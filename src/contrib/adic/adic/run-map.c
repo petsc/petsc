@@ -137,7 +137,7 @@ void* ad_map_get(void* key)
       pa = (Pair*)pa->key;
     }
     else {
-      Pair* tmp = (Pair*)ad_map_alloc_bucket() ;
+      Pair* tmp = (Pair*)ad_map_alloc_bucket();
       pa->key = tmp;
       tmp->key = key;
       entry->cache = tmp;
@@ -147,7 +147,7 @@ void* ad_map_get(void* key)
 }
 
 
-static void* ad_map_alloc_bucket()
+static void* ad_map_alloc_bucket(void)
 {
 #if defined(DEBUG)
   static 	count = 0;

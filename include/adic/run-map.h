@@ -47,7 +47,7 @@ extern "C" {
     void* ad_map_reg_array_d(double* base, int size);
     void* ad_map_reg_array_s(float* base, int size);
     void* ad_map_get(void* key);
-    static void* ad_map_alloc_bucket();
+    static void* ad_map_alloc_bucket(void);
     void* ad_map_free_bucket(void* ptr);
     void* ad_map_free(void* key);
 

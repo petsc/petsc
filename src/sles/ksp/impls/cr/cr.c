@@ -18,8 +18,8 @@ static int KSPSetUp_CR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSolve_CR"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolve_CR"
 static int  KSPSolve_CR(KSP ksp,int *its)
 {
   int          i = 0, maxit, cerr = 0, ierr;
