@@ -10,6 +10,8 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Add info about which library components do what.  Mention SLES_LIB.
+
   - Add table of all preconditioners and options to PETSc manual.
 
   - Support DA users setting own partition
