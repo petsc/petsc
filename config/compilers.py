@@ -369,8 +369,11 @@ class Configure(config.base.Configure):
     self.flibs = ldRunPath+self.flibs
 
     # on OS X, mixing g77 3.4 with gcc-3.3 requires using -lcc_dynamic
-    if self.flibs.count('-L/sw/lib/gcc/powerpc-apple-darwin') > 0:
-      self.flibs.append('-lcc_dynamic')
+    for l in self.flibs:
+      if l.find('-L/sw/lib/gcc/powerpc-apple-darwin') >= 0:
+        self.flibs.append('-lcc_dynamic')
+        self.framework.log.write('Detected Apple Mac Fink libraries used; adding -lcc_dynamic so Fortran can work with C++')
+        break
 
     self.logPrint('Libraries needed to link against Fortran compiler'+str(self.flibs), 3, 'compilers')
     # check that these monster libraries can be used from C
