@@ -408,7 +408,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm comm,const char *libna
     ierr = PetscStrcat(urlget,libname);CHKERRQ(ierr);
     ierr = PetscStrcat(urlget," 2>&1 ");CHKERRQ(ierr);
 
+#if defined(PETSC_HAVE_POPEN)
     ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,urlget,"r",&fp);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+#endif
     if (!fgets(buf,1024,fp)) {
       SETERRQ1(PETSC_ERR_PLIB,"No output from ${PETSC_DIR}/bin/urlget in getting file %s",libname);
     }

@@ -84,8 +84,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFStringCreateFunction(PF pf,char *string,void
   } else {
     sprintf(task,"cd %s ; mkdir ${USERNAME} ;cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; make  MIN=%d NOUT=%d -f makefile petscdlib STRINGFUNCTION=\"%s\" ; \\rm -f makefile petscdlib.c libpetscdlib.a ;  sync\n",tmp,(int)pf->dimin,(int)pf->dimout,string);
   }
+#if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(comm,PETSC_NULL,task,"r",&fd);CHKERRQ(ierr);
   ierr = PetscPClose(comm,fd);CHKERRQ(ierr);
+#else
+  SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+#endif
 
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 

@@ -162,7 +162,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-
   if (type == PETSC_INT){
 #if (PETSC_SIZEOF_INT == 8)
     /* read them in as shorts, later stretch into ints */
@@ -182,6 +181,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
+  else if (type == PETSC_ENUM)    m *= sizeof(PetscTruth);
   else if (type == PETSC_LOGICAL) m = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
   
@@ -196,6 +196,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
   }
 #if !defined(PETSC_WORDS_BIGENDIAN)
   if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}        
   else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
@@ -310,12 +311,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
+  else if (type == PETSC_ENUM)    m *= sizeof(PetscTruth);
   else if (type == PETSC_LOGICAL) m = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
   if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}          
   else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif

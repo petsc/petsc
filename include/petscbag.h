@@ -121,6 +121,7 @@ extern PetscErrorCode PetscBagRegisterReal(PetscBag*,void*,PetscReal, const char
 extern PetscErrorCode PetscBagRegisterString(PetscBag*,void*,size_t,const char*, const char*, const char*);
 extern PetscErrorCode PetscBagRegisterScalar(PetscBag*,void*,PetscScalar,const  char*,const  char*);
 extern PetscErrorCode PetscBagRegisterInt(PetscBag*,void*,PetscInt,const  char*,const  char*);
+extern PetscErrorCode PetscBagRegisterEnum(PetscBag*,void*,PetscEnum,const  char*,const  char*);
 extern PetscErrorCode PetscBagRegisterTruth(PetscBag*,void*,PetscTruth,const  char*,const  char*);
 extern PetscErrorCode PetscBagRegisterVec(PetscBag*,void*,const char*,const  char*);
 

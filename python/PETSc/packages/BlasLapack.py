@@ -359,7 +359,7 @@ class Configure(config.base.Configure):
         self.dlib.extend(self.compilers.flibs)
       self.framework.packages.append(self)
       if self.f2c:
-        self.addDefine('BLASLAPACK_F2C', 1)
+        self.addDefine('BLASLAPACK_UNDERSCORE', 1)
     else:
       if not self.foundBlas:
         raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate the library containing BLAS.\n Or --download-c-blas-lapack=1 or --download-f-blas-lapack=1 to have one automatically downloaded and installed\n')

@@ -69,9 +69,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscPopUpSelect(MPI_Comm comm,char *machine,char
     ierr = PetscStrcat(buffer,choices[i]);CHKERRQ(ierr);
     ierr = PetscStrcat(buffer,"\" ");CHKERRQ(ierr);
   }
+#if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(comm,machine,buffer,"r",&fp);CHKERRQ(ierr);
   ierr = PetscPClose(comm,fp);CHKERRQ(ierr);
-
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     FILE *fd;
@@ -80,8 +80,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscPopUpSelect(MPI_Comm comm,char *machine,char
     fscanf(fd,"%d",choice);
     *choice -= 1;
     if (*choice < 0 || *choice > n-1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Selection %d out of range",*choice);
-    ierr = PetscFClose(PETSC_COMM_SELF,fd);CHKERRQ(ierr);
+    ierr = PetscPClose(PETSC_COMM_SELF,fd);CHKERRQ(ierr);
   }
+#else
+  SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+#endif
   ierr = MPI_Bcast(choice,1,MPI_INT,0,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

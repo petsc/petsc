@@ -100,7 +100,7 @@ typedef int PetscCookie;
 typedef int PetscEvent;
 typedef int PetscBLASInt;
 typedef int PetscMPIInt;
-
+typedef int PetscEnum;           /* Currently PetscEnum and PETSC_ENUM only work when sizeof(PetscInt) = size(int) */
 #if defined(PETSC_USE_64BIT_INT)
 typedef long long PetscInt;
 #define MPIU_INT MPI_LONG_LONG_INT
@@ -152,6 +152,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscTruth;
+const char *PetscTruths[] = {"PETSC_FALSE","PETSC_TRUE","PetscTruth",0};
 
 /*M
     PETSC_FALSE - False value of PetscTruth
@@ -182,6 +183,7 @@ M*/
 
 .seealso: PetscTruth
 M*/
+#define PETSC_YES            PETSC_TRUE
 
 /*M
     PETSC_NO - Alias for PETSC_FALSE
@@ -192,6 +194,7 @@ M*/
 
 .seealso: PetscTruth
 M*/
+#define PETSC_NO             PETSC_FALSE
 
 /*M
     PETSC_NULL - standard way of passing in a null or array or pointer
@@ -231,8 +234,6 @@ M*/
 M*/
 #define PETSC_DEFAULT        -2
 
-#define PETSC_YES            PETSC_TRUE
-#define PETSC_NO             PETSC_FALSE
 
 /*M
     PETSC_IGNORE - same as PETSC_NULL, means PETSc will ignore this argument
@@ -800,12 +801,16 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMallocSetDumpLog(void);
    Level: beginner
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscDataTypeToMPIDataType(),
-          PetscDataTypeGetSize(), PetscDataTypeGetName()
+          PetscDataTypeGetSize()
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
               PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_LOGICAL = 7} PetscDataType;
+              PETSC_CHAR = 6,PETSC_LOGICAL = 7,PETSC_ENUM = 8} PetscDataType;
+const char *PetscDataTypes[] = {"PETSC_INT", "PETSC_DOUBLE", "PETSC_COMPLEX",
+                                "PETSC_LONG","PETSC_SHORT",  "PETSC_FLOAT",
+                                "PETSC_CHAR","PETSC_LOGICAL","PETSC_ENUM","PetscDataType",0};
+
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX
 #else
@@ -824,7 +829,6 @@ typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetSize(PetscDataType,PetscInt*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetName(PetscDataType,const char*[]);
 
 /*
     Basic memory and string operations. These are usually simple wrappers

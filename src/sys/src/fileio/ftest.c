@@ -194,7 +194,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscLs(MPI_Comm comm,const char libname[],char *
   PetscFunctionBegin;
   ierr   = PetscStrcpy(program,"ls ");CHKERRQ(ierr);
   ierr   = PetscStrcat(program,libname);CHKERRQ(ierr); 
+#if defined(PETSC_HAVE_POPEN)
   ierr   = PetscPOpen(comm,PETSC_NULL,program,"r",&fp);CHKERRQ(ierr);
+#else
+  SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+#endif
   f      = fgets(found,tlen,fp);
   if (f) *flg = PETSC_TRUE; else *flg = PETSC_FALSE;
   while (f) {
@@ -202,5 +206,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscLs(MPI_Comm comm,const char libname[],char *
     f     = fgets(found+len,tlen-len,fp);
   }
   if (*flg) {ierr = PetscLogInfo((0,"PetscLS:ls on %s gives \n%s\n",libname,found));CHKERRQ(ierr);}
+#if defined(PETSC_HAVE_POPEN)
+  ierr   = PetscPClose(comm,fp);CHKERRQ(ierr);
+#else
+  SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+#endif
   PetscFunctionReturn(0);
 }

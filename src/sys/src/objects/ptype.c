@@ -19,7 +19,7 @@
 
     Level: advanced
    
-.seealso: PetscDataType, PetscDataTypeGetName()
+.seealso: PetscDataType
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
 {
@@ -36,6 +36,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType ptype,MP
     *mtype = MPI_LONG;
   } else if (ptype == PETSC_SHORT) {
     *mtype = MPI_SHORT;
+  } else if (ptype == PETSC_ENUM) {
+    *mtype = MPI_INT;
   } else if (ptype == PETSC_FLOAT) {
     *mtype = MPI_FLOAT;
   } else if (ptype == PETSC_CHAR) {
@@ -51,7 +53,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType ptype,MP
 typedef enum {PETSC_INT_SIZE = sizeof(PetscInt),PETSC_DOUBLE_SIZE = sizeof(double),
               PETSC_COMPLEX_SIZE = sizeof(PetscScalar),PETSC_LONG_SIZE=sizeof(long),
               PETSC_SHORT_SIZE = sizeof(short),PETSC_FLOAT_SIZE = sizeof(float),
-              PETSC_CHAR_SIZE = sizeof(char),PETSC_LOGICAL_SIZE = 1} PetscDataTypeSize;
+              PETSC_CHAR_SIZE = sizeof(char),PETSC_LOGICAL_SIZE = sizeof(PetscTruth),PETSC_ENUM_SIZE = sizeof(int)} PetscDataTypeSize;
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR_SIZE PETSC_COMPLEX_SIZE
 #else
@@ -80,7 +82,7 @@ typedef enum {PETSC_INT_SIZE = sizeof(PetscInt),PETSC_DOUBLE_SIZE = sizeof(doubl
 
     Level: advanced
    
-.seealso: PetscDataType, PetscDataTypeGetName(), PetscDataTypeToMPIDataType()
+.seealso: PetscDataType, PetscDataTypeToMPIDataType()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetSize(PetscDataType ptype,PetscInt *size)
 {
@@ -101,52 +103,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetSize(PetscDataType ptype,PetscInt
     *size = PETSC_FLOAT_SIZE;
   } else if (ptype == PETSC_CHAR) {
     *size = PETSC_CHAR_SIZE;
+  } else if (ptype == PETSC_ENUM) {
+    *size = PETSC_ENUM_SIZE;
   } else if (ptype == PETSC_LOGICAL) {
     *size = PETSC_LOGICAL_SIZE;
-  } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDataTypeGetName"
-/*@C
-     PetscDataTypeGetName - Gets the string representation of a PETSc datatype
-
-   Not collective
-
-    Input Parameter:
-.     ptype - the PETSc datatype name (for example PETSC_DOUBLE)
-
-    Output Parameter:
-.     name - the name as a string (for example "double")
-
-    Level: advanced
-   
-.seealso: PetscDataType, PetscDataTypeGetSize(), PetscDataTypeToMPIDataType()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetName(PetscDataType ptype,const char *name[])
-{
-  PetscFunctionBegin;
-  if (ptype == PETSC_INT) {
-    *name = "int";
-  } else if (ptype == PETSC_DOUBLE) {
-    *name = "double";
-#if defined(PETSC_USE_COMPLEX)
-  } else if (ptype == PETSC_COMPLEX) {
-    *name = "complex";
-#endif
-  } else if (ptype == PETSC_LONG) {
-    *name = "long";
-  } else if (ptype == PETSC_SHORT) {
-    *name = "short";
-  } else if (ptype == PETSC_FLOAT) {
-    *name = "float";
-  } else if (ptype == PETSC_CHAR) {
-    *name = "char";
-  } else if (ptype == PETSC_LOGICAL) {
-    *name = "logical";
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   }

@@ -32,16 +32,16 @@
 PetscErrorCode PETSC_DLLEXPORT PetscStartMatlab(MPI_Comm comm,const char machine[],const char script[],FILE **fp)
 {
   PetscErrorCode ierr;
-  FILE *fd;
-  char command[512];
-#if defined(PETSC_HAVE_UCBPS)
-  char buf[1024],*found;
-  int  rank;
+  FILE           *fd;
+  char           command[512];
+#if defined(PETSC_HAVE_UCBPS) && defined(PETSC_HAVE_POPEN)
+  char           buf[1024],*found;
+  PetscMPIInt    rank;
 #endif
 
   PetscFunctionBegin;
 
-#if defined(PETSC_HAVE_UCBPS)
+#if defined(PETSC_HAVE_UCBPS) && defined(PETSC_HAVE_POPEN)
   /* check if Matlab is not already running */
   ierr = PetscPOpen(comm,machine,"/usr/ucb/ps -ugxww | grep matlab | grep -v grep","r",&fd);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStartMatlab(MPI_Comm comm,const char machine
     found = fgets(buf,1024,fd);
   }
   ierr = MPI_Bcast(&found,1,MPI_CHAR,0,comm);CHKERRQ(ierr);
-  ierr = PetscFClose(comm,fd);CHKERRQ(ierr);
+  ierr = PetscPClose(comm,fd);CHKERRQ(ierr);
   if (found) PetscFunctionReturn(0);
 #endif
 
@@ -57,11 +57,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscStartMatlab(MPI_Comm comm,const char machine
     /* the remote machine won't know about current directory, so add it to Matlab path */
     /* the extra \" are to protect possible () in the script command from the shell */
     sprintf(command,"echo \"delete ${HOMEDIRECTORY}/matlab/startup.m ; path(path,'${WORKINGDIRECTORY}'); %s  \" > ${HOMEDIRECTORY}/matlab/startup.m",script);
+#if defined(PETSC_HAVE_POPEN)
     ierr = PetscPOpen(comm,machine,command,"r",&fd);CHKERRQ(ierr);
-    ierr = PetscFClose(comm,fd);CHKERRQ(ierr);
+    ierr = PetscPClose(comm,fd);CHKERRQ(ierr);
+#endif
   }
-
+#if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(comm,machine,"xterm -display ${DISPLAY} -e matlab -nosplash","r",fp);CHKERRQ(ierr);
+#endif
 
   PetscFunctionReturn(0);
 }
