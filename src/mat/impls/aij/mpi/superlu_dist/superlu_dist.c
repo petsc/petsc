@@ -418,8 +418,6 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
   char                    *prtype[] = {"LargeDiag","NATURAL"}; 
   PetscFunctionBegin;
 	
-  ierr = PetscNew(Mat_MPIAIJ_SuperLU_DIST,&lu);CHKERRQ(ierr); 
-
   /* Create the factorization matrix */
   ierr = MatCreate(A->comm,A->m,A->n,M,N,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSUPERLUDIST);CHKERRQ(ierr);
@@ -430,7 +428,8 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
   B->ops->solve            = MatSolve_MPIAIJ_SuperLU_DIST;
   B->ops->destroy          = MatDestroy_MPIAIJ_SuperLU_DIST;  
   B->factor                = FACTOR_LU;  
-  B->spptr                 = (void*)lu;
+
+  lu = (Mat_MPIAIJ_SuperLU_DIST*)(B->spptr);
 
   /* Set the input options */
   set_default_options(&options);

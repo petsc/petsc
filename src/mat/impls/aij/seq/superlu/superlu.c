@@ -303,16 +303,16 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
 
   PetscFunctionBegin;
   
-  ierr            = MatCreateSeqAIJ(A->comm,A->m,A->n,0,PETSC_NULL,F);CHKERRQ(ierr);
-  B               = *F;
+  ierr = MatCreate(A->comm,A->m,A->n,PETSC_DETERMINE,PETSC_DETERMINE,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSUPERLU);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_SuperLU;
   B->ops->solve           = MatSolve_SeqAIJ_SuperLU;
   B->ops->destroy         = MatDestroy_SeqAIJ_SuperLU;
   B->factor               = FACTOR_LU;
-  (*F)->assembled         = PETSC_TRUE;  /* required by -sles_view */
+  B->assembled         = PETSC_TRUE;  /* required by -sles_view */
   
-  ierr            = PetscNew(Mat_SeqAIJ_SuperLU,&lu);CHKERRQ(ierr);
-  B->spptr        = (void*)lu;
+  lu = (Mat_SeqAIJ_SuperLU*)(B->spptr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatCreateNull","MatCreateNull_SeqAIJ_SuperLU",
                                     (void(*)(void))MatCreateNull_SeqAIJ_SuperLU);CHKERRQ(ierr);
 
@@ -331,6 +331,8 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
 
   lu->flg            = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpSuperLU = PETSC_TRUE;
+
+  *F = B;
   PetscFunctionReturn(0);
 }
 
