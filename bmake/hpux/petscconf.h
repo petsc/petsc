@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.16 1999/09/16 19:01:10 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.17 1999/11/05 14:42:55 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -7,6 +7,7 @@
 #define INCLUDED_PETSCCONF_H
 
 #define PARCH_hpux 
+#define PETSC_ARCH_NAME "hpux"
 
 #define PETSC_HAVE_LIMITS_H
 #define PETSC_HAVE_STDLIB_H 
@@ -40,4 +41,16 @@
 #define PETSC_HAVE_HPUXF90
 #define PETSC_NEED_SOCKET_PROTO
 
+#define PETSC_NEED_DEBUGGER_NO_SLEEP
+#define PETSC_HAVE_NO_GETRUSAGE
+#define PETSC_USE_LARGEP_FOR_DEBUGGER
+
 #endif
+
+
+
+
+
+
+
+
