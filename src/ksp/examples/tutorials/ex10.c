@@ -17,7 +17,8 @@ users manual for a discussion of preloading.  Input parameters include\n\
         -help -ksp_view                  \n\
         -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
         -ksp_type preonly -pc_type lu -matload_type seqaijspooles/superlu/superlu_dist/aijmumps \n\
-        -ksp_type preonly -pc_type cholesky -matload_type seqsbaijspooles/dscpack/sbaijmumps    \n\n";
+        -ksp_type preonly -pc_type cholesky -matload_type seqsbaijspooles/dscpack/sbaijmumps    \n\
+        -f0 <A> -fB <B> -matload_type sbaijmumps -ksp_type preonly -pc_type cholesky -test_inertia -mat_sigma <sigma> \n\n";
 */
 /*T
    Concepts: KSP^solving a linear system

@@ -82,7 +82,8 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
   for (i=0; i<ec; i++) { stmp[i] = bs*i; } 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
 
-  /* generate the scatter context */
+  /* generate the scatter context 
+     -- Mvctx and lvec are not used by MatMult_MPISBAIJ(), but usefule for some applications */
   ierr = VecCreateMPI(mat->comm,mat->n,mat->N,&gvec);CHKERRQ(ierr);
   ierr = VecScatterCreate(gvec,from,sbaij->lvec,to,&sbaij->Mvctx);CHKERRQ(ierr); 
   ierr = VecScatterPostRecvs(gvec,sbaij->lvec,INSERT_VALUES,SCATTER_FORWARD,sbaij->Mvctx);CHKERRQ(ierr); 
