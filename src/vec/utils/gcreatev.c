@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.9 1995/03/21 23:18:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.10 1995/04/15 03:26:19 bsmith Exp bsmith $";
 #endif
 
 
@@ -25,14 +25,8 @@ int VecCreateInitialVector(MPI_Comm comm,int n,Vec *V)
 {
   int numtid;
   MPI_Comm_size(comm,&numtid);
-  if (OptionsHasName(0,0,"-mpi_nonblas_objects")) {
-    return VecCreateMPINonBLAS(comm,PETSC_DECIDE,n,V);
-  }
   if (numtid > 1 || OptionsHasName(0,0,"-mpi_objects")) {
     return VecCreateMPI(comm,PETSC_DECIDE,n,V);
-  }
-  if (OptionsHasName(0,0,"-nonblas_objects")) {
-    return VecCreateSequentialNonBLAS(comm,n,V);
   }
   return VecCreateSequential(comm,n,V);
 }

@@ -26,11 +26,7 @@ typedef struct _Vec*            Vec;
 typedef struct _VecScatterCtx*  VecScatterCtx;
 
 extern int VecCreateSequential(MPI_Comm,int,Vec *);  
-extern int VecCreateSequentialNonBLAS(MPI_Comm,int,Vec *); 
-
 extern int VecCreateMPI(MPI_Comm,int,int,Vec *);  
-extern int VecCreateMPINonBLAS(MPI_Comm,int,int,Vec *); 
-
 extern int VecCreateInitialVector(MPI_Comm,int,Vec *); 
 
 extern int VecDot(Vec, Vec, Scalar*);
