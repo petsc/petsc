@@ -231,7 +231,7 @@ class Configure(config.base.Configure):
     octave-2.0.13/aclocal.m4, and full credit should go to John W. Eaton
     for writing this extremely useful macro.'''
     if not 'CC' in self.framework.argDB or not 'FC' in self.framework.argDB: 
-      self.flibs = ''
+      self.flibs = []
       return
     oldFlags = self.framework.argDB['LDFLAGS']
     self.framework.argDB['LDFLAGS'] += ' -v'
@@ -267,11 +267,11 @@ class Configure(config.base.Configure):
     if ldRunPath: ldRunPath = ldRunPath[0]
     if ldRunPath and ldRunPath[0] == '/':
       if self.isGCC:
-        ldRunPath = '-Xlinker -R -Xlinker '+ldRunPath
+        ldRunPath = ['-Xlinker -R -Xlinker '+ldRunPath]
       else:
-        ldRunPath = '-R '+ldRunPath
+        ldRunPath = ['-R '+ldRunPath]
     else:
-      ldRunPath = ''
+      ldRunPath = []
       
     # Parse output
     argIter = iter(output.split())
@@ -359,31 +359,31 @@ class Configure(config.base.Configure):
       pass
 
     # Change to string
-    self.flibs = ''
+    self.flibs = []
     for lib in flibs:
       if 'FC_LINKER_SLFLAG' in self.framework.argDB and lib.startswith('-L'):
-        self.flibs += ' '+self.framework.argDB['FC_LINKER_SLFLAG']+lib[2:]
-      self.flibs += ' '+lib
+        self.flibs.append(self.framework.argDB['FC_LINKER_SLFLAG']+lib[2:])
+      self.flibs.append(lib)
     # Append run path
-    if ldRunPath: self.flibs = ldRunPath+self.flibs
+    self.flibs = ldRunPath+self.flibs
 
     # on OS X, mixing g77 3.4 with gcc-3.3 requires using -lcc_dynamic
     if self.flibs.find('-L/sw/lib/gcc/powerpc-apple-darwin') >= 0:
-      self.flibs += ' -lcc_dynamic'
+      self.flibs.append('-lcc_dynamic')
 
-    self.logPrint('Libraries needed to link against Fortran compiler'+self.flibs, 3, 'compilers')
+    self.logPrint('Libraries needed to link against Fortran compiler'+str(self.flibs), 3, 'compilers')
     # check that these monster libraries can be used from C
     self.logPrint('Check that Fortran libraries can be used from C', 4, 'compilers')
     oldLibs = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] += ' '+self.flibs
+    self.framework.argDB['LIBS'] += ' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError, e:
       self.logPrint('Fortran libraries cannot directly be used from C, try without -lcrt2.o', 4, 'compilers')
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
       # try removing this one
-      self.flibs = re.sub('-lcrt2.o','',self.flibs)
-      self.framework.argDB['LIBS'] = oldLibs+self.flibs
+      if '-lcrt2.o' in self.flibs: self.flibs.remove('-lcrt2.o')
+      self.framework.argDB['LIBS'] = oldLibs+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
       try:
         self.setCompilers.checkCompiler('C')
       except RuntimeError, e:
@@ -392,27 +392,27 @@ class Configure(config.base.Configure):
 
     # check if Intel library exists (that is not linked by default but has iargc_ in it :-(
     self.logPrint('Check for Intel PEPCF90 library', 4, 'compilers')
-    self.framework.argDB['LIBS'] = oldLibs+' -lPEPCF90 '+self.flibs
+    self.framework.argDB['LIBS'] = oldLibs+' -lPEPCF90 '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
     try:
       self.setCompilers.checkCompiler('C')
-      self.flibs = ' -lPEPCF90 '+self.flibs
+      self.flibs = [' -lPEPCF90']+self.flibs
       self.logPrint('Intel PEPCF90 library exists', 4, 'compilers')
     except RuntimeError, e:
       self.logPrint('Intel PEPCF90 library does not exist', 4, 'compilers')
-      self.framework.argDB['LIBS'] = oldLibs+' '+self.flibs
+      self.framework.argDB['LIBS'] = oldLibs+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
 
     # check these monster libraries work from C++
     if 'CXX' in self.framework.argDB:
       self.logPrint('Check that Fortran libraries can be used from C++', 4, 'compilers')
-      self.framework.argDB['LIBS'] = oldLibs+self.flibs
+      self.framework.argDB['LIBS'] = oldLibs+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
       try:
         self.setCompilers.checkCompiler('C++')
         self.logPrint('Fortran libraries can be used from C++', 4, 'compilers')
       except RuntimeError, e:
         self.logPrint(str(e), 4, 'compilers')
         # try removing this one causes grief with gnu g++ and Intel Fortran
-        self.flibs = re.sub('-lintrins','',self.flibs)
-        self.framework.argDB['LIBS'] = oldLibs+self.flibs
+        if '-lintrins' in self.flibs: self.flibs.remove('-lintrins')
+        self.framework.argDB['LIBS'] = oldLibs+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
         try:
           self.setCompilers.checkCompiler('C++')
         except RuntimeError, e:

@@ -114,7 +114,7 @@ class Configure(config.base.Configure):
         self.framework.argDB['LIBS'] += ' -L'+dir
     for lib in libName:
       self.framework.argDB['LIBS'] += ' '+self.getLibArgument(lib)
-    self.framework.argDB['LIBS'] += ' '+otherLibs
+    self.framework.argDB['LIBS'] += ' '+' '.join(otherLibs)
     self.pushLanguage(self.language[-1])
     if self.checkLink(includes, body):
       found = 1
@@ -131,6 +131,10 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return found
 
+  def toString(self,libs):
+    '''Converts a list of libraries to a string suitable for a linker'''
+    return ' '.join([self.getLibArgument(lib) for lib in libs])
+  
   def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int', noCheckArg = 0):
     '''Determine whether a library is shared
        - initFunction(int *argc, char *argv[]) is called to initialize some static data
