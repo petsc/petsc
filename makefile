@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.240 1998/04/28 16:01:09 bsmith Exp balay $ 
+# $Id: makefile,v 1.241 1998/04/28 19:35:47 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -247,12 +247,12 @@ TAGS_MAKEFILE_FILES = include/makefile include/*/makefile \
 
 # Builds all etags files
 alletags:
-	-make etags_complete
-	-make etags
-	-make etags_noexamples
-	-make etags_examples
-	-make etags_makefiles
-	-make ctags
+	-${OMAKE} etags_complete
+	-${OMAKE} etags
+	-${OMAKE} etags_noexamples
+	-${OMAKE} etags_examples
+	-${OMAKE} etags_makefiles
+	-${OMAKE} ctags
 
 # Builds the basic etags file.	This should be employed by most users.
 etags:
@@ -339,25 +339,25 @@ deletelatexpages:
 # Builds all versions of the man pages
 allmanpages: allmanualpages alllatexpages
 allmanualpages: deletemanualpages
-	-make ACTION=manualpages_buildcite tree
-	-cd src/fortran/custom; make manualpages_buildcite
-	-cd src/fortran/custom; make manualpages
-	-make ACTION=manualpages tree
+	-${OMAKE} ACTION=manualpages_buildcite tree
+	-cd src/fortran/custom; ${OMAKE} manualpages_buildcite
+	-cd src/fortran/custom; ${OMAKE} manualpages
+	-${OMAKE} ACTION=manualpages tree
 	-maint/wwwman ${PETSC_DIR}
 	-maint/examplesindex.tcl
 	-maint/htmlkeywords.tcl
 	-@chmod g+w docs/manualpages/man*/*
 
 alllatexpages: deletelatexpages
-	-make ACTION=latexpages tree
-	-cd src/fortran/custom; make latexpages
+	-${OMAKE} ACTION=latexpages tree
+	-cd src/fortran/custom; ${OMAKE} latexpages
 	-@chmod g+w docs/tex/rsum/*
 
 # Builds Fortran stub files
 allfortranstubs:
 	-@include/foldinclude/generateincludes
 	-@${RM} -f src/fortran/auto/*.c
-	-make ACTION=fortranstubs tree
+	-${OMAKE} ACTION=fortranstubs tree
 	-@cd src/fortran/auto; ${OMAKE} -f makefile fixfortran
 	chmod g+w src/fortran/auto/*.c
 
