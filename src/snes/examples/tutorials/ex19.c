@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.18 2001/03/23 23:24:25 balay Exp bsmith $*/
+/*$Id: ex19.c,v 1.19 2001/04/10 19:37:05 bsmith Exp bsmith $*/
 
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
   \n\
@@ -7,11 +7,6 @@ The flow can be driven with the lid or with bouyancy or both:\n\
   -lidvelocity <lid>, where <lid> = dimensionless velocity of lid\n\
   -grashof <gr>, where <gr> = dimensionless temperature gradient\n\
   -prandtl <pr>, where <pr> = dimensionless thermal/momentum diffusity ratio\n\
-Mesh parameters are:\n\
-  -mx <xg>, where <xg> = number of grid points in the x-direction\n\
-  -my <yg>, where <yg> = number of grid points in the y-direction\n\
-  -printg : print grid information\n\
-Graphics of the contours of (U,V,Omega,T) are available on each grid:\n\
   -contours : draw contour plots of solution\n\n";
 
 /*T
@@ -22,8 +17,6 @@ Graphics of the contours of (U,V,Omega,T) are available on each grid:\n\
 T*/
 
 /* ------------------------------------------------------------------------
-
-    This code is the same as ex8.c except it uses a multigrid preconditioner
 
     We thank David E. Keyes for contributing the driven cavity discretization
     within this example code.
@@ -82,6 +75,9 @@ typedef struct {
 extern int FormInitialGuess(SNES,Vec,void*);
 extern int FormFunction(SNES,Vec,Vec,void*);
 extern int FormFunctionLocal(Field**x,Field**f,DALocalInfo*info,void*);
+#if defined(PETSC_HAVE_ADIC)
+extern int ad_FormFunctionLocal(Field**x,Field**f,DALocalInfo*info,void*);
+#endif
 
 typedef struct {
    double     lidvelocity,prandtl,grashof;  /* physical parameters */
@@ -113,7 +109,7 @@ int main(int argc,char **argv)
       Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
     */
-    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
@@ -148,7 +144,15 @@ int main(int argc,char **argv)
     if (localfunction) {
       ierr = DMMGSetSNESLocal(dmmg,(int(*)(Scalar**,Scalar**,DALocalInfo*,void*))FormFunctionLocal,0);CHKERRQ(ierr);
     } else {
-      ierr = DMMGSetSNES(dmmg,FormFunction,0);
+#if defined(PETSC_HAVE_ADIC)
+      PetscTruth localad = PETSC_FALSE;
+      ierr = PetscOptionsGetLogical(PETSC_NULL,"-localad",&localad,PETSC_IGNORE);CHKERRQ(ierr);
+      if (localad) {
+        ierr = DMMGSetSNESLocalWithAD(dmmg,(int(*)(Scalar**,Scalar**,DALocalInfo*,void*))FormFunctionLocal,
+                                           (int(*)(Scalar**,Scalar**,DALocalInfo*,void*))ad_FormFunctionLocal);CHKERRQ(ierr);
+      } else 
+#endif
+      {ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);}
     }
 
     ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",
@@ -569,3 +573,4 @@ int FormFunctionLocal(Field **x,Field **f,DALocalInfo *info,void *ptr)
   ierr = PetscLogFlops(84*info->ym*info->xm);CHKERRQ(ierr);
   return 0; 
 } 
+

@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.19 2001/04/19 19:57:09 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.20 2001/04/19 20:00:09 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -411,17 +411,9 @@ int DMMGSetSNESLocal(DMMG *dmmg,int (*function)(Scalar **,Scalar**,DALocalInfo*,
 
 #if defined(PETSC_HAVE_ADIC)
 
-typedef struct {
-	double value;
-	double grad[ad_GRAD_MAX];
-} DERIV_TYPE;
-
-#define DERIV_val(a) ((a).value)
-#define DERIV_grad(a) ((a).grad)
 void ad_AD_Init();
 void ad_AD_Final();
 #include "adic_utils.h"
-#include "ad_grad.h"
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -458,7 +450,7 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   Vec            localX;
   Scalar         **x;
   DALocalInfo    info;
-  DERIV_TYPE     **ad_x,**ad_f,*derivptr;
+  void           **ad_x,**ad_f;
   int            dim,dof,stencil_size,stencil_width;
   DAStencilType  stencil_type;
   DAPeriodicType periodicity;
@@ -505,29 +497,13 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   /* allocate space for derivative objects.  */
   ierr = PetscGetStructArray2d(gxs*dof,gys,gxm*dof,gym,deriv_type_size,(void ***)&ad_x,&ad_xstart);CHKERRQ(ierr);
   my_AD_SetValArray(ad_xstart,gxm*gym*dof,(&x[gys][gxs]));
-
-  /*
-  for(j=gys;j<gys+gym;j++) {
-    for(i=dof*gxs;i<dof*(gxs+gxm);i++) {
-      DERIV_val(ad_x[j][i]) = x[j][i];
-    }
-    }*/
   ierr = PetscGetStructArray2d(xs*dof,ys,xm*dof,ym,deriv_type_size,(void ***)&ad_f,&ad_fstart);CHKERRQ(ierr);
 
 
-  ad_AD_ResetIndep();
+  my_AD_ResetIndep();
   my_AD_SetIndepArrayColored(ad_xstart,gxm*gym*dof,colors);
-  ad_AD_IncrementTotalGradSize(dmmg->iscoloring->n);
-  ad_AD_SetIndepDone();
-
-  /*
-  for(j=gys;j<gys+gym;j++) {
-    derivptr = &(ad_x[j][dof*gxs]);
-    colorptr = &(colors[j*gxm*dof]);
-    ad_AD_SetIndepArrayColored(derivptr,dof*gxm,&colors[(j-gys)*gxm*dof]);
-  }
-  ad_AD_IncrementTotalGradSize(dmmg->iscoloring->n);
-  ad_AD_SetIndepDone();*/
+  my_AD_IncrementTotalGradSize(dmmg->iscoloring->n);
+  my_AD_SetIndepDone();
 
   /* 
      Compute entries for the locally owned part of the Jacobian.
@@ -538,8 +514,8 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
   /* stick the values into the matrix */
-  ierr = MatADSetColoring_MPIAIJ(*B,dmmg->iscoloring);CHKERRQ(ierr);
-  ierr = MatADSetValues_MPIAIJ(*B,(Scalar**)ad_fstart,ad_GRAD_MAX);CHKERRQ(ierr);
+  ierr = MatADSetColoring_SeqAIJ(*B,dmmg->iscoloring);CHKERRQ(ierr);
+  ierr = MatADSetValues_SeqAIJ(*B,(Scalar**)ad_fstart,deriv_type_size);CHKERRQ(ierr);
 
   /* Assemble true Jacobian; if it is different */
   ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.369 2001/03/23 23:21:51 balay Exp bsmith $*/
+/*$Id: aij.c,v 1.370 2001/04/10 19:35:19 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -698,6 +698,7 @@ int MatDestroy_SeqAIJ(Mat A)
   if (a->inode.size) {ierr = PetscFree(a->inode.size);CHKERRQ(ierr);}
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   if (a->saved_values) {ierr = PetscFree(a->saved_values);CHKERRQ(ierr);}
+  if (a->coloring) {ierr = ISColoringDestroy(a->coloring);CHKERRQ(ierr);}
   ierr = PetscFree(a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2714,5 +2715,43 @@ int MatCreateSeqAIJWithArrays(MPI_Comm comm,int m,int n,int* i,int*j,Scalar *a,M
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatADSetColoring_SeqAIJ"
+int MatADSetColoring_SeqAIJ(Mat A,ISColoring coloring)
+{
+  int        ierr;
+  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;  
 
+  PetscFunctionBegin;
+  ierr        = ISColoringReference(coloring);CHKERRQ(ierr);
+  a->coloring = coloring;
+  PetscFunctionReturn(0);
+}
+
+#include "adic_utils.h"
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatADSetValues_SeqAIJ"
+int MatADSetValues_SeqAIJ(Mat A,void *advalues,int nlen)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;  
+  int        m = A->m,*ii = a->i,*jj = a->j,nz,i,*color,j;
+  Scalar     *v = a->a,*values;
+
+  PetscFunctionBegin;
+  if (!a->coloring) SETERRQ(1,"Coloring not set for matrix");
+
+  color = a->coloring->colors;
+  /* loop over rows */
+  for (i=0; i<m; i++) {
+    nz = ii[i+1] - ii[i];
+    /* loop over columns putting computed value into matrix */
+    values = my_AD_GetGradArray(advalues);
+    for (j=0; j<nz; j++) {
+      *v++ = values[color[*jj++]];
+    }
+    advalues += nlen; /* jump to next row of derivatives */
+  }
+  PetscFunctionReturn(0);
+}
 
