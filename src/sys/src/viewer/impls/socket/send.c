@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.116 2000/10/24 20:24:13 bsmith Exp bsmith $ */
+/* $Id: send.c,v 1.117 2000/11/28 17:27:14 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -80,16 +80,17 @@ static int ViewerDestroy_Socket(Viewer viewer)
 #define __FUNC__ /*<a name="SOCKCall_Private"></a>*/"SOCKCall_Private" 
 int SOCKCall_Private(char *hostname,int portnum,int *t)
 {
-#if defined(PETSC_MISSING_SOCKETS)
-  SETERRQ(1,"This system does not support Unix tcp/ip");
-  PetscFunctionReturn(0);
-#else
+#if !defined(PETSC_MISSING_SOCKETS)
   struct sockaddr_in sa;
   struct hostent     *hp;
   int                s = 0,ierr;
   PetscTruth         flg = PETSC_TRUE;
+#endif
 
   PetscFunctionBegin;
+#if defined(PETSC_MISSING_SOCKETS)
+  SETERRQ(1,"This system does not support Unix tcp/ip");
+#else
   if (!(hp=gethostbyname(hostname))) {
     perror("SEND: error gethostbyname: ");   
     SETERRQ1(PETSC_ERR_LIB,"system error open connection to %s",hostname);
@@ -127,8 +128,8 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
     else flg = PETSC_FALSE;
   }
   *t = s;
-  PetscFunctionReturn(0);
 #endif
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
