@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.50 2001/03/23 01:39:47 bsmith Exp balay $*/
+/*$Id: ex10.c,v 1.51 2001/03/23 23:23:55 balay Exp bsmith $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 This version first preloads and solves a small system, then loads \n\
@@ -176,7 +176,7 @@ int main(int argc,char **args)
       ierr = VecDuplicate(x,&scale);CHKERRQ(ierr);
       ierr = VecGetOwnershipRange(scale,&start,&end);CHKERRQ(ierr);
       for (j=start; j<end; j++) {
-        VecSetValue(scale,j,((double)(j+1))/((double)n),INSERT_VALUES);
+        ierr = VecSetValue(scale,j,((double)(j+1))/((double)n),INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = VecAssemblyBegin(scale);CHKERRQ(ierr);
       ierr = VecAssemblyEnd(scale);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.48 2001/04/13 15:06:09 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.49 2001/04/13 15:09:31 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -526,7 +526,7 @@ int PetscFinalize(void)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);
 #else 
-  if (nopt || flg2) {
+  if (nopt && flg2) {
 #endif
     ierr = PetscOptionsLeft();CHKERRQ(ierr);
   }
