@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.54 1999/02/24 17:30:20 balay Exp balay $ 
+# $Id: base.site,v 1.55 1999/03/24 19:16:53 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -86,6 +86,11 @@ PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis_solaris.a
 #
 AMS_INCLUDE = -I/home/alice/ams/include
 AMS_LIB     =  -L/home/alice/ams/lib/lib/solaris -lamspub -lamsutilmt -lamsutil -lthread
+#
+# Optional location of SPAI;
+#
+SPAI_INCLUDE = -I/home/bsmith/libraries/spai_3.0/lib
+SPAI_LIB     = /home/bsmith/libraries/spai_3.0/lib/${PETSC_ARCH}/libspai.a
 # 
 # ---------------------------------------------------------------------------------------
 #
@@ -98,7 +103,7 @@ AMS_LIB     =  -L/home/alice/ams/lib/lib/solaris -lamspub -lamsutilmt -lamsutil 
 PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE -DHAVE_PVODE -DHAVE_PARMETIS -DHAVE_AMS
 #PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE 
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB} \
-                ${AMS_LIB}
+                ${SPAI_LIB} ${AMS_LIB}
 #
 # ---------------------------------------------------------------------------------------
 #
