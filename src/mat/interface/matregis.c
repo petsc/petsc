@@ -76,7 +76,7 @@ int MatRegisterAll(char *path)
   ierr = MatRegisterDynamic(MATSEQDENSE,  path,"MatCreate_SeqDense",  MatCreate_SeqDense);CHKERRQ(ierr);
 
   ierr = MatRegisterDynamic(MATMPIADJ,    path,"MatCreate_MPIAdj",    MatCreate_MPIAdj);CHKERRQ(ierr);
-#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_MATSINGLE) && defined(PETSC_HAVE_CXX_NAMESPACE)
+#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && defined(PETSC_HAVE_CXX_NAMESPACE)
   ierr = MatRegisterDynamic(MATESI,       path,"MatCreate_ESI",    MatCreate_ESI);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATPETSCESI,  path,"MatCreate_PetscESI",    MatCreate_PetscESI);CHKERRQ(ierr);
 #endif
