@@ -1,3 +1,4 @@
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /***********************************gs.c***************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -20,7 +21,13 @@ File Description:
 
 ************************************gs.c**************************************/
 #include <stdio.h>
+#include "petsc.h"
+#if defined(PETSC_HAVE_STRINGS_H)
 #include <strings.h>
+#endif
+#if defined(PETSC_HAVE_STRING_H)
+#include <string.h>
+#endif
 #include <math.h>
 #include <float.h>
 #include <limits.h>
@@ -169,8 +176,8 @@ typedef struct gather_scatter_id {
 static int  gs_dump_ngh(gs_id *id, int loc_num, int *num, int *ngh_list);
 
 /* PRIVATE - and definitely not exported */
-static void gs_print_template(register gs_id* gs, int who);
-static void gs_print_stemplate(register gs_id* gs, int who);
+/*static void gs_print_template(register gs_id* gs, int who);*/
+/*static void gs_print_stemplate(register gs_id* gs, int who);*/
 
 static gs_id *gsi_check_args(int *elms, int nel, int level);
 static void gsi_via_bit_mask(gs_id *gs);
@@ -254,12 +261,12 @@ static int num_gs_ids = 0;
 
 /* should make this dynamic ... later */
 static gs_id *gs_handles[MAX_GS_IDS];
-static queue_ADT elms_q, mask_q;
+/*static queue_ADT elms_q, mask_q;*/
 static int msg_buf=MAX_MSG_BUF;
-static int msg_ch=FALSE;
+/*static int msg_ch=FALSE;*/
 
 static int vec_sz=GS_VEC_SZ;
-static int vec_ch=FALSE;
+/*static int vec_ch=FALSE; */
 
 static int *tree_buf=NULL;
 static int tree_buf_sz=0;
@@ -323,7 +330,7 @@ Description:
 ******************************************************************************/
 void gs_init_vec_sz(int size)
 {
-  vec_ch = TRUE;
+  /*  vec_ch = TRUE; */
 
   vec_sz = size;
 }
@@ -359,7 +366,7 @@ Description:
 ******************************************************************************/
 void gs_init_msg_buf_sz(int buf_size)
 {
-  msg_ch = TRUE;
+  /*  msg_ch = TRUE; */
 
   msg_buf = buf_size;
 }
@@ -606,7 +613,7 @@ gsi_new(void)
   else if (!(size%INT_LEN))
     {ivec_zero((INT *)gs,size/INT_LEN);}
   else if (!(size%sizeof(char)))
-    {bzero((char *)gs,size/sizeof(char));}
+    {memset((char *)gs,0,size/sizeof(char));}
   else
     {error_msg_fatal("gsi_new() :: can't initialize gs template!\n");}
 
@@ -870,7 +877,7 @@ void
 gsi_via_bit_mask(gs_id *gs)
 {
   register int i, nel, *elms;
-  int t1,t2,op;
+  int t1;
   int **reduce;
   int *map;
 
@@ -1043,7 +1050,7 @@ get_ngh_buf(gs_id *gs)
   int offset, per_load, num_loads, or_ct, start, end;
   int *ptr1, *ptr2, i_start, negl, nel, *elms;
   int oper=GL_B_OR;
-  int *ptr3, *t_mask, *in_elm, level, ct1, ct2, *tp;
+  int *ptr3, *t_mask, level, ct1, ct2;
 
 #ifdef DEBUG  
   error_msg_warning("get_ngh_buf() begin w/%d :: %d\n",my_id,num_nodes);
@@ -1265,7 +1272,7 @@ set_pairwise(gs_id *gs)
   int *msg_list, *msg_size, **msg_nodes, nprs;
   int *pairwise_elm_list, len_pair_list=0;
   int *iptr, t1, i_start, nel, *elms;
-  int ct, level;
+  int ct;
 
 
 #ifdef DEBUG  
@@ -1277,7 +1284,6 @@ set_pairwise(gs_id *gs)
   elms = gs->elms;
   ngh_buf = gs->ngh_buf;
   sh_proc_mask  = gs->pw_nghs;
-  level = gs->level;
 
   /* need a few temp masks */
   p_mask_size   = len_bit_mask(num_nodes);
@@ -1294,7 +1300,7 @@ set_pairwise(gs_id *gs)
 #endif
 	  
   len_pair_list=gs->len_pw_list;
-  gs->pw_elm_list=pairwise_elm_list=perm_malloc((len_pair_list+1)*INT_LEN);
+  gs->pw_elm_list=pairwise_elm_list=(int*)perm_malloc((len_pair_list+1)*INT_LEN);
 
   /* how many processors (nghs) do we have to exchange with? */
   nprs=gs->num_pairs=ct_bits((char *)sh_proc_mask,p_mask_size*INT_LEN);
@@ -1430,7 +1436,7 @@ void
 set_tree(gs_id *gs)
 {
   register int i, j, n, nel;
-  register int *iptr_in, *iptr_out, *tree_elms, *elms, *map;
+  register int *iptr_in, *iptr_out, *tree_elms, *elms;
 
 
 #ifdef DEBUG
@@ -1440,7 +1446,6 @@ set_tree(gs_id *gs)
   /* local work ptrs */
   elms = gs->elms;
   nel     = gs->nel;
-  map = gs->companion;
 
   /* how many via tree */
   gs->tree_nel  = n = ntree;
@@ -1492,16 +1497,16 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
+/*static
 void
 gsi_via_int_list(gs_id *gs)
 {
 
-  /* LATER: for P large the bit masks -> too many passes */
-  /* LATER: strategy: do gsum w/1 in position i in negl if owner */
-  /* LATER: then sum of entire vector 1 ... negl determines min buf len */
-  /* LATER: So choose min from this or mask method */
-}
+   LATER: for P large the bit masks -> too many passes 
+   LATER: strategy: do gsum w/1 in position i in negl if owner 
+   LATER: then sum of entire vector 1 ... negl determines min buf len 
+   LATER: So choose min from this or mask method 
+}*/
 
 
 static
@@ -1554,12 +1559,11 @@ root_sub_tree(int *proc_list, int num)
 }
 
 
-
+#if defined(not_using)
 static int
 in_sub_tree(int *mask, int mask_size, int *work, int nw)
 {
-  int i, j, k, ct, nb;
-  int root, *sh_mask;
+  int ct, nb;
   
   /* mask size in bytes */
   nb = mask_size<<2;
@@ -1575,7 +1579,7 @@ in_sub_tree(int *mask, int mask_size, int *work, int nw)
   bm_to_proc((char *)mask,nb,work);
   
   /* find tree root */
-  root = root_sub_tree(work,ct);
+  root_sub_tree(work,ct);
 
   /* am i in any of the paths? */
 
@@ -1586,7 +1590,7 @@ in_sub_tree(int *mask, int mask_size, int *work, int nw)
   bss_free(sh_mask);
   */
 }
-
+#endif
 
 
 /******************************************************************************
@@ -1611,7 +1615,7 @@ gs_gop_local_out(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
-  while (map = *reduce++)
+  while ((map = *reduce++))
     {
       /* wall */
       if (*num == 2)
@@ -1716,7 +1720,7 @@ gs_gop_local_binary(register gs_id *gs, register REAL *vals, register rbfp fct)
 #endif
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
-  while (map = *reduce)
+  while ((map = *reduce))
     {
       num ++;
       (*fct)(&tmp,NULL,1);
@@ -1756,7 +1760,7 @@ gs_gop_local_in_binary(register gs_id *gs, register REAL *vals, register rbfp fc
   num    = gs->num_gop_local_reduce;  
 
   reduce = gs->gop_local_reduce;  
-  while (map = *reduce++)
+  while ((map = *reduce++))
     {
       num++;
       base = vals + *map++;
@@ -1884,7 +1888,7 @@ gs_gop_pairwise_binary(register gs_id *gs, register REAL *in_vals,
     {*dptr3++ = *(in_vals + *iptr++);}
 
   /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
+  while ((iptr = *msg_nodes++))
     {
       dptr3 = dptr2;
       while (*iptr >= 0)
@@ -1900,7 +1904,7 @@ gs_gop_pairwise_binary(register gs_id *gs, register REAL *in_vals,
 
   /* process the received data */
   msg_nodes=nodes;
-  while (iptr = *nodes++)
+  while ((iptr = *nodes++))
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
@@ -1944,10 +1948,6 @@ gs_gop_tree_binary(gs_id *gs, REAL *vals, register rbfp fct)
   int size;
   int *in, *out;  
   REAL *buf, *work;
-#ifdef MPISRC
-  MPI_Op op;
-#endif
-
 
 #ifdef DEBUG
   error_msg_warning("gs_gop_tree_binary() :: start\n");
@@ -1967,7 +1967,7 @@ gs_gop_tree_binary(gs_id *gs, REAL *vals, register rbfp fct)
     {(*fct)((buf + *out++),(vals + *in++),-1);}
 /*    {*(buf + *out++) = *(vals + *in++);} */
 
-  gfop(buf,work,size,fct,REAL_TYPE,0);
+  gfop(buf,work,size,(vbfp)fct,REAL_TYPE,0);
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
@@ -2114,7 +2114,7 @@ gs_gop_local_exists(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
-  while (map = *reduce)
+  while ((map = *reduce))
     {
       num ++;
       tmp = 0.0;
@@ -2151,7 +2151,7 @@ gs_gop_local_in_exists(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
-  while (map = *reduce++)
+  while ((map = *reduce++))
     {
       num++;
       base = vals + *map++;
@@ -2277,7 +2277,7 @@ gs_gop_pairwise_exists(register gs_id *gs, register REAL *in_vals)
     {*dptr3++ = *(in_vals + *iptr++);}
 
   /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
+  while ((iptr = *msg_nodes++))
     {
       dptr3 = dptr2;
       while (*iptr >= 0)
@@ -2293,7 +2293,7 @@ gs_gop_pairwise_exists(register gs_id *gs, register REAL *in_vals)
 
   /* process the received data */
   msg_nodes=nodes;
-  while (iptr = *nodes++)
+  while ((iptr = *nodes++))
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
@@ -2449,7 +2449,7 @@ gs_gop_local_max_abs(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
-  while (map = *reduce)
+  while ((map = *reduce))
     {
       num ++;
       tmp = 0.0;
@@ -2486,7 +2486,7 @@ gs_gop_local_in_max_abs(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
-  while (map = *reduce++)
+  while ((map = *reduce++))
     {
       num++;
       base = vals + *map++;
@@ -2613,7 +2613,7 @@ gs_gop_pairwise_max_abs(register gs_id *gs, register REAL *in_vals)
     {*dptr3++ = *(in_vals + *iptr++);}
 
   /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
+  while ((iptr = *msg_nodes++))
     {
       dptr3 = dptr2;
       while (*iptr >= 0)
@@ -2629,7 +2629,7 @@ gs_gop_pairwise_max_abs(register gs_id *gs, register REAL *in_vals)
 
   /* process the received data */
   msg_nodes=nodes;
-  while (iptr = *nodes++)
+  while ((iptr = *nodes++))
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
@@ -2786,7 +2786,7 @@ gs_gop_local_max(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
-  while (map = *reduce)
+  while ((map = *reduce))
     {
       num ++;
       tmp = -REAL_MAX;
@@ -2823,7 +2823,7 @@ gs_gop_local_in_max(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
-  while (map = *reduce++)
+  while ((map = *reduce++))
     {
       num++;
       base = vals + *map++;
@@ -2949,7 +2949,7 @@ gs_gop_pairwise_max(register gs_id *gs, register REAL *in_vals)
     {*dptr3++ = *(in_vals + *iptr++);}
 
   /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
+  while ((iptr = *msg_nodes++))
     {
       dptr3 = dptr2;
       while (*iptr >= 0)
@@ -2965,7 +2965,7 @@ gs_gop_pairwise_max(register gs_id *gs, register REAL *in_vals)
 
   /* process the received data */
   msg_nodes=nodes;
-  while (iptr = *nodes++)
+  while ((iptr = *nodes++))
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
@@ -3006,7 +3006,7 @@ gs_gop_tree_max(gs_id *gs, REAL *vals)
   int size;
   int *in, *out;  
   REAL *buf, *work;
-  int op[] = {GL_MAX,0};
+  /* int op[] = {GL_MAX,0}; */
 
 
 #ifdef DEBUG
@@ -3123,7 +3123,7 @@ gs_gop_local_min_abs(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
-  while (map = *reduce)
+  while ((map = *reduce))
     {
       num ++;
       tmp = REAL_MAX;
@@ -3159,7 +3159,7 @@ gs_gop_local_in_min_abs(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
-  while (map = *reduce++)
+  while ((map = *reduce++))
     {
       num++;
       base = vals + *map++;
@@ -3285,7 +3285,7 @@ gs_gop_pairwise_min_abs(register gs_id *gs, register REAL *in_vals)
     {*dptr3++ = *(in_vals + *iptr++);}
 
   /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
+  while ((iptr = *msg_nodes++))
     {
       dptr3 = dptr2;
       while (*iptr >= 0)
@@ -3301,7 +3301,7 @@ gs_gop_pairwise_min_abs(register gs_id *gs, register REAL *in_vals)
 
   /* process the received data */
   msg_nodes=nodes;
-  while (iptr = *nodes++)
+  while ((iptr = *nodes++))
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
@@ -3452,7 +3452,7 @@ gs_gop_local_min(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
-  while (map = *reduce)
+  while ((map = *reduce))
     {
       num ++;
       tmp = REAL_MAX;
@@ -3489,7 +3489,7 @@ gs_gop_local_in_min(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
-  while (map = *reduce++)
+  while ((map = *reduce++))
     {
       num++;
       base = vals + *map++;
@@ -3615,7 +3615,7 @@ gs_gop_pairwise_min(register gs_id *gs, register REAL *in_vals)
     {*dptr3++ = *(in_vals + *iptr++);}
 
   /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
+  while ((iptr = *msg_nodes++))
     {
       dptr3 = dptr2;
       while (*iptr >= 0)
@@ -3631,7 +3631,7 @@ gs_gop_pairwise_min(register gs_id *gs, register REAL *in_vals)
     {gs_gop_tree_min(gs,in_vals);}
 
   msg_nodes=nodes;
-  while (iptr = *nodes++)
+  while ((iptr = *nodes++))
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
@@ -3672,7 +3672,7 @@ gs_gop_tree_min(gs_id *gs, REAL *vals)
   int size;
   int *in, *out;  
   REAL *buf, *work;
-  int op[] = {GL_MIN,0};
+  /*int op[] = {GL_MIN,0};*/
 
 
 #ifdef DEBUG
@@ -3789,7 +3789,7 @@ gs_gop_local_times(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
-  while (map = *reduce)
+  while ((map = *reduce))
     {
       /* wall */
       if (*num == 2)
@@ -3849,7 +3849,7 @@ gs_gop_local_in_times(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
-  while (map = *reduce++)
+  while ((map = *reduce++))
     {
       /* wall */
       if (*num == 2)
@@ -3998,7 +3998,7 @@ gs_gop_pairwise_times(register gs_id *gs, register REAL *in_vals)
     {*dptr3++ = *(in_vals + *iptr++);}
 
   /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
+  while ((iptr = *msg_nodes++))
     {
       dptr3 = dptr2;
       while (*iptr >= 0)
@@ -4014,7 +4014,7 @@ gs_gop_pairwise_times(register gs_id *gs, register REAL *in_vals)
 
   /* process the received data */
   msg_nodes=nodes;
-  while (iptr = *nodes++)
+  while ((iptr = *nodes++))
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
@@ -4055,7 +4055,7 @@ gs_gop_tree_times(gs_id *gs, REAL *vals)
   int size;
   int *in, *out;  
   REAL *buf, *work;
-  int op[] = {GL_MULT,0};
+  /*int op[] = {GL_MULT,0};*/
 
 
 #ifdef DEBUG
@@ -4177,7 +4177,7 @@ gs_gop_local_plus(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
-  while (map = *reduce)
+  while ((map = *reduce))
     {
       /* wall */
       if (*num == 2)
@@ -4240,7 +4240,7 @@ gs_gop_local_in_plus(register gs_id *gs, register REAL *vals)
 
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
-  while (map = *reduce++)
+  while ((map = *reduce++))
     {
       /* wall */
       if (*num == 2)
@@ -4403,7 +4403,7 @@ gs_gop_pairwise_plus(register gs_id *gs, register REAL *in_vals)
     {*dptr3++ = *(in_vals + *iptr++);}
 
   /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
+  while ((iptr = *msg_nodes++))
     {
       dptr3 = dptr2;
       while (*iptr >= 0)
@@ -4420,7 +4420,7 @@ gs_gop_pairwise_plus(register gs_id *gs, register REAL *in_vals)
 
   /* process the received data */
   msg_nodes=nodes;
-  while (iptr = *nodes++)
+  while ((iptr = *nodes++))
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
@@ -4466,7 +4466,7 @@ gs_gop_tree_plus(gs_id *gs, REAL *vals)
   int size;
   int *in, *out;  
   REAL *buf, *work;
-  int op[] = {GL_ADD,0};
+  /*int op[] = {GL_ADD,0}; */
 
 
 #ifdef DEBUG
@@ -4522,6 +4522,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
+#if defined(notusing)
 static
 int 
 level_best_guess(void)
@@ -4529,7 +4530,7 @@ level_best_guess(void)
   /* full pairwise for now */
   return(num_nodes);
 }
-
+#endif
 
 
 /******************************************************************************
@@ -4543,6 +4544,7 @@ Return:
 
 Description:  
 ******************************************************************************/
+#if defined(not_used)
 static
 void
 gs_print_template(register gs_id* gs, int who)
@@ -4588,7 +4590,7 @@ gs_print_template(register gs_id* gs, int who)
       printf("pw_elm_list=%ld\n", (PTRINT) gs->pw_elm_list);
 
       printf("pw_elm_list: ");
-      if (iptr = gs->pw_elm_list)
+      if ((iptr = gs->pw_elm_list))
 	{
 	  for (j=0;j<gs->len_pw_list;j++)
 	    {printf("%d ", *iptr); iptr++;}
@@ -4596,7 +4598,7 @@ gs_print_template(register gs_id* gs, int who)
       printf("\n");
 
       printf("processor_list: ");
-      if (iptr = gs->pair_list)
+      if ((iptr = gs->pair_list))
 	{
 	  for (j=0;j<gs->num_pairs;j++)
 	    {printf("%d ", *iptr); iptr++;}
@@ -4609,18 +4611,18 @@ gs_print_template(register gs_id* gs, int who)
       printf("avg_node_pairs=%d\n",   gs->avg_node_pairs);
 
       printf("size_list: ");
-      if (iptr = gs->msg_sizes)
+      if ((iptr = gs->msg_sizes))
 	{
 	  for (j=0;j<gs->num_pairs;j++)
 	    {printf("%d ", *iptr); iptr++;}
 	}
       printf("\n");
-      if (iptr = gs->pair_list)
+      if ((iptr = gs->pair_list))
 	{
 	  for (j=0;j<gs->num_pairs;j++)
 	    {
 	      printf("node_list %d: ", *iptr);
-	      if (iptr2 = (gs->node_list)[j])
+	      if ((iptr2 = (gs->node_list)[j]))
 		{
 		  for (k=0;k<(gs->msg_sizes)[j];k++)
 		    {printf("%d ", *iptr2); iptr2++;}
@@ -4632,7 +4634,7 @@ gs_print_template(register gs_id* gs, int who)
       printf("\n");
       
       printf("elm_list(U): ");
-      if (iptr = gs->elms)
+      if ((iptr = gs->elms))
 	{
 	  for (j=0;j<gs->nel;j++)
 	    {printf("%d ", *iptr); iptr++;}
@@ -4641,7 +4643,7 @@ gs_print_template(register gs_id* gs, int who)
       printf("\n");
       
       printf("elm_list(T): ");
-      if (iptr = gs->local_elms)
+      if ((iptr = gs->local_elms))
 	{
 	  for (j=0;j<gs->nel_total;j++)
 	    {printf("%d ", *iptr); iptr++;}
@@ -4650,7 +4652,7 @@ gs_print_template(register gs_id* gs, int who)
       printf("\n");
       
       printf("map_list(T): ");
-      if (iptr = gs->companion)
+      if ((iptr = gs->companion))
 	{
 	  for (j=0;j<gs->nel;j++)
 	    {printf("%d ", *iptr); iptr++;}
@@ -4674,7 +4676,7 @@ gs_print_template(register gs_id* gs, int who)
       for (j=0;j<gs->num_local;j++)
 	{
 	  printf("local reduce_list %d: ", j);
-	  if (iptr2 = (gs->local_reduce)[j])
+	  if ((iptr2 = (gs->local_reduce)[j]))
 	    {
 	      if ((gs->num_local_reduce)[j] <= 0)
 		{printf("oops");}
@@ -4717,7 +4719,7 @@ gs_print_template(register gs_id* gs, int who)
     }
   fflush(stdout);
 }
-
+#endif
 
 
 
@@ -4804,37 +4806,6 @@ gs_free(register gs_id *gs)
 
 
 
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-
-NOT FUNCTIONAL - FROM OLD VERSION!!!
-***********************************************************************/
-static int 
-gs_dump_ngh(gs_id *id, int loc_num, int *num, int *ngh_list)
-{
-  register int size, *ngh_buf;
-
-#ifdef DEBUG  
-  error_msg_warning("start gs_gop_xxx()\n");
-#endif
-
-
-  return(0);
-  /*
-  size = id->mask_sz;
-  ngh_buf = id->ngh_buf;
-  ngh_buf += (size*loc_num);
-
-  size *= INT_LEN;
-  *num = ct_bits((char *) ngh_buf, size);
-  bm_to_proc((char *) ngh_buf, size, ngh_list);  
-  */
-}
 
 
 
@@ -4972,7 +4943,7 @@ void
 gs_gop_vec_local_plus(register gs_id *gs, register REAL *vals, 
 		      register int step)
 {
-  register int i, *num, *map, **reduce;
+  register int *num, *map, **reduce;
   register REAL *base;
 
 
@@ -4982,7 +4953,7 @@ gs_gop_vec_local_plus(register gs_id *gs, register REAL *vals,
 
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
-  while (map = *reduce)
+  while ((map = *reduce))
     {
       base = vals + map[0] * step;
 
@@ -5047,7 +5018,7 @@ void
 gs_gop_vec_local_in_plus(register gs_id *gs, register REAL *vals, 
 			 register int step)
 {
-  register int i, *num, *map, **reduce;
+  register int  *num, *map, **reduce;
   register REAL *base;
 
 
@@ -5057,7 +5028,7 @@ gs_gop_vec_local_in_plus(register gs_id *gs, register REAL *vals,
 
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
-  while (map = *reduce++)
+  while ((map = *reduce++))
     {
       base = vals + map[0] * step;
 
@@ -5109,7 +5080,7 @@ void
 gs_gop_vec_local_out(register gs_id *gs, register REAL *vals, 
 		     register int step)
 {
-  register int i, *num, *map, **reduce;
+  register int *num, *map, **reduce;
   register REAL *base;
 
 
@@ -5119,7 +5090,7 @@ gs_gop_vec_local_out(register gs_id *gs, register REAL *vals,
 
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
-  while (map = *reduce++)
+  while ((map = *reduce++))
     {
       base = vals + map[0] * step;
 
@@ -5308,7 +5279,7 @@ gs_gop_vec_pairwise_plus(register gs_id *gs, register REAL *in_vals,
     }
 
   /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
+  while ((iptr = *msg_nodes++))
     {
       dptr3 = dptr2;
       while (*iptr >= 0)
@@ -5327,7 +5298,7 @@ gs_gop_vec_pairwise_plus(register gs_id *gs, register REAL *in_vals,
 
   /* process the received data */
   msg_nodes=nodes;
-  while (iptr = *nodes++)
+  while ((iptr = *nodes++))
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
@@ -5721,7 +5692,7 @@ gs_gop_pairwise_plus_hc(register gs_id *gs, register REAL *in_vals, int dim)
   /* load out buffers and post the sends */
   msg_nodes=nodes;
   list = msg_list;
-  while (iptr = *msg_nodes++)
+  while ((iptr = *msg_nodes++))
     {
       if ((my_id|mask)==(*list|mask))
 	{
@@ -5744,7 +5715,7 @@ gs_gop_pairwise_plus_hc(register gs_id *gs, register REAL *in_vals, int dim)
   /* process the received data */
   msg_nodes=nodes;
   list = msg_list;
-  while (iptr = *nodes++)
+  while ((iptr = *nodes++))
     {
       if ((my_id|mask)==(*list|mask))
 	{
