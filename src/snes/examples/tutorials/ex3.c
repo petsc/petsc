@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.75 2001/03/13 04:35:04 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.76 2001/03/13 04:40:11 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -393,11 +393,12 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   Scalar         *xx,d,A[3];
   int            i,j[3],ierr,start,end,M,N,istart,iend;
+  DA             da = user->da;
 
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,x,(void**)&xx);CHKERRQ(ierr);
 
   /*
     Get range of locally owned matrix
@@ -433,7 +434,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   d = 1.0/(user->h*user->h);
   for (i=istart; i<iend; i++) {
     j[0] = i - 1; j[1] = i; j[2] = i + 1; 
-    A[0] = A[2] = d; A[1] = -2.0*d + 2.0*xx[i-start];
+    A[0] = A[2] = d; A[1] = -2.0*d + 2.0*xx[i];
     ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
   }
 
@@ -447,7 +448,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   */
 
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,x,(void**)&xx);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   *flag = SAME_NONZERO_PATTERN;
@@ -502,11 +503,12 @@ int Monitor(SNES snes,int its,double fnorm,void *ctx)
  */
 int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
 {
-  int            ierr,i,iter,ldim;
+  int            ierr,i,iter,xs,xm;
   ApplicationCtx *user;
   StepCheckCtx   *check = (StepCheckCtx*) ctx;
   Scalar         *xa,*xa_last,tmp;
   double         rdiff;
+  DA             da = user->da;
 
   *flg = PETSC_FALSE;
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
@@ -517,9 +519,9 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
        iter,check->tolerance);CHKERRQ(ierr);
 
     /* Access local array data */
-    ierr = VecGetArray(check->last_step,&xa_last);CHKERRQ(ierr);
-    ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(x,&ldim);CHKERRQ(ierr);
+    ierr = DAVecGetArray(da,check->last_step,(void**)&xa_last);CHKERRQ(ierr);
+    ierr = DAVecGetArray(da,x,(void**)&xa);CHKERRQ(ierr);
+    ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
     /* 
        If we fail the user-defined check for validity of the candidate iterate,
@@ -527,22 +529,25 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
        below is intended simply to demonstrate how to manipulate this data, not
        as a meaningful or appropriate choice.)
     */
-    for (i=0; i<ldim; i++) {
+    for (i=xs; i<xs+xm; i++) {
       rdiff = PetscAbsScalar((xa[i] - xa_last[i])/xa[i]);
       if (rdiff > check->tolerance) {
-        tmp = xa[i];
+        tmp   = xa[i];
         xa[i] = (xa[i] + xa_last[i])/2.0;
         *flg = PETSC_TRUE;
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %d: x=%g, x_last=%g, diff=%g, x_new=%g\n",
                     i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));CHKERRQ(ierr);
       }
     }
-    ierr = VecRestoreArray(check->last_step,&xa_last);CHKERRQ(ierr);
-    ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(da,check->last_step,(void**)&xa_last);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(da,x,(void**)&xa);CHKERRQ(ierr);
   }
   ierr = VecCopy(x,check->last_step);CHKERRQ(ierr);
 
   return 0;
 }
+
+
+
 
 
