@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.34 1996/07/08 22:23:15 bsmith Exp curfman $";
+C    "$Id: ex12.F,v 1.35 1996/08/22 23:31:57 curfman Exp curfman $";
 C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  
@@ -17,6 +17,8 @@ C  Note: Any user-defined Fortran routines (such as FormJacobian)
 C  MUST be declared as external.
 C
 
+       implicit none
+
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/da.h"
@@ -31,9 +33,9 @@ C
       character*(10)   matrixname
       external         FormJacobian, FormFunction
 
-      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       N = 10
-      call OptionsGetInt(PETSC_NULL_CHAR,'-n',N,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',N,flg,ierr)
       h = 1.d0/(N-1.d0)
       ctx(6) = N
 
