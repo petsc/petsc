@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.42 1996/01/09 15:05:49 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.43 1996/01/09 15:40:27 curfman Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -107,7 +107,6 @@ $  -ksp_left_pc, -ksp_right_pc, -ksp_symmetric_pc,
 
 .seealso: KSPGetPreconditionerSide()
 @*/
-
 int KSPSetPreconditionerSide(KSP itP,PCSide side)
 {
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);

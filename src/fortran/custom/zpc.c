@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zpc.c,v 1.4 1995/11/23 04:15:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: zpc.c,v 1.5 1995/12/13 23:01:52 curfman Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -15,7 +15,6 @@ static char vcid[] = "$Id: zpc.c,v 1.4 1995/11/23 04:15:38 bsmith Exp curfman $"
 #define pcgetoperators_            PCGETOPERATORS
 #define pcgetfactoredmatrix_       PCGETFACTOREDMATRIX
 #define pcsetoptionsprefix_        PCSETOPTIONSPREFIX
-#define pcgetmethodfromcontext_    PCGETMETHODFROMCONTEXT
 #define pcbjacobigetsubsles_       PCBJACOBIGETSUBSLES
 #define mggetcoarsesolve_          MGGETCOARSESOLVE
 #define mggetsmoother_             MGGETSMOOTHER
@@ -23,6 +22,7 @@ static char vcid[] = "$Id: zpc.c,v 1.4 1995/11/23 04:15:38 bsmith Exp curfman $"
 #define mggetsmootherdown_         MGGETSMOOTHERDOWN
 #define pcshellsetapply_           PCSHELLSETAPPLY
 #define pcshellsetapplyrichardson_ PCSHELLSETAPPLYRICHARDSON
+#define pcgettype_                 PCGETTYPE
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define pcregisterall_             pcregisterall
 #define pcregisterdestroy_         pcregisterdestroy
@@ -31,7 +31,6 @@ static char vcid[] = "$Id: zpc.c,v 1.4 1995/11/23 04:15:38 bsmith Exp curfman $"
 #define pcgetoperators_            pcgetoperators
 #define pcgetfactoredmatrix_       pcgetfactoredmatrix
 #define pcsetoptionsprefix_        pcsetoptionsprefix
-#define pcgetmethodfromcontext_    pcgetmethodfromcontext
 #define pcbjacobigetsubsles_       pcbjacobigetsubsles
 #define mggetcoarsesolve_          mggetcoarsesolve
 #define mggetsmoother_             mggetsmoother
@@ -39,6 +38,7 @@ static char vcid[] = "$Id: zpc.c,v 1.4 1995/11/23 04:15:38 bsmith Exp curfman $"
 #define mggetsmootherdown_         mggetsmootherdown
 #define pcshellsetapplyrichardson_ pcshellsetapplyrichardson
 #define pcshellsetapply_           pcshellsetapply
+#define pcgettype_                 pcgettype
 #endif
 
 static void (*f1)(void *,int*,int*,int*);
@@ -119,9 +119,7 @@ void pcgetoperators_(PC pc,Mat *mat,Mat *pmat,MatStructure *flag, int *__ierr){
   *(int*) mat = MPIR_FromPointer(m);
   *(int*) pmat = MPIR_FromPointer(p);
 }
-void pcgetmethodfromcontext_(PC pc,PCMethod *method, int *__ierr ){
-  *__ierr = PCGetMethodFromContext((PC)MPIR_ToPointer( *(int*)(pc) ),method);
-}
+
 void pcgetfactoredmatrix_(PC pc,Mat *mat, int *__ierr ){
   Mat m;
   *__ierr = PCGetFactoredMatrix((PC)MPIR_ToPointer( *(int*)(pc) ),&m);
@@ -154,4 +152,12 @@ void pcregisterdestroy_(int *__ierr){
 
 void pcregisterall_(int *__ierr){
   *__ierr = PCRegisterAll();
+}
+
+void pcgettype_(PC pc,PCType *type,char *name,int *__ierr,int len)
+{
+  char *tname;
+  if (type == PETSC_NULL_Fortran) type = PETSC_NULL;
+  *__ierr = PCGetType((PC)MPIR_ToPointer(*(int*)pc),type,&tname);
+  if (name != PETSC_NULL_Fortran) PetscStrncpy(name,tname,len);
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zksp.c,v 1.6 1995/12/14 14:31:15 curfman Exp curfman $";
+static char vcid[] = "$Id: zksp.c,v 1.7 1995/12/14 14:31:41 curfman Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -8,34 +8,49 @@ static char vcid[] = "$Id: zksp.c,v 1.6 1995/12/14 14:31:15 curfman Exp curfman 
 #include "pinclude/petscfix.h"
 
 #ifdef FORTRANCAPS
-#define kspregisterdestroy_      KSPREGISTERDESTROY
-#define kspregisterall_          KSPREGISTERALL
-#define kspgetmethodfromcontext_ KSPGETMETHODFROMCONTEXT
-#define kspdestroy_              KSPDESTROY
-#define ksplgmonitordestroy_     KSPLGMONITORDESTROY
-#define ksplgmonitorcreate_      KSPLGMONITORCREATE
-#define kspgetrhs_               KSPGETRHS
-#define kspgetsolution_          KSPGETSOLUTION
-#define kspgetbinv_              KSPGETBINV
-#define kspsetmonitor_           KSPSETMONITOR
-#define kspsetconvergencetest_   KSPSETCONVERGENCETEST
-#define kspcreate_               KSPCREATE
-#define kspsetoptionsprefix_     KSPSETOPTIONSPREFIX
+#define kspregisterdestroy_       KSPREGISTERDESTROY
+#define kspregisterall_           KSPREGISTERALL
+#define kspdestroy_               KSPDESTROY
+#define ksplgmonitordestroy_      KSPLGMONITORDESTROY
+#define ksplgmonitorcreate_       KSPLGMONITORCREATE
+#define kspgetrhs_                KSPGETRHS
+#define kspgetsolution_           KSPGETSOLUTION
+#define kspgetbinv_               KSPGETBINV
+#define kspsetmonitor_            KSPSETMONITOR
+#define kspsetconvergencetest_    KSPSETCONVERGENCETEST
+#define kspcreate_                KSPCREATE
+#define kspsetoptionsprefix_      KSPSETOPTIONSPREFIX
+#define kspgettype_               KSPGETTYPE
+#define kspgetpreconditionerside_ KSPGETPRECONDITIONERSIDE
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define kspregisterdestroy_      kspregisterdestroy
-#define kspregisterall_          kspregisterall
-#define kspgetmethodfromcontext_ kspgetmethodfromcontext
-#define kspdestroy_              kspdestroy
-#define ksplgmonitordestroy_     ksplgmonitordestroy
-#define ksplgmonitorcreate_      ksplgmonitorcreate
-#define kspgetrhs_               kspgetrhs
-#define kspgetsolution_          kspgetsolution
-#define kspgetbinv_              kspgetbinv
-#define kspsetmonitor_           kspsetmonitor
-#define kspsetconvergencetest_   kspsetconvergencetest
-#define kspcreate_               kspcreate
-#define kspsetoptionsprefix_     kspsetoptionsprefix
+#define kspregisterdestroy_       kspregisterdestroy
+#define kspregisterall_           kspregisterall
+#define kspdestroy_               kspdestroy
+#define ksplgmonitordestroy_      ksplgmonitordestroy
+#define ksplgmonitorcreate_       ksplgmonitorcreate
+#define kspgetrhs_                kspgetrhs
+#define kspgetsolution_           kspgetsolution
+#define kspgetbinv_               kspgetbinv
+#define kspsetmonitor_            kspsetmonitor
+#define kspsetconvergencetest_    kspsetconvergencetest
+#define kspcreate_                kspcreate
+#define kspsetoptionsprefix_      kspsetoptionsprefix
+#define kspgettype_               kspgettype
+#define kspgetpreconditionerside_ kspgetpreconditionerside
 #endif
+
+void kspgettype_(KSP ksp,KSPType *type,char *name,int *__ierr,int len)
+{
+  char *tname;
+  if (type == PETSC_NULL_Fortran) type = PETSC_NULL;
+  *__ierr = KSPGetType((KSP)MPIR_ToPointer(*(int*)ksp),type,&tname);
+  if (name != PETSC_NULL_Fortran) PetscStrncpy(name,tname,len);
+}
+
+void kspgetpreconditionerside_(KSP itP,PCSide *side, int *__ierr ){
+*__ierr = KSPGetPreconditionerSide(
+	(KSP)MPIR_ToPointer( *(int*)(itP) ),side );
+}
 
 void kspsetoptionsprefix_(KSP ksp,char *prefix, int *__ierr,int len ){
   char *t;
@@ -133,10 +148,6 @@ void ksplgmonitordestroy_(DrawLG ctx, int *__ierr ){
 void kspdestroy_(KSP itP, int *__ierr ){
   *__ierr = KSPDestroy((KSP)MPIR_ToPointer( *(int*)(itP) ));
   MPIR_RmPointer(*(int*)(itP) );
-}
-
-void kspgetmethodfromcontext_(KSP itP,KSPMethod *method, int *__ierr ){
-  *__ierr = KSPGetMethodFromContext((KSP)MPIR_ToPointer(*(int*)(itP)),method);
 }
 
 void kspregisterdestroy_(int* MPIR_ierr)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsnes.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.3 1995/10/09 21:58:54 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -20,13 +20,12 @@ static char vcid[] = "$Id: zsnes.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $
 #define snessetmonitor_              SNESSETMONITOR
 #define snessetconvergencetest_      SNESSETCONVERGENCETEST
 #define snesregisterdestroy_         SNESREGISTERDESTROY
-#define snesgetmethodfromcontext_    SNESGETMETHODFROMCONTEXT
-#define snesgetmethodname_           SNESGETMETHODNAME
 #define snesgetsolution_             SNESGETSOLUTION
 #define snesgetsolutionupdate_       SNESGETSOLUTIONUPDATE
 #define snesgetfunction_             SNESGETFUNCTION
 #define snesgetgradient_             SNESGETGRADIENT
 #define snesdestroy_                 SNESDESTROY
+#define snesgettype_                 SNESGETTYPE
 #define snesdefaultmatrixfreematcreate_ SNESDEFAULTMATRIXFREEMATCREATE
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define snesregisterdestroy_         snesregisterdestroy
@@ -43,12 +42,11 @@ static char vcid[] = "$Id: zsnes.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $
 #define snessetmonitor_              snessetmonitor
 #define snessetconvergencetest_      snessetconvergencetest
 #define snesregisterdestroy_         snesregisterdestroy
-#define snesgetmethodfromcontext_    snesgetmethodfromcontext
-#define snesgetmethodname_           snesgetmethodname
 #define snesgetsolution_             snesgetsolution
 #define snesgetsolutionupdate_       snesgetsolutionupdate
 #define snesgetfunction_             snesgetfunction
 #define snesgetgradient_             snesgetgradient
+#define snesgettype_                 snesgettype
 #define snesdefaultmatrixfreematcreate_ snesdefaultmatrixfreematcreate
 #endif
 
@@ -209,7 +207,7 @@ void snessetfunction_(SNES snes,Vec r,int (*func)(int*,int*,int*,void*,int*),
         (SNESFunctionSign) *rneg);
 }
 /* ---------------------------------------------------------*/
-void snescreate_(MPI_Comm comm,SNESType *type,SNES *outsnes, int *__ierr ){
+void snescreate_(MPI_Comm comm,SNESProblemType *type,SNES *outsnes, int *__ierr ){
   SNES snes;
 *__ierr = SNESCreate(
 	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*type,&snes);
@@ -273,4 +271,12 @@ void snesregisterdestroy_(int *__ierr)
 void snesregisterall_(int *__ierr)
 {
   *__ierr = SNESRegisterAll();
+}
+
+void snesgettype_(SNES snes,SNESType *type,char *name,int *__ierr,int len)
+{
+  char *tname;
+  if (type == PETSC_NULL_Fortran) type = PETSC_NULL;
+  *__ierr = SNESGetType((SNES)MPIR_ToPointer(*(int*)snes),type,&tname);
+  if (name != PETSC_NULL_Fortran) PetscStrncpy(name,tname,len);
 }
