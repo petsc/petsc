@@ -2,9 +2,6 @@
 static char help[] ="Solves the 2d Burgers equation. \n  u*du/dx + v*du/dy - c(lap(u)) = f. \n  u*dv/dx + v*dv/dy - c(lap(v)) = g.  This has exact solution, see Fletcher.\n  This version has new indexing of Degrees of Freedom";
 
 #include "appctx.h"
-extern int FormInitialGuess(AppCtx*);
-extern int SetBoundaryConditions(Vec, AppCtx *, Vec);
-extern int SetJacobian(Vec, AppCtx *, Mat*);
 
 #undef __FUNC__
 #define __FUNC__ "main"
@@ -24,10 +21,10 @@ int main( int argc, char **argv )
   /*      Initialize graphics  */
   ierr = AppCtxGraphics(appctx); CHKERRA(ierr); 
 
-  /*   Setup the system and solve it*/
+  /*   Setup the nonlinear system and solve it*/
   ierr = AppCtxSolve(appctx);CHKERRQ(ierr);
 
-  /* Send to  matlab viewer */
+  /* Send solution to  matlab viewer */
   if (appctx->view.matlabgraphics) {AppCtxViewMatlab(appctx);  }
 
   /*      Destroy all datastructures  */
@@ -40,6 +37,11 @@ int main( int argc, char **argv )
 /*----------------------------------------------------------------------------
          Sets up the non-linear system associated with the PDE and solves it
 */
+
+extern int FormInitialGuess(AppCtx*);
+extern int SetBoundaryConditions(Vec, AppCtx *, Vec);
+extern int SetJacobian(Vec, AppCtx *, Mat*);
+
 #undef __FUNC__
 #define __FUNC__ "AppCxtSolve"
 int AppCtxSolve(AppCtx* appctx)
