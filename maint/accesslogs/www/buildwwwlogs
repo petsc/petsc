@@ -4,5 +4,5 @@
 #
 set today = `date '+%d/%h/19%y'`
 
-grep petsc /Net/charlotte/www/ncsa_httpd/logs/access_log | grep -v gif | grep $today >> /home/bsmith/petsc/maint/accesslogs/www/accesslog
+grep petsc /Net/charlotte/www/ncsa_httpd/logs/access_log | grep -v gif | grep -v xbm | grep $today >> /home/bsmith/petsc/maint/accesslogs/www/accesslog
 
