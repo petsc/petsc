@@ -1,4 +1,4 @@
-/* $Id: petscmg.h,v 1.19 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petscmg.h,v 1.20 2000/08/01 20:58:40 bsmith Exp bsmith $ */
 /*
       Structure used for Multigrid preconditioners 
 */
@@ -6,7 +6,24 @@
 #define __PETSCMG_H
 #include "petscsles.h"
 
-/*  Possible Multigrid Variants */
+/*E
+    MGType - Determines the type of multigrid method that is run.
+
+   Level: beginner
+
+   Values:
++  MGMULTIPLICATIVE (default) - traditional V or W cycle as determined by MGSetCycles()
+.  MGADDITIVE - the additive multigrid preconditioner where all levels are
+                smoothed before updating the residual
+.  MGFULL - same as multiplicative except one also performs grid sequencing, 
+            that is starts on the coarsest grid, performs a cycle, interpolates
+            to the next, performs a cycle etc
+-  MGKASKADE - like full multigrid except one never goes back to a coarser level
+               from a finer
+
+.seealso: MGSetType()
+
+E*/
 typedef enum { MGMULTIPLICATIVE,MGADDITIVE,MGFULL,MGKASKADE } MGType;
 #define MGCASCADE MGKASKADE;
 
