@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.65 1995/09/30 19:29:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.66 1995/10/01 02:26:54 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -1468,6 +1468,7 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
     sndcounts = (int*) PETSCMALLOC( numtid*sizeof(int) ); CHKPTRQ(sndcounts);
     for ( i=0; i<numtid; i++ ) sndcounts[i] = rowners[i+1] - rowners[i];
     MPI_Scatterv(rowlengths,sndcounts,rowners,MPI_INT,ourlens,rend-rstart,MPI_INT,0,comm);
+    PETSCFREE(sndcounts);
   }
   else {
     MPI_Scatterv(0,0,0,MPI_INT,ourlens,rend-rstart,MPI_INT, 0,comm);
@@ -1491,6 +1492,7 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
         procsnz[i] += rowlengths[j];
       }
     }
+    PETSCFREE(rowlengths);
 
     /* determine max buffer needed and allocate it */
     maxnz = 0;
@@ -1537,7 +1539,7 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
       ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
       MPI_Send(vals,nz,MPIU_SCALAR,i,mat->tag,comm);
     }
-    PETSCFREE(vals);
+    PETSCFREE(vals); PETSCFREE(procsnz);
   }
   else {
     /* determine buffer space needed for message */
@@ -1579,8 +1581,10 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
     PETSCFREE(vals);
  
   }
+  PETSCFREE(rowners);
   ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  mrow->nz = header[3];
   return 0;
 }
 

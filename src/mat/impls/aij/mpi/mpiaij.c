@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.82 1995/10/01 02:26:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.83 1995/10/01 21:52:35 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1466,11 +1466,11 @@ int MatLoad_MPIAIJ(Viewer bview,MatType type,Mat *newmat)
     sndcounts = (int*) PETSCMALLOC( numtid*sizeof(int) ); CHKPTRQ(sndcounts);
     for ( i=0; i<numtid; i++ ) sndcounts[i] = rowners[i+1] - rowners[i];
     MPI_Scatterv(rowlengths,sndcounts,rowners,MPI_INT,ourlens,rend-rstart,MPI_INT,0,comm);
+    PETSCFREE(sndcounts);
   }
   else {
     MPI_Scatterv(0,0,0,MPI_INT,ourlens,rend-rstart,MPI_INT, 0,comm);
   }
-
 
   if (!mytid) {
     /* calculate the number of nonzeros on each processor */
@@ -1481,6 +1481,7 @@ int MatLoad_MPIAIJ(Viewer bview,MatType type,Mat *newmat)
         procsnz[i] += rowlengths[j];
       }
     }
+    PETSCFREE(rowlengths);
 
     /* determine max buffer needed and allocate it */
     maxnz = 0;
@@ -1567,6 +1568,7 @@ int MatLoad_MPIAIJ(Viewer bview,MatType type,Mat *newmat)
       ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
       MPI_Send(vals,nz,MPIU_SCALAR,i,A->tag,comm);
     }
+    PETSCFREE(procsnz);
   }
   else {
     /* receive numeric values */
@@ -1588,7 +1590,7 @@ int MatLoad_MPIAIJ(Viewer bview,MatType type,Mat *newmat)
       jj++;
     }
   }
-  PETSCFREE(ourlens); PETSCFREE(vals); PETSCFREE(mycols);
+  PETSCFREE(ourlens); PETSCFREE(vals); PETSCFREE(mycols); PETSCFREE(rowners);
 
   ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
