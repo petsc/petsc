@@ -96,3 +96,14 @@ indicated that the function free() has the prototype
 extern int free(void *);
 The default prototype is:
 extern void free(void *);
+
+PETSC_HAVE_SSE
+valid values are "iclsse.h" and "gccsse.h" (with "")
+indicates that the C compiler/assembler are satisfactory for issuing
+Intel Pentium 3 Streaming SIMD Extension instructions.
+Set value to "gccsse.h" for use with gcc version egcs-2.91.66 or newer.
+The gnu assembler must be version 2.9.5 or newer (2.9.1 fails).
+Set value to "iclsse.h" for use with Intel compilers or Microsoft Visual
+Studio 6.0, with the Processor Pack.
+Microsoft Visual Studio 6.0 Processor Pack available at:
+http://msdn.microsoft.com/vstudio/downloads/ppack/download.asp
