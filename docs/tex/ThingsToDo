@@ -221,6 +221,8 @@ Lois - Add table of all preconditioners and options to PETSc manual.
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Investigate Mark Adams coloring routines (petsc-maint #2769)
+
   - Upgrade LSQR to support damping (petsc-maint #2753)
 
   - Upgrade TS to enable testing/rejecting of timesteps (petsc-maint #2751)
