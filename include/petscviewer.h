@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: viewer.h,v 1.8 1995/06/07 16:33:04 bsmith Exp bsmith $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -23,7 +23,5 @@ extern int ViewerMatlabOpen(char*,int,Viewer *);
 extern Viewer STDOUT_VIEWER;  
 extern Viewer STDERR_VIEWER;
 extern Viewer SYNC_STDOUT_VIEWER;
-
-extern int PetscView(PetscObject,Viewer);
 
 #endif
