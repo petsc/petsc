@@ -1,6 +1,5 @@
 #!/usr/bin/env python1.5
-
-# $Id: urlget.py,v 1.2 1998/01/14 16:52:32 balay Exp balay $ 
+# $Id: urlget.py,v 1.3 1998/01/14 21:14:20 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and copy it to the specified filename
 # 
