@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.11 1998/06/02 22:52:27 balay Exp curfman $ 
+# $Id: solid.make,v 1.12 1998/06/08 16:52:36 curfman Exp curfman $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.22"
@@ -62,6 +62,8 @@ if [ ${user} != petsc ]; then
     echo 'Run this script as user petsc'
     exit
 fi
+
+set -x
 
 # solaris
 arch=solaris
