@@ -1,14 +1,20 @@
 %
-%  Matlab graphics routine that may be used with the main program
+%  Matlab graphics routine that may be used with the main program.  This uses
+%  sockets for faster visualization than writing intermediate output to a file.
 %
-%  main -viewer_matlab_machine machinename -matlabgraphics
-%
-% First, compile programs in petsc/src/viewer/impls/matlab/
-%    make BOPT=g openport closeport receive 
-% to generate *.mex4
-% Also, be sure to set the MATLABPATH environmental variable with a
-% command such as
-%    setenv MATLABPATH $PETSC_DIR/src/viewer/impls/matlab
+%  Usage Instructions:
+%  - First, compile Matlab programs in petsc/src/viewer/impls/matlab/ via
+%      make BOPT=g openport closeport receive 
+%    to generate the executables openport.mex4, closeport.mex4, and receive.mex4
+%  - Be sure to set the MATLABPATH environmental variable with a command such as
+%      setenv MATLABPATH $PETSC_DIR/src/viewer/impls/matlab
+%    (or append this to your existing Matlab path)
+%  - Then run both of the following:
+%      - this script (mscript.m) in Matlab (via mscript)
+%      - the example program on any machine, via
+%            main -f <grid_name> -viewer_matlab_machine machine_name -matlabgraphics
+%        for example,
+%            main -f grids/B -viewer_matlab_machine merlin.mcs.anl.gov -matlabgraphics
 %
 % Open the connection to the MPI program
 p = openport;        
