@@ -979,7 +979,10 @@ int SNESSetUp(SNES snes,Vec x)
     /* force no preconditioner */
     ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
     ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+    }
   }
 
   if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
