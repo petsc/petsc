@@ -198,7 +198,10 @@ class Configure(config.base.Configure):
     if not 'FC' in self.framework.argDB:
       args.append('--with-fc=0')
     if not self.framework.argDB['with-shared']:
-      args.append('--with-shared=0')      
+      args.append('--with-shared=0')
+    args.extend(['--with-mpi-include='+str(self.mpi.include).replace(' ',''), '--with-mpi-lib='+str(self.mpi.lib).replace(' ','')])
+    if self.framework.argDB['with-mpi-shared']:
+      args.append('--with-mpi-shared')
     argsStr = ' '.join(args)
     try:
       fd         = file(os.path.join(installDir,'config.args'))
