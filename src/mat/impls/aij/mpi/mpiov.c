@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.5 1996/01/29 21:12:09 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.6 1996/01/30 16:08:15 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -91,10 +91,10 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
     if (w1[i]) { pa[j] = i; j++; }
   } 
 
-  /* Each message would have a header = 1 + no of IS + data */
+  /* Each message would have a header = 1 + 2*(no of IS) + data */
   for (i = 0; i<mct ; i++) {
     j = pa[i];
-    w1[j] += w2[j] + w3[j];   
+    w1[j] += w2[j] + 2* w3[j];   
     msz   += w1[j];  
   }
 
@@ -121,8 +121,8 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
   for ( i=0 ; i<mct ; i++) {
     j = pa[i];
     outdat[j][0] = 0;
-    PetscMemzero(outdat[j]+1, w3[j]*sizeof(int));
-    ptr[j] = outdat[j] + w3[j];
+    PetscMemzero(outdat[j]+1, 2 * w3[j]*sizeof(int));
+    ptr[j] = outdat[j] + 2*w3[j] +1;
   }
  
   /* Memory for doing local proc's work*/
@@ -155,12 +155,12 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
         if(!table[i][row]++) { data[i][isz[i]++] = row;}
       }
     }
-    
-    /*    Update the headers*/
+    /* Update the headers for the current IS */
     for( j = 0; j<size; j++) { /* Can Optimise this loop too */
       if (ctr[j]) {
-        outdat[j][0] ++;
-        outdat[j][ outdat[j][0]] = ctr[j];
+        k= ++outdat[j][0];
+        outdat[j][2*k]   = ctr[j];
+        outdat[j][2*k-1] = i;
       }
     }
   }
@@ -174,11 +174,9 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
   for ( i=0 ; i<mct ; i++) {
     j = pa[i];
     sum = 1;
-    for (k = 1; k <= w3[j]; k++) sum += outdat[j][k]+1;
+    for (k = 1; k <= w3[j]; k++) sum += outdat[j][2*k]+2; 
     if (sum != w1[j]) { SETERRQ(1,"MatIncreaseOverlap_MPIAIJ: Blew it! Header[2-n] mismatch!  \n"); }
   }
-
-  MPIU_printf(MPI_COMM_SELF,"[%d]Whew!!! sending to %d nodes\n",rank, mct);
 
 
   /* Do a global reduction to determine how many messages to expect*/
@@ -212,9 +210,6 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
     j = pa[i];
     MPI_Isend( (void *)outdat[j], w1[j], MPI_INT, j, tag, comm, send_waits+i);
   }
-  
-  MPIU_printf(MPI_COMM_SELF,"[%d]:) posted %d sends and %d recieves\n",rank, mct, nmsg);
-  
   
   /* Do Local work*/
   /* Extract the matrices */
@@ -271,12 +266,12 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
 
     
     for (i =0; i< nmsg; i++) { /* for easch mesg from proc i */
-      ct1 = rbuf[i][0]+1;
-      ct2 = rbuf[i][0]+1;
-      for (j = 0, max1= rbuf[i][0]; j<max1; j++) { /* for each IS from proc i*/
+      ct1 = 2*rbuf[i][0]+1;
+      ct2 = 2*rbuf[i][0]+1;
+      for (j = 1, max1= rbuf[i][0]; j<=max1; j++) { /* for each IS from proc i*/
         PetscMemzero((void *)xtable,(m+1)*sizeof(int));
         oct2 = ct2;
-        for (k =0; k < rbuf[i][j]+1; k++, ct1++) { 
+        for (k =0; k < rbuf[i][2*j]; k++, ct1++) { 
           row = rbuf[i][ct1];
           if(!xtable[row]++) { xdata[i][ct2++] = row;}  
         }
@@ -296,7 +291,8 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
           } 
         }
         /* Update the header*/
-        xdata[i][j] = ct2-oct2; /* Undo the vector isz1 and use only a var*/
+        xdata[i][2*j]   = ct2-oct2; /* Undo the vector isz1 and use only a var*/
+        xdata[i][2*j-1] = rbuf[i][2*j-1];
       }
       xdata[i][0] = rbuf[i][0];
       xdata[i+1]  = xdata[i] +ct2;
@@ -345,10 +341,45 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
     MPI_Isend( (void *)xdata[i], isz1[i], MPI_INT, j, tag, comm, send_waits2+i);
   }
   
-  MPIU_printf(MPI_COMM_SELF,"[%d]:):) posted %d sends and %d recieves\n",rank, mct, nmsg);
-  
   /* recieve work done on other processors*/
+  {
+    int         index, is_no, ct1, max;
+    MPI_Status  *send_status2 ,*recv_status2;
+     
+    recv_status2 = (MPI_Status *) PetscMalloc( (mct+1)*sizeof(MPI_Status) );
+    CHKPTRQ(recv_status2);
+    
 
+    for ( i=0; i< mct; ++i) {
+      MPI_Waitany(mct, recv_waits2, &index, recv_status2+i);
+      /* Process the message*/
+      ct1 = 2*rbuf2[index][0]+1;
+      for (j=1; j<=rbuf2[index][0]; j++) {
+        max   = rbuf2[index][2*j];
+        is_no = rbuf2[index][2*j-1];
+        for (k=0; k < max ; k++, ct1++) {
+          row = rbuf2[index][ct1];
+          if(!table[is_no][row]++) { data[is_no][isz[is_no]++] = row;}   
+        }
+      }
+    }
+    
+    
+    send_status2 = (MPI_Status *) PetscMalloc( (nmsg+1)*sizeof(MPI_Status) );
+    CHKPTRQ(send_status2);
+    MPI_Waitall(nmsg,send_waits2,send_status2);
+    
+    PetscFree(send_status2); PetscFree(recv_status2);
+  }
+  for( i=0; i< is_max; ++i) {
+    ierr = ISRestoreIndices(is[i], idx+i); CHKERRQ(ierr);
+  }
+  for( i=0; i< is_max; ++i) {
+    ierr = ISDestroy(is[i]); CHKERRQ(ierr);
+  }
+  for ( i=0; i<is_max; ++i) {
+    ierr = ISCreateSeq(MPI_COMM_SELF, isz[i], data[i], is+i); CHKERRQ(ierr);
+  }
   /* pack up*/
 
   /* done !!!! */

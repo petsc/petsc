@@ -15,9 +15,9 @@ RUNEXAMPLES_1 = runex1	runex3	runex5 runex6  runex8 runex9\
 		runex10 runex11 runex14 runex15 runex15_2 runex16\
 		runex20 runex21 runex22
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex19 ex24 ex25 \
-		ex27 ex28 ex29 ex30 ex31 ex32 ex33 ex34 ex35 ex37 ex38 ex39
+		ex27 ex28 ex29 ex30 ex31 ex32 ex33 ex34 ex35 ex37 ex38 ex40
 RUNEXAMPLES_2 = runex2 runex2_2 runex4 runex7 runex12 runex13 runex19 \
-		runex35 runex39
+		runex35 runex40
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
 		ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
@@ -183,9 +183,19 @@ ex37: ex37.o chkopts
 ex38: ex38.o chkopts
 	-$(CLINKER) -o ex38 ex38.o $(PETSC_LIB)
 	$(RM) ex38.o
+
 ex39: ex39.o chkopts
 	-$(CLINKER) -o ex39 ex39.o $(PETSC_LIB)
 	$(RM) ex39.o
+
+ex40: ex40.o chkopts
+	-$(CLINKER) -o ex40 ex40.o $(PETSC_LIB)
+	$(RM) ex40.o
+
+ex41: ex41.o chkopts
+	-$(CLINKER) -o ex41 ex41.o $(PETSC_LIB)
+	$(RM) ex41.o
+
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -312,7 +322,7 @@ runex30:
 	   else echo "Possible problem with ex30_1, diffs above"; fi; \
 	   $(RM) -f ex30_1.tmp
 runex35:
-	-@$(MPIRUN)  ex35 > ex35_1.tmp  2>&1;   \
+	-@$(MPIRUN)  ex35 > ex35_1.tmp	2>&1;	\
 	   if (diff output/ex35_1.out ex35_1.tmp) then true; \
 	   else echo "Possible problem with ex35_1, diffs above"; fi; \
 	   $(RM) -f ex35_1.tmp
@@ -326,4 +336,17 @@ runex39:
 	   if (diff output/ex39_1.out ex39_1.tmp) then true; \
 	   else echo "Possible problem with ex39_1, diffs above"; fi; \
 	   $(RM) -f ex39_1.tmp
+runex40:
+	-@$(MPIRUN) -np 3 ex40 > ex40_1.tmp -nd 7  -ov 2 2>&1;	 \
+	   if (diff output/ex40_1.out ex40_1.tmp) then true; \
+	   else echo "Possible problem with ex40_1, diffs above"; fi; \
+	   $(RM) -f ex40_1.tmp
+runex41:
+	-@$(MPIRUN) -np 3 ex41 > ex41_1.tmp -nd 3  -ov 1 2>&1;	 \
+	   if (diff output/ex41_1.out ex41_1.tmp) then true; \
+	   else echo "Possible problem with ex41_1, diffs above"; fi; \
+	   $(RM) -f ex41_1.tmp
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+
+
+
