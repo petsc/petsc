@@ -5,7 +5,7 @@ ALL: lib
 CFLAGS	 = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC	 = mpi.c
 SOURCEF	 = 
-SOURCEH	 = 
+SOURCEH	 = mpi.h
 OBJSC	 = mpi.o
 OBJSF	 =
 LIBBASE	 = libmpiuni

@@ -1,10 +1,7 @@
-/* $Id: mpi.h,v 1.25 1996/03/18 05:51:35 balay Exp balay $ */
+/* $Id: mpi.h,v 1.26 1996/03/18 15:20:14 balay Exp bsmith $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
- * This is UNDER CONSTRUCTION
- * Does not yet provide for timer access.
- *
  * Does not implement send to self.
  * Does not implement attributes correctly.
  */
@@ -12,55 +9,50 @@
 #ifndef __MPI_BINDINGS
 #define __MPI_BINDINGS
 
-#if defined(__cplusplus) 
-#if defined(PARCH_alpha) ||  defined(PARCH_solaris) || defined(PARCH_freebsd) || defined(PARCH_IRIX) || defined(PARCH_rs6000) || defined(PARCH_sun4)
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+
+#if defined(PARCH_sun4) && defined(__cplusplus)
 extern "C" {
-extern void  exit(int);
+extern void exit(const int);
 }
 #endif
-#if defined(PARCH_t3d) || defined(PARCH_hpux) 
-extern "C" {
-extern int exit(int);
-}
-#endif
-#endif
+
+
 extern double MPIUNI_DUMMY;
-extern void *MPIUNI_TMP;
+extern void   *MPIUNI_TMP;
 extern double MPI_Wtime();
 
-/* External objects outside of MPI calls */
-#define MPI_COMM_WORLD 1
-#define MPI_COMM_SELF  2
-#define MPI_COMM_NULL  0
-#define MPI_SUCCESS    0
-#define MPI_IDENT      0
-#define MPI_UNEQUAL    3
-#define MPI_ANY_SOURCE (-2)
+#define MPI_COMM_WORLD       1
+#define MPI_COMM_SELF        2
+#define MPI_COMM_NULL        0
+#define MPI_SUCCESS          0
+#define MPI_IDENT            0
+#define MPI_UNEQUAL          3
+#define MPI_ANY_SOURCE     (-2)
 #define MPI_KEYVAL_INVALID   0
-#define MPI_ERR_UNKNOWN     18      /* Unknown error */
-#define MPI_ERR_INTERN      21      /* internal error code    */
+#define MPI_ERR_UNKNOWN     18
+#define MPI_ERR_INTERN      21
 #define MPI_ERR_OTHER        1
 #define MPI_TAG_UB           0
 
 
 /* External types */
-typedef long MPI_Comm;         /* was void * ???? */
-typedef void *MPI_Request;
-typedef void *MPI_Group;
-typedef struct { int MPI_TAG, MPI_SOURCE, MPI_ERROR; } MPI_Status;
-typedef char* MPI_Errhandler;
+typedef long   MPI_Comm;         
+typedef void   *MPI_Request;
+typedef void   *MPI_Group;
+typedef struct {int MPI_TAG, MPI_SOURCE, MPI_ERROR;} MPI_Status;
+typedef char*   MPI_Errhandler;
 
 /* In order to handle datatypes, we make them into "sizeof(raw-type)";
     this allows us to do the PetscMemcpy's easily */
-#define MPI_Datatype int
-#define MPI_FLOAT sizeof(float)
-#define MPI_DOUBLE sizeof(double)
-#define MPI_CHAR sizeof(char)
-#define MPI_INT sizeof(int)
+#define MPI_Datatype      int
+#define MPI_FLOAT         sizeof(float)
+#define MPI_DOUBLE        sizeof(double)
+#define MPI_CHAR          sizeof(char)
+#define MPI_INT           sizeof(int)
 #define MPI_UNSIGNED_LONG sizeof(unsigned long)
-
-/* This is a special PETSC datatype */
-/*#define MPIU_COMPLEX (2*sizeof(double))*/
 
 /* Routines */
 #define MPI_Send( buf, count, datatype, dest, tag, comm)  \
@@ -428,20 +420,12 @@ typedef char* MPI_Errhandler;
 #define MPI_Finalize() MPI_SUCCESS
 #define MPI_Initialized(flag) (*(flag)=1,MPI_SUCCESS)
 #define MPI_Pcontrol(level) MPI_SUCCESS
-/*#define MPI_Abort(comm, errorcode) \
-                        (MPIUNI_TMP = (void *) (comm), \
-                         MPIUNI_TMP = (void *) (errorcode), \
-                         fprintf(stderr,"[0] Aborting program!\n"), abort() )*/
+
 #define MPI_Abort(comm, errorcode) \
-                        (MPIUNI_TMP = (void *) (comm), \
-               PetscError(__LINE__,__DIR__,__FILE__,errorcode,"[0] Aborting program!"), \
+                        (MPIUNI_TMP = (void *) (comm),\
+     PetscError(__LINE__,__DIR__,__FILE__,errorcode,"[0] Aborting program!"), \
                exit(errorcode))
-/*#define MPI_NULL_COPY_FN(oldcomm, keyval, extra_state, \
-                        attr_in, attr_out, flag ) 
-#define MPI_NULL_DELETE_FN(comm, keyval, attr, extra_state )\
-#define MPI_DUP_FN(comm, keyval, extra_state, \
-                attr_in, attr_out, flag ) */
-#define MPI_NULL_COPY_FN 0
+#define MPI_NULL_COPY_FN   0
 #define MPI_NULL_DELETE_FN 0
 
 #endif
