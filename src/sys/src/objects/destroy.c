@@ -4,6 +4,46 @@
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
+struct _p_Object {
+  PETSCHEADER(int);
+};
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectCreate"
+/*@C
+   PetscObjectCreate - Creates a PetscObject
+
+   Collective on PetscObject
+
+   Input Parameter:
+.  comm - An MPI communicator
+
+   Output Parameter:
+.  obj - The object
+
+   Level: beginner
+
+    Concepts: destroying object
+    Concepts: freeing object
+    Concepts: deleting object
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj)
+{
+  PetscObject o;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(obj,2);
+
+  ierr = PetscHeaderCreate(o,_p_Object,PetscInt,-1,0,"PetscObject",comm,PetscObjectDestroy,0);CHKERRQ(ierr);
+  o->data        = 0;
+  o->view        = 0;
+  o->setupcalled = 0;
+  *obj = o;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectDestroy"
 /*@C
@@ -16,7 +56,7 @@
          This must be cast with a (PetscObject), for example, 
          PetscObjectDestroy((PetscObject)mat);
 
-   Level: intermediate
+   Level: beginner
 
     Concepts: destroying object
     Concepts: freeing object

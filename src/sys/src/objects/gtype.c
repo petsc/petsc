@@ -19,21 +19,42 @@
    Output Parameter:
 .  type - the object type
 
-   Note: This is being PHASED out; all classes derived from abstract classes instead have a
-         type_name
+   Level: advanced
+
+   Concepts: object type
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscObjectGetType(PetscObject obj, const char *type[])
+{
+  PetscFunctionBegin;
+  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Null object");
+  PetscValidPointer(type,2);
+  *type = obj->type_name;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectSetType"
+/*@C
+   PetscObjectSetType - Sets the object type of any PetscObject.
+
+   Not Collective
+
+   Input Parameters:
++  obj - any PETSc object, for example a Vec, Mat or KSP.
+         Thus must be cast with a (PetscObject), for example, 
+         PetscObjectGetType((PetscObject)mat,&type);
+-  type - the object type
+
+   Note: This does not currently work since we need to dispatch by type.
 
    Level: advanced
 
    Concepts: object type
-
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectGetType(PetscObject obj,int *type)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectSetType(PetscObject obj, const char type[])
 {
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
-  *type = obj->type;
-  PetscFunctionReturn(0);
+  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Null object");
+  PetscValidCharPointer(type,2);
+  SETERRQ(PETSC_ERR_SUP, "Cannot set the type of a generic PetscObject")
 }
-
-
-
