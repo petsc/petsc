@@ -1,4 +1,4 @@
-/*$Id: gcreate.c,v 1.121 2000/07/10 03:39:59 bsmith Exp balay $*/
+/*$Id: gcreate.c,v 1.122 2000/09/01 19:09:14 balay Exp curfman $*/
 
 #include "petscsys.h"
 #include "petscmat.h"       /*I "petscmat.h"  I*/
@@ -64,7 +64,8 @@
 .seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
           MatCreateSeqBDiag(),MatCreateMPIBDiag(),
           MatCreateSeqDense(), MatCreateMPIDense(), 
-          MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ()
+          MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
+          MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert(), MatGetTypeFromOptions()
 @*/
 int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)

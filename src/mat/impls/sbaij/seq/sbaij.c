@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.27 2000/09/20 16:50:47 hzhang Exp bsmith $*/
+/*$Id: sbaij.c,v 1.28 2000/09/21 14:24:13 bsmith Exp curfman $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1290,7 +1290,7 @@ EXTERN_C_END
    allocation.  For additional details, see the users manual chapter on
    matrices.
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIBAIJ()
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPISBAIJ()
 @*/
 int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
 {

@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.19 2000/09/15 14:24:33 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.20 2000/09/18 17:28:52 hzhang Exp curfman $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -1639,7 +1639,7 @@ EXTERN_C_END
 
 .keywords: matrix, block, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateMPISBAIJ()
+.seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateMPIBAIJ()
 @*/
 
 int MatCreateMPISBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,int d_nz,int *d_nnz,int o_nz,int *o_nnz,Mat *A)
