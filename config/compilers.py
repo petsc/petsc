@@ -338,8 +338,8 @@ class Configure(config.base.Configure):
     # Change to string
     self.flibs = ''
     for lib in flibs:
-      if self.setCompilers.slpath and lib.startswith('-L'):
-        self.flibs += ' '+self.setCompilers.slpath+lib[2:]
+      if 'F77_LINKER_SLFLAG' in self.framework.argDB and lib.startswith('-L'):
+        self.flibs += ' '+self.framework.argDB['F77_LINKER_SLFLAG']+lib[2:]
       self.flibs += ' '+lib
     # Append run path
     if ldRunPath: self.flibs = ldRunPath+self.flibs

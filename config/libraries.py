@@ -31,8 +31,9 @@ class Configure(config.base.Configure):
     if os.path.basename(library).startswith('lib'):
       name = self.getLibName(library)
       if os.path.isabs(library):
-        if self.setCompilers.slpath:
-          return self.setCompilers.slpath+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
+        flagName = self.language[-1].replace('+', 'x').upper()+'_LINKER_SLFLAG'
+        if flagName in self.framework.argDB:
+          return self.framework.argDB[flagName]+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
         else:
           return '-L'+os.path.dirname(library)+' -l'+name
       else:
