@@ -109,7 +109,7 @@ int MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 #define __FUNCT__ "MatMatMult_MPIAIJ_MPIAIJ"
 int MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C) 
 {
-  Mat           *aseq,*bseq,A_seq=PETSC_NULL,B_seq=PETSC_NULL,*cseq,C_seq,C_mpi;
+  Mat           *aseq,*bseq,A_seq=PETSC_NULL,B_seq=PETSC_NULL,C_seq,C_mpi;
   Mat_MPIAIJ    *a = (Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ    *c;
   MatScalar     *ca;
