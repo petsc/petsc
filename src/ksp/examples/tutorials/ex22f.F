@@ -20,7 +20,6 @@
 !     petsc.h  - base PETSc routines      petscvec.h - vectors
 !     petscsys.h    - system routines          petscmat.h - matrices
 !     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
-!     petscsles.h   - SLES interface
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
