@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.185 1997/01/06 20:24:32 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.186 1997/01/14 17:18:18 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -55,20 +55,27 @@ static int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,
 }
 
 #define CHUNKSIZE   15
-#define MatSetValues_SeqAIJ_A_Private(row,col,value) \
+#define MatSetValues_SeqAIJ_A_Private(A,row,col,value,addv) \
 { \
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) (A)->data; \
+  int        *rp,ii,nrow,_i,rmax, N, col1; \
+  int        *imax = a->imax, *ai = a->i, *ailen = a->ilen; \
+  int        *aj = a->j, nonew = a->nonew,shift = a->indexshift; \
+  Scalar     *ap, *aa = a->a; \
  \
     rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift; \
     rmax = imax[row]; nrow = ailen[row];  \
+    col1 = col - shift; \
+     \
       for ( _i=0; _i<nrow; _i++ ) { \
-        if (rp[_i] > col) break; \
-        if (rp[_i] == col) { \
+        if (rp[_i] > col1) break; \
+        if (rp[_i] == col1) { \
           if (addv == ADD_VALUES) ap[_i] += value;   \
           else                  ap[_i] = value; \
           goto _noinsert; \
         } \
       }  \
-      if (a->nonew) goto _noinsert; \
+      if (nonew)  goto _noinsert; \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
         int    new_nz = ai[a->m] + CHUNKSIZE,len,*new_i,*new_j; \
@@ -91,6 +98,7 @@ static int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,
         PetscMemcpy(new_a+ai[row]+shift+nrow+CHUNKSIZE,aa+ai[row]+shift+nrow, \
                                                            len*sizeof(Scalar));  \
         /* free up old matrix storage */ \
+ \
         PetscFree(a->a);  \
         if (!a->singlemalloc) {PetscFree(a->i);PetscFree(a->j);} \
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j;  \
@@ -108,11 +116,10 @@ static int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,
         rp[ii+1] = rp[ii]; \
         ap[ii+1] = ap[ii]; \
       } \
-      rp[_i] = col;  \
+      rp[_i] = col1;  \
       ap[_i] = value;  \
-      _noinsert:; \
-    ailen[row] = nrow; \
-  return 0; \
+      _noinsert: ; \
+      ailen[row] = nrow; \
 } 
 
 extern int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
@@ -127,13 +134,13 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
   int        roworiented = aij->roworiented;
 
   /* Some Variables required in the macro */
-  Mat        A = aij->A;
+  /*  Mat        A = aij->A;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) (A)->data; 
-  int        *rp,ii,nrow,_i,rmax,N; 
+  int        *rp,ii,nrow,_i,rmax,N,col2; 
   int        *imax=a->imax,*ai=a->i,*ailen=a->ilen; 
   int        *aj=a->j,shift=a->indexshift;
   Scalar     *ap,*aa=a->a;
-
+  */
 #if defined(PETSC_BOPT_g)
   if (aij->insertmode != NOT_SET_VALUES && aij->insertmode != addv) {
     SETERRQ(1,0,"Cannot mix inserts and adds");
@@ -151,7 +158,7 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
         if (in[j] >= cstart && in[j] < cend){
           col = in[j] - cstart;
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          MatSetValues_SeqAIJ_A_Private(row,col,value);
+          MatSetValues_SeqAIJ_A_Private(aij->A,row,col,value,addv);
           /* ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
 #if defined(PETSC_BOPT_g)

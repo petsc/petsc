@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.49 1997/01/14 15:50:48 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.50 1997/01/14 17:15:35 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -70,7 +70,7 @@ static int MatRestoreRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n
 }
 #define CHUNKSIZE  10
 
-#define  MatSetValues_SeqBAIJ_A_Private( row, col, value) \
+#define  MatSetValues_SeqBAIJ_A_Private(row,col,value,addv) \
 { \
  \
     brow = row/bs;  \
@@ -174,7 +174,7 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
         if (in[j] >= cstart_orig && in[j] < cend_orig){
           col = in[j] - cstart_orig;
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          MatSetValues_SeqBAIJ_A_Private(row,col,value);
+          MatSetValues_SeqBAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
 #if defined(PETSC_BOPT_g)
