@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.13 1996/01/20 04:17:05 bsmith Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.14 1996/02/16 20:04:50 balay Exp balay $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -120,6 +120,8 @@ static int PCSetUp_ASM(PC pc)
   for ( i=0; i<n_local_true; i++ ) {
     PLogObjectParent(pc,osm->pmat[i]);
     ierr = SLESSetOperators(osm->sles[i],osm->pmat[i],osm->pmat[i],pc->flag);CHKERRQ(ierr);
+    ierr = SLESSetUp(osm->sles[i],osm->x[i],osm->y[i]); CHKERRQ(ierr);
+
   }
   return 0;
 }
