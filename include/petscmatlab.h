@@ -30,7 +30,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineGet(PetscMatlabEngine,Pet
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMatlabEnginePutArray(PetscMatlabEngine,int,int,PetscScalar*,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineGetArray(PetscMatlabEngine,int,int,PetscScalar*,const char[]);
 
-EXTERN PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm);
+EXTERN PetscMatlabEngine PETSC_DLLEXPORT PETSC_MATLAB_ENGINE_(MPI_Comm);
 
 /*MC
   PETSC_MATLAB_ENGINE_WORLD - same as PETSC_MATLAB_ENGINE_(PETSC_COMM_WORLD)
