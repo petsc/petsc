@@ -62,7 +62,7 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base.$(BOPT)
 chkpetsc_dir:
 	@if [ Holder = Holder$(BOPT) ] ; then \
 	  echo "You must set the variable BOPT=[g,O,Opg,O_c++,O_complex,...]" ; \
-          echo "Remove all .o files and rerun make"; false; fi
+          echo "Remove all .o files and rerun make with appropriate BOPT"; false; fi
 	-@if [ ! -d $(PDIR) ]; then \
 	  echo Making directory $(PDIR) for library; mkdir -p $(PDIR) ; fi
 
@@ -71,7 +71,7 @@ chkpetsc_dir:
 chkopts_basic: 
 	@if [ Holder = Holder$(BOPT) ] ; then \
 	  echo "You must set the variable BOPT=[g,O,Opg,O_c++,O_complex,...]" ; \
-          echo "Remove all .o files and rerun make"; false; fi
+          echo "Remove all .o files and rerun make with appropriate BOPT"; false; fi
 	@if [ ! -d $(LDIR) ]; then \
 	  echo Libraries not built for this BOPT: $(BOPT); false ; fi
 
