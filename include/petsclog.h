@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.135 2000/01/10 23:37:17 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.136 2000/02/24 04:46:10 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -57,7 +57,7 @@
 #define VEC_ReduceArithmetic                    37
 #define VEC_ReduceCommunication                 38
 #define VEC_ScatterBarrier                      39
-#define VEC_Dot                                 40
+#define VEC_ScatterCommunication                40
 #define VEC_Norm                                41
 #define VEC_Max                                 42
 #define VEC_Min                                 43
@@ -111,6 +111,7 @@
 
 #define VEC_ReduceBarrier                       87
 #define VEC_ReduceCommOnly                      88
+#define VEC_Dot                                 89
 
 #define TS_Step                                 90
 #define TS_PseudoComputeTimeStep                91
@@ -192,12 +193,12 @@ extern PetscTruth PLogEventDepth[];
   { \
     if (_PLogPLB && PLogEventFlags[e]) {                           \
       PLogEventBegin((e),o1,o2,o3,o4);                                   \
-      if (UseMPE && PLogEventMPEFlags[(e)])\
-        MPE_Log_event(MPEBEGIN+2*(e),0,"");\
+      if (UseMPE && PLogEventMPEFlags[(e)]) \
+        MPE_Log_event(MPEBEGIN+2*(e),0,""); \
       MPI_Barrier(cm);                                             \
       PLogEventEnd((e),o1,o2,o3,o4);                                     \
-      if (UseMPE && PLogEventMPEFlags[(e)])\
-        MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");\
+      if (UseMPE && PLogEventMPEFlags[(e)]) \
+        MPE_Log_event(MPEBEGIN+2*((e)+1),0,""); \
     }                                                                \
     PLogEventBegin(e+1,o1,o2,o3,o4);                                   \
     if (UseMPE && PLogEventMPEFlags[(e)+1])\
@@ -231,7 +232,7 @@ extern PetscTruth PLogEventDepth[];
 
 #if defined(PETSC_HAVE_MPE)
 #define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) {\
-  if (_PLogPLE && PLogEventFlags[(e)+1]) {\
+  if (_PLogPLE && PLogEventFlags[(e)+1]) \
     (*_PLogPLE)((e)+1,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   if (UseMPE && PLogEventMPEFlags[(e)+1])\
      MPE_Log_event(MPEBEGIN+2*((e)+1)+1,0,"");\
