@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.77 1996/04/08 14:55:17 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.78 1996/04/09 14:15:10 curfman Exp balay $";
 #endif
 
 #include "sys.h"
@@ -151,7 +151,7 @@ $  -mat_seqbaij  : Block AIJ type, uses MatCreateSeaBAIJ
 int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 {
   MatType type;
-  int     set, ierr, bs=1, flg, found=1;
+  int     set, ierr, bs=1, flg;
 
   ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   switch (type) {
@@ -181,12 +181,10 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg); CHKERRQ(ierr);
     ierr = MatCreateSeqBAIJ(comm,bs,m,n,PETSC_DEFAULT,PETSC_NULL,V); CHKERRQ(ierr);
     break;
-  default:
-    found = 0;
-    break;
+
   }
-  if (!found) return MatCreateSeqAIJ(comm,m,n,PETSC_DEFAULT,PETSC_NULL,V);
-  else        return 0;
+  /* default */
+  return MatCreateSeqAIJ(comm,m,n,PETSC_DEFAULT,PETSC_NULL,V);
 }
 
 #include "matimpl.h"
