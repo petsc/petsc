@@ -67,10 +67,14 @@ int MGKCycle_Private(MG *mg)
   /* work our way up through the levels */
   ierr = VecSet(&zero,mg[0]->x);CHKERRQ(ierr); 
   for (i=0; i<l-1; i++) {
+    if (mg[i]->eventsolve) {ierr = PetscLogEventBegin(mg[i]->eventsolve,0,0,0,0);CHKERRQ(ierr);}
     ierr = SLESSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x,&its);CHKERRQ(ierr);
+    if (mg[i]->eventsolve) {ierr = PetscLogEventEnd(mg[i]->eventsolve,0,0,0,0);CHKERRQ(ierr);}
     ierr = MatInterpolate(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x);CHKERRQ(ierr);
   }
+  if (mg[l-1]->eventsolve) {ierr = PetscLogEventBegin(mg[l-1]->eventsolve,0,0,0,0);CHKERRQ(ierr);}
   ierr = SLESSolve(mg[l-1]->smoothd,mg[l-1]->b,mg[l-1]->x,&its);CHKERRQ(ierr);
+  if (mg[l-1]->eventsolve) {ierr = PetscLogEventEnd(mg[l-1]->eventsolve,0,0,0,0);CHKERRQ(ierr);}
 
   PetscFunctionReturn(0);
 }

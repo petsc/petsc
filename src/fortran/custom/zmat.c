@@ -23,6 +23,8 @@
 #define matcreateseqaij_                 MATCREATESEQAIJ
 #define matcreatempibaij_                MATCREATEMPIBAIJ
 #define matcreateseqbaij_                MATCREATESEQBAIJ
+#define matcreatempisbaij_               MATCREATEMPISBAIJ
+#define matcreateseqsbaij_               MATCREATESEQSBAIJ
 #define matcreate_                       MATCREATE
 #define matcreateshell_                  MATCREATESHELL
 #define matorderingregisterdestroy_      MATORDERINGREGISTERDESTROY
@@ -78,6 +80,8 @@
 #define matcreateseqaij_                 matcreateseqaij
 #define matcreatempibaij_                matcreatempibaij
 #define matcreateseqbaij_                matcreateseqbaij
+#define matcreatempisbaij_               matcreatempisbaij
+#define matcreateseqsbaij_               matcreateseqsbaij
 #define matcreate_                       matcreate
 #define matcreateshell_                  matcreateshell
 #define matorderingregisterdestroy_      matorderingregisterdestroy
@@ -444,6 +448,13 @@ void PETSC_STDCALL matcreateseqbaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *n
   *ierr = MatCreateSeqBAIJ((MPI_Comm)PetscToPointerComm(*comm),*bs,*m,*n,*nz,nnz,newmat);
 }
 
+void PETSC_STDCALL matcreateseqsbaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *nz,
+                           int *nnz,Mat *newmat,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(nnz);
+  *ierr = MatCreateSeqSBAIJ((MPI_Comm)PetscToPointerComm(*comm),*bs,*m,*n,*nz,nnz,newmat);
+}
+
 void PETSC_STDCALL matfdcoloringdestroy_(MatFDColoring *mat,int *ierr)
 {
   *ierr = MatFDColoringDestroy(*mat);
@@ -469,6 +480,14 @@ void PETSC_STDCALL matcreatempibaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *M
   CHKFORTRANNULLINTEGER(d_nnz);
   CHKFORTRANNULLINTEGER(o_nnz);
   *ierr = MatCreateMPIBAIJ((MPI_Comm)PetscToPointerComm(*comm),
+                             *bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
+}
+void PETSC_STDCALL matcreatempisbaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *M,int *N,
+         int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(d_nnz);
+  CHKFORTRANNULLINTEGER(o_nnz);
+  *ierr = MatCreateMPISBAIJ((MPI_Comm)PetscToPointerComm(*comm),
                              *bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
 }
 

@@ -24,12 +24,10 @@ int MGMCycle_Private(MG *mglevels,PetscTruth *converged)
   PetscFunctionBegin;
   if (converged) *converged = PETSC_FALSE;
 
-  if (!mg->level) {  /* coarse grid */
-    if (mg->eventsolve) {ierr = PetscLogEventBegin(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
-    ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
-    if (mg->eventsolve) {ierr = PetscLogEventEnd(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
-  } else {
-    ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
+  if (mg->eventsolve) {ierr = PetscLogEventBegin(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
+  ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
+  if (mg->eventsolve) {ierr = PetscLogEventEnd(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
+  if (mg->level) {  /* not the coarsest grid */
     ierr = (*mg->residual)(mg->A,mg->b,mg->x,mg->r);CHKERRQ(ierr);
 
     /* if on finest level and have convergence criteria set */
@@ -54,7 +52,9 @@ int MGMCycle_Private(MG *mglevels,PetscTruth *converged)
       ierr = MGMCycle_Private(mglevels-1,converged);CHKERRQ(ierr); 
     }
     ierr = MatInterpolateAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
+    if (mg->eventsolve) {ierr = PetscLogEventBegin(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
     ierr = SLESSolve(mg->smoothu,mg->b,mg->x,&its);CHKERRQ(ierr); 
+    if (mg->eventsolve) {ierr = PetscLogEventEnd(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -273,9 +273,9 @@ static int PCSetFromOptions_MG(PC pc)
       if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
       levels = mg[0]->levels;
       for (i=0; i<levels; i++) {  
-         sprintf(eventname,"MSetup Level %d",i);
+        sprintf(eventname,"MSetup Level %d",i);
         ierr = PetscLogEventRegister(&mg[i]->eventsetup,eventname,pc->cookie);CHKERRQ(ierr);
-        sprintf(eventname,"MG SLESSolve Level %d",i);
+        sprintf(eventname,"MGSolve Level %d",i);
         ierr = PetscLogEventRegister(&mg[i]->eventsolve,eventname,pc->cookie);CHKERRQ(ierr);
       }
     }
@@ -384,14 +384,18 @@ static int PCSetUp_MG(PC pc)
     if (mg[i]->smoothd) {
       ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+      if (mg[i]->eventsetup) {ierr = PetscLogEventBegin(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
       ierr = SLESSetUp(mg[i]->smoothd,mg[i]->b,mg[i]->x);CHKERRQ(ierr);
+      if (mg[i]->eventsetup) {ierr = PetscLogEventEnd(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
     }
   }
   for (i=0; i<n; i++) {
     if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
       ierr = SLESGetKSP(mg[i]->smoothu,&ksp);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+      if (mg[i]->eventsetup) {ierr = PetscLogEventBegin(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
       ierr = SLESSetUp(mg[i]->smoothu,mg[i]->b,mg[i]->x);CHKERRQ(ierr);
+      if (mg[i]->eventsetup) {ierr = PetscLogEventEnd(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
     }
   }
 
@@ -420,7 +424,9 @@ static int PCSetUp_MG(PC pc)
     ierr = SLESSetFromOptions(mg[0]->smoothd);CHKERRQ(ierr);
   }
 
+  if (mg[0]->eventsetup) {ierr = PetscLogEventBegin(mg[0]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
   ierr = SLESSetUp(mg[0]->smoothd,mg[0]->b,mg[0]->x);CHKERRQ(ierr);
+  if (mg[0]->eventsetup) {ierr = PetscLogEventEnd(mg[0]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
 
   /*
      Dump the interpolation/restriction matrices to matlab plus the 
