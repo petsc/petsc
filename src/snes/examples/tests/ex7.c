@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.41 1999/03/19 21:22:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.42 1999/04/20 21:20:00 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -67,9 +67,9 @@ int main( int argc, char **argv )
   ierr = MatCreateSNESMF(snes,x,&J); CHKERRA(ierr);
 
   /* Set various routines and options */
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F); CHKERRA(ierr);
-  ierr = SNESSetJacobian(snes,J,B,FormJacobian,(void*)&user); CHKERRA(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,(void*)&monP,0); CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,F); CHKERRA(ierr);
+  ierr = SNESSetJacobian(snes,J,B,FormJacobian,&user); CHKERRA(ierr);
+  ierr = SNESSetMonitor(snes,Monitor,&monP,0); CHKERRA(ierr);
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
   /* Solve nonlinear system */

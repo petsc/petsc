@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.81 1999/01/31 21:56:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.82 1999/04/19 22:14:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -289,13 +289,13 @@ int PCCreate_SOR(PC pc)
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_SOR));
 
-  pc->apply          = PCApply_SOR;
-  pc->applyrich      = PCApplyRichardson_SOR;
-  pc->setfromoptions = PCSetFromOptions_SOR;
-  pc->printhelp      = PCPrintHelp_SOR;
-  pc->setup          = 0;
+  pc->ops->apply           = PCApply_SOR;
+  pc->ops->applyrichardson = PCApplyRichardson_SOR;
+  pc->ops->setfromoptions  = PCSetFromOptions_SOR;
+  pc->ops->printhelp       = PCPrintHelp_SOR;
+  pc->ops->setup           = 0;
+  pc->ops->view            = PCView_SOR;
   pc->data           = (void *) jac;
-  pc->view           = PCView_SOR;
   jac->sym           = SOR_FORWARD_SWEEP;
   jac->omega         = 1.0;
   jac->its           = 1;

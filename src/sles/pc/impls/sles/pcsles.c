@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.16 1999/01/31 21:55:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.17 1999/04/19 22:14:19 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -236,15 +236,15 @@ int PCCreate_SLES(PC pc)
   PLogObjectMemory(pc,sizeof(PC_SLES));
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
-  pc->apply              = PCApply_SLES;
-  pc->setup              = PCSetUp_SLES;
-  pc->destroy            = PCDestroy_SLES;
-  pc->setfromoptions     = PCSetFromOptions_SLES;
-  pc->printhelp          = PCPrintHelp_SLES;
-  pc->view               = PCView_SLES;
-  pc->applyrich          = 0;
-  pc->data               = (void *) jac;
+  pc->ops->apply              = PCApply_SLES;
+  pc->ops->setup              = PCSetUp_SLES;
+  pc->ops->destroy            = PCDestroy_SLES;
+  pc->ops->setfromoptions     = PCSetFromOptions_SLES;
+  pc->ops->printhelp          = PCPrintHelp_SLES;
+  pc->ops->view               = PCView_SLES;
+  pc->ops->applyrichardson    = 0;
 
+  pc->data               = (void *) jac;
   ierr                   = SLESCreate(pc->comm,&jac->sles);CHKERRQ(ierr);
 
   ierr = PCGetOptionsPrefix(pc,&prefix); CHKERRQ(ierr);

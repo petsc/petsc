@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.159 1999/04/02 15:10:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.160 1999/04/19 22:14:29 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -524,7 +524,7 @@ int KSPSetFromOptions(KSP ksp)
     int rank = 0;
     ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,(void *)0); CHKERRQ(ierr);
+      ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,0,0); CHKERRQ(ierr);
     }
   }
   /*
@@ -532,14 +532,14 @@ int KSPSetFromOptions(KSP ksp)
     */
   ierr = OptionsHasName(ksp->prefix,"-ksp_vecmonitor",&flg); CHKERRQ(ierr);
   if (flg) {
-    ierr = KSPSetMonitor(ksp,KSPVecViewMonitor,(void *)0); CHKERRQ(ierr);
+    ierr = KSPSetMonitor(ksp,KSPVecViewMonitor,0,0); CHKERRQ(ierr);
   }
   /*
     Prints preconditioned and true residual norm at each iteration
     */
   ierr = OptionsHasName(ksp->prefix,"-ksp_truemonitor",&flg); CHKERRQ(ierr);
   if (flg) {
-    ierr = KSPSetMonitor(ksp,KSPTrueMonitor,(void *)0); CHKERRQ(ierr);
+    ierr = KSPSetMonitor(ksp,KSPTrueMonitor,0,0); CHKERRQ(ierr);
   }
   /*
     Prints extreme eigenvalue estimates at each iteration
@@ -547,7 +547,7 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(ksp->prefix,"-ksp_singmonitor",&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = KSPSetComputeSingularValues(ksp); CHKERRQ(ierr);
-    ierr = KSPSetMonitor(ksp,KSPSingularValueMonitor,(void *)0);CHKERRQ(ierr); 
+    ierr = KSPSetMonitor(ksp,KSPSingularValueMonitor,0,0);CHKERRQ(ierr); 
   }
   /*
     Prints preconditioned residual norm with fewer digits
@@ -557,7 +557,7 @@ int KSPSetFromOptions(KSP ksp)
     int rank = 0;
     ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = KSPSetMonitor(ksp,KSPDefaultSMonitor,(void *)0);CHKERRQ(ierr);
+      ierr = KSPSetMonitor(ksp,KSPDefaultSMonitor,0,0);CHKERRQ(ierr);
     }
   }
   /*
@@ -572,8 +572,7 @@ int KSPSetFromOptions(KSP ksp)
     if (!rank) {
       ierr = KSPLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); CHKERRQ(ierr);
       PLogObjectParent(ksp,(PetscObject) lg);
-      ierr = KSPSetMonitor(ksp,KSPLGMonitor,(void *)lg);CHKERRQ(ierr);
-      ksp->xmonitor = lg; 
+      ierr = KSPSetMonitor(ksp,KSPLGMonitor,lg,(int (*)(void*))KSPLGMonitorDestroy);CHKERRQ(ierr);
     }
   }
   /*
@@ -588,8 +587,7 @@ int KSPSetFromOptions(KSP ksp)
     if (!rank) {
       ierr = KSPLGTrueMonitorCreate(ksp->comm,0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
       PLogObjectParent(ksp,(PetscObject) lg);
-      ierr = KSPSetMonitor(ksp,KSPLGTrueMonitor,(void *)lg);CHKERRQ(ierr);
-      ksp->xmonitor = lg; 
+      ierr = KSPSetMonitor(ksp,KSPLGTrueMonitor,lg,(int (*)(void*))KSPLGMonitorDestroy);CHKERRQ(ierr);
     } 
   }
   /* -----------------------------------------------------------------------*/

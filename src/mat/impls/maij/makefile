@@ -1,17 +1,17 @@
-# $Id: makefile,v 1.41 1999/02/02 21:26:24 balay Exp $ 
+# $Id: makefile,v 1.1 1999/04/21 02:04:12 bsmith Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = aij.c aijfact.c ij.c essl.c dxml.c aijnode.c fdaij.c
+SOURCEC  = 
 SOURCEF  =
-SOURCEH  = aij.h
-OBJSC    = aij.o aijfact.o ij.o essl.o dxml.o aijnode.o fdaij.o
+SOURCEH  = 
+OBJSC    = 
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/aij/seq/
+LOCDIR   = src/mat/impls/maij/seq/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.182 1999/04/05 18:28:00 balay Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.183 1999/04/19 22:15:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -270,13 +270,13 @@ int SNESSetFromOptions(SNES snes)
   ierr = OptionsHasName(snes->prefix,"-snes_cancelmonitors",&flg); CHKERRQ(ierr);
   if (flg) {ierr = SNESClearMonitor(snes);CHKERRQ(ierr);}
   ierr = OptionsHasName(snes->prefix,"-snes_monitor",&flg); CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultMonitor,0);CHKERRQ(ierr);}
+  if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultMonitor,0,0);CHKERRQ(ierr);}
   ierr = OptionsHasName(snes->prefix,"-snes_smonitor",&flg); CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,0);  CHKERRQ(ierr);}
+  if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,0,0);  CHKERRQ(ierr);}
   ierr = OptionsHasName(snes->prefix,"-snes_vecmonitor",&flg); CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitor,0);  CHKERRQ(ierr);}
+  if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitor,0,0);  CHKERRQ(ierr);}
   ierr = OptionsHasName(snes->prefix,"-snes_vecmonitor_update",&flg); CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitorUpdate,0);  CHKERRQ(ierr);}
+  if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitorUpdate,0,0);  CHKERRQ(ierr);}
   ierr = OptionsGetIntArray(snes->prefix,"-snes_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
     int    rank = 0;
@@ -285,8 +285,7 @@ int SNESSetFromOptions(SNES snes)
     if (rank) {ierr = MPI_Comm_rank(snes->comm,&rank);CHKERRQ(ierr);}
     if (!rank) {
       ierr = SNESLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); CHKERRQ(ierr);
-      ierr = SNESSetMonitor(snes,SNESLGMonitor,(void *)lg); CHKERRQ(ierr);  
-      snes->xmonitor = lg;
+      ierr = SNESSetMonitor(snes,SNESLGMonitor,lg,( int (*)(void *))SNESLGMonitorDestroy); CHKERRQ(ierr);  
       PLogObjectParent(snes,lg);
     }
   }
@@ -314,7 +313,7 @@ int SNESSetFromOptions(SNES snes)
   if (flg) {
     KSP ksp;
     ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);
   }
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
@@ -687,7 +686,6 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->set_method_called = 0;
   snes->setupcalled      = 0;
   snes->ksp_ewconv        = 0;
-  snes->xmonitor          = 0;
   snes->vwork             = 0;
   snes->nwork             = 0;
   snes->conv_hist_len     = 0;
@@ -1432,7 +1430,7 @@ int SNESSetUp(SNES snes,Vec x)
 @*/
 int SNESDestroy(SNES snes)
 {
-  int ierr;
+  int i,ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
@@ -1442,8 +1440,12 @@ int SNESDestroy(SNES snes)
   if (snes->kspconvctx) PetscFree(snes->kspconvctx);
   if (snes->mfshell) {ierr = MatDestroy(snes->mfshell);CHKERRQ(ierr);}
   ierr = SLESDestroy(snes->sles); CHKERRQ(ierr);
-  if (snes->xmonitor) {ierr = SNESLGMonitorDestroy(snes->xmonitor);CHKERRQ(ierr);}
   if (snes->vwork) {ierr = VecDestroyVecs(snes->vwork,snes->nvwork);CHKERRQ(ierr);}
+  for (i=0; i<snes->numbermonitors; i++ ) {
+    if (snes->monitordestroy[i]) {
+      ierr = (*snes->monitordestroy[i])(snes->monitorcontext[i]);CHKERRQ(ierr);
+    }
+  }
   PLogObjectDestroy((PetscObject)snes);
   PetscHeaderDestroy((PetscObject)snes);
   PetscFunctionReturn(0);
@@ -1619,8 +1621,9 @@ int SNESLGMonitor(SNES snes,int it,double norm,void *ctx)
    Input Parameters:
 +  snes - the SNES context
 .  func - monitoring routine
--  mctx - [optional] user-defined context for private data for the 
+.  mctx - [optional] user-defined context for private data for the 
           monitor routine (may be PETSC_NULL)
+-  monitordestroy - options routine that frees monitor context
 
    Calling sequence of func:
 $     int func(SNES snes,int its, double norm,void *mctx)
@@ -1654,7 +1657,7 @@ _    -snes_cancelmonitors - cancels all monitors that have
 
 .seealso: SNESDefaultMonitor(), SNESClearMonitor()
 @*/
-int SNESSetMonitor( SNES snes, int (*func)(SNES,int,double,void*),void *mctx )
+int SNESSetMonitor( SNES snes, int (*func)(SNES,int,double,void*),void *mctx,int (*monitordestroy)(void *))
 {
   PetscFunctionBegin;
   if (snes->numbermonitors >= MAXSNESMONITORS) {
@@ -1662,6 +1665,7 @@ int SNESSetMonitor( SNES snes, int (*func)(SNES,int,double,void*),void *mctx )
   }
 
   snes->monitor[snes->numbermonitors]           = func;
+  snes->monitordestroy[snes->numbermonitors]    = monitordestroy;
   snes->monitorcontext[snes->numbermonitors++]  = (void*)mctx;
   PetscFunctionReturn(0);
 }

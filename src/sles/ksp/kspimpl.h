@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.38 1998/10/09 19:19:56 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.39 1999/02/27 03:24:20 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -61,8 +61,9 @@ struct _p_KSP {
 
   /* --------User (or default) routines (most return -1 on error) --------*/
   int  (*monitor[MAXKSPMONITORS])(KSP,int,double,void*); /* returns control to user after */
-  void *monitorcontext[MAXKSPMONITORS];            /* residual calculation, allows user */
-  int  numbermonitors;                   /* to, for instance, print residual norm, etc. */
+  int  (*monitordestroy[MAXKSPMONITORS])(void*);         /* */
+  void *monitorcontext[MAXKSPMONITORS];                  /* residual calculation, allows user */
+  int  numbermonitors;                                   /* to, for instance, print residual norm, etc. */
 
   int  (*converged)(KSP,int,double,void*);
   void       *cnvP; 
@@ -78,7 +79,6 @@ struct _p_KSP {
 
   int        setupcalled;
 
-  DrawLG     xmonitor;  /* location for stashing default xmonitor context */
   int        its;       /* number of iterations so far computed */
   PetscTruth avoidnorms; /* does not compute residual norms when possible */
 };

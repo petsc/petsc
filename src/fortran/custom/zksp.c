@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.28 1999/04/05 18:26:57 balay Exp balay $";
+static char vcid[] = "$Id: zksp.c,v 1.29 1999/04/06 17:47:43 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -123,10 +123,10 @@ static int ourmonitor(KSP ksp,int i,double d,void* ctx)
   return 0;
 }
 void kspsetmonitor_(KSP *ksp,int (*monitor)(KSP*,int*,double*,void*,int*),
-                    void *mctx, int *__ierr )
+                    void *mctx, int (*monitordestroy)(void *),int *__ierr )
 {
   f1 = monitor;
-  *__ierr = KSPSetMonitor(*ksp,ourmonitor,mctx);
+  *__ierr = KSPSetMonitor(*ksp,ourmonitor,mctx,0);
 }
 
 void kspgetpc_(KSP *ksp,PC *B, int *__ierr )

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: icc.c,v 1.58 1999/04/16 16:08:28 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.59 1999/04/19 22:14:16 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -126,16 +126,17 @@ int PCCreate_ICC(PC pc)
   icc->ordering           = MATORDERING_ND;
   icc->levels	          = 0;
   icc->implctx            = 0;
-  pc->apply	          = PCApply_ICC;
-  pc->setup               = PCSetup_ICC;
-  pc->destroy	          = PCDestroy_ICC;
-  pc->setfromoptions      = PCSetFromOptions_ICC;
-  pc->printhelp           = PCPrintHelp_ICC;
-  pc->view                = 0;
-  pc->getfactoredmatrix   = PCGetFactoredMatrix_ICC;
   pc->data	          = (void *) icc;
-  pc->applysymmetricleft  = PCApplySymmetricLeft_ICC;
-  pc->applysymmetricright = PCApplySymmetricRight_ICC;
+
+  pc->ops->apply	       = PCApply_ICC;
+  pc->ops->setup               = PCSetup_ICC;
+  pc->ops->destroy	       = PCDestroy_ICC;
+  pc->ops->setfromoptions      = PCSetFromOptions_ICC;
+  pc->ops->printhelp           = PCPrintHelp_ICC;
+  pc->ops->view                = 0;
+  pc->ops->getfactoredmatrix   = PCGetFactoredMatrix_ICC;
+  pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ICC;
+  pc->ops->applysymmetricright = PCApplySymmetricRight_ICC;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

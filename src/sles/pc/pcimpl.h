@@ -1,35 +1,44 @@
-/* $Id: pcimpl.h,v 1.22 1998/04/03 23:14:04 bsmith Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.23 1999/01/27 19:46:43 bsmith Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
 
-#include "vec.h"
-#include "mat.h"
 #include "ksp.h"
 #include "pc.h"
+
+typedef struct _PCOps *PCOps;
+struct _PCOps {
+  int          (*setup)(PC);
+  int          (*apply)(PC,Vec,Vec);
+  int          (*applyrichardson)(PC,Vec,Vec,Vec,int);
+  int          (*applyBA)(PC,int,Vec,Vec,Vec);
+  int          (*applytrans)(PC,Vec,Vec);
+  int          (*applyBAtrans)(PC,int,Vec,Vec,Vec);
+  int          (*setfromoptions)(PC);
+  int          (*printhelp)(PC,char*);
+  int          (*presolve)(PC,KSP,Vec,Vec);
+  int          (*postsolve)(PC,KSP,Vec,Vec);  
+  int          (*getfactoredmatrix)(PC,Mat*);
+  int          (*applysymmetricleft)(PC,Vec,Vec);
+  int          (*applysymmetricright)(PC,Vec,Vec);
+  int          (*setuponblocks)(PC);
+  int          (*destroy)(PC);
+  int          (*view)(PC,Viewer);
+};
 
 /*
    Preconditioner context
 */
 struct _p_PC {
-  PETSCHEADER(int)
+  PETSCHEADER(struct _PCOps)
   int          setupcalled;
   MatStructure flag;
-  int          (*apply)(PC,Vec,Vec),(*setup)(PC),(*applyrich)(PC,Vec,Vec,Vec,int),
-               (*applyBA)(PC,int,Vec,Vec,Vec),(*setfromoptions)(PC),(*printhelp)(PC,char*),
-               (*applytrans)(PC,Vec,Vec),(*applyBAtrans)(PC,int,Vec,Vec,Vec);
-  int          (*presolve)(PC,KSP,Vec,Vec),(*postsolve)(PC,KSP,Vec,Vec);
   Mat          mat,pmat;
   Vec          vec;
-  void         *data;
-  int          (*getfactoredmatrix)(PC,Mat*);
   PCNullSpace  nullsp;
-  int          (*applysymmetricleft)(PC,Vec,Vec),(*applysymmetricright)(PC,Vec,Vec);
-  int          (*setuponblocks)(PC);
-  int          (*modifysubmatrices)(PC,int,IS*,IS*,Mat*,void*);
-  void         *modifysubmatricesP;
-  int          (*destroy)(PC);
-  int          (*view)(PC,Viewer);
+  int          (*modifysubmatrices)(PC,int,IS*,IS*,Mat*,void*); /* user provided routine */
+  void         *modifysubmatricesP; /* context for user routine */
+  void         *data;
 };
 
 struct _p_PCNullSpace {

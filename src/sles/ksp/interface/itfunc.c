@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.122 1999/04/12 17:43:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.123 1999/04/19 22:14:29 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -347,7 +347,7 @@ int KSPSolveTrans(KSP ksp, int *its)
 @*/
 int KSPDestroy(KSP ksp)
 {
-  int ierr;
+  int i,ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -355,8 +355,10 @@ int KSPDestroy(KSP ksp)
   if (ksp->ops->destroy) {
     ierr = (*ksp->ops->destroy)(ksp); CHKERRQ(ierr);
   }
-  if (ksp->xmonitor) {
-    ierr = KSPLGMonitorDestroy(ksp->xmonitor);
+  for (i=0; i<ksp->numbermonitors; i++ ) {
+    if (ksp->monitordestroy[i]) {
+      ierr = (*ksp->monitordestroy[i])(ksp->monitorcontext[i]);CHKERRQ(ierr);
+    }
   }
   PLogObjectDestroy(ksp);
   PetscHeaderDestroy(ksp);
@@ -888,8 +890,9 @@ int KSPGetPC(KSP ksp, PC *B)
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
 .  monitor - pointer to function (if this is PETSC_NULL, it turns off monitoring
--  mctx    - [optional] context for private data for the
+.  mctx    - [optional] context for private data for the
              monitor routine (use PETSC_NULL if no context is desired)
+-  monitordestroy - optional pointer to function to free mctx space
 
    Calling Sequence of monitor:
 $     monitor (KSP ksp, int it, double rnorm, void *mctx)
@@ -929,7 +932,7 @@ $     monitor (KSP ksp, int it, double rnorm, void *mctx)
 
 .seealso: KSPDefaultMonitor(), KSPLGMonitorCreate(), KSPClearMonitor()
 @*/
-int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx)
+int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx, int (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -937,6 +940,7 @@ int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx)
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many KSP monitors set");
   }
   ksp->monitor[ksp->numbermonitors]           = monitor;
+  ksp->monitordestroy[ksp->numbermonitors]    = monitordestroy;
   ksp->monitorcontext[ksp->numbermonitors++]  = (void*)mctx;
   PetscFunctionReturn(0);
 }

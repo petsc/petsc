@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.64 1999/03/19 21:23:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.65 1999/04/16 16:10:23 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
@@ -111,7 +111,7 @@ int main( int argc, char **argv )
      Set an optional user-defined monitoring routine
   */
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr); 
+  ierr = SNESSetMonitor(snes,Monitor,&monP,0); CHKERRA(ierr); 
 
   /*
      Set names for some vectors to facilitate monitoring (optional)

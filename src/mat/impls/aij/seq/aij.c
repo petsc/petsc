@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.318 1999/03/29 16:50:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.319 1999/04/19 22:11:59 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1607,8 +1607,6 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatReuse scall,Mat 
 }
 
 /*
-     note: This can only work for identity for row and col. It would 
-   be good to check this and otherwise generate an error.
 */
 #undef __FUNC__  
 #define __FUNC__ "MatILUFactor_SeqAIJ"
@@ -1617,9 +1615,15 @@ int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) inA->data;
   int        ierr;
   Mat        outA;
+  PetscTruth row_identity, col_identity;
 
   PetscFunctionBegin;
-  if (info && info->levels != 0) SETERRQ(PETSC_ERR_SUP,0,"Only levels=0 supported");
+  if (info && info->levels != 0) SETERRQ(PETSC_ERR_SUP,0,"Only levels=0 supported for in-place ilu");
+  ierr = ISIdentity(row,&row_identity); CHKERRQ(ierr);
+  ierr = ISIdentity(col,&col_identity); CHKERRQ(ierr);
+  if (!row_identity || !col_identity) {
+    SETERRQ(1,1,"Row and column permutations must be identity for in-place ILU");
+  }
 
   outA          = inA; 
   inA->factor   = FACTOR_LU;

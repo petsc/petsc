@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewers.c,v 1.1 1999/04/19 21:29:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewers.c,v 1.2 1999/04/19 22:08:46 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: viewers.c,v 1.1 1999/04/19 21:29:35 bsmith Exp bsmith
 struct _p_Viewers {
    MPI_Comm comm;
    Viewer   *viewer;
-   int      n,nmax;
+   int      n;
 } ;
 
 #undef __FUNC__  
@@ -32,7 +32,7 @@ int ViewersDestroy(Viewers v)
 
   PetscFunctionBegin;
   for ( i=0; i<v->n; i++ ) {
-    ierr = ViewerDestroy(v->viewer[i]);CHKERRQ(ierr);
+    if (v->viewer[i]) {ierr = ViewerDestroy(v->viewer[i]);CHKERRQ(ierr);}
   }
   PetscFree(v->viewer);
   PetscFree(v);
@@ -61,8 +61,58 @@ int ViewersDestroy(Viewers v)
 @*/
 int ViewersCreate(MPI_Comm comm,Viewers *v)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  *v = PetscNew(struct _p_Viewers);CHKPTRQ(*v);
+  *v           = PetscNew(struct _p_Viewers);CHKPTRQ(*v);
+  (*v)->n      = 64;
+  (*v)->comm   = comm;
+  (*v)->viewer = (Viewer *) PetscMalloc(64*sizeof(Viewer));CHKPTRQ(v);
+  ierr = PetscMemzero((*v)->viewer,64*sizeof(Viewer));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "ViewersGetViewer"
+/*@C
+   ViewersGetViewer - Gets a viewer from a viewer collection
+
+   Not Collective, but Viewer will be collective object on Viewers
+
+   Input Parameter:
++   viewers - object created with ViewersCreate()
+-   n - number of viewer you want
+
+   Output Parameter:
+.  viewer - the viewer
+
+   Level: intermediate
+
+.keywords: Viewers, get, type
+
+.seealso: ViewersCreate(), ViewersDestroy()
+
+@*/
+int ViewersGetViewer(Viewers viewers,int n,Viewer *viewer)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Cannot access using a negative index - %d\n",n);
+  if (n >= viewers->n) {
+    Viewer *v;
+    int    newn = n + 64; /* add 64 new ones at a time */
+     
+    v    = (Viewer *) PetscMalloc(newn*sizeof(Viewer));CHKPTRQ(v);
+    ierr = PetscMemzero(v,newn*sizeof(Viewer));CHKERRQ(ierr);
+    ierr = PetscMemcpy(v,viewers->viewer,viewers->n*sizeof(Viewer));CHKERRQ(ierr);
+    PetscFree(viewers->viewer);
+    viewers->viewer = v;
+  }
+  if (!viewers->viewer[n]) {
+    ierr = ViewerCreate(viewers->comm,&viewers->viewer[n]);CHKERRQ(ierr);
+  }
+  *viewer = viewers->viewer[n];
   PetscFunctionReturn(0);
 }
 

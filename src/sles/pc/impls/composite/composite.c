@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.20 1999/03/16 00:53:07 balay Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.21 1999/04/19 22:14:20 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -218,9 +218,9 @@ int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 {
   PetscFunctionBegin;
   if (type == PC_COMPOSITE_ADDITIVE) {
-    pc->apply = PCApply_Composite_Additive;
+    pc->ops->apply = PCApply_Composite_Additive;
   } else if (type ==  PC_COMPOSITE_MULTIPLICATIVE) {
-    pc->apply = PCApply_Composite_Multiplicative;
+    pc->ops->apply = PCApply_Composite_Multiplicative;
   } else {
     SETERRQ(1,1,"Unkown composite preconditioner type");
   }
@@ -451,15 +451,15 @@ int PCCreate_Composite(PC pc)
   PLogObjectMemory(pc,sizeof(PC_Composite));
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
-  pc->apply              = PCApply_Composite_Additive;
-  pc->setup              = PCSetUp_Composite;
-  pc->destroy            = PCDestroy_Composite;
-  pc->setfromoptions     = PCSetFromOptions_Composite;
-  pc->printhelp          = PCPrintHelp_Composite;
-  pc->view               = PCView_Composite;
-  pc->applyrich          = 0;
-  pc->data               = (void *) jac;
+  pc->ops->apply              = PCApply_Composite_Additive;
+  pc->ops->setup              = PCSetUp_Composite;
+  pc->ops->destroy            = PCDestroy_Composite;
+  pc->ops->setfromoptions     = PCSetFromOptions_Composite;
+  pc->ops->printhelp          = PCPrintHelp_Composite;
+  pc->ops->view               = PCView_Composite;
+  pc->ops->applyrichardson    = 0;
 
+  pc->data               = (void *) jac;
   jac->type              = PC_COMPOSITE_ADDITIVE;
   jac->work1             = 0;
   jac->work2             = 0;

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.84 1999/04/16 16:08:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.85 1999/04/19 22:13:53 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -64,7 +64,7 @@ int PCSetType(PC ctx,PCType type)
   PetscValidHeaderSpecific(ctx,PC_COOKIE);
   if (PetscTypeCompare(ctx->type_name,type)) PetscFunctionReturn(0);
 
-  if (ctx->destroy) {ierr =  (*ctx->destroy)(ctx);CHKERRQ(ierr);}
+  if (ctx->ops->destroy) {ierr =  (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
   ctx->data        = 0;
   ctx->setupcalled = 0;
 
@@ -74,22 +74,22 @@ int PCSetType(PC ctx,PCType type)
   if (!r) SETERRQ1(1,1,"Unable to find requested PC type %s",type);
   if (ctx->data) PetscFree(ctx->data);
 
-  ctx->destroy         = ( int (*)(PC )) 0;
-  ctx->view            = ( int (*)(PC,Viewer) ) 0;
-  ctx->apply           = ( int (*)(PC,Vec,Vec) ) 0;
-  ctx->setup           = ( int (*)(PC) ) 0;
-  ctx->applyrich       = ( int (*)(PC,Vec,Vec,Vec,int) ) 0;
-  ctx->applyBA         = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
-  ctx->setfromoptions  = ( int (*)(PC) ) 0;
-  ctx->printhelp       = ( int (*)(PC,char*) ) 0;
-  ctx->applytrans      = ( int (*)(PC,Vec,Vec) ) 0;
-  ctx->applyBAtrans    = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
-  ctx->presolve        = ( int (*)(PC,KSP,Vec,Vec) ) 0;
-  ctx->postsolve       = ( int (*)(PC,KSP,Vec,Vec) ) 0;
-  ctx->getfactoredmatrix   = ( int (*)(PC,Mat*) ) 0;
-  ctx->applysymmetricleft  = ( int (*)(PC,Vec,Vec) ) 0;
-  ctx->applysymmetricright = ( int (*)(PC,Vec,Vec) ) 0;
-  ctx->setuponblocks       = ( int (*)(PC) ) 0;
+  ctx->ops->destroy             = ( int (*)(PC )) 0;
+  ctx->ops->view                = ( int (*)(PC,Viewer) ) 0;
+  ctx->ops->apply               = ( int (*)(PC,Vec,Vec) ) 0;
+  ctx->ops->setup               = ( int (*)(PC) ) 0;
+  ctx->ops->applyrichardson     = ( int (*)(PC,Vec,Vec,Vec,int) ) 0;
+  ctx->ops->applyBA             = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
+  ctx->ops->setfromoptions      = ( int (*)(PC) ) 0;
+  ctx->ops->printhelp           = ( int (*)(PC,char*) ) 0;
+  ctx->ops->applytrans          = ( int (*)(PC,Vec,Vec) ) 0;
+  ctx->ops->applyBAtrans        = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
+  ctx->ops->presolve            = ( int (*)(PC,KSP,Vec,Vec) ) 0;
+  ctx->ops->postsolve           = ( int (*)(PC,KSP,Vec,Vec) ) 0;
+  ctx->ops->getfactoredmatrix   = ( int (*)(PC,Mat*) ) 0;
+  ctx->ops->applysymmetricleft  = ( int (*)(PC,Vec,Vec) ) 0;
+  ctx->ops->applysymmetricright = ( int (*)(PC,Vec,Vec) ) 0;
+  ctx->ops->setuponblocks       = ( int (*)(PC) ) 0;
   ctx->modifysubmatrices   = ( int (*)(PC,int,IS*,IS*,Mat*,void*) ) 0;
   ierr = (*r)(ctx);CHKERRQ(ierr);
 
@@ -162,8 +162,8 @@ int PCPrintHelp(PC pc)
   ierr = FListPrintTypes(pc->comm,stdout,pc->prefix,"pc_type",PCList);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm,"Run program with -help %spc_type <method> for help on ",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm,"a particular method\n");CHKERRQ(ierr);
-  if (pc->printhelp) {
-    ierr = (*pc->printhelp)(pc,p);CHKERRQ(ierr);
+  if (pc->ops->printhelp) {
+    ierr = (*pc->ops->printhelp)(pc,p);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -268,8 +268,8 @@ int PCSetFromOptions(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   ierr = PCSetTypeFromOptions(pc);CHKERRQ(ierr);
-  if (pc->setfromoptions) {
-    ierr = (*pc->setfromoptions)(pc);CHKERRQ(ierr);
+  if (pc->ops->setfromoptions) {
+    ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); 
   if (flg){

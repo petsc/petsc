@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.322 1999/04/02 21:44:19 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.323 1999/04/16 16:12:46 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2293,7 +2293,7 @@ Application programmers can also provide their own routines to perform
 the monitoring by using the command \findex{KSPSetMonitor()}
 \begin{verbatim}
    ierr = KSPSetMonitor(KSP ksp,int (*mon)(KSP ksp,int it,double rnorm,void *ctx),
-                        void *ctx);
+                        void *ctx,int (*mondestroy)(void *));
 \end{verbatim}
 The final routine argument, {\tt ctx}, is an optional context for private
 data for the user-defined monitoring routine, {\tt mon}.  Other
@@ -2330,7 +2330,7 @@ commands \findex{KSPLGMonitorCreate()} \findex{KSPLGMonitorDestroy()}
 \begin{verbatim}
    DrawLG lg;
    ierr = KSPLGMonitorCreate(char *display,char *title,int x,int y,int w,int h,DrawLG *lg);
-   ierr = KSPSetMonitor(KSP ksp,KSPLGMonitor,(void *)lg);
+   ierr = KSPSetMonitor(KSP ksp,KSPLGMonitor,lg,0);
 \end{verbatim}
 When no longer needed, the line graph should be destroyed 
 with the command
@@ -3510,7 +3510,7 @@ about the iterations. The user can initiate monitoring with the
 command \findex{SNESSetMonitor()} 
 \begin{verbatim}
    ierr = SNESSetMonitor(SNES snes,int (*mon)(SNES,int its,double norm,void* mctx),
-                         void *mctx);
+                         void *mctx,int (*monitordestroy)(void *));
 \end{verbatim}
 The routine, {\tt mon}, indicates a user-defined monitoring routine,
 where {\tt its} and {\tt mctx} respectively denote the iteration

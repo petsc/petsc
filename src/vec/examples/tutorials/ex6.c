@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.16 1999/01/12 23:13:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.17 1999/03/19 21:18:23 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
@@ -17,7 +17,7 @@ int main(int argc,char **args)
   Viewer  view_out, view_in;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_size(PETSC_COMM_WORLD,&sz);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&sz);CHKERRA(ierr);
   if (sz != 1) SETERRA(1,0,"This is a uniprocessor example only!");
   
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);

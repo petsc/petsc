@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: milu.c,v 1.8 1999/01/31 16:11:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: milu.c,v 1.9 1999/04/19 22:17:38 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -199,13 +199,13 @@ int PCCreate_mILU(PC pc)
   int ierr;
 
   PetscFunctionBegin;
-  pc->apply            = PCApply_mILU;
-  pc->applyrich        = 0;
-  pc->destroy          = PCDestroy_mILU;
-  pc->setfromoptions   = 0;
-  pc->printhelp        = 0;
-  pc->setup            = PCSetup_mILU;
-  pc->view             = PCView_mILU;
+  pc->ops->apply            = PCApply_mILU;
+  pc->ops->applyrichardson  = 0;
+  pc->ops->destroy          = PCDestroy_mILU;
+  pc->ops->setfromoptions   = 0;
+  pc->ops->printhelp        = 0;
+  pc->ops->setup            = PCSetup_mILU;
+  pc->ops->view             = PCView_mILU;
 
   ierr = PCCreate(pc->comm,&base_pc); CHKERRQ(ierr);
   ierr = PCSetType(base_pc,PCILU); CHKERRQ(ierr);

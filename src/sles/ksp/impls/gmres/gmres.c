@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.119 1999/03/01 04:55:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.120 1999/04/19 22:14:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -603,6 +603,44 @@ static int KSPPrintHelp_GMRES(KSP ksp,char *p)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "KSPGMRESKrylovMonitor"
+/*@C
+    KSPGMRESKrylovMonitor- Calls VecView() for each direction in the 
+      GMRES accumulated Krylov space.
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - the KSP context
+.  its - iteration number
+.  fgnorm - 2-norm of residual (or gradient)
+-  a viewers object created with ViewersCreate()
+
+   Level: intermediate
+
+.keywords: KSP, nonlinear, vector, monitor, view, Krylov space
+
+.seealso: KSPSetMonitor(), KSPDefaultMonitor(), VecView(), ViewersCreate(), ViewersDestroy()
+@*/
+int KSPGMRESKrylovMonitor(KSP ksp,int its,double fgnorm,void *dummy)
+{
+  Viewers   viewers = (Viewers)dummy;
+  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
+  int       ierr;
+  Vec       x;
+  Viewer    viewer;
+
+  PetscFunctionBegin;
+  ierr = ViewersGetViewer(viewers,gmres->it+1,&viewer);CHKERRQ(ierr);
+  ierr = ViewerSetType(viewer,DRAW_VIEWER);CHKERRQ(ierr);
+
+  x      = VEC_VV(gmres->it+1);
+  ierr   = VecView(x,viewer);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "KSPSetFromOptions_GMRES"
 int KSPSetFromOptions_GMRES(KSP ksp)
 {
@@ -621,6 +659,12 @@ int KSPSetFromOptions_GMRES(KSP ksp)
   if (flg) { ierr = KSPGMRESPrestartSet(ksp,prestart);CHKERRQ(ierr); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp, KSPGMRESIROrthogonalization);CHKERRQ(ierr);}
+  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_krylov_monitor",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Viewers viewers;
+    ierr = ViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
+    ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(int (*)(void*))ViewersDestroy); CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -741,47 +785,3 @@ int KSPCreate_GMRES(KSP ksp)
 }
 EXTERN_C_END
 
-typedef struct {
-   Viewer *viewers;
-   int    nviewers;
-} KSPGMRES_MonitorKrylovSpace;
-
-#undef __FUNC__  
-#define __FUNC__ "KSPGMRESMonitorKrylovSpace"
-/*@C
-    KSPGMRESMonitorKrylovSpace- Calls VecView() for each direction in the 
-      GMRES accumulated Krylov space.
-
-   Collective on KSP
-
-   Input Parameters:
-+  ksp - the KSP context
-.  its - iteration number
-.  fgnorm - 2-norm of residual (or gradient)
--  dummy - either a viewer or PETSC_NULL
-
-   Level: intermediate
-
-.keywords: KSP, nonlinear, vector, monitor, view, Krylov space
-
-.seealso: KSPSetMonitor(), KSPDefaultMonitor(), VecView()
-@*/
-int KSPGMRESMonitorKrylovSpace(KSP ksp,int its,double fgnorm,void *dummy)
-{
-  KSPGMRES_MonitorKrylovSpace *ctx = (KSPGMRES_MonitorKrylovSpace *)dummy;
-  KSP_GMRES                   *gmres = (KSP_GMRES*)ksp->data;
-  int                         ierr;
-  Vec                         x;
-  Viewer                      viewer;
-
-  PetscFunctionBegin;
-  if (gmres->it >= ctx->nviewers) {
-    SETERRQ(1,1,"Not enough viewers in array to display next Krylov space");
-  }
-
-  x      = VEC_VV(gmres->it);
-  viewer = ctx->viewers[gmres->it];
-  ierr   = VecView(x,viewer);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}

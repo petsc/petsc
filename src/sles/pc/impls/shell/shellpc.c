@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.54 1999/01/31 16:08:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.55 1999/04/19 22:14:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -185,10 +185,10 @@ int PCShellSetApplyRichardson_Shell(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),v
   PC_Shell *shell;
 
   PetscFunctionBegin;
-  shell            = (PC_Shell *) pc->data;
-  pc->applyrich    = PCApplyRichardson_Shell;
-  shell->applyrich = apply;
-  shell->ctxrich   = ptr;
+  shell                     = (PC_Shell *) pc->data;
+  pc->ops->applyrichardson  = PCApplyRichardson_Shell;
+  shell->applyrich          = apply;
+  shell->ctxrich            = ptr;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -449,17 +449,19 @@ int PCCreate_Shell(PC pc)
   PC_Shell *shell;
 
   PetscFunctionBegin;
-  pc->destroy    = PCDestroy_Shell;
-  shell          = PetscNew(PC_Shell); CHKPTRQ(shell);
+  pc->ops->destroy    = PCDestroy_Shell;
+  shell               = PetscNew(PC_Shell); CHKPTRQ(shell);
   PLogObjectMemory(pc,sizeof(PC_Shell));
 
   pc->data         = (void *) shell;
-  pc->apply        = PCApply_Shell;
-  pc->applytrans   = PCApplyTrans_Shell;
-  pc->applyrich    = 0;
-  pc->setup        = PCSetUp_Shell;
-  pc->view         = PCView_Shell;
   pc->name         = 0;
+
+  pc->ops->apply           = PCApply_Shell;
+  pc->ops->applytrans      = PCApplyTrans_Shell;
+  pc->ops->applyrichardson = 0;
+  pc->ops->setup           = PCSetUp_Shell;
+  pc->ops->view            = PCView_Shell;
+
   shell->apply     = 0;
   shell->applytrans= 0;
   shell->name      = 0;

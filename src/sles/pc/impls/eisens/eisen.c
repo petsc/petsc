@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.89 1999/03/31 22:28:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.90 1999/04/19 22:14:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -313,16 +313,17 @@ int PCCreate_Eisenstat(PC pc)
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_Eisenstat));
 
-  pc->apply          = PCApply_Eisenstat;
-  pc->presolve       = PCPre_Eisenstat;
-  pc->postsolve      = PCPost_Eisenstat;
-  pc->applyrich      = 0;
-  pc->setfromoptions = PCSetFromOptions_Eisenstat;
-  pc->printhelp      = PCPrintHelp_Eisenstat ;
-  pc->destroy        = PCDestroy_Eisenstat;
-  pc->view           = PCView_Eisenstat;
+  pc->ops->apply           = PCApply_Eisenstat;
+  pc->ops->presolve        = PCPre_Eisenstat;
+  pc->ops->postsolve       = PCPost_Eisenstat;
+  pc->ops->applyrichardson = 0;
+  pc->ops->setfromoptions  = PCSetFromOptions_Eisenstat;
+  pc->ops->printhelp       = PCPrintHelp_Eisenstat ;
+  pc->ops->destroy         = PCDestroy_Eisenstat;
+  pc->ops->view            = PCView_Eisenstat;
+  pc->ops->setup           = PCSetUp_Eisenstat;
+
   pc->data           = (void *) eis;
-  pc->setup          = PCSetUp_Eisenstat;
   eis->omega         = 1.0;
   eis->b             = 0;
   eis->diag          = 0;

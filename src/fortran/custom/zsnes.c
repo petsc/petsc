@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.28 1999/04/05 18:25:29 balay Exp balay $";
+static char vcid[] = "$Id: zsnes.c,v 1.29 1999/04/06 18:04:42 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -108,10 +108,10 @@ static int oursnesmonitor(SNES snes,int i,double d,void*ctx)
   return 0;
 }
 void snessetmonitor_(SNES *snes,int (*func)(SNES*,int*,double*,void*,int*),
-                    void *mctx, int *__ierr )
+                    void *mctx, int (*mondestroy)(void *,int *),int *__ierr )
 {
   f7 = func;
-  *__ierr = SNESSetMonitor(*snes,oursnesmonitor,mctx);
+  *__ierr = SNESSetMonitor(*snes,oursnesmonitor,mctx,0);
 }
 
 static int (*f8)(SNES*,double*,double*,double*,void*,int*);

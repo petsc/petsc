@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.91 1999/04/08 17:53:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.92 1999/04/19 22:14:09 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -326,10 +326,10 @@ int MGSetLevels(PC pc,int levels)
     SETERRQ(1,1,"Number levels already set for MG\n\
     make sure that you call MGSetLevels() before SLESSetFromOptions()");
   }
-  ierr          = MGCreate_Private(pc->comm,levels,pc,&mg); CHKERRQ(ierr);
-  mg[0]->am     = MGMULTIPLICATIVE;
-  pc->data      = (void *) mg;
-  pc->applyrich = MGCycleRichardson;
+  ierr                     = MGCreate_Private(pc->comm,levels,pc,&mg); CHKERRQ(ierr);
+  mg[0]->am                = MGMULTIPLICATIVE;
+  pc->data                 = (void *) mg;
+  pc->ops->applyrichardson = MGCycleRichardson;
   PetscFunctionReturn(0);
 }
 
@@ -396,8 +396,8 @@ int MGSetType(PC pc,MGType form)
   mg = (MG *) pc->data;
 
   mg[0]->am = form;
-  if (form == MGMULTIPLICATIVE) pc->applyrich = MGCycleRichardson;
-  else pc->applyrich = 0;
+  if (form == MGMULTIPLICATIVE) pc->ops->applyrichardson = MGCycleRichardson;
+  else pc->ops->applyrichardson = 0;
   PetscFunctionReturn(0);
 }
 
@@ -587,13 +587,14 @@ EXTERN_C_BEGIN
 int PCCreate_MG(PC pc)
 {
   PetscFunctionBegin;
-  pc->apply          = MGCycle;
-  pc->setup          = PCSetUp_MG;
-  pc->destroy        = PCDestroy_MG;
-  pc->data           = (void *) 0;
-  pc->setfromoptions = PCSetFromOptions_MG;
-  pc->printhelp      = PCPrintHelp_MG;
-  pc->view           = PCView_MG;
+  pc->ops->apply          = MGCycle;
+  pc->ops->setup          = PCSetUp_MG;
+  pc->ops->destroy        = PCDestroy_MG;
+  pc->ops->setfromoptions = PCSetFromOptions_MG;
+  pc->ops->printhelp      = PCPrintHelp_MG;
+  pc->ops->view           = PCView_MG;
+
+  pc->data                = (void *) 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

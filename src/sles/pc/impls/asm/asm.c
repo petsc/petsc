@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.95 1999/03/02 20:15:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.96 1999/04/19 22:14:18 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -804,17 +804,17 @@ int PCCreate_ASM(PC pc)
   osm->type              = PC_ASM_RESTRICT;
   osm->same_local_solves = 1;
   osm->inplace           = 0;
+  pc->data               = (void *) osm;
 
-  pc->apply             = PCApply_ASM;
-  pc->applytrans        = PCApplyTrans_ASM;
-  pc->setup             = PCSetUp_ASM;
-  pc->destroy           = PCDestroy_ASM;
-  pc->printhelp         = PCPrintHelp_ASM;
-  pc->setfromoptions    = PCSetFromOptions_ASM;
-  pc->setuponblocks     = PCSetUpOnBlocks_ASM;
-  pc->data              = (void *) osm;
-  pc->view              = PCView_ASM;
-  pc->applyrich         = 0;
+  pc->ops->apply             = PCApply_ASM;
+  pc->ops->applytrans        = PCApplyTrans_ASM;
+  pc->ops->setup             = PCSetUp_ASM;
+  pc->ops->destroy           = PCDestroy_ASM;
+  pc->ops->printhelp         = PCPrintHelp_ASM;
+  pc->ops->setfromoptions    = PCSetFromOptions_ASM;
+  pc->ops->setuponblocks     = PCSetUpOnBlocks_ASM;
+  pc->ops->view              = PCView_ASM;
+  pc->ops->applyrichardson   = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalSubdomains_C","PCASMSetLocalSubdomains_ASM",
                     (void*)PCASMSetLocalSubdomains_ASM);CHKERRQ(ierr);

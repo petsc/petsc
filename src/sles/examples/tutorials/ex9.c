@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.32 1999/03/19 21:22:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.33 1999/04/16 16:09:25 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -110,7 +110,7 @@ int main(int argc,char **args)
   */
   ierr = SLESGetKSP(sles1,&ksp1); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-my_ksp_monitor",&flg); CHKERRA(ierr);
-  if (flg) {ierr = KSPSetMonitor(ksp1,MyKSPMonitor,PETSC_NULL); CHKERRA(ierr);}
+  if (flg) {ierr = KSPSetMonitor(ksp1,MyKSPMonitor,PETSC_NULL,0); CHKERRA(ierr);}
 
   /*
      Create data structures for second linear system.

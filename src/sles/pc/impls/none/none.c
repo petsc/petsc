@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: none.c,v 1.20 1998/10/19 22:17:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: none.c,v 1.21 1999/01/31 16:08:07 bsmith Exp bsmith $";
 #endif
 /*
     Identity preconditioner, simply copies vector x to y.
@@ -23,14 +23,15 @@ EXTERN_C_BEGIN
 int PCCreate_None(PC pc)
 {
   PetscFunctionBegin;
-  pc->apply               = PCApply_None;
-  pc->applytrans          = PCApply_None;
-  pc->destroy             = 0;
-  pc->setup               = 0;
-  pc->data                = 0;
-  pc->view                = 0;
-  pc->applysymmetricleft  = PCApply_None;
-  pc->applysymmetricright = PCApply_None;
+  pc->ops->apply               = PCApply_None;
+  pc->ops->applytrans          = PCApply_None;
+  pc->ops->destroy             = 0;
+  pc->ops->setup               = 0;
+  pc->ops->view                = 0;
+  pc->ops->applysymmetricleft  = PCApply_None;
+  pc->ops->applysymmetricright = PCApply_None;
+
+  pc->data                     = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

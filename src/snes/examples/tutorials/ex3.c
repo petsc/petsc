@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.60 1999/03/25 16:22:30 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.61 1999/04/16 16:10:23 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -138,7 +138,7 @@ int main( int argc, char **argv )
         context that provides application-specific data for the
         function evaluation routine.
   */
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&ctx);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,&ctx);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -154,7 +154,7 @@ int main( int argc, char **argv )
         context that provides application-specific data for the
         Jacobian evaluation routine.
   */
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&ctx); CHKERRA(ierr);
+  ierr = SNESSetJacobian(snes,J,J,FormJacobian,&ctx); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -164,7 +164,7 @@ int main( int argc, char **argv )
      Set an optional user-defined monitoring routine
   */
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer); CHKERRA(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr); 
+  ierr = SNESSetMonitor(snes,Monitor,&monP,0); CHKERRA(ierr); 
 
   /*
      Set names for some vectors to facilitate monitoring (optional)
@@ -185,7 +185,7 @@ int main( int argc, char **argv )
   ierr = OptionsHasName(PETSC_NULL,"-check_iterates",&step_check); CHKERRA(ierr);
   if (step_check) {
     PetscPrintf(PETSC_COMM_WORLD,"Activating step checking routine\n");
-    ierr = SNESSetLineSearchCheck(snes,StepCheck,(void*)&checkP); CHKERRA(ierr); 
+    ierr = SNESSetLineSearchCheck(snes,StepCheck,&checkP); CHKERRA(ierr); 
     ierr = VecDuplicate(x,&(checkP.last_step)); CHKERRA(ierr); 
     checkP.tolerance = 1.0;
     ierr = OptionsGetDouble(PETSC_NULL,"-check_tol",&checkP.tolerance,&flg); CHKERRA(ierr);

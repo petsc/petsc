@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.45 1998/04/21 23:48:30 curfman Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.46 1999/03/01 04:49:27 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -36,6 +36,7 @@ struct _p_SNES {
   /* ---------------- PETSc-provided (or user-provided) stuff ---------------------*/
 
   int   (*monitor[MAXSNESMONITORS])(SNES,int,double,void*); /* monitor routine */
+  int   (*monitordestroy[MAXSNESMONITORS])(void*);          /* monitor context destroy routine */
   void  *monitorcontext[MAXSNESMONITORS];                   /* monitor context */
   int   numbermonitors;                                     /* number of monitors */
   int   (*converged)(SNES,double,double,double,void*);      /* convergence routine */
@@ -103,7 +104,6 @@ struct _p_SNES {
 
   double   ttol;              /* used by default convergence test routine */
 
-  DrawLG   xmonitor;          /* Where -snes_xmonitor context is stashed */
   Vec      *vwork;            /* more work vectors for Jacobian/Hessian approx */
   int      nvwork;
   int      (*destroy)(SNES);

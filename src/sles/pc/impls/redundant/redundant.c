@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: redundant.c,v 1.5 1999/04/16 16:08:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: redundant.c,v 1.6 1999/04/19 22:14:22 bsmith Exp bsmith $";
 #endif
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
@@ -254,16 +254,17 @@ int PCCreate_Redundant(PC pc)
   ierr = PCSetOptionsPrefix(red->pc,prefix); CHKERRQ(ierr);
   ierr = PCAppendOptionsPrefix(red->pc,"redundant_"); CHKERRQ(ierr);
 
-  pc->apply             = PCApply_Redundant;
-  pc->applytrans        = 0;
-  pc->setup             = PCSetUp_Redundant;
-  pc->destroy           = PCDestroy_Redundant;
-  pc->printhelp         = PCPrintHelp_Redundant;
-  pc->setfromoptions    = PCSetFromOptions_Redundant;
-  pc->setuponblocks     = 0;
+  pc->ops->apply             = PCApply_Redundant;
+  pc->ops->applytrans        = 0;
+  pc->ops->setup             = PCSetUp_Redundant;
+  pc->ops->destroy           = PCDestroy_Redundant;
+  pc->ops->printhelp         = PCPrintHelp_Redundant;
+  pc->ops->setfromoptions    = PCSetFromOptions_Redundant;
+  pc->ops->setuponblocks     = 0;
+  pc->ops->view              = PCView_Redundant;
+  pc->ops->applyrichardson   = 0;
+
   pc->data              = (void *) red;
-  pc->view              = PCView_Redundant;
-  pc->applyrich         = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetScatter_C","PCRedundantSetScatter_Redundant",
                     (void*)PCRedundantSetScatter_Redundant);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.128 1999/03/24 18:01:38 balay Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.129 1999/04/19 22:14:07 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -529,14 +529,15 @@ int PCCreate_BJacobi(PC pc)
   PLogObjectMemory(pc,sizeof(PC_BJacobi));
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
-  pc->apply              = 0;
-  pc->applytrans         = 0;
-  pc->setup              = PCSetUp_BJacobi;
-  pc->destroy            = PCDestroy_BJacobi;
-  pc->setfromoptions     = PCSetFromOptions_BJacobi;
-  pc->printhelp          = PCPrintHelp_BJacobi;
-  pc->view               = PCView_BJacobi;
-  pc->applyrich          = 0;
+  pc->ops->apply              = 0;
+  pc->ops->applytrans         = 0;
+  pc->ops->setup              = PCSetUp_BJacobi;
+  pc->ops->destroy            = PCDestroy_BJacobi;
+  pc->ops->setfromoptions     = PCSetFromOptions_BJacobi;
+  pc->ops->printhelp          = PCPrintHelp_BJacobi;
+  pc->ops->view               = PCView_BJacobi;
+  pc->ops->applyrichardson    = 0;
+
   pc->data               = (void *) jac;
   jac->n                 = -1;
   jac->n_local           = -1;
@@ -702,10 +703,10 @@ static int PCSetUp_BJacobi_Singleblock(PC pc, Mat mat, Mat pmat)
     PLogObjectParent(pc,x);
     PLogObjectParent(pc,y);
 
-    pc->destroy       = PCDestroy_BJacobi_Singleblock;
-    pc->apply         = PCApply_BJacobi_Singleblock;
-    pc->applytrans    = PCApplyTrans_BJacobi_Singleblock;
-    pc->setuponblocks = PCSetUpOnBlocks_BJacobi_Singleblock;
+    pc->ops->destroy       = PCDestroy_BJacobi_Singleblock;
+    pc->ops->apply         = PCApply_BJacobi_Singleblock;
+    pc->ops->applytrans    = PCApplyTrans_BJacobi_Singleblock;
+    pc->ops->setuponblocks = PCSetUpOnBlocks_BJacobi_Singleblock;
 
     bjac         = (PC_BJacobi_Singleblock *) PetscMalloc(sizeof(PC_BJacobi_Singleblock));CHKPTRQ(bjac);
     PLogObjectMemory(pc,sizeof(PC_BJacobi_Singleblock));
@@ -888,11 +889,11 @@ static int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 
   /* set default direct solver with no Krylov method */
   if (!pc->setupcalled) {
-    scall             = MAT_INITIAL_MATRIX;
-    pc->destroy       = PCDestroy_BJacobi_Multiblock;
-    pc->apply         = PCApply_BJacobi_Multiblock;
-    pc->applytrans    = PCApplyTrans_BJacobi_Multiblock;
-    pc->setuponblocks = PCSetUpOnBlocks_BJacobi_Multiblock;
+    scall                  = MAT_INITIAL_MATRIX;
+    pc->ops->destroy       = PCDestroy_BJacobi_Multiblock;
+    pc->ops->apply         = PCApply_BJacobi_Multiblock;
+    pc->ops->applytrans    = PCApplyTrans_BJacobi_Multiblock;
+    pc->ops->setuponblocks = PCSetUpOnBlocks_BJacobi_Multiblock;
 
     bjac         = (PC_BJacobi_Multiblock *) PetscMalloc(sizeof(PC_BJacobi_Multiblock));CHKPTRQ(bjac);
     PLogObjectMemory(pc,sizeof(PC_BJacobi_Multiblock));

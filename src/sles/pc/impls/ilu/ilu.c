@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.124 1999/04/16 16:08:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.125 1999/04/19 22:14:13 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -677,16 +677,17 @@ int PCCreate_ILU(PC pc)
   ilu->dtcount          = 0;
   ilu->reusefill        = 0;
   ilu->diagonal_fill    = 0;
-  pc->destroy           = PCDestroy_ILU;
-  pc->apply             = PCApply_ILU;
-  pc->applytrans        = PCApplyTrans_ILU;
-  pc->setup             = PCSetUp_ILU;
   pc->data              = (void *) ilu;
-  pc->setfromoptions    = PCSetFromOptions_ILU;
-  pc->printhelp         = PCPrintHelp_ILU;
-  pc->getfactoredmatrix = PCGetFactoredMatrix_ILU;
-  pc->view              = PCView_ILU;
-  pc->applyrich         = 0;
+
+  pc->ops->destroy           = PCDestroy_ILU;
+  pc->ops->apply             = PCApply_ILU;
+  pc->ops->applytrans        = PCApplyTrans_ILU;
+  pc->ops->setup             = PCSetUp_ILU;
+  pc->ops->setfromoptions    = PCSetFromOptions_ILU;
+  pc->ops->printhelp         = PCPrintHelp_ILU;
+  pc->ops->getfactoredmatrix = PCGetFactoredMatrix_ILU;
+  pc->ops->view              = PCView_ILU;
+  pc->ops->applyrichardson   = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetUseDropTolerance_C","PCILUSetUseDropTolerance_ILU",
                     (void*)PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);
