@@ -64,11 +64,9 @@ typedef struct {
   PetscTruth    ht_flag;                  /* Flag to indicate if hash tables are used */
   double        ht_fact;                  /* Factor to determine the HT size */
 
-#if defined(PETSC_USE_MAT_SINGLE)
-  int           setvalueslen;
+  int           setvalueslen;   /* only used for single precision computations */
   MatScalar     *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied
                                       before calling MatSetValuesXXX_MPISBAIJ_MatScalar() */
-#endif
 } Mat_MPISBAIJ;
 
 EXTERN int MatLoad_MPISBAIJ(PetscViewer,const MatType,Mat*);

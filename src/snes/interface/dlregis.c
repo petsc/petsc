@@ -85,10 +85,10 @@ int PetscDLLibraryRegister(char *path)
 EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc nonlinear solver library. \n\
+static const char *contents = "PETSc nonlinear solver library. \n\
      line search Newton methods\n\
      trust region Newton methods\n";
-static char *authors  = PETSC_AUTHOR_INFO;
+static const char *authors  = PETSC_AUTHOR_INFO;
 
 #include "src/sys/src/utils/dlregis.h"
 

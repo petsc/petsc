@@ -14,7 +14,8 @@ int main(int argc,char **argv)
 {
   int        ierr;
   PetscTruth flg;
-  char       *string,filename[256];
+  const char *string,
+  char       filename[256];
   void       *handle;
 
   /*

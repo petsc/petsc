@@ -81,7 +81,7 @@ int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int
     Mat_SeqSBAIJ  *aa=(Mat_SeqSBAIJ*)(mat->A)->data;
     Mat_SeqBAIJ    *bb=(Mat_SeqBAIJ*)(mat->B)->data;
     if (mat->bs > 1) SETERRQ1(PETSC_ERR_SUP," bs=%d is not supported yet\n", mat->bs);
-    nz = aa->s_nz + bb->nz;
+    nz = aa->nz + bb->nz;
     ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= mat->rstart;
     garray = mat->garray;
     av=aa->a; bv=bb->a;
@@ -514,7 +514,7 @@ int MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
         ai = aa->i; aj = aa->j; lu->val = aa->a;
       } else {
         Mat_SeqSBAIJ *aa = (Mat_SeqSBAIJ*)A->data;
-        nz                  =  aa->s_nz;
+        nz                  =  aa->nz;
         ai = aa->i; aj = aa->j; lu->val = aa->a;
       }
       if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization, get irn and jcn */

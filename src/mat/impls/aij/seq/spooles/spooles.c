@@ -185,7 +185,7 @@ int MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
   } else { /* A is SBAIJ */
       Mat_SeqSBAIJ *mat = (Mat_SeqSBAIJ*)A->data;
       ai=mat->i; aj=mat->j; av=mat->a;
-      nz=mat->s_nz;
+      nz=mat->nz;
   } 
   InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, lu->options.typeflag, nz, 0) ;
  

@@ -281,8 +281,8 @@ int EventRegLogRegister(EventRegLog eventLog, const char ename[], int cookie, Pe
   eventLog->eventInfo[e].cookie = cookie;
 #if defined(PETSC_HAVE_MPE)
   if (UseMPE) {
-    char *color;
-    int   rank, beginID, endID;
+    const char *color;
+    int        rank, beginID, endID;
 
     beginID = MPE_Log_get_event_number();
     endID   = MPE_Log_get_event_number();
@@ -291,7 +291,7 @@ int EventRegLogRegister(EventRegLog eventLog, const char ename[], int cookie, Pe
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank); CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscLogGetRGBColor(&color); CHKERRQ(ierr);
-      MPE_Describe_state(beginID, endID, str, color);
+      MPE_Describe_state(beginID, endID, str, (char*)color);
     }
   }
 #endif

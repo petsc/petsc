@@ -539,7 +539,7 @@ EXTERN int PetscDLLibraryAppend(MPI_Comm,PetscDLLibraryList *,const char[]);
 EXTERN int PetscDLLibraryPrepend(MPI_Comm,PetscDLLibraryList *,const char[]);
 EXTERN int PetscDLLibraryClose(PetscDLLibraryList);
 EXTERN int PetscDLLibraryPrintPath(void);
-EXTERN int PetscDLLibraryGetInfo(void *,char *,char **);
+EXTERN int PetscDLLibraryGetInfo(void *,const char[],const char *[]);
 
 /*
     Mechanism for translating PETSc object representations between languages

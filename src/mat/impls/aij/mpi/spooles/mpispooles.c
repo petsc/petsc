@@ -232,7 +232,7 @@ int MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
     ai=aa->i; aj=aa->j; av=aa->a;  
     bi=bb->i; bj=bb->j; bv=bb->a;
     lu->rstart = mat->rstart;
-    nz         = aa->s_nz + bb->nz;     
+    nz         = aa->nz + bb->nz;     
     garray     = mat->garray;
   } 
       

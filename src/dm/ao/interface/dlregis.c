@@ -96,9 +96,9 @@ int PetscDLLibraryRegister(char *path)
 EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc Distributed Structures library, includes\n\
+static const char *contents = "PETSc Distributed Structures library, includes\n\
 Application Orderings, Application Data, and Distributed Arrays";
-static char *authors  = PETSC_AUTHOR_INFO;
+static const char *authors  = PETSC_AUTHOR_INFO;
 
 #include "src/sys/src/utils/dlregis.h"
 
