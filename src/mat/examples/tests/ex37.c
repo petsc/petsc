@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex37.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex37.c,v 1.5 1998/09/25 03:15:02 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatCopy().\n\n"; 
@@ -38,6 +38,8 @@ int main(int argc,char **args)
   ierr = MatCopy(C,A,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
 
   /* Now C and A have the same nonzero pattern */
+  ierr = MatSetOption(C,MAT_NO_NEW_NONZERO_LOCATIONS);CHKERRA(ierr);
+  ierr = MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);CHKERRA(ierr);
   ierr = MatCopy(C,A,SAME_NONZERO_PATTERN); CHKERRA(ierr);
 
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
