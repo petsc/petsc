@@ -98,6 +98,10 @@ to do what you need.
 
     Added PetscTypeCompare(), see the manual page
 
+
+   Routines with the suffix withcoloring have been changed to the suffix color
+   to get around 31 character limit in names.
+
   Viewer
 
     Changed the names associated with the Matlab viewer to Socket viewer; this 
