@@ -1,5 +1,5 @@
 !
-!    "$Id: ex15f.F,v 1.4 1998/03/24 16:45:12 balay Exp balay $";
+!    "$Id: ex15f.F,v 1.5 1998/03/30 22:03:24 balay Exp balay $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -189,7 +189,7 @@
 
       if (user_defined_pc .eq. 1) then
 
-!  (Required) Indicate to PETSc that we're using a shell preconditioner 
+!  (Required) Indicate to PETSc that we are using a shell preconditioner 
          call PCSetType(pc,PCSHELL,ierr)
 
 !  (Required) Set the user-defined routine for applying the preconditioner
@@ -268,7 +268,7 @@
 !   ierr  - error code (nonzero if error has been detected)
 !
 !   Notes:
-!   In this example, we define the shell preconditioner to be Jacobi's
+!   In this example, we define the shell preconditioner to be Jacobi
 !   method.  Thus, here we create a work vector for storing the reciprocal
 !   of the diagonal of the preconditioner matrix; this vector is then
 !   used within the routine SampleShellPCApply().
