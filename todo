@@ -9,6 +9,11 @@
   Currently the are ignored for all partitioners except parmetis, where they are 
   incorrectly always used.
 
+ We need to have MPI.py properly detect if the MPI macros
+in PETSc can be used and turn them off if they cannot.
+Better to add a new flag like PETSC_USE_MPI_MACROS
+
+
   If shared libraries is turned on, need configure test that each external package
   can go into shared library. Trouble on Mac
 

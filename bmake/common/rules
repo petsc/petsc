@@ -718,18 +718,6 @@ push:
 
 
 #
-#   Updates your PETSc version to the latest set of patches
-#
-update:
-	-@if [ -d ${PETSC_DIR}/BitKeeper ]; then \
-          echo "Using BK to update source code" ; \
-          ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} BOPT=g pull ;\
-          echo " ";\
-          echo "You may need to run ** make alletags allfortranstubs ** to update the Fortran interfaces";\
-          echo " ";\
-        else \
-          echo "Automatic update requires BitKeeper";\
-        fi
 
 
 

@@ -2722,7 +2722,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
   rend   = rowners[rank+1]; 
 
   /* distribute row lengths to all processors */
-  ierr = PetscMalloc(mmax*sizeof(PetscInt),&locrowlens);CHKERRQ(ierr);
+  ierr = PetscMalloc((mmax+1)*sizeof(PetscInt),&locrowlens);CHKERRQ(ierr);
   if (!rank) {
     mend = m;
     if (size == 1) mend = mend - extra_rows;
@@ -2760,7 +2760,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
 
     /* read in my part of the matrix column indices  */
     nz     = procsnz[0];
-    ierr   = PetscMalloc(nz*sizeof(PetscInt),&ibuf);CHKERRQ(ierr);
+    ierr   = PetscMalloc((nz+1)*sizeof(PetscInt),&ibuf);CHKERRQ(ierr);
     mycols = ibuf;
     if (size == 1)  nz -= extra_rows;
     ierr = PetscBinaryRead(fd,mycols,nz,PETSC_INT);CHKERRQ(ierr);
@@ -2786,7 +2786,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
     for (i=0; i<m; i++) {
       nz += locrowlens[i];
     }
-    ierr   = PetscMalloc(nz*sizeof(PetscInt),&ibuf);CHKERRQ(ierr);
+    ierr   = PetscMalloc((nz+1)*sizeof(PetscInt),&ibuf);CHKERRQ(ierr);
     mycols = ibuf;
     /* receive message of column indices*/
     ierr = MPI_Recv(mycols,nz,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
@@ -2834,7 +2834,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
   ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   
   if (!rank) {
-    ierr = PetscMalloc(maxnz*sizeof(PetscScalar),&buf);CHKERRQ(ierr);
+    ierr = PetscMalloc((maxnz+1)*sizeof(PetscScalar),&buf);CHKERRQ(ierr);
     /* read in my part of the matrix numerical values  */
     nz = procsnz[0];
     vals = buf;
@@ -2869,7 +2869,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
     ierr = PetscFree(procsnz);CHKERRQ(ierr);
   } else {
     /* receive numeric values */
-    ierr = PetscMalloc(nz*sizeof(PetscScalar),&buf);CHKERRQ(ierr);
+    ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&buf);CHKERRQ(ierr);
 
     /* receive message of values*/
     vals   = buf;
