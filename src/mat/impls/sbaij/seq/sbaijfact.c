@@ -1239,7 +1239,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
       /* check for zero pivot and save diagoanl element */
       if (PetscRealPart(dk) < zeropivot){
         if (damping == (PetscReal) PETSC_DECIDE) damping = -PetscRealPart(dk)/(k+1);
-        if (damping > 0.0) {        
+        if (damping > 0.0) {      
           if (ndamp) damping *= 2.0;    
           damp = PETSC_TRUE;
           ndamp++;

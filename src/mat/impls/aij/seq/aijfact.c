@@ -1077,7 +1077,8 @@ int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
     (*fact)->factor = FACTOR_CHOLESKY;  
     b               = (Mat_SeqSBAIJ*)(*fact)->data;    
     b->row          = perm;
-    b->icol         = perm;   
+    b->icol         = perm; 
+    b->factor_damping = info->damping;
     ierr            = PetscMalloc(((*fact)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
     ierr            = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
     ierr            = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
