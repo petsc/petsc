@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.9 1995/11/21 00:25:01 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.10 1995/11/22 01:24:34 balay Exp balay $";
 #endif
 /*
     Provides high performance routines for the AIJ (compressed row) storage 
@@ -11,32 +11,6 @@ extern int Mat_AIJ_CheckInode(Mat);
 extern int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
 extern int MatLUFactorNumeric_SeqAIJ_Inode(Mat ,Mat * );
 
-/*
-   MatToSymmetricIJ_SeqAIJ_Inode - Convert a sparse AIJ matrix to IJ format.
-           Creates a new block matrix using inode info (The dimension of
-           new matrix is same as the no of Inodes).
-           Uses only the lower triangular part of the matrix.
-
-    Description:
-    Take the data in the row-oriented sparse storage, and using the inode
-    info, creates a block matrix, builds the IJ data for the Block Matrix.
-    Return 0 on success. Produces the ij for a symmetric matrix by only 
-    using the lower triangular part of the block matrix.
-
-    Input Parameters:
-.   Matrix - matrix to convert
-
-    Output Parameters:
-.   ia     - ia part of IJ representation of the block matrix (row information)
-.   ja     - ja part of the block matrix(column indices)
-
-    Notes:
-$    Both ia and ja may be freed with PetscFree();
-$    This routine is provided for ordering routines that require a 
-$    symmetric structure.  It is used in SpOrder (and derivatives) since
-$    those routines call SparsePak routines that expect a symmetric 
-$    matrix.
-*/
 int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
 {
   int *work,*ia,*ja,*j, nz, m , row, wr, col, shift = A->indexshift;
@@ -63,7 +37,7 @@ int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
     col = *j + shift;
     while (i2 <= i1) {
       while (col > tns[i2]) ++i2; /* skip until corresponding inode is found*/
-      if(i2 >i1 ) {printf("goofy\n"); break;}
+      if(i2 >i1 ) break;
       if(i2 <i1 ) ia[i1+1]++;
       ia[i2+1]++;
       i2++;                     /* Start col of next node */
@@ -90,7 +64,7 @@ int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
     col = *j + shift;
     while (i2 <= i1) {
       while (col > tns[i2]) ++i2; /* skip until corresponding inode is found*/
-      if(i2 >i1 ) {printf("goofy\n"); break;}
+      if(i2 >i1 ) break;
       if(i2 <i1 ) {wr = work[i2]; work[i2] = wr +1; ja[wr] = i1 +1;}
       wr = work[i1]; work[i1] = wr + 1; ja[wr] = i2 + 1;
       ++i2;
@@ -102,39 +76,13 @@ int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
   return 0;
 }
 
-/*
-   MatGetReordering_SeqAIJ_Inode - Convert a sparse AIJ matrix to IJ format.
-           Creates a new block matrix using inode info (The dimension of
-           new matrix is same as the no of Inodes).
-           Uses only the lower triangular part of the matrix.
-
-    Description:
-    Take the data in the row-oriented sparse storage, and using the inode
-    info, creates a block matrix, builds the IJ data for the Block Matrix.
-    Return 0 on success. Produces the ij for a symmetric matrix by only 
-    using the lower triangular part of the block matrix.
-
-    Input Parameters:
-.   Matrix - matrix to convert
-
-    Output Parameters:
-.   ia     - ia part of IJ representation of the block matrix (row information)
-.   ja     - ja part of the block matrix(column indices)
-
-    Notes:
-$    Both ia and ja may be freed with PetscFree();
-$    This routine is provided for ordering routines that require a 
-$    symmetric structure.  It is used in SpOrder (and derivatives) since
-$    those routines call SparsePak routines that expect a symmetric 
-$    matrix.
-*/
 
 static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *cperm)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        ierr, *ia, *ja,n = a->n,*idx,i,j, *ridx, *cidx, *invridx, *invcidx;
+  int        ierr, *ia, *ja,n = a->n,*idx,i,j, *ridx, *cidx;
   int        row,*permr, *permc,m ,*ns, *tns, start_val, end_val, indx;
-  IS         ris= 0, cis = 0, invris, invcis;
+  IS         ris= 0, cis = 0;
   /*Viewer     V1, V2;*/
   if (!a->assembled) SETERRQ(1,"MatGetReordering_SeqAIJ_Inode:Not for unassembled matrix");
 
@@ -165,15 +113,11 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
   permr = (int *) PetscMalloc( (2*a->n+1)*sizeof(int) ); CHKPTRQ(permr);
   permc = permr + n;
 
-  ierr  = ISInvertPermutation(ris, &invris); CHKERRQ(ierr);
-  ierr  = ISInvertPermutation(cis, &invcis); CHKERRQ(ierr);
   ierr  = ISGetIndices(ris,&ridx); CHKERRQ(ierr);
   ierr  = ISGetIndices(cis,&cidx); CHKERRQ(ierr);
-  ierr  = ISGetIndices(invris,&invridx); CHKERRQ(ierr);
-  ierr  = ISGetIndices(invcis,&invcidx); CHKERRQ(ierr);
 
   /* Form the inode structure for the rows of permuted matric using inv perm*/
-  for(i = 0, tns[0] =0; i < m; ++i) tns[i+1] = tns[i]+ ns[invridx[i]];
+  for(i =0, tns[0]=0; i < m; ++i) tns[i+1] = tns[i]+ ns[i];
 
   /* Consturct the permutations for rows*/
   for( i = 0,row = 0; i<m; ++i){
@@ -182,9 +126,6 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
     end_val   = tns[indx + 1];
     for(j = start_val; j< end_val; ++j, ++row) permr[row]= j;
   }
-
-   /* Form the inode structure for the cols of permuted matric using inv perm*/
-  for(i = 0, tns[0] =0; i < m; ++i) tns[i+1] = tns[i]+ ns[invcidx[i]];
 
  /*Construct permutations for columns*/
   for( i = 0,row =0; i<m ; ++i){
@@ -200,16 +141,8 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
   ierr = ISCreateSeq(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
   ISSetPermutation(*cperm);
  
-/*  ViewerFileOpenASCII(MPI_COMM_SELF,"row_is", &V1);
-  ViewerFileOpenASCII(MPI_COMM_SELF,"col_is", &V2);
-  ISView(ris,V1);
-  ISView(cis,V2);
-  ViewerDestroy(V1);
-  ViewerDestroy(V2);*/
- 
-  PetscFree(ia); PetscFree(ja); PetscFree(permr);
-  ISDestroy(cis); ISDestroy(invcis);
-  ISDestroy(ris); ISDestroy(invris);
+  PetscFree(ia);  PetscFree(ja); PetscFree(permr);
+  ISDestroy(cis); ISDestroy(ris); 
   PetscFree(tns);
   return 0; 
 }
@@ -438,7 +371,7 @@ int Mat_AIJ_CheckInode(Mat A)
   A->ops.solve         = MatSolve_SeqAIJ_Inode;
   a->inode.node_count  = node_count;
   a->inode.size        = ns;
-  PLogInfo((PetscObject)A,"Found %d nodes. Limit used:%d.Using Inode_Routines\n",node_count,limit);
+  PLogInfo((PetscObject)A,"Mat_AIJ_CheckInode:Found %d nodes. Limit used:%d.Using Inode_Routines\n",node_count,limit);
   return 0;
 }
 
@@ -638,7 +571,7 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       tmp[row ++]=sum5;
       break;
     default:
-      printf ("** Node size not yet supported \n");
+      SETERRQ(1,"MatSolve_SeqAIJ_Inode: Node size not yet supported \n");
     }
   }
   
@@ -807,7 +740,7 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       x[*c--] = tmp[row] = sum5*a_a[ad[row]+shift]; row--;
       break;
     default:
-      printf ("*** Node size not yet supported \n");
+      SETERRQ(1,"MatSolve_SeqAIJ_Inode: Node size not yet supported \n");
     }
   }
 
@@ -823,9 +756,9 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   Mat        C = *B;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b = (Mat_SeqAIJ *)C->data;
   IS         iscol = b->col, isrow = b->row, isicol;
-  int        *r,*ic, ierr, n = a->m, *bi = b->i, *bj = b->j, *ai = a->i, *aj = a->j;
+  int        *r,*ic,*c, ierr, n = a->m, *bi = b->i, *bj = b->j, *ai = a->i, *aj = a->j;
   int        *ajtmp, *bjtmp, nz, row, prow, *ics, shift = a->indexshift, i, j, idx;
-  int        *bd = b->diag, node_max, nsz, *ns;
+  int        *bd = b->diag, node_max, nsz, *ns, *nsa, *tmp_vec;
   Scalar     *rtmp1, *rtmp2,*v1, *v2, *pc1, *pc2, tmp, mul1, mul2, *ba = b->a, *aa = a->a; 
   
   /* These declarations are for optimizations.  They reduce the number of
@@ -839,15 +772,33 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   PLogObjectParent(*B,isicol);
   ierr   = ISGetIndices(isrow,&r); CHKERRQ(ierr);
+  ierr   = ISGetIndices(iscol,&c); CHKERRQ(ierr);
   ierr   = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
   rtmp1  = (Scalar *) PetscMalloc( (2*n+1)*sizeof(Scalar) ); CHKPTRQ(rtmp1);
   rtmp2  = rtmp1 + n;      ics    = ic + shift;
   rtmps1 = rtmp1 + shift;  rtmps2 = rtmp2 + shift; 
-/*  ierr   = Mat_AIJ_CheckInode(C); CHKERRQ(ierr);*/
+
   
-  if (!a->inode.size)SETERRQ(1,"MatLUFactorNumeric_SeqAIJ_Inode: Missing Inode Info");
-  node_max = a->inode.node_count;                
-  ns       = a->inode.size;     /* Node Size array */
+  node_max = a->inode.node_count; /*has to be same for both a,b */
+  ns       = b->inode.size ;
+  if (!ns){                     /* If mat_order other than natural is used*/
+    nsa           = a->inode.size;
+    ns            = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(ns);
+    tmp_vec       = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(tmp_vec);
+    b->inode.size = ns;
+    b->inode.node_count = node_max;
+    for(i = 0, row = 0; i< node_max; ++i){
+      nsz = nsa[i];
+      for( j = 0; j < nsz; ++j, ++row)
+        tmp_vec[row] = i;
+    }
+    for( i = 0, row = 0; i < node_max ; ++i){
+      ns[i] = nsa[tmp_vec[r[row]]];
+      row  += ns[i];
+    }
+    PetscFree(tmp_vec);
+  }
+  /*Create Inode info for B*/
   
   for ( i=0,row=0; i<node_max; i++ ) { /* make sure row is updated */
     nsz   = ns[i];
@@ -861,7 +812,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         rtmps1[idx] = 0.0;
       }
       break;
-    
+      
     case 2:
       for  ( j=0; j<nz; j++ ) {
         idx         = bjtmp[j];
@@ -870,7 +821,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       }
       break;
     default:
-      printf("Not yet supported - inode size %d \n", nsz);
+      SETERRQ(1,"MatLUFactorNumeric_SeqAIJ_Inode: Node size not yet supported \n");
     }
 
     /* load in initial (unfactored row) */
@@ -895,7 +846,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       }
       break;
     default:
-      printf("Not yet supported - inode size %d \n", nsz);
+      SETERRQ(1,"MatLUFactorNumeric_SeqAIJ_Inode: Node size not yet supported \n");
     }
 
     prow = *bjtmp++ + shift;
@@ -941,8 +892,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       /* Now take care of the odd element*/
       pc1 = rtmp1 + prow;
       pc2 = rtmp2 + prow;
-      if (*pc2 != 0.0){        /* ????????????????? */
-                                /* use pc1 instead of pv */
+      if (*pc2 != 0.0){
         pj   = bj + bd[prow] + (!shift);
         if(*pc1 ==0.0) {SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");}
         mul2 = (*pc2)/(*pc1); /* since diag is not yet inverted.*/
@@ -951,15 +901,14 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         PLogFlops(2*nz);
         for (j=0; j<nz; j++) {
           idx = pj[j] + shift;
-          tmp = pc1[idx];
+          tmp = rtmp1[idx];
           rtmp2[idx] -= mul2 * tmp;
         }
       }
       break;
     default:
-      printf("error\n");
+      SETERRQ(1,"MatLUFactorNumeric_SeqAIJ_Inode: Node size not yet supported \n");
     }
-  
     
     /* finished row so stick it into b->a */
     switch (nsz) {
@@ -988,7 +937,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       }
       break;
     default:
-      printf("error\n");
+      SETERRQ(1,"MatLUFactorNumeric_SeqAIJ_Inode: Node size not yet supported \n");
     }
     row += nsz;                 /* Update the row */
   } 
@@ -1001,6 +950,8 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   PLogFlops(b->n);
   return 0;
 }
+
+
 
 
 
