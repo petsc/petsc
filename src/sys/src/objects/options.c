@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.198 1998/10/09 19:20:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.199 1998/11/20 15:28:14 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -731,8 +731,7 @@ int OptionsGetDouble(const char pre[],const char name[],double *dvalue,int *flg)
 #define __FUNC__ "OptionsGetScalar"
 /*@C
    OptionsGetScalar - Gets the scalar value for a particular 
-   option in the database. At the moment can get only a Scalar with 
-   0 imaginary part.
+   option in the database.
 
    Not Collective
 
@@ -743,6 +742,10 @@ int OptionsGetDouble(const char pre[],const char name[],double *dvalue,int *flg)
    Output Parameter:
 +  dvalue - the double value to return
 -  flg - 1 if found, else 0
+
+   Usage:
+   A complex number 2+3i can be specified as 2,3 at the command line.
+   or a number 3.2-2i can be specified as 3.2,2.
 
 .keywords: options, database, get, double
 
@@ -757,9 +760,28 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,int *flg)
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag); CHKERRQ(ierr);
   if (flag) {
-    if (!value) {if (flg) *flg = 0; *dvalue = 0.0;}
-    else        {if (flg) *flg = 1; *dvalue = atof(value);}
-  } else {
+    if (!value) {
+      if (flg) *flg = 0; *dvalue = 0.0;
+    } else { 
+#if !defined(USE_PETSC_COMPLEX)
+      *dvalue = atof(value);
+#else
+      double re=0.0,im=0.0;
+      char   *tvalue = 0;
+      tvalue  = PetscStrtok(value,",");
+      if (!tvalue) { SETERRQ(1,0,"unknnown string specified\n"); }
+      re      = atof(tvalue);
+      tvalue  = PetscStrtok(0,",");
+      if (!tvalue) { /* Unknown separator used. using only real value */
+        *dvalue = re;
+      } else {
+        im      = atof(tvalue);
+        *dvalue = re + PETSC_i*im;
+      } 
+#endif
+      if (flg) *flg    = 1;
+    } 
+  } else { /* flag */
     if (flg) *flg = 0;
   }
   PetscFunctionReturn(0); 
