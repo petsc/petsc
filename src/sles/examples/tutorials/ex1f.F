@@ -1,14 +1,15 @@
 
-C    "$Id: ex1f.F,v 1.4 1996/08/29 15:55:54 curfman Exp bsmith $";
+C    "$Id: ex1f.F,v 1.5 1996/09/25 17:46:13 bsmith Exp balay $";
 C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
+C/*T
 C   Concepts: SLES (solving linear equations)
 C   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
 C   Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESGetPC();
 C   Routines: KSPSetTolerances(); PCSetType();
 C   Processors: 1
-C
+CT*/
 C -----------------------------------------------------------------------
 
       program main
