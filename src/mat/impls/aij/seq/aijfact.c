@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.76 1997/01/15 16:52:24 balay Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.77 1997/02/22 02:25:00 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -108,10 +108,14 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
     }
     idnew[i] = ainew[i] + nzi;
   }
-
-  PLogInfo(A,
-    "Info:MatLUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
-                             realloc,f,((double)ainew[n])/((double)ai[i]));
+  if (ai[i] != 0) {
+    PLogInfo(A,
+             "Info:MatLUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
+             realloc,f,((double)ainew[n])/((double)ai[i]));
+  } else {
+    PLogInfo(A,
+             "Info:MatLUFactorSymbolic_SeqAIJ: Empty matrix\n");
+  }
 
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
