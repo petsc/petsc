@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.272 1998/07/13 18:49:50 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.273 1998/07/13 18:52:55 balay Exp bsmith $";
 #endif
 
 /*
@@ -1703,7 +1703,12 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatFDColoringCreate_SeqAIJ,
        MatColoringPatch_SeqAIJ,
        0,
-       MatPermute_SeqAIJ};
+       MatPermute_SeqAIJ,
+       0,
+       0,
+       0,
+       0,
+       MatGetMaps_Petsc};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);

@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.159 1998/06/10 21:41:33 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.160 1998/06/11 19:59:10 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -46,6 +46,7 @@ extern int MatCreateShell(MPI_Comm,int,int,int,int,void *,Mat*);
 extern int MatShellGetContext(Mat,void **);
 
 extern int MatPrintHelp(Mat);
+extern int MatGetMaps(Mat,Map*,Map*);
 
 /* ------------------------------------------------------------*/
 extern int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);

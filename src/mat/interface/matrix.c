@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.296 1998/05/20 13:44:48 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.297 1998/06/14 19:53:34 curfman Exp bsmith $";
 #endif
 
 /*
@@ -327,6 +327,7 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
     mat->assembled     = PETSC_FALSE;
   }
   PLogEventBegin(MAT_SetValues,mat,0,0,0);
+  if (!mat->ops->setvalues) SETERRQ(PETSC_ERR_SUP,1,"Not supported for this matrix type");
   ierr = (*mat->ops->setvalues)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   PLogEventEnd(MAT_SetValues,mat,0,0,0);  
   PetscFunctionReturn(0);
@@ -399,6 +400,7 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
     mat->assembled     = PETSC_FALSE;
   }
   PLogEventBegin(MAT_SetValues,mat,0,0,0);
+  if (!mat->ops->setvaluesblocked) SETERRQ(PETSC_ERR_SUP,1,"Not supported for this matrix type");
   ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   PLogEventEnd(MAT_SetValues,mat,0,0,0);  
   PetscFunctionReturn(0);
@@ -3335,5 +3337,41 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCall cll,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "MatGetMaps"
+/*@C
+   MatGetMaps - Returns the maps associated with the matrix.
 
+   Not Collective
 
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameters:
++  rmap - the row (right) map
+-  cmap - the column (left) map  
+
+.keywords: matrix, get, map
+@*/
+int MatGetMaps(Mat mat,Map *rmap,Map *cmap)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  ierr = (*mat->ops->getmaps)(mat,rmap,cmap);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+      Version that works for all PETSc matrices
+*/
+#undef __FUNC__  
+#define __FUNC__ "MatGetMaps_Petsc"
+int MatGetMaps_Petsc(Mat mat,Map *rmap,Map *cmap)
+{
+  PetscFunctionBegin;
+  if (rmap) *rmap = mat->rmap;
+  if (cmap) *cmap = mat->cmap;
+  PetscFunctionReturn(0);
+}
