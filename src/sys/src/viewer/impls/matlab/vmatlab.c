@@ -11,7 +11,7 @@
        Note: Currently can only save PETSc vectors to .mat files, not matrices (use the PETSC_VIEWER_BINARY and 
              ${PETSC_DIR}/bin/matlab/PetscReadBinary.m to read matrices into matlab).
 
-             For parallel vectors obtained with DACreateGlobalVec() or DAGetGlobalVec() the vectors are saved to
+             For parallel vectors obtained with DACreateGlobalVector() or DAGetGlobalVector() the vectors are saved to
              the .mat file in natural ordering. You can use DAView() to save the DA information to the .mat file
              the fields in the Matlab loaded da variable give the array dimensions so you can reshape the Matlab
              vector to the same multidimensional shape as it had in PETSc for plotting etc. For example,
@@ -148,7 +148,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscViewerSetFilename_Matlab" 
 int PetscViewerSetFilename_Matlab(PetscViewer viewer,const char name[])
 {
-  PetscViewer_Matlab    *vmatlab = (PetscViewer_Matlab*)viewer->data;
+  PetscViewer_Matlab  *vmatlab = (PetscViewer_Matlab*)viewer->data;
   PetscViewerFileType type = vmatlab->btype;
 
   PetscFunctionBegin;

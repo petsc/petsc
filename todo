@@ -17,6 +17,12 @@ PETSc configure
 
    Change bmake/configure to only do one of C or C++ compiler?
 
+KSP
+   Manual pages for KSPConvergedReason
+
+SNES
+   Manual pages for SNESConvergedReason
+
 Vectors
    Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input
 

@@ -107,7 +107,47 @@ EXTERN int PetscViewerCreate(MPI_Comm,PetscViewer*);
 EXTERN int PetscViewerSetFromOptions(PetscViewer);
 
 EXTERN int PetscViewerASCIIOpen(MPI_Comm,const char[],PetscViewer*);
+
+/*E
+  PetscViewerFileType - Indicates how the file should be opened for the viewer
+
+  Level: beginner
+
+.seealso: PetscViewerSetFileName(), PetscViewerSetFileType(), PetscViewerBinaryOpen(), PetscViewerASCIIOpen(),
+          PetscViewerMatlabOpen()
+E*/
 typedef enum {PETSC_FILE_RDONLY,PETSC_FILE_WRONLY,PETSC_FILE_CREATE} PetscViewerFileType;
+
+/*M
+    PETSC_FILE_RDONLY - File is open to be read from only, not written to
+
+    Level: beginner
+
+.seealso: PetscViewerFileType, PETSC_FILE_WRONLY, PETSC_FILE_CREATE, PetscViewerSetFileName(), PetscViewerSetFileType(), 
+          PetscViewerBinaryOpen(), PetscViewerASCIIOpen(), PetscViewerMatlabOpen()
+
+M*/
+
+/*M
+    PETSC_FILE_WRONLY - File is open to be appended to.
+
+    Level: beginner
+
+.seealso: PetscViewerFileType, PETSC_FILE_RDONLY, PETSC_FILE_CREATE, PetscViewerSetFileName(), PetscViewerSetFileType(), 
+          PetscViewerBinaryOpen(), PetscViewerASCIIOpen(), PetscViewerMatlabOpen()
+
+M*/
+
+/*M
+    PETSC_FILE_CREATE - Create the file, or delete it and open an empty file if it already existed
+
+    Level: beginner
+
+.seealso: PetscViewerFileType, PETSC_FILE_RDONLY, PETSC_FILE_WRONLY, PetscViewerSetFileName(), PetscViewerSetFileType(), 
+          PetscViewerBinaryOpen(), PetscViewerASCIIOpen(), PetscViewerMatlabOpen()
+
+M*/
+
 EXTERN int PetscViewerBinaryOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
 EXTERN int PetscViewerSocketOpen(MPI_Comm,const char[],int,PetscViewer*);
 EXTERN int PetscViewerStringOpen(MPI_Comm,char[],int,PetscViewer*);

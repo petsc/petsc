@@ -933,6 +933,17 @@ M*/
 .seealso: PetscScalar, PetscReal, PassiveScalar
 M*/
 
+/*M
+    MPIU_SCALAR - MPI datatype corresponding to PetscScalar
+
+   Level: beginner
+
+    Note: In MPI calls that require an MPI datatype that matches a PetscScalar or array of PetscScalars
+          pass this value
+
+.seealso: PetscReal, PassiveReal, PassiveScalar, PetscScalar
+M*/
+
 /*
      The IBM include files define hz, here we hide it so that it may be used
    as a regular user variable.

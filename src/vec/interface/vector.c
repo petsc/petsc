@@ -1468,7 +1468,7 @@ int VecDestroyVecs(const Vec vv[],int m)
    Concepts: vector^setting values
 
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesLocal(),
-           VecSetValue(), VecSetValuesBlocked()
+           VecSetValue(), VecSetValuesBlocked(), InsertMode, INSERT_VALUES, ADD_VALUES
 @*/
 int VecSetValues(Vec x,int ni,const int ix[],const PetscScalar y[],InsertMode iora) 
 {

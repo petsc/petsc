@@ -121,9 +121,42 @@ EXTERN int ParameterDictGetObject(ParameterDict, const char [], void **);
 
 .seealso: VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
           VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(),
-          MatSetValuesBlockedLocal(), MatSetValuesLocal()
+          MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd()
 E*/
 typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES} InsertMode;
+
+/*M
+    INSERT_VALUES - Put a value into a vector or matrix, overwrites any previous value
+
+    Level: beginner
+
+.seealso: InsertMode, VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
+          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(), ADD_VALUES, INSERT_VALUES,
+          MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd()
+
+M*/
+
+/*M
+    ADD_VALUES - Adds a value into a vector or matrix, if there previously was no value, just puts the
+                value into that location
+
+    Level: beginner
+
+.seealso: InsertMode, VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
+          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(), ADD_VALUES, INSERT_VALUES,
+          MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd()
+
+M*/
+
+/*M
+    MAX_VALUES - Puts the maximum of the scattered/gathered value and the current value into each location
+
+    Level: beginner
+
+.seealso: InsertMode, VecScatterBegin(), VecScatterEnd(), ADD_VALUES, INSERT_VALUES
+
+M*/
+
 /*E
   ScatterMode - Determines the direction of a scatter
 
@@ -132,6 +165,50 @@ typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES} InsertMode;
 .seealso: VecScatter, VecScatterBegin(), VecScatterEnd()
 E*/
 typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCATTER_REVERSE_LOCAL=3, SCATTER_LOCAL=2} ScatterMode;
+
+/*M
+    SCATTER_FORWARD - Scatters the values as dictated by the VecScatterCreate() call
+
+    Level: beginner
+
+.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_REVERSE, SCATTER_FORWARD_LOCAL,
+          SCATTER_REVERSE_LOCAL
+
+M*/
+
+/*M
+    SCATTER_REVERSE - Moves the values in the opposite direction then the directions indicated in
+         in the VecScatterCreate()
+
+    Level: beginner
+
+.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_FORWARD, SCATTER_FORWARD_LOCAL,
+          SCATTER_REVERSE_LOCAL
+
+M*/
+
+/*M
+    SCATTER_FORWARD_LOCAL - Scatters the values as dictated by the VecScatterCreate() call except NO parallel communication
+       is done. Any variables that have be moved between processes are ignored
+
+    Level: developer
+
+.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_REVERSE, SCATTER_FORWARD,
+          SCATTER_REVERSE_LOCAL
+
+M*/
+
+/*M
+    SCATTER_REVERSE_LOCAL - Moves the values in the opposite direction then the directions indicated in
+         in the VecScatterCreate()  except NO parallel communication
+       is done. Any variables that have be moved between processes are ignored
+
+    Level: developer
+
+.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_FORWARD, SCATTER_FORWARD_LOCAL,
+          SCATTER_REVERSE
+
+M*/
 
 EXTERN int PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataType, int *, InsertMode, ScatterMode, void *, void *);
 

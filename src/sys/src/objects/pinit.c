@@ -474,15 +474,13 @@ int PetscInitialize(int *argc,char ***args,const char file[],const char help[])
    Collective on PETSC_COMM_WORLD
 
    Options Database Keys:
-+  -options_table - Calls OptionsPrint()
++  -options_table - Calls PetscOptionsPrint()
 .  -options_left - Prints unused options that remain in the database
 .  -options_left no - Does not print unused options that remain in the database
 .  -mpidump - Calls PetscMPIDump()
 .  -trdump - Calls PetscTrDump()
 .  -trinfo - Prints total memory usage
-.  -trdebug - Calls malloc_debug(2) to activate memory
-        allocation diagnostics (used by PETSC_ARCH=sun4, 
-        BOPT=[g,g_c++,g_complex] only!)
+.  -trdebug - Calls PetscTrDebug(), checks allocated memory for corruption while running
 -  -trmalloc_log - Prints summary of memory usage
 
    Options Database Keys for Profiling:
