@@ -386,7 +386,6 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
   PetscScalar    zero = 0.0,mone = -1.0,one = 1.0;
   MG             *mg;
   PC             pc;
-  KSP            ksp;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,dmmg[level]->r);CHKERRQ(ierr);
@@ -396,8 +395,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
     }
   }
 
-  ierr = SNESGetKSP(dmmg[level]->snes,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = KSPGetPC(dmmg[level]->ksp,&pc);CHKERRQ(ierr);
   mg   = ((MG*)pc->data);
 
   for (i=0; i<100; i++) {
@@ -535,7 +533,6 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   PetscTruth     mfadoperator,mfad,adjacobian;
 #endif
-  KSP            ksp;
   PetscViewer    ascii;
   MPI_Comm       comm;
 
@@ -567,6 +564,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
   /* create solvers for each level */
   for (i=0; i<nlevels; i++) {
     ierr = SNESCreate(dmmg[i]->comm,&dmmg[i]->snes);CHKERRQ(ierr);
+    ierr = SNESGetKSP(dmmg[i]->snes,&dmmg[i]->ksp);CHKERRQ(ierr);
     if (snesmonitor) {
       ierr = PetscObjectGetComm((PetscObject)dmmg[i]->snes,&comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
@@ -603,8 +601,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
       dmmg[i]->J = dmmg[i]->B;
     }
 
-    ierr = SNESGetKSP(dmmg[i]->snes,&ksp);CHKERRQ(ierr);
-    ierr = DMMGSetUpLevel(dmmg,ksp,i+1);CHKERRQ(ierr);
+    ierr = DMMGSetUpLevel(dmmg,dmmg[i]->ksp,i+1);CHKERRQ(ierr);
     
     /*
        if the number of levels is > 1 then we want the coarse solve in the grid sequencing to use LU
@@ -615,7 +612,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
       KSP        cksp;
       PetscTruth flg1,flg2,flg3;
 
-      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+      ierr = KSPGetPC(dmmg[i]->ksp,&pc);CHKERRQ(ierr);
       ierr = MGGetCoarseSolve(pc,&cksp);CHKERRQ(ierr);
       ierr = KSPGetPC(cksp,&pc);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCILU,&flg1);CHKERRQ(ierr);

@@ -36,7 +36,6 @@ typedef enum {DIRICHLET, NEUMANN} BCType;
 typedef struct {
   PetscScalar   nu;
   BCType        bcType;
-  MatNullSpace  nullSpace;
 } UserContext;
 
 #undef __FUNCT__
@@ -71,29 +70,7 @@ int main(int argc,char **argv)
 
   ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
   if (user.bcType == NEUMANN) {
-    PC           pc;
-    KSP          ksp;
-    PetscTruth   ismg,isred;
-
-    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, PETSC_NULL, &user.nullSpace);CHKERRQ(ierr);
-    ierr = KSPSetNullSpace(DMMGGetKSP(dmmg), user.nullSpace);CHKERRQ(ierr);
-    /* need to set null space for all levels */
-    ierr = KSPGetPC(DMMGGetKSP(dmmg), &pc);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
-    if (ismg) {
-      for (l = 0; l < DMMGGetLevels(dmmg); l++) {
-	ierr = MGGetSmoother(pc,l,&ksp);CHKERRQ(ierr);
-	ierr = KSPSetNullSpace(ksp, user.nullSpace);CHKERRQ(ierr);
-      }
-      /* coarse direct LU factorization will fail due to null space hence add shift */
-      ierr = MGGetSmoother(pc,0,&ksp);CHKERRQ(ierr);
-      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)pc,PCREDUNDANT,&isred);CHKERRQ(ierr);
-      if (isred) {
-        ierr = PCRedundantGetPC(pc,&pc);CHKERRQ(ierr);
-      }
-      ierr = PCLUSetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
-    }
+    ierr = DMMGSetNullSpace(dmmg,PETSC_TRUE,0,PETSC_NULL);CHKERRQ(ierr);
   }
 
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
@@ -103,9 +80,6 @@ int main(int argc,char **argv)
   ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
   /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",norm);CHKERRQ(ierr); */
 
-  if (user.bcType == NEUMANN) {
-    ierr = MatNullSpaceDestroy(user.nullSpace);CHKERRQ(ierr);
-  }
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
 
@@ -139,8 +113,12 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
   /* force right hand side to be consistent for singular matrix */
+  /* note this is really a hack, normally the model would provide you with a consistent right handside */
   if (user->bcType == NEUMANN) {
-    ierr = MatNullSpaceRemove(user->nullSpace,b,PETSC_NULL);CHKERRQ(ierr);
+    MatNullSpace nullspace;
+
+    ierr = KSPGetNullSpace(dmmg->ksp,&nullspace);CHKERRQ(ierr);
+    ierr = MatNullSpaceRemove(nullspace,b,PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

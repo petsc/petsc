@@ -246,6 +246,7 @@ EXTERN PetscErrorCode KSPDefaultBuildSolution(KSP,Vec,Vec*);
 EXTERN PetscErrorCode KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 
 EXTERN PetscErrorCode KSPSetOperators(KSP,Mat,Mat,MatStructure);
+EXTERN PetscErrorCode KSPGetOperators(KSP,Mat*,Mat*,MatStructure*);
 EXTERN PetscErrorCode KSPSetOptionsPrefix(KSP,const char[]);
 EXTERN PetscErrorCode KSPAppendOptionsPrefix(KSP,const char[]);
 EXTERN PetscErrorCode KSPGetOptionsPrefix(KSP,char*[]);
