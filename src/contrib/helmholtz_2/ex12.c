@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.25 1997/09/22 15:21:21 balay Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.26 1997/10/19 03:27:22 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -30,7 +30,7 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
    Routines: SLESSolve(); SLESView(); SLESGetPC(); SLESGetKSP();
    Routines: KSPSetTolerances(); PCSetModifySubMatrices();
    Routines: MatGetTypeFromOptions(); MatCreateSeqAIJ(); MatCreateMPIAIJ();
-   Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAView();
+   Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DAView();
    Routines: DAGetCorners(); DAGetGhostCorners(); DAGetGlobalIndices();
    Routines: ISCreateGeneral(); ISDestroy(); MatZeroRows();
    Routines: ViewerSetFormat();
@@ -50,14 +50,11 @@ T*/
    vector component ordering.  In particular, we use DFVecView() for
    viewing vectors in parallel using the same ordering of components that
    would be used for 1 processor, regardless of the processor layout.
-   Note: The DFVec component of PETSc is being phased out, as the GVec
-   (Grid Vector) component is currently being built to replace it.
 */
 
 #include "da.h"
 #include "sles.h"
 #include "dfvec.h"
-#include <math.h>
 
 /* 
    ---------------------
@@ -249,7 +246,7 @@ int main(int argc,char **args)
   */
   ierr = DACreate2d(user.comm,DA_NONPERIODIC,DA_STENCIL_STAR,user.m_eta,
                     user.m_xi,N_eta,N_xi,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
-  ierr = DAGetDistributedVector(user.da,&user.phi); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(user.da,&user.phi); CHKERRA(ierr);
   ierr = VecGetLocalSize(user.phi,&user.m_ldim); CHKERRA(ierr);
   ierr = VecDuplicate(user.phi,&b); CHKERRA(ierr);
   ierr = VecDuplicate(user.phi,&b2); CHKERRA(ierr);
@@ -332,7 +329,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(b2); CHKERRA(ierr);
   ierr = MatDestroy(A); CHKERRA(ierr);
   ierr = SLESDestroy(sles); CHKERRA(ierr);
-  ierr = DAGetLocalVector(user.da,&localv); CHKERRA(ierr);
+  ierr = DACreateLocalVector(user.da,&localv); CHKERRA(ierr);
   ierr = VecDestroy(localv); CHKERRA(ierr);
   ierr = DADestroy(user.da); CHKERRA(ierr);
 
@@ -764,7 +761,7 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
 #define __FUNC__ "ModifySubmatrices1"
 /*
    ModifySubmatrices1 - Modifies the submatrices that arise in certain
-   preconditioners (block Jacobi, ASM, and block Gauss-Seidel) (for
+   preconditioners (block Jacobi, ASM) (for
    example, to set alternative boundary conditions for the subdomains).
    This routine is set by calling PCSetModifySubMatrices() within the
    main program.
@@ -804,7 +801,7 @@ int ModifySubmatrices1(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
   /* Note that one can refer to any data within the user-defined context,
     as set by the call to PCSetModifySubMatrices() in the main program. */
   if (user->print_debug){
-      PetscPrintf(user->comm,"grid spacing: h_eta = %g, h_xi = %g\n",user->h_eta,user->h_xi);
+    PetscPrintf(user->comm,"grid spacing: h_eta = %g, h_xi = %g\n",user->h_eta,user->h_xi);
   }
 
   /* 

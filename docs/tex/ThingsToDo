@@ -7,6 +7,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  mv the two contrib pc things into the regular pc directory
+
   improve snes/examples/tutorials/ex8.c to use macros U(i,j) instead of U(row) etc
 
   add MatPermute_MPIAIJ() and use it to have DAGetColoring() overload the 

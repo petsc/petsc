@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.192 2000/04/30 22:12:37 bsmith Exp balay $*/
+/*$Id: precon.c,v 1.193 2000/05/05 22:16:59 balay Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -696,7 +696,7 @@ int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx
    Notes:
    The user should NOT generally call this routine, as it will
    automatically be called within certain preconditioners (currently
-   block Jacobi, additive Schwarz, and block Gauss-Seidel) if set.
+   block Jacobi, additive Schwarz) if set.
 
    The basic submatrices are extracted from the preconditioner matrix
    as usual; the user can then alter these (for example, to set different
