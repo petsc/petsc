@@ -1,4 +1,4 @@
-# $Id: base,v 1.7 1999/02/08 23:54:39 balay Exp balay $ 
+# $Id: base,v 1.8 1999/02/24 19:00:21 balay Exp balay $ 
 #
 include ${PETSC_DIR}/bmake/common
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
@@ -42,7 +42,7 @@ shared: chkopts_basic
 #  Since there is no .so version of the libC.a it must be done this way.
 
 oshared: 
-	-${RM} -rf tmp; \
+	-@${RM} -rf tmp; \
 	mkdir tmp; \
 	cd tmp; \
         echo "building ${LIBNAME}.${SLSUFFIX}"; \
