@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.59 1996/11/30 21:40:01 curfman Exp curfman $ */
+/* $Id: pdvec.c,v 1.60 1996/12/01 17:54:52 curfman Exp balay $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -367,10 +367,7 @@ static int VecGetSize_MPI(Vec xin,int *N)
   *N = x->N;
   return 0;
 }
-/*
-      Uses a slow search to determine if item is already cached. 
-   Could keep cache list sorted at all times.
-*/
+
 static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
