@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.14 1997/09/15 16:25:53 bsmith Exp bsmith $";
+C "$Id: ex1f.F,v 1.15 1997/10/10 04:05:11 bsmith Exp bsmith $";
 C
 C       Formatted test for TS routines.
 C
@@ -32,7 +32,6 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       Vec              local, global
       double precision dt,ftime,zero,tmax
       TS               ts
-      TSType           type
       Mat              A
       MatStructure     A_structure
       TSProblemType    tsproblem
