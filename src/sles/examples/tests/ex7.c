@@ -98,13 +98,14 @@ int main(int argc,char **args)
   ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
 
   /* 
-       Here we explicitly call SLESSetUp() and SLESSetUpOnBlocks() to
+       Here we explicitly call SLESSetUp() and KSPSetUpOnBlocks() to
        enable more precise profiling of setting up the preconditioner.
        These calls are optional, since both will be called within
        SLESSolve() if they haven't been called already.
   */
   ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
-  ierr = SLESSetUpOnBlocks(sles);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetUpOnBlocks(sles);CHKERRQ(ierr);
 
   ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
 
@@ -119,7 +120,6 @@ int main(int argc,char **args)
   ierr = MatMult(A,x,u);
   ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %A\n",norm);CHKERRQ(ierr);

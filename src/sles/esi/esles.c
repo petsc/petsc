@@ -114,7 +114,9 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::getPreconditioner( esi::
 {
   if (!this->pre) {
     PC  pc;
-    int ierr  = SLESGetPC(this->sles,&pc);if (ierr) return ierr;
+    KSP ksp;
+    int ierr  = SLESGetKSP(this->sles,&ksp);if (ierr) return ierr;
+        ierr  = KSPGetPC(this->sles,&pc);if (ierr) return ierr;
     this->pre = new ::esi::petsc::Preconditioner<double,int>(pc); 
   }
   ipre = this->pre;
@@ -123,9 +125,10 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::getPreconditioner( esi::
 
 esi::ErrorCode esi::petsc::SolverIterative<double,int>::setPreconditioner( esi::Preconditioner<double,int> &ipre)
 {
-  int ierr;
   PC  pc;
-  ierr = SLESGetPC(this->sles,&pc);if (ierr) return ierr;
+  KSP ksp;
+  int ierr  = SLESGetKSP(this->sles,&ksp);if (ierr) return ierr;
+  ierr = KSPGetPC(ksp,&pc);if (ierr) return ierr;
   ierr = PCSetType(pc,PCESI);if (ierr) return ierr;
   ierr = PCESISetPreconditioner(pc,&ipre);if (ierr) return ierr;
   if (this->pre) {ierr = this->pre->deleteReference();if (ierr) return ierr;}

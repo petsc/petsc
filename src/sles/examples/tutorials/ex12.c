@@ -153,7 +153,8 @@ int main(int argc,char **args)
   /* 
      Set the PC type to be the new method
   */  
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,"ourjacobi");
 
   /* 

@@ -43,7 +43,6 @@ int main(int argc,char **args)
   int         ierr,m = 6,n = 7,t,tmax = 2,i,I,j,N;
   PetscScalar *userx,*rho,*solution,*userb,hx,hy,x,y;
   PetscReal   enorm;
-
   /*
      Initialize the PETSc libraries
   */
@@ -189,10 +188,11 @@ int UserInitializeLinearSolver(int m,int n,UserCtx *userctx)
 /* ------------------------------------------------------------------------*/
 int UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,PetscScalar *userx)
 {
-  int    ierr,i,j,I,J,m = userctx->m,n = userctx->n;
-  Mat    A = userctx->A;
-  PC     pc;
+  int         ierr,i,j,I,J,m = userctx->m,n = userctx->n;
+  Mat         A = userctx->A;
+  PC          pc;
   PetscScalar v,hx2 = userctx->hx2,hy2 = userctx->hy2;
+  KSP         ksp;
 
   /*
      This is not the most efficient way of generating the matrix 
@@ -254,7 +254,8 @@ int UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,Pets
      Set linear solver defaults for this problem (optional).
      - Here we set it to use direct LU factorization for the solution
   */
-  ierr = SLESGetPC(userctx->sles,&pc);CHKERRQ(ierr);
+  ierr = SLESGetKSP(userctx->sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
 
   /* 

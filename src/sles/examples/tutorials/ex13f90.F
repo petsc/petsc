@@ -255,7 +255,7 @@
       Vec  b,x
       Mat  A
       integer m,n
-
+      KSP         ksp
       integer i,j,II,JJ
       PetscScalar  v
 
@@ -326,7 +326,8 @@
 !     Set linear solver defaults for this problem (optional).
 !     - Here we set it to use direct LU factorization for the solution
 !
-      call SLESGetPC(sles,pc,ierr)
+      call SLESGetKSP(sles,ksp,ierr)
+      call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCLU,ierr)
 
 !

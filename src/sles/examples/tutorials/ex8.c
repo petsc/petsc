@@ -112,7 +112,8 @@ int main(int argc,char **args)
   /* 
      Set the default preconditioner for this program to be ASM
   */
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCASM);CHKERRQ(ierr);
 
   /* -------------------------------------------------------------------
@@ -222,8 +223,8 @@ int main(int argc,char **args)
        for each block.  
     */
     for (i=0; i<nlocal; i++) {
-      ierr = SLESGetPC(subsles[i],&subpc);CHKERRQ(ierr);
       ierr = SLESGetKSP(subsles[i],&subksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(subksp,&subpc);CHKERRQ(ierr);
       ierr = PCSetType(subpc,PCILU);CHKERRQ(ierr);
       ierr = KSPSetType(subksp,KSPGMRES);CHKERRQ(ierr);
       ierr = KSPSetTolerances(subksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);

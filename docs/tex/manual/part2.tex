@@ -2089,10 +2089,10 @@ which is solved with ILU(0)). A variety of other solvers
 and options are also available.
 To allow application programmers to set any of the preconditioner or 
 Krylov subspace options directly within the code, we provide routines
-that extract the PC and KSP contexts, \findex{SLESGetPC()}
+that extract the PC and KSP contexts, \findex{KSPGetPC()}
 \begin{tabbing}
-  SLESGetPC(SLES sles,PC *pc);\\
   SLESGetKSP(SLES sles,KSP *ksp);
+  KSPGetPC(KSP ksp,PC *pc);\\
 \end{tabbing}
 \findex{SLESGetKSP()}
 The application programmer can then directly call any of the PC or KSP 
@@ -3035,7 +3035,8 @@ interface to the multigrid solvers for linear and nonlinear problems using the D
 A multigrid preconditioner is created with the four commands 
 \begin{tabbing}
   SLESCreate(MPI\_Comm comm,SLES *sles);\\
-  SLESGetPC(SLES sles,PC *pc);\\
+  SLESGetKSP(SLES sles,KSP *ksp);\\
+  KSPGetPC(KSP ksp,PC *pc);\\
   PCSetType(PC pc,PCMG);\\
   MGSetLevels(pc,int levels,MPI\_Comm *comms);
 \end{tabbing}
@@ -3885,7 +3886,7 @@ Matrix          & routine. $ ^\dagger $                         & various matrix
                 &                                    & Or use MatCreateSNESMF().\\
 & & \\ \hline
 & & \\
-Preconditioning  & Create matrix with MatCreate(). $ ^* $ & Use SNESGetSLES() and SLESGetPC() \\
+Preconditioning  & Create matrix with MatCreate(). $ ^* $ & Use SNESGetSLES() and KSPGetPC() \\
 Matrix           & Assemble matrix with user-defined & to access the PC, then use\\
                 & routine. $ ^\dagger $         & PCSetType(pc,PCSHELL);\\ 
                 &             & followed by PCSetApply(). \\
@@ -7330,7 +7331,7 @@ With PETSc this should not be a problem.
 \section{Unimportant Details of PC}
 
 Most users will obtain their preconditioner contexts from the SLES
-context with the command SLESGetPC(). It is possible to create,
+context with the command KSPGetPC(). It is possible to create,
 manipulate, and destroy PC contexts directly, although this capability
 should rarely be needed. To create a PC context, one uses the command
 \findex{PCCreate()}

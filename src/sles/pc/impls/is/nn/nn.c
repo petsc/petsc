@@ -361,7 +361,7 @@ int PCNNCreateCoarseMatrix (PC pc)
     ierr = SLESCreate(pc->comm,&pcnn->sles_coarse);CHKERRQ(ierr);
     ierr = SLESSetOperators(pcnn->sles_coarse,pcnn->coarse_mat,pcnn->coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
     ierr = SLESGetKSP(pcnn->sles_coarse,&ksp_ctx);CHKERRQ(ierr);
-    ierr = SLESGetPC(pcnn->sles_coarse,&pc_ctx);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp_ctx,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCREDUNDANT);CHKERRQ(ierr);                
     ierr = KSPSetType(ksp_ctx,KSPPREONLY);CHKERRQ(ierr);               
     ierr = PCRedundantGetPC(pc_ctx,&inner_pc);CHKERRQ(ierr);           

@@ -225,13 +225,14 @@ int main(int argc,char **args)
     ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
 
     /* 
-       Here we explicitly call SLESSetUp() and SLESSetUpOnBlocks() to
+       Here we explicitly call SLESSetUp() and KSPSetUpOnBlocks() to
        enable more precise profiling of setting up the preconditioner.
        These calls are optional, since both will be called within
        SLESSolve() if they haven't been called already.
     */
     ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
-    ierr = SLESSetUpOnBlocks(sles);CHKERRQ(ierr);
+    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
     ierr = PetscGetTime(&tsetup2);CHKERRQ(ierr);
     tsetup = tsetup2 - tsetup1;
 
@@ -245,8 +246,8 @@ int main(int argc,char **args)
       PC      pc;
       int     nneg, nzero, npos;
       Mat     F;
-     
-      ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+      
+      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
       ierr = PCGetFactoredMatrix(pc,&F);CHKERRQ(ierr);
       ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %d, nzero: %d, npos: %d\n",nneg,nzero,npos);
@@ -263,7 +264,7 @@ int main(int argc,char **args)
       int    j,start,end,n;
       Vec    scale;
       
-      ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
       ierr = VecGetSize(x,&n);CHKERRQ(ierr);
       ierr = VecDuplicate(x,&scale);CHKERRQ(ierr);
       ierr = VecGetOwnershipRange(scale,&start,&end);CHKERRQ(ierr);
@@ -284,7 +285,7 @@ int main(int argc,char **args)
 
       ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, 1, 0, PETSC_NULL, &nullSpace);CHKERRQ(ierr);
       ierr = MatNullSpaceTest(nullSpace, A);CHKERRQ(ierr);
-      ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
       ierr = PCNullSpaceAttach(pc, nullSpace);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(nullSpace);CHKERRQ(ierr); 
     }
@@ -311,7 +312,6 @@ int main(int argc,char **args)
         ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
       }
     }
-    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
     tsolve = tsolve2 - tsolve1;

@@ -24,6 +24,7 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
   PetscTruth   ismg;
   Vec          W;
   MatStructure flg;
+  KSP          ksp;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as user context which should contain DMMG");
@@ -40,7 +41,8 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
 
   /* create coarser grid Jacobians for preconditioner if multigrid is the preconditioner */
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
 
@@ -380,6 +382,7 @@ int DMMGSolveFAS(DMMG *dmmg,int level)
   MG          *mg;
   PC          pc;
   SLES        sles;
+  KSP         ksp;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,dmmg[level]->r);CHKERRQ(ierr);
@@ -390,7 +393,8 @@ int DMMGSolveFAS(DMMG *dmmg,int level)
   }
 
   ierr = SNESGetSLES(dmmg[level]->snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   mg   = ((MG*)pc->data);
 
   for (i=0; i<100; i++) {
@@ -606,10 +610,13 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
       PC         pc;
       SLES       csles;
       PetscTruth flg1,flg2,flg3;
+      KSP        ksp;
 
-      ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
       ierr = MGGetCoarseSolve(pc,&csles);CHKERRQ(ierr);
-      ierr = SLESGetPC(csles,&pc);CHKERRQ(ierr);
+      ierr = SLESGetKSP(csles,&ksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCILU,&flg1);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCSOR,&flg2);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PETSC_NULL,&flg3);CHKERRQ(ierr);

@@ -287,15 +287,18 @@ int main(int argc,char **argv)
       SLES       subsles,sles;
       PC         pc,subpc;
       PetscTruth mg;
+      KSP        ksp;
 
       ierr = SNESGetSLES(DMMGGetSNES(dmmg),&sles);CHKERRQ(ierr);
-      ierr = SLESGetPC(sles,&pc);
+      ierr = SLESGetKSP(sles,&ksp);
+      ierr = KSPGetPC(sles,&pc);
       ierr = AttachNullSpace(pc,DMMGGetx(dmmg));CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCMG,&mg);CHKERRQ(ierr);
       if (mg) {
         for (i=0; i<param.mglevels; i++) {
 	  ierr = MGGetSmoother(pc,i,&subsles);CHKERRQ(ierr);
-	  ierr = SLESGetPC(subsles,&subpc);CHKERRQ(ierr);
+	  ierr = SLESGetKSP(subsles,&ksp);CHKERRQ(ierr);
+	  ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
 	  ierr = AttachNullSpace(subpc,dmmg[i]->x);CHKERRQ(ierr);
         }
       }
@@ -741,6 +744,7 @@ int Update(DMMG *dmmg)
       MatStructure flag;
       PetscViewer viewer;
       char file[128];
+      KSP  ksp;
 
       ierr = PetscStrcpy(file, "matrix");CHKERRQ(ierr);
 
@@ -751,7 +755,9 @@ int Update(DMMG *dmmg)
       ierr = SNESGetSLES(snes, &sles);
       CHKERRQ(ierr);
 
-      ierr = SLESGetPC(sles, &pc);
+      ierr = SLESGetKSP(sles, &ksp);
+      CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp, &pc);
       CHKERRQ(ierr);
 
       ierr = PCGetOperators(pc, &mat, &pmat, &flag);

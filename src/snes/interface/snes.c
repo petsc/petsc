@@ -525,7 +525,7 @@ int SNESGetNumberLinearIterations(SNES snes,int* lits)
 
 .keywords: SNES, nonlinear, get, SLES, context
 
-.seealso: SLESGetPC(), SLESGetKSP()
+.seealso: KSPGetPC(), SLESGetKSP()
 @*/
 int SNESGetSLES(SNES snes,SLES *sles)
 {
@@ -969,6 +969,7 @@ int SNESSetUp(SNES snes,Vec x)
     Mat  J;
     SLES sles;
     PC   pc;
+    KSP  ksp;
 
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
@@ -978,7 +979,8 @@ int SNESSetUp(SNES snes,Vec x)
 
     /* force no preconditioner */
     ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-    ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&flg);CHKERRQ(ierr);
     if (!flg) {
       ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);

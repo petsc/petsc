@@ -134,7 +134,7 @@
 
       call SNESGetSLES(snes,sles,ierr)
       call SLESGetKSP(sles,ksp,ierr)
-      call SLESGetPC(sles,pc,ierr)
+      call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCNONE,ierr)
       tol = 1.e-4
       call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,     &

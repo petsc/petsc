@@ -86,6 +86,7 @@ int main( int argc, char **argv )
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
   SLES          sles;
   PC            pc;
+  KSP           ksp;
 
   /*
       Initialize PETSc, note that default options in ex11options can be 
@@ -158,7 +159,8 @@ int main( int argc, char **argv )
 
   /* set two level additive Schwarz preconditioner */
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr = MGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
   ierr = MGSetType(pc,MGADDITIVE);CHKERRQ(ierr);
@@ -175,8 +177,10 @@ int main( int argc, char **argv )
   ierr = MGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr); 
   ierr = MGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr); 
   if (user.redundant_build) {
-    PC rpc;
-    ierr = SLESGetPC(user.sles_coarse,&rpc);CHKERRQ(ierr);
+    PC  rpc;
+    KSP rksp;
+    ierr = SLESGetKSP(user.sles_coarse,&rksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(rksp,&rpc);CHKERRQ(ierr);
     ierr = PCRedundantSetScatter(rpc,user.tolocalall,user.fromlocalall);CHKERRQ(ierr);
   }
 
@@ -432,13 +436,15 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   SLES       sles;
   PC         pc;
   PetscTruth ismg;
+  KSP        ksp;
 
   *flag = SAME_NONZERO_PATTERN;
   ierr = FormJacobian_Grid(user,&user->fine,X,J,B);CHKERRQ(ierr);
 
   /* create coarse grid jacobian for preconditioner */
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {

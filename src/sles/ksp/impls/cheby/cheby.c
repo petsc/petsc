@@ -26,6 +26,8 @@ int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,PetscReal emax,PetscReal emin)
   KSP_Chebychev *chebychevP = (KSP_Chebychev*)ksp->data;
 
   PetscFunctionBegin;
+  if (emax <= emin) SETERRQ2(1,"Maximum eigenvalue must be larger than minimum: max %g min %g",emax,emin);
+  if (emax*emin <= 0.0) SETERRQ2(1,"Both eigenvalues must be of the same sign: max %g min %g",emax,emin);
   chebychevP->emax = emax;
   chebychevP->emin = emin;
   PetscFunctionReturn(0);

@@ -106,7 +106,8 @@ int main(int argc,char **argv)
   ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
 
   /* set two level additive Schwarz preconditioner */
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr = MGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
   ierr = MGSetType(pc,MGADDITIVE);CHKERRQ(ierr);

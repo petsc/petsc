@@ -107,8 +107,8 @@ int AppCtxSolve(AppCtx* appctx)
 	KSP         ksp;
 	Mat         mat,mat2;
 	PetscViewer viewer;
-	ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
 	ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	ierr = PCComputeExplicitOperator(pc,&mat);CHKERRQ(ierr);
 	ierr = KSPComputeExplicitOperator(ksp,&mat2);CHKERRQ(ierr);
 	ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"pc.m",&viewer);CHKERRQ(ierr);

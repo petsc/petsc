@@ -21,7 +21,7 @@ and preconditioning options at runtime via the options database (e.g.,
 SLES users can also set KSP and PC options directly in application
 codes by first extracting the KSP and/or PC context from the SLES context via
 <A HREF="PETSC_DIRdocs/manualpages/SLES/SLESGetKSP.html">SLESGetKSP()</A>/
-<A HREF="PETSC_DIRdocs/manualpages/SLES/SLESGetPC.html">SLESGetPC()</A>
+<A HREF="PETSC_DIRdocs/manualpages/KSP/KSPGetPC.html">KSPGetPC()</A>
 and then directly calling the KSP and PC routines (e.g., 
 <A HREF="PETSC_DIRdocs/manualpages/KSP/KSPSetType.html">KSPSetType()</A>/
 <A HREF="PETSC_DIRdocs/manualpages/PC/PCSetType.html">PCSetType()</A>

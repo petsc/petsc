@@ -133,7 +133,7 @@ int PCISSetUp(PC pc)
     ierr = SLESSetOperators(pcis->sles_D,pcis->A_II,pcis->A_II,SAME_PRECONDITIONER);CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix(pcis->sles_D,"localD_");CHKERRQ(ierr);
     ierr = SLESGetKSP(pcis->sles_D,&ksp_ctx);CHKERRQ(ierr);
-    ierr = SLESGetPC(pcis->sles_D,&pc_ctx);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp_ctx,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCLU);CHKERRQ(ierr);
     ierr = KSPSetType(ksp_ctx,KSPPREONLY);CHKERRQ(ierr);
     ierr = SLESSetFromOptions(pcis->sles_D);CHKERRQ(ierr);
@@ -144,7 +144,7 @@ int PCISSetUp(PC pc)
     ierr = SLESSetOperators(pcis->sles_N,matis->A,matis->A,SAME_PRECONDITIONER);CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix(pcis->sles_N,"localN_");CHKERRQ(ierr);
     ierr = SLESGetKSP(pcis->sles_N,&ksp_ctx);CHKERRQ(ierr);
-    ierr = SLESGetPC(pcis->sles_N,&pc_ctx);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp_ctx,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCLU);CHKERRQ(ierr);
     ierr = KSPSetType(ksp_ctx,KSPPREONLY);CHKERRQ(ierr);
     ierr = SLESSetFromOptions(pcis->sles_N);CHKERRQ(ierr);

@@ -81,7 +81,7 @@ int main(int argc,char **argv)
    * command line option, and see that the pivots are all positive and
    * the method converges.
    */
-  ierr = SLESGetPC(solver,&prec); CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&prec); CHKERRQ(ierr);
   ierr = PCSetType(prec,PCICC); CHKERRQ(ierr);
   /*  ierr = PCICCSetShift(prec,PETSC_TRUE); CHKERRQ(ierr); */
 

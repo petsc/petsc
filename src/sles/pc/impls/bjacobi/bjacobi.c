@@ -636,7 +636,7 @@ int PCBJacobiGetLocalBlocks(PC pc, int *blocks, const int *lens[])
         
      To set the options on the solvers seperate for each block call PCBJacobiGetSubSLES()
          and set the options directly on the resulting SLES object (you can access its KSP and PC
-         with SLESGetKSP() and SLESGetPC())
+         with SLESGetKSP() and KSPGetPC())
 
    Level: beginner
 
@@ -780,6 +780,7 @@ int PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
   PetscScalar            *x_array,*y_array;
   PC                     subpc;
+  KSP                    ksp;
 
   PetscFunctionBegin;
   /* 
@@ -796,7 +797,8 @@ int PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   /* apply the symmetric left portion of the inner PC operator */
   /* note this by-passes the inner SLES and its options completely */
 
-  ierr = SLESGetPC(jac->sles[0],&subpc);CHKERRQ(ierr);
+  ierr = SLESGetKSP(jac->sles[0],&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
   ierr = PCApplySymmetricLeft(subpc,bjac->x,bjac->y);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr); 
@@ -813,6 +815,7 @@ int PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
   PetscScalar            *x_array,*y_array;
   PC                     subpc;
+  KSP                    ksp;
 
   PetscFunctionBegin;
   /* 
@@ -829,7 +832,8 @@ int PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   /* apply the symmetric right portion of the inner PC operator */
   /* note this by-passes the inner SLES and its options completely */
 
-  ierr = SLESGetPC(jac->sles[0],&subpc);CHKERRQ(ierr);
+  ierr = SLESGetKSP(jac->sles[0],&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
   ierr = PCApplySymmetricRight(subpc,bjac->x,bjac->y);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr); 
@@ -884,7 +888,7 @@ static int PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     PetscLogObjectParent(pc,sles);
     ierr = SLESGetKSP(sles,&subksp);CHKERRQ(ierr);
     ierr = KSPSetType(subksp,KSPPREONLY);CHKERRQ(ierr);
-    ierr = SLESGetPC(sles,&subpc);CHKERRQ(ierr);
+    ierr = KSPGetPC(subksp,&subpc);CHKERRQ(ierr);
     ierr = PCSetType(subpc,PCILU);CHKERRQ(ierr);
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix(sles,prefix);CHKERRQ(ierr);
@@ -1119,7 +1123,7 @@ static int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
       PetscLogObjectParent(pc,sles);
       ierr = SLESGetKSP(sles,&subksp);CHKERRQ(ierr);
       ierr = KSPSetType(subksp,KSPPREONLY);CHKERRQ(ierr);
-      ierr = SLESGetPC(sles,&subpc);CHKERRQ(ierr);
+      ierr = KSPGetPC(subksp,&subpc);CHKERRQ(ierr);
       ierr = PCSetType(subpc,PCILU);CHKERRQ(ierr);
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
       ierr = SLESSetOptionsPrefix(sles,prefix);CHKERRQ(ierr);
