@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.99 1997/05/03 21:11:11 curfman Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.100 1997/05/03 22:46:30 curfman Exp curfman $";
 #endif
 
 /*
@@ -418,13 +418,13 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
         }
       } 
       if (nonew == 1) goto noinsert1;
-      else if (nonew == -1) SETERRQ(1,1,"Inserting a new nonzero in the matrix");
+      else if (nonew == -1) SETERRQ(1,0,"Inserting a new nonzero in the matrix");
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
         int    new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
         Scalar *new_a;
 
-        if (nonew == -2) SETERRQ(1,1,"Inserting a new nonzero in the matrix");
+        if (nonew == -2) SETERRQ(1,0,"Inserting a new nonzero in the matrix");
 
         /* Malloc new storage space */
         len     = new_nz*(sizeof(int)+bs2*sizeof(Scalar))+(a->mbs+1)*sizeof(int);
@@ -547,13 +547,13 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
         }
       } 
       if (nonew == 1) goto noinsert2;
-      else if (nonew == -1) SETERRQ(1,1,"Inserting a new nonzero in the matrix");
+      else if (nonew == -1) SETERRQ(1,0,"Inserting a new nonzero in the matrix");
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
         int    new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
         Scalar *new_a;
 
-        if (nonew == -2) SETERRQ(1,1,"Inserting a new nonzero in the matrix");
+        if (nonew == -2) SETERRQ(1,0,"Inserting a new nonzero in the matrix");
 
         /* malloc new storage space */
         len     = new_nz*(sizeof(int)+bs2*sizeof(Scalar))+(a->mbs+1)*sizeof(int);

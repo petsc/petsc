@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.216 1997/04/10 16:32:51 balay Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.217 1997/05/03 21:11:07 curfman Exp curfman $";
 #endif
 
 /*
@@ -183,13 +183,13 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
         }
       } 
       if (nonew == 1) goto noinsert;
-      else if (nonew == -1) SETERRQ(1,1,"Inserting a new nonzero in the matrix");
+      else if (nonew == -1) SETERRQ(1,0,"Inserting a new nonzero in the matrix");
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
         int    new_nz = ai[a->m] + CHUNKSIZE,len,*new_i,*new_j;
         Scalar *new_a;
 
-        if (nonew == -2) SETERRQ(1,1,"Inserting a new nonzero in the matrix");
+        if (nonew == -2) SETERRQ(1,0,"Inserting a new nonzero in the matrix");
 
         /* malloc new storage space */
         len     = new_nz*(sizeof(int)+sizeof(Scalar))+(a->m+1)*sizeof(int);
