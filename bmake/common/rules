@@ -733,8 +733,6 @@ push:
 	-@cd ${PETSC_DIR}/python/BuildSystem; bk push
 
 
-#
-
-
-
-
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscrules
+# some systems like this line between the two includes
+include ${PETSC_DIR}/bmake/common/rules.shared.basic
