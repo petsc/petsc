@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.117 1995/11/16 16:55:50 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.118 1995/11/17 23:44:50 balay Exp bsmith $";
 #endif
 
 /*
@@ -1109,6 +1109,16 @@ static int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatr
   return 0;
 }
 
+static int MatIncreaseOverlap_SeqAIJ(Mat A, int n, IS *is, int ov)
+{
+  int i,m,*idx,ierr;
+
+  for ( i=0; i<n; i++ ) {
+    ierr = ISGetIndices(is[i],&idx); CHKERRQ(ierr);
+    ISGetLocalSize(is[i],&m); 
+  }
+  SETERRQ(1,"MatIncreaseOverlap_SeqAIJ:Not implemented");
+}
 /* -------------------------------------------------------------------*/
 
 static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
@@ -1133,7 +1143,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetSubMatrix_SeqAIJ,0,
        MatCopyPrivate_SeqAIJ,0,0,
        MatILUFactor_SeqAIJ,0,0,
-       MatGetSubMatrices_SeqAIJ};
+       MatGetSubMatrices_SeqAIJ,
+       MatIncreaseOverlap_SeqAIJ};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);

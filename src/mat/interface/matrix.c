@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.110 1995/11/01 19:09:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.111 1995/11/09 22:28:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1436,5 +1436,28 @@ int MatGetType(Mat mat,MatType *type)
 {
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   *type = (MatType) mat->type;
+  return 0;
+}
+
+/*@
+      MatIncreaseOverlap - Given a set of submatrices indicated by index sets,
+          replaces the index by larger ones that represent submatrices with more
+          overlap.
+
+  Input Parameters:
+.   mat - the matrix
+.   n   - the number of index sets
+.   is  - the array of pointers to index sets
+.   ov  - the additional overlap requested
+
+.keywords: overlap, Schwarz
+.seealso: MatGetSubMatrices()
+@*/
+int MatIncreaseOverlap(Mat mat,int n, IS *is, int ov)
+{
+  int ierr;
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  if (!mat->ops.increaseoverlap) SETERRQ(PETSC_ERR_SUP,"MatIncreaseOverlap");
+  ierr = (*mat->ops.increaseoverlap)(mat,n,is,ov); CHKERRQ(ierr);
   return 0;
 }

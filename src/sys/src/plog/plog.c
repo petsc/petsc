@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.47 1995/11/06 02:32:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.48 1995/11/15 01:18:25 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -112,8 +112,8 @@ typedef struct {
 static double  BaseTime;
 static Events  *events = 0;
 static Objects *objects = 0;
-static int nobjects = 0, nevents = 0, objectsspace = CHUNCK;
-static int ObjectsDestroyed = 0, eventsspace = CHUNCK;
+static int     nobjects = 0, nevents = 0, objectsspace = CHUNCK;
+static int     ObjectsDestroyed = 0, eventsspace = CHUNCK;
 #define COUNT 0
 #define FLOPS 1
 #define TIME  2
@@ -124,7 +124,6 @@ int (*_PHC)(PetscObject) = 0;
 int (*_PHD)(PetscObject) = 0;
 int (*_PLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 int (*_PLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
-
 
 /*
       Default object create logger 
@@ -512,10 +511,18 @@ static char *(name[]) = {"MatMult         ",
                          "MatLoad         ",
                          "MatView         ",
                          "MatILUFactor    ",
+                         "MatGetSubMatrix ",
+                         "MatGetSubMatrice",
+                         "                ",
+                         "                ",
+                         "                ",
+                         "                ",
+                         "                ",
+                         "                ",
+                         "                ",
+                         "                ",
                          "VecDot          ",
                          "VecNorm         ",
-                         "                ",
-                         "                ",
                          "VecMax          ",
                          "VecMin          ",
                          "VecTDot         ",
@@ -535,11 +542,24 @@ static char *(name[]) = {"MatMult         ",
                          "VecSetValues    ",
                          "VecLoad         ",
                          "VecView         ",
-                         " "," ",
+                         "VecScatterBegin ",
+                         "VecScatterEnd   ",
+                         " ",
+                         " ",
+                         " ",
+                         " ",
+                         " ",
+                         " ",
+                         " ",
                          "SLESSolve       ",
+                         "SLESSetUp       ",
+                         "KSPGMRESOrthog  ",
+                         "KSPSolve        ",
+                         " ",
                          "PCSetUp         ",
                          "PCApply         ",
-                         "SLESSetUp       ",
+                         " ",
+                         " ",
                          " ",
                          "SNESSolve       ",
                          "SNESLineSearch  ",
@@ -548,15 +568,31 @@ static char *(name[]) = {"MatMult         ",
                          "SNESMinFunctEval",
                          "SNESGradientEval",
                          "SNESHessianEval ",
-                         " "," "," ",
-                         "MatGetSubMatrix ",
-                         "KSPGMRESOrthogon",
-                         "KSPSolve        ",
-                         "MatGetSubMatrice",
-                         "VecScatterBegin ",
-                         "VecScatterEnd   ",
-                         " "," "," "," ",
-                         " "," "," "," ",
+                         " ",
+                         " ",
+                         " ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
                          " "," "," "," "," ",
                          " "," "," "," "," "};
 
@@ -565,7 +601,7 @@ static char *(name[]) = {"MatMult         ",
     an application code. 
 
     Input Parameters:
-.   e - integer associated with the event (69 < e < 89) 
+.   e - integer associated with the event (PLOG_USER_EVENT_LOW <= e < PLOG_USER_EVENT_HIGH) 
 .   string - name associated with the event
 
     Notes: 
@@ -576,7 +612,7 @@ static char *(name[]) = {"MatMult         ",
     information.
 
     Example of Usage:
-$     #define USER_EVENT 75
+$     #define USER_EVENT PLOG_USER_EVENT_LOW
 $     int user_event_flops;
 $     PLogEventRegister(USER_EVENT,"User event");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
@@ -590,8 +626,10 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 @*/
 int PLogEventRegister(int e,char *string)
 {
-  if (e < 70) SETERRQ(1,"PLogEventRegister:user events must be > 69");
-  if (e > 89) SETERRQ(1,"PLogEventRegister:user events must be < 89");
+  if (e < PLOG_USER_EVENT_LOW) 
+    SETERRQ(1,"PLogEventRegister:user events must be >= PLOG_USER_EVENT_LOW");
+  if (e > PLOG_USER_EVENT_HIGH) 
+    SETERRQ(1,"PLogEventRegister:user events must be < PLOG_USER_EVENT_HIGH ");
   name[e] = string;
   return 0;
 }
@@ -716,3 +754,9 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
 }
 
 #endif
+
+
+
+
+
+

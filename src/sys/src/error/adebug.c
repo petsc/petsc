@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.31 1995/11/01 23:15:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.32 1995/11/06 02:29:26 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -22,6 +22,7 @@ static int   Xterm     = 1;
    Input Parameters:
 .  debugger - name of debugger, which should be in your path,
               usually either "dbx", "gdb" or "xxgdb" or "xdb" on the HP-UX
+              or xldb on an IBM rs6000.
 
 .   xterm - flag to indicate debugger window, set to one of:
 $     1 to indicate debugger should be started in a new xterm
@@ -93,6 +94,17 @@ int PetscAttachDebugger()
         exit(0);
       }
     }
+#if defined(PARCH_rs6000)
+    else if (!PetscStrcmp(Debugger,"xldb")) {
+      args[1] = "-a"; args[2] = pid; args[3] = Program;  args[4] = "-display";
+      args[0] = Debugger; args[5] = Display; args[6] = 0;
+      fprintf(stderr,"PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
+      if (execvp(args[0], args)  < 0) {
+        perror("Unable to start debugger");
+        exit(0);
+      }
+    }
+#endif
     else if (!Xterm) {
       args[1] = program; args[2] = pid; args[3] = 0;
       args[0] = Debugger;
@@ -240,12 +252,12 @@ int PetscAttachDebugger()
 .  ctx - error handler context
 
    Options Database Keys:
-$   -on_error_attach_debugger [noxterm,dbx,xxgdb]
+$   -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb]
 $       [-display name]
 
    Notes:
    By default the GNU debugger, gdb, is used.  Alternatives are dbx and
-   xxgdb.
+   xxgdb,xldb (on IBM rs6000), xdb (on HP-UX).
 
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERR, which has 

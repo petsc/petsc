@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.19 1995/11/02 04:11:03 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.20 1995/11/09 22:26:41 bsmith Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -76,13 +76,13 @@ static int VecSet_Seq(Scalar* alpha,Vec xin )
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
   register int n = x->n;
-  Scalar       *xx = x->array;
+  Scalar       *xx = x->array, oalpha = *alpha;
 
-  if (*alpha == 0.0) {
+  if (oalpha == 0.0) {
     PetscMemzero(xx,n*sizeof(Scalar));
   }
   else {
-    SET(xx,n,*alpha);
+    SET(xx,n,oalpha);
   }
   return 0;
 }
@@ -91,20 +91,21 @@ static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec yin, Vec *x )
 {
   Vec_Seq      *y = (Vec_Seq *) yin->data;
   register int n = y->n;
-  Scalar       *yy = y->array, *xx;
+  Scalar       *yy = y->array, *xx,oalpha;
   int          j;
 
   PLogFlops(nv*2*n);
   for (j=0; j<nv; j++) {
-    xx = ((Vec_Seq *)(x[j]->data))->array;
-    if (alpha[j] == -1.0) {
+    xx     = ((Vec_Seq *)(x[j]->data))->array;
+    oalpha = alpha[j];
+    if (oalpha == -1.0) {
       YMX(yy,xx,n);
     }
-    else if (alpha[j] == 1.0) {
+    else if (oalpha == 1.0) {
       YPX(yy,xx,n);
     }
-    else if (alpha[j] != 0.0) {
-      APXY(yy,alpha[j],xx,n);
+    else if (oalpha != 0.0) {
+      APXY(yy,oalpha,xx,n);
     }
   }
   return 0;
@@ -113,33 +114,44 @@ static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec yin, Vec *x )
 static int VecAYPX_Seq(Scalar *alpha, Vec xin, Vec yin )
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
-  register int n = x->n;
-  Scalar       *xx = x->array, *yy = y->array;
+  register int i,n = x->n;
+  Scalar       *xx = x->array, *yy = y->array, oalpha = *alpha;
 
   PLogFlops(2*n);
-  AYPX(yy,*alpha,xx,n);
+  for ( i=0; i<n; i++ ) {
+    yy[i] = xx[i] + oalpha*yy[i];
+  }
   return 0;
 }
+
+/*
+   IBM ESSL contains a routine dzaxpy() that is our WAXPY() but it appears
+  to be slower then a regular C loop. Hence we do not include it.
+  void ?zaxpy(int*,Scalar*,Scalar*,int*,Scalar*,int*,Scalar*,int*);
+*/
 
 static int VecWAXPY_Seq(Scalar* alpha,Vec xin,Vec yin,Vec win )
 {
   Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
   Vec_Seq      *y = (Vec_Seq *)yin->data;
   register int i, n = x->n;
-  Scalar       *xx = x->array, *yy = y->array, *ww = w->array;
+  Scalar       *xx = x->array, *yy = y->array, *ww = w->array, oalpha = *alpha;
 
-  if (*alpha == 1.0) {
+  if (oalpha == 1.0) {
     PLogFlops(n);
     /* could call BLAS axpy after call to memcopy, but may be slower */
     for (i=0; i<n; i++) ww[i] = yy[i] + xx[i];
   }
-  else if (*alpha == -1.0) {
+  else if (oalpha == -1.0) {
     PLogFlops(n);
     for (i=0; i<n; i++) ww[i] = yy[i] - xx[i];
   }
+  else if (oalpha == 0.0) {
+    PetscMemcpy(ww,yy,n*sizeof(Scalar));
+  }
   else {
+    for (i=0; i<n; i++) ww[i] = yy[i] + oalpha * xx[i];
     PLogFlops(2*n);
-    for (i=0; i<n; i++) ww[i] = yy[i] + (*alpha) * xx[i];
   }
   return 0;
 }

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.55 1995/11/07 22:26:55 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.56 1995/11/09 22:27:39 bsmith Exp bsmith $";
 #endif
 /*
   These routines simplify the use of command line, file options, etc.,
@@ -313,6 +313,9 @@ int OptionsCheckInitial_Private()
 #else
     if (PetscStrstr(string,"dbx"))     debugger = "dbx";
 #endif
+#if defined(PARCH_rs6000)
+    if (PetscStrstr(string,"xldb"))    debugger = "xldb";
+#endif
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
     if (OptionsGetString(0,"-display",string,64)){
       display = string;
@@ -351,6 +354,9 @@ int OptionsCheckInitial_Private()
     if (PetscStrstr(string,"xdb"))     debugger = "xdb";
 #else
     if (PetscStrstr(string,"dbx"))     debugger = "dbx";
+#endif
+#if defined(PARCH_rs6000)
+    if (PetscStrstr(string,"xldb"))    debugger = "xldb";
 #endif
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
     if (OptionsGetString(0,"-display",string,64)){

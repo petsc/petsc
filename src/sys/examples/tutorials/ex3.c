@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.4 1995/09/30 19:31:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.9 1995/10/12 04:14:40 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -14,7 +14,7 @@ codes.  Note that the code must be compiled with the flag -DPETSC_LOG\n\
 #include "petsc.h"
 #include <stdio.h>
 
-#define USER_EVENT 85
+#define USER_EVENT PLOG_USER_EVENT_LOW
 
 int main(int argc,char **argv)
 {

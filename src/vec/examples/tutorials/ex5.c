@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.12 1995/10/12 04:13:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex20.c,v 1.13 1995/10/19 22:16:36 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -20,8 +20,8 @@ int main(int argc,char **args)
   VecType vtype;
   Viewer  bview;
 
-#define VECTOR_GENERATE 86
-#define VECTOR_READ     87
+#define VECTOR_GENERATE PLOG_USER_EVENT_LOW
+#define VECTOR_READ     PLOG_USER_EVENT_LOW+1
 
   PetscInitialize(&argc,&args,0,0,help);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);

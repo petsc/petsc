@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.26 1995/11/15 01:18:35 curfman Exp bsmith $ */
+/* $Id: plog.h,v 1.27 1995/11/19 23:30:57 bsmith Exp bsmith $ */
 
 /*
     Defines high level logging in Petsc.
@@ -42,56 +42,58 @@
 #define MAT_Load                                27
 #define MAT_View                                28
 #define MAT_ILUFactor                           29
+#define MAT_GetSubMatrix                        30
+#define MAT_GetSubMatrices                      31
 
-#define VEC_Dot                                 30
-#define VEC_Norm                                31
-#define VEC_Max                                 34
-#define VEC_Min                                 35
-#define VEC_TDot                                36
-#define VEC_Scale                               37
-#define VEC_Copy                                38
-#define VEC_Set                                 39
-#define VEC_AXPY                                40
-#define VEC_AYPX                                41
-#define VEC_Swap                                42
-#define VEC_WAXPY                               43
-#define VEC_AssemblyBegin                       44
-#define VEC_AssemblyEnd                         45
-#define VEC_MTDot                               46
-#define VEC_MDot                                47
-#define VEC_MAXPY                               48
-#define VEC_PMult                               49
-#define VEC_SetValues                           50
-#define VEC_Load                                51
-#define VEC_View                                52
+#define VEC_Dot                                 40
+#define VEC_Norm                                41
+#define VEC_Max                                 42
+#define VEC_Min                                 43
+#define VEC_TDot                                44
+#define VEC_Scale                               45
+#define VEC_Copy                                46
+#define VEC_Set                                 47
+#define VEC_AXPY                                48
+#define VEC_AYPX                                49
+#define VEC_Swap                                50
+#define VEC_WAXPY                               51
+#define VEC_AssemblyBegin                       52
+#define VEC_AssemblyEnd                         53
+#define VEC_MTDot                               54
+#define VEC_MDot                                55
+#define VEC_MAXPY                               56
+#define VEC_PMult                               57
+#define VEC_SetValues                           58
+#define VEC_Load                                59
+#define VEC_View                                60
+#define VEC_ScatterBegin                        61
+#define VEC_ScatterEnd                          62
 
-#define SLES_Solve                              55
-#define PC_SetUp                                56
-#define PC_Apply                                57
-#define SLES_SetUp                              58
+#define SLES_Solve                              70
+#define SLES_SetUp                              71
 
-#define SNES_Solve                              60
-#define SNES_LineSearch                         61
-#define SNES_FunctionEval                       62
-#define SNES_JacobianEval                       63
-#define SNES_MinimizationFunctionEval           64
-#define SNES_GradientEval                       65
-#define SNES_HessianEval                        66
+#define KSP_GMRESOrthogonalization              72
+#define KSP_Solve                               73
 
-#define MAT_GetSubMatrix                        70
-#define KSP_GMRESOrthogonalization              71
-#define KSP_Solve                               72
-#define MAT_GetSubMatrices                      73
-#define VEC_ScatterBegin                        74
-#define VEC_ScatterEnd                          75
+#define PC_SetUp                                75
+#define PC_Apply                                76
+
+#define SNES_Solve                              80
+#define SNES_LineSearch                         81
+#define SNES_FunctionEval                       82
+#define SNES_JacobianEval                       83
+#define SNES_MinimizationFunctionEval           84
+#define SNES_GradientEval                       85
+#define SNES_HessianEval                        86
+
 
 /* 
-   event numbers 80 to 99 are reserved for applications, make sure that
-   src/sys/src/plog.c defines enough entries in (*name)[] to go up to 
-   PLOG_USER_EVENT_HIGH.
+   event numbers  PLOG_USER_EVENT_LOW to PLOG_USER_EVENT_HIGH are reserved 
+   for applications, make sure that src/sys/src/plog.c defines enough entries
+   in (*name)[] to go up to PLOG_USER_EVENT_HIGH.
 */
-#define PLOG_USER_EVENT_LOW                     80
-#define PLOG_USER_EVENT_HIGH                    120
+#define PLOG_USER_EVENT_LOW                     120
+#define PLOG_USER_EVENT_HIGH                    200
 
 /* Global flop counter */
 extern double _TotalFlops;
