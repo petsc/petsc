@@ -97,9 +97,9 @@ class BS (install.base.Base):
     argDB.setLocalType('regExp',         nargs.ArgString('Regular expression'))
 
     # Cannot just check whether initDB is given since an empty one comes in during installation
-    if not 'noConfigure'    in argDB: argDB['noConfigure']    = 0
-    if not 'forceConfigure' in argDB: argDB['forceConfigure'] = 0
-    if not 'displayTarget'  in argDB: argDB['displayTarget']  = 0
+    if not argDB.has_key('noConfigure'):    argDB['noConfigure']    = 0
+    if not argDB.has_key('forceConfigure'): argDB['forceConfigure'] = 0
+    if not argDB.has_key('displayTarget'):  argDB['displayTarget']  = 0
 
     argDB.insertArgs(clArgs)
     return argDB
@@ -371,6 +371,8 @@ class BS (install.base.Base):
     print 'Displaying '+str(target)
     if self.targets.has_key(target):
       target = self.targets[target]
+    elif target == 'sidl':
+      target = self.getSIDLDefaults().getSIDLTarget()
     elif target == 'compile':
       target = self.getCompileDefaults().getCompileTarget()
     else:
