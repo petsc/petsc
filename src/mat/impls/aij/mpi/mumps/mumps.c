@@ -328,7 +328,8 @@ int MatSolve_AIJ_MUMPS(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatFactorNumeric_MPIAIJ_MUMPS"
 int MatFactorNumeric_AIJ_MUMPS(Mat A,Mat *F)
 {
-  Mat_AIJ_MUMPS *lu = (Mat_AIJ_MUMPS*)(*F)->spptr; 
+  Mat_AIJ_MUMPS *lu  = (Mat_AIJ_MUMPS*)(*F)->spptr; 
+  Mat_AIJ_MUMPS *lua = (Mat_AIJ_MUMPS*)(A)->spptr; 
   int              rnz,nnz,ierr,nz,i,M=A->M,*ai,*aj,icntl;
   PetscTruth       valOnly,flg;
 
@@ -412,7 +413,7 @@ int MatFactorNumeric_AIJ_MUMPS(Mat A,Mat *F)
   switch (lu->id.ICNTL(18)){
   case 0:  /* centralized assembled matrix input (size=1) */
     if (!lu->myid) {
-      if (lu->isAIJ){
+      if (lua->isAIJ){
         Mat_SeqAIJ   *aa = (Mat_SeqAIJ*)A->data;
         nz               = aa->nz;
         ai = aa->i; aj = aa->j; lu->val = aa->a;
