@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 2001/06/13 20:27:10 balay Exp balay $ 
+# $Id: packages,v 1.2 2001/06/20 15:21:47 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -12,7 +12,7 @@
 #
 #BLASLAPACK_LIB = -L/home/balay/software/fblaslapack/linux_intel -lflapack -lfblas
 #
-BLASLAPACK_LIB = -L/usr/local/intel/mkl/LIB -lmkl32_lapack -lmkl32_p4 
+BLASLAPACK_LIB = -L/usr/local/intel/mkl/LIB -lmkl32_lapack -lmkl32_def
 PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
 
 #
