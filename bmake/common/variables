@@ -133,7 +133,7 @@ PCONF         = ${PETSC_HAVE_MPE}         ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_
 EXTERNAL_LIB  = ${MPE_LIB}                ${BLOCKSOLVE_LIB}        ${PVODE_LIB}          ${PARMETIS_LIB} \
                 ${AMS_LIB}                ${SPAI_LIB}              ${X11_LIB}            ${MATLAB_ENGINE_LIB}   \
                                                                    ${LUSOL_LIB}          ${DSCPACK_LIB} \
-                ${RAMG_LIB}                                                              ${ADIFOR_LIB} \
+                ${RAMG_LIB}               ${TAU_LIB}                                     ${ADIFOR_LIB} \
                 ${SUPERLUDIST_LIB}        ${SUPERLU_LIB}           ${SPOOLES_LIB}        ${UMFPACK_LIB}\
                                           ${TRILINOS_LIB}          ${HYPRE_LIB} \
                 ${MATHEMATICA_LIB}        ${TRIANGLE_LIB}          ${PLAPACK_LIB}        ${SAMG_LIB}
@@ -162,13 +162,13 @@ ADIC_DIRS          = src/mat/impls/aij src/snes/utils src/dm/da/src src/fortran/
 # ----------------------------------------------------------------------------------------
 #
 PDT_PETSC_OPTS     = -DPETSC_BOPT='\"${BOPT}\"' -DPETSC_LIB_DIR='\".\/\"' -DPETSC_SLSUFFIX='\"${SLSUFFIX}\"' \
-                     -DPETSC_DIR='\".\/\"' -DPETSC_ARCH='"${PETSC_ARCH}"'
+                     -DPETSC_DIR='\".\/\"' -DPETSC_ARCH='\"${PETSC_ARCH}\"'
 TAU_CPPFLAGS       = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${CPPFLAGS}
 TAU_PETSC_OPTS     = -c -rn PetscFunctionReturn -rv PetscFunctionReturnVoid\(\) 
 TAU_COMPILE_SINGLE =  name=`basename $$filename .c`;\
 		     ${PDT_PARSE} $$filename ${COPTFLAGS} ${CFLAGS} ${TAU_CPPFLAGS} ${PDT_PETSC_OPTS}; \
                      ${TAU_INSTR} $$name.c.pdb $$filename -o $$name.inst.c ${TAU_PETSC_OPTS}; \
-                     ${CC} -c ${COPTFLAGS} ${CFLAGS} ${TAU_CPPFLAGS} ${TAU_DEFS} ${TAU_INCLUDE} $$name.inst.c -o $$name.o ;\
+                     ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${TAU_DEFS} ${TAU_INCLUDE} $$name.inst.c -o $$name.o ;\
                      ${RM} $$name.c.pdb $$name.inst.c;
 TAU_COMPILE        = files="${SOURCEC} ${SSOURCE}"; \
                      for filename in $$files foo ; do \
