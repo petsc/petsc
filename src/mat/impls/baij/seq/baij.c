@@ -873,7 +873,7 @@ int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   /* diagonals may have moved, so kill the diagonal pointers */
   if (fshift && a->diag) {
     ierr = PetscFree(a->diag);CHKERRQ(ierr);
-    PetscLogObjectMemory(A,-(m+1)*sizeof(int));
+    PetscLogObjectMemory(A,-(mbs+1)*sizeof(int));
     a->diag = 0;
   } 
   PetscLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Matrix size: %d X %d, block size %d; storage space: %d unneeded, %d used\n",m,A->n,a->bs,fshift*bs2,a->nz*bs2);

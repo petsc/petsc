@@ -3,6 +3,8 @@
 static char help[] = "Tests the various sequential routines in MatSBAIJ format.\n";
 
 #include "petscmat.h"
+extern int MatMissingDiagonal_SeqSBAIJ(Mat);
+extern int MatMarkDiagonal_SeqSBAIJ(Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -55,8 +57,9 @@ int main(int argc,char **args)
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
 
-      i = 0; col[0] = 0; col[1] = 1; col[2]=n-1;
-      value[0] = 2.0; value[1] = -1.0; value[2]=0.1;
+      i = 0; 
+      col[0] = n-1;  col[1] = 1; col[2]=0; 
+      value[0] = 0.1; value[1] = -1.0; value[2]=2;
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -232,8 +235,11 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&s2);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
-
   ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
+
+  ierr = MatMarkDiagonal_SeqSBAIJ(sA);CHKERRQ(ierr);
+  ierr = MatMissingDiagonal_SeqSBAIJ(sA);CHKERRQ(ierr); 
+
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sA,x,x);CHKERRQ(ierr);
 

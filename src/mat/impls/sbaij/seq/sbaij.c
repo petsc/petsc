@@ -35,17 +35,16 @@ int MatMissingDiagonal_SeqSBAIJ(Mat A)
 int MatMarkDiagonal_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
-  int          i,m = a->mbs,ierr;
+  int          i,mbs = a->mbs,ierr;
 
   PetscFunctionBegin;
   if (a->diag) PetscFunctionReturn(0);
 
-  ierr = PetscMalloc((m+1)*sizeof(int),&a->diag);CHKERRQ(ierr); 
-  PetscLogObjectMemory(A,(m+1)*sizeof(int));
-  for (i=0; i<m; i++) a->diag[i] = a->i[i];
+  ierr = PetscMalloc((mbs+1)*sizeof(int),&a->diag);CHKERRQ(ierr); 
+  PetscLogObjectMemory(A,(mbs+1)*sizeof(int));
+  for (i=0; i<mbs; i++) a->diag[i] = a->i[i];  
   PetscFunctionReturn(0);
 }
-
 
 extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
@@ -579,7 +578,6 @@ int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not yet written for SBAIJ format");
-  /* PetscFunctionReturn(0); */
 } 
 
 #undef __FUNCT__  
@@ -620,11 +618,9 @@ int MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   }
   a->s_nz = ai[mbs]; 
 
-  /* diagonals may have moved, so kill the diagonal pointers */
-  if (fshift && a->diag) {
-    ierr = PetscFree(a->diag);CHKERRQ(ierr);
-    PetscLogObjectMemory(A,-(m+1)*sizeof(int));
-    a->diag = 0;
+  /* diagonals may have moved, reset it */
+  if (a->diag) {
+    ierr = PetscMemcpy(a->diag,ai,(mbs+1)*sizeof(int));CHKERRQ(ierr);
   } 
   PetscLogInfo(A,"MatAssemblyEnd_SeqSBAIJ:Matrix size: %d X %d, block size %d; storage space: %d unneeded, %d used\n",
            m,A->m,a->bs,fshift*bs2,a->s_nz*bs2);

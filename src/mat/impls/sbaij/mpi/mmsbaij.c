@@ -18,16 +18,11 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
   IS                 from,to;
   Vec                gvec;
   int                rank=sbaij->rank,lsize,size=sbaij->size; 
-  int                *owners=sbaij->rowners,*sowners,*ec_owner,prank=100,k; 
+  int                *owners=sbaij->rowners,*sowners,*ec_owner,k; 
   PetscMap           vecmap;
   PetscScalar        *ptr;
 
   PetscFunctionBegin;
-  /*
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], MatSetUpMultiply_MPISBAIJ is called ...\n",rank);
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
-  */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-prank",&prank,PETSC_NULL);CHKERRQ(ierr);
   if (sbaij->lvec) {
     ierr = VecDestroy(sbaij->lvec);CHKERRQ(ierr);
     sbaij->lvec = 0;
@@ -64,15 +59,8 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
     }
   }
 
-  if (rank == prank){
-    printf("proc[%d]: \n",rank);
-    for (i=0; i<ec;i++)  printf("[%d]: garray = %d, ec_owner = %d\n", i,garray[i], ec_owner[i]); 
-  }
-
   /* make indices now point into garray */
-  for (i=0; i<ec; i++) {
-    indices[garray[i]] = i;
-  }
+  for (i=0; i<ec; i++) indices[garray[i]] = i;
 
   /* compact out the extra columns in B */
   for (i=0; i<mbs; i++) {
@@ -92,13 +80,6 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
   
   for (i=0; i<ec; i++) { stmp[i] = bs*i; } 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
-
-  if (rank == prank){
-    ierr = PetscPrintf(PETSC_COMM_SELF," from: ");CHKERRQ(ierr);
-    ierr = ISView(from,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF," to:");CHKERRQ(ierr);
-    ierr = ISView(to,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); 
-  }
 
   /* generate the scatter context */
   ierr = VecCreateMPI(mat->comm,mat->n,mat->N,&gvec);CHKERRQ(ierr);
@@ -141,14 +122,7 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
   /* b index in the IS sto */
   for (i=ec; i<2*ec; i++) stmp[i] = bs*sgarray[i-ec]; 
 
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,stmp,&to);CHKERRQ(ierr);
-
-  if (rank == prank){
-    ierr = PetscPrintf(PETSC_COMM_SELF," sfrom: ");CHKERRQ(ierr);
-    ierr = ISView(from,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); 
-    ierr = PetscPrintf(PETSC_COMM_SELF," sto:");CHKERRQ(ierr);
-    ierr = ISView(to,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); 
-  } 
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,stmp,&to);CHKERRQ(ierr); 
 
   /* gnerate the SBAIJ scatter context */
   ierr = VecScatterCreate(sbaij->slvec0,from,sbaij->slvec1,to,&sbaij->sMvctx);CHKERRQ(ierr);  
