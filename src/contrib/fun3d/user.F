@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.16 2000/01/23 21:09:23 kaushik Exp bsmith $
+c  $Id: user.F,v 1.17 2000/01/24 03:57:28 bsmith Exp bsmith $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -788,7 +788,7 @@ c=====================================================================72
       subroutine L2NORM(res,nnodes,nnode_glo,x,y,z,vol,irank)
       implicit none
 #include "include/finclude/petsc.h"  
-      integer nnodes,nnode_glo,irank,icount,irank
+      integer nnodes,nnode_glo,irank,icount
       Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       Scalar  rms(3000),clw(3000),cdw(3000),
@@ -805,7 +805,7 @@ c=====================================================================72
       Scalar res(4,nnodes),x(1),y(1),z(1)
 c     dimension dq(nnodes,4),vol(1)
       Scalar vol(1)
-      integer iflag,i,icount,ierr
+      integer iflag,i,ierr
       Scalar sum,sumglo,t1,rmax,test,xloc,yloc,zloc,
      &       ratio,compare
 
