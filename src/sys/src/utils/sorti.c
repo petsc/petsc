@@ -127,7 +127,7 @@ static int PetscSortIntWithArray_Private(int *v,int *V,int right)
    Input Parameters:
 +  n  - number of values
 .  i  - array of integers
--  I - second array if integers
+-  I - second array of integers
 
    Level: intermediate
 

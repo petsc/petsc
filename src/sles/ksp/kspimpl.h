@@ -48,6 +48,7 @@ struct _p_KSP {
   PetscReal rnorm0;                   /* initial residual norm (used for divergence testing) */
   PetscReal rnorm;                    /* current residual norm */
   KSPConvergedReason reason;     
+  PetscTruth         printreason;     /* prints converged reason after solve */
 
   Vec vec_sol,vec_rhs;            /* pointer to where user has stashed 
                                       the solution and rhs, these are 

@@ -207,7 +207,6 @@ int MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
     garray[lid] = gid; 
   }
   ierr = PetscSortInt(ec,garray);CHKERRQ(ierr);
-  /* qsort(garray, ec, sizeof(int), intcomparcarc); */
   ierr = PetscTableRemoveAll(gid1_lid1);CHKERRQ(ierr);
   for (i=0; i<ec; i++) {
     ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1);CHKERRQ(ierr); 

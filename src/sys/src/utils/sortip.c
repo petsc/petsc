@@ -150,3 +150,78 @@ int PetscSortRealWithPermutation(int n,const PetscReal i[],int idx[])
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortStrWithPermutation_Private"
+static int PetscSortStrWithPermutation_Private(const char* v[],int vdx[],int right)
+{
+  int        ierr,tmp,i,last;
+  PetscTruth gt;
+  const char *vl;
+
+  PetscFunctionBegin;
+  if (right <= 1) {
+    if (right == 1) {
+      ierr = PetscStrgrt(v[vdx[0]],v[vdx[1]],&gt);CHKERRQ(ierr);
+      if (gt) SWAP(vdx[0],vdx[1],tmp);
+    }
+    PetscFunctionReturn(0);
+  }
+  SWAP(vdx[0],vdx[right/2],tmp);
+  vl   = v[vdx[0]];
+  last = 0;
+  for (i=1; i<=right; i++) {
+    ierr = PetscStrgrt(vl,v[vdx[i]],&gt);CHKERRQ(ierr);
+    if (gt) {last++; SWAP(vdx[last],vdx[i],tmp);}
+  }
+  SWAP(vdx[0],vdx[last],tmp);
+  ierr = PetscSortStrWithPermutation_Private(v,vdx,last-1);CHKERRQ(ierr);
+  ierr = PetscSortStrWithPermutation_Private(v,vdx+last+1,right-(last+1));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortStrWithPermutation"
+/*@
+   PetscSortStrWithPermutation - Computes the permutation of values that gives 
+   a sorted sequence.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values to sort
+.  i  - values to sort
+-  idx - permutation array.  Must be initialized to 0:n-1 on input.
+
+   Level: intermediate
+
+   Notes: 
+   i is unchanged on output.
+
+   Concepts: sorting^ints with permutation
+
+.seealso: PetscSortInt(), PetscSortRealWithPermutation()
+ @*/
+int PetscSortStrWithPermutation(int n,const char* i[],int idx[])
+{
+  int        ierr,j,k,tmp;
+  const char *ik;
+  PetscTruth gt;
+
+  PetscFunctionBegin;
+  if (n<8) {
+    for (k=0; k<n; k++) {
+      ik = i[idx[k]];
+      for (j=k+1; j<n; j++) {
+        ierr = PetscStrgrt(ik,i[idx[j]],&gt);CHKERRQ(ierr);
+	if (gt) {
+	  SWAP(idx[k],idx[j],tmp);
+	  ik = i[idx[k]];
+	}
+      }
+    }
+  } else {
+    ierr = PetscSortStrWithPermutation_Private(i,idx,n-1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}

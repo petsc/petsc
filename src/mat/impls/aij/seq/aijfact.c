@@ -565,7 +565,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   }
   if (nshift) {
     b->lu_shift_fraction = shift_fraction;
-    PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: diagonal shifted up by %e fraction\n",shift_fraction);
+    PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: diagonal shifted up by %e fraction top_value %e number shifts %d\n",shift_fraction,shift_top,nshift);
   }
   PetscFunctionReturn(0);
 }
