@@ -5781,8 +5781,8 @@ PetscErrorCode MatFactorInfoInitialize(MatFactorInfo *info)
    Notes:
    C will be created and must be destroyed by the user with MatDestroy().
 
-   This routine is currently only implemented for pairs of SeqAIJ matrices and classes
-   which inherit from SeqAIJ.  C will be of type MATSEQAIJ.
+   This routine is currently only implemented for pairs of AIJ matrices and classes
+   which inherit from AIJ.  
 
    Level: intermediate
 
