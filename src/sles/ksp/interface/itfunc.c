@@ -500,7 +500,10 @@ int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
   Vec w = v;
   int ierr;
   VALIDHEADER(ctx,KSP_COOKIE);
-  if (!w) {ierr = VecCreate(ctx->vec_rhs,&w); CHKERR(ierr);}
+  if (!w) {
+    ierr = VecCreate(ctx->vec_rhs,&w); CHKERR(ierr);
+    PLogParent((PetscObject)ctx,w);
+  }
   return (*ctx->BuildSolution)(ctx,w,V);
 }
 
@@ -525,8 +528,14 @@ int KSPBuildResidual(KSP ctx, Vec t, Vec v, Vec *V)
   int flag = 0, ierr;
   Vec w = v, tt = t;
   VALIDHEADER(ctx,KSP_COOKIE);
-  if (!w) {ierr = VecCreate(ctx->vec_rhs,&w); CHKERR(ierr);}
-  if (!tt) {ierr = VecCreate(ctx->vec_rhs,&tt); CHKERR(ierr); flag = 1;}
+  if (!w) {
+    ierr = VecCreate(ctx->vec_rhs,&w); CHKERR(ierr);
+    PLogParent((PetscObject)ctx,w);
+  }
+  if (!tt) {
+    PLogParent((PetscObject)ctx,tt);
+    ierr = VecCreate(ctx->vec_rhs,&tt); CHKERR(ierr); flag = 1;
+  }
   ierr = (*ctx->BuildResidual)(ctx,tt,w,V); CHKERR(ierr);
   if (flag) ierr = VecDestroy(tt); CHKERR(ierr);
   return ierr;
