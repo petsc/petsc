@@ -1,4 +1,4 @@
-/* $Id: petscviewer.h,v 1.81 2001/01/19 23:19:27 balay Exp bsmith $ */
+/* $Id: petscviewer.h,v 1.82 2001/01/20 03:33:35 bsmith Exp bsmith $ */
 /*
      PetscViewers are objects where other objects can be looked at or stored.
 */
@@ -130,6 +130,7 @@ EXTERN PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm);
 #include "ams.h"
 EXTERN int         PetscViewerAMSGetAMSComm(PetscViewer,AMS_Comm *);
 EXTERN int         PetscViewerAMSOpen(MPI_Comm,const char[],PetscViewer*);
+EXTERN int         PetscViewerAMSLock(PetscViewer);
 EXTERN PetscViewer PETSC_VIEWER_AMS_(MPI_Comm);
 EXTERN int         PETSC_VIEWER_AMS_Destroy(MPI_Comm);
 #define PETSC_VIEWER_AMS_WORLD PETSC_VIEWER_AMS_(PETSC_COMM_WORLD)
