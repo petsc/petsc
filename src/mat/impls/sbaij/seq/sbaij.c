@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.23 2000/09/13 20:05:46 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.24 2000/09/14 19:49:18 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1397,14 +1397,15 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
     if (nz == PETSC_DEFAULT) nz = 5;
     else if (nz <= 0)        nz = 1;
     for (i=0; i<mbs; i++) {
-      b->imax[i] = (nz+1)/2; /* s_imax */
+      b->imax[i] = nz; 
     }
     nz = nz*mbs; /* total nz */
   } else {
     nz = 0;
-    for (i=0; i<mbs; i++) {b->imax[i] = (nnz[i]+1)/2; nz += nnz[i];}
+    for (i=0; i<mbs; i++) {b->imax[i] = nnz[i]; nz += nnz[i];}
   }
-  s_nz=(nz+mbs)/2;  /* total diagonal and superdiagonal nonzero blocks */
+  /* s_nz=(nz+mbs)/2; */ /* total diagonal and superdiagonal nonzero blocks */
+  s_nz = nz;
 
   /* allocate the matrix space */
   len   = s_nz*sizeof(int) + s_nz*bs2*sizeof(MatScalar) + (b->m+1)*sizeof(int);
@@ -1458,8 +1459,8 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
                                      (void*)MatRetrieveValues_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqSBAIJSetColumnIndices_C",
                                      "MatSeqSBAIJSetColumnIndices_SeqSBAIJ",
-                                     (void*)MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);
-  /* printf("In MatCreateSeqSBAIJ, s_nz = %d, bs2=%d, m=%d, mbs=%d \n", s_nz,bs2,m,mbs); */ 
+                                     (void*)MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr); */
+  /* printf("In MatCreateSeqSBAIJ, s_nz = %d, bs2=%d, m=%d, mbs=%d \n", s_nz,bs2,m,mbs);  
    /*
    for (i=0; i<mbs; i++){
      printf("imax[%d]= %d, ilen[%d]= %d\n", i,b->imax[i], i,b->ilen[i]);
