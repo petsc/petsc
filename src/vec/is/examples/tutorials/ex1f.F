@@ -1,10 +1,10 @@
 
-C  "$Id: ex1f.F,v 1.6 1996/09/28 20:48:32 curfman Exp bsmith $";
+C  "$Id: ex1f.F,v 1.7 1996/11/07 15:07:22 bsmith Exp balay $";
 C
 C/*T
 C    Concepts: Index sets^Manipulating a general index set;
-C    Routines: ISCreateGeneral(), ISDestroy(), ISView(), ISGetSize()
-C    Routines: ISGetIndices(), ISRestoreIndices()
+C    Routines: ISCreateGeneral(); ISDestroy(); ISView(); ISGetSize()
+C    Routines: ISGetIndices(); ISRestoreIndices()
 CT*/
 C    
 C    Comment: Creates an index set based on a set of integers. Views that index set

@@ -1,11 +1,11 @@
 
-C      "$Id: ex2f.F,v 1.5 1996/09/28 20:49:22 curfman Exp bsmith $";
+C      "$Id: ex2f.F,v 1.6 1996/09/30 19:37:48 bsmith Exp balay $";
 C
 C/*T
 C    Concepts: Index sets^Manipulating a stride index set;
 C    Concepts: Index sets^Accessing indices from Fortran
-C    Routines: ISCreateStride(), ISDestroy(), ISView()
-C    Routines: ISGetIndices(), ISRestoreIndices()
+C    Routines: ISCreateStride(); ISDestroy(); ISView()
+C    Routines: ISGetIndices(); ISRestoreIndices()
 CT*/
 C    
 C    Comment: Creates an index set based on a stride. Views that index set
