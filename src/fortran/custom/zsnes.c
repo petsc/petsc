@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.60 2001/08/07 21:32:16 bsmith Exp balay $*/
+/*$Id: zsnes.c,v 1.61 2001/08/10 15:50:58 balay Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsnes.h"
@@ -161,9 +161,9 @@ void PETSC_STDCALL snessetlinesearchparams_(SNES *snes,PetscReal *alpha,PetscRea
 
 void PETSC_STDCALL snesgetlinesearchparams_(SNES *snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol,int *ierr)
 {
-  if (FORTRANNULLPETSCREAL(alpha)) alpha = PETSC_NULL;
-  if (FORTRANNULLPETSCREAL(maxstep)) maxstep = PETSC_NULL;
-  if (FORTRANNULLPETSCREAL(steptol)) steptol = PETSC_NULL;
+  if (FORTRANNULLREAL(alpha)) alpha = PETSC_NULL;
+  if (FORTRANNULLREAL(maxstep)) maxstep = PETSC_NULL;
+  if (FORTRANNULLREAL(steptol)) steptol = PETSC_NULL;
   *ierr = SNESGetLineSearchParams(*snes,alpha,maxstep,steptol);
 }
 
@@ -410,7 +410,7 @@ void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void **ctx,void *func,int 
 void PETSC_STDCALL snesgetminimizationfunction_(SNES *snes,PetscReal *r,void **ctx,int *ierr)
 {
   if (FORTRANNULLINTEGER(ctx)) ctx = PETSC_NULL;
-  if (FORTRANNULLPETSCREAL(r))    r   = PETSC_NULL;
+  if (FORTRANNULLREAL(r))    r   = PETSC_NULL;
   *ierr = SNESGetMinimizationFunction(*snes,r,ctx);
 }
 
