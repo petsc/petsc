@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.13 1997/10/12 23:22:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.14 1997/12/03 14:04:26 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -44,7 +44,8 @@ void dagetcoloring_(DA da, ISColoring *coloring, Mat *J,int *__ierr)
   *(int*) J = PetscFromPointer(oJ);
 }
 
-void daview_(DA da,Viewer v, int *__ierr ){
+void daview_(DA da,Viewer v, int *__ierr )
+{
   PetscPatchDefaultViewers_Fortran(v);
   *__ierr = DAView((DA)PetscToPointer( *(int*)(da) ),v);
 }
@@ -84,9 +85,9 @@ void dagetscatter_(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,
   if (!FORTRANNULL(ltol)) *(int*) ltol = PetscFromPointer(ll);
 }
 
-void dadestroy_(DA da, int *__ierr ){
-  *__ierr = DADestroy(
-	(DA)PetscToPointer( *(int*)(da) ));
+void dadestroy_(DA da, int *__ierr )
+{
+  *__ierr = DADestroy((DA)PetscToPointer( *(int*)(da) ));
   PetscRmPointer(*(int*)(da));
 }
 
@@ -97,9 +98,8 @@ void dacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
   DA da;
   if (FORTRANNULL(lx)) lx = PETSC_NULL;
   if (FORTRANNULL(ly)) ly = PETSC_NULL;
-  *__ierr = DACreate2d(
-	    (MPI_Comm)PetscToPointerComm( *comm ),*wrap,
-            *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,&da);
+  *__ierr = DACreate2d((MPI_Comm)PetscToPointerComm( *comm ),*wrap,
+                       *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,&da);
   *(int*) inra = PetscFromPointer(da);
 }
 
@@ -108,8 +108,7 @@ void dacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,int *M,int *w,int *s,
 {
   DA da;
   if (FORTRANNULL(lc)) lc = PETSC_NULL;
-  *__ierr = DACreate1d(
-	   (MPI_Comm)PetscToPointerComm( *comm ),*wrap,*M,*w,*s,lc,&da);
+  *__ierr = DACreate1d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*M,*w,*s,lc,&da);
   *(int*) inra = PetscFromPointer(da);
 }
 
@@ -118,15 +117,15 @@ void dacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                  int *w,int *s,int *lx,int *ly,int *lz,DA *inra, int *__ierr )
 {
   DA da;
-  *__ierr = DACreate3d(
-	   (MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,
-           *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,&da);
+  *__ierr = DACreate3d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,
+                        *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,&da);
   *(int*) inra = PetscFromPointer(da);
 }
 
-void dagetinfo_(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,DAPeriodicType *wrap, int *__ierr ){
-*__ierr = DAGetInfo(
-	(DA)PetscToPointer( *(int*)(da) ),dim,M,N,P,m,n,p,w,s,wrap);
+void dagetinfo_(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,
+                DAPeriodicType *wrap, int *__ierr )
+{
+  *__ierr = DAGetInfo((DA)PetscToPointer( *(int*)(da) ),dim,M,N,P,m,n,p,w,s,wrap);
 }
 
 #if defined(__cplusplus)

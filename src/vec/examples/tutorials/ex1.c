@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.42 1997/10/19 03:22:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.43 1997/11/28 16:18:34 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates various vector routines\n\n";
@@ -44,6 +44,9 @@ int main(int argc,char **argv)
         VecCreateSeq() - uniprocessor vector
         VecCreateMPI() - distributed vector, where the user can
                          determine the parallel partitioning
+        VecCreateShared() - parallel vector that uses shared memory
+                            (available only on the SGI), otherwise
+                            is the same as VecCreateMPI()
   */
   ierr = VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
 
