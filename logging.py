@@ -5,7 +5,7 @@ class defaultWriter:
 
   def write(self,mess):
     import sys
-    sys.std.write(mess)
+    sys.stdout.write(mess)
     
     
 class Logger(object):
