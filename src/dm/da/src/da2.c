@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.51 1996/05/30 20:55:42 balay Exp balay $";
+static char vcid[] = "$Id: da2.c,v 1.52 1996/06/11 15:39:57 balay Exp balay $";
 #endif
  
 #include "daimpl.h"    /*I   "da.h"   I*/
@@ -175,11 +175,12 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2); CHKERRQ(ierr);
   if (flg1) {  /* Block Comm type Distribution */
-        xs = (rank%m)*M/m;
-        x = (rank%m + 1)*M/m - xs;
-        ys = (rank/m)*N/n;
-        y = (rank/m + 1)*N/n - ys;
-      
+    xs = (rank%m)*M/m;
+    x = (rank%m + 1)*M/m - xs;
+    ys = (rank/m)*N/n;
+    y = (rank/m + 1)*N/n - ys;
+    if (x < s) SETERRQ(1,"DACreate2d:Column width is too thin for stencil!");
+    if (y < s) SETERRQ(1,"DACreate2d:Row width is too thin for stencil!");      
   }
   else if (flg2) { 
     x = (M + rank%m)/m;
