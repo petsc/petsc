@@ -23,7 +23,7 @@ def petsc_configure(configure_options):
   framework.argDB['CPPFLAGS'] = ''
   framework.argDB['LIBS'] = ''
   framework.configure()
-  #framework.dumpSubstitutions()
+  framework.storeSubstitutions(framework.argDB)
 
 if __name__ == '__main__':
   petsc_configure([])
