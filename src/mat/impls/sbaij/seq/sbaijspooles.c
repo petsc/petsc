@@ -24,9 +24,9 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
 
   ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
   (*F)->spptr       = (void*)lu;
-  lu->symflag       = SPOOLES_SYMMETRIC;
-  lu->pivotingflag  = SPOOLES_NO_PIVOTING;
-  lu->flg           = DIFFERENT_NONZERO_PATTERN;
+  lu->options.symflag       = SPOOLES_SYMMETRIC;
+  lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
+  lu->flg                   = DIFFERENT_NONZERO_PATTERN;
 
   PetscFunctionReturn(0); 
 }

@@ -29,9 +29,13 @@ int MatLUFactorSymbolic_MPIAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 
   ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
   (*F)->spptr      = (void*)lu;
-  lu->symflag      = SPOOLES_NONSYMMETRIC;
-  lu->pivotingflag = SPOOLES_PIVOTING; 
-  lu->flg          = DIFFERENT_NONZERO_PATTERN;
+  lu->options.symflag      = SPOOLES_NONSYMMETRIC;
+  lu->options.pivotingflag = SPOOLES_PIVOTING; 
+  lu->flg                  = DIFFERENT_NONZERO_PATTERN;
+
+  if (info && info->dtcol == 0.0) {
+    lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
+  }
 
   PetscFunctionReturn(0); 
 }

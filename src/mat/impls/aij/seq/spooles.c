@@ -9,6 +9,157 @@
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
 #include "src/mat/impls/aij/seq/spooles.h"
 
+/* Set Spooles' default and runtime options */
+int SetSpoolesOptions(Mat A, Spooles_options *options)
+{
+  int          ierr;
+  char         buff[32],*ordertype[]={"BestOfNDandMS","MMD","MS","ND"}; 
+  PetscTruth   flg;
+
+  PetscFunctionBegin;	
+  /* set default input parameters */ 
+  options->tau            = 100.; 
+  options->seed           = 10101;  
+  options->ordering       = 1;     /* MMD */
+  options->maxdomainsize  = 500;
+  options->maxzeros       = 1000;
+  options->maxsize        = 96;   
+  if ( options->symflag == SPOOLES_SYMMETRIC ) {
+    options->patchAndGoFlag = 0;  /* no patch */
+    options->storeids       = 1; 
+    options->storevalues    = 1;
+    options->toosmall       = 1.e-9;
+    options->fudge          = 1.e-9;
+  } 
+
+  /* get runtime input parameters */
+  ierr = PetscOptionsBegin(A->comm,A->prefix,"Spooles Options","Mat");CHKERRQ(ierr); 
+
+    ierr = PetscOptionsReal("-mat_spooles_tau","tau (used for pivoting; \n\
+           all entries in L and U have magnitude no more than tau)","None",options->tau,&options->tau,PETSC_NULL);CHKERRQ(ierr);
+
+    ierr = PetscOptionsInt("-mat_spooles_seed","random number seed, used for ordering","None",options->seed,&options->seed,PETSC_NULL);CHKERRQ(ierr);
+
+    if (PetscLogPrintInfo) {
+      options->msglvl = 1;
+    } else {
+      options->msglvl = 0;
+    }
+    ierr = PetscOptionsInt("-mat_spooles_msglvl","msglvl","None",options->msglvl,&options->msglvl,0);CHKERRQ(ierr); 
+    if (options->msglvl > 0) {
+        options->msgFile = fopen("spooles.msgFile", "a");
+        PetscPrintf(PETSC_COMM_SELF,"\n Spooles' output is written into the file 'spooles.msgFile' \n\n");
+    } 
+
+    ierr = PetscOptionsEList("-mat_spooles_ordering","ordering type","None",
+             ordertype,4,ordertype[1],buff,32,&flg);CHKERRQ(ierr);
+    while (flg) {
+      ierr = PetscStrcmp(buff,"BestOfNDandMS",&flg);CHKERRQ(ierr);
+      if (flg) {
+        options->ordering = 0;
+        break;
+      }
+      ierr = PetscStrcmp(buff,"MMD",&flg);CHKERRQ(ierr);
+      if (flg) {
+        options->ordering = 1;
+        break;
+      }
+      ierr = PetscStrcmp(buff,"MS",&flg);CHKERRQ(ierr);
+      if (flg) {
+        options->ordering = 2;
+        break;
+      }
+      ierr = PetscStrcmp(buff,"ND",&flg);CHKERRQ(ierr);
+      if (flg) {
+        options->ordering = 3;
+        break;
+      }
+      SETERRQ1(1,"Unknown Spooles's ordering %s",buff);
+    }
+   
+    ierr = PetscOptionsInt("-mat_spooles_maxdomainsize","maxdomainsize","None",\
+                           options->maxdomainsize,&options->maxdomainsize,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_spooles_maxzeros ","maxzeros","None",\
+                           options->maxzeros,&options->maxzeros,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_spooles_maxsize","maxsize","None",\
+                           options->maxsize,&options->maxsize,PETSC_NULL);CHKERRQ(ierr);
+    if ( options->symflag == SPOOLES_SYMMETRIC ) {
+      ierr = PetscOptionsInt("-mat_spooles_patchAndGoFlag","patchAndGoFlag","None", \
+                           options->patchAndGoFlag,&options->patchAndGoFlag,PETSC_NULL);CHKERRQ(ierr);
+      
+      ierr = PetscOptionsReal("-mat_spooles_fudge","fudge","None", \
+                           options->fudge,&options->fudge,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsReal("-mat_spooles_toosmall","toosmall","None", \
+                           options->toosmall,&options->toosmall,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-mat_spooles_storeids","storeids","None", \
+                           options->storeids,&options->storeids,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-mat_spooles_storevalues","storevalues","None", \
+                           options->storevalues,&options->storevalues,PETSC_NULL);CHKERRQ(ierr);
+      
+    }
+  PetscOptionsEnd(); 
+
+  PetscFunctionReturn(0);
+}
+
+/* used by -sles_view */
+extern int MatSolve_SeqAIJ_Spooles(Mat,Vec,Vec);
+extern int MatSolve_MPIAIJ_Spooles(Mat,Vec,Vec);
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorInfo_Spooles"
+int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
+{
+  Mat_Spooles    *lu = (Mat_Spooles*)A->spptr; 
+  int            ierr,size;
+  char           *s;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  
+  /* check if matrix is spooles type */
+  if (size == 1){
+    if (A->ops->solve != MatSolve_SeqAIJ_Spooles) PetscFunctionReturn(0);
+  } else {
+    if (A->ops->solve != MatSolve_MPIAIJ_Spooles) PetscFunctionReturn(0);
+  }
+
+  switch (lu->options.symflag) {
+  case 0: s = "SPOOLES_SYMMETRIC"; break;
+  case 2: s = "SPOOLES_NONSYMMETRIC"; break; }
+  ierr = PetscViewerASCIIPrintf(viewer,"  symmetryflag:   %s \n",s);CHKERRQ(ierr);
+
+  switch (lu->options.pivotingflag) {
+  case 0: s = "SPOOLES_NO_PIVOTING"; break;
+  case 1: s = "SPOOLES_PIVOTING"; break; }
+  ierr = PetscViewerASCIIPrintf(viewer,"  pivotingflag:   %s \n",s);CHKERRQ(ierr);
+
+  ierr = PetscViewerASCIIPrintf(viewer,"  tau:            %g \n",lu->options.tau);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  seed:           %d \n",lu->options.seed);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  msglvl:         %d \n",lu->options.msglvl);CHKERRQ(ierr);
+
+  switch (lu->options.ordering) {
+  case 0: s = "BestOfNDandMS"; break;  
+  case 1: s = "MMD"; break;
+  case 2: s = "MS"; break;
+  case 3: s = "ND"; break;
+  }
+  ierr = PetscViewerASCIIPrintf(viewer,"  ordering:       %s \n",s);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxdomainsize:  %d \n",lu->options.maxdomainsize);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxzeros:       %d \n",lu->options.maxzeros);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxsize:        %d \n",lu->options.maxsize);CHKERRQ(ierr);
+
+  if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  patchAndGoFlag: %d \n",lu->options.patchAndGoFlag);CHKERRQ(ierr);
+    if ( lu->options.patchAndGoFlag > 0 ) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  fudge:          %g \n",lu->options.fudge);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  toosmall:       %g \n",lu->options.toosmall);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  storeids:       %d \n",lu->options.storeids);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  storevalues:    %d \n",lu->options.storevalues);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 extern int MatDestroy_SeqAIJ(Mat); 
 
 #undef __FUNCT__  
@@ -58,13 +209,13 @@ int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
   DenseMtx_init(mtxX, SPOOLES_REAL, 0, 0, neqns, 1, 1, neqns) ;
   DenseMtx_zero(mtxX) ;
   FrontMtx_solve(lu->frontmtx, mtxX, mtxY, lu->mtxmanager, 
-                 lu->cpus, lu->msglvl, lu->msgFile) ;
-  if ( lu->msglvl > 2 ) {
-    fprintf(lu->msgFile, "\n\n right hand side matrix after permutation") ;
-    DenseMtx_writeForHumanEye(mtxY, lu->msgFile) ; 
-    fprintf(lu->msgFile, "\n\n solution matrix in new ordering") ;
-    DenseMtx_writeForHumanEye(mtxX, lu->msgFile) ;
-    fflush(lu->msgFile) ;
+                 lu->cpus, lu->options.msglvl, lu->options.msgFile) ;
+  if ( lu->options.msglvl > 2 ) {
+    fprintf(lu->options.msgFile, "\n\n right hand side matrix after permutation") ;
+    DenseMtx_writeForHumanEye(mtxY, lu->options.msgFile) ; 
+    fprintf(lu->options.msgFile, "\n\n solution matrix in new ordering") ;
+    DenseMtx_writeForHumanEye(mtxX, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
   }
 
   /* permute solution into original ordering, then copy to x */  
@@ -77,7 +228,7 @@ int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
   /* free memory */
   DenseMtx_free(mtxX) ;
   DenseMtx_free(mtxY) ;
-
+  
   PetscFunctionReturn(0);
 }
 
@@ -95,97 +246,20 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
                      *ai,*aj,*ivec1, *ivec2, i;
   PetscScalar        *av;
   double             *dvec;
+  /*
   char               buff[32],*ordertype[]={"BestOfNDandMS","MMD","MS","ND"}; 
   PetscTruth         flg;
-
+  */
   PetscFunctionBegin;
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
-
+    
     (*F)->ops->solve   = MatSolve_SeqAIJ_Spooles;
     (*F)->ops->destroy = MatDestroy_SeqAIJ_Spooles;  
+    
+    ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr); 
 
-    /* set default input parameters */
-    lu->tau            = 100.;
-    lu->seed           = 10101;  
-    lu->ordering       = 0;
-    lu->maxdomainsize  = 500;
-    lu->maxzeros       = 1000;
-    lu->maxsize        = 96;
-    if ( lu->symflag == SPOOLES_SYMMETRIC ) {
-      lu->patchAndGoFlag = 1;
-      lu->storeids       = 1; 
-      lu->storevalues    = 1;
-      lu->toosmall       = 1.e-9;
-      lu->fudge          = 1.e-9;
-    }
-
-    /* get runtime input parameters */
-    ierr = PetscOptionsBegin(A->comm,A->prefix,"Spooles Options","Mat");CHKERRQ(ierr); 
-
-    ierr = PetscOptionsReal("-mat_aij_spooles_tau","tau (used for pivoting; \n\
-           all entries in L and U have magnitude no more than tau)","None",lu->tau,&lu->tau,PETSC_NULL);CHKERRQ(ierr);
-
-    ierr = PetscOptionsInt("-mat_aij_spooles_seed","random number seed, used for ordering","None",lu->seed,&lu->seed,PETSC_NULL);CHKERRQ(ierr);
-
-    if (PetscLogPrintInfo) {
-      lu->msglvl = 1;
-    } else {
-      lu->msglvl = 0;
-    }
-    ierr = PetscOptionsInt("-mat_aij_spooles_msglvl","msglvl","None",lu->msglvl,&lu->msglvl,0);CHKERRQ(ierr); 
-    if (lu->msglvl > 0) {
-        lu->msgFile = fopen("spooles.msgFile", "a");
-        PetscPrintf(PETSC_COMM_SELF,"\n Spooles' output is written into the file 'spooles.msgFile' \n\n");
-    } 
-
-    ierr = PetscOptionsEList("-mat_aij_spooles_ordering","ordering type","None",
-             ordertype,4,ordertype[0],buff,32,&flg);CHKERRQ(ierr);
-    while (flg) {
-      ierr = PetscStrcmp(buff,"BestOfNDandMS",&flg);CHKERRQ(ierr);
-      if (flg) {
-        lu->ordering = 0;
-        break;
-      }
-      ierr = PetscStrcmp(buff,"MMD",&flg);CHKERRQ(ierr);
-      if (flg) {
-        lu->ordering = 1;
-        break;
-      }
-      ierr = PetscStrcmp(buff,"MS",&flg);CHKERRQ(ierr);
-      if (flg) {
-        lu->ordering = 2;
-        break;
-      }
-      ierr = PetscStrcmp(buff,"ND",&flg);CHKERRQ(ierr);
-      if (flg) {
-        lu->ordering = 3;
-        break;
-      }
-      SETERRQ1(1,"Unknown Spooles's ordering %s",buff);
-    }
-   
-    ierr = PetscOptionsInt("-mat_aij_spooles_maxdomainsize","maxdomainsize","None",\
-                           lu->maxdomainsize,&lu->maxdomainsize,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_aij_spooles_maxzeros ","maxzeros","None",\
-                           lu->maxzeros,&lu->maxzeros,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_aij_spooles_maxsize","maxsize","None",\
-                           lu->maxsize,&lu->maxsize,PETSC_NULL);CHKERRQ(ierr);
-    if ( lu->symflag == SPOOLES_SYMMETRIC ) {
-      ierr = PetscOptionsInt("-mat_aij_spooles_patchAndGoFlag","patchAndGoFlag","None", \
-                           lu->patchAndGoFlag,&lu->patchAndGoFlag,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsReal("-mat_aij_spooles_fudge","fudge","None", \
-                           lu->fudge,&lu->fudge,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsReal("-mat_aij_spooles_toosmall","toosmall","None", \
-                           lu->toosmall,&lu->toosmall,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-mat_aij_spooles_storeids","storeids","None", \
-                           lu->storeids,&lu->storeids,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-mat_aij_spooles_storevalues","storevalues","None", \
-                           lu->storevalues,&lu->storevalues,PETSC_NULL);CHKERRQ(ierr);
-    }
-    PetscOptionsEnd();
-  
     /* copy A to Spooles' InpMtx object */
-    if ( lu->symflag == SPOOLES_NONSYMMETRIC ) {
+    if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) {
       Mat_SeqAIJ       *mat = (Mat_SeqAIJ*)A->data;
       ai=mat->i; aj=mat->j; av=mat->a;
       lu->nz=mat->nz;
@@ -217,34 +291,34 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     adjIVL = InpMtx_fullAdjacency(lu->mtxA) ;
     nedges = IVL_tsize(adjIVL) ;
     Graph_init2(graph, 0, m, 0, nedges, m, nedges, adjIVL,NULL, NULL) ;
-    if ( lu->msglvl > 2 ) {
-      fprintf(lu->msgFile, "\n\n graph of the input matrix") ;
-      Graph_writeForHumanEye(graph, lu->msgFile) ;
-      fflush(lu->msgFile) ;
+    if ( lu->options.msglvl > 2 ) {
+      fprintf(lu->options.msgFile, "\n\n graph of the input matrix") ;
+      Graph_writeForHumanEye(graph, lu->options.msgFile) ;
+      fflush(lu->options.msgFile) ;
     }
 
-    switch (lu->ordering) {
+    switch (lu->options.ordering) {
     case 0:
       lu->frontETree = orderViaBestOfNDandMS(graph,
-                     lu->maxdomainsize, lu->maxzeros, lu->maxsize,
-                     lu->seed, lu->msglvl, lu->msgFile); break;
+                     lu->options.maxdomainsize, lu->options.maxzeros, lu->options.maxsize,
+                     lu->options.seed, lu->options.msglvl, lu->options.msgFile); break;
     case 1:
-      lu->frontETree = orderViaMMD(graph,lu->seed,lu->msglvl,lu->msgFile); break;
+      lu->frontETree = orderViaMMD(graph,lu->options.seed,lu->options.msglvl,lu->options.msgFile); break;
     case 2:
-      lu->frontETree = orderViaMS(graph, lu->maxdomainsize,
-                     lu->seed,lu->msglvl,lu->msgFile); break;
+      lu->frontETree = orderViaMS(graph, lu->options.maxdomainsize,
+                     lu->options.seed,lu->options.msglvl,lu->options.msgFile); break;
     case 3:
-      lu->frontETree = orderViaND(graph, lu->maxdomainsize, 
-                     lu->seed,lu->msglvl,lu->msgFile); break;
+      lu->frontETree = orderViaND(graph, lu->options.maxdomainsize, 
+                     lu->options.seed,lu->options.msglvl,lu->options.msgFile); break;
     default:
       SETERRQ(1,"Unknown Spooles's ordering");
     }
     Graph_free(graph) ;
 
-    if ( lu->msglvl > 0 ) {
-      fprintf(lu->msgFile, "\n\n front tree from ordering") ;
-      ETree_writeForHumanEye(lu->frontETree, lu->msgFile) ;
-      fflush(lu->msgFile) ;
+    if ( lu->options.msglvl > 0 ) {
+      fprintf(lu->options.msgFile, "\n\n front tree from ordering") ;
+      ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile) ;
+      fflush(lu->options.msgFile) ;
     }
   
     /* get the permutation, permute the front tree, permute the matrix */
@@ -254,7 +328,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     ETree_permuteVertices(lu->frontETree, lu->oldToNewIV) ;
 
     InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ; 
-    if ( lu->symflag == SPOOLES_SYMMETRIC ) {
+    if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
       InpMtx_mapToUpperTriangle(lu->mtxA) ; 
     }
     InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
@@ -263,18 +337,18 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     /* get symbolic factorization */
     lu->symbfacIVL = SymbFac_initFromInpMtx(lu->frontETree, lu->mtxA) ;
 
-    if ( lu->msglvl > 2 ) {
-      fprintf(lu->msgFile, "\n\n old-to-new permutation vector") ;
-      IV_writeForHumanEye(lu->oldToNewIV, lu->msgFile) ;
-      fprintf(lu->msgFile, "\n\n new-to-old permutation vector") ;
-      IV_writeForHumanEye(lu->newToOldIV, lu->msgFile) ;
-      fprintf(lu->msgFile, "\n\n front tree after permutation") ;
-      ETree_writeForHumanEye(lu->frontETree, lu->msgFile) ;
-      fprintf(lu->msgFile, "\n\n input matrix after permutation") ;
-      InpMtx_writeForHumanEye(lu->mtxA, lu->msgFile) ;
-      fprintf(lu->msgFile, "\n\n symbolic factorization") ;
-      IVL_writeForHumanEye(lu->symbfacIVL, lu->msgFile) ;
-      fflush(lu->msgFile) ;
+    if ( lu->options.msglvl > 2 ) {
+      fprintf(lu->options.msgFile, "\n\n old-to-new permutation vector") ;
+      IV_writeForHumanEye(lu->oldToNewIV, lu->options.msgFile) ;
+      fprintf(lu->options.msgFile, "\n\n new-to-old permutation vector") ;
+      IV_writeForHumanEye(lu->newToOldIV, lu->options.msgFile) ;
+      fprintf(lu->options.msgFile, "\n\n front tree after permutation") ;
+      ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile) ;
+      fprintf(lu->options.msgFile, "\n\n input matrix after permutation") ;
+      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
+      fprintf(lu->options.msgFile, "\n\n symbolic factorization") ;
+      IVL_writeForHumanEye(lu->symbfacIVL, lu->options.msgFile) ;
+      fflush(lu->options.msgFile) ;
     }  
 
     lu->frontmtx   = FrontMtx_new() ;
@@ -282,7 +356,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0) ;
 
   } else { /* new num factorization using previously computed symbolic factor */ 
-    if (lu->pivotingflag) {              /* different FrontMtx is required */
+    if (lu->options.pivotingflag) {              /* different FrontMtx is required */
       FrontMtx_free(lu->frontmtx) ;   
       lu->frontmtx   = FrontMtx_new() ;
     }
@@ -297,7 +371,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     ivec2 = InpMtx_ivec2(lu->mtxA); 
     dvec  = InpMtx_dvec(lu->mtxA);
 
-    if ( lu->symflag == SPOOLES_NONSYMMETRIC ) {
+    if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) {
       Mat_SeqAIJ       *mat = (Mat_SeqAIJ*)A->data;
       ai=mat->i; aj=mat->j; av=mat->a;
     } else {
@@ -314,29 +388,29 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
 
     /* permute mtxA */
     InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ;
-    if ( lu->symflag == SPOOLES_SYMMETRIC ) InpMtx_mapToUpperTriangle(lu->mtxA) ; 
+    if ( lu->options.symflag == SPOOLES_SYMMETRIC ) InpMtx_mapToUpperTriangle(lu->mtxA) ; 
     InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
-    if ( lu->msglvl > 2 ) {
-      fprintf(lu->msgFile, "\n\n input matrix after permutation") ;
-      InpMtx_writeForHumanEye(lu->mtxA, lu->msgFile) ; 
+    if ( lu->options.msglvl > 2 ) {
+      fprintf(lu->options.msgFile, "\n\n input matrix after permutation") ;
+      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ; 
     } 
   } /* end of if( lu->flg == DIFFERENT_NONZERO_PATTERN) */
 
-  FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, lu->symflag, 
-                FRONTMTX_DENSE_FRONTS, lu->pivotingflag, NO_LOCK, 0, NULL, 
-                lu->mtxmanager, lu->msglvl, lu->msgFile) ;   
+  FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, lu->options.symflag, 
+                FRONTMTX_DENSE_FRONTS, lu->options.pivotingflag, NO_LOCK, 0, NULL, 
+                lu->mtxmanager, lu->options.msglvl, lu->options.msgFile) ;   
   
 
-  if ( lu->symflag == SPOOLES_SYMMETRIC ) {
-    if ( lu->patchAndGoFlag == 1 ) {
+  if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+    if ( lu->options.patchAndGoFlag == 1 ) {
       lu->frontmtx->patchinfo = PatchAndGoInfo_new() ;
-      PatchAndGoInfo_init(lu->frontmtx->patchinfo, 1, lu->toosmall, lu->fudge,
-                       lu->storeids, lu->storevalues) ;
-    } else if ( lu->patchAndGoFlag == 2 ) {
+      PatchAndGoInfo_init(lu->frontmtx->patchinfo, 1, lu->options.toosmall, lu->options.fudge,
+                       lu->options.storeids, lu->options.storevalues) ;
+    } else if ( lu->options.patchAndGoFlag == 2 ) {
       lu->frontmtx->patchinfo = PatchAndGoInfo_new() ;
-      PatchAndGoInfo_init(lu->frontmtx->patchinfo, 2, lu->toosmall, lu->fudge,
-                       lu->storeids, lu->storevalues) ;
+      PatchAndGoInfo_init(lu->frontmtx->patchinfo, 2, lu->options.toosmall, lu->options.fudge,
+                       lu->options.storeids, lu->options.storevalues) ;
     }   
   }
 
@@ -345,33 +419,33 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   ChvManager_init(chvmanager, NO_LOCK, 1) ;
   DVfill(10, lu->cpus, 0.0) ;
   IVfill(20, stats, 0) ;
-  rootchv = FrontMtx_factorInpMtx(lu->frontmtx, lu->mtxA, lu->tau, 0.0, 
-            chvmanager, &ierr, lu->cpus, stats, lu->msglvl, lu->msgFile) ; 
+  rootchv = FrontMtx_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, 0.0, 
+            chvmanager, &ierr, lu->cpus, stats, lu->options.msglvl, lu->options.msgFile) ; 
   ChvManager_free(chvmanager) ;
-  if ( lu->msglvl > 0 ) {
-    fprintf(lu->msgFile, "\n\n factor matrix") ;
-    FrontMtx_writeForHumanEye(lu->frontmtx, lu->msgFile) ;
-    fflush(lu->msgFile) ;
+  if ( lu->options.msglvl > 0 ) {
+    fprintf(lu->options.msgFile, "\n\n factor matrix") ;
+    FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
   }
 
-  if ( lu->symflag == SPOOLES_SYMMETRIC ) {
-    if ( lu->patchAndGoFlag == 1 ) {
+  if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+    if ( lu->options.patchAndGoFlag == 1 ) {
       if ( lu->frontmtx->patchinfo->fudgeIV != NULL ) {
-        if (lu->msglvl > 0 ){
-          fprintf(lu->msgFile, "\n small pivots found at these locations") ;
-          IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->msgFile) ;
+        if (lu->options.msglvl > 0 ){
+          fprintf(lu->options.msgFile, "\n small pivots found at these locations") ;
+          IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->options.msgFile) ;
         }
       }
       PatchAndGoInfo_free(lu->frontmtx->patchinfo) ;
-    } else if ( lu->patchAndGoFlag == 2 ) {
-      if (lu->msglvl > 0 ){
+    } else if ( lu->options.patchAndGoFlag == 2 ) {
+      if (lu->options.msglvl > 0 ){
         if ( lu->frontmtx->patchinfo->fudgeIV != NULL ) {
-          fprintf(lu->msgFile, "\n small pivots found at these locations") ;
-          IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->msgFile) ;
+          fprintf(lu->options.msgFile, "\n small pivots found at these locations") ;
+          IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->options.msgFile) ;
         }
         if ( lu->frontmtx->patchinfo->fudgeDV != NULL ) {
-          fprintf(lu->msgFile, "\n perturbations") ;
-          DV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeDV, lu->msgFile) ;
+          fprintf(lu->options.msgFile, "\n perturbations") ;
+          DV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeDV, lu->options.msgFile) ;
         }
       }
       PatchAndGoInfo_free(lu->frontmtx->patchinfo) ;
@@ -382,11 +456,11 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   if ( ierr >= 0 ) SETERRQ1(1,"\n error encountered at front %d", ierr);
 
   /* post-process the factorization */
-  FrontMtx_postProcess(lu->frontmtx, lu->msglvl, lu->msgFile) ;
-  if ( lu->msglvl > 2 ) {
-    fprintf(lu->msgFile, "\n\n factor matrix after post-processing") ;
-    FrontMtx_writeForHumanEye(lu->frontmtx, lu->msgFile) ;
-    fflush(lu->msgFile) ;
+  FrontMtx_postProcess(lu->frontmtx, lu->options.msglvl, lu->options.msgFile) ;
+  if ( lu->options.msglvl > 2 ) {
+    fprintf(lu->options.msgFile, "\n\n factor matrix after post-processing") ;
+    FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
   }
 
   lu->flg         = SAME_NONZERO_PATTERN;

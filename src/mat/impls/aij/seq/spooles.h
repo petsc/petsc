@@ -13,21 +13,24 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 typedef struct {
+  int             msglvl,pivotingflag,symflag,seed;
+  int             ordering,maxdomainsize,maxzeros,maxsize,
+                  patchAndGoFlag,storeids,storevalues;
+  double          tau,toosmall,fudge;
+  FILE            *msgFile ;
+} Spooles_options;
+
+typedef struct {
   /* Followings are used for seq and MPI Spooles */
   InpMtx          *mtxA ;        /* coefficient matrix */
   ETree           *frontETree ;  /* defines numeric and symbolic factorizations */
   FrontMtx        *frontmtx ;    /* numeric L, D, U factor matrices */
   IV              *newToOldIV, *oldToNewIV ; /* permutation vectors */
   IVL             *symbfacIVL ;              /* symbolic factorization */
-  int             msglvl,pivotingflag,symflag,seed;
-  FILE            *msgFile ;
   SubMtxManager   *mtxmanager  ;  /* working array */
-  double          cpus[10] ; 
+  double          cpus[20] ; 
   MatStructure    flg;
   int             *oldToNew,nz;
-  double          tau,toosmall,fudge;
-  int             ordering,maxdomainsize,maxzeros,maxsize,
-                  patchAndGoFlag,storeids,storevalues;
 
   /* Followings are used for MPI Spooles */
   IV              *ownersIV,*ownedColumnsIV,*vtxmapIV;
@@ -35,6 +38,7 @@ typedef struct {
   DenseMtx        *mtxY, *mtxX;
   double          *entX;
   int             *rowindX,stats[20],rstart,firsttag,nmycol;
+  Spooles_options options;
 } Mat_Spooles;
 
 EXTERN int MatDestroy_SeqAIJ_Spooles(Mat);

@@ -12,6 +12,7 @@
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
 #include "src/mat/impls/aij/seq/spooles.h"
 
+extern int SetSpoolesOptions(Mat, Spooles_options *);
 extern int MatDestroy_MPIAIJ(Mat); 
 
 #undef __FUNCT__  
@@ -19,10 +20,10 @@ extern int MatDestroy_MPIAIJ(Mat);
 int MatDestroy_MPIAIJ_Spooles(Mat A)
 {
   Mat_Spooles   *lu = (Mat_Spooles*)A->spptr; 
-  int              ierr;
+  int           ierr;
   
   PetscFunctionBegin;
-
+ 
   /* allInOneMPI doesn't free following spaces, should I do it? */
   FrontMtx_free(lu->frontmtx) ;        
   IV_free(lu->newToOldIV) ;            
@@ -46,19 +47,19 @@ int MatDestroy_MPIAIJ_Spooles(Mat A)
 int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
 {
   Mat_Spooles      *lu = (Mat_Spooles*)A->spptr;
-  int                 ierr,size,rank,m=A->m,irow,*rowindY;
-  PetscScalar         *array;
-  DenseMtx            *newY ;
-  IV                  *rowmapIV ;
-  SubMtxManager       *solvemanager ; 
-  Vec                 vec_spooles;
-  IS                  iden, is_petsc;
-  VecScatter          scat;
+  int              ierr,size,rank,m=A->m,irow,*rowindY;
+  PetscScalar      *array;
+  DenseMtx         *newY ;
+  IV               *rowmapIV ;
+  SubMtxManager    *solvemanager ; 
+  Vec              vec_spooles;
+  IS               iden, is_petsc;
+  VecScatter       scat;
 
   PetscFunctionBegin;	
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-
+  
   /* copy b into spooles' rhs mtxY */
   DenseMtx_init(lu->mtxY, SPOOLES_REAL, 0, 0, m, 1, 1, m) ;    
   ierr = VecGetArray(b,&array);CHKERRQ(ierr);
@@ -78,70 +79,70 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
   /* DenseMtx_column(lu->mtxY, 0, &array);  doesn't work! */
   ierr = VecRestoreArray(b,&array);CHKERRQ(ierr);   
   
-  if ( lu->msglvl > 2 ) {
-    fprintf(lu->msgFile, "\n\n 1 matrix in original ordering") ;
-    DenseMtx_writeForHumanEye(lu->mtxY, lu->msgFile) ;
-    fflush(lu->msgFile) ;
+  if ( lu->options.msglvl > 2 ) {
+    fprintf(lu->options.msgFile, "\n\n 1 matrix in original ordering") ;
+    DenseMtx_writeForHumanEye(lu->mtxY, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
   }
   
   /* STEP 13: permute and redistribute Y if necessary */
   DenseMtx_permuteRows(lu->mtxY, lu->oldToNewIV) ;
-  if ( lu->msglvl > 2 ) {
-    fprintf(lu->msgFile, "\n\n rhs matrix in new ordering") ;
-    DenseMtx_writeForHumanEye(lu->mtxY, lu->msgFile) ;
-   fflush(lu->msgFile) ;
+  if ( lu->options.msglvl > 2 ) {
+    fprintf(lu->options.msgFile, "\n\n rhs matrix in new ordering") ;
+    DenseMtx_writeForHumanEye(lu->mtxY, lu->options.msgFile) ;
+   fflush(lu->options.msgFile) ;
   }
   
-  newY = DenseMtx_MPI_splitByRows(lu->mtxY, lu->vtxmapIV, lu->stats, lu->msglvl, 
-                                lu->msgFile, lu->firsttag, MPI_COMM_WORLD) ;
+  newY = DenseMtx_MPI_splitByRows(lu->mtxY, lu->vtxmapIV, lu->stats, lu->options.msglvl, 
+                                lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
   DenseMtx_free(lu->mtxY) ;
   lu->mtxY = newY ;
   lu->firsttag += size ;
-  if ( lu->msglvl > 2 ) {
-    fprintf(lu->msgFile, "\n\n split DenseMtx Y") ;
-    DenseMtx_writeForHumanEye(lu->mtxY, lu->msgFile) ;
-    fflush(lu->msgFile) ;
+  if ( lu->options.msglvl > 2 ) {
+    fprintf(lu->options.msgFile, "\n\n split DenseMtx Y") ;
+    DenseMtx_writeForHumanEye(lu->mtxY, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
   }
 
   if ( FRONTMTX_IS_PIVOTING(lu->frontmtx) ) {
     /*   pivoting has taken place, redistribute the right hand side
          to match the final rows and columns in the fronts             */
 
-    rowmapIV = FrontMtx_MPI_rowmapIV(lu->frontmtx, lu->ownersIV, lu->msglvl,
-                                    lu->msgFile, MPI_COMM_WORLD) ;
-    newY = DenseMtx_MPI_splitByRows(lu->mtxY, rowmapIV, lu->stats, lu->msglvl, 
-                                   lu->msgFile, lu->firsttag, MPI_COMM_WORLD) ;
+    rowmapIV = FrontMtx_MPI_rowmapIV(lu->frontmtx, lu->ownersIV, lu->options.msglvl,
+                                    lu->options.msgFile, MPI_COMM_WORLD) ;
+    newY = DenseMtx_MPI_splitByRows(lu->mtxY, rowmapIV, lu->stats, lu->options.msglvl, 
+                                   lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
     DenseMtx_free(lu->mtxY) ;
     lu->mtxY = newY ;
     IV_free(rowmapIV) ;
   }
-  if ( lu->msglvl > 2 ) {
-    fprintf(lu->msgFile, "\n\n rhs matrix after split") ;
-    DenseMtx_writeForHumanEye(lu->mtxY, lu->msgFile) ;
-    fflush(lu->msgFile) ;
+  if ( lu->options.msglvl > 2 ) {
+    fprintf(lu->options.msgFile, "\n\n rhs matrix after split") ;
+    DenseMtx_writeForHumanEye(lu->mtxY, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
   }
 
   if ( lu->nmycol > 0 ) IVcopy(lu->nmycol, lu->rowindX, IV_entries(lu->ownedColumnsIV)) ; /* must be done for each solve */
-
+  
   /* STEP 15: solve the linear system */
   solvemanager = SubMtxManager_new() ;
   SubMtxManager_init(solvemanager, NO_LOCK, 0) ;
   FrontMtx_MPI_solve(lu->frontmtx, lu->mtxX, lu->mtxY, solvemanager, lu->solvemap, lu->cpus, 
-                   lu->stats, lu->msglvl, lu->msgFile, lu->firsttag, MPI_COMM_WORLD) ;
+                   lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
   SubMtxManager_free(solvemanager) ;
-  if ( lu->msglvl > 2 ) {
-    fprintf(lu->msgFile, "\n solution in new ordering") ;
-    DenseMtx_writeForHumanEye(lu->mtxX, lu->msgFile) ;
+  if ( lu->options.msglvl > 2 ) {
+    fprintf(lu->options.msgFile, "\n solution in new ordering") ;
+    DenseMtx_writeForHumanEye(lu->mtxX, lu->options.msgFile) ;
   }
 
   /* permute the solution into the original ordering */
   DenseMtx_permuteRows(lu->mtxX, lu->newToOldIV) ;
-  if ( lu->msglvl > 2 ) {
-    fprintf(lu->msgFile, "\n\n solution in old ordering") ;
-    DenseMtx_writeForHumanEye(lu->mtxX, lu->msgFile) ;
-    fflush(lu->msgFile) ;
+  if ( lu->options.msglvl > 2 ) {
+    fprintf(lu->options.msgFile, "\n\n solution in old ordering") ;
+    DenseMtx_writeForHumanEye(lu->mtxX, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
   }
-
+  
   /* scatter local solution mtxX into mpi vector x */
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,lu->nmycol,lu->entX,&vec_spooles);CHKERRQ(ierr); /* vec_spooles <- mtxX */ 
  
@@ -166,20 +167,18 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
 int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
 {
   Mat_Spooles     *lu = (Mat_Spooles*)(*F)->spptr;
-  int                rank,size,ierr,lookahead=0,ordering;
-  ChvManager         *chvmanager ;
-  Chv                *rootchv ;
-  Graph              *graph ;
-  IVL                *adjIVL;
-  DV                 *cumopsDV ;
-  double             droptol=0.0,tau,*opcounts,  minops, cutoff, *val;
-  InpMtx             *newA ;
-  char               buff[32],*ordertype[] = {"BestOfNDandMS","MMD","MS","ND"}; 
-  PetscTruth         flg;
-  PetscScalar        *av, *bv; 
-  int                *ai, *aj, *bi,*bj, nz, *ajj, *bjj, *garray,
-                     i,j,irow,jcol,countA,countB,jB,*row,*col,colA_start,jj;
-  int                M=A->M,N=A->N,m=A->m,root,nedges;
+  int             rank,size,ierr,lookahead=0;
+  ChvManager      *chvmanager ;
+  Chv             *rootchv ;
+  Graph           *graph ;
+  IVL             *adjIVL;
+  DV              *cumopsDV ;
+  double          droptol=0.0,*opcounts,  minops, cutoff, *val;
+  InpMtx          *newA ;
+  PetscScalar     *av, *bv; 
+  int             *ai, *aj, *bi,*bj, nz, *ajj, *bjj, *garray,
+                  i,j,irow,jcol,countA,countB,jB,*row,*col,colA_start,jj;
+  int             M=A->M,N=A->N,m=A->m,root,nedges;
   
   PetscFunctionBegin;	
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -193,65 +192,11 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
 
     IVzero(20, lu->stats) ; 
     DVzero(20, lu->cpus) ;
-
-    /* set default input parameters */
-    lu->tau           = 100.;
-    lu->seed          = 10101;  
-    lu->ordering      = 1;    
-    lu->maxdomainsize = 500;
-    lu->maxzeros      = 1000;
-    lu->maxsize       = 96;
-
-    /* get runtime input parameters */
-    ierr = PetscOptionsBegin(A->comm,A->prefix,"MPI Spooles Options","Mat");CHKERRQ(ierr); 
-  
-    ierr = PetscOptionsReal("-mat_spooles_tau","tau (used for pivoting; \n\
-           all entries in L and U have magnitude no more than tau)","None",lu->tau,&lu->tau,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_spooles_seed","random number seed, used for ordering","None",\
-                           lu->seed,&lu->seed,PETSC_NULL);CHKERRQ(ierr);
-    if (PetscLogPrintInfo) {
-      lu->msglvl = 1;
-    } else {
-      lu->msglvl = 0;
-    }
-    ierr = PetscOptionsInt("-mat_spooles_msglvl","msglvl","None",lu->msglvl,&lu->msglvl,0);CHKERRQ(ierr); 
-    if (lu->msglvl > 0) {
-        lu->msgFile = fopen("spooles.msgFile", "a");
-        if(!rank) PetscPrintf(PETSC_COMM_SELF,"\n Spooles' output is written into the file 'spooles.msgFile' \n\n");
-    } 
-
-    ierr = PetscOptionsEList("-mat_spooles_ordering","ordering type","None",
-             ordertype,4,ordertype[1],buff,32,&flg);CHKERRQ(ierr); /* default: MMD */
-    while (flg) {
-      ierr = PetscStrcmp(buff,"BestOfNDandMS",&flg);CHKERRQ(ierr);
-      if (flg) {
-        lu->ordering = 0; break;
-      }
-      ierr = PetscStrcmp(buff,"MMD",&flg);CHKERRQ(ierr);
-      if (flg) {
-        lu->ordering = 1; break;
-      }
-      ierr = PetscStrcmp(buff,"MS",&flg);CHKERRQ(ierr);
-      if (flg) {
-        lu->ordering = 2; break;
-      }
-      ierr = PetscStrcmp(buff,"ND",&flg);CHKERRQ(ierr);
-      if (flg) {
-        lu->ordering = 3; break;
-      }
-      SETERRQ1(1,"Unknown Spooles's ordering %s",buff);
-    }
     
-    ierr = PetscOptionsInt("-mat_spooles_maxdomainsize","maxdomainsize","None",\
-                           lu->maxdomainsize,&lu->maxdomainsize,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_spooles_maxzeros ","maxzeros","None",\
-                           lu->maxzeros,&lu->maxzeros,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_spooles_maxsize","maxsize","None",\
-                           lu->maxsize,&lu->maxsize,PETSC_NULL);CHKERRQ(ierr);
-    PetscOptionsEnd();
+    ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr);
 
     /* copy A to Spooles' InpMtx object */ 
-    if ( lu->symflag == SPOOLES_NONSYMMETRIC ) { 
+    if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) { 
       Mat_MPIAIJ  *mat =  (Mat_MPIAIJ*)A->data;  
       Mat_SeqAIJ  *aa=(Mat_SeqAIJ*)(mat->A)->data;
       Mat_SeqAIJ  *bb=(Mat_SeqAIJ*)(mat->B)->data;
@@ -271,7 +216,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
       garray     = mat->garray;
      
     } 
-        
+      
     lu->mtxA   = InpMtx_new() ;
     InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, nz, 0) ; 
     row   = InpMtx_ivec1(lu->mtxA); 
@@ -281,20 +226,22 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     jj = 0; jB = 0; irow = lu->rstart;   
     for ( i=0; i<m; i++ ) {
       ajj = aj + ai[i];                 /* ptr to the beginning of this row */      
-      colA_start = lu->rstart + ajj[0]; /* the smallest col index for A */
       countA = ai[i+1] - ai[i];
       countB = bi[i+1] - bi[i];
-        
-      /* B part, smaller col index */   
-      bjj = bj + bi[i];      
-      for (j=0; j<countB; j++){
-        jcol = garray[bjj[j]];
-        if (jcol > colA_start) {
-          jB = j;
-          break;
+      bjj = bj + bi[i];  
+  
+      if (lu->options.symflag == SPOOLES_NONSYMMETRIC ){
+        /* B part, smaller col index */   
+        colA_start = lu->rstart + ajj[0]; /* the smallest col index for A */  
+        for (j=0; j<countB; j++){
+          jcol = garray[bjj[j]];
+          if (jcol > colA_start) {
+            jB = j;
+            break;
+          }
+          row[jj] = irow; col[jj] = jcol; val[jj++] = *bv++;
+          if (j==countB-1) jB = countB; 
         }
-        row[jj] = irow; col[jj] = jcol; val[jj++] = *bv++;
-        if (j==countB-1) jB = countB; 
       }
       /* A part */
       for (j=0; j<countA; j++){
@@ -309,12 +256,12 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
 
     InpMtx_inputRealTriples(lu->mtxA, nz, row, col, val); 
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
-    if ( lu->msglvl > 2 ) {
-      fprintf(lu->msgFile, "\n\n input matrix") ;
-      InpMtx_writeForHumanEye(lu->mtxA, lu->msgFile) ;
-      fflush(lu->msgFile) ;
+    if ( lu->options.msglvl > 2 ) {
+      fprintf(lu->options.msgFile, "\n\n input matrix") ;
+      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
+      fflush(lu->options.msgFile) ;
     }
- 
+
     /*
       -------------------------------------------------------
       STEP 2 : find a low-fill ordering
@@ -326,52 +273,52 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     */
     graph = Graph_new() ;
     adjIVL = InpMtx_MPI_fullAdjacency(lu->mtxA, lu->stats, 
-                                  lu->msglvl, lu->msgFile, MPI_COMM_WORLD) ;
+                                  lu->options.msglvl, lu->options.msgFile, MPI_COMM_WORLD) ;
     nedges = IVL_tsize(adjIVL) ;
     Graph_init2(graph, 0, M, 0, nedges, M, nedges, adjIVL, NULL, NULL) ;
-    if ( lu->msglvl > 2 ) {
-      fprintf(lu->msgFile, "\n\n graph of the input matrix") ;
-      Graph_writeForHumanEye(graph, lu->msgFile) ;
-      fflush(lu->msgFile) ;
+    if ( lu->options.msglvl > 2 ) {
+      fprintf(lu->options.msgFile, "\n\n graph of the input matrix") ;
+      Graph_writeForHumanEye(graph, lu->options.msgFile) ;
+      fflush(lu->options.msgFile) ;
     }
 
-    switch (lu->ordering) {
+    switch (lu->options.ordering) {
     case 0:
       lu->frontETree = orderViaBestOfNDandMS(graph,
-                     lu->maxdomainsize, lu->maxzeros, lu->maxsize,
-                     lu->seed + rank, lu->msglvl, lu->msgFile); break;
+                     lu->options.maxdomainsize, lu->options.maxzeros, lu->options.maxsize,
+                     lu->options.seed + rank, lu->options.msglvl, lu->options.msgFile); break;
     case 1:
-      lu->frontETree = orderViaMMD(graph,lu->seed + rank,lu->msglvl,lu->msgFile); break;
+      lu->frontETree = orderViaMMD(graph,lu->options.seed + rank,lu->options.msglvl,lu->options.msgFile); break;
     case 2:
-      lu->frontETree = orderViaMS(graph, lu->maxdomainsize,
-                     lu->seed + rank,lu->msglvl,lu->msgFile); break;
+      lu->frontETree = orderViaMS(graph, lu->options.maxdomainsize,
+                     lu->options.seed + rank,lu->options.msglvl,lu->options.msgFile); break;
     case 3:
-      lu->frontETree = orderViaND(graph, lu->maxdomainsize, 
-                     lu->seed + rank,lu->msglvl,lu->msgFile); break;
+      lu->frontETree = orderViaND(graph, lu->options.maxdomainsize, 
+                     lu->options.seed + rank,lu->options.msglvl,lu->options.msgFile); break;
     default:
       SETERRQ(1,"Unknown Spooles's ordering");
     }
 
     Graph_free(graph) ;
-    if ( lu->msglvl > 2 ) {
-      fprintf(lu->msgFile, "\n\n front tree from ordering") ;
-      ETree_writeForHumanEye(lu->frontETree, lu->msgFile) ;
-      fflush(lu->msgFile) ;
+    if ( lu->options.msglvl > 2 ) {
+      fprintf(lu->options.msgFile, "\n\n front tree from ordering") ;
+      ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile) ;
+      fflush(lu->options.msgFile) ;
     }
 
     opcounts = DVinit(size, 0.0) ;
-    opcounts[rank] = ETree_nFactorOps(lu->frontETree, SPOOLES_REAL, lu->symflag) ;
+    opcounts[rank] = ETree_nFactorOps(lu->frontETree, SPOOLES_REAL, lu->options.symflag) ;
     MPI_Allgather((void *) &opcounts[rank], 1, MPI_DOUBLE,
               (void *) opcounts, 1, MPI_DOUBLE, MPI_COMM_WORLD) ;
     minops = DVmin(size, opcounts, &root) ;
     DVfree(opcounts) ;
-
+    
     lu->frontETree = ETree_MPI_Bcast(lu->frontETree, root, 
-                             lu->msglvl, lu->msgFile, MPI_COMM_WORLD) ;
-    if ( lu->msglvl > 2 ) {
-      fprintf(lu->msgFile, "\n\n best front tree") ;
-      ETree_writeForHumanEye(lu->frontETree, lu->msgFile) ;
-      fflush(lu->msgFile) ;
+                             lu->options.msglvl, lu->options.msgFile, MPI_COMM_WORLD) ;
+    if ( lu->options.msglvl > 2 ) {
+      fprintf(lu->options.msgFile, "\n\n best front tree") ;
+      ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile) ;
+      fflush(lu->options.msgFile) ;
     }
   
     /* STEP 3: get the permutations, permute the front tree, permute the matrix */
@@ -382,7 +329,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
 
     InpMtx_permute(lu->mtxA, IV_entries(lu->oldToNewIV), IV_entries(lu->oldToNewIV)) ;
     
-    if (  lu->symflag == SPOOLES_SYMMETRIC ) InpMtx_mapToUpperTriangle(lu->mtxA) ;
+    if (  lu->options.symflag == SPOOLES_SYMMETRIC ) InpMtx_mapToUpperTriangle(lu->mtxA) ;
 
     InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
@@ -392,43 +339,43 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     cumopsDV = DV_new() ;
     DV_init(cumopsDV, size, NULL) ;
     lu->ownersIV = ETree_ddMap(lu->frontETree, 
-                       SPOOLES_REAL, lu->symflag, cumopsDV, cutoff) ;
+                       SPOOLES_REAL, lu->options.symflag, cumopsDV, cutoff) ;
     DV_free(cumopsDV) ;
     lu->vtxmapIV = IV_new() ;
     IV_init(lu->vtxmapIV, M, NULL) ;
     IVgather(M, IV_entries(lu->vtxmapIV), 
              IV_entries(lu->ownersIV), ETree_vtxToFront(lu->frontETree)) ;
-    if ( lu->msglvl > 2 ) {
-      fprintf(lu->msgFile, "\n\n map from fronts to owning processes") ;
-      IV_writeForHumanEye(lu->ownersIV, lu->msgFile) ;
-      fprintf(lu->msgFile, "\n\n map from vertices to owning processes") ;
-      IV_writeForHumanEye(lu->vtxmapIV, lu->msgFile) ;
-      fflush(lu->msgFile) ;
+    if ( lu->options.msglvl > 2 ) {
+      fprintf(lu->options.msgFile, "\n\n map from fronts to owning processes") ;
+      IV_writeForHumanEye(lu->ownersIV, lu->options.msgFile) ;
+      fprintf(lu->options.msgFile, "\n\n map from vertices to owning processes") ;
+      IV_writeForHumanEye(lu->vtxmapIV, lu->options.msgFile) ;
+      fflush(lu->options.msgFile) ;
     }
 
     /* STEP 5: redistribute the matrix */
     lu->firsttag = 0 ;
     newA = InpMtx_MPI_split(lu->mtxA, lu->vtxmapIV, lu->stats, 
-                        lu->msglvl, lu->msgFile, lu->firsttag, MPI_COMM_WORLD) ;
+                        lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
     lu->firsttag++ ;
 
     InpMtx_free(lu->mtxA) ;
     lu->mtxA = newA ;
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
-    if ( lu->msglvl > 2 ) {
-      fprintf(lu->msgFile, "\n\n split InpMtx") ;
-      InpMtx_writeForHumanEye(lu->mtxA, lu->msgFile) ;
-      fflush(lu->msgFile) ;
+    if ( lu->options.msglvl > 2 ) {
+      fprintf(lu->options.msgFile, "\n\n split InpMtx") ;
+      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
+      fflush(lu->options.msgFile) ;
     }
  
     /* STEP 6: compute the symbolic factorization */
     lu->symbfacIVL = SymbFac_MPI_initFromInpMtx(lu->frontETree, lu->ownersIV, lu->mtxA,
-                     lu->stats, lu->msglvl, lu->msgFile, lu->firsttag, MPI_COMM_WORLD) ;
+                     lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
     lu->firsttag += lu->frontETree->nfront ;
-    if ( lu->msglvl > 2 ) {
-      fprintf(lu->msgFile, "\n\n local symbolic factorization") ;
-      IVL_writeForHumanEye(lu->symbfacIVL, lu->msgFile) ;
-      fflush(lu->msgFile) ;
+    if ( lu->options.msglvl > 2 ) {
+      fprintf(lu->options.msgFile, "\n\n local symbolic factorization") ;
+      IVL_writeForHumanEye(lu->symbfacIVL, lu->options.msgFile) ;
+      fflush(lu->options.msgFile) ;
     }
 
     lu->mtxmanager = SubMtxManager_new() ;
@@ -440,7 +387,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     lu->mtxX = DenseMtx_new() ;
 
   } else { /* new num factorization using previously computed symbolic factor */
-    if (lu->pivotingflag) {                  /* different FrontMtx is required */
+    if (lu->options.pivotingflag) {                  /* different FrontMtx is required */
       FrontMtx_free(lu->frontmtx) ;   
       lu->frontmtx   = FrontMtx_new() ;
     }
@@ -450,7 +397,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0) ;
 
     /* copy new numerical values of A into mtxA */   
-    if ( lu->symflag == SPOOLES_NONSYMMETRIC ) { 
+    if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) { 
       Mat_MPIAIJ  *mat =  (Mat_MPIAIJ*)A->data;  
       Mat_SeqAIJ  *aa=(Mat_SeqAIJ*)(mat->A)->data;
       Mat_SeqAIJ  *bb=(Mat_SeqAIJ*)(mat->B)->data;
@@ -509,15 +456,15 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     InpMtx_inputRealTriples(lu->mtxA, nz, row, col, val); 
 
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
-    if ( lu->msglvl > 2 ) {
-      fprintf(lu->msgFile, "\n\n input matrix") ;
-      InpMtx_writeForHumanEye(lu->mtxA, lu->msgFile) ;
-      fflush(lu->msgFile) ;
+    if ( lu->options.msglvl > 2 ) {
+      fprintf(lu->options.msgFile, "\n\n input matrix") ;
+      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
+      fflush(lu->options.msgFile) ;
     }
  
     /* permute mtxA */
     InpMtx_permute(lu->mtxA, IV_entries(lu->oldToNewIV), IV_entries(lu->oldToNewIV)) ;
-    if ( lu->symflag == SPOOLES_SYMMETRIC ) InpMtx_mapToUpperTriangle(lu->mtxA) ;
+    if ( lu->options.symflag == SPOOLES_SYMMETRIC ) InpMtx_mapToUpperTriangle(lu->mtxA) ;
     
     InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
@@ -525,53 +472,84 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     /* STEP 5: redistribute the matrix */
     /* lu->firsttag = 0 ;  */   /* do I need this? */
     newA = InpMtx_MPI_split(lu->mtxA, lu->vtxmapIV, lu->stats, 
-                        lu->msglvl, lu->msgFile, lu->firsttag, MPI_COMM_WORLD) ;
+                        lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
     lu->firsttag++ ;
 
     InpMtx_free(lu->mtxA) ;
     lu->mtxA = newA ;
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
-    if ( lu->msglvl > 2 ) {
-      fprintf(lu->msgFile, "\n\n split InpMtx") ;
-      InpMtx_writeForHumanEye(lu->mtxA, lu->msgFile) ;
-      fflush(lu->msgFile) ;
+    if ( lu->options.msglvl > 2 ) {
+      fprintf(lu->options.msgFile, "\n\n split InpMtx") ;
+      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
+      fflush(lu->options.msgFile) ;
     }
   } /* end of if ( lu->flg == DIFFERENT_NONZERO_PATTERN) */
 
-  FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, lu->symflag,
-              FRONTMTX_DENSE_FRONTS, lu->pivotingflag, NO_LOCK, rank,
-              lu->ownersIV, lu->mtxmanager, lu->msglvl, lu->msgFile) ;
+  FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, lu->options.symflag,
+              FRONTMTX_DENSE_FRONTS, lu->options.pivotingflag, NO_LOCK, rank,
+              lu->ownersIV, lu->mtxmanager, lu->options.msglvl, lu->options.msgFile) ;
+
+    if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+    if ( lu->options.patchAndGoFlag == 1 ) {
+      lu->frontmtx->patchinfo = PatchAndGoInfo_new() ;
+      PatchAndGoInfo_init(lu->frontmtx->patchinfo, 1, lu->options.toosmall, lu->options.fudge,
+                       lu->options.storeids, lu->options.storevalues) ;
+    } else if ( lu->options.patchAndGoFlag == 2 ) {
+      lu->frontmtx->patchinfo = PatchAndGoInfo_new() ;
+      PatchAndGoInfo_init(lu->frontmtx->patchinfo, 2, lu->options.toosmall, lu->options.fudge,
+                       lu->options.storeids, lu->options.storevalues) ;
+    }   
+  }
 
   /* STEP 8: numerical factorization */
   chvmanager = ChvManager_new() ;
-  ChvManager_init(chvmanager, NO_LOCK, 0) ;
-
-  ordering = lu->ordering;
-  tau = lu->tau;          /* lu->tau, ordering will be rewritten by cpus, so save them */
-  rootchv = FrontMtx_MPI_factorInpMtx(lu->frontmtx, lu->mtxA, lu->tau, droptol,
+  ChvManager_init(chvmanager, NO_LOCK, 0) ;  
+  rootchv = FrontMtx_MPI_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, droptol,
                      chvmanager, lu->ownersIV, lookahead, &ierr, lu->cpus, 
-                     lu->stats, lu->msglvl, lu->msgFile, lu->firsttag, MPI_COMM_WORLD) ;
-  lu->ordering = ordering;
-  lu->tau = tau; /* original value of ordering and tau */
- 
+                     lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
   ChvManager_free(chvmanager) ;
   lu->firsttag += 3*lu->frontETree->nfront + 2 ;
-  if ( lu->msglvl > 2 ) {
-    fprintf(lu->msgFile, "\n\n numeric factorization") ;
-    FrontMtx_writeForHumanEye(lu->frontmtx, lu->msgFile) ;
-    fflush(lu->msgFile) ;
+  if ( lu->options.msglvl > 2 ) {
+    fprintf(lu->options.msgFile, "\n\n numeric factorization") ;
+    FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
   }
+
+  if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+    if ( lu->options.patchAndGoFlag == 1 ) {
+      if ( lu->frontmtx->patchinfo->fudgeIV != NULL ) {
+        if (lu->options.msglvl > 0 ){
+          fprintf(lu->options.msgFile, "\n small pivots found at these locations") ;
+          IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->options.msgFile) ;
+        }
+      }
+      PatchAndGoInfo_free(lu->frontmtx->patchinfo) ;
+    } else if ( lu->options.patchAndGoFlag == 2 ) {
+      if (lu->options.msglvl > 0 ){
+        if ( lu->frontmtx->patchinfo->fudgeIV != NULL ) {
+          fprintf(lu->options.msgFile, "\n small pivots found at these locations") ;
+          IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->options.msgFile) ;
+        }
+        if ( lu->frontmtx->patchinfo->fudgeDV != NULL ) {
+          fprintf(lu->options.msgFile, "\n perturbations") ;
+          DV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeDV, lu->options.msgFile) ;
+        }
+      }
+      PatchAndGoInfo_free(lu->frontmtx->patchinfo) ;
+    }
+  }
+
   if ( ierr >= 0 ) SETERRQ2(1,"\n proc %d : factorization error at front %d", rank, ierr) ;
  
   /*  STEP 9: post-process the factorization and split 
               the factor matrices into submatrices */
-  FrontMtx_MPI_postProcess(lu->frontmtx, lu->ownersIV, lu->stats, lu->msglvl,
-                         lu->msgFile, lu->firsttag, MPI_COMM_WORLD) ;
+  FrontMtx_MPI_postProcess(lu->frontmtx, lu->ownersIV, lu->stats, lu->options.msglvl,
+                         lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
   lu->firsttag += 5*size ;
-  if ( lu->msglvl > 2 ) {
-    fprintf(lu->msgFile, "\n\n numeric factorization after post-processing");
-    FrontMtx_writeForHumanEye(lu->frontmtx, lu->msgFile) ;
-    fflush(lu->msgFile) ;
+  if ( lu->options.msglvl > 2 ) {
+    fprintf(lu->options.msgFile, "\n\n numeric factorization after post-processing");
+    FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
   }
   
   /* STEP 10: create the solve map object */
@@ -580,26 +558,26 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
                FrontMtx_upperBlockIVL(lu->frontmtx),
                FrontMtx_lowerBlockIVL(lu->frontmtx),
                size, lu->ownersIV, FrontMtx_frontTree(lu->frontmtx), 
-               lu->seed, lu->msglvl, lu->msgFile);
-  if ( lu->msglvl > 2 ) {
-    SolveMap_writeForHumanEye(lu->solvemap, lu->msgFile) ;
-    fflush(lu->msgFile) ;
+               lu->options.seed, lu->options.msglvl, lu->options.msgFile);
+  if ( lu->options.msglvl > 2 ) {
+    SolveMap_writeForHumanEye(lu->solvemap, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
   }
 
   /* STEP 11: redistribute the submatrices of the factors */
   FrontMtx_MPI_split(lu->frontmtx, lu->solvemap, 
-                   lu->stats, lu->msglvl, lu->msgFile, lu->firsttag, MPI_COMM_WORLD) ;
-  if ( lu->msglvl > 2 ) {
-    fprintf(lu->msgFile, "\n\n numeric factorization after split") ;
-    FrontMtx_writeForHumanEye(lu->frontmtx, lu->msgFile) ;
-    fflush(lu->msgFile) ;
+                   lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
+  if ( lu->options.msglvl > 2 ) {
+    fprintf(lu->options.msgFile, "\n\n numeric factorization after split") ;
+    FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
   }
 
   /* STEP 14: create a solution DenseMtx object */  
   lu->ownedColumnsIV = FrontMtx_ownedColumnsIV(lu->frontmtx, rank, lu->ownersIV,
-                                         lu->msglvl, lu->msgFile) ;
+                                         lu->options.msglvl, lu->options.msgFile) ;
   lu->nmycol = IV_size(lu->ownedColumnsIV) ;
-  DenseMtx_init(lu->mtxX, SPOOLES_REAL, 0, 0, lu->nmycol, 1, 1, lu->nmycol) ;
+  if ( lu->nmycol > 0) DenseMtx_init(lu->mtxX, SPOOLES_REAL, 0, 0, lu->nmycol, 1, 1, lu->nmycol) ;
   /* get pointers rowindX and entX */
   DenseMtx_rowIndices(lu->mtxX, &lu->nmycol, &lu->rowindX) ; 
   lu->entX = DenseMtx_entries(lu->mtxX) ; 
@@ -607,63 +585,6 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   lu->flg = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
-
-extern int MatSolve_SeqAIJ_Spooles(Mat,Vec,Vec);
-#undef __FUNCT__  
-#define __FUNCT__ "MatFactorInfo_Spooles"
-int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
-{
-  Mat_Spooles    *lu = (Mat_Spooles*)A->spptr; 
-  int            ierr,size;
-  char           *s;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  
-  /* check if matrix is spooles type */
-  if (size == 1){
-    if (A->ops->solve != MatSolve_SeqAIJ_Spooles) PetscFunctionReturn(0);
-  } else {
-    if (A->ops->solve != MatSolve_MPIAIJ_Spooles) PetscFunctionReturn(0);
-  }
-
-  ierr = PetscViewerASCIIPrintf(viewer,"Spooles run parameters:\n");CHKERRQ(ierr);
-
-  switch (lu->symflag) {
-  case 0: s = "SPOOLES_SYMMETRIC"; break;
-  case 2: s = "SPOOLES_NONSYMMETRIC"; break; }
-  ierr = PetscViewerASCIIPrintf(viewer,"  symmetryflag:   %s \n",s);CHKERRQ(ierr);
-
-  switch (lu->pivotingflag) {
-  case 0: s = "SPOOLES_NO_PIVOTING"; break;
-  case 1: s = "SPOOLES_PIVOTING"; break; }
-  ierr = PetscViewerASCIIPrintf(viewer,"  pivotingflag:   %s \n",s);CHKERRQ(ierr);
-
-  ierr = PetscViewerASCIIPrintf(viewer,"  tau:            %g \n",lu->tau);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  seed:           %d \n",lu->seed);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  msglvl:         %d \n",lu->msglvl);CHKERRQ(ierr);
-
-  switch (lu->ordering) {
-  case 0: s = "BestOfNDandMS"; break;  
-  case 1: s = "MMD"; break;
-  case 2: s = "MS"; break;
-  case 3: s = "ND"; break;
-  }
-  ierr = PetscViewerASCIIPrintf(viewer,"  ordering:       %s \n",s);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxdomainsize:  %d \n",lu->maxdomainsize);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxzeros:       %d \n",lu->maxzeros);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxsize:        %d \n",lu->maxsize);CHKERRQ(ierr);
-
-  if ( lu->symflag == SPOOLES_SYMMETRIC ) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  patchAndGoFlag: %d \n",lu->patchAndGoFlag);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  fudge:          %g \n",lu->fudge);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  toosmall:       %g \n",lu->toosmall);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  storeids:       %d \n",lu->storeids);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  storevalues:    %d \n",lu->storevalues);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 
 #endif
 
