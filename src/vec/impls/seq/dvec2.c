@@ -1,6 +1,6 @@
 
 
-/* $Id: dvec2.c,v 1.48 1998/03/16 18:36:11 balay Exp bsmith $ */
+/* $Id: dvec2.c,v 1.49 1998/04/13 17:26:44 bsmith Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -608,7 +608,7 @@ int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
   Vec_Seq      *xdata = (Vec_Seq *) xin->data;
   int n = xdata->n;
   int          j,j_rem;
-  Scalar       *xx = xdata->array,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
+  Scalar       *xx,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
 
 #if defined(HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*xx,*yy0,*yy1,*yy2,*yy3,*alpha)
@@ -616,7 +616,8 @@ int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
 
   PetscFunctionBegin;
   PLogFlops(nv*2*n);
-  
+
+  xx = xdata->array;  
   switch (j_rem=nv&0x3) {
   case 3: 
     yy0 = ((Vec_Seq *)(y[0]->data))->array;
