@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.26 2000/02/27 02:08:53 bsmith Exp bsmith $*/
+/*$Id: drawreg.c,v 1.27 2000/02/27 02:11:50 bsmith Exp bsmith $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
@@ -272,7 +272,7 @@ int DrawRegister(char *sname,char *path,char *name,int (*function)(Draw))
 int DrawSetFromOptions(Draw draw)
 {
   int        ierr;
-  PetscTruth flg,warn;
+  PetscTruth flg;
   char       vtype[256];
 
   PetscFunctionBegin;
@@ -289,6 +289,7 @@ int DrawSetFromOptions(Draw draw)
 #if defined(PETSC_HAVE_X11)
     ierr = DrawSetType(draw,DRAW_X);CHKERRQ(ierr);
 #else
+    PetscTruth warn;
     ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-nox_warning",&warn);CHKERRQ(ierr);
     if (!flg && !warn) {
