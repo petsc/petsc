@@ -1,18 +1,25 @@
 /*$Id: $*/
 
+/*#define HAVE_DA_HDF*/
+
 /* solve the equations for the perturbed magnetic field only */
 #define EQ 
 
 /* turning this on causes instability?!? */
 #undef UPWINDING 
 
-static char help[] = "2D Hall Magnetic Reconnection with multigrid and timestepping in 2 dimensions.\n\
-  \n\
--da_grid_x 5 -da_grid_y 5 -dmmg_nlevels 3 -mg_coarse_pc_lu_damping -mg_levels_pc_type sor -mg_levels_pc_sor_symmetric -max_st 5 -ksp_type gmres -mg_levels_ksp_type richardson -ksp_left_pc \n\
-  -viscosity <nu>\n\
-  -skin_depth <d_e>\n\
-  -larmor_radius <rho_s>\n\
-  -contours : draw contour plots of solution\n\n";
+static char help[] = "Hall MHD with in two dimensions with \
+                      time stepping and multigrid.\n\n\
+-da_grid_x 5 -da_grid_y 5 -dmmg_nlevels 3\n\
+-mg_coarse_pc_type lu mg_coarse_pc_lu_damping\n\
+-mg_levels_pc_type sor -mg_levels_pc_sor_symmetric\n\
+-mg_levels_ksp_type richardson\n\
+-ksp_type fgmres -ksp_right_pc\n\
+-max_st 5\n\
+-viscosity <nu>\n\
+-skin_depth <d_e>\n\
+-larmor_radius <rho_s>\n\
+-contours : draw contour plots of solution\n\n";
 
 /*T
    Concepts: SNES^solving a system of nonlinear equations (parallel multicomponent example);
@@ -23,8 +30,7 @@ T*/
 
 /* ------------------------------------------------------------------------
 
-    We thank XXXXXX for contributing the FormFunctionLocal()
-
+    We thank Kai Germaschewski for contributing the FormFunctionLocal()
 
   ------------------------------------------------------------------------- */
 
@@ -43,7 +49,11 @@ T*/
 #include "petscda.h"
 #include "petscmg.h"
 
-#define D_x(x,m,i,j)  (p5 * (x[(j)][(i)+1].m - x[(j)][(i)+1].m) * dhx)
+#ifdef HAVE_DA_HDF
+int DAVecHDFOutput(DA da, Vec X, char *fname);
+#endif
+
+#define D_x(x,m,i,j)  (p5 * (x[(j)][(i)+1].m - x[(j)][(i)-1].m) * dhx)
 #define D_xm(x,m,i,j) ((x[(j)][(i)].m - x[(j)][(i)-1].m) * dhx)
 #define D_xp(x,m,i,j) ((x[(j)][(i+1)].m - x[(j)][(i)].m) * dhx)
 #define D_y(x,m,i,j)  (p5 * (x[(j)+1][(i)].m - x[(j)-1][(i)].m) * dhy)
@@ -81,9 +91,9 @@ typedef struct {
 
 typedef struct {
   int          mglevels;
-  int          cycles;         /* numbers of time steps for integration */ 
-  PassiveReal  nu,d_e,rho_s;   /* physical parameters */
-  PetscTruth   draw_contours;  /* flag - 1 indicates drawing contours */
+  int          cycles;           /* numbers of time steps for integration */ 
+  PassiveReal  nu,eta,d_e,rho_s; /* physical parameters */
+  PetscTruth   draw_contours;    /* flag - 1 indicates drawing contours */
   PetscTruth   PreLoading;
 } Parameter;
 
@@ -105,10 +115,10 @@ extern int AttachNullSpace(PC,Vec);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG       *dmmg;                /* multilevel grid structure */
-  AppCtx     *user;                /* user-defined work context (one for each level) */
-  TstepCtx   tsCtx;                /* time-step parameters (one total) */
-  Parameter  param;                /* physical parameters (one total) */
+  DMMG       *dmmg;       /* multilevel grid structure */
+  AppCtx     *user;       /* user-defined work context (one for each level) */
+  TstepCtx   tsCtx;       /* time-step parameters (one total) */
+  Parameter  param;       /* physical parameters (one total) */
   int        i,ierr,m,n;
   MPI_Comm   comm;
   DA         da;
@@ -125,13 +135,19 @@ int main(int argc,char **argv)
     param.mglevels = DMMGGetLevels(dmmg);
 
     /*
-      Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
-      for principal unknowns (x) and governing residuals (f)
+      Create distributed array multigrid object (DMMG) to manage
+      parallel grid and vectors for principal unknowns (x) and
+      governing residuals (f)
     */
-    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,-5,-5,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DACreate2d(comm, DA_XYPERIODIC, DA_STENCIL_STAR, -5, -5,
+                      PETSC_DECIDE, PETSC_DECIDE, 4, 1, 0, 0, &da);
+    CHKERRQ(ierr);
 
-    /* overwrite the matrix allocation routine with one specific for this codes nonzero structure */
-    ierr = PetscOptionsHasName(PETSC_NULL,"-default_nonzero_structure",&defaultnonzerostructure);CHKERRQ(ierr);
+    /* overwrite the matrix allocation routine with one specific for
+       this codes nonzero structure */
+    ierr = PetscOptionsHasName(PETSC_NULL, "-default_nonzero_structure",
+                               &defaultnonzerostructure);
+    CHKERRQ(ierr);
     if (!defaultnonzerostructure) {
       ierr = DASetGetMatrix(da,DAGetMatrix_Specialized);CHKERRQ(ierr);
     }
@@ -139,37 +155,71 @@ int main(int argc,char **argv)
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
-    /* 
-     Problem parameters
-    */
-    param.nu          = 0.0;
-    param.rho_s       = 0.0;
-    param.d_e         = 0.2;
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-viscosity",&param.nu,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-skin_depth",&param.d_e,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-larmor_radius",&param.rho_s,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(PETSC_NULL,"-contours",&param.draw_contours);CHKERRQ(ierr);
+    /* default physical parameters */
+    param.eta = 1e-3;
+    param.nu = 0;
+    param.rho_s = 0;
+    param.d_e = 0.2;
 
-    ierr = DASetFieldName(DMMGGetDA(dmmg),0,"phi");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDA(dmmg),1,"psi");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDA(dmmg),2,"U");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDA(dmmg),3,"F");CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-viscosity", &param.nu,
+                               PETSC_NULL);
+    CHKERRQ(ierr);
+
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-resistivity", &param.eta,
+                               PETSC_NULL);
+    CHKERRQ(ierr);
+
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-skin_depth", &param.d_e,
+                               PETSC_NULL);
+    CHKERRQ(ierr);
+
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-larmor_radius", &param.rho_s,
+                               PETSC_NULL);
+    CHKERRQ(ierr);
+
+    ierr = PetscOptionsHasName(PETSC_NULL, "-contours", &param.draw_contours);
+    CHKERRQ(ierr);
+
+    ierr = DASetFieldName(DMMGGetDA(dmmg), 0, "phi");
+    CHKERRQ(ierr);
+
+    ierr = DASetFieldName(DMMGGetDA(dmmg), 1, "psi");
+    CHKERRQ(ierr);
+
+    ierr = DASetFieldName(DMMGGetDA(dmmg), 2, "U");
+    CHKERRQ(ierr);
+
+    ierr = DASetFieldName(DMMGGetDA(dmmg), 3, "F");
+    CHKERRQ(ierr);
 
     /*======================================================================*/
-    /* Initilize stuff related to time stepping */
+    /* Initialize stuff related to time stepping */
     /*======================================================================*/
-    tsCtx.fnorm_ini   = 0.0;  
-    tsCtx.max_steps   = 50;   
+
+    tsCtx.fnorm_ini   = 0;  
+    tsCtx.max_steps   = 10000;   
     tsCtx.max_time    = 1.0e+12;
     tsCtx.dt          = .1;  
     tsCtx.fnorm_ratio = 1.0e+10;
-    tsCtx.t           = 0.;
-    tsCtx.dt_out      = .1;
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-max_st",&tsCtx.max_steps,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,PETSC_NULL);CHKERRQ(ierr);
-    tsCtx.print_freq = tsCtx.max_steps; 
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-print_freq",&tsCtx.print_freq,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetScalar(PETSC_NULL,"-deltat",&tsCtx.dt,PETSC_NULL);CHKERRQ(ierr);
+    tsCtx.t           = 0;
+    tsCtx.dt_out      = 10;
+    tsCtx.print_freq  = tsCtx.max_steps; 
+
+    ierr = PetscOptionsGetInt(PETSC_NULL, "-max_st", &tsCtx.max_steps,
+                              PETSC_NULL);
+    CHKERRQ(ierr);
+
+    ierr = PetscOptionsGetReal(PETSC_NULL, "-ts_rtol", &tsCtx.fnorm_ratio,
+                               PETSC_NULL);
+    CHKERRQ(ierr);
+
+    ierr = PetscOptionsGetInt(PETSC_NULL, "-print_freq", &tsCtx.print_freq,
+                              PETSC_NULL);
+    CHKERRQ(ierr);
+
+    ierr = PetscOptionsGetScalar(PETSC_NULL, "-deltat", &tsCtx.dt,
+                                 PETSC_NULL);
+    CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create user context, set problem data, create vector data structures.
@@ -178,7 +228,8 @@ int main(int argc,char **argv)
     /* create application context for each level */    
     ierr = PetscMalloc(param.mglevels*sizeof(AppCtx),&user); CHKERRQ(ierr);
     for (i=0; i<param.mglevels; i++) {
-      /* create work vectors to hold previous time-step solution and function value */
+      /* create work vectors to hold previous time-step solution and
+         function value */
       ierr = VecDuplicate(dmmg[i]->x, &user[i].Xold); CHKERRQ(ierr);
       ierr = VecDuplicate(dmmg[i]->x, &user[i].func); CHKERRQ(ierr);
       user[i].tsCtx = &tsCtx;
@@ -191,7 +242,9 @@ int main(int argc,char **argv)
        
        Process adiC(20):  AddTSTermLocal FormFunctionLocal
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
+    ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, 0,
+                            ad_FormFunctionLocal, admf_FormFunctionLocal);
+    CHKERRQ(ierr);
 
     /* attach nullspace to each level of the preconditioner */
     {
@@ -212,8 +265,11 @@ int main(int argc,char **argv)
       }
     }
 
-    ierr = PetscPrintf(comm,"# viscosity = %g, skin_depth # = %g, larmor_radius # = %g\n",
-		       param.nu,param.d_e,param.rho_s);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "# viscosity = %g, resistivity = %g, "
+		       "skin_depth # = %g, larmor_radius # = %g\n",
+		       param.nu, param.eta, param.d_e, param.rho_s);
+    CHKERRQ(ierr);
+
     ierr = DAGetInfo(DMMGGetDA(dmmg),0,&m,&n,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"Problem size %d by %d\n",m,n);CHKERRQ(ierr);
     
@@ -225,9 +281,13 @@ int main(int argc,char **argv)
     PreLoadStage("Solve");
 
     if (param.draw_contours) {
-      ierr = VecView(((AppCtx*)dmmg[param.mglevels-1]->user)->Xold,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+      ierr = VecView(((AppCtx*)dmmg[param.mglevels-1]->user)->Xold,
+                     PETSC_VIEWER_DRAW_WORLD);
+      CHKERRQ(ierr);
     }
-    ierr = Update(dmmg); CHKERRQ(ierr);
+
+    ierr = Update(dmmg);
+    CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Free work space.  All PETSc objects should be destroyed when they
@@ -243,7 +303,9 @@ int main(int argc,char **argv)
 
     PreLoadEnd();
     
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
+  CHKERRQ(ierr);
+
   return 0;
 }
 
@@ -261,23 +323,38 @@ int Gnuplot(DA da, Vec X, double time)
   char         fname[100];
   int          cpu;
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&cpu);CHKERRQ(ierr);
-  sprintf(fname, "out-%g-%d.dat", time, cpu);
-  f = fopen(fname, "w");
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&cpu);
+  CHKERRQ(ierr);
 
-  ierr = DAVecGetArray(da,X,(void**)&x);CHKERRQ(ierr);
+  sprintf(fname, "out-%g-%d.dat", time, cpu);
+
+  f = fopen(fname, "w");
+
+  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);
+  CHKERRQ(ierr);
+
+  ierr = DAVecGetArray(da,X,(void**)&x);
+  CHKERRQ(ierr);
 
   xints = xs; xinte = xs+xm; yints = ys; yinte = ys+ym;
 
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
-      ierr = PetscFPrintf(PETSC_COMM_WORLD,f, "%d %d %g %g %g %g %g %g\n", i, j, 0., 0., x[j][i].U, x[j][i].F, x[j][i].phi, x[j][i].psi);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_WORLD, f,
+                          "%d %d %g %g %g %g %g %g\n",
+                          i, j, 0.0, 0.0,
+                          x[j][i].U, x[j][i].F, x[j][i].phi, x[j][i].psi);
+      CHKERRQ(ierr);
     }
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,f, "\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,f, "\n");
+    CHKERRQ(ierr);
   }
-  ierr = DAVecRestoreArray(da,X,(void**)&x);CHKERRQ(ierr);
+
+  ierr = DAVecRestoreArray(da,X,(void**)&x);
+  CHKERRQ(ierr);
+
   fclose(f);
+
   return 0;
 }
 
@@ -373,9 +450,12 @@ int Initialize(DMMG *dmmg)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(da,dmmg[param->mglevels-1]->x,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,localX,(void**)&localx);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,dmmg[param->mglevels-1]->x,(void**)&x);
+  CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,localX,(void**)&localx);
+  CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);
+  CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 } 
@@ -392,12 +472,18 @@ int ComputeMaxima(DA da, Vec X, PetscReal t)
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);
+  CHKERRQ(ierr);
+
+  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);
+  CHKERRQ(ierr);
+
   xints = xs; xinte = xs+xm; yints = ys; yinte = ys+ym;
 
-  ierr = DAVecGetArray(da,X,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da, X, (void**)&x);
+  CHKERRQ(ierr);
+
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
       norm[0] = PetscMax(norm[0],x[j][i].U);
@@ -406,10 +492,19 @@ int ComputeMaxima(DA da, Vec X, PetscReal t)
       norm[3] = PetscMax(norm[3],x[j][i].psi);
     }
   }
-  ierr = DAVecRestoreArray(da,X,(void**)&x);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(norm, gnorm, 4, MPI_DOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,stderr, "%g\t%g\t%g\t%g\t%g\n", t,gnorm[0], gnorm[1], gnorm[2], gnorm[3]);CHKERRQ(ierr);
+
+  ierr = DAVecRestoreArray(da,X,(void**)&x);
+  CHKERRQ(ierr);
+
+  ierr = PetscObjectGetComm((PetscObject)da, &comm);
+  CHKERRQ(ierr);
+  ierr = MPI_Allreduce(norm, gnorm, 4, MPI_DOUBLE, MPI_MAX, comm);
+  CHKERRQ(ierr);
+
+  ierr = PetscFPrintf(PETSC_COMM_WORLD, stderr,
+                      "%g\t%g\t%g\t%g\t%g\n",
+                      t, gnorm[0], gnorm[1], gnorm[2], gnorm[3]);
+  CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -423,7 +518,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   int           ierr,i,j;
   int           xints,xinte,yints,yinte;
   PassiveReal   hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
-  PassiveReal   de2,rhos2,nu,dde2;
+  PassiveReal   de2,rhos2,nu,eta,dde2;
   PassiveReal   two = 2.0,one = 1.0,p5 = 0.5;
   PassiveReal   F_eq_x,By_eq;
 
@@ -435,6 +530,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   de2     = sqr(user->param->d_e);
   rhos2   = sqr(user->param->rho_s);
   nu      = user->param->nu;
+  eta     = user->param->eta;
   dde2    = one/de2;
 
   /* 
@@ -454,7 +550,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
 #ifdef EQ
-      xx = i * hx; 
+      xx = i * hx;
       F_eq_x = - (1. + de2) * sin(xx);
       By_eq = sin(xx);
 #else
@@ -484,33 +580,29 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
       Byp = Bym = p5*By;
 #endif
 
-      /* Lap phi - U */
+      /* Lap(phi) - U */
       f[j][i].phi = (Lapl(x,phi,i,j) - x[j][i].U) * hxhy;
 
-      /* (1 - de^2 Lap) psi - F */
+      /* psi - d_e^2 * Lap(psi) - F */
       f[j][i].psi = (x[j][i].psi - de2 * Lapl(x,psi,i,j) - x[j][i].F) * hxhy;
 
-      /* - nu Lap U + vx * U_x + vy * U_y - (B_x F_x + B_y F_y)/de2 */
-      f[j][i].U  = hxhy * (-nu * Lapl(x,U,i,j) +
-			   (vxp*(D_xm(x,U,i,j)) +
-			    vxm*(D_xp(x,U,i,j)) +
-			    vyp*(D_ym(x,U,i,j)) +
-			    vym*(D_yp(x,U,i,j))) -
-			   (Bxp*(D_xm(x,F,i,j) + F_eq_x) +
-			    Bxm*(D_xp(x,F,i,j) + F_eq_x) +
-			    Byp*(D_ym(x,F,i,j)) +
-			    Bym*(D_yp(x,F,i,j))) * dde2);
+      /* vx * U_x + vy * U_y - (B_x * F_x + B_y * F_y) / d_e^2
+         - nu Lap(U) */
+      f[j][i].U  =
+        ((vxp * (D_xm(x,U,i,j)) + vxm * (D_xp(x,U,i,j)) +
+          vyp * (D_ym(x,U,i,j)) + vym * (D_yp(x,U,i,j))) -
+         (Bxp * (D_xm(x,F,i,j) + F_eq_x) + Bxm * (D_xp(x,F,i,j) + F_eq_x) +
+          Byp * (D_ym(x,F,i,j)) + Bym * (D_yp(x,F,i,j))) * dde2 -
+         nu * Lapl(x,U,i,j)) * hxhy;
       
-      /* -nu Lap F + vx * F_x + vy * F_y - rho_s2 (B_x U_x + B_y U_y) */
-      f[j][i].F  = hxhy * (-nu * Lapl(x,F,i,j) +  /* not quite right */
-			   (vxp*(D_xm(x,F,i,j) + F_eq_x) +
-			    vxm*(D_xp(x,F,i,j) + F_eq_x) +
-			    vyp*(D_ym(x,F,i,j)) +
-			    vym*(D_yp(x,F,i,j))) +
-			   (Bxp*(D_xm(x,U,i,j)) +
-			    Bxm*(D_xp(x,U,i,j)) +
-			    Byp*(D_ym(x,U,i,j)) +
-			    Bym*(D_yp(x,U,i,j))) * rhos2);
+      /* vx * F_x + vy * F_y - rho_s^2 * (B_x * U_x + B_y * U_y)
+         - eta * Lap(psi) */
+      f[j][i].F  =
+        ((vxp * (D_xm(x,F,i,j) + F_eq_x) + vxm * (D_xp(x,F,i,j) + F_eq_x) +
+          vyp * (D_ym(x,F,i,j)) + vym * (D_yp(x,F,i,j))) -
+         (Bxp * (D_xm(x,U,i,j)) + Bxm * (D_xp(x,U,i,j)) +
+          Byp * (D_ym(x,U,i,j)) + Bym * (D_yp(x,U,i,j))) * rhos2 -
+         eta * Lapl(x,psi,i,j)) * hxhy;
     }
   }
 
@@ -531,75 +623,169 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 int Update(DMMG *dmmg)
 /*---------------------------------------------------------------------*/
 {
- 
- AppCtx         *user = (AppCtx *) ((dmmg[0])->user);
- TstepCtx 	*tsCtx = user->tsCtx;
- Parameter      *param = user->param;
- SNES           snes;
- int 		ierr,its,lits,i;
- int 		max_steps;
- PetscTruth     print_flag = PETSC_FALSE;
- int		nfailsCum = 0,nfails = 0;
- static int     ic_out;
+  AppCtx         *user = (AppCtx *) ((dmmg[0])->user);
+  TstepCtx       *tsCtx = user->tsCtx;
+  Parameter      *param = user->param;
+  SNES           snes;
+  int            ierr,its,lits,i;
+  int            max_steps;
+  PetscTruth     print_flag = PETSC_FALSE;
+  int            nfailsCum = 0,nfails = 0;
+  static int     ic_out;
+  PetscLogDouble start, stop, elapsed;
 
   PetscFunctionBegin;
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-print",&print_flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-print", &print_flag);
+  CHKERRQ(ierr);
+
   if (user->param->PreLoading) 
-   max_steps = 1;
+    max_steps = 1;
   else
-   max_steps = tsCtx->max_steps;
+    max_steps = tsCtx->max_steps;
   
-  ierr = Initialize(dmmg); CHKERRQ(ierr);
+  ierr = Initialize(dmmg);
+  CHKERRQ(ierr);
+
+  ierr = PetscGetTime(&start);
+  CHKERRQ(ierr);
 
   for (tsCtx->itstep = 0; tsCtx->itstep < max_steps; tsCtx->itstep++) {
     for (i=param->mglevels-1; i>0 ;i--) {
-      ierr = MatRestrict(dmmg[i]->R, dmmg[i]->x, dmmg[i-1]->x);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(dmmg[i]->Rscale,dmmg[i-1]->x,dmmg[i-1]->x);CHKERRQ(ierr);
-      ierr = VecCopy(dmmg[i]->x, ((AppCtx*)dmmg[i]->user)->Xold); CHKERRQ(ierr);
+      ierr = MatRestrict(dmmg[i]->R, dmmg[i]->x, dmmg[i-1]->x);
+      CHKERRQ(ierr);
+      ierr = VecPointwiseMult(dmmg[i]->Rscale,dmmg[i-1]->x,dmmg[i-1]->x);
+      CHKERRQ(ierr);
+      ierr = VecCopy(dmmg[i]->x, ((AppCtx*)dmmg[i]->user)->Xold);
+      CHKERRQ(ierr);
     }
-    ierr = VecCopy(dmmg[0]->x, ((AppCtx*)dmmg[0]->user)->Xold); CHKERRQ(ierr);
+    ierr = VecCopy(dmmg[0]->x, ((AppCtx*)dmmg[0]->user)->Xold);
+    CHKERRQ(ierr);
 
-    ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
+    ierr = DMMGSolve(dmmg);
+    CHKERRQ(ierr); 
+
     snes = DMMGGetSNES(dmmg);
-    ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-    ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRQ(ierr);
-    if (print_flag) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d / lin = %d\n", its,lits);CHKERRQ(ierr);
-    }
-    ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
-    if (print_flag) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of unsuccessful = %d\n", nfails);CHKERRQ(ierr);
-    }
-    nfailsCum += nfails; nfails = 0;
-    if (nfailsCum >= 2) SETERRQ(1,"Unable to find a Newton Step");
 
-    ierr = SNESComputeFunction(snes,dmmg[param->mglevels-1]->x,((AppCtx*)dmmg[param->mglevels-1]->user)->func);
-    ierr = VecNorm(user->func,NORM_2,&tsCtx->fnorm);CHKERRQ(ierr);
+#ifdef SAVE_JACOBIAN
+
+    {
+      SLES sles;
+      PC pc;
+      Mat mat, pmat;
+      MatStructure flag;
+      PetscViewer viewer;
+      char file[128];
+
+      strcpy(file, "matrix");
+
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD, file,
+                                   PETSC_BINARY_CREATE, &viewer);
+      CHKERRQ(ierr);
+
+      ierr = SNESGetSLES(snes, &sles);
+      CHKERRQ(ierr);
+
+      ierr = SLESGetPC(sles, &pc);
+      CHKERRQ(ierr);
+
+      ierr = PCGetOperators(pc, &mat, &pmat, &flag);
+      CHKERRQ(ierr);
+
+      ierr = MatView(mat, viewer);
+      CHKERRQ(ierr);
+
+      ierr = PetscViewerDestroy(viewer);
+      CHKERRQ(ierr);
+    }
+
+#endif
+
+    ierr = SNESGetIterationNumber(snes,&its);
+    CHKERRQ(ierr);
+    ierr = SNESGetNumberLinearIterations(snes,&lits);
+    CHKERRQ(ierr);
+
+    if (print_flag) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,
+                         "Number of Newton iterations = %d / lin = %d\n",
+                         its, lits);
+      CHKERRQ(ierr);
+    }
+
+    ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);
+    CHKERRQ(ierr);
+
+    if (print_flag) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of unsuccessful = %d\n",
+                         nfails);
+      CHKERRQ(ierr);
+    }
+
+    nfailsCum += nfails;
+    nfails = 0;
+
+    if (nfailsCum >= 2)
+      SETERRQ(1,"Unable to find a Newton Step");
+
+    ierr = SNESComputeFunction(snes, dmmg[param->mglevels-1]->x,
+                               ((AppCtx*)dmmg[param->mglevels-1]->user)->func);
+    CHKERRQ(ierr);
+
+    ierr = VecNorm(user->func, NORM_2, &tsCtx->fnorm);
+    CHKERRQ(ierr);
     
     tsCtx->t += tsCtx->dt;
+
     if (print_flag) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"After Time Step %d and fnorm = %g\n",
-			 tsCtx->itstep,tsCtx->fnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,
+                         "After Time Step %d and fnorm = %g\n",
+			 tsCtx->itstep, tsCtx->fnorm);
+      CHKERRQ(ierr);
     }
+
     if (!param->PreLoading) {
       if (param->draw_contours) {
-	ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+	ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);
+        CHKERRQ(ierr);
       }
+
       if (print_flag) {
 	/* compute maxima */
-	ComputeMaxima((DA) dmmg[param->mglevels-1]->dm, dmmg[param->mglevels-1]->x, tsCtx->t);
+	ComputeMaxima((DA) dmmg[param->mglevels-1]->dm,
+                      dmmg[param->mglevels-1]->x,
+                      tsCtx->t);
 	/* output */
 	if (ic_out++ == (int)(tsCtx->dt_out / tsCtx->dt + .5)) {
-	  ierr = Gnuplot((DA) dmmg[param->mglevels-1]->dm,
-			 dmmg[param->mglevels-1]->x, tsCtx->t);CHKERRQ(ierr);
+#ifdef HAVE_DA_HDF
+          char fname[128];
+
+          sprintf(fname, "out-%g.hdf", tsCtx->t);
+          ierr = DAVecHDFOutput(DMMGGetDA(dmmg), DMMGGetx(dmmg), fname);
+          CHKERRQ(ierr);
+#else
+/*
+          ierr = Gnuplot(DMMGGetDA(dmmg), DMMGGetx(dmmg), tsCtx->t);
+          CHKERRQ(ierr);
+*/
+#endif
 	  ic_out = 1;
         }
       }
     }
   } /* End of time step loop */
   
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"timesteps %d fnorm = %g\n",tsCtx->itstep,tsCtx->fnorm);CHKERRQ(ierr);
+  ierr = PetscGetTime(&stop); CHKERRQ(ierr);
+
+  elapsed = stop - start;
+
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "elapsed time = %g\n", elapsed);
+  CHKERRQ(ierr);
+  
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "timesteps %d fnorm = %g\n",
+                     tsCtx->itstep, tsCtx->fnorm);
+  CHKERRQ(ierr);
+
   if (user->param->PreLoading) {
     tsCtx->fnorm_ini = 0.0;
   }
