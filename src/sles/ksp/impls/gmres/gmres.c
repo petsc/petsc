@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.43 1995/10/23 22:54:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.44 1995/10/24 21:42:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -61,14 +61,13 @@ static char vcid[] = "$Id: gmres.c,v 1.43 1995/10/23 22:54:19 bsmith Exp bsmith 
 #include "pinclude/pviewer.h"
 #define GMRES_DELTA_DIRECTIONS 5
 #define GMRES_DEFAULT_MAXK 10
-int  BasicMultiMaxpy( Vec *,int,Scalar *,Vec);
-static int GMRESGetNewVectors( KSP ,int );
+static int    GMRESGetNewVectors( KSP ,int );
 static double GMRESUpdateHessenberg( KSP , int );
-static int BuildGmresSoln(Scalar* ,Vec,Vec ,KSP, int);
-static int KSPSetUp_GMRES(KSP itP )
+static int    BuildGmresSoln(Scalar* ,Vec,Vec ,KSP, int);
+static int    KSPSetUp_GMRES(KSP itP )
 {
-  unsigned int size, hh, hes, rs, cc;
-  int      ierr,  max_k, k;
+  unsigned  int size, hh, hes, rs, cc;
+  int       ierr,  max_k, k;
   KSP_GMRES *gmresP = (KSP_GMRES *)itP->data;
 
   if ((ierr = KSPCheckDef( itP ))) return ierr;
@@ -178,8 +177,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
   /* Note that hapend is ignored in the code */
   int     it, hapend, converged;
   KSP_GMRES *gmresP = (KSP_GMRES *)(itP->data);
-  int     max_k = gmresP->max_k;
-  int     max_it = itP->max_it;
+  int     max_k = gmresP->max_k, max_it = itP->max_it;
 
   /* Question: on restart, compute the residual?  No; provide a restart 
      driver */
@@ -216,7 +214,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
 	/* get more vectors */
 	GMRESGetNewVectors(  itP, it+1 );
 	}
-    ierr = PCApplyBAorAB(itP->B,itP->right_pre,VEC_VV(it),VEC_VV(it+1),
+    ierr = PCApplyBAorAB(itP->B,itP->right_pre,VEC_VV(it),VEC_VV(1+it),
                          VEC_TEMP_MATOP); CHKERRQ(-ierr);
 
     /* update hessenberg matrix and do Gram-Schmidt */
@@ -249,8 +247,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
   }
   if (nres && hist_len > it + itsSoFar) nres[it + itsSoFar]   = res; 
   if (nres) 
-    itP->res_act_size = (hist_len < it + itsSoFar) ? hist_len : 
-	it + itsSoFar + 1;
+    itP->res_act_size = (hist_len < it + itsSoFar) ? hist_len : it + itsSoFar + 1;
   if (itP->monitor) {
     gmresP->it = it - 1;
     (*itP->monitor)( itP,  it + itsSoFar, res, itP->monP );
@@ -298,7 +295,7 @@ static int KSPSolve_GMRES(KSP itP,int *outits )
   }
     
   while ((ierr = GMREScycle(  &its, itcount, restart, itP ))) {
-    if (ierr == -1) SETERRQ(1,0);
+    if (ierr < 0) SETERRQ(1,0);
     restart = 1;
     itcount += its;
     if ((ierr = GMRESResidual(  itP, restart ))) return ierr;
@@ -313,25 +310,25 @@ static int KSPSolve_GMRES(KSP itP,int *outits )
 static int KSPAdjustWork_GMRES(KSP itP )
 {
   KSP_GMRES *gmresP;
-  int          i;
+  int       i;
 
   if ( itP->adjust_work_vectors ) {
-   gmresP = (KSP_GMRES *) itP->data;
-   for (i=0; i<gmresP->vv_allocated; i++) 
-     if ( (*itP->adjust_work_vectors)(itP,gmresP->user_work[i],
-					     gmresP->mwork_alloc[i])) 
-       SETERRQ(1,"KSPAdjustWork_GMRES:Could not allocate work vectors");
- }
+    gmresP = (KSP_GMRES *) itP->data;
+    for (i=0; i<gmresP->vv_allocated; i++) {
+      ierr = (*itP->adjust_work_vectors)(itP,gmresP->user_work[i],gmresP->mwork_alloc[i]); 
+      CHKERRQ(ierr);
+    }  
+  }
   return 0;
 }
 
 static int KSPDestroy_GMRES(PetscObject obj)
 {
-  KSP itP = (KSP) obj;
+  KSP       itP = (KSP) obj;
   KSP_GMRES *gmresP = (KSP_GMRES *) itP->data;
-  int          i;
+  int       i;
 
-  /* Free the matrix */
+  /* Free the Hessenberg matrix */
   PETSCFREE( gmresP->hh_origin );
 
   /* Free the pointer to user variables */
@@ -439,9 +436,7 @@ static double GMRESUpdateHessenberg( KSP itP, int it )
     thus obtaining the updated value of the residual
   */
   tt        = sqrt( *hh * *hh + *(hh+1) * *(hh+1) );
-  if (tt == 0.0) {
-    SETERRQ(1,"KSPSolve_GMRES:bad A or B operator, are you sure it is !0?");
-  }
+  if (tt == 0.0) {SETERRQ(1,"KSPSolve_GMRES:bad A or B operator, are you sure it is !0?");}
   *cc       = *hh / tt;
   *ss       = *(hh+1) / tt;
   *RS(it+1) = - ( *ss * *RS(it) );
@@ -459,8 +454,7 @@ static double GMRESUpdateHessenberg( KSP itP, int it )
 static int GMRESGetNewVectors( KSP itP,int it )
 {
   KSP_GMRES *gmresP = (KSP_GMRES *)itP->data;
-  int nwork = gmresP->nwork_alloc;
-  int k, nalloc;
+  int       nwork = gmresP->nwork_alloc,k, nalloc;
 
   nalloc = gmresP->delta_allocate;
   /* Adjust the number to allocate to make sure that we don't exceed the
@@ -472,8 +466,7 @@ static int GMRESGetNewVectors( KSP itP,int it )
 
   gmresP->vv_allocated += nalloc;
   VecGetVecs(itP->vec_rhs, nalloc,&gmresP->user_work[nwork] );
-  PLogObjectParents(itP,nalloc,gmresP->user_work[nwork]);
-  CHKPTRQ(gmresP->user_work[nwork]);
+  PLogObjectParents(itP,nalloc,gmresP->user_work[nwork]);CHKPTRQ(gmresP->user_work[nwork]);
   gmresP->mwork_alloc[nwork] = nalloc;
   for (k=0; k<nalloc; k++)
     gmresP->vecs[it+VEC_OFFSET+k] = gmresP->user_work[nwork][k];
@@ -545,15 +538,15 @@ static int KSPBuildSolution_GMRES(KSP itP,Vec  ptr,Vec *result )
 .   fcn   - Orthogonalization function.  
 
   Notes:
-  The functions GMRESBasicOrthog and GMRESUnmodifiedOrthog are predefined.
-  The default is GMRESBasicOrthog; GMRESUnmodifiedOrthog is a simple 
-  Gram-Schmidt (NOT modified Gram-Schmidt).  The GMRESUnmodifiedOrthog is 
+  The functions KSPGMRESBasicOrthog and KSPGMRESUnmodifiedOrthog are predefined.
+  The default is KSPGMRESBasicOrthog; KSPGMRESUnmodifiedOrthog is a simple 
+  Gram-Schmidt (NOT modified Gram-Schmidt).  The KSPGMRESUnmodifiedOrthog is 
   NOT recommended; however, for some problems, particularly when using 
   parallel distributed vectors, this may be significantly faster.
 
-  The routine GMRESIROrthog is an interative refinement version of 
-  GMRESUnmodifiedOrthog.  It may be more effective than GMRESUnmodifiedOrthog
-  on parallel systems.  
+  The routine KSPGMRESIROrthog is an interative refinement version of 
+  KSPGMRESUnmodifiedOrthog.  It may be more numerically stable than
+  KSPGMRESUnmodifiedOrthog on parallel systems.  
 */
 int KSPGMRESSetOrthogRoutine( KSP itP,int (*fcn)(KSP,int) )
 {
@@ -570,21 +563,20 @@ static int KSPView_GMRES(PetscObject obj,Viewer viewer)
   KSP_GMRES *gmresP = (KSP_GMRES *)itP->data; 
   FILE      *fd;
   char      *cstring;
-  int       GMRESBasicOrthog(KSP,int),ierr;
+  int       ierr;
 
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
 
-  if (gmresP->orthog == GMRESUnmodifiedOrthog) 
+  if (gmresP->orthog == KSPGMRESUnmodifiedOrthog) 
     cstring = "GMRESUnmodifiedOrthog";
-  else if (gmresP->orthog == GMRESBasicOrthog) 
+  else if (gmresP->orthog == KSPGMRESBasicOrthog) 
     cstring = "GMRESBasicOrthog";
-  else if (gmresP->orthog == GMRESIROrthog) 
+  else if (gmresP->orthog == KSPGMRESIROrthog) 
     cstring = "GMRESIROrthog";
   else 
     cstring = "unknown";
-  MPIU_fprintf(itP->comm,fd,
-    "    GMRES: restart=%d, orthogonalization routine is %s\n",
-    gmresP->max_k,cstring);
+  MPIU_fprintf(itP->comm,fd,"    GMRES: restart=%d, orthogonalization routine is %s\n",
+               gmresP->max_k,cstring);
   return 0;
 }
 
@@ -594,25 +586,25 @@ int KSPCreate_GMRES(KSP itP)
 
   gmresP = (KSP_GMRES*) PETSCMALLOC(sizeof(KSP_GMRES)); CHKPTRQ(gmresP);
   PLogObjectMemory(itP,sizeof(KSP_GMRES));
-  itP->data = (void *) gmresP;
-  itP->type        = KSPGMRES;
-  itP->converged     = KSPDefaultConverged_GMRES;
-  itP->buildsolution = KSPBuildSolution_GMRES;
+  itP->data              = (void *) gmresP;
+  itP->type              = KSPGMRES;
+  itP->converged         = KSPDefaultConverged_GMRES;
+  itP->buildsolution     = KSPBuildSolution_GMRES;
 
-  itP->setup         = KSPSetUp_GMRES;
-  itP->solver        = KSPSolve_GMRES;
-  itP->adjustwork    = KSPAdjustWork_GMRES;
-  itP->destroy       = KSPDestroy_GMRES;
-  itP->view          = KSPView_GMRES;
+  itP->setup             = KSPSetUp_GMRES;
+  itP->solver            = KSPSolve_GMRES;
+  itP->adjustwork        = KSPAdjustWork_GMRES;
+  itP->destroy           = KSPDestroy_GMRES;
+  itP->view              = KSPView_GMRES;
 
-  gmresP->haptol    = 1.0e-8;
-  gmresP->epsabs    = 1.0e-8;
-  gmresP->q_preallocate = 0;
+  gmresP->haptol         = 1.0e-8;
+  gmresP->epsabs         = 1.0e-8;
+  gmresP->q_preallocate  = 0;
   gmresP->delta_allocate = GMRES_DELTA_DIRECTIONS;
-  gmresP->orthog    = GMRESBasicOrthog;
-  gmresP->nrs       = 0;
-  gmresP->sol_temp  = 0;
-  gmresP->max_k     = GMRES_DEFAULT_MAXK;
+  gmresP->orthog         = KSPGMRESBasicOrthog;
+  gmresP->nrs            = 0;
+  gmresP->sol_temp       = 0;
+  gmresP->max_k          = GMRES_DEFAULT_MAXK;
   return 0;
 }
 

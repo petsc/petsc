@@ -1,4 +1,4 @@
-/* $Id: gmresp.h,v 1.1 1994/10/02 02:03:49 bsmith Exp bsmith $
+/* $Id: gmresp.h,v 1.2 1995/05/05 03:58:34 bsmith Exp bsmith $
 
    Private include for gmres package
  */
@@ -15,14 +15,12 @@ typedef struct {
     Scalar *hh_origin, *hes_origin, *cc_origin, *ss_origin, *rs_origin;
 
     /* parameters */
-    double haptol, epsabs;         /* */
+    double haptol, epsabs;        
     int    max_k;
 
-    /* Functions to use (special to gmres) */
-    int   (*orthog)(KSP,int);
+    int   (*orthog)(KSP,int); /* Functions to use (special to gmres) */
     
-    /* vecs holds the temporary vectors */
-    Vec *vecs;
+    Vec   *vecs;  /* holds the work vectors */
     /* vv_allocated is the number of allocated gmres direction vectors */
     int    q_preallocate, delta_allocate;
     int    vv_allocated;
@@ -32,7 +30,7 @@ typedef struct {
     /* Since we may call the user "obtain_work_vectors" several times, 
        we have to keep track of the pointers that it has returned 
        (so that we may free the storage) */
-    Vec **user_work;
+    Vec    **user_work;
     int    *mwork_alloc;    /* Number of work vectors allocated as part of
                                a work-vector chunck */
     int    nwork_alloc;     /* Number of work vectors allocated */
@@ -43,7 +41,7 @@ typedef struct {
     Scalar *nrs;            /* temp that holds the coefficients of the 
                                Krylov vectors that form the minimum residual
                                solution */
-    Vec sol_temp;       /* used to hold temporary solution */
+    Vec    sol_temp;       /* used to hold temporary solution */
     } KSP_GMRES;
 
 #define HH(a,b)  (gmresP->hh_origin + (b)*(gmresP->max_k+2)+(a))
@@ -53,12 +51,12 @@ typedef struct {
 #define RS(a)    (gmresP->rs_origin + (a))
 
 /* vector names */
-#define VEC_OFFSET 3
-#define VEC_SOLN itP->vec_sol
-#define VEC_RHS  itP->vec_rhs
-#define VEC_TEMP gmresP->vecs[0]
+#define VEC_OFFSET     3
+#define VEC_SOLN       itP->vec_sol
+#define VEC_RHS        itP->vec_rhs
+#define VEC_TEMP       gmresP->vecs[0]
 #define VEC_TEMP_MATOP gmresP->vecs[1]
-#define VEC_BINVF gmresP->vecs[2]
-#define VEC_VV(i) gmresP->vecs[VEC_OFFSET+i]
+#define VEC_BINVF      gmresP->vecs[2]
+#define VEC_VV(i)      gmresP->vecs[VEC_OFFSET+i]
 
 #endif
