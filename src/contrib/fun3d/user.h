@@ -80,11 +80,8 @@
 #define f77IREAD    f77name(IREAD,iread,iread_)
 #define f77RREAD    f77name(RREAD,rread,rread_)
                   
-/*#define NULL 0*/
 #define max_colors  200
 #define max_nbtran 20
-#define MAX(x,y) (((x) > (y))?(x):(y))
-#define MIN(x,y) (((x) < (y))?(x):(y))
 
 /*
 #ifdef DOUBLE
