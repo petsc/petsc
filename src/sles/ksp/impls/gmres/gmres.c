@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.162 2001/01/31 04:16:25 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.163 2001/01/31 04:22:44 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -271,7 +271,7 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
   itcount += its;
   while (!ksp->reason) {
     ksp->guess_zero = PETSC_FALSE;
-    ierr     = GMRESResidual(ksp);CHKERRQ(ierr);
+    ierr     = KSPInitialResidual(ksp,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),VEC_BINVF,VEC_RHS);CHKERRQ(ierr);
     if (itcount >= ksp->max_it) break;
     ierr     = GMREScycle(&its,ksp);CHKERRQ(ierr);
     itcount += its;  
