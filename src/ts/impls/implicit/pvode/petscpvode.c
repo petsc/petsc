@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.8 1997/10/13 21:16:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.9 1997/10/13 21:53:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,8 +12,9 @@ static char vcid[] = "$Id: petscpvode.c,v 1.8 1997/10/13 21:16:19 bsmith Exp bsm
 #include "src/ts/impls/implicit/pvode/petscpvode.h"  /*I "ts.h" I*/    
 
 /*
-      TSPrecond_PVode is the function that we provide to PVODE to
-   evaluate the preconditioner.
+      TSPrecond_PVode - function that we provide to PVODE to
+                        evaluate the preconditioner.
+
 */
 #undef __FUNC__
 #define __FUNC__ "TSPrecond_PVode"
@@ -26,61 +27,55 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
   TS           ts = (TS) P_data;
   TS_PVode     *cvode = (TS_PVode*) ts->data;
   PC           pc = cvode->pc;
-  int          ierr, locsize;
-
-  Mat          Jac;
+  int          ierr;
+  Mat          Jac = ts->B;
   Vec          tmpy = cvode->w1;
   Scalar       one = 1.0, gm;
-  MatStructure str = SAME_NONZERO_PATTERN;
+  MatStructure str = DIFFERENT_NONZERO_PATTERN;
 
-  /* get the local size of N_Vector y */
-  locsize = N_VLOCLENGTH(y);
+  
+  /* This allows use to construct preconditioners in-place if we like */
+  ierr = MatSetUnfactored(Jac); CHKERRQ(ierr);
 
-  /* Jac and u must be set before calling PCSetUp */
-  ierr = MatCreate(PETSC_COMM_WORLD,N,N,&Jac); CHKERRQ(ierr);
-
-  if (!cvode->pmat) {
-    ierr = MatCreate(MPI_COMM_WORLD,N,N,&cvode->pmat); CHKERRQ(ierr);
-  }
-
+  /*
+       jok - TRUE means reuse current Jacobian
+                  else recompute Jacobian
+  */
   if (jok) {
-    /* jok=TRUE: copy the Jacobian to Pcond */
-    ierr = MatCopy(cvode->pmat,Jac); CHKERRQ(ierr);
-
+    ierr     = MatCopy(cvode->pmat,Jac); CHKERRQ(ierr);
+    str      = SAME_NONZERO_PATTERN;
     *jcurPtr = FALSE;
   }
   else {
-    /* jok = FALSE: generate the Jacobian and then copy it to Pcond */
-    /* convert N_Vector y to petsc Vec tmpy */
+    /* make PETSc vector tmpy point to PVODE vector y */
     ierr = VecPlaceArray(tmpy,&N_VIth(y,0));CHKERRQ(ierr);
 
-    /* recompute the Jacobian */
+    /* compute the Jacobian */
     ierr = (*ts->rhsjacobian)(ts,ts->ptime,tmpy,&Jac,&Jac,&str,ts->jacP);CHKERRQ(ierr);
 
     /* copy the Jacobian matrix */
+    if (!cvode->pmat) {
+      ierr = MatDuplicate(Jac,&cvode->pmat); CHKERRQ(ierr);
+      PLogObjectParent(ts,cvode->pmat); 
+    }
     ierr = MatCopy(Jac, cvode->pmat); CHKERRQ(ierr);
 
-    /* set the flag */
     *jcurPtr = TRUE;
   }
 
   /* construct I-gamma*Jac  */
-  gm = -_gamma;
+  gm   = -_gamma;
   ierr = MatScale(&gm,Jac); CHKERRQ(ierr);
   ierr = MatShift(&one,Jac); CHKERRQ(ierr);
   
-  /* setup the preconditioner contex */
-  ierr = PCSetOperators(pc,Jac,Jac,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = PCSetVector(pc,ts->vec_sol);   CHKERRQ(ierr);
-
-  ierr = PCSetUp(pc); CHKERRQ(ierr);
+  ierr = PCSetOperators(pc,Jac,Jac,str);CHKERRQ(ierr);
 
   return(0);
 }
 
 /*
-  TSPSolve_PVode -  routine that we provide to PVode that applies the 
-  preconditioner.
+     TSPSolve_PVode -  routine that we provide to PVode that applies the 
+                       preconditioner.
       
    ---------------------------------------------------------------------
 */    
@@ -112,8 +107,8 @@ static int TSPSolve_PVode(integer N, real tn, N_Vector y,
 }
 
 /*
-    TSPSolve_PVode - routine that we provide to PVode that applies the 
-  right hand side.
+        TSPSolve_PVode - routine that we provide to PVode that applies the 
+                         right hand side.
       
    ---------------------------------------------------------------------
 */  
@@ -137,7 +132,7 @@ static void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
 }
 
 /*
-  TSStep_PVode_Nonlinear - Calls PVode to integrate the ODE.
+       TSStep_PVode_Nonlinear - Calls PVode to integrate the ODE.
 
    ----------------------------------------------------------------------
 */
@@ -169,7 +164,7 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
   tout = ts->max_time;
   for ( i=0; i<max_steps; i++) {
     if (ts->ptime > ts->max_time) break;
-    flag=CVode(cvode->mem, tout, cvode->y, &t, ONE_STEP);
+    flag = CVode(cvode->mem, tout, cvode->y, &t, ONE_STEP);
     if (flag != SUCCESS) SETERRQ(1,0,"PVODE failed");	
 
     ts->time_step = t - ts->ptime;
@@ -186,19 +181,15 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
     ierr = TSMonitor(ts,ts->steps,t,sol); CHKERRQ(ierr);
   }
 
-  /* count the number of interations, notice CVDEnse uses Newtons method 
-  */
   ts->nonlinear_its = cvode->iopt[NNI];
   ts->linear_its    = 0;
-
-  /* count the number of steps and the time reached by CVODE */
-  *steps += ts->steps;
-  *time  = t;
+  *steps           += ts->steps;
+  *time             = t;
 
   return 0;
 }
 
-/*------------------------------------------------------------*/
+/*--------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "TSDestroy_PVode"
 static int TSDestroy_PVode(PetscObject obj )
@@ -207,6 +198,7 @@ static int TSDestroy_PVode(PetscObject obj )
   TS_PVode *cvode = (TS_PVode*) ts->data;
   int       ierr;
 
+  if (cvode->pmat)   {ierr = MatDestroy(cvode->pmat);CHKERRQ(ierr);}
   if (cvode->pc)     {ierr = PCDestroy(cvode->pc); CHKERRQ(ierr);}
   if (cvode->update) {ierr = VecDestroy(cvode->update); CHKERRQ(ierr);}
   if (cvode->func)   {ierr = VecDestroy(cvode->func);CHKERRQ(ierr);}
@@ -225,7 +217,6 @@ static int TSSetUp_PVode_Nonlinear(TS ts)
 {
   TS_PVode    *cvode = (TS_PVode*) ts->data;
   int         ierr, M, locsize;
-
   machEnvType machEnv;
 
   /* get the vector size */
@@ -260,75 +251,69 @@ static int TSSetUp_PVode_Nonlinear(TS ts)
   PLogObjectParent(ts,cvode->w1);
   PLogObjectParent(ts,cvode->w2);
 
+  ierr = PCSetVector(cvode->pc,ts->vec_sol);   CHKERRQ(ierr);
+
   /* allocate memory for PVode */
   cvode->mem = CVodeMalloc(M,TSFunction_PVode,ts->ptime,cvode->y,
- 			          cvode->cvode_method,
+ 			          cvode->cvode_type,
                                   NEWTON,SS,&cvode->reltol,
                                   &cvode->abstol,ts,NULL,FALSE,cvode->iopt,
                                   cvode->ropt,machEnv); CHKPTRQ(cvode->mem);
   return 0;
 }
 
-/*--------------------------------------------------------------------*/
-#undef __FUNC__
-#define __FUNC__ "TSPVodePCSetUp_PVode"
-static int TSPVodePCSetUp_PVode(TS ts)
-{
-  TS_PVode *cvode = (TS_PVode*) ts->data;
-  int      ierr;
-
-  ierr = PCSetFromOptions(cvode->pc); CHKERRQ(ierr);
-
-  return 0;
-}
-
-/*------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ "TSSetFromOptions_PVode_Nonlinear"
 static int TSSetFromOptions_PVode_Nonlinear(TS ts)
 {
+  TS_PVode *cvode = (TS_PVode*) ts->data;
   int      ierr, flag;
   char     method[128];
 
   /*
      Allows user to set any of the PC options 
-     -ts_pvode_method bdf or adams
+     -ts_pvode_type bdf or adams
   */
-  ierr = OptionsGetString(PETSC_NULL,"-ts_pvode_method",method,127,&flag);CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-ts_pvode_type",method,127,&flag);CHKERRQ(ierr);
   
   if (flag) {
     if (PetscStrcmp(method,"bdf") == 0) {
-      ierr = TSPVodeSetMethod(ts, BDF); CHKERRQ(ierr);
+      ierr = TSPVodeSetType(ts, BDF); CHKERRQ(ierr);
     }
     else if (PetscStrcmp(method,"adams") == 0) {
-      ierr = TSPVodeSetMethod(ts, ADAMS); CHKERRQ(ierr);
+      ierr = TSPVodeSetType(ts, ADAMS); CHKERRQ(ierr);
     }
     else {
       SETERRQ(1,0,"Unknow PVode method. \n");
     }
   }
   else {
-    ierr = TSPVodeSetMethod(ts, BDF); CHKERRQ(ierr); /* the default method */
+    ierr = TSPVodeSetType(ts, BDF); CHKERRQ(ierr); /* the default method */
   }
-
-  /*  user set the preconditioner */
-  ierr = TSPVodePCSetUp_PVode(ts); CHKERRQ(ierr); 
+  ierr = PCSetFromOptions(cvode->pc); CHKERRQ(ierr);
   
   return 0;
 }
 
-/*--------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ "TSPrintHelp_PVode" 
 static int TSPrintHelp_PVode(TS ts,char *p)
 {
+  int      ierr;
+  TS_PVode *cvode = (TS_PVode*) ts->data;
 
+  PetscPrintf(ts->comm," Options for TSPVODE integrater:\n");
+  PetscPrintf(ts->comm," -ts_pvode_type <bdf,adams>: integration approach",p);
+
+  ierr = PCPrintHelp(cvode->pc);CHKERRQ(ierr);
   return 0;
 }
 
-/*------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "TSView_PVode" 
 static int TSView_PVode(PetscObject obj,Viewer viewer)
@@ -347,7 +332,7 @@ static int TSView_PVode(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-/* ------------------------------------------------------------ */
+/* ---------------------------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "TSCreate_PVode"
 int TSCreate_PVode(TS ts )
@@ -377,28 +362,29 @@ int TSCreate_PVode(TS ts )
 }
 
 
-/*--------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*/
 #undef __FUNC__
-#define __FUNC__ "TSPVodeSetMethod"
+#define __FUNC__ "TSPVodeSetType"
 /*@
-   TSPVodeSetMethod - Sets the method that PVode will use for integration.
+   TSPVodeSetType - Sets the method that PVode will use for integration.
 
    Input parameters:
     ts     - the time-step context
-    method - one of  PVODE_ADAMS or PVODE_BDF
+    type - one of  PVODE_ADAMS or PVODE_BDF
 
 .keywords: Adams, backward differentiation formula
+
 @*/
-int TSPVodeSetMethod(TS ts, TSPVodeMethod method)
+int TSPVodeSetType(TS ts, TSPVodeType type)
 {
   TS_PVode *cvode = (TS_PVode*) ts->data;
   
   if (ts->type != TS_PVODE) return 0;
-  cvode->cvode_method = method;
+  cvode->cvode_type = type;
   return 0;
 }
 
-/*--------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "TSPVodeGetPC"
 /*
@@ -414,14 +400,10 @@ int TSPVodeSetMethod(TS ts, TSPVodeMethod method)
 */
 int TSPVodeGetPC(TS ts, PC *pc)
 { 
-  int      ierr;
   TS_PVode *cvode = (TS_PVode*) ts->data;
 
   if (ts->type != TS_PVODE) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"TS must be of PVode type to extract the PC");
-  }
-  if (!cvode->pc) {
-    ierr = PCCreate(ts->comm,&cvode->pc); CHKERRQ(ierr);
   }
   *pc = cvode->pc;
 
