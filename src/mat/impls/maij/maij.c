@@ -1792,13 +1792,13 @@ PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,Mat *B)
   Mat_SeqAIJ        *AIJ = (Mat_SeqAIJ*) MatAIJ->data;
   Mat_SeqAIJ        *OAIJ =(Mat_SeqAIJ*) MatOAIJ->data;
   Mat_MPIAIJ        *mpiaij = (Mat_MPIAIJ*) maij->A->data;
-  PetscInt          dof = maij->dof,i,j,*dnz,*onz,nmax = 0,onmax = 0,*oicols,*icols,ncols,*cols,oncols,*ocols,omax;
+  PetscInt          dof = maij->dof,i,j,*dnz,*onz,nmax = 0,onmax = 0,*oicols,*icols,ncols,*cols,oncols,*ocols;
   PetscInt          rstart,cstart,*garray,ii,k;
   PetscErrorCode    ierr;
   PetscScalar       *vals,*ovals;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc2(A->m,PETSC_INT,&dnz,A->m,PETSC_INT,&onz);CHKERRQ(ierr);
+  ierr = PetscMalloc2(A->m,PetscInt,&dnz,A->m,PetscInt,&onz);CHKERRQ(ierr);
   for (i=0; i<A->m/dof; i++) {
     nmax  = PetscMax(nmax,AIJ->ilen[i]);
     onmax = PetscMax(onmax,OAIJ->ilen[i]);
@@ -1811,7 +1811,7 @@ PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,Mat *B)
   ierr = MatSetOption(*B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
 
-  ierr   = PetscMalloc2(nmax,PETSC_INT,&icols,omax,PETSC_INT,&oicols);CHKERRQ(ierr);
+  ierr   = PetscMalloc2(nmax,PetscInt,&icols,onmax,PetscInt,&oicols);CHKERRQ(ierr);
   rstart = dof*mpiaij->rstart;
   cstart = dof*mpiaij->cstart;
   garray = mpiaij->garray;
