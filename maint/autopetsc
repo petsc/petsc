@@ -1,7 +1,16 @@
 #!/usr/local/bin/expect -f
 #
 #  Simple PETSc MUD demon
+#
+
+#
+#   Get the most recent petsc-maint added
 # 
+    set last_petsc_maint [exec ls /mcs/adm/request/petsc-maint/active | sort -n | tail -1]
+
+#
+#  Start up the MUD session
+#
      spawn telnet wfg.mcs.anl.gov 7777
      expect "*if you have any problems.\r\n\r\n"
 
@@ -11,7 +20,7 @@
      puts "PETSc successfully connected"
      send "page Barry PETSc has connected\r"
 
-     set timeout 1000000
+     set timeout 60
 #
 #   Main loop, looks for certain text strings coming back from the MUD server.
 #        eventually for each pattern we can call large sophisticated functions.
@@ -52,6 +61,16 @@
                  } "*\r\n" { 
                                    puts "Irrelevant message"
                  }
+       }
+#
+#   Check petsc-maint, see if anything came in
+#
+       set last [exec ls /mcs/adm/request/petsc-maint/active | sort -n | tail -1]
+       if {$last > $last_petsc_maint} {
+          send "say Another pesky petsc-maint has arrived\r"
+          set last_petsc_maint $last
+          set subject [exec grep Subject: /mcs/adm/request/petsc-maint/active/$last]
+          set from [exec grep From: /mcs/adm/request/petsc-maint/active/$last]
        }
     }
 
