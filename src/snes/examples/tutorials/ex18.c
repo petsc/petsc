@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.7 2000/09/28 14:41:23 bsmith Exp bsmith $ */
+/* $Id: ex18.c,v 1.8 2000/12/08 04:43:02 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   DMMG          *dmmg;
   SNES          snes;                      
   AppCtx        user;
-  int           nlevels,ierr,its,lits,mx,my,ratio;
+  int           nlevels,ierr,its,lits,mx,my;
   double	litspit;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
@@ -87,7 +87,6 @@ int main(int argc,char **argv)
   /* set number of levels and grid size on coarsest level */
   mx              = 5; 
   my              = 5; 
-  ratio           = 2;
   nlevels         = 3;
   ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
