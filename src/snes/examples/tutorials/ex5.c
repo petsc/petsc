@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.30 1995/10/12 04:20:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.31 1995/10/19 22:29:40 curfman Exp bsmith $";
 #endif
 
 static char help[] =
@@ -8,7 +8,8 @@ nonlinear equations in parallel, using 2-dimensional distributed arrays.\n\
 The 2-dim Bratu (SFI - solid fuel ignition) test problem is used, where\n\
 analytic formation of the Jacobian is the default.  The command line\n\
 options are:\n\
-  -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
+  -par <parameter>, where <parameter> indicates the       ierr = ISAddStrideSeq(&to,xe-xs,left+i*(Xe-Xs),1);CHKERRQ(ierr);
+problem's nonlinearity\n\
      problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
   -my <yg>, where <yg> = number of grid points in the y-direction\n\

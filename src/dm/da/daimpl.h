@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.6 1995/08/02 04:19:19 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.7 1995/08/07 22:01:45 bsmith Exp bsmith $ */
 
 /*
 
@@ -19,7 +19,7 @@ struct _DA {
   int           *idx,Nl;           /* local to global map */
   int           base;              /* global number of 1st local node */
   int           wrap;              /* indicates if periodic boundaries */
-  VecScatterCtx gtol,ltog;      
+  VecScatter    gtol,ltog;      
   Vec           global,local;
   DAStencilType stencil_type;
 };

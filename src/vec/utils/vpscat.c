@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.32 1995/10/19 22:15:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.33 1995/10/22 04:17:02 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -10,37 +10,49 @@ static char vcid[] = "$Id: vpscat.c,v 1.32 1995/10/19 22:15:56 curfman Exp bsmit
 #include "vecimpl.h"                     /*I "vec.h" I*/
 #include "impls/dvecimpl.h"
 #include "impls/mpi/pvecimpl.h"
+#include "pinclude/pviewer.h"
 
-int PrintPVecScatter(VecScatter ctx)
+int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 {
+  VecScatter     ctx = (VecScatter) obj;
   VecScatter_MPI *to=(VecScatter_MPI *) ctx->todata, *from=(VecScatter_MPI *) ctx->fromdata;
-  int            i,rank;
+  PetscObject    vobj = (PetscObject) viewer;
+  int            i,rank,ierr;
+  FILE           *fd;
 
-  MPIU_Seq_begin(ctx->comm,1);
+  if (!viewer) { 
+    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+  }
+  if (vobj->cookie != VIEWER_COOKIE) return 0;
+  if (vobj->type != ASCII_FILE_VIEWER && vobj->type != ASCII_FILES_VIEWER) return 0;
+
   MPI_Comm_rank(ctx->comm,&rank);
-
-  fprintf(stderr,"[%d]Number sends %d below %d self %d\n",rank,to->n,
-                 to->nbelow,to->nself);
-  fprintf(stderr,"[%d]Inital start should be zero %d\n",rank,to->starts[0]);
+  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  MPIU_Seq_begin(ctx->comm,1);
+  fprintf(fd,"[%d]Number sends %d below %d self %d\n",rank,to->n,to->nbelow,to->nself);
   for ( i=0; i<to->n; i++ ){
-    fprintf(stderr,"[%d]start %d %d\n",rank,i,to->starts[i+1]);
-    fprintf(stderr,"[%d]proc %d\n",rank,to->procs[i]);
+    fprintf(fd,"[%d] %d length %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],
+            to->procs[i]);
   }
-  fprintf(stderr,"Now the indices\n");
+  /*
+  fprintf(fd,"Now the indices\n");
   for ( i=0; i<to->starts[to->n]; i++ ){
-    fprintf(stderr,"[%d]%d \n",rank,to->indices[i]);
+    fprintf(fd,"[%d]%d \n",rank,to->indices[i]);
   }
-  fprintf(stderr,"[%d]Number receives %d below %d self %d\n",rank,from->n,
-                     from->nbelow,from->nself);
-  fprintf(stderr,"[%d]Inital start should be zero %d\n",rank,from->starts[0]);
+  */
+  fprintf(fd,"[%d]Number receives %d below %d self %d\n",rank,from->n,
+          from->nbelow,from->nself);
   for ( i=0; i<from->n; i++ ){
-    fprintf(stderr,"[%d]start %d %d\n",rank,i,from->starts[i+1]);
-    fprintf(stderr,"[%d]proc %d\n",rank,from->procs[i]);
+    fprintf(fd,"[%d] %d length %d to whom %d\n",rank,i,from->starts[i+1]-from->starts[i],
+            from->procs[i]);
   }
-  fprintf(stderr,"Now the indices\n");
+  /*
+  fprintf(fd,"Now the indices\n");
   for ( i=0; i<from->starts[from->n]; i++ ){
-    fprintf(stderr,"[%d]%d \n",rank,from->indices[i]);
+    fprintf(fd,"[%d]%d \n",rank,from->indices[i]);
   }
+  */
+  fflush(fd);
   MPIU_Seq_end(ctx->comm,1);
   return 0;
 }  
@@ -493,7 +505,7 @@ static int PtoPScatterDestroy(PetscObject obj)
 }
 
 /* --------------------------------------------------------------*/
-int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter ctx)
+int PtoSScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter ctx)
 {
   Vec_MPI        *x = (Vec_MPI *)xin->data;
   VecScatter_MPI *from,*to;
@@ -518,7 +530,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter 
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"PtoSScatterCtxCreate:Index out of range");
+    if (!found) SETERRQ(1,"PtoSScatterCreate:Index out of range");
   }
   nprocslocal = nprocs[rank]; 
   nprocs[rank] = procs[rank] = 0; 
@@ -691,6 +703,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter 
   ctx->pipelinebegin  = PtoPPipelinebegin;
   ctx->pipelineend    = PtoPPipelineend;
   ctx->copy           = PtoPCopy;
+  ctx->view           = VecScatterView_MPI;
   return 0;
 }
 
@@ -698,7 +711,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter 
 /*
      scatter from local Seq vectors to a parallel vector.
 */
-int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter ctx)
+int StoPScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter ctx)
 {
   Vec_MPI        *y = (Vec_MPI *)yin->data;
   VecScatter_MPI *from,*to;
@@ -723,7 +736,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter 
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"StoPScatterCtxCreate:Index out of range");
+    if (!found) SETERRQ(1,"StoPScatterCreate:Index out of range");
   }
   nprocslocal = nprocs[rank];
   nprocs[rank] = procs[rank] = 0; 
@@ -882,7 +895,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter 
   ctx->pipelinebegin     = 0;
   ctx->pipelineend       = 0;
   ctx->copy              = 0;
-
+  ctx->view              = VecScatterView_MPI;
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.28 1995/10/01 21:51:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.29 1995/10/11 15:17:55 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -59,6 +59,10 @@ int PetscAttachDebugger()
   char *program = OptionsGetProgramName();
 #if defined(PARCH_t3d)
   fprintf(stderr,"PETSC ERROR: Cray t3d cannot start debugger\n");
+  MPI_Finalize();
+  exit(0);
+#elif defined(PARCH_IRIX)
+  fprintf(stderr,"PETSC ERROR: IRIX cannot start debugger\n");
   MPI_Finalize();
   exit(0);
 #else

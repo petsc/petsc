@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.14 1995/10/06 17:32:29 curfman Exp bsmith $ */
+/* $Id: aij.h,v 1.15 1995/10/17 21:41:57 bsmith Exp bsmith $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -33,5 +33,11 @@ typedef struct {
   void   *spptr;           /* pointer for special library like SuperLU */
   int    indexshift;       /* zero or -one for C or Fortran indexing */
 } Mat_SeqAIJ;
+
+extern int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,double,int,Mat *);
+extern int MatConvert_SeqAIJ(Mat,MatType,Mat *);
+extern int MatCopyPrivate_SeqAIJ(Mat, Mat*,int);
+extern int MatMarkDiag_SeqAIJ(Mat);
+
 
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.19 1995/10/01 21:53:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: da1.c,v 1.20 1995/10/19 22:30:20 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -116,7 +116,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   int           i,*idx,nn;
   DA            da;
   Vec           local,global;
-  VecScatterCtx ltog,gtol;
+  VecScatter    ltog,gtol;
   IS            to,from;
   *inra = 0;
 
@@ -165,7 +165,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   VecGetOwnershipRange(global,&start,&end);
   ierr = ISCreateStrideSeq(MPI_COMM_SELF,x,start,1,&to);CHKERRQ(ierr);
   ierr = ISCreateStrideSeq(MPI_COMM_SELF,x,xs-Xs,1,&from);CHKERRQ(ierr);
-  ierr = VecScatterCtxCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
+  ierr = VecScatterCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
   PLogObjectParent(da,to);
   PLogObjectParent(da,from);
   PLogObjectParent(da,ltog);
@@ -207,7 +207,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   }
 
   ierr = ISCreateSeq(comm,nn,idx,&from); CHKERRQ(ierr);
-  ierr = VecScatterCtxCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
+  ierr = VecScatterCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
   PLogObjectParent(da,to);
   PLogObjectParent(da,from);
   PLogObjectParent(da,gtol);

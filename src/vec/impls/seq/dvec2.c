@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.15 1995/09/04 17:23:23 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.16 1995/09/30 19:26:35 bsmith Exp bsmith $ */
 
 #include "inline/dot.h"
 #include "inline/vmult.h"
@@ -20,9 +20,6 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
   for (i=0; i<nv; i++) {
     sum = 0.0;
     yy = ((Vec_Seq *)(y[i]->data))->array;
-#if defined(PARCH_rs6000) 
-#pragma disjoint (*xx,*yy)
-#endif
     DOT(sum,xx,yy,n);
     z[i] = sum;
   }
@@ -109,9 +106,6 @@ static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec yin, Vec *x )
   PLogFlops(nv*2*n);
   for (j=0; j<nv; j++) {
     xx = ((Vec_Seq *)(x[j]->data))->array;
-#if defined(PARCH_rs6000) 
-#pragma disjoint (*xx,*yy)
-#endif
     if (alpha[j] == -1.0) {
       YMX(yy,xx,n);
     }

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.42 1995/10/16 14:50:02 bsmith Exp gropp $";
+static char vcid[] = "$Id: gmres.c,v 1.43 1995/10/23 22:54:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -551,7 +551,7 @@ static int KSPBuildSolution_GMRES(KSP itP,Vec  ptr,Vec *result )
   NOT recommended; however, for some problems, particularly when using 
   parallel distributed vectors, this may be significantly faster.
 
-  The routine GMRESOrthogIR is an interative refinement version of 
+  The routine GMRESIROrthog is an interative refinement version of 
   GMRESUnmodifiedOrthog.  It may be more effective than GMRESUnmodifiedOrthog
   on parallel systems.  
 */
@@ -562,32 +562,6 @@ int KSPGMRESSetOrthogRoutine( KSP itP,int (*fcn)(KSP,int) )
     ((KSP_GMRES *)itP->data)->orthog = fcn;
   }
   return 0;
-}
-
-int GMRESUnmodifiedOrthog(KSP,int);
-
-/*@
-    KSPGMRESSetUseUnmodifiedGramSchmidt - Sets GMRES to use unmodified
-    Gram-Schmidt for the orthogonalization.  This is not recommended, due 
-    to possible numerical problems, although it may be faster, especially
-    in a parallel environment.
-
-    Input Parameters:
-.   itP - the iterative context
-
-    Options Database Key:
-$   -ksp_gmres_unmodifiedgramschmidt
-
-    Notes:
-    The default is to use modified Gram-Schmidt.
-
-.keywords: GMRES, unmodified, Gram-Schmidt, orthogonalization
-
-.seealso: KSPGMRESSetRestart()
-@*/
-int KSPGMRESSetUseUnmodifiedGramSchmidt(KSP itP)
-{
-  return KSPGMRESSetOrthogRoutine( itP, GMRESUnmodifiedOrthog);
 }
 
 static int KSPView_GMRES(PetscObject obj,Viewer viewer)
@@ -604,6 +578,8 @@ static int KSPView_GMRES(PetscObject obj,Viewer viewer)
     cstring = "GMRESUnmodifiedOrthog";
   else if (gmresP->orthog == GMRESBasicOrthog) 
     cstring = "GMRESBasicOrthog";
+  else if (gmresP->orthog == GMRESIROrthog) 
+    cstring = "GMRESIROrthog";
   else 
     cstring = "unknown";
   MPIU_fprintf(itP->comm,fd,
@@ -615,7 +591,6 @@ static int KSPView_GMRES(PetscObject obj,Viewer viewer)
 int KSPCreate_GMRES(KSP itP)
 {
   KSP_GMRES *gmresP;
-  int         GMRESBasicOrthog(KSP,int);
 
   gmresP = (KSP_GMRES*) PETSCMALLOC(sizeof(KSP_GMRES)); CHKPTRQ(gmresP);
   PLogObjectMemory(itP,sizeof(KSP_GMRES));

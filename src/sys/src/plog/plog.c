@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.41 1995/10/19 22:19:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.42 1995/10/23 12:50:30 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -66,6 +66,8 @@ int PLogAllowInfo(PetscTruth flag)
   return 0;
 }
 
+extern FILE *petsc_history;
+
 /* This is a temporary shell until we devise a complete version */
 int PLogInfo(PetscObject obj,char *format,...)
 {
@@ -77,6 +79,9 @@ int PLogInfo(PetscObject obj,char *format,...)
   if (rank) return 0;
   va_start( Argp, format );
   vfprintf(stdout,format,Argp);
+  if (petsc_history) {
+    vfprintf(petsc_history,format,Argp);
+  }
   va_end( Argp );
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.12 1995/08/02 04:19:29 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.13 1995/08/21 18:14:36 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallism of simple grid 
@@ -35,7 +35,7 @@ extern int   DAGetCorners(DA,int*,int*,int*,int*,int*,int*);
 extern int   DAGetGhostCorners(DA,int*,int*,int*,int*,int*,int*);
 
 extern int   DAGetGlobalIndices(DA,int*,int**);
-extern int   DAGetScatterCtx(DA,VecScatterCtx*,VecScatterCtx*);
+extern int   DAGetScatterCtx(DA,VecScatter*,VecScatter*);
 
 
 #endif

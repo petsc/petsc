@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.8 1995/10/12 04:21:23 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.9 1995/10/19 22:30:35 curfman Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -11,7 +11,7 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 #include "sys.h"
 #include "draw.h"
 #include <math.h>
-#include <sysio.h>
+#include "sysio.h"
 
 #define PI 3.14159265
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.18 1995/10/01 02:26:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiu.c,v 1.19 1995/10/19 22:19:14 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -9,6 +9,12 @@ static char vcid[] = "$Id: mpiu.c,v 1.18 1995/10/01 02:26:08 bsmith Exp curfman 
 #include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"
+
+/*
+   If petsc_history is on then all MPI_*printf() results are saved
+   if the appropriate (usually .petschistory) directory.
+*/
+extern FILE *petsc_history;
 
 /*@C
     MPIU_fopen - The first process in the communicator opens a file,
@@ -62,6 +68,9 @@ int MPIU_fprintf(MPI_Comm comm,FILE* fd,char *format,...)
     va_list Argp;
     va_start( Argp, format );
     vfprintf(fd,format,Argp);
+    if (petsc_history) {
+      vfprintf(petsc_history,format,Argp);
+    }
     va_end( Argp );
   }
   return 0;
@@ -82,6 +91,9 @@ int MPIU_printf(MPI_Comm comm,char *format,...)
     va_list Argp;
     va_start( Argp, format );
     vfprintf(stdout,format,Argp);
+    if (petsc_history) {
+      vfprintf(petsc_history,format,Argp);
+    }
     va_end( Argp );
   }
   return 0;

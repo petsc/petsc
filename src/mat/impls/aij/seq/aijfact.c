@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.41 1995/10/11 15:19:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.42 1995/10/12 15:01:41 bsmith Exp bsmith $";
 #endif
 
 
@@ -437,8 +437,8 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
   return 0;
 }
 /* ----------------------------------------------------------------*/
-int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,
-                             int levels,Mat *fact)
+
+int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat *fact)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b;
   IS         isicol;
@@ -450,6 +450,20 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,
   if (n != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqAIJ:Matrix must be square");
   if (!isrow) SETERRQ(1,"MatILUFactorSymbolic_SeqAIJ:Must have row permutation");
   if (!iscol) SETERRQ(1,"MatILUFactorSymbolic_SeqAIJ:Must have column permutation");
+
+  /* special case that simply copies fill pattern */
+  if (levels == 0 && ISIsIdentity(isrow) && ISIsIdentity(iscol)) {
+    ierr = MatCopyPrivate_SeqAIJ(A,fact,DO_NOT_COPY_VALUES); CHKERRQ(ierr);
+    (*fact)->factor = FACTOR_LU;
+    b               = (Mat_SeqAIJ *) (*fact)->data;
+    if (!b->diag) {
+      ierr = MatMarkDiag_SeqAIJ(*fact); CHKERRQ(ierr);
+    }
+    b->row          = isrow;
+    b->col          = iscol;
+    b->solve_work = (Scalar *) PETSCMALLOC((b->m+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
+    return 0;
+  }
 
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r); CHKERRQ(ierr);

@@ -1,6 +1,6 @@
 PETSC_DIR = ../..
 
-CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I.. -I$(IPETSCDIR) $(CONF)
+CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I.. -I$(IPETSCDIR) $(CONF) $(PCONF)
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = petsc.h vec.h snes.h da.h draw.h mat.h ksp.h pc.h sles.h viewer.h

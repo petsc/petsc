@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.15 1995/09/07 04:28:17 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.16 1995/09/21 20:13:13 bsmith Exp bsmith $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -12,10 +12,11 @@ typedef struct _Viewer*            Viewer;
 #define ASCII_FILES_VIEWER         2
 #define BINARY_FILE_VIEWER         3
 
-#define FILE_FORMAT_DEFAULT  0
-#define FILE_FORMAT_MATLAB   1
-#define FILE_FORMAT_IMPL     2
-#define FILE_FORMAT_INFO     3
+#define FILE_FORMAT_DEFAULT       0
+#define FILE_FORMAT_MATLAB        1
+#define FILE_FORMAT_IMPL          2
+#define FILE_FORMAT_INFO          3
+#define FILE_FORMAT_INFO_DETAILED 4
 
 /* file types */
 typedef enum { BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE} ViewerBinaryType;

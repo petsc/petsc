@@ -1,7 +1,7 @@
 PETSC_DIR = ../../../..
 
 ALL: lib 
-CFLAGS    =  -I../.. $(PETSC_INCLUDE) \
+CFLAGS    =  -I../.. $(PETSC_INCLUDE) $(PCONF)\
             $(XINCLUDEDIR) $(CONF) -D__DIR__='"viewer/impls/file/"'
 SOURCEC   = binv.c
 SOURCEF   =

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.17 1995/10/01 21:53:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: da3.c,v 1.18 1995/10/19 22:30:20 curfman Exp bsmith $";
 #endif
 
 /*
@@ -178,11 +178,11 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   int           left,up,down,bottom,top,i,j,k,*idx,nn;
   int           n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
   int           n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;
-  int           *bases,x_t,y_t,z_t,s_t,base;
+  int           *bases,x_t,y_t,z_t,s_t,base,count;
   int           s_x,s_y,s_z; /* s proportionalized to w */
   DA            da;
   Vec           local,global;
-  VecScatterCtx ltog,gtol;
+  VecScatter    ltog,gtol;
   IS            to,from;
   *inra = 0;
 
@@ -346,18 +346,23 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   ierr = ISCreateStrideSeq(MPI_COMM_SELF,x*y*z,start,1,&to); 
   CHKERRQ(ierr);
 
-  left = xs - Xs; 
+  left   = xs - Xs; 
   bottom = ys - Ys; top = bottom + y;
-  down = zs - Zs;   up  = down + z;
-  from = 0;
+  down   = zs - Zs; up  = down + z;
+  count  = x*(top-bottom)*(up-down);
+  idx    = (int *) PETSCMALLOC( count*sizeof(int) ); CHKPTRQ(idx);
+  count  = 0;
   for ( i=down; i<up; i++ ) {
     for ( j=bottom; j<top; j++) {
-      ierr = ISAddStrideSeq(&from,x,(left+j*(Xe-Xs))+i*(Xe-Xs)*(Ye-Ys),1);
-      CHKERRQ(ierr);
+      for ( k=0; k<x; k++ ) {
+        idx[count++] = (left+j*(Xe-Xs))+i*(Xe-Xs)*(Ye-Ys) + k;
+      }
     }
   }
+  ierr = ISCreateSeq(MPI_COMM_SELF,count,idx,&from); CHKERRQ(ierr);
+  PETSCFREE(idx);
 
-  ierr = VecScatterCtxCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
+  ierr = VecScatterCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
   PLogObjectParent(da,to);
   PLogObjectParent(da,from);
   PLogObjectParent(da,ltog);
@@ -370,41 +375,42 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   else {
     /* This is way ugly! We need to list the funny cross type region */
     /* the bottom chunck */
-    left = xs - Xs; 
+    left   = xs - Xs; 
     bottom = ys - Ys; top = bottom + y;
-    down = zs - Zs;   up  = down + z;
-    to = 0;
+    down   = zs - Zs;   up  = down + z;
+    count  = down*(top-bottom)*x +
+             (up-down)*(bottom*x  + (top-bottom)*(Xe-Xs) + (Ye-Ys-top)*x) +
+             (Ze-Zs-up)*(top-bottom)*x;
+    idx    = (int *) PETSCMALLOC( count*sizeof(int) ); CHKPTRQ(idx);
+    count  = 0;
     for ( i=0; i<down; i++ ) {
       for ( j=bottom; j<top; j++) {
-        ierr = ISAddStrideSeq(&to,x,left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
-        CHKERRQ(ierr);
+        for ( k=0; k<x; k++ ) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
       }
     }
     /* the middle piece */
     for ( i=down; i<up; i++ ) {
       /* front */
       for ( j=0; j<bottom; j++) {
-        ierr = ISAddStrideSeq(&to,x,left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
-        CHKERRQ(ierr);
+        for ( k=0; k<x; k++ ) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
       }
       /* middle */
       for ( j=bottom; j<top; j++) {
-        ierr = ISAddStrideSeq(&to,Xe-Xs,j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
-        CHKERRQ(ierr);
+        for ( k=0; k<Xe-Xs; k++ ) idx[count++] = j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
       }
       /* back */
       for ( j=top; j<Ye-Ys; j++) {
-        ierr = ISAddStrideSeq(&to,x,left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
-        CHKERRQ(ierr);
+        for ( k=0; k<x; k++ ) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
       }
     }
     /* the top piece */
     for ( i=up; i<Ze-Zs; i++ ) {
       for ( j=bottom; j<top; j++) {
-        ierr = ISAddStrideSeq(&to,x,left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
-        CHKERRQ(ierr);
+        for ( k=0; k<x; k++ ) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
       }
     }
+    ierr = ISCreateSeq(MPI_COMM_SELF,count,idx,&to); CHKERRQ(ierr);
+    PETSCFREE(idx);
   }
 
   /* determine who lies on each side of use stored in    n24 n25 n26
@@ -871,7 +877,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   }  
   base = bases[rank];
   ierr = ISCreateSeq(comm,nn,idx,&from); CHKERRQ(ierr);
-  ierr = VecScatterCtxCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
+  ierr = VecScatterCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
   PLogObjectParent(da,gtol);
   PLogObjectParent(da,to);
   PLogObjectParent(da,from);

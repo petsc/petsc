@@ -1,8 +1,8 @@
 C
 C      Include file for Fortran use of the Vec package in PETSc
 C
-#define Vec           integer
-#define VecScatterCtx integer 
+#define Vec        integer
+#define VecScatter integer 
 C
       integer INSERT_VALUES, ADD_VALUES
       integer SCATTER_REVERSE,SCATTER_DOWN,SCATTER_UP,SCATTER_ALL,

@@ -2,7 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(PETSC_INCLUDE) -I.. $(CONF) -D__DIR__='"da/src/"'
+CFLAGS   = $(PETSC_INCLUDE) -I.. $(CONF) $(PCONF) -D__DIR__='"da/src/"'
 SOURCEC  = da2.c da1.c da3.c
 SOURCEF  = 
 SOURCEH  = 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sp1wd.c,v 1.10 1995/09/30 19:29:19 bsmith Exp $";
+static char vcid[] = "$Id: sorder.c,v 1.11 1995/10/12 04:16:18 bsmith Exp bsmith $";
 #endif
 
 #include "../../matimpl.h"
@@ -8,13 +8,11 @@ static char vcid[] = "$Id: sp1wd.c,v 1.10 1995/09/30 19:29:19 bsmith Exp $";
 
 static NRList *__MatReorderingList = 0;
 
-int MatGetReordering_IJ(int n,int *ia,int* ja,MatOrdering type,
-                            IS *rperm, IS *cperm)
+int MatGetReordering_IJ(int n,int *ia,int* ja,MatOrdering type,IS *rperm, IS *cperm)
 {
-  int  ierr,*permr,*permc;
-  int  (*r)(int*,int*,int*,int*,int*);
+  int  ierr,*permr,*permc,(*r)(int*,int*,int*,int*,int*);
 
-  permr = (int *) PETSCMALLOC( 2*n*sizeof(int) ); CHKPTRQ(permr);
+  permr = (int *) PETSCMALLOC( (2*n+1)*sizeof(int) ); CHKPTRQ(permr);
   permc = permr + n;
 
   /* Get the function pointers for the method requested */
@@ -33,6 +31,17 @@ int MatGetReordering_IJ(int n,int *ia,int* ja,MatOrdering type,
   ierr = ISCreateSeq(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
   ISSetPermutation(*cperm);
   PETSCFREE(permr); 
+
+  /* 
+     this is tacky: In the future when we have written special factorization
+     and solve routines for the identity permutation we should use a 
+     stride index set instead of the general one.
+  */
+  if (type == ORDER_NATURAL) {
+    ISSetIdentity(*rperm);
+    ISSetIdentity(*cperm);
+  }
+
   return 0; 
 }
 
@@ -57,7 +66,7 @@ int MatOrderNatural(int *N,int *ia,int* ja, int* permr, int* permc)
 .seealso: MatReorderingRegisterDestroy(), MatReorderingRegisterAll()
 @*/
 int  MatReorderingRegister(MatOrdering name,char *sname,
-                          int (*order)(int*,int*,int*,int*,int*))
+                                    int (*order)(int*,int*,int*,int*,int*))
 {
   int ierr;
   if (!__MatReorderingList) {

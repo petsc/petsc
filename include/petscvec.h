@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.34 1995/09/21 20:13:13 bsmith Exp curfman $ */
+/* $Id: vec.h,v 1.35 1995/10/11 17:59:04 curfman Exp bsmith $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -24,8 +24,8 @@
 
 typedef enum { VECSAME=-1, VECSEQ, VECMPI } VecType;
 
-typedef struct _Vec*            Vec;
-typedef struct _VecScatterCtx*  VecScatterCtx;
+typedef struct _Vec*         Vec;
+typedef struct _VecScatter*  VecScatter;
 
 extern int VecCreateSeq(MPI_Comm,int,Vec *);  
 extern int VecCreateMPI(MPI_Comm,int,int,Vec *);  
@@ -65,16 +65,17 @@ extern int VecAssemblyEnd(Vec);
 typedef enum {SCATTER_REVERSE=1,SCATTER_DOWN=2,SCATTER_UP=4,SCATTER_ALL=8,
               SCATTER_ALL_REVERSE=9} ScatterMode;
 
-extern int VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatterCtx);
-extern int VecScatterEnd(Vec,Vec,InsertMode,ScatterMode,VecScatterCtx); 
-extern int VecScatterCtxCreate(Vec,IS,Vec,IS,VecScatterCtx *);
-extern int VecScatterCtxDestroy(VecScatterCtx);
-extern int VecScatterCtxCopy(VecScatterCtx,VecScatterCtx *);
+extern int VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+extern int VecScatterEnd(Vec,Vec,InsertMode,ScatterMode,VecScatter); 
+extern int VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
+extern int VecScatterDestroy(VecScatter);
+extern int VecScatterCopy(VecScatter,VecScatter *);
+extern int VecScatterView(VecScatter,Viewer);
 
 typedef enum {PIPELINE_DOWN=0,PIPELINE_UP=1} PipelineMode;
 
-extern int VecPipelineBegin(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx);
-extern int VecPipelineEnd(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx); 
+extern int VecPipelineBegin(Vec,Vec,InsertMode,PipelineMode,VecScatter);
+extern int VecPipelineEnd(Vec,Vec,InsertMode,PipelineMode,VecScatter); 
 
 extern int VecShift(Scalar *,Vec);
 extern int VecGetArray(Vec,Scalar**);

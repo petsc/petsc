@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.93 1995/10/23 17:21:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.94 1995/10/23 18:37:47 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -514,18 +514,25 @@ static int MatView_MPIAIJ_ASCIIorDraw(Mat mat,Viewer viewer)
  
   if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
     ierr = ViewerFileGetFormat_Private(viewer,&format);
-    if (format == FILE_FORMAT_INFO) {
+    if (format == FILE_FORMAT_INFO_DETAILED) {
       int nz,nzalloc,mem;
       MPI_Comm_rank(mat->comm,&rank);
       ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
       MPIU_Seq_begin(mat->comm,1);
-        fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d \n",rank,aij->m,nz,
+      fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d \n",rank,aij->m,nz,
                 nzalloc,mem);       
+      ierr = MatGetInfo(aij->A,MAT_LOCAL,&nz,&nzalloc,&mem); 
+      fprintf(fd,"[%d] on diagonal nz %d \n",rank,nz); 
+      ierr = MatGetInfo(aij->B,MAT_LOCAL,&nz,&nzalloc,&mem); 
+      fprintf(fd,"[%d] off diagonal nz %d \n",rank,nz); 
       fflush(fd);
       MPIU_Seq_end(mat->comm,1);
       ierr = VecScatterView(aij->Mvctx,viewer);
       return 0; 
+    }
+    else if (format == FILE_FORMAT_INFO) {
+      return 0;
     }
   }
 

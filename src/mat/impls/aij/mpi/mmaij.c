@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.19 1995/09/21 20:10:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.20 1995/09/30 19:28:49 bsmith Exp bsmith $";
 #endif
 
 
@@ -65,7 +65,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = VecCreateMPI(mat->comm,aij->n,aij->N,&gvec); CHKERRQ(ierr);
 
   /* gnerate the scatter context */
-  ierr = VecScatterCtxCreate(gvec,from,aij->lvec,to,&aij->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx); CHKERRQ(ierr);
   PLogObjectParent(mat,aij->Mvctx);
   PLogObjectParent(mat,aij->lvec);
   PLogObjectParent(mat,from);
@@ -100,7 +100,7 @@ int DisAssemble_MPIAIJ(Mat A)
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(aij->lvec,&ec); /* needed for PLogObjectMemory below */
   ierr = VecDestroy(aij->lvec); CHKERRQ(ierr); aij->lvec = 0;
-  ierr = VecScatterCtxDestroy(aij->Mvctx); CHKERRQ(ierr); aij->Mvctx = 0;
+  ierr = VecScatterDestroy(aij->Mvctx); CHKERRQ(ierr); aij->Mvctx = 0;
   if (aij->colmap) {
     PETSCFREE(aij->colmap); aij->colmap = 0;
     PLogObjectMemory(A,-Baij->n*sizeof(int));

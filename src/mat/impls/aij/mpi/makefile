@@ -3,7 +3,7 @@ PETSC_DIR = ../../../../..
 ALL: lib
 
 CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I../seq $(CONF) \
-            -D__DIR__='"mat/impls/aij/mpi/"'
+            -D__DIR__='"mat/impls/aij/mpi/"' $(PCONF)
 SOURCEC  = mpiaij.c mmaij.c maijfact.c mpiaijpc.c aijpc.c
 SOURCEF  =
 SOURCEH  = 

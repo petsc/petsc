@@ -3,7 +3,7 @@ PETSC_DIR = ../../../../..
 ALL: lib
 
 CFLAGS   =  $(PETSC_INCLUDE) -I../../.. $(SUPERLU_INCLUDE) \
-           $(CONF) -D__DIR__='"mat/impls/aij/seq/"'
+           $(CONF) -D__DIR__='"mat/impls/aij/seq/"' $(PCONF)
 SOURCEC  = aij.c aijfact.c ij.c superlu.c essl.c dxml.c
 SOURCEF  =
 SOURCEH  = aij.h

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.28 1995/10/11 17:57:48 curfman Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.29 1995/10/19 22:28:23 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -132,6 +132,7 @@ $    FILE_FORMAT_MATLAB - Matlab format
 $    FILE_FORMAT_IMPL - implementation-specific format
 $      (which is in many cases the same as the default)
 $    FILE_FORMAT_INFO - basic information about object
+$    FILE_FORMAT_INFO_DETAILED 
  
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.
@@ -144,7 +145,7 @@ int ViewerFileSetFormat(Viewer v,int format,char *name)
 {
   PETSCVALIDHEADERSPECIFIC(v,VIEWER_COOKIE);
   if (v->type == ASCII_FILES_VIEWER || v->type == ASCII_FILE_VIEWER) {
-    v->format = format;
+    v->format     = format;
     v->outputname = name;
   }
   return 0;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.39 1995/10/19 22:15:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.40 1995/10/22 04:17:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -115,8 +115,8 @@ static int SGtoSGDestroy(PetscObject obj)
   return 0;
 }
 
-int PtoSScatterCtxCreate(int,int *,int,int *,Vec,VecScatter);
-int StoPScatterCtxCreate(int,int *,int,int *,Vec,VecScatter);
+int PtoSScatterCreate(int,int *,int,int *,Vec,VecScatter);
+int StoPScatterCreate(int,int *,int,int *,Vec,VecScatter);
 /* --------------------------------------------------------------*/
 /*@C
    VecScatterCreate - Creates a vector scatter context. This routine
@@ -270,7 +270,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetLocalSize(iy,&ny); ISGetIndices(iy,&idy);
       if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
-      ierr = PtoSScatterCtxCreate(nx,idx,ny,idy,xin,ctx); CHKERRQ(ierr);
+      ierr = PtoSScatterCreate(nx,idx,ny,idy,xin,ctx); CHKERRQ(ierr);
       ISRestoreIndices(ix,&idx); ISRestoreIndices(iy,&idy);
       *newctx = ctx;
       return 0;
@@ -308,7 +308,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetLocalSize(iy,&ny); ISGetIndices(iy,&idy);
       if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
-      ierr = StoPScatterCtxCreate(nx,idx,ny,idy,yin,ctx); CHKERRQ(ierr);
+      ierr = StoPScatterCreate(nx,idx,ny,idy,yin,ctx); CHKERRQ(ierr);
       ISRestoreIndices(ix,&idx); ISRestoreIndices(iy,&idy);
       *newctx = ctx;
       return 0;
@@ -500,5 +500,20 @@ int VecPipelineEnd(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatter ctx)
   MPI_Comm_size(ctx->comm,&size);
   if (size == 1) return 0;
   if ((ctx)->pipelineend) return (*(ctx)->pipelineend)(x,y,addv,mode,ctx);
+  else return 0;
+}
+
+/*@
+     VecScatterView - View a vector scatter context.
+
+  Input Parameters:
+.  - ctx - the scatter context
+.  - viewer - the viewer where one wishes to display the context
+
+@*/
+int VecScatterView(VecScatter ctx, Viewer viewer)
+{
+  PETSCVALIDHEADERSPECIFIC(ctx,VEC_SCATTER_COOKIE);
+  if (ctx->view) return (*ctx->view)((PetscObject)ctx,viewer);
   else return 0;
 }

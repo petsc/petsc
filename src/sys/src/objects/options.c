@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.49 1995/10/17 21:41:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.50 1995/10/19 22:19:14 curfman Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -51,6 +51,51 @@ static int OptionsDestroy_Private();
 #if defined(PETSC_COMPLEX)
 MPI_Datatype  MPIU_COMPLEX;
 #endif
+
+/* 
+    Optional file where all PETSc output from MPIU_*printf() 
+  is saved in. 
+*/
+FILE *petsc_history = 0;
+
+static int PLogOpenHistoryFile(char *filename,FILE **fd)
+{
+  int  ierr,rank,size;
+  char pfile[256];
+
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
+  if (!rank) {
+    char arch[10];
+    SYGetArchType(arch,10);
+    MPI_Comm_size(MPI_COMM_WORLD,&size);
+    if (!filename) {
+      ierr = SYGetHomeDirectory(240,pfile); CHKERRQ(ierr);
+      PetscStrcat(pfile,"/.petschistory");
+      filename = pfile;
+    }
+    *fd = fopen(filename,"a"); if (!fd) SETERRQ(1,"PLogOpenHistoryFile:");
+    fprintf(*fd,"---------------------------------------------------------\n");
+    fprintf(*fd,"%s %s ",PETSC_VERSION_NUMBER,SYGetDate());
+    fprintf(*fd,"%s on a %s, %d proc. with options:\n",
+            options->programname,arch,size);
+    OptionsPrint(*fd);
+    fprintf(*fd,"---------------------------------------------------------\n");
+  }
+  return 0; 
+}
+
+static int PLogCloseHistoryFile(FILE **fd)
+{
+  int  rank;
+
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
+  if (rank) return 0;
+  fprintf(*fd,"---------------------------------------------------------\n");
+  fprintf(*fd,"Finished at %s",SYGetDate());
+  fprintf(*fd,"---------------------------------------------------------\n");
+  fclose(*fd);
+  return 0; 
+}
 
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI. 
@@ -143,6 +188,7 @@ int PetscFinalize()
   if (OptionsHasName(0,"-log_summary")) {
     PLogPrint(MPI_COMM_WORLD,stdout);
   }
+  mname[0] = 0;
   if (OptionsGetString(0,"-log_all",mname,64) || OptionsGetString(0,"-log",mname,64)){
     if (mname[0]) PLogDump(mname); 
     else PLogDump(0);
@@ -173,6 +219,10 @@ int PetscFinalize()
         }
       }
     } 
+  }
+  if (OptionsHasName(0,"-log_history")) {
+    PLogCloseHistoryFile(&petsc_history);
+    petsc_history = 0;
   }
   if (OptionsHasName(0,"-trdump")) {
     OptionsDestroy_Private();
@@ -322,6 +372,19 @@ int OptionsCheckInitial_Private()
     PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0);
   }
 #if defined(PETSC_LOG)
+  {
+  char mname[256];
+  mname[0] = 0;
+  if (OptionsGetString(0,"-log_history",mname,256)) {
+    int ierr;
+    if (mname[0]) {
+      ierr = PLogOpenHistoryFile(mname,&petsc_history); CHKERRQ(ierr);
+    }
+    else {
+      ierr = PLogOpenHistoryFile(0,&petsc_history); CHKERRQ(ierr);
+    }
+  }
+  }
   if (OptionsHasName(0,"-info")) {
     PLogAllowInfo(PETSC_TRUE);
   }
@@ -499,7 +562,12 @@ int OptionsPrint(FILE *fd)
   if (!fd) fd = stdout;
   if (!options) OptionsCreate_Private(0,0,0,0);
   for ( i=0; i<options->N; i++ ) {
-    fprintf(fd,"OptionTable: %s %s\n",options->names[i],options->values[i]);
+    if (options->values[i]) {
+      fprintf(fd,"OptionTable: %s %s\n",options->names[i],options->values[i]);
+    }
+    else {
+      fprintf(fd,"OptionTable: %s\n",options->names[i]);
+    }
   }
   return 0;
 }

@@ -1,7 +1,7 @@
 PETSC_DIR = ../../../..
 
 ALL: lib 
-CFLAGS    = -I../.. $(PETSC_INCLUDE)  \
+CFLAGS    = -I../.. $(PETSC_INCLUDE) $(PCONF) \
             $(X11_INCLUDE) $(CONF) -D__DIR__='"draw/impls/x/"'
 SOURCEC   = xinit.c  frame.c wmap.c color.c xops.c text.c tone.c
 SOURCEF   =

@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.24 1995/08/22 16:33:42 bsmith Exp curfman $ */
+/* $Id: ksp.h,v 1.25 1995/10/17 14:09:32 curfman Exp bsmith $ */
 
 #ifndef __KSP_PACKAGE
 #define __KSP_PACKAGE
@@ -57,8 +57,12 @@ extern int KSPRichardsonSetScale(KSP , double);
 extern int KSPChebychevSetEigenvalues(KSP , double, double);
 extern int KSPCGGetEigenvalues(KSP, int n,Scalar*,Scalar*);
 extern int KSPGMRESSetRestart(KSP, int);
-extern int KSPGMRESSetUseUnmodifiedGramSchmidt(KSP);
+
 extern int KSPGMRESSetOrthogRoutine(KSP,int (*)(KSP,int));
+extern int GMRESUnmodifiedOrthog(KSP,int);
+extern int GMRESBasicOrthog(KSP,int);
+extern int GMRESIROrthog(KSP,int);
+
 extern int KSPSetFromOptions(KSP);
 
 extern int KSPCGDefaultMonitor(KSP,int,double, void * );

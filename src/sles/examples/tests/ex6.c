@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.9 1995/10/12 21:19:42 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.10 1995/10/12 22:09:52 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -12,7 +12,6 @@ Input arguments are:\n\
 #include "mat.h"
 #include "sles.h"
 #include <stdio.h>
-#include <stdlib.h>
 
 int main(int argc,char **args)
 {

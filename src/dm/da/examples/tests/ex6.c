@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.10 1995/10/12 04:21:23 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.11 1995/10/19 22:30:35 curfman Exp bsmith $";
 #endif
       
 /* Peter Mell created this file on 7/25/95 */
@@ -11,7 +11,7 @@ static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 #include "sys.h"
 #include "draw.h"
 #include <math.h>
-#include <sysio.h>
+#include "sysio.h"
 
 int main(int argc,char **argv)
 {

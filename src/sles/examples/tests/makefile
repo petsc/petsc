@@ -1,7 +1,7 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS        = $(CONF) $(PETSC_INCLUDE) $(BS_INCLUDE)
+CFLAGS        = $(PCONF) $(PETSC_INCLUDE) $(BS_INCLUDE)
 SOURCEC       = 
 SOURCEF       =
 SOURCEH       = pargrid.h

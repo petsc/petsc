@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.16 1995/10/12 04:20:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.17 1995/10/19 22:29:40 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -29,7 +29,8 @@ int main( int argc, char **argv )
   ApplicationCtx ctx;                /* user-defined context */
   Vec            x, r, U, F;
   Scalar         xp, *FF, *UU;
-  int            ierr, its, N = 5, i, start, end, n;
+  int            ierr, its, N = 5, i, start, end, n, set;
+  MatType        mtype;
 
   PetscInitialize( &argc, &argv, 0,0,help );
   OptionsGetInt(0,"-n",&N);
@@ -49,16 +50,20 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(x,&F); CHKERRA(ierr); ctx.F = F;
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)U,"Exact Solution");
-  if (OptionsHasName(0,"-mat_row")) {
+  ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,&mtype,&set); CHKERRA(ierr);
+  if (mtype == MATMPIROW) {
     ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
            0,0,&J); CHKERRA(ierr);
-  } else if (OptionsHasName(0,"-mat_bdiag")) {
+  } else if (mtype == MATMPIBDIAG) {
     int diag[3]; diag[0] = -1; diag[1] = 0; diag[2] = 1;
     ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,N,N,3,1,diag,0,&J);
            CHKERRA(ierr);
+  } else if (mtype == MATSEQAIJ) {
+    ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,3,0,&J);
+           CHKERRA(ierr);
   } else {
-    ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
-           0,0,&J); CHKERRA(ierr);
+    ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,0,0,&J);
+           CHKERRA(ierr);
   }
 
   /* Store right-hand-side of PDE and exact solution */

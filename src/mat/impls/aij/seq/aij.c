@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.104 1995/10/19 22:22:19 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.105 1995/10/20 02:00:02 curfman Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -155,7 +155,7 @@ static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerFileGetFormat_Private(viewer,&format);
   if (format == FILE_FORMAT_INFO) {
-    ; /* do nothing for now */
+    /* no need to print additional information */ ;
   } 
   else if (format == FILE_FORMAT_MATLAB) {
     int nz, nzalloc, mem;
@@ -418,9 +418,6 @@ static int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   idx  = a->j;
   v    = a->a;
   ii   = a->i;
-#if defined(PARCH_rs6000) 
-#pragma disjoint (*x,*v,*y)
-#endif
   for ( i=0; i<m; i++ ) {
     n    = ii[1] - ii[0]; ii++;
     sum  = 0.0;
@@ -874,7 +871,16 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
       }
     }
     /* create submatrix */
-    ierr = MatCreateSeqAIJ(A->comm,nrows,ncols,0,lens,&C);CHKERRQ(ierr);
+    if (MatValidMatrix(*B)) {
+      int n_cols,n_rows;
+      ierr = MatGetSize(*B,&n_rows,&n_cols); CHKERRQ(ierr);
+      if (n_rows != nrows || n_cols != ncols) SETERRQ(1,"MatGetSubMatrix_SeqAIJ:");
+      MatZeroEntries(*B);
+      C = *B;
+    }
+    else {  
+      ierr = MatCreateSeqAIJ(A->comm,nrows,ncols,0,lens,&C);CHKERRQ(ierr);
+    }
     c = (Mat_SeqAIJ*) C->data;
 
     /* loop over rows inserting into submatrix */
@@ -914,7 +920,16 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
       }
     }
     /* Create and fill new matrix */
-    ierr = MatCreateSeqAIJ(A->comm,nrows,ncols,0,lens,&C);CHKERRQ(ierr);
+    if (MatValidMatrix(*B)) {
+      int n_cols,n_rows;
+      ierr = MatGetSize(*B,&n_rows,&n_cols); CHKERRQ(ierr);
+      if (n_rows != nrows || n_cols != ncols) SETERRQ(1,"MatGetSubMatrix_SeqAIJ:");
+      MatZeroEntries(*B);
+      C = *B;
+    }
+    else {  
+      ierr = MatCreateSeqAIJ(A->comm,nrows,ncols,0,lens,&C);CHKERRQ(ierr);
+    }
     for (i=0; i<nrows; i++) {
       nznew  = 0;
       kstart = a->i[irow[i]]+shift; 
@@ -946,7 +961,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
 static int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) inA->data;
-  int        ierr, i, *idx, shift = a->indexshift, ii, *diag;
+  int        ierr;
   Mat        outA;
 
   if (fill != 0) SETERRQ(1,"MatILUFactor_SeqAIJ:Only fill=0 supported");
@@ -958,25 +973,14 @@ static int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
 
   a->solve_work = (Scalar *) PETSCMALLOC( (a->m+1)*sizeof(Scalar)); CHKPTRQ(a->solve_work);
 
-  /* determine diagonal locations */
-  a->diag       = diag = (int *) PETSCMALLOC( (a->m+1)*sizeof(int)); CHKPTRQ(a->diag);
-  ii            = -shift;
-  for ( i=0; i<a->m; i++ ) {
-    diag[i]    = a->i[i];
-    idx        = a->j + a->i[i] + shift; 
-    while (*idx++ < ii) diag[i]++;
-    if (idx[-1] != ii) SETERRQ(1,"MatILUFactor_SeqAIJ: Missing diagonal entry");
-    ii++;
+  if (!a->diag) {
+    ierr = MatMarkDiag_SeqAIJ(inA); CHKERRQ(ierr);
   }
-
   ierr = MatLUFactorNumeric_SeqAIJ(inA,&outA); CHKERRQ(ierr);
   return 0;
 }
 
 /* -------------------------------------------------------------------*/
-extern int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,double,int,Mat *);
-extern int MatConvert_SeqAIJ(Mat,MatType,Mat *);
-static int MatCopyPrivate_SeqAIJ(Mat,Mat *);
 
 static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,MatRestoreRow_SeqAIJ,
@@ -1109,12 +1113,11 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   return 0;
 }
 
-static int MatCopyPrivate_SeqAIJ(Mat A,Mat *B)
+int MatCopyPrivate_SeqAIJ(Mat A,Mat *B,int cpvalues)
 {
   Mat        C;
   Mat_SeqAIJ *c,*a = (Mat_SeqAIJ *) A->data;
-  int        i,len, m = a->m;
-  int        shift = a->indexshift;
+  int        i,len, m = a->m,shift = a->indexshift;
 
   *B = 0;
   if (!a->assembled) SETERRQ(1,"MatCopyPrivate_SeqAIJ:Cannot copy unassembled matrix");
@@ -1148,7 +1151,9 @@ static int MatCopyPrivate_SeqAIJ(Mat A,Mat *B)
   PetscMemcpy(c->i,a->i,(m+1)*sizeof(int));
   if (m > 0) {
     PetscMemcpy(c->j,a->j,(a->i[m]+shift)*sizeof(int));
-    PetscMemcpy(c->a,a->a,(a->i[m]+shift)*sizeof(Scalar));
+    if (cpvalues == COPY_VALUES) {
+      PetscMemcpy(c->a,a->a,(a->i[m]+shift)*sizeof(Scalar));
+    }
   }
 
   PLogObjectMemory(C,len+2*(m+1)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_SeqAIJ));  

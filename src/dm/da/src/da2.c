@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.24 1995/10/11 17:58:55 curfman Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.25 1995/10/19 22:30:20 curfman Exp bsmith $";
 #endif
  
 /*
@@ -141,11 +141,11 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 {
   int           rank, size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
-  int           xbase,*bases,j,x_t,y_t,s_t,base;
+  int           xbase,*bases,j,x_t,y_t,s_t,base,count;
   int           s_x,s_y; /* s proportionalized to w */
   DA            da;
   Vec           local,global;
-  VecScatterCtx ltog,gtol;
+  VecScatter    ltog,gtol;
   IS            to,from;
   *inra = 0;
 
@@ -233,14 +233,18 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   VecGetOwnershipRange(global,&start,&end);
   ierr = ISCreateStrideSeq(MPI_COMM_SELF,x*y,start,1,&to);CHKERRQ(ierr);
 
-  left = xs - Xs; 
-  down = ys - Ys; up    = down + y;
-  from = 0;
+  left  = xs - Xs; down  = ys - Ys; up    = down + y;
+  idx = (int *) PETSCMALLOC( x*(up - down)*sizeof(int) ); CHKPTRQ(idx);
+  count = 0;
   for ( i=down; i<up; i++ ) {
-    ierr = ISAddStrideSeq(&from,x,left + i*(Xe-Xs),1); CHKERRQ(ierr);
+    for ( j=0; j<x; j++ ) {
+      idx[count++] = left + i*(Xe-Xs) + j;
+    }
   }
+  ierr = ISCreateSeq(MPI_COMM_SELF,count,idx,&from);CHKERRQ(ierr);
+  PETSCFREE(idx);
 
-  ierr = VecScatterCtxCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
+  ierr = VecScatterCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
   PLogObjectParent(da,to);
   PLogObjectParent(da,from);
   PLogObjectParent(da,ltog);
@@ -262,21 +266,29 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
             -----------
         Xs xs        xe  Xe */
     /* bottom */
-    to = 0;
-    left = xs - Xs; 
-    down = ys - Ys; up    = down + y;
+    left  = xs - Xs; down = ys - Ys; up    = down + y;
+    count = down*(xe-xs) + (up-down)*(Xe-Xs) + (Ye-Ys-up)*(xe-xs);
+    idx   = (int *) PETSCMALLOC( count*sizeof(int) ); CHKPTRQ(idx);
+    count = 0;
     for ( i=0; i<down; i++ ) {
-      ierr = ISAddStrideSeq(&to,xe-xs,left+i*(Xe-Xs),1);CHKERRQ(ierr);
+      for ( j=0; j<xe-xs; j++ ) {
+        idx[count++] = left + i*(Xe-Xs) + j;
+      }
     }
     /* middle */
     for ( i=down; i<up; i++ ) {
-      ierr = ISAddStrideSeq(&to,Xe-Xs,i*(Xe-Xs),1); CHKERRQ(ierr);
+      for ( j=0; j<Xe-Xs; j++ ) {
+        idx[count++] = i*(Xe-Xs) + j;
+      }
     }
     /* top */
     for ( i=up; i<Ye-Ys; i++ ) {
-      ierr = ISAddStrideSeq(&to,xe-xs,left+i*(Xe-Xs),1);CHKERRQ(ierr);
+      for ( j=0; j<xe-xs; j++ ) {
+        idx[count++] = left + i*(Xe-Xs) + j;
+      }
     }
-
+    ierr = ISCreateSeq(MPI_COMM_SELF,count,idx,&to);CHKERRQ(ierr);
+    PETSCFREE(idx);
   }
 
 
@@ -424,7 +436,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   base = bases[rank];
   ierr = ISCreateSeq(comm,nn,idx,&from); CHKERRQ(ierr);
-  ierr = VecScatterCtxCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
+  ierr = VecScatterCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
   PLogObjectParent(da,to);
   PLogObjectParent(da,from);
   PLogObjectParent(da,gtol);
@@ -649,8 +661,8 @@ int DADestroy(DA da)
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   PLogObjectDestroy(da);
   PETSCFREE(da->idx);
-  VecScatterCtxDestroy(da->ltog);
-  VecScatterCtxDestroy(da->gtol);
+  VecScatterDestroy(da->ltog);
+  VecScatterDestroy(da->gtol);
   PETSCHEADERDESTROY(da);
   return 0;
 }
@@ -854,7 +866,7 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
 
 .seealso: DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToGlobal()
 @*/
-int DAGetScatterCtx(DA da, VecScatterCtx *ltog,VecScatterCtx *gtol)
+int DAGetScatterCtx(DA da, VecScatter *ltog,VecScatter *gtol)
 {
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   *ltog = da->ltog;

@@ -7,7 +7,7 @@ PETSC_DIR = ../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../../.. \
-           -I$(PETSC_DIR)/pinclude $(CONF) \
+           -I$(PETSC_DIR)/pinclude $(CONF) $(PCONF)\
            -D__DIR__='"mat/impls/order/"'
 SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c sorder.c sregis.c\
            degree.c  fnroot.c genqmd.c qmdqt.c rcm.c fn1wd.c gen1wd.c \
