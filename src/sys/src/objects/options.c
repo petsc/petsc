@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.1 1995/05/12 20:38:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.2 1995/05/14 16:32:28 bsmith Exp curfman $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -177,10 +177,10 @@ int OptionsCheckInitial()
     MPE_printf(comm,"--------------------------------------------\
 ------------------------------\n");
     MPE_printf(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
-    MPE_printf(comm,"Lois Curfman McInnes,Bill Gropp,Barry Smith.\
+    MPE_printf(comm,"Bill Gropp,Lois Curfman McInnes,Barry Smith.\
  Bugs: petsc-maint@mcs.anl.gov\n");
     MPE_printf(comm,"See petsc/COPYRIGHT for copyright information,\
- Changes for recent updates.\n");
+ petsc/Changes for recent updates.\n");
     MPE_printf(comm,"--------------------------------------------\
 ---------------------------\n");
   }
