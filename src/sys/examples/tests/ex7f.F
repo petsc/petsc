@@ -1,9 +1,9 @@
-C
-C "$Id: ex7f.F,v 1.3 1997/04/10 00:01:45 bsmith Exp balay $";
-C
-C
-C     Formatted test for PetscSetCommWorld()
-C
+!
+! "$Id: ex7f.F,v 1.4 1997/07/10 15:49:44 balay Exp balay $";
+!
+!
+!     Formatted test for PetscSetCommWorld()
+!
 
 #include "FINCLUDE/petsc.h"
 

@@ -1,88 +1,87 @@
-
-C "$Id: ex5f90.F,v 1.11 1998/03/17 23:14:10 balay Exp bsmith $";
-C
-C  Description: This example solves a nonlinear system in parallel with SNES.
-C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
-C  domain, using distributed arrays (DAs) to partition the parallel grid.
-C  The command line options include:
-C    -par <parameter>, where <parameter> indicates the nonlinearity of the problem
-C       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
-C    -mx <xg>, where <xg> = number of grid points in the x-direction
-C    -my <yg>, where <yg> = number of grid points in the y-direction
-C    -Nx <npx>, where <npx> = number of processors in the x-direction
-C    -Ny <npy>, where <npy> = number of processors in the y-direction
-C
-C/*T
-C  Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
-C  Concepts: DA^Using distributed arrays;
-C  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-C  Routines: SNESSolve(); SNESSetFromOptions(); DAView();
-C  Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
-C  Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-C  Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndicesF90();
-C  Processors: n
-CT*/
-C
-C  --------------------------------------------------------------------------
-C 
-C  Solid Fuel Ignition (SFI) problem.  This problem is modeled by
-C  the partial differential equation
-C  
-C          -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
-C 
-C  with boundary conditions
-C  
-C           u = 0  for  x = 0, x = 1, y = 0, y = 1.
-C 
-C  A finite difference approximation with the usual 5-point stencil
-C  is used to discretize the boundary value problem to obtain a nonlinear 
-C  system of equations.
-C
-C  The uniprocessor version of this code is snes/examples/tutorials/ex4f.F
-C
-C  --------------------------------------------------------------------------
+! "$Id: ex5f90.F,v 1.12 1998/03/20 22:52:53 bsmith Exp balay $";
+!
+!  Description: This example solves a nonlinear system in parallel with SNES.
+!  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
+!  domain, using distributed arrays (DAs) to partition the parallel grid.
+!  The command line options include:
+!    -par <parameter>, where <parameter> indicates the nonlinearity of the problem
+!       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
+!    -mx <xg>, where <xg> = number of grid points in the x-direction
+!    -my <yg>, where <yg> = number of grid points in the y-direction
+!    -Nx <npx>, where <npx> = number of processors in the x-direction
+!    -Ny <npy>, where <npy> = number of processors in the y-direction
+!
+!/*T
+!  Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
+!  Concepts: DA^Using distributed arrays;
+!  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
+!  Routines: SNESSolve(); SNESSetFromOptions(); DAView();
+!  Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
+!  Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
+!  Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndicesF90();
+!  Processors: n
+!T*/
+!
+!  --------------------------------------------------------------------------
+! 
+!  Solid Fuel Ignition (SFI) problem.  This problem is modeled by
+!  the partial differential equation
+!  
+!          -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
+! 
+!  with boundary conditions
+!  
+!           u = 0  for  x = 0, x = 1, y = 0, y = 1.
+! 
+!  A finite difference approximation with the usual 5-point stencil
+!  is used to discretize the boundary value problem to obtain a nonlinear 
+!  system of equations.
+!
+!  The uniprocessor version of this code is snes/examples/tutorials/ex4f.F
+!
+!  --------------------------------------------------------------------------
 
       program main
       implicit none
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                    Include files
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C
-C  This program uses CPP for preprocessing, as indicated by the use of
-C  PETSc include files in the directory petsc/include/FINCLUDE.  This
-C  convention enables use of the CPP preprocessor, which allows the use
-C  of the #include statements that define PETSc objects and variables.
-C
-C  Use of the conventional Fortran include statements is also supported
-C  In this case, the PETsc include files are located in the directory
-C  petsc/include/finclude.
-C         
-C  Since one must be very careful to include each file no more than once
-C  in a Fortran routine, application programmers must exlicitly list
-C  each file needed for the various PETSc components within their
-C  program (unlike the C/C++ interface).
-C
-C  See the Fortran section of the PETSc users manual for details.
-C
-C  The following include statements are generally used in SNES Fortran
-C  programs:
-C     petsc.h  - base PETSc routines
-C     vec.h    - vectors
-C     vec.h90  - Fortran 90 interface to vectors
-C     mat.h    - matrices
-C     ksp.h    - Krylov subspace methods
-C     pc.h     - preconditioners
-C     sles.h   - SLES interface
-C     snes.h   - SNES interface
-C  In addition, we need the following for use of distributed arrays
-C     da.h     - distributed arrays (DAs)
-C     da.h90   - Fortran 90 DA interface
-C  Other include statements may be needed if using additional PETSc
-C  routines in a Fortran program, e.g.,
-C     viewer.h - viewers
-C     is.h     - index sets
-C
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                    Include files
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!
+!  This program uses CPP for preprocessing, as indicated by the use of
+!  PETSc include files in the directory petsc/include/FINCLUDE.  This
+!  convention enables use of the CPP preprocessor, which allows the use
+!  of the #include statements that define PETSc objects and variables.
+!
+!  Use of the conventional Fortran include statements is also supported
+!  In this case, the PETsc include files are located in the directory
+!  petsc/include/finclude.
+!         
+!  Since one must be very careful to include each file no more than once
+!  in a Fortran routine, application programmers must exlicitly list
+!  each file needed for the various PETSc components within their
+!  program (unlike the C/C++ interface).
+!
+!  See the Fortran section of the PETSc users manual for details.
+!
+!  The following include statements are generally used in SNES Fortran
+!  programs:
+!     petsc.h  - base PETSc routines
+!     vec.h    - vectors
+!     vec.h90  - Fortran 90 interface to vectors
+!     mat.h    - matrices
+!     ksp.h    - Krylov subspace methods
+!     pc.h     - preconditioners
+!     sles.h   - SLES interface
+!     snes.h   - SNES interface
+!  In addition, we need the following for use of distributed arrays
+!     da.h     - distributed arrays (DAs)
+!     da.h90   - Fortran 90 DA interface
+!  Other include statements may be needed if using additional PETSc
+!  routines in a Fortran program, e.g.,
+!     viewer.h - viewers
+!     is.h     - index sets
+!
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/vec.h90"
@@ -94,35 +93,35 @@ C
 #include "include/FINCLUDE/sles.h"
 #include "include/FINCLUDE/snes.h"
 #include "include/FINCLUDE/is.h"
-C
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                   Variable declarations
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C
-C  The application context to contain data needed by the 
-C  application-provided call-back routines, FormJacobian() and
-C  FormFunction().  In this example the application context is
-C  a Fortran integer array.  Note that we can store (pointers to)
-C  PETSc objects within this array.
-C     user(1) = mx     - discretization in x-direction
-C          2  = my     - discretization in y-direction
-C          3  = da     - distributed array
-C          4  = localX - local work vector (including ghost points)
-C          5  = localF - local work vector (including ghost points)
-C          6  = rank   - processor rank within communicator
-C
-C  Variables:
-C     snes        - nonlinear solver
-C     x, r        - solution, residual vectors
-C     J           - Jacobian matrix
-C     user        - user-defined work context
-C     its         - iterations for convergence
-C     Nx, Ny      - number of preocessors in x- and y- directions
-C     matrix_free - flag - 1 indicates matrix-free version
-C     size        - number of processors
-C     rank        - processor rank
-C     lambda      - nonlinearity parameter
-C
+!
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                   Variable declarations
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!
+!  The application context to contain data needed by the 
+!  application-provided call-back routines, FormJacobian() and
+!  FormFunction().  In this example the application context is
+!  a Fortran integer array.  Note that we can store (pointers to)
+!  PETSc objects within this array.
+!     user(1) = mx     - discretization in x-direction
+!          2  = my     - discretization in y-direction
+!          3  = da     - distributed array
+!          4  = localX - local work vector (including ghost points)
+!          5  = localF - local work vector (including ghost points)
+!          6  = rank   - processor rank within communicator
+!
+!  Variables:
+!     snes        - nonlinear solver
+!     x, r        - solution, residual vectors
+!     J           - Jacobian matrix
+!     user        - user-defined work context
+!     its         - iterations for convergence
+!     Nx, Ny      - number of preocessors in x- and y- directions
+!     matrix_free - flag - 1 indicates matrix-free version
+!     size        - number of processors
+!     rank        - processor rank
+!     lambda      - nonlinearity parameter
+!
       SNES                   snes
       Vec                    x, r, localX, localF
       DA                     da
@@ -135,37 +134,37 @@ C
       integer                ltog_a(0:1),  nloc
       PetscOffset            ltog_i
 
-C  Store nonlinearity parameter in common block
+!  Store nonlinearity parameter in common block
 
       common /params/ lambda
 
-C  Note: Any user-defined Fortran routines (such as FormJacobian)
-C  MUST be declared as external.
+!  Note: Any user-defined Fortran routines (such as FormJacobian)
+!  MUST be declared as external.
 
       external FormFunction, FormInitialGuess, FormJacobian
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                   Macro definitions
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C
-C  Macros to make clearer the process of setting values in vectors and
-C  getting values from vectors.  These vectors are used in the routines
-C  FormFunction(), FormInitialGuess(), and FormJacobian().
-C
-C   - The element lx_a(ib) is element ib+1 in the vector localX
-C   - Here we add 1 to the base array index to facilitate the use of
-C     conventional Fortran 1-based array indexing.
-C
-C
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                 Beginning of program
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                   Macro definitions
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!
+!  Macros to make clearer the process of setting values in vectors and
+!  getting values from vectors.  These vectors are used in the routines
+!  FormFunction(), FormInitialGuess(), and FormJacobian().
+!
+!   - The element lx_a(ib) is element ib+1 in the vector localX
+!   - Here we add 1 to the base array index to facilitate the use of
+!     conventional Fortran 1-based array indexing.
+!
+!
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                 Beginning of program
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
-C  Initialize problem parameters
+!  Initialize problem parameters
 
       lambda_max = 6.81
       lambda_min = 0.0
@@ -183,18 +182,18 @@ C  Initialize problem parameters
       user(2) = my
       N       = mx*my
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Create nonlinear solver context
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Create nonlinear solver context
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,
      &               ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Create vector data structures; set function evaluation routine
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Create vector data structures; set function evaluation routine
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-C  Create distributed array (DA) to manage parallel grid and vectors
+!  Create distributed array (DA) to manage parallel grid and vectors
 
       Nx = PETSC_DECIDE
       Ny = PETSC_DECIDE
@@ -210,13 +209,13 @@ C  Create distributed array (DA) to manage parallel grid and vectors
      &                mx,my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,da,ierr)
       user(3) = da
 
-C
-C   Visualize the distribution of the array across the processors
-C
-C     call DAView(da,VIEWER_DRAWX_WORLD,ierr)
+!
+!   Visualize the distribution of the array across the processors
+!
+!     call DAView(da,VIEWER_DRAWX_WORLD,ierr)
 
-C  Extract global and local vectors from DA; then duplicate for remaining
-C  vectors that are the same types
+!  Extract global and local vectors from DA; then duplicate for remaining
+!  vectors that are the same types
 
       call DACreateGlobalVector(da,x,ierr)
       call DACreateLocalVector(da,localX,ierr)
@@ -226,33 +225,33 @@ C  vectors that are the same types
       user(5) = localF
       user(6) = rank
 
-C  Set function evaluation routine and vector
+!  Set function evaluation routine and vector
 
       call SNESSetFunction(snes,r,FormFunction,user,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Create matrix data structure; set Jacobian evaluation routine
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Create matrix data structure; set Jacobian evaluation routine
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-C  Set Jacobian matrix data structure and default Jacobian evaluation
-C  routine. User can override with:
-C     -snes_fd : default finite differencing approximation of Jacobian
-C     -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-C                (unless user explicitly sets preconditioner) 
-C     -snes_mf_operator : form preconditioning matrix as set by the user,
-C                         but use matrix-free approx for Jacobian-vector
-C                         products within Newton-Krylov method
-C
-C  Note:  For the parallel case, vectors and matrices MUST be partitioned
-C     accordingly.  When using distributed arrays (DAs) to create vectors,
-C     the DAs determine the problem partitioning.  We must explicitly
-C     specify the local matrix dimensions upon its creation for compatibility
-C     with the vector distribution.  Thus, the generic MatCreate() routine
-C     is NOT sufficient when working with distributed arrays.
-C
-C     Note: Here we only approximately preallocate storage space for the
-C     Jacobian.  See the users manual for a discussion of better techniques
-C     for preallocating matrix memory.
+!  Set Jacobian matrix data structure and default Jacobian evaluation
+!  routine. User can override with:
+!     -snes_fd : default finite differencing approximation of Jacobian
+!     -snes_mf : matrix-free Newton-Krylov method with no preconditioning
+!                (unless user explicitly sets preconditioner) 
+!     -snes_mf_operator : form preconditioning matrix as set by the user,
+!                         but use matrix-free approx for Jacobian-vector
+!                         products within Newton-Krylov method
+!
+!  Note:  For the parallel case, vectors and matrices MUST be partitioned
+!     accordingly.  When using distributed arrays (DAs) to create vectors,
+!     the DAs determine the problem partitioning.  We must explicitly
+!     specify the local matrix dimensions upon its creation for compatibility
+!     with the vector distribution.  Thus, the generic MatCreate() routine
+!     is NOT sufficient when working with distributed arrays.
+!
+!     Note: Here we only approximately preallocate storage space for the
+!     Jacobian.  See the users manual for a discussion of better techniques
+!     for preallocating matrix memory.
 
       call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,
      &                    ierr)
@@ -266,11 +265,11 @@ C     for preallocating matrix memory.
         endif
         call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
 
-C       Get the global node numbers for all local nodes, including ghost points.
-C       Associate this mapping with the matrix for later use in setting matrix
-C       entries via MatSetValuesLocal().
-C        - Note that the Fortran interface to DAGetGlobalIndices() differs from
-C          the C version.  See the Fortran chapter of the users manual for details.
+!       Get the global node numbers for all local nodes, including ghost points.
+!       Associate this mapping with the matrix for later use in setting matrix
+!       entries via MatSetValuesLocal().
+!        - Note that the Fortran interface to DAGetGlobalIndices() differs from
+!          the C version.  See the Fortran chapter of the users manual for details.
 
         call DAGetGlobalIndices(da,nloc,ltog_a,ltog_i,ierr)
         call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,
@@ -280,22 +279,22 @@ C          the C version.  See the Fortran chapter of the users manual for detai
 
       endif
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Customize nonlinear solver; set runtime options
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Customize nonlinear solver; set runtime options
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-C  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
+!  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
 
       call SNESSetFromOptions(snes,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Evaluate initial guess; then solve nonlinear system.
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Evaluate initial guess; then solve nonlinear system.
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-C  Note: The user should initialize the vector, x, with the initial guess
-C  for the nonlinear solver prior to calling SNESSolve().  In particular,
-C  to employ an initial guess of zero, the user should explicitly set
-C  this vector to zero by calling VecSet().
+!  Note: The user should initialize the vector, x, with the initial guess
+!  for the nonlinear solver prior to calling SNESSolve().  In particular,
+!  to employ an initial guess of zero, the user should explicitly set
+!  this vector to zero by calling VecSet().
 
       call FormInitialGuess(user,x,ierr)
       call SNESSolve(snes,x,its,ierr) 
@@ -304,10 +303,10 @@ C  this vector to zero by calling VecSet().
       endif
   100 format('Number of Newton iterations = ',i5)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Free work space.  All PETSc objects should be destroyed when they
-C  are no longer needed.
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Free work space.  All PETSc objects should be destroyed when they
+!  are no longer needed.
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       if (matrix_free .eq. 0) call MatDestroy(J,ierr)
       call VecDestroy(x,ierr)
@@ -319,17 +318,17 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call PetscFinalize(ierr)
       end
 
-C ---------------------------------------------------------------------
-C
-C  FormInitialGuess - Forms initial approximation.
-C
-C  Input Parameters:
-C  user - user-defined application context
-C  X - vector
-C
-C  Output Parameter:
-C  X - vector
-C
+! ---------------------------------------------------------------------
+!
+!  FormInitialGuess - Forms initial approximation.
+!
+!  Input Parameters:
+!  user - user-defined application context
+!  X - vector
+!
+!  Output Parameter:
+!  X - vector
+!
       subroutine FormInitialGuess(user,X,ierr)
       implicit none
 
@@ -345,12 +344,12 @@ C
       integer  i, j, row, mx, my, ierr, hxdhy, hydhx
       Scalar   lambda, temp1, temp, hx, hy, sc, one
 
-C  Declarations for use with local arrays
+!  Declarations for use with local arrays
       Scalar, pointer ::  lx_v(:)
 
       common /params/ lambda
 
-C  Set parameters
+!  Set parameters
 
       ierr   = 0
       one    = 1.0
@@ -365,21 +364,21 @@ C  Set parameters
       hydhx  = hy/hx
       temp1  = lambda/(lambda + one)
 
-C  Get a pointer to vector data.
-C    - For default PETSc vectors, VecGetArray() returns a pointer to
-C      the data array.  Otherwise, the routine is implementation dependent.
-C    - You MUST call VecRestoreArray() when you no longer need access to
-C      the array.
-C    - Note that the Fortran interface to VecGetArray() differs from the
-C      C version.  See the users manual for details.
+!  Get a pointer to vector data.
+!    - For default PETSc vectors, VecGetArray() returns a pointer to
+!      the data array.  Otherwise, the routine is implementation dependent.
+!    - You MUST call VecRestoreArray() when you no longer need access to
+!      the array.
+!    - Note that the Fortran interface to VecGetArray() differs from the
+!      C version.  See the users manual for details.
 
       call VecGetArrayF90(localX,lx_v,ierr)
 
-C  Get local grid boundaries (for 2-dimensional DA):
-C       xs, ys   - starting grid indices (no ghost points)
-C       xm, ym   - widths of local grid (no ghost points)
-C       gxs, gys - starting grid indices (including ghost points)
-C       gxm, gym - widths of local grid (including ghost points)
+!  Get local grid boundaries (for 2-dimensional DA):
+!       xs, ys   - starting grid indices (no ghost points)
+!       xm, ym   - widths of local grid (no ghost points)
+!       gxs, gys - starting grid indices (including ghost points)
+!       gxm, gym - widths of local grid (including ghost points)
 
       call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
       call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
@@ -387,7 +386,7 @@ C       gxm, gym - widths of local grid (including ghost points)
       ye = ys+ym-1
       xe = xs+xm-1
 
-C  Compute initial guess over the locally owned part of the grid
+!  Compute initial guess over the locally owned part of the grid
 
       do 20 j=ys,ye
          temp = dble(min(j,my-j-1))*hy
@@ -404,29 +403,29 @@ C  Compute initial guess over the locally owned part of the grid
  20   continue
 
 
-C  Restore vector
+!  Restore vector
 
       call VecRestoreArrayF90(localX,lx_v,ierr)
 
-C  Insert values into global vector
+!  Insert values into global vector
 
       call DALocalToGlobal(da,localX,INSERT_VALUES,X,ierr)
 
       return 
       end
 
-C ---------------------------------------------------------------------
-C
-C  FormFunction - Evaluates nonlinear function, F(x).
-C
-C  Input Parameters:
-C  snes - the SNES context
-C  X - input vector
-C  user - optional user-defined context, as set by SNESSetFunction()
-C
-C  Output Parameter:
-C  F - function vector
-C
+! ---------------------------------------------------------------------
+!
+!  FormFunction - Evaluates nonlinear function, F(x).
+!
+!  Input Parameters:
+!  snes - the SNES context
+!  X - input vector
+!  user - optional user-defined context, as set by SNESSetFunction()
+!
+!  Output Parameter:
+!  F - function vector
+!
       subroutine FormFunction(snes,X,F,user)
       implicit none
 
@@ -444,7 +443,7 @@ C
       integer  ierr, i, j, row, mx, my, xs, ys, xm, ym, xe, ye
       integer  user(*), gxs, gys, gxm, gym
 
-C  Declarations for use with local arrays
+!  Declarations for use with local arrays
 
       Scalar, pointer ::   lx_v(:), lf_v(:)
 
@@ -463,24 +462,24 @@ C  Declarations for use with local arrays
       hxdhy  = hx/hy
       hydhx  = hy/hx
 
-C  Scatter ghost points to local vector, using the 2-step process
-C     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
-C  By placing code between these two statements, computations can
-C  be done while messages are in transition.
+!  Scatter ghost points to local vector, using the 2-step process
+!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!  By placing code between these two statements, computations can
+!  be done while messages are in transition.
 
       call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
       call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
 
-C  Get pointers to vector data.
-C    - For default PETSc vectors, VecGetArray() returns a pointer to
-C      the data array.  Otherwise, the routine is implementation dependent.
-C    - You MUST call VecRestoreArray() when you no longer need access to
-C      the array.
+!  Get pointers to vector data.
+!    - For default PETSc vectors, VecGetArray() returns a pointer to
+!      the data array.  Otherwise, the routine is implementation dependent.
+!    - You MUST call VecRestoreArray() when you no longer need access to
+!      the array.
 
       call VecGetArrayF90(localX,lx_v,ierr)
       call VecGetArrayF90(localF,lf_v,ierr)
 
-C  Get local grid boundaries
+!  Get local grid boundaries
 
       call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
       call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
@@ -488,7 +487,7 @@ C  Get local grid boundaries
       ye = ys+ym-1
       xe = xs+xm-1
 
-C  Compute function over the locally owned part of the grid
+!  Compute function over the locally owned part of the grid
 
       do 20 j=ys,ye
          row = (j - gys)*gxm + xs - gxs
@@ -510,12 +509,12 @@ C  Compute function over the locally owned part of the grid
  10      continue
  20   continue
 
-C  Restore vectors
+!  Restore vectors
 
       call VecRestoreArrayF90(localX,lx_v,ierr)
       call VecRestoreArrayF90(localF,lf_v,ierr)
 
-C  Insert values into global vector
+!  Insert values into global vector
 
       call DALocalToGlobal(da,localF,INSERT_VALUES,F,ierr)
       call PLogFlops(11*ym*xm,ierr)
@@ -523,44 +522,44 @@ C  Insert values into global vector
       return 
       end
 
-C ---------------------------------------------------------------------
-C
-C  FormJacobian - Evaluates Jacobian matrix.
-C
-C  Input Parameters:
-C  snes - the SNES context
-C  x - input vector
-C  user - optional user-defined context, as set by SNESSetJacobian()
-C
-C  Output Parameters:
-C  A - Jacobian matrix
-C  B - optionally different preconditioning matrix
-C  flag - flag indicating matrix structure
-C
-C  Notes:
-C  Due to grid point reordering with DAs, we must always work
-C  with the local grid points, and then transform them to the new
-C  global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
-C  We cannot work directly with the global numbers for the original
-C  uniprocessor grid!
-C
-C  Two methods are available for imposing this transformation
-C  when setting matrix entries:
-C    (A) MatSetValuesLocal(), using the local ordering (including
-C        ghost points!)
-C        - Use DAGetGlobalIndices() to extract the local-to-global map
-C        - Associate this map with the matrix by calling
-C          MatSetLocalToGlobalMapping() once
-C        - Set matrix entries using the local ordering
-C          by calling MatSetValuesLocal()
-C    (B) MatSetValues(), using the global ordering 
-C        - Use DAGetGlobalIndices() to extract the local-to-global map
-C        - Then apply this map explicitly yourself
-C        - Set matrix entries using the global ordering by calling
-C          MatSetValues()
-C  Option (A) seems cleaner/easier in many cases, and is the procedure
-C  used in this example.
-C
+! ---------------------------------------------------------------------
+!
+!  FormJacobian - Evaluates Jacobian matrix.
+!
+!  Input Parameters:
+!  snes - the SNES context
+!  x - input vector
+!  user - optional user-defined context, as set by SNESSetJacobian()
+!
+!  Output Parameters:
+!  A - Jacobian matrix
+!  B - optionally different preconditioning matrix
+!  flag - flag indicating matrix structure
+!
+!  Notes:
+!  Due to grid point reordering with DAs, we must always work
+!  with the local grid points, and then transform them to the new
+!  global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
+!  We cannot work directly with the global numbers for the original
+!  uniprocessor grid!
+!
+!  Two methods are available for imposing this transformation
+!  when setting matrix entries:
+!    (A) MatSetValuesLocal(), using the local ordering (including
+!        ghost points!)
+!        - Use DAGetGlobalIndices() to extract the local-to-global map
+!        - Associate this map with the matrix by calling
+!          MatSetLocalToGlobalMapping() once
+!        - Set matrix entries using the local ordering
+!          by calling MatSetValuesLocal()
+!    (B) MatSetValues(), using the global ordering 
+!        - Use DAGetGlobalIndices() to extract the local-to-global map
+!        - Then apply this map explicitly yourself
+!        - Set matrix entries using the global ordering by calling
+!          MatSetValues()
+!  Option (A) seems cleaner/easier in many cases, and is the procedure
+!  used in this example.
+!
       subroutine FormJacobian(snes,X,jac,B,flag,user)
       implicit none
 
@@ -586,12 +585,12 @@ C
 
       common /params/ lambda
 
-C  Declarations for use with local arrays
+!  Declarations for use with local arrays
 
       Scalar, pointer ::  lx_v(:)
       integer, pointer :: ltog_a(:)
 
-C  Set parameters
+!  Set parameters
 
       one    = 1.0
       two    = 2.0
@@ -605,19 +604,19 @@ C  Set parameters
       hxdhy  = hx/hy
       hydhx  = hy/hx
 
-C  Scatter ghost points to local vector, using the 2-step process
-C     DAGlobalToLocalBegin(), DAGlobalToLocalEnd()
-C  Computations can be done while messages are in transition,
-C  by placing code between these two statements.
+!  Scatter ghost points to local vector, using the 2-step process
+!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd()
+!  Computations can be done while messages are in transition,
+!  by placing code between these two statements.
 
       call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
       call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
 
-C  Get a pointer to vector data
+!  Get a pointer to vector data
 
       call VecGetArrayF90(localX,lx_v,ierr)
 
-C  Get local grid boundaries
+!  Get local grid boundaries
 
       call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
       call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
@@ -625,35 +624,35 @@ C  Get local grid boundaries
       ye = ys+ym-1
       xe = xs+xm-1
 
-C  Get the global node numbers for all local nodes, including ghost points
+!  Get the global node numbers for all local nodes, including ghost points
 
        call DAGetGlobalIndicesF90(da,nloc,ltog_a,ierr)
 
-C  Compute entries for the locally owned part of the Jacobian.
-C   - Currently, all PETSc parallel matrix formats are partitioned by
-C     contiguous chunks of rows across the processors. The "grow"
-C     parameter computed below specifies the global row number 
-C     corresponding to each local grid point.
-C   - Each processor needs to insert only elements that it owns
-C     locally (but any non-local elements will be sent to the
-C     appropriate processor during matrix assembly). 
-C   - Always specify global row and columns of matrix entries.
-C   - Here, we set all entries for a particular row at once.
-C   - We can set matrix entries either using either
-C     MatSetValuesLocal() or MatSetValues(), as discussed above.
-C   - Note that MatSetValues() uses 0-based row and column numbers
-C     in Fortran as well as in C.
+!  Compute entries for the locally owned part of the Jacobian.
+!   - Currently, all PETSc parallel matrix formats are partitioned by
+!     contiguous chunks of rows across the processors. The "grow"
+!     parameter computed below specifies the global row number 
+!     corresponding to each local grid point.
+!   - Each processor needs to insert only elements that it owns
+!     locally (but any non-local elements will be sent to the
+!     appropriate processor during matrix assembly). 
+!   - Always specify global row and columns of matrix entries.
+!   - Here, we set all entries for a particular row at once.
+!   - We can set matrix entries either using either
+!     MatSetValuesLocal() or MatSetValues(), as discussed above.
+!   - Note that MatSetValues() uses 0-based row and column numbers
+!     in Fortran as well as in C.
 
       do 20 j=ys,ye
          row = (j - gys)*gxm + xs - gxs
          do 10 i=xs,xe
             row = row + 1
-C           boundary points
+!           boundary points
             if (i .eq. 0 .or. j .eq. 0 
      &             .or. i .eq. mx-1 .or. j .eq. my-1) then
                call MatSetValuesLocal(jac,1,row,1,row,one,
      &                           INSERT_VALUES,ierr)
-C           interior grid points
+!           interior grid points
             else
                v(1) = -hxdhy
                v(2) = -hydhx
@@ -672,30 +671,30 @@ C           interior grid points
  10      continue
  20   continue
 
-C  Assemble matrix, using the 2-step process:
-C     MatAssemblyBegin(), MatAssemblyEnd()
-C  Computations can be done while messages are in transition,
-C  by placing code between these two statements.
+!  Assemble matrix, using the 2-step process:
+!     MatAssemblyBegin(), MatAssemblyEnd()
+!  Computations can be done while messages are in transition,
+!  by placing code between these two statements.
 
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
       call VecRestoreArrayF90(localX,lx_v,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
 
-C  Set flag to indicate that the Jacobian matrix retains an identical
-C  nonzero structure throughout all nonlinear iterations (although the
-C  values of the entries change). Thus, we can save some work in setting
-C  up the preconditioner (e.g., no need to redo symbolic factorization for
-C  ILU/ICC preconditioners).
-C   - If the nonzero structure of the matrix is different during
-C     successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-C     must be used instead.  If you are unsure whether the matrix
-C     structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-C   - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-C     believes your assertion and does not check the structure
-C     of the matrix.  If you erroneously claim that the structure
-C     is the same when it actually is not, the new preconditioner
-C     will not function correctly.  Thus, use this optimization
-C     feature with caution!
+!  Set flag to indicate that the Jacobian matrix retains an identical
+!  nonzero structure throughout all nonlinear iterations (although the
+!  values of the entries change). Thus, we can save some work in setting
+!  up the preconditioner (e.g., no need to redo symbolic factorization for
+!  ILU/ICC preconditioners).
+!   - If the nonzero structure of the matrix is different during
+!     successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
+!     must be used instead.  If you are unsure whether the matrix
+!     structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
+!   - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
+!     believes your assertion and does not check the structure
+!     of the matrix.  If you erroneously claim that the structure
+!     is the same when it actually is not, the new preconditioner
+!     will not function correctly.  Thus, use this optimization
+!     feature with caution!
 
       flag = SAME_NONZERO_PATTERN
 

@@ -1,10 +1,10 @@
-C
-C "$Id: ex17f.F,v 1.1 1997/10/06 14:19:08 bsmith Exp bsmith $";
-C
-C
-C   "Scatters from a parallel vector to a sequential vector.  In
-C  this case each local vector is as long as the entire parallel vector.
-C
+!
+! "$Id: ex17f.F,v 1.2 1997/10/10 04:02:15 bsmith Exp balay $";
+!
+!
+!   "Scatters from a parallel vector to a sequential vector.  In
+!  this case each local vector is as long as the entire parallel vector.
+!
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/is.h"
 #include "include/FINCLUDE/vec.h"
@@ -25,9 +25,9 @@ C
       call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
 
-C     create two vectors 
-C     one parallel and one sequential. The sequential one on each processor
-C     is as long as the entire parallel one.
+!     create two vectors 
+!     one parallel and one sequential. The sequential one on each processor
+!     is as long as the entire parallel one.
 
       NN = size*n
 
@@ -44,15 +44,15 @@ C     is as long as the entire parallel one.
 
       call VecAssemblyBegin(y,ierr)
       call VecAssemblyEnd(y,ierr)
-C
-C   View the parallel vector
-C
+!
+!   View the parallel vector
+!
       call VecView(y,VIEWER_STDOUT_WORLD,ierr)
 
-C     create two index sets and the scatter context to move the contents of
-C     of the parallel vector to each sequential vector. If you want the
-C     parallel vector delivered to only one processor then create a is2 
-C     of length zero on all processors except the one to receive the parallel vector
+!     create two index sets and the scatter context to move the contents of
+!     of the parallel vector to each sequential vector. If you want the
+!     parallel vector delivered to only one processor then create a is2 
+!     of length zero on all processors except the one to receive the parallel vector
 
       call ISCreateStride(PETSC_COMM_SELF,NN,0,1,is1,ierr)
       call ISCreateStride(PETSC_COMM_SELF,NN,0,1,is2,ierr)
@@ -60,9 +60,9 @@ C     of length zero on all processors except the one to receive the parallel ve
       call VecScatterBegin(y,x,ADD_VALUES,SCATTER_FORWARD,ctx,ierr)
       call VecScatterEnd(y,x,ADD_VALUES,SCATTER_FORWARD,ctx,ierr)
       call VecScatterDestroy(ctx,ierr)
-C
-C   View the sequential vector on the 0th processor
-C  
+!
+!   View the sequential vector on the 0th processor
+!  
       if (rank .eq. 0) then
         call VecView(x,VIEWER_STDOUT_SELF,ierr)
       endif

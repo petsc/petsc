@@ -1,13 +1,13 @@
-C
-C "$Id: ex1f.F,v 1.19 1998/03/20 22:51:36 bsmith Exp bsmith $";
-C
-C       Formatted test for TS routines.
-C
-C          Solves U_t = U_xx 
-C     F(t,u) = (u_i+1 - 2u_i + u_i-1)/h^2
-C       using several different schemes. 
-C
-C23456789012345678901234567890123456789012345678901234567890123456789012
+!
+! "$Id: ex1f.F,v 1.20 1998/03/23 21:24:04 bsmith Exp balay $";
+!
+!       Formatted test for TS routines.
+!
+!          Solves U_t = U_xx 
+!     F(t,u) = (u_i+1 - 2u_i + u_i-1)/h^2
+!       using several different schemes. 
+!
+!23456789012345678901234567890123456789012345678901234567890123456789012
 
       program main
       implicit none
@@ -40,9 +40,9 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       character*(60)   type,tsinfo
       character*(5)    etype
 
-C
-C    Application context data, stored in common block
-C
+!
+!    Application context data, stored in common block
+!
       Vec              localwork,csolution
       DA               da
       Viewer           viewer1,viewer2
@@ -77,7 +77,7 @@ C
       nrm_2   = 0.0 
       nrm_max = 0.0
 
-C   Set up the ghost point communication pattern                       
+!   Set up the ghost point communication pattern                       
 
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,1,1,
      &                PETSC_NULL,da,ierr)
@@ -85,7 +85,7 @@ C   Set up the ghost point communication pattern
       call VecGetLocalSize(global,m,ierr) 
       call DACreateLocalVector(da,local,ierr) 
 
-C   Set up display to show wave graph 
+!   Set up display to show wave graph 
 
       call ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,
      &              PETSC_NULL_CHARACTER,80,380,400,160,viewer1,ierr)
@@ -96,25 +96,25 @@ C   Set up display to show wave graph
       call ViewerDrawGetDraw(viewer2,draw,ierr) 
       call DrawSetDoubleBuffer(draw,ierr) 
 
-C   make work array for evaluating right hand side function 
+!   make work array for evaluating right hand side function 
 
       call VecDuplicate(local,localwork,ierr) 
 
-C   make work array for storing exact solution 
+!   make work array for storing exact solution 
 
       call VecDuplicate(global,csolution,ierr) 
 
       h = 1.0/(M-1.0)
 
-C   set initial conditions
+!   set initial conditions
  
       call Initial(global,PETSC_NULL,ierr) 
  
-C
-C     This example is written to allow one to easily test parts 
-C    of TS, we do not expect users to generally need to use more
-C    then a single TSProblemType
-C
+!
+!     This example is written to allow one to easily test parts 
+!    of TS, we do not expect users to generally need to use more
+!    then a single TSProblemType
+!
       call OptionsHasName(PETSC_NULL_CHARACTER,'-linear_no_matrix',
      &                    flg,ierr) 
       if (flg .eq. 1) then
@@ -146,7 +146,7 @@ C
         problem   = nonlinear
       endif
     
-C   make timestep context 
+!   make timestep context 
 
       call TSCreate(PETSC_COMM_WORLD,tsproblem,ts,ierr) 
       call TSSetMonitor(ts,Monitor,PETSC_NULL,ierr) 
@@ -154,38 +154,38 @@ C   make timestep context
       dt = h*h/2.01
 
       if (problem .eq. linear_no_matrix) then
-C    
-C         The user provides the RHS as a Shell matrix.
-C    
+!    
+!         The user provides the RHS as a Shell matrix.
+!    
         call MatCreateShell(PETSC_COMM_WORLD,m,M,M,M,PETSC_NULL,A,ierr)
         call MatShellSetOperation(A,MATOP_MULT,RHSMatrixFree,ierr)
         call TSSetRHSMatrix(ts,A,A,PETSC_NULL,PETSC_NULL,ierr) 
       else if (problem .eq. linear_no_time) then
-C    
-C         The user provides the RHS as a matrix
-C    
+!    
+!         The user provides the RHS as a matrix
+!    
         call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
         call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL,ierr)  
         call TSSetRHSMatrix(ts,A,A,PETSC_NULL,PETSC_NULL,ierr) 
       else if (problem .eq. linear) then
-C    
-C         The user provides the RHS as a time dependent matrix
-C    
+!    
+!         The user provides the RHS as a time dependent matrix
+!    
         call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
         call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL,ierr)  
         call TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,PETSC_NULL,ierr) 
       else if (problem .eq. nonlinear_no_jacobian) then
-C    
-C         The user provides the RHS and a Shell Jacobian
-C    
+!    
+!         The user provides the RHS and a Shell Jacobian
+!    
         call TSSetRHSFunction(ts,RHSFunctionHeat,PETSC_NULL,ierr) 
         call MatCreateShell(PETSC_COMM_WORLD,m,M,M,M,PETSC_NULL,A,ierr)
         call MatShellSetOperation(A,MATOP_MULT,RHSMatrixFree,ierr)
         call TSSetRHSJacobian(ts,A,A,PETSC_NULL,PETSC_NULL,ierr)   
       else if (problem .eq. nonlinear) then
-C    
-C         The user provides the RHS and Jacobian
-C    
+!    
+!         The user provides the RHS and Jacobian
+!    
         call TSSetRHSFunction(ts,RHSFunctionHeat,PETSC_NULL,ierr) 
         call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
         call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL,ierr)  
@@ -207,10 +207,10 @@ C
 
       call OptionsHasName(PETSC_NULL_CHARACTER,'-test',flg,ierr) 
       if (flg .eq. 1) then
-C   
-C         copy type to string of length 5 to ensure equality test        
-C         is done correctly
-C
+!   
+!         copy type to string of length 5 to ensure equality test        
+!         is done correctly
+!
         call PetscStrncpy(etype,type,5)
         if (etype .eq. TS_EULER) then
           if (abs(nrm_2/steps - 0.00257244) .gt. 1.e-4) then
@@ -244,7 +244,7 @@ C
       call PetscFinalize(ierr)
       end
 
-C  -------------------------------------------------------------------
+!  -------------------------------------------------------------------
  
       subroutine Initial(global,ctx,ierr)
       implicit none
@@ -265,9 +265,9 @@ C  -------------------------------------------------------------------
       integer     i,mybase,myend,ierr
       PetscOffset idx
 
-C
-C    Application context data, stored in common block
-C
+!
+!    Application context data, stored in common block
+!
       Vec              localwork,csolution
       DA               da
       Viewer           viewer1,viewer2
@@ -276,11 +276,11 @@ C
       common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
      &               nrm_max,nox
 
-C   determine starting point of each processor 
+!   determine starting point of each processor 
 
       call VecGetOwnershipRange(global,mybase,myend,ierr) 
 
-C   Initialize the array 
+!   Initialize the array 
 
       call VecGetArray(global,localptr,idx,ierr) 
       do 10, i=mybase,myend-1
@@ -291,10 +291,10 @@ C   Initialize the array
       return
       end
 
-C ------------------------------------------------------------------------------
-C 
-C       Exact solution 
-C  
+! ------------------------------------------------------------------------------
+! 
+!       Exact solution 
+!  
       subroutine Solution(t,sol,ctx)
       implicit none
 #include "FINCLUDE/petsc.h"
@@ -315,9 +315,9 @@ C
       integer           i,mybase,myend,ierr
       PetscOffset       idx
 
-C
-C    Application context data, stored in common block
-C
+!
+!    Application context data, stored in common block
+!
       Vec               localwork,csolution
       DA                da
       Viewer            viewer1,viewer2
@@ -326,7 +326,7 @@ C
       common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
      &               nrm_max,nox
 
-C   determine starting point of each processor 
+!   determine starting point of each processor 
 
       call VecGetOwnershipRange(csolution,mybase,myend,ierr) 
 
@@ -343,7 +343,7 @@ C   determine starting point of each processor
       end 
 
 
-C -----------------------------------------------------------------------------------
+! -----------------------------------------------------------------------------------
 
       subroutine Monitor(ts,step,time,global,ctx,ierr)
       implicit none
@@ -364,9 +364,9 @@ C ------------------------------------------------------------------------------
       Vec               global
       Scalar            mone
 
-C
-C    Application context data, stored in common block
-C
+!
+!    Application context data, stored in common block
+!
       Vec              localwork,csolution
       DA               da
       Viewer           viewer1,viewer2
@@ -397,7 +397,7 @@ C
       return   
       end
 
-C  -----------------------------------------------------------------------
+!  -----------------------------------------------------------------------
 
       subroutine RHSMatrixFree(mat,x,y,ierr)
       implicit none
@@ -422,7 +422,7 @@ C  -----------------------------------------------------------------------
       return
       end
 
-C -------------------------------------------------------------------------
+! -------------------------------------------------------------------------
 
       subroutine RHSFunctionHeat(ts,t,globalin,globalout,ctx,ierr)
       implicit none
@@ -444,9 +444,9 @@ C -------------------------------------------------------------------------
       integer          ierr,i,localsize
       PetscOffset      ldx,cdx 
       Scalar           copyptr(1), localptr(1),sc
-C
-C    Application context data, stored in common block
-C
+!
+!    Application context data, stored in common block
+!
       Vec              localwork,csolution
       DA               da
       Viewer           viewer1,viewer2
@@ -455,20 +455,20 @@ C
       common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
      &               nrm_max,nox
 
-C  Extract local array  
+!  Extract local array  
 
       call DACreateLocalVector(da,local,ierr) 
       call DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr) 
       call DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local,ierr) 
       call VecGetArray(local,localptr,ldx,ierr) 
 
-C  Extract work vector 
+!  Extract work vector 
 
       call VecGetArray(localwork,copyptr,cdx,ierr) 
 
-C   Update Locally - Make array of new values 
-C   Note: For the first and last entry I copy the value 
-C   if this is an interior node it is irrelevant 
+!   Update Locally - Make array of new values 
+!   Note: For the first and last entry I copy the value 
+!   if this is an interior node it is irrelevant 
 
       sc = 1.0/(h*h)
       call VecGetLocalSize(local,localsize,ierr) 
@@ -482,13 +482,13 @@ C   if this is an interior node it is irrelevant
       call VecRestoreArray(local,localptr,cdx,ierr) 
       call VecDestroy(local,ierr)
 
-C   Local to Global 
+!   Local to Global 
 
       call DALocalToGlobal(da,localwork,INSERT_VALUES,globalout,ierr) 
       return 
       end
 
-C  ---------------------------------------------------------------------
+!  ---------------------------------------------------------------------
 
       subroutine RHSMatrixHeat(ts,t,AA,BB,str,ctx,ierr)
       implicit none
@@ -512,9 +512,9 @@ C  ---------------------------------------------------------------------
       integer          i,mstart,mend,rank,size, idx(3)
       Scalar           v(3),stwo, sone
 
-C
-C    Application context data, stored in common block
-C
+!
+!    Application context data, stored in common block
+!
       Vec              localwork,csolution
       DA               da
       Viewer           viewer1,viewer2
@@ -543,9 +543,9 @@ C
         call MatSetValues(A,1,mend,1,mend,v,INSERT_VALUES,ierr) 
       endif
 
-C  
-C     Construct matrice one row at a time
-C  
+!  
+!     Construct matrice one row at a time
+!  
       v(1) = sone
       v(2) = stwo
       v(3) = sone  
@@ -561,7 +561,7 @@ C
       return
       end
 
-C --------------------------------------------------------------------------------------
+! --------------------------------------------------------------------------------------
 
       subroutine RHSJacobianHeat(ts,t,x,AA,BB,str,ctx,ierr)
       implicit none

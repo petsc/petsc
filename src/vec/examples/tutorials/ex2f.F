@@ -1,40 +1,40 @@
-
-C    "$Id: ex2f.F,v 1.5 1997/07/02 20:53:43 bsmith Exp balay $"
-
-C  Description: Builds a parallel vector with 1 component on the first
-C               processor, 2 on the second, etc.  Then each processor adds
-C               one to all elements except the last rank.
-C
-C/*T
-C   Concepts: Vectors^Assembling vectors;
-C   Routines: VecCreateMPI(); VecGetSize(); VecSet(); VecSetValues();
-C   Routines: VecView(); VecDestroy();
-C   Processors: n
-CT*/
-C -----------------------------------------------------------------------
+!
+!    "$Id: ex2f.F,v 1.6 1997/09/22 15:16:44 balay Exp balay $"
+!
+!  Description: Builds a parallel vector with 1 component on the first
+!               processor, 2 on the second, etc.  Then each processor adds
+!               one to all elements except the last rank.
+!
+!/*T
+!   Concepts: Vectors^Assembling vectors;
+!   Routines: VecCreateMPI(); VecGetSize(); VecSet(); VecSetValues();
+!   Routines: VecView(); VecDestroy();
+!   Processors: n
+!T*/
+! -----------------------------------------------------------------------
 
       program ex2f
       implicit none
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                    Include files
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C  The following include statements are required for Fortran programs
-C  that use PETSc vectors:
-C     petsc.h  - base PETSc routines
-C     vec.h    - vectors
-C  Additional include statements may be needed if using additional
-C  PETSc routines in a Fortran program, e.g.,
-C     viewer.h - viewers
-C     is.h     - index sets
-C
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                    Include files
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!  The following include statements are required for Fortran programs
+!  that use PETSc vectors:
+!     petsc.h  - base PETSc routines
+!     vec.h    - vectors
+!  Additional include statements may be needed if using additional
+!  PETSc routines in a Fortran program, e.g.,
+!     viewer.h - viewers
+!     is.h     - index sets
+!
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                 Beginning of program
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                 Beginning of program
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       Vec     x
       integer N, ierr, rank, i
@@ -44,42 +44,42 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       one   = 1.0
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
-C  Create a parallel vector.
-C   - In this case, we specify the size of the local portion on 
-C     each processor, and PETSc computes the global size.  Alternatively,
-C     if we pass the global size and use PETSC_DECIDE for the 
-C     local size PETSc will choose a reasonable partition trying 
-C     to put nearly an equal number of elements on each processor.
+!  Create a parallel vector.
+!   - In this case, we specify the size of the local portion on 
+!     each processor, and PETSc computes the global size.  Alternatively,
+!     if we pass the global size and use PETSC_DECIDE for the 
+!     local size PETSc will choose a reasonable partition trying 
+!     to put nearly an equal number of elements on each processor.
 
 
       call VecCreateMPI(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,x,ierr)
       call VecGetSize(x,N,ierr)
       call VecSet(one,x,ierr)
 
-C  Set the vector elements.
-C   - Note that VecSetValues() uses 0-based row and column numbers
-C     in Fortran as well as in C.
-C   - Always specify global locations of vector entries.
-C   - Each processor can contribute any vector entries,
-C     regardless of which processor "owns" them; any nonlocal
-C     contributions will be transferred to the appropriate processor
-C     during the assembly process.
-C   - In this example, the flag ADD_VALUES indicates that all
-C     contributions will be added together.
+!  Set the vector elements.
+!   - Note that VecSetValues() uses 0-based row and column numbers
+!     in Fortran as well as in C.
+!   - Always specify global locations of vector entries.
+!   - Each processor can contribute any vector entries,
+!     regardless of which processor "owns" them; any nonlocal
+!     contributions will be transferred to the appropriate processor
+!     during the assembly process.
+!   - In this example, the flag ADD_VALUES indicates that all
+!     contributions will be added together.
 
       do 100 i=0, N-rank-1
          call VecSetValues(x,1,i,one,ADD_VALUES,ierr)
  100  continue
 
-C  Assemble vector, using the 2-step process:
-C    VecAssemblyBegin(), VecAssemblyEnd()
-C  Computations can be done while messages are in transition
-C  by placing code between these two statements.
+!  Assemble vector, using the 2-step process:
+!    VecAssemblyBegin(), VecAssemblyEnd()
+!  Computations can be done while messages are in transition
+!  by placing code between these two statements.
 
       call VecAssemblyBegin(x,ierr)
       call VecAssemblyEnd(x,ierr)
 
-C  View the vector; then destroy it.
+!  View the vector; then destroy it.
 
       call VecView(x,VIEWER_STDOUT_WORLD,ierr)
       call VecDestroy(x,ierr)

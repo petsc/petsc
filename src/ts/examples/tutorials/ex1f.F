@@ -1,34 +1,34 @@
-C
-C "$Id: ex1f.F,v 1.14 1997/10/10 04:05:15 bsmith Exp bsmith $"
-C
-C   Solves the time dependent Bratu problem using pseudo-timestepping
-C
-C   Concepts: TS^Pseudo-timestepping^nonlinear problems
-C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian(); 
-C   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration(); 
-C   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); 
-C   Processors: 1
-C
-C   This code demonstrates how one may solve a nonlinear problem 
-C   with pseudo-timestepping. In this simple example, the pseudo-timestep
-C   is the same for all grid points, i.e., this is equivalent to using
-C   the backward Euler method with a variable timestep.
-C
-C   Note: This example does not require pseudo-timestepping since it
-C   is an easy nonlinear problem, but it is included to demonstrate how
-C   the pseudo-timestepping may be done.
-C
-C   See snes/examples/tutorials/ex4.c[ex4f.F] and 
-C   snes/examples/tutorials/ex5.c[ex5f.F] where the problem is described
-C   and solved using the method of Newton alone.
-C
-C   Include "ts.h"    to use the PETSc timestepping routines,
-C           "petsc.h" for basic PETSc operation,
-C           "mat.h"   for matrix operations,
-C           "pc.h"    for preconditions, and
-C           "vec.h"   for vector operations.
-C
-C23456789012345678901234567890123456789012345678901234567890123456789012
+!
+! "$Id: ex1f.F,v 1.15 1998/03/12 23:21:49 bsmith Exp balay $"
+!
+!   Solves the time dependent Bratu problem using pseudo-timestepping
+!
+!   Concepts: TS^Pseudo-timestepping^nonlinear problems
+!   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian(); 
+!   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration(); 
+!   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); 
+!   Processors: 1
+!
+!   This code demonstrates how one may solve a nonlinear problem 
+!   with pseudo-timestepping. In this simple example, the pseudo-timestep
+!   is the same for all grid points, i.e., this is equivalent to using
+!   the backward Euler method with a variable timestep.
+!
+!   Note: This example does not require pseudo-timestepping since it
+!   is an easy nonlinear problem, but it is included to demonstrate how
+!   the pseudo-timestepping may be done.
+!
+!   See snes/examples/tutorials/ex4.c[ex4f.F] and 
+!   snes/examples/tutorials/ex5.c[ex5f.F] where the problem is described
+!   and solved using the method of Newton alone.
+!
+!   Include "ts.h"    to use the PETSc timestepping routines,
+!           "petsc.h" for basic PETSc operation,
+!           "mat.h"   for matrix operations,
+!           "pc.h"    for preconditions, and
+!           "vec.h"   for vector operations.
+!
+!23456789012345678901234567890123456789012345678901234567890123456789012
       program main
       implicit none
 #include "FINCLUDE/petsc.h"
@@ -36,22 +36,22 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/pc.h"
 #include "FINCLUDE/ts.h"
-C
-C  Create an application context to contain data needed by the 
-C  application-provided call-back routines, FormJacobian() and
-C  FormFunction(). We use a double precision array with three
-C  entries indexed by param, lmx, lmy.
-C
+!
+!  Create an application context to contain data needed by the 
+!  application-provided call-back routines, FormJacobian() and
+!  FormFunction(). We use a double precision array with three
+!  entries indexed by param, lmx, lmy.
+!
       double precision user(3)
       integer          param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
-C
-C   User-defined routines
-C
+!
+!   User-defined routines
+!
       external FormJacobian,FormFunction
-C
-C   Data for problem
-C
+!
+!   Data for problem
+!
       TS                ts                
       Vec               x, r              
       Mat               J                 
@@ -68,9 +68,9 @@ C
       user(lmy)        = 4
       user(param)      = 6.0
   
-C
-C     Allow user to set the grid dimensions and nonlinearity parameter at run-time
-C
+!
+!     Allow user to set the grid dimensions and nonlinearity parameter at run-time
+!
       call OptionsGetDouble(PETSC_NULL_CHARACTER,'-mx',user(lmx),flg,
      &                      ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',user(lmy),flg,ierr)
@@ -88,99 +88,99 @@ C
       call OptionsGetDouble(PETSC_NULL_CHARACTER,'-dt',dt,flg,ierr)
       N          = user(lmx)*user(lmy)
   
-C
-C      Create vectors to hold the solution and function value
-C
+!
+!      Create vectors to hold the solution and function value
+!
        call VecCreateSeq(PETSC_COMM_SELF,N,x,ierr)
        call VecDuplicate(x,r,ierr) 
 
-C
-C    Create matrix to hold Jacobian. Preallocate 5 nonzeros per row
-C    in the sparse matrix. Note that this is not the optimal strategy see
-C    the Performance chapter of the users manual for information on 
-C    preallocating memory in sparse matrices.
-C
+!
+!    Create matrix to hold Jacobian. Preallocate 5 nonzeros per row
+!    in the sparse matrix. Note that this is not the optimal strategy see
+!    the Performance chapter of the users manual for information on 
+!    preallocating memory in sparse matrices.
+!
 
       call MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,PETSC_NULL,J,ierr) 
 
-C
-C     Create timestepper context 
-C
+!
+!     Create timestepper context 
+!
 
       call TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,ts,ierr) 
 
-C
-C     Tell the timestepper context where to compute solutions
-C
+!
+!     Tell the timestepper context where to compute solutions
+!
 
       call TSSetSolution(ts,x,ierr) 
 
-C
-C    Provide the call-back for the nonlinear function we are 
-C    evaluating. Thus whenever the timestepping routines need the
-C    function they will call this routine. Note the final argument
-C    is the application context used by the call-back functions.
-C
+!
+!    Provide the call-back for the nonlinear function we are 
+!    evaluating. Thus whenever the timestepping routines need the
+!    function they will call this routine. Note the final argument
+!    is the application context used by the call-back functions.
+!
 
       call TSSetRHSFunction(ts,FormFunction,user,ierr) 
 
-C
-C     Set the Jacobian matrix and the function used to compute 
-C     Jacobians.
-C
+!
+!     Set the Jacobian matrix and the function used to compute 
+!     Jacobians.
+!
 
       call TSSetRHSJacobian(ts,J,J,FormJacobian,user,ierr)
 
-C
-C       For the initial guess for the problem
-C
+!
+!       For the initial guess for the problem
+!
 
       call FormInitialGuess(x,user,ierr)
 
-C
-C       This indicates that we are using pseudo timestepping to 
-C     find a steady state solution to the nonlinear problem.
-C
+!
+!       This indicates that we are using pseudo timestepping to 
+!     find a steady state solution to the nonlinear problem.
+!
 
       call TSSetType(ts,TS_PSEUDO,ierr) 
 
-C
-C       Set the initial time to start at (this is arbitrary for 
-C     steady state problems and the initial timestep given above
-C
+!
+!       Set the initial time to start at (this is arbitrary for 
+!     steady state problems and the initial timestep given above
+!
 
       zero = 0.0
       call TSSetInitialTimeStep(ts,zero,dt,ierr) 
 
-C
-C      Set a large number of timesteps and final duration time
-C     to insure convergence to steady state.
-C
+!
+!      Set a large number of timesteps and final duration time
+!     to insure convergence to steady state.
+!
       tmax = 1.e12
       call TSSetDuration(ts,1000,tmax,ierr)
 
-C
-C      Set any additional options from the options database. This
-C     includes all options for the nonlinear and linear solvers used
-C     internally the the timestepping routines.
-C
+!
+!      Set any additional options from the options database. This
+!     includes all options for the nonlinear and linear solvers used
+!     internally the the timestepping routines.
+!
 
       call TSSetFromOptions(ts,ierr) 
 
       call TSSetUp(ts,ierr) 
 
-C
-C      Perform the solve. This is where the timestepping takes place.
-C
+!
+!      Perform the solve. This is where the timestepping takes place.
+!
  
       call TSStep(ts,its,ftime,ierr) 
    
       write(6,100) its,ftime
  100  format('Number of pseudo time-steps ',i5,' final time ',e8.2)
 
-C
-C     Free the data structures constructed above
-C
+!
+!     Free the data structures constructed above
+!
 
       call VecDestroy(x,ierr) 
       call VecDestroy(r,ierr) 
@@ -189,9 +189,9 @@ C
       call PetscFinalize(ierr)
       end
 
-C
-C  --------------------  Form initial approximation ----------------- 
-C
+!
+!  --------------------  Form initial approximation ----------------- 
+!
       subroutine FormInitialGuess(X,user,ierr)
       implicit none
 #include "FINCLUDE/petsc.h"
@@ -241,9 +241,9 @@ C
       call VecRestoreArray(X,xx,xidx,ierr) 
       return
       end
-C
-C  --------------------  Evaluate Function F(x) --------------------- 
-C
+!
+!  --------------------  Evaluate Function F(x) --------------------- 
+!
       subroutine FormFunction(ts,t,X,F,user,ierr)
       implicit none
 #include "FINCLUDE/petsc.h"
@@ -303,9 +303,9 @@ C
       call VecRestoreArray(F,ff,fidx,ierr) 
       return 
       end
-C
-C  --------------------  Evaluate Jacobian of F(x) -------------------- 
-C
+!
+!  --------------------  Evaluate Jacobian of F(x) -------------------- 
+!
       subroutine FormJacobian(ts,ctime,X,JJ,B,flag,user,ierr)
       implicit none
 #include "FINCLUDE/petsc.h"
@@ -344,10 +344,10 @@ C
       call VecGetArray(X,xx,xidx,ierr) 
       do 10 j=1,my
         do 20 i=1,mx
-C
-C      When inserting into PETSc matrices, indices start at 0
-C
-C       call PetscTrValid(ierr)
+!
+!      When inserting into PETSc matrices, indices start at 0
+!
+!       call PetscTrValid(ierr)
           row = i - 1 + (j-1)*mx
           if (i .eq. 1 .or. j .eq. 1 .or. 
      &        i .eq. mx .or. j .eq. my ) then
@@ -371,7 +371,7 @@ C       call PetscTrValid(ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       call VecRestoreArray(X,xx,xidx,ierr) 
       flag = SAME_NONZERO_PATTERN
-C       call PetscTrValid(ierr)
+!       call PetscTrValid(ierr)
       return
       end
 

@@ -1,37 +1,37 @@
-
-C      "$Id: ex3f.F,v 1.3 1997/09/22 15:16:30 balay Exp bsmith $";
-
-C  Description: Displays a vector visually.
-C
-C/*T
-C   Concepts: Vectors^Drawing vectors;
-C   Routines: VecCreate(); VecSetValues(); VecView(); VecDestroy();
-C   Routines: VecAssemblyBegin(); VecAssemblyEnd(); VecGetOwnershipRange();
-C   Routines: ViewerDrawOpenX(); ViewerDestroy();
-C   Processors: n
-CT*/
-C -----------------------------------------------------------------------
+!
+!      "$Id: ex3f.F,v 1.4 1997/11/28 16:18:34 bsmith Exp balay $";
+!
+!  Description: Displays a vector visually.
+!
+!/*T
+!   Concepts: Vectors^Drawing vectors;
+!   Routines: VecCreate(); VecSetValues(); VecView(); VecDestroy();
+!   Routines: VecAssemblyBegin(); VecAssemblyEnd(); VecGetOwnershipRange();
+!   Routines: ViewerDrawOpenX(); ViewerDestroy();
+!   Processors: n
+!T*/
+! -----------------------------------------------------------------------
 
       program ex3f
       implicit none
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                    Include files
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C  The following include statements are required for Fortran programs
-C  that use PETSc vectors:
-C     petsc.h  - base PETSc routines
-C     vec.h    - vectors
-C  Include viewer.h so that we can use the PETSc viewers.
-C
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                    Include files
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!  The following include statements are required for Fortran programs
+!  that use PETSc vectors:
+!     petsc.h  - base PETSc routines
+!     vec.h    - vectors
+!  Include viewer.h so that we can use the PETSc viewers.
+!
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/viewer.h"
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                 Beginning of program
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                 Beginning of program
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       Vec     x
       Viewer  viewer
@@ -42,47 +42,47 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       n = 50
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
-C  Create a vector, specifying only its global dimension.
-C  When using VecCreate(), the vector format (currently parallel
-C  or sequential) is determined at runtime.  Also, the parallel
-C  partitioning of the vector is determined by PETSc at runtime.
+!  Create a vector, specifying only its global dimension.
+!  When using VecCreate(), the vector format (currently parallel
+!  or sequential) is determined at runtime.  Also, the parallel
+!  partitioning of the vector is determined by PETSc at runtime.
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
 
-C  Currently, all PETSc parallel vectors are partitioned by
-C  contiguous chunks of rows across the processors.  Determine
-C  which vector are locally owned. 
+!  Currently, all PETSc parallel vectors are partitioned by
+!  contiguous chunks of rows across the processors.  Determine
+!  which vector are locally owned. 
       call VecGetOwnershipRange(x,istart,iend,ierr)
 
-C  Set the vector elements.
-C   - Always specify global locations of vector entries.
-C   - Each processor needs to insert only elements that it owns locally.
+!  Set the vector elements.
+!   - Always specify global locations of vector entries.
+!   - Each processor needs to insert only elements that it owns locally.
       do 100 i=istart,iend-1
          v = dble(i)
          call VecSetValues(x,1,i,v,INSERT_VALUES,ierr)
  100  continue
 
-C  Assemble vector, using the 2-step process:
-C    VecAssemblyBegin(), VecAssemblyEnd()
-C  Computations can be done while messages are in transition
-C  by placing code between these two statements.
+!  Assemble vector, using the 2-step process:
+!    VecAssemblyBegin(), VecAssemblyEnd()
+!  Computations can be done while messages are in transition
+!  by placing code between these two statements.
       call VecAssemblyBegin(x,ierr)
       call VecAssemblyEnd(x,ierr)
 
-C  Open an X-window viewer.  Note that we specify the same communicator
-C  for the viewer as we used for the distributed vector (PETSC_COMM_WORLD).
-C    - Helpful runtime option:
-C         -draw_pause <pause> : sets time (in seconds) that the
-C               program pauses after DrawPause() has been called
-C              (0 is default, -1 implies until user input).
+!  Open an X-window viewer.  Note that we specify the same communicator
+!  for the viewer as we used for the distributed vector (PETSC_COMM_WORLD).
+!    - Helpful runtime option:
+!         -draw_pause <pause> : sets time (in seconds) that the
+!               program pauses after DrawPause() has been called
+!              (0 is default, -1 implies until user input).
 
       call ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,
      &                     PETSC_NULL_CHARACTER,0,0,300,300,viewer,ierr)
 
-C  View the vector
+!  View the vector
       call VecView(x,viewer,ierr)
 
-C  Free work space.  All PETSc objects should be destroyed when they
-C  are no longer needed.
+!  Free work space.  All PETSc objects should be destroyed when they
+!  are no longer needed.
 
       call ViewerDestroy(viewer,ierr)
       call VecDestroy(x,ierr)

@@ -1,7 +1,7 @@
-C    "$Id: ex6.F,v 1.5 1996/08/27 20:24:20 curfman Exp balay $";
-C
-C  Progran to test random number generation routines from fortran.
-C
+!    "$Id: ex6.F,v 1.6 1997/09/22 15:18:58 balay Exp balay $";
+!
+!  Progran to test random number generation routines from fortran.
+!
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/sys.h"
       integer         ierr

@@ -1,12 +1,12 @@
-
-C    "$Id: ex19.F,v 1.28 1997/09/22 15:17:59 balay Exp bsmith $";
-
+!
+!    "$Id: ex19.F,v 1.29 1997/11/28 16:18:32 bsmith Exp balay $";
+!
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
-C
-C  This example demonstrates basic use of the PETSc Fortran interface
-C  to vectors.
-C
+!
+!  This example demonstrates basic use of the PETSc Fortran interface
+!  to vectors.
+!
        integer          n, ierr,flg
        Scalar           one, two, three, dot
        double precision norm,rdot
@@ -20,7 +20,7 @@ C
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)                  
        call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
-C Create a vector, then duplicate it
+! Create a vector, then duplicate it
        call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
        call VecDuplicate(x,y,ierr)
        call VecDuplicate(x,w,ierr)

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.10 1997/09/10 18:55:09 balay Exp balay $ 
+# $Id: makefile,v 1.11 1998/03/19 02:14:41 balay Exp balay $ 
 
 ALL: lib
 
@@ -14,6 +14,8 @@ LOCDIR   = src/contrib/sda/examples/tests/
 
 EXAMPLES_2    = ex1
 EXAMPLES_3    = ex2
+EXAMPLESC     = ex1.c
+EXAMPLESF     = ex2.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
