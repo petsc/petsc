@@ -9,6 +9,15 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
+
+  - Fix this:
+    > VecNorm with a NORM_MAX option returns 0 if the
+    > vector has NaN's. It seems to me that it should return
+    > NaN like the 1 and 2 norms. I guess the problem is that
+    > the comparison in the loop of the current max to NaN
+    > returns false becuase of the NaN, so the max is not
+    > set to NaN.
+
   - fix PetscView so that with scrolling in horizontal direction and click on icon
     it pops up detailed information in correct location.
 
