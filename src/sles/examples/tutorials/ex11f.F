@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.2 1996/09/25 20:10:09 curfman Exp curfman $";
+C    "$Id: ex11f.F,v 1.3 1996/09/25 20:33:30 curfman Exp curfman $";
 C
 C/*T
 C  Concepts: SLES (solving a Helmholtz equation)
@@ -88,7 +88,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       none   = -1.0
-      n      = 10
+      n      = 6
       sigma1 = 100.0
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
       call OptionsGetDouble(PETSC_NULL_CHARACTER,'-sigma1',sigma1,

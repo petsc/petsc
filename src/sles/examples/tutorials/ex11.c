@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.1 1996/09/25 20:33:38 curfman Exp curfman $";
+static char vcid[] = "$Id: ex11.c,v 1.2 1996/09/25 20:41:23 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -49,7 +49,7 @@ int main(int argc,char **args)
   Mat         A;            /* linear system matrix */
   SLES        sles;         /* linear solver context */
   double      norm;         /* norm of solution error */
-  int         dim, i, j, I, J, Istart, Iend, ierr, n = 10, its, flg;
+  int         dim, i, j, I, J, Istart, Iend, ierr, n = 6, its, flg;
   Scalar      v, none = -1.0, sigma2;
   PetscRandom rctx;
   double      h2, sigma1 = 100.0;

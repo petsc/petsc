@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.26 1996/08/27 18:15:09 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.27 1996/08/28 19:57:38 curfman Exp curfman $";
 #endif
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
@@ -7,8 +7,7 @@ linear system matrix in the SLES solvers.  Note that different storage formats\n
 can be used for the different matrices.\n\n";
 
 /*T
-   Concepts: SLES (solving linear equations)
-   Concepts: different matrices for linear system and preconditioner
+   Concepts: SLES (different matrices for linear system and preconditioner)
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions()
    Routines: SLESSolve(); SLESView()
    Routines: PetscRandomCreate(); PetscRandomDestroy()
