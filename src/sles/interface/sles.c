@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.88 1997/07/25 23:11:51 balay Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.89 1997/08/22 15:15:29 bsmith Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -315,7 +315,8 @@ $        divergence or breakdown was detected.
      If using a direct method (e.g., via the KSP solver
      KSPPREONLY and a preconditioner such as PCLU/PCILU),
      then its=1.  See KSPSetTolerances() and KSPDefaultConverged()
-     for more details.
+     for more details.  Also see KSPSolve() for more details
+     about iterative solver options.
 
    Setting a Nonzero Initial Guess:
      By default, SLES assumes an initial guess of zero by zeroing
@@ -341,6 +342,7 @@ $        KSPSetInitialGuessNonzero(ksp);
      matrix data structure change), the user MUST call SLESSetOperators()
      and SLESSolve() for each solve.  See SLESSetOperators() for
      options that can save work for such cases.
+
 
 .keywords: SLES, solve, linear system
 
