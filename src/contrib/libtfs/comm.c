@@ -122,7 +122,7 @@ comm_init (void)
 
 #ifdef r8
   iptr= (int *) &tmp;
-  for(i=0;i<(int) sizeof(REAL)/sizeof(int);i++)
+  for(i=0;i<(int) (sizeof(REAL)/sizeof(int));i++)
   {
      if (iptr[i]!=0) 
     {error_msg_fatal("type double doesn't conform to IEEE 754 std. for 64 bit!");}
