@@ -66,3 +66,13 @@ class Defaults:
     action.repositoryDirs.append(self.usingSIDL.repositoryDir)
     action.repositoryDirs.extend(self.usingSIDL.repositoryDirs)
     return
+
+  def removeNullIORExceptionStub(self):
+    root = self.usingSIDL.getClientRootDir('C++')
+    stub = os.path.join(root, 'src', 'SIDL', 'NullIORException')
+    if os.path.exists(stub): os.system('rm -rf '+stub)
+    return
+
+  def getExtraClientTargets(self):
+    import transform
+    return [transform.SimpleFunction(self.removeNullIORExceptionStub)]

@@ -31,6 +31,7 @@ class Defaults:
     return lang.lower()+'-scandal'
 
   def generatesAllStubs(self):
+    '''Scandal only generates stubs for the packages being compiled'''
     return 0
 
   def getImplRE(self):
@@ -63,3 +64,6 @@ class Defaults:
     action.repositoryDirs.append(self.usingSIDL.repositoryDir)
     action.repositoryDirs.extend(self.usingSIDL.repositoryDirs)
     return
+
+  def getExtraClientTargets(self):
+    return []

@@ -133,6 +133,8 @@ class Defaults(logging.Logger):
       for lang in self.usingSIDL.internalClientLanguages[package]:
         targets.append(target.Target(None, [self.usingSIDL.compilerDefaults.getTagger('client'),
                                             self.getSIDLClientCompiler(lang, self.usingSIDL.getServerRootDir(lang, package))]))
+    extras = self.usingSIDL.compilerDefaults.getExtraClientTargets()
+    if len(extras): targets.extend(extras)
     return targets
 
   def getSIDLTarget(self):
