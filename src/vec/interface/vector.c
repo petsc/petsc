@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.87 1996/08/08 14:40:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.88 1996/08/22 20:30:47 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -417,7 +417,7 @@ int VecWAXPY(Scalar *alpha,Vec x,Vec y,Vec w)
    Output Parameter:
 .  w - the result
 
-.keywords: vector, multiply, componentwise
+.keywords: vector, multiply, componentwise, pointwise
 
 .seealso: VecPointwiseDivide()
 @*/
@@ -441,7 +441,7 @@ int VecPointwiseMult(Vec x,Vec y,Vec w)
    Output Parameter:
 .  w - the result
 
-.keywords: vector, divide, componentwise
+.keywords: vector, divide, componentwise, pointwise
 
 .seealso: VecPointwiseMult()
 @*/
