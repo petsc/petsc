@@ -11,8 +11,8 @@
     line options. These are called at the end KSPSetFromOptions()
 */
 #define MAXSETFROMOPTIONS 5
-int numberofsetfromoptions;
-int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
+int numberofsetfromoptions = 0;
+int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP) = {0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPAddOptionsChecker"

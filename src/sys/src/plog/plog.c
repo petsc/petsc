@@ -26,7 +26,7 @@ int PETSC_LARGEST_EVENT  = PETSC_EVENT;
 #if defined(PETSC_USE_LOG)
 
 /* used in the MPI_XXX() count macros in petsclog.h */
-int PETSC_DUMMY,PETSC_DUMMY_SIZE;
+int PETSC_DUMMY = 0,PETSC_DUMMY_SIZE = 0; 
 
 /* Action and object logging variables */
 Action    *actions    = PETSC_NULL;
@@ -38,7 +38,7 @@ int        numObjects = 0, maxObjects = 100;
 int        numObjectsDestroyed = 0;
 
 /* Global counters */
-PetscLogDouble BaseTime;
+PetscLogDouble BaseTime        = 0.0;
 PetscLogDouble _TotalFlops     = 0.0; /* The number of flops */
 PetscLogDouble send_ct         = 0.0; /* The number of sends */
 PetscLogDouble recv_ct         = 0.0; /* The number of receives */
@@ -61,11 +61,11 @@ int (*_PetscLogPLB)(int, int, PetscObject, PetscObject, PetscObject, PetscObject
 int (*_PetscLogPLE)(int, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
 
 /* Tracing event logging variables */
-FILE          *tracefile   = PETSC_NULL;
-int            tracelevel  = 0;
-char          *traceblanks = "                                                                                                    ";
-char           tracespace[128];
-PetscLogDouble tracetime   = 0.0;
+FILE          *tracefile       = PETSC_NULL;
+int            tracelevel      = 0;
+char          *traceblanks     = "                                                                                                    ";
+char           tracespace[128] = " ";
+PetscLogDouble tracetime       = 0.0;
 
 /*---------------------------------------------- General Functions --------------------------------------------------*/
 #undef __FUNCT__  

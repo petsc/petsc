@@ -7,7 +7,7 @@
 /* Logging support */
 int AO_COOKIE = 0;
 int AODATA_COOKIE = 0;
-int AOEvents[AO_MAX_EVENTS];
+int AOEvents[AO_MAX_EVENTS] = {0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOView" 

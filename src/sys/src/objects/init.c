@@ -37,13 +37,13 @@ PetscScalar   PETSC_i;
 #else
 PetscScalar   PETSC_i = 0.0; 
 #endif
-MPI_Datatype  MPIU_2SCALAR;
+MPI_Datatype  MPIU_2SCALAR = 0;
 
 /*
      These are needed by petscbt.h
 */
-char _BT_mask,_BT_c;
-int  _BT_idx;
+char _BT_mask = ' ',_BT_c = ' ';
+int  _BT_idx  = 0;
 
 /*
      Determines if all PETSc objects are published to the AMS

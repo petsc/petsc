@@ -8,7 +8,7 @@
 
 /* Logging support */
 int DA_COOKIE = 0;
-int DAEvents[DA_MAX_EVENTS];
+int DAEvents[DA_MAX_EVENTS] = {0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "DADestroy"

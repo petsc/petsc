@@ -6,7 +6,7 @@
 #include "src/mat/matimpl.h"      /*I "petscmat.h" I*/
 #include "petscsys.h"
 
-int MAT_NULLSPACE_COOKIE;
+int MAT_NULLSPACE_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNullSpaceCreate"

@@ -4,7 +4,7 @@
 #include "src/sys/src/plog/ptime.h"
 #include "plog.h"
 
-StageLog _stageLog;
+StageLog _stageLog = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageInfoDestroy"
