@@ -1,4 +1,4 @@
-/* $Id: tsimpl.h,v 1.4 1996/03/26 04:47:24 bsmith Exp balay $ */
+/* $Id: tsimpl.h,v 1.5 1996/03/26 16:21:14 balay Exp curfman $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -41,7 +41,7 @@ struct _TS {
 
   int           (*setup)(TS);            /* sets up the nonlinear solver */
   int           setup_called;            /* true if setup has been called */
-  int           (*step)(TS,int*,Scalar*);      
+  int           (*step)(TS,int*,double*); /* stepping routine */      
   int           (*setfromoptions)(TS);    /* sets options from database */
   int           (*printhelp)(TS);         /* prints help info */
   void          *data;                    /* implementationspecific data */

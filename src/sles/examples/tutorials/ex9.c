@@ -1,16 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.1 1996/03/26 17:48:33 curfman Exp curfman $";
+static char vcid[] = "$Id: ex19.c,v 1.2 1996/03/29 18:29:09 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, the example illustrates the repeated solution\n\
 of linear systems, while reusing matrix, vector, and solver data structures\n\
-throughout the entire process. Note, in particular, the reuse of the preconditioner\n\
-with the same preconditioner\n\
-method but different matrices (having the same nonzero structure).  Input\n\
-arguments are\n\
-  -m <size> : problem size\n\
-  -mat_nonsym : use nonsymmetric matrix (default is symmetric)\n\n";
+throughout the entire process.\n\n";
 
 #include "sles.h"
 #include  <stdio.h>
