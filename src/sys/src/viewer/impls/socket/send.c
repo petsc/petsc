@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.88 1999/03/31 03:48:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.89 1999/03/31 03:52:21 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -25,6 +25,9 @@ typedef unsigned long   u_long;
 #if defined(PARCH_alpha)
 #include <machine/endian.h>
 #endif
+#if defined (PARCH_ascired)
+#include <unistd.h>
+#endif
 #if !defined(PARCH_win32)
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -43,7 +46,7 @@ typedef unsigned long   u_long;
 */
 #if defined(PARCH_sun4) || defined(PARCH_rs6000) || defined(PARCH_freebsd) \
     || defined(PARCH_hpux) || defined(PARCH_alpha) || defined(PARCH_solaris) \
-    || defined(PARCH_linux)
+    || defined(PARCH_linux) || defined(PARCH_ascired)
 EXTERN_C_BEGIN
 #if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_hpux) \
     && !defined(PARCH_alpha) && !defined(PARCH_solaris) && \
@@ -80,7 +83,7 @@ extern int connect(int,struct sockaddr *,int);
  */
 #if defined(PARCH_rs6000)
 extern unsigned int sleep(unsigned int);
-#else
+#elseif !defined(PARCH_ascired)
 extern int sleep(unsigned);
 #endif
 #endif
