@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.52 1997/03/27 20:18:22 bsmith Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.53 1997/03/27 22:29:34 balay Exp bsmith $";
 #endif
 
 /* 
@@ -68,7 +68,7 @@ extern int socket(int,int,int);
     Some IBM rs6000 machines running 4.1 remove the prototype 
    below for connect()
 */
-#if defined(PARCH_rs6000)
+#if defined(PARCH_rs6000) && !defined(__cplusplus)
 extern int connect(int,const struct sockaddr *,size_t);
 #else
 extern int connect(int,struct sockaddr *,int);
