@@ -1,5 +1,5 @@
 !
-!  "$Id: ex16f90.F,v 1.13 2000/05/05 22:16:17 balay Exp bsmith $";
+!  "$Id: ex16f90.F,v 1.14 2000/09/27 20:14:43 bsmith Exp balay $";
 !
 !
 !  Tests MatGetArray() on a dense matrix
@@ -27,6 +27,7 @@
 
       Mat A
       integer i,j,m,n,ierr
+      integer rstart,rend
       Scalar  v
       Scalar, pointer :: array(:,:)
 
@@ -64,9 +65,13 @@
 !      Print the local portion of the matrix to the screen
 !
       call MatGetArrayF90(A,array,ierr) 
+      call MatGetOwnershipRange(A,rstart,rend,ierr)
       call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr)
-      write(6,100) PetscRealPart(array)
+      do 30 i=1,rend-rstart
+         write(6,100) (PetscRealPart(array(i,j)),j=1,n)
+ 30   continue
  100  format(2F6.2)
+
       call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr)
 
       call MatRestoreArrayF90(A,array,ierr)   
