@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ec.c,v 1.4 1997/02/22 02:30:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ec.c,v 1.5 1997/05/23 17:13:12 balay Exp balay $";
 #endif
 
 /*
@@ -210,7 +210,7 @@ int ECCreate(MPI_Comm comm,ECProblemType pt,EC *ec)
   EC ctx;
 
   *ec = 0;
-  PetscHeaderCreate(ctx,_EC,EC_COOKIE,EC_LAPACK,comm);
+  PetscHeaderCreate(ctx,_p_EC,EC_COOKIE,EC_LAPACK,comm);
   PLogObjectCreate(ctx);
   *ec                = ctx;
   ctx->view          = 0;
