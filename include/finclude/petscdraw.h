@@ -1,5 +1,5 @@
 !
-!  $Id: draw.h,v 1.18 1999/01/12 23:18:29 bsmith Exp bsmith $;
+!  $Id: draw.h,v 1.19 1999/01/13 22:37:30 bsmith Exp bsmith $;
 !
 !  Include file for Fortran use of the Draw package in PETSc
 !
@@ -10,6 +10,8 @@
 #define DrawHist   PetscFortranAddr
 #define DrawMesh   PetscFortranAddr
 #define DrawButton integer
+#define DrawType   character*(80)
+
 !
 !  types of draw context
 !
