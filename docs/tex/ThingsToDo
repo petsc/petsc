@@ -71,8 +71,31 @@ Additional Capabilities that PETSc Needs:
    * Fix fact that first line of verbatim in html files have all leading blanks
      removed. (Note our makefile puts in three blanks before ierr which fixes
      90 percent of the problems for manual.html)
+    (The verbatim handler for tothml seems not to put a carriage return 
+     after the <pre><tt> and before the text. This causes the first line 
+     of verbatim text to be printed incorrectly. I think this can be fixed
+     by simply putting a \n after the outputed <pre><tt>)
 
    - allow inputed example files to have PETSc routine names mapped to manpages.
+
+    tothml doesn't handle \cite{} with -mapref../www/petsc.cit
+    when the \cite is within an included file. 
+
+    \ge doesn't seem to work correctly
+
+    Also the automatic manpage finder feature invoked by -mapman does not
+    seem to be able to handle function names with integers in them like
+    DACreate2d()
+
+    In the enumerate environment tothml doesn't seem to be able to handle
+   \subitem and \subsubitem. It also seems to put to much blank space
+    before and after the enumerate list. 
+
+   An additional feature that would be great for tohtml, especially in
+   handling large documents (such as the ever expanding PETSc users
+   manual), is the optional addition of buttons for "Contents" and
+   "Index" with the usual "up", "next", "previous" buttons.  
+
 
    To do sometime soon:
   ----------------------
