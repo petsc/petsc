@@ -596,7 +596,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   PetscInt       fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax;
   PetscInt       m = A->m,*ip,N,*ailen = a->ilen,rmax = 0;
   PetscScalar    *aa = a->a,*ap;
-  PetscReal      ratio=0.7;
+  PetscReal      ratio=0.6;
 
   PetscFunctionBegin;  
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -647,7 +647,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 
   /* check for zero rows. If found a large number of nonzero rows, use CompressedRow functions */
   /* fshift=0 <-> samestructure? */
-  if (!a->inode.use && !a->compressedrow.checked && a->compressedrow.use && fshift){
+  if (!a->inode.use && !a->compressedrow.checked && a->compressedrow.use){
     ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,ratio);CHKERRQ(ierr); 
     if (a->compressedrow.use){
       A->ops->mult    = MatMult_SeqAIJ_CompressedRow;
@@ -843,7 +843,6 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultTransposeAdd_SeqAIJ"
 PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
@@ -854,7 +853,9 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
   PetscInt       m = A->m;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
   PetscScalar    *v,alpha;
-  PetscInt       n,i,*idx;
+  PetscInt       n,i,*idx,*ii,*ridx=PETSC_NULL;
+  Mat_CompressedRow cprow = a->compressedrow;
+  PetscTruth        usecprow=cprow.use; 
 #endif
 
   PetscFunctionBegin;
@@ -865,11 +866,22 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
   fortranmulttransposeaddaij_(&m,x,a->i,a->j,a->a,y);
 #else
+  if (usecprow){
+    m    = cprow.nrows;
+    ii   = cprow.i;
+    ridx = cprow.rindex;
+  } else {
+    ii = a->i;
+  }
   for (i=0; i<m; i++) {
-    idx   = a->j + a->i[i] ;
-    v     = a->a + a->i[i] ;
-    n     = a->i[i+1] - a->i[i];
-    alpha = x[i];
+    idx   = a->j + ii[i] ;
+    v     = a->a + ii[i] ;
+    n     = ii[i+1] - ii[i];
+    if (usecprow){
+      alpha = x[ridx[i]];
+    } else {
+      alpha = x[i];
+    }
     while (n-->0) {y[*idx++] += alpha * *v++;}
   }
 #endif
@@ -942,22 +954,22 @@ PetscErrorCode MatMult_SeqAIJ_CompressedRow(Mat A,Vec xx,Vec yy)
   PetscErrorCode ierr;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscScalar    *x,*y,*aa,sum;
-  PetscInt       m,*rindex,nz,i,j,*aj,*ai;
+  PetscInt       m,*ridx,nz,i,j,*aj,*ai;
 
   PetscFunctionBegin;  
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
-  m      = a->compressedrow.nrows;
-  ai     = a->compressedrow.i;
-  rindex = a->compressedrow.rindex;
+  m    = a->compressedrow.nrows;
+  ai   = a->compressedrow.i;
+  ridx = a->compressedrow.rindex;
   for (i=0; i<m; i++){
     nz  = ai[i+1] - ai[i]; 
     aj  = a->j + ai[i];
     aa  = a->a + ai[i];
     sum = 0.0;
     for (j=0; j<nz; j++) sum += (*aa++)*x[*aj++]; 
-    y[*rindex++] = sum;
+    y[*ridx++] = sum;
   }
 
   PetscLogFlops(2*a->nz - m);
@@ -1021,7 +1033,7 @@ PetscErrorCode MatMultAdd_SeqAIJ_CompressedRow(Mat A,Vec xx,Vec zz,Vec yy)
   PetscErrorCode ierr;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscScalar    *x,*y,*z,*aa,sum;
-  PetscInt       m,*rindex,nz,i,j,*aj,*ai;
+  PetscInt       m,*ridx,nz,i,j,*aj,*ai;
 
   PetscFunctionBegin;  
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -1032,16 +1044,16 @@ PetscErrorCode MatMultAdd_SeqAIJ_CompressedRow(Mat A,Vec xx,Vec zz,Vec yy)
     z = y;
   }
 
-  m      = a->compressedrow.nrows;
-  ai     = a->compressedrow.i;
-  rindex = a->compressedrow.rindex;
+  m    = a->compressedrow.nrows;
+  ai   = a->compressedrow.i;
+  ridx = a->compressedrow.rindex;
   for (i=0; i<m; i++){
     nz  = ai[i+1] - ai[i]; 
     aj  = a->j + ai[i];
     aa  = a->a + ai[i];
-    sum = y[*rindex];
+    sum = y[*ridx];
     for (j=0; j<nz; j++) sum += (*aa++)*x[*aj++]; 
-    z[*rindex++] = sum;
+    z[*ridx++] = sum;
   }
   PetscLogFlops(2*a->nz - m);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
