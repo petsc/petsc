@@ -22,6 +22,9 @@ EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                 ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
                 ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex33.c \
                 ex34.c ex35.c
+EXAMPLESF     = ex36.c
+EXAMPLES_3    = ex36
+RUNEXAMPLES_3 = runex36
 
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB)
@@ -292,11 +295,15 @@ runex30:
            if (diff output/ex30_1.out ex30_1.tmp) then true; \
            else echo "Possible problem with ex30_1, diffs above"; fi; \
            $(RM) -f ex30_1.tmp
-
 runex35:
 	-@$(MPIRUN)  ex35 > ex35_1.tmp 2>&1;   \
            if (diff output/ex35_1.out ex35_1.tmp) then true; \
            else echo "Possible problem with ex35_1, diffs above"; fi; \
            $(RM) -f ex35_1.tmp
+runex36:
+	-@$(MPIRUN)  ex36 > ex36_1.tmp 2>&1;   \
+           if (diff output/ex36_1.out ex36_1.tmp) then true; \
+           else echo "Possible problem with ex36_1, diffs above"; fi; \
+           $(RM) -f ex36_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
