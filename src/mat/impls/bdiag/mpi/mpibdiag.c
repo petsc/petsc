@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.155 1999/02/03 03:17:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.156 1999/02/15 20:16:59 bsmith Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -677,8 +677,8 @@ int MatSetOption_MPIBDiag(Mat A,MatOption op)
 
   if (op == MAT_NO_NEW_NONZERO_LOCATIONS ||
       op == MAT_YES_NEW_NONZERO_LOCATIONS ||
-      op == MAT_NEW_NONZERO_LOCATION_ERROR ||
-      op == MAT_NEW_NONZERO_ALLOCATION_ERROR ||
+      op == MAT_NEW_NONZERO_LOCATION_ERR ||
+      op == MAT_NEW_NONZERO_ALLOCATION_ERR ||
       op == MAT_NO_NEW_DIAGONALS ||
       op == MAT_YES_NEW_DIAGONALS) {
         MatSetOption(mbd->A,op);

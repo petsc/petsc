@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.6 1997/10/19 03:26:38 bsmith Exp balay $";
+static char vcid[] = "$Id: ex12.c,v 1.7 1999/02/11 22:07:31 balay Exp balay $";
 #endif
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\n";
@@ -99,7 +99,7 @@ int TestMatZeroRows_with_no_allocation(Mat A,IS is, Scalar *diag)
   /* Now copy A into B, and test it with MatZeroRows() */
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B); CHKERRQ(ierr);
   /* Set this flag after assembly. This way, it affects only MatZeroRows() */
-  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERROR); CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR); CHKERRQ(ierr);
 
   ierr = MatZeroRows(B,is,diag); CHKERRQ(ierr);
   ierr = MatView(B,VIEWER_STDOUT_WORLD); CHKERRQ(ierr); 

@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.18 1998/04/21 18:33:39 balay Exp bsmith $"
+! "$Id: ex5f90.F,v 1.19 1999/01/13 21:47:26 bsmith Exp balay $"
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -620,7 +620,7 @@
 !  Tell the matrix we will never add a new nonzero location to the
 !  matrix. If we do it will generate an error.
 
-       call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERROR,ierr)
+       call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,ierr)
 
       return
       end

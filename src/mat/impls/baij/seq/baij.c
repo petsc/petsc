@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.161 1999/02/15 17:07:34 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.162 1999/02/15 18:32:41 balay Exp balay $";
 #endif
 
 /*
@@ -167,8 +167,8 @@ int MatSetOption_SeqBAIJ(Mat A,MatOption op)
   else if (op == MAT_COLUMNS_SORTED)               a->sorted      = 1;
   else if (op == MAT_COLUMNS_UNSORTED)             a->sorted      = 0;
   else if (op == MAT_NO_NEW_NONZERO_LOCATIONS)     a->nonew       = 1;
-  else if (op == MAT_NEW_NONZERO_LOCATION_ERROR)   a->nonew       = -1;
-  else if (op == MAT_NEW_NONZERO_ALLOCATION_ERROR) a->nonew       = -2;
+  else if (op == MAT_NEW_NONZERO_LOCATION_ERR)     a->nonew       = -1;
+  else if (op == MAT_NEW_NONZERO_ALLOCATION_ERR)   a->nonew       = -2;
   else if (op == MAT_YES_NEW_NONZERO_LOCATIONS)    a->nonew       = 0;
   else if (op == MAT_ROWS_SORTED || 
            op == MAT_ROWS_UNSORTED ||

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.146 1999/02/03 03:19:17 curfman Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.147 1999/02/12 00:04:25 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -1508,8 +1508,8 @@ int MatSetOption_MPIBAIJ(Mat A,MatOption op)
       op == MAT_YES_NEW_NONZERO_LOCATIONS ||
       op == MAT_COLUMNS_UNSORTED ||
       op == MAT_COLUMNS_SORTED ||
-      op == MAT_NEW_NONZERO_ALLOCATION_ERROR ||
-      op == MAT_NEW_NONZERO_LOCATION_ERROR) {
+      op == MAT_NEW_NONZERO_ALLOCATION_ERR ||
+      op == MAT_NEW_NONZERO_LOCATION_ERR) {
         MatSetOption(a->A,op);
         MatSetOption(a->B,op);
   } else if (op == MAT_ROW_ORIENTED) {

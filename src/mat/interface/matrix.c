@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.316 1999/01/27 19:47:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.317 1999/02/03 04:11:53 curfman Exp balay $";
 #endif
 
 /*
@@ -2405,7 +2405,7 @@ int MatCompress(Mat mat)
    Input Parameters:
 +  mat - the matrix 
 -  option - the option, one of those listed below (and possibly others),
-             e.g., MAT_ROWS_SORTED, MAT_NEW_NONZERO_LOCATION_ERROR
+             e.g., MAT_ROWS_SORTED, MAT_NEW_NONZERO_LOCATION_ERR
 
    Options Describing Matrix Structure:
 +    MAT_SYMMETRIC - symmetric in terms of both structure and value
@@ -2433,7 +2433,7 @@ int MatCompress(Mat mat)
          they generate a nonzero in a new diagonal (for block diagonal format only)
 .    MAT_YES_NEW_DIAGONALS - new diagonals will be allowed (for block diagonal format only)
 .    MAT_IGNORE_OFF_PROC_ENTRIES - drops off-processor entries
-.    MAT_NEW_NONZERO_LOCATION_ERROR - generates an error for new matrix entry
+.    MAT_NEW_NONZERO_LOCATION_ERR - generates an error for new matrix entry
 -    MAT_USE_HASH_TABLE - uses a hash table to speed up matrix assembly
 
    Notes:
@@ -2451,14 +2451,14 @@ int MatCompress(Mat mat)
    data, then the insertion is ignored. For dense matrices, in which
    the entire array is allocated, no entries are ever ignored. 
 
-   MAT_NEW_NONZERO_LOCATION_ERROR indicates that any add or insertion 
+   MAT_NEW_NONZERO_LOCATION_ERR indicates that any add or insertion 
    that would generate a new entry in the nonzero structure instead produces 
    an error. (Currently supported for AIJ and BAIJ formats only.)
    This is a useful flag when using SAME_NONZERO_PATTERN in calling
    SLESSetOperators() to ensure that the nonzero pattern truely does 
    remain unchanged.
 
-   MAT_NEW_NONZERO_ALLOCATION_ERROR indicates that any add or insertion 
+   MAT_NEW_NONZERO_ALLOCATION_ERR indicates that any add or insertion 
    that would generate a new entry that has not been preallocated will 
    instead produce an error. (Currently supported for AIJ and BAIJ formats
    only.) This is a useful flag when debugging matrix memory preallocation.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.163 1999/01/27 19:47:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.164 1999/02/03 03:18:16 curfman Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1011,7 +1011,7 @@ int MatSetOption_SeqDense(Mat A,MatOption op)
            op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_NO_NEW_NONZERO_LOCATIONS ||
            op == MAT_YES_NEW_NONZERO_LOCATIONS ||
-           op == MAT_NEW_NONZERO_LOCATION_ERROR ||
+           op == MAT_NEW_NONZERO_LOCATION_ERR ||
            op == MAT_NO_NEW_DIAGONALS ||
            op == MAT_YES_NEW_DIAGONALS ||
            op == MAT_IGNORE_OFF_PROC_ENTRIES ||

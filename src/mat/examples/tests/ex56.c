@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex56.c,v 1.14 1998/01/12 17:14:14 balay Exp bsmith $";
+static char vcid[] = "$Id: ex56.c,v 1.15 1999/02/11 20:25:13 bsmith Exp balay $";
 #endif
 static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for \n\
 rectangular MatBAIJ matrix";
@@ -51,7 +51,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
 
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRA(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR); CHKERRA(ierr);
   ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES); CHKERRA(ierr);
 
   /* Do another MatSetValues to test the case when only one local block is specified */

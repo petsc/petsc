@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.103 1999/02/03 03:18:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.104 1999/02/15 20:16:39 bsmith Exp balay $";
 #endif
 
 /*
@@ -667,8 +667,8 @@ int MatSetOption_MPIDense(Mat A,MatOption op)
   PetscFunctionBegin;
   if (op == MAT_NO_NEW_NONZERO_LOCATIONS ||
       op == MAT_YES_NEW_NONZERO_LOCATIONS ||
-      op == MAT_NEW_NONZERO_LOCATION_ERROR ||
-      op == MAT_NEW_NONZERO_ALLOCATION_ERROR ||
+      op == MAT_NEW_NONZERO_LOCATION_ERR ||
+      op == MAT_NEW_NONZERO_ALLOCATION_ERR ||
       op == MAT_COLUMNS_SORTED ||
       op == MAT_COLUMNS_UNSORTED) {
         MatSetOption(a->A,op);

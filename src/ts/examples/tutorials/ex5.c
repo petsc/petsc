@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.1 1998/06/21 01:05:43 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.1 1999/02/03 00:32:49 balay Exp balay $";
 #endif
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
@@ -490,7 +490,7 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
      Set and option to indicate that we will never add a new nonzero location 
      to the matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR); CHKERRQ(ierr);
 
   return 0;
 }

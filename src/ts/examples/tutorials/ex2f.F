@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.23 1999/01/12 18:33:00 balay Exp bsmith $";
+! "$Id: ex2f.F,v 1.24 1999/01/13 21:45:24 bsmith Exp balay $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -665,7 +665,7 @@
 !  Set and option to indicate that we will never add a new nonzero location 
 !  to the matrix. If we do, it will generate an error.
 
-      call MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERROR,ierr)
+      call MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,ierr)
 
       return
       end

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.10 1998/12/03 04:05:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.11 1999/01/13 21:46:49 bsmith Exp balay $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -500,7 +500,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       Tell the matrix we will never add a new nonzero location to the
     matrix. If we do it will generate an error.
   */
-  /* ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRQ(ierr); */
+  /* ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR); CHKERRQ(ierr); */
   return 0;
 }
 

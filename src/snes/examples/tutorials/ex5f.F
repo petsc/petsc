@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.45 1998/04/28 03:40:31 curfman Exp bsmith $";
+! "$Id: ex5f.F,v 1.46 1999/01/13 21:47:26 bsmith Exp balay $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -618,7 +618,7 @@
 !  Tell the matrix we will never add a new nonzero location to the
 !  matrix. If we do it will generate an error.
 
-       call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERROR,ierr)
+       call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,ierr)
 
       return
       end
