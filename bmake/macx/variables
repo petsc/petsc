@@ -7,7 +7,8 @@ AR_FLAGS	   = cr
 RM		   = rm -f
 OMAKE		   = make  --no-print-directory
 RANLIB		   = ranlib -s -c
-SHELL		   = /usr/local/bin/bash
+#SHELL              = /usr/local/bin/bash
+SHELL		   = /bin/sh
 SED		   = sed
 SH_LD		   = cc
 MKDIR              = mkdir -p
@@ -23,7 +24,7 @@ C_CLINKER	   = cc
 C_FLINKER	   = g77
 C_CCV		   = ${C_CC} --version
 C_FCV              = g77 --version | head -1
-C_SYS_LIB	   =
+C_SYS_LIB	   = -lg2c
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g
@@ -39,7 +40,7 @@ CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER	   = c++
 CXX_FLINKER	   = c++
 CXX_CCV		   = ${CXX_CC} --version
-CXX_SYS_LIB	   = 
+CXX_SYS_LIB	   = -lg2c
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g
