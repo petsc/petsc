@@ -806,20 +806,7 @@ void PETSC_STDCALL matpartitioningscotchsetarch_(MatPartitioning *part,CHAR file
   *ierr = MatPartitioningScotchSetArch(*part,t);
   FREECHAR(filename,t);
 }
-#endif
 
-#if defined(PETSC_HAVE_SCOTCH)
-void PETSC_STDCALL matpartitioningscotchsethostlist_(MatPartitioning *part,CHAR filename PETSC_MIXED_LEN(len),
-                                           PetscErrorCode *ierr PETSC_END_LEN(len))
-{
-  char *t;
-  FIXCHAR(filename,len,t);
-  *ierr = MatPartitioningScotchSetHostList(*part,t);
-  FREECHAR(filename,t);
-}
-#endif
-
-#if defined(PETSC_HAVE_SCOTCH)
 void PETSC_STDCALL matpartitioningscotchsethostlist_(MatPartitioning *part,CHAR filename PETSC_MIXED_LEN(len),
                                            PetscErrorCode *ierr PETSC_END_LEN(len))
 {
