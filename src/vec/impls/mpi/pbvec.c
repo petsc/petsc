@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.22 1995/05/03 13:15:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: pbvec.c,v 1.23 1995/05/05 20:02:29 curfman Exp curfman $";
 #endif
 
 #include "ptscimpl.h"
@@ -114,7 +114,7 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
 
 .keywords: vector, create, MPI
 
-.seealso: VecCreateSequential(), VecCreate()
+.seealso: VecCreateSequential(), VecCreate(), VecDuplicate(), VecGetVecs()
 @*/ 
 int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 {

@@ -1,13 +1,9 @@
-
-
-
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.20 1995/04/28 20:20:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.21 1995/05/03 13:15:29 bsmith Exp curfman $";
 #endif
 /*
    Defines the sequential BLAS based vectors
 */
-
 
 #include "inline/dot.h"
 #include "inline/vmult.h"
@@ -44,9 +40,13 @@ static struct _VeOps DvOps = {VecCreate_Blas,
    Output Parameter:
 .  V - the vector
 
+   Notes:
+   Use VecDuplicate() or VecGetVecs() to form additional vectors of the
+   same type as an existing vector.
+
 .keywords: vector, sequential, create, BLAS
 
-.seealso: VecCreateMPI(), VecCreate()
+.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecGetVecs()
 @*/
 int VecCreateSequential(MPI_Comm comm,int n,Vec *V)
 {
