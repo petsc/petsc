@@ -28,6 +28,7 @@ class BabelPackageDict (UserDict.UserDict):
 
   def checkPackage(self, package):
     if not package in self.defaults.getPackages():
+      if package == 'executable': return
       raise KeyError('Invalid Babel package: '+package)
 
   def __getitem__(self, key):
@@ -41,7 +42,8 @@ class BabelPackageDict (UserDict.UserDict):
     self.data[key] = value
 
 class Defaults:
-  implRE = re.compile(r'^(.*)_Impl$')
+  implRE   = re.compile(r'^(.*)_Impl$')
+  clientRE = re.compile(r'^(.*)lib(.*)client.so$')
 
   def __init__(self, sources = None, repositoryDir = None, serverBaseDir = None):
     self.sources         = sources
@@ -60,6 +62,10 @@ class Defaults:
   def isImpl(self, source):
     if self.implRE.match(os.path.dirname(source)): return 1
     return 0
+
+  def isNotClientLibrary(self, source):
+    if self.clientRE.match(source): return 0
+    return 1
 
   def getPackages(self):
     return map(lambda file: os.path.splitext(os.path.split(file)[1])[0], self.sources)
@@ -124,6 +130,7 @@ class CompileDefaults (Defaults):
     self.etagsFile             = None
 
     bs.argDB.setHelp('PYTHON_INCLUDE', 'The directory containing Python.h')
+    bs.argDB.setParent('BABEL_DIR', '$BS_DIR/bsArg.db')
 
   def getServerCompileTargets(self):
     targets = []
@@ -198,3 +205,42 @@ class CompileDefaults (Defaults):
                                   transform.Update()])
     else:
       return target.Target(None, [self.getSIDLTarget()]+self.getServerCompileTargets()+self.getClientCompileTargets())
+
+  def getExecutableCompileTargets(self, executable):
+    baseName  = os.path.splitext(os.path.split(executable[0])[1])[0] 
+    library   = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
+    libraries = fileset.FileSet(children = [self.babelLib])
+    package   = self.getPackages()[0]
+    if len(self.serverLanguages) > 1:
+      rootDir = self.serverBaseDir+'-'+self.serverLanguages[0]+'-'+package
+    else:
+      rootDir = self.serverBaseDir+'-'+package
+    for lang in self.serverLanguages:
+      for package in self.getPackages():
+        if len(self.serverLanguages) > 1:
+          libraries.append(os.path.join(self.libDir, 'lib'+lang+'server-'+package+'.so'))
+        else:
+          libraries.append(os.path.join(self.libDir, 'libserver-'+package+'.so'))
+
+    action = compile.CompileCxx(library)
+    action.includeDirs.append(self.babelIncludeDir)
+    action.includeDirs.append(rootDir)
+    if self.includeDirs.has_key('executable'):
+      action.includeDirs.extend(self.includeDirs['executable'])
+
+    return [target.Target(None,
+                         [compile.TagCxx(),
+                          action,
+                          link.TagLibrary(),
+                          link.LinkSharedLibrary(extraLibraries = libraries)])]
+
+  def getExecutableTarget(self, sources, executable):
+    libraries = fileset.FileSet([])
+    if self.extraLibraries.has_key('executable'):
+      libraries.extend(self.extraLibraries['executable'])
+
+    return target.Target(sources,
+                         [self.getCompileTarget()]+self.getExecutableCompileTargets(executable)+
+                         [transform.FileFilter(self.isNotClientLibrary),
+                          link.TagShared(),
+                          link.LinkExecutable(executable, extraLibraries = libraries)])

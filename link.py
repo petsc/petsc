@@ -75,6 +75,8 @@ class LinkSharedLibrary (action.Action):
       for file in set:
         self.sharedLibs.append(self.getSharedName(file))
     else:
+      if isinstance(self.products, fileset.FileSet):
+        self.products = [self.products]
       self.products.append(set)
     return self.products
 
@@ -84,10 +86,9 @@ class TagShared (transform.GenericTag):
 
 class LinkExecutable (action.Action):
   def __init__(self, executable, sources = None, linker = 'g++', linkerFlags = '', extraLibraries = None):
-    action.Action.__init__(self, self.link, sources, '-o '+executable.getFiles()[0]+' '+linkerFlags, setwiseExecute = 1)
+    action.Action.__init__(self, self.link, sources, linkerFlags, setwiseExecute = 1)
     self.executable    = executable
     self.linker        = linker
-    self.linkerFlags   = linkerFlags
     if extraLibraries:
       self.extraLibraries = extraLibraries
     else:
@@ -96,17 +97,23 @@ class LinkExecutable (action.Action):
     self.products      = executable
     self.buildProducts = 0
 
+  def constructFlags(self, source, baseFlags):
+    return '-o '+self.executable[0]+' '+baseFlags
+
   def link(self, set):
-    command = self.linker+' '+self.flags
+    command = self.linker+' '+self.constructFlags(set, self.flags)
     files   = set.getFiles()
     if files:
       self.debugPrint('Linking '+str(files)+' into '+self.executable[0], 3, 'link')
       for file in files:
         command += ' '+file
-      for lib in self.extraLibraries.getFiles():
+      for lib in self.extraLibraries:
         (dir, file) = os.path.split(lib)
         (base, ext) = os.path.splitext(file)
-        command += ' -L'+dir+' -l'+base[3:]
+        if dir:
+          command += ' -L'+dir+' -l'+base[3:]
+        else:
+          command += ' -l'+base[3:]
       output = self.executeShellCommand(command, self.errorHandler)
 #    for source in files:
 #      self.updateSourceDB(source)
@@ -116,11 +123,13 @@ class LinkExecutable (action.Action):
     if set.tag == 'sharedlib':
       action.Action.setAction(self, set)
     else:
+      if isinstance(self.products, fileset.FileSet):
+        self.products = [self.products]
       self.products.append(set)
     return self.products
 
   def execute(self):
-    if (self.executable):
-      (dir, file) = os.path.split(self.executable.getFiles()[0])
+    if self.executable:
+      (dir, file) = os.path.split(self.executable[0])
       if not os.path.exists(dir): os.makedirs(dir)
     return action.Action.execute(self)
