@@ -30,5 +30,8 @@ General
 
   Make --with-mpich get the correct mpich under windows
 
+  change the --with-mpich --with-f-b ... to --with-mpich-download and change
+  the -if-needed to be a different flag for -download
+
 
 
