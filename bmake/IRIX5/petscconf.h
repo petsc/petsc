@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.6 1998/04/16 15:46:26 balay Exp bsmith $ */
+/* $Id: petscconf.h,v 1.7 1998/04/20 19:27:19 bsmith Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -6,6 +6,8 @@
 
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
+
+#define PARCH_IRIX5
 
 #define HAVE_PWD_H 
 #define HAVE_STRING_H 
