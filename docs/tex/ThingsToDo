@@ -30,8 +30,6 @@ Mark
  - Support preconditioning in LSQR code - requested by Victor and some other petsc-maint 
    person.
 
- add Real and setup PETSc with a USE_PETSC_SINGLE that allows compiling and
- running everything in single precision.
 
  look at MatGeetSubMatrices_MPI(B)AIJ to see if much of the information
  could be used between repeated calls.
@@ -49,8 +47,6 @@ Current applications using PETSc (3) - pointers
         to dinesh's work and ACTI?  This would
         go into http://www.nersc.gov/ACTS/gallery.html
 
-  - Reorganize codemanagement.html to deemphasis the preaching and add section
-    on how to use the debuggers.
 
   Get SPPOLES from netlib
  Date: Thu, 7 May 98 13:43:34 EDT
@@ -1082,3 +1078,6 @@ are drawn on top of the contour plots (that's a separate problem).
     easy for people to clone
 
  X SNESSetFromOptions() manual page needs list of options it supports.
+
+ X Reorganize codemanagement.html to deemphasis the preaching and add section
+    on how to use the debuggers.
