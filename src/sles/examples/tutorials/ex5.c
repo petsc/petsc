@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.63 1996/08/22 15:34:35 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.64 1996/08/22 15:35:51 curfman Exp balay $";
 #endif
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
@@ -15,7 +15,7 @@ also uses multiple profiling stages.  Input arguments are\n\
    Rotuines: SLESSetOperators(A,A,SAME_NONZERO_PATTERN)
    Routines: MatZeroEntries(), MatSetOption(A,MAT_SYMMETRIC)
    Routines: PLogStagePush(), PLogStagePop(), PLogStageRegister()
-   Multiprocessor code
+   Processors: n
 T*/
 
 /* 
