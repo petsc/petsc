@@ -83,15 +83,14 @@ class BootstrapInstall (object):
         return 0
     return 1
 
-  def cleanup(self):
-    '''Kill all remaining RDict servers and cleanup aborted attempts'''
+  def killRDict(self):
+    '''Kill any remaining RDict servers'''
     import signal
     import time
 
     if not os.path.isdir('/proc'):
       sys.stdout.write('WARNING: Cannot kill rouge RDict servers\n')
       return
-    # Kill RDict servers
     pids = []
     for f in os.listdir('/proc'):
       try:
@@ -104,18 +103,21 @@ class BootstrapInstall (object):
           time.sleep(1)
       except ValueError:
         pass
-    # Remove old PLY, Runtime and Compiler downloads
+    return
+
+  def cleanup(self):
+    '''Kill all remaining RDict servers and cleanup aborted attempts'''
     import shutil
 
-    plyDir = os.path.join(self.installPath, 'ply', 'ply-dev')
-    if os.path.isdir(plyDir):
-      shutil.rmtree(plyDir, 1)
-    runtimeDir = os.path.join(self.installPath, 'sidl', 'Runtime')
-    if os.path.isdir(runtimeDir):
-      shutil.rmtree(runtimeDir, 1)
-    compilerDir = os.path.join(self.installPath, 'sidl', 'Compiler')
-    if os.path.isdir(compilerDir):
-      shutil.rmtree(compilerDir, 1)
+    self.killRDict()
+    for d in [os.path.join(self.installPath, 'ply', 'ply-dev'), os.path.join(self.installPath, 'sidl', 'Runtime'), os.path.join(self.installPath, 'sidl', 'Compiler')]:
+      if os.path.isdir(d):
+        shutil.rmtree(d)
+    return
+
+  def setupPaths(self):
+    '''Setup the paths'''
+    sys.path.insert(0, os.path.join(self.installPath, 'sidl','BuildSystem'))
     return
 
   def installBuildSystem(self):
@@ -517,12 +519,10 @@ class CursesInstall (BootstrapInstall):
 #-------------------------------------------------------------------------------------
 if __name__ ==  '__main__':
   try:
-
     if len(sys.argv) > 1 and (sys.argv[1] == '-batch' or sys.argv[1] == '--batch'):
       installer = BootstrapInstall()
     else:
       installer = CursesInstall()
-
     installer.welcome()
     if not installer.installBitkeeper():
       sys.exit('Could not locate Bitkeeper')
@@ -531,12 +531,8 @@ if __name__ ==  '__main__':
     installer.cleanup()
     if not installer.installBuildSystem():
       sys.exit('Could not install BuildSystem')
-
-    sys.path.insert(0, os.path.join(installer.installPath, 'sidl','BuildSystem'))
-
-    args = ['-debugSections=[install,compile,bk,shell,build]','-debugLevel=4','-installedprojects=[]']
-    installer.runInstaller(args)
-
+    installer.setupPaths()
+    installer.runInstaller(['-debugSections=[install,compile,bk,shell,build]','-debugLevel=4','-installedprojects=[]'])
   except Exception, e:
     import traceback
 
