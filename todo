@@ -61,6 +61,8 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
 
   (Priority 0) Fix bad macros with inline
 
+   Make binary file and socket viewers subclass off a common binary viewer
+
    Add _SNESOps function table, dang I can't beleive we don't have it yet
 
   ---------------------

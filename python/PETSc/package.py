@@ -23,9 +23,10 @@ class Package(config.base.Configure):
     self.dlib         = []
     self.include      = []
     if hasattr(sys.modules.get(self.__module__), '__file__'):
-      self.name         = os.path.splitext(os.path.basename(sys.modules.get(self.__module__).__file__))[0]
+      self.name       = os.path.splitext(os.path.basename(sys.modules.get(self.__module__).__file__))[0]
     else:
-      self.name         = 'DEBUGGING'
+      self.name       = 'DEBUGGING'
+    self.downloadname = self.name
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
     self.version      = ''
@@ -37,6 +38,7 @@ class Package(config.base.Configure):
     # urls where bk or tarballs may be found
     self.download     = []
     # other packages whose dlib or include we depend on (maybe can be figured automatically)
+    # usually this is the list of all the assignments in the package that use self.framework.require()
     self.deps         = []
     # functions we wish to check in the libraries
     self.functions    = []
@@ -47,6 +49,8 @@ class Package(config.base.Configure):
     # location of libraries and includes in packages directory tree
     self.libdir       = 'lib'
     self.includedir   = 'include'
+    # package defaults to being required (MPI and BlasLapack)
+    self.required     = 0
     return
 
   def getChecksum(self,source, chunkSize = 1024*1024):  
@@ -78,7 +82,7 @@ class Package(config.base.Configure):
   def setupHelp(self,help):
     '''Prints help messages for the package'''
     import nargs
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,0,'Indicate if you wish to test for '+self.name))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required,'Indicate if you wish to test for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     if self.download:
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Download and install '+self.name))
@@ -86,29 +90,42 @@ class Package(config.base.Configure):
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<dir,or list of libraries>',nargs.ArgLibrary(None,None,'Indicate the directory of the '+self.name+' libraries or a list of libraries'))    
     return
 
+  # by default, just check for all the libraries in self.liblist 
   def generateLibList(self,dir):
     '''Generates full path list of libraries from self.liblist'''
     alllibs = []
     for l in self.liblist:
       libs = []
       for ll in l:
-        libs.append(os.path.join(dir,ll))
+        if not self.libdir == dir: libs.append(os.path.join(dir,ll))
+        else: libs.append(ll)
       alllibs.append(libs)
     return alllibs
 
-  def generateGuesses(self):
-    if self.download and self.framework.argDB['download-'+self.package] == 1:
+  # By default, don't search any particular directories
+  def getSearchDirectories(self):
+    return []
+
+  def checkDownload(self,preOrPost):
+    '''Check if we should download the package'''
+    if self.download and self.framework.argDB['download-'+self.downloadname] == preOrPost:
       if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
         self.framework.logClear()
         self.logPrint("**************************************************************************************************", debugSection='screen')
-        self.logPrint('You must register to use '+self.name+' at '+self.license, debugSection='screen')
-        self.logPrint('    Once you have registered, config/configure.py will continue and download and install '+self.name+' for you', debugSection='screen')
+        self.logPrint('You must register to use '+self.downloadname+' at '+self.license, debugSection='screen')
+        self.logPrint('    Once you have registered, config/configure.py will continue and download and install '+self.downloadname+' for you', debugSection='screen')
         self.logPrint("**************************************************************************************************\n", debugSection='screen')
         fd = open(os.path.expanduser(os.path.join('~','.'+self.package+'_license')),'w')
         fd.close()
+      return os.path.abspath(os.path.join(self.Install(),self.arch.arch))
+    else:
+      return ''
 
-      dir = os.path.abspath(os.path.join(self.Install(),self.arch.arch))
+  def generateGuesses(self):
+    dir = self.checkDownload(1)
+    if dir:
       for l in self.generateLibList(os.path.join(dir,self.libdir)):
+        self.framework.log.write('Testing library '+str(l)+'\n')
         yield('Download '+self.PACKAGE,l,os.path.join(dir,self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
 
@@ -119,17 +136,21 @@ class Package(config.base.Configure):
 
     if 'with-'+self.package+'-include' in self.framework.argDB and 'with-'+self.package+'-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-'+self.package+'-lib']
-      if not isinstance(libs, list):
-        libs = [libs]
+      if not isinstance(libs, list): libs = [libs]
       libs = [os.path.abspath(l) for l in libs]
       yield('User specified '+self.PACKAGE+' libraries', libs, os.path.abspath(self.framework.argDB['with-'+self.package+'-include']))
 
-    if self.download and self.framework.argDB['download-'+self.package] == 2:
-      dir = os.path.abspath(os.path.join(self.Install(),self.arch.arch))
+    for d in self.getSearchDirectories():
+      for l in self.generateLibList(os.path.join(d,self.libdir)):
+        yield('User specified root directory '+self.PACKAGE,l,os.path.join(d,self.includedir))
+
+    dir = self.checkDownload(2)
+    if dir:
       for l in self.generateLibList(os.path.join(dir,self.libdir)):
         yield('Download '+self.PACKAGE,l,os.path.join(dir,self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+os.path.join(self.Install(),self.arch.arch)+'\n')
-    raise RuntimeError('You must specifiy a path for '+self.name+' with --with-'+self.package+'-dir=<directory>')
+
+    raise RuntimeError('You must specify a path for '+self.name+' with --with-'+self.package+'-dir=<directory>')
 
   def downLoad(self):
     '''Downloads a package; using bk or ftp; opens it in the with-external-packages-dir directory'''
@@ -184,18 +205,22 @@ class Package(config.base.Configure):
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
     Dir = None
     for dir in os.listdir(packages):
-      if dir.startswith(self.name) and os.path.isdir(os.path.join(packages, dir)):
+      if dir.startswith(self.downloadname) and os.path.isdir(os.path.join(packages, dir)):
         Dir = dir
         break
     if Dir is None:
-      self.framework.log.write('Did not located already downloaded '+self.name+'\n')
+      self.framework.log.write('Did not located already downloaded '+self.downloadname+'\n')
       if retry <= 0:
-        raise RuntimeError('Unable to download '+self.name)
+        raise RuntimeError('Unable to download '+self.downloadname)
       self.downLoad()
       return self.getDir(retry = 0)
     if not os.path.isdir(os.path.join(packages,Dir,self.arch.arch)):
       os.mkdir(os.path.join(packages,Dir,self.arch.arch))
     return os.path.join(packages, Dir)
+
+  def checkShared(self):
+    '''By default we don't care about checking if shared'''
+    return 1
 
   def configureLibrary(self):
     '''Find an installation ando check if it can work with PETSc'''
@@ -219,15 +244,16 @@ class Package(config.base.Configure):
       if not isinstance(lib, list): lib = [lib]
       if not isinstance(incl, list): incl = [incl]
       self.framework.log.write('Checking for library '+location+': '+str(lib)+'\n')
-      if (not self.lib) or self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs}):      
-        self.lib = lib
+      if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs}):      
+        self.lib = lib	
         self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
         if (not self.includes) or self.executeTest(self.libraries.checkInclude, [incl, self.includes],{'otherIncludes' : incls}):
           self.include = incl
-          self.found   = 1
-          self.dlib    = self.lib+libs
-          self.framework.packages.append(self)
-          break
+          if self.checkSharedLibrary():
+            self.found   = 1
+            self.dlib    = self.lib+libs
+            self.framework.packages.append(self)
+            break
     if not self.found:
       raise RuntimeError('Could not find a functional '+self.name+'\n')
 

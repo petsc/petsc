@@ -295,7 +295,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   ierr = PetscFree(r_status1);CHKERRQ(ierr);
   ierr = PetscFree(r_waits1);CHKERRQ(ierr);
   ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&s_status1);CHKERRQ(ierr);
-  ierr      = MPI_Waitall(nrqs,s_waits1,s_status1);CHKERRQ(ierr);
+  if (nrqs) {ierr = MPI_Waitall(nrqs,s_waits1,s_status1);CHKERRQ(ierr);}
   ierr = PetscFree(s_status1);CHKERRQ(ierr);
   ierr = PetscFree(s_waits1);CHKERRQ(ierr);
 
@@ -397,7 +397,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   ierr = PetscFree(r_status2);CHKERRQ(ierr);
   ierr = PetscFree(r_waits2);CHKERRQ(ierr);
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&s_status2);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nrqr,s_waits2,s_status2);CHKERRQ(ierr);
+  if (nrqr) {ierr = MPI_Waitall(nrqr,s_waits2,s_status2);CHKERRQ(ierr);}
   ierr = PetscFree(s_status2);CHKERRQ(ierr);
   ierr = PetscFree(s_waits2);CHKERRQ(ierr);
 

@@ -2893,8 +2893,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
     k++;
   } 
 
-  ierr = MPI_Waitall(merge->nrecv,r_waits,status);CHKERRQ(ierr);
-  ierr = MPI_Waitall(merge->nsend,s_waits,status);CHKERRQ(ierr);
+  if (merge->nrecv) {ierr = MPI_Waitall(merge->nrecv,r_waits,status);CHKERRQ(ierr);}
+  if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,s_waits,status);CHKERRQ(ierr);}
   ierr = PetscFree(status);CHKERRQ(ierr);
 
   ierr = PetscFree(s_waits);CHKERRQ(ierr);
@@ -3060,8 +3060,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
 
   /* receives and sends of j-structure are complete */
   /*------------------------------------------------*/
-  ierr = MPI_Waitall(merge->nrecv,rj_waits,status);CHKERRQ(ierr);
-  ierr = MPI_Waitall(merge->nsend,sj_waits,status);CHKERRQ(ierr);
+  if (merge->nrecv) {ierr = MPI_Waitall(merge->nrecv,rj_waits,status);CHKERRQ(ierr);}
+  if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,sj_waits,status);CHKERRQ(ierr);}
   
   /* send and recv i-structure */
   /*---------------------------*/  
@@ -3096,8 +3096,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
     buf_si += len_si[proc];
   } 
 
-  ierr = MPI_Waitall(merge->nrecv,ri_waits,status);CHKERRQ(ierr);
-  ierr = MPI_Waitall(merge->nsend,si_waits,status);CHKERRQ(ierr);
+  if (merge->nrecv) {ierr = MPI_Waitall(merge->nrecv,ri_waits,status);CHKERRQ(ierr);}
+  if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,si_waits,status);CHKERRQ(ierr);}
 
   ierr = PetscLogInfo(((PetscObject)(seqmat),"MatMerge_SeqsToMPI: nsend: %D, nrecv: %D\n",merge->nsend,merge->nrecv));CHKERRQ(ierr);
   for (i=0; i<merge->nrecv; i++){
@@ -3584,9 +3584,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
     while (i--) {
       ierr = MPI_Waitany(nrecvs,rwaits,&j,&rstatus);CHKERRQ(ierr);
     }
-    if (nsends) {
-      ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
-    }  
+    if (nsends) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}  
     /* allocate buffers for sending j and a arrays */
     ierr = PetscMalloc((len+1)*sizeof(PetscInt),&bufj);CHKERRQ(ierr);
     ierr = PetscMalloc((len+1)*sizeof(PetscScalar),&bufa);CHKERRQ(ierr);
@@ -3637,9 +3635,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
     while (i--) {
       ierr = MPI_Waitany(nrecvs,rwaits,&j,&rstatus);CHKERRQ(ierr);
     }
-    if (nsends) {
-      ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
-    }
+    if (nsends) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}
   } else if (scall == MAT_REUSE_MATRIX){
     sstartsj = *startsj;
     rstartsj = sstartsj + nsends +1;
@@ -3677,9 +3673,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
   while (i--) {
     ierr = MPI_Waitany(nrecvs,rwaits,&j,&rstatus);CHKERRQ(ierr);
   }
-   if (nsends) {
-    ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
-  }  
+   if (nsends) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}  
  
   if (scall == MAT_INITIAL_MATRIX){
     /* put together the new matrix */

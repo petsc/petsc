@@ -251,10 +251,10 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
 
   /* Receive messages*/
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&recv_status);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nrqr,r_waits1,recv_status);CHKERRQ(ierr);
+  if (nrqr) {ierr = MPI_Waitall(nrqr,r_waits1,recv_status);CHKERRQ(ierr);}
   
   ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&s_status);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nrqs,s_waits1,s_status);CHKERRQ(ierr);
+  if (nrqs) {ierr = MPI_Waitall(nrqs,s_waits1,s_status);CHKERRQ(ierr);}
 
   /* Phase 1 sends are complete - deallocate buffers */
   ierr = PetscFree(outdat);CHKERRQ(ierr);
@@ -324,7 +324,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
       }
     }
 
-    ierr = MPI_Waitall(nrqr,s_waits2,status2);CHKERRQ(ierr);
+    if (nrqr) {ierr = MPI_Waitall(nrqr,s_waits2,status2);CHKERRQ(ierr);}
     ierr = PetscFree(status2);CHKERRQ(ierr);
   }
   
@@ -1022,8 +1022,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&s_status1);CHKERRQ(ierr);
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&s_status2);CHKERRQ(ierr);
 
-  ierr = MPI_Waitall(nrqs,s_waits1,s_status1);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nrqr,s_waits2,s_status2);CHKERRQ(ierr);
+  if (nrqs) {ierr = MPI_Waitall(nrqs,s_waits1,s_status1);CHKERRQ(ierr);}
+  if (nrqr) {ierr = MPI_Waitall(nrqr,s_waits2,s_status2);CHKERRQ(ierr);}
   ierr = PetscFree(s_status1);CHKERRQ(ierr);
   ierr = PetscFree(s_status2);CHKERRQ(ierr);
   ierr = PetscFree(s_waits1);CHKERRQ(ierr);
@@ -1219,7 +1219,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   }    
   ierr = PetscFree(r_status3);CHKERRQ(ierr);
   ierr = PetscFree(r_waits3);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nrqr,s_waits3,s_status3);CHKERRQ(ierr);
+  if (nrqr) {ierr = MPI_Waitall(nrqr,s_waits3,s_status3);CHKERRQ(ierr);}
   ierr = PetscFree(s_status3);CHKERRQ(ierr);
   ierr = PetscFree(s_waits3);CHKERRQ(ierr);
 
@@ -1341,7 +1341,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   }    
   ierr = PetscFree(r_status4);CHKERRQ(ierr);
   ierr = PetscFree(r_waits4);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nrqr,s_waits4,s_status4);CHKERRQ(ierr);
+  if (nrqr) {ierr = MPI_Waitall(nrqr,s_waits4,s_status4);CHKERRQ(ierr);}
   ierr = PetscFree(s_waits4);CHKERRQ(ierr);
   ierr = PetscFree(s_status4);CHKERRQ(ierr);
 

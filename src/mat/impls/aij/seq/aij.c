@@ -2340,6 +2340,9 @@ $    endloop
     Must set the matrix option MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS); before 
     calling this routine.
 
+    When this is called multiple times it overwrites the previous set of stored values
+    and does not allocated additional space.
+
 .seealso: MatRetrieveValues()
 
 @*/ 

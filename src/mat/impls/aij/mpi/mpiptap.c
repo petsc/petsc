@@ -264,9 +264,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
     ierr = MPI_Waitany(merge->nrecv,rwaits,&j,&rstatus);CHKERRQ(ierr);
   }
   ierr = PetscFree(rwaits);CHKERRQ(ierr);
-  if (merge->nsend){
-    ierr = MPI_Waitall(merge->nsend,swaits,sstatus);CHKERRQ(ierr);
-  }
+  if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,swaits,sstatus);CHKERRQ(ierr);}
   
   /* send and recv coi */
   /*-------------------*/  
@@ -302,9 +300,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
     ierr = MPI_Waitany(merge->nrecv,rwaits,&j,&rstatus);CHKERRQ(ierr);
   }
   ierr = PetscFree(rwaits);CHKERRQ(ierr);
-  if (merge->nsend){
-    ierr = MPI_Waitall(merge->nsend,swaits,sstatus);CHKERRQ(ierr);
-  }
+  if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,swaits,sstatus);CHKERRQ(ierr);}
 
   ierr = PetscLogInfo(((PetscObject)A,"MatMerge_SeqsToMPI: nsend: %d, nrecv: %d\n",merge->nsend,merge->nrecv));CHKERRQ(ierr);
   for (i=0; i<merge->nrecv; i++){
@@ -561,8 +557,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     k++;
   } 
   ierr = PetscMalloc(size*sizeof(MPI_Status),&status);CHKERRQ(ierr);
-  ierr = MPI_Waitall(merge->nrecv,r_waits,status);CHKERRQ(ierr);
-  ierr = MPI_Waitall(merge->nsend,s_waits,status);CHKERRQ(ierr);
+  if (merge->nrecv) {ierr = MPI_Waitall(merge->nrecv,r_waits,status);CHKERRQ(ierr);}
+  if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,s_waits,status);CHKERRQ(ierr);}
   ierr = PetscFree(status);CHKERRQ(ierr);
 
   ierr = PetscFree(s_waits);CHKERRQ(ierr);
