@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.60 1996/10/28 21:24:15 curfman Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.61 1996/10/28 21:24:41 curfman Exp curfman $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -374,8 +374,8 @@ extern int XiQuickWindowFromWindow(Draw_X*,char*,Window,int);
 
    Input Parameters:
 .  comm - the communicator that will share X-window
-.  display - the X display on which to open, or null for the local machine
-.  title - the title to put in the title bar
+.  display - the X display on which to open, or PETSC_NULLx for the local machine
+.  title - the title to put in the title bar, or PETSC_NULL
 .  x, y - the screen coordinates of the upper left corner of window
 .  w, h - the screen width and height in pixels
 
@@ -493,7 +493,7 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
 
    Input Parameters:
 .  comm - communicator that will share window
-.  display - the X display on which to open, or null for the local machine
+.  display - the X display on which to open, or PETSC_NULL for the local machine
 .  title - the title to put in the title bar
 .  x, y - the screen coordinates of the upper left corner of window
 .  w, h - the screen width and height in pixels
