@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.11 1996/10/24 15:29:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.12 1996/10/29 19:13:17 bsmith Exp curfman $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -43,6 +43,14 @@ T*/
      sys.h    - system routines       mat.h - matrices
      is.h     - index sets            ksp.h - Krylov subspace methods
      viewer.h - viewers               pc.h  - preconditioners
+
+   We also include "dfvec.h" so that we can use "discrete function" vectors,
+   which enable use to perform various actions that use information about
+   vector component ordering.  In particular, we use DFVecView() for
+   viewing vectors in parallel using the same ordering of components that
+   would be used for 1 processor, regardless of the processor layout.
+   Note: The DFVec component of PETSc is being phased out, as the GVec
+   (Grid Vector) component is currently being built to replace it.
 */
 
 #include "da.h"
@@ -142,7 +150,7 @@ typedef struct {
 } Atassi;
 
 /* Declare user-defined routines */
-int UserMatrixCreate(Atassi*,Mat*);
+int UserMatrixCreate1(Atassi*,Mat*);
 int FormSystem1(Atassi*,Mat,Vec);
 int UserDetermineMatrixNonzeros(Atassi*,MatType,int**,int**);
 int ModifySubmatrices1(PC,int,IS*,IS*,Mat*,void*);
@@ -211,10 +219,14 @@ int main(int argc,char **args)
   if (N_eta*N_xi != user.size && (N_eta != PETSC_DECIDE || N_xi != PETSC_DECIDE)) {
     SETERRA(1,"Incompatible number of processors:  N_eta * N_xi != size");
   }
+
   /* Note: Although the ghost width overlap is 0 for this problem, we need to
      create a DA with width 1, so that each processor generates the local-to-global
      mapping for its neighbors in the north/south/east/west (needed for
-     matrix assembly for the 5-point, 2D finite difference stencil). */
+     matrix assembly for the 5-point, 2D finite difference stencil). This
+     mapping is needed when we determine the global column numbers for
+     grid points on a processor edge.
+  */
   ierr = DACreate2d(user.comm,DA_NONPERIODIC,DA_STENCIL_STAR,user.m_eta,
                     user.m_xi,N_eta,N_xi,1,1,&user.da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(user.da,&user.phi); CHKERRA(ierr);
@@ -222,12 +234,16 @@ int main(int argc,char **args)
   ierr = VecDuplicate(user.phi,&b); CHKERRA(ierr);
   ierr = VecDuplicate(user.phi,&b2); CHKERRA(ierr);
 
-  /* Create matrix data structure */
-  ierr = UserMatrixCreate(&user,&A); CHKERRA(ierr);
 
-  /* Assemble linear system */
+  /* 
+     Assemble linear system
+  */
   switch (user.problem) {
     case 1:
+      /* Create matrix data structure */
+      ierr = UserMatrixCreate1(&user,&A); CHKERRA(ierr);
+
+      /* Compute matrix and vector that define linear system */
       ierr = FormSystem1(&user,A,b); CHKERRA(ierr); break;
     default:
       SETERRA(1,"Only problem #1 currently supported");
@@ -300,12 +316,19 @@ int main(int argc,char **args)
   ierr = VecDestroy(localv); CHKERRA(ierr);
   ierr = DADestroy(user.da); CHKERRA(ierr);
 
+  /*
+     Always call PetscFinalize() before exiting a program.  This routine
+       - finalizes the PETSc libraries as well as MPI
+       - provides summary and diagnostic information if certain runtime
+         options are chosen (e.g., -log_summary).  See PetscFinalize()
+     manpage for more information.
+  */
   PetscFinalize();
   return 0;
 }
 /* -------------------------------------------------------------------------------- */
 /*
-   UserMatrixCreate - Creates matrix data structure, selecting a particular format
+   UserMatrixCreate1 - Creates matrix data structure, selecting a particular format
    at runtime.  This routine is just a customized version of the generic PETSc
    routine MatCreate() to enable preallocation of matrix memory.  See the manpage
    for MatCreate() for runtime options.
@@ -324,7 +347,7 @@ int main(int argc,char **args)
    See the users manual for details.  Use the option -log_info to print
    info about matrix memory allocation.
  */
-int UserMatrixCreate(Atassi *user,Mat *mat)
+int UserMatrixCreate1(Atassi *user,Mat *mat)
 {
   Mat     A;
   MatType mtype;
@@ -377,8 +400,13 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
   int nloc, *ltog;        /* local-to-global mapping (including ghost points!) */
   int te;                 /* trailing edge point */
   int istart, iend;       /* starting/ending local row numbers */
+  int *nnz_d;             /* number of nonzeros (diagonal part of parallel matrix) */
+  int *nnz_o;             /* number of nonzeros - (off-diagonal part of parallel matrix) */
+  int lrow_g;             /* local row number, including ghost points */
+  int lrow_ng;            /* local row number, not including ghost pooints */
+  int col[5];             /* work array - column numbers */
   int m_eta = user->m_eta, m_xi = user->m_xi, m_ldim = user->m_ldim;
-  int ierr, i, j, m, *nnz_d, *nnz_o, row, lrow, col[5];
+  int ierr, i, j, m;
 
   nnz_o = PETSC_NULL; nnz_d = PETSC_NULL;
   if (mtype == MATSEQAIJ) {
@@ -414,20 +442,47 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
   if (ys == 0)     ysi = ys + 1;
   else             ysi = ys;
 
+  /*
+     We build 2 arrays (each of length m_ldim, where m_ldim is the
+     number of local rows of the matrix) that specify the number of
+     nonzeros for each row of the local submatrix.  Internally, the
+     MATMPIAIJ matrix format subdivides ech processor's local 
+     submatrix into a 2 parts:
+       - diagonal part (square submatrix of the local
+            rows and corresponding columns)
+       - off-diagonal part (rectangular submatrix of the local
+            rows and all other columns)
+     We thus specify information for these 2 sections in
+     nnz_d and nnz_o, respectively.
+
+     lrow_ng - local row number, not including ghost values,
+               used to find the index in the nnz_d nnz_o arrays
+     lrow_g  - local row number, including ghost values,
+               used in conjunction with the local-to-global
+               mapping to determine the global column numbers
+               for the parallel grid.  Recall that due to grid
+               point reordering with DAs, we must always work
+               with the local grid points, and then transform 
+               them to the new global numbering with the "ltog"
+               mapping (via DAGetGlobalIndices()).  We cannot work
+               directly with the global numbers for the original
+               uniprocessor grid!
+  */
+
   if (user->problem == 1) {
     /* Interior part of matrix */
     for (j=ysi; j<yei; j++) {
       for (i=xsi; i<xei; i++) {
-        row    = (j-Ys)*Xm + i-Xs; 
-        lrow   = (j-ys)*xm + i-xs; 
-        col[0] = ltog[row - Xm];
-        col[1] = ltog[row - 1];
-        col[2] = ltog[row];
-        col[3] = ltog[row + 1];
-        col[4] = ltog[row + Xm];
+        lrow_g  = (j-Ys)*Xm + i-Xs; 
+        lrow_ng = (j-ys)*xm + i-xs; 
+        col[0]  = ltog[lrow_g - Xm];
+        col[1]  = ltog[lrow_g - 1];
+        col[2]  = ltog[lrow_g];
+        col[3]  = ltog[lrow_g + 1];
+        col[4]  = ltog[lrow_g + Xm];
         for (m=0; m<5; m++) {
-          if (col[m] >= istart && col[m] < iend) nnz_d[lrow]++;
-          else                                   nnz_o[lrow]++;
+          if (col[m] >= istart && col[m] < iend) nnz_d[lrow_ng]++;
+          else                                   nnz_o[lrow_ng]++;
         }
       }
     }
@@ -437,13 +492,13 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
               /* Possible alternative: Set to south neighbor instead of te=(0,0) */
     if (xs == 0) {
       for (j=ysi; j<ye; j++) {
-        row    = (j-Ys)*Xm - Xs;
-        lrow   = (j-ys)*xm - xs;
-        col[0] = ltog[row];
-        col[1] = te;
+        lrow_g  = (j-Ys)*Xm - Xs;
+        lrow_ng = (j-ys)*xm - xs;
+        col[0]  = ltog[lrow_g];
+        col[1]  = te;
         for (m=0; m<2; m++) {
-          if (col[m] >= istart && col[m] < iend) nnz_d[lrow]++;
-          else                                   nnz_o[lrow]++;
+          if (col[m] >= istart && col[m] < iend) nnz_d[lrow_ng]++;
+          else                                   nnz_o[lrow_ng]++;
         }
       }
     }
@@ -451,24 +506,24 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
     /* Upstream: i=xe-1 */
     if (xe == m_eta) {
       for (j=ysi; j<ye; j++) {
-        row  = (j-Ys)*Xm + xe-1-Xs;
-        lrow = (j-ys)*xm + xe-1-xs;
-        col[0] = ltog[row];
-        if (col[0] >= istart && col[0] < iend) nnz_d[lrow]++;
-        else                                   nnz_o[lrow]++;
+        lrow_g  = (j-Ys)*Xm + xe-1-Xs;
+        lrow_ng = (j-ys)*xm + xe-1-xs;
+        col[0]  = ltog[lrow_g];
+        if (col[0] >= istart && col[0] < iend) nnz_d[lrow_ng]++;
+        else                                   nnz_o[lrow_ng]++;
       }
     }
 
     /* Airfoil slit: j=0 */
     if (ys == 0) {
       for (i=xs; i<xe; i++) {
-        row    = -Ys*Xm + i-Xs; 
-        lrow   = -ys*xm + i-xs; 
-        col[0] = ltog[row];
-        col[1] = ltog[row + Xm];
+        lrow_g  = -Ys*Xm + i-Xs; 
+        lrow_ng = -ys*xm + i-xs; 
+        col[0]  = ltog[lrow_g];
+        col[1]  = ltog[lrow_g + Xm];
         for (m=0; m<2; m++) {
-          if (col[m] >= istart && col[m] < iend) nnz_d[lrow]++;
-          else                                   nnz_o[lrow]++;
+          if (col[m] >= istart && col[m] < iend) nnz_d[lrow_ng]++;
+          else                                   nnz_o[lrow_ng]++;
         }
       }
     }
@@ -477,14 +532,14 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
     j = ye-1;
     if (ye == m_xi) {
       for (i=xsi; i<xei; i++) {
-        row    = (ye-1-Ys)*Xm + i-Xs; 
-        lrow   = (ye-1-ys)*xm + i-xs; 
-        col[0] = ltog[row - 2*Xm];
-        col[1] = ltog[row - Xm];
-        col[2] = ltog[row];
+        lrow_g  = (ye-1-Ys)*Xm + i-Xs; 
+        lrow_ng = (ye-1-ys)*xm + i-xs; 
+        col[0]  = ltog[lrow_g - 2*Xm];
+        col[1]  = ltog[lrow_g - Xm];
+        col[2]  = ltog[lrow_g];
         for (m=0; m<3; m++) {
-          if (col[m] >= istart && col[m] < iend) nnz_d[lrow]++;
-          else                                   nnz_o[lrow]++;
+          if (col[m] >= istart && col[m] < iend) nnz_d[lrow_ng]++;
+          else                                   nnz_o[lrow_ng]++;
         }
       }
     }
@@ -528,16 +583,20 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
  */
 int FormSystem1(Atassi *user,Mat A,Vec b)
 {
-
+  int     te;                 /* trailing edge point */
   int     xs, ys, xe, ye;     /* local grid starting/ending values (no ghost points) */
-  int     xsi, ysi, xei, yei; /* local interior grid starting/ending values (no ghost points) */
+  int     xsi, ysi, xei, yei; /* local interior grid starting/ending values 
+                                 (no ghost points) */
   int     xm, ym;             /* local grid widths (no ghost points) */
   int     Xm, Ym;             /* local grid widths (including ghost points) */
   int     Xs, Ys;             /* local ghost point starting values */
   int     nloc, *ltog;        /* local-to-global mapping (including ghost points!) */
-  int     te;                 /* trailing edge point */
+  int     lrow;               /* local row number, including ghost points, used
+                                 in conjunction with ltog mapping */
+  int     grow;               /* global row number */
+  int     col[5];             /* work array to stash global column numbers */
+  int     flg, ierr, i, j;
   int     m_eta = user->m_eta, m_xi = user->m_xi;
-  int     ierr, i, j, row, grow, flg, col[5];
   double  pi = user->pi, mach = user->mach, h_xi = user->h_xi, h_eta = user->h_eta;
   double  k1Dbeta_sq = user->k1Dbeta_sq, ampDbeta = user->ampDbeta, rh_xi;
   double  rh_eta_sq = user->rh_eta_sq, rh_xi_sq = user->rh_xi_sq, one = 1.0, two = 2.0;
@@ -577,13 +636,13 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
   c = sqr(pi * mach * k1Dbeta_sq);
   for (j=ysi; j<yei; j++) {
     for (i=xsi; i<xei; i++) {
-      row    = (j-Ys)*Xm + i-Xs; 
-      grow   = ltog[row];
-      col[0] = ltog[row - Xm];
-      col[1] = ltog[row - 1];
+      lrow   = (j-Ys)*Xm + i-Xs; 
+      grow   = ltog[lrow];
+      col[0] = ltog[lrow - Xm];
+      col[1] = ltog[lrow - 1];
       col[2] = grow;
-      col[3] = ltog[row + 1];
-      col[4] = ltog[row + Xm];
+      col[3] = ltog[lrow + 1];
+      col[4] = ltog[lrow + Xm];
       v[0]   = rh_xi_sq;
       v[1]   = rh_eta_sq;
       v[2]   = -two * (rh_eta_sq + rh_xi_sq) +
@@ -602,8 +661,8 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
             /* Possible alternative: Set to south neighbor instead of te=(0,0) */
   if (xs == 0) {
     for (j=ysi; j<ye; j++) {
-      row    = (j-Ys)*Xm - Xs;
-      grow   = ltog[row];
+      lrow   = (j-Ys)*Xm - Xs;
+      grow   = ltog[lrow];
       col[0] = grow;
       col[1] = te;
       v[0]   = -one;
@@ -616,8 +675,8 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
   /* Upstream: i=xe-1 */
   if (xe == m_eta) {
     for (j=ysi; j<ye; j++) {
-      row  = (j-Ys)*Xm + xe-1-Xs;
-      grow = ltog[row];
+      lrow = (j-Ys)*Xm + xe-1-Xs;
+      grow = ltog[lrow];
       v[0] = -one;
       ierr = MatSetValues(A,1,&grow,1,&grow,v,INSERT_VALUES); CHKERRQ(ierr);
       ierr = VecSetValues(b,1,&grow,&zero,INSERT_VALUES); CHKERRQ(ierr);
@@ -627,10 +686,10 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
   /* Airfoil slit: j=0 */
   if (ys == 0) {
     for (i=xs; i<xe; i++) {
-      row    = -Ys*Xm + i-Xs; 
-      grow   = ltog[row];
+      lrow   = -Ys*Xm + i-Xs; 
+      grow   = ltog[lrow];
       col[0] = grow;
-      col[1] = ltog[row + Xm];
+      col[1] = ltog[lrow + Xm];
       v[0]   = -rh_xi;
       v[1]   = rh_xi;
       val    = -pi*ampDbeta * sin(pi*i*h_eta) *
@@ -647,11 +706,11 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
       c2 = rh_xi_sq * cos(pi*i*h_eta) / sqr(pi* sin(pi*i*h_eta) * cosh(pi*j*h_xi));
       c1 = rh_xi * k1Dbeta_sq * (mach * cos(pi*i*h_eta) + one) /
           (pi* sin(pi*i*h_eta) * cosh(pi*j*h_xi));
-      row    = (ye-1-Ys)*Xm + i-Xs; 
-      grow   = ltog[row];
-      col[0] = ltog[row - 2*Xm];
-      col[1] = ltog[row - Xm];
-      col[2] = ltog[row];
+      lrow   = (ye-1-Ys)*Xm + i-Xs; 
+      grow   = ltog[lrow];
+      col[0] = ltog[lrow - 2*Xm];
+      col[1] = ltog[lrow - Xm];
+      col[2] = ltog[lrow];
       v[0]   = c2;
       v[1]   = -2.0*c2 + PETSC_i * c1;
       v[2]   = c2 - PETSC_i * c1 - sqr(k1Dbeta_sq)*mach;
@@ -719,7 +778,9 @@ int ModifySubmatrices1(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
       PetscPrintf(user->comm,"grid spacing: h_eta = %g, h_xi = %g\n",user->h_eta,user->h_xi);
   }
 
-  /* Loop over local submatrices */
+  /* 
+     Loop over local submatrices
+  */
   for (i=0; i<nsub; i++) {
     ierr = MatGetSize(submat[i],&m,&n); CHKERRQ(ierr);
     if (user->print_debug) {
@@ -727,10 +788,19 @@ int ModifySubmatrices1(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
               user->rank,i+1,nsub,m,n);
     }
     if (m) m--;
+
+    /* 
+       Create an index set to define certain rows numbers that we then set
+       to zero. Note that each processor creates its own local index set using
+       the communicator MPI_COMM_SELF.
+    */
     ierr = ISCreateGeneral(MPI_COMM_SELF,1,&m,&is); CHKERRQ(ierr);
     ierr = MatZeroRows(submat[i],is,&one); CHKERRQ(ierr);
     ierr = ISDestroy(is); CHKERRQ(ierr);
 
+    /*
+       Reassemble the submatrix 
+    */
     lrow = 1; lcol = 1; val = 0.5;
     ierr = MatSetValues(submat[i],1,&lrow,1,&lcol,&val,INSERT_VALUES); CHKERRQ(ierr);
     ierr = MatAssemblyBegin(submat[i],MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);

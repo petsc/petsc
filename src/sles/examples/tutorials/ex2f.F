@@ -1,5 +1,5 @@
 
-C    "$Id: ex2f.F,v 1.38 1996/10/26 18:30:54 curfman Exp curfman $";
+C    "$Id: ex2f.F,v 1.39 1996/12/10 21:27:21 curfman Exp curfman $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -25,7 +25,6 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                    Include files
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
-C  Important Note:  
 C  This program uses CPP for preprocessing, as indicated by the use of
 C  PETSc include files in the directory petsc/include/FINCLUDE.  This
 C  convention enables use of the CPP preprocessor, which allows the use
