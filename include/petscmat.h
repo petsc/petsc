@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.143 1997/09/26 02:22:17 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.144 1997/10/12 23:27:14 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -87,6 +87,7 @@ extern int MatMultTrans(Mat,Vec,Vec);
 extern int MatMultTransAdd(Mat,Vec,Vec,Vec);
 
 extern int MatConvert(Mat,MatType,Mat*);
+extern int MatDuplicate(Mat,*Mat);
 extern int MatConvertRegister(MatType,MatType,int (*)(Mat,MatType,Mat*));
 extern int MatConvertRegisterAll();
 
@@ -228,13 +229,14 @@ typedef struct _p_MatFDColoring *MatFDColoring;
 extern int MatFDColoringCreate(Mat,ISColoring,MatFDColoring *);
 extern int MatFDColoringDestroy(MatFDColoring);
 extern int MatFDColoringView(MatFDColoring,Viewer);
-extern int MatFDColoringSetFunction(MatFDColoring,int (*)(void *,Vec,Vec,void *),void*);
+extern int MatFDColoringSetFunction(MatFDColoring,int (*)(void),void*);
 extern int MatFDColoringSetParameters(MatFDColoring,double,double);
 extern int MatFDColoringSetFrequency(MatFDColoring,int);
 extern int MatFDColoringGetFrequency(MatFDColoring,int*);
 extern int MatFDColoringSetFromOptions(MatFDColoring);
 extern int MatFDColoringPrintHelp(MatFDColoring);
 extern int MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
+extern int MatFDColoringApplyTS(Mat,MatFDColoring,double,Vec,MatStructure*,void *);
 
 /* 
     These routines are for partitioning matrices: currently used only 
