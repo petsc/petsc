@@ -1,9 +1,9 @@
 !
-!  $Id: snes.h,v 1.14 1998/03/24 16:11:20 balay Exp balay $;
+!  $Id: snes.h,v 1.15 1998/03/25 00:37:02 balay Exp balay $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
-#define SNES            PETScAddr
+#define SNES            PetscFortranAddr
 #define SNESProblemType integer
 
 !

@@ -1,12 +1,12 @@
 !
-!  $Id: mat.h,v 1.43 1998/03/24 16:11:32 balay Exp balay $;
+!  $Id: mat.h,v 1.44 1998/03/25 00:37:13 balay Exp balay $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
-#define Mat                 PETScAddr
-#define MatFDColoring       PETScAddr
-#define Partitioning        PETScAddr
-#define MatAIJIndices       PETScAddr
+#define Mat                 PetscFortranAddr
+#define MatFDColoring       PetscFortranAddr
+#define Partitioning        PetscFortranAddr
+#define MatAIJIndices       PetscFortranAddr
 #define MatType             integer
 #define MatOption           integer 
 #define MatAssemblyType     integer

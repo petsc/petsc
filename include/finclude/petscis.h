@@ -1,11 +1,11 @@
 !
-!  $Id: is.h,v 1.13 1998/03/24 16:11:37 balay Exp balay $;
+!  $Id: is.h,v 1.14 1998/03/25 00:37:18 balay Exp balay $;
 !
 !  Include file for Fortran use of the IS (index set) package in PETSc
 !
-#define IS                     PETScAddr
-#define ISLocalToGlobalMapping PETScAddr
-#define ISColoring             PETScAddr
+#define IS                     PetscFortranAddr
+#define ISLocalToGlobalMapping PetscFortranAddr
+#define ISColoring             PetscFortranAddr
 #define ISType                 integer
 
       integer IS_GENERAL,IS_STRIDE, IS_BLOCK

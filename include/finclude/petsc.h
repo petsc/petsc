@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.60 1998/03/25 18:34:06 balay Exp balay $;
+!  $Id: petsc.h,v 1.61 1998/03/25 19:42:38 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -94,9 +94,9 @@
 #define PetscOffset integer
 #endif
 #if defined(HAVE_64BITS) && !defined(USE_POINTER_CONVERSION)
-#define PETScAddr   integer*8
+#define PetscFortranAddr   integer*8
 #else
-#define PETScAddr   integer
+#define PetscFortranAddr   integer
 #endif
 
 !
@@ -146,7 +146,7 @@
 !  that are not used in the numerical computations, but rather in logging,
 !  timing etc.
 !
-#define PetscObject PetscAddr
+#define PetscObject PetscFortranAddr
 #define PLogDouble  double precision
 
 
