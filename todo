@@ -9,8 +9,13 @@ PETSc configure
    Have configure generate bmake/init.csh init.sh that can be source
    by .cshrc and friends and sets PETSC_DIR, MATLABPATH and PATH, others?
 
+   Download and install c2html if user missing documentation?
+
+   Download sowing (take code from fortranStubs.py) for build docs if 
+   requested with --with-sowing-if-needed
+
 Matrices
-   Add MatIncreaseOverlap() code for mpi (mpi more important) sbaij matrices
+   Add MatIncreaseOverlap() code for mpi sbaij matrices
 
 Vectors
    Move VecGet/RestoreArrayFast() -> VecGet/RestoreArray(), VecGetArray() -> Private

@@ -70,8 +70,18 @@ class Configure(config.base.Configure):
       fd = open(os.path.join(installDir,'config.args'),'w')
       fd.write(args)
       fd.close()
+    self.framework.sowingDir = os.path.join(installDir,'bin')
     self.framework.bfort = os.path.join(installDir,'bin','bfort')
 
+  def findSowing(self):
+    '''check if the SOWING directory exists and has bfort'''
+    sowingDir = None
+    for dir in os.listdir(self.framework.argDB['PETSC_DIR']):
+      if dir.startswith('sowing') and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'], dir)):
+        sowingDir = dir
+    if sowingDir and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.argDB['PETSC_ARCH'],'bin')):
+      self.framework.sowingDir = os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.argDB['PETSC_ARCH'],'bin')
+    
   def configureFortranStubs(self):
     '''Determine whether the Fortran stubs exist or not'''
     if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')):
@@ -84,15 +94,12 @@ class Configure(config.base.Configure):
           self.downLoadbfort()
         elif not hasattr(self.framework, 'bfort'):
           # check if the SOWING directory exists and has bfort
-          sowingDir = None
-          for dir in os.listdir(self.framework.argDB['PETSC_DIR']):
-            if dir.startswith('sowing') and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'], dir)):
-              sowingDir = dir
-          if sowingDir:
-            bfort = os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.arch,'bin','bfort')
+          self.findSowing()
+          if hasattr(self.framework,'sowingDir'):
+            bfort = os.path.join(self.framework.sowingDir,'bfort')
             if os.path.isfile(bfort):
               self.framework.log.write('Found downloaded Sowing installed, will use this')
-              self.framework.addSubstitution('BFORT', bfort)
+              self.framework.bfort = bfort
         
       if hasattr(self.framework, 'bfort'):
         self.framework.addSubstitution('BFORT', self.framework.bfort)
@@ -108,4 +115,6 @@ class Configure(config.base.Configure):
     self.framework.addSubstitution('BFORT', 'bfort')
     if 'FC' in self.framework.argDB:
       self.executeTest(self.configureFortranStubs)
+    else:
+      self.findSowing()
     return
