@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.13 2000/09/07 16:13:53 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.14 2000/09/08 14:08:50 hzhang Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -21,19 +21,19 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   int         *jutmp,bs = a->bs,bs2=a->bs2;
   int         m,nzi,realloc = 0;
   int         *jl,*q,jumin,jmin,jmax,juptr,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
-  PetscTruth  *ident;
+  /* PetscTruth  *ident; */
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(perm,IS_COOKIE);
   if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
-  
+#ifdef ISIdentity
   ierr = ISIdentity(perm,ident);CHKERRQ(ierr);
   if (!*ident) { /* for a non-trivial perm, the matrix A in SBAIJ format needs to be 
                    re-indexed so that A(perm(i),iperm(k)) is stored in the upper
                    triangle. */
     SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Call MatReIndexingSeqSBAIJ() to re-indexing (ai,aj,a)");
   }
-  
+#endif  
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr); 
   ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
