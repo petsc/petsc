@@ -5,19 +5,22 @@
 PDFELATEX = unset TEXINPUTS; pdfelatex 
 NOADIC    = true
 SHELL     = sh
+MV        = mv
+CP        = cp
+RM        = rm
 GONULL    = > /dev/null 2>&1
 
 # Build the entire manual as well as the intro part
 
 clean:
-	rm -f  *.aux *.toc *.log *.bbl *.blg part1tmp.tex part2tmp.tex *.ilg *.idx *.ind *.out htmlmap tmp anchors manual.pdf intro.pdf ../manual.pdf
+	rm -f  *.aux *.toc *.log *.bbl *.blg part1tmp.tex part2tmp.tex *.ilg *.idx *.ind *.out htmlmap tmp anchors manual.pdf intro.pdf ../../../../docs/manual.pdf
 
 manual.pdf:  intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex gettinginfo.tex
 # Generate a list of labels
 	-@rm -f anchors htmlmap tmp
 	-@cat  part1.tex part2.tex | egrep '(\\label|\\chapter|\\section|\\subsection)' | ${PETSC_DIR}/maint/getpdflabels.py > anchors
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > htmlmap
-	-@cat ${PETSC_DIR}/docs/mpi.www.index >> htmlmap
+	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> htmlmap
 	-@cat anchors >> ${LOC}/docs/manualpages/manualpages.cit
 	-@${RM} part1tmp.tex part2tmp.tex index.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat part1.tex | ../../../../maint/mapnameslatex.py > part1tmp.tex
@@ -32,7 +35,7 @@ manual.pdf:  intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex g
 	sed -e 's/_/\\_/g' manual.ind | grep -v "begin{theindex}" >>  part2tmp.tex
 	${PDFELATEX} manual  ${GONULL}
 	${PDFELATEX} manual 
-	${MV} manual.pdf ${LOC}/docs/manual.pdf
+	${MV} manual.pdf ${LOC}/src/docs/manual.pdf
 # Now make the intro part ... note that this depends on latexing the manual
 	${CP} manual.aux intro.aux
 	${PDFELATEX} intro 
