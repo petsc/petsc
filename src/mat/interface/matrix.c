@@ -2650,9 +2650,10 @@ PetscErrorCode MatConvertRegister(const char sname[],const char path[],const cha
 
    Input Parameters:
 +  mat - the matrix
--  newtype - new matrix type.  Use MATSAME to create a new matrix of the
+.  newtype - new matrix type.  Use MATSAME to create a new matrix of the
    same type as the original matrix.
-
+-  reuse - denotes if the destination matrix is to be created or reused.  Currently
+   MAT_REUSE_MATRIX is only supported for inplace conversion.
    Output Parameter:
 .  M - pointer to place new matrix
 
