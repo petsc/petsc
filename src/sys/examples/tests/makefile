@@ -21,8 +21,8 @@ BUILDEXAMPLES_3 = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_9 = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex3.c
-EXAMPLESF       = ex5.F ex6.F
+EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex8.c
+EXAMPLESF       = ex5.F ex6.F ex7f.F
 
 runex1:
 	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1; grep -v p0 ex1_1.tmp > ex1_1.tmpz ;\
@@ -74,6 +74,10 @@ ex7: ex7.o
 ex7f: ex7f.o 
 	-$(FLINKER) -o ex7f ex7f.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) -f ex7f.o
+
+ex8: ex8.o 
+	-$(CLINKER) -o ex8 ex8.o  $(PETSC_LIB)
+	$(RM) -f ex8.o
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
