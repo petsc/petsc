@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.82 1999/04/19 22:14:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.83 1999/04/21 18:17:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,6 +12,17 @@ typedef struct {
   MatSORType sym;        /* forward, reverse, symmetric etc. */
   double     omega;
 } PC_SOR;
+
+#undef __FUNC__  
+#define __FUNC__ "PCDestroy_SOR"
+static int PCDestroy_SOR(PC pc)
+{
+  PC_SOR *jac = (PC_SOR *) pc->data;
+
+  PetscFunctionBegin;
+  PetscFree(jac);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "PCApply_SOR"
@@ -295,6 +306,7 @@ int PCCreate_SOR(PC pc)
   pc->ops->printhelp       = PCPrintHelp_SOR;
   pc->ops->setup           = 0;
   pc->ops->view            = PCView_SOR;
+  pc->ops->destroy         = PCDestroy_SOR;
   pc->data           = (void *) jac;
   jac->sym           = SOR_FORWARD_SWEEP;
   jac->omega         = 1.0;

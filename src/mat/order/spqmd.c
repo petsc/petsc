@@ -2,16 +2,16 @@
 static char vcid[] = "$Id: spqmd.c,v 1.26 1997/12/01 01:54:57 bsmith Exp bsmith $";
 #endif
 
-#include "petsc.h"
 #include "mat.h"
 #include "src/mat/impls/order/order.h"
 
+EXTERN_C_BEGIN
 /*
-    MatOrder_QMD - Find the Quotient Minimum Degree ordering of a given matrix.
+    MatOrdering_QMD - Find the Quotient Minimum Degree ordering of a given matrix.
 */    
 #undef __FUNC__  
-#define __FUNC__ "MatOrder_QMD"
-int MatOrder_QMD(Mat mat, MatReorderingType type, IS *row, IS *col) 
+#define __FUNC__ "MatOrdering_QMD"
+int MatOrdering_QMD(Mat mat, MatOrderingType type, IS *row, IS *col) 
 {
   int        i,   *deg, *marker, *rchset, *nbrhd, *qsize, *qlink, nofsub, *iperm, nrow;
   int        ierr, *ia,*ja,*perm;
@@ -42,4 +42,4 @@ int MatOrder_QMD(Mat mat, MatReorderingType type, IS *row, IS *col)
   PetscFree(perm);
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END

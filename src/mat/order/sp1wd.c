@@ -2,16 +2,16 @@
 static char vcid[] = "$Id: sp1wd.c,v 1.25 1997/12/01 01:54:57 bsmith Exp bsmith $";
 #endif
 
-#include "petsc.h"
 #include "mat.h"
 #include "src/mat/impls/order/order.h"
 
+EXTERN_C_BEGIN
 /*
-    MatOrder_1WD - Find the 1-way dissection ordering of a given matrix.
+    MatOrdering_1WD - Find the 1-way dissection ordering of a given matrix.
 */    
 #undef __FUNC__  
-#define __FUNC__ "MatOrder_1WD"
-int MatOrder_1WD( Mat mat, MatReorderingType type, IS *row, IS *col)
+#define __FUNC__ "MatOrdering_1WD"
+int MatOrdering_1WD( Mat mat, MatOrderingType type, IS *row, IS *col)
 {
   int        i,*mask, *xls, nblks, *xblk, *ls, nrow, *perm, ierr,*ia,*ja;
   PetscTruth done;
@@ -36,4 +36,5 @@ int MatOrder_1WD( Mat mat, MatReorderingType type, IS *row, IS *col)
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 

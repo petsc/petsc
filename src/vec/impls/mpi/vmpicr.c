@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vmpicr.c,v 1.1 1999/01/11 01:45:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vmpicr.c,v 1.2 1999/01/12 23:13:27 bsmith Exp curfman $";
 #endif
 
 /*
@@ -26,6 +26,8 @@ static char vcid[] = "$Id: vmpicr.c,v 1.1 1999/01/11 01:45:00 bsmith Exp bsmith 
    Notes:
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
+
+   Level: intermediate
 
 .keywords: vector, create, MPI
 
