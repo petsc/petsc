@@ -272,7 +272,6 @@ PetscErrorCode PetscOptionsName(const char opt[],const char text[],const char ma
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
     ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,text,man);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -321,7 +320,6 @@ PetscErrorCode PetscOptionsList(const char opt[],const char ltext[],const char m
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
     ierr = PetscFListPrintTypes(amspub.comm,stdout,amspub.prefix,opt,ltext,man,list);CHKERRQ(ierr);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -444,7 +442,6 @@ PetscErrorCode PetscOptionsLogicalGroupBegin(const char opt[],const char text[],
     ierr = (*PetscHelpPrintf)(amspub.comm,"  Pick at most one of -------------\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(amspub.comm,"    -%s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,text,man);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -488,7 +485,6 @@ PetscErrorCode PetscOptionsLogicalGroup(const char opt[],const char text[],const
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
     ierr = (*PetscHelpPrintf)(amspub.comm,"    -%s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,text,man);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -532,7 +528,6 @@ PetscErrorCode PetscOptionsLogicalGroupEnd(const char opt[],const char text[],co
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
     ierr = (*PetscHelpPrintf)(amspub.comm,"    -%s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,text,man);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -569,7 +564,7 @@ PetscErrorCode PetscOptionsLogicalGroupEnd(const char opt[],const char text[],co
 PetscErrorCode PetscOptionsLogical(const char opt[],const char text[],const char man[],PetscTruth deflt,PetscTruth *flg,PetscTruth *set)
 {
   PetscErrorCode ierr;
-  PetscTruth iset;
+  PetscTruth     iset;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetLogical(amspub.prefix,opt,flg,&iset);CHKERRQ(ierr);
@@ -581,7 +576,6 @@ PetscErrorCode PetscOptionsLogical(const char opt[],const char text[],const char
     const char *v = (deflt ? "true" : "false");
     ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s: <%s> %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,v,text,man);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -624,7 +618,7 @@ PetscErrorCode PetscOptionsLogical(const char opt[],const char text[],const char
 PetscErrorCode PetscOptionsRealArray(const char opt[],const char text[],const char man[],PetscReal value[],PetscInt *n,PetscTruth *set)
 {
   PetscErrorCode ierr;
-  PetscInt        i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetRealArray(amspub.prefix,opt,value,n,set);CHKERRQ(ierr);
@@ -780,7 +774,6 @@ PetscErrorCode PetscOptionsHead(const char head[])
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
     ierr = (*PetscHelpPrintf)(amspub.comm,"  %s\n",head);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 

@@ -78,23 +78,15 @@ PetscErrorCode PCILUSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,P
 
   PetscFunctionBegin;
   ilu = (PC_ILU*)pc->data;
-
-  if (!pc->setupcalled) {
-    ilu->usedt        = PETSC_TRUE;
-    ilu->info.dt      = dt;
-    ilu->info.dtcol   = dtcol;
-    ilu->info.dtcount = dtcount;
-    ilu->info.fill    = PETSC_DEFAULT;
-  } else if ((ilu->usedt == PETSC_FALSE) 
-    || ilu->info.dt != dt || ilu->info.dtcol != dtcol || ilu->info.dtcount != dtcount) {
-    ilu->usedt        = PETSC_TRUE;
-    ilu->info.dt      = dt;
-    ilu->info.dtcol   = dtcol;
-    ilu->info.dtcount = dtcount;
-    ilu->info.fill    = PETSC_DEFAULT;
+  if (pc->setupcalled && (ilu->usedt == PETSC_FALSE || ilu->info.dt != dt || ilu->info.dtcol != dtcol || ilu->info.dtcount != dtcount)) {
     pc->setupcalled   = 0;
     ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
   }
+  ilu->usedt        = PETSC_TRUE;
+  ilu->info.dt      = dt;
+  ilu->info.dtcol   = dtcol;
+  ilu->info.dtcount = dtcount;
+  ilu->info.fill    = PETSC_DEFAULT;
   PetscFunctionReturn(0);
 }  
 EXTERN_C_END

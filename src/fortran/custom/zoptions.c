@@ -4,6 +4,22 @@
   between Fortran and C.
 */
 
+/*M
+     PetscFortranAddr - a variable type in Fortran that can hold a
+         regular C pointer.
+
+   Notes: Used, for example, as the file argument in PetscFOpen()
+
+.seealso:  PetscOffset, PetscInt
+M*/
+/*M
+     PetscOffset - a variable type in Fortran used with VecGetArray()
+        and ISGetIndices()
+
+
+.seealso:  PetscFortranAddr, PetscInt
+M*/
+
 #include "src/fortran/custom/zpetsc.h" 
 #include "petscsys.h"
 extern PetscTruth PetscBeganMPI;

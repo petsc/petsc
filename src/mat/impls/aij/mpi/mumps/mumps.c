@@ -452,7 +452,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
 }
 
 #undef __FUNCT__   
-#define __FUNCT__ "MatFactorNumeric_MPIAIJMUMPS"
+#define __FUNCT__ "MatFactorNumeric_AIJMUMPS"
 PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
   Mat_MUMPS  *lu =(Mat_MUMPS*)(*F)->spptr; 
   Mat_MUMPS  *lua=(Mat_MUMPS*)(A)->spptr; 
@@ -481,9 +481,9 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
       if (flg && icntl == 1) lu->id.sym=icntl;  /* matrix is spd */
     }
 #if defined(PETSC_USE_COMPLEX)
-  zmumps_c(&lu->id); 
+    zmumps_c(&lu->id); 
 #else
-  dmumps_c(&lu->id); 
+    dmumps_c(&lu->id); 
 #endif
  
     if (lu->size == 1){
@@ -494,7 +494,7 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
 
     icntl=-1;
     ierr = PetscOptionsInt("-mat_mumps_icntl_4","ICNTL(4): level of printing (0 to 4)","None",lu->id.ICNTL(4),&icntl,&flg);CHKERRQ(ierr);
-    if (flg && icntl > 0) {
+    if ((flg && icntl > 0) || PetscLogPrintInfo) {
       lu->id.ICNTL(4)=icntl; /* and use mumps default icntl(i), i=1,2,3 */
     } else { /* no output */
       lu->id.ICNTL(1) = 0;  /* error message, default= 6 */
@@ -604,9 +604,9 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
     }    
     lu->id.job=1;
 #if defined(PETSC_USE_COMPLEX)
-  zmumps_c(&lu->id); 
+    zmumps_c(&lu->id); 
 #else
-  dmumps_c(&lu->id); 
+    dmumps_c(&lu->id); 
 #endif
     if (lu->id.INFOG(1) < 0) { 
       SETERRQ1(PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
@@ -636,10 +636,14 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
   dmumps_c(&lu->id); 
 #endif
   if (lu->id.INFOG(1) < 0) {
-    SETERRQ2(PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFO(1)=%d, INFO(2)=%d\n",lu->id.INFO(1),lu->id.INFO(2)); 
+    if (lu->id.INFO(1) == -13) {
+      SETERRQ1(PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d megabytes\n",lu->id.INFO(2)); 
+    } else {
+      SETERRQ2(PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFO(1)=%d, INFO(2)=%d\n",lu->id.INFO(1),lu->id.INFO(2)); 
+    }
   }
 
-  if (lu->myid==0 && lu->id.ICNTL(16) > 0){
+  if (!lu->myid && lu->id.ICNTL(16) > 0){
     SETERRQ1(PETSC_ERR_LIB,"  lu->id.ICNTL(16):=%d\n",lu->id.INFOG(16)); 
   }
   
@@ -653,8 +657,8 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMUMPS"
 PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) {
-  Mat       B;
-  Mat_MUMPS *lu;   
+  Mat            B;
+  Mat_MUMPS      *lu;   
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -684,7 +688,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat A,IS r,MatFactorInfo *in
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /* Create the factorization matrix */ 
   ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);

@@ -33,14 +33,6 @@
 !
 !
 
-/*M
-     PetscFortranAddr - a variable type in Fortran that can hold a
-         regular C pointer.
-
-   Notes: Used, for example, as the file argument in PetscFOpen()
-
-.seealso:  PetscOffset, PetscInt
-M*/
 
 
 #if (PETSC_SIZEOF_VOID_P == 8)
@@ -59,13 +51,6 @@ M*/
 #define PetscInt integer*4
 #endif
 
-/*M
-     PetscOffset - a variable type in Fortran used with VecGetArray()
-        and ISGetIndices()
-
-
-.seealso:  PetscFortranAddr, PetscInt
-M*/
 #define PetscOffset PetscInt
 
 #if defined (PETSC_MISSING_FORTRANSTAR)
