@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.27 1999/05/06 17:59:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.28 1999/05/12 03:27:21 bsmith Exp balay $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -150,7 +150,7 @@ int PetscStrncmp(const char a[],const char b[],int n)
 int PetscStrchr(const char a[],char b,char **c)
 {
   PetscFunctionBegin;
-  *c = strchr(a,b);
+  *c = (char *)strchr(a,b);
   PetscFunctionReturn(0);
 }
 
@@ -164,7 +164,7 @@ int PetscStrchr(const char a[],char b,char **c)
 int PetscStrrchr(const char a[],char b,char **tmp)
 {
   PetscFunctionBegin;
-  *tmp = strrchr(a,b);
+  *tmp = (char *)strrchr(a,b);
   if (!*tmp) *tmp = (char*)a; else *tmp = *tmp + 1;
   PetscFunctionReturn(0);
 }
@@ -206,12 +206,10 @@ int PetscStrtok(const char a[],const char b[],char **result)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrstr"
-int PetscStrstr(const char a[],const char b[],char **tmp)
+int PetscStrstr(const char a[],const char b[], char **tmp)
 {
   PetscFunctionBegin;
-  *tmp = strstr(a,b);
+  *tmp = (char *)strstr(a,b);
   PetscFunctionReturn(0);
 }
-
-
 
