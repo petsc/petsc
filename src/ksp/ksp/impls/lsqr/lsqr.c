@@ -143,7 +143,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
     i++;
   } while (i<ksp->max_it);
-  if (i == ksp->max_it && !ksp->reason) {
+  if (i >= ksp->max_it && !ksp->reason) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
 

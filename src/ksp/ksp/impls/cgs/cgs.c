@@ -123,7 +123,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
     rhoold = rho;
     i++;
   } while (i<ksp->max_it);
-  if (i == ksp->max_it) {
+  if (i >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
 

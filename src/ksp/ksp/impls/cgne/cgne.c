@@ -196,7 +196,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
      }
      i++;
   } while (i<ksp->max_it);
-  if (i == ksp->max_it) {
+  if (i >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
   PetscFunctionReturn(0);
