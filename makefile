@@ -14,7 +14,7 @@ SOURCEH	 = Changes Machines Readme maint/addlinks \
 	   bmake/common bmake/sun4/* bmake/paragon/* bmake/linux/* \
 	   bmake/rs6000/* bmake/alpha/* bmake/IRIX/* bmake/IRIX64/* \
 	   bmake/hpux/* bmake/t3d/* bmake/freebsd/* bmake/solaris/* \
-	   maint/autoftp
+	   bmake/sun4_local/* maint/autoftp
 OBJSC	 =
 OBJSF	 =
 LIBBASE	 = libpetscvec
@@ -136,6 +136,9 @@ etags:
 	etags -a -f TAGS src/*/*.h src/*/*/*.h src/*/interface/*.c 
 	etags -a -f TAGS src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS src/*/impls/*/*/*.c 
+	etags -a -f TAGS src/contrib/*/*.c src/contrib/*/src/*.c 
+	etags -a -f TAGS src/contrib/*/examples/*.c src/contrib/*/src/*/*.c
+	etags -a -f TAGS src/contrib/*/src/*.h
 	etags -a -f TAGS include/*.h include/*include/*.h bmake/common
 	etags -a -f TAGS src/*/impls/*.c src/*/utils/*.c
 	etags -a -f TAGS makefile src/*/src/makefile
@@ -144,6 +147,8 @@ etags:
 	etags -a -f TAGS src/*/utils/makefile src/*/examples/makefile
 	etags -a -f TAGS src/*/examples/*/makefile
 	etags -a -f TAGS src/*/makefile src/*/impls/*/*/makefile
+	etags -a -f TAGS src/contrib/*/makefile src/contrib/*/src/makefile 
+	etags -a -f TAGS src/contrib/*/src/*/makefile 
 	etags -a -f TAGS src/fortran/makefile src/fortran/auto/makefile 
 	etags -a -f TAGS src/fortran/custom/makefile
 	etags -a -f TAGS include/makefile include/*/makefile 
@@ -168,6 +173,8 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES src/*/*.h src/*/*/*.h src/*/interface/*.c 
 	etags -a -f TAGS_NO_EXAMPLES src/*/src/*.c  src/*/impls/*/*.c 
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*/*/*.c 
+	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/*.c src/contrib/*/src/*.c 
+	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/src/*/*.c src/contrib/*/src/*.h
 	etags -a -f TAGS_NO_EXAMPLES include/*.h include/*include/*.h
 	etags -a -f TAGS_NO_EXAMPLES bmake/common
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*.c src/*/utils/*.c
@@ -176,6 +183,8 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/makefile src/*/impls/*/makefile
 	etags -a -f TAGS_NO_EXAMPLES src/*/utils/makefile
 	etags -a -f TAGS_NO_EXAMPLES src/*/makefile src/*/impls/*/*/makefile
+	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/makefile src/contrib/*/src/makefile 
+	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/src/*/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/makefile src/fortran/auto/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/makefile
 	etags -a -f TAGS_NO_EXAMPLES include/makefile include/*/makefile 
@@ -206,6 +215,8 @@ etags_makefiles:
 	etags -a -f TAGS_MAKEFILES src/*/makefile src/*/impls/*/*/makefile
 	etags -a -f TAGS_MAKEFILES src/*/examples/makefile src/*/examples/*/makefile
 	etags -a -f TAGS_MAKEFILES src/fortran/makefile src/fortran/auto/makefile 
+	etags -a -f TAGS_MAKEFILES src/contrib/*/makefile src/contrib/*/src/makefile 
+	etags -a -f TAGS_MAKEFILES src/contrib/*/src/*/makefile 
 	etags -a -f TAGS_MAKEFILES src/fortran/custom/makefile
 	etags -a -f TAGS_MAKEFILES include/makefile include/*/makefile
 	etags -a -f TAGS_MAKEFILES bmake/common bmake/sun4/sun4* 
