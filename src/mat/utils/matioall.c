@@ -60,8 +60,9 @@ int MatLoadRegisterAll(char *path)
   ierr = MatLoadRegisterDynamic(MATMPIROWBS,path,"MatLoad_MPIRowbs",MatLoad_MPIRowbs);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
-  ierr = MatLoadRegisterDynamic(MATSEQAIJSPOOLES,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATMPIAIJSPOOLES,path,"MatLoad_MPIAIJ",MatLoad_MPIAIJ);CHKERRQ(ierr);
+  ierr = MatLoadRegisterDynamic(MATSEQAIJSPOOLES,  path,"MatLoad_SeqAIJ",  MatLoad_SeqAIJ);CHKERRQ(ierr);
+  ierr = MatLoadRegisterDynamic(MATSEQSBAIJSPOOLES,path,"MatLoad_SeqSBAIJ",MatLoad_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = MatLoadRegisterDynamic(MATMPIAIJSPOOLES,  path,"MatLoad_MPIAIJ",  MatLoad_MPIAIJ);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }  

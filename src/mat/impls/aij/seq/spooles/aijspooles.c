@@ -116,7 +116,7 @@ int MatCholeskyFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,MatFactorInfo *info,Mat 
   ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
-/*   B->ops->getinertia             = MatGetInertia_SeqSBAIJ_Spooles; */
+  B->ops->getinertia             = MatGetInertia_SeqSBAIJ_Spooles;
   B->factor                      = FACTOR_CHOLESKY;  
 
   lu                        = (Mat_Spooles*)(B->spptr);
