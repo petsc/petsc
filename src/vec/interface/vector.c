@@ -6,11 +6,11 @@
 
 /* Logging support */
 PetscCookie VEC_COOKIE = 0;
-PetscEvent    VEC_View = 0, VEC_Max = 0, VEC_Min = 0, VEC_DotBarrier = 0, VEC_Dot = 0, VEC_MDotBarrier = 0, VEC_MDot = 0, VEC_TDot = 0;
-PetscEvent    VEC_Norm = 0, VEC_Normalize = 0, VEC_Scale = 0, VEC_Copy = 0, VEC_Set = 0, VEC_AXPY = 0, VEC_AYPX = 0, VEC_WAXPY = 0; 
-PetscEvent    VEC_MTDot = 0, VEC_NormBarrier = 0, VEC_MAXPY = 0, VEC_Swap = 0, VEC_AssemblyBegin = 0, VEC_ScatterBegin = 0, VEC_ScatterEnd = 0;
-PetscEvent    VEC_AssemblyEnd = 0, VEC_PointwiseMult = 0, VEC_SetValues = 0, VEC_Load = 0, VEC_ScatterBarrier = 0;
-PetscEvent    VEC_SetRandom = 0, VEC_ReduceArithmetic = 0, VEC_ReduceBarrier = 0, VEC_ReduceCommunication = 0;
+PetscEvent  VEC_View = 0, VEC_Max = 0, VEC_Min = 0, VEC_DotBarrier = 0, VEC_Dot = 0, VEC_MDotBarrier = 0, VEC_MDot = 0, VEC_TDot = 0;
+PetscEvent  VEC_Norm = 0, VEC_Normalize = 0, VEC_Scale = 0, VEC_Copy = 0, VEC_Set = 0, VEC_AXPY = 0, VEC_AYPX = 0, VEC_WAXPY = 0; 
+PetscEvent  VEC_MTDot = 0, VEC_NormBarrier = 0, VEC_MAXPY = 0, VEC_Swap = 0, VEC_AssemblyBegin = 0, VEC_ScatterBegin = 0, VEC_ScatterEnd = 0;
+PetscEvent  VEC_AssemblyEnd = 0, VEC_PointwiseMult = 0, VEC_SetValues = 0, VEC_Load = 0, VEC_ScatterBarrier = 0;
+PetscEvent  VEC_SetRandom = 0, VEC_ReduceArithmetic = 0, VEC_ReduceBarrier = 0, VEC_ReduceCommunication = 0;
 
 /* ugly globals for VecSetValue() and VecSetValueLocal() */
 PetscInt    VecSetValue_Row = 0;
@@ -1188,7 +1188,7 @@ PetscErrorCode VecWAXPY(const PetscScalar *alpha,Vec x,Vec y,Vec w)
 
    Concepts: vector^pointwise multiply
 
-.seealso: VecPointwiseDivide()
+.seealso: VecPointwiseDivide(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
 PetscErrorCode VecPointwiseMult(Vec x,Vec y,Vec w)
 {
@@ -1214,6 +1214,135 @@ PetscErrorCode VecPointwiseMult(Vec x,Vec y,Vec w)
 } 
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecPointwiseMax"
+/*@
+   VecPointwiseMax - Computes the componentwise maximum w_i = max(x_i, y_i).
+
+   Collective on Vec
+
+   Input Parameters:
+.  x, y  - the vectors
+
+   Output Parameter:
+.  w - the result
+
+   Level: advanced
+
+   Notes: any subset of the x, y, and w may be the same vector.
+          For complex numbers compares only the real part
+
+   Concepts: vector^pointwise multiply
+
+.seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
+@*/
+PetscErrorCode VecPointwiseMax(Vec x,Vec y,Vec w)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1); 
+  PetscValidHeaderSpecific(y,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(w,VEC_COOKIE,3);
+  PetscValidType(x,1);
+  PetscValidType(y,2);
+  PetscValidType(w,3);
+  PetscCheckSameTypeAndComm(x,1,y,2);
+  PetscCheckSameTypeAndComm(y,2,w,3);
+  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+
+  ierr = (*x->ops->pointwisemax)(x,y,w);CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)w);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecPointwiseMin"
+/*@
+   VecPointwiseMin - Computes the componentwise minimum w_i = min(x_i, y_i).
+
+   Collective on Vec
+
+   Input Parameters:
+.  x, y  - the vectors
+
+   Output Parameter:
+.  w - the result
+
+   Level: advanced
+
+   Notes: any subset of the x, y, and w may be the same vector.
+          For complex numbers compares only the real part
+
+   Concepts: vector^pointwise multiply
+
+.seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
+@*/
+PetscErrorCode VecPointwiseMin(Vec x,Vec y,Vec w)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1); 
+  PetscValidHeaderSpecific(y,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(w,VEC_COOKIE,3);
+  PetscValidType(x,1);
+  PetscValidType(y,2);
+  PetscValidType(w,3);
+  PetscCheckSameTypeAndComm(x,1,y,2);
+  PetscCheckSameTypeAndComm(y,2,w,3);
+  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+
+  ierr = (*x->ops->pointwisemin)(x,y,w);CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)w);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecPointwiseMaxAbs"
+/*@
+   VecPointwiseMaxAbs - Computes the componentwise maximum of the absolute values w_i = max(abs(x_i), abs(y_i)).
+
+   Collective on Vec
+
+   Input Parameters:
+.  x, y  - the vectors
+
+   Output Parameter:
+.  w - the result
+
+   Level: advanced
+
+   Notes: any subset of the x, y, and w may be the same vector.
+
+   Concepts: vector^pointwise multiply
+
+.seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMin(), VecPointwiseMax(), VecMaxPointwiseDivide()
+@*/
+PetscErrorCode VecPointwiseMaxAbs(Vec x,Vec y,Vec w)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1); 
+  PetscValidHeaderSpecific(y,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(w,VEC_COOKIE,3);
+  PetscValidType(x,1);
+  PetscValidType(y,2);
+  PetscValidType(w,3);
+  PetscCheckSameTypeAndComm(x,1,y,2);
+  PetscCheckSameTypeAndComm(y,2,w,3);
+  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+
+  ierr = (*x->ops->pointwisemaxabs)(x,y,w);CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)w);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseDivide"
 /*@
    VecPointwiseDivide - Computes the componentwise division w = x/y.
@@ -1232,7 +1361,7 @@ PetscErrorCode VecPointwiseMult(Vec x,Vec y,Vec w)
 
    Concepts: vector^pointwise divide
 
-.seealso: VecPointwiseMult()
+.seealso: VecPointwiseMult(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
 PetscErrorCode VecPointwiseDivide(Vec x,Vec y,Vec w)
 {
@@ -1272,7 +1401,7 @@ PetscErrorCode VecPointwiseDivide(Vec x,Vec y,Vec w)
 
    Notes: any subset of the x, y, and w may be the same vector.
 
-.seealso: VecPointwiseDivide(), VecPointwiseMult()
+.seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs()
 @*/
 PetscErrorCode VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *max)
 {
