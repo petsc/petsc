@@ -32,6 +32,9 @@ typedef struct _PetscObject* PetscObject;
 typedef struct _Viewer*      Viewer;
 
 /* useful Petsc routines (used often) */
+extern int  PetscInitialize(int*,char***,char*,char*);
+extern int  PetscFinalize();
+
 extern int  PetscDestroy(PetscObject);
 extern int  PetscView(PetscObject,Viewer);
 
