@@ -581,7 +581,8 @@ c    8   CONTINUE
 C************************************************************************
 
       SUBROUTINE EIGENV(dt,r,ru,rv,rw,e,p,sadai,sadaj,sadak,
-     &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
+     &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+     &                  tstype)
 c
 c Forms diagonal blocks for eigendecomposition.
 c
@@ -604,9 +605,9 @@ c      COMMON /AVCTRS/ AIY(NI,NJ,NK),AJY(NI,NJ,NK),AKY(NI,NJ,NK)
 c      COMMON /AVCTRS/ AIZ(NI,NJ,NK),AJZ(NI,NJ,NK),AKZ(NI,NJ,NK)
 c      COMMON /SADA/ SADAI(NI,NJ,NK),SADAJ(NI,NJ,NK),SADAK(NI,NJ,NK)
 c      COMMON /TSTEP/ DT(NI,NJ,NK)
-      integer i,j,k
+      integer i,j,k,tstype,ierr
       Double  c,aixa,aiya,aiza,ajxa,ajya,ajza,akxa,akya,akza
-      Double  ei,ej,ek,conu,conv,conw
+      Double  ei,ej,ek,conu,conv,conw,dt_gmin,dt_lmin
 
       do 2 k=zsf2,zef01
       do 2 j=ysf2,yef01
@@ -632,6 +633,26 @@ c      DO 2 I=2,NI
       EK=ABS(CONW)+C*(SADAK(I,J,K)+SADAK(I,J,K-1))
       DT(I,J,K)=CFL*two/(EI+EJ+EK)
     2 CONTINUE
+
+C Modify if using just a global timestepping scheme.  Really we could
+C eliminate that DT array completely for this variant.  Maybe later.
+C For simplicity, we just change the DT array to be the global min.
+      if (tstype .eq. GLOBAL_TS) then
+         dt_lmin = dt(xsf2,ysf2,zsf2)
+         do 20 k=zsf2,zef01
+         do 20 j=ysf2,yef01
+         do 20 i=xsf2,xef01
+            dt_lmin = min(dt_lmin,dt(i,j,k))
+  20     CONTINUE
+         call MPI_Allreduce(dt_lmin,dt_gmin,1,MPI_DOUBLE_PRECISION,
+     &                      MPI_MIN,comm,ierr)
+         do 30 k=zsf2,zef01
+         do 30 j=ysf2,yef01
+         do 30 i=xsf2,xef01
+            dt(i,j,k) = dt_gmin
+  30     CONTINUE
+      endif
+
       RETURN
       END
 
