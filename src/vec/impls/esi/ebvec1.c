@@ -1,7 +1,7 @@
 /*$Id: ebvec1.c,v 1.9 2001/09/26 17:10:29 balay Exp $*/
 
 
-#include "src/vec/vecimpl.h" 
+#include "src/vec/vecimpl.h"                 /*I "petscvec.h" I*/
 #include "src/vec/impls/dvecimpl.h" 
 #include "esi/ESI.h"
 #include "esi/petsc/vector.h"
