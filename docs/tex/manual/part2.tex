@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.271 1998/04/29 15:10:38 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.272 1998/05/01 02:35:52 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4613,7 +4613,7 @@ returned in routine arguments.  To create {\tt n} vectors of the same
 format as an existing vector, the user must declare a vector array,
 {\tt v\_new} of size {\tt n}.  Then, after {\tt VecDuplicateVecs()} has
 been called, {\tt v\_new} will contain (pointers to) the new PETSc
-vector objects.  When finished with the vectors, the use should
+vector objects.  When finished with the vectors, the user should
 destroy them by calling {\tt VecDestroyVectors()}.
 \findex{VecDestroyVectors()} For example, the following code fragment
 duplicates {\tt v\_old} to form two new vectors, {\tt v\_new(1)} and {\tt v\_new(2)}.
@@ -4623,9 +4623,9 @@ duplicates {\tt v\_old} to form two new vectors, {\tt v\_new(1)} and {\tt v\_new
    Scalar  alpha
    call VecDuplicateVecs(v_old,2,v_new,ierr)
    alpha = 4.3
-   call VecSet(alpha,v(1),ierr)
+   call VecSet(alpha,v_new(1),ierr)
    alpha = 6.0
-   call VecSet(alpha,v(2),ierr)
+   call VecSet(alpha,v_new(2),ierr)
    call VecDestroyVecs(v_new,2,ierr)
 \end{verbatim}
 
