@@ -1,9 +1,9 @@
-/*$Id: zf90mat.c,v 1.7 2000/07/11 21:00:07 balay Exp balay $*/
+/*$Id: zf90mat.c,v 1.8 2000/09/06 23:01:04 balay Exp balay $*/
 
 #include "petscmat.h"
 #include "petscf90.h"
 
-#if !defined (PETSC_HAVE_NOF90)
+#if defined (PETSC_HAVE_F90_H)
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define matgetarrayf90_            MATGETARRAYF90
@@ -31,7 +31,7 @@ void PETSC_STDCALL matrestorearrayf90_(Mat *mat,F90Array2d ptr,int *__ierr)
 }
 EXTERN_C_END
 
-#else  /* !defined (PETSC_HAVE_NOF90) */
+#else  /* !defined (PETSC_HAVE_F90_H) */
 
 /*
      Dummy function so that compilers won't complain about 

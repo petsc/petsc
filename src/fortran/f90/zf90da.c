@@ -1,9 +1,9 @@
-/*$Id: zf90da.c,v 1.9 2000/07/11 20:59:59 balay Exp balay $*/
+/*$Id: zf90da.c,v 1.10 2000/09/06 23:01:04 balay Exp balay $*/
 
 #include "petscda.h"
 #include "petscf90.h"
 
-#if !defined (PETSC_HAVE_NOF90)
+#if defined (PETSC_HAVE_F90_H)
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dagetglobalindicesf90_     DAGETGLOBALINDICESF90
@@ -20,7 +20,7 @@ void PETSC_STDCALL dagetglobalindicesf90_(DA *da,int *n,F90Array1d indices,int *
 }
 EXTERN_C_END
 
-#else  /* !defined (PETSC_HAVE_NOF90) */
+#else  /* !defined (PETSC_HAVE_F90_H) */
 
 /*
      Dummy function so that compilers won't complain about 

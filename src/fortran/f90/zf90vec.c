@@ -1,10 +1,10 @@
-/*$Id: zf90vec.c,v 1.12 2000/08/01 15:55:48 balay Exp balay $*/
+/*$Id: zf90vec.c,v 1.13 2000/09/06 23:01:04 balay Exp balay $*/
 
 #include "petscis.h"
 #include "petscvec.h"
 #include "petscf90.h"
 
-#if !defined (PETSC_HAVE_NOF90)
+#if defined (PETSC_HAVE_F90_H)
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define isgetindicesf90_           ISGETINDICESF90
@@ -140,7 +140,7 @@ void PETSC_STDCALL vecdestroyvecsf90_(F90Array1d ptr,int *m,int *__ierr)
 
 EXTERN_C_END
 
-#else  /* !defined (PETSC_HAVE_NOF90) */
+#else  /* !defined (PETSC_HAVE_F90_H) */
 
 
 /*
