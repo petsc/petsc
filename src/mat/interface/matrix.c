@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.339 1999/06/30 23:50:49 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.340 1999/07/26 01:20:59 curfman Exp curfman $";
 #endif
 
 /*
@@ -3165,10 +3165,10 @@ int MatRestoreArray(Mat mat,Scalar **v)
    them with MatDestroySubMatrices().
 
    MAT_REUSE_MATRIX can only be used when the nonzero structure of the 
-   original matrix has not changed from that last call to MatGetSubMatrices()
+   original matrix has not changed from that last call to MatGetSubMatrices().
 
    Fortran Note:
-   The Fortran interface is slightly different from that given below, it 
+   The Fortran interface is slightly different from that given below; it 
    requires one to pass in  as submat a Mat (integer) array of size at least m.
 
    Level: advanced
