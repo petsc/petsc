@@ -303,9 +303,9 @@ int VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecBlockScale"
+#define __FUNCT__ "VecStrideScaleAll"
 /*@C
-   VecBlockScale - Scales the subvectors of a vector defined 
+   VecStrideScaleAll - Scales the subvectors of a vector defined 
    by a starting point and a stride.
 
    Collective on Vec
@@ -326,7 +326,7 @@ int VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
 
 .seealso: VecNorm(), VecStrideScale(), VecScale(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
-int VecBlockScale(Vec v,PetscScalar *scales)
+int VecStrideScaleAll(Vec v,PetscScalar *scales)
 {
   int         i,j,n,ierr,bs;
   PetscScalar *x;
@@ -349,9 +349,9 @@ int VecBlockScale(Vec v,PetscScalar *scales)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecBlockNorm"
+#define __FUNCT__ "VecStrideNormAll"
 /*@C
-   VecBlockNorm - Computes the norms  subvectors of a vector defined 
+   VecStrideNormAll - Computes the norms  subvectors of a vector defined 
    by a starting point and a stride.
 
    Collective on Vec
@@ -382,7 +382,7 @@ int VecBlockScale(Vec v,PetscScalar *scales)
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
-int VecBlockNorm(Vec v,NormType ntype,PetscReal *nrm)
+int VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
 {
   int         i,j,n,ierr,bs;
   PetscScalar *x;
@@ -446,9 +446,9 @@ int VecBlockNorm(Vec v,NormType ntype,PetscReal *nrm)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecBlockMax"
+#define __FUNCT__ "VecStrideMaxAll"
 /*@C
-   VecBlockMax - Computes the maximums of subvectors of a vector defined 
+   VecStrideMaxAll - Computes the maximums of subvectors of a vector defined 
    by a starting point and a stride and optionally its location.
 
    Collective on Vec
@@ -476,7 +476,7 @@ int VecBlockNorm(Vec v,NormType ntype,PetscReal *nrm)
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
-int VecBlockMax(Vec v,int *idex,PetscReal *nrm)
+int VecStrideMaxAll(Vec v,int *idex,PetscReal *nrm)
 {
   int         i,j,n,ierr,bs;
   PetscScalar *x;
@@ -524,9 +524,9 @@ int VecBlockMax(Vec v,int *idex,PetscReal *nrm)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecBlockMin"
+#define __FUNCT__ "VecStrideMinAll"
 /*@C
-   VecBlockMin - Computes the minimum of subvector of a vector defined 
+   VecStrideMinAll - Computes the minimum of subvector of a vector defined 
    by a starting point and a stride and optionally its location.
 
    Collective on Vec
@@ -554,7 +554,7 @@ int VecBlockMax(Vec v,int *idex,PetscReal *nrm)
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
-int VecBlockMin(Vec v,int *idex,PetscReal *nrm)
+int VecStrideMinAll(Vec v,int *idex,PetscReal *nrm)
 {
   int         i,n,ierr,bs,j;
   PetscScalar *x;
@@ -601,6 +601,7 @@ int VecBlockMin(Vec v,int *idex,PetscReal *nrm)
   PetscFunctionReturn(0);
 }
 
+/*----------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideGatherAll"
 /*@
@@ -627,6 +628,8 @@ int VecBlockMin(Vec v,int *idex,PetscReal *nrm)
    The parallel layout of the vector and the subvector must be the same;
    i.e., nlocal of v = stride*(nlocal of s) 
 
+   Not optimized; could be easily
+
    Level: advanced
 
    Concepts: gather^into strided vector
@@ -636,45 +639,59 @@ int VecBlockMin(Vec v,int *idex,PetscReal *nrm)
 @*/
 int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 {
-  int          i,n,ierr,bs,ns,j;
+  int          i,n,ierr,bs,j,k,*bss,nv,jj,nvc;
   PetscScalar  *x,**y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   PetscValidHeaderSpecific(*s,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(*s,&ns);CHKERRQ(ierr);
   ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
 
   ierr = PetscMalloc(bs*sizeof(PetscReal*),&y);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*sizeof(int),&bss);CHKERRQ(ierr);
+  nv   = 0;
+  nvc  = 0;
   for (i=0; i<bs; i++) {
+    ierr = VecGetBlockSize(s[i],&bss[i]);CHKERRQ(ierr);
     ierr = VecGetArrayFast(s[i],&y[i]);CHKERRQ(ierr);
+    nvc  += bss[i];
+    nv++;
+    if (nvc > bs)  SETERRQ(1,"Number of subvectors in subvectors > number of vectors in main vector");
+    if (nvc == bs) break;
   }
 
-  if (n != ns*bs) {
-    SETERRQ2(1,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
-  }
   n =  n/bs;
 
+  jj = 0;
   if (addv == INSERT_VALUES) {
-    for (j=0; j<bs; j++) {
-      for (i=0; i<n; i++) {
-        y[j][i] = x[bs*i+j];
+    for (j=0; j<nv; j++) {
+      for (k=0; k<bss[j]; k++) {
+	for (i=0; i<n; i++) {
+	  y[j][i*bss[j] + k] = x[bs*i+jj+k];
+        }
       }
+      jj += bss[j];
     }
   } else if (addv == ADD_VALUES) {
-    for (j=0; j<bs; j++) {
-      for (i=0; i<n; i++) {
-        y[j][i] += x[bs*i+j];
+    for (j=0; j<nv; j++) {
+      for (k=0; k<bss[j]; k++) {
+	for (i=0; i<n; i++) {
+	  y[j][i*bss[j] + k] += x[bs*i+jj+k];
+        }
       }
+      jj += bss[j];
     }
 #if !defined(PETSC_USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
-    for (j=0; j<bs; j++) {
-      for (i=0; i<n; i++) {
-        y[j][i] = PetscMax(y[j][i],x[bs*i+j]);
+    for (j=0; j<nv; j++) {
+      for (k=0; k<bss[j]; k++) {
+	for (i=0; i<n; i++) {
+	  y[j][i*bss[j] + k] = PetscMax(y[j][i*bss[j] + k],x[bs*i+jj+k]);
+        }
       }
+      jj += bss[j];
     }
 #endif
   } else {
@@ -682,12 +699,14 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   }
 
   ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
-  for (i=0; i<bs; i++) {
+  for (i=0; i<nv; i++) {
     ierr = VecRestoreArrayFast(s[i],&y[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(y);CHKERRQ(ierr);
+  ierr = PetscFree(bss);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideScatterAll"
 /*@
@@ -710,6 +729,8 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
    The parallel layout of the vector and the subvector must be the same;
    i.e., nlocal of v = stride*(nlocal of s) 
 
+   Not optimized; could be easily
+
    Level: advanced
 
    Concepts:  scatter^into strided vector
@@ -719,45 +740,59 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 @*/
 int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 {
-  int          i,n,ierr,bs,ns,j;
+  int          i,n,ierr,bs,j,jj,k,*bss,nv,nvc;
   PetscScalar  *x,**y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   PetscValidHeaderSpecific(*s,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(*s,&ns);CHKERRQ(ierr);
   ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
 
   ierr = PetscMalloc(bs*sizeof(PetscReal*),&y);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*sizeof(int*),&bss);CHKERRQ(ierr);
+  nv  = 0;
+  nvc = 0;
   for (i=0; i<bs; i++) {
+    ierr = VecGetBlockSize(s[i],&bss[i]);CHKERRQ(ierr);
     ierr = VecGetArrayFast(s[i],&y[i]);CHKERRQ(ierr);
+    nvc  += bss[i];
+    nv++;
+    if (nvc > bs)  SETERRQ(1,"Number of subvectors in subvectors > number of vectors in main vector");
+    if (nvc == bs) break;
   }
 
-  if (n != ns*bs) {
-    SETERRQ2(1,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
-  }
   n =  n/bs;
 
+  jj = 0;
   if (addv == INSERT_VALUES) {
-    for (j=0; j<bs; j++) {
-      for (i=0; i<n; i++) {
-        x[bs*i+j] = y[j][i];
+    for (j=0; j<nv; j++) {
+      for (k=0; k<bss[j]; k++) {
+	for (i=0; i<n; i++) {
+	  x[bs*i+jj+k] = y[j][i*bss[j] + k];
+        }
       }
+      jj += bss[j];
     }
   } else if (addv == ADD_VALUES) {
-    for (j=0; j<bs; j++) {
-      for (i=0; i<n; i++) {
-        x[bs*i+j] += y[j][i];
+    for (j=0; j<nv; j++) {
+      for (k=0; k<bss[j]; k++) {
+	for (i=0; i<n; i++) {
+	  x[bs*i+jj+k] += y[j][i*bss[j] + k];
+        }
       }
+      jj += bss[j];
     }
 #if !defined(PETSC_USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
-    for (j=0; j<bs; j++) {
-      for (i=0; i<n; i++) {
-        x[bs*i+j] = PetscMax(y[j][i],x[bs*i+j]);
+    for (j=0; j<nv; j++) {
+      for (k=0; k<bss[j]; k++) {
+	for (i=0; i<n; i++) {
+	  x[bs*i+jj+k] = PetscMax(x[bs*i+jj+k],y[j][i*bss[j] + k]);
+        }
       }
+      jj += bss[j];
     }
 #endif
   } else {
@@ -765,10 +800,11 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
   }
 
   ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
-  for (i=0; i<bs; i++) {
+  for (i=0; i<nv; i++) {
     ierr = VecRestoreArrayFast(s[i],&y[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(y);CHKERRQ(ierr);
+  ierr = PetscFree(bss);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -797,6 +833,8 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 
    The parallel layout of the vector and the subvector must be the same;
    i.e., nlocal of v = stride*(nlocal of s) 
+
+   Not optimized; could be easily
 
    Level: advanced
 
@@ -873,6 +911,8 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 
    The parallel layout of the vector and the subvector must be the same;
    i.e., nlocal of v = stride*(nlocal of s) 
+
+   Not optimized; could be easily
 
    Level: advanced
 

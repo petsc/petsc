@@ -453,7 +453,6 @@ static int VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   v->bops->publish   = VecPublish_Seq;
   v->n               = PetscMax(v->n,v->N); 
   v->N               = PetscMax(v->n,v->N); 
-  v->bs              = -1;
   v->petscnative     = PETSC_TRUE;
   s->array           = (PetscScalar *)array;
   s->array_allocated = 0;

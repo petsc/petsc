@@ -166,7 +166,6 @@ int VecSetSizes(Vec v, int n, int N)
   PetscValidHeaderSpecific(v, VEC_COOKIE); 
   v->n = n;
   v->N = N;
-  ierr = PetscSplitOwnership(v->comm, &v->n, &v->N);                                                      CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

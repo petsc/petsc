@@ -187,10 +187,10 @@ EXTERN int VecDuplicateVecs(Vec,int,Vec*[]);
 EXTERN int VecDestroyVecs(const Vec[],int); 
 EXTERN int VecGetPetscMap(Vec,PetscMap*);
 
-EXTERN int VecBlockNorm(Vec,NormType,PetscReal*);
-EXTERN int VecBlockMax(Vec,int *,PetscReal *);
-EXTERN int VecBlockMin(Vec,int *,PetscReal *);
-EXTERN int VecBlockScale(Vec,PetscScalar*);
+EXTERN int VecStrideNormAll(Vec,NormType,PetscReal*);
+EXTERN int VecStrideMaxAll(Vec,int *,PetscReal *);
+EXTERN int VecStrideMinAll(Vec,int *,PetscReal *);
+EXTERN int VecStrideScaleAll(Vec,PetscScalar*);
 
 EXTERN int VecStrideNorm(Vec,int,NormType,PetscReal*);
 EXTERN int VecStrideMax(Vec,int,int *,PetscReal *);

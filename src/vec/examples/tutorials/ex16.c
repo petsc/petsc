@@ -1,0 +1,82 @@
+/*$Id: ex12.c,v 1.18 2001/09/11 16:32:18 bsmith Exp $*/
+
+/* Program usage:  mpirun ex1 [-help] [all PETSc options] */
+
+static char help[] = "Demonstrates VecStrideScatter() and VecStrideGather() with subvectors that are also strided.\n\n";
+
+/*T
+   Concepts: vectors^sub-vectors;
+   Processors: n
+T*/
+
+/* 
+  Include "petscvec.h" so that we can use vectors.  Note that this file
+  automatically includes:
+     petsc.h       - base PETSc routines   petscis.h     - index sets
+     petscsys.h    - system routines       petscviewer.h - viewers
+*/
+
+#include "petscvec.h"
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc,char **argv)
+{
+  Vec           v,s,r,vecs[2];               /* vectors */
+  int           i,start,end,n = 20,ierr;
+  PetscScalar   one = 1.0,value;
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+
+  /* 
+      Create multi-component vector with 2 components
+  */
+  ierr = VecCreate(PETSC_COMM_WORLD,&v);CHKERRQ(ierr);
+  ierr = VecSetSizes(v,PETSC_DECIDE,n);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(v,4);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
+
+  /* 
+      Create double-component vectors
+  */
+  ierr = VecCreate(PETSC_COMM_WORLD,&s);CHKERRQ(ierr);
+  ierr = VecSetSizes(s,PETSC_DECIDE,n/2);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(s,2);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(s);CHKERRQ(ierr);
+  ierr = VecDuplicate(s,&r);CHKERRQ(ierr);
+
+  vecs[0] = s;
+  vecs[1] = r;
+  /*
+     Set the vector values
+  */
+  ierr = VecGetOwnershipRange(v,&start,&end);CHKERRQ(ierr);
+  for (i=start; i<end; i++) {
+    value = i;
+    ierr  = VecSetValues(v,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+  }
+
+  /*
+     Get the components from the multi-component vector to the other vectors
+  */
+  ierr = VecStrideGatherAll(v,vecs,INSERT_VALUES);CHKERRQ(ierr);
+
+  ierr = VecView(s,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(r,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  ierr = VecStrideScatterAll(vecs,v,ADD_VALUES);CHKERRQ(ierr);
+
+  ierr = VecView(v,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* 
+     Free work space.  All PETSc objects should be destroyed when they
+     are no longer needed.
+  */
+  ierr = VecDestroy(v);CHKERRQ(ierr);
+  ierr = VecDestroy(s);CHKERRQ(ierr);
+  ierr = VecDestroy(r);CHKERRQ(ierr);
+  ierr = PetscFinalize();CHKERRQ(ierr);
+  return 0;
+}
+ 
