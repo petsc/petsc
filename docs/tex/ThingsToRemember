@@ -62,6 +62,8 @@ Other Machines at NCSA:
 solaris: pecos
 sun4   : space
 hpux   : sangamon
+userid : barrys
+password: petsc-password
 ---------
 
 ANL Solaris machine: tiamat
