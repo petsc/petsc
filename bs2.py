@@ -27,10 +27,16 @@ class Maker:
     map(os.remove, os.listdir(self.tmpDir))
     os.chdir(oldDir)
 
-  def executeShellCommand(self, command):
+  def defaultCheckCommand(self, command, status, output):
+    if status: raise RuntimeError('Could not execute \''+command+'\': '+output)
+
+  def executeShellCommand(self, command, checkCommand = None):
     if echo: print command
     (status, output) = commands.getstatusoutput(command)
-    if status: raise IOError('Could not execute \''+command+'\': '+output)
+    if checkCommand:
+      checkCommand(command, status, output)
+    else:
+      self.defaultCheckCommand(command, status, output)
     return output
 
 class FileGroup (Maker):
@@ -198,12 +204,13 @@ class NewerThanLibraryObject (FileCompare):
       return 0
 
 class Action (Transform):
-  def __init__(self, program, sources = FileGroup(), flags = '', fileFilter = lambda file: 1, allAtOnce = 0):
+  def __init__(self, program, sources = FileGroup(), flags = '', fileFilter = lambda file: 1, allAtOnce = 0, errorHandler = None):
     Transform.__init__(self, sources)
-    self.program    = program
-    self.flags      = flags
-    self.fileFilter = fileFilter
-    self.allAtOnce  = allAtOnce
+    self.program      = program
+    self.flags        = flags
+    self.fileFilter   = fileFilter
+    self.allAtOnce    = allAtOnce
+    self.errorHandler = errorHandler
 
   def doFunction(self):
     files = filter(self.fileFilter, self.sources.getFiles())
@@ -221,13 +228,13 @@ class Action (Transform):
       if (not files): return ''
       for file in files:
         if (self.fileFilter(file)): command += ' '+file
-      return self.executeShellCommand(command)
+      return self.executeShellCommand(command, self.errorHandler)
     else:
       output = ''
       for file in self.sources.getFiles():
         if (self.fileFilter(file)):
           command = commandBase+' '+file
-          output += self.executeShellCommand(command)
+          output += self.executeShellCommand(command, self.errorHandler)
       return output
 
   def execute(self):
@@ -256,8 +263,18 @@ class ArchiveObjects (Action):
 
 class BKEditFiles (Action):
   def __init__(self, sources = FileGroup(), extraSources = None, flags = '', fileFilter = lambda file: 1):
-    Action.__init__(self, 'bk', sources, 'edit '+flags, fileFilter, 1)
+    Action.__init__(self, 'bk', sources, 'edit '+flags, fileFilter, 1, self.checkEdit)
     self.extraSources = extraSources
+
+  def checkEdit(self, command, status, output):
+    if (status):
+      lines    = string.split(output, '\n')
+      badLines = ''
+      for line in lines:
+        if line[0:4] == 'edit:':
+          badLines += line
+      if badLines:
+        raise RuntimeError('Could not execute \''+command+'\': '+output)
 
   def execute(self):
     if self.sources: self.sources.extend(self.extraSources)
