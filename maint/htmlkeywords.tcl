@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: htmlkeywords.tcl,v 1.11 1999/02/03 00:49:51 balay Exp balay $ 
+# $Id: htmlkeywords.tcl,v 1.12 2000/03/30 23:26:27 balay Exp balay $ 
 
 ################################################
 # This program scans the WWW man pages         #
@@ -25,7 +25,7 @@ proc scanfile { filename } {
     set filebuff [ read $fileid ]
     close $fileid
     
-    set start_comment [ string first "Keywords</FONT></H2>"  $filebuff ]
+    set start_comment [ string first "Keywords</FONT></H3>"  $filebuff ]
     if { $start_comment == -1 } { 
         set mesg "No Keywords found in $filename"
         #puts stderr $mesg

@@ -1,4 +1,4 @@
-/*$Id: map.c,v 1.9 2000/05/05 22:14:59 balay Exp balay $*/
+/*$Id: map.c,v 1.10 2000/09/15 18:53:02 balay Exp balay $*/
 /*
      Provides the interface functions for all map operations.
    These are the map functions the user calls.
@@ -81,7 +81,6 @@ int MapGetSize(Map m,int *N)
 
 .seealso: MapGetLocalSize(), MapGetGlobalRange()
 
-.keywords: 
 @*/
 int MapGetLocalRange(Map m,int *rstart,int *rend)
 {
