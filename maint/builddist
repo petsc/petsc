@@ -46,7 +46,7 @@ tar cf ~/petsc$version.tar petsc$version
 # Do builds in petsc$version -- Remember that you must set
 # PETSC_DIR in .cshrc to  point to petsc$version
 #
-# For local distribution, remember to make etags in petsc.solid
+# For local distribution, remember to make etags in petsc$version
 #
 # Put a .gz and .Z file in the ftp site.
 # Add to petsc.html the current release and date (in Overview section)
