@@ -164,7 +164,8 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
   int         *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
   MatScalar   *pv,*v,*rtmp,*pc,*w,*x;
   MatScalar   *ba = b->a,*aa = a->a;
-  int nonzero=0;
+  int         nonzero=0;
+  PetscTruth  pivotinblocks = b->pivotinblocks;
 
   PetscFunctionBegin;
   SSE_SCOPE_BEGIN;
@@ -560,7 +561,11 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
+    if (pivotinblocks) {
+      ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
+    } else {
+      ierr = Kernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
+    }
 /*      ierr = Kernel_A_gets_inverse_A_4_SSE(w);CHKERRQ(ierr); */
     /* Note: Using Kramer's rule, flop count below might be infairly high or low? */ 
   }
