@@ -9,7 +9,9 @@ Meta priorities:
 
   - make DrawOpenPostscript()
 
-  - Fix MPI factorization for one processor on aij and baij; currently they
+  - Remove unnneded MPI factorization stuff ofr AIJ and BAIJ matrices
+    oonce new SeqAIJ code for one processor has been tested.
+   Fix MPI factorization for one processor on aij and baij; currently they
     return a seq factored matrix should return a mpi factored matrix.
 
   - add indenting to PLogInfo?
