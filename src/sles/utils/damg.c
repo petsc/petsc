@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.25 2001/01/17 22:25:50 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.26 2001/03/09 19:24:57 balay Exp balay $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -337,7 +337,7 @@ int DMMGSolveSLES(DMMG *dmmg,int level)
 
   PetscFunctionBegin;
   ierr = (*dmmg[level]->rhs)(dmmg[level],dmmg[level]->b);CHKERRQ(ierr); 
-  ierr = SLESSetOperators(dmmg[level]->sles,dmmg[level]->J,dmmg[level]->J,DIFFERENT_NONZERO_PATTERN);
+  ierr = SLESSetOperators(dmmg[level]->sles,dmmg[level]->J,dmmg[level]->J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = SLESSolve(dmmg[level]->sles,dmmg[level]->b,dmmg[level]->x,&its);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

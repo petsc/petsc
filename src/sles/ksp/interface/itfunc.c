@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.151 2001/01/16 18:19:24 balay Exp balay $*/
+/*$Id: itfunc.c,v 1.152 2001/01/19 23:21:28 balay Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -1058,13 +1058,21 @@ int KSPGetMonitorContext(KSP ksp,void **ctx)
 @*/
 int KSPSetResidualHistory(KSP ksp,PetscReal *a,int na,PetscTruth reset)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (na) PetscValidScalarPointer(a);
-  ksp->res_hist        = a;
+  if (na != PETSC_DECIDE && a != PETSC_NULL) {
+    ksp->res_hist        = a;
+    ksp->res_hist_max    = na;
+  } else {
+    ksp->res_hist_max    = 1000;
+    ierr = PetscMalloc(ksp->res_hist_max*sizeof(PetscReal),&ksp->res_hist);CHKERRQ(ierr);
+  }
   ksp->res_hist_len    = 0;
-  ksp->res_hist_max    = na;
   ksp->res_hist_reset  = reset;
+
+
   PetscFunctionReturn(0);
 }
 
