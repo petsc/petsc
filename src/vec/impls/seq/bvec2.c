@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.180 2000/05/18 18:06:44 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.181 2000/06/23 17:48:35 bsmith Exp buschelm $*/
 /*
    Implements the sequential vectors.
 */
@@ -406,7 +406,8 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecTDot_Seq,
             VecNorm_Seq,
             VecLoadIntoVector_Default,
-            VecReciprocal_Default};
+            VecReciprocal_Default,
+            VecConjugate_Seq};
 
 
 /*
