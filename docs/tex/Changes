@@ -8,6 +8,10 @@ add to it).
 
   VEC
 
+     After a call to VecCreate() you MUST either call VecSetType() or VecSetFromOptions()
+     on the vector before using it for any purpose. The VecCreatexxx() routines do not need
+     to have calls to VecSetType() or VecSetFromOptions() after them.
+
      All VecGetArray() must now be matched with a VecRestoreArray()   
 
   MAT
