@@ -58,6 +58,10 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-CXX_LD=<prog>',     nargs.Arg(None, None, 'Specify the linker for C++ only'))
     help.addArgument('Compilers', '-FC_LD=<prog>',      nargs.Arg(None, None, 'Specify the linker for Fortran only'))
     help.addArgument('Compilers', '-LDFLAGS=<string>',  nargs.Arg(None, '',   'Specify the linker options'))
+    help.addArgument('Compilers', '-with-ar',                    nargs.Arg(None, 'ar',   'Specify the archiver'))
+    help.addArgument('Compilers', 'AR',                          nargs.Arg(None, None,   'Specify the archiver flags'))
+    help.addArgument('Compilers', 'AR_FLAGS',                    nargs.Arg(None, 'cr',   'Specify the archiver flags'))
+    help.addArgument('Compilers', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
     return
 
   def isGNU(compiler):
@@ -504,6 +508,26 @@ class Configure(config.base.Configure):
     self.addSubstitution('SHARED_LIBRARY_FLAG', self.sharedLibraryFlag)
     return
 
+  def configureArchiver(self):
+    '''Check the archiver'''
+    self.getExecutable(self.framework.argDB['with-ar'], getFullPath = 1, resultName = 'AR')
+    self.AR_FLAGS = self.framework.argDB['AR_FLAGS']
+    self.addArgumentSubstitution('AR_FLAGS', 'AR_FLAGS')
+    return
+
+  def configureRanlib(self):
+    '''Check for ranlib, using "true" if it is not found'''
+    if 'with-ranlib' in self.framework.argDB:
+      found = selfgetExecutable(self.framework.argDB['with-ranlib'], resultName = 'RANLIB')
+      if not found:
+         raise RuntimeError('You set a value for --with-ranlib, but '+self.framework.argDB['with-ranlib']+' does not exist')
+    else:
+      found = self.getExecutable('ranlib',resultName = 'RANLIB')
+      if not found:
+        self.addSubstitution('RANLIB', 'true')
+        self.RANLIB = 'true'
+    return
+
   def configure(self):
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
@@ -514,4 +538,6 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkSharedLinkerFlag)
     self.executeTest(self.checkSharedLinkerPaths)
     self.executeTest(self.output)
+    self.executeTest(self.configureArchiver)
+    self.executeTest(self.configureRanlib)
     return
