@@ -54,7 +54,7 @@ class BitKeeper(script.Script, VersionControl):
     try:
       import cygwinpath
 
-      self.convertPath = cygwinpath.convertToFullWin32Path(file)
+      self.convertPath = cygwinpath.convertToFullWin32Path
     except ImportError:
       self.convertPath = (lambda f: f)
     return

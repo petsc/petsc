@@ -252,11 +252,12 @@ class OutputFiles(dict):
     return dict.__delitem__(key, value)
 
 class LanguageProcessor(args.ArgumentProcessor):
-  def __init__(self, clArgs = None, argDB = None):
+  def __init__(self, clArgs = None, argDB = None, compilers = None):
     self.languageModule     = {}
     self.preprocessorObject = {}
     self.compilerObject     = {}
     self.linkerObject       = {}
+    self.compilers          = compilers
     args.ArgumentProcessor.__init__(self, clArgs, argDB)
     self.outputFiles        = OutputFiles()
     self.modulePath         = 'config.compile'
@@ -282,6 +283,11 @@ class LanguageProcessor(args.ArgumentProcessor):
     for obj in self.preprocessorObject.values(): obj.argDB = argDB
     for obj in self.compilerObject.values():     obj.argDB = argDB
     for obj in self.linkerObject.values():       obj.argDB = argDB
+    if not self.compilers is None:
+      self.compilers.argDB = argDB
+      for obj in self.preprocessorObject.values(): obj.configCompilers.argDB = argDB
+      for obj in self.compilerObject.values():     obj.configCompilers.argDB = argDB
+      for obj in self.linkerObject.values():       obj.configCompilers.argDB = argDB
     return
   argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
 
@@ -319,16 +325,22 @@ class LanguageProcessor(args.ArgumentProcessor):
     language = self.normalizeLanguage(language)
     if not language in self.preprocessorObject:
       self.preprocessorObject[language] = self.getLanguageModule(language).Preprocessor(self.argDB)
+      if not self.compilers is None:
+        self.preprocessorObject[language].configCompilers = self.compilers
     return self.preprocessorObject[language]
 
   def getCompilerObject(self, language):
     language = self.normalizeLanguage(language)
     if not language in self.compilerObject:
       self.compilerObject[language] = self.getLanguageModule(language).Compiler(self.argDB)
+      if not self.compilers is None:
+        self.compilerObject[language].configCompilers = self.compilers
     return self.compilerObject[language]
 
   def getLinkerObject(self, language):
     language = self.normalizeLanguage(language)
     if not language in self.linkerObject:
       self.linkerObject[language] = self.getLanguageModule(language).Linker(self.argDB)
+      if not self.compilers is None:
+        self.linkerObject[language].configCompilers = self.compilers
     return self.linkerObject[language]

@@ -120,6 +120,7 @@ class Builder(logging.Logger):
   def setFramework(self, framework):
     self._framework   = framework
     self.setCompilers = framework.require('config.setCompilers', None)
+    self.compilers    = framework.require('config.compilers', None)
     return
   framework = property(getFramework, setFramework, doc = 'The configure framework')
 
@@ -148,7 +149,7 @@ class Builder(logging.Logger):
     if configurationName is None:
       configurationName = self.configurationName[-1]
     elif not configurationName in self.configurations:
-      self.configurations[configurationName] = script.LanguageProcessor(argDB = self.argDB)
+      self.configurations[configurationName] = script.LanguageProcessor(argDB = self.argDB, compilers = self.compilers)
       self.configurations[configurationName].setup()
     return self.configurations[configurationName]
 

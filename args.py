@@ -25,9 +25,9 @@ class ArgumentProcessor(object):
 
   def __setstate__(self, d):
     '''We must create the default RDict'''
+    self.__dict__.update(d)
     if not '_argDB' in d:
       self.argDB = self.createArgDB(None)
-    self.__dict__.update(d)
     return
 
   def getArgDB(self):
