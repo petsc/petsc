@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.37 2001/01/15 21:43:46 bsmith Exp balay $*/
+/*$Id: fretrieve.c,v 1.38 2001/03/23 23:20:30 balay Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -159,7 +159,6 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
   ierr = MPI_Attr_get(comm,Petsc_Tmp_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
   if (!iflg) {
     char       filename[256],tmpname[256];
-;
 
     /* This communicator does not yet have a shared tmp attribute */
     ierr = PetscMalloc(sizeof(int),&tagvalp);CHKERRQ(ierr);

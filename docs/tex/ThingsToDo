@@ -7,6 +7,13 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+Steven Allmaras <steven.r.allmaras@boeing.com>
+support so that the MAT_COLUMN_ORIENTED effects the MatGetValues() as well as
+the MatSetValues() and also we'll add a MatGetBlockRow() to match the    
+MatGetRow() (this will always return the blocks in column orientation (since
+that is the way they are installed internally.)
+
+
 * Also, I need a DA mesh or grid type definition (i.e. #define DAGridType
 > integer with options of DA_GRID_CELL_CENTER, DA_GRID_GRID_CENTER [yes, those
 > stink, I am sure you have better ideas.]), just like the DAPeriodicTypes in

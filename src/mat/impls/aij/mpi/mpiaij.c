@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.334 2001/04/10 19:35:25 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.335 2001/04/21 21:13:28 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1515,7 +1515,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        MatSetColoring_MPIAIJ,
-       MatSetValuesAD_MPIAIJ
+       MatSetValuesAdic_MPIAIJ,
+       MatSetValuesAdifor_MPIAIJ
 };
 
 /* ----------------------------------------------------------------------------------------*/
@@ -2420,14 +2421,27 @@ int MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetValuesAD_MPIAIJ"
-int MatSetValuesAD_MPIAIJ(Mat A,void *advalues)
+#define __FUNCT__ "MatSetValuesAdic_MPIAIJ"
+int MatSetValuesAdic_MPIAIJ(Mat A,void *advalues)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;  
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = MatSetValuesAD_SeqAIJ(a->A,advalues);CHKERRQ(ierr);
-  ierr = MatSetValuesAD_SeqAIJ(a->B,advalues);CHKERRQ(ierr);
+  ierr = MatSetValuesAdic_SeqAIJ(a->A,advalues);CHKERRQ(ierr);
+  ierr = MatSetValuesAdic_SeqAIJ(a->B,advalues);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesAdifor_MPIAIJ"
+int MatSetValuesAdifor_MPIAIJ(Mat A,int nl,void *advalues)
+{
+  Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;  
+  int        ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSetValuesAdifor_SeqAIJ(a->A,nl,advalues);CHKERRQ(ierr);
+  ierr = MatSetValuesAdifor_SeqAIJ(a->B,nl,advalues);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
