@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.48 1996/08/22 14:37:33 balay Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.49 1996/08/22 20:15:12 balay Exp curfman $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
 
 /*T
    Concepts: SLES; solving linear equations
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions()
-   Routines: SLESSolve(); SLESView()
+   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
+   Routines: SLESSolve(); SLESView();
    Processors: 1
 T*/
 
@@ -28,10 +28,12 @@ int main(int argc,char **args)
   Mat     A;            /* linear system matrix */
   SLES    sles;         /* linear solver context */
   double  norm;         /* norm of solution error */
-  int     ierr, i, n = 10, col[3], its,flg;
+  int     ierr, i, n = 10, col[3], its, flg, size;
   Scalar  none = -1.0, one = 1.0, value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   /* 

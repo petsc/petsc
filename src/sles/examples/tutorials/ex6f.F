@@ -1,16 +1,16 @@
 
-C    "$Id: ex20.F,v 1.9 1996/08/22 21:24:46 curfman Exp curfman $";
+C    "$Id: ex20.F,v 1.10 1996/08/23 14:43:42 curfman Exp curfman $";
 C
 C  Description: This example demonstrates repeated linear solves as
 C  well as the use of different preconditioner and linear system
 C  matrices.  This example also illustrates how to save PETSc objects
 C  in common blocks.
 C
-C  Concepts: SLES, solving linear systems
-C  Routines: SLESCreate(), SLESSetOperators(), SLESSetFromOptions()
-C  Routines: SLESSolve(), SLESView(), SLESGetKSP(), KSPSetMonitor()
-C  Routines: KSPBuildSolution()
-C  Multiprocessor code
+C  Concepts: SLES; solving linear systems
+C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
+C  Routines: SLESSolve(); SLESView(); SLESGetKSP(); KSPSetMonitor();
+C  Routines: KSPBuildSolution();
+C  Processors: n
 C
 C  The following include statements are required for SLES Fortran programs:
 C     petsc.h  - base PETSc routines
