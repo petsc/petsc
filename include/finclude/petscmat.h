@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.21 1996/08/22 22:17:02 curfman Exp curfman $;
+C  $Id: mat.h,v 1.22 1996/08/22 22:25:56 curfman Exp curfman $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -13,10 +13,6 @@ C
 #define MatGetSubMatrixCall integer
 #define MatOperation        integer
 #define MatInfo             Double
-
-C  Note: MAT_INFO_SIZE must correspond with number of elements in 
-C  MatInfo structure in petsc/include/mat.h
-#define MAT_INFO_SIZE       14
 
 C
 C  Matrix types
@@ -65,6 +61,14 @@ C
       integer MAT_LOCAL,MAT_GLOBAL_MAX,MAT_GLOBAL_SUM
 
       parameter (MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3)
+
+C
+C  Note: MAT_INFO_SIZE must equal # elements in MatInfo structure
+C  (See petsc/include/mat.h)
+C
+      integer MAT_INFO_SIZE
+
+      parameter (MAT_INFO_SIZE=14)
 
 C
 C  MatSubMatrixCall
@@ -220,4 +224,4 @@ C
       parameter (MATRIX_BINARY_FORMAT_DENSE=-1)
 C
 C  End of Fortran include file for the Mat package in PETSc
-
+C
