@@ -55,7 +55,7 @@ f77 -c  -O somefort.f
   - fix output formats for -log_summary so that 3-digit numbers (e.g., 100.0) 
     doesn't screw up column alignment
 
-  - update petscopts ( some of the options are outdated  for eg: pc_method )
+  X update petscopts ( some of the options are outdated  for eg: pc_method )
 
   - extend PETSc PLogInfo() logging so that individual components can disable
     their printouts (e.g., get SNES loggin but not matrix logging)
