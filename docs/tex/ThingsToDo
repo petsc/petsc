@@ -7,7 +7,6 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-  - seperate KSPSetFromOptions and KSPPrintHelp()
 
   -  a basic member function like viewpublic and destroypublic for object validation
 
@@ -936,3 +935,5 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
   X compile with PETSC_DEBUG turned off and fix all places in code that 
     generate warning messages.
+
+  X seperate KSPSetFromOptions and KSPPrintHelp()
