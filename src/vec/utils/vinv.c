@@ -144,7 +144,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *nrm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideMax"
-/*@C
+/*@
    VecStrideMax - Computes the maximum of subvector of a vector defined 
    by a starting point and a stride and optionally its location.
 
