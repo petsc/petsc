@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
  
