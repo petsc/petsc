@@ -689,7 +689,7 @@ int KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGMRESSetRestart"
-/*@
+/*@C
    KSPGMRESSetRestart - Sets number of iterations at which GMRES, FGMRES and LGMRES restarts.
 
    Collective on KSP

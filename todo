@@ -1,11 +1,17 @@
 
 PETSc configure
-   Add support for requesting 32 bit or 64 bit code
+   Test support for requesting 32 bit or 64 bit code
 
    Download and install c2html if user missing documentation?
 
    Download sowing (take code from fortranStubs.py) for build docs if 
    requested with --with-sowing-if-needed
+
+   Fix the bmake and configure way of handling -rpath paths for different compilers. How to do??
+
+   It would be nice if someday configure could get the "compute nodes" to see
+   that they have the appropriate shared libraries that are used when compiling
+   or otherwise the static libraries are used.
 
 Vectors
    Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input
@@ -13,9 +19,8 @@ Vectors
 Error handling
    Add troubleshooting entries and error messages with web address for common errors.
 
-Convert the Tufo-Fischer parallel direct solver to its own PC.
+PC/Mat
+  Convert the Tufo-Fischer parallel direct solver to its own PC.
 
-convert the int MatUseMatlab_SeqAIJ(Mat A) to the new style like Kris did
-for all the other external solvers
 
-fix the bmake and configure way of handling -rpath paths for different compilers. How to do??
+
