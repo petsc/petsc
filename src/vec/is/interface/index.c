@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.62 1999/02/01 22:08:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.63 1999/03/17 23:22:09 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -29,10 +29,16 @@ static char vcid[] = "$Id: index.c,v 1.62 1999/02/01 22:08:37 curfman Exp bsmith
 @*/
 int ISIdentity(IS is,PetscTruth *ident)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(ident);
   *ident = (PetscTruth) is->isidentity;
+  if (*ident) PetscFunctionReturn(0);
+  if (is->ops->identity) {
+    ierr = (*is->ops->identity)(is,ident);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
