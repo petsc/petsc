@@ -47,6 +47,8 @@ typedef struct {
   PetscTruth       ilu_preserve_row_sums;
   PetscReal        lu_dtcol;
   PetscReal        lu_damping;
+  PetscTruth       lu_shift;         /* Manteuffel shift switch, fraction */
+  PetscReal        lu_shift_fraction;
   PetscReal        lu_zeropivot;
   PetscScalar      *saved_values;    /* location for stashing nonzero values of matrix */
   PetscScalar      *idiag,*ssor;     /* inverse of diagonal entries; space for eisen */

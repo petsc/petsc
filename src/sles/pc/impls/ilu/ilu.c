@@ -56,6 +56,21 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCILUSetShift_ILU"
+int PCILUSetShift_ILU(PC pc,PetscTruth shift)
+{
+  PC_ILU *dir;
+
+  PetscFunctionBegin;
+  dir = (PC_ILU*)pc->data;
+  dir->info.lu_shift = shift;
+  if (shift) dir->info.lu_shift_fraction = 0.0;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCILUSetUseDropTolerance_ILU"
 int PCILUSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,int dtcount)
 {
@@ -271,6 +286,30 @@ int PCILUSetDamping(PC pc,PetscReal damping)
   } 
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PCILUSetShift"
+/*@
+   PCILUSetShift - specify whether to use Manteuffel shifting of ILU
+
+   If an ILU factorisation breaks down because of nonpositive pivots,
+   adding sufficient identity to the diagonal will remedy this.
+   Setting this causes a bisection method to find the minimum shift that
+   will lead to a well-defined ILU.
+@*/
+int PCILUSetShift(PC pc,PetscTruth shifting)
+{
+  int ierr,(*f)(PC,PetscTruth);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetShift_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,shifting);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetUseDropTolerance"
@@ -637,6 +676,10 @@ static int PCSetFromOptions_ILU(PC pc)
       ierr = PCILUSetDamping(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_ilu_damping","Damping added to diagonal","PCILUSetDamping",ilu->info.damping,&ilu->info.damping,0);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_ilu_shift","Manteuffel shift applied to diagonal","PCILUSetShift",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCILUSetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsReal("-pc_ilu_zeropivot","Pivot is considered zero if less than","PCILUSetSetZeroPivot",ilu->info.zeropivot,&ilu->info.zeropivot,0);CHKERRQ(ierr);
 
     dt[0] = ilu->info.dt;
@@ -873,6 +916,8 @@ int PCCreate_ILU(PC pc)
   ilu->info.dtcount            = PETSC_DEFAULT;
   ilu->info.dtcol              = PETSC_DEFAULT;
   ilu->info.damping            = 0.0;
+  ilu->info.lu_shift           = PETSC_FALSE;
+  ilu->info.lu_shift_fraction  = 0.0;
   ilu->info.zeropivot          = 1.e-12;
   ilu->info.pivotinblocks      = 1.0;
   ilu->reusefill               = PETSC_FALSE;
@@ -894,6 +939,8 @@ int PCCreate_ILU(PC pc)
                     PCILUSetFill_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetDamping_C","PCILUSetDamping_ILU",
                     PCILUSetDamping_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetShift_C","PCILUSetShift_ILU",
+ 		    PCILUSetShift_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetMatOrdering_C","PCILUSetMatOrdering_ILU",
                     PCILUSetMatOrdering_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetReuseOrdering_C","PCILUSetReuseOrdering_ILU",

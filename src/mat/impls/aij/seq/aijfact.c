@@ -402,8 +402,10 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
-  b->lu_damping   = info->damping;
-  b->lu_zeropivot = info->zeropivot;
+  b->lu_damping        = info->damping;
+  b->lu_zeropivot      = info->zeropivot;
+  b->lu_shift          = info->lu_shift;
+  b->lu_shift_fraction = info->lu_shift_fraction;
   ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
   ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol       = isicol;
@@ -443,6 +445,9 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   PetscScalar  *rtmp,*v,*pc,multiplier,*pv,*rtmps;
   PetscReal    damping = b->lu_damping, zeropivot = b->lu_zeropivot,rs;
   PetscTruth   damp;
+  PetscReal row_shift,shift_fraction,shift_amount,
+    shift_lo=0., shift_hi=1., shift_top;
+  PetscTruth lushift; int nshift=0;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -451,8 +456,27 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   ierr  = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   rtmps = rtmp + shift; ics = ic + shift;
 
+  if (b->lu_shift) { /* set max shift */
+    int *ai = a->i,*diag;
+    shift_top = 0;
+    if (!a->diag) {
+      ierr = MatMarkDiagonal_SeqAIJ(A); CHKERRQ(ierr);}
+    diag = a->diag;
+    for (i=0; i<n; i++) {
+      PetscReal d = (PetscReal) (a->a)[diag[i]+shift];
+      /* calculate amt of shift needed for this row */
+      if (d<0) row_shift = 0; else row_shift = -2*PetscAbsScalar(d);
+      v = a->a+ai[i]+shift;
+      for (j=0; j<ai[i+1]-ai[i]; j++) 
+	row_shift += PetscAbsScalar(v[j]);
+      if (row_shift>shift_top) shift_top = row_shift;
+    }
+  }
+
+  shift_fraction = 0; shift_amount = 0;
   do {
     damp = PETSC_FALSE;
+    lushift = PETSC_FALSE;
     for (i=0; i<n; i++) {
       nz    = ai[i+1] - ai[i];
       ajtmp = aj + ai[i] + shift;
@@ -464,8 +488,8 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
       v        = a->a + a->i[r[i]] + shift;
       for (j=0; j<nz; j++) {
         rtmp[ics[ajtmpold[j]]] = v[j];
-        if (ndamp && ajtmpold[j] == r[i]) { /* damp the diagonal of the matrix */
-          rtmp[ics[ajtmpold[j]]] += damping;
+        if ( (ndamp||nshift) && ajtmpold[j] == r[i]) { /* damp the diagonal of the matrix */
+          rtmp[ics[ajtmpold[j]]] += damping + shift_amount;
         }
       }
 
@@ -494,6 +518,18 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
         pv[j] = rtmps[pj[j]];
         if (j != diag) rs += PetscAbsScalar(pv[j]);
       }
+#define MAX_NSHIFT 5
+      if (pv[diag] < zeropivot*rs && b->lu_shift) {
+	if (nshift>MAX_NSHIFT) {
+	  SETERRQ(1,"This can't happen"); /* actually, it just might */
+	} else if (nshift==MAX_NSHIFT) {
+	  shift_fraction = shift_hi;
+	} else {
+	  shift_lo = shift_fraction; shift_fraction = (shift_hi+shift_lo)/2.;
+	}
+	shift_amount = shift_fraction * shift_top;
+	lushift = PETSC_TRUE; nshift++; break;
+      }
       if (PetscAbsScalar(pv[diag]) < zeropivot*rs) {
         if (damping) {
           if (ndamp) damping *= 2.0;
@@ -505,7 +541,16 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
         }
       }
     }
-  } while (damp);
+    if (!lushift && b->lu_shift && shift_fraction>0 && nshift<MAX_NSHIFT) {
+      /*
+       * if not already shifting up & shifting & started shifting & can refine,
+       * then try lower shift
+       */
+      shift_hi = shift_fraction; shift_fraction = (shift_hi+shift_lo)/2.;
+      shift_amount = shift_fraction * shift_top;
+      lushift = PETSC_TRUE; nshift++;
+    }
+  } while (damp || lushift);
 
   /* invert diagonal entries for simplier triangular solves */
   for (i=0; i<n; i++) {
@@ -521,6 +566,10 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   PetscLogFlops(C->n);
   if (ndamp) {
     PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of damping tries %d damping value %g\n",ndamp,damping);
+  }
+  if (nshift) {
+    b->lu_shift_fraction = shift_fraction;
+    PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: diagonal shifted up by %e fraction\n",shift_fraction);
   }
   PetscFunctionReturn(0);
 }
@@ -846,6 +895,8 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat 
     b->icol             = isicol;
     b->lu_damping       = info->damping;
     b->lu_zeropivot     = info->zeropivot;
+    b->lu_shift         = info->lu_shift;
+    b->lu_shift_fraction= info->lu_shift_fraction;
     ierr                = PetscMalloc(((*fact)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
     (*fact)->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
     ierr                = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);

@@ -168,6 +168,7 @@ EXTERN int PCLUSetReuseFill(PC,PetscTruth);
 EXTERN int PCLUSetUseInPlace(PC);
 EXTERN int PCLUSetFill(PC,PetscReal);
 EXTERN int PCLUSetDamping(PC,PetscReal);
+EXTERN int PCILUSetShift(PC,PetscTruth);
 EXTERN int PCLUSetPivoting(PC,PetscReal);
 EXTERN int PCLUSetPivotInBlocks(PC,PetscTruth);
 EXTERN int PCLUSetZeroPivot(PC,PetscReal);
