@@ -1,0 +1,57 @@
+# $Id: rules,v 1.2 2001/08/22 17:57:34 balay Exp $ 
+
+libc: ${LIBNAME}(${OBJSC})
+libf: ${OBJSF}
+	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}
+
+#############
+
+# with 5.0.1 Build 010730D0 version of intel compilers, shared libraries created
+# are broken with BOPT=O && using -KPIC flag
+shared: chkopts_basic
+	-@echo making shared libraries in ${INSTALL_LIB_DIR} ;\
+	cd ${INSTALL_LIB_DIR}; \
+	${RM} -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+	for LIBNAME in ${SHLIBS} ; \
+	do \
+          if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.a ]; then \
+	    flag=""; \
+	    if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.a -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	    else \
+	      flag="true"; \
+	    fi; \
+            if [ "$$flag" != "" ]; then \
+	      echo "building $$LIBNAME.${SLSUFFIX}"; \
+	      ${AR} x ../$$LIBNAME.a ;\
+	      ${CLINKER} -shared -o ../$$LIBNAME.${SLSUFFIX} *.o ; \
+	      ${RM} -f * ; \
+	    fi; \
+	  fi; \
+	done ;\
+	cd ../ ; \
+	${RM} -rf tmp
+
+#
+#  Generates a shared library from any .a library; not just the PETSc ones
+#  This is to allow any user to generate his or her own shared library
+#
+#  
+
+oshared: 
+	-@${RM} -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+        echo "building ${LIBNAME}.${SLSUFFIX}"; \
+	${AR} x ../${LIBNAME}.a ;\
+        ${CLINKER} -shared -o ../$$LIBNAME.${SLSUFFIX} *.o ; \
+	cd ../ ; \
+	${RM} -rf tmp
+
+#
+# Notes:
+#
+#  -ldl is the dynamic link library that allows one to use dlopen() etc
+#

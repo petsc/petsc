@@ -1,0 +1,78 @@
+# $Id: variables,v 1.9 2001/10/10 19:39:23 balay Exp $ 
+#
+#     See the file bmake/variables.defs for a complete explanation of all these fields
+#
+AR		   = ar
+AR_FLAGS	   = cr
+RM		   = rm -f
+OMAKE		   = make  --no-print-directory
+RANLIB		   = ranlib
+SHELL		   = /bin/sh
+SED		   = /bin/sed
+MKDIR              = mkdir -p
+LIB_SUFFIX         = a
+DIFF               = diff
+# ######################### C and Fortran compiler ########################
+#
+C_CC		   = icc
+C_FC		   = ifc -w90 -w
+C_CLINKER_SLFLAG   = -Qoption,link,-rpath,
+C_FLINKER_SLFLAG   = -Qoption,link,-rpath,
+C_CLINKER	   = icc
+C_FLINKER	   = icc
+C_CCV		   = icc -V 2>&1| head -1
+C_FCV              = ifc -V 2>&1| head -1
+C_SYS_LIB	   = ${CLINKER_SLFLAG}/soft/com/packages/intel-6.0.1.304/compiler60/ia32/lib -lCEPCF90 -lPEPCF90 -lintrins  -lF90 -ldl
+# ---------------------------- BOPT - g options ----------------------------
+G_COPTFLAGS	   = -g -use_msasm
+G_FOPTFLAGS	   = -g
+# ----------------------------- BOPT - O options -----------------------------
+# Note: -xW generates Pentium 4 specific code.  Use -xK for Pentium III.
+O_COPTFLAGS	   = -O2 -use_msasm -xW
+O_FOPTFLAGS	   = -O2 -xW
+# ########################## C++ compiler ##################################
+#
+CXX_CC		   = icc -Kc++ -Kc++eh
+CXX_FC		   = ifc -w90 -w
+CXX_CLINKER_SLFLAG = -Qoption,link,-rpath,
+CXX_FLINKER_SLFLAG = -Qoption,link,-rpath,
+CXX_CLINKER	   = icc -Kc++
+CXX_FLINKER	   = icc -Kc++
+CXX_CCV		   = icc -Kc++ -Kc++eh -V 2>&1| head -1
+CXX_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lintrins -lF90 -ldl
+# ------------------------- BOPT - g_c++ options ------------------------------
+GCXX_COPTFLAGS	   = -g -use_msasm
+GCXX_FOPTFLAGS	   = -g
+# ------------------------- BOPT - O_c++ options ------------------------------
+# Note: -xW generates Pentium 4 specific code.  Use -xK for Pentium III.
+OCXX_COPTFLAGS	   = -O2 -use_msasm -xW
+OCXX_FOPTFLAGS	   = -O2 -xW
+# -------------------------- BOPT - g_complex options ------------------------
+GCOMP_COPTFLAGS	   = -g -use_msasm
+GCOMP_FOPTFLAGS	   = -g
+# --------------------------- BOPT - O_complex options -------------------------
+# Note: -xW generates Pentium 4 specific code.  Use -xK for Pentium III.
+OCOMP_COPTFLAGS	   = -O2 -use_msasm -xW
+OCOMP_FOPTFLAGS	   = -O2 -xW
+# ########################### PETSc install options ###########################
+#
+G_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
+                     -DPETSC_USE_STACK
+O_PETSCFLAGS	   = -DPETSC_USE_FOR_KERNELS -DPETSC_USE_LOG -DPETSC_USE_DEBUG  \
+	             -DPETSC_USE_BOPT_O
+GCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
+                     -DPETSC_USE_STACK 
+OCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O
+GCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
+                     -DPETSC_USE_STACK -DPETSC_USE_COMPLEX
+OCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O \
+		     -DPETSC_USE_COMPLEX
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
+
+PARCH		   = linux
+
