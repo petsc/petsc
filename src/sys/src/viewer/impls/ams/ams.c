@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.9 1998/11/30 17:17:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ams.c,v 1.10 1998/12/03 04:05:03 bsmith Exp curfman $";
 #endif
 
 #include "src/viewer/viewerimpl.h"
@@ -53,7 +53,7 @@ static int ViewerDestroy_AMS(Viewer viewer)
 /*@C
     ViewerAMSOpen - Opens an AMS memory snooper viewer. 
 
-    Cllective on MPI_Comm
+    Collective on MPI_Comm
 
     Input Parameters:
 +   comm - the MPI communicator
@@ -62,11 +62,14 @@ static int ViewerDestroy_AMS(Viewer viewer)
     Output Parameter:
 .   lab - the viewer
 
-    Options Database:
-.   -ams_port port
+    Options Database Key:
+.   -ams_port <port number>
 
     Fortran Note:
     This routine is not supported in Fortran.
+
+    Notes:
+    This viewer can be destroyed with ViewerDestroy().
 
 .keywords: Viewer, open, AMS memory snooper
 
@@ -102,8 +105,7 @@ int ViewerAMSOpen(MPI_Comm comm,const char name[],Viewer *lab)
 #undef __FUNC__  
 #define __FUNC__ "ViewerAMSGetAMSComm"
 /*@C
-    ViewerAMSGetAMSComm - Gets the AMS communicator associated with 
-         the viewer.
+    ViewerAMSGetAMSComm - Gets the AMS communicator associated with the viewer.
 
     Collective on MPI_Comm
 
@@ -111,7 +113,7 @@ int ViewerAMSOpen(MPI_Comm comm,const char name[],Viewer *lab)
 .   lab - the viewer
 
     Output Parameter:
-.    ams_comm - the AMS communicator
+.   ams_comm - the AMS communicator
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -141,8 +143,8 @@ static int Petsc_Viewer_Ams_keyval = MPI_KEYVAL_INVALID;
 #undef __FUNC__  
 #define __FUNC__ "VIEWER_AMS_" 
 /*@C
-     VIEWER_AMS_ - Creates a AMS memory snooper viewer shared by all processors 
-                     in a communicator.
+     VIEWER_AMS_ - Creates an AMS memory snooper viewer shared by all processors 
+                   in a communicator.
 
      Collective on MPI_Comm
 
@@ -199,7 +201,7 @@ Viewer VIEWER_AMS_(MPI_Comm comm)
 }
 
 /*
-       If there is a Viewer associated with this communicator it is destroyed.
+       If there is a Viewer associated with this communicator, it is destroyed.
 */
 int VIEWER_AMS_Destroy(MPI_Comm comm)
 {
