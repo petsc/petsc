@@ -1,8 +1,8 @@
-/*$Id: const.c,v 1.5 2000/04/12 04:26:59 bsmith Exp balay $*/
+/*$Id: const.c,v 1.6 2000/05/05 22:20:11 balay Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFApply_Constant"
+#define __FUNC__ /*<a name="PFApply_Constant"></a>*/"PFApply_Constant"
 int PFApply_Constant(void *value,int n,Scalar *x,Scalar *y)
 {
   int    i;
@@ -17,7 +17,7 @@ int PFApply_Constant(void *value,int n,Scalar *x,Scalar *y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFApplyVec_Constant"
+#define __FUNC__ /*<a name="PFApplyVec_Constant"></a>*/"PFApplyVec_Constant"
 int PFApplyVec_Constant(void *value,Vec x,Vec y)
 {
   int ierr;
@@ -26,7 +26,7 @@ int PFApplyVec_Constant(void *value,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFView_Constant"
+#define __FUNC__ /*<a name="PFView_Constant"></a>*/"PFView_Constant"
 int PFView_Constant(void *value,Viewer viewer)
 {
   int        ierr;
@@ -44,7 +44,7 @@ int PFView_Constant(void *value,Viewer viewer)
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFDestroy_Constant"
+#define __FUNC__ /*<a name="PFDestroy_Constant"></a>*/"PFDestroy_Constant"
 int PFDestroy_Constant(void *value)
 {
   int ierr;
@@ -54,7 +54,7 @@ int PFDestroy_Constant(void *value)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFSetFromOptions_Constant"
+#define __FUNC__ /*<a name="PFSetFromOptions_Constant"></a>*/"PFSetFromOptions_Constant"
 int PFSetFromOptions_Constant(PF pf)
 {
   int        ierr;
@@ -68,7 +68,7 @@ int PFSetFromOptions_Constant(PF pf)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFCreate_Constant"
+#define __FUNC__ /*<a name="PFCreate_Constant"></a>*/"PFCreate_Constant"
 int PFCreate_Constant(PF pf,void *value)
 {
   int    ierr;
@@ -87,7 +87,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFCreate_Quick"
+#define __FUNC__ /*<a name="PFCreate_Quick"></a>*/"PFCreate_Quick"
 int PFCreate_Quick(PF pf,void* function)
 {
   int  ierr;
