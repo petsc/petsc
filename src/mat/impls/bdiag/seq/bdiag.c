@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.62 1995/10/16 23:00:58 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.63 1995/10/19 22:24:04 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1307,7 +1307,7 @@ static int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,Mat *submat)
   return 0;
 }
 
-static int MatCopyPrivate_SeqBDiag(Mat,Mat *);
+static int MatCopyPrivate_SeqBDiag(Mat,Mat *,int);
 extern int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,Mat*);
 extern int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,int,Mat*);
 extern int MatLUFactorNumeric_SeqBDiag(Mat,Mat*);
@@ -1451,7 +1451,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   return 0;
 }
 
-static int MatCopyPrivate_SeqBDiag(Mat A,Mat *matout)
+static int MatCopyPrivate_SeqBDiag(Mat A,Mat *matout,int cpvalues)
 { 
   Mat_SeqBDiag *newmat, *a = (Mat_SeqBDiag *) A->data;
   int          i, ierr, len;
@@ -1465,9 +1465,11 @@ static int MatCopyPrivate_SeqBDiag(Mat A,Mat *matout)
   /* Copy contents of diagonals */
   mat = *matout;
   newmat = (Mat_SeqBDiag *) mat->data;
-  for (i=0; i<a->nd; i++) {
-    len = a->bdlen[i] * a->nb * a->nb * sizeof(Scalar);
-    PetscMemcpy(newmat->diagv[i],a->diagv[i],len);
+  if (cpvalues == COPY_VALUES) {
+    for (i=0; i<a->nd; i++) {
+      len = a->bdlen[i] * a->nb * a->nb * sizeof(Scalar);
+      PetscMemcpy(newmat->diagv[i],a->diagv[i],len);
+    }
   }
   ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
