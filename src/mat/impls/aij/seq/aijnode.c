@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.43 1996/05/07 19:23:39 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.44 1996/05/07 19:26:19 balay Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -430,9 +430,9 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   if (!a->inode.size)SETERRQ(1,"MatMultAdd_SeqAIJ_Inode: Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
-  ierr = VecGetArray(zz,&z); CHKERRQ(ierr);
+  VecGetArray(xx,&x);
+  VecGetArray(yy,&y);
+  VecGetArray(zz,&z);
   x    = x + shift;             /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v1   = a->a;
@@ -593,7 +593,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
       SETERRQ(1,"MatMultAdd_SeqAIJ_Inode:Node size not yet supported");
     }
   }
-  PLogFlops(2*a->nz - a->m);
+  PLogFlops(2*a->nz);
   return 0;
 }
 /* ----------------------------------------------------------- */
