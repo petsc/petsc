@@ -7,10 +7,10 @@ BLASLAPACK_LIB       = -L/home/petsc/software/fblaslapack/alpha -lflapack -lfbla
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /home/petsc/software/mpich-1.2.2.3/alpha_ssh
+MPI_HOME       = /home/petsc/software/mpich-1.2.2.3/alpha
 MPI_LIB        = -L${MPI_HOME}/lib  -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
-MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
+MPIRUN         =  ${MPI_HOME}/bin/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
