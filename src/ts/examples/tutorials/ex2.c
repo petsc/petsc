@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.4 1997/04/19 17:02:03 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.5 1997/04/19 17:03:35 curfman Exp curfman $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit timestepping";
 
@@ -123,8 +123,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = MatCreate(PETSC_COMM_WORLD,appctx.M,appctx.M,&A); CHKERRA(ierr);
-  ierr = TSSetType(ts,TS_BEULER); CHKERRA(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx); CHKERRA(ierr);  
+  ierr = TSSetType(ts,TS_BEULER); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize timestepping solver; set runtime options.
