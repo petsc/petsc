@@ -16,9 +16,9 @@ users manual for a discussion of preloading.  Input parameters include\n\
    ex10 -f0 <datafile> -ksp_type preonly  \n\
         -help -sles_view                  \n\
         -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
-        -pc_type lu -mat_aij_spooles/superlu/superlu_dist \n\
-        -pc_type cholesky -mat_baij_dscpack  -matload_type mpibaij \n\  
-        -pc_type cholesky -mat_sbaij_spooles -matload_type mpisbaij\n\n";
+        -ksp_type preonly -pc_type lu -mat_aij_spooles/superlu/superlu_dist/mumps \n\
+        -ksp_type preonly -pc_type cholesky -mat_baij_dscpack  -matload_type mpibaij \n\  
+        -ksp_type preonly -pc_type cholesky -mat_sbaij_spooles/mumps -matload_type mpisbaij\n\n";
 */
 /*T
    Concepts: SLES^solving a linear system
@@ -115,6 +115,11 @@ int main(int argc,char **args)
       ierr = VecSet(&one,b);CHKERRQ(ierr);
     }
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+
+    /* Add a shift to A */
+    PetscScalar sigma;
+    ierr = PetscOptionsGetScalar(PETSC_NULL,"-mat_sigma",&sigma,&flg);CHKERRQ(ierr);
+    if(flg) {ierr = MatShift(&sigma,A);CHKERRQ(ierr); }
 
     /* Check whether A is symmetric */
     ierr = PetscOptionsHasName(PETSC_NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
@@ -340,6 +345,15 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
     }
 
+    ierr = PetscOptionsHasName(PETSC_NULL, "-ksp_reason", &flg);CHKERRQ(ierr);
+    if (flg){
+      KSP ksp;
+      KSPConvergedReason reason;
+      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+      ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
+      PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %d\n", reason); 
+    }
+       
     } /* while ( num_numfac-- ) */
 
     /* 
