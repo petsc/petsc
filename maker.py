@@ -106,6 +106,7 @@ class Make(script.Script):
 
   def setupConfigure(self, framework):
     framework.header = os.path.join('include', 'config.h')
+    framework.cHeader = os.path.join('include', 'configC.h')
     try:
       framework.addChild(self.getModule(self.root, 'configure').Configure(framework))
     except ImportError, e:
