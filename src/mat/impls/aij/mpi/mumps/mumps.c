@@ -692,7 +692,7 @@ int MatCreate_AIJ_MUMPS(Mat A) {
   } else {
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   }
-  ierr = MatConvert_Base_MUMPS(A,MATAIJMUMPS,&A);CHKERRQ(ierr);
+  ierr = MatConvert_AIJ_MUMPS(A,MATAIJMUMPS,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -835,7 +835,7 @@ int MatCreate_SBAIJ_MUMPS(Mat A) {
   } else {
     ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
   }
-  ierr = MatConvert_Base_MUMPS(A,MATSBAIJMUMPS,&A);CHKERRQ(ierr);
+  ierr = MatConvert_SBAIJ_MUMPS(A,MATSBAIJMUMPS,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
