@@ -66,14 +66,6 @@ PetscErrorCode MatSetType(Mat mat,const MatType matype)
       ierr = PetscMapDestroy(mat->cmap);CHKERRQ(ierr);
       mat->cmap = 0;
     }
-    if (mat->qlist) {
-      ierr = PetscFListDestroy(&mat->qlist);CHKERRQ(ierr);
-      mat->qlist = 0;
-    }
-    if (mat->olist) {
-      ierr = PetscOListDestroy(&mat->olist);CHKERRQ(ierr);
-      mat->olist = 0;
-    }
     /* create the new data structure */
     ierr = (*r)(mat);CHKERRQ(ierr);
     ierr = PetscObjectChangeTypeName((PetscObject)mat,matype);CHKERRQ(ierr);

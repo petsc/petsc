@@ -69,9 +69,14 @@ PetscErrorCode MatConvert_SuperLU_DIST_Base(Mat A,const MatType type,Mat *newmat
   B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
   B->ops->destroy          = lu->MatDestroy;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
-  ierr = PetscFree(lu);CHKERRQ(ierr); 
+  ierr = PetscFree(lu);CHKERRQ(ierr);
 
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_superlu_dist_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_superlu_dist_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_superlu_dist_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_superlu_dist_mpiaij_C","",PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }

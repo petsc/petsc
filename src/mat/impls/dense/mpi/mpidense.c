@@ -494,6 +494,8 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
     ierr = PetscFree(mdn->factor);CHKERRQ(ierr);
   }
   ierr = PetscFree(mdn);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetDiagonalBlock_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMPIDenseSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -43,17 +43,20 @@ PetscErrorCode MatConvert_UMFPACK_SeqAIJ(Mat A,const MatType type,Mat *newmat)
 
   PetscFunctionBegin;
   if (B != A) {
-    /* This routine was inherited from SeqAIJ. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
   /* Reset the original function pointers */
-  A->ops->duplicate        = lu->MatDuplicate;
-  A->ops->view             = lu->MatView;
-  A->ops->assemblyend      = lu->MatAssemblyEnd;
-  A->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
-  A->ops->destroy          = lu->MatDestroy;
+  B->ops->duplicate        = lu->MatDuplicate;
+  B->ops->view             = lu->MatView;
+  B->ops->assemblyend      = lu->MatAssemblyEnd;
+  B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
+  B->ops->destroy          = lu->MatDestroy;
     
   ierr = PetscFree(lu);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_umfpack_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_umfpack_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
+
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);

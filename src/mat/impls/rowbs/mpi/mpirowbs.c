@@ -1356,6 +1356,7 @@ PetscErrorCode MatDestroy_MPIRowbs(Mat mat)
   if (a->imax)     {ierr = PetscFree(a->imax);CHKERRQ(ierr);}
   ierr = MPI_Comm_free(&(a->comm_mpirowbs));CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIRowbsSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

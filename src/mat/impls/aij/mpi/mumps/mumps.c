@@ -154,6 +154,7 @@ PetscErrorCode MatConvert_MUMPS_Base(Mat A,const MatType type,Mat *newmat) {
   PetscErrorCode ierr;
   Mat       B=*newmat;
   Mat_MUMPS *mumps=(Mat_MUMPS*)A->spptr;
+  void      (*f)(void);
 
   PetscFunctionBegin;
   if (B != A) {
@@ -165,8 +166,23 @@ PetscErrorCode MatConvert_MUMPS_Base(Mat A,const MatType type,Mat *newmat) {
   B->ops->lufactorsymbolic       = mumps->MatLUFactorSymbolic;
   B->ops->choleskyfactorsymbolic = mumps->MatCholeskyFactorSymbolic;
   B->ops->destroy                = mumps->MatDestroy;
-  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
+
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","",mumps->MatPreallocate);CHKERRQ(ierr);
+  }
   ierr = PetscFree(mumps);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_aijmumps_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_aijmumps_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_aijmumps_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_aijmumps_mpiaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction(PetscObject)B,"MatConvert_seqsbaij_sbaijmumps_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction(PetscObject)B,"MatConvert_sbaijmumps_seqsbaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_sbaijmumps_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_sbaijmumps_mpisbaij_C","",PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -909,7 +925,7 @@ PetscErrorCode MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,Mat *newm
   } else {
   /* I really don't like needing to know the tag: MatMPISBAIJSetPreallocation_C */
     ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
-    if (f) {
+    if (f) { /* This case should always be true when this routine is called */
       mumps->MatPreallocate = (PetscErrorCode (*)(Mat,int,int,int*,int,int*))f;
       ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPISBAIJSetPreallocation_C",
                                                "MatMPISBAIJSetPreallocation_MPISBAIJMUMPS",

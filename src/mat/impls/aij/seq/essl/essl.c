@@ -46,6 +46,10 @@ PetscErrorCode MatConvert_Essl_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
 
   /* free the Essl datastructures */
   ierr = PetscFree(essl);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_essl_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_essl_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
+
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
