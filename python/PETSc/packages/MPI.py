@@ -156,7 +156,7 @@ class Configure(config.base.Configure):
   def libraryGuesses(self, root = None):
     '''Return standard library name guesses for a given installation root'''
     if root:
-      yield [os.path.join(root, 'lib', 'shared', 'libfmpich.a'),os.path.join(root,'lib','shared','libmpich.a')]
+      yield [os.path.join(root, 'lib', 'shared', 'libfmpich.a'),os.path.join(root,'lib','shared','libmpich.a'),os.path.join(root,'lib','libmpichfarg.a')]
       yield [os.path.join(root, 'lib', 'shared', 'libmpich.a')]
       yield [os.path.join(root, 'lib', 'shared', 'libmpi.a')]
       yield [os.path.join(root, 'lib', 'shared', 'libmpich.a'), os.path.join(root, 'lib', 'shared', 'libpmpich.a')]
