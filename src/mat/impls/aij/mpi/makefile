@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS	 =  $(PETSC_INCLUDE) -I../../.. -I../seq $(CONF) -I../../../../vec \
 	    -D__DIR__='"mat/impls/aij/mpi/"' $(PCONF)
-SOURCEC	 = mpiaij.c mmaij.c maijfact.c mpiaijpc.c aijpc.c 
+SOURCEC	 = mpiaij.c mmaij.c maijfact.c mpiaijpc.c aijpc.c mpiov.c
 SOURCEF	 =
 SOURCEH	 = 
-OBJSC	 = mpiaij.o mmaij.o maijfact.o mpiaijpc.o aijpc.o 
+OBJSC	 = mpiaij.o mmaij.o maijfact.o mpiaijpc.o aijpc.o mpiov.o
 OBJSF	 =
 LIBBASE	 = libpetscmat
 DIRS	 = 
