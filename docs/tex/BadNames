@@ -11,6 +11,6 @@ PETSc names that should be changed.
        but longer
 
  - VecValidVector ->? VecValid
-   MatValidMatrix ->? MatValid
+   MatValidMatrix ->? MatValid (Similar to MatEqual)
 
  - PCBSIterSetBlockSolve -> move into pc? (Right now the man page is in mat)
