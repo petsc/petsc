@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.56 1995/10/04 20:49:56 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.56 1995/10/04 23:42:02 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -318,7 +318,7 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
                              double shift,int its,Vec xx)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  Scalar       *x, *b, *xb, *dvmain, *dv, dval, sum;
+  Scalar       *x, *b, *xb, *dd, *dv, dval, sum;
   int          m = a->m, i, j, k, d, kbase, nb = a->nb, loc, kloc;
   int          mainbd = a->mainbd, diag, mblock = a->mblock, bloc;
 
@@ -326,12 +326,12 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
      we should eventually incorporate that option */
   VecGetArray(xx,&x); VecGetArray(bb,&b);
   if (mainbd == -1) SETERRQ(1,"MatRelax_SeqBDiag:Main diagonal not set");
-  dvmain = a->diagv[mainbd];
+  dd = a->diagv[mainbd];
   if (flag == SOR_APPLY_UPPER) {
     /* apply ( U + D/omega) to the vector */
     if (nb == 1) {
       for ( i=0; i<m; i++ ) {
-        sum = b[i] * (shift + dvmain[i]) / omega;
+        sum = b[i] * (shift + dd[i]) / omega;
         for (d=mainbd+1; d<a->nd; d++) {
           diag = a->diag[d];
           if (i-diag < m) sum += a->diagv[d][i] * x[i-diag];
@@ -342,9 +342,9 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
       for ( k=0; k<mblock; k++ ) {
         kloc = k*nb; kbase = kloc*nb;
         for (i=0; i<nb; i++) {
-          sum = b[i+kloc] * (shift + dvmain[i*(nb+1)+kbase]) / omega;
+          sum = b[i+kloc] * (shift + dd[i*(nb+1)+kbase]) / omega;
           for (j=i+1; j<nb; j++)
-            sum += dvmain[kbase + j*nb + i] * b[kloc + j];
+            sum += dd[kbase + j*nb + i] * b[kloc + j];
           for (d=mainbd+1; d<a->nd; d++) {
             diag = a->diag[d];
             dv   = a->diagv[d];
@@ -368,14 +368,14 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
             loc = i - a->diag[d];
             if (loc >= 0) sum -= a->diagv[d][loc] * x[loc];
           }
-          x[i] = omega*(sum/(shift + dvmain[i]));
+          x[i] = omega*(sum/(shift + dd[i]));
         }
       } else {
         for ( k=0; k<mblock; k++ ) {
           kloc = k*nb; kbase = kloc*nb;
           for (i=0; i<nb; i++) {
             sum  = b[i+kloc];
-            dval = shift + dvmain[i*(nb+1)+kbase];
+            dval = shift + dd[i*(nb+1)+kbase];
             for (d=0; d<mainbd; d++) {
               diag = a->diag[d];
               dv   = a->diagv[d];
@@ -386,7 +386,7 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
               }
 	    }
             for (j=0; j<i; j++)
-              sum -= dvmain[kbase + j*nb + i] * x[kloc + j];
+              sum -= dd[kbase + j*nb + i] * x[kloc + j];
             x[kloc+i] = omega*sum/dval;
           }
         }
@@ -397,13 +397,13 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
     if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
       if (nb == 1) {
-        for ( i=0; i<m; i++ ) x[i] *= dvmain[i];
+        for ( i=0; i<m; i++ ) x[i] *= dd[i];
       } 
       else {
         for ( k=0; k<mblock; k++ ) {
           kloc = k*nb; kbase = kloc*nb;
           for (i=0; i<nb; i++)
-            x[kloc+i] *= dvmain[i*(nb+1)+kbase];
+            x[kloc+i] *= dd[i*(nb+1)+kbase];
         }
       }
     }
@@ -415,7 +415,7 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
             diag = a->diag[d];
             if (i-diag < m) sum -= a->diagv[d][i] * x[i-diag];
           }
-          x[i] = omega*(sum/(shift + dvmain[i]));
+          x[i] = omega*(sum/(shift + dd[i]));
         }
       } 
       else {
@@ -423,9 +423,9 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
           kloc = k*nb; kbase = kloc*nb;
           for ( i=nb-1; i>=0; i-- ) {
             sum  = xb[i+kloc];
-            dval = shift + dvmain[i*(nb+1)+kbase];
+            dval = shift + dd[i*(nb+1)+kbase];
             for ( j=i+1; j<nb; j++ )
-              sum -= dvmain[kbase + j*nb + i] * x[kloc + j];
+              sum -= dd[kbase + j*nb + i] * x[kloc + j];
             for (d=mainbd+1; d<a->nd; d++) {
               diag = a->diag[d];
               dv   = a->diagv[d];
@@ -447,7 +447,7 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
       if (nb == 1) {
         for (i=0; i<m; i++) {
           sum  = b[i];
-          dval = shift + dvmain[i];
+          dval = shift + dd[i];
           for (d=0; d<mainbd; d++) {
             loc = i - a->diag[d];
             if (loc >= 0) sum -= a->diagv[d][loc] * x[loc];
@@ -463,7 +463,7 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
           kloc = k*nb; kbase = kloc*nb;
           for (i=0; i<nb; i++) {
             sum  = b[i+kloc];
-            dval = shift + dvmain[i*(nb+1)+kbase];
+            dval = shift + dd[i*(nb+1)+kbase];
             for (d=0; d<mainbd; d++) {
               diag = a->diag[d];
               dv   = a->diagv[d];
@@ -499,7 +499,7 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
             diag = a->diag[d];
             if (i-diag < m) sum -= a->diagv[d][i] * x[i-diag];
           }
-          x[i] = (1. - omega)*x[i] + omega*(sum/(shift + dvmain[i]) + x[i]);
+          x[i] = (1. - omega)*x[i] + omega*(sum/(shift + dd[i]) + x[i]);
         }
       } 
       else {
@@ -507,7 +507,7 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
           kloc = k*nb; kbase = kloc*nb;
           for ( i=nb-1; i>=0; i-- ) {
             sum  = b[i+kloc];
-            dval = shift + dvmain[i*(nb+1)+kbase];
+            dval = shift + dd[i*(nb+1)+kbase];
             for (d=0; d<mainbd; d++) {
               diag = a->diag[d];
               dv   = a->diagv[d];
@@ -889,7 +889,9 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
       for (i=0; i<a->nd; i++) PETSCFREE( a->diagv[i] );
     }
     if (a->pivots) PETSCFREE(a->pivots);
-    PETSCFREE(a->diagv); PETSCFREE(a->diag); PETSCFREE(a->colloc); PETSCFREE(a->dvalue);
+    PETSCFREE(a->diagv); PETSCFREE(a->diag);
+    PETSCFREE(a->colloc); PETSCFREE(a->dvalue);
+    if (a->solve_work) PETSCFREE(a->solve_work);
     PETSCFREE(a);
     PetscMemcpy(A,tmat,sizeof(struct _Mat)); 
     PETSCHEADERDESTROY(tmat);
@@ -1064,7 +1066,9 @@ static int MatDestroy_SeqBDiag(PetscObject obj)
     for (i=0; i<a->nd; i++) PETSCFREE( a->diagv[i] );
   }
   if (a->pivots) PETSCFREE(a->pivots);
-  PETSCFREE(a->diagv); PETSCFREE(a->diag); PETSCFREE(a->colloc); PETSCFREE(a->dvalue);
+  PETSCFREE(a->diagv); PETSCFREE(a->diag);
+  PETSCFREE(a->colloc); PETSCFREE(a->dvalue);
+  if (a->solve_work) PETSCFREE(a->solve_work);
   PETSCFREE(a);
   PLogObjectDestroy(A);
   PETSCHEADERDESTROY(A);
@@ -1116,19 +1120,19 @@ static int MatGetDiagonal_SeqBDiag(Mat A,Vec v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, j, n, ibase, nb = a->nb, iloc;
-  Scalar       *x, *dvmain;
+  Scalar       *x, *dd;
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
   if (n != a->m) 
      SETERRQ(1,"MatGetDiagonal_SeqBDiag:Nonconforming matrix and vector");
   if (a->mainbd == -1) 
      SETERRQ(1,"MatGetDiagonal_SeqBDiag:Main diagonal is not set");
-  dvmain = a->diagv[a->mainbd];
+  dd = a->diagv[a->mainbd];
   if (a->nb == 1) {
-    for (i=0; i<a->m; i++) x[i] = dvmain[i];
+    for (i=0; i<a->m; i++) x[i] = dd[i];
   } else {
     for (i=0; i<a->mblock; i++) {
       ibase = i*nb*nb;  iloc = i*nb;
-      for (j=0; j<nb; j++) x[j + iloc] = dvmain[ibase + j*(nb+1)];
+      for (j=0; j<nb; j++) x[j + iloc] = dd[ibase + j*(nb+1)];
     }
   }
   return 0;
@@ -1152,7 +1156,7 @@ static int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, ierr, N, *rows, m = a->m - 1, nz, *col;
-  Scalar       *dvmain, *val;
+  Scalar       *dd, *val;
 
   ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
@@ -1165,8 +1169,8 @@ static int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
   }
   if (diag) {
     if (a->mainbd == -1) SETERRQ(1,"MatZeroRows_SeqBDiag:Main diagonal does not exist");
-    dvmain = a->diagv[a->mainbd];
-    for ( i=0; i<N; i++ ) dvmain[rows[i]] = *diag;
+    dd = a->diagv[a->mainbd];
+    for ( i=0; i<N; i++ ) dd[rows[i]] = *diag;
   }
   ISRestoreIndices(is,&rows);
   ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -1365,9 +1369,10 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
     a->nonew = 1;
   }
 
-  a->nz        = a->maxnz; /* Currently not keeping track of exact count */
-  a->assembled = 0;
-  *newmat      = A;
+  a->nz         = a->maxnz; /* Currently not keeping track of exact count */
+  a->assembled  = 0;
+  a->solve_work = 0;
+  *newmat       = A;
   return 0;
 }
 

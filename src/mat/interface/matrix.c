@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.91 1995/10/05 01:31:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.92 1995/10/06 20:07:59 bsmith Exp curfman $";
 #endif
 
 /*
@@ -12,8 +12,6 @@ static char vcid[] = "$Id: matrix.c,v 1.91 1995/10/05 01:31:33 curfman Exp bsmit
 #include "vec/vecimpl.h"  
 #include "pinclude/pviewer.h"
        
-extern int MatGetReorderingMethodFromOptions_Private(MatOrdering *);
-
 /*@C
    MatGetReordering - Gets a reordering for a matrix to reduce fill or to
    improve numerical stability of LU factorization.
@@ -41,10 +39,14 @@ $    -mat_order rcm, -mat_order qmd
    If the column permutations and row permutations are the same, 
    then MatGetReordering() returns 0 in cperm.
 
+   The user can define additional orderings; see MatReorderingRegister().
+
 .keywords: matrix, set, ordering, factorization, direct, ILU, LU,
            fill, reordering, natural, Nested Dissection,
            One-way Dissection, Cholesky, Reverse Cuthill-McGee, 
            Quotient Minimum Degree
+
+.seealso:  MatGetReorderingTypeFromOptions(), MatReorderingRegister()
 @*/
 int MatGetReordering(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
 {
@@ -53,7 +55,7 @@ int MatGetReordering(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!mat->ops.getreordering) {*rperm = 0; *cperm = 0; return 0;}
   PLogEventBegin(MAT_GetReordering,mat,0,0,0);
-  if (MatGetReorderingMethodFromOptions_Private(&newtype)) type = newtype;
+  ierr = MatGetReorderingTypeFromOptions(0,&type); CHKERRQ(ierr);
   ierr = (*mat->ops.getreordering)(mat,type,rperm,cperm); CHKERRQ(ierr);
   PLogEventEnd(MAT_GetReordering,mat,0,0,0);
   return 0;

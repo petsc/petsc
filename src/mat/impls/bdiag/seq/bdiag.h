@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.9 1995/08/17 01:31:02 curfman Exp bsmith $ */
+/* $Id: bdiag.h,v 1.10 1995/09/12 03:25:38 bsmith Exp curfman $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -7,7 +7,7 @@
 #define __BDIAG_H
 
 /*
-   Mat_SeqBdiag (MATSEQBDIAG) - block-diagonal format, where each diagonal
+   Mat_SeqBDiag (MATSEQBDIAG) - block-diagonal format, where each diagonal
    element consists of a square block of size nb x nb.  Dense storage
    within each block is in column-major order.  The diagonals are the
    full length of the matrix.  As a special case, blocks of size nb=1
@@ -32,6 +32,7 @@ typedef struct {
   Scalar **diagv;          /* The actual diagonals */
   Scalar *dvalue;          /* Used to hold a row if MatGetRow is used */
   int    *pivots;          /* pivots for LU factorization (temporary loc) */
+  Scalar *solve_work;      /* work space used in MatSolve */
 } Mat_SeqBDiag;
 
 #endif

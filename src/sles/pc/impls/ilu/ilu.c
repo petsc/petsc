@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.40 1995/10/01 21:52:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.41 1995/10/06 18:30:50 bsmith Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -65,7 +65,7 @@ static int PCPrintHelp_ILU(PC pc)
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
   MPIU_printf(pc->comm," Options for PCILU preconditioner:\n");
-  MPIU_printf(pc->comm," mat_order name: ordering to reduce fill",p);
+  MPIU_printf(pc->comm," -mat_order name: ordering to reduce fill",p);
   MPIU_printf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
   MPIU_printf(pc->comm," %spc_ilu_levels levels: levels of fill\n",p);
   return 0;
@@ -77,6 +77,7 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
   FILE   *fd;
   PC_ILU *lu = (PC_ILU *) pc->data;
   int    ierr;
+  char   *order;
 
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
   if (lu->levels == 1)
@@ -85,6 +86,13 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
   else
     MPIU_fprintf(pc->comm,fd,"    ILU: %d levels of fill\n",
     lu->levels);
+  if (lu->ordering == ORDER_NATURAL)  order = "Natural";
+  else if (lu->ordering == ORDER_ND)  order = "Nested Dissection";
+  else if (lu->ordering == ORDER_1WD) order = "One-way Dissection";
+  else if (lu->ordering == ORDER_RCM) order = "Reverse Cuthill-McGee";
+  else if (lu->ordering == ORDER_QMD) order = "Quotient Minimum Degree";
+  else                                order = "unknown";
+  MPIU_fprintf(pc->comm,fd,"         matrix ordering: %s\n",order);
   return 0;
 }
 
@@ -95,11 +103,12 @@ extern int PCImplDestroy_ILU_MPIRowbs(PC pc);
 
 static int PCSetUp_ILU(PC pc)
 {
-  int    ierr;
-  double f;
-  PC_ILU *ilu = (PC_ILU *) pc->data;
+  int         ierr;
+  double      f;
+  PC_ILU      *ilu = (PC_ILU *) pc->data;
 
-  ierr = MatGetReordering(pc->pmat,ORDER_NATURAL,&ilu->row,&ilu->col); CHKERRQ(ierr);
+  ierr = MatGetReorderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
+  ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
   if (ilu->row) {PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);}
   if (!pc->setupcalled) {
     if (setups[pc->pmat->type]) {
@@ -152,6 +161,7 @@ int PCCreate_ILU(PC pc)
   ilu->levels    = 0;
   ilu->col       = 0;
   ilu->row       = 0;
+  ilu->ordering  = ORDER_NATURAL;
   pc->destroy    = PCDestroy_ILU;
   pc->apply      = PCApply_ILU;
   pc->setup      = PCSetUp_ILU;

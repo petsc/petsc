@@ -79,23 +79,35 @@ int MatReorderingRegisterDestroy()
   return 0;
 }
 
-/*
-   MatGetReorderingMethodFromOptions_Private - Gets reorder method 
-     from the options database.
+/*@
+   MatGetReorderingTypeFromOptions - Gets matrix reordering method from the
+   options database.
+
+   Input Parameter:
+.  prefix - optional database prefix
 
    Output Parameter:
-.  method - reordering method
+.  type - reordering method
 
-   Returns:
-   Returns 1 if the method is found; 0 otherwise.
-*/
-int MatGetReorderingMethodFromOptions_Private(MatOrdering *type)
+   Options Database Keys:
+   To specify the ordering through the options database, use one of
+   the following 
+$    -mat_order natural, -mat_order nd, -mat_order 1wd, 
+$    -mat_order rcm, -mat_order qmd
+
+.keywords: matrix, set, ordering, factorization, direct, ILU, LU,
+           fill, reordering, natural, Nested Dissection,
+           One-way Dissection, Cholesky, Reverse Cuthill-McGee, 
+           Quotient Minimum Degree
+
+.seealso: MatGetReordering()
+@*/
+int MatGetReorderingTypeFromOptions(char *prefix,MatOrdering *type)
 {
   char sbuf[50];
-  if (OptionsGetString(0,"-mat_order", sbuf, 50 )) {
+  if (OptionsGetString(prefix,"-mat_order", sbuf, 50 )) {
     if (!__MatReorderingList) MatReorderingRegisterAll();
     *type = (MatOrdering)NRFindID( __MatReorderingList, sbuf );
-    return 1;
   }
   return 0;
 }

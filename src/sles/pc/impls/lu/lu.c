@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.44 1995/09/30 19:28:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.45 1995/10/01 21:52:06 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -13,6 +13,7 @@ typedef struct {
   Mat         fact;       /* factored matrix */
   int         inplace;    /* flag indicating in-place factorization */
   IS          row, col;   /* index sets used for reordering */
+  MatOrdering ordering;   /* matrix ordering */
 } PC_LU;
 
 
@@ -71,8 +72,18 @@ static int PCView_LU(PetscObject obj,Viewer viewer)
   FILE  *fd;
   PC_LU *lu = (PC_LU *) pc->data;
   int   ierr;
+  char  *order;
+
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
   if (lu->inplace) MPIU_fprintf(pc->comm,fd,"  LU: in-place factorization\n");
+  else MPIU_fprintf(pc->comm,fd,"  LU: out-of-place factorization\n");
+  if (lu->ordering == ORDER_NATURAL)  order = "Natural";
+  else if (lu->ordering == ORDER_ND)  order = "Nested Dissection";
+  else if (lu->ordering == ORDER_1WD) order = "One-way Dissection";
+  else if (lu->ordering == ORDER_RCM) order = "Reverse Cuthill-McGee";
+  else if (lu->ordering == ORDER_QMD) order = "Quotient Minimum Degree";
+  else                                order = "unknown";
+  MPIU_fprintf(pc->comm,fd,"      matrix ordering: %s\n",order);
   return 0;
 }
 
@@ -85,13 +96,15 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 
 static int PCSetUp_LU(PC pc)
 {
-  int       ierr;
-  PC_LU *dir = (PC_LU *) pc->data;
-  MatType   type;
+  int         ierr;
+  PC_LU       *dir = (PC_LU *) pc->data;
+  MatType     type;
 
   ierr = MatGetType(pc->pmat,&type); CHKERRQ(ierr);
+  if (type == MATSEQBDIAG) dir->ordering = ORDER_NATURAL;
   if (dir->inplace) {
-    ierr = MatGetReordering(pc->pmat,ORDER_ND,&dir->row,&dir->col); CHKERRQ(ierr);
+    ierr = MatGetReorderingTypeFromOptions(0,&dir->ordering); CHKERRQ(ierr);
+    ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
     if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
 
     /* this uses an arbritrary 5.0 as the fill factor! User may set
@@ -100,16 +113,18 @@ static int PCSetUp_LU(PC pc)
   }
   else {
     if (!pc->setupcalled) {
-      ierr = MatGetReordering(pc->pmat,ORDER_ND,&dir->row,&dir->col); CHKERRQ(ierr);
-      if (dir->row) {PLogObjectParent(pc,dir->row);PLogObjectParent(pc,dir->col);}
-      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact);CHKERRQ(ierr);
+      ierr = MatGetReorderingTypeFromOptions(0,&dir->ordering); CHKERRQ(ierr);
+      ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
+      if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
+      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,dir->fact);
     }
     else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) { 
       ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
-      ierr = MatGetReordering(pc->pmat,ORDER_ND,&dir->row,&dir->col); CHKERRQ(ierr);
+      ierr = MatGetReorderingTypeFromOptions(0,&dir->ordering); CHKERRQ(ierr);
+      ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
       if (dir->row) {PLogObjectParent(pc,dir->row);PLogObjectParent(pc,dir->col);}
-      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact);CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,dir->fact);
     }
     ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERRQ(ierr);
@@ -143,6 +158,7 @@ int PCCreate_LU(PC pc)
   dir->inplace   = 0;
   dir->col       = 0;
   dir->row       = 0;
+  dir->ordering  = ORDER_ND;
   pc->destroy    = PCDestroy_LU;
   pc->apply      = PCApply_LU;
   pc->setup      = PCSetUp_LU;
