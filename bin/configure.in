@@ -601,7 +601,8 @@ ac_cv_func_sysinfo3,
 #include <sys/systeminfo.h>
 #else
 'Cannot check sysinfo without special headers'
-#fi],[
+#endif
+],[
     char buf[10];
     long  count=10;
     sysinfo( 1, buf, count );],
