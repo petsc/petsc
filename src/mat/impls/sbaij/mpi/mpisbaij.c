@@ -2340,7 +2340,7 @@ int MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal
 {
   Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
   int            ierr;
-  PetscReal      mone=-1.0;
+  PetscScalar    mone=-1.0;
   Vec            lvec1,bb1;
   MatSORType     lflg=SOR_LOCAL_SYMMETRIC_SWEEP;
  
