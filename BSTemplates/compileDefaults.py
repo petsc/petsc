@@ -629,6 +629,13 @@ class UsingMatlab(UsingCompiler):
   def getCompiler(self, library):
     return compile.CompileMatlabCxx(self.usingSIDL.sourceDB)
 
+  def getClientLibrary(self, project, lang, isArchive = 1, root = None):
+    '''Need to return empty fileset for Matlab client library'''
+    if lang == self.getLanguage():
+      return fileset.FileSet()
+    else:
+      return UsingCompiler.getClientLibrary(self, project, lang, isArchive, root)
+
   def getClientLinkTarget(self, project, doLibraryCheck = 1):
     libraries = fileset.FileSet([])
     libraries.extend(self.usingSIDL.getExtraLibraries()[self.getLanguage()])
