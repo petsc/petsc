@@ -17,6 +17,7 @@ class Configure(PETSc.package.Package):
     self.liblist        = [[],
                            ['liblammpi++.a','libmpi.a','liblam.a'],
                            ['libmpich.a'],
+                           ['mpich.lib','ws2_32.lib'],
                            ['libmpich.a', 'libpmpich.a'],
                            ['libfmpich.a','libmpich.a', 'libpmpich.a'],
                            ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
@@ -89,8 +90,8 @@ class Configure(PETSc.package.Package):
     # Try MPICH install locations under Windows
     yield(os.path.join('/cygdrive','c','Program\\ Files','MPICH'))
     yield(os.path.join('c:','Program\\ Files','MPICH'))
-    yield(os.path.join('c:','Program\\ Files','MPICH','SDK'))
     yield(os.path.join('c:','Program\\ Files','MPICH','SDK.gcc'))
+    yield(os.path.join('c:','Program\\ Files','MPICH','SDK'))
     return
 
   def checkSharedLibrary(self):
