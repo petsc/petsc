@@ -1019,6 +1019,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
   int          ierr,*idx,*diag,n = A->n,m = A->m,i,shift = a->indexshift;
 
   PetscFunctionBegin;
+  its = its*lits;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   if (xx != bb) {
     ierr = VecGetArray(bb,&b);CHKERRQ(ierr);

@@ -1786,7 +1786,8 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
   int          nz,nz1,*vj,*vj1,i;
 
   PetscFunctionBegin;
-  
+  its = its*lits;
+
   if (bs > 1)
     SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
 

@@ -361,6 +361,7 @@ int MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,
   }
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  its  = its*lits;
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP){
       for (i=0; i<m; i++) {
