@@ -341,6 +341,7 @@ class Configure(config.base.Configure):
       self.framework.addSubstitution('CFLIBS','-L/sw/lib/gcc/powerpc-apple-darwin7.0.0/3.4')
       cflibs = ' -L/sw/lib/gcc/powerpc-apple-darwin7.0.0/3.4 '
     else:
+      self.framework.addSubstitution('CFLIBS','')
       cflibs = ''
     
     self.framework.log.write('Libraries needed to link against Fortran compiler'+self.flibs+'\n')
