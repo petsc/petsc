@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.235 1997/10/09 15:39:19 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.236 1997/10/18 14:38:07 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3510,13 +3510,6 @@ supported for the AIJ matrix format.
 \chapter{TS: Scalable ODE Solvers}
 \sindex{ODE solvers}
 
-This chapter introduces an early release of the TS component of PETSc.
-We encourage users to give us input on needed functionality and the
-interface.  We expect to make changes as we refine the component based
-on such feedback.
-
-\medskip \medskip
-
 \findex{TS} 
 The TS component provides a framework for the scalable solution of ODEs
 arising from the discretization of time-dependent PDEs, and of
@@ -3687,6 +3680,44 @@ Jacobian as a matrix; thus, if using a matrix-free approach is used, the
 user must create a {\tt MatShell} matrix. Again, note the similarity
 to {\tt SNESSetJacobian()}. \findex{SNESSetJacobian()}
 \end{itemize}
+
+\subsection{Using PVODE from PETSc}
+
+PVODE is a parallel ODE solver developed by Hindmarsh et al. at LLNL \cite{?}.
+The TS component provides an interface to use PVODE directly from PETSc.
+(To install PETSc to use PVODE, see the Installation guide.) 
+
+To use the PVODE integrators call 
+\begin{verbatim}
+  ierr = TSSetType(TS ts,TSType TS_PVODE);
+\end{verbatim}
+or the command line option {\tt -ts\_type pvode}. \findex{TS_PVODE} 
+\sindex{PVODE} \sindex{Hindmarsh} \sindex{ODE solvers}
+
+PVODE comes with to main integrator families, Adams and BDF, backward 
+differentiation formula. One selects these with 
+\begin{verbatim}
+  ierr = TSPvodeSetType(TS ts,TSPvodeType [PVODE_ADAMS,PVODE_BDF]);
+\end{verbatim}
+or the command line option {\tt -ts\_pvode\_type <adams,bdf>}. BDF is
+the default. \findex{-ts_pvode_type} \findex{TSPVodeType}
+\findex{TSPvodeSetType()} \sindex{Adams} \sindex{BDF}
+
+PVODE does not use SNES for its nonlinear solver so one cannot change
+the nonlinear solver options via SNES. Rather, PVODE uses PC, you can 
+obtain the PC object via
+\begin{verbatim}
+  ierr = TSPvodeGetPC(TS ts,PC *pc);
+\end{verbatim}
+and thus set preconditioner options; or use the command line interface
+via {\tt -pc\_xxx}. \findex{TSPvodeGetPC()}
+
+Finally, one can set the PVODE tolerances via
+\begin{verbatim}
+  ierr = TSPvodeSetTolerance(TS ts,double abs,double rel);
+\end{verbatim}
+where {\tt abs} denotes the absolute tolerance and {\tt rel}
+the relative tolerance. \findex{TSPvodeSetTolerance()}
 
 \subsection{Solving Steady-State Problems with Pseudo-Timestepping}
 For solving steady-state problems with pseudo-timestepping one proceeds 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.11 1997/10/14 20:50:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.12 1997/10/19 03:28:26 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: petscpvode.c,v 1.11 1997/10/14 20:50:52 bsmith Exp bs
 /*
       TSPrecond_PVode - function that we provide to PVODE to
                         evaluate the preconditioner.
+
+    Contributed by: Liyang Xu
 
 */
 #undef __FUNC__
@@ -33,7 +35,6 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
   Vec          tmpy = cvode->w1;
   Scalar       one = 1.0, gm;
   MatStructure str = DIFFERENT_NONZERO_PATTERN;
-
   
   PetscFunctionBegin;
   /* This allows use to construct preconditioners in-place if we like */
@@ -79,7 +80,8 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
      TSPSolve_PVode -  routine that we provide to PVode that applies the 
                        preconditioner.
       
-   ---------------------------------------------------------------------
+    Contributed by: Liyang Xu
+
 */    
 #undef __FUNC__
 #define __FUNC__ "TSPSolve_PVode"
@@ -105,6 +107,7 @@ static int TSPSolve_PVode(integer N, real tn, N_Vector y,
       Solve the Px=r and put the result in xx 
   */
   ierr = PCApply(pc,rr,xx); CHKERRQ(ierr);
+  ts->linear_its++;
 
   PetscFunctionReturn(0);
 }
@@ -113,7 +116,7 @@ static int TSPSolve_PVode(integer N, real tn, N_Vector y,
         TSFunction_PVode - routine that we provide to PVode that applies the 
                            right hand side.
       
-   ---------------------------------------------------------------------
+    Contributed by: Liyang Xu
 */  
 #undef __FUNC__  
 #define __FUNC__ "TSFunction_PVode"
@@ -138,7 +141,7 @@ static void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
 /*
        TSStep_PVode_Nonlinear - Calls PVode to integrate the ODE.
 
-   ----------------------------------------------------------------------
+    Contributed by: Liyang Xu
 */
 #undef __FUNC__  
 #define __FUNC__ "TSStep_PVode_Nonlinear"
@@ -187,14 +190,16 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
   }
 
   ts->nonlinear_its = cvode->iopt[NNI];
-  ts->linear_its    = 0;
   *steps           += ts->steps;
   *time             = t;
 
   PetscFunctionReturn(0);
 }
 
-/*--------------------------------------------------------------------*/
+/*
+
+    Contributed by: Liyang Xu
+*/
 #undef __FUNC__  
 #define __FUNC__ "TSDestroy_PVode"
 static int TSDestroy_PVode(PetscObject obj )
@@ -216,7 +221,10 @@ static int TSDestroy_PVode(PetscObject obj )
 }
 
 
-/*--------------------------------------------------------------------*/
+/*
+
+    Contributed by: Liyang Xu
+*/
 #undef __FUNC__  
 #define __FUNC__ "TSSetUp_PVode_Nonlinear"
 static int TSSetUp_PVode_Nonlinear(TS ts)
@@ -237,9 +245,6 @@ static int TSSetUp_PVode_Nonlinear(TS ts)
   cvode->y         = N_VNew(M,machEnv); 
   ierr = VecGetArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
 
-  /* set tolerance for PVode */
-  cvode->abstol = 1e-6;
-  cvode->reltol = 1e-6;
 
 
   /* initializing vector update and func */
@@ -269,8 +274,10 @@ static int TSSetUp_PVode_Nonlinear(TS ts)
   PetscFunctionReturn(0);
 }
 
-/*-----------------------------------------------------------------------------*/
+/*
 
+    Contributed by: Liyang Xu
+*/
 #undef __FUNC__  
 #define __FUNC__ "TSSetFromOptions_PVode_Nonlinear"
 static int TSSetFromOptions_PVode_Nonlinear(TS ts)
@@ -278,35 +285,33 @@ static int TSSetFromOptions_PVode_Nonlinear(TS ts)
   TS_PVode *cvode = (TS_PVode*) ts->data;
   int      ierr, flag;
   char     method[128];
+  double   aabs = PETSC_DECIDE,rel = PETSC_DECIDE;
 
   PetscFunctionBegin;
-  /*
-     Allows user to set any of the PC options 
-     -ts_pvode_type bdf or adams
-  */
+
   ierr = OptionsGetString(PETSC_NULL,"-ts_pvode_type",method,127,&flag);CHKERRQ(ierr);
-  
   if (flag) {
     if (PetscStrcmp(method,"bdf") == 0) {
-      ierr = TSPVodeSetType(ts, BDF); CHKERRQ(ierr);
-    }
-    else if (PetscStrcmp(method,"adams") == 0) {
-      ierr = TSPVodeSetType(ts, ADAMS); CHKERRQ(ierr);
-    }
-    else {
+      ierr = TSPVodeSetType(ts, PVODE_BDF); CHKERRQ(ierr);
+    } else if (PetscStrcmp(method,"adams") == 0) {
+      ierr = TSPVodeSetType(ts, PVODE_ADAMS); CHKERRQ(ierr);
+    } else {
       SETERRQ(1,0,"Unknow PVode method. \n");
     }
   }
-  else {
-    ierr = TSPVodeSetType(ts, BDF); CHKERRQ(ierr); /* the default method */
-  }
+  ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_atol",&aabs,&flag);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_rtol",&rel,&flag);CHKERRQ(ierr);
+  ierr = TSPVodeSetTolerance(ts,aabs,rel);
+
   ierr = PCSetFromOptions(cvode->pc); CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
 
-/*--------------------------------------------------------------------------------*/
+/*
 
+    Contributed by: Liyang Xu
+*/
 #undef __FUNC__  
 #define __FUNC__ "TSPrintHelp_PVode" 
 static int TSPrintHelp_PVode(TS ts,char *p)
@@ -317,32 +322,52 @@ static int TSPrintHelp_PVode(TS ts,char *p)
   PetscFunctionBegin;
   PetscPrintf(ts->comm," Options for TSPVODE integrater:\n");
   PetscPrintf(ts->comm," -ts_pvode_type <bdf,adams>: integration approach",p);
+  PetscPrintf(ts->comm," -ts_pvode_atol aabs: absolute tolerance",p);
+  PetscPrintf(ts->comm," -ts_pvode_rtol rel: relative tolerance",p);
 
   ierr = PCPrintHelp(cvode->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-/*--------------------------------------------------------------------------------*/
+/*
+
+    Contributed by: Liyang Xu
+*/
 #undef __FUNC__  
 #define __FUNC__ "TSView_PVode" 
 static int TSView_PVode(PetscObject obj,Viewer viewer)
 {
-  TS       ts = (TS) obj;
-  TS_PVode *cvode = (TS_PVode*) ts->data;
-  int      ierr;
-  MPI_Comm comm;
-  FILE     *fd;
+  TS         ts = (TS) obj;
+  TS_PVode   *cvode = (TS_PVode*) ts->data;
+  int        ierr;
+  MPI_Comm   comm;
+  FILE       *fd;
+  char       *type;
+  ViewerType vtype;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm(obj,&comm); CHKERRQ(ierr);
-  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  PetscFPrintf(comm,fd,"PVode integrater does not use SNES!\n");
+  if (cvode->cvode_type == PVODE_ADAMS) {type = "Adams";}
+  else {type = "BDF: backward differentiation formula";}
+
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = PetscObjectGetComm(obj,&comm); CHKERRQ(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    PetscFPrintf(comm,fd,"PVode integrater does not use SNES!\n"); 
+    PetscFPrintf(comm,fd,"PVode integrater type %s\n",type);
+    PetscFPrintf(comm,fd,"PVode abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);
+  } else if (vtype == STRING_VIEWER) {
+    ViewerStringSPrintf(viewer,"Pvode type %s",type);
+  } 
   ierr = PCView(cvode->pc,viewer); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
-/* ---------------------------------------------------------------------------- */
+/*
+
+    Contributed by: Liyang Xu
+*/
 #undef __FUNC__  
 #define __FUNC__ "TSCreate_PVode"
 int TSCreate_PVode(TS ts )
@@ -367,13 +392,16 @@ int TSCreate_PVode(TS ts )
   PetscMemzero(cvode,sizeof(TS_PVode));
   ierr     = PCCreate(ts->comm, &cvode->pc); CHKERRQ(ierr);
   PLogObjectParent(ts,cvode->pc);
-  ts->data = (void *) cvode;
+  ts->data          = (void *) cvode;
+  cvode->cvode_type = BDF;
+
+  /* set tolerance for PVode */
+  cvode->abstol = 1e-6;
+  cvode->reltol = 1e-6;
 
   PetscFunctionReturn(0);
 }
 
-
-/*-----------------------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "TSPVodeSetType"
 /*@
@@ -382,6 +410,8 @@ int TSCreate_PVode(TS ts )
    Input parameters:
     ts     - the time-step context
     type - one of  PVODE_ADAMS or PVODE_BDF
+
+    Contributed by: Liyang Xu
 
 .keywords: Adams, backward differentiation formula
 
@@ -396,7 +426,33 @@ int TSPVodeSetType(TS ts, TSPVodeType type)
   PetscFunctionReturn(0);
 }
 
-/*-----------------------------------------------------------------------------*/
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetTolerance"
+/*@
+   TSPVodeSetTolerance - Sets the absolute and relative tolerance used by 
+                         PVode for error control.
+
+   Input parameters:
+.    ts  - the time-step context
+.    aabs - the absolute tolerance  
+.    rel - the relative tolerance
+
+    Contributed by: Liyang Xu
+
+.keywords: PVode, tolerance
+
+@*/
+int TSPVodeSetTolerance(TS ts, double aabs, double rel)
+{
+  TS_PVode *cvode = (TS_PVode*) ts->data;
+  
+  PetscFunctionBegin;
+  if (ts->type != TS_PVODE) PetscFunctionReturn(0);
+  if (aabs != PETSC_DECIDE) cvode->abstol = aabs;
+  if (rel != PETSC_DECIDE)  cvode->reltol = rel;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ "TSPVodeGetPC"
 /*
@@ -407,6 +463,8 @@ int TSPVodeSetType(TS ts, TSPVodeType type)
 
    Output Parameter:
 .    pc - the preconditioner context
+
+    Contributed by: Liyang Xu
 
 .seealso: 
 */
