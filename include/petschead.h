@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.20 1995/11/01 23:22:08 bsmith Exp bsmith $ */
+/* $Id: phead.h,v 1.21 1995/12/11 22:14:14 bsmith Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -30,7 +30,9 @@
   MPI_Comm    comm;                        \
   PetscObject parent;                      \
   char*       name;                        \
-  /*  ... */                               \
+  void *      child;                       \
+  int         childcopy(void *,void*);     
+  /*  ... */                               
 
 #define  PETSCFREEDHEADER -1
 
