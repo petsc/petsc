@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.35 2001/04/30 15:12:02 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.36 2001/05/01 16:19:08 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -435,10 +435,8 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   DMMG        dmmg = (DMMG)ptr;
   int         ierr;
-  Scalar      **x,**f;
   Vec         localX;
   DA          da = (DA)dmmg->dm;
-  DALocalInfo info;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
@@ -450,24 +448,7 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
-  
-  /*
-     Get pointers to vector data
-  */
-  ierr = DAVecGetArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
-
-  /*
-     Compute function over the locally owned part of the grid
-  */
-  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = (*dmmg->computefunctionlocal)(&info,x,f,dmmg->user);CHKERRQ(ierr); 
-
-  /*
-     Restore vectors
-  */
-  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
+  ierr = DAFormFunction1(da,dmmg->computefunctionlocal,localX,F,dmmg->user);
 
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
 
