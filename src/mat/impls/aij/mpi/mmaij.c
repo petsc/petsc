@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.29 1996/08/08 14:42:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.30 1996/08/15 12:47:27 bsmith Exp bsmith $";
 #endif
 
 
@@ -107,7 +107,7 @@ int DisAssemble_MPIAIJ(Mat A)
 
   /* make sure that B is assembled so we can access its values */
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* invent new B and copy stuff over */
   nz = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(nz);
