@@ -22,8 +22,3 @@ MPI_LIB        = -lmpiuni
 MPIRUN         = $(PETSC_DIR)/src/sys/src/mpiuni/mpirun
 
 # ----------------------------------------------------------------------------------------  
-#
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#

@@ -90,9 +90,6 @@ PETSC_HAVE_SAMG = -DPETSC_HAVE_SAMG
 SAMG_MOD        = -module/home/petsc/software/20b1/samg/
 #
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
 #
 # ---------------------------------------------------------------------------------------
 #

@@ -31,7 +31,3 @@ MPIRUN         = mpirun
 #PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#

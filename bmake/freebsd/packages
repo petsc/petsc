@@ -77,7 +77,3 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
 #LUSOL_LIB = 
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#

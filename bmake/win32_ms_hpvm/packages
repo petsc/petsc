@@ -31,7 +31,3 @@ MPI_LIB        = -L"$(MPI_HOME)/lib" mpi.lib fm.lib wsock32.lib shell32.lib
 #PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#

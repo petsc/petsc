@@ -63,7 +63,3 @@ SUPERLU_DIST_INCLUDE    = -I/usr/local/pkg/acts/SuperLU/SuperLU_DIST_1.0/SRC
 SUPERLU_DIST_LIB        = /usr/local/pkg/acts/SuperLU/SuperLU_DIST_1.0/lib/libsuperlu_dist_64bit.a
 PETSC_HAVE_SUPERLU_DIST = -DPETSC_HAVE_SUPERLU_DIST
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#

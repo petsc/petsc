@@ -16,6 +16,7 @@ MKDIR              = @MKDIR@
 PARCH              = @PETSC_ARCH@
 LIB_SUFFIX         = @LIB_SUFFIX@
 
+BFORT              = @BFORT@
 top_builddir       = @PETSC_DIR@
 LIBTOOL            = @LIBTOOL@
 PETSC_LIBTOOL      = ${PETSC_DIR}/bin/petsc_libtool

@@ -36,7 +36,3 @@ TAU_LIB              = -L${TAUROOT}/${CONFIG_ARCH}/lib -ltau-mpi-pdt -lTauMpi-mp
 PDT_PARSE            = ${PDTDIR}/${PDTARCHDIR}/bin/cxxparse
 TAU_INSTR            = ${TAUROOT}/${CONFIG_ARCH}/bin/tau_instrumentor
 #
-#  Location of bfort; generates Fortran stubs from C
-#
-BFORT = bfort
-#
