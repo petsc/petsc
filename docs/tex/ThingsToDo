@@ -7,6 +7,66 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+Lois,
+
+   The other day you asked me what functionality I would
+like in for sparse symmetric matrices.  Here are a few suggestions
+that would fall on my wish list.  I haven't looked thoroughly
+through Hong's work, so some of these things may already be done.
+Other suggestions may not really apply to this class, but here they are.
+
+1.  MatrixAXPY.  In positive semidefinite programming, some of the
+variables are positive symmetric matrices.  One of the operations required
+to solve these problems is the sum indefinite symmmetic matrices.  The sum
+must always be positive definite. In most applications, there are many,
+many matrices that need to be added together.  These matrices are often
+very sparse -- sometimes containing only one nonzero element. Since the
+matrices get added many times (in varying linear combinations), an
+efficient implementation is very important.  In most of the current
+software, these matrix sums usually take less that 5% of the computation
+time, so even even an efficient sequential version offers a lot of
+potential for scalability in positive semidefinite programming.
+
+
+2.  One particular algorithm for solving positive semidefinite programs
+requires a Cholesky factorization. Sometimes the sum of the matrices is
+sparse and sometimes it is dense. I currently apply the command
+MatCholeskyFactor() command which accesses only the lower half of the
+dnese matrix. I would hope to apply this operation to sparse symmetric or
+dense matrices.  When adding sparse matrices to dense ones, do we get a
+lower triangular matrix or an upper triangular matrix?
+
+3.  Set a matrix option about whether a matrix is a factorization
+or not.  Currently, when I want to write over a factored dense
+matrix, I have to access the matrix data and manually set the flag.
+
+4.   It may also be worthwhile to have a symbolic stage, where the
+application first figures out the sparsity pattern of the sum of the
+matrices, and figures out a good ordering.  In this application, many
+different positive semidefinite matrices with an identical sparsity
+pattern get factored.
+
+5. MatMult(), MatSolve(),MatDuplicate(), MatExtractSubMatrix(), 
+MatShiftDiagonal();
+
+6. I have sometimes used a Cholesky factorization as a test for
+whether or not the matrix is positive definite.  If not, returning
+a flag would be more preferable than a printed error message.
+
+7.  Either SYMMLQ or MINRES for solving symmetric, indefinite systems
+with symmetric preconditioning.  This would be great to have in
+parallel.  Our KKT systems for constrained optimization are usually
+positive definite and could benefit from a symmetric solver.
+
+
+These are just suggestions I have for you.  If I was unclear, I
+would be happy to clarify things.
+
+Hong told me about her Cholesky factorization software.  I will try it out
+and give her any feedback I have.
+
+Steve
+
 > Some suggestions on the truncated SNES.
 > 
 > If KSP does not  use true residual to check convergence the EW context fails
