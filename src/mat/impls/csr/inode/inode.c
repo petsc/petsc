@@ -1592,8 +1592,7 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
   PetscTruth     flag,flg;
 
   PetscFunctionBegin;
-  if (a->inode.checked) PetscFunctionReturn(0);
-  if (samestructure) PetscFunctionReturn(0);
+  if (a->inode.checked && samestructure) PetscFunctionReturn(0);
 
   a->inode.checked = PETSC_TRUE;
 
@@ -1630,15 +1629,6 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
   /* If not enough inodes found,, do not use inode version of the routines */
   if (!a->inode.size && m && node_count > 0.9*m) {
     ierr = PetscFree(ns);CHKERRQ(ierr);
-/*     A->ops->mult            = MatMult_SeqAIJ; */
-/*     A->ops->multadd         = MatMultAdd_SeqAIJ; */
-/*     A->ops->solve           = MatSolve_SeqAIJ; */
-/*     A->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ; */
-/*     A->ops->getrowij        = MatGetRowIJ_SeqAIJ; */
-/*     A->ops->restorerowij    = MatRestoreRowIJ_SeqAIJ; */
-/*     A->ops->getcolumnij     = MatGetColumnIJ_SeqAIJ; */
-/*     A->ops->restorecolumnij = MatRestoreColumnIJ_SeqAIJ; */
-/*     A->ops->coloringpatch   = 0; */
     a->inode.node_count     = 0;
     a->inode.size           = PETSC_NULL;
     a->inode.use            = PETSC_FALSE;
