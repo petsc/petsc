@@ -38,6 +38,9 @@ add to it).
 
   General
 
+   All include files like mat.h vec.h sles.h snes.h ts.h etc are now changed to petscmat.h petscvec.h
+   petscsles.h petscsnes.h petscts.h
+
   added PetscSetHelpVersionFunctions() for developers of other libraries that use PETSc.
 
   added PetscPoUpSelect(), see src/sys/examples/tests/ex15.c
