@@ -58,9 +58,9 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-CXX_LD=<prog>',     nargs.Arg(None, None, 'Specify the linker for C++ only'))
     help.addArgument('Compilers', '-FC_LD=<prog>',      nargs.Arg(None, None, 'Specify the linker for Fortran only'))
     help.addArgument('Compilers', '-LDFLAGS=<string>',  nargs.Arg(None, '',   'Specify the linker options'))
-    help.addArgument('Compilers', '-with-ar',                    nargs.Arg(None, 'ar',   'Specify the archiver'))
+    help.addArgument('Compilers', '-with-ar',                    nargs.Arg(None, None,   'Specify the archiver'))
     help.addArgument('Compilers', 'AR',                          nargs.Arg(None, None,   'Specify the archiver flags'))
-    help.addArgument('Compilers', 'AR_FLAGS',                    nargs.Arg(None, 'cr',   'Specify the archiver flags'))
+    help.addArgument('Compilers', 'AR_FLAGS',                    nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('Compilers', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
     return
 
@@ -515,6 +515,26 @@ class Configure(config.base.Configure):
     self.addSubstitution('SHARED_LIBRARY_FLAG', self.sharedLibraryFlag)
     return
 
+  def generateArchiverFlags(self,archiver):
+    flag = ''
+    if 'AR_FLAGS' in self.framework.argDB: flag = self.framework.argDB['AR_FLAGS']
+    elif archiver == 'ar': flag = 'cr'
+    elif archiver == 'win32fe lib': flag = '-a'
+    elif archiver == 'win32fe tlib': flag = '-a -P512'
+    return flag
+  
+  def generateArchiverGuesses(self):
+    if 'with-ar' in self.framework.argDB:
+      yield (self.framework.argDB['with-ar'],self.generateArchiverFlags(self.framework.argDB['with-ar']))
+      raise RuntimeError('You set a value for --with-ar=<archiver>, but '+self.framework.argDB['with-ar']+' cannot be used\n')
+    if 'AR' in self.framework.argDB:
+      yield (self.framework.argDB['AR'],self.generateArchiverFlags(self.framework.argDB['AR']))
+      raise RuntimeError('You set a value for -AR=<archiver> (perhaps in your environment), but '+self.framework.argDB['AR']+' cannot be used\n')
+    yield ('ar',self.generateArchiverFlags('ar'))
+    yield ('win32fe tlib',self.generateArchiverFlags('win32fe tlib'))
+    yield ('win32fe lib',self.generateArchiverFlags('win32fe lib'))
+    return
+  
   def configureArchiver(self):
     '''Check that the archiver exists and can make a library usable by the compiler'''
     def checkArchive(command, status, output, error):
@@ -525,27 +545,34 @@ class Configure(config.base.Configure):
         os.remove('conf1.o')
         raise RuntimeError('Archiver is not functional')
       return
-    self.framework.getExecutable(self.framework.argDB['with-ar'], getFullPath = 1, resultName = 'AR')
-    self.framework.addArgumentSubstitution('AR_FLAGS', 'AR_FLAGS')
+    oldLibs = self.framework.argDB['LIBS']
     self.pushLanguage('C')
     if not self.checkCompile('', 'int foo(int a) {\n  return a+1;\n}\n\n', cleanup = 0, codeBegin = '', codeEnd = ''):
       raise RuntimeError('Compiler is not functional')
     os.rename(self.compilerObj, 'conf1.o')
-    (output, error, status) = config.base.Configure.executeShellCommand(self.framework.AR+' '+self.framework.argDB['AR_FLAGS']+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
-    os.remove('conf1.o')
-    oldLibs = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] = 'conf1.a'
-    if not self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n', cleanup = 0):
-      self.framework.argDB['LIBS'] = oldLibs
+    for (archiver, flags) in self.generateArchiverGuesses():
+      self.framework.getExecutable(archiver, getFullPath = 1, resultName = 'AR')
+      (output, error, status) = config.base.Configure.executeShellCommand(archiver+' '+flags+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
+      self.framework.argDB['LIBS'] = 'conf1.a'
+      success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
       os.rename('conf1.a','conf1.lib')
-      self.framework.argDB['LIBS'] = 'conf1.lib'
-      if not self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n', cleanup = 0):
-        self.framework.argDB['LIBS'] = oldLibs
+      if not success:
+        self.framework.argDB['LIBS'] = 'conf1.lib'
+        success = self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
         os.remove('conf1.lib')
-        raise RuntimeError('Compiler cannot use libaries made by archiver')
-      os.remove('conf1.lib')
+        if success: break
+      else:
+        os.remove('conf1.lib')
+        break
     else:
-      os.remove('conf1.a')
+      os.remove('conf1.o')
+      self.framework.argDB['LIBS'] = oldLibs
+      self.popLanguage()
+      raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
+    self.framework.getExecutable(archiver, getFullPath = 1, resultName = 'AR')
+    self.framework.argDB['AR_FLAGS']=flags
+    self.framework.addArgumentSubstitution('AR_FLAGS','AR_FLAGS')
+    os.remove('conf1.o')
     self.framework.argDB['LIBS'] = oldLibs
     self.popLanguage()
     return
