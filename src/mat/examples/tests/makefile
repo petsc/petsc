@@ -199,4 +199,4 @@ ex24: ex24.o
 	-$(CLINKER) -o ex24 ex24.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex24.o
 
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

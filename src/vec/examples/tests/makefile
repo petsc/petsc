@@ -158,5 +158,5 @@ ex16: ex16.o
 	-$(CLINKER) -o ex16 ex16.o  $(SYSLIB) 
 	$(RM) -f ex16.o
 
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

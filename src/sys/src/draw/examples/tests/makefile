@@ -48,4 +48,4 @@ ex6: ex6.o
 	-$(CLINKER) -o ex6 ex6.o  $(SYSLIB)
 	$(RM) -f ex6.o
 
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

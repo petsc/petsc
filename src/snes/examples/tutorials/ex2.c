@@ -1,11 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.6 1995/04/15 18:09:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.7 1995/04/19 03:01:28 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve u`` + u^{2} = f\n";
 
 #include "draw.h"
 #include "snes.h"
+#include "options.h"
 #include <math.h>
 
 int  FormJacobian(Vec,Mat*,void*),
@@ -25,7 +26,7 @@ int main( int argc, char **argv )
   SNESMETHOD   method = SNES_NLS;  /* nonlinear solution method */
   Vec          x,r,F,U;
   Mat          J;
-  int          ierr, its, n = 5,i; 
+  int          ierr, its, n = 5,i,nox = 0; 
   double       h,xp = 0.0,v;
   MonitorCtx   monP;
 
@@ -33,8 +34,13 @@ int main( int argc, char **argv )
   OptionsGetInt(0,0,"-n",&n);
   h = 1.0/(n-1);
 
-  ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,400,400,&monP.win1); CHKERR(ierr);
-  ierr = DrawOpenX(MPI_COMM_SELF,0,0,400,0,400,400,&monP.win2); CHKERR(ierr);
+  if (OptionsHasName(0, 0,"-nox")) {
+    nox = 1;
+  }
+  else {
+    ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,400,400,&monP.win1); CHKERR(ierr);
+    ierr = DrawOpenX(MPI_COMM_SELF,0,0,400,0,400,400,&monP.win2); CHKERR(ierr);
+  }
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)x,"Approximate Solution");
   ierr = VecCreate(x,&r); CHKERRA(ierr);
@@ -55,7 +61,7 @@ int main( int argc, char **argv )
 
   ierr = SNESCreate(MPI_COMM_WORLD,&snes); CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,(void*)&monP);
+  if (!nox) ierr = SNESSetMonitor(snes,Monitor,(void*)&monP);
   ierr = SNESSetFromOptions(snes); CHKERR(ierr);
 
   /* Set various routines */
@@ -78,8 +84,10 @@ int main( int argc, char **argv )
   VecDestroy(F);
   MatDestroy(J);
   SNESDestroy( snes );	
-  DrawDestroy(monP.win1);			       
-  DrawDestroy(monP.win2);			       
+  if (!nox) {
+    DrawDestroy(monP.win1);			       
+    DrawDestroy(monP.win2);			       
+  }
   PetscFinalize();
 
   return 0;

@@ -16,8 +16,6 @@ int main(int argc,char **argv)
   Scalar   one = 1.0, two = 2.0, three = 3.0, dots[3],dot;
   double   norm;
   Vec      x,y,w,*z;
-  FILE     *fd = stdout;
- 
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.17 1995/04/12 23:50:44 curfman Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.18 1995/04/17 02:15:40 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -380,7 +380,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
   /* Accumulate the correction to the solution of the preconditioned problem
     in TEMP */
   VecSet( &zero, VEC_TEMP );
-  BasicMultiMaxpy(  &VEC_VV(0), it, nrs, VEC_TEMP );
+  VecMAXPY(it, nrs, VEC_TEMP, &VEC_VV(0) );
 
   /* If we preconditioned on the right, we need to solve for the correction to
      the unpreconditioned problem */
@@ -525,12 +525,13 @@ static int GMRESBuildSolution(KSP itP,Vec  ptr,Vec *result )
 }
 
 
-/*@
-  KSPGMRESSetOrthogRoutine - Sets the orthogonalization routine used by GMRES.
+/*
+  KSPGMRESSetOrthogRoutine - Sets the orthogonalization routine used by 
+                             GMRES.
 
   Input Parameters:
 .   itP   - iterative context obtained from KSPCreate
-.   fcn   - Orthogonalization function.  See iter/gmres/borthog.c for examples
+.   fcn   - Orthogonalization function.  
 
   Notes:
   The functions GMRESBasicOrthog and GMRESUnmodifiedOrthog are predefined.
@@ -538,7 +539,7 @@ static int GMRESBuildSolution(KSP itP,Vec  ptr,Vec *result )
   Gramm-Schmidt (NOT modified Gramm-Schmidt).  The GMRESUnmodifiedOrthog is 
   NOT recommended; however, for some problems, particularly when using 
   parallel distributed vectors, this may be significantly faster.
-@*/
+*/
 int KSPGMRESSetOrthogRoutine( KSP itP,int (*fcn)(KSP,int) )
 {
   VALIDHEADER(itP,KSP_COOKIE);
@@ -547,6 +548,31 @@ int KSPGMRESSetOrthogRoutine( KSP itP,int (*fcn)(KSP,int) )
   }
   return 0;
 }
+
+int GMRESUnmodifiedOrthog(KSP,int);
+
+/*@
+    KSPGMRESSetUseUnmodifiedGrammSchmidt - Sets GMRES to use unmodified
+        Gramm-Schmidt for the Orthogonalization. Not recommended, do 
+        to possible numerical problems, but may faster, especially in 
+        a parallel environment.
+        
+
+    Input Parameters:
+.   itP - the iterative context
+
+    Options Database Key:
+$   -ksp_gmres_unmodifiedgrammschmidt
+
+    Note:
+    The default is to use modified Gramm-Schmidt
+@*/
+int KSPGMRESSetUseUnmodifiedGrammSchmidt(KSP itP)
+{
+  return KSPGMRESSetOrthogRoutine( itP, GMRESUnmodifiedOrthog);
+}
+
+
 int KSPCreate_GMRES(KSP itP)
 {
   KSP_GMRES *gmresP;

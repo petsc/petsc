@@ -55,4 +55,4 @@ ex7: ex7.o
 	-$(CLINKER) -o ex7 ex7.o $(SYSLIB)
 	$(RM) ex7.o
 
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

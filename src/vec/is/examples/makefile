@@ -34,4 +34,4 @@ ex2: ex2.o
 	-$(CLINKER) -o ex2 ex2.o  $(SYSLIB)
 	$(RM) -f ex2.o
 
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

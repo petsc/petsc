@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.18 1995/04/16 03:50:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.19 1995/04/17 02:15:27 bsmith Exp bsmith $";
 #endif
 /*
     Command line interface for KSP
@@ -66,6 +66,9 @@ int KSPSetFromOptions(KSP ctx)
   if (OptionsGetInt(0,ctx->prefix,"-ksp_gmres_restart",&restart)) {
     KSPGMRESSetRestart(ctx,restart);
   }
+  if (OptionsHasName(0,0,"-ksp_gmres_unmodifiedgrammschmidt")) {
+    KSPGMRESSetUseUnmodifiedGrammSchmidt(ctx);
+  }
   if (OptionsHasName(0,0,"-ksp_eigen")) {
     KSPSetCalculateEigenvalues(ctx);
   }
@@ -108,6 +111,7 @@ int KSPPrintHelp(KSP ctx)
     fprintf(stderr," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
     fprintf(stderr," %sksp_gmres_restart num: gmres restart, defaults to 10)\n",p);
     fprintf(stderr," %sksp_eigen: calculate eigenvalues during linear solve\n",p);
+    fprintf(stderr," %sksp_gmres_unmodifiedgrammschmidt\n",p);
   }
   return 1;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.22 1995/04/24 18:41:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.23 1995/04/25 16:20:25 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -320,10 +320,13 @@ int VecWAXPY(Scalar *alpha,Vec x,Vec y,Vec w)
 @*/
 int VecPMult(Vec x,Vec y,Vec w)
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   VALIDHEADER(w,VEC_COOKIE);
-  CHKSAME(x,y); CHKSAME(y,w);
-  return (*x->ops->pmult)(x,y,w);
+  PLogEventBegin(VEC_PMult,x,y,w,0);
+  ierr = (*x->ops->pmult)(x,y,w); CHKERR(ierr);
+  PLogEventEnd(VEC_PMult,x,y,w,0);
+  return 0;
 } 
 /*@
      VecPDiv  -  Computes the componentwise division w = x/y.
