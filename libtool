@@ -40,7 +40,7 @@ if test "${CDPATH+set}" = set; then CDPATH=; export CDPATH; fi
 # LD="/usr/bin/ld" LDFLAGS="" LIBS="" \
 # NM="/usr/bin/nm -B" RANLIB="ranlib" LN_S="ln -s" \
 # DLLTOOL="" OBJDUMP="" AS="" \
-#   config/ltconfig --disable-shared --with-gcc --with-gnu-ld --enable-dlopen --enable-win32-dll --no-verify config/ltmain.sh i686-pc-linux-gnu
+#   config/ltconfig --with-gcc --with-gnu-ld --enable-dlopen --enable-win32-dll --no-verify config/ltmain.sh i686-pc-linux-gnu
 #
 # Compiler and other test output produced by ltconfig, useful for
 # debugging ltconfig, is in ./config.log if it exists.
@@ -52,13 +52,13 @@ LTCONFIG_VERSION="1.3.3"
 SHELL="/bin/sh"
 
 # Whether or not to build shared libraries.
-build_libtool_libs=no
+build_libtool_libs=yes
 
 # Whether or not to build static libraries.
 build_old_libs=yes
 
 # Whether or not to optimize for fast installation.
-fast_install=needless
+fast_install=yes
 
 # The host system.
 host_alias=i686-pc-linux-gnu
