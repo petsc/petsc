@@ -7,7 +7,11 @@ static char vcid[] = "$Id: vecserialize.c,v 1.10 2000/01/10 03:18:14 knepley Exp
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate"
 /*@C
-  VecCreate - Creates an empty vector object. The type can then be set with VecSetType().
+  VecCreate - Creates an empty vector object. The type can then be set with VecSetType(),
+  or VecSetFromOptions().
+
+   If you never  call VecSetType() or VecSetFromOptions() it will generate an 
+   error when you try to use the vector.
 
   Collective on MPI_Comm
 

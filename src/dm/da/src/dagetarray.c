@@ -5,7 +5,7 @@
 #undef __FUNCT__  
 #define __FUNCT__ "DAVecGetArray"
 /*@
-   DAVecGetArray - Returns an multiple dimension array that shares data with 
+   DAVecGetArray - Returns a multiple dimension array that shares data with 
       the underlying vector and is indexed using the global dimensions.
 
    Not Collective

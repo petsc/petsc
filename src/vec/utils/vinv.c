@@ -188,7 +188,7 @@ int VecStrideMax(Vec v,int start,int *index,PetscReal *nrm)
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
 -  nrm - the min
 
-   Level: intermediate
+   Level: advanced
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
