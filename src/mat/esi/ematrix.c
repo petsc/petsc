@@ -303,7 +303,7 @@ gov::cca::Component *create_esi_petsc_operatorfactory(void)
 #else
 ::esi::OperatorFactory<double,int> *create_esi_petsc_operatorfactory(void)
 {
-  return dynamic_cast<::esi::OperatorFactory<double,int> *>(new esi::petsc::OperatorFactory<double,int>);
+  return dynamic_cast< ::esi::OperatorFactory<double,int> *>(new esi::petsc::OperatorFactory<double,int>);
 }
 #endif
 EXTERN_C_END
