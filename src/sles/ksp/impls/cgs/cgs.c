@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.23 1996/03/10 17:27:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.24 1996/03/19 21:23:52 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -59,13 +59,13 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   ierr = VecCopy(R,RP); CHKERRQ(ierr);
 
   /* Set the initial conditions */
-  ierr = VecDot(RP,R,&rhoold); CHKERRQ(ierr);
+  ierr = VecDot(R,RP,&rhoold); CHKERRQ(ierr);        /* rhoold = (r,rp)      */
   ierr = VecCopy(R,U); CHKERRQ(ierr);
   ierr = VecCopy(R,P); CHKERRQ(ierr);
   ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,P,V,T); CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
-    ierr = VecDot(RP,V,&s); CHKERRQ(ierr);           /* s <- rp' v           */
+    ierr = VecDot(V,RP,&s); CHKERRQ(ierr);           /* s <- (v,rp)          */
     a = rhoold / s;                                  /* a <- rho / s         */
     tmp = -a; 
     ierr = VecWAXPY(&tmp,V,U,Q); CHKERRQ(ierr);      /* q <- u - a v         */
@@ -80,7 +80,7 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
     cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
     if (cerr) break;
 
-    ierr = VecDot(RP,R,&rho); CHKERRQ(ierr);         /* newrho <- rp' r      */
+    ierr = VecDot(R,RP,&rho); CHKERRQ(ierr);         /* rho <- (r,rp)        */
     b    = rho / rhoold;                             /* b <- rho / rhoold    */
     ierr = VecWAXPY(&b,Q,R,U); CHKERRQ(ierr);        /* u <- r + b q         */
     ierr = VecAXPY(&b,P,Q); CHKERRQ(ierr);

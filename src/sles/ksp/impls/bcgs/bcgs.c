@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.28 1996/03/10 17:27:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.29 1996/03/19 21:23:46 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -64,19 +64,19 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   ierr = VecSet(&zero,V); CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
-    ierr = VecDot(RP,R,&rho); CHKERRQ(ierr);       /*   rho <- rp' r       */
+    ierr = VecDot(R,RP,&rho); CHKERRQ(ierr);       /*   rho <- (r,rp)      */
     if (rho == 0.0) {fprintf(stderr,"Breakdown\n"); *its = -(i+1);return 0;} 
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
     ierr = VecAYPX(&beta,R,P); CHKERRQ(ierr);      /*   p <- r + p beta    */
     ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,
                          P,V,T); CHKERRQ(ierr);    /*   v <- K p           */
-    ierr = VecDot(RP,V,&d1); CHKERRQ(ierr);
-    alpha = rho / d1; tmp = -alpha;                /*   a <- rho / (rp' v) */
+    ierr = VecDot(V,RP,&d1); CHKERRQ(ierr);
+    alpha = rho / d1; tmp = -alpha;                /*   a <- rho / (v,rp)  */
     ierr = VecWAXPY(&tmp,V,R,S); CHKERRQ(ierr);    /*   s <- r - a v       */
     ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,
                          S,T,R); CHKERRQ(ierr);    /*   t <- K s           */
-    ierr = VecDot(T,S,&d1); CHKERRQ(ierr);
+    ierr = VecDot(S,T,&d1); CHKERRQ(ierr);
     ierr = VecDot(T,T,&d2); CHKERRQ(ierr);
     if (d2 == 0.0) {
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
