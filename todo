@@ -71,9 +71,9 @@
   ---------------------
   Better user interface 
   ---------------------
-  Add support for configure nonsense like --without --disable --enable ...
+  (Priority 0) Add support for configure nonsense like --without --disable --enable ...
 
-  Have make in the root directory stop on error in any compile! Default behavior
+  (Priority 0) Have make in the root directory stop on error in any compile! Default behavior
 
   Allow setting precision of printed numbers in ASCII viewers.
 
@@ -83,7 +83,6 @@
   should have instead self.framework.Box('message','url') that formats the 
   message with ** around it for users to see easily.
 
-  print error message at the end of make if any error detected in compile
 
   Do more error checking on user input arguments for nice error messages like if they
   pass a directory for -with-blas-lapack-dir or the other way around
