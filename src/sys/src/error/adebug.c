@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.68 1997/10/10 04:02:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.69 1997/10/19 03:23:45 bsmith Exp balay $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -71,7 +71,11 @@ int PetscAttachDebugger()
   char  program[256];
 
   PetscFunctionBegin;
-  PetscGetProgramName(program,256);
+  ierr = PetscGetProgramName(program,256);
+  if (ierr) {
+    fprintf(stderr,"PETSC ERROR: Cannot determine program name\n");
+    PetscFunctionReturn(1);
+  }
 #if defined(PARCH_t3d) 
   fprintf(stderr,"PETSC ERROR: Cray t3d cannot start debugger\n");
   MPI_Finalize();
@@ -81,7 +85,7 @@ int PetscAttachDebugger()
   MPI_Finalize();
   exit(0);
 #else
-  if (!program) {
+  if (!program[0]) {
     fprintf(stderr,"PETSC ERROR: Cannot determine program name\n");
     PetscFunctionReturn(1);
   }
