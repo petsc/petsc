@@ -104,6 +104,8 @@ EXTERN int PetscGetFlops(PetscLogDouble *);
 EXTERN int PetscLogStageRegister(int *, const char[]);
 EXTERN int PetscLogStagePush(int);
 EXTERN int PetscLogStagePop(void);
+EXTERN int PetscLogStageSetActive(int, PetscTruth);
+EXTERN int PetscLogStageGetActive(int, PetscTruth *);
 EXTERN int PetscLogStageSetVisible(int, PetscTruth);
 EXTERN int PetscLogStageGetVisible(int, PetscTruth *);
 EXTERN int PetscLogStageGetId(const char [], int *);
@@ -206,6 +208,7 @@ struct _ClassPerfLog {
 /* The structures for logging in stages */
 typedef struct _StageInfo {
   char         *name;     /* The stage name */
+  PetscTruth    used;     /* The stage was pushed on this processor */
   EventPerfInfo perfInfo; /* The stage performance information */
   EventPerfLog  eventLog; /* The event information for this stage */
   ClassPerfLog  classLog; /* The class information for this stage */
@@ -227,7 +230,9 @@ struct _StageLog {
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) 0; \
 {\
   int _2_ierr;\
-  if (_PetscLogPLB && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) {\
+  if (_PetscLogPLB && \
+      _stageLog->stageInfo[_stageLog->curStage].perfInfo.active && \
+      _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) {\
     _2_ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);\
     _2_ierr = MPI_Barrier(cm);CHKERRQ(_2_ierr);\
     _2_ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);\
@@ -237,7 +242,9 @@ struct _StageLog {
 
 #define PetscLogEventBegin(e,o1,o2,o3,o4) 0; \
 {\
-  if (_PetscLogPLB && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) {\
+  if (_PetscLogPLB && \
+      _stageLog->stageInfo[_stageLog->curStage].perfInfo.active && \
+      _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) {\
     (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   }\
   PETSC_LOG_EVENT_MPE_BEGIN(e); \
@@ -247,7 +254,9 @@ struct _StageLog {
 
 #define PetscLogEventEnd(e,o1,o2,o3,o4) 0; \
 {\
-  if (_PetscLogPLE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) {\
+  if (_PetscLogPLE && \
+      _stageLog->stageInfo[_stageLog->curStage].perfInfo.active && \
+      _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) {\
     (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   }\
   PETSC_LOG_EVENT_MPE_END(e); \
@@ -425,8 +434,8 @@ extern PetscTruth PetscPreLoadingOn;         /* true if we are currently in a pr
       _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
     } else {\
       _3_ierr = PetscLogStageRegister(&_stageNum,name);CHKERRQ(_3_ierr);\
-      _3_ierr = PetscLogStageSetVisible(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
     }\
+    _3_ierr = PetscLogStageSetActive(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
     _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
 
 #define PreLoadEnd() \
@@ -441,7 +450,7 @@ extern PetscTruth PetscPreLoadingOn;         /* true if we are currently in a pr
     _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
   } else {\
     _3_ierr = PetscLogStageRegister(&_stageNum,name);CHKERRQ(_3_ierr);\
-    _3_ierr = PetscLogStageSetVisible(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
   }\
+  _3_ierr = PetscLogStageSetActive(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
   _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
 #endif

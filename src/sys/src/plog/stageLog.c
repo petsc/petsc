@@ -101,7 +101,8 @@ int StageLogRegister(StageLog stageLog, const char sname[], int *stage) {
   /* Setup stage */
   ierr = PetscStrallocpy(sname, &str);                                                                    CHKERRQ(ierr);
   stageLog->stageInfo[s].name                   = str;
-  stageLog->stageInfo[s].perfInfo.active        = PETSC_FALSE;
+  stageLog->stageInfo[s].used                   = PETSC_FALSE;
+  stageLog->stageInfo[s].perfInfo.active        = PETSC_TRUE;
   stageLog->stageInfo[s].perfInfo.visible       = PETSC_TRUE;
   stageLog->stageInfo[s].perfInfo.count         = 0;
   stageLog->stageInfo[s].perfInfo.flops         = 0.0;
@@ -176,7 +177,7 @@ int StageLogPush(StageLog stageLog, int stage)
   }
   /* Activate the stage */
   ierr = StackPush(stageLog->stack, stage);                                                               CHKERRQ(ierr);
-  stageLog->stageInfo[stage].perfInfo.active = PETSC_TRUE;
+  stageLog->stageInfo[stage].used = PETSC_TRUE;
   stageLog->stageInfo[stage].perfInfo.count++;
   stageLog->curStage = stage;
   /* Subtract current quantities so that we obtain the difference when we pop */
@@ -397,6 +398,61 @@ int StageLogGetEventPerfLog(StageLog stageLog, int stage, EventPerfLog *eventLog
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
   }
   *eventLog = stageLog->stageInfo[stage].eventLog;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "StageLogSetActive"
+/*@C
+  StageLogSetActive - This function determines whether events will be logged during this state.
+
+  Not Collective
+
+  Input Parameters:
++ stageLog - The StageLog
+. stage    - The stage to log
+- isActive - The activity flag, PETSC_TRUE for logging, otherwise PETSC_FALSE (default is PETSC_TRUE)
+
+  Level: intermediate
+
+.keywords: log, active, stage
+.seealso: StageLogGetActive(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
+@*/
+int StageLogSetActive(StageLog stageLog, int stage, PetscTruth isActive) {
+  PetscFunctionBegin;
+  if ((stage < 0) || (stage >= stageLog->numStages)) {
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
+  }
+  stageLog->stageInfo[stage].perfInfo.active = isActive;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "StageLogGetActive"
+/*@C
+  StageLogGetActive - This function returns whether events will be logged suring this stage.
+
+  Not Collective
+
+  Input Parameters:
++ stageLog - The StageLog
+- stage    - The stage to log
+
+  Output Parameter:
+. isActive - The activity flag, PETSC_TRUE for logging, otherwise PETSC_FALSE (default is PETSC_TRUE)
+
+  Level: intermediate
+
+.keywords: log, visible, stage
+.seealso: StageLogSetActive(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
+@*/
+int StageLogGetActive(StageLog stageLog, int stage, PetscTruth *isActive) {
+  PetscFunctionBegin;
+  if ((stage < 0) || (stage >= stageLog->numStages)) {
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
+  }
+  PetscValidIntPointer(isActive);
+  *isActive = stageLog->stageInfo[stage].perfInfo.active;
   PetscFunctionReturn(0);
 }
 

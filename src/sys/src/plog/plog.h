@@ -92,6 +92,8 @@ EXTERN int PetscLogGetStageLog(StageLog *);
 EXTERN int StageLogPush(StageLog, int);
 EXTERN int StageLogPop(StageLog);
 EXTERN int StageLogGetCurrent(StageLog, int *);
+EXTERN int StageLogSetActive(StageLog, int, PetscTruth);
+EXTERN int StageLogGetActive(StageLog, int, PetscTruth *);
 EXTERN int StageLogSetVisible(StageLog, int, PetscTruth);
 EXTERN int StageLogGetVisible(StageLog, int, PetscTruth *);
 EXTERN int StageLogGetClassRegLog(StageLog, ClassRegLog *);

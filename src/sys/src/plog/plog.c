@@ -399,6 +399,58 @@ int PetscLogStagePop(void)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscLogStageSetActive"
+/*@C
+  PetscLogStageSetActive - Determines stage activity for PetscLogEventBegin() and PetscLogEventEnd().
+
+  Not Collective 
+
+  Input Parameters:
++ stage    - The stage
+- isActive - The activity flag, PETSC_TRUE for logging, else PETSC_FALSE (defaults to PETSC_TRUE)
+
+  Level: intermediate
+
+.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
+@*/
+int PetscLogStageSetActive(int stage, PetscTruth isActive) {
+  StageLog stageLog;
+  int      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
+  ierr = StageLogSetActive(stageLog, stage, isActive);                                                    CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogStageGetActive"
+/*@C
+  PetscLogStageGetActive - Returns stage activity for PetscLogEventBegin() and PetscLogEventEnd().
+
+  Not Collective 
+
+  Input Parameter:
+. stage    - The stage
+
+  Output Parameter:
+. isActive - The activity flag, PETSC_TRUE for logging, else PETSC_FALSE (defaults to PETSC_TRUE)
+
+  Level: intermediate
+
+.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
+@*/
+int PetscLogStageGetActive(int stage, PetscTruth *isActive) {
+  StageLog stageLog;
+  int      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
+  ierr = StageLogGetActive(stageLog, stage, isActive);                                                    CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscLogStageSetVisible"
 /*@C
   PetscLogStageSetVisible - Determines stage visibility in PetscLogPrintSummary()
@@ -411,7 +463,7 @@ int PetscLogStagePop(void)
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStagePop(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
+.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogPrintSummary()
 @*/
 int PetscLogStageSetVisible(int stage, PetscTruth isVisible)
 {
@@ -439,7 +491,7 @@ int PetscLogStageSetVisible(int stage, PetscTruth isVisible)
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStagePop(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
+.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogPrintSummary()
 @*/
 int PetscLogStageGetVisible(int stage, PetscTruth *isVisible)
 {
@@ -1140,7 +1192,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
     stageInfo = stageLog->stageInfo;
     for(stage = 0; stage < numStages; stage++) {
       if (stage < stageLog->numStages) {
-        localStageUsed[stage]    = stageInfo[stage].perfInfo.active;
+        localStageUsed[stage]    = stageInfo[stage].used;
         localStageVisible[stage] = stageInfo[stage].perfInfo.visible;
       } else {
         localStageUsed[stage]    = PETSC_FALSE;
