@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.31 2000/10/06 20:26:17 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.32 2000/10/10 19:49:14 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -923,6 +923,7 @@ extern int MatGetDiagonal_SeqSBAIJ(Mat,Vec);
 extern int MatDiagonalScale_SeqSBAIJ(Mat,Vec,Vec);
 extern int MatGetInfo_SeqSBAIJ(Mat,MatInfoType,MatInfo *);
 extern int MatZeroEntries_SeqSBAIJ(Mat);
+extern int MatGetRowMax_SeqSBAIJ(Mat,Vec);
 
 extern int MatSolve_SeqSBAIJ_N(Mat,Vec,Vec);
 extern int MatSolve_SeqSBAIJ_1(Mat,Vec,Vec);
