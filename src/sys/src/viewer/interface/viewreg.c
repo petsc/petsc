@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewreg.c,v 1.3 1999/01/13 21:46:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewreg.c,v 1.4 1999/01/31 16:04:48 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
-int   ViewerRegisterAllCalled = 0;
 FList ViewerList              = 0;
 
 #undef __FUNC__  
@@ -76,7 +75,7 @@ int ViewerSetType(Viewer viewer,ViewerType type)
     viewer->type_name = 0;
   }
   /* Get the function pointers for the graphics method requested */
-  if (!ViewerRegisterAllCalled) {ierr = ViewerRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  if (!ViewerList) SETERRQ(1,1,"No viewer implementations registered");
 
   ierr =  FListFind(viewer->comm, ViewerList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
 
@@ -113,7 +112,6 @@ int ViewerRegisterDestroy(void)
     ierr = FListDestroy( ViewerList );CHKERRQ(ierr);
     ViewerList = 0;
   }
-  ViewerRegisterAllCalled = 0;
   PetscFunctionReturn(0);
 }
 
@@ -193,7 +191,7 @@ int ViewerSetFromOptions(Viewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
-  if (!ViewerRegisterAllCalled) {ierr = ViewerRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!ViewerList) SETERRQ(1,1,"No viewer implementations registered");
   ierr = OptionsGetString(viewer->prefix,"-viewer_type",vtype,256,&flg);
   if (flg) {
     ierr = ViewerSetType(viewer,vtype); CHKERRQ(ierr);

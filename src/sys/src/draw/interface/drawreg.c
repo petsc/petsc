@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.4 1999/01/27 19:48:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawreg.c,v 1.5 1999/01/31 16:04:52 bsmith Exp bsmith $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
@@ -11,7 +11,6 @@ static char vcid[] = "$Id: drawreg.c,v 1.4 1999/01/27 19:48:25 bsmith Exp bsmith
    Contains the list of registered Draw routines
 */
 FList DrawList              = 0;
-int   DrawRegisterAllCalled = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "DrawCreate"
@@ -107,9 +106,9 @@ int DrawSetType(Draw draw,DrawType type)
   }
 
   /* Get the function pointers for the graphics method requested */
-  if (!DrawRegisterAllCalled) {ierr = DrawRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  if (!DrawList) SETERRQ(1,1,"No draw implementations ierr");
 
-  ierr =  FListFind(draw->comm, DrawList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
+  registered =  FListFind(draw->comm, DrawList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
 
   if (!r) SETERRQ1(1,1,"Unknown Draw type given: %s",type);
 
@@ -144,7 +143,6 @@ int DrawRegisterDestroy(void)
     ierr = FListDestroy( DrawList );CHKERRQ(ierr);
     DrawList = 0;
   }
-  DrawRegisterAllCalled = 0;
   PetscFunctionReturn(0);
 }
 
@@ -246,7 +244,7 @@ int DrawSetFromOptions(Draw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
 
-  if (!DrawRegisterAllCalled) {ierr = DrawRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!DrawList) SETERRQ(1,1,"No draw implementations registered");
   ierr = OptionsGetString(draw->prefix,"-draw_type",vtype,256,&flg);
   if (flg) {
     ierr = DrawSetType(draw,vtype); CHKERRQ(ierr);
