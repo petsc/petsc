@@ -84,12 +84,16 @@ typedef int PetscInt;
 
 /*
     Allows defining simple C++ polymorphic functions that remove certain
-   optional arguments for a simplier user interface.
+   optional arguments for a simplier user interface. Also allows returning
+   an out argument instead of returning the error code. Eventually we should
+   check the error code and generate an exception.
 */
 #if defined(__cplusplus)
 #define PetscPolymorphicSubroutine(A,B,C) inline PetscErrorCode A B {return A C;}
+#define PetscPolymorphicFunction(A,B,C,D,E) inline D A B {D E; A C;return E;}
 #else
 #define PetscPolymorphicSubroutine(A,B,C)
+#define PetscPolymorphicFunction(A,B,C,D,E)
 #endif
 
 /*

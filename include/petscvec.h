@@ -199,6 +199,8 @@ M*/
 
 EXTERN PetscErrorCode VecNorm(Vec,NormType,PetscReal *);
 PetscPolymorphicSubroutine(VecNorm,(Vec x,PetscReal *r),(x,NORM_2,r))
+PetscPolymorphicFunction(VecNorm,(Vec x,NormType t),(x,t,&r),PetscReal,r)
+PetscPolymorphicFunction(VecNorm,(Vec x),(x,NORM_2,&r),PetscReal,r)
 EXTERN PetscErrorCode VecNormComposedDataID(NormType,PetscInt*);
 EXTERN PetscErrorCode VecNormalize(Vec,PetscReal *);
 EXTERN PetscErrorCode VecSum(Vec,PetscScalar*);
