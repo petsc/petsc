@@ -170,10 +170,18 @@ class Logger(args.ArgumentProcessor):
           f.write(self.debugIndent)
     return
 
+  def logBack(self):
+    '''Backup the current line if we are not scrolling output'''
+    if not self.out is None and self.linewidth > 0:
+      self.out.write(''.join(['\b'] * self.linewidth))
+    return
+
   def logClear(self):
     '''Clear the current line if we are not scrolling output'''
     if not self.out is None and self.linewidth > 0:
       self.out.write(''.join(['\b'] * self.linewidth))
+      self.out.write(''.join([' '] * self.linewidth))
+      self.out.write(''.join(['\b'] * self.linewidth))      
     return
 
   def logWrite(self, msg, debugLevel = -1, debugSection = None, forceScroll = 0):
@@ -181,7 +189,7 @@ class Logger(args.ArgumentProcessor):
     for writeAll, f in enumerate([self.out, self.log]):
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
         if not forceScroll and not writeAll and self.linewidth > 0:
-          self.logClear()
+          self.logBack()
           f.write(msg[0:self.linewidth])
           f.write(''.join([' '] * (self.linewidth - len(msg))))
         else:
