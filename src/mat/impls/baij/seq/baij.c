@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.179 1999/06/30 23:51:46 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.180 1999/09/02 14:53:28 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1453,6 +1453,13 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
 
   if (mbs*bs!=m || nbs*bs!=n) {
     SETERRQ(PETSC_ERR_ARG_SIZ,0,"Number rows, cols must be divisible by blocksize");
+  }
+
+  if (nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"nz cannot be less than -2: value %d",nz);
+  if (nnz) {
+    for (i=0; i<m; i++) {
+      if (nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"nnz cannot be less than 0: local row %d value %d",i,nnz[i]);
+    }
   }
 
   *A = 0;
