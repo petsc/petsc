@@ -181,7 +181,10 @@ EXTERN int DAPublish_Petsc(PetscObject);
 +  -da_view - Calls DAView() at the conclusion of DACreate3d()
 .  -da_grid_x <nx> - number of grid points in x direction, if M < 0
 .  -da_grid_y <ny> - number of grid points in y direction, if N < 0
--  -da_grid_z <nz> - number of grid points in z direction, if P < 0
+.  -da_grid_z <nz> - number of grid points in z direction, if P < 0
+.  -da_refine_x - refinement ratio in x direction
+.  -da_refine_y - refinement ratio in y direction
+-  -da_refine_y - refinement ratio in z direction
 
    Level: beginner
 
@@ -196,8 +199,8 @@ EXTERN int DAPublish_Petsc(PetscObject);
 
 .keywords: distributed array, create, three-dimensional
 
-.seealso: DADestroy(), DAView(), DACreate1d(), DACreate2d(), DAGlobalToLocalBegin(),
-          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(),
+.seealso: DADestroy(), DAView(), DACreate1d(), DACreate2d(), DAGlobalToLocalBegin(), DAGetRefinementFactor(),
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(), DASetRefinementFactor(),
           DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
 
 @*/
@@ -246,9 +249,9 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DACreate3d",m,&m,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DACreate3d",n,&n,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DACreate3d",p,&p,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DACreate3d",refine_x,&refine_x,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DACreate3d",refine_y,&refine_y,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DACreate3d",refine_z,&refine_z,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DASetRefinementFactor",refine_x,&refine_x,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DASetRefinementFactor",refine_y,&refine_y,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DASetRefinementFactor",refine_z,&refine_z,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   M = tM; N = tN; P = tP;
 

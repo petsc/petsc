@@ -206,8 +206,7 @@ static PetscFList   dlallhead = 0;
    PetscFListAddDynamic - Given a routine and a string id, saves that routine in the
    specified registry.
 
-   Synopsis:
-   int PetscFListAddDynamic(PetscFList *fl,char *name,char *rname,int (*fnc)(void *))
+     Not Collective
 
    Input Parameters:
 +  fl    - pointer registry
@@ -216,7 +215,9 @@ static PetscFList   dlallhead = 0;
 -  fnc   - function pointer (optional if using dynamic libraries)
 
    Notes:
-   Users who wish to register new methods for use by a particular PETSc
+   To remove a registered routine, pass in a PETSC_NULL rname and fnc().
+
+   Users who wish to register new classes for use by a particular PETSc
    component (e.g., SNES) should generally call the registration routine
    for that particular component (e.g., SNESRegisterDynamic()) instead of
    calling PetscFListAddDynamic() directly.
