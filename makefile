@@ -15,7 +15,7 @@ AUTOMAKE               = ${PETSC_DIR}/bin/automake
 CONFIGURE_ARCH_PROG    = ${PETSC_DIR}/config/configarch
 CONFIGURE_ARCH         = $(shell ${CONFIGURE_ARCH_PROG})
 CONFIGURE_OPTIONS_FILE = ./config/configure_options.${PETSC_ARCH}
-CONFIGURE_OPTIONS      = $(shell echo $(shell cat ${CONFIGURE_OPTIONS_FILE} | sed -e 's/\#.*$$//'))
+CONFIGURE_OPTIONS      = $(shell echo $(shell cat ${CONFIGURE_OPTIONS_FILE} | sed -e 's/\#.*$$//' -e "s/'/\\\\'/g"))
 CONFIGURE_LOG_FILE     = configure_petsc.log
 AUTOMAKE_ADD_FILES     = config/config.guess config/config.sub config/install-sh config/missing config/mkinstalldirs \
                          config/ltmain.sh
