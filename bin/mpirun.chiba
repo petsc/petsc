@@ -158,25 +158,46 @@ pbs_job_id=`qsub ./.mpirun$$`
 pbs_job_num=`expr $pbs_job_id : '\([0-9]*\).*'`
 #
 
-echo -n "Submitted to PBS Job ID $pbs_job_id " 
+echo -n "PBS Job ID $pbs_job_id Submitted to queue " 
 date
 
 #rm -f ./.mpirun$$
 # Spin until qstat returns a non-zero return code
 #
-# It would be nice if qstat <id> returned a non-zero code only when 
-# the job exited from the queue (and was now unknown).  Unfortunately,
-# this doesn't always happen.
-outstat=""
-while [ "$outstat" != "Unknown Job" ] ; do
-    while qstat $pbs_job_id >/dev/null 2>&1 ; do
-        sleep 5
-    done
-    outstat=`qstat $pbs_job_id 2>&1 | \
-	sed -e 's/^.*Unknown Job.*$/Unknown Job/'`
+status="Q"
+while [ "$status" = "Q" ] ; do
+  sleep 5
+  lstatus=`qstat $pbs_job_id 2> /dev/null`
+  status=`echo $lstatus | tail -1 | tr -s "" " " | cut -f19 -d" "`
+  echo -n "#"
 done
+echo " "
 # 
-echo -n "PBS Job ID $pbs_job_id Done "
+echo -n "PBS Job ID $pbs_job_id No longer in queue (may be running) "
+date
+#
+status="R"
+while [ "$status" = "R" ] ; do
+  sleep 5
+  lstatus=`qstat $pbs_job_id 2> /dev/null`
+  status=`echo $lstatus | tail -1 | tr -s "" " " | cut -f19 -d" "`
+  echo -n "#"
+done
+echo " "
+#
+echo -n "PBS Job ID $pbs_job_id Job no longer running "
+date
+#
+status="E"
+while [ "$status" = "E" ] ; do
+  sleep 5
+  lstatus=`qstat $pbs_job_id 2> /dev/null`
+  status=`echo $lstatus | tail -1 | tr -s "" " " | cut -f19 -d" "`
+  echo -n "#"
+done
+echo " "
+#
+echo -n "PBS Job ID $pbs_job_id No longer existing "
 date
 #
 # Move the output to the stdout/err of the process running this script
