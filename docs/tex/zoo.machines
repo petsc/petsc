@@ -1,13 +1,13 @@
 
 Some machine/os/compiler/mpi combinations based on current PETSc
-requirements, most of them are currently avilable in the MCS network.
+requirements, most of them are currently available in the MCS network.
 
 
-     Porcessor       OS          Compilers            MPI                       Comments
+     Processor       OS          Compilers            MPI                       Comments
 1.   PA-risc?        HPUX        hp compilers/gcc     HP-MPI?/mpich             Support both 32/64 bits
 2.   ultra/sparc     solaris     sun compilers/gcc    Sun-MPI/mpich             support both 32/64 bits
-3.   MPIS-??         IRIX        sgi compilrs/gcc     sgi mpi/mpich             support both 32/64 bits
-4.   IBM-pwr2/3      AIX         ibm compilrs/gcc     ibm-mpi/mpich             support both 32/64 bits
+3.   MIPS-??         IRIX        sgi compilers/gcc    sgi mpi/mpich             support both 32/64 bits
+4.   IBM-pwr2/3      AIX         ibm compilers/gcc    ibm-mpi/mpich             support both 32/64 bits
 5.   alpha           OSF??       compaq compilers/gcc compaq-MPI/mpich          
 6.   alpha           linux       compaq/gcc           
 7.   Motorola-ppc    MACOS-X     gcc                  ???       
@@ -15,7 +15,7 @@ requirements, most of them are currently avilable in the MCS network.
 9.   intel-pentium   freebsd     gcc                  mpich                     
 10.  intel-pentium   linux       gcc/absoft/pgi       mpich/lam/myrinet?
 11.  intel-pentium   Win2K       MS,borland,gcc,intel mpich/hpvm/wmpi/mpi-pro   good old 32 bit stuff
-12.  intel-pentium   solaris     sun compilers        ??                        is this still avilable?
+12.  intel-pentium   solaris     sun compilers        ??                        is this still available?
 
 Unavoidable external machines
 
@@ -25,6 +25,6 @@ Unavoidable external machines
 
 All the above on itanium?
 ppc-linux?
-hurd - whenever it comes up...
+gnu-hurd - whenever it comes up...
 
 
