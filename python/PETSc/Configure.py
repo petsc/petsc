@@ -316,20 +316,6 @@ class Configure(config.base.Configure):
           self.addDefine('HAVE_SUN4_STYLE_FPTRAP', 1)
     return
 
-  def configureLibrarySuffix(self):
-    '''(Belongs in config.libraries) Determine the suffix used for libraries'''
-    # If MS Windows's kernel32.lib is available then use lib for the suffix, otherwise use a.
-    # Cygwin w32api uses libkernel32.a for this symbol.
-    oldLibs = self.framework.argDB['LIBS']
-    found = self.libraries.check(['kernel32.lib'],'GetCurrentProcess',prototype='int __stdcall GetCurrentProcess(void);\n')
-    if found:
-      suffix = 'lib'
-    else:
-      suffix = 'a'
-    self.libraries.addSubstitution('LIB_SUFFIX', suffix)
-    self.framework.argDB['LIBS'] = oldLibs
-    return
-
   def configureGetDomainName(self):
     if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
       self.missingPrototypesC.append('int getdomainname(char *, int);')
@@ -539,7 +525,6 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureMissingSignals)
     self.executeTest(self.configureMemorySize)
     self.executeTest(self.configureFPTrap)
-    self.executeTest(self.configureLibrarySuffix)
     self.executeTest(self.configureGetDomainName)
     self.executeTest(self.configureIRIX)
     self.executeTest(self.configureSolaris)
