@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.193 1997/12/12 04:58:48 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.194 1997/12/20 04:39:32 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -9,12 +9,12 @@
 /* 
    Current PETSc Version 
 */
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.21, Released November 13, 1997."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.22, Released ??? ??, 1998."
 
 #define PETSC_VERSION_MAJOR    2
 #define PETSC_VERSION_MINOR    0
-#define PETSC_VERSION_SUBMINOR 21
-#define PETSC_VERSION_DATE     "November 13, 1997"
+#define PETSC_VERSION_SUBMINOR 22
+#define PETSC_VERSION_DATE     "??? ??, 1998"
 
 /* ========================================================================== */
 /* Before anything else, include the PETSc configuration file.  This 
@@ -84,14 +84,14 @@ extern int      PetscSetCommWorld(MPI_Comm);
 /*
     Defines the malloc employed by PETSc. Users may use these routines as well. 
 */
+#define PetscMalloc(a)       (*PetscTrMalloc)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
+#define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
+#define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
 extern void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*);
 extern int  (*PetscTrFree)(void *,int,char*,char*,char*);
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*,char*,char*),
                            int (*)(void *,int,char*,char*,char*));
 extern int  PetscClearMalloc();
-#define PetscMalloc(a)       (*PetscTrMalloc)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
-#define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
-#define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
 
 extern int   PetscTrDump(FILE *);
 extern int   PetscTrSpace( PLogDouble *, PLogDouble *,PLogDouble *);
@@ -140,6 +140,9 @@ extern char* PetscStrstr(char*,char*);
 extern char* PetscStrtok(char*,char*);
 extern char* PetscStrrtok(char*,char*);
 
+/*
+       Basic PETSc constants
+*/
 typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define PETSC_NULL            0
 #define PETSC_DECIDE         -1
@@ -277,6 +280,14 @@ extern int    DLGetTypeFromOptions(char *,char *,DLList,int *,char*,int,int *);
 #else
 #define       DLRegister(a,b,c,d,e,f) DLRegister_Private(a,b,c,d,e,f)
 #endif
+
+typedef struct _DLLibraryList *DLLibraryList;
+extern DLLibraryList DLLibrariesLoaded;
+extern int DLOpen(char *,void **);
+extern int DLSym(DLLibraryList,char *, void **);
+extern int DLAppend(DLLibraryList *,char *);
+extern int DLPrepend(DLLibraryList *,char *);
+extern int DLClose(DLLibraryList);
 
 /*
     C code optimization is often enhanced by telling the compiler 
