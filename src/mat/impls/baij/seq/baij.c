@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.75 1996/11/29 22:26:31 curfman Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.76 1996/11/30 20:35:21 curfman Exp balay $";
 #endif
 
 /*
@@ -614,6 +614,7 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
            m,a->n,a->bs,fshift*bs2,a->nz*bs2);
   PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Number of mallocs during MatSetValues is %d\n",
            a->reallocs);
+  a->reallocs          = 0;
   A->info.nz_unneeded  = (double)fshift*bs2;
 
   return 0;
