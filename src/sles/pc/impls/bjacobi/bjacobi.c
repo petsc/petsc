@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.77 1996/07/08 22:18:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.78 1996/07/10 00:32:22 curfman Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -418,6 +418,7 @@ int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
 {
   return PCBJacobiSetTotalBlocks(pc, blocks, lens, true1);
 }
+
 /*@
    PCBJacobiSetLocalBlocks - Sets the local number of blocks for the block
    Jacobi preconditioner.
@@ -462,7 +463,6 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
   }
   return 0;
 }
-
 
 /*@
    PCBGSSetLocalBlocks - Sets the local number of blocks for the block
