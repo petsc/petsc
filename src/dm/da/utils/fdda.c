@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.16 1997/10/10 19:32:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.17 1997/10/10 22:23:23 bsmith Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -251,10 +251,10 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
               }
             }
           }
+          rows[l]      = l + nc*(slot);
         }
-        rows[l]      = l + nc*(slot);
+        ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES); CHKERRQ(ierr);
       }
-      ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES); CHKERRQ(ierr);
     }
   }
   PetscFree(values); 
