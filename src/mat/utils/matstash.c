@@ -51,14 +51,14 @@ int StashInfo_Private(Stash *stash)
 int StashValues_Private(Stash *stash,int row,int n, int *idxn,
                         Scalar *values,InsertMode addv)
 {
-  int    i,/* j,N = stash->n, */found,*n_idx, *n_idy;
-  Scalar val,*n_array;
+  int    i, found, *n_idx, *n_idy;  /* int j, N = stash->n, */
+  Scalar val, *n_array;
 
   for ( i=0; i<n; i++ ) {
     found = 0;
     val = *values++;
 /*
-   Removed search!
+   Removed search!  Now much faster assembly.
 
     for ( j=0; j<N; j++ ) {
       if ( stash->idx[j] == row && stash->idy[j] == idxn[i]) {
@@ -84,9 +84,9 @@ int StashValues_Private(Stash *stash,int row,int n, int *idxn,
         stash->array = n_array; stash->idx = n_idx; stash->idy = n_idy;
         stash->nmax += CHUNCKSIZE;
       }
-      stash->array[stash->n]   = val;
-      stash->idx[stash->n]     = row;
-      stash->idy[stash->n++]   = idxn[i];
+      stash->array[stash->n] = val;
+      stash->idx[stash->n]   = row;
+      stash->idy[stash->n++] = idxn[i];
     }
   }
   return 0;
