@@ -19,7 +19,7 @@ if __name__ == '__main__':
       installer.backup(url)
     else:
       if installer.checkBootstrap():
-        booter = Installer(localDict = 1, initDict = installer.argDB)
+        booter = installerclass.Installer(localDict = 1, initDict = installer.argDB)
         # Must build and install BuildSystem
         booter.builder.build(os.path.dirname(booter.builder.getRoot()))
         # Install Compiler and Runtime
