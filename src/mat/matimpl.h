@@ -31,7 +31,8 @@ struct _MatOps {
             (*ilufactorsymbolic)(Mat,IS,IS,int,Mat *),
             (*ichfactorsymbolic)(Mat,IS,int,Mat *),
             (*getarray)(Mat,Scalar **),
-            (*convert)(Mat,MATTYPE,Mat *);
+            (*convert)(Mat,MATTYPE,Mat *),
+            (*condense)(Mat,int,IS);
 };
 
 
