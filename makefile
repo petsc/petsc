@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.331 2001/01/08 17:10:18 balay Exp bsmith $ 
+# $Id: makefile,v 1.332 2001/01/25 19:30:19 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -15,6 +15,7 @@ include ${PETSC_DIR}/bmake/common_test
 # Basic targets to build PETSc libraries.
 # all     : builds the c, fortran, and f90 libraries
 all       : info info_h chklib_dir deletelibs build_c build_fortran shared
+	-@if [ "${PETSC_HAVE_MATLAB}" != "" ] ; then make matlabcodes ; fi
 #
 # Prints information about the system and version of PETSc being compiled
 #
