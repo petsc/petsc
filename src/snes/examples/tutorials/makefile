@@ -104,12 +104,12 @@ runex2_2:
 	   $(RM) -f ex2_2.tmp
 
 runex3:
-	-@$(MPIRUN) -np 2 ex3 -snes_smonitor  > ex3_1.tmp 2>&1;	  \
+	-@$(MPIRUN) -np 2 ex3 -nox -snes_smonitor  > ex3_1.tmp 2>&1;	  \
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   $(RM) -f ex3_1.tmp
 runex3_2:
-	-@$(MPIRUN) -np 3 ex3 -pc_type asm  -mat_mpiaij -mat_aij_oneindex \
+	-@$(MPIRUN) -np 3 ex3 -nox -pc_type asm  -mat_mpiaij -mat_aij_oneindex \
 	   -snes_smonitor > ex3_2.tmp 2>&1; \
 	   if (diff output/ex3_2.out ex3_2.tmp) then true; \
 	   else echo "Possible problem with ex3_2, diffs above"; fi; \
