@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.234 2000/04/17 04:24:23 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.235 2000/04/18 03:17:59 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -2221,3 +2221,79 @@ M*/
 
 .keywords: log, event, begin, barrier
 M*/
+
+/*MC
+   PreLoadBegin - Begin a segment of code that may be preloaded (run twice)
+    to get accurate timings
+
+   Input Parameter:
++   flag - PETSC_TRUE to run twice, PETSC_FALSE to run once, may be overridden
+           with command line option -preload true or -preload false
+-   name - name of first stage (lines of code timed seperately with -log_summary) to
+           be preloaded
+
+   Synopsis:
+   void PreLoadBegin(PetscTruth flag,char *name);
+
+   Usage:
+.vb
+     PreLoadBegin(PETSC_TRUE,"first stage);
+       lines of code
+       PreLoadStage("second stage");
+       lines of code
+     PreLoadEnd();
+.ve
+
+   Level: intermediate
+
+.seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(), PreLoadEnd(), PreLoadStage()
+
+.keywords: timing, preloading
+M*/
+
+/*MC
+   PreLoadEnd - End a segment of code that may be preloaded (run twice)
+    to get accurate timings
+
+   Synopsis:
+   void PreLoadEnd(void);
+
+   Usage:
+.vb
+     PreLoadBegin(PETSC_TRUE,"first stage);
+       lines of code
+       PreLoadStage("second stage");
+       lines of code
+     PreLoadEnd();
+.ve
+
+   Level: intermediate
+
+.seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(), PreLoadBegin(), PreLoadStage()
+
+.keywords: timing, preloading
+M*/
+
+/*MC
+   PreLoadStage - Start a new segment of code to be timed seperately.
+    to get accurate timings
+
+   Synopsis:
+   void PreLoadStage(char *name);
+
+   Usage:
+.vb
+     PreLoadBegin(PETSC_TRUE,"first stage);
+       lines of code
+       PreLoadStage("second stage");
+       lines of code
+     PreLoadEnd();
+.ve
+
+   Level: intermediate
+
+.seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(), PreLoadBegin(), PreLoadEnd()
+
+.keywords: timing, preloading
+M*/
+
