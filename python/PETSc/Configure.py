@@ -1,4 +1,5 @@
 import config.base
+import bs.nargs
 
 import commands
 import os
@@ -60,10 +61,10 @@ class Configure(config.base.Configure):
     help.addOption('PETSc', 'PETSC_DIR', 'The root directory of the PETSc installation')
     help.addOption('PETSc', 'PETSC_ARCH', 'The machine architecture')
     help.addOption('PETSc', '-with-bopt=<g,O,...>', 'Specify the build option, e.g. g for debuggin, O for optimized, etc.')
-    help.addOption('PETSc', '-enable-debug', 'Activate debugging code in PETSc', nargs.ArgBool)
-    help.addOption('PETSc', '-enable-log', 'Activate logging code in PETSc', nargs.ArgBool)
-    help.addOption('PETSc', '-enable-stack', 'Activate manual stack tracing code in PETSc', nargs.ArgBool)
-    help.addOption('PETSc', '-enable-shared', 'Build dynamic libraries for PETSc', nargs.ArgBool)
+    help.addOption('PETSc', '-enable-debug', 'Activate debugging code in PETSc', bs.nargs.ArgBool)
+    help.addOption('PETSc', '-enable-log', 'Activate logging code in PETSc', bs.nargs.ArgBool)
+    help.addOption('PETSc', '-enable-stack', 'Activate manual stack tracing code in PETSc', bs.nargs.ArgBool)
+    help.addOption('PETSc', '-enable-shared', 'Build dynamic libraries for PETSc', bs.nargs.ArgBool)
 
     self.framework.argDB['with-bopt']     = 'g'
     self.framework.argDB['enable-debug']  = 1
