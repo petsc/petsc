@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.51 2001/04/13 19:02:10 buschelm Exp bsmith $*/
+/*$Id: baijfact2.c,v 1.52 2001/04/13 20:48:17 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2235,9 +2235,6 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   PetscReal   f;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(isrow,IS_COOKIE);
-  PetscValidHeaderSpecific(iscol,IS_COOKIE);
-
   if (info) {
     f             = info->fill;
     levels        = (int)info->levels;
@@ -2246,12 +2243,6 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     f             = 1.0;
     levels        = 0;
     diagonal_fill = 0;
-  }
-  if (!isrow) {
-    ierr = ISCreateStride(PETSC_COMM_SELF,A->M,0,1,&isrow);CHKERRQ(ierr);
-  }
-  if (!iscol) {
-    ierr = ISCreateStride(PETSC_COMM_SELF,A->M,0,1,&iscol);CHKERRQ(ierr);
   }
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
