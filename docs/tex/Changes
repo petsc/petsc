@@ -29,7 +29,9 @@ it removes the locations from the nonzero structure
   SLES
  
 SLESSolveTrans() is now SLESSolveTranspose()
-   
+
+  SLESSolve() now ALWAYS returns a 0 or positive iteration count. Call KSPGeeytConvergedReason()
+to see if converged or diverged and why.   
 
   PC
 
@@ -55,11 +57,11 @@ SLESSolveTrans() is now SLESSolveTranspose()
   Viewers
 
 
+  Binary and ASCII viewers can create compressed files by simply appending a .gz on the 
+filename.
+
    PETSc now has a new viewer that generates rudimentary Postscript.
 Improvements, additions may be added as needed.
-
-  Barry
-
   DrawOpenPS(), or DrawSetType(,DRAW_PS); or -draw_type ps
 
 
@@ -73,3 +75,6 @@ Improvements, additions may be added as needed.
   TS
 
    
+
+
+

@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.5 1999/12/11 04:23:11 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.6 1999/12/11 23:12:12 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -6,8 +6,6 @@
 
     Preconditioning:  It the preconditioner is constant then this fgmres
     code is equivalent to RIGHT-PRECONDITIONED GMRES.
-
-    To vary the preconditioner, pcfamily must be used as the preconditioner type.
 
     Restarts:  Restarts are basically solves with x0 not equal to zero.
  */
@@ -715,8 +713,7 @@ static int KSPPrintHelp_FGMRES(KSP ksp,char *p)
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_preallocate: preallocate FGMRES work vectors\n",p);
   
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_modifypcnochange: (default) do not vary the preconditioner\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_modifypcgmresvariableex: vary the gmres preconditioner (example)\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_modifypcex: example: no pc for 3 iterations then gmres\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_modifypcsles: vary the SLES based preconditioner (example)\n",p);
 
   PetscFunctionReturn(0);
 }
@@ -742,10 +739,8 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
   
   ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_modifypcnochange", &flg ); CHKERRQ(ierr);
   if (flg) {ierr = KSPFGMRESSetModifyPC( ksp, KSPFGMRESModifyPCNoChange); CHKERRQ(ierr);} 
-  ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_modifypcgmresvariableex", &flg ); CHKERRQ(ierr);
-  if (flg) {ierr = KSPFGMRESSetModifyPC( ksp, KSPFGMRESModifyPCGMRESVariableEx); CHKERRQ(ierr);} 
-  ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_modifypcex", &flg ); CHKERRQ(ierr);
-  if (flg) {ierr = KSPFGMRESSetModifyPC( ksp, KSPFGMRESModifyPCEx); CHKERRQ(ierr);} 
+  ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_modifypcsles", &flg ); CHKERRQ(ierr);
+  if (flg) {ierr = KSPFGMRESSetModifyPC( ksp, KSPFGMRESModifyPCSLES); CHKERRQ(ierr);} 
 
   PetscFunctionReturn(0);
 }

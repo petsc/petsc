@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.85 1999/11/05 14:46:46 bsmith Exp bsmith $*/
+/*$Id: fgmresp.h,v 1.2 1999/11/24 21:54:59 bsmith Exp bsmith $*/
 /*
    Private data structure used by the FGMRES method.
 */
@@ -54,13 +54,6 @@
     int    nwork_alloc;       /* Number of work-vector chunks allocated */
 
 
-    /* new storage for fgmres */
-    Vec  *prevecs;            /* holds the preconditioned basis vectors for fgmres.  
-                                We will allocate these at the same time as vecs 
-                                above (and in the same "chunks". */
-    Vec  **prevecs_user_work; /* same purpose as user_work above, but this one is
-                                for our preconditioned vectors */
-
     /* In order to allow the solution to be constructed during the solution
        process, we need some additional information: */
 
@@ -70,20 +63,13 @@
                                solution */
     Vec    sol_temp;        /* used to hold temporary solution */
 
-    /*
-       Supported for David Keye's request for prestarted GMRES. The Krylov space
-       is augmented by additional vectors that are either
-         1) provided initially by the user via KSPGMRESGetPrestartVectors() or
-            Note: I don't think that this function exists.  I assume it would add
-            the additional vectors to vec_vv. If it was added we would also need 
-            to populate PREVEC with the preconditioned additional vectors.
- 
-         2) computed during the first iteration
-    */
 
-    int    nprestart_requested; /* number of prestart directions that are to be
-                                   computed in the first solver */
-    int    nprestart;           /* number of prestart directions */     
+    /* new storage for fgmres */
+    Vec  *prevecs;            /* holds the preconditioned basis vectors for fgmres.  
+                                We will allocate these at the same time as vecs 
+                                above (and in the same "chunks". */
+    Vec  **prevecs_user_work; /* same purpose as user_work above, but this one is
+                                for our preconditioned vectors */
 
     /* we need a function for interacting with the pcfamily */
    
