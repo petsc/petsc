@@ -1,4 +1,6 @@
-! "$Id: ex5f.F,v 1.40 1998/03/24 16:42:48 balay Exp balay $";
+! "$Id: ex5f.F,v 1.41 1998/03/30 22:03:03 balay Exp curfman $";
+!
+!  Program usage:  mpirun ex14 [-help] [all PETSc options]
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular

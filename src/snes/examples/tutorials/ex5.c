@@ -1,6 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.87 1998/03/23 21:25:37 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.88 1998/03/24 20:58:29 balay Exp curfman $";
 #endif
+
+/* Program usage:  mpirun ex5 [-help] [all PETSc options] */
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
