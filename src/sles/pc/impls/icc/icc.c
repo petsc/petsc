@@ -1,4 +1,4 @@
-/*$Id: icc.c,v 1.68 2000/05/05 22:17:16 balay Exp bsmith $*/
+/*$Id: icc.c,v 1.69 2000/09/02 02:48:53 bsmith Exp balay $*/
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
@@ -15,8 +15,7 @@ static int PCSetup_ICC(PC pc)
   int    ierr;
 
   PetscFunctionBegin;
-  /* Currently no orderings are supported!
-  ierr = MatGetOrdering(pc->pmat,icc->ordering,&perm,&perm);CHKERRQ(ierr); */
+  ierr = MatGetOrdering(pc->pmat,icc->ordering,&perm,&perm);CHKERRQ(ierr);
   perm = 0;
 
   if (!pc->setupcalled) {
