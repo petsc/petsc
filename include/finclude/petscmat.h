@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.11 1996/04/16 03:50:00 balay Exp bsmith $;
+C  $Id: mat.h,v 1.12 1996/04/16 04:53:36 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -92,7 +92,7 @@ C
 C  
 C
       integer MATRIX_BINARY_FORMAT_DENSE
-      parmaeter (MATRIX_BINARY_FORMAT_DENSE=-1)
+      parameter (MATRIX_BINARY_FORMAT_DENSE=-1)
 C
 C  End of Fortran include file for the Mat package in PETSc
 
