@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.20 1995/08/22 19:29:30 curfman Exp bsmith $ */
+/* $Id: pdvec.c,v 1.21 1995/08/24 22:26:21 bsmith Exp bsmith $ */
 
 #include "pinclude/pviewer.h"
 
@@ -82,6 +82,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
 #else
           fprintf(fd,"%g \n",x->array[i]);
 #endif
+
         }
         /* receive and print messages */
         for ( j=1; j<numtids; j++ ) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.44 1995/08/23 17:11:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.45 1995/08/24 22:27:31 bsmith Exp bsmith $";
 #endif
 
 /*  
@@ -297,8 +297,7 @@ $       Neither Amat nor Pmat has same nonzero structure
 .keywords: PC, set, operators, matrix, linear system
 
 .seealso: PCGetOperators()
-@*/
-
+ @*/
 int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
