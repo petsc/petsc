@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.15 2001/04/18 16:01:35 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.16 2001/04/19 15:47:39 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -251,7 +251,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   if ((!jacobian && !dmmg[0]->matrixfree) || usefd) {
     ISColoring iscoloring;
     for (i=0; i<nlevels; i++) {
-      ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_GLOBAL,MATMPIAIJ,&iscoloring,PETSC_NULL);CHKERRQ(ierr);
+      ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_LOCAL,MATMPIAIJ,&iscoloring,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(dmmg[i]->J,iscoloring,&dmmg[i]->fdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(dmmg[i]->fdcoloring,(int(*)(void))function,dmmg[i]);CHKERRQ(ierr);
@@ -261,7 +261,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
 #if defined(PETSC_HAVE_ADIC)
   } else if (jacobian == DMMGFormJacobianWithAD) {
     for (i=0; i<nlevels; i++) {
-      ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_LOCAL,MATMPIAIJ,&dmmg[i]->iscoloring,PETSC_NULL);CHKERRQ(ierr);
+      ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_GHOSTED,MATMPIAIJ,&dmmg[i]->iscoloring,PETSC_NULL);CHKERRQ(ierr);
     }
 #endif
   }
@@ -450,27 +450,25 @@ static int PetscGetStructArray2d(int xs,int ys,int xm,int ym,int structsize,void
 */
 int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  DMMG        dmmg = (DMMG) ptr;
-  int         ierr,i,j,k,l,row,col[25],color,*colors = dmmg->iscoloring->colors;
-  int         xs,ys,xm,ym;
-  int         gxs,gys,gxm,gym;
-  int         mx,my;
-  Vec         localX;
-  Scalar      **x;
-  Mat         jac = *B;                /* Jacobian matrix */
-  DALocalInfo info;
-
-  DERIV_TYPE **ad_x, **ad_f, *ad_ptr, dummy;
-  Scalar av[25];
-  int dim,dof,stencil_size,stencil_width;
-  DAStencilType stencil_type;
+  DMMG           dmmg = (DMMG) ptr;
+  int            ierr,i,j,k,l,*colors = dmmg->iscoloring->colors;
+  int            xs,ys,xm,ym;
+  int            gxs,gys,gxm,gym;
+  int            mx,my,*colorptr;
+  Vec            localX;
+  Scalar         **x;
+  DALocalInfo    info;
+  DERIV_TYPE     **ad_x,**ad_f,*derivptr;
+  int            dim,dof,stencil_size,stencil_width;
+  DAStencilType  stencil_type;
   DAPeriodicType periodicity;
-
-  DA      da= (DA) dmmg->dm;
-  int *colorptr;
-  DERIV_TYPE *derivptr;
+  DA             da= (DA) dmmg->dm;
+  int            deriv_type_size;
 
   PetscFunctionBegin;
+  ad_AD_Init(dmmg->iscoloring->n);
+  deriv_type_size = my_AD_GetDerivTypeSize();
+
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
 
@@ -504,15 +502,15 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   ierr = DAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
 
   /* allocate space for derivative objects.  */
-  ierr = PetscGetStructArray2d(gxs*dof,gys,gxm*dof,gym,sizeof(DERIV_TYPE),(void ***)&ad_x); CHKERRQ(ierr);
+  ierr = PetscGetStructArray2d(gxs*dof,gys,gxm*dof,gym,deriv_type_size,(void ***)&ad_x); CHKERRQ(ierr);
   for(j=gys;j<gys+gym;j++) {
     for(i=dof*gxs;i<dof*(gxs+gxm);i++) {
       DERIV_val(ad_x[j][i]) = x[j][i];
     }
   }
-  ierr = PetscGetStructArray2d(xs*dof,ys,xm*dof,ym,sizeof(DERIV_TYPE),(void ***)&ad_f); CHKERRQ(ierr);
+  ierr = PetscGetStructArray2d(xs*dof,ys,xm*dof,ym,deriv_type_size,(void ***)&ad_f); CHKERRQ(ierr);
 
-  ad_AD_Init(dmmg->iscoloring->n);
+
   ad_AD_ResetIndep();
   for(j=gys;j<gys+gym;j++) {
     derivptr = &(ad_x[j][dof*gxs]);
@@ -531,13 +529,13 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
   /* stick the values into the matrix */
-  ierr = MatADSetColoring_SeqAIJ(*B,dmmg->iscoloring);CHKERRQ(ierr);
-  ierr = MatADSetValues_SeqAIJ(*B,(Scalar**)&ad_f[ys][xs],ad_GRAD_MAX);CHKERRQ(ierr);
+  ierr = MatADSetColoring_MPIAIJ(*B,dmmg->iscoloring);CHKERRQ(ierr);
+  ierr = MatADSetValues_MPIAIJ(*B,(Scalar**)&ad_f[ys][xs],ad_GRAD_MAX);CHKERRQ(ierr);
 
   /* Assemble true Jacobian; if it is different */
   ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  ierr  = MatSetOption(*B,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
