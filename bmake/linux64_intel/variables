@@ -20,8 +20,8 @@ C_CLINKER_SLFLAG   = -Qoption,link,-rpath,
 C_FLINKER_SLFLAG   = -Qoption,link,-rpath,
 C_CLINKER	   = ecc -i_dynamic
 C_FLINKER	   = ecc -i_dynamic
-C_CCV		   = ecc -V 2>&1| head -1
-C_FCV              = efc -V 2>&1| head -1
+C_CCV		   = ecc -V 2>&1| head -2
+C_FCV              = efc -V 2>&1| head -2
 C_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lF90 -lintrins -lpthread -ldl
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g -use_msasm

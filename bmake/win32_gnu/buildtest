@@ -21,14 +21,14 @@ else if ($day == Mon) then
 else if ($day == Tue) then
   set ARCH=win32_borland
   set BOPT=g
-  set JOBS=(4 9 13)
+  set JOBS=(4)
 else if ($day == Wed) then
   set BOPT=O
   set JOBS=(1 2 3 6 8)
 else if ($day == Thu) then
   set ARCH=win32_borland
   set BOPT=O_c++
-  set JOBS=(4 9 13)
+  set JOBS=(4)
 else if ($day == Fri) then
   set BOPT=O_complex
   set JOBS=(1 2 3 5 10 13)

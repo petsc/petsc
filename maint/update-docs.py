@@ -85,6 +85,8 @@ def main():
         'docs/changes/2029.htm',
         'docs/changes/21.htm',
         'docs/changes/211.htm',
+        'docs/changes/212.htm',
+        'docs/changes/213.htm',
         'docs/changes/2918-21.htm',
         'docs/changes/index.htm',
         'docs/installation/index.htm',

@@ -7,15 +7,14 @@
 # example usage: builddist -2.1.2
 #
 #echo "------- Have you done ALL of the following?? -----------------------------"
-#echo "(0) Excluded any directories not for public release (for example, src/eg, src/snes/interface/noise)"
-#echo "(1) Built wwwpages, latexpages by running make allmanpages?"
-#echo "(2) Set the version number in manual_tex.tex, manual.tex, and intro.tex?"
-#echo "(3) Built the users manual (and intro) in .ps and .html?"
-#echo "(4) Set the version number and release date in petsc.h?"
-#echo "(5) Rebuilt and checked all Fortran stubs?"
-#echo "(6) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run correctly?"
-#echo "(7) Made sure Fortran include files match C ones?"
-#echo "(8) Latest version of win32fe.exe is copied over into /sandbox/petsc/petsc-dist on terra"
+#echo "(0) Excluded any directories not for public release"
+#echo "(1) Set the version number in part1.tex, manual.tex, and intro.tex?"
+#echo "(2) Set the version number and release date in petsc.h?"
+#echo "(3) Made sure Fortran include files match C ones?"
+#echo "(4) Latest version of win32fe.exe is copied over into /sandbox/petsc/petsc-dist on terra"
+#echo "(5) Update update-docs.py with additional docs on the www-fp web page (for eg new changes file)"
+#echo "(5) Update version info on all www-fp/petsc web pages"
+#echo "(5) tag the new release with 'bk' and make a new clone for the release"
 
 # If version specified on the commandline, set the version
 if [ $# = 1 ] ; then 
