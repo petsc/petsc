@@ -2173,8 +2173,8 @@ with \findex{KSPGMRESSetOrthogonalization()}
 \end{tabbing}
 or the options database \findex{-ksp_gmres_classicalgramschmidt}
 command \trl{-ksp_gmres_classicalgramschmidt}.
-By default this will use one step of iterative refinement to improve the 
-stability of the orthogonalization if a simple test indicates that it is needed.
+By default this will {\bf not} use iterative refinement to improve the 
+stability of the orthogonalization.
 This can be changed with the option
 \begin{tabbing}
 KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)

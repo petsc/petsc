@@ -733,7 +733,7 @@ int KSPCreate_GMRES(KSP ksp)
   gmres->sol_temp            = 0;
   gmres->max_k               = GMRES_DEFAULT_MAXK;
   gmres->Rsvd                = 0;
-  gmres->cgstype             = KSP_GMRES_CGS_REFINEMENT_IFNEEDED;
+  gmres->cgstype             = KSP_GMRES_CGS_REFINEMENT_NONE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

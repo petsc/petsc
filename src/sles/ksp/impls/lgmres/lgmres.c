@@ -988,7 +988,7 @@ int KSPCreate_LGMRES(KSP ksp)
   lgmres->sol_temp            = 0;
   lgmres->max_k               = LGMRES_DEFAULT_MAXK;
   lgmres->Rsvd                = 0;
-  lgmres->cgstype             = KSP_GMRES_CGS_REFINEMENT_IFNEEDED;
+  lgmres->cgstype             = KSP_GMRES_CGS_REFINEMENT_NONE;
   /*LGMRES_MOD - new defaults */
   lgmres->aug_dim             = LGMRES_DEFAULT_AUGDIM;
   lgmres->aug_ct              = 0; /* start with no aug vectors */ 

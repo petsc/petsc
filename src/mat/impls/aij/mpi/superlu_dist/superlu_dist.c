@@ -444,7 +444,7 @@ int MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
       options.Equil = NO;
     }
 
-    ierr = PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",prtype,2,prtype[0],index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",prtype,2,prtype[0],&index,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (index) {
       case 0:
@@ -456,7 +456,7 @@ int MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
       }
     }
 
-    ierr = PetscOptionsEList("-mat_superlu_dist_colperm","Column permutation","None",ptype,4,ptype[0],index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mat_superlu_dist_colperm","Column permutation","None",ptype,4,ptype[0],&index,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (index) {
       case 0:

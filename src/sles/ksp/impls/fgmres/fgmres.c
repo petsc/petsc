@@ -833,7 +833,7 @@ int KSPCreate_FGMRES(KSP ksp)
   fgmres->modifypc            = KSPFGMRESModifyPCNoChange;
   fgmres->modifyctx           = PETSC_NULL;
   fgmres->modifydestroy       = PETSC_NULL;
-  fgmres->cgstype             = KSP_GMRES_CGS_REFINEMENT_IFNEEDED;
+  fgmres->cgstype             = KSP_GMRES_CGS_REFINEMENT_NONE;
   /*
         This is not great since it changes this without explicit request from the user
      but there is no left preconditioning in the FGMRES
