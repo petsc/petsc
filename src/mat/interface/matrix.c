@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.372 2000/05/26 17:16:32 balay Exp bsmith $*/
+/*$Id: matrix.c,v 1.373 2000/05/26 17:41:28 bsmith Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3822,21 +3822,6 @@ M*/
 
     Output Parameter:
 .   newmat - the new submatrix, of the same type as the old
-
-    Notes:
-
-    If the original matrix is a parallel matrix, then the submatrix
-    obtained by this call is also a parallel matrix.
-
-    The 'csize' parameter determines the the partitioning of the newly
-    created submatrix. If csize=PETSC_DECIDE, then the partitioning of
-    the submatrix is determined by PETSc. however if the user
-    specifies this value for each processor, then each processor will
-    locally "own" that many columns of the submatrix. When specifying
-    csize, you should make sure that sum of 'csize' over all
-    processors is same as the size of the submatrix. This is equivalent to
-    the 'n' argument to MatCreate(). The number of local rows owned by the 
-    matrix is the same as the local size of isrow.
 
     Level: advanced
 
