@@ -2,8 +2,8 @@
 
 configure_options = [
   '--with-cc=icc',
-  '--with-fc=ifc',
-  '--with-cxx=icc',
+  '--with-fc=ifort',
+  '--with-cxx=icpc',
   '--with-mpi-include=/home/petsc/soft/linux-rh73-intel/mpich-1.2.5.2/include',
   '--with-mpi-lib=[/home/petsc/soft/linux-rh73-intel/mpich-1.2.5.2/lib/libmpich.a,libpmpich.a]',
   '--with-mpirun=mpirun',

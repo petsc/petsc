@@ -3,7 +3,7 @@
 # Note: Intel 7.1 Fortran cannot work with g++ 3.3
 configure_options = [
   '--with-cc=gcc',
-  '--with-fc=ifc',
+  '--with-fc=ifort',
   '--with-cxx=g++',
   '--with-scalar-type=complex',
   '--download-mpich=1',
