@@ -182,7 +182,6 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   
   for (i=0; i<is_max; i++) { 
     ierr = ISGetIndices(is[i],&idx_i);CHKERRQ(ierr); 
-    ierr = PetscSortInt(n[i],idx_i);CHKERRQ(ierr); 
     for (j=0; j<n[i]; j++){
       idx = idx_i[j];
       *data1_start[rank] = idx; data1_start[rank]++; /* for local proccessing */
@@ -195,7 +194,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
       }
     } 
     /* update header data */
-    for (proc_id=0; proc_id<=proc_end; proc_id++){ 
+    for (proc_id=0; proc_id<size; proc_id++){ 
       if (proc_id== rank) continue;
       *(data1 + proc_id*len + 1 + i) = len_s[proc_id] - iwork[proc_id];
       iwork[proc_id] = len_s[proc_id] ;
