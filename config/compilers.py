@@ -12,6 +12,7 @@ class Configure(config.base.Configure):
     self.libraries = self.framework.require('config.libraries', self)
     self.fortranMangling = 'unchanged'
     self.flibs = []
+    self.fmainlibs = []
     return
 
   def __str__(self):
@@ -309,6 +310,7 @@ class Configure(config.base.Configure):
     # Parse output
     argIter = iter(output.split())
     flibs   = []
+    fmainlibs = []
     lflags  = []
     try:
       while 1:
@@ -356,6 +358,9 @@ class Configure(config.base.Configure):
               continue
             elif arg == '-lm':
               pass
+            elif arg == '-lfrtbegin':
+              fmainlibs.append(arg)
+              continue
             else:
               lflags.append(arg)
             self.logPrint('Found special library: '+arg, 4, 'compilers')
@@ -395,12 +400,12 @@ class Configure(config.base.Configure):
     except StopIteration:
       pass
 
-    # Change to string
     self.flibs = []
     for lib in flibs:
       if 'FC_LINKER_SLFLAG' in self.framework.argDB and lib.startswith('-L'):
         self.flibs.append(self.framework.argDB['FC_LINKER_SLFLAG']+lib[2:])
       self.flibs.append(lib)
+    self.fmainlibs = fmainlibs
     # Append run path
     self.flibs = ldRunPath+self.flibs
 
@@ -411,7 +416,8 @@ class Configure(config.base.Configure):
         self.framework.log.write('Detected Apple Mac Fink libraries used; adding -lcc_dynamic so Fortran can work with C++')
         break
 
-    self.logPrint('Libraries needed to link against Fortran compiler'+str(self.flibs), 3, 'compilers')
+    self.logPrint('Libraries needed to link Fortran code with the C linker: '+str(self.flibs), 3, 'compilers')
+    self.logPrint('Libraries needed to link Fortran main with the C linker: '+str(self.fmainlibs), 3, 'compilers')
     # check that these monster libraries can be used from C
     self.logPrint('Check that Fortran libraries can be used from C', 4, 'compilers')
     oldLibs = self.framework.argDB['LIBS']
