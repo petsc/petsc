@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.2 1995/07/12 18:53:11 curfman Exp curfman $ */
+/* $Id: plog.h,v 1.3 1995/07/13 22:22:26 curfman Exp curfman $ */
 
 /*
     Defines high level logging in Petsc.
@@ -37,6 +37,8 @@
 #define MAT_SolveTrans                          22
 #define MAT_SolveTransAdd                       23
 #define MAT_SetValues                           24
+#define MAT_ForwardSolve                        25
+#define MAT_BackwardSolve                       26
 
 #define VEC_Dot                                 30
 #define VEC_Norm                                31
