@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.50 1998/04/24 04:52:37 curfman Exp balay $";
+static char vcid[] = "$Id: snesj.c,v 1.51 1998/05/29 22:51:22 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -64,7 +64,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
 
   ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
-  VecGetArray(x1,&xx);
+  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
   ierr = eval_fct(snes,x1,j1a); CHKERRQ(ierr);
 
   /* Compute Jacobian approximation, 1 column at a time. 
@@ -85,8 +85,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
       dx *= epsilon;
       wscale = 1.0/dx;
       VecSetValues(x2,1,&i,&dx,ADD_VALUES); 
-    } 
-    else {
+    } else {
       wscale = 0.0;
     }
     ierr = eval_fct(snes,x2,j2a); CHKERRQ(ierr);
@@ -107,6 +106,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
     }
     VecRestoreArray(j2a,&y);
   }
+  ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   *flag =  DIFFERENT_NONZERO_PATTERN;
