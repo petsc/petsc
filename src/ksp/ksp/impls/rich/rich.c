@@ -57,7 +57,11 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
       if (ksp->normtype == KSP_UNPRECONDITIONED_NORM || ksp->pc_side == PC_RIGHT) {
         ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
       } else {
-        ierr = KSP_PCApply(ksp,r,z);CHKERRQ(ierr);
+        ierr = PetscExceptionTry1((KSP_PCApply(ksp,r,z)),PETSC_ERR_SUP);
+        if (PetscExceptionCaught(ierr,PETSC_ERR_SUP)) {
+          ksp->reason = KSP_CONVERGED_ITS;
+          PetscFunctionReturn(0);
+        }
         if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
           ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'B'*Br     */
         } else {
