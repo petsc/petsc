@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.148 1999/01/27 19:46:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.149 1999/01/31 16:08:34 bsmith Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -33,11 +33,11 @@ int KSPRegisterAllCalled = 0;
    The user can open an alternative visualization context with
    ViewerASCIIOpen() - output to a specified file.
 
+   Level: beginner
+
 .keywords: KSP, view
 
 .seealso: PCView(), ViewerASCIIOpen()
-
-   Level: beginner
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {
@@ -90,11 +90,11 @@ FList KSPList = 0;
 
    Currently only works with the CG, Richardson, Bi-CG-stab, CR, and CGS methods.
 
+   Level: advanced
+
 .keywords: KSP, create, context, norms
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged()
-
-   Level: advanced
 @*/
 int KSPSetAvoidNorms(KSP ksp)
 {
@@ -151,11 +151,11 @@ static int KSPPublish_Petsc(PetscObject object)
    The default KSP type is GMRES with a restart of 30, using modified Gram-Schmidt
    orthogonalization.
 
+   Level: developer
+
 .keywords: KSP, create, context
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy()
-
-   Level: developer
 @*/
 int KSPCreate(MPI_Comm comm,KSP *inksp)
 {
@@ -244,11 +244,11 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   choosing the appropriate method.  In other words, this routine is
   not for beginners.
 
+  Level: intermediate
+
 .keywords: KSP, set, method
 
 .seealso: PCSetType()
-
-   Level: intermediate
 @*/
 int KSPSetType(KSP ksp,KSPType itmethod)
 {
@@ -290,11 +290,11 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 
    Not Collective
 
+   Level: advanced
+
 .keywords: KSP, register, destroy
 
 .seealso: KSPRegister(), KSPRegisterAll()
-
-   Level: advanced
 @*/
 int KSPRegisterDestroy(void)
 {
@@ -322,10 +322,11 @@ int KSPRegisterDestroy(void)
    Output Parameter:
 .  name - name of KSP method 
 
-.keywords: KSP, get, method, name
-.seealso: KSPSetType()
-
    Level: intermediate
+
+.keywords: KSP, get, method, name
+
+.seealso: KSPSetType()
 @*/
 int KSPGetType(KSP ksp,KSPType *type)
 {
@@ -348,10 +349,11 @@ int KSPGetType(KSP ksp,KSPType *type)
 +  -help - Prints KSP options
 -  -h - Prints KSP options
 
-.keywords: KSP, help
-.seealso: KSPSetFromOptions()
-
    Level: beginner
+
+.keywords: KSP, help
+
+.seealso: KSPSetFromOptions()
 @*/
 int KSPPrintHelp(KSP ksp)
 {
@@ -419,14 +421,15 @@ extern int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
    Input Parameters:
 .  ksp - the Krylov space context
 
-   Notes:  To see all options, run your program with the -help option;
-           or consult the users manual.
+   Notes:  
+   To see all options, run your program with the -help option
+   or consult the users manual.
+
+   Level: developer
 
 .keywords: KSP, set, from, options, database
 
 .seealso: KSPPrintHelp()
-
-   Level: developer
 @*/
 int KSPSetFromOptions(KSP ksp)
 {

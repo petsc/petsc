@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.122 1999/01/25 19:05:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.123 1999/01/31 16:08:12 bsmith Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -352,14 +352,14 @@ EXTERN_C_END
    Input Parameters:
 .  pc - the preconditioner context
 
-   Level: intermediate
-
    Options Database Key:
 .  -pc_bjacobi_truelocal - Activates PCBJacobiSetUseTrueLocal()
 
    Notes:
    For the common case in which the preconditioning and linear 
    system matrices are identical, this routine is unnecessary.
+
+   Level: intermediate
 
 .keywords:  block, Jacobi, set, true, local, flag
 
@@ -395,8 +395,6 @@ int PCBJacobiSetUseTrueLocal(PC pc)
 .  first_local - the global number of the first block on this processor
 -  sles - the array of SLES contexts
 
-   Level: advanced
-
    Notes:  
    After PCBJacobiGetSubSLES() the array of SLES contexts is not to be freed.
    
@@ -404,6 +402,8 @@ int PCBJacobiSetUseTrueLocal(PC pc)
    is supported.
    
    You must call SLESSetUp() before calling PCBJacobiGetSubSLES().
+
+   Level: advanced
 
 .keywords:  block, Jacobi, get, sub, SLES, context
 
@@ -439,14 +439,14 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 .  blocks - the number of blocks
 -  lens - [optional] integer array containing the size of each block
 
-   Level: intermediate
-
    Options Database Key:
 .  -pc_bjacobi_blocks <blocks> - Sets the number of global blocks
 
    Notes:  
    Currently only a limited number of blocking configurations are supported.
    All processors sharing the PC must call this routine with the same data.
+
+   Level: intermediate
 
 .keywords:  set, number, Jacobi, global, total, blocks
 
@@ -479,10 +479,10 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
 .  blocks - the number of blocks
 -  lens - [optional] integer array containing size of each block
 
-   Level: intermediate
-
    Note:  
    Currently only a limited number of blocking configurations are supported.
+
+   Level: intermediate
 
 .keywords: PC, set, number, Jacobi, local, blocks
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres2.c,v 1.17 1999/01/13 23:17:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: gmres2.c,v 1.18 1999/01/31 16:08:49 bsmith Exp curfman $";
 #endif
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
@@ -15,10 +15,10 @@ static char vcid[] = "$Id: gmres2.c,v 1.17 1999/01/13 23:17:24 curfman Exp bsmit
 +   ksp - the iterative context
 -   max_k - the number of directions
 
-    Level: intermediate
-
     Options Database Key:
 .   -ksp_gmres_restart <max_k> - Sets max_k
+
+    Level: intermediate
 
     Note:
     The default value of max_k = 30.
@@ -52,8 +52,6 @@ int KSPGMRESSetRestart(KSP ksp,int max_k )
 +  ksp - iterative context obtained from KSPCreate
 -  fcn - orthogonalization function
 
-   Level: intermediate
-
    Notes:
    Several orthogonalization routines are predefined, including
 
@@ -71,6 +69,8 @@ int KSPGMRESSetRestart(KSP ksp,int max_k )
    Options Database Keys:
 +  -ksp_gmres_unmodifiedgramschmidt - Activates KSPGMRESUnmodifiedGramSchmidtOrthogonalization()
 -  -ksp_gmres_irorthog - Activates KSPGMRESIROrthogonalization()
+
+   Level: intermediate
 
 .keywords: KSP, GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eige.c,v 1.13 1999/01/28 17:45:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eige.c,v 1.14 1999/01/31 16:08:34 bsmith Exp curfman $";
 #endif
 
 #include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -24,12 +24,12 @@ static char vcid[] = "$Id: eige.c,v 1.13 1999/01/28 17:45:19 bsmith Exp bsmith $
     Currently, this routine uses a dense matrix format when 1 processor
     is used and a sparse format otherwise.  This routine is costly in general,
     and is recommended for use only with relatively small systems.
+
+    Level: advanced
    
 .keywords: KSP, compute, explicit, operator
 
 .seealso: KSPComputeEigenvaluesExplicitly()
-
-    Level: advanced
 @*/
 int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
 {
@@ -114,11 +114,11 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
    KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
    to print the singular values at each iteration of the linear solve.
 
+   Level: advanced
+
 .keywords: KSP, compute, eigenvalues, explicitly
 
 .seealso: KSPComputeEigenvalues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues()
-
-   Level: advanced
 @*/
 int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c) 
 {

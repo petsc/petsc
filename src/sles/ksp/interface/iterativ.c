@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.79 1999/01/27 23:12:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.80 1999/01/31 16:08:34 bsmith Exp curfman $";
 #endif
 
 /*
@@ -44,11 +44,11 @@ int KSPDefaultFreeWork( KSP ksp )
    Output Parameters:
 .  rnorm - residual norm
 
+   Level: intermediate
+
 .keywords: KSP, get, residual norm
 
 .seealso: KSPComputeResidual()
-
-   Level: intermediate
 @*/
 int KSPGetResidualNorm(KSP ksp,double *rnorm)
 {
@@ -80,11 +80,11 @@ int KSPGetResidualNorm(KSP ksp,double *rnorm)
     while GMRES uses the Arnoldi technique; other iterative methods do
     not currently compute singular values.
 
+    Level: intermediate
+
 .keywords: KSP, CG, default, monitor, extreme, singular values, Lanczos, Arnoldi
 
 .seealso: KSPComputeExtremeSingularValues()
-
-    Level: intermediate
 @*/
 int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
@@ -117,11 +117,11 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
 -  dummy - unused monitor context 
 
+   Level: intermediate
+
 .keywords: KSP, default, monitor, residual
 
 .seealso: KSPSetMonitor(), KSPTrueMonitor(), KSPLGMonitorCreate()
-
-   Level: intermediate
 @*/
 int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
@@ -155,11 +155,11 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
    print both the residual norm associated with the original
    (unscaled) matrix.
 
+   Level: intermediate
+
 .keywords: KSP, default, monitor, residual
 
 .seealso: KSPSetMonitor(), KSPDefaultMonitor(), KSPLGMonitorCreate()
-
-   Level: intermediate
 @*/
 int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
@@ -233,12 +233,12 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
    since norms of the residual are not computed. Convergence is then declared 
    after a fixed number of iterations have been used. Useful when one is 
    using CG or Bi-CG-stab as a smoother.
+                    
+   Level: advanced
 
 .keywords: KSP, default, convergence, residual
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSetAvoidNorms()
-                    
-   Level: advanced
 @*/
 int KSPSkipConverged(KSP ksp,int n,double rnorm,void *dummy)
 {
@@ -280,11 +280,11 @@ $      rnorm > dtol * rnorm_0,
 
    Use KSPSetTolerances() to alter the defaults for rtol, atol, dtol.
 
+   Level: intermediate
+
 .keywords: KSP, default, convergence, residual
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged()
-
-   Level: intermediate
 @*/
 int KSPDefaultConverged(KSP ksp,int n,double rnorm,void *dummy)
 {
@@ -311,11 +311,11 @@ int KSPDefaultConverged(KSP ksp,int n,double rnorm,void *dummy)
    Output Parameter:
 .  V - pointer to a vector containing the solution
 
+   Level: advanced
+
 .keywords:  KSP, build, solution, default
 
 .seealso: KSPGetSolution(), KSPDefaultBuildResidual()
-
-   Level: advanced
 */
 int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
 {
@@ -361,11 +361,11 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
    Output Parameter:
 .  V - pointer to a vector containing the residual
 
+   Level: advanced
+
 .keywords:  KSP, build, residual, default
 
 .seealso: KSPDefaultBuildSolution()
-
-   Level: advanced
 */
 int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmpre.c,v 1.17 1999/01/13 23:07:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: gmpre.c,v 1.18 1999/01/31 16:08:49 bsmith Exp curfman $";
 #endif
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
@@ -49,10 +49,10 @@ int KSPGMRESSetPreAllocateVectors(KSP ksp)
 +   ksp   - iterative context obtained from KSPCreate
 -   pre - number of directions
 
-    Level: intermediate
-
     Options Database Key:
 .   -ksp_gmres_prestart <pre>
+
+    Level: intermediate
 
 .keywords: KSP, GMRES, vectors prestarted GMRES
 

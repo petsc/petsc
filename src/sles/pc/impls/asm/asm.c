@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.92 1999/01/13 23:46:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.93 1999/01/31 16:08:25 bsmith Exp curfman $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -516,12 +516,12 @@ EXTERN_C_END
    Options Database Key:
 .  -pc_asm_in_place - Activates in-place factorization
 
-   Level: intermediate
-
    Note:
    PCASMSetUseInplace() can only be used with the KSP method KSPPREONLY, and
    when the original matrix is not required during the Solve process.
    This destroys the matrix, early thus, saving on memory usage.
+
+   Level: intermediate
 
 .keywords: PC, set, factorization, direct, inplace, in-place, ASM
 
@@ -555,8 +555,6 @@ int PCASMSetUseInPlace(PC pc)
 -   is - the index sets that define the subdomains for this processor
          (or PETSC_NULL for PETSc to determine subdomains)
 
-    Level: advanced
-
     Notes:
     The IS numbering is in the parallel, global numbering of the vector.
 
@@ -566,6 +564,8 @@ int PCASMSetUseInPlace(PC pc)
     linear solves for which the ASM preconditioner is being used.
 
     Use PCASMSetTotalSubdomains() to set the subdomains for all processors.
+
+    Level: advanced
 
 .keywords: PC, ASM, set, local, subdomains, additive Schwarz
 
@@ -600,8 +600,6 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 -   is - the index sets that define the subdomains for all processor
          (or PETSC_NULL for PETSc to determine subdomains)
 
-    Level: advanced
-
     Options Database Key:
     To set the total number of subdomain blocks rather than specify the
     index sets, use the option
@@ -616,6 +614,8 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
     linear solves for which the ASM preconditioner is being used.
 
     Use PCASMSetLocalSubdomains() to set local subdomains.
+
+    Level: advanced
 
 .keywords: PC, ASM, set, total, global, subdomains, additive Schwarz
 
@@ -648,8 +648,6 @@ int PCASMSetTotalSubdomains(PC pc, int N, IS *is)
 +   pc  - the preconditioner context
 -   ovl - the amount of overlap between subdomains (ovl >= 0, default value = 1)
 
-    Level: intermediate
-
     Options Database Key:
 .   -pc_asm_overlap <ovl> - Sets overlap
 
@@ -670,6 +668,8 @@ int PCASMSetTotalSubdomains(PC pc, int N, IS *is)
     PCASMSetTotalSubdomains() or PCASMSetLocalSubdomains(); the routine
     PCASMSetOverlap() merely allows PETSc to extend that overlap further
     if desired.
+
+    Level: intermediate
 
 .keywords: PC, ASM, set, overlap
 
@@ -707,10 +707,10 @@ int PCASMSetOverlap(PC pc, int ovl)
       PC_ASM_NONE        - local processor restriction and interpolation
 .ve
 
-    Level: intermediate
-
     Options Database Key:
 $   -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
+
+    Level: intermediate
 
 .keywords: PC, ASM, set, type
 
@@ -746,8 +746,6 @@ int PCASMSetType(PC pc,PCASMType type)
 .  first_local - the global number of the first block on this processor
 -  sles - the array of SLES contexts
 
-   Level: advanced
-
    Note:  
    After PCASMGetSubSLES() the array of SLESes is not to be freed
 
@@ -755,6 +753,8 @@ int PCASMSetType(PC pc,PCASMType type)
    is supported.
    
    You must call SLESSetUp() before calling PCASMGetSubSLES().
+
+   Level: advanced
 
 .keywords: PC, ASM, additive Schwarz, get, sub, SLES, context
 
@@ -849,12 +849,12 @@ EXTERN_C_END
 +  Nsub - the number of subdomains created
 -  is - the array of index sets defining the subdomains
 
-   Level: advanced
-
    Note:
    Presently PCAMSCreateSubdomains2d() is valid only for sequential
    preconditioners.  More general related routines are
    PCASMSetTotalSubdomains() and PCASMSetLocalSubdomains().
+
+   Level: advanced
 
 .keywords: PC, ASM, additive Schwarz, create, subdomains, 2D, regular grid
 

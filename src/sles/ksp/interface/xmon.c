@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.35 1999/01/21 14:49:44 curfman Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.36 1999/01/31 16:08:34 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -28,13 +28,13 @@ static char vcid[] = "$Id: xmon.c,v 1.35 1999/01/21 14:49:44 curfman Exp bsmith 
 .  -ksp_xmonitor - Sets line graph monitor
 
    Notes: 
-   Use KSPLGMonitorDestroy() to destroy this line graph, not DrawLGDestroy().
+   Use KSPLGMonitorDestroy() to destroy this line graph; do not use DrawLGDestroy().
+
+   Level: intermediate
 
 .keywords: KSP, monitor, line graph, residual, create
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPLGTrueMonitorCreate()
-
-   Level: intermediate
 @*/
 int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
                        int n, DrawLG *draw)
@@ -79,11 +79,11 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
    Input Parameter:
 .  draw - the drawing context
 
+   Level: intermediate
+
 .keywords: KSP, monitor, line graph, destroy
 
 .seealso: KSPLGMonitorCreate(), KSPLGTrueMonitorDestroy(), KSPSetMonitor()
-
-   Level: intermediate
 @*/
 int KSPLGMonitorDestroy(DrawLG drawlg)
 {
@@ -122,11 +122,11 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
    Use KSPLGTrueMonitorDestroy() to destroy this line graph, not
    DrawLGDestroy().
 
+   Level: intermediate
+
 .keywords: KSP, monitor, line graph, residual, create, true
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
-
-   Level: intermediate
 @*/
 int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int m,
                        int n, DrawLG *draw)
@@ -187,11 +187,11 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
    Input Parameter:
 .  draw - the drawing context
 
+   Level: intermediate
+
 .keywords: KSP, monitor, line graph, destroy, true
 
 .seealso: KSPLGTrueMonitorCreate(), KSPSetMonitor()
-
-   Level: intermediate
 @*/
 int KSPLGTrueMonitorDestroy(DrawLG drawlg)
 {

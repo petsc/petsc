@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.77 1999/01/27 19:46:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.78 1999/01/31 16:08:03 bsmith Exp curfman $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -50,10 +50,10 @@ FList PCList = 0;
   choosing the appropriate preconditioner.  In other words, this
   routine is not for beginners.
 
+  Level: intermediate
+
 .keywords: PC, set, method, type
 .seealso: KSPSetType()
-
-   Level: intermediate
 @*/
 int PCSetType(PC ctx,PCType type)
 {
@@ -111,7 +111,6 @@ int PCSetType(PC ctx,PCType type)
    Level: advanced
 
 .keywords: PC, register, destroy
-
 .seealso: PCRegisterAll(), PCRegisterAll()
 @*/
 int PCRegisterDestroy(void)
@@ -144,7 +143,6 @@ int PCRegisterDestroy(void)
    Level: beginner
 
 .keywords: PC, help
-
 .seealso: PCSetFromOptions()
 @*/
 int PCPrintHelp(PC pc)
@@ -181,11 +179,10 @@ int PCPrintHelp(PC pc)
    Output Parameter:
 .  name - name of preconditioner 
 
-.keywords: PC, get, method, name, type
-
-.seealso: PCSetType()
-
    Level: intermediate
+
+.keywords: PC, get, method, name, type
+.seealso: PCSetType()
 @*/
 int PCGetType(PC pc,PCType *meth)
 {
@@ -212,7 +209,6 @@ int PCGetType(PC pc,PCType *meth)
    Level: beginner
 
 .keywords: PC, set, from, options, database
-
 .seealso: PCPrintHelp()
 @*/
 int PCSetFromOptions(PC pc)

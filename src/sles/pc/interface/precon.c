@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.164 1999/01/27 23:08:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.165 1999/01/31 16:08:03 bsmith Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -72,11 +72,11 @@ static int PCPublish_Petsc(PetscObject object)
    Output Parameter:
 .  pc - location to put the preconditioner context
 
-   Level: developer
-
    Notes:
    The default preconditioner on one processor is PCILU with 0 fill on more 
    then one it is PCBJACOBI with ILU() on each processor.
+
+   Level: developer
 
 .keywords: PC, create, context
 
@@ -177,10 +177,10 @@ int PCApply(PC pc,Vec x,Vec y)
    Output Parameter:
 .  y - output vector
 
-   Level: developer
-
    Notes:
    Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
+
+   Level: developer
 
 .keywords: PC, apply, symmetric, left
 
@@ -460,11 +460,11 @@ int PCApplyRichardsonExists(PC pc, PetscTruth *exists)
    Output Parameter:
 .  y - the solution
 
-   Level: developer
-
    Notes: 
    Most preconditioners do not support this function. Use the command
    PCApplyRichardsonExists() to determine if one does.
+
+   Level: developer
 
 .keywords: PC, apply, Richardson
 
@@ -606,8 +606,6 @@ $     func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
 -  ctx - optional user-defined context for private data for the 
          user-defined func routine (may be null)
 
-   Level: advanced
-
    Notes:
    PCSetModifySubMatrices() MUST be called before SLESSetUp() and
    SLESSolve().
@@ -615,6 +613,8 @@ $     func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
    A routine set by PCSetModifySubMatrices() is currently called within
    the block Jacobi (PCBJACOBI) and additive Schwarz (PCASM)
    preconditioners.  All other preconditioners ignore this routine.
+
+   Level: advanced
 
 .keywords: PC, set, modify, submatrices
 
@@ -652,8 +652,6 @@ int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx
 .  submat - array of local submatrices (the entries of which may
             have been modified)
 
-   Level: developer
-
    Notes:
    The user should NOT generally call this routine, as it will
    automatically be called within certain preconditioners (currently
@@ -663,6 +661,8 @@ int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx
    as usual; the user can then alter these (for example, to set different
    boundary conditions for each submatrix) before they are used for the
    local solves.
+
+   Level: developer
 
 .keywords: PC, modify, submatrices
 
@@ -698,8 +698,6 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
    linear system is solved, and thus is irrelevant when solving just one linear
    system.
 
-   Level: developer
-
    Notes: 
    The flag can be used to eliminate unnecessary work in the preconditioner 
    during the repeated solution of linear systems of the same size.  The 
@@ -732,7 +730,9 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
    to zero after a linear solve; the user is completely responsible for
    matrix assembly.  See the routine MatZeroEntries() if desiring to
    zero all elements of a matrix.
-    
+
+   Level: developer
+
 .keywords: PC, set, operators, matrix, linear system
 
 .seealso: PCGetOperators(), MatZeroEntries()
@@ -821,11 +821,11 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 +  pc - the preconditioner context
 -  vec - the vector
 
-   Level: developer
-
    Notes:
    The vector must be set so that the preconditioner knows what type
    of vector to allocate if necessary.
+
+   Level: developer
 
 .keywords: PC, set, vector
 
@@ -913,12 +913,12 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 +  pc - the preconditioner context
 -  prefix - the prefix string to prepend to all PC option requests
 
-   Level: advanced
-
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
+
+   Level: advanced
 
 .keywords: PC, set, options, prefix, database
 
@@ -946,12 +946,12 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
 +  pc - the preconditioner context
 -  prefix - the prefix string to prepend to all PC option requests
 
-   Level: advanced
-
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
+
+   Level: advanced
 
 .keywords: PC, append, options, prefix, database
 
@@ -1069,8 +1069,6 @@ int PCPreSolve(PC pc,KSP ksp)
 +  pc - the preconditioner context
 -  ksp - the Krylov subspace context
 
-   Level: developer
-
    Sample of Usage:
 .vb
     PCPreSolve(pc,ksp);
@@ -1079,8 +1077,9 @@ int PCPreSolve(PC pc,KSP ksp)
 .ve
 
    Note:
+   SLESSolve() calls this routine directly, so it is rarely called by the user.
 
-   SLESSolve() calls this directly, so is rarely called by the user.
+   Level: developer
 
 .keywords: PC, post-solve
 
@@ -1124,8 +1123,6 @@ int PCPostSolve(PC pc,KSP ksp)
 +  PC - the PC context
 -  viewer - optional visualization context
 
-   Level: developer
-
    Note:
    The available visualization contexts include
 +     VIEWER_STDOUT_SELF - standard output (default)
@@ -1136,6 +1133,8 @@ int PCPostSolve(PC pc,KSP ksp)
 
    The user can open an alternative visualization contexts with
    ViewerASCIIOpen() (output to a specified file).
+
+   Level: developer
 
 .keywords: PC, view
 
@@ -1207,8 +1206,6 @@ int PCView(PC pc,Viewer viewer)
 .  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
-   Level: advanced
-
    Notes:
    PCRegister() may be called multiple times to add several user-defined preconditioners.
 
@@ -1225,6 +1222,8 @@ int PCView(PC pc,Viewer viewer)
 $     PCSetType(pc,"my_solver")
    or at runtime via the option
 $     -pc_type my_solver
+
+   Level: advanced
 
 .keywords: PC, register
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itres.c,v 1.37 1999/01/28 04:21:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itres.c,v 1.38 1999/01/31 16:08:34 bsmith Exp curfman $";
 #endif
 
 #include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -25,11 +25,11 @@ $     A x = b
 $     M u = f    
    where M = AC (right preconditioning) or CA (left preconditioning).
 
+   Level: intermediate
+
 .keywords: KSP, residual
 
 .seealso:  KSPMonitor()
-
-   Level: intermediate
 @*/
 int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 {
@@ -90,11 +90,11 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
    for the correction to the unpreconditioned problem.  If preconditioning on 
    the left, nothing is done.
 
+   Level: advanced
+
 .keywords: KSP, unwind, preconditioner
 
 .seealso: KSPSetPreconditionerSide()
-
-   Level: advanced
 @*/
 int KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
 {

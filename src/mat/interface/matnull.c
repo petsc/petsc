@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcnull.c,v 1.19 1999/01/13 23:42:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcnull.c,v 1.20 1999/01/31 16:08:03 bsmith Exp curfman $";
 #endif
 /*
     Routines to project vectors out of null spaces.
@@ -20,18 +20,19 @@ static char vcid[] = "$Id: pcnull.c,v 1.19 1999/01/13 23:42:13 curfman Exp bsmit
    Collective on MPI_Comm
 
    Input Parameters:
-+  comm - the MPI communicator associated with the object.
-.  has_cnst - if the null spaces contains the constant vector, PETSC_TRUE or PETSC_FALSE
++  comm - the MPI communicator associated with the object
+.  has_cnst - PETSC_TRUE if the null space contains the constant vector; otherwise PETSC_FALSE
 .  n - number of vectors (excluding constant vector) in null space
--  vecs - the vectors that span the null space (excluding the constant vector)
+-  vecs - the vectors that span the null space (excluding the constant vector);
           these vectors must be orthonormal
-
-   Level: advanced
 
    Output Parameter:
 .  SP - the null space context
 
-.keywords: PC, Null space
+   Level: advanced
+
+.keywords: PC, null space, create
+.seealso: PCNullSpaceDestroy(), PCNullSpaceRemove()
 @*/
 int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace *SP)
 {
@@ -63,7 +64,8 @@ int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace 
 
    Level: advanced
 
-.keywords: PC, Null space
+.keywords: PC, null space, destroy
+.seealso: PCNullSpaceDestroy(), PCNullSpaceRemove()
 @*/
 int PCNullSpaceDestroy(PCNullSpace sp)
 {
@@ -82,11 +84,12 @@ int PCNullSpaceDestroy(PCNullSpace sp)
 
    Input Parameters:
 +  sp - the null space context
--  vec - the vector you want the null space removed from
+-  vec - the vector from which the null space is to be removed 
 
    Level: advanced
 
-.keywords: PC, Null space
+.keywords: PC, null space, remove
+.seealso: PCNullSpaceCreate(), PCNullSpaceDestroy()
 @*/
 int PCNullSpaceRemove(PCNullSpace sp,Vec vec)
 {
