@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.145 1999/01/27 19:47:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.146 1999/02/03 03:19:17 curfman Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -1659,7 +1659,6 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
   IS             istmp;
-  PetscTruth     localdiag;
   
   PetscFunctionBegin;
   ierr = ISGetSize(is,&N); CHKERRQ(ierr);
@@ -1761,24 +1760,23 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
 
        Contributed by: Mathew Knepley
   */
-  localdiag = PETSC_FALSE;
+  /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
+  ierr = MatZeroRows(l->B,istmp,0); CHKERRQ(ierr); 
   if (diag && (l->A->M == l->A->N)) {
-    localdiag = PETSC_TRUE;
     ierr      = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
+  } else if (diag) {
+    ierr = MatZeroRows(l->A,istmp,0); CHKERRQ(ierr);
+    for ( i = 0; i < slen; i++ ) {
+      row  = lrows[i] + rstart_bs;
+      ierr = MatSetValues(A,1,&row,1,&row,diag,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   } else {
     ierr = MatZeroRows(l->A,istmp,0); CHKERRQ(ierr);
   }
-  ierr = MatZeroRows(l->B,istmp,0); CHKERRQ(ierr);
-  ierr = ISDestroy(istmp); CHKERRQ(ierr);
 
-  if (diag && (localdiag == PETSC_FALSE)) {
-    for ( i = 0; i < slen; i++ ) {
-      row = lrows[i] + rstart_bs;
-      ierr = MatSetValues(A,1,&row,1,&row,diag,INSERT_VALUES); CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  }
+  ierr = ISDestroy(istmp); CHKERRQ(ierr);
   PetscFree(lrows);
 
   /* wait on sends */
