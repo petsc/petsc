@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.2 1999/11/10 03:22:06 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.3 1999/11/24 18:50:07 bsmith Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -51,7 +51,7 @@ int DAGetInterpolation_1D_1(DA dac, DA daf, Mat *A)
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c); CHKERRQ(ierr);
 
   /* create interpolation matrix */
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m_f,m_c,mx,Mx,3,0,0,0,&mat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(dac->comm,m_f,m_c,mx,Mx,3,0,0,0,&mat);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for ( i=i_start; i<i_start+m_f; i++ ) {
@@ -119,7 +119,7 @@ int DAGetInterpolation_2D_1(DA dac, DA daf, Mat *A)
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c); CHKERRQ(ierr);
 
   /* create interpolation matrix */
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m_f*n_f,m_c*n_c,mx*my,Mx*My,5,0,3,0,&mat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(dac->comm,m_f*n_f,m_c*n_c,mx*my,Mx*My,4,0,3,0,&mat);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for ( j=j_start; j<j_start+n_f; j++ ) {
@@ -204,7 +204,7 @@ int DAGetInterpolation_2D_dof(DA dac, DA daf, Mat *A)
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c); CHKERRQ(ierr);
 
   /* create interpolation matrix */
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,dof*m_f*n_f,dof*m_c*n_c,dof*mx*my,dof*Mx*My,dof*5,0,3,0,&mat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(dac->comm,dof*m_f*n_f,dof*m_c*n_c,dof*mx*my,dof*Mx*My,dof*4,0,dof*3,0,&mat);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for ( j=j_start; j<j_start+n_f; j++ ) {
@@ -278,7 +278,7 @@ int DAGetInterpolation_3D_dof(DA dac, DA daf, Mat *A)
   int      row,col,i_start_ghost,j_start_ghost,cols[8],mx, m_c,my, nc,ratio;
   int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   int      l_start,p_f,l_start_ghost,p_ghost,l_start_c,p_c;
-  int      l_start_ghost_c,p_ghost_c,ll,l_c;
+  int      l_start_ghost_c,p_ghost_c,ll,l_c,*dnz,*onz;
   Scalar   v[8],x,y,z;
   Mat      mat;
 
@@ -298,15 +298,64 @@ int DAGetInterpolation_3D_dof(DA dac, DA daf, Mat *A)
   ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c); CHKERRQ(ierr);
 
-  /* create interpolation matrix */
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,dof*m_f*n_f*p_f,dof*m_c*n_c*p_c,dof*mx*my*mz,dof*Mx*My*Mz,dof*7,0,3,0,&mat);CHKERRQ(ierr);
+  /* create interpolation matrix, determining exact preallocation */
+  MatPreallocateInitialize(dac->comm,dof*m_f*n_f*p_f,dof*m_c*n_c*p_c,dnz,onz);
+  /* loop over local fine grid nodes counting interpolating points */
+  for ( l=l_start; l<l_start+p_f; l++ ) {
+    for ( j=j_start; j<j_start+n_f; j++ ) {
+      for ( i=i_start; i<i_start+m_f; i++ ) {
+        /* convert to local "natural" numbering and then to PETSc global numbering */
+        row = idx[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
+        i_c = (i/ratio);
+        j_c = (j/ratio);
+        l_c = (l/ratio);
+
+        /* 
+         Only include those interpolation points that are truly 
+         nonzero. Note this is very important for final grid lines
+         in x and y directions; since they have no right/top neighbors
+        */
+        nc       = 0;
+        col      = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
+        cols[nc++] = idx_c[col]; 
+        if (i_c*ratio != i) { 
+          cols[nc++] = idx_c[col+dof];
+        }
+        if (j_c*ratio != j) { 
+          cols[nc++] = idx_c[col+m_ghost_c*dof];
+        }
+        if (l_c*ratio != l) { 
+          cols[nc++] = idx_c[col+m_ghost_c*n_ghost_c*dof];
+        }
+        if (j_c*ratio != j && i_c*ratio != i) { 
+          cols[nc++] = idx_c[col+(m_ghost_c+1)*dof];
+        }
+        if (j_c*ratio != j && l_c*ratio != l) { 
+          cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c)*dof];
+        }
+        if (i_c*ratio != i && l_c*ratio != l) { 
+          cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+1)*dof];
+        }
+        if (i_c*ratio != i && l_c*ratio != l && j_c*ratio != j) { 
+          cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)*dof];
+        }
+        MatPreallocateSet(row,nc,cols,dnz,onz);
+        for ( k=1; k<dof; k++ ) {
+          row++;
+          MatPreallocateSet(row,nc,cols,dnz,onz);
+        }
+      }
+    }
+  }
+  ierr = MatCreateMPIAIJ(dac->comm,dof*m_f*n_f*p_f,dof*m_c*n_c*p_c,dof*mx*my*mz,dof*Mx*My*Mz,0,dnz,0,onz,&mat);CHKERRQ(ierr);
+  MatPreallocateFinalize(dnz,onz);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for ( l=l_start; l<l_start+p_f; l++ ) {
     for ( j=j_start; j<j_start+n_f; j++ ) {
       for ( i=i_start; i<i_start+m_f; i++ ) {
         /* convert to local "natural" numbering and then to PETSc global numbering */
-        row    = idx[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
+        row = idx[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
 
         i_c = (i/ratio);
         j_c = (j/ratio);
@@ -371,7 +420,6 @@ int DAGetInterpolation_3D_dof(DA dac, DA daf, Mat *A)
           cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)*dof];
           v[nc++]  = .125*(1 + (2*x-1))*(1 + (2*y-1))*(1 + (2*z-1));
         }
-
         ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES); CHKERRQ(ierr); 
         for ( k=1; k<dof; k++ ) {
           for ( ll=0; ll<nc; ll++ ) {
