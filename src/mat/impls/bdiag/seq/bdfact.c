@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.19 1995/10/13 18:37:56 curfman Exp curfman $";
+static char vcid[] = "$Id: bdfact.c,v 1.20 1995/10/13 19:39:54 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -115,10 +115,6 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
     PETSCFREE(dgptr);
   } 
   else {
-    /* Note: The case nb>1 is not yet finished */
-    if (a->nd != 1 || a->diag[0] !=0) SETERRQ(1,
-      "MatLUFactorNumeric_SeqBDiag:Case nb>1 is not finished");
-
     if (!a->pivot) {
       /* Comment: We have chosen to hide column permutation in the pivots,
                   rather than put it in the Mat->col slot. */
@@ -224,9 +220,6 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
     }
     PLogFlops(2*a->nz - a->n);
   } else {
-    /* Note:  The case nb>1 is not yet finished */
-    if (a->nd != 1 || a->diag[0] !=0) SETERRQ(1,
-      "MatSolve_SeqBDiag:Triangular solves only for main diag");
     PetscMemcpy(y,x,m*sizeof(Scalar));
 
     /* forward solve the lower triangular part */
