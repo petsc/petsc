@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.99 1996/04/07 22:45:27 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.100 1996/04/09 02:17:20 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -752,11 +752,69 @@ static int MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,Scalar **v
   return 0;
 }
 
+/* 
+   MatNorm_SeqBDiag_Columns - Computes the column norms of a block diagonal
+   matrix.  We code this separately from MatNorm_SeqBDiag() so that the
+   routine can be used for the parallel version as well.
+ */
+int MatNorm_SeqBDiag_Columns(Mat A,double *tmp,int n)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          d, i, j, k, nd = a->nd, nb = a->nb, diag, kshift, kloc, len;
+  Scalar       *dv;
+
+  if (n != a->n) SETERRQ(1,"MatNorm_SeqBDiag_Columns:Incorrect work space dimension");
+  PetscMemzero(tmp,a->n*sizeof(double));
+  if (nb == 1) {
+    for (d=0; d<nd; d++) {
+      dv   = a->diagv[d];
+      diag = a->diag[d];
+      len  = a->bdlen[d];
+      if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
+        for (i=0; i<len; i++) {
+          tmp[i] += PetscAbsScalar(dv[i]); 
+        }
+      } else {	/* upper triangle: row = loc, col = loc-diag */
+        for (i=0; i<len; i++) {
+          tmp[i-diag] += PetscAbsScalar(dv[i]); 
+        }
+      }
+    }
+  } else { 
+    for (d=0; d<nd; d++) {
+      dv   = a->diagv[d];
+      diag = a->diag[d];
+      len  = a->bdlen[d];
+
+      if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
+        for (k=0; k<len; k++) {
+          kloc = k*nb; kshift = kloc*nb; 
+          for (i=0; i<nb; i++) {	/* i = local row */
+            for (j=0; j<nb; j++) {	/* j = local column */
+              tmp[kloc + j] += PetscAbsScalar(dv[kshift + j*nb + i]);
+            }
+          }
+        }
+      } else {	/* upper triangle: row = loc, col = loc-diag */
+        for (k=0; k<len; k++) {
+          kloc = k*nb; kshift = kloc*nb; 
+          for (i=0; i<nb; i++) {	/* i = local row */
+            for (j=0; j<nb; j++) {	/* j = local column */
+              tmp[kloc + j - nb*diag] += PetscAbsScalar(dv[kshift + j*nb + i]);
+            }
+          }
+        }
+      }
+    }
+  }
+  return 0;
+}
+
 static int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   double       sum = 0.0, *tmp;
-  int          d, i, j, k, nd = a->nd, nb = a->nb, diag, kshift, kloc, len;
+  int          ierr, d, i, j, k, nd = a->nd, nb = a->nb, diag, kshift, kloc, len;
   Scalar       *dv;
 
   if (type == NORM_FROBENIUS) {
@@ -775,50 +833,8 @@ static int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
   }
   else if (type == NORM_1) { /* max column norm */
     tmp = (double *) PetscMalloc( a->n*sizeof(double) ); CHKPTRQ(tmp);
-    PetscMemzero(tmp,a->n*sizeof(double));
+    ierr = MatNorm_SeqBDiag_Columns(A,tmp,a->n); CHKERRQ(ierr);
     *norm = 0.0;
-    if (nb == 1) {
-      for (d=0; d<nd; d++) {
-        dv   = a->diagv[d];
-        diag = a->diag[d];
-        len  = a->bdlen[d];
-        if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
-          for (i=0; i<len; i++) {
-            tmp[i] += PetscAbsScalar(dv[i]); 
-          }
-        } else {	/* upper triangle: row = loc, col = loc-diag */
-          for (i=0; i<len; i++) {
-            tmp[i-diag] += PetscAbsScalar(dv[i]); 
-          }
-        }
-      }
-    } else { 
-      for (d=0; d<nd; d++) {
-        dv   = a->diagv[d];
-        diag = a->diag[d];
-        len  = a->bdlen[d];
-
-        if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
-          for (k=0; k<len; k++) {
-            kloc = k*nb; kshift = kloc*nb; 
-            for (i=0; i<nb; i++) {	/* i = local row */
-              for (j=0; j<nb; j++) {	/* j = local column */
-                tmp[kloc + j] += PetscAbsScalar(dv[kshift + j*nb + i]);
-              }
-            }
-          }
-        } else {	/* upper triangle: row = loc, col = loc-diag */
-          for (k=0; k<len; k++) {
-            kloc = k*nb; kshift = kloc*nb; 
-            for (i=0; i<nb; i++) {	/* i = local row */
-              for (j=0; j<nb; j++) {	/* j = local column */
-                tmp[kloc + j - nb*diag] += PetscAbsScalar(dv[kshift + j*nb + i]);
-              }
-            }
-          }
-        }
-      }
-    }
     for ( j=0; j<a->n; j++ ) {
       if (tmp[j] > *norm) *norm = tmp[j];
     }

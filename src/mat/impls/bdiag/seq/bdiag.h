@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.17 1995/12/30 22:22:07 bsmith Exp bsmith $ */
+/* $Id: bdiag.h,v 1.18 1996/01/24 05:46:19 bsmith Exp curfman $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -36,5 +36,5 @@ typedef struct {
 } Mat_SeqBDiag;
 
 extern int MatConvert_SeqBDiag(Mat,MatType,Mat *);
-
+int MatNorm_SeqBDiag_Columns(Mat,double*,int);
 #endif

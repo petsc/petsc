@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.81 1996/04/09 02:21:12 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.82 1996/04/09 04:06:41 curfman Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -720,7 +720,7 @@ static int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
     int    j;
     tmp  = (double *) PetscMalloc( a->n*sizeof(double) ); CHKPTRQ(tmp);
     tmp2 = (double *) PetscMalloc( a->n*sizeof(double) ); CHKPTRQ(tmp2);
-    ierr = MatNorm_SeqBDiag_Columns(mbd->A,tmp); CHKERRQ(ierr);
+    ierr = MatNorm_SeqBDiag_Columns(mbd->A,tmp,a->n); CHKERRQ(ierr);
     *norm = 0.0;
     MPI_Allreduce(tmp,tmp2,a->n,MPI_DOUBLE,MPI_SUM,A->comm);
     for ( j=0; j<a->n; j++ ) {
