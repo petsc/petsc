@@ -11,7 +11,7 @@ PETSc configure
    Do more error checking on user input arguments for nice error messages like if they
    pass a directory for -with-blas-lapack-dir or the other way around
 
-   Change bmake/configure to only do one of C or C++ compiler
+   Change bmake/configure to only do one of C or C++ compiler?
 
 Vectors
    Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input
@@ -24,11 +24,15 @@ PC/Mat
 
   Manual pages for partitioners
 
+  Add support for ICC for BAIJ by converting to SBAIJ
+
+  Add MatOption POSITIVE_DEFINITE and have KSP default to CG if that plus symmetric set
+
 General
 
   Manual Pages for Norm types, for KSPGMRESxxxxGramSchmidtOrthogonalization() ....
 
-  Make --with-mpich get the correct mpich under windows
+  Make --download-mpich get the correct mpich under windows
 
   add DAVecGatherAll and DAVecGather
   

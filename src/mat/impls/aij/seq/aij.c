@@ -1696,7 +1696,6 @@ int MatScale_SeqAIJ(const PetscScalar *alpha,Mat inA)
 int MatGetSubMatrices_SeqAIJ(Mat A,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
   int        ierr,i;
-  PetscTruth eq;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
@@ -1705,18 +1704,6 @@ int MatGetSubMatrices_SeqAIJ(Mat A,int n,const IS irow[],const IS icol[],MatReus
 
   for (i=0; i<n; i++) {
     ierr = MatGetSubMatrix_SeqAIJ(A,irow[i],icol[i],PETSC_DECIDE,scall,&(*B)[i]);CHKERRQ(ierr);
-    if (A->symmetric || A->structurally_symmetric || A->hermitian) {
-      ierr = ISEqual(irow[i],icol[i],&eq);CHKERRQ(ierr);
-      if (eq) {
-        if (A->symmetric){
-          ierr = MatSetOption((*B)[i],MAT_SYMMETRIC);CHKERRQ(ierr);
-        } else if (A->hermitian) {
-          ierr = MatSetOption((*B)[i],MAT_HERMITIAN);CHKERRQ(ierr);
-        } else if (A->structurally_symmetric) {
-          ierr = MatSetOption((*B)[i],MAT_STRUCTURALLY_SYMMETRIC);CHKERRQ(ierr);
-        }
-      }
-    }
   }
   PetscFunctionReturn(0);
 }

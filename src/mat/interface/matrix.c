@@ -4208,7 +4208,8 @@ int MatRestoreArray(Mat mat,PetscScalar *v[])
 @*/
 int MatGetSubMatrices(Mat mat,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
-  int        ierr;
+  int        i,ierr;
+  PetscTruth eq;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4232,6 +4233,20 @@ int MatGetSubMatrices(Mat mat,int n,const IS irow[],const IS icol[],MatReuse sca
   ierr = PetscLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->getsubmatrices)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
+      ierr = ISEqual(irow[i],icol[i],&eq);CHKERRQ(ierr);
+      if (eq) {
+	if (mat->symmetric){
+	  ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC);CHKERRQ(ierr);
+	} else if (mat->hermitian) {
+	  ierr = MatSetOption((*submat)[i],MAT_HERMITIAN);CHKERRQ(ierr);
+	} else if (mat->structurally_symmetric) {
+	  ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC);CHKERRQ(ierr);
+	}
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
