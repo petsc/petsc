@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.107 1996/07/02 18:09:25 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.108 1996/07/08 22:24:30 bsmith Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -55,6 +55,7 @@ extern int MatGetColumn(Mat,int,int *,int **,Scalar**);
 extern int MatRestoreColumn(Mat,int,int *,int **,Scalar**);
 extern int MatGetArray(Mat,Scalar **);
 extern int MatRestoreArray(Mat,Scalar **);
+extern int MatGetBlockSize(Mat,int *);
 
 extern int MatMult(Mat,Vec,Vec);
 extern int MatMultAdd(Mat,Vec,Vec,Vec);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.26 1996/07/08 22:18:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.27 1996/07/10 00:32:10 curfman Exp balay $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -52,7 +52,7 @@ static int PCSetUp_ASM(PC pc)
 {
   PC_ASM              *osm  = (PC_ASM *) pc->data;
   int                 i,ierr,m,n_local = osm->n_local,n_local_true = osm->n_local_true;
-  int                 start, start_val, end_val, size, sz;
+  int                 start, start_val, end_val, size, sz, bs;
   MatGetSubMatrixCall scall = MAT_REUSE_MATRIX;
   IS                  isl;
   SLES                sles;
@@ -74,11 +74,13 @@ static int PCSetUp_ASM(PC pc)
     n_local_true = osm->n_local_true;  
     if( !osm->is){ /* build the index sets */
       osm->is    = (IS *) PetscMalloc( n_local_true*sizeof(IS **) );CHKPTRQ(osm->is);
-      MatGetOwnershipRange(pc->pmat,&start_val,&end_val);
+      ierr  = MatGetOwnershipRange(pc->pmat,&start_val,&end_val); CHKERRQ(ierr);
+      ierr  = MatGetBlockSize(pc->pmat,&bs); CHKERRQ(ierr);
       sz    = end_val - start_val;
       start = start_val;
+      if (end_val/bs*bs != end_val || start_val/bs*bs != start_val) SETERRQ(1,"PCSetUp_ASM:Wrong Distribution");
       for ( i=0; i<n_local_true; i++){
-        size     = sz/n_local_true + (( sz % n_local_true) > i);
+        size     = ((sz/bs)/n_local_true + (( (sz/bs) % n_local_true) > i))*bs;
         ierr     = ISCreateStrideSeq(MPI_COMM_SELF,size,start,1,&isl);CHKERRQ(ierr);
         start    += size;
         osm->is[i] = isl;
