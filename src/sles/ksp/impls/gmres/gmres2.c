@@ -3,9 +3,12 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetHapTol" 
-/*@
+/*M
     KSPGMRESSetHapTol - Sets the tolerence for GMRES to declare happy breakdown.
     for GMRES before restart.
+
+   Synopsis:
+     int KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 
     Collective on KSP
 
@@ -21,27 +24,16 @@
 .keywords: KSP, GMRES, set, happy breakdown
 
 .seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreallocateVectors()
-@*/
-int KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
-{
-  int ierr,(*f)(KSP,PetscReal);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (tol < 0.0) SETERRQ(1,"Tolerance must be non-negative");
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetHapTol_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,tol);CHKERRQ(ierr);
-  }
-
-  PetscFunctionReturn(0);
-}
+M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetRestart" 
-/*@
+/*MC
     KSPGMRESSetRestart - Sets the number of search directions 
     for GMRES before restart.
+
+   Synopsis:
+     int KSPGMRESSetRestart(KSP ksp,int max_k)
 
     Collective on KSP
 
@@ -60,21 +52,7 @@ int KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 .keywords: KSP, GMRES, set, restart
 
 .seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreallocateVectors()
-@*/
-int KSPGMRESSetRestart(KSP ksp,int max_k)
-{
-  int ierr,(*f)(KSP,int);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (max_k < 1) SETERRQ(1,"Restart must be positive");
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,max_k);CHKERRQ(ierr);
-  }
-
-  PetscFunctionReturn(0);
-}
+M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetOrthogonalization" 

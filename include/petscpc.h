@@ -56,6 +56,8 @@ E*/
 #define PCPBJACOBI  "pbjacobi"
 #define PCMULTILEVEL "multilevel"
 #define PCSCHUR      "schur"
+#define PCESI        "esi"
+#define PCPETSCESI   "petscesi"
 
 /* Logging support */
 extern int PC_COOKIE;

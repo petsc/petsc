@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = -DPETSC_FORTRAN_STUBS
 FFLAGS   =
 SOURCEC  = zoptions.c zksp.c zpc.c zsnes.c zsys.c zmat.c zvec.c zsles.c \
            zdraw.c zda.c zviewer.c zis.c zplog.c zstart.c zstartf.c zts.c \

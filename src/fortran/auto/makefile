@@ -3,7 +3,7 @@
 ALL: lib
 
 
-CFLAGS   =
+CFLAGS   = -DPETSC_FORTRAN_STUBS
 FFLAGS   =
 SOURCEF	 = 
 SOURCEH	 = 
