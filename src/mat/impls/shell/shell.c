@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.68 1999/03/31 18:41:23 bsmith Exp balay $";
+static char vcid[] = "$Id: shell.c,v 1.69 1999/05/04 20:31:58 balay Exp bsmith $";
 #endif
 
 /*
@@ -332,11 +332,10 @@ int MatShellSetOperation(Mat mat,MatOperation op, void *f)
     if (mat->type == MATSHELL) {
        Mat_Shell *shell = (Mat_Shell *) mat->data;
        shell->destroy                 = (int (*)(Mat)) f;
-    } 
-    else mat->ops->destroy            = (int (*)(Mat)) f;
+    } else mat->ops->destroy            = (int (*)(Mat)) f;
   } 
   else if (op == MATOP_VIEW) mat->ops->view  = (int (*)(Mat,Viewer)) f;
-  else      (((void**)mat->ops)[op]) = f;
+  else                       (((void**)mat->ops)[op]) = f;
 
   PetscFunctionReturn(0);
 }
