@@ -61,7 +61,6 @@
 
 #define PETSC_NEED_KILL_FOR_DEBUGGER
 #define PETSC_USE_PID_FOR_DEBUGGER
-#define PETSC_HAVE_TEMPLATED_COMPLEX
 
 #define PETSC_HAVE_F90_H "f90impl/f90_alpha.h"
 #define PETSC_HAVE_F90_C "src/sys/src/f90/f90_alpha.c"

@@ -65,8 +65,6 @@
 #define PETSC_HAVE_RTLD_GLOBAL 1
 #define PETSC_PRINTF_FORMAT_CHECK(a,b) __attribute__ ((format (printf, a,b)))
 
-#define PETSC_HAVE_TEMPLATED_COMPLEX
-
 #define PETSC_HAVE_SYS_TIMES_H
 
 #define PETSC_HAVE_UCBPS
