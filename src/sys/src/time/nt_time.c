@@ -1,13 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: nt_gnu_time.c,v 1.3 1997/02/21 18:01:05 balay Exp balay $";
+static char vcid[] = "$Id: nt_gnu_time.c,v 1.4 1997/02/21 18:23:24 balay Exp balay $";
 #endif
 
 #include <petsc.h>
 #if defined (PARCH_nt_gnu)
-#include <Windows32/Base.h>
-#include <Windows32/Defines.h>
-#include <Windows32/Structures.h>
-#include <Windows32/Functions.h>
+#include <Windows.h>
 #define FACTOR   4294967296.0
 
 double nt_gnu_time()
