@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.83 1996/08/08 14:42:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.84 1996/08/26 20:54:02 curfman Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -360,7 +360,7 @@ int PCCreate_BGS(PC pc)
 .  lens - [optional] integer array containing the size of each block
 
    Options Database Key:
-$  -pc_bjacobi_blocks blocks
+$  -pc_bjacobi_blocks <blocks>
 
    Notes:  
    Currently only a limited number of blocking configurations are supported.
@@ -399,7 +399,7 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
 .  lens - [optional] integer array containing the size of each block
 
    Options Database Key:
-$  -pc_bgs_blocks blocks
+$  -pc_bgs_blocks <blocks>
 
    Notes:  
    Currently only a limited number of blocking configurations are supported.
