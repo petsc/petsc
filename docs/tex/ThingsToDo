@@ -10,9 +10,6 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
- - Where does the Fortran interface flag really belong?  Should be more
-   readily available to applications codes so that $(CONF) need not be
-   use there.
 
  - Document which routines are not currently supported (e.g., PCILUSetUseDropTolerance()).
 
@@ -24,8 +21,6 @@ Additional Capabilities that PETSc Needs:
   - Add info about which library components do what.  Mention SLES_LIB.
 
   - Add table of all preconditioners and options to PETSc manual.
-
-  - Support DA users setting own partition
 
   - investigate Said's ILUDT
 
@@ -712,3 +707,8 @@ Lois  - Add SLES example showing multiple linear solves with same matrices but
 
   X Cai's versions of ASM
 
+  X Support DA users setting own partition
+
+ X Where does the Fortran interface flag really belong?  Should be more
+   readily available to applications codes so that $(CONF) need not be
+   use there.
