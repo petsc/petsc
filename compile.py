@@ -162,7 +162,7 @@ class TagC (transform.GenericTag):
     transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
 
 class CompileC (Compile):
-  def __init__(self, library, sources = None, tag = 'c', compiler = 'gcc', compilerFlags = '-g -Wall', archiver = 'ar', archiverFlags = 'crv'):
+  def __init__(self, library, sources = None, tag = 'c', compiler = 'gcc', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wredundant-decls -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
     Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
     self.includeDirs.append('.')
 
@@ -171,9 +171,16 @@ class TagCxx (transform.GenericTag):
     transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
 
 class CompileCxx (Compile):
-  def __init__(self, library, sources = None, tag = 'cxx', compiler = 'g++', compilerFlags = '-g -Wall', archiver = 'ar', archiverFlags = 'crv'):
+  def __init__(self, library, sources = None, tag = 'cxx', compiler = 'g++', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wredundant-decls -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
     Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
     self.includeDirs.append('.')
+    self.errorHandler = self.handleCxxErrors
+
+  def handleCxxErrors(self, command, status, output):
+    if status:
+      raise RuntimeError('Could not execute \''+command+'\': '+output)
+    elif output.find('warning') >= 0:
+      print('\''+command+'\': '+output)
 
 class TagFortran (transform.GenericTag):
   def __init__(self, tag = 'fortran', ext = 'f', sources = None, extraExt = '', root = None):
