@@ -28,7 +28,8 @@ class Configure(config.base.Configure):
     self.functions   = self.framework.require('config.functions', self)
     self.libraries   = self.framework.require('config.libraries', self)
     self.blaslapack  = self.framework.require('PETSc.packages.BlasLapack',  self)
-    self.mpi         = self.framework.require('PETSc.packages.MPI',         self)
+    if self.framework.argDB['with-mpi']:
+      self.mpi       = self.framework.require('PETSc.packages.MPI',         self)
     self.mpe         = self.framework.require('PETSc.packages.MPE',         self)
     self.adic        = self.framework.require('PETSc.packages.ADIC',        self)
     self.matlab      = self.framework.require('PETSc.packages.Matlab',      self)
@@ -617,9 +618,11 @@ acfindx:
 
   def configureMPIUNI(self):
     '''If MPI was not found, setup MPIUNI, our uniprocessor version of MPI'''
-    if self.mpi.foundMPI: return
     if self.framework.argDB['with-mpi']:
-      raise RuntimeError('********** Error: Unable to locate a functional MPI. Please consult configure.log. **********')
+      if self.mpi.foundMPI:
+        return
+      else:
+        raise RuntimeError('********** Error: Unable to locate a functional MPI. Please consult configure.log. **********')
     print '********** Warning: Using uniprocessor MPI (mpiuni) from Petsc **********'
     print '**********    Use --with-mpi-* options to specify a full MPI   **********'
     self.framework.addDefine('HAVE_MPI', 1)
