@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.140 1999/12/19 00:47:09 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.141 2000/01/11 21:00:37 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -409,7 +409,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,PetscReal f,Mat *B)
   (*B)->factor                 =  FACTOR_LU;
   (*B)->info.factor_mallocs    = realloc;
   (*B)->info.fill_ratio_given  = f;
-  (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant if A has inodes */
+  (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
 
   if (ai[n] != 0) {
     (*B)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
@@ -528,6 +528,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   ierr = Mat_AIJ_CheckInode(C);CHKERRQ(ierr);
+  (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
   C->assembled = PETSC_TRUE;
   PLogFlops(b->n);
   PetscFunctionReturn(0);
