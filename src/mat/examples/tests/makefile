@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.227 2000/05/05 22:16:17 balay Exp balay $ 
+# $Id: makefile,v 1.228 2000/06/21 15:53:14 balay Exp balay $ 
 
 ALL: ex1
 
@@ -29,7 +29,8 @@ TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.P
 		   ex43.PETSc ex43.rm ex48.PETSc runex48 ex48.rm ex49.PETSc ex49.rm \
 		   ex51.PETSc runex51 ex51.rm \
 		   ex52.PETSc ex52.rm ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 \
-		   runex56_2  runex56_3  runex56_4 runex56_5 ex56.rm clean 
+		   runex56_2  runex56_3  runex56_4 runex56_5 ex56.rm \
+		   ex74.PETSc runex74 ex74.rm clean
 TESTEXAMPLES_3	 = ex36.PETSc runex36 ex36.rm ex63.PETSc runex63 ex63.rm \
                    ex67f.PETSc ex67f.rm clean
 TESTEXAMPLES_9	 = ex36.PETSc runex36 ex36.rm clean
