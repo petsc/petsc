@@ -32,19 +32,19 @@ X11_LIB        = -lX11
 # BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
 # below if it is there.
 #
-BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+#BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+#BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = -L/usr/local/mpi/lib/IRIX/ch_shmem/ -lmpi
-MPI_INCLUDE    = -I/usr/local/mpi/include
-MPIRUN         = /usr/local/mpi/bin/mpirun.ch_shmem
+MPI_LIB        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)/libmpiuni.a
+MPI_INCLUDE    = -I$(PETSC_DIR)/src/mpiuni
+MPIRUN         = $(PETSC_DIR)/src/mpiuni/mpirun
 #
 # PCONF - indicates which external packages are available at your site
 #    Make sure that -DHAVE_BLOCKSOLVE is not listed below
 #
-PCONF         =   -DHAVE_BLOCKSOLVE
+PCONF         =   
 #
 #  If you are using dynamic libraries (the default) you must make this
 # point to the directories where all your shared libraries are stored.

@@ -25,10 +25,10 @@ X11_LIB        = /usr/X11/lib/libX11.a
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        =/usr/local/mpich/lib/LINUX/ch_p4/libmpe.a \
-                 /usr/local/mpich/lib/LINUX/ch_p4/libmpi.a
-MPI_INCLUDE    = -Dmpi -I/usr/local/mpich/include 
-MPIRUN         = /usr/local/mpich/bin/mpirun
+MPI_LIB        =/usr/local/mpi/lib/LINUX/ch_p4/libmpe.a \
+                 /usr/local/mpi/lib/LINUX/ch_p4/libmpi.a
+MPI_INCLUDE    = -Dmpi -I/usr/local/mpi/include 
+MPIRUN         = /usr/local/mpi/bin/mpirun
 #
 # Optional location of BlockSolve, if you do not have BlockSolve, then
 # remove -DHAVE_BLOCKSOLVE from the PCONF definition below if it is there.

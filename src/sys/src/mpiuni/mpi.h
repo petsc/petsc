@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.28 1996/06/23 23:08:49 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.29 1996/07/24 15:19:06 bsmith Exp balay $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -15,12 +15,21 @@
 #include <stdlib.h>
 #endif
 
-#if defined(PARCH_sun4) && defined(__cplusplus)
+#if defined(PARCH_sun4) || defined(PARCH_rs6000) || defined(PARCH_IRIX)
+#if defined(__cplusplus)
 extern "C" {
-extern void exit(const int);
+extern void exit(int);
 }
 #endif
+#endif
 
+#if defined(PARCH_hpux) || defined(PARCH_t3d) 
+#if defined(__cplusplus)
+extern "C" {
+extern int    exit(int);
+}
+#endif
+#endif
 
 extern int MPIUNI_DUMMY[2];
 extern void   *MPIUNI_TMP;
