@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.20 1996/08/16 20:32:15 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.21 1996/08/16 20:32:57 bsmith Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -118,7 +118,7 @@ extern UTP_readTime(struct timestruc_t *);
 /*
     The usual Unix time routines.
 */
-#if defined(PARCH_IRIX) && defined(__cplusplus)
+#if (defined(PARCH_IRIX)  || defined(PARCH_IRIX64)) && defined(__cplusplus)
 struct timeval {
         long    tv_sec;         /* seconds */
         long    tv_usec;        /* and microseconds */

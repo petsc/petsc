@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.41 1996/08/26 20:24:48 curfman Exp curfman $";
+static char vcid[] = "$Id: send.c,v 1.42 1996/09/14 03:35:02 curfman Exp balay $";
 #endif
 
 /* 
@@ -78,7 +78,7 @@ extern int sleep(unsigned);
 #endif
 #endif
 
-#if defined(PARCH_IRIX) && defined(__cplusplus)
+#if (defined(PARCH_IRIX)  || defined(PARCH_IRIX64)) && defined(__cplusplus)
 extern "C" {
 extern int sleep(unsigned);
 extern int close(int);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.26 1996/04/20 04:19:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: signal.c,v 1.27 1996/09/14 03:34:30 curfman Exp balay $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -32,7 +32,7 @@ static char *SIGNAME[] = { "Unknown", "HUP",  "INT",  "QUIT", "ILL",
     This is the signal handler called by the system. This calls 
   your signal handler.
 */
-#if defined(PARCH_IRIX) || defined(PARCH_sun4)
+#if defined(PARCH_IRIX)  || defined(PARCH_IRIX64) || defined(PARCH_sun4)
 static void PetscSignalHandler( int sig, int code,struct sigcontext * scp,char *addr)
 #else
 static void PetscSignalHandler( int sig )
@@ -89,7 +89,7 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
 {
   struct  SH *newsh;
   if (!SignalSet && routine) {
-#if defined(PARCH_IRIX) && defined(__cplusplus)
+#if (defined(PARCH_IRIX)  || defined(PARCH_IRIX64)) && defined(__cplusplus)
     signal( SIGQUIT, (void (*)(...)) PetscSignalHandler );
     signal( SIGILL,  (void (*)(...)) PetscSignalHandler );
     signal( SIGFPE,  (void (*)(...)) PetscSignalHandler );
@@ -111,7 +111,7 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
     signal( SIGQUIT, 0 );
     signal( SIGILL,  0 );
     signal( SIGFPE,  0 );
-#if !defined(PARCH_IRIX) && !defined(__cplusplus)
+#if !defined(PARCH_IRIX)  !defined(PARCH_IRIX64) && !defined(__cplusplus)
     signal( SIGBUS,  0 );
 #endif
     signal( SIGSEGV, 0 );
@@ -140,7 +140,7 @@ int PetscPopSignalHandler()
     signal( SIGQUIT, 0 );
     signal( SIGILL,  0 );
     signal( SIGFPE,  0 );
-#if !defined(PARCH_IRIX) && !defined(__cplusplus)
+#if !defined(PARCH_IRIX)  && defined(PARCH_IRIX64) && !defined(__cplusplus)
     signal( SIGBUS,  0 );
 #endif
     signal( SIGSEGV, 0 );
