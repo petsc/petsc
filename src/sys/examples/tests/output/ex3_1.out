@@ -2,25 +2,33 @@ This is a contrived example to test floating pointing
 It is not a true error.
 Run with -fp_trap to catch the floating point error
 --------------------------------------------------------------------------
-PETSc Version 2.0.22, Released April 28, 1998.
-Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.
-Bug reports, questions: petsc-maint@mcs.anl.gov
-Web page: http://www.mcs.anl.gov/petsc/
+Petsc Version 2.1.1, Patch 19, Released December 19, 2001
+       The PETSc Team
+    petsc-maint@mcs.anl.gov
+ http://www.mcs.anl.gov/petsc/
+
 See docs/copyright.html for copyright information.
 See docs/changes.html for recent updates.
 See docs/troubleshooting.html for hints about trouble shooting.
 See docs/manualpages/index.html for manual pages.
 -----------------------------------------------------------------------
-ex3 
- on a sun4 named maverick.mcs.anl.gov by balay Mon Jun 15 13:06:49 1998
-Libraries linked from /tmp/petsc/petsc/lib/libOpg_complex/sun4
+ex3 on a solaris named maple.mcs.anl.gov by petsc Tue Jan 29 16:10:41 2002
+Libraries linked from /sandbox/petsc/petsc-test/lib/libg/solaris
 -----------------------------------------------------------------------
-[0]PETSC ERROR: unknownfunction() line 0 in  unknown file
+--------------- Stack Frames ---------------
+Note: The EXACT line numbers in the stack are not available,
+      INSTEAD the line number of the start of the function
+      is given.
+[0] CreateError line 12 src/sys/examples/tests/ex3.c
+--------------------------------------------
+[0]PETSC ERROR: unknownfunction() line 0 in Unknown directoryUnknown file
 [0]PETSC ERROR:   Signal received!
 [0]PETSC ERROR:   Caught signal FPE:
-PETSC ERROR: Floating Point Exception, probably divide by zero
+PETSC ERROR: Floating Point Exception,probably divide by zero
 PETSC ERROR: Try option -start_in_debugger or -on_error_attach_debugger to
 PETSC ERROR: determine where problem occurs
-
+PETSC ERROR: likely location of problem given above in stack
+!
 [0] MPI Abort by user Aborting program !
 [0] Aborting program!
+p0_279:  p4_error: : 59

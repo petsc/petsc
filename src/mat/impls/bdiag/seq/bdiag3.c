@@ -547,13 +547,13 @@ int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
             if (dv[j] != zero) {
 #if defined(PETSC_USE_COMPLEX)
               if (PetscImaginaryPart(dv[j]) != 0.0) {
-                ierr = PetscViewerASCIIPrintf(viewer,"A[ %d , %d ] = %e + %e i\n",
+                ierr = PetscViewerASCIIPrintf(viewer,"A[ %d , %d ] = %g + %g i\n",
                                          j,j-diag,PetscRealPart(dv[j]),PetscImaginaryPart(dv[j]));CHKERRQ(ierr);
               } else {
-                ierr = PetscViewerASCIIPrintf(viewer,"A[ %d , %d ] = %e\n",j,j-diag,PetscRealPart(dv[j]));CHKERRQ(ierr);
+                ierr = PetscViewerASCIIPrintf(viewer,"A[ %d , %d ] = %g\n",j,j-diag,PetscRealPart(dv[j]));CHKERRQ(ierr);
               }
 #else
-              ierr = PetscViewerASCIIPrintf(viewer,"A[ %d , %d ] = %e\n",j,j-diag,dv[j]);CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer,"A[ %d , %d ] = %g\n",j,j-diag,dv[j]);CHKERRQ(ierr);
 #endif
             }
           }
