@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.101 1996/10/03 19:12:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.102 1996/10/09 15:13:50 bsmith Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -344,9 +344,6 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
 $  -optionstable : Calls OptionsPrint()
 $  -optionsleft : Prints unused options that remain in 
 $     the database
-$  -trdump : Calls PetscTrDump()
-$  -mpidump : Calls PetscMPIDump()
-$  -trinfo : Prints total memory usage
 $  -log_all : Prints extensive log information (for
 $      code compiled with PETSC_LOG)
 $  -log : Prints basic log information (for code 
@@ -356,6 +353,12 @@ $      information to screen (for code compiled with
 $      PETSC_LOG)
 $  -log_mpe : creates a logfile viewable by the 
 $      utility upshot/nupshot (in MPICH distribution)
+$  -mpidump : Calls PetscMPIDump()
+$  -trdump : Calls PetscTrDump()
+$  -trinfo : Prints total memory usage
+$  -trdebug : Calls malloc_debug(2) to activate memory
+$      allocation diagnostics (used by PETSC_ARCH=sun4, 
+$      BOPT=[g,g_c++,g_complex] only!)
 
 .keywords: finalize, exit, end
 
