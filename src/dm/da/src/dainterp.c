@@ -33,9 +33,10 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   int            m_ghost,*idx_c,m_ghost_c;
   int            row,col,i_start_ghost,mx,m_c,nc,ratio;
   int            i_c,i_start_c,i_start_ghost_c,cols[2],dof;
-  PetscScalar    v[2],x;
+  PetscScalar    v[2],x,*coors = 0;
   Mat            mat;
   DAPeriodicType pt;
+  Vec            vcoors;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
@@ -63,6 +64,10 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   if (!DAXPeriodic(pt)){ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
+  ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
+  if (vcoors) {
+    ierr = VecGetArray(vcoors,&coors);CHKERRQ(ierr);
+  }
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i=i_start; i<i_start+m_f; i++) {
     /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -77,7 +82,11 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
          nonzero. Note this is very important for final grid lines
          in x direction; since they have no right neighbor
     */
-    x  = ((double)(i - i_c*ratio))/((double)ratio);
+    if (coors) {
+      x = coors[i-i_start] - coors[i_c*ratio-i_start];
+    } else {
+      x  = ((double)(i - i_c*ratio))/((double)ratio);
+    }
     /* printf("i j %d %d %g %g\n",i,j,x,y); */
     nc = 0;
       /* one left and below; or we are right on it */
@@ -90,6 +99,9 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
       v[nc++]  = x;
     }
     ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+  }
+  if (vcoors) {
+    ierr = VecRestoreArray(vcoors,&coors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -342,21 +354,27 @@ int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
   PetscFunctionBegin;
   ierr = DAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  if (DAXPeriodic(pt)){
+  if (mx == My) {
+    ratioi = 1;
+  } else if (DAXPeriodic(pt)){
     ratioi = mx/Mx;
     if (ratioi*Mx != mx) SETERRQ2(1,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
     if (ratioi*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
   }
-  if (DAYPeriodic(pt)){
+  if (my == My) {
+    ratioj = 1;
+  } else if (DAYPeriodic(pt)){
     ratioj = my/My;
     if (ratioj*My != my) SETERRQ2(1,"Ratio between levels: my/My  must be integer: my %d My %d",my,My);
   } else {
     ratioj = (my-1)/(My-1);
     if (ratioj*(My-1) != my-1) SETERRQ2(1,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %d My %d",my,My);
   }
-  if (DAZPeriodic(pt)){
+  if (mz == Mz) {
+    ratiok = 1;
+  } else if (DAZPeriodic(pt)){
     ratiok = mz/Mz;
     if (ratiok*Mz != mz) SETERRQ2(1,"Ratio between levels: mz/Mz  must be integer: mz %d Mz %d",mz,Mz);
   } else {
@@ -549,9 +567,9 @@ int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
   if (sc != sf) SETERRQ2(1,"Stencil width of DA do not match %d %d",sc,sf);CHKERRQ(ierr);
   if (wrapc != wrapf) SETERRQ(1,"Periodic type different in two DAs");CHKERRQ(ierr);
   if (stc != stf) SETERRQ(1,"Stencil type different in two DAs");CHKERRQ(ierr);
-  if (Mc < 2) SETERRQ(1,"Coarse grid requires at least 2 points in x direction");
-  if (dimc > 1 && Nc < 2) SETERRQ(1,"Coarse grid requires at least 2 points in y direction");
-  if (dimc > 2 && Pc < 2) SETERRQ(1,"Coarse grid requires at least 2 points in z direction");
+  if (Mc < 2 && Mf > 1) SETERRQ(1,"Coarse grid requires at least 2 points in x direction");
+  if (dimc > 1 && Nc < 2 && Nf > 1) SETERRQ(1,"Coarse grid requires at least 2 points in y direction");
+  if (dimc > 2 && Pc < 2 && Pf > 1) SETERRQ(1,"Coarse grid requires at least 2 points in z direction");
 
   if (dac->interptype == DA_Q1){
     if (dimc == 1){

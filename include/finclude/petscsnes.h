@@ -32,30 +32,24 @@
       integer SNES_CONVERGED_FNORM_ABS
       integer SNES_CONVERGED_FNORM_RELATIVE
       integer SNES_CONVERGED_PNORM_RELATIVE
-      integer SNES_CONVERGED_GNORM_ABS
-      integer SNES_CONVERGED_TR_REDUCTION
       integer SNES_CONVERGED_TR_DELTA
 
       integer SNES_DIVERGED_FUNCTION_COUNT
       integer SNES_DIVERGED_FNORM_NAN
       integer SNES_DIVERGED_MAX_IT
       integer SNES_DIVERGED_LS_FAILURE
-      integer SNES_DIVERGED_TR_REDUCTION
       integer SNES_DIVERGED_LOCAL_MIN
       integer SNES_CONVERGED_ITERATING
    
       parameter (SNES_CONVERGED_FNORM_ABS         =  2)
       parameter (SNES_CONVERGED_FNORM_RELATIVE    =  3)
       parameter (SNES_CONVERGED_PNORM_RELATIVE    =  4)
-      parameter (SNES_CONVERGED_GNORM_ABS         =  5)
-      parameter (SNES_CONVERGED_TR_REDUCTION      =  6)
       parameter (SNES_CONVERGED_TR_DELTA          =  7)
 
       parameter (SNES_DIVERGED_FUNCTION_COUNT     = -2)  
       parameter (SNES_DIVERGED_FNORM_NAN          = -4) 
       parameter (SNES_DIVERGED_MAX_IT             = -5)
       parameter (SNES_DIVERGED_LS_FAILURE         = -6)
-      parameter (SNES_DIVERGED_TR_REDUCTION       = -7)
       parameter (SNES_DIVERGED_LOCAL_MIN          = -8)
       parameter (SNES_CONVERGED_ITERATING         =  0)
      

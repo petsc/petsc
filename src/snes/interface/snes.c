@@ -159,7 +159,8 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES))
 .  -snes_vecmonitor_update - plots update to solution at each iteration 
 .  -snes_xmonitor - plots residual norm at each iteration 
 .  -snes_fd - use finite differences to compute Jacobian; very slow, only for testing
--  -snes_mf_ksp_monitor - if using matrix-free multiply then print h at each KSP iteration
+.  -snes_mf_ksp_monitor - if using matrix-free multiply then print h at each KSP iteration
+-  -snes_print_converged_reason - print the reason for convergence/divergence after each solve
 
     Options Database for Eisenstat-Walker method:
 +  -snes_ksp_ew_conv - use Eisenstat-Walker method for determining linear system convergence
@@ -216,6 +217,10 @@ int SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsInt("-snes_max_it","Maximum iterations","SNESSetTolerances",snes->max_its,&snes->max_its,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_funcs","Maximum function evaluations","SNESSetTolerances",snes->max_funcs,&snes->max_funcs,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_fail","Maximum failures","SNESSetTolerances",snes->maxFailures,&snes->maxFailures,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-snes_converged_reason","Print reason for converged or diverged","SNESSolve",&flg);CHKERRQ(ierr);
+    if (flg) {
+      snes->printreason = PETSC_TRUE;
+    }
 
     ierr = PetscOptionsName("-snes_ksp_ew_conv","Use Eisentat-Walker linear system convergence test","SNES_KSP_SetParametersEW",&snes->ksp_ewconv);CHKERRQ(ierr);
 
@@ -1659,6 +1664,23 @@ int SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal *delta,Pets
   PetscFunctionReturn(0);
 }
 
+static const char *convergedreasons[] = {"appears to located a local minimum instead of a zero",
+                                         "not currently used",                                   
+                                         "line search failed",                                   
+                                         "reach maximum number of iterations",                   
+                                         "function norm became NaN (not a number)",              
+                                         "not currently used",                                   
+                                         "number of function computations exceeded",             
+                                         "not currently used",                                   
+                                         "still iterating",
+                                         "not currently used",
+                                         "absolute size of function norm",
+                                         "relative decrease in function norm",
+                                         "step size is small",
+                                         "not currently used",
+                                         "not currently used",
+                                         "small trust region"};
+
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve"
 /*@
@@ -1705,6 +1727,14 @@ int SNESSolve(SNES snes,Vec x)
   if (flg && !PetscPreLoadingOn) { ierr = SNESView(snes,PETSC_VIEWER_STDOUT_(snes->comm));CHKERRQ(ierr); }
   ierr = PetscOptionsHasName(snes->prefix,"-snes_test_local_min",&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) { ierr = SNESTestLocalMin(snes);CHKERRQ(ierr); }
+  if (snes->printreason) {
+    if (snes->reason > 0) {
+      ierr = PetscPrintf(snes->comm,"Nonlinear solve converged due to %s\n",convergedreasons[snes->reason+8]);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(snes->comm,"Nonlinear solve did not converge due to %s\n",convergedreasons[snes->reason+8]);CHKERRQ(ierr);
+    }
+  }
+
   PetscFunctionReturn(0);
 }
 

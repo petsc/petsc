@@ -74,7 +74,7 @@ struct _p_SNES {
   PetscReal   atol;            /* absolute tolerance */
   PetscReal   xtol;            /* relative tolerance in solution */
   PetscReal   deltatol;        /* trust region convergence tolerance */
-
+  PetscTruth  printreason;     /* print reason for convergence/divergence after each solve */
   /* ------------------------ Default work-area management ---------------------- */
 
   int      nwork;              

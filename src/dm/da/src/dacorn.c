@@ -28,7 +28,7 @@
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DAGetCoordinates()
+.seealso: DAGetGhostCorners(), DAGetCoordinates(), DASetUniformCoordinates()
 @*/
 int DASetCoordinates(DA da,Vec c)
 {
@@ -68,7 +68,7 @@ int DASetCoordinates(DA da,Vec c)
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DASetCoordinates()
+.seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates()
 @*/
 int DAGetCoordinates(DA da,Vec *c)
 {

@@ -287,7 +287,6 @@ int main(int argc,char **argv)
       KSP       subksp,ksp;
       PC         pc,subpc;
       PetscTruth mg;
-      KSP        ksp;
 
       ierr = SNESGetKSP(DMMGGetSNES(dmmg),&ksp);CHKERRQ(ierr);
       ierr = KSPGetPC(ksp,&pc);
@@ -742,7 +741,6 @@ int Update(DMMG *dmmg)
       MatStructure flag;
       PetscViewer viewer;
       char file[128];
-      KSP  ksp;
 
       ierr = PetscStrcpy(file, "matrix");CHKERRQ(ierr);
 
