@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.71 1996/02/19 15:31:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.72 1996/03/19 21:27:41 bsmith Exp balay $";
 #endif
 
 #include "sys.h"
@@ -150,7 +150,7 @@ $  -mat_mpidense : dense type, uses MatCreateMPIDense()
 int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 {
   MatType type;
-  int     set,ierr;
+  int     set,ierr,bs=1,flg;
 
   ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   if (type == MATSEQDENSE)
@@ -168,6 +168,10 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
   if (type == MATMPIAIJ)
     return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_DEFAULT,
            PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,V);
+  if (type == MATSEQBAIJ){
+    ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRQ(ierr);
+    return MatCreateSeqBAIJ(comm,bs,m,n,PETSC_DEFAULT,PETSC_NULL,V);
+  }
   return MatCreateSeqAIJ(comm,m,n,PETSC_DEFAULT,PETSC_NULL,V); 
 }
 
