@@ -55,7 +55,7 @@ PetscErrorCode PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
   for(i = 0 ; i < ta->tablesize ; i++){
     ta->keytable[i] = intable->keytable[i]; 
     ta->table[i]    = intable->table[i];
-#if defined(PETSC_USE_BOPT_g)    
+#if defined(PETSC_USE_DEBUG)    
     if (ta->keytable[i] < 0) SETERRQ(PETSC_ERR_COR,"ta->keytable[i] < 0"); 
 #endif  
  }

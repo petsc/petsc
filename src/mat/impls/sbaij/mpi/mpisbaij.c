@@ -321,7 +321,7 @@ PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt
 
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
     if (im[i] >= mat->M) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->M-1);
 #endif
     if (im[i] >= rstart_orig && im[i] < rend_orig) { /* this processor entry */
@@ -336,7 +336,7 @@ PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt
           MatSetValues_SeqSBAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         } else if (in[j] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
         else if (in[j] >= mat->N) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->N-1);}
 #endif
         else {  /* off-diag entry (B) */
@@ -416,7 +416,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const P
   }
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
     if (im[i] >= baij->Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large, row %D max %D",im[i],baij->Mbs-1);
 #endif
     if (im[i] >= rstart && im[i] < rend) {
@@ -446,7 +446,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const P
           ierr = MatSetValuesBlocked_SeqSBAIJ(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
         }
         else if (in[j] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
         else if (in[j] >= baij->Nbs) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %D max %D",in[j],baij->Nbs-1);}
 #endif
         else {
@@ -455,7 +455,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const P
               ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
 
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
 #if defined (PETSC_USE_CTABLE)
             { PetscInt data;
               ierr = PetscTableFind(baij->colmap,in[j]+1,&data);CHKERRQ(ierr);

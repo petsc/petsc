@@ -67,7 +67,7 @@
 
       external FormInitialGuess
       external FormFunctionLocal,FormJacobianLocal
-#if defined(PETSC_HAVE_ADIFOR) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ADIFOR)
       external g_FormFunctionLocal,m_FormFunctionLocal
 #endif
 
@@ -146,7 +146,7 @@
 
       call DASetLocalFunction(da,FormFunctionLocal,ierr)
       call DASetLocalJacobian(da,FormJacobianLocal,ierr)
-#if defined(PETSC_HAVE_ADIFOR) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ADIFOR)
       call DASetLocalAdiforFunction(da,                                             &
      &         g_FormFunctionLocal,ierr)
 #endif
@@ -165,7 +165,7 @@
 !
 
       call DAGetMatrix(da,MATAIJ,J,ierr)
-#if defined(PETSC_HAVE_ADIFOR) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ADIFOR)
       call PetscOptionsGetLogical(PETSC_NULL_CHARACTER                            &
      &     ,'-adiformf_jacobian',                                                 &
      &     adiformf_jacobian,PETSC_NULL_INTEGER,ierr)
@@ -184,7 +184,7 @@
 
       call SNESSetJacobian(snes,A,J,SNESDAComputeJacobian,                        &
      &                       da,ierr)
-#if defined(PETSC_HAVE_ADIFOR) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ADIFOR)
       call PetscOptionsGetLogical(PETSC_NULL_CHARACTER                            &
      &     ,'-adifor_jacobian',                                                   &
      &     adifor_jacobian,PETSC_NULL_INTEGER,ierr)

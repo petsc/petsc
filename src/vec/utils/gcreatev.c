@@ -1,7 +1,7 @@
 
 #include "petscvec.h"    /*I "petscvec.h" I*/
 
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN

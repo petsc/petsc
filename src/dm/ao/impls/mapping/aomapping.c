@@ -365,7 +365,7 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp[
   for(i = 0; i < N; i++) {
     aomap->petscPerm[i] = allapp[petscPerm[i]];
   }
-#ifdef PETSC_USE_BOPT_g
+#ifdef PETSC_USE_DEBUG
   /* Check that the permutations are complementary */
   for(i = 0; i < N; i++) {
     if (i != aomap->appPerm[aomap->petscPerm[i]])

@@ -614,7 +614,7 @@ PetscErrorCode PetscFinalize(void)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %d unused database options. They are:\n",nopt);CHKERRQ(ierr);
     }
   } 
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   if (nopt && !flg1 && !flg2) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);

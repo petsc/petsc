@@ -20,17 +20,17 @@ EXTERN PetscErrorCode PCCreate_Redundant(PC);
 EXTERN PetscErrorCode PCCreate_NN(PC);
 EXTERN PetscErrorCode PCCreate_Cholesky(PC);
 EXTERN PetscErrorCode PCCreate_FieldSplit(PC);
-#if defined(PETSC_HAVE_ML) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ML)
 EXTERN PetscErrorCode PCCreate_ML(PC);
 #endif
-#if defined(PETSC_HAVE_SPAI) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_SPAI)
 EXTERN PetscErrorCode PCCreate_SPAI(PC);
 #endif
-#if defined(PETSC_HAVE_SAMG)  && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_SAMG)
 EXTERN PetscErrorCode PCCreate_SAMG(PC);
 #endif
 EXTERN PetscErrorCode PCCreate_Mat(PC);
-#if defined(PETSC_HAVE_HYPRE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_HYPRE)
 EXTERN PetscErrorCode PCCreate_HYPRE(PC);
 #endif
 #if !defined(PETSC_USE_64BIT_INT) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
@@ -81,16 +81,16 @@ PetscErrorCode PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCNN           ,path,"PCCreate_NN",PCCreate_NN);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCMAT          ,path,"PCCreate_Mat",PCCreate_Mat);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCFIELDSPLIT   ,path,"PCCreate_FieldSplit",PCCreate_FieldSplit);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_ML) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ML)
   ierr = PCRegisterDynamic(PCML           ,path,"PCCreate_ML",PCCreate_ML);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_SPAI) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_SPAI)
   ierr = PCRegisterDynamic(PCSPAI         ,path,"PCCreate_SPAI",PCCreate_SPAI);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_SAMG) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_SAMG)
   ierr = PCRegisterDynamic(PCSAMG         ,path,"PCCreate_SAMG",PCCreate_SAMG);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_HYPRE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_HYPRE)
   ierr = PCRegisterDynamic(PCHYPRE        ,path,"PCCreate_HYPRE",PCCreate_HYPRE);CHKERRQ(ierr);
 #endif
 #if !defined(PETSC_USE_64BIT_INT) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)

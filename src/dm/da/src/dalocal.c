@@ -7,7 +7,7 @@
 /*
    This allows the DA vectors to properly tell Matlab their dimensions
 */
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN
@@ -80,7 +80,7 @@ PetscErrorCode DACreateLocalVector(DA da,Vec* g)
   ierr = VecCreateSeq(PETSC_COMM_SELF,da->nlocal,g);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*g,da->w);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
   if (da->w == 1  && da->dim == 2) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)*g,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
   }
@@ -297,7 +297,7 @@ PetscErrorCode DARestoreGlobalVector(DA da,Vec* g)
 }
 
 /* ------------------------------------------------------------------- */
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ADIC)
 
 EXTERN_C_BEGIN
 #include "adic/ad_utils.h"

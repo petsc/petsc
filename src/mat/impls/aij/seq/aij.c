@@ -127,7 +127,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
   for (k=0; k<m; k++) { /* loop over added rows */
     row  = im[k]; 
     if (row < 0) continue;
-#if defined(PETSC_USE_BOPT_g)  
+#if defined(PETSC_USE_DEBUG)  
     if (row >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->m-1);
 #endif
     rp   = aj + ai[row]; ap = aa + ai[row];
@@ -135,7 +135,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
     low = 0;
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)  
+#if defined(PETSC_USE_DEBUG)  
       if (in[l] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[l],A->n-1);
 #endif
       col = in[l];
@@ -3051,11 +3051,11 @@ PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pet
 
   for (ii=0; ii<m; ii++) {
     aij->ilen[ii] = aij->imax[ii] = i[ii+1] - i[ii];
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
     if (i[ii+1] - i[ii] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %d length = %d",ii,i[ii+1] - i[ii]);
 #endif    
   }
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   for (ii=0; ii<aij->i[m]; ii++) {
     if (j[ii] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Negative column index at location = %d index = %d",ii,j[ii]);
     if (j[ii] > n - 1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column index to large at location = %d index = %d",ii,j[ii]);

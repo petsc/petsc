@@ -157,7 +157,7 @@ PetscErrorCode PetscDefaultSignalHandler(int sig,void *ptr)
     (*PetscErrorPrintf)("--------------------------------------------\n");
   }
 #endif
-#if !defined(PETSC_USE_BOPT_g)
+#if !defined(PETSC_USE_DEBUG)
   (*PetscErrorPrintf)("compile, link, and run with BOPT=g or g_c++ or g_complex\n");
   (*PetscErrorPrintf)("to get more information on the crash.\n");
 #endif

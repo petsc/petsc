@@ -223,7 +223,7 @@ void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErrorCo
   FIXRETURNCHAR(name,len);
 }
 
-#if defined(PETSC_HAVE_PVODE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_PVODE)
 void PETSC_STDCALL tspvodegetiterations_(TS *ts,PetscInt *nonlin,PetscInt *lin,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nonlin);

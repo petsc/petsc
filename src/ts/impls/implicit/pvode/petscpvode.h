@@ -14,7 +14,7 @@
 /*
    Include files specific for PVODE
 */
-#if defined(PETSC_HAVE_PVODE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_PVODE)
 
 EXTERN_C_BEGIN
 #include "sundialstypes.h"

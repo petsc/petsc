@@ -458,7 +458,7 @@ void PETSC_STDCALL matcreateseqbdiag_(MPI_Comm *comm,PetscInt *m,PetscInt *n,Pet
                                PETSC_NULL,newmat);
 }
 
-#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_BLOCKSOLVE)
 /*  Fortran cannot pass in procinfo,hence ignored */
 void PETSC_STDCALL matcreatempirowbs_(MPI_Comm *comm,PetscInt *m,PetscInt *M,PetscInt *nz,PetscInt *nnz,Mat *newmat,PetscErrorCode *ierr)
 {
@@ -756,7 +756,7 @@ void PETSC_STDCALL matmpiadjsetpreallocation_(Mat *mat,PetscInt *i,PetscInt *j,P
   *ierr = MatMPIAdjSetPreallocation(*mat,i,j,values);
 }
 
-#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_BLOCKSOLVE)
 void PETSC_STDCALL matmpirowbssetpreallocation_(Mat *mat,PetscInt *nz,PetscInt *nnz,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nnz);

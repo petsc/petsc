@@ -1988,7 +1988,7 @@ PetscErrorCode VecAssemblyEnd(Vec vec)
       ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
     }
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
     ierr = PetscOptionsName("-vec_view_matlab_file","Print vector to matlaboutput.mat format Matlab can read","VecView",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = VecView(vec,PETSC_VIEWER_MATLAB_(vec->comm));CHKERRQ(ierr);
@@ -2367,7 +2367,7 @@ PetscErrorCode VecRestoreArray_Private(Vec x,PetscScalar *a[])
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   if (a) PetscValidPointer(a,2);
   PetscValidType(x,1);
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   CHKMEMQ;
 #endif
   if (x->ops->restorearray) {

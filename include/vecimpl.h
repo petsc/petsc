@@ -279,7 +279,7 @@ EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,Pets
 
 EXTERN PetscErrorCode VecReciprocal_Default(Vec);
 
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);
 EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);

@@ -271,7 +271,7 @@ PetscErrorCode VecView_Seq_Netcdf(Vec xin,PetscViewer v)
 }
 #endif
 
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
 #include "mat.h"   /* Matlab include file */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -306,7 +306,7 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_PNETCDF)
   PetscTruth  isnetcdf;
 #endif
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscTruth  ismatlab;
 #endif
 
@@ -321,7 +321,7 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
 
@@ -341,7 +341,7 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   } else if (isnetcdf) {
     ierr = VecView_Seq_Netcdf(xin,viewer);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
   } else if (ismatlab) {
     ierr = VecView_Seq_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif
@@ -363,7 +363,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
       if (ix[i] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
       if (ix[i] >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->n);
 #endif
       xx[ix[i]] = y[i];
@@ -371,7 +371,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
   } else {
     for (i=0; i<ni; i++) {
       if (ix[i] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
       if (ix[i] >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->n);
 #endif
       xx[ix[i]] += y[i];
@@ -396,7 +396,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
     for (i=0; i<ni; i++) {
       start = bs*ix[i];
       if (start < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
       if (start >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->n);
 #endif
       for (j=0; j<bs; j++) {
@@ -408,7 +408,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
     for (i=0; i<ni; i++) {
       start = bs*ix[i];
       if (start < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
       if (start >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->n);
 #endif
       for (j=0; j<bs; j++) {
@@ -528,7 +528,7 @@ static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
     ierr = PetscMapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
   }
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECSEQ);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
 #endif

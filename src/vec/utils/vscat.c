@@ -10,7 +10,7 @@
 /* Logging support */
 PetscCookie VEC_SCATTER_COOKIE = 0;
 
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
 /*
      Checks if any indices are less than zero and generates an error
 */
@@ -874,12 +874,12 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISGetIndices(iy,&idy);CHKERRQ(ierr);
       ierr = PetscMalloc4(1,VecScatter_Seq_General,&to,nx,PetscInt,&to->slots,1,VecScatter_Seq_General,&from,nx,PetscInt,&from->slots);CHKERRQ(ierr);
       to->n             = nx; 
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
       ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
 #endif
       ierr = PetscMemcpy(to->slots,idy,nx*sizeof(PetscInt));CHKERRQ(ierr);
       from->n           = nx; 
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
       ierr = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
 #endif
       ierr =  PetscMemcpy(from->slots,idx,nx*sizeof(PetscInt));CHKERRQ(ierr);
@@ -936,7 +936,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       to9->first     = first; 
       to9->step      = step;
       from9->n       = nx; 
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
       ierr           = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
 #endif
       ierr           = PetscMemcpy(from9->slots,idx,nx*sizeof(PetscInt));CHKERRQ(ierr);
@@ -966,7 +966,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       from10->first     = first; 
       from10->step      = step;
       to10->n           = nx; 
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
       ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
 #endif
       ierr = PetscMemcpy(to10->slots,idy,nx*sizeof(PetscInt));CHKERRQ(ierr);
@@ -1019,12 +1019,12 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISGetIndices(ix,&idx);CHKERRQ(ierr);
       ierr = PetscMalloc4(1,VecScatter_Seq_General,&to11,nx,PetscInt,&to11->slots,1,VecScatter_Seq_General,&from11,nx,PetscInt,&from11->slots);CHKERRQ(ierr);
       to11->n           = nx; 
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
       ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
 #endif
       ierr = PetscMemcpy(to11->slots,idy,nx*sizeof(PetscInt));CHKERRQ(ierr);
       from11->n         = nx; 
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
       ierr = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
 #endif
       ierr = PetscMemcpy(from11->slots,idx,nx*sizeof(PetscInt));CHKERRQ(ierr);
@@ -1439,7 +1439,7 @@ PetscErrorCode VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,
 PetscErrorCode VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
 {
   PetscErrorCode ierr;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   PetscInt      to_n,from_n;
 #endif
 
@@ -1448,7 +1448,7 @@ PetscErrorCode VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecS
   PetscValidHeaderSpecific(y,VEC_COOKIE,2);
   PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE,5);
   if (inctx->inuse) SETERRQ(PETSC_ERR_ARG_WRONGSTATE," Scatter ctx already in use");
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   /*
      Error checking to make sure these vectors match the vectors used
    to create the vector scatter context. -1 in the from_n and to_n indicate the

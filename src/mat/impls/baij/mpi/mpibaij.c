@@ -405,7 +405,7 @@ PetscErrorCode MatSetValues_MPIBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
     if (im[i] >= mat->M) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->M-1);
 #endif
     if (im[i] >= rstart_orig && im[i] < rend_orig) {
@@ -417,7 +417,7 @@ PetscErrorCode MatSetValues_MPIBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt 
           MatSetValues_SeqBAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         } else if (in[j] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
         else if (in[j] >= mat->N) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[i],mat->N-1);}
 #endif
         else {
@@ -485,7 +485,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_MatScalar(Mat mat,PetscInt m,const Pe
   }
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
     if (im[i] >= baij->Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large, row %D max %D",im[i],baij->Mbs-1);
 #endif
     if (im[i] >= rstart && im[i] < rend) {
@@ -515,7 +515,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_MatScalar(Mat mat,PetscInt m,const Pe
           ierr = MatSetValuesBlocked_SeqBAIJ_MatScalar(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
         }
         else if (in[j] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
         else if (in[j] >= baij->Nbs) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %D max %D",in[j],baij->Nbs-1);}
 #endif
         else {
@@ -524,7 +524,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_MatScalar(Mat mat,PetscInt m,const Pe
               ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
 
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
 #if defined (PETSC_USE_CTABLE)
             { PetscInt data;
               ierr = PetscTableFind(baij->colmap,in[j]+1,&data);CHKERRQ(ierr);
@@ -579,14 +579,14 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT_MatScalar(Mat mat,PetscInt m,const PetscI
   PetscInt       h1,key,size=baij->ht_size,bs=mat->bs,*HT=baij->ht,idx;
   PetscReal      tmp;
   MatScalar      **HD = baij->hd,value;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   PetscInt       total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
 #endif
 
   PetscFunctionBegin;
 
   for (i=0; i<m; i++) {
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
     if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
     if (im[i] >= mat->M) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->M-1);
 #endif
@@ -601,7 +601,7 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT_MatScalar(Mat mat,PetscInt m,const PetscI
 
         
         idx = h1;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
         insert_ct++;
         total_ct++;
         if (HT[idx] != key) {
@@ -638,7 +638,7 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT_MatScalar(Mat mat,PetscInt m,const PetscI
       }
     }
   }
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   baij->ht_total_ct = total_ct;
   baij->ht_insert_ct = insert_ct;
 #endif
@@ -659,7 +659,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat mat,PetscInt m,const
   PetscReal       tmp;
   MatScalar       **HD = baij->hd,*baij_a;
   const MatScalar *v_t,*value;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   PetscInt        total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
 #endif
  
@@ -671,7 +671,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat mat,PetscInt m,const
     stepval = (m-1)*bs;
   }
   for (i=0; i<m; i++) {
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
     if (im[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",im[i]);
     if (im[i] >= baij->Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],baij->Mbs-1);
 #endif
@@ -686,7 +686,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat mat,PetscInt m,const
         h1  = HASH(size,key,tmp);
       
         idx = h1;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
         total_ct++;
         insert_ct++;
        if (HT[idx] != key) {
@@ -755,7 +755,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat mat,PetscInt m,const
       }
     }
   }
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   baij->ht_total_ct = total_ct;
   baij->ht_insert_ct = insert_ct;
 #endif
@@ -870,7 +870,7 @@ PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
   PetscInt       *HT,key;
   MatScalar      **HD;
   PetscReal      tmp;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   PetscInt       ct=0,max=0;
 #endif
 
@@ -905,13 +905,13 @@ PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
           HT[(h1+k)%size] = key;
           HD[(h1+k)%size] = a->a + j*bs2;
           break;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
         } else {
           ct++;
 #endif
         }
       }
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
       if (k> max) max = k;
 #endif
     }
@@ -928,20 +928,20 @@ PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
           HT[(h1+k)%size] = key;
           HD[(h1+k)%size] = b->a + j*bs2;
           break;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
         } else {
           ct++;
 #endif
         }
       }
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
       if (k> max) max = k;
 #endif
     }
   }
   
   /* Print Summary */
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   for (i=0,j=0; i<size; i++) {
     if (HT[i]) {j++;}
   }
@@ -1062,7 +1062,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(baij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode);CHKERRQ(ierr);
   
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   if (baij->ht && mode== MAT_FINAL_ASSEMBLY) {
     PetscLogInfo(0,"MatAssemblyEnd_MPIBAIJ:Average Hash Table Search in MatSetValues = %5.2f\n",((PetscReal)baij->ht_total_ct)/baij->ht_insert_ct);
     baij->ht_total_ct  = 0;

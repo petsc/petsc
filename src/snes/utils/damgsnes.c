@@ -401,7 +401,7 @@ EXTERN PetscErrorCode NLFDAADSetResidual_DAAD(NLF,Vec);
 EXTERN PetscErrorCode NLFDAADSetNewtonIterations_DAAD(NLF,PetscInt);
 EXTERN_C_END
 
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ADIC)
 #include "src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
 /*
           This is pre-beta FAS code. It's design should not be taken seriously!
@@ -561,7 +561,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
   PetscMPIInt    size;
   PetscInt       i,nlevels = dmmg[0]->nlevels,period = 1;
   PetscTruth     snesmonitor,mffdoperator,mffd,fdjacobian;
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ADIC)
   PetscTruth     mfadoperator,mfad,adjacobian;
 #endif
   PetscViewer    ascii;
@@ -577,7 +577,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
 
     ierr = PetscOptionsName("-dmmg_jacobian_fd","Compute sparse Jacobian explicitly with finite differencing","DMMGSetSNES",&fdjacobian);CHKERRQ(ierr);
     if (fdjacobian) jacobian = DMMGComputeJacobianWithFD;
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ADIC)
     ierr = PetscOptionsName("-dmmg_jacobian_ad","Compute sparse Jacobian explicitly with ADIC (automatic differentiation)","DMMGSetSNES",&adjacobian);CHKERRQ(ierr);
     if (adjacobian) jacobian = DMMGComputeJacobianWithAdic;
 #endif
@@ -585,7 +585,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
     ierr = PetscOptionsLogicalGroupBegin("-dmmg_jacobian_mf_fd_operator","Apply Jacobian via matrix free finite differencing","DMMGSetSNES",&mffdoperator);CHKERRQ(ierr);
     ierr = PetscOptionsLogicalGroupEnd("-dmmg_jacobian_mf_fd","Apply Jacobian via matrix free finite differencing even in computing preconditioner","DMMGSetSNES",&mffd);CHKERRQ(ierr);
     if (mffd) mffdoperator = PETSC_TRUE;
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ADIC)
     ierr = PetscOptionsLogicalGroupBegin("-dmmg_jacobian_mf_ad_operator","Apply Jacobian via matrix free ADIC (automatic differentiation)","DMMGSetSNES",&mfadoperator);CHKERRQ(ierr);
     ierr = PetscOptionsLogicalGroupEnd("-dmmg_jacobian_mf_ad","Apply Jacobian via matrix free ADIC (automatic differentiation) even in computing preconditioner","DMMGSetSNES",&mfad);CHKERRQ(ierr);
     if (mfad) mfadoperator = PETSC_TRUE;
@@ -612,7 +612,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
         dmmg[i]->B = dmmg[i]->J;
         jacobian   = DMMGComputeJacobianWithMF;
       }
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ADIC)
     } else if (mfadoperator) {
       ierr = MatRegisterDAAD();CHKERRQ(ierr);
       ierr = MatCreateDAAD((DA)dmmg[i]->dm,&dmmg[i]->J);CHKERRQ(ierr);
@@ -668,7 +668,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
       ierr = MatFDColoringSetFunction(dmmg[i]->fdcoloring,(PetscErrorCode(*)(void))function,dmmg[i]);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(dmmg[i]->fdcoloring);CHKERRQ(ierr);
     }
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ADIC)
   } else if (jacobian == DMMGComputeJacobianWithAdic) {
     for (i=0; i<nlevels; i++) {
       ISColoring iscoloring;
@@ -696,7 +696,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
     dmmg[i]->updatejacobianperiod = period;
   }
 
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ADIC)
   { 
     PetscTruth flg;
     ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_fas",&flg);CHKERRQ(ierr);
@@ -808,7 +808,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
 
   PetscFunctionBegin;
   if (jacobian)         computejacobian = DMMGComputeJacobian;
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ADIC)
   else if (ad_function) computejacobian = DMMGComputeJacobianWithAdic;
 #endif
 
@@ -874,7 +874,7 @@ PetscErrorCode DMMGSetSNESLocali_Private(DMMG *dmmg,PetscErrorCode (*functioni)(
 }
 
 
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ADIC)
 EXTERN_C_BEGIN
 #include "adic/ad_utils.h"
 EXTERN_C_END

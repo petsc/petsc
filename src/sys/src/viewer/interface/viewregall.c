@@ -42,10 +42,10 @@ PetscErrorCode PetscViewerRegisterAll(const char *path)
 #if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_NETCDF,     path,"PetscViewerCreate_Netcdf",     PetscViewerCreate_Netcdf);CHKERRQ(ierr); 
 #endif
-#if defined(PETSC_HAVE_HDF4) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_HDF4)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_HDF4,       path,"PetscViewerCreate_HDF4",       PetscViewerCreate_HDF4);CHKERRQ(ierr); 
 #endif
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_MATLAB,     path,"PetscViewerCreate_Matlab",     PetscViewerCreate_Matlab);CHKERRQ(ierr); 
 #endif
   PetscFunctionReturn(0);

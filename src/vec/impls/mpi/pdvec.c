@@ -639,7 +639,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
   PetscScalar    *xx;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   if (xin->stash.insertmode == INSERT_VALUES && addv == ADD_VALUES) { 
    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
   } else if (xin->stash.insertmode == ADD_VALUES && addv == INSERT_VALUES) { 
@@ -655,7 +655,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
         xx[row-start] = y[i];
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
         if (ix[i] >= xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->N);
 #endif
         VecStashValue_Private(&xin->stash,row,y[i]);
@@ -667,7 +667,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
         xx[row-start] += y[i];
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
         if (ix[i] > xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->N);
 #endif        
         VecStashValue_Private(&xin->stash,row,y[i]);
@@ -683,14 +683,14 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
 PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar yin[],InsertMode addv)
 {
   PetscMPIInt    rank = xin->stash.rank;
-  PetscInt            *owners = xin->map->range,start = owners[rank];
+  PetscInt       *owners = xin->map->range,start = owners[rank];
   PetscErrorCode ierr;
-  PetscInt            end = owners[rank+1],i,row,bs = xin->bs,j;
+  PetscInt       end = owners[rank+1],i,row,bs = xin->bs,j;
   PetscScalar    *xx,*y = (PetscScalar*)yin;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   if (xin->stash.insertmode == INSERT_VALUES && addv == ADD_VALUES) { 
    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
   }
@@ -708,7 +708,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
         }
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
         if (ix[i] >= xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->N);
 #endif
         VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);
@@ -723,7 +723,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
         }
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
         if (ix[i] > xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->N);
 #endif
         VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);
