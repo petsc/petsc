@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: closeport.c,v 1.3 1995/03/06 04:40:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: closeport.c,v 1.4 1995/06/13 03:05:25 bsmith Exp bsmith $";
 #endif
 /* This is part of the MatlabSockettool package. 
  
@@ -26,9 +26,9 @@ typedef unsigned long   u_long;
 #include <fcntl.h>
 #include <stropts.h>
 #include <math.h>
-#include "matlab.h"
+#include "src/viewer/impls/matlab/matlab.h"
 #include "mex.h"
-#define ERROR(a) {fprintf(stderr,"RECEIVE: %s \n",a); return ;}
+#define ERROR(a) {fprintf(stderr,"CLOSEPORT: %s \n",a); return ;}
 typedef struct { int onoff; int time; } Linger;
 /*-----------------------------------------------------------------*/
 /*                                                                 */
@@ -46,8 +46,5 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
   if (setsockopt(t,SOL_SOCKET,SO_LINGER,&linger,sizeof(Linger))) 
     ERROR("Setting linger");
   if (close(t)) ERROR("closing socket");
-#if !defined(PARCH_IRIX) && !defined(PARCH_hpux)
-  usleep((unsigned) 100);
-#endif
   return;
 }
