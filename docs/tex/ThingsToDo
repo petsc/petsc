@@ -8,6 +8,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - Add OptionsGetStringArray().
+
   - Decide what to do about MAT_NEW_NONZERO_ALLOCATION_ERROR; then update
     manpage and Changes file and parallel macros for MatSetValues().
 
