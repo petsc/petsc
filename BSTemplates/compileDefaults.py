@@ -67,9 +67,9 @@ class UsingCompiler:
       for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
         if os.path.isfile(lib):
           libraries.append(lib)
-    linker    = link.LinkSharedLibrary(extraLibraries = libraries)
+    linker    = link.LinkSharedLibrary(self.usingSIDL.sourceDB, extraLibraries = libraries)
     linker.doLibraryCheck = doLibraryCheck
-    return [link.TagLibrary(), linker]
+    return [link.TagLibrary(self.usingSIDL.sourceDB), linker]
 
   def getServerLinkTarget(self, project, package, doLibraryCheck = 1):
     libraries = fileset.FileSet([])
@@ -81,9 +81,9 @@ class UsingCompiler:
       for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
         if os.path.isfile(lib):
           libraries.append(lib)
-    linker    = link.LinkSharedLibrary(extraLibraries = libraries)
+    linker    = link.LinkSharedLibrary(self.usingSIDL.sourceDB, extraLibraries = libraries)
     linker.doLibraryCheck = doLibraryCheck
-    return [link.TagLibrary(), linker]
+    return [link.TagLibrary(self.usingSIDL.sourceDB), linker]
 
   def getExecutableCompileTarget(self, project, sources, executable):
     baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
@@ -111,7 +111,7 @@ class UsingCompiler:
       for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
         if os.path.isfile(lib):
           libraries.append(lib)
-    return [link.TagLibrary(), link.LinkSharedLibrary(extraLibraries = libraries)]
+    return [link.TagLibrary(self.usingSIDL.sourceDB), link.LinkSharedLibrary(self.usingSIDL.sourceDB, extraLibraries = libraries)]
 
 class UsingC (UsingCompiler):
   '''This class handles all interaction specific to the C language'''
@@ -127,17 +127,17 @@ class UsingC (UsingCompiler):
     return ['.c', '.h']
 
   def getTagger(self, rootDir):
-    return compile.TagC(root = rootDir)
+    return compile.TagC(self.usingSIDL.sourceDB, root = rootDir)
 
   def getCompiler(self, library):
-    return compile.CompileC(library)
+    return compile.CompileC(self.usingSIDL.sourceDB, library)
 
   def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
     stubDir = self.usingSIDL.getStubDir(self.getLanguage(), package)
     library = self.getServerLibrary(project, self.getLanguage(), package)
     # IOR and server compile are both C
-    compiler = compile.CompileC(library)
+    compiler = compile.CompileC(self.usingSIDL.sourceDB, library)
     compiler.defines.extend(self.getDefines())
     compiler.includeDirs.append(rootDir)
     compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
@@ -149,7 +149,7 @@ class UsingC (UsingCompiler):
       includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
       if os.path.isdir(includeDir):
         compiler.includeDirs.append(includeDir)
-    return [compile.TagC(root = rootDir), compiler]
+    return [compile.TagC(self.usingSIDL.sourceDB, root = rootDir), compiler]
 
 class UsingCxx (UsingCompiler):
   '''This class handles all interaction specific to the C++ language'''
@@ -165,10 +165,10 @@ class UsingCxx (UsingCompiler):
     return ['.cc', '.hh']
 
   def getTagger(self, rootDir):
-    return compile.TagCxx(root = rootDir)
+    return compile.TagCxx(self.usingSIDL.sourceDB, root = rootDir)
 
   def getCompiler(self, library):
-    return compile.CompileCxx(library)
+    return compile.CompileCxx(self.usingSIDL.sourceDB, library)
 
   def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
@@ -177,14 +177,14 @@ class UsingCxx (UsingCompiler):
     # IOR Filter
     iorFilter = transform.FileFilter(self.usingSIDL.compilerDefaults.isIOR, tags = ['c', 'old c'])
     # IOR compiler
-    compileC = compile.CompileC(library)
+    compileC = compile.CompileC(self.usingSIDL.sourceDB, library)
     compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(rootDir)
     compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     # Server Filter
     serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['cxx', 'old cxx'])
     # Server compiler
-    compileCxx = compile.CompileCxx(library)
+    compileCxx = compile.CompileCxx(self.usingSIDL.sourceDB, library)
     compileCxx.defines.extend(self.getDefines())
     compileCxx.includeDirs.append(rootDir)
     compileCxx.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
@@ -195,7 +195,8 @@ class UsingCxx (UsingCompiler):
       includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
       if os.path.isdir(includeDir):
         compileCxx.includeDirs.append(includeDir)
-    targets = [compile.TagC(root = rootDir), iorFilter, compileC, compile.TagCxx(root = rootDir), serverFilter, compileCxx]
+    targets = [compile.TagC(self.usingSIDL.sourceDB, root = rootDir), iorFilter, compileC,
+               compile.TagCxx(self.usingSIDL.sourceDB, root = rootDir), serverFilter, compileCxx]
     return targets
 
 class UsingPython(UsingCompiler):
@@ -249,7 +250,7 @@ class UsingPython(UsingCompiler):
     return ['.py']
 
   def getTagger(self, rootDir):
-    return compile.TagC(root = rootDir)
+    return compile.TagC(self.usingSIDL.sourceDB, root = rootDir)
 
   def getCompiler(self, library):
     return compile.CompilePythonC()
@@ -268,7 +269,7 @@ class UsingPython(UsingCompiler):
     # Server Filter
     serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['c', 'old c'])
     # IOR and server compile are both C
-    compiler = compile.CompileC(library)
+    compiler = compile.CompileC(self.usingSIDL.sourceDB, library)
     compiler.defines.extend(self.getDefines())
     compiler.includeDirs.append(rootDir)
     compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
@@ -276,7 +277,7 @@ class UsingPython(UsingCompiler):
     compiler.includeDirs.append(stubDir)
     compiler.includeDirs.extend(self.includeDirs[package])
     compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
-    return [compile.TagC(root = rootDir), serverFilter, compiler]
+    return [compile.TagC(self.usingSIDL.sourceDB, root = rootDir), serverFilter, compiler]
 
   def getExecutableCompileTarget(self, project, sources, executable):
     return []
@@ -316,10 +317,10 @@ class UsingMathematica(UsingCompiler):
     return ['.m', '.cc', '.hh']
 
   def getTagger(self, rootDir):
-    return compile.TagCxx(root = rootDir)
+    return compile.TagCxx(self.usingSIDL.sourceDB, root = rootDir)
 
   def getCompiler(self, library):
-    return compile.CompileCxx(library)
+    return compile.CompileCxx(self.usingSIDL.sourceDB, library)
 
   def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
@@ -328,14 +329,14 @@ class UsingMathematica(UsingCompiler):
     # IOR Filter
     iorFilter = transform.FileFilter(self.usingSIDL.compilerDefaults.isIOR, tags = ['c', 'old c'])
     # IOR compiler
-    compileC = compile.CompileC(library)
+    compileC = compile.CompileC(self.usingSIDL.sourceDB, library)
     compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(rootDir)
     compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     # Server Filter
     serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['cxx', 'old cxx'])
     # Server compiler
-    compileCxx = compile.CompileCxx(library)
+    compileCxx = compile.CompileCxx(self.usingSIDL.sourceDB, library)
     compileCxx.defines.extend(self.getDefines())
     compileCxx.includeDirs.append(rootDir)
     compileCxx.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
@@ -346,7 +347,8 @@ class UsingMathematica(UsingCompiler):
       includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
       if os.path.isdir(includeDir):
         compileCxx.includeDirs.append(includeDir)
-    targets = [compile.TagC(root = rootDir), iorFilter, compileC, compile.TagCxx(root = rootDir), serverFilter, compileCxx]
+    targets = [compile.TagC(self.usingSIDL.sourceDB, root = rootDir), iorFilter, compileC,
+               compile.TagCxx(self.usingSIDL.sourceDB, root = rootDir), serverFilter, compileCxx]
     return targets
 
 class UsingF77 (UsingCompiler):
@@ -363,38 +365,38 @@ class UsingF77 (UsingCompiler):
     return ['.f', '.f90']
 
   def getTagger(self, rootDir):
-    return compile.TagC(root = rootDir)
+    return compile.TagC(self.usingSIDL.sourceDB, root = rootDir)
 
   def getCompiler(self, library):
-    return compile.CompileC(library)
+    return compile.CompileC(self.usingSIDL.sourceDB, library)
 
   def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
     stubDir = self.usingSIDL.getStubDir(self.getLanguage(), package)
     library = self.getServerLibrary(project, self.getLanguage(), package)
     # IOR compiler
-    compileC = compile.CompileC(library)
+    compileC = compile.CompileC(self.usingSIDL.sourceDB, library)
     compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(rootDir)
     compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     # Server compiler
-    compileF77 = compile.CompileF77(library)
+    compileF77 = compile.CompileF77(self.usingSIDL.sourceDB, library)
     compileF77.defines.extend(self.getDefines())
     compileF77.includeDirs.append(rootDir)
     compileF77.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     compileF77.includeDirs.append(stubDir)
     compileF77.includeDirs.extend(self.includeDirs[package])
     compileF77.includeDirs.extend(self.includeDirs[self.getLanguage()])
-    return [compile.TagC(root = rootDir), compileC, compile.TagF77(root = rootDir), compileF77]
+    return [compile.TagC(self.usingSIDL.sourceDB, root = rootDir), compileC, compile.TagF77(self.usingSIDL.sourceDB, root = rootDir), compileF77]
 
   def getExecutableCompileTarget(self, project, sources, executable):
     baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
     library  = fileset.FileSet([os.path.join(project.getRoot(), 'lib', 'lib'+baseName+'.a')])
-    compileC = compile.CompileC(library)
+    compileC = compile.CompileC(self.usingSIDL.sourceDB, library)
     compileC.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
     compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     compileC.includeDirs.extend(self.includeDirs['executable'])
-    return [compile.TagC(), compileC, compile.TagF77(), compile.CompileF77(library)]
+    return [compile.TagC(self.usingSIDL.sourceDB), compileC, compile.TagF77(self.usingSIDL.sourceDB), compile.CompileF77(self.usingSIDL.sourceDB, library)]
 
 class UsingJava (UsingCompiler):
   '''This class handles all interaction specific to the Java language'''
@@ -446,15 +448,15 @@ class UsingJava (UsingCompiler):
 
   def getClientCompileTarget(self, project):
     sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())
-    compileC    = compile.CompileC(self.getClientLibrary(project, self.getLanguage(), 1))
-    compileJava = compile.CompileJava(self.getClientLibrary(project, self.getLanguage()))
+    compileC    = compile.CompileC(self.usingSIDL.sourceDB, self.getClientLibrary(project, self.getLanguage(), 1))
+    compileJava = compile.CompileJava(self.usingSIDL.sourceDB, self.getClientLibrary(project, self.getLanguage()))
     compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(sourceDir)
     compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     compileC.includeDirs.extend(self.includeDirs[self.getLanguage()])
     compileJava.includeDirs.extend(self.getSIDLRuntimeLibraries())
     compileJava.archiverRoot = sourceDir
-    return [compile.TagC(root = sourceDir), compile.TagJava(root = sourceDir), compileC, compileJava]
+    return [compile.TagC(self.usingSIDL.sourceDB, root = sourceDir), compile.TagJava(self.usingSIDL.sourceDB, root = sourceDir), compileC, compileJava]
 
   def getServerCompileTarget(self, project, package):
     raise RuntimeError('No server for '+self.getLanguage())
@@ -462,8 +464,8 @@ class UsingJava (UsingCompiler):
   def getExecutableCompileTarget(self, project, sources, executable):
     baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
     library  = fileset.FileSet([os.path.join(project.getRoot(), 'lib', 'lib'+baseName+'.jar')])
-    compileJava = compile.CompileJava(library)
+    compileJava = compile.CompileJava(self.usingSIDL.sourceDB, library)
     compileJava.includeDirs.extend(self.getClientLibrary(project, self.getLanguage()))
     compileJava.includeDirs.extend(self.getSIDLRuntimeLibraries())
     compileJava.archiverRoot = os.path.dirname(sources[0])
-    return [compile.TagJava(), compileJava]
+    return [compile.TagJava(self.usingSIDL.sourceDB), compileJava]

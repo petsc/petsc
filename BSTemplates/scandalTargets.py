@@ -56,7 +56,7 @@ class Defaults:
     return 1
 
   def getTagger(self, type):
-    return BSTemplates.sidlDefaults.TagSIDL()
+    return BSTemplates.sidlDefaults.TagSIDL(self.usingSIDL.sourceDB)
 
   def setupIncludes(self, action):
     action.repositoryDirs.append(self.usingSIDL.repositoryDir)

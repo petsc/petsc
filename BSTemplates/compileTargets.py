@@ -21,7 +21,7 @@ class Defaults:
     except AttributeError, e:
       print e
       raise RuntimeError('Unknown client language: '+lang)
-    return compiler+linker+[transform.Update()]
+    return compiler+linker+[transform.Update(self.sidlTargets.sourceDB)]
 
   def getServerCompileTargets(self, lang, package, doCompile = 1, doLink = 1):
     compiler = []
@@ -32,10 +32,10 @@ class Defaults:
     except AttributeError, e:
       print e
       raise RuntimeError('Unknown server language: '+lang)
-    return compiler+linker+[transform.Update()]
+    return compiler+linker+[transform.Update(self.sidlTargets.sourceDB)]
 
   def getEmacsTagsTargets(self):
-    return [transform.FileFilter(self.sidlTargets.isImpl), compile.TagEtags(), compile.CompileEtags(self.etagsFile)]
+    return [transform.FileFilter(self.sidlTargets.isImpl), compile.TagEtags(self.sidlTargets.sourceDB), compile.CompileEtags(self.sidlTargets.sourceDB, self.etagsFile)]
 
   def getCompileTargets(self, doCompile = 1, doLink = 1):
     bootstrapTargets = []
@@ -56,9 +56,9 @@ class Defaults:
     compileTargets = bootstrapTargets+clientTargets+serverTargets
 
     if self.etagsFile:
-      return [(compileTargets, self.getEmacsTagsTargets()), transform.Update()]
+      return [(compileTargets, self.getEmacsTagsTargets()), transform.Update(self.sidlTargets.sourceDB)]
     else:
-      return compileTargets+[transform.Update()]
+      return compileTargets+[transform.Update(self.sidlTargets.sourceDB)]
 
   def getCompileTarget(self):
     return target.Target(None, [self.sidlTargets.getSIDLTarget()]+self.getCompileTargets(1, 1))
@@ -74,7 +74,7 @@ class Defaults:
       print str(e)
       print traceback.print_tb(sys.exc_info()[2])
       raise RuntimeError('Unknown executable language: '+lang)
-    return compiler+linker+[transform.Update()]
+    return compiler+linker+[transform.Update(self.sidlTargets.sourceDB)]
 
   def getExecutableTarget(self, lang, sources, executable, noClient = 0):
     # TODO: Of course this should be determined from configure
@@ -86,5 +86,5 @@ class Defaults:
       t += self.getClientCompileTargets(lang)
     t += self.getExecutableDriverTargets(sources, lang, executable)
     if not lang == 'Java':
-      t += [link.TagShared(), link.LinkExecutable(executable, extraLibraries = libraries)]
+      t += [link.TagShared(self.sidlTargets.sourceDB), link.LinkExecutable(executable, extraLibraries = libraries)]
     return target.Target(sources, t)

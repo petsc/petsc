@@ -73,45 +73,42 @@ class BS (install.base.Base):
     argDB = nargs.ArgDict('ArgDict', clArgs)
     return
 
-  def saveSourceDB(self):
-    self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
-    global sourceDB
-    # Make sourceDB paths relative
-    newDB = sourceDatabase.SourceDB()
-    pwd   = self.getRoot()
-    for key in sourceDB:
-      new_key        = re.split(pwd,key)[-1]
-      newDB[new_key] = sourceDB[key]
-    sourceDB = newDB
-
-    dbFile = open(self.sourceDBFilename, 'w')
-    cPickle.dump(sourceDB, dbFile)
-    dbFile.close()
-    return
-  
   def setupSourceDB(self):
     self.debugPrint('Reading source database from '+self.sourceDBFilename, 2, 'sourceDB')
-    global sourceDB
-
     if os.path.exists(self.sourceDBFilename):
-      dbFile   = open(self.sourceDBFilename, 'r')
-      sourceDB = cPickle.load(dbFile)
+      dbFile        = open(self.sourceDBFilename, 'r')
+      self.sourceDB = cPickle.load(dbFile)
       dbFile.close()
 
       # Make sourceDB paths absolute
       newDB = sourceDatabase.SourceDB()
       pwd   = self.getRoot()
-      for key in sourceDB:
+      for key in self.sourceDB:
         new_key        = pwd+key
-        newDB[new_key] = sourceDB[key]
-      sourceDB = newDB
+        newDB[new_key] = self.sourceDB[key]
+      self.sourceDB = newDB
     else:
-      sourceDB = sourceDatabase.SourceDB()
+      self.sourceDB = sourceDatabase.SourceDB()
     atexit.register(self.cleanup)
-    sourceDB.setFromArgs(argDB)
+    self.sourceDB.setFromArgs(argDB)
     if not argDB.has_key('restart') or not int(argDB['restart']):
-      for source in sourceDB:
-        sourceDB.clearUpdateFlag(source)
+      for source in self.sourceDB:
+        self.sourceDB.clearUpdateFlag(source)
+    return
+
+  def saveSourceDB(self):
+    self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
+    # Make sourceDB paths relative
+    newDB = sourceDatabase.SourceDB()
+    pwd   = self.getRoot()
+    for key in self.sourceDB:
+      new_key        = re.split(pwd,key)[-1]
+      newDB[new_key] = self.sourceDB[key]
+    self.sourceDB = newDB
+
+    dbFile = open(self.sourceDBFilename, 'w')
+    cPickle.dump(self.sourceDB, dbFile)
+    dbFile.close()
     return
 
   def getSIDLDefaults(self):
@@ -119,9 +116,9 @@ class BS (install.base.Base):
       if not self.filesets.has_key('sidl'):
         self.filesets['sidl'] = None
       if self.filesets.has_key('bootstrap'):
-        self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.filesets['sidl'], bootstrapPackages = self.filesets['bootstrap'])
+        self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.sourceDB, self.filesets['sidl'], bootstrapPackages = self.filesets['bootstrap'])
       else:
-        self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.filesets['sidl'])
+        self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.sourceDB, self.filesets['sidl'])
       # Add dependencies
       for url in self.executeTarget('getDependencies'):
         project = self.getInstalledProject(url)
@@ -162,6 +159,14 @@ class BS (install.base.Base):
       argDB['installedprojects'] = argDB['installedprojects']+[self.project]
     return p
 
+  def t_uninstall(self):
+    p = self.getInstalledProject(self.project.getUrl())
+    if not p is None:
+      projects = argDB['installedprojects']
+      projects.remove(p)
+      argDB['installedprojects'] = projects
+    return p
+
   def t_print(self):
     return self.getSIDLDefaults().getSIDLPrintTarget().execute()
 
@@ -170,7 +175,7 @@ class BS (install.base.Base):
     return self.executeTarget('install')
 
   def t_recalc(self):
-    return sourceDB.calculateDependencies()
+    return self.sourceDB.calculateDependencies()
 
   def t_printTargets(self):
     targets = self.targets.keys()
@@ -180,7 +185,7 @@ class BS (install.base.Base):
     print 'Available targets: '+str(targets)
 
   def t_printSourceDB(self):
-    print sourceDB
+    print self.sourceDB
 
   def t_purge(self):
     if argDB.has_key('arg'):
@@ -196,14 +201,14 @@ class BS (install.base.Base):
       try:
         self.debugPrint('Purging source database of fileset '+setName, 1, 'sourceDB')
         for file in self.filesets[setName]:
-          if sourceDB.has_key(file):
+          if self.sourceDB.has_key(file):
             self.debugPrint('Purging '+file, 3, 'sourceDB')
-            del sourceDB[file]
+            del self.sourceDB[file]
       except KeyError:
         try:
-          if sourceDB.has_key(setName):
+          if self.sourceDB.has_key(setName):
             self.debugPrint('Purging '+setName, 3, 'sourceDB')
-            del sourceDB[setName]
+            del self.sourceDB[setName]
         except KeyError:
           print 'FileSet '+setName+' not found for purge'
     else:
@@ -211,12 +216,12 @@ class BS (install.base.Base):
 
       purgeRE = re.compile(argDB['regExp'])
       purges  = []
-      for key in sourceDB:
+      for key in self.sourceDB:
         m = purgeRE.match(key)
         if m: purges.append(key)
       for source in purges:
         self.debugPrint('Purging '+source, 3, 'sourceDB')
-        del sourceDB[source]
+        del self.sourceDB[source]
 
   def t_update(self):
     if argDB.has_key('fileset'):
@@ -225,11 +230,11 @@ class BS (install.base.Base):
         self.debugPrint('Updating source database of fileset '+setName, 1, 'sourceDB')
         for file in self.filesets[setName]:
           self.debugPrint('Updating '+file, 3, 'sourceDB')
-          sourceDB.updateSource(file)
+          self.sourceDB.updateSource(file)
       except KeyError:
         try:
           self.debugPrint('Updating '+setName, 3, 'sourceDB')
-          sourceDB.updateSource(setName)
+          self.sourceDB.updateSource(setName)
         except KeyError:
           print 'FileSet '+setName+' not found for update'
     else:
@@ -238,12 +243,12 @@ class BS (install.base.Base):
       print argDB['regExp']
       updateRE = re.compile(argDB['regExp'])
       updates  = []
-      for key in sourceDB:
+      for key in self.sourceDB:
         m = updateRE.match(key)
         if m: updates.append(key)
       for source in updates:
         self.debugPrint('Updating '+source, 3, 'sourceDB')
-        sourceDB.updateSource(source)
+        self.sourceDB.updateSource(source)
 
   def cleanup(self):
     self.saveSourceDB()

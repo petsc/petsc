@@ -12,7 +12,8 @@ import commands
 import re
 
 class Process (action.Action):
-  def __init__(self, products, tag, sources, compiler, compilerFlags, setwiseExecute, updateType = 'immediate'):
+  def __init__(self, sourceDB, products, tag, sources, compiler, compilerFlags, setwiseExecute, updateType = 'immediate'):
+    self.sourceDB = sourceDB
     if setwiseExecute:
       action.Action.__init__(self, compiler,     sources, compilerFlags, setwiseExecute)
     else:
@@ -38,7 +39,7 @@ class Process (action.Action):
       action.Action.shellSetAction(self, set)
       if self.updateType == 'immediate':
         for file in set:
-          bs.sourceDB.updateSource(file)
+          self.sourceDB.updateSource(file)
       elif self.updateType == 'deferred':
         set.tag = 'update '+set.tag
         if isinstance(self.products, fileset.FileSet):
@@ -60,7 +61,7 @@ class Process (action.Action):
     output   = self.executeShellCommand(command, self.errorHandler)
     # Update source DB if it compiled successfully
     if self.updateType == 'immediate':
-      bs.sourceDB.updateSource(source)
+      self.sourceDB.updateSource(source)
     elif self.updateType == 'deferred':
       self.deferredUpdates.append(source)
     return source
@@ -74,7 +75,8 @@ class Process (action.Action):
       self.products.append(set)
 
 class Compile (action.Action):
-  def __init__(self, library, tag, sources, compiler, compilerFlags, archiver, archiverFlags, setwiseExecute, updateType = 'immediate'):
+  def __init__(self, sourceDB, library, tag, sources, compiler, compilerFlags, archiver, archiverFlags, setwiseExecute, updateType = 'immediate'):
+    self.sourceDB = sourceDB
     if setwiseExecute:
       action.Action.__init__(self, self.compileSet, sources, compilerFlags, setwiseExecute)
     else:
@@ -136,7 +138,7 @@ class Compile (action.Action):
     output   = self.executeShellCommand(command, self.errorHandler)
     # Update source DB if it compiled successfully
     if self.updateType == 'immediate':
-      bs.sourceDB.updateSource(source)
+      self.sourceDB.updateSource(source)
     elif self.updateType == 'deferred':
       self.deferredUpdates.append(source)
     # Archive file
@@ -160,7 +162,7 @@ class Compile (action.Action):
     # Update source DB if it compiled successfully
     for source in set:
       if self.updateType == 'immediate':
-        bs.sourceDB.updateSource(source)
+        self.sourceDB.updateSource(source)
       elif self.updateType == 'deferred':
         self.deferredUpdates.append(source)
     # Archive files
@@ -208,21 +210,21 @@ class Compile (action.Action):
     if library:
       if not os.path.exists(library):
         self.rebuildAll = 1
-        if bs.sourceDB.has_key(library): del bs.sourceDB[library]
+        if self.sourceDB.has_key(library): del self.sourceDB[library]
         (dir, file) = os.path.split(library)
         if not os.path.exists(dir):
           os.makedirs(dir)
-      elif not bs.sourceDB.has_key(library):
+      elif not self.sourceDB.has_key(library):
         self.rebuildAll = 1
     return action.Action.execute(self)
 
 class TagC (transform.GenericTag):
-  def __init__(self, tag = 'c', ext = 'c', sources = None, extraExt = 'h', root = None):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
+  def __init__(self, sourceDB, tag = 'c', ext = 'c', sources = None, extraExt = 'h', root = None):
+    transform.GenericTag.__init__(self, sourceDB, tag, ext, sources, extraExt, root)
 
 class CompileC (Compile):
-  def __init__(self, library, sources = None, tag = 'c', compiler = 'gcc', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wredundant-decls -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
-    Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
+  def __init__(self, sourceDB, library, sources = None, tag = 'c', compiler = 'gcc', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wredundant-decls -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
+    Compile.__init__(self, sourceDB, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
     self.includeDirs.append('.')
     self.errorHandler = self.handleCErrors
 
@@ -260,12 +262,12 @@ class CompilePythonC (CompileC):
         self.products.append(fileset.FileSet([self.getLibraryName(source)]))
 
 class TagCxx (transform.GenericTag):
-  def __init__(self, tag = 'cxx', ext = 'cc', sources = None, extraExt = 'hh', root = None):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
+  def __init__(self, sourceDB, tag = 'cxx', ext = 'cc', sources = None, extraExt = 'hh', root = None):
+    transform.GenericTag.__init__(self, sourceDB, tag, ext, sources, extraExt, root)
 
 class CompileCxx (Compile):
-  def __init__(self, library, sources = None, tag = 'cxx', compiler = 'g++', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
-    Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
+  def __init__(self, sourceDB, library, sources = None, tag = 'cxx', compiler = 'g++', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
+    Compile.__init__(self, sourceDB, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
     self.includeDirs.append('.')
     self.errorHandler = self.handleCxxErrors
     self.checkCompiler()
@@ -287,28 +289,28 @@ class CompileCxx (Compile):
       print('\''+command+'\': '+output)
 
 class TagF77 (transform.GenericTag):
-  def __init__(self, tag = 'f77', ext = 'f', sources = None, extraExt = '', root = None):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
+  def __init__(self, sourceDB, tag = 'f77', ext = 'f', sources = None, extraExt = '', root = None):
+    transform.GenericTag.__init__(self, sourceDB, tag, ext, sources, extraExt, root)
 
 class CompileF77 (Compile):
-  def __init__(self, library, sources = None, tag = 'f77', compiler = 'g77', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
-    Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
+  def __init__(self, sourceDB, library, sources = None, tag = 'f77', compiler = 'g77', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
+    Compile.__init__(self, sourceDB, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
 
 class TagF90 (transform.GenericTag):
-  def __init__(self, tag = 'f90', ext = 'f90', sources = None, extraExt = '', root = None):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
+  def __init__(self, sourceDB, tag = 'f90', ext = 'f90', sources = None, extraExt = '', root = None):
+    transform.GenericTag.__init__(self, sourceDB, tag, ext, sources, extraExt, root)
 
 class CompileF90 (Compile):
-  def __init__(self, library, sources = None, tag = 'f90', compiler = 'f90', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
-    Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
+  def __init__(self, sourceDB, library, sources = None, tag = 'f90', compiler = 'f90', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
+    Compile.__init__(self, sourceDB, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
 
 class TagJava (transform.GenericTag):
-  def __init__(self, tag = 'java', ext = 'java', sources = None, extraExt = '', root = None):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
+  def __init__(self, sourceDB, tag = 'java', ext = 'java', sources = None, extraExt = '', root = None):
+    transform.GenericTag.__init__(self, sourceDB, tag, ext, sources, extraExt, root)
 
 class CompileJava (Compile):
-  def __init__(self, library, sources = None, tag = 'java', compiler = 'javac', compilerFlags = '-g', archiver = 'jar', archiverFlags = 'cf'):
-    Compile.__init__(self, library, tag, sources, compiler, compilerFlags, archiver, archiverFlags, 1, 'deferred')
+  def __init__(self, sourceDB, library, sources = None, tag = 'java', compiler = 'javac', compilerFlags = '-g', archiver = 'jar', archiverFlags = 'cf'):
+    Compile.__init__(self, sourceDB, library, tag, sources, compiler, compilerFlags, archiver, archiverFlags, 1, 'deferred')
     self.includeDirs.append('.')
     self.errorHandler = self.handleJavaErrors
 
@@ -345,16 +347,16 @@ class CompileJava (Compile):
     retval = Compile.execute(self)
     # Need to update JAR files since they do not get linked
     library = self.getLibraryName()
-    if os.path.exists(library): bs.sourceDB.updateSource(library)
+    if os.path.exists(library): self.sourceDB.updateSource(library)
     return retval
 
 class TagEtags (transform.GenericTag):
-  def __init__(self, tag = 'etags', ext = ['c', 'h', 'cc', 'hh', 'py'], sources = None, extraExt = '', root = None):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
+  def __init__(self, sourceDB, tag = 'etags', ext = ['c', 'h', 'cc', 'hh', 'py'], sources = None, extraExt = '', root = None):
+    transform.GenericTag.__init__(self, sourceDB, tag, ext, sources, extraExt, root)
 
 class CompileEtags (Compile):
-  def __init__(self, tagsFile, sources = None, tag = 'etags', compiler = 'etags', compilerFlags = '-a'):
-    Compile.__init__(self, tagsFile, tag, sources, compiler, compilerFlags, '', '', 1, 'deferred')
+  def __init__(self, sourceDB, tagsFile, sources = None, tag = 'etags', compiler = 'etags', compilerFlags = '-a'):
+    Compile.__init__(self, sourceDB, tagsFile, tag, sources, compiler, compilerFlags, '', '', 1, 'deferred')
 
   def constructFlags(self, source, baseFlags):
     return baseFlags+' -f '+self.getLibraryName()

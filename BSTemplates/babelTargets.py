@@ -57,9 +57,9 @@ class Defaults:
 
   def getTagger(self, type):
     if type == 'server':
-      return BSTemplates.sidlDefaults.TagSIDL()
+      return BSTemplates.sidlDefaults.TagSIDL(self.usingSIDL.sourceDB)
     elif type == 'client' or type == 'repository':
-      return BSTemplates.sidlDefaults.TagAllSIDL()
+      return BSTemplates.sidlDefaults.TagAllSIDL(self.usingSIDL.sourceDB)
     raise RuntimeError('Unknown build type: '+type)
 
   def setupIncludes(self, action):

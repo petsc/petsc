@@ -21,11 +21,10 @@ class Builder(install.base.Base):
 
   def build(self, root, target = 'default'):
     self.debugPrint('Building in '+root, 3, 'install')
-    mod   = self.getMakeModule(root)
-    maker = mod.PetscMake(sys.argv[1:])
+    maker = self.getMakeModule(root).PetscMake(sys.argv[1:])
     for url in maker.executeTarget('getDependencies'):
       self.debugPrint('  Building dependency '+url, 3, 'install')
       if not self.getInstalledProject(url) is None: continue
       self.build(self.retriever.retrieve(url))
-    self.debugPrint('Compiling '+mod.__file__, 3, 'install')
+    self.debugPrint('Compiling in '+maker.getRoot(), 3, 'install')
     return maker.main(target)

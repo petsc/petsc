@@ -180,12 +180,12 @@ class UsingSIDL (logging.Logger):
     return fileset.FileSet([library])
 
 class TagSIDL (transform.GenericTag):
-  def __init__(self, tag = 'sidl', ext = 'sidl', sources = None, extraExt = ''):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
+  def __init__(self, sourceDB, tag = 'sidl', ext = 'sidl', sources = None, extraExt = ''):
+    transform.GenericTag.__init__(self, sourceDB, tag, ext, sources, extraExt)
 
 class TagAllSIDL (transform.GenericTag):
-  def __init__(self, tag = 'sidl', ext = 'sidl', sources = None, extraExt = '', force = 0):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
+  def __init__(self, sourceDB, tag = 'sidl', ext = 'sidl', sources = None, extraExt = '', force = 0):
+    transform.GenericTag.__init__(self, sourceDB, tag, ext, sources, extraExt)
     self.taggedFiles = fileset.FileSet()
     self.force       = force
 

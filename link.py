@@ -8,12 +8,13 @@ import transform
 import os
 
 class TagLibrary (transform.GenericTag):
-  def __init__(self, tag = 'lib', ext = 'a', sources = None, extraExt = ''):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
+  def __init__(self, sourceDB, tag = 'lib', ext = 'a', sources = None, extraExt = ''):
+    transform.GenericTag.__init__(self, sourceDB, tag, ext, sources, extraExt)
 
 class LinkSharedLibrary (action.Action):
-  def __init__(self, sources = None, linker = 'g++', linkerFlags = '-g -shared', archiver = 'ar', archiverFlags = 'x', extraLibraries = None):
+  def __init__(self, sourceDB, sources = None, linker = 'g++', linkerFlags = '-g -shared', archiver = 'ar', archiverFlags = 'x', extraLibraries = None):
     action.Action.__init__(self, self.link, sources, linkerFlags, 0)
+    self.sourceDB       = sourceDB
     self.linker         = linker
     self.linkerFlags    = linkerFlags
     self.archiver       = archiver
@@ -71,7 +72,7 @@ class LinkSharedLibrary (action.Action):
     os.chdir(oldDir)
     self.cleanupDir(linkDir, remove = 1)
     self.checkLibrary(sharedLibrary)
-    bs.sourceDB.updateSource(source)
+    self.sourceDB.updateSource(source)
     return self.products
 
   def setExecute(self, set):
@@ -91,8 +92,8 @@ class LinkSharedLibrary (action.Action):
     return self.products
 
 class TagShared (transform.GenericTag):
-  def __init__(self, tag = 'sharedlib', ext = 'so', sources = None, extraExt = ''):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
+  def __init__(self, sourceDB, tag = 'sharedlib', ext = 'so', sources = None, extraExt = ''):
+    transform.GenericTag.__init__(self, sourceDB, tag, ext, sources, extraExt)
 
 class LinkExecutable (action.Action):
   def __init__(self, executable, sources = None, linker = 'g++', linkerFlags = '', extraLibraries = None):
@@ -126,7 +127,7 @@ class LinkExecutable (action.Action):
           command += ' -l'+base[3:]
       output = self.executeShellCommand(command, self.errorHandler)
 #    for source in files:
-#      bs.sourceDB.updateSource(source)
+#      self.sourceDB.updateSource(source)
     return self.products
 
   def setAction(self, set):

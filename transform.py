@@ -7,7 +7,6 @@ import maker
 import os
 import string
 import time
-import types
 
 class Transform (maker.Maker):
   def __init__(self, sources = None):
@@ -29,7 +28,7 @@ class Transform (maker.Maker):
     return self.products
 
   def genericExecute(self, sources):
-    if type(sources) == types.ListType:
+    if isinstance(sources, list):
       for set in sources:
         self.genericExecute(set)
     elif isinstance(sources, fileset.FileSet):
@@ -38,7 +37,7 @@ class Transform (maker.Maker):
 
   def execute(self):
     self.genericExecute(self.sources)
-    if type(self.products) == types.ListType and len(self.products) == 1:
+    if isinstance(self.products, list) and len(self.products) == 1:
       self.products = self.products[0]
     return self.products
       
@@ -62,7 +61,7 @@ class FileFilter (Transform):
     Transform.__init__(self, sources)
     self.filter = filter
     self.tags   = tags
-    if self.tags and not type(self.tags) == types.ListType:
+    if self.tags and not isinstance(self.tags, list):
       self.tags = [self.tags]
 
   def fileExecute(self, source):
@@ -76,7 +75,7 @@ class SetFilter (Transform):
   def __init__(self, tags, sources = None):
     Transform.__init__(self, sources)
     self.tags   = tags
-    if self.tags and not type(self.tags) == types.ListType:
+    if self.tags and not isinstance(self.tags, list):
       self.tags = [self.tags]
 
   def setExecute(self, set):
@@ -85,8 +84,9 @@ class SetFilter (Transform):
     return self.products
 
 class FileChanged (Transform):
-  def __init__(self, sources = None):
+  def __init__(self, sourceDB, sources = None):
     Transform.__init__(self, sources)
+    self.sourceDB      = sourceDB
     self.changed       = fileset.FileSet(tag = 'changed')
     self.unchanged     = fileset.FileSet(tag = 'unchanged')
     self.products      = [self.changed, self.unchanged]
@@ -98,7 +98,7 @@ class FileChanged (Transform):
       return 0
     else:
       self.debugPrint('Checking for '+source+' in the source database', 3, 'sourceDB')
-      checksum = bs.sourceDB.getChecksum(source)
+      checksum = self.sourceDB.getChecksum(source)
       if sourceEntry[0] == checksum:
         return 0
       else:
@@ -112,12 +112,12 @@ class FileChanged (Transform):
         return 1
       else:
         changed = 0
-        if self.compare(source, bs.sourceDB[source]):
+        if self.compare(source, self.sourceDB[source]):
           return 1
         else:
-          for dep in bs.sourceDB[source][3]:
+          for dep in self.sourceDB[source][3]:
             try:
-              if self.compare(dep, bs.sourceDB[dep]):
+              if self.compare(dep, self.sourceDB[dep]):
                 return 1
                 break
             except KeyError:
@@ -132,7 +132,7 @@ class FileChanged (Transform):
       self.changed.append(source)
     else:
       self.unchanged.append(source)
-      bs.sourceDB.setUpdateFlag(source)
+      self.sourceDB.setUpdateFlag(source)
     return
 
   def execute(self):
@@ -140,13 +140,13 @@ class FileChanged (Transform):
     return Transform.execute(self)
 
 class GenericTag (FileChanged):
-  def __init__(self, tag, ext, sources = None, extraExt = '', root = None):
-    FileChanged.__init__(self, sources)
-    if type(ext) == types.ListType:
+  def __init__(self, sourceDB, tag, ext, sources = None, extraExt = '', root = None):
+    FileChanged.__init__(self, sourceDB, sources)
+    if isinstance(ext, list):
       self.ext           = map(lambda x: '.'+x, ext)
     else:
       self.ext           = ['.'+ext]
-    if type(extraExt) == types.ListType:
+    if isinstance(extraExt, list):
       self.extraExt      = map(lambda x: '.'+x, extraExt)
     else:
       self.extraExt      = ['.'+extraExt]
@@ -184,16 +184,20 @@ class GenericTag (FileChanged):
     return FileChanged.execute(self)
 
 class Update (Transform):
-  def __init__(self, tags = [], sources = None):
+  def __init__(self, sourceDB, tags = None, sources = None):
     Transform.__init__(self, sources)
-    self.tags   = tags
-    if self.tags and not type(self.tags) == types.ListType:
+    self.sourceDB = sourceDB
+    if tags is None:
+      self.tags   = []
+    else:
+      self.tags   = tags
+    if self.tags and not isinstance(self.tags, list):
       self.tags = [self.tags]
     self.tags = map(lambda tag: 'update '+tag, self.tags)
     self.products  = []
 
   def fileExecute(self, source):
-    bs.sourceDB.updateSource(source)
+    self.sourceDB.updateSource(source)
 
   def setExecute(self, set):
     if self.tags and set.tag in self.tags:

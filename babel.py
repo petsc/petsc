@@ -9,11 +9,11 @@ import os
 import string
 
 class CompileSIDL (compile.Process):
-  def __init__(self, generatedSources, sources, compiler, compilerFlags, isRepository):
+  def __init__(self, sourceDB, generatedSources, sources, compiler, compilerFlags, isRepository):
     if isRepository:
-      compile.Process.__init__(self, generatedSources, 'sidl', sources, compiler, compilerFlags, 1, 'deferred')
+      compile.Process.__init__(self, sourceDB, generatedSources, 'sidl', sources, compiler, compilerFlags, 1, 'deferred')
     else:
-      compile.Process.__init__(self, generatedSources, 'sidl', sources, compiler, compilerFlags, 0, 'deferred')
+      compile.Process.__init__(self, sourceDB, generatedSources, 'sidl', sources, compiler, compilerFlags, 0, 'deferred')
     self.outputDir      = 'generated'
     self.repositoryDirs = []
     self.errorHandler   = self.handleBabelErrors
@@ -49,16 +49,16 @@ class CompileSIDL (compile.Process):
     return baseFlags
 
 class CompileSIDLRepository (CompileSIDL):
-  def __init__(self, sources = None, compiler = 'babel', compilerFlags = ''):
-    CompileSIDL.__init__(self, None, sources, compiler, compilerFlags, 1)
+  def __init__(self, sourceDB, sources = None, compiler = 'babel', compilerFlags = ''):
+    CompileSIDL.__init__(self, sourceDB, None, sources, compiler, compilerFlags, 1)
     self.outputDir = 'xml'
 
   def constructAction(self, source, baseFlags):
     return baseFlags+' --xml'
 
 class CompileSIDLServer (CompileSIDL):
-  def __init__(self, generatedSources, sources = None, compiler = 'babel', compilerFlags = ''):
-    CompileSIDL.__init__(self, generatedSources, sources, compiler, compilerFlags, 0)
+  def __init__(self, sourceDB, generatedSources, sources = None, compiler = 'babel', compilerFlags = ''):
+    CompileSIDL.__init__(self, sourceDB, generatedSources, sources, compiler, compilerFlags, 0)
     self.language = 'C++'
 
   def constructAction(self, source, baseFlags):
@@ -78,8 +78,8 @@ class CompileSIDLServer (CompileSIDL):
     return '--suppress-stubs '+CompileSIDL.constructFlags(self, source, baseFlags)
 
 class CompileSIDLClient (CompileSIDL):
-  def __init__(self, generatedSources = None, sources = None, compiler = 'babel', compilerFlags = ''):
-    CompileSIDL.__init__(self, generatedSources, sources, compiler, compilerFlags, 1)
+  def __init__(self, sourceDB, generatedSources = None, sources = None, compiler = 'babel', compilerFlags = ''):
+    CompileSIDL.__init__(self, sourceDB, generatedSources, sources, compiler, compilerFlags, 1)
     self.language = 'Python'
 
   def constructAction(self, source, baseFlags):

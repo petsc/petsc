@@ -102,7 +102,7 @@ class DependencyAnalyzer (logging.Logger):
     self.includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
 
   def resolveDependency(self, source, dep):
-    if dep in sourceDB: return dep
+    if dep in self.sourceDB: return dep
     # Choose the entry in sourceDB whose base matches dep,
     #   and who has the most path components in common with source
     # This should be replaced by an appeal to cpp
@@ -120,7 +120,7 @@ class DependencyAnalyzer (logging.Logger):
           self.debugPrint('    Choosing '+s+'('+str(i)+')', 3, 'sourceDB')
           matchName = s
           matchNum  = i
-    if not matchName in sourceDB: raise RuntimeError('Invalid #include '+matchName+' in '+source)
+    if not matchName in self.sourceDB: raise RuntimeError('Invalid #include '+matchName+' in '+source)
     return matchName
 
   def getNeighbors(self, source):

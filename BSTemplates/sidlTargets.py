@@ -10,14 +10,17 @@ import BSTemplates.sidlDefaults as sidlDefaults
 import os
 
 class Defaults(logging.Logger):
-  def __init__(self, project, sources = None, bootstrapPackages = []):
+  def __init__(self, project, sourceDB, sources = None, bootstrapPackages = []):
     self.project    = project
+    self.sourceDB   = sourceDB
     self.sources    = sources
     self.usingSIDL  = sidlDefaults.UsingSIDL(project, self.getPackages(), bootstrapPackages = bootstrapPackages)
     self.compileExt = []
     self.masterCompiler = self.usingSIDL.compilerDefaults.getCompilerModule().__name__
     # Add C for the IOR
     self.addLanguage('C')
+    # Give source database to usingSIDL
+    self.usingSIDL.sourceDB = self.sourceDB
     return
 
   def getUsing(self, lang):
@@ -73,7 +76,8 @@ class Defaults(logging.Logger):
 
   def getSIDLServerCompiler(self, lang, rootDir, generatedRoots, flags = None):
     if not flags: flags = self.usingSIDL.getServerCompilerFlags(lang)
-    compiler            = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLServer(fileset.ExtensionFileSet(generatedRoots, self.compileExt),
+    compiler            = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLServer(self.sourceDB,
+                                                                                                fileset.ExtensionFileSet(generatedRoots, self.compileExt),
                                                                                                 compilerFlags = flags)
     compiler.language   = lang
     compiler.outputDir  = rootDir
@@ -82,7 +86,8 @@ class Defaults(logging.Logger):
 
   def getSIDLClientCompiler(self, lang, rootDir, flags = None):
     if not flags: flags = self.usingSIDL.getClientCompilerFlags(lang)
-    compiler            = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLClient(fileset.ExtensionFileSet(rootDir, self.compileExt),
+    compiler            = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLClient(self.sourceDB,
+                                                                                                fileset.ExtensionFileSet(rootDir, self.compileExt),
                                                                                                 compilerFlags = flags)
     compiler.language   = lang
     compiler.outputDir  = rootDir
@@ -90,14 +95,14 @@ class Defaults(logging.Logger):
     return compiler
 
   def getSIDLPrintCompiler(self, outputDir = None, printer = None):
-    compiler = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLPrint()
+    compiler = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLPrint(self.sourceDB)
     if outputDir: compiler.outputDir = outputDir
     if printer:   compiler.printer   = printer
     self.usingSIDL.compilerDefaults.setupIncludes(compiler)
     return compiler
 
   def getRepositoryTargets(self):
-    action = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLRepository(compilerFlags = self.usingSIDL.getClientCompilerFlags(self.usingSIDL.getBaseLanguage()))
+    action = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLRepository(self.sourceDB, compilerFlags = self.usingSIDL.getClientCompilerFlags(self.usingSIDL.getBaseLanguage()))
     action.outputDir = os.path.join(self.usingSIDL.repositoryDir, 'xml')
     action.repositoryDirs.extend(self.usingSIDL.repositoryDirs)
     return [target.Target(None, [self.usingSIDL.compilerDefaults.getTagger('repository'), action])]
@@ -139,8 +144,8 @@ class Defaults(logging.Logger):
 
   def getSIDLTarget(self):
     return target.Target(self.sources, [tuple(self.getRepositoryTargets()+self.getSIDLServerTargets()+self.getSIDLClientTargets()),
-                                        transform.Update(),
+                                        transform.Update(self.sourceDB),
                                         transform.SetFilter('old sidl')])
 
   def getSIDLPrintTarget(self):
-    return target.Target(self.sources, [sidlDefaults.TagAllSIDL(force = 1), self.getSIDLPrintCompiler()])
+    return target.Target(self.sources, [sidlDefaults.TagAllSIDL(self.sourceDB, force = 1), self.getSIDLPrintCompiler()])
