@@ -228,6 +228,7 @@ class Configure(config.base.Configure):
     if not 'CC' in self.framework.argDB or not 'FC' in self.framework.argDB: 
       self.flibs = ''
       self.addSubstitution('FLIBS', '')
+      self.addSubstitution('CFLIBS', '')
       # this is not the correct place for the next 2 lines, but I'm to lazy to figure out where to put them
       self.addSubstitution('FC', '')
       self.addSubstitution('FC_SHARED_OPT', '')
