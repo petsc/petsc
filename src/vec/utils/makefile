@@ -4,11 +4,11 @@ ALL: lib
 
 CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I$(ITOOLSDIR)/pinclude\
            $(COPT) $(CONF)
-SOURCEC  = vinv.c gcreate.c 
+SOURCEC  = vinv.c gcreate.c vscat.c
 SOURCEF  =
 WSOURCEC = 
 SOURCEH  = 
-OBJSC    = vinv.o gcreate.o 
+OBJSC    = vinv.o gcreate.o vscat.o
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
