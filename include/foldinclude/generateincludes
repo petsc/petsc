@@ -8,7 +8,7 @@
 cd /home/bsmith/petsc/include/FINCLUDE
 /bin/rm -f ../finclude/*.h
 foreach i (*.h *.h90) 
-  grep -v "define" $i | grep -v "else" | grep -v "endif" | grep -v "real " | grep -v "include" | sed " s/PetscDoubleExp(-2.0,0)/-2.0d0/" |sed "s/DoubleComplex/double complex/g" | sed "s/Double/double precision/"  |  sed "s/MPI_Comm/integer/g" | sed "s/PetscFortranAddr/integer/g" > ../finclude/$i
+  grep -v "define" $i | grep -v "else" | grep -v "endif" | grep -v "real " | grep -v "include" |grep -v SELECTED_REAL_KIND | sed " s/PetscDoubleExp(-2.0,0)/-2.0d0/" |sed "s/DoubleComplex/double complex/g" | sed "s/Double/double precision/"  |  sed "s/MPI_Comm/integer/g" | sed "s/PetscFortranAddr/integer/g" > ../finclude/$i
 end
 cd /home/bsmith/petsc/include/finclude
 echo "!   You will have to adjust this line for your site" >> petsc.h
