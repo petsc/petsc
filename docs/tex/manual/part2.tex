@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.281 1998/07/06 16:24:13 balay Exp bsmith $ 
+% $Id: part2.tex,v 1.282 1998/07/15 14:34:55 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -996,11 +996,11 @@ or {\tt VecDuplicateVecs()} on a ghosted vector will generate additional ghosted
 In many ways a ghosted vector behaves just like any other {\tt MPI} vector created 
 by {\tt VecCreateMPI()}, the difference is that the ghosted vector has an additional 
 ``local'' representation that allows one to access the ghost locations. This is done
-through the call to \findex{VecGhostGetLocalRepresentation()} 
+through the call to \findex{VecGhostGetLocalForm()} 
 \begin{verbatim}
-  ierr = VecGhostGetLocalRepresentation(Vec g,Vec *l);
+  ierr = VecGhostGetLocalForm(Vec g,Vec *l);
 \end{verbatim}
-The vector {\tt l} is a \findex{VecGhostRestoreLocalRepresentation()}
+The vector {\tt l} is a \findex{VecGhostRestoreLocalForm()}
 sequential representation of the parallel vector {\tt g} 
 that shares the same array space (and hence numerical values); but allows one to 
 access the ``ghost'' values past ``the end of the'' array. Note that one access the 
@@ -1014,13 +1014,13 @@ A common usage of a ghosted vector is given by
                           SCATTER_FORWARD);
    ierr = VecGhostUpdateEnd(Vec globalin,InsertMode INSERT_VALUES,ScatterMode
                           SCATTER_FORWARD);
-   ierr = VecGhostGetLocalRepresentation(Vec globalin,Vec *localin);
-   ierr = VecGhostGetLocalRepresentation(Vec globalout,Vec *localout);
+   ierr = VecGhostGetLocalForm(Vec globalin,Vec *localin);
+   ierr = VecGhostGetLocalForm(Vec globalout,Vec *localout);
    /*
       Do local calculations from localin to localout 
    */
-   ierr = VecGhostRestoreLocalRepresentation(Vec globalin,Vec *localin);
-   ierr = VecGhostRestoreLocalRepresentation(Vec globalout,Vec *localout);
+   ierr = VecGhostRestoreLocalForm(Vec globalin,Vec *localin);
+   ierr = VecGhostRestoreLocalForm(Vec globalout,Vec *localout);
    ierr = VecGhostUpdateBegin(Vec globalout,InsertMode ADD_VALUES,ScatterMode
                           SCATTER_REVERSE);
    ierr = VecGhostUpdateEnd(Vec globalout,InsertMode ADD_VALUES,ScatterMode
