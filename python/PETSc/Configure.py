@@ -20,14 +20,18 @@ class Configure(config.base.Configure):
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
                  'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','dlopen','dlsym','erf']
     libraries1 = [(['socket', 'nsl'], 'socket')]
-    self.setCompilers = self.framework.require('config.setCompilers', self)
-    self.compilers    = self.framework.require('config.compilers',    self)
-    self.types        = self.framework.require('config.types',        self)
-    self.headers      = self.framework.require('config.headers',      self)
-    self.functions    = self.framework.require('config.functions',    self)
-    self.libraries    = self.framework.require('config.libraries',    self)
+    self.setCompilers = self.framework.require('config.setCompilers',   self)
+    self.compilers    = self.framework.require('config.compilers',      self)
+    self.types        = self.framework.require('config.types',          self)
+    self.headers      = self.framework.require('config.headers',        self)
+    self.functions    = self.framework.require('config.functions',      self)
+    self.libraries    = self.framework.require('config.libraries',      self)
     self.update       = self.framework.require('PETSc.packages.update', self)
-    self.x11          = self.framework.require('PETSc.packages.X11', self)
+    self.make         = self.framework.require('PETSc.packages.Make',   self)    
+    self.x11          = self.framework.require('PETSc.packages.X11',    self)
+    self.sowing       = self.framework.require('PETSc.packages.Sowing', self)
+    self.c2html       = self.framework.require('PETSc.packages.C2HTML', self)
+    self.lgrind       = self.framework.require('PETSc.packages.lgrind', self)            
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
     self.headers.headerPrefix   = self.headerPrefix
@@ -72,7 +76,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-shared=<bool>',           nargs.ArgBool(None, 1, 'Build shared libraries for PETSc'))
     help.addArgument('PETSc', '-with-etags=<bool>',            nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
     help.addArgument('PETSc', '-with-fortran-kernels=<bool>',  nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
-    help.addArgument('PETSc', '-with-make',                    nargs.Arg(None, 'make', 'Specify make'))
+    help.addArgument('PETSc', '-with-make=<makename>',         nargs.Arg(None, 'make', 'Specify make'))
     help.addArgument('PETSc', '-prefix=<path>',                nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
     help.addArgument('PETSc', '-with-gcov=<bool>',             nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
     help.addArgument('PETSc', '-with-64-bit-ints=<bool>',      nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
@@ -134,14 +138,14 @@ class Configure(config.base.Configure):
     Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
     self.useDynamic = 0
-    if not (self.framework.argDB['PETSC_ARCH_BASE'].startswith('aix') or (self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and not (self.usingMPIUni and not self.framework.argDB.has_key('FC')))):
+    if not (self.framework.argDB['PETSC_ARCH_BASE'].startswith('aix') or (self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and not (self.mpi.usingMPIUni and not self.framework.argDB.has_key('FC')))):
       self.useDynamic = self.framework.argDB['with-shared'] and self.framework.argDB['with-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
       self.addDefine('USE_DYNAMIC_LIBRARIES', self.useDynamic)
       if self.useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
         self.addDefine('HAVE_RTLD_GLOBAL', 1)
 
     #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)
-    if self.useDynamic and self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
+    if self.useDynamic and self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and self.mpi.usingMPIUni and not self.framework.argDB.has_key('FC'):
       if self.blaslapack.sharedBlasLapack: bls = 'BLASLAPACK_LIB_SHARED=${BLASLAPACK_LIB}\n'
       else:                                bls = ''
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', bls+'MPI_LIB_SHARED=${MPI_LIB}\ninclude ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
@@ -188,52 +192,84 @@ class Configure(config.base.Configure):
       self.popLanguage()
     return
 
+  def setValue(self,name,value):
+    ''' prints a variable and its value to the configure generated file'''
+    self.fd.write(name + ' = ' + value + '\n')
+    
   def configureBmake(self):
     ''' Actually put the values into the bmake files '''
-    # .o or .obj 
-    fd = open(os.path.join(self.framework.argDB['PETSC_DIR'],'bmake',self.framework.argDB['PETSC_ARCH'],'packages'),'w')
+    self.fd = open(os.path.join(self.framework.argDB['PETSC_DIR'],'bmake',self.framework.argDB['PETSC_ARCH'],'petscconf'),'w')
     #  Basic shell commands
-    fd.write('RM = ' +          self.framework.argDB['RM'])
-    fd.write('SHELL = '+           self.framework.argDB['SHELL'])
-    fd.write('SED = '+             self.framework.argDB['SED'])
-    fd.write('DIFF   = '+          self.framework.argDB['DIFF'])
-    fd.write('MKDIR  = '+          self.framework.argDB['MKDIR'])
-    fd.write('MV   = '+            self.framework.argDB['MV'])
-    fd.write('OMAKE  = '+          self.framework.argDB['MAKE']+' '+self.framework.argDB['MAKE_FLAGS'])
+    self.setValue('RM' ,             self.framework.rm)
+    self.setValue('SHELL',           self.framework.SHELL)
+    self.setValue('SED',             self.framework.sed)
+    self.setValue('DIFF  ',          self.framework.diff)
+    self.setValue('MKDIR ',          self.framework.mkdir)
+    self.setValue('MV  ',            self.framework.mv)
+    self.setValue('OMAKE ',          self.make.make+' '+self.make.flags)
 
     # Documentation generation tools
-    fd.write('BFORT  = '+          self.framework.argDB['BFORT'])
-    fd.write('DOCTEXT  = '+        self.framework.argDB['DOCTEXT'])
-    fd.write('MAPNAMES  = '+       self.framework.argDB['MAPNAMES'])
-    fd.write('BIB2HTML  = '+       self.framework.argDB['BIB2HTML'])
-    fd.write('C2HTML   = '+        self.framework.argDB['C2HTML'])
-    fd.write('LGRIND   = '+        self.framework.argDB['LGRIND'])
+    self.setValue('BFORT ',          self.sowing.bfort)
+    self.setValue('DOCTEXT ',        self.sowing.doctext)
+    self.setValue('MAPNAMES ',       self.sowing.mapnames)
+    self.setValue('BIB2HTML ',       self.sowing.bib2html)
+    self.setValue('C2HTML  ',        self.c2html.c2html)
+    self.setValue('LGRIND  ',        self.lgrind.lgrind)
 
     # archive management tools
-    fd.write('AR    = '+           self.framework.argDB['AR'])
-    fd.write('AR_FLAGS   = '+      self.framework.argDB['AR_FLAGS'])
-    fd.write('AR_LIB_SUFFIX ='+  self.framework.argDB['LIB_SUFFIX'])
-    fd.write('RANLIB  = '++         self.framework.argDB['RANLIB'])
+    self.setValue('AR   ',           self.setCompilers.AR)
+    self.setValue('AR_FLAGS  ',      self.setCompilers.AR_FLAGS)
+    self.setValue('AR_LIB_SUFFIX ',    self.libraries.suffix)
+    self.setValue('RANLIB ',         self.setCompilers.RANLIB)
+
+    # C preprocessor values
+    self.setValue('CPP',self.setCompilers.CPP)
+    self.setValue('CPP_FLAGS',self.setCompilers.CPPFLAGS)
     
-    fd.write('CC_SUFFIX = '+'o'+'\n')
+    # compiler values
+    self.setCompilers.pushLanguage('C')
+    self.setValue('CC',self.setCompilers.getCompiler())
+    self.setValue('CC_FLAGS',self.setCompilers.getCompilerFlags())    
+    self.setCompilers.popLanguage()
+    # .o or .obj 
+    self.setValue('CC_SUFFIX','o')
+
+    # executable linker values
+    self.setCompilers.pushLanguage('C')
+    self.setValue('CC_LINKER',self.setCompilers.getLinker())
+    self.setValue('CC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
+    self.setCompilers.popLanguage()
+    # -rpath or -R or -L etc
+    if not self.setCompilers.CSharedLinkerFlag: value = '-L'
+    else: value = self.setCompilers.CSharedLinkerFlag
+    self.setValue('CC_LINKER_SLFLAG',value)    
     # '' for Unix, .exe for Windows
-    fd.write('CC_LINKER_SUFFIX = '+''+'\n')
+    self.setValue('CC_LINKER_SUFFIX','')
+    self.setValue('CC_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.compilers.flibs)    
+
+    
     # CONLY or CPP
-    fd.write('PETSC_LANGUAGE = '+'CONLY'+'\n')
+    self.setValue('PETSC_LANGUAGE','CONLY')
     # real or complex
-    fd.write('PETSC_SCALAR = '+'real'+'\n')
+    self.setValue('PETSC_SCALAR','real')
     # double or float
-    fd.write('PETSC_PRECISION = '+'double'+'\n')
+    self.setValue('PETSC_PRECISION','double')
+
+    # print include and lib for external packages
     for i in self.framework.packages:
       if not isinstance(i.lib,list): i.lib = [i.lib]
-      if not isinstance(i.include,list): i.include = [i.include]      
-      fd.write(i.PACKAGE+'_LIB = '+' '.join(map(self.libraries.getLibArgument, i.lib))+'\n')
-      fd.write(i.PACKAGE+'_INCLUDE = '+' '.join(map(self.libraries.getIncludeArgument, i.include))+'\n')
-    fd.write('PACKAGES_LIBS = ')
+      self.setValue(i.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument, i.lib)))
+      if hasattr(i,'include'):
+        if not isinstance(i.include,list): i.include = [i.include]      
+        self.setValue(i.PACKAGE+'_INCLUDE',' '.join(map(self.libraries.getIncludeArgument, i.include)))
+    self.fd.write('PACKAGES_LIBS = ')
     for i in self.framework.packages:
-      fd.write('${'+i.PACKAGE+'_LIB} ')
-    fd.write('\n')
-    fd.close()
+      self.fd.write('${'+i.PACKAGE+'_LIB} ')
+    self.fd.write('\n')
+
+    # misc package stuff, should be handled better
+    self.setValue('MPIRUN',self.mpi.mpirun)    
+    self.fd.close()
       
   def configureDebuggers(self):
     '''Find a default debugger and determine its arguments'''
@@ -328,36 +364,6 @@ class Configure(config.base.Configure):
     self.framework.argDB['LIBS'] = oldLibs
     os.remove('conf1.a')
     self.popLanguage()
-    return
-
-  def configureRanlib(self):
-    '''Check for ranlib, using "true" if it is not found. If found, test it on a library.'''
-    if 'with-ranlib' in self.framework.argDB:
-      found = self.framework.getExecutable(self.framework.argDB['with-ranlib'], resultName = 'RANLIB')
-      if not found:
-         raise RuntimeError('You set a value for --with-ranlib, but '+self.framework.argDB['with-ranlib']+' does not exist')
-    else:
-      found = self.framework.getExecutable('ranlib', resultName = 'RANLIB')
-      if not found:
-        self.framework.addSubstitution('RANLIB', 'true')
-    if found:
-      def checkRanlib(command, status, output, error):
-        if error or status:
-          self.framework.log.write('Possible ERROR while running ranlib: '+output)
-          if status: self.framework.log.write('ret = '+str(status)+'\n')
-          if error: self.framework.log.write('error message = {'+error+'}\n')
-          os.remove('conf1.a')
-          raise RuntimeError('Ranlib is not functional')
-        return
-      self.pushLanguage('C')
-      if not self.checkCompile('', 'int foo(int a) {\n  return a+1;\n}\n\n', cleanup = 0, codeBegin = '', codeEnd = ''):
-        raise RuntimeError('Compiler is not functional')
-      os.rename(self.compilerObj, 'conf1.o')
-      (output, error, status) = config.base.Configure.executeShellCommand(self.framework.AR+' '+self.framework.argDB['AR_FLAGS']+' conf1.a conf1.o', log = self.framework.log)
-      os.remove('conf1.o')
-      self.popLanguage()
-      config.base.Configure.executeShellCommand(self.framework.RANLIB+' conf1.a', checkCommand = checkRanlib, log = self.framework.log)
-      os.remove('conf1.a')
     return
 
   def configurePrograms(self):
@@ -559,27 +565,6 @@ class Configure(config.base.Configure):
       self.addDefine('DIR_SEPARATOR','\'/\'')
     return
     
-  def configureMPIUNI(self):
-    '''If MPI was not found, setup MPIUNI, our uniprocessor version of MPI'''
-    if self.framework.argDB['with-mpi']:
-      if self.mpi.foundMPI:
-        return
-      else:
-        raise RuntimeError('********** Error: Unable to locate a functional MPI. Please consult configure.log. **********')
-    self.framework.addDefine('HAVE_MPI', 1)
-    if 'STDCALL' in self.compilers.defines:
-      self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/include/mpiuni'+' -D'+'MPIUNI_USE_STDCALL')
-    else:
-      self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/include/mpiuni')
-    self.framework.addSubstitution('MPI_LIB',     '-L${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH} -lmpiuni')
-    self.framework.addSubstitution('MPIRUN',      '${PETSC_DIR}/bin/mpirun.uni')
-    self.framework.addSubstitution('MPE_INCLUDE', '')
-    self.framework.addSubstitution('MPE_LIB',     '')
-    self.mpi.addDefine('HAVE_MPI_COMM_F2C', 1)
-    self.mpi.addDefine('HAVE_MPI_COMM_C2F', 1)
-    self.mpi.addDefine('HAVE_MPI_FINT', 1)
-    self.usingMPIUni = 1
-    return
 
   def configureMissingPrototypes(self):
     '''Checks for missing prototypes, which it adds to petscfix.h'''
@@ -633,7 +618,7 @@ class Configure(config.base.Configure):
     jobs  = []    # Jobs can be run on with all BOPTs
     rjobs = []    # Jobs can only be run with real numbers; i.e. NOT BOPT=g_complex or BOPT=O_complex
     ejobs = []    # Jobs that require an external package install (also cannot work with complex)
-    if self.usingMPIUni:
+    if self.mpi.usingMPIUni:
       jobs.append('4')
       if 'FC' in self.framework.argDB:
         jobs.append('9')
@@ -720,7 +705,6 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureFortranCPP)
     self.executeTest(self.configureFortranCommandline)
-    self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configurePIC)
     self.executeTest(self.configureDebuggers)
@@ -744,9 +728,9 @@ class Configure(config.base.Configure):
     if not os.path.exists(self.bmakeDir):
       os.makedirs(self.bmakeDir)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created '+self.bmakeDir+' for configuration data')
-    self.executeTest(self.configureBmake)    
     self.executeTest(self.configureRegression)
     self.executeTest(self.configureScript)
+    self.executeTest(self.configureBmake)    
     self.executeTest(self.configureInstall)
     self.framework.log.write('================================================================================\n')
     self.logClear()

@@ -519,13 +519,29 @@ class Configure(config.base.Configure):
       self.framework.packages.append(self)
     return
 
+  def configureMPIUNI(self):
+    '''Setup MPIUNI, our uniprocessor version of MPI'''
+    self.framework.addDefine('HAVE_MPI', 1)
+    self.include = ['-I${PETSC_DIR}/include/mpiuni']
+    if 'STDCALL' in self.compilers.defines:
+      self.include.append(' -DMPIUNI_USE_STDCALL')
+    self.lib = ['-L${PETSC_DIR}/lib/${PETSC_ARCH}','-lmpiuni']
+    self.mpirun = '${PETSC_DIR}/bin/mpirun.uni'
+    self.addDefine('HAVE_MPI_COMM_F2C', 1)
+    self.addDefine('HAVE_MPI_COMM_C2F', 1)
+    self.addDefine('HAVE_MPI_FINT', 1)
+    self.framework.packages.append(self)
+    self.usingMPIUni = 1
+    return
+
   def configure(self):
     if not self.framework.argDB['with-mpi']:
-      return
-    self.executeTest(self.configureLibrary)
-    if self.foundMPI:
-      self.executeTest(self.configureConversion)
-      self.executeTest(self.configureTypes)
-      self.executeTest(self.configureMPIRUN)
-    self.setOutput()
+      self.configureMPIUNI()
+    else:
+      self.executeTest(self.configureLibrary)
+      if self.foundMPI:
+        self.executeTest(self.configureConversion)
+        self.executeTest(self.configureTypes)
+        self.executeTest(self.configureMPIRUN)
+      self.setOutput()
     return

@@ -16,6 +16,9 @@ class Configure(config.base.Configure):
     self.setcompilers = self.framework.require('config.setCompilers',            self)    
     self.libraries    = self.framework.require('config.libraries',            self)
     self.framework.require('PETSc.packages.Sowing', self)
+    self.name         = 'BlasLapack'
+    self.PACKAGE      = self.name.upper()
+    self.package      = self.name.lower()
     return
 
   def __str__(self):

@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
 
   def configureMake(self):
     '''Check various things about make'''
-    self.getExecutable(self.framework.argDB['with-make'], getFullPath = 1)
+    self.getExecutable(self.framework.argDB['with-make'], getFullPath = 1,resultName = 'make')
     # Check for GNU make
     haveGNUMake = 0
     try:
@@ -37,10 +37,10 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         self.framework.log.write('Make check failed: '+str(e)+'\n')
     # Setup make flags
-    flags = ''
+    self.flags = ''
     if haveGNUMake:
-      flags += ' --no-print-directory'
-    self.framework.addSubstitution('MAKE_FLAGS', flags.strip())
+      self.flags += ' --no-print-directory'
+    self.framework.addSubstitution('MAKE_FLAGS', self.flags.strip())
     self.framework.addSubstitution('SET_MAKE', '')
     # Check to see if make allows rules which look inside archives
     if haveGNUMake:

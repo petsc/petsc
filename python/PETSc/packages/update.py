@@ -34,48 +34,15 @@ class Configure(config.base.Configure):
     return
 
   def configureArchitecture(self):
-    '''Verify that PETSC_ARCH is acceptable and setup a default architecture'''
-    # Check if PETSC_ARCH is a built-in arch
-    if os.path.isdir(os.path.join('bmake', self.arch.arch)) and not os.path.isfile(os.path.join('bmake', self.arch.arch, 'configure.py')):
-      dirs   = os.listdir('bmake')
-      arches = ''
-      for d in dirs:
-        if os.path.isdir(os.path.join('bmake', d)) and not os.path.isfile(os.path.join('bmake', d, 'configure.py')):
-          arches = arches + ' '+d
-      raise RuntimeError('The selected PETSC_ARCH is not allowed with config/configure.py\nbecause it clashes with a built-in PETSC_ARCH, rerun config/configure.py with -PETSC_ARCH=somethingelse;\n   DO NOT USE the following names:'+arches)
-    # if PETSC_ARCH is not set use one last created with configure
+    '''Setup a default architecture; so one need not set PETSC_ARCH'''
     if self.framework.argDB['with-default-arch']:
-      fd = file(os.path.join('bmake', 'variables'), 'w')
+      fd = file(os.path.join('bmake', 'petscconf'), 'w')
       fd.write('PETSC_ARCH='+self.arch.arch+'\n')
-      fd.write('include ${PETSC_DIR}/bmake/'+self.arch.arch+'/variables\n')
+      fd.write('include '+os.path.join('${PETSC_DIR}','bmake',self.arch.arch,'petscconf')+'\n')
       fd.close()
-      self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch.arch+' in bmake/variables')
+      self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch.arch+' in bmake/petscconf')
     else:
-      os.unlink(os.path.join('bmake', 'variables'))
-    return
-
-  def configureOptimization(self):
-    '''Allow a default optimization level and language'''
-    # if BOPT is not set determines what libraries to use
-    bopt = self.framework.argDB['with-default-optimization']
-    if self.framework.argDB['with-default-language'] == '0' or self.framework.argDB['with-default-optimization'] == '0':
-      fd = file(os.path.join('bmake', 'common', 'bopt_'), 'w')
-      fd.write('PETSC_LANGUAGE  = CONLY\nPETSC_SCALAR    = real\nPETSC_PRECISION = double\n')
-      fd.close()
-    elif not ((bopt == 'O') or (bopt == 'g')):
-      raise RuntimeError('Unknown option given with --with-default-optimization='+self.framework.argDB['with-default-optimization'])
-    else:
-      if self.framework.argDB['with-default-language'] == 'c': pass
-      elif self.framework.argDB['with-default-language'] == 'c++': bopt += '_c++'
-      elif self.framework.argDB['with-default-language'].find('complex') >= 0: bopt += '_complex'
-      else:
-        raise RuntimeError('Unknown option given with --with-default-language='+self.framework.argDB['with-default-language'])
-      fd = file(os.path.join('bmake', 'common', 'bopt_'), 'w')
-      fd.write('BOPT='+bopt+'\n')
-      fd.write('include ${PETSC_DIR}/bmake/common/bopt_'+bopt+'\n')
-      fd.close()
-      self.addSubstitution('BOPT', bopt)
-      self.framework.actions.addArgument('PETSc', 'Build', 'Set default optimization to '+bopt+' in bmake/common/bopt_')
+      os.unlink(os.path.join('bmake', 'petscconf'))
     return
 
   def datafilespath(self):
@@ -100,6 +67,5 @@ class Configure(config.base.Configure):
   def configure(self):
     self.executeTest(self.configureDirectories)
     self.executeTest(self.configureArchitecture)
-    self.executeTest(self.configureOptimization)
     self.executeTest(self.datafilespath)
     return

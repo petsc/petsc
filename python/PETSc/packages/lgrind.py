@@ -70,7 +70,7 @@ class Configure(config.base.Configure):
     except RuntimeError, e:
       raise RuntimeError('Error copying lgrind executable: '+str(e))
     self.framework.actions.addArgument('lgrind', 'Install', 'Installed lgrind into '+installDir)
-    self.lgrind = lgrindDir
+    self.lgrind = lgrindexe
     return
 
   def configureLgrind(self):

@@ -77,7 +77,7 @@ PETSC_FORTRAN_LIB = -L${PETSC_LIB_DIR} ${PETSC_FORTRAN_LIB_BASIC}
 PETSC_CONTRIB     = -L${PETSC_LIB_DIR} ${PETSC_CONTRIB_BASIC}
 
 #-----------------------------------------------------------------------------------------
-PETSC_LIB_DIR_COMPLEX = ${PETSC_DIR}/lib/libg_complex/${PETSC_ARCH}
+PETSC_LIB_DIR_COMPLEX = ${PETSC_DIR}/lib/${PETSC_ARCH}
 PETSC_SYS_LIB_BASIC_COMPLEX      = -lpetsc 
 PETSC_VEC_LIB_BASIC_COMPLEX      = -lpetscvec ${PETSC_SYS_LIB_BASIC_COMPLEX}
 PETSC_MAT_LIB_BASIC_COMPLEX      = -lpetscmat ${PETSC_VEC_LIB_BASIC_COMPLEX}
@@ -111,8 +111,6 @@ SHLIBS   = libpetsc libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes 
 # need to edit only ${PETSC_DIR}/bmake/${PETSC_ARCH}/packages to specify your
 # particular package configuration.  See the users manual for details.
 #
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/variables
-# (This line MUST be present for certain machines (e.g., Cray T3D))
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/packages
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf
 
 

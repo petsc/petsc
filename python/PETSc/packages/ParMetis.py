@@ -16,6 +16,9 @@ class Configure(config.base.Configure):
     self.libraries     = self.framework.require('config.libraries', self)
     self.sourceControl = self.framework.require('config.sourceControl', self)
     self.mpi           = self.framework.require('PETSc.packages.MPI', self)
+    self.name         = 'ParMetis'
+    self.PACKAGE      = self.name.upper()
+    self.package      = self.name.lower()
     return
 
   def __str__(self):
