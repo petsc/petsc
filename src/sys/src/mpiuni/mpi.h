@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.48 1997/06/17 17:58:14 bsmith Exp bsmith $ */
+/* $Id: mpi.h,v 1.49 1997/06/17 20:17:36 bsmith Exp balay $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -464,12 +464,13 @@ typedef char*   MPI_Errhandler;
                       MPIUNI_TMP = (void *) (keyval), \
                       MPIUNI_TMP = (void *) (attribute_val), \
                       MPI_SUCCESS)
-#define MPI_Attr_get(comm, keyval, attribute_val, flag)  \
+extern int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag);
+/* #define MPI_Attr_get(comm, keyval, attribute_val, flag)  \
                       (MPIUNI_TMP = (void *) (comm), \
                       MPIUNI_TMP = (void *) (keyval), \
                       (*(void**)attribute_val)= (void *)MPIUNI_DUMMY, \
                       *(flag) = 1, \
-                      MPI_SUCCESS) 
+                      MPI_SUCCESS) */
 #define MPI_Attr_delete(comm, keyval) (MPIUNI_TMP = (void *) (comm),MPI_SUCCESS)
 #define MPI_Topo_test(comm, status) MPI_SUCCESS
 #define MPI_Cart_create(comm_old, ndims, dims, periods,\

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpi.c,v 1.27 1997/04/02 21:03:00 bsmith Exp balay $";
+static char vcid[] = "$Id: mpi.c,v 1.28 1997/06/17 21:16:03 balay Exp balay $";
 #endif
 
 /* #include <signal.h> */
@@ -17,19 +17,16 @@ void   *MPIUNI_TMP   = 0;
 int    MPIUNI_DUMMY[2] = {100000,0};
 int    MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),
                               2*sizeof(double),sizeof(char)};
+
 PLogDouble MPI_Wtime()
 {
   return PetscGetTime();
 }
 
-/*     Fortran versions of several routines */
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
-/*******MPI_Attr_get******Implemented as a function to comply 
-with ANSI aliasing. The problem appeared om IBM's with -O */
+/* 
+   Implemented as a function to comply with ANSI aliasing. 
+   The problem appeared om IBM's with -O 
+*/
 int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag)
 {
   *flag = 1;
@@ -37,6 +34,12 @@ int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag)
   return MPI_SUCCESS;
 }
 
+
+/*     Fortran versions of several routines */
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /******mpi_init*******/
 void  mpi_init(int *ierr)
