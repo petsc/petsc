@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.196 1996/09/28 16:13:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.197 1996/10/02 17:22:28 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2014,6 +2014,32 @@ int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,in
   else {
     *done = PETSC_TRUE;
     ierr  = (*mat->ops.restorecolumnij)(mat,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
+  }
+  return 0;
+}
+
+/*@C
+      MatColoringPatch - EXPERTS ONLY, used inside matrix coloring routines that 
+          use matGetRowIJ() and/or MatGetColumnIJ().
+
+  Input Parameters:
+.   mat - the matrix
+.   n   - number of colors
+.   colorarray - array indicating color for each column
+
+  Output Parameters:
+.   iscoloring - coloring generated using colorarray information
+
+@*/
+int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
+{
+  int ierr;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidIntPointer(colorarray);
+
+  if (!mat->ops.coloringpatch) {SETERRQ(PETSC_ERR_SUP,"MatColoringPatch");}
+  else {
+    ierr  = (*mat->ops.coloringpatch)(mat,n,colorarray,iscoloring); CHKERRQ(ierr);
   }
   return 0;
 }
