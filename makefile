@@ -77,7 +77,8 @@ etags:
 	$(RM) TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h 
 	etags -a -f TAGS src/*/examples/*.c src/*/examples/*/*.c
-	etags -a -f TAGS src/*/*.h src/*/interface/*.c src/*/impls/*/*.c 
+	etags -a -f TAGS src/*/*.h src/*/interface/*.c 
+	etags -a -f TAGS src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS src/*/impls/*/*/*.c src/*/impls/*/*/*/*.c 
 	etags -a -f TAGS include/*.h include/pinclude/*.h bmake/common
 	etags -a -f TAGS src/*/impls/*.c src/*/utils/*.c
