@@ -23,7 +23,7 @@ extern int abort();
 }
 #endif
 #endif
-extern long MPID_DUMMY;
+extern int  MPID_DUMMY;
 extern void *MPID_TMP;
 extern double MPI_Wtime();
 

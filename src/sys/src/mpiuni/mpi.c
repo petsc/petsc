@@ -1,9 +1,8 @@
 
 #include "petsc.h"
 #define MPI_SUCCESS 0
-
-long MPID_DUMMY = 0;
-void * MPID_TMP = 0;
+void * MPID_TMP  = 0;
+int MPID_DUMMY =0;
 
 double MPI_Wtime()
 {
