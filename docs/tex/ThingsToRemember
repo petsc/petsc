@@ -12,6 +12,9 @@ PETSc grammar review:
 
 ----------------------------------------------------------------
 
+PETSc tutorial material:
+   /home/gropp/petsc_work/byoc
+
 Whenever you introduce ANYTHING new in PETSc, be sure to add 
 it to the Fortran include files and fix the interface files as
 well if necessary; otherwise, indicate that this still needs to be
