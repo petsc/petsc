@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.24 1997/08/22 15:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.25 1997/09/18 03:24:23 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -341,6 +341,7 @@ int PetscBinaryClose(int fd)
 .  fd - the file
 .  whence - if BINARY_SEEK_SET then size is an absolute location in the file
             if BINARY_SEEK_CUR then size is offset from current location
+            if BINARY_SEEK_END then size is offset from end of file
 .  size - number of bytes to move. Use BINARY_INT_SIZE, BINARY_SCALAR_SIZE,
           etc in your calculation rather then sizeof() to compute byte lengths.
 
@@ -361,6 +362,8 @@ int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence)
     iwhence = SEEK_SET;
   } else if (whence == BINARY_SEEK_CUR) {
     iwhence = SEEK_CUR;
+  } else if (whence == BINARY_SEEK_END) {
+    iwhence = SEEK_END;
   } else {
     SETERRQ(1,1,"Unknown seek location");
   }
