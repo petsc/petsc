@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.95 1998/05/11 21:59:03 bsmith Exp curfman $ */
+/* $Id: pdvec.c,v 1.96 1998/05/19 01:49:32 curfman Exp balay $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -148,7 +148,7 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
 #if defined(USE_PETSC_COMPLEX)
         fprintf(fd,"%18.16e %18.16e\n",real(x->array[i]),imag(x->array[i]));
 #else
-        fprintf(fd,"%18.16\n",x->array[i]);
+        fprintf(fd,"%18.16e\n",x->array[i]);
 #endif
       }
       /* receive and print messages */
