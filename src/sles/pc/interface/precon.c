@@ -546,7 +546,7 @@ int PCHasTransposeApply(PC pc,PetscTruth *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  *flg = (PetscTruth) (pc->ops->applytranspose);
+  *flg = (PetscTruth) (pc->ops->applytranspose == 0);
   PetscFunctionReturn(0);
 }
 
