@@ -1,4 +1,4 @@
-% $Id: developers.tex,v 1.12 1998/07/08 16:02:00 bsmith Exp bsmith $ 
+% $Id: developers.tex,v 1.13 1998/10/12 18:58:18 bsmith Exp bsmith $ 
 %
 % LATEX version of the PETSc users manual.
 %
@@ -29,7 +29,7 @@ William Gropp\\ Lois Curfman McInnes\\ Barry Smith\\
 Mathematics and Computer Science Division \\
 http://www.mcs.anl.gov/petsc
 \vspace{0.5in} \\
-{\rm This document is intended for use with PETSc 2.0.22}}
+{\rm This document is intended for use with PETSc 2.0.24}}
 %{98/?? - Revision 2.0.22}{1998}
 {\Large This is not yet an official ANL document}{1998}
 
@@ -171,6 +171,15 @@ is that when an error is detected in the main program one cannot return, because
 this would not call the {\tt MPI\_Abort()} routine and would leave MPI processes hanging.
 Hence these versions of the macros call {\tt MPI\_Abort()}, rather than returning.
 
+In addition to {\tt SETERRQ()} are the macros {\tt SETERRQ1()}, {\tt SETERRQ2()}, {\tt SETERRQ3()}
+and {\tt SETERRQ4()} that allow one to include additional arguments that the message
+string is formated. For example,
+\begin{verbatim}
+  SETERRQ2(1,26,''Iteration overflow: its %d norm %g'',its,norm);
+\end{verbatim}
+The reason for the numbered format is because CPP macros cannot handle variable number
+of arguments.
+ 
 \subsection{Error Handlers}
 The error handling function {\tt PetscError()} calls the ``current'' error handler
 with the code
@@ -185,7 +194,7 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess)
   PetscFunctionReturn(ierr);
 }
 \end{verbatim}
-The variable {\tt eh} is the current error handler and is defined in 
+The variable {\tt eh} is the current error handler context and is defined in 
 {\tt src/sys/src/error/err.c} as
 \begin{verbatim}
 typedef struct _EH* EH;
@@ -257,7 +266,9 @@ PETSc provides the replaceable function pointer
    (*PetscErrorPrintf)(``Format'',...);
 
 \end{verbatim}
-that, by default prints to standard error.
+that, by default prints to standard error. Thus error messages should not
+be printed with printf() or fprintf() rather than should be printed with
+{\tt (*PetscErrorPrintf)()}.
 
 
 % -----------------------------------------------------------------------------------
@@ -265,7 +276,7 @@ that, by default prints to standard error.
 \label{sec:profimpl}
 
 This section provides details about the implementation of event
-logging and profiling within ALICE.   
+logging and profiling within the ALICE kernel.
 The interface for profiling in PETSc is contained in the file 
 {\tt \$\{PETSC\_DIR\}/include/petsclog.h}. The source code for the profile logging
 is in {\tt src/sys/src/plog/}.
@@ -442,7 +453,7 @@ struct _p_<component> {
   OTHER STUFF SPECIFIC TO THAT PARTICULAR LIBRARY
 };
 
-/* Data structure header common to all PETSc components */
+/* Data structure header common to all PETSc components; but not all ALICE components */
 
 struct _p_<component> {
   int              cookie;                                  
@@ -620,7 +631,8 @@ composed with a PETSc object.
 This sections discusses how PETSc implements the {\tt compose()}, {\tt query()}, {\tt
 composefunction()}, and {\tt queryfunction()} functions for its object implementations. 
 Other ALICE compatible component implementations are free to manage these functions in any 
-manner.
+manner; but generally they would use the PETSc defaults so that the library writer does
+not have to ``reinvent the wheel.''
 
 \subsection{Compose and Query}
 
@@ -643,8 +655,7 @@ to manipulate these elementary objects are
   int OListDuplicate(OList fl, OList *nl);
 \end{verbatim}
 The function {\tt OListAdd()} will create the initial {\tt OList} if the argument 
-{\tt fl} points
-to a null.
+{\tt fl} points to a null.
 
 The PETSc object {\tt compose()} and {\tt query()} functions are then simply
 (defined in {\tt src/sys/src/objects/inherit.c})
@@ -736,7 +747,7 @@ dynamic libraries. This is done with macros like the following
 #endif
 \end{verbatim}
 Thus when the code is compiled with the dynamic link library flag the function pointer 
-argument is removed from the code; otherwise it is retained. 
+argument is removed from the code; otherwise it is retained. Ugly, but neccessary.
 
 The {\tt FListAdd\_Private()} and all related routines can be found in the directory
 {\tt src/sys/src/dll}.
@@ -812,11 +823,14 @@ fields. We hope to rectify this in the next release. Regardless, this does not
 effect (except superficially) the development of the objects.
 
 \subsection{Preconditioners: PC}
-The base PETSc PC object is defined in the {\tt src/pc/pcimpl.h} include file. 
+The base PETSc PC object is defined in the {\tt src/sles/pc/pcimpl.h} include file. 
 A carefully commented implementation of a PC object can be found in 
-{\tt src/pc/impls/jacobi/jacobi.c}. 
+{\tt src/sles/pc/impls/jacobi/jacobi.c}. 
 
 \subsection{Krylov Solvers}
+The base PETSc KSP object is defined in the {\tt src/sles/ksp/kspimpl.h} include file. 
+A carefully commented implementation of a KSP object can be found in 
+{\tt src/sles/ksp/impls/cg/cg.c}. 
 
 \subsection{Registering New Methods}
 \label{sec:registeringnewmethods}
@@ -839,7 +853,7 @@ We use several conventions:
 \begin{itemize}
 \item All function names and enum types consist of words, each of 
       which is capitalized, for example {\tt SLESSolve()} and 
-      {\tt MatGetReordering()}.
+      {\tt MatGetOrdering()}.
 \item All enum elements and macro variables are capitalized. When
       they consist of several
       complete words, there is an underscore between each word.
@@ -895,6 +909,13 @@ instead of
 \item There {\em must} be a single blank line
       between the local variable declarations and the body of the function.
 \item The first line of the executable statments must be {\tt PetscFunctionBegin;}
+\item The following text should be before each function
+\begin{verbatim}
+#undef __FUNC__
+#define __FUNC__ ``FunctionName''
+\end{verbatim}
+this is used by various macros (for example the error handlers) to always know
+what function one is in.
 \item Use {\tt PetscFunctionReturn(returnvalue);} not {\tt return(returnvalue);}
 \item {\em Never} put a function call in a return statment; do not do
 \begin{verbatim}

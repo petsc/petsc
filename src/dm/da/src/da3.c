@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.92 1999/02/24 22:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.93 1999/03/01 04:58:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -143,6 +143,8 @@ int DAView_3d(DA da,Viewer viewer)
     } 
     ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = DrawPause(draw);CHKERRQ(ierr);
+  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
+    ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -1853,6 +1855,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_MPI_Binary_C",
+         "VecView_MPI_Binary_DA",(void *)VecView_MPI_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
