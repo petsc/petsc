@@ -10,6 +10,7 @@ add to it).
 
   MAT
    - MatSNESMFFormJacobian() has been renamed to MatSNESMFComputeJacobian().
+added another field to MatLUInfo and MatILUInfo
 
    
   KSP
@@ -26,7 +27,7 @@ add to it).
 
 
 
-
+ added -pc_lu_zeropivot and -pc_ilu_zeropivot (still need function interfaces)
 
   
  
