@@ -11,7 +11,7 @@
 #ifndef __DVECIMPL 
 #define __DVECIMPL
 
-#include "src/vec/vecimpl.h"
+#include "vecimpl.h"
 
 typedef struct { 
   VECHEADER

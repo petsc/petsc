@@ -118,6 +118,14 @@ static int ourshellsetup(void *ctx)
   return 0;
 }
 
+typedef int (*MVVVV)(Mat,Vec,Vec,Vec);
+static int ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
+{
+  int ierr = 0;
+  (*(void (PETSC_STDCALL *)(Mat*,Vec*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat,&b,&x,&R,&ierr);
+  return 0;
+}
+
 EXTERN_C_BEGIN
 void PETSC_STDCALL pccompositespecialsetalpha_(PC *pc,PetscScalar *alpha,int *ierr)
 {
@@ -378,16 +386,9 @@ void mgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, int *ierr)
   *ierr = MGDefaultResidual(*mat,*b,*x,*r);
 }
 
-static int ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
-{
-  int ierr = 0;
-  (*(void (PETSC_STDCALL *)(Mat*,Vec*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat,&b,&x,&R,&ierr);
-  return 0;
-}
-
 void PETSC_STDCALL mgsetresidual_(PC *pc,int *l,int (*residual)(Mat*,Vec*,Vec*,Vec*,int*),Mat *mat, int *ierr)
 {
-  int (*rr)(Mat,Vec,Vec,Vec);
+  MVVVV rr;
   if ((FCNVOID)residual == (FCNVOID)mgdefaultresidual_) rr = MGDefaultResidual;
   else {
     if (!((PetscObject)*mat)->fortran_func_pointers) {

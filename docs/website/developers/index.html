@@ -62,13 +62,6 @@
         debugger and EMACS etags then please don't access these pages.<br>
         </p>
 
-        <h2>Building Fortran Interfaces:<br>
-        </h2>
-
-        <p>In order to use the development version of PETSc from Fortran,
-        make sure the <b>bfort</b> program from the <a
-        href="ftp://ftp.mcs.anl.gov/pub/petsc/sowing.tar.gz">Sowing</a>
-        package developed by Bill Gropp is in your PATH.</p>
         <big><span style="font-weight: bold;">Obtaining
         PETSc:</span></big><br>
         <br>
@@ -103,7 +96,7 @@
         following:<br>
         </p>
         <ul>
-          <li><font color="#800000">bk pull</font>(from inside the petsc-dev directory tree)</li>
+          <li><font color="#800000">make update</font>(from inside the petsc-dev directory tree)</li>
         </ul>
 
         <p align="left" style="font-weight: bold;"><big>Building
@@ -114,7 +107,7 @@
         <ul>
           <li><p align="left"><font size="4"><a
             href="ftp://ftp.mcs.anl.gov/pub/petsc/sowing.tar.gz">Sowing</a>:</font>&nbsp;
-            A text processing tools developed by Bill Gropp. </p>
+            A text processing tools developed by Bill Gropp. This is automatically download and installed by configure</p>
           </li>
           <li><p align="left"><font size="4"><a
             href="ftp://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a></font>:
@@ -129,8 +122,7 @@
           </li>
         </ul>
 
-        <p align="left">&nbsp;&nbsp; Once doctext, mapnames (from sowing),
-        c2html and pdflatex (from teTeX) are in your PATH you can build the
+        <p align="left">&nbsp;&nbsp; Once c2html and pdflatex (from teTeX) are in your PATH you can build the
         documentation with:<br>
         </p>
         <ul>

@@ -44,34 +44,41 @@ class Configure(config.base.Configure):
 
     for package in os.listdir(os.path.dirname(PETSc.packages.__file__)):
       (packageName, ext) = os.path.splitext(package)
-      if ext == '.py' and not packageName == '__init__':
+      if not packageName.startswith('.') and not packageName.startswith('#') and ext == '.py' and not packageName == '__init__':
         packageObj              = self.framework.require('PETSc.packages.'+packageName, self)
         packageObj.headerPrefix = self.headerPrefix
         setattr(self, packageName.lower(), packageObj)
     # Put in dependencies
     self.framework.require('PETSc.packages.update', self.setCompilers)
     self.framework.require('PETSc.packages.compilerFlags', self.compilers)
-    self.framework.require('PETSc.packages.fortranstubs',  self.blaslapack)
     return
+
+  def __str__(self):
+    desc = ['PETSc:']
+    desc.append('  PETSC_ARCH: '+str(self.framework.argDB['PETSC_ARCH']))
+    desc.append('  PETSC_DIR: '+str(self.framework.argDB['PETSC_DIR']))
+    return '\n'.join(desc)+'\n'
+                              
 
   def configureHelp(self, help):
     import nargs
 
     help.addArgument('PETSc', 'PETSC_DIR',                   nargs.Arg(None, None, 'The root directory of the PETSc installation'))
     help.addArgument('PETSc', 'PETSC_ARCH',                  nargs.Arg(None, None, 'The machine architecture'))
-    help.addArgument('PETSc', '-enable-debug',               nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
-    help.addArgument('PETSc', '-enable-log',                 nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
-    help.addArgument('PETSc', '-enable-stack',               nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
-    help.addArgument('PETSc', '-enable-dynamic',             nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
-    help.addArgument('PETSc', '-enable-etags',               nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
-    help.addArgument('PETSc', '-enable-fortran-kernels',     nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
-    help.addArgument('PETSc', '-with-mpi',                   nargs.ArgBool(None, 1, 'If this is false, MPIUNI will be used as a uniprocessor substitute'))
-    help.addArgument('PETSc', '-with-libtool',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
+    help.addArgument('PETSc', '-with-debug=<bool>',                 nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
+    help.addArgument('PETSc', '-with-log=<bool>',                   nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
+    help.addArgument('PETSc', '-with-stack=<bool>',                 nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
+    help.addArgument('PETSc', '-with-dynamic=<bool>',               nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
+    help.addArgument('PETSc', '-with-shared=<bool>',                nargs.ArgBool(None, 1, 'Build shared libraries for PETSc'))
+    help.addArgument('PETSc', '-with-etags=<bool>',                 nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
+    help.addArgument('PETSc', '-with-fortran-kernels=<bool>',       nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
+    help.addArgument('PETSc', '-with-libtool=<bool>',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
     help.addArgument('PETSc', '-with-make',                  nargs.Arg(None, 'make', 'Specify make'))
     help.addArgument('PETSc', '-with-ar',                    nargs.Arg(None, 'ar',   'Specify the archiver'))
+    help.addArgument('PETSc', 'AR',                          nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('PETSc', 'AR_FLAGS',                    nargs.Arg(None, 'cr',   'Specify the archiver flags'))
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
-    help.addArgument('PETSc', '-with-scroll-output',         nargs.ArgBool(None, 0, 'Scroll configure output instead of keeping it on one line'))
+    help.addArgument('PETSc', '-prefix=<path>',                     nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
     return
 
   def defineAutoconfMacros(self):
@@ -80,27 +87,14 @@ class Configure(config.base.Configure):
 
   def configureLibraryOptions(self):
     '''Sets PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_STACK, and PETSC_USE_FORTRAN_KERNELS'''
-    self.useDebug = self.framework.argDB['enable-debug']
+    self.useDebug = self.framework.argDB['with-debug']
     self.addDefine('USE_DEBUG', self.useDebug)
-    self.useLog   = self.framework.argDB['enable-log']
+    self.useLog   = self.framework.argDB['with-log']
     self.addDefine('USE_LOG',   self.useLog)
-    self.useStack = self.framework.argDB['enable-stack']
+    self.useStack = self.framework.argDB['with-stack']
     self.addDefine('USE_STACK', self.useStack)
-    self.useFortranKernels = self.framework.argDB['enable-fortran-kernels']
+    self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
     self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
-    return
-
-  def configureFortranPIC(self):
-    '''Determine the PIC option for the Fortran compiler'''
-    # We use the framework in order to remove the PETSC_ namespace
-    self.compilers.pushLanguage('F77')
-    option = ''
-    for opt in ['-PIC', '-fPIC', '-KPIC']:
-      if self.compilers.checkCompilerFlag(opt):
-        option = opt
-        break
-    self.framework.addSubstitution('FC_SHARED_OPT', option)
-    self.compilers.popLanguage()
     return
 
   def configureFortranCPP(self):
@@ -119,33 +113,70 @@ class Configure(config.base.Configure):
       self.framework.addSubstitution('F_to_o_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.fortran.none')
     return
 
+  def configureFortranCommandline(self):
+    '''Check for the mechanism to retrieve command line arguments in Fortran'''
+    self.pushLanguage('C')
+    if self.functions.check('ipxfargc_', libraries = self.compilers.flibs):
+      self.addDefine('HAVE_PXFGETARG_NEW',1)
+    elif self.functions.check('f90_unix_MP_iargc', libraries = self.compilers.flibs):
+      self.addDefine('HAVE_NAGF90',1)
+    elif self.functions.check('PXFGETARG', libraries = self.compilers.flibs):
+      self.addDefine('HAVE_PXFGETARG',1)
+    elif self.functions.check('GETARG@16', libraries = self.compilers.flibs): 
+      self.addDefine('USE_NARGS',1)
+      self.addDefine('HAVE_IARG_COUNT_PROGNAME',1)
+    return
 
   def configureDynamicLibraries(self):
     '''Checks whether dynamic libraries should be used, for which you must
-      - Specify --enable-dynamic
+      - Specify --with-dynamic
       - Find dlfcn.h and libdl
     Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
+    self.useDynamic = 0
     if not (self.framework.argDB['PETSC_ARCH_BASE'].startswith('aix') or (self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and not (self.usingMPIUni and not self.framework.argDB.has_key('FC')))):
-      useDynamic = self.framework.argDB['enable-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
-      self.addDefine('USE_DYNAMIC_LIBRARIES', useDynamic)
-      if useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
+      self.useDynamic = self.framework.argDB['with-shared'] and self.framework.argDB['with-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
+      self.addDefine('USE_DYNAMIC_LIBRARIES', self.useDynamic)
+      if self.useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
         self.addDefine('HAVE_RTLD_GLOBAL', 1)
 
     #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)
-    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
+    if self.useDynamic and self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
       if self.framework.sharedBlasLapack: bls = 'BLASLAPACK_LIB_SHARED=${BLASLAPACK_LIB}\n'
       else:                               bls = ''
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', bls+'MPI_LIB_SHARED=${MPI_LIB}\ninclude ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
     else:
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.basic')
 
-    if self.setCompilers.slpath:
-      flag = self.setCompilers.slpath
-    else:
-      flag = '-L'
-    self.addSubstitution('CLINKER_SLFLAG', flag)
-    self.addSubstitution('FLINKER_SLFLAG', flag)
+    for language in ['C', 'CXX', 'F77']:
+      flagName = language.upper()+'_LINKER_SLFLAG'
+      if flagName in self.framework.argDB:
+        slflag = self.framework.argDB[flagName]
+      else:
+        slflag = '-L'
+      self.addSubstitution(flagName, slflag)
+    return
+
+  def configurePIC(self):
+    '''Determine the PIC option for each compiler
+       - There needs to be a test that checks that the functionality is actually working'''
+    if not self.useDynamic:
+      return
+    languages = ['C']
+    if 'CXX' in self.framework.argDB:
+      languages.append('C++')
+    if 'FC' in self.framework.argDB:
+      languages.append('F77')
+    for language in languages:
+      self.pushLanguage(language)
+      for testFlag in ['-PIC', '-fPIC', '-KPIC']:
+        try:
+          self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
+          self.addCompilerFlag(testFlag)
+          break
+        except RuntimeError:
+          self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
+      self.popLanguage()
     return
 
   def configureLibtool(self):
@@ -156,7 +187,10 @@ class Configure(config.base.Configure):
     else:
       self.framework.addSubstitution('LT_CC', '')
       self.framework.addSubstitution('LIBTOOL', '')
-      self.framework.addSubstitution('SHARED_TARGET', 'shared_'+self.framework.argDB['PETSC_ARCH_BASE'])
+      if self.framework.argDB['with-shared']:
+        self.framework.addSubstitution('SHARED_TARGET', 'shared_'+self.framework.argDB['PETSC_ARCH_BASE'])
+      else:
+        self.framework.addSubstitution('SHARED_TARGET', 'shared_none')
     return
 
   def configureDebuggers(self):
@@ -300,20 +334,6 @@ class Configure(config.base.Configure):
           self.addDefine('HAVE_SUN4_STYLE_FPTRAP', 1)
     return
 
-  def configureLibrarySuffix(self):
-    '''(Belongs in config.libraries) Determine the suffix used for libraries'''
-    # If MS Windows's kernel32.lib is available then use lib for the suffix, otherwise use a.
-    # Cygwin w32api uses libkernel32.a for this symbol.
-    oldLibs = self.framework.argDB['LIBS']
-    found = self.libraries.check(['kernel32.lib'],'GetCurrentProcess',prototype='int __stdcall GetCurrentProcess(void);\n')
-    if found:
-      suffix = 'lib'
-    else:
-      suffix = 'a'
-    self.libraries.addSubstitution('LIB_SUFFIX', suffix)
-    self.framework.argDB['LIBS'] = oldLibs
-    return
-
   def configureGetDomainName(self):
     if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
       self.missingPrototypesC.append('int getdomainname(char *, int);')
@@ -334,7 +354,11 @@ class Configure(config.base.Configure):
     '''Solaris specific stuff'''
     if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
       if os.path.isdir(os.path.join('/usr','ucblib')):
-        self.framework.argDB['LIBS'] += ' '+self.setCompilers.slpath+'/usr/ucblib'
+        flagName = self.language[-1].replace('+', 'x').upper()+'_LINKER_SLFLAG'
+        if flagName in self.framework.argDB:
+          self.framework.argDB['LIBS'] += ' '+self.framework.argDB[flagName]+'/usr/ucblib'
+        else:
+          self.framework.argDB['LIBS'] += ' -L/usr/ucblib'
     return
 
   def configureLinux(self):
@@ -349,16 +373,19 @@ class Configure(config.base.Configure):
     import os
     if os.path.splitext(os.path.basename(wfe))[0] == 'win32fe':
       self.framework.addDefine('PARCH_win32',1)
-      self.framework.argDB['LIBS'] += ' kernel32.lib user32.lib  gdi32.lib advapi32.lib'
       self.addDefine('CANNOT_START_DEBUGGER',1)
       self.addDefine('USE_NT_TIME',1)
-      self.missingPrototypes.append('typedef int uid_t;')
-      self.missingPrototypes.append('typedef int gid_t;')
-      self.missingPrototypes.append('#define R_OK 04')
-      self.missingPrototypes.append('#define W_OK 02')
-      self.missingPrototypes.append('#define X_OK 01')
-      self.missingPrototypes.append('#define S_ISREG(a) (((a)&_S_IFMT) == _S_IFREG)')
-      self.missingPrototypes.append('#define S_ISDIR(a) (((a)&_S_IFMT) == _S_IFDIR)')
+      if not self.checkCompile('#include <sys/types.h>\n','uid_t u;\n'):
+        self.missingPrototypes.append('typedef int uid_t;')
+        self.missingPrototypes.append('typedef int gid_t;')
+      if not self.checkCompile('#include <sys/stat.h>\n','int a=R_OK;\n'):
+        self.missingPrototypes.append('#define R_OK 04')
+        self.missingPrototypes.append('#define W_OK 02')
+        self.missingPrototypes.append('#define X_OK 01')
+      if not self.checkLink('#include <sys/stat.h>\n','int a=0;\nif (S_ISDIR(a)){}\n'):
+        self.missingPrototypes.append('#define S_ISREG(a) (((a)&_S_IFMT) == _S_IFREG)')
+        self.missingPrototypes.append('#define S_ISDIR(a) (((a)&_S_IFMT) == _S_IFDIR)')
+      self.framework.argDB['LIBS'] += ' kernel32.lib user32.lib  gdi32.lib advapi32.lib'
     return
     
   def configureMPIUNI(self):
@@ -369,9 +396,9 @@ class Configure(config.base.Configure):
       else:
         raise RuntimeError('********** Error: Unable to locate a functional MPI. Please consult configure.log. **********')
     self.framework.addDefine('HAVE_MPI', 1)
-    self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/src/sys/src/mpiuni')
+    self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/include/mpiuni')
     self.framework.addSubstitution('MPI_LIB',     '-L${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH} -lmpiuni')
-    self.framework.addSubstitution('MPIRUN',      '${PETSC_DIR}/src/sys/src/mpiuni/mpirun')
+    self.framework.addSubstitution('MPIRUN',      '${PETSC_DIR}/bin/mpirun.uni')
     self.framework.addSubstitution('MPE_INCLUDE', '')
     self.framework.addSubstitution('MPE_LIB',     '')
     self.mpi.addDefine('HAVE_MPI_COMM_F2C', 1)
@@ -409,7 +436,7 @@ class Configure(config.base.Configure):
         pd = self.framework.argDB['PETSC_DIR']
         self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand('PETSC_ARCH=linux; export PETSC_ARCH; make PETSC_DIR='+pd+' TAGSDIR='+pd+' etags', timeout = 15*60.0, log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand('make PETSC_ARCH=solaris BOPT=g PETSC_DIR='+pd+' TAGSDIR='+pd+' etags', timeout = 15*60.0, log = self.framework.log)
           # filter out the normal messages
           cnt = 0
           for i in output.split('\n'):
@@ -509,13 +536,11 @@ class Configure(config.base.Configure):
     self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.argDB['PETSC_ARCH']+'/variables')
     self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h')
     self.executeTest(self.configureLibraryOptions)
-    if 'FC' in self.framework.argDB:
-      self.executeTest(self.configureFortranPIC)
-    else:
-      self.framework.addSubstitution('FC_SHARED_OPT', '')
     self.executeTest(self.configureFortranCPP)
+    self.executeTest(self.configureFortranCommandline)
     self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureDynamicLibraries)
+    self.executeTest(self.configurePIC)
     self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)
     self.executeTest(self.configureMkdir)
@@ -526,7 +551,6 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureMissingSignals)
     self.executeTest(self.configureMemorySize)
     self.executeTest(self.configureFPTrap)
-    self.executeTest(self.configureLibrarySuffix)
     self.executeTest(self.configureGetDomainName)
     self.executeTest(self.configureIRIX)
     self.executeTest(self.configureSolaris)
@@ -534,7 +558,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureWin32NonCygwin)
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMachineInfo)
-    if self.framework.argDB['enable-etags']:                                    
+    if self.framework.argDB['with-etags']:                                    
       self.executeTest(self.configureETags)
     self.executeTest(self.configureDocs)
     self.bmakeDir = os.path.join('bmake', self.framework.argDB['PETSC_ARCH'])
@@ -542,5 +566,7 @@ class Configure(config.base.Configure):
       os.makedirs(self.bmakeDir)
     self.executeTest(self.configureRegression)
     self.executeTest(self.configureScript)
+    if self.framework.argDB['prefix']: self.framework.addSubstitution('INSTALL_DIR', os.path.join(self.framework.argDB['prefix'],os.path.basename(os.getcwd())))
+    else: self.framework.addSubstitution('INSTALL_DIR', self.framework.argDB['PETSC_DIR'])
     self.startLine()
     return

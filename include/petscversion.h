@@ -13,10 +13,10 @@ PETSC_EXTERN_CXX_BEGIN
     docs/website/index.html.
 */
 #define PETSC_VERSION_MAJOR    2
-#define PETSC_VERSION_MINOR    1
-#define PETSC_VERSION_SUBMINOR 6
-#define PETSC_VERSION_PATCH    12
-#define PETSC_VERSION_DATE     "Nov 03, 2003"
+#define PETSC_VERSION_MINOR    2
+#define PETSC_VERSION_SUBMINOR 0
+#define PETSC_VERSION_PATCH    0
+#define PETSC_VERSION_DATE     "Feb 27, 2004"
 #define PETSC_AUTHOR_INFO      "\
        The PETSc Team\n\
     petsc-maint@mcs.anl.gov\n\

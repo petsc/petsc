@@ -22,12 +22,13 @@ DOCTEXT            = @DOCTEXT@
 MAPNAMES           = @MAPNAMES@
 
 top_builddir       = @PETSC_DIR@
+INSTALL_DIR        = @INSTALL_DIR@
 LIBTOOL            = @LIBTOOL@
 PETSC_LIBTOOL      = ${PETSC_DIR}/bin/petsc_libtool
 # ######################### C compiler #####################################
 #
-C_CC               = @LT_CC@ @CC@ @CC_SHARED_OPT@
-C_CLINKER_SLFLAG   = @PETSC_CLINKER_SLFLAG@
+C_CC               = @LT_CC@ @CC@
+C_CLINKER_SLFLAG   = @PETSC_C_LINKER_SLFLAG@
 C_CLINKER          = @CC@ @LDFLAGS@
 C_CCV              = echo "@PETSC_C_VERSION@"
 C_SYS_LIB          = @LIBS@ @CFLIBS@ @FLIBS@
@@ -36,12 +37,12 @@ G_COPTFLAGS        = @CFLAGS@ @PETSC_CFLAGS_g@
 # ----------------------------- BOPT=O options -----------------------------
 O_COPTFLAGS        = @CFLAGS@ @PETSC_CFLAGS_O@
 # ############################ Fortran compiler ############################
-C_FC               = @FC@ @FC_SHARED_OPT@
-C_FLINKER_SLFLAG   = @PETSC_FLINKER_SLFLAG@
+C_FC               = @FC@
+C_FLINKER_SLFLAG   = @PETSC_F77_LINKER_SLFLAG@
 C_FLINKER          = @FC@ @LDFLAGS@
 C_FCV              = echo "@PETSC_F_VERSION@"
-CXX_FC             = @FC@  @FC_SHARED_OPT@
-CXX_FLINKER_SLFLAG = @PETSC_FLINKER_SLFLAG@
+CXX_FC             = @FC@
+CXX_FLINKER_SLFLAG = @PETSC_CXX_LINKER_SLFLAG@
 CXX_FLINKER        = @CXX@ @LDFLAGS@
 # ---------------------------- BOPT=g,g_c++,g_complex options --------------
 G_FOPTFLAGS        = @FFLAGS@ @PETSC_FFLAGS_g@
@@ -53,8 +54,8 @@ OCXX_FOPTFLAGS     = @FFLAGS@ @PETSC_FFLAGS_O@
 OCOMP_FOPTFLAGS	   = @FFLAGS@ @PETSC_FFLAGS_O_complex@
 # ########################## C++ compiler ##################################
 #
-CXX_CC             = @LT_CC@ @CXX@ @CC_SHARED_OPT@
-CXX_CLINKER_SLFLAG = @PETSC_CLINKER_SLFLAG@
+CXX_CC             = @LT_CC@ @CXX@
+CXX_CLINKER_SLFLAG = @PETSC_CXX_LINKER_SLFLAG@
 CXX_CLINKER        = @CXX@ @LDFLAGS@
 CXX_CCV            = echo "@PETSC_CXX_VERSION@"
 CXX_SYS_LIB        = @LIBS@ @FLIBS@

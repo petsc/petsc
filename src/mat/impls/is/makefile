@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = is.c 
+SOURCEC  = matis.c 
 SOURCEF  =
-SOURCEH  = is.h
-OBJSC    = is.o
+SOURCEH  = matis.h
+OBJSC    = matis.o
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = Mat

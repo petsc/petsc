@@ -297,11 +297,6 @@ struct _p_MatNullSpace {
   Vec         vec;      /* for out of place removals */
 };
 
-/*
-   Allows all matrices to use VecGet/RestoreArrayFast() 
-*/
-#include "src/vec/vecimpl.h"
-
 #endif
 
 

@@ -2,7 +2,7 @@
 static char vcid[] = "$Id: vecserialize.c,v 1.10 2000/01/10 03:18:14 knepley Exp $";
 #endif
 
-#include "src/vec/vecimpl.h"      /*I "petscvec.h" I*/
+#include "vecimpl.h"      /*I "petscvec.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate"

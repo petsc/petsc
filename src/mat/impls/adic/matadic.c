@@ -471,7 +471,7 @@ int MatDAADSetSNES(Mat A,SNES snes)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(snes,2);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,2);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetSNES_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,snes);CHKERRQ(ierr);

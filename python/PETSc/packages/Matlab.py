@@ -10,6 +10,7 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.foundMatlab  = 0
+    self.setCompilers = self.framework.require('config.setCompilers', self)
     return
 
   def __str__(self):
@@ -18,7 +19,7 @@ class Configure(config.base.Configure):
     
   def configureHelp(self, help):
     import nargs
-    help.addArgument('Matlab', '-with-matlab',                nargs.ArgBool(None, 1, 'Activate Matlab'))
+    help.addArgument('Matlab', '-with-matlab=<bool>',         nargs.ArgBool(None, 1, 'Activate Matlab'))
     help.addArgument('Matlab', '-with-matlab-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the Matlab installation'))
     return
 
@@ -59,14 +60,12 @@ class Configure(config.base.Configure):
             self.framework.log.write('        Run with --with-matlab-dir=Matlabrootdir if you know where it is\n')
             matlab = None
           else:
-            matlab_arch = os.listdir(os.path.join(matlab,'extern','lib'))[0]
-
             # hope there is always only one arch installation in the location
             self.foundMatlab = 1
             self.matlab      = matlab
             matlab_arch = os.listdir(os.path.join(matlab,'extern','lib'))[0]
 
-            self.framework.log.write('Configuring PETSc to use the Matlab at '+matlab+'\n')
+            self.framework.log.write('Configuring PETSc to use the Matlab at '+matlab+' Matlab arch '+matlab_arch+'\n')
             self.addDefine('HAVE_MATLAB', 1)
             self.addSubstitution('MATLAB_MEX', os.path.join(matlab,'bin','mex'))
             self.addSubstitution('MATLAB_CC', '${C_CC}')
@@ -81,10 +80,7 @@ class Configure(config.base.Configure):
               matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
             else:
               matlab_sys = ''
-            if self.framework.slpath:
-              self.addSubstitution('MATLAB_LIB',self.framework.slpath+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
-            else:
-              self.addSubstitution('MATLAB_LIB','-L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)              
+            self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
             return
       except RuntimeError:
         self.framework.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')

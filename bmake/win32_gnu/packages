@@ -19,8 +19,8 @@ MPI_LIB        = -L${MPI_HOME}/lib -lmpich
 MPIRUN         = mpirun -localonly
 
 #MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-#MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
-#MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
+#MPI_INCLUDE    = -I${PETSC_DIR}/include/mpiuni
+#MPIRUN         = ${PETSC_DIR}/bin/mpirun.uni
 
 #
 # ----------------------------------------------------------------------------------------  

@@ -32,8 +32,8 @@ MPIRUN         = /usr/sbin/npri -w /bin/mpirun
 # The following lines can be used with MPIUNI
 #
 #MPI_LIB         =${INSTALL_LIB_DIR}/libmpiuni.a
-#MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni
-#MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
+#MPI_INCLUDE     = -I${PETSC_DIR}/include/mpiuni
+#MPIRUN          = ${PETSC_DIR}/bin/mpirun.uni
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.

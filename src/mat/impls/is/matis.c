@@ -12,7 +12,7 @@
 
 */
 
-#include "src/mat/impls/is/is.h"      /*I "mat.h" I*/
+#include "src/mat/impls/is/matis.h"      /*I "petscmat.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_IS" 
@@ -197,6 +197,55 @@ int MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatISGetLocalMat_IS"
+int MatISGetLocalMat_IS(Mat mat,Mat *local)
+{
+  Mat_IS *is = (Mat_IS *)mat->data;
+  
+  PetscFunctionBegin;
+  *local = is->A;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatISGetLocalMat"
+/*@
+    MatISGetLocalMat - Gets the local matrix stored inside a MATIS matrix.
+
+  Input Parameter:
+.  mat - the matrix
+
+  Output Parameter:
+.  local - the local matrix usually MATSEQAIJ
+
+  Level: advanced
+
+  Notes:
+    This can be called if you have precomputed the nonzero structure of the 
+  matrix and want to provide it to the inner matrix object to improve the performance
+  of the MatSetValues() operation.
+
+.seealso: MATIS
+@*/ 
+int MatISGetLocalMat(Mat mat,Mat *local)
+{
+  int ierr,(*f)(Mat,Mat *);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidPointer(local,2);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatISGetLocalMat_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat,local);CHKERRQ(ierr);
+  } else {
+    local = 0;
+  }
+  PetscFunctionReturn(0);
+}
+
 /*MC
    MATIS - MATIS = "is" - A matrix type to be used for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 
@@ -209,9 +258,17 @@ int MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
    Options Database Keys:
 . -mat_type is - sets the matrix type to "is" during a call to MatSetFromOptions()
 
+   Notes: Options prefix for the inner matrix are given by -is_mat_xxx
+    
+          You must call MatSetLocalToGlobalMapping() before using this matrix type.
+
+          You can do matrix preallocation on the local matrix after you obtain it with 
+          MatISGetLocalMat()
+
   Level: advanced
 
-.seealso: PC
+.seealso: PC, MatISGetLocalMat(), MatSetLocalToGlobalMapping()
+
 M*/
 
 EXTERN_C_BEGIN
@@ -248,6 +305,7 @@ int MatCreate_IS(Mat A)
   b->ctx        = 0;
   b->x          = 0;  
   b->y          = 0;  
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatISGetLocalMat_C","MatISGetLocalMat_IS",MatISGetLocalMat_IS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

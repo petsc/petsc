@@ -2,7 +2,7 @@
 static char vcid[] = "$Id: mapregall.c,v 1.1 1999/06/21 02:03:51 knepley Exp $";
 #endif
 
-#include "src/vec/vecimpl.h"     /*I  "vec.h"  I*/
+#include "vecimpl.h"     /*I  "vec.h"  I*/
 EXTERN_C_BEGIN
 extern int PetscMapCreate_MPI(PetscMap);
 EXTERN_C_END

@@ -33,7 +33,6 @@ int pde_bc(void *dummy,int n,double *xx,double *f)
 int AppCtxSolve(AppCtx* appctx)
 {
   AppAlgebra   *algebra = &appctx->algebra;
-  AppPartition *part = &appctx->part;
   MPI_Comm     comm = appctx->comm;
   KSP         ksp;
   int          ierr;
@@ -153,10 +152,16 @@ int AppCtxCreateRhsAndMatrix (AppCtx *appctx)
   /* This allows one to set entries into the vector and matrix using the LOCAL numbering */
   {
     ISLocalToGlobalMapping mapping;
+    Mat                    local;
+
     ierr = AppPartitionCreateLocalToGlobalMapping(part,&mapping);CHKERRQ(ierr);
     ierr = VecSetLocalToGlobalMapping(algebra->b,mapping);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(algebra->A,mapping);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(mapping);CHKERRQ(ierr);
+    ierr = MatISGetLocalMat(algebra->A,&local);CHKERRQ(ierr);
+    if (local) {
+      ierr = MatSeqAIJSetPreallocation(local,9,0);CHKERRQ(ierr);
+    }
   }
 
   /* Generate the vector to contain the solution */

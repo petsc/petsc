@@ -79,14 +79,17 @@ PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
 #LUSOL_LIB
 #
-# SuperLU-DIST, SuperLU
+# SuperLU-DIST
 #
-SUPERLU_DIST_INCLUDE    = -I/home/petsc/soft/linux-rh73/SuperLU_DIST_2.0/SRC
-SUPERLU_INCLUDE         = -I/home/petsc/soft/linux-rh73/SuperLU/SRC                       
+SUPERLU_DIST_INCLUDE    = -I/home/petsc/soft/linux-rh73/SuperLU_DIST_2.0/SRC                     
 SUPERLU_DIST_LIB        = /home/petsc/soft/linux-rh73/SuperLU_DIST_2.0/superlu_linux.a
-SUPERLU_LIB             = /home/petsc/soft/linux-rh73/SuperLU/superlu_linux.a
 PETSC_HAVE_SUPERLU_DIST = -DPETSC_HAVE_SUPERLU_DIST
-PETSC_HAVE_SUPERLU      = -DPETSC_HAVE_SUPERLU                      
+#
+# SuperLU
+#
+SUPERLU_INCLUDE         = -I/home/petsc/soft/linux-rh73/SuperLU_3.0/SRC 
+SUPERLU_LIB             = /home/petsc/soft/linux-rh73/SuperLU_3.0/superlu_linux_g.a
+PETSC_HAVE_SUPERLU      = -DPETSC_HAVE_SUPERLU 
 #
 # SPOOLES, SPOOLES_MPI
 #

@@ -1351,7 +1351,7 @@ int MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newmat)
   rend   = rowners[rank+1]; 
 
   /* distribute row lengths to all processors */
-  ierr    = PetscMalloc(2*(rend-rstart)*sizeof(int),&ourlens);CHKERRQ(ierr);
+  ierr    = PetscMalloc(2*(rend-rstart+1)*sizeof(int),&ourlens);CHKERRQ(ierr);
   offlens = ourlens + (rend-rstart);
   if (!rank) {
     ierr = PetscMalloc(M*sizeof(int),&rowlengths);CHKERRQ(ierr);
@@ -1400,7 +1400,7 @@ int MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newmat)
     for (i=0; i<m; i++) {
       nz += ourlens[i];
     }
-    ierr = PetscMalloc(nz*sizeof(int),&mycols);CHKERRQ(ierr);
+    ierr = PetscMalloc((nz+1)*sizeof(int),&mycols);CHKERRQ(ierr);
 
     /* receive message of column indices*/
     ierr = MPI_Recv(mycols,nz,MPI_INT,0,tag,comm,&status);CHKERRQ(ierr);
@@ -1457,7 +1457,7 @@ int MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newmat)
     ierr = PetscFree(procsnz);CHKERRQ(ierr);
   } else {
     /* receive numeric values */
-    ierr = PetscMalloc(nz*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
+    ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
 
     /* receive message of values*/
     ierr = MPI_Recv(vals,nz,MPIU_SCALAR,0,A->tag,comm,&status);CHKERRQ(ierr);

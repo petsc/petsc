@@ -13,6 +13,7 @@ SHELL            = /bin/sh
 SED              = sed
 MKDIR            = mkdir -p
 DIFF             = ${PETSC_DIR}/bin/ndiff_wrapper
+INSTALL_DIR      = ${PETSC_DIR}
 # ######################### C and Fortran compiler ########################
 #
 C_CC             = ${WIN32FE} cl

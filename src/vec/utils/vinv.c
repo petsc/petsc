@@ -2,7 +2,7 @@
 /*
      Some useful vector utility functions.
 */
-#include "src/vec/vecimpl.h"          /*I "petscvec.h" I*/
+#include "vecimpl.h"          /*I "petscvec.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideScale"

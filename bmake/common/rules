@@ -8,8 +8,9 @@ chkpetsc_dir:
         newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}+DUMMY+g"`;\
         haspetsc=`echo $${mypwd} | sed "s+petsc-+DUMMY+g"`;\
         if [ $${mypwd} = $${newpwd} -a $${haspetsc} != $${mypwd} ]; then \
-          echo "*********************** ERROR ************************" ; \
-          echo "Your PETSC_DIR does not match the directory you are in";\
+          echo "*********************Warning*************************" ; \
+          echo "Your PETSC_DIR may not match the directory you are in";\
+          echo "PETSC_DIR " $${true_PETSC_DIR} "Current directory" $${mypwd};\
           echo "******************************************************" ; \
         fi
 
@@ -591,7 +592,7 @@ getexlist:
 checkmakefilelist:
 	-@ls makefile ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
 	ls makefile *.c *.h *.F *.m *.h90 2>/dev/null | sort | uniq > /tmp/$$USER.$$.ls; \
-	diff /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls; \
+	${DIFF} /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls; \
 	${RM}  /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls
 
 html:
@@ -827,8 +828,8 @@ citool:
 	-@cd ${PETSC_DIR}/python/BuildSystem; bk citool
 
 pull:
-	-@bk pull
-	-@cd ${PETSC_DIR}/python/BuildSystem; bk pull
+	-@bk pull -q
+	-@cd ${PETSC_DIR}/python/BuildSystem; bk pull -q
 
 push:
 	-@bk push

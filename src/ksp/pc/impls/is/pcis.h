@@ -3,7 +3,7 @@
 #define __pcis_h
 
 #include "src/ksp/pc/pcimpl.h"
-#include "src/mat/impls/is/is.h"
+#include "src/mat/impls/is/matis.h"
 #include "petscksp.h"
 
 /* 

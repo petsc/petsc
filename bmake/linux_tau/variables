@@ -13,6 +13,7 @@ SH_LD		   = gcc
 MKDIR              = mkdir -p
 LIB_SUFFIX         = a
 DIFF               = diff
+INSTALL_DIR        = ${PETSC_DIR}
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = ${PETSC_DIR}/bin/taucc.py -cc=gcc -pdt_parse=${PDT_PARSE} -tau_instr=${TAU_INSTR} -fPIC

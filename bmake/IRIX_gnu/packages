@@ -27,8 +27,8 @@ BLASLAPACK_LIB = -L/home/petsc/soft/irix-6-gnu/fblaslapack -lflapack -lfblas
 # Location of MPI (Message Passing Interface) software  
 #
 MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
-MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
+MPI_INCLUDE    = -I${PETSC_DIR}/include/mpiuni
+MPIRUN         = ${PETSC_DIR}/bin/mpirun.uni
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.

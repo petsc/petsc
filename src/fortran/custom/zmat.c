@@ -614,7 +614,7 @@ void PETSC_STDCALL matfdcoloringsetfunctionts_(MatFDColoring *fd,void (PETSC_STD
                                  void *ctx,int *ierr)
 {
   f7 = f;
-  *ierr = MatFDColoringSetFunction(*fd,(int (*)(void))ourmatfdcoloringfunctionts,ctx);
+  *ierr = MatFDColoringSetFunction(*fd,(FCNINTVOID)ourmatfdcoloringfunctionts,ctx);
 }
 
 
@@ -622,7 +622,7 @@ void PETSC_STDCALL matfdcoloringsetfunctionsnes_(MatFDColoring *fd,void (PETSC_S
                                  void *ctx,int *ierr)
 {
   f8 = f;
-  *ierr = MatFDColoringSetFunction(*fd,(int (*)(void))ourmatfdcoloringfunctionsnes,ctx);
+  *ierr = MatFDColoringSetFunction(*fd,(FCNINTVOID)ourmatfdcoloringfunctionsnes,ctx);
 }
 
 /*

@@ -30,15 +30,15 @@ class Configure(config.base.Configure):
       return ''
   def configureHelp(self, help):
     import nargs
-    help.addArgument('MPI', '-with-mpi',                nargs.ArgBool(None, 1, 'Activate MPI'))
-    help.addArgument('MPI', '-with-mpi-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the MPI installation'))
-    help.addArgument('MPI', '-with-mpi-include=<dir>',  nargs.ArgDir(None, None, 'The directory containing mpi.h'))
-    help.addArgument('MPI', '-with-mpi-lib=<lib>',      nargs.Arg(None, None, 'The MPI library or list of libraries'))
-    help.addArgument('MPI', '-with-mpirun=<prog>',      nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
-    help.addArgument('MPI', '-with-mpi-shared',         nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
-    help.addArgument('MPI', '-with-mpi-compilers',      nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
-    help.addArgument('MPI', '-with-mpich',              nargs.ArgBool(None, 0, 'Install MPICH to provide MPI'))
-    help.addArgument('MPI', '-with-mpich-if-needed',    nargs.ArgBool(None, 0, 'Install MPICH to provide MPI if cannot find any MPI'))
+    help.addArgument('MPI', '-with-mpi=<bool>',              nargs.ArgBool(None, 1, 'Activate MPI'))
+    help.addArgument('MPI', '-with-mpi-dir=<root dir>',      nargs.ArgDir(None, None, 'Specify the root directory of the MPI installation'))
+    help.addArgument('MPI', '-with-mpi-include=<dir>',       nargs.ArgDir(None, None, 'The directory containing mpi.h'))
+    help.addArgument('MPI', '-with-mpi-lib=<lib>',           nargs.Arg(None, None, 'The MPI library or list of libraries'))
+    help.addArgument('MPI', '-with-mpirun=<prog>',           nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
+    help.addArgument('MPI', '-with-mpi-shared=<bool>',       nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
+    help.addArgument('MPI', '-with-mpi-compilers=<bool>',    nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
+    help.addArgument('MPI', '-with-mpich=<bool>',            nargs.ArgBool(None, 0, 'Install MPICH to provide MPI'))
+    help.addArgument('MPI', '-with-mpich-if-needed=<bool>',  nargs.ArgBool(None, 0, 'Install MPICH to provide MPI if cannot find any MPI'))
     
     return
 
@@ -75,14 +75,14 @@ class Configure(config.base.Configure):
     self.framework.argDB['LIBS']     = oldLibs
     return success
 
-  def outputMPIRun(self, includes, body, cleanup = 1):
+  def outputMPIRun(self, includes, body, cleanup = 1, defaultOutputArg = ''):
     '''Analogous to outputRun(), but the MPI includes and libraries are automatically provided'''
     oldFlags = self.framework.argDB['CPPFLAGS']
     oldLibs  = self.framework.argDB['LIBS']
     for inc in self.include:
       self.framework.argDB['CPPFLAGS'] += ' -I'+inc
     self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib]+[self.compilers.flibs])+' '+self.framework.argDB['LIBS']
-    output, status = self.outputRun(includes, body, cleanup)
+    output, status = self.outputRun(includes, body, cleanup, defaultOutputArg)
     self.framework.argDB['CPPFLAGS'] = oldFlags
     self.framework.argDB['LIBS']     = oldLibs
     return (output, status)
@@ -113,6 +113,14 @@ class Configure(config.base.Configure):
         self.framework.log.write('MPI cannot link Fortran using MPI_Init((), but can link C, which indicates a problem with the MPI installation\nRun with -with-fc=0 if you do not wish to use Fortran')
         self.popLanguage()
         return 0
+      # Also do Satish check for broken mpif90 (MPICH)
+      # 1) bug.F
+      #       program main
+      # #include "include/main.h"
+      #       end
+      # 2) include/main.h
+      # #include "mpif.h"
+      # 3) compile bug.F
       self.popLanguage()
     return 1
 
@@ -123,12 +131,13 @@ class Configure(config.base.Configure):
 
   def configureVersion(self):
     '''Determine the MPI version'''
-    output, status = self.outputMPIRun('#include <stdio.h>\n#include <mpi.h>\n', 'int ver, subver;\n if (MPI_Get_version(&ver, &subver));\nprintf("%d.%d\\n", ver, subver)\n')
-    if not status:
-      # need to strip out information from batch system
-      f = re.match('([0-9]*.[0-9]*)',output)
-      if not f: return 'Unknown'
-      return f.group()
+    if self.framework.argDB['can-execute']:
+      output, status = self.outputMPIRun('#include <stdio.h>\n#include <mpi.h>\n', 'int ver, subver;\n if (MPI_Get_version(&ver, &subver));\nprintf("%d.%d\\n", ver, subver)\n')
+      if not status:
+        # need to strip out information from batch system
+        f = re.match('([0-9]*.[0-9]*)',output)
+        if not f: return 'Unknown'
+        return f.group()
     return 'Unknown'
 
   def includeGuesses(self, path):
@@ -313,7 +322,7 @@ class Configure(config.base.Configure):
     args.append('-rsh=ssh')
     args = ' '.join(args)
     try:
-      fd = open(os.path.join(installDir,'config.args'),'r')
+      fd      = file(os.path.join(installDir,'config.args'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -327,7 +336,7 @@ class Configure(config.base.Configure):
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on MPICH: '+str(e))
-      fd = open(os.path.join(installDir,'config.args'),'w')
+      fd = file(os.path.join(installDir,'config.args'), 'w')
       fd.write(args)
       fd.close()
     

@@ -2,7 +2,7 @@
 static char vcid[] = "$Id: mapreg.c,v 1.2 2000/01/10 03:18:14 knepley Exp $";
 #endif
 
-#include "src/vec/vecimpl.h"  /*I "petscvec.h"  I*/
+#include "vecimpl.h"  /*I "petscvec.h"  I*/
 
 PetscFList PetscMapList                       = PETSC_NULL;
 PetscTruth PetscMapRegisterAllCalled          = PETSC_FALSE;

@@ -3,7 +3,7 @@
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
 */
-#include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
+#include "vecimpl.h"    /*I "petscvec.h" I*/
 
 /* Logging support */
 int VEC_COOKIE = 0;
@@ -3244,7 +3244,7 @@ int VecConjugate(Vec x)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
-  PetscValidType(x,,1);
+  PetscValidType(x,1);
   ierr = (*x->ops->conjugate)(x);CHKERRQ(ierr);
   /* we need to copy norms here */
   ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);

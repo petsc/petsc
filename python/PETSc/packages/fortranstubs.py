@@ -13,7 +13,7 @@ class Configure(config.base.Configure):
      
   def configureHelp(self, help):
     import nargs
-    help.addArgument('fortranstubs', '-with-bfort-if-needed',     nargs.ArgBool(None, 1, 'Download bfort if needed'))
+    help.addArgument('Fortran', '-with-bfort-if-needed=<bool>',     nargs.ArgBool(None, 1, 'Download bfort to generate Fortran interface'))
     return
 
   def downLoadbfort(self):
@@ -53,7 +53,7 @@ class Configure(config.base.Configure):
     args = ['--prefix='+installDir]
     args = ' '.join(args)
     try:
-      fd = open(os.path.join(installDir,'config.args'),'r')
+      fd      = file(os.path.join(installDir,'config.args'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -67,7 +67,7 @@ class Configure(config.base.Configure):
         output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on Sowing: '+str(e))
-      fd = open(os.path.join(installDir,'config.args'),'w')
+      fd = file(os.path.join(installDir,'config.args'), 'w')
       fd.write(args)
       fd.close()
     self.framework.sowingDir = os.path.join(installDir,'bin')

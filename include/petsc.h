@@ -411,7 +411,12 @@ typedef void (**PetscVoidFunction)(void);
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
   }
 #endif
-
+#define  PetscUseMethod(obj,A,B,C) \
+  0;{ int (*f)B, __ierr; \
+    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidFunction)&f);CHKERRQ(__ierr); \
+    if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
+    else {SETERRQ1(1,"Cannot locate function %s in object",A);} \
+  }
 /*
     Functions that can act on any PETSc object.
 */
@@ -435,6 +440,7 @@ EXTERN int PetscObjectQuery(PetscObject,const char[],PetscObject *);
 EXTERN int PetscObjectComposeFunction(PetscObject,const char[],const char[],void (*)(void));
 
 typedef void (*FCNVOID)(void); /* cast in next macro should never be extern C */
+typedef int  (*FCNINTVOID)(void); /* used in casts to make sure they are not extern C */
 /*MC
    PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object. 
                        

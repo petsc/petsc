@@ -11,7 +11,7 @@
 
 */
 
-#include "src/vec/vecimpl.h" /*I "petscvec.h" I*/
+#include "vecimpl.h" /*I "petscvec.h" I*/
 #include "petscsys.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 

@@ -17,9 +17,9 @@ class Configure(config.base.Configure):
      
   def configureHelp(self, help):
     import nargs
-    help.addArgument('Update', '-with-default-arch',         nargs.ArgBool(None, 1, 'Allow using the most recently configured arch without setting PETSC_ARCH'))
-    help.addArgument('Update', '-with-default-language=<c,c++,c++-complex,0(zero for no default)>', nargs.Arg(None, 'c', 'Specifiy default language of libraries'))
-    help.addArgument('Update', '-with-default-optimization=<g,O,0(zero for no default)>',           nargs.Arg(None, 'g', 'Specifiy default optimization of libraries'))
+    help.addArgument('PETSc', '-with-default-arch=<bool>',         nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
+    help.addArgument('PETSc', '-with-default-language=<c,c++,complex,0>', nargs.Arg(None, 'c', 'Specifiy default language of libraries. 0 indicates no default'))
+    help.addArgument('PETSc', '-with-default-optimization=<g,O,0>',           nargs.Arg(None, 'g', 'Specifiy default optimization of libraries. 0 indicates no default'))
     return
 
   def configureDirectories(self):
@@ -76,6 +76,10 @@ class Configure(config.base.Configure):
     self.addDefine('ARCH', archBase)
     self.addDefine('ARCH_NAME', '"'+arch+'"')
 
+    # Check if PETSC_ARCH is a built-in arch
+    if os.path.isdir(os.path.join('bmake',self.framework.argDB['PETSC_DIR'])) and not os.path.isfile(os.path.join('bmake',self.framework.argDB['PETSC_DIR'],'configure.py')):
+      raise RuntimeError('The selected PETSC_ARCH is not allowed with config/configure.py\nbecause it clashes with a built-in PETSC_ARCH\nplease rerun config/configure.py with -PETSC_ARCH=somethingelse')
+    
     # if PETSC_ARCH is not set use one last created with configure
     if self.framework.argDB['with-default-arch']:
       fd = file(os.path.join('bmake', 'variables'), 'w')
@@ -88,9 +92,6 @@ class Configure(config.base.Configure):
 
   def configureOptimization(self):
     '''Allow a default optimization level and language'''
-    # We use the framework in order to remove the PETSC_ namespace
-    self.framework.addSubstitution('CC_SHARED_OPT', '')
-
     # if BOPT is not set determines what libraries to use
     bopt = self.framework.argDB['with-default-optimization']
     if self.framework.argDB['with-default-language'] == '0' or self.framework.argDB['with-default-optimization'] == '0':
@@ -105,7 +106,7 @@ class Configure(config.base.Configure):
       elif self.framework.argDB['with-default-language'].find('complex') >= 0: bopt += '_complex'
       else:
         raise RuntimeError('Unknown option given with --with-default-language='+self.framework.argDB['with-default-language'])
-      fd = open(os.path.join('bmake', 'common', 'bopt_'), 'w')
+      fd = file(os.path.join('bmake', 'common', 'bopt_'), 'w')
       fd.write('BOPT='+bopt+'\n')
       fd.write('include ${PETSC_DIR}/bmake/common/bopt_'+bopt+'\n')
       fd.close()

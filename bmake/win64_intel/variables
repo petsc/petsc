@@ -13,6 +13,7 @@ SHELL            = /bin/sh
 SED              = sed
 MKDIR            = mkdir -p
 DIFF             = diff -w
+INSTALL_DIR      = ${PETSC_DIR}
 # ######################### C and Fortran compiler ########################
 #
 C_CC             = ${WIN32FE} icl --use ecl --nodetect 

@@ -5,7 +5,7 @@
 #ifndef __PVECIMPL
 #define __PVECIMPL
 
-#include "src/vec/vecimpl.h"
+#include "vecimpl.h"
 #include "src/vec/impls/dvecimpl.h"
 
 typedef struct {

@@ -13,6 +13,7 @@ LD                 = /home/petsc/soft/solaris-9-gnu//binutils-2.13.2.1/bin/ld
 MKDIR              = mkdir -p
 LIB_SUFFIX         = a
 DIFF               = diff
+INSTALL_DIR        = ${PETSC_DIR}
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = gcc -fPIC

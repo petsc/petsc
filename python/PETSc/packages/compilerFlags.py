@@ -45,12 +45,16 @@ class Configure(config.base.Configure):
     try:
       mod     = __import__('PETSc.Options', locals(), globals(), ['Options'])
       options = mod.Options(self.framework)
-    except ImportError: print 'Failed to load generic options'
+    except ImportError:
+      self.framework.log.write('Failed to load generic options\n')
+      print 'Failed to load generic options'
     try:
       if self.framework.argDB.has_key('optionsModule'):
         mod     = __import__(self.framework.argDB['optionsModule'], locals(), globals(), ['Options'])
         options = mod.Options(self.framework)
-    except ImportError: print 'Failed to load custom options'
+    except ImportError:
+      self.framework.log.write('Failed to load custom options\n')
+      print 'Failed to load custom options'
     if options:
       for language, flags in [('C', 'CFLAGS'), ('Cxx', 'CXXFLAGS'), ('F77', 'FFLAGS')]:
         # Calling getCompiler() will raise an exception if a language is missing

@@ -66,19 +66,18 @@ PETSc</strong></a></li>
 
         <li><a name="(Windows only)">(Microsoft Windows only)</a> <a
  href="#Cygwin:">Install the cygwin</a> package (including <font color="#ff1a8b">make, patch, python, rebase</font> 
- <!-cygwin link has this info: duplicate> modules; run rebaseall after the install)  and   use
+ <!-cygwin link has this info: duplicate> modules; run rebaseall after the Cygwin install)  and   use
 bash as the working shell. <a href="#Aditional%20Windows%20Notes:">Microsoft Windows hints</a></li>
         <li>In the directory you wish PETSc installed: <font color="#ff0000">gunzip -c petsc.tar.gz | tar -xof -</font></li>
         <li><font color="#ff0000">cd petsc-2.2.0</font></li>
-        <li>sh/bash shell <br>
-          <font color="#ff0000"><a href="#PETSC_DIR">PETSC_DIR</a>=`pwd`; export PETSC_DIR</font>
+        <li>sh/bash shell <font color="#ff0000"><a href="#PETSC_DIR">PETSC_DIR</a>=`pwd`; export PETSC_DIR</font>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (note the backquote)</font><br>
-          csh/tcsh shell<br>
-          <font color="#ff0000">setenv <a href="#PETSC_DIR">PETSC_DIR</a> `pwd`</font></li>
-        <li> <font color="#ff0000">make update</font></li>
-        <li><font color="#ff0000">./config/configure.py</font></li>
+          csh/tcsh shell <font color="#ff0000">setenv <a href="#PETSC_DIR">PETSC_DIR</a> `pwd`</font></li>
+        <li> <font color="#ff0000">make PETSC_ARCH=solaris BOPT=g update</font></li>
+        <li><font color="#ff0000">./config/configure.py (--help) (--prefix=installation_directory) ... </font></li>
         <li> <font color="#ff0000">make all</font></li>
         <li><font color="#ff0000">make test</font></li>
+        <li><font color="#ff0000">make install</font></li>
         <li>Encounter problems? 
           <ul> 
              <li> <strong>Read the error message from ./config/configure.py!</strong> </li>
@@ -294,8 +293,8 @@ to         Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp<a href="#Manual"
 these packages provide some basic numeric kernels used by PETSc.</p>
       <ul>
         <li>If  <font color="##ff0000">./config/configure.py</font> cannot locate BLAS and LAPACK you can use the options
-             <font color="##ff0000">--with-blas-lapack_dir=directory</font> or <font color="##ff0000">--with-blas=BLASlibrary</font>
-             and <font color="##ff0000">--with-lapack=LAPACKlibrary</font> or <font color="##ff0000">--with-blas-lapack=library</font>
+             <font color="##ff0000">--with-blas-lapack_dir=directory</font> or <font color="##ff0000">--with-blas-lib=library</font>
+             and <font color="##ff0000">--with-lapack-lib=library</font> or <font color="##ff0000">--with-blas-lapack-lib=library</font>
              to indicate the location of the libraries.
         <ul>
           <li>on Microsoft Windows and Linux, one can use Intel MKL</li>
@@ -404,7 +403,7 @@ without an MPI.</p>
         <li>Otherwise edit<font color="#ff0000"> </font><b><font
  color="#551a8b"><a name="bmake/${PETSC_ARCH}/packages">bmake/${PETSC_ARCH}/packages</a> </font> </b>and
 use
-          <pre># Location of MPI (Message Passing Interface) software<br>#<br>MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a<br>MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni<br>MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun<br></pre>
+          <pre># Location of MPI (Message Passing Interface) software<br>#<br>MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a<br>MPI_INCLUDE    = -I${PETSC_DIR}/include/mpiuni<br>MPIRUN         = ${PETSC_DIR}/bin/mpirun.uni<br></pre>
         </li>
       </ul>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return

@@ -273,8 +273,8 @@
     without using an implementation of MPI. To do this, edit the file ${PETSC_DIR}/bmake/${PETSC_ARCH}/packages and change the lines that define the location
     of MPI to </p>
     <p>MPI_LIB = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a <br>
-    MPI_INCLUDE = -I${PETSC_DIR}/src/sys/src/mpiuni <br>
-    MPIRUN = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun </p>
+    MPI_INCLUDE = -I${PETSC_DIR}/include/mpiuni <br>
+    MPIRUN = ${PETSC_DIR}/bin/mpirun.uni </p>
     <p>If you compile PETSc as such, you will be able to run PETSc ONLY on one processor.
     Also, you will be able to run the program directly, without using the mpirun command. </p>
     <p><strong><a name="no-x"><font color="#FF0000">Can I install PETSc to not use X windows
