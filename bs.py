@@ -74,7 +74,12 @@ class BS (install.base.Base):
     else:
       argDB = nargs.ArgDict('ArgDict')
 
-    argDB.setLocalType('help', nargs.ArgBool('Print help message'))
+    argDB.setLocalType('help',           nargs.ArgBool('Print help message'))
+    argDB.setLocalType('noConfigure',    nargs.ArgBool('Suppress configure'))
+    argDB.setLocalType('forceConfigure', nargs.ArgBool('Force a  reconfigure'))
+
+    if not argDB.has_key('noConfigure'):    argDB['noConfigure']    = 0
+    if not argDB.has_key('forceConfigure'): argDB['forceConfigure'] = 0
 
     argDB.insertArgs(clArgs)
     return argDB
@@ -171,11 +176,10 @@ class BS (install.base.Base):
     return
 
   def t_configure(self):
+    if argDB['noConfigure']: return
     import config.framework
     import install.base
 
-    if argDB.has_key('noConfigure') and int(argDB['noConfigure']):
-      return
     framework = config.framework.Framework(sys.argv[1:])
     for arg in ['debugLevel', 'debugSections']:
       framework.argDB[arg] = argDB[arg]
@@ -187,10 +191,12 @@ class BS (install.base.Base):
       framework.children.append(install.base.Base(framework.argDB).getMakeModule(self.getRoot(), 'configure').Configure(framework))
     except ImportError:
       return
-    # Run configuration
-    framework.configure()
-    if framework.argDB.has_key('dumpSubstitutions'):
-      framework.dumpSubstitutions()
+    # Run configuration only if the log file was absent or it is forced
+    if not framework.logExists or argDB['forceConfigure']:
+      framework.configure()
+      # Debugging
+      if framework.argDB.has_key('dumpSubstitutions'):
+        framework.dumpSubstitutions()
     return
 
   def t_sidl(self):
