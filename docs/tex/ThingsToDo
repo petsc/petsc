@@ -16,8 +16,9 @@ that can be called on any factored matrix?
   Some of the row, col, icol may be null.
   Will put in next release if you think makes sense?
 
-  MatZeroRows() use MatSetOption() to zero the entries rather than remove them.
+*  MatZeroRows() use MatSetOption() to zero the entries rather than remove them.
 allows reusing with different boundary conditions.
+(waiting for Satish to do seqBAIJ)
 
   Change AO routines to allow different ranges for two orderings. Maybe something
  like AOCreateBasic( napp,appindices[],petscindices[]) where max petscindices[]
