@@ -1,3 +1,4 @@
+from __future__ import generators
 import config.base
 
 import re
@@ -346,9 +347,13 @@ class Configure(config.base.Configure):
     import os
 
     if self.framework.argDB.has_key('FC'):
+      if self.framework.argDB['FC'] == '0': return
       yield self.framework.argDB['FC']
+      raise RuntimeError('Fortran compiler you provided with -FC='+self.framework.argDB['FC']+'does not work')
     elif self.framework.argDB.has_key('with-fc'):
+      if self.framework.argDB['with-fc'] == '0': return
       yield self.framework.argDB['with-fc']
+      raise RuntimeError('Fortran compiler you provided with --with-fc='+self.framework.argDB['with-fc']+'does not work')
     elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers']:
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77')
@@ -399,7 +404,7 @@ class Configure(config.base.Configure):
     if 'FC' in self.framework.argDB and not self.framework.argDB['FC'] is None:
       self.addSubstitution('FC', self.framework.argDB['FC'])
     else:
-      raise RuntimeError('Could not locate a functional Fortran compiler')
+      self.addSubstitution('FC', '')
     return
 
   def checkFortranFlags(self):
