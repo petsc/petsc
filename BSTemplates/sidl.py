@@ -320,6 +320,7 @@ class UsingPython(UsingCompiler):
     return self.includeDirs
 
   def setupExtraLibraries(self):
+    # This is not quite right
     for package in self.usingSIDL.getPackages():
       self.extraLibraries[package].extend([bs.argDB['PYTHON_LIB'], 'libpthread.so', 'libutil.so'])
     return self.extraLibraries
@@ -482,8 +483,7 @@ class UsingJava (UsingCompiler):
     return [compile.TagJava(), compileJava]
 
 class Defaults:
-  implRE     = re.compile(r'^(.*)_Impl$')
-  libraryRE  = re.compile(r'^(.*)lib(.*).so$')
+  implRE = re.compile(r'^(.*)_Impl$')
 
   def __init__(self, project, sources = None, bootstrapPackages = []):
     self.project    = project
@@ -518,10 +518,6 @@ class Defaults:
     if os.path.splitext(source)[1] == '.pyc':      return 0
     if self.implRE.match(os.path.dirname(source)): return 1
     return 0
-
-  def isNotLibrary(self, source):
-    if self.libraryRE.match(source): return 0
-    return 1
 
   def isNewSidl(self, sources):
     if isinstance(sources, fileset.FileSet):
@@ -607,53 +603,49 @@ class CompileDefaults (Defaults):
     Defaults.__init__(self, project, sidlSources, bootstrapPackages = bootstrapPackages)
     self.etagsFile = etagsFile
 
-  def getClientCompileTargets(self, doCompile = 1, doLink = 1):
-    targets        = []
-    doLibraryCheck = not self.project == 'bs' and not self.project == 'sidlruntime'
+  def doLibraryCheck(self):
+    return not self.project == 'bs' and not self.project == 'sidlruntime'
 
-    for lang in self.usingSIDL.clientLanguages:
-      compiler = []
-      linker   = []
-      try:
-        if doCompile: compiler = self.getUsing(lang).getClientCompileTarget(self.project)
-        if doLink:    linker   = self.getUsing(lang).getClientLinkTarget(self.project, doLibraryCheck)
-      except AttributeError:
-        raise RuntimeError('Unknown client language: '+lang)
+  def getClientCompileTargets(self, lang, doCompile = 1, doLink = 1):
+    compiler = []
+    linker   = []
+    try:
+      if doCompile: compiler = self.getUsing(lang).getClientCompileTarget(self.project)
+      if doLink:    linker   = self.getUsing(lang).getClientLinkTarget(self.project, self.doLibraryCheck())
+    except AttributeError:
+      raise RuntimeError('Unknown client language: '+lang)
+    return compiler+linker+[transform.Update()]
 
-      targets.append(target.Target(None, compiler + linker))
-    # Could update after each client
-    targets.append(transform.Update())
-    return targets
-
-  def getServerCompileTargets(self, doCompile = 1, doLink = 1):
-    targets          = []
-    bootstrapTargets = []
-    doLibraryCheck   = not self.project == 'bs' and not self.project == 'sidlruntime'
-
-    for lang in self.usingSIDL.serverLanguages:
-      for package in self.getPackages():
-        compiler = []
-        linker   = []
-        try:
-          if doCompile: compiler = self.getUsing(lang).getServerCompileTarget(self.project, package)
-          if doLink:    linker   = self.getUsing(lang).getServerLinkTarget(self.project, package, doLibraryCheck)
-          t = target.Target(None, compiler + linker + [transform.Update()])
-        except AttributeError:
-          raise RuntimeError('Unknown server language: '+lang)
-
-        if package in self.usingSIDL.bootstrapPackages:
-          bootstrapTargets.append(t)
-        else:
-          targets.append(t)
-
-    return [bootstrapTargets, targets]
+  def getServerCompileTargets(self, lang, package, doCompile = 1, doLink = 1):
+    compiler = []
+    linker   = []
+    try:
+      if doCompile: compiler = self.getUsing(lang).getServerCompileTarget(self.project, package)
+      if doLink:    linker   = self.getUsing(lang).getServerLinkTarget(self.project, package, self.doLibraryCheck())
+    except AttributeError:
+      raise RuntimeError('Unknown server language: '+lang)
+    return compiler+linker+[transform.Update()]
 
   def getEmacsTagsTargets(self):
     return [transform.FileFilter(self.isImpl), compile.TagEtags(), compile.CompileEtags(self.etagsFile)]
 
   def getCompileTargets(self, doCompile = 1, doLink = 1):
-    serverTargets  = self.getServerCompileTargets(doCompile, doLink)
-    compileTargets = serverTargets[0]+self.getClientCompileTargets(doCompile, doLink)+serverTargets[1]
+    bootstrapTargets = []
+    clientTargets    = []
+    serverTargets    = []
+
+    for lang in self.usingSIDL.clientLanguages:
+      clientTargets.append(self.getClientCompileTargets(lang, doCompile, doLink))
+    for lang in self.usingSIDL.serverLanguages:
+      for package in self.getPackages():
+        t = self.getServerCompileTargets(lang, package, doCompile, doLink)
+
+        if package in self.usingSIDL.bootstrapPackages:
+          bootstrapTargets.append(t)
+        else:
+          serverTargets.append(t)
+
+    compileTargets = bootstrapTargets+clientTargets+serverTargets
 
     if self.etagsFile:
       return [(compileTargets, self.getEmacsTagsTargets()), transform.Update()]
@@ -680,7 +672,8 @@ class CompileDefaults (Defaults):
     # TODO: Of course this should be determined from configure
     libraries = fileset.FileSet(['libdl.so'])
 
-    t = [self.getCompileTarget(), transform.FileFilter(self.isNotLibrary)] + self.getExecutableDriverTargets(sources, lang, executable)
+    # It is the repsonsibility of the user to make sure the implementation is built prior to use
+    t = self.getClientCompileTargets(lang)+self.getExecutableDriverTargets(sources, lang, executable)
     if not lang == 'Java':
       t += [link.TagShared(), link.LinkExecutable(executable, extraLibraries = libraries)]
     return target.Target(sources, t)
