@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.22 2001/01/15 21:47:36 bsmith Exp balay $*/
+/*$Id: ex13.c,v 1.23 2001/01/16 18:19:55 balay Exp bsmith $*/
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
 
@@ -53,13 +53,13 @@ int main(int argc,char **args)
      The next two lines are for testing only; these allow the user to
      decide the grid size at runtime.
   */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Create the empty sparse matrix and linear solver data structures
   */
-  ierr = UserInitializeLinearSolver(m,n,&userctx);CHKERRA(ierr);
+  ierr = UserInitializeLinearSolver(m,n,&userctx);CHKERRQ(ierr);
   N    = m*n;
 
   /*
@@ -70,14 +70,14 @@ int main(int argc,char **args)
      the context of a larger application these would be provided by
      other (non-PETSc) parts of the application code.
   */
-  ierr = PetscMalloc(N*sizeof(Scalar),&userx);CHKERRA(ierr);
-  ierr = PetscMalloc(N*sizeof(Scalar),&userb);CHKERRA(ierr);
-  ierr = PetscMalloc(N*sizeof(Scalar),&solution);CHKERRA(ierr);
+  ierr = PetscMalloc(N*sizeof(Scalar),&userx);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(Scalar),&userb);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(Scalar),&solution);CHKERRQ(ierr);
 
   /* 
       Allocate an array to hold the coefficients in the elliptic operator
   */
-  ierr = PetscMalloc(N*sizeof(Scalar),&rho);CHKERRA(ierr);
+  ierr = PetscMalloc(N*sizeof(Scalar),&rho);CHKERRQ(ierr);
 
   /*
      Fill up the array rho[] with the function rho(x,y) = x; fill the
@@ -108,7 +108,7 @@ int main(int argc,char **args)
      one may reuse the linear solver stuff in each time-step.
   */
   for (t=0; t<tmax; t++) {
-    ierr =  UserDoLinearSolver(rho,&userctx,userb,userx);CHKERRA(ierr);
+    ierr =  UserDoLinearSolver(rho,&userctx,userb,userx);CHKERRQ(ierr);
 
     /*
         Compute error: Note that this could (and usually should) all be done
@@ -128,11 +128,11 @@ int main(int argc,char **args)
      We are all finished solving linear systems, so we clean up the
      data structures.
   */
-  ierr = PetscFree(rho);CHKERRA(ierr);
-  ierr = PetscFree(solution);CHKERRA(ierr);
-  ierr = PetscFree(userx);CHKERRA(ierr);
-  ierr = PetscFree(userb);CHKERRA(ierr);
-  ierr = UserFinalizeLinearSolver(&userctx);CHKERRA(ierr);
+  ierr = PetscFree(rho);CHKERRQ(ierr);
+  ierr = PetscFree(solution);CHKERRQ(ierr);
+  ierr = PetscFree(userx);CHKERRQ(ierr);
+  ierr = PetscFree(userb);CHKERRQ(ierr);
+  ierr = UserFinalizeLinearSolver(&userctx);CHKERRQ(ierr);
   PetscFinalize();
 
   return 0;

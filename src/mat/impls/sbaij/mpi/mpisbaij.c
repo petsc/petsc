@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.39 2001/01/15 21:46:06 bsmith Exp balay $*/
+/*$Id: mpisbaij.c,v 1.40 2001/01/16 18:18:09 balay Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -2248,8 +2248,8 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   ierr = MatGetRowMax(a->A,v);CHKERRQ(ierr); 
   ierr = VecGetArray(v,&va);CHKERRQ(ierr);  
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   bs   = a->bs;
   mbs  = a->mbs;
@@ -2332,6 +2332,6 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   }
 
   ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
-  ierr = PetscFree(work);CHKERRA(ierr);
+  ierr = PetscFree(work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

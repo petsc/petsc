@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.8 2000/01/11 20:59:47 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.9 2000/11/28 17:28:08 bsmith Exp bsmith $*/
 
 /*
      Tests PetscSetCommWorld()
@@ -20,7 +20,7 @@ int main(int argc,char **argv)
     printf("Error in getting rank");
     return 1;
   }
-  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
   if (ierr) {
     printf("Error in getting size");
     return 1;
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   }
 
   PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   printf("rank = %3d\n",rank);
 
   PetscFinalize();

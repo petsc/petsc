@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.18 2000/10/24 20:26:55 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.19 2001/01/15 21:47:36 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex12 [-help] [all PETSc options] */
 
@@ -57,8 +57,8 @@ int main(int argc,char **args)
   PC          pc;      /* preconditioner context */
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
@@ -70,15 +70,15 @@ int main(int argc,char **args)
      runtime. Also, the parallel partitioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRA(ierr);
-  ierr = MatSetFromOptions(A);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned. 
   */
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
 
   /* 
      Set matrix elements for the 2-D, five-point stencil in parallel.
@@ -89,10 +89,10 @@ int main(int argc,char **args)
    */
   for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
     v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);
   }
 
@@ -102,8 +102,8 @@ int main(int argc,char **args)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* 
      Create parallel vectors.
@@ -115,17 +115,17 @@ int main(int argc,char **args)
         and VecCreate() are used with the same communicator. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRA(ierr);
-  ierr = VecSetFromOptions(u);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRA(ierr); 
-  ierr = VecDuplicate(b,&x);CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&b);CHKERRQ(ierr); 
+  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
 
   /* 
      Set exact solution; then compute right-hand-side vector.
      Use an exact solution of a vector with all elements of 1.0;  
   */
-  ierr = VecSet(&one,u);CHKERRA(ierr);
-  ierr = MatMult(A,u,b);CHKERRA(ierr);
+  ierr = VecSet(&one,u);CHKERRQ(ierr);
+  ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                 Create the linear solver and set various options
@@ -134,23 +134,23 @@ int main(int argc,char **args)
   /* 
      Create linear solver context
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /*
        First register a new PC type with the command PCRegister()
   */
-  ierr = PCRegister("ourjacobi",0,"PCCreate_Jacobi",PCCreate_Jacobi);CHKERRA(ierr);
+  ierr = PCRegister("ourjacobi",0,"PCCreate_Jacobi",PCCreate_Jacobi);CHKERRQ(ierr);
   
   /* 
      Set the PC type to be the new method
   */  
-  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,"ourjacobi");
 
   /* 
@@ -160,13 +160,13 @@ int main(int argc,char **args)
     SLESSetFromOptions() is called _after_ any other customization
     routines.
   */
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
+  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up
@@ -175,8 +175,8 @@ int main(int argc,char **args)
   /* 
      Check the error
   */
-  ierr = VecAXPY(&neg_one,u,x);CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
+  ierr = VecAXPY(&neg_one,u,x);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
 
   /* Scale the norm */
   /*  norm *= sqrt(1.0/((m+1)*(n+1))); */
@@ -185,15 +185,15 @@ int main(int argc,char **args)
      Print convergence information.  PetscPrintf() produces a single 
      print statement from all processes that share a communicator.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = SLESDestroy(sles);CHKERRA(ierr);
-  ierr = VecDestroy(u);CHKERRA(ierr);  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr);  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr);  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr);  ierr = MatDestroy(A);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

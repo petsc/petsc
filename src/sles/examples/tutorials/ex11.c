@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.30 2000/10/24 20:26:55 bsmith Exp bsmith $*/
+/*$Id: ex11.c,v 1.31 2001/01/15 21:47:36 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 
@@ -54,11 +54,11 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 #if !defined(PETSC_USE_COMPLEX)
-  SETERRA(1,"This example requires complex numbers");
+  SETERRQ(1,"This example requires complex numbers");
 #endif
 
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   dim = n*n;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -71,15 +71,15 @@ int main(int argc,char **args)
      runtime. Also, the parallel partitioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,dim,dim,&A);CHKERRA(ierr);
-  ierr = MatSetFromOptions(A);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,dim,dim,&A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned. 
   */
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
 
   /* 
      Set matrix elements in parallel.
@@ -89,11 +89,11 @@ int main(int argc,char **args)
       - Always specify global rows and columns of matrix entries.
   */
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-norandom",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-norandom",&flg);CHKERRQ(ierr);
   if (flg) use_random = 0;
   else     use_random = 1;
   if (use_random) {
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx);CHKERRA(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx);CHKERRQ(ierr);
   } else {
     sigma2 = 10.0*PETSC_i;
   }
@@ -101,18 +101,18 @@ int main(int argc,char **args)
   for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
     if (i>0) {
-      J = I-n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      J = I-n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (i<n-1) {
-      J = I+n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      J = I+n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (j>0) {
-      J = I-1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      J = I-1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (j<n-1) {
-      J = I+1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    if (use_random) {ierr = PetscRandomGetValue(rctx,&sigma2);CHKERRA(ierr);}
+      J = I+1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    if (use_random) {ierr = PetscRandomGetValue(rctx,&sigma2);CHKERRQ(ierr);}
     v = 4.0 - sigma1*h2 + sigma2*h2;
-    ierr = MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
+    ierr = MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES);CHKERRQ(ierr);
   }
-  if (use_random) {ierr = PetscRandomDestroy(rctx);CHKERRA(ierr);}
+  if (use_random) {ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);}
 
   /* 
      Assemble matrix, using the 2-step process:
@@ -120,8 +120,8 @@ int main(int argc,char **args)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* 
      Create parallel vectors.
@@ -129,22 +129,22 @@ int main(int argc,char **args)
         dimension; the parallel partitioning is determined at runtime. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,dim,&u);CHKERRA(ierr);
-  ierr = VecSetFromOptions(u);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRA(ierr); 
-  ierr = VecDuplicate(b,&x);CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,dim,&u);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&b);CHKERRQ(ierr); 
+  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
 
   /* 
      Set exact solution; then compute right-hand-side vector.
   */
   
   if (use_random) {
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRA(ierr);
-    ierr = VecSetRandom(rctx,u);CHKERRA(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
+    ierr = VecSetRandom(rctx,u);CHKERRQ(ierr);
   } else {
-    ierr = VecSet(&pfive,u);CHKERRA(ierr);
+    ierr = VecSet(&pfive,u);CHKERRQ(ierr);
   }
-  ierr = MatMult(A,u,b);CHKERRA(ierr);
+  ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                 Create the linear solver and set various options
@@ -153,25 +153,25 @@ int main(int argc,char **args)
   /* 
      Create linear solver context
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* 
     Set runtime options, e.g.,
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
   */
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
+  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up
@@ -181,31 +181,31 @@ int main(int argc,char **args)
       Print the first 3 entries of x; this demonstrates extraction of the
       real and imaginary components of the complex vector, x.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-print_x3",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-print_x3",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = VecGetArray(x,&xa);CHKERRA(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");CHKERRA(ierr);
+    ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");CHKERRQ(ierr);
     for (i=0; i<3; i++){
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"x[%d] = %g + %g i\n",i,PetscRealPart(xa[i]),PetscImaginaryPart(xa[i]));CHKERRA(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"x[%d] = %g + %g i\n",i,PetscRealPart(xa[i]),PetscImaginaryPart(xa[i]));CHKERRQ(ierr);
   }
-    ierr = VecRestoreArray(x,&xa);CHKERRA(ierr);
+    ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   }
 
   /* 
      Check the error
   */
-  ierr = VecAXPY(&none,u,x);CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRA(ierr);
+  ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = SLESDestroy(sles);CHKERRA(ierr);
-  if (use_random) {ierr = PetscRandomDestroy(rctx);CHKERRA(ierr);}
-  ierr = VecDestroy(u);CHKERRA(ierr); ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr); ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  if (use_random) {ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);}
+  ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr); ierr = MatDestroy(A);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

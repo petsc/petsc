@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.5 2000/01/17 00:09:20 bsmith Exp bsmith $*/
+/*$Id: appview.c,v 1.6 2001/01/15 21:49:23 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 
@@ -56,10 +56,10 @@ int AppCtxGraphics(AppCtx *appctx)
   if (appctx->view.show_grid) {
     ierr = PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,PETSC_DRAW_HALF_SIZE,PETSC_DRAW_HALF_SIZE,
                      &appctx->view.drawglobal);CHKERRQ(ierr);
-    ierr = PetscDrawSetFromOptions(appctx->view.drawglobal);CHKERRA(ierr);
+    ierr = PetscDrawSetFromOptions(appctx->view.drawglobal);CHKERRQ(ierr);
     ierr = PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,PETSC_DRAW_HALF_SIZE,PETSC_DRAW_HALF_SIZE,
                      &appctx->view.drawlocal);CHKERRQ(ierr);
-    ierr = PetscDrawSetFromOptions(appctx->view.drawlocal);CHKERRA(ierr);
+    ierr = PetscDrawSetFromOptions(appctx->view.drawlocal);CHKERRQ(ierr);
     ierr = PetscDrawSplitViewPort((appctx)->view.drawlocal);CHKERRQ(ierr);
 
     /*
@@ -74,8 +74,8 @@ int AppCtxGraphics(AppCtx *appctx)
     /*
       Visualize the grid 
     */
-    ierr = PetscDrawZoom((appctx)->view.drawglobal,AppCtxViewGrid,appctx);CHKERRA(ierr);
-    ierr = PetscDrawZoom((appctx)->view.drawlocal,AppCtxViewGrid,appctx);CHKERRA(ierr);
+    ierr = PetscDrawZoom((appctx)->view.drawglobal,AppCtxViewGrid,appctx);CHKERRQ(ierr);
+    ierr = PetscDrawZoom((appctx)->view.drawlocal,AppCtxViewGrid,appctx);CHKERRQ(ierr);
 
     ierr = PetscDrawDestroy((appctx)->view.drawglobal);CHKERRQ(ierr);
     ierr = PetscDrawDestroy((appctx)->view.drawlocal);CHKERRQ(ierr);

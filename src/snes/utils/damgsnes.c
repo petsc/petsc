@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.8 2000/12/13 17:38:45 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.9 2001/01/15 21:48:24 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -37,7 +37,7 @@ int DMMGComputeJacobian_MF(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   if (ismg) {
 
     ierr = MGGetSmoother(pc,nlevels-1,&lsles);CHKERRQ(ierr);
-    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->J,*flag);CHKERRA(ierr);
+    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->J,*flag);CHKERRQ(ierr);
 
     for (i=nlevels-1; i>0; i--) {
 
@@ -53,7 +53,7 @@ int DMMGComputeJacobian_MF(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
       ierr = MatAssemblyEnd(dmmg[i-1]->J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
       ierr = MGGetSmoother(pc,i-1,&lsles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(lsles,dmmg[i-1]->J,dmmg[i-1]->B,*flag);CHKERRA(ierr);
+      ierr = SLESSetOperators(lsles,dmmg[i-1]->J,dmmg[i-1]->B,*flag);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -84,7 +84,7 @@ int DMMGComputeJacobian_User(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,vo
   if (ismg) {
 
     ierr = MGGetSmoother(pc,nlevels-1,&lsles);CHKERRQ(ierr);
-    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->J,*flag);CHKERRA(ierr);
+    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->J,*flag);CHKERRQ(ierr);
 
     for (i=nlevels-1; i>0; i--) {
 
@@ -99,7 +99,7 @@ int DMMGComputeJacobian_User(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,vo
       ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,flag,dmmg[i-1]);CHKERRQ(ierr);
 
       ierr = MGGetSmoother(pc,i-1,&lsles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(lsles,dmmg[i-1]->J,dmmg[i-1]->B,*flag);CHKERRA(ierr);
+      ierr = SLESSetOperators(lsles,dmmg[i-1]->J,dmmg[i-1]->B,*flag);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -130,7 +130,7 @@ int DMMGComputeJacobian_FD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   if (ismg) {
 
     ierr = MGGetSmoother(pc,nlevels-1,&lsles);CHKERRQ(ierr);
-    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->J,*flag);CHKERRA(ierr);
+    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->J,*flag);CHKERRQ(ierr);
 
     for (i=nlevels-1; i>0; i--) {
 
@@ -145,7 +145,7 @@ int DMMGComputeJacobian_FD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
       ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,flag,dmmg[i-1]->fdcoloring);CHKERRQ(ierr);
 
       ierr = MGGetSmoother(pc,i-1,&lsles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(lsles,dmmg[i-1]->J,dmmg[i-1]->B,*flag);CHKERRA(ierr);
+      ierr = SLESSetOperators(lsles,dmmg[i-1]->J,dmmg[i-1]->B,*flag);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.4 2001/01/15 21:48:34 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.5 2001/01/16 18:20:54 balay Exp bsmith $*/
 /*
        The Problem:
            Solve the convection-diffusion equation:
@@ -75,7 +75,7 @@ int main(int argc,char **argv)
 #endif
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
  
   /* set Data */
   data.m = 9;
@@ -86,89 +86,89 @@ int main(int argc,char **argv)
   data.dy = 1.0/(data.n+1.0);
   mn = (data.m)*(data.n);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
     
   /* set initial conditions */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,mn,&global);CHKERRA(ierr);
-  ierr = VecSetFromOptions(global);CHKERRA(ierr);
-  ierr = Initial(global,&data);CHKERRA(ierr);
-  ierr = VecDuplicate(global,&x);CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,mn,&global);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(global);CHKERRQ(ierr);
+  ierr = Initial(global,&data);CHKERRQ(ierr);
+  ierr = VecDuplicate(global,&x);CHKERRQ(ierr);
  
   /* make timestep context */
-  ierr = TSCreate(PETSC_COMM_WORLD,tsproblem,&ts);CHKERRA(ierr);
-  ierr = TSSetMonitor(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRA(ierr);
+  ierr = TSCreate(PETSC_COMM_WORLD,tsproblem,&ts);CHKERRQ(ierr);
+  ierr = TSSetMonitor(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   dt = 0.1;
 
   /*
     The user provides the RHS and Jacobian
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,mn,mn,&A);CHKERRA(ierr);
-  ierr = MatSetFromOptions(A);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,mn,mn,&A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   /* Create SNES context  */
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);
- CHKERRA(ierr);
+ CHKERRQ(ierr);
 
   /* setting the RHS function and the Jacobian's non-zero structutre */
-  ierr = SNESSetFunction(snes,global,FormFunction,&data);CHKERRA(ierr);
-  ierr = SNESSetJacobian(snes,A,A,FormJacobian,&data);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,global,FormFunction,&data);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,A,A,FormJacobian,&data);CHKERRQ(ierr);
 
   /* set TSPVodeRHSFunction and TSPVodeRHSJacobian, so PETSc will pick up the 
      RHS function from SNES and compute the Jacobian by FD */
   /*
-  ierr = TSSetRHSFunction(ts,TSPVodeSetRHSFunction,snes);CHKERRA(ierr);
-  ierr = TSPVodeSetRHSJacobian(ts,0.0,global,&A,&A,&A_structure,snes);CHKERRA(ierr);
-  ierr = TSSetRHSJacobian(ts,A,A,TSPVodeSetRHSJacobian,snes);CHKERRA(ierr);
+  ierr = TSSetRHSFunction(ts,TSPVodeSetRHSFunction,snes);CHKERRQ(ierr);
+  ierr = TSPVodeSetRHSJacobian(ts,0.0,global,&A,&A,&A_structure,snes);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,A,A,TSPVodeSetRHSJacobian,snes);CHKERRQ(ierr);
   */
   
-  ierr = TSSetRHSFunction(ts,RHSFunction,&data);CHKERRA(ierr);
-  ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,&data);CHKERRA(ierr);
-  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&data);CHKERRA(ierr);
+  ierr = TSSetRHSFunction(ts,RHSFunction,&data);CHKERRQ(ierr);
+  ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,&data);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&data);CHKERRQ(ierr);
 
   /* Use PVODE */
-  ierr = TSSetType(ts,TS_PVODE);CHKERRA(ierr);
+  ierr = TSSetType(ts,TS_PVODE);CHKERRQ(ierr);
 
-  ierr = TSSetFromOptions(ts);CHKERRA(ierr);
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRA(ierr);
-  ierr = TSSetDuration(ts,time_steps,1);CHKERRA(ierr);
-  ierr = TSSetSolution(ts,global);CHKERRA(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,time_steps,1);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
 
 
   /* Pick up a Petsc preconditioner */
   /* one can always set method or preconditioner during the run time */
 #if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus)
-  ierr = TSPVodeGetPC(ts,&pc);CHKERRA(ierr);
-  ierr = PCSetType(pc,PCJACOBI);CHKERRA(ierr);
-  ierr = TSPVodeSetType(ts,PVODE_BDF);CHKERRA(ierr);
-  /* ierr = TSPVodeSetMethodFromOptions(ts);CHKERRA(ierr); */
+  ierr = TSPVodeGetPC(ts,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
+  ierr = TSPVodeSetType(ts,PVODE_BDF);CHKERRQ(ierr);
+  /* ierr = TSPVodeSetMethodFromOptions(ts);CHKERRQ(ierr); */
 #endif
 
-  ierr = TSSetUp(ts);CHKERRA(ierr);
-  ierr = TSStep(ts,&steps,&ftime);CHKERRA(ierr);
+  ierr = TSSetUp(ts);CHKERRQ(ierr);
+  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
 
-  ierr = TSGetSolution(ts,&global);CHKERRA(ierr);
-  ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"out.m",&viewfile);CHKERRA(ierr); 
-  ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"u");CHKERRA(ierr);
-  ierr = VecView(global,viewfile);CHKERRA(ierr);
+  ierr = TSGetSolution(ts,&global);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"out.m",&viewfile);CHKERRQ(ierr); 
+  ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"u");CHKERRQ(ierr);
+  ierr = VecView(global,viewfile);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus)
   /* extracts the PC  from ts */
-  ierr = TSPVodeGetPC(ts,&pc);CHKERRA(ierr);
-  ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRA(ierr);
-  ierr = TSView(ts,viewer);CHKERRA(ierr);
-  ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRA(ierr);
-  ierr = PCView(pc,viewer);CHKERRA(ierr);
+  ierr = TSPVodeGetPC(ts,&pc);CHKERRQ(ierr);
+  ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRQ(ierr);
+  ierr = TSView(ts,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRQ(ierr);
+  ierr = PCView(pc,viewer);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs,%s Preconditioner,%s\n",
-                     size,tsinfo,pcinfo);CHKERRA(ierr);
-  ierr = PCDestroy(pc);CHKERRA(ierr);
+                     size,tsinfo,pcinfo);CHKERRQ(ierr);
+  ierr = PCDestroy(pc);CHKERRQ(ierr);
 #endif
 
   /* free the memories */
-  ierr = TSDestroy(ts);CHKERRA(ierr);
-  ierr = VecDestroy(global);CHKERRA(ierr);
-  if (A) {ierr= MatDestroy(A);CHKERRA(ierr);}
+  ierr = TSDestroy(ts);CHKERRQ(ierr);
+  ierr = VecDestroy(global);CHKERRQ(ierr);
+  if (A) {ierr= MatDestroy(A);CHKERRQ(ierr);}
   PetscFinalize();
   return 0;
 }
@@ -234,11 +234,11 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&from);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&to);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,tmp_vec,to,&scatter);CHKERRQ(ierr);
-  ierr = VecScatterBegin(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRA(ierr);
-  ierr = VecScatterEnd(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRA(ierr);
+  ierr = VecScatterBegin(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
 
   ierr = VecGetArray(tmp_vec,&tmp);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u= %14.6e at the center \n",time,PetscRealPart(tmp[n/2]));CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u= %14.6e at the center \n",time,PetscRealPart(tmp[n/2]));CHKERRQ(ierr);
   ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRQ(ierr);
 
   ierr = PetscFree(idx);CHKERRQ(ierr);
@@ -295,9 +295,9 @@ int FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   ierr = VecScatterBegin(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);
   
 
- CHKERRA(ierr);
+ CHKERRQ(ierr);
   ierr = VecScatterEnd(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);
- CHKERRA(ierr);
+ CHKERRQ(ierr);
 
   /*Extract income array */
   ierr = VecGetArray(tmp_in,&inptr);CHKERRQ(ierr);
@@ -336,9 +336,9 @@ int FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   ierr = VecScatterCreate(tmp_out,from,globalout,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter
 );
- CHKERRA(ierr);
+ CHKERRQ(ierr);
   ierr = VecScatterEnd(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);
- CHKERRA(ierr);
+ CHKERRQ(ierr);
  
   /* Destroy idx aand scatter */
   ierr = ISDestroy(from);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex80.c,v 1.5 2001/01/15 21:46:09 bsmith Exp balay $*/
+/*$Id: ex80.c,v 1.6 2001/01/16 18:18:12 balay Exp bsmith $*/
 
 static char help[] = 
 "Partition tiny grid\n\n";
@@ -28,9 +28,9 @@ int main(int argc,char **args)
   IS              is,isn;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 4) SETERRQ(1,"Must run with 4 processors");
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = PetscMalloc(5*sizeof(int),&ia);CHKERRQ(ierr);
   ierr = PetscMalloc(16*sizeof(int),&ja);CHKERRQ(ierr);
@@ -58,24 +58,24 @@ int main(int argc,char **args)
   /*
        Partition the graph of the matrix 
   */
-  ierr = MatPartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRA(ierr);
-  ierr = MatPartitioningSetAdjacency(part,A);CHKERRA(ierr);
-  ierr = MatPartitioningSetFromOptions(part);CHKERRA(ierr);
+  ierr = MatPartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRQ(ierr);
+  ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
+  ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
   /* get new processor owner number of each vertex */
-  ierr = MatPartitioningApply(part,&is);CHKERRA(ierr);
+  ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
   /* get new global number of each old global number */
-  ierr = ISPartitioningToNumbering(is,&isn);CHKERRA(ierr);
+  ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
   ierr = ISView(isn,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRA(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
 
-  ierr = ISDestroy(isn);CHKERRA(ierr);
-  ierr = MatPartitioningDestroy(part);CHKERRA(ierr);
+  ierr = ISDestroy(isn);CHKERRQ(ierr);
+  ierr = MatPartitioningDestroy(part);CHKERRQ(ierr);
 
   /*
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = MatDestroy(A);CHKERRA(ierr); 
+  ierr = MatDestroy(A);CHKERRQ(ierr); 
 
 
   PetscFinalize();

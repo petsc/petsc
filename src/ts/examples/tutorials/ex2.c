@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.32 2000/10/24 20:27:29 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.33 2001/01/15 21:48:36 bsmith Exp bsmith $*/
 static char help[] ="Solves a time-dependent nonlinear PDE. Uses implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
@@ -96,8 +96,8 @@ int main(int argc,char **argv)
 
   appctx.comm = PETSC_COMM_WORLD;
   appctx.m    = 60;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&appctx.m,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&appctx.m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
   appctx.h    = 1.0/(appctx.m-1.0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -110,36 +110,36 @@ int main(int argc,char **argv)
      total grid values spread equally among all the processors.
   */ 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,appctx.m,1,1,PETSC_NULL,
-                    &appctx.da);CHKERRA(ierr);
+                    &appctx.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DA; we use these to store the
      approximate solution.  Then duplicate these for remaining vectors that
      have the same types.
   */ 
-  ierr = DACreateGlobalVector(appctx.da,&u);CHKERRA(ierr);
-  ierr = DACreateLocalVector(appctx.da,&appctx.u_local);CHKERRA(ierr);
+  ierr = DACreateGlobalVector(appctx.da,&u);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(appctx.da,&appctx.u_local);CHKERRQ(ierr);
 
   /*
      Create local work vector for use in evaluating right-hand-side function;
      create global work vector for storing exact solution.
   */
-  ierr = VecDuplicate(appctx.u_local,&appctx.localwork);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&appctx.solution);CHKERRA(ierr);
+  ierr = VecDuplicate(appctx.u_local,&appctx.localwork);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&appctx.solution);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context; set callback routine for
      right-hand-side function evaluation.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts);CHKERRA(ierr);
-  ierr = TSSetRHSFunction(ts,RHSFunction,&appctx);CHKERRA(ierr);
+  ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,RHSFunction,&appctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetMonitor(ts,Monitor,&appctx,PETSC_NULL);CHKERRA(ierr);
+  ierr = TSSetMonitor(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      For nonlinear problems, the user can provide a Jacobian evaluation
@@ -148,13 +148,13 @@ int main(int argc,char **argv)
      Create matrix data structure; set Jacobian evaluation routine.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,appctx.m,appctx.m,&A);CHKERRA(ierr);
-  ierr = MatSetFromOptions(A);CHKERRA(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-fdjac",&flg);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,appctx.m,appctx.m,&A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-fdjac",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianFD,&appctx);CHKERRA(ierr);
+    ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianFD,&appctx);CHKERRQ(ierr);
   } else {
-    ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx);CHKERRA(ierr);
+    ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -162,8 +162,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   dt   = appctx.h/2.0;
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRA(ierr);
-  ierr = TSSetSolution(ts,u);CHKERRA(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize timestepping solver:  
@@ -175,9 +175,9 @@ int main(int argc,char **argv)
      to override the defaults set by TSSetDuration().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetType(ts,TS_BEULER);CHKERRA(ierr);
-  ierr = TSSetDuration(ts,time_steps_max,time_total_max);CHKERRA(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRA(ierr);
+  ierr = TSSetType(ts,TS_BEULER);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,time_steps_max,time_total_max);CHKERRQ(ierr);
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the problem
@@ -186,25 +186,25 @@ int main(int argc,char **argv)
   /*
      Evaluate initial conditions
   */
-  ierr = InitialConditions(u,&appctx);CHKERRA(ierr);
+  ierr = InitialConditions(u,&appctx);CHKERRQ(ierr);
 
   /*
      Run the timestepping solver
   */
-  ierr = TSStep(ts,&steps,&ftime);CHKERRA(ierr);
+  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSDestroy(ts);CHKERRA(ierr);
-  ierr = VecDestroy(u);CHKERRA(ierr);
-  ierr = MatDestroy(A);CHKERRA(ierr);
-  ierr = DADestroy(appctx.da);CHKERRA(ierr);
-  ierr = VecDestroy(appctx.localwork);CHKERRA(ierr);
-  ierr = VecDestroy(appctx.solution);CHKERRA(ierr);
-  ierr = VecDestroy(appctx.u_local);CHKERRA(ierr);
+  ierr = TSDestroy(ts);CHKERRQ(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = DADestroy(appctx.da);CHKERRQ(ierr);
+  ierr = VecDestroy(appctx.localwork);CHKERRQ(ierr);
+  ierr = VecDestroy(appctx.solution);CHKERRQ(ierr);
+  ierr = VecDestroy(appctx.u_local);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

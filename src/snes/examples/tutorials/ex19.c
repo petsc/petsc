@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.7 2000/09/28 14:45:23 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.8 2001/01/15 21:48:06 bsmith Exp bsmith $*/
 
 static char help[] = "Solves nonlinear driven cavity with multigrid.\n\
   \n\
@@ -99,8 +99,8 @@ int main(int argc,char **argv)
 
   mx = 4; 
   my = 4; 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRQ(ierr);
 
   /* 
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
 
   ierr = DMMGSetSNES(dmmg,FormFunction,0);
   ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",
-                     user.lidvelocity,user.prandtl,user.grashof);CHKERRA(ierr);
+                     user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -147,18 +147,18 @@ int main(int argc,char **argv)
   ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
 
   PreLoadStage("Solve");
-  ierr = DMMGSolve(dmmg);CHKERRA(ierr); 
+  ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
 
   snes = DMMGGetSNES(dmmg);
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRA(ierr);
-  ierr = PetscPrintf(comm,"Number of Newton iterations = %d\n", its);CHKERRA(ierr);
+  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Number of Newton iterations = %d\n", its);CHKERRQ(ierr);
 
   /*
      Visualize solution
   */
 
   if (user.draw_contours) {
-    ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr);
+    ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -166,7 +166,7 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = DMMGDestroy(dmmg);CHKERRA(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
 
   PetscFinalize();

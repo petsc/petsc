@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.52 2000/08/17 04:52:48 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.53 2001/01/15 21:48:01 bsmith Exp bsmith $*/
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
  matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";
@@ -33,65 +33,65 @@ int main(int argc,char **argv)
   int          ierr,its,n = 5,i;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-variant",&user.variant);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-variant",&user.variant);CHKERRQ(ierr);
   h = 1.0/(n-1);
 
   /* Set up data structures */
-  ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);
-  ierr = PetscObjectSetName((PetscObject)x,"Approximate Solution");CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&F);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&U);CHKERRA(ierr); 
-  ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRA(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&monP.viewer);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)x,"Approximate Solution");CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&F);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&U);CHKERRQ(ierr); 
+  ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRQ(ierr);
 
   /* create explict matrix preconditioner */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&B);CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&B);CHKERRQ(ierr);
   user.precond = B;
 
   /* Store right-hand-side of PDE and exact solution */
   for (i=0; i<n; i++) {
     v = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
-    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
     v= xp*xp*xp;
-    ierr = VecSetValues(U,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(U,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
     xp += h;
   }
 
   /* Create nonlinear solver */  
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = SNESSetType(snes,type);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
+  ierr = SNESSetType(snes,type);CHKERRQ(ierr);
 
   if (user.variant) {
-    ierr = MatCreateMF(x,&J);CHKERRA(ierr);
+    ierr = MatCreateMF(x,&J);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&work);CHKERRQ(ierr);
     ierr = MatSNESMFSetFunction(J,work,FormFunction,F);CHKERRQ(ierr);
   } else {
     /* create matrix free matrix for Jacobian */
-    ierr = MatCreateSNESMF(snes,x,&J);CHKERRA(ierr);
+    ierr = MatCreateSNESMF(snes,x,&J);CHKERRQ(ierr);
   }
 
   /* Set various routines and options */
-  ierr = SNESSetFunction(snes,r,FormFunction,F);CHKERRA(ierr);
-  ierr = SNESSetJacobian(snes,J,B,FormJacobian,&user);CHKERRA(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,&monP,0);CHKERRA(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,F);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,B,FormJacobian,&user);CHKERRQ(ierr);
+  ierr = SNESSetMonitor(snes,Monitor,&monP,0);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* Solve nonlinear system */
-  ierr = FormInitialGuess(snes,x);CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n",its);CHKERRA(ierr);
+  ierr = FormInitialGuess(snes,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n",its);CHKERRQ(ierr);
 
   /* Free data structures */
   if (user.variant) {
     ierr = VecDestroy(work);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(x);CHKERRA(ierr);  ierr = VecDestroy(r);CHKERRA(ierr);
-  ierr = VecDestroy(U);CHKERRA(ierr);  ierr = VecDestroy(F);CHKERRA(ierr);
-  ierr = MatDestroy(J);CHKERRA(ierr);  ierr = MatDestroy(B);CHKERRA(ierr);
-  ierr = SNESDestroy(snes);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(monP.viewer);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);  ierr = VecDestroy(r);CHKERRQ(ierr);
+  ierr = VecDestroy(U);CHKERRQ(ierr);  ierr = VecDestroy(F);CHKERRQ(ierr);
+  ierr = MatDestroy(J);CHKERRQ(ierr);  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(monP.viewer);CHKERRQ(ierr);
   PetscFinalize();
 
   return 0;

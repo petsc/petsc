@@ -1,4 +1,4 @@
-/*$Id: ex81.c,v 1.3 2000/09/28 21:11:49 bsmith Exp bsmith $*/
+/*$Id: ex81.c,v 1.4 2001/01/15 21:46:09 bsmith Exp bsmith $*/
 
 static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing format\n\
   -fout <output_file> : file to load.\n\
@@ -29,19 +29,19 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
 #if defined(PETSC_USE_COMPLEX)
-  SETERRA(1,"This example does not work with complex numbers");
+  SETERRQ(1,"This example does not work with complex numbers");
 #endif
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(1,"Only runs on one processor");
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",bfile,127,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",hbfile,127,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",bfile,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",hbfile,127,PETSC_NULL);CHKERRQ(ierr);
 
   /* Read matrix and RHS */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,bfile,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
-  ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
-  ierr = VecLoad(fd,&x);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,bfile,PETSC_BINARY_RDONLY,&fd);CHKERRQ(ierr);
+  ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRQ(ierr);
+  ierr = VecLoad(fd,&x);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   /* Format is in column storage so we print transpose matrix */
   ierr = MatTranspose(A,0);CHKERRQ(ierr);
@@ -89,8 +89,8 @@ int main(int argc,char **args)
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
 
   fclose(file);
-  ierr = MatDestroy(A);CHKERRA(ierr);
-  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

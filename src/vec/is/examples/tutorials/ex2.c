@@ -1,5 +1,5 @@
 
-/*      "$Id: ex2.c,v 1.15 2000/09/28 21:10:03 bsmith Exp bsmith $"; */
+/*      "$Id: ex2.c,v 1.16 2001/01/15 21:44:33 bsmith Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a stride index set.\n\n";
 
@@ -37,26 +37,26 @@ int main(int argc,char **argv)
     Note each processor is generating its own index set 
     (in this case they are all identical)
   */
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,first,step,&set);CHKERRA(ierr);
-  ierr = ISView(set,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,n,first,step,&set);CHKERRQ(ierr);
+  ierr = ISView(set,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /*
     Extract indices from set.
   */
-  ierr = ISGetIndices(set,&indices);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Printing indices directly\n");CHKERRA(ierr);
+  ierr = ISGetIndices(set,&indices);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Printing indices directly\n");CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%d\n",indices[i]);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%d\n",indices[i]);CHKERRQ(ierr);
   }
 
-  ierr = ISRestoreIndices(set,&indices);CHKERRA(ierr);
+  ierr = ISRestoreIndices(set,&indices);CHKERRQ(ierr);
 
   /*
       Determine information on stride
   */
-  ierr = ISStrideGetInfo(set,&first,&step);CHKERRA(ierr);
-  if (first != 3 || step != 2) SETERRA(1,"Stride info not correct!\n");
-  ierr = ISDestroy(set);CHKERRA(ierr);
+  ierr = ISStrideGetInfo(set,&first,&step);CHKERRQ(ierr);
+  if (first != 3 || step != 2) SETERRQ(1,"Stride info not correct!\n");
+  ierr = ISDestroy(set);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: PetscMemcmp.c,v 1.14 2000/11/28 17:32:38 bsmith Exp bsmith $*/
+/*$Id: PetscMemcmp.c,v 1.15 2001/01/15 21:49:39 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -18,9 +18,9 @@ int main(int argc,char **argv)
   }
   /* To take care of paging effects */
   PetscMemcmp(A,B,sizeof(Scalar)*0);
-  ierr = PetscGetTime(&x);CHKERRA(ierr);
+  ierr = PetscGetTime(&x);CHKERRQ(ierr);
 
-  ierr = PetscGetTime(&x);CHKERRA(ierr);
+  ierr = PetscGetTime(&x);CHKERRQ(ierr);
   PetscMemcmp(A,B,sizeof(Scalar)*10000);
   PetscMemcmp(A,B,sizeof(Scalar)*10000);
   PetscMemcmp(A,B,sizeof(Scalar)*10000);
@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   PetscMemcmp(A,B,sizeof(Scalar)*10000);
   PetscMemcmp(A,B,sizeof(Scalar)*10000);
   PetscMemcmp(A,B,sizeof(Scalar)*10000);
-  ierr = PetscGetTime(&y);CHKERRA(ierr);
+  ierr = PetscGetTime(&y);CHKERRQ(ierr);
   PetscMemcmp(A,B,sizeof(Scalar)*0);
   PetscMemcmp(A,B,sizeof(Scalar)*0);
   PetscMemcmp(A,B,sizeof(Scalar)*0);
@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   PetscMemcmp(A,B,sizeof(Scalar)*0);
   PetscMemcmp(A,B,sizeof(Scalar)*0);
   PetscMemcmp(A,B,sizeof(Scalar)*0);
-  ierr = PetscGetTime(&z);CHKERRA(ierr);
+  ierr = PetscGetTime(&z);CHKERRQ(ierr);
 
   fprintf(stdout,"%s : \n","PetscMemcmp");
   fprintf(stdout,"    %-11s : %e sec\n","Latency",(z-y)/10.0);

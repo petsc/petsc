@@ -1,4 +1,4 @@
-/*$Id: aosetlocal.c,v 1.10 2000/05/25 15:30:22 bsmith Exp bsmith $*/
+/*$Id: aosetlocal.c,v 1.11 2001/01/15 21:48:49 bsmith Exp bsmith $*/
 
 #include "petscao.h"       /*I  "petscao.h"  I*/
 
@@ -39,10 +39,10 @@ int AODataPartitionAndSetupLocal(AOData ao,char *keyname,char *segmentname,IS *i
   PetscFunctionBegin;  
 
   /*      Partition the keys (cells)   */
-  ierr = AODataKeyPartition(ao,keyname);CHKERRA(ierr);  
+  ierr = AODataKeyPartition(ao,keyname);CHKERRQ(ierr);  
 
   /*      Partition the segment (vertices) subservient to the keys (cells)  */ 
-  ierr = AODataSegmentPartition(ao,keyname,segmentname);CHKERRA(ierr);  
+  ierr = AODataSegmentPartition(ao,keyname,segmentname);CHKERRQ(ierr);  
 
  /*     Generate the list of key entries (cells) on this processor   */
   ierr = AODataKeyGetOwnershipRange(ao,"cell",&rstart,&rend);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* "$Id: ex19.c,v 1.5 2000/08/01 20:57:07 bsmith Exp bsmith $" */
+/* "$Id: ex19.c,v 1.6 2001/01/15 21:47:31 bsmith Exp bsmith $" */
 
 static char help[] ="\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
@@ -66,9 +66,9 @@ int main(int argc,char **argv)
 
   user.ratio = 2;
   user.coarse.mx = 5; user.coarse.my = 5; 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
 
   PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.coarse.mx,user.coarse.my);
@@ -77,97 +77,97 @@ int main(int argc,char **argv)
   n = user.fine.mx*user.fine.my; N = user.coarse.mx*user.coarse.my;
 
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.fine.mx,
-                    user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRA(ierr);
-  ierr = DACreateGlobalVector(user.fine.da,&user.fine.x);CHKERRA(ierr);
-  ierr = VecDuplicate(user.fine.x,&user.fine.r);CHKERRA(ierr);
-  ierr = VecDuplicate(user.fine.x,&user.fine.b);CHKERRA(ierr);
-  ierr = VecGetLocalSize(user.fine.x,&nlocal);CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.fine.da,&user.fine.localX);CHKERRA(ierr);
-  ierr = VecDuplicate(user.fine.localX,&user.fine.localF);CHKERRA(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.fine.J);CHKERRA(ierr);
+                    user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(user.fine.da,&user.fine.x);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.fine.x,&user.fine.r);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.fine.x,&user.fine.b);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(user.fine.x,&nlocal);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(user.fine.da,&user.fine.localX);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.fine.localX,&user.fine.localF);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.fine.J);CHKERRQ(ierr);
 
   /* Set up distributed array for coarse grid */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.coarse.mx,
-                    user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRA(ierr);
-  ierr = DACreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRA(ierr);
-  ierr = VecDuplicate(user.coarse.x,&user.coarse.b);CHKERRA(ierr);
-  ierr = VecGetLocalSize(user.coarse.x,&Nlocal);CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.coarse.da,&user.coarse.localX);CHKERRA(ierr);
-  ierr = VecDuplicate(user.coarse.localX,&user.coarse.localF);CHKERRA(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.coarse.J);CHKERRA(ierr);
+                    user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.coarse.x,&user.coarse.b);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(user.coarse.x,&Nlocal);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(user.coarse.da,&user.coarse.localX);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.coarse.localX,&user.coarse.localF);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.coarse.J);CHKERRQ(ierr);
 
   /* Create linear solver */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
 
   /* set two level additive Schwarz preconditioner */
-  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-  ierr = PCSetType(pc,PCMG);CHKERRA(ierr);
-  ierr = MGSetLevels(pc,2,PETSC_NULL);CHKERRA(ierr);
-  ierr = MGSetType(pc,MGADDITIVE);CHKERRA(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
+  ierr = MGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MGSetType(pc,MGADDITIVE);CHKERRQ(ierr);
 
-  ierr = FormJacobian_Grid(&user,&user.coarse,&user.coarse.J);CHKERRA(ierr);
-  ierr = FormJacobian_Grid(&user,&user.fine,&user.fine.J);CHKERRA(ierr);
+  ierr = FormJacobian_Grid(&user,&user.coarse,&user.coarse.J);CHKERRQ(ierr);
+  ierr = FormJacobian_Grid(&user,&user.fine,&user.fine.J);CHKERRQ(ierr);
 
   /* Create coarse level */
-  ierr = MGGetCoarseSolve(pc,&user.sles_coarse);CHKERRA(ierr);
-  ierr = SLESSetOptionsPrefix(user.sles_coarse,"coarse_");CHKERRA(ierr);
-  ierr = SLESSetFromOptions(user.sles_coarse);CHKERRA(ierr);
-  ierr = SLESSetOperators(user.sles_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = MGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRA(ierr); 
-  ierr = MGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRA(ierr); 
+  ierr = MGGetCoarseSolve(pc,&user.sles_coarse);CHKERRQ(ierr);
+  ierr = SLESSetOptionsPrefix(user.sles_coarse,"coarse_");CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(user.sles_coarse);CHKERRQ(ierr);
+  ierr = SLESSetOperators(user.sles_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr); 
+  ierr = MGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr); 
 
   /* Create fine level */
-  ierr = MGGetSmoother(pc,FINE_LEVEL,&sles_fine);CHKERRA(ierr);
-  ierr = SLESSetOptionsPrefix(sles_fine,"fine_");CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles_fine);CHKERRA(ierr);
-  ierr = SLESSetOperators(sles_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = MGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRA(ierr); 
-  ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.fine.J);CHKERRA(ierr);
+  ierr = MGGetSmoother(pc,FINE_LEVEL,&sles_fine);CHKERRQ(ierr);
+  ierr = SLESSetOptionsPrefix(sles_fine,"fine_");CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(sles_fine);CHKERRQ(ierr);
+  ierr = SLESSetOperators(sles_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr); 
+  ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.fine.J);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
-  ierr = DAGetInterpolation(user.coarse.da,user.fine.da,&user.I,PETSC_NULL);CHKERRA(ierr);
-  ierr = MGSetInterpolate(pc,FINE_LEVEL,user.I);CHKERRA(ierr);
-  ierr = MGSetRestriction(pc,FINE_LEVEL,user.I);CHKERRA(ierr);
+  ierr = DAGetInterpolation(user.coarse.da,user.fine.da,&user.I,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MGSetInterpolate(pc,FINE_LEVEL,user.I);CHKERRQ(ierr);
+  ierr = MGSetRestriction(pc,FINE_LEVEL,user.I);CHKERRQ(ierr);
 
-  ierr = SLESSetOperators(sles,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   ierr = VecSet(&one,user.fine.b);CHKERRQ(ierr);
   {
     PetscRandom rand;
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
-    ierr = VecSetRandom(rand,user.fine.b);CHKERRA(ierr);
-    ierr = PetscRandomDestroy(rand);CHKERRA(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+    ierr = VecSetRandom(rand,user.fine.b);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
   }
 
   /* Set options, then solve nonlinear system */
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
 
-  ierr = SLESSolve(sles,user.fine.b,user.fine.x,&its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %d\n",its);CHKERRA(ierr);
+  ierr = SLESSolve(sles,user.fine.b,user.fine.x,&its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %d\n",its);CHKERRQ(ierr);
 
   /* Free data structures */
-  ierr = MatDestroy(user.fine.J);CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.x);CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.r);CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.b);CHKERRA(ierr);
-  ierr = DADestroy(user.fine.da);CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.localX);CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.localF);CHKERRA(ierr);
+  ierr = MatDestroy(user.fine.J);CHKERRQ(ierr);
+  ierr = VecDestroy(user.fine.x);CHKERRQ(ierr);
+  ierr = VecDestroy(user.fine.r);CHKERRQ(ierr);
+  ierr = VecDestroy(user.fine.b);CHKERRQ(ierr);
+  ierr = DADestroy(user.fine.da);CHKERRQ(ierr);
+  ierr = VecDestroy(user.fine.localX);CHKERRQ(ierr);
+  ierr = VecDestroy(user.fine.localF);CHKERRQ(ierr);
 
-  ierr = MatDestroy(user.coarse.J);CHKERRA(ierr);
-  ierr = VecDestroy(user.coarse.x);CHKERRA(ierr);
-  ierr = VecDestroy(user.coarse.b);CHKERRA(ierr);
-  ierr = DADestroy(user.coarse.da);CHKERRA(ierr);
-  ierr = VecDestroy(user.coarse.localX);CHKERRA(ierr);
-  ierr = VecDestroy(user.coarse.localF);CHKERRA(ierr);
+  ierr = MatDestroy(user.coarse.J);CHKERRQ(ierr);
+  ierr = VecDestroy(user.coarse.x);CHKERRQ(ierr);
+  ierr = VecDestroy(user.coarse.b);CHKERRQ(ierr);
+  ierr = DADestroy(user.coarse.da);CHKERRQ(ierr);
+  ierr = VecDestroy(user.coarse.localX);CHKERRQ(ierr);
+  ierr = VecDestroy(user.coarse.localF);CHKERRQ(ierr);
 
-  ierr = SLESDestroy(sles);CHKERRA(ierr);
-  ierr = MatDestroy(user.I);CHKERRA(ierr); 
+  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = MatDestroy(user.I);CHKERRQ(ierr); 
   PetscFinalize();
 
   return 0;

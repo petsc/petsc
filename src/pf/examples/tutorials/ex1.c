@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.4 2000/09/22 20:47:35 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.5 2001/01/15 21:49:48 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -42,24 +42,24 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRA(ierr);
-  ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRA(ierr);
-  ierr = DACreateGlobalVector(da,&u);CHKERRA(ierr);
-  ierr = DAGetCoordinates(da,&xy);CHKERRA(ierr);
+  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,&u);CHKERRQ(ierr);
+  ierr = DAGetCoordinates(da,&xy);CHKERRQ(ierr);
 
-  ierr = DACreatePF(da,&pf);CHKERRA(ierr);
-  ierr = PFSet(pf,myfunction,0,0,0,0);CHKERRA(ierr);
+  ierr = DACreatePF(da,&pf);CHKERRQ(ierr);
+  ierr = PFSet(pf,myfunction,0,0,0,0);CHKERRQ(ierr);
 
-  ierr = PFApplyVec(pf,xy,u);CHKERRA(ierr);
+  ierr = PFApplyVec(pf,xy,u);CHKERRQ(ierr);
 
-  ierr = VecView(u,PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr);
+  ierr = VecView(u,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = PFDestroy(pf);CHKERRA(ierr);
-  ierr = DADestroy(da);CHKERRA(ierr);
+  ierr = PFDestroy(pf);CHKERRQ(ierr);
+  ierr = DADestroy(da);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

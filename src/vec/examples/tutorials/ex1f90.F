@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f90.F,v 1.24 2000/10/24 20:25:21 bsmith Exp bsmith $"
+!    "$Id: ex1f90.F,v 1.25 2001/01/15 21:45:20 bsmith Exp bsmith $"
 !
 !/*T
 !   Concepts: vectors^using basic vector routines;
@@ -205,7 +205,7 @@
          if (rank .eq. 0) then
             write(6,*) 'Corrupted vector!'
          endif
-         SETERRA(1,' ',ierr)
+         SETERRQ(1,' ',ierr)
       endif
 
 !  Free work space.  All PETSc objects should be destroyed when they

@@ -21,37 +21,37 @@ int main( int argc, char **argv )
   AOData   aodata;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) {
     SETERRQ(1,"Must run input program with exactly one processor");
   }
   x_min = 0.0; x_max = 1.0;
   y_min = 0.0; y_max = 1.0;
-  ierr = PetscOptionsGetDouble(0,"-xmin",&x_min,0);CHKERRA(ierr);
-  ierr = PetscOptionsGetDouble(0,"-xmax",&x_max,0);CHKERRA(ierr);
-  ierr = PetscOptionsGetDouble(0,"-ymin",&y_min,0);CHKERRA(ierr);
-  ierr = PetscOptionsGetDouble(0,"-ymax",&y_max,0);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(0,"-xmin",&x_min,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(0,"-xmax",&x_max,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(0,"-ymin",&y_min,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(0,"-ymax",&y_max,0);CHKERRQ(ierr);
   n_x = 5; n_y = 5;
-  ierr = PetscOptionsGetInt(0,"-nx",&n_x,0);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(0,"-ny",&n_y,0);CHKERRA(ierr);
-  ierr = PetscOptionsGetString(0,"-f",filename,512,0);CHKERRA(ierr)
+  ierr = PetscOptionsGetInt(0,"-nx",&n_x,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(0,"-ny",&n_y,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(0,"-f",filename,512,0);CHKERRQ(ierr)
 
   /*
      Create the grid database.
   */
-  ierr = InputGrid(&aodata);CHKERRA(ierr);
+  ierr = InputGrid(&aodata);CHKERRQ(ierr);
 
   /*
      Save the grid database to a file.
   */
   {
     PetscViewer binary;
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,PETSC_BINARY_CREATE,&binary);CHKERRA(ierr);
-    ierr = AODataView(aodata,binary);CHKERRA(ierr);
-    ierr = PetscViewerDestroy(binary);CHKERRA(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,PETSC_BINARY_CREATE,&binary);CHKERRQ(ierr);
+    ierr = AODataView(aodata,binary);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(binary);CHKERRQ(ierr);
   }
 
-  ierr = AODataDestroy(aodata);CHKERRA(ierr);
+  ierr = AODataDestroy(aodata);CHKERRQ(ierr);
 
   {
     char command[530] = "\\rm -f ";

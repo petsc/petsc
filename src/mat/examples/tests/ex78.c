@@ -1,4 +1,4 @@
-/*$Id: ex78.c,v 1.6 2000/11/28 18:53:43 hzhang Exp bsmith $*/
+/*$Id: ex78.c,v 1.7 2001/01/17 19:45:37 bsmith Exp bsmith $*/
 
 static char help[] =
 "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format, then writes them using the PETSc sparse format.\n\
@@ -28,17 +28,17 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read in matrix, rhs and exact solution from an ascii file */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-Ain",Ain,127,&flg_A);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-Ain",Ain,127,&flg_A);CHKERRQ(ierr);
   if (flg_A){
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read matrix in ascii format ...\n");CHKERRA(ierr);
-    ierr = PetscFOpen(PETSC_COMM_SELF,Ain,"r",&Afile);CHKERRA(ierr); 
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read matrix in ascii format ...\n");CHKERRQ(ierr);
+    ierr = PetscFOpen(PETSC_COMM_SELF,Ain,"r",&Afile);CHKERRQ(ierr); 
     fscanf(Afile,"%d %d %d\n",&m,&n,&nz);
     printf("m: %d, n: %d, nz: %d \n", m,n,nz);
     if (m != n) SETERRQ(PETSC_ERR_ARG_SIZ, "Number of rows, cols must be same for SBAIJ format\n");
 
-    ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,1,n,n,20,0,&A);CHKERRA(ierr);  
-    ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRA(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRA(ierr);
+    ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,1,n,n,20,0,&A);CHKERRQ(ierr);  
+    ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);
 
     ierr = PetscMalloc(nz*sizeof(double),&val);CHKERRQ(ierr);
     ierr = PetscMalloc(nz*sizeof(double),&row);CHKERRQ(ierr);
@@ -52,10 +52,10 @@ int main(int argc,char **args)
     fclose(Afile);
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-bin",bin,127,&flg_b);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-bin",bin,127,&flg_b);CHKERRQ(ierr);
   if (flg_b){
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read rhs in ascii format ...\n");CHKERRA(ierr);
-    ierr = PetscFOpen(PETSC_COMM_SELF,bin,"r",&bfile);CHKERRA(ierr); 
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read rhs in ascii format ...\n");CHKERRQ(ierr);
+    ierr = PetscFOpen(PETSC_COMM_SELF,bin,"r",&bfile);CHKERRQ(ierr); 
     ierr = PetscMalloc(n*sizeof(double),&bval);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(Scalar),&work);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(int),&ib);CHKERRQ(ierr);
@@ -67,10 +67,10 @@ int main(int argc,char **args)
     fclose(bfile);
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-uin",uin,127,&flg_u);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-uin",uin,127,&flg_u);CHKERRQ(ierr);
   if (flg_u){
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read exact solution in ascii format ...\n");CHKERRA(ierr);
-    ierr = PetscFOpen(PETSC_COMM_SELF,uin,"r",&ufile);CHKERRA(ierr); 
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read exact solution in ascii format ...\n");CHKERRQ(ierr);
+    ierr = PetscFOpen(PETSC_COMM_SELF,uin,"r",&ufile);CHKERRQ(ierr); 
     ierr = PetscMalloc(n*sizeof(double),&uval);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       fscanf(ufile,"  %le\n",uval+i);  /* modify according to data file! */
@@ -82,62 +82,62 @@ int main(int argc,char **args)
   if(flg_A){
     /*
     for (i=0; i<n; i++){ 
-      ierr = MatSetValues(A,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRA(ierr); 
+      ierr = MatSetValues(A,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr); 
     }
     */
     for (i=0; i<nz; i++) {
       row_i =(int)row[i]; col_i =(int)col[i]; val_i = (Scalar)val[i];
-      ierr = MatSetValues(A,1,&row_i,1,&col_i,&val_i,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&row_i,1,&col_i,&val_i,INSERT_VALUES);CHKERRQ(ierr);
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-    ierr = PetscFree(col);CHKERRA(ierr);
-    ierr = PetscFree(val);CHKERRA(ierr);
-    ierr = PetscFree(row);CHKERRA(ierr);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = PetscFree(col);CHKERRQ(ierr);
+    ierr = PetscFree(val);CHKERRQ(ierr);
+    ierr = PetscFree(row);CHKERRQ(ierr);
   }
   if(flg_b){
     for (i=0; i<n; i++) work[i]=(Scalar)bval[i];
-    ierr = VecSetValues(b,n,ib,work,INSERT_VALUES);CHKERRA(ierr);
-    ierr = VecAssemblyBegin(b);CHKERRA(ierr);
-    ierr = VecAssemblyEnd(b);CHKERRA(ierr);
+    ierr = VecSetValues(b,n,ib,work,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
     /* printf("b: \n"); ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF); */
-    ierr = PetscFree(bval);CHKERRA(ierr);
+    ierr = PetscFree(bval);CHKERRQ(ierr);
   }
 
   if(flg_u & flg_b){
     for (i=0; i<n; i++) work[i]=(Scalar)uval[i];
-    ierr = VecSetValues(u,n,ib,work,INSERT_VALUES);CHKERRA(ierr);
-    ierr = VecAssemblyBegin(u);CHKERRA(ierr);
-    ierr = VecAssemblyEnd(u);CHKERRA(ierr);
+    ierr = VecSetValues(u,n,ib,work,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
     /* printf("u: \n"); ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF); */
-    ierr = PetscFree(uval);CHKERRA(ierr);                        
+    ierr = PetscFree(uval);CHKERRQ(ierr);                        
   }
   
   if(flg_b) {
-    ierr = PetscFree(ib);CHKERRA(ierr);
-    ierr = PetscFree(work);CHKERRA(ierr);
+    ierr = PetscFree(ib);CHKERRQ(ierr);
+    ierr = PetscFree(work);CHKERRQ(ierr);
   }
   /* Check accuracy of the data */
   if (flg_A & flg_b & flg_u){
-    ierr = VecDuplicate(u,&u_tmp);CHKERRA(ierr); 
-    ierr = MatMult(A,u,u_tmp);CHKERRA(ierr);
-    ierr = VecAXPY(&mone,b,u_tmp);CHKERRA(ierr);
-    ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRA(ierr);
+    ierr = VecDuplicate(u,&u_tmp);CHKERRQ(ierr); 
+    ierr = MatMult(A,u,u_tmp);CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,b,u_tmp);CHKERRQ(ierr);
+    ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
     printf("\n Accuracy of the reading data: | b - A*u |_2 : %g \n",res_norm); 
 
   /* Write the matrix, rhs and exact solution in Petsc binary file */
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write matrix and rhs in binary to 'matrix.dat' ...\n");CHKERRA(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",PETSC_BINARY_CREATE,&view);CHKERRA(ierr);
-    ierr = MatView(A,view);CHKERRA(ierr);
-    ierr = VecView(b,view);CHKERRA(ierr);
-    ierr = VecView(u,view);CHKERRA(ierr);
-    ierr = PetscViewerDestroy(view);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write matrix and rhs in binary to 'matrix.dat' ...\n");CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",PETSC_BINARY_CREATE,&view);CHKERRQ(ierr);
+    ierr = MatView(A,view);CHKERRQ(ierr);
+    ierr = VecView(b,view);CHKERRQ(ierr);
+    ierr = VecView(u,view);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
 
-    ierr = VecDestroy(b);CHKERRA(ierr);
-    ierr = VecDestroy(u);CHKERRA(ierr);
-    ierr = VecDestroy(u_tmp);CHKERRA(ierr);
+    ierr = VecDestroy(b);CHKERRQ(ierr);
+    ierr = VecDestroy(u);CHKERRQ(ierr);
+    ierr = VecDestroy(u_tmp);CHKERRQ(ierr);
     
-    ierr = MatDestroy(A);CHKERRA(ierr);
+    ierr = MatDestroy(A);CHKERRQ(ierr);
   }
 
   PetscFinalize();

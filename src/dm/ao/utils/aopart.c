@@ -1,4 +1,4 @@
-/*$Id: aopart.c,v 1.14 2000/05/05 22:19:20 balay Exp bsmith $*/
+/*$Id: aopart.c,v 1.15 2001/01/15 21:48:49 bsmith Exp bsmith $*/
 
 #include "petscao.h"       /*I  "petscao.h"  I*/
 
@@ -31,20 +31,20 @@ int AODataKeyPartition(AOData aodata,char *key)
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   ierr = PetscObjectGetComm((PetscObject)aodata,&comm);CHKERRQ(ierr);
 
-  ierr = AODataKeyGetAdjacency(aodata,key,&adj);CHKERRA(ierr);
-  ierr = MatPartitioningCreate(comm,&part);CHKERRA(ierr);
-  ierr = MatPartitioningSetAdjacency(part,adj);CHKERRA(ierr);
-  ierr = MatPartitioningSetFromOptions(part);CHKERRA(ierr);
-  ierr = MatPartitioningApply(part,&is);CHKERRA(ierr);
-  ierr = MatPartitioningDestroy(part);CHKERRA(ierr);
+  ierr = AODataKeyGetAdjacency(aodata,key,&adj);CHKERRQ(ierr);
+  ierr = MatPartitioningCreate(comm,&part);CHKERRQ(ierr);
+  ierr = MatPartitioningSetAdjacency(part,adj);CHKERRQ(ierr);
+  ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
+  ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
+  ierr = MatPartitioningDestroy(part);CHKERRQ(ierr);
   ierr = MatDestroy(adj);CHKERRQ(ierr);
-  ierr = ISPartitioningToNumbering(is,&isg);CHKERRA(ierr);
+  ierr = ISPartitioningToNumbering(is,&isg);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
 
-  ierr = AOCreateBasicIS(isg,PETSC_NULL,&ao);CHKERRA(ierr);
-  ierr = ISDestroy(isg);CHKERRA(ierr);
+  ierr = AOCreateBasicIS(isg,PETSC_NULL,&ao);CHKERRQ(ierr);
+  ierr = ISDestroy(isg);CHKERRQ(ierr);
 
-  ierr = AODataKeyRemap(aodata,key,ao);CHKERRA(ierr);
-  ierr = AODestroy(ao);CHKERRA(ierr);
+  ierr = AODataKeyRemap(aodata,key,ao);CHKERRQ(ierr);
+  ierr = AODestroy(ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

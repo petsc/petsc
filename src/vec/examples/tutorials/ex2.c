@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.37 2000/09/22 20:43:24 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.38 2001/01/15 21:45:20 bsmith Exp bsmith $*/
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
 processor, 2 on the second, etc.  Then each processor adds one to all\n\
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   Vec     x;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /*
      Create a parallel vector.
@@ -36,9 +36,9 @@ int main(int argc,char **argv)
         local size PETSc will choose a reasonable partition trying 
         to put nearly an equal number of elements on each processor.
   */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,&x);CHKERRA(ierr);
-  ierr = VecGetSize(x,&N);CHKERRA(ierr);
-  ierr = VecSet(&one,x);CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,&x);CHKERRQ(ierr);
+  ierr = VecGetSize(x,&N);CHKERRQ(ierr);
+  ierr = VecSet(&one,x);CHKERRQ(ierr);
 
   /*
      Set the vector elements.
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
         contributions will be added together.
   */
   for (i=0; i<N-rank; i++) {
-    ierr = VecSetValues(x,1,&i,&one,ADD_VALUES);CHKERRA(ierr);  
+    ierr = VecSetValues(x,1,&i,&one,ADD_VALUES);CHKERRQ(ierr);  
   }
 
   /* 
@@ -60,14 +60,14 @@ int main(int argc,char **argv)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = VecAssemblyBegin(x);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
   /*
       View the vector; then destroy it.
   */
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

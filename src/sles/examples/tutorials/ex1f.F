@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.27 2000/10/24 20:26:55 bsmith Exp bsmith $";
+!    "$Id: ex1f.F,v 1.28 2001/01/15 21:47:36 bsmith Exp bsmith $";
 !
 !   Description: Solves a tridiagonal linear system with SLES.
 !
@@ -84,7 +84,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRA(1,' ',ierr)
+         SETERRQ(1,' ',ierr)
       endif
       none = -1.0
       one  = 1.0

@@ -1,4 +1,4 @@
-/*$Id: ex26.c,v 1.7 2000/01/11 21:00:17 bsmith Exp balay $*/
+/*$Id: ex26.c,v 1.8 2000/05/05 22:15:11 balay Exp bsmith $*/
 /*
 
 Test program follows. Writing it I realised that 
@@ -34,57 +34,57 @@ int main(int Argc,char **Args)
   PetscInitialize(&Argc,&Args,PETSC_NULL,PETSC_NULL);
 
   comm = MPI_COMM_WORLD;
-  ierr = MPI_Comm_size(comm,&size);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
   /* Create the necessary vectors; one element per processor */
-  ierr = VecCreateMPI(comm,1,PETSC_DECIDE,&tar_v);CHKERRA(ierr);
-  ierr = VecSet(&zero,tar_v);CHKERRA(ierr);
-  ierr = VecCreateMPI(comm,1,PETSC_DECIDE,&src_v);CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,1,&loc_v);CHKERRA(ierr);
+  ierr = VecCreateMPI(comm,1,PETSC_DECIDE,&tar_v);CHKERRQ(ierr);
+  ierr = VecSet(&zero,tar_v);CHKERRQ(ierr);
+  ierr = VecCreateMPI(comm,1,PETSC_DECIDE,&src_v);CHKERRQ(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,1,&loc_v);CHKERRQ(ierr);
   /* -- little trick: we need a distributed and a local vector
      that share each other's data; see below for application */
-  ierr = VecGetArray(loc_v,&loc_ar);CHKERRA(ierr);
-  ierr = VecPlaceArray(src_v,loc_ar);CHKERRA(ierr);
+  ierr = VecGetArray(loc_v,&loc_ar);CHKERRQ(ierr);
+  ierr = VecPlaceArray(src_v,loc_ar);CHKERRQ(ierr);
 
   /* Create the pipeline data: we write into our own location,
      and read one location from the left */
   tar_loc = rank;
   if (tar_loc>0) src_loc = tar_loc-1; else src_loc = tar_loc;
-  ierr = ISCreateGeneral(MPI_COMM_SELF,1,&tar_loc,&tar_idx);CHKERRA(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,1,&src_loc,&src_idx);CHKERRA(ierr);
-  ierr = VecPipelineCreate(comm,src_v,src_idx,tar_v,tar_idx,&pipe);CHKERRA(ierr);
-  ierr = VecPipelineSetType(pipe,PIPELINE_SEQUENTIAL,PETSC_NULL);CHKERRA(ierr);
-  ierr = VecPipelineSetup(pipe);CHKERRA(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,1,&tar_loc,&tar_idx);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,1,&src_loc,&src_idx);CHKERRQ(ierr);
+  ierr = VecPipelineCreate(comm,src_v,src_idx,tar_v,tar_idx,&pipe);CHKERRQ(ierr);
+  ierr = VecPipelineSetType(pipe,PIPELINE_SEQUENTIAL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecPipelineSetup(pipe);CHKERRQ(ierr);
 
   /* The actual pipe:
      receive accumulated value from previous processor,
      add the square of your own value, and send on. */
-  ierr = VecPipelineBegin(src_v,tar_v,INSERT_VALUES,SCATTER_FORWARD,PIPELINE_UP,pipe);CHKERRA(ierr);
-  ierr = VecGetArray(tar_v,&vec_values);CHKERRA(ierr);
+  ierr = VecPipelineBegin(src_v,tar_v,INSERT_VALUES,SCATTER_FORWARD,PIPELINE_UP,pipe);CHKERRQ(ierr);
+  ierr = VecGetArray(tar_v,&vec_values);CHKERRQ(ierr);
   my_value = vec_values[0] + (double)((rank+1)*(rank+1));
 
-  ierr = VecRestoreArray(tar_v,&vec_values);CHKERRA(ierr);CHKERRA(ierr)
+  ierr = VecRestoreArray(tar_v,&vec_values);CHKERRQ(ierr);CHKERRQ(ierr)
   /* -- little trick: we have to be able to call VecAssembly, 
      but since this code executed sequentially (critical section!),
      we have a local vector with data aliased to the distributed one */
   ierr = VecSetValues(loc_v,1,&zero_loc,&my_value,INSERT_VALUES);
-  ierr = VecAssemblyBegin(loc_v);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(loc_v);CHKERRA(ierr);
-  ierr = VecPipelineEnd(src_v,tar_v,INSERT_VALUES,SCATTER_FORWARD,PIPELINE_UP,pipe);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(loc_v);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(loc_v);CHKERRQ(ierr);
+  ierr = VecPipelineEnd(src_v,tar_v,INSERT_VALUES,SCATTER_FORWARD,PIPELINE_UP,pipe);CHKERRQ(ierr);
 
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] value=%d\n",rank,(int)PetscRealPart(my_value));CHKERRA(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] value=%d\n",rank,(int)PetscRealPart(my_value));CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   /* Clean up */
-  ierr = VecPipelineDestroy(pipe);CHKERRA(ierr);
-  ierr = VecDestroy(src_v);CHKERRA(ierr);
-  ierr = VecDestroy(tar_v);CHKERRA(ierr);
-  ierr = VecDestroy(loc_v);CHKERRA(ierr);
-  ierr = ISDestroy(src_idx);CHKERRA(ierr);
-  ierr = ISDestroy(tar_idx);CHKERRA(ierr);
+  ierr = VecPipelineDestroy(pipe);CHKERRQ(ierr);
+  ierr = VecDestroy(src_v);CHKERRQ(ierr);
+  ierr = VecDestroy(tar_v);CHKERRQ(ierr);
+  ierr = VecDestroy(loc_v);CHKERRQ(ierr);
+  ierr = ISDestroy(src_idx);CHKERRQ(ierr);
+  ierr = ISDestroy(tar_idx);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRA(ierr);
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }

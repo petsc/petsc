@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.16 2000/10/24 20:26:04 bsmith Exp bsmith $*/
+/*$Id: ex15.c,v 1.17 2001/01/15 21:46:09 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd().\n\n";
 
@@ -18,72 +18,72 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
-  ierr = MatSetFromOptions(C);CHKERRA(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-symmetric",&flg);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-symmetric",&flg);CHKERRQ(ierr);
   if (flg) {  /* Treat matrix as symmetric only if we set this flag */
-    ierr = MatSetOption(C,MAT_SYMMETRIC);CHKERRA(ierr);
+    ierr = MatSetOption(C,MAT_SYMMETRIC);CHKERRQ(ierr);
   }
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
       v = -1.0;  I = j + n*i;
-      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
+      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatGetOrdering(C,MATORDERING_RCM,&perm,&iperm);CHKERRA(ierr);
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u);CHKERRA(ierr);
-  ierr = VecSet(&one,u);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&x);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&y);CHKERRA(ierr);
-  ierr = MatMult(C,u,b);CHKERRA(ierr);
-  ierr = VecCopy(b,y);CHKERRA(ierr);
-  ierr = VecScale(&alpha,y);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatGetOrdering(C,MATORDERING_RCM,&perm,&iperm);CHKERRQ(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u);CHKERRQ(ierr);
+  ierr = VecSet(&one,u);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&y);CHKERRQ(ierr);
+  ierr = MatMult(C,u,b);CHKERRQ(ierr);
+  ierr = VecCopy(b,y);CHKERRQ(ierr);
+  ierr = VecScale(&alpha,y);CHKERRQ(ierr);
 
-  ierr = MatNorm(C,NORM_FROBENIUS,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Frobenius norm of matrix %g\n",norm);CHKERRA(ierr);
-  ierr = MatNorm(C,NORM_1,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"One  norm of matrix %g\n",norm);CHKERRA(ierr);
-  ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Infinity norm of matrix %g\n",norm);CHKERRA(ierr);
+  ierr = MatNorm(C,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Frobenius norm of matrix %g\n",norm);CHKERRQ(ierr);
+  ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"One  norm of matrix %g\n",norm);CHKERRQ(ierr);
+  ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Infinity norm of matrix %g\n",norm);CHKERRQ(ierr);
 
-  ierr = MatLUFactor(C,perm,iperm,PETSC_NULL);CHKERRA(ierr);
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatLUFactor(C,perm,iperm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Test MatSolve */
-  ierr = MatSolve(C,b,x);CHKERRA(ierr);
-  ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
-  ierr = VecAXPY(&mone,u,x);CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRA(ierr);
+  ierr = MatSolve(C,b,x);CHKERRQ(ierr);
+  ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = VecAXPY(&mone,u,x);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);
 
   /* Test MatSolveAdd */
-  ierr = MatSolveAdd(C,b,y,x);CHKERRA(ierr);
+  ierr = MatSolveAdd(C,b,y,x);CHKERRQ(ierr);
 
-  ierr = VecAXPY(&mone,y,x);CHKERRA(ierr);
-  ierr = VecAXPY(&mone,u,x);CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
+  ierr = VecAXPY(&mone,y,x);CHKERRQ(ierr);
+  ierr = VecAXPY(&mone,u,x);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);
 
-  ierr = ISDestroy(perm);CHKERRA(ierr);
-  ierr = ISDestroy(iperm);CHKERRA(ierr);
-  ierr = VecDestroy(u);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr);
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = MatDestroy(C);CHKERRA(ierr);
+  ierr = ISDestroy(perm);CHKERRQ(ierr);
+  ierr = ISDestroy(iperm);CHKERRQ(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = MatDestroy(C);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

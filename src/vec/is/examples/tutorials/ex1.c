@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.22 2001/01/15 21:44:33 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.23 2001/01/16 18:16:39 balay Exp bsmith $*/
 
 static char help[] = "Creating a general index set.\n\n";
 
@@ -25,19 +25,19 @@ int main(int argc,char **argv)
   IS       is;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /*
      Create an index set with 5 entries. Each processor creates
    its own index set with its own list of integers.
   */
-  ierr = PetscMalloc(5*sizeof(int),&indices);CHKERRA(ierr);
+  ierr = PetscMalloc(5*sizeof(int),&indices);CHKERRQ(ierr);
   indices[0] = rank + 1; 
   indices[1] = rank + 2; 
   indices[2] = rank + 3; 
   indices[3] = rank + 4; 
   indices[4] = rank + 5; 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,5,indices,&is);CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,5,indices,&is);CHKERRQ(ierr);
   /*
      Note that ISCreateGeneral() has made a copy of the indices
      so we may (and generally should) free indices[]
@@ -47,34 +47,34 @@ int main(int argc,char **argv)
   /*
      Print the index set to stdout
   */
-  ierr = ISView(is,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(is,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /*
      Get the number of indices in the set 
   */
-  ierr = ISGetLocalSize(is,&n);CHKERRA(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
 
   /*
      Get the indices in the index set
   */
-  ierr = ISGetIndices(is,&indices);CHKERRA(ierr);
+  ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
   /*
      Now any code that needs access to the list of integers
    has access to it here through indices[].
    */
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] First index %d\n",rank,indices[0]);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] First index %d\n",rank,indices[0]);CHKERRQ(ierr);
 
   /*
      Once we no longer need access to the indices they should 
      returned to the system 
   */
-  ierr = ISRestoreIndices(is,&indices);CHKERRA(ierr);
+  ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
 
   /*
      One should destroy any PETSc object once one is completely
     done with it.
   */
-  ierr = ISDestroy(is);CHKERRA(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.8 2000/01/11 20:59:19 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.9 2001/01/15 21:43:34 bsmith Exp bsmith $*/
 
 static char help[] = "Makes a simple histogram\n";
 
@@ -20,33 +20,33 @@ int main(int argc,char **argv)
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-width",&width,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-height",&height,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-bins",&bins,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-color",&color,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-nolabels",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-width",&width,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-height",&height,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-bins",&bins,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-color",&color,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-nolabels",&flg);CHKERRQ(ierr);
   if (flg) {
     xlabel = (char *)0; toplabel = (char *)0;
   }
-  /* ierr = PetscDrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);*/
-  ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
-  ierr = PetscDrawSetType(draw,PETSC_DRAW_X);CHKERRA(ierr);
-  ierr = PetscDrawHGCreate(draw,bins,&hist);CHKERRA(ierr);
-  ierr = PetscDrawHGGetAxis(hist,&axis);CHKERRA(ierr);
-  ierr = PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE);CHKERRA(ierr);
-  ierr = PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel);CHKERRA(ierr);
+  /* ierr = PetscDrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);*/
+  ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetType(draw,PETSC_DRAW_X);CHKERRQ(ierr);
+  ierr = PetscDrawHGCreate(draw,bins,&hist);CHKERRQ(ierr);
+  ierr = PetscDrawHGGetAxis(hist,&axis);CHKERRQ(ierr);
+  ierr = PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE);CHKERRQ(ierr);
+  ierr = PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel);CHKERRQ(ierr);
 
   for (i=0; i<n ; i++) {
     xd = (double)(i - 5);
-    ierr = PetscDrawHGAddValue(hist,xd*xd);CHKERRA(ierr);
+    ierr = PetscDrawHGAddValue(hist,xd*xd);CHKERRQ(ierr);
   }
-  ierr = PetscDrawHGSetColor(hist,color);CHKERRA(ierr);
-  ierr = PetscDrawHGDraw(hist);CHKERRA(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRA(ierr);
+  ierr = PetscDrawHGSetColor(hist,color);CHKERRQ(ierr);
+  ierr = PetscDrawHGDraw(hist);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
 
-  ierr = PetscDrawHGDestroy(hist);CHKERRA(ierr);
-  ierr = PetscDrawDestroy(draw);CHKERRA(ierr);
+  ierr = PetscDrawHGDestroy(hist);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

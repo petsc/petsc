@@ -1,4 +1,4 @@
-/*$Id: ex32.c,v 1.22 2001/01/15 21:46:09 bsmith Exp balay $*/
+/*$Id: ex32.c,v 1.23 2001/01/16 18:18:12 balay Exp bsmith $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
@@ -22,25 +22,25 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read in matrix and RHS */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,127,PETSC_NULL);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRA(ierr);
+  ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRQ(ierr);
 
   fscanf(file,"  NUNKNS =%d  NCOEFF =%d\n",&n,&nnz);
   fscanf(file,"  JA POINTER IN SLAPSV\n");
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,n,n,20,0,&A);CHKERRA(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,n,n,20,0,&A);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((n+1)*sizeof(int),&col);CHKERRA(ierr);
+  ierr = PetscMalloc((n+1)*sizeof(int),&col);CHKERRQ(ierr);
   for (i=0; i<n+1; i++)
     fscanf(file,"     I=%d%d\n",&j,&col[i]);
   fscanf(file,"  EOD JA\n");
 
-  ierr = PetscMalloc(nnz*sizeof(Scalar),&val);CHKERRA(ierr);
-  ierr = PetscMalloc(nnz*sizeof(int),&row);CHKERRA(ierr);
+  ierr = PetscMalloc(nnz*sizeof(Scalar),&val);CHKERRQ(ierr);
+  ierr = PetscMalloc(nnz*sizeof(int),&row);CHKERRQ(ierr);
   fscanf(file,"  COEFFICIENT MATRIX IN SLAPSV: I, IA, A\n");
   for (i=0; i<nnz; i++) {
     fscanf(file,"    %d%d%le\n",&j,&row[i],&val[i]);
@@ -48,8 +48,8 @@ int main(int argc,char **args)
   }
   fscanf(file,"  EOD IA\n");
 
-  ierr = PetscMalloc(n*sizeof(Scalar),&bval);CHKERRA(ierr);
-  ierr = PetscMalloc(n*sizeof(int),&brow);CHKERRA(ierr);
+  ierr = PetscMalloc(n*sizeof(Scalar),&bval);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(int),&brow);CHKERRQ(ierr);
   fscanf(file,"  RESIDUAL IN SLAPSV ;IRHS=%d\n",&j);
   for (i=0; i<n; i++) {
     fscanf(file,"      %d%le%d\n",&j,bval+i,&j);
@@ -63,31 +63,31 @@ int main(int argc,char **args)
   end = (rank+1)*m; if (end > n) end = n;
   for (j=start; j<end; j++) {
     length = col[j+1]-col[j];
-    ierr = MatSetValues(A,length,&row[col[j]-1],1,&j,&val[col[j]-1],INSERT_VALUES);CHKERRA(ierr);
+    ierr = MatSetValues(A,length,&row[col[j]-1],1,&j,&val[col[j]-1],INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = VecGetOwnershipRange(b,&start,&end);CHKERRA(ierr);
-  ierr = VecSetValues(b,end-start,brow+start,bval+start,INSERT_VALUES);CHKERRA(ierr);
-  ierr = VecAssemblyBegin(b);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
+  ierr = VecSetValues(b,end-start,brow+start,bval+start,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
-  ierr = PetscFree(col);CHKERRA(ierr);
-  ierr = PetscFree(val);CHKERRA(ierr);
-  ierr = PetscFree(row);CHKERRA(ierr);
-  ierr = PetscFree(bval);CHKERRA(ierr);
+  ierr = PetscFree(col);CHKERRQ(ierr);
+  ierr = PetscFree(val);CHKERRQ(ierr);
+  ierr = PetscFree(row);CHKERRQ(ierr);
+  ierr = PetscFree(bval);CHKERRQ(ierr);
   ierr = PetscFree(brow);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRA(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,127,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,PETSC_BINARY_CREATE,&view);CHKERRA(ierr);
-  ierr = MatView(A,view);CHKERRA(ierr);
-  ierr = VecView(b,view);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(view);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,PETSC_BINARY_CREATE,&view);CHKERRQ(ierr);
+  ierr = MatView(A,view);CHKERRQ(ierr);
+  ierr = VecView(b,view);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
 
-  ierr = VecDestroy(b);CHKERRA(ierr);
-  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

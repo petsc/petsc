@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.76 2000/10/24 20:27:14 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.77 2001/01/15 21:48:06 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
 This example employs a user-defined monitoring routine.\n\n";
@@ -50,16 +50,16 @@ int main(int argc,char **argv)
   double     atol,rtol,stol,norm;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   h = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -67,24 +67,24 @@ int main(int argc,char **argv)
   /*
      Note that we form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRA(ierr);
-  ierr = VecSetFromOptions(x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&F);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&U);CHKERRA(ierr); 
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&F);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&U);CHKERRQ(ierr); 
 
   /* 
      Set function evaluation routine and vector
   */
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&J);CHKERRA(ierr);
-  ierr = MatSetFromOptions(J);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&J);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(J);CHKERRQ(ierr);
 
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
   */
 
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL);CHKERRA(ierr);
+  ierr = SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -106,28 +106,28 @@ int main(int argc,char **argv)
   /* 
      Set an optional user-defined monitoring routine
   */
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,&monP,0);CHKERRA(ierr); 
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRQ(ierr);
+  ierr = SNESSetMonitor(snes,Monitor,&monP,0);CHKERRQ(ierr); 
 
   /*
      Set names for some vectors to facilitate monitoring (optional)
   */
-  ierr = PetscObjectSetName((PetscObject)x,"Approximate Solution");CHKERRA(ierr);
-  ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRA(ierr);
+  ierr = PetscObjectSetName((PetscObject)x,"Approximate Solution");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRQ(ierr);
 
   /* 
      Set SNES/SLES/KSP/PC runtime options, e.g.,
          -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
   */
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* 
      Print parameters used for convergence testing (optional) ... just
      to demonstrate this routine; this information is also printed with
      the option -snes_view
   */
-  ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%d, maxf=%d\n",atol,rtol,stol,maxit,maxf);CHKERRA(ierr);
+  ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%d, maxf=%d\n",atol,rtol,stol,maxit,maxf);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
@@ -137,9 +137,9 @@ int main(int argc,char **argv)
   xp = 0.0;
   for (i=0; i<n; i++) {
     v = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
-    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
     v= xp*xp*xp;
-    ierr = VecSetValues(U,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(U,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
     xp += h;
   }
 
@@ -152,9 +152,9 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(x);CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d\n\n",its);CHKERRA(ierr);
+  ierr = FormInitialGuess(x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d\n\n",its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Check solution and clean up
@@ -163,19 +163,19 @@ int main(int argc,char **argv)
   /* 
      Check the error
   */
-  ierr = VecAXPY(&none,U,x);CHKERRA(ierr);
-  ierr  = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRA(ierr);
+  ierr = VecAXPY(&none,U,x);CHKERRQ(ierr);
+  ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
 
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(x);CHKERRA(ierr);  ierr = VecDestroy(r);CHKERRA(ierr);
-  ierr = VecDestroy(U);CHKERRA(ierr);  ierr = VecDestroy(F);CHKERRA(ierr);
-  ierr = MatDestroy(J);CHKERRA(ierr);  ierr = SNESDestroy(snes);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(monP.viewer);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);  ierr = VecDestroy(r);CHKERRQ(ierr);
+  ierr = VecDestroy(U);CHKERRQ(ierr);  ierr = VecDestroy(F);CHKERRQ(ierr);
+  ierr = MatDestroy(J);CHKERRQ(ierr);  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(monP.viewer);CHKERRQ(ierr);
   PetscFinalize();
 
   return 0;

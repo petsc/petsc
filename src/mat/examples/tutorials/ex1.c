@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.23 2000/10/31 17:23:10 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.24 2001/01/15 21:46:24 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and reorders it.\n\
@@ -47,9 +47,9 @@ int main(int argc,char **args)
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,"Must indicate binary file with the -f0 option");
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(1,"Must indicate binary file with the -f0 option");
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRQ(ierr);
   if (flg) PreLoad = PETSC_TRUE;
 
   /* -----------------------------------------------------------
@@ -74,28 +74,28 @@ int main(int argc,char **args)
        Open binary file.  Note that we use PETSC_BINARY_RDONLY to indicate
        reading from this file.
     */
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],PETSC_BINARY_RDONLY,&fd);CHKERRQ(ierr);
 
     /*
        Load the matrix; then destroy the viewer.
     */
-    ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
-    ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
+    ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     PreLoadStage("Reordering");
-    ierr = MatGetOrdering(A,rtype,&isrow,&iscol);CHKERRA(ierr);
+    ierr = MatGetOrdering(A,rtype,&isrow,&iscol);CHKERRQ(ierr);
 
     /* 
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
     */
-    ierr = MatDestroy(A);CHKERRA(ierr);
-    ierr = ISDestroy(isrow);CHKERRA(ierr);
-    ierr = ISDestroy(iscol);CHKERRA(ierr);
+    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = ISDestroy(isrow);CHKERRQ(ierr);
+    ierr = ISDestroy(iscol);CHKERRQ(ierr);
   PreLoadEnd();
 
   PetscFinalize();

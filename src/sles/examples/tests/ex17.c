@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.36 2000/10/24 20:26:51 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.37 2001/01/15 21:47:31 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
@@ -23,8 +23,8 @@ int main(int argc,char **args)
   PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
   switch (p) {
     case 1:  type = TEST_1;      dim = n;   break;
     case 2:  type = TEST_2;      dim = n;   break;
@@ -35,51 +35,51 @@ int main(int argc,char **args)
   }
 
   /* Create vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,dim,&x);CHKERRA(ierr);
-  ierr = VecSetFromOptions(x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&b);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,dim,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
 
   use_random = 1;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-norandom",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-norandom",&flg);CHKERRQ(ierr);
   if (flg) {
     use_random = 0;
-    ierr = VecSet(&pfive,u);CHKERRA(ierr);
+    ierr = VecSet(&pfive,u);CHKERRQ(ierr);
   } else {
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRA(ierr);
-    ierr = VecSetRandom(rctx,u);CHKERRA(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
+    ierr = VecSetRandom(rctx,u);CHKERRQ(ierr);
   }
 
   /* Create and assemble matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,dim,dim,&A);CHKERRA(ierr);
-  ierr = MatSetFromOptions(A);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,dim,dim,&A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = FormTestMatrix(A,n,type);CHKERRQ(ierr);
-  ierr = MatMult(A,u,b);CHKERRA(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-printout",&flg);CHKERRA(ierr);
+  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-printout",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-    ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-    ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* Create SLES context; set operators and options; solve linear system */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);
- CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
-  ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
-  ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+ CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+  ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Check error */
-  ierr = VecAXPY(&none,u,x);CHKERRA(ierr);
-  ierr  = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A,Iterations %d\n",norm,its);CHKERRA(ierr);
+  ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
+  ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A,Iterations %d\n",norm,its);CHKERRQ(ierr);
 
   /* Free work space */
-  ierr = VecDestroy(x);CHKERRA(ierr); ierr = VecDestroy(u);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr); ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr); ierr = MatDestroy(A);CHKERRQ(ierr);
   if (use_random) {ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);}
-  ierr = SLESDestroy(sles);CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }
@@ -95,7 +95,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
   Scalar val[5],h;
   int    i,j,I,J,ierr,col[5],Istart,Iend;
 
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
   if (type == TEST_1) {
     val[0] = 1.0; val[1] = 4.0; val[2] = -2.0;
     for (i=1; i<n-1; i++) {
@@ -146,7 +146,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
     PetscRandom rctx;
     double      h2,sigma1 = 5.0;
     Scalar      sigma2;
-    ierr = PetscOptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
+    ierr = PetscOptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
     for (I=Istart; I<Iend; I++) { 
@@ -175,7 +175,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
      */
     double  h2,sigma1 = 200.0;
     Scalar alpha_h;
-    ierr = PetscOptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
+    ierr = PetscOptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
     alpha_h = (PETSC_i * 10.0) / (double)(n+1);  /* alpha_h = alpha * h */
     for (I=Istart; I<Iend; I++) { 

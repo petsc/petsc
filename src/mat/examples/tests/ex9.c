@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.17 2000/10/24 20:26:04 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.18 2001/01/15 21:46:09 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
@@ -18,12 +18,12 @@ int main(int argc,char **args)
   int        bs,ndiag,diag[7];  bs = 1,ndiag = 5;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n = 2*size;
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
 
   diag[0] = n;
   diag[1] = 1;
@@ -31,63 +31,63 @@ int main(int argc,char **args)
   diag[3] = -1;
   diag[4] = -n;
   if (size>1) {ndiag = 7; diag[5] = 2; diag[6] = -2;}
-  ierr = MatMPIBDiagSetPreallocation(C,ndiag,bs,diag,PETSC_NULL);CHKERRA(ierr);
-  ierr = MatMPIAIJSetPreallocation(C,5,PETSC_NULL,5,PETSC_NULL);CHKERRA(ierr);
+  ierr = MatMPIBDiagSetPreallocation(C,ndiag,bs,diag,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(C,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   for (i=0; i<m; i++) { 
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  I = j + n*i;
-      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
+      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
   /* Add extra elements (to illustrate variants of MatGetInfo) */
   I = n; J = n-2; v = 100.0;
-  ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);
+  ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
   I = n-2; J = n; v = 100.0;
-  ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);
+  ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Form vectors */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecGetLocalSize(u,&ldim);
-  ierr = VecGetOwnershipRange(u,&low,&high);CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(u,&low,&high);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
     v = one*((double)i) + 100.0*rank;
-    ierr = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(u);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(u);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
 
-  ierr = MatMult(C,u,b);CHKERRA(ierr);
+  ierr = MatMult(C,u,b);CHKERRQ(ierr);
 
-  ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = VecDestroy(u);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-view_info",&flg);CHKERRA(ierr);
-  if (flg)  {ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);}
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-view_info",&flg);CHKERRQ(ierr);
+  if (flg)  {ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);}
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRA(ierr);
+  ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix information (global sums):\n\
-     nonzeros = %d, allocated nonzeros = %d\n",(int)info.nz_used,(int)info.nz_allocated);CHKERRA(ierr);
-  ierr = MatGetInfo (C,MAT_GLOBAL_MAX,&info);CHKERRA(ierr);
+     nonzeros = %d, allocated nonzeros = %d\n",(int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
+  ierr = MatGetInfo (C,MAT_GLOBAL_MAX,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix information (global max):\n\
-     nonzeros = %d, allocated nonzeros = %d\n",(int)info.nz_used,(int)info.nz_allocated);CHKERRA(ierr);
+     nonzeros = %d, allocated nonzeros = %d\n",(int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
 
-  ierr = MatDestroy(C);CHKERRA(ierr);
+  ierr = MatDestroy(C);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

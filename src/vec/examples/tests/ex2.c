@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.48 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.49 2001/01/15 21:45:13 bsmith Exp bsmith $*/
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
   -n <length> : vector length\n\n";
@@ -17,36 +17,36 @@ int main(int argc,char **argv)
   VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   /* create two vector */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&y);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
 
   /* create two index sets */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,idx1,&is1);CHKERRA(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,idx2,&is2);CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,idx1,&is1);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,idx2,&is2);CHKERRQ(ierr);
 
-  ierr = VecSet(&one,x);CHKERRA(ierr);
-  ierr = VecSet(&two,y);CHKERRA(ierr);
-  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRA(ierr);
-  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
-  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
+  ierr = VecSet(&one,x);CHKERRQ(ierr);
+  ierr = VecSet(&two,y);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
   
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-  ierr = VecScatterBegin(y,x,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
-  ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
-  ierr = VecScatterDestroy(ctx);CHKERRA(ierr);
+  ierr = VecScatterBegin(y,x,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"-------\n");CHKERRA(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"-------\n");CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-  ierr = ISDestroy(is1);CHKERRA(ierr);
-  ierr = ISDestroy(is2);CHKERRA(ierr);
+  ierr = ISDestroy(is1);CHKERRQ(ierr);
+  ierr = ISDestroy(is2);CHKERRQ(ierr);
 
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(y);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

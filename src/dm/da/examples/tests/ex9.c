@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.13 2001/01/15 21:49:08 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.14 2001/01/16 18:21:19 balay Exp bsmith $*/
       
 static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 
@@ -23,28 +23,28 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* Read options */  
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-star",&flg);CHKERRA(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-star",&flg);CHKERRQ(ierr); 
   if (flg) stencil_type =  DA_STENCIL_STAR;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-test_order",&test_order);CHKERRA(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-test_order",&test_order);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRQ(ierr);
   if (flg) {
-    if (m == PETSC_DECIDE) SETERRA(1,"Must set -m option with -distribute option");
+    if (m == PETSC_DECIDE) SETERRQ(1,"Must set -m option with -distribute option");
     ierr = PetscMalloc(m*sizeof(int),&lx);CHKERRQ(ierr);
     for (i=0; i<m-1; i++) { lx[i] = 4;}
     lx[m-1] = M - 4*(m-1);
-    if (n == PETSC_DECIDE) SETERRA(1,"Must set -n option with -distribute option");
+    if (n == PETSC_DECIDE) SETERRQ(1,"Must set -n option with -distribute option");
     ierr = PetscMalloc(n*sizeof(int),&ly);CHKERRQ(ierr);
     for (i=0; i<n-1; i++) { ly[i] = 2;}
     ly[n-1] = N - 2*(n-1);
-    if (p == PETSC_DECIDE) SETERRA(1,"Must set -p option with -distribute option");
+    if (p == PETSC_DECIDE) SETERRQ(1,"Must set -p option with -distribute option");
     ierr = PetscMalloc(p*sizeof(int),&lz);CHKERRQ(ierr);
     for (i=0; i<p-1; i++) { lz[i] = 2;}
     lz[p-1] = P - 2*(p-1);
@@ -52,26 +52,26 @@ int main(int argc,char **argv)
 
   /* Create distributed array and get vectors */
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,stencil_type,M,N,P,m,n,p,w,s,
-                    lx,ly,lz,&da);CHKERRA(ierr);
+                    lx,ly,lz,&da);CHKERRQ(ierr);
   if (lx) {
-    ierr = PetscFree(lx);CHKERRA(ierr);
-    ierr = PetscFree(ly);CHKERRA(ierr);
-    ierr = PetscFree(lz);CHKERRA(ierr);
+    ierr = PetscFree(lx);CHKERRQ(ierr);
+    ierr = PetscFree(ly);CHKERRQ(ierr);
+    ierr = PetscFree(lz);CHKERRQ(ierr);
   }
 
-  ierr = DAGetColoring(da,&coloring,&mat);CHKERRA(ierr);
-  ierr = MatFDColoringCreate(mat,coloring,&fdcoloring);CHKERRA(ierr); 
+  ierr = DAGetColoring(da,&coloring,&mat);CHKERRQ(ierr);
+  ierr = MatFDColoringCreate(mat,coloring,&fdcoloring);CHKERRQ(ierr); 
 
-  ierr = DACreateGlobalVector(da,&dvec);CHKERRA(ierr);
-  ierr = DACreateLocalVector(da,&lvec);CHKERRA(ierr);
+  ierr = DACreateGlobalVector(da,&dvec);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,&lvec);CHKERRQ(ierr);
 
   /* Free memory */
-  ierr = MatFDColoringDestroy(fdcoloring);CHKERRA(ierr);
-  ierr = VecDestroy(dvec);CHKERRA(ierr);
-  ierr = VecDestroy(lvec);CHKERRA(ierr);
-  ierr = MatDestroy(mat);CHKERRA(ierr); 
-  ierr = ISColoringDestroy(coloring);CHKERRA(ierr); 
-  ierr = DADestroy(da);CHKERRA(ierr);
+  ierr = MatFDColoringDestroy(fdcoloring);CHKERRQ(ierr);
+  ierr = VecDestroy(dvec);CHKERRQ(ierr);
+  ierr = VecDestroy(lvec);CHKERRQ(ierr);
+  ierr = MatDestroy(mat);CHKERRQ(ierr); 
+  ierr = ISColoringDestroy(coloring);CHKERRQ(ierr); 
+  ierr = DADestroy(da);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

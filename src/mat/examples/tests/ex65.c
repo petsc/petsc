@@ -1,4 +1,4 @@
-/*$Id: ex65.c,v 1.8 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex65.c,v 1.9 2001/01/15 21:46:09 bsmith Exp bsmith $*/
 
 static char help[] = "Saves a rectangular sparse matrix to disk\n\n";
 
@@ -15,7 +15,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,20,0,&A);CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,20,0,&A);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) values[i] = (double)i;
 
@@ -28,16 +28,16 @@ int main(int argc,char **args)
     } else {
       ;
     }
-    ierr = MatSetValues(A,1,&i,cnt,js,values,INSERT_VALUES);CHKERRA(ierr);
+    ierr = MatSetValues(A,1,&i,cnt,js,values,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"rect",PETSC_BINARY_CREATE,&view);CHKERRA(ierr);
-  ierr = MatView(A,view);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(view);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"rect",PETSC_BINARY_CREATE,&view);CHKERRQ(ierr);
+  ierr = MatView(A,view);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
 
-  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

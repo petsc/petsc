@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.16 2001/01/15 21:49:29 bsmith Exp balay $*/
+/*$Id: appload.c,v 1.17 2001/01/16 18:21:41 balay Exp bsmith $*/
 /*
      Loads the quadrilateral grid database from a file  and sets up the local 
      data structures. 
@@ -45,14 +45,14 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   /* (moved to AppCtxSetLocal by H)
       Partition the grid cells */
   
-  /* ierr = AODataKeyPartition((*appctx)->aodata,"cell");CHKERRA(ierr); */ 
+  /* ierr = AODataKeyPartition((*appctx)->aodata,"cell");CHKERRQ(ierr); */ 
 
   /* Partition the vertices subservient to the cells */
-  /* ierr = AODataSegmentPartition((*appctx)->aodata,"cell","vertex");CHKERRA(ierr);  
+  /* ierr = AODataSegmentPartition((*appctx)->aodata,"cell","vertex");CHKERRQ(ierr);  
   */
 
   /*     Generate the local numbering of cells and vertices  */
-  ierr = AppCtxSetLocal(*appctx);CHKERRA(ierr);
+  ierr = AppCtxSetLocal(*appctx);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -96,10 +96,10 @@ int AppCtxSetLocal(AppCtx *appctx)
   /* (moved from AppCtxCreate by H)
      Partition the grid cells */
   
-  ierr = AODataKeyPartition(ao,"cell");CHKERRA(ierr); 
+  ierr = AODataKeyPartition(ao,"cell");CHKERRQ(ierr); 
 
   /* Partition the vertices subservient to the cells */
-  ierr = AODataSegmentPartition(ao,"cell","vertex");CHKERRA(ierr);  
+  ierr = AODataSegmentPartition(ao,"cell","vertex");CHKERRQ(ierr);  
 
   /*   Generate the list of on processor cells   */
   /* Need a local numbering so that we can loop over the cells */

@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.10 2000/05/05 22:15:21 balay Exp bsmith $*/
+/*$Id: ex13.c,v 1.11 2000/09/22 20:43:24 bsmith Exp bsmith $*/
 
 static char help[] = "Tests PetscObjectPublish().\n\n";
 
@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   Vec     x,xlocal;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /*
      Create a parallel vector.
@@ -34,14 +34,14 @@ int main(int argc,char **argv)
         local size PETSc will choose a reasonable partition trying 
         to put nearly an equal number of elements on each processor.
   */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+4,PETSC_DECIDE,&x);CHKERRA(ierr);
-  ierr = PetscObjectPublish((PetscObject)x);CHKERRA(ierr);
-  ierr = VecGetLocalSize(x,&n);CHKERRA(ierr);
-  ierr = VecSet(&one,x);CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+4,PETSC_DECIDE,&x);CHKERRQ(ierr);
+  ierr = PetscObjectPublish((PetscObject)x);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+  ierr = VecSet(&one,x);CHKERRQ(ierr);
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,rank+4,&xlocal);CHKERRA(ierr);
-  ierr = PetscObjectPublish((PetscObject)xlocal);CHKERRA(ierr);
-  ierr = VecSet(&one,xlocal);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,rank+4,&xlocal);CHKERRQ(ierr);
+  ierr = PetscObjectPublish((PetscObject)xlocal);CHKERRQ(ierr);
+  ierr = VecSet(&one,xlocal);CHKERRQ(ierr);
 
   while (1) {
 
@@ -49,24 +49,24 @@ int main(int argc,char **argv)
        Access the vector entries and add to them
     */
     PetscBarrier((PetscObject)x);
-    ierr = VecGetArray(x,&array);CHKERRA(ierr);
+    ierr = VecGetArray(x,&array);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       array[i]++;
     }
-    ierr = VecRestoreArray(x,&array);CHKERRA(ierr);
+    ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
 
-    ierr = VecGetArray(xlocal,&array);CHKERRA(ierr);
+    ierr = VecGetArray(xlocal,&array);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       array[i]++;
     }
-    ierr = VecRestoreArray(xlocal,&array);CHKERRA(ierr);
+    ierr = VecRestoreArray(xlocal,&array);CHKERRQ(ierr);
   }
 
   /*
         Destroy the vectors
   */
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(xlocal);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(xlocal);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

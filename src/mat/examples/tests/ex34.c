@@ -1,4 +1,4 @@
-/*$Id: ex34.c,v 1.12 2000/10/24 20:26:04 bsmith Exp bsmith $*/
+/*$Id: ex34.c,v 1.13 2001/01/15 21:46:09 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a matrix and vector from a file and writes to another. Input options:\n\
@@ -22,24 +22,24 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read matrix and RHS */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",file,255,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,help);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
-  ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
-  ierr = VecLoad(fd,&x);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",file,255,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(1,help);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRQ(ierr);
+  ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRQ(ierr);
+  ierr = VecLoad(fd,&x);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   /* Write matrix and vector */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",file,255,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,help);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_CREATE,&fd);CHKERRA(ierr);
-  ierr = MatView(A,fd);CHKERRA(ierr);
-  ierr = VecView(x,fd);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",file,255,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(1,help);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_CREATE,&fd);CHKERRQ(ierr);
+  ierr = MatView(A,fd);CHKERRQ(ierr);
+  ierr = VecView(x,fd);CHKERRQ(ierr);
 
   /* Free data structures */
-  ierr = MatDestroy(A);CHKERRA(ierr);
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

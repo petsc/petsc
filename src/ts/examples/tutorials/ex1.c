@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.23 2000/09/28 21:15:02 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.24 2001/01/15 21:48:36 bsmith Exp bsmith $*/
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
 
@@ -79,14 +79,14 @@ int main(int argc,char **argv)
     SETERRQ(1,"Parameter is out of range");
   }
   dt = .5/PetscMax(user.mx,user.my);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-dt",&dt,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-dt",&dt,PETSC_NULL);CHKERRQ(ierr);
   N          = user.mx*user.my;
   
   /* 
       Create vectors to hold the solution and function value
   */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
   /*
     Create matrix to hold Jacobian. Preallocate 5 nonzeros per row
@@ -94,17 +94,17 @@ int main(int argc,char **argv)
     the Performance chapter of the users manual for information on 
     preallocating memory in sparse matrices.
   */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,0,&J);CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,0,&J);CHKERRQ(ierr);
 
   /* 
      Create timestepper context 
   */
-  ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts);CHKERRA(ierr);
+  ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts);CHKERRQ(ierr);
 
   /*
      Tell the timestepper context where to compute solutions
   */
-  ierr = TSSetSolution(ts,x);CHKERRA(ierr);
+  ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
 
   /*
      Provide the call-back for the nonlinear function we are 
@@ -112,13 +112,13 @@ int main(int argc,char **argv)
      function they will call this routine. Note the final argument
      is the application context used by the call-back functions.
   */
-  ierr = TSSetRHSFunction(ts,FormFunction,&user);CHKERRA(ierr);
+  ierr = TSSetRHSFunction(ts,FormFunction,&user);CHKERRQ(ierr);
 
   /*
      Set the Jacobian matrix and the function used to compute 
      Jacobians.
   */
-  ierr = TSSetRHSJacobian(ts,J,J,FormJacobian,&user);CHKERRA(ierr);
+  ierr = TSSetRHSJacobian(ts,J,J,FormJacobian,&user);CHKERRQ(ierr);
 
   /*
        For the initial guess for the problem
@@ -129,13 +129,13 @@ int main(int argc,char **argv)
        This indicates that we are using pseudo timestepping to 
      find a steady state solution to the nonlinear problem.
   */
-  ierr = TSSetType(ts,TS_PSEUDO);CHKERRA(ierr);
+  ierr = TSSetType(ts,TS_PSEUDO);CHKERRQ(ierr);
 
   /*
        Set the initial time to start at (this is arbitrary for 
      steady state problems; and the initial timestep given above
   */
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRA(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
 
   /*
       Set a large number of timesteps and final duration time
@@ -146,31 +146,31 @@ int main(int argc,char **argv)
   /*
       Use the default strategy for increasing the timestep
   */
-  ierr = TSPseudoSetTimeStep(ts,TSPseudoDefaultTimeStep,0);CHKERRA(ierr);
+  ierr = TSPseudoSetTimeStep(ts,TSPseudoDefaultTimeStep,0);CHKERRQ(ierr);
 
   /*
       Set any additional options from the options database. This
      includes all options for the nonlinear and linear solvers used
      internally the the timestepping routines.
   */
-  ierr = TSSetFromOptions(ts);CHKERRA(ierr);
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = TSSetUp(ts);CHKERRA(ierr);
+  ierr = TSSetUp(ts);CHKERRQ(ierr);
 
   /*
       Perform the solve. This is where the timestepping takes place.
   */
-  ierr = TSStep(ts,&its,&ftime);CHKERRA(ierr);
+  ierr = TSStep(ts,&its,&ftime);CHKERRQ(ierr);
   
   printf("Number of pseudo timesteps = %d final time %4.2e\n",its,ftime);
 
   /* 
      Free the data structures constructed above
   */
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(r);CHKERRA(ierr);
-  ierr = MatDestroy(J);CHKERRA(ierr);
-  ierr = TSDestroy(ts);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(r);CHKERRQ(ierr);
+  ierr = MatDestroy(J);CHKERRQ(ierr);
+  ierr = TSDestroy(ts);CHKERRQ(ierr);
   PetscFinalize();
 
   return 0;

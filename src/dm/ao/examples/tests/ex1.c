@@ -1,4 +1,4 @@
-/* $Id: ex1.c,v 1.16 2000/05/05 22:19:15 balay Exp bsmith $ */
+/* $Id: ex1.c,v 1.17 2001/01/15 21:48:46 bsmith Exp bsmith $ */
 
 static char help[] = "Demonstrates constructing an application ordering\n\n";
 
@@ -15,31 +15,31 @@ int main(int argc,char **argv)
   AO       ao;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* create the index sets */
-  ierr = ISCreateStride(PETSC_COMM_WORLD,n,rank,size,&ispetsc);CHKERRA(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&isapp);CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,n,rank,size,&ispetsc);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&isapp);CHKERRQ(ierr);
 
   /* create the application ordering */
-  ierr = AOCreateBasicIS(isapp,ispetsc,&ao);CHKERRA(ierr);
+  ierr = AOCreateBasicIS(isapp,ispetsc,&ao);CHKERRQ(ierr);
 
-  ierr = ISDestroy(ispetsc);CHKERRA(ierr);
-  ierr = ISDestroy(isapp);CHKERRA(ierr);
+  ierr = ISDestroy(ispetsc);CHKERRQ(ierr);
+  ierr = ISDestroy(isapp);CHKERRQ(ierr);
 
-  ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = AOPetscToApplication(ao,4,getapp);CHKERRA(ierr);
-  ierr = AOApplicationToPetsc(ao,3,getpetsc);CHKERRA(ierr);
+  ierr = AOPetscToApplication(ao,4,getapp);CHKERRQ(ierr);
+  ierr = AOApplicationToPetsc(ao,3,getpetsc);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 2,1,3,4 PetscToApplication %d %d %d %d\n",
-          rank,getapp[0],getapp[1],getapp[2],getapp[3]);CHKERRA(ierr);
+          rank,getapp[0],getapp[1],getapp[2],getapp[3]);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 0,3,4 ApplicationToPetsc %d %d %d\n",
-          rank,getpetsc[0],getpetsc[1],getpetsc[2]);CHKERRA(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
+          rank,getpetsc[0],getpetsc[1],getpetsc[2]);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-  ierr = AODestroy(ao);CHKERRA(ierr);
+  ierr = AODestroy(ao);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

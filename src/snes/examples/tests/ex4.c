@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.55 2000/10/24 20:27:11 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.56 2001/01/15 21:48:01 bsmith Exp bsmith $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
@@ -66,58 +66,58 @@ int main(int argc, char **argv)
   Scalar     *xvalues;
 
   PetscInitialize(&argc, &argv,(char *)0,help);
-  /* ierr = PetscDrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr); */
-  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
-  ierr = PetscDrawSetType(draw,PETSC_DRAW_X);CHKERRA(ierr);
+  /* ierr = PetscDrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRQ(ierr); */
+  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetType(draw,PETSC_DRAW_X);CHKERRQ(ierr);
 
   user.mx    = 4;
   user.my    = 4;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-cavity",&cavity);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-cavity",&cavity);CHKERRQ(ierr);
   if (cavity) user.param = 100.0;
   else        user.param = 6.0;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (!cavity && (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
-    SETERRA(1,"Lambda is out of range");
+    SETERRQ(1,"Lambda is out of range");
   }
   N = user.mx*user.my;
   
   /* Set up data structures */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,PETSC_NULL,&J);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = SNESSetType(snes,method);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
+  ierr = SNESSetType(snes,method);CHKERRQ(ierr);
 
   /* Set various routines and compute initial guess for nonlinear solver */
   if (cavity){
-    ierr = FormInitialGuess2(&user,x);CHKERRA(ierr);
-    ierr = SNESSetFunction(snes,r,FormFunction2,(void *)&user);CHKERRA(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,(void *)&user);CHKERRA(ierr);
+    ierr = FormInitialGuess2(&user,x);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction2,(void *)&user);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,(void *)&user);CHKERRQ(ierr);
   } else {
-    ierr = FormInitialGuess1(&user,x);CHKERRA(ierr);
-    ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user);CHKERRA(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void *)&user);CHKERRA(ierr);
+    ierr = FormInitialGuess1(&user,x);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void *)&user);CHKERRQ(ierr);
   }
 
   /* Set options and solve nonlinear system */
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr);
+  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);CHKERRA(ierr);
-  ierr = VecGetArray(x,&xvalues);CHKERRA(ierr);
-  ierr = PetscDrawTensorContour(draw,user.mx,user.my,0,0,xvalues);CHKERRA(ierr);
-  ierr = VecRestoreArray(x,&xvalues);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&xvalues);CHKERRQ(ierr);
+  ierr = PetscDrawTensorContour(draw,user.mx,user.my,0,0,xvalues);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xvalues);CHKERRQ(ierr);
 
   /* Free data structures */
-  ierr = VecDestroy(x);CHKERRA(ierr);  ierr = VecDestroy(r);CHKERRA(ierr);
-  ierr = MatDestroy(J);CHKERRA(ierr);  ierr = SNESDestroy(snes);CHKERRA(ierr);
-  ierr = PetscDrawDestroy(draw);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);  ierr = VecDestroy(r);CHKERRQ(ierr);
+  ierr = MatDestroy(J);CHKERRQ(ierr);  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
   PetscFinalize();
 
   return 0;

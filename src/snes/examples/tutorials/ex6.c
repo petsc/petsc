@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.65 2001/01/15 21:48:06 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.66 2001/01/16 18:20:24 balay Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
 matrices are used for the Jacobian and the preconditioner.  The code also\n\
@@ -50,59 +50,59 @@ int main(int argc,char **argv)
   PetscTruth flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   h = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,n,&x);CHKERRA(ierr);
-  ierr = VecSetFromOptions(x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&F);CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&F);CHKERRQ(ierr);
 
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structures; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&J);CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,1,PETSC_NULL,&JPrec);CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&J);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,1,PETSC_NULL,&JPrec);CHKERRQ(ierr);
 
   /*
      Note that in this case we create separate matrices for the Jacobian
      and preconditioner matrix.  Both of these are computed in the
      routine FormJacobian()
   */
-  ierr = SNESSetJacobian(snes,J,JPrec,FormJacobian,0);CHKERRA(ierr);
+  ierr = SNESSetJacobian(snes,J,JPrec,FormJacobian,0);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* Set preconditioner for matrix-free method */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
-    ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-    ierr = PetscOptionsHasName(PETSC_NULL,"-user_precond",&flg);CHKERRA(ierr);
+    ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+    ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-user_precond",&flg);CHKERRQ(ierr);
     if (flg) { /* user-defined precond */
-      ierr = PCSetType(pc,PCSHELL);CHKERRA(ierr);
-      ierr = PCShellSetApply(pc,MatrixFreePreconditioner,PETSC_NULL);CHKERRA(ierr);
-    } else {ierr = PCSetType(pc,PCNONE);CHKERRA(ierr);}
+      ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
+      ierr = PCShellSetApply(pc,MatrixFreePreconditioner,PETSC_NULL);CHKERRQ(ierr);
+    } else {ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);}
   }
 
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /*
      Save all the linear residuals for all the Newton steps; this enables us
@@ -114,15 +114,15 @@ int main(int argc,char **argv)
      following is a good option when monitoring code performance, for example
      when using -log_summary.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
-    ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
-    ierr = PetscMalloc(Khistl*sizeof(double),&Khist);CHKERRA(ierr);
-    ierr = KSPSetResidualHistory(ksp,Khist,Khistl,PETSC_FALSE);CHKERRA(ierr);
-    ierr = PetscMalloc(Shistl*sizeof(double),&Shist);CHKERRA(ierr);
-    ierr = PetscMalloc(Shistl*sizeof(int),&Shistit);CHKERRA(ierr);
-    ierr = SNESSetConvergenceHistory(snes,Shist,Shistit,Shistl,PETSC_FALSE);CHKERRA(ierr);
+    ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = PetscMalloc(Khistl*sizeof(double),&Khist);CHKERRQ(ierr);
+    ierr = KSPSetResidualHistory(ksp,Khist,Khistl,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscMalloc(Shistl*sizeof(double),&Shist);CHKERRQ(ierr);
+    ierr = PetscMalloc(Shistl*sizeof(int),&Shistit);CHKERRQ(ierr);
+    ierr = SNESSetConvergenceHistory(snes,Shist,Shistit,Shistl,PETSC_FALSE);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -133,7 +133,7 @@ int main(int argc,char **argv)
   xp = 0.0;
   for (i=0; i<n; i++) {
     v = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
-    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
     xp += h;
   }
 
@@ -141,20 +141,20 @@ int main(int argc,char **argv)
      Evaluate initial guess; then solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecSet(&pfive,x);CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&it);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Newton iterations = %d\n\n",it);CHKERRA(ierr);
+  ierr = VecSet(&pfive,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,x,&it);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Newton iterations = %d\n\n",it);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = KSPGetResidualHistory(ksp,PETSC_NULL,&Khistl);CHKERRA(ierr);
+    ierr = KSPGetResidualHistory(ksp,PETSC_NULL,&Khistl);CHKERRQ(ierr);
     PetscDoubleView(Khistl,Khist,PETSC_VIEWER_STDOUT_SELF);
-    ierr = PetscFree(Khist);CHKERRA(ierr);
-    ierr = SNESGetConvergenceHistory(snes,PETSC_NULL,PETSC_NULL,&Shistl);CHKERRA(ierr);
+    ierr = PetscFree(Khist);CHKERRQ(ierr);
+    ierr = SNESGetConvergenceHistory(snes,PETSC_NULL,PETSC_NULL,&Shistl);CHKERRQ(ierr);
     PetscDoubleView(Shistl,Shist,PETSC_VIEWER_STDOUT_SELF);
     PetscIntView(Shistl,Shistit,PETSC_VIEWER_STDOUT_SELF);
-    ierr = PetscFree(Shist);CHKERRA(ierr);
-    ierr = PetscFree(Shistit);CHKERRA(ierr);
+    ierr = PetscFree(Shist);CHKERRQ(ierr);
+    ierr = PetscFree(Shistit);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -162,9 +162,9 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecDestroy(x);CHKERRA(ierr);     ierr = VecDestroy(r);CHKERRA(ierr);
-  ierr = VecDestroy(F);CHKERRA(ierr);     ierr = MatDestroy(J);CHKERRA(ierr);
-  ierr = MatDestroy(JPrec);CHKERRA(ierr); ierr = SNESDestroy(snes);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);     ierr = VecDestroy(r);CHKERRQ(ierr);
+  ierr = VecDestroy(F);CHKERRQ(ierr);     ierr = MatDestroy(J);CHKERRQ(ierr);
+  ierr = MatDestroy(JPrec);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
   PetscFinalize();
 
   return 0;

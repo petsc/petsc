@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.26 2001/01/15 21:45:20 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.27 2001/01/16 18:17:11 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 2) SETERRA(1,"Must run example with two processors\n");
+  if (size != 2) SETERRQ(1,"Must run example with two processors\n");
 
   /*
      Construct a two dimensional graph connecting nlocal degrees of 
@@ -67,52 +67,52 @@ int main(int argc,char **argv)
      the local vector (lx) and the global vector (gx) share the same 
      array for storing vector values.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-allocate",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-allocate",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscMalloc((nlocal+nghost)*sizeof(Scalar),&tarray);CHKERRA(ierr);
-    ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRA(ierr);
+    ierr = PetscMalloc((nlocal+nghost)*sizeof(Scalar),&tarray);CHKERRQ(ierr);
+    ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRQ(ierr);
   } else {
-    ierr = VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs);CHKERRA(ierr);
+    ierr = VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs);CHKERRQ(ierr);
   }
 
   /*
       Test VecDuplicate()
   */
-  ierr = VecDuplicate(gxs,&gx);CHKERRA(ierr);
-  ierr = VecDestroy(gxs);CHKERRA(ierr);
+  ierr = VecDuplicate(gxs,&gx);CHKERRQ(ierr);
+  ierr = VecDestroy(gxs);CHKERRQ(ierr);
 
   /*
      Access the local representation
   */
-  ierr = VecGhostGetLocalForm(gx,&lx);CHKERRA(ierr);
+  ierr = VecGhostGetLocalForm(gx,&lx);CHKERRQ(ierr);
 
   /*
      Set the values from 0 to 12 into the "global" vector 
   */
-  ierr = VecGetOwnershipRange(gx,&rstart,&rend);CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(gx,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     value = (Scalar) i;
-    ierr  = VecSetValues(gx,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
+    ierr  = VecSetValues(gx,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(gx);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(gx);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(gx);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(gx);CHKERRQ(ierr);
 
-  ierr = VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD);CHKERRA(ierr);
-  ierr = VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD);CHKERRA(ierr);
+  ierr = VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /*
      Print out each vector, including the ghost padding region. 
   */
-  ierr = VecGetArray(lx,&array);CHKERRA(ierr);
+  ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
   for (i=0; i<nlocal+nghost; i++) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %g\n",i,PetscRealPart(array[i]));CHKERRA(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %g\n",i,PetscRealPart(array[i]));CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(lx,&array);CHKERRA(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
+  ierr = VecRestoreArray(lx,&array);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-  ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRA(ierr); 
-  ierr = VecDestroy(gx);CHKERRA(ierr);
-  if (flg) {ierr = PetscFree(tarray);CHKERRA(ierr);}
+  ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRQ(ierr); 
+  ierr = VecDestroy(gx);CHKERRQ(ierr);
+  if (flg) {ierr = PetscFree(tarray);CHKERRQ(ierr);}
   PetscFinalize();
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.8 2001/01/15 21:49:23 bsmith Exp balay $*/
+/*$Id: appload.c,v 1.9 2001/01/16 18:21:35 balay Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -51,7 +51,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   /*------------------------------------------------------------------------
       Setup the local data structures; this generates a local numbering of cells and vertices
    ----------------------------------------------------------------------------*/
-  ierr = AppCtxSetLocal(*appctx);CHKERRA(ierr);
+  ierr = AppCtxSetLocal(*appctx);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -102,14 +102,14 @@ int AppCtxSetLocal(AppCtx *appctx)
   if (appctx->view.show_griddata) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The Application Ordering Database (AOData:\n");CHKERRQ(ierr);
     ierr = AODataView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nAODataPartitionAndSetupLocal generates \n grid->iscell:\n");CHKERRA(ierr);
-    ierr = ISView(grid->iscell,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nAODataPartitionAndSetupLocal generates \n grid->iscell:\n");CHKERRQ(ierr);
+    ierr = ISView(grid->iscell,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n isvertex:\n");CHKERRA(ierr);
-    ierr = ISView(isvertex,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n isvertex:\n");CHKERRQ(ierr);
+    ierr = ISView(isvertex,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n grid->ltog:\n");CHKERRA(ierr); 
-    ierr = ISLocalToGlobalMappingView(grid->ltog,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n grid->ltog:\n");CHKERRQ(ierr); 
+    ierr = ISLocalToGlobalMappingView(grid->ltog,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /*      Get the number of cells on processor */

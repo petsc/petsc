@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.23 2001/01/15 21:47:46 bsmith Exp balay $*/
+/*$Id: damg.c,v 1.24 2001/01/16 18:20:03 balay Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -114,7 +114,7 @@ int DMMGDestroy(DMMG *dmmg)
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
 
   for (i=1; i<nlevels; i++) {
-    if (dmmg[i]->R) {ierr = MatDestroy(dmmg[i]->R);CHKERRA(ierr);}
+    if (dmmg[i]->R) {ierr = MatDestroy(dmmg[i]->R);CHKERRQ(ierr);}
   }
   for (i=0; i<nlevels; i++) {
     if (dmmg[i]->dm) {ierr = DMDestroy(dmmg[i]->dm);CHKERRQ(ierr);}
@@ -262,9 +262,9 @@ int DMMGSetUp(DMMG *dmmg)
 
   /* Create work vectors and matrix for each level */
   for (i=0; i<nlevels; i++) {
-    ierr = DMCreateGlobalVector(dmmg[i]->dm,&dmmg[i]->x);CHKERRA(ierr);
-    ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->b);CHKERRA(ierr);
-    ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->r);CHKERRA(ierr);
+    ierr = DMCreateGlobalVector(dmmg[i]->dm,&dmmg[i]->x);CHKERRQ(ierr);
+    ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->b);CHKERRQ(ierr);
+    ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->r);CHKERRQ(ierr);
     if (!dmmg[i]->matrixfree) {
       ierr = DMGetColoring(dmmg[i]->dm,PETSC_NULL,&dmmg[i]->J);CHKERRQ(ierr);
     } 
@@ -273,7 +273,7 @@ int DMMGSetUp(DMMG *dmmg)
 
   /* Create interpolation/restriction between levels */
   for (i=1; i<nlevels; i++) {
-    ierr = DMGetInterpolation(dmmg[i-1]->dm,dmmg[i]->dm,&dmmg[i]->R,PETSC_NULL);CHKERRA(ierr);
+    ierr = DMGetInterpolation(dmmg[i-1]->dm,dmmg[i]->dm,&dmmg[i]->R,PETSC_NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_view",&flg);CHKERRQ(ierr);
@@ -370,13 +370,13 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
     ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
-  ierr  = SLESGetPC(sles,&pc);CHKERRA(ierr);
-  ierr  = PCSetType(pc,PCMG);CHKERRA(ierr);
+  ierr  = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr  = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr = PetscMalloc(nlevels*sizeof(MPI_Comm),&comms);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
     comms[i] = dmmg[i]->comm;
   }
-  ierr  = MGSetLevels(pc,nlevels,comms);CHKERRA(ierr);
+  ierr  = MGSetLevels(pc,nlevels,comms);CHKERRQ(ierr);
   ierr  = PetscFree(comms);CHKERRQ(ierr); 
 
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
@@ -384,12 +384,12 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
 
     /* set solvers for each level */
     for (i=0; i<nlevels; i++) {
-      ierr = MGGetSmoother(pc,i,&lsles);CHKERRA(ierr);
-      ierr = SLESSetOperators(lsles,dmmg[i]->J,dmmg[i]->J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-      ierr = MGSetX(pc,i,dmmg[i]->x);CHKERRA(ierr); 
-      ierr = MGSetRhs(pc,i,dmmg[i]->b);CHKERRA(ierr); 
-      ierr = MGSetR(pc,i,dmmg[i]->r);CHKERRA(ierr); 
-      ierr = MGSetResidual(pc,i,MGDefaultResidual,dmmg[i]->J);CHKERRA(ierr);
+      ierr = MGGetSmoother(pc,i,&lsles);CHKERRQ(ierr);
+      ierr = SLESSetOperators(lsles,dmmg[i]->J,dmmg[i]->J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MGSetX(pc,i,dmmg[i]->x);CHKERRQ(ierr); 
+      ierr = MGSetRhs(pc,i,dmmg[i]->b);CHKERRQ(ierr); 
+      ierr = MGSetR(pc,i,dmmg[i]->r);CHKERRQ(ierr); 
+      ierr = MGSetResidual(pc,i,MGDefaultResidual,dmmg[i]->J);CHKERRQ(ierr);
       if (monitor) {
         ierr = SLESGetKSP(lsles,&ksp);CHKERRQ(ierr);
         ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
@@ -401,8 +401,8 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
 
     /* Set interpolation/restriction between levels */
     for (i=1; i<nlevels; i++) {
-      ierr = MGSetInterpolate(pc,i,dmmg[i]->R);CHKERRA(ierr); 
-      ierr = MGSetRestriction(pc,i,dmmg[i]->R);CHKERRA(ierr); 
+      ierr = MGSetInterpolate(pc,i,dmmg[i]->R);CHKERRQ(ierr); 
+      ierr = MGSetRestriction(pc,i,dmmg[i]->R);CHKERRQ(ierr); 
     }
   }
   PetscFunctionReturn(0);
@@ -436,7 +436,7 @@ int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
   for (i=0; i<nlevels; i++) {
     ierr = SLESCreate(dmmg[i]->comm,&dmmg[i]->sles);CHKERRQ(ierr);
     ierr = DMMGSetUpLevel(dmmg,dmmg[i]->sles,i+1);CHKERRQ(ierr);
-    ierr = SLESSetFromOptions(dmmg[i]->sles);CHKERRA(ierr);
+    ierr = SLESSetFromOptions(dmmg[i]->sles);CHKERRQ(ierr);
     dmmg[i]->solve = DMMGSolveSLES;
     dmmg[i]->rhs   = rhs;
   }

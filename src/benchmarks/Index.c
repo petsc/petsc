@@ -1,4 +1,4 @@
-/*$Id: Index.c,v 1.27 2001/01/15 21:49:39 bsmith Exp balay $*/
+/*$Id: Index.c,v 1.28 2001/01/16 18:21:52 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -15,8 +15,8 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,0,0);
  
-  ierr = test1();CHKERRA(ierr);
-  ierr = test2();CHKERRA(ierr);
+  ierr = test1();CHKERRQ(ierr);
+  ierr = test2();CHKERRQ(ierr);
 
   PetscFinalize();
   PetscFunctionReturn(0);
@@ -33,11 +33,11 @@ int test1(void)
   PetscRandom r;
 
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
-  ierr = PetscMalloc(20000*sizeof(Scalar),&x);CHKERRA(ierr);
-  ierr = PetscMalloc(20000*sizeof(Scalar),&y);CHKERRA(ierr);
+  ierr = PetscMalloc(20000*sizeof(Scalar),&x);CHKERRQ(ierr);
+  ierr = PetscMalloc(20000*sizeof(Scalar),&y);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(2000*sizeof(int),&z);CHKERRA(ierr); 
-  ierr = PetscMalloc(2000*sizeof(int),&zi);CHKERRA(ierr); 
+  ierr = PetscMalloc(2000*sizeof(int),&z);CHKERRQ(ierr); 
+  ierr = PetscMalloc(2000*sizeof(int),&zi);CHKERRQ(ierr); 
 
 
 
@@ -195,7 +195,7 @@ int BlastCache(void)
   int    i,n = 1000000;
   Scalar *x,*y,*z,*a,*b;
 
-  ierr = PetscMalloc(5*n*sizeof(Scalar),&x);CHKERRA(ierr);
+  ierr = PetscMalloc(5*n*sizeof(Scalar),&x);CHKERRQ(ierr);
   y = x + n;
   z = y + n;
   a = z + n;

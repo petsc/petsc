@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.32 2001/01/15 21:48:48 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.33 2001/01/16 18:21:07 balay Exp bsmith $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -141,22 +141,22 @@ int main(int argc,char **args)
   PetscLogEventRegister(&PARTITION_VERTEX_EVENT, "Partition vertic","orange");
   PetscLogEventRegister(&MOVE_VERTEX_EVENT,      "Move vertices","yellow");
 
-  ierr = PetscLogEventBegin(READ_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = DataRead(&gdata);CHKERRA(ierr);
-  ierr = PetscLogEventEnd(READ_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = PetscLogEventBegin(PARTITION_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = DataPartitionElements(&gdata);CHKERRA(ierr);
-  ierr = PetscLogEventEnd(PARTITION_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = PetscLogEventBegin(MOVE_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = DataMoveElements(&gdata);CHKERRA(ierr);
-  ierr = PetscLogEventEnd(MOVE_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = PetscLogEventBegin(PARTITION_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = DataPartitionVertices(&gdata);CHKERRA(ierr);
-  ierr = PetscLogEventEnd(PARTITION_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = PetscLogEventBegin(MOVE_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = DataMoveVertices(&gdata);CHKERRA(ierr);
-  ierr = PetscLogEventEnd(MOVE_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = DataDestroy(&gdata);CHKERRA(ierr);
+  ierr = PetscLogEventBegin(READ_EVENT,0,0,0,0);CHKERRQ(ierr);
+  ierr = DataRead(&gdata);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(READ_EVENT,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PARTITION_ELEMENT_EVENT,0,0,0,0);CHKERRQ(ierr);
+  ierr = DataPartitionElements(&gdata);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PARTITION_ELEMENT_EVENT,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MOVE_ELEMENT_EVENT,0,0,0,0);CHKERRQ(ierr);
+  ierr = DataMoveElements(&gdata);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MOVE_ELEMENT_EVENT,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PARTITION_VERTEX_EVENT,0,0,0,0);CHKERRQ(ierr);
+  ierr = DataPartitionVertices(&gdata);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PARTITION_VERTEX_EVENT,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MOVE_VERTEX_EVENT,0,0,0,0);CHKERRQ(ierr);
+  ierr = DataMoveVertices(&gdata);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MOVE_VERTEX_EVENT,0,0,0,0);CHKERRQ(ierr);
+  ierr = DataDestroy(&gdata);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;
@@ -212,7 +212,7 @@ int DataRead(GridData *gdata)
       vertices are assigned to each processor. Splitting vertices equally amoung
       all processors.
     */ 
-    ierr = PetscMalloc(size*sizeof(int),&mmlocal_vert);CHKERRA(ierr);
+    ierr = PetscMalloc(size*sizeof(int),&mmlocal_vert);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
       mmlocal_vert[i] = n_vert/size + ((n_vert % size) > i);
       printf("Processor %d assigned %d vertices\n",i,mmlocal_vert[i]);
@@ -221,7 +221,7 @@ int DataRead(GridData *gdata)
     /*
        Read in vertices assigned to first processor
     */ 
-    ierr = PetscMalloc(2*mmlocal_vert[0]*sizeof(double),&vert);CHKERRA(ierr);   
+    ierr = PetscMalloc(2*mmlocal_vert[0]*sizeof(double),&vert);CHKERRQ(ierr);   
     printf("Vertices assigned to processor 0\n");
     for (i=0; i<mlocal_vert; i++) {
       fscanf(fd,"%d %lf %lf\n",&cnt,vert+2*i,vert+2*i+1);
@@ -231,7 +231,7 @@ int DataRead(GridData *gdata)
     /* 
        Read in vertices for all the other processors 
     */
-    ierr = PetscMalloc(2*mmlocal_vert[0]*sizeof(double),&tmpvert);CHKERRA(ierr);
+    ierr = PetscMalloc(2*mmlocal_vert[0]*sizeof(double),&tmpvert);CHKERRQ(ierr);
     for (j=1; j<size; j++) {
       printf("Vertices assigned to processor %d\n",j);
       for (i=0; i<mmlocal_vert[j]; i++) {
@@ -256,7 +256,7 @@ int DataRead(GridData *gdata)
       Allocate enough room for the first processor to keep track of how many 
       elements are assigned to each processor.
     */ 
-    ierr = PetscMalloc(size*sizeof(int),&mmlocal_ele);CHKERRA(ierr);
+    ierr = PetscMalloc(size*sizeof(int),&mmlocal_ele);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
       mmlocal_ele[i] = n_ele/size + ((n_ele % size) > i);
       printf("Processor %d assigned %d elements\n",i,mmlocal_ele[i]);
@@ -265,7 +265,7 @@ int DataRead(GridData *gdata)
     /*
         read in element information for the first processor
     */
-    ierr = PetscMalloc(3*mmlocal_ele[0]*sizeof(int),&ele);CHKERRA(ierr);   
+    ierr = PetscMalloc(3*mmlocal_ele[0]*sizeof(int),&ele);CHKERRQ(ierr);   
     printf("Elements assigned to processor 0\n");
     for (i=0; i<mlocal_ele; i++) {
       fscanf(fd,"%d %d %d %d\n",&cnt,ele+3*i,ele+3*i+1,ele+3*i+2);
@@ -275,7 +275,7 @@ int DataRead(GridData *gdata)
     /* 
        Read in elements for all the other processors 
     */
-    ierr = PetscMalloc(3*mmlocal_ele[0]*sizeof(int),&tmpele);CHKERRA(ierr);
+    ierr = PetscMalloc(3*mmlocal_ele[0]*sizeof(int),&tmpele);CHKERRQ(ierr);
     for (j=1; j<size; j++) {
       printf("Elements assigned to processor %d\n",j);
       for (i=0; i<mmlocal_ele[j]; i++) {
@@ -291,8 +291,8 @@ int DataRead(GridData *gdata)
          We don't know how many spaces in ja[] to allocate so we allocate 
        3*the number of local elements, this is the maximum it could be
     */
-    ierr = PetscMalloc((mlocal_ele+1)*sizeof(int),&ia);CHKERRA(ierr);
-    ierr = PetscMalloc((3*mlocal_ele+1)*sizeof(int),&ja);CHKERRA(ierr);
+    ierr = PetscMalloc((mlocal_ele+1)*sizeof(int),&ia);CHKERRQ(ierr);
+    ierr = PetscMalloc((3*mlocal_ele+1)*sizeof(int),&ja);CHKERRQ(ierr);
     net   = 0;
     ia[0] = 0;
     printf("Element neighbors on processor 0\n");
@@ -320,8 +320,8 @@ int DataRead(GridData *gdata)
     /*
        Read in element neighbor information for all other processors
     */
-    ierr = PetscMalloc((mlocal_ele+1)*sizeof(int),&iatmp);CHKERRA(ierr);
-    ierr = PetscMalloc((3*mlocal_ele+1)*sizeof(int),&jatmp);CHKERRA(ierr);
+    ierr = PetscMalloc((mlocal_ele+1)*sizeof(int),&iatmp);CHKERRQ(ierr);
+    ierr = PetscMalloc((3*mlocal_ele+1)*sizeof(int),&jatmp);CHKERRQ(ierr);
     for (j=1; j<size; j++) {
       net   = 0;
       iatmp[0] = 0;
@@ -378,10 +378,10 @@ int DataRead(GridData *gdata)
     ierr = MPI_Recv(ele,3*mlocal_ele,MPI_INT,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
     /* receive element adjacency graph */
-    ierr = PetscMalloc((mlocal_ele+1)*sizeof(int),&ia);CHKERRA(ierr);
+    ierr = PetscMalloc((mlocal_ele+1)*sizeof(int),&ia);CHKERRQ(ierr);
     ierr = MPI_Recv(ia,mlocal_ele+1,MPI_INT,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
-    ierr = PetscMalloc((ia[mlocal_ele]+1)*sizeof(int),&ja);CHKERRA(ierr);
+    ierr = PetscMalloc((ia[mlocal_ele]+1)*sizeof(int),&ja);CHKERRQ(ierr);
     ierr = MPI_Recv(ja,ia[mlocal_ele],MPI_INT,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
   }
 

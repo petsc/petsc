@@ -1,4 +1,4 @@
-/*$Id: ex38.c,v 1.12 2000/10/24 20:26:04 bsmith Exp bsmith $*/
+/*$Id: ex38.c,v 1.13 2001/01/15 21:46:09 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatSetValues() for column oriented storage.\n\n"; 
 
@@ -14,23 +14,23 @@ int main(int argc,char **args)
   Scalar      v[6];
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&C);CHKERRA(ierr);
-  ierr = MatSetFromOptions(C);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&C);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRA(ierr);
-  if (flg) {ierr = MatSetOption(C,MAT_COLUMN_ORIENTED);CHKERRA(ierr);}
+  ierr = PetscOptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = MatSetOption(C,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);}
   for (i=0; i<6; i++) v[i] = (double)i;
   midx[0] = 0; midx[1] = 2; midx[2] = 3;
   nidx[0] = 1; nidx[1] = 3;
-  ierr = MatSetValues(C,3,midx,2,nidx,v,ADD_VALUES);CHKERRA(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatSetValues(C,3,midx,2,nidx,v,ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = MatDestroy(C);CHKERRA(ierr);
+  ierr = MatDestroy(C);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

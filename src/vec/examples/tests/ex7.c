@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.41 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.42 2001/01/15 21:45:13 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates a scatter with a stride and general index set.\n\n";
 
@@ -18,28 +18,28 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* create two vectors */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&y);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStride(PETSC_COMM_SELF,3,0,2,&is1);CHKERRA(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx1,&is2);CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,3,0,2,&is1);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx1,&is2);CHKERRQ(ierr);
 
-  ierr = VecSetValues(x,6,loc,vals,INSERT_VALUES);CHKERRA(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"----\n");CHKERRA(ierr);
-  ierr = VecSet(&two,y);CHKERRA(ierr);
-  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRA(ierr);
-  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
-  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
-  ierr = VecScatterDestroy(ctx);CHKERRA(ierr);
+  ierr = VecSetValues(x,6,loc,vals,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"----\n");CHKERRQ(ierr);
+  ierr = VecSet(&two,y);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
   
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-  ierr = ISDestroy(is1);CHKERRA(ierr);
-  ierr = ISDestroy(is2);CHKERRA(ierr);
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
+  ierr = ISDestroy(is1);CHKERRQ(ierr);
+  ierr = ISDestroy(is2);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(y);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

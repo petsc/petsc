@@ -1,4 +1,4 @@
-/*$Id: ex72.c,v 1.12 2000/09/28 21:11:49 bsmith Exp bsmith $*/
+/*$Id: ex72.c,v 1.13 2001/01/15 21:46:09 bsmith Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -25,12 +25,12 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size > 1) SETERRA(1,"Uniprocessor Example only\n");
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(1,"Uniprocessor Example only\n");
 
   /* Read in matrix and RHS */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,127,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRQ(ierr);
 
   /* Ignore the first line */
   /* while (getc(file) != '\n') ; */
@@ -39,34 +39,34 @@ int main(int argc,char **args)
   fscanf(file,"%d %d %d\n",&m,&n,&nnz);
   printf ("m = %d, n = %d, nnz = %d\n",m,n,nnz);
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,20,0,&A);CHKERRA(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRA(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRA(ierr);
-  ierr = VecSetRandom(r,b);CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,20,0,&A);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
+  ierr = VecSetRandom(r,b);CHKERRQ(ierr);
 
   for (i=0; i<nnz; i++) {
     fscanf(file,"%d %d %le\n",&row,&col,&val);
     row = row-1; col = col-1 ;
-    ierr = MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);CHKERRA(ierr);
+    ierr = MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
     if (row != col) {
-      ierr = MatSetValues(A,1,&col,1,&row,&val,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&col,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   fclose(file);
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRA(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,127,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,PETSC_BINARY_CREATE,&view);CHKERRA(ierr);
-  ierr = MatView(A,view);CHKERRA(ierr);
-  ierr = VecView(b,view);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(view);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,PETSC_BINARY_CREATE,&view);CHKERRQ(ierr);
+  ierr = MatView(A,view);CHKERRQ(ierr);
+  ierr = VecView(b,view);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
 
-  ierr = VecDestroy(b);CHKERRA(ierr);
-  ierr = MatDestroy(A);CHKERRA(ierr);
-  ierr = PetscRandomDestroy(r);CHKERRA(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(r);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

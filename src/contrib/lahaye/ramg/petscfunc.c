@@ -17,7 +17,7 @@
 /*
   Sample usage: 
   ierr = KSPSetMonitor(ksp, KSPMonitorWriteConvHist,PETSC_NULL, 
-                       PETSC_NULL); CHKERRA(ierr); 
+                       PETSC_NULL); CHKERRQ(ierr); 
    
   Note: the tolerance file can viewed using gnuplot, e.g. 
   gnuplot plotpetsctol 
@@ -112,24 +112,24 @@ int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
   numnodes = convhist->NUMNODES;
 
   sprintf(filename,"/home/domenico/Antas/Output/residual.%u",n); 
-  ierr = VecCreate(MPI_COMM_WORLD,numnodes,numnodes,&t); CHKERRA(ierr);
-  ierr = VecSetType(t,VEC_SEQ); CHKERRA(ierr);
-  ierr = VecDuplicate(t,&v); CHKERRA(ierr); 
+  ierr = VecCreate(MPI_COMM_WORLD,numnodes,numnodes,&t); CHKERRQ(ierr);
+  ierr = VecSetType(t,VEC_SEQ); CHKERRQ(ierr);
+  ierr = VecDuplicate(t,&v); CHKERRQ(ierr); 
 
-  ierr = KSPBuildResidual(ksp, t, v, &V); CHKERRA(ierr); 
+  ierr = KSPBuildResidual(ksp, t, v, &V); CHKERRQ(ierr); 
   
-  //  ierr = PetscViewerFileOpenASCII(MPI_COMM_WORLD,filename,&viewer); CHKERRA(ierr);
+  //  ierr = PetscViewerFileOpenASCII(MPI_COMM_WORLD,filename,&viewer); CHKERRQ(ierr);
   //  ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,PETSC_NULL); 
-  //         CHKERRA(ierr);
-  //  ierr = VecView(V, viewer); CHKERRA(ierr);
-  //  ierr = PetscViewerDestroy(viewer); CHKERRA(ierr);
-  ierr = VecGetArray(V,&values); CHKERRA(ierr); 
+  //         CHKERRQ(ierr);
+  //  ierr = VecView(V, viewer); CHKERRQ(ierr);
+  //  ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
+  ierr = VecGetArray(V,&values); CHKERRQ(ierr); 
   PetscFOpen(MPI_COMM_WORLD,filename,"w",&fout);
   for (i=0;i<numnodes;i++)
       PetscFPrintf(MPI_COMM_WORLD,fout,"%14.12e \n", values[i]); 
   PetscFClose(MPI_COMM_WORLD,fout);
 
-  ierr = VecRestoreArray(V,&values); CHKERRA(ierr);
+  ierr = VecRestoreArray(V,&values); CHKERRQ(ierr);
 
   return 0;
 }
@@ -156,7 +156,7 @@ int MyConvTest(KSP ksp,int n, double rnorm, KSPConvergedReason *reason,
  
   bnrm2 =    convhist->BNRM2;
   ierr = KSPGetTolerances(ksp, &rtol, PETSC_NULL, PETSC_NULL, PETSC_NULL); 
-         CHKERRA(ierr);
+         CHKERRQ(ierr);
   if (rnorm/bnrm2 < rtol){ 
     PetscPrintf(MPI_COMM_WORLD,"[test] %d %g \r",n,rnorm/bnrm2);
     return 1; }
@@ -175,7 +175,7 @@ int ReorderSubmatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
   MatOrderingType   rtype = MATORDERING_RCM;
 
   for (i=0; i<nsub; i++) {
-     ierr = MatGetOrdering(submat[i], rtype, &isrow, &iscol); CHKERRA(ierr);
+     ierr = MatGetOrdering(submat[i], rtype, &isrow, &iscol); CHKERRQ(ierr);
   }
 
   return 0;
@@ -191,12 +191,12 @@ int PrintSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
   PetscPrintf(PETSC_COMM_WORLD,"***  Overzicht van opdeling matrix *** \n");
   for (i=0; i<nsub; i++) {
     PetscPrintf(PETSC_COMM_WORLD,"\n** Jacobi Blok %d \n",i);
-    ierr = ISGetSize(row[i],&nloc); CHKERRA(ierr); 
-    ierr = ISGetIndices(row[i], &glo_row_ind); CHKERRA(ierr);
+    ierr = ISGetSize(row[i],&nloc); CHKERRQ(ierr); 
+    ierr = ISGetIndices(row[i], &glo_row_ind); CHKERRQ(ierr);
     for (j=0; j< nloc; j++) {
        PetscPrintf(PETSC_COMM_WORLD,"[%d] global row %d\n",j,glo_row_ind[j]); 
     }
-  ierr = ISRestoreIndices(row[i],&glo_row_ind); CHKERRA(ierr);
+  ierr = ISRestoreIndices(row[i],&glo_row_ind); CHKERRQ(ierr);
   }
 
   return 0;
@@ -212,13 +212,13 @@ int ViewSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
   PetscDraw   draw; 
 
   for (i=0; i<nsub; i++) {
-    // ierr = MatView(submat[i],PETSC_NULL); CHKERRA(ierr);
+    // ierr = MatView(submat[i],PETSC_NULL); CHKERRQ(ierr);
      ierr = PetscViewerDrawOpen(MPI_COMM_WORLD,PETSC_NULL, PETSC_NULL, 
             0, 0, 500,500,&viewer); 
-     ierr = PetscViewerDrawGetDraw(viewer, 0, &draw); CHKERRA(ierr);
-     ierr = MatView(submat[i], viewer); CHKERRA(ierr);
-     ierr = PetscDrawPause(draw); CHKERRA(ierr);
-     ierr = PetscViewerDestroy(viewer); CHKERRA(ierr);
+     ierr = PetscViewerDrawGetDraw(viewer, 0, &draw); CHKERRQ(ierr);
+     ierr = MatView(submat[i], viewer); CHKERRQ(ierr);
+     ierr = PetscDrawPause(draw); CHKERRQ(ierr);
+     ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
   }
 
   return 0;
@@ -234,9 +234,9 @@ int SamgShellPCSetUpOnFem(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
   SamgShellPC *samg_ctx;
 
   samg_ctx = (SamgShellPC*) ctx; 
-  ierr = MatGetSize(submat[0], &nnn, &nnn); CHKERRA(ierr);
+  ierr = MatGetSize(submat[0], &nnn, &nnn); CHKERRQ(ierr);
   printf("\n Dim submatrix = %d\n\n",nnn); 
-  ierr = SamgShellPCSetUp(samg_ctx,submat[0]); CHKERRA(ierr); 
+  ierr = SamgShellPCSetUp(samg_ctx,submat[0]); CHKERRQ(ierr); 
 
   return 0;
 }
@@ -252,11 +252,11 @@ int MyMatView(Mat mat,void *dummy)
 
   ierr = PetscViewerDrawOpen(MPI_COMM_WORLD,PETSC_NULL, PETSC_NULL, 
 	 0, 0, 500,500,&viewer); 
-  ierr = PetscViewerDrawGetDraw(viewer, 0, &draw); CHKERRA(ierr);
-  ierr = MatView(mat, viewer); CHKERRA(ierr);
-  ierr = PetscDrawSetPause(draw, 5); CHKERRA(ierr);
-  ierr = PetscDrawPause(draw); CHKERRA(ierr);
-  ierr = PetscViewerDestroy(viewer); CHKERRA(ierr);
+  ierr = PetscViewerDrawGetDraw(viewer, 0, &draw); CHKERRQ(ierr);
+  ierr = MatView(mat, viewer); CHKERRQ(ierr);
+  ierr = PetscDrawSetPause(draw, 5); CHKERRQ(ierr);
+  ierr = PetscDrawPause(draw); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
 
   return 0;
 }
@@ -282,7 +282,7 @@ int PrintMatrix(Mat mat, char* path, char* base)
    sprintf(filename, "%s%s", path, base);
    printf("   [PrintMatrix]::Generating file %s ...\n", filename); 
    ierr = PetscViewerASCIIOpen(MPI_COMM_WORLD,filename,&viewer); 
-          CHKERRA(ierr);
+          CHKERRQ(ierr);
  
    /*..Print file header..*/
    ierr = PetscViewerASCIIPrintf(viewer,"%% \n"); 
@@ -311,7 +311,7 @@ int PrintMatrix(Mat mat, char* path, char* base)
    }
 
    /*..Close file..*/ 
-   ierr = PetscViewerDestroy(viewer); CHKERRA(ierr);
+   ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
    printf("   [PrintMatrix]::Done Generating file !\n", filename);       
    return 0; 
 }
@@ -329,23 +329,23 @@ int PrintVector(Vec vec, char* path, char* base)
 
    sprintf(filename, "%s%s%s", path, base, ".m");
    printf("   [PrintVector]::Generating file %s ...\n", filename); 
-   ierr = VecGetSize(vec, &size); CHKERRA(ierr);
+   ierr = VecGetSize(vec, &size); CHKERRQ(ierr);
    ierr = PetscMalloc(size * sizeof(Scalar),&values);CHKERRQ(ierr); 
-   ierr = VecGetArray(vec, &values); CHKERRA(ierr);
-   ierr = PetscViewerASCIIOpen(MPI_COMM_WORLD,filename,&viewer);CHKERRA(ierr);
-   ierr = PetscViewerASCIIPrintf(viewer,"function [z] = %s()\n",base);CHKERRA(ierr);
-   ierr = PetscViewerASCIIPrintf(viewer,"z = [\n");CHKERRA(ierr);
+   ierr = VecGetArray(vec, &values); CHKERRQ(ierr);
+   ierr = PetscViewerASCIIOpen(MPI_COMM_WORLD,filename,&viewer);CHKERRQ(ierr);
+   ierr = PetscViewerASCIIPrintf(viewer,"function [z] = %s()\n",base);CHKERRQ(ierr);
+   ierr = PetscViewerASCIIPrintf(viewer,"z = [\n");CHKERRQ(ierr);
    for (i=0;i<size;i++){
      #if defined(PETSC_USE_COMPLEX)
        ierr = PetscViewerASCIIPrintf(viewer, "%22.18e %22.18e \n",
-                                real( values[i] ), imag( values[i]);CHKERRA(ierr);
+                                real( values[i] ), imag( values[i]);CHKERRQ(ierr);
      #else 
-       ierr = PetscViewerASCIIPrintf(viewer, "%22.18e \n", values[i]);CHKERRA(ierr);
+       ierr = PetscViewerASCIIPrintf(viewer, "%22.18e \n", values[i]);CHKERRQ(ierr);
      #endif 
    }
-   ierr = PetscViewerASCIIPrintf(viewer,"]; \n");CHKERRA(ierr);
-   ierr = PetscViewerDestroy(viewer); CHKERRA(ierr);
-   ierr = VecRestoreArray(vec, &values); CHKERRA(ierr);
+   ierr = PetscViewerASCIIPrintf(viewer,"]; \n");CHKERRQ(ierr);
+   ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
+   ierr = VecRestoreArray(vec, &values); CHKERRQ(ierr);
    printf("   [PrintVector]::Done Generating file !\n", filename);    
    return 0; 
 }

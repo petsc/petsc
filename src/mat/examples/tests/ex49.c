@@ -1,4 +1,4 @@
-/*$Id: ex49.c,v 1.17 2000/10/24 20:26:04 bsmith Exp bsmith $*/
+/*$Id: ex49.c,v 1.18 2001/01/15 21:46:09 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 
@@ -17,96 +17,96 @@ int main(int argc,char **argv)
   MatInfo    info;
   
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n = m;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-rect1",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-rect1",&flg);CHKERRQ(ierr);
   if (flg) {n += 2; rect = 1;}
-  ierr = PetscOptionsHasName(PETSC_NULL,"-rect2",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-rect2",&flg);CHKERRQ(ierr);
   if (flg) {n -= 2; rect = 1;}
 
   /* Create and assemble matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&mat);CHKERRA(ierr);
-  ierr = MatSetFromOptions(mat);CHKERRA(ierr);
-  ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&mat);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) { 
     for (j=0; j<n; j++) { 
       v=10*i+j; 
-      ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Test whether matrix has been corrupted (just to demonstrate this
      routine) not needed in most application codes. */
-  ierr = MatValid(mat,(PetscTruth*)&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,"Corrupted matrix.");
+  ierr = MatValid(mat,(PetscTruth*)&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(1,"Corrupted matrix.");
 
   /* Print info about original matrix */
-  ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info);CHKERRA(ierr);
+  ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix nonzeros = %d, allocated nonzeros = %d\n",
-                    (int)info.nz_used,(int)info.nz_allocated);CHKERRA(ierr);
-  ierr = MatNorm(mat,NORM_FROBENIUS,&normf);CHKERRA(ierr);
-  ierr = MatNorm(mat,NORM_1,&norm1);CHKERRA(ierr);
-  ierr = MatNorm(mat,NORM_INFINITY,&normi);CHKERRA(ierr);
+                    (int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
+  ierr = MatNorm(mat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);
+  ierr = MatNorm(mat,NORM_1,&norm1);CHKERRQ(ierr);
+  ierr = MatNorm(mat,NORM_INFINITY,&normi);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"original: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
-                     normf,norm1,normi);CHKERRA(ierr);
-  ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+                     normf,norm1,normi);CHKERRQ(ierr);
+  ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)mat,MATSEQBDIAG,&isbdiag);CHKERRQ(ierr);
   if (!isbdiag) {
     ierr = PetscTypeCompare((PetscObject)mat,MATMPIBDIAG,&isbdiag);CHKERRQ(ierr);
   }
   if (isbdiag) {
-    ierr = MatBDiagGetData(mat,&nd,&bs,&diag,&bdlen,&diagv);CHKERRA(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix: block diag format: %d diagonals, block size = %d\n",nd,bs);CHKERRA(ierr);
+    ierr = MatBDiagGetData(mat,&nd,&bs,&diag,&bdlen,&diagv);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix: block diag format: %d diagonals, block size = %d\n",nd,bs);CHKERRQ(ierr);
     for (i=0; i<nd; i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD," diag=%d, bdlength=%d\n",diag[i],bdlen[i]);CHKERRA(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD," diag=%d, bdlength=%d\n",diag[i],bdlen[i]);CHKERRQ(ierr);
     }
   }
 
   /* Form matrix transpose */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-in_place",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-in_place",&flg);CHKERRQ(ierr);
   if (!rect && flg) {
-    ierr = MatTranspose(mat,0);CHKERRA(ierr);   /* in-place transpose */
+    ierr = MatTranspose(mat,0);CHKERRQ(ierr);   /* in-place transpose */
     tmat = mat; mat = 0;
   } else {      /* out-of-place transpose */
-    ierr = MatTranspose(mat,&tmat);CHKERRA(ierr); 
+    ierr = MatTranspose(mat,&tmat);CHKERRQ(ierr); 
   }
 
   /* Print info about transpose matrix */
-  ierr = MatGetInfo(tmat,MAT_GLOBAL_SUM,&info);CHKERRA(ierr);
+  ierr = MatGetInfo(tmat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose matrix nonzeros = %d, allocated nonzeros = %d\n",
-                     (int)info.nz_used,(int)info.nz_allocated);CHKERRA(ierr);
-  ierr = MatNorm(tmat,NORM_FROBENIUS,&normf);CHKERRA(ierr);
-  ierr = MatNorm(tmat,NORM_1,&norm1);CHKERRA(ierr);
-  ierr = MatNorm(tmat,NORM_INFINITY,&normi);CHKERRA(ierr);
+                     (int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
+  ierr = MatNorm(tmat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);
+  ierr = MatNorm(tmat,NORM_1,&norm1);CHKERRQ(ierr);
+  ierr = MatNorm(tmat,NORM_INFINITY,&normi);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
-                     normf,norm1,normi);CHKERRA(ierr);
-  ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+                     normf,norm1,normi);CHKERRQ(ierr);
+  ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   if (isbdiag) {
-    ierr = MatBDiagGetData(tmat,&nd,&bs,&diag,&bdlen,&diagv);CHKERRA(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose matrix: block diag format: %d diagonals, block size = %d\n",nd,bs);CHKERRA(ierr);
+    ierr = MatBDiagGetData(tmat,&nd,&bs,&diag,&bdlen,&diagv);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose matrix: block diag format: %d diagonals, block size = %d\n",nd,bs);CHKERRQ(ierr);
     for (i=0; i<nd; i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD," diag=%d, bdlength=%d\n",diag[i],bdlen[i]);CHKERRA(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD," diag=%d, bdlength=%d\n",diag[i],bdlen[i]);CHKERRQ(ierr);
     }
   }
 
   /* Test MatAXPY */
   if (mat && !rect) {
     Scalar alpha = 1.0;
-    ierr = PetscOptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRA(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");CHKERRA(ierr);
-    ierr = MatAXPY(&alpha,mat,tmat);CHKERRA(ierr); 
-    ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = PetscOptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");CHKERRQ(ierr);
+    ierr = MatAXPY(&alpha,mat,tmat);CHKERRQ(ierr); 
+    ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* Free data structures */  
-  ierr = MatDestroy(tmat);CHKERRA(ierr);
-  if (mat) {ierr = MatDestroy(mat);CHKERRA(ierr);}
+  ierr = MatDestroy(tmat);CHKERRQ(ierr);
+  if (mat) {ierr = MatDestroy(mat);CHKERRQ(ierr);}
 
   PetscFinalize();
   return 0;

@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.13 2001/01/15 21:44:15 bsmith Exp balay $*/
+/*$Id: ex12.c,v 1.14 2001/01/16 18:16:21 balay Exp bsmith $*/
 
 static char help[] = "Tests timing PetscSortInt().\n\n";
 
@@ -14,32 +14,32 @@ int main(int argc,char **argv)
   Scalar      value;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(n*sizeof(int),&values);CHKERRA(ierr);
+  ierr = PetscMalloc(n*sizeof(int),&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscRandomGetValue(rand,&value);CHKERRA(ierr);
+    ierr = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
     values[i] = (int)(n*PetscRealPart(value) + 2.0);
   }
-  ierr = PetscSortInt(n,values);CHKERRA(ierr);
+  ierr = PetscSortInt(n,values);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister(&event,"Sort",PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRA(ierr);
-  ierr = PetscMalloc(n*sizeof(int),&values);CHKERRA(ierr);
+  ierr = PetscLogEventRegister(&event,"Sort",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(int),&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscRandomGetValue(rand,&value);CHKERRA(ierr);
+    ierr = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
     values[i] = (int)(n*PetscRealPart(value) + 2.0);
   }
-  ierr = PetscSortInt(n,values);CHKERRA(ierr);
-  ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscSortInt(n,values);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
 
   for (i=1; i<n; i++) {
-    if (values[i] < values[i-1]) SETERRA(1,"Values not sorted");
+    if (values[i] < values[i-1]) SETERRQ(1,"Values not sorted");
   }
-  ierr = PetscFree(values);CHKERRA(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRA(ierr);
+  ierr = PetscFree(values);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

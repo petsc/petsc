@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.6 2001/01/15 21:49:27 bsmith Exp balay $*/
+/*$Id: main.c,v 1.7 2001/01/16 18:21:39 balay Exp bsmith $*/
 static char help[] ="Solves the 2d burgers equation.   u*du/dx + v*du/dy - c(lap(u)) = f.  u*dv/dv + v*dv/dy - c(lap(v)) =g.  This has exact solution, see fletcher.";
 
 
@@ -19,10 +19,10 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   /*  Load the grid database*/
-  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx);CHKERRA(ierr);
+  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx);CHKERRQ(ierr);
 
   /*      Initialize graphics */
-  ierr = AppCtxGraphics(appctx);CHKERRA(ierr);
+  ierr = AppCtxGraphics(appctx);CHKERRQ(ierr);
   algebra = &appctx->algebra;
 
   /*   Setup the linear system and solve it*/
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   if (appctx->view.show_solution) {
     ierr = VecScatterBegin(algebra->g,algebra->w_local,INSERT_VALUES,SCATTER_FORWARD,algebra->gtol);CHKERRQ(ierr);
     ierr = VecScatterEnd(algebra->g,algebra->w_local,INSERT_VALUES,SCATTER_FORWARD,algebra->gtol);CHKERRQ(ierr);
-    ierr = PetscDrawZoom(appctx->view.drawglobal,AppCtxViewSolution,appctx);CHKERRA(ierr);
+    ierr = PetscDrawZoom(appctx->view.drawglobal,AppCtxViewSolution,appctx);CHKERRQ(ierr);
   }
 
   /* Send to  matlab viewer */
@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   }
 
   /*      Destroy all datastructures  */
-  ierr = AppCtxDestroy(appctx);CHKERRA(ierr);
+  ierr = AppCtxDestroy(appctx);CHKERRQ(ierr);
 
   PetscFinalize();
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.123 2000/10/24 20:27:14 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.124 2001/01/15 21:48:06 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -91,17 +91,17 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRQ(ierr);
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,"Lambda is out of range");
+    SETERRQ(1,"Lambda is out of range");
   }
   N = user.mx*user.my;
 
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -118,35 +118,35 @@ int main(int argc,char **argv)
   /*
      Create distributed array (DA) to manage parallel grid and vectors
   */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
-    SETERRA(1,"Incompatible number of processors:  Nx * Ny != size");
+    SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
-                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
+                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
 
   /*
      Visualize the distribution of the array across the processors
   */
-  /* ierr =  DAView(user.da,PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr); */
+  /* ierr =  DAView(user.da,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); */
 
 
   /*
      Extract global and local vectors from DA; then duplicate for remaining
      vectors that are the same types
   */
-  ierr = DACreateGlobalVector(user.da,&x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
+  ierr = DACreateGlobalVector(user.da,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
-  ierr = DACreateLocalVector(user.da,&user.localX);CHKERRA(ierr);
-  ierr = VecDuplicate(user.localX,&user.localF);CHKERRA(ierr);
+  ierr = DACreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 
   /* 
      Set function evaluation routine and vector
   */
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -173,29 +173,29 @@ int main(int argc,char **argv)
      Jacobian.  See the users manual for a discussion of better techniques
      for preallocating matrix memory.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRQ(ierr);
   if (!matrix_free) {
     PetscTruth usegenericmatcreate;
 
-    ierr = VecGetLocalSize(x,&m);CHKERRA(ierr);
+    ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
 
-    ierr = PetscOptionsHasName(PETSC_NULL,"-use_generic_matcreate",&usegenericmatcreate);CHKERRA(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-use_generic_matcreate",&usegenericmatcreate);CHKERRQ(ierr);
     if (usegenericmatcreate) {
-      ierr = MatCreate(PETSC_COMM_WORLD,m,m,N,N,&J);CHKERRA(ierr);
-      ierr = MatSetFromOptions(J);CHKERRA(ierr);
+      ierr = MatCreate(PETSC_COMM_WORLD,m,m,N,N,&J);CHKERRQ(ierr);
+      ierr = MatSetFromOptions(J);CHKERRQ(ierr);
     } else {
-      ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRA(ierr);
+      ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRQ(ierr);
     }
 
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
 
     /*
        Get the mapping from local-to-global node numbers for all local nodes,
        including ghost points.  Associate this mapping with the matrix for later
        use in setting matrix entries via MatSetValuesLocal().
     */
-    ierr = DAGetISLocalToGlobalMapping(user.da,&isltog);CHKERRA(ierr);
-    ierr = MatSetLocalToGlobalMapping(J,isltog);CHKERRA(ierr);
+    ierr = DAGetISLocalToGlobalMapping(user.da,&isltog);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(J,isltog);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -205,7 +205,7 @@ int main(int argc,char **argv)
   /*
      Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
   */
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -216,11 +216,11 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr); 
+  ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr); 
   ierr = FormFunction(snes,x,r,(void *)&user);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&fnorm);CHKERRQ(ierr); 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d fnorm %g\n",its,fnorm);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d fnorm %g\n",its,fnorm);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -228,11 +228,11 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (!matrix_free) {
-    ierr = MatDestroy(J);CHKERRA(ierr);
+    ierr = MatDestroy(J);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(user.localX);CHKERRA(ierr); ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(user.localF);CHKERRA(ierr); ierr = VecDestroy(r);CHKERRA(ierr);      
-  ierr = SNESDestroy(snes);CHKERRA(ierr);  ierr = DADestroy(user.da);CHKERRA(ierr);
+  ierr = VecDestroy(user.localX);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(user.localF);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);      
+  ierr = SNESDestroy(snes);CHKERRQ(ierr);  ierr = DADestroy(user.da);CHKERRQ(ierr);
   PetscFinalize();
 
   return 0;

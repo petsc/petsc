@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.13 2000/01/06 20:43:22 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.14 2001/01/15 21:49:29 bsmith Exp bsmith $*/
 static char help[] ="Solves the 2d Burgers equation. \n  u*du/dx + v*du/dy - c(lap(u)) = f. \n  u*dv/dx + v*dv/dy - c(lap(v)) = g.  This has exact solution, see Fletcher.\n  This version has new indexing of Degrees of Freedom";
 
 #include "appctx.h"
@@ -17,10 +17,10 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   /*  Load the grid database*/
-  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx);CHKERRA(ierr);
+  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx);CHKERRQ(ierr);
 
   /*      Initialize graphics  */
-  ierr = AppCtxGraphics(appctx);CHKERRA(ierr); 
+  ierr = AppCtxGraphics(appctx);CHKERRQ(ierr); 
 
   /*   Setup the nonlinear system and solve it*/
   ierr = AppCtxSolve(appctx);CHKERRQ(ierr);
@@ -30,14 +30,14 @@ int main(int argc,char **argv)
     algebra = &appctx->algebra;
     ierr = VecScatterBegin(algebra->g,algebra->f_local,INSERT_VALUES,SCATTER_FORWARD,algebra->dfgtol);CHKERRQ(ierr);
     ierr = VecScatterEnd(algebra->g,algebra->f_local,INSERT_VALUES,SCATTER_FORWARD,algebra->dfgtol);CHKERRQ(ierr);
-    ierr = PetscDrawZoom(appctx->view.drawglobal,AppCtxViewSolution,appctx);CHKERRA(ierr);
+    ierr = PetscDrawZoom(appctx->view.drawglobal,AppCtxViewSolution,appctx);CHKERRQ(ierr);
   }
 
   /* Send solution to  matlab viewer */
   if (appctx->view.matlabgraphics) {AppCtxViewMatlab(appctx);  }
 
   /*      Destroy all datastructures  */
-  ierr = AppCtxDestroy(appctx);CHKERRA(ierr);
+  ierr = AppCtxDestroy(appctx);CHKERRQ(ierr);
 
   PetscFinalize();
   PetscFunctionReturn(0);

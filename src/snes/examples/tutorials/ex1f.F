@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.29 2000/10/24 20:27:14 bsmith Exp bsmith $";
+! "$Id: ex1f.F,v 1.30 2001/01/15 21:48:06 bsmith Exp bsmith $";
 !
 !/*T
 !  Concepts: SNES^basic uniprocessor example
@@ -91,7 +91,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRA(1,' ',ierr)
+         SETERRQ(1,' ',ierr)
       endif
 
 ! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - 

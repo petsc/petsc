@@ -1,5 +1,5 @@
 
-/*      "$Id: ex3.c,v 1.16 2000/09/28 21:10:03 bsmith Exp bsmith $"; */
+/*      "$Id: ex3.c,v 1.17 2001/01/15 21:44:33 bsmith Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
@@ -29,49 +29,49 @@ int main(int argc,char **argv)
     Note each processor is generating its own index set 
     (in this case they are all identical)
   */
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,&set);CHKERRA(ierr);
-  ierr = ISView(set,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,&set);CHKERRQ(ierr);
+  ierr = ISView(set,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /*
     Extract indices from set.
   */
-  ierr = ISGetLocalSize(set,&issize);CHKERRA(ierr);
-  ierr = ISGetIndices(set,&indices);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Printing indices directly\n");CHKERRA(ierr);
+  ierr = ISGetLocalSize(set,&issize);CHKERRQ(ierr);
+  ierr = ISGetIndices(set,&indices);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Printing indices directly\n");CHKERRQ(ierr);
   for (i=0; i<issize; i++) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"%d\n",indices[i]);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"%d\n",indices[i]);CHKERRQ(ierr);
   }
-  ierr = ISRestoreIndices(set,&indices);CHKERRA(ierr);
+  ierr = ISRestoreIndices(set,&indices);CHKERRQ(ierr);
 
   /*
     Extract the block indices. This returns one index per block.
   */
-  ierr = ISBlockGetIndices(set,&indices);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Printing block indices directly\n");CHKERRA(ierr);
+  ierr = ISBlockGetIndices(set,&indices);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Printing block indices directly\n");CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"%d\n",indices[i]);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"%d\n",indices[i]);CHKERRQ(ierr);
   }
-  ierr = ISBlockRestoreIndices(set,&indices);CHKERRA(ierr);
+  ierr = ISBlockRestoreIndices(set,&indices);CHKERRQ(ierr);
 
   /*
     Check if this is really a block index set
   */
-  ierr = ISBlock(set,&isblock);CHKERRA(ierr);
-  if (isblock != PETSC_TRUE) SETERRA(1,"Index set is not blocked!");
+  ierr = ISBlock(set,&isblock);CHKERRQ(ierr);
+  if (isblock != PETSC_TRUE) SETERRQ(1,"Index set is not blocked!");
 
   /*
     Determine the block size of the index set
   */
-  ierr = ISBlockGetBlockSize(set,&bs);CHKERRA(ierr);
-  if (bs != 3) SETERRA(1,"Block size is not 3!");
+  ierr = ISBlockGetBlockSize(set,&bs);CHKERRQ(ierr);
+  if (bs != 3) SETERRQ(1,"Block size is not 3!");
 
   /*
     Get the number of blocks
   */
-  ierr = ISBlockGetSize(set,&n);CHKERRA(ierr);
-  if (n != 4) SETERRA(1,"Number of blocks not 4!");
+  ierr = ISBlockGetSize(set,&n);CHKERRQ(ierr);
+  if (n != 4) SETERRQ(1,"Number of blocks not 4!");
 
-  ierr = ISDestroy(set);CHKERRA(ierr);
+  ierr = ISDestroy(set);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

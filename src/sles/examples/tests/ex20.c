@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.10 2000/10/24 20:26:51 bsmith Exp bsmith $*/
+/*$Id: ex20.c,v 1.11 2001/01/15 21:47:31 bsmith Exp bsmith $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\
@@ -38,16 +38,16 @@ int main(int argc,char **args)
   PetscRandom  rand;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* Create stiffness matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&C);CHKERRA(ierr);
-  ierr = MatSetFromOptions(C);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&C);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank); 
 
@@ -58,47 +58,47 @@ int main(int argc,char **args)
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + (i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-     ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRA(ierr);
+     ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Create right-hand-side and solution vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&u);CHKERRA(ierr); 
-  ierr = VecSetFromOptions(u);CHKERRA(ierr);
-  ierr = PetscObjectSetName((PetscObject)u,"Approx. Solution");CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRA(ierr);
-  ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&u);CHKERRQ(ierr); 
+  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)u,"Approx. Solution");CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRQ(ierr);
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
-  ierr = VecSetRandom(rand,u);CHKERRA(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRA(ierr);
-  ierr = MatMult(C,u,b);CHKERRA(ierr);
-  ierr = VecSet(&zero,u);CHKERRA(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+  ierr = VecSetRandom(rand,u);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = MatMult(C,u,b);CHKERRQ(ierr);
+  ierr = VecSet(&zero,u);CHKERRQ(ierr);
 
   /* Solve linear system */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
-  ierr = KSPSetInitialGuessNonzero(ksp);CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
+  ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-fixnullspace",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-fixnullspace",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,1,0,PETSC_NULL,&nullsp);CHKERRA(ierr);
-    ierr = PCNullSpaceAttach(pc,nullsp);CHKERRA(ierr);
-    ierr = MatNullSpaceDestroy(nullsp);CHKERRA(ierr);
+    ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,1,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
+    ierr = PCNullSpaceAttach(pc,nullsp);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
   }
 
-  ierr = SLESSolve(sles,b,u,&its);CHKERRA(ierr);
+  ierr = SLESSolve(sles,b,u,&its);CHKERRQ(ierr);
 
 
   /* Free work space */
-  ierr = SLESDestroy(sles);CHKERRA(ierr);
-  ierr = VecDestroy(u);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr);
-  ierr = MatDestroy(C);CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = MatDestroy(C);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

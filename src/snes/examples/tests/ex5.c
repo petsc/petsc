@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.22 2000/09/28 21:14:21 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.23 2001/01/15 21:48:01 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the modified Bratu problem in a 2D rectangular domain,\n\
@@ -88,23 +88,23 @@ int main(int argc,char **argv)
   double     bratu_kappa_max = 10000,bratu_kappa_min = 0.;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRQ(ierr);
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0; user.param2 = 0.0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-lambda",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-lambda",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,"Lambda is out of range");
+    SETERRQ(1,"Lambda is out of range");
   }
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-kappa",&user.param2,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-kappa",&user.param2,PETSC_NULL);CHKERRQ(ierr);
   if (user.param2 >= bratu_kappa_max || user.param2 < bratu_kappa_min) {
-    SETERRA(1,"Kappa is out of range");
+    SETERRQ(1,"Kappa is out of range");
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the Bratu problem with lambda=%g, kappa=%g\n",user.param,user.param2);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the Bratu problem with lambda=%g, kappa=%g\n",user.param,user.param2);CHKERRQ(ierr);
 
   N = user.mx*user.my;
 
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -121,33 +121,33 @@ int main(int argc,char **argv)
   /*
      Create distributed array (DA) to manage parallel grid and vectors
   */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
-    SETERRA(1,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
+    SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
+  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
 
   /*
      Visualize the distribution of the array across the processors
   */
-  /* ierr =  DAView(user.da,PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr); */
+  /* ierr =  DAView(user.da,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); */
 
 
   /*
      Extract global and local vectors from DA; then duplicate for remaining
      vectors that are the same types
   */
-  ierr = DACreateGlobalVector(user.da,&x);CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.da,&user.localX);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
-  ierr = VecDuplicate(user.localX,&user.localF);CHKERRA(ierr);
+  ierr = DACreateGlobalVector(user.da,&x);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 
   /* 
      Set function evaluation routine and vector
   */
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -174,15 +174,15 @@ int main(int argc,char **argv)
      Jacobian.  See the users manual for a discussion of better techniques
      for preallocating matrix memory.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRQ(ierr);
   if (!matrix_free) {
     if (size == 1) {
-      ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRA(ierr);
+      ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);
     } else {
-      ierr = VecGetLocalSize(x,&m);CHKERRA(ierr);
-      ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRA(ierr);
+      ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
+      ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRQ(ierr);
     }
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -192,7 +192,7 @@ int main(int argc,char **argv)
   /*
      Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
   */
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -203,9 +203,9 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr); 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
+  ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr); 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -213,11 +213,11 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (!matrix_free) {
-    ierr = MatDestroy(J);CHKERRA(ierr);
+    ierr = MatDestroy(J);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(user.localX);CHKERRA(ierr); ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(user.localF);CHKERRA(ierr); ierr = VecDestroy(r);CHKERRA(ierr);      
-  ierr = SNESDestroy(snes);CHKERRA(ierr);  ierr = DADestroy(user.da);CHKERRA(ierr);
+  ierr = VecDestroy(user.localX);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(user.localF);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);      
+  ierr = SNESDestroy(snes);CHKERRQ(ierr);  ierr = DADestroy(user.da);CHKERRQ(ierr);
   PetscFinalize();
 
   return 0;

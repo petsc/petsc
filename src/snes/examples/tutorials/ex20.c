@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.6 2000/10/05 20:44:38 bsmith Exp bsmith $ */
+/* $Id: ex20.c,v 1.7 2001/01/15 21:48:06 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -114,18 +114,18 @@ int main(int argc,char **argv)
   mz              = 5; 
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Application PetscOptions","None");
-  ierr = PetscOptionsDouble("-tleft","left value","Manualpage",user.tleft,&user.tleft,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsDouble("-tright","right value","Manualpage",user.tright,&user.tright,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsDouble("-beta","beta","Manualpage",user.beta,&user.beta,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsDouble("-bm1","bm1","Manualpage",user.bm1,&user.bm1,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsDouble("-coef","coefficient","Manualpage",user.coef,&user.coef,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsDouble("-tleft","left value","Manualpage",user.tleft,&user.tleft,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsDouble("-tright","right value","Manualpage",user.tright,&user.tright,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsDouble("-beta","beta","Manualpage",user.beta,&user.beta,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsDouble("-bm1","bm1","Manualpage",user.bm1,&user.bm1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsDouble("-coef","coefficient","Manualpage",user.coef,&user.coef,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsInt("-ratio","grid ration","Manualpage",user.ratio,&user.ratio,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsInt("-nlevels","number levels","Manualpage",user.nlevels,&user.nlevels,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsInt("-mx","grid points in x","Manualpage",mx,&mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsInt("-my","grid points in y","Manualpage",my,&my,&flag);CHKERRA(ierr);
+  ierr = PetscOptionsInt("-ratio","grid ration","Manualpage",user.ratio,&user.ratio,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-nlevels","number levels","Manualpage",user.nlevels,&user.nlevels,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mx","grid points in x","Manualpage",mx,&mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-my","grid points in y","Manualpage",my,&my,&flag);CHKERRQ(ierr);
   if (!flag) { my = mx;}
-  ierr = PetscOptionsInt("-mz","grid points in z","Manualpage",mz,&mz,&flag);CHKERRA(ierr);
+  ierr = PetscOptionsInt("-mz","grid points in z","Manualpage",mz,&mz,&flag);CHKERRQ(ierr);
   if (!flag) { mz = mx;}
 
   /* Set grid size for all finer levels */
@@ -133,105 +133,105 @@ int main(int argc,char **argv)
   }
 
   /* set partitioning of domains accross processors */
-  ierr = PetscOptionsInt("-Nx","Nx","Manualpage",Nx,&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsInt("-Ny","Ny","Manualpage",Ny,&Ny,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsInt("-Nz","Nz","Manualpage",Nz,&Nz,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsInt("-Nx","Nx","Manualpage",Nx,&Nx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-Ny","Ny","Manualpage",Ny,&Ny,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-Nz","Nz","Manualpage",Nz,&Nz,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   /* Set up distributed array for each level */
   for (i=0; i<user.nlevels; i++) {
     ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,
-                      my,mz,Nx,Ny,Nz,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.grid[i].da);CHKERRA(ierr);
-    ierr = DACreateGlobalVector(user.grid[i].da,&user.grid[i].x);CHKERRA(ierr);
-    ierr = VecDuplicate(user.grid[i].x,&user.grid[i].r);CHKERRA(ierr);
-    ierr = VecDuplicate(user.grid[i].x,&user.grid[i].b);CHKERRA(ierr);
-    ierr = DACreateLocalVector(user.grid[i].da,&user.grid[i].localX);CHKERRA(ierr);
-    ierr = VecDuplicate(user.grid[i].localX,&user.grid[i].localF);CHKERRA(ierr);
-    ierr = VecGetLocalSize(user.grid[i].x,&nlocal);CHKERRA(ierr);
-    ierr = VecGetSize(user.grid[i].x,&n);CHKERRA(ierr);
-    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,7,PETSC_NULL,5,PETSC_NULL,&user.grid[i].J);CHKERRA(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Grid %d size %d by %d by %d\n",i,mx,my,mz);CHKERRA(ierr);
+                      my,mz,Nx,Ny,Nz,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.grid[i].da);CHKERRQ(ierr);
+    ierr = DACreateGlobalVector(user.grid[i].da,&user.grid[i].x);CHKERRQ(ierr);
+    ierr = VecDuplicate(user.grid[i].x,&user.grid[i].r);CHKERRQ(ierr);
+    ierr = VecDuplicate(user.grid[i].x,&user.grid[i].b);CHKERRQ(ierr);
+    ierr = DACreateLocalVector(user.grid[i].da,&user.grid[i].localX);CHKERRQ(ierr);
+    ierr = VecDuplicate(user.grid[i].localX,&user.grid[i].localF);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(user.grid[i].x,&nlocal);CHKERRQ(ierr);
+    ierr = VecGetSize(user.grid[i].x,&n);CHKERRQ(ierr);
+    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,7,PETSC_NULL,5,PETSC_NULL,&user.grid[i].J);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Grid %d size %d by %d by %d\n",i,mx,my,mz);CHKERRQ(ierr);
     mx = user.ratio*(mx-1)+1; 
     my = user.ratio*(my-1)+1;
     mz = user.ratio*(mz-1)+1;
   }
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
 
   /* provide user function and Jacobian */
   finegrid = &user.grid[user.nlevels-1];
-  ierr = SNESSetFunction(snes,finegrid->b,FormFunction,&user);CHKERRA(ierr);
-  ierr = SNESSetJacobian(snes,finegrid->J,finegrid->J,FormJacobian,&user);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,finegrid->b,FormFunction,&user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,finegrid->J,finegrid->J,FormJacobian,&user);CHKERRQ(ierr);
 
   /* set multilevel (Schwarz) preconditioner */
-  ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
-  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-  ierr = PCSetType(pc,PCMG);CHKERRA(ierr);
-  ierr = MGSetLevels(pc,user.nlevels,PETSC_NULL);CHKERRA(ierr);
-  ierr = MGSetType(pc,MGADDITIVE);CHKERRA(ierr);
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
+  ierr = MGSetLevels(pc,user.nlevels,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MGSetType(pc,MGADDITIVE);CHKERRQ(ierr);
 
   /* set the work vectors and SLES options for all the levels */
   for (i=0; i<user.nlevels; i++) {
-    ierr = MGGetSmoother(pc,i,&user.grid[i].sles);CHKERRA(ierr);
-    ierr = SLESSetFromOptions(user.grid[i].sles);CHKERRA(ierr);
-    ierr = SLESSetOperators(user.grid[i].sles,user.grid[i].J,user.grid[i].J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-    ierr = MGSetX(pc,i,user.grid[i].x);CHKERRA(ierr); 
-    ierr = MGSetRhs(pc,i,user.grid[i].b);CHKERRA(ierr); 
-    ierr = MGSetR(pc,i,user.grid[i].r);CHKERRA(ierr); 
-    ierr = MGSetResidual(pc,i,MGDefaultResidual,user.grid[i].J);CHKERRA(ierr);
+    ierr = MGGetSmoother(pc,i,&user.grid[i].sles);CHKERRQ(ierr);
+    ierr = SLESSetFromOptions(user.grid[i].sles);CHKERRQ(ierr);
+    ierr = SLESSetOperators(user.grid[i].sles,user.grid[i].J,user.grid[i].J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MGSetX(pc,i,user.grid[i].x);CHKERRQ(ierr); 
+    ierr = MGSetRhs(pc,i,user.grid[i].b);CHKERRQ(ierr); 
+    ierr = MGSetR(pc,i,user.grid[i].r);CHKERRQ(ierr); 
+    ierr = MGSetResidual(pc,i,MGDefaultResidual,user.grid[i].J);CHKERRQ(ierr);
   }
 
   /* Create interpolation between the levels */
   for (i=1; i<user.nlevels; i++) {
-    ierr = DAGetInterpolation(user.grid[i-1].da,user.grid[i].da,&user.grid[i].R,&user.grid[i].Rscale);CHKERRA(ierr);
-    ierr = MGSetInterpolate(pc,i,user.grid[i].R);CHKERRA(ierr);
-    ierr = MGSetRestriction(pc,i,user.grid[i].R);CHKERRA(ierr);
+    ierr = DAGetInterpolation(user.grid[i-1].da,user.grid[i].da,&user.grid[i].R,&user.grid[i].Rscale);CHKERRQ(ierr);
+    ierr = MGSetInterpolate(pc,i,user.grid[i].R);CHKERRQ(ierr);
+    ierr = MGSetRestriction(pc,i,user.grid[i].R);CHKERRQ(ierr);
   }
 
   /* Solve 1 Newton iteration of nonlinear system 
      - to preload executable so next solve has accurate timing */
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf);CHKERRA(ierr);
-  ierr = SNESSetTolerances(snes,atol,rtol,stol,1,maxf);CHKERRA(ierr);
-  ierr = FormInitialGuess1(&user,finegrid->x);CHKERRA(ierr);
+  ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf);CHKERRQ(ierr);
+  ierr = SNESSetTolerances(snes,atol,rtol,stol,1,maxf);CHKERRQ(ierr);
+  ierr = FormInitialGuess1(&user,finegrid->x);CHKERRQ(ierr);
 
-  ierr = SNESSolve(snes,finegrid->x,&its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Pre-load Newton iterations = %d\n",its);CHKERRA(ierr);
+  ierr = SNESSolve(snes,finegrid->x,&its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Pre-load Newton iterations = %d\n",its);CHKERRQ(ierr);
 
   /* Reset options, then solve nonlinear system */
-  ierr = SNESSetTolerances(snes,atol,rtol,stol,maxit,maxf);CHKERRA(ierr);
-  ierr = FormInitialGuess1(&user,finegrid->x);CHKERRA(ierr);
-  ierr = PetscLogStagePush(1);CHKERRA(ierr);
-  ierr = SNESSolve(snes,finegrid->x,&its);CHKERRA(ierr);
-  ierr = SNESView(snes,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = PetscLogStagePop();CHKERRA(ierr);
-  ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRA(ierr);
+  ierr = SNESSetTolerances(snes,atol,rtol,stol,maxit,maxf);CHKERRQ(ierr);
+  ierr = FormInitialGuess1(&user,finegrid->x);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(1);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,finegrid->x,&its);CHKERRQ(ierr);
+  ierr = SNESView(snes,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRQ(ierr);
   litspit = ((double)lits)/((double)its);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %d\n",lits);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n",litspit);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %d\n",lits);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n",litspit);CHKERRQ(ierr);
 
   /* Free data structures on the levels */
   for (i=0; i<user.nlevels; i++) {
-    ierr = MatDestroy(user.grid[i].J);CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].x);CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].r);CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].b);CHKERRA(ierr);
-    ierr = DADestroy(user.grid[i].da);CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].localX);CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].localF);CHKERRA(ierr);
+    ierr = MatDestroy(user.grid[i].J);CHKERRQ(ierr);
+    ierr = VecDestroy(user.grid[i].x);CHKERRQ(ierr);
+    ierr = VecDestroy(user.grid[i].r);CHKERRQ(ierr);
+    ierr = VecDestroy(user.grid[i].b);CHKERRQ(ierr);
+    ierr = DADestroy(user.grid[i].da);CHKERRQ(ierr);
+    ierr = VecDestroy(user.grid[i].localX);CHKERRQ(ierr);
+    ierr = VecDestroy(user.grid[i].localF);CHKERRQ(ierr);
   }
 
   /* Free interpolations between levels */
   for (i=1; i<user.nlevels; i++) {
-    ierr = MatDestroy(user.grid[i].R);CHKERRA(ierr); 
-    ierr = VecDestroy(user.grid[i].Rscale);CHKERRA(ierr); 
+    ierr = MatDestroy(user.grid[i].R);CHKERRQ(ierr); 
+    ierr = VecDestroy(user.grid[i].Rscale);CHKERRQ(ierr); 
   }
 
   /* free nonlinear solver object */
-  ierr = SNESDestroy(snes);CHKERRA(ierr);
+  ierr = SNESDestroy(snes);CHKERRQ(ierr);
   PetscFinalize();
 
 
@@ -1585,7 +1585,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
 
-    ierr = SLESSetOperators(finegrid->sles,finegrid->J,finegrid->J,SAME_NONZERO_PATTERN);CHKERRA(ierr);
+    ierr = SLESSetOperators(finegrid->sles,finegrid->J,finegrid->J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
     for (i=user->nlevels-1; i>0; i--) {
 
@@ -1599,7 +1599,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       /* form Jacobian on coarse grid */
       ierr = FormJacobian_Grid(user,&user->grid[i-1],X,&user->grid[i-1].J,&user->grid[i-1].J);CHKERRQ(ierr);
     
-      ierr = SLESSetOperators(user->grid[i-1].sles,user->grid[i-1].J,user->grid[i-1].J,SAME_NONZERO_PATTERN);CHKERRA(ierr);
+      ierr = SLESSetOperators(user->grid[i-1].sles,user->grid[i-1].J,user->grid[i-1].J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

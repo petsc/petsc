@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.63 2000/09/28 21:14:55 bsmith Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.64 2001/01/15 21:48:32 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 /*
@@ -119,11 +119,11 @@ void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
   /*
       Make the PETSc work vectors tmpx and tmpy point to the arrays in the PVODE vectors 
   */
-  ierr = VecPlaceArray(tmpx,&N_VIth(y,0));CHKERRA(ierr);
-  ierr = VecPlaceArray(tmpy,&N_VIth(ydot,0));CHKERRA(ierr);
+  ierr = VecPlaceArray(tmpx,&N_VIth(y,0));CHKERRQ(ierr);
+  ierr = VecPlaceArray(tmpy,&N_VIth(ydot,0));CHKERRQ(ierr);
 
   /* now compute the right hand side function */
-  ierr = TSComputeRHSFunction(ts,t,tmpx,tmpy);CHKERRA(ierr);
+  ierr = TSComputeRHSFunction(ts,t,tmpx,tmpy);CHKERRQ(ierr);
 }
 
 /*

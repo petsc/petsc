@@ -1,4 +1,4 @@
-/*$Id: ex62.c,v 1.16 2000/10/24 20:26:04 bsmith Exp bsmith $*/
+/*$Id: ex62.c,v 1.17 2001/01/15 21:46:09 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 
@@ -20,16 +20,16 @@ int main(int argc,char **args)
   PetscTruth flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size > 1) SETERRA(1,"Can only run on one processor");
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(1,"Can only run on one processor");
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,"Must indicate binary file with the -f option");
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(1,"Must indicate binary file with the -f option");
   /* 
      Open binary file.  Note that we use PETSC_BINARY_RDONLY to indicate
      reading from this file.
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRQ(ierr);
 
   /* 
      Determine matrix format to be used (specified at runtime).
@@ -41,34 +41,34 @@ int main(int argc,char **args)
   /*
      Load the matrix and vector; then destroy the viewer.
   */
-  ierr = MatLoad(fd,type,&C);CHKERRA(ierr);
-  ierr = VecLoad(fd,&u);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
+  ierr = MatLoad(fd,type,&C);CHKERRQ(ierr);
+  ierr = VecLoad(fd,&u);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
-  ierr = VecDuplicate(u,&x);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRA(ierr);
+  ierr = VecDuplicate(u,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
 
-  ierr = MatMultTranspose(C,u,b);CHKERRA(ierr);
+  ierr = MatMultTranspose(C,u,b);CHKERRQ(ierr);
 
   /* Set default ordering to be Quotient Minimum Degree; also read
      orderings from the options database */
-  ierr = MatGetOrdering(C,MATORDERING_QMD,&row,&col);CHKERRA(ierr);
+  ierr = MatGetOrdering(C,MATORDERING_QMD,&row,&col);CHKERRQ(ierr);
 
-  ierr = MatLUFactorSymbolic(C,row,col,PETSC_NULL,&A);CHKERRA(ierr);
-  ierr = MatLUFactorNumeric(C,&A);CHKERRA(ierr);
-  ierr = MatSolveTranspose(A,b,x);CHKERRA(ierr);
+  ierr = MatLUFactorSymbolic(C,row,col,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(C,&A);CHKERRQ(ierr);
+  ierr = MatSolveTranspose(A,b,x);CHKERRQ(ierr);
 
-  ierr = VecAXPY(&mone,u,x);CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);CHKERRA(ierr);
+  ierr = VecAXPY(&mone,u,x);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);CHKERRQ(ierr);
 
-  ierr = ISDestroy(row);CHKERRA(ierr);
-  ierr = ISDestroy(col);CHKERRA(ierr);
-  ierr = VecDestroy(u);CHKERRA(ierr);
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr);
-  ierr = MatDestroy(C);CHKERRA(ierr);
-  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = ISDestroy(row);CHKERRQ(ierr);
+  ierr = ISDestroy(col);CHKERRQ(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

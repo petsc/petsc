@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.12 2000/09/22 20:42:48 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.13 2000/09/27 03:28:43 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -24,14 +24,14 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRA(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
   /* 
      The following MPI calls return the number of processes
      being used and the rank of this process in the group.
    */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* 
      Here we would like to print only one message that represents
@@ -39,12 +39,12 @@ int main(int argc,char **argv)
      communicator PETSC_COMM_WORLD.  Thus, only one message is
      printed representng PETSC_COMM_WORLD, i.e., all the processors.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank);CHKERRQ(ierr);
 
   /*
     Here a barrier is used to separate the two program states.
   */
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRA(ierr);
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   /*
     Here we simply use PetscPrintf() with the communicator PETSC_COMM_SELF,
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
     appear in any particular order.
   */
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Jumbled Hello World\n",rank);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Jumbled Hello World\n",rank);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -62,6 +62,6 @@ int main(int argc,char **argv)
          options are chosen (e.g., -log_summary).  See PetscFinalize()
      manpage for more information.
   */
-  ierr = PetscFinalize();CHKERRA(ierr);
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.44 2000/10/24 20:26:55 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.45 2001/01/15 21:47:36 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\
@@ -45,30 +45,30 @@ int main(int argc,char **args)
   Scalar     v;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-t",&ntimes,PETSC_NULL);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-t",&ntimes,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n = 2*size;
 
   /* 
      Register various stages for profiling
   */
-  ierr = PetscLogStageRegister(0,"Prelim setup");CHKERRA(ierr);
-  ierr = PetscLogStageRegister(1,"Linear System 1");CHKERRA(ierr);
-  ierr = PetscLogStageRegister(2,"Linear System 2");CHKERRA(ierr);
+  ierr = PetscLogStageRegister(0,"Prelim setup");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister(1,"Linear System 1");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister(2,"Linear System 2");CHKERRQ(ierr);
 
   /* 
      Register a user-defined event for profiling (error checking).
   */
   CHECK_ERROR = 0;
-  ierr = PetscLogEventRegister(&CHECK_ERROR,"Check Error","Red:");CHKERRA(ierr);
+  ierr = PetscLogEventRegister(&CHECK_ERROR,"Check Error","Red:");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - Stage 0: - - - - - - - - - - - - - -
                         Preliminary Setup
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscLogStagePush(0);CHKERRA(ierr);
+  ierr = PetscLogStagePush(0);CHKERRQ(ierr);
 
   /* 
      Create data structures for first linear system.
@@ -81,13 +81,13 @@ int main(int argc,char **args)
           dimension; the parallel partitioning is determined at runtime. 
         - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C1);CHKERRA(ierr);
-  ierr = MatSetFromOptions(C1);CHKERRA(ierr);
-  ierr = MatGetOwnershipRange(C1,&Istart,&Iend);CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRA(ierr);
-  ierr = VecSetFromOptions(u);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b1);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&x1);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C1);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(C1);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(C1,&Istart,&Iend);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&b1);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&x1);CHKERRQ(ierr);
 
   /*
      Create first linear solver context.
@@ -96,60 +96,60 @@ int main(int argc,char **args)
      names, while the second linear systme uses a different
      options prefix.
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles1);CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles1);CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles1);CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(sles1);CHKERRQ(ierr);
 
   /* 
      Set user-defined monitoring routine for first linear system.
   */
-  ierr = SLESGetKSP(sles1,&ksp1);CHKERRA(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-my_ksp_monitor",&flg);CHKERRA(ierr);
-  if (flg) {ierr = KSPSetMonitor(ksp1,MyKSPMonitor,PETSC_NULL,0);CHKERRA(ierr);}
+  ierr = SLESGetKSP(sles1,&ksp1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-my_ksp_monitor",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = KSPSetMonitor(ksp1,MyKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);}
 
   /*
      Create data structures for second linear system.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C2);CHKERRA(ierr);
-  ierr = MatSetFromOptions(C2);CHKERRA(ierr);
-  ierr = MatGetOwnershipRange(C2,&Istart2,&Iend2);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b2);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&x2);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C2);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(C2);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(C2,&Istart2,&Iend2);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&b2);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&x2);CHKERRQ(ierr);
 
   /*
      Create second linear solver context
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles2);CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles2);CHKERRQ(ierr);
 
   /* 
      Set different options prefix for second linear system.
      Set runtime options (e.g., -s2_pc_type <type>)
   */
-  ierr = SLESAppendOptionsPrefix(sles2,"s2_");CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles2);CHKERRA(ierr);
+  ierr = SLESAppendOptionsPrefix(sles2,"s2_");CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(sles2);CHKERRQ(ierr);
 
   /* 
      Assemble exact solution vector in parallel.  Note that each
      processor needs to set only its local part of the vector.
   */
-  ierr = VecGetLocalSize(u,&ldim);CHKERRA(ierr);
-  ierr = VecGetOwnershipRange(u,&low,&high);CHKERRA(ierr);
+  ierr = VecGetLocalSize(u,&ldim);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(u,&low,&high);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
     v = (Scalar)(i + 100*rank);
-    ierr = VecSetValues(u,1,&iglobal,&v,ADD_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(u,1,&iglobal,&v,ADD_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(u);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(u);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
 
   /* 
      Log the number of flops for computing vector entries
   */
-  ierr = PetscLogFlops(2*ldim);CHKERRA(ierr);
+  ierr = PetscLogFlops(2*ldim);CHKERRQ(ierr);
 
   /*
      End curent profiling stage
   */
-  ierr = PetscLogStagePop();CHKERRA(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* -------------------------------------------------------------- 
                         Linear solver loop:
@@ -165,13 +165,13 @@ int main(int argc,char **args)
     /*
        Begin profiling stage #1
     */
-    ierr = PetscLogStagePush(1);CHKERRA(ierr);
+    ierr = PetscLogStagePush(1);CHKERRQ(ierr);
 
     /* 
        Initialize all matrix entries to zero.  MatZeroEntries() retains
        the nonzero structure of the matrix for sparse formats.
     */
-    ierr = MatZeroEntries(C1);CHKERRA(ierr);
+    ierr = MatZeroEntries(C1);CHKERRQ(ierr);
 
     /* 
        Set matrix entries in parallel.  Also, log the number of flops
@@ -183,17 +183,17 @@ int main(int argc,char **args)
     */
     for (I=Istart; I<Iend; I++) { 
       v = -1.0; i = I/n; j = I - i*n;  
-      if (i>0)   {J = I - n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-      if (i<m-1) {J = I + n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-      if (j>0)   {J = I - 1; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-      if (j<n-1) {J = I + 1; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-      v = 4.0; ierr = MatSetValues(C1,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
+      if (i>0)   {J = I - n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      v = 4.0; ierr = MatSetValues(C1,1,&I,1,&I,&v,ADD_VALUES);CHKERRQ(ierr);
     }
     for (I=Istart; I<Iend; I++) { /* Make matrix nonsymmetric */
       v = -1.0*(t+0.5); i = I/n;
-      if (i>0)   {J = I - n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     }
-    ierr = PetscLogFlops(2*(Istart-Iend));CHKERRA(ierr);
+    ierr = PetscLogFlops(2*(Istart-Iend));CHKERRQ(ierr);
 
     /* 
        Assemble matrix, using the 2-step process:
@@ -201,18 +201,18 @@ int main(int argc,char **args)
        Computations can be done while messages are in transition
        by placing code between these two statements.
     */
-    ierr = MatAssemblyBegin(C1,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-    ierr = MatAssemblyEnd(C1,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+    ierr = MatAssemblyBegin(C1,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(C1,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     /* 
        Indicate same nonzero structure of successive linear system matrices
     */
-    ierr = MatSetOption(C1,MAT_NO_NEW_NONZERO_LOCATIONS);CHKERRA(ierr);
+    ierr = MatSetOption(C1,MAT_NO_NEW_NONZERO_LOCATIONS);CHKERRQ(ierr);
 
     /* 
        Compute right-hand-side vector
     */
-    ierr = MatMult(C1,u,b1);CHKERRA(ierr);
+    ierr = MatMult(C1,u,b1);CHKERRQ(ierr);
 
     /* 
        Set operators. Here the matrix that defines the linear system
@@ -235,7 +235,7 @@ int main(int argc,char **args)
           will not function correctly.  Thus, use this optimization
           feature with caution!
     */
-    ierr = SLESSetOperators(sles1,C1,C1,SAME_NONZERO_PATTERN);CHKERRA(ierr);
+    ierr = SLESSetOperators(sles1,C1,C1,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
     /* 
        Use the previous solution of linear system #1 as the initial
@@ -244,7 +244,7 @@ int main(int argc,char **args)
        guess vector; otherwise, an initial guess of zero is used.
     */
     if (t>0) {
-      ierr = KSPSetInitialGuessNonzero(ksp1);CHKERRA(ierr);
+      ierr = KSPSetInitialGuessNonzero(ksp1);CHKERRQ(ierr);
     }
 
     /* 
@@ -254,13 +254,13 @@ int main(int argc,char **args)
        is optional, ase SLESSetUp() will automatically be called
        within SLESSolve() if it hasn't been called already.
     */
-    ierr = SLESSetUp(sles1,b1,x1);CHKERRA(ierr);
-    ierr = SLESSolve(sles1,b1,x1,&its);CHKERRA(ierr);
+    ierr = SLESSetUp(sles1,b1,x1);CHKERRQ(ierr);
+    ierr = SLESSolve(sles1,b1,x1,&its);CHKERRQ(ierr);
 
     /*
        Check error of solution to first linear system
     */
-    ierr = CheckError(u,x1,b1,its,CHECK_ERROR);CHKERRA(ierr); 
+    ierr = CheckError(u,x1,b1,its,CHECK_ERROR);CHKERRQ(ierr); 
 
     /* - - - - - - - - - - - - Stage 2: - - - - - - - - - - - - - -
                  Assemble and solve second linear system            
@@ -269,13 +269,13 @@ int main(int argc,char **args)
     /*
        Conclude profiling stage #1; begin profiling stage #2
     */
-    ierr = PetscLogStagePop();CHKERRA(ierr);
-    ierr = PetscLogStagePush(2);CHKERRA(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    ierr = PetscLogStagePush(2);CHKERRQ(ierr);
 
     /*
        Initialize all matrix entries to zero
     */
-    ierr = MatZeroEntries(C2);CHKERRA(ierr);
+    ierr = MatZeroEntries(C2);CHKERRQ(ierr);
 
    /* 
       Assemble matrix in parallel. Also, log the number of flops
@@ -291,30 +291,30 @@ int main(int argc,char **args)
     for (i=0; i<m; i++) { 
       for (j=2*rank; j<2*rank+2; j++) {
         v = -1.0;  I = j + n*i;
-        if (i>0)   {J = I - n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-        if (i<m-1) {J = I + n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-        if (j>0)   {J = I - 1; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-        if (j<n-1) {J = I + 1; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-        v = 6.0 + t*0.5; ierr = MatSetValues(C2,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
+        if (i>0)   {J = I - n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+        if (i<m-1) {J = I + n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+        if (j>0)   {J = I - 1; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+        if (j<n-1) {J = I + 1; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+        v = 6.0 + t*0.5; ierr = MatSetValues(C2,1,&I,1,&I,&v,ADD_VALUES);CHKERRQ(ierr);
       }
     } 
     for (I=Istart2; I<Iend2; I++) { /* Make matrix nonsymmetric */
       v = -1.0*(t+0.5); i = I/n;
-      if (i>0)   {J = I - n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     }
-    ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-    ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY);CHKERRA(ierr); 
-    ierr = PetscLogFlops(2*(Istart-Iend));CHKERRA(ierr);
+    ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
+    ierr = PetscLogFlops(2*(Istart-Iend));CHKERRQ(ierr);
 
     /* 
        Indicate same nonzero structure of successive linear system matrices
     */
-    ierr = MatSetOption(C2,MAT_NO_NEW_NONZERO_LOCATIONS);CHKERRA(ierr);
+    ierr = MatSetOption(C2,MAT_NO_NEW_NONZERO_LOCATIONS);CHKERRQ(ierr);
 
     /*
        Compute right-hand-side vector 
     */
-    ierr = MatMult(C2,u,b2);CHKERRA(ierr);
+    ierr = MatMult(C2,u,b2);CHKERRQ(ierr);
 
     /*
        Set operators. Here the matrix that defines the linear system
@@ -322,18 +322,18 @@ int main(int argc,char **args)
        structure of successive preconditioner matrices by setting flag
        SAME_NONZERO_PATTERN.
     */
-    ierr = SLESSetOperators(sles2,C2,C2,SAME_NONZERO_PATTERN);CHKERRA(ierr);
+    ierr = SLESSetOperators(sles2,C2,C2,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
     /* 
        Solve the second linear system
     */
-    ierr = SLESSetUp(sles2,b2,x2);CHKERRA(ierr);
-    ierr = SLESSolve(sles2,b2,x2,&its);CHKERRA(ierr);
+    ierr = SLESSetUp(sles2,b2,x2);CHKERRQ(ierr);
+    ierr = SLESSolve(sles2,b2,x2,&its);CHKERRQ(ierr);
 
     /*
        Check error of solution to first linear system
     */
-    ierr = CheckError(u,x2,b2,its,CHECK_ERROR);CHKERRA(ierr); 
+    ierr = CheckError(u,x2,b2,its,CHECK_ERROR);CHKERRQ(ierr); 
 
     /* 
        Conclude profiling stage #2
@@ -348,11 +348,11 @@ int main(int argc,char **args)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = SLESDestroy(sles1);CHKERRA(ierr); ierr = SLESDestroy(sles2);CHKERRA(ierr);
-  ierr = VecDestroy(x1);CHKERRA(ierr);     ierr = VecDestroy(x2);CHKERRA(ierr);
-  ierr = VecDestroy(b1);CHKERRA(ierr);     ierr = VecDestroy(b2);CHKERRA(ierr);
-  ierr = MatDestroy(C1);CHKERRA(ierr);     ierr = MatDestroy(C2);CHKERRA(ierr);
-  ierr = VecDestroy(u);CHKERRA(ierr);
+  ierr = SLESDestroy(sles1);CHKERRQ(ierr); ierr = SLESDestroy(sles2);CHKERRQ(ierr);
+  ierr = VecDestroy(x1);CHKERRQ(ierr);     ierr = VecDestroy(x2);CHKERRQ(ierr);
+  ierr = VecDestroy(b1);CHKERRQ(ierr);     ierr = VecDestroy(b2);CHKERRQ(ierr);
+  ierr = MatDestroy(C1);CHKERRQ(ierr);     ierr = MatDestroy(C2);CHKERRQ(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

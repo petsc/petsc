@@ -1,4 +1,4 @@
-/*$Id: ex1e.c,v 1.5 2000/09/28 21:10:40 bsmith Exp bsmith $*/
+/*$Id: ex1e.c,v 1.6 2001/01/15 21:45:20 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -13,7 +13,7 @@ T*/
 
    This uses the PETSc _ error checking routines. Put _ before the PETSc function call
   and __ after the call (or ___ in a subroutine, not the main program). This is equivalent
-  to using the ierr = ... CHKERRA(ierr); macros
+  to using the ierr = ... CHKERRQ(ierr); macros
 
 
   Include "petscvec.h" so that we can use vectors.  Note that this file
@@ -167,7 +167,7 @@ _ PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %g %g %g \n",v,v1,v2);___
      routine) not needed in most application codes.
   */
 _ VecValid(x,&flg);___
-  if (!flg) SETERRA(1,"Corrupted vector.");
+  if (!flg) SETERRQ(1,"Corrupted vector.");
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

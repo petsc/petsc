@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.42 2001/01/15 21:49:08 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.43 2001/01/16 18:21:19 balay Exp bsmith $*/
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
@@ -20,15 +20,15 @@ int main(int argc,char **argv)
   PetscTruth flg;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
   /*
       Test putting two nodes on each processor, exact last processor gets the rest
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMalloc(size*sizeof(int),&localnodes);CHKERRQ(ierr);
     for (i=0; i<size-1; i++) { localnodes[i] = 2;}
@@ -36,32 +36,32 @@ int main(int argc,char **argv)
   }
     
   /* Set up the array */ 
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_XPERIODIC,M,1,1,localnodes,&da);CHKERRA(ierr);
-  if (localnodes) {ierr = PetscFree(localnodes);CHKERRA(ierr);}
-  ierr = DACreateGlobalVector(da,&global);CHKERRA(ierr);
-  ierr = DACreateLocalVector(da,&local);CHKERRA(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_XPERIODIC,M,1,1,localnodes,&da);CHKERRQ(ierr);
+  if (localnodes) {ierr = PetscFree(localnodes);CHKERRQ(ierr);}
+  ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
 
   /* Set up display to show combined wave graph */
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"Entire Solution",20,480,800,200,&viewer);CHKERRA(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"Entire Solution",20,480,800,200,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRA(ierr);
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
 
   /* determine starting point of each processor */
-  ierr = VecGetOwnershipRange(global,&mybase,&myend);CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(global,&mybase,&myend);CHKERRQ(ierr);
 
   /* set up display to show my portion of the wave */
   xbase = (int)((mybase)*((800.0 - 4.0*size)/M) + 4.0*rank);
   width = (int)((myend-mybase)*800./M);
   ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Local Portion of Solution",xbase,200,
-                         width,200,&viewer_private);CHKERRA(ierr);
+                         width,200,&viewer_private);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(viewer_private,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRA(ierr);
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
 
 
 
   /* Initialize the array */
-  ierr = VecGetLocalSize(local,&localsize);CHKERRA(ierr);
-  ierr = VecGetArray(local,&localptr);CHKERRA(ierr);
+  ierr = VecGetLocalSize(local,&localsize);CHKERRQ(ierr);
+  ierr = VecGetArray(local,&localptr);CHKERRQ(ierr);
   localptr[0] = 0.0;
   localptr[localsize-1] = 0.0;
   for (i=1; i<localsize-1; i++) {
@@ -70,11 +70,11 @@ int main(int argc,char **argv)
                         + 1.2 * sin((PETSC_PI*j*2)/((double)M))) * 2;
   }
 
-  ierr = VecRestoreArray(local,&localptr);CHKERRA(ierr);
-  ierr = DALocalToGlobal(da,local,INSERT_VALUES,global);CHKERRA(ierr);
+  ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);
+  ierr = DALocalToGlobal(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
 
   /* Make copy of local array for doing updates */
-  ierr = VecDuplicate(local,&copy);CHKERRA(ierr);
+  ierr = VecDuplicate(local,&copy);CHKERRQ(ierr);
 
   /* Assign Parameters */
   a= 1.0;
@@ -84,12 +84,12 @@ int main(int argc,char **argv)
   for (j=0; j<time_steps; j++) {  
 
     /* Global to Local */
-    ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRA(ierr);
-    ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
+    ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
     /*Extract local array */ 
-    ierr = VecGetArray(local,&localptr);CHKERRA(ierr);
-    ierr = VecGetArray(copy,&copyptr);CHKERRA(ierr);
+    ierr = VecGetArray(local,&localptr);CHKERRQ(ierr);
+    ierr = VecGetArray(copy,&copyptr);CHKERRQ(ierr);
 
     /* Update Locally - Make array of new values */
     /* Note: I don't do anything for the first and last entry */
@@ -97,25 +97,25 @@ int main(int argc,char **argv)
       copyptr[i] = .5*(localptr[i+1]+localptr[i-1]) - 
                     (k / (2.0*a*h)) * (localptr[i+1] - localptr[i-1]);
     }
-    ierr = VecRestoreArray(copy,&copyptr);CHKERRA(ierr);
-    ierr = VecRestoreArray(local,&localptr);CHKERRA(ierr);
+    ierr = VecRestoreArray(copy,&copyptr);CHKERRQ(ierr);
+    ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);
 
     /* Local to Global */
-    ierr = DALocalToGlobal(da,copy,INSERT_VALUES,global);CHKERRA(ierr);
+    ierr = DALocalToGlobal(da,copy,INSERT_VALUES,global);CHKERRQ(ierr);
   
     /* View my part of Wave */ 
-    ierr = VecView(copy,viewer_private);CHKERRA(ierr);
+    ierr = VecView(copy,viewer_private);CHKERRQ(ierr);
 
     /* View global Wave */ 
-    ierr = VecView(global,viewer);CHKERRA(ierr);
+    ierr = VecView(global,viewer);CHKERRQ(ierr);
   }
 
-  ierr = DADestroy(da);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(viewer_private);CHKERRA(ierr);
-  ierr = VecDestroy(copy);CHKERRA(ierr);
-  ierr = VecDestroy(local);CHKERRA(ierr);
-  ierr = VecDestroy(global);CHKERRA(ierr);
+  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer_private);CHKERRQ(ierr);
+  ierr = VecDestroy(copy);CHKERRQ(ierr);
+  ierr = VecDestroy(local);CHKERRQ(ierr);
+  ierr = VecDestroy(global);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

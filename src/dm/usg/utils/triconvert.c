@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: triconvert.c,v 1.6 2001/01/15 21:49:15 bsmith Exp balay $";
+static char vcid[] = "$Id: triconvert.c,v 1.7 2001/01/16 18:21:27 balay Exp bsmith $";
 #endif
 /*
       Converts triangulated grid data file.node and file.ele generated
@@ -24,33 +24,33 @@ int main(int argc,char **args)
   PetscTruth flag;
 
   PetscInitialize(&argc,&args,0,0);
-  ierr = PetscMemzero(filename,256*sizeof(char));CHKERRA(ierr);
+  ierr = PetscMemzero(filename,256*sizeof(char));CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetString(0,"-f",filebase,246,&flag);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(0,"-f",filebase,246,&flag);CHKERRQ(ierr);
   if (!flag) {
-    SETERRA(1,"Must provide filebase name with -f");
+    SETERRQ(1,"Must provide filebase name with -f");
   }
 
   /*
      Create empty database 
   */
-  ierr = AODataCreateBasic(PETSC_COMM_SELF,&ao);CHKERRA(ierr);
+  ierr = AODataCreateBasic(PETSC_COMM_SELF,&ao);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------------------------------
        Read in vertex information 
   */
-  ierr = PetscStrcpy(filename,filebase);CHKERRA(ierr);
-  ierr = PetscStrcat(filename,".node");CHKERRA(ierr);
+  ierr = PetscStrcpy(filename,filebase);CHKERRQ(ierr);
+  ierr = PetscStrcat(filename,".node");CHKERRQ(ierr);
   file = fopen(filename,"r"); 
   if (!file) {  
-    SETERRA1(1,"Unable to open node file: %s",filename);
+    SETERRQ1(1,"Unable to open node file: %s",filename);
   }
   fscanf(file,"%d %d %d %d\n",&nvertex,&dim,&nstuff,&nbound);  
   if (dim != 2) {
-    SETERRA(1,"Triangulation is not in two dimensions");
+    SETERRQ(1,"Triangulation is not in two dimensions");
   }
-  ierr = PetscMalloc(2*nvertex*sizeof(double),&vertex);CHKERRA(ierr);
-  ierr   = PetscBTCreate(nvertex,vertex_boundary);CHKERRA(ierr);
+  ierr = PetscMalloc(2*nvertex*sizeof(double),&vertex);CHKERRQ(ierr);
+  ierr   = PetscBTCreate(nvertex,vertex_boundary);CHKERRQ(ierr);
 
   if (nstuff == 1) {
     for (i=0; i<nvertex; i++) {
@@ -62,29 +62,29 @@ int main(int argc,char **args)
       fscanf(file,"%d %le %le %d\n",&dummy,vertex+2*i,vertex+2*i+1,&bound);
       if (bound) PetscBTSet(vertex_boundary,i);
     }
-  } else SETERRA(1,"No support yet for that number of vertex quantities");
+  } else SETERRQ(1,"No support yet for that number of vertex quantities");
   fclose(file);
 
   /*  
      Put vertex into database 
   */
-  ierr = AODataKeyAdd(ao,"vertex",nvertex,nvertex);CHKERRA(ierr);
-  ierr = AODataSegmentAdd(ao,"vertex","values",2,nvertex,0,vertex,PETSC_DOUBLE);CHKERRA(ierr);
-  ierr = AODataSegmentAdd(ao,"vertex","boundary",1,nvertex,0,vertex_boundary,PETSC_LOGICAL);CHKERRA(ierr);
-  ierr = PetscBTDestroy(vertex_boundary);CHKERRA(ierr);
+  ierr = AODataKeyAdd(ao,"vertex",nvertex,nvertex);CHKERRQ(ierr);
+  ierr = AODataSegmentAdd(ao,"vertex","values",2,nvertex,0,vertex,PETSC_DOUBLE);CHKERRQ(ierr);
+  ierr = AODataSegmentAdd(ao,"vertex","boundary",1,nvertex,0,vertex_boundary,PETSC_LOGICAL);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(vertex_boundary);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------------------------------
       Read in triangle information 
   */
-  ierr = PetscStrcpy(filename,filebase);CHKERRA(ierr);
-  ierr = PetscStrcat(filename,".ele");CHKERRA(ierr);
+  ierr = PetscStrcpy(filename,filebase);CHKERRQ(ierr);
+  ierr = PetscStrcat(filename,".ele");CHKERRQ(ierr);
   file = fopen(filename,"r"); 
   if (!file) {  
-    SETERRA(1,"Unable to open element file");
+    SETERRQ(1,"Unable to open element file");
   }
   fscanf(file,"%d %d %d\n",&ncell,&nc,&nstuff);ncp = nc;
 
-  ierr = PetscMalloc(nc*ncell*sizeof(int),&cell);CHKERRA(ierr);
+  ierr = PetscMalloc(nc*ncell*sizeof(int),&cell);CHKERRQ(ierr);
   if (nstuff == 0) {
     if (nc == 3) {
       for (i=0; i<ncell; i++) {
@@ -97,7 +97,7 @@ int main(int argc,char **args)
       }
     }
   } else {
-    SETERRA(1,"No support yet for that number of element quantities");
+    SETERRQ(1,"No support yet for that number of element quantities");
   }
   fclose(file);
   for (i=0; i<nc*ncell; i++) {
@@ -107,13 +107,13 @@ int main(int argc,char **args)
   /*  
      Put cell into database 
   */
-  ierr = AODataKeyAdd(ao,"cell",ncell,ncell);CHKERRA(ierr);
-  ierr = AODataSegmentAdd(ao,"cell","vertex",nc,ncell,0,cell,PETSC_INT);CHKERRA(ierr);
+  ierr = AODataKeyAdd(ao,"cell",ncell,ncell);CHKERRQ(ierr);
+  ierr = AODataSegmentAdd(ao,"cell","vertex",nc,ncell,0,cell,PETSC_INT);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(nc*ncell*sizeof(int),&cell_edge);CHKERRA(ierr);
-  ierr = PetscMalloc(2*nc*ncell*sizeof(int),&edge_cell);CHKERRA(ierr);
-  ierr = PetscMalloc(2*nc*ncell*sizeof(int),&edge_vertex);CHKERRA(ierr);
-  ierr = PetscMalloc(3*ncell*sizeof(int),&cell_cell);CHKERRA(ierr);
+  ierr = PetscMalloc(nc*ncell*sizeof(int),&cell_edge);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*nc*ncell*sizeof(int),&edge_cell);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*nc*ncell*sizeof(int),&edge_vertex);CHKERRQ(ierr);
+  ierr = PetscMalloc(3*ncell*sizeof(int),&cell_cell);CHKERRQ(ierr);
 
   /*
       Determine edges 
@@ -156,8 +156,8 @@ int main(int argc,char **args)
   /*
        Determine cell neighbors 
   */
-  ierr = PetscStrcpy(filename,filebase);CHKERRA(ierr);
-  ierr = PetscStrcat(filename,".neigh");CHKERRA(ierr);
+  ierr = PetscStrcpy(filename,filebase);CHKERRQ(ierr);
+  ierr = PetscStrcat(filename,".neigh");CHKERRQ(ierr);
   file = fopen(filename,"r"); 
   if (file) {  
     fscanf(file,"%d %d\n",&ncell,&nc);
@@ -182,34 +182,34 @@ int main(int argc,char **args)
     }
   }
 
-  ierr = AODataSegmentAdd(ao,"cell","cell",3,ncell,0,cell_cell,PETSC_INT);CHKERRA(ierr);
-  ierr = AODataSegmentAdd(ao,"cell","edge",nc,ncell,0,cell_edge,PETSC_INT);CHKERRA(ierr);
+  ierr = AODataSegmentAdd(ao,"cell","cell",3,ncell,0,cell_cell,PETSC_INT);CHKERRQ(ierr);
+  ierr = AODataSegmentAdd(ao,"cell","edge",nc,ncell,0,cell_edge,PETSC_INT);CHKERRQ(ierr);
 
-  ierr = AODataKeyAdd(ao,"edge",nedge,nedge);CHKERRA(ierr);
-  ierr = AODataSegmentAdd(ao,"edge","vertex",2,nedge,0,edge_vertex,PETSC_INT);CHKERRA(ierr);
+  ierr = AODataKeyAdd(ao,"edge",nedge,nedge);CHKERRQ(ierr);
+  ierr = AODataSegmentAdd(ao,"edge","vertex",2,nedge,0,edge_vertex,PETSC_INT);CHKERRQ(ierr);
 
-  ierr = PetscFree(vertex);CHKERRA(ierr);
-  ierr = PetscFree(cell);CHKERRA(ierr);
-  ierr = PetscFree(shift0);CHKERRA(ierr);
-  ierr = PetscFree(shift1);CHKERRA(ierr);
+  ierr = PetscFree(vertex);CHKERRQ(ierr);
+  ierr = PetscFree(cell);CHKERRQ(ierr);
+  ierr = PetscFree(shift0);CHKERRQ(ierr);
+  ierr = PetscFree(shift1);CHKERRQ(ierr);
 
   /*
       Add information about cell shape and element type to database
   */
-  ierr = AODataKeyAdd(ao,"info",1,1);CHKERRA(ierr);
-  ierr = AODataSegmentAdd(ao,"info","shape",10,1,0,(void*)"triangular",PETSC_CHAR);CHKERRA(ierr);
+  ierr = AODataKeyAdd(ao,"info",1,1);CHKERRQ(ierr);
+  ierr = AODataSegmentAdd(ao,"info","shape",10,1,0,(void*)"triangular",PETSC_CHAR);CHKERRQ(ierr);
   if (ncp == 3) {
-    ierr = AODataSegmentAdd(ao,"info","element",6,1,0,(void*)"linear",PETSC_CHAR);CHKERRA(ierr);
+    ierr = AODataSegmentAdd(ao,"info","element",6,1,0,(void*)"linear",PETSC_CHAR);CHKERRQ(ierr);
   } else if (ncp == 6) {
-    ierr = AODataSegmentAdd(ao,"info","element",13,1,0,(void*)"quadratic",PETSC_CHAR);CHKERRA(ierr);
+    ierr = AODataSegmentAdd(ao,"info","element",13,1,0,(void*)"quadratic",PETSC_CHAR);CHKERRQ(ierr);
   }
 
   /*  ierr = AODataView(ao,0); */
 
   { PetscViewer binary;
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filebase,PETSC_BINARY_CREATE,&binary);CHKERRA(ierr);
-  ierr = AODataView(ao,binary);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(binary);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filebase,PETSC_BINARY_CREATE,&binary);CHKERRQ(ierr);
+  ierr = AODataView(ao,binary);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(binary);CHKERRQ(ierr);
   }
   
   return 0;

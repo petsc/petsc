@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.8 2000/05/05 22:14:45 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.9 2001/01/15 21:44:31 bsmith Exp bsmith $*/
 
 static char help[] = "Tests ISStrideToGeneral()\n\n";
 
@@ -13,12 +13,12 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-step",&step,PETSC_NULL);CHKERRA(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,10,0,step,&is);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-step",&step,PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,10,0,step,&is);CHKERRQ(ierr);
 
-  ierr = ISStrideToGeneral(is);CHKERRA(ierr);
+  ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
 
-  ierr = ISDestroy(is);CHKERRA(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

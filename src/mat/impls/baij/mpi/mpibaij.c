@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.208 2001/01/15 21:45:57 bsmith Exp balay $*/
+/*$Id: mpibaij.c,v 1.209 2001/01/16 18:17:55 balay Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -50,7 +50,7 @@ int MatGetRowMax_MPIBAIJ(Mat A,Vec v)
   ierr = MatGetRowMax(a->A,v);CHKERRQ(ierr); 
   ierr = VecGetArray(v,&va);CHKERRQ(ierr);
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,A->m,&vtmp);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,A->m,&vtmp);CHKERRQ(ierr);
   ierr = MatGetRowMax(a->B,vtmp);CHKERRQ(ierr);
   ierr = VecGetArray(vtmp,&vb);CHKERRQ(ierr);
 
@@ -60,7 +60,7 @@ int MatGetRowMax_MPIBAIJ(Mat A,Vec v)
 
   ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
   ierr = VecRestoreArray(vtmp,&vb);CHKERRQ(ierr); 
-  ierr = VecDestroy(vtmp);CHKERRA(ierr);
+  ierr = VecDestroy(vtmp);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }

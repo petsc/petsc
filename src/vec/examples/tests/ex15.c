@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.11 2000/09/28 21:10:28 bsmith Exp bsmith $*/
+/*$Id: ex15.c,v 1.12 2001/01/15 21:45:13 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecSetValuesBlocked() on Seq vectors\n\n";
 
@@ -14,27 +14,27 @@ int main(int argc,char **argv)
   Vec          x;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  if (size != 1) SETERRA(1,"Must be run with one processor");
+  if (size != 1) SETERRQ(1,"Must be run with one processor");
 
   /* create vector */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);
-  ierr = VecSetBlockSize(x,bs);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);
 
   for (i=0; i<6; i++) values[i] = 4.0*i;
   indices[0] = 0; indices[1] = 2;
-  ierr = VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES);CHKERRA(ierr);
+  ierr = VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES);CHKERRQ(ierr);
 
-  ierr = VecAssemblyBegin(x);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
   /* 
       Resulting vector should be 0 4 8  0 0 0 12 16 20
   */
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

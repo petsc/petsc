@@ -1,4 +1,4 @@
-/*$Id: ex56.c,v 1.25 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex56.c,v 1.26 2001/01/15 21:46:09 bsmith Exp bsmith $*/
 static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for \n\
 rectangular MatBAIJ matrix";
 
@@ -17,25 +17,25 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   
   if (size == 1) {
-    ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m*bs,n*bs,1,PETSC_NULL,&A);CHKERRA(ierr);
+    ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m*bs,n*bs,1,PETSC_NULL,&A);CHKERRQ(ierr);
   } else {
     ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,
-                            PETSC_NULL,1,PETSC_NULL,&A);CHKERRA(ierr);
+                            PETSC_NULL,1,PETSC_NULL,&A);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRQ(ierr);
   if (flg) { 
-    ierr = MatSetOption(A,MAT_COLUMN_ORIENTED);CHKERRA(ierr); 
+    ierr = MatSetOption(A,MAT_COLUMN_ORIENTED);CHKERRQ(ierr); 
     eval = 6;
   } else {
     eval = 9;
   }
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-ass_extern",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-ass_extern",&flg);CHKERRQ(ierr);
   if (flg && (size != 1))    rstart = m*((rank+1)%size);
   else                       rstart = m*(rank);
 
@@ -45,42 +45,42 @@ int main(int argc,char **args)
     for (j =0; j< 9; j++) x[i][j] = (Scalar)val++;
   }
 
-  ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES);CHKERRA(ierr);
+  ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES);CHKERRQ(ierr);
 
 
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /*
   This option does not work for rectangular matrices
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRA(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
   */
   
-  ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES);CHKERRA(ierr);
+  ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES);CHKERRQ(ierr);
 
   /* Do another MatSetValues to test the case when only one local block is specified */
   for (i=0; i<3; i++) {
     for (j =0; j<3 ; j++)  y[i][j] = (Scalar)(10 + i*eval + j);
   }
-  ierr = MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES);CHKERRA(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   
-  ierr = PetscOptionsHasName(PETSC_NULL,"-zero_rows",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-zero_rows",&flg);CHKERRQ(ierr);
   if (flg) {
     col[0] = rstart*bs+0;
     col[1] = rstart*bs+1;
     col[2] = rstart*bs+2;
-    ierr = ISCreateGeneral(MPI_COMM_SELF,3,col,&is);CHKERRA(ierr);
-    ierr = MatZeroRows(A,is,&one);CHKERRA(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,3,col,&is);CHKERRQ(ierr);
+    ierr = MatZeroRows(A,is,&one);CHKERRQ(ierr);
     ISDestroy(is);
   }
 
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

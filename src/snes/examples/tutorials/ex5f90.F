@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.34 2000/10/24 20:27:14 bsmith Exp bsmith $";
+! "$Id: ex5f90.F,v 1.35 2001/01/15 21:48:06 bsmith Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -216,7 +216,7 @@
       if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) &
      &     then
          if (user%rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRA(1,' ',ierr)
+         SETERRQ(1,' ',ierr)
       endif
       N = user%mx*user%my
 
@@ -243,7 +243,7 @@
          if (user%rank .eq. 0)  then
             write(6,*) 'Incompatible number of procs: Nx * Ny != size'
          endif
-         SETERRA(1,' ',ierr)
+         SETERRQ(1,' ',ierr)
       endif
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.

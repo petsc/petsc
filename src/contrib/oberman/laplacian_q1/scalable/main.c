@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.2 2000/08/24 22:43:40 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.3 2001/01/15 21:49:25 bsmith Exp bsmith $*/
 static char help[] =
 "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
@@ -28,24 +28,24 @@ int main(int argc,char **argv)
   PetscFunctionBegin;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
                                                       
   /* Load the grid database -- in appload.c              */
-  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx);CHKERRA(ierr);
+  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx);CHKERRQ(ierr);
 
   /* Setup the linear system and solve it -- in appalgebra.c */
-  ierr = AppCtxSolve(appctx,&its);CHKERRA(ierr);
+  ierr = AppCtxSolve(appctx,&its);CHKERRQ(ierr);
 
   /* Save the solution, if this is the case. */ 
   {
     PetscTruth flg;
-    ierr = PetscOptionsHasName(PETSC_NULL,"-save_solution",&flg);CHKERRA(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-save_solution",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
-      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"solution.m",&viewer);CHKERRA(ierr);
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"solution.m",&viewer);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"X");
-      ierr = VecView(appctx->algebra.x,viewer);CHKERRA(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
+      ierr = VecView(appctx->algebra.x,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
   }
 
@@ -53,16 +53,16 @@ int main(int argc,char **argv)
     Vec r;
     Scalar m1 = -1.0;
     PetscReal petscnorm;
-    ierr = VecDuplicate(appctx->algebra.b,&r);CHKERRA(ierr);
-    ierr = MatMult(appctx->algebra.A,appctx->algebra.x,r);CHKERRA(ierr);
-    ierr = VecAYPX(&m1,appctx->algebra.b,r);CHKERRA(ierr);
-    ierr = VecNorm(r,NORM_2,&petscnorm);CHKERRA(ierr);
-    ierr = VecDestroy(r);CHKERRA(ierr);
+    ierr = VecDuplicate(appctx->algebra.b,&r);CHKERRQ(ierr);
+    ierr = MatMult(appctx->algebra.A,appctx->algebra.x,r);CHKERRQ(ierr);
+    ierr = VecAYPX(&m1,appctx->algebra.b,r);CHKERRQ(ierr);
+    ierr = VecNorm(r,NORM_2,&petscnorm);CHKERRQ(ierr);
+    ierr = VecDestroy(r);CHKERRQ(ierr);
     norm = (double)petscnorm;
   }
 
   /* Destroy all datastructures  -- in appload.c */
-  ierr = AppCtxDestroy(appctx);CHKERRA(ierr);
+  ierr = AppCtxDestroy(appctx);CHKERRQ(ierr);
 
   /* Close down PETSc and stop the program */
   PetscFinalize();

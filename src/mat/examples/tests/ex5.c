@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.19 2000/10/24 20:26:04 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.20 2001/01/15 21:46:09 bsmith Exp bsmith $*/
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose(),\n\
 MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
@@ -17,127 +17,127 @@ int main(int argc,char **args)
   PetscTruth flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_COMMON,0);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_COMMON,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   n = m;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-rectA",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-rectA",&flg);CHKERRQ(ierr);
   if (flg) n += 2;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-rectB",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-rectB",&flg);CHKERRQ(ierr);
   if (flg) n -= 2;
 
   /* ---------- Assemble matrix and vectors ----------- */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&C);CHKERRA(ierr);
-  ierr = MatSetFromOptions(C);CHKERRA(ierr);
-  ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&x);CHKERRA(ierr);
-  ierr = VecSetFromOptions(x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&z);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&w);CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&y);CHKERRA(ierr);
-  ierr = VecSetFromOptions(y);CHKERRA(ierr);
-  ierr = VecDuplicate(y,&u);CHKERRA(ierr);
-  ierr = VecDuplicate(y,&s);CHKERRA(ierr);
-  ierr = VecGetOwnershipRange(y,&vstart,&vend);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&C);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&z);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&w);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&y);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
+  ierr = VecDuplicate(y,&u);CHKERRQ(ierr);
+  ierr = VecDuplicate(y,&s);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(y,&vstart,&vend);CHKERRQ(ierr);
 
   /* Assembly */
   for (i=rstart; i<rend; i++) { 
     v = 100*(i+1);
-    ierr = VecSetValues(z,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(z,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
     for (j=0; j<n; j++) { 
       v=10*(i+1)+j+1; 
-      ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
   /* Flush off proc Vec values and do more assembly */
-  ierr = VecAssemblyBegin(z);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(z);CHKERRQ(ierr);
   for (i=vstart; i<vend; i++) {
     v = one*((double)i);
-    ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
     v = 100.0*i;
-    ierr = VecSetValues(u,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(u,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /* Flush off proc Mat values and do more assembly */
-  ierr = MatAssemblyBegin(C,MAT_FLUSH_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) { 
     for (j=0; j<n; j++) { 
       v=10*(i+1)+j+1; 
-      ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   /* Try overlap Coomunication with the next stage XXXSetValues */
-  ierr = VecAssemblyEnd(z);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FLUSH_ASSEMBLY);CHKERRA(ierr);
+  ierr = VecAssemblyEnd(z);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 
   /* The Assembly for the second Stage */
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = VecAssemblyBegin(y);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(y);CHKERRA(ierr);
-  ierr = MatScale(&alpha,C);CHKERRA(ierr);
-  ierr = VecAssemblyBegin(u);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(u);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
+  ierr = MatScale(&alpha,C);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
 
   /* ------------ Test MatMult(), MatMultAdd()  ---------- */
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMult()\n");CHKERRA(ierr);
-  ierr = MatMult(C,y,x);CHKERRA(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultAdd()\n");CHKERRA(ierr);
-  ierr = MatMultAdd(C,y,z,w);CHKERRA(ierr);
-  ierr = VecAXPY(&one,z,x);CHKERRA(ierr);
-  ierr = VecAXPY(&negone,w,x);CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMult()\n");CHKERRQ(ierr);
+  ierr = MatMult(C,y,x);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultAdd()\n");CHKERRQ(ierr);
+  ierr = MatMultAdd(C,y,z,w);CHKERRQ(ierr);
+  ierr = VecAXPY(&one,z,x);CHKERRQ(ierr);
+  ierr = VecAXPY(&negone,w,x);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > 1.e-8){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);CHKERRQ(ierr);
   }
 
   /* ------- Test MatMultTranspose(), MatMultTransposeAdd() ------- */
 
   for (i=rstart; i<rend; i++) {
     v = one*((double)i);
-    ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(x);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTranspose()\n");CHKERRA(ierr);
-  ierr = MatMultTranspose(C,x,y);CHKERRA(ierr);
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTranspose()\n");CHKERRQ(ierr);
+  ierr = MatMultTranspose(C,x,y);CHKERRQ(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTransposeAdd()\n");CHKERRA(ierr);
-  ierr = MatMultTransposeAdd(C,x,u,s);CHKERRA(ierr);
-  ierr = VecAXPY(&one,u,y);CHKERRA(ierr);
-  ierr = VecAXPY(&negone,s,y);CHKERRA(ierr);
-  ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTransposeAdd()\n");CHKERRQ(ierr);
+  ierr = MatMultTransposeAdd(C,x,u,s);CHKERRQ(ierr);
+  ierr = VecAXPY(&one,u,y);CHKERRQ(ierr);
+  ierr = VecAXPY(&negone,s,y);CHKERRQ(ierr);
+  ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > 1.e-8){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);CHKERRQ(ierr);
   }
 
   /* -------------------- Test MatGetDiagonal() ------------------ */
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatGetDiagonal(), MatDiagonalScale()\n");CHKERRA(ierr);
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = VecSet(&one,x);CHKERRA(ierr);
-  ierr = MatGetDiagonal(C,x);CHKERRA(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatGetDiagonal(), MatDiagonalScale()\n");CHKERRQ(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecSet(&one,x);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(C,x);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   for (i=vstart; i<vend; i++) {
     v = one*((double)(i+1));
-    ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /* -------------------- Test () MatDiagonalScale ------------------ */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-test_diagonalscale",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-test_diagonalscale",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatDiagonalScale(C,x,y);CHKERRA(ierr);
-    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
+    ierr = MatDiagonalScale(C,x,y);CHKERRQ(ierr);
+    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
   }
   /* Free data structures */
-  ierr = VecDestroy(u);CHKERRA(ierr); ierr = VecDestroy(s);CHKERRA(ierr); 
-  ierr = VecDestroy(w);CHKERRA(ierr); ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr); ierr = VecDestroy(z);CHKERRA(ierr);
-  ierr = MatDestroy(C);CHKERRA(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(s);CHKERRQ(ierr); 
+  ierr = VecDestroy(w);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(y);CHKERRQ(ierr); ierr = VecDestroy(z);CHKERRQ(ierr);
+  ierr = MatDestroy(C);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

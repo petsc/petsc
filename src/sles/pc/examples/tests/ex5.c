@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.68 2001/01/15 21:47:06 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.69 2001/01/16 18:19:19 balay Exp bsmith $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -46,131 +46,131 @@ int main(int Argc,char **Args)
 
   PetscInitialize(&Argc,&Args,(char *)0,help);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-x",&x_mesh,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-l",&levels,PETSC_NULL);CHKERRA(ierr); 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-c",&cycles,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-smooths",&smooths,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-a",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-x",&x_mesh,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-l",&levels,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-c",&cycles,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-smooths",&smooths,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-a",&flg);CHKERRQ(ierr);
   if (flg) {am = MGADDITIVE;}
-  ierr = PetscOptionsHasName(PETSC_NULL,"-f",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-f",&flg);CHKERRQ(ierr);
   if (flg) {am = MGFULL;}
-  ierr = PetscOptionsHasName(PETSC_NULL,"-j",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-j",&flg);CHKERRQ(ierr);
   if (flg) {use_jacobi = 1;}
          
-  ierr = PetscMalloc(levels*sizeof(int),&N);CHKERRA(ierr);
+  ierr = PetscMalloc(levels*sizeof(int),&N);CHKERRQ(ierr);
   N[0] = x_mesh;
   for (i=1; i<levels; i++) {
     N[i] = N[i-1]/2;
-    if (N[i] < 1) {SETERRA(1,"Too many levels");}
+    if (N[i] < 1) {SETERRQ(1,"Too many levels");}
   }
 
-  ierr = Create1dLaplacian(N[levels-1],&cmat);CHKERRA(ierr);
+  ierr = Create1dLaplacian(N[levels-1],&cmat);CHKERRQ(ierr);
 
-  ierr = SLESCreate(PETSC_COMM_WORLD,&slesmg);CHKERRA(ierr);
-  ierr = SLESGetPC(slesmg,&pcmg);CHKERRA(ierr);
-  ierr = SLESGetKSP(slesmg,&kspmg);CHKERRA(ierr);
-  ierr = SLESSetFromOptions(slesmg);CHKERRA(ierr);
-  ierr = PCSetType(pcmg,PCMG);CHKERRA(ierr);
-  ierr = MGSetLevels(pcmg,levels,PETSC_NULL);CHKERRA(ierr);
-  ierr = MGSetType(pcmg,am);CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&slesmg);CHKERRQ(ierr);
+  ierr = SLESGetPC(slesmg,&pcmg);CHKERRQ(ierr);
+  ierr = SLESGetKSP(slesmg,&kspmg);CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(slesmg);CHKERRQ(ierr);
+  ierr = PCSetType(pcmg,PCMG);CHKERRQ(ierr);
+  ierr = MGSetLevels(pcmg,levels,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MGSetType(pcmg,am);CHKERRQ(ierr);
 
-  ierr = MGGetCoarseSolve(pcmg,&csles);CHKERRA(ierr);
+  ierr = MGGetCoarseSolve(pcmg,&csles);CHKERRQ(ierr);
   ierr = SLESSetOperators(csles,cmat,cmat,
-         DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = SLESGetPC(csles,&pc);CHKERRA(ierr);
-  ierr = PCSetType(pc,PCLU);CHKERRA(ierr);
-  ierr = SLESGetKSP(csles,&ksp);CHKERRA(ierr);
-  ierr = KSPSetType(ksp,KSPPREONLY);CHKERRA(ierr);
+         DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = SLESGetPC(csles,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+  ierr = SLESGetKSP(csles,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
 
   /* zero is finest level */
   for (i=0; i<levels-1; i++) {
-    ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0);CHKERRA(ierr);
-    ierr = MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],(void *)0,&mat[i]);CHKERRA(ierr);
-    ierr = MatShellSetOperation(mat[i],MATOP_MULT,(void*)restrct);CHKERRA(ierr);
-    ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANSPOSE_ADD,(void*)interpolate);CHKERRA(ierr);
-    ierr = MGSetInterpolate(pcmg,levels - 1 - i,mat[i]);CHKERRA(ierr);
-    ierr = MGSetRestriction(pcmg,levels - 1 - i,mat[i]);CHKERRA(ierr);
-    ierr = MGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles);CHKERRA(ierr);
+    ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0);CHKERRQ(ierr);
+    ierr = MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],(void *)0,&mat[i]);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(mat[i],MATOP_MULT,(void*)restrct);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANSPOSE_ADD,(void*)interpolate);CHKERRQ(ierr);
+    ierr = MGSetInterpolate(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
+    ierr = MGSetRestriction(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
+    ierr = MGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles);CHKERRQ(ierr);
 
     /* set smoother */
-    ierr = MGGetSmoother(pcmg,levels - 1 - i,&sles[i]);CHKERRA(ierr);
-    ierr = SLESGetPC(sles[i],&pc);CHKERRA(ierr);
-    ierr = PCSetType(pc,PCSHELL);CHKERRA(ierr);
-    ierr = PCShellSetName(pc,"user_precond");CHKERRA(ierr);
-    ierr = PCShellGetName(pc,&shellname);CHKERRA(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"level=%d, PCShell name is %s\n",i,shellname);CHKERRA(ierr);
+    ierr = MGGetSmoother(pcmg,levels - 1 - i,&sles[i]);CHKERRQ(ierr);
+    ierr = SLESGetPC(sles[i],&pc);CHKERRQ(ierr);
+    ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
+    ierr = PCShellSetName(pc,"user_precond");CHKERRQ(ierr);
+    ierr = PCShellGetName(pc,&shellname);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"level=%d, PCShell name is %s\n",i,shellname);CHKERRQ(ierr);
 
     /* this is a dummy! since SLES requires a matrix passed in  */
-    ierr = SLESSetOperators(sles[i],mat[i],mat[i],DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+    ierr = SLESSetOperators(sles[i],mat[i],mat[i],DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     /* 
         We override the matrix passed in by forcint it to use Richardson with 
         a user provided application. This is non-standard and this practice
         should be avoided.
     */
-    ierr = PCShellSetApplyRichardson(pc,gauss_seidel,(void *)0);CHKERRA(ierr);
+    ierr = PCShellSetApplyRichardson(pc,gauss_seidel,(void *)0);CHKERRQ(ierr);
     if (use_jacobi) {
-      ierr = PCShellSetApplyRichardson(pc,jacobi,(void *)0);CHKERRA(ierr);
+      ierr = PCShellSetApplyRichardson(pc,jacobi,(void *)0);CHKERRQ(ierr);
     }
-    ierr = SLESGetKSP(sles[i],&ksp);CHKERRA(ierr);
-    ierr = KSPSetType(ksp,KSPRICHARDSON);CHKERRA(ierr);
-    ierr = KSPSetInitialGuessNonzero(ksp);CHKERRA(ierr);
+    ierr = SLESGetKSP(sles[i],&ksp);CHKERRQ(ierr);
+    ierr = KSPSetType(ksp,KSPRICHARDSON);CHKERRQ(ierr);
+    ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
     ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,
-                            PETSC_DEFAULT,smooths);CHKERRA(ierr);
+                            PETSC_DEFAULT,smooths);CHKERRQ(ierr);
 
-    ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRA(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
     X[levels - 1 - i] = x;
-    ierr = MGSetX(pcmg,levels - 1 - i,x);CHKERRA(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRA(ierr);
+    ierr = MGSetX(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
     B[levels -1 - i] = x;
-    ierr = MGSetRhs(pcmg,levels - 1 - i,x);CHKERRA(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRA(ierr);
+    ierr = MGSetRhs(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
     R[levels - 1 - i] = x;
-    ierr = MGSetR(pcmg,levels - 1 - i,x);CHKERRA(ierr);
+    ierr = MGSetR(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
   } 
   /* create coarse level vectors */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRA(ierr);
-  ierr = MGSetX(pcmg,0,x);CHKERRA(ierr); X[0] = x;
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRA(ierr);
-  ierr = MGSetRhs(pcmg,0,x);CHKERRA(ierr); B[0] = x;
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRA(ierr);
-  ierr = MGSetR(pcmg,0,x);CHKERRA(ierr); R[0] = x;
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRQ(ierr);
+  ierr = MGSetX(pcmg,0,x);CHKERRQ(ierr); X[0] = x;
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRQ(ierr);
+  ierr = MGSetRhs(pcmg,0,x);CHKERRQ(ierr); B[0] = x;
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRQ(ierr);
+  ierr = MGSetR(pcmg,0,x);CHKERRQ(ierr); R[0] = x;
 
   /* create matrix multiply for finest level */
-  ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],(void *)0,&fmat);CHKERRA(ierr);
-  ierr = MatShellSetOperation(fmat,MATOP_MULT,(void*)amult);CHKERRA(ierr);
-  ierr = SLESSetOperators(slesmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],(void *)0,&fmat);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(fmat,MATOP_MULT,(void*)amult);CHKERRQ(ierr);
+  ierr = SLESSetOperators(slesmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  ierr = CalculateSolution(N[0],&solution);CHKERRA(ierr);
-  ierr = CalculateRhs(B[levels-1]);CHKERRA(ierr);
-  ierr = VecSet(&zero,X[levels-1]);CHKERRA(ierr);
+  ierr = CalculateSolution(N[0],&solution);CHKERRQ(ierr);
+  ierr = CalculateRhs(B[levels-1]);CHKERRQ(ierr);
+  ierr = VecSet(&zero,X[levels-1]);CHKERRQ(ierr);
 
-  if (MGCheck(pcmg)) {SETERRA(1,0);}
+  if (MGCheck(pcmg)) {SETERRQ(1,0);}
      
-  ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRA(ierr);
-  ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);CHKERRA(ierr);
+  ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
+  ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);CHKERRQ(ierr);
 
-  ierr = SLESSolve(slesmg,B[levels-1],X[levels-1],&its);CHKERRA(ierr);
-  ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRA(ierr);
-  ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);CHKERRA(ierr);
+  ierr = SLESSolve(slesmg,B[levels-1],X[levels-1],&its);CHKERRQ(ierr);
+  ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
+  ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);CHKERRQ(ierr);
 
-  ierr = PetscFree(N);CHKERRA(ierr);
-  ierr = VecDestroy(solution);CHKERRA(ierr);
+  ierr = PetscFree(N);CHKERRQ(ierr);
+  ierr = VecDestroy(solution);CHKERRQ(ierr);
 
   /* note we have to keep a list of all vectors allocated, this is 
      not ideal, but putting it in MGDestroy is not so good either*/
   for (i=0; i<levels; i++) {
-    ierr = VecDestroy(X[i]);CHKERRA(ierr);
-    ierr = VecDestroy(B[i]);CHKERRA(ierr);
-    ierr = VecDestroy(R[i]);CHKERRA(ierr);
+    ierr = VecDestroy(X[i]);CHKERRQ(ierr);
+    ierr = VecDestroy(B[i]);CHKERRQ(ierr);
+    ierr = VecDestroy(R[i]);CHKERRQ(ierr);
   }
   for (i=0; i<levels-1; i++) {
-    ierr = MatDestroy(mat[i]);CHKERRA(ierr);
+    ierr = MatDestroy(mat[i]);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(cmat);CHKERRA(ierr);
-  ierr = MatDestroy(fmat);CHKERRA(ierr);
-  ierr = SLESDestroy(slesmg);CHKERRA(ierr);
+  ierr = MatDestroy(cmat);CHKERRQ(ierr);
+  ierr = MatDestroy(fmat);CHKERRQ(ierr);
+  ierr = SLESDestroy(slesmg);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

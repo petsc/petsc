@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.6 2001/01/15 21:49:27 bsmith Exp balay $*/
+/*$Id: appload.c,v 1.7 2001/01/16 18:21:39 balay Exp bsmith $*/
 
 /*
      Loads the qquadrilateral grid database from a file  and sets up the local 
@@ -41,7 +41,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   /*
      Generate the local numbering of cells and vertices
   */
-  ierr = AppCtxSetLocal(*appctx);CHKERRA(ierr);
+  ierr = AppCtxSetLocal(*appctx);CHKERRQ(ierr);
 
 
   PetscFunctionReturn(0);
@@ -162,11 +162,11 @@ int AppCtxGraphics(AppCtx *appctx)
   if (appctx->view.show_grid || appctx->view.show_solution) {
     ierr = PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,400,400,
                      &appctx->view.drawglobal);CHKERRQ(ierr);
-    ierr = PetscDrawSetFromOptions(appctx->view.drawglobal);CHKERRA(ierr);
+    ierr = PetscDrawSetFromOptions(appctx->view.drawglobal);CHKERRQ(ierr);
 
     ierr = PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,400,400,
                      &appctx->view.drawlocal);CHKERRQ(ierr);
-    ierr = PetscDrawSetFromOptions(appctx->view.drawlocal);CHKERRA(ierr);
+    ierr = PetscDrawSetFromOptions(appctx->view.drawlocal);CHKERRQ(ierr);
     ierr = PetscDrawSplitViewPort((appctx)->view.drawlocal);CHKERRQ(ierr);
 
     /*
@@ -183,7 +183,7 @@ int AppCtxGraphics(AppCtx *appctx)
   }
 
   if (appctx->view.show_grid) {
-    ierr = PetscDrawZoom((appctx)->view.drawglobal,AppCtxView,appctx);CHKERRA(ierr);
+    ierr = PetscDrawZoom((appctx)->view.drawglobal,AppCtxView,appctx);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-matlab_graphics",&(appctx)->view.matlabgraphics);CHKERRQ(ierr);
 

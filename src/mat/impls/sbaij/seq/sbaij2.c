@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.26 2001/01/15 21:46:03 bsmith Exp balay $*/
+/*$Id: sbaij2.c,v 1.27 2001/01/16 18:18:03 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -32,7 +32,7 @@ int MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse sca
 
   PetscFunctionBegin;
  
-  if (isrow != iscol) SETERRA(1,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro"); 
+  if (isrow != iscol) SETERRQ(1,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro"); 
   ierr = ISSorted(iscol,(PetscTruth*)&i);CHKERRQ(ierr);
   if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
 
@@ -108,7 +108,7 @@ int MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *
   int         *vary,*iary,*irow,nrows,i,ierr,bs=a->bs,count;
 
   PetscFunctionBegin;
-  if (isrow != iscol) SETERRA(1,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro");
+  if (isrow != iscol) SETERRQ(1,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro");
  
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ int MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *
  
   count = 0;
   for (i=0; i<a->mbs; i++) {
-    if (vary[i]!=0 && vary[i]!=bs) SETERRA(1,"Index set does not match blocks");
+    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(1,"Index set does not match blocks");
     if (vary[i]==bs) iary[count++] = i;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,&is1);CHKERRQ(ierr);

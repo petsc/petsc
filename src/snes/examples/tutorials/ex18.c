@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.9 2000/12/08 04:46:20 bsmith Exp bsmith $ */
+/* $Id: ex18.c,v 1.10 2001/01/15 21:48:06 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -78,18 +78,18 @@ int main(int argc,char **argv)
   user.beta   = 2.5; 
   user.bm1    = 1.5; 
   user.coef   = 1.25;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-coef",&user.coef,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-coef",&user.coef,PETSC_NULL);CHKERRQ(ierr);
 
   /* set number of levels and grid size on coarsest level */
   mx              = 5; 
   my              = 5; 
   nlevels         = 3;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRQ(ierr);
 
   /*
       Create the multilevel DA data structure 
@@ -119,12 +119,12 @@ int main(int argc,char **argv)
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
   snes = DMMGGetSNES(dmmg);
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRA(ierr);
-  ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRA(ierr);
+  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+  ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRQ(ierr);
   litspit = ((double)lits)/((double)its);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %d\n",lits);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n",litspit);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %d\n",lits);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n",litspit);CHKERRQ(ierr);
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PetscFinalize();

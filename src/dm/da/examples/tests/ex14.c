@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.10 2000/05/05 22:19:31 balay Exp bsmith $*/
+/*$Id: ex14.c,v 1.11 2001/01/15 21:49:08 bsmith Exp bsmith $*/
 
 static char help[] = "Tests saving DA vectors to files\n\n";
 
@@ -19,45 +19,45 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* Read options */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
-                    M,N,m,n,dof,1,PETSC_NULL,PETSC_NULL,&da);CHKERRA(ierr);
-  ierr = DACreateGlobalVector(da,&global);CHKERRA(ierr);
-  ierr = DACreateLocalVector(da,&local);CHKERRA(ierr);
+                    M,N,m,n,dof,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
 
   value = -3.0;
-  ierr = VecSet(&value,global);CHKERRA(ierr);
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
+  ierr = VecSet(&value,global);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   value = rank+1;
-  ierr = VecScale(&value,local);CHKERRA(ierr);
-  ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRA(ierr);
+  ierr = VecScale(&value,local);CHKERRQ(ierr);
+  ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRQ(ierr);
 
-  ierr = DACreateNaturalVector(da,&natural);CHKERRA(ierr);
-  ierr = DAGlobalToNaturalBegin(da,global,INSERT_VALUES,natural);CHKERRA(ierr);
-  ierr = DAGlobalToNaturalEnd(da,global,INSERT_VALUES,natural);CHKERRA(ierr);
+  ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
+  ierr = DAGlobalToNaturalBegin(da,global,INSERT_VALUES,natural);CHKERRQ(ierr);
+  ierr = DAGlobalToNaturalEnd(da,global,INSERT_VALUES,natural);CHKERRQ(ierr);
 
-  ierr = DASetFieldName(da,0,"First field");CHKERRA(ierr);
-  ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr); 
+  ierr = DASetFieldName(da,0,"First field");CHKERRQ(ierr);
+  ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); 
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",PETSC_BINARY_CREATE,&bviewer);CHKERRA(ierr);
-  ierr = DAView(da,bviewer);CHKERRA(ierr);
-  ierr = VecView(global,bviewer);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(bviewer);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",PETSC_BINARY_CREATE,&bviewer);CHKERRQ(ierr);
+  ierr = DAView(da,bviewer);CHKERRQ(ierr);
+  ierr = VecView(global,bviewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(bviewer);CHKERRQ(ierr);
 
   /* Free memory */
-  ierr = VecDestroy(local);CHKERRA(ierr);
-  ierr = VecDestroy(global);CHKERRA(ierr);
-  ierr = VecDestroy(natural);CHKERRA(ierr);
-  ierr = DADestroy(da);CHKERRA(ierr);
+  ierr = VecDestroy(local);CHKERRQ(ierr);
+  ierr = VecDestroy(global);CHKERRQ(ierr);
+  ierr = VecDestroy(natural);CHKERRQ(ierr);
+  ierr = DADestroy(da);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

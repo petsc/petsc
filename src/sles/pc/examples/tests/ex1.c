@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.32 2000/01/11 21:01:53 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.33 2000/05/05 22:17:23 balay Exp bsmith $*/
 
 static char help[] = "Tests the creation of a PC context.\n\n";
 
@@ -14,19 +14,19 @@ int main(int argc,char **args)
   Mat mat;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRA(ierr);
-  ierr = PCSetType(pc,PCNONE);CHKERRA(ierr);
+  ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
 
   /* Vector and matrix must be set before calling PCSetUp */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRA(ierr);
-  ierr = PCSetVector(pc,u);CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat);CHKERRA(ierr);
-  ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = PCSetUp(pc);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);
+  ierr = PCSetVector(pc,u);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat);CHKERRQ(ierr);
+  ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
 
-  ierr = VecDestroy(u);	CHKERRA(ierr);
-  ierr = MatDestroy(mat);CHKERRA(ierr);
-  ierr = PCDestroy(pc);	CHKERRA(ierr);
+  ierr = VecDestroy(u);	CHKERRQ(ierr);
+  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = PCDestroy(pc);	CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

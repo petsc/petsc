@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.5 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex21.c,v 1.6 2001/01/15 21:45:13 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecMax() with index\
   -n <length> : vector length\n\n";
@@ -16,23 +16,23 @@ int main(int argc,char **argv)
   PetscRandom   rand;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   /* create vector */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_REAL,&rand);CHKERRA(ierr);
-  ierr = VecSetRandom(rand,x);CHKERRA(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRA(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_REAL,&rand);CHKERRQ(ierr);
+  ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
 
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = VecMax(x,&idx,&value);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %d\n",value,idx);CHKERRA(ierr);
-  ierr = VecMin(x,&idx,&value);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %d\n",value,idx);CHKERRA(ierr);
+  ierr = VecMax(x,&idx,&value);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %d\n",value,idx);CHKERRQ(ierr);
+  ierr = VecMin(x,&idx,&value);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %d\n",value,idx);CHKERRQ(ierr);
 
-  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

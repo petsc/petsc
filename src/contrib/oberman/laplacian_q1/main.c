@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.6 2000/01/16 03:29:05 bsmith Exp $*/
+/*$Id: main.c,v 1.7 2000/08/24 22:43:38 bsmith Exp bsmith $*/
 static char help[] =
 "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
@@ -36,21 +36,21 @@ int main(int argc,char **argv)
   MatPartitioningRegisterDynamic("square",PETSC_NULL,"MatPartitioningCreate_Square",MatPartitioningCreate_Square);
                                                       
   /*  Load the grid database -- in appload.c              */
-  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx);CHKERRA(ierr);
+  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx);CHKERRQ(ierr);
 
   /*   Setup the graphics routines to view the grid -- in appview.c  */
-  ierr = AppCtxGraphics(appctx);CHKERRA(ierr);
+  ierr = AppCtxGraphics(appctx);CHKERRQ(ierr);
  
   /*   Setup the linear system and solve it -- in appalgebra.c */
-  ierr = AppCtxSolve(appctx,&its);CHKERRA(ierr);
+  ierr = AppCtxSolve(appctx,&its);CHKERRQ(ierr);
 
   /*   Send solution to  matlab viewer -- in appview.c */
   if (appctx->view.show_solution) {
-    ierr = AppCtxViewMatlab(appctx);CHKERRA(ierr);  
+    ierr = AppCtxViewMatlab(appctx);CHKERRQ(ierr);  
   }
 
   /*  Destroy all datastructures  -- in appload.c */
-  ierr = AppCtxDestroy(appctx);CHKERRA(ierr);
+  ierr = AppCtxDestroy(appctx);CHKERRQ(ierr);
 
   /* Close down PETSc and stop the program */
   PetscFinalize();

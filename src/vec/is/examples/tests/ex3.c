@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.12 2001/01/15 21:44:31 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.13 2001/01/16 18:16:37 balay Exp bsmith $*/
 /*
        Tests ISAllGather()
 */
@@ -15,8 +15,8 @@ int main(int argc,char **argv)
   IS         is,newis;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /*
      Create IS
@@ -26,20 +26,20 @@ int main(int argc,char **argv)
   for (i=0; i<n; i++) {
     indices[i] = rank + i;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,indices,&is);CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,indices,&is);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
 
   /*
       Stick them together from all processors 
   */
-  ierr = ISAllGather(is,&newis);CHKERRA(ierr);
+  ierr = ISAllGather(is,&newis);CHKERRQ(ierr);
 
   if (!rank) {
-    ierr = ISView(newis,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+    ierr = ISView(newis,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
-  ierr = ISDestroy(newis);CHKERRA(ierr);
-  ierr = ISDestroy(is);CHKERRA(ierr);
+  ierr = ISDestroy(newis);CHKERRQ(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

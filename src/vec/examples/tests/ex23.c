@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.12 2000/09/28 21:10:28 bsmith Exp bsmith $*/
+/*$Id: ex23.c,v 1.13 2001/01/15 21:45:13 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector\n\
   using a blocked send and a strided receive.\n\n";
@@ -24,16 +24,16 @@ int main(int argc,char **argv)
   VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   if (size != 2) SETERRQ(1,"Must run with 2 processors");
 
   /* create two vectors */
   if (!rank) nlocal = 8;
   else nlocal = 4;
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,nlocal,12,&x);CHKERRA(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,8,&y);CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,nlocal,12,&x);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,8,&y);CHKERRQ(ierr);
 
   /* create two index sets */
   if (!rank) {
@@ -41,28 +41,28 @@ int main(int argc,char **argv)
   } else {
     blocks[0] = 4; blocks[1] = 8;
   }
-  ierr = ISCreateBlock(PETSC_COMM_SELF,4,2,blocks,&is1);CHKERRA(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,8,0,1,&is2);CHKERRA(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,4,2,blocks,&is1);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,8,0,1,&is2);CHKERRQ(ierr);
 
   for (i=0; i<12; i++) {
     value = i;
-    ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(x);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
-  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRA(ierr);
-  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
-  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
-  ierr = VecScatterDestroy(ctx);CHKERRA(ierr); 
+  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(ctx);CHKERRQ(ierr); 
  
-  ierr = PetscSleep(2*rank);CHKERRA(ierr);
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = PetscSleep(2*rank);CHKERRQ(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
-  ierr = ISDestroy(is1);CHKERRA(ierr);
-  ierr = ISDestroy(is2);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = ISDestroy(is1);CHKERRQ(ierr);
+  ierr = ISDestroy(is2);CHKERRQ(ierr);
 
   PetscFinalize(); 
   return 0;

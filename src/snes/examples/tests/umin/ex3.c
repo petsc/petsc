@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.62 2000/10/24 20:27:13 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.63 2001/01/15 21:48:04 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems in parallel.  This example is based on the\n\
@@ -58,81 +58,81 @@ int main(int argc,char **argv)
   PC         pc;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
     SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
 
   /* Set up user-defined work space */
   user.param = 5.0;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRQ(ierr);
   user.ndim = mx * my; user.mx = mx; user.my = my;
   user.hx = one/(mx+1); user.hy = one/(my+1);
 
   /* Set up distributed array and vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,user.mx,
-         user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
-  ierr = DACreateGlobalVector(user.da,&x);CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.da,&user.localX);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&user.s);CHKERRA(ierr);
-  ierr = VecDuplicate(user.localX,&user.localS);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&g);CHKERRA(ierr);
-  ierr = VecDuplicate(g,&user.y);CHKERRA(ierr);
+         user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(user.da,&x);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&user.s);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.localX,&user.localS);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&g);CHKERRQ(ierr);
+  ierr = VecDuplicate(g,&user.y);CHKERRQ(ierr);
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_UNCONSTRAINED_MINIMIZATION,&snes);CHKERRA(ierr);
-  ierr = SNESSetType(snes,type);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_UNCONSTRAINED_MINIMIZATION,&snes);CHKERRQ(ierr);
+  ierr = SNESSetType(snes,type);CHKERRQ(ierr);
 
   /* Set various routines */
   ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,
-         (void *)&user);CHKERRA(ierr);
-  ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user);CHKERRA(ierr);
+         (void *)&user);CHKERRQ(ierr);
+  ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user);CHKERRQ(ierr);
 
   /* Either explicitly form Hessian matrix approx or use matrix-free version */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = VecGetLocalSize(x,&ldim);CHKERRA(ierr);
+    ierr = VecGetLocalSize(x,&ldim);CHKERRQ(ierr);
     ierr = MatCreateShell(PETSC_COMM_WORLD,ldim,user.ndim,user.ndim,user.ndim,
-           (void*)&user,&H);CHKERRA(ierr);
-    ierr = MatShellSetOperation(H,MATOP_MULT,(void*)HessianProductMat);CHKERRA(ierr);
-    ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user);CHKERRA(ierr);
+           (void*)&user,&H);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(H,MATOP_MULT,(void*)HessianProductMat);CHKERRQ(ierr);
+    ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user);CHKERRQ(ierr);
 
     /* Set null preconditioner.  Alternatively, set user-provided 
        preconditioner or explicitly form preconditioning matrix */
-    ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
-    ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-    ierr = PCSetType(pc,PCNONE);CHKERRA(ierr);
+    ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+    ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+    ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   } else {
-    ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,user.ndim,user.ndim,&H);CHKERRA(ierr);
-    ierr = MatSetFromOptions(H);CHKERRA(ierr);
-    ierr = MatSetOption(H,MAT_SYMMETRIC);CHKERRA(ierr);
-    ierr = PetscOptionsHasName(PETSC_NULL,"-defaultH",&flg);CHKERRA(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,user.ndim,user.ndim,&H);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(H);CHKERRQ(ierr);
+    ierr = MatSetOption(H,MAT_SYMMETRIC);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-defaultH",&flg);CHKERRQ(ierr);
     if (flg) ierr = SNESSetHessian(snes,H,H,SNESDefaultComputeHessian,(void *)&user);
-    else     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user);CHKERRA(ierr);
+    else     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user);CHKERRQ(ierr);
   }
 
   /* Set options; then solve minimization problem */
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
-  ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRA(ierr);
-  ierr = SNESView(snes,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of unsuccessful steps = %d\n\n",nfails);CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr);
+  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
+  ierr = SNESView(snes,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d, ",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of unsuccessful steps = %d\n\n",nfails);CHKERRQ(ierr);
 
   /* Free data structures */
-  ierr = VecDestroy(user.s);CHKERRA(ierr);
-  ierr = VecDestroy(user.localX);CHKERRA(ierr);
-  ierr = VecDestroy(user.localS);CHKERRA(ierr);
-  ierr = VecDestroy(user.y);CHKERRA(ierr);
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(g);CHKERRA(ierr);
-  ierr = MatDestroy(H);CHKERRA(ierr); 
-  ierr = SNESDestroy(snes);CHKERRA(ierr); 
-  ierr = DADestroy(user.da);CHKERRA(ierr);
+  ierr = VecDestroy(user.s);CHKERRQ(ierr);
+  ierr = VecDestroy(user.localX);CHKERRQ(ierr);
+  ierr = VecDestroy(user.localS);CHKERRQ(ierr);
+  ierr = VecDestroy(user.y);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(g);CHKERRQ(ierr);
+  ierr = MatDestroy(H);CHKERRQ(ierr); 
+  ierr = SNESDestroy(snes);CHKERRQ(ierr); 
+  ierr = DADestroy(user.da);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

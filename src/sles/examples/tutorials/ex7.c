@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.51 2001/01/15 21:47:36 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.52 2001/01/16 18:19:55 balay Exp bsmith $*/
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
 solving a linear system in parallel with SLES.  The code indicates the\n\
@@ -47,9 +47,9 @@ int main(int argc,char **args)
   PetscTruth isbjacobi,flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n = m+2;
 
   /* -------------------------------------------------------------------
@@ -60,52 +60,52 @@ int main(int argc,char **args)
   /* 
      Create and assemble parallel matrix
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRA(ierr);
-  ierr = MatSetFromOptions(A);CHKERRA(ierr);
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
   for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
+    if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /*
      Create parallel vectors
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRA(ierr);
-  ierr = VecSetFromOptions(u);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRA(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
+  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
 
   /*
      Set exact solution; then compute right-hand-side vector.
   */
-  ierr = VecSet(&one,u);CHKERRA(ierr);
-  ierr = MatMult(A,u,b);CHKERRA(ierr);
+  ierr = VecSet(&one,u);CHKERRQ(ierr);
+  ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
   /*
      Create linear solver context
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /*
      Set default preconditioner for this program to be block Jacobi.
      This choice can be overridden at runtime with the option
         -pc_type <type>
   */
-  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-  ierr = PCSetType(pc,PCBJACOBI);CHKERRA(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCBJACOBI);CHKERRQ(ierr);
 
 
   /* -------------------------------------------------------------------
@@ -122,10 +122,10 @@ int main(int argc,char **args)
 
       Note: The default decomposition is 1 block per processor.
   */
-  ierr = PetscMalloc(m*sizeof(int),&blks);CHKERRA(ierr);
+  ierr = PetscMalloc(m*sizeof(int),&blks);CHKERRQ(ierr);
   for (i=0; i<m; i++) blks[i] = n;
   ierr = PCBJacobiSetTotalBlocks(pc,m,blks);
-  ierr = PetscFree(blks);CHKERRA(ierr);
+  ierr = PetscFree(blks);CHKERRQ(ierr);
 
 
   /* -------------------------------------------------------------------
@@ -153,7 +153,7 @@ int main(int argc,char **args)
      the individual blocks.  These choices are obviously not recommended
      for solving this particular problem.
   */
-  ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi);CHKERRA(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi);CHKERRQ(ierr);
   if (isbjacobi) {
     /* 
        Call SLESSetUp() to set the block Jacobi data structures (including
@@ -161,32 +161,32 @@ int main(int argc,char **args)
 
        Note: SLESSetUp() MUST be called before PCBJacobiGetSubSLES().
     */
-    ierr = SLESSetUp(sles,x,b);CHKERRA(ierr);
+    ierr = SLESSetUp(sles,x,b);CHKERRQ(ierr);
 
     /*
        Extract the array of SLES contexts for the local blocks
     */
-    ierr = PCBJacobiGetSubSLES(pc,&nlocal,&first,&subsles);CHKERRA(ierr);
+    ierr = PCBJacobiGetSubSLES(pc,&nlocal,&first,&subsles);CHKERRQ(ierr);
 
     /*
        Loop over the local blocks, setting various SLES options
        for each block.  
     */
     for (i=0; i<nlocal; i++) {
-      ierr = SLESGetPC(subsles[i],&subpc);CHKERRA(ierr);
-      ierr = SLESGetKSP(subsles[i],&subksp);CHKERRA(ierr);
+      ierr = SLESGetPC(subsles[i],&subpc);CHKERRQ(ierr);
+      ierr = SLESGetKSP(subsles[i],&subksp);CHKERRQ(ierr);
       if (!rank) {
         if (i%2) {
-          ierr = PCSetType(subpc,PCILU);CHKERRA(ierr);
+          ierr = PCSetType(subpc,PCILU);CHKERRQ(ierr);
         } else {
-          ierr = PCSetType(subpc,PCNONE);CHKERRA(ierr);
-          ierr = KSPSetType(subksp,KSPBCGS);CHKERRA(ierr);
-          ierr = KSPSetTolerances(subksp,1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRA(ierr);
+          ierr = PCSetType(subpc,PCNONE);CHKERRQ(ierr);
+          ierr = KSPSetType(subksp,KSPBCGS);CHKERRQ(ierr);
+          ierr = KSPSetTolerances(subksp,1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
         }
       } else {
-        ierr = PCSetType(subpc,PCJACOBI);CHKERRA(ierr);
-        ierr = KSPSetType(subksp,KSPGMRES);CHKERRA(ierr);
-        ierr = KSPSetTolerances(subksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRA(ierr);
+        ierr = PCSetType(subpc,PCJACOBI);CHKERRQ(ierr);
+        ierr = KSPSetType(subksp,KSPGMRES);CHKERRQ(ierr);
+        ierr = KSPSetTolerances(subksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
       }
     }
   }
@@ -198,19 +198,19 @@ int main(int argc,char **args)
   /* 
     Set runtime options
   */
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
 
   /*
      Solve the linear system
   */
-  ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
+  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
 
   /*
      View info about the solver
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-noslesview",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-noslesview",&flg);CHKERRQ(ierr);
   if (!flg) {
-    ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* -------------------------------------------------------------------
@@ -220,17 +220,17 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  ierr = VecAXPY(&none,u,x);CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRA(ierr);
+  ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = SLESDestroy(sles);CHKERRA(ierr);
-  ierr = VecDestroy(u);CHKERRA(ierr);  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr);  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr);  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr);  ierr = MatDestroy(A);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

@@ -106,8 +106,8 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    int              ierr;
 
    /*..Get size and number of unknowns of preconditioner matrix..*/ 
-   ierr = MatGetSize(pmat, &numnodes, &numnodes); CHKERRA(ierr);
-   ierr = MatGetInfo(pmat,MAT_LOCAL,&info); CHKERRA(ierr); 
+   ierr = MatGetSize(pmat, &numnodes, &numnodes); CHKERRQ(ierr);
+   ierr = MatGetInfo(pmat,MAT_LOCAL,&info); CHKERRQ(ierr); 
    numnonzero = (int)info.nz_used;
    /*..Set number of unknowns and nonzeros in RAMG terminology..*/
    nnu    = numnodes; 
@@ -283,7 +283,7 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
    double            ecg1, ecg2, ewt2; 
 
    /*..Get numnodes as the size of the input vector r..*/
-   ierr = VecGetSize(r,&numnodes); CHKERRA(ierr);
+   ierr = VecGetSize(r,&numnodes); CHKERRQ(ierr);
    nnu = numnodes; 
 
    /*..Get values from context..*/
@@ -296,7 +296,7 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
    ramg_param = shell->PARAM; 
 
    /*..Set the rhs of the call to ramg equal to the residual..*/
-   ierr = VecGetArray(r,&vals_getarray); CHKERRA(ierr);
+   ierr = VecGetArray(r,&vals_getarray); CHKERRQ(ierr);
 
    /*..Set rhs of call to ramg..*/
    memcpy(rhs, vals_getarray, numnodes * sizeof(*rhs)); 
@@ -349,10 +349,10 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
        cols[I] = I; 
 
    /*..Store values computed by RAMG into the PETSc vector z..*/
-   ierr = VecSetValues(z,numnodes,cols,u_approx,INSERT_VALUES);CHKERRA(ierr);  
+   ierr = VecSetValues(z,numnodes,cols,u_approx,INSERT_VALUES);CHKERRQ(ierr);  
 
    /*..Restore PETSc rhs vector..*/
-   ierr = VecRestoreArray(r, &vals_getarray); CHKERRA(ierr);
+   ierr = VecRestoreArray(r, &vals_getarray); CHKERRQ(ierr);
 
    PetscFree(cols); 
    
@@ -423,9 +423,9 @@ int RamgGetParam(struct RAMG_PARAM *ramg_param)
 
   /*..Overwrite default values by values specified at runtime..*/
   /*....Class 2 RAMG parameters....*/ 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_iswtch",&(*ramg_param).ISWTCH,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_iswtch",&(*ramg_param).ISWTCH,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_iout",&(*ramg_param).IOUT,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_iout",&(*ramg_param).IOUT,PETSC_NULL);CHKERRQ(ierr);
 
   return 0; 
 }

@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.65 2001/01/15 21:49:32 bsmith Exp balay $";*/
+/* "$Id: flow.c,v 1.66 2001/01/16 18:21:45 balay Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -122,7 +122,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetDouble(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetDouble(PETSC_NULL,"-cfl_max",&tsCtx.cfl_max,PETSC_NULL);CHKERRQ(ierr);
   tsCtx.print_freq = tsCtx.max_steps; 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRQ(ierr);
 
   c_info->alpha  = 3.0;
   c_info->beta   = 15.0;

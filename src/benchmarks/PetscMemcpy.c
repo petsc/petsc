@@ -1,4 +1,4 @@
-/*$Id: PetscMemcpy.c,v 1.17 2001/01/15 21:49:39 bsmith Exp balay $*/
+/*$Id: PetscMemcpy.c,v 1.18 2001/01/16 18:21:52 balay Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -12,18 +12,18 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,0,0);
 
-  ierr = PetscMalloc(8000000*sizeof(Scalar),&A);CHKERRA(ierr);
-  ierr = PetscMalloc(8000000*sizeof(Scalar),&B);CHKERRA(ierr);
+  ierr = PetscMalloc(8000000*sizeof(Scalar),&A);CHKERRQ(ierr);
+  ierr = PetscMalloc(8000000*sizeof(Scalar),&B);CHKERRQ(ierr);
 
   for (i=0; i<8000000; i++) {
     A[i] = i%61897;
     B[i] = i%61897;
   }
   /* To take care of paging effects */
-  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscGetTime(&x);CHKERRA(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscGetTime(&x);CHKERRQ(ierr);
 
-  ierr = PetscGetTime(&x);CHKERRA(ierr);
+  ierr = PetscGetTime(&x);CHKERRQ(ierr);
   /*
   PetscMemcpy(A,B,sizeof(Scalar)*8000000);
   PetscMemcpy(A,B,sizeof(Scalar)*8000000);
@@ -42,18 +42,18 @@ int main(int argc,char **argv)
     }
   }}
 
-  ierr = PetscGetTime(&y);CHKERRA(ierr);
-  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscGetTime(&z);CHKERRA(ierr);
+  ierr = PetscGetTime(&y);CHKERRQ(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscGetTime(&z);CHKERRQ(ierr);
 
   fprintf(stdout,"%s : \n","PetscMemcpy");
   fprintf(stdout,"    %-11s : %e MB/s\n","Bandwidth",10.0*8*8/(y-x));

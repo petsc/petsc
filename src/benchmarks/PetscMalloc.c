@@ -1,4 +1,4 @@
-/*$Id: PetscMalloc.c,v 1.22 2001/01/15 21:49:39 bsmith Exp balay $*/
+/*$Id: PetscMalloc.c,v 1.23 2001/01/16 18:21:52 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -25,37 +25,37 @@ int main(int argc,char **argv)
   }
   
   /* Take care of paging effects */
-  ierr = PetscMalloc(100,&dummy);CHKERRA(ierr);
-  ierr = PetscFree(dummy);CHKERRA(ierr);
-  ierr = PetscGetTime(&x);CHKERRA(ierr);
+  ierr = PetscMalloc(100,&dummy);CHKERRQ(ierr);
+  ierr = PetscFree(dummy);CHKERRQ(ierr);
+  ierr = PetscGetTime(&x);CHKERRQ(ierr);
 
   /* Do all mallocs */
   for (i=0 ; i< 1000; i++) {
-    ierr = PetscMalloc(rand1[i],& arr[i]);CHKERRA(ierr);
+    ierr = PetscMalloc(rand1[i],& arr[i]);CHKERRQ(ierr);
   }
   
-  ierr = PetscGetTime(&x);CHKERRA(ierr);
+  ierr = PetscGetTime(&x);CHKERRQ(ierr);
 
   /* Do some frees */
   for (i=0; i< 1000; i+=2) {
-    ierr = PetscFree(arr[i]);CHKERRA(ierr);
+    ierr = PetscFree(arr[i]);CHKERRQ(ierr);
   }
 
   /* Do some mallocs */
   for (i=0; i< 1000; i+=2) {
-    ierr = PetscMalloc(rand2[i],&arr[i]);CHKERRA(ierr);
+    ierr = PetscMalloc(rand2[i],&arr[i]);CHKERRQ(ierr);
  }
-  ierr = PetscGetTime(&y);CHKERRA(ierr);
+  ierr = PetscGetTime(&y);CHKERRQ(ierr);
   
   for (i=0; i< 1000; i++) {
-    ierr = PetscFree(arr[i]);CHKERRA(ierr);
+    ierr = PetscFree(arr[i]);CHKERRQ(ierr);
   }
   
   fprintf(stdout,"%-15s : %e sec, with options : ","PetscMalloc",(y-x)/500.0);
   if(PetscOptionsHasName(PETSC_NULL,"-trmalloc",&flg),flg) fprintf(stdout,"-trmalloc ");
   fprintf(stdout,"\n"); 
   
-  ierr = PetscRandomDestroy(r);CHKERRA(ierr);
+  ierr = PetscRandomDestroy(r);CHKERRQ(ierr);
   PetscFinalize();
   PetscFunctionReturn(0);
 }

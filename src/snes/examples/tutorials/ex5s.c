@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.20 2001/01/15 21:48:06 bsmith Exp balay $*/
+/*$Id: ex5s.c,v 1.21 2001/01/16 18:20:24 balay Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -120,17 +120,17 @@ int main(int argc,char **argv)
   PetscTruth     flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRQ(ierr);
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,"Lambda is out of range");
+    SETERRQ(1,"Lambda is out of range");
   }
   N = user.mx*user.my;
 
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -151,9 +151,9 @@ int main(int argc,char **argv)
     parallelism rather than MPI.
   */
   ierr = VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);
-  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-use_fortran_function",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-use_fortran_function",&flg);CHKERRQ(ierr);
   if (flg) {
     fnc = FormFunctionFortran;
   } else {
@@ -163,7 +163,7 @@ int main(int argc,char **argv)
   /* 
      Set function evaluation routine and vector
   */
-  ierr = SNESSetFunction(snes,r,fnc,&user);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,fnc,&user);CHKERRQ(ierr);
 
   /*
        Currently when using VecCreateShared() and using loop level parallelism
@@ -179,13 +179,13 @@ int main(int argc,char **argv)
      Color the grid; since this is a five point stencil we can get away with 
      9 colors.
   */
-  ierr = VecGetOwnershipRange(r,&rstart,&rend);CHKERRA(ierr);
-  ierr = PetscMalloc((rend-rstart)*sizeof(int),&colors);CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(r,&rstart,&rend);CHKERRQ(ierr);
+  ierr = PetscMalloc((rend-rstart)*sizeof(int),&colors);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     colors[i - rstart] = 3*((i/user.mx) % 3) + (i % 3);
   }
-  ierr   = ISColoringCreate(PETSC_COMM_WORLD,rend-rstart,colors,&iscoloring);CHKERRA(ierr);
-  ierr = PetscFree(colors);CHKERRA(ierr);
+  ierr   = ISColoringCreate(PETSC_COMM_WORLD,rend-rstart,colors,&iscoloring);CHKERRQ(ierr);
+  ierr = PetscFree(colors);CHKERRQ(ierr);
 
   /*
      Create and set the nonzero pattern for the Jacobian: This is not done 
@@ -197,44 +197,44 @@ int main(int argc,char **argv)
      chunk of data.
   */
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,rend-rstart,rend-rstart,N,
-                         N,5,0,0,0,&J);CHKERRA(ierr);
+                         N,5,0,0,0,&J);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     rj = i % user.mx;         /* column in grid */
     ri = i / user.mx;         /* row in grid */
     if (ri != 0) {     /* first row does not have neighbor below */
       ii   = i - user.mx;
-      ierr = MatSetValues(J,1,&i,1,&ii,&zero,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(J,1,&i,1,&ii,&zero,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (ri != user.my - 1) { /* last row does not have neighbors above */
       ii   = i + user.mx;
-      ierr = MatSetValues(J,1,&i,1,&ii,&zero,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(J,1,&i,1,&ii,&zero,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (rj != 0) {     /* first column does not have neighbor to left */
       ii   = i - 1;
-      ierr = MatSetValues(J,1,&i,1,&ii,&zero,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(J,1,&i,1,&ii,&zero,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (rj != user.mx - 1) {     /* last column does not have neighbor to right */
       ii   = i + 1;
-      ierr = MatSetValues(J,1,&i,1,&ii,&zero,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(J,1,&i,1,&ii,&zero,INSERT_VALUES);CHKERRQ(ierr);
     }
-    ierr = MatSetValues(J,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRA(ierr);
+    ierr = MatSetValues(J,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /*
        Create the data structure that SNESDefaultComputeJacobianColor() uses
        to compute the actual Jacobians via finite differences.
   */
-  ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRA(ierr);
-  ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void))fnc,&user);CHKERRA(ierr);
-  ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRA(ierr);
+  ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
+  ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void))fnc,&user);CHKERRQ(ierr);
+  ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
   /*
         Tell SNES to use the routine SNESDefaultComputeJacobianColor()
       to compute Jacobians.
   */
-  ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRA(ierr);  
-  ierr = ISColoringDestroy(iscoloring);CHKERRA(ierr);
+  ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRQ(ierr);  
+  ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -244,7 +244,7 @@ int main(int argc,char **argv)
   /*
      Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
   */
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -255,17 +255,17 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr); 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
+  ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr); 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(r);CHKERRA(ierr);      
-  ierr = SNESDestroy(snes);CHKERRA(ierr); 
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(r);CHKERRQ(ierr);      
+  ierr = SNESDestroy(snes);CHKERRQ(ierr); 
   PetscFinalize();
 
   return 0;

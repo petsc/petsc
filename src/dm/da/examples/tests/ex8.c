@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.22 2001/01/15 21:49:08 bsmith Exp balay $*/
+/*$Id: ex8.c,v 1.23 2001/01/16 18:21:19 balay Exp bsmith $*/
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 
@@ -96,39 +96,39 @@ int main(int argc,char **argv)
   VecScatter     scatter;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Read options */  
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-star",&flg);CHKERRA(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-star",&flg);CHKERRQ(ierr); 
   if (flg) stencil_type =  DA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
   ierr = DACreate3d(PETSC_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,1,s,
-                    lx,ly,lz,&da);CHKERRA(ierr);
-  ierr = DAView(da,PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr);
-  ierr = DACreateGlobalVector(da,&global);CHKERRA(ierr);
-  ierr = DACreateLocalVector(da,&local);CHKERRA(ierr);
+                    lx,ly,lz,&da);CHKERRQ(ierr);
+  ierr = DAView(da,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
 
-  ierr = GenerateSliceScatter(da,&scatter,&vslice);CHKERRA(ierr);
+  ierr = GenerateSliceScatter(da,&scatter,&vslice);CHKERRQ(ierr);
 
   /* Put the value rank+1 into all locations of vslice and transfer back to global vector */
   value = 1.0 + rank;
-  ierr = VecSet(&value,vslice);CHKERRA(ierr);
-  ierr = VecScatterBegin(vslice,global,INSERT_VALUES,SCATTER_REVERSE,scatter);CHKERRA(ierr);
-  ierr = VecScatterEnd(vslice,global,INSERT_VALUES,SCATTER_REVERSE,scatter);CHKERRA(ierr);
+  ierr = VecSet(&value,vslice);CHKERRQ(ierr);
+  ierr = VecScatterBegin(vslice,global,INSERT_VALUES,SCATTER_REVERSE,scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(vslice,global,INSERT_VALUES,SCATTER_REVERSE,scatter);CHKERRQ(ierr);
 
-  ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr);
+  ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
 
-  ierr = VecDestroy(local);CHKERRA(ierr);
-  ierr = VecDestroy(global);CHKERRA(ierr);
-  ierr = DADestroy(da);CHKERRA(ierr);
+  ierr = VecDestroy(local);CHKERRQ(ierr);
+  ierr = VecDestroy(global);CHKERRQ(ierr);
+  ierr = DADestroy(da);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

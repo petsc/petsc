@@ -1,4 +1,4 @@
-/*$Id: ex44.c,v 1.10 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex44.c,v 1.11 2001/01/15 21:46:09 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Loads matrix dumped by ex43.\n\n";
@@ -15,11 +15,11 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,0,help);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",PETSC_BINARY_RDONLY,&viewer); 
-        CHKERRA(ierr);
-  MatLoad(viewer,MATMPIDENSE,&C);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = MatDestroy(C);CHKERRA(ierr);
+        CHKERRQ(ierr);
+  MatLoad(viewer,MATMPIDENSE,&C);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatDestroy(C);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

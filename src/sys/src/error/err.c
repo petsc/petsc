@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.122 2000/10/24 20:24:29 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.123 2001/01/15 21:43:39 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -199,7 +199,7 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
   va_list     Argp;
   int         ierr;
   char        buf[2048],*lbuf = 0;
-  PetscTruth  ismain;
+  PetscTruth  ismain,isunknown;
 
   PetscFunctionBegin;
   /* Compose the message evaluating the print format */
@@ -224,7 +224,8 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
     PetscStrncmp() does its own error checking which is problamatic
   */
   PetscStrncmp(func,"main",4,&ismain);
-  if (ismain) {
+  PetscStrncmp(func,"unknown",7,&isunknown);
+  if (ismain || isunknown) {
     MPI_Abort(PETSC_COMM_WORLD,ierr);
   }
   PetscFunctionReturn(ierr);

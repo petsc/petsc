@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.66 2000/11/28 17:30:48 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.67 2001/01/15 21:47:31 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -26,20 +26,20 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-table",&table);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-table",&table);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-  SETERRA(1,"This example does not work with complex numbers");
+  SETERRQ(1,"This example does not work with complex numbers");
 #else
 
   /* Read matrix and RHS */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,"Must indicate binary file with the -f option");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(1,"Must indicate binary file with the -f option");
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRQ(ierr);
 
-  ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
-  ierr = VecLoad(fd,&b);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
+  ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRQ(ierr);
+  ierr = VecLoad(fd,&b);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   /* 
    If the load matrix is larger then the vector, due to being padded 
@@ -50,71 +50,71 @@ int main(int argc,char **args)
     Vec    tmp;
     Scalar *bold;
 
-    ierr = MatGetLocalSize(A,&m,&n);CHKERRA(ierr);
+    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
     ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&tmp);
-    ierr = VecGetOwnershipRange(b,&start,&end);CHKERRA(ierr);
-    ierr = VecGetLocalSize(b,&mvec);CHKERRA(ierr);
-    ierr = VecGetArray(b,&bold);CHKERRA(ierr);
+    ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
+    ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
     for (j=0; j<mvec; j++) {
       index = start+j;
-      ierr  = VecSetValues(tmp,1,&index,bold+j,INSERT_VALUES);CHKERRA(ierr);
+      ierr  = VecSetValues(tmp,1,&index,bold+j,INSERT_VALUES);CHKERRQ(ierr);
     }
-    ierr = VecRestoreArray(b,&bold);CHKERRA(ierr);
-    ierr = VecDestroy(b);CHKERRA(ierr);
-    ierr = VecAssemblyBegin(tmp);CHKERRA(ierr);
-    ierr = VecAssemblyEnd(tmp);CHKERRA(ierr);
+    ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
+    ierr = VecDestroy(b);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(tmp);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
     b = tmp;
   }
-  ierr = VecDuplicate(b,&x);CHKERRA(ierr);
-  ierr = VecDuplicate(b,&u);CHKERRA(ierr);
+  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
 
-  ierr = VecSet(&zero,x);CHKERRA(ierr);
-  ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
+  ierr = VecSet(&zero,x);CHKERRQ(ierr);
+  ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
 
   PetscLogStagePush(1);
-  ierr = PetscGetTime(&tsetup1);CHKERRA(ierr);
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
-  ierr = SLESSetUp(sles,b,x);CHKERRA(ierr);
-  ierr = SLESSetUpOnBlocks(sles);CHKERRA(ierr);
-  ierr = PetscGetTime(&tsetup2);CHKERRA(ierr);
+  ierr = PetscGetTime(&tsetup1);CHKERRQ(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
+  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
+  ierr = SLESSetUpOnBlocks(sles);CHKERRQ(ierr);
+  ierr = PetscGetTime(&tsetup2);CHKERRQ(ierr);
   tsetup = tsetup2 -tsetup1;
   PetscLogStagePop();
-  ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
+  ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
 
   PetscLogStagePush(2);
-  ierr = PetscGetTime(&tsolve1);CHKERRA(ierr);
-  ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
-  ierr = PetscGetTime(&tsolve2);CHKERRA(ierr);
+  ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+  ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
   tsolve = tsolve2 - tsolve1;
   PetscLogStagePop();
 
   /* Show result */
   ierr = MatMult(A,x,u);
-  ierr = VecAXPY(&none,b,u);CHKERRA(ierr);
-  ierr = VecNorm(u,NORM_2,&norm);CHKERRA(ierr);
+  ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
+  ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   /*  matrix PC   KSP   Options       its    residual setuptime solvetime  */
   if (table) {
     char   *matrixname,slesinfo[120];
     PetscViewer viewer;
-    ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,slesinfo,120,&viewer);CHKERRA(ierr);
-    ierr = SLESView(sles,viewer);CHKERRA(ierr);
-    ierr = PetscStrrchr(file,'/',&matrixname);CHKERRA(ierr);
+    ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,slesinfo,120,&viewer);CHKERRQ(ierr);
+    ierr = SLESView(sles,viewer);CHKERRQ(ierr);
+    ierr = PetscStrrchr(file,'/',&matrixname);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
-                       matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,slesinfo);CHKERRA(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
+                       matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,slesinfo);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRA(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %A\n",norm);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %A\n",norm);CHKERRQ(ierr);
   }
 
   /* Cleanup */
-  ierr = SLESDestroy(sles);CHKERRA(ierr);
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr);
-  ierr = VecDestroy(u);CHKERRA(ierr);
-  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
 
   PetscFinalize();
 #endif

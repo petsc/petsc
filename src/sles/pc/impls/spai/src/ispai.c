@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.19 2001/01/15 21:47:01 bsmith Exp balay $*/
+/* $Id: ispai.c,v 1.20 2001/01/16 18:19:14 balay Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -742,22 +742,22 @@ int ConvertMatrixToMat(matrix *B,Mat *PB)
   }
 
   M = N = B->n;
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,n,M,N,d_nz,d_nnz,o_nz,o_nnz,PB);CHKERRA(ierr);
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,n,M,N,d_nz,d_nnz,o_nz,o_nnz,PB);CHKERRQ(ierr);
 
   for (i=0; i<B->mnls[rank]; i++) {
     global_row = B->start_indices[rank]+i;
     for (k=0; k<B->lines->len[i]; k++) {
       global_col = B->lines->ptrs[i][k];
       val = B->lines->A[i][k];
-      ierr = MatSetValues(*PB,1,&global_row,1,&global_col,&val,ADD_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(*PB,1,&global_row,1,&global_col,&val,ADD_VALUES);CHKERRQ(ierr);
     }
   }
 
   PetscFree(d_nnz);
   PetscFree(o_nnz);
 
-  ierr = MatAssemblyBegin(*PB,MAT_FINAL_ASSEMBLY);  CHKERRA(ierr);
-  ierr = MatAssemblyEnd(*PB,MAT_FINAL_ASSEMBLY);  CHKERRA(ierr);
+  ierr = MatAssemblyBegin(*PB,MAT_FINAL_ASSEMBLY);  CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*PB,MAT_FINAL_ASSEMBLY);  CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -783,7 +783,7 @@ int ConvertVectorToVec(vector *v,Vec *Pv)
   M = v->n;
   
   
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,m,M,Pv);CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,m,M,Pv);CHKERRQ(ierr);
 
   ierr = PetscMalloc(size*sizeof(int),&mnls);
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -801,12 +801,12 @@ int ConvertVectorToVec(vector *v,Vec *Pv)
   PetscFree(mnls);
   PetscFree(start_indices);
   
-  ierr = VecSetValues(*Pv,v->mnl,global_indices,v->v,INSERT_VALUES);CHKERRA(ierr);
+  ierr = VecSetValues(*Pv,v->mnl,global_indices,v->v,INSERT_VALUES);CHKERRQ(ierr);
 
   PetscFree(global_indices);
 
-  ierr = VecAssemblyBegin(*Pv);  CHKERRA(ierr);
-  ierr = VecAssemblyEnd(*Pv);  CHKERRA(ierr);
+  ierr = VecAssemblyBegin(*Pv);  CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(*Pv);  CHKERRQ(ierr);
  
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.87 2001/01/15 21:47:31 bsmith Exp balay $*/
+/*$Id: ex10.c,v 1.88 2001/01/16 18:19:49 balay Exp bsmith $*/
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
@@ -34,52 +34,52 @@ int main(int argc,char **args)
   double  norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* Form matrix */
-  ierr = GetElasticityMatrix(m,&mat);CHKERRA(ierr);
+  ierr = GetElasticityMatrix(m,&mat);CHKERRQ(ierr);
 
   /* Generate vectors */
-  ierr = MatGetSize(mat,&rdim,&cdim);CHKERRA(ierr);
-  ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,rdim,&u);CHKERRA(ierr);
-  ierr = VecSetFromOptions(u);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRA(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRA(ierr);
+  ierr = MatGetSize(mat,&rdim,&cdim);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,rdim,&u);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
+  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     v = (Scalar)(i-rstart + 100*rank); 
-    ierr = VecSetValues(u,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(u,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   } 
-  ierr = VecAssemblyBegin(u);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(u);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
   
   /* Compute right-hand-side */
-  ierr = MatMult(mat,u,b);CHKERRA(ierr);
+  ierr = MatMult(mat,u,b);CHKERRQ(ierr);
   
   /* Solve linear system */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,mat,mat,SAME_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
-  ierr = KSPGMRESSetRestart(ksp,2*m);CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRA(ierr);
-  ierr = KSPSetType(ksp,KSPCG);CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
-  ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
+  ierr = SLESSetOperators(sles,mat,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGMRESSetRestart(ksp,2*m);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
  
   /* Check error */
-  ierr = VecAXPY(&neg1,u,x);CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
+  ierr = VecAXPY(&neg1,u,x);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Number of iterations %d\n",norm,its);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Number of iterations %d\n",norm,its);CHKERRQ(ierr);
 
   /* Free work space */
-  ierr = SLESDestroy(sles);CHKERRA(ierr);
-  ierr = VecDestroy(u);CHKERRA(ierr);
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr);
-  ierr = MatDestroy(mat);CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = MatDestroy(mat);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;
@@ -141,9 +141,9 @@ int GetElasticityMatrix(int m,Mat *newmat)
   }
 
   for (i=0; i<81; i++) {
-    ierr = PetscFree(K[i]);CHKERRA(ierr);
+    ierr = PetscFree(K[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(K);CHKERRA(ierr);
+  ierr = PetscFree(K);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -160,8 +160,8 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ict,rowkeep,&iskeep);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(mat,1,&iskeep,&iskeep,MAT_INITIAL_MATRIX,&submatb);CHKERRQ(ierr);
   submat = *submatb; 
-  ierr = PetscFree(submatb);CHKERRA(ierr);
-  ierr = PetscFree(rowkeep);CHKERRA(ierr);
+  ierr = PetscFree(submatb);CHKERRQ(ierr);
+  ierr = PetscFree(rowkeep);CHKERRQ(ierr);
   ierr = ISDestroy(iskeep);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
 

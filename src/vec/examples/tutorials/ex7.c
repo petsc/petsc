@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.28 2000/05/10 16:40:22 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.29 2001/01/15 21:45:20 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
 Also demonstrates passing  PETSc objects, MPI Communicators from C to Fortran\n\
@@ -36,20 +36,20 @@ int main(int argc,char **args)
 
   PetscInitializeFortran();  
 
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&vec);CHKERRA(ierr);
-  ierr = VecSetFromOptions(vec);CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&vec);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
 
   /* 
      Call Fortran routine - the use of MPICCommToFortranComm() allows 
      translation of the MPI_Comm from C so that it can be properly 
      interpreted from Fortran.
   */
-  ierr = MPICCommToFortranComm(PETSC_COMM_WORLD,&fcomm);CHKERRA(ierr);
+  ierr = MPICCommToFortranComm(PETSC_COMM_WORLD,&fcomm);CHKERRQ(ierr);
 
   ex7f_(&vec,&fcomm);
 
-  ierr = VecView(vec,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = VecDestroy(vec);CHKERRA(ierr);
+  ierr = VecView(vec,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecDestroy(vec);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }
@@ -71,7 +71,7 @@ int ex7c_(Vec *fvec,int *fcomm)
   /*
     Some PETSc/MPI operations on Vec/Communicator objects 
   */
-  ierr = VecGetSize(*fvec,&size);CHKERRA(ierr);
+  ierr = VecGetSize(*fvec,&size);CHKERRQ(ierr);
   MPI_Barrier(comm);
   
   return 0;

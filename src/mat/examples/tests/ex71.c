@@ -1,4 +1,4 @@
-/*$Id: ex71.c,v 1.39 2000/10/24 20:26:04 bsmith Exp bsmith $*/
+/*$Id: ex71.c,v 1.40 2001/01/15 21:46:09 bsmith Exp bsmith $*/
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 
@@ -15,37 +15,37 @@ int main(int argc,char **args)
   PetscViewer  viewer;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscViewerSocketOpen(PETSC_COMM_WORLD,"eagle",-1,&viewer);CHKERRA(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRA(ierr);
-  ierr = MatSetFromOptions(A);CHKERRA(ierr);
+  ierr = PetscViewerSocketOpen(PETSC_COMM_WORLD,"eagle",-1,&viewer);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
       v = -1.0;  I = j + n*i;
-      if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
+      if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatView(A,viewer);CHKERRA(ierr);
+  ierr = MatView(A,viewer);CHKERRQ(ierr);
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRA(ierr);
-  ierr = VecSet(&one,x);CHKERRA(ierr);
-  ierr = VecView(x,viewer);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);
+  ierr = VecSet(&one,x);CHKERRQ(ierr);
+  ierr = VecView(x,viewer);CHKERRQ(ierr);
   
-  ierr = PetscSleep(30);CHKERRA(ierr);
-  ierr = PetscObjectDestroy((PetscObject)viewer);CHKERRA(ierr);
+  ierr = PetscSleep(30);CHKERRQ(ierr);
+  ierr = PetscObjectDestroy((PetscObject)viewer);CHKERRQ(ierr);
 
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

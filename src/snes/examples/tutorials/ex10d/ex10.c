@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.20 2001/01/15 21:48:23 bsmith Exp balay $*/
+/*$Id: ex10.c,v 1.21 2001/01/16 18:20:41 balay Exp bsmith $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -121,23 +121,23 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscInitialize(&argc,&argv,"options.inf",help);
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* The current input file options.inf is for 2 proc run only */
-  if (size != 2) SETERRA(1,"This Example currently runs on 2 procs only.");
+  if (size != 2) SETERRQ(1,"This Example currently runs on 2 procs only.");
 
   /*
      Initialize problem parameters
   */
   user.Nvglobal = 16;      /*Global # of vertices  */
   user.Neglobal = 18;      /*Global # of elements  */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-vert",&user.Nvglobal,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-elem",&user.Neglobal,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-vert",&user.Nvglobal,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-elem",&user.Neglobal,PETSC_NULL);CHKERRQ(ierr);
   user.non_lin_param = 0.06;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-nl_par",&user.non_lin_param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-nl_par",&user.non_lin_param,PETSC_NULL);CHKERRQ(ierr);
   user.lin_param = -1.0;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-lin_par",&user.lin_param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-lin_par",&user.lin_param,PETSC_NULL);CHKERRQ(ierr);
   user.Nvlocal = 0;
   user.Nelocal = 0;
 
@@ -211,9 +211,9 @@ int main(int argc,char **argv)
     application-to-PETSc mappings. Each vertex also gets a local index (stored in the 
     locInd array). 
   */
-  ierr = MPI_Scan(&user.Nvlocal,&rstart,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);CHKERRA(ierr);
+  ierr = MPI_Scan(&user.Nvlocal,&rstart,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);CHKERRQ(ierr);
   rstart -= user.Nvlocal;
-  ierr = PetscMalloc(user.Nvlocal*sizeof(int),&pordering);CHKERRA(ierr);
+  ierr = PetscMalloc(user.Nvlocal*sizeof(int),&pordering);CHKERRQ(ierr);
 
   for (i=0; i < user.Nvlocal; i++) {
     pordering[i] = rstart + i;
@@ -222,8 +222,8 @@ int main(int argc,char **argv)
   /* 
     Create the AO object 
   */
-  ierr = AOCreateBasic(MPI_COMM_WORLD,user.Nvlocal,user.gloInd,pordering,&ao);CHKERRA(ierr);
-  ierr = PetscFree(pordering);CHKERRA(ierr);
+  ierr = AOCreateBasic(MPI_COMM_WORLD,user.Nvlocal,user.gloInd,pordering,&ao);CHKERRQ(ierr);
+  ierr = PetscFree(pordering);CHKERRQ(ierr);
  
   /* 
     Keep the global indices for later use 
@@ -255,8 +255,8 @@ int main(int argc,char **argv)
   /* 
     Now map the vlocal and neighbor lists to the PETSc ordering 
   */
-  ierr = AOApplicationToPetsc(ao,user.Nvlocal,user.locInd);CHKERRA(ierr);
-  ierr = AOApplicationToPetsc(ao,Nvneighborstotal,tmp);CHKERRA(ierr);
+  ierr = AOApplicationToPetsc(ao,user.Nvlocal,user.locInd);CHKERRQ(ierr);
+  ierr = AOApplicationToPetsc(ao,Nvneighborstotal,tmp);CHKERRQ(ierr);
  
   fprintf(fptr1,"After AOApplicationToPetsc, local indices are : \n");
   for (i=0; i < user.Nvlocal; i++) {
@@ -294,9 +294,9 @@ int main(int argc,char **argv)
     number of processors. Importantly, it allows us to use NO SEARCHING
     in setting up the data structures.
   */
-  ierr      = PetscMalloc(user.Nvglobal*sizeof(int),&vertices);CHKERRA(ierr);
-  ierr      = PetscMalloc(user.Nvglobal*sizeof(int),&verticesmask);CHKERRA(ierr);
-  ierr      = PetscMemzero(verticesmask,user.Nvglobal*sizeof(int));CHKERRA(ierr);
+  ierr      = PetscMalloc(user.Nvglobal*sizeof(int),&vertices);CHKERRQ(ierr);
+  ierr      = PetscMalloc(user.Nvglobal*sizeof(int),&verticesmask);CHKERRQ(ierr);
+  ierr      = PetscMemzero(verticesmask,user.Nvglobal*sizeof(int));CHKERRQ(ierr);
   nvertices = 0;
  
   /* 
@@ -352,56 +352,56 @@ int main(int argc,char **argv)
   /* 
     Create vector data structures 
   */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,user.Nvlocal,N,&x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,bs*nvertices,&user.localX);CHKERRA(ierr);
-  ierr = VecDuplicate(user.localX,&user.localF);CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,user.Nvlocal,N,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,bs*nvertices,&user.localX);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 
   /*
     Create the scatter between the global representation and the 
     local representation
   */
-  ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal);CHKERRA(ierr);
-  ierr = PetscMalloc(nvertices*sizeof(int),&svertices);CHKERRA(ierr);
+  ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal);CHKERRQ(ierr);
+  ierr = PetscMalloc(nvertices*sizeof(int),&svertices);CHKERRQ(ierr);
   for (i=0; i<nvertices; i++) svertices[i] = bs*vertices[i];
-  ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,&isglobal);CHKERRA(ierr);
-  ierr = PetscFree(svertices);CHKERRA(ierr);
-  ierr = VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter);CHKERRA(ierr);
+  ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,&isglobal);CHKERRQ(ierr);
+  ierr = PetscFree(svertices);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter);CHKERRQ(ierr);
 
   /* 
      Create matrix data structure; Just to keep the example simple, we have not done any 
      preallocation of memory for the matrix. In real application code with big matrices,
      preallocation should always be done to expedite the matrix creation. 
   */
-  ierr = MatCreate(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&Jac);CHKERRA(ierr);
-  ierr = MatSetFromOptions(Jac);CHKERRA(ierr);
+  ierr = MatCreate(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&Jac);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(Jac);CHKERRQ(ierr);
 
   /* 
     The following routine allows us to set the matrix values in local ordering 
   */
-  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,vertices,&isl2g);CHKERRA(ierr);
-  ierr = MatSetLocalToGlobalMapping(Jac,isl2g);CHKERRA(ierr);
+  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,vertices,&isl2g);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(Jac,isl2g);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = SNESSetType(snes,type);CHKERRA(ierr);
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
+  ierr = SNESSetType(snes,type);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set routines for function and Jacobian evaluation
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
-   ierr = SNESSetFunction(snes,r,FormFunction,(void *)&user);CHKERRA(ierr);
-   ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void *)&user);CHKERRA(ierr);
+   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
+   ierr = SNESSetFunction(snes,r,FormFunction,(void *)&user);CHKERRQ(ierr);
+   ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void *)&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -413,22 +413,22 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-   ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
+   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
 
    /* 
      Print the initial guess 
    */
-   ierr = VecGetArray(x,&xx);CHKERRA(ierr);
+   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
    for (inode = 0; inode < user.Nvlocal; inode++)
     fprintf(fptr1,"Initial Solution at node %d is %f \n",inode,xx[inode]);
-   ierr = VecRestoreArray(x,&xx);CHKERRA(ierr);
+   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Now solve the nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr);
+  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Print the output : solution vector and other information
@@ -436,25 +436,25 @@ int main(int argc,char **argv)
      processor's rank.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecGetArray(x,&xx);CHKERRA(ierr);
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   for (inode = 0; inode < user.Nvlocal; inode++)
    fprintf(fptr1,"Solution at node %d is %f \n",inode,xx[inode]);
-  ierr = VecRestoreArray(x,&xx);CHKERRA(ierr);
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   fclose(fptr1);
-  ierr = PetscPrintf(MPI_COMM_WORLD,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
-  ierr = PetscPrintf(MPI_COMM_WORLD,"number of unsuccessful steps = %d\n",nfails);CHKERRA(ierr);
+  ierr = PetscPrintf(MPI_COMM_WORLD,"number of Newton iterations = %d, ",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(MPI_COMM_WORLD,"number of unsuccessful steps = %d\n",nfails);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecDestroy(x);CHKERRA(ierr);  
-  ierr = VecDestroy(r);CHKERRA(ierr);
-  ierr = VecDestroy(user.localX);CHKERRA(ierr);  
-  ierr = VecDestroy(user.localF);CHKERRA(ierr);
-  ierr = MatDestroy(Jac);CHKERRA(ierr);  ierr = SNESDestroy(snes);CHKERRA(ierr);
-  /*ierr = PetscDrawDestroy(draw);CHKERRA(ierr);*/
+  ierr = VecDestroy(x);CHKERRQ(ierr);  
+  ierr = VecDestroy(r);CHKERRQ(ierr);
+  ierr = VecDestroy(user.localX);CHKERRQ(ierr);  
+  ierr = VecDestroy(user.localF);CHKERRQ(ierr);
+  ierr = MatDestroy(Jac);CHKERRQ(ierr);  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  /*ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);*/
   PetscFinalize();
 
   return 0;
@@ -562,8 +562,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
      VecScatterBegin() and VecScatterEnd() to overlap the communication with
      computation.
  */
-  ierr = VecScatterBegin(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRA(ierr);
-  ierr = VecScatterEnd(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRA(ierr);
+  ierr = VecScatterBegin(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data
@@ -645,8 +645,8 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
      VecScatterBegin() and VecScatterEnd() to overlap the communication with
      computation.
   */
-  ierr = VecScatterBegin(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRA(ierr);
-  ierr = VecScatterEnd(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRA(ierr);
+  ierr = VecScatterBegin(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
   
   /*
      Get pointer to vector data

@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.42 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex14.c,v 1.43 2001/01/15 21:45:13 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
 This does the tricky case.\n\n";
@@ -18,33 +18,33 @@ int main(int argc,char **argv)
   VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* create two vectors */
   N = size*n;
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&y);CHKERRA(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&y);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&is1);CHKERRA(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,rank,1,&is2);CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&is1);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,n,rank,1,&is2);CHKERRQ(ierr);
 
   value = rank+1; 
-  ierr = VecSet(&value,x);CHKERRA(ierr);
-  ierr = VecSet(&zero,y);CHKERRA(ierr);
+  ierr = VecSet(&value,x);CHKERRQ(ierr);
+  ierr = VecSet(&zero,y);CHKERRQ(ierr);
 
-  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRA(ierr);
-  ierr = VecScatterBegin(x,y,ADD_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
-  ierr = VecScatterEnd(x,y,ADD_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
-  ierr = VecScatterDestroy(ctx);CHKERRA(ierr);
+  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(x,y,ADD_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(x,y,ADD_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
   
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
-  ierr = ISDestroy(is1);CHKERRA(ierr);
-  ierr = ISDestroy(is2);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = ISDestroy(is1);CHKERRQ(ierr);
+  ierr = ISDestroy(is2);CHKERRQ(ierr);
 
   PetscFinalize(); 
   return 0;

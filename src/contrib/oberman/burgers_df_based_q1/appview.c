@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.6 2000/08/01 20:58:21 bsmith Exp bsmith $*/
+/*$Id: appview.c,v 1.7 2001/01/15 21:49:29 bsmith Exp bsmith $*/
 
 
 /*
@@ -255,10 +255,10 @@ int AppCtxGraphics(AppCtx *appctx)
   if ((appctx)->view.show_grid) {
     ierr = PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,400,400,
                      &appctx->view.drawglobal);CHKERRQ(ierr);
-    ierr = PetscDrawSetFromOptions(appctx->view.drawglobal);CHKERRA(ierr);
+    ierr = PetscDrawSetFromOptions(appctx->view.drawglobal);CHKERRQ(ierr);
     ierr = PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,400,400,
                      &appctx->view.drawlocal);CHKERRQ(ierr);
-    ierr = PetscDrawSetFromOptions(appctx->view.drawlocal);CHKERRA(ierr);
+    ierr = PetscDrawSetFromOptions(appctx->view.drawlocal);CHKERRQ(ierr);
     ierr = PetscDrawSplitViewPort((appctx)->view.drawlocal);CHKERRQ(ierr);
 
     /*
@@ -272,8 +272,8 @@ int AppCtxGraphics(AppCtx *appctx)
     /*
        Visualize the grid 
     */
-    ierr = PetscDrawZoom((appctx)->view.drawglobal,AppCtxView,appctx);CHKERRA(ierr);
-    ierr = PetscDrawZoom((appctx)->view.drawlocal,AppCtxView,appctx);CHKERRA(ierr);
+    ierr = PetscDrawZoom((appctx)->view.drawglobal,AppCtxView,appctx);CHKERRQ(ierr);
+    ierr = PetscDrawZoom((appctx)->view.drawlocal,AppCtxView,appctx);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-matlab_graphics",&(appctx)->view.matlabgraphics);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.121 2000/10/24 20:25:32 bsmith Exp bsmith $*/
+/*$Id: aijnode.c,v 1.122 2001/01/15 21:45:34 bsmith Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -83,7 +83,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,int **iia,int **jja,int ishi
   nslim_row = a->inode.node_count;
   m         = A->m;
   n         = A->n;
-  if (m != n) SETERRA(1,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix shoul be square");
+  if (m != n) SETERRQ(1,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix shoul be square");
   
   /* Use the row_inode as column_inode */
   nslim_col = nslim_row;

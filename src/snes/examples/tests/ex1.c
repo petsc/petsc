@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.77 2000/09/28 21:14:25 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.78 2001/01/15 21:48:06 bsmith Exp bsmith $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 
@@ -81,18 +81,18 @@ int main(int argc,char **argv)
   PetscTruth     matrix_free,flg,fd_coloring;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,"Lambda is out of range");
+    SETERRQ(1,"Lambda is out of range");
   }
   N = user.mx*user.my;
   
@@ -100,15 +100,15 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);CHKERRA(ierr);
-  ierr = VecSetFromOptions(x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
   /* 
      Set function evaluation routine and vector.  Whenever the nonlinear
@@ -118,7 +118,7 @@ int main(int argc,char **argv)
         context that provides application-specific data for the
         function evaluation routine.
   */
-  ierr = SNESSetFunction(snes,r,FormFunction,(void *)&user);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,(void *)&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -129,18 +129,18 @@ int main(int argc,char **argv)
      for the Jacobian.  See the users manual for a discussion of better 
      techniques for preallocating matrix memory.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRQ(ierr);
   if (!matrix_free) {
-    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRA(ierr);
+    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);
   }
 
   /*
      This option will cause the Jacobian to be computed via finite differences
     efficiently using a coloring of the columns of the matrix.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_fd_coloring",&fd_coloring);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_fd_coloring",&fd_coloring);CHKERRQ(ierr);
 
-  if (matrix_free && fd_coloring)  SETERRA(1,"Use only one of -snes_mf, -snes_fd_coloring options!\n\
+  if (matrix_free && fd_coloring)  SETERRQ(1,"Use only one of -snes_mf, -snes_fd_coloring options!\n\
                                                 You can do -snes_mf_operator -snes_fd_coloring");
 
   if (fd_coloring) {
@@ -152,26 +152,26 @@ int main(int argc,char **argv)
       because clearly if we had a routine to compute the Jacobian we won't need
       to use finite differences.
     */
-    ierr = FormJacobian(snes,x,&J,&J,&str,&user);CHKERRA(ierr);
+    ierr = FormJacobian(snes,x,&J,&J,&str,&user);CHKERRQ(ierr);
 
     /*
        Color the matrix, i.e. determine groups of columns that share no common 
       rows. These columns in the Jacobian can all be computed simulataneously.
     */
-    ierr = MatGetColoring(J,MATCOLORING_NATURAL,&iscoloring);CHKERRA(ierr);
+    ierr = MatGetColoring(J,MATCOLORING_NATURAL,&iscoloring);CHKERRQ(ierr);
     /*
        Create the data structure that SNESDefaultComputeJacobianColor() uses
        to compute the actual Jacobians via finite differences.
     */
-    ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRA(ierr);
-    ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void))FormFunction,&user);CHKERRA(ierr);
-    ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRA(ierr);
+    ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void))FormFunction,&user);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
     /*
         Tell SNES to use the routine SNESDefaultComputeJacobianColor()
       to compute Jacobians.
     */
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRA(ierr);  
-    ierr = ISColoringDestroy(iscoloring);CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRQ(ierr);  
+    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
   }
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -189,7 +189,7 @@ int main(int argc,char **argv)
                              products within Newton-Krylov method
   */
   else if (!matrix_free) {
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -199,14 +199,14 @@ int main(int argc,char **argv)
   /*
      Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
   */
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /*
      Set array that saves the function norms.  This array is intended
      when the user wants to save the convergence history for later use
      rather than just to view the function norms via -snes_monitor.
   */
-  ierr = SNESSetConvergenceHistory(snes,history,hist_its,50,PETSC_TRUE);CHKERRA(ierr);
+  ierr = SNESSetConvergenceHistory(snes,history,hist_its,50,PETSC_TRUE);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -217,29 +217,29 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr); 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
+  ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr); 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRQ(ierr);
 
   /*
      PetscDraw contour plot of solution
   */
-  /* ierr = PetscDrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr); */
-  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
-  ierr = PetscDrawSetType(draw,PETSC_DRAW_X);CHKERRA(ierr);
+  /* ierr = PetscDrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRQ(ierr); */
+  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetType(draw,PETSC_DRAW_X);CHKERRQ(ierr);
 
   ierr = VecGetArray(x,&array);CHKERRQ(ierr);
-  ierr = PetscDrawTensorContour(draw,user.mx,user.my,0,0,array);CHKERRA(ierr);
+  ierr = PetscDrawTensorContour(draw,user.mx,user.my,0,0,array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
 
   /* 
      Print the convergence history.  This is intended just to demonstrate
      use of the data attained via SNESSetConvergenceHistory().  
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-print_history",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-print_history",&flg);CHKERRQ(ierr);
   if (flg) {
     for (i=0; i<its+1; i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %d: Linear iterations %d Function norm = %g\n",i,hist_its[i],history[i]);CHKERRA(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %d: Linear iterations %d Function norm = %g\n",i,hist_its[i],history[i]);CHKERRQ(ierr);
     }
   }
 
@@ -249,15 +249,15 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (!matrix_free) {
-    ierr = MatDestroy(J);CHKERRA(ierr);
+    ierr = MatDestroy(J);CHKERRQ(ierr);
   }
   if (fd_coloring) {
-    ierr = MatFDColoringDestroy(fdcoloring);CHKERRA(ierr);
+    ierr = MatFDColoringDestroy(fdcoloring);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(r);CHKERRA(ierr);
-  ierr = PetscDrawDestroy(draw);CHKERRA(ierr);
-  ierr = SNESDestroy(snes);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(r);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
+  ierr = SNESDestroy(snes);CHKERRQ(ierr);
   PetscFinalize();
 
   return 0;

@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.12 2000/09/22 20:43:24 bsmith Exp bsmith $*/
+/*$Id: ex11.c,v 1.13 2001/01/15 21:45:20 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   Scalar   one = 1.0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   /* 
      Create a vector, specifying only its global dimension.
@@ -48,35 +48,35 @@ int main(int argc,char **argv)
      particular type of vector to be formed.
 
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRA(ierr);
-  ierr = VecSetFromOptions(x);CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   /*
      Set the vectors to entries to a constant value.
   */
-  ierr = VecSet(&one,x);CHKERRA(ierr);
+  ierr = VecSet(&one,x);CHKERRQ(ierr);
 
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of entire vector %g\n",norm);CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of entire vector %g\n",norm);CHKERRQ(ierr);
 
-  ierr = VecSetBlockSize(x,2);CHKERRA(ierr);
-  ierr = VecStrideNorm(x,0,NORM_2,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",norm);CHKERRA(ierr);
+  ierr = VecSetBlockSize(x,2);CHKERRQ(ierr);
+  ierr = VecStrideNorm(x,0,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",norm);CHKERRQ(ierr);
 
-  ierr = VecStrideNorm(x,1,NORM_2,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",norm);CHKERRA(ierr);
+  ierr = VecStrideNorm(x,1,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",norm);CHKERRQ(ierr);
 
-  ierr = VecStrideNorm(x,1,NORM_1,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",norm);CHKERRA(ierr);
+  ierr = VecStrideNorm(x,1,NORM_1,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",norm);CHKERRQ(ierr);
 
-  ierr = VecStrideNorm(x,1,NORM_INFINITY,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",norm);CHKERRA(ierr);
+  ierr = VecStrideNorm(x,1,NORM_INFINITY,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",norm);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

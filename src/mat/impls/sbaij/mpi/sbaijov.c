@@ -1,4 +1,4 @@
-/*$Id: sbaijov.c,v 1.4 2001/01/15 21:46:06 bsmith Exp balay $*/
+/*$Id: sbaijov.c,v 1.5 2001/01/16 18:18:09 balay Exp bsmith $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -62,15 +62,15 @@ static int MatCompressIndicesSorted_MPISBAIJ(Mat C,int imax,IS *is_in,IS *is_out
   for (i=0; i<imax; i++) {
     ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
     ierr = ISGetSize(is_in[i],&n);CHKERRQ(ierr);
-    if (n%bs !=0) SETERRA(1,"Indices are not block ordered");
+    if (n%bs !=0) SETERRQ(1,"Indices are not block ordered");
 
     n = n/bs; /* The reduced index size */
     idx_local = idx;
     for (j=0; j<n ; j++) {
       val = idx_local[0];
-      if (val%bs != 0) SETERRA(1,"Indices are not block ordered");
+      if (val%bs != 0) SETERRQ(1,"Indices are not block ordered");
       for (k=0; k<bs; k++) {
-        if (val+k != idx_local[k]) SETERRA(1,"Indices are not block ordered");
+        if (val+k != idx_local[k]) SETERRQ(1,"Indices are not block ordered");
       }
       nidx[j] = val/bs;
       idx_local +=bs;

@@ -1,4 +1,4 @@
-/*$Id: ex42.c,v 1.19 2001/01/15 21:46:09 bsmith Exp balay $*/
+/*$Id: ex42.c,v 1.20 2001/01/16 18:18:12 balay Exp bsmith $*/
 
 static char help[] = 
 "Tests MatIncreaseOverlap() and MatGetSubmatrices() for the parallel case.\n\
@@ -26,82 +26,82 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 #if defined(PETSC_USE_COMPLEX)
-  SETERRA(1,"This example does not work with complex numbers");
+  SETERRQ(1,"This example does not work with complex numbers");
 #else
   
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);  CHKERRA(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);  CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRQ(ierr);
 
   /* Read matrix and RHS */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
-  ierr = MatLoad(fd,MATMPIAIJ,&A);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRQ(ierr);
+  ierr = MatLoad(fd,MATMPIAIJ,&A);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   /* Read the matrix again as a seq matrix */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
-  ierr = MatLoad(fd,MATSEQAIJ,&B);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,file,PETSC_BINARY_RDONLY,&fd);CHKERRQ(ierr);
+  ierr = MatLoad(fd,MATSEQAIJ,&B);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
   
   /* Create the Random no generator */
-  ierr = MatGetSize(A,&m,&n);CHKERRA(ierr);  
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRA(ierr);
+  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);  
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
 
   /* Create the IS corresponding to subdomains */
-  ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRA(ierr);
-  ierr = PetscMalloc(nd*sizeof(IS **),&is2);CHKERRA(ierr);
-  ierr = PetscMalloc(m *sizeof(int),&idx);CHKERRA(ierr);
+  ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRQ(ierr);
+  ierr = PetscMalloc(nd*sizeof(IS **),&is2);CHKERRQ(ierr);
+  ierr = PetscMalloc(m *sizeof(int),&idx);CHKERRQ(ierr);
   
   /* Create the random Index Sets */
   for (i=0; i<nd; i++) {
     /* Skip a few,so that the IS on different procs are diffeent*/
     for (j=0; j<rank; j++) {
-      ierr   = PetscRandomGetValue(r,&rand);CHKERRA(ierr);
+      ierr   = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
     }
-    ierr   = PetscRandomGetValue(r,&rand);CHKERRA(ierr);
+    ierr   = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
     size   = (int)(rand*m);
     for (j=0; j<size; j++) {
-      ierr   = PetscRandomGetValue(r,&rand);CHKERRA(ierr);
+      ierr   = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
       idx[j] = (int)(rand*m);
     }
-    ierr = PetscSortInt(size,idx);CHKERRA(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,size,idx,is1+i);CHKERRA(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,size,idx,is2+i);CHKERRA(ierr);
+    ierr = PetscSortInt(size,idx);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,size,idx,is1+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,size,idx,is2+i);CHKERRQ(ierr);
   }
 
-  ierr = MatIncreaseOverlap(A,nd,is1,ov);CHKERRA(ierr);
-  ierr = MatIncreaseOverlap(B,nd,is2,ov);CHKERRA(ierr);
+  ierr = MatIncreaseOverlap(A,nd,is1,ov);CHKERRQ(ierr);
+  ierr = MatIncreaseOverlap(B,nd,is2,ov);CHKERRQ(ierr);
 
   for (i=0; i<nd; ++i) { 
     ierr = ISSort(is1[i]);CHKERRQ(ierr);
     ierr = ISSort(is2[i]);CHKERRQ(ierr);
   }
   
-  ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRA(ierr);
-  ierr = MatGetSubMatrices(B,nd,is2,is2,MAT_INITIAL_MATRIX,&submatB);CHKERRA(ierr);
+  ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(B,nd,is2,is2,MAT_INITIAL_MATRIX,&submatB);CHKERRQ(ierr);
   
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) { 
-    ierr = MatEqual(submatA[i],submatB[i],&flg);CHKERRA(ierr);
+    ierr = MatEqual(submatA[i],submatB[i],&flg);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%d, flg =%d\n",rank,i,flg);CHKERRQ(ierr);
   }
 
   /* Free Allocated Memory */
   for (i=0; i<nd; ++i) { 
-    ierr = ISDestroy(is1[i]);CHKERRA(ierr);
-    ierr = ISDestroy(is2[i]);CHKERRA(ierr);
-    ierr = MatDestroy(submatA[i]);CHKERRA(ierr);
-    ierr = MatDestroy(submatB[i]);CHKERRA(ierr);
+    ierr = ISDestroy(is1[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(is2[i]);CHKERRQ(ierr);
+    ierr = MatDestroy(submatA[i]);CHKERRQ(ierr);
+    ierr = MatDestroy(submatB[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(submatA);CHKERRA(ierr);
-  ierr = PetscFree(submatB);CHKERRA(ierr);
-  ierr = PetscRandomDestroy(r);CHKERRA(ierr);
-  ierr = PetscFree(is1);CHKERRA(ierr);
-  ierr = PetscFree(is2);CHKERRA(ierr);
-  ierr = MatDestroy(A);CHKERRA(ierr);
-  ierr = MatDestroy(B);CHKERRA(ierr);
-  ierr = PetscFree(idx);CHKERRA(ierr);
+  ierr = PetscFree(submatA);CHKERRQ(ierr);
+  ierr = PetscFree(submatB);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(r);CHKERRQ(ierr);
+  ierr = PetscFree(is1);CHKERRQ(ierr);
+  ierr = PetscFree(is2);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = PetscFree(idx);CHKERRQ(ierr);
 
   PetscFinalize();
 #endif

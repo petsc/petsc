@@ -1,4 +1,4 @@
-/*$Id: ex73.c,v 1.6 2001/01/15 21:46:09 bsmith Exp balay $*/
+/*$Id: ex73.c,v 1.7 2001/01/16 18:18:12 balay Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix from a file partitions it\n\n";
@@ -32,56 +32,56 @@ int main(int argc,char **args)
   IS              is,isn;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* 
      Determine file from which we read the matrix
   */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRQ(ierr);
 
   /* 
        Open binary file.  Note that we use PETSC_BINARY_RDONLY to indicate
        reading from this file.
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRQ(ierr);
 
   /*
       Load the matrix and vector; then destroy the viewer.
   */
-  ierr = MatLoad(fd,mtype,&A);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
+  ierr = MatLoad(fd,mtype,&A);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
 
   /*
        Partition the graph of the matrix 
   */
-  ierr = MatPartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRA(ierr);
-  ierr = MatPartitioningSetAdjacency(part,A);CHKERRA(ierr);
-  ierr = MatPartitioningSetFromOptions(part);CHKERRA(ierr);
+  ierr = MatPartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRQ(ierr);
+  ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
+  ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
   /* get new processor owner number of each vertex */
-  ierr = MatPartitioningApply(part,&is);CHKERRA(ierr);
+  ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
   /* get new global number of each old global number */
-  ierr = ISPartitioningToNumbering(is,&isn);CHKERRA(ierr);
-  ierr = PetscMalloc(size*sizeof(int),&nlocal);CHKERRA(ierr);
+  ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(int),&nlocal);CHKERRQ(ierr);
   /* get number of new vertices for each processor */
-  ierr = ISPartitioningCount(is,nlocal);CHKERRA(ierr); 
-  ierr = ISDestroy(is);CHKERRA(ierr);
+  ierr = ISPartitioningCount(is,nlocal);CHKERRQ(ierr); 
+  ierr = ISDestroy(is);CHKERRQ(ierr);
 
   /* get old global number of each new global number */
-  ierr = ISInvertPermutation(isn,nlocal[rank],&is);CHKERRA(ierr);
-  ierr = PetscFree(nlocal);CHKERRA(ierr);
-  ierr = ISDestroy(isn);CHKERRA(ierr);
-  ierr = MatPartitioningDestroy(part);CHKERRA(ierr);
+  ierr = ISInvertPermutation(isn,nlocal[rank],&is);CHKERRQ(ierr);
+  ierr = PetscFree(nlocal);CHKERRQ(ierr);
+  ierr = ISDestroy(isn);CHKERRQ(ierr);
+  ierr = MatPartitioningDestroy(part);CHKERRQ(ierr);
 
-  ierr = ISSort(is);CHKERRA(ierr);
-  ierr = ISAllGather(is,&isn);CHKERRA(ierr);
+  ierr = ISSort(is);CHKERRQ(ierr);
+  ierr = ISAllGather(is,&isn);CHKERRQ(ierr);
 
 
-  ierr = MatGetSubMatrix(A,is,isn,PETSC_DECIDE,MAT_INITIAL_MATRIX,&B);CHKERRA(ierr);
-  ierr = ISDestroy(is);CHKERRA(ierr);
-  ierr = ISDestroy(isn);CHKERRA(ierr);
+  ierr = MatGetSubMatrix(A,is,isn,PETSC_DECIDE,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = ISDestroy(isn);CHKERRQ(ierr);
 
   ierr = MatView(B,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
 
@@ -89,8 +89,8 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = MatDestroy(A);CHKERRA(ierr); 
-  ierr = MatDestroy(B);CHKERRA(ierr); 
+  ierr = MatDestroy(A);CHKERRQ(ierr); 
+  ierr = MatDestroy(B);CHKERRQ(ierr); 
 
 
   PetscFinalize();

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.13 1999/05/04 20:29:49 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.15 1999/10/24 14:01:38 bsmith Exp bsmith $*/
 
 /*
       Tests the signal handler.
@@ -22,10 +22,10 @@ int main(int argc,char **argv)
 {
   int ierr;
   PetscInitialize(&argc,&argv,(char *)0,0);
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates how PETSc can trap error interrupts\n");CHKERRA(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error below is contrived to test the code!\n");CHKERRA(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
-  ierr = CreateError(5);CHKERRA(ierr);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates how PETSc can trap error interrupts\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error below is contrived to test the code!\n");CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = CreateError(5);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

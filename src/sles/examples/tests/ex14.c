@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.25 2000/09/28 21:13:46 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.26 2001/01/15 21:47:36 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -110,18 +110,18 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm,&user.rank);CHKERRA(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-no_output",&no_output);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(comm,&user.rank);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-no_output",&no_output);CHKERRQ(ierr);
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,"Lambda is out of range");
+    SETERRQ(1,"Lambda is out of range");
   }
   N = user.mx*user.my;
 
@@ -129,7 +129,7 @@ int main(int argc,char **argv)
      Create linear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESCreate(comm,&sles);CHKERRA(ierr);
+  ierr = SLESCreate(comm,&sles);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
@@ -138,24 +138,24 @@ int main(int argc,char **argv)
   /*
      Create distributed array (DA) to manage parallel grid and vectors
   */
-  ierr = MPI_Comm_size(comm,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
-    SETERRA(1,"Incompatible number of processors:  Nx * Ny != size");
+    SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
-                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
+                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DA; then duplicate for remaining
      vectors that are the same types
   */
-  ierr = DACreateGlobalVector(user.da,&X);CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.da,&user.localX);CHKERRA(ierr);
-  ierr = VecDuplicate(X,&F);CHKERRA(ierr);
-  ierr = VecDuplicate(X,&Y);CHKERRA(ierr);
-  ierr = VecDuplicate(user.localX,&user.localF);CHKERRA(ierr);
+  ierr = DACreateGlobalVector(user.da,&X);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
+  ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+  ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -174,10 +174,10 @@ int main(int argc,char **argv)
      for preallocating matrix memory.
   */
   if (size == 1) {
-    ierr = MatCreateSeqAIJ(comm,N,N,5,PETSC_NULL,&J);CHKERRA(ierr);
+    ierr = MatCreateSeqAIJ(comm,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);
   } else {
-    ierr = VecGetLocalSize(X,&m);CHKERRA(ierr);
-    ierr = MatCreateMPIAIJ(comm,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRA(ierr);
+    ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
+    ierr = MatCreateMPIAIJ(comm,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -187,15 +187,15 @@ int main(int argc,char **argv)
   /*
      Set runtime options (e.g.,-ksp_monitor -ksp_rtol <rtol> -ksp_type <type>)
   */
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = FormInitialGuess(&user,X);CHKERRA(ierr);
-  ierr = ComputeFunction(&user,X,F);CHKERRA(ierr);   /* Compute F(X)    */
-  ierr = VecNorm(F,NORM_2,&fnorm);CHKERRA(ierr);     /* fnorm = || F || */
+  ierr = FormInitialGuess(&user,X);CHKERRQ(ierr);
+  ierr = ComputeFunction(&user,X,F);CHKERRQ(ierr);   /* Compute F(X)    */
+  ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);     /* fnorm = || F || */
   ttol = fnorm*rtol;
   if (!no_output) PetscPrintf(comm,"Initial function norm = %g\n",fnorm);
 
@@ -221,7 +221,7 @@ int main(int argc,char **argv)
         Compute the Jacobian matrix.  See the comments in this routine for
         important information about setting the flag mat_flag.
      */
-    ierr = ComputeJacobian(&user,X,J,&mat_flag);CHKERRA(ierr);
+    ierr = ComputeJacobian(&user,X,J,&mat_flag);CHKERRQ(ierr);
 
     /* 
         Solve J Y = F, where J is the Jacobian matrix.
@@ -230,27 +230,27 @@ int main(int argc,char **argv)
             matrix.
           - Then solve the Newton system.
      */
-    ierr = SLESSetOperators(sles,J,J,mat_flag);CHKERRA(ierr);
-    ierr = SLESSolve(sles,F,Y,&lin_its);CHKERRA(ierr);
+    ierr = SLESSetOperators(sles,J,J,mat_flag);CHKERRQ(ierr);
+    ierr = SLESSolve(sles,F,Y,&lin_its);CHKERRQ(ierr);
 
     /* 
        Compute updated iterate
      */
-    ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRA(ierr);       /* ynorm = || Y || */
-    ierr = VecAYPX(&mone,X,Y);CHKERRA(ierr);             /* Y <- X - Y      */
-    ierr = VecCopy(Y,X);CHKERRA(ierr);                   /* X <- Y          */
-    ierr = VecNorm(X,NORM_2,&xnorm);CHKERRA(ierr);       /* xnorm = || X || */
+    ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);       /* ynorm = || Y || */
+    ierr = VecAYPX(&mone,X,Y);CHKERRQ(ierr);             /* Y <- X - Y      */
+    ierr = VecCopy(Y,X);CHKERRQ(ierr);                   /* X <- Y          */
+    ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);       /* xnorm = || X || */
     if (!no_output) {
-      ierr = PetscPrintf(comm,"   linear solve iterations = %d, xnorm=%g, ynorm=%g\n",lin_its,xnorm,ynorm);CHKERRA(ierr);
+      ierr = PetscPrintf(comm,"   linear solve iterations = %d, xnorm=%g, ynorm=%g\n",lin_its,xnorm,ynorm);CHKERRQ(ierr);
     }
 
     /* 
        Evaluate new nonlinear function
      */
-    ierr = ComputeFunction(&user,X,F);CHKERRA(ierr);     /* Compute F(X)    */
-    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRA(ierr);       /* fnorm = || F || */
+    ierr = ComputeFunction(&user,X,F);CHKERRQ(ierr);     /* Compute F(X)    */
+    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);       /* fnorm = || F || */
     if (!no_output) {
-      ierr = PetscPrintf(comm,"Iteration %d, function norm = %g\n",i+1,fnorm);CHKERRA(ierr);
+      ierr = PetscPrintf(comm,"Iteration %d, function norm = %g\n",i+1,fnorm);CHKERRQ(ierr);
     }
 
     /*
@@ -258,34 +258,34 @@ int main(int argc,char **argv)
      */
     if (fnorm <= ttol) {
       if (!no_output) {
-         ierr = PetscPrintf(comm,"Converged due to function norm %g < %g (relative tolerance)\n",fnorm,ttol);CHKERRA(ierr);
+         ierr = PetscPrintf(comm,"Converged due to function norm %g < %g (relative tolerance)\n",fnorm,ttol);CHKERRQ(ierr);
       }
       break;
     }
     if (ynorm < xtol*(xnorm)) {
       if (!no_output) {
-         ierr = PetscPrintf(comm,"Converged due to small update length: %g < %g * %g\n",ynorm,xtol,xnorm);CHKERRA(ierr);
+         ierr = PetscPrintf(comm,"Converged due to small update length: %g < %g * %g\n",ynorm,xtol,xnorm);CHKERRQ(ierr);
       }
       break;
     }
     if (i > max_functions) {
       if (!no_output) {
-        ierr = PetscPrintf(comm,"Exceeded maximum number of function evaluations: %d > %d\n",i,max_functions);CHKERRA(ierr);
+        ierr = PetscPrintf(comm,"Exceeded maximum number of function evaluations: %d > %d\n",i,max_functions);CHKERRQ(ierr);
       }
       break;
     }  
   }
-  ierr = PetscPrintf(comm,"Number of Newton iterations = %d\n",i+1);CHKERRA(ierr);
+  ierr = PetscPrintf(comm,"Number of Newton iterations = %d\n",i+1);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatDestroy(J);CHKERRA(ierr);           ierr = VecDestroy(Y);CHKERRA(ierr);
-  ierr = VecDestroy(user.localX);CHKERRA(ierr); ierr = VecDestroy(X);CHKERRA(ierr);
-  ierr = VecDestroy(user.localF);CHKERRA(ierr); ierr = VecDestroy(F);CHKERRA(ierr);      
-  ierr = SLESDestroy(sles);CHKERRA(ierr);  ierr = DADestroy(user.da);CHKERRA(ierr);
+  ierr = MatDestroy(J);CHKERRQ(ierr);           ierr = VecDestroy(Y);CHKERRQ(ierr);
+  ierr = VecDestroy(user.localX);CHKERRQ(ierr); ierr = VecDestroy(X);CHKERRQ(ierr);
+  ierr = VecDestroy(user.localF);CHKERRQ(ierr); ierr = VecDestroy(F);CHKERRQ(ierr);      
+  ierr = SLESDestroy(sles);CHKERRQ(ierr);  ierr = DADestroy(user.da);CHKERRQ(ierr);
   PetscFinalize();
 
   return 0;

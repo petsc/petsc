@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.25 2001/01/15 21:47:00 bsmith Exp balay $*/
+/*$Id: milu.c,v 1.26 2001/01/16 18:19:12 balay Exp bsmith $*/
 
 /*
     Contributed by  Victor Eijkhout <eijkhout@cs.utk.edu>, September 1998
@@ -105,10 +105,10 @@ static int PCSetup_mILU(PC pc)
     do {
       ierr = PCSetUp(base_pc);CHKERRQ(ierr);
       ierr = PCGetFactoredMatrix(base_pc,&lu);CHKERRQ(ierr);
-      ierr = MatGetDiagonal(lu,piv);CHKERRA(ierr);
-      ierr = VecGetArray(piv,&elt);CHKERRA(ierr);
+      ierr = MatGetDiagonal(lu,piv);CHKERRQ(ierr);
+      ierr = VecGetArray(piv,&elt);CHKERRQ(ierr);
       bd = 0; for (t=0; t<lsize; t++) if (PetscRealPart(elt[t]) < 0.0) bd++;
-      ierr = VecRestoreArray(piv,&elt);CHKERRA(ierr);
+      ierr = VecRestoreArray(piv,&elt);CHKERRQ(ierr);
       if (bd>0) {
 	/*printf("negative pivots %d\n",bd);*/
 	try1++;

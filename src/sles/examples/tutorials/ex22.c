@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.10 2000/10/13 22:59:50 balay Exp bsmith $*/
+/*$Id: ex22.c,v 1.11 2001/01/15 21:47:36 bsmith Exp bsmith $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -42,9 +42,9 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(0,"-stencil_width",&sw,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mz",&mz,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mz",&mz,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,nlevels,PETSC_NULL,&dmmg);CHKERRQ(ierr);
 

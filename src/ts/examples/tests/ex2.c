@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.28 2001/01/15 21:48:34 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.29 2001/01/16 18:20:54 balay Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -40,46 +40,46 @@ int main(int argc,char **argv)
   Mat           A = 0;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
  
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
     
   /* set initial conditions */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,3,&global);CHKERRA(ierr);
-  ierr = VecSetFromOptions(global);CHKERRA(ierr);
-  ierr = Initial(global,PETSC_NULL);CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,3,&global);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(global);CHKERRQ(ierr);
+  ierr = Initial(global,PETSC_NULL);CHKERRQ(ierr);
  
   /* make timestep context */
-  ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts);CHKERRA(ierr);
-  ierr = TSSetMonitor(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRA(ierr);
+  ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts);CHKERRQ(ierr);
+  ierr = TSSetMonitor(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   dt = 0.1;
 
   /*
     The user provides the RHS and Jacobian
   */
-  ierr = TSSetRHSFunction(ts,RHSFunction,NULL);CHKERRA(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,3,3,&A);CHKERRA(ierr);
-  ierr = MatSetFromOptions(A);CHKERRA(ierr);
-  ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,NULL);CHKERRA(ierr);
-  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL);CHKERRA(ierr);  
+  ierr = TSSetRHSFunction(ts,RHSFunction,NULL);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,3,3,&A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,NULL);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL);CHKERRQ(ierr);  
  
-  ierr = TSSetFromOptions(ts);CHKERRA(ierr);
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRA(ierr);
-  ierr = TSSetDuration(ts,time_steps,1);CHKERRA(ierr);
-  ierr = TSSetSolution(ts,global);CHKERRA(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,time_steps,1);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
 
 
-  ierr = TSSetUp(ts);CHKERRA(ierr);
-  ierr = TSStep(ts,&steps,&ftime);CHKERRA(ierr);
+  ierr = TSSetUp(ts);CHKERRQ(ierr);
+  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
 
 
   /* free the memories */
   
-  ierr = TSDestroy(ts);CHKERRA(ierr);
-  ierr = VecDestroy(global);CHKERRA(ierr);
-  ierr= MatDestroy(A);CHKERRA(ierr);
+  ierr = TSDestroy(ts);CHKERRQ(ierr);
+  ierr = VecDestroy(global);CHKERRQ(ierr);
+  ierr= MatDestroy(A);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;
@@ -135,19 +135,19 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&from);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&to);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,tmp_vec,to,&scatter);CHKERRQ(ierr);
-  ierr = VecScatterBegin(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRA(ierr);
-  ierr = VecScatterEnd(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRA(ierr);
+  ierr = VecScatterBegin(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
 
   ierr = VecGetArray(tmp_vec,&tmp);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
-                     time,PetscRealPart(tmp[0]),PetscRealPart(tmp[1]),PetscRealPart(tmp[2]));CHKERRA(ierr);
+                     time,PetscRealPart(tmp[0]),PetscRealPart(tmp[1]),PetscRealPart(tmp[2]));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
-                     time,PetscRealPart(tmp[0]-solx(time)),PetscRealPart(tmp[1]-soly(time)),PetscRealPart(tmp[2]-solz(time)));CHKERRA(ierr);
-  ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRA(ierr);
+                     time,PetscRealPart(tmp[0]-solx(time)),PetscRealPart(tmp[1]-soly(time)),PetscRealPart(tmp[2]-solz(time)));CHKERRQ(ierr);
+  ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
-  ierr = PetscFree(idx);CHKERRA(ierr);
+  ierr = PetscFree(idx);CHKERRQ(ierr);
   ierr = VecDestroy(tmp_vec);CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.13 2000/09/28 21:09:51 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.14 2001/01/15 21:44:21 bsmith Exp bsmith $*/
 
 static char help[] = "Prints loadable objects from dynamic library.\n\n";
 
@@ -26,32 +26,32 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRA(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-library",filename,256,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-library",filename,256,&flg);CHKERRQ(ierr);
   if (!flg) {
-    SETERRA(1,"Must indicate library name with -library");
+    SETERRQ(1,"Must indicate library name with -library");
   }
 
 #if defined(USE_DYNAMIC_LIBRARIES)
-  ierr = PetscDLLibraryOpen(PETSC_COMM_WORLD,filename,&handle);CHKERRA(ierr);
-  ierr = PetscDLLibraryGetInfo(handle,"Contents",&string);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Contents:%s\n",string);CHKERRA(ierr);
-  ierr = PetscDLLibraryGetInfo(handle,"Authors",&string);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Authors:%s\n",string);CHKERRA(ierr);
-  ierr = PetscDLLibraryGetInfo(handle,"Version",&string);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Version:%s\n",string);CHKERRA(ierr);
+  ierr = PetscDLLibraryOpen(PETSC_COMM_WORLD,filename,&handle);CHKERRQ(ierr);
+  ierr = PetscDLLibraryGetInfo(handle,"Contents",&string);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Contents:%s\n",string);CHKERRQ(ierr);
+  ierr = PetscDLLibraryGetInfo(handle,"Authors",&string);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Authors:%s\n",string);CHKERRQ(ierr);
+  ierr = PetscDLLibraryGetInfo(handle,"Version",&string);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Version:%s\n",string);CHKERRQ(ierr);
 #else
   /* just forces string and handle to be used so there are no compiler warnings */
   string = "No dynamic libraries used";
   handle = (void*)string;
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",string);CHKERRA(ierr);
-  ierr = PetscStrcmp(string,"Never will happen",&flg);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",string);CHKERRQ(ierr);
+  ierr = PetscStrcmp(string,"Never will happen",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscObjectDestroy((PetscObject)handle);CHKERRA(ierr);
+    ierr = PetscObjectDestroy((PetscObject)handle);CHKERRQ(ierr);
   }
 #endif
 
-  ierr = PetscFinalize();CHKERRA(ierr);
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.52 2000/10/03 19:36:12 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.53 2001/01/15 21:50:04 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -66,10 +66,6 @@
 #define PETSC_ERR_MAT_CH_ZRPVT    81   /* detected a zero pivot during Cholesky factorization */
 
 #if defined(PETSC_USE_DEBUG)
-#define SETERRA(n,s)       {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s);\
-                           MPI_Abort(PETSC_COMM_WORLD,_ierr);}
-#define SETERRA1(n,s,a1)   {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s,a1);\
-                           MPI_Abort(PETSC_COMM_WORLD,_ierr);}
 #define SETERRQ(n,s)              {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s);}
 #define SETERRQ1(n,s,a1)          {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s,a1);}
 #define SETERRQ2(n,s,a1,a2)       {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s,a1,a2);}
@@ -77,25 +73,16 @@
 #define SETERRQ4(n,s,a1,a2,a3,a4) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4);}
 
 #define CHKERRQ(n)     if (n) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,0,0);}
-#define CHKERRA(n)     if (n) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,0,0);\
-                           MPI_Abort(PETSC_COMM_WORLD,_ierr);}
-#define CHKPTRQ(p)     if (!p) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,PETSC_ERR_MEM,0,0);}
-#define CHKPTRA(p)     if (!p) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,PETSC_ERR_MEM,0,0);\
-                                MPI_Abort(PETSC_COMM_WORLD,_ierr);}
 
 #define CHKMEMQ {int __ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__);CHKERRQ(__ierr);}
-#define CHKMEMA {int __ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__);CHKERRA(__ierr);}
 
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
 extern  int __gierr;
 #define _   __gierr = 
-#define ___  CHKERRA(__gierr);
-#define ____ CHKERRQ(__gierr);
+#define ___  CHKERRQ(__gierr);
 #endif
 
 #else
-#define SETERRA(n,s) ;
-#define SETERRA1(n,s,b) ;
 #define SETERRQ(n,s) ;
 #define SETERRQ1(n,s,a1) ;
 #define SETERRQ2(n,s,a1,a2) ;
@@ -103,17 +90,12 @@ extern  int __gierr;
 #define SETERRQ4(n,s,a1,a2,a3,a4) ;
 
 #define CHKERRQ(n)     ;
-#define CHKERRA(n)     ;
-#define CHKPTRQ(p)     ;
-#define CHKPTRA(p)     ;
 
 #define CHKMEMQ        ;
-#define CHKMEMA        ;
 
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
 #define _   
 #define ___  
-#define ____
 #endif 
 
 #endif
@@ -127,7 +109,6 @@ EXTERN int PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,int,char*,v
 EXTERN int PetscError(int,char*,char*,char*,int,int,char*,...);
 EXTERN int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,int,char*,void*),void*);
 EXTERN int PetscPopErrorHandler(void);
-
 EXTERN int PetscDefaultSignalHandler(int,void*);
 EXTERN int PetscPushSignalHandler(int (*)(int,void *),void*);
 EXTERN int PetscPopSignalHandler(void);

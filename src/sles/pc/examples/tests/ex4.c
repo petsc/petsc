@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.39 2000/05/05 22:17:23 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.40 2001/01/15 21:47:06 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR and tests\n\
 the MatRelax() routines.\n\n";
@@ -18,44 +18,44 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Create vectors */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRA(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);
 
   /* Create and assemble matrix */
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,n,n,PETSC_NULL,&mat);CHKERRA(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,n,n,PETSC_NULL,&mat);CHKERRQ(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr = MatSetValues(mat,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
+    ierr = MatSetValues(mat,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
   i = n - 1; col[0] = n - 2; col[1] = n - 1;
-  ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES);CHKERRA(ierr);
+  ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
-  ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES);CHKERRA(ierr);
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Create PC context and set up data structures */
-  ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRA(ierr);
-  ierr = PCSetType(pc,PCSOR);CHKERRA(ierr);
-  ierr = PCSetFromOptions(pc);CHKERRA(ierr);
-  ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = PCSetVector(pc,u);CHKERRA(ierr);
-  ierr = PCSetUp(pc);CHKERRA(ierr);
+  ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCSOR);CHKERRQ(ierr);
+  ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
+  ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = PCSetVector(pc,u);CHKERRQ(ierr);
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
 
   value[0] = 1.0;
   for (i=0; i<n; i++) {
-    ierr = VecSet(&zero,u);CHKERRA(ierr);
-    ierr = VecSetValues(u,1,&i,value,INSERT_VALUES);CHKERRA(ierr);
-    ierr = PCApply(pc,u,b);CHKERRA(ierr);
-    ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+    ierr = VecSet(&zero,u);CHKERRQ(ierr);
+    ierr = VecSetValues(u,1,&i,value,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = PCApply(pc,u,b);CHKERRQ(ierr);
+    ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   /* Free data structures */
-  ierr = MatDestroy(mat);CHKERRA(ierr);
-  ierr = PCDestroy(pc);CHKERRA(ierr);
-  ierr = VecDestroy(u);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr); 
+  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = PCDestroy(pc);CHKERRQ(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr); 
   PetscFinalize();
   return 0;
 }

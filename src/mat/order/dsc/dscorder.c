@@ -1,4 +1,4 @@
-/*$Id: dscorder.c,v 1.3 2001/01/15 21:46:39 bsmith Exp balay $*/
+/*$Id: dscorder.c,v 1.4 2001/01/16 18:18:44 balay Exp bsmith $*/
 /* 
         Provides an interface to the DSCPACK-S ordering routines.
 */
@@ -47,8 +47,8 @@ int MatOrdering_DSC(Mat mat,MatOrderingType type,IS *row,IS *col)
   if (DSC_STATUS.cont_or_stop == DSC_STOP_TYPE) goto ERROR_HANDLE;
   /* fix the error handling? */
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,m,perm,row);CHKERRA(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,m,perm,col);CHKERRA(ierr);                                          
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,m,perm,row);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,m,perm,col);CHKERRQ(ierr);                                          
   
   /* set some global structures in case they are required by DSC-ICC */
   dsc_s_nz  = s_nz;

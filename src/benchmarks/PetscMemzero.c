@@ -1,4 +1,4 @@
-/*$Id: PetscMemzero.c,v 1.15 2000/11/28 17:32:38 bsmith Exp bsmith $*/
+/*$Id: PetscMemzero.c,v 1.16 2001/01/15 21:49:39 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -12,32 +12,32 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,0,0);
   /* To take care of paging effects */
-  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscGetTime(&x);CHKERRA(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscGetTime(&x);CHKERRQ(ierr);
 
-  ierr = PetscGetTime(&x);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRA(ierr);,
-  ierr = PetscGetTime(&y);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRA(ierr);
-  ierr = PetscGetTime(&z);CHKERRA(ierr);
+  ierr = PetscGetTime(&x);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*10000);CHKERRQ(ierr);,
+  ierr = PetscGetTime(&y);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRQ(ierr);
+  ierr = PetscGetTime(&z);CHKERRQ(ierr);
 
   fprintf(stdout,"%s : \n","PetscMemzero");
   fprintf(stdout,"    %-11s : %e sec\n","Latency",(z-y)/10.0);

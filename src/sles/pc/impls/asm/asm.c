@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.124 2001/01/15 21:46:57 bsmith Exp balay $*/
+/*$Id: asm.c,v 1.125 2001/01/16 18:19:09 balay Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -888,13 +888,13 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
   loc_outter = 0;
   for (i=0; i<N; i++) {
     height = n/N + ((n % N) > i); /* height of subdomain */
-    if (height < 2) SETERRA(1,"Too many N subdomains for mesh dimension n");
+    if (height < 2) SETERRQ(1,"Too many N subdomains for mesh dimension n");
     yleft  = ystart - overlap; if (yleft < 0) yleft = 0;
     yright = ystart + height + overlap; if (yright > n) yright = n;
     xstart = 0;
     for (j=0; j<M; j++) {
       width = m/M + ((m % M) > j); /* width of subdomain */
-      if (width < 2) SETERRA(1,"Too many M subdomains for mesh dimension m");
+      if (width < 2) SETERRQ(1,"Too many M subdomains for mesh dimension m");
       xleft  = xstart - overlap; if (xleft < 0) xleft = 0;
       xright = xstart + width + overlap; if (xright > m) xright = m;
       nidx   = (xright - xleft)*(yright - yleft);

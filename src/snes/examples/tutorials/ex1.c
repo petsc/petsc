@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.20 2000/10/24 20:27:14 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.21 2001/01/15 21:48:06 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 
@@ -41,14 +41,14 @@ int main(int argc,char **argv)
   PetscTruth flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix and vector data structures; set corresponding routines
@@ -57,29 +57,29 @@ int main(int argc,char **argv)
   /*
      Create vectors for solution and nonlinear function
   */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,2,&x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,2,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
   /*
      Create Jacobian matrix data structure
   */
-  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,2,2,&J);CHKERRA(ierr);
-  ierr = MatSetFromOptions(J);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,2,2,&J);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(J);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-hard",&flg);CHKERRQ(ierr);
   if (!flg) {
     /* 
      Set function evaluation routine and vector.
     */
-    ierr = SNESSetFunction(snes,r,FormFunction1,PETSC_NULL);CHKERRA(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction1,PETSC_NULL);CHKERRQ(ierr);
 
     /* 
      Set Jacobian matrix data structure and Jacobian evaluation routine
     */
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,PETSC_NULL);CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,PETSC_NULL);CHKERRQ(ierr);
   } else {
-    ierr = SNESSetFunction(snes,r,FormFunction2,PETSC_NULL);CHKERRA(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,PETSC_NULL);CHKERRA(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction2,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,PETSC_NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -91,11 +91,11 @@ int main(int argc,char **argv)
      SLES, KSP, and PC contexts from the SNES context, we can then
      directly call any SLES, KSP, and PC routines to set various options.
   */
-  ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
-  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-  ierr = PCSetType(pc,PCNONE);CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,20);CHKERRA(ierr);
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,20);CHKERRQ(ierr);
 
   /* 
      Set SNES/SLES/KSP/PC runtime options, e.g.,
@@ -104,7 +104,7 @@ int main(int argc,char **argv)
      SNESSetFromOptions() is called _after_ any other customization
      routines.
   */
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -123,7 +123,7 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
 
-  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr);
   if (flg) {
     Vec f;
     ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -131,15 +131,15 @@ int main(int argc,char **argv)
     ierr = VecView(r,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n",its);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n",its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecDestroy(x);CHKERRA(ierr); ierr = VecDestroy(r);CHKERRA(ierr);
-  ierr = MatDestroy(J);CHKERRA(ierr); ierr = SNESDestroy(snes);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);
+  ierr = MatDestroy(J);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

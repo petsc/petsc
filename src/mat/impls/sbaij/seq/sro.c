@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.21 2001/01/15 21:46:03 bsmith Exp balay $*/
+/*$Id: sro.c,v 1.22 2001/01/16 18:18:03 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -52,8 +52,8 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   for (i=0; i<mbs; i++) {
     if (rip[i] - riip[i] != 0) SETERRQ(1,"Non-symm. permutation, use symm. permutation or general matrix format");     
   }
-  ierr = ISRestoreIndices(iperm,&riip);CHKERRA(ierr);
-  ierr = ISDestroy(iperm);CHKERRA(ierr);
+  ierr = ISRestoreIndices(iperm,&riip);CHKERRQ(ierr);
+  ierr = ISDestroy(iperm);CHKERRQ(ierr);
   
   if (!a->inew){ 
     len  = (mbs+1 + 2*(a->i[mbs]))*sizeof(int);
@@ -131,7 +131,7 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
       /* ak = aa[k]; aa[k] = aa[j]; aa[j] = ak; */
     }
   }
-  ierr= ISRestoreIndices(perm,&rip);CHKERRA(ierr);
+  ierr= ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
 
   a->inew = ai;
   a->jnew = aj;
@@ -147,8 +147,8 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
 
-  ierr = PetscFree(nzr);CHKERRA(ierr); 
-  ierr = PetscFree(r);CHKERRA(ierr); 
+  ierr = PetscFree(nzr);CHKERRQ(ierr); 
+  ierr = PetscFree(r);CHKERRQ(ierr); 
   
   PetscFunctionReturn(0);
 }

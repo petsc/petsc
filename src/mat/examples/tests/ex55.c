@@ -1,4 +1,4 @@
-/*$Id: ex55.c,v 1.13 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex55.c,v 1.14 2001/01/15 21:46:09 bsmith Exp bsmith $*/
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
 
@@ -17,42 +17,42 @@ int main(int argc,char **args)
   PetscViewer  fd;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) ntypes = 5;
 
   /* 
      Open binary file.  Note that we use PETSC_BINARY_RDONLY to indicate
      reading from this file.
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRQ(ierr);
 
   /*
      Load the matrix and vector; then destroy the viewer.
   */
-  ierr = MatLoad(fd,MATMPIAIJ,&C);CHKERRA(ierr);
-  ierr = VecLoad(fd,&v);CHKERRA(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
+  ierr = MatLoad(fd,MATMPIAIJ,&C);CHKERRQ(ierr);
+  ierr = VecLoad(fd,&v);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   
   for (i=0; i<ntypes; i++) {
-    ierr = MatConvert(C,type[i],&A);CHKERRA(ierr);
+    ierr = MatConvert(C,type[i],&A);CHKERRQ(ierr);
     for (j=0; j<ntypes; j++) {
-      ierr = MatConvert(A,type[i],&B);CHKERRA(ierr);
-      ierr = MatDestroy(B);CHKERRA(ierr);
+      ierr = MatConvert(A,type[i],&B);CHKERRQ(ierr);
+      ierr = MatDestroy(B);CHKERRQ(ierr);
     }
-    ierr = MatDestroy(A);CHKERRA(ierr);
+    ierr = MatDestroy(A);CHKERRQ(ierr);
   }
 
   if (size == 1) {
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testmat",PETSC_BINARY_CREATE,&fd);CHKERRA(ierr);
-    ierr = MatView(C,fd);CHKERRA(ierr);
-    ierr = VecView(v,fd);CHKERRA(ierr);
-    ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testmat",PETSC_BINARY_CREATE,&fd);CHKERRQ(ierr);
+    ierr = MatView(C,fd);CHKERRQ(ierr);
+    ierr = VecView(v,fd);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
   }
 
-  ierr = MatDestroy(C);CHKERRA(ierr);
-  ierr = VecDestroy(v);CHKERRA(ierr);
+  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = VecDestroy(v);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

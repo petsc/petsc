@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.12 2000/09/28 21:10:28 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.13 2001/01/15 21:45:13 bsmith Exp bsmith $*/
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
 uses block index sets\n\n";
@@ -20,17 +20,17 @@ int main(int argc,char **argv)
   VecScatter    ctx = 0,newctx;
 
   PetscInitialize(&argc,&argv,(char*)0,help); 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   if (size != 2) SETERRQ(1,"Must run with 2 processors");
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);
   n = bs*n;
 
   /* create two vectors */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,size*n,&x);CHKERRA(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,size*n,&x);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
 
   /* create two index sets */
   for (i=0; i<3; i++) {
@@ -39,46 +39,46 @@ int main(int argc,char **argv)
   }
 
   if (!rank) {
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix0,&isx);CHKERRA(ierr);
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy0,&isy);CHKERRA(ierr);
+    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix0,&isx);CHKERRQ(ierr);
+    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy0,&isy);CHKERRQ(ierr);
   } else {
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix1,&isx);CHKERRA(ierr);
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy1,&isy);CHKERRA(ierr);
+    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix1,&isx);CHKERRQ(ierr);
+    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy1,&isy);CHKERRQ(ierr);
   }
 
   /* fill local part of parallel vector */
   for (i=n*rank; i<n*(rank+1); i++) {
     value = (Scalar) i;
-    ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(x);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* fill local part of parallel vector */
   for (i=0; i<n; i++) {
     value = -(Scalar) (i + 100*rank);
-    ierr = VecSetValues(y,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
+    ierr = VecSetValues(y,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(y);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(y);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
 
 
-  ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRA(ierr);
-  ierr = VecScatterCopy(ctx,&newctx);CHKERRA(ierr);
-  ierr = VecScatterDestroy(ctx);CHKERRA(ierr);
+  ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterCopy(ctx,&newctx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
 
-  ierr = VecScatterBegin(y,x,INSERT_VALUES,SCATTER_REVERSE,newctx);CHKERRA(ierr);
-  ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_REVERSE,newctx);CHKERRA(ierr);
-  ierr = VecScatterDestroy(newctx);CHKERRA(ierr);
+  ierr = VecScatterBegin(y,x,INSERT_VALUES,SCATTER_REVERSE,newctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_REVERSE,newctx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(newctx);CHKERRQ(ierr);
 
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = ISDestroy(isx);CHKERRA(ierr);
-  ierr = ISDestroy(isy);CHKERRA(ierr);
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
+  ierr = ISDestroy(isx);CHKERRQ(ierr);
+  ierr = ISDestroy(isy);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(y);CHKERRQ(ierr);
 
   PetscFinalize(); 
   return 0;

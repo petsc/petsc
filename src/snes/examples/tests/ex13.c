@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.25 2000/10/24 20:27:11 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.26 2001/01/15 21:48:01 bsmith Exp bsmith $*/
 
 static char help[] =
 "This program is a replica of ex6.c except that it does 2 solves to avoid paging\n\
@@ -64,62 +64,62 @@ int main(int argc,char **argv)
     user.mx = 4; user.my = 4; user.param = 6.0;
     
     if (i!=0) {
-      ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-      ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-      ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+      ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
       if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-        SETERRA(1,"Lambda is out of range");
+        SETERRQ(1,"Lambda is out of range");
       }
     }
     N = user.mx*user.my;
 
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
     if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
       SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
     
     /* Set up distributed array */
     ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,
-                      PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
-    ierr = DACreateGlobalVector(user.da,&x);CHKERRA(ierr);
-    ierr = VecDuplicate(x,&r);CHKERRA(ierr);
-    ierr = DACreateLocalVector(user.da,&user.localX);CHKERRA(ierr);
-    ierr = VecDuplicate(user.localX,&user.localF);CHKERRA(ierr);
+                      PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+    ierr = DACreateGlobalVector(user.da,&x);CHKERRQ(ierr);
+    ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+    ierr = DACreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
+    ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 
     /* Create nonlinear solver and set function evaluation routine */
-    ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-    ierr = SNESSetType(snes,type);CHKERRA(ierr);
-    ierr = SNESSetFunction(snes,r,FormFunction1,&user);CHKERRA(ierr);
+    ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
+    ierr = SNESSetType(snes,type);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction1,&user);CHKERRQ(ierr);
 
     /* Set default Jacobian evaluation routine.  User can override with:
        -snes_mf : matrix-free Newton-Krylov method with no preconditioning
        (unless user explicitly sets preconditioner) 
        -snes_fd : default finite differencing approximation of Jacobian
        */
-    ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRQ(ierr);
     if (!matrix_free) {
-      ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&J);CHKERRA(ierr);
-      ierr = MatSetFromOptions(J);CHKERRA(ierr);
-      ierr = SNESSetJacobian(snes,J,J,FormJacobian1,&user);CHKERRA(ierr);
+      ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&J);CHKERRQ(ierr);
+      ierr = MatSetFromOptions(J);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,J,J,FormJacobian1,&user);CHKERRQ(ierr);
     }
 
     /* Set PetscOptions, then solve nonlinear system */
-    ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
-    ierr = FormInitialGuess1(&user,x);CHKERRA(ierr);
-    ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
+    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+    ierr = FormInitialGuess1(&user,x);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRQ(ierr);
 
   /* Free data structures */
     if (!matrix_free) {
-      ierr = MatDestroy(J);CHKERRA(ierr);
+      ierr = MatDestroy(J);CHKERRQ(ierr);
     }
-    ierr = VecDestroy(x);CHKERRA(ierr);
-    ierr = VecDestroy(r);CHKERRA(ierr);
-    ierr = VecDestroy(user.localX);CHKERRA(ierr);
-    ierr = VecDestroy(user.localF);CHKERRA(ierr);
-    ierr = SNESDestroy(snes);CHKERRA(ierr);
-    ierr = DADestroy(user.da);CHKERRA(ierr);
+    ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = VecDestroy(r);CHKERRQ(ierr);
+    ierr = VecDestroy(user.localX);CHKERRQ(ierr);
+    ierr = VecDestroy(user.localF);CHKERRQ(ierr);
+    ierr = SNESDestroy(snes);CHKERRQ(ierr);
+    ierr = DADestroy(user.da);CHKERRQ(ierr);
   }
   PetscFinalize();
 

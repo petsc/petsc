@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.35 2001/01/15 21:44:31 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.36 2001/01/16 18:16:37 balay Exp bsmith $*/
 /*
        Formatted test for ISGeneral routines.
 */
@@ -16,68 +16,68 @@ int main(int argc,char **argv)
   PetscTruth flg;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /*
      Test IS of size 0 
   */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,0,&n,&is);CHKERRA(ierr);
-  ierr = ISGetSize(is,&n);CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,0,&n,&is);CHKERRQ(ierr);
+  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
   if (n != 0) SETERRQ(1,0);
-  ierr = ISDestroy(is);CHKERRA(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
 
   /*
      Create large IS and test ISGetIndices()
   */
   n = 10000 + rank;
-  ierr = PetscMalloc(n*sizeof(int),&indices);CHKERRA(ierr);
+  ierr = PetscMalloc(n*sizeof(int),&indices);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     indices[i] = rank + i;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,&is);CHKERRA(ierr);
-  ierr = ISGetIndices(is,&ii);CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,&is);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&ii);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    if (ii[i] != indices[i]) SETERRA(1,0);
+    if (ii[i] != indices[i]) SETERRQ(1,0);
   }
-  ierr = ISRestoreIndices(is,&ii);CHKERRA(ierr);
+  ierr = ISRestoreIndices(is,&ii);CHKERRQ(ierr);
 
   /* 
      Check identity and permutation 
   */
-  ierr = ISPermutation(is,&flg);CHKERRA(ierr);
-  if (flg == PETSC_TRUE) SETERRA(1,0);
-  ierr = ISIdentity(is,&flg);CHKERRA(ierr);
-  if (flg != PETSC_TRUE) SETERRA(1,0);
-  ierr = ISSetPermutation(is);CHKERRA(ierr);
-  ierr = ISSetIdentity(is);CHKERRA(ierr);
-  ierr = ISPermutation(is,&flg);CHKERRA(ierr);
-  if (flg != PETSC_TRUE) SETERRA(1,0);
-  ierr = ISIdentity(is,&flg);CHKERRA(ierr);
-  if (flg != PETSC_TRUE) SETERRA(1,0);
+  ierr = ISPermutation(is,&flg);CHKERRQ(ierr);
+  if (flg == PETSC_TRUE) SETERRQ(1,0);
+  ierr = ISIdentity(is,&flg);CHKERRQ(ierr);
+  if (flg != PETSC_TRUE) SETERRQ(1,0);
+  ierr = ISSetPermutation(is);CHKERRQ(ierr);
+  ierr = ISSetIdentity(is);CHKERRQ(ierr);
+  ierr = ISPermutation(is,&flg);CHKERRQ(ierr);
+  if (flg != PETSC_TRUE) SETERRQ(1,0);
+  ierr = ISIdentity(is,&flg);CHKERRQ(ierr);
+  if (flg != PETSC_TRUE) SETERRQ(1,0);
 
   /*
      Check equality of index sets 
   */
-  ierr = ISEqual(is,is,&flg);CHKERRA(ierr);
-  if (flg != PETSC_TRUE) SETERRA(1,0);
+  ierr = ISEqual(is,is,&flg);CHKERRQ(ierr);
+  if (flg != PETSC_TRUE) SETERRQ(1,0);
 
   /*
      Sorting 
   */
-  ierr = ISSort(is);CHKERRA(ierr);
-  ierr = ISSorted(is,&flg);CHKERRA(ierr);
-  if (flg != PETSC_TRUE) SETERRA(1,0);
+  ierr = ISSort(is);CHKERRQ(ierr);
+  ierr = ISSorted(is,&flg);CHKERRQ(ierr);
+  if (flg != PETSC_TRUE) SETERRQ(1,0);
 
   /*
      Thinks it is a different type?
   */
-  ierr = ISStride(is,&flg);CHKERRA(ierr);
-  if (flg == PETSC_TRUE) SETERRA(1,0);
-  ierr = ISBlock(is,&flg);CHKERRA(ierr);
-  if (flg == PETSC_TRUE) SETERRA(1,0);
+  ierr = ISStride(is,&flg);CHKERRQ(ierr);
+  if (flg == PETSC_TRUE) SETERRQ(1,0);
+  ierr = ISBlock(is,&flg);CHKERRQ(ierr);
+  if (flg == PETSC_TRUE) SETERRQ(1,0);
 
-  ierr = ISDestroy(is);CHKERRA(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
 
   /*
      Inverting permutation
@@ -85,17 +85,17 @@ int main(int argc,char **argv)
   for (i=0; i<n; i++) {
     indices[i] = n - i - 1;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,&is);CHKERRA(ierr);
-  ierr = PetscFree(indices);CHKERRA(ierr);
-  ierr = ISSetPermutation(is);CHKERRA(ierr);
-  ierr = ISInvertPermutation(is,PETSC_DECIDE,&newis);CHKERRA(ierr);
-  ierr = ISGetIndices(newis,&ii);CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,&is);CHKERRQ(ierr);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
+  ierr = ISSetPermutation(is);CHKERRQ(ierr);
+  ierr = ISInvertPermutation(is,PETSC_DECIDE,&newis);CHKERRQ(ierr);
+  ierr = ISGetIndices(newis,&ii);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    if (ii[i] != n - i - 1) SETERRA(1,0);
+    if (ii[i] != n - i - 1) SETERRQ(1,0);
   }
-  ierr = ISRestoreIndices(newis,&ii);CHKERRA(ierr);
-  ierr = ISDestroy(newis);CHKERRA(ierr);
-  ierr = ISDestroy(is);CHKERRA(ierr);
+  ierr = ISRestoreIndices(newis,&ii);CHKERRQ(ierr);
+  ierr = ISDestroy(newis);CHKERRQ(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

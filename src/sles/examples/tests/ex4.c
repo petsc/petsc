@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.56 2001/01/15 21:47:31 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.57 2001/01/16 18:19:49 balay Exp bsmith $*/
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\
@@ -38,34 +38,34 @@ int main(int argc,char **args)
   IS          is;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */
 
   /* create stiffness matrix */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,PETSC_NULL,&C);CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,PETSC_NULL,&C);CHKERRQ(ierr);
 
   /* forms the element stiffness for the Laplacian */
-  ierr = FormElementStiffness(h*h,Ke);CHKERRA(ierr);
+  ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);
   for (i=0; i<M; i++) {
      /* location of lower left corner of element */
      x = h*(i % m); y = h*(i/m); 
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + (i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-     ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRA(ierr);
+     ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* create right hand side and solution */
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&u);CHKERRA(ierr); 
-  ierr = VecDuplicate(u,&b);CHKERRA(ierr);
-  ierr = VecDuplicate(b,&ustar);CHKERRA(ierr);
-  ierr = VecSet(&zero,u);CHKERRA(ierr);
-  ierr = VecSet(&zero,b);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&u);CHKERRQ(ierr); 
+  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
+  ierr = VecDuplicate(b,&ustar);CHKERRQ(ierr);
+  ierr = VecSet(&zero,u);CHKERRQ(ierr);
+  ierr = VecSet(&zero,b);CHKERRQ(ierr);
 
   for (i=0; i<M; i++) {
      /* location of lower left corner of element */
@@ -73,11 +73,11 @@ int main(int argc,char **args)
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + (i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-     ierr = FormElementRhs(x,y,h*h,r);CHKERRA(ierr);
-     ierr = VecSetValues(b,4,idx,r,ADD_VALUES);CHKERRA(ierr);
+     ierr = FormElementRhs(x,y,h*h,r);CHKERRQ(ierr);
+     ierr = VecSetValues(b,4,idx,r,ADD_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(b);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
   /* modify matrix and rhs for Dirichlet boundary conditions */
   ierr = PetscMalloc((4*m+1)*sizeof(int),&rows);CHKERRQ(ierr);
@@ -93,49 +93,49 @@ int main(int argc,char **args)
   for (i=2*m+1; i<m*(m+1); i+= m+1) {
     rows[count++] = i;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,4*m,rows,&is);CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,4*m,rows,&is);CHKERRQ(ierr);
   for (i=0; i<4*m; i++) {
      x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
      val = y;
-     ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRA(ierr);
-     ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRA(ierr);
+     ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
+     ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
   }    
-  ierr = PetscFree(rows);CHKERRA(ierr);
-  ierr = VecAssemblyBegin(u);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(u);CHKERRA(ierr);
-  ierr = VecAssemblyBegin(b);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRA(ierr);
+  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
-  ierr = MatZeroRows(C,is,&one);CHKERRA(ierr);
-  ierr = ISDestroy(is);CHKERRA(ierr);
+  ierr = MatZeroRows(C,is,&one);CHKERRQ(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
 
   /* solve linear system */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
   ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);
- CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
-  ierr = KSPSetInitialGuessNonzero(ksp);CHKERRA(ierr);
-  ierr = SLESSolve(sles,b,u,&its);CHKERRA(ierr);
+ CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,u,&its);CHKERRQ(ierr);
 
   /* check error */
   for (i=0; i<N; i++) {
      x = h*(i % (m+1)); y = h*(i/(m+1)); 
      val = y;
-     ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRA(ierr);
+     ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(ustar);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(ustar);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(ustar);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(ustar);CHKERRQ(ierr);
 
-  ierr = VecAXPY(&none,ustar,u);CHKERRA(ierr);
-  ierr = VecNorm(u,NORM_2,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %d\n",norm*h,its);CHKERRA(ierr);
+  ierr = VecAXPY(&none,ustar,u);CHKERRQ(ierr);
+  ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %d\n",norm*h,its);CHKERRQ(ierr);
 
-  ierr = SLESDestroy(sles);CHKERRA(ierr);
-  ierr = VecDestroy(ustar);CHKERRA(ierr);
-  ierr = VecDestroy(u);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr);
-  ierr = MatDestroy(C);CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = VecDestroy(ustar);CHKERRQ(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = MatDestroy(C);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

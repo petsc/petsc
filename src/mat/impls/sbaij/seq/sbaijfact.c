@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.53 2001/01/16 18:18:03 balay Exp bsmith $*/
+/*$Id: sbaijfact.c,v 1.54 2001/01/17 19:45:08 bsmith Exp bsmith $*/
 /*
     Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -2524,7 +2524,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat A,Mat *B)
         }
       }
     }
-    ierr = PetscFree(a2anew);CHKERRA(ierr); 
+    ierr = PetscFree(a2anew);CHKERRQ(ierr); 
   }
   
   /* for each row k */
@@ -2871,7 +2871,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
         }
       }
     }
-    ierr = PetscFree(a2anew);CHKERRA(ierr); 
+    ierr = PetscFree(a2anew);CHKERRQ(ierr); 
   }
 
   /* for each row k */
@@ -3148,7 +3148,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
         ak = aa[k]; aa[k] = aa[j]; aa[j] = ak;         
       }
     }
-    ierr = PetscFree(r);CHKERRA(ierr); 
+    ierr = PetscFree(r);CHKERRQ(ierr); 
   }
   
   /* initialization */
