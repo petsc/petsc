@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.29 1996/09/24 20:38:27 balay Exp curfman $";
+static char vcid[] = "$Id: signal.c,v 1.30 1996/09/28 17:30:39 curfman Exp balay $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -28,6 +28,8 @@ static char *SIGNAME[] = { "Unknown", "HUP",  "INT",  "QUIT", "ILL",
                            "TERM",    "URG",  "STOP", "TSTP", "CONT", 
                            "CHLD" }; 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSignalHandler"
 /*
     This is the signal handler called by the system. This calls 
   your signal handler.
@@ -49,6 +51,8 @@ static void PetscSignalHandler( int sig )
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscDefaultSignalHandler"
 /*@
    PetscDefaultSignalHandler - Default signal handler.
 
@@ -75,6 +79,8 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscPushSignalHandler"
 /*@C
    PetscPushSignalHandler - Catches the usual fatal errors and 
    calls a user-provided routine.
@@ -129,6 +135,8 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscPopSignalHandler"
 int PetscPopSignalHandler()
 {
   struct SH *tmp;

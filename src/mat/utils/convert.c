@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.52 1996/08/15 12:48:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.53 1996/09/14 03:08:53 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -8,6 +8,8 @@ static char vcid[] = "$Id: convert.c,v 1.52 1996/08/15 12:48:42 bsmith Exp bsmit
 /* This file contains a generic conversion routine and implementation specific
    versions for increased efficiency. */
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatConvert_Basic"
 /* 
   MatConvert_Basic - Converts from any input format to another format. For
   parallel formats, the new matrix distribution is determined by PETSc.
@@ -68,6 +70,8 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
   return 0;
 }
 /* -------------------------------------------------------------- */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatConvert_SeqAIJ"
 /* 
   MatConvert_SeqAIJ - Converts from MATSEQAIJ format to another format. For
   parallel formats, the new matrix distribution is determined by PETSc.
@@ -126,6 +130,8 @@ int MatConvert_SeqAIJ(Mat A, MatType newtype, Mat *B)
   return 0;
 }
 /* ------------------------------------------------------------------ */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatConvert_MPIAIJ"
 /* 
   MatConvert_MPIAIJ - Converts from MATMPIAIJ format to another
   parallel format.
@@ -152,6 +158,8 @@ int MatConvert_MPIAIJ(Mat A, MatType newtype, Mat *B)
 ---------------------------------------------------------*/
 }
 /* ------------------------------------------------------------------ */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatConvert_SeqBDiag"
 /* 
   MatConvert_SeqBDiag - Converts from MATSEQBDiag format to another format. For
   parallel formats, the new matrix distribution is determined by PETSc.

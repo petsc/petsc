@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dscatter.c,v 1.1 1996/09/04 21:35:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dscatter.c,v 1.2 1996/09/12 16:27:12 bsmith Exp balay $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -21,6 +21,8 @@ struct _DrawSP {
 
 #define CHUNCKSIZE 100
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSPCreate"
 /*@C
     DrawSPCreate - Creates a scatter plot data structure.
 
@@ -66,6 +68,8 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSPSetDimension"
 /*@
    DrawSPSetDimension - Change the number of sets of points  that are to be drawn.
 
@@ -89,6 +93,8 @@ int DrawSPSetDimension(DrawSP sp,int dim)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSPReset"
 /*@
    DrawSPReset - Clears line graph to allow for reuse with new data.
 
@@ -110,6 +116,8 @@ int DrawSPReset(DrawSP sp)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSPDestroy"
 /*@C
    DrawSPDestroy - Frees all space taken up by scatter plot data structure.
 
@@ -133,6 +141,8 @@ int DrawSPDestroy(DrawSP sp)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSPAddPoint"
 /*@
    DrawSPAddPoint - Adds another point to each of the scatter plots.
 
@@ -175,6 +185,8 @@ int DrawSPAddPoint(DrawSP sp,double *x,double *y)
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSPAddPoints"
 /*@C
    DrawSPAddPoints - Adds several points to each of the scatter plots.
 
@@ -228,6 +240,8 @@ int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSPDraw"
 /*@
    DrawSPDraw - Redraws a scatter plot.
 
@@ -259,6 +273,8 @@ int DrawSPDraw(DrawSP sp)
   return 0;
 } 
  
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSPSetLimits"
 /*@
    DrawSPSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
@@ -282,6 +298,8 @@ int DrawSPSetLimits( DrawSP sp,double x_min,double x_max,double y_min,
   return 0;
 }
  
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSPGetAxis"
 /*@C
    DrawSPGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
@@ -307,6 +325,8 @@ int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSPGetDraw"
 /*@C
     DrawSPGetDraw - Gets the draw context associated with a line graph.
 

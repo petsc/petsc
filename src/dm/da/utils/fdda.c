@@ -1,11 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdda.c,v 1.1 1996/10/11 21:07:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.2 1996/11/07 15:11:59 bsmith Exp balay $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
 #include "mat.h"    /*I      "mat.h"    I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DAGetColoring2dBox"
 /*@C
       DAGetColoring2dBox - Gets the coloring required for computing the Jacobian via
           finite differences on a function defined using the nine point stencil
@@ -208,6 +210,8 @@ int DAGetColoring2dBox(DA da,ISColoring *coloring,Mat *J)
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DAGetBilinearInterpolation2dBox"
 /*@C
       DAGetBilinearInterpolation2dBox - Gets the matrix representing bilinear
         interpolation from a DA grid to the next refinement.

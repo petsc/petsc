@@ -1,11 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.98 1996/09/28 16:06:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.99 1996/11/19 16:31:54 bsmith Exp balay $";
 #endif
 
 #include "sys.h"
 #include "mat.h"       /*I "mat.h"  I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetTypeFromOptions"
 /*@C
    MatGetTypeFromOptions - Determines from the options database what matrix
    format the user has specified.
@@ -141,6 +143,8 @@ int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatCreate"
 /*@C
    MatCreate - Creates a matrix where the type is determined
    from the options database. Generates a parallel MPI matrix if the
@@ -236,6 +240,8 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *A)
 }
 
 #include "src/mat/matimpl.h"
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetType"
 /*@C
    MatGetType - Gets the matrix type and name (as a string) from the matrix.
 

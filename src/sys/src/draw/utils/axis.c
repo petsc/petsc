@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.32 1996/09/04 22:48:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.33 1996/10/24 21:10:06 bsmith Exp balay $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -30,12 +30,16 @@ static char   *PetscADefLabel(double,double);
 static double PetscAGetNice(double,double,int );
 static int    PetscAGetBase(double,double,int,double*,int*);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscRint"
 static double PetscRint(double x )
 {
   if (x > 0) return floor( x + 0.5 );
   return floor( x - 0.5 );
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawAxisCreate"
 /*@C
    DrawAxisCreate - Generate the axis data structure.
 
@@ -72,6 +76,8 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawAxisDestroy"
 /*@C
       DrawAxisDestroy - Frees the space used by an axis structure.
 
@@ -86,6 +92,8 @@ int DrawAxisDestroy(DrawAxis ad)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawAxisSetColors"
 /*@
     DrawAxisSetColors -  Sets the colors to be used for the axis,       
                          tickmarks, and text.
@@ -103,6 +111,8 @@ int DrawAxisSetColors(DrawAxis ad,int ac,int tc,int cc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawAxisSetLabels"
 /*@C
     DrawAxisSetLabels -  Sets the x and y axis labels.
 
@@ -121,6 +131,8 @@ int DrawAxisSetLabels(DrawAxis ad,char* top,char *xlabel,char *ylabel)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawAxisSetLimits"
 /*@
     DrawAxisSetLimits -  Sets the limits (in user coords) of the axis
     
@@ -139,6 +151,8 @@ int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double yma
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawAxisDraw"
 /*@
     DrawAxisDraw - Draws an axis.
 
@@ -236,6 +250,8 @@ int DrawAxisDraw(DrawAxis ad)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscStripAllZeros"
 /*
     Removes all zeros but one from .0000 
 */
@@ -251,6 +267,8 @@ static int PetscStripAllZeros(char *buf)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscStripTrailingZeros"
 /*
     Removes trailing zeros
 */
@@ -272,6 +290,8 @@ static int PetscStripTrailingZeros(char *buf)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscStripInitialZero"
 /*
     Removes leading 0 from 0.22 or -0.22
 */
@@ -290,6 +310,8 @@ static int PetscStripInitialZero(char *buf)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscStripZeros"
 /*
      Removes the extraneous zeros in numbers like 1.10000e6
 */
@@ -307,6 +329,8 @@ static int PetscStripZeros(char *buf)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscStripZerosPlus"
 /*
       Removes the plus in something like 1.1e+2
 */
@@ -334,6 +358,8 @@ static int PetscStripZerosPlus(char *buf)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscADefLabel"
 /*
    val is the label value.  sep is the separation to the next (or previous)
    label; this is useful in determining how many significant figures to   
@@ -398,6 +424,8 @@ static char *PetscADefLabel(double val,double sep )
   return buf;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscADefTicks"
 /* Finds "nice" locations for the ticks */
 static int PetscADefTicks( double low, double high, int num, int *ntick,
                            double * tickloc,int  maxtick )
@@ -434,11 +462,15 @@ static int PetscADefTicks( double low, double high, int num, int *ntick,
 
 #define EPS 1.e-6
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscExp10"
 static double PetscExp10(double d )
 {
   return pow( 10.0, d );
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscMod"
 static double PetscMod(double x,double y )
 {
   int     i;
@@ -448,12 +480,16 @@ static double PetscMod(double x,double y )
   return x;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscCopysign"
 static double PetscCopysign(double a,double b )
 {
   if (b >= 0) return a;
   return -a;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscAGetNice"
 /*
     Given a value "in" and a "base", return a nice value.
     based on "sgn", extend up (+1) or down (-1)
@@ -468,6 +504,8 @@ static double PetscAGetNice(double in,double base,int sgn )
   return base * ( etmp - PetscMod( etmp, 1.0 ) );
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscAGetBase"
 static int PetscAGetBase(double vmin,double vmax,int num,double*Base,int*power)
 {
   double  base, ftemp;

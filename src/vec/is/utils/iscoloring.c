@@ -1,10 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: iscoloring.c,v 1.2 1996/11/07 15:07:28 bsmith Exp balay $";
+static char vcid[] = "$Id: iscoloring.c,v 1.3 1996/11/19 20:05:57 balay Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ISColoringDestroy"
 /*@
      ISColoringDestroy - Destroy's a coloring context.
 
@@ -36,6 +38,8 @@ int ISColoringDestroy(ISColoring iscoloring)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ISColoringView"
 /*@
      ISColoringView - View's a coloring context.
 
@@ -56,6 +60,8 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ISColoringCreate"
 /*@
     ISColoringCreate - From lists (provided by each processor) of
         colors for each node, generate a ISColoring
