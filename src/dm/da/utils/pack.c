@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.7 2000/06/19 20:33:10 bsmith Exp bsmith $*/
+/*$Id: pack.c,v 1.8 2000/06/20 15:17:54 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -30,7 +30,7 @@ struct _p_VecPack {
 #undef __FUNC__  
 #define __FUNC__ /*<a name="VecPackCreate"></a>*/"VecPackCreate"
 /*@C
-    VecPackCreate - Creates a vector packer, used to generate "composite
+    VecPackCreate - Creates a vector packer, used to generate "composite"
       vectors made up of several subvectors.
 
     Collective on MPI_Comm
@@ -44,7 +44,7 @@ struct _p_VecPack {
     Level: advanced
 
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackScatter(),
-         VecPackGather(), VecPackCreateGlobalVector()
+         VecPackGather(), VecPackCreateGlobalVector(), VecPackGetGlobalIndices()
 
 @*/
 int VecPackCreate(MPI_Comm comm,VecPack *packer)
@@ -78,7 +78,7 @@ int VecPackCreate(MPI_Comm comm,VecPack *packer)
     Level: advanced
 
 .seealso VecPackCreate(), VecPackAddArray(), VecPackAddDA(), VecPackScatter(),
-         VecPackGather(), VecPackCreateGlobalVector()
+         VecPackGather(), VecPackCreateGlobalVector(), VecPackGetGlobalIndices()
 
 @*/
 int VecPackDestroy(VecPack packer)
@@ -193,7 +193,7 @@ int VecPackGather_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
 -    ... - the individual sequential objects (arrays or vectors)
  
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate()
+         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices()
 
 @*/
 int VecPackScatter(VecPack packer,Vec gvec,...)
@@ -241,7 +241,7 @@ int VecPackScatter(VecPack packer,Vec gvec,...)
 -    ... - the individual sequential objects (arrays or vectors)
  
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackScatter(), VecPackCreate()
+         VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices()
 
 @*/
 int VecPackGather(VecPack packer,Vec gvec,...)
@@ -278,6 +278,20 @@ int VecPackGather(VecPack packer,Vec gvec,...)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="VecPackAddArray"></a>*/"VecPackAddArray"
+/*@C
+    VecPackAddArray - adds an "redundant" array to a VecPack. The array values will 
+       be stored in part of the array on processor 0.
+
+    Collective on VecPack
+
+    Input Parameter:
++    packer - the packer object
+-    n - the length of the array
+ 
+.seealso VecPackDestroy(), VecPackGather(), VecPackAddDA(), VecPackCreateGlobalVector(),
+         VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices()
+
+@*/
 int VecPackAddArray(VecPack packer,int n)
 {
   int                ierr;
@@ -309,6 +323,19 @@ int VecPackAddArray(VecPack packer,int n)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="VecPackAddDA"></a>*/"VecPackAddDA"
+/*@C
+    VecPackAddDA - adds a DA vector to a VecPack
+
+    Collective on VecPack
+
+    Input Parameter:
++    packer - the packer object
+-    da - the DA object
+ 
+.seealso VecPackDestroy(), VecPackGather(), VecPackAddDA(), VecPackCreateGlobalVector(),
+         VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices()
+
+@*/
 int VecPackAddDA(VecPack packer,DA da)
 {
   int                ierr,n;
@@ -360,7 +387,7 @@ int VecPackAddDA(VecPack packer,DA da)
     Notes: Once this has been created you cannot add additional arrays or vectors to be packed.
 
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackScatter(),
-         VecPackGather(), VecPackCreate()
+         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices()
 
 @*/
 int VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
