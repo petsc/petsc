@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.119 1996/08/08 18:36:24 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.120 1996/08/08 19:06:05 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -400,6 +400,9 @@ static double  EventsType[10][PLOG_USER_EVENT_HIGH][6];
  Input Parameters:
 .  stage - the stage from 0 to 9 inclusive
 .  sname - the name to associate with that stage
+
+  Note: the string information is not copied, so you should not change the
+        strings you pass in.
 
 .seealso: PLogStagePush(), PLogStagePop()
 @*/
