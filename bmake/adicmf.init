@@ -16,6 +16,7 @@
 	Vec            = "typedef int Vec;"
 	Mat            = "typedef int Mat;"
 	DA             = "typedef int DA;"
+	DMMG           = "typedef int DMMG;"
 	PC             = "typedef int PC;"
 	SLES           = "typedef int SLES;"
 	SNES           = "typedef int SNES;"
@@ -69,6 +70,7 @@
         Vec
         ISColoring
         DA
+        DMMG
         PC
         SLES
         SNES
