@@ -1,7 +1,7 @@
-/*$Id: zsles.c,v 1.24 2000/04/30 22:11:48 bsmith Exp bsmith $*/
+/*$Id: zsles.c,v 1.25 2000/05/04 03:15:23 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
-#include "sles.h"
+#include "petscsles.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define slesdestroy_             SLESDESTROY

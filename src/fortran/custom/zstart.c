@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.71 2000/03/23 23:03:06 balay Exp bsmith $*/
+/*$Id: zstart.c,v 1.72 2000/05/04 16:27:10 bsmith Exp balay $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -14,7 +14,7 @@
 #define T3EMPI_FORTRAN
 
 #include "src/fortran/custom/zpetsc.h" 
-#include "sys.h"
+#include "petscsys.h"
 
 extern PetscTruth PetscBeganMPI;
 

@@ -1,8 +1,8 @@
-/*$Id: zda.c,v 1.35 1999/11/24 21:55:52 bsmith Exp bsmith $*/
+/*$Id: zda.c,v 1.36 2000/01/11 21:03:48 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
-#include "mat.h"
-#include "da.h"
+#include "petscmat.h"
+#include "petscda.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dagetinterpolation_          DAGETINTERPOLATION

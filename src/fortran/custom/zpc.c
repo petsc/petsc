@@ -1,8 +1,8 @@
-/*$Id: zpc.c,v 1.36 2000/04/30 22:19:54 bsmith Exp bsmith $*/
+/*$Id: zpc.c,v 1.37 2000/05/04 16:27:10 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
-#include "sles.h"
-#include "mg.h"
+#include "petscsles.h"
+#include "petscmg.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define pcregisterdestroy_         PCREGISTERDESTROY

@@ -1,7 +1,7 @@
-/*$Id: zsnes.c,v 1.46 2000/04/30 22:19:19 bsmith Exp bsmith $*/
+/*$Id: zsnes.c,v 1.47 2000/05/04 16:27:10 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
-#include "snes.h"
+#include "petscsnes.h"
 
 #ifdef PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE
 #define snesconverged_eq_tr_         snesconverged_eq_tr__

@@ -1,7 +1,7 @@
-/*$Id: zsys.c,v 1.78 2000/01/22 20:35:03 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.79 2000/05/04 16:27:10 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
-#include "sys.h"
+#include "petscsys.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define chkmemfortran_             CHKMEMFORTRAN

@@ -1,7 +1,7 @@
-/*$Id: zmat.c,v 1.77 2000/01/31 21:23:36 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.78 2000/05/04 16:27:10 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
-#include "mat.h"
+#include "petscmat.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define matsetvalue_                     MATSETVALUE
@@ -446,7 +446,7 @@ void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,int (*f)(Mat*
   }
 }
 
-#include "ts.h"
+#include "petscts.h"
 /*
         MatFDColoringSetFunction sticks the Fortran function into the fortran_func_pointers
     this function is then accessed by ourmatfdcoloringfunction()

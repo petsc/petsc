@@ -1,7 +1,7 @@
-/*$Id: zksp.c,v 1.44 2000/03/23 22:30:17 balay Exp bsmith $*/
+/*$Id: zksp.c,v 1.45 2000/05/04 16:27:10 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
-#include "ksp.h"
+#include "petscksp.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define kspfgmressetmodifypc_      KSPFGMRESSETMODIFYPC

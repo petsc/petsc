@@ -1,7 +1,7 @@
-/*$Id: zao.c,v 1.15 2000/04/30 22:25:45 bsmith Exp bsmith $*/
+/*$Id: zao.c,v 1.16 2000/05/04 16:27:10 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
-#include "ao.h"
+#include "petscao.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define aocreatebasic_   AOCREATEBASIC

@@ -1,7 +1,7 @@
-/*$Id: zvec.c,v 1.57 1999/11/05 14:48:14 bsmith Exp bsmith $*/
+/*$Id: zvec.c,v 1.58 2000/01/11 21:03:48 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
-#include "vec.h"
+#include "petscvec.h"
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define vecsetfromoptions_        VECSETFROMOPTIONS
 #define vecsettype_               VECSETTYPE

@@ -1,7 +1,7 @@
-/*$Id: zf90mat.c,v 1.3 1999/05/12 03:34:46 bsmith Exp bsmith $*/
+/*$Id: zf90mat.c,v 1.4 1999/10/24 14:04:23 bsmith Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
-#include "mat.h"
+#include "petscmat.h"
 
 #if !defined (PETSC_HAVE_NOF90)
 

@@ -1,7 +1,7 @@
-/*$Id: zplog.c,v 1.20 1999/10/24 14:04:19 bsmith Exp bsmith $*/
+/*$Id: zplog.c,v 1.21 2000/01/11 21:03:48 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
-#include "sys.h"
+#include "petscsys.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define plogeventbegin_       PLOGEVENTBEGIN

@@ -1,7 +1,7 @@
-/*$Id: zf90da.c,v 1.4 1999/10/24 14:04:23 bsmith Exp bsmith $*/
+/*$Id: zf90da.c,v 1.5 2000/01/11 21:03:54 bsmith Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
-#include "da.h"
+#include "petscda.h"
 
 #if !defined (PETSC_HAVE_NOF90)
 

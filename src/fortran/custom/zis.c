@@ -1,7 +1,7 @@
-/*$Id: zis.c,v 1.31 2000/01/11 21:03:48 bsmith Exp bsmith $*/
+/*$Id: zis.c,v 1.32 2000/02/02 21:21:19 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
-#include "is.h"
+#include "petscis.h"
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define ispartitioningcount_   ISPARTITIONINGCOUNT
 #define isdestroy_             ISDESTROY
