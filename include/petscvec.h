@@ -109,10 +109,15 @@ extern PetscEvent    VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier;
 EXTERN PetscErrorCode VecInitializePackage(char *);
 
 EXTERN PetscErrorCode VecCreate(MPI_Comm,Vec *);
+PetscPolymorphicFunction(VecCreate,(Vec *x),(PETSC_COMM_SELF,x))
 EXTERN PetscErrorCode VecCreateSeq(MPI_Comm,PetscInt,Vec*);
+PetscPolymorphicFunction(VecCreateSeq,(PetscInt n,Vec *x),(PETSC_COMM_SELF,n,x))
 EXTERN PetscErrorCode VecCreateMPI(MPI_Comm,PetscInt,PetscInt,Vec*);
+PetscPolymorphicFunction(VecCreateMPI,(PetscInt n,PetscInt N,Vec *x),(PETSC_COMM_WORLD,n,N,x))
 EXTERN PetscErrorCode VecCreateSeqWithArray(MPI_Comm,PetscInt,const PetscScalar[],Vec*);
+PetscPolymorphicFunction(VecCreateSeqWithArray,(PetscInt n,PetscScalar s[],Vec *x),(PETSC_COMM_SELF,n,s,x))
 EXTERN PetscErrorCode VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar[],Vec*);
+PetscPolymorphicFunction(VecCreateMPIWithArray,(PetscInt n,PetscInt N,PetscScalar s[],Vec *x),(PETSC_COMM_WORLD,n,N,s,x))
 EXTERN PetscErrorCode VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
 EXTERN PetscErrorCode VecSetFromOptions(Vec);
 EXTERN PetscErrorCode VecPrintHelp(Vec);
@@ -193,11 +198,14 @@ M*/
 M*/
 
 EXTERN PetscErrorCode VecNorm(Vec,NormType,PetscReal *);
+PetscPolymorphicFunction(VecNorm,(Vec x,PetscReal *r),(x,NORM_2,r))
 EXTERN PetscErrorCode VecNormComposedDataID(NormType,PetscInt*);
 EXTERN PetscErrorCode VecNormalize(Vec,PetscReal *);
 EXTERN PetscErrorCode VecSum(Vec,PetscScalar*);
 EXTERN PetscErrorCode VecMax(Vec,PetscInt*,PetscReal *);
+PetscPolymorphicFunction(VecMax,(Vec x,PetscReal *r),(x,PETSC_NULL,r))
 EXTERN PetscErrorCode VecMin(Vec,PetscInt*,PetscReal *);
+PetscPolymorphicFunction(VecMin,(Vec x,PetscReal *r),(x,PETSC_NULL,r))
 EXTERN PetscErrorCode VecScale(const PetscScalar *a,Vec v);
 EXTERN PetscErrorCode VecCopy(Vec,Vec);        
 EXTERN PetscErrorCode VecSetRandom(PetscRandom,Vec);
