@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.39 1997/12/01 01:51:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.40 1997/12/03 14:13:44 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -9,6 +9,7 @@ static char vcid[] = "$Id: zmat.c,v 1.39 1997/12/01 01:51:25 bsmith Exp bsmith $
 #include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
+#define matsetvalue_                     MATSETVALUE
 #define matgetrow_                       MATGETROW
 #define matrestorerow_                   MATRESTOREROW
 #define matgetreorderingtypefromoptions_ MATGETREORDERINGTYPEFROMOPTIONS
@@ -41,6 +42,7 @@ static char vcid[] = "$Id: zmat.c,v 1.39 1997/12/01 01:51:25 bsmith Exp bsmith $
 #define matfdcoloringdestroy_            MATFDCOLORINGDESTROY
 #define matfdcoloringsetfunction_        MATFDCOLORINGSETFUNCTION
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define matsetvalue_                     matsetvalue
 #define matgetrow_                       matgetrow
 #define matrestorerow_                   matrestorerow
 #define matview_                         matview
@@ -76,6 +78,12 @@ static char vcid[] = "$Id: zmat.c,v 1.39 1997/12/01 01:51:25 bsmith Exp bsmith $
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void matsetvalue_(Vec v,int *i,int *j,Scalar *va,InsertMode *mode)
+{
+  /* cannot use MatSetValue() here since that uses CHKERRQ() which has a return in it */
+  MatSetValues((Vec)PetscToPointer( *(int*)(v) ),1,i,1,j,va,*mode);
+}
 
 void matfdcoloringcreate_(Mat mat,ISColoring iscoloring,MatFDColoring *color,int *__ierr)
 {
@@ -187,8 +195,8 @@ void matgetarray_(Mat mat,Scalar *fa,int *ia, int *__ierr)
   Scalar *mm;
 
 #if defined(PARCH_IRIX64)
-  PetscErrorPrintf("PETSC ERROR: Cannot use MatGetArray() from Fortran under IRIX\n");
-  PetscErrorPrintf("PETSC ERROR: Refer to troubleshooting.html for more details\n");
+  (*PetscErrorPrintf)("PETSC ERROR: Cannot use MatGetArray() from Fortran under IRIX\n");
+  (*PetscErrorPrintf)("PETSC ERROR: Refer to troubleshooting.html for more details\n");
   MPI_Abort(PETSC_COMM_WORLD,1);
 #else
   *__ierr = MatGetArray((Mat)PetscToPointer( *(int*)(mat) ),&mm);

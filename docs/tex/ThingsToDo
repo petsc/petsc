@@ -6,7 +6,11 @@ Additional Capabilities that PETSc Needs:
 
 -----------------------------------------------------------------------
 Meta priorities: 
-  - Add fortran interface for VecSetValue()/MatSetValue()
+
+  - add MAT_ZERO_ROWS_LEAVE_LOCATIONS option to keep the locations but zeroed
+    for AIJ and BAIJ matrices.
+
+  - Add fortran interface for MatSetValue()
 
   - Add MatGetOwnershipRangeColumn() for AIJ and BAIJ
 
