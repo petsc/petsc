@@ -371,7 +371,13 @@ class BKEditFiles (Action):
 class BKCloseFiles (Action):
   def __init__(self, sources = None, flags = '', fileFilter = lambda file: 1):
     if not sources: sources = TreeFileGroup()
-    Action.__init__(self, 'bk', sources, flags, fileFilter, 1)
+    Action.__init__(self, 'bk', sources, flags, self.completeFilter, 1)
+    self.subFilter = fileFilter
+
+  def completeFilter(self, file):
+    if (file[-1] == '~'): return 0
+    if (file[-1] == '#'): return 0
+    return self.subFilter(file)
 
   def execute(self):
     oldFlags   = self.flags
