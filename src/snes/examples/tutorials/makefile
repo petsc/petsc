@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.92 2001/03/13 04:11:40 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.93 2001/03/22 20:32:01 bsmith Exp bsmith $ 
 
 # This directory contains SNES example programs for solving systems of
 # nonlinear equations.  Examples of unconstrained minimization problems
@@ -13,7 +13,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
-EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex6.c ex5s.c \
+EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                    ex23.c ex24.c
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F 

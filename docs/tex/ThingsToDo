@@ -7,6 +7,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Improve DAGetColoring for star stencil, paul says (i + 3*j % 5) in 2d
+
   Man pages for PetscMalloc()/PetscFree()?
 
   Redue src/snes/examples/tutorials/ex5s.c and .F with OpenMP and merge with ex5.c

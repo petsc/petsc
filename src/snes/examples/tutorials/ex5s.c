@@ -1,6 +1,6 @@
-/*$Id: ex5s.c,v 1.22 2001/01/17 22:26:26 bsmith Exp balay $*/
+/*$Id: ex5s.c,v 1.23 2001/01/23 20:57:12 balay Exp bsmith $*/
 
-static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
+static char help[] = "2d Bratur problem in shared memory parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
 domain, uses SHARED MEMORY to evaluate the user function.\n\
 The command line options include:\n\
@@ -176,8 +176,7 @@ int main(int argc,char **argv)
   */ 
 
   /*
-     Color the grid; since this is a five point stencil we can get away with 
-     9 colors.
+
   */
   ierr = VecGetOwnershipRange(r,&rstart,&rend);CHKERRQ(ierr);
   ierr = PetscMalloc((rend-rstart)*sizeof(int),&colors);CHKERRQ(ierr);
