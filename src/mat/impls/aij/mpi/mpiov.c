@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.9 1996/01/31 20:22:46 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.10 1996/02/01 00:24:06 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -272,7 +272,7 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
       for ( j = 1; j <= rbuf[i][0] ; j++ ) { total_sz += rbuf[i][2*j]; }
     }
     max1 = ct*(a->nz +b->nz)/c->m;
-    mem_estimate =  3* (total_sz > max1?total_sz:max1)
+    mem_estimate =1+  3* (total_sz > max1?total_sz:max1)
 ;
     xdata    = (int **)PetscMalloc((nmsg+1)*sizeof(int *)); CHKPTRQ(xdata);
     xdata[0] = (int *)PetscMalloc(mem_estimate *sizeof(int)); CHKPTRQ(xdata[0]);
