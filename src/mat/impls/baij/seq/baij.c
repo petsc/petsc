@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.229 2001/06/21 23:47:10 buschelm Exp buschelm $*/
+/*$Id: baij.c,v 1.230 2001/06/22 19:05:58 buschelm Exp buschelm $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -218,7 +218,7 @@ int MatSetOption_SeqBAIJ(Mat A,MatOption op)
       int ierr;
       ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
       if (sse_enabled) {
-        singleprecisionsolves = PETSC_TRUE;
+        a->singleprecisionsolves = PETSC_TRUE;
       } else {
         PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES ignored\n");
       }
@@ -1219,12 +1219,14 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
     break; 
   case 4:
 #if defined(PETSC_HAVE_SSE)
-    PetscTruth sse_enabled;
-    ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
-    if (sse_enabled) {
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
-    } else {
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+    {
+      PetscTruth sse_enabled;
+      ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
+      if (sse_enabled) {
+        inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
+      } else {
+        inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+      }
     }
 #else
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
