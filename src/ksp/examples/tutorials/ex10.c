@@ -40,16 +40,16 @@ T*/
 int main(int argc,char **args)
 {
   KSP           ksp;             /* linear solver context */
-  Mat            A;                /* matrix */
+  Mat            A,B;            /* matrix */
   Vec            x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
-  char           file[2][128];     /* input file name */
-  PetscTruth     table,flg,trans=PETSC_FALSE,partition=PETSC_FALSE;
+  char           file[3][128];     /* input file name */
+  PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,partition=PETSC_FALSE;
   int            ierr,its,ierrp;
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   PetscScalar    zero = 0.0,none = -1.0;
-  PetscTruth     preload = PETSC_TRUE,diagonalscale,hasNullSpace,isSymmetric,cknorm;
+  PetscTruth     preload=PETSC_TRUE,diagonalscale,hasNullSpace,isSymmetric,cknorm=PETSC_FALSE;
   int            num_numfac;
   PetscScalar    sigma;
 
@@ -66,6 +66,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file[0],127,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscStrcpy(file[1],file[0]);CHKERRQ(ierr);
+    preload = PETSC_FALSE;
   } else {
     ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(1,"Must indicate binary file with the -f0 or -f option");
@@ -114,11 +115,22 @@ int main(int argc,char **args)
       ierr = VecSetFromOptions(b);CHKERRQ(ierr);
       ierr = VecSet(&one,b);CHKERRQ(ierr);
     }
-    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
 
     /* Add a shift to A */
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-mat_sigma",&sigma,&flg);CHKERRQ(ierr);
-    if(flg) {ierr = MatShift(&sigma,A);CHKERRQ(ierr); }
+    if(flg) {
+      ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[2],127,&flgB);CHKERRQ(ierr);
+      if (flgB){
+        /* load B to get A = A + sigma*B */
+        ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
+        ierr  = MatLoad(fd,MATAIJ,&B);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+        ierr = MatAXPY(&sigma,B,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- sigma*B + A */  
+      } else {
+        ierr = MatShift(&sigma,A);CHKERRQ(ierr); 
+      }
+    }
 
     /* Check whether A is symmetric */
     ierr = PetscOptionsHasName(PETSC_NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
@@ -392,6 +404,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(A);CHKERRQ(ierr); ierr = VecDestroy(b);CHKERRQ(ierr);
     ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
     ierr = KSPDestroy(ksp);CHKERRQ(ierr); 
+    if (flgB) { ierr = MatDestroy(B);CHKERRQ(ierr); }
   PreLoadEnd();
   /* -----------------------------------------------------------
                       End of linear solver loop
