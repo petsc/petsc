@@ -125,14 +125,25 @@ runex6:
 runex6_2:
 	-@$(MPIRUN) -np 4 ex6 -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor > ex6_2.tmp 2>&1;	 \
 	   if (diff output/ex6_2.out ex6_2.tmp) then true; \
-	   else echo "Possible problem with ex6_3, diffs above"; fi; \
+	   else echo "Possible problem with ex6_2, diffs above"; fi; \
 	   $(RM) -f ex6_2.tmp
 runex6_3:
 	-@$(MPIRUN) -np 4 ex6 -matrix_freeJ -Nx 2 -Ny 2 -star -snes_smonitor>ex6_3.tmp 2>&1;\
 	   if (diff output/ex6_1.out ex6_3.tmp) then true; \
 	   else echo "Possible problem with ex6_3, diffs above"; fi; \
 	   $(RM) -f ex6_3.tmp
-
+runex6_4:
+	-@$(MPIRUN) -np 4 ex6 -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor -pc_type asm \
+	   -pc_asm_blocks 4 -pc_asm_overlap 1 -snes_view > ex6_4.tmp 2>&1; \
+	   if (diff output/ex6_4.out ex6_4.tmp) then true; \
+	   else echo "Possible problem with ex6_4, diffs above"; fi; \
+	   $(RM) -f ex6_4.tmp
+runex6_5:
+	-@$(MPIRUN) -np 4 ex6 -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor -pc_type bjacobi \
+	   -snes_view > ex6_5.tmp 2>&1; \
+	   if (diff output/ex6_5.out ex6_5.tmp) then true; \
+	   else echo "Possible problem with ex6_5, diffs above"; fi; \
+	   $(RM) -f ex6_5.tmp
 runex7:
 	-@$(MPIRUN) ex7 -snes_smonitor	> ex7_1.tmp 2>&1;   \
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
