@@ -1,4 +1,6 @@
 #!/usr/local/bin/expect -f
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 #
 #  automatically ftp's to a certain site and 
 # drops off a file

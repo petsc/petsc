@@ -1,4 +1,6 @@
 #!/usr/local/bin/tcsh
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 #!/bin/csh  #csh is unable to handle a VERY long list of files in the foreach loop (eg:adic/lapack)
 #
 # Add the individual links for the PETSc shadow directory.  This script

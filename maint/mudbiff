@@ -1,5 +1,6 @@
 #! /home/bsmith/bin/sun4/wish4.1 -f
 #! /usr/local/bin/wish -f
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
 
 
 wm title . "PETSc MudBiff"

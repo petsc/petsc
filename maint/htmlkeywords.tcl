@@ -1,4 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
 
 ################################################
 # This program scans the WWW man pages         #

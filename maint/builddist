@@ -1,4 +1,6 @@
 #! /bin/csh
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 # 
 #  Makes distribution version of Petsc 2.0
 #

@@ -1,3 +1,5 @@
+/* $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ */
+
 #include <sys/param.h>
 #include <string.h>
 int main(int argc, char **argv)

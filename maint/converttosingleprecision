@@ -1,4 +1,6 @@
 #! /usr/local/tcl/bin/tclsh 
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 #
 #   For a source file, takes a list of function names
 # and replaces then with functionname_Single

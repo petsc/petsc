@@ -1,4 +1,6 @@
 #! /bin/sh
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 mkdir $1
 chmod g+ws $1
 chgrp pdetools $1

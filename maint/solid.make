@@ -1,4 +1,5 @@
 #!/bin/sh
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.18"
