@@ -181,11 +181,11 @@ class compilerOptions(config.base.Configure):
         if bopt == '':
           flags.append('-threads')
         elif bopt == 'g':
-          flags.extend(['-dbglibs', '-debug:full'])
+          flags.extend(['-debug:full'])
         elif bopt == 'O':
           flags.extend(['-optimize:5', '-fast'])
         elif bopt == 'g_complex':
-          flags.extend(['-dbglibs', '-debug:full'])
+          flags.extend(['-debug:full'])
         elif bopt == 'O_complex':
           flags.append('-optimize:4')
     # MIPS
