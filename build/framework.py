@@ -6,6 +6,7 @@ import atexit
 import cPickle
 import os
 import sys
+import nargs
 
 if not hasattr(sys, 'version_info'):
   raise RuntimeError('You must have Python version 2.2 or higher to run the build system')
@@ -31,7 +32,6 @@ class Framework(base.Base):
 
   def setupArgDB(self, argDB, clArgs):
     '''Setup argument types, using the database created by base.Base'''
-    import nargs
 
     # Generic arguments
     argDB.setType('help',           nargs.ArgBool(None, 0, 'Print help message',   isTemporary = 1), forceLocal = 1)
@@ -503,8 +503,9 @@ class Framework(base.Base):
     compiler.run()
     return compiler.outputFiles
 
-  def t_printSIDLBabel(self):
-    '''Print all the SIDL dependencies as plain text'''
+  def t_printSIDLBabel(self,exportDir):
+    '''Print the SIDL for this project and all dependent projects in
+       a format Babel can parse'''
     import build.compile.SIDL
 
     self.argDB.target = []
@@ -512,11 +513,30 @@ class Framework(base.Base):
       if hasattr(v, 'getIncludeFlags'):
         includes = v.getIncludeFlags(None)
     mod      = build.compile.SIDL.Compiler(self.sourceDB, 'Python', None, 0, self.sidlTemplate.usingSIDL).getCompilerModule('scandalDoc')
-    args     = ['-filename=allsidl.sidl']+['-printer=[ANL.SIDL.PrettyPrinterBabel]']+includes+self.filesets['sidl']
+    args     = ['-filename='+os.path.join(exportDir,'allsidl.sidl')]+['-printer=[ANL.SIDL.PrettyPrinterBabel]']+includes+self.filesets['sidl']
     self.debugPrint('Running scandalDoc with arguments '+str(args), 3, 'build')
     compiler = mod.ScandalDoc(args)
     compiler.run()
     return compiler.outputFiles
+
+  def t_exportBabel(self):
+    '''Exports all the SIDL projects and impls in a form that Babel can handle'''
+    self.argDB.setType('exportDir', nargs.ArgString(key='exportDir', help='Directory to export for Babel'))
+    exportDir = self.argDB['exportDir']
+    if not os.path.isdir(exportDir): os.makedirs(exportDir)
+    self.t_printSIDLBabel(exportDir)
+    import getsplicers
+    getsplicers.getSplicers()
+    try:
+      #output = self.executeShellCommand('cd '+exportDir+'; babel --server=C allsidl.sidl')
+      import commands
+      (status,output) = commands.getstatusoutput('cd '+exportDir+';babel --server=C++ allsidl.sidl')
+    except:
+      pass
+    print status
+    print output
+    import setsplicers
+    setsplicers.setSplicers(exportDir)
 
   def t_updateBootstrap(self):
     '''Create a bootstrap tarball and copy it to the FTP site'''
@@ -528,6 +548,7 @@ class Framework(base.Base):
     raise RuntimeError('Need to fix the path')
     return
 
+    
   def t_updateWebsite(self):
     '''Print all the SIDL dependencies as HTML and move to the website'''
     for f in self.executeTarget('printSIDLHTML'):

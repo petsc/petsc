@@ -6,16 +6,6 @@ import sys
 import re
 import cPickle
 
-def setSIDL(splicedimpls,dir,file):
-  if file in splicedimpls['.sidl']:
-    print 'Replacing sidl file '+os.path.join(dir,file)
-    fd = open(os.path.join(dir,file),'w')
-    fd.write(splicedimpls['.sidl'][file])
-    fd.close()
-  else:
-    print 'WARNING: Found sidl file that is not in spliced database'
-    print os.path.join(dir,file)    
-  
 def setSplicersDir(splicedimpls,dir,names):
 
   reg = re.compile('splicer.begin\(([A-Za-z0-9._]*)\)')
@@ -25,9 +15,6 @@ def setSplicersDir(splicedimpls,dir,names):
   if 'docs' in names: del names[names.index('docs')]
   for f in names:
     ext = os.path.splitext(f)[1]
-    if ext == '.sidl':
-      setSIDL(splicedimpls,dir,f)
-      continue
     if not ext in splicedimpls: continue
     if f == '__init__.py': continue
     if not os.path.isfile(os.path.join(dir,f)): continue
@@ -55,6 +42,15 @@ def setSplicersDir(splicedimpls,dir,names):
 #          print 'with ------------'
 #          print splicedimpls[ext][name]
           body = splicedimpls[ext][name]
+        elif name.endswith('._includes') and ext == '.cc':
+          print 'handling includes for class '+name
+          name = name[0:-10]
+          len1  = len(name)
+          body = ''
+          for n in splicedimpls[ext]:
+            if n.startswith(name) and n.endswith('._includes') and n[len1+1:-10].find('.') == -1:
+              body = body + splicedimpls[ext][n]
+          print body
 
         text = text+body
         text = text+line
@@ -64,7 +60,7 @@ def setSplicersDir(splicedimpls,dir,names):
     if foundreplacement:
       print 'Replaced blocks in '+os.path.join(dir,f)
       fd = open(os.path.join(dir,f),'w')
-      fd.write(body)
+      fd.write(text)
       fd.close()
 
 #    print text

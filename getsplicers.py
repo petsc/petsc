@@ -9,17 +9,6 @@ import project
 import RDict
 import commands
 
-def getSIDL(splicedimpls,dir,file):
-    args     = ' -printer=[ANL.SIDL.PrettyPrinter] '+os.path.join(dir,file)
-    
-    argsDB   = RDict.RDict(parentDirectory = os.path.abspath(os.path.dirname(sys.modules['RDict'].__file__)))
-    # would be nice to do this with import but PrettyPrinter only prints to stdout
-    projects = argsDB['installedprojects']
-    for p in projects:
-      if p.getUrl() == 'bk://sidl.bkbits.net/Compiler':
-        args = os.path.join(p.getRoot(),'driver','python','scandalDoc.py')+args
-    (status,output) = commands.getstatusoutput(args)
-    splicedimpls['.sidl'][file] = output
 
 def getSplicersDir(splicedimpls,dir,names):
   reg = re.compile('splicer.begin\(([A-Za-z0-9._]*)\)')
@@ -29,9 +18,6 @@ def getSplicersDir(splicedimpls,dir,names):
   if 'docs' in names: del names[names.index('docs')]
   for f in names:
     ext = os.path.splitext(f)[1]
-    if ext == '.sidl':
-      getSIDL(splicedimpls,dir,f)
-      continue
     if not ext in splicedimpls: continue
     if f == '__init__.py': continue
     if not os.path.isfile(os.path.join(dir,f)): continue
@@ -52,8 +38,8 @@ def getSplicersDir(splicedimpls,dir,names):
       line = fd.readline()
     fd.close()
   
-def getSplicers(directory):
-  splicedimpls = {'.c' : {}, '.h' : {}, '.cc' : {}, '.hh' : {}, '.py' : {}, '.m' : {}, '.sidl':{}}
+def getSplicers(directory = None):
+  splicedimpls = {'.c' : {}, '.h' : {}, '.cc' : {}, '.hh' : {}, '.py' : {}, '.m' : {}}
 
   if not directory: directory = os.getcwd()
   os.path.walk(directory,getSplicersDir,splicedimpls)
