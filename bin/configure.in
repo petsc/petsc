@@ -552,7 +552,7 @@ dnl  Make stdout come back to the screen
 dnl
 exec 1>&9
 
-echo "***************************************************************"
+echo "********** Configuring PETSc for your system *************"
 if test -z "$BMAKEDIR" ; then
   BMAKEDIR=default
   if test -n "$PETSC_ARCH" -a  "$PETSC_ARCH" != "$BMAKEDIR" ; then
@@ -562,11 +562,11 @@ else
   if test -z "$PETSC_ARCH" -o  "$PETSC_ARCH" != "$BMAKEDIR" ; then
     echo "Use setenv PETSC_ARCH $BMAKEDIR before using make"
   fi
-  echo "Use setenv BOPT=g, BOPT=O, BOPT=g_c++, BOPT=O_c++ before using make"
 fi
 if test -n "$PETSC_DIR_NOT_SET" ; then
   echo "Use setenv PETSC_DIR $PETSC_DIR before using make"
 fi
+echo "Do make BOPT=g (or BOPT=O, BOPT=g_c++, or BOPT=O_c++) to build the libraries"
 echo "***************************************************************"
 
 dnl Move the files into the bmake area in their own directory
