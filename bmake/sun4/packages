@@ -29,8 +29,9 @@ X11_LIB        = -lX11
 MPI_LIB        = /usr/local/mpi/lib/sun4/ch_p4/libmpe.a \
                  /usr/local/mpi/lib/sun4/ch_p4/libmpi.a
 MPI_INCLUDE    = -I/usr/local/mpi/include
-MPIRUN         = /usr/local/mpi/bin/mpirun
-
+#MPIRUN         = /usr/local/mpi/bin/mpirun
+MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile $(PETSC_DIR)/maint/hosts.local
+#
 # Optional location of BlockSolve (MPI version), if you do not have
 # BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
 # below if it is there.
