@@ -165,12 +165,18 @@ class Make(script.Script):
 
   def run(self, setupOnly = 0):
     self.setup()
-    self.logPrint('Starting Build', debugSection = 'build')
-    self.executeSection(self.configure, self.builder)
-    self.build(self.builder, setupOnly)
-    self.updateDependencies(self.builder.sourceDB)
-    self.executeSection(self.install, self.builder, self.argDB)
-    self.logPrint('Ending Build', debugSection = 'build')
+    try:
+      self.logPrint('Starting Build', debugSection = 'build')
+      self.executeSection(self.configure, self.builder)
+      self.build(self.builder, setupOnly)
+      self.updateDependencies(self.builder.sourceDB)
+      self.executeSection(self.install, self.builder, self.argDB)
+      self.logPrint('Ending Build', debugSection = 'build')
+    except Exception, e:
+      import sys, traceback
+      self.logPrint('************************************ ERROR **************************************')
+      traceback.print_tb(sys.exc_info()[2], file = self.log)
+      raise
     return 1
 
 try:
