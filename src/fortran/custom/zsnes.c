@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.17 1998/09/21 02:31:12 bsmith Exp balay $";
+static char vcid[] = "$Id: zsnes.c,v 1.18 1998/10/05 20:43:14 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -51,9 +51,7 @@ static char vcid[] = "$Id: zsnes.c,v 1.17 1998/09/21 02:31:12 bsmith Exp balay $
 #define snessettype_                    snessettype
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void snessettype_(SNES *snes,CHAR itmethod, int *__ierr,int len )
 {
@@ -243,7 +241,6 @@ void snesgettype_(SNES *snes,CHAR name,int *__ierr,int len)
 #endif
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
+
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.49 1998/09/28 15:10:28 balay Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.50 1998/10/14 18:41:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -246,9 +246,9 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
        Initialize PETSC_COMM_SELF as a MPI_Comm with the PETSc 
      attribute.
   */
-  *__ierr = PetscCommDup_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
+  *__ierr = PetscCommDuplicate_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_SELF");return;}
-  *__ierr = PetscCommDup_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
+  *__ierr = PetscCommDuplicate_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_WORLD");return;}
 #if defined (LAM_MPI)
   {
@@ -259,7 +259,7 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
   }
 #endif
 
-  *__ierr = ViewerInitialize_Private(); 
+  *__ierr = ViewerInitializeASCII_Private(); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
   PetscInitializeFortran();
 

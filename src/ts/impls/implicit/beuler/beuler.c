@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: beuler.c,v 1.33 1998/07/27 02:46:26 curfman Exp curfman $";
+static char vcid[] = "$Id: beuler.c,v 1.34 1998/07/27 03:52:01 curfman Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -364,6 +364,7 @@ static int TSView_BEuler(TS ts,Viewer viewer)
 }
 
 /* ------------------------------------------------------------ */
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSCreate_BEuler"
 int TSCreate_BEuler(TS ts )
@@ -389,8 +390,7 @@ int TSCreate_BEuler(TS ts )
       }
       ts->setup  = TSSetUp_BEuler_Linear_Constant_Matrix;
       ts->step   = TSStep_BEuler_Linear_Constant_Matrix;
-    }
-    else {
+    } else {
       if (mtype == MATSHELL) {
         ts->Ashell = ts->A;
       }
@@ -422,7 +422,7 @@ int TSCreate_BEuler(TS ts )
 
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 

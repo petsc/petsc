@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.9 1998/04/13 17:34:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.10 1998/05/29 20:36:49 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -120,6 +120,7 @@ static int PCSetFromOptions_SLES(PC pc)
 
 /* ----------------------------------------------------------------------------------*/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSLESSetUseTrue_SLES"
 int PCSLESSetUseTrue_SLES(PC pc)
@@ -131,7 +132,9 @@ int PCSLESSetUseTrue_SLES(PC pc)
   jac->use_true_matrix = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSLESGetSLES_SLES"
 int PCSLESGetSLES_SLES(PC pc,SLES *sles)
@@ -143,6 +146,7 @@ int PCSLESGetSLES_SLES(PC pc,SLES *sles)
   *sles        = jac->sles;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "PCSLESSetUseTrue"
@@ -214,6 +218,7 @@ int PCSLESGetSLES(PC pc,SLES *sles)
 
 /* ----------------------------------------------------------------------------------*/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_SLES"
 int PCCreate_SLES(PC pc)
@@ -221,7 +226,6 @@ int PCCreate_SLES(PC pc)
   int       rank,size,ierr;
   char      *prefix;
   PC_SLES   *jac = PetscNew(PC_SLES); CHKPTRQ(jac);
-
 
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_SLES));
@@ -251,5 +255,5 @@ int PCCreate_SLES(PC pc)
 
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 

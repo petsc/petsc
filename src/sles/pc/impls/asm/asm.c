@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.82 1998/07/24 15:39:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.83 1998/07/28 03:10:44 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -378,6 +378,7 @@ static int PCSetFromOptions_ASM(PC pc)
 
 /*------------------------------------------------------------------------------------*/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCASMSetLocalSubdomains_ASM"
 int PCASMSetLocalSubdomains_ASM(PC pc, int n, IS *is)
@@ -395,7 +396,9 @@ int PCASMSetLocalSubdomains_ASM(PC pc, int n, IS *is)
   osm->is           = is;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCASMSetTotalSubdomains_ASM"
 int PCASMSetTotalSubdomains_ASM(PC pc, int N, IS *is)
@@ -424,7 +427,9 @@ they cannot be set globally yet.");
   osm->is           = 0;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCASMSetOverlap_ASM"
 int PCASMSetOverlap_ASM(PC pc, int ovl)
@@ -438,7 +443,9 @@ int PCASMSetOverlap_ASM(PC pc, int ovl)
   osm->overlap      = ovl;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCASMSetType_ASM"
 int PCASMSetType_ASM(PC pc,PCASMType type)
@@ -450,7 +457,9 @@ int PCASMSetType_ASM(PC pc,PCASMType type)
   osm->type  = type;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCASMGetSubSLES_ASM"
 int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
@@ -467,6 +476,7 @@ int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
                                  used only for PCView_ASM */
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /*----------------------------------------------------------------------------*/
 
@@ -697,6 +707,7 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 }
 
 /* -------------------------------------------------------------------------------------*/
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_ASM"
 int PCCreate_ASM(PC pc)
@@ -744,6 +755,7 @@ int PCCreate_ASM(PC pc)
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 
 #undef __FUNC__  

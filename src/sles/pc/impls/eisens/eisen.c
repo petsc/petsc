@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.74 1998/04/24 21:21:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.75 1998/05/29 20:36:42 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -201,6 +201,7 @@ static int PCSetUp_Eisenstat(PC pc)
 
 /* --------------------------------------------------------------------*/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCEisenstatSetOmega_Eisenstat"
 int PCEisenstatSetOmega_Eisenstat(PC pc,double omega)
@@ -213,7 +214,9 @@ int PCEisenstatSetOmega_Eisenstat(PC pc,double omega)
   eis->omega = omega;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCEisenstatUseDiagonalScaling_Eisenstat"
 int PCEisenstatUseDiagonalScaling_Eisenstat(PC pc)
@@ -225,7 +228,7 @@ int PCEisenstatUseDiagonalScaling_Eisenstat(PC pc)
   eis->usediag = 1;
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "PCEisenstatSetOmega"
@@ -303,6 +306,7 @@ int PCEisenstatUseDiagonalScaling(PC pc)
 
 /* --------------------------------------------------------------------*/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_Eisenstat"
 int PCCreate_Eisenstat(PC pc)
@@ -335,4 +339,4 @@ int PCCreate_Eisenstat(PC pc)
                     (void*)PCEisenstatUseDiagonalScaling_Eisenstat);CHKERRQ(ierr);
  PetscFunctionReturn(0);
 }
-
+EXTERN_C_END

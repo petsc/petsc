@@ -1,9 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itregis.c,v 1.36 1998/07/27 02:56:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itregis.c,v 1.37 1998/07/28 15:49:26 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
 
+EXTERN_C_BEGIN
 extern int KSPCreate_Richardson(KSP);
 extern int KSPCreate_Chebychev(KSP);
 extern int KSPCreate_CG(KSP);
@@ -17,7 +18,7 @@ extern int KSPCreate_PREONLY(KSP);
 extern int KSPCreate_CR(KSP);
 extern int KSPCreate_QCG(KSP);
 extern int KSPCreate_BiCG(KSP);
-
+EXTERN_C_END
   
 /*
     This is used by KSPSetType() to make sure that at least one 

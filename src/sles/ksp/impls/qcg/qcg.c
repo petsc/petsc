@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.49 1998/07/28 15:50:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.50 1998/10/09 19:20:25 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -298,6 +298,7 @@ int KSPDestroy_QCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_QCG"
 int KSPCreate_QCG(KSP ksp)
@@ -319,6 +320,8 @@ int KSPCreate_QCG(KSP ksp)
   ksp->ops->view                 = 0;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
+
 /* ---------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "QuadraticRoots_Private"

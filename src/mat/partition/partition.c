@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.14 1998/05/19 01:35:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.15 1998/09/25 03:14:56 bsmith Exp bsmith $";
 #endif
  
 
@@ -28,7 +28,8 @@ static int PartitioningApply_Current(Partitioning part, IS *partitioning)
   ierr = ISCreateStride(part->comm,m,rank,0,partitioning);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-  
+
+EXTERN_C_BEGIN  
 #undef __FUNC__  
 #define __FUNC__ "PartitioningCreate_Current" 
 int PartitioningCreate_Current(Partitioning part)
@@ -40,6 +41,7 @@ int PartitioningCreate_Current(Partitioning part)
   part->type    = PARTITIONING_CURRENT;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* ===========================================================================================*/
 

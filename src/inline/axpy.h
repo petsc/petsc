@@ -1,4 +1,4 @@
-/* $Id: axpy.h,v 1.12 1998/05/08 16:11:49 bsmith Exp balay $ */
+/* $Id: axpy.h,v 1.13 1998/07/13 18:44:23 balay Exp bsmith $ */
 
 /* 
    These are macros for daxpy like operations.  The format is
@@ -27,16 +27,11 @@
 #define fortranmaxpy2_ fortranmaxpy2
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-extern void fortranmaxpy4_(void *, void *,void *,void *,void *,void *,
-                           void *, void *,void *,int *);
+EXTERN_C_BEGIN
+extern void fortranmaxpy4_(void *, void *,void *,void *,void *,void *,void *, void *,void *,int *);
 extern void fortranmaxpy3_(void *, void *,void *,void *,void *,void *,void *,int *);
 extern void fortranmaxpy2_(void *, void *,void *,void *,void *,int *);
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
 
 #define APXY(U,a1,p1,n)  {int one=1;\
   BLaxpy_(&n,&a1,p1,&one,U,&one);}

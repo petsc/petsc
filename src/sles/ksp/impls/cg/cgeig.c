@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgeig.c,v 1.39 1997/12/01 01:53:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.40 1998/06/11 19:55:17 bsmith Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -70,8 +70,6 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
   *emin = dd[0]; *emax = dd[n-1];
   PetscFunctionReturn(0);
 }
-
-
 
 /* tql1.f -- translated by f2c (version of 25 March 1992  12:58:56).
    By Barry Smith on March 27, 1994. 
@@ -148,11 +146,9 @@ static int ccgtql1_private(int *n, double *d, double *e, int *ierr)
     double ds;
 
     PetscFunctionBegin;
-    /* Parameter adjustments */
     --e;
     --d;
 
-    /* Function Body */
     *ierr = 0;
     if (*n == 1) {
         goto L1001;
@@ -160,7 +156,6 @@ static int ccgtql1_private(int *n, double *d, double *e, int *ierr)
 
     i__1 = *n;
     for (i = 2; i <= i__1; ++i) {
-/* L100: */
         e[i - 1] = e[i];
     }
 
@@ -184,7 +179,6 @@ static int ccgtql1_private(int *n, double *d, double *e, int *ierr)
             }
 /*     .......... E(N) IS ALWAYS ZERO, SO THERE IS NO EXIT */
 /*                THROUGH THE BOTTOM OF THE LOOP .......... */
-/* L110: */
         }
 L120:
         if (m == l) {
@@ -214,7 +208,6 @@ L130:
 
         i__2 = *n;
         for (i = l2; i <= i__2; ++i) {
-/* L140: */
             d[i] -= h;
         }
 
@@ -242,8 +235,6 @@ L145:
             c = p / r;
             p = c * d[i] - s * g;
             d[i + 1] = h + s * (c * g + s * d[i]);
-/* L200: */
-
         }
  
         p = -s * s2 * c3 * el1 * e[l] / dl1;
@@ -267,14 +258,12 @@ L210:
                 goto L270;
             }
             d[i] = d[i - 1];
-/* L230: */
         }
 
 L250:
         i = 1;
 L270:
         d[i] = p;
-/* L290: */
     }
 
     goto L1001;

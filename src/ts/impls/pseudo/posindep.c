@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: posindep.c,v 1.28 1998/05/29 20:38:26 bsmith Exp balay $";
+static char vcid[] = "$Id: posindep.c,v 1.29 1998/07/20 16:33:37 balay Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -518,6 +518,7 @@ int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
 
 /* ----------------------------------------------------------------------------- */
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSPseudoSetVerifyTimeStep_Pseudo"
 int TSPseudoSetVerifyTimeStep_Pseudo(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* ctx)
@@ -530,7 +531,9 @@ int TSPseudoSetVerifyTimeStep_Pseudo(TS ts,int (*dt)(TS,Vec,void*,double*,int*),
   pseudo->verifyctx   = ctx;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSPseudoSetTimeStepIncrement_Pseudo"
 int TSPseudoSetTimeStepIncrement_Pseudo(TS ts,double inc)
@@ -542,7 +545,9 @@ int TSPseudoSetTimeStepIncrement_Pseudo(TS ts,double inc)
   pseudo->dt_increment = inc;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSPseudoIncrementDtFromInitialDt_Pseudo"
 int TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
@@ -554,7 +559,9 @@ int TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
   pseudo->increment_dt_from_initial_dt = 1;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSPseudoSetTimeStep_Pseudo"
 int TSPseudoSetTimeStep_Pseudo(TS ts,int (*dt)(TS,double*,void*),void* ctx)
@@ -567,9 +574,11 @@ int TSPseudoSetTimeStep_Pseudo(TS ts,int (*dt)(TS,double*,void*),void* ctx)
   pseudo->dtctx   = ctx;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* ----------------------------------------------------------------------------- */
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSCreate_Pseudo"
 int TSCreate_Pseudo(TS ts )
@@ -623,6 +632,7 @@ int TSCreate_Pseudo(TS ts )
                     (void*)TSPseudoSetTimeStep_Pseudo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "TSPseudoDefaultTimeStep"

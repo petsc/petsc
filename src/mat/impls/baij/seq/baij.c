@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.144 1998/08/03 20:10:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.145 1998/10/09 19:22:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1145,6 +1145,7 @@ int MatPrintHelp_SeqBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "MatSeqBAIJSetColumnIndices_SeqBAIJ"
 int MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat,int *indices)
@@ -1165,6 +1166,7 @@ int MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat,int *indices)
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "MatSeqBAIJSetColumnIndices"

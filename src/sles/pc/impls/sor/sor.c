@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.72 1998/04/24 21:21:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.73 1998/05/29 20:36:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -119,6 +119,7 @@ static int PCView_SOR(PC pc,Viewer viewer)
 
 
 /* ------------------------------------------------------------------------------*/
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSORSetSymmetric_SOR"
 int PCSORSetSymmetric_SOR(PC pc, MatSORType flag)
@@ -130,7 +131,9 @@ int PCSORSetSymmetric_SOR(PC pc, MatSORType flag)
   jac->sym = flag;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSORSetOmega_SOR"
 int PCSORSetOmega_SOR(PC pc, double omega)
@@ -143,7 +146,9 @@ int PCSORSetOmega_SOR(PC pc, double omega)
   jac->omega = omega;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSORSetIterations_SOR"
 int PCSORSetIterations_SOR(PC pc, int its)
@@ -155,6 +160,8 @@ int PCSORSetIterations_SOR(PC pc, int its)
   jac->its = its;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
+
 /* ------------------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "PCSORSetSymmetric"
@@ -269,6 +276,7 @@ int PCSORSetIterations(PC pc, int its)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_SOR"
 int PCCreate_SOR(PC pc)
@@ -299,6 +307,6 @@ int PCCreate_SOR(PC pc)
 
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 

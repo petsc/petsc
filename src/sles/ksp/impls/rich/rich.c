@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.64 1998/07/28 15:49:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.65 1998/10/09 19:20:18 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -156,6 +156,7 @@ int KSPSetFromOptions_Richardson(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPRichardsonSetScale_Richardson"
 int KSPRichardsonSetScale_Richardson(KSP ksp,double scale)
@@ -167,7 +168,9 @@ int KSPRichardsonSetScale_Richardson(KSP ksp,double scale)
   richardsonP->scale = scale;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_Richardson"
 int KSPCreate_Richardson(KSP ksp)
@@ -195,6 +198,6 @@ int KSPCreate_Richardson(KSP ksp)
                                     (void*)KSPRichardsonSetScale_Richardson);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.164 1998/07/22 18:27:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.165 1998/10/09 19:22:28 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -179,16 +179,17 @@ static int MatGetDiagonal_SeqBDiag_N(Mat A,Vec v)
   PetscFunctionBegin;
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix");  
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Nonconforming mat and vec");
   if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Main diagonal not set");
   len = PetscMin(a->mblock,a->nblock);
   dd = a->diagv[a->mainbd];
+  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   for (i=0; i<len; i++) {
     ibase = i*bs*bs;  iloc = i*bs;
     for (j=0; j<bs; j++) x[j + iloc] = dd[ibase + j*(bs+1)];
   }
+  ierr = VecRestoreArray(v,&x); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -202,13 +203,14 @@ static int MatGetDiagonal_SeqBDiag_1(Mat A,Vec v)
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,v); CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Nonconforming mat and vec");
   if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Main diagonal not set");
   dd = a->diagv[a->mainbd];
   len = PetscMin(a->m,a->n);
+  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   for (i=0; i<len; i++) x[i] = dd[i];
+  ierr = VecRestoreArray(v,&x); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -378,14 +380,15 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   Scalar       *l,*r, *dv;
-  int          d, j, len;
+  int          d, j, len,ierr;
   int          nd = a->nd, bs = a->bs, diag, m, n;
 
   PetscFunctionBegin;
   if (ll) {
-    VecGetArray(ll,&l); VecGetSize(ll,&m);
+    ierr = VecGetSize(ll,&m);CHKERRQ(ierr);
     if (m != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Left scaling vector wrong length");
     if (bs == 1) {
+      ierr = VecGetArray(ll,&l);CHKERRQ(ierr); 
       for (d=0; d<nd; d++) {
         dv   = a->diagv[d];
         diag = a->diag[d];
@@ -393,13 +396,15 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
         if (diag > 0) for (j=0; j<len; j++) dv[j+diag] *= l[j+diag];
         else          for (j=0; j<len; j++) dv[j]      *= l[j];
       }
+      ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr); 
       PLogFlops(a->nz);
     } else SETERRQ(PETSC_ERR_SUP,0,"Not yet done for bs>1");
   }
   if (rr) {
-    VecGetArray(rr,&r); VecGetSize(rr,&n);
+    ierr = VecGetSize(rr,&n);CHKERRQ(ierr);
     if (n != a->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Right scaling vector wrong length");
     if (bs == 1) {
+      ierr = VecGetArray(rr,&r);CHKERRQ(ierr);  
       for (d=0; d<nd; d++) {
         dv   = a->diagv[d];
         diag = a->diag[d];
@@ -407,6 +412,7 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
         if (diag > 0) for (j=0; j<len; j++) dv[j+diag] *= r[j];
         else          for (j=0; j<len; j++) dv[j]      *= r[j-diag];
       }
+      ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);  
       PLogFlops(a->nz);
     } else SETERRQ(PETSC_ERR_SUP,0,"Not yet done for bs>1");
   }

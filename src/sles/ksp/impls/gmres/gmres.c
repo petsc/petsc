@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.109 1998/09/25 03:13:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.110 1998/10/09 19:20:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -643,6 +643,7 @@ extern int KSPComputeExtremeSingularValues_GMRES(KSP,double *,double *);
 extern int KSPComputeEigenvalues_GMRES(KSP,int,double *,double *,int *);
 extern int KSPDefaultConverged_GMRES(KSP,int,double,void*);
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPGMRESPrestartSet_GMRES" 
 int KSPGMRESPrestartSet_GMRES(KSP ksp,int pre)
@@ -658,7 +659,9 @@ int KSPGMRESPrestartSet_GMRES(KSP ksp,int pre)
   gmres->nprestart           = 0; /*reset this so that it will be set after the first solve*/
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPGMRESSetRestart_GMRES" 
 int KSPGMRESSetRestart_GMRES(KSP ksp,int max_k )
@@ -670,7 +673,9 @@ int KSPGMRESSetRestart_GMRES(KSP ksp,int max_k )
   gmres->max_k = max_k;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPGMRESSetOrthogonalization_GMRES" 
 int KSPGMRESSetOrthogonalization_GMRES( KSP ksp,int (*fcn)(KSP,int) )
@@ -680,7 +685,9 @@ int KSPGMRESSetOrthogonalization_GMRES( KSP ksp,int (*fcn)(KSP,int) )
   ((KSP_GMRES *)ksp->data)->orthog = fcn;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPGMRESSetPreAllocateVectors_GMRES" 
 int KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp)
@@ -692,7 +699,9 @@ int KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp)
   gmres->q_preallocate = 1;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_GMRES"
 int KSPCreate_GMRES(KSP ksp)
@@ -744,4 +753,4 @@ int KSPCreate_GMRES(KSP ksp)
 
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.109 1998/07/23 22:47:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.110 1998/07/28 15:51:32 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -27,6 +27,7 @@ static int (*setups[])(PC) = {0,
                               0,0,0,0,0};
 
 /* ------------------------------------------------------------------------------------------*/
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCILUSetUseDropTolerance_ILU"
 int PCILUSetUseDropTolerance_ILU(PC pc,double dt,int dtcount)
@@ -40,7 +41,9 @@ int PCILUSetUseDropTolerance_ILU(PC pc,double dt,int dtcount)
   ilu->dtcount  = dtcount;
   PetscFunctionReturn(0);
 }  
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCILUSetFill_ILU"
 int PCILUSetFill_ILU(PC pc,double fill)
@@ -52,7 +55,9 @@ int PCILUSetFill_ILU(PC pc,double fill)
   dir->fill = fill;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCILUSetMatReordering_ILU"
 int PCILUSetMatReordering_ILU(PC pc, MatReorderingType ordering)
@@ -63,7 +68,9 @@ int PCILUSetMatReordering_ILU(PC pc, MatReorderingType ordering)
   dir->ordering = ordering;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCILUSetReuseReordering_ILU"
 int PCILUSetReuseReordering_ILU(PC pc,PetscTruth flag)
@@ -75,7 +82,9 @@ int PCILUSetReuseReordering_ILU(PC pc,PetscTruth flag)
   ilu->reusereordering = (int) flag;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCILUSetReuseFill_ILU"
 int PCILUSetReuseFill_ILU(PC pc,PetscTruth flag)
@@ -87,7 +96,9 @@ int PCILUSetReuseFill_ILU(PC pc,PetscTruth flag)
   ilu->reusefill = (int) flag;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCILUSetLevels_ILU"
 int PCILUSetLevels_ILU(PC pc,int levels)
@@ -99,7 +110,9 @@ int PCILUSetLevels_ILU(PC pc,int levels)
   ilu->levels = levels;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCILUSetUseInPlace_ILU"
 int PCILUSetUseInPlace_ILU(PC pc)
@@ -111,6 +124,7 @@ int PCILUSetUseInPlace_ILU(PC pc)
   dir->inplace = 1;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* ------------------------------------------------------------------------------------------*/
 #undef __FUNC__  
@@ -588,6 +602,7 @@ static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_ILU"
 int PCCreate_ILU(PC pc)
@@ -638,3 +653,4 @@ int PCCreate_ILU(PC pc)
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

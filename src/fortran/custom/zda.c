@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.23 1998/10/05 18:36:15 bsmith Exp balay $";
+static char vcid[] = "$Id: zda.c,v 1.24 1998/10/05 20:42:41 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -32,9 +32,8 @@ static char vcid[] = "$Id: zda.c,v 1.23 1998/10/05 18:36:15 bsmith Exp balay $";
 #define dagetcoloring_          dagetcoloring
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
+
 void dagetcoloring_(DA *da, ISColoring *coloring, Mat *J,int *__ierr)
 {
   *__ierr = DAGetColoring(*da,coloring,J);
@@ -112,7 +111,5 @@ void dagetinfo_(DA *da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w
   *__ierr = DAGetInfo(*da,dim,M,N,P,m,n,p,w,s,wrap);
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
 

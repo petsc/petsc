@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.75 1998/07/28 15:49:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.76 1998/10/09 19:20:06 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -236,6 +236,7 @@ int KSPSetFromOptions_CG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPCGSetType_CG" 
 int KSPCGSetType_CG(KSP ksp,KSPCGType type)
@@ -247,7 +248,9 @@ int KSPCGSetType_CG(KSP ksp,KSPCGType type)
   cg->type = type;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_CG"
 int KSPCreate_CG(KSP ksp)
@@ -280,6 +283,7 @@ int KSPCreate_CG(KSP ksp)
                                      (void*)KSPCGSetType_CG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 
 

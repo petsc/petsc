@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zpc.c,v 1.20 1998/07/15 14:39:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zpc.c,v 1.21 1998/09/21 02:17:07 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -43,9 +43,7 @@ static char vcid[] = "$Id: zpc.c,v 1.20 1998/07/15 14:39:16 bsmith Exp bsmith $"
 #define pcsettype_                 pcsettype
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void pcsettype_(PC *pc,CHAR itmethod, int *__ierr,int len )
 {
@@ -194,6 +192,5 @@ void pcgettype_(PC *pc,CHAR name,int *__ierr,int len)
 #endif
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
+

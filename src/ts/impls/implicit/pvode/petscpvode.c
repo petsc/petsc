@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.29 1998/09/25 03:15:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.30 1998/10/09 19:24:50 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -404,6 +404,7 @@ static int TSView_PVode(TS ts,Viewer viewer)
 
 
 /* --------------------------------------------------------------------------*/
+EXTERN_C_BEGIN
 #undef __FUNC__
 #define __FUNC__ "TSPVodeSetType_Pvode"
 int TSPVodeSetType_PVode(TS ts, TSPVodeType type)
@@ -414,7 +415,9 @@ int TSPVodeSetType_PVode(TS ts, TSPVodeType type)
   cvode->cvode_type = type;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__
 #define __FUNC__ "TSPVodeSetGMRESRestart_PVode"
 int TSPVodeSetGMRESRestart_PVode(TS ts, int restart)
@@ -425,7 +428,9 @@ int TSPVodeSetGMRESRestart_PVode(TS ts, int restart)
   cvode->restart = restart;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__
 #define __FUNC__ "TSPVodeSetLinearTolerance_PVode"
 int TSPVodeSetLinearTolerance_PVode(TS ts, double tol)
@@ -436,7 +441,9 @@ int TSPVodeSetLinearTolerance_PVode(TS ts, double tol)
   cvode->linear_tol = tol;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__
 #define __FUNC__ "TSPVodeSetGramSchmidtType_PVode"
 int TSPVodeSetGramSchmidtType_PVode(TS ts, TSPVodeGramSchmidtType type)
@@ -448,7 +455,9 @@ int TSPVodeSetGramSchmidtType_PVode(TS ts, TSPVodeGramSchmidtType type)
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__
 #define __FUNC__ "TSPVodeSetTolerance_PVode"
 int TSPVodeSetTolerance_PVode(TS ts, double aabs, double rel)
@@ -460,7 +469,9 @@ int TSPVodeSetTolerance_PVode(TS ts, double aabs, double rel)
   if (rel != PETSC_DECIDE)  cvode->reltol = rel;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSPVodeGetPC_PVode"
 int TSPVodeGetPC_PVode(TS ts, PC *pc)
@@ -472,7 +483,9 @@ int TSPVodeGetPC_PVode(TS ts, PC *pc)
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSPVodeGetIterations_PVode"
 int TSPVodeGetIterations_PVode(TS ts, int *nonlin,int *lin )
@@ -484,7 +497,9 @@ int TSPVodeGetIterations_PVode(TS ts, int *nonlin,int *lin )
   if (lin)    *lin    = cvode->iopt[SPGMR_NLI];
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
   
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSPVodeSetExactFinalTime_PVode"
 int TSPVodeSetExactFinalTime_PVode(TS ts,PetscTruth s)
@@ -495,7 +510,7 @@ int TSPVodeSetExactFinalTime_PVode(TS ts,PetscTruth s)
   cvode->exact_final_time = s;
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 /* -------------------------------------------------------------------------------------------*/
 
 #undef __FUNC__
@@ -774,6 +789,7 @@ int TSPVodeSetExactFinalTime(TS ts, PetscTruth ft)
 
     Contributed by: Liyang Xu
 */
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSCreate_PVode"
 int TSCreate_PVode(TS ts )
@@ -830,7 +846,7 @@ int TSCreate_PVode(TS ts )
 
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 #else

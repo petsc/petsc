@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zao.c,v 1.8 1998/03/30 22:21:54 balay Exp bsmith $";
+static char vcid[] = "$Id: zao.c,v 1.9 1998/10/05 18:36:15 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ao.h"
-
 
 #ifdef HAVE_FORTRAN_CAPS
 #define aocreatebasic_ AOCREATEBASIC
@@ -14,17 +13,16 @@ static char vcid[] = "$Id: zao.c,v 1.8 1998/03/30 22:21:54 balay Exp bsmith $";
 #define aocreatebasicis_ aocreatebasicis
 #endif
 
-/* Definitions of Fortran Wrapper routines */
-#if defined(__cplusplus)
-extern "C" {
-#endif
-void aocreatebasic_(MPI_Comm *comm,int *napp,int *myapp,int *mypetsc,AO *aoout, int *__ierr ){
-*__ierr = AOCreateBasic(
-	(MPI_Comm)PetscToPointerComm( *comm ),*napp,myapp,mypetsc,aoout);
+EXTERN_C_BEGIN
+
+void aocreatebasic_(MPI_Comm *comm,int *napp,int *myapp,int *mypetsc,AO *aoout, int *__ierr )
+{
+  *__ierr = AOCreateBasic((MPI_Comm)PetscToPointerComm( *comm ),*napp,myapp,mypetsc,aoout);
 }
-void aocreatebasicis_(IS *isapp,IS *ispetsc,AO *aoout, int *__ierr ){
-*__ierr = AOCreateBasicIS(*isapp,*ispetsc,aoout);
+
+void aocreatebasicis_(IS *isapp,IS *ispetsc,AO *aoout, int *__ierr )
+{
+  *__ierr = AOCreateBasicIS(*isapp,*ispetsc,aoout);
 }
-#if defined(__cplusplus)
-}
-#endif
+
+EXTERN_C_END

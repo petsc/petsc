@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.262 1998/10/09 19:22:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.263 1998/10/13 15:13:47 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1640,6 +1640,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 
 /* ----------------------------------------------------------------------------------------*/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "MatStoreValues_MPIAIJ"
 int MatStoreValues_MPIAIJ(Mat mat)
@@ -1652,7 +1653,9 @@ int MatStoreValues_MPIAIJ(Mat mat)
   ierr = MatStoreValues(aij->B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "MatRetrieveValues_MPIAIJ"
 int MatRetrieveValues_MPIAIJ(Mat mat)
@@ -1665,6 +1668,7 @@ int MatRetrieveValues_MPIAIJ(Mat mat)
   ierr = MatRetrieveValues(aij->B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "MatCreateMPIAIJ"
@@ -2049,6 +2053,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   } else {
     cstart = rstart;
     cend   = rend;
+    n      = cend - cstart;
   }
 
   /* loop over local rows, determining number of off diagonal entries */
@@ -2067,7 +2072,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   }
   ierr = MatCreateMPIAIJ(comm,m,n,M,N,0,ourlens,0,offlens,newmat);CHKERRQ(ierr);
   A = *newmat;
-  MatSetOption(A,MAT_COLUMNS_SORTED); 
+  ierr = MatSetOption(A,MAT_COLUMNS_SORTED); CHKERRQ(ierr);
   for ( i=0; i<m; i++ ) {
     ourlens[i] += offlens[i];
   }
@@ -2076,7 +2081,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
     vals = (Scalar *) PetscMalloc( maxnz*sizeof(Scalar) ); CHKPTRQ(vals);
 
     /* read in my part of the matrix numerical values  */
-    nz = procsnz[0];
+    nz   = procsnz[0];
     ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR); CHKERRQ(ierr);
     
     /* insert into matrix */

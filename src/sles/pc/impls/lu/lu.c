@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.98 1998/07/24 12:50:53 balay Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.99 1998/07/27 16:24:45 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -20,6 +20,7 @@ typedef struct {
 } PC_LU;
 
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCLUSetReuseReordering_LU"
 int PCLUSetReuseReordering_LU(PC pc,PetscTruth flag)
@@ -31,7 +32,9 @@ int PCLUSetReuseReordering_LU(PC pc,PetscTruth flag)
   lu->reusereordering = (int) flag;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCLUSetReuseFill_LU"
 int PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
@@ -43,6 +46,7 @@ int PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
   lu->reusefill = (int) flag;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "PCSetFromOptions_LU"
@@ -235,6 +239,7 @@ static int PCApplyTrans_LU(PC pc,Vec x,Vec y)
 
 /* -----------------------------------------------------------------------------------*/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCLUSetFill_LU"
 int PCLUSetFill_LU(PC pc,double fill)
@@ -246,7 +251,9 @@ int PCLUSetFill_LU(PC pc,double fill)
   dir->fill = fill;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCLUSetUseInPlace_LU"
 int PCLUSetUseInPlace_LU(PC pc)
@@ -258,7 +265,9 @@ int PCLUSetUseInPlace_LU(PC pc)
   dir->inplace = 1;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCLUSetMatReordering_LU"
 int PCLUSetMatReordering_LU(PC pc, MatReorderingType ordering)
@@ -269,6 +278,7 @@ int PCLUSetMatReordering_LU(PC pc, MatReorderingType ordering)
   dir->ordering = ordering;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* -----------------------------------------------------------------------------------*/
 
@@ -445,6 +455,7 @@ int PCLUSetMatReordering(PC pc, MatReorderingType ordering)
 
 /* ------------------------------------------------------------------------ */
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_LU"
 int PCCreate_LU(PC pc)
@@ -486,3 +497,4 @@ int PCCreate_LU(PC pc)
                     (void*)PCLUSetReuseFill_LU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

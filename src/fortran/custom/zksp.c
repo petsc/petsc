@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.23 1998/08/25 16:22:34 bsmith Exp balay $";
+static char vcid[] = "$Id: zksp.c,v 1.24 1998/10/05 20:42:54 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -45,9 +45,7 @@ static char vcid[] = "$Id: zksp.c,v 1.23 1998/08/25 16:22:34 bsmith Exp balay $"
 #define kspbuildsolution_         kspbuildsolution
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void kspsettype_(KSP *ksp,CHAR itmethod, int *__ierr,int len )
 {
@@ -177,6 +175,4 @@ void kspbuildresidual_(KSP *ctx,Vec *t,Vec *v,Vec *V, int *__ierr )
   *__ierr = KSPBuildResidual(*ctx,*t,*v,V);
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END

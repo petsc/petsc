@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zplog.c,v 1.14 1998/03/30 22:22:17 balay Exp balay $";
+static char vcid[] = "$Id: zplog.c,v 1.15 1998/10/05 20:43:09 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -32,9 +32,7 @@ static char vcid[] = "$Id: zplog.c,v 1.14 1998/03/30 22:22:17 balay Exp balay $"
 #define plogstagepush_        plogstagepush
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void plogdump_(CHAR name, int *__ierr,int len ){
 #if defined(USE_PETSC_LOG)
@@ -108,6 +106,4 @@ void plogstagepush_(int *stage, int *__ierr ){
 #endif
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END

@@ -18,14 +18,9 @@
 #define petsc_null_function_  petsc_null_function__
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-extern void petscsetcommonblock_(Viewer*,Viewer*,Viewer*,
-                                 int*,int*);
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_BEGIN
+extern void petscsetcommonblock_(Viewer*,Viewer*,Viewer*,int*,int*);
+EXTERN_C_END
 
 /*@
    PetscInitializeFortran - Routine that should be called from C after
@@ -57,9 +52,7 @@ void PetscInitializeFortran(void)
   petscsetcommonblock_(&VIEWER_STDOUT_SELF,&VIEWER_STDERR_SELF,&VIEWER_STDOUT_WORLD,&c1,&c2);
 }
   
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void petscinitializefortran_(void)
 {
@@ -98,6 +91,5 @@ void petsc_null_function_(void)
   return;
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
+

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.115 1998/09/24 23:59:13 balay Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.116 1998/09/25 00:17:59 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -108,12 +108,10 @@ static int     TRid         = 0;
 static int     TRdebugLevel = 0;
 static long    TRMaxMem     = 0;
 
-#if defined(HAVE_MALLOC_VERIFY) && defined(__cplusplus)
-extern "C" {
-  extern int malloc_verify();
-}
-#elif defined(HAVE_MALLOC_VERIFY)
-  extern int malloc_verify();
+#if defined(HAVE_MALLOC_VERIFY)
+EXTERN_C_BEGIN
+extern int malloc_verify();
+EXTERN_C_END
 #endif
 
 

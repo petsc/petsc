@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.40 1998/08/26 22:01:46 balay Exp balay $";
+static char vcid[] = "$Id: inherit.c,v 1.41 1998/09/28 18:49:31 balay Exp bsmith $";
 #endif
 /*
      Provides utility routines for manipulating any type of PETSc object.
@@ -39,7 +39,7 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,MPI_Comm comm,in
   h->bops->queryfunction    = PetscObjectQueryFunction_Petsc;
   h->bops->querylanguage    = PetscObjectQueryLanguage_Petsc;
   h->bops->composelanguage  = PetscObjectComposeLanguage_Petsc;
-  PetscCommDup_Private(comm,&h->comm,&h->tag);
+  PetscCommDuplicate_Private(comm,&h->comm,&h->tag);
   PetscFunctionReturn(0);
 }
 
@@ -54,7 +54,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
   int ierr;
 
   PetscFunctionBegin;
-  PetscCommFree_Private(&h->comm);
+  PetscCommDestroy_Private(&h->comm);
   PetscFree(h->bops);
   PetscFree(h->ops);
   ierr = OListDestroy(&h->olist);CHKERRQ(ierr);
@@ -595,6 +595,10 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
    Notes:
    PetscObjectComposeFunction() can be used with any PETSc object (such as
    Mat, Vec, KSP, SNES, etc.) or any user-provided object. 
+
+   The composed function must be wrapped in a EXTERN_C_BEGIN/END for this to
+   work in C++/complex with dynamic link libraries (USE_DYNAMIC_LIBRARIES)
+   enabled.
 
 .keywords: object, composition
 

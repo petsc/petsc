@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.50 1998/04/27 19:48:45 curfman Exp balay $";
+static char vcid[] = "$Id: fp.c,v 1.51 1998/05/13 18:28:32 balay Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -18,14 +18,12 @@ static char vcid[] = "$Id: fp.c,v 1.50 1998/04/27 19:48:45 curfman Exp balay $";
 /*----------------sun4 ---------------------------------------------------*/
 #if defined(PARCH_sun4) 
 #include <floatingpoint.h>
-#if defined(__cplusplus)
-extern "C" {
-#endif
+
+EXTERN_C_BEGIN
 int ieee_flags(char*,char*,char*,char**);
 int ieee_handler(char *,char *,sigfpe_handler_type(int,int,struct sigcontext*,char *));
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
+
 struct { int code_no; char *name; } error_codes[] = {
            { FPE_INTDIV_TRAP	, "integer divide" } ,
 	   { FPE_FLTOPERR_TRAP	, "IEEE operand error" } ,

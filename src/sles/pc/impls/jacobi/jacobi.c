@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.53 1998/05/29 20:36:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.54 1998/07/27 03:14:36 bsmith Exp bsmith $";
 #endif
 
 /*  -------------------------------------------------------------------- 
@@ -286,6 +286,7 @@ static int PCDestroy_Jacobi(PC pc)
 
    Application Interface Routine: PCCreate()
 */
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_Jacobi"
 int PCCreate_Jacobi(PC pc)
@@ -331,5 +332,5 @@ int PCCreate_Jacobi(PC pc)
   pc->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 

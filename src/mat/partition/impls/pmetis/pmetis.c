@@ -1,18 +1,14 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.10 1998/04/13 17:41:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.11 1998/04/20 19:29:53 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
 #if defined(HAVE_PARMETIS)
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "mat.h" I*/
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 #include "par_kmetis.h"
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
 
 /*
       The first 5 elements of this structure are the input control array to Metis
@@ -152,6 +148,7 @@ int PartitioningDestroy_Parmetis(Partitioning part)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PartitioningCreate_Parmetis" 
 int PartitioningCreate_Parmetis(Partitioning part)
@@ -176,6 +173,7 @@ int PartitioningCreate_Parmetis(Partitioning part)
   part->data           = (void *) parmetis;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #else
 

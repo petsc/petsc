@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.74 1998/10/02 03:42:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.75 1998/10/06 13:55:24 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -44,9 +44,7 @@ typedef unsigned long   u_long;
 #if defined(PARCH_sun4) || defined(PARCH_rs6000) || defined(PARCH_freebsd) \
     || defined(PARCH_hpux) || defined(PARCH_alpha) || defined(PARCH_solaris) \
     || defined(PARCH_linux)
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 #if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_hpux) \
     && !defined(PARCH_alpha) && !defined(PARCH_solaris) && \
     !defined(PARCH_linux)
@@ -86,9 +84,7 @@ extern unsigned int sleep(unsigned int);
 extern int sleep(unsigned);
 #endif
 #endif
-#if defined(__cplusplus)
-};
-#endif
+EXTERN_C_END
 #endif
 
 #if (defined(PARCH_IRIX)  || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)) && defined(__cplusplus)

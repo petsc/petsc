@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.100 1998/08/31 22:04:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.101 1998/09/04 18:25:02 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -108,6 +108,7 @@ int DAView_2d(DA da,Viewer viewer)
       This function tells the AMS the layout of the vectors, it is called
    in the VecPublish_xx routines.
 */
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "AMSSetFieldBlock_DA"
 int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
@@ -153,6 +154,7 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 #endif
 
 #undef __FUNC__  

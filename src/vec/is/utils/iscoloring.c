@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.31 1998/06/07 20:00:24 curfman Exp balay $";
+static char vcid[] = "$Id: iscoloring.c,v 1.32 1998/07/22 20:18:47 balay Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -28,7 +28,7 @@ int ISColoringDestroy(ISColoring iscoloring)
   for ( i=0; i<iscoloring->n; i++ ) {
     ierr = ISDestroy(iscoloring->is[i]); CHKERRQ(ierr);
   }
-  PetscCommFree_Private(&iscoloring->comm);
+  PetscCommDestroy_Private(&iscoloring->comm);
   PetscFree(iscoloring->is);
   PetscFree(iscoloring);
   PetscFunctionReturn(0);
@@ -134,7 +134,7 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
 
   PetscFunctionBegin;
   *iscoloring = (ISColoring) PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
-  ierr = PetscCommDup_Private(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate_Private(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
   comm = (*iscoloring)->comm;
 
   /* compute the number of the first node on my processor */

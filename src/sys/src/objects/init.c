@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.16 1998/08/26 22:01:46 balay Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.17 1998/10/09 19:20:45 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -287,12 +287,10 @@ void Petsc_MPI_Abort_Function(MPI_Comm *comm,int *flag)
   abort();
 }
 
-#if defined(HAVE_MALLOC_VERIFY) && defined(__cplusplus)
-extern "C" {
-  extern int malloc_debug(int);
-}
-#elif defined(HAVE_MALLOC_VERIFY)
-  extern int malloc_debug(int);
+#if defined(HAVE_MALLOC_VERIFY)
+EXTERN_C_BEGIN
+extern int malloc_debug(int);
+EXTERN_C_END
 #endif
 
 extern int PLogInfoAllow(PetscTruth);
@@ -718,15 +716,15 @@ int AliceInitialize(int *argc,char ***args,const char file[],const char help[])
      attribute.
     
        We delay until here to do it, since PetscMalloc() may not have been
-     setup yet.
+     setup before this.
   */
-  ierr = PetscCommDup_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);CHKERRQ(ierr);
-  ierr = PetscCommDup_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); CHKERRQ(ierr);
+  ierr = PetscCommDuplicate_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); CHKERRQ(ierr);
 
   /*
       Initialize all the default viewers
   */
-  ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
+  ierr = ViewerInitializeASCII_Private(); CHKERRQ(ierr);
   if (PetscBeganMPI) {
     int size;
 
@@ -799,11 +797,14 @@ int AliceFinalize(void)
 
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
-  ViewerDestroy_Private();
-  ViewerDestroyDrawX_Private();
-  ViewerDestroyMatlab_Private();
+  /*
+       Close any default viewers that may have been opened during the run
+  */
+  ierr = ViewerDestroyASCII_Private();CHKERRQ(ierr);
+  ierr = ViewerDestroyDrawX_Private();CHKERRQ(ierr);
+  ierr = ViewerDestroyMatlab_Private();CHKERRQ(ierr);
 #if defined(HAVE_AMS)
-  ViewerDestroyAMS_Private();
+  ierr = ViewerDestroyAMS_Private();CHKERRQ(ierr);
 #endif
 
   ierr = OptionsHasName(PETSC_NULL,"-get_resident_set_size",&flg1);CHKERRQ(ierr);
@@ -896,12 +897,12 @@ int AliceFinalize(void)
        Destroy PETSC_COMM_SELF as a MPI_Comm with the PETSc 
      attribute.
   */
-  ierr = PetscCommFree_Private(&PETSC_COMM_SELF);CHKERRQ(ierr);
-  ierr = PetscCommFree_Private(&PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscCommDestroy_Private(&PETSC_COMM_SELF);CHKERRQ(ierr);
+  ierr = PetscCommDestroy_Private(&PETSC_COMM_WORLD);CHKERRQ(ierr);
 
 #if defined(USE_PETSC_LOG)
-  PLogEventRegisterDestroy_Private();
-  PLogStageDestroy_Private();
+  ierr = PLogEventRegisterDestroy_Private();CHKERRQ(ierr);
+  ierr = PLogStageDestroy_Private();CHKERRQ(ierr);
 #endif
 
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
@@ -931,7 +932,7 @@ int AliceFinalize(void)
     ierr = PetscTrLogDump(stdout);CHKERRQ(ierr); 
   }
   /* Can be destroyed only after all the options are used */
-  OptionsDestroy();
+  ierr = OptionsDestroy();CHKERRQ(ierr);
 
 
   if (PetscBeganMPI) {
@@ -945,13 +946,13 @@ int AliceFinalize(void)
      Note: In certain cases PETSC_COMM_WORLD is never MPI_Comm_free()ed because 
    the communicator has some outstanding requests on it. Specifically if the 
    flag HAVE_BROKEN_REQUEST_FREE is set (for IBM MPI implementation). See 
-   src/vec/utils/vpscat.c. Due to this the memory allocated in PetscCommDup_Private()
+   src/vec/utils/vpscat.c. Due to this the memory allocated in PetscCommDuplicate_Private()
    is never freed as it should be. Thus one may obtain messages of the form
-   [ 1] 8 bytes PetscCommDup_Private() line 645 in src/sys/src/mpiu.c indicating the
+   [ 1] 8 bytes PetscCommDuplicate_Private() line 645 in src/sys/src/mpiu.c indicating the
    memory was not freed.
 
 */
-  PetscClearMalloc();
+  ierr = PetscClearMalloc();CHKERRQ(ierr);
   PetscInitializedCalled = 0;
   PetscFunctionReturn(0);
 }

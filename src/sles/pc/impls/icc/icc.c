@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: icc.c,v 1.50 1998/03/06 00:13:52 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.51 1998/04/03 23:14:29 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -133,6 +133,7 @@ static int PCSetFromOptions_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_ICC"
 int PCCreate_ICC(PC pc)
@@ -159,5 +160,6 @@ int PCCreate_ICC(PC pc)
   pc->applysymmetricright = PCApplySymmetricRight_ICC;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 

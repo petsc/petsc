@@ -63,14 +63,11 @@ Fortran.
     Here we assume that only MPICH uses pointers for 
   MPI_Comms on 64 bit machines.
 */
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 extern void *MPIR_ToPointer(int);
 extern int   MPIR_FromPointer(void*);
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
+
 #define PetscToPointerComm(a)    MPIR_ToPointer(*(int *)(&a))
 #define PetscFromPointerComm(a)  MPIR_FromPointer(a)
 

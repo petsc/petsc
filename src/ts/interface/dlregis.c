@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.6 1998/04/22 14:23:30 curfman Exp curfman $";
+static char vcid[] = "$Id: dlregis.c,v 1.7 1998/04/22 19:13:34 curfman Exp bsmith $";
 #endif
 
 #include "ts.h"
@@ -38,14 +38,12 @@ static char *authors = PETSC_AUTHOR_INFO;
 static char *version = PETSC_VERSION_NUMBER;
 
 /* --------------------------------------------------------------------------*/
-char *DLLibraryInfo(char *path,char *type) 
+int DLLibraryInfo(char *path,char *type,char **mess) 
 { 
-  char *mess = contents;
+  if (!PetscStrcmp(type,"Contents"))     *mess = contents;
+  else if (!PetscStrcmp(type,"Authors")) *mess = authors;
+  else if (!PetscStrcmp(type,"Version")) *mess = version;
+  else *mess = 0;
 
-  if (!PetscStrcmp(type,"Contents"))     mess = contents;
-  else if (!PetscStrcmp(type,"Authors")) mess = authors;
-  else if (!PetscStrcmp(type,"Version")) mess = version;
-  else mess = 0;
-
-  return mess;
+  return 0;
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.111 1998/07/24 15:38:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.112 1998/07/28 15:51:26 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -179,6 +179,7 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
 
 /* -------------------------------------------------------------------------------------*/  
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCBGSSetSymmetric_BGS"
 int PCBGSSetSymmetric_BGS(PC pc, PCBGSType flag)
@@ -190,7 +191,9 @@ int PCBGSSetSymmetric_BGS(PC pc, PCBGSType flag)
   jac->gstype = flag;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCBJacobiSetUseTrueLocal_BJacobi"
 int PCBJacobiSetUseTrueLocal_BJacobi(PC pc)
@@ -202,7 +205,9 @@ int PCBJacobiSetUseTrueLocal_BJacobi(PC pc)
   jac->use_true_local = 1;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCBJacobiGetSubSLES_BJacobi"
 int PCBJacobiGetSubSLES_BJacobi(PC pc,int *n_local,int *first_local,SLES **sles)
@@ -221,7 +226,9 @@ int PCBJacobiGetSubSLES_BJacobi(PC pc,int *n_local,int *first_local,SLES **sles)
                                  used only for PCView_BJacobi */
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCBJacobiSetTotalBlocks_BJacobi"
 int PCBJacobiSetTotalBlocks_BJacobi(PC pc, int blocks,int *lens)
@@ -240,7 +247,9 @@ int PCBJacobiSetTotalBlocks_BJacobi(PC pc, int blocks,int *lens)
   }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCBJacobiSetLocalBlocks_BJacobi"
 int PCBJacobiSetLocalBlocks_BJacobi(PC pc, int blocks,int *lens)
@@ -260,6 +269,7 @@ int PCBJacobiSetLocalBlocks_BJacobi(PC pc, int blocks,int *lens)
   }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* -------------------------------------------------------------------------------------*/  
 
@@ -588,6 +598,7 @@ int PCBGSSetLocalBlocks(PC pc, int blocks,int *lens)
 
 /* -----------------------------------------------------------------------------------*/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_BJacobi"
 int PCCreate_BJacobi(PC pc)
@@ -630,7 +641,9 @@ int PCCreate_BJacobi(PC pc)
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_BGS"
 int PCCreate_BGS(PC pc)
@@ -651,3 +664,4 @@ int PCCreate_BGS(PC pc)
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

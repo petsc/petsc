@@ -1,13 +1,29 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecreg.c,v 1.1 1998/06/10 17:43:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecreg.c,v 1.2 1998/06/11 19:54:45 bsmith Exp bsmith $";
 #endif
 
 #include "src/vec/vecimpl.h"  /*I "vec.h" I*/
 
-extern int VecCreateMPI(MPI_Comm,int,int,Vec *);
-extern int VecCreateShared(MPI_Comm,int,int,Vec *);
-extern int VecCreateSeq_Stub(MPI_Comm,int,int,Vec *);
-  
+/*
+    We need these stubs since with C++ we need to compile with 
+  extern "C"
+*/
+EXTERN_C_BEGIN
+int VecCreate_Seq(MPI_Comm comm, int n, int N, Vec *v)
+{
+  return VecCreateSeq(comm,PetscMax(n,N),v);
+}
+int VecCreate_MPI(MPI_Comm comm, int n, int N, Vec *v)
+{
+  return VecCreateMPI(comm,n,N,v);
+}
+int VecCreate_Shared(MPI_Comm comm, int n, int N, Vec *v)
+{
+  return VecCreateShared(comm,n,N,v);
+}
+EXTERN_C_END
+
+
 
 /*
     This is used by VecCreate() to make sure that at least one 
@@ -34,12 +50,12 @@ int VecRegisterAll(char *path)
   PetscFunctionBegin;
   VecRegisterAllCalled = 1;
 
-  ierr = VecRegister("PETSc#VecMPI",    path,"VecCreateMPI",     VecCreateMPI);CHKERRQ(ierr);
-  ierr = VecRegister("PETSc#VecShared", path,"VecCreateShared",  VecCreateShared);CHKERRQ(ierr);
-  ierr = VecRegister("PETSc#VecSeq",    path,"VecCreateSeq_Stub",VecCreateSeq_Stub);CHKERRQ(ierr);
+  ierr = VecRegister("PETSc#VecMPI",    path,"VecCreate_MPI",     VecCreate_MPI);CHKERRQ(ierr);
+  ierr = VecRegister("PETSc#VecShared", path,"VecCreate_Shared",  VecCreate_Shared);CHKERRQ(ierr);
+  ierr = VecRegister("PETSc#VecSeq",    path,"VecCreate_Seq",VecCreate_Seq);CHKERRQ(ierr);
 
-  ierr = VecRegister("mpi",             path,"VecCreateMPI",     VecCreateMPI);CHKERRQ(ierr);
-  ierr = VecRegister("shared",          path,"VecCreateShared",  VecCreateShared);CHKERRQ(ierr);
-  ierr = VecRegister("seq",             path,"VecCreateSeq_Stub",VecCreateSeq_Stub);CHKERRQ(ierr);
+  ierr = VecRegister("mpi",             path,"VecCreate_MPI",     VecCreate_MPI);CHKERRQ(ierr);
+  ierr = VecRegister("shared",          path,"VecCreate_Shared",  VecCreate_Shared);CHKERRQ(ierr);
+  ierr = VecRegister("seq",             path,"VecCreate_Seq",VecCreate_Seq);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

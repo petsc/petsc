@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zviewer.c,v 1.12 1998/10/05 20:43:29 balay Exp bsmith $";
+static char vcid[] = "$Id: zviewer.c,v 1.13 1998/10/06 13:57:14 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -27,9 +27,7 @@ static char vcid[] = "$Id: zviewer.c,v 1.12 1998/10/05 20:43:29 balay Exp bsmith
 #define viewerdrawopenx_      viewerdrawopenx
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void viewermatlabopen_(MPI_Comm *comm,CHAR name,int *port,Viewer *lab, 
                        int *__ierr,int len1 )
@@ -111,7 +109,6 @@ void viewerdrawopenx_(MPI_Comm *comm,CHAR display,CHAR title, int *x,int*y,int*w
   FREECHAR(title,c2);
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
+
 

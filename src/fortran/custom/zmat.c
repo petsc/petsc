@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.56 1998/10/05 18:36:15 bsmith Exp balay $";
+static char vcid[] = "$Id: zmat.c,v 1.57 1998/10/05 20:42:56 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -77,9 +77,7 @@ static char vcid[] = "$Id: zmat.c,v 1.56 1998/10/05 18:36:15 bsmith Exp balay $"
 #define matgetsubmatrices_               matgetsubmatrices
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void matsetvalue_(Mat *mat,int *i,int *j,Scalar *va,InsertMode *mode)
 {
@@ -423,6 +421,5 @@ void matgetsubmatrices_(Mat *mat, int *n, IS *isrow, IS *iscol,MatGetSubMatrixCa
   PetscFree(lsmat); 
 }
   
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
+

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zts.c,v 1.12 1998/04/21 18:23:47 balay Exp balay $";
+static char vcid[] = "$Id: zts.c,v 1.13 1998/10/05 20:43:23 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -35,9 +35,7 @@ static char vcid[] = "$Id: zts.c,v 1.12 1998/04/21 18:23:47 balay Exp balay $";
 #define tssettype_                            tssettype
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void tssettype_(TS *ts,CHAR itmethod, int *__ierr,int len )
 {
@@ -170,7 +168,5 @@ void tssetrhsjacobiandefault_(TS *ts,MatFDColoring *fd,Mat *A,Mat *B,int *err)
   *err = TSSetRHSJacobianDefault(*ts,*fd,*A,*B); 
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
 

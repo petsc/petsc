@@ -1,13 +1,15 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsregall.c,v 1.19 1998/07/27 03:52:06 curfman Exp balay $";
+static char vcid[] = "$Id: tsregall.c,v 1.20 1998/07/27 21:55:09 balay Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"     /*I  "ts.h"  I*/
+EXTERN_C_BEGIN
 extern int TSCreate_Euler(TS);
 extern int TSCreate_BEuler(TS);
 extern int TSCreate_Pseudo(TS);
 extern int TSCreate_PVode(TS);
 extern int TSCreate_CN(TS);
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "TSRegisterAll"

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.46 1998/07/20 00:15:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.47 1998/07/28 15:47:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -107,6 +107,7 @@ static int PCView_Shell(PC pc,Viewer viewer)
 }
 
 /* ------------------------------------------------------------------------------*/
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCShellSetSetUp_Shell"
 int PCShellSetSetUp_Shell(PC pc, int (*setup)(void*))
@@ -118,7 +119,9 @@ int PCShellSetSetUp_Shell(PC pc, int (*setup)(void*))
   shell->setup = setup;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCShellSetApply_Shell"
 int PCShellSetApply_Shell(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
@@ -131,7 +134,9 @@ int PCShellSetApply_Shell(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
   shell->ctx   = ptr;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCShellSetApplyTrans_Shell"
 int PCShellSetApplyTrans_Shell(PC pc, int (*applytrans)(void*,Vec,Vec))
@@ -143,7 +148,9 @@ int PCShellSetApplyTrans_Shell(PC pc, int (*applytrans)(void*,Vec,Vec))
   shell->applytrans = applytrans;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCShellSetName_Shell"
 int PCShellSetName_Shell(PC pc,char *name)
@@ -155,7 +162,9 @@ int PCShellSetName_Shell(PC pc,char *name)
   shell->name = name;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCShellGetName_Shell"
 int PCShellGetName_Shell(PC pc,char **name)
@@ -167,7 +176,9 @@ int PCShellGetName_Shell(PC pc,char **name)
   *name  = shell->name;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCShellSetApplyRichardson_Shell"
 int PCShellSetApplyRichardson_Shell(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),void *ptr)
@@ -181,6 +192,7 @@ int PCShellSetApplyRichardson_Shell(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),v
   shell->ctxrich   = ptr;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* -------------------------------------------------------------------------------*/
 
@@ -416,6 +428,7 @@ $             PCShellSetApply(pc,mult,ctx);
 $             PCShellSetSetUp(pc,setup);       (optional)
 
 */
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_Shell"
 int PCCreate_Shell(PC pc)
@@ -460,7 +473,7 @@ int PCCreate_Shell(PC pc)
 
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.85 1998/04/21 23:48:38 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.86 1998/04/24 04:53:00 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -358,6 +358,7 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,void *d
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------ */
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "SNESCreate_EQ_TR"
 int SNESCreate_EQ_TR(SNES snes )
@@ -393,5 +394,5 @@ int SNESCreate_EQ_TR(SNES snes )
   neP->ttol		= 0;
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 

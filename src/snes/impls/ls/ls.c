@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.114 1998/08/31 14:34:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.115 1998/09/10 18:34:03 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -659,6 +659,7 @@ int SNESSetLineSearch(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "SNESSetLineSearch_LS"
 int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
@@ -668,6 +669,7 @@ int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
   ((SNES_LS *)(snes->data))->LineSearch = func;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 /* -------------------------------------------------------------------------- */
 /*
    SNESPrintHelp_EQ_LS - Prints all options for the SNES_EQ_LS method.
@@ -785,6 +787,7 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
 
    Application Interface Routine: SNESCreate()
  */
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "SNESCreate_EQ_LS"
 int SNESCreate_EQ_LS(SNES snes)
@@ -819,7 +822,7 @@ int SNESCreate_EQ_LS(SNES snes)
 
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zis.c,v 1.25 1998/09/20 03:04:16 bsmith Exp balay $";
+static char vcid[] = "$Id: zis.c,v 1.26 1998/10/05 20:42:50 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -50,9 +50,7 @@ static char vcid[] = "$Id: zis.c,v 1.25 1998/09/20 03:04:16 bsmith Exp balay $";
 #define isallgather_                  isallgather
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void iscoloringdestroy_(ISColoring *iscoloring, int *__ierr )
 {
@@ -173,6 +171,5 @@ void isallgather_(IS *is,IS *isout, int *__ierr )
 
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
+

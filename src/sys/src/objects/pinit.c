@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.4 1998/08/26 22:01:46 balay Exp bsmith $";
+static char vcid[] = "$Id: pinit.c,v 1.5 1998/10/09 19:20:45 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -171,8 +171,8 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = AliceInitialize(argc,args,file,help);
-  ierr = OptionsCheckInitial_Components();
+  ierr = AliceInitialize(argc,args,file,help);CHKERRQ(ierr);
+  ierr = OptionsCheckInitial_Components();CHKERRQ(ierr);
 
   /*
       Initialize the default dynamic libraries

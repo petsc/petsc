@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.51 1998/04/24 02:16:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.52 1998/08/18 20:15:02 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -74,6 +74,8 @@ static int MatLoadPrintHelp_Private(Mat A)
 .  newmat - new matrix
 
    Basic Options Database Keys:
+   The following options will work if you first call MatGetTypeFromOptions()
+   and pass the resulting type to MatLoad().
    These options use MatCreateSeqXXX or MatCreateMPIXXX,
    depending on the communicator, comm.
 +    -mat_aij      - AIJ type
@@ -146,7 +148,8 @@ and PetscWriteBinary() to see how this may be done.
 .keywords: matrix, load, binary, input
 
 .seealso: ViewerFileOpenBinary(), MatView(), VecLoad(), MatLoadRegister(),
-          MatLoadRegisterAll()
+          MatLoadRegisterAll(), MatGetTypeFromOptions()
+
  @*/  
 int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.53 1998/09/25 00:20:46 balay Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.54 1998/10/05 20:43:20 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -71,9 +71,7 @@ static char vcid[] = "$Id: zsys.c,v 1.53 1998/09/25 00:20:46 balay Exp balay $";
 #define petscbinaryseek_           petscbinaryseek
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void petscbarrier_(PetscObject *A, int *__ierr )
 {
@@ -289,7 +287,6 @@ void petscreleasepointer_(int *index,int *__ierr)
    *__ierr = 0;
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
+
 

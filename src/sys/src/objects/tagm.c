@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tagm.c,v 1.3 1998/06/29 21:01:23 balay Exp balay $";
+static char vcid[] = "$Id: tagm.c,v 1.4 1998/06/30 18:36:32 balay Exp bsmith $";
 #endif
 /*
       Some PETSc utilites
@@ -39,6 +39,7 @@ static int Petsc_Tag_keyval = MPI_KEYVAL_INVALID;
 int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
 {
   PetscFunctionBegin;
+  PLogInfo(0,"Deleting tag data in an MPI_Comm %d\n",(int) comm);
   PetscFree( attr_val );
   PetscFunctionReturn(MPI_SUCCESS);
 }
@@ -118,23 +119,23 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscCommDup_Private" 
+#define __FUNC__ "PetscCommDuplicate_Private" 
 /*
-  PetscCommDup_Private - Duplicates the communicator only if it is not already PETSc 
+  PetscCommDuplicate_Private - Duplicates the communicator only if it is not already PETSc 
                          communicator.
 
   Input Parameters:
 . comm_in - Input communicator
 
   Output Parameters:
-. comm_out - Output communicator.  May be 'comm_in'.
-. first_tag - First tag available
++ comm_out - Output communicator.  May be 'comm_in'.
+- first_tag - First tag available
 
   Notes:
   This routine returns one tag number.
-  Call Petsc_Comm_free() when finished with the communicator.
+
 */
-int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
+int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 {
   int ierr = MPI_SUCCESS,*tagvalp, flag,*maxval;
 
@@ -147,7 +148,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
        the older version you will get a warning message about the next line;
        it is only a warning message and should do no harm.
     */
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN, Petsc_DelTag,&Petsc_Tag_keyval,(void*)0);CHKERRQ(ierr);
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelTag,&Petsc_Tag_keyval,(void*)0);CHKERRQ(ierr);
   }
 
   ierr = MPI_Attr_get(comm_in,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
@@ -160,6 +161,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
     ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval, tagvalp);CHKERRQ(ierr);
+    PLogInfo(0,"Duplicating a communicator %d %d\n",(int) comm_in,(int)*comm_out);
   } else {
     *comm_out = comm_in;
   }
@@ -184,21 +186,24 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscCommFree_Private" 
+#define __FUNC__ "PetscCommDestroy_Private" 
 /*
-  PetscCommFree_Private - Frees communicator.  Use in conjunction with PetscCommDup_Private().
+  PetscCommDestroy_Private - Frees communicator.  Use in conjunction with PetscCommDuplicate_Private().
 */
-int PetscCommFree_Private(MPI_Comm *comm)
+int PetscCommDestroy_Private(MPI_Comm *comm)
 {
   int ierr,*tagvalp,flag;
 
   PetscFunctionBegin;
   ierr = MPI_Attr_get(*comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
   if (!flag) {
-    SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Error freeing PETSc object, problem with corrupted memory");
+    SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Error freeing MPI_Comm, problem with corrupted memory");
   }
   tagvalp[1]--;
-  if (!tagvalp[1]) {ierr = MPI_Comm_free(comm);CHKERRQ(ierr);}
+  if (!tagvalp[1]) {
+    PLogInfo(0,"Deleting MPI_Comm %d\n",(int) *comm);
+    ierr = MPI_Comm_free(comm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

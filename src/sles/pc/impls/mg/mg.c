@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.79 1998/04/13 17:33:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.80 1998/04/24 21:21:30 curfman Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -563,6 +563,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
 
 /* ----------------------------------------------------------------------------------------*/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_MG"
 int PCCreate_MG(PC pc)
@@ -577,3 +578,4 @@ int PCCreate_MG(PC pc)
   pc->view           = PCView_MG;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

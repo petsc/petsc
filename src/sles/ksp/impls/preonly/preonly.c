@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: preonly.c,v 1.24 1998/07/28 15:50:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: preonly.c,v 1.25 1998/10/09 19:20:21 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -51,6 +51,7 @@ static int  KSPSolveTrans_PREONLY(KSP ksp,int *its)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_PREONLY"
 int KSPCreate_PREONLY(KSP ksp)
@@ -68,3 +69,4 @@ int KSPCreate_PREONLY(KSP ksp)
   ksp->guess_zero                = 0; 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

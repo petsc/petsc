@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iccbs.c,v 1.28 1998/03/24 20:58:44 balay Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.29 1998/04/03 23:15:15 bsmith Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -65,16 +65,18 @@ int PCPreSolve_MPIRowbs(PC pc,KSP ksp)
   /* Permute and scale RHS and solution vectors */
   ierr = KSPGetSolution(ksp,&x); CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&rhs); CHKERRQ(ierr);
-  ierr = VecGetArray(rhs,&rhsa); CHKERRQ(ierr);
   ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
   ierr = VecGetArray(v,&va); CHKERRQ(ierr);
   BSperm_dvec(xa,va,bsif->pA->perm); CHKERRBS(0);
-  ierr = VecPointwiseDivide(v,bsif->diag,x); CHKERRQ(ierr);
-  BSperm_dvec(rhsa,va,bsif->pA->perm); CHKERRBS(0);
-  ierr = VecPointwiseMult(v,bsif->diag,rhs); CHKERRQ(ierr);
-  ierr = VecRestoreArray(rhs,&rhsa); CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
+  ierr = VecPointwiseDivide(v,bsif->diag,x); CHKERRQ(ierr);
+  ierr = VecGetArray(rhs,&rhsa); CHKERRQ(ierr);
+  ierr = VecGetArray(v,&va); CHKERRQ(ierr);
+  BSperm_dvec(rhsa,va,bsif->pA->perm); CHKERRBS(0);
+  ierr = VecRestoreArray(rhs,&rhsa); CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
+  ierr = VecPointwiseMult(v,bsif->diag,rhs); CHKERRQ(ierr);
   bsif->vecs_permscale  = 1;
   bsifa->vecs_permscale = 1;
   PetscFunctionReturn(0);
@@ -97,15 +99,18 @@ int PCPostSolve_MPIRowbs(PC pc,KSP ksp)
   /* Unpermute and unscale the solution and RHS vectors */
   ierr = KSPGetSolution(ksp,&x); CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&rhs); CHKERRQ(ierr);
+  ierr = VecPointwiseMult(x,bsif->diag,v); CHKERRQ(ierr);
+
   ierr = VecGetArray(v,&va); CHKERRQ(ierr);
   ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
-  ierr = VecGetArray(rhs,&rhsa); CHKERRQ(ierr);
-  ierr = VecPointwiseMult(x,bsif->diag,v); CHKERRQ(ierr);
   BSiperm_dvec(va,xa,bsif->pA->perm); CHKERRBS(0);
+  ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
   ierr = VecPointwiseDivide(rhs,bsif->diag,v); CHKERRQ(ierr);
+  ierr = VecGetArray(rhs,&rhsa); CHKERRQ(ierr);
+  ierr = VecGetArray(v,&va); CHKERRQ(ierr);
   BSiperm_dvec(va,rhsa,bsif->pA->perm); CHKERRBS(0);
   ierr = VecRestoreArray(rhs,&rhsa); CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
   bsif->vecs_permscale  = 0;
   bsifa->vecs_permscale = 0;

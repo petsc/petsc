@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tcqmr.c,v 1.40 1998/07/28 15:50:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tcqmr.c,v 1.41 1998/10/09 19:20:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -165,6 +165,7 @@ static int KSPSetUp_TCQMR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_TCQMR"
 int KSPCreate_TCQMR(KSP ksp)
@@ -181,3 +182,4 @@ int KSPCreate_TCQMR(KSP ksp)
   ksp->ops->view          = 0;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.40 1998/05/18 19:25:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.41 1998/05/18 19:26:21 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -102,15 +102,10 @@ int PetscRandomSetInterval(PetscRandom r,Scalar low,Scalar high)
    a routine to enable restarts [seed48()] 
 */
 #if defined(HAVE_DRAND48)
-#if defined(__cplusplus)
-extern "C" {
+EXTERN_C_BEGIN
 extern double drand48();
 extern void   srand48(long);
-}
-#else
-extern double drand48();
-extern void   srand48(long);
-#endif
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "PetscRandomCreate" 

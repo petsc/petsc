@@ -1,13 +1,16 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesregi.c,v 1.26 1998/04/21 19:37:00 curfman Exp curfman $";
+static char vcid[] = "$Id: snesregi.c,v 1.27 1998/04/22 14:13:53 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
+
+EXTERN_C_BEGIN
 extern int SNESCreate_EQ_LS(SNES);
 extern int SNESCreate_EQ_TR(SNES);
 extern int SNESCreate_UM_TR(SNES);
 extern int SNESCreate_UM_LS(SNES);
 extern int SNESCreate_Test(SNES);
+EXTERN_C_END
   
 /*
       This is used by SNESSetType() to make sure that at least one 

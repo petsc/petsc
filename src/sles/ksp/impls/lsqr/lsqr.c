@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.43 1998/09/03 18:12:31 balay Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.44 1998/10/09 19:20:20 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -184,6 +184,7 @@ int KSPDestroy_LSQR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_LSQR"
 int KSPCreate_LSQR(KSP ksp)
@@ -206,3 +207,4 @@ int KSPCreate_LSQR(KSP ksp)
   ksp->ops->view                 = 0;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

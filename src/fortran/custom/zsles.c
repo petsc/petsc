@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsles.c,v 1.13 1998/03/30 22:22:21 balay Exp bsmith $";
+static char vcid[] = "$Id: zsles.c,v 1.14 1998/09/21 01:44:12 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -22,9 +22,7 @@ static char vcid[] = "$Id: zsles.c,v 1.13 1998/03/30 22:22:21 balay Exp bsmith $
 #define slesgetksp_              slesgetksp
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void slessetoptionsprefix_(SLES *sles,CHAR prefix, int *__ierr,int len )
 {
@@ -65,8 +63,6 @@ void slescreate_(MPI_Comm *comm,SLES *outsles, int *__ierr )
 
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
 
 

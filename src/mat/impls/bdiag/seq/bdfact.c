@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdfact.c,v 1.48 1998/04/03 23:15:21 bsmith Exp balay $";
+static char vcid[] = "$Id: bdfact.c,v 1.49 1998/06/01 22:07:41 balay Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -210,6 +210,8 @@ int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
     }
     y[i] = sum*dd[i];
   }
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->n);
   PetscFunctionReturn(0);
 }
@@ -267,6 +269,8 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
     y[inb+1] = dvt[1]*sum0 + dvt[3]*sum1;
     inb -= 2; inb2 -= 4;
   }
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->n);
   PetscFunctionReturn(0);
 }
@@ -326,6 +330,8 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
     y[inb+2] = dvt[2]*sum0 + dvt[5]*sum1 + dvt[8]*sum2;
     inb -= 3; inb2 -= 9;
   }
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->n);
   PetscFunctionReturn(0);
 }
@@ -388,6 +394,8 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
     y[inb+3] = dvt[3]*sum0 + dvt[7]*sum1 + dvt[11]*sum2 + dvt[15]*sum3;
     inb -= 4; inb2 -= 16;
   }
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->n);
   PetscFunctionReturn(0);
 }
@@ -459,6 +467,8 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
                + dvt[24]*sum4;
     inb -= 5; inb2 -= 25;
   }
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->n);
   PetscFunctionReturn(0);
 }
@@ -506,6 +516,8 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
     PetscMemcpy(y+inb,work,bs*sizeof(Scalar));
     inb -= bs; inb2 -= bs2;
   }
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->n);
   PetscFunctionReturn(0);
 }

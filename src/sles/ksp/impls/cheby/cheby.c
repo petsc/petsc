@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.60 1998/07/28 15:49:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.61 1998/10/09 19:20:17 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -23,6 +23,7 @@ int KSPSetUp_Chebychev(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPChebychevSetEigenvalues_Chebychev"
 int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,double emax,double emin)
@@ -34,6 +35,7 @@ int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,double emax,double emin)
   chebychevP->emin = emin;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "KSPChebychevSetEigenvalues"
@@ -195,6 +197,7 @@ int KSPView_Chebychev(KSP ksp,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_Chebychev"
 int KSPCreate_Chebychev(KSP ksp)
@@ -225,3 +228,4 @@ int KSPCreate_Chebychev(KSP ksp)
                                     (void*)KSPChebychevSetEigenvalues_Chebychev); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

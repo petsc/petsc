@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.44 1998/09/20 03:06:08 bsmith Exp balay $";
+static char vcid[] = "$Id: zvec.c,v 1.45 1998/10/05 20:43:26 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -76,9 +76,7 @@ static char vcid[] = "$Id: zvec.c,v 1.44 1998/09/20 03:06:08 bsmith Exp balay $"
 #define vecmax_                vecmax
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void vecgetmap_(Vec *x,Map *map, int *__ierr )
 {
@@ -297,6 +295,4 @@ void vecmax_(Vec *x,int *p,double *val, int *__ierr )
   *__ierr = VecMax(*x,p,val);
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END

@@ -1,10 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcregis.c,v 1.44 1998/04/22 14:24:22 curfman Exp curfman $";
+static char vcid[] = "$Id: pcregis.c,v 1.45 1998/04/24 21:21:12 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include "src/pc/pcimpl.h"          /*I   "pc.h"   I*/
 
+EXTERN_C_BEGIN
 extern int PCCreate_Jacobi(PC);
 extern int PCCreate_BJacobi(PC);
 extern int PCCreate_ILU(PC);
@@ -19,6 +20,7 @@ extern int PCCreate_ASM(PC);
 extern int PCCreate_BGS(PC);
 extern int PCCreate_SLES(PC);
 extern int PCCreate_Composite(PC);
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "PCRegisterAll"

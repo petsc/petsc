@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zdraw.c,v 1.21 1998/09/20 02:55:58 bsmith Exp balay $";
+static char vcid[] = "$Id: zdraw.c,v 1.22 1998/10/05 20:42:45 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -46,9 +46,7 @@ static char vcid[] = "$Id: zdraw.c,v 1.21 1998/09/20 02:55:58 bsmith Exp balay $
 #define drawgetpopup_        drawgetpopup
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void drawtensorcontour_(Draw *win,int *m,int *n,double *x,double *y,Vec *V, int *__ierr )
 {
@@ -188,10 +186,7 @@ void drawgetpopup_(Draw *draw,Draw *popup, int *__ierr )
   *__ierr = DrawGetPopup(*draw,popup);
 }
 
-
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
 
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bicg.c,v 1.3 1998/07/28 15:50:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bicg.c,v 1.4 1998/10/09 19:20:27 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -133,6 +133,7 @@ int KSPDestroy_BiCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_BiCG"
 int KSPCreate_BiCG(KSP ksp)
@@ -153,7 +154,7 @@ int KSPCreate_BiCG(KSP ksp)
 
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 

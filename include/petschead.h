@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.66 1998/07/21 16:25:52 bsmith Exp balay $ */
+/* $Id: petschead.h,v 1.67 1998/08/26 22:04:55 balay Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -8,8 +8,8 @@
 #define _PHEAD_H
 #include "petsc.h"  
 
-extern int PetscCommDup_Private(MPI_Comm,MPI_Comm*,int*);
-extern int PetscCommFree_Private(MPI_Comm*);
+extern int PetscCommDuplicate_Private(MPI_Comm,MPI_Comm*,int*);
+extern int PetscCommDestroy_Private(MPI_Comm*);
 
 extern int PetscRegisterCookie(int *);
 

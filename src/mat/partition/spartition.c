@@ -1,12 +1,14 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spartition.c,v 1.7 1998/04/13 17:41:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spartition.c,v 1.8 1998/04/20 19:29:53 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
 #include "mat.h"
 
+EXTERN_C_BEGIN
 extern int PartitioningCreate_Current(Partitioning);
 extern int PartitioningCreate_Parmetis(Partitioning);
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "PartitioningRegisterAll" 

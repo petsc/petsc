@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.49 1998/07/28 15:49:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.50 1998/10/09 19:20:04 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -128,6 +128,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_BCGS"
 int KSPCreate_BCGS(KSP ksp)
@@ -145,3 +146,4 @@ int KSPCreate_BCGS(KSP ksp)
   ksp->ops->view                 = 0;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

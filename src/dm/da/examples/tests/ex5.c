@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.25 1998/03/20 22:53:15 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.26 1998/03/31 17:27:07 balay Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -36,7 +36,6 @@ int main(int argc,char **argv)
 
   /* Make copy of local array for doing updates */
   ierr = VecDuplicate(local,&copy); CHKERRA(ierr);
-  ierr = VecGetArray (copy,&copyptr); CHKERRA(ierr);
 
   /* Set Up Display to Show Heat Graph */
   ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",80,480,500,160,&viewer); CHKERRA(ierr);
@@ -49,6 +48,7 @@ int main(int argc,char **argv)
   /* Initialize the Array */
   ierr = VecGetLocalSize (local,&localsize); CHKERRA(ierr);
   ierr = VecGetArray (local,&localptr);  CHKERRA(ierr);
+  ierr = VecGetArray (copy,&copyptr); CHKERRA(ierr);
   localptr[0] = copyptr[0] = 0.0;
   localptr[localsize-1] = copyptr[localsize-1] = 1.0;
   for (i=1; i<localsize-1; i++) {
@@ -58,6 +58,7 @@ int main(int argc,char **argv)
   }
 
   ierr = VecRestoreArray(local,&localptr); CHKERRA(ierr);
+  ierr = VecRestoreArray(copy,&copyptr); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 
   /* Assign Parameters */
@@ -72,6 +73,7 @@ int main(int argc,char **argv)
 
     /*Extract local array */ 
     ierr = VecGetArray(local,&localptr); CHKERRA(ierr);
+    ierr = VecGetArray (copy,&copyptr); CHKERRA(ierr);
 
     /* Update Locally - Make array of new values */
     /* Note: I don't do anything for the first and last entry */
@@ -81,6 +83,7 @@ int main(int argc,char **argv)
     }
   
     ierr = VecRestoreArray(copy,&copyptr); CHKERRA(ierr);
+    ierr = VecRestoreArray(local,&localptr); CHKERRA(ierr);
 
     /* Local to Global */
     ierr = DALocalToGlobal(da,copy,INSERT_VALUES,global); CHKERRA(ierr);

@@ -1,10 +1,8 @@
-/* $Id: dot.h,v 1.11 1998/10/08 15:40:21 bsmith Exp bsmith $ */
+/* $Id: dot.h,v 1.12 1998/10/09 19:18:54 bsmith Exp bsmith $ */
 
 #ifndef DOT
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 #if defined(USE_FORTRAN_KERNEL_MDOT)
 #if defined(HAVE_FORTRAN_CAPS)
@@ -67,21 +65,31 @@ extern void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
 #if defined(USE_FORTRAN_KERNEL_SOLVEBAIJ)
 #if defined(HAVE_FORTRAN_CAPS)
 #define fortransolvebaij4_         FORTRANSOLVEBAIJ4_
-#define fortransolvebaij4blas_     FORTRANSOLVEBAIJ4BLAS_
-#define fortransolvebaij4unroll_   FORTRANSOLVEBAIJ4UNROLL_
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4_          fortransolvebaij4
-#define fortransolvebaij4blas_      fortransolvebaij4blas
-#define fortransolvebaij4unroll_    fortransolvebaij4unroll
 #endif
 extern void fortransolvebaij4_(int *,void*,int *,int *,int*,void *,void*,void *);
+#endif
+
+#if defined(USE_FORTRAN_KERNEL_SOLVEBAIJUNROLL)
+#if defined(HAVE_FORTRAN_CAPS)
+#define fortransolvebaij4unroll_   FORTRANSOLVEBAIJ4UNROLL_
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define fortransolvebaij4unroll_    fortransolvebaij4unroll
+#endif
 extern void fortransolvebaij4unroll_(int *,void*,int *,int *,int*,void *,void*);
+#endif
+
+#if defined(USE_FORTRAN_KERNEL_SOLVEBAIJBLAS)
+#if defined(HAVE_FORTRAN_CAPS)
+#define fortransolvebaij4blas_     FORTRANSOLVEBAIJ4BLAS_
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define fortransolvebaij4blas_      fortransolvebaij4blas
+#endif
 extern void fortransolvebaij4blas_(int *,void*,int *,int *,int*,void *,void*,void *);
 #endif
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
 
 /* ------------------------------------------------------------------- */
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.48 1998/07/12 03:42:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.49 1998/07/12 03:45:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -13,6 +13,7 @@ static char vcid[] = "$Id: mpi.c,v 1.48 1998/07/12 03:42:05 bsmith Exp bsmith $"
    hence we fake it by creating our own prototype
 */
 
+/* This file does not include petsc.h hence cannot use EXTERN_C_XXXX*/
 #if defined(__cplusplus)
 extern "C" {
   void exit(int);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.30 1997/09/26 02:21:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.31 1998/03/20 22:53:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
@@ -77,7 +77,6 @@ int main(int argc,char **argv)
 
   /* Make copy of local array for doing updates */
   ierr = VecDuplicate(local,&copy); CHKERRA(ierr);
-  ierr = VecGetArray(copy,&copyptr); CHKERRA(ierr);
 
   /* Assign Parameters */
   a= 1.0;
@@ -92,6 +91,7 @@ int main(int argc,char **argv)
 
     /*Extract local array */ 
     ierr = VecGetArray(local,&localptr); CHKERRA(ierr);
+    ierr = VecGetArray(copy,&copyptr); CHKERRA(ierr);
 
     /* Update Locally - Make array of new values */
     /* Note: I don't do anything for the first and last entry */
@@ -100,6 +100,7 @@ int main(int argc,char **argv)
                     (k / (2.0*a*h)) * (localptr[i+1] - localptr[i-1]);
     }
     ierr = VecRestoreArray(copy,&copyptr); CHKERRA(ierr);
+    ierr = VecRestoreArray(local,&localptr); CHKERRA(ierr);
 
     /* Local to Global */
     ierr = DALocalToGlobal(da,copy,INSERT_VALUES,global); CHKERRA(ierr);

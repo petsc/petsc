@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snestest.c,v 1.40 1998/03/06 00:18:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.41 1998/04/03 23:17:55 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -98,6 +98,7 @@ static int SNESSetFromOptions_Test(SNES snes)
 }
 
 /* ------------------------------------------------------------ */
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "SNESCreate_Test"
 int SNESCreate_Test(SNES  snes )
@@ -121,7 +122,7 @@ int SNESCreate_Test(SNES  snes )
   neP->complete_print   = 0;
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 

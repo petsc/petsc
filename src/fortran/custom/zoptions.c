@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.47 1998/06/03 22:06:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.48 1998/06/11 19:53:29 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -38,9 +38,7 @@ extern int          PetscBeganMPI;
 #define petscgetprogramname_          petscgetprogramname
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 /* ---------------------------------------------------------------------*/
 
@@ -183,10 +181,7 @@ void petscgetprogramname_(CHAR name, int *__ierr,int len_in )
   *__ierr = PetscGetProgramName(tmp,len);
 }
 
-#if defined(__cplusplus)
-}
-#endif
-
+EXTERN_C_END
 
 /*
     This is code for translating PETSc memory addresses to integer offsets 

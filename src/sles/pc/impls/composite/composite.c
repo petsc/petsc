@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.11 1998/04/13 17:34:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.12 1998/05/29 20:36:50 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -212,6 +212,7 @@ static int PCView_Composite(PC pc,Viewer viewer)
 
 /* ------------------------------------------------------------------------------*/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCompositeSetType_Composite"
 int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
@@ -226,7 +227,9 @@ int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
   }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCompositeAddPC_Composite"
 int PCCompositeAddPC_Composite(PC pc,PCType type)
@@ -261,7 +264,9 @@ int PCCompositeAddPC_Composite(PC pc,PCType type)
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCompositeGetPC_Composite"
 int PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
@@ -283,7 +288,9 @@ int PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
   *subpc = next->pc;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCompositeSetUseTrue_Composite"
 int PCCompositeSetUseTrue_Composite(PC pc)
@@ -295,6 +302,7 @@ int PCCompositeSetUseTrue_Composite(PC pc)
   jac->use_true_matrix = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* -------------------------------------------------------------------------------- */
 #undef __FUNC__  
@@ -423,6 +431,7 @@ int PCCompositeSetUseTrue(PC pc)
 
 /* -------------------------------------------------------------------------------------------*/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_Composite"
 int PCCreate_Composite(PC pc)
@@ -458,5 +467,5 @@ int PCCreate_Composite(PC pc)
 
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 

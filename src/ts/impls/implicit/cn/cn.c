@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cn.c,v 1.9 1998/07/29 02:39:13 curfman Exp balay $";
+static char vcid[] = "$Id: cn.c,v 1.10 1998/07/29 15:08:55 balay Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
@@ -416,6 +416,7 @@ static int TSView_CN(TS ts,Viewer viewer)
 }
 
 /* ------------------------------------------------------------ */
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSCreate_CN"
 int TSCreate_CN(TS ts )
@@ -474,7 +475,7 @@ int TSCreate_CN(TS ts )
 
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 

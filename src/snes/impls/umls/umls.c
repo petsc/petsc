@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.70 1998/05/29 20:39:06 bsmith Exp balay $";
+static char vcid[] = "$Id: umls.c,v 1.71 1998/06/11 15:27:23 balay Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -529,6 +529,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "SNESLineSearchGetDampingParameter_UMLS"
 int SNESLineSearchGetDampingParameter_UMLS(SNES snes,Scalar *damp)
@@ -540,8 +541,10 @@ int SNESLineSearchGetDampingParameter_UMLS(SNES snes,Scalar *damp)
   *damp = neP->gamma;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* ---------------------------------------------------------- */
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "SNESCreate_UM_LS"
 int SNESCreate_UM_LS(SNES snes)
@@ -593,7 +596,7 @@ int SNESCreate_UM_LS(SNES snes)
 
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 #undef __FUNC__  

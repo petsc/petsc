@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sda2f.c,v 1.9 1997/07/09 21:01:25 balay Exp balay $";
+static char vcid[] = "$Id: sda2f.c,v 1.10 1998/03/30 22:28:14 balay Exp bsmith $";
 #endif
 /*
      Fortran interface for SDA routines.
@@ -24,9 +24,7 @@ static char vcid[] = "$Id: sda2f.c,v 1.9 1997/07/09 21:01:25 balay Exp balay $";
 #define sdacreate3d_          sdacreate3d
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void sdadestroy_(SDA *sda, int *__ierr )
 {
@@ -76,6 +74,4 @@ void sdacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
   *(PetscFortranAddr*) inra = PetscFromPointer(da);
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END

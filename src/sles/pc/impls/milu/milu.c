@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: milu.c,v 1.1 1998/09/22 15:00:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: milu.c,v 1.2 1998/09/24 13:33:40 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -192,6 +192,7 @@ static int PCView_mILU(PC pc,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__
 #define __FUNC__ "PCCreate_mILU"
 int PCCreate_mILU(PC pc)
@@ -214,5 +215,5 @@ int PCCreate_mILU(PC pc)
 
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 

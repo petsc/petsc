@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.283 1998/09/26 21:57:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.284 1998/10/09 19:22:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -942,7 +942,12 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  if (xx != bb) {
+    ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  } else {
+    b = x;
+  }
+
   if (!a->diag) {ierr = MatMarkDiag_SeqAIJ(A);CHKERRQ(ierr);}
   diag = a->diag;
   xs   = x + shift; /* shifted by one for index start of a or a->j*/
@@ -960,7 +965,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
         x[i] = sum;
     }
     ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
-    ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+    if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
   if (flag == SOR_APPLY_LOWER) {
@@ -1014,7 +1019,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
     for ( i=0; i<m; i++ ) { x[i] += t[i]; }
     PetscFree(t);
     ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
-    ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+    if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -1079,7 +1084,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
     }
   }
   ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 } 
 
@@ -1796,6 +1801,7 @@ extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);
 extern int MatUseDXML_SeqAIJ(Mat);
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "MatSeqAIJSetColumnIndices_SeqAIJ"
 int MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,int *indices)
@@ -1818,6 +1824,7 @@ int MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,int *indices)
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "MatSeqAIJSetColumnIndices"
@@ -1858,6 +1865,7 @@ int MatSeqAIJSetColumnIndices(Mat mat,int *indices)
 
 /* ----------------------------------------------------------------------------------------*/
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "MatStoreValues_SeqAIJ"
 int MatStoreValues_SeqAIJ(Mat mat)
@@ -1879,6 +1887,7 @@ int MatStoreValues_SeqAIJ(Mat mat)
   PetscMemcpy(aij->saved_values,aij->a,nz*sizeof(Scalar));
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "MatStoreValues"
@@ -1943,6 +1952,7 @@ int MatStoreValues(Mat mat)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "MatRetrieveValues_SeqAIJ"
 int MatRetrieveValues_SeqAIJ(Mat mat)
@@ -1962,6 +1972,7 @@ int MatRetrieveValues_SeqAIJ(Mat mat)
   PetscMemcpy(aij->a, aij->saved_values,nz*sizeof(Scalar));
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "MatRetrieveValues"

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.74 1998/07/23 14:50:47 bsmith Exp balay $";
+static char vcid[] = "$Id: filev.c,v 1.75 1998/08/26 22:03:55 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -21,14 +21,15 @@ Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD, VIEWER_STDER
    default PETSc viewers.
 */
 #undef __FUNC__  
-#define __FUNC__ "ViewerInitialize_Private"
-int ViewerInitialize_Private(void)
+#define __FUNC__ "ViewerInitializeASCII_Private"
+int ViewerInitializeASCII_Private(void)
 {
+  int ierr;
   PetscFunctionBegin;
-  ViewerFileOpenASCII(PETSC_COMM_SELF,"stderr",&VIEWER_STDERR_SELF);
-  ViewerFileOpenASCII(PETSC_COMM_SELF,"stdout",&VIEWER_STDOUT_SELF);
-  ViewerFileOpenASCII(PETSC_COMM_WORLD,"stdout",&VIEWER_STDOUT_WORLD);
-  ViewerFileOpenASCII(PETSC_COMM_WORLD,"stderr",&VIEWER_STDERR_WORLD);
+  ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,"stderr",&VIEWER_STDERR_SELF);CHKERRQ(ierr);
+  ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,"stdout",&VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = ViewerFileOpenASCII(PETSC_COMM_WORLD,"stdout",&VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ViewerFileOpenASCII(PETSC_COMM_WORLD,"stderr",&VIEWER_STDERR_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -37,18 +38,20 @@ int ViewerInitialize_Private(void)
    traces of the default viewers.
 */
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_Private"
-int ViewerDestroy_Private(void)
+#define __FUNC__ "ViewerDestroyASCII_Private"
+int ViewerDestroyASCII_Private(void)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  ViewerDestroy(VIEWER_STDERR_SELF);
-  ViewerDestroy(VIEWER_STDOUT_SELF);
-  ViewerDestroy(VIEWER_STDOUT_WORLD);
-  ViewerDestroy(VIEWER_STDERR_WORLD);
-  VIEWER_STDOUT_Destroy(PETSC_COMM_SELF);
-  VIEWER_STDERR_Destroy(PETSC_COMM_SELF);
-  VIEWER_STDOUT_Destroy(PETSC_COMM_WORLD);
-  VIEWER_STDERR_Destroy(PETSC_COMM_WORLD);
+  ierr = ViewerDestroy(VIEWER_STDERR_SELF);CHKERRQ(ierr);
+  ierr = ViewerDestroy(VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = ViewerDestroy(VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ViewerDestroy(VIEWER_STDERR_WORLD);CHKERRQ(ierr);
+  ierr = VIEWER_STDOUT_Destroy(PETSC_COMM_SELF);CHKERRQ(ierr);
+  ierr = VIEWER_STDERR_Destroy(PETSC_COMM_SELF);CHKERRQ(ierr);
+  ierr = VIEWER_STDOUT_Destroy(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = VIEWER_STDERR_Destroy(PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

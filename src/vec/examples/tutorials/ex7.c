@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.18 1998/06/11 19:55:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.19 1998/07/23 22:46:13 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
@@ -19,13 +19,9 @@ and from Fortran to C\n\n";
 #define ex7f_ ex7f
 #define ex7c_ ex7c
 #endif
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 extern void ex7f_(Vec *,int*);
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
 
 int main(int argc,char **args)
 {
@@ -57,9 +53,7 @@ int main(int argc,char **args)
   return 0;
 }
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 int ex7c_(Vec *fvec, int *fcomm)
 {
@@ -81,6 +75,4 @@ int ex7c_(Vec *fvec, int *fcomm)
   return 0;
 }
  
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
