@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.341 2001/03/21 23:57:02 balay Exp bsmith $ 
+# $Id: makefile,v 1.342 2001/03/22 20:27:58 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -285,6 +285,9 @@ allmanualpages: deletemanualpages
 # Builds .html versions of the source
 allhtml: 
 	-${OMAKE} ACTION=html tree LOC=${LOC}
+
+cleanhtml: 
+	-${OMAKE} ACTION=deletehtml tree
 
 # Builds Fortran stub files
 allfortranstubs:
