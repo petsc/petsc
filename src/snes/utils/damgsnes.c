@@ -5,6 +5,11 @@
 
 
 /*
+      period of -1 indicates update only on zeroth iteration of SNES
+*/
+#define ShouldUpdate(l,it) (((dmmg[l-1]->updatejacobianperiod == -1) && (it == 0)) || \
+                            ((dmmg[l-1]->updatejacobianperiod >   0) && !(it % dmmg[l-1]->updatejacobianperiod)))
+/*
    Evaluates the Jacobian on all of the grids. It is used by DMMG to provide the 
    ComputeJacobian() function that SNESSetJacobian() requires.
 */
@@ -25,7 +30,7 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
   /* compute Jacobian on finest grid */
-  if (dmmg[nlevels-1]->updatejacobian && !(it % dmmg[nlevels-1]->updatejacobianperiod)) {
+  if (dmmg[nlevels-1]->updatejacobian && ShouldUpdate(nlevels,it)) {
     ierr = (*DMMGGetFine(dmmg)->computejacobian)(snes,X,J,B,flag,DMMGGetFine(dmmg));CHKERRQ(ierr);
   } else {
     PetscLogInfo(0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %d frequence %d level %d\n",it,dmmg[nlevels-1]->updatejacobianperiod,nlevels-1);
@@ -60,7 +65,7 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
       ierr = MatSNESMFSetBase(dmmg[i-1]->J,X);CHKERRQ(ierr);
 
       /* compute Jacobian on coarse grid */
-      if (dmmg[i-1]->updatejacobian && !(it % dmmg[i-1]->updatejacobianperiod)) {
+      if (dmmg[i-1]->updatejacobian && ShouldUpdate(i,it)) {
 	ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,&flg,dmmg[i-1]);CHKERRQ(ierr);
       } else {
         PetscLogInfo(0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %d frequence %d level %d\n",it,dmmg[i-1]->updatejacobianperiod,i-1);
@@ -373,7 +378,10 @@ int DMMGSolveSNES(DMMG *dmmg,int level)
 .    -dmmg_jacobian_mf_fd_operator
 .    -dmmg_jacobian_mf_fd
 .    -dmmg_jacobian_mf_ad_operator
--    -dmmg_jacobian_mf_ad
+.    -dmmg_jacobian_mf_ad
+-    -dmmg_jacobian_period <p> - Indicates how often in the SNES solve the Jacobian is recomputed (on all levels)
+                                 as suggested by Florin Dobrian if p is -1 then Jacobian is computed only on first
+                                 SNES iteration (i.e. -1 is equivalent to infinity) 
 
     Level: advanced
 
