@@ -1,5 +1,5 @@
 #ifndef lint
- static char vcid[] = "$Id: vpscat.c,v 1.79 1997/05/28 20:28:24 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.80 1997/06/05 12:51:01 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -64,8 +64,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 */
 #undef __FUNC__  
 #define __FUNC__ "VecScatterLocalOptimize_Private" /* ADIC Ignore */
-int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,
-                                     VecScatter_Seq_General *gen_from)
+int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from)
 {
   int n = gen_to->n,n_nonmatching = 0,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
   int *nto_slots, *nfrom_slots,j = 0;
@@ -152,7 +151,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
     for ( i=0; i<nsends; i++ ) {
       val  = svalues + sstarts[i];
       iend = sstarts[i+1]-sstarts[i];
-
+      /* pack the message */
       for ( j=0; j<iend; j++ ) {
         val[j] = xv[*indices++];
       } 
