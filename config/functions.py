@@ -60,7 +60,7 @@ class Configure(config.base.Configure):
         if not library.strip()[0] == '-':
           self.framework.argDB['LIBS'] += ' -l'+library
         else:
-          self.framework.argDB['LIBS'] += library
+          self.framework.argDB['LIBS'] += ' '+library
     found = self.checkLink(includes, body)
     if libraries:
       self.framework.argDB['LIBS'] = oldLibs
