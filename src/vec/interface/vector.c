@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.104 1997/03/09 17:56:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.105 1997/03/20 18:42:48 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1232,3 +1232,62 @@ int VecDestroyVecs_Default( Vec *v, int m )
 }
 
 
+
+/*M
+    VecGetArrayF90 - Access a vector array from Fortran 90.
+
+   Input Parameter:
+.    x - vector
+
+   Output Parameter:
+.  xx_v - the Fortran90 pointer to the array
+.  ierr - error code
+
+   Synopsis:
+   VecGetArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+   Usage: 
+    Scalar, pointer xx_v(:)
+    ....
+    VecGetArrayF90(x,xx_v,ierr)
+    a = xx_v(3)
+    VecRestoreArrayF90(x,xx_v,ierr)
+   
+
+   Notes:
+     Currently only supported using the NAG F90 compiler.
+
+.seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray()
+
+.keywords:  vector, array, f90
+M*/
+
+/*M
+    VecRestoreArrayF90 - Return a vector array from Fortran 90,
+        accessed with VecGetArrayF90().
+
+   Input Parameter:
+.    x - vector
+
+   Output Parameter:
+.  xx_v - the Fortran90 pointer to the array
+.  ierr - error code
+
+   Synopsis:
+   VecRestoreArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+   Usage: 
+    Scalar, pointer xx_v(:)
+    ....
+    VecGetArrayF90(x,xx_v,ierr)
+    a = xx_v(3)
+    VecRestoreArrayF90(x,xx_v,ierr)
+   
+
+   Notes:
+     Currently only supported using the NAG F90 compiler.
+
+.seealso:  VecGetArrayF90(), VecGetArray(), VecRestoreArray()
+
+.keywords:  vector, array, f90
+M*/
