@@ -2,7 +2,7 @@
 NOADIC    = true
 
 # Build the entire manual as well as the intro part
-manual.dvi: intro.tex abstract.tex acknowl.tex manual_tex.tex part1.tex routines.red part2.tex
+manual.dvi: intro.tex abstract.tex acknowl.tex manual_tex.tex part1.tex part2.tex
 # First build the manual
 	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
 	-bibtex manual_tex
