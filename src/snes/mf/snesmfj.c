@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.69 1998/10/26 03:26:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.70 1998/10/31 23:40:15 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -158,7 +158,6 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   }
 #endif
 
-
   /* Safeguard for step sizes too small */
   if (sum == 0.0) {dot = 1.0; norm = 1.0;}
 #if defined(USE_PETSC_COMPLEX)
@@ -232,11 +231,15 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
 
    Options Database Keys:
 +  -snes_mf_err <error_rel> - Sets error_rel
--  -snes_mf_unim <umin> - Sets umin
+.  -snes_mf_unim <umin> - Sets umin
+-  -snes_mf_ksp_monitor - KSP monitor routine that prints differencing h
 
 .keywords: SNES, default, matrix-free, create, matrix
 
-.seealso: MatDestroy(), SNESDefaultMatrixFreeSetParameters()
+.seealso: MatDestroy(), SNESDefaultMatrixFreeSetParameters(),
+          SNESDefaultMatrixFreeSetHHistory(), SNESDefaultMatrixFreeResetHHistory(),
+          SNESDefaultMatrixFreeGetH(),SNESDefaultMatrixFreeKSPMonitor()
+ 
 @*/
 int SNESDefaultMatrixFreeCreate(SNES snes,Vec x, Mat *J)
 {
@@ -295,7 +298,8 @@ int SNESDefaultMatrixFreeCreate(SNES snes,Vec x, Mat *J)
 
 .keywords: SNES, matrix-free, parameters
 
-.seealso: SNESDefaultMatrixFreeCreate()
+.seealso: SNESDefaultMatrixFreeCreate(),SNESDefaultMatrixFreeSetHHistory(), 
+          SNESDefaultMatrixFreeResetHHistory(),SNESDefaultMatrixFreeKSPMonitor()
 @*/
 int SNESDefaultMatrixFreeGetH(Mat mat,Scalar *h)
 {
@@ -374,7 +378,9 @@ int SNESDefaultMatrixFreeKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
 
 .keywords: SNES, matrix-free, parameters
 
-.seealso: SNESDefaultMatrixFreeCreate()
+.seealso: SNESDefaultMatrixFreeCreate(),SNESDefaultMatrixFreeGetH(),
+          SNESDefaultMatrixFreeSetHHistory(), SNESDefaultMatrixFreeResetHHistory(),
+          SNESDefaultMatrixFreeKSPMonitor()
 @*/
 int SNESDefaultMatrixFreeSetParameters(Mat mat,double error,double umin)
 {
@@ -408,6 +414,11 @@ int SNESDefaultMatrixFreeSetParameters(Mat mat,double error,double umin)
           these vectors must be orthonormal
 
 .keywords: SNES, matrix-free, null space
+
+.seealso: SNESDefaultMatrixFreeGetH(), SNESDefaultMatrixFreeCreate(),
+          SNESDefaultMatrixFreeSetHHistory(), SNESDefaultMatrixFreeResetHHistory(),
+          SNESDefaultMatrixFreeKSPMonitor(), SNESDefaultMatrixFreeSetParameters()
+
 @*/
 int SNESDefaultMatrixFreeAddNullSpace(Mat J,int has_cnst,int n,Vec *vecs)
 {
@@ -424,6 +435,84 @@ int SNESDefaultMatrixFreeAddNullSpace(Mat J,int has_cnst,int n,Vec *vecs)
   ierr = PCNullSpaceCreate(comm,has_cnst,n,vecs,&ctx->sp); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "SNESDefaultMatrixFreeSetHHistory"
+/*@
+   SNESDefaultMatrixFreeSetHHistory - Sets an array to collect a history
+      of the differencing values h computed for the matrix free product
+
+   Collective on Mat 
+
+   Input Parameters:
++  J - the matrix-free matrix context
+.  histroy - space to hold the h history
+-  nhistory - number of entries in history, if more h are generated than
+              nhistory the later ones are discarded
+
+   Notes:
+    Use SNESDefaultMatrixFreeResetHHistory() to reset the history counter
+    and collect a new batch of h.
+
+.keywords: SNES, matrix-free, h history, differencing history
+
+.seealso: SNESDefaultMatrixFreeGetH(), SNESDefaultMatrixFreeCreate(),
+          SNESDefaultMatrixFreeResetHHistory(),
+          SNESDefaultMatrixFreeKSPMonitor(), SNESDefaultMatrixFreeSetParameters()
+
+@*/
+int SNESDefaultMatrixFreeSetHHistory(Mat J,Scalar *history,int nhistory)
+{
+  int           ierr;
+  MFCtx_Private *ctx;
+
+  PetscFunctionBegin;
+
+  ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
+  /* no context indicates that it is not the "matrix free" matrix type */
+  if (!ctx) PetscFunctionReturn(0);
+  ctx->historyh    = history;
+  ctx->maxcurrenth = nhistory;
+  ctx->currenth    = 0;
+
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESDefaultMatrixFreeResetHHistory - Resets the counter to zero to begin 
+      collecting a new set of differencing histories.
+
+   Collective on Mat 
+
+   Input Parameters:
+.  J - the matrix-free matrix context
+
+   Notes:
+    Use SNESDefaultMatrixFreeSetHHistory() to create the original history counter
+
+.keywords: SNES, matrix-free, h history, differencing history
+
+.seealso: SNESDefaultMatrixFreeGetH(), SNESDefaultMatrixFreeCreate(),
+          SNESDefaultMatrixFreeSetHHistory(),
+          SNESDefaultMatrixFreeKSPMonitor(), SNESDefaultMatrixFreeSetParameters()
+
+@*/
+int SNESDefaultMatrixFreeResetHHistory(Mat J)
+{
+  int           ierr;
+  MFCtx_Private *ctx;
+
+  PetscFunctionBegin;
+
+  ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
+  /* no context indicates that it is not the "matrix free" matrix type */
+  if (!ctx) PetscFunctionReturn(0);
+  ctx->currenth    = 0;
+
+  PetscFunctionReturn(0);
+}
+
+
 
 
 
