@@ -7,6 +7,19 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - Change function prototypes and declaration as 
+
+> > 
+> >     An input array  
+> >     An output scalar
+> >     An output array
+> > 
+> > In ISO C, these can be separated as
+> > 
+> >     An input array: const []
+> >     An output scalar: *
+> >     An output array: []
+
   - Fix all KSP methods to set ksp->its (see petsc-maint #1593)
 
   - Put in Hysom's fixes for ilu preallocation in docs/tex/hysom
