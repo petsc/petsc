@@ -1271,7 +1271,7 @@ int MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
     if (bb->n > a->solves_work_n) {
       if (a->solves_work) {ierr = PetscFree(a->solves_work);CHKERRQ(ierr);}
       ierr = PetscMalloc(bb->n*A->m*sizeof(PetscScalar),&a->solves_work);CHKERRQ(ierr);
-      a->solves_work_n == bb->n;
+      a->solves_work_n = bb->n;
     }
     n    = bb->n;
     ierr = VecGetArray(bb->v,&b);CHKERRQ(ierr); 

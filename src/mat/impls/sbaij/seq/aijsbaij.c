@@ -11,11 +11,11 @@ int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat *B)
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data; 
   Mat_SeqSBAIJ *b;
   int          ierr,*ai=a->i,*aj,m=A->M,n=A->N,i,j,
-               *bi=b->i,*bj=b->j,*rowlengths;
+               *bi,*bj,*rowlengths;
   PetscScalar  *av,*bv;
 
   PetscFunctionBegin;
-  if (n != m) SETERRQ(PETSC_ERR_SUP,"Matrix must be a square matrix");
+  if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!a->diag){
     ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr); 
   }
