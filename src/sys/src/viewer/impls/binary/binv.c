@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.44 1998/04/03 23:17:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.45 1998/04/13 17:54:44 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -108,7 +108,7 @@ $    BINARY_WRONLY - open existing file for binary output
 .seealso: ViewerFileOpenASCII(), ViewerSetFormat(), ViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), ViewerBinaryGetDescriptor()
 @*/
-int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *binv)
+int ViewerFileOpenBinary(MPI_Comm comm,const char name[],ViewerBinaryType type,Viewer *binv)
 {  
   int    rank,ierr;
   Viewer v;
@@ -157,13 +157,11 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
 
   /* try to open info file */
   if (type == BINARY_RDONLY) {
-    char *infoname;
-    infoname = (char *)PetscMalloc(PetscStrlen(name)+6); CHKPTRQ(infoname);
+    char infoname[256],iname[256];
     PetscStrcpy(infoname,name);
     PetscStrcat(infoname,".info");
-    ierr = PetscFixFilename(infoname); CHKERRQ(ierr);
-    v->fdes_info = fopen(infoname,"r");
-    PetscFree(infoname);
+    ierr = PetscFixFilename(infoname,iname); CHKERRQ(ierr);
+    v->fdes_info = fopen(iname,"r");
   }
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
