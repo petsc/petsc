@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.90 1996/01/23 19:46:07 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.91 1996/01/24 15:40:21 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -10,7 +10,7 @@
 #include <stdio.h>
 
 /*
-    This is deal with missing entries in the Gnu gcc include files 
+    This is to deal with missing entries in the Gnu gcc include files 
   the Sun4 machines. It's ugly but then so is the Gnu compiler!
 */
 #if defined(PARCH_sun4) && !defined(__cplusplus) && defined(_Gnu_)
