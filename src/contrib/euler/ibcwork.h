@@ -1,41 +1,7 @@
 c
-c  Local arrays for function components due to boundary conditions.
-c  We could eventually upgrade the routine residbc() to place
-c  the function components in the residual vector and thus alleviate
-c  the need for these arrays.  
-c
-c      double precision fbcrj1(xsf2:xef01,zsf2:zef01)
-c      double precision fbcruj1(xsf2:xef01,zsf2:zef01)
-c      double precision fbcrvj1(xsf2:xef01,zsf2:zef01)
-c      double precision fbcrwj1(xsf2:xef01,zsf2:zef01)
-c      double precision fbcej1(xsf2:xef01,zsf2:zef01)
-c      double precision fbcrj2(xsf2:xef01,zsf2:zef01)
-c      double precision fbcruj2(xsf2:xef01,zsf2:zef01)
-c      double precision fbcrvj2(xsf2:xef01,zsf2:zef01)
-c      double precision fbcrwj2(xsf2:xef01,zsf2:zef01)
-c      double precision fbcej2(xsf2:xef01,zsf2:zef01)
-c      double precision fbcrk1(xsf2:xef01,ysf2:yef01)
-c      double precision fbcruk1(xsf2:xef01,ysf2:yef01)
-c      double precision fbcrvk1(xsf2:xef01,ysf2:yef01)
-c      double precision fbcrwk1(xsf2:xef01,ysf2:yef01)
-c      double precision fbcek1(xsf2:xef01,ysf2:yef01)
-c      double precision fbcrk2(xsf2:xef01,ysf2:yef01)
-c      double precision fbcruk2(xsf2:xef01,ysf2:yef01)
-c      double precision fbcrvk2(xsf2:xef01,ysf2:yef01)
-c      double precision fbcrwk2(xsf2:xef01,ysf2:yef01)
-c      double precision fbcek2(xsf2:xef01,ysf2:yef01)
-c      double precision fbcri1(ysf2:yef01,zsf2:zef01)
-c      double precision fbcrui1(ysf2:yef01,zsf2:zef01)
-c      double precision fbcrvi1(ysf2:yef01,zsf2:zef01)
-c      double precision fbcrwi1(ysf2:yef01,zsf2:zef01)
-c      double precision fbcei1(ysf2:yef01,zsf2:zef01)
-c      double precision fbcri2(ysf2:yef01,zsf2:zef01)
-c      double precision fbcrui2(ysf2:yef01,zsf2:zef01)
-c      double precision fbcrvi2(ysf2:yef01,zsf2:zef01)
-c      double precision fbcrwi2(ysf2:yef01,zsf2:zef01)
-c      double precision fbcei2(ysf2:yef01,zsf2:zef01)
-
-      double precision  fff(5,xsf1:xef01,ysf1:yef01,zsf1:zef01)
+c  Local function components due to boundary conditions
+c  
+      double precision  fff(5,xsf1:xefp1,ysf1:yefp1,zsf1:zefp1)
 
 #define fbcrk1(i,j) fff(1,i,j,1)
 #define fbcruk1(i,j) fff(2,i,j,1)

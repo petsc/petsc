@@ -924,7 +924,7 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
 {
   Euler  *app = (Euler *)ptr;
   int    ierr, base_unit, iter;
-  Scalar zero = 0.0;
+  Scalar zero = 0.0, *fv_array;
 
   if (app->bctype != IMPLICIT) SETERRQ(1,0,"This version supports only implicit BCs!");
   app->fct_tot++;
@@ -932,6 +932,7 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
   /* Initialize vector to zero.  These values will be overwritten everywhere but
      the edges of the 3D domain */
   ierr = VecSet(&zero,Fvec); CHKERRQ(ierr);
+  ierr = VecGetArray(Fvec,&fv_array); CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         Do setup (not required for the first function evaluation)
