@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.12 1996/09/30 20:10:27 bsmith Exp bsmith $";
+C "$Id: ex5f.F,v 1.13 1996/09/30 20:11:03 bsmith Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -37,6 +37,8 @@ C
 C  A finite difference approximation with the usual 5-point stencil
 C  is used to discretize the boundary value problem to obtain a nonlinear 
 C  system of equations.
+C
+C  The uniprocessor version of this code is snes/examples/tutorials/ex4f.F
 C
 C  --------------------------------------------------------------------------
 
@@ -158,6 +160,16 @@ C  Initialize problem parameters
       user(2) = my
       N       = mx*my
 
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C  Create nonlinear solver context
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      call SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
+
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C  Create vector data structures; set function evaluation routine
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 C  Create distributed array (DA) to manage parallel grid and vectors
 
       Nx = PETSC_DECIDE
@@ -185,13 +197,13 @@ C  vectors that are the same types
       user(5) = localF
       user(6) = rank
 
-C  Create nonlinear solver context
-
-      call SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
-
 C  Set function evaluation routine and vector
 
       call SNESSetFunction(snes,r,FormFunction,user,ierr)
+
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C  Create matrix data structure; set Jacobian evaluation routine
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 C  Set Jacobian matrix data structure and default Jacobian evaluation
 C  routine. User can override with:
@@ -208,6 +220,10 @@ C     the DAs determine the problem partitioning.  We must explicitly
 C     specify the local matrix dimensions upon its creation for compatibility
 C     with the vector distribution.  Thus, the generic MatCreate() routine
 C     is NOT sufficient when working with distributed arrays.
+C
+C     Note: Here we only approximately preallocate storage space for the
+C     Jacobian.  See the users manual for a discussion of better techniques
+C     for preallocating matrix memory.
 
       call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,
      &                    ierr)
@@ -222,15 +238,22 @@ C     is NOT sufficient when working with distributed arrays.
         call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
       endif
 
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C  Customize nonlinear solver; set runtime options
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 C  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
 
       call SNESSetFromOptions(snes,ierr)
 
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Evaluate initial guess; then solve nonlinear system.
-C   - The user should initialize the vector, x, with the initial guess
-C     for the nonlinear solver prior to calling SNESSolve().  In particular,
-C     to employ an initial guess of zero, the user should explicitly set
-C     this vector to zero by calling VecSet().
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+C  Note: The user should initialize the vector, x, with the initial guess
+C  for the nonlinear solver prior to calling SNESSolve().  In particular,
+C  to employ an initial guess of zero, the user should explicitly set
+C  this vector to zero by calling VecSet().
 
       call FormInitialGuess(user,x,ierr)
       call SNESSolve(snes,x,its,ierr) 
@@ -239,8 +262,10 @@ C     this vector to zero by calling VecSet().
       endif
   100 format('Number of Newton iterations = ',i5)
 
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Free work space.  All PETSc objects should be destroyed when they
 C  are no longer needed.
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       if (matrix_free .eq. 0) call MatDestroy(J,ierr)
       call VecDestroy(x,ierr)
