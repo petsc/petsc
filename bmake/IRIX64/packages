@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.70 2001/04/25 15:20:20 bsmith Exp balay $ 
+# $Id: base.site,v 1.71 2001/06/20 17:59:21 balay Exp curfman $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -80,10 +80,10 @@ PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
 # Location where adiC is installed
 #
-#ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
-#ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
-#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
-#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
+# ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
+# ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
+# ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+# PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #
 # Location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
