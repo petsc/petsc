@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.41 1998/03/30 22:03:03 balay Exp $";
+! "$Id: ex5f90.F,v 1.15 1998/04/06 22:31:53 balay Exp balay $"
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
