@@ -98,7 +98,8 @@ int PetscDrawCreate(MPI_Comm comm,const char display[],const char title[],int x,
 int PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 {
   int        ierr,(*r)(PetscDraw);
-  PetscTruth match,flg;
+  PetscTruth match;
+  PetscTruth flg=PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
