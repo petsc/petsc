@@ -1605,6 +1605,9 @@ int MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqSBAIJSetColumnIndices_C",
                                      "MatSeqSBAIJSetColumnIndices_SeqSBAIJ",
                                      MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqsbaij_seqaij_C",
+                                     "MatConvert_SeqSBAIJ_SeqAIJ",
+                                      MatConvert_SeqSBAIJ_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqSBAIJSetPreallocation_C",
                                      "MatSeqSBAIJSetPreallocation_SeqSBAIJ",
                                      MatSeqSBAIJSetPreallocation_SeqSBAIJ);CHKERRQ(ierr);
