@@ -97,6 +97,7 @@
    provide VecSetMap()
 
   (Priority 2) Change MatLoad() to take a matrix, move sizes out of MatCreate(), add MatSetMaps(), allow setting type before sizes
+   Also allow loading matrices with the same nonzero pattern efficiently.
 
   Add PCShellSetContext()/GetContext() and remove the ctx and ctxrich passed into setapply and setapplyrichardson()
   indicates limits on context from Fortran. (Make like MatShell())
