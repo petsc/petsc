@@ -1,3 +1,4 @@
+/*$Id: rich.c,v 1.85 1999/11/05 14:46:46 bsmith Exp bsmith $*/
 
 /*
     This fixes various things in system files that are incomplete, for 
