@@ -21,7 +21,7 @@ Additional Capabilities that PETSc Needs:
     unformated ascii. For example blocksize 5 blockdiagonals -1,0,3
     symmetric, symmetricstructure .....
 
-  * fix rules on all machines that do .F files, so they work properly 
+  X fix rules on all machines that do .F files, so they work properly 
     with PETSC_COMPLEX but don't generate warnign messages like
 cpp -I../../.. -I../../../include -I/usr/local/mpi/include  -I../../../src -O -D
 PETSC_DEBUG -DPETSC_BOPT_O  somefort.F  > somefort.f
@@ -30,7 +30,7 @@ gmake[1]: [../../../lib/libO_complex/freebsd_nolog/libpetscfortran.a(somefort.o)
 ] Error 33 (ignored)
 f77 -c  -O somefort.f
 
-  * Fix F.o rules to pass proper flags; i.e. yes -I flags but maybe not
+  X Fix F.o rules to pass proper flags; i.e. yes -I flags but maybe not
     -O flags on some machines, for example paragon.
 
   - find LAgesvd_ on Cray T3D.
