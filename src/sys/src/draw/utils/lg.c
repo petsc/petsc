@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.25 1995/11/01 23:20:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.26 1995/11/09 22:31:51 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -269,6 +269,10 @@ int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
 @*/
 int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 {
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == NULLWINDOW) {
+    *axis = 0;
+    return 0;
+  }
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
   *axis = lg->axis;
   return 0;
