@@ -1,7 +1,6 @@
 import install.base
 import install.retrieval
 
-import imp
 import sys
 
 class Builder(install.base.Base):
@@ -10,14 +9,6 @@ class Builder(install.base.Base):
     self.argDB     = argDB
     self.retriever = install.retrieval.Retriever(argDB)
     return
-
-  def getMakeModule(self, root):
-    name = 'make'
-    (fp, pathname, description) = imp.find_module(name, [root])
-    try:
-      return imp.load_module(name, fp, pathname, description)
-    finally:
-      if fp: fp.close()
 
   def build(self, root, target = 'default'):
     self.debugPrint('Building in '+root, 3, 'install')

@@ -111,6 +111,15 @@ class BS (install.base.Base):
     dbFile.close()
     return
 
+  def updateRepositoryDirs(self, repositoryDirs):
+    for url in self.executeTarget('getDependencies'):
+      project = self.getInstalledProject(url)
+      if not project is None:
+        root = project.getRoot()
+        repositoryDirs.append(root)
+        self.getMakeModule(root).PetscMake(sys.argv[1:]).updateRepositoryDirs(repositoryDirs)
+    return
+
   def getSIDLDefaults(self):
     if not hasattr(self, 'sidlDefaults'):
       if not self.filesets.has_key('sidl'):
@@ -119,11 +128,7 @@ class BS (install.base.Base):
         self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.sourceDB, self.filesets['sidl'], bootstrapPackages = self.filesets['bootstrap'])
       else:
         self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.sourceDB, self.filesets['sidl'])
-      # Add dependencies
-      for url in self.executeTarget('getDependencies'):
-        project = self.getInstalledProject(url)
-        if not project is None:
-          self.sidlDefaults.usingSIDL.repositoryDirs.append(project.getRoot())
+      self.updateRepositoryDirs(self.sidlDefaults.usingSIDL.repositoryDirs)
     return self.sidlDefaults
 
   def getCompileDefaults(self):
