@@ -1,0 +1,43 @@
+\documentstyle[11pt]{article}
+
+\def\note{\medskip \noindent Note:\begin{em}}
+\def\endnote{\end{em} \medskip}
+
+\input epsf
+
+\begin{document}
+
+\include{title}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+
+\newpage
+\section{Getting Started}
+
+The PETSc utility programs were written using John Ousterhout's Tcl and the Tk Toolkit \footnote{University of California at Berkeley}.  Therefore, in order to use the PETSc utility programs, the Tcl and Tk packages must be installed on your system.  If they are not installed on your system, Tcl and Tk can be obtained via anonymous {\tt ftp} from {\tt ftp.cs.berkeley.edu}.  The Tcl and Tk packages are located in the {\tt /ucb/tcl} directory.   
+
+In order for PETSc Simulator and PETSc Options to work properly, a slight modification of the source code is required.  Using any text editor, simply load {\tt petscsim} (or {\tt petscopts}) and change the first line in the source code to point to the proper location of where {\tt wish} can be found.  For example, if {\tt wish} is located at {\tt /usr/bin/wish}, the first line for each program should be changed to:
+\begin{verbatim}
+#! /usr/local/wish -f
+\end{verbatim}
+After {\tt petscsim} and {\tt petscopts} have been modified, they are now ready to run.
+
+\newpage
+\include{petscsim}
+
+\newpage
+\include{petscopts}
+
+%\newpage
+%\include{appendix}
+
+\end{document}
+
+
+
+
+
+
