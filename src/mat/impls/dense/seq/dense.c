@@ -550,8 +550,7 @@ int MatRestoreRow_SeqDense(Mat A,int row,int *ncols,int **cols,PetscScalar **val
 /* ----------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_SeqDense"
-int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
-                                    int *indexn,PetscScalar *v,InsertMode addv)
+int MatSetValues_SeqDense(Mat A,int m,const int indexm[],int n,const int indexn[],const PetscScalar v[],InsertMode addv)
 { 
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   int          i,j;
@@ -623,7 +622,7 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_SeqDense"
-int MatGetValues_SeqDense(Mat A,int m,int *indexm,int n,int *indexn,PetscScalar *v)
+int MatGetValues_SeqDense(Mat A,int m,const int indexm[],int n,const int indexn[],PetscScalar v[])
 { 
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   int          i,j;

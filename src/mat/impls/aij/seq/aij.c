@@ -114,7 +114,7 @@ int MatRestoreColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int *
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_SeqAIJ"
-int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertMode is)
+int MatSetValues_SeqAIJ(Mat A,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;
   int         *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted = a->sorted;
@@ -218,7 +218,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertM
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_SeqAIJ"
-int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v)
+int MatGetValues_SeqAIJ(Mat A,int m,const int im[],int n,const int in[],PetscScalar v[])
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   int          *rp,k,low,high,t,row,nrow,i,col,l,*aj = a->j;

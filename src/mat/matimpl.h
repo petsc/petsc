@@ -16,9 +16,9 @@
 */
 typedef struct _MatOps *MatOps;
 struct _MatOps {
-  int       (*setvalues)(Mat,int,int *,int,int *,PetscScalar *,InsertMode),
-            (*getrow)(Mat,int,int *,int **,PetscScalar **),
-            (*restorerow)(Mat,int,int *,int **,PetscScalar **),
+  int       (*setvalues)(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode),
+            (*getrow)(Mat,int,int *,int*[],PetscScalar*[]),
+            (*restorerow)(Mat,int,int *,int *[],PetscScalar *[]),
             (*mult)(Mat,Vec,Vec),
 /* 4*/      (*multadd)(Mat,Vec,Vec,Vec),
             (*multtranspose)(Mat,Vec,Vec),
@@ -59,7 +59,7 @@ struct _MatOps {
 /*40*/      (*axpy)(PetscScalar *,Mat,Mat,MatStructure),
             (*getsubmatrices)(Mat,int,IS *,IS *,MatReuse,Mat **),
             (*increaseoverlap)(Mat,int,IS *,int),
-            (*getvalues)(Mat,int,int *,int,int *,PetscScalar *),
+            (*getvalues)(Mat,int,const int[],int,const int[],PetscScalar []),
             (*copy)(Mat,Mat,MatStructure),
 /*45*/      (*printhelp)(Mat),
             (*scale)(PetscScalar *,Mat),
@@ -75,7 +75,7 @@ struct _MatOps {
             (*coloringpatch)(Mat,int,int,ISColoringValue *,ISColoring*),
             (*setunfactored)(Mat),
             (*permute)(Mat,IS,IS,Mat*),
-            (*setvaluesblocked)(Mat,int,int *,int,int *,PetscScalar *,InsertMode),
+            (*setvaluesblocked)(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode),
 /*60*/      (*getsubmatrix)(Mat,IS,IS,int,MatReuse,Mat*),
             (*destroy)(Mat),
             (*view)(Mat,PetscViewer),
@@ -84,7 +84,7 @@ struct _MatOps {
 /*65*/      (*scalesystem)(Mat,Vec,Vec),
             (*unscalesystem)(Mat,Vec,Vec),
             (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping),
-            (*setvalueslocal)(Mat,int,int *,int,int *,PetscScalar *,InsertMode),
+            (*setvalueslocal)(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode),
             (*zerorowslocal)(Mat,IS,PetscScalar *),
 /*70*/      (*getrowmax)(Mat,Vec),
             (*convert)(Mat,MatType,Mat*),
@@ -148,10 +148,10 @@ EXTERN int MatStashDestroy_Private(MatStash*);
 EXTERN int MatStashScatterEnd_Private(MatStash*);
 EXTERN int MatStashSetInitialSize_Private(MatStash*,int);
 EXTERN int MatStashGetInfo_Private(MatStash*,int*,int*);
-EXTERN int MatStashValuesRow_Private(MatStash*,int,int,int*,MatScalar*);
-EXTERN int MatStashValuesCol_Private(MatStash*,int,int,int*,MatScalar*,int);
-EXTERN int MatStashValuesRowBlocked_Private(MatStash*,int,int,int*,MatScalar*,int,int,int);
-EXTERN int MatStashValuesColBlocked_Private(MatStash*,int,int,int*,MatScalar*,int,int,int);
+EXTERN int MatStashValuesRow_Private(MatStash*,int,int,const int[],const MatScalar[]);
+EXTERN int MatStashValuesCol_Private(MatStash*,int,int,const int[],const MatScalar[],int);
+EXTERN int MatStashValuesRowBlocked_Private(MatStash*,int,int,const int[],const MatScalar[],int,int,int);
+EXTERN int MatStashValuesColBlocked_Private(MatStash*,int,int,const int[],const MatScalar[],int,int,int);
 EXTERN int MatStashScatterBegin_Private(MatStash*,int*);
 EXTERN int MatStashScatterGetMesg_Private(MatStash*,int*,int**,int**,MatScalar**,int*);
 

@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPIBDiag"
-int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v,InsertMode addv)
+int MatSetValues_MPIBDiag(Mat mat,int m,const int idxm[],int n,const int idxn[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
   int          ierr,i,j,row,rstart = mbd->rstart,rend = mbd->rend;
@@ -44,7 +44,7 @@ int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_MPIBDiag"
-int MatGetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v)
+int MatGetValues_MPIBDiag(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScalar v[])
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
   int          ierr,i,j,row,rstart = mbd->rstart,rend = mbd->rend;

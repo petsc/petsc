@@ -164,8 +164,8 @@ EXTERN int MatPrintHelp(Mat);
 EXTERN int MatGetPetscMaps(Mat,PetscMap*,PetscMap*);
 
 /* ------------------------------------------------------------*/
-EXTERN int MatSetValues(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
-EXTERN int MatSetValuesBlocked(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
+EXTERN int MatSetValues(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
+EXTERN int MatSetValuesBlocked(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
 
 /*S
      MatStencil - Data structure (C struct) for storing information about a single row or
@@ -181,9 +181,9 @@ typedef struct {
   int k,j,i,c;
 } MatStencil;
 
-EXTERN int MatSetValuesStencil(Mat,int,MatStencil*,int,MatStencil*,PetscScalar*,InsertMode);
-EXTERN int MatSetValuesBlockedStencil(Mat,int,MatStencil*,int,MatStencil*,PetscScalar*,InsertMode);
-EXTERN int MatSetStencil(Mat,int,int*,int*,int);
+EXTERN int MatSetValuesStencil(Mat,int,const MatStencil[],int,const MatStencil[],const PetscScalar[],InsertMode);
+EXTERN int MatSetValuesBlockedStencil(Mat,int,const MatStencil[],int,const MatStencil[],const PetscScalar[],InsertMode);
+EXTERN int MatSetStencil(Mat,int,const int[],const int[],int);
 
 EXTERN int MatSetColoring(Mat,ISColoring);
 EXTERN int MatSetValuesAdic(Mat,void*);
@@ -266,9 +266,9 @@ typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
 EXTERN int MatSetOption(Mat,MatOption);
 EXTERN int MatGetType(Mat,MatType*);
 
-EXTERN int MatGetValues(Mat,int,int*,int,int*,PetscScalar*);
-EXTERN int MatGetRow(Mat,int,int *,int **,PetscScalar**);
-EXTERN int MatRestoreRow(Mat,int,int *,int **,PetscScalar**);
+EXTERN int MatGetValues(Mat,int,const int[],int,const int[],PetscScalar[]);
+EXTERN int MatGetRow(Mat,int,int *,int *[],PetscScalar*[]);
+EXTERN int MatRestoreRow(Mat,int,int *,int *[],PetscScalar*[]);
 EXTERN int MatGetColumn(Mat,int,int *,int **,PetscScalar**);
 EXTERN int MatRestoreColumn(Mat,int,int *,int **,PetscScalar**);
 EXTERN int MatGetColumnVector(Mat,Vec,int);
@@ -426,8 +426,8 @@ EXTERN int MatShift(PetscScalar *,Mat);
 EXTERN int MatSetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping);
 EXTERN int MatSetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping);
 EXTERN int MatZeroRowsLocal(Mat,IS,PetscScalar*);
-EXTERN int MatSetValuesLocal(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
-EXTERN int MatSetValuesBlockedLocal(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
+EXTERN int MatSetValuesLocal(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
+EXTERN int MatSetValuesBlockedLocal(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
 
 EXTERN int MatSetStashInitialSize(Mat,int,int);
 

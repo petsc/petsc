@@ -6,10 +6,10 @@
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 
-EXTERN int MatSetValues_SeqBDiag_1(Mat,int,int *,int,int *,PetscScalar *,InsertMode);
-EXTERN int MatSetValues_SeqBDiag_N(Mat,int,int *,int,int *,PetscScalar *,InsertMode);
-EXTERN int MatGetValues_SeqBDiag_1(Mat,int,int *,int,int *,PetscScalar *);
-EXTERN int MatGetValues_SeqBDiag_N(Mat,int,int *,int,int *,PetscScalar *);
+EXTERN int MatSetValues_SeqBDiag_1(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
+EXTERN int MatSetValues_SeqBDiag_N(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
+EXTERN int MatGetValues_SeqBDiag_1(Mat,int,const int [],int,const int [],PetscScalar []);
+EXTERN int MatGetValues_SeqBDiag_N(Mat,int,const int [],int,const int [],PetscScalar []);
 EXTERN int MatMult_SeqBDiag_1(Mat,Vec,Vec);
 EXTERN int MatMult_SeqBDiag_2(Mat,Vec,Vec);
 EXTERN int MatMult_SeqBDiag_3(Mat,Vec,Vec);

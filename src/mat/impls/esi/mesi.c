@@ -160,7 +160,7 @@ int MatESISetFromOptions(Mat V)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_ESI"
-int MatSetValues_ESI(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
+int MatSetValues_ESI(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_ESI *iesi = (Mat_ESI*)mat->data;
   int      ierr,i,j,rstart = iesi->rstart,rend = iesi->rend;

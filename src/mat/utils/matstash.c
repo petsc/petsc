@@ -257,7 +257,7 @@ static int MatStashExpand_Private(MatStash *stash,int incr)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashValuesRow_Private"
-int MatStashValuesRow_Private(MatStash *stash,int row,int n,int *idxn,MatScalar *values)
+int MatStashValuesRow_Private(MatStash *stash,int row,int n,const int idxn[],const MatScalar values[])
 {
   int    ierr,i; 
 
@@ -290,7 +290,7 @@ int MatStashValuesRow_Private(MatStash *stash,int row,int n,int *idxn,MatScalar 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashValuesCol_Private"
-int MatStashValuesCol_Private(MatStash *stash,int row,int n,int *idxn,MatScalar *values,int stepval)
+int MatStashValuesCol_Private(MatStash *stash,int row,int n,const int idxn[],const MatScalar values[],int stepval)
 {
   int    ierr,i; 
 
@@ -328,10 +328,11 @@ int MatStashValuesCol_Private(MatStash *stash,int row,int n,int *idxn,MatScalar 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashValuesRowBlocked_Private"
-int MatStashValuesRowBlocked_Private(MatStash *stash,int row,int n,int *idxn,MatScalar *values,int rmax,int cmax,int idx)
+int MatStashValuesRowBlocked_Private(MatStash *stash,int row,int n,const int idxn[],const MatScalar values[],int rmax,int cmax,int idx)
 {
-  int       ierr,i,j,k,bs2,bs=stash->bs; 
-  MatScalar *vals,*array;
+  int             ierr,i,j,k,bs2,bs=stash->bs; 
+  const MatScalar *vals;
+  MatScalar       *array;
 
   PetscFunctionBegin;
   bs2 = bs*bs;
@@ -376,10 +377,11 @@ int MatStashValuesRowBlocked_Private(MatStash *stash,int row,int n,int *idxn,Mat
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashValuesColBlocked_Private"
-int MatStashValuesColBlocked_Private(MatStash *stash,int row,int n,int *idxn,MatScalar *values,int rmax,int cmax,int idx)
+int MatStashValuesColBlocked_Private(MatStash *stash,int row,int n,const int idxn[],const MatScalar values[],int rmax,int cmax,int idx)
 {
-  int       ierr,i,j,k,bs2,bs=stash->bs; 
-  MatScalar *vals,*array;
+  int             ierr,i,j,k,bs2,bs=stash->bs; 
+  const MatScalar *vals;
+  MatScalar       *array;
 
   PetscFunctionBegin;
   bs2 = bs*bs;
