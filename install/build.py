@@ -24,6 +24,7 @@ class Builder(install.base.Base):
         self.build(self.retriever.retrieve(url), target, setupTarget)
     # Load any existing local RDict
     dictFilename = os.path.join(root, 'RDict.db')
+    loadedRDict  = 0
     if os.path.exists(dictFilename):
       try:
         import cPickle
@@ -34,6 +35,7 @@ class Builder(install.base.Base):
           if data[k].isValueSet():
             self.argDB.setType(k, data[k])
         dbFile.close()
+        loadedRDict = 1
         self.debugPrint('Loaded dictionary from '+dictFilename, 2, 'install')
       except Exception, e:
         self.debugPrint('Problem loading dictionary from '+dictFilename+'\n--> '+str(e), 2, 'install')
@@ -44,9 +46,10 @@ class Builder(install.base.Base):
     for t in setupTarget:
       maker.executeTarget(t)
     ret = maker.main(target)
-    for k in filter(lambda k: not k in keys, data.keys()):
-      if data[k].isValueSet():
-        del self.argDB[k]
+    if loadedRDict:
+      for k in filter(lambda k: not k in keys, data.keys()):
+        if data[k].isValueSet():
+          del self.argDB[k]
     # Save source database (since atexit() functions might not be called before another build)
     maker.saveSourceDB()
     return ret
