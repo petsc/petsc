@@ -60,6 +60,10 @@ ex10: ex10.o  chkopts
 	-$(CLINKER) -o ex10 ex10.o $(PETSC_LIB)
 	$(RM) ex10.o
 
+ex11: ex11.o  chkopts
+	-$(CLINKER) -o ex11 ex11.o $(PETSC_LIB)
+	$(RM) ex11.o
+
 ex12: ex12.o  chkopts
 	-$(FLINKER) -o ex12 ex12.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex12.o
