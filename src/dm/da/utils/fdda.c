@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.59 2001/02/17 21:44:06 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.60 2001/02/17 21:47:43 bsmith Exp balay $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -550,7 +550,7 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoring *coloring,Mat *J)
 int DAGetColoring3d_MPIBAIJ(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,slot,gxs,gys,gnx,gny;           
-  int                    m,n,dim,s,*cols,k,nc,col,cnt,l,lcol,lrow,p,*dnz,*onz;
+  int                    m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
   int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
   Scalar                 *values;
