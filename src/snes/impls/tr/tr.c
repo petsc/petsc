@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.93 1999/02/09 23:31:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.94 1999/02/10 23:11:31 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
@@ -61,16 +61,14 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
 {
   SNES_TR      *neP = (SNES_TR *) snes->data;
   Vec          X, F, Y, G, TMP, Ytmp;
-  int          maxits, i, history_len, ierr, lits, breakout = 0;
+  int          maxits, i, ierr, lits, breakout = 0;
   MatStructure flg = DIFFERENT_NONZERO_PATTERN;
-  double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm,*history, ynorm,norm1;
+  double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm,ynorm,norm1;
   Scalar       mone = -1.0,cnorm;
   KSP          ksp;
   SLES         sles;
 
   PetscFunctionBegin;
-  history	= snes->conv_hist;	/* convergence history */
-  history_len	= snes->conv_hist_size;	/* convergence history length */
   maxits	= snes->max_its;	/* maximum number of iterations */
   X		= snes->vec_sol;	/* solution vector */
   F		= snes->vec_func;	/* residual vector */
@@ -86,9 +84,9 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   snes->norm = fnorm;
   snes->iter = 0;
   PetscAMSGrantAccess(snes);
-  if (history) history[0] = fnorm;
   delta = neP->delta0*fnorm;         
   neP->delta = delta;
+  SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
 
  if (fnorm < snes->atol) {*its = 0; PetscFunctionReturn(0);}
@@ -159,10 +157,10 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
       snes->iter = i+1;
       snes->norm = fnorm;
       PetscAMSGrantAccess(snes);
-      if (history && history_len > i+1) history[i+1] = fnorm;
       TMP = F; F = G; snes->vec_func_always = F; G = TMP;
       TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
       VecNorm(X, NORM_2,&xnorm );		/* xnorm = || X || */
+      SNESLogConvHistory(snes,fnorm,lits);
       SNESMonitor(snes,i+1,fnorm);
 
       /* Test for convergence */
@@ -184,7 +182,6 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     PLogInfo(snes,"SNESSolve_EQ_TR: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
   }
-  if (history) snes->conv_act_size = (history_len < i+1) ? history_len : i+1;
   *its = i+1;
   PetscFunctionReturn(0);
 }

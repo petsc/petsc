@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.112 1999/01/31 16:11:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.113 1999/02/24 22:56:28 bsmith Exp bsmith $";
 #endif
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
@@ -7,6 +7,18 @@ static char vcid[] = "$Id: da2.c,v 1.112 1999/01/31 16:11:27 bsmith Exp bsmith $
 EXTERN_C_BEGIN
 extern int VecView_MPI_Draw_DA2d(Vec,Viewer);
 EXTERN_C_END
+
+#undef __FUNC__  
+#define __FUNC__ "DAGetOwnershipRange"
+int DAGetOwnershipRange(DA da,int **lx,int **ly,int **lz)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  if (lx) *lx = da->lx;
+  if (ly) *ly = da->ly;
+  if (lz) *lz = da->lz;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "DAView_2d"
@@ -124,7 +136,7 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
 
   ierr = PetscObjectQuery((PetscObject)v,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) PetscFunctionReturn(0);
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   if (dof > 1) {dim++; shift = 1; ends[0] = dof;}
 
   ierr = VecGetType(v,&type);CHKERRQ(ierr);
@@ -202,7 +214,7 @@ int DAPublish_Petsc(PetscObject object)
 .  lx, ly - arrays containing the number of nodes in each cell along
            the x and y coordinates, or PETSC_NULL. If non-null, these
            must be of length as m and n, and the corresponding
-           m and n cannot be PETSC_DECIDE.
+           m and n cannot be PETSC_DECIDE. Sum of the lx[] entries must be M, sum of the ly[] entries N
 -  s - stencil width
 
    Output Parameter:
@@ -910,8 +922,16 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     ierr = ISDestroy(ispetsc); CHKERRQ(ierr);
     ierr = ISDestroy(isnatural); CHKERRQ(ierr);
   }
-  if (flx) PetscFree(flx); 
-  if (fly) PetscFree(fly);
+  if (!flx) {
+    flx = (int *) PetscMalloc(m*sizeof(int));CHKPTRQ(flx);
+    PetscMemcpy(flx,lx,m*sizeof(int));
+  }
+  if (!fly) {
+    fly = (int *) PetscMalloc(n*sizeof(int));CHKPTRQ(fly);
+    PetscMemcpy(fly,ly,n*sizeof(int));
+  }
+  da->lx = flx;
+  da->ly = fly;
 
   /*
      Note the following will be removed soon. Since the functionality 

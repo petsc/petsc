@@ -1,0 +1,223 @@
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="GENERATOR" CONTENT="Mozilla/4.03 [en] (X11; U; SunOS 5.5.1 sun4u) [Netscape]">
+</HEAD>
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#0000FF" VLINK="#FF0000" ALINK="#FF0000">
+
+<H1>
+Patches for PETSc (Release 2.0.21)
+</H1>
+<HR>
+
+
+Updates for: <B><FONT COLOR="#993399">Mon Jan 26, 1998&nbsp;</FONT></B>
+<HR><H1>
+All machines using DA component from fortran</H1>
+Use the updated <A HREF="http://www.mcs.anl.gov/petsc/src/fortran/custom/zda.c">
+src/fortran/custom/zda.c</A>
+<HR>
+
+<H1>All machines using option -ksp_xmonitor</H1>
+Use the updated <A HREF="http://www.mcs.anl.gov/petsc/src/sys/src/options.c">
+src/sys/src/options.c</A>
+<HR>
+
+Updates for: <B><FONT COLOR="#993399">Fri Dec 5, 1997&nbsp;</FONT></B>
+<HR><H1>
+All machines</H1>
+Use the updated <A HREF="http://www.mcs.anl.gov/petsc/src/mat/impls/baij/seq/baij.c">
+src/mat/impls/baij/seq/baij.c</A> and
+<A HREF="http://www.mcs.anl.gov/petsc/src/mat/impls/baij/mpi/mpibaij.c">
+src/mat/impls/baij/mpi/mpibaij.c </A> files.
+
+
+<HR>
+Updates for: <B><FONT COLOR="#993399">Wed Dec 3, 1997&nbsp;</FONT></B>
+
+
+<HR><H1>
+All machines</H1>
+Use the updated <A HREF="http://www.mcs.anl.gov/petsc/src/draw/impls/x/xcolor.c">src/draw/impls/x/xcolor.c</A> and <A HREF="http://www.mcs.anl.gov/petsc/src/draw/impls/x/xinit.c">src/draw/impls/x/xinit.c</A> files.
+
+<P><HR><H1>
+Cray T3D/T3E using fortran interface with C++</H1>
+Edit bmake/t3e/base.g_c++ and base.O_c++ and add the following line to
+both of them:
+<PRE>FLINKER&nbsp;&nbsp;&nbsp; = CC $(COPTFLAGS)</PRE>
+
+<P><HR><H1>
+Cray T3D/T3E and DEC alpha  using fortran</H1>
+Edit include/FINCLUDE/vec.h and replace VEC_IGNORE_OFF_PROCESSOR_ENTRIES
+with VEC_IGNORE_OFF_PROC_ENTRIES. The full name is too long for the
+Cray compiler. DO NOT change it in include/vec.h
+
+<P><HR><H1>
+Cray T3D/T3E complex number version does not compile</H1>
+We have reported several compiler/linker bugs to Cray; but have no work
+around until Cray provides suitable patches.
+
+<P><HR>
+Updates for: <B><FONT COLOR="#993399">Nov 14, 1997</FONT></B>&nbsp;
+
+<P><HR><H1>
+Solaris using fortran interface</H1>
+Error When building the fortran interface
+<PRE>somefort.f:
+"somefort.f", line 1: Error: illegal continuation card ignored
+*** Error code 1 (ignored)
+rm -f somefort.f</PRE>
+This occurs because PETSc uses /usr/ucb/cc to preprocess .F files, and
+/usr/ucb/cc on your machine is not useable. Fix: 1. If you have SC compilers
+of version &lt; SC4.2, edit bmake/solaris/base and replace
+<PRE>.F.f:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $(RM) $*.f
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/ucb/cc -E&nbsp; $(CFLAGS) $*.F | grep -v '^# '&nbsp; > $*.f
+
+.F.o:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $(RM) $*.f
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/ucb/cc -E&nbsp; $(CFLAGS) $*.F | grep -v '^# '&nbsp; > $*.f
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $(RM) $*.f&nbsp;
+
+.F.a:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $(RM) $*.f&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /usr/ucb/cc -E&nbsp; $(CFLAGS) $*.F | grep -v '^# '&nbsp; > $*.f
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $(AR) cr $(LIBNAME) $*.o
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $(RM) $*.f $*.o</PRE>
+with
+<PRE>.F.o:&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $(FC) -c $(FFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
+.F.a:&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $(FC) -c $(FFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $(AR) cr $(LIBNAME) $*.o
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $(RM) $*.o</PRE>
+Else if you have gcc installed, replace the above with
+<PRE>.F.f:
+&nbsp;&nbsp;&nbsp; $(RM) $*.f&nbsp; __$*.c
+&nbsp;&nbsp;&nbsp; cp $*.F __$*.c
+&nbsp;&nbsp;&nbsp; gcc -E&nbsp; $(CFLAGS) __$*.c | grep -v '^# '&nbsp; > $*.f
+
+.F.o:
+&nbsp;&nbsp;&nbsp; $(RM) $*.f&nbsp; __$*.c
+&nbsp;&nbsp;&nbsp; cp $*.F __$*.c
+&nbsp;&nbsp;&nbsp; gcc -E&nbsp; $(CFLAGS) __$*.c | grep -v '^# '&nbsp; > $*.f
+&nbsp;&nbsp;&nbsp; -$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+&nbsp;&nbsp;&nbsp; $(RM) $*.f&nbsp; __$*.c
+
+.F.a:
+&nbsp;&nbsp;&nbsp; $(RM) $*.f&nbsp; __$*.c
+&nbsp;&nbsp;&nbsp; cp $*.F __$*.c
+&nbsp;&nbsp;&nbsp; gcc -E&nbsp; $(CFLAGS) __$*.c | grep -v '^# '&nbsp; > $*.f
+&nbsp;&nbsp;&nbsp; -$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+&nbsp;&nbsp;&nbsp; $(AR) cr $(LIBNAME) $*.o
+&nbsp;&nbsp;&nbsp; $(RM) $*.f $*.o __$*.c</PRE>
+
+<P><HR><H1>
+All machines: If using BlockSolve95 with c++ version of PETSc</H1>
+Edit Blocksolve95/include/Bsdepend.h file and comment out the following
+<PRE>/*&nbsp;
+#if defined(__cplusplus)
+extern "C" {
+extern void *malloc(long unsigned int );
+extern void free(void *);
+extern int&nbsp; abs(int);
+extern double fabs(double);
+extern void srand(int);
+extern int rand();
+extern double drand48();
+extern void srand48(long);
+extern int exit(int);
+}
+#endif
+*/</PRE>
+
+<P><HR><H1>
+HP machines using HP version of MPI 1.2: HP machines using HP version 1.3</H1>
+Edit the file src/fortran/custom/zpetsc.h and change the lines (app line 90)
+<PRE>
+#else
+#define PetscToPointerComm(a)        (a)
+#define PetscFromPointerComm(a) (int)(a)
+/* For HPUX with HP-MPI
+#define PetscToPointerComm(a)        MPI_Comm_f2c(*(MPI_Fint *)(&a))
+#define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
+*/
+#endif
+</PRE>
+to
+<PRE>
+#else
+/*
+#define PetscToPointerComm(a)        (a)
+#define PetscFromPointerComm(a) (int)(a)
+*/
+/* For HPUX with HP-MPI */
+#define PetscToPointerComm(a)        MPI_Comm_f2c(*(MPI_Fint *)(&a))
+#define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
+
+#endif
+
+</PRE>
+
+<P><HR><H1>
+IBM RS/6000 or SP running OS 4.1</H1>
+Error when compiling src/viewers/impls/matlab/send.c:
+<PRE>"send.c", line 72.12: 1506-343 (S) Redeclaration of connect differs from
+&nbsp;&nbsp;&nbsp;&nbsp; previous declaration on line 368 of "/usr/include/sys/socket.h".</PRE>
+Fix: edit the file send.c and remove the prototype for connect() (line
+68). This error occurs only on some machines running OS 4.1.
+
+<P><HR><H1>
+Solaris running OS 5.3</H1>
+(an out-dated OS version) did not have prototype for gettimeofday(). To
+fix this edit file include/pinclude/ptime.h line: 180 and replace
+<PRE>#if defined(PARCH_sun4) &amp;&amp; defined(__cplusplus)</PRE>
+with
+<PRE>#if (defined(PARCH_sun4) ||&nbsp; defined(PARCH_solaris)) &amp;&amp; defined(__cplusplus)</PRE>
+
+<P><HR><H1>
+SunOS 4.1.3 using gcc, if all programs crash on start-up</H1>
+Edit the file bmake/sun4/base and remove the flag -fPIC from the definition
+of CC. E.g., use the following:
+<PRE>CC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = gcc -DPARCH_sun4 -D__USE_FIXED_PROTOTYPES__</PRE>
+If installing PETSc using C++ or complex numbers, then remove the flag
+-fPIC from the definition of CC in the files bmake/sun4/[base.g_complex,base.O_complex,base.g_c++,base.O_c++]
+as well. Then reinstall. Please also send us email so we can try to determine
+why this happens.
+
+<P><HR><H1>
+SGI Power Challange /Origin 2000</H1>
+running IRIX64 less than 6.2, edit bmake/IRIX64/base.O* files and replace
+the occurences of:
+<PRE>-OPT:Olimit=5000</PRE>
+with
+<PRE>-OPT:fprop_limit=5000</PRE>
+
+<P><HR><H1>
+DEC Alpha using g++ compiler</H1>
+Error message:
+<PRE>libfast in: /u/acti/bsmith/petsc/src/viewer/impls/matlab
+In file included from send.c:36:
+netdb.h:114: syntax error before `;'
+*** Exit 1 (ignored)
+ar: Error: send.o cannot open</PRE>
+We have no fix for this error.
+
+<P><HR><H1>
+Convex Exemplar</H1>
+To compile PETSc on Convex, use PETSC_ARCH=hpux and use only HP-compilers.
+Assuming that the HP compilers are in /bin and Convex compilers are in
+/usr/convex/bin, edit bmake/hpux/base* files and replace the occurence
+of each of the following:
+<PRE>cc&nbsp; -> /bin/cc
+CC&nbsp; -> /bin/CC
+f77 -> /bin/f77
+ld&nbsp; -> /bin/ld</PRE>
+Also, add the following line to bmake/hpux/base:
+<PRE>LD&nbsp;&nbsp;&nbsp; = /bin/ld</PRE>
+
+<HR>
+</BODY>
+</HTML>

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dacorn.c,v 1.18 1999/01/31 16:11:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dacorn.c,v 1.19 1999/02/19 23:23:14 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -31,11 +31,13 @@ static char vcid[] = "$Id: dacorn.c,v 1.18 1999/01/31 16:11:27 bsmith Exp bsmith
 @*/
 int DASetCoordinates(DA da,Vec c)
 {
+  int ierr;
+
   PetscFunctionBegin;
- 
   PetscValidHeaderSpecific(da,DA_COOKIE);
   PetscValidHeaderSpecific(c,VEC_COOKIE);
   da->coordinates = c;
+  ierr = VecSetBlockSize(c,da->dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

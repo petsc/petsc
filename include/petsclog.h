@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.124 1998/08/26 22:04:55 balay Exp bsmith $ */
+/* $Id: petsclog.h,v 1.125 1998/11/20 15:31:26 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -56,6 +56,8 @@
 #define MAT_GetRow                              35
 #define MAT_Partitioning                        36
 
+#define VEC_ReduceArithmetic                    37
+#define VEC_ReduceCommunication                 38
 #define VEC_ScatterBarrier                      39
 #define VEC_Dot                                 40
 #define VEC_Norm                                41
@@ -108,6 +110,9 @@
 #define SNES_MinimizationFunctionEval           84
 #define SNES_GradientEval                       85
 #define SNES_HessianEval                        86
+
+#define VEC_ReduceBarrier                       87
+#define VEC_ReduceCommOnly                      88
 
 #define TS_Step                                 90
 #define TS_PseudoComputeTimeStep                91

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.1 1998/12/10 19:51:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.2 1998/12/23 22:53:47 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
@@ -44,19 +44,17 @@ int main(int argc,char **argv)
   ierr = DAGetCoordinates(da,&coors); CHKERRA(ierr);
   ierr = VecGetArray(coors,&x); CHKERRA(ierr);
 
-  /* Set values into local vectors */
-  ierr = VecGetArray(local,&alocal); CHKERRA(ierr);
-  ierr = VecGetSize(local,&n);CHKERRA(ierr);
+  /* Set values into global vectors */
+  ierr = VecGetArray(global,&alocal); CHKERRA(ierr);
+  ierr = VecGetLocalSize(global,&n);CHKERRA(ierr);
   n    = n/dof;
   for ( j=0; j<dof; j++ ) {
     for ( i=0; i<n; i++ ) {
-      alocal[j+dof*i] = sin(2*PETSC_PI*(j+1)*x[i]);
+      alocal[j+dof*i] = sin(2*PETSC_PI*(j+1)*x[i]); 
     }
   }
-  ierr = VecRestoreArray(local,&alocal); CHKERRA(ierr);
+  ierr = VecRestoreArray(global,&alocal); CHKERRA(ierr);
   ierr = VecRestoreArray(coors,&x); CHKERRA(ierr);
-
-  ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 
   ierr = VecView(global,viewer); CHKERRA(ierr); 
 

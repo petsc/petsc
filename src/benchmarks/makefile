@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.22 1998/11/20 15:31:19 bsmith Exp balay $ 
+# $Id: makefile,v 1.23 1999/02/01 23:35:29 balay Exp bsmith $ 
 
 ALL: 
 
@@ -20,7 +20,7 @@ EXAMPLESC     = PetscTime.c PetscGetTime.c MPI_Wtime.c PLogEvent.c PetscMalloc.c
 		PetscMemcpy.c PetscMemzero.c PetscMemcmp.c Index.c PetscVecNorm.c \
 		PetscGetCPUTime.c
 EXAMPLESF     = 
-DOCS          = README
+DOCS          = readme
 TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
 		PetscMemcpy PetscMemzero PetscMemcmp Index PetscVecNorm \
 		PetscGetCPUTime

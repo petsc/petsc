@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.117 1999/02/03 04:31:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.118 1999/02/07 19:49:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -175,9 +175,9 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
   double    res_norm, res;
-  double    hapbnd,*nres = ksp->residual_history,tt;
+  double    hapbnd,tt;
   Scalar    tmp;
-  int       hist_len = ksp->res_hist_size,  ierr, it;
+  int       ierr, it;
   int       max_k = gmres->max_k, max_it = ksp->max_it;
 
   /* Note that hapend is ignored in the code */
@@ -238,7 +238,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   gmres->it = (it - 1);
   while (!(*converged = (*ksp->converged)(ksp,ksp->its,res,ksp->cnvP))
            && it < max_k && ksp->its < max_it) {
-    if (nres && hist_len > ksp->its) nres[ksp->its]   = res;
+    KSPLogResidualHistory(ksp,res);
     gmres->it = (it - 1);
     KSPMonitor(ksp,ksp->its,res); 
     if (gmres->vv_allocated <= it + VEC_OFFSET + 1) {
@@ -273,8 +273,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     ksp->rnorm = res;
     PetscAMSGrantAccess(ksp)
   }
-  if (nres && hist_len > ksp->its) nres[ksp->its]   = res; 
-  if (nres) ksp->res_act_size = (hist_len < ksp->its) ? hist_len : ksp->its+1;
+  KSPLogResidualHistory(ksp,res);
 
   /*
      Monitor if we know that we will not return for a restart */

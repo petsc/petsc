@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.22 1998/12/03 04:06:09 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.23 1998/12/17 22:12:48 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -37,8 +37,10 @@ struct _p_DA {
   AO             ao;                    /* application ordering context */
 
   ISLocalToGlobalMapping ltogmap;       /* local to global mapping for associated vectors */
-  Vec                    coordinates;   /* coordinates (x,y,x) of local nodes; including ghost points */
-  char                   **fieldname;  /* names of individual components in vectors */
+  Vec                    coordinates;   /* coordinates (x,y,x) of local nodes, not including ghosts*/
+  char                   **fieldname;   /* names of individual components in vectors */
+
+  int                    *lx,*ly,*lz;   /* number of nodes in each partition block along 3 axis */
 };
 
 /*

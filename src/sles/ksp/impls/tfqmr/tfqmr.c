@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tfqmr.c,v 1.42 1999/02/09 22:52:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.43 1999/02/12 19:54:12 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -31,15 +31,13 @@ static int KSPSetUp_TFQMR(KSP ksp)
 #define __FUNC__ "KSPSolve_TFQMR"
 static int  KSPSolve_TFQMR(KSP ksp,int *its)
 {
-  int       i=0, maxit, m, conv=0, hist_len, cerr=0, ierr;
+  int       i=0, maxit, m, conv=0, cerr=0, ierr;
   Scalar    rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
-  double    *history,dp,dpold,w,dpest,tau,psi,cm;
+  double    dp,dpold,w,dpest,tau,psi,cm;
   Vec       X,B,V,P,R,RP,T,T1,Q,U, D, BINVF, AUQ;
 
   PetscFunctionBegin;
   maxit    = ksp->max_it;
-  history  = ksp->residual_history;
-  hist_len = ksp->res_hist_size;
   X        = ksp->vec_sol;
   B        = ksp->vec_rhs;
   R        = ksp->work[0];
@@ -114,7 +112,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
       PetscAMSTakeAccess(ksp);
       ksp->rnorm                                    = dpest;
       PetscAMSGrantAccess(ksp);
-      if (history && hist_len > i + 1) history[i+1] = dpest;
+      KSPLogResidualHistory(ksp,dpest);
       KSPMonitor(ksp,i+1,dpest);
       if ((conv = cerr = (*ksp->converged)(ksp,i+1,dpest,ksp->cnvP))) break;
 
@@ -134,7 +132,6 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
     dpold  = dp;
   }
   if (i == maxit) i--;
-  if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
   ierr = KSPUnwindPreconditioner(ksp,X,T); CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1);

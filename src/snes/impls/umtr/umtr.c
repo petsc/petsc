@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.78 1999/02/09 23:26:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.79 1999/02/09 23:31:02 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -35,8 +35,8 @@ static char vcid[] = "$Id: umtr.c,v 1.78 1999/02/09 23:26:39 bsmith Exp bsmith $
 static int SNESSolve_UM_TR(SNES snes,int *outits)
 {
   SNES_UMTR    *neP = (SNES_UMTR *) snes->data;
-  int          maxits, i, history_len, nlconv, ierr, qits, newton;
-  double       *gnorm, xnorm, max_val, *history, ftrial, delta;
+  int          maxits, i, nlconv, ierr, qits, newton;
+  double       *gnorm, xnorm, max_val, ftrial, delta;
   double       zero = 0.0, *f, two = 2.0, four = 4.0;
   Scalar       one = 1.0;
   Vec          X, G,  S, Xtrial;
@@ -47,8 +47,6 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
 
   PetscFunctionBegin;
   nlconv        = 0;
-  history	= snes->conv_hist;       /* convergence history */
-  history_len	= snes->conv_hist_size;  /* convergence history length */
   maxits	= snes->max_its;         /* maximum number of iterations */
   X		= snes->vec_sol; 	 /* solution vector */
   G		= snes->vec_func;	 /* gradient vector */
@@ -67,7 +65,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   PetscAMSTakeAccess(snes);
   ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);               /* gnorm = || G || */
   PetscAMSGrantAccess(snes);
-  if (history) history[0] = *gnorm;
+  SNESLogConvHistory(snes,*gnorm,0);
   SNESMonitor(snes,0,*gnorm);
 
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
@@ -166,9 +164,9 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     PetscAMSTakeAccess(snes);
     ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);
     PetscAMSGrantAccess(snes);
-    if (history && history_len > i+1) history[i+1] = *gnorm;
     snes->vec_func_always = G;
 
+    SNESLogConvHistory(snes,*gnorm,qits);
     SNESMonitor(snes,i+1,*gnorm);
   }
   /* Verify solution is in corect location */
@@ -182,7 +180,6 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     i--;
   }
   *outits = i;  /* not i+1, since update for i happens in loop above */
-  if (history) snes->conv_act_size = (history_len < i+1) ? history_len : i+1;
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

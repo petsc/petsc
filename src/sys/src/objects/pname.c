@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.18 1998/11/20 15:28:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pname.c,v 1.19 1998/12/14 21:08:11 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -96,6 +96,8 @@ int PetscObjectPublishBaseBegin(PetscObject obj)
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amem,"ParentId",&obj->parentid,1,AMS_INT,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amem,"Name",&obj->name,1,AMS_STRING,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 #else
   PetscFunctionBegin;
 #endif
@@ -121,4 +123,7 @@ int PetscObjectPublishBaseEnd(PetscObject obj)
 #endif
   PetscFunctionReturn(0);
 }
+
+
+
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.48 1999/02/09 22:51:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.49 1999/02/09 22:51:58 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -55,20 +55,17 @@ static int KSPSetUp_LSQR(KSP ksp)
 #define __FUNC__ "KSPSolve_LSQR"
 static int KSPSolve_LSQR(KSP ksp,int *its)
 {
-  int          i = 0, maxit, hist_len, cerr = 0, ierr;
+  int          i = 0, maxit, cerr = 0, ierr;
   Scalar       rho, rhobar, phi, phibar, theta, c, s,tmp, zero = 0.0,mone=-1.0;
-  double       beta, alpha, rnorm, *history;
+  double       beta, alpha, rnorm;
   Vec          X,B,V,V1,U,U1,TMP,W;
   Mat          Amat, Pmat;
   MatStructure pflag;
   KSP_LSQR     *lsqr = (KSP_LSQR *) ksp->data;
 
   PetscFunctionBegin;
-  ksp->its = 0;
   ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   maxit    = ksp->max_it;
-  history  = ksp->residual_history;
-  hist_len = ksp->res_hist_size;
 
   /* vectors of length m, where system size is mxn */
   B        = ksp->vec_rhs;
@@ -96,12 +93,13 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
 
   /* Test for nothing to do */
   ierr = VecNorm(U,NORM_2,&rnorm); CHKERRQ(ierr);
-  if ((*ksp->converged)(ksp,0,rnorm,ksp->cnvP)) { *its = 0; PetscFunctionReturn(0);}
-  KSPMonitor(ksp,0,rnorm);
   PetscAMSTakeAccess(ksp);
-  ksp->rnorm              = rnorm;
+  ksp->its   = 0;
+  ksp->rnorm = rnorm;
   PetscAMSGrantAccess(ksp);
-  if (history) history[0] = rnorm;
+  if ((*ksp->converged)(ksp,0,rnorm,ksp->cnvP)) { *its = 0; PetscFunctionReturn(0);}
+  KSPLogResidualHistory(ksp,rnorm);
+  KSPMonitor(ksp,0,rnorm);
 
   ierr = VecCopy(B,U); CHKERRQ(ierr);
   ierr = VecNorm(U,NORM_2,&beta); CHKERRQ(ierr);
@@ -116,7 +114,6 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   phibar = beta;
   rhobar = alpha;
   for (i=0; i<maxit; i++) {
-    ksp->its++;
 
     ierr = MatMult(Amat,V,U1); CHKERRQ(ierr);
     tmp  = -alpha; ierr = VecAXPY(&tmp,U,U1); CHKERRQ(ierr);
@@ -148,9 +145,10 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
 #endif
 
     PetscAMSTakeAccess(ksp);
+    ksp->its++;
     ksp->rnorm = rnorm;
     PetscAMSGrantAccess(ksp);
-    if (history && hist_len > i + 1) history[i+1] = rnorm;
+    KSPLogResidualHistory(ksp,rnorm);
     KSPMonitor(ksp,i+1,rnorm);
     cerr = (*ksp->converged)(ksp,i+1,rnorm,ksp->cnvP);
     if (cerr) break;
@@ -158,7 +156,6 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
     SWAP( V1, V, TMP );
   }
   if (i == maxit) i--;
-  if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
   /* ierr = KSPUnwindPreconditioner(ksp,X,W); CHKERRQ(ierr); */
 

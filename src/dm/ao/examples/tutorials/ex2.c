@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.14 1998/08/03 15:00:09 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.15 1998/09/19 04:01:00 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -13,7 +13,7 @@ T*/
 
 /*
     Updates of this example MAY be found at 
-       http://www.mcs.anl.gov/petsc/src/mat/impls/examples/tutorials/ex2.c
+       http://www.mcs.anl.gov/petsc/src/dm/ao/examples/tutorials/ex2.c
 
     This is a very basic, even crude, example of managing an unstructured
     grid in parallel.

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.14 1999/02/01 22:39:51 balay Exp balay $ 
+# $Id: makefile,v 1.15 1999/02/02 21:27:03 balay Exp bsmith $ 
 #
 #  All the Minpack coloring routines have been converted to C with the F2C 
 # converter. We do not include in the distribution the original Fortran 77 
@@ -13,7 +13,7 @@ SOURCEC  = degr.c setr.c dsm.c ido.c numsrt.c seq.c slo.c color.c \
 SOURCEH  = color.h
 OBJSC    = degr.o setr.o dsm.o ido.o numsrt.o seq.o slo.o color.o \
            scolor.o
-DOCS     = README
+DOCS     = readme
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/impls/color/
 MANSEC   = Mat

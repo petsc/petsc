@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.26 1999/01/13 21:47:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.27 1999/01/31 16:11:27 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -89,9 +89,10 @@ int DAView(DA da, Viewer v)
 .  m, n, p - corresponding number of procs in each dimension
 .  w - number of degrees of freedom per node
 .  s - stencil width
--  wrap - type of periodicity, on of DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, 
+.  wrap - type of periodicity, on of DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, 
           DA_XYPERIODIC, DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC,DA_ZPERIODIC
-
+-  st - stencil type, either DA_STENCIL_STAR or DA_STENCIL_BOX
+  
    Note:
    Use PETSC_NULL in place of any output parameter that is not of interest.
 
@@ -99,7 +100,8 @@ int DAView(DA da, Viewer v)
 
 .seealso: DAView()
 @*/
-int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,DAPeriodicType *wrap)
+int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,DAPeriodicType *wrap,
+              DAStencilType *st)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
@@ -113,6 +115,7 @@ int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,in
   if (w != PETSC_NULL)    *w    = da->w;
   if (s != PETSC_NULL)    *s    = da->s;
   if (wrap != PETSC_NULL) *wrap = da->wrap;
+  if (st != PETSC_NULL)   *st   = da->stencil_type;
   PetscFunctionReturn(0);
 }  
 

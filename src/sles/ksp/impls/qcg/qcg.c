@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.54 1999/02/09 22:52:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.55 1999/02/09 22:53:10 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -62,8 +62,8 @@ int KSPSolve_QCG(KSP ksp,int *its)
   Vec          W, WA, WA2, R, P, ASP, BS, X, B;
   Scalar       zero = 0.0, negone = -1.0, scal, nstep, btx, xtax,beta, rntrn, step;
   double       ptasp, q1, q2, wtasp, bstp, rtr, xnorm, step1, step2, rnrm, p5 = 0.5;
-  double       *history, dzero = 0.0, bsnrm;
-  int          i, cerr, hist_len, maxit, ierr;
+  double       dzero = 0.0, bsnrm;
+  int          i, cerr,  maxit, ierr;
   PC           pc = ksp->B;
   PCSide       side;
 #if defined(USE_PETSC_COMPLEX)
@@ -72,8 +72,6 @@ int KSPSolve_QCG(KSP ksp,int *its)
 
   PetscFunctionBegin;
   ksp->its = 0;
-  history  = ksp->residual_history;
-  hist_len = ksp->res_hist_size;
   maxit    = ksp->max_it;
   WA       = ksp->work[0];
   R        = ksp->work[1];
@@ -100,11 +98,12 @@ int KSPSolve_QCG(KSP ksp,int *its)
   ierr = PCApplySymmetricLeft(pc,B,BS); CHKERRQ(ierr);
 
   ierr = VecNorm(BS,NORM_2,&bsnrm); CHKERRQ(ierr);
-  KSPMonitor(ksp,0,bsnrm);
   PetscAMSTakeAccess(ksp);
-  ksp->rnorm              = bsnrm;
+  ksp->its    = 0;
+  ksp->rnorm  = bsnrm;
   PetscAMSGrantAccess(ksp);
-  if (history) history[0] = bsnrm;
+  KSPLogResidualHistory(ksp,bsnrm);
+  KSPMonitor(ksp,0,bsnrm);
   cerr = (*ksp->converged)(ksp,0,bsnrm,ksp->cnvP);
   if (cerr) {*its =  0; PetscFunctionReturn(0);}
 
@@ -119,7 +118,9 @@ int KSPSolve_QCG(KSP ksp,int *its)
 #endif
 
   for (i=0; i<=maxit; i++) {
+    PetscAMSTakeAccess(ksp);
     ksp->its++;
+    PetscAMSGrantAccess(ksp);
 
     /* Compute:  asp = D^{-T}*A*D^{-1}*p  */
     ierr = PCApplySymmetricRight(pc,P,WA); CHKERRQ(ierr);
@@ -227,7 +228,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
          PetscAMSTakeAccess(ksp);
          ksp->rnorm                                    = rnrm;
          PetscAMSGrantAccess(ksp);
-         if (history && hist_len > i + 1) history[i+1] = rnrm;
+         KSPLogResidualHistory(ksp,rnrm);
          KSPMonitor(ksp,i+1,rnrm);
          cerr = (*ksp->converged)(ksp,i+1,rnrm,ksp->cnvP);
          if (cerr) {                 /* convergence for */

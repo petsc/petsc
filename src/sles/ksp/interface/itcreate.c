@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.150 1999/01/31 21:26:16 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.151 1999/02/01 15:21:42 curfman Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -182,16 +182,17 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->guess_zero          = 1;
   ksp->calc_sings          = 0;
   ksp->calc_res            = 0;
-  ksp->residual_history    = 0;
-  ksp->res_hist_size       = 0;
-  ksp->res_act_size        = 0;
+  ksp->res_hist            = PETSC_NULL;
+  ksp->res_hist_len        = 0;
+  ksp->res_hist_max        = 0;
+  ksp->res_hist_reset      = PETSC_TRUE;
   ksp->numbermonitors      = 0;
   ksp->converged           = KSPDefaultConverged;
-  ksp->ops->buildsolution       = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual       = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
 
-  ksp->ops->setfromoptions      = 0;
-  ksp->ops->printhelp           = 0;
+  ksp->ops->setfromoptions = 0;
+  ksp->ops->printhelp      = 0;
 
   ksp->vec_sol         = 0;
   ksp->vec_rhs         = 0;

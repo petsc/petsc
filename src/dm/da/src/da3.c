@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.91 1999/01/31 16:11:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.92 1999/02/24 22:56:21 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -171,7 +171,8 @@ extern int DAPublish_Petsc(PetscObject);
 .  lx, ly, lz - arrays containing the number of nodes in each cell along
           the x, y, and z coordinates, or PETSC_NULL. If non-null, these
           must be of length as m,n,p and the corresponding
-          m,n, or p cannot be PETSC_DECIDE.
+          m,n, or p cannot be PETSC_DECIDE. Sum of the lx[] entries must be M, sum or
+          the ly[] must n, sum of the lz[] must be P
 -  s - stencil width
 
    Output Parameter:
@@ -1773,10 +1774,22 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     ierr = ISDestroy(ispetsc); CHKERRQ(ierr);
     ierr = ISDestroy(isnatural); CHKERRQ(ierr);
   }
+  if (!flx) {
+    flx = (int *) PetscMalloc(m*sizeof(int));CHKPTRQ(flx);
+    PetscMemcpy(flx,lx,m*sizeof(int));
+  }
+  if (!fly) {
+    fly = (int *) PetscMalloc(n*sizeof(int));CHKPTRQ(fly);
+    PetscMemcpy(fly,ly,n*sizeof(int));
+  }
+  if (!flz) {
+    flz = (int *) PetscMalloc(p*sizeof(int));CHKPTRQ(flz);
+    PetscMemcpy(flz,lz,p*sizeof(int));
+  }
+  da->lx = flx;
+  da->ly = fly;
+  da->lz = flz;
 
-  if (flx) PetscFree(flx);
-  if (fly) PetscFree(fly);
-  if (flz) PetscFree(flz);
   /*
      Note the following will be removed soon. Since the functionality 
     is replaced by the above. */

@@ -1,5 +1,5 @@
 
-!    "$Id: ex2f.F,v 1.50 1998/07/14 00:05:19 bsmith Exp bsmith $";
+!    "$Id: ex2f.F,v 1.51 1999/01/12 23:16:17 bsmith Exp bsmith $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -85,19 +85,19 @@
 !  See the Fortran section of the PETSc users manual for details.
 !  
       double precision  norm
-
-      integer  i, j, II, JJ, ierr, m, n
-      integer  rank, size, its, Istart, Iend, flg
-      Scalar   v, one, neg_one
-      Vec      x, b, u
-      Mat      A 
-      SLES     sles
-      KSP      ksp
+      integer     i, j, II, JJ, ierr, m, n
+      integer     rank, size, its, Istart, Iend, flg
+      Scalar      v, one, neg_one
+      Vec         x, b, u
+      Mat         A 
+      SLES        sles
+      KSP         ksp
       PetscRandom rctx
-
 !  These variables are not currently used.
-!      PC               pc
+!      PC          pc
+!      PCType      ptype 
 !      double precision tol
+
 
 !  Note: Any user-defined Fortran routines (such as MyKSPMonitor)
 !  MUST be declared as external.
@@ -246,9 +246,10 @@
 !     We comment out this section of code since the Jacobi
 !     preconditioner is not a good general default.
 
-!      call SLESGetKSP(sles,ksp,ierr)
 !      call SLESGetPC(sles,pc,ierr)
-!      call PCSetType(pc,PCJACOBI,ierr)
+!      ptype = PCJACOBI
+!      call PCSetType(pc,ptype,ierr)
+!      call SLESGetKSP(sles,ksp,ierr)
 !      tol = 1.e-7
 !      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
 !     &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)

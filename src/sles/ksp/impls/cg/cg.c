@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.82 1998/12/23 22:50:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.83 1999/01/31 16:08:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -110,9 +110,9 @@ int KSPSetUp_CG(KSP ksp)
 #define __FUNC__ "KSPSolve_CG"
 int  KSPSolve_CG(KSP ksp,int *its)
 {
-  int          ierr, i = 0,maxit,eigs,pres, hist_len, cerr;
+  int          ierr, i = 0,maxit,eigs,pres, cerr;
   Scalar       dpi, a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0, mone = -1.0, ma; 
-  double       *history, dp = 0.0;
+  double       dp = 0.0;
   Vec          X,B,Z,R,P;
   KSP_CG       *cg;
   Mat          Amat, Pmat;
@@ -123,8 +123,6 @@ int  KSPSolve_CG(KSP ksp,int *its)
   eigs    = ksp->calc_sings;
   pres    = ksp->use_pres;
   maxit   = ksp->max_it;
-  history = ksp->residual_history;
-  hist_len= ksp->res_hist_size;
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
   R       = ksp->work[0];
@@ -159,9 +157,9 @@ int  KSPSolve_CG(KSP ksp,int *its)
   }
   cerr = (*ksp->converged)(ksp,0,dp,ksp->cnvP);      /* test for convergence */
   if (cerr) {*its =  0; PetscFunctionReturn(0);}
+  KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);                              /* call any registered monitor routines */
   ksp->rnorm              = dp;
-  if (history) history[0] = dp;
 
   for ( i=0; i<maxit; i++) {
      ksp->its = i+1;
@@ -197,14 +195,13 @@ int  KSPSolve_CG(KSP ksp,int *its)
        }
      }
      ksp->rnorm = dp;
-     if (history && hist_len > i + 1) history[i+1] = dp;
+     KSPLogResidualHistory(ksp,dp);
      KSPMonitor(ksp,i+1,dp);
      cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
      if (cerr) break;
      if (!pres) {ierr = PCApply(ksp->B,R,Z); CHKERRQ(ierr);} /* z <- Br  */
   }
   if (i == maxit) {i--; ksp->its--;}
-  if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
   if (cerr <= 0) *its = -(i+1);
   else           *its = i+1;
   PetscFunctionReturn(0);

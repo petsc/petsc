@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.11 1999/02/01 21:40:04 balay Exp bsmith $ 
+# $Id: makefile,v 1.12 1999/02/03 04:30:23 bsmith Exp bsmith $ 
 
 ALL:
 
-DOCS     = README
+DOCS     = readme
 LOCDIR   = src/mat/examples/
 DIRS     = tests tutorials
 

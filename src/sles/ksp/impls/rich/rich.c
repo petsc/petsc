@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.72 1999/02/09 22:51:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.73 1999/02/12 19:52:18 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -23,9 +23,9 @@ int KSPSetUp_Richardson(KSP ksp)
 #define __FUNC__ "KSPSolve_Richardson"
 int  KSPSolve_Richardson(KSP ksp,int *its)
 {
-  int                i = 0,maxit,pres, brokeout = 0, hist_len, cerr = 0, ierr;
+  int                i = 0,maxit,pres, brokeout = 0, cerr = 0, ierr;
   MatStructure       pflag;
-  double             rnorm = 0.0,*history;
+  double             rnorm = 0.0;
   Scalar             scale, mone = -1.0;
   Vec                x,b,r,z;
   Mat                Amat, Pmat;
@@ -51,8 +51,6 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   }
 
   z       = ksp->work[1];
-  history = ksp->residual_history;
-  hist_len= ksp->res_hist_size;
   scale   = richardsonP->scale;
   pres    = ksp->use_pres;
 
@@ -80,7 +78,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
        PetscAMSTakeAccess(ksp);
        ksp->rnorm                              = rnorm;
        PetscAMSGrantAccess(ksp);
-       if (history && hist_len > i) history[i] = rnorm;
+       KSPLogResidualHistory(ksp,rnorm);
        KSPMonitor(ksp,i,rnorm);
        cerr = (*ksp->converged)(ksp,i,rnorm,ksp->cnvP);
        if (cerr) {brokeout = 1; break;}
@@ -102,10 +100,9 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
     PetscAMSTakeAccess(ksp);
     ksp->rnorm                              = rnorm;
     PetscAMSGrantAccess(ksp);
-    if (history && hist_len > i) history[i] = rnorm;
+    KSPLogResidualHistory(ksp,rnorm);
     KSPMonitor(ksp,i,rnorm);
   }
-  if (history) ksp->res_act_size = (hist_len < i) ? hist_len : i;
 
   if (cerr <= 0) *its = -(i+1);
   else          *its = i+1;

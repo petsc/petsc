@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.34 1999/01/21 18:25:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.35 1999/01/31 16:11:43 bsmith Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -57,7 +57,7 @@ int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);
 
   /*
      We do not provide a getcoloring function in the DA operations because 
@@ -96,7 +96,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap,0); CHKERRQ(ierr);
   if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,0,"Currently no support for periodic");
 
   nc     = w;
@@ -195,7 +195,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,0); CHKERRQ(ierr);
   if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,0,"Currently no support for periodic");
   col    = 2*s + 1;
 
@@ -305,7 +305,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
          |                                                     |
           -----------------------------------------------------
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,0); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,0,0); CHKERRQ(ierr);
 
   nc     = w;
   values = (Scalar *) PetscMalloc( 9*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
@@ -530,7 +530,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,&wrap); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,&wrap,0); CHKERRQ(ierr);
   col    = 2*s + 1;
 
   if (wrap && (m % col)) {

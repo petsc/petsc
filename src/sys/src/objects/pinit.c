@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.9 1999/01/13 21:38:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pinit.c,v 1.10 1999/01/27 19:46:26 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -91,6 +91,8 @@ int OptionsCheckInitial_Components(void)
     PLogEventActivate(VEC_DotComm);
     PLogEventActivate(VEC_MDotBarrier);
     PLogEventActivate(VEC_MDotComm);
+    PLogEventActivate(VEC_ReduceBarrier);
+    PLogEventActivate(VEC_ReduceCommOnly);
   }
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);

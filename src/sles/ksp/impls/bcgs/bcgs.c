@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.55 1999/02/09 22:54:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.56 1999/02/26 21:32:51 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -31,16 +31,14 @@ static int KSPSetUp_BCGS(KSP ksp)
 #define __FUNC__ "KSPSolve_BCGS"
 static int  KSPSolve_BCGS(KSP ksp,int *its)
 {
-  int       i = 0, maxit, hist_len, cerr = 0,ierr;
+  int       i = 0, maxit, cerr = 0,ierr;
   Scalar    rho, rhoold, alpha, beta, omega, omegaold, d1, d2,zero = 0.0, tmp;
   Vec       X,B,V,P,R,RP,T,S, BINVF;
-  double    dp = 0.0, *history;
+  double    dp = 0.0;
 
   PetscFunctionBegin;
 
   maxit   = ksp->max_it;
-  history = ksp->residual_history;
-  hist_len= ksp->res_hist_size;
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
   R       = ksp->work[0];
@@ -62,9 +60,9 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   ksp->its   = 0;
   ksp->rnorm = dp;
   PetscAMSGrantAccess(ksp);
+  KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
-  if (history) history[0] = dp;
 
   /* Make the initial Rp == R */
   ierr = VecCopy(R,RP); CHKERRQ(ierr);
@@ -100,7 +98,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
       ksp->its++;
       ksp->rnorm = 0.0;
       PetscAMSGrantAccess(ksp);
-      if (history && hist_len > i+1) history[i+1] = 0.0;
+      KSPLogResidualHistory(ksp,dp);
       KSPMonitor(ksp,i+1,0.0);
       break;
     }
@@ -120,13 +118,12 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
     ksp->its++;
     ksp->rnorm = dp;
     PetscAMSGrantAccess(ksp);
-    if (history && hist_len > i + 1) history[i+1] = dp;
+    KSPLogResidualHistory(ksp,dp);
     KSPMonitor(ksp,i+1,dp);
     cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
     if (cerr) break;    
   }
   if (i == maxit) i--;
-  if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
   ierr = KSPUnwindPreconditioner(ksp,X,T); CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1);

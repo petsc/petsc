@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cholbs.c,v 1.49 1998/10/13 15:34:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.50 1999/01/31 16:06:40 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -249,6 +249,15 @@ int    MLOG_sequence_num;
 MLOG_log_type MLOG_event_log[MLOG_MAX_EVNTS];
 MLOG_log_type MLOG_accum_log[MLOG_MAX_ACCUM];
 #else
-int    MLOG_event_log[300];
-int    MLOG_accum_log[75];
+typedef struct __MLOG_log_type {
+	double	time_stamp;
+	double	total_time;
+	double  flops;
+	int	event_num;
+} MLOG_log_type;
+#define	MLOG_MAX_EVNTS 1300
+#define	MLOG_MAX_ACCUM 75
+MLOG_log_type MLOG_event_log[MLOG_MAX_EVNTS];
+MLOG_log_type MLOG_accum_log[MLOG_MAX_ACCUM];
 #endif
+

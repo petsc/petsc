@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.18 1998/12/17 22:49:01 balay Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.19 1999/01/12 23:13:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,18 +19,17 @@ extern void *PetscSharedMalloc(int,int,MPI_Comm);
 #define __FUNC__ "VecDuplicate_Shared"
 int VecDuplicate_Shared( Vec win, Vec *v)
 {
-  int     ierr,rank;
+  int     ierr;
   Vec_MPI *vw, *w = (Vec_MPI *)win->data;
   Scalar  *array;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(win->comm,&rank);
 
   /* first processor allocates entire array and sends it's address to the others */
   array = (Scalar *) PetscSharedMalloc(w->n*sizeof(Scalar),w->N*sizeof(Scalar),win->comm);CHKPTRQ(array);
 
   ierr = VecCreate(win->comm,w->n,w->N,v);CHKERRQ(ierr);
-  ierr = VecCreate_MPI_Private(*v,w->nghost,w->size,rank,array,win->map);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*v,w->nghost,array,win->map);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
 
   /* New vector should inherit stashing property of parent */
@@ -53,24 +52,14 @@ EXTERN_C_BEGIN
 #define __FUNC__ "VecCreate_Shared"
 int VecCreate_Shared(Vec vv)
 {
-  int     sum, work = vv->n, size, rank,ierr,i;
+  int     ierr,i;
   Scalar  *array;
 
   PetscFunctionBegin;
-
-  MPI_Comm_size(vv->comm,&size);
-  MPI_Comm_rank(vv->comm,&rank); 
-  if (vv->N == PETSC_DECIDE) { 
-    ierr = MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,vv->comm );CHKERRQ(ierr);
-    vv->N = sum;
-  }
-  if (vv->n == PETSC_DECIDE) { 
-    vv->n = vv->N/size + ((vv->N % size) > rank);
-  }
-
+  ierr = PetscSplitOwnership(vv->comm,&vv->n,&vv->N);CHKERRQ(ierr);
   array = (Scalar *) PetscSharedMalloc(vv->n*sizeof(Scalar),vv->N*sizeof(Scalar),vv->comm);CHKPTRQ(array); 
 
-  ierr = VecCreate_MPI_Private(vv,0,size,rank,array,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(vv,0,array,PETSC_NULL);CHKERRQ(ierr);
   vv->ops->duplicate = VecDuplicate_Shared;
   PetscFree(vv->type_name);
   vv->type_name   = (char *) PetscMalloc((1+PetscStrlen(VEC_SHARED))*sizeof(char));CHKPTRQ(vv->type_name);

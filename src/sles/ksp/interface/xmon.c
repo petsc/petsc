@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.36 1999/01/31 16:08:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: xmon.c,v 1.37 1999/01/31 21:21:14 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -36,8 +36,7 @@ static char vcid[] = "$Id: xmon.c,v 1.36 1999/01/31 16:08:34 bsmith Exp curfman 
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPLGTrueMonitorCreate()
 @*/
-int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
-                       int n, DrawLG *draw)
+int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n, DrawLG *draw)
 {
   Draw win;
   int  ierr;
@@ -88,11 +87,12 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
 int KSPLGMonitorDestroy(DrawLG drawlg)
 {
   Draw draw;
+  int  ierr;
 
   PetscFunctionBegin;
-  DrawLGGetDraw(drawlg,&draw);
-  DrawDestroy(draw);
-  DrawLGDestroy(drawlg);
+  ierr = DrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
+  ierr = DrawDestroy(draw);CHKERRQ(ierr);
+  ierr = DrawLGDestroy(drawlg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -128,8 +128,7 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
-int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int m,
-                       int n, DrawLG *draw)
+int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int m,int n, DrawLG *draw)
 {
   Draw win;
   int  ierr,rank;

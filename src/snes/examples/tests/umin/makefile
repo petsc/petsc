@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.61 1998/06/12 21:50:20 balay Exp balay $ 
+# $Id: makefile,v 1.62 1999/02/01 21:24:13 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -21,7 +21,7 @@ EXAMPLESF       = deptfg.f dgl1fg.f dgl2fg.f dmsafg.f dodcfg.f dpjbfg.f \
 		  dsscfg.f dgl1hs.f dgl2hs.f dmsahs.f dodchs.f dpjbhs.f \
 		  dsschs.f dmsabc.f dodcps.f dgl2co.f mpinter.f depths.f \
 		  pdgl2fg.f
-DOCS            = README
+DOCS            = readme
 DIRS            = 
 FOBJ1 = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
         depths.o dgl1hs.o dgl2hs.o dmsahs.o dodchs.o dpjbhs.o dsschs.o \

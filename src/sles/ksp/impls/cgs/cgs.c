@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgs.c,v 1.46 1999/01/31 16:08:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.47 1999/02/09 22:49:57 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -29,17 +29,14 @@ static int KSPSetUp_CGS(KSP ksp)
 #define __FUNC__ "KSPSolve_CGS"
 static int  KSPSolve_CGS(KSP ksp,int *its)
 {
-  int       i = 0, maxit, hist_len, cerr = 0, ierr;
+  int       i = 0, maxit,  cerr = 0, ierr;
   Scalar    rho, rhoold, a, s, b, tmp, one = 1.0; 
   Vec       X,B,V,P,R,RP,T,Q,U, BINVF, AUQ;
-  double    *history, dp = 0.0;
+  double    dp = 0.0;
 
   PetscFunctionBegin;
-  ksp->its = 0;
 
   maxit   = ksp->max_it;
-  history = ksp->residual_history;
-  hist_len= ksp->res_hist_size;
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
   R       = ksp->work[0];
@@ -59,12 +56,13 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   if (!ksp->avoidnorms) {
     ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
   }
-  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
-  KSPMonitor(ksp,0,dp);
   PetscAMSTakeAccess(ksp);
-  ksp->rnorm              = dp;
+  ksp->its   = 0;
+  ksp->rnorm = dp;
   PetscAMSGrantAccess(ksp);
-  if (history) history[0] = dp;
+  KSPLogResidualHistory(ksp,dp);
+  KSPMonitor(ksp,0,dp);
+  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
 
   /* Make the initial Rp == R */
   ierr = VecCopy(R,RP); CHKERRQ(ierr);
@@ -76,7 +74,6 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,P,V,T); CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
-    ksp->its++;
 
     ierr = VecDot(V,RP,&s); CHKERRQ(ierr);           /* s <- (v,rp)          */
     a = rhoold / s;                                  /* a <- rho / s         */
@@ -91,9 +88,10 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
     }
 
     PetscAMSTakeAccess(ksp);
+    ksp->its++;
     ksp->rnorm = dp;
     PetscAMSGrantAccess(ksp);
-    if (history && hist_len > i + 1) history[i+1] = dp;
+    KSPLogResidualHistory(ksp,dp);
     KSPMonitor(ksp,i+1,dp);
     cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
     if (cerr) break;
@@ -108,7 +106,6 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
     rhoold = rho;
   }
   if (i == maxit) i--;
-  if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
   ierr = KSPUnwindPreconditioner(ksp,X,T); CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1); 

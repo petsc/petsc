@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.63 1999/01/12 20:28:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.64 1999/01/12 23:15:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -264,14 +264,8 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
     SETERRQ(1,1,"Must give local row and column count for matrix");
   }
 
-  if (M == PETSC_DETERMINE || N == PETSC_DETERMINE) {
-    int work[2], sum[2];
-    
-    work[0] = m; work[1] = n;
-    ierr = MPI_Allreduce( work, sum,2,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    if (M == PETSC_DECIDE) M = sum[0];
-    if (N == PETSC_DECIDE) N = sum[1];
-  }
+  ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
+  ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   b->M = M; B->M = M;
   b->N = N; B->N = N;
   b->m = m; B->m = m;

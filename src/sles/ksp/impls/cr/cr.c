@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cr.c,v 1.44 1999/01/31 16:08:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.45 1999/02/09 22:48:27 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -24,21 +24,18 @@ static int KSPSetUp_CR(KSP ksp)
 #define __FUNC__ "KSPSolve_CR"
 static int  KSPSolve_CR(KSP ksp,int *its)
 {
-  int          i = 0, maxit,pres, hist_len, cerr = 0, ierr;
+  int          i = 0, maxit,pres, cerr = 0, ierr;
   MatStructure pflag;
-  double       *history, dp;
+  double       dp;
   Scalar       lambda, alpha0, alpha1; 
   Scalar       btop, bbot, bbotold, tmp, zero = 0.0, mone = -1.0;
   Vec          X,B,R,Pm1,P,Pp1,Sm1,S,Qm1,Q,Qp1,T, Tmp;
   Mat          Amat, Pmat;
 
   PetscFunctionBegin;
-  ksp->its = 0;
 
   pres    = ksp->use_pres;
   maxit   = ksp->max_it;
-  history = ksp->residual_history;
-  hist_len= ksp->res_hist_size;
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
   R       = ksp->work[0];
@@ -70,16 +67,16 @@ static int  KSPSolve_CR(KSP ksp,int *its)
       ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- r'*r       */
     }
   }
-  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
-  KSPMonitor(ksp,0,dp);
   PetscAMSTakeAccess(ksp);
-  ksp->rnorm              = dp;
+  ksp->its   = 0;
+  ksp->rnorm = dp;
   PetscAMSGrantAccess(ksp);
-  if (history) history[0] = dp;
+  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
+  KSPLogResidualHistory(ksp,dp);
+  KSPMonitor(ksp,0,dp);
   ierr = MatMult(Amat,P,Q); CHKERRQ(ierr);      /*    q <- A p          */
 
   for ( i=0; i<maxit; i++) {
-    ksp->its++;
 
     ierr   = PCApply(ksp->B,Q,S); CHKERRQ(ierr);  /*     s <- Bq          */
     ierr   = VecDot(R,S,&btop); CHKERRQ(ierr);    /*                      */
@@ -92,9 +89,10 @@ static int  KSPSolve_CR(KSP ksp,int *its)
       ierr   = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*   dp <- r'*r         */
     } else { dp = 0.0; }
     PetscAMSTakeAccess(ksp);
+    ksp->its++;
     ksp->rnorm = dp;
     PetscAMSGrantAccess(ksp);
-    if (history && hist_len > i + 1) history[i+1] = dp;
+    KSPLogResidualHistory(ksp,dp);
     KSPMonitor(ksp,i+1,dp);
     cerr   = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
     if (cerr) break;
@@ -120,7 +118,6 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     bbotold = bbot; 
   }
   if (i == maxit) i--;
-  if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
   if (cerr <= 0) *its = -(i+1);
   else           *its = i + 1;
   PetscFunctionReturn(0);

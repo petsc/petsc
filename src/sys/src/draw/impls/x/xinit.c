@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.49 1999/01/04 21:52:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.50 1999/01/31 16:05:02 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -49,6 +49,8 @@ int XiOpenDisplay(Draw_X* XiWin,char *display_name )
 #define __FUNC__ "XiSetVisual" 
 int XiSetVisual(Draw_X* XiWin,int usedefaultcolormap,Colormap cmap)
 {
+  int ierr;
+
   PetscFunctionBegin;
 
   /*
@@ -61,13 +63,18 @@ int XiSetVisual(Draw_X* XiWin,int usedefaultcolormap,Colormap cmap)
   else if (usedefaultcolormap) XiWin->cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
   else                         XiWin->cmap = 0;
 
+  if (!XiWin->cmap) {
+    XiWin->cmap = XCreateColormap(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),
+                                  XiWin->vis,AllocAll);CHKPTRQ(XiWin->cmap);
+  }
+
   if (XiWin->depth < 8) {
     SETERRQ(1,1,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
   }
   PLogInfo(0,"XiSetVisual:Always opening default visual X window\n");
 
   /* reset the number of colors from info on the display, the colormap */
-  XiInitColors( XiWin, cmap);
+  ierr = XiInitColors( XiWin, cmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

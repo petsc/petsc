@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.69 1999/02/09 22:50:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.70 1999/02/12 19:51:52 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev routine, it is not 
@@ -67,9 +67,9 @@ int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
 #define __FUNC__ "KSPSolve_Chebychev"
 int KSPSolve_Chebychev(KSP ksp,int *its)
 {
-  int              k,kp1,km1,maxit,ktmp,i = 0,pres,hist_len,cerr,ierr;
+  int              k,kp1,km1,maxit,ktmp,i = 0,pres,cerr,ierr;
   Scalar           alpha,omegaprod,mu,omega,Gamma,c[3],scale,mone = -1.0, tmp;
-  double           rnorm,*history;
+  double           rnorm;
   Vec              x,b,p[3],r;
   KSP_Chebychev    *chebychevP = (KSP_Chebychev *) ksp->data;
   Mat              Amat, Pmat;
@@ -78,8 +78,6 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   PetscFunctionBegin;
   ksp->its = 0;
   ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
-  history  = ksp->residual_history;
-  hist_len = ksp->res_hist_size;
   maxit    = ksp->max_it;
   pres     = ksp->use_pres;
   cerr     = 1;
@@ -134,8 +132,8 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
       PetscAMSTakeAccess(ksp);
       ksp->rnorm                              = rnorm;
       PetscAMSGrantAccess(ksp);
-      if (history && hist_len > i) history[i] = rnorm;
       ksp->vec_sol = p[k]; 
+      KSPLogResidualHistory(ksp,rnorm);
       KSPMonitor(ksp,i,rnorm);
       cerr = (*ksp->converged)(ksp,i,rnorm,ksp->cnvP);
       if (cerr) break;
@@ -163,11 +161,10 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
     PetscAMSTakeAccess(ksp);
     ksp->rnorm                              = rnorm;
     PetscAMSGrantAccess(ksp);
-    if (history && hist_len > i) history[i] = rnorm;
     ksp->vec_sol = p[k]; 
+    KSPLogResidualHistory(ksp,rnorm);
     KSPMonitor(ksp,i,rnorm);
   }
-  if (history) ksp->res_act_size = (hist_len < i) ? hist_len : i;
 
   /* make sure solution is in vector x */
   ksp->vec_sol = x;

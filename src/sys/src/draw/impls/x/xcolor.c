@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.42 1999/01/31 16:05:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.43 1999/02/27 05:18:15 bsmith Exp bsmith $";
 #endif
 
 
@@ -49,33 +49,67 @@ static char *(colornames[DRAW_BASIC_COLORS]) = { "white",
                                                  "limegreen",
                                                  "lavenderblush" };
 
-extern int      XiInitCmap( Draw_X* );
-extern int      XiGetVisualClass( Draw_X * );
-extern int      XiHlsToRgb(int,int,int,unsigned char*,unsigned char*,unsigned char*);
-extern int      XiUniformHues( Draw_X *, int);
+extern int XiInitCmap( Draw_X* );
+extern int XiGetVisualClass( Draw_X * );
+extern int XiHlsToRgb(int,int,int,unsigned char*,unsigned char*,unsigned char*);
+extern int XiUniformHues( Draw_X *, int);
+extern int XiSetCmapHue(unsigned char*,unsigned char*,unsigned char*,int);
 
 #undef __FUNC__  
 #define __FUNC__ "XSetUpColorMap_Private"
 /*
    Sets up a color map for a display. This is shared by all the windows
   opened on that display; this is to save time when windows are open so 
-  each one does not have to create a color map which can take 15 to 20 seconds
+  each one does not have to create its own color map which can take 15 to 20 seconds
 
      This is new code written 2/26/1999 Barry Smith, I hope it can replace
   some older, rather confusing code.
+
+
+     The calls to XAllocNamedColor() and XAllocColor() are very slow 
+     because we have to request from the X server for each
+     color. Could not figure out a way to request a large number at the
+     same time.
+
 */
 static int       gNumcolors = 0;
 static Colormap  gColormap  = 0;
+static PixVal    gCmapping[256];
 int XSetUpColorMap_Shared(Display *display,int screen,Visual *visual)
 {
+  XColor        colordef,ecolordef;
+  unsigned char *red, *green, *blue;
+  int           i,ierr,fast,ncolors;
+
   PetscFunctionBegin;
   gColormap   = DefaultColormap(display,screen);CHKPTRQ(gColormap);
 
   /* set the basic colors into the color map */
-
-/*  ierr = XiInitCmap( XiWin );CHKERRQ(ierr); */
+  for (i=0; i<DRAW_BASIC_COLORS; i++) {
+    XAllocNamedColor(display,gColormap, colornames[i], &colordef,&ecolordef); 
+    gCmapping[i] = colordef.pixel;
+  }
 
   /* set the uniform hue colors into the color map */
+  ncolors = 256-DRAW_BASIC_COLORS;
+  red   = (unsigned char *)PetscMalloc(3*ncolors*sizeof(unsigned char));CHKPTRQ(red);
+  green = red   + ncolors;
+  blue  = green + ncolors;
+  ierr = XiSetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
+
+  ierr = OptionsHasName(0,"-draw_fast",&fast);CHKERRQ(ierr);
+  if (!fast) {
+    for (i=DRAW_BASIC_COLORS; i<ncolors+DRAW_BASIC_COLORS; i++) {
+      colordef.red    = ((int)red[i-DRAW_BASIC_COLORS]   * 65535) / 255;
+      colordef.green  = ((int)green[i-DRAW_BASIC_COLORS] * 65535) / 255;
+      colordef.blue   = ((int)blue[i-DRAW_BASIC_COLORS]  * 65535) / 255;
+      colordef.flags  = DoRed | DoGreen | DoBlue;
+      XAllocColor( display, gColormap, &colordef ); 
+      gCmapping[i]   = colordef.pixel;
+    }
+  }
+  PetscFree( red );
 
   PetscFunctionReturn(0);
 }
@@ -135,10 +169,6 @@ int XiInitColors(Draw_X* XiWin,Colormap cmap)
   */
   XiWin->numcolors = 1 << DefaultDepth( XiWin->disp, XiWin->screen );
 
-  if (!XiWin->cmap) {
-    XiWin->cmap = XCreateColormap(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),
-                                  XiWin->vis,AllocAll);CHKPTRQ(XiWin->cmap);
-  }
 
   /* get the initial colormap */
   ierr = XiInitCmap( XiWin );CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.8 1998/12/03 04:06:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.9 1999/01/13 21:47:59 bsmith Exp bsmith $";
 #endif
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
@@ -29,7 +29,7 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
   MPI_Comm_rank(comm,&rank);
 
   ierr = DAGetAO(da,&ao); CHKERRQ(ierr);
-  ierr = DAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0); CHKERRQ(ierr);
 
   /* 
      nslice is number of degrees of freedom in this processors slice

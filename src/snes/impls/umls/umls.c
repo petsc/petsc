@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.76 1998/12/23 22:53:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.77 1999/02/09 23:30:27 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
@@ -22,8 +22,8 @@ extern int SNESStep(SNES,double*,double*,double*,double*,
 static int SNESSolve_UM_LS(SNES snes,int *outits)
 {
   SNES_UMLS    *neP = (SNES_UMLS *) snes->data;
-  int          maxits, success, iters, history_len, i, global_dim, ierr, kspmaxit;
-  double       *history, snorm, *f, *gnorm, two = 2.0,tnorm;
+  int          maxits, success, iters, i, global_dim, ierr, kspmaxit;
+  double       snorm, *f, *gnorm, two = 2.0,tnorm;
   Scalar       neg_one = -1.0;
   Vec          G, X, RHS, S, W;
   SLES         sles;
@@ -31,8 +31,6 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   MatStructure flg = DIFFERENT_NONZERO_PATTERN;
 
   PetscFunctionBegin;
-  history	= snes->conv_hist;      /* convergence history */
-  history_len	= snes->conv_hist_size; /* convergence history length */
   maxits	= snes->max_its;        /* maximum number of iterations */
   X		= snes->vec_sol; 	/* solution vector */
   G		= snes->vec_func;	/* gradient vector */
@@ -51,7 +49,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   PetscAMSTakeAccess(snes);
   ierr = VecNorm(G,NORM_2,gnorm);   CHKERRQ(ierr);         /* gnorm = || G || */
   PetscAMSGrantAccess(snes);
-  if (history) history[0] = *gnorm;
+  SNESLogConvHistory(snes,*gnorm,0);
   SNESMonitor(snes,0,*gnorm);
 
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
@@ -104,7 +102,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
     PetscAMSGrantAccess(snes);
     if (neP->line != 1) snes->nfailures++;CHKERRQ(ierr);
 
-    if (history && history_len > i+1) history[i+1] = *gnorm;
+    SNESLogConvHistory(snes,*gnorm,iters);
     SNESMonitor(snes,i+1,*gnorm);
     PLogInfo(snes,"SNESSolve_UM_LS: %d:  f=%g, gnorm=%g, snorm=%g, step=%g, KSP iters=%d\n",
              snes->iter, *f, *gnorm, snorm, neP->step, iters );
@@ -123,7 +121,6 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
     PLogInfo(snes,"SNESSolve_UM_LS: Maximum number of iterations reached: %d\n",maxits);
     i--;
   }
-  if (history) snes->conv_act_size = (history_len < i+1) ? history_len : i+1;
   *outits = i+1;
   PetscFunctionReturn(0);
 }
