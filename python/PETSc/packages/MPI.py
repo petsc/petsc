@@ -251,7 +251,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Error locating MPICH directory')
 
     libdir = os.path.join(self.framework.argDB['PETSC_DIR'],releasename,self.framework.argDB['PETSC_ARCH'])
-    if not os.path.isdir(libdir)
+    if not os.path.isdir(libdir):
       os.mkdir(libdir)
 
       
