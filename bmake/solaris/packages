@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.39 1998/11/20 15:26:46 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.40 1998/12/04 23:22:05 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,8 +10,8 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
 # for information on retrieving them.
 #
-# If your machine has the file /opt/SUNWspro/SC4.0/lib/libsunperf.a you 
-# can use -lsunperf or /opt/SUNWspro/SC4.0/lib/libsunperf.a below instead of
+# If your machine has the file /opt/SUNWspro/SC*/lib/libsunperf.a you 
+# can use -lsunperf or /opt/SUNWspro/SC*/lib/libsunperf.a below instead of
 # installing BLAS and LAPACK yourself.
 #
 BLAS_LIB       =  /home/bsmith/libraries/blaslapack/blas_solaris.a  ${FC_LIB}
