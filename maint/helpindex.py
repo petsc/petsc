@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: helpindex.py,v 1.4 2000/09/22 19:57:44 balay Exp balay $ 
+# $Id: helpindex.py,v 1.5 2000/09/22 20:05:08 balay Exp balay $ 
 # 
 # reads in docs/tex/exampleconcepts,manconcepts, and create
 # the file help.html
@@ -22,7 +22,26 @@ def comptxt(a,b):
       a = lower(a)
       b = lower(b)
       return cmp(a,b)
+
+def gethelpstring(filename):
+      PETSC_DIR = '/home/bsmith/petsc'
+      filename = PETSC_DIR + '/' + filename
+      fd = open(filename,'r')
       
+      for line in fd.readlines():
+            tmp = find(line,'help[]')
+            if not tmp == -1:
+                  tmp1 = find(line,'"')
+                  tmp2 = find(line,'.')
+                  if tmp1 == -1 or tmp2 == -1:
+                        return "PetscNoHelp"
+                  buf = strip(split(line,'"')[1])
+                  buf = strip(split(buf,'.')[0])
+                  fd.close()
+                  return buf
+      return "PetscNoHelp"
+      
+
 
 # Scan and extract format information from each line
 def updatedata(dict,line):
@@ -36,10 +55,13 @@ def updatedata(dict,line):
             link_title = split(split(filename,'/')[-1],'.')[0]
       else:
             # should be an example file
-            tmp = filename
-            link_title = replace(filename,'src/','')
-            link_title = replace(link_title,'examples/','')
-            link_title = replace(link_title,'tutorials/','')
+            help_str = gethelpstring(filename)
+            if not help_str == "PetscNoHelp":
+                  link_title = help_str
+            else:
+                  link_title = replace(filename,'src/','')
+                  link_title = replace(link_title,'examples/','')
+                  link_title = replace(link_title,'tutorials/','')
       
       # ';' is a field separator
       keys = split(concept_list,";")
@@ -127,7 +149,7 @@ def printdata(fd,dict):
                   fd.write("<TD WIDTH=260 ><B><FONT SIZE=4>")
                   fd.write(prim_key)
                   fd.write("</FONT></B></TD>")
-                  fd.write("<TD WIDTH=300>")
+                  fd.write("<TD WIDTH=500>")
                   fd.write(temp)
                   fd.write("</TD>")
                  
@@ -136,7 +158,7 @@ def printdata(fd,dict):
             else:
                   fd.write("<TABLE>")
                   fd.write("<TD WIDTH=4 ><BR></TD>")
-                  fd.write("<TD WIDTH=1000 ><B><FONT SIZE=4>")
+                  fd.write("<TD WIDTH=300 ><B><FONT SIZE=4>")
                   fd.write(prim_key)
                   fd.write("</FONT></B></TD>")
                   fd.write("</TR>")
@@ -158,7 +180,7 @@ def printdata(fd,dict):
                         fd.write("<TD WIDTH=205><FONT COLOR=\"#CC3333\"><B>")
                         fd.write(sub_key)
                         fd.write("</B></FONT></TD>")
-                        fd.write("<TD WIDTH=300 >")
+                        fd.write("<TD WIDTH=500 >")
                         fd.write(temp)
                         fd.write("</TD>")
                         fd.write("</TR>")
@@ -169,7 +191,7 @@ def printdata(fd,dict):
                         temp = "<A HREF=\"" + "../../" + filename + "\">" + link_name + "</A>"
                         fd.write("<TABLE>")
                         fd.write("<TD WIDTH=270><BR></TD>")
-                        fd.write("<TD WIDTH=300>")
+                        fd.write("<TD WIDTH=500>")
                         fd.write(temp)
                         fd.write("</TD>")
                         fd.write("</TR>")
