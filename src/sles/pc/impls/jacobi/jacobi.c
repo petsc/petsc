@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.43 1998/04/21 23:54:30 curfman Exp balay $";
+static char vcid[] = "$Id: jacobi.c,v 1.44 1998/04/22 01:00:23 balay Exp curfman $";
 #endif
 
 /*  -------------------------------------------------------------------- 
 
-     This file implements a Jacobi preconditioner for any implementation 
-     of the preconditioner matrix, A, that uses the Mat interface.
+     This file implements a Jacobi preconditioner for matrices that use
+     the Mat interface (various matrix formats).  Actually, the only
+     matrix operation used here is MatGetDiagonal(), which extracts 
+     diagonal elements of the preconditioning matrix.
 
      The following basic routines are required for each preconditioner.
           PCCreate_XXX()          - Creates a preconditioner context
