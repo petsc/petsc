@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.344 1999/09/27 21:29:33 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.345 1999/09/28 21:28:34 balay Exp bsmith $";
 #endif
 
 /*
@@ -2792,8 +2792,8 @@ int MatZeroEntries(Mat mat)
 
    The user can set a value in the diagonal entry (or for the AIJ and
    row formats can optionally remove the main diagonal entry from the
-   nonzero structure as well, by passing a null pointer as the final
-   argument).
+   nonzero structure as well, by passing a null pointer (PETSC_NULL 
+   in C or PETSC_NULL_SCALAR in Fortran) as the final argument).
 
    For the parallel case, all processes that share the matrix (i.e.,
    those in the communicator used for matrix creation) MUST call this
