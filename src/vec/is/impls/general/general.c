@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.79 1999/04/19 22:10:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.80 1999/04/23 19:29:31 bsmith Exp balay $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -242,7 +242,8 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
   ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-  Nindex->isperm  = 0;
+  Nindex->isperm     = 0;
+  Nindex->isidentity = 0;
   ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm)); CHKERRQ(ierr);
