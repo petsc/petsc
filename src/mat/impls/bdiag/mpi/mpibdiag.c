@@ -912,6 +912,17 @@ int MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,int nd,int bs,int *diag,PetscScal
 }
 EXTERN_C_END
 
+/*MC
+   MATMPIBDIAG = "mpibdiag" - A matrix type to be used for distributed block diagonal matrices.
+
+   Options Database Keys:
+. -mat_type mpibdiag - sets the matrix type to "mpibdiag" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateMPIBDiag
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIBDiag"

@@ -636,7 +636,7 @@ int MatDuplicate_MPIAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATMPIAIJSPOOLES - a matrix type providing direct solvers (LU) for distributed matrices 
+  MATMPIAIJSPOOLES = "mpiaijspooles" - A matrix type providing direct solvers (LU) for distributed matrices 
   via the external package MPIAIJSPOOLES.
 
   If MPIAIJSPOOLES is installed (see the manual for
@@ -652,7 +652,7 @@ int MatDuplicate_MPIAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
   Consult Spooles documentation for more information about the options database keys below.
 
   Options Database Keys:
-+ -mat_type mpiaijspooles - sets the matrix type to mpiaijspooles during a call to MatSetFromOptions()
++ -mat_type mpiaijspooles - sets the matrix type to "mpiaijspooles" during a call to MatSetFromOptions()
 . -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
 . -mat_spooles_seed <seed> - random number seed used for ordering
 . -mat_spooles_msglvl <msglvl> - message output level

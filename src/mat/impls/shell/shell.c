@@ -212,6 +212,14 @@ static struct _MatOps MatOps_Values = {0,
        0,
        MatConvert_Shell};
 
+/*MC
+   MATSHELL = "shell" - A matrix type to be used to define your own matrix type -- perhaps matrix free.
+
+  Level: advanced
+
+.seealso: MatCreateShell
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_Shell"

@@ -372,6 +372,15 @@ int MatDAADSetCtx_AD(Mat A,void *ctx)
 }
 EXTERN_C_END
 
+/*MC
+  MATDAAD = "daad" - A matrix type that can do matrix-vector products using a local function that
+  is differentiated with ADIFOR or ADIC. 
+
+  Level: intermediate
+
+.seealso: MatCreateDAAD
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_DAAD"

@@ -516,7 +516,7 @@ int MatDuplicate_LUSOL(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATLUSOL - A matrix type providing direct solvers (LU) for sequential matrices 
+  MATLUSOL = "lusol" - A matrix type providing direct solvers (LU) for sequential matrices 
   via the external package LUSOL.
 
   If LUSOL is installed (see the manual for
@@ -530,7 +530,7 @@ int MatDuplicate_LUSOL(Mat A, MatDuplicateOption op, Mat *M) {
   to and from the MATSEQAIJ matrix type.
 
   Options Database Keys:
-. -mat_type lusol - sets the matrix type to lusol during a call to MatSetFromOptions()
+. -mat_type lusol - sets the matrix type to "lusol" during a call to MatSetFromOptions()
 
    Level: beginner
 

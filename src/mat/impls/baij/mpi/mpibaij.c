@@ -2030,6 +2030,17 @@ EXTERN int MatDiagonalScaleLocal_MPIBAIJ(Mat,Vec);
 EXTERN int MatSetHashTableFactor_MPIBAIJ(Mat,PetscReal);
 EXTERN_C_END
 
+/*MC
+   MATMPIBAIJ = "mpibaij" - A matrix type to be used for distributed block sparse matrices.
+
+   Options Database Keys:
+. -mat_type mpibaij - sets the matrix type to "mpibaij" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateMPIBAIJ
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIBAIJ"

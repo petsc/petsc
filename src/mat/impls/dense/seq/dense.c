@@ -1585,6 +1585,17 @@ int MatSeqDenseSetLDA(Mat B,int lda)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   MATSEQDENSE = "seqdense" - A matrix type to be used for sequential dense matrices.
+
+   Options Database Keys:
+. -mat_type seqdense - sets the matrix type to "seqdense" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateSeqDense
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqDense"
