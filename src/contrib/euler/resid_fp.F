@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_fp.F,v 1.14 1997/10/17 18:58:03 curfman Exp curfman $";
+c  "$Id: resid_fp.F,v 1.15 1997/10/17 19:46:42 curfman Exp keyes $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -104,7 +104,7 @@ c      COMMON /FREQ/ IFREQ,ISGS
       double precision p25 
       parameter(p25=0.25d0)
       double precision dx, dy, xv, yv, zv, dn 
-
+      double precision xaux0, xauxm, xauxp, yaux0, yauxm, yauxp
       resid_fp = 0
 
 c set dx and dy from "interior" area metrics (assumes that dz spacing
@@ -129,9 +129,11 @@ c          den (i,j,k)= ( one+p5*gm1*(fsmach**2-
 c     &                 (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
 c1     continue
 c
-      do 1 k=gzsf2,gzefm1
-      do 1 j=gysf2,gyefm1
-      do 1 i=gxsf2,gxefm1
+c velocities at (i,j) interior points, for all k:
+c
+      do 100 k=gzsf1,gzef01
+      do 100 j=gysf2,gyefm1
+      do 100 i=gxsf2,gxefm1
 c       xne = p25 * (x(i,j,k)+x(i+1,j,k)+x(i,j+1,k)+x(i+1,j+1,k))
 c	xnw = p25 * (x(i,j,k)+x(i-1,j,k)+x(i,j+1,k)+x(i-1,j+1,k))
 c	xse = p25 * (x(i,j,k)+x(i+1,j,k)+x(i,j-1,k)+x(i+1,j-1,k))
@@ -171,7 +173,106 @@ c       yvel(i,j,k) = (fpn-fps) / (yn-ys)
         zvel(i,j,k) = zero
         den (i,j,k) = ( one+p5*gm1*(fsmach**2-
      &               (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
-1     continue
+100   continue
+c
+c velocities at left edge dual points (includes upper and lower corners):
+c
+      i=gxsf1
+      do 101 k=gzsf1,gzef01
+      do 101 j=gysf1,gyef01
+	xaux0 = two * x(i,j,k) - x(i+1,j,k)
+	yaux0 = two * y(i,j,k) - y(i+1,j,k)
+	call velfcn(xaux0       ,x(i,j-1,k),x(i+1,j-1,k),
+     &              xaux0       ,x(i,j  ,k),x(i+1,j  ,k),
+     &              xaux0       ,x(i,j+1,k),x(i+1,j+1,k),
+     &              yaux0       ,y(i,j-1,k),y(i+1,j-1,k),
+     &              yaux0       ,y(i,j  ,k),y(i+1,j  ,k),
+     &              yaux0       ,y(i,j+1,k),y(i+1,j+1,k),
+     &              fp(i,j,k),fp(i+1,j,k),
+     &              fp(i,j+1,k),fp(i+1,j+1,k),
+     &  	    xvel(i,j,k), yvel(i,j,k),
+     &              x(i,j,k),y(i,j,k))
+        zvel(i,j,k) = zero
+        den (i,j,k) = ( one+p5*gm1*(fsmach**2-
+     &               (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
+101   continue
+
+c
+c velocities at right edge dual points (includes upper and lower corners):
+c
+      i=gxef01
+      do 102 k=gzsf1,gzef01
+      do 102 j=gysf1,gyef01
+	xaux0 = two * x(i,j,k) - x(i-1,j,k)
+	yaux0 = two * y(i,j,k) - y(i-1,j,k)
+	call velfcn(x(i-1,j-1,k),x(i,j-1,k),xaux0       ,
+     &              x(i-1,j  ,k),x(i,j  ,k),xaux0       ,
+     &              x(i-1,j+1,k),x(i,j+1,k),xaux0       ,
+     &              y(i-1,j-1,k),y(i,j-1,k),yaux0       ,
+     &              y(i-1,j  ,k),y(i,j  ,k),yaux0       ,
+     &              y(i-1,j+1,k),y(i,j+1,k),yaux0       ,
+     &              fp(i,j,k),fp(i+1,j,k),
+     &              fp(i,j+1,k),fp(i+1,j+1,k),
+     &  	    xvel(i,j,k), yvel(i,j,k),
+     &              x(i,j,k),y(i,j,k))
+        zvel(i,j,k) = zero
+        den (i,j,k) = ( one+p5*gm1*(fsmach**2-
+     &               (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
+102   continue
+
+c
+c velocities at bottom edge dual points:
+c
+      j=gysf1
+      do 103 k=gzsf1,gzef01
+      do 103 i=gxsf2,gxefm1
+	xaux0 = two * x(i  ,j,k) - x(i  ,j+1,k)
+	xauxm = two * x(i-1,j,k) - x(i-1,j+1,k)
+	xauxp = two * x(i+1,j,k) - x(i+1,j+1,k)
+	yaux0 = two * y(i  ,j,k) - y(i  ,j+1,k)
+	yauxm = two * y(i-1,j,k) - y(i-1,j+1,k)
+	yauxp = two * y(i+1,j,k) - y(i+1,j+1,k)
+	call velfcn(xauxm       ,xaux0     ,xauxp       ,
+     &              x(i-1,j  ,k),x(i,j  ,k),x(i+1,j  ,k),
+     &              x(i-1,j+1,k),x(i,j+1,k),x(i+1,j+1,k),
+     &              yauxm       ,yaux0     ,yauxp       ,
+     &              y(i-1,j  ,k),y(i,j  ,k),y(i+1,j  ,k),
+     &              y(i-1,j+1,k),y(i,j+1,k),y(i+1,j+1,k),
+     &              fp(i,j,k),fp(i+1,j,k),
+     &              fp(i,j+1,k),fp(i+1,j+1,k),
+     &  	    xvel(i,j,k), yvel(i,j,k),
+     &              x(i,j,k),y(i,j,k))
+        zvel(i,j,k) = zero
+        den (i,j,k) = ( one+p5*gm1*(fsmach**2-
+     &               (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
+103   continue
+
+c
+c velocities at top edge dual points:
+c
+      j=gyef01
+      do 104 k=gzsf1,gzef01
+      do 104 i=gxsf2,gxefm1
+	xaux0 = two * x(i  ,j,k) - x(i  ,j-1,k)
+	xauxm = two * x(i-1,j,k) - x(i-1,j-1,k)
+	xauxp = two * x(i+1,j,k) - x(i+1,j-1,k)
+	yaux0 = two * y(i  ,j,k) - y(i  ,j-1,k)
+	yauxm = two * y(i-1,j,k) - y(i-1,j-1,k)
+	yauxp = two * y(i+1,j,k) - y(i+1,j-1,k)
+	call velfcn(x(i-1,j-1,k),x(i,j-1,k),x(i+1,j-1,k),
+     &              x(i-1,j  ,k),x(i,j  ,k),x(i+1,j  ,k),
+     &              xauxm       ,xaux0     ,xauxp       ,
+     &              y(i-1,j-1,k),y(i,j-1,k),y(i+1,j-1,k),
+     &              y(i-1,j  ,k),y(i,j  ,k),y(i+1,j  ,k),
+     &              yauxm       ,yaux0     ,yauxp       ,
+     &              fp(i,j,k),fp(i+1,j,k),
+     &              fp(i,j+1,k),fp(i+1,j+1,k),
+     &  	    xvel(i,j,k), yvel(i,j,k),
+     &              x(i,j,k),y(i,j,k))
+        zvel(i,j,k) = zero
+        den (i,j,k) = ( one+p5*gm1*(fsmach**2-
+     &               (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
+104   continue
 
 C   FLUX IN THE I DIRECTION
       do 2 k=zsf2,zef01
@@ -213,10 +314,10 @@ c
 c   Form density and contravariant velocities at FV cell edge centers (J+1/2)
 c   as functions of PHI(I,J,K) and PHI(I,J+1,K)
 c
-      xv = p5 * (xvel(i,j,k)+xvel(i,j-1,k))
-      yv = p5 * (yvel(i,j,k)+yvel(i,j-1,k))
-      zv = p5 * (zvel(i,j,k)+zvel(i,j-1,k))
-      dn = p5 * (den(i,j,k) +den(i,j-1,k) )
+      xv = p5 * (xvel(i,j,k)+xvel(i-1,j,k))
+      yv = p5 * (yvel(i,j,k)+yvel(i-1,j,k))
+      zv = p5 * (zvel(i,j,k)+zvel(i-1,j,k))
+      dn = p5 * (den(i,j,k) +den(i-1,j,k) )
 c
 c   Form j-flux at the FV cell edge centers (J+1/2)
 c
@@ -271,17 +372,16 @@ c      RETURN
 c=======================================================================
 	subroutine velfcn(xmm,xim,xpm,xmj,xij,xpj,xmp,xip,xpp,
      &                    ymm,yim,ypm,ymj,yij,ypj,ymp,yip,ypp,
-     &                    fij,fpj,fip,fpp,xvel,yvel,xcen,ycen)
+     &                    fij,fpj,fip,fpp,xvel,yvel,xctr,yctr)
 
 	double precision xmm,xim,xpm,xmj,xij,xpj,xmp,xip,xpp,
      &                   ymm,yim,ypm,ymj,yij,ypj,ymp,yip,ypp,
      &                   fij,fpj,fip,fpp, xvel,yvel, p25,
      &			 xne,xnw,xse,xsw,yne,ynw,yse,ysw,
      &                   cen,ces,cwn,cws,cne,cnw,cse,csw,
-     &                   xe,xw,yn,ys,fpe,fpw,fpn,fps,xcen,ycen
+     &                   xe,xw,yn,ys,fpe,fpw,fpn,fps,xctr,yctr
 
-
-	parameter (p25=0.25d0)
+	parameter (p25=0.25d0,p5=0.5d0,one=1.0d0)
 	xne = p25 * (xij+xpj+xip+xpp)
 	xnw = p25 * (xij+xmj+xip+xmp)
 	xse = p25 * (xij+xpj+xim+xpm)
@@ -294,13 +394,13 @@ c=======================================================================
 	xw  = p5 * (xnw + xsw)
 	yn  = p5 * (yne + ynw)
 	ys  = p5 * (yse + ysw)
-        cen = (ycen-yse) / (yne-yse)
+        cen = (yctr-yse) / (yne-yse)
 	ces = one - cen
-        cwn = (ycen-ysw) / (ynw-ysw)
+        cwn = (yctr-ysw) / (ynw-ysw)
 	cws = one - cen
-        cne = (xcen-xnw) / (xne-xnw)
+        cne = (xctr-xnw) / (xne-xnw)
 	cnw = one - cne
-        cse = (xcen-xsw) / (xse-xsw)
+        cse = (xctr-xsw) / (xse-xsw)
 	csw = one - cse
         fpe = cen*fpp + ces*fpj
         fpw = cwn*fip + cws*fij
@@ -367,7 +467,8 @@ c        do 2 k=zsf2,zef01
 c        do 2 i=xsf2,xef01
 c      DO 2 K=2,NK
 c      DO 2 I=2,NI
-      IF (I.LE.ILE.OR.I.GT.ITU) GO TO 4
+c      IF (I.LE.ILE.OR.I.GT.ITU) GO TO 4
+       IF (I.GT.0)  GO TO 4
 c
 c inhomogeneous Neumann for FP over the "bump"
 c
@@ -400,8 +501,10 @@ c      DO 20 K=2,NK
 c      DO 20 I=2,NI
 c
 c inhomogeneous Dirichlet 
-      xloc=-1.50d0+3.0d0*(dfloat(i-1)-p5)/dfloat(ni-1)
-      fbcfpj2(i,k)=fp(i,nj1,k)-xloc*fsmach
+c      xloc=-1.50d0+3.0d0*(dfloat(i-1)-p5)/dfloat(ni-1)
+c      fbcfpj2(i,k)=fp(i,nj1,k)-xloc*fsmach
+c inhomogeneous Neumann 
+      fbcfpj2(i,k)=fp(i,nj1,k)-fp(i,nj,k)
    20 CONTINUE
       endif
 
@@ -437,8 +540,10 @@ c      DO 8 K=2,NK
 c      DO 8 J=2,NJ
 c
 c simple outflow condition
-      fbcfpi2(j,k)=fp(ni1,j,k)-fp(ni,j,k)-
-     &             dx*fsmach
+c      fbcfpi2(j,k)=fp(ni1,j,k)-fp(ni,j,k)-
+c     &    dx*fsmach
+      fbcfpi2(j,k)=fp(ni1,j,k)
+     &   -two*fp(ni,j,k)+fp(ni-1,j,k)
     8 CONTINUE
       endif
 c
