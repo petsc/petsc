@@ -1,4 +1,4 @@
-/*$Id: xyt.c,v 1.2 2001/04/10 19:37:38 bsmith Exp balay $*/
+/*$Id: xyt.c,v 1.3 2001/04/11 02:42:20 balay Exp balay $*/
 /*************************************xyt.c************************************
 Module Name: xyt
 Module Info:
@@ -292,9 +292,9 @@ Description:
 int
 XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
 {
-#if   NXSRC&&TIMING
+#if defined( NXSRC) && defined(TIMING)
   double dclock(),    time=0.0;
-#elifdef MPISRC&&TIMING
+#elif defined(MPISRC) && defined(TIMING)
   double MPI_Wtime(), time=0.0; 
 #endif
 #ifdef INFO
@@ -310,9 +310,9 @@ XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
   check_init();
   check_handle(xyt_handle);
 
-#if   NXSRC&&TIMING
+#if defined(NXSRC) && defined(TIMING)
   time = dclock();
-#elifdef MPISRC&&TIMING
+#elif defined(MPISRC) && defined(TIMING)
   time = MPI_Wtime();
 #endif
 
@@ -321,9 +321,9 @@ XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
     {rvec_copy(x,b,xyt_handle->mvi->n);}
   do_xyt_solve(xyt_handle,x);
 
-#if   NXSRC&&TIMING
+#if defined(NXSRC) && defined(TIMING)
   time = dclock() - time;
-#elifdef MPISRC&&TIMING
+#elif defined(MPISRC) && defined(TIMING)
   time = MPI_Wtime() - time;
 #endif
 

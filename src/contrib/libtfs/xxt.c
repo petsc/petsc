@@ -1,4 +1,4 @@
-/*$Id: xxt.c,v 1.2 2001/04/10 19:37:38 bsmith Exp balay $*/
+/*$Id: xxt.c,v 1.3 2001/04/11 02:42:18 balay Exp balay $*/
 /*************************************xxt.c************************************
 Module Name: xxt
 Module Info:
@@ -285,9 +285,9 @@ Description:
 int
 XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
 {
-#if   NXSRC&&TIMING
+#if defined(NXSRC) && defined(TIMING)
   double dclock(),    time=0.0;
-#elifdef MPISRC&&TIMING
+#elif defined(MPISRC) && defined(TIMING)
   double MPI_Wtime(), time=0.0; 
 #endif
 #ifdef INFO
@@ -303,9 +303,9 @@ XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
   check_init();
   check_handle(xxt_handle);
 
-#if   NXSRC&&TIMING
+#if defined(NXSRC) && defined(TIMING)
   time = dclock();
-#elifdef MPISRC&&TIMING
+#elif defined(MPISRC) && defined(TIMING)
   time = MPI_Wtime();
 #endif
 
@@ -314,9 +314,9 @@ XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
     {rvec_copy(x,b,xxt_handle->mvi->n);}
   do_xxt_solve(xxt_handle,x);
 
-#ifdef   NXSRC&&TIMING
+#if defined(NXSRC) && defined(TIMING)
   time = dclock() - time;
-#elifdef MPISRC&&TIMING
+#elif defined(MPISRC) && defined(TIMING)
   time = MPI_Wtime() - time;
 #endif
 
