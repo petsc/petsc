@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.41 2000/05/10 16:40:58 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.42 2000/07/10 03:39:47 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -78,16 +78,17 @@ int MatDestroy_MPIAdj(Mat mat)
 #endif
   if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
   if (a->values) {ierr = PetscFree(a->values);CHKERRQ(ierr);}
-  ierr = PetscFree(a->i);CHKERRQ(ierr);
-  ierr = PetscFree(a->j);CHKERRQ(ierr);
+  if (a->freeaij) {
+    ierr = PetscFree(a->i);CHKERRQ(ierr);
+    ierr = PetscFree(a->j);CHKERRQ(ierr);
+    ierr = PetscFree(a);CHKERRQ(ierr);
+  }
   ierr = PetscFree(a->rowners);CHKERRQ(ierr);
-  ierr = PetscFree(a);CHKERRQ(ierr);
 
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatSetOption_MPIAdj"
@@ -396,7 +397,7 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
   b->nz               = i[m];
   b->diag             = 0;
   b->symmetric        = PETSC_FALSE;
-
+  b->freeaij          = PETSC_TRUE;
   *A = B;
 
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
