@@ -132,11 +132,21 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     help.addArgument('Framework', '-ignoreCompileOutput', nargs.ArgBool(None, 1, 'Ignore compiler output'))
     help.addArgument('Framework', '-ignoreLinkOutput',    nargs.ArgBool(None, 1, 'Ignore linker output'))
     help.addArgument('Framework', '-ignoreWarnings',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
+    help.addArgument('Framework', '-cleanup',             nargs.ArgBool(None, 1, 'Delete any configure generated files (turn off for debugging)'))
     help.addArgument('Framework', '-with-alternatives',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
     help.addArgument('Framework', '-search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
     help.addArgument('Framework', '-package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
     help.addArgument('Framework', '-can-execute',         nargs.ArgBool(None, 1, 'Disable this option on a batch system'))
     return help
+
+  def getCleanup(self):
+    if not hasattr(self, '_cleanup'):
+      return self.argDB['cleanup']
+    return self._cleanup
+  def setCleanup(self):
+    self._cleanup = cleanup
+    return
+  cleanup = property(getCleanup, setCleanup, doc = 'Flag for deleting generating files')
 
   def setupArguments(self, argDB):
     '''Change titles and setup all children'''
