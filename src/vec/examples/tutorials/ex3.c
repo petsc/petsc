@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex15.c,v 1.22 1995/12/21 18:29:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.23 1996/01/12 22:05:06 bsmith Exp balay $";
 #endif
 
 static char help[] = "Displays a vector visually.\n\n";
@@ -14,7 +14,7 @@ static char help[] = "Displays a vector visually.\n\n";
 
 int main(int argc,char **argv)
 {
-  int        i,n = 50, ierr,&flg;
+  int        i,n = 50, ierr, flg;
   Scalar     v;
   Vec        x;
   Draw       win;
