@@ -167,8 +167,9 @@ extern void   *malloc(long unsigned int );
 };
 
 #else
+extern char   *mktemp(char *);
+extern void   *malloc(long unsigned int);
 extern char   *getenv( char *);
-extern int    vfprintf(FILE*,char*,...);
 extern void   perror(char *);
 extern double atof(char *);
 extern int    atoi(char*);
