@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.46 1998/04/17 20:10:46 balay Exp $ 
+# $Id: makefile,v 1.1 1998/04/22 18:02:53 curfman Exp balay $ 
 
 ALL: ex1
 
-CFLAGS	         = ${CPPFLAGS} ${FCONF} -D__SDIR__='"${LOCDIR}"'
+CFLAGS	         = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 FFLAGS	         = 
 LOCDIR           = src/contrib/elliott/
 

@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.51 1998/04/23 22:38:58 balay Exp balay $ 
+# $Id: builddist,v 1.52 1998/04/23 22:43:42 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -51,7 +51,7 @@ cd /mcs/tmp/petsc
 /bin/rm -f  bmake/sun4/base.bak
 
 # Create EMACS-TAGS and VI-TAGS
-make etags etags_examples vitags
+make etags etags_examples ctags
 
 cd /mcs/tmp
 chmod -R u+w petsc

@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.6 1998/03/23 21:06:13 balay Exp bsmith $ 
+# $Id: makefile,v 1.7 1998/04/13 16:20:29 bsmith Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS} ${FCONF} ${CONF} -D__SDIR__='"${LOCDIR}"'
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 FFLAGS   = 
 SOURCEC  = zf90.c f90_nag.c f90_IRIX.c f90_rs6000.c
 SOURCEF  = 

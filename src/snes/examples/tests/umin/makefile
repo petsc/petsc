@@ -1,9 +1,8 @@
-# $Id: makefile,v 1.58 1998/03/19 02:13:45 balay Exp balay $ 
+# $Id: makefile,v 1.59 1998/04/07 16:22:24 balay Exp balay $ 
 
 ALL: ex1
 
-# Note that we need FCONF to pick up the Fortran format info
-CFLAGS          = ${CPPFLAGS} ${FCONF} -D__SDIR__='"${LOCDIR}"'
+CFLAGS          = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 FFLAGS          = 
 SOURCEC         = 
 SOURCEF         =

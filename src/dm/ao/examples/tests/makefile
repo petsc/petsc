@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.19 1998/03/13 22:52:19 balay Exp balay $ 
+# $Id: makefile,v 1.20 1998/03/19 02:15:40 balay Exp balay $ 
 
 ALL: ex1
 
-CFLAGS	        = ${CPPFLAGS} ${FCONF} -D__SDIR__='"${LOCDIR}"'
+CFLAGS	        = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 FFLAGS	        =	 
 LOCDIR          = src/ao/examples/tests/
 TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm \
