@@ -178,6 +178,9 @@ EXTERN_C_END
 +   A - the matrix created with MatCreateSNESMF()
 -   flag - PETSC_TRUE causes it to compute ||a||, PETSC_FALSE assumes it is 1.
 
+  Options Database Key:
+.   -snes_mf_compute_norma <true,false> - can be set false for GMRES to speed up code
+
   Level: advanced
 
   Notes:
@@ -225,6 +228,9 @@ EXTERN_C_END
   Input Parameters:
 +   A - the matrix created with MatCreateSNESMF()
 -   flag - PETSC_TRUE causes it to compute ||U||, PETSC_FALSE uses the previous value
+
+  Options Database Key:
+.   -snes_mf_compute_normu <true,false> - true by default, false causes extra calculations
 
   Level: advanced
 

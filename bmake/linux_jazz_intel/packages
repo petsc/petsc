@@ -36,7 +36,7 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 # SPOOLES, SPOOLES_MPI
 #
 SPOOLES_INCLUDE       = -I${SOFT_HOME}/spooles-2.2
-SPOOLES_LIB           = -L${SOFT_HOME}/spooles-2.2/MPI/src/spoolesMPI.a ${SOFT_HOME}/spooles-2.2 -lspooles
+SPOOLES_LIB           = ${SOFT_HOME}/spooles-2.2/MPI/src/spoolesMPI.a ${SOFT_HOME}/spooles-2.2/spooles.a
 PETSC_HAVE_SPOOLES    = -DPETSC_HAVE_SPOOLES
 #
 #
