@@ -73,7 +73,7 @@ static int MatGetRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,in
 #define __FUNCT__ "MatRestoreRowIJ_SeqSBAIJ" 
 static int MatRestoreRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,PetscTruth *done)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   int         i,n = a->mbs;
 
   PetscFunctionBegin;
@@ -536,7 +536,7 @@ int MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
   } else if (isdraw) {
     ierr = MatView_SeqSBAIJ_Draw(A,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by SeqBAIJ matrices",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported by SeqSBAIJ matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
