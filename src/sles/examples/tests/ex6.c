@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.10 1995/10/12 22:09:52 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.11 1995/10/24 21:50:03 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
-                    use the file petsc/src/mat/examples/mat.ex.binary\n\n";
+                    use the file petsc/src/mat/examples/matbinary.ex\n\n";
 
 #include "draw.h"
 #include "mat.h"
@@ -15,11 +15,12 @@ Input arguments are:\n\
 
 int main(int argc,char **args)
 {
-  int        ierr, its;
+  int        ierr, its, set;
   double     time, norm;
   Scalar     zero = 0.0, none = -1.0;
   Vec        x, b, u;
   Mat        A;
+  MatType    mtype;
   SLES       sles;
   char       file[128]; 
   Viewer     fd;
@@ -29,11 +30,11 @@ int main(int argc,char **args)
   /* Read matrix and RHS */
   OptionsGetString(0,"-f",file,127);
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
-  ierr = MatLoad(fd,MATSEQAIJ,&A); CHKERRA(ierr);
-
+  mtype = MATSEQAIJ; /* default matrix type */
+  ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,&mtype,&set); CHKERRQ(ierr);
+  ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
-
 
   /* Set up solution */
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
