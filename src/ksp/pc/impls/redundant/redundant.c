@@ -306,6 +306,20 @@ int PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 }  
 
 /* -------------------------------------------------------------------------------------*/
+/*MC
+     PCREDUNDANT - Runs a preconditioner for the entire problem on each processor
+
+
+     Options for the redundant preconditioners can be set with -redundant_pc_xxx
+
+   Level: intermediate
+
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCRedundantSetScatter(),
+           PCRedundantGetPC(), PCRedundantGetOperators()
+
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Redundant"

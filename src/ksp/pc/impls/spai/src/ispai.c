@@ -612,7 +612,7 @@ static int PCSetFromOptions_SPAI(PC pc)
 .  -pc_spai_sp <m> - set sp
 -  -pc_spai_set_verbose <true,false> - verbose output
 
-   Notes: This only works with SeqAIJ matrices.
+   Notes: This only works with AIJ matrices.
 
    Level: beginner
 
@@ -624,11 +624,6 @@ static int PCSetFromOptions_SPAI(PC pc)
 M*/
 
 EXTERN_C_BEGIN
-/*
-   PCCreate_SPAI - Creates the preconditioner context for the SPAI 
-                   preconditioner written by Stephen Barnard.
-
-*/
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_SPAI"
 int PCCreate_SPAI(PC pc)

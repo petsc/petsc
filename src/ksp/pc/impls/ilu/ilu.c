@@ -935,6 +935,8 @@ static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 
    Notes: Only implemented for some matrix formats. Not implemented in parallel
 
+          For BAIJ matrices this implements a point block ILU
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
            PCILUSetSetZeroPivot(), PCILUSetDamping(), PCILUSetShift(), PCILUSetUseDropTolerance(),
            PCILUSetFill(), PCILUSetMatOrdering(), PCILUSetReuseOrdering(), PCILUDTSetReuseFill(),

@@ -297,9 +297,11 @@ int PCSORSetIterations(PC pc,int its,int lits)
 
   Concepts: SOR, preconditioners, Gauss-Seidel
 
-   Notes: Only implemented for the AIJ matrix format.
+   Notes: Only implemented for the AIJ  and SeqBAIJ matrix formats.
           Not a true parallel SOR, in parallel this implementation corresponds to block
           Jacobi with SOR on each block.
+
+          For SeqBAIJ matrices this implements point-block SOR, but the omega, its, lits options are not supported.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCSORSetIterations(), PCSORSetSymmetric(), PCSORSetOmega(), PCEISENSTAT
