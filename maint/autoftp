@@ -1,5 +1,5 @@
 #!/usr/local/bin/expect -f
-# $Id: autoftp,v 1.11 1998/10/07 22:42:45 balay Exp balay $ 
+# $Id: autoftp,v 1.12 1998/10/23 20:55:40 balay Exp bsmith $ 
 
 #
 #  automatically ftp's to a certain site and 
@@ -7,6 +7,8 @@
 # 
 # PETSc MCS passwd is now different from external PETSc passwds.
 # mcs passwd: F67g23ah
+#
+#  nersc cray t3e password z9ab25
 #
 #  old passwords: F43z22gh, K23p66ai, Pzr92a8i, 1953bz24
 # 
