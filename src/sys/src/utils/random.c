@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.13 1996/03/22 17:05:28 bsmith Exp balay $";
+static char vcid[] = "$Id: random.c,v 1.14 1996/03/26 19:58:06 balay Exp bsmith $";
 #endif
 
 /*
@@ -113,7 +113,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   return 0;
 }
 
-/*@
+/*@C
    PetscRandomGetValue - Generates a random number.  Call this after first calling
    PetscRandomCreate().
 
@@ -133,7 +133,7 @@ $    PetscRandomDestroy(r);
 .keywords: system, random, get, value
 
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
-@*/
+C@*/
 int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
 #if defined(PETSC_COMPLEX)
