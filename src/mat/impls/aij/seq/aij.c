@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.214 1997/04/04 23:54:18 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.215 1997/04/10 00:02:38 bsmith Exp balay $";
 #endif
 
 /*
@@ -771,7 +771,7 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *v, sum;
-  int        m = a->m, n, i, *idx, shift = a->indexshift,*ii;
+  int        m = a->m, n, i, *idx, shift = a->indexshift,*ii,jrow,j;
 
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
   x    = x + shift; /* shift for Fortran start by 1 indexing */
@@ -779,11 +779,13 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   v    = a->a;
   ii   = a->i;
   for ( i=0; i<m; i++ ) {
-    n    = ii[1] - ii[0]; ii++;
+    jrow = ii[i];
+    n    = ii[i+1] - jrow;
     sum  = 0.0;
-    /* SPARSEDENSEDOT(sum,x,v,idx,n);  */
-    /* for ( j=n-1; j>-1; j--) sum += v[j]*x[idx[j]]; */
-    while (n--) sum += *v++ * x[*idx++];
+    /* while (n--) sum += *v++ * x[*idx++]; */
+    for ( j=0; j<n; j++) {
+      sum += v[jrow]*x[idx[jrow]]; jrow++;
+     }
     y[i] = sum;
   }
   PLogFlops(2*a->nz - m);
@@ -796,7 +798,8 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *z, *v, sum;
-  int        m = a->m, n, i, *idx, shift = a->indexshift,*ii;
+  int        m = a->m, n, i, *idx, shift = a->indexshift,*ii,jrow,j;
+
 
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y); VecGetArray_Fast(zz,z); 
   x    = x + shift; /* shift for Fortran start by 1 indexing */
@@ -804,10 +807,13 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   v    = a->a;
   ii   = a->i;
   for ( i=0; i<m; i++ ) {
-    n    = ii[1] - ii[0]; ii++;
+    jrow = ii[i];
+    n    = ii[i+1] - jrow;
     sum  = y[i];
-    /* SPARSEDENSEDOT(sum,x,v,idx,n);  */
-    while (n--) sum += *v++ * x[*idx++];
+    /* while (n--) sum += *v++ * x[*idx++]; */
+    for ( j=0; j<n; j++) {
+      sum += v[jrow]*x[idx[jrow]]; jrow++;
+     }
     z[i] = sum;
   }
   PLogFlops(2*a->nz);
