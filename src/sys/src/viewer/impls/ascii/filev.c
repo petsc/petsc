@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.5 1995/04/17 02:17:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.6 1995/04/26 15:29:31 curfman Exp curfman $";
 #endif
 
 #include "ptscimpl.h"
@@ -45,9 +45,16 @@ FILE *ViewerFileGetPointer(Viewer viewer)
    Output Parameter:
 .  lab - the viewer to use with that file
 
+   Notes:
+   As shown below, ViewerFileOpen() is useful in conjunction with 
+   MatView() and VecView()
+$
+$     ViewerFileOpen("mat.output", &viewer);
+$     MatView(matrix, viewer);
+
 .keywords: Viewer, file, open
 
-.seealso: ViewerFileSyncOpen()
+.seealso: ViewerFileSyncOpen(), MatView(), VecView()
 @*/
 int ViewerFileOpen(char *name,Viewer *lab)
 {
@@ -79,9 +86,16 @@ int ViewerFileOpen(char *name,Viewer *lab)
    Output Parameter:
 .  lab - the viewer to use with that file
 
+   Notes:
+   As shown below, ViewerSyncFileOpen() is useful in conjunction with 
+   MatView() and VecView()
+$
+$     ViewerSyncFileOpen("mat.output", &viewer);
+$     MatView(matrix, viewer);
+
 .keywords: Viewer, file, open
 
-.seealso: ViewerFileOpen()
+.seealso: ViewerFileOpen(), MatView(), VecView()
 @*/
 int ViewerSyncFileOpen(char *name,MPI_Comm comm,Viewer *lab)
 {

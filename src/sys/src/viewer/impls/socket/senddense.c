@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: senddense.c,v 1.4 1995/03/27 22:59:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: senddense.c,v 1.5 1995/04/26 15:32:01 curfman Exp curfman $";
 #endif
 /* This is part of the MatlabSockettool package. Here are the routines
    to send a dense matrix to Matlab.
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: senddense.c,v 1.4 1995/03/27 22:59:15 bsmith Exp curf
 */
 #include "matlab.h"
 
-/*@
+/*
    ViewerMatlabPutArray - Passes an array to a Matlab viewer.
 
   Input Paramters:
@@ -37,7 +37,7 @@ $     VecView(Vec vector,Viewer viewer)
 .keywords: Viewer, Matlab, put, dense, array, vector
 
 .seealso: ViewerMatlabOpen(), MatView(), VecView()
-@*/
+*/
 int ViewerMatlabPutArray(Viewer viewer,int m,int n,Scalar *array)
 {
   int t = viewer->port,type = DENSEREAL,one = 1, zero = 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.7 1995/03/23 00:40:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: send.c,v 1.8 1995/04/26 15:31:30 curfman Exp curfman $";
 #endif
 /* This is part of the MatlabSockettool package. 
  
@@ -192,7 +192,7 @@ $    VecView(Vec vector,Viewer viewer)
 
 .keywords: Viewer, Matlab, open
 
-.seealso: MatView(), VecView(), ViewerMatlabPutSparse(), ViewerMatlabPutArray()
+.seealso: MatView(), VecView()
 @*/
 int ViewerMatlabOpen(char *machine,int port,Viewer *lab)
 {
