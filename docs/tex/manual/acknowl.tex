@@ -19,6 +19,7 @@ have been written by
 \begin{itemize}
   \item Asbjorn Hoiland Aarrestad - the explicit Runge-Kutta implementations;
   \item Mark Adams - scalability features of MPIBAIJ matrices;
+  \item G. Anciaux and J. Roman - the interfaces to the partitioning packages Jostle, Scotch, Chaco, and Party;
   \item Allison Baker - the flexible GMRES code;
   \item Tony Caola - the SPARSEKIT2 ilutp() interface;
   \item Chad Carroll - Win32 graphics;
@@ -62,6 +63,7 @@ PETSc interfaces to the following external software:
                      \trllink{http://www.mgnet.org/mgnet-codes-gmd.html}{http://www.mgnet.org/mgnet-codes-gmd.html}
   \item BlockSolve95 - see page \pageref{sec_blocksolve}, for parallel ICC(0) and ILU(0) preconditioning,
                      \trllink{http://www.mcs.anl.gov/blocksolve}{http://www.mcs.anl.gov/blocksolve},
+  \item Chaco -     A graph partitioning package, \trllink{ http://www.cs.sandia.gov/CRF/chac.html}{ http://www.cs.sandia.gov/CRF/chac.html}
   \item DSCPACK -    see page \pageref{sec_externalsol}, Domain-Separator Codes for solving sparse symmetric
                       positive-definite systems, 
                      developed by Padma Raghavan,   
@@ -69,6 +71,7 @@ PETSc interfaces to the following external software:
   \item ESSL -         IBM's math library for fast sparse direct LU factorization,
   \item Euclid  -   parallel ILU(k) developed by David Hysom, accessed through the Hypre interface,
   \item Hypre -    the LLNL preconditioner library, \trllink{http://www.llnl.gov/CASC/hypre}{http://www.llnl.gov/CASC/hypre}
+  \item Jostle -     A graph partitioning package, \trllink{http://www.gre.ac.uk/~c.walshaw/jostle/}{http://www.gre.ac.uk/~c.walshaw/jostle/}
   \item LUSOL -       sparse LU factorization code (part of MINOS) developed by Michael Saunders,
                       Systems Optimization Laboratory, Stanford University,
                      \trllink{http://www.sbsi-sol-optimize.com/}{http://www.sbsi-sol-optimize.com/},
@@ -79,8 +82,10 @@ PETSc interfaces to the following external software:
                      \trllink{http://www.enseeiht.fr/lima/apo/MUMPS/credits.html}{http://www.enseeiht.fr/lima/apo/MUMPS/credits.html},
   \item ParMeTiS -     see page \pageref{sec_partitioning}, parallel graph partitioner,
                      \trllink{http://www-users.cs.umn.edu/~karypis/metis/}{http://www-users.cs.umn.edu/~karypis/metis/},
+  \item Party -     A graph partitioning package, \trllink{http://www.uni-paderborn.de/fachbereich/AG/monien/RESEARCH/PART/party.html}{http://www.uni-paderborn.de/fachbereich/AG/monien/RESEARCH/PART/party.html},
   \item PVODE -       see page \pageref{sec_pvode}, parallel ODE integrator,
                      \trllink{http://www.llnl.gov/CASC/PVODE}{http://www.llnl.gov/CASC/PVODE},
+  \item Scotch -     A graph partitioning package, \trllink{http://www.labri.fr/Perso/~pelegrin/scotch/}{http://www.labri.fr/Perso/~pelegrin/scotch/}
   \item SPAI -        for parallel sparse approximate inverse preconditiong, 
                      \trllink{http://www.sam.math.ethz.ch/~grote/spai/}{http://www.sam.math.ethz.ch/~grote/spai/},
   \item SPOOLES - see page \pageref{sec_externalsol}, SParse Object Oriented Linear Equations Solver, developed by Cleve Ashcraft, 
