@@ -11,4 +11,4 @@ OBJSF    =
 LIBBASE  = libpetscsles
 DIRS     = jacobi none sor lu shell bjacobi mg eisens ilu icc asm
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

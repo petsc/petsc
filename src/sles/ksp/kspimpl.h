@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.21 1996/04/04 22:02:50 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.22 1996/04/05 05:57:46 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -14,7 +14,7 @@ struct _KSP {
   /*------------------------- User parameters--------------------------*/
   int max_it,                      /* maximum number of iterations */
       guess_zero,                  /* flag for whether initial guess is 0 */
-      calc_sings,                  /* calculate extreme Singularvalues */
+      calc_sings,                  /* calculate extreme Singular Values */
       calc_res,                    /* calculate residuals at each iteration*/
       use_pres;                    /* use preconditioned residual */
   PCSide pc_side;                  /* flag for left, right, or symmetric 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.47 1996/03/26 00:10:48 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.48 1996/04/04 19:19:13 curfman Exp bsmith $";
 #endif
 
 static char help[] =
@@ -65,7 +65,7 @@ int main( int argc, char **argv )
 
   user.mx = 4; user.my = 4; user.param = 6.0;
   ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(0,"-my",&user.my,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,"Lambda is out of range");
@@ -89,7 +89,7 @@ int main( int argc, char **argv )
   /* Create nonlinear solver and set function evaluation routine */
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
-  ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user); CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction1,&user); CHKERRA(ierr);
 
   /* Set default Jacobian evaluation routine.  User can override with:
      -snes_mf : matrix-free Newton-Krylov method with no preconditioning
@@ -99,7 +99,7 @@ int main( int argc, char **argv )
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free); CHKERRA(ierr);
   if (!matrix_free) {
     ierr = MatCreate(MPI_COMM_WORLD,N,N,&J); CHKERRA(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void *)&user); CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,&user); CHKERRA(ierr);
   }
 
   /* Set options, then solve nonlinear system */

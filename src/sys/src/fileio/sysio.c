@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sysio.c,v 1.11 1996/03/19 21:24:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: sysio.c,v 1.12 1996/04/01 03:12:30 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -8,16 +8,8 @@ static char vcid[] = "$Id: sysio.c,v 1.11 1996/03/19 21:24:22 bsmith Exp curfman
 
 #include "petsc.h"
 #include "sys.h"
-#include <sys/errno.h>
+#include <errno.h>
 #include <unistd.h>
-/*
-   Cray T3D cannot find errno!
-*/
-#if defined(PARCH_t3d)
-int errno = 0;
-#else
-extern int errno;
-#endif
 
 #if defined(HAVE_SWAPPED_BYTES)
 /*

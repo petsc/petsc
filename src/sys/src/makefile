@@ -34,5 +34,5 @@ rs6000_time: rs6000_time.s
 	$(RM) -f rs6000_time.o; \
 	fi
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

@@ -11,4 +11,4 @@ OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = cr bcgs cg cgs gmres cheby rich lsqr preonly tcqmr tfqmr qcg
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

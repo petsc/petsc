@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.38 1996/03/20 02:00:50 curfman Exp bsmith $ */
+/* $Id: ksp.h,v 1.39 1996/04/04 22:05:50 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -35,7 +35,7 @@ extern int KSPSetTolerances(KSP,double,double,double,int);
 extern int KSPSetCalculateResidual(KSP,PetscTruth);
 extern int KSPSetUsePreconditionedResidual(KSP);
 extern int KSPSetInitialGuessNonzero(KSP);
-extern int KSPSetCalculateSingularvalues(KSP);
+extern int KSPSetCalculateSingularValues(KSP);
 extern int KSPSetRhs(KSP,Vec);
 extern int KSPGetRhs(KSP,Vec *);
 extern int KSPSetSolution(KSP,Vec);
@@ -56,7 +56,7 @@ extern int KSPBuildResidual(KSP, Vec, Vec,Vec *);
 
 extern int KSPRichardsonSetScale(KSP , double);
 extern int KSPChebychevSetEigenvalues(KSP , double, double);
-extern int KSPComputeExtremeSingularvalues(KSP, Scalar*,Scalar*);
+extern int KSPComputeExtremeSingularValues(KSP, Scalar*,Scalar*);
 
 extern int KSPGMRESSetRestart(KSP, int);
 extern int KSPGMRESSetPreAllocateVectors(KSP);

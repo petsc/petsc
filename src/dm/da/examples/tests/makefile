@@ -77,4 +77,4 @@ runex5:
 runex6:
 	-@$(MPIRUN) -np 6 ex6
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

@@ -13,5 +13,5 @@ LIBBASE  = libpetscvec
 MANSEC   = 6
 LOCDIR   = src/is/impls/seq/stride/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

@@ -92,4 +92,4 @@ runex4:
            else echo "Possible problem with ex4_1, diffs above"; fi;\
 	   $(RM) -f ex4_1.tmp
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

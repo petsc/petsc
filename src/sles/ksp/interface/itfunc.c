@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.49 1996/04/04 22:02:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.50 1996/04/06 16:36:22 curfman Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -9,32 +9,32 @@ static char vcid[] = "$Id: itfunc.c,v 1.49 1996/04/04 22:02:51 bsmith Exp curfma
 #include "kspimpl.h"   /*I "ksp.h" I*/
 
 /*@
-   KSPComputeExtremeSingularvalues - Computes the extreme Singularvalues for 
+   KSPComputeExtremeSingularValues - Computes the extreme Singular Values for 
    the preconditioned operator. Called after or during KSPSolve() (SLESSolve()).
 
    Input Parameter:
 .  ksp - iterative context obtained from KSPCreate()
 
    Output Parameters:
-.  emin, emax - extreme Singularvalues
+.  emin, emax - extreme Singular Values
 
    Notes:
-   One must call KSPSetCalculateSingularvalues() before calling KSPSetUp() 
+   One must call KSPSetCalculateSingularValues() before calling KSPSetUp() 
    (or use the option -ksp_eigen) in order for this routine to work correctly.  
 
    Many users may just want to use the monitoring routine
    KSPSingularvalueMonitor() (which can be set with the option -ksp_singmonitor)
-   to print the Singularvalues at each iteration of the linear solve.
+   to print the Singular Values at each iteration of the linear solve.
 
 .keywords: KSP, compute, extreme, singular, values
 
-.seealso: KSPSetCalculateSingularvalues(), KSPSingularvalueMonitor()
+.seealso: KSPSetCalculateSingularValues(), KSPSingularValueMonitor()
 @*/
-int KSPComputeExtremeSingularvalues(KSP ksp,Scalar *emax,Scalar *emin)
+int KSPComputeExtremeSingularValues(KSP ksp,Scalar *emax,Scalar *emin)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (!ksp->calc_sings) {
-    SETERRQ(4,"KSPComputeExtremeSingularvalues:Singularvalues not requested before KSPSetUp");
+    SETERRQ(4,"KSPComputeExtremeSingularValues:SingularValues not requested before KSPSetUp");
   }
 
   if (ksp->computeextremesingularvalues) {
@@ -307,9 +307,9 @@ int KSPSetInitialGuessNonzero(KSP ksp)
 }
 
 /*@
-   KSPSetCalculateSingularvalues - Sets a flag so that the extreme Singularvalues 
-   will be calculated via a Lanczos or Arnoldi process as the linear system 
-   is solved.
+   KSPSetCalculateSingularValues - Sets a flag so that the extreme Singular 
+   Values will be calculated via a Lanczos or Arnoldi process as the linear 
+   system is solved.
 
    Input Parameters:
 .  ksp - iterative context obtained from KSPCreate()
@@ -322,13 +322,13 @@ $  -ksp_eigen
 
    Many users may just want to use the monitoring routine
    KSPSingularvalueMonitor() (which can be set with the option -ksp_singmonitor)
-   to print the Singularvalues at each iteration of the linear solve.
+   to print the Singular Values at each iteration of the linear solve.
 
-.keywords: KSP, set, Singularvalues, calculate
+.keywords: KSP, set, Singular Values, calculate
 
-.seealso: KSPComputeExtremeSingularvalues(), KSPSingularvalueMonitor()
+.seealso: KSPComputeExtremeSingularValues(), KSPSingularValueMonitor()
 @*/
-int KSPSetCalculateSingularvalues(KSP ksp)
+int KSPSetCalculateSingularValues(KSP ksp)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ksp->calc_sings  = 1;

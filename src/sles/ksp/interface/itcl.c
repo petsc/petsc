@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.65 1996/03/31 16:49:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.66 1996/04/04 22:02:51 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -70,7 +70,7 @@ int KSPSetFromOptions(KSP ksp)
   */
   ierr = OptionsHasName(ksp->prefix,"-ksp_singmonitor", &flg);  CHKERRQ(ierr);
   if (flg) {
-    KSPSetCalculateSingularvalues(ksp);
+    KSPSetCalculateSingularValues(ksp);
     KSPSetMonitor(ksp,KSPSingularvalueMonitor,(void *)0);
   }
   /*
@@ -136,7 +136,7 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
   if (flg) { KSPGMRESSetOrthogonalization(ksp, KSPGMRESIROrthogonalization);}
   ierr = OptionsHasName(ksp->prefix,"-ksp_eigen",&flg); CHKERRQ(ierr);
-  if (flg) { KSPSetCalculateSingularvalues(ksp); }
+  if (flg) { KSPSetCalculateSingularValues(ksp); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_cg_Hermitian",&flg);CHKERRQ(ierr);
   if (flg) { KSPCGSetType(ksp,CG_HERMITIAN); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_cg_symmetric",&flg);CHKERRQ(ierr);
@@ -189,7 +189,7 @@ int KSPPrintHelp(KSP ksp)
     PetscPrintf(ksp->comm," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
     PetscPrintf(ksp->comm," %sksp_truemonitor: at each iteration print true residual norm to stdout\n",p);
     PetscPrintf(ksp->comm," %sksp_xtruemonitor [x,y,w,h]: use X graphics residual convergence monitor with true residual\n",p);
-    PetscPrintf(ksp->comm," %sksp_singmonitor: calculate singularvalues during linear solve\n              only for CG and GMRES",p);
+    PetscPrintf(ksp->comm," %sksp_singmonitor: calculate singular values during linear solve\n              only for CG and GMRES",p);
     PetscPrintf(ksp->comm," GMRES options:\n");
     PetscPrintf(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);
     PetscPrintf(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative GMRES orthogonalization\n",p);

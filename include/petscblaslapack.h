@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.17 1996/02/27 17:53:25 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.18 1996/04/04 22:05:54 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -86,7 +86,7 @@ Cray T3D.  Yet another reason to hate ...
                                         (f),(g),(h),(i))
 #define LAgetrs_(a,b,c,d,e,f,g,h,i) SGETRS(_cptofcd((a),1),(b),(c),(d),(e),\
                                         (f),(g),(h),(i))
-#define LAgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) SGEMM(_cptofcd((a),1), \
+#define BLgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) SGEMM(_cptofcd((a),1), \
                                             _cptofcd((a),1),(c),(d),(e),\
                                         (f),(g),(h),(i),(j),(k),(l),(m))
 #define LAgesvd_(a,b,c,d,e,f,g,h,i,j,k,l,m) SGESVD(_cptofcd((a),1), \
@@ -193,7 +193,7 @@ Cray T3D.  Yet another reason to hate ...
                                         (f),(g),(h),(i),(j),(k))
 #define LAgetrs_(a,b,c,d,e,f,g,h,i) CGETRS(_cptofcd((a),1),(b),(c),(d),(e),\
                                         (f),(g),(h),(i))
-#define LAgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) SGEMM(_cptofcd((a),1), \
+#define BLgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) SGEMM(_cptofcd((a),1), \
                                             _cptofcd((a),1),(c),(d),(e),\
                                         (f),(g),(h),(i),(j),(k),(l),(m))
 #define LAtrmv_  CTRMV

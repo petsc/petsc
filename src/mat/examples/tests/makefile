@@ -416,4 +416,4 @@ runex48:
 	   $(RM) -f ex48_1.tmp
 
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

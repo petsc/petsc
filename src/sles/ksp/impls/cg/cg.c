@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.44 1996/04/04 22:03:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.45 1996/04/05 05:57:54 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: cg.c,v 1.44 1996/04/04 22:03:02 bsmith Exp bsmith $";
 #include <stdio.h>
 #include <math.h>
 #include "cgctx.h"       /*I "ksp.h" I*/
-extern int KSPComputeExtremeSingularvalues_CG(KSP,Scalar *,Scalar *);
+extern int KSPComputeExtremeSingularValues_CG(KSP,Scalar *,Scalar *);
 
 int KSPSetUp_CG(KSP ksp)
 {
@@ -42,7 +42,7 @@ int KSPSetUp_CG(KSP ksp)
     cgP->d                         = cgP->e + maxit + 1; 
     cgP->ee                        = cgP->d + maxit + 1;
     cgP->dd                        = cgP->ee + maxit + 1;
-    ksp->computeextremesingularvalues = KSPComputeExtremeSingularvalues_CG;
+    ksp->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
   }
   return 0;
 }

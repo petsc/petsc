@@ -11,16 +11,13 @@ SOURCEF	 =
 SOURCEH	 = Changes Machines Readme maint/addlinks \
 	   maint/builddist FAQ Installation Performance BugReporting\
 	   maint/buildlinks maint/wwwman maint/xclude maint/crontab\
-	   bmake/common bmake/sun4/* bmake/paragon/* bmake/linux/* \
-	   bmake/rs6000/* bmake/alpha/* bmake/IRIX/* bmake/IRIX64/* \
-	   bmake/hpux/* bmake/t3d/* bmake/freebsd/* bmake/solaris/* \
-	   bmake/sun4_local/* maint/autoftp docs/www/sec/*
+	   bmake/common bmake/*/base* maint/autoftp docs/www/sec/*
 OBJSC	 =
 OBJSF	 =
 LIBBASE	 = libpetscvec
 DIRS	 = src include docs 
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 # Builds PETSc libraries for a given BOPT and architecture
 all: chkpetsc_dir
@@ -157,12 +154,7 @@ etags:
 	etags -a -f TAGS src/fortran/makefile src/fortran/auto/makefile 
 	etags -a -f TAGS src/fortran/custom/makefile
 	etags -a -f TAGS include/makefile include/*/makefile 
-	etags -a -f TAGS bmake/common bmake/sun4/sun4* bmake/rs6000/rs6000* 
-	etags -a -f TAGS bmake/solaris/solaris* bmake/sun4_local/sun4_local*
-	etags -a -f TAGS bmake/sun4_lam/sun4_lam* bmake/rs6000_lam/rs6000_lam
-	etags -a -f TAGS bmake/IRIX/IRIX* bmake/freebsd/freebsd*
-	etags -a -f TAGS bmake/hpux/hpux* bmake/alpha/alpha*
-	etags -a -f TAGS bmake/t3d/t3d* bmake/paragon/paragon*
+	etags -a -f TAGS bmake/common bmake/*/base*
 	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c src/benchmarks/*.c
 	etags -a -f TAGS src/*/examples/*.F src/*/examples/*.f src/fortran/custom/*.F 
 	etags -a -f TAGS docs/tex/manual/routin.tex docs/tex/manual/manual.tex
@@ -195,13 +187,7 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/makefile src/fortran/auto/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/makefile
 	etags -a -f TAGS_NO_EXAMPLES include/makefile include/*/makefile 
-	etags -a -f TAGS_NO_EXAMPLES bmake/common bmake/sun4/sun4* 
-	etags -a -f TAGS_NO_EXAMPLES bmake/rs6000/rs6000* 
-	etags -a -f TAGS_NO_EXAMPLES bmake/solaris/solaris* bmake/sun4_local/sun4_local*
-	etags -a -f TAGS_NO_EXAMPLES bmake/sun4_lam/sun4_lam* bmake/rs6000_lam/rs6000_lam
-	etags -a -f TAGS_NO_EXAMPLES bmake/IRIX/IRIX* bmake/freebsd/freebsd*
-	etags -a -f TAGS_NO_EXAMPLES bmake/hpux/hpux* bmake/alpha/alpha*
-	etags -a -f TAGS_NO_EXAMPLES bmake/t3d/t3d* bmake/paragon/paragon*
+	etags -a -f TAGS_NO_EXAMPLES bmake/common bmake/*/base*
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/auto/*.c
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/*.c src/fortran/custom/*.F
 	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/routin.tex 
@@ -227,12 +213,7 @@ etags_makefiles:
 	etags -a -f TAGS_MAKEFILES src/contrib/*/src/*/makefile 
 	etags -a -f TAGS_MAKEFILES src/fortran/custom/makefile
 	etags -a -f TAGS_MAKEFILES include/makefile include/*/makefile
-	etags -a -f TAGS_MAKEFILES bmake/common bmake/sun4/sun4* 
-	etags -a -f TAGS_MAKEFILES bmake/rs6000/rs6000* 
-	etags -a -f TAGS_MAKEFILES bmake/solaris/solaris*
-	etags -a -f TAGS_MAKEFILES bmake/IRIX/IRIX* bmake/freebsd/freebsd*
-	etags -a -f TAGS_MAKEFILES bmake/hpux/hpux* bmake/alpha/alpha*
-	etags -a -f TAGS_MAKEFILES bmake/t3d/t3d* bmake/paragon/paragon*
+	etags -a -f TAGS_MAKEFILES bmake/common bmake/*/base*
 	etags -a -f TAGS_MAKEFILES docs/makefile
 	chmod g+w TAGS_MAKEFILES
 

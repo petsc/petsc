@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.104 1996/03/23 18:35:47 bsmith Exp curfman $ */
+/* $Id: petsc.h,v 1.105 1996/04/07 16:53:59 curfman Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -45,10 +45,11 @@ extern MPI_Datatype MPIU_COMPLEX;
 
 extern void *(*PetscMalloc)(unsigned int,int,char*);
 extern int  (*PetscFree)(void *,int,char*);
+extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,char*));
+
 #define PetscMalloc(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
 #define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
 #define PetscFree(a)         (*PetscFree)(a,__LINE__,__FILE__)
-extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,char*));
 
 extern int  PetscTrDump(FILE *);
 extern int  PetscTrSpace( double *, double *,double *);
@@ -100,21 +101,21 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define PETSC_ERR_SIZ 60   /* nonconforming object sizes */
 
 #if defined(PETSC_DEBUG)
-#define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,n,s);}
-#define SETERRA(n,s)     {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,n,s);\
+#define SETERRQ(n,s)   {return PetscError(__LINE__,__DIR__,__FILE__,n,s);}
+#define SETERRA(n,s)   {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,n,s);\
                           MPI_Abort(MPI_COMM_WORLD,_ierr);}
-#define CHKERRQ(n)       {if (n) SETERRQ(n,(char *)0);}
-#define CHKERRA(n)       {if (n) SETERRA(n,(char *)0);}
-#define CHKPTRQ(p)       if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
-#define CHKPTRA(p)       if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
+#define CHKERRQ(n)     {if (n) SETERRQ(n,(char *)0);}
+#define CHKERRA(n)     {if (n) SETERRA(n,(char *)0);}
+#define CHKPTRQ(p)     if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
+#define CHKPTRA(p)     if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
 #else
-#define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,n,s);}
-#define SETERRA(n,s)     {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,n,s);\
+#define SETERRQ(n,s)   {return PetscError(__LINE__,__DIR__,__FILE__,n,s);}
+#define SETERRA(n,s)   {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,n,s);\
                           MPI_Abort(MPI_COMM_WORLD,_ierr);}
-#define CHKERRQ(n)       {if (n) SETERRQ(n,(char *)0);}
-#define CHKERRA(n)       {if (n) SETERRA(n,(char *)0);}
-#define CHKPTRQ(p)       if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
-#define CHKPTRA(p)       if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
+#define CHKERRQ(n)     {if (n) SETERRQ(n,(char *)0);}
+#define CHKERRA(n)     {if (n) SETERRA(n,(char *)0);}
+#define CHKPTRQ(p)     if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
+#define CHKPTRA(p)     if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
 #endif
 
 #define PETSC_COOKIE                1211211
@@ -129,7 +130,7 @@ extern int LARGEST_PETSC_COOKIE;
 
 extern double PetscGetTime();
 extern double PetscGetFlops();
-extern void PetscSleep(int);
+extern void   PetscSleep(int);
 
 extern int PetscInitialize(int*,char***,char*,char*);
 extern int PetscFinalize();

@@ -13,4 +13,4 @@ LIBBASE   = libpetscdraw
 DIRS      = 
 LOCDIR    = src/draw/impls/x/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.24 1996/03/19 21:23:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.25 1996/04/04 22:03:02 bsmith Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -13,7 +13,7 @@ static int ccgtql1_private(int *, Scalar *, Scalar *, int *);
 
 #if !defined(PETSC_COMPLEX)
 
-int KSPComputeExtremeSingularvalues_CG(KSP ksp,Scalar *emax,Scalar *emin)
+int KSPComputeExtremeSingularValues_CG(KSP ksp,Scalar *emax,Scalar *emin)
 {
   KSP_CG *cgP = (KSP_CG *) ksp->data;
   double *d, *e, *dd, *ee;
@@ -30,7 +30,7 @@ int KSPComputeExtremeSingularvalues_CG(KSP ksp,Scalar *emax,Scalar *emin)
   for ( j=0; j<ii ; j++) { dd[j] = d[j]; ee[j] = e[j]; }
 
   ccgtql1_private(&ii,dd,ee,&j);
-  if (j != 0) SETERRQ(1,"KSPComputeExtremeSingularvalues_CG:Error from tql1.");  
+  if (j != 0) SETERRQ(1,"KSPComputeExtremeSingularValues_CG:Error from tql1.");  
   *emin = dd[0]; *emax = dd[ii-1];
   return 0;
 }
@@ -285,9 +285,9 @@ L20:
 
 #else
 
-int KSPComputeExtremeSingularvalues_CG(KSP ksp,Scalar *emax,Scalar *emin)
+int KSPComputeExtremeSingularValues_CG(KSP ksp,Scalar *emax,Scalar *emin)
 {
-  fprintf(stderr,"KSPComputeExtremeSingularvalues_CG:No code for complex case\n");
+  fprintf(stderr,"KSPComputeExtremeSingularValues_CG:No code for complex case\n");
   return 0;
 }
 

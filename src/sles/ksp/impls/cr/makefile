@@ -11,4 +11,4 @@ OBJSC    = cr.o
 OBJSF    =
 LIBBASE  = libpetscksp
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

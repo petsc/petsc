@@ -66,4 +66,4 @@ runex5:
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   $(RM) -f ex5_1.tmp 
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

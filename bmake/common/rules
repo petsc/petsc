@@ -42,12 +42,12 @@ PETSC_FORTRAN_LIB = -L$(LDIR) -lpetscfortran
 #
 # These include files set customized site, optimization, and version options.
 # Do NOT remove any of these include files.  You should generally have to edit
-# only $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site for your particular
+# only $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base.site for your particular
 # machine configuration.  See the users manual for details.
 #
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base.site
 # (This line MUST be present for certain machines (e.g., Cray T3D))
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(BOPT)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base.$(BOPT)
 
 # Checks that PETSC_DIR variable is set and creates library directory
 # if it does not exist

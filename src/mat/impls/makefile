@@ -11,4 +11,4 @@ OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = dense aij shell rowbs bdiag order baij
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

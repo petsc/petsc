@@ -20,4 +20,4 @@ LIBBASE  = libpetscmat
 
 runexamples:
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

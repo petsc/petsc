@@ -196,4 +196,4 @@ runex12:
 	   else echo "Possible problem with ex12_1, diffs above"; fi; \
 	   $(RM) -f ex12_1.tmp
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

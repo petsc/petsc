@@ -18,5 +18,5 @@ LIBBASE  = libpetscvec
 MANSEC   = 1
 LOCDIR   = src/vec/impls/mpi/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

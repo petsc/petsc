@@ -14,5 +14,5 @@ LIBBASE  = libpetscsnes
 MANSEC   = n
 LOCDIR   = src/snes/impls/umtr/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

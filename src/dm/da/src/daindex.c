@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daindex.c,v 1.1 1996/01/30 04:28:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daindex.c,v 1.2 1996/03/19 21:29:33 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: daindex.c,v 1.1 1996/01/30 04:28:03 bsmith Exp bsmith
 .  da - the distributed array
 
    Output Parameters:
-.  n - the number of local elements, including ghost nodes
+.  n - the number of local elements, including ghost nodes (or PETSC_NULL)
 .  idx - the global indices
 
 .keywords: distributed array, get, global, indices, local to global
@@ -27,7 +27,7 @@ static char vcid[] = "$Id: daindex.c,v 1.1 1996/01/30 04:28:03 bsmith Exp bsmith
 int DAGetGlobalIndices(DA da, int *n,int **idx)
 {
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  *n   = da->Nl;
+  if (n) *n   = da->Nl;
   *idx = da->idx;
   return 0;
 }

@@ -13,5 +13,5 @@ LIBBASE  = libpetscts
 MANSEC   = t
 LOCDIR   = src/ts/impls/implicit/beuler/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

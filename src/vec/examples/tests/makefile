@@ -247,5 +247,5 @@ runex24:
 	   else echo "Possible problem with ex24_1, diffs above"; fi;\
 	   $(RM) -f ex24_1.tmp input.dat
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.26 1995/11/27 22:24:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.27 1996/01/26 04:35:05 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -8,7 +8,6 @@ static char vcid[] = "$Id: axis.c,v 1.26 1995/11/27 22:24:55 bsmith Exp bsmith $
 #include "petsc.h"
 #include "draw.h"              /*I "draw.h" I*/
 #include <math.h>
-#include "pinclude/petscfix.h"
 
 struct _DrawAxis {
     PETSCHEADER
@@ -26,10 +25,10 @@ struct _DrawAxis {
 
 #define MAXSEGS 20
 
-static int    XiADefTicks(double,double,int,int*,double*,int);
-static char   *XiADefLabel(double,double);
-static double XiAGetNice(double,double,int );
-static int    XiAGetBase(double,double,int,double*,int*);
+static int    PetscADefTicks(double,double,int,int*,double*,int);
+static char   *PetscADefLabel(double,double);
+static double PetscAGetNice(double,double,int );
+static int    PetscAGetBase(double,double,int,double*,int*);
 
 static double PetscRint(double x )
 {
@@ -57,10 +56,10 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
   PetscHeaderCreate(ad,_DrawAxis,AXIS_COOKIE,0,vobj->comm);
   PLogObjectCreate(ad);
   PLogObjectParent(win,ad);
-  ad->xticks    = XiADefTicks;
-  ad->yticks    = XiADefTicks;
-  ad->xlabelstr = XiADefLabel;
-  ad->ylabelstr = XiADefLabel;
+  ad->xticks    = PetscADefTicks;
+  ad->yticks    = PetscADefTicks;
+  ad->xlabelstr = PetscADefLabel;
+  ad->ylabelstr = PetscADefLabel;
   ad->win       = win;
   ad->ac        = DRAW_BLACK;
   ad->tc        = DRAW_BLACK;
@@ -240,20 +239,20 @@ int DrawAxisDraw(DrawAxis ad )
 /*
      Removes the extraneous zeros in numbers like 1.10000e6
 */
-static int StripZeros(char *buf)
+static int PetscStripZeros(char *buf)
 {
   int i,j,n = (int) PetscStrlen(buf);
   if (n<5) return 0;
   for ( i=1; i<n-1; i++ ) {
     if (buf[i] == 'e' && buf[i-1] == '0') {
       for ( j=i; j<n+1; j++ ) buf[j-1] = buf[j];
-      StripZeros(buf);
+      PetscStripZeros(buf);
       return 0;
     }
   }
   return 0;
 }
-static int StripZerosPlus(char *buf)
+static int PetscStripZerosPlus(char *buf)
 {
   int i,j,n = (int) PetscStrlen(buf);
   if (n<5) return 0;
@@ -276,7 +275,7 @@ static int StripZerosPlus(char *buf)
    label; this is useful in determining how many significant figures to   
    keep.
  */
-static char *XiADefLabel(double val,double sep )
+static char *PetscADefLabel(double val,double sep )
 {
   static char buf[40];
   char   fmat[10];
@@ -320,22 +319,22 @@ static char *XiADefLabel(double val,double sep )
   else {
     sprintf( buf, "%e", val );
     /* remove the extraneous 0's before the e */
-    StripZeros(buf);
-    StripZerosPlus(buf);
+    PetscStripZeros(buf);
+    PetscStripZerosPlus(buf);
   }
   return buf;
 }
 
 /* This is a simple routine that finds "nice" locations for the ticks */
-static int XiADefTicks( double low, double high, int num, int *ntick,
+static int PetscADefTicks( double low, double high, int num, int *ntick,
                         double * tickloc,int  maxtick )
 {
   int    i;
   double x, base;
   int    power;
 
-  XiAGetBase( low, high, num, &base, &power );
-  x = XiAGetNice( low, base, -1 );
+  PetscAGetBase( low, high, num, &base, &power );
+  x = PetscAGetNice( low, base, -1 );
 
   /* Values are of the form j * base */
   /* Find the starting value */
@@ -349,21 +348,19 @@ static int XiADefTicks( double low, double high, int num, int *ntick,
   *ntick = i;
 
   if (i < 2 && num < 10) {
-    XiADefTicks( low, high, num+1, ntick, tickloc, maxtick );
+    PetscADefTicks( low, high, num+1, ntick, tickloc, maxtick );
   }
   return 0;
 }
 
 #define EPS 1.e-6
-#if !defined(PARCH_sun4)
-static double exp10(double d )
+
+static double PetscExp10(double d )
 {
   return pow( 10.0, d );
 }
-#endif
 
-#if !defined(PARCH_sun4)
-static double Xifmod(double x,double y )
+static double PetscMod(double x,double y )
 {
   int     i;
   i   = ((int) x ) / ( (int) y );
@@ -371,31 +368,28 @@ static double Xifmod(double x,double y )
   while (x > y) x -= y;
   return x;
 }
-static double Xicopysign(double a,double b )
+
+static double PetscCopysign(double a,double b )
 {
   if (b >= 0) return a;
   return -a;
 }
-#else
-#define Xifmod     fmod
-#define Xicopysign copysign
-#endif
 
 /*
     Given a value "in" and a "base", return a nice value.
     based on "sgn", extend up (+1) or down (-1)
  */
-static double XiAGetNice(double in,double base,int sgn )
+static double PetscAGetNice(double in,double base,int sgn )
 {
   double  etmp;
 
-  etmp    = in / base + 0.5 + Xicopysign ( 0.5, (double) sgn );
-  etmp    = etmp - 0.5 + Xicopysign( 0.5, etmp ) -
-		       Xicopysign ( EPS * etmp, (double) sgn );
-  return base * ( etmp - Xifmod( etmp, 1.0 ) );
+  etmp    = in / base + 0.5 + PetscCopysign ( 0.5, (double) sgn );
+  etmp    = etmp - 0.5 + PetscCopysign( 0.5, etmp ) -
+		       PetscCopysign ( EPS * etmp, (double) sgn );
+  return base * ( etmp - PetscMod( etmp, 1.0 ) );
 }
 
-static int XiAGetBase(double vmin,double vmax,int num,double*Base,int*power)
+static int PetscAGetBase(double vmin,double vmax,int num,double*Base,int*power)
 {
   double  base, ftemp;
   static double base_try[5] = {10.0, 5.0, 2.0, 1.0, 0.5};
@@ -413,12 +407,12 @@ static int XiAGetBase(double vmin,double vmax,int num,double*Base,int*power)
   ftemp   = log10( ( 1.0 + EPS ) * base );
   if (ftemp < 0.0)  ftemp   -= 1.0;
   *power  = (int) ftemp;
-  base    = base * exp10( (double) - *power );
+  base    = base * PetscExp10( (double) - *power );
   if (base < 1.0) base    = 1.0;
   /* now reduce it to one of 1, 2, or 5 */
   for (i=1; i<5; i++) {
     if (base >= base_try[i]) {
-	base            = base_try[i-1] * exp10( (double) *power );
+	base            = base_try[i-1] * PetscExp10( (double) *power );
 	if (i == 1) *power    = *power + 1;
 	break;
     }

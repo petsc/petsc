@@ -12,5 +12,5 @@ LIBBASE  = libpetsccontrib
 DIRS     = 
 LOCDIR   = src/contrib/sda/src
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

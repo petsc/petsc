@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.42 1996/04/05 05:57:48 bsmith Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.43 1996/04/06 16:35:22 curfman Exp bsmith $";
 #endif
 
 /*
@@ -44,9 +44,9 @@ $   -ksp_singmonitor
 
 .keywords: KSP, CG, default, monitor, extreme, eigenvalues, Lanczos
 
-.seealso: KSPComputeExtremeSingularvalues()
+.seealso: KSPComputeExtremeSingularValues()
 @*/
-int KSPSingularvalueMonitor(KSP ksp,int n,double rnorm,void *dummy)
+int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
   Scalar emin,emax;
   double c;
@@ -57,7 +57,7 @@ int KSPSingularvalueMonitor(KSP ksp,int n,double rnorm,void *dummy)
     PetscPrintf(ksp->comm,"%d %14.12e \n",n,rnorm);
   }
   else {
-    ierr = KSPComputeExtremeSingularvalues(ksp,&emax,&emin); CHKERRQ(ierr);
+    ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin); CHKERRQ(ierr);
 #if defined(PETSC_COMPLEX)
     c = real(emax)/real(emin);
     PetscPrintf(ksp->comm,"%d %14.12e %% %g %g %g \n",n,rnorm,real(emax),

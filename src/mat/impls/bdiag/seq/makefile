@@ -13,4 +13,4 @@ LIBBASE  = libpetscmat
 MANSEC   = 2
 LOCDIR   = src/mat/impls/bdiag/seq/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

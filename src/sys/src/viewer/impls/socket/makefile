@@ -31,4 +31,4 @@ launch: chkopts launch.o
 	$(CMEX)  launch.o
 	$(RM) -f  launch.o 
   
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

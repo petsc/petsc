@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.64 1996/04/05 05:57:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmres.c,v 1.65 1996/04/06 18:47:00 curfman Exp bsmith $";
 #endif
 
 /*
@@ -596,7 +596,7 @@ static int KSPView_GMRES(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-extern int KSPComputeExtremeSingularvalues_GMRES(KSP,Scalar *,Scalar *);
+extern int KSPComputeExtremeSingularValues_GMRES(KSP,Scalar *,Scalar *);
 
 int KSPCreate_GMRES(KSP ksp)
 {
@@ -615,7 +615,7 @@ int KSPCreate_GMRES(KSP ksp)
   ksp->adjustwork        = KSPAdjustWork_GMRES;
   ksp->destroy           = KSPDestroy_GMRES;
   ksp->view              = KSPView_GMRES;
-  ksp->computeextremesingularvalues = KSPComputeExtremeSingularvalues_GMRES;
+  ksp->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
 
   gmres->haptol         = 1.0e-8;
   gmres->epsabs         = 1.0e-8;

@@ -11,4 +11,4 @@ OBJSF    =
 LIBBASE  = libpetscsles
 DIRS     = utils interface impls  examples
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

@@ -12,6 +12,6 @@ OBJSF    =
 LIBBASE  = libpetscsnes
 DIRS     = explicit implicit
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 

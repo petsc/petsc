@@ -13,4 +13,4 @@ DIRS     =
 MANSEC   = 4
 LOCDIR   = src/pc/impls/asm/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

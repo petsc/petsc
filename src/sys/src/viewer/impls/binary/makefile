@@ -13,4 +13,4 @@ LIBBASE   = libpetscsys
 DIRS      = 
 LOCDIR    = src/viewer/impls/binary/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
