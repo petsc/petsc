@@ -1,4 +1,4 @@
-# $Id: common.g_c++,v 1.1 1998/12/04 20:42:00 balay Exp balay $ 
+# $Id: common_g_c++,v 1.2 1998/12/04 23:34:03 balay Exp balay $ 
 
 CC         = ${CXX_CC}
 FC         = ${CXX_FC}
@@ -10,3 +10,4 @@ PETSCFLAGS = ${GCXX_PETSCFLAGS}
 COPTFLAGS  = ${GCXX_COPTFLAGS}
 FOPTFLAGS  = ${GCXX_FOPTFLAGS}
 
+BBOPT      = ${G_BBOPT}
