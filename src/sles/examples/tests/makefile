@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.153 1998/06/12 20:19:22 bsmith Exp balay $ 
+# $Id: makefile,v 1.154 1998/06/13 05:12:53 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -214,13 +214,13 @@ runex5:
 # ftp://info.mcs.anl.gov/pub/petsc/testmatrices
 #
 runex6:
-	-@${MPIRUN} -np 1 ex6 -ksp_type preonly  -pc_type lu \
+	-@${MPIRUN} -np 1 ex6 -ksp_type preonly  -pc_type lu -optionsleft_off \
 	   -f ${PETSC_DIR}/src/mat/examples/matrices/arco1 > ex6_1.tmp 2>&1; \
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   ${RM} -f ex6_1.tmp
 runex6_2:
-	-@${MPIRUN} -np 1 ex6 -sub_pc_type ilu \
+	-@${MPIRUN} -np 1 ex6 -sub_pc_type ilu -optionsleft_off \
 	   -f ${PETSC_DIR}/src/mat/examples/matrices/arco1 \
 	   -ksp_gmres_restart 100 -sub_ksp_type preonly -pc_type bjacobi \
 	   -pc_bjacobi_blocks 8 -sub_pc_ilu_in_place -ksp_smonitor \
@@ -229,7 +229,7 @@ runex6_2:
 	   else echo "Possible problem with ex6_2, diffs above"; fi; \
 	   ${RM} -f ex6_2.tmp
 runex6_3:
-	-@${MPIRUN} -np 1 ex6 -pc_type ilu \
+	-@${MPIRUN} -np 1 ex6 -pc_type ilu -optionsleft_off \
 	   -f ${PETSC_DIR}/src/mat/examples/matrices/arco4 \
 	   -ksp_gmres_restart 100  -ksp_smonitor  > ex6_3.tmp 2>&1; \
 	   if (diff output/ex6_3.out ex6_3.tmp) then true; \
@@ -237,7 +237,7 @@ runex6_3:
 	   ${RM} -f ex6_3.tmp
 runex6_4:
 	-@${MPIRUN} -np 1 ex6 -pc_type bgs -pc_bgs_blocks 5 -sub_pc_type lu\
-	   -f ${PETSC_DIR}/src/mat/examples/matrices/arco1 \
+	   -f ${PETSC_DIR}/src/mat/examples/matrices/arco1 -optionsleft_off \
 	   -ksp_gmres_restart 100  -ksp_smonitor  > ex6_4.tmp 2>&1; \
 	   if (diff output/ex6_4.out ex6_4.tmp) then true; \
 	   else echo "Possible problem with ex6_4, diffs above"; fi; \
@@ -245,7 +245,7 @@ runex6_4:
 runex6_5:
 	-@${MPIRUN} -np 1 ex6 -pc_type bgs -pc_bgs_blocks 5 -mat_aij_oneindex \
 	    -sub_pc_type lu -f ${PETSC_DIR}/src/mat/examples/matrices/arco1 \
-	   -ksp_gmres_restart 100  -ksp_smonitor  > ex6_5.tmp 2>&1; \
+	   -ksp_gmres_restart 100  -ksp_smonitor  -optionsleft_off > ex6_5.tmp 2>&1; \
 	   if (diff output/ex6_4.out ex6_5.tmp) then true; \
 	   else echo "Possible problem with ex6_5, diffs above"; fi; \
 	   ${RM} -f ex6_5.tmp

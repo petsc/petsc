@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.198 1998/06/12 20:31:40 bsmith Exp balay $ 
+# $Id: makefile,v 1.199 1998/06/12 21:09:02 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -511,7 +511,7 @@ runex39:
 	   else echo "Possible problem with ex39_1, diffs above"; fi; \
 	   ${RM} -f ex39_1.tmp
 runex40:
-	-@${MPIRUN} -np 3 ex40 -f ../matrices/arco1 -nd 7 -ov 2 > ex40_1.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ex40 -f ../matrices/arco1 -nd 7 -ov 2 -optionsleft_off > ex40_1.tmp 2>&1; \
 	   grep -v "flg =1" ex40_1.tmp > ex40_12.tmp; \
 	   if (diff output/ex40_1.out ex40_12.tmp) then true; \
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
@@ -523,7 +523,7 @@ runex41:
 	   else echo "Possible problem with ex41_1, diffs above"; fi; \
 	   ${RM} -f ex41_1.tmp ex41_12.tmp
 runex42:
-	-@${MPIRUN} -np 3 ex42 -f ../matrices/arco1 -mat_aij_oneindex  \
+	-@${MPIRUN} -np 3 ex42 -f ../matrices/arco1 -mat_aij_oneindex -optionsleft_off \
 	   -nd 5 -ov 2  > ex42_1.tmp 2>&1; \
 	   grep -v "flg =1" ex42_1.tmp > ex42_12.tmp; \
 	   if (diff output/ex42_1.out ex42_12.tmp) then true; \
