@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.32 1996/01/27 04:56:41 bsmith Exp $";
+static char vcid[] = "$Id: daview.c,v 1.1 1996/01/30 04:28:06 bsmith Exp curfman $";
 #endif
  
 /*
@@ -45,5 +45,23 @@ int DAView(DA da, Viewer v)
 {
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   return (*da->view)((PetscObject)da,v);
+}  
+
+/*@
+   DAGetDimension - Gets the dimension of a given distributed array.
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameter
+.  dim - dimension of distributed array (1, 2, or 3)
+
+.keywords: distributed array, get, dimension
+@*/
+int DAGetDimension(DA da,int *dim)
+{
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+  *dim = da->dim;
+  return 0;
 }  
 
