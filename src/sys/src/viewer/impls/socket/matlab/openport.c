@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: openport.c,v 1.3 1995/03/06 04:41:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: openport.c,v 1.4 1996/12/18 17:01:58 balay Exp balay $";
 #endif
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
@@ -36,6 +36,8 @@ extern int SOCKConnect_Private(int);
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
+#undef __FUNCTION__  
+#define __FUNCTION__ "mexFunction"
 void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 {
   int t, portnumber;
@@ -66,6 +68,8 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 static int listenport;
 /*-----------------------------------------------------------------*/
 int establish(u_short);
+#undef __FUNCTION__  
+#define __FUNCTION__ "SOCKConnect_Private"
 int SOCKConnect_Private(int portnumber)
 {
   struct sockaddr_in isa;
@@ -89,6 +93,8 @@ int SOCKConnect_Private(int portnumber)
 }
 /*-----------------------------------------------------------------*/
 #define MAXHOSTNAME 100
+#undef __FUNCTION__  
+#define __FUNCTION__ "establish"
 int establish(u_short portnum)
 {
   char               myname[MAXHOSTNAME+1];
