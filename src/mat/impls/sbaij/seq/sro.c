@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.7 2000/09/07 16:11:21 hzhang Exp hzhang $*/
+/*$Id: sro.c,v 1.8 2000/09/08 16:31:07 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -34,7 +34,7 @@ C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
 */
 #undef __FUNC__  
 #define __FUNC__ "MatReorderingSeqSBAIJ"
-int MatReIndexingSeqSBAIJ(Mat A,IS isp)
+int MatReOrderingSeqSBAIJ(Mat A,IS isp)
 {
   Mat_SeqSBAIJ     *a=(Mat_SeqSBAIJ *)A->data;
   int             *r,ierr,i,mbs=a->mbs,*ai=a->i,*aj=a->j,*rip,*riip;
