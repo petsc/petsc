@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.168 2001/05/18 19:29:22 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.169 2001/06/21 21:19:09 bsmith Exp curfman $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -1437,17 +1437,18 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 #undef __FUNCT__
 #define __FUNCT__ "DAMultiplyByJacobian1WithAdic"
 /*@C
-    DAMultiplyByJacobian1WithAdic - Applies a adiC provided Jacobian function on each processor that 
-        share a DA to a vector
+    DAMultiplyByJacobian1WithAdic - Applies an ADIC-provided Jacobian function to a vector on 
+    each processor that shares a DA.
 
-   Input Parameters:
-+    da - the DA that defines the grid
-.    vu - Jacobian is computed at this point (ghosted)
-.    v - product is done on this vector (ghosted)
-.    fu - output vector = J(vu)*v
--    w - any user data
+    Input Parameters:
++   da - the DA that defines the grid
+.   vu - Jacobian is computed at this point (ghosted)
+.   v - product is done on this vector (ghosted)
+.   fu - output vector = J(vu)*v (not ghosted)
+-   w - any user data
 
-    Notes: Does NOT do ghost updates on vu upon entry
+    Notes: 
+    This routine does NOT do ghost updates on vu upon entry.
 
    Level: advanced
 
@@ -1608,8 +1609,8 @@ int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
 #undef __FUNCT__
 #define __FUNCT__ "DAMultiplyByJacobian1WithAD"
 /*@C
-    DAMultiplyByJacobian1WithAD - Applies an ADIFOR or ADIC provided Jacobian function on each processor that 
-        share a DA to a vector
+    DAMultiplyByJacobian1WithAD - Applies a Jacobian function supplied by ADIFOR or ADIC
+    to a vector on each processor that shares a DA.
 
    Input Parameters:
 +    da - the DA that defines the grid
@@ -1618,10 +1619,11 @@ int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
 .    fu - output vector = J(vu)*v (not ghosted)
 -    w - any user data
 
-    Notes: Does NOT do ghost updates on vu and v upon entry
+    Notes: 
+    This routine does NOT do ghost updates on vu and v upon entry.
            
     Automatically calls DAMultiplyByJacobian1WithAdifor() or DAMultiplyByJacobian1WithAdic()
-    depending on whether DASetLocalAdicMFFunction() or DASetLocalAdiforMFFunction() was called
+    depending on whether DASetLocalAdicMFFunction() or DASetLocalAdiforMFFunction() was called.
 
    Level: advanced
 
