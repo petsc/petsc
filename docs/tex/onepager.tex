@@ -1,4 +1,4 @@
-% $Id: onepager.tex,v 1.10 1995/10/12 19:53:56 bsmith Exp curfman $ 
+% $Id: onepager.tex,v 1.11 1995/10/31 22:23:38 curfman Exp curfman $ 
 \documentstyle[epsf,sty/handpage,/home/gropp/hyper/style/anlhtext]{article}
 \pagestyle{empty}
 \begin{document}
@@ -20,30 +20,32 @@ This work was supported by the Mathematical,
 \section*{Description}
 
 \code{PETSc}, the Portable, Extensible Toolkit for Scientific computation,
-is a suite of uni- and parallel-processor tools that are
-intended especially for the solution of large-scale problems modeled
-by partial differential equations.
-\code{PETSc} employs the MPI standard for all
-message-passing communication.  Most of the code is written in a
+is a suite of uni- and parallel-processor codes that are intended for
+the solution of large-scale problems modeled by partial differential
+equations.  \code{PETSc} employs the MPI standard for all
+message-passing communication.  The code is written in a
 data-structure-neutral manner to enable easy reuse and flexibility.
 
-\code{PETSc} integrates a hierarchy of components, all of which
-are naturally and easily used in parallel from C, C++, and Fortran,
-thus enabling the user to employ the level of abstraction that is 
-most natural for a particular problem.  Some of the components include:
+\code{ PETSc} is easy to use for beginners.  Moreover, its careful
+design allows advanced users to have detailed control over the solution
+process. \code{PETSc} integrates a hierarchy of components, all of
+which are naturally used in parallel from C, C++, and Fortran, thus
+enabling the user to employ the level of abstraction that is most
+natural for a particular problem.  Some of the components include:
 
 \vspace{-.4cm}
 \begin{itemize}
 \item \code{Mat} - a large suite of data structures and code
       for the manipulation of parallel sparse matrices,
 \vsp
-\item \code{PC} - a small, but growing collection of preconditioners,
+\item \code{PC} - a small, but growing, collection of preconditioners,
 \vsp
 \item \code{KSP} - data-structure-neutral implementations of
       many popular Krylov space iterative methods,
 \vsp
-\item \code{SLES} - a higher-level interface to a variety
-      of preconditioners and Krylov space methods,
+\item \code{SLES} - a higher-level interface for the solution of
+      large-scale linear systems,
+
 \vsp
 \item \code{SNES} - data-structure-neutral implementations of Newton-like
       methods for nonlinear systems.
@@ -66,7 +68,7 @@ as combine and nest algorithms.
 \section*{Computational Environment}
 \code{PETSc} is available on Sun, DEC alpha, Silicon Graphics, HP-UX, and IBM
 RS/6000 workstations; IBM PCs running freeBSD or Linux; the Cray T3D,
-Intel Paragon and the IBM SP. Other machines may be supported as our
+the Intel Paragon; and the IBM SP. Other machines may be supported as our
 resources permit.
 
 \section*{Availability}
