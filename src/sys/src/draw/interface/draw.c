@@ -183,7 +183,7 @@ PetscErrorCode PetscDrawDestroy(PetscDraw draw)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (--draw->refct > 0) PetscFunctionReturn(0);
 
-  /* if memory was published with AMS then destroy it */
+  /* if memory was published then destroy it */
   ierr = PetscObjectDepublish(draw);CHKERRQ(ierr);
 
   if (draw->ops->destroy) {

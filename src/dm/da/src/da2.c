@@ -102,82 +102,11 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_AMS)
-/*
-      This function tells the AMS the layout of the vectors, it is called
-   in the VecPublish_xx routines.
-*/
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "AMSSetFieldBlock_DA"
-PetscErrorCode AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec vec)
-{
-  PetscErrorCode ierr;
-  int dof,dim,ends[4],shift = 0,starts[] = {0,0,0,0};
-  DA         da = 0;
-  PetscTruth isseq,ismpi;
-
-  PetscFunctionBegin;
-  if (((PetscObject)vec)->amem < 0) PetscFunctionReturn(0); /* return if not published */
-
-  ierr = PetscObjectQuery((PetscObject)vec,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) PetscFunctionReturn(0);
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  if (dof > 1) {dim++; shift = 1; ends[0] = dof;}
-
-  ierr = PetscTypeCompare((PetscObject)vec,VECSEQ,&isseq);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)vec,VECMPI,&ismpi);CHKERRQ(ierr);
-  if (isseq) {
-    ierr = DAGetGhostCorners(da,0,0,0,ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
-    ends[shift]   += starts[shift]-1;
-    ends[shift+1] += starts[shift+1]-1;
-    ends[shift+2] += starts[shift+2]-1;
-    ierr = AMS_Memory_set_field_block(amem,name,dim,starts,ends);CHKERRQ(ierr);
-    if (ierr) {
-      char *message;
-      AMS_Explain_error(ierr,&message);
-      SETERRQ(ierr,message);
-    }
-  } else if (ismpi) {
-    ierr = DAGetCorners(da,starts+shift,starts+shift+1,starts+shift+2,
-                           ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
-    ends[shift]   += starts[shift]-1;
-    ends[shift+1] += starts[shift+1]-1;
-    ends[shift+2] += starts[shift+2]-1;
-    ierr = AMS_Memory_set_field_block(amem,name,dim,starts,ends);
-    if (ierr) {
-      char *message;
-      AMS_Explain_error(ierr,&message);
-      SETERRQ(ierr,message);
-    }
-  } else {
-    SETERRQ1(1,"Wrong vector type %s for this call",((PetscObject)vec)->type_name);
-  }
-
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-#endif
-
 #undef __FUNCT__  
 #define __FUNCT__ "DAPublish_Petsc"
 PetscErrorCode DAPublish_Petsc(PetscObject obj)
 {
-#if defined(PETSC_HAVE_AMS)
-  DA          v = (DA) obj;
-  PetscErrorCode ierr;
-#endif
-
   PetscFunctionBegin;
-
-#if defined(PETSC_HAVE_AMS)
-  /* if it is already published then return */
-  if (v->amem >=0) PetscFunctionReturn(0);
-
-  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
-#endif
-
   PetscFunctionReturn(0);
 }
 

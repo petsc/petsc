@@ -6,10 +6,6 @@
 #include "petsc.h"
 PETSC_EXTERN_CXX_BEGIN
 
-#if defined(PETSC_HAVE_AMS)
-#include "ams.h"
-#endif
-
 /*
    Defines the directory where the compiled source is located; used
    in printing error messages. Each makefile has an entry 
@@ -307,7 +303,6 @@ EXTERN PetscErrorCode PetscStackPrint(PetscStack*,FILE* fp);
 
 #define PetscStackActive (petscstack != 0)
 
-#if !defined(PETSC_HAVE_AMS)
 
 /*MC
    PetscFunctionBegin - First executable line of each PETSc function
@@ -393,65 +388,6 @@ M*/
   PetscStackPop; \
   return;}
 
-#else
-
-/*
-    Duplicate Code for when the ALICE Memory Snooper (AMS)
-  is being used. When PETSC_HAVE_AMS is defined.
-
-     stack_mem is the AMS memory that contains fields for the 
-               number of stack frames and names of the stack frames
-*/
-
-extern AMS_Memory stack_mem;
-extern int        stack_err;
-
-#define PetscFunctionBegin \
-  {\
-   if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
-    if (!(stack_mem < 0)) stack_err = AMS_Memory_take_access(stack_mem);\
-    petscstack->function[petscstack->currentsize]  = __FUNCT__; \
-    petscstack->file[petscstack->currentsize]      = __FILE__; \
-    petscstack->directory[petscstack->currentsize] = __SDIR__; \
-    petscstack->line[petscstack->currentsize]      = __LINE__; \
-    petscstack->currentsize++; \
-    if (!(stack_mem < 0)) stack_err = AMS_Memory_grant_access(stack_mem);\
-  }}
-
-#define PetscStackPush(n) \
-  {if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
-    if (!(stack_mem < 0)) stack_err = AMS_Memory_take_access(stack_mem);\
-    petscstack->function[petscstack->currentsize]  = n; \
-    petscstack->file[petscstack->currentsize]      = "unknown"; \
-    petscstack->directory[petscstack->currentsize] = "unknown"; \
-    petscstack->line[petscstack->currentsize]      = 0; \
-    petscstack->currentsize++; \
-    if (!(stack_mem < 0)) stack_err = AMS_Memory_grant_access(stack_mem);\
-  }}
-
-#define PetscStackPop \
-  {if (petscstack && petscstack->currentsize > 0) {     \
-    if (!(stack_mem < 0)) stack_err = AMS_Memory_take_access(stack_mem);\
-    petscstack->currentsize--; \
-    petscstack->function[petscstack->currentsize]  = 0; \
-    petscstack->file[petscstack->currentsize]      = 0; \
-    petscstack->directory[petscstack->currentsize] = 0; \
-    petscstack->line[petscstack->currentsize]      = 0; \
-    if (!(stack_mem < 0)) stack_err = AMS_Memory_grant_access(stack_mem);\
-  }};
-
-#define PetscFunctionReturn(a) \
-  {\
-  PetscStackPop; \
-  return(a);}
-
-#define PetscFunctionReturnVoid() \
-  {\
-  PetscStackPop; \
-  return;}
-
-
-#endif
 
 #else
 

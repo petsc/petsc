@@ -4,10 +4,10 @@ ALL: lib
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  = 
-SOURCEC	  = pams.c aoptions.c
+SOURCEC	  = aoptions.c
 SOURCEF	  =
 SOURCEH	  = ../../../../../include/petscoptions.h
-OBJSC	  = pams.o aoptions.o
+OBJSC	  = aoptions.o
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc

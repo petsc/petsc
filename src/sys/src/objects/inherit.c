@@ -59,9 +59,6 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject h)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (h->amem != -1) {
-    SETERRQ(PETSC_ERR_ORDER,"PETSc object destroyed before its AMS publication was destroyed");
-  }
 
   ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
   ierr = PetscFree(h->bops);CHKERRQ(ierr);

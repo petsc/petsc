@@ -143,34 +143,7 @@ PetscErrorCode KSPSetNormType(KSP ksp,KSPNormType normtype)
 #define __FUNCT__ "KSPPublish_Petsc"
 static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
 {
-#if defined(PETSC_HAVE_AMS)
-  KSP          v = (KSP) obj;
-  PetscErrorCode ierr;
-#endif
-
   PetscFunctionBegin;
-
-#if defined(PETSC_HAVE_AMS)
-  /* if it is already published then return */
-  if (v->amem >=0) PetscFunctionReturn(0);
-
-  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Iteration",&v->its,1,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Residual",&v->rnorm,1,AMS_DOUBLE,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-
-  if (v->res_hist_max > 0) {
-    ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"ResidualNormsCount",&v->res_hist_len,1,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-    ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"ResidualNormsCountMax",&v->res_hist_max,1,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-    ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"ResidualNorms",v->res_hist,v->res_hist_max,AMS_DOUBLE,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  }
-
-  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 

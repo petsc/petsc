@@ -45,13 +45,6 @@ char      _BT_mask = ' ',_BT_c = ' ';
 PetscInt  _BT_idx  = 0;
 
 /*
-     Determines if all PETSc objects are published to the AMS
-*/
-#if defined(PETSC_HAVE_AMS)
-PetscTruth PetscAMSPublishAll = PETSC_FALSE;
-#endif
-
-/*
        Function that is called to display all error messages
 */
 EXTERN PetscErrorCode  PetscErrorPrintfDefault(const char [],...);
@@ -390,11 +383,6 @@ PetscErrorCode PetscOptionsCheckInitial_Private(void)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_options",&flg3);CHKERRQ(ierr);
-  if (flg3) PetscOptionsPublish = PETSC_TRUE;
-#endif
-
   /*
       Setup the memory management; support for tracing malloc() usage 
   */
@@ -654,10 +642,6 @@ PetscErrorCode PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm," -v: prints PETSc version number and release date\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -petsc_sleep n: sleeps n seconds before running program\n");CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-    ierr = (*PetscHelpPrintf)(comm," -ams_publish_objects: \n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -ams_publish_stack: \n");CHKERRQ(ierr);
-#endif
     ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
   }
 

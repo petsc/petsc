@@ -26,7 +26,6 @@ PetscErrorCode PetscViewerDestroy(PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   if (--viewer->refct > 0) PetscFunctionReturn(0);
 
-  /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(viewer);CHKERRQ(ierr);
 
   if (viewer->ops->destroy) {

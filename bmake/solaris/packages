@@ -85,14 +85,6 @@ PARMETIS_INCLUDE    = -I/home/petsc/soft/solaris-9/ParMetis-3.0
 PARMETIS_LIB        = -L/home/petsc/soft/solaris-9/ParMetis-3.0 -lparmetis -lmetis
 PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
-#  Location for ALICE Memory Snooper
-#
-#AMS_HOME       = /home/alice/ams
-#AMS_INCLUDE    = -I${AMS_HOME}/include
-#AMS_LIBDIR     = ${AMS_HOME}/lib/lib/solaris
-#AMS_LIB        = -L${AMS_LIBDIR} -lamspub -lamsutilmt -lamsutil -lthread -lldap
-#PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
-#
 # Location of SPAI;
 #
 SPAI_INCLUDE    = -I/home/petsc/soft/solaris-9/spai_3.0/lib

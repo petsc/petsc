@@ -7,7 +7,6 @@ EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer);
 EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer);
 EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer);
 EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer);
-EXTERN PetscErrorCode PetscViewerCreate_AMS(PetscViewer);
 EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer);
 EXTERN PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer);
 EXTERN PetscErrorCode PetscViewerCreate_Netcdf(PetscViewer);
@@ -36,9 +35,6 @@ PetscErrorCode PetscViewerRegisterAll(const char *path)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_STRING,     path,"PetscViewerCreate_String",     PetscViewerCreate_String);CHKERRQ(ierr);
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_DRAW,       path,"PetscViewerCreate_Draw",       PetscViewerCreate_Draw);CHKERRQ(ierr);
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_SOCKET,     path,"PetscViewerCreate_Socket",     PetscViewerCreate_Socket);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_AMS,        path,"PetscViewerCreate_AMS",        PetscViewerCreate_AMS);CHKERRQ(ierr); 
-#endif
 #if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_MATHEMATICA,path,"PetscViewerCreate_Mathematica",PetscViewerCreate_Mathematica);CHKERRQ(ierr); 
 #endif

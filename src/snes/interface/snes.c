@@ -546,24 +546,7 @@ PetscErrorCode SNESGetKSP(SNES snes,KSP *ksp)
 #define __FUNCT__ "SNESPublish_Petsc"
 static PetscErrorCode SNESPublish_Petsc(PetscObject obj)
 {
-#if defined(PETSC_HAVE_AMS)
-  SNES          v = (SNES) obj;
-  PetscErrorCode ierr;
-#endif
-
   PetscFunctionBegin;
-
-#if defined(PETSC_HAVE_AMS)
-  /* if it is already published then return */
-  if (v->amem >=0) PetscFunctionReturn(0);
-
-  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Iteration",&v->iter,1,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Residual",&v->norm,1,AMS_DOUBLE,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 

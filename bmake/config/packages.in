@@ -107,12 +107,6 @@ PARMETIS_LIB       = @PARMETIS_LIB@
 PLAPACK_INCLUDE    = @PLAPACK_INCLUDE@
 PLAPACK_LIB        = @PLAPACK_LIB@
 #
-#  Location for ALICE Memory Snooper
-#
-AMS_DIR            = 
-AMS_INCLUDE        = 
-AMS_LIB            = 
-#
 # Location of SPAI;
 #
 SPAI_INCLUDE       = 

@@ -5,12 +5,6 @@
 
 #include "src/dm/da/daimpl.h"     /*I   "petscda.h"    I*/
 
-#if defined (PETSC_HAVE_AMS)
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
-EXTERN_C_END
-#endif
-
 #undef __FUNCT__  
 #define __FUNCT__ "DAView_3d"
 PetscErrorCode DAView_3d(DA da,PetscViewer viewer)

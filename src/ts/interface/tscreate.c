@@ -5,26 +5,7 @@
 #define __FUNCT__ "TSPublish_Petsc"
 static PetscErrorCode TSPublish_Petsc(PetscObject obj)
 {
-#if defined(PETSC_HAVE_AMS)
-  TS   v = (TS) obj;
-  PetscErrorCode ierr;
-#endif  
-
   PetscFunctionBegin;
-
-#if defined(PETSC_HAVE_AMS)
-  /* if it is already published then return */
-  if (v->amem >=0) PetscFunctionReturn(0);
-
-  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Step",&v->steps,1,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Time",&v->ptime,1,AMS_DOUBLE,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"CurrentTimeStep",&v->time_step,1,
-                               AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 

@@ -92,9 +92,3 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
 #
-#  Location for ALICE Memory Snooper
-#
-#AMS_INCLUDE    = -I/home/alice/ams/include
-#AMS_LIB        = -L/home/alice/ams/lib/libg/irix64 -lamspub -lamsutilmt -lamsutil -lpthread
-#PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
-#

@@ -11,9 +11,6 @@ EXTERN_C_BEGIN
 #include "pnetcdf.h"
 EXTERN_C_END
 #endif
-#if defined(PETSC_HAVE_AMS)
-EXTERN PetscErrorCode PetscViewerAMSGetAMSComm(PetscViewer,AMS_Comm *);
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecNorm_Seq"
@@ -442,34 +439,7 @@ PetscErrorCode VecDestroy_Seq(Vec v)
 #define __FUNCT__ "VecPublish_Seq"
 static PetscErrorCode VecPublish_Seq(PetscObject obj)
 {
-#if defined(PETSC_HAVE_AMS)
-  Vec          v = (Vec) obj;
-  Vec_Seq      *s = (Vec_Seq*)v->data;
-  PetscErrorCode ierr,(*f)(AMS_Memory,char *,Vec);
-#endif
-
   PetscFunctionBegin;
-
-#if defined(PETSC_HAVE_AMS)
-  /* if it is already published then return */
-  if (v->amem >=0) PetscFunctionReturn(0);
-
-  /* if array in vector was not allocated (for example PCSetUp_BJacobi_Singleblock()) then
-     cannot AMS publish the object*/
-  if (!s->array) PetscFunctionReturn(0);
-
-  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"values",s->array,v->n,AMS_DOUBLE,AMS_READ,
-                                AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-
-  /* if the vector knows its "layout" let it set it*/
-  ierr = PetscObjectQueryFunction(obj,"AMSSetFieldBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)((AMS_Memory)v->amem,"values",v);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
-#endif
-
   PetscFunctionReturn(0);
 }
 

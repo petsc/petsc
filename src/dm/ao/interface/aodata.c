@@ -1297,55 +1297,7 @@ PetscErrorCode AODataSegmentPartition(AOData aodata,const char key[],const char 
 #define __FUNCT__ "AODataPublish_Petsc"
 PetscErrorCode AODataPublish_Petsc(PetscObject obj)
 {
-#if defined(PETSC_HAVE_AMS)
-  AOData        ao = (AOData) obj;
-  AODataKey     *key = 0;
-  AODataSegment *segment = 0;
-  PetscErrorCode ierr;
-  int keys,segments;
-  char          tmp[1024];
-#endif
-
   PetscFunctionBegin;
-
-#if defined(PETSC_HAVE_AMS)
-  /* if it is already published then return */
-  if (ao->amem >=0) PetscFunctionReturn(0);
-
-  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)ao->amem,"Number_of_Keys",&ao->nkeys,1,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  /* Loop over keys publishing info on each */
-  for (keys=0; keys<ao->nkeys; keys++) {
-    if (!keys) key = ao->keys;
-    else       key = key->next;
-
-    ierr = PetscStrcpy(tmp,key->name);CHKERRQ(ierr);
-    ierr = PetscStrcat(tmp,"_N");CHKERRQ(ierr);
-    ierr = AMS_Memory_add_field((AMS_Memory)ao->amem,tmp,&key->N,1,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
- 
-    ierr = PetscStrcpy(tmp,key->name);CHKERRQ(ierr);
-    ierr = PetscStrcat(tmp,"_nsegments");CHKERRQ(ierr);
-    ierr = AMS_Memory_add_field((AMS_Memory)ao->amem,tmp,&key->nsegments,1,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-
-    for (segments=0; segments<key->nsegments; segments++) {
-      if (!segments) segment = key->segments;
-      else           segment = segment->next;
-   
-      ierr = PetscStrcpy(tmp,key->name);CHKERRQ(ierr);
-      ierr = PetscStrcat(tmp,"_");CHKERRQ(ierr);
-      ierr = PetscStrcat(tmp,segment->name);CHKERRQ(ierr);
-      ierr = PetscStrcat(tmp,"_bs");CHKERRQ(ierr);
-      ierr = AMS_Memory_add_field((AMS_Memory)ao->amem,tmp,&segment->bs,1,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-    }
-  }
-
-  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
-#endif
-
   PetscFunctionReturn(0);
 }
 
@@ -1467,17 +1419,6 @@ PetscErrorCode AODataKeyAdd(AOData aodata,const char name[],int nlocal,int N)
   key->nlocal        = nlocal;
 
   aodata->nkeys++;
-
-#if defined(PETSC_HAVE_AMS)
-  if (aodata->amem >=0) {
-    char namesize[1024];
-    ierr = PetscStrcpy(namesize,name);CHKERRQ(ierr);
-    ierr = PetscStrcat(namesize,"_N");CHKERRQ(ierr);
-    ierr = AMS_Memory_add_field((AMS_Memory)aodata->amem,namesize,&key->N,1,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  }
-#endif
-
   PetscFunctionReturn(0);
 }
 

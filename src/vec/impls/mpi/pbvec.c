@@ -10,31 +10,7 @@
 #define __FUNCT__ "VecPublish_MPI"
 static PetscErrorCode VecPublish_MPI(PetscObject obj)
 {
-#if defined(PETSC_HAVE_AMS)
-  Vec          v = (Vec) obj;
-  Vec_MPI      *s = (Vec_MPI*)v->data;
-  PetscErrorCode ierr,(*f)(AMS_Memory,char *,Vec);
-#endif  
-
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_AMS)
-  /* if it is already published then return */
-  if (v->amem >=0) PetscFunctionReturn(0);
-
-  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"values",s->array,v->n,AMS_DOUBLE,AMS_READ,
-                                AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-
-  /*
-     If the vector knows its "layout" let it set it, otherwise it defaults
-     to correct 1d distribution
-  */
-  ierr = PetscObjectQueryFunction(obj,"AMSSetFieldBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)((AMS_Memory)v->amem,"values",v);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -620,9 +596,6 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   PetscErrorCode ierr;
   Vec_MPI      *vw,*w = (Vec_MPI *)win->data;
   PetscScalar  *array;
-#if defined(PETSC_HAVE_AMS)
-  PetscErrorCode (*f)(AMS_Memory,char *,Vec);
-#endif
 
   PetscFunctionBegin;
   ierr = VecCreate(win->comm,v);CHKERRQ(ierr);
@@ -660,16 +633,6 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   (*v)->bs        = win->bs;
   (*v)->bstash.bs = win->bstash.bs;
 
-#if defined(PETSC_HAVE_AMS)
-  /*
-     If the vector knows its "layout" let it set it, otherwise it defaults
-     to correct 1d distribution
-  */
-  ierr = PetscObjectQueryFunction((PetscObject)(*v),"AMSSetFieldBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)((AMS_Memory)(*v)->amem,"values",*v);CHKERRQ(ierr);
-  }
-#endif
   PetscFunctionReturn(0);
 }
 

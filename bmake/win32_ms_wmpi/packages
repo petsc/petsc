@@ -22,11 +22,3 @@ MPI_LIB        = -L$(MPI_HOME)/lib wmpif_vf.lib wmpi.lib
 #  Locations of OPTIONAL packages. Comment out those you do not have.
 # ----------------------------------------------------------------------------------------  
 #
-#  Optional location for ALICE Memory Snooper
-#
-#AMS_HOME    = c:/Program Files/Argonne National Laboratory/Alice Memory Snooper
-#AMS_INCLUDE = -I"$(AMS_HOME)/include"
-#AMS_LIB     = -L"$(AMS_HOME)/src/pubacc/pub/Release" -L"$(AMS_HOME)/src/util/Release" -L"$(AMS_HOME)/src/mpiuni/Release"  amspub.lib amsutil.lib amsmpiuni.lib wsock32.lib
-#PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
-
-#

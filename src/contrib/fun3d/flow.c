@@ -66,18 +66,6 @@ long long counter0,counter1;
 int  ntran[max_nbtran];        /* transition stuff put here to make global */
 REAL dxtran[max_nbtran];
 
-#ifdef PETSC_HAVE_AMS
-AMS_Comm ams;
-AMS_Memory memid;
-int ams_err;
-char *msg;
-char *vtk = "vtk", *grid_type = "Unstructured Grid", *cell_type = "VTK_TETRA";
-int point_dims[2], cell_dims[2];
-int p_start_ind[2], p_end_ind[2];
-int c_start_ind[2], c_end_ind[2];
-int s_start_ind[2], s_end_ind[2];
-#endif
- 
 /* ======================== MAIN ROUTINE =================================== */
 /*                                                                           */
 /* Finite volume flux split solver for general polygons                      */
@@ -97,10 +85,6 @@ int main(int argc,char **args)
   int 		ierr;
   PetscTruth    flg;
   MPI_Comm      comm;
-#ifdef PETSC_HAVE_AMS
-  int           fdes,i, *itmp;
-  PetscScalar   *qsc;
-#endif  
   ierr = PetscInitialize(&argc,&args,"petsc.opt",help);CHKERRQ(ierr);
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
@@ -162,109 +146,6 @@ int main(int argc,char **args)
   user.tsCtx = &tsCtx;
 
     /* AMS Stuff */
-#ifdef PETSC_HAVE_AMS
-    /* Create and publish the Communicator */
-    ierr = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_WORLD,&ams);CHKERRQ(ierr);
-    /* ams_err = AMS_Comm_publish("FUN3D",&ams, MPI_TYPE, comm); */
-    
-    AMS_Check_error(ams_err,&msg);
-  
-    /* Create a Memory */
-    ams_err = AMS_Memory_create(ams,"FUN3DMEM",&memid);
-    AMS_Check_error(ams_err,&msg);
-
-    /* Add vtk fields to the memory */
-    ams_err =  AMS_Memory_add_field(memid,"vtk",&vtk,1,AMS_STRING,
-                               AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err,&msg);
-
-    /* Add type field */
-    ams_err =  AMS_Memory_add_field(memid,"type",&grid_type,1,AMS_STRING,
-                               AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err,&msg);
-
-    /* Add point dimensions field */
-    point_dims[0] = user.grid->nnodes;
-    point_dims[1] = 3;
-
-    ams_err =  AMS_Memory_add_field(memid,"point_dims",point_dims,2,AMS_INT,
-                               AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err,&msg);
-
-    /* Add cell dimensions field */
-    cell_dims[0] = user.grid->ncell;
-    cell_dims[1] = 3;
-
-    ams_err =  AMS_Memory_add_field(memid,"cell_dims",cell_dims,2,AMS_INT,
-                               AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err,&msg);
-
-    /* Add cell type field */
-    ams_err =  AMS_Memory_add_field(memid,"cell_type",&cell_type,1,AMS_STRING,
-                               AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err,&msg);
-
-    /* Add points field */
-    ams_err =  AMS_Memory_add_field(memid,"points",user.grid->xyz,3*user.grid->nnodesLoc,
-                          AMS_DOUBLE,AMS_READ,AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err,&msg);
-
-    /* Set Field Dimensions */
-    p_start_ind[0] = rstart;   /* Starting index in the first dimension */
-    p_end_ind[0] = rstart+user.grid->nnodesLoc-1;    /* Ending index in the first dimension */
-
-    p_start_ind[1] = 0;   /* Starting index in the second dimension */
-    p_end_ind[1] = 2;    /* Ending index in the second dimension */
-
-    /*
-     * This would be an array of user.grid->nnodesLoc rows and 3 columns
-     */ 
-    ams_err = AMS_Memory_set_field_block(memid,"points",2,p_start_ind,p_end_ind);
-    AMS_Check_error(ams_err,&msg);
-
-    /* Add cells field */
-    /* First read the cells*/
-    if (!rank) {
-      char       cells_file[PETSC_MAX_PATH_LEN];
-      PetscTruth exists;
-      ierr = PetscOptionsGetString(PETSC_NULL,"-cells_msh",cells_file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-      ierr = PetscTestFile(cells_file,'r',&exists);CHKERRQ(ierr);
-      if (!exists) { /* try cells.msh as the file name */
-	ierr = PetscStrcpy(cells_file,"cells.msh");CHKERRQ(ierr);
-      }
-      ierr = PetscBinaryOpen(cells_file,PETSC_FILE_RDONLY,&fdes);CHKERRQ(ierr);
-    }
-    ICALLOC(4*user.grid->ncell,&itmp);
-    ICALLOC(4*user.grid->ncell,&user.grid->c2n);
-    ierr = PetscSynchronizedBinaryRead(comm,fdes,itmp,4*user.grid->ncell,PETSC_INT);CHKERRQ(ierr);
-    if (!rank) {
-     ierr = PetscBinaryClose(fdes);
-    }
-    for (i = 0; i < user.grid->ncell; i++) {
-      int j;
-      j = 4*i;
-      user.grid->c2n[j]   = itmp[i]-1;
-      user.grid->c2n[j+1] = itmp[i+user.grid->ncell]-1;
-      user.grid->c2n[j+2] = itmp[i+2*user.grid->ncell]-1;
-      user.grid->c2n[j+3] = itmp[i+3*user.grid->ncell]-1;
-    }
-    ams_err =  AMS_Memory_add_field(memid,"cells",user.grid->c2n,4*user.grid->ncell,
-                          AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF); 
-    AMS_Check_error(ams_err,&msg);
-
-    /* Set Field Dimensions */
-    c_start_ind[0] = 0;   /* Starting index in the first dimension */
-    c_end_ind[0] = user.grid->ncell-1;  /* Ending index in the first dimension */
-
-    c_start_ind[1] = 0;   /* Starting index in the second dimension */
-    c_end_ind[1] = 3;    /* Ending index in the second dimension */
-
-    /*
-     * This would be an array of user.grid->nnodesLoc rows and 3 columns
-     */ 
-    ams_err = AMS_Memory_set_field_block(memid,"cells",2,c_start_ind,c_end_ind);
-    AMS_Check_error(ams_err,&msg);
-#endif
 
     /* 
      Preload the executable to get accurate timings. This runs the following chunk of 
@@ -279,56 +160,6 @@ int main(int argc,char **args)
     ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
     ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
 
-#ifdef PETSC_HAVE_AMS
-
- /* Add points field -- temporary fix for Matt*/
-    if (!user.PreLoading) {
-
-    FCALLOC(user.grid->nnodesLoc, &qsc);
-    for (i=0; i<user.grid->nnodesLoc; i++)
-         qsc[i] = 0.1;
-
-    ams_err =  AMS_Memory_add_field(memid,"scalars",qsc, user.grid->nnodesLoc,
-                          AMS_DOUBLE,AMS_READ,AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err,&msg);
-
-    /* Set Field Dimensions */
-    s_start_ind[0] = rstart;   /* Starting index in the first dimension */
-    s_end_ind[0] = rstart+user.grid->nnodesLoc-1;    /* Ending index in the first dimension */
-
-    /*
-     * This would be an array of ??? rows and 4 columns
-     */ 
-    ams_err = AMS_Memory_set_field_block(memid,"scalars",1,s_start_ind,s_end_ind);
-    AMS_Check_error(ams_err,&msg);
-   
-    ierr = VecGetArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
-    ams_err =  AMS_Memory_add_field(memid,"supervectors",qnode,4*user.grid->nnodesLoc,
-                          AMS_DOUBLE,AMS_READ,AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err,&msg);
-    ierr = VecRestoreArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
-
-    /* Set Field Dimensions */
-    s_start_ind[0] = rstart;   /* Starting index in the first dimension */
-    s_end_ind[0] = rstart+user.grid->nnodesLoc-1;    /* Ending index in the first dimension */
-
-    s_start_ind[1] = 0;   /* Starting index in the second dimension */
-    s_end_ind[1] = 3;    /* Ending index in the second dimension */
-
-    /*
-     * This would be an array of ??? rows and 4 columns
-     */ 
-    ams_err = AMS_Memory_set_field_block(memid,"supervectors",2,s_start_ind,s_end_ind);
-    AMS_Check_error(ams_err,&msg);
-
-    /*
-     * Memory is being published
-     */
-    ams_err = AMS_Memory_publish(memid);
-    AMS_Check_error(ams_err,&msg);
-    
-    }
-#endif 
 
     /* Set various routines and options */
     ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRQ(ierr);
@@ -381,18 +212,6 @@ int main(int argc,char **args)
     if (flg) {
       ierr = PetscShowMemoryUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
     }
-
-#ifdef PETSC_HAVE_AMS_no_need
-    if (!user.PreLoading) {
-    printf("Destroying the Memory\n");
-    ams_err = AMS_Memory_destroy(memid);
-    AMS_Check_error(ams_err, &msg);
-
-    printf("Destroying the AMS Communicator \n");
-    ams_err = AMS_Comm_destroy(ams);
-    AMS_Check_error(ams_err, &msg);
-    }
-#endif
 
     ierr = VecDestroy(user.grid->qnode);CHKERRQ(ierr);
     ierr = VecDestroy(user.grid->qnodeLoc);CHKERRQ(ierr);
@@ -652,18 +471,8 @@ int Update(SNES snes,void *ctx)
   ierr = ComputeTimeStep(snes,tsCtx->itstep,user);CHKERRQ(ierr);
   /*tsCtx->ptime +=  tsCtx->dt;*/
 
-#ifdef PETSC_HAVE_AMS
-  ams_err = AMS_Memory_take_write_access(memid);
-  AMS_Check_error(ams_err, &msg);
-#endif
   ierr = SNESSolve(snes,grid->qnode);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-
-#ifdef PETSC_HAVE_AMS
-  ams_err = AMS_Memory_grant_write_access(memid);
-  AMS_Check_error(ams_err, &msg);
-  /*sleep(5);*/
-#endif
 
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
   nfailsCum += nfails; nfails = 0;
@@ -708,22 +517,6 @@ int Update(SNES snes,void *ctx)
   ierr = VecRestoreArray(grid->res,&res);CHKERRQ(ierr);
   fratio = tsCtx->fnorm_ini/tsCtx->fnorm;
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)  
-  if (!user->PreLoading) {
-    AMS_Comm acomm;
-  static AMS_Memory amem = 0;
-  static PetscTruth lock = PETSC_FALSE;
-  if (!amem) {
-    PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_WORLD,&acomm);
-    AMS_Memory_create(acomm,"lock",&amem);
-    AMS_Memory_add_field(amem,"lock",&lock,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);
-    AMS_Memory_publish(amem);
-  }
-  AMS_Memory_lock(amem,20000);  
-  AMS_Memory_take_access(amem);
-  AMS_Memory_grant_access(amem); 
-  }
-#endif
 
  } /* End of time step loop */
 

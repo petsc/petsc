@@ -254,21 +254,7 @@ PetscErrorCode PCDiagonalScaleRight(PC pc,Vec in,Vec out)
 #define __FUNCT__ "PCPublish_Petsc"
 static PetscErrorCode PCPublish_Petsc(PetscObject obj)
 {
-#if defined(PETSC_HAVE_AMS)
-  PC          v = (PC) obj;
-  PetscErrorCode ierr;
-#endif
-
   PetscFunctionBegin;
-
-#if defined(PETSC_HAVE_AMS)
-  /* if it is already published then return */
-  if (v->amem >=0) PetscFunctionReturn(0);
-
-  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
-#endif
-
   PetscFunctionReturn(0);
 }
 

@@ -6,39 +6,11 @@
 
 PetscStack *petscstack = 0;
 
-#if defined(PETSC_HAVE_AMS)
-/* AMS Variables */
-AMS_Memory stack_mem      = -1;
-AMS_Comm   Petsc_AMS_Comm = -1;
-PetscErrorCode        stack_err;
-char       *msg;
-#endif
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackPublish"
 PetscErrorCode PetscStackPublish(void)
 {
-#if defined(PETSC_HAVE_AMS)
-  /*
-        Publishes the stack to AMS
-  */
-  PetscErrorCode ierr;
-  AMS_Comm acomm;
-
   PetscFunctionBegin;
-  if (!petscstack) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Stack not available to publish");
-  ierr = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_WORLD,&acomm);CHKERRQ(ierr);
-  ierr = AMS_Memory_create(acomm,"stack_memory",&stack_mem);CHKERRQ(ierr);
-         
-  /* Add a field to the memory */
-  ierr = AMS_Memory_add_field(stack_mem,"stack",petscstack->function,petscstack->currentsize,
-                              AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-                
-  /* Publish the memory */
-  ierr = AMS_Memory_publish(stack_mem);CHKERRQ(ierr);
-#else
-  PetscFunctionBegin;
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -46,17 +18,7 @@ PetscErrorCode PetscStackPublish(void)
 #define __FUNCT__ "PetscStackDepublish"
 PetscErrorCode PetscStackDepublish(void)
 {
-#if defined(PETSC_HAVE_AMS)
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  if (stack_mem >= 0) {
-    ierr      = AMS_Memory_destroy(stack_mem);CHKERRQ(ierr);
-    stack_mem = -1;
-  }
-#else
-  PetscFunctionBegin;
-#endif
   PetscFunctionReturn(0);
 }
   
@@ -120,10 +82,6 @@ PetscErrorCode PetscStackView(PetscViewer viewer)
 PetscErrorCode PetscStackDestroy(void) 
 {
   PetscErrorCode ierr;
-
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscStackDepublish();CHKERRQ(ierr);
-#endif
   if (petscstack){
     PetscStack *petscstack_in = petscstack;
     petscstack = 0;

@@ -21,7 +21,6 @@ petsc-dist/config/python
 petsc-dist/config/solaris2.9
 petsc-dist/config/solaris2.9-lam
 petsc-dist/docs/website
-petsc-dist/src/sys/src/objects/ams/java
 petsc-dist/lib
 petsc-dist/BitKeeper
 petsc-dist/ChangeSet
@@ -37,7 +36,6 @@ petsc-dist/docs/manualpages/manualpages.cit
 petsc-dist/bmake/alpha_uni
 petsc-dist/bmake/linux_superludist
 petsc-dist/bmake/solaris_x86
-petsc-dist/src/sys/src/objects/ams/java/AMSBean
 petsc-dist/src/contrib/RamgPetsc.C
 petsc-dist/src/contrib/pc
 petsc-dist/src/contrib/mixedrealcomplex

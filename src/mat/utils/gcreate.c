@@ -6,24 +6,7 @@
 #define __FUNCT__ "MatPublish_Base"
 static PetscErrorCode MatPublish_Base(PetscObject obj)
 {
-#if defined(PETSC_HAVE_AMS)
-  Mat mat = (Mat)obj;
-  PetscErrorCode ierr;
-#endif
-
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_AMS)
-  /* if it is already published then return */
-  if (mat->amem >=0) PetscFunctionReturn(0);
-
-  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)mat->amem,"globalsizes",&mat->M,2,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)mat->amem,"localsizes",&mat->m,2,AMS_INT,AMS_READ,
-                                AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
-#endif
-
   PetscFunctionReturn(0);
 }
 

@@ -66,7 +66,7 @@ PetscErrorCode PetscObjectName(PetscObject obj)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectPublish"
 /*@C 
-   PetscObjectPublish - Publish an object for the ALICE Memory Snooper
+   PetscObjectPublish - Publish an object
 
    Collective on PetscObject
 
@@ -78,11 +78,10 @@ PetscErrorCode PetscObjectName(PetscObject obj)
    Level: advanced
 
    Concepts: publishing object
-   Concepts: AMS
-   Concepts: ALICE Memory Snooper
-   Concepts: Asynchronous Memory Snooper
 
-.seealso: PetscObjectSetName(), PetscViewerAMSOpen()
+   Notes: Not currently used
+
+.seealso: PetscObjectSetName()
 
 @*/
 PetscErrorCode PetscObjectPublish(PetscObject obj)

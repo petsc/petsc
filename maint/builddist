@@ -110,15 +110,12 @@ for i in bmake/*/packages ; do
     sed "s/^MATLAB_ENGINE_LIB/#MATLAB_ENGINE_LIB/g" | \
     sed "s/^MATLAB_ENGINE_INCLUDE/#MATLAB_ENGINE_INCLUDE/g" | \
     sed "s/^MATLAB_ROOT/#MATLAB_ROOT/g" | \
-    sed "s/^AMS_HOME/#AMS_HOME/g" | \
     sed "s/^PETSC_PYTHON/#PETSC_PYTHON/g" | \
     sed "s/^PETSC_HAVE_ADIC/#PETSC_HAVE_ADIC/g" | sed "s/^ADIC_CC/#ADIC_CC/g" | \
     sed "s/^PVODE_INCLUDE/#PVODE_INCLUDE/g" | sed "s/^PVODE_LIB/#PVODE_LIB/g" | \
     sed "s/^PETSC_HAVE_PVODE/#PETSC_HAVE_PVODE/g" | \
     sed "s/^PARMETIS_INCLUDE/#PARMETIS_INCLUDE/g" | sed "s/^PARMETIS_LIB/#PARMETIS_LIB/g" | \
     sed "s/^PETSC_HAVE_PARMETIS/#PETSC_HAVE_PARMETIS/g" | \
-    sed "s/^AMS_INCLUDE/#AMS_INCLUDE/g" | sed "s/^AMS_LIB/#AMS_LIB/g" | \
-    sed "s/^PETSC_HAVE_AMS/#PETSC_HAVE_AMS/g" | \
     sed "s/^SPAI_INCLUDE/#SPAI_INCLUDE/g" | sed "s/^SPAI_LIB/#SPAI_LIB/g" | \
     sed "s/^PETSC_HAVE_SPAI/#PETSC_HAVE_SPAI/g" | \
     sed "s/^PETSC_HAVE_LUSOL/#PETSC_HAVE_LUSOL/g" | \

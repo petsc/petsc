@@ -47,7 +47,6 @@ E*/
 #define PETSC_VIEWER_BINARY       "binary"
 #define PETSC_VIEWER_STRING       "string"
 #define PETSC_VIEWER_DRAW         "draw"
-#define PETSC_VIEWER_AMS          "ams"
 #define PETSC_VIEWER_VU           "vu"
 #define PETSC_VIEWER_MATHEMATICA  "mathematica"
 #define PETSC_VIEWER_SILO         "silo"
@@ -153,7 +152,6 @@ EXTERN PetscErrorCode PetscViewerBinaryOpen(MPI_Comm,const char[],PetscViewerFil
 EXTERN PetscErrorCode PetscViewerSocketOpen(MPI_Comm,const char[],int,PetscViewer*);
 EXTERN PetscErrorCode PetscViewerStringOpen(MPI_Comm,char[],int,PetscViewer*);
 EXTERN PetscErrorCode PetscViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,PetscViewer*);
-EXTERN PetscErrorCode PetscViewerAMSSetCommName(PetscViewer,const char[]);
 EXTERN PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm, int, const char[], const char[], PetscViewer *);
 EXTERN PetscErrorCode PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
 EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
@@ -353,19 +351,6 @@ M*/
 #define PETSC_VIEWER_MATHEMATICA_WORLD (PetscViewerInitializeMathematicaWorld_Private(),PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) 
 
 /*
-    PetscViewer based on the ALICE Memory Snooper
-*/
-#if defined(PETSC_HAVE_AMS)
-#include "ams.h"
-EXTERN PetscErrorCode         PetscViewerAMSGetAMSComm(PetscViewer,AMS_Comm *);
-EXTERN PetscErrorCode         PetscViewerAMSOpen(MPI_Comm,const char[],PetscViewer*);
-EXTERN PetscErrorCode         PetscViewerAMSLock(PetscViewer);
-EXTERN PetscViewer PETSC_VIEWER_AMS_(MPI_Comm);
-EXTERN PetscErrorCode         PETSC_VIEWER_AMS_Destroy(MPI_Comm);
-#define PETSC_VIEWER_AMS_WORLD PETSC_VIEWER_AMS_(PETSC_COMM_WORLD)
-#endif
-
-/*
    petscViewer writes to Matlab .mat file
 */
 EXTERN PetscErrorCode PetscViewerMatlabPutArray(PetscViewer,int,int,PetscScalar*,char*);
@@ -380,7 +365,6 @@ EXTERN PetscErrorCode  PetscViewerSocketPutScalar(PetscViewer,PetscInt,PetscInt,
 EXTERN PetscErrorCode  PetscViewerSocketPutReal(PetscViewer,PetscInt,PetscInt,PetscReal*);
 EXTERN PetscErrorCode  PetscViewerSocketPutInt(PetscViewer,PetscInt,PetscInt*);
 EXTERN PetscErrorCode  PetscViewerSocketPutSparse_Private(PetscViewer,PetscInt,PetscInt,PetscInt,PetscScalar*,PetscInt*,PetscInt *);
-EXTERN PetscErrorCode  PetscViewerDestroyAMS_Private(void);
 
 /*S
      PetscViewers - Abstract collection of PetscViewers

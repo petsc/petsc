@@ -34,20 +34,6 @@ PetscErrorCode PetscOptionsCheckInitial_Components(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /*
-     Publishing to the AMS
-  */
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    PetscAMSPublishAll = PETSC_TRUE;
-  }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_stack",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscStackPublish();CHKERRQ(ierr);
-  }
-#endif
-
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
   if (flg1) {
 #if defined (PETSC_USE_LOG)

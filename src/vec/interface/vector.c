@@ -1821,8 +1821,7 @@ PetscErrorCode VecAssemblyBegin(Vec vec)
 .  -vec_view_draw - Activates vector viewing using drawing tools
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
-.  -vec_view_socket - Activates vector viewing using a socket
--  -vec_view_ams - Activates vector viewing using the ALICE Memory Snooper (AMS)
+-  -vec_view_socket - Activates vector viewing using a socket
  
    Level: beginner
 
@@ -1868,12 +1867,6 @@ PetscErrorCode VecAssemblyEnd(Vec vec)
       ierr = VecView(vec,PETSC_VIEWER_BINARY_(vec->comm));CHKERRQ(ierr);
       ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(vec->comm));CHKERRQ(ierr);
     }
-#if defined(PETSC_HAVE_AMS)
-    ierr = PetscOptionsName("-vec_view_ams","View vector using AMS","VecView",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = VecView(vec,PETSC_VIEWER_AMS_(vec->comm));CHKERRQ(ierr);
-    }
-#endif
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   /* These invoke PetscDrawGetDraw which invokes PetscOptionsBegin/End, */
   /* hence they should not be inside the above PetscOptionsBegin/End block. */
