@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: baijfact.c,v 1.78 2000/01/11 21:00:52 bsmith Exp bsmith $*/
+/*$Id: sbaijfact.c,v 1.1 2000/06/21 15:47:02 balay Exp buschelm $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -2360,7 +2360,7 @@ int MatLUFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
     }                                               
 
     /* SAVE NONZERO ENTRIES IN K-TH ROW OF U ... */
-    ba[k] = 1/dk;
+    ba[k] = 1.0/dk;
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
       for (j=jmin; j<jmax; j++){

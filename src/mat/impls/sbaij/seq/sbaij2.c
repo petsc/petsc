@@ -1,4 +1,4 @@
-/*$Id: SBAIJ2.c,v 1.55 2000/01/11 21:00:52 bsmith Exp $*/
+/*$Id: sbaij2.c,v 1.1 2000/06/21 15:47:01 balay Exp buschelm $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -1470,7 +1470,7 @@ int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
   }  else if (type == NORM_INFINITY) { /* maximum row sum */
     il = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(il);
     jl = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(jl);
-    sum = (Scalar*)PetscMalloc(bs*sizeof(Scalar));CHKPTRQ(sum);
+    sum = (PetscReal*)PetscMalloc(bs*sizeof(PetscReal));CHKPTRQ(sum);
     for (i=0; i<mbs; i++) {
       jl[i] = mbs; il[0] = 0;
     }
