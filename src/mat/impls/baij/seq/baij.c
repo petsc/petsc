@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.239 2001/07/16 18:15:53 buschelm Exp buschelm $*/
+/*$Id: baij.c,v 1.240 2001/07/16 20:10:28 buschelm Exp buschelm $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -221,6 +221,7 @@ int MatSetOption_SeqBAIJ(Mat A,MatOption op)
           a->single_precision_solves = PETSC_TRUE;
           A->ops->solve              = MatSolve_SeqBAIJ_Update;
           A->ops->solvetranspose     = MatSolveTranspose_SeqBAIJ_Update;
+          PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES set\n");
           break;
       }
 #else
@@ -1138,6 +1139,16 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
   if (!a->diag) {
     ierr = MatMarkDiagonal_SeqBAIJ(inA);CHKERRQ(ierr);
   }
+
+  a->row        = row;
+  a->col        = col;
+  ierr          = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
+  ierr          = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
+  
+  /* Create the invert permutation so that it can be used in MatLUFactorNumeric() */
+  ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
+  PetscLogObjectParent(inA,a->icol);
+  
   /*
       Blocksize 2, 3, 4, 5, 6 and 7 have a special faster factorization/solver 
       for ILU(0) factorization with natural ordering
@@ -1145,24 +1156,12 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
   if (a->bs < 8) {
     ierr = MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(inA);CHKERRQ(ierr);
   } else {
-    a->row        = row;
-    a->col        = col;
-    ierr          = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
-    ierr          = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
-
-    /* Create the invert permutation so that it can be used in MatLUFactorNumeric() */
-    ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
-    PetscLogObjectParent(inA,a->icol);
-
     if (!a->solve_work) {
       ierr = PetscMalloc((inA->m+a->bs)*sizeof(Scalar),&a->solve_work);CHKERRQ(ierr);
       PetscLogObjectMemory(inA,(inA->m+a->bs)*sizeof(Scalar));
     }
   }
 
-  if (row_identity && col_identity) {
-    ierr = MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(inA);
-  }
   ierr = MatLUFactorNumeric(inA,&outA);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

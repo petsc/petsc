@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.64 2001/07/16 04:47:24 buschelm Exp buschelm $*/
+/*$Id: baijfact2.c,v 1.65 2001/07/16 04:51:58 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2894,16 +2894,8 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
     ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
     if (sse_enabled) {
 #if defined(PETSC_HAVE_SSE)
-      PetscTruth single_prec,flg;
-      single_prec = flg = PETSC_FALSE;
-      ierr = PetscOptionsGetLogical(PETSC_NULL,"-mat_single_precision_solves",&single_prec,&flg);CHKERRQ(ierr);
-      if (flg) {
-        a->single_precision_solves = single_prec;
-      }
-      if (a->single_precision_solves) {
-        inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
-        PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n");
-      }
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
+      PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n");
 #else
       /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
       SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
@@ -2944,6 +2936,9 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
   int         ierr;
 
   PetscFunctionBegin;
+
+  sse_enabled = use_single = use_natural = PETSC_FALSE;
+
   ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(col,&col_identity);CHKERRQ(ierr);
 
@@ -2989,6 +2984,12 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
   case 4:
     ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
     if (sse_enabled) {
+      PetscTruth single_prec,flg;
+      single_prec = flg = PETSC_FALSE;
+      ierr = PetscOptionsGetLogical(PETSC_NULL,"-mat_single_precision_solves",&single_prec,&flg);CHKERRQ(ierr);
+      if (flg) {
+        a->single_precision_solves = single_prec;
+      }
       if (a->single_precision_solves) {
         use_single = PETSC_TRUE;
       }
@@ -3072,7 +3073,11 @@ int MatSolve_SeqBAIJ_Update(Mat A,Vec x,Vec y) {
 
   PetscFunctionBegin;
   ierr = MatSeqBAIJ_UpdateSolvers(A);
-  ierr = (*A->ops->solve)(A,x,y);CHKERRQ(ierr);
+  if (A->ops->solve != MatSolve_SeqBAIJ_Update) {
+    ierr = (*A->ops->solve)(A,x,y);CHKERRQ(ierr); 
+  } else {
+    SETERRQ(PETSC_ERR_SUP,"Something really wrong happened.");
+  }
   PetscFunctionReturn(0);
 }
 
