@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.77 1997/02/22 02:25:00 bsmith Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.78 1997/05/16 22:43:55 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -109,12 +109,15 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
     idnew[i] = ainew[i] + nzi;
   }
   if (ai[i] != 0) {
-    PLogInfo(A,
-             "Info:MatLUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
-             realloc,f,((double)ainew[n])/((double)ai[i]));
+    double af = ((double)ainew[n])/((double)ai[i]);
+    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
+             realloc,f,af);
+    af += .01;
+    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ:Run with -pc_lu_fill %g or use \n",af);
+    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ:PCLUSetFill(pc,%g);\n",af);
+    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ:for best performance.\n");
   } else {
-    PLogInfo(A,
-             "Info:MatLUFactorSymbolic_SeqAIJ: Empty matrix\n");
+    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ: Empty matrix\n");
   }
 
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
@@ -646,9 +649,15 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
   ierr = ISDestroy(isicol); CHKERRQ(ierr);
   PetscFree(fill); PetscFree(im);
 
-  PLogInfo(A,
-    "Info:MatILUFactorSymbolic_SeqAIJ:Realloc %d Fill ratio:given %g needed %g\n",
-                             realloc,f,((double)ainew[n])/((double)ai[prow]));
+  {
+    double af = ((double)ainew[n])/((double)ai[i]);
+    PLogInfo(A,"Info:MatILUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
+             realloc,f,af);
+    af += .01;
+    PLogInfo(A,"Info:MatILUFactorSymbolic_SeqAIJ:Run with -pc_ilu_fill %g or use \n",af);
+    PLogInfo(A,"Info:MatILUFactorSymbolic_SeqAIJ:PCILUSetFill(pc,%g);\n",af);
+    PLogInfo(A,"Info:MatILUFactorSymbolic_SeqAIJ:for best performance.\n");
+  }
 
   /* put together the new matrix */
   ierr = MatCreateSeqAIJ(A->comm,n,n,0,PETSC_NULL,fact); CHKERRQ(ierr);
