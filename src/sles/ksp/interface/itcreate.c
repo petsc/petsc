@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.152 1999/03/01 04:55:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.153 1999/03/07 17:28:24 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -447,6 +447,13 @@ int KSPSetFromOptions(KSP ksp)
   if (flg) {
     ierr = KSPSetType(ksp,method); CHKERRQ(ierr);
   }
+  /*
+    Set the type if it was never set.
+  */
+  if (!ksp->type_name) {
+    ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
+  }
+
   ierr = OptionsGetInt(ksp->prefix,"-ksp_max_it",&ksp->max_it, &flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_rtol",&ksp->rtol, &flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_atol",&ksp->atol, &flg); CHKERRQ(ierr);
@@ -562,13 +569,6 @@ int KSPSetFromOptions(KSP ksp)
     ierr = (*othersetfromoptions[i])(ksp); CHKERRQ(ierr);
   }
 
-  /*
-    Since the private setfromoptions requires the type to have 
-    been set already, we make sure a type is set by this time.
-    */
-  if (!ksp->type_name) {
-    ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
-  }
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) { ierr = KSPPrintHelp(ksp); CHKERRQ(ierr);  }
