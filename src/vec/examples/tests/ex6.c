@@ -43,6 +43,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERR(ierr);
   ierr = VecDestroy(y);CHKERR(ierr);
 
+  PetscFinalize();
   return 0;
 }
  

@@ -21,12 +21,11 @@ int main(int argc,char **argv)
   IS            is1,is2;
   VecScatterCtx ctx = 0;
 
-  /* MPI_Init(&argc,&argv); */
   OptionsCreate(argc,argv,(char*)0,(char*)0);
   OptionsGetInt(0,"-n",&n);
 
   /* create two vector */
-  ierr = VecCreateInitialVector(n,&x); CHKERR(ierr);
+  ierr = VecCreateSequential(n,&x); CHKERR(ierr);
   ierr = VecCreate(x,&y); CHKERR(ierr);
 
   /* create two index sets */
@@ -47,12 +46,12 @@ int main(int argc,char **argv)
 
   printf("-------\n");VecView(x,0);
 
-
+  ierr = ISDestroy(is1); CHKERR(ierr);
+  ierr = ISDestroy(is2); CHKERR(ierr);
 
   ierr = VecDestroy(x);CHKERR(ierr);
   ierr = VecDestroy(y);CHKERR(ierr);
 
-  /* MPI_Finalize(); */
   return 0;
 }
  

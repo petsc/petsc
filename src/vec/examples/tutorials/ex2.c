@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   ierr = VecGetSize(x,&N);
   ierr = VecSet(&one,x);CHKERR(ierr);
 
-  for ( i=0; i<N-numtids; i++ ) {
+  for ( i=0; i<N-mytid; i++ ) {
     ierr = VecAddValues(x,1,&i,&one); CHKERR(ierr);  
   }
   ierr = VecBeginAssembly(x); CHKERR(ierr);
