@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.43 1995/07/09 23:17:55 bsmith Exp curfman $ */
+/* $Id: mat.h,v 1.44 1995/07/12 20:22:00 curfman Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -77,6 +77,8 @@ extern int MatLUFactorNumeric(Mat,Mat*);
 extern int MatCholeskyFactorNumeric(Mat,Mat*);
 
 extern int MatSolve(Mat,Vec,Vec);
+extern int MatForwardSolve(Mat,Vec,Vec);
+extern int MatBackwardSolve(Mat,Vec,Vec);
 extern int MatSolveAdd(Mat,Vec,Vec,Vec);
 extern int MatSolveTrans(Mat,Vec,Vec);
 extern int MatSolveTransAdd(Mat,Vec,Vec,Vec);
