@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.39 1995/08/07 18:51:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.40 1995/08/18 17:39:43 curfman Exp curfman $";
 #endif
 
 /*  
@@ -443,8 +443,17 @@ int PCPostSolve(PC pc,KSP ksp)
 .  viewer - optional visualization context
 
    Note:
-   Most users should employ the viewer STDOUT_VIEWER (or SYNC_STDOUT_VIEWER 
-   for the parallel case).
+   The available visualization contexts include
+$     STDOUT_VIEWER - standard output (the default)
+$     SYNC_STDOUT_VIEWER - synchronized standard
+$        output, where only the first processor opens
+$        the file.  All other processors send their 
+$        data to the first processor to print. 
+
+   The user can open alternative vistualization contexts with
+$    ViewerFileOpen() - output to a specified file
+$    ViewerFileOpenSync() - synchronized output to a 
+$         specified file
 
 .keywords: PC, view
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.49 1995/08/18 17:39:37 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.50 1995/08/18 17:40:17 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -15,11 +15,20 @@ static char vcid[] = "$Id: itcreate.c,v 1.49 1995/08/18 17:39:37 curfman Exp cur
 
    Input Parameters:
 .  ksp - the Krylov space context
-.  viewer - optional visualization context
+.  viewer - visualization context
 
    Note:
-   Most users should employ the viewer STDOUT_VIEWER (or SYNC_STDOUT_VIEWER 
-   for the parallel case).
+   The available visualization contexts include
+$    STDOUT_VIEWER - standard output
+$    SYNC_STDOUT_VIEWER - synchronized standard
+$       output, where only the first processor opens
+$       the file.  All other processors send their 
+$       data to the first processor to print. 
+
+   The user can open alternative vistualization contexts with
+$    ViewerFileOpen() - output to a specified file
+$    ViewerFileOpenSync() - synchronized output to a 
+$         specified file
 
 .keywords: KSP, view
 
