@@ -16,21 +16,14 @@ int main(int argc,char **args)
   Mat       mat;
   Vec       b,ustar,u;
   PC        pc;
-  KSP       ksp;
-  int       ierr, n = 10, i, its, col[3];
+  int       ierr, n = 5, i, its, col[3];
   Scalar    value[3], one = 1.0, zero = 0.0;
-  KSPMETHOD kspmethod;
-  PCMETHOD  pcmethod;
-  char      *kspname, *pcname;
 
   OptionsCreate(argc,args,0,0);
   ierr = VecCreateSequential(n,&b);     CHKERR(ierr);
-  ierr = VecCreateSequential(n,&ustar); CHKERR(ierr);
   ierr = VecCreateSequential(n,&u);     CHKERR(ierr);
-  ierr = VecSet(&one,ustar);            CHKERR(ierr);
-  ierr = VecSet(&zero,u);               CHKERR(ierr);
 
-  ierr = MatCreateSequentialAIJ(n,n,1000,&mat); CHKERR(ierr);
+  ierr = MatCreateSequentialDense(n,n,&mat); CHKERR(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
@@ -43,45 +36,22 @@ int main(int argc,char **args)
   ierr = MatBeginAssembly(mat); CHKERR(ierr);
   ierr = MatEndAssembly(mat); CHKERR(ierr);
 
-
-  ierr = MatMult(mat,ustar,b); CHKERR(ierr);
-
   ierr = PCCreate(&pc); CHKERR(ierr);
-  ierr = PCSetMethod(pc,PCNONE); CHKERR(ierr);
+  ierr = PCSetMethod(pc,PCSOR); CHKERR(ierr);
   PCSetFromOptions(pc);
   ierr = PCSetMatrix(pc,mat); CHKERR(ierr);
   ierr = PCSetVector(pc,u);   CHKERR(ierr);
   ierr = PCSetUp(pc); CHKERR(ierr);
 
-  ierr = KSPCreate(&ksp); CHKERR(ierr);
-  ierr = KSPSetMethod(ksp,KSPRICHARDSON); CHKERR(ierr);
-  KSPSetFromOptions(ksp);
-  ierr = KSPSetSolution(ksp,u); CHKERR(ierr);
-  ierr = KSPSetRhs(ksp,b); CHKERR(ierr);
-  ierr = KSPSetAmult(ksp,MatMult,(void *)mat); CHKERR(ierr);
-  ierr = KSPSetBinv(ksp,PCApply,(void *)pc); CHKERR(ierr);
 
-  if (PCApplyRichardsonExists(pc)) {
-    KSPRichardsonSetFast(ksp,PCApplyRichardson,pc);
+  value[0] = 1.0;
+  for ( i=0; i<n; i++ ) {
+    ierr = VecSet(&zero,u);               CHKERR(ierr);
+    ierr = VecInsertValues(u,1,&i,value); CHKERR(ierr);
+    ierr = PCApply(pc,u,b);   CHKERR(ierr);
+    VecView(b,0);
   }
 
-  ierr = KSPSetUp(ksp); CHKERR(ierr);
-
-  KSPGetMethodFromContext(ksp,&kspmethod);
-  KSPGetMethodName(kspmethod,&kspname);
-  PCGetMethodFromContext(pc,&pcmethod);
-  PCGetMethodName(pcmethod,&pcname);
-  
-  printf("Running %s with %s preconditioning\n",kspname,pcname);
-  ierr = KSPSolve(ksp,&its); CHKERR(ierr);
-  fprintf(stdout,"Number of iterations %d\n",its);
-
-  ierr = KSPDestroy(ksp); CHKERR(ierr);
-  ierr = VecDestroy(u); CHKERR(ierr);
-  ierr = VecDestroy(ustar); CHKERR(ierr);
-  ierr = VecDestroy(b); CHKERR(ierr);
-  ierr = MatDestroy(mat); CHKERR(ierr);
-  ierr = PCDestroy(pc); CHKERR(ierr);
   return 0;
 }
     
