@@ -242,6 +242,7 @@ class Framework(config.base.Configure):
     if prefix is None: prefix = self.getHeaderPrefix(child)
     if prefix:         prefix = prefix+'_'
     for pair in child.defines.items():
+      if not pair[1]: continue
       if help.has_key(pair[0]):
         self.outputDefine(f, prefix+pair[0], pair[1], help[pair[0]])
       else:
