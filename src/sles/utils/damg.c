@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.29 2001/03/23 23:24:05 balay Exp bsmith $*/
+/*$Id: damg.c,v 1.30 2001/03/28 15:56:14 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -117,6 +117,7 @@ int DMMGDestroy(DMMG *dmmg)
     if (dmmg[i]->J)  {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr);}
     if (dmmg[i]->Rscale)  {ierr = VecDestroy(dmmg[i]->Rscale);CHKERRQ(ierr);}
     if (dmmg[i]->fdcoloring)  {ierr = MatFDColoringDestroy(dmmg[i]->fdcoloring);CHKERRQ(ierr);}
+    if (dmmg[i]->iscoloring)  {ierr = ISColoringDestroy(dmmg[i]->iscoloring);CHKERRQ(ierr);}
     if (dmmg[i]->sles)  {ierr = SLESDestroy(dmmg[i]->sles);CHKERRQ(ierr);}
     if (dmmg[i]->snes)  {ierr = PetscObjectDestroy((PetscObject)dmmg[i]->snes);CHKERRQ(ierr);} 
     ierr = PetscFree(dmmg[i]);CHKERRQ(ierr);
