@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.110 1998/04/24 21:37:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.111 1998/05/29 20:39:00 bsmith Exp balay $";
 #endif
 
 #include <math.h>
@@ -366,7 +366,7 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
     scale = maxstep/(*ynorm);
 #if defined(USE_PETSC_COMPLEX)
-    PLogInfo(snes,"SNESCubicLineSearch: Scaling step by %g\n",real(scale));
+    PLogInfo(snes,"SNESCubicLineSearch: Scaling step by %g\n",PetscReal(scale));
 #else
     PLogInfo(snes,"SNESCubicLineSearch: Scaling step by %g\n",scale);
 #endif
@@ -377,7 +377,7 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
   ierr = MatMult(snes->jacobian,y,w); CHKERRQ(ierr);
 #if defined(USE_PETSC_COMPLEX)
   ierr = VecDot(f,w,&cinitslope); CHKERRQ(ierr);
-  initslope = real(cinitslope);
+  initslope = PetscReal(cinitslope);
 #else
   ierr = VecDot(f,w,&initslope); CHKERRQ(ierr);
 #endif
@@ -543,7 +543,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   ierr = MatMult(snes->jacobian,y,w); CHKERRQ(ierr);
 #if defined(USE_PETSC_COMPLEX)
   ierr = VecDot(f,w,&cinitslope); CHKERRQ(ierr);
-  initslope = real(cinitslope);
+  initslope = PetscReal(cinitslope);
 #else
   ierr = VecDot(f,w,&initslope); CHKERRQ(ierr);
 #endif
@@ -649,7 +649,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 int SNESSetLineSearch(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
                              double,double*,double*,int*))
 {
-  int ierr, (*f)(SNES,int (*f)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));
+  int ierr, (*f)(SNES,int (*f2)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESSetLineSearch_C",(void **)&f);CHKERRQ(ierr);
