@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.13 1998/10/09 19:20:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stack.c,v 1.14 1998/12/04 23:25:06 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
@@ -25,7 +25,7 @@ int PetscStackPublish(void)
   /*
         Publishes the stack to AMS
   */
-  int      ierr,ams_flag;
+  int      ierr;
   AMS_Comm acomm;
 
   PetscFunctionBegin;

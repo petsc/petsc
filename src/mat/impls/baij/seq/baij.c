@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.148 1998/12/03 04:01:06 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.149 1998/12/05 20:26:51 balay Exp balay $";
 #endif
 
 /*
@@ -465,9 +465,8 @@ static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
   Mat          A = (Mat) Aa;
   Mat_SeqBAIJ  *a=(Mat_SeqBAIJ *) A->data;
   int          row,ierr,i,j,k,l,mbs=a->mbs,color,bs=a->bs,bs2=a->bs2,rank;
-  double       xl,yl,xr,yr,yc,x_l,x_r,y_l,y_r;
+  double       xl,yl,xr,yr,x_l,x_r,y_l,y_r;
   Scalar       *aa;
-  PetscTruth   isnull;
   MPI_Comm     comm;
   Viewer       viewer;
 
