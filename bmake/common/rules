@@ -274,7 +274,7 @@ alltree: ${ACTION}
 	done ; fi
 
 getlinklibs:
-	-@echo ${PETSC_LIB}
+	-@echo ${PETSC_TS_LIB}
 
 etags_sourcec:
 	-@if [ "${SOURCEC}" != "" ]; then \
