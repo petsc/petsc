@@ -1,4 +1,4 @@
-/* $Id: sles.h,v 1.16 1996/01/01 01:05:46 bsmith Exp balay $ */
+/* $Id: sles.h,v 1.17 1996/01/02 19:48:53 balay Exp balay $ */
 
 #if !defined(__SLES_PACKAGE)
 #define __SLES_PACKAGE
@@ -19,8 +19,11 @@ extern int SLESSolve(SLES,Vec,Vec,int*);
 extern int SLESSetFromOptions(SLES);
 extern int SLESPrintHelp(SLES);
 extern int SLESView(SLES,Viewer);
-extern int SLESSetOptionsPrefix(SLES,char*);
 extern int SLESSetUp(SLES,Vec,Vec);
+
+extern int SLESSetOptionsPrefix(SLES,char*);
+extern int SLESAppendOptionsPrefix(SLES,char*);
+extern int SLESGetOptionsPrefix(SLES,char**);
 
 extern int PCBJacobiGetSubSLES(PC,int*,int*,SLES**);
 extern int PCBGSGetSubSLES(PC,int*,int*,SLES**);
