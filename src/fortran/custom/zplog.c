@@ -56,25 +56,22 @@ void PETSC_STDCALL petsclogdump_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_
   FREECHAR(name,t1);
 #endif
 }
-void PETSC_STDCALL petsclogeventregister_(int *e,CHAR string PETSC_MIXED_LEN(len1),
-               CHAR color PETSC_MIXED_LEN(len2),int *cookie,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
-{
-#if defined(PETSC_USE_LOG)
-  char *t1,*t2;
-  FIXCHAR(string,len1,t1);
-  FIXCHAR(color,len2,t2);
-
-  *ierr = PetscLogEventRegister(e,t1,t2,*cookie);
-  FREECHAR(string,t1);
-  FREECHAR(color,t2);
-#endif
-}
-void PETSC_STDCALL petsclogclassregister_(int *e,CHAR string PETSC_MIXED_LEN(len1),
-               int *ierr PETSC_END_LEN(len1))
+void PETSC_STDCALL petsclogeventregister_(int *e,CHAR string PETSC_MIXED_LEN(len),
+               int *cookie,int *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t1;
-  FIXCHAR(string,len1,t1);
+  FIXCHAR(string,len,t1);
+  *ierr = PetscLogEventRegister(e,t1,*cookie);
+  FREECHAR(string,t1);
+#endif
+}
+void PETSC_STDCALL petsclogclassregister_(int *e,CHAR string PETSC_MIXED_LEN(len),
+               int *ierr PETSC_END_LEN(len))
+{
+#if defined(PETSC_USE_LOG)
+  char *t1;
+  FIXCHAR(string,len,t1);
 
   *ierr = PetscLogClassRegister(e,t1);
   FREECHAR(string,t1);

@@ -6,7 +6,7 @@ CFLAGS    =
 FFLAGS    =
 SOURCEC	  = plog.c plogmpe.c ploginfo.c mpitr.c classLog.c stageLog.c eventLog.c
 SOURCEF	  =
-SOURCEH	  = ptime.h ../../../../include/petsclog.h
+SOURCEH	  = ptime.h plog.h ../../../../include/petsclog.h
 OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Profiling

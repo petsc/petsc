@@ -5166,7 +5166,7 @@ To deactivate logging of an event for MPE, one should use
 \end{verse}
 The \trl{event} may be either a predefined PETSc event (as listed in
 the file \trl{${PETSC_DIR}/include/petsclog.h}) or one obtained with
-\trl{PetscEventRegister()} (as described in
+\trl{PetscLogEventRegister()} (as described in
 Section~\ref{sec:profileuser}).  These routines may be called as many
 times as desired in an application program, so that one could restrict
 MPE event logging only to certain code segments.
@@ -5195,7 +5195,7 @@ code fragment below:
 \begin{verse}
     \#include "petsclog.h"\\
     int USER\_EVENT;\\
-    PetscLogEventRegister(\&USER\_EVENT,"User event name","Color:",0);\\
+    PetscLogEventRegister(\&USER\_EVENT,"User event name",0);\\
     PetscLogEventBegin(USER\_EVENT,0,0,0,0);\\
        /* application code segment to monitor */\\
        PetscLogFlops(number of flops for this code segment);\\
@@ -5206,7 +5206,7 @@ One must register the event by calling \trl{
 PetscLogEventRegister()}, which assigns a unique integer to identify the
 event for profiling purposes: \findex{PetscLogEventRegister()}
 \begin{verse}
-  PetscLogEventRegister(int *e,char *string,char *color);
+  PetscLogEventRegister(int *e,char *string);
 \end{verse}
 Here \trl{string} is a user-defined event name, and \trl{color} is an
 optional user-defined event color (for use with {\em Upshot/Nupshot} logging);
@@ -5302,7 +5302,7 @@ To enable or disable the PETSc logging of individual events, one uses the comman
 \end{verse}
 The \trl{event} may be either a predefined PETSc event (as listed in
 the file \trl{${PETSC_DIR}/include/petsclog.h}) or one obtained with
-\trl{PetscEventRegister()} (as described in Section~\ref{sec:profileuser}).
+\trl{PetscLogEventRegister()} (as described in Section~\ref{sec:profileuser}).
 
 PETSc also provides routines that deactivate (or activate)
 logging for entire components of the library. Currently, the 

@@ -37,10 +37,10 @@ int DMInitializePackage(char *path) {
   /* Register Constructors and Serializers */
   ierr = AOSerializeRegisterAll(path);                                                                    CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&AOEvents[AO_PetscToApplication], "AOPetscToApplication", PETSC_NULL, AO_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&AOEvents[AO_ApplicationToPetsc], "AOApplicationToPetsc", PETSC_NULL, AO_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DAEvents[DA_GlobalToLocal],      "DAGlobalToLocal",      PETSC_NULL, DA_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DAEvents[DA_LocalToGlobal],      "DALocalToGlobal",      PETSC_NULL, DA_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&AOEvents[AO_PetscToApplication], "AOPetscToApplication", AO_COOKIE);      CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&AOEvents[AO_ApplicationToPetsc], "AOApplicationToPetsc", AO_COOKIE);      CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DAEvents[DA_GlobalToLocal],      "DAGlobalToLocal",      DA_COOKIE);      CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DAEvents[DA_LocalToGlobal],      "DALocalToGlobal",      DA_COOKIE);      CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {

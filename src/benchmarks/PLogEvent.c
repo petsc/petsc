@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscTruth flg;
 
   PetscInitialize(&argc,&argv,0,0);
-  PetscLogEventRegister(&e1,"*DummyEvent","red:");
+  PetscLogEventRegister(&e1,"*DummyEvent",0);
   /* To take care of the paging effects */
   ierr = PetscGetTime(&x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(e1,&x,0,0,0);CHKERRQ(ierr);

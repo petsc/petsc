@@ -53,16 +53,20 @@ extern PetscTruth PetscLogPrintInfo;  /* if true, indicates PetscLogInfo() is tu
 
 #if defined (PETSC_HAVE_MPE)
 #include "mpe.h"
-#define MPEBEGIN    1000 
 EXTERN int        PetscLogMPEBegin(void);
 EXTERN int        PetscLogMPEDump(const char[]);
 extern PetscTruth UseMPE;
-extern int        PetscLogEventMPEFlags[];
-EXTERN int        PetscLogEventMPEActivate(int);
-EXTERN int        PetscLogEventMPEDeactivate(int);
-#else
-#define PetscLogEventMPEActivate(a) 0
-#define PetscLogEventMPEDeactivate(a) 0
+#define PETSC_LOG_EVENT_MPE_BEGIN(e) \
+  if(UseMPE && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) \
+    MPE_Log_event(_stageLog->eventLog[_stageLog->curStage]->eventInfo[e].mpe_id_begin,0,"");
+
+#define PETSC_LOG_EVENT_MPE_END(e) \
+  if(UseMPE && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) \
+    MPE_Log_event(_stageLog->eventLog[_stageLog->curStage]->eventInfo[e].mpe_id_end,0,"");
+
+#else 
+#define PETSC_LOG_EVENT_MPE_BEGIN(e)
+#define PETSC_LOG_EVENT_MPE_END(e)
 #endif
 
 EXTERN int (*_PetscLogPLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
@@ -70,21 +74,23 @@ EXTERN int (*_PetscLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObje
 EXTERN int (*_PetscLogPHC)(PetscObject);
 EXTERN int (*_PetscLogPHD)(PetscObject);
 
-#define PetscLogObjectParent(p,c)       if (c) {PetscValidHeader((PetscObject)(c)); \
-                                                PetscValidHeader((PetscObject)(p));\
-                                                ((PetscObject)(c))->parent = (PetscObject)(p);\
-				                ((PetscObject)(c))->parentid = ((PetscObject)p)->id;}
-#define PetscLogObjectParents(p,n,d)    {int _i; for (_i=0; _i<n; _i++) \
-                                         PetscLogObjectParent(p,(d)[_i]);}
-#define PetscLogObjectCreate(h)         {if (_PetscLogPHC) (*_PetscLogPHC)((PetscObject)h);}
-#define PetscLogObjectDestroy(h)        {if (_PetscLogPHD) (*_PetscLogPHD)((PetscObject)h);}
-#define PetscLogObjectMemory(p,m)       {PetscValidHeader((PetscObject)p);\
-                                         ((PetscObject)(p))->mem += (m);}
+#define PetscLogObjectParent(p,c) \
+  if (c) {\
+    PetscValidHeader((PetscObject)(c));\
+    PetscValidHeader((PetscObject)(p));\
+    ((PetscObject)(c))->parent = (PetscObject)(p);\
+    ((PetscObject)(c))->parentid = ((PetscObject)p)->id;\
+  }
+#define PetscLogObjectParents(p,n,d) {int _i; for (_i=0; _i<n; _i++) PetscLogObjectParent(p,(d)[_i]);}
+#define PetscLogObjectCreate(h)      {if (_PetscLogPHC) (*_PetscLogPHC)((PetscObject)h);}
+#define PetscLogObjectDestroy(h)     {if (_PetscLogPHD) (*_PetscLogPHD)((PetscObject)h);}
+#define PetscLogObjectMemory(p,m)    {PetscValidHeader((PetscObject)p);((PetscObject)(p))->mem += (m);}
 /* Initialization functions */
 EXTERN int PetscLogBegin(void);
 EXTERN int PetscLogAllBegin(void);
 EXTERN int PetscLogTraceBegin(FILE *);
 /* General functions */
+EXTERN int PetscLogGetRGBColor(char **);
 EXTERN int PetscLogDestroy(void);
 EXTERN int PetscLogSet(int (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
                    int (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject));
@@ -102,7 +108,7 @@ EXTERN int PetscLogStageSetVisible(int, PetscTruth);
 EXTERN int PetscLogStageGetVisible(int, PetscTruth *);
 EXTERN int PetscLogStageGetId(const char [], int *);
 /* Event functions */
-EXTERN int PetscLogEventRegister(int *, const char[], const char[], int);
+EXTERN int PetscLogEventRegister(int *, const char[], int);
 EXTERN int PetscLogEventActivate(int);
 EXTERN int PetscLogEventDeactivate(int);
 EXTERN int PetscLogEventActivateClass(int);
@@ -128,7 +134,6 @@ extern int            PETSC_DUMMY, PETSC_DUMMY_SIZE;
 /* The structure for logging performance */
 typedef struct _PerfInfo {
   char          *name;          /* The name of this section */
-  char          *color;         /* The color of this section */
   int            id;            /* The integer identifying this event */
   int            cookie;        /* The class id for this section */
   PetscTruth     active;        /* The flag to activate logging */
@@ -140,6 +145,10 @@ typedef struct _PerfInfo {
   PetscLogDouble numMessages;   /* The number of messages in this section */
   PetscLogDouble messageLength; /* The total message lengths in this section */
   PetscLogDouble numReductions; /* The number of reductions in this section */
+#if defined (PETSC_HAVE_MPE)
+  int           mpe_id_begin;   /* MPE ids that define the event */
+  int           mpe_id_end; 
+#endif
 } PerfInfo;
 
 /* The structure for logging events */
@@ -185,63 +194,34 @@ struct _StageLog {
   ClassLog   *classLog;     /* The class information for each stage */
 };
 
-#if defined(PETSC_HAVE_MPE)
-#define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
-  0; { int _1_ierr; \
-    if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) { \
-      _1_ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(_1_ierr);  \
-      if (UseMPE && PetscLogEventMPEFlags[(e)])                      \
-        MPE_Log_event(MPEBEGIN+2*(e),0,"");                      \
-      _1_ierr = MPI_Barrier(cm);CHKERRQ(_1_ierr);                  \
-      _1_ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(_1_ierr);    \
-      if (UseMPE && PetscLogEventMPEFlags[(e)])                      \
-        MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");                  \
-    }                                                            \
-    _1_ierr = PetscLogEventBegin(e+1,o1,o2,o3,o4);CHKERRQ(_1_ierr);    \
-    if (UseMPE && PetscLogEventMPEFlags[(e)+1])                      \
-      MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");                    \
-  }
-#define PetscLogEventBegin(e,o1,o2,o3,o4)  \
-  0; { \
-   if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) {\
-     (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
-   if (UseMPE && PetscLogEventMPEFlags[(e)])\
-     MPE_Log_event(MPEBEGIN+2*(e),0,"");\
-  }
-#else
-#define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
-  0; { int _2_ierr;\
-    if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) { \
-      _2_ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);    \
-      _2_ierr = MPI_Barrier(cm);CHKERRQ(_2_ierr);                    \
-      _2_ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);      \
-    }                                                              \
-    _2_ierr = PetscLogEventBegin((e)+1,o1,o2,o3,o4);CHKERRQ(_2_ierr);    \
-  }
-#define PetscLogEventBegin(e,o1,o2,o3,o4)  \
-  0; { \
-   if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) {\
-     (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
-  }
-#endif
+#define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) 0; \
+{\
+  int _2_ierr;\
+  if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) {\
+    _2_ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);\
+    _2_ierr = MPI_Barrier(cm);CHKERRQ(_2_ierr);\
+    _2_ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);\
+  }\
+  _2_ierr = PetscLogEventBegin((e)+1,o1,o2,o3,o4);CHKERRQ(_2_ierr);\
+}
 
-#if defined(PETSC_HAVE_MPE)
+#define PetscLogEventBegin(e,o1,o2,o3,o4) 0; \
+{\
+  if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) {\
+    (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
+  }\
+  PETSC_LOG_EVENT_MPE_BEGIN(e); \
+}
+
 #define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PetscLogEventEnd(e+1,o1,o2,o3,o4)
-#define PetscLogEventEnd(e,o1,o2,o3,o4) \
-  0; { \
+
+#define PetscLogEventEnd(e,o1,o2,o3,o4) 0; \
+{\
   if (_PetscLogPLE && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) {\
-    (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
-  if (UseMPE && PetscLogEventMPEFlags[(e)])\
-     MPE_Log_event(MPEBEGIN+2*(e)+1,0,"");\
-  }  
-#else
-#define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PetscLogEventEnd(e+1,o1,o2,o3,o4)
-#define PetscLogEventEnd(e,o1,o2,o3,o4) \
-  0; { \
-  if (_PetscLogPLE && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) {\
-    (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
-  } 
-#endif
+    (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
+  }\
+  PETSC_LOG_EVENT_MPE_END(e); \
+} 
 
 /*
      This does not work for MPI-Uni because our src/mpiuni/mpi.h file
@@ -258,69 +238,69 @@ struct _StageLog {
    Logging of MPI activities
 */
 
-#define TypeSize(buff,count,type)                                                \
+#define TypeSize(buff,count,type) \
 (\
-  MPI_Type_size(type,&PETSC_DUMMY_SIZE),buff += ((PetscLogDouble) ((count)*PETSC_DUMMY_SIZE)) \
+  MPI_Type_size(type,&PETSC_DUMMY_SIZE),buff += ((PetscLogDouble) ((count)*PETSC_DUMMY_SIZE))\
 )
 
-#define MPI_Irecv(buf,count, datatype,source,tag,comm,request)        \
+#define MPI_Irecv(buf,count, datatype,source,tag,comm,request) \
 (\
-  PETSC_DUMMY = MPI_Irecv(buf,count, datatype,source,tag,comm,request),            \
-  irecv_ct++,TypeSize(irecv_len,count,datatype),PETSC_DUMMY                            \
+  PETSC_DUMMY = MPI_Irecv(buf,count, datatype,source,tag,comm,request),\
+  irecv_ct++,TypeSize(irecv_len,count,datatype),PETSC_DUMMY\
 )
 
-#define MPI_Isend(buf,count, datatype,dest,tag,comm,request)          \
+#define MPI_Isend(buf,count, datatype,dest,tag,comm,request) \
 (\
-  PETSC_DUMMY = MPI_Isend(buf,count, datatype,dest,tag,comm,request),              \
-  isend_ct++,  TypeSize(isend_len,count,datatype),PETSC_DUMMY                          \
+  PETSC_DUMMY = MPI_Isend(buf,count, datatype,dest,tag,comm,request),\
+  isend_ct++,  TypeSize(isend_len,count,datatype),PETSC_DUMMY\
 )
 
-#define MPI_Startall_irecv(count,number,requests)                                     \
+#define MPI_Startall_irecv(count,number,requests) \
 (\
-  PETSC_DUMMY = MPI_Startall(number,requests),                                                    \
-  irecv_ct += (PetscLogDouble)(number),irecv_len += ((PetscLogDouble) ((count)*sizeof(PetscScalar))),PETSC_DUMMY \
+  PETSC_DUMMY = MPI_Startall(number,requests),\
+  irecv_ct += (PetscLogDouble)(number),irecv_len += ((PetscLogDouble) ((count)*sizeof(PetscScalar))),PETSC_DUMMY\
 )
 
-#define MPI_Startall_isend(count,number,requests)                                    \
+#define MPI_Startall_isend(count,number,requests) \
 (\
-  PETSC_DUMMY = MPI_Startall(number,requests),                                                   \
-  isend_ct += (PetscLogDouble)(number),isend_len += ((PetscLogDouble) ((count)*sizeof(PetscScalar))),PETSC_DUMMY \
+  PETSC_DUMMY = MPI_Startall(number,requests),\
+  isend_ct += (PetscLogDouble)(number),isend_len += ((PetscLogDouble) ((count)*sizeof(PetscScalar))),PETSC_DUMMY\
 )
 
-#define MPI_Start_isend(count, requests)\
+#define MPI_Start_isend(count, requests) \
 (\
   PETSC_DUMMY = MPI_Start(requests),\
   isend_ct++,isend_len += ((PetscLogDouble) ((count)*sizeof(PetscScalar))),PETSC_DUMMY\
 )
 
-#define MPI_Recv(buf,count, datatype,source,tag,comm,status)           \
+#define MPI_Recv(buf,count, datatype,source,tag,comm,status) \
 (\
-  PETSC_DUMMY = MPI_Recv(buf,count, datatype,source,tag,comm,status),               \
-  recv_ct++,TypeSize(recv_len,count,datatype),PETSC_DUMMY                              \
+  PETSC_DUMMY = MPI_Recv(buf,count, datatype,source,tag,comm,status),\
+  recv_ct++,TypeSize(recv_len,count,datatype),PETSC_DUMMY\
 )
 
-#define MPI_Send(buf,count, datatype,dest,tag,comm)                     \
+#define MPI_Send(buf,count, datatype,dest,tag,comm) \
 (\
-  PETSC_DUMMY = MPI_Send(buf,count, datatype,dest,tag,comm),                         \
-  send_ct++, TypeSize(send_len,count,datatype),PETSC_DUMMY                              \
+  PETSC_DUMMY = MPI_Send(buf,count, datatype,dest,tag,comm),\
+  send_ct++, TypeSize(send_len,count,datatype),PETSC_DUMMY\
 )
 
 #define MPI_Wait(request,status) \
 (\
-  wait_ct++,sum_of_waits_ct++,  \
-  MPI_Wait(request,status)       \
+  wait_ct++,sum_of_waits_ct++,\
+  MPI_Wait(request,status)\
 )
 
-#define MPI_Waitany(a,b,c,d)     \
+#define MPI_Waitany(a,b,c,d) \
 (\
   wait_any_ct++,sum_of_waits_ct++,\
-  MPI_Waitany(a,b,c,d)           \
+  MPI_Waitany(a,b,c,d)\
 )
 
 #define MPI_Waitall(count,array_of_requests,array_of_statuses) \
 (\
-  wait_all_ct++,sum_of_waits_ct += (PetscLogDouble) (count),       \
-  MPI_Waitall(count,array_of_requests,array_of_statuses)       \
+  wait_all_ct++,sum_of_waits_ct += (PetscLogDouble) (count),\
+  MPI_Waitall(count,array_of_requests,array_of_statuses)\
 )
 
 #define MPI_Allreduce(sendbuf, recvbuf,count,datatype,op,comm) \
@@ -332,17 +312,17 @@ struct _StageLog {
 
 #define MPI_Startall_irecv(count,number,requests) \
 (\
-  MPI_Startall(number,requests)                 \
+  MPI_Startall(number,requests)\
 )
 
 #define MPI_Startall_isend(count,number,requests) \
 (\
-  MPI_Startall(number,requests)                 \
+  MPI_Startall(number,requests)\
 )
 
 #define MPI_Start_isend(count, requests) \
 (\
-  MPI_Start(requests)                   \
+  MPI_Start(requests)\
 )
 
 #endif /* !PETSC_HAVE_MPI_UNI && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
@@ -354,11 +334,8 @@ struct _StageLog {
 /*
      With logging turned off, then MPE has to be turned off
 */
-#define MPEBEGIN                  1000 
-#define PetscLogMPEBegin()            0
-#define PetscLogMPEDump(a)            0
-#define PetscLogEventMPEActivate(a)   0
-#define PetscLogEventMPEDeactivate(a) 0
+#define PetscLogMPEBegin()         0
+#define PetscLogMPEDump(a)         0
 
 #define PetscLogEventActivate(a)   0
 #define PetscLogEventDeactivate(a) 0
@@ -391,14 +368,12 @@ struct _StageLog {
 #define PetscLogSet(lb,le)                  0
 #define PetscLogAllBegin()                  0
 #define PetscLogDump(c)                     0
-#define PetscLogEventRegister(a,b,c,d)      0
+#define PetscLogEventRegister(a,b,c)        0
 EXTERN int PetscLogObjectState(PetscObject,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
 
 /* If PETSC_USE_LOG is NOT defined, these still need to be! */
 #define MPI_Startall_irecv(count,number,requests) MPI_Startall(number,requests)
-
 #define MPI_Startall_isend(count,number,requests) MPI_Startall(number,requests)
-
 #define MPI_Start_isend(count,requests) MPI_Start(requests)
 
 #endif   /* PETSC_USE_LOG */
@@ -406,29 +381,37 @@ EXTERN int PetscLogObjectState(PetscObject,const char[],...) PETSC_PRINTF_FORMAT
 extern PetscTruth PetscPreLoadingUsed;       /* true if we are or have done preloading */
 extern PetscTruth PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
 
-#define PreLoadBegin(flag,name) {PetscTruth PreLoading = flag; \
-                                 int        PreLoadMax,PreLoadIt,_stageNum,_3_ierr;\
-                                 _3_ierr = PetscOptionsGetLogical(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(_3_ierr);\
-                                 PreLoadMax = (int)(PreLoading);PetscPreLoadingUsed = PreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
-                                 for (PreLoadIt=0; PreLoadIt<=PreLoadMax; PreLoadIt++) {\
-                                   PetscPreLoadingOn = PreLoading;\
-                                   _3_ierr = PetscBarrier(PETSC_NULL);CHKERRQ(_3_ierr);\
-                                   if (PreLoadIt>0) {\
-                                     _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
-                                   } else {\
-                                     _3_ierr = PetscLogStageRegister(&_stageNum,name);CHKERRQ(_3_ierr);\
-                                     _3_ierr = PetscLogStageSetVisible(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
-                                   }\
-                                   _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
+#define PreLoadBegin(flag,name) \
+{\
+  PetscTruth PreLoading = flag;\
+  int        PreLoadMax,PreLoadIt,_stageNum,_3_ierr;\
+  _3_ierr = PetscOptionsGetLogical(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(_3_ierr);\
+  PreLoadMax = (int)(PreLoading);\
+  PetscPreLoadingUsed = PreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
+  for (PreLoadIt=0; PreLoadIt<=PreLoadMax; PreLoadIt++) {\
+    PetscPreLoadingOn = PreLoading;\
+    _3_ierr = PetscBarrier(PETSC_NULL);CHKERRQ(_3_ierr);\
+    if (PreLoadIt>0) {\
+      _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
+    } else {\
+      _3_ierr = PetscLogStageRegister(&_stageNum,name);CHKERRQ(_3_ierr);\
+      _3_ierr = PetscLogStageSetVisible(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
+    }\
+    _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
 
-#define PreLoadEnd()               _3_ierr = PetscLogStagePop();CHKERRQ(_3_ierr);PreLoading = PETSC_FALSE;}}
+#define PreLoadEnd() \
+    _3_ierr = PetscLogStagePop();CHKERRQ(_3_ierr);\
+    PreLoading = PETSC_FALSE;\
+  }\
+}
 
-#define PreLoadStage(name)         _3_ierr = PetscLogStagePop();CHKERRQ(_3_ierr);\
-                                   if (PreLoadIt>0) {\
-                                     _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
-                                   } else {\
-                                     _3_ierr = PetscLogStageRegister(&_stageNum,name);CHKERRQ(_3_ierr);\
-                                     _3_ierr = PetscLogStageSetVisible(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
-                                   }\
-                                   _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
+#define PreLoadStage(name) \
+  _3_ierr = PetscLogStagePop();CHKERRQ(_3_ierr);\
+  if (PreLoadIt>0) {\
+    _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
+  } else {\
+    _3_ierr = PetscLogStageRegister(&_stageNum,name);CHKERRQ(_3_ierr);\
+    _3_ierr = PetscLogStageSetVisible(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
+  }\
+  _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
 #endif

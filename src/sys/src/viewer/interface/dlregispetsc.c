@@ -43,7 +43,7 @@ int PetscInitializePackage(char *path)
   ierr = PetscDrawRegisterAll(path);                                                                      CHKERRQ(ierr);
   ierr = PetscViewerRegisterAll(path);                                                                    CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&PETSC_Barrier, "PetscBarrier", PETSC_NULL, PETSC_COOKIE);                 CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PETSC_Barrier, "PetscBarrier", PETSC_COOKIE);                             CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {

@@ -63,7 +63,7 @@ int main(int argc,char **args)
      Register a user-defined event for profiling (error checking).
   */
   CHECK_ERROR = 0;
-  ierr = PetscLogEventRegister(&CHECK_ERROR,"Check Error","Red:",SLES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&CHECK_ERROR,"Check Error",SLES_COOKIE);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - Stage 0: - - - - - - - - - - - - - -
                         Preliminary Setup

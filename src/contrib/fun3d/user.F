@@ -1090,7 +1090,7 @@
        save flux_event, fun3d_class, flag, flux_label
        if (flag .eq. -1) then
           call PetscLogClassRegister(fun3d_class,'PetscFun3d',ierr)
-          call PetscLogEventRegister(flux_event,flux_label,'blue:',      &
+          call PetscLogEventRegister(flux_event,flux_label,             &
      &         fun3d_class,ierr)         
           flag = 1
        endif
@@ -2084,9 +2084,9 @@
 !     save node1_event,node2_event,node1_label, node2_label
 
 !     if (flag .eq. -1) then
-!        call PetscLogEventRegister(grad_event,grad_label,'blue:',ierr)
-!        call PetscLogEventRegister(node1_event,node1_label,'red:',ierr)
-!        call PetscLogEventRegister(node2_event,node2_label,'green:',ierr)
+!        call PetscLogEventRegister(grad_event,grad_label,ierr)
+!        call PetscLogEventRegister(node1_event,node1_label,ierr)
+!        call PetscLogEventRegister(node2_event,node2_label,ierr)
 !        flag = 1
 !     endif
 !     call PetscLogEventBegin(grad_event,0,0,0,0,ierr)
@@ -2418,8 +2418,8 @@
 !
 
 !     if (flag .eq. -1) then
-!        call PetscLogEventRegister(delta2_event,delta2_label,'red:',ierr)
-!        call PetscLogEventRegister(flux_event,flux_label,'blue:',ierr)         
+!        call PetscLogEventRegister(delta2_event,delta2_label,ierr)
+!        call PetscLogEventRegister(flux_event,flux_label,ierr)         
 !        flag = 1
 !     endif
 !

@@ -870,7 +870,7 @@ int PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (flag) {
-    ierr = PetscLogEventRegister(&SUBSlesSolve,"SubSlesSolve","black:",SLES_COOKIE);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(&SUBSlesSolve,"SubSlesSolve",SLES_COOKIE);CHKERRQ(ierr);
     flag = PETSC_FALSE;
   }
   ierr = VecGetArray(x,&xin);CHKERRQ(ierr);
@@ -909,7 +909,7 @@ int PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (flag) {
-    ierr = PetscLogEventRegister(&SUBSlesSolve,"SubSlesSolveTranspose","black:",SLES_COOKIE);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(&SUBSlesSolve,"SubSlesSolveTranspose",SLES_COOKIE);CHKERRQ(ierr);
     flag = PETSC_FALSE;
   }
   ierr = VecGetArray(x,&xin);CHKERRQ(ierr);
