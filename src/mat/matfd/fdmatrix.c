@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.84 2001/03/23 23:22:48 balay Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.85 2001/04/10 19:35:59 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -493,6 +493,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   if (coloring->usersetsrecompute) {
     if (!coloring->recompute) {
       *flag = SAME_PRECONDITIONER;
+      PetscLogInfo(J,"MatFDColoringApply:Skipping Jacobian, since user called MatFDColorSetRecompute()\n");
       PetscFunctionReturn(0);
     } else {
       coloring->recompute = PETSC_FALSE;
@@ -500,115 +501,120 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   }
 
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
-  if (!coloring->w1) {
-    ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
-    PetscLogObjectParent(coloring,coloring->w1);
-    ierr = VecDuplicate(x1,&coloring->w2);CHKERRQ(ierr);
-    PetscLogObjectParent(coloring,coloring->w2);
-    ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
-    PetscLogObjectParent(coloring,coloring->w3);
-  }
-  w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
-
-  ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscLogInfo(coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n");
+  if (J->ops->fdcoloringapply) {
+    ierr = (*J->ops->fdcoloringapply)(J,coloring,x1,flag,sctx);CHKERRQ(ierr);
   } else {
-    ierr = MatZeroEntries(J);CHKERRQ(ierr);
-  }
 
-  ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
-  ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
-  ierr = (*f)(sctx,x1,w1,fctx);CHKERRQ(ierr);
-
-  /* 
-      Compute all the scale factors and share with other processors
-  */
-  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);xx = xx - start;
-  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);vscale_array = vscale_array - start;
-  for (k=0; k<coloring->ncolors; k++) { 
-    /*
-       Loop over each column associated with color adding the 
-       perturbation to the vector w3.
-    */
-    for (l=0; l<coloring->ncolumns[k]; l++) {
-      col = coloring->columns[k][l];    /* column of the matrix we are probing for */
-      dx  = xx[col];
-      if (dx == 0.0) dx = 1.0;
-#if !defined(PETSC_USE_COMPLEX)
-      if (dx < umin && dx >= 0.0)      dx = umin;
-      else if (dx < 0.0 && dx > -umin) dx = -umin;
-#else
-      if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
-      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
-#endif
-      dx                *= epsilon;
-      vscale_array[col] = 1.0/dx;
+    if (!coloring->w1) {
+      ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
+      PetscLogObjectParent(coloring,coloring->w1);
+      ierr = VecDuplicate(x1,&coloring->w2);CHKERRQ(ierr);
+      PetscLogObjectParent(coloring,coloring->w2);
+      ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
+      PetscLogObjectParent(coloring,coloring->w3);
     }
-  } 
-  vscale_array = vscale_array + start;ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
-  /*  ierr = VecView(coloring->vscale,PETSC_VIEWER_STDOUT_WORLD);
-      ierr = VecView(x1,PETSC_VIEWER_STDOUT_WORLD);*/
+    ierr = MatSetUnfactored(J);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscLogInfo(coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n");
+    } else {
+      ierr = MatZeroEntries(J);CHKERRQ(ierr);
+    }
 
-  if (coloring->vscaleforrow) vscaleforrow = coloring->vscaleforrow;
-  else                        vscaleforrow = coloring->columnsforrow;
+    ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
+    ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
+    ierr = (*f)(sctx,x1,w1,fctx);CHKERRQ(ierr);
 
-  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  /*
-      Loop over each color
-  */
-  for (k=0; k<coloring->ncolors; k++) { 
-    ierr = VecCopy(x1,w3);CHKERRQ(ierr);
-    ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);w3_array = w3_array - start;
-    /*
-       Loop over each column associated with color adding the 
-       perturbation to the vector w3.
+    /* 
+       Compute all the scale factors and share with other processors
     */
-    for (l=0; l<coloring->ncolumns[k]; l++) {
-      col = coloring->columns[k][l];    /* column of the matrix we are probing for */
-      dx  = xx[col];
-      if (dx == 0.0) dx = 1.0;
+    ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);xx = xx - start;
+    ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);vscale_array = vscale_array - start;
+    for (k=0; k<coloring->ncolors; k++) { 
+      /*
+	Loop over each column associated with color adding the 
+	perturbation to the vector w3.
+      */
+      for (l=0; l<coloring->ncolumns[k]; l++) {
+	col = coloring->columns[k][l];    /* column of the matrix we are probing for */
+	dx  = xx[col];
+	if (dx == 0.0) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
-      if (dx < umin && dx >= 0.0)      dx = umin;
-      else if (dx < 0.0 && dx > -umin) dx = -umin;
+	if (dx < umin && dx >= 0.0)      dx = umin;
+	else if (dx < 0.0 && dx > -umin) dx = -umin;
 #else
-      if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
-      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
+	if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
+	else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
-      dx            *= epsilon;
-      if (!PetscAbsScalar(dx)) SETERRQ(1,"Computed 0 differencing parameter");
-      w3_array[col] += dx;
+	dx                *= epsilon;
+	vscale_array[col] = 1.0/dx;
+      }
     } 
-    w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
+    vscale_array = vscale_array + start;ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+    ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
+    /*  ierr = VecView(coloring->vscale,PETSC_VIEWER_STDOUT_WORLD);
+	ierr = VecView(x1,PETSC_VIEWER_STDOUT_WORLD);*/
+
+    if (coloring->vscaleforrow) vscaleforrow = coloring->vscaleforrow;
+    else                        vscaleforrow = coloring->columnsforrow;
+
+    ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
     /*
-       Evaluate function at x1 + dx (here dx is a vector of perturbations)
+      Loop over each color
     */
+    for (k=0; k<coloring->ncolors; k++) { 
+      ierr = VecCopy(x1,w3);CHKERRQ(ierr);
+      ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);w3_array = w3_array - start;
+      /*
+	Loop over each column associated with color adding the 
+	perturbation to the vector w3.
+      */
+      for (l=0; l<coloring->ncolumns[k]; l++) {
+	col = coloring->columns[k][l];    /* column of the matrix we are probing for */
+	dx  = xx[col];
+	if (dx == 0.0) dx = 1.0;
+#if !defined(PETSC_USE_COMPLEX)
+	if (dx < umin && dx >= 0.0)      dx = umin;
+	else if (dx < 0.0 && dx > -umin) dx = -umin;
+#else
+	if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
+	else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
+#endif
+	dx            *= epsilon;
+	if (!PetscAbsScalar(dx)) SETERRQ(1,"Computed 0 differencing parameter");
+	w3_array[col] += dx;
+      } 
+      w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
 
-    ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
+      /*
+	Evaluate function at x1 + dx (here dx is a vector of perturbations)
+      */
 
-    /*
-       Loop over rows of vector, putting results into Jacobian matrix
-    */
-    ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
-    for (l=0; l<coloring->nrows[k]; l++) {
-      row    = coloring->rows[k][l];
-      col    = coloring->columnsforrow[k][l];
-      y[row] *= vscale_array[vscaleforrow[k][l]];
-      srow   = row + start;
-      ierr   = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
+      ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
+
+      /*
+	Loop over rows of vector, putting results into Jacobian matrix
+      */
+      ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
+      for (l=0; l<coloring->nrows[k]; l++) {
+	row    = coloring->rows[k][l];
+	col    = coloring->columnsforrow[k][l];
+	y[row] *= vscale_array[vscaleforrow[k][l]];
+	srow   = row + start;
+	ierr   = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
+      }
+      ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
     }
-    ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
+    ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+    xx = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
+    ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  xx = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
-  ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_null_space_test",&flg);CHKERRQ(ierr);
