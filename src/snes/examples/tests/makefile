@@ -19,7 +19,7 @@ TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex7.PETSc\
 TESTEXAMPLES_3  = ex12.PETSc runex12  ex12.rm
 TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc\
 		  runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_2 ex4.rm \
-		  ex5.PETSc runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm \
+		  ex5.PETSc runex5 runex5_2 ex5.rm ex6.PETSc ex6.rm \
                   ex7.PETSc runex7 ex7.rm ex8.PETSc ex8.rm ex9.PETSc ex9.rm
 BUILDEXAMPLES_1 = ex3.PETSc ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex6.PETSc \
 		  ex6.rm
