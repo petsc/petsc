@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.16 1996/01/01 01:05:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.17 1996/01/03 22:50:08 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -230,13 +230,11 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
     ierr = VecGetArray(user->y,&y); CHKERRQ(ierr);
     for (i=0; i<ndim; i++) {
       if (y[i] != zero) {
-        ierr = MatSetValues(*H,1,&i,1,&j,&y[i],INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(*H,1,&i,1,&j,&y[i],ADD_VALUES); CHKERRQ(ierr);
       }
     }
     ierr = VecRestoreArray(user->y,&y); CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* Modify diagonal if necessary */
   ierr = SNESGetType(snes,&method,PETSC_NULL); CHKERRQ(ierr);
@@ -245,10 +243,11 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
     MPIU_printf(MPI_COMM_SELF,"  gamma1 = %g\n",gamma1);
     for (i=0; i<ndim; i++) {
       ierr = MatSetValues(*H,1,&i,1,&i,(Scalar*)&gamma1,ADD_VALUES); CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
     }
   }
+  ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
+
   return 0;
 }
 /* -------------------------------------------------------------------- */

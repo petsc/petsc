@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.12 1995/10/17 21:40:53 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.13 1995/11/04 23:22:09 bsmith Exp curfman $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -11,11 +11,11 @@ struct _KSP {
   PETSCHEADER
   /*------------------------- User parameters--------------------------*/
   int max_it,                      /* maximum number of iterations */
-      right_pre,                   /* flag for right preconditioning */
       guess_zero,                  /* flag for whether initial guess is 0 */
       calc_eigs,                   /* calculate extreme eigenvalues */
       calc_res,                    /* calculate residuals at each iteration*/
       use_pres;                    /* use preconditioned residual */
+  KSPPrecondSide pc_side;          /* flag for left, right, or symmetric preconditioning */
 
   double rtol,                     /* relative tolerance */
          atol,                     /* absolute tolerance */

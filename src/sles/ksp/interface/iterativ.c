@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.34 1995/11/04 23:26:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.35 1996/01/01 01:01:38 bsmith Exp curfman $";
 #endif
 
 /*
@@ -147,18 +147,28 @@ int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
 int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
 {
   int ierr;
-  if (itP->right_pre) {
+  if (itP->pc_side == KSP_RIGHT_PC) {
     if (itP->B) {
-      if (v) { ierr = PCApply(itP->B, itP->vec_sol, v ); CHKERRQ(ierr); *V = v;}
-      else {SETERRQ(1,"KSPDefaultBuildSolution:Not working with right pre");}
+      if (v) {ierr = PCApply(itP->B,itP->vec_sol,v); CHKERRQ(ierr); *V = v;}
+      else {SETERRQ(1,"KSPDefaultBuildSolution:Not working with right preconditioner");}
     }
     else        {
-      if (v) {ierr = VecCopy(itP->vec_sol, v ); CHKERRQ(ierr); *V = v;}
+      if (v) {ierr = VecCopy(itP->vec_sol,v); CHKERRQ(ierr); *V = v;}
+      else { *V = itP->vec_sol;}
+    }
+  }
+  else if (itP->pc_side == KSP_SYMMETRIC_PC) {
+    if (itP->B) {
+      if (v) {ierr = PCApplySymmRight(itP->B,itP->vec_sol,v); CHKERRQ(ierr); *V = v;}
+      else {SETERRQ(1,"KSPDefaultBuildSolution:Not working with symmetric preconditioner");}
+    }
+    else        {
+      if (v) {ierr = VecCopy(itP->vec_sol,v); CHKERRQ(ierr); *V = v;}
       else { *V = itP->vec_sol;}
     }
   }
   else {
-    if (v) {ierr = VecCopy(itP->vec_sol, v ); CHKERRQ(ierr); *V = v;}
+    if (v) {ierr = VecCopy(itP->vec_sol,v); CHKERRQ(ierr); *V = v;}
     else { *V = itP->vec_sol; }
   }
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.18 1995/11/01 19:08:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.19 1995/11/05 18:55:50 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -13,6 +13,8 @@ static char vcid[] = "$Id: cgs.c,v 1.18 1995/11/01 19:08:57 bsmith Exp bsmith $"
 static int KSPSetUp_CGS(KSP itP)
 {
   int ierr;
+  if (itP->pc_side == KSP_SYMMETRIC_PC)
+    {SETERRQ(2,"KSPSetUp_CGS:no symmetric preconditioning for KSPCGS");}
   ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
   return KSPiDefaultGetWork( itP, 8 );
 }
@@ -55,7 +57,7 @@ static int  KSPSolve_CGS(KSP itP,int *its)
   ierr = VecDot(RP,R,&rhoold); CHKERRQ(ierr);
   ierr = VecCopy(R,U); CHKERRQ(ierr);
   ierr = VecCopy(R,P); CHKERRQ(ierr);
-  ierr = PCApplyBAorAB(itP->B,itP->right_pre,P,V,T); CHKERRQ(ierr);
+  ierr = PCApplyBAorAB(itP->B,itP->pc_side,P,V,T); CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
     ierr = VecDot(RP,V,&s); CHKERRQ(ierr);           /* s <- rp' v           */
@@ -64,7 +66,7 @@ static int  KSPSolve_CGS(KSP itP,int *its)
     ierr = VecWAXPY(&tmp,V,U,Q); CHKERRQ(ierr);      /* q <- u - a v         */
     ierr = VecWAXPY(&one,U,Q,T); CHKERRQ(ierr);      /* t <- u + q           */
     ierr = VecAXPY(&a,T,X); CHKERRQ(ierr);           /* x <- x + a (u + q)   */
-    ierr = PCApplyBAorAB(itP->B,itP->right_pre,T,AUQ,U); CHKERRQ(ierr);
+    ierr = PCApplyBAorAB(itP->B,itP->pc_side,T,AUQ,U); CHKERRQ(ierr);
     ierr = VecAXPY(&tmp,AUQ,R); CHKERRQ(ierr);       /* r <- r - a K (u + q) */
     ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
 
@@ -78,7 +80,7 @@ static int  KSPSolve_CGS(KSP itP,int *its)
     ierr = VecWAXPY(&b,Q,R,U); CHKERRQ(ierr);        /* u <- r + b q         */
     ierr = VecAXPY(&b,P,Q); CHKERRQ(ierr);
     ierr = VecWAXPY(&b,Q,U,P); CHKERRQ(ierr);        /* p <- u + b(q + b p)  */
-    ierr = PCApplyBAorAB(itP->B,itP->right_pre,
+    ierr = PCApplyBAorAB(itP->B,itP->pc_side,
                          P,V,Q); CHKERRQ(ierr);      /* v <- K p             */
     rhoold = rho;
   }
@@ -95,7 +97,7 @@ int KSPCreate_CGS(KSP itP)
 {
   itP->data                 = (void *) 0;
   itP->type                 = KSPCGS;
-  itP->right_pre            = 0;
+  itP->pc_side              = KSP_LEFT_PC;
   itP->calc_res             = 1;
   itP->setup                = KSPSetUp_CGS;
   itP->solver               = KSPSolve_CGS;

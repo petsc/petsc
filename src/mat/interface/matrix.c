@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.123 1996/01/02 20:15:38 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.124 1996/01/08 19:17:05 balay Exp curfman $";
 #endif
 
 /*
@@ -894,7 +894,14 @@ int MatCopy_Basic(Mat A,Mat B)
    Output Parameter:
 .  B - where the copy is put
 
+   Notes:
+   MatCopy() copies the matrix entries of a matrix to another existing
+   matrix (after first zeroing the second matrix).  A related routine is
+   MatConvert(), which first creates a new matrix and then copies the data.
+   
 .keywords: matrix, copy, convert
+
+.seealso: MatConvert()
 @*/
 int MatCopy(Mat A,Mat B)
 {
@@ -925,7 +932,14 @@ int MatCopy(Mat A,Mat B)
    Output Parameter:
 .  M - pointer to place new matrix
 
+   Notes:
+   MatConvert() first creates a new matrix and then copies the data from
+   the first matrix.  A related routine is MatCopy(), which copies the matrix
+   entries of one matrix to another already existing matrix context.
+
 .keywords: matrix, copy, convert
+
+.seealso: MatCopy()
 @*/
 int MatConvert(Mat mat,MatType newtype,Mat *M)
 {

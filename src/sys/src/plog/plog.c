@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.55 1995/12/31 17:25:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.56 1996/01/03 20:54:04 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -789,9 +789,12 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   avet = (tott)/((double) size);
 
   MPIU_fprintf(comm,fd,
-   "\nPerformance Summary:------------------------------------------------------------\n");
+   "\nPerformance Summary:----------------------------------------------------------\n");
   SYGetArchType(arch,10);
-  MPIU_fprintf(comm,fd,"Machine: %s with %d processors run on %s",arch,size,SYGetDate());
+  if (size == 1)
+    MPIU_fprintf(comm,fd,"Machine: %s with %d processor, run on %s",arch,size,SYGetDate());
+  else
+    MPIU_fprintf(comm,fd,"Machine: %s with %d processors, run on %s",arch,size,SYGetDate());
 
   MPIU_fprintf(comm,fd,"\n                Max         Min        Avg        Total \n");
   MPIU_fprintf(comm,fd,"Time:        %5.3e   %5.3e   %5.3e\n",maxt,mint,avet);

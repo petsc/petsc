@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.39 1995/12/14 14:32:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.40 1996/01/01 01:01:38 bsmith Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -82,29 +82,36 @@ int KSPDestroy(KSP itP)
 }
 
 /*@
-    KSPSetRightPreconditioner - Sets a flag so that right preconditioning
-    is used.
+    KSPSetPreconditionerSide - Sets the preconditioning side.
 
     Input Parameter:
 .   itP - Iterative context obtained from KSPCreate()
 
-   Options Database Key:
-$  -ksp_right_pc
+    Output Parameter:
+.   side - the preconditioning side, where side is one of
+$
+$      KSP_LEFT_PC - left preconditioning (default)
+$      KSP_RIGHT_PC - right preconditioning
+$      KSP_SYMMETRIC_PC - symmetric preconditioning
+
+   Options Database Keys:
+$  -ksp_left_pc, -ksp_right_pc, -ksp_symmetric_pc,
 
     Notes:
     Left preconditioning is used by default.  Symmetric preconditioning is
-    not currently available.   Note, however, that symmetric preconditioning 
-    can be emulated by using either right or left preconditioning and a pre 
-    or post processing step.
+    currently available only for the KSPQCG method. Note, however, that
+    symmetric preconditioning can be emulated by using either right or left
+    preconditioning and a pre or post processing step.
 
-.keywords: KSP, set, right, preconditioner, flag
+.keywords: KSP, set, right, left, symmetric, side, preconditioner, flag
 
 .seealso: KSPGetPreconditionerSide()
 @*/
-int KSPSetRightPreconditioner(KSP itP)
+
+int KSPSetPreconditionerSide(KSP itP,KSPPrecondSide side)
 {
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  (itP)->right_pre  = 1;
+  (itP)->pc_side = side;
   return 0;
 }
 
@@ -115,19 +122,20 @@ int KSPSetRightPreconditioner(KSP itP)
 .   itP - Iterative context obtained from KSPCreate()
 
     Output Parameter:
-.   side - the preconditioning side, where
+.   side - the preconditioning side, where side is one of
 $
-$      side = 1:  right preconditioning
-$      side = 0:  left preconditioning (default)
+$      KSP_LEFT_PC - left preconditioning (default)
+$      KSP_RIGHT_PC - right preconditioning
+$      KSP_SYMMETRIC_PC - symmetric preconditioning
 
-.keywords: KSP, get, right, left, side, preconditioner, flag
+.keywords: KSP, get, right, left, symmetric, side, preconditioner, flag
 
-.seealso: KSPSetRightPreconditioner()
+.seealso: KSPSetPreconditionerSide()
 @*/
-int KSPGetPreconditionerSide(KSP itP, int *side) 
+int KSPGetPreconditionerSide(KSP itP, KSPPrecondSide *side) 
 {
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  *side = (itP)->right_pre;
+  *side = (itP)->pc_side;
   return 0;
 }
 

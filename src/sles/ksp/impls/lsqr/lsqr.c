@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.17 1995/11/01 19:09:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.18 1995/11/05 19:01:20 bsmith Exp curfman $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: lsqr.c,v 1.17 1995/11/01 19:09:10 bsmith Exp bsmith $
 static int KSPSetUp_LSQR(KSP itP)
 {
   int ierr;
+  if (itP->pc_side == KSP_SYMMETRIC_PC)
+    {SETERRQ(2,"KSPSetUp_LSQR:no symmetric preconditioning for KSPLSQR");}
   ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
   ierr = KSPiDefaultGetWork( itP,  6 ); CHKERRQ(ierr);
   return 0;
@@ -114,7 +116,7 @@ int KSPCreate_LSQR(KSP itP)
 {
   itP->data                 = (void *) 0;
   itP->type                 = KSPLSQR;
-  itP->right_pre            = 0;
+  itP->pc_side              = KSP_LEFT_PC;
   itP->calc_res             = 1;
   itP->setup                = KSPSetUp_LSQR;
   itP->solver               = KSPSolve_LSQR;

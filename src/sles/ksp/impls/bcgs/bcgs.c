@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.23 1995/11/01 19:08:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.24 1995/11/04 23:37:09 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -13,6 +13,9 @@ static char vcid[] = "$Id: bcgs.c,v 1.23 1995/11/01 19:08:52 bsmith Exp bsmith $
 static int KSPSetUp_BCGS(KSP itP)
 {
   int ierr;
+
+  if (itP->pc_side == KSP_SYMMETRIC_PC)
+    {SETERRQ(2,"KSPSetUp_BCGS:no symmetric preconditioning for KSPBCGS");}
   ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
   return KSPiDefaultGetWork( itP, 7 );
 }
@@ -61,12 +64,12 @@ static int  KSPSolve_BCGS(KSP itP,int *its)
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
     ierr = VecAYPX(&beta,R,P); CHKERRQ(ierr);      /*   p <- r + p beta    */
-    ierr = PCApplyBAorAB(itP->B,itP->right_pre,
+    ierr = PCApplyBAorAB(itP->B,itP->pc_side,
                          P,V,T); CHKERRQ(ierr);    /*   v <- K p           */
     ierr = VecDot(RP,V,&d1); CHKERRQ(ierr);
     alpha = rho / d1; tmp = -alpha;                /*   a <- rho / (rp' v) */
     ierr = VecWAXPY(&tmp,V,R,S); CHKERRQ(ierr);    /*   s <- r - a v       */
-    ierr = PCApplyBAorAB(itP->B,itP->right_pre,
+    ierr = PCApplyBAorAB(itP->B,itP->pc_side,
                          S,T,R); CHKERRQ(ierr);    /*   t <- K s           */
     ierr = VecDot(S,T,&d1); CHKERRQ(ierr);
     ierr = VecDot(T,T,&d2); CHKERRQ(ierr);
@@ -108,7 +111,7 @@ int KSPCreate_BCGS(KSP itP)
 {
   itP->data                 = (void *) 0;
   itP->type                 = KSPBCGS;
-  itP->right_pre            = 0;
+  itP->pc_side              = KSP_LEFT_PC;
   itP->calc_res             = 1;
   itP->setup                = KSPSetUp_BCGS;
   itP->solver               = KSPSolve_BCGS;

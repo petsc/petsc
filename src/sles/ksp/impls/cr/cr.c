@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.20 1995/11/01 19:08:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.21 1995/11/05 18:52:47 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -12,10 +12,11 @@ static char vcid[] = "$Id: cr.c,v 1.20 1995/11/01 19:08:50 bsmith Exp bsmith $";
 
 static int KSPSetUp_CR(KSP itP)
 {
-  int    ierr;
-  if ( itP->right_pre ) {
-    SETERRQ(2,"KSPSetUp_CR:no right preconditioning for CR");
-  }
+  int ierr;
+  if (itP->pc_side == KSP_RIGHT_PC)
+    {SETERRQ(2,"KSPSetUp_CR:no right preconditioning for KSPCR");}
+  else if (itP->pc_side == KSP_SYMMETRIC_PC)
+    {SETERRQ(2,"KSPSetUp_CR:no symmetric preconditioning for KSPCR");}
   ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
   ierr = KSPiDefaultGetWork( itP, 9  ); CHKERRQ(ierr);
   return ierr;
@@ -115,7 +116,7 @@ static int  KSPSolve_CR(KSP itP,int *its)
 int KSPCreate_CR(KSP itP)
 {
   itP->type                 = KSPCR;
-  itP->right_pre            = 0;
+  itP->pc_side              = KSP_LEFT_PC;
   itP->calc_res             = 1;
   itP->setup                = KSPSetUp_CR;
   itP->solver               = KSPSolve_CR;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.17 1995/11/01 19:09:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tcqmr.c,v 1.18 1995/11/05 18:50:12 bsmith Exp curfman $";
 #endif
 
 /*
@@ -55,7 +55,7 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
     if (itP->monitor) {
         (*itP->monitor)( itP, it, rnorm,itP->monP );
     }
-    ierr   = PCApplyBAorAB(itP->B,itP->right_pre,u,y,vtmp); CHKERRQ(ierr); /* y = A*u */
+    ierr   = PCApplyBAorAB(itP->B,itP->pc_side,u,y,vtmp); CHKERRQ(ierr); /* y = A*u */
     ierr   = VecDot(v0,y,&dp11); CHKERRQ(ierr);
     ierr   = VecDot(v0,u,&dp2); CHKERRQ(ierr);
     alpha  = dp11 / dp2;                          /* alpha = v0'*y/v0'*u */
@@ -70,7 +70,7 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
 					         (z-2*beta*p) + f*beta*
 					         beta*um1 */
     tmp    = -2.0*beta;VecAXPY(&tmp,p,utmp);
-    ierr   = PCApplyBAorAB(itP->B,itP->right_pre,utmp,up1,vtmp); CHKERRQ(ierr);
+    ierr   = PCApplyBAorAB(itP->B,itP->pc_side,utmp,up1,vtmp); CHKERRQ(ierr);
     tmp    = -alpha; ierr = VecAXPY(&tmp,utmp,up1); CHKERRQ(ierr);
     tmp    = f*beta*beta; ierr = VecAXPY(&tmp,um1,up1); CHKERRQ(ierr);
     ierr   = VecNorm(up1,NORM_2,&dp1); CHKERRQ(ierr);
@@ -83,7 +83,7 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
     ierr   = VecCopy(up1,u); CHKERRQ(ierr);
     beta   = beta/Gamma;
     eptmp  = beta;
-    ierr   = PCApplyBAorAB(itP->B,itP->right_pre,v,vp1,vtmp); CHKERRQ(ierr);
+    ierr   = PCApplyBAorAB(itP->B,itP->pc_side,v,vp1,vtmp); CHKERRQ(ierr);
     tmp    = -alpha; ierr = VecAXPY(&tmp,v,vp1); CHKERRQ(ierr);
     tmp    = -beta; ierr = VecAXPY(&tmp,vm1,vp1); CHKERRQ(ierr);
     ierr   = VecNorm(vp1,NORM_2,&Gamma); CHKERRQ(ierr);
@@ -147,6 +147,8 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
 static int KSPSetUp_TCQMR(KSP itP)
 {
   int ierr;
+  if (itP->pc_side == KSP_SYMMETRIC_PC)
+    {SETERRQ(2,"KSPSetUp_TCQMR:no symmetric preconditioning for KSPTCQMR");}
   ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
   ierr = KSPiDefaultGetWork(itP,TCQMR_VECS); CHKERRQ(ierr);
   return 0;
