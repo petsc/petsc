@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.150 2000/08/01 20:03:08 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.151 2000/08/17 04:52:11 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -85,8 +85,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCILUSetReuseFill_ILU"
-int PCILUSetReuseFill_ILU(PC pc,PetscTruth flag)
+#define __FUNC__ /*<a name=""></a>*/"PCILUDTSetReuseFill_ILUDT"
+int PCILUDTSetReuseFill_ILUDT(PC pc,PetscTruth flag)
 {
   PC_ILU *ilu;
 
@@ -308,7 +308,7 @@ int PCILUSetMatOrdering(PC pc,MatOrderingType ordering)
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 
-.seealso: PCILUSetReuseFill(), PCLUSetReuseOrdering(), PCLUSetReuseFill()
+.seealso: PCILUDTSetReuseFill(), PCLUSetReuseOrdering(), PCLUSetReuseFill()
 @*/
 int PCILUSetReuseOrdering(PC pc,PetscTruth flag)
 {
@@ -324,9 +324,9 @@ int PCILUSetReuseOrdering(PC pc,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCILUSetReuseFill"
+#define __FUNC__ /*<a name=""></a>*/"PCILUDTSetReuseFill"
 /*@
-   PCILUSetReuseFill - When matrices with same nonzero structure are ILUDT factored,
+   PCILUDTSetReuseFill - When matrices with same nonzero structure are ILUDT factored,
    this causes later ones to use the fill computed in the initial factorization.
 
    Collective on PC
@@ -336,7 +336,7 @@ int PCILUSetReuseOrdering(PC pc,PetscTruth flag)
 -  flag - PETSC_TRUE to reuse else PETSC_FALSE
 
    Options Database Key:
-.  -pc_ilu_reuse_fill - Activates PCILUSetReuseFill()
+.  -pc_iludt_reuse_fill - Activates PCILUDTSetReuseFill()
 
    Level: intermediate
 
@@ -344,13 +344,13 @@ int PCILUSetReuseOrdering(PC pc,PetscTruth flag)
 
 .seealso: PCILUSetReuseOrdering(), PCLUSetReuseOrdering(), PCLUSetReuseFill()
 @*/
-int PCILUSetReuseFill(PC pc,PetscTruth flag)
+int PCILUDTSetReuseFill(PC pc,PetscTruth flag)
 {
   int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetReuseFill_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUDTSetReuseFill_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   } 
@@ -488,9 +488,9 @@ static int PCSetFromOptions_ILU(PC pc)
   if (flg) {
     ierr = PCILUSetAllowDiagonalFill(pc);CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(pc->prefix,"-pc_ilu_reuse_fill",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_iludt_reuse_fill",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCILUSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PCILUDTSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = OptionsHasName(pc->prefix,"-pc_ilu_reuse_ordering",&flg);CHKERRQ(ierr);
   if (flg) {
@@ -781,8 +781,8 @@ int PCCreate_ILU(PC pc)
                     PCILUSetMatOrdering_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetReuseOrdering_C","PCILUSetReuseOrdering_ILU",
                     PCILUSetReuseOrdering_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetReuseFill_C","PCILUSetReuseFill_ILU",
-                    PCILUSetReuseFill_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUDTSetReuseFill_C","PCILUDTSetReuseFill_ILUDT",
+                    PCILUDTSetReuseFill_ILUDT);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetLevels_C","PCILUSetLevels_ILU",
                     PCILUSetLevels_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetUseInPlace_C","PCILUSetUseInPlace_ILU",

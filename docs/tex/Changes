@@ -26,6 +26,9 @@ add to it).
 
   PC
 
+PCILUSetReuseFill() changed to PCILUDTSetReuseFill() and -pc_ilu_reuse_fill changed
+to -pc_iludt_reuse_fill Note that currently these functions don't work.
+
 PCNullSpaceXXX changed to MatNullSpaceXXX except for PCNullSpaceAttach()
 
 added -pc_ilu_damping and -pc_lu_damping PCLUSetDamping(), ILU for handling singular
