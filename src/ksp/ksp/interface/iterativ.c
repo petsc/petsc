@@ -383,26 +383,31 @@ PetscErrorCode KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverg
   if (!n) {
     /* if user gives initial guess need to compute norm of b */
     if (!ksp->guess_zero) {
+      PetscReal      snorm;
       PetscErrorCode ierr;
       if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
-        ierr = VecNorm(ksp->vec_rhs,NORM_2,&rnorm);CHKERRQ(ierr);        /*     <- b'*b */
+        ierr = VecNorm(ksp->vec_rhs,NORM_2,&snorm);CHKERRQ(ierr);        /*     <- b'*b */
       } else {
         Vec z;
         ierr = VecDuplicate(ksp->vec_rhs,&z);CHKERRQ(ierr);
         ierr = KSP_PCApply(ksp,ksp->vec_rhs,z);CHKERRQ(ierr);
         if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
-          ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr);                 /*    dp <- b'*B'*B*b */
+          ierr = VecNorm(z,NORM_2,&snorm);CHKERRQ(ierr);                 /*    dp <- b'*B'*B*b */
         } else if (ksp->normtype == KSP_NATURAL_NORM) {
           PetscScalar norm;
           ierr  = VecDot(ksp->vec_rhs,z,&norm);
-          rnorm = sqrt(PetscAbsScalar(norm));                            /*    dp <- b'*B*b */
+          snorm = sqrt(PetscAbsScalar(norm));                            /*    dp <- b'*B*b */
         }
         ierr = VecDestroy(z);CHKERRQ(ierr);
       }
+      /* handle special case of zero RHS and nonzero guess */
+      if (!snorm) snorm = rnorm;
+      ksp->ttol   = PetscMax(ksp->rtol*snorm,ksp->abstol);
+      ksp->rnorm0 = snorm;
+    } else {
+      ksp->ttol   = PetscMax(ksp->rtol*rnorm,ksp->abstol);
+      ksp->rnorm0 = rnorm;
     }
-
-    ksp->ttol   = PetscMax(ksp->rtol*rnorm,ksp->abstol);
-    ksp->rnorm0 = rnorm;
   }
   if (rnorm <= ksp->ttol) {
     if (rnorm < ksp->abstol) {
