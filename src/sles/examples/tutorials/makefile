@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.80 2000/08/01 20:57:12 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.81 2000/08/17 04:52:37 bsmith Exp curfman $ 
 
 CFLAGS	         =
 FFLAGS	         = 
@@ -118,12 +118,18 @@ ex18: ex18.o  chkopts
 ex20: ex20.o  chkopts
 	-${CLINKER} -o ex20 ex20.o  ${PETSC_SLES_LIB}
 	${RM} ex20.o
+
 ex21f: ex21f.o  chkopts
 	-${FLINKER} -o ex21f ex21f.o  ${PETSC_FORTRAN_LIB} ${PETSC_SLES_LIB}
 	${RM} ex21f.o
+
 ex22: ex22.o  chkopts
 	-${CLINKER} -o ex22 ex22.o  ${PETSC_SLES_LIB}
 	${RM} ex22.o
+
+ex23: ex23.o  chkopts
+	-${CLINKER} -o ex23 ex23.o  ${PETSC_SLES_LIB}
+	${RM} ex23.o
 
 #----------------------------------------------------------------------------
 runex1:
@@ -392,6 +398,18 @@ runex20_2:
 	   else echo "Possible problem with ex20_2, diffs above"; fi; \
 	   ${RM} -f ex20_2.tmp
 
+runex23:
+	-@${MPIRUN} -np 1 ex23 -ksp_smonitor -ksp_gmres_irorthog > ex23_1.tmp 2>&1;	  \
+	   if (diff output/ex23_1.out ex23_1.tmp) then true; \
+	   else echo "Possible problem with ex23_1, diffs above"; fi; \
+	   ${RM} -f ex23_1.tmp
+
+runex23_2:
+	-@${MPIRUN} -np 3 ex23 -ksp_smonitor -ksp_gmres_irorthog > ex23_2.tmp 2>&1;	  \
+	   if (diff output/ex23_2.out ex23_2.tmp) then true; \
+	   else echo "Possible problem with ex23_2, diffs above"; fi; \
+	   ${RM} -f ex23_2.tmp
+
 
 TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
@@ -401,7 +419,8 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
                    ex14.PETSc runex14 runex14_2 ex14.rm \
                    ex15.PETSc runex15 ex15.rm \
                    ex16.PETSc runex16 ex16.rm ex18.PETSc runex18 ex18.rm \
-                   ex20.PETSc runex20 runex20_2 ex20.rm	
+                   ex20.PETSc runex20 runex20_2 ex20.rm	\
+                   ex23.PETSc runex23 runex23_2 ex23.rm
 TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
 	           runex5_5 ex5.rm ex8.rm 
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
