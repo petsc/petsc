@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.9 1995/03/25 01:26:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.10 1995/04/13 01:40:41 curfman Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -66,8 +66,7 @@ $  -bjacobi_truelocal
    For the common case in which the preconditioning and linear 
    system matrices are identical, this routine is unnecessary.
 
-   Keywords:
-   Jacobi, local
+   Keywords:  Jacobi, block, local, truelocal, flag
 @*/
 int PCBJacobiSetUseTrueLocal(PC pc)
 {
@@ -106,7 +105,8 @@ int PCCreate_BJacobi(PC pc)
   return 0;
 }
 /*@
-   PCBJacobiSetBlocks - Sets the number of blocks for block Jacobi.
+   PCBJacobiSetBlocks - Sets the number of blocks for the block Jacobi
+   preconditioner.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -114,6 +114,8 @@ int PCCreate_BJacobi(PC pc)
 
    Options Database Key:
 $  -bjacobi_blocks  blocks
+
+   Keywords:  blocks, Jacobi, block
 @*/
 int PCBJacobiSetBlocks(PC pc, int blocks)
 {
