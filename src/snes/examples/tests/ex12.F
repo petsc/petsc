@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.28 1996/02/13 23:30:46 bsmith Exp curfman $";
+C    "$Id: ex12.F,v 1.29 1996/02/24 17:12:28 curfman Exp curfman $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -12,12 +12,12 @@ C
 C  Note:  The program ex10.f is the same as this example, except that it
 C         uses the Fortran .f suffix rather than the .F suffix.
 C
-C      ctx(1) = da    - the distributed array
-C          2  = F     - the global vector where the evaluated function is stored
+C      ctx(1) = da    - distributed array
+C          2  = F     - global vector where the evaluated function is stored
 C          3  = xl    - local work vector
-C          4  = rank
-C          5  = size
-C          6  = N
+C          4  = rank  - processor rank
+C          5  = size  - number of processors
+C          6  = N     - system size
 C
       integer          ctx(8),ierr,N,start,end,nn,i,ii,its,flg
       SNES             snes
