@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.101 1998/06/11 19:55:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.102 1998/07/28 15:49:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -196,8 +196,10 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   /* Question: on restart, compute the residual?  No; provide a restart 
      driver */
 
-  
-  it         = 0;
+  /*
+    Number of pseudo iterations since last restart is the number of prestart directions
+  */
+  it         = gmres->nprestart;
   *converged = 0;
 
   /* dest . dest */
@@ -215,8 +217,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   tmp = 1.0/res_norm; ierr = VecScale(&tmp , VEC_VV(0) ); CHKERRQ(ierr);
 
   if (!restart) {
-    rtol      = ksp->rtol * res_norm;
-    ksp->ttol = PetscMax(ksp->atol,rtol);
+    ksp->ttol = PetscMax(ksp->rtol*res_norm,rtol);
   }
   rtol      = ksp->ttol;
   gmres->it = (it - 1);
@@ -273,6 +274,15 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
 
   /* Form the solution (or the solution so far) */
   ierr = BuildGmresSoln(RS(0),VEC_SOLN,VEC_SOLN,ksp,it-1); CHKERRQ(ierr);
+
+  /* set the prestart counter */
+  if (gmres->nprestart_requested > 0 && gmres->nprestart == 0) {
+    /* 
+       Cut off to make sure number of directions is less than or equal
+       number computed so far
+    */
+    gmres->nprestart = PetscMin(it-1,gmres->nprestart_requested);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -560,6 +570,9 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
     }
     PetscFPrintf(ksp->comm,fd,"    GMRES: restart=%d, using %s\n",
                gmres->max_k,cstr);
+    if (gmres->nprestart > 0) {
+      PetscFPrintf(ksp->comm,fd,"    GMRES: using prestart=%d\n",gmres->nprestart);
+    }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -573,6 +586,7 @@ static int KSPPrintHelp_GMRES(KSP ksp,char *p)
   PetscFunctionBegin;
   (*PetscHelpPrintf)(ksp->comm," Options for GMRES method:\n");
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_prestart <num>: GMRES prestart, defaults to 0\n",p);
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_irorthog: use iterative refinement in orthogonalization\n",p);
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_preallocate: preallocate GMRES work vectors\n",p);
@@ -584,7 +598,7 @@ static int KSPPrintHelp_GMRES(KSP ksp,char *p)
 #define __FUNC__ "KSPSetFromOptions_GMRES"
 int KSPSetFromOptions_GMRES(KSP ksp)
 {
-  int       ierr,flg,restart;
+  int       ierr,flg,restart,prestart;
 
   PetscFunctionBegin;
   ierr = OptionsGetInt(ksp->prefix,"-ksp_gmres_restart",&restart,&flg); CHKERRQ(ierr);
@@ -593,6 +607,8 @@ int KSPSetFromOptions_GMRES(KSP ksp)
   if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp); CHKERRQ(ierr);}
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
+  ierr = OptionsGetInt(ksp->prefix,"-ksp_gmres_prestart",&prestart,&flg); CHKERRQ(ierr);
+  if (flg) { ierr = KSPGMRESPrestartSet(ksp,prestart);CHKERRQ(ierr); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp, KSPGMRESIROrthogonalization);CHKERRQ(ierr);}
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_dgksorthog",&flg);CHKERRQ(ierr);
@@ -604,6 +620,22 @@ int KSPSetFromOptions_GMRES(KSP ksp)
 extern int KSPComputeExtremeSingularValues_GMRES(KSP,double *,double *);
 extern int KSPComputeEigenvalues_GMRES(KSP,int,double *,double *,int *);
 extern int KSPDefaultConverged_GMRES(KSP,int,double,void*);
+
+#undef __FUNC__  
+#define __FUNC__ "KSPGMRESPrestartSet_GMRES" 
+int KSPGMRESPrestartSet_GMRES(KSP ksp,int pre)
+{
+  KSP_GMRES *gmres;
+
+  PetscFunctionBegin;
+  gmres                      = (KSP_GMRES *)ksp->data;
+  if (pre > gmres->max_k-1) {
+    SETERRQ(1,1,"Prestart count is too large for current restart");
+  }
+  gmres->nprestart_requested = pre;
+  gmres->nprestart           = 0; /*reset this so that it will be set after the first solve*/
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGMRESSetRestart_GMRES" 
@@ -673,16 +705,22 @@ int KSPCreate_GMRES(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",
                                      "KSPGMRESSetRestart_GMRES",
                                     (void*)KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESPrestartSet_C",
+                                     "KSPGMRESPrestartSet_GMRES",
+                                    (void*)KSPGMRESPrestartSet_GMRES);CHKERRQ(ierr);
 
-  gmres->haptol         = 1.0e-8;
-  gmres->epsabs         = 1.0e-8;
-  gmres->q_preallocate  = 0;
-  gmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
-  gmres->orthog         = KSPGMRESModifiedGramSchmidtOrthogonalization;
-  gmres->nrs            = 0;
-  gmres->sol_temp       = 0;
-  gmres->max_k          = GMRES_DEFAULT_MAXK;
-  gmres->Rsvd           = 0;
+  gmres->haptol              = 1.0e-8;
+  gmres->epsabs              = 1.0e-8;
+  gmres->q_preallocate       = 0;
+  gmres->delta_allocate      = GMRES_DELTA_DIRECTIONS;
+  gmres->orthog              = KSPGMRESModifiedGramSchmidtOrthogonalization;
+  gmres->nrs                 = 0;
+  gmres->sol_temp            = 0;
+  gmres->max_k               = GMRES_DEFAULT_MAXK;
+  gmres->Rsvd                = 0;
+  gmres->nprestart           = 0;
+  gmres->nprestart_requested = 0;
+
   PetscFunctionReturn(0);
 }
 
