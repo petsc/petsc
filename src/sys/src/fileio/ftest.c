@@ -1,4 +1,4 @@
-/*$Id: ftest.c,v 1.37 2001/03/16 19:47:26 balay Exp balay $*/
+/*$Id: ftest.c,v 1.38 2001/03/23 23:20:30 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -43,7 +43,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestFile"
-/*+
+/*@C
   PetscTestFile - Test for a file existing with a specified mode.
 
   Input Parameters:
@@ -51,9 +51,11 @@
 - mode  - mode.  One of r, w, or x
 
   Output Parameter:
-  flg - PETSC_TRUE if file exists with given mode, PETSC_FALSE otherwise.
+.  flg - PETSC_TRUE if file exists with given mode, PETSC_FALSE otherwise.
 
-+*/
+  Level: intermediate
+
+@*/
 int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
 {
   int m;
