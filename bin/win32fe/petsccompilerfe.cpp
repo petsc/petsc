@@ -45,9 +45,11 @@ void compiler::Parse(void) {
 }
 
 void compiler::AddSystemInfo(void) {
-  tool::AddSystemInfo();
-  AddSystemInclude();
-  AddSystemLib();
+  if (detect) {
+    tool::AddSystemInfo();
+    AddSystemInclude();
+    AddSystemLib();
+  }
 }
 
 void compiler::AddSystemInclude(void) {
@@ -162,7 +164,9 @@ void compiler::Compile(void) {
       filename = cwd + "\\" + filename;
     }
     string compileeach = compile + " " + outfile + " " + filename;
-    if (verbose) cout << compileeach << endl;
+    if (verbose) {
+      cout << compileeach << endl;
+    }
     system(compileeach.c_str());
   }
   return;
@@ -176,7 +180,9 @@ void compiler::Link(void) {
   Merge(link,file,i);
   i = linkarg.begin();
   Merge(link,linkarg,i);
-  if (verbose) cout << link << endl;
+  if (verbose) {
+    cout << link << endl;
+  }
   system(link.c_str());
 }
 
@@ -270,10 +276,12 @@ void compiler::FixOutput(void) {
 
 void compiler::DisplayVersion(void) {
   tool::DisplayVersion();
-  version = compilearg.front();
-  version += " 2>&1 | head -1";
-  if (verbose) cout << version << endl;
-  system(version.c_str());
+  version_string = compilearg.front();
+  version_string += " 2>&1 | head -1";
+  if (verbose) {
+    cout << version_string << endl;
+  }
+  system(version_string.c_str());
 }
 
 bool compiler::IsAKnownTool(void) {

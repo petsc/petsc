@@ -1,24 +1,25 @@
-/* $Id: petsctoolfe.cpp,v 1.18 2001/05/11 19:50:00 buschelm Exp buschelm $ */
+/* $Id: petsctoolfe.cpp,v 1.16 2001/05/05 02:16:22 buschelm Exp buschelm $ */
 #include "Windows.h"
 #include "petsctoolfe.h"
 
 using namespace PETScFE;
 
 tool::tool(void) {
-  tool::OptionTags= "uvhpV";
+  tool::OptionTags= "hnpuvw";
+  tool::Options['h'] = &tool::FoundHelp;
+  tool::Options['n'] = &tool::FoundNoDetect;
+  tool::Options['p'] = &tool::FoundPath;
   tool::Options['u'] = &tool::FoundUse;
   tool::Options['v'] = &tool::FoundV;
-  tool::Options['h'] = &tool::FoundHelp;
-  tool::Options['p'] = &tool::FoundPath;
   tool::Options['w'] = &tool::FoundWoff;
-  tool::Options['V'] = &tool::FoundV;
   tool::Options[UNKNOWN] = &tool::FoundUnknown;
-  version   = "PETSc's Win32 Front End, version 1.1";
-  woff      = false;
-  verbose   = false;
-  helpfound = false;
+  version_string  = "PETSc's Win32 Front End, version 1.1";
+  detect       = true;
+  woff         = false;
+  verbose      = false;
+  helpfound    = false;
   versionfound = false;
-  inpath    = false;
+  inpath       = false;
 }
   
 void tool::GetArgs(int argc,char *argv[]) {
@@ -61,8 +62,10 @@ void tool::Parse() {
 }
 
 void tool::AddSystemInfo(void) {
-  FindInstallation();
-  AddPaths();
+  if (detect) {
+    FindInstallation();
+    AddPaths();
+  }
 }
 
 void tool::FindInstallation(void) {
@@ -117,11 +120,9 @@ void tool::Execute(void) {
     Help();
     return;
   }
-  if (versionfound) {
+  if (versionfound || verbose) {
     DisplayVersion();
-    return;
   }
-  if (verbose) cout << "PETSc Front End v1.1" << endl;
 }
 
 void tool::Help(void) {
@@ -137,8 +138,9 @@ void tool::Help(void) {
   cout << "  bcc32: Borland C++ for Win32" << endl;
   cout << "  lib:   Microsoft Library Manager" << endl;
   cout << "  tlib:  Borland Library Manager" << endl << endl;
-  cout << "<win32fe options>: {help,path,use,verbose,version,woff}" << endl;
-  cout << "  --help:       Output this help message and help for <tool>" << endl << endl;
+  cout << "<win32fe options>: {help,nodetect,path,use,verbose,version,woff}" << endl;
+  cout << "  --help:       Output this help message and help for <tool>" << endl;
+  cout << "  --nodetect:   Suppress automatic detection of <tool> installation" << endl;
   cout << "  --path <arg>: <arg> specifies an addition to the PATH that is required" << endl;
   cout << "                (ex. the location of a required .dll)" << endl;
   cout << "  --use <arg>:  <arg> specifies the variant of <tool> to use" << endl;
@@ -156,20 +158,42 @@ void tool::FoundPath(LI &i) {
   if (*i=="--path") {
     i = arg.erase(i);
     if (i!=arg.end()) {
+      string shortpath = *i;
       int length = 1024*sizeof(char);
       char buff[1024];
       string path="PATH";
       GetEnvironmentVariable(path.c_str(),buff,length);
       string newpath = (string)buff;
-      if (verbose) cout << "win32fe: Adding to path: " << *i << endl;
-      newpath = *i + ";" + newpath;
-      SetEnvironmentVariable(path.c_str(),newpath.c_str());
+      int noterr = GetShortPath(shortpath);
+      if (noterr) {
+        if (verbose) {
+          cout << "win32fe: Adding to path: " << *i << endl;
+        }
+        newpath = shortpath + ";" + newpath;
+        SetEnvironmentVariable(path.c_str(),newpath.c_str());
+      } else {
+        if (!woff) {
+          cout << "Warning: win32fe Path Not Found: " << *i << endl;
+        }
+      }
       i = arg.erase(i);
     } else {
       i--;
       arg.push_back("--help");
       i--;
     }
+  }
+}
+
+void tool::FoundNoDetect(LI &i) {
+  if (*i=="--nodetect") {
+    detect = false;
+    i = arg.erase(i);
+    if (verbose) {
+      cout << "win32fe: Turing off installation detection" << endl;
+    }
+  } else {
+    i++;
   }
 }
 
@@ -272,6 +296,14 @@ int tool::GetShortPath(string &name) {
   return(size);
 }
 
+int tool::GetLongPath(string &shortpath,string &longpath) {
+  char longpath_c[MAX_PATH];
+  int length = MAX_PATH*sizeof(char);
+  int size = GetLongPathName(shortpath.c_str(),longpath_c,length);
+  longpath = (string)longpath_c;
+  return(size);
+}
+
 void tool::PrintListString(list<string> &liststr) {
   cout << "Printing..." << endl;
   LI i = liststr.begin();
@@ -286,7 +318,7 @@ void tool::Merge(string &str,list<string> &liststr,LI &i) {
 }
 
 void tool::DisplayVersion(void) {
-  cout << version << endl;
+  cout << version_string << endl;
 }
 
 bool tool::IsAKnownTool(void) {

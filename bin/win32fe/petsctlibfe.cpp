@@ -14,7 +14,9 @@ void tlib::Execute() {
     backup = backup + ".BAK";
     string temp=backup;
     if (GetShortPath(temp)) {
-      if (verbose) cout << "del \"" << backup << "\"" << endl;
+      if (verbose) {
+        cout << "del \"" << backup << "\"" << endl;
+      }
       DeleteFile(backup.c_str());
     }
   }

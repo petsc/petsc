@@ -27,7 +27,9 @@ void lib::Archive(void) {
   while (li != file.end()) {
     string archive = header;
     Merge(archive,file,li);
-    if (verbose) cout << archive << endl;
+    if (verbose) {
+      cout << archive << endl;
+    }
     system(archive.c_str());
     if (archivearg.back()!=archivename) {
       archivearg.push_back(archivename);

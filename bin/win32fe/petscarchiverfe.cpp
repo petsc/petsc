@@ -52,8 +52,9 @@ void archiver::Archive(void) {
     /* Invoke archiver several times to limit arg length <512 chars */
     archive = header;
     Merge(archive,file,li);
-    if (verbose)
+    if (verbose) {
       cout << archive << endl;
+    }
     system(archive.c_str());
   }
 }
@@ -95,10 +96,12 @@ void archiver::Merge(string &str,list<string> &liststr,LI &i) {
 
 void archiver::DisplayVersion(void) {
   tool::DisplayVersion();
-  version = archivearg.front();
-  version += " 2>&1 | head -1";
-  if (verbose) cout << version << endl;
-  system(version.c_str());
+  version_string = archivearg.front();
+  version_string += " 2>&1 | head -1";
+  if (verbose) {
+    cout << version_string << endl;
+  }
+  system(version_string.c_str());
 }
  
 bool archiver::IsAKnownTool(void) {

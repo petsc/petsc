@@ -1,4 +1,4 @@
-/* $Id: petscbccfe.cpp,v 1.15 2001/05/03 11:03:30 buschelm Exp buschelm $ */
+/* $Id: petscbccfe.cpp,v 1.16 2001/05/03 20:04:15 buschelm Exp buschelm $ */
 #include <vector>
 #include <stdlib.h>
 #include <Windows.h>
@@ -44,7 +44,9 @@ void bcc::Link(void) {
       temp[i]=*f;
       string outfile = (string)path + (*f).substr(0,n) + ".obj";
       string copy = "copy " + temp[i] + " " + outfile;
-      if (verbose) cout << copy << endl;
+      if (verbose) {
+        cout << copy << endl;
+      }
       CopyFile(temp[i].c_str(),outfile.c_str(),FALSE); /* Win32 Specific */
 //        system(copy.c_str());
       f = file.erase(f);
@@ -60,14 +62,18 @@ void bcc::Link(void) {
   Merge(link,linkarg,f);
   f = file.begin();
   Merge(link,file,f);
-  if (verbose) cout << link << endl;
+  if (verbose) {
+    cout << link << endl;
+  }
   system(link.c_str());
 
   /* Remove /tmp/file.obj's */
   for (i=0,f=file.begin();f!=file.end();i++,f++) {
     if (ext[i] == ".o") {
       string del = "del " + *f;
-      if (verbose) cout << del << endl;
+      if (verbose) {
+        cout << del << endl;
+      }
 //        system(del.c_str());
       DeleteFile((*f).c_str()); /* Win32 Specific */
       f = file.erase(f);
