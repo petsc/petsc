@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.25 1996/01/11 20:14:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.26 1996/02/05 19:32:38 curfman Exp curfman $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -42,9 +42,9 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
   MPI_Comm comm;
   int      (*eval_fct)(SNES,Vec,Vec);
 
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS)
+  if (snes->method_class == SNES_NONLINEAR_EQUATIONS)
     eval_fct = SNESComputeFunction;
-  else if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION)
+  else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
     eval_fct = SNESComputeGradient;
   else SETERRQ(1,"SNESDefaultComputeJacobian: Invalid method class");
 

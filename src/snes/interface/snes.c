@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.53 1996/02/13 15:55:43 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.54 1996/02/13 18:30:23 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -87,7 +87,7 @@ int SNESView(SNES snes,Viewer viewer)
 
 .keywords: SNES, nonlinear, set, options, database
 
-.seealso: SNESPrintHelp()
+.seealso: SNESPrintHelp(), SNESSetOptionsPrefix()
 @*/
 int SNESSetFromOptions(SNES snes)
 {
@@ -325,8 +325,12 @@ int SNESGetIterationNumber(SNES snes,int* iter)
 
    Note:
    SNESGetFunctionNorm() is valid for SNES_NONLINEAR_EQUATIONS methods only.
+   A related routine for SNES_UNCONSTRAINED_MINIMIZATION methods is
+   SNESGetGradientNorm().
 
 .keywords: SNES, nonlinear, get, function, norm
+
+.seealso: SNESSetFunction()
 @*/
 int SNESGetFunctionNorm(SNES snes,Scalar *fnorm)
 {
@@ -348,9 +352,12 @@ int SNESGetFunctionNorm(SNES snes,Scalar *fnorm)
 
    Note:
    SNESGetGradientNorm() is valid for SNES_UNCONSTRAINED_MINIMIZATION 
-   methods only.
+   methods only.  A related routine for SNES_NONLINEAR_EQUATIONS methods
+   is SNESGetFunctionNorm().
 
 .keywords: SNES, nonlinear, get, gradient, norm
+
+.seelso: SNESSetGradient()
 @*/
 int SNESGetGradientNorm(SNES snes,Scalar *gnorm)
 {
@@ -514,7 +521,7 @@ $  where f'(x) denotes the Jacobian matrix and f(x) is the function.
 
 .keywords: SNES, nonlinear, set, function
 
-.seealso: SNESGetFunction(), SNESSetJacobian()
+.seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian()
 @*/
 int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
@@ -538,19 +545,21 @@ int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx
    Output Parameter:
 .  y - function vector, as set by SNESSetFunction()
 
-   Notes:
+n   Notes:
    SNESComputeFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only.
    Analogous routines for SNES_UNCONSTRAINED_MINIMIZATION methods are
    SNESComputeMinimizationFunction() and SNESComputeGradient();
 
 .keywords: SNES, nonlinear, compute, function
 
-.seealso: SNESSetFunction()
+.seealso: SNESSetFunction(), SNESGetFunction()
 @*/
 int SNESComputeFunction(SNES snes,Vec x, Vec y)
 {
   int    ierr;
 
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
+    "SNESComputeFunction: For SNES_NONLINEAR_EQUATIONS only");
   PLogEventBegin(SNES_FunctionEval,snes,x,y,0);
   ierr = (*snes->computefunction)(snes,x,y,snes->funP); CHKERRQ(ierr);
   PLogEventEnd(SNES_FunctionEval,snes,x,y,0);
@@ -581,7 +590,8 @@ int SNESComputeFunction(SNES snes,Vec x, Vec y)
 
 .keywords: SNES, nonlinear, set, minimization, function
 
-.seealso:  SNESGetMinimizationFunction(), SNESSetHessian(), SNESSetGradient(), 
+.seealso:  SNESGetMinimizationFunction(), SNESComputeMinimizationFunction(),
+           SNESSetHessian(), SNESSetGradient()
 @*/
 int SNESSetMinimizationFunction(SNES snes,int (*func)(SNES,Vec,double*,void*),
                       void *ctx)
@@ -609,6 +619,11 @@ int SNESSetMinimizationFunction(SNES snes,int (*func)(SNES,Vec,double*,void*),
    SNESComputeMinimizationFunction() is valid only for 
    SNES_UNCONSTRAINED_MINIMIZATION methods. An analogous routine for 
    SNES_NONLINEAR_EQUATIONS methods is SNESComputeFunction().
+
+.keywords: SNES, nonlinear, compute, minimization, function
+
+.seealso: SNESSetMinimizationFunction(), SNESGetMinimizationFunction(),
+          SNESComputeGradient(), SNESComputeHessian()
 @*/
 int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
 {
@@ -646,7 +661,8 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
 
 .keywords: SNES, nonlinear, set, function
 
-.seealso: SNESGetGradient(), SNESSetHessian(), SNESSetMinimizationFunction(),
+.seealso: SNESGetGradient(), SNESComputeGradient(), SNESSetHessian(),
+          SNESSetMinimizationFunction(),
 @*/
 int SNESSetGradient(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),
                      void *ctx)
@@ -661,8 +677,8 @@ int SNESSetGradient(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),
 }
 
 /*@
-   SNESComputeGradient - Computes the gradient that has been
-   set with SNESSetGradient().
+   SNESComputeGradient - Computes the gradient that has been set with
+   SNESSetGradient().
 
    Input Parameters:
 .  snes - the SNES context
@@ -675,6 +691,11 @@ int SNESSetGradient(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),
    SNESComputeGradient() is valid only for 
    SNES_UNCONSTRAINED_MINIMIZATION methods. An analogous routine for 
    SNES_NONLINEAR_EQUATIONS methods is SNESComputeFunction().
+
+.keywords: SNES, nonlinear, compute, gradient
+
+.seealso:  SNESSetGradient(), SNESGetGradient(), 
+           SNESComputeMinimizationFunction(), SNESComputeHessian()
 @*/
 int SNESComputeGradient(SNES snes,Vec x, Vec y)
 {
@@ -752,7 +773,8 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
 
 .keywords: SNES, compute, Hessian, matrix
 
-.seealso:  SNESSetHessian(), SLESSetOperators()
+.seealso:  SNESSetHessian(), SLESSetOperators(), SNESComputeGradient(),
+           SNESComputeMinimizationFunction()
 @*/
 int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
 {
@@ -1513,7 +1535,7 @@ int SNESPrintTypes_Private(char* prefix,char *name)
 
 .keywords: SNES, nonlinear, get, solution
 
-.seealso: SNESGetFunction(), SNESGetSolutionUpdate()
+.seealso: SNESGetFunction(), SNESGetGradient(), SNESGetSolutionUpdate()
 @*/
 int SNESGetSolution(SNES snes,Vec *x)
 {
@@ -1560,7 +1582,7 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
    Analogous routines for SNES_UNCONSTRAINED_MINIMIZATION methods are
    SNESGetMinimizationFunction() and SNESGetGradient();
 
-.keywords: SNES, nonlinear, get function
+.keywords: SNES, nonlinear, get, function
 
 .seealso: SNESSetFunction(), SNESGetSolution(), SNESGetMinimizationFunction(),
           SNESGetGradient()
@@ -1629,7 +1651,6 @@ int SNESGetMinimizationFunction(SNES snes,double *r)
   return 0;
 }  
 
-
 /*@C
    SNESSetOptionsPrefix - Sets the prefix used for searching for all 
    SNES options in the database.
@@ -1639,6 +1660,8 @@ int SNESGetMinimizationFunction(SNES snes,double *r)
 .  prefix - the prefix to prepend to all option names
 
 .keywords: SNES, set, options, prefix, database
+
+.seealso: SNESSetFromOptions()
 @*/
 int SNESSetOptionsPrefix(SNES snes,char *prefix)
 {
@@ -1659,6 +1682,8 @@ int SNESSetOptionsPrefix(SNES snes,char *prefix)
 .  prefix - the prefix to prepend to all option names
 
 .keywords: SNES, append, options, prefix, database
+
+.seealso: SNESGetOptionsPrefix()
 @*/
 int SNESAppendOptionsPrefix(SNES snes,char *prefix)
 {
@@ -1681,6 +1706,8 @@ int SNESAppendOptionsPrefix(SNES snes,char *prefix)
 .  prefix - pointer to the prefix string used
 
 .keywords: SNES, get, options, prefix, database
+
+.seealso: SNESAppendOptionsPrefix()
 @*/
 int SNESGetOptionsPrefix(SNES snes,char **prefix)
 {
