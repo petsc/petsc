@@ -8,7 +8,7 @@ SNES Object:
     mu=0.25, eta=0.75, sigma=0.0001
     delta0=0.2, delta1=0.3, delta2=0.75, delta3=2
   maximum iterations=50, maximum function evaluations=10000
-  tolerances: relative=1e-08, absolute=1e-10, solution=1e-08
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=10
   total number of function evaluations=4
   KSP Object:
