@@ -40,7 +40,7 @@ PetscErrorCode SPARSEPACKqmdmrg(PetscInt *xadj, PetscInt *adjncy, PetscInt *deg,
     PetscInt i__1, i__2, i__3;
 
     /* Local variables */
-    PetscInt head, inhd, irch, node, mark, link, root, j, lnode, nabor, 
+    PetscInt head, inhd, irch, node, mark, ilink, root, j, lnode, nabor, 
 	    jstop, jstrt, rchsze, mrgsze, novrlp, iov, deg1;
 
     PetscFunctionBegin;
@@ -140,11 +140,11 @@ L800:
 	    marker[node] = -1;
 	    lnode = node;
 L900:
-	    link = qlink[lnode];
-	    if (link <= 0) {
+	    ilink = qlink[lnode];
+	    if (ilink <= 0) {
 		goto L1000;
 	    }
-	    lnode = link;
+	    lnode = ilink;
 	    goto L900;
 L1000:
 	    qlink[lnode] = head;

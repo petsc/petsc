@@ -24,7 +24,7 @@
 PetscErrorCode PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,void *),void *ctx)
 {
   PetscErrorCode ierr;
-  int             pause;
+  int             dpause;
   PetscDrawButton button;
   PetscReal       xc,yc,scale = 1.0,w,h,xr,xl,yr,yl,xmin,xmax,ymin,ymax;
   PetscTruth      isnull;
@@ -37,9 +37,9 @@ PetscErrorCode PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,voi
   ierr = (*func)(draw,ctx);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
-  ierr = PetscDrawGetPause(draw,&pause);CHKERRQ(ierr);
-  if (pause >= 0) { 
-    ierr = PetscSleep(pause);CHKERRQ(ierr);
+  ierr = PetscDrawGetPause(draw,&dpause);CHKERRQ(ierr);
+  if (dpause >= 0) { 
+    ierr = PetscSleep(dpause);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 

@@ -31,7 +31,7 @@ PetscErrorCode SPARSEPACKqmdqt(PetscInt *root, PetscInt *xadj, PetscInt *adjncy,
     PetscInt i__1, i__2;
 
     /* Local variables */
-    PetscInt inhd, irch, node, link, j, nabor, jstop, jstrt;
+    PetscInt inhd, irch, node, ilink, j, nabor, jstop, jstrt;
 
     PetscFunctionBegin;
     /* Parameter adjustments */
@@ -61,9 +61,9 @@ L100:
     }
 /*       LINK TO OTHER SPACE PROVIDED BY THE NBRHD SET.*/
 L300:
-    link = adjncy[jstop + 1];
-    node = -link;
-    if (link < 0) {
+    ilink = adjncy[jstop + 1];
+    node = -ilink;
+    if (ilink < 0) {
 	goto L100;
     }
     ++inhd;

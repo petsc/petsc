@@ -37,7 +37,7 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm,const char display[],const char tit
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
-  PetscInt       pause;
+  PetscInt       dpause;
   PetscTruth     flag;
 
   PetscFunctionBegin;
@@ -60,8 +60,8 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm,const char display[],const char tit
   draw->port_yl = 0.0;  
   draw->port_yr = 1.0;
   draw->popup   = 0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-draw_pause",&pause,&flag);CHKERRQ(ierr);
-  if (flag) draw->pause = (int) pause;
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-draw_pause",&dpause,&flag);CHKERRQ(ierr);
+  if (flag) draw->pause = (int) dpause;
   *indraw       = draw;
   PetscFunctionReturn(0);
 }
