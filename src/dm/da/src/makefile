@@ -10,5 +10,6 @@ OBJSC    = da2.o da1.o da3.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = 6
+LOCDIR   = src/da/src/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

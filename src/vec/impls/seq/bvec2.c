@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.54 1995/11/09 22:26:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.55 1995/11/20 04:46:13 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -82,6 +82,7 @@ static int VecView_Seq_File(Vec xin,Viewer ptr)
     fprintf(fd,"%g\n",x->array[i]);
 #endif
   }
+  fflush(fd);
   return 0;
 }
 

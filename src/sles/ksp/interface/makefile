@@ -13,5 +13,6 @@ OBJSC    = itcl.o itfunc.o iguess.o itcreate.o iterativ.o itres.o itregis.o \
 LIBBASE  = libpetscksp
 DIRS     =
 MANSEC   = 5
+LOCDIR   = src/ksp/interface/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

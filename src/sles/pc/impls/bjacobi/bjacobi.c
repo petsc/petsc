@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.52 1995/12/03 01:29:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.53 1995/12/03 02:41:45 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -226,7 +226,7 @@ $  -pc_bjacobi_blocks blocks
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetLocalBlocks()
 @*/
-int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens,int *true)
+int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
 {
   PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
 
@@ -243,8 +243,8 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens,int *true)
     jac->g_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->g_lens);
     PetscMemcpy(jac->g_lens,lens,blocks*sizeof(int));
     jac->g_true = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->g_true);
-    if (true) {
-      PetscMemcpy(jac->g_true,true,blocks*sizeof(int));      
+    if (true1) {
+      PetscMemcpy(jac->g_true,true1,blocks*sizeof(int));      
     }
     else {
       PetscMemzero(jac->g_true,blocks*sizeof(int));
@@ -271,7 +271,7 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens,int *true)
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetTotalBlocks()
 @*/
-int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true)
+int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
 {
   PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
 
@@ -288,8 +288,8 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true)
     jac->l_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->l_lens);
     PetscMemcpy(jac->l_lens,lens,blocks*sizeof(int));
     jac->l_true = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->l_true);
-    if (true) {
-      PetscMemcpy(jac->l_true,true,blocks*sizeof(int));      
+    if (true1) {
+      PetscMemcpy(jac->l_true,true1,blocks*sizeof(int));      
     }
     else {
       PetscMemzero(jac->l_true,blocks*sizeof(int));

@@ -11,5 +11,6 @@ OBJSC    = shell.o
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = 2
+LOCDIR   = src/mat/impls/shell/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

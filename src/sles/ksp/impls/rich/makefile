@@ -10,5 +10,6 @@ OBJSC    = rich.o
 OBJSF    =
 LIBBASE  = libpetscksp
 MANSEC   = 5
+LOCDIR   = src/ksp/impls/rich/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

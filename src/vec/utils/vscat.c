@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.45 1995/11/02 04:08:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.46 1995/11/06 16:48:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,6 +12,86 @@ static char vcid[] = "$Id: vscat.c,v 1.45 1995/11/02 04:08:56 bsmith Exp bsmith 
 #include "vecimpl.h"                     /*I "vec.h" I*/
 #include "impls/dvecimpl.h"
 #include "impls/mpi/pvecimpl.h"
+
+
+/*
+      This is special scatter code for when the entire parallel vector is 
+   copied to each processor.
+
+      This code was written by Cameron Cooper, Occidental College, Fall 1995.
+*/
+static int MPIToAll(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
+{ 
+  if (mode & SCATTER_REVERSE) {
+    Vec_MPI             *yy = (Vec_MPI *) y->data;
+    Vec_Seq             *xx = (Vec_Seq *) x->data;
+    Scalar              *xv = xx->array, *yv = yy->array, *xvt, *xvt2;
+    VecScatter_MPIToAll *scat = (VecScatter_MPIToAll *) ctx->todata;
+    int                 i, size = xx->n;
+
+    if (addv == INSERT_VALUES) {
+      /* 
+         copy the correct part of the local vector into the local storage of 
+         the MPI one  Note: this operation only makes sense if all the local 
+         vectors have the same values
+      */
+      PetscMemcpy(yv,xv+yy->ownership[yy->rank],yy->n*sizeof(Scalar));
+    }
+    else {
+      if (scat->work2) xvt2 = scat->work2; 
+      else {scat->work2 = xvt2 = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(xvt2);}
+      if (!yy->rank) { /* I am the zeroth processor, values are accumulated here */
+        if (scat->work) xvt = scat->work; 
+        else {scat->work = xvt = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(xvt);}
+        MPI_Gatherv(yv,yy->n,MPIU_SCALAR,xvt2,scat->count,yy->ownership,MPIU_SCALAR,0,ctx->comm);
+        MPI_Reduce(xv, xvt, size, MPIU_SCALAR, MPI_SUM, 0, ctx->comm);
+	for ( i=0; i<size; i++ ) {
+	  xvt[i] += xvt2[i];
+	}
+        MPI_Scatterv(xvt,scat->count,yy->ownership,MPIU_SCALAR,yv,yy->n,MPIU_SCALAR,0,ctx->comm);
+      }
+      else {
+        MPI_Gatherv(yv, yy->n, MPIU_SCALAR, 0,  0, 0, MPIU_SCALAR, 0, ctx->comm);
+        MPI_Reduce(xv, xvt, size, MPIU_SCALAR, MPI_SUM, 0, ctx->comm);
+        MPI_Scatterv(xvt,scat->count,yy->ownership,MPIU_SCALAR,yv,yy->n,MPIU_SCALAR,0,ctx->comm);
+      }
+    }
+  }
+  else {
+    Vec_MPI             *xx = (Vec_MPI *) x->data;
+    Vec_Seq             *yy = (Vec_Seq *) y->data;
+    Scalar              *xv = xx->array, *yv = yy->array, *yvt;
+    VecScatter_MPIToAll *scat = (VecScatter_MPIToAll *) ctx->todata;
+    int                 i, size = yy->n;
+
+    if (addv == INSERT_VALUES) {
+      MPI_Allgatherv(xv,xx->n,MPIU_SCALAR,yv,scat->count,xx->ownership,MPIU_SCALAR,ctx->comm);
+    }
+    else {
+      if (scat->work) yvt = scat->work; 
+      else {scat->work = yvt = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(yvt);}
+      MPI_Allgatherv(xv,xx->n,MPIU_SCALAR,yvt,scat->count,xx->ownership,MPIU_SCALAR,ctx->comm);
+      for ( i=0; i<size; i++ ) {
+	yv[i] += yvt[i];
+      }
+    }
+  }
+  return 0;
+}
+
+static int MPIToAllDestroy(PetscObject obj)
+{
+  VecScatter          ctx = (VecScatter) obj;
+  VecScatter_MPIToAll *scat = (VecScatter_MPIToAll *) ctx->todata;
+
+  PetscFree(scat->count);
+  if (scat->work)  PetscFree(scat->work);
+  if (scat->work2) PetscFree(scat->work2);
+  PetscFree(ctx->todata); 
+  PLogObjectDestroy(ctx);
+  PetscHeaderDestroy(ctx);
+  return 0;
+}
 
 /*
     Sequential general to general scatter 
@@ -356,7 +436,43 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);
     }
     /* test for special case of all processors getting entire vector */
+    if (ix->type == IS_STRIDE_SEQ && iy->type == IS_STRIDE_SEQ){
+      Vec_MPI             *x = (Vec_MPI *)xin->data;
+      int                 i,nx,ny,to_first,to_step,from_first,from_step,totalv,cando,*count;
+      VecScatter_MPIToAll *sto;
 
+      ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
+      ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
+      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      if (from_first==0 && from_step==1 && from_first==to_first && from_step==to_step) {
+        totalv = 1; 
+      } else totalv = 0;
+      MPI_Allreduce( &totalv, &cando,1,MPI_INT,MPI_LAND,xin->comm);
+
+      if (cando) {
+        sto = (VecScatter_MPIToAll *) PetscMalloc(sizeof(VecScatter_MPIToAll));CHKPTRQ(sto);
+        MPI_Comm_size(ctx->comm,&size);
+        count = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(count);
+        for ( i=0; i<size; i++ ) {
+	  count[i] = x->ownership[i+1]-x->ownership[i];
+        }
+        sto->count         = count;
+        sto->work          = 0;
+        sto->work2         = 0;
+        PLogObjectMemory(ctx,sizeof(VecScatter_MPIToAll)+size*sizeof(int));
+        ctx->todata       = (void *) sto;        ctx->fromdata = 0;
+        ctx->scatterbegin = MPIToAll;             ctx->destroy = MPIToAllDestroy;
+        ctx->scatterend   = 0;              ctx->pipelinebegin = 0; 
+        ctx->pipelineend  = 0;                       ctx->copy = 0;
+        *newctx = ctx;
+        return 0;
+      }
+    }
+    else {
+      int cando,totalv = 0;
+      MPI_Allreduce( &totalv, &cando,1,MPI_INT,MPI_LAND,yin->comm);
+    }
+    /* left over general case */
     {
       int ierr,nx,ny,*idx,*idy;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);

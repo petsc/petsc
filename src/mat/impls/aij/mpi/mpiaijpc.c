@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.6 1995/11/01 23:18:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.7 1995/12/03 02:42:38 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
-   At the moment only supports a single block per processor.
+   Handles special case of  single block per processor.
    This file knows about storage formats for MPIAIJ matrices.
-   This code is nearly identical to that for the MPIROW format;
+   The general case is handled in aijpc.c
 */
 #include "mpiaij.h"
 #include "src/pc/pcimpl.h"
@@ -21,11 +21,9 @@ int PCDestroy_BJacobiMPIAIJ(PetscObject obj)
   PC               pc = (PC) obj;
   PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
   PC_BJacobiMPIAIJ *bjac = (PC_BJacobiMPIAIJ *) jac->data;
-  int              i,ierr;
+  int              ierr;
 
-  for ( i=0; i<jac->n_local; i++ ) {
-    ierr = SLESDestroy(jac->sles[i]); CHKERRQ(ierr);
-  }
+  ierr = SLESDestroy(jac->sles[0]); CHKERRQ(ierr);
   PetscFree(jac->sles);
   ierr = VecDestroy(bjac->x); CHKERRQ(ierr);
   PetscFree(bjac); PetscFree(jac); 
@@ -37,9 +35,20 @@ int PCApply_BJacobiMPIAIJ(PC pc,Vec x, Vec y)
   int              ierr,its;
   PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
   PC_BJacobiMPIAIJ *bjac = (PC_BJacobiMPIAIJ *) jac->data;
+  Scalar           *array,*true_array;
 
+  /* 
+      The VecPlaceArray() is to avoid having to copy the 
+    y vector into the bjac->x vector. The reason for 
+    the bjac->x vector is that we need a sequential vector
+    for the sequential solve.
+  */
+  ierr = VecGetArray(y,&array); CHKERRQ(ierr);
+  ierr = VecGetArray(bjac->x,&true_array); CHKERRQ(ierr);
+  ierr = VecPlaceArray(bjac->x,array); CHKERRQ(ierr);
   ierr = SLESSolve(jac->sles[0],x,bjac->x,&its); CHKERRQ(ierr);
-  ierr = VecCopy(bjac->x,y); CHKERRQ(ierr);
+  ierr = VecPlaceArray(bjac->x,true_array); CHKERRQ(ierr);
+
   return 0;
 }
 

@@ -11,6 +11,7 @@ OBJSC    = umls.o search.o
 OBJSF    = 
 LIBBASE  = libpetscsnes
 MANSEC   = n
+LOCDIR   = src/snes/impls/umls/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

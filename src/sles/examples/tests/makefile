@@ -15,7 +15,7 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
                 runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex5\
                 runex8 runex8_2
 EXAMPLES_2    = ex10 ex11 ex6 ex13 ex14
-RUNEXAMPLES_2 = runex11 runex6 runex6_2 runex6_3
+RUNEXAMPLES_2 = runex11 runex6 runex6_2 runex6_3 runex13
 EXAMPLES_3    = ex7 ex12
 RUNEXAMPLES_3 = runex7
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c\
@@ -244,5 +244,11 @@ runex11:
            if (diff output/ex11_1.out ex11_1.tmp) then true; \
            else echo "Possible problem with ex11_1, diffs above"; fi; \
            $(RM) -f ex11_1.tmp
+
+runex13:
+	-@$(MPIRUN) -np 2  ex13 -ksp_smonitor > ex13_1.tmp 2>&1; \
+           if (diff output/ex13_1.out ex13_1.tmp) then true; \
+           else echo "Possible problem with ex13_1, diffs above"; fi; \
+           $(RM) -f ex13_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

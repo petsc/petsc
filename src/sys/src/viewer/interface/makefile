@@ -3,7 +3,7 @@ PETSC_DIR = ../../..
 ALL: lib
 
 CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I..  \
-           $(CONF) $(PCONF) -D__DIR__='"viewer/src/"'
+           $(CONF) $(PCONF) -D__DIR__='"viewer/interface/"'
 SOURCEC  = view.c 
 SOURCEF  =
 SOURCEH  = 
@@ -11,6 +11,7 @@ OBJSC    = view.o
 OBJSF    =
 LIBBASE  = libpetscsys
 MANSEC   = 7
+LOCDIR   = src/viewer/interface/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

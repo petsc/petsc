@@ -12,6 +12,7 @@ OBJSC    = bvec2.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = 1
+LOCDIR   = src/vec/impls/seq/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

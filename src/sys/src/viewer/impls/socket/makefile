@@ -13,6 +13,7 @@ OBJSF     =
 MANSEC    = 7
 LIBBASE   = libpetscsys
 DIRS      = 
+LOCDIR    = src/viewer/impls/matlab/
 
 receive: chkopts openport closeport receive.o receivesparse.o receivedense.o
 	$(CMEX) receive.o receivesparse.o  receivedense.o 

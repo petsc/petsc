@@ -11,6 +11,7 @@ OBJSC    = ls.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = n
+LOCDIR   = src/snes/impls/ls/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

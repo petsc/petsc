@@ -7,7 +7,6 @@ SOURCEF   =
 SOURCEH   = nreg.h
 OBJSC     =
 OBJSF     =
-MANSEC    = 7
 LIBBASE   = libpetscsys
 DIRS      = src examples
 

@@ -39,12 +39,11 @@ testexamples: chkpetsc_dir
 	-@echo "Using libraries: $(PETSC_LIB)"
 	-@echo "------------------------------------------"
 	-@echo "Due to different numerical round-off on   "
-	-@echo "certain machines all the numbers may not  "
-	-@echo "match exactly. This is not due to errors. "
+	-@echo "certain machines some of the numbers may not  "
+	-@echo "match exactly."
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
            ACTION=testexamples_1  tree 
-	$(RANLIB) $(PDIR)/*.a
 	-@echo "Completed compiling and running test examples"
 	-@echo "------------------------------------------"
 
@@ -57,7 +56,6 @@ testfortran: chkpetsc_dir
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
            ACTION=testexamples_3  tree 
-	$(RANLIB) $(PDIR)/*.a
 	-@echo "Completed compiling and running Fortran test examples"
 	-@echo "------------------------------------------"
 
@@ -136,8 +134,8 @@ etags:
 	etags -a -f TAGS bmake/IRIX/IRIX* bmake/freebsd/freebsd*
 	etags -a -f TAGS bmake/hpux/hpux* bmake/alpha/alpha*
 	etags -a -f TAGS bmake/t3d/t3d* bmake/paragon/paragon*
-	etags -a -f TAGS docs/tex/routin.tex  docs/tex/manual.tex
-	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex 
+	etags -a -f TAGS docs/tex/routin.tex  docs/tex/manual.tex docs/tex/manual_tex.tex
+	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex docs/tex/part2.tex
 	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c
 	etags -a -f TAGS src/*/examples/*.F
 	chmod g+w TAGS

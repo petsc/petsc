@@ -9,6 +9,7 @@ OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = 
 MANSEC   = 7
+LOCDIR   = include/
 
 runexamples:
 

@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.15 1995/11/28 21:37:56 curfman Exp bsmith $";
+C    "$Id: ex12.F,v 1.16 1995/11/30 22:36:13 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -16,11 +16,10 @@ C          4  = rank
 C          5  = size
 C          6  = N
 C
-      integer          ctx(8),ierr
+      integer          ctx(8),ierr,N,start,end,nn,i,ii,its
       SNES             snes
       Mat              J
       Vec              x,r,u,F
-      integer          N,start,end,nn,i,ii,its
       double precision xp,FF,UU,h
       character*(10)   matrixname
       external         FormJacobian,FormFunction,FormInitialGuess
