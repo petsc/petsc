@@ -515,12 +515,11 @@ static int PetscDrawCheckResizedWindow_Win32(PetscDraw draw)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawSetTitle_Win32"
-static int PetscDrawSetTitle_Win32(PetscDraw draw, char *title)
+static int PetscDrawSetTitle_Win32(PetscDraw draw, const char title[])
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   
   PetscFunctionBegin;
-  draw->title = title;
   SetWindowText(windraw->hWnd,title);
   PetscFunctionReturn(0);
 }

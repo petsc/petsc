@@ -7,7 +7,7 @@
 /* Variables for the tracing logger */
 extern FILE          *tracefile;
 extern int            tracelevel;
-extern char          *traceblanks;
+extern const char    *traceblanks;
 extern char           tracespace[128];
 extern PetscLogDouble tracetime;
 
