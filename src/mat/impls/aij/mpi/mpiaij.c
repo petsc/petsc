@@ -1516,7 +1516,7 @@ EXTERN int MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,MatFactorInfo*,Mat*);
 #define __FUNCT__ "MatAXPY_MPIAIJ"
 int MatAXPY_MPIAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
-  int        ierr,one;
+  int        ierr,one = 1;
   Mat_MPIAIJ *xx  = (Mat_MPIAIJ *)X->data,*yy = (Mat_MPIAIJ *)Y->data;
   Mat_SeqAIJ *x,*y;
 
