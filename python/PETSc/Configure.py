@@ -309,7 +309,7 @@ class Configure(config.base.Configure):
         self.framework.log.write('           bfort is in your path\n')
         self.framework.log.write('WARNING: Turning off Fortran interfaces for PETSc')
         del self.framework.argDB['FC']
-        self.addSubstitution('FC', '')
+        self.compilers.addSubstitution('FC', '')
     else:
       self.framework.log.write('Fortran stubs do exist in '+stubDir+'\n')
     return
