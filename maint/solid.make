@@ -55,11 +55,11 @@ done
 # sun4
 arch=sun4
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh cosmo "cd $hme/$src_dir; $make BOPT=g"
-rsh cosmo "cd $hme/$src_dir; $make BOPT=O"
-rsh cosmo "cd $hme/$src_dir; $make BOPT=g_c++"
-rsh cosmo "cd $hme/$src_dir; $make BOPT=O_c++"
-rsh cosmo "cd $hme/$src_dir; $make BOPT=g_complex"
+rsh maverick "cd $hme/$src_dir; $make BOPT=g"
+rsh maverick "cd $hme/$src_dir; $make BOPT=O"
+rsh maverick "cd $hme/$src_dir; $make BOPT=g_c++"
+rsh maverick "cd $hme/$src_dir; $make BOPT=O_c++"
+rsh maverick "cd $hme/$src_dir; $make BOPT=g_complex"
 
 
 # IRIX
