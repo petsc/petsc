@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.25 1995/06/08 03:07:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.26 1995/06/18 16:23:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -407,8 +407,8 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
  */
 static double GMRESUpdateHessenberg( KSP itP, int it )
 {
-  register Scalar *hh, *cc, *ss, tt;
-  register int    j;
+  Scalar    *hh, *cc, *ss, tt;
+  int       j;
   KSP_GMRES *gmresP = (KSP_GMRES *)(itP->MethodPrivate);
 
   hh  = HH(0,it);

@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.11 1995/06/07 17:27:28 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.12 1995/06/13 20:48:42 bsmith Exp bsmith $ */
 
 /*
      These are routines shared by sequential vectors and BLAS sequential 
@@ -21,8 +21,7 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data;
   register int n = x->n;
-  register Scalar sum;
-  Scalar   *xx = x->array, *yy;
+  Scalar   sum,*xx = x->array, *yy;
   int      i;
   /* This could be unrolled to reuse x[j] values */
   for (i=0; i<nv; i++) {
