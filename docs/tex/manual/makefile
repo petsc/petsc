@@ -30,15 +30,17 @@ manual.ps:
 	mv intro.ps ../intro.ps
 
 manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
-	tohtml -mapman ../../www/www.cit manual.tex -notopnames \
-	       -mapref../../www/petsc.cit -nobottomnav
-	tohtml -mapman ../../www/www.cit manual.tex -notopnames \
-	       -mapref../../www/petsc.cit -nobottomnav
+	rm -f www.cit
+	cat ../../www/www.cit | sed 's/+man+../+man+www/g' > www.cit 
+	tohtml -mapman www.cit manual.tex -notopnames \
+	       -mapref ../../www/petsc.cit -nobottomnav
+	tohtml -mapman www.cit manual.tex -notopnames \
+	       -mapref ../../www/petsc.cit -nobottomnav
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv manual.html manual_html.html
 	cat manual_html.html | grep -v Up: | grep -v Next: | grep -v Previous: |sed 's/H1/H2/g' | sed 's/H0/H1/g' | sed 's/<pre><tt>ierr/<pre><tt>   ierr/g' | sed 's/<pre><tt>call/<pre><tt>   call/g' > manual.html
 	-mv manual.html ../..
-	-@chmod g+w ../../manual.html
+	-@chmod g+w ../../manual.html www.cit
 	rm -f  *.xbm latex.err findex.tex sindex.tex tmp.html manual_html.html
 
 clean:
