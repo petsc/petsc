@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.12 1996/09/25 14:07:44 curfman Exp curfman $";
+static char vcid[] = "$Id: ex17.c,v 1.13 1996/09/25 20:30:33 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -137,7 +137,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
        Dirichlet b.c.'s on all sides
      */
     PetscRandom rctx;
-    double      h2, sigma1 = 100.0;
+    double      h2, sigma1 = 5.0;
     Scalar      sigma2;
     ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,&flg); CHKERRA(ierr);
     ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx); CHKERRQ(ierr);

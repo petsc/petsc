@@ -304,7 +304,7 @@ runex16:
 	   else echo "Possible problem with ex16_1, diffs above"; fi; \
 	   $(RM) -f ex16_1.tmp
 runex17:
-	-@$(MPIRUN) ex17 -n 20 -ksp_smonitor -p 4 -ksp_type cg \
+	-@$(MPIRUN) ex17 -n 10 -ksp_smonitor -p 4 -ksp_type cg \
 	   -ksp_cg_symmetric -pc_type jacobi > ex17_1.tmp 2>&1; \
 	   if (diff output/ex17_1.out ex17_1.tmp) then true; \
 	   else echo "Possible problem with ex17_1, diffs above"; fi; \
