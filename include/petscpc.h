@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.109 2000/09/21 16:07:43 bsmith Exp balay $ */
+/* $Id: petscpc.h,v 1.110 2000/09/25 17:29:31 balay Exp curfman $ */
 
 /*
       Preconditioner module. 
@@ -121,6 +121,13 @@ EXTERN int PCLUSetUseInPlace(PC);
 EXTERN int PCLUSetFill(PC,double);
 EXTERN int PCLUSetDamping(PC,double);
 EXTERN int PCLUSetColumnPivoting(PC,PetscReal);
+
+EXTERN int PCCholeskySetMatOrdering(PC,MatOrderingType);
+EXTERN int PCCholeskySetReuseOrdering(PC,PetscTruth);
+EXTERN int PCCholeskySetReuseFill(PC,PetscTruth);
+EXTERN int PCCholeskySetUseInPlace(PC);
+EXTERN int PCCholeskySetFill(PC,double);
+EXTERN int PCCholeskySetDamping(PC,double);
 
 EXTERN int PCILUSetMatOrdering(PC,MatOrderingType);
 EXTERN int PCILUSetUseInPlace(PC);

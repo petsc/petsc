@@ -251,6 +251,7 @@ petsc/src/pc/impls/bjacobi/RCS/
 petsc/src/pc/impls/direct/RCS/
 petsc/src/pc/impls/eisens/RCS/
 petsc/src/pc/impls/jacobi/RCS/
+petsc/src/pc/impls/cholesky/RCS/
 petsc/src/pc/impls/mg/RCS/
 petsc/src/pc/impls/none/RCS/
 petsc/src/pc/impls/shell/RCS/

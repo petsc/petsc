@@ -1,4 +1,4 @@
-/*$Id: cholesky.c,v 1.1 2000/09/01 03:36:30 bsmith Exp bsmith $*/
+/*$Id: cholesky.c,v 1.2 2000/09/25 17:23:06 bsmith Exp curfman $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -14,9 +14,8 @@ typedef struct {
   MatOrderingType ordering;         /* matrix ordering */
   PetscTruth      reuseordering;    /* reuses previous reordering computed */
   PetscTruth      reusefill;        /* reuse fill from previous Cholesky */
-  MatCholeskyInfo       info;
+  MatCholeskyInfo info;
 } PC_Cholesky;
-
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -65,12 +64,6 @@ static int PCSetFromOptions_Cholesky(PC pc)
       ierr = PCCholeskySetUseInPlace(pc);CHKERRQ(ierr);
     }
     ierr = OptionsDouble("-pc_cholesky_fill","Expected non-zeros in Cholesky/non-zeros in matrix","PCCholeskySetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
-
-    ierr = OptionsHasName(pc->prefix,"-pc_cholesky_damping",&flg);CHKERRQ(ierr);
-    if (flg) {
-        ierr = PCCholeskySetDamping(pc,0.0);CHKERRQ(ierr);
-    }
-    ierr = OptionsDouble("-pc_cholesky_damping","Damping added to diagonal","PCCholeskySetDamping",lu->info.damping,&lu->info.damping,0);CHKERRQ(ierr);
 
     ierr = OptionsName("-pc_cholesky_reuse_fill","Use fill from previous factorization","PCCholeskySetReuseFill",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -150,7 +143,7 @@ static int PCSetUp_Cholesky(PC pc)
     if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
     ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
     if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
-    ierr = MatCholeskyFactor(pc->pmat,dir->row,dir->col,&dir->info);CHKERRQ(ierr);
+    ierr = MatCholeskyFactor(pc->pmat,dir->row,dir->info.fill);CHKERRQ(ierr);
     dir->fact = pc->pmat;
   } else {
     MatInfo info;
@@ -163,7 +156,7 @@ static int PCSetUp_Cholesky(PC pc)
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
       }
       if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
-      ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,dir->col,&dir->info,&dir->fact);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,dir->info.fill,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
       PLogObjectParent(pc,dir->fact);
@@ -181,7 +174,7 @@ static int PCSetUp_Cholesky(PC pc)
         if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
       }
       ierr = MatDestroy(dir->fact);CHKERRQ(ierr);
-      ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,dir->col,&dir->info,&dir->fact);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,dir->info.fill,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
       PLogObjectParent(pc,dir->fact);
@@ -367,7 +360,7 @@ int PCCholeskySetReuseFill(PC pc,PetscTruth flag)
 #undef __FUNC__  
 #define __FUNC__ /*<a name="PCCholeskySetFill"></a>*/"PCCholeskySetFill"
 /*@
-   PCCholeskySetFill - Indicate the amount of fill you expect in the factored matrix,
+   PCCholeskySetFill - Indicates the amount of fill you expect in the factored matrix,
    fill = number nonzeros in factor/number nonzeros in original matrix.
 
    Collective on PC
@@ -408,8 +401,8 @@ int PCCholeskySetFill(PC pc,PetscReal fill)
 #undef __FUNC__  
 #define __FUNC__ /*<a name="PCCholeskySetDamping"></a>*/"PCCholeskySetDamping"
 /*@
-   PCCholeskySetDamping - adds this quantity to the diagonal of the matrix during the 
-     Cholesky numerical factorization
+   PCCholeskySetDamping - Adds this quantity to the diagonal of the matrix during the 
+   Cholesky numerical factorization.
 
    Collective on PC
    
@@ -531,7 +524,6 @@ int PCCreate_Cholesky(PC pc)
   dir->fact             = 0;
   dir->inplace          = 0;
   dir->info.fill        = 5.0;
-  dir->info.dtcol       = 0.0; /* default to no pivoting; this is only thing PETSc Cholesky supports */
   dir->info.damping     = 0.0;
   dir->info.damp        = 0.0;
   dir->col              = 0;
@@ -562,8 +554,6 @@ int PCCreate_Cholesky(PC pc)
                     PCCholeskySetReuseOrdering_Cholesky);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetReuseFill_C","PCCholeskySetReuseFill_Cholesky",
                     PCCholeskySetReuseFill_Cholesky);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetCoCholeskymnPivoting_C","PCCholeskySetCoCholeskymnPivoting_Cholesky",
-                    PCCholeskySetColumnPivoting_Cholesky);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
