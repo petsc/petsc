@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+import atexit
+import cPickle
+import os
+import os.path
+import string
+import sys
+import traceback
+import types
 
 # Debugging
 debugLevel    = 1
@@ -63,22 +71,61 @@ class Maker:
     return output
 
 class BS (Maker):
-  sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
+  def __init__(self, args = None):
+    self.targets = {}
+    if args: self.processArgs(args)
+    Maker.__init__(self)
+    self.sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
+    self.setupSourceDB()
+    for key in self.args.keys():
+      self.debugPrint('Set '+key+' to '+self.args[key])
 
-  def saveSourceDB():
-    self.debugPrint('Saving source database in '+sourceDBFilename, 2, 'sourceDB')
-    dbFile = open(sourceDBFilename, 'w')
+  def parseArgs(self, argList):
+    args = {}
+    args['target'] = 'default'
+    for arg in argList:
+      if not arg[0] == '-':
+        args['target'] = arg
+      else:
+        (key, val) = string.split(arg[1:], '=')
+        args[key]  = val
+    return args
+
+  def processArgs(self, args):
+    global debugLevel
+    global debugSections
+
+    if type(args) == types.ListType:
+      args = self.parseArgs(args)
+    # Here we could have an object BSOptions which had nothing but member
+    # variables. Then we could use reflection to get all the names of the
+    # variables, and look them up in args[]
+    try:
+      debugLevel    = int(args['debugLevel'])
+      debugSections = string.split(args['debugSections'])
+    except KeyError: pass
+    self.args = args
+
+  def saveSourceDB(self):
+    self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
+    dbFile = open(self.sourceDBFilename, 'w')
     cPickle.dump(sourceDB, dbFile)
     dbFile.close()
 
-  def main():
-    self.debugPrint('Reading source database from '+sourceDBFilename, 2, 'sourceDB')
+  def setupSourceDB(self):
+    self.debugPrint('Reading source database from '+self.sourceDBFilename, 2, 'sourceDB')
     global sourceDB
 
-    if os.path.exists(sourceDBFilename):
-      dbFile   = open(sourceDBFilename, 'r')
+    if os.path.exists(self.sourceDBFilename):
+      dbFile   = open(self.sourceDBFilename, 'r')
       sourceDB = cPickle.load(dbFile)
       dbFile.close()
     else:
       sourceDB = {}
-    atexit.register(saveSourceDB)
+    atexit.register(self.saveSourceDB)
+
+  def main(self):
+    if self.targets.has_key(self.args['target']):
+      self.targets[self.args['target']].execute()
+    else:
+      print 'Invalid target: '+self.args['target']
