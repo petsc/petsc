@@ -1,11 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.4 1995/04/16 16:09:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.5 1995/04/16 16:25:46 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
 #include "mpirowbs.h"
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
+#include "BSprivate.h"
+#include "BSsparse.h"
 
 #define CHUNCKSIZE         100
 #define CHUNCKSIZE_LOCAL   10
@@ -91,7 +93,7 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
   Mat_MPIRowbs *mat = (Mat_MPIRowbs *) matin->data;
   BSspmat      *A = mat->A;
   BSsprow      *vs;
-  int          *rp,k,a,b,t,ii,row,nrow,i,col,l,rmax, ierr, N;
+  int          *rp,k,a,b,t,ii,row,nrow,i,col,l,rmax, ierr;
   int          *imax = mat->imax, nonew = mat->nonew, sorted = mat->sorted;
   Scalar       *ap, value;
 
@@ -409,9 +411,8 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
-  int          ierr, i,j, m = mrow->m;
+  int          ierr;
   PetscObject  vobj = (PetscObject) viewer;
-  double       xl,yl,xr,yr,w,h;
 
   if (!mrow->assembled)
     SETERR(1,"MatView_MPIRow: Must assemble matrix first.");
@@ -500,8 +501,8 @@ static int MatEndAssembly_MPIRowbs(Mat mat,int mode)
     VecEndAssembly( mrow->diag );
 
     mrow->assembled = 1;
-    return 0;
   }
+  return 0;
 }
 
 static int MatZeroEntries_MPIRowbs(Mat mat)
@@ -616,7 +617,6 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
 {
   Mat          mat = (Mat) obj;
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
-  int          ierr;
 
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows %d Cols %d",mrow->M,mrow->N);
@@ -625,7 +625,6 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
   /* Destroy BlockSolve interface stuff */
   if (mrow->ctx_filled) {
     BSspmat   *A = mrow->A;
-    BSmapping *bsmap = mrow->bsmap;
     BSsprow   *vs;
     int       i, ierr;
 
@@ -761,7 +760,7 @@ int MatCreateShellMPIRowbs(MPI_Comm comm,int m,int M, int nz,int *nnz,
 {
   Mat          mat;
   Mat_MPIRowbs *mrow;
-  int          ierr, i;
+  int          i;
   *newmat       = 0;
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIROW_BS,comm);
   PLogObjectCreate(mat);
@@ -824,7 +823,7 @@ int MatCreateShellMPIRowbs(MPI_Comm comm,int m,int M, int nz,int *nnz,
   *newmat = mat;
   return 0;
 }
-/* ------------------------------------------------------------------- /*
+/* ------------------------------------------------------------------- */
 /*@
    MatCreateMPIRowbs - Creates a symmetric, sparse parallel matrix in 
    the MPIRowbs format.  This format is currently only partially 
