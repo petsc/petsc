@@ -58,7 +58,10 @@ class Builder(install.urlMapping.UrlMapping):
     self.debugPrint('Purging checkpoints from '+proj.getUrl()+' and dependencies', 3, 'install')
     for p in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, proj):
       os.chdir(p.getRoot())
-      del RDict.RDict()['checkpoint']
+      d = RDict.RDict()
+      if 'checkpoint' in d:
+        self.debugPrint('Purging checkpoint in '+p.getUrl(), 4, 'install')
+        del d['checkpoint']
     os.chdir(oldDir)
     return
 
