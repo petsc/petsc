@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.13 2001/01/15 21:45:27 bsmith Exp balay $";
+static char vcid[] = "$Id: matreg.c,v 1.14 2001/03/23 23:21:44 balay Exp bsmith $";
 #endif
 /*
      Mechanism for register PETSc matrix types
@@ -51,7 +51,7 @@ int MatSetType(Mat mat,MatType matype)
 
     /* Get the function pointers for the matrix requested */
     if (!MatRegisterAllCalled) {ierr = MatRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr =  PetscFListFind(mat->comm,MatList,matype,(int(**)(void*))&r);CHKERRQ(ierr);
+    ierr =  PetscFListFind(mat->comm,MatList,matype,(void(**)())&r);CHKERRQ(ierr);
     if (!r) SETERRQ1(1,"Unknown Mat type given: %s",matype);
 
     /* free the old data structure if it existed */
@@ -107,7 +107,7 @@ int MatRegisterDestroy(void)
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetType"
 /*@C
-   MatGetType - Gets the matrx type as a string from the matrix object.
+   MatGetType - Gets the matrix type as a string from the matrix object.
 
    Not Collective
 
@@ -180,7 +180,7 @@ int MatRegister(char *sname,char *path,char *name,int (*function)(Mat))
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
