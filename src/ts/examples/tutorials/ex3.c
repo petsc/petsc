@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.5 1999/05/04 20:36:56 balay Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.6 1999/07/08 14:37:20 balay Exp curfman $";
 #endif
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
@@ -19,6 +19,7 @@ Input parameters include:\n\
    Routines: TSCreate(); TSSetSolution(); TSSetRHSMatrix();
    Routines: TSSetInitialTimeStep(); TSSetDuration(); TSSetMonitor();
    Routines: TSSetFromOptions(); TSStep(); TSDestroy(); 
+   Routines: TSSetTimeStep(); TSGetTimeStep();
    Processors: 1
 */
 
@@ -350,6 +351,8 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
    each timestep.  This example plots the solution and computes the
    error in two different norms.
 
+   This example also demonstrates changing the timestep via TSSetTimeStep().
+
    Input Parameters:
    ts     - the timestep context
    step   - the count of the current step (with 0 meaning the
@@ -364,8 +367,8 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
 int Monitor(TS ts,int step,double time,Vec u,void *ctx)
 {
   AppCtx   *appctx = (AppCtx*) ctx;   /* user-defined application context */
-  int      ierr;
-  double   norm_2,norm_max;
+  int      ierr, flg;
+  double   norm_2, norm_max, dt, dttol;
   Scalar   mone = -1.0;
 
   /* 
@@ -396,10 +399,18 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   norm_2 = sqrt(appctx->h)*norm_2;
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
-  printf("Timestep %d: time = %g, 2-norm error = %g, max norm error = %g\n",
-         step,time,norm_2,norm_max);
+  ierr = TSGetTimeStep(ts,&dt); CHKERRQ(ierr);
+  printf("Timestep %d: step size = %g, time = %g, 2-norm error = %g, max norm error = %g\n",
+         step,dt,norm_2,norm_max);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
+
+  dttol = .0001;
+  ierr = OptionsGetDouble(PETSC_NULL,"-dttol",&dttol,&flg);CHKERRA(ierr);
+  if (dt < dttol) {
+    dt *= .999;
+    ierr = TSSetTimeStep(ts,dt); CHKERRQ(ierr);
+  }
 
   /* 
      View a graph of the error
