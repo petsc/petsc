@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.49 1998/04/25 16:11:07 balay Exp balay $ */
+/* $Id: ptime.h,v 1.50 1998/04/25 17:55:45 balay Exp bsmith $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -152,22 +152,6 @@ extern PLogDouble nt_time();
 /*
     The usual Unix time routines.
 */
-#if (defined(PARCH_IRIX5_oldcode) && defined(__cplusplus))
-struct timeval {
-  long tv_sec;         /* seconds */
-  long tv_usec;        /* and microseconds */
-};
-
-struct timezone {
-  int tz_minuteswest; /* minutes west of Greenwich */
-  int tz_dsttime;     /* type of dst correction */
-};
-extern "C" {
-/*
-extern int gettimeofday(struct timeval *, struct timezone *);
-*/
-extern int gettimeofday(struct timeval *,...);
-}
 #elif ( defined (PARCH_IRIX64) ||  defined (PARCH_IRIX) || defined(PARCH_IRIX5))
 #include <sys/resource.h>
 #if defined(__cplusplus)
