@@ -50,7 +50,7 @@ int main(int argc,char **args)
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   PetscScalar    zero = 0.0,none = -1.0;
-  PetscTruth     preload = PETSC_TRUE,diagonalscale,hasNullSpace;
+  PetscTruth     preload = PETSC_TRUE,diagonalscale,hasNullSpace,isSymmetric;
   int            num_numfac;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -115,6 +115,20 @@ int main(int argc,char **args)
       ierr = VecSet(&one,b);CHKERRQ(ierr);
     }
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+
+    /* Check whether A is symmetric */
+    ierr = PetscOptionsHasName(PETSC_NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
+    if (flg) {
+      Mat trans;
+      ierr = MatTranspose(A, &trans);
+      ierr = MatEqual(A, trans, &isSymmetric);
+      if (isSymmetric) {
+        PetscPrintf(PETSC_COMM_WORLD,"A is symmetric \n");CHKERRQ(ierr);
+      } else {
+        PetscPrintf(PETSC_COMM_WORLD,"A is non-symmetric \n");CHKERRQ(ierr);
+      }
+      ierr = MatDestroy(trans);CHKERRQ(ierr);
+    }
 
     /* 
        If the loaded matrix is larger than the vector (due to being padded 
