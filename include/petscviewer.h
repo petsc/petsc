@@ -29,7 +29,7 @@ extern Viewer STDERR_VIEWER;
 extern Viewer SYNC_STDOUT_VIEWER;
 
 extern int ViewerMatlabPutArray_Private(Viewer,int,int,Scalar*);
-extern int ViewMatlabPutSparse(Viewer,int,int,int,Scalar*,int*,int *);
+extern int ViewMatlabPutSparse_Private(Viewer,int,int,int,Scalar*,int*,int *);
 
 extern int PetscView(PetscObject,Viewer);
 extern int ViewerInitialize();
