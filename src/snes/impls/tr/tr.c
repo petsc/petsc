@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.68 1997/01/14 22:58:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.69 1997/01/21 02:21:53 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -61,7 +61,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
 {
   SNES_TR      *neP = (SNES_TR *) snes->data;
   Vec          X, F, Y, G, TMP, Ytmp;
-  int          maxits, i, history_len, ierr, lits;
+  int          maxits, i, history_len, ierr, lits, breakout = 0;
   MatStructure flg = DIFFERENT_NONZERO_PATTERN;
   double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm,*history, ynorm,norm1;
   Scalar       mone = -1.0,cnorm;
@@ -144,22 +144,27 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
       neP->itflag = 0;
       if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
         /* We're not progressing, so return with the current iterate */
+        breakout = 1; break;
       }
       snes->nfailures++;
     }
-    fnorm = gnorm;
-    snes->norm = fnorm;
-    if (history && history_len > i+1) history[i+1] = fnorm;
-    TMP = F; F = G; snes->vec_func_always = F; G = TMP;
-    TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
-    VecNorm(X, NORM_2,&xnorm );		/* xnorm = || X || */
-    SNESMonitor(snes,i+1,fnorm);
+    if (!breakout) {
+      fnorm = gnorm;
+      snes->norm = fnorm;
+      if (history && history_len > i+1) history[i+1] = fnorm;
+      TMP = F; F = G; snes->vec_func_always = F; G = TMP;
+      TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
+      VecNorm(X, NORM_2,&xnorm );		/* xnorm = || X || */
+      SNESMonitor(snes,i+1,fnorm);
 
-    /* Test for convergence */
-    neP->itflag = 1;
-    if ((*snes->converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
+      /* Test for convergence */
+      neP->itflag = 1;
+      if ((*snes->converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
+        break;
+      } 
+    } else {
       break;
-    } 
+    }
   }
   if (X != snes->vec_sol) {
     /* Verify solution is in corect location */
@@ -319,7 +324,12 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,void *d
   if (neP->itflag) {
     info = SNESConverged_EQ_LS(snes,xnorm,pnorm,fnorm,dummy);
     if (info) return info;
-  } 
+  } else if (snes->nfuncs > snes->max_funcs) {
+    PLogInfo(snes,
+      "SNES: Exceeded maximum number of function evaluations: %d > %d\n",
+      snes->nfuncs, snes->max_funcs );
+    return -2;
+  }  
   if (neP->delta < xnorm * epsmch) {
     PLogInfo(snes,
       "SNESConverged_EQ_TR: Converged due to trust region param %g < %g * %g\n",neP->delta,xnorm, epsmch);
