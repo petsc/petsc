@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.197 1996/11/29 22:20:00 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.198 1996/11/29 22:26:43 curfman Exp balay $";
 #endif
 
 /*
@@ -544,6 +544,7 @@ static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
            m,a->n,fshift,a->nz);
   PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues is %d\n",
            a->reallocs);
+  a->reallocs          = 0;
   A->info.nz_unneeded  = (double)fshift;
 
   /* check out for identical nodes. If found, use inode functions */
