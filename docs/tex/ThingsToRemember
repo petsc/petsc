@@ -28,19 +28,19 @@ Nightly build:
   The password is in petsc/maint/autoftp
 
 UT account:
-  brazos.pe.utexas.edu 
+  brazos.pe.utexas.edu  and frankfort
 
 Location of email sent to petsc-maint:
   
   Location of old petsc-maint mail is
   /mcs/adm/request/petsc-maint/[active,resolved]
-  it may be processed with /usr/local/req-1.0/petsc-maint/bin/petsctkreq
-  make sure that /usr/local/req-1.0/petsc-maint/bin/ is in your path.
+  it may be processed with /usr/local/req/petsc-maint/bin/petsctkreq
+  make sure that /usr/local/req/petsc-maint/bin/ is in your path.
 
 FTP log file.
 charlotte  /usr/adm/xferlog
 
-Paragon account 
+Paragon account at San Diego
    telnet paragate.sdsc.edu 7577
    user id u12461
    cannot ftp to 

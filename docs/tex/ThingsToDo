@@ -58,10 +58,12 @@ Additional Capabilities that PETSc Needs:
    To do sometime soon:
   ----------------------
 
+   - Add matrix reduction plus ILU preconditioner. 
+
    - Add functionality to bjacobi to support block Gauss-Seidel including 
      support for coloring in parallel.
 
-   - Check why block Jacobi with ILU on blocks is not faster per iteration than 
+   * Check why block Jacobi with ILU on blocks is not faster per iteration than 
      ILU global is for SeqAIJ matrices. See file docs/tex/pictures/bjacobi_8_ilu_0
 
    - Develop basic PETSc benchmark suite

@@ -114,7 +114,9 @@ examples_3: chkopts
 	@-if [ "$(EXAMPLES_3)" != "" ] ; then \
           (for ex in $(EXAMPLES_3) foo ; do \
           $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
-          > trashz 2>&1; egrep -i '(Error|warning|Can)' trashz >> /dev/null ; \
+          > trashz 2>&1; \
+          grep -v EXTERNAL | \
+          egrep -i '(Error|warning|Can)' trashz >> /dev/null ; \
           if [ "$$?" != 1 ]; then \
           cat trashz ; fi; $(RM) trashz;\
           done;) fi
