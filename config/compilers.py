@@ -653,13 +653,23 @@ class Configure(config.base.Configure):
     try:
       self.checkCompiler('C')
     except:
-#      try removing this one
+      # try removing this one
       self.flibs = re.sub('-lcrt2.o','',self.flibs)
       self.framework.argDB['LIBS'] = oldLibs+self.flibs
       try:
         self.checkCompiler('C')
       except:
         raise RuntimeError('Fortran libraries cannot be used with C compiler')
+
+    # check these monster libraries work from C++
+    if self.framework.argDB['CXX']:
+      oldLibs = self.framework.argDB['LIBS']
+      self.framework.argDB['LIBS'] += ' '+self.flibs
+      try:
+        self.checkCompiler('C++')
+      except:
+        raise RuntimeError('Fortran libraries cannot be used with C++ compiler.\n Run with --with-fc=0 or --with-cxx=0')
+
     self.framework.argDB['LIBS'] = oldLibs
     self.addSubstitution('FLIBS', self.flibs)
     return
