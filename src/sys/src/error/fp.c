@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.23 1996/07/08 22:17:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.24 1996/08/06 04:01:37 bsmith Exp curfman $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -134,7 +134,7 @@ void SYsample_handler( unsigned exception[],int val[] )
             "*** floating point error 0x%x occurred ***\n",
             code);  
     ierr = PetscError(0,0,"Unknown file",1,"floating point error");
-    MPI_Abort(MPI_COMM_WORLD,0);
+    MPI_Abort(PETSC_COMM_WORLD,0);
 }
 int PetscSetFPTrap(int flag)
 {

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plogmpe.c,v 1.11 1996/08/19 23:02:33 curfman Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.12 1996/08/20 21:56:59 balay Exp curfman $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -290,7 +290,7 @@ int PLogMPEBegin()
     
   /* Do MPE initialization */
   MPE_Init_log();
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (!rank) {
     for ( i=0; i < PLOG_USER_EVENT_HIGH; i++) {
       if (PLogEventMPEFlags[i]) {

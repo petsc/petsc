@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.86 1996/07/08 22:16:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.87 1996/08/08 14:40:48 bsmith Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -267,7 +267,7 @@ int KSPGetType(KSP ksp,KSPType *type,char **name)
    database.
 
    Input Parameters:
-.  comm   - The communicator ( usually MPI_COMM_WORLD)
+.  comm   - The communicator (usually MPI_COMM_WORLD)
 .  prefix - prefix (usually "-")
 .  name   - the options database name (by default "ksp_type") 
 */

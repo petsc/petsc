@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.125 1996/08/20 22:25:41 balay Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.126 1996/09/12 16:28:34 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -126,7 +126,7 @@ int PLogInfo(void *vobj,char *message,...)
   else      {MPI_Comm_rank(obj->comm,&rank);} 
   if (rank) return 0;
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&urank);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&urank);
   va_start( Argp, message );
   sprintf(string,"[%d]",urank); len = PetscStrlen(string);
   vsprintf(string+len,message,Argp);
@@ -750,7 +750,7 @@ int PLogAllBegin()
   _PLB    = plball;
   _PLE    = pleall;
   /* all processors sync here for more consistent logging */
-  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Barrier(PETSC_COMM_WORLD);
   PetscTime(BaseTime);
   PLogStagePush(0);
   return 0;
@@ -810,7 +810,7 @@ int PLogBegin()
   _PLB    = plb;
   _PLE    = ple;
   /* all processors sync here for more consistent logging */
-  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Barrier(PETSC_COMM_WORLD);
   PetscTime(BaseTime);
   PLogStagePush(0);
   return 0;
@@ -849,7 +849,7 @@ int PLogDump(char* sname)
   PetscTime(_TotalTime);
   _TotalTime -= BaseTime;
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (sname) sprintf(file,"%s.%d",sname,rank);
   else  sprintf(file,"Log.%d",rank);
   fd = fopen(file,"w"); if (!fd) SETERRQ(1,"PlogDump:cannot open file");
@@ -947,7 +947,7 @@ int PLogEventRegister(int *e,char *string,char *color)
 
     PLogEventMPEFlags[*e]       = 1;
     if (color != PETSC_NULL) PLogEventColor[*e] = color;
-    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     if (!rank) {
       MPE_Describe_state(MPEBEGIN+2*(*e),MPEBEGIN+2*(*e)+1,string,PLogEventColor[*e]);
     }

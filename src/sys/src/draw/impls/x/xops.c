@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.55 1996/08/27 14:33:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.56 1996/09/12 16:27:01 bsmith Exp curfman $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -550,7 +550,7 @@ int ViewerInitializeDrawXSelf_Private()
   xywh[0] = 300; xywh[1] = 0; xywh[2] = 300; xywh[3] = 300;
   ierr = OptionsGetIntArray(PETSC_NULL,"-draw_self_geometry",xywh,&size,&flg);
          CHKERRQ(ierr);
-  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
+  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
                          &VIEWER_DRAWX_SELF_PRIVATE); CHKERRQ(ierr);
   return 0;
 }
@@ -563,7 +563,7 @@ int ViewerInitializeDrawXWorld_Private()
   xywh[0] = 0; xywh[1] = 0; xywh[2] = 300; xywh[3] = 300;
   ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);
          CHKERRQ(ierr);
-  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
+  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
                          &VIEWER_DRAWX_WORLD_PRIVATE); CHKERRQ(ierr);
   return 0;
 }

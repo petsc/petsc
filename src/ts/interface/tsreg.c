@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: tsreg.c,v 1.7 1996/04/26 00:12:38 balay Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.8 1996/08/08 14:45:29 bsmith Exp curfman $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -111,7 +111,7 @@ int TSGetType(TS ts, TSType *method,char **name)
    options database.
 
    Input Parameters:
-.  comm   - The communicator ( usually MPI_COMM_WORLD)
+.  comm   - The communicator (usually MPI_COMM_WORLD)
 .  prefix - prefix (usually "-")
 .  name   - the options database name (by default "ts_type") 
 */

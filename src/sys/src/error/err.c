@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.44 1996/09/12 16:25:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: err.c,v 1.45 1996/09/14 03:34:44 curfman Exp curfman $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -98,44 +98,44 @@ $    PetscStopErrorHandler()
 int PetscTraceBackErrorHandler(int line,char *dir,char *file,int number,
                              char *message,void *ctx)
 {
-  int        tid,flg;
+  int rank,flg;
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&tid);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (number == PETSC_ERR_MEM) {
-    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s line # %d\n",tid,file,line);
-    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s line # %d\n",tid,dir,file,line);
-    fprintf(stderr,"[%d]PETSC ERROR: Out of memory. This could be due to\n",tid);
-    fprintf(stderr,"[%d]PETSC ERROR: allocating too large an object or\n",tid);
-    fprintf(stderr,"[%d]PETSC ERROR: bleeding by not properly destroying\n",tid);
-    fprintf(stderr,"[%d]PETSC ERROR: unneeded objects.\n",tid);
+    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s line # %d\n",rank,file,line);
+    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s line # %d\n",rank,dir,file,line);
+    fprintf(stderr,"[%d]PETSC ERROR: Out of memory. This could be due to\n",rank);
+    fprintf(stderr,"[%d]PETSC ERROR: allocating too large an object or\n",rank);
+    fprintf(stderr,"[%d]PETSC ERROR: bleeding by not properly destroying\n",rank);
+    fprintf(stderr,"[%d]PETSC ERROR: unneeded objects.\n",rank);
     OptionsHasName(PETSC_NULL,"-trdump",&flg);
     if (flg) {
       PetscTrDump(stderr);
     }
     else {
-      fprintf(stderr,"[%d]PETSC ERROR: Try running with -trdump. \n",tid);
+      fprintf(stderr,"[%d]PETSC ERROR: Try running with -trdump. \n",rank);
     }
     number = 1;
   }
   else if (number == PETSC_ERR_SUP) {
-    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s line # %d\n",tid,file,line);
-    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s line # %d\n",tid,dir,file,line);
-    fprintf(stderr,"[%d]PETSC ERROR: %s: No support for this operation\n",tid,message);
-    fprintf(stderr,"[%d]PETSC ERROR: for this object type!\n",tid);
+    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s line # %d\n",rank,file,line);
+    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s line # %d\n",rank,dir,file,line);
+    fprintf(stderr,"[%d]PETSC ERROR: %s: No support for this operation\n",rank,message);
+    fprintf(stderr,"[%d]PETSC ERROR: for this object type!\n",rank);
     number = 1;
   }
   else if (number == PETSC_ERR_SIG) {
-    fprintf(stderr,"[%d]PETSC ERROR: ",tid);
+    fprintf(stderr,"[%d]PETSC ERROR: ",rank);
     fprintf(stderr,"%s %s\n",file,message);
   }
   else if (number == PETSC_ERR_SIZ) {
-    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s line # %d\n",tid,file,line);
-    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s line # %d\n",tid,dir,file,line);
-    fprintf(stderr,"[%d]PETSC ERROR: %s: Nonconforming object sizes!\n",tid,message);
+    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s line # %d\n",rank,file,line);
+    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s line # %d\n",rank,dir,file,line);
+    fprintf(stderr,"[%d]PETSC ERROR: %s: Nonconforming object sizes!\n",rank,message);
     number = 1;
   }
   else {
-    fprintf(stderr,"[%d]PETSC ERROR: ",tid);
+    fprintf(stderr,"[%d]PETSC ERROR: ",rank);
     if (!dir) {
       if (!message) fprintf(stderr,"%s line # %d\n",file,line);
       else fprintf(stderr,"%s line # %d %s\n",file,line,message);
@@ -181,38 +181,38 @@ $    PetscAbortErrorHandler()
 int PetscStopErrorHandler(int line,char *dir,char *file,int number,
                              char *message,void *ctx)
 {
-  int        tid,flg;
+  int rank, flg;
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&tid);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (number == PETSC_ERR_MEM) {
-    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s line # %d\n",tid,file,line);
-    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s line # %d\n",tid,dir,file,line);
-    fprintf(stderr,"[%d]PETSC ERROR: Out of memory. This could be due to\n",tid);
-    fprintf(stderr,"[%d]PETSC ERROR: allocating too large an object or\n",tid);
-    fprintf(stderr,"[%d]PETSC ERROR: bleeding by not properly destroying\n",tid);
-    fprintf(stderr,"[%d]PETSC ERROR: unneeded objects.\n",tid);
+    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s line # %d\n",rank,file,line);
+    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s line # %d\n",rank,dir,file,line);
+    fprintf(stderr,"[%d]PETSC ERROR: Out of memory. This could be due to\n",rank);
+    fprintf(stderr,"[%d]PETSC ERROR: allocating too large an object or\n",rank);
+    fprintf(stderr,"[%d]PETSC ERROR: bleeding by not properly destroying\n",rank);
+    fprintf(stderr,"[%d]PETSC ERROR: unneeded objects.\n",rank);
     OptionsHasName(PETSC_NULL,"-trdump",&flg);
     if (flg) {
       PetscTrDump(stderr);
     }
     else {
-      fprintf(stderr,"[%d]PETSC ERROR: Try running with -trdump. \n",tid);
+      fprintf(stderr,"[%d]PETSC ERROR: Try running with -trdump. \n",rank);
     }
     number = 1;
   }
   else if (number == PETSC_ERR_SUP) {
-    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s line # %d\n",tid,file,line);
-    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s line # %d\n",tid,dir,file,line);
-    fprintf(stderr,"[%d]PETSC ERROR: %s: No support for this operation\n",tid,message);
-    fprintf(stderr,"[%d]PETSC ERROR: for this object type!\n",tid);
+    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s line # %d\n",rank,file,line);
+    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s line # %d\n",rank,dir,file,line);
+    fprintf(stderr,"[%d]PETSC ERROR: %s: No support for this operation\n",rank,message);
+    fprintf(stderr,"[%d]PETSC ERROR: for this object type!\n",rank);
     number = 1;
   }
   else if (number == PETSC_ERR_SIG) {
-    fprintf(stderr,"[%d]PETSC ERROR: ",tid);
+    fprintf(stderr,"[%d]PETSC ERROR: ",rank);
     fprintf(stderr,"%s %s\n",file,message);
   }
   else {
-    fprintf(stderr,"[%d]PETSC ERROR: ",tid);
+    fprintf(stderr,"[%d]PETSC ERROR: ",rank);
     if (!dir) {
       if (!message) fprintf(stderr,"%s line # %d\n",file,line);
       else fprintf(stderr,"%s line # %d %s\n",file,line,message);
