@@ -4,10 +4,10 @@ IPETSCDIR = ../../../../
 
 CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) \
            -I$(IPETSCDIR)/pinclude -I../../ -D__DIR__='"ksp/impls/gmres/"'
-SOURCEC  = gmres.c borthog.c mmaxpy.c
+SOURCEC  = gmres.c borthog.c
 WSOURCEC = gmresf.c  
 SOURCEF  =
-OBJSC    = gmres.o borthog.o mmaxpy.o
+OBJSC    = gmres.o borthog.o
 WOBJS    = gmresf.o 
 OBJSF    = 
 LIBBASE  = libpetscksp
