@@ -1704,13 +1704,15 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,IS is,const PetscScalar *diag)
   PetscInt       i,N,*rows,*owners = l->rowners;
   PetscInt       *nprocs,j,idx,nsends,row;
   PetscInt       nmax,*svalues,*starts,*owner,nrecvs;
-  PetscInt       *rvalues,tag = A->tag,count,base,slen,*source;
+  PetscInt       *rvalues,tag = A->tag,count,base,slen,*source,lastidx = -1;
   PetscInt       *lens,*lrows,*values,bs=A->bs,rstart_bs=l->rstart_bs;
   MPI_Comm       comm = A->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
   IS             istmp;
-  PetscTruth     found;
+#if defined(PETSC_DEBUG)
+  PetscTruth     found = PETSC_FALSE;
+#endif
   
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
@@ -1720,15 +1722,25 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,IS is,const PetscScalar *diag)
   ierr  = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
   ierr  = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
   ierr  = PetscMalloc((N+1)*sizeof(PetscInt),&owner);CHKERRQ(ierr); /* see note*/
+  j = 0;
   for (i=0; i<N; i++) {
-    idx   = rows[i];
-    found = PETSC_FALSE;
-    for (j=0; j<size; j++) {
+    if (lastidx > (idx = rows[i])) j = 0;
+    lastidx = idx;
+    for (; j<size; j++) {
       if (idx >= owners[j]*bs && idx < owners[j+1]*bs) {
-        nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; found = PETSC_TRUE; break;
+        nprocs[2*j]++; 
+        nprocs[2*j+1] = 1;
+        owner[i] = j; 
+#if defined(PETSC_DEBUG)
+        found = PETSC_TRUE; 
+#endif
+        break;
       }
     }
+#if defined(PETSC_DEBUG)
     if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Index out of range");
+    found = PETSC_FALSE;
+#endif
   }
   nsends = 0;  for (i=0; i<size; i++) { nsends += nprocs[2*i+1];} 
   
