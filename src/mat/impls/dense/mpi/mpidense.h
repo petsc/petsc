@@ -1,6 +1,10 @@
-/* $Id: mpidense.h,v 1.2 1995/10/22 18:42:58 bsmith Exp curfman $ */
+/* $Id: mpidense.h,v 1.3 1995/10/23 23:14:55 curfman Exp bsmith $ */
 
 #include "dense.h"
+
+  /* 
+       Data stucture for basic parallel dense matrix 
+  */
 
 typedef struct {
   int           *rowners, *cowners;     /* ranges owned by each processor */

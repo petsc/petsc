@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.7 1995/11/01 19:10:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.8 1995/11/01 23:17:49 bsmith Exp bsmith $";
 #endif
 
 #include "mpidense.h"
@@ -640,7 +640,7 @@ static int MatNorm_MPIDense(Mat A,NormType type,double *norm)
       v = mat->v;
       for ( j=0; j<mat->n; j++ ) {
         for ( i=0; i<mat->m; i++ ) {
-          tmp[j] += PetscAbsScalar(*v++); 
+          tmp[j] += PetscAbsScalar(*v);  v++;
         }
       }
       MPI_Allreduce((void*)tmp,(void*)tmp2,mdn->N,MPI_DOUBLE,MPI_SUM,A->comm);

@@ -1,6 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.72 1995/11/01 23:17:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.73 1995/11/03 02:44:58 bsmith Exp bsmith $";
 #endif
+/*
+     Defines the basic matrix operations for sequential dense.
+*/
 
 #include "dense.h"
 #include "pinclude/plapack.h"
@@ -85,6 +88,7 @@ static int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          one = 1, info;
   Scalar       *x, *y;
+  
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   PetscMemcpy(y,x,mat->m*sizeof(Scalar));
   if (A->factor == FACTOR_LU) {
@@ -103,6 +107,7 @@ static int MatSolveTrans_SeqDense(Mat A,Vec xx,Vec yy)
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          one = 1, info;
   Scalar       *x, *y;
+  
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   PetscMemcpy(y,x,mat->m*sizeof(Scalar));
   /* assume if pivots exist then use LU; else Cholesky */
@@ -122,6 +127,7 @@ static int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   int          one = 1, info,ierr;
   Scalar       *x, *y, sone = 1.0;
   Vec          tmp = 0;
+  
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp); CHKERRQ(ierr);
@@ -142,12 +148,14 @@ static int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   PLogFlops(mat->n*mat->n - mat->n);
   return 0;
 }
+
 static int MatSolveTransAdd_SeqDense(Mat A,Vec xx,Vec zz, Vec yy)
 {
   Mat_SeqDense  *mat = (Mat_SeqDense *) A->data;
   int           one = 1, info,ierr;
   Scalar        *x, *y, sone = 1.0;
   Vec           tmp;
+  
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp); CHKERRQ(ierr);
@@ -273,6 +281,7 @@ static int MatGetRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *v;
   int          i;
+  
   *ncols = mat->n;
   if (cols) {
     *cols = (int *) PetscMalloc(mat->n*sizeof(int)); CHKPTRQ(*cols);
@@ -649,6 +658,7 @@ static int MatNorm_SeqDense(Mat A,NormType type,double *norm)
 static int MatSetOption_SeqDense(Mat A,MatOption op)
 {
   Mat_SeqDense *aij = (Mat_SeqDense *) A->data;
+  
   if (op == ROW_ORIENTED)            aij->roworiented = 1;
   else if (op == COLUMN_ORIENTED)    aij->roworiented = 0;
   else if (op == ROWS_SORTED || 
