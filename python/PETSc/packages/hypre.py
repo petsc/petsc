@@ -49,22 +49,16 @@ class Configure(PETSc.package.Package):
           
         
   def Install(self):
-    self.framework.log.write('Downloading hypre\n')
-    try:
-      hypreDir = self.getDir()
-      self.framework.log.write('HYPRE already downloaded, no need to ftp\n')
-    except RuntimeError:
-      if not os.path.isfile(os.path.expanduser(os.path.join('~','.hypre_license'))):
-        print "**************************************************************************************************"
-        print "You must register to use hypre at http://www.llnl.gov/CASC/hypre/download/hyprebeta_cur_agree.html"
-        print "    Once you have registered, configure will continue and download and install hypre for you      "
-        print "**************************************************************************************************"
-        fd = open(os.path.expanduser(os.path.join('~','.hypre_license')),'w')
-        fd.close()
-      self.downLoad()
-      self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.package+' into '+self.getDir())
-    # Get the HYPRE directories
+    if not os.path.isfile(os.path.expanduser(os.path.join('~','.hypre_license'))):
+      print "**************************************************************************************************"
+      print "You must register to use hypre at http://www.llnl.gov/CASC/hypre/download/hyprebeta_cur_agree.html"
+      print "    Once you have registered, configure will continue and download and install hypre for you      "
+      print "**************************************************************************************************"
+      fd = open(os.path.expanduser(os.path.join('~','.hypre_license')),'w')
+      fd.close()
     hypreDir = self.getDir()
+
+    # Get the HYPRE directories
     installDir = os.path.join(hypreDir, self.framework.argDB['PETSC_ARCH'])
     if not os.path.isdir(installDir):
       os.mkdir(installDir)

@@ -1598,13 +1598,14 @@ PetscErrorCode SNESDefaultSolutionBC(SNES snes, Vec sol, void *ctx)
 . func - The function
 
   Calling sequence of func:
-. func (TS ts, int step);
+. func (SNES snes, PetscInt step);
 
 . step - The current step of the iteration
 
   Level: intermediate
 
 .keywords: SNES, update
+
 .seealso SNESDefaultUpdate(), SNESSetRhsBC(), SNESSetSolutionBC()
 @*/
 PetscErrorCode SNESSetUpdate(SNES snes, PetscErrorCode (*func)(SNES, PetscInt))

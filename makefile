@@ -16,7 +16,7 @@ include ${PETSC_DIR}/bmake/common/test
 all: 
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
 	-@${OMAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}
-all_build: chk_petsc_dir chklib_dir info info_h deletelibs  blaslapack build shared
+all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -111,18 +111,6 @@ build:
 	-@${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
 	-@echo "Completed building libraries"
 	-@echo "========================================="
-#
-#  Compiles the blas and lapack source code if found
-blaslapack:
-	-@if [ -d externalpackages/f2cblaslapack/${PETSC_ARCH} -a ! -s externalpackages/f2cblaslapack/${PETSC_ARCH}/libf2cblas.a ] ; then cd externalpackages/f2cblaslapack;\
-        echo "=========================================";\
-        echo "Building C Blas/Lapack libraries";\
-        ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ;\
-        ${MV} libf2cblas.a libf2clapack.a ${PETSC_ARCH};\
-        ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} cleanblaslapack ;\
-        echo "Completed C building Blas/Lapack libraries";\
-        echo "========================================="; fi
-#
 #
 # Builds PETSc test examples for a given architecture
 #
@@ -373,8 +361,6 @@ alladic:
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} ACTION=adic  tree 
 	-@cd src/inline ; \
             ${OMAKE} PETSC_ARCH=${PETSC_ARCH} adic
-	-@cd src/blaslapack ; \
-            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} ACTION=adic  tree
 
 alladiclib:
 	-@echo "Beginning to compile ADIC libraries in all directories"
@@ -392,8 +378,6 @@ alladiclib:
 	-@echo "========================================="
 	-@${RM} -f  ${INSTALL_LIB_DIR}/*adic.${AR_LIB_SUFFIX}
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
-	-@cd src/blaslapack ; \
-            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
 	-@cd src/adic/src ; \
             ${OMAKE} PETSC_ARCH=${PETSC_ARCH} lib
 

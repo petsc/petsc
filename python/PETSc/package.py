@@ -8,12 +8,13 @@ import sys
 class Package(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.headerPrefix = ''
-    self.substPrefix  = ''
+    self.headerPrefix = 'PETSc'
+    self.substPrefix  = 'PETSc'
     self.compilers    = self.framework.require('config.compilers',self)
     self.libraries    = self.framework.require('config.libraries',self)
     self.clanguage    = self.framework.require('PETSc.utilities.clanguage',self)    
-    self.functions    = self.framework.require('config.functions',         self)
+    self.functions    = self.framework.require('config.functions',self)
+    self.source       = self.framework.require('config.sourceControl',self)    
     self.found        = 0
     self.lib          = []
     # this packages libraries and all those it depends on
@@ -73,25 +74,47 @@ class Package(config.base.Configure):
   def downLoad(self):
     '''Downloads a package; using bk or ftp; opens it in the with-external-packages-dir directory'''
     self.framework.log.write('Downloading '+self.name+'\n')
-    import urllib
-
     packages  = self.framework.argDB['with-external-packages-dir']
-    tarname   = self.name+'.tar'
-    tarnamegz = tarname+'.gz'
-    try:
-      urllib.urlretrieve(self.download[0], os.path.join(packages,tarnamegz ))
-    except Exception, e:
-      raise RuntimeError('Error downloading '+self.name+': '+str(e))
-    try:
-      config.base.Configure.executeShellCommand('cd '+packages+'; gunzip '+tarnamegz, log = self.framework.log)
-    except RuntimeError, e:
-      raise RuntimeError('Error unzipping '+tarname+': '+str(e))
-    try:
-      config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf '+tarname, log = self.framework.log)
-    except RuntimeError, e:
-      raise RuntimeError('Error doing tar -xf '+tarname+': '+str(e))
-    os.unlink(os.path.join(packages, tarname))
-    self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.package+'\n')
+    
+    if hasattr(self.source,'bk'):
+      for url in self.download:
+        if url.startswith('bk://'):
+          import commands
+
+          try:
+            self.framework.log.write('Downloading it using "bk clone '+url+' '+os.path.join(packages,self.package)+'"\n')
+            (status,output) = commands.getstatusoutput('bk clone '+url+' '+os.path.join(packages,self.package))
+          except RuntimeError, e:
+            raise RuntimeError('Error bk cloning '+self.package+' '+str(e))        
+          if status:
+            if output.find('ommand not found') >= 0:
+              raise RuntimeError('Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path')
+            elif output.find('Cannot resolve host') >= 0:
+              raise RuntimeError('Unable to download '+self.package+'. You must be off the network. Connect to the internet and run config/configure.py again')
+          self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.package+' into '+self.getDir())
+          return
+
+    for url in self.download:
+      if url.startswith('http://') or url.startswith('ftp://'):      
+        import urllib
+        tarname   = self.name+'.tar'
+        tarnamegz = tarname+'.gz'
+        try:
+          urllib.urlretrieve(url, os.path.join(packages,tarnamegz ))
+        except Exception, e:
+          raise RuntimeError('Error downloading '+self.name+': '+str(e))
+        try:
+          config.base.Configure.executeShellCommand('cd '+packages+'; gunzip '+tarnamegz, log = self.framework.log)
+        except RuntimeError, e:
+          raise RuntimeError('Error unzipping '+tarname+': '+str(e))
+        try:
+          config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf '+tarname, log = self.framework.log)
+        except RuntimeError, e:
+          raise RuntimeError('Error doing tar -xf '+tarname+': '+str(e))
+        os.unlink(os.path.join(packages, tarname))
+        self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.package+' into '+self.getDir())
+        return
+    raise RuntimeError('Unable to download '+self.package+' from locations '+str(self.download)) 
 
   def getDir(self):
     '''Find the directory containing the package'''
@@ -103,13 +126,15 @@ class Package(config.base.Configure):
     for dir in os.listdir(packages):
       if dir.startswith(self.name) and os.path.isdir(os.path.join(packages, dir)):
         Dir = dir
+        break
     if Dir is None:
       self.framework.log.write('Did not located already downloaded '+self.name+'\n')
-      raise RuntimeError('Error locating '+self.name+' directory')
+      self.downLoad()
+      return self.getDir()
     return os.path.join(packages, Dir)
 
   def configureLibrary(self):
-    '''Find an installation and check if it can work with PETSc'''
+    '''Find an installation ando check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
     self.framework.log.write('Checking for a functional '+self.name+'\n')
     foundLibrary = 0
@@ -140,7 +165,7 @@ class Package(config.base.Configure):
 
   def configure(self):
     '''Determines if the package should be configured for, then calls the configure'''
-    if self.framework.argDB['download-'+self.package]:
+    if self.download and self.framework.argDB['download-'+self.package]:
       self.framework.argDB['with-'+self.package] = 1
     if 'with-'+self.package+'-dir' in self.framework.argDB or 'with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1

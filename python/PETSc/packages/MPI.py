@@ -431,8 +431,9 @@ class Configure(config.base.Configure):
     # User chooses one or take first (sort by version)
     if self.foundMPI:
       self.name, self.lib, self.include, self.version = functionalMPI[0]
-      self.dlib = self.lib + self.compilers.flibs 
-      self.framework.packages.append(self)
+      self.dlib = self.lib + self.compilers.flibs
+      if hasattr(self.framework,'packages'):
+        self.framework.packages.append(self)
       self.framework.log.write('Choose MPI '+self.version+' in '+self.name+'\n')
     elif len(nonsharedMPI):
       raise RuntimeError('Could not locate any MPI with shared libraries')
