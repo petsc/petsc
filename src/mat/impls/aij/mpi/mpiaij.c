@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.116 1996/01/24 16:01:05 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.117 1996/01/26 04:33:52 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -213,6 +213,7 @@ static int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
   PetscFree(starts); PetscFree(nprocs);
 
   /* Free cache space */
+  PLogInfo(0,"[%d]MatAssemblyBegin_MPIAIJ:Number of off processor values %d\n",rank,aij->stash.n);
   ierr = StashDestroy_Private(&aij->stash); CHKERRQ(ierr);
 
   aij->svalues    = svalues;    aij->rvalues    = rvalues;
@@ -1354,6 +1355,23 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    d_nz=PETSC_DEFAULT and d_nnz=PETSC_NULL for PETSc to control dynamic
    memory allocation.  Likewise, specify preallocated storage for the
    off-diagonal part of the local submatrix with o_nz or o_nnz (not both).
+
+$  Consider a processor that owns rows 3, 4 and 5 
+$
+$  row  col = 0    1   2   3    4   5   6   7  8   9   10 11
+$  3          o    o   o   d    d   d   o   o  o   o    o  o
+$  4          o    o   o   d    d   d   o   o  o   o    o  o
+$  5          o    o   o   d    d   d   o   o  o   o    o  o
+$ 
+$   Thus any entries in the d locations are stored in the d matrix and 
+$ any in the o locations are store in the o matrix. (The d and the o matrix
+$ are simply SeqAIJ matrix (that is they store the matrices in compress 
+$ row storage)).
+
+$   Now d_nz should give the number of non zeros per row in the d matrix
+$ and o_nz should give the number of nonzeros per row in the o matrix.
+$ In general for PDE problems where most nonzeros are near the diagonal
+$ one expects d_nz >> o_nz
 
    By default, this format uses inodes (identical nodes) when possible.
    We search for consecutive rows with the same nonzero structure, thereby
