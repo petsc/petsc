@@ -782,13 +782,6 @@ PetscErrorCode MatZeroRows_SeqSBAIJ_Check_Blocks(PetscInt idx[],PetscInt n,Petsc
   PetscFunctionReturn(0);
 }
   
-#undef __FUNCT__  
-#define __FUNCT__ "MatZeroRows_SeqSBAIJ"
-PetscErrorCode MatZeroRows_SeqSBAIJ(Mat A,IS is,const PetscScalar *diag)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"No support for this function yet");
-}
 
 /* Only add/insert a(i,j) with i<=j (blocks). 
    Any a(i,j) with i>j input by user is ingored. 
@@ -1272,7 +1265,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        MatSetOption_SeqSBAIJ,
        MatZeroEntries_SeqSBAIJ,
-/*25*/ MatZeroRows_SeqSBAIJ,
+/*25*/ 0,
        0,
        0,
        MatCholeskyFactorSymbolic_SeqSBAIJ,

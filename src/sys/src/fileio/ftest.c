@@ -32,7 +32,7 @@
 #define __FUNCT__ "PetscTestOwnership"
 static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) 
 {
-  int m;
+  int m = R_OK;
   
   PetscFunctionBegin;
   if (mode == 'r') m = R_OK;

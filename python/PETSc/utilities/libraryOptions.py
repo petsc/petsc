@@ -10,6 +10,7 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.arch          = self.framework.require('PETSc.utilities.arch', self)
+    self.framework.require('config.setCompilers',self)
     return
 
   def __str__(self):
@@ -38,6 +39,9 @@ class Configure(config.base.Configure):
 
     self.useCtable = self.framework.argDB['with-lib-ctable']
     self.addDefine('USE_CTABLE', self.useCtable)
+    
+    if not 'FC' in self.framework.argDB and self.framework.argDB['with-lib-fortran-kernels']:
+      raise RuntimeError('Cannot use fortran kernels without a Fortran compiler')
     self.useFortranKernels = self.framework.argDB['with-lib-fortran-kernels']
     self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
 

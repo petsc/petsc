@@ -5,8 +5,6 @@
 */
 #include "vsilo.h"
 
-#ifdef PETSC_HAVE_SILO
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_Silo"
 static PetscErrorCode PetscViewerDestroy_Silo(PetscViewer viewer)
@@ -95,8 +93,7 @@ PetscErrorCode PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer
 {
   PetscViewer    v;
   Viewer_Silo    *silo;
-  char           filename[PETSC_MAX_PATH_LEN];
-  char           filetemp[PETSC_MAX_PATH_LEN];
+  char           filename[PETSC_MAX_PATH_LEN], filetemp[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -314,42 +311,4 @@ PetscErrorCode PetscViewerSiloClearMeshName(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#else
-
-PetscErrorCode PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
-{
-  SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
-}
-
-PetscErrorCode PetscViewerSiloGetName(PetscViewer viewer, char **name)
-{
-  SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
-}
-
-PetscErrorCode PetscViewerSiloSetName(PetscViewer viewer, const char name[])
-{
-  SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
-}
-
-PetscErrorCode PetscViewerSiloClearName(PetscViewer viewer)
-{
-  SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
-}
-
-PetscErrorCode PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
-{
-  SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
-}
-
-PetscErrorCode PetscViewerSiloSetMeshName(PetscViewer viewer, const char name[])
-{
-  SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
-}
-
-PetscErrorCode PetscViewerSiloClearMeshName(PetscViewer viewer)
-{
-  SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
-}
-
-#endif /* PETSC_HAVE_SILO */
   

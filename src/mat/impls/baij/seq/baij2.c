@@ -273,7 +273,7 @@ PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*z,*xb,sum1,sum2,*zarray;
+  PetscScalar    *x,*z = 0,*xb,sum1,sum2,*zarray;
   PetscScalar    x1,x2;
   MatScalar      *v;
   PetscErrorCode ierr;
@@ -320,7 +320,7 @@ PetscErrorCode MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*z,*xb,sum1,sum2,sum3,x1,x2,x3,*zarray;
+  PetscScalar    *x,*z = 0,*xb,sum1,sum2,sum3,x1,x2,x3,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
   PetscInt       mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
@@ -372,7 +372,7 @@ PetscErrorCode MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*z,*xb,sum1,sum2,sum3,sum4,x1,x2,x3,x4,*zarray;
+  PetscScalar    *x,*z = 0,*xb,sum1,sum2,sum3,sum4,x1,x2,x3,x4,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
   PetscInt       mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
@@ -421,7 +421,7 @@ PetscErrorCode MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5,*xb,*z,*x,*zarray;
+  PetscScalar    sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5,*xb,*z = 0,*x,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
   PetscInt       mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
@@ -472,7 +472,7 @@ PetscErrorCode MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*z,*xb,sum1,sum2,sum3,sum4,sum5,sum6;
+  PetscScalar    *x,*z = 0,*xb,sum1,sum2,sum3,sum4,sum5,sum6;
   PetscScalar    x1,x2,x3,x4,x5,x6,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
@@ -524,7 +524,7 @@ PetscErrorCode MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*z,*xb,sum1,sum2,sum3,sum4,sum5,sum6,sum7;
+  PetscScalar    *x,*z = 0,*xb,sum1,sum2,sum3,sum4,sum5,sum6,sum7;
   PetscScalar    x1,x2,x3,x4,x5,x6,x7,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
@@ -581,7 +581,7 @@ PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*z,*xb,*work,*workt,*zarray;
+  PetscScalar    *x,*z = 0,*xb,*work,*workt,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
   PetscInt       mbs=a->mbs,i,*idx,*ii,bs=A->bs,j,n,bs2=a->bs2;
@@ -635,7 +635,7 @@ PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y,*z,sum,*yarray,*zarray;
+  PetscScalar    *x,*y = 0,*z = 0,sum,*yarray,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
   PetscInt       mbs,i,*idx,*ii,n,*ridx=PETSC_NULL;
@@ -690,7 +690,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y,*z,*xb,sum1,sum2;
+  PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2;
   PetscScalar    x1,x2,*yarray,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
@@ -751,7 +751,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y,*z,*xb,sum1,sum2,sum3,x1,x2,x3,*yarray,*zarray;
+  PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2,sum3,x1,x2,x3,*yarray,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
   PetscInt       mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
@@ -812,7 +812,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y,*z,*xb,sum1,sum2,sum3,sum4,x1,x2,x3,x4,*yarray,*zarray;
+  PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2,sum3,sum4,x1,x2,x3,x4,*yarray,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
   PetscInt       mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
@@ -875,7 +875,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y,*z,*xb,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;
+  PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;
   PetscScalar    *yarray,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
@@ -939,7 +939,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y,*z,*xb,sum1,sum2,sum3,sum4,sum5,sum6;
+  PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2,sum3,sum4,sum5,sum6;
   PetscScalar    x1,x2,x3,x4,x5,x6,*yarray,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
@@ -1005,7 +1005,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y,*z,*xb,sum1,sum2,sum3,sum4,sum5,sum6,sum7;
+  PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2,sum3,sum4,sum5,sum6,sum7;
   PetscScalar    x1,x2,x3,x4,x5,x6,x7,*yarray,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
@@ -1072,7 +1072,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*z,*xb,*work,*workt,*y,*zarray;
+  PetscScalar    *x,*z = 0,*xb,*work,*workt,*y,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
   PetscInt       mbs,i,*idx,*ii,bs=A->bs,j,n,bs2=a->bs2;
@@ -1150,7 +1150,7 @@ PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *zb,*x,*z,*xb,x1,x2,x3,x4,x5;
+  PetscScalar    *zb,*x,*z,*xb = 0,x1,x2,x3,x4,x5;
   MatScalar      *v;
   PetscErrorCode ierr;
   PetscInt       mbs,i,*idx,*ii,rval,bs=A->bs,j,n,bs2=a->bs2,*ib,*ridx=PETSC_NULL;
