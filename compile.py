@@ -85,9 +85,15 @@ class Compile (action.Action):
     self.rebuildAll    = 0
     self.buildProducts = 0
 
+  def checkIncludeDirectory(self, dirname):
+    if not os.path.isdir(dirname):
+      raise RuntimeError('Include directory '+dirname+' does not exist')
+
   def getIncludeFlags(self):
     flags = ''
-    for dir in self.includeDirs: flags += ' -I'+dir
+    for dirname in self.includeDirs:
+      self.checkIncludeDirectory(dirname)
+      flags += ' -I'+dirname
     return flags
 
   def getDefines(self):
@@ -139,8 +145,8 @@ class Compile (action.Action):
     return action.Action.execute(self)
 
 class TagC (transform.GenericTag):
-  def __init__(self, tag = 'c', ext = 'c', sources = None, extraExt = 'h'):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
+  def __init__(self, tag = 'c', ext = 'c', sources = None, extraExt = 'h', root = None):
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
 
 class CompileC (Compile):
   def __init__(self, library, sources = None, tag = 'c', compiler = 'gcc', compilerFlags = '-g -Wall', archiver = 'ar', archiverFlags = 'crv'):
@@ -148,8 +154,8 @@ class CompileC (Compile):
     self.includeDirs.append('.')
 
 class TagCxx (transform.GenericTag):
-  def __init__(self, tag = 'cxx', ext = 'cc', sources = None, extraExt = 'hh'):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
+  def __init__(self, tag = 'cxx', ext = 'cc', sources = None, extraExt = 'hh', root = None):
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
 
 class CompileCxx (Compile):
   def __init__(self, library, sources = None, tag = 'cxx', compiler = 'g++', compilerFlags = '-g -Wall', archiver = 'ar', archiverFlags = 'crv'):
@@ -157,8 +163,8 @@ class CompileCxx (Compile):
     self.includeDirs.append('.')
 
 class TagFortran (transform.GenericTag):
-  def __init__(self, tag = 'fortran', ext = 'f', sources = None, extraExt = ''):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
+  def __init__(self, tag = 'fortran', ext = 'f', sources = None, extraExt = '', root = None):
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
 
 class CompileF77 (Compile):
   def __init__(self, library, sources = None, tag = 'fortran', compiler = 'g77', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
@@ -169,8 +175,8 @@ class CompileF90 (Compile):
     Compile.__init__(self, library, sources, tag, compiler, '-c '+compilerFlags, archiver, archiverFlags)
 
 class TagEtags (transform.GenericTag):
-  def __init__(self, tag = 'etags', ext = ['c', 'h', 'cc', 'hh', 'py'], sources = None, extraExt = ''):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
+  def __init__(self, tag = 'etags', ext = ['c', 'h', 'cc', 'hh', 'py'], sources = None, extraExt = '', root = None):
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
 
 class CompileEtags (Process):
   def __init__(self, tagsFile, sources = None, compiler = 'etags', compilerFlags = '-a'):

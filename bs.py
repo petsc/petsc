@@ -128,7 +128,7 @@ class Maker (logging.Logger):
         output += self.debugFileSetStr(fs)
       return output+']'
     else:
-      raise RuntimeError('Invalid fileset '+set)
+      raise RuntimeError('Invalid fileset '+str(set))
 
 class BS (Maker):
   includeRE   = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
@@ -233,19 +233,11 @@ class BS (Maker):
       except KeyError:
         print 'FileSet '+setName+' not found for purge'
 
-  def checkDirectory(self, dirname):
-    if not os.path.isdir(self.directories[dirname]):
-      raise RuntimeError('Directory '+dirname+' ==> '+self.directories[dirname]+' does not exist')
-
-  def consistencyChecks(self):
-    if int(argDB['checkDir']): map(self.checkDirectory, self.directories.keys())
-
   def cleanup(self):
     if argDB.has_key('target'): del argDB['target']
     self.saveSourceDB()
 
   def main(self):
-    self.consistencyChecks()
     if argDB.has_key('target'):
       for target in argDB['target']:
         if self.targets.has_key(target):

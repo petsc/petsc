@@ -107,7 +107,7 @@ class FileChanged (Transform):
     return Transform.execute(self)
 
 class GenericTag (FileChanged):
-  def __init__(self, tag, ext, sources = None, extraExt = ''):
+  def __init__(self, tag, ext, sources = None, extraExt = '', root = None):
     FileChanged.__init__(self, sources)
     if type(ext) == types.ListType:
       self.ext           = map(lambda x: '.'+x, ext)
@@ -117,6 +117,7 @@ class GenericTag (FileChanged):
       self.extraExt      = map(lambda x: '.'+x, extraExt)
     else:
       self.extraExt      = ['.'+extraExt]
+    self.root            = root
     self.changed.tag     = tag
     self.unchanged.tag   = 'old '+tag
     self.deferredUpdates = fileset.FileSet(tag = 'update '+tag)
@@ -124,10 +125,13 @@ class GenericTag (FileChanged):
 
   def fileExecute(self, source):
     (base, ext) = os.path.splitext(source)
-    if ext in self.ext:
-      FileChanged.fileExecute(self, source)
-    elif ext in self.extraExt:
-      self.deferredUpdates.append(source)
+    if not self.root or self.root == os.path.commonprefix([os.path.normpath(base), self.root]):
+      if ext in self.ext:
+        FileChanged.fileExecute(self, source)
+      elif ext in self.extraExt:
+        self.deferredUpdates.append(source)
+      else:
+        self.currentSet.append(source)
     else:
       self.currentSet.append(source)
 
@@ -137,6 +141,13 @@ class GenericTag (FileChanged):
       self.fileExecute(file)
     if len(self.currentSet): self.products.append(self.currentSet)
     return self.products
+
+  def execute(self):
+    if self.root:
+      self.root = os.path.normpath(self.root)
+      if not os.path.isdir(self.root):
+        raise RuntimeError('Invalid tag root directory: '+self.root)
+    return FileChanged.execute(self)
 
 class Update (Transform):
   def __init__(self, tags = [], sources = None):
