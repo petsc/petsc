@@ -1,4 +1,4 @@
-/*$Id: block.c,v 1.46 2000/04/12 04:22:00 bsmith Exp balay $*/
+/*$Id: block.c,v 1.47 2000/05/05 22:14:43 balay Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
@@ -7,7 +7,7 @@
 #include "petscsys.h"
 
 typedef struct {
-  int n;            /* number of blocks */
+  int N,n;            /* number of blocks */
   int sorted;       /* are the blocks sorted? */
   int *idx;
   int bs;           /* blocksize */
@@ -76,26 +76,41 @@ int ISGetSize_Block(IS is,int *size)
   IS_Block *sub = (IS_Block *)is->data;
 
   PetscFunctionBegin;
-  *size = sub->bs*sub->n; 
+  *size = sub->bs*sub->N; 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"ISGetLocalSize_Block" 
+int ISGetLocalSize_Block(IS is,int *size)
+{
+  IS_Block *sub = (IS_Block *)is->data;
+
+  PetscFunctionBegin;
+  *size = sub->bs*sub->n; 
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"ISInvertPermutation_Block" 
 int ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
 {
   IS_Block *sub = (IS_Block *)is->data;
-  int      i,ierr,*ii,n = sub->n,*idx = sub->idx;
+  int      i,ierr,*ii,n = sub->n,*idx = sub->idx,size;
 
   PetscFunctionBegin;
-  ii = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(ii);
-  for (i=0; i<n; i++) {
-    ii[idx[i]] = i;
+  ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ii = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(ii);
+    for (i=0; i<n; i++) {
+      ii[idx[i]] = i;
+    }
+    ierr = ISCreateBlock(PETSC_COMM_SELF,sub->bs,n,ii,isout);CHKERRQ(ierr);
+    ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
+    ierr = PetscFree(ii);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"No inversion written yet for block IS");
   }
-  ierr = ISCreateBlock(PETSC_COMM_SELF,sub->bs,n,ii,isout);CHKERRQ(ierr);
-  ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
-  ierr = PetscFree(ii);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -184,7 +199,7 @@ int ISIdentity_Block(IS is,PetscTruth *ident)
 }
 
 static struct _ISOps myops = { ISGetSize_Block,
-                               ISGetSize_Block,
+                               ISGetLocalSize_Block,
                                ISGetIndices_Block,
                                ISRestoreIndices_Block,
                                ISInvertPermutation_Block,
@@ -214,7 +229,8 @@ static struct _ISOps myops = { ISGetSize_Block,
    Notes:
    When the communicator is not MPI_COMM_SELF, the operations on the 
    index sets, IS, are NOT conceptually the same as MPI_Group operations. 
-   The index sets are then distributed sets of indices. 
+   The index sets are then distributed sets of indices and thus certain operations
+   on them are collective. 
 
    Example:
    If you wish to index the values {0,1,4,5}, then use
@@ -240,6 +256,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
   PLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(int)+sizeof(struct _p_IS));
   sub->idx       = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(sub->idx);
   sub->n         = n;
+  ierr = MPI_Allreduce(&n,&sub->N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   for (i=1; i<n; i++) {
     if (idx[i] < idx[i-1]) {sorted = 0; break;}
   }

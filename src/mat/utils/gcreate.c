@@ -1,4 +1,4 @@
-/*$Id: gcreate.c,v 1.119 2000/04/12 04:24:13 bsmith Exp balay $*/
+/*$Id: gcreate.c,v 1.120 2000/05/05 22:16:35 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "petscmat.h"       /*I "petscmat.h"  I*/
@@ -91,7 +91,7 @@ int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
     break;
 #if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
   case MATMPIROWBS:
-    ierr = MatCreateMPIRowbs(comm,m,M,PETSC_DEFAULT,PETSC_NULL,PETSC_NULL,A);CHKERRQ(ierr);
+    ierr = MatCreateMPIRowbs(comm,m,M,PETSC_DEFAULT,PETSC_NULL,A);CHKERRQ(ierr);
     break;
 #endif
   case MATMPIDENSE:

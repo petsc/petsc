@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.38 2000/02/02 20:08:56 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.39 2000/05/10 16:40:36 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -46,6 +46,9 @@ typedef struct {
                                         as more values are set than were prealloced */
   int              rmax;             /* max nonzeros in any row */
   PetscTruth       ilu_preserve_row_sums;
+  PetscReal        lu_dtcol;
+  PetscTruth       lu_damp;
+  PetscReal        lu_damping;
   Scalar           *saved_values;    /* location for stashing nonzero values of matrix */
   Scalar           *idiag,*ssor;     /* inverse of diagonal entries; space for eisen */
 

@@ -1,10 +1,10 @@
 !
-!  "$Id: ex1f90.F,v 1.10 2000/01/11 21:00:01 bsmith Exp balay $";
+!  "$Id: ex1f90.F,v 1.11 2000/05/05 22:14:48 balay Exp bsmith $";
 !
 !/*T
 !    Concepts: Index sets^Manipulating a general index set;
 !    Concepts: Fortran90;
-!    Routines: ISCreateGeneral(); ISDestroy(); ISView(); ISGetSize()
+!    Routines: ISCreateGeneral(); ISDestroy(); ISView(); ISGetLocalSize()
 !    Routines: ISGetIndicesF90(); ISRestoreIndicesF90()
 !T*/
 !    
@@ -46,7 +46,7 @@
 
 !  Get the number of indices in the set 
 
-      call ISGetSize(is,n,ierr)
+      call ISGetLocalSize(is,n,ierr)
 
 !   Get the indices in the index set
 

@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.208 2000/05/05 22:16:00 balay Exp bsmith $*/
+/*$Id: baij.c,v 1.209 2000/05/10 16:40:51 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -976,7 +976,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is,Scalar *diag)
 
   PetscFunctionBegin;
   /* Make a copy of the IS and  sort it */
-  ierr = ISGetSize(is,&is_n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&is_n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&is_idx);CHKERRQ(ierr);
 
   /* allocate memory for rows,sizes */
@@ -1141,8 +1141,8 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
   PetscFunctionReturn(0);
 } 
 
-EXTERN int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,PetscReal,Mat*);
-EXTERN int MatLUFactor_SeqBAIJ(Mat,IS,IS,PetscReal);
+EXTERN int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatLUInfo*,Mat*);
+EXTERN int MatLUFactor_SeqBAIJ(Mat,IS,IS,MatLUInfo*);
 EXTERN int MatIncreaseOverlap_SeqBAIJ(Mat,int,IS*,int);
 EXTERN int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
 EXTERN int MatGetSubMatrices_SeqBAIJ(Mat,int,IS*,IS*,MatReuse,Mat**);
@@ -1425,8 +1425,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        0,
        MatSetValuesBlocked_SeqBAIJ,
        MatGetSubMatrix_SeqBAIJ,
-       0,
-       0,
+       MatDestroy_SeqBAIJ,
+       MatView_SeqBAIJ,
        MatGetMaps_Petsc};
 
 EXTERN_C_BEGIN
@@ -1608,8 +1608,6 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
       break;
     }
   }
-  B->ops->destroy     = MatDestroy_SeqBAIJ;
-  B->ops->view        = MatView_SeqBAIJ;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
   B->mapping          = 0;
@@ -1708,8 +1706,6 @@ int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PLogObjectCreate(C);
   C->data           = (void*)(c = PetscNew(Mat_SeqBAIJ));CHKPTRQ(c);
   ierr              = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  C->ops->destroy   = MatDestroy_SeqBAIJ;
-  C->ops->view      = MatView_SeqBAIJ;
   C->factor         = A->factor;
   c->row            = 0;
   c->col            = 0;

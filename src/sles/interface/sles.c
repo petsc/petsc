@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.137 2000/05/04 16:25:55 bsmith Exp balay $*/
+/*$Id: sles.c,v 1.138 2000/05/05 22:16:56 balay Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
@@ -322,7 +322,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   sles->dscalefix   = PETSC_FALSE;
   sles->diagonal    = PETSC_NULL;
   *outsles = sles;
-  PetscPublishAll(sles);
+  ierr = PetscPublishAll(sles);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

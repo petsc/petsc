@@ -1,4 +1,4 @@
-/*$Id: comb.c,v 1.29 2000/04/12 04:22:10 bsmith Exp balay $*/
+/*$Id: comb.c,v 1.30 2000/05/05 22:14:53 balay Exp bsmith $*/
 
 /*
       Split phase global vector reductions with support for combining the
@@ -127,7 +127,6 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
     SETERRQ(1,1,"Cannot call this after VecxxxEnd() has been called");
   }
 
-  PLogEventBegin(VEC_ReduceCommunication,0,0,0,0);
   PLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,comm);
   ierr  = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr); 
   if (size == 1) {
@@ -185,7 +184,6 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
   sr->state     = STATE_END;
   sr->numopsend = 0;
   PLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,comm);
-  PLogEventEnd(VEC_ReduceCommunication,0,0,0,0);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.13 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex17.c,v 1.14 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 
@@ -49,7 +49,7 @@ int main(int argc,char **args)
      orderings from the options database */
   ierr = MatGetOrdering(C,MATORDERING_QMD,&row,&col);CHKERRA(ierr);
 
-  ierr = MatLUFactorSymbolic(C,row,col,1.0,&A);CHKERRA(ierr);
+  ierr = MatLUFactorSymbolic(C,row,col,PETSC_NULL,&A);CHKERRA(ierr);
   ierr = MatLUFactorNumeric(C,&A);CHKERRA(ierr);
   ierr = MatSolveTranspose(A,b,x);CHKERRA(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: mmdense.c,v 1.29 2000/04/12 04:22:59 bsmith Exp bsmith $*/
+/*$Id: mmdense.c,v 1.30 2000/05/10 16:40:34 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel dense matrix vector multiply
@@ -12,7 +12,7 @@ int MatSetUpMultiply_MPIDense(Mat mat)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense*)mat->data;
   int          ierr;
-  IS           tofrom;
+  IS           from,to;
   Vec          gvec;
 
   PetscFunctionBegin;
@@ -20,7 +20,8 @@ int MatSetUpMultiply_MPIDense(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,mdn->N,&mdn->lvec);CHKERRQ(ierr);
 
   /* Create temporary index set for building scatter gather */
-  ierr = ISCreateStride(PETSC_COMM_SELF,mdn->N,0,1,&tofrom);CHKERRQ(ierr);
+  ierr = ISCreateStride(mat->comm,mdn->N,0,1,&from);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,mdn->N,0,1,&to);CHKERRQ(ierr);
 
   /* Create temporary global vector to generate scatter context */
   /* n    = mdn->cowners[mdn->rank+1] - mdn->cowners[mdn->rank]; */
@@ -28,13 +29,15 @@ int MatSetUpMultiply_MPIDense(Mat mat)
   ierr = VecCreateMPI(mat->comm,mdn->nvec,mdn->N,&gvec);CHKERRQ(ierr);
 
   /* Generate the scatter context */
-  ierr = VecScatterCreate(gvec,tofrom,mdn->lvec,tofrom,&mdn->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(gvec,from,mdn->lvec,to,&mdn->Mvctx);CHKERRQ(ierr);
   PLogObjectParent(mat,mdn->Mvctx);
   PLogObjectParent(mat,mdn->lvec);
-  PLogObjectParent(mat,tofrom);
+  PLogObjectParent(mat,from);
+  PLogObjectParent(mat,to);
   PLogObjectParent(mat,gvec);
 
-  ierr = ISDestroy(tofrom);CHKERRQ(ierr);
+  ierr = ISDestroy(to);CHKERRQ(ierr);
+  ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = VecDestroy(gvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -118,8 +121,8 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   for (i=0; i<ismax; i++) { 
     ierr = ISGetIndices(isrow[i],&irow[i]);CHKERRQ(ierr);
     ierr = ISGetIndices(iscol[i],&icol[i]);CHKERRQ(ierr);
-    ierr = ISGetSize(isrow[i],&nrow[i]);CHKERRQ(ierr);
-    ierr = ISGetSize(iscol[i],&ncol[i]);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(isrow[i],&nrow[i]);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(iscol[i],&ncol[i]);CHKERRQ(ierr);
   }
 
   /* Create hash table for the mapping :row -> proc*/
@@ -429,8 +432,6 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
 
   ierr = PetscFree(sbuf2);CHKERRQ(ierr);
   ierr = PetscFree(rmap);CHKERRQ(ierr);
-
-  ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
 
   for (i=0; i<ismax; i++) {
     ierr = MatAssemblyBegin(submats[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

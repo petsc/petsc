@@ -1,4 +1,4 @@
-/*$Id: maij.c,v 1.6 2000/06/27 17:46:45 bsmith Exp bsmith $*/
+/*$Id: maij.c,v 1.7 2000/06/27 18:32:51 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the MAIJ  matrix storage format.
   This format is used for restriction and interpolation operations for 
@@ -32,6 +32,43 @@ typedef struct {
 } Mat_MPIMAIJ;
 
 #undef __FUNC__  
+#define __FUNC__ /*<a name="MatMAIJGetAIJ"></a>*/"MatMAIJGetAIJ" 
+int MatMAIJGetAIJ(Mat A,Mat *B)
+{
+  int         ierr;
+  PetscTruth  ismpimaij,isseqmaij;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)A,MATMPIMAIJ,&ismpimaij);CHKERRQ(ierr);  
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQMAIJ,&isseqmaij);CHKERRQ(ierr);  
+  if (ismpimaij) {
+    Mat_MPIMAIJ *b = (Mat_MPIMAIJ*)A->data;
+
+    *B = b->A;
+  } else if (isseqmaij) {
+    Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
+
+    *B = b->AIJ;
+  } else {
+    *B = A;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatMAIJRedimension"></a>*/"MatMAIJRedimension" 
+int MatMAIJRedimension(Mat A,int dof,Mat *B)
+{
+  int ierr;
+  Mat Aij;
+
+  PetscFunctionBegin;
+  ierr = MatMAIJGetAIJ(A,&Aij);CHKERRQ(ierr);
+  ierr = MatCreateMAIJ(Aij,dof,B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ /*<a name="MatDestroy_SeqMAIJ"></a>*/"MatDestroy_SeqMAIJ" 
 int MatDestroy_SeqMAIJ(Mat A)
 {
@@ -55,14 +92,14 @@ int MatDestroy_MPIMAIJ(Mat A)
   Mat_MPIMAIJ *b = (Mat_MPIMAIJ*)A->data;
 
   PetscFunctionBegin;
-  if (b->A) {
-    ierr = MatDestroy(b->A);CHKERRQ(ierr);
-  }
   if (b->AIJ) {
     ierr = MatDestroy(b->AIJ);CHKERRQ(ierr);
   }
   if (b->OAIJ) {
     ierr = MatDestroy(b->OAIJ);CHKERRQ(ierr);
+  }
+  if (b->A) {
+    ierr = MatDestroy(b->A);CHKERRQ(ierr);
   }
   if (b->ctx) {
     ierr = VecScatterDestroy(b->ctx);CHKERRQ(ierr);
@@ -72,6 +109,16 @@ int MatDestroy_MPIMAIJ(Mat A)
   }
   ierr = PetscFree(b);CHKERRQ(ierr);
   PetscHeaderDestroy(A);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatGetSize_MAIJ"></a>*/"MatGetSize_MAIJ"
+static int MatGetSize_MAIJ(Mat A,int *m,int *n)
+{
+  PetscFunctionBegin;
+  if (m) *m = A->M; 
+  if (n) *n = A->N;
   PetscFunctionReturn(0);
 }
 
@@ -87,6 +134,7 @@ int MatCreate_MAIJ(Mat A)
   A->data             = (void*)(b = PetscNew(Mat_MPIMAIJ));CHKPTRQ(b);
   ierr = PetscMemzero(b,sizeof(Mat_MPIMAIJ));CHKERRQ(ierr);
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
+  A->ops->getsize     = MatGetSize_MAIJ;
   A->factor           = 0;
   A->mapping          = 0;
 
@@ -809,14 +857,14 @@ int MatCreateMAIJ(Mat A,int dof,Mat *maij)
     *maij = A;
   } else {
     ierr = MATCreate(A->comm,dof*A->m,dof*A->n,dof*A->M,dof*A->N,&B);CHKERRQ(ierr);
-    ierr = MatSetType(B,MATMAIJ);CHKERRQ(ierr);
     B->assembled    = PETSC_TRUE;
-    b = (Mat_MPIMAIJ*)B->data;
-    b->dof = dof;
 
     ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
+      ierr = MatSetType(B,MATSEQMAIJ);CHKERRQ(ierr);
       B->ops->destroy = MatDestroy_SeqMAIJ;
+      b      = (Mat_MPIMAIJ*)B->data;
+      b->dof = dof;
       b->AIJ = A;
       if (dof == 2) {
         B->ops->mult             = MatMult_SeqMAIJ_2;
@@ -847,8 +895,11 @@ int MatCreateMAIJ(Mat A,int dof,Mat *maij)
       Vec        gvec;
       int        *garray,i;
 
-      b->A = A;
+      ierr = MatSetType(B,MATMPIMAIJ);CHKERRQ(ierr);
       B->ops->destroy = MatDestroy_MPIMAIJ;
+      b      = (Mat_MPIMAIJ*)B->data;
+      b->dof = dof;
+      b->A   = A;
       ierr = MatCreateMAIJ(mpiaij->A,dof,&b->AIJ);CHKERRQ(ierr);
       ierr = MatCreateMAIJ(mpiaij->B,dof,&b->OAIJ);CHKERRQ(ierr);
 

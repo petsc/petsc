@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.143 2000/05/04 14:04:29 balay Exp balay $*/
+/*$Id: bjacobi.c,v 1.144 2000/05/05 22:17:09 balay Exp bsmith $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -233,6 +233,7 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
   PC_BJacobi *jac = (PC_BJacobi*)pc->data;
   int        rank,ierr,i;
   PetscTruth isascii,isstring;
+  Viewer     sviewer;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
@@ -245,17 +246,14 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
     ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
     if (jac->same_local_solves) {
       ierr = ViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
+      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
       if (!rank && jac->sles) {
-        Viewer sviewer;
-
-        ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
         ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = SLESView(jac->sles[0],sviewer);CHKERRQ(ierr);
         ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-        ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
       }   
+      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     } else {
-      Viewer sviewer;
 
       ierr = ViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
       ierr = ViewerASCIISynchronizedPrintf(viewer,"Proc %d: number of local blocks = %d, first local block number = %d\n",
@@ -947,9 +945,6 @@ static int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
       block. We do not need to allocate space for the vectors since
       that is provided via VecPlaceArray() just before the call to 
       SLESSolve() on the block.
-
-           For x we need a real array since it is used directly by the 
-          GS version.
 
       */
       ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);

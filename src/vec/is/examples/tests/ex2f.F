@@ -1,5 +1,5 @@
 !
-!  "$Id: ex2f.F,v 1.13 2000/01/11 20:59:59 bsmith Exp balay $"
+!  "$Id: ex2f.F,v 1.14 2000/05/05 22:14:45 balay Exp bsmith $"
 !
 !  Formatted Test for IS stride routines
 !
@@ -17,7 +17,7 @@
 !     Test IS of size 0 
 
       call ISCreateStride(PETSC_COMM_SELF,0,0,2,is,ierr)
-      call ISGetSize(is,n,ierr)
+      call ISGetLocalSize(is,n,ierr)
       if (n .ne. 0) then 
         SETERRA(1,0,0)
       endif
@@ -39,7 +39,7 @@
 !     Test ISGetIndices()
 
       call ISCreateStride(PETSC_COMM_SELF,10000,-8,3,is,ierr)
-      call ISGetSize(is,n,ierr)
+      call ISGetLocalSize(is,n,ierr)
       call ISGetIndices(is,ii,iis,ierr)
       do 10, i=1,10000
         if (ii(i+iis) .ne. -11 + 3*i) then 

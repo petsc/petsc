@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.93 2000/04/12 04:21:59 bsmith Exp balay $*/
+/*$Id: stride.c,v 1.94 2000/05/05 22:14:42 balay Exp bsmith $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
@@ -6,7 +6,7 @@
 #include "src/vec/is/isimpl.h"             /*I   "petscis.h"   I*/
 
 typedef struct {
-  int n,first,step;
+  int N,n,first,step;
 } IS_Stride;
 
 #undef __FUNC__  
@@ -26,7 +26,7 @@ int ISIdentity_Stride(IS is,PetscTruth *ident)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISDuplicate_Stride" 
+#define __FUNC__ /*<a name="ISDuplicate_Stride"></a>*/"ISDuplicate_Stride" 
 int ISDuplicate_Stride(IS is,IS *newIS)
 {
   int       ierr;
@@ -38,7 +38,7 @@ int ISDuplicate_Stride(IS is,IS *newIS)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISInvertPermutation_Stride" 
+#define __FUNC__ /*<a name="ISInvertPermutation_Stride"></a>*/"ISInvertPermutation_Stride" 
 int ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
 {
   IS_Stride *isstride = (IS_Stride*)is->data;
@@ -49,16 +49,13 @@ int ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
     ierr = ISCreateStride(PETSC_COMM_SELF,isstride->n,0,1,perm);CHKERRQ(ierr);
     ierr = ISSetPermutation(*perm);CHKERRQ(ierr);
   } else {
-    int *ii,*indices,i,n = isstride->n;
+    IS  tmp;
+    int *indices,n = isstride->n;
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
-    ii = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(ii);
-    for (i=0; i<n; i++) {
-      ii[indices[i]] = i;
-    }
+    ierr = ISCreateGeneral(is->comm,n,indices,&tmp);CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,perm);CHKERRQ(ierr);
-    ierr = PetscFree(ii);CHKERRQ(ierr);
-    ierr = ISSetPermutation(*perm);CHKERRQ(ierr);
+    ierr = ISInvertPermutation(tmp,nlocal,perm);CHKERRQ(ierr);
+    ierr = ISDestroy(tmp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -183,7 +180,19 @@ int ISGetSize_Stride(IS is,int *size)
   IS_Stride *sub = (IS_Stride *)is->data;
 
   PetscFunctionBegin;
-  *size = sub->n; PetscFunctionReturn(0);
+  *size = sub->N; 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="ISGetLocalSize_Stride"></a>*/"ISGetLocalSize_Stride" 
+int ISGetLocalSize_Stride(IS is,int *size)
+{
+  IS_Stride *sub = (IS_Stride *)is->data;
+
+  PetscFunctionBegin;
+  *size = sub->n; 
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -249,7 +258,7 @@ int ISSorted_Stride(IS is,PetscTruth* flg)
 }
 
 static struct _ISOps myops = { ISGetSize_Stride,
-                               ISGetSize_Stride,
+                               ISGetLocalSize_Stride,
                                ISGetIndices_Stride,
                                ISRestoreIndices_Stride,
                                ISInvertPermutation_Stride,
@@ -280,7 +289,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
    Notes: 
    When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
    conceptually the same as MPI_Group operations. The IS are the 
-   distributed sets of indices. 
+   distributed sets of indices and thus certain operations on them are collective. 
 
    Level: beginner
 
@@ -304,6 +313,7 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   PLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _p_IS));
   sub            = PetscNew(IS_Stride);CHKPTRQ(sub);
   sub->n         = n;
+  ierr = MPI_Allreduce(&n,&sub->N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   sub->first     = first;
   sub->step      = step;
   if (step > 0) {min = first; max = first + step*(n-1);}

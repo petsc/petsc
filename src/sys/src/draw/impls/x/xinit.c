@@ -1,4 +1,4 @@
-/*$Id: xinit.c,v 1.66 2000/04/12 04:21:09 bsmith Exp bsmith $*/
+/*$Id: xinit.c,v 1.67 2000/05/10 16:39:00 bsmith Exp bsmith $*/
 
 /* 
    This file contains routines to open an X window display and window
@@ -25,7 +25,7 @@ EXTERN int DrawSetColormap_X(Draw_X*,char *,Colormap);
   XiOpenDisplay - Open a display
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"XiOpenDisplay" 
+#define __FUNC__ /*<a name="XiOpenDisplay"></a>*/"XiOpenDisplay" 
 int XiOpenDisplay(Draw_X* XiWin,char *display_name)
 {
   PetscFunctionBegin;
@@ -44,7 +44,7 @@ int XiOpenDisplay(Draw_X* XiWin,char *display_name)
    XiSetGC - set the GC structure in the base window
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"XiSetGC" 
+#define __FUNC__ /*<a name="XiSetGC"></a>*/"XiSetGC" 
 int XiSetGC(Draw_X* XiWin,PixVal fg)
 {
   XGCValues       gcvalues;       /* window graphics context values */
@@ -67,7 +67,7 @@ int XiSetGC(Draw_X* XiWin,PixVal fg)
     (which may have been set by, for example, XiSetWindowSize)
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"XiDisplayWindow" 
+#define __FUNC__ /*<a name="XiDisplayWindow"></a>*/"XiDisplayWindow" 
 int XiDisplayWindow(Draw_X* XiWin,char *label,int x,int y,
                      int w,int h,PixVal backgnd_pixel)
 {
@@ -175,7 +175,7 @@ int XiDisplayWindow(Draw_X* XiWin,char *label,int x,int y,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"XiQuickWindow" 
+#define __FUNC__ /*<a name="XiQuickWindow"></a>*/"XiQuickWindow" 
 int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,int nx,int ny)
 {
   int         ierr;
@@ -203,7 +203,7 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,int nx,int ny)
    A version from an already defined window 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"XiQuickWindowFromWindow" 
+#define __FUNC__ /*<a name="XiQuickWindowFromWindow"></a>*/"XiQuickWindowFromWindow" 
 int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
 {
   Window            root;
@@ -240,7 +240,7 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
       XiSetWindowLabel - Sets new label in open window.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"XiSetWindowLabel" 
+#define __FUNC__ /*<a name="XiSetWindowLabel"></a>*/"XiSetWindowLabel" 
 int XiSetWindowLabel(Draw_X* Xiwin,char *label)
 {
   XTextProperty prop;
@@ -256,7 +256,7 @@ int XiSetWindowLabel(Draw_X* Xiwin,char *label)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"XiSetToBackground" 
+#define __FUNC__ /*<a name="XiSetToBackground"></a>*/"XiSetToBackground" 
 int XiSetToBackground(Draw_X* XiWin)
 {
   PetscFunctionBegin;

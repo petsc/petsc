@@ -1,4 +1,4 @@
-/*$Id: ex33.c,v 1.13 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex33.c,v 1.14 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = 
 "Writes a matrix using the PETSc sparse format. Input arguments are:\n\
@@ -26,8 +26,7 @@ int main(int argc,char **args)
                            PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,&A);CHKERRA(ierr);
 #if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
   } else {
-    ierr = MatCreateMPIRowbs(PETSC_COMM_WORLD,PETSC_DECIDE,N,6,PETSC_NULL,
-                             PETSC_NULL,&A);CHKERRA(ierr);
+    ierr = MatCreateMPIRowbs(PETSC_COMM_WORLD,PETSC_DECIDE,N,6,PETSC_NULL,&A);CHKERRA(ierr);
 #endif
   }
 

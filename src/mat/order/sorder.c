@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.72 2000/05/05 22:16:44 balay Exp bsmith $*/
+/*$Id: sorder.c,v 1.73 2000/05/10 16:41:27 bsmith Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -38,6 +38,8 @@ int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
   PetscTruth done;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+
   if (mat->type == MATMPIROWBS || mat->type == MATSEQBDIAG || mat->type == MATMPIBDIAG) {
     int start,end;
     /*
@@ -45,16 +47,14 @@ int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
        to provide it to everyone.
     */
     ierr = MatGetOwnershipRange(mat,&start,&end);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,irow);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,icol);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm,end-start,start,1,irow);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm,end-start,start,1,icol);CHKERRQ(ierr);
     ierr = ISSetIdentity(*irow);CHKERRQ(ierr);
     ierr = ISSetIdentity(*icol);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
     
-  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
   if (size > 1) {
     SETERRQ(PETSC_ERR_SUP,0,"Currently only for 1 processor matrices");
   }
@@ -283,7 +283,7 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     is smaller then matrix size
   */
   ierr = MatGetLocalSize(mat,&mmat,&nmat);CHKERRQ(ierr);
-  ierr = ISGetSize(*rperm,&mis);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(*rperm,&mis);CHKERRQ(ierr);
   if (mmat > mis) {  
     ierr = MatAdjustForInodes(mat,rperm,cperm);CHKERRQ(ierr);
   }

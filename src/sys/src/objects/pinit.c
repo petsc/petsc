@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.35 2000/05/13 04:29:48 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.36 2000/05/13 04:36:48 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -95,13 +95,9 @@ int OptionsCheckInitial_Components(void)
   if (flg1) {
     ierr = PLogEventActivate(VEC_ScatterBarrier);CHKERRQ(ierr);
     ierr = PLogEventActivate(VEC_NormBarrier);CHKERRQ(ierr);
-    ierr = PLogEventActivate(VEC_NormComm);CHKERRQ(ierr);
     ierr = PLogEventActivate(VEC_DotBarrier);CHKERRQ(ierr);
-    ierr = PLogEventActivate(VEC_DotComm);CHKERRQ(ierr);
     ierr = PLogEventActivate(VEC_MDotBarrier);CHKERRQ(ierr);
-    ierr = PLogEventActivate(VEC_MDotComm);CHKERRQ(ierr);
     ierr = PLogEventActivate(VEC_ReduceBarrier);CHKERRQ(ierr);
-    ierr = PLogEventActivate(VEC_ReduceCommOnly);CHKERRQ(ierr);
   }
 
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);

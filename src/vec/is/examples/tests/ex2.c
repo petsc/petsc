@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.13 2000/01/11 20:59:59 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.14 2000/05/05 22:14:45 balay Exp bsmith $*/
 
 /*
        Formatted test for ISStride routines.
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
      Test ISGetIndices()
   */
   ierr = ISCreateStride(PETSC_COMM_SELF,10000,-8,3,&is);CHKERRA(ierr);
-  ierr = ISGetSize(is,&n);CHKERRA(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRA(ierr);
   ierr = ISGetIndices(is,&ii);CHKERRA(ierr);
   for (i=0; i<10000; i++) {
     if (ii[i] != -8 + 3*i) SETERRA(1,0,0);

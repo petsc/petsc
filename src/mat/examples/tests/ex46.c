@@ -1,4 +1,4 @@
-/*$Id: ex46.c,v 1.10 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex46.c,v 1.11 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests generating a nonsymmetric BlockSolve95 (MATMPIROWBS) matrix.\n\n";
 
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   N = m*n;
 
   /* Generate matrix */
-  ierr = MatCreateMPIRowbs(PETSC_COMM_WORLD,PETSC_DECIDE,N,0,0,0,&C);CHKERRA(ierr);
+  ierr = MatCreateMPIRowbs(PETSC_COMM_WORLD,PETSC_DECIDE,N,0,0,&C);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRA(ierr);
   for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  

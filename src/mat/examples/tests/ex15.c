@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.13 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex15.c,v 1.14 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd().\n\n";
 
@@ -56,7 +56,7 @@ int main(int argc,char **args)
   ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Infinity norm of matrix %g\n",norm);CHKERRA(ierr);
 
-  ierr = MatLUFactor(C,perm,iperm,1.0);CHKERRA(ierr);
+  ierr = MatLUFactor(C,perm,iperm,PETSC_NULL);CHKERRA(ierr);
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* Test MatSolve */

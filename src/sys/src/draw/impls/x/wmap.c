@@ -1,4 +1,4 @@
-/*$Id: wmap.c,v 1.26 2000/04/09 04:34:12 bsmith Exp bsmith $*/
+/*$Id: wmap.c,v 1.27 2000/04/12 04:21:09 bsmith Exp bsmith $*/
 
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
@@ -7,7 +7,7 @@
     Returns 0 if window is mapped; 1 if window is destroyed.
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"Xi_wait_map" 
+#define __FUNC__ /*<a name="Xi_wait_map"></a>*/"Xi_wait_map" 
 int Xi_wait_map(Draw_X *XiWin)
 {
   XEvent  event;

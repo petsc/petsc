@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.110 2000/05/10 16:40:28 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.111 2000/06/02 16:58:45 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -83,7 +83,10 @@ struct _MatOps {
             (*getmaps)(Mat,Map*,Map*),
             (*usescaledform)(Mat,PetscTruth),
             (*scalesystem)(Mat,Vec,Vec),
-            (*unscalesystem)(Mat,Vec,Vec);
+            (*unscalesystem)(Mat,Vec,Vec),
+            (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping),
+            (*setvalueslocal)(Mat,int,int *,int,int *,Scalar *,InsertMode),
+            (*zerorowslocal)(Mat,IS,Scalar *);
 };
 
 /*

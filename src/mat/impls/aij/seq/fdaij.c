@@ -1,4 +1,4 @@
-/*$Id: fdaij.c,v 1.31 2000/05/15 18:42:47 bsmith Exp bsmith $*/
+/*$Id: fdaij.c,v 1.32 2000/05/16 17:55:22 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -47,7 +47,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   columnsforrow = (int*)PetscMalloc((N+1)*sizeof(int));CHKPTRQ(columnsforrow);
 
   for (i=0; i<nis; i++) {
-    ierr = ISGetSize(isa[i],&n);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(isa[i],&n);CHKERRQ(ierr);
     ierr = ISGetIndices(isa[i],&is);CHKERRQ(ierr);
     c->ncolumns[i] = n;
     if (n) {

@@ -1,4 +1,4 @@
-/*$Id: ex68.c,v 1.8 1999/10/24 14:02:39 bsmith Exp balay $*/
+/*$Id: ex68.c,v 1.9 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal().\n\n";
 
@@ -104,7 +104,7 @@ int main(int argc,char **argv)
   printf("RCM + NonzeroDiagonal() column permutation\n"); 
   ierr = ISView(iscol,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
-   ierr = MatLUFactor(mat,isrow,iscol,0.0);CHKERRA(ierr); 
+   ierr = MatLUFactor(mat,isrow,iscol,PETSC_NULL);CHKERRA(ierr); 
   printf("Factored matrix permuted by RCM + NonzeroDiagonal()\n"); 
   ierr = MatView(mat,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 

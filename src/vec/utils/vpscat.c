@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.138 2000/05/22 12:40:18 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.139 2000/06/12 21:20:49 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -1838,7 +1838,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Index out of range");
+    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Index %d out of range",idx);
   }
   nprocslocal  = nprocs[rank]; 
   nprocs[rank] = procs[rank] = 0; 

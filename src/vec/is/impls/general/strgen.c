@@ -1,4 +1,4 @@
-/*$Id: strgen.c,v 1.14 2000/05/05 22:14:40 balay Exp bsmith $*/
+/*$Id: strgen.c,v 1.15 2000/05/10 16:39:51 bsmith Exp bsmith $*/
 
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
@@ -7,13 +7,14 @@ EXTERN int ISDestroy_General(IS);
 EXTERN int ISGetIndices_General(IS,int **);
 EXTERN int ISRestoreIndices_General(IS,int **);
 EXTERN int ISGetSize_General(IS,int *);
+EXTERN int ISGetLocalSize_General(IS,int *);
 EXTERN int ISInvertPermutation_General(IS,int,IS *);
 EXTERN int ISView_General(IS,Viewer);
 EXTERN int ISSort_General(IS);
 EXTERN int ISSorted_General(IS,PetscTruth*);
 
 static struct _ISOps myops = { ISGetSize_General,
-                               ISGetSize_General,
+                               ISGetLocalSize_General,
                                ISGetIndices_General,
                                ISRestoreIndices_General,
                                ISInvertPermutation_General,
@@ -54,7 +55,7 @@ int ISStrideToGeneral(IS inis)
   
   ierr   = ISGetIndices(inis,&sub->idx);CHKERRQ(ierr);
   /* Note: we never restore the indices, since we need to keep the copy generated */
-  ierr   = ISGetSize(inis,&sub->n);CHKERRQ(ierr);
+  ierr   = ISGetLocalSize(inis,&sub->n);CHKERRQ(ierr);
 
   ierr = ISStrideGetInfo(inis,PETSC_NULL,&step);CHKERRQ(ierr);
   if (step > 0) sub->sorted = PETSC_TRUE; else sub->sorted = PETSC_FALSE;

@@ -1,4 +1,4 @@
-/*$Id: mmbdiag.c,v 1.35 2000/04/09 04:36:16 bsmith Exp bsmith $*/
+/*$Id: mmbdiag.c,v 1.36 2000/04/12 04:23:30 bsmith Exp bsmith $*/
 
 /*
    Support for the MPIBDIAG matrix-vector multiply
@@ -14,7 +14,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   Mat_SeqBDiag *lmbd = (Mat_SeqBDiag*)mbd->A->data;
   int          ierr,N = mbd->N,*indices,*garray,ec=0;
   int          bs = lmbd->bs,d,i,j,diag;
-  IS           tofrom;
+  IS           to,from;
   Vec          gvec;
 
   PetscFunctionBegin;
@@ -67,7 +67,8 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,&mbd->lvec);CHKERRQ(ierr);
 
   /* create temporary index set for building scatter-gather */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,ec,garray,&tofrom);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(mat->comm,ec,garray,&from);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ec,garray,&to);CHKERRQ(ierr);
   ierr = PetscFree(garray);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
@@ -80,13 +81,15 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   ierr = VecCreateMPI(mat->comm,mbd->m,mbd->N,&gvec);CHKERRQ(ierr);
 
   /* generate the scatter context */
-  ierr = VecScatterCreate(gvec,tofrom,mbd->lvec,tofrom,&mbd->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(gvec,from,mbd->lvec,to,&mbd->Mvctx);CHKERRQ(ierr);
   PLogObjectParent(mat,mbd->Mvctx);
   PLogObjectParent(mat,mbd->lvec);
-  PLogObjectParent(mat,tofrom);
+  PLogObjectParent(mat,to);
+  PLogObjectParent(mat,from);
   PLogObjectParent(mat,gvec);
 
-  ierr = ISDestroy(tofrom);CHKERRQ(ierr);
+  ierr = ISDestroy(to);CHKERRQ(ierr);
+  ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = VecDestroy(gvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,14 +1,14 @@
-/*$Id: dupl.c,v 1.6 2000/04/12 04:20:59 bsmith Exp balay $*/
+/*$Id: dupl.c,v 1.7 2000/05/05 22:13:21 balay Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerGetSingleton" 
+#define __FUNC__ /*<a name="ViewerGetSingleton"></a>*/"ViewerGetSingleton" 
 /*@
    ViewerGetSingleton - Creates a new viewer (same type as the old)
     that lives on a single processor (with MPI_comm PETSC_COMM_SELF)
 
-   Not Collective
+    Collective on Viewer
 
    Input Parameter:
 .  viewer - the viewer to be duplicated
@@ -48,11 +48,11 @@ int ViewerGetSingleton(Viewer viewer,Viewer *outviewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerRestoreSingleton" 
+#define __FUNC__ /*<a name="ViewerRestoreSingleton"></a>*/"ViewerRestoreSingleton" 
 /*@
    ViewerRestoreSingleton - Restores a new viewer obtained with ViewerGetSingleton().
 
-   Not Collective
+    Collective on Viewer
 
    Input Parameters:
 +  viewer - the viewer to be duplicated
@@ -73,7 +73,6 @@ int ViewerRestoreSingleton(Viewer viewer,Viewer *outviewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscValidPointer(outviewer);
-  PetscValidHeaderSpecific(*outviewer,VIEWER_COOKIE);
   ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);

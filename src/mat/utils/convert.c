@@ -1,4 +1,4 @@
-/*$Id: convert.c,v 1.66 2000/04/09 04:36:57 bsmith Exp bsmith $*/
+/*$Id: convert.c,v 1.67 2000/04/12 04:24:13 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"
 
@@ -24,7 +24,7 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
 #if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
     case MATMPIROWBS:
       if (m != n) SETERRQ(PETSC_ERR_SUP,0,"MATMPIROWBS matrix must be square");
-      ierr = MatCreateMPIRowbs(mat->comm,PETSC_DECIDE,m,0,PETSC_NULL,PETSC_NULL,M);CHKERRQ(ierr);
+      ierr = MatCreateMPIRowbs(mat->comm,PETSC_DECIDE,m,0,PETSC_NULL,M);CHKERRQ(ierr);
       break;
 #endif
     case MATMPIAIJ:

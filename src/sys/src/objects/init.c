@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.63 2000/05/08 15:07:31 balay Exp bsmith $*/
+/*$Id: init.c,v 1.64 2000/05/10 16:39:22 bsmith Exp bsmith $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -471,6 +471,8 @@ int OptionsCheckInitial(void)
     if (f)     debugger = "xxgdb";
     ierr = PetscStrstr(string,"ups",&f);CHKERRQ(ierr);
     if (f)     debugger = "ups";
+    ierr = PetscStrstr(string,"workshop",&f);CHKERRQ(ierr);
+    if (f)     debugger = "workshop";
 
     ierr = PetscSetDebugger(debugger,xterm);CHKERRQ(ierr);
     ierr = MPI_Errhandler_create((MPI_Handler_function*)Petsc_MPI_DebuggerOnError,&err_handler);CHKERRQ(ierr);
@@ -524,6 +526,8 @@ int OptionsCheckInitial(void)
       if (f)     debugger = "xxgdb";
       ierr = PetscStrstr(string,"ups",&f);CHKERRQ(ierr);
       if (f)     debugger = "ups";
+      ierr = PetscStrstr(string,"workshop",&f);CHKERRQ(ierr);
+      if (f)     debugger = "workshop";
 
       ierr = PetscSetDebugger(debugger,xterm);CHKERRQ(ierr);
       ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);
@@ -644,6 +648,7 @@ int OptionsCheckInitial(void)
     ierr = (*PetscHelpPrintf)(comm," -not_shared_tmp: each processor has seperate tmp directory\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -get_resident_set_size: print memory usage at end of run\n");CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
+    ierr = (*PetscHelpPrintf)(comm," -get_total_flops: total flops over all processors\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log[_all _summary]: logging objects and events\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n");CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPE)

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f90.F,v 1.10 2000/01/11 21:00:01 bsmith Exp balay $"; */
+!      "$Id: ex3f90.F,v 1.11 2000/05/05 22:14:48 balay Exp bsmith $"; */
 !
 !
 !/*T
@@ -52,7 +52,7 @@
 !
 !    Extract indices from set.
 !
-      call ISGetSize(set,issize,ierr) 
+      call ISGetLocalSize(set,issize,ierr) 
       call ISGetIndicesF90(set,indices,ierr) 
       write(6,100)indices
  100  format(12I3)

@@ -1,4 +1,4 @@
-/* $Id: isimpl.h,v 1.21 2000/02/02 20:08:31 bsmith Exp balay $ */
+/* $Id: isimpl.h,v 1.22 2000/05/05 22:14:37 balay Exp bsmith $ */
 
 /*
     Index sets for scatter-gather type operations in vectors
@@ -32,13 +32,5 @@ struct _p_IS {
   int          isidentity;
 };
 
-struct _p_ISLocalToGlobalMapping{
-  PETSCHEADER(int)
-  int n;                  /* number of local indices */
-  int *indices;           /* global index of each local index */
-  int globalstart;        /* first global referenced in indices */
-  int globalend;          /* last + 1 global referenced in indices */
-  int *globals;           /* local index for each global index between start and end */
-};
 
 #endif

@@ -1,4 +1,4 @@
-/*$Id: baijfact.c,v 1.81 2000/04/09 04:36:19 bsmith Exp bsmith $*/
+/*$Id: baijfact.c,v 1.82 2000/04/12 04:23:32 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -12,14 +12,15 @@
   NOT good code reuse.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactorSymbolic_SeqBAIJ"
-int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
+#define __FUNC__ /*<a name="MatLUFactorSymbolic_SeqBAIJ"></a>*/"MatLUFactorSymbolic_SeqBAIJ"
+int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b;
   IS          isicol;
   int         *r,*ic,ierr,i,n = a->mbs,*ai = a->i,*aj = a->j;
   int         *ainew,*ajnew,jmax,*fill,*ajtmp,nz,bs = a->bs,bs2=a->bs2;
   int         *idnew,idx,row,m,fm,nnz,nzi,realloc = 0,nzbd,*im;
+  PetscReal   f = 1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
@@ -36,6 +37,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
+  if (info) f = info->fill;
   /* get new row pointers */
   ainew = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(ainew);
   ainew[0] = 0;
@@ -175,7 +177,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 
 /* ----------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_N"
+#define __FUNC__ /*<a name="MatLUFactorNumeric_SeqBAIJ_N"></a>*/"MatLUFactorNumeric_SeqBAIJ_N"
 int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -257,7 +259,7 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
       Version for when blocks are 7 by 7
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqBAIJ_7"
+#define __FUNC__ /*<a name="MatLUFactorNumeric_SeqBAIJ_7"></a>*/"MatLUFactorNumeric_SeqBAIJ_7"
 int MatLUFactorNumeric_SeqBAIJ_7(Mat A,Mat *B)
 {
   Mat         C = *B;
@@ -2333,17 +2335,17 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
 
 /* ----------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactor_SeqBAIJ"
-int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,PetscReal f)
+#define __FUNC__ /*<a name="MatLUFactor_SeqBAIJ"></a>*/"MatLUFactor_SeqBAIJ"
+int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatLUInfo *info)
 {
-  Mat_SeqBAIJ    *mat = (Mat_SeqBAIJ*)A->data;
-  int            ierr,refct;
-  Mat            C;
-  PetscOps *Abops;
-  MatOps   Aops;
+  Mat_SeqBAIJ *mat = (Mat_SeqBAIJ*)A->data;
+  int         ierr,refct;
+  Mat         C;
+  PetscOps    *Abops;
+  MatOps      Aops;
 
   PetscFunctionBegin;
-  ierr = MatLUFactorSymbolic(A,row,col,f,&C);CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(A,row,col,info,&C);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(A,&C);CHKERRQ(ierr);
 
   /* free all the data structures from mat */

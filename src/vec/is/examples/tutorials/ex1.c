@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.16 2000/01/11 21:00:01 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.17 2000/05/05 22:14:48 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates creating a general index set.\n\n";
 
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   /*
      Get the number of indices in the set 
   */
-  ierr = ISGetSize(is,&n);CHKERRA(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRA(ierr);
 
   /*
      Get the indices in the index set

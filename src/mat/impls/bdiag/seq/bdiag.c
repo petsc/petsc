@@ -1,4 +1,4 @@
-/*$Id: bdiag.c,v 1.186 2000/05/05 22:15:54 balay Exp bsmith $*/
+/*$Id: bdiag.c,v 1.187 2000/05/10 16:40:47 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -250,7 +250,7 @@ int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
   Scalar       *dd,*val;
 
   PetscFunctionBegin;
-  ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     if (rows[i]<0 || rows[i]>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"row out of range");
@@ -299,8 +299,8 @@ int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
-  ierr = ISGetSize(isrow,&newr);CHKERRQ(ierr);
-  ierr = ISGetSize(iscol,&newc);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isrow,&newr);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(iscol,&newc);CHKERRQ(ierr);
 
   smap  = (int*)PetscMalloc((oldcols+1)*sizeof(int));CHKPTRQ(smap);
   cwork = (int*)PetscMalloc((newc+1)*sizeof(int));CHKPTRQ(cwork);
@@ -421,7 +421,7 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
 }
 
 static int MatDuplicate_SeqBDiag(Mat,MatDuplicateOption,Mat *);
-EXTERN int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,PetscReal,Mat*);
+EXTERN int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,MatLUInfo*,Mat*);
 EXTERN int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,MatILUInfo*,Mat*);
 EXTERN int MatILUFactor_SeqBDiag(Mat,IS,IS,MatILUInfo*);
 EXTERN int MatLUFactorNumeric_SeqBDiag_N(Mat,Mat*);
@@ -497,8 +497,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
        0,
        0,
        0,
-       0,
-       0,
+       MatDestroy_SeqBDiag,
+       MatView_SeqBDiag,
        MatGetMaps_Petsc};
 
 #undef __FUNC__  
@@ -572,8 +572,6 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
   B->data         = (void*)(b = PetscNew(Mat_SeqBDiag));CHKPTRQ(b);
   ierr            = PetscMemzero(b,sizeof(Mat_SeqBDiag));CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->ops->destroy = MatDestroy_SeqBDiag;
-  B->ops->view    = MatView_SeqBDiag;
   B->factor       = 0;
   B->mapping      = 0;
 

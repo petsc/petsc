@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.187 2000/05/05 22:15:57 balay Exp bsmith $*/
+/*$Id: mpibdiag.c,v 1.188 2000/05/10 16:40:49 bsmith Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -202,7 +202,7 @@ int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   IS             istmp;
 
   PetscFunctionBegin;
-  ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
 
   /*  first count number of contributors to each processor */
@@ -487,6 +487,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
   Mat_SeqBDiag *dmat = (Mat_SeqBDiag*)mbd->A->data;
   int          ierr,format,i,size = mbd->size,rank = mbd->rank;
   PetscTruth   isascii,isdraw;
+  Viewer       sviewer;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
@@ -553,12 +554,11 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
     } 
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
-      Viewer sviewer;
-      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
       ierr = MatView(((Mat_MPIBDiag*)(A->data))->A,sviewer);CHKERRQ(ierr);
-      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     }
+    ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
@@ -825,8 +825,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
        0,
        0,
        0,
-       0,
-       0,
+       MatDestroy_MPIBDiag,
+       MatView_MPIBDiag,
        MatGetMaps_Petsc};
 
 EXTERN_C_BEGIN
@@ -938,8 +938,6 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   PLogObjectCreate(B);
   B->data         = (void*)(b = PetscNew(Mat_MPIBDiag));CHKPTRQ(b);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->ops->destroy = MatDestroy_MPIBDiag;
-  B->ops->view    = MatView_MPIBDiag;
   B->factor       = 0;
   B->mapping      = 0;
 

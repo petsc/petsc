@@ -1,4 +1,4 @@
-/*$Id: openport.c,v 1.18 2000/05/05 22:13:07 balay Exp bsmith $*/
+/*$Id: openport.c,v 1.19 2000/05/10 16:38:39 bsmith Exp bsmith $*/
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
  
@@ -78,7 +78,7 @@ void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
   /* open connection */
   t = SOCKConnect_Private(portnumber); if (t == -1)  ERROR("opening socket");
 
-  plhs[0]  = mxCreateFull(1,1,0);
+  plhs[0]  = mxCreateFull(1,1,mxREAL);
  
   *mxGetPr(plhs[0]) = t;
   return;

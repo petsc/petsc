@@ -1,11 +1,11 @@
-/*$Id: dlinegw.c,v 1.26 2000/04/12 04:21:02 bsmith Exp balay $*/
+/*$Id: dlinegw.c,v 1.27 2000/05/05 22:13:25 balay Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawLineGetWidth" 
+#define __FUNC__ /*<a name="DrawLineGetWidth"></a>*/"DrawLineGetWidth" 
 /*@
    DrawLineGetWidth - Gets the line width for future draws.  The width is
    relative to the user coordinates of the window; 0.0 denotes the natural

@@ -1,7 +1,7 @@
 !
-!    "$Id: ex30f.F,v 1.2 2000/05/05 22:15:11 balay Exp $";
+!    "$Id: ex32f.F,v 1.1 2000/05/30 15:23:15 bsmith Exp bsmith $";
 !
-!  Tests parallel to parallel scatter where a to from index are 
+!  Tests PescOffsetFortran()
 !  duplicated
        implicit none
 
@@ -9,95 +9,36 @@
 #include "include/finclude/petscis.h"
 #include "include/finclude/petscvec.h"
 
-      integer ierr, nlocal, n, irank, iprocs, 
-     +     from(10), to(10)
+      integer ierr, n, size
 
-      Scalar num
-      Vec v1, v2, v3
-      VecScatter scat1, scat2
-      IS fromis, tois
+      Scalar  v_v1(1),v_v2(1)
+      Vec     v
+      integer i,i_v1,i_v2
+      
       n=8
-      nlocal=2
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call MPI_COMM_RANK(PETSC_COMM_WORLD,irank,ierr)
-      call MPI_COMM_SIZE(PETSC_COMM_WORLD,iprocs,ierr)
-      if (iprocs.ne.4) then
-         print *, 'Four processor test'
-         stop
-      end if
-      
-      call VecCreateMPI(PETSC_COMM_WORLD,nlocal*2,n*2,v1,ierr)
-      call VecCreateMPI(PETSC_COMM_WORLD,nlocal,n,v2,ierr)
-      call VecCreateSeq(PETSC_COMM_SELF,n,v3,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr) 
+      if (size .gt. 1) then
+        print*,'Example for one processor only'
+        call MPI_Abort(MPI_COMM_WORLD,0)
+      endif
 
-      num=2.0
-      call VecSetValue(v1,1,num,INSERT_VALUES,ierr)
-      call VecSetValue(v1,5,num,INSERT_VALUES,ierr)
-      call VecSetValue(v1,9,num,INSERT_VALUES,ierr)
-      call VecSetValue(v1,13,num,INSERT_VALUES,ierr)
-      num=1.0
-      call VecSetValue(v1,15,num,INSERT_VALUES,ierr)
-      call VecSetValue(v1,3,num,INSERT_VALUES,ierr)
-      call VecSetValue(v1,7,num,INSERT_VALUES,ierr)
-      call VecSetValue(v1,11,num,INSERT_VALUES,ierr)
+      call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,v,ierr)
+      call VecGetArray(v,v_v1,i_v1,ierr)
+      call PetscOffsetFortran(v_v2,v_v1,i_v2,ierr)
+      i_v2 = i_v1 + i_v2
 
-      call VecAssemblyBegin(v1,ierr)
-      call VecAssemblyEnd(v1,ierr)
+      do 10, i=1,n
+        v_v1(i_v1 + i) = i
+ 10   continue
 
-      num=0.0
-      call VecScale(num,v2,ierr)
-      call VecScale(num,v3,ierr)
+      call VecView(v,VIEWER_STDOUT_WORLD,ierr)
 
-      from(1)=1
-      from(2)=5
-      from(3)=9
-      from(4)=13
-      from(5)=3
-      from(6)=7
-      from(7)=11
-      from(8)=15
-      to(1)=0
-      to(2)=0
-      to(3)=0
-      to(4)=0
-      to(5)=7
-      to(6)=7
-      to(7)=7
-      to(8)=7
+      do 20, i=1,n
+        print*,i,v_v2(i_v2 + i)
+ 20   continue
 
-      call ISCreateGeneral(PETSC_COMM_SELF,
-     +     8,from,fromis,ierr)
-      call ISCreateGeneral(PETSC_COMM_SELF,
-     +     8,to,tois,ierr)
-      call VecScatterCreate(v1,fromis,v2,tois,scat1,ierr)
-      call VecScatterCreate(v1,fromis,v3,tois,scat2,ierr)
-      call ISDestroy(fromis,ierr)
-      call ISDestroy(tois,ierr)
-      
-      call VecScatterBegin(v1,v2,ADD_VALUES,
-     +     SCATTER_FORWARD,scat1,ierr)
-      call VecScatterEnd(v1,v2,ADD_VALUES,
-     +     SCATTER_FORWARD,scat1,ierr)
-      
-      call VecScatterBegin(v1,v3,ADD_VALUES,
-     +     SCATTER_FORWARD,scat2,ierr)
-      call VecScatterEnd(v1,v3,ADD_VALUES,
-     +     SCATTER_FORWARD,scat2,ierr)
-      
-      if (irank.eq.0) print *, "V1"
-      call VecView(v1,VIEWER_STDOUT_WORLD,ierr)
-      if (irank.eq.0) print *, "V2"
-      call VecView(v2,VIEWER_STDOUT_WORLD,ierr)
-      if (irank.eq.0) then
-         print *, "V3"
-         call VecView(v3,VIEWER_STDOUT_SELF,ierr)
-      end if
-
-      call VecScatterDestroy(scat1,ierr)
-      call VecScatterDestroy(scat2,ierr)
-      call VecDestroy(v1,ierr)
-      call VecDestroy(v2,ierr)
-      call VecDestroy(v3,ierr)
+      call VecDestroy(v,ierr)
 
       call PetscFinalize(ierr)
       

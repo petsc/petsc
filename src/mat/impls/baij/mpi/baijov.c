@@ -1,4 +1,4 @@
-/*$Id: baijov.c,v 1.47 2000/05/08 15:08:13 balay Exp bsmith $*/
+/*$Id: baijov.c,v 1.48 2000/05/10 16:40:56 bsmith Exp bsmith $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -30,7 +30,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C,int imax,IS *is_in,IS *is_out
     isz  = 0;
     ierr = PetscBTMemzero(Nbs,table);CHKERRQ(ierr);
     ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISGetSize(is_in[i],&n);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is_in[i],&n);CHKERRQ(ierr);
     for (j=0; j<n ; j++) {
       ival = idx[j]/bs; /* convert the indices into block indices */
       if (ival>Nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"index greater than mat-dim");
@@ -61,7 +61,7 @@ static int MatCompressIndicesSorted_MPIBAIJ(Mat C,int imax,IS *is_in,IS *is_out)
   /* Now check if the indices are in block order */
   for (i=0; i<imax; i++) {
     ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISGetSize(is_in[i],&n);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is_in[i],&n);CHKERRQ(ierr);
     if (n%bs !=0) SETERRA(1,0,"Indices are not block ordered");
 
     n = n/bs; /* The reduced index size */
@@ -96,7 +96,7 @@ static int MatExpandIndices_MPIBAIJ(Mat C,int imax,IS *is_in,IS *is_out)
 
   for (i=0; i<imax; i++) {
     ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISGetSize(is_in[i],&n);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is_in[i],&n);CHKERRQ(ierr);
     for (j=0; j<n ; ++j){
       for (k=0; k<bs; k++)
         nidx[j*bs+k] = idx[j]*bs+k;
@@ -181,7 +181,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C,int imax,IS *is)
    
   for (i=0; i<imax; i++) {
     ierr = ISGetIndices(is[i],&idx[i]);CHKERRQ(ierr);
-    ierr = ISGetSize(is[i],&n[i]);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is[i],&n[i]);CHKERRQ(ierr);
   }
   
   /* Create hash table for the mapping :row -> proc*/
@@ -770,8 +770,8 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,M
   for (i=0; i<ismax; i++) { 
     ierr = ISGetIndices(isrow[i],&irow[i]);CHKERRQ(ierr);
     ierr = ISGetIndices(iscol[i],&icol[i]);CHKERRQ(ierr);
-    ierr = ISGetSize(isrow[i],&nrow[i]);CHKERRQ(ierr);
-    ierr = ISGetSize(iscol[i],&ncol[i]);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(isrow[i],&nrow[i]);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(iscol[i],&ncol[i]);CHKERRQ(ierr);
   }
 
   /* Create hash table for the mapping :row -> proc*/
@@ -1362,10 +1362,6 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,M
     ierr = MatAssemblyBegin(submats[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(submats[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-
-  ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag3);CHKERRQ(ierr);
-  ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
-  ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: matregis.c,v 1.1 2000/05/17 19:37:32 bsmith Exp bsmith $*/
+/*$Id: matregis.c,v 1.2 2000/07/08 16:33:24 bsmith Exp bsmith $*/
 
 #include "petscmat.h"  /*I "petscmat.h" I*/
 
@@ -35,6 +35,7 @@ int MatRegisterAll(char *path)
   MatRegisterAllCalled = PETSC_TRUE;
 
   ierr = MatRegisterDynamic(MATMPIMAIJ, path,"MatCreate_MAIJ",   MatCreate_MAIJ);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQMAIJ, path,"MatCreate_MAIJ",   MatCreate_MAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATNN,      path,"MatCreate_NN",     MatCreate_NN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f.F,v 1.15 2000/02/02 20:08:36 bsmith Exp balay $"
+!  "$Id: ex1f.F,v 1.16 2000/05/05 22:14:45 balay Exp bsmith $"
 !
 !  Formatted test for IS general routines
 !
@@ -22,7 +22,7 @@
 
        call ISCreateGeneral(PETSC_COMM_SELF,0,indices,is,ierr) 
            CHKERRA(ierr)
-       call ISGetSize(is,n,ierr) 
+       call ISGetLocalSize(is,n,ierr) 
            CHKERRA(ierr)
        if (n .ne. 0) then
          print*, 'Error getting size of zero IS'

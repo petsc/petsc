@@ -1,4 +1,4 @@
-/* $Id: xops.c,v 1.147 2000/04/12 04:21:09 bsmith Exp bsmith $*/
+/* $Id: xops.c,v 1.148 2000/05/10 16:39:00 bsmith Exp bsmith $*/
 
 /*
     Defines the operations for the X Draw implementation.
@@ -20,7 +20,7 @@
                                        ((draw)->coor_yr - (draw)->coor_yl))))
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawLine_X" 
+#define __FUNC__ /*<a name="DrawLine_X"></a>*/"DrawLine_X" 
 int DrawLine_X(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   Draw_X* XiWin = (Draw_X*)draw->data;
@@ -35,7 +35,7 @@ int DrawLine_X(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawPoint_X" 
+#define __FUNC__ /*<a name="DrawPoint_X"></a>*/"DrawPoint_X" 
 static int DrawPoint_X(Draw draw,PetscReal x,PetscReal  y,int c)
 {
   int     xx,yy;
@@ -49,7 +49,7 @@ static int DrawPoint_X(Draw draw,PetscReal x,PetscReal  y,int c)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawRectangle_X" 
+#define __FUNC__ /*<a name="DrawRectangle_X"></a>*/"DrawRectangle_X" 
 static int DrawRectangle_X(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c1,int c2,int c3,int c4)
 {
   Draw_X* XiWin = (Draw_X*)draw->data;
@@ -67,7 +67,7 @@ static int DrawRectangle_X(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,Pets
 EXTERN int DrawInterpolatedTriangle_X(Draw_X*,int,int,int,int,int,int,int,int,int);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawTriangle_X" 
+#define __FUNC__ /*<a name="DrawTriangle_X"></a>*/"DrawTriangle_X" 
 static int DrawTriangle_X(Draw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,
                           PetscReal Y2,PetscReal X3,PetscReal Y3,int c1,int c2,int c3)
 {
@@ -99,7 +99,7 @@ static int DrawTriangle_X(Draw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawString_X" 
+#define __FUNC__ /*<a name="DrawString_X"></a>*/"DrawString_X" 
 static int DrawString_X(Draw draw,PetscReal x,PetscReal  y,int c,char *chrs)
 {
   int     xx,yy,ierr,len;
@@ -127,7 +127,7 @@ static int DrawString_X(Draw draw,PetscReal x,PetscReal  y,int c,char *chrs)
 EXTERN int XiFontFixed(Draw_X*,int,int,XiFont **);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawStringSetSize_X" 
+#define __FUNC__ /*<a name="DrawStringSetSize_X"></a>*/"DrawStringSetSize_X" 
 static int DrawStringSetSize_X(Draw draw,PetscReal x,PetscReal  y)
 {
   Draw_X* XiWin = (Draw_X*)draw->data;
@@ -142,7 +142,7 @@ static int DrawStringSetSize_X(Draw draw,PetscReal x,PetscReal  y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawStringGetSize_X" 
+#define __FUNC__ /*<a name="DrawStringGetSize_X"></a>*/"DrawStringGetSize_X" 
 int DrawStringGetSize_X(Draw draw,PetscReal *x,PetscReal  *y)
 {
   Draw_X*   XiWin = (Draw_X*)draw->data;
@@ -156,7 +156,7 @@ int DrawStringGetSize_X(Draw draw,PetscReal *x,PetscReal  *y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawStringVertical_X" 
+#define __FUNC__ /*<a name="DrawStringVertical_X"></a>*/"DrawStringVertical_X" 
 int DrawStringVertical_X(Draw draw,PetscReal x,PetscReal  y,int c,char *chrs)
 {
   int     xx,yy,n,i,ierr;
@@ -180,7 +180,7 @@ int DrawStringVertical_X(Draw draw,PetscReal x,PetscReal  y,int c,char *chrs)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawFlush_X" 
+#define __FUNC__ /*<a name="DrawFlush_X"></a>*/"DrawFlush_X" 
 static int DrawFlush_X(Draw draw)
 {
   Draw_X* XiWin = (Draw_X*)draw->data;
@@ -194,7 +194,7 @@ static int DrawFlush_X(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSynchronizedFlush_X" 
+#define __FUNC__ /*<a name="DrawSynchronizedFlush_X"></a>*/"DrawSynchronizedFlush_X" 
 static int DrawSynchronizedFlush_X(Draw draw)
 {
   int     rank,ierr;
@@ -222,7 +222,7 @@ static int DrawSynchronizedFlush_X(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSetViewport_X" 
+#define __FUNC__ /*<a name="DrawSetViewport_X"></a>*/"DrawSetViewport_X" 
 static int DrawSetViewport_X(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
   Draw_X*    XiWin = (Draw_X*)draw->data;
@@ -236,7 +236,7 @@ static int DrawSetViewport_X(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,Pe
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawClear_X" 
+#define __FUNC__ /*<a name="DrawClear_X"></a>*/"DrawClear_X" 
 static int DrawClear_X(Draw draw)
 {
   Draw_X*  XiWin = (Draw_X*)draw->data;
@@ -253,7 +253,7 @@ static int DrawClear_X(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSynchronizedClear_X" 
+#define __FUNC__ /*<a name="DrawSynchronizedClear_X"></a>*/"DrawSynchronizedClear_X" 
 static int DrawSynchronizedClear_X(Draw draw)
 {
   int     rank,ierr;
@@ -273,7 +273,7 @@ static int DrawSynchronizedClear_X(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSetDoubleBuffer_X" 
+#define __FUNC__ /*<a name="DrawSetDoubleBuffer_X"></a>*/"DrawSetDoubleBuffer_X" 
 static int DrawSetDoubleBuffer_X(Draw draw)
 {
   Draw_X*  win = (Draw_X*)draw->data;
@@ -295,7 +295,7 @@ static int DrawSetDoubleBuffer_X(Draw draw)
 #include <X11/cursorfont.h>
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawGetMouseButton_X" 
+#define __FUNC__ /*<a name="DrawGetMouseButton_X"></a>*/"DrawGetMouseButton_X" 
 static int DrawGetMouseButton_X(Draw draw,DrawButton *button,PetscReal* x_user,
                                 PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
@@ -340,7 +340,7 @@ static int DrawGetMouseButton_X(Draw draw,DrawButton *button,PetscReal* x_user,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawPause_X" 
+#define __FUNC__ /*<a name="DrawPause_X"></a>*/"DrawPause_X" 
 static int DrawPause_X(Draw draw)
 {
   int ierr;
@@ -361,7 +361,7 @@ static int DrawPause_X(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawGetPopup_X" 
+#define __FUNC__ /*<a name="DrawGetPopup_X"></a>*/"DrawGetPopup_X" 
 static int DrawGetPopup_X(Draw draw,Draw *popup)
 {
   int     ierr;
@@ -374,7 +374,7 @@ static int DrawGetPopup_X(Draw draw,Draw *popup)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSetTitle_X" 
+#define __FUNC__ /*<a name="DrawSetTitle_X"></a>*/"DrawSetTitle_X" 
 static int DrawSetTitle_X(Draw draw,char *title)
 {
   Draw_X        *win = (Draw_X*)draw->data;

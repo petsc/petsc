@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.238 2000/05/17 22:10:27 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.239 2000/07/02 15:12:07 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -439,6 +439,8 @@ static PLogDouble  EventsStageTime[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}
 static PLogDouble  EventsStageMessageCounts[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 static PLogDouble  EventsStageMessageLengths[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 static PLogDouble  EventsStageReductions[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+       PetscTruth  PLogStagePrintFlag[] = {PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
+                                       PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE};
 #define COUNT      0
 #define FLOPS      1
 #define TIME       2
@@ -475,6 +477,30 @@ int PLogStageRegister(int stage,const char sname[])
   if (stage == PETSC_DETERMINE) stage = EventsStage;
   if (stage < 0 || stage > 10) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stage must be >= 0 and < 10: Instead %d",stage);
   ierr = PetscStrallocpy(sname,&EventsStageName[stage]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PLogStagePrint"
+/*@C
+    PLogStagePrint - Tells PLogPrintSummary() whether to print this stage or not
+
+    Collective on PETSC_COMM_WORLD 
+
+    Input Parameters:
++   stage - the stage from 0 to 9 inclusive (use PETSC_DETERMINE for current stage)
+-   flg - PETSC_TRUE to print, else PETSC_FALSE (defaults to PETSC_TRUE)
+
+    Level: intermediate
+
+.seealso: PLogStagePush(), PLogStagePop(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
+@*/
+int PLogStagePrint(int stage,PetscTruth flg)
+{
+  PetscFunctionBegin;
+  if (stage == PETSC_DETERMINE) stage = EventsStage;
+  if (stage < 0 || stage > 10) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stage must be >= 0 and < 10: Instead %d",stage);
+  PLogStagePrintFlag[stage] = flg;
   PetscFunctionReturn(0);
 }
 
@@ -1510,6 +1536,8 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
     ierr = PetscFPrintf(comm,fd,"\nSummary of Stages:  ---- Time ------     ----- Flops -------    -- Messages -- -- Message-lengths -- Reductions --\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"                      Avg      %%Total        Avg       %%Total   counts   %%Total    avg      %%Total   counts  %%Total \n");CHKERRQ(ierr);
     for (j=0; j<=lEventsStageMax; j++) {
+      if (!PLogStagePrintFlag[j]) continue;
+
       ierr = MPI_Allreduce(&EventsStageFlops[j],&sflops,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
       ierr = MPI_Allreduce(&EventsStageTime[j],&sstime,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
       if (tott)   pstime = 100.0*sstime/tott; else pstime = 0.0;if (pstime >= 99.9) pstime = 99.9;
@@ -1591,6 +1619,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   ierr = PetscFPrintf(comm,fd,
     "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr); 
   for (j=0; j<=EventsStageMax; j++) {
+    if (!PLogStagePrintFlag[j]) continue;
     ierr = MPI_Allreduce(&EventsStageFlops[j],&sflops,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&EventsStageTime[j],&sstime,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
     if (EventsStageMax) {

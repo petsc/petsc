@@ -1,4 +1,4 @@
-/*$Id: aijmatlab.c,v 1.4 2000/05/12 04:40:57 bsmith Exp bsmith $*/
+/*$Id: aijmatlab.c,v 1.5 2000/05/16 22:53:57 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface for the Matlab engine sparse solver
@@ -6,7 +6,7 @@
 */
 #include "src/mat/impls/aij/seq/aij.h"
 
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 
@@ -109,6 +109,7 @@ int MatUseMatlab_SeqAIJ(Mat A)
   PetscFunctionBegin;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Matlab;
   A->ops->iludtfactor      = MatILUDTFactor_SeqAIJ_Matlab;
+  PLogInfo(0,"Using Matlab for SeqAIJ LU and ILUDT factorization and solves");
   PetscFunctionReturn(0);
 }
 

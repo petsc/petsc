@@ -1,4 +1,4 @@
-/*$Id: pdisplay.c,v 1.19 2000/05/04 16:24:51 bsmith Exp balay $*/
+/*$Id: pdisplay.c,v 1.20 2000/05/05 22:14:11 balay Exp bsmith $*/
 
 #include "petsc.h"        
 #include "petscsys.h"             /*I    "petscsys.h"   I*/
@@ -105,13 +105,10 @@ int PetscSetDisplay(void)
       ierr = PetscStrncpy(display,str,128);CHKERRQ(ierr);
     }
     ierr = PetscStrlen(display,&len);CHKERRQ(ierr);
-    ierr = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    ierr = MPI_Bcast(display,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  } else {
-    ierr = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    ierr = MPI_Bcast(display,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    display[len] = 0;
   }
+  ierr = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(display,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  display[len] = 0;
   ierr = PetscStrcpy(PetscDisplay,display);CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }

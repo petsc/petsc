@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.14 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.15 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\n";
 
@@ -71,14 +71,14 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatMult(mat,x,b);CHKERRA(ierr);
   ierr = MatConvert(mat,MATSAME,&fact);CHKERRA(ierr);
-  ierr = MatLUFactor(fact,0,0,1.0);CHKERRA(ierr);
+  ierr = MatLUFactor(fact,0,0,PETSC_NULL);CHKERRA(ierr);
   ierr = MatSolve(fact,b,y);CHKERRA(ierr);
   value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRA(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU %A\n",norm);CHKERRA(ierr);
   ierr = MatDestroy(fact);CHKERRA(ierr);
 
-  ierr = MatLUFactorSymbolic(mat,0,0,1.0,&fact);CHKERRA(ierr);
+  ierr = MatLUFactorSymbolic(mat,0,0,PETSC_NULL,&fact);CHKERRA(ierr);
   ierr = MatLUFactorNumeric(mat,&fact);CHKERRA(ierr);
   ierr = MatSolve(fact,b,y);CHKERRA(ierr);
   value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRA(ierr);

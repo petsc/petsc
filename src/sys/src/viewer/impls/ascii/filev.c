@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.107 2000/05/10 16:38:42 bsmith Exp bsmith $ */
+/* $Id: filev.c,v 1.108 2000/06/09 16:35:21 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -323,7 +323,7 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
 #endif
     va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > QUEUESTRINGSIZE) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
+    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
   }
   PetscFunctionReturn(0);
 }
@@ -351,6 +351,7 @@ int ViewerSetFilename(Viewer viewer,const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  if (!name) SETERRQ(1,1,"You must pass in non-null string");
   ierr = PetscObjectQueryFunction((PetscObject)viewer,"ViewerSetFilename_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,name);CHKERRQ(ierr);
@@ -566,7 +567,7 @@ EXTERN_C_END
 int ViewerASCIISynchronizedPrintf(Viewer viewer,const char format[],...)
 {
   Viewer_ASCII *vascii = (Viewer_ASCII *)viewer->data;
-  int          ierr,rank;
+  int          ierr,rank,tab = vascii->tab;
   MPI_Comm     comm;
   FILE         *fp;
   PetscTruth   isascii;
@@ -581,9 +582,13 @@ int ViewerASCIISynchronizedPrintf(Viewer viewer,const char format[],...)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (vascii->bviewer) {ierr = MPI_Comm_rank(vascii->bviewer->comm,&rank);CHKERRQ(ierr);}
   
+
   /* First processor prints immediately to fp */
   if (!rank) {
     va_list Argp;
+
+    while (tab--) fprintf(fp,"  ");
+
     va_start(Argp,format);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
     vfprintf(fp,format,(char*)Argp);
@@ -603,16 +608,20 @@ int ViewerASCIISynchronizedPrintf(Viewer viewer,const char format[],...)
     va_end(Argp);
   } else { /* other processors add to local queue */
     int         len;
+    char        *string;
     va_list     Argp;
     PrintfQueue next = PetscNew(struct _PrintfQueue);CHKPTRQ(next);
+
     if (queue) {queue->next = next; queue = next;}
     else       {queuebase   = queue = next;}
     queuelength++;
+    string = next->string;
+    while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vsprintf(next->string,format,(char *)Argp);
+    vsprintf(string,format,(char *)Argp);
 #else
-    vsprintf(next->string,format,Argp);
+    vsprintf(string,format,Argp);
 #endif
     va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.11 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.12 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests matrix factorization.  Note that most users should\n\
 employ the SLES interface to the linear solvers instead of using the factorization\n\
@@ -38,7 +38,7 @@ int main(int argc,char **args)
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = ISView(perm,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
-  ierr = MatLUFactorSymbolic(C,perm,iperm,1.0,&LU);CHKERRA(ierr);
+  ierr = MatLUFactorSymbolic(C,perm,iperm,PETSC_NULL,&LU);CHKERRA(ierr);
   ierr = MatLUFactorNumeric(C,&LU);CHKERRA(ierr);
   ierr = MatView(LU,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 

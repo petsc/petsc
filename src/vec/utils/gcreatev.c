@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.76 2000/05/05 22:14:53 balay Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.77 2000/05/10 16:40:00 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "petsc.h"
@@ -219,7 +219,7 @@ int VecPrintHelp(Vec vec)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN
@@ -236,9 +236,9 @@ int VecMatlabEnginePut_Default(PetscObject obj,void *engine)
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  mat  = mxCreateDoubleMatrix(n,1,(mxComplexity)0);
+  mat  = mxCreateDoubleMatrix(n,1,mxREAL);
 #else
-  mat  = mxCreateDoubleMatrix(n,1,(mxComplexity)1);
+  mat  = mxCreateDoubleMatrix(n,1,mxCOMPLEX);
 #endif
   ierr = PetscMemcpy(mxGetPr(mat),array,n*sizeof(Scalar));CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);

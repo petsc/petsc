@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.2 2000/05/20 20:31:27 bsmith Exp balay $";
+static char vcid[] = "$Id: matreg.c,v 1.3 2000/05/24 21:13:24 balay Exp bsmith $";
 #endif
 /*
      Mechanism for register PETSc matrix types
@@ -59,7 +59,7 @@ int MatSetType(Mat mat,MATType matype)
   mat->data        = 0;
   ierr = (*r)(mat);CHKERRQ(ierr);
 
-  ierr = PetscObjectSetName((PetscObject)mat,matype);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)mat,matype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -215,19 +215,16 @@ int MatRegister(char *sname,char *path,char *name,int (*function)(Mat))
 int MATCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
 {
   Mat B;
-  int ierr;
 
   PetscFunctionBegin;
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);
   PLogObjectCreate(B);
 
   B->m = m;
-  B->n = N;
+  B->n = n;
   B->M = M;
   B->N = N;
 
   *A = B;
-  
-
   PetscFunctionReturn(0);
 }

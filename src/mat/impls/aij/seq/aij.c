@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.350 2000/05/11 04:51:42 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.351 2000/05/13 14:19:29 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -1219,9 +1219,9 @@ int MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatLUFactorSymbolic_SeqAIJ(Mat,IS,IS,PetscReal,Mat*);
+EXTERN int MatLUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatLUInfo*,Mat*);
 EXTERN int MatLUFactorNumeric_SeqAIJ(Mat,Mat*);
-EXTERN int MatLUFactor_SeqAIJ(Mat,IS,IS,PetscReal);
+EXTERN int MatLUFactor_SeqAIJ(Mat,IS,IS,MatLUInfo*);
 EXTERN int MatSolve_SeqAIJ(Mat,Vec,Vec);
 EXTERN int MatSolveAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 EXTERN int MatSolveTranspose_SeqAIJ(Mat,Vec,Vec);
@@ -1235,7 +1235,7 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
   int         i,ierr,N,*rows,m = a->m - 1,shift = a->indexshift;
 
   PetscFunctionBegin;
-  ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
   if (a->keepzeroedrows) {
     for (i=0; i<N; i++) {
@@ -1403,9 +1403,10 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
   ierr = MatCreateSeqAIJ(A->comm,a->n,m,0,col,&C);CHKERRQ(ierr);
   ierr = PetscFree(col);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
-    len = ai[i+1]-ai[i];
-    ierr = MatSetValues(C,len,aj,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
-    array += len; aj += len;
+    len    = ai[i+1]-ai[i];
+    ierr   = MatSetValues(C,len,aj,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
+    array += len; 
+    aj    += len;
   }
   if (shift) { 
     for (i=0; i<ai[m]-1; i++) aj[i] += 1;
@@ -1519,8 +1520,8 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatReuse scall,Mat 
   if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"IScol is not sorted");
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
-  ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
-  ierr = ISGetSize(iscol,&ncols);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
 
   ierr = ISStrideGetInfo(iscol,&first,&step);CHKERRQ(ierr);
   ierr = ISStride(iscol,&stride);CHKERRQ(ierr);
@@ -1665,7 +1666,7 @@ int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
   ierr = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
 
   /* Create the inverse permutation so that it can be used in MatLUFactorNumeric() */
-  if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);} /* if this came from a previous factored; need to remove old one */
+  if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);} /* need to remove old one */
   ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
   PLogObjectParent(inA,a->icol);
 
@@ -1747,7 +1748,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A,int is_max,IS *is,int ov)
                  
     /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);CHKERRQ(ierr);
-    ierr = ISGetSize(is[i],&n);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is[i],&n);CHKERRQ(ierr);
     
     /* Enter these into the temp arrays. I.e., mark table[row], enter row into new index */
     for (j=0; j<n ; ++j){
@@ -1836,7 +1837,7 @@ int MatPrintHelp_SeqAIJ(Mat A)
 #if defined(PETSC_HAVE_ESSL)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_essl: Use IBM sparse LU factorization and solve.\n");CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_matlab: Use Matlab engine sparse LU factorization and solve.\n");CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -1930,8 +1931,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatPermute_SeqAIJ,
        0,
        0,
-       0,
-       0,
+       MatDestroy_SeqAIJ,
+       MatView_SeqAIJ,
        MatGetMaps_Petsc};
 
 EXTERN int MatUseSuperLU_SeqAIJ(Mat);
@@ -2153,7 +2154,7 @@ int MatRetrieveValues(Mat mat)
 /*
    This allows SeqAIJ matrices to be passed to the matlab engine
 */
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN
@@ -2270,8 +2271,6 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz,Mat *A)
   B->data             = (void*)(b = PetscNew(Mat_SeqAIJ));CHKPTRQ(b);
   ierr = PetscMemzero(b,sizeof(Mat_SeqAIJ));CHKERRQ(ierr);
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->ops->destroy          = MatDestroy_SeqAIJ;
-  B->ops->view             = MatView_SeqAIJ;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
   B->mapping          = 0;
@@ -2369,7 +2368,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz,Mat *A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_SeqAIJ",
                                      MatRetrieveValues_SeqAIJ);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatMatlabEnginePut_SeqAIJ",MatMatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -2389,8 +2388,6 @@ int MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PLogObjectCreate(C);
   C->data           = (void*)(c = PetscNew(Mat_SeqAIJ));CHKPTRQ(c);
   ierr              = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  C->ops->destroy   = MatDestroy_SeqAIJ;
-  C->ops->view      = MatView_SeqAIJ;
   C->factor         = A->factor;
   c->row            = 0;
   c->col            = 0;

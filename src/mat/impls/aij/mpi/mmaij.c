@@ -1,4 +1,4 @@
-/*$Id: mmaij.c,v 1.52 2000/04/09 04:36:04 bsmith Exp bsmith $*/
+/*$Id: mmaij.c,v 1.53 2000/04/12 04:23:11 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel AIJ matrix vector multiply
@@ -26,7 +26,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 
 #if defined (PETSC_USE_CTABLE)
   /* use a table - Mark Adams (this has not been tested with "shift") */
-  PetscTableCreate(B->m,&gid1_lid1); 
+  ierr = PetscTableCreate(B->m,&gid1_lid1);CHKERRQ(ierr);
   for (i=0; i<B->m; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       int data,gid1 = aj[B->i[i] + shift + j] + 1 + shift;
@@ -100,7 +100,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,ec,&aij->lvec);CHKERRQ(ierr);
 
   /* create two temporary Index sets for build scatter gather */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,ec,garray,&from);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(mat->comm,ec,garray,&from);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,ec,0,1,&to);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */

@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.51 2000/05/10 16:39:17 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.52 2000/05/18 19:20:31 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -226,7 +226,6 @@ int PetscSynchronizedFlush(MPI_Comm comm)
     queue       = 0;
     queuelength = 0;
   }
-  ierr = PetscCommRestoreNewTag(comm,&tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

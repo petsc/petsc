@@ -1,4 +1,4 @@
-/*$Id: baij2.c,v 1.61 2000/05/08 15:08:11 balay Exp bsmith $*/
+/*$Id: baij2.c,v 1.62 2000/05/12 20:16:18 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -35,7 +35,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
                  
     /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);CHKERRQ(ierr);
-    ierr = ISGetSize(is[i],&n);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is[i],&n);CHKERRQ(ierr);
 
     /* Enter these into the temp arrays i.e mark table[row], enter row into new index */
     for (j=0; j<n ; ++j){
@@ -91,8 +91,8 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
-  ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
-  ierr = ISGetSize(iscol,&ncols);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
 
   smap  = (int*)PetscMalloc((1+oldcols)*sizeof(int));CHKPTRQ(smap);
   ssmap = smap;
@@ -166,8 +166,8 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
-  ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
-  ierr = ISGetSize(iscol,&ncols);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
   
   /* Verify if the indices corespond to each element in a block 
    and form the IS with compressed IS */
@@ -186,7 +186,7 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B
   for (i=0; i<ncols; i++) vary[icol[i]/bs]++;
   count = 0;
   for (i=0; i<a->mbs; i++) {
-    if (vary[i]!=0 && vary[i]!=bs) SETERRA(1,0,"MatGetSubmatrices_SeqBAIJ:");
+    if (vary[i]!=0 && vary[i]!=bs) SETERRA(1,0,"Internal error in PETSc");
     if (vary[i]==bs) iary[count++] = i;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,&is2);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: shell.c,v 1.79 2000/04/12 04:23:17 bsmith Exp balay $*/
+/*$Id: shell.c,v 1.80 2000/05/05 22:15:48 balay Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -177,7 +177,7 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        0,
-       0,
+       MatDestroy_Shell,
        0,
        MatGetMaps_Petsc};
 
@@ -256,7 +256,6 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
   B->factor       = 0;
   B->assembled    = PETSC_TRUE;
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->ops->destroy = MatDestroy_Shell;
 
   b       = PetscNew(Mat_Shell);CHKPTRQ(b);
   PLogObjectMemory(B,sizeof(struct _p_Mat)+sizeof(Mat_Shell));

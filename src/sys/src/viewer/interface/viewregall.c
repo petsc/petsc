@@ -1,4 +1,4 @@
-/*$Id: viewregall.c,v 1.12 2000/04/12 04:20:59 bsmith Exp bsmith $*/
+/*$Id: viewregall.c,v 1.13 2000/05/10 16:38:49 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -12,7 +12,7 @@ EXTERN int ViewerCreate_AMS(Viewer);
 EXTERN_C_END
   
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerRegisterAll" 
+#define __FUNC__ /*<a name=ViewerRegisterAll""></a>*/"ViewerRegisterAll" 
 /*@C
   ViewerRegisterAll - Registers all of the graphics methods in the Viewer package.
 

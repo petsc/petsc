@@ -1,4 +1,4 @@
-/*$Id: cholbs.c,v 1.58 2000/04/09 04:36:09 bsmith Exp bsmith $*/
+/*$Id: cholbs.c,v 1.59 2000/04/12 04:23:21 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -46,7 +46,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_MPIRowbs"
+#define __FUNC__ /*<a name="MatLUFactorNumeric_MPIRowbs"></a>*/"MatLUFactorNumeric_MPIRowbs"
 int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;

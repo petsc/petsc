@@ -1,4 +1,4 @@
-/*$Id: ex30.c,v 1.16 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex30.c,v 1.17 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
 of matrix sparsity structure with MatView().  Input parameters are:\n\
@@ -64,7 +64,7 @@ int main(int argc,char **args)
   /* Compute factorization */
   ierr = OptionsHasName(PETSC_NULL,"-lu",&flg1);CHKERRA(ierr);
   if (flg1){ 
-    ierr = MatLUFactorSymbolic(C,row,col,1.0,&A);CHKERRA(ierr);
+    ierr = MatLUFactorSymbolic(C,row,col,PETSC_NULL,&A);CHKERRA(ierr);
   } else {
     MatILUInfo info;
     info.levels        = lf;

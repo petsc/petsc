@@ -1,4 +1,4 @@
-/*$Id: fdmpiaij.c,v 1.33 2000/05/15 18:42:52 bsmith Exp bsmith $*/
+/*$Id: fdmpiaij.c,v 1.34 2000/05/16 17:51:33 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -61,7 +61,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   ierr = OptionsHasName(PETSC_NULL,"-matfdcoloring_slow",&flg);CHKERRQ(ierr);
 
   for (i=0; i<nis; i++) {
-    ierr = ISGetSize(isa[i],&n);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(isa[i],&n);CHKERRQ(ierr);
     ierr = ISGetIndices(isa[i],&is);CHKERRQ(ierr);
     c->ncolumns[i] = n;
     c->ncolumns[i] = n;

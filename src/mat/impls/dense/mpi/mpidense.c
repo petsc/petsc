@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.139 2000/05/05 22:15:35 balay Exp bsmith $*/
+/*$Id: mpidense.c,v 1.140 2000/05/10 16:40:34 bsmith Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -127,8 +127,8 @@ static int MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
   ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
-  ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
-  ierr = ISGetSize(iscol,&ncols);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
 
   /* No parallel redistribution currently supported! Should really check each index set
      to comfirm that it is OK.  ... Currently supports only submatrix same partitioning as
@@ -279,7 +279,7 @@ int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
   IS             istmp;
 
   PetscFunctionBegin;
-  ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
 
   /*  first count number of contributors to each processor */
@@ -533,6 +533,7 @@ static int MatView_MPIDense_ASCIIorDraworSocket(Mat mat,Viewer viewer)
   int          ierr,format,size = mdn->size,rank = mdn->rank; 
   ViewerType   vtype;
   PetscTruth   isascii,isdraw;
+  Viewer       sviewer;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
@@ -588,12 +589,11 @@ static int MatView_MPIDense_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
-      Viewer sviewer;
-      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
       ierr = MatView(((Mat_MPIDense*)(A->data))->A,sviewer);CHKERRQ(ierr);
-      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     }
+    ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
@@ -998,8 +998,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
        0,
        MatGetSubMatrix_MPIDense,
-       0,
-       0,
+       MatDestroy_MPIDense,
+       MatView_MPIDense,
        MatGetMaps_Petsc};
 
 #undef __FUNC__  
@@ -1054,8 +1054,6 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   PLogObjectCreate(mat);
   mat->data         = (void*)(a = PetscNew(Mat_MPIDense));CHKPTRQ(a);
   ierr              = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  mat->ops->destroy = MatDestroy_MPIDense;
-  mat->ops->view    = MatView_MPIDense;
   mat->factor       = 0;
   mat->mapping      = 0;
 
@@ -1136,8 +1134,6 @@ static int MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
   PLogObjectCreate(mat);
   mat->data         = (void*)(a = PetscNew(Mat_MPIDense));CHKPTRQ(a);
   ierr              = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  mat->ops->destroy = MatDestroy_MPIDense;
-  mat->ops->view    = MatView_MPIDense;
   mat->factor       = A->factor;
   mat->assembled    = PETSC_TRUE;
 
@@ -1155,6 +1151,7 @@ static int MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
   a->size         = oldmat->size;
   a->rank         = oldmat->rank;
   mat->insertmode = NOT_SET_VALUES;
+  a->nvec         = oldmat->nvec;
   a->donotstash   = oldmat->donotstash;
   a->rowners = (int*)PetscMalloc((a->size+1)*sizeof(int));CHKPTRQ(a->rowners);
   PLogObjectMemory(mat,(a->size+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIDense));

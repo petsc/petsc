@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.113 2000/04/12 04:21:20 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.114 2000/04/20 03:34:35 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -288,13 +288,13 @@ int PetscIntView(int N,int idx[],Viewer viewer)
         }
         array  = (int*)PetscMalloc(Ntotal*sizeof(int));CHKPTRQ(array);
         ierr   = MPI_Gatherv(idx,N,MPI_INT,array,sizes,displs,MPI_INT,0,comm);CHKERRQ(ierr);
-        ierr   = ViewerSocketPutInt_Private(viewer,Ntotal,array);CHKERRQ(ierr);
+        ierr   = ViewerSocketPutInt(viewer,Ntotal,array);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);
         ierr = PetscFree(displs);CHKERRQ(ierr);
         ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
-      ierr = ViewerSocketPutInt_Private(viewer,N,idx);CHKERRQ(ierr);
+      ierr = ViewerSocketPutInt(viewer,N,idx);CHKERRQ(ierr);
     }
   } else {
     SETERRQ(1,1,"Cannot handle that viewer");
@@ -369,13 +369,13 @@ int PetscDoubleView(int N,PetscReal idx[],Viewer viewer)
         }
         array  = (PetscReal*)PetscMalloc(Ntotal*sizeof(PetscReal));CHKPTRQ(array);
         ierr = MPI_Gatherv(idx,N,MPI_DOUBLE,array,sizes,displs,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
-        ierr = ViewerSocketPutReal_Private(viewer,Ntotal,1,array);CHKERRQ(ierr);
+        ierr = ViewerSocketPutReal(viewer,Ntotal,1,array);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);
         ierr = PetscFree(displs);CHKERRQ(ierr);
         ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
-      ierr = ViewerSocketPutReal_Private(viewer,N,1,idx);CHKERRQ(ierr);
+      ierr = ViewerSocketPutReal(viewer,N,1,idx);CHKERRQ(ierr);
     }
   } else {
     SETERRQ(1,1,"Cannot handle that viewer");
@@ -462,13 +462,13 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
         }
         array = (Scalar*)PetscMalloc(Ntotal*sizeof(Scalar));CHKPTRQ(array);
         ierr  = MPI_Gatherv(idx,N,MPIU_SCALAR,array,sizes,displs,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
-        ierr  = ViewerSocketPutScalar_Private(viewer,Ntotal,1,array);CHKERRQ(ierr);
+        ierr  = ViewerSocketPutScalar(viewer,Ntotal,1,array);CHKERRQ(ierr);
         ierr  = PetscFree(sizes);CHKERRQ(ierr);
         ierr  = PetscFree(displs);CHKERRQ(ierr);
         ierr  = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
-      ierr = ViewerSocketPutScalar_Private(viewer,N,1,idx);CHKERRQ(ierr);
+      ierr = ViewerSocketPutScalar(viewer,N,1,idx);CHKERRQ(ierr);
     }
   } else {
     SETERRQ(1,1,"Cannot handle that viewer");

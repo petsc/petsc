@@ -1,4 +1,4 @@
-/*$Id: vecstash.c,v 1.21 2000/04/27 03:49:23 bsmith Exp bsmith $*/
+/*$Id: vecstash.c,v 1.22 2000/06/15 14:55:41 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"
 
@@ -80,8 +80,6 @@ int VecStashDestroy_Private(VecStash *stash)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscCommRestoreNewTag(stash->comm,&stash->tag2);CHKERRQ(ierr);
-  ierr = PetscCommRestoreNewTag(stash->comm,&stash->tag1);CHKERRQ(ierr);
   if (stash->array) {
     ierr = PetscFree(stash->array);CHKERRQ(ierr);
     stash->array = 0;

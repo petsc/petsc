@@ -1,4 +1,4 @@
-/*$Id: pvec2.c,v 1.48 2000/04/09 04:35:30 bsmith Exp bsmith $*/
+/*$Id: pvec2.c,v 1.49 2000/04/12 04:22:23 bsmith Exp bsmith $*/
 
 /*
      Code for some of the parallel vector primatives.
@@ -47,9 +47,7 @@ int VecMDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
     work = (Scalar*)PetscMalloc(nv * sizeof(Scalar));CHKPTRQ(work);
   }
   ierr = VecMDot_Seq(nv,xin,y,work);CHKERRQ(ierr);
-  PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
   ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
-  PLogEventBarrierEnd(VEC_MDotBarrier,0,0,0,0,xin->comm);
   if (nv > 128) {
     ierr = PetscFree(work);CHKERRQ(ierr);
   }
@@ -68,9 +66,7 @@ int VecMTDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
     work = (Scalar*)PetscMalloc(nv * sizeof(Scalar));CHKPTRQ(work);
   }
   ierr = VecMTDot_Seq(nv,xin,y,work);CHKERRQ(ierr);
-  PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
   ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
-  PLogEventBarrierEnd(VEC_MDotBarrier,0,0,0,0,xin->comm);
   if (nv > 128) {
     ierr = PetscFree(work);CHKERRQ(ierr);
   }
@@ -126,33 +122,25 @@ int VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
     } 
     */
 #endif
-    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     ierr = MPI_Allreduce(&work,&sum,1,MPI_DOUBLE,MPI_SUM,xin->comm);CHKERRQ(ierr);
-    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
     *z = sqrt(sum);
     PLogFlops(2*xin->n);
   } else if (type == NORM_1) {
     /* Find the local part */
     ierr = VecNorm_Seq(xin,NORM_1,&work);CHKERRQ(ierr);
     /* Find the global max */
-    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     ierr = MPI_Allreduce(&work,z,1,MPI_DOUBLE,MPI_SUM,xin->comm);CHKERRQ(ierr);
-    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else if (type == NORM_INFINITY) {
     /* Find the local max */
     ierr = VecNorm_Seq(xin,NORM_INFINITY,&work);CHKERRQ(ierr);
     /* Find the global max */
-    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     ierr = MPI_Allreduce(&work,z,1,MPI_DOUBLE,MPI_MAX,xin->comm);CHKERRQ(ierr);
-    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else if (type == NORM_1_AND_2) {
     PetscReal temp[2];
     ierr = VecNorm_Seq(xin,NORM_1,temp);CHKERRQ(ierr);
     ierr = VecNorm_Seq(xin,NORM_2,temp+1);CHKERRQ(ierr);
     temp[1] = temp[1]*temp[1];
-    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     ierr = MPI_Allreduce(temp,z,2,MPI_DOUBLE,MPI_SUM,xin->comm);CHKERRQ(ierr);
-    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
     z[1] = sqrt(z[1]);
   }
   PetscFunctionReturn(0);
@@ -221,9 +209,7 @@ int VecMax_MPI(Vec xin,int *idx,PetscReal *z)
 
   /* Find the global max */
   if (!idx) {
-    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     ierr = MPI_Allreduce(&work,z,1,MPI_DOUBLE,MPI_MAX,xin->comm);CHKERRQ(ierr);
-    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else {
     PetscReal work2[2],z2[2];
     int    rstart;
@@ -235,9 +221,7 @@ int VecMax_MPI(Vec xin,int *idx,PetscReal *z)
     ierr = VecGetOwnershipRange(xin,&rstart,PETSC_NULL);CHKERRQ(ierr);
     work2[0] = work;
     work2[1] = *idx + rstart;
-    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     ierr = MPI_Allreduce(work2,z2,2,MPI_DOUBLE,VecMax_Local_Op,xin->comm);CHKERRQ(ierr);
-    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
     *z   = z2[0];
     *idx = (int)z2[1];
 
@@ -258,9 +242,7 @@ int VecMin_MPI(Vec xin,int *idx,PetscReal *z)
 
   /* Find the global Min */
   if (!idx) {
-    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     ierr = MPI_Allreduce(&work,z,1,MPI_DOUBLE,MPI_MIN,xin->comm);CHKERRQ(ierr);
-    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else {
     PetscReal work2[2],z2[2];
     int    rstart;
@@ -272,9 +254,7 @@ int VecMin_MPI(Vec xin,int *idx,PetscReal *z)
     ierr = VecGetOwnershipRange(xin,&rstart,PETSC_NULL);CHKERRQ(ierr);
     work2[0] = work;
     work2[1] = *idx + rstart;
-    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     ierr = MPI_Allreduce(work2,z2,2,MPI_DOUBLE,VecMin_Local_Op,xin->comm);CHKERRQ(ierr);
-    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
     *z   = z2[0];
     *idx = (int)z2[1];
 

@@ -1,4 +1,4 @@
-/*$Id: isdiff.c,v 1.19 2000/05/05 22:14:51 balay Exp balay $*/
+/*$Id: isdiff.c,v 1.20 2000/05/08 15:07:47 balay Exp bsmith $*/
 
 #include "petscis.h"                    /*I "petscis.h"  I*/
 #include "petsc.h"
@@ -41,7 +41,7 @@ int ISDifference(IS is1,IS is2,IS *isout)
   PetscValidPointer(isout);
 
   ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
-  ierr = ISGetSize(is1,&n1);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);
 
   /* Create a bit mask array to contain required values */
   if (n1) {
@@ -64,7 +64,7 @@ int ISDifference(IS is1,IS is2,IS *isout)
   ierr = ISRestoreIndices(is1,&i1);CHKERRQ(ierr);
   /* Remove the values from is2 */
   ierr = ISGetIndices(is2,&i2);CHKERRQ(ierr);
-  ierr = ISGetSize(is2,&n2);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is2,&n2);CHKERRQ(ierr);
   for (i=0; i<n2; i++) {
     if (i2[i] < imin || i2[i] > imax) continue;
     PetscBTClear(mask,i2[i] - imin);
@@ -128,9 +128,9 @@ int ISSum(IS is1,IS is2,IS *isout)
   PetscValidPointer(isout);
 
   ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
-  ierr = ISGetSize(is1,&n1);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);
   ierr = ISGetIndices(is2,&i2);CHKERRQ(ierr);
-  ierr = ISGetSize(is2,&n2);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is2,&n2);CHKERRQ(ierr);
 
   /* Create a bit mask array to contain required values */
   if (n1 || n2) {

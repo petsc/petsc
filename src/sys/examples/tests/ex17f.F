@@ -1,23 +1,31 @@
 !
-! "$Id: ex7f.F,v 1.6 1998/04/15 18:00:53 balay Exp $";
+! "$Id: ex17f.F,v 1.1 2000/07/03 18:00:54 bsmith Exp bsmith $";
 !
 !
-!     Formatted test for PetscSetCommWorld()
+!     Test for PetscFOpen() from Fortran
 !
 
 #include "finclude/petsc.h"
 
-      integer size,ierr
-
-      call MPI_Init(ierr)
-      call PetscSetCommWorld(PETSC_COMM_SELF,ierr)
+      integer          ierr,rank
+      PetscFortranAddr file
+      character*100    joe
+ 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-   
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      if (size .ne. 1) then
-        print*,'main:Error from PetscSetCommWorld()'
-      endif
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+
+      call PetscFOpen(PETSC_COMM_WORLD,'testfile','w',file,ierr)
+      
+      call PetscFPrintf(PETSC_COMM_WORLD,file,'Hi once \n',ierr)
+      call PetscSynchronizedFPrintf(PETSC_COMM_WORLD,file,'Hi twice \n',     &
+     &                              ierr)
+      call PetscSynchronizedFlush(PETSC_COMM_WORLD,ierr)
+
+      write (FMT=*,UNIT=joe) 'greetings from ',rank,'\n'
+      call PetscSynchronizedFPrintf(PETSC_COMM_WORLD,file,joe,ierr)
+      call PetscSynchronizedFlush(PETSC_COMM_WORLD,ierr)
+
+      call PetscFClose(PETSC_COMM_WORLD,file,ierr)
 
       call PetscFinalize(ierr)
-      call MPI_Finalize(ierr)
       end

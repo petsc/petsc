@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.60 2000/05/06 20:11:51 bsmith Exp balay $*/
+/*$Id: iscoloring.c,v 1.61 2000/05/24 22:17:46 balay Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -261,7 +261,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* count the number of partitions, make sure <= size */
-  ierr = ISGetSize(part,&n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(part,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(part,&indices);CHKERRQ(ierr);
   np = 0;
   for (i=0; i<n; i++) {
@@ -339,7 +339,7 @@ int ISPartitioningCount(IS part,int count[])
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* count the number of partitions,make sure <= size */
-  ierr = ISGetSize(part,&n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(part,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(part,&indices);CHKERRQ(ierr);
   np = 0;
   for (i=0; i<n; i++) {
@@ -409,7 +409,7 @@ int ISAllGather(IS is,IS *isout)
   sizes   = (int*)PetscMalloc(2*size*sizeof(int));CHKPTRQ(sizes);
   offsets = sizes + size;
   
-  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = MPI_Allgather(&n,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;
   for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];

@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.40 2000/05/05 22:16:12 balay Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.41 2000/05/10 16:40:58 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -296,8 +296,8 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        0,
-       0,
-       0,
+       MatDestroy_MPIAdj,
+       MatView_MPIAdj,
        MatGetMaps_Petsc};
 
 
@@ -350,8 +350,6 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
   B->data             = (void*)(b = PetscNew(Mat_MPIAdj));CHKPTRQ(b);
   ierr                = PetscMemzero(b,sizeof(Mat_MPIAdj));CHKERRQ(ierr);
   ierr                = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->ops->destroy     = MatDestroy_MPIAdj;
-  B->ops->view        = MatView_MPIAdj;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
   B->mapping          = 0;

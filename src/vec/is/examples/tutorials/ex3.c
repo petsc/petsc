@@ -1,5 +1,5 @@
 
-/*      "$Id: ex3.c,v 1.11 2000/01/11 21:00:01 bsmith Exp balay $"; */
+/*      "$Id: ex3.c,v 1.12 2000/05/05 22:14:48 balay Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   /*
     Extract indices from set.
   */
-  ierr = ISGetSize(set,&issize);CHKERRA(ierr);
+  ierr = ISGetLocalSize(set,&issize);CHKERRA(ierr);
   ierr = ISGetIndices(set,&indices);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Printing indices directly\n");CHKERRA(ierr);
   for (i=0; i<issize; i++) {

@@ -1,4 +1,4 @@
-/*$Id: matstash.c,v 1.43 2000/04/26 21:21:56 bsmith Exp balay $*/
+/*$Id: matstash.c,v 1.44 2000/04/26 22:27:35 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"
 
@@ -39,7 +39,7 @@ int MatStashCreate_Private(MPI_Comm comm,int bs,MatStash *stash)
 
   nopt = stash->size;
   opt  = (int*)PetscMalloc(nopt*sizeof(int));CHKPTRQ(opt);
-  ierr = OptionsGetIntArray(PETSC_NULL,"-vecstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(PETSC_NULL,"-matstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
   if (flg) {
     if (nopt == 1)                max = opt[0];
     else if (nopt == stash->size) max = opt[stash->rank];
@@ -84,8 +84,6 @@ int MatStashDestroy_Private(MatStash *stash)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscCommRestoreNewTag(stash->comm,&stash->tag2);CHKERRQ(ierr);
-  ierr = PetscCommRestoreNewTag(stash->comm,&stash->tag1);CHKERRQ(ierr);
   if (stash->array) {
     ierr = PetscFree(stash->array);CHKERRQ(ierr);
     stash->array = 0;
@@ -119,9 +117,11 @@ int MatStashScatterEnd_Private(MatStash *stash)
   /* Now update nmaxold to be app 10% more than max n used, this way the
      wastage of space is reduced the next time this stash is used.
      Also update the oldmax, only if it increases */
-  bs2      = stash->bs*stash->bs;
-  oldnmax  = ((int)(stash->n * 1.1) + 5)*bs2;
-  if (oldnmax > stash->oldnmax) stash->oldnmax = oldnmax;
+  if (stash->n) {
+    bs2      = stash->bs*stash->bs;
+    oldnmax  = ((int)(stash->n * 1.1) + 5)*bs2;
+    if (oldnmax > stash->oldnmax) stash->oldnmax = oldnmax;
+  }
 
   stash->nmax       = 0;
   stash->n          = 0;

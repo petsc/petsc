@@ -1,4 +1,4 @@
-/*$Id: ex48.c,v 1.14 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex48.c,v 1.15 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = 
 "Tests the vatious routines in MatBAIJ format.\n";
@@ -176,8 +176,8 @@ int main(int argc,char **args)
   ierr = PetscFree(idx);CHKERRA(ierr);
   ierr = ISSetPermutation(is1);CHKERRA(ierr);
   ierr = ISSetPermutation(is2);CHKERRA(ierr);
-  ierr = MatLUFactor(B,is1,is2,3);CHKERRA(ierr);
-  ierr = MatLUFactor(A,is1,is2,3);CHKERRA(ierr);
+  ierr = MatLUFactor(B,is1,is2,PETSC_NULL);CHKERRA(ierr);
+  ierr = MatLUFactor(A,is1,is2,PETSC_NULL);CHKERRA(ierr);
   
   
   /* Test MatSolveAdd() */

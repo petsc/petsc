@@ -1,11 +1,11 @@
-/*$Id: draw.c,v 1.67 2000/04/12 04:21:02 bsmith Exp balay $*/
+/*$Id: draw.c,v 1.68 2000/05/05 22:13:25 balay Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawResizeWindow" 
+#define __FUNC__ /*<a name="DrawResizeWindow"></a>*/"DrawResizeWindow" 
 /*@
    DrawResizeWindow - Allows one to resize a window from a program.
 
@@ -30,7 +30,7 @@ int DrawResizeWindow(Draw draw,int w,int h)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawCheckResizedWindow" 
+#define __FUNC__ /*<a name="DrawCheckResizedWindow"></a>*/"DrawCheckResizedWindow" 
 /*@
    DrawCheckResizedWindow - Checks if the user has resized the window.
 
@@ -55,7 +55,7 @@ int DrawCheckResizedWindow(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawGetTitle" 
+#define __FUNC__ /*<a name="DrawGetTitle"></a>*/"DrawGetTitle" 
 /*@C
    DrawGetTitle - Gets pointer to title of a Draw context.
 
@@ -80,7 +80,7 @@ int DrawGetTitle(Draw draw,char **title)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSetTitle" 
+#define __FUNC__ /*<a name="DrawSetTitle"></a>*/"DrawSetTitle" 
 /*@C
    DrawSetTitle - Sets the title of a Draw context.
 
@@ -112,7 +112,7 @@ int DrawSetTitle(Draw draw,char *title)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawAppendTitle" 
+#define __FUNC__ /*<a name="DrawAppendTitle"></a>*/"DrawAppendTitle" 
 /*@C
    DrawAppendTitle - Appends to the title of a Draw context.
 
@@ -158,7 +158,7 @@ int DrawAppendTitle(Draw draw,char *title)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawDestroy" 
+#define __FUNC__ /*<a name="DrawDestroy"></a>*/"DrawDestroy" 
 /*@C
    DrawDestroy - Deletes a draw context.
 
@@ -195,7 +195,7 @@ int DrawDestroy(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawGetPopup" 
+#define __FUNC__ /*<a name="DrawGetPopup"></a>*/"DrawGetPopup" 
 /*@C
    DrawGetPopup - Creates a popup window associated with a Draw window.
 
@@ -228,7 +228,7 @@ int DrawGetPopup(Draw draw,Draw *popup)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawDestroy_Null" 
+#define __FUNC__ /*<a name="DrawDestroy_Null"></a>*/"DrawDestroy_Null" 
 int DrawDestroy_Null(Draw draw)
 {
   PetscFunctionBegin;
@@ -236,7 +236,7 @@ int DrawDestroy_Null(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawOpenNull" 
+#define __FUNC__ /*<a name="DrawOpenNull"></a>*/"DrawOpenNull" 
 /*
   DrawOpenNull - Opens a null drawing context. All draw commands to 
   it are ignored.
@@ -259,7 +259,7 @@ int DrawOpenNull(MPI_Comm comm,Draw *win)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawCreate_Null" 
+#define __FUNC__ /*<a name="DrawCreate_Null"></a>*/"DrawCreate_Null" 
 /*
   DrawCreate_Null - Opens a null drawing context. All draw commands to 
   it are ignored.
@@ -287,7 +287,7 @@ int DrawCreate_Null(Draw draw)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawGetSingleton" 
+#define __FUNC__ /*<a name="DrawGetSingleton"></a>*/"DrawGetSingleton" 
 /*@C
    DrawGetSingleton - Gain access to a Draw object as if it were owned 
         by the one process.
@@ -328,7 +328,7 @@ int DrawGetSingleton(Draw draw,Draw *sdraw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawRestoreSingleton" 
+#define __FUNC__ /*<a name="DrawRestoreSingleton"></a>*/"DrawRestoreSingleton" 
 /*@C
    DrawRestoreSingleton - Remove access to a Draw object as if it were owned 
         by the one process.

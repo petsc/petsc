@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.30 2000/04/12 04:21:02 bsmith Exp balay $*/
+/*$Id: drawreg.c,v 1.31 2000/05/05 22:13:25 balay Exp bsmith $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
@@ -10,7 +10,7 @@
 FList DrawList              = 0;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawCreate" 
+#define __FUNC__ /*<a name="DrawCreate"></a>*/"DrawCreate" 
 /*@C
    DrawCreate - Creates a graphics context.
 
@@ -66,7 +66,7 @@ int DrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y
 }
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSetType" 
+#define __FUNC__ /*<a name="DrawSetType"></a>*/"DrawSetType" 
 /*@C
    DrawSetType - Builds graphics object for a particular implementation 
 
@@ -143,7 +143,7 @@ int DrawSetType(Draw draw,DrawType type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawRegisterDestroy" 
+#define __FUNC__ /*<a name="DrawRegisterDestroy"></a>*/"DrawRegisterDestroy" 
 /*@C
    DrawRegisterDestroy - Frees the list of Draw methods that were
    registered by DrawRegisterDynamic().
@@ -169,7 +169,7 @@ int DrawRegisterDestroy(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawGetType" 
+#define __FUNC__ /*<a name="DrawGetType"></a>*/"DrawGetType" 
 /*@C
    DrawGetType - Gets the Draw type as a string from the Draw object.
 
@@ -231,7 +231,7 @@ $     -draw_type my_draw_type
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawRegister" 
+#define __FUNC__ /*<a name="DrawRegister"></a>*/"DrawRegister" 
 int DrawRegister(char *sname,char *path,char *name,int (*function)(Draw))
 {
   int ierr;
@@ -244,7 +244,7 @@ int DrawRegister(char *sname,char *path,char *name,int (*function)(Draw))
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSetFromOptions" 
+#define __FUNC__ /*<a name="DrawSetFromOptions"></a>*/"DrawSetFromOptions" 
 /*@C
    DrawSetFromOptions - Sets the graphics type from the options database.
       Defaults to a PETSc X windows graphics.

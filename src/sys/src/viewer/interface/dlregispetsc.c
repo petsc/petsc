@@ -1,11 +1,11 @@
-/*$Id: dlregispetsc.c,v 1.10 2000/04/09 04:34:00 bsmith Exp bsmith $*/
+/*$Id: dlregispetsc.c,v 1.11 2000/04/12 04:20:59 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
   
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DLLibraryRegister" 
+#define __FUNC__ /*<a name="DLLibraryRegister"></a>*/"DLLibraryRegister" 
 /*
   DLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
@@ -39,7 +39,7 @@ static char *contents = "PETSc Graphics and Viewer libraries. \n\
 
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DLLibraryRegister_Petsc" 
+#define __FUNC__ /*<a name="DLLibraryRegister_Petsc"></a>*/"DLLibraryRegister_Petsc" 
 int DLLibraryRegister_Petsc(char *path)
 {
   int ierr;

@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.4 2000/06/18 03:59:43 bsmith Exp bsmith $*/
+/*$Id: nn.c,v 1.5 2000/06/20 03:58:26 bsmith Exp bsmith $*/
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 
@@ -159,13 +159,13 @@ int MatZeroRowsLocal_NN(Mat A,IS isrows,Scalar *diag)
   ierr = VecGetArray(y,&array);CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<n; i++) {
-    if (array[i]) cnt++;
+    if (array[i] != 0.0) cnt++;
   }  
   nn->nzeroedrows = cnt;
   nn->zeroedrows  = (int*)PetscMalloc((cnt+1)*sizeof(int));CHKPTRQ(nn->zeroedrows);
   cnt = 0;
   for (i=0; i<n; i++) {
-    if (array[i]) nn->zeroedrows[cnt++] = i;
+    if (array[i] != 0.0) nn->zeroedrows[cnt++] = i;
   }
   ierr = VecRestoreArray(y,&array);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);

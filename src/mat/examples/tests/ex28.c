@@ -1,4 +1,4 @@
-/*$Id: ex28.c,v 1.14 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex28.c,v 1.15 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal()\n\n";
 
@@ -40,7 +40,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_SELF,"column and row perms\n");CHKERRA(ierr);
   ierr = ISView(rowperm,0);CHKERRA(ierr);
   ierr = ISView(colperm,0);CHKERRA(ierr);
-  ierr = MatLUFactorSymbolic(A,rowperm,colperm,1.0,&LU);CHKERRA(ierr);
+  ierr = MatLUFactorSymbolic(A,rowperm,colperm,PETSC_NULL,&LU);CHKERRA(ierr);
   ierr = MatLUFactorNumeric(A,&LU);CHKERRA(ierr);
   ierr = MatView(LU,VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,4,&x);CHKERRA(ierr);
