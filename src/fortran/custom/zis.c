@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zis.c,v 1.24 1998/09/20 03:02:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zis.c,v 1.25 1998/09/20 03:04:16 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -64,10 +64,11 @@ void iscoloringview_(ISColoring *iscoloring,Viewer *viewer, int *__ierr )
   *__ierr = ISColoringView(*iscoloring,*viewer);
 }
 
-void isview_(IS *is,Viewer viewer, int *__ierr )
+void isview_(IS *is,Viewer *vin, int *__ierr )
 {
-  PetscPatchDefaultViewers_Fortran(viewer);
-  *__ierr = ISView(*is,viewer);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(vin,v);
+  *__ierr = ISView(*is,v);
 }
 
 void isequal_(IS *is1,IS *is2,PetscTruth *flg, int *__ierr )

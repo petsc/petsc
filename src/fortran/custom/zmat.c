@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.55 1998/09/24 16:13:34 balay Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.56 1998/10/05 18:36:15 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -141,10 +141,11 @@ void matrestorerow_(Mat *mat,int *row,int *ncols,int *cols,Scalar *vals,int *ier
   matgetrowactive = 0;
 }
 
-void matview_(Mat *mat,Viewer viewer, int *__ierr )
+void matview_(Mat *mat,Viewer *vin, int *__ierr )
 {
-  PetscPatchDefaultViewers_Fortran(viewer);
-  *__ierr = MatView(*mat,viewer);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(vin,v);
+  *__ierr = MatView(*mat,v);
 }
 
 void matcopy_(Mat *A,Mat *B, MatStructure *str,int *__ierr )
@@ -363,23 +364,14 @@ void matcreateshell_(MPI_Comm *comm,int *m,int *n,int *M,int *N,void *ctx,Mat *m
 static int ourmult(Mat mat, Vec x, Vec y)
 {
   int              ierr = 0;
-  PetscFortranAddr s1,s2,s3;
-
-  s1 = PetscFromPointer(mat);
-  s2 = PetscFromPointer(x);
-  s3 = PetscFromPointer(y);
-  (*(int (*)(PetscFortranAddr*,PetscFortranAddr*,PetscFortranAddr*,int*))(((PetscObject)mat)->fortran_func_pointers[0]))(&s1,&s2,&s3,&ierr);
-  PetscRmPointer(&s3);
-  PetscRmPointer(&s2);
-  PetscRmPointer(&s1);
+  (*(int (*)(Mat*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat,&x,&y,&ierr);
   return ierr;
 }
 
-void matshellsetoperation_(Mat *mat,MatOperation *op,int (*f)(PetscFortranAddr*,PetscFortranAddr*,
-                    PetscFortranAddr*,int*), int *__ierr )
+void matshellsetoperation_(Mat *mat,MatOperation *op,int (*f)(Mat*,Vec*,Vec*,int*), int *__ierr )
 {
   if (*op == MATOP_MULT) {
-    *__ierr = MatShellSetOperation(*mat,*op,(void*) ourmult);
+    *__ierr = MatShellSetOperation(*mat,*op,(void *)ourmult);
     ((PetscObject)*mat)->fortran_func_pointers[0] = (void *) f;
   } else {
     PetscError(__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,1,0,
@@ -398,28 +390,16 @@ void matshellsetoperation_(Mat *mat,MatOperation *op,int (*f)(PetscFortranAddr*,
    USER CAN HAVE ONLY ONE MatFDCOloring in code Because there is no place to hang f7!
 */
 
-static void (*f7)(PetscFortranAddr*,double*,PetscFortranAddr*,PetscFortranAddr*,void*,int*);
+static void (*f7)(TS*,double*,Vec*,Vec*,void*,int*);
 
 static int ourmatfdcoloringfunctionts(TS ts,double t,Vec x,Vec y, void *ctx)
 {
-  int              ierr = 0;
-  PetscFortranAddr s1,s2,s3;
-
-  s1 = PetscFromPointer(ts);
-  s2 = PetscFromPointer(x);
-  s3 = PetscFromPointer(y);
-  
-  (*f7)(&s1,&t,&s2,&s3,ctx,&ierr);
-
-  PetscRmPointer(&s3);
-  PetscRmPointer(&s2);
-  PetscRmPointer(&s1);
-
+  int ierr = 0;
+  (*f7)(&ts,&t,&x,&y,ctx,&ierr);
   return ierr;
 }
 
-void matfdcoloringsetfunction_(MatFDColoring *fd,void (*f)(PetscFortranAddr*,double*,
-                               PetscFortranAddr*,PetscFortranAddr*,void*,int*),
+void matfdcoloringsetfunction_(MatFDColoring *fd,void (*f)(TS*,double*,Vec*,Vec*,void*,int*),
                                void *ctx, int *__ierr )
 {
   f7 = f;

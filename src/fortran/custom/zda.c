@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.22 1998/08/05 17:28:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.23 1998/10/05 18:36:15 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -40,9 +40,10 @@ void dagetcoloring_(DA *da, ISColoring *coloring, Mat *J,int *__ierr)
   *__ierr = DAGetColoring(*da,coloring,J);
 }
 
-void daview_(DA *da,Viewer v, int *__ierr )
+void daview_(DA *da,Viewer *vin, int *__ierr )
 {
-  PetscPatchDefaultViewers_Fortran(v);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(vin,v);
   *__ierr = DAView(*da,v);
 }
 
@@ -66,11 +67,10 @@ void dacreatelocalvector_(DA *da,Vec* l, int *__ierr )
 void dagetscatter_(DA *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,
                    int *__ierr )
 {
-  VecScatter l,g,ll;
-  *__ierr = DAGetScatter(*da,&l,&g,&ll);
-  if (!FORTRANNULLINTEGER(ltog)) *(PetscFortranAddr*) ltog = PetscFromPointer(l);
-  if (!FORTRANNULLINTEGER(gtol)) *(PetscFortranAddr*) gtol = PetscFromPointer(g);
-  if (!FORTRANNULLINTEGER(ltol)) *(PetscFortranAddr*) ltol = PetscFromPointer(ll);
+  if (!FORTRANNULLINTEGER(ltog)) ltog = PETSC_NULL;
+  if (!FORTRANNULLINTEGER(gtol)) gtol = PETSC_NULL;
+  if (!FORTRANNULLINTEGER(ltol)) ltol = PETSC_NULL;
+  *__ierr = DAGetScatter(*da,ltog,gtol,ltol);
 }
 
 void dadestroy_(DA *da, int *__ierr )

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zdraw.c,v 1.20 1998/04/21 18:23:47 balay Exp bsmith $";
+static char vcid[] = "$Id: zdraw.c,v 1.21 1998/09/20 02:55:58 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -61,15 +61,17 @@ void drawtensorcontour_(Draw *win,int *m,int *n,double *x,double *y,Vec *V, int 
   *__ierr = DrawTensorContour(*win,*m,*n,xx,yy,*V);
 }
 
-void viewerdrawgetdraw_(Viewer v,Draw *draw, int *__ierr )
+void viewerdrawgetdraw_(Viewer *vin,Draw *draw, int *__ierr )
 {
-  PetscPatchDefaultViewers_Fortran(v);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(vin,v);
   *__ierr = ViewerDrawGetDraw(v,draw);
 }
 
-void viewerdrawgetdrawlg_(Viewer v,DrawLG *drawlg, int *__ierr )
+void viewerdrawgetdrawlg_(Viewer *vin,DrawLG *drawlg, int *__ierr )
 {
-  PetscPatchDefaultViewers_Fortran(v);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(vin,v);
   *__ierr = ViewerDrawGetDrawLG(v,drawlg);
 }
 

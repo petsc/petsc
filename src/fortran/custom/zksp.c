@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.22 1998/08/05 13:10:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.23 1998/08/25 16:22:34 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -94,41 +94,31 @@ void kspappendoptionsprefix_(KSP *ksp,CHAR prefix, int *__ierr,int len ){
 }
 
 void kspcreate_(MPI_Comm *comm,KSP *ksp, int *__ierr ){
-  KSP tmp;
-  *__ierr = KSPCreate((MPI_Comm)PetscToPointerComm( *comm ),&tmp);
-  *(PetscFortranAddr*)ksp =  PetscFromPointer(tmp);
+  *__ierr = KSPCreate((MPI_Comm)PetscToPointerComm( *comm ),ksp);
 }
 
-static int (*f2)(PetscFortranAddr*,int*,double*,void*,int*);
+static int (*f2)(KSP*,int*,double*,void*,int*);
 static int ourtest(KSP ksp,int i,double d,void* ctx)
 {
-  int              ierr = 0;
-  PetscFortranAddr s1;
-
-  s1 = PetscFromPointer(ksp);
-  (*f2)(&s1,&i,&d,ctx,&ierr); CHKERRQ(ierr);
-  PetscRmPointer(&s1);
+  int ierr = 0;
+  (*f2)(&ksp,&i,&d,ctx,&ierr); CHKERRQ(ierr);
   return 0;
 }
 void kspsetconvergencetest_(KSP *ksp,
-      int (*converge)(PetscFortranAddr*,int*,double*,void*,int*),void *cctx, int *__ierr)
+      int (*converge)(KSP*,int*,double*,void*,int*),void *cctx, int *__ierr)
 {
   f2 = converge;
   *__ierr = KSPSetConvergenceTest(*ksp,ourtest,cctx);
 }
 
-static int (*f1)(PetscFortranAddr*,int*,double*,void*,int*);
+static int (*f1)(KSP*,int*,double*,void*,int*);
 static int ourmonitor(KSP ksp,int i,double d,void* ctx)
 {
-  int              ierr = 0;
-  PetscFortranAddr s1;
-
-  s1 = PetscFromPointer(ksp);
-  (*f1)(&s1,&i,&d,ctx,&ierr); CHKERRQ(ierr);
-  PetscRmPointer(&s1);
+  int ierr = 0;
+  (*f1)(&ksp,&i,&d,ctx,&ierr); CHKERRQ(ierr);
   return 0;
 }
-void kspsetmonitor_(KSP *ksp,int (*monitor)(PetscFortranAddr*,int*,double*,void*,int*),
+void kspsetmonitor_(KSP *ksp,int (*monitor)(KSP*,int*,double*,void*,int*),
                     void *mctx, int *__ierr )
 {
   f1 = monitor;

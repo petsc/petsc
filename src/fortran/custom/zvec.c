@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.43 1998/07/27 15:20:23 balay Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.44 1998/09/20 03:06:08 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -116,10 +116,11 @@ void vecsetvalue_(Vec *v,int *i,Scalar *va,InsertMode *mode)
   VecSetValues(*v,1,i,va,*mode);
 }
 
-void vecview_(Vec *v,Viewer viewer, int *__ierr )
+void vecview_(Vec *x,Viewer *vin, int *__ierr )
 {
-  PetscPatchDefaultViewers_Fortran(viewer);
-  *__ierr = VecView(*v,viewer);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(vin,v);
+  *__ierr = VecView(*x,v);
 }
 
 void vecgettype_(Vec *vv,CHAR name,int *__ierr,int len)

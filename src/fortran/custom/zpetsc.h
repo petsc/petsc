@@ -161,19 +161,19 @@ extern void             lam_F_maketype(int*,int*,void*);
 #define VIEWER_DRAWX_SELF_FORTRAN     -7
 #define VIEWER_MATLAB_WORLD_FORTRAN   -8 
 
-#define PetscPatchDefaultViewers_Fortran(v) \
+#define PetscPatchDefaultViewers_Fortran(vin,v) \
 { \
-    if ( (*(PetscFortranAddr*)v) == VIEWER_DRAWX_WORLD_0_FORTRAN) { \
+    if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAWX_WORLD_0_FORTRAN) { \
       v = VIEWER_DRAWX_WORLD_0; \
-    } else if ( (*(PetscFortranAddr*)v) == VIEWER_DRAWX_WORLD_1_FORTRAN) { \
+    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAWX_WORLD_1_FORTRAN) { \
       v = VIEWER_DRAWX_WORLD_1; \
-    } else if ( (*(PetscFortranAddr*)v) == VIEWER_DRAWX_WORLD_2_FORTRAN) { \
+    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAWX_WORLD_2_FORTRAN) { \
       v = VIEWER_DRAWX_WORLD_2; \
-    } else if ( (*(PetscFortranAddr*)v) == VIEWER_DRAWX_SELF_FORTRAN) { \
+    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAWX_SELF_FORTRAN) { \
       v = VIEWER_DRAWX_SELF; \
-    } else if ( (*(PetscFortranAddr*)v) == VIEWER_MATLAB_WORLD_FORTRAN) { \
+    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_MATLAB_WORLD_FORTRAN) { \
       v = VIEWER_MATLAB_WORLD; \
-    } else {\
-      v = (Viewer)PetscToPointer(v); \
+    } else { \
+      v = *vin; \
     } \
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.52 1998/06/11 19:53:29 bsmith Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.53 1998/09/25 00:20:46 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -75,9 +75,9 @@ static char vcid[] = "$Id: zsys.c,v 1.52 1998/06/11 19:53:29 bsmith Exp balay $"
 extern "C" {
 #endif
 
-void petscbarrier_(PetscObject A, int *__ierr )
+void petscbarrier_(PetscObject *A, int *__ierr )
 {
-  *__ierr = PetscBarrier((PetscObject)PetscToPointer(A));
+  *__ierr = PetscBarrier(*A);
 }
 
 void petscstrncpy_(CHAR s1, CHAR s2, int *n,int len1, int len2)
@@ -184,21 +184,20 @@ void petsctrvalid_(int *__ierr)
   *__ierr = PetscTrValid(0,"Unknown Fortran",0,0);
 }
 
-void petscrandomgetvalue_(PetscRandom r,Scalar *val, int *__ierr )
+void petscrandomgetvalue_(PetscRandom *r,Scalar *val, int *__ierr )
 {
-  *__ierr = PetscRandomGetValue((PetscRandom)PetscToPointer(r),val);
+  *__ierr = PetscRandomGetValue(*r,val);
 }
 
-void vecsetrandom_(PetscRandom r,Vec x, int *__ierr )
+void vecsetrandom_(PetscRandom *r,Vec *x, int *__ierr )
 {
-  *__ierr = VecSetRandom((PetscRandom)PetscToPointer(r),
-                         (Vec)PetscToPointer(x));
+  *__ierr = VecSetRandom(*r,*x);
 }
 
-void petscobjectgetname(PetscObject obj, CHAR name, int *__ierr, int len)
+void petscobjectgetname(PetscObject *obj, CHAR name, int *__ierr, int len)
 {
   char *tmp;
-  *__ierr = PetscObjectGetName((PetscObject)PetscToPointer(obj),&tmp);
+  *__ierr = PetscObjectGetName(*obj,&tmp);
 #if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name);
@@ -210,16 +209,15 @@ void petscobjectgetname(PetscObject obj, CHAR name, int *__ierr, int len)
 #endif
 }
 
-void petscobjectdestroy_(PetscObject obj, int *__ierr )
+void petscobjectdestroy_(PetscObject *obj, int *__ierr )
 {
-  *__ierr = PetscObjectDestroy((PetscObject)PetscToPointer(obj));
-  PetscRmPointer(obj);
+  *__ierr = PetscObjectDestroy(*obj);
 }
 
-void petscobjectgetcomm_(PetscObject obj,int *comm, int *__ierr )
+void petscobjectgetcomm_(PetscObject *obj,int *comm, int *__ierr )
 {
   MPI_Comm c;
-  *__ierr = PetscObjectGetComm((PetscObject)PetscToPointer(obj),&c);
+  *__ierr = PetscObjectGetComm(*obj,&c);
   *(int*)comm = PetscFromPointerComm(c);
 }
 
@@ -231,12 +229,12 @@ void petscattachdebugger_(int *__ierr)
 /*
       This bleeds memory, but no easy way to get around it
 */
-void petscobjectsetname_(PetscObject obj,CHAR name,int *__ierr,int len)
+void petscobjectsetname_(PetscObject *obj,CHAR name,int *__ierr,int len)
 {
   char *t1;
 
   FIXCHAR(name,len,t1);
-  *__ierr = PetscObjectSetName((PetscObject)PetscToPointer(obj),t1);
+  *__ierr = PetscObjectSetName(*obj,t1);
 }
 
 void petscerror_(int *number,int *p,CHAR message,int *__ierr,int len)
@@ -258,15 +256,12 @@ void petscgetflops_(PLogDouble *d,int *__ierr)
 
 void petscrandomcreate_(MPI_Comm *comm,PetscRandomType *type,PetscRandom *r,int *__ierr )
 {
-  PetscRandom rr;
-  *__ierr = PetscRandomCreate((MPI_Comm)PetscToPointerComm( *comm ),*type,&rr);
-  *(PetscFortranAddr*)r = PetscFromPointer(rr);
+  *__ierr = PetscRandomCreate((MPI_Comm)PetscToPointerComm( *comm ),*type,r);
 }
 
-void petscrandomdestroy_(PetscRandom r, int *__ierr )
+void petscrandomdestroy_(PetscRandom *r, int *__ierr )
 {
-  *__ierr = PetscRandomDestroy((PetscRandom )PetscToPointer(r));
-   PetscRmPointer(r); 
+  *__ierr = PetscRandomDestroy(*r);
 }
 
 void petscdoubleview_(int *n,double *d,int *viwer,int *__ierr)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zplog.c,v 1.13 1997/10/19 03:18:54 bsmith Exp balay $";
+static char vcid[] = "$Id: zplog.c,v 1.14 1998/03/30 22:22:17 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -75,33 +75,12 @@ void plogbegin_(int *__ierr){
 #endif
 }
 
-void plogeventbegin_(int *e,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4){
-#if defined(USE_PETSC_LOG)
-  PetscObject t1,t2,t3,t4;
-  if (o1) t1 = (PetscObject) PetscToPointer(o1); else t1 = 0;
-  if (o2) t2 = (PetscObject) PetscToPointer(o2); else t2 = 0;
-  if (o3) t3 = (PetscObject) PetscToPointer(o3); else t3 = 0;
-  if (o4) t4 = (PetscObject) PetscToPointer(o4); else t4 = 0;
-
-  if (_PLogPLB) (*_PLogPLB)(*e,1,t1,t2,t3,t4);
-#if defined(HAVE_MPE)
-  if (UseMPE && PLogEventMPEFlags[*e]) MPE_Log_event(MPEBEGIN+2*(*e),0,"");
-#endif
-#endif
+void plogeventbegin_(int *e,PetscObject *o1,PetscObject *o2,PetscObject *o3,PetscObject *o4){
+  PLogEventBegin(*e,*o1,*o2,*o3,*o4);
 }
 
-void plogeventend_(int *e,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4){
-#if defined(USE_PETSC_LOG)
-  PetscObject t1,t2,t3,t4;
-  if (o1) t1 = (PetscObject) PetscToPointer(o1); else t1 = 0;
-  if (o2) t2 = (PetscObject) PetscToPointer(o2); else t2 = 0;
-  if (o3) t3 = (PetscObject) PetscToPointer(o3); else t3 = 0;
-  if (o4) t4 = (PetscObject) PetscToPointer(o4); else t4 = 0;
-  if (_PLogPLE) (*_PLogPLE)(*e,1,t1,t2,t3,t4);
-#if defined(HAVE_MPE)
-  if (UseMPE && PLogEventMPEFlags[*e]) MPE_Log_event(MPEBEGIN+2*(*e)+1,0,"");
-#endif
-#endif
+void plogeventend_(int *e,PetscObject *o1,PetscObject *o2,PetscObject *o3,PetscObject *o4){
+  PLogEventEnd(*e,*o1,*o2,*o3,*o4);
 }
 
 void plogflops_(int *f) {
