@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.347 2001/04/05 20:41:57 balay Exp bsmith $ 
+# $Id: makefile,v 1.348 2001/06/19 18:18:12 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -14,7 +14,7 @@ include ${PETSC_DIR}/bmake/common_test
 #
 # Basic targets to build PETSc libraries.
 # all     : builds the c, fortran, and f90 libraries
-all       : info info_h chklib_dir deletelibs build shared
+all       : chk_petsc_dir info info_h chklib_dir deletelibs build shared
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -157,6 +157,14 @@ deletelibs: chkopts_basic
 #
 update:
 	-@bin/petscupdate
+
+#
+# Check if PETSC_DIR variable specified is valid
+#
+chk_petsc_dir:
+	@if [ ! -f ${PETSC_DIR}/include/petscversion.h ]; then \
+	  echo "Incorrect PETSC_DIR specified: ${PETSC_DIR}! Aborting build"; \
+	  false; fi
 
 # ------------------------------------------------------------------
 #
