@@ -1030,28 +1030,23 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat 
 }
 
 #include "src/mat/impls/sbaij/seq/sbaij.h"
-typedef struct {
-  int levels;   
-} Mat_SeqAIJ_SeqSBAIJ;
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ"
 int MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
 {
   Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqSBAIJ        *b = (Mat_SeqSBAIJ*)(*fact)->data;
   int                 ierr;
-  Mat_SeqAIJ_SeqSBAIJ *ptr = (Mat_SeqAIJ_SeqSBAIJ*)(*fact)->spptr;
 
   PetscFunctionBegin; 
   if (!a->sbaijMat){
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
   } 
-  ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(a->sbaijMat,fact);CHKERRQ(ierr);
-  if (ptr->levels > 0){ 
+  ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(a->sbaijMat,fact);CHKERRQ(ierr);
+  if (b->factor_levels > 0){ 
     ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
   }
   a->sbaijMat = PETSC_NULL; 
-  ierr = PetscFree(ptr);CHKERRQ(ierr);
   
   PetscFunctionReturn(0); 
 }
@@ -1062,10 +1057,8 @@ int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
 {
   Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ        *b;
-  int                 ierr;
+  int                 ierr,levels = info->levels;
   PetscTruth          perm_identity;
-  Mat_SeqAIJ_SeqSBAIJ *ptr;
-  int                 levels = info->levels;
  
   PetscFunctionBegin;   
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
@@ -1078,25 +1071,22 @@ int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
 
   if (levels > 0){
     ierr = MatICCFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);
-
+    b    = (Mat_SeqSBAIJ*)(*fact)->data;
   } else { /* in-place icc(0) */
-    (*fact)             = a->sbaijMat;
-    (*fact)->factor     = FACTOR_CHOLESKY;  
-    b                   = (Mat_SeqSBAIJ*)(*fact)->data;    
-    b->row              = perm;
-    b->icol             = perm;   
-    ierr                = PetscMalloc(((*fact)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-    ierr                = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-    ierr                = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+    (*fact)         = a->sbaijMat;
+    (*fact)->factor = FACTOR_CHOLESKY;  
+    b               = (Mat_SeqSBAIJ*)(*fact)->data;    
+    b->row          = perm;
+    b->icol         = perm;   
+    ierr            = PetscMalloc(((*fact)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
+    ierr            = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+    ierr            = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   }
+  b->factor_levels = levels;  
 
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
-  (*fact)->ops->solve = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
-
-  ierr           = PetscNew(Mat_SeqAIJ_SeqSBAIJ,&ptr);CHKERRQ(ierr);
-  (*fact)->spptr = (void*)ptr;
-  ptr->levels    = levels;   /* to be used by CholeskyFactorNumeric_SeqAIJ() */
-  
+  (*fact)->ops->solve = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+ 
   PetscFunctionReturn(0); 
 }
 

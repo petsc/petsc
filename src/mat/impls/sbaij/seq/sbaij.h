@@ -43,8 +43,10 @@ typedef struct {
   PetscTruth       permute;        /* if true, a non-trivial permutation is used for factorization */
   PetscTruth       pivotinblocks;  /* pivot inside factorization of each diagonal block */
 
-  PetscReal        lu_damping;
-  PetscReal        lu_zeropivot;
+  /* carry MatFactorInfo from symbolic factor to numeric factor */
+  int              factor_levels;
+  PetscReal        factor_damping;     
+  PetscReal        factor_zeropivot;
 } Mat_SeqSBAIJ;
 
 extern int MatICCFactorSymbolic_SeqSBAIJ(Mat,IS,MatFactorInfo*,Mat *);
@@ -52,9 +54,7 @@ extern int MatDuplicate_SeqSBAIJ(Mat,MatDuplicateOption,Mat*);
 extern int MatMarkDiagonal_SeqSBAIJ(Mat);
 
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat,Mat*);
-extern int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Mat*);
 extern int MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
-extern int MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat,Mat*);
