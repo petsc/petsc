@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.36 2000/02/02 20:09:09 bsmith Exp $*/
+/*$Id: sbaijfact2.c,v 1.1 2000/06/21 15:47:02 balay Exp balay $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -2259,21 +2259,19 @@ int MatILUFactorSymbolic_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
   IS          isicol;
   int         *rip,*riip,ierr,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
-  int         *fill,*jutmp,nz,bs = a->bs,bs2=a->bs2;
-  int         *idnew,idx,row,m,fm,nnz,nzi,realloc = 0,nzbd,*levtmp;
-  int         *jl,*q,jumin,jumax,jmin,jmax,juptr,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
-  int         levels,incrlev,*lev,lev_ik,diagonal_fill,shift;
+  int         *jutmp,bs = a->bs,bs2=a->bs2;
+  int         m,nzi,realloc = 0,*levtmp;
+  int         *jl,*q,jumin,jmin,jmax,juptr,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
+  int         levels,incrlev,*lev,lev_ik,shift;
   PetscReal  f;
 
   PetscFunctionBegin;
   if (info) {
     f             = info->fill;
     levels        = (int)info->levels;
-    diagonal_fill = (int)info->diagonal_fill;
   } else {
     f             = 1.0;
     levels        = 0;
-    diagonal_fill = 0;
   }
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
   PetscValidHeaderSpecific(iscol,IS_COOKIE);

@@ -17,8 +17,8 @@ The permutation needs to be symmetric, i.e., P = P^T = inv(P).
 int MatReordering_SeqSBAIJ(Mat A,IS isp)
 {
   Mat_SeqSBAIJ     *a=(Mat_SeqSBAIJ *)A->data;
-  int             *r,ierr,i,mbs=a->mbs,*vi,*ai=a->i,*aj=a->j,*rip,*riip;
-  MatScalar       *aa=a->a,*v;
+  int             *r,ierr,i,mbs=a->mbs,*ai=a->i,*aj=a->j,*rip,*riip;
+  MatScalar       *aa=a->a;
   Scalar          ak;
   int             *nzr,nz,jmin,jmax,j,k,ajk;
   IS              isip;  /* inverse of isp */
