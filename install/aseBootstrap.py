@@ -22,6 +22,7 @@ class Bootstrapper(script.Script):
     help = script.Script.setupHelp(self, help)
     help.addArgument('Bootstrapper', 'baseDirectory', nargs.ArgDir(None, os.getcwd(), 'The root directory for all repositories', isTemporary = 1))
     help.addArgument('Bootstrapper', 'compilerRepository', nargs.Arg(None, 'ftp://ftp.mcs.anl.gov/pub/petsc/ase/Compiler.tgz', 'The repository containing the SIDL compiler', isTemporary = 1))
+    help.addArgument('Bootstrapper', 'download', nargs.ArgBool(None, 1, 'Download the base repositories', isTemporary = 1))
     return help
 
   def setup(self):
@@ -114,10 +115,11 @@ class Bootstrapper(script.Script):
   def run(self):
     [self.safeRemove(f) for f in ['RDict.db', 'RDict.log']]
     self.setup()
-    [self.safeRemove(os.path.join(self.baseDir, f)) for f in ['ply', 'ase']]
-    self.downloadASE()
-    for url in ['bk://ase.bkbits.net/Runtime', 'bk://ase.bkbits.net/Compiler']:
-      self.downloadBootstrap(url)
+    if self.argDB['download']:
+      [self.safeRemove(os.path.join(self.baseDir, f)) for f in ['ply', 'ase']]
+      self.downloadASE()
+      for url in ['bk://ase.bkbits.net/Runtime', 'bk://ase.bkbits.net/Compiler']:
+        self.downloadBootstrap(url)
     for url in ['bk://ase.bkbits.net/Runtime', 'bk://ase.bkbits.net/Compiler']:
       self.build(os.path.abspath(install.urlMapping.UrlMappingNew.getRepositoryPath(url)))
       self.disableBootstrap(url)
