@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.161 1996/08/12 03:41:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.162 1996/08/14 15:08:16 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -422,7 +422,7 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   PetscFree(owner); PetscFree(nprocs);
     
   /* actually zap the local rows */
-  ierr = ISCreateSeq(MPI_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
+  ierr = ISCreateGeneral(MPI_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
   PLogObjectParent(A,istmp);
   PetscFree(lrows);
   ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
@@ -480,15 +480,13 @@ static int MatMultTrans_MPIAIJ(Mat A,Vec xx,Vec yy)
   /* do nondiagonal part */
   ierr = (*a->B->ops.multtrans)(a->B,xx,a->lvec); CHKERRQ(ierr);
   /* send it on its way */
-  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,
-                (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   /* do local part */
   ierr = (*a->A->ops.multtrans)(a->A,xx,yy); CHKERRQ(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
-  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,
-                  (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   return 0;
 }
 
@@ -500,8 +498,7 @@ static int MatMultTransAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   /* do nondiagonal part */
   ierr = (*a->B->ops.multtrans)(a->B,xx,a->lvec); CHKERRQ(ierr);
   /* send it on its way */
-  ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,
-                 (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   /* do local part */
   ierr = (*a->A->ops.multtransadd)(a->A,xx,yy,zz); CHKERRQ(ierr);
   /* receive remote parts: note this assumes the values are not actually */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijov.c,v 1.9 1996/08/06 14:36:31 balay Exp bsmith $";
+static char vcid[] = "$Id: baijov.c,v 1.10 1996/08/08 14:43:40 bsmith Exp bsmith $";
 #endif
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -36,7 +36,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_
       if(!BT_LOOKUP(table, ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is_in[i],&idx);  CHKERRQ(ierr);
-    ierr = ISCreateSeq(MPI_COMM_SELF, isz, nidx, (is_out+i)); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF, isz, nidx, (is_out+i)); CHKERRQ(ierr);
   }
   PetscFree(table);
   PetscFree(nidx);
@@ -72,7 +72,7 @@ static int MatCompressIndicesSorted_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_o
       idx_local +=bs;
     }
     ierr = ISRestoreIndices(is_in[i],&idx);  CHKERRQ(ierr);
-    ierr = ISCreateSeq(MPI_COMM_SELF,n,nidx,(is_out+i)); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,n,nidx,(is_out+i)); CHKERRQ(ierr);
   }
   PetscFree(nidx);
   return 0;
@@ -95,7 +95,7 @@ static int MatExpandIndices_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_out)
         nidx[j*bs+k] = idx[j]*bs+k;
     }
     ierr = ISRestoreIndices(is_in[i],&idx);  CHKERRQ(ierr);
-    ierr = ISCreateSeq(MPI_COMM_SELF, n*bs, nidx, (is_out+i)); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF, n*bs, nidx, (is_out+i)); CHKERRQ(ierr);
   }
   PetscFree(nidx);
   return 0;
@@ -451,7 +451,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   }
   
   for (i=0; i<imax; ++i) {
-    ierr = ISCreateSeq(MPI_COMM_SELF, isz[i], data[i], is+i); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF, isz[i], data[i], is+i); CHKERRQ(ierr);
   }
   
   PetscFree(pa);

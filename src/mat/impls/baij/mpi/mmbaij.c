@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbaij.c,v 1.5 1996/08/04 23:12:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmbaij.c,v 1.6 1996/08/08 14:43:40 bsmith Exp bsmith $";
 #endif
 
 
@@ -14,7 +14,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   Mat_SeqBAIJ *B = (Mat_SeqBAIJ *) (baij->B->data);  
   int        Nbs = baij->Nbs,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
-  int        col,bs = baij->bs,*tmp;
+  int        col,bs = baij->bs,*tmp,*stmp;
   IS         from,to;
   Vec        gvec;
 
@@ -60,16 +60,19 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
 
   /* create two temporary index sets for building scatter-gather */
 
-  /* ierr = ISCreateSeq(MPI_COMM_SELF,ec*bs,tmp,&from); CHKERRQ(ierr); */
+  /* ierr = ISCreateGeneral(MPI_COMM_SELF,ec*bs,tmp,&from); CHKERRQ(ierr); */
   for ( i=0,col=0; i<ec; i++ ) {
     garray[i] = bs*garray[i];
   }
-  ierr = ISCreateBlockSeq(MPI_COMM_SELF,bs,ec,garray,&from);CHKERRQ(ierr);   
+  ierr = ISCreateBlock(MPI_COMM_SELF,bs,ec,garray,&from);CHKERRQ(ierr);   
   for ( i=0,col=0; i<ec; i++ ) {
     garray[i] = garray[i]/bs;
   }
 
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,ec*bs,0,1,&to);CHKERRQ(ierr);
+  stmp = (int *) PetscMalloc( (ec+1)*sizeof(int) ); CHKPTRQ(stmp);
+  for ( i=0; i<ec; i++ ) { stmp[i] = bs*i; } 
+  ierr = ISCreateBlock(MPI_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
+  PetscFree(stmp);
 
   /* create temporary global vector to generate scatter context */
   /* this is inefficient, but otherwise we must do either 

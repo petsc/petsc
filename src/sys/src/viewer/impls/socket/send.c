@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.38 1996/08/04 23:13:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.39 1996/08/08 14:46:23 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -196,13 +196,16 @@ Viewer VIEWER_MATLAB_WORLD_PRIVATE = 0;
 
 int ViewerInitializeMatlabWorld_Private()
 {
-  int  ierr,port = 5001;
+  int  ierr,port = 5001,flag;
   char machine[128];
 
   if (VIEWER_MATLAB_WORLD_PRIVATE) return 0;
-  ierr = PetscGetHostName(machine,128); CHKERRQ(ierr);
-  ierr = ViewerMatlabOpen(MPI_COMM_WORLD,machine,port,
-                         &VIEWER_MATLAB_WORLD_PRIVATE); CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-viewer_matlab_machine",machine,128,&flag);CHKERRQ(ierr);
+  if (!flag) {
+    ierr = PetscGetHostName(machine,128); CHKERRQ(ierr);
+  }
+  ierr = OptionsGetInt(PETSC_NULL,"-viewer_matlab_port",&port,&flag); CHKERRQ(ierr);
+  ierr = ViewerMatlabOpen(MPI_COMM_WORLD,machine,port,&VIEWER_MATLAB_WORLD_PRIVATE); CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.90 1996/08/06 04:02:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.91 1996/08/08 14:43:18 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -179,7 +179,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   Mat_SeqBDiag *mlocal;
   MPI_Status   *send_status, recv_status;
   int          imdex, nrecvs = mbd->nrecvs, count = nrecvs, i, n, row, col;
-  int          *tmp, *tmp2, ierr, len, ict, Mblock, Nblock;
+  int          *tmp1, *tmp2, ierr, len, ict, Mblock, Nblock;
   Scalar       *values, val;
   InsertMode   addv = mbd->insertmode;
 
@@ -218,18 +218,17 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 
   /* Fix main diagonal location and determine global diagonals */
   mlocal = (Mat_SeqBDiag *) mbd->A->data;
-  Mblock = mbd->M/mlocal->nb; Nblock = mbd->N/mlocal->nb;
-  len = Mblock + Nblock + 1; /* add 1 to prevent 0 malloc */
-  tmp = (int *) PetscMalloc( (2*len)*sizeof(int) ); CHKPTRQ(tmp);
-  tmp2 = tmp + len;
-  PetscMemzero(tmp,2*len*sizeof(int));
+  Mblock = mbd->M/mlocal->bs; Nblock = mbd->N/mlocal->bs;
+  len    = Mblock + Nblock + 1; /* add 1 to prevent 0 malloc */
+  tmp1   = (int *) PetscMalloc( 2*len*sizeof(int) ); CHKPTRQ(tmp1);
+  tmp2   = tmp1 + len;
+  PetscMemzero(tmp1,2*len*sizeof(int));
   mlocal->mainbd = -1; 
   for (i=0; i<mlocal->nd; i++) {
     if (mlocal->diag[i] + mbd->brstart == 0) mlocal->mainbd = i; 
-    tmp[mlocal->diag[i] + mbd->brstart + Mblock] = 1;
+    tmp1[mlocal->diag[i] + mbd->brstart + Mblock] = 1;
   }
-  MPI_Allreduce(tmp,tmp2,len,MPI_INT,MPI_SUM,mat->comm);
-  PetscFree(tmp);
+  MPI_Allreduce(tmp1,tmp2,len,MPI_INT,MPI_SUM,mat->comm);
   ict = 0;
   for (i=0; i<len; i++) {
     if (tmp2[i]) {
@@ -238,6 +237,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
     }
   }
   mbd->gnd = ict;
+  PetscFree(tmp1);
 
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIBDiag(mat); CHKERRQ(ierr);
@@ -368,7 +368,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   PetscFree(owner); PetscFree(nprocs);
     
   /* actually zap the local rows */
-  ierr = ISCreateSeq(MPI_COMM_SELF,slen,lrows,&istmp); CHKERRQ(ierr);  
+  ierr = ISCreateGeneral(MPI_COMM_SELF,slen,lrows,&istmp); CHKERRQ(ierr);  
   PLogObjectParent(A,istmp);
   PetscFree(lrows);
   ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
@@ -376,8 +376,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
 
   /* wait on sends */
   if (nsends) {
-    send_status = (MPI_Status *) PetscMalloc( nsends*sizeof(MPI_Status) );
-    CHKPTRQ(send_status);
+    send_status = (MPI_Status *) PetscMalloc(nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     MPI_Waitall(nsends,send_waits,send_status);
     PetscFree(send_status);
   }
@@ -390,10 +389,9 @@ static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
-  ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
-  CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
-  CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);CHKERRQ(ierr);
   ierr = (*mbd->A->ops.mult)(mbd->A,mbd->lvec,yy); CHKERRQ(ierr);
   return 0;
 }
@@ -403,10 +401,8 @@ static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
 
-  ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
-  CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
-  CHKERRQ(ierr);
+  ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);CHKERRQ(ierr);
   ierr = (*mbd->A->ops.multadd)(mbd->A,mbd->lvec,yy,zz); CHKERRQ(ierr);
   return 0;
 }
@@ -419,10 +415,8 @@ static int MatMultTrans_MPIBDiag(Mat A,Vec xx,Vec yy)
 
   ierr = VecSet(&zero,yy); CHKERRQ(ierr);
   ierr = (*a->A->ops.multtrans)(a->A,xx,a->lvec); CHKERRQ(ierr);
-  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,
-         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
-  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,
-         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   return 0;
 }
 
@@ -433,10 +427,8 @@ static int MatMultTransAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
 
   ierr = VecCopy(yy,zz); CHKERRQ(ierr);
   ierr = (*a->A->ops.multtrans)(a->A,xx,a->lvec); CHKERRQ(ierr);
-  ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,
-         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
-  ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,
-         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   return 0;
 }
 
@@ -480,7 +472,7 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
 #if defined(PETSC_LOG)
   Mat_SeqBDiag *ms = (Mat_SeqBDiag *) mbd->A->data;
   PLogObjectState(obj,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",
-                  mbd->M,mbd->N,ms->nb,ms->nd);
+                  mbd->M,mbd->N,ms->bs,ms->nd);
 #endif
   PetscFree(mbd->rowners); 
   PetscFree(mbd->gdiag);
@@ -523,7 +515,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
     if (format == ASCII_FORMAT_INFO || format == ASCII_FORMAT_INFO_DETAILED) {
       int nline = PetscMin(10,mbd->gnd), k, nk, np;
       PetscFPrintf(mat->comm,fd,"  block size=%d, total number of diagonals=%d\n",
-                   dmat->nb,mbd->gnd);
+                   dmat->bs,mbd->gnd);
       nk = (mbd->gnd-1)/nline + 1;
       for (k=0; k<nk; k++) {
         PetscFPrintf(mat->comm,fd,"  global diag numbers:");
@@ -575,11 +567,11 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
       Mat_SeqBDiag *Ambd = (Mat_SeqBDiag*) mbd->A->data;
 
       if (!rank) {
-        ierr = MatCreateMPIBDiag(mat->comm,M,M,N,mbd->gnd,Ambd->nb,
+        ierr = MatCreateMPIBDiag(mat->comm,M,M,N,mbd->gnd,Ambd->bs,
                mbd->gdiag,PETSC_NULL,&A); CHKERRQ(ierr);
       }
       else {
-        ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,1,PETSC_NULL,PETSC_NULL,&A);
+        ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,Ambd->bs,PETSC_NULL,PETSC_NULL,&A);
                CHKERRQ(ierr);
       }
       PLogObjectParent(mat,A);
@@ -690,13 +682,13 @@ static int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) A->data;
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) mbd->A->data;
   double       sum = 0.0;
-  int          ierr, d, i, nd = a->nd, nb = a->nb, len;
+  int          ierr, d, i, nd = a->nd, bs = a->bs, len;
   Scalar       *dv;
 
   if (type == NORM_FROBENIUS) {
     for (d=0; d<nd; d++) {
       dv   = a->diagv[d];
-      len  = a->bdlen[d]*nb*nb;
+      len  = a->bdlen[d]*bs*bs;
       for (i=0; i<len; i++) {
 #if defined(PETSC_COMPLEX)
         sum += real(conj(dv[i])*dv[i]);
@@ -778,11 +770,11 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
 .  N - number of columns (local and global)
 .  nd - number of block diagonals (global) (optional)
-.  nb - each element of a diagonal is an nb x nb dense matrix
+.  bs - each element of a diagonal is an bs x bs dense matrix
 .  diag - array of block diagonal numbers (length nd),
 $     where for a matrix element A[i,j], 
 $     where i=row and j=column, the diagonal number is
-$     diag = i/nb - j/nb  (integer division)
+$     diag = i/bs - j/bs  (integer division)
 $     Set diag=PETSC_NULL on input for PETSc to dynamically allocate
 $     memory as needed.
 .  diagv  - pointer to actual diagonals (in same order as diag array), 
@@ -800,7 +792,7 @@ $     memory as needed.
    The user MUST specify either the local or global numbers of rows
    (possibly both).
 
-   The case nb=1 (conventional diagonal storage) is implemented as
+   The case bs=1 (conventional diagonal storage) is implemented as
    a special case.
 
    Fortran Notes:
@@ -810,7 +802,7 @@ $     memory as needed.
 
 .seealso: MatCreate(), MatCreateSeqBDiag(), MatSetValues()
 @*/
-int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
+int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
                      int *diag,Scalar **diagv,Mat *A)
 {
   Mat          B;
@@ -819,9 +811,9 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   Scalar       **ldiagv = 0;
 
   *A = 0;
-  if (nb == PETSC_DEFAULT) nb = 1;
+  if (bs == PETSC_DEFAULT) bs = 1;
   if (nd == PETSC_DEFAULT) nd = 0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg1); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg1); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd,&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag_dvals",&flg2); CHKERRQ(ierr);
   if (nd && diag == PETSC_NULL) {
@@ -834,8 +826,8 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
     SETERRQ(1,"MatCreateMPIBDiag:Must specify number of diagonals with -mat_bdiag_ndiag");
   }
 
-  if (nb <= 0) SETERRQ(1,"MatCreateMPIBDiag:Blocksize must be positive");
-  if ((N%nb)) SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad column number");
+  if (bs <= 0) SETERRQ(1,"MatCreateMPIBDiag:Blocksize must be positive");
+  if ((N%bs)) SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad column number");
   PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATMPIBDIAG,comm);
   PLogObjectCreate(B);
   B->data	= (void *) (b = PetscNew(Mat_MPIBDiag)); CHKPTRQ(b);
@@ -849,13 +841,13 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   MPI_Comm_size(comm,&b->size);
 
   if (M == PETSC_DECIDE) {
-    if ((m%nb)) SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad local row number");
+    if ((m%bs)) SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad local row number");
     MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);
   }
   if (m == PETSC_DECIDE) {
-    if ((M%nb)) SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad global row number");
+    if ((M%bs)) SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad global row number");
     m = M/b->size + ((M % b->size) > b->rank);
-    if ((m%nb)) SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad local row number");
+    if ((m%bs)) SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad local row number");
   }
   b->M = M;    B->M = M;
   b->N = N;    B->N = N;
@@ -864,8 +856,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   b->gnd = nd;
 
   /* build local table of row ownerships */
-  b->rowners = (int *) PetscMalloc((b->size+2)*sizeof(int)); 
-  CHKPTRQ(b->rowners);
+  b->rowners = (int *) PetscMalloc((b->size+2)*sizeof(int)); CHKPTRQ(b->rowners);
   MPI_Allgather(&m,1,MPI_INT,b->rowners+1,1,MPI_INT,comm);
   b->rowners[0] = 0;
   for ( i=2; i<=b->size; i++ ) {
@@ -874,13 +865,13 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   b->rstart  = b->rowners[b->rank]; 
   b->rend    = b->rowners[b->rank+1]; 
 
-  b->brstart = (b->rstart)/nb;
-  b->brend   = (b->rend)/nb;
+  b->brstart = (b->rstart)/bs;
+  b->brend   = (b->rend)/bs;
 
   /* Determine local diagonals; for now, assume global rows = global cols */
   /* These are sorted in MatCreateSeqBDiag */
   ldiag = (int *) PetscMalloc((nd+1)*sizeof(int)); CHKPTRQ(ldiag); 
-  len = M/nb + N/nb + 1; /* add 1 to prevent 0 malloc */
+  len = M/bs + N/bs + 1; /* add 1 to prevent 0 malloc */
   b->gdiag = (int *) PetscMalloc(len*sizeof(int)); CHKPTRQ(b->gdiag);
   k = 0;
   PLogObjectMemory(B,(nd+1)*sizeof(int) + (b->size+2)*sizeof(int)
@@ -897,14 +888,14 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
         k++;
       }
     } else { /* upper triangular */
-      if (b->M/nb - diag[i] > b->N/nb) {
-        if (b->M/nb + diag[i] > b->brstart) {
+      if (b->M/bs - diag[i] > b->N/bs) {
+        if (b->M/bs + diag[i] > b->brstart) {
           ldiag[k] = diag[i] - b->brstart;
           if (diagv != PETSC_NULL) ldiagv[k] = diagv[i];
           k++;
         }
       } else {
-        if (b->M/nb > b->brstart) {
+        if (b->M/bs > b->brstart) {
           ldiag[k] = diag[i] - b->brstart;
           if (diagv != PETSC_NULL) ldiagv[k] = diagv[i];
           k++;
@@ -914,8 +905,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   }
 
   /* Form local matrix */
-  ierr = MatCreateSeqBDiag(MPI_COMM_SELF,b->m,b->n,k,nb,
-                                  ldiag,ldiagv,&b->A); CHKERRQ(ierr); 
+  ierr = MatCreateSeqBDiag(MPI_COMM_SELF,b->m,b->n,k,bs,ldiag,ldiagv,&b->A);CHKERRQ(ierr); 
   PLogObjectParent(B,b->A);
   PetscFree(ldiag); if (ldiagv) PetscFree(ldiagv);
 
@@ -947,12 +937,12 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
 .  m - number of rows
 .  n - number of columns
 .  nd - number of block diagonals
-.  nb - each element of a diagonal is an nb x nb dense matrix
+.  bs - each element of a diagonal is an bs x bs dense matrix
 .  bdlen - array of total block lengths of block diagonals
 .  diag - array of block diagonal numbers,
 $     where for a matrix element A[i,j], 
 $     where i=row and j=column, the diagonal number is
-$     diag = i/nb - j/nb  (integer division)
+$     diag = i/bs - j/bs  (integer division)
 .  diagv - pointer to actual diagonals (in same order as diag array), 
 
    Notes:
@@ -962,7 +952,7 @@ $     diag = i/nb - j/nb  (integer division)
 
 .seealso: MatCreateSeqBDiag(), MatCreateMPIBDiag()
 @*/
-int MatBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,Scalar ***diagv)
+int MatBDiagGetData(Mat mat,int *nd,int *bs,int **diag,int **bdlen,Scalar ***diagv)
 {
   Mat_MPIBDiag *pdmat;
   Mat_SeqBDiag *dmat;
@@ -975,7 +965,7 @@ int MatBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,Scalar ***dia
     dmat = (Mat_SeqBDiag *) pdmat->A->data;
   } else SETERRQ(1,"MatBDiagGetData:Valid only for MATSEQBDIAG and MATMPIBDIAG formats");
   *nd    = dmat->nd;
-  *nb    = dmat->nb;
+  *bs    = dmat->bs;
   *diag  = dmat->diag;
   *bdlen = dmat->bdlen;
   *diagv = dmat->diagv;
@@ -990,10 +980,10 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
   Scalar       *vals,*svals;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
-  int          nb, i, nz, ierr, j, rstart, rend, fd, *rowners, maxnz, *cols;
-  int          header[4], rank, size, *rowlengths = 0, M, N, m;
+  int          bs, i, nz, ierr, j, rstart, rend, fd, *rowners, maxnz, *cols;
+  int          header[4], rank, size, *rowlengths = 0, M, N, m,Mbs;
   int          *ourlens, *sndcounts = 0, *procsnz = 0, jj, *mycols, *smycols;
-  int          tag = ((PetscObject)viewer)->tag,flg;
+  int          tag = ((PetscObject)viewer)->tag,flg,extra_rows;
 
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {
@@ -1001,11 +991,26 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
     ierr = PetscBinaryRead(fd,(char *)header,4,BINARY_INT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIBDiag:not matrix object");
   }
-
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
   M = header[1]; N = header[2];
+
+  bs = 1;   /* uses a block size of 1 by default; */
+  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,&flg);CHKERRQ(ierr);
+
+  /* 
+     This code adds extra rows to make sure the number of rows is 
+     divisible by the blocksize
+  */
+  Mbs        = M/bs;
+  extra_rows = bs - M + bs*(Mbs);
+  if (extra_rows == bs) extra_rows = 0;
+  else                  Mbs++;
+  if (extra_rows && !rank) {
+    PLogInfo(0,"MatLoad_MPIBDiag:Padding loaded matrix to match blocksize\n");
+  }
+
   /* determine ownership of all rows */
-  m = M/size + ((M % size) > rank);
+  m = bs*(Mbs/size + ((Mbs % size) > rank));
   rowners = (int *) PetscMalloc((size+2)*sizeof(int)); CHKPTRQ(rowners);
   MPI_Allgather(&m,1,MPI_INT,rowners+1,1,MPI_INT,comm);
   rowners[0] = 0;
@@ -1018,8 +1023,9 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
   /* distribute row lengths to all processors */
   ourlens = (int*) PetscMalloc( (rend-rstart)*sizeof(int) ); CHKPTRQ(ourlens);
   if (!rank) {
-    rowlengths = (int*) PetscMalloc( M*sizeof(int) ); CHKPTRQ(rowlengths);
+    rowlengths = (int*) PetscMalloc( (M+extra_rows)*sizeof(int) ); CHKPTRQ(rowlengths);
     ierr = PetscBinaryRead(fd,rowlengths,M,BINARY_INT); CHKERRQ(ierr);
+    for ( i=0; i<extra_rows; i++ ) rowlengths[M+i] = 1;
     sndcounts = (int*) PetscMalloc( size*sizeof(int) ); CHKPTRQ(sndcounts);
     for ( i=0; i<size; i++ ) sndcounts[i] = rowners[i+1] - rowners[i];
     MPI_Scatterv(rowlengths,sndcounts,rowners,MPI_INT,ourlens,rend-rstart,MPI_INT,0,comm);
@@ -1034,7 +1040,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
     procsnz = (int*) PetscMalloc( size*sizeof(int) ); CHKPTRQ(procsnz);
     PetscMemzero(procsnz,size*sizeof(int));
     for ( i=0; i<size; i++ ) {
-      for ( j=rowners[i]; j< rowners[i+1]; j++ ) {
+      for ( j=rowners[i]; j<rowners[i+1]; j++ ) {
         procsnz[i] += rowlengths[j];
       }
     }
@@ -1050,13 +1056,22 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
     /* read in my part of the matrix column indices  */
     nz = procsnz[0];
     mycols = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(mycols);
+    if (size == 1)  nz -= extra_rows;
     ierr = PetscBinaryRead(fd,mycols,nz,BINARY_INT); CHKERRQ(ierr);
+    if (size == 1)  for (i=0; i<extra_rows; i++) { mycols[nz+i] = M+i; }
 
     /* read in every one elses and ship off */
-    for ( i=1; i<size; i++ ) {
+    for ( i=1; i<size-1; i++ ) {
       nz = procsnz[i];
       ierr = PetscBinaryRead(fd,cols,nz,BINARY_INT); CHKERRQ(ierr);
       MPI_Send(cols,nz,MPI_INT,i,tag,comm);
+    }
+    /* read in the stuff for the last proc */
+    if ( size != 1 ) {
+      nz = procsnz[size-1] - extra_rows;  /* the extra rows are not on the disk */
+      ierr = PetscBinaryRead(fd,cols,nz,BINARY_INT); CHKERRQ(ierr);
+      for ( i=0; i<extra_rows; i++ ) cols[nz+i] = M+i;
+      MPI_Send(cols,nz+extra_rows,MPI_INT,size-1,tag,comm);
     }
     PetscFree(cols);
   }
@@ -1074,9 +1089,8 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
     if (maxnz != nz) SETERRQ(1,"MatLoad_MPIBDiag:something is wrong with file");
   }
 
-  nb = 1;   /* uses a block size of 1 by default; */
-  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&nb,&flg);CHKERRQ(ierr);
-  ierr = MatCreateMPIBDiag(comm,m,M,N,0,nb,PETSC_NULL,PETSC_NULL,newmat);CHKERRQ(ierr);
+  ierr = MatCreateMPIBDiag(comm,m,M+extra_rows,N+extra_rows,PETSC_NULL,bs,PETSC_NULL,PETSC_NULL,
+                           newmat); CHKERRQ(ierr);
   A = *newmat;
 
   if (!rank) {
@@ -1084,8 +1098,10 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
 
     /* read in my part of the matrix numerical values  */
     nz = procsnz[0];
+    if (size == 1)  nz -= extra_rows;
     ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
-    
+    if (size == 1)  for (i=0; i<extra_rows; i++) { vals[nz+i] = 1.0; }   
+
     /* insert into matrix */
     jj      = rstart;
     smycols = mycols;
@@ -1097,11 +1113,18 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
       jj++;
     }
 
-    /* read in other processors and ship out */
-    for ( i=1; i<size; i++ ) {
-      nz = procsnz[i];
+    /* read in other processors (except the last one) and ship out */
+    for ( i=1; i<size-1; i++ ) {
+      nz   = procsnz[i];
       ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
       MPI_Send(vals,nz,MPIU_SCALAR,i,A->tag,comm);
+    }
+    /* the last proc */
+    if ( size != 1 ){
+      nz   = procsnz[i] - extra_rows;
+      ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
+      for ( i=0; i<extra_rows; i++ ) vals[nz+i] = 1.0;
+      MPI_Send(vals,nz+extra_rows,MPIU_SCALAR,size-1,A->tag,comm);
     }
     PetscFree(procsnz);
   }

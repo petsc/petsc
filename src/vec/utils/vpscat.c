@@ -2,7 +2,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.61 1996/08/08 14:40:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.62 1996/08/13 19:25:54 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -158,6 +158,7 @@ static int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,int mode,VecScat
 
     for ( j=0; j<iend; j++ ) {
       val[j] = xv[*indices++];
+      /* printf("[%d] sending idx %d val %g\n",PetscGlobalRank,indices[-1],val[j]); */
     } 
     MPI_Isend(val,iend, MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
   }
@@ -228,6 +229,7 @@ static int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,int mode,VecScatte
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {
         yv[lindices[i]] = *val++;
+	/*    printf("[%d] recving idx %d val %g\n",PetscGlobalRank,indices[i],val[-1]); */
       }
     } else {
       for ( i=0; i<n; i++ ) {
@@ -249,23 +251,20 @@ static int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,int mode,VecScatte
 static int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
-  Vec_MPI                *x = (Vec_MPI *)xin->data;
+  Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
   MPI_Comm               comm = ctx->comm;
-  Scalar                 *xv = x->array, *val, *rvalues,*svalues;
+  Scalar                 *xv = x->array, *yv = y->array, *val, *rvalues,*svalues;
   MPI_Request            *rwaits, *swaits;
-  int                    tag = ctx->tag, i,j,*indices,*rstarts,*sstarts,*rprocs, *sprocs;
-  int                    rank,nrecvs, nsends,iend,idx;
+  int                    i,*indices,*sstarts,iend,j;
+  int                    rank,nrecvs, nsends,idx;
 
   MPI_Comm_rank(comm,&rank);
 
-  if (mode & SCATTER_REVERSE ){
-    gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
-    gen_from = (VecScatter_MPI_General *) ctx->todata;
-  }
-  else {
-    gen_to   = (VecScatter_MPI_General *) ctx->todata;
-    gen_from = (VecScatter_MPI_General *) ctx->fromdata;
-  }
+  if (mode & SCATTER_REVERSE ) SETERRQ(1,"VecScatterBegin_PtoP_5:No reverse currently");
+
+  gen_to   = (VecScatter_MPI_General *) ctx->todata;
+  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+
   rvalues  = gen_from->values;
   svalues  = gen_to->values;
   nrecvs   = gen_from->n;
@@ -273,34 +272,66 @@ static int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,int mode,VecSc
   rwaits   = gen_from->requests;
   swaits   = gen_to->requests;
   indices  = gen_to->indices;
-  rstarts  = gen_from->starts;
   sstarts  = gen_to->starts;
-  rprocs   = gen_from->procs;
-  sprocs   = gen_to->procs;
   
   /* post receives:   */
-  for ( i=0; i<nrecvs; i++ ) {
-    MPI_Irecv(rvalues+5*rstarts[i],5*rstarts[i+1] - 5*rstarts[i],MPIU_SCALAR,rprocs[i],tag,comm,
-              rwaits+i);
-  }
+  MPI_Startall(nrecvs,rwaits); 
 
-  /* do sends:  */
+  /* this version packs all the messages together and sends */
+  /*
+  len  = 5*sstarts[nsends];
+  val  = svalues;
+  for ( i=0; i<len; i += 5 ) {
+    idx     = *indices++;
+    val[0] = xv[idx];
+    val[1] = xv[idx+1];
+    val[2] = xv[idx+2];
+    val[3] = xv[idx+3];
+    val[4] = xv[idx+4];
+    val      += 5;
+  }
+  MPI_Startall(nsends,swaits);
+  */
+
+  /* this version packs and sends one at a time */
+  val  = svalues;
   for ( i=0; i<nsends; i++ ) {
-    val  = svalues + 5*sstarts[i];
-    iend = 5*sstarts[i+1] - 5*sstarts[i];
+    iend = sstarts[i+1]-sstarts[i];
 
-    for ( j=0; j<iend; j += 5 ) {
-      idx      = *indices++;
-      val[j]   = xv[idx];
-      val[j+1] = xv[idx+1];
-      val[j+2] = xv[idx+2];
-      val[j+3] = xv[idx+3];
-      val[j+4] = xv[idx+4];
+    for ( j=0; j<iend; j++ ) {
+      idx     = *indices++;
+      val[0] = xv[idx];
+      val[1] = xv[idx+1];
+      val[2] = xv[idx+2];
+      val[3] = xv[idx+3];
+      val[4] = xv[idx+4];
+      val    += 5;
     } 
-    MPI_Isend(val,iend, MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
+    MPI_Start(swaits+i);
   }
 
-  if (gen_to->local.n) SETERRQ(1,"VecScatterBegin_PtoP_5:No local copy support");
+  /* take care of local scatters */
+  if (gen_to->local.n) {
+    int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
+    int n       = gen_to->local.n, il,ir;
+    if (addv == INSERT_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        il = fslots[i]; ir = tslots[i];
+        yv[il]   = xv[ir];
+        yv[il+1] = xv[ir+1];
+        yv[il+2] = xv[ir+2];
+        yv[il+3] = xv[ir+3];
+        yv[il+4] = xv[ir+4];
+      }
+    }  else {
+        il = fslots[i]; ir = tslots[i];
+        yv[il]   += xv[ir];
+        yv[il+1] += xv[ir+1];
+        yv[il+2] += xv[ir+2];
+        yv[il+3] += xv[ir+3];
+        yv[il+4] += xv[ir+4];
+    }
+  }
 
   return 0;
 }
@@ -316,16 +347,9 @@ static int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,int mode,VecScat
   MPI_Status             rstatus, *sstatus;
 
   MPI_Comm_rank(ctx->comm,&rank);
-  if (mode & SCATTER_REVERSE ){
-    gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
-    gen_from = (VecScatter_MPI_General *) ctx->todata;
-    sstatus  = gen_from->sstatus;
-  }
-  else {
-    gen_to   = (VecScatter_MPI_General *) ctx->todata;
-    gen_from = (VecScatter_MPI_General *) ctx->fromdata;
-    sstatus  = gen_to->sstatus;
-  }
+  gen_to   = (VecScatter_MPI_General *) ctx->todata;
+  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+  sstatus  = gen_to->sstatus;
   rvalues  = gen_from->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
@@ -350,6 +374,7 @@ static int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,int mode,VecScat
         yv[idx+2] = val[2];
         yv[idx+3] = val[3];
         yv[idx+4] = val[4];
+	/*     printf("[%d]recving %d %g \n",PetscGlobalRank,idx,val[0]); */
         val      += 5;
       }
     } else {
@@ -451,6 +476,42 @@ static int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
   return 0;
 }
 /* --------------------------------------------------------------------*/
+
+static int VecScatterDestroy_PtoP_5(PetscObject obj)
+{
+  VecScatter             ctx = (VecScatter) obj;
+  VecScatter_MPI_General *gen_to   = (VecScatter_MPI_General *) ctx->todata;
+  VecScatter_MPI_General *gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+  int                    i;
+
+  if (gen_to->local.slots) PetscFree(gen_to->local.slots);
+  if (gen_from->local.slots) PetscFree(gen_from->local.slots);
+  if (gen_to->local.slots_nonmatching) PetscFree(gen_to->local.slots_nonmatching);
+  if (gen_from->local.slots_nonmatching) PetscFree(gen_from->local.slots_nonmatching);
+
+  /* release MPI resources obtained with MPI_Send_init() and MPI_Recv_init() */
+  /* 
+     IBM's PE version of MPI has a bug where freeing these guys will screw up later
+     message passing.
+  */
+#if !defined(PARCH_rs6000)
+  for (i=0; i<gen_to->n; i++) {
+    MPI_Request_free(gen_to->requests + i);
+  } 
+  for (i=0; i<gen_from->n; i++) {
+    MPI_Request_free(gen_from->requests + i);
+  } 
+#endif
+ 
+  PetscFree(gen_to->sstatus);
+  PetscFree(gen_to->values);
+  PetscFree(gen_to);
+  PetscFree(gen_from->values); 
+  PetscFree(gen_from);
+  PLogObjectDestroy(ctx);
+  PetscHeaderDestroy(ctx);
+  return 0;
+}
 
 static int VecScatterDestroy_PtoP(PetscObject obj)
 {
@@ -673,11 +734,31 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,Vec
   from->type = VEC_SCATTER_MPI_GENERAL;
 
   if (bs == 5) {
-    ctx->destroy        = VecScatterDestroy_PtoP;
+    int         *sstarts = to->starts,   *rstarts = from->starts;
+    int         *sprocs  = to->procs,    *rprocs  = from->procs;
+    MPI_Request *swaits  = to->requests, *rwaits  = from->requests;
+    Scalar      *Ssvalues = to->values,  *Srvalues = from->values;
+
+    ctx->destroy        = VecScatterDestroy_PtoP_5;
     ctx->scatterbegin   = VecScatterBegin_PtoP_5;
     ctx->scatterend     = VecScatterEnd_PtoP_5; 
     ctx->copy           = 0;
     ctx->view           = VecScatterView_MPI;
+  
+    tag     = ctx->tag;
+    comm    = ctx->comm;
+
+    /* Register the sends and receives that you will use later */
+    for ( i=0; i<from->n; i++ ) {
+      MPI_Recv_init(Srvalues + 5*rstarts[i],5*rstarts[i+1] - 5*rstarts[i],MPIU_SCALAR,rprocs[i],tag,
+                    comm,rwaits+i);
+    }
+
+    for ( i=0; i<to->n; i++ ) {
+      MPI_Send_init(Ssvalues + 5*sstarts[i],5*sstarts[i+1] - 5*sstarts[i],MPIU_SCALAR,sprocs[i],tag,
+                    comm,swaits+i);
+    } 
+
     PLogInfo(0,"Using blocksize 5 scatter\n");
   } else {
     ctx->destroy        = VecScatterDestroy_PtoP;

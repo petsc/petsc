@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: block.c,v 1.3 1996/08/08 14:39:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.4 1996/08/14 19:50:12 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -75,7 +75,7 @@ static int ISInvertPermutation_Block(IS is, IS *isout)
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
-  ierr = ISCreateBlockSeq(MPI_COMM_SELF,sub->bs,n,ii,isout); CHKERRQ(ierr);
+  ierr = ISCreateBlock(MPI_COMM_SELF,sub->bs,n,ii,isout); CHKERRQ(ierr);
   ISSetPermutation(*isout);
   PetscFree(ii);
   return 0;
@@ -130,7 +130,7 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISSort_Block,
                                ISSorted_Block };
 /*@C
-   ISCreateBlockSeq - Creates a data structure for an index set 
+   ISCreateBlock - Creates a data structure for an index set 
       containing a list of integers. The indices are relative to entries
       not blocks. 
 
@@ -149,16 +149,16 @@ $   a block size of 2 and idx of 0,4.
 
 .keywords: IS, sequential, index set, create, blocks
 
-.seealso: ISCreateStrideSeq(), ISCreateSeq()
+.seealso: ISCreateStride(), ISCreateGeneral()
 @*/
-int ISCreateBlockSeq(MPI_Comm comm,int bs,int n,int *idx,IS *is)
+int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
 {
   int      i, sorted = 1, min, max;
   IS       Nindex;
   IS_Block *sub;
 
   *is = 0;
-  PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_BLOCK_SEQ,comm); 
+  PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_BLOCK,comm); 
   PLogObjectCreate(Nindex);
   sub            = PetscNew(IS_Block); CHKPTRQ(sub);
   PLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(int)+sizeof(struct _IS));
@@ -202,7 +202,7 @@ int ISBlockGetIndices(IS in,int **idx)
   IS_Block *sub;
   PetscValidHeaderSpecific(in,IS_COOKIE);
   PetscValidPointer(idx);
-  if (in->type != IS_BLOCK_SEQ) SETERRQ(1,"ISBlockGetIndices:Not a block index set");
+  if (in->type != IS_BLOCK) SETERRQ(1,"ISBlockGetIndices:Not a block index set");
 
   sub = (IS_Block *) in->data;
   *idx = sub->idx; 
@@ -224,7 +224,7 @@ int ISBlockRestoreIndices(IS is,int **idx)
 {
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidPointer(idx);
-  if (is->type != IS_BLOCK_SEQ) SETERRQ(1,"ISBlockRestoreIndices:Not a block index set");
+  if (is->type != IS_BLOCK) SETERRQ(1,"ISBlockRestoreIndices:Not a block index set");
   return 0;
 }
 
@@ -237,14 +237,14 @@ int ISBlockRestoreIndices(IS is,int **idx)
   Output Parameter:
 . size - the number of elements in a block
 
-.seealso: ISBlockGetSize(), ISGetSize(), ISBlock(), ISCreateBlockSeq()
+.seealso: ISBlockGetSize(), ISGetSize(), ISBlock(), ISCreateBlock()
 @*/
 int ISBlockGetBlockSize(IS is,int *size)
 {
   IS_Block *sub;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(size);
-  if (is->type != IS_BLOCK_SEQ) SETERRQ(1,"ISBlockGetSize:Not a block index set");
+  if (is->type != IS_BLOCK) SETERRQ(1,"ISBlockGetSize:Not a block index set");
 
   sub = (IS_Block *)is->data;
   *size = sub->bs; 
@@ -260,13 +260,13 @@ int ISBlockGetBlockSize(IS is,int *size)
   Output Parameter:
 . flag - PETSC_TRUE if a block index set, else PETSC_FALSE
 
-.seealso: ISBlockGetSize(), ISGetSize(), ISBlockGetBlockSize(), ISCreateBlockSeq()
+.seealso: ISBlockGetSize(), ISGetSize(), ISBlockGetBlockSize(), ISCreateBlock()
 @*/
 int ISBlock(IS is,PetscTruth *flag)
 {
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(flag);
-  if (is->type != IS_BLOCK_SEQ) *flag = PETSC_FALSE;
+  if (is->type != IS_BLOCK) *flag = PETSC_FALSE;
   else                          *flag = PETSC_TRUE;
   return 0;
 }
@@ -280,14 +280,14 @@ int ISBlock(IS is,PetscTruth *flag)
   Output Parameter:
 . size - the number of blocks
 
-.seealso: ISBlockGetBlockSize(), ISGetSize(), ISBlock(), ISCreateBlockSeq()
+.seealso: ISBlockGetBlockSize(), ISGetSize(), ISBlock(), ISCreateBlock()
 @*/
 int ISBlockGetSize(IS is,int *size)
 {
   IS_Block *sub;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(size);
-  if (is->type != IS_BLOCK_SEQ) SETERRQ(1,"ISBlockGetSize:Not a block index set");
+  if (is->type != IS_BLOCK) SETERRQ(1,"ISBlockGetSize:Not a block index set");
 
   sub = (IS_Block *)is->data;
   *size = sub->n; 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.92 1996/08/13 23:07:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.93 1996/08/13 23:14:10 curfman Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -469,7 +469,16 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   if (type == MATMPIROWBS) {
     if (pc->type == PCBJACOBI) {
       ierr = PCSetType(pc,PCILU); CHKERRQ(ierr);
+      PLogInfo(pc,"PCSetOperators:Switching to PCILU since BS95 doesn't support BJacobi");
     }
+  }
+  /*
+      Shell matrix (probably) cannot support an preconditioner
+  */
+  ierr = MatGetType(Pmat,&type,PETSC_NULL); CHKERRQ(ierr);
+  if (type == MATSHELL && pc->type != PCSHELL) {
+    ierr = PCSetType(pc,PCNONE); CHKERRQ(ierr);
+    PLogInfo(pc,"PCSetOperators:Setting PCNONE since MATSHELL doesn't support pcs");
   }
 
   pc->mat  = Amat;

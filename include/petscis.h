@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.28 1996/08/04 23:14:42 bsmith Exp bsmith $ */
+/* $Id: is.h,v 1.29 1996/08/05 03:49:27 bsmith Exp bsmith $ */
 
 /*
       An index set is a genralization of a subset of integers. They are used
@@ -8,15 +8,15 @@
 #define __IS_PACKAGE
 #include "petsc.h"
 
-typedef enum {IS_SEQ=0, IS_STRIDE_SEQ=1, IS_BLOCK_SEQ = 2} ISType;
+typedef enum {IS_GENERAL=0, IS_STRIDE=1, IS_BLOCK = 2} ISType;
 
 #define IS_COOKIE PETSC_COOKIE+2
 
 typedef struct _IS* IS;
 
-extern int   ISCreateSeq(MPI_Comm,int,int *,IS *);
-extern int   ISCreateBlockSeq(MPI_Comm,int,int,int *,IS *);
-extern int   ISCreateStrideSeq(MPI_Comm,int,int,int,IS *);
+extern int   ISCreateGeneral(MPI_Comm,int,int *,IS *);
+extern int   ISCreateBlock(MPI_Comm,int,int,int *,IS *);
+extern int   ISCreateStride(MPI_Comm,int,int,int,IS *);
 
 extern int   ISDestroy(IS);
 
@@ -34,10 +34,13 @@ extern int   ISEqual(IS, IS, PetscTruth *);
 extern int   ISSort(IS);
 extern int   ISSorted(IS, PetscTruth *);
 
+extern int   ISBlock(IS,PetscTruth*);
 extern int   ISBlockGetIndices(IS,int **);
 extern int   ISBlockRestoreIndices(IS,int **);
-extern int   ISBlockGetBlockSize(IS,int **);
+extern int   ISBlockGetSize(IS,int *);
+extern int   ISBlockGetBlockSize(IS,int *);
 
+extern int   ISStride(IS,PetscTruth*);
 extern int   ISStrideGetInfo(IS,int *,int*);
 
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.44 1996/08/06 04:02:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.45 1996/08/08 14:42:42 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -352,7 +352,7 @@ static int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
   PetscFree(owner); PetscFree(nprocs);
     
   /* actually zap the local rows */
-  ierr = ISCreateSeq(MPI_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
+  ierr = ISCreateGeneral(MPI_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
   PLogObjectParent(A,istmp);
   PetscFree(lrows);
   ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
@@ -402,10 +402,8 @@ static int MatMultTrans_MPIDense(Mat A,Vec xx,Vec yy)
 
   ierr = VecSet(&zero,yy); CHKERRQ(ierr);
   ierr = MatMultTrans_SeqDense(a->A,xx,a->lvec); CHKERRQ(ierr);
-  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,
-         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
-  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,
-         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   return 0;
 }
 
@@ -416,10 +414,8 @@ static int MatMultTransAdd_MPIDense(Mat A,Vec xx,Vec yy,Vec zz)
 
   ierr = VecCopy(yy,zz); CHKERRQ(ierr);
   ierr = MatMultTrans_SeqDense(a->A,xx,a->lvec); CHKERRQ(ierr);
-  ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,
-         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
-  ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,
-         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   return 0;
 }
 

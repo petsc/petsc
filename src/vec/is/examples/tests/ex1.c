@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.12 1996/03/19 21:22:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.13 1996/07/08 22:16:12 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Tests various IS routines\n\n";
+static char help[] = "Tests IS general routines\n\n";
 
 #include "petsc.h"
 #include "is.h"
@@ -11,23 +11,98 @@ static char help[] = "Tests various IS routines\n\n";
 
 int main(int argc,char **argv)
 {
-  int      n = 5, ierr,indices[5],rank;
-  IS       is;
+  int        i, n, ierr,*indices,rank,size,*ii;
+  IS         is,newis;
+  PetscTruth flag;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
 
-  /* create an index set */
-  indices[0] = rank + 1; 
-  indices[1] = rank + 2; 
-  indices[2] = rank + 3; 
-  indices[3] = rank + 4; 
-  indices[4] = rank + 5; 
-  ierr = ISCreateSeq(MPI_COMM_SELF,n,indices,&is); CHKERRA(ierr);
+  /*
+     Test IS of size 0 
+  */
+  ierr = ISCreateGeneral(MPI_COMM_SELF,0,&n,&is); CHKERRA(ierr);
+  ierr = ISGetSize(is,&n); CHKERRA(ierr);
+  if (n != 0) SETERRQ(1,0);
+  ierr = ISDestroy(is); CHKERRA(ierr);
 
-  ierr = ISView(is,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+  /*
+     Create large IS and test ISGetIndices()
+  */
+  n = 10000 + rank;
+  indices = (int *) PetscMalloc( n*sizeof(int) ); CHKERRA(ierr);
+  for ( i=0; i<n; i++ ) {
+    indices[i] = rank + i;
+  }
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,indices,&is); CHKERRA(ierr);
+  ierr = ISGetIndices(is,&ii); CHKERRA(ierr);
+  for ( i=0; i<n; i++ ) {
+    if (ii[i] != indices[i]) SETERRA(1,0);
+  }
+  ierr = ISRestoreIndices(is,&ii); CHKERRA(ierr);
+
+  /* 
+     Check identity and permutation 
+  */
+  ierr = ISPermutation(is,&flag); CHKERRA(ierr);
+  if (flag == PETSC_TRUE) SETERRA(1,0);
+  ierr = ISIdentity(is,&flag); CHKERRA(ierr);
+  if (flag == PETSC_TRUE) SETERRA(1,0);
+  ierr = ISSetPermutation(is); CHKERRA(ierr);
+  ierr = ISSetIdentity(is);  CHKERRA(ierr);
+  ierr = ISPermutation(is,&flag); CHKERRA(ierr);
+  if (flag != PETSC_TRUE) SETERRA(1,0);
+  ierr = ISIdentity(is,&flag); CHKERRA(ierr);
+  if (flag != PETSC_TRUE) SETERRA(1,0);
+
+  /*
+     Check equality of index sets 
+  */
+  ierr = ISEqual(is,is,&flag); CHKERRA(ierr);
+  if (flag != PETSC_TRUE) SETERRA(1,0);
+
+  /*
+     Sorting 
+  */
+  ierr = ISSort(is); CHKERRA(ierr);
+  ierr = ISSorted(is,&flag); CHKERRA(ierr);
+  if (flag != PETSC_TRUE) SETERRA(1,0);
+
+  /*
+     Thinks it is a different type?
+  */
+  ierr = ISStride(is,&flag); CHKERRA(ierr);
+  if (flag == PETSC_TRUE) SETERRA(1,0);
+  ierr = ISBlock(is,&flag); CHKERRA(ierr);
+  if (flag == PETSC_TRUE) SETERRA(1,0);
+
+  ierr = ISDestroy(is); CHKERRA(ierr);
+
+  /*
+     Inverting permutation
+  */
+  for ( i=0; i<n; i++ ) {
+    indices[i] = n - i - 1;
+  }
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,indices,&is); CHKERRA(ierr);
+  ierr = PetscFree(indices); CHKERRA(ierr);
+  ierr = ISSetPermutation(is); CHKERRA(ierr);
+  ierr = ISInvertPermutation(is,&newis); CHKERRA(ierr);
+  ierr = ISGetIndices(newis,&ii); CHKERRA(ierr);
+  for ( i=0; i<n; i++ ) {
+    if (ii[i] != i) SETERRA(1,0);
+  }
+  ierr = ISRestoreIndices(newis,&ii); CHKERRA(ierr);
+  ierr = ISDestroy(newis); CHKERRA(ierr);
   ierr = ISDestroy(is); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }
  
+
+
+
+
+
+

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.21 1996/07/02 18:06:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.22 1996/08/08 14:43:21 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -32,9 +32,9 @@ int MatGetReordering_IJ(int n,int *ia,int* ja,MatReordering type,IS *rperm,IS *c
 
   ierr = (*r)(&n,ia,ja,permr,permc); CHKERRQ(ierr);
 
-  ierr = ISCreateSeq(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
   ISSetPermutation(*rperm);
-  ierr = ISCreateSeq(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
   ISSetPermutation(*cperm);
   PetscFree(permr); 
 

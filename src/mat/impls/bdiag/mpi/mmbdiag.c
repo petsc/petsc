@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.21 1996/08/08 14:43:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.22 1996/08/13 02:41:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -67,17 +67,17 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   ierr = VecCreateSeq(MPI_COMM_SELF,N,&mbd->lvec); CHKERRQ(ierr);
 
   /* create temporary index set for building scatter-gather */
-  ierr = ISCreateSeq(MPI_COMM_SELF,ec,garray,&tofrom); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,ec,garray,&tofrom); CHKERRQ(ierr);
   PetscFree(garray);
-
- ISView(tofrom,0); 
 
   /* create temporary global vector to generate scatter context */
   /* this is inefficient, but otherwise we must do either 
      1) save garray until the first actual scatter when the vector is known or
      2) have another way of generating a scatter context without a vector.*/
-
-  ierr = VecCreateMPI(mat->comm,PETSC_DECIDE,mbd->N,&gvec); CHKERRQ(ierr);
+  /*
+     This is not correct for a rectangular matrix mbd->m? 
+  */
+  ierr = VecCreateMPI(mat->comm,mbd->m,mbd->N,&gvec); CHKERRQ(ierr);
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,tofrom,mbd->lvec,tofrom,&mbd->Mvctx);CHKERRQ(ierr);

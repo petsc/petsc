@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.30 1996/08/04 23:10:54 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.31 1996/08/07 03:26:52 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -122,8 +122,6 @@ typedef struct {
 typedef struct { 
   VecScatterType         type;
   int                    n;        /* number of processors to send/receive */
-  int                    nbelow;   /* number with lower process id */
-  int                    nself;    /* number sending to self */
   int                    *starts;  /* starting point in indices and 
                                       values for each proc*/ 
   int                    *indices; /* list of all components sent or
@@ -138,6 +136,7 @@ typedef struct {
 
 struct _VecScatter {
   PETSCHEADER
+  int     to_n,from_n;
   int     inuse;   /* prevents corruption from mixing two scatters */
   int     (*scatterbegin)(Vec,Vec,InsertMode,int,VecScatter);
   int     (*scatterend)(Vec,Vec,InsertMode,int,VecScatter);

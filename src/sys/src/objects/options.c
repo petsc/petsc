@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.91 1996/08/04 23:11:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.92 1996/08/06 04:01:37 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -236,8 +236,12 @@ int PetscFinalize()
     PLogDestroy();
   }
 #endif
-  ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler",&flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler",&flg1);CHKERRQ(ierr);
   if (!flg1) { PetscPopSignalHandler(); }
+  ierr = OptionsHasName(PETSC_NULL,"-mpidump",&flg1); CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscMPIDump(stdout); CHKERRQ(ierr);
+  }
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   ierr = OptionsHasName(PETSC_NULL,"-optionstable",&flg1); CHKERRQ(ierr);
@@ -268,10 +272,6 @@ int PetscFinalize()
   if (flg1) {
     PLogCloseHistoryFile(&petsc_history);
     petsc_history = 0;
-  }
-  ierr = OptionsHasName(PETSC_NULL,"-mpidump",&flg1); CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscMPIDump(stdout); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trinfo",&flg2); CHKERRQ(ierr);
@@ -987,10 +987,11 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *fl
 
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
   if (!*flg)  {*nmax = 0; return 0;}
+  if (!value) {*nmax = 0; return 0;}
 
   /* make a copy of the values, otherwise we destroy the old values */
   len = PetscStrlen(value) + 1; 
-  cpy = (char *) PetscMalloc(len*sizeof(char*));
+  cpy = (char *) PetscMalloc(len*sizeof(char));
   PetscStrcpy(cpy,value);
   value = cpy;
 
@@ -1033,10 +1034,11 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
 
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
   if (!*flg) {*nmax = 0; return 0;}
+  if (!value) {*nmax = 0; return 0;}
 
   /* make a copy of the values, otherwise we destroy the old values */
   len = PetscStrlen(value) + 1; 
-  cpy = (char *) PetscMalloc(len*sizeof(char*));
+  cpy = (char *) PetscMalloc(len*sizeof(char));
   PetscStrcpy(cpy,value);
   value = cpy;
 

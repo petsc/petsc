@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.20 1996/08/06 16:51:30 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.21 1996/08/08 14:43:40 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -21,16 +21,17 @@ extern int MatSolveTrans_MPIBAIJ(Mat,Vec,Vec);
 extern int MatSolveTransAdd_MPIBAIJ(Mat,Vec,Vec,Vec);
 extern int MatILUFactorSymbolic_MPIBAIJ(Mat,IS,IS,double,int,Mat *);
 
-/* local utility routine that creates a mapping from the global column 
-number to the local number in the off-diagonal part of the local 
-storage of the matrix.  This is done in a non scable way since the 
-length of colmap equals the global matrix length. 
+/* 
+     Local utility routine that creates a mapping from the global column 
+   number to the local number in the off-diagonal part of the local 
+   storage of the matrix.  This is done in a non scable way since the 
+   length of colmap equals the global matrix length. 
 */
 static int CreateColmap_MPIBAIJ_Private(Mat mat)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   Mat_SeqBAIJ *B = (Mat_SeqBAIJ*) baij->B->data;
-  int        nbs = B->nbs,i;
+  int         nbs = B->nbs,i;
 
   baij->colmap = (int *) PetscMalloc(baij->Nbs*sizeof(int));CHKPTRQ(baij->colmap);
   PLogObjectMemory(mat,baij->Nbs*sizeof(int));
@@ -571,15 +572,14 @@ static int MatMultTrans_MPIBAIJ(Mat A,Vec xx,Vec yy)
   /* do nondiagonal part */
   ierr = (*a->B->ops.multtrans)(a->B,xx,a->lvec); CHKERRQ(ierr);
   /* send it on its way */
-  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,
-                (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   /* do local part */
   ierr = (*a->A->ops.multtrans)(a->A,xx,yy); CHKERRQ(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
   ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,
-                  (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+                  (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx);CHKERRQ(ierr);
   return 0;
 }
 
@@ -591,15 +591,13 @@ static int MatMultTransAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   /* do nondiagonal part */
   ierr = (*a->B->ops.multtrans)(a->B,xx,a->lvec); CHKERRQ(ierr);
   /* send it on its way */
-  ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,
-                 (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   /* do local part */
   ierr = (*a->A->ops.multtransadd)(a->A,xx,yy,zz); CHKERRQ(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
-  ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,
-                  (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   return 0;
 }
 
@@ -987,7 +985,7 @@ static int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
   PetscFree(owner); PetscFree(nprocs);
     
   /* actually zap the local rows */
-  ierr = ISCreateSeq(MPI_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
+  ierr = ISCreateGeneral(MPI_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
   PLogObjectParent(A,istmp);
   PetscFree(lrows);
   ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
@@ -1315,7 +1313,6 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
   M = header[1]; N = header[2];
 
-
   if (M != N) SETERRQ(1,"MatLoad_SeqBAIJ:Can only do square matrices");
 
   /* 
@@ -1327,8 +1324,9 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
   if (extra_rows == bs) extra_rows = 0;
   else                  Mbs++;
   if (extra_rows &&!rank) {
-    PLogInfo(0,"MatLoad_SeqBAIJ:Padding loaded matrix to match blocksize");
+    PLogInfo(0,"MatLoad_SeqBAIJ:Padding loaded matrix to match blocksize\n");
   }
+
   /* determine ownership of all rows */
   mbs = Mbs/size + ((Mbs % size) > rank);
   m   = mbs * bs;
@@ -1444,7 +1442,8 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
   }
 
   /* create our matrix */
-  ierr = MatCreateMPIBAIJ(comm,bs,m,PETSC_DECIDE,M+extra_rows,N+extra_rows,0,dlens,0,odlens,newmat);CHKERRQ(ierr);
+  ierr = MatCreateMPIBAIJ(comm,bs,m,PETSC_DECIDE,M+extra_rows,N+extra_rows,0,dlens,0,odlens,newmat);
+         CHKERRQ(ierr);
   A = *newmat;
   MatSetOption(A,MAT_COLUMNS_SORTED); 
   
@@ -1457,6 +1456,7 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
     if (size == 1)  nz -= extra_rows;
     ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
     if (size == 1)  for (i=0; i< extra_rows; i++) { vals[nz+i] = 1.0; }
+
     /* insert into matrix */
     jj      = rstart*bs;
     for ( i=0; i<m; i++ ) {
@@ -1465,7 +1465,7 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
       vals   += locrowlens[i];
       jj++;
     }
-    /* read in other processors( except the last one) and ship out */
+    /* read in other processors (except the last one) and ship out */
     for ( i=1; i<size-1; i++ ) {
       nz = procsnz[i];
       vals = buf;
@@ -1496,7 +1496,7 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
     /* insert into matrix */
     jj      = rstart*bs;
     for ( i=0; i<m; i++ ) {
-      ierr = MatSetValues(A,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr    = MatSetValues(A,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr);
       mycols += locrowlens[i];
       vals   += locrowlens[i];
       jj++;

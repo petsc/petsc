@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmdense.c,v 1.6 1996/04/26 00:01:58 balay Exp bsmith $";
+static char vcid[] = "$Id: mmdense.c,v 1.7 1996/08/08 14:42:42 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,7 +19,7 @@ int MatSetUpMultiply_MPIDense(Mat mat)
   ierr = VecCreateSeq(MPI_COMM_SELF,mdn->N,&mdn->lvec); CHKERRQ(ierr);
 
   /* Create temporary index set for building scatter gather */
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,mdn->N,0,1,&tofrom); CHKERRQ(ierr);
+  ierr = ISCreateStride(MPI_COMM_SELF,mdn->N,0,1,&tofrom); CHKERRQ(ierr);
 
   /* Create temporary global vector to generate scatter context */
   n    = mdn->cowners[mdn->rank+1] - mdn->cowners[mdn->rank];

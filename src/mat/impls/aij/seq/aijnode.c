@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.47 1996/07/02 18:06:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.48 1996/08/08 14:42:46 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -175,8 +175,8 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatReordering type,IS *rperm, IS 
   if (type  == ORDER_NATURAL) {
     idx = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(idx);
     for ( i=0; i<n; i++ ) idx[i] = i;
-    ierr = ISCreateSeq(MPI_COMM_SELF,n,idx,rperm); CHKERRQ(ierr);
-    ierr = ISCreateSeq(MPI_COMM_SELF,n,idx,cperm); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,rperm); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,cperm); CHKERRQ(ierr);
     PetscFree(idx);
     ISSetPermutation(*rperm);
     ISSetPermutation(*cperm);
@@ -225,9 +225,9 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatReordering type,IS *rperm, IS 
       permc[row]= j;
   }
 
-  ierr = ISCreateSeq(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
   ISSetPermutation(*rperm);
-  ierr = ISCreateSeq(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
   ISSetPermutation(*cperm);
  
   ierr  = ISRestoreIndices(ris,&ridx); CHKERRQ(ierr);

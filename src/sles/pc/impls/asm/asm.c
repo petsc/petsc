@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.32 1996/08/13 19:52:07 balay Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.33 1996/08/13 19:54:33 balay Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -83,7 +83,7 @@ static int PCSetUp_ASM(PC pc)
       }
       for ( i=0; i<n_local_true; i++){
         size       =  ((sz/bs)/n_local_true + (( (sz/bs) % n_local_true) > i))*bs;
-        ierr       =  ISCreateStrideSeq(MPI_COMM_SELF,size,start,1,&isl);CHKERRQ(ierr);
+        ierr       =  ISCreateStride(MPI_COMM_SELF,size,start,1,&isl);CHKERRQ(ierr);
         start      += size;
         osm->is[i] =  isl;
       }
@@ -106,14 +106,14 @@ static int PCSetUp_ASM(PC pc)
       ierr = ISGetSize(osm->is[i],&m); CHKERRQ(ierr);
       ierr = VecCreateSeq(MPI_COMM_SELF,m,&osm->x[i]); CHKERRQ(ierr);
       ierr = VecDuplicate(osm->x[i],&osm->y[i]); CHKERRQ(ierr);
-      ierr = ISCreateStrideSeq(MPI_COMM_SELF,m,0,1,&isl); CHKERRQ(ierr);
+      ierr = ISCreateStride(MPI_COMM_SELF,m,0,1,&isl); CHKERRQ(ierr);
       ierr = VecScatterCreate(pc->vec,osm->is[i],osm->x[i],isl,&osm->scat[i]); CHKERRQ(ierr);
       ierr = ISDestroy(isl); CHKERRQ(ierr);
     }
     for ( i=n_local_true; i<n_local; i++ ) {
       ierr = VecCreateSeq(MPI_COMM_SELF,0,&osm->x[i]); CHKERRQ(ierr);
       ierr = VecDuplicate(osm->x[i],&osm->y[i]); CHKERRQ(ierr);
-      ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&isl); CHKERRQ(ierr);
+      ierr = ISCreateStride(MPI_COMM_SELF,0,0,1,&isl); CHKERRQ(ierr);
       ierr = VecScatterCreate(pc->vec,isl,osm->x[i],isl,&osm->scat[i]); CHKERRQ(ierr);
       ierr = ISDestroy(isl); CHKERRQ(ierr);   
     }
@@ -425,7 +425,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
           idx[loc++] = count++;
         }
       }
-      ierr = ISCreateSeq(MPI_COMM_SELF,nidx,idx,(*is)+loc_outter++); CHKERRQ(ierr);
+      ierr = ISCreateGeneral(MPI_COMM_SELF,nidx,idx,(*is)+loc_outter++); CHKERRQ(ierr);
       PetscFree(idx);
       /* ISView((*is)[loc_outter-1],0); */
       xstart += width;

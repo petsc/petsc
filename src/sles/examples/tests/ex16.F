@@ -1,5 +1,5 @@
 
-C      "$Id: ex16.F,v 1.7 1996/02/24 17:25:45 curfman Exp bsmith $";
+C      "$Id: ex16.F,v 1.8 1996/03/19 21:27:49 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -77,7 +77,7 @@ C      print*, 'Time for solve = ',time
   100 format('Residual norm ',e10.4,' iterations ',i5)
 
 C Create system 2 by striping off some rows of the matrix
-      call ISCreateStrideSeq(MPI_COMM_SELF,5,0,1,isrow, ierr)
+      call ISCreateStride(MPI_COMM_SELF,5,0,1,isrow, ierr)
       call MatZeroRows(A,isrow,five,ierr)
 
 C Solve system-2

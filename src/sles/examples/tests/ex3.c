@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.45 1996/07/02 18:07:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.46 1996/07/08 22:20:55 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -100,7 +100,7 @@ int main(int argc,char **args)
   for ( i=2*m+1; i<m*(m+1); i+= m+1 ) {
     rows[count++] = i;
   }
-  ierr = ISCreateSeq(MPI_COMM_SELF,4*m,rows,&is); CHKERRA(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,4*m,rows,&is); CHKERRA(ierr);
   for ( i=0; i<4*m; i++ ) {
      x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
      val = y;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.2 1996/07/02 18:09:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.3 1996/07/08 22:24:28 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates constructing an application ordering\n\n";
@@ -21,8 +21,8 @@ int main(int argc,char **argv)
   MPI_Comm_size(MPI_COMM_WORLD,&size);
 
   /* create the index sets */
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,n,rank,size,&ispetsc); CHKERRA(ierr);
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,n,n*rank,1,&isapp); CHKERRA(ierr);
+  ierr = ISCreateStride(MPI_COMM_SELF,n,rank,size,&ispetsc); CHKERRA(ierr);
+  ierr = ISCreateStride(MPI_COMM_SELF,n,n*rank,1,&isapp); CHKERRA(ierr);
 
   /* create the application ordering */
   ierr = AOCreateDebugIS(MPI_COMM_WORLD,isapp,ispetsc,&ao); CHKERRA(ierr);

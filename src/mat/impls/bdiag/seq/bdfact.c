@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.36 1996/08/06 23:00:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.37 1996/08/08 14:43:12 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -58,7 +58,7 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
 {
   Mat          C = *B;
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data, *a1 = (Mat_SeqBDiag *) A->data;
-  int          k, d, d2, dgk, elim_row, elim_col, nb = a->nb, knb, knb2, nb2 = nb*nb;
+  int          k, d, d2, dgk, elim_row, elim_col, bs = a->bs, knb, knb2, bs2 = bs*bs;
   int          dnum,nd = a->nd, mblock = a->mblock, nblock = a->nblock, ierr;
   int          *diag = a->diag,  m = a->m, mainbd = a->mainbd, *dgptr, len, i;
   Scalar       **dv = a->diagv, *dd = dv[mainbd], *v_work;
@@ -70,9 +70,9 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
      factorization for successive calls with same matrix sparsity structure. */
   if (C->factor == FACTOR_LU) {
     for (i=0; i<a->nd; i++) {
-      len = a->bdlen[i] * nb2 * sizeof(Scalar);
+      len = a->bdlen[i] * bs2 * sizeof(Scalar);
       d   = diag[i];
-      if (d > 0) PetscMemcpy(dv[i]+nb2*d,a1->diagv[i]+nb2*d,len);
+      if (d > 0) PetscMemcpy(dv[i]+bs2*d,a1->diagv[i]+bs2*d,len);
       else       PetscMemcpy(dv[i],a1->diagv[i],len);
     }
   }
@@ -81,27 +81,27 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
     a->pivot = (int *) PetscMalloc(m*sizeof(int)); CHKPTRQ(a->pivot);
     PLogObjectMemory(C,m*sizeof(int));
   }
-  v_work = (Scalar *) PetscMalloc((nb*nb+nb)*sizeof(Scalar));CHKPTRQ(v_work);
-  multiplier = v_work + nb;
+  v_work = (Scalar *) PetscMalloc((bs2+bs)*sizeof(Scalar));CHKPTRQ(v_work);
+  multiplier = v_work + bs;
   dgptr = (int *) PetscMalloc((mblock+nblock)*sizeof(int)); CHKPTRQ(dgptr);
   PetscMemzero(dgptr,(mblock+nblock)*sizeof(int));
   for ( k=0; k<nd; k++ ) dgptr[diag[k]+mblock] = k+1;
   for ( k=0; k<mblock; k++ ) { /* k = block pivot_row */
-    knb = k*nb; knb2 = knb*nb;
+    knb = k*bs; knb2 = knb*bs;
     /* invert the diagonal block */
-    Kernel_A_gets_inverse_A(nb,dd+knb2,a->pivot+knb,v_work);
+    Kernel_A_gets_inverse_A(bs,dd+knb2,a->pivot+knb,v_work);
     for ( d=mainbd-1; d>=0; d-- ) {
       elim_row = k + diag[d];
       if (elim_row < mblock) { /* sweep down */
         /* dv[d][knb2]: test if entire block is zero? */
-        Kernel_A_gets_A_times_B(nb,&dv[d][elim_row*nb2],dd+knb2,multiplier); 
+        Kernel_A_gets_A_times_B(bs,&dv[d][elim_row*bs2],dd+knb2,multiplier); 
         for ( d2=d+1; d2<nd; d2++ ) {
           elim_col = elim_row - diag[d2];
           if (elim_col >=0 && elim_col < nblock) {
             dgk = k - elim_col;
             if ((dnum = dgptr[dgk+mblock])) {
-              Kernel_A_gets_A_minus_B_times_C(nb,&dv[d2][elim_row*nb2],
-                             &dv[d][elim_row*nb2],&dv[dnum-1][knb2]);
+              Kernel_A_gets_A_minus_B_times_C(bs,&dv[d2][elim_row*bs2],
+                             &dv[d][elim_row*bs2],&dv[dnum-1][knb2]);
             }
           }
         }
@@ -448,13 +448,13 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, d, loc, ierr, mainbd = a->mainbd;
   int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
-  int          nb = a->nb, m = a->m, *diag = a->diag, col, nb2 = nb*nb;
+  int          bs = a->bs, m = a->m, *diag = a->diag, col, bs2 = bs*bs;
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv;
   Scalar       work[25];
 
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
-  if (nb > 25) SETERRQ(1,"Blocks must be smaller then 25");
+  if (bs > 25) SETERRQ(1,"Blocks must be smaller then 25");
   PetscMemcpy(y,x,m*sizeof(Scalar));
 
   /* forward solve the lower triangular part */
@@ -464,24 +464,24 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
       for (d=0; d<mainbd; d++) {
         loc = i - diag[d];
         if (loc >= 0) {
-          Kernel_v_gets_v_minus_A_times_w(nb,y+inb,&dv[d][i*nb2],y+loc*nb);
+          Kernel_v_gets_v_minus_A_times_w(bs,y+inb,&dv[d][i*bs2],y+loc*bs);
         }
       }
-      inb += nb;
+      inb += bs;
     }
   }
   /* backward solve the upper triangular part */
-  inb = nb*(mblock-1); inb2 = inb*nb;
+  inb = bs*(mblock-1); inb2 = inb*bs;
   for ( i=mblock-1; i>=0; i-- ) {
     for (d=mainbd+1; d<a->nd; d++) {
       col = i - diag[d];
       if (col < nblock) {
-        Kernel_v_gets_v_minus_A_times_w(nb,y+inb,&dv[d][inb2],y+col*nb);
+        Kernel_v_gets_v_minus_A_times_w(bs,y+inb,&dv[d][inb2],y+col*bs);
       }
     }
-    Kernel_w_gets_A_times_v(nb,y+inb,dd+inb2,work);  
-    PetscMemcpy(y+inb,work,nb*sizeof(Scalar));
-    inb -= nb; inb2 -= nb2;
+    Kernel_w_gets_A_times_v(bs,y+inb,dd+inb2,work);  
+    PetscMemcpy(y+inb,work,bs*sizeof(Scalar));
+    inb -= bs; inb2 -= bs2;
   }
   PLogFlops(2*a->nz - a->n);
   ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);

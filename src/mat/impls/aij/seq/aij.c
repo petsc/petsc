@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.180 1996/08/08 14:42:46 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.181 1996/08/13 19:56:16 balay Exp bsmith $";
 #endif
 
 /*
@@ -62,8 +62,8 @@ static int MatGetReordering_SeqAIJ(Mat A,MatReordering type,IS *rperm, IS *cperm
     n = a->n;
     idx = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(idx);
     for ( i=0; i<n; i++ ) idx[i] = i;
-    ierr = ISCreateSeq(MPI_COMM_SELF,n,idx,rperm); CHKERRQ(ierr);
-    ierr = ISCreateSeq(MPI_COMM_SELF,n,idx,cperm); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,rperm); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,cperm); CHKERRQ(ierr);
     PetscFree(idx);
     ISSetPermutation(*rperm);
     ISSetPermutation(*cperm);
@@ -1303,7 +1303,7 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
         }
       }
     }
-    ierr = ISCreateSeq(MPI_COMM_SELF, isz, nidx, (is+i)); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF, isz, nidx, (is+i)); CHKERRQ(ierr);
   }
   PetscFree(table);
   PetscFree(nidx);

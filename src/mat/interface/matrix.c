@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.187 1996/08/08 14:42:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.188 1996/08/12 03:41:21 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -356,6 +356,7 @@ int MatMult(Mat mat,Vec x,Vec y)
   PLogEventBegin(MAT_Mult,mat,x,y,0);
   ierr = (*mat->ops.mult)(mat,x,y); CHKERRQ(ierr);
   PLogEventEnd(MAT_Mult,mat,x,y,0);
+
   return 0;
 }   
 /*@
@@ -382,7 +383,6 @@ int MatMultTrans(Mat mat,Vec x,Vec y)
   if (x == y) SETERRQ(1,"MatMultTrans:x and y must be different vectors");
   if (mat->M != x->N) SETERRQ(PETSC_ERR_SIZ,"MatMultTrans:Mat mat,Vec x: global dim"); 
   if (mat->N != y->N) SETERRQ(PETSC_ERR_SIZ,"MatMultTrans:Mat mat,Vec y: global dim"); 
-
   PLogEventBegin(MAT_MultTrans,mat,x,y,0);
   ierr = (*mat->ops.multtrans)(mat,x,y); CHKERRQ(ierr);
   PLogEventEnd(MAT_MultTrans,mat,x,y,0);
@@ -1789,6 +1789,7 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatGetSubMatrixCall scall,
   PLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);
   ierr = (*mat->ops.getsubmatrices)(mat,n,irow,icol,scall,submat); CHKERRQ(ierr);
   PLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);
+
   return 0;
 }
 

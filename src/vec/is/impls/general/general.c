@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.46 1996/07/22 16:59:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.47 1996/08/08 14:39:54 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -47,7 +47,7 @@ static int ISInvertPermutation_General(IS is, IS *isout)
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
-  ierr = ISCreateSeq(MPI_COMM_SELF,n,ii,isout); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,ii,isout); CHKERRQ(ierr);
   ISSetPermutation(*isout);
   PetscFree(ii);
   return 0;
@@ -100,7 +100,7 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISSort_General,
                                ISSorted_General };
 /*@C
-   ISCreateSeq - Creates a data structure for an index set 
+   ISCreateGeneral - Creates a data structure for an index set 
    containing a list of integers.
 
    Input Parameters:
@@ -113,16 +113,20 @@ static struct _ISOps myops = { ISGetSize_General,
 
 .keywords: IS, sequential, index set, create
 
-.seealso: ISCreateStrideSeq()
+.seealso: ISCreateStride()
 @*/
-int ISCreateSeq(MPI_Comm comm,int n,int *idx,IS *is)
+int ISCreateGeneral(MPI_Comm comm,int n,int *idx,IS *is)
 {
   int        i, sorted = 1, min, max;
   IS         Nindex;
   IS_General *sub;
 
+  PetscValidPointer(is);
+  PetscValidIntPointer(idx);
+  if (n < 0) SETERRQ(1,"ISCreateGeneral: length < 0");
+
   *is = 0;
-  PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_SEQ,comm); 
+  PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_GENERAL,comm); 
   PLogObjectCreate(Nindex);
   sub            = PetscNew(IS_General); CHKPTRQ(sub);
   PLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(int)+sizeof(struct _IS));

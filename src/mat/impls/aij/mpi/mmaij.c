@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.28 1996/07/08 22:19:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.29 1996/08/08 14:42:52 bsmith Exp bsmith $";
 #endif
 
 
@@ -54,8 +54,8 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = VecCreateSeq(MPI_COMM_SELF,ec,&aij->lvec); CHKERRQ(ierr);
 
   /* create two temporary Index sets for build scatter gather */
-  ierr = ISCreateSeq(MPI_COMM_SELF,ec,garray,&from); CHKERRQ(ierr);
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,ec,0,1,&to); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,ec,garray,&from); CHKERRQ(ierr);
+  ierr = ISCreateStride(MPI_COMM_SELF,ec,0,1,&to); CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
   /* this is inefficient, but otherwise we must do either 

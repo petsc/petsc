@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.27 1996/08/06 04:01:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.28 1996/08/08 14:40:07 bsmith Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -39,13 +39,13 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
   if (rank == 0) {
     ierr = VecGetSize(V,&N); CHKERRQ(ierr);
     ierr = VecCreateSeq(MPI_COMM_SELF,N,&W); CHKERRQ(ierr);
-    ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&from); CHKERRQ(ierr);
-    ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&to); CHKERRQ(ierr);
+    ierr = ISCreateStride(MPI_COMM_SELF,N,0,1,&from); CHKERRQ(ierr);
+    ierr = ISCreateStride(MPI_COMM_SELF,N,0,1,&to); CHKERRQ(ierr);
   }
   else {
     ierr = VecCreateSeq(MPI_COMM_SELF,0,&W); CHKERRQ(ierr);
-    ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&from); CHKERRQ(ierr);
-    ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&to); CHKERRQ(ierr);
+    ierr = ISCreateStride(MPI_COMM_SELF,0,0,1,&from); CHKERRQ(ierr);
+    ierr = ISCreateStride(MPI_COMM_SELF,0,0,1,&to); CHKERRQ(ierr);
   }
   PLogObjectParent(win,W); PLogObjectParent(win,from); PLogObjectParent(win,to);
   ierr = VecScatterCreate(V,from,W,to,&ctx); CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: bjacobi.h,v 1.17 1996/03/04 05:15:29 bsmith Exp bsmith $ */
+/* $Id: bjacobi.h,v 1.18 1996/08/06 04:01:55 bsmith Exp bsmith $ */
 
 #if !defined(__BJACOBI_H)
 #define __BJACOBI_H
@@ -6,6 +6,7 @@
     Private data for block Jacobi and block Gauss-Seidel preconditioner.
 */
 #include "sles.h"
+#include "src/pc/pcimpl.h"
 
 typedef struct {
   int       n, n_local;        /* number of blocks (global, local) */

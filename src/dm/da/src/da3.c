@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.39 1996/07/08 22:23:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.40 1996/08/08 14:47:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -385,7 +385,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
   VecGetOwnershipRange(global,&start,&end);
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,x*y*z,start,1,&to);CHKERRQ(ierr);
+  ierr = ISCreateStride(MPI_COMM_SELF,x*y*z,start,1,&to);CHKERRQ(ierr);
 
   left   = xs - Xs; 
   bottom = ys - Ys; top = bottom + y;
@@ -400,7 +400,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       }
     }
   }
-  ierr = ISCreateSeq(MPI_COMM_SELF,count,idx,&from); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,count,idx,&from); CHKERRQ(ierr);
   PetscFree(idx);
 
   ierr = VecScatterCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
@@ -411,7 +411,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* global to local must include ghost points */
   if (stencil_type == DA_STENCIL_BOX) {
-    ierr = ISCreateStrideSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),0,1,&to); 
+    ierr = ISCreateStride(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),0,1,&to); 
   }
   else {
     /* This is way ugly! We need to list the funny cross type region */
@@ -450,7 +450,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
         for ( k=0; k<x; k++ ) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
       }
     }
-    ierr = ISCreateSeq(MPI_COMM_SELF,count,idx,&to); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,count,idx,&to); CHKERRQ(ierr);
     PetscFree(idx);
   }
 
@@ -917,7 +917,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     }
   }  
   base = bases[rank];
-  ierr = ISCreateSeq(comm,nn,idx,&from); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,nn,idx,&from); CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
   PLogObjectParent(da,gtol);
   PLogObjectParent(da,to);
@@ -1418,7 +1418,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     int *lidx,lict = 0;
     int Nlocal = (da->xe-da->xs)*(da->ye-da->ys)*(da->ze-da->zs);
 
-    ierr = ISCreateStrideSeq(MPI_COMM_SELF,Nlocal,da->base,1,&ispetsc);
+    ierr = ISCreateStride(MPI_COMM_SELF,Nlocal,da->base,1,&ispetsc);
            CHKERRQ(ierr);
 
     lidx = (int *) PetscMalloc(Nlocal*sizeof(int)); CHKPTRQ(lidx);
@@ -1429,7 +1429,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
         }
       }
     }
-    ierr = ISCreateSeq(MPI_COMM_SELF,Nlocal,lidx,&isnatural);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,Nlocal,lidx,&isnatural);CHKERRQ(ierr);
     PetscFree(lidx);
 
     ierr = AOCreateDebugIS(comm,isnatural,ispetsc,&da->ao); CHKERRQ(ierr);

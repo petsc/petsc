@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.24 1996/03/19 21:25:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.25 1996/08/08 14:42:00 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -18,13 +18,6 @@ static int PCSetUp_Jacobi(PC pc)
   PC_Jacobi  *jac = (PC_Jacobi *) pc->data;
   Vec        diag, diagsqrt;
   Scalar     *x;
-  PetscTruth can_use_diag;
-
-  ierr = MatHasOperation(pc->pmat,MAT_GET_DIAGONAL,&can_use_diag);CHKERRQ(ierr);
-  if (!can_use_diag) {
-    ierr = PCSetType(pc,PCNONE); CHKERRQ(ierr);
-    return PCSetUp(pc);
-  }
 
   /* We set up both regular and symmetric preconditioning. Perhaps there
      actually should be an option to use only one or the other? */

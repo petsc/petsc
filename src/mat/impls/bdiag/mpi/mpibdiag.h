@@ -1,10 +1,10 @@
-/* $Id: mpibdiag.h,v 1.10 1996/01/24 05:46:24 bsmith Exp bsmith $ */
+/* $Id: mpibdiag.h,v 1.11 1996/08/08 14:43:18 bsmith Exp bsmith $ */
 
 #include "src/mat/impls/bdiag/seq/bdiag.h"
 
 /* 
    Mat_MPIBDiag - Parallel, block-diagonal format, where each diagonal
-   element consists of a square block of size nb x nb.  Dense storage
+   element consists of a square block of size bs x bs.  Dense storage
    within each block is in column-major order.
 
    For now, the parallel part is just a copy of the Mat_MPIAIJ

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.64 1996/08/06 04:02:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.65 1996/08/08 14:43:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -26,8 +26,8 @@ static int MatGetReordering_SeqBAIJ(Mat A,MatReordering type,IS *rperm,IS *cperm
   if (type  == ORDER_NATURAL) {
     idx = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(idx);
     for ( i=0; i<n; i++ ) idx[i] = i;
-    ierr = ISCreateSeq(MPI_COMM_SELF,n,idx,rperm); CHKERRQ(ierr);
-    ierr = ISCreateSeq(MPI_COMM_SELF,n,idx,cperm); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,rperm); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,cperm); CHKERRQ(ierr);
     PetscFree(idx);
     ISSetPermutation(*rperm);
     ISSetPermutation(*cperm);
@@ -617,8 +617,9 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
     PLogObjectMemory(A,-(m+1)*sizeof(int));
     a->diag = 0;
   } 
-  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ: Unneed storage space (blocks) %d used %d, rows %d, block size %d\n", fshift*bs2,a->nz*bs2,m,a->bs);
-  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ: Number of mallocs during MatSetValues %d\n",
+  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Unneed storage space %d used %d, rows %d, block size %d\n", 
+           fshift*bs2,a->nz*bs2,m,a->bs);
+  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Number of mallocs during MatSetValues %d\n",
            a->reallocs);
   return 0;
 }
@@ -1602,7 +1603,7 @@ static int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
   /* Make a copy of the IS and  sort it */
   ierr = ISGetSize(is,&is_n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&is_idx);CHKERRQ(ierr);
-  ierr = ISCreateSeq(A->comm,is_n,is_idx,&is_local); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(A->comm,is_n,is_idx,&is_local); CHKERRQ(ierr);
   ierr = ISSort(is_local); CHKERRQ(ierr);
   ierr = ISGetIndices(is_local,&rows); CHKERRQ(ierr);
 
@@ -1922,7 +1923,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   if (extra_rows == bs) extra_rows = 0;
   else                  mbs++;
   if (extra_rows) {
-    PLogInfo(0,"MatLoad_SeqBAIJ:Padding loaded matrix to match blocksize");
+    PLogInfo(0,"MatLoad_SeqBAIJ:Padding loaded matrix to match blocksize\n");
   }
 
   /* read in row lengths */

@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.21 1996/05/03 19:26:53 bsmith Exp bsmith $ */
+/* $Id: bdiag.h,v 1.22 1996/08/08 14:43:12 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 #include <math.h>
@@ -8,9 +8,9 @@
 
 /*
    Mat_SeqBDiag (MATSEQBDIAG) - block-diagonal format, where each diagonal
-   element consists of a square block of size nb x nb.  Dense storage
+   element consists of a square block of size bs  x bs.  Dense storage
    within each block is in column-major order.  The diagonals are the
-   full length of the matrix.  As a special case, blocks of size nb=1
+   full length of the matrix.  As a special case, blocks of size bs=1
    (scalars) are supported as well.
 */
 
@@ -22,8 +22,8 @@ typedef struct {
   int    nz,maxnz;         /* nonzeros, allocated nonzeros */
   int    nd;               /* number of block diagonals */
   int    mainbd;           /* the number of the main block diagonal */
-  int    nb;               /* Each diagonal element is an nb x nb matrix */
-  int    *diag;            /* value of (row-col)/nb for each diagonal */
+  int    bs;               /* Each diagonal element is an bs x bs matrix */
+  int    *diag;            /* value of (row-col)/bs for each diagonal */
   int    *bdlen;           /* block-length of each diagonal */
   int    ndim;             /* diagonals come from an ndim pde (if 0, ignore) */
   int    ndims[3];         /* sizes of the mesh if ndim > 0 */

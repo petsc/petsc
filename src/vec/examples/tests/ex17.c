@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.17 1996/04/01 20:09:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.18 1996/07/08 22:16:40 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
@@ -30,8 +30,8 @@ int main(int argc,char **argv)
   ierr = VecCreateSeq(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&is2); CHKERRA(ierr);
+  ierr = ISCreateStride(MPI_COMM_SELF,N,0,1,&is1); CHKERRA(ierr);
+  ierr = ISCreateStride(MPI_COMM_SELF,N,0,1,&is2); CHKERRA(ierr);
 
   ierr = VecSet(&zero,x); CHKERRA(ierr);
   ierr = VecGetOwnershipRange(y,&low,&high); CHKERRA(ierr);
