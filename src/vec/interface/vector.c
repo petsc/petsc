@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.203 2000/05/04 16:25:10 bsmith Exp balay $*/
+/*$Id: vector.c,v 1.204 2000/05/05 22:14:59 balay Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -150,9 +150,9 @@ int VecDot(Vec x,Vec y,Scalar *val)
   if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
   if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
 
-  PLogEventBegin(VEC_Dot,x,y,0,0);
+  PLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,x->comm);
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
-  PLogEventEnd(VEC_Dot,x,y,0,0);
+  PLogEventBarrierEnd(VEC_DotBarrier,x,y,0,0,x->comm);
   /*
      The next block is for incremental debugging
   */
@@ -213,9 +213,9 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidType(x);
-  PLogEventBegin(VEC_Norm,x,0,0,0);
+  PLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,x->comm);
   ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
-  PLogEventEnd(VEC_Norm,x,0,0,0);
+  PLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,x->comm);
   /*
      The next block is for incremental debugging
   */
@@ -1507,9 +1507,9 @@ int VecMDot(int nv,Vec x,const Vec y[],Scalar *val)
   if (x->N != (*y)->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
   if (x->n != (*y)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
 
-  PLogEventBegin(VEC_MDot,x,*y,0,0);
+  PLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,x->comm);
   ierr = (*x->ops->mdot)(nv,x,y,val);CHKERRQ(ierr);
-  PLogEventEnd(VEC_MDot,x,*y,0,0);
+  PLogEventBarrierEnd(VEC_MDotBarrier,x,*y,0,0,x->comm);
   PetscFunctionReturn(0);
 }
 
@@ -2388,7 +2388,7 @@ int VecSetOperation(Vec vec,VecOperation op, void *f)
 
 .keywords: vector, stash, assembly
 
-.seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked()
+.seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked(), VecStashView()
 
 @*/
 int VecSetStashInitialSize(Vec vec,int size,int bsize)
@@ -2402,12 +2402,29 @@ int VecSetStashInitialSize(Vec vec,int size,int bsize)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="VecStashView"></a>*/"VecStashView"
+/*@
+   VecStashView - Prints the entries in the vector stash and block stash.
+
+   Collective on Vec
+
+   Input Parameters:
++  vec   - the vector
+-  viewer - the viewer
+
+.keywords: vector, stash, assembly
+
+.seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked()
+
+@*/
 int VecStashView(Vec v,Viewer viewer)
 {
   int        ierr,rank,i,j;
   PetscTruth match;
   VecStash   *s;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscCheckSameComm(v,viewer);
@@ -2428,7 +2445,6 @@ int VecStashView(Vec v,Viewer viewer)
     ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
   }
   ierr = ViewerFlush(viewer);CHKERRQ(ierr);
-
 
   s = &v->stash;
 
