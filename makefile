@@ -15,8 +15,6 @@ DIRS     = src include pinclude docs
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
 all: chkpetsc_dir
-	-@if [ ! -d $(PDIR) ]; then \
-          echo $(PDIR) ; mkdir -p $(PDIR) ; fi
 	-$(RM) -f $(PDIR)/*.a
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
            PETSC_VERSION=$(PETSC_VERSION) ACTION=libfast  tree 

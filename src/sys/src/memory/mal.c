@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: mal.c,v 1.4 1995/05/28 17:37:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.5 1995/05/29 03:45:34 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if defined(HAVE_MALLOC_H)
+#if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
 #include "petscfix.h"

@@ -86,10 +86,6 @@ extern void   *malloc(long unsigned int );
 
 #else
 extern char   *mktemp(char *);
-extern char   *getenv( char *);
-extern void   perror(char *);
-extern double atof(char *);
-extern int    atoi(char*);
 #endif
 #endif
 
@@ -109,7 +105,7 @@ extern int    exit(int);
 extern void   perror(const char *);
 extern int    abort();
 extern double atof(const char *);
-extern int    free(char *);
+extern int    free(void *);
 extern void   *malloc(long unsigned int );
 };
 
@@ -139,7 +135,7 @@ extern int    exit(int);
 extern void   perror(const char *);
 extern int    abort();
 extern double atof(const char *);
-extern int    free(char *);
+extern int    free(void *);
 extern void   *malloc(long unsigned int );
 };
 
@@ -168,7 +164,7 @@ extern int    exit(int);
 extern void   perror(const char *);
 extern int    abort();
 extern double atof(const char *);
-extern int    free(char *);
+extern int    free(void *);
 extern void   *malloc(long unsigned int );
 };
 

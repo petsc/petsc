@@ -17,37 +17,37 @@ EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
 LINCLUDE  = $(SOURCEH)
 
 runex3:
-	-@$(MPIRUN) ex3 -nox -snes_monitor > ex3_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex3 -nox -snes_smonitor > ex3_1.tmp 2>&1;   \
            if (diff ex3_1.out ex3_1.tmp) then true; \
            else echo "Possible problem with ex3_1, diffs above"; fi; \
            $(RM) -f ex3_1.tmp
 runex3_2:
-	-@$(MPIRUN) ex3 -nox -snes_monitor -snes_method tr > ex3_2.tmp 2>&1; \
+	-@$(MPIRUN) ex3 -nox -snes_smonitor -snes_method tr > ex3_2.tmp 2>&1; \
            if (diff ex3_2.out ex3_2.tmp) then true; \
            else echo "Possible problem with ex3_2, diffs above"; fi; \
            $(RM) -f ex3_2.tmp
 runex4:
-	-@$(MPIRUN) ex4 -snes_monitor -nox > ex4_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex4 -snes_smonitor -nox > ex4_1.tmp 2>&1;   \
            if (diff ex4_1.out ex4_1.tmp) then true; \
            else echo "Possible problem with ex4_1, diffs above"; fi; \
            $(RM) -f ex4_1.tmp
 runex4_2:
-	-@$(MPIRUN) ex4 -snes_monitor -nox -snes_method tr > ex4_2.tmp 2>&1;\
+	-@$(MPIRUN) ex4 -snes_smonitor -nox -snes_method tr > ex4_2.tmp 2>&1;\
            if (diff ex4_2.out ex4_2.tmp) then true; \
            else echo "Possible problem with ex4_2, diffs above"; fi; \
            $(RM) -f ex4_2.tmp
 runex5:
-	-@$(MPIRUN) ex5 -snes_monitor > ex5_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex5 -snes_smonitor > ex5_1.tmp 2>&1;   \
            if (diff ex5_1.out ex5_1.tmp) then true; \
            else echo "Possible problem with ex5_1, diffs above"; fi; \
            $(RM) -f ex5_1.tmp
 runex5_2:
-	-@$(MPIRUN) ex5 -snes_monitor -snes_mf > ex5_2.tmp 2>&1;   \
+	-@$(MPIRUN) ex5 -snes_smonitor -snes_mf > ex5_2.tmp 2>&1;   \
            if (diff ex5_2.out ex5_2.tmp) then true; \
            else echo "Possible problem with ex5_2, diffs above"; fi; \
            $(RM) -f ex5_2.tmp
 runex6:
-	-@$(MPIRUN) -np 4 ex6 -snes_monitor  > ex6_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 4 ex6 -snes_smonitor  > ex6_1.tmp 2>&1;   \
            if (diff ex6_1.out ex6_1.tmp) then true; \
            else echo "Possible problem with ex6_1, diffs above"; fi; \
            $(RM) -f ex6_1.tmp

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.9 1995/05/16 00:41:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.10 1995/05/18 22:48:06 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -146,7 +146,7 @@ static int SNESSolve_TR(SNES snes, int *its )
      TMP = F; F = G; snes->vec_func_always = F; G = TMP;
      TMP = X; X = Y;snes->vec_sol_always = X; Y = TMP;
      VecNorm(X, &xnorm );		/* xnorm = || X || */
-     if (snes->Monitor) (*snes->Monitor)(snes,i,fnorm,snes->monP);
+     if (snes->Monitor) (*snes->Monitor)(snes,i+1,fnorm,snes->monP);
 
      /* Test for convergence */
      if ((*snes->Converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
@@ -159,7 +159,7 @@ static int SNESSolve_TR(SNES snes, int *its )
        break;
      } 
    }
-   if (i == maxits) *its = i-1; else *its = i;
+   if (i == maxits) *its = i-1; else *its = i + 1;
    return 0;
 }
 /* -------------------------------------------------------------*/
