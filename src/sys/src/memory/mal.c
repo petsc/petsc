@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mal.c,v 1.35 1998/04/27 19:48:45 curfman Exp balay $";
+static char vcid[] = "$Id: mal.c,v 1.36 1998/04/27 20:06:32 balay Exp bsmith $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
@@ -26,10 +26,6 @@ static char vcid[] = "$Id: mal.c,v 1.35 1998/04/27 19:48:45 curfman Exp balay $"
 
 void *PetscMallocAlign(int mem)
 {
-  /* if size is not a multiple of align then don't bother aligning */
-  if ((mem % sizeof(Scalar))) {
-    return malloc(mem);
-  }
 #if defined(HAVE_DOUBLE_ALIGN_MALLOC) && !defined(USE_PETSC_COMPLEX)
   return malloc(mem);
 #elif defined(HAVE_MEMALIGN)
@@ -38,16 +34,14 @@ void *PetscMallocAlign(int mem)
   {
     int *ptr,shift;
     /*
-      malloc space for one extra Scalar and shift ptr enough to get it Scalar aligned
+      malloc space for two extra Scalar and shift ptr 1 + enough to get it Scalar aligned
     */
-    ptr = (int *) malloc(mem + sizeof(Scalar));
+    ptr = (int *) malloc(mem + 2*sizeof(Scalar));
     if (!ptr) return 0;
     shift = (int)(((unsigned long) ptr) % sizeof(Scalar));
-    shift = (sizeof(Scalar) - shift)/sizeof(int);
-    if (shift) {
-      ptr     += shift;
-      ptr[-1]  = shift + SHIFT_COOKIE ;
-    }
+    shift = (2*sizeof(Scalar) - shift)/sizeof(int);
+    ptr     += shift;
+    ptr[-1]  = shift + SHIFT_COOKIE ;
     return (void *) ptr;
   }
 #endif
@@ -68,9 +62,8 @@ int PetscFreeAlign(void *ptr)
     the original address provided by the system malloc().
   */
   shift = ((int *)ptr)[-1] - SHIFT_COOKIE;   
-  if (shift == 1 || shift == 2 || shift == 3) {
-    ptr   = (void *) (((int *) ptr) - shift);
-  }
+  if (shift > 7) SETERRQ(1,1,"Likely memory corruption in heap");
+  ptr   = (void *) (((int *) ptr) - shift);
   free(ptr);
   return 0;
 #endif
