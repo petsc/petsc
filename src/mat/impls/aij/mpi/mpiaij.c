@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.122 1996/02/03 19:09:24 curfman Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.123 1996/02/07 23:13:36 balay Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1314,10 +1314,10 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
 
 /*@C
    MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format
-   (the default parallel PETSc format). For good performance you should 
-   preallocate the matrix storage by setting the parameters d_nz (or d_nzz)
-   and o_nz (or o_nzz). By setting these parameters accurately, performance
-   can be increased by more than a factor of 50.
+   (the default parallel PETSc format).  For good matrix assembly performance
+   the user should preallocate the matrix storage by setting the parameters 
+   d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
+   performance can be increased by more than a factor of 50.
 
    Input Parameters:
 .  comm - MPI communicator
@@ -1388,8 +1388,9 @@ $
    Now d_nz should indicate the number of nonzeros per row in the d matrix,
    and o_nz should indicate the number of nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects d_nz >> o_nz.  See the users manual chapter on matrices for 
-   more details.
+   one expects d_nz >> o_nz.   For additional details, see the users manual
+   chapter on matrices and the file $(PETSC_DIR)/Performance.
+
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
