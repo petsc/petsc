@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.5 1995/07/30 14:59:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.6 1995/08/02 01:59:45 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -52,8 +52,13 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(x,&F); CHKERRA(ierr); ctx.F = F;
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)U,"Exact Solution");
-  ierr=MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
-                       0,0,&J); CHKERRA(ierr);
+  if (OptionsHasName(0,"-mat_row")) 
+    ierr=MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
+                         0,0,&J);
+  else
+    ierr=MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
+                         0,0,&J);
+  CHKERRA(ierr);
 
   /* Store right-hand-side of PDE and exact solution */
   ierr = VecGetOwnershipRange(x,&start,&end); CHKERRQ(ierr);
