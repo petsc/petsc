@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.137 1997/08/13 22:23:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.138 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -355,10 +355,8 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
     ierr = MPI_Init(argc,args); CHKERRQ(ierr);
     PetscBeganMPI    = 1;
     PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);
-    /* PETSC_COMM_WORLD = MPI_COMM_WORLD; */
   } else if (!PETSC_COMM_WORLD) {
     PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);
-    /* PETSC_COMM_WORLD = MPI_COMM_WORLD; */
   }
   PetscInitializedCalled = 1;
 

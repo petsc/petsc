@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.89 1997/08/22 15:10:22 bsmith Exp gropp $";
+ static char vcid[] = "$Id: vpscat.c,v 1.90 1997/09/05 18:17:33 gropp Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -1394,7 +1395,7 @@ int VecScatterDestroy_PtoP_X(PetscObject obj)
      IBM's PE version of MPI has a bug where freeing these guys will screw up later
      message passing.
   */
-#if defined(HAVE_BROKEN_REQUEST_FREE)
+#if !defined(HAVE_BROKEN_REQUEST_FREE)
   for (i=0; i<gen_to->n; i++) {
     MPI_Request_free(gen_to->requests + i);
     MPI_Request_free(gen_to->rev_requests + i);
