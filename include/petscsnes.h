@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.20 1995/06/14 02:10:31 bsmith Exp curfman $ */
+/* $Id: snes.h,v 1.21 1995/06/14 20:42:04 curfman Exp curfman $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -53,6 +53,7 @@ extern int SNESSetTruncationTolerance(SNES,double);
 extern int SNESSetMaxIterations(SNES,int);
 extern int SNESSetMaxFunctionEvaluations(SNES,int);
 extern int SNESGetIterationNumber(SNES,int*);
+extern int SNESGetFunctionNorm(SNES,Scalar*);
 
 #if defined(__DRAW_PACKAGE)
 #define SNESLGMonitorCreate  KSPLGMonitorCreate
