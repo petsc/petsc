@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.218 1997/10/22 13:11:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.219 1997/10/22 14:12:58 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1999,7 +1999,7 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall call,Ma
     nz    = ii[i+1] - ii[i];
     cwork = jj;     jj += nz;
     vwork = aa;     aa += nz;
-    ierr = MatSetValues(M,1,&row,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues_MPIAIJ(M,1,&row,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
   }
 
   ierr = MatDestroyMatrices(1,&local);CHKERRQ(ierr);
