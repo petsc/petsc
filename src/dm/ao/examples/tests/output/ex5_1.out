@@ -1,12 +1,12 @@
 AOData Key: key1 Length 5 Ownership: 0 3 5 
-  AOData Segment: key1 Blocksize 1 datatype int
+  AOData Segment: key1 Blocksize 1 datatype INT
  0:    1 
  1:    0 
  2:    3 
  3:    4 
  4:    0 
 AOData Key: key1 Length 5 Ownership: 0 3 5 
-  AOData Segment: key1 Blocksize 1 datatype int
+  AOData Segment: key1 Blocksize 1 datatype INT
  0:    4 
  1:    0 
  2:    1 
