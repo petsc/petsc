@@ -14,6 +14,7 @@
 #define HAVE_MALLOC_H 
 #define HAVE_STDLIB_H 
 #define HAVE_LIMITS_H
+#define HAVE_GETCWD
 
 #define HAVE_DRAND48  
 #define HAVE_UNISTD_H 

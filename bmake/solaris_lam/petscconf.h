@@ -20,6 +20,8 @@
 #define HAVE_STDLIB_H
 #define HAVE_UNISTD_H 
 #define HAVE_DRAND48 
+#define HAVE_GETCWD
+
 #define HAVE_SYS_TIME_H
 #define HAVE_SYS_SYSTEMINFO_H
 #define HAVE_SYSINFO_3ARG

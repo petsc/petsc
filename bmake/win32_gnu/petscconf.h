@@ -9,6 +9,7 @@
 #define PARCH_win32_gnu
 #define PETSC_ARCH_NAME "win32_gnu"
 
+#define HAVE_GETCWD
 #define HAVE_POPEN
 #define HAVE_LIMITS_H
 #define HAVE_SLOW_NRM2

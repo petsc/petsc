@@ -25,6 +25,7 @@
 #define HAVE_SYS_TIME_H
 #define HAVE_UNISTD_H 
 #define HAVE_UNAME
+#define HAVE_GETCWD
 
 #define HAVE_READLINK
 #define HAVE_MEMMOVE

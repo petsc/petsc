@@ -20,6 +20,8 @@
 #define HAVE_MALLOC_H 
 #define _POSIX_SOURCE
 #define HAVE_DRAND48  
+#define HAVE_GETCWD
+
 #define HAVE_GETDOMAINNAME  
 #if !defined(_XOPEN_SOURCE)
 #define _XOPEN_SOURCE 

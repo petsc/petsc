@@ -19,6 +19,7 @@
 #define HAVE_UNISTD_H  
 #define HAVE_UNAME 
 #define HAVE_SYS_TIME_H
+#define HAVE_GETCWD
 
 #define BITS_PER_BYTE 8
 
