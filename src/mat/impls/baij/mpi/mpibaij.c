@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.25 1996/09/14 03:08:37 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.26 1996/09/19 20:51:42 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -1063,20 +1063,18 @@ static int MatConvertSameType_MPIBAIJ(Mat,Mat *,int);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {
   MatSetValues_MPIBAIJ,MatGetRow_MPIBAIJ,MatRestoreRow_MPIBAIJ,MatMult_MPIBAIJ,
-  MatMultAdd_MPIBAIJ,MatMultTrans_MPIBAIJ,MatMultTransAdd_MPIBAIJ,MatSolve_MPIBAIJ,
-  MatSolveAdd_MPIBAIJ,MatSolveTrans_MPIBAIJ,MatSolveTransAdd_MPIBAIJ,MatLUFactor_MPIBAIJ,
+  MatMultAdd_MPIBAIJ,MatMultTrans_MPIBAIJ,MatMultTransAdd_MPIBAIJ,0,
+  0,0,0,0,
   0,0,MatTranspose_MPIBAIJ,MatGetInfo_MPIBAIJ,
   0,MatGetDiagonal_MPIBAIJ,MatDiagonalScale_MPIBAIJ,MatNorm_MPIBAIJ,
   MatAssemblyBegin_MPIBAIJ,MatAssemblyEnd_MPIBAIJ,0,MatSetOption_MPIBAIJ,
-  MatZeroEntries_MPIBAIJ,MatZeroRows_MPIBAIJ,MatLUFactorSymbolic_MPIBAIJ,
-  MatLUFactorNumeric_MPIBAIJ,0,0,MatGetSize_MPIBAIJ,
-  MatGetLocalSize_MPIBAIJ,MatGetOwnershipRange_MPIBAIJ,MatILUFactorSymbolic_MPIBAIJ,0,
+  MatZeroEntries_MPIBAIJ,MatZeroRows_MPIBAIJ,0,
+  0,0,0,MatGetSize_MPIBAIJ,
+  MatGetLocalSize_MPIBAIJ,MatGetOwnershipRange_MPIBAIJ,0,0,
   0,0,0,MatConvertSameType_MPIBAIJ,0,0,
   0,0,0,MatGetSubMatrices_MPIBAIJ,
   MatIncreaseOverlap_MPIBAIJ,MatGetValues_MPIBAIJ,0,MatPrintHelp_MPIBAIJ,
-  MatScale_MPIBAIJ,0,0,0,MatGetBlockSize_MPIBAIJ,
-  MatGetRowIJ_MPIBAIJ,
-  MatRestoreRowIJ_MPIBAIJ};
+  MatScale_MPIBAIJ,0,0,0,MatGetBlockSize_MPIBAIJ};
                                 
 
 /*@C
@@ -1160,7 +1158,7 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
 {
   Mat          B;
   Mat_MPIBAIJ  *b;
-  int          ierr, i,sum[2],work[2],mbs,nbs,Mbs=PETSC_DECIDE,Nbs=PETSC_DECIDE;
+  int          ierr, i,sum[2],work[2],mbs,nbs,Mbs=PETSC_DECIDE,Nbs=PETSC_DECIDE,size;
 
   if (bs < 1) SETERRQ(1,"MatCreateMPIBAIJ: invalid block size specified");
   *A = 0;
@@ -1169,6 +1167,20 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   B->data       = (void *) (b = PetscNew(Mat_MPIBAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIBAIJ));
   PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
+  MPI_Comm_size(comm,&size);
+  if (size == 1) {
+    B->ops.getrowij          = MatGetRowIJ_MPIBAIJ;
+    B->ops.restorerowij      = MatRestoreRowIJ_MPIBAIJ;
+    B->ops.lufactorsymbolic  = MatLUFactorSymbolic_MPIBAIJ;
+    B->ops.lufactornumeric   = MatLUFactorNumeric_MPIBAIJ;
+    B->ops.lufactor          = MatLUFactor_MPIBAIJ;
+    B->ops.solve             = MatSolve_MPIBAIJ;
+    B->ops.solveadd          = MatSolveAdd_MPIBAIJ;
+    B->ops.solvetrans        = MatSolveTrans_MPIBAIJ;
+    B->ops.solvetransadd     = MatSolveTransAdd_MPIBAIJ;
+    B->ops.ilufactorsymbolic = MatILUFactorSymbolic_MPIBAIJ;
+  }
+
   B->destroy    = MatDestroy_MPIBAIJ;
   B->view       = MatView_MPIBAIJ;
 
