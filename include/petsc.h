@@ -22,8 +22,9 @@
    in the bmake/common_variables definition of PETSC_INCLUDE
 */
 #include "petscconf.h"
-#if !defined(PETSC_HAVE_COMPILER_ATTRIBTE_CHECKING)
-  #define __attribute__(a)
+
+#if !defined(PETSC_PRINTF_FORMAT_CHECK)
+#define PETSC_PRINTF_FORMAT_CHECK(a,b)
 #endif
 
 /* ========================================================================== */
@@ -463,14 +464,14 @@ EXTERN int  MPIFortranCommToCComm(int,MPI_Comm*);
 EXTERN int  PetscFixFilename(const char[],char[]);
 EXTERN int  PetscFOpen(MPI_Comm,const char[],const char[],FILE**);
 EXTERN int  PetscFClose(MPI_Comm,FILE*);
-EXTERN int  PetscFPrintf(MPI_Comm,FILE*,const char[],...) __attribute__ ((format (printf, 3,4)));
-EXTERN int  PetscPrintf(MPI_Comm,const char[],...) __attribute__ ((format (printf, 2,3)));
+EXTERN int  PetscFPrintf(MPI_Comm,FILE*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(3,4);
+EXTERN int  PetscPrintf(MPI_Comm,const char[],...)  PETSC_PRINTF_FORMAT_CHECK(2,3);
 EXTERN int  (*PetscErrorPrintf)(const char[],...);
 EXTERN int  (*PetscHelpPrintf)(MPI_Comm,const char[],...);
 EXTERN int  PetscPOpen(MPI_Comm,char *,char*,const char[],FILE **);
 EXTERN int  PetscPClose(MPI_Comm,FILE*);
-EXTERN int  PetscSynchronizedPrintf(MPI_Comm,const char[],...) __attribute__ ((format (printf, 2,3)));
-EXTERN int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...) __attribute__ ((format (printf, 3,4)));
+EXTERN int  PetscSynchronizedPrintf(MPI_Comm,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(3,4);
 EXTERN int  PetscSynchronizedFlush(MPI_Comm);
 EXTERN int  PetscSynchronizedFGets(MPI_Comm,FILE*,int,char[]);
 EXTERN int  PetscStartMatlab(MPI_Comm,char *,char*,FILE**);

@@ -46,15 +46,15 @@
 !      - The user can also optionally log floating point operations
 !        with the routine PetscLogFlops().
 !
-      call PetscLogEventRegister(USER_EVENT1,'User event 1','Red:',ierr)
-      call PetscLogEventRegister(USER_EVENT2,'User event 2','Red:',ierr)
-      call PetscLogEventRegister(USER_EVENT3,'User event 3','Red:',ierr)
-      call PetscLogEventRegister(USER_EVENT4,'User event 4','Red:',ierr)
-      call PetscLogEventRegister(USER_EVENT5,'User event 5','Red:',ierr)
-      call PetscLogEventRegister(USER_EVENT6,'User event 6','Red:',ierr)
-      call PetscLogEventRegister(USER_EVENT7,'User event 7','Red:',ierr)
-      call PetscLogEventRegister(USER_EVENT8,'User event 8','Red:',ierr)
-      call PetscLogEventRegister(USER_EVENT9,'User event 9','Red:',ierr)
+      call PetscLogEventRegister(USER_EVENT1,'Event 1','Red:',0,ierr)
+      call PetscLogEventRegister(USER_EVENT2,'Event 2','Red:',0,ierr)
+      call PetscLogEventRegister(USER_EVENT3,'Event 3','Red:',0,ierr)
+      call PetscLogEventRegister(USER_EVENT4,'Event 4','Red:',0,ierr)
+      call PetscLogEventRegister(USER_EVENT5,'Event 5','Red:',0,ierr)
+      call PetscLogEventRegister(USER_EVENT6,'Event 6','Red:',0,ierr)
+      call PetscLogEventRegister(USER_EVENT7,'Event 7','Red:',0,ierr)
+      call PetscLogEventRegister(USER_EVENT8,'Event 8','Red:',0,ierr)
+      call PetscLogEventRegister(USER_EVENT9,'Event 9','Red:',0,ierr)
       call PetscLogEventBegin(USER_EVENT1,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)

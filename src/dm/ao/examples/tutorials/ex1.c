@@ -74,9 +74,12 @@ int main(int argc,char **argv)
       printf("Enter segmentname: value (or return to end) ");
       gets(string);
       while (string[0] != 0) {
-        ierr    = PetscStrtok(string," ",&segname);CHKERRQ(ierr);
-        ierr    = PetscStrtok(0," ",&value);CHKERRQ(ierr);
-        ierr     = PetscStrlen(value,&bs);CHKERRQ(ierr);
+        PetscToken *token;
+        ierr    = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
+        ierr    = PetscTokenFind(token,&segname);CHKERRQ(ierr);
+        ierr    = PetscTokenFind(token,&value);CHKERRQ(ierr);
+        ierr    = PetscTokenDestroy(token);CHKERRQ(ierr);
+        ierr    = PetscStrlen(value,&bs);CHKERRQ(ierr);
         ierr = AODataSegmentAdd(aodata,keyname,segname,bs,1,&zero,value,PETSC_CHAR);CHKERRQ(ierr);
         printf("Enter segmentname: value (or return to end) ");
         gets(string);
@@ -104,8 +107,11 @@ int main(int argc,char **argv)
     printf("Enter keyname segment name to remove: (or return to end) ");
     gets(string);
     while (string[0] != 0) {
-      ierr = PetscStrtok(string," ",&ikeyname);CHKERRQ(ierr);
-      ierr = PetscStrtok(0," ",&segname);CHKERRQ(ierr);
+      PetscToken *token;
+      ierr = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&ikeyname);CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&segname);CHKERRQ(ierr);
+      ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
       ierr = AODataSegmentRemove(aodata,ikeyname,segname);CHKERRQ(ierr);
       printf("Enter keyname segment name to remove: (or return to end) ");
       gets(string);

@@ -134,11 +134,11 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  PetscLogEventRegister(&READ_EVENT,             "Read Data","red");
-  PetscLogEventRegister(&PARTITION_ELEMENT_EVENT,"Partition elemen","blue");
-  PetscLogEventRegister(&MOVE_ELEMENT_EVENT,     "Move elements","green");
-  PetscLogEventRegister(&PARTITION_VERTEX_EVENT, "Partition vertic","orange");
-  PetscLogEventRegister(&MOVE_VERTEX_EVENT,      "Move vertices","yellow");
+  PetscLogEventRegister(&READ_EVENT,             "Read Data","red",0);
+  PetscLogEventRegister(&PARTITION_ELEMENT_EVENT,"Partition elemen","blue",0);
+  PetscLogEventRegister(&MOVE_ELEMENT_EVENT,     "Move elements","green",0);
+  PetscLogEventRegister(&PARTITION_VERTEX_EVENT, "Partition vertic","orange",0);
+  PetscLogEventRegister(&MOVE_VERTEX_EVENT,      "Move vertices","yellow",0);
 
   ierr = PetscLogEventBegin(READ_EVENT,0,0,0,0);CHKERRQ(ierr);
   ierr = DataRead(&gdata);CHKERRQ(ierr);

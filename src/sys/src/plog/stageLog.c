@@ -137,9 +137,9 @@ int StageLogRegister(StageLog stageLog, const char sname[], int *stage)
 .vb
       PetscInitialize(int *argc,char ***args,0,0);
       [stage 0 of code]   
-      PetscLogStagePush(1);
+      StageLogPush(stageLog,1);
       [stage 1 of code]
-      PetscLogStagePop();
+      StageLogPop(stageLog);
       PetscBarrier(...);
       [more stage 0 of code]   
       PetscFinalize();
@@ -206,9 +206,9 @@ int StageLogPush(StageLog stageLog, int stage)
 .vb
       PetscInitialize(int *argc,char ***args,0,0);
       [stage 0 of code]   
-      PetscLogStagePush(1);
+      StageLogPush(stageLog,1);
       [stage 1 of code]
-      PetscLogStagePop();
+      StageLogPop(stageLog);
       PetscBarrier(...);
       [more stage 0 of code]   
       PetscFinalize();
