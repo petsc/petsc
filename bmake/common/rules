@@ -284,7 +284,7 @@ wwwpages:
 	cat trashz ; fi; $(RM) trashz;
 
 SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
-	libpetscsnes libpetscsys libpetscts libpetscvec libpetscts
+	libpetscsnes libpetscsys libpetscts libpetscvec libpetscts libpetscgvec
 
 
 deleteshared: chkopts_basic
