@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.318 1999/04/01 18:52:02 curfman Exp curfman $ 
+% $Id: part2.tex,v 1.319 1999/04/01 19:29:55 curfman Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -6376,9 +6376,11 @@ within the makefile.
 Note that the variable {\tt \$\{PETSC\_LIB\}} (as listed on the link
 line in the above makefile) specifies {\em all} of the various PETSc
 libraries in the appropriate order for correct linking.  For users who
-employ only the PETSc linear solvers and data structures (i.e., do not
-use the nonlinear and timestepping solvers), {\tt \$\{SLES\_LIB\}} can
-be used as an alternative to {\tt \$\{PETSC\_LIB\}}.
+employ only a specific PETSc component, can use alternative variables
+like  {\tt \$\{PETSC\_SYS\_LIB\}}, {\tt \$\{PETSC\_VEC\_LIB\}}, 
+{\tt \$\{PETSC\_MAT\_LIB\}}, {\tt \$\{PETSC\_DM\_LIB\}},
+{\tt \$\{PETSC\_SLES\_LIB\}}, {\tt \$\{PETSC\_SNES\_LIB\}} or
+{\tt \$\{PETSC\_TS\_LIB\}}.
 
 The second sample makefile, given in Figure~\ref{fig:make2},
 controls the generation of several example programs. 
@@ -6434,15 +6436,12 @@ line that includes the files defining all of the macro variables.
 Some additional variables that can be used in the makefile are defined
 as follows:
 \begin{itemize}
+\item {\tt CFLAGS, FFLAGS} - User specified additional options for the C compiler and
+        fortran compiler.
+\itme {\tt CPPFLAGS, FPPFLAGS} - User specified additional flags for the C preprocessor
+        and fortran preprocesor.
 \item {\tt CLINKER, FLINKER} - the C and Fortran linkers. 
 \item {\tt RM} - the remove command for deleting files.
-\item {\tt PETSC\_INCLUDE} - the directory locations of any PETSc (or PETSc
-            needed) files that are included in programs. \findex{PETSC_INCLUDE}
-\item {\tt CPPFLAGS} - flags defined for each system and level of 
-                       optimization for C/C++ preprocessor (also processes Fortran *.F files).
-\item {\tt FCONF} - flag that handles the naming convention for Fortran routines
-                    on various machines (needed by C routines that call 
-                    Fortran routines).
 \item {\tt PCONF} - defined in {\tt \$\{PETSC\_ARCH\}/base.site} to 
             indicate which external packages are available at a particular site.
 \item {\tt EXAMPLES\_1} - examples that will be built with
@@ -6459,12 +6458,6 @@ as follows:
              \findex{PETSC_LIB}
 \item {\tt PETSC\_FORTRAN\_LIB} - the PETSc Fortran interface 
              library. \findex{PETSC_FORTRAN_LIB}
-\item {\tt CONF} - various defines that indicate what packages are available
-           (generally not needed by application programs).
-\item {\tt COPTFLAGS} - flags defined for each system and level of 
-                        optimization (C/C++ compiler).
-\item {\tt FOPTFLAGS} - flags defined for each system and level of 
-                        optimization (Fortran compiler).
 \end{itemize}
 Note that the PETSc example programs are divided into several
 categories, which currently include: 
