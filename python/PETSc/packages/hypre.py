@@ -60,8 +60,6 @@ class Configure(PETSc.package.Package):
 
     # Get the HYPRE directories
     installDir = os.path.join(hypreDir, self.arch.arch)
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
     # Configure and Build HYPRE
     self.framework.pushLanguage('C')
     args = ['--prefix='+installDir, '--with-CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']

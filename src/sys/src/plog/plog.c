@@ -1825,7 +1825,9 @@ PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
      PreLoadEnd();
 .ve
 
-   Notes: Flags available within the macro. 
+   Notes: Only works in C/C++, not Fortran
+
+     Flags available within the macro. 
 +    PetscPreLoadingUsed - true if we are or have done preloading 
 .    PetscPreLoadingOn - true if it is CURRENTLY doing preload
 .    PreLoadIt - 0 for the first computation (with preloading turned off it is only 0) 1 for the second
@@ -1860,6 +1862,8 @@ M*/
      PreLoadEnd();
 .ve
 
+   Notes: only works in C/C++ not fortran
+
    Level: intermediate
 
 .seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadStage()
@@ -1881,6 +1885,8 @@ M*/
        lines of code
      PreLoadEnd();
 .ve
+
+   Notes: only works in C/C++ not fortran
 
    Level: intermediate
 
