@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.130 1999/10/24 14:02:12 bsmith Exp bsmith $*/
+/*$Id: mpidense.c,v 1.131 1999/11/05 14:45:15 bsmith Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -196,8 +196,7 @@ int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
 
   ierr = MatStashScatterBegin_Private(&mat->stash,mdn->rowners);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  PLogInfo(mdn->A,"MatAssemblyBegin_MPIDense:Stash has %d entries, uses %d mallocs.\n",
-           nstash,reallocs);
+  PLogInfo(mdn->A,"MatAssemblyBegin_MPIDense:Stash has %d entries, uses %d mallocs.\n",nstash,reallocs);
   PetscFunctionReturn(0);
 }
 

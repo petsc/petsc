@@ -1,4 +1,4 @@
-/*$Id: snesut.c,v 1.48 1999/09/27 21:31:38 bsmith Exp bsmith $*/
+/*$Id: snesut.c,v 1.49 1999/10/24 14:03:31 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
 
@@ -331,7 +331,7 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
 
   PetscFunctionBegin;
   if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"No Eisenstat-Walker context exists");
-  if (snes->iter == 1) {
+  if (!snes->iter) { /* first time in, so use the original user rtol */
     rtol = kctx->rtol_0;
   } else {
     if (kctx->version == 1) {

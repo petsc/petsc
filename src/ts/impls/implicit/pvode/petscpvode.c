@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.48 1999/10/24 14:03:52 bsmith Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.49 1999/11/05 14:47:34 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 /*
@@ -298,10 +298,10 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
 
   ierr = OptionsGetString(PETSC_NULL,"-ts_pvode_type",method,127,&flag);CHKERRQ(ierr);
   if (flag) {
-    int isbdf,isadams;
+    PetscTruth isbdf,isadams;
 
-    isbdf   = !PetscStrcmp(method,"bdf");
-    isadams = !PetscStrcmp(method,"adams");
+    ierr = PetscStrcmp(method,"bdf",&isbdf);CHKERRQ(ierr);
+    ierr = PetscStrcmp(method,"adams",&isadams);CHKERRQ(ierr);
     if (isbdf) {
       ierr = TSPVodeSetType(ts, PVODE_BDF);CHKERRQ(ierr);
     } else if (isadams) {
@@ -312,10 +312,10 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
   }
   ierr = OptionsGetString(PETSC_NULL,"-ts_pvode_gramschmidt_type",method,127,&flag);CHKERRQ(ierr);
   if (flag) {
-    int ismodified, isunmodified;
+    PetscTruth ismodified, isunmodified;
 
-    ismodified   = !PetscStrcmp(method,"modified");
-    isunmodified = !PetscStrcmp(method,"unmodified");
+    ierr = PetscStrcmp(method,"modified",&ismodified);CHKERRQ(ierr);
+    ierr = PetscStrcmp(method,"unmodified",&isunmodified);CHKERRQ(ierr);
     if (ismodified) {
       ierr = TSPVodeSetGramSchmidtType(ts, PVODE_MODIFIED_GS);CHKERRQ(ierr);
     } else if (isunmodified) {

@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.81 1999/05/12 03:35:01 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.82 1999/11/05 14:48:27 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -26,6 +26,7 @@ typedef struct _p_KSP*     KSP;
 #define KSPPREONLY    "preonly"
 #define KSPQCG        "qcg"
 #define KSPBICG       "bicg"
+#define KSPFGMRES     "fgmres" 
 typedef char * KSPType;
 
 extern int KSPCreate(MPI_Comm,KSP *);
@@ -94,6 +95,20 @@ extern int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP,int);
 extern int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP,int);
 extern int KSPGMRESIROrthogonalization(KSP,int);
 extern int KSPGMRESPrestartSet(KSP,int);
+
+
+extern int KSPFGMRESSetRestart( KSP, int);
+extern int KSPFGMRESSetPreAllocateVectors( KSP );
+extern int KSPFGMRESSetOrthogonalization( KSP, int (*)( KSP, int ) );
+extern int KSPFGMRESUnmodifiedGramSchmidtOrthogonalization( KSP, int );
+extern int KSPFGMRESModifiedGramSchmidtOrthogonalization( KSP, int );
+extern int KSPFGMRESIROrthogonalization( KSP, int );
+extern int KSPFGMRESPrestartSet( KSP, int );
+
+extern int KSPFGMRESModifyPCNoChange( KSP, int, int, int, int, double );
+extern int KSPFGMRESModifyPCGMRESVariableEx( KSP, int, int, int, int, double );
+extern int KSPFGMRESModifyPCEx( KSP, int, int, int, int, double );
+extern int KSPFGMRESSetModifyPC(KSP,int (*)(KSP,int,int,int,int,double));
 
 extern int KSPSetFromOptions(KSP);
 extern int KSPSetTypeFromOptions(KSP);

@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.175 1999/10/24 14:03:08 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.176 1999/11/05 14:46:35 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -579,12 +579,9 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
     int    rank;
-    DrawLG lg;
     ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = KSPLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
-      PLogObjectParent(ksp,(PetscObject) lg);
-      ierr = KSPSetMonitor(ksp,KSPLGMonitor,lg,(int (*)(void*))KSPLGMonitorDestroy);CHKERRQ(ierr);
+      ierr = KSPSetMonitor(ksp,KSPLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
   }
   /*
@@ -594,12 +591,9 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xtruemonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg){
     int    rank;
-    DrawLG lg;
     ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = KSPLGTrueMonitorCreate(ksp->comm,0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
-      PLogObjectParent(ksp,(PetscObject) lg);
-      ierr = KSPSetMonitor(ksp,KSPLGTrueMonitor,lg,(int (*)(void*))KSPLGMonitorDestroy);CHKERRQ(ierr);
+      ierr = KSPSetMonitor(ksp,KSPLGTrueMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     } 
   }
   /* -----------------------------------------------------------------------*/

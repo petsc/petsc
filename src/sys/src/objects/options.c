@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.224 1999/10/24 14:01:28 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.225 1999/11/05 14:44:14 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -151,9 +151,9 @@ int OptionsInsertFile(const char file[])
         }
         ierr = OptionsSetValue(first,second);CHKERRQ(ierr);
       } else if (first) {
-        int match;
+        PetscTruth match;
 
-        match = !PetscStrcmp(first,"alias");
+        ierr = PetscStrcmp(first,"alias",&match);CHKERRQ(ierr);
         if (match) {
           ierr = PetscStrtok(0," ",&third);CHKERRQ(ierr);
           if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,0,"Error in options file:alias missing (%s)",second);
@@ -244,18 +244,18 @@ int OptionsInsert(int *argc,char ***args,const char file[])
 
   /* insert command line options */
   if (argc && args && *argc) {
-    int   left    = *argc - 1;
-    char  **eargs = *args + 1;
-    int   isoptions_file,isp4,tisp4;
+    int        left    = *argc - 1;
+    char       **eargs = *args + 1;
+    PetscTruth isoptions_file,isp4,tisp4;
 
     while (left) {
-      isoptions_file = !PetscStrcmp(eargs[0],"-options_file");
-      isp4           = !PetscStrcmp(eargs[0],"-p4pg");
-      tisp4          = !PetscStrcmp(eargs[0],"-p4wd");
-      isp4           = isp4 || tisp4;
-      tisp4          = !PetscStrcmp(eargs[0],"-np");
-      isp4           = isp4 || tisp4;
-      tisp4          = !PetscStrcmp(eargs[0],"-p4amslave");
+      ierr = PetscStrcmp(eargs[0],"-options_file",&isoptions_file);CHKERRQ(ierr);
+      ierr = PetscStrcmp(eargs[0],"-p4pg",&isp4);CHKERRQ(ierr);
+      ierr = PetscStrcmp(eargs[0],"-p4wd",&tisp4);CHKERRQ(ierr);
+      isp4 = (PetscTruth) (isp4 || tisp4);
+      ierr = PetscStrcmp(eargs[0],"-np",&tisp4);CHKERRQ(ierr);
+      isp4 = (PetscTruth) (isp4 || tisp4);
+      ierr = PetscStrcmp(eargs[0],"-p4amslave",&tisp4);CHKERRQ(ierr);
 
       if (eargs[0][0] != '-') {
         eargs++; left--;
@@ -426,22 +426,22 @@ int OptionsDestroy(void)
 @*/
 int OptionsSetValue(const char iname[],const char value[])
 {
-  int        len, N, n, i,ierr,match;
+  int        len, N, n, i,ierr;
   char       **names, *name = (char*) iname;
-  PetscTruth gt;
+  PetscTruth gt,match;
 
   PetscFunctionBegin;
   if (!options) {ierr = OptionsInsert(0,0,0);CHKERRQ(ierr);}
 
   /* this is so that -h and -help are equivalent (p4 don't like -help)*/
-  match = !PetscStrcmp(name,"-h");
+  ierr = PetscStrcmp(name,"-h",&match);CHKERRQ(ierr);
   if (match) name = "-help";
 
   name++;
   /* first check against aliases */
   N = options->Naliases; 
   for ( i=0; i<N; i++ ) {
-    match = !PetscStrcmp(options->aliases1[i],name);
+    ierr = PetscStrcmp(options->aliases1[i],name,&match);CHKERRQ(ierr);
     if (match) {
       name = options->aliases2[i];
       break;
@@ -453,7 +453,7 @@ int OptionsSetValue(const char iname[],const char value[])
   names = options->names; 
  
   for ( i=0; i<N; i++ ) {
-    match = !PetscStrcmp(names[i],name);
+    ierr = PetscStrcmp(names[i],name,&match);CHKERRQ(ierr);
     ierr  = PetscStrgrt(names[i],name,&gt);CHKERRQ(ierr);
     if (match) {
       if (options->values[i]) free(options->values[i]);
@@ -511,9 +511,9 @@ int OptionsSetValue(const char iname[],const char value[])
 @*/
 int OptionsClearValue(const char iname[])
 {
-  int        N, n, i,ierr,match;
+  int        N, n, i,ierr;
   char       **names,*name=(char*)iname;
-  PetscTruth gt;
+  PetscTruth gt,match;
 
   PetscFunctionBegin;
   if (!options) {ierr = OptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -524,7 +524,7 @@ int OptionsClearValue(const char iname[])
   names = options->names; 
  
   for ( i=0; i<N; i++ ) {
-    match = !PetscStrcmp(names[i],name);
+    ierr = PetscStrcmp(names[i],name,&match);CHKERRQ(ierr);
     ierr  = PetscStrgrt(names[i],name,&gt);CHKERRQ(ierr);
     if (match) {
       if (options->values[i]) free(options->values[i]);
@@ -573,8 +573,9 @@ int OptionsSetAlias(const char inewname[],const char ioldname[])
 #define __FUNC__ "OptionsFindPair_Private"
 static int OptionsFindPair_Private(const char pre[],const char name[],char *value[],PetscTruth *flg)
 {
-  int  i, N,ierr,len,match;
-  char **names,tmp[256];
+  int        i, N,ierr,len;
+  char       **names,tmp[256];
+  PetscTruth match;
 
   PetscFunctionBegin;
   if (!options) {ierr = OptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -595,7 +596,7 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
   /* slow search */
   *flg = PETSC_FALSE;
   for ( i=0; i<N; i++ ) {
-    match = !PetscStrcmp(names[i],tmp);
+    ierr = PetscStrcmp(names[i],tmp,&match);CHKERRQ(ierr);
     if (match) {
        *value = options->values[i];
        options->used[i]++;
@@ -745,8 +746,8 @@ int OptionsGetInt(const char pre[],const char name[],int *ivalue,PetscTruth *flg
 int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,PetscTruth *flg)
 {
   char       *value;
-  PetscTruth flag;
-  int        ierr,istrue,isfalse;
+  PetscTruth flag,istrue,isfalse;
+  int        ierr;
 
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
@@ -757,29 +758,29 @@ int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,Pets
     }
     else {
       *ivalue = PETSC_TRUE;
-      istrue = !PetscStrcmp(value,"TRUE");
+      ierr = PetscStrcmp(value,"TRUE",&istrue);CHKERRQ(ierr);
       if (istrue) PetscFunctionReturn(0);
-      istrue = !PetscStrcmp(value,"YES");
+      ierr = PetscStrcmp(value,"YES",&istrue);CHKERRQ(ierr);
       if (istrue) PetscFunctionReturn(0);
-      istrue = !PetscStrcmp(value,"YES");
+      ierr = PetscStrcmp(value,"YES",&istrue);CHKERRQ(ierr);
       if (istrue) PetscFunctionReturn(0);
-      istrue = !PetscStrcmp(value,"1");
+      ierr = PetscStrcmp(value,"1",&istrue);CHKERRQ(ierr);
       if (istrue) PetscFunctionReturn(0);
-      istrue = !PetscStrcmp(value,"true");
+      ierr = PetscStrcmp(value,"true",&istrue);CHKERRQ(ierr);
       if (istrue) PetscFunctionReturn(0);
-      istrue = !PetscStrcmp(value,"yes");
+      ierr = PetscStrcmp(value,"yes",&istrue);CHKERRQ(ierr);
       if (istrue) PetscFunctionReturn(0);
 
       *ivalue = PETSC_FALSE;
-      isfalse = !PetscStrcmp(value,"FALSE");
+      ierr = PetscStrcmp(value,"FALSE",&isfalse);CHKERRQ(ierr);
       if (isfalse) PetscFunctionReturn(0);
-      isfalse = !PetscStrcmp(value,"NO");
+      ierr = PetscStrcmp(value,"NO",&isfalse);CHKERRQ(ierr);
       if (isfalse) PetscFunctionReturn(0);
-      isfalse = !PetscStrcmp(value,"0");
+      ierr = PetscStrcmp(value,"0",&isfalse);CHKERRQ(ierr);
       if (isfalse) PetscFunctionReturn(0);
-      isfalse = !PetscStrcmp(value,"false");
+      ierr = PetscStrcmp(value,"false",&isfalse);CHKERRQ(ierr);
       if (isfalse) PetscFunctionReturn(0);
-      isfalse = !PetscStrcmp(value,"no");
+      ierr = PetscStrcmp(value,"no",&isfalse);CHKERRQ(ierr);
       if (isfalse) PetscFunctionReturn(0);
 
       SETERRQ1(1,1,"Unknown logical value: %s",value);

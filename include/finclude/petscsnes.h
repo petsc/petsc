@@ -1,5 +1,5 @@
 !
-!  $Id: snes.h,v 1.24 1999/09/27 22:31:28 balay Exp bsmith $;
+!  $Id: snes.h,v 1.25 1999/10/23 00:02:11 bsmith Exp bsmith $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
@@ -68,6 +68,10 @@
 !
       external SNESDEFAULTCOMPUTEJACOBIAN
       external SNESDEFAULTCOMPUTEJACOBIANCOLOR
+      external SNESDEFAULTMONITOR
+      external SNESLGMONITOR
+      external SNESVECVIEWMONITOR
+      external SNESVECVIEWUPDATEMONITOR
 !
 !  End of Fortran include file for the SNES package in PETSc
 

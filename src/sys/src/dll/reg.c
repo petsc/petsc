@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.48 1999/10/24 14:01:23 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.49 1999/11/05 14:44:08 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -226,9 +226,9 @@ int FListAdd( FList *fl,const char name[],const char rname[],int (*fnc)(void *))
     /* search list to see if it is already there */
     ne = *fl;
     while (ne) {
-      int founddup;
+      PetscTruth founddup;
 
-      founddup = !PetscStrcmp(ne->name,name);
+      ierr = PetscStrcmp(ne->name,name,&founddup);CHKERRQ(ierr);
       if (founddup) { /* found duplicate */
         ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
         if (ne->path) {ierr = PetscFree(ne->path);CHKERRQ(ierr);}
@@ -348,12 +348,11 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 {
   FList        entry = fl;
   int          ierr;
-  int          f1,f2,f3;
   char         *function, *path;
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   char         *newpath;
 #endif
-  PetscTruth   flg;
+  PetscTruth   flg,f1,f2,f3;
  
   PetscFunctionBegin;
   *r = 0;
@@ -371,13 +370,13 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
   while (entry) {
     flg = PETSC_FALSE;
     if (path && entry->path) {
-      f1 = !PetscStrcmp(path,entry->path);
-      f2 = !PetscStrcmp(function,entry->rname);
-      f3 = !PetscStrcmp(function,entry->name);
+      ierr = PetscStrcmp(path,entry->path,&f1);CHKERRQ(ierr);
+      ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
+      ierr = PetscStrcmp(function,entry->name,&f3);CHKERRQ(ierr);
       flg =  (PetscTruth) ((f1 && f2) || (f1 && f3));
     } else if (!path) {
-      f1 = !PetscStrcmp(function,entry->name);
-      f2 = !PetscStrcmp(function,entry->rname);
+      ierr = PetscStrcmp(function,entry->name,&f1);CHKERRQ(ierr);
+      ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
       flg =  (PetscTruth) (f1 || f2);
     }
 

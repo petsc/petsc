@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.131 1999/10/24 14:04:04 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.132 1999/11/05 14:47:52 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
@@ -1004,9 +1004,9 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 @*/
 int DAPrintHelp(DA da)
 {
-  static int called = 0;
-  MPI_Comm   comm;
-  int        ierr;
+  static PetscTruth called = PETSC_FALSE;
+  MPI_Comm          comm;
+  int               ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
@@ -1016,7 +1016,7 @@ int DAPrintHelp(DA da)
     ierr = (*PetscHelpPrintf)(comm,"General Distributed Array (DA) options:\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"  -da_view: print DA distribution to screen\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"  -da_view_draw: display DA in window\n");CHKERRQ(ierr);
-    called = 1;
+    called = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }

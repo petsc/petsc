@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.65 1999/11/05 14:46:58 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.66 1999/11/08 19:09:36 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -322,7 +322,7 @@ runex10_7:
 	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
                     -mat_seqbaij -matload_block_size $$bs -ksp_type preonly \
                     -ksp_smonitor -pc_type lu  >> ex10_7.tmp 2>&1 ; \
-         done; cp ex10_7.tmp joe \
+         done;
 	-@if (diff output/ex10_7.out ex10_7.tmp) then true; \
 	   else echo "Possible problem with ex10_7, diffs above"; fi;
 	-@${RM} -f ex10_7.tmp

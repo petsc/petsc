@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.21 1999/10/24 14:01:10 bsmith Exp bsmith $*/
+/*$Id: drawreg.c,v 1.22 1999/11/05 14:43:51 bsmith Exp bsmith $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
@@ -93,6 +93,19 @@ int DrawSetType(Draw draw,DrawType type)
 
   /*  User requests no graphics */
   ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
+
+  /*
+     This is not ideal, but it allows codes to continue to run if X graphics 
+   was requested but is not installed on this machine. Mostly this is for
+   testing.
+   */
+#if !defined(PETSC_HAVE_X11)
+  {
+    PetscTruth match;
+    ierr = PetscStrcmp(type,DRAW_X,&match);CHKERRQ(ierr);
+    if (match) flg = PETSC_TRUE;
+  }
+#endif
   if (flg) {
     type = DRAW_NULL;
   }

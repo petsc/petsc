@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.130 1999/10/24 14:03:14 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.131 1999/11/05 14:46:42 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -316,6 +316,11 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
+
+  if (ksp->calc_sings && !gmres->Rsvd) {
+    SETERRQ(1,1,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
+  }
+
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);

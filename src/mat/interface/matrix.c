@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.351 1999/10/24 14:02:09 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.352 1999/11/05 14:45:11 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3343,9 +3343,9 @@ int MatIncreaseOverlap(Mat mat,int n, IS *is,int ov)
 @*/
 int MatPrintHelp(Mat mat)
 {
-  static int called = 0;
-  int        ierr;
-  MPI_Comm   comm;
+  static PetscTruth called = PETSC_FALSE;
+  int               ierr;
+  MPI_Comm          comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -3358,7 +3358,7 @@ int MatPrintHelp(Mat mat)
     ierr = (*PetscHelpPrintf)(comm,"  -mat_view_draw: draw nonzero matrix structure during MatAssemblyEnd()\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"      -draw_pause <sec>: set seconds of display pause\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"      -display <name>: set alternate display\n");CHKERRQ(ierr);
-    called = 1;
+    called = PETSC_TRUE;
   }
   if (mat->ops->printhelp) {
     ierr = (*mat->ops->printhelp)(mat);CHKERRQ(ierr);

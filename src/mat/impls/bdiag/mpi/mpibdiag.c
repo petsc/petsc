@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.177 1999/10/24 14:02:22 bsmith Exp bsmith $*/
+/*$Id: mpibdiag.c,v 1.178 1999/11/05 14:45:30 bsmith Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -85,8 +85,7 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   mat->insertmode = addv; /* in case this processor had no cache */
   ierr = MatStashScatterBegin_Private(&mat->stash,mbd->rowners);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  PLogInfo(0,"MatAssemblyBegin_MPIBDiag:Stash has %d entries, uses %d mallocs.\n",
-           nstash,reallocs);
+  PLogInfo(0,"MatAssemblyBegin_MPIBDiag:Stash has %d entries, uses %d mallocs.\n",nstash,reallocs);
   PetscFunctionReturn(0);
 }
 extern int MatSetUpMultiply_MPIBDiag(Mat);

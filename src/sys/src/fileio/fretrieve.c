@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.19 1999/10/24 14:01:25 bsmith Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.20 1999/11/05 14:44:09 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -53,6 +53,15 @@ EXTERN_C_END
    Output Parameters:
 .  shared - PETSC_TRUE or PETSC_FALSE
 
+   Options Database Keys:
++    -petsc_shared_tmp 
+-    -petsc_not_shared_tmp
+
+   Environmental Variables:
++     PETSC_SHARED_TMP
+.     PETSC_NOT_SHARED_TMP
+-     PETSC_TMP
+
    Level: developer
 
    Notes:
@@ -70,9 +79,6 @@ EXTERN_C_END
 
    If the environmental variable PETSC_TMP is set it will use this directory
   as the "/tmp" directory.
-
-   If the environmental variable PETSC_SHARED_TMP is set it will always return 
-  PETSC_TRUE
 
 @*/
 int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
@@ -98,6 +104,18 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
   ierr = OptionsGetenv(comm,"PETSC_SHARED_TMP",PETSC_NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  }
+
+  ierr = OptionsHasName(PETSC_NULL,"-petsc_not_shared_tmp",&iflg);CHKERRQ(ierr);
+  if (iflg) {
+    *shared = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+
+  ierr = OptionsGetenv(comm,"PETSC_NOT_SHARED_TMP",PETSC_NULL,0,&flg);CHKERRQ(ierr);
+  if (flg) {
+    *shared = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 

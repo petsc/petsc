@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.105 1999/10/24 14:03:36 bsmith Exp bsmith $*/
+/*$Id: tr.c,v 1.106 1999/11/05 14:47:12 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
 
@@ -34,8 +34,7 @@ int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   if (norm >= neP->delta) {
     PLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
-    PLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: Ending linear iteration early, delta=%g, length=%g\n",
-             neP->delta,norm);
+    PLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: Ending linear iteration early, delta=%g, length=%g\n",neP->delta,norm);
     PetscFunctionReturn(1);
   }
   PetscFunctionReturn(0);

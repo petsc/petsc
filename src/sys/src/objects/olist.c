@@ -1,4 +1,4 @@
-/*$Id: olist.c,v 1.13 1999/10/04 18:49:33 bsmith Exp bsmith $*/
+/*$Id: olist.c,v 1.14 1999/10/24 14:01:28 bsmith Exp bsmith $*/
 /*
          Provides a general mechanism to maintain a linked list of PETSc objects.
      This is used to allow PETSc objects to carry a list of "composed" objects
@@ -23,15 +23,16 @@ struct _OList {
 */
 int OListAdd(OList *fl,const char name[],PetscObject obj )
 {
-  OList olist,nlist,prev;
-  int   ierr,match;
+  OList      olist,nlist,prev;
+  int        ierr;
+  PetscTruth match;
 
   PetscFunctionBegin;
 
   if (!obj) { /* this means remove from list if it is there */
     nlist = *fl; prev = 0;
     while (nlist) {
-      match = !PetscStrcmp(name,nlist->name);
+      ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
       if (match) {  /* found it already in the list */
         ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
         if (prev) prev->next = nlist->next;
@@ -51,7 +52,7 @@ int OListAdd(OList *fl,const char name[],PetscObject obj )
   /* look for it already in list */
   nlist = *fl;
   while (nlist) {
-    match = !PetscStrcmp(name,nlist->name);
+    ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
     if (match) {  /* found it in the list */
       ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
       ierr = PetscObjectReference(obj);CHKERRQ(ierr);
@@ -126,13 +127,14 @@ int OListDestroy(OList *fl )
 */
 int OListFind(OList fl, const char name[], PetscObject *obj)
 {
-  int match;
+  int        ierr;
+  PetscTruth match;
 
   PetscFunctionBegin;
 
   *obj = 0;
   while (fl) {
-    match = !PetscStrcmp(name,fl->name);
+    ierr = PetscStrcmp(name,fl->name,&match);CHKERRQ(ierr);
     if (match) {
       *obj = fl->obj;
       break;

@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.96 1999/10/24 14:01:21 bsmith Exp bsmith $*/
+/*$Id: adebug.c,v 1.97 1999/11/05 14:44:06 bsmith Exp bsmith $*/
 /*
       Code to handle PETSc starting up in debuggers, etc.
 */
@@ -111,8 +111,8 @@ int PetscAttachDebugger(void)
   else       { child = (int) getppid(); }
 
   if (child) { /* I am the parent, will run the debugger */
-    char  *args[9],pid[9];
-    int   isdbx,isxldb,isxxgdb,isups,isxdb;
+    char       *args[9],pid[9];
+    PetscTruth isdbx,isxldb,isxxgdb,isups,isxdb;
 
     /*
          We need to send a continue signal to the "child" process on the 
@@ -123,11 +123,11 @@ int PetscAttachDebugger(void)
 #endif
     sprintf(pid,"%d",child); 
 
-    isxxgdb = !PetscStrcmp(Debugger,"xxgdb");
-    isups   = !PetscStrcmp(Debugger,"ups");
-    isxldb  = !PetscStrcmp(Debugger,"xldb");
-    isxdb   = !PetscStrcmp(Debugger,"xdb");
-    isdbx   = !PetscStrcmp(Debugger,"dbx");
+    ierr = PetscStrcmp(Debugger,"xxgdb",&isxxgdb);CHKERRQ(ierr);
+    ierr = PetscStrcmp(Debugger,"ups",&isups);CHKERRQ(ierr);
+    ierr = PetscStrcmp(Debugger,"xldb",&isxldb);CHKERRQ(ierr);
+    ierr = PetscStrcmp(Debugger,"xdb",&isxdb);CHKERRQ(ierr);
+    ierr = PetscStrcmp(Debugger,"dbx",&isdbx);CHKERRQ(ierr);
     if (isxxgdb || isups) {
       args[1] = program; args[2] = pid; args[3] = "-display";
       args[0] = Debugger; args[4] = display; args[5] = 0;
@@ -370,9 +370,9 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
 @*/
 int PetscStopForDebugger(void)
 {
-  int   sleeptime=0,ierr=0,ppid,rank;
-  char  program[256],hostname[256];
-  int   isdbx,isxldb,isxxgdb,isups,isxdb;
+  int        sleeptime=0,ierr=0,ppid,rank;
+  char       program[256],hostname[256];
+  PetscTruth isdbx,isxldb,isxxgdb,isups,isxdb;
 
   PetscFunctionBegin;
 
@@ -403,11 +403,11 @@ int PetscStopForDebugger(void)
 
   ppid = getpid();
 
-  isxxgdb = !PetscStrcmp(Debugger,"xxgdb");
-  isups   = !PetscStrcmp(Debugger,"ups");
-  isxldb  = !PetscStrcmp(Debugger,"xldb");
-  isxdb   = !PetscStrcmp(Debugger,"xdb");
-  isdbx   = !PetscStrcmp(Debugger,"dbx");
+  ierr = PetscStrcmp(Debugger,"xxgdb",&isxxgdb);CHKERRQ(ierr);
+  ierr = PetscStrcmp(Debugger,"ups",&isups);CHKERRQ(ierr);
+  ierr = PetscStrcmp(Debugger,"xldb",&isxldb);CHKERRQ(ierr);
+  ierr = PetscStrcmp(Debugger,"xdb",&isxdb);CHKERRQ(ierr);
+  ierr = PetscStrcmp(Debugger,"dbx",&isdbx);CHKERRQ(ierr);
 
   if (isxxgdb || isups) {
     (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);

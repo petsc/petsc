@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.51 1999/10/24 14:01:28 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.52 1999/11/05 14:44:14 bsmith Exp bsmith $*/
 /*
 
    This file defines the initialization of PETSc, including PetscInitialize()
@@ -233,9 +233,10 @@ int PetscCompareScalar(Scalar d)
 */
 int PetscCompareInitialize(double tol)
 {
-  int       ierr,i, len,rank,work,*gflag,size,mysize;
-  char      pname[256], basename[256];
-  MPI_Group group_all,group_sub;
+  int        ierr,i, len,rank,*gflag,size,mysize;
+  char       pname[256], basename[256];
+  MPI_Group  group_all,group_sub;
+  PetscTruth work;
 
   PetscFunctionBegin;
   ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
@@ -253,7 +254,7 @@ int PetscCompareInitialize(double tol)
   ierr = MPI_Bcast(basename,len+1,MPI_CHAR,0,MPI_COMM_WORLD);CHKERRQ(ierr);
 
   /* determine what processors belong to my group */
-  work = !PetscStrcmp(pname,basename);
+  ierr = PetscStrcmp(pname,basename,&work);CHKERRQ(ierr);
 
   gflag = (int *) malloc( size*sizeof(int) );CHKPTRQ(gflag);
   ierr = MPI_Allgather(&work,1,MPI_INT,gflag,1 ,MPI_INT,MPI_COMM_WORLD);CHKERRQ(ierr);
@@ -328,7 +329,7 @@ extern PetscTruth petscsetmallocvisited;
 #define __FUNC__ "OptionsCheckInitial"
 int OptionsCheckInitial(void)
 {
-  char       string[64];
+  char       string[64], mname[256],*f;
   MPI_Comm   comm = PETSC_COMM_WORLD;
   PetscTruth flg1,flg2,flg3,flag;
   int        ierr,*nodes,i,rank;
@@ -418,7 +419,7 @@ int OptionsCheckInitial(void)
 #endif
   ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64,&flg1);CHKERRQ(ierr);
   if (flg1) {
-    char           *debugger = 0, *f;
+    char           *debugger = 0;
     int            xterm     = 1;
     MPI_Errhandler err_handler;
 
@@ -474,8 +475,6 @@ int OptionsCheckInitial(void)
       }
     }
     if (!flag) {        
-      char *f;
-
       ierr = PetscStrstr(string,"noxterm",&f);CHKERRQ(ierr);
       if (f) xterm = 0;
       ierr = PetscStrstr(string,"xdb",&f);CHKERRQ(ierr);
@@ -508,55 +507,50 @@ int OptionsCheckInitial(void)
         Setup profiling and logging
   */
 #if defined(PETSC_USE_LOG)
-  {
-    char mname[256];
-    {
-      mname[0] = 0;
-      ierr = OptionsGetString(PETSC_NULL,"-log_history",mname,256, &flg1);CHKERRQ(ierr);
-      if(flg1) {
-        if (mname[0]) {
-          ierr = PLogOpenHistoryFile(mname,&petsc_history);CHKERRQ(ierr);
-        } else {
-          ierr = PLogOpenHistoryFile(0,&petsc_history);CHKERRQ(ierr);
-        }
-      }
+  mname[0] = 0;
+  ierr = OptionsGetString(PETSC_NULL,"-log_history",mname,256, &flg1);CHKERRQ(ierr);
+  if (flg1) {
+    if (mname[0]) {
+      ierr = PLogOpenHistoryFile(mname,&petsc_history);CHKERRQ(ierr);
+    } else {
+      ierr = PLogOpenHistoryFile(0,&petsc_history);CHKERRQ(ierr);
     }
-    ierr = OptionsHasName(PETSC_NULL,"-log_info", &flg1);CHKERRQ(ierr);
-    if (flg1) { 
-      char logname[256]; logname[0] = 0;
-      ierr = OptionsGetString(PETSC_NULL,"-log_info",logname,250,&flg1);CHKERRQ(ierr);
-      if (logname[0]) {
-        PLogInfoAllow(PETSC_TRUE,logname); 
-      } else {
-        PLogInfoAllow(PETSC_TRUE,PETSC_NULL); 
-      }
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-log_info", &flg1);CHKERRQ(ierr);
+  if (flg1) { 
+    char logname[256]; logname[0] = 0;
+    ierr = OptionsGetString(PETSC_NULL,"-log_info",logname,250,&flg1);CHKERRQ(ierr);
+    if (logname[0]) {
+      PLogInfoAllow(PETSC_TRUE,logname); 
+    } else {
+      PLogInfoAllow(PETSC_TRUE,PETSC_NULL); 
     }
+  }
 #if defined(PETSC_HAVE_MPE)
-    ierr = OptionsHasName(PETSC_NULL,"-log_mpe", &flg1);CHKERRQ(ierr);
-    if (flg1) PLogMPEBegin();
+  ierr = OptionsHasName(PETSC_NULL,"-log_mpe", &flg1);CHKERRQ(ierr);
+  if (flg1) PLogMPEBegin();
 #endif
-    ierr = OptionsHasName(PETSC_NULL,"-log_all", &flg1);CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-log", &flg2);CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3);CHKERRQ(ierr);
-    if (flg1)              {  ierr = PLogAllBegin();CHKERRQ(ierr); }
-    else if (flg2 || flg3) {  ierr = PLogBegin();CHKERRQ(ierr);}
+  ierr = OptionsHasName(PETSC_NULL,"-log_all", &flg1);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-log", &flg2);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3);CHKERRQ(ierr);
+  if (flg1)              {  ierr = PLogAllBegin();CHKERRQ(ierr); }
+  else if (flg2 || flg3) {  ierr = PLogBegin();CHKERRQ(ierr);}
     
-    ierr = OptionsGetString(PETSC_NULL,"-log_trace",mname,250,&flg1);CHKERRQ(ierr);
-    if (flg1) { 
-      char name[256],fname[256];
-      FILE *file;
-      if (mname[0]) {
-        sprintf(name,"%s.%d",mname,rank);
-        ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
-        file = fopen(fname,"w"); 
-        if (!file) {
-          SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Unable to open trace file: %s",fname);
-        }
-      } else {
-        file = stdout;
+  ierr = OptionsGetString(PETSC_NULL,"-log_trace",mname,250,&flg1);CHKERRQ(ierr);
+  if (flg1) { 
+    char name[256],fname[256];
+    FILE *file;
+    if (mname[0]) {
+      sprintf(name,"%s.%d",mname,rank);
+      ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
+      file = fopen(fname,"w"); 
+      if (!file) {
+        SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Unable to open trace file: %s",fname);
       }
-      ierr = PLogTraceBegin(file);CHKERRQ(ierr);
+    } else {
+      file = stdout;
     }
+    ierr = PLogTraceBegin(file);CHKERRQ(ierr);
   }
 #endif
 
@@ -602,8 +596,12 @@ int OptionsCheckInitial(void)
     ierr = (*PetscHelpPrintf)(comm," -trmalloc_off: don't use error checking malloc\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -trinfo: prints total memory usage\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -trdebug: enables extended checking for memory corruption\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -optionstable: dump list of options inputted\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -optionsleft: dump list of unused options\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -options_table: dump list of options inputted\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -options_left: dump list of unused options\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -options_left_off: don't dump list of unused options\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -petsc_tmp tmpdir: alternative /tmp directory\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -petsc_shared_tmp: tmp directory is shared by all processors\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -petsc_not_shared_tmp: each processor has seperate tmp directory\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -get_resident_set_size: print memory usage at end of run\n");CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
     ierr = (*PetscHelpPrintf)(comm," -log[_all _summary]: logging objects and events\n");CHKERRQ(ierr);
@@ -635,6 +633,12 @@ int OptionsCheckInitial(void)
   ierr = OptionsGetInt(PETSC_NULL,"-petsc_sleep",&i,&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscSleep(i);CHKERRQ(ierr);
+  }
+
+  ierr = OptionsGetString(PETSC_NULL,"-log_info_exclude",mname,256, &flg1);CHKERRQ(ierr);
+  ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = PLogInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

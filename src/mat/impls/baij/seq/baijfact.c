@@ -1,4 +1,4 @@
-/*$Id: baijfact.c,v 1.74 1999/10/24 14:02:28 bsmith Exp bsmith $*/
+/*$Id: baijfact.c,v 1.75 1999/11/05 14:45:32 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -27,7 +27,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
   ierr = ISInvertPermutation(iscol,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
-  ierr =  ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* get new row pointers */
   ainew = (int *) PetscMalloc( (n+1)*sizeof(int) );CHKPTRQ(ainew);
@@ -114,8 +114,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 
   if (ai[n] != 0) {
     double af = ((double)ainew[n])/((double)ai[n]);
-    PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
-             realloc,f,af);
+    PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
     PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:Run with -pc_lu_fill %g or use \n",af);
     PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:PCLUSetFill(pc,%g);\n",af);
     PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:for best performance.\n");
@@ -145,6 +144,8 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
+  ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+  ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol       = isicol;
   b->solve_work = (Scalar *) PetscMalloc( (bs*n+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
   /* In b structure:  Free imax, ilen, old a, old j.  
@@ -2384,6 +2385,9 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
   A->bops  = Abops;
   A->ops   = Aops;
   A->qlist = 0;
+  /* copy over the type_name and name */
+  ierr     = PetscStrallocpy(C->type_name,&A->type_name);CHKERRQ(ierr);
+  ierr     = PetscStrallocpy(C->name,&A->name);CHKERRQ(ierr);
 
   PetscHeaderDestroy(C);
   PetscFunctionReturn(0);

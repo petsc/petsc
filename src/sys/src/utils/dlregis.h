@@ -1,4 +1,4 @@
-/* $Id: dlregis.c,v 1.1 1999/10/22 01:10:33 bsmith Exp bsmith $ */
+/* $Id: dlregis.h,v 1.3 1999/10/24 14:01:32 bsmith Exp bsmith $ */
 /*
    This file is included by all the dlregis.c files to provide common information
    on the PETSC team.
@@ -13,13 +13,14 @@ EXTERN_C_BEGIN
 #define __FUNC__ "DLLibraryInfo"
 int DLLibraryInfo(char *path,char *type,char **mess) 
 {
-  int iscon,isaut,isver;
+  PetscTruth iscon,isaut,isver;
+  int        ierr;
 
   PetscFunctionBegin; 
 
-  iscon = !PetscStrcmp(type,"Contents");
-  isaut = !PetscStrcmp(type,"Authors");
-  isver = !PetscStrcmp(type,"Version");
+  ierr = PetscStrcmp(type,"Contents",&iscon);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type,"Authors",&isaut);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type,"Version",&isver);CHKERRQ(ierr);
   if (iscon)      *mess = contents;
   else if (isaut) *mess = authors;
   else if (isver) *mess = version;

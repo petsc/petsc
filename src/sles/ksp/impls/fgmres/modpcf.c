@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fgmres2.c,v 1.20 1999/02/02 23:14:52 bsmith Exp $";
+static char vcid[] = "$Id: modpcf.c,v 1.1 1999/11/08 22:21:02 bsmith Exp bsmith $";
 #endif
 
 #include "/home/baker/working/fgmresp.h"
@@ -84,14 +84,14 @@ int KSPFGMRESModifyPCNoChange( KSP ksp, int total_its, int max_total_its, int lo
 {
   PC         pc, pcfamilypc;
   int        ierr;
-  PCType     type, familytype;
+  PCType     familytype;
+  PetscTruth isfamily;
 
   PetscFunctionBegin;
   ierr = KSPGetPC( ksp, &pc ); CHKERRQ(ierr);
-  ierr = PCGetType( pc, &type);  CHKERRQ(ierr);  
-  
 
-  if (!(PetscTypeCompare(type, PCFAMILY ))) { 
+  ierr = PetscTypeCompare((PetscObject)pc, PCFAMILY,&isfamily );CHKERRQ(ierr);
+  if (isfamily) { 
     /* currently we can only modify the pc is pcfamily is being used */
     /* might want to add a warning message that pcfamily should be used */
     PetscFunctionReturn(0);
@@ -150,24 +150,24 @@ KSPFGMRESModifyPCGMRESVariableEx( KSP ksp, int total_its, int max_total_its, int
 {
   PC         pc, pcfamilypc;
   int        ierr;
-  PCType     type, familytype;
   SLES       sub_sles;
   KSP        sub_ksp;
   double     rtol, atol, dtol;
   int        maxits; 
+  PetscTruth isfamily,issles;
 
   PetscFunctionBegin;
 
   ierr = KSPGetPC( ksp, &pc ); CHKERRQ(ierr);
-  ierr = PCGetType( pc, &type); CHKERRQ(ierr); 
 
-  if (!(PetscTypeCompare(type, PCFAMILY ))) { 
+  ierr = PetscTypeCompare((PetscObject)pc, PCFAMILY,&isfamily ); CHKERRQ(ierr);
+  if (isfamily) { 
     /* currently we can only modify the pc if pcfamily is being used */
     /* might want to add a warning message that pcfamily should be used */
     PetscFunctionReturn(0);
   }
-  ierr = PCFamilyGetPCType(pc, &familytype);
-  if (!(PetscTypeCompare(familytype, PCSLES ))) { 
+  ierr = PetscTypeCompare((PetscObject) pc, PCSLES,&issles );CHKERRQ(ierr);
+  if (issles) { 
     /* we only want to use the default GMRES for this contrived example */
     PetscFunctionReturn(0);
   }
@@ -222,17 +222,17 @@ KSPFGMRESModifyPCEx( KSP ksp, int total_its, int max_total_its, int loc_its, int
 {
   PC         pc, pcfamilypc;
   int        ierr;
-  PCType     type, familytype;
   SLES       sub_sles;
   KSP        sub_ksp;
   double     rtol, atol, dtol;
   int        maxits; 
+  PetscTruth isfamily;
 
   PetscFunctionBegin;
   ierr = KSPGetPC( ksp, &pc ); CHKERRQ(ierr);
-  ierr = PCGetType( pc, &type); CHKERRQ(ierr); 
 
-  if (!(PetscTypeCompare(type, PCFAMILY ))) { 
+  ierr = PetscTypeCompare((PetscObject)pc, PCFAMILY,&isfamily);CHKERRQ(ierr);
+  if (isfamily) { 
     /* currently we can only modify the pc if pcfamily is being used */
     /* might want to add a warning message that pcfamily should be used */
     PetscFunctionReturn(0);

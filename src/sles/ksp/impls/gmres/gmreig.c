@@ -1,4 +1,4 @@
-/*$Id: gmreig.c,v 1.14 1999/06/30 23:53:36 balay Exp bsmith $*/
+/*$Id: gmreig.c,v 1.15 1999/10/24 14:03:14 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"
 #include "pinclude/blaslapack.h"
@@ -8,14 +8,12 @@
 int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
 {
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
-  int       n = gmres->it + 1, N = gmres->max_k + 2, ierr, lwork = 5*N;
-  int       idummy = N, i;
-  Scalar    *R = gmres->Rsvd;
+  int       n = gmres->it + 1, N = gmres->max_k + 2, ierr, lwork = 5*N, idummy = N, i;
+  Scalar    *R = gmres->Rsvd, *work = R + N*N, sdummy;
   double    *realpart = gmres->Dsvd;
-  Scalar    *work = R + N*N, sdummy;
 
   PetscFunctionBegin;
-  if (n == 0) {
+  if (!n) {
     *emax = *emin = 1.0;
     PetscFunctionReturn(0);
   }
@@ -58,15 +56,14 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
   int       n = gmres->it + 1, N = gmres->max_k + 1, ierr, lwork = 5*N;
   int       idummy = N, i,*perm, clen, zero;
   Scalar    *R = gmres->Rsvd;
-  Scalar    *cwork = R + N*N;
+  Scalar    *cwork = R + N*N, sdummy;
   double    *work, *realpart = gmres->Dsvd, *imagpart = realpart + N ;
-  Scalar    sdummy;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
-  if (n == 0) {
+  if (!n) {
     PetscFunctionReturn(0);
   }
   /* copy R matrix to work space */
@@ -116,18 +113,15 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
 {
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
-  int       n = gmres->it + 1, N = gmres->max_k + 1, ierr, lwork = 5*N;
-  int       idummy = N, i,*perm;
-  Scalar    *R = gmres->Rsvd;
-  Scalar    *work = R + N*N;
-  Scalar    *realpart = gmres->Dsvd, *imagpart = realpart + N ;
-  Scalar    sdummy;
+  int       n = gmres->it + 1, N = gmres->max_k + 1, ierr, lwork = 5*N, idummy = N, i,*perm;
+  Scalar    *R = gmres->Rsvd, *work = R + N*N;
+  Scalar    *realpart = gmres->Dsvd, *imagpart = realpart + N, sdummy;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
-  if (n == 0) {
+  if (!n) {
     PetscFunctionReturn(0);
   }
 
@@ -153,18 +147,14 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
 {
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
-  int       n = gmres->it + 1, N = gmres->max_k + 1, ierr, lwork = 5*N;
-  int       idummy = N, i,*perm;
-  Scalar    *R = gmres->Rsvd;
-  Scalar    *work = R + N*N;
-  Scalar    *eigs = work + 5*N;
-  Scalar    sdummy;
+  int       n = gmres->it + 1, N = gmres->max_k + 1, ierr, lwork = 5*N, idummy = N, i,*perm;
+  Scalar    *R = gmres->Rsvd, *work = R + N*N, *eigs = work + 5*N,sdummy;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
-  if (n == 0) {
+  if (!n) {
     PetscFunctionReturn(0);
   }
   /* copy R matrix to work space */

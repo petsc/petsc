@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.8 1999/10/24 14:01:41 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.9 1999/11/05 14:44:32 bsmith Exp bsmith $*/
 
 static char help[] = "Prints loadable objects from dynamic library.\n\n";
 
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   string = "No dynamic libraries used";
   handle = (void *) string;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",string);CHKERRA(ierr);
-  flg = (PetscTruth)!PetscStrcmp(string,"Never will happen");
+  ierr = PetscStrcmp(string,"Never will happen",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = PetscObjectDestroy((PetscObject)handle);CHKERRA(ierr);
   }

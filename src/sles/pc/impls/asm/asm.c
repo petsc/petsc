@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.105 1999/10/24 14:03:04 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.106 1999/11/05 14:46:28 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -387,13 +387,13 @@ static int PCSetFromOptions_ASM(PC pc)
   if (flg) {ierr = PCASMSetUseInPlace(pc);CHKERRQ(ierr); }
   ierr = OptionsGetString(pc->prefix,"-pc_asm_type",buff,15,&flg);CHKERRQ(ierr);
   if (flg) {
-    PCASMType type = PC_ASM_RESTRICT;
-    int       isbasic,isrestrict,isinterpolate,isnone;
+    PCASMType  type;
+    PetscTruth isbasic,isrestrict,isinterpolate,isnone;
 
-    isbasic       = !PetscStrcmp(buff,"basic");
-    isrestrict    = !PetscStrcmp(buff,"restrict");
-    isinterpolate = !PetscStrcmp(buff,"interpolate");
-    isnone        = !PetscStrcmp(buff,"none");
+    ierr = PetscStrcmp(buff,"basic",&isbasic);CHKERRQ(ierr);
+    ierr = PetscStrcmp(buff,"restrict",&isrestrict);CHKERRQ(ierr);
+    ierr = PetscStrcmp(buff,"interpolate",&isinterpolate);CHKERRQ(ierr);
+    ierr = PetscStrcmp(buff,"none",&isnone);CHKERRQ(ierr);
 
     if (isbasic)            type = PC_ASM_BASIC;
     else if (isrestrict)    type = PC_ASM_RESTRICT;

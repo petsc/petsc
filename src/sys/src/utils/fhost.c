@@ -1,4 +1,4 @@
-/*$Id: fhost.c,v 1.39 1999/10/13 20:36:48 bsmith Exp bsmith $*/
+/*$Id: fhost.c,v 1.40 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -57,7 +57,7 @@ int PetscGetHostName( char name[], int nlen )
   struct utsname utname;
 #endif
 #if defined(PETSC_HAVE_GETDOMAINNAME)
-  int            match;
+  PetscTruth     match;
 #endif
 
   PetscFunctionBegin;
@@ -85,7 +85,7 @@ int PetscGetHostName( char name[], int nlen )
 #elif defined(PETSC_HAVE_GETDOMAINNAME)
     getdomainname( name+l, nlen - l );
     /* change domain name if it is an ANL crap one */
-    match = !PetscStrcmp(name+l,"qazwsxedc");
+    ierr = PetscStrcmp(name+l,"qazwsxedc",&match);CHKERRQ(ierr);
     if (match) {
       ierr = PetscStrncpy(name+l,"mcs.anl.gov",nlen-12);CHKERRQ(ierr);
     }

@@ -1,9 +1,12 @@
-/*$Id: zsnes.c,v 1.39 1999/10/24 14:04:19 bsmith Exp bsmith $*/
+/*$Id: zsnes.c,v 1.40 1999/11/05 14:48:14 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "snes.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define snesdefaultmonitor_          SNESDEFAULTMONITOR
+#define snesvecviewmonitor_          SNESVECVIEWMONITOR
+#define snesvecviewmonitorupdate_    SNESVECVIEWMONITORUPDATE
 #define snesregisterdestroy_         SNESREGISTERDESTROY
 #define snessetjacobian_             SNESSETJACOBIAN
 #define snescreate_                  SNESCREATE
@@ -36,7 +39,10 @@
 #define snessetlinesearchparams_         SNESSETLINESEARCHPARAMS
 #define snesgetlinesearchparams_         SNESGETLINESEARCHPARAMS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matsnesmfsetfunction_            matsnesmfsetfunction
+#define snesdefaultmonitor_          snesdefaultmonitor
+#define snesvecviewmonitor_          snesvecviewmonitor
+#define snesvecviewmonitorupdate_    snesvecviewmonitorupdate
+#define matsnesmfsetfunction_        matsnesmfsetfunction
 #define snesregisterdestroy_         snesregisterdestroy
 #define snessetjacobian_             snessetjacobian
 #define snescreate_                  snescreate
@@ -131,6 +137,21 @@ void PETSC_STDCALL matcreatesnewsmf_(SNES *snes,Vec *x,Mat *J, int *__ierr )
   *__ierr = MatCreateSNESMF(*snes,*x,J);
 }
 
+void PETSC_STDCALL snesdefaultmonitor_(SNES *snes,int *its,double *fgnorm,void *dummy,int *__ierr)
+{
+  *__ierr = SNESDefaultMonitor(*snes,*its,*fgnorm,dummy);
+}
+
+void PETSC_STDCALL snesvecviewmonitor_(SNES *snes,int *its,double *fgnorm,void *dummy,int *__ierr)
+{
+  *__ierr = SNESVecViewMonitor(*snes,*its,*fgnorm,dummy);
+}
+
+void PETSC_STDCALL snesvecviewmonitorupdate_(SNES *snes,int *its,double *fgnorm,void *dummy,int *__ierr)
+{
+  *__ierr = SNESVecViewMonitorUpdate(*snes,*its,*fgnorm,dummy);
+}
+
 static void (*f7)(SNES*,int*,double*,void*,int*);
 static int oursnesmonitor(SNES snes,int i,double d,void*ctx)
 {
@@ -139,11 +160,20 @@ static int oursnesmonitor(SNES snes,int i,double d,void*ctx)
   (*f7)(&snes,&i,&d,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
+
 void PETSC_STDCALL snessetmonitor_(SNES *snes,void (*func)(SNES*,int*,double*,void*,int*),
                     void *mctx, int (*mondestroy)(void *,int *),int *__ierr )
 {
-  f7 = func;
-  *__ierr = SNESSetMonitor(*snes,oursnesmonitor,mctx,0);
+  if ((void *)func == (void *)snesdefaultmonitor_) {
+    *__ierr = SNESSetMonitor(*snes,SNESDefaultMonitor,0,0);
+  } else if ((void *)func == (void *)snesvecviewmonitor_) {
+    *__ierr = SNESSetMonitor(*snes,SNESVecViewMonitor,0,0);
+  } else if ((void *)func == (void *)snesvecviewmonitorupdate_) {
+    *__ierr = SNESSetMonitor(*snes,SNESVecViewMonitorUpdate,0,0);
+  } else {
+    f7 = func;
+    *__ierr = SNESSetMonitor(*snes,oursnesmonitor,mctx,0);
+  }
 }
 
 static void (*f8)(SNES*,double*,double*,double*,SNESConvergedReason*,void*,int*);
@@ -288,7 +318,9 @@ void PETSC_STDCALL snescreate_(MPI_Comm *comm,SNESProblemType *type,SNES *outsne
 /* ---------------------------------------------------------*/
 /*
      snesdefaultcomputejacobian() and snesdefaultcomputejacobiancolor()
-  are special and get mapped directly to their C equivalent.
+  These can be used directly from Fortran but are mostly so that 
+  Fortran SNESSetJacobian() will properly handle the defaults being passed in.
+
 */
 void PETSC_STDCALL snesdefaultcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,
                                  void *ctx,int *__ierr)
@@ -302,8 +334,7 @@ void PETSC_STDCALL snesdefaultcomputejacobiancolor_(SNES *snes,Vec *x,Mat *m,Mat
 }
 
 static void (*f3)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,int*);
-static int oursnesjacobian(SNES snes,Vec x,Mat* m,Mat* p,MatStructure* type,
-                          void*ctx)
+static int oursnesjacobian(SNES snes,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
 {
   int              ierr = 0;
   (*f3)(&snes,&x,m,p,type,ctx,&ierr);CHKERRQ(ierr);

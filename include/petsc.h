@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.259 1999/10/23 00:02:04 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.260 1999/11/05 14:48:27 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -97,6 +97,7 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define PETSC_YES            PETSC_TRUE
 #define PETSC_NO             PETSC_FALSE
 #define PETSC_NULL           0
+#define PETSC_IGNORE         PETSC_NULL
 #define PETSC_DECIDE         -1
 #define PETSC_DETERMINE      PETSC_DECIDE
 #define PETSC_DEFAULT        -2
@@ -112,7 +113,7 @@ extern int   PetscMemmove(void *,void *,int);
 extern int   PetscMemzero(void *,int);
 extern int   PetscMemcmp(const void*,const void*, int,PetscTruth *);
 extern int   PetscStrlen(const char[],int*);
-extern int   PetscStrcmp(const char[],const char[]);
+extern int   PetscStrcmp(const char[],const char[],PetscTruth *);
 extern int   PetscStrgrt(const char[],const char[],PetscTruth *);
 extern int   PetscStrcasecmp(const char[],const char[],PetscTruth*);
 extern int   PetscStrncmp(const char[],const char[],int,PetscTruth*);

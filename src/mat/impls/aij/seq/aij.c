@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.331 1999/10/24 14:02:14 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.332 1999/11/05 14:45:18 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -667,10 +667,8 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
     PLogObjectMemory(A,-(m+1)*sizeof(int));
     a->diag = 0;
   } 
-  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Matrix size: %d X %d; storage space: %d unneeded, %d used\n",
-           m,a->n,fshift,a->nz);
-  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues() is %d\n",
-           a->reallocs);
+  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Matrix size: %d X %d; storage space: %d unneeded, %d used\n",m,a->n,fshift,a->nz);
+  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues() is %d\n",a->reallocs);
   PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Most nonzeros in any row is %d\n",rmax);
   a->reallocs          = 0;
   A->info.nz_unneeded  = (double)fshift;
@@ -721,6 +719,12 @@ int MatDestroy_SeqAIJ(Mat A)
   if (!a->singlemalloc) {
     ierr = PetscFree(a->i);CHKERRQ(ierr);
     ierr = PetscFree(a->j);CHKERRQ(ierr);
+  }
+  if (a->row) {
+    ierr = ISDestroy(a->row);CHKERRQ(ierr);
+  }
+  if (a->col) {
+    ierr = ISDestroy(a->col);CHKERRQ(ierr);
   }
   if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
   if (a->ilen) {ierr = PetscFree(a->ilen);CHKERRQ(ierr);}
@@ -1655,8 +1659,11 @@ int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
   inA->factor   = FACTOR_LU;
   a->row        = row;
   a->col        = col;
+  ierr = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
 
   /* Create the invert permutation so that it can be used in MatLUFactorNumeric() */
+  if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);} /* if this came from a previous factored; need to remove old one */
   ierr = ISInvertPermutation(col,&(a->icol));CHKERRQ(ierr);
   PLogObjectParent(inA,a->icol);
 
@@ -1813,12 +1820,12 @@ int MatPermute_SeqAIJ(Mat A, IS rowp, IS colp, Mat *B)
 #define __FUNC__ "MatPrintHelp_SeqAIJ"
 int MatPrintHelp_SeqAIJ(Mat A)
 {
-  static int called = 0; 
-  MPI_Comm   comm = A->comm;
-  int        ierr;
+  static PetscTruth called = PETSC_FALSE; 
+  MPI_Comm          comm = A->comm;
+  int               ierr;
 
   PetscFunctionBegin;
-  if (called) {PetscFunctionReturn(0);} else called = 1;
+  if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
   ierr = (*PetscHelpPrintf)(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_lu_pivotthreshold <threshold>: Set pivoting threshold\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");CHKERRQ(ierr);

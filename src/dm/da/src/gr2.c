@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.31 1999/10/24 14:04:04 bsmith Exp bsmith $*/
+/*$Id: gr2.c,v 1.32 1999/11/05 14:47:52 bsmith Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
@@ -157,8 +157,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   ierr = VecStrideMax(xcoor,1,PETSC_NULL,&ymax);CHKERRQ(ierr);
   coors[0] = xmin - .05*(xmax- xmin); coors[2] = xmax + .05*(xmax - xmin);
   coors[1] = ymin - .05*(ymax- ymin); coors[3] = ymax + .05*(ymax - ymin);
-  PLogInfo(da,"VecView_MPI_Draw_DA2d:Preparing DA 2d contour plot coordinates %g %g %g %g\n",
-           coors[0],coors[1],coors[2],coors[3]);
+  PLogInfo(da,"VecView_MPI_Draw_DA2d:Preparing DA 2d contour plot coordinates %g %g %g %g\n",coors[0],coors[1],coors[2],coors[3]);
 
   /*
        get local ghosted version of coordinates 

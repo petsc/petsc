@@ -1,4 +1,4 @@
-/*$Id: aodata.c,v 1.40 1999/10/24 14:03:58 bsmith Exp bsmith $*/
+/*$Id: aodata.c,v 1.41 1999/11/05 14:47:43 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AOData
 */
@@ -64,7 +64,8 @@ int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
 */
 int AODataKeyFind_Private(AOData aodata,char *keyname, PetscTruth *flag,AODataKey **key)
 {
-  int         match;
+  PetscTruth  match;
+  int         ierr;
   AODataAlias *t = aodata->aliases;
   char        *name = keyname;
   AODataKey   *nkey;
@@ -75,7 +76,7 @@ int AODataKeyFind_Private(AOData aodata,char *keyname, PetscTruth *flag,AODataKe
   while (name) {
     nkey  = aodata->keys;
     while (nkey) {
-      match = !PetscStrcmp(nkey->name,name);
+      ierr = PetscStrcmp(nkey->name,name,&match);CHKERRQ(ierr);
       if (match) {
         /* found the key */
         *key   = nkey;
@@ -87,7 +88,7 @@ int AODataKeyFind_Private(AOData aodata,char *keyname, PetscTruth *flag,AODataKe
     }
     name = 0;
     while (t) {
-      match = !PetscStrcmp(keyname,t->alias);
+      ierr = PetscStrcmp(keyname,t->alias,&match);CHKERRQ(ierr);
       if (match) {
         name = t->name;
         t    = t->next;
@@ -155,8 +156,7 @@ int AODataKeyExists(AOData aodata,char *keyname, PetscTruth *flag)
 int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, PetscTruth *flag,AODataKey **key,AODataSegment **seg)
 {
   int           ierr;
-  PetscTruth    keyflag;
-  int           match;
+  PetscTruth    keyflag,match;
   AODataAlias   *t = aodata->aliases;
   char          *name;
   AODataSegment *nseg;
@@ -170,7 +170,7 @@ int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, PetscT
     while (name) {
       nseg = (*key)->segments;
       while (nseg) {
-        match = !PetscStrcmp(nseg->name,name);
+        ierr = PetscStrcmp(nseg->name,name,&match);CHKERRQ(ierr);
         if (match) {
           /* found the segment */
           *seg   = nseg;
@@ -182,7 +182,7 @@ int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, PetscT
       }
       name = 0;
       while (t) {
-        match = !PetscStrcmp(segname,t->alias); CHKERRQ(ierr);
+        ierr = PetscStrcmp(segname,t->alias,&match); CHKERRQ(ierr);
         if (match) {
           name = t->name;
           t    = t->next;

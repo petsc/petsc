@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.119 1999/03/01 04:55:51 bsmith Exp $";
+static char vcid[] = "$Id: fgmres.c,v 1.1 1999/11/08 22:21:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -266,9 +266,9 @@ int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converg
   }
 
   /* FYI: AMS calls are for memory snooper */
-  PetscAMSTakeAccess( ksp );
+  PetscObjectTakeAccess( ksp );
   ksp->rnorm = res_norm;
-  PetscAMSGrantAccess( ksp );
+  PetscObjectGrantAccess( ksp );
 
 
   /* note: (fgmres->it) is always set one less than (loc_it) It is used in 
@@ -346,10 +346,10 @@ int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converg
     loc_it++;
     fgmres->it  = (loc_it-1);  /* Add this here in case it has converged */
  
-    PetscAMSTakeAccess( ksp );
+    PetscObjectTakeAccess( ksp );
     ksp->its++;
     ksp->rnorm = res_norm;
-    PetscAMSGrantAccess( ksp );
+    PetscObjectGrantAccess( ksp );
 
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
@@ -429,9 +429,9 @@ int KSPSolve_FGMRES(KSP ksp,int *outits )
 
   PetscFunctionBegin;
 
-  PetscAMSTakeAccess(ksp);
+  PetscObjectTakeAccess(ksp);
   ksp->its = 0;
-  PetscAMSGrantAccess(ksp);
+  PetscObjectGrantAccess(ksp);
 
   /* initialize */
   restart  = 0;
@@ -766,11 +766,11 @@ int KSPView_FGMRES(KSP ksp,Viewer viewer)
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)ksp->data; 
   char         *cstr;
   int          ierr;
-  ViewerType   vtype;
+  PetscTruth   isascii;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType( viewer, &vtype ); CHKERRQ(ierr);
-  if (PetscTypeCompare( vtype, ASCII_VIEWER )) {
+  ierr = PetscTypeCompare((PetscObject) viewer, ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  if (isascii) {
     if (fgmres->orthog == KSPFGMRESUnmodifiedGramSchmidtOrthogonalization) {
       cstr = "Unmodified Gram-Schmidt Orthogonalization";
     } else if (fgmres->orthog == KSPFGMRESModifiedGramSchmidtOrthogonalization) {
@@ -780,9 +780,9 @@ int KSPView_FGMRES(KSP ksp,Viewer viewer)
     } else {
       cstr = "unknown orthogonalization";
     }
-    ViewerASCIIPrintf(viewer,"  FGMRES: restart=%d, using %s\n",fgmres->max_k,cstr);
+    ierr = ViewerASCIIPrintf(viewer,"  FGMRES: restart=%d, using %s\n",fgmres->max_k,cstr);CHKERRQ(ierr);
     if (fgmres->nprestart > 0) {
-      ViewerASCIIPrintf(viewer,"  FGMRES: using prestart=%d\n",fgmres->nprestart);
+      ierr = ViewerASCIIPrintf(viewer,"  FGMRES: using prestart=%d\n",fgmres->nprestart);CHKERRQ(ierr);
     }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
@@ -820,7 +820,8 @@ static int KSPPrintHelp_FGMRES(KSP ksp,char *p)
 #define __FUNC__ "KSPSetFromOptions_FGMRES"
 int KSPSetFromOptions_FGMRES(KSP ksp)
 {
-  int       ierr, flg, restart, prestart;
+  int        ierr, restart, prestart;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsGetInt( ksp->prefix, "-ksp_fgmres_restart", &restart, &flg ); CHKERRQ(ierr);

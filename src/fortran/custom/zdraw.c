@@ -1,4 +1,4 @@
-/*$Id: zdraw.c,v 1.32 1999/10/24 14:04:19 bsmith Exp bsmith $*/
+/*$Id: zdraw.c,v 1.33 1999/11/05 14:48:14 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 
@@ -94,6 +94,7 @@ void PETSC_STDCALL drawdestroy_(Draw *ctx, int *__ierr )
   *__ierr = DrawDestroy(*ctx);
 }
 
+#if defined(PETSC_HAVE_X11)
 void PETSC_STDCALL drawopenx_(MPI_Comm *comm,CHAR display PETSC_MIXED_LEN(len1),
                     CHAR title PETSC_MIXED_LEN(len2),int *x,int *y,int *w,int *h,Draw* inctx, 
                     int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
@@ -106,6 +107,7 @@ void PETSC_STDCALL drawopenx_(MPI_Comm *comm,CHAR display PETSC_MIXED_LEN(len1),
   FREECHAR(display,t1);
   FREECHAR(title,t2);
 }
+#endif
 
 void PETSC_STDCALL drawlggetaxis_(DrawLG *lg,DrawAxis *axis, int *__ierr )
 {

@@ -1,4 +1,4 @@
-/*$Id: xmon.c,v 1.41 1999/06/30 22:51:20 bsmith Exp bsmith $*/
+/*$Id: xmon.c,v 1.42 1999/10/24 14:03:08 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"              /*I  "ksp.h"   I*/
 
@@ -38,7 +38,8 @@ int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n, DrawLG *d
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = DrawOpenX(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = DrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = DrawSetType(win,DRAW_X);CHKERRQ(ierr);
   ierr = DrawLGCreate(win,1,draw);CHKERRQ(ierr);
   PLogObjectParent(*draw,win);
   PetscFunctionReturn(0);
@@ -53,6 +54,15 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
   double    x, y;
 
   PetscFunctionBegin;
+  if (!monctx) {
+    MPI_Comm comm;
+    Viewer   viewer;
+
+    ierr   = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+    viewer = VIEWER_DRAW_(comm);
+    ierr   = ViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
+  }
+
   if (!n) {ierr = DrawLGReset(lg);CHKERRQ(ierr);}
   x = (double) n;
   if (rnorm > 0.0) y = log10(rnorm); else y = -15.0;
@@ -133,7 +143,8 @@ int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) { *draw = 0; PetscFunctionReturn(0);}
 
-  ierr = DrawOpenX(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = DrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = DrawSetType(win,DRAW_X);CHKERRQ(ierr);
   ierr = DrawLGCreate(win,2,draw);CHKERRQ(ierr);
   PLogObjectParent(*draw,win);
   PetscFunctionReturn(0);
@@ -149,6 +160,15 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
   Vec       resid,work;
 
   PetscFunctionBegin;
+  if (!monctx) {
+    MPI_Comm comm;
+    Viewer   viewer;
+
+    ierr   = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+    viewer = VIEWER_DRAW_(comm);
+    ierr   = ViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
+  }
+
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
   if (!rank) { 
     if (!n) {ierr = DrawLGReset(lg);CHKERRQ(ierr);}

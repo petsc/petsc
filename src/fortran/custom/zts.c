@@ -1,4 +1,4 @@
-/*$Id: zts.c,v 1.21 1999/10/24 14:04:19 bsmith Exp bsmith $*/
+/*$Id: zts.c,v 1.22 1999/11/05 14:48:14 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ts.h"
@@ -19,6 +19,7 @@
 #define tsdefaultcomputejacobian_            TSDEFAULTCOMPUTEJACOBIAN
 #define tsdefaultcomputejacobiancolor_       TSDEFAULTCOMPUTEJACOBIANCOLOR
 #define tsgetoptionsprefix_                  TSGETOPTIONSPREFIX
+#define tsdefaultmonitor_                    TSDEFAULTMONITOR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define tsdefaultcomputejacobian_            tsdefaultcomputejacobian
 #define tsdefaultcomputejacobiancolor_       tsdefaultcomputejacobiancolor
@@ -35,6 +36,7 @@
 #define tssetmonitor_                        tssetmonitor
 #define tssettype_                           tssettype
 #define tsgetoptionsprefix_                  tsgetoptionsprefix
+#define tsdefaultmonitor_                    tsdefaultmonitor
 #endif
 
 EXTERN_C_BEGIN
@@ -166,6 +168,11 @@ void PETSC_STDCALL tsdestroy_(TS *ts, int *__ierr ){
   *__ierr = TSDestroy(*ts);
 }
 
+void PETSC_STDCALL tsdefaultmonitor_(TS *ts,int *step,double *dt,Vec *x,void *ctx,int *__ierr)
+{
+  *__ierr = TSDefaultMonitor(*ts,*step,*dt,*x,ctx);
+}
+
 static int (*f7)(TS*,int*,double*,Vec*,void*,int*);
 static int ourtsmonitor(TS ts,int i,double d,Vec v,void*ctx)
 {
@@ -173,10 +180,15 @@ static int ourtsmonitor(TS ts,int i,double d,Vec v,void*ctx)
   (*f7)(&ts,&i,&d,&v,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
-void PETSC_STDCALL tssetmonitor_(TS *ts,int (*func)(TS*,int*,double*,Vec*,void*,int*),
-                    void *mctx, int *__ierr ){
-  f7 = func;
-  *__ierr = TSSetMonitor(*ts,ourtsmonitor,mctx);
+
+void PETSC_STDCALL tssetmonitor_(TS *ts,int (*func)(TS*,int*,double*,Vec*,void*,int*),void *mctx, int *__ierr )
+{
+  if ((void*)func == (void*) tsdefaultmonitor_) {
+    *__ierr = TSSetMonitor(*ts,TSDefaultMonitor,0);
+  } else {
+    f7 = func;
+    *__ierr = TSSetMonitor(*ts,ourtsmonitor,mctx);
+  }
 }
 
 void PETSC_STDCALL tsgetoptionsprefix_(TS *ts, CHAR prefix,int *__ierr,int len)

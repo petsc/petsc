@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.99 1999/10/24 14:03:01 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.100 1999/11/05 14:46:23 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -229,14 +229,14 @@ static int PCSetFromOptions_MG(PC pc)
   }
   ierr = OptionsGetString(pc->prefix,"-pc_mg_type",buff,15,&flg);CHKERRQ(ierr);
   if (flg) {
-    MGType mg = MGADDITIVE;
-    int    isadd,ismult,isfull,iskask,iscasc;
+    MGType     mg;
+    PetscTruth isadd,ismult,isfull,iskask,iscasc;
 
-    isadd  = !PetscStrcmp(buff,"additive");
-    ismult = !PetscStrcmp(buff,"multiplicative");
-    isfull = !PetscStrcmp(buff,"full");
-    iskask = !PetscStrcmp(buff,"kaskade");
-    iscasc = !PetscStrcmp(buff,"cascade");
+    ierr = PetscStrcmp(buff,"additive",&isadd);CHKERRQ(ierr);
+    ierr = PetscStrcmp(buff,"multiplicative",&ismult);CHKERRQ(ierr);
+    ierr = PetscStrcmp(buff,"full",&isfull);CHKERRQ(ierr);
+    ierr = PetscStrcmp(buff,"kaskade",&iskask);CHKERRQ(ierr);
+    ierr = PetscStrcmp(buff,"cascade",&iscasc);CHKERRQ(ierr);
 
     if      (isadd)  mg = MGADDITIVE;
     else if (ismult) mg = MGMULTIPLICATIVE;

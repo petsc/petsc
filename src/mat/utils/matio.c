@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.62 1999/10/24 14:02:51 bsmith Exp bsmith $*/
+/*$Id: matio.c,v 1.63 1999/11/05 14:46:00 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
@@ -40,12 +40,12 @@ int MatLoadRegister(MatType type,int (*loader)(Viewer,MatType,Mat*))
 #define __FUNC__ "MatLoadPrintHelp_Private"
 static int MatLoadPrintHelp_Private(Mat A)
 {
-  static int called = 0; 
-  MPI_Comm   comm = A->comm;
-  int        ierr;
+  static PetscTruth called = PETSC_FALSE; 
+  MPI_Comm          comm = A->comm;
+  int               ierr;
   
   PetscFunctionBegin;
-  if (called) {PetscFunctionReturn(0);} else called = 1;
+  if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
   ierr = (*PetscHelpPrintf)(comm," Options for MatLoad:\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -matload_block_size <block_size> :Used for MATBAIJ, MATBDIAG\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -matload_bdiag_diags <s1,s2,s3,...> : Used for MATBDIAG\n");CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: str.c,v 1.34 1999/10/13 20:36:48 bsmith Exp bsmith $*/
+/*$Id: str.c,v 1.36 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 /*
     We define the string operations here. The reason we just don't use 
   the standard string routines in the PETSc code is that on some machines 
@@ -89,15 +89,21 @@ int PetscStrncat(char s[],const char t[],int n)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrcmp"
-int PetscStrcmp(const char a[],const char b[])
+int PetscStrcmp(const char a[],const char b[],PetscTruth *flg)
 {
   int c;
 
   PetscFunctionBegin;
-  if (!a && !b) PetscFunctionReturn(0);
-  if (!a || !b) PetscFunctionReturn(1);
-  c = strcmp(a,b);
-  PetscFunctionReturn(c);
+  if (!a && !b) {
+    *flg = PETSC_TRUE;
+  } else if (!a || !b) {
+    *flg = PETSC_FALSE;
+  } else {
+    c = strcmp(a,b);
+    if (c) *flg = PETSC_FALSE;
+    else   *flg = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  

@@ -1,4 +1,4 @@
-/*$Id: destroy.c,v 1.43 1999/05/04 20:29:12 balay Exp bsmith $*/
+/*$Id: destroy.c,v 1.45 1999/10/24 14:01:28 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -93,10 +93,12 @@ int PetscObjectView(PetscObject obj,Viewer viewer)
 @*/
 int PetscTypeCompare(PetscObject obj,char *type_name,PetscTruth *same)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidHeader(obj);
   PetscValidCharPointer(type_name);
-  *same = (PetscTruth) !PetscStrcmp((char*)(obj->type_name),type_name);
+  ierr = PetscStrcmp((char*)(obj->type_name),type_name,same);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

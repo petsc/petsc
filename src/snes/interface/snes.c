@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.201 1999/10/24 14:03:31 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.202 1999/11/05 14:47:05 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
 
@@ -285,14 +285,10 @@ int SNESSetFromOptions(SNES snes)
   if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitorUpdate,0,0);CHKERRQ(ierr);}
   ierr = OptionsGetIntArray(snes->prefix,"-snes_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
-    int    rank = 0;
-    DrawLG lg;
-    MPI_Initialized(&rank);
-    if (rank) {ierr = MPI_Comm_rank(snes->comm,&rank);CHKERRQ(ierr);}
+    int rank;
+    ierr = MPI_Comm_rank(snes->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = SNESLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
-      ierr = SNESSetMonitor(snes,SNESLGMonitor,lg,( int (*)(void *))SNESLGMonitorDestroy);CHKERRQ(ierr);  
-      PLogObjectParent(snes,lg);
+      ierr = SNESSetMonitor(snes,SNESLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);  
     }
   }
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.218 1999/09/16 18:04:43 balay Exp bsmith $ 
+# $Id: makefile,v 1.220 1999/11/05 14:45:44 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -557,7 +557,7 @@ runex37:
 	   else echo "Possible problem with part IV of ex37_1, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
 runex40:
-	-@${MPIRUN} -np 3 ex40 -f ../matrices/arco1 -nd 7 -ov 2 -optionsleft_off > ex40_1.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ex40 -f ../matrices/arco1 -nd 7 -ov 2 -options_left_off > ex40_1.tmp 2>&1; \
 	   grep -v "flg =1" ex40_1.tmp > ex40_12.tmp; \
 	   if (diff output/ex40_1.out ex40_12.tmp) then true; \
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
@@ -569,7 +569,7 @@ runex41:
 	   else echo "Possible problem with ex41_1, diffs above"; fi; \
 	   ${RM} -f ex41_1.tmp ex41_12.tmp
 runex42:
-	-@${MPIRUN} -np 3 ex42 -f ../matrices/arco1 -mat_aij_oneindex -optionsleft_off \
+	-@${MPIRUN} -np 3 ex42 -f ../matrices/arco1 -mat_aij_oneindex -options_left_off \
 	   -nd 5 -ov 2  > ex42_1.tmp 2>&1; \
 	   grep -v "flg =1" ex42_1.tmp > ex42_12.tmp; \
 	   if (diff output/ex42_1.out ex42_12.tmp) then true; \
@@ -721,7 +721,7 @@ runex63:
 	   ${RM} -f ex63_1.tmp dense.mat
 
 runex67f:
-	-@${MPIRUN} -np 1  ex67f -optionsleft_off  > ex67f_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ex67f -options_left_off  > ex67f_1.tmp 2>&1;   \
 	   if (diff output/ex67f_1.out ex67f_1.tmp) then true; \
 	   else echo "Possible problem with ex67f_1, diffs above"; fi; \
 	   ${RM} -f ex67f_1.tmp

@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.177 1999/10/24 14:02:11 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.178 1999/11/05 14:45:14 bsmith Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -1121,9 +1121,9 @@ int MatSetOption_SeqDense(Mat A,MatOption op)
            op == MAT_NO_NEW_DIAGONALS ||
            op == MAT_YES_NEW_DIAGONALS ||
            op == MAT_IGNORE_OFF_PROC_ENTRIES ||
-           op == MAT_USE_HASH_TABLE)
+           op == MAT_USE_HASH_TABLE) {
     PLogInfo(A,"MatSetOption_SeqDense:Option ignored\n");
-  else {
+  } else {
     SETERRQ(PETSC_ERR_SUP,0,"unknown option");
   }
   PetscFunctionReturn(0);

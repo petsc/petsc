@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.133 1999/10/24 14:03:08 bsmith Exp bsmith $*/
+/*$Id: itfunc.c,v 1.134 1999/11/05 14:46:35 bsmith Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -952,7 +952,7 @@ int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx, int
 
 #undef __FUNC__  
 #define __FUNC__ "KSPClearMonitor"
-/*@C
+/*@
    KSPClearMonitor - Clears all monitors for a KSP object.
 
    Collective on KSP

@@ -1,8 +1,6 @@
-/*$Id: pinit.c,v 1.22 1999/10/24 14:01:28 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.23 1999/11/05 14:44:14 bsmith Exp bsmith $*/
 /*
-
    This file defines the initialization of PETSc, including PetscInitialize()
-
 */
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
@@ -56,10 +54,6 @@ int OptionsCheckInitial_Components(void)
 
   ierr = OptionsGetString(PETSC_NULL,"-log_info_exclude",mname,256, &flg1);CHKERRQ(ierr);
   if (flg1) {
-    ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = PLogInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);
-    }
     ierr = PetscStrstr(mname,"vec",&f);CHKERRQ(ierr);
     if (f) {
       ierr = PLogInfoDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
@@ -239,6 +233,9 @@ EXTERN_C_END
 .  -fp_trap - Stops on floating point exceptions (Note that on the
               IBM RS6000 this slows code by at least a factor of 10.)
 .  -no_signal_handler - Indicates not to trap error signals
+.  -petsc_shared_tmp - indicates /tmp directory is shared by all processors
+.  -petsc_not_shared_tmp - each processor has own /tmp
+.  -petsc_tmp - alternative name of /tmp directory
 -  -get_resident_set_size - Print memory usage at end of run
 
    Options Database Keys for Profiling:
@@ -248,6 +245,14 @@ EXTERN_C_END
         hangs without running in the debugger).  See PLogTraceBegin().
 .  -log_info <optional filename> - Prints verbose information to the screen
 -  -log_info_exclude <null,vec,mat,sles,snes,ts> - Excludes some of the verbose messages
+
+   Environmental Variables:
++   PETSC_TMP - alternative tmp directory
+.   PETSC_SHARED_TMP - tmp is shared by all processes
+.   PETSC_NOT_SHARED_TMP - each process has its own private tmp
+.   PETSC_VIEWER_SOCKET_PORT - socket number to use for socket viewer
+-   PETSC_VIEWER_SOCKET_MACHINE - machine to use for socket viewer to connect to
+
 
    Level: beginner
 
@@ -384,8 +389,9 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
    Collective on PETSC_COMM_WORLD
 
    Options Database Keys:
-+  -optionstable - Calls OptionsPrint()
-.  -optionsleft - Prints unused options that remain in the database
++  -options_table - Calls OptionsPrint()
+.  -options_left - Prints unused options that remain in the database
+.  -options_left_off - Does not print unused options that remain in the database
 .  -mpidump - Calls PetscMPIDump()
 .  -trdump - Calls PetscTrDump()
 .  -trinfo - Prints total memory usage
@@ -497,12 +503,14 @@ int PetscFinalize(void)
   }
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-optionstable",&flg1);CHKERRQ(ierr);
-  if (flg1) {
+  ierr = OptionsHasName(PETSC_NULL,"-options_table",&flg2);CHKERRQ(ierr);
+  if (flg1 && flg2) {
     if (!rank) {ierr = OptionsPrint(stdout);CHKERRQ(ierr);}
   }
   ierr = OptionsHasName(PETSC_NULL,"-optionsleft",&flg1);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-options_left",&flg2);CHKERRQ(ierr);
   ierr = OptionsAllUsed(&nopt);CHKERRQ(ierr);
-  if (flg1) {
+  if (flg1 || flg2) {
     ierr = OptionsPrint(stdout);CHKERRQ(ierr);
   }
   if (flg1) {
@@ -516,8 +524,7 @@ int PetscFinalize(void)
   }
 
 #if defined(PETSC_USE_BOPT_g)
-  flg2 = PETSC_FALSE;
-  ierr = OptionsHasName(PETSC_NULL,"-optionsleft_off",&flg2);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-options_left_off",&flg2);CHKERRQ(ierr);
   if (nopt && !flg1 && !flg2) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);

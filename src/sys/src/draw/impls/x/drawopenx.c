@@ -1,4 +1,4 @@
-/*$Id: drawopenx.c,v 1.10 1999/10/24 14:01:15 bsmith Exp bsmith $*/
+/*$Id: drawopenx.c,v 1.11 1999/11/05 14:43:58 bsmith Exp bsmith $*/
 /*
     Defines the operations for the X Draw implementation.
 */
@@ -60,21 +60,10 @@
 int DrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,Draw* draw)
 {
   int        ierr;
-#if !defined(PETSC_HAVE_X11)
-  PetscTruth flg;
-#endif
 
   PetscFunctionBegin;
   ierr = DrawCreate(comm,display,title,x,y,w,h,draw);CHKERRQ(ierr);
-#if !defined(PETSC_HAVE_X11)
-  ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
-  if (!flg) {
-    (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
-  }
-  ierr = DrawSetType(*draw,DRAW_NULL);CHKERRQ(ierr);
-#else
   ierr = DrawSetType(*draw,DRAW_X);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 

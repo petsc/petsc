@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.30 1999/10/24 14:02:28 bsmith Exp bsmith $*/
+/*$Id: baijfact2.c,v 1.31 1999/11/05 14:45:32 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2259,6 +2259,8 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     ierr = MatMissingDiag_SeqBAIJ(*fact);CHKERRQ(ierr);
     b->row        = isrow;
     b->col        = iscol;
+    ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+    ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
     b->icol       = isicol;
     b->solve_work = (Scalar *) PetscMalloc((b->m+1+b->bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
    /*
@@ -2274,7 +2276,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     case 3:
       (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering;
       (*fact)->ops->solve           = MatSolve_SeqBAIJ_3_NaturalOrdering;
-      PLogInfo(A,"UMatILUFactorSymbolic_SeqBAIJ:sing special in-place natural ordering factor and solve BS=3\n");
+      PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:sing special in-place natural ordering factor and solve BS=3\n");
       break; 
     case 4:
       (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
@@ -2428,8 +2430,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
 
   {
     double af = ((double)ainew[n])/((double)ai[n]);
-    PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
-             realloc,f,af);
+    PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
     PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Run with -pc_ilu_fill %g or use \n",af);
     PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:PCILUSetFill(pc,%g);\n",af);
     PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:for best performance.\n");
@@ -2457,6 +2458,8 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
+  ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+  ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol       = isicol;
   b->solve_work = (Scalar *) PetscMalloc( (bs*n+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
   /* In b structure:  Free imax, ilen, old a, old j.  

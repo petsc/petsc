@@ -1,4 +1,4 @@
-/*$Id: aodatabasic.c,v 1.45 1999/10/24 14:03:59 bsmith Exp bsmith $*/
+/*$Id: aodatabasic.c,v 1.46 1999/11/05 14:47:45 bsmith Exp bsmith $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.
@@ -602,8 +602,7 @@ int AODataKeyRemap_Basic(AOData aodata, char *keyname,AO ao)
   char          *data,*tmpdata;
   AODataKey     *key;
   AODataSegment *seg;
-  int           match;
-  PetscTruth    flag;
+  PetscTruth    flag,match;
 
   PetscFunctionBegin;
 
@@ -612,7 +611,7 @@ int AODataKeyRemap_Basic(AOData aodata, char *keyname,AO ao)
   while (key) {
     seg = key->segments;
     while (seg) {
-      match = !PetscStrcmp(seg->name,keyname);
+      ierr = PetscStrcmp(seg->name,keyname,&match);CHKERRQ(ierr);
       if (!match) {
         seg = seg->next;
         continue;

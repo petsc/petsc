@@ -1,4 +1,4 @@
-/*$Id: bdiag.c,v 1.179 1999/10/24 14:02:21 bsmith Exp bsmith $*/
+/*$Id: bdiag.c,v 1.180 1999/11/05 14:45:27 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -114,8 +114,7 @@ int MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
   for (i=0; i<a->nd; i++) {
     if (a->diag[i] == 0) {a->mainbd = i; break;}
   }
-  PLogInfo(A,"MatAssemblyEnd_SeqBDiag:Number diagonals %d, memory used %d, block size %d\n", 
-           a->nd,a->maxnz,a->bs);
+  PLogInfo(A,"MatAssemblyEnd_SeqBDiag:Number diagonals %d, memory used %d, block size %d\n",a->nd,a->maxnz,a->bs);
   PetscFunctionReturn(0);
 }
 
@@ -153,12 +152,12 @@ int MatSetOption_SeqBDiag(Mat A,MatOption op)
 #define __FUNC__ "MatPrintHelp_SeqBDiag"
 int MatPrintHelp_SeqBDiag(Mat A)
 {
-  static int called = 0; 
-  MPI_Comm   comm = A->comm;
-  int        ierr;
+  static PetscTruth called = PETSC_FALSE; 
+  MPI_Comm          comm = A->comm;
+  int               ierr;
 
   PetscFunctionBegin;
-  if (called) {PetscFunctionReturn(0);} else called = 1;
+  if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
   ierr = (*PetscHelpPrintf)(comm," Options for MATSEQBDIAG and MATMPIBDIAG matrix formats:\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_block_size <block_size>\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_bdiag_diags <d1,d2,d3,...> (diagonal numbers)\n");CHKERRQ(ierr); 

@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.98 1999/10/24 02:35:10 bsmith Exp bsmith $ */
+/* $Id: filev.c,v 1.99 1999/11/05 14:43:41 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "pinclude/petscfix.h"
@@ -356,13 +356,13 @@ int ViewerSetFilename_ASCII(Viewer viewer,const char name[])
   int          ierr;
   char         fname[256];
   Viewer_ASCII *vascii = (Viewer_ASCII *) viewer->data;
-  int          isstderr,isstdout;
+  PetscTruth   isstderr,isstdout;
 
   PetscFunctionBegin;
   if (!name) PetscFunctionReturn(0);
 
-  isstderr = !PetscStrcmp(name,"stderr");
-  isstdout = !PetscStrcmp(name,"stdout");
+  ierr = PetscStrcmp(name,"stderr",&isstderr);CHKERRQ(ierr);
+  ierr = PetscStrcmp(name,"stdout",&isstdout);CHKERRQ(ierr);
   if (isstderr)      vascii->fd = stderr;
   else if (isstdout) vascii->fd = stdout;
   else {

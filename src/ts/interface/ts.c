@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.14 1999/10/24 14:03:48 bsmith Exp bsmith $ */
+/* $Id: ts.c,v 1.15 1999/11/05 14:47:28 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "ts.h"  I*/
 
 #undef __FUNC__  
@@ -1004,14 +1004,14 @@ int TSMonitor(TS ts,int step,double time,Vec x)
 
 .seealso: TSLGMonitorDestroy(), TSSetMonitor()
 @*/
-int TSLGMonitorCreate(char *host,char *label,int x,int y,int m,
-                       int n, DrawLG *draw)
+int TSLGMonitorCreate(char *host,char *label,int x,int y,int m,int n, DrawLG *draw)
 {
   Draw win;
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = DrawOpenX(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = DrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = DrawSetType(win,DRAW_X);CHKERRQ(ierr);
   ierr = DrawLGCreate(win,1,draw);CHKERRQ(ierr);
   ierr = DrawLGIndicateDataPoints(*draw);CHKERRQ(ierr);
 

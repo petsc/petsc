@@ -1,4 +1,4 @@
-/*$Id: composite.c,v 1.29 1999/10/24 14:03:05 bsmith Exp bsmith $*/
+/*$Id: composite.c,v 1.30 1999/11/05 14:46:29 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
@@ -126,10 +126,10 @@ static int PCSetFromOptions_Composite(PC pc)
   PetscFunctionBegin;
   ierr = OptionsGetString(pc->prefix,"-pc_composite_type",stype,16,&flg);CHKERRQ(ierr);
   if (flg) {
-    int ismult,isadd;
+    PetscTruth ismult,isadd;
 
-    ismult = !PetscStrcmp(stype,"multiplicative");
-    isadd  = !PetscStrcmp(stype,"additive");
+    ierr = PetscStrcmp(stype,"multiplicative",&ismult);CHKERRQ(ierr);
+    ierr = PetscStrcmp(stype,"additive",&isadd);CHKERRQ(ierr);
 
     if (ismult)      type = PC_COMPOSITE_MULTIPLICATIVE;
     else if (isadd)  type = PC_COMPOSITE_ADDITIVE;

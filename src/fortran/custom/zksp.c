@@ -1,9 +1,15 @@
-/*$Id: zksp.c,v 1.36 1999/10/24 14:04:19 bsmith Exp bsmith $*/
+/*$Id: zksp.c,v 1.37 1999/11/05 14:48:14 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ksp.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define kspdefaultmonitor_        KSPDEFAULTMONITOR
+#define ksptruemonitor_           KSPTRUEMONITOR
+#define kspvecviewmonitor_        KSPVECVIEWMONITOR
+#define ksplgmonitor_             KSPLGMONITOR
+#define ksplgtruemonitor_         KSPLGTRUEMONITOR
+#define kspsingularvaluemonitor_  KSPSINGULARVALUEMONITOR
 #define kspregisterdestroy_       KSPREGISTERDESTROY
 #define kspdestroy_               KSPDESTROY
 #define ksplgmonitordestroy_      KSPLGMONITORDESTROY
@@ -23,6 +29,12 @@
 #define kspgetresidualhistory_    KSPGETRESIDUALHISTORY
 #define kspgetoptionsprefix_      KSPGETOPTIONSPREFIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define kspsingularvaluemonitor_  kspsingularvaluemonitor
+#define kspdefaultmonitor_        kspdefaultmonitor
+#define ksptruemonitor_           ksptruemonitor
+#define kspvecviewmonitor_        kspvecviewmonitor
+#define ksplgmonitor_             ksplgmonitor
+#define ksplgtruemonitor_         ksplgtruemonitor
 #define kspgetresidualhistory_    kspgetresidualhistory
 #define kspsettype_               kspsettype
 #define kspregisterdestroy_       kspregisterdestroy
@@ -116,6 +128,40 @@ void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
   *__ierr = KSPSetConvergenceTest(*ksp,ourtest,cctx);
 }
 
+/*
+        These are not usually called from Fortran but allow Fortran users 
+   to transparently set these monitors from .F code
+*/
+void PETSC_STDCALL kspdefaultmonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *__ierr)
+{
+  *__ierr = KSPDefaultMonitor(*ksp,*it,*norm,ctx);
+}
+ 
+void PETSC_STDCALL kspsingularvaluemonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *__ierr)
+{
+  *__ierr = KSPSingularValueMonitor(*ksp,*it,*norm,ctx);
+}
+
+void PETSC_STDCALL ksplgmonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *__ierr)
+{
+  *__ierr = KSPLGMonitor(*ksp,*it,*norm,ctx);
+}
+
+void PETSC_STDCALL ksplgtruemonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *__ierr)
+{
+  *__ierr = KSPLGTrueMonitor(*ksp,*it,*norm,ctx);
+}
+
+void PETSC_STDCALL ksptruemonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *__ierr)
+{
+  *__ierr = KSPTrueMonitor(*ksp,*it,*norm,ctx);
+}
+
+void PETSC_STDCALL kspvecviewmonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *__ierr)
+{
+  *__ierr = KSPVecViewMonitor(*ksp,*it,*norm,ctx);
+}
+
 static int (*f1)(KSP*,int*,double*,void*,int*);
 static int ourmonitor(KSP ksp,int i,double d,void* ctx)
 {
@@ -126,8 +172,22 @@ static int ourmonitor(KSP ksp,int i,double d,void* ctx)
 void PETSC_STDCALL kspsetmonitor_(KSP *ksp,int (*monitor)(KSP*,int*,double*,void*,int*),
                     void *mctx, int (*monitordestroy)(void *),int *__ierr )
 {
-  f1 = monitor;
-  *__ierr = KSPSetMonitor(*ksp,ourmonitor,mctx,0);
+  if ((void *) monitor == (void *) kspdefaultmonitor_) {
+    *__ierr = KSPSetMonitor(*ksp,KSPDefaultMonitor,0,0);
+  } else if ((void *) monitor == (void *) ksplgmonitor_) {
+    *__ierr = KSPSetMonitor(*ksp,KSPLGMonitor,0,0);
+  } else if ((void *) monitor == (void *) ksplgtruemonitor_) {
+    *__ierr = KSPSetMonitor(*ksp,KSPLGTrueMonitor,0,0);
+  } else if ((void *) monitor == (void *) kspvecviewmonitor_) {
+    *__ierr = KSPSetMonitor(*ksp,KSPVecViewMonitor,0,0);
+  } else if ((void *) monitor == (void *) ksptruemonitor_) {
+    *__ierr = KSPSetMonitor(*ksp,KSPTrueMonitor,0,0);
+  } else if ((void *) monitor == (void *) kspsingularvaluemonitor_) {
+    *__ierr = KSPSetMonitor(*ksp,KSPSingularValueMonitor,0,0);
+  } else {
+    f1 = monitor;
+    *__ierr = KSPSetMonitor(*ksp,ourmonitor,mctx,0);
+  }
 }
 
 void PETSC_STDCALL kspgetpc_(KSP *ksp,PC *B, int *__ierr )

@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.124 1999/10/24 14:02:14 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.125 1999/11/05 14:45:18 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -122,8 +122,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   }
   if (ai[n] != 0) {
     double af = ((double)ainew[n])/((double)ai[n]);
-    PLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
-             realloc,f,af);
+    PLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
     PLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:Run with -pc_lu_fill %g or use \n",af);
     PLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:PCLUSetFill(pc,%g);\n",af);
     PLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:for best performance.\n");
@@ -153,6 +152,8 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
+  ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+  ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol       = isicol;
   b->solve_work = (Scalar *) PetscMalloc( (n+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
   /* In b structure:  Free imax, ilen, old a, old j.  
@@ -328,14 +329,18 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   Abops = A->bops;
   Aops  = A->ops;
   ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
-  mat = (Mat_SeqAIJ *) A->data;
+  mat  = (Mat_SeqAIJ *) A->data;
   PLogObjectParent(A,mat->icol); 
   
   A->bops  = Abops;
   A->ops   = Aops;
   A->qlist = 0;
+  /* copy over the type_name and name */
+  ierr     = PetscStrallocpy(C->type_name,&A->type_name);CHKERRQ(ierr);
+  ierr     = PetscStrallocpy(C->name,&A->name);CHKERRQ(ierr);
 
   PetscHeaderDestroy(C);
+
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
@@ -521,10 +526,12 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
     v   = aa + diag[i] + shift;
     vi  = aj + diag[i] + (!shift);
     nz  = ai[i+1] - diag[i] - 1;
-    s1  = tmp[i] *= *(v++);  /* multiply by inverse of diagonal entry */
+    s1  = tmp[i];
+    s1 *= *(v++);  /* multiply by inverse of diagonal entry */
     while (nz--) {
       tmp[*vi++ + shift] -= (*v++)*s1;
     }
+    tmp[i] = s1;
   }
 
   /* backward solve the L^T */
@@ -649,6 +656,8 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     b->icol             = isicol;
     b->solve_work       = (Scalar *) PetscMalloc((b->m+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
     (*fact)->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
+    ierr                = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+    ierr                = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -780,8 +789,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
 
   {
     double af = ((double)ainew[n])/((double)ai[n]);
-    PLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
-             realloc,f,af);
+    PLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
     PLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Run with -pc_ilu_fill %g or use \n",af);
     PLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:PCILUSetFill(pc,%g);\n",af);
     PLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:for best performance.\n");
@@ -809,6 +817,8 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
+  ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+  ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol       = isicol;
   b->solve_work = (Scalar *) PetscMalloc( (n+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
   /* In b structure:  Free imax, ilen, old a, old j.  

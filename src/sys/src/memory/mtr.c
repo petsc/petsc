@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.132 1999/10/13 20:36:44 bsmith Exp bsmith $*/
+/*$Id: mtr.c,v 1.134 1999/10/24 14:01:27 bsmith Exp bsmith $*/
 /*
      PETSc's interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -528,7 +528,7 @@ int PetscTrLog(void)
 int PetscTrLogDump(FILE *fp)
 {
   int        i,rank,j,n,*shortlength,ierr,dummy,size, tag = 1212 /* very bad programming */;
-  int        match;
+  PetscTruth match;
   char       **shortfunction;
   PLogDouble rss;
   MPI_Status status;
@@ -557,7 +557,7 @@ int PetscTrLogDump(FILE *fp)
   n = 1;
   for ( i=1; i<PetscLogMalloc; i++ ) {
     for ( j=0; j<n; j++ ) {
-      match = !PetscStrcmp(shortfunction[j],PetscLogMallocFunction[i]);
+      ierr = PetscStrcmp(shortfunction[j],PetscLogMallocFunction[i],&match);CHKERRQ(ierr);
       if (match) {
         shortlength[j] += PetscLogMallocLength[i];
         goto foundit;

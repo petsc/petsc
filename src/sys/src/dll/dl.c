@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.52 1999/10/24 14:01:23 bsmith Exp bsmith $*/
+/*$Id: dl.c,v 1.53 1999/11/05 14:44:08 bsmith Exp bsmith $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -392,9 +392,9 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
     nlist = list;
     prev  = 0;
     while (nlist) {
-      int match;
+      PetscTruth match;
 
-      match = !PetscStrcmp(nlist->libname,path);
+      ierr = PetscStrcmp(nlist->libname,path,&match);CHKERRQ(ierr);
       if (match) {
         handle = nlist->handle;
         goto done;
@@ -472,9 +472,9 @@ int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
   /* see if library was already open then we are done */
   list = prev = *outlist;
   while (list) {
-    int match;
+    PetscTruth match;
 
-    match = !PetscStrcmp(list->libname,libname);
+    ierr = PetscStrcmp(list->libname,libname,&match);CHKERRQ(ierr);
     if (match) {
       PetscFunctionReturn(0);
     }
@@ -530,9 +530,9 @@ int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
   list = *outlist;
   prev = 0;
   while (list) {
-    int match;
+    PetscTruth match;
 
-    match = !PetscStrcmp(list->libname,libname);
+    ierr = PetscStrcmp(list->libname,libname,&match);CHKERRQ(ierr);
     if (match) {
       if (prev) prev->next = list->next;
       list->next = *outlist;

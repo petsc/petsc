@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.182 1999/10/24 14:02:31 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.183 1999/11/05 14:45:37 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -785,10 +785,10 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
   
   /* Print Summary */
 #if defined(PETSC_USE_BOPT_g)
-  for ( i=0,j=0; i<size; i++) 
+  for ( i=0,j=0; i<size; i++) {
     if (HT[i]) {j++;}
-  PLogInfo(0,"MatCreateHashTable_MPIBAIJ_Private: Average Search = %5.2f,max search = %d\n",
-           (j== 0)? 0.0:((double)(ct+j))/j,max);
+  }
+  PLogInfo(0,"MatCreateHashTable_MPIBAIJ_Private: Average Search = %5.2f,max search = %d\n",(j== 0)? 0.0:((double)(ct+j))/j,max);
 #endif
   PetscFunctionReturn(0);
 }
@@ -902,8 +902,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   
 #if defined(PETSC_USE_BOPT_g)
   if (baij->ht && mode== MAT_FINAL_ASSEMBLY) {
-    PLogInfo(0,"MatAssemblyEnd_MPIBAIJ:Average Hash Table Search in MatSetValues = %5.2f\n",
-             ((double)baij->ht_total_ct)/baij->ht_insert_ct);
+    PLogInfo(0,"MatAssemblyEnd_MPIBAIJ:Average Hash Table Search in MatSetValues = %5.2f\n",((double)baij->ht_total_ct)/baij->ht_insert_ct);
     baij->ht_total_ct  = 0;
     baij->ht_insert_ct = 0;
   }

@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.187 1999/10/24 14:02:28 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.188 1999/11/05 14:45:32 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -142,6 +142,12 @@ int MatDestroy_SeqBAIJ(Mat A)
   if (!a->singlemalloc) {
     ierr = PetscFree(a->i);CHKERRQ(ierr);
     ierr = PetscFree(a->j);CHKERRQ(ierr);
+  }
+  if (a->row) {
+    ierr = ISDestroy(a->row);CHKERRQ(ierr);
+  }
+  if (a->col) {
+    ierr = ISDestroy(a->col);CHKERRQ(ierr);
   }
   if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
   if (a->ilen) {ierr = PetscFree(a->ilen);CHKERRQ(ierr);}
@@ -1158,17 +1164,6 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
 
   outA          = inA; 
   inA->factor   = FACTOR_LU;
-  a->row        = row;
-  a->col        = col;
-
-  /* Create the invert permutation so that it can be used in MatLUFactorNumeric() */
-  ierr = ISInvertPermutation(col,&(a->icol));CHKERRQ(ierr);
-  PLogObjectParent(inA,a->icol);
-
-  if (!a->solve_work) {
-    a->solve_work = (Scalar *) PetscMalloc((a->m+a->bs)*sizeof(Scalar));CHKPTRQ(a->solve_work);
-    PLogObjectMemory(inA,(a->m+a->bs)*sizeof(Scalar));
-  }
 
   if (!a->diag) {
     ierr = MatMarkDiag_SeqBAIJ(inA);CHKERRQ(ierr);
@@ -1217,6 +1212,20 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
     inA->ops->solve           = MatSolve_SeqBAIJ_7_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
     break; 
+  default:
+    a->row        = row;
+    a->col        = col;
+    ierr          = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
+    ierr          = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
+
+    /* Create the invert permutation so that it can be used in MatLUFactorNumeric() */
+    ierr = ISInvertPermutation(col,&(a->icol));CHKERRQ(ierr);
+    PLogObjectParent(inA,a->icol);
+
+    if (!a->solve_work) {
+      a->solve_work = (Scalar *) PetscMalloc((a->m+a->bs)*sizeof(Scalar));CHKPTRQ(a->solve_work);
+      PLogObjectMemory(inA,(a->m+a->bs)*sizeof(Scalar));
+    }
   }
 
   ierr = MatLUFactorNumeric(inA,&outA);CHKERRQ(ierr);
@@ -1227,12 +1236,12 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
 #define __FUNC__ "MatPrintHelp_SeqBAIJ"
 int MatPrintHelp_SeqBAIJ(Mat A)
 {
-  static int called = 0; 
-  MPI_Comm   comm = A->comm;
-  int        ierr;
+  static PetscTruth called = PETSC_FALSE; 
+  MPI_Comm          comm = A->comm;
+  int               ierr;
 
   PetscFunctionBegin;
-  if (called) {PetscFunctionReturn(0);} else called = 1;
+  if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
   ierr = (*PetscHelpPrintf)(comm," Options for MATSEQBAIJ and MATMPIBAIJ matrix formats (the defaults):\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_block_size <block_size>\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);

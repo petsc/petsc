@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.132 1999/10/24 14:03:02 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.133 1999/11/05 14:46:26 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -614,9 +614,9 @@ static int PCDestroy_ILU(PC pc)
   int    ierr;
 
   PetscFunctionBegin;
-  if (!ilu->inplace && ilu->fact) MatDestroy(ilu->fact);
-  if (ilu->row && ilu->col && ilu->row != ilu->col) ISDestroy(ilu->row);
-  if (ilu->col) ISDestroy(ilu->col);
+  if (!ilu->inplace && ilu->fact) {ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);}
+  if (ilu->row && ilu->col && ilu->row != ilu->col) {ierr = ISDestroy(ilu->row);CHKERRQ(ierr);}
+  if (ilu->col) {ierr = ISDestroy(ilu->col);CHKERRQ(ierr);}
   ierr = PetscFree(ilu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

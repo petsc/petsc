@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.146 1999/10/24 14:03:35 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.147 1999/11/05 14:47:10 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -904,12 +904,12 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
   }
   ierr = OptionsGetString(snes->prefix,"-snes_eq_ls",ver,16, &flg);CHKERRQ(ierr);
   if (flg) {
-    int isbasic,isnonorms,isquad,iscubic;
+    PetscTruth isbasic,isnonorms,isquad,iscubic;
 
-    isbasic   = !PetscStrcmp(ver,"basic");
-    isnonorms = !PetscStrcmp(ver,"basicnonorms");
-    isquad    = !PetscStrcmp(ver,"quadratic");
-    iscubic   = !PetscStrcmp(ver,"cubic");
+    ierr = PetscStrcmp(ver,"basic",&isbasic);CHKERRQ(ierr);
+    ierr = PetscStrcmp(ver,"basicnonorms",&isnonorms);CHKERRQ(ierr);
+    ierr = PetscStrcmp(ver,"quadratic",&isquad);CHKERRQ(ierr);
+    ierr = PetscStrcmp(ver,"cubic",&iscubic);CHKERRQ(ierr);
 
     if (isbasic) {
       ierr = SNESSetLineSearch(snes,SNESNoLineSearch,PETSC_NULL);CHKERRQ(ierr);
