@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.16 1996/03/01 01:14:19 balay Exp balay $ */
+/* $Id: ptime.h,v 1.17 1996/03/04 15:15:03 balay Exp bsmith $ */
 /*
      Low cost access to system time. This, in general, should not
   be included in user programs.
@@ -27,6 +27,10 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 #if defined(PARCH_sun4) && !defined(__cplusplus)
 extern int gettimeofday(struct timeval *, struct timezone *);
 #endif
+/*
+   With Solaris 5.5 (and maybe 5.4) you should remove the 
+ part of the line defined(PARCH_solaris) || 
+*/
 #if (defined(PARCH_solaris) || defined(PARCH_sun4)) && defined(__cplusplus)
 extern "C" {
 extern int gettimeofday(struct timeval *, struct timezone *);
