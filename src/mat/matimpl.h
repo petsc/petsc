@@ -17,7 +17,7 @@ struct _MatOps {
             (*transpose)(Mat),
             (*getinfo)(Mat,MatInfoType,int*,int*,int*),(*equal)(Mat,Mat),
             (*getdiagonal)(Mat,Vec),(*scale)(Mat,Vec,Vec),
-            (*norm)(Mat,int,double*),
+            (*norm)(Mat,int,double*),(*compress)(Mat),
             (*assemblybegin)(Mat,MatAssemblyType),
             (*assemblyend)(Mat,MatAssemblyType),
             (*setoption)(Mat,MatOption),(*zeroentries)(Mat),
