@@ -127,10 +127,95 @@ typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE } PetscScalarPrecision;
 /* PETSC_i is the imaginary number, i */
 extern  PetscScalar       PETSC_i;
 
+/*MC
+   PetscMin - Returns minimum of two numbers
+
+   Input Parameter:
++  v1 - first value to find minimum of
+-  v2 - second value to find minimum of
+
+   Synopsis:
+   type PetscMin(type v1,type v2)
+
+   Notes: type can be integer or floating point value
+
+   Level: beginner
+
+
+.seealso: PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+
+M*/
 #define PetscMin(a,b)   (((a)<(b)) ?  (a) : (b))
+
+/*MC
+   PetscMax - Returns maxium of two numbers
+
+   Input Parameter:
++  v1 - first value to find maximum of
+-  v2 - second value to find maximum of
+
+   Synopsis:
+   type max PetscMax(type v1,type v2)
+
+   Notes: type can be integer or floating point value
+
+   Level: beginner
+
+.seealso: PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+
+M*/
 #define PetscMax(a,b)   (((a)<(b)) ?  (b) : (a))
+
+/*MC
+   PetscAbsInt - Returns the absolute value of an integer
+
+   Input Parameter:
+.   v1 - the integer
+
+   Synopsis:
+   int abs PetscAbsInt(int v1)
+
+
+   Level: beginner
+
+.seealso: PetscMax(), PetscMin(), PetscAbsReal(), PetscSqr()
+
+M*/
 #define PetscAbsInt(a)  (((a)<0)   ? -(a) : (a))
+
+/*MC
+   PetscAbsReal - Returns the absolute value of an real number
+
+   Input Parameter:
+.   v1 - the double 
+
+   Synopsis:
+   int abs PetscAbsReal(PetscReal v1)
+
+
+   Level: beginner
+
+.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscSqr()
+
+M*/
 #define PetscAbsReal(a) (((a)<0)   ? -(a) : (a))
+
+/*MC
+   PetscSqr - Returns the square of a number
+
+   Input Parameter:
+.   v1 - the value
+
+   Synopsis:
+   type sqr PetscSqr(type v1)
+
+   Notes: type can be integer or floating point value
+
+   Level: beginner
+
+.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscAbsReal()
+
+M*/
 #define PetscSqr(a)     ((a)*(a))
 
 /* ----------------------------------------------------------------------------*/

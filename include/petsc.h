@@ -105,6 +105,21 @@ M*/
 
 #define PETSC_YES            PETSC_TRUE
 #define PETSC_NO             PETSC_FALSE
+
+/*M
+    PETSC_IGNORE - same as PETSC_NULL, means PETSc will ignore this argument
+
+   Level: beginner
+
+   Notes: accepted by many PETSc functions to not set a parameter and instead use
+          some default
+
+          This macro does not exist in Fortran; you must use PETSC_NULL_INTEGER, 
+          PETSC_NULL_DOUBLE_PRECISION etc
+
+.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_NULL, PETSC_DETERMINE
+
+M*/
 #define PETSC_IGNORE         PETSC_NULL
 
 /*M

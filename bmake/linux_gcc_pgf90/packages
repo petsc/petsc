@@ -91,3 +91,10 @@ PETSC_HAVE_RAMG = -DPETSC_HAVE_RAMG
 SPAI_INCLUDE    = -I/home/petsc/software/spai_3.0/lib
 SPAI_LIB        = /home/petsc/software/spai_3.0/lib/${PETSC_ARCH}/libspai.a
 PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
+#
+# BlockSolve
+#
+BLOCKSOLVE_INCLUDE    = -I/home/petsc/software/BlockSolve95/include
+BLOCKSOLVE_LIB        = -L/home/petsc/software/BlockSolve95/lib/libO/linux -lBS95
+PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
+

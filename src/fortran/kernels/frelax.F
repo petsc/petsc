@@ -5,7 +5,7 @@
 !
 #include "include/finclude/petscdef.h"
 !
-      subroutine FortranRelaxAIJForwardZero(n,omega,x,ai,aj,        
+      subroutine FortranRelaxAIJForwardZero(n,omega,x,ai,aj,            &
      &           adiag,idiag,aa,b)
       implicit none
       PetscScalar      x(0:*),aa(0:*),b(0:*),idiag(0:*)
@@ -33,7 +33,7 @@
 !
 !-------------------------------------------------------------------
 !      
-      subroutine FortranRelaxAIJBackwardZero(n,omega,x,ai,aj,     
+      subroutine FortranRelaxAIJBackwardZero(n,omega,x,ai,aj,           &
      &                                  adiag,idiag,aa,b)
       implicit none
       PetscScalar      x(0:*),aa(0:*),b(0:*),idiag(0:*)

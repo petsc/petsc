@@ -554,17 +554,7 @@ int FormInterpolation(AppCtx *user)
   ierr = MatMultTranspose(mat,user->fine.x,Rscale);CHKERRQ(ierr);
   ierr = VecReciprocal(Rscale);CHKERRQ(ierr);
   user->Rscale = Rscale;
-
-  /*
-     this is merely so we provide a restriction "matrix" to the multigrid code
-     so we flip the roles of MatMult() and MatMultTranspose() on the "interpolation/restriction"
-     matrix
-  */
-  ierr = MatCreateShell(PETSC_COMM_WORLD,m_c_local,m_fine_local,m_coarse,m_fine,
-                        mat,&user->R);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(user->R,MATOP_MULT,(void*)MatMult_Ours);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(user->R,MATOP_MULT_TRANSPOSE_ADD,(void*)MatMultTransAdd_Ours);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(user->R,MATOP_DESTROY,(void*)MatDestroy_Ours);CHKERRQ(ierr);
+  user->R = mat;
   return 0;
 }
 

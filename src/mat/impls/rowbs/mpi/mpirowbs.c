@@ -66,7 +66,7 @@ int MatScale_MPIRowbs(const PetscScalar *alphain,Mat inA)
 /* ----------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMPIRowbs_local"
-static int MatCreateMPIRowbs_local(Mat A,int nz,int *nnz)
+static int MatCreateMPIRowbs_local(Mat A,int nz,const int nnz[])
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs*)A->data;
   int          ierr,i,len,nzalloc = 0,m = A->m;
@@ -1467,7 +1467,7 @@ EXTERN int MatBackwardSolve_MPIRowbs(Mat,Vec,Vec);
 EXTERN int MatScaleSystem_MPIRowbs(Mat,Vec,Vec);
 EXTERN int MatUnScaleSystem_MPIRowbs(Mat,Vec,Vec);
 EXTERN int MatUseScaledForm_MPIRowbs(Mat,PetscTruth);
-EXTERN int MatGetSubMatrices_MPIRowbs (Mat,int,IS *,IS *,MatReuse,Mat **);
+EXTERN int MatGetSubMatrices_MPIRowbs (Mat,int,const IS[],const IS[],MatReuse,Mat **);
 EXTERN int MatGetSubMatrix_MPIRowbs (Mat,IS,IS,int,MatReuse,Mat *);
 
 static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
@@ -1542,7 +1542,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIRowbsSetPreallocation_MPIRowbs"
-int MatMPIRowbsSetPreallocation_MPIRowbs(Mat mat,int nz,int *nnz)
+int MatMPIRowbsSetPreallocation_MPIRowbs(Mat mat,int nz,const int nnz[])
 {
   PetscTruth ismpirowbs;
   int        ierr;
@@ -1696,9 +1696,9 @@ EXTERN_C_END
   This routine is valid only for matrices stored in the MATMPIROWBS
   format.
 @ */
-int MatMPIRowbsSetPreallocation(Mat mat,int nz,int *nnz)
+int MatMPIRowbsSetPreallocation(Mat mat,int nz,const int nnz[])
 {
-  int ierr,(*f)(Mat,int,int*);
+  int ierr,(*f)(Mat,int,const int[]);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatMPIRowbsSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -2121,7 +2121,7 @@ $     MatSetOption(mat,MAT_SYMMETRIC)
 
 .seealso: MatCreate(), MatSetValues()
 @*/
-int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,Mat *newA)
+int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,const int nnz[],Mat *newA)
 {
   int ierr;
   
@@ -2198,7 +2198,7 @@ int MatGetSubMatrices_MPIRowbs(Mat C,int ismax,const IS isrow[],const IS iscol[]
  */  
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIRowbs_Local" 
-int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat *submats)
+int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 { 
   Mat_MPIRowbs  *c = (Mat_MPIRowbs *)(C->data);
   BSspmat       *A = c->A;
