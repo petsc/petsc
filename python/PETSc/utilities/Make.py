@@ -15,7 +15,7 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
-    help.addArgument('Make', '-with-make=<executable>', nargs.Arg(None, 'make', 'Specify the make executable'))
+    help.addArgument('PETSc', '-with-make=<makename>', nargs.Arg(None, 'make', 'Specify make'))
     return
 
   def configureMake(self):

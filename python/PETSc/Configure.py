@@ -8,7 +8,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
-    self.usingMPIUni  = 0
     self.defineAutoconfMacros()
     headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
@@ -21,22 +20,15 @@ class Configure(config.base.Configure):
                  'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','dlopen','dlsym','erf']
     libraries1 = [(['socket', 'nsl'], 'socket')]
     self.setCompilers = self.framework.require('config.setCompilers',   self)
-    print 'fuck'
-    self.framework.require('PETSc.utilities.update', self.setCompilers)
-    print 'fuck'
-
+    self.framework.require('PETSc.utilities.arch', self.setCompilers)
     self.compilers    = self.framework.require('config.compilers',      self)
     self.framework.require('PETSc.utilities.compilerFlags', self.compilers)
     self.types        = self.framework.require('config.types',          self)
     self.headers      = self.framework.require('config.headers',        self)
     self.functions    = self.framework.require('config.functions',      self)
     self.libraries    = self.framework.require('config.libraries',      self)
-    self.update       = self.framework.require('PETSc.utilities.update', self)
-    self.make         = self.framework.require('PETSc.utilities.Make',   self)    
+    self.arch         = self.framework.require('PETSc.utilities.arch',  self)
     self.x11          = self.framework.require('PETSc.packages.X11',    self)
-    self.sowing       = self.framework.require('PETSc.packages.Sowing', self)
-    self.c2html       = self.framework.require('PETSc.packages.C2HTML', self)
-    self.lgrind       = self.framework.require('PETSc.packages.lgrind', self)            
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
     self.headers.headerPrefix   = self.headerPrefix
@@ -52,7 +44,6 @@ class Configure(config.base.Configure):
     for utility in os.listdir(os.path.join('python','PETSc','utilities')):
       (utilityName, ext) = os.path.splitext(utility)
       if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
-        print utilityName
         utilityObj              = self.framework.require('PETSc.utilities.'+utilityName, self)
         utilityObj.headerPrefix = self.headerPrefix
         setattr(self, utilityName.lower(), utilityObj)
@@ -64,17 +55,12 @@ class Configure(config.base.Configure):
         packageObj.headerPrefix = self.headerPrefix
         setattr(self, packageName.lower(), packageObj)
 
-    # Put in dependencies
-
     # List of packages actually found
     self.framework.packages = []
     return
 
   def __str__(self):
-    desc = ['PETSc:']
-    desc.append('  PETSC_ARCH: '+str(self.framework.argDB['PETSC_ARCH']))
-    desc.append('  PETSC_DIR: '+str(self.framework.argDB['PETSC_DIR']))
-    return '\n'.join(desc)+'\n'
+    return ''
                               
   def setupHelp(self, help):
     import nargs
@@ -89,7 +75,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-shared=<bool>',           nargs.ArgBool(None, 1, 'Build shared libraries for PETSc'))
     help.addArgument('PETSc', '-with-etags=<bool>',            nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
     help.addArgument('PETSc', '-with-fortran-kernels=<bool>',  nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
-    help.addArgument('PETSc', '-with-make=<makename>',         nargs.Arg(None, 'make', 'Specify make'))
     help.addArgument('PETSc', '-prefix=<path>',                nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
     help.addArgument('PETSc', '-with-gcov=<bool>',             nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
     help.addArgument('PETSc', '-with-64-bit-ints=<bool>',      nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
@@ -194,7 +179,8 @@ class Configure(config.base.Configure):
     
   def configureBmake(self):
     ''' Actually put the values into the bmake files '''
-
+    # eventually this will be gone
+    
     # archive management tools
     self.addMakeMacro('AR_FLAGS  ',      self.setCompilers.AR_FLAGS)
     self.addMakeMacro('AR_LIB_SUFFIX ',    self.libraries.suffix)
@@ -254,16 +240,7 @@ class Configure(config.base.Configure):
     for i in self.framework.packages:
       text += '${'+i.PACKAGE+'_LIB} '
     self.addMakeMacro('PACKAGES_LIBS',text)
-
-    # misc package stuff, should be handled better
-    self.addMakeMacro('MPIRUN',self.mpi.mpirun)
-
-    if self.matlab.foundMatlab:
-      self.addMakeMacro('MATLAB_MEX',self.matlab.mex)
-      self.addMakeMacro('MATLAB_CC',self.matlab.cc)
-      self.addMakeMacro('MATLAB_COMMAND',self.matlab.command)        
     
-    self.addMakeMacro('DATAFILESPATH',self.update.datafilespath)
     self.addMakeMacro('INSTALL_DIR',self.installdir)
     self.addMakeMacro('top_builddir',self.installdir)                
 
@@ -331,35 +308,6 @@ class Configure(config.base.Configure):
           self.mkdir = self.mkdir+' -p'
       except RuntimeError: pass
       if os.path.exists('.conftest'): os.removedirs('.conftest/.tmp')
-    return
-
-  def configureArchiver(self):
-    '''Check that the archiver exists and can make a library usable by the compiler'''
-    def checkArchive(command, status, output, error):
-      if error or status:
-        self.framework.log.write('Possible ERROR while running archiver: '+output)
-        if status: self.framework.log.write('ret = '+str(status)+'\n')
-        if error: self.framework.log.write('error message = {'+error+'}\n')
-        os.remove('conf1.o')
-        raise RuntimeError('Archiver is not functional')
-      return
-    self.framework.getExecutable(self.framework.argDB['with-ar'], getFullPath = 1, resultName = 'AR')
-    self.framework.addArgumentSubstitution('AR_FLAGS', 'AR_FLAGS')
-    self.pushLanguage('C')
-    if not self.checkCompile('', 'int foo(int a) {\n  return a+1;\n}\n\n', cleanup = 0, codeBegin = '', codeEnd = ''):
-      raise RuntimeError('Compiler is not functional')
-    os.rename(self.compilerObj, 'conf1.o')
-    (output, error, status) = config.base.Configure.executeShellCommand(self.framework.AR+' '+self.framework.argDB['AR_FLAGS']+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
-    os.remove('conf1.o')
-    oldLibs = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] = 'conf1.a'
-    if not self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n', cleanup = 0):
-      self.framework.argDB['LIBS'] = oldLibs
-      os.remove('conf1.a')
-      raise RuntimeError('Compiler cannot use libaries made by archiver')
-    self.framework.argDB['LIBS'] = oldLibs
-    os.remove('conf1.a')
-    self.popLanguage()
     return
 
   def configurePrograms(self):
@@ -625,7 +573,7 @@ class Configure(config.base.Configure):
       if 'FC' in self.framework.argDB:
         jobs.append('3')
         rjobs.append('8')
-      if self.update.datafilespath:
+      if self.datafilespath.datafilespath:
         rjobs.append('6')
       # add jobs for each external package (except X11, already done)
       for i in self.framework.packages:

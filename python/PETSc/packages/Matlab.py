@@ -84,6 +84,10 @@ class Configure(config.base.Configure):
               matlab_sys = ''
             self.lib = ['${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys,'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-L'+os.path.join(matlab,'bin',matlab_arch),'-leng','-lmx','-lmat','-lut'+matlab_dl]
             self.framework.packages.append(self)
+            self.addMakeMacro('MATLAB_MEX',self.mex)
+            self.addMakeMacro('MATLAB_CC',self.cc)
+            self.addMakeMacro('MATLAB_COMMAND',self.command)        
+
             return
       except RuntimeError:
         self.framework.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')

@@ -10,7 +10,14 @@ class Configure(config.base.Configure):
     return
 
   def __str__(self):
-    return ''
+    desc = ['PETSc:']
+    desc.append('  PETSC_ARCH: '+str(self.framework.argDB['PETSC_ARCH']))
+    desc.append('  PETSC_DIR: '+str(self.framework.argDB['PETSC_DIR']))
+    return '\n'.join(desc)+'\n'
+
+  def setupHelp(self, help):
+    import nargs
+    help.addArgument('PETSc', '-with-default-arch=<bool>',nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
 
   def configureDirectories(self):
     '''Checks PETSC_DIR and sets if not set'''
@@ -26,6 +33,11 @@ class Configure(config.base.Configure):
         (self.dir, error, status) = self.executeShellCommand('cygpath -au '+self.dir)
       except RuntimeError:
         pass
+    if not os.path.samefile(self.dir, os.getcwd()):
+      raise RuntimeError('Wrong PETSC_DIR option specified: '+self.framework.argDB['PETSC_DIR'] + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
+    if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
+      raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
+
     #  HMMm, not good a macro name DIR???
     self.addMakeMacro('DIR', self.dir)
     self.addDefine('DIR', self.dir)
@@ -70,7 +82,16 @@ class Configure(config.base.Configure):
     self.framework.argDB['PETSC_ARCH']      = self.arch
     self.framework.argDB['PETSC_ARCH_BASE'] = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.host_os)
     self.addArgumentSubstitution('ARCH', 'PETSC_ARCH')
+    if self.framework.argDB['with-default-arch']:
+      fd = file(os.path.join('bmake', 'petscconf'), 'w')
+      fd.write('PETSC_ARCH='+self.arch+'\n')
+      fd.write('include '+os.path.join('${PETSC_DIR}','bmake',self.arch,'petscconf')+'\n')
+      fd.close()
+      self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch+' in bmake/petscconf')
+    else:
+      os.unlink(os.path.join('bmake', 'petscconf'))
     return
+
 
   def configure(self):
     self.executeTest(self.configureDirectories)

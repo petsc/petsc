@@ -442,6 +442,7 @@ class Configure(config.base.Configure):
     if self.foundMPI:
       self.name, self.lib, self.include, self.version = functionalMPI[0]
       self.framework.log.write('Choose MPI '+self.version+' in '+self.name+'\n')
+      self.framework.packages.append(self)
     elif len(nonsharedMPI):
       raise RuntimeError('Could not locate any MPI with shared libraries')
     else:
@@ -496,10 +497,6 @@ class Configure(config.base.Configure):
     self.getExecutables(mpiruns, path = path, useDefaultPath = 1, resultName = 'mpirun')
     return
 
-  def setOutput(self):
-    self.framework.packages.append(self)
-    return
-
   def configureMPIUNI(self):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.framework.addDefine('HAVE_MPI', 1)
@@ -524,5 +521,4 @@ class Configure(config.base.Configure):
         self.executeTest(self.configureConversion)
         self.executeTest(self.configureTypes)
         self.executeTest(self.configureMPIRUN)
-      self.setOutput()
     return
