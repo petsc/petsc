@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.49 1996/04/23 21:09:39 balay Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.50 1996/05/11 04:04:19 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -102,9 +102,12 @@ static int PCDestroy_MG(PetscObject obj)
 @*/
 int MGCheck(PC pc)
 {
-  MG *mg = (MG *) pc->data;
+  MG  *mg;
   int i, n, count = 0;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCMG) return 0;
+  mg = (MG *) pc->data;
+
   n = mg[0]->level;
 
   if (!mg[n]->csles) {
@@ -166,9 +169,13 @@ $  -pc_mg_smoothdown  n
 @*/
 int MGSetNumberSmoothDown(PC pc,int n)
 { 
-  MG *mg = (MG *) pc->data;
+  MG  *mg;
   int i;
   KSP ksp;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (pc->type != PCMG) return 0;
+  mg = (MG *) pc->data;
+
   for ( i=0; i<mg[0]->level; i++ ) {  
     SLESGetKSP(mg[i]->smoothd,&ksp);
     KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
@@ -194,9 +201,13 @@ $  -pc_mg_smoothup  n
 @*/
 int  MGSetNumberSmoothUp(PC pc,int n)
 { 
-  MG *mg = (MG *) pc->data;
+  MG  *mg;
   int i;
   KSP ksp;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (pc->type != PCMG) return 0;
+  mg = (MG *) pc->data;
+
   for ( i=0; i<mg[0]->level; i++ ) {  
      SLESGetKSP(mg[i]->smoothu,&ksp);
      KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
@@ -222,8 +233,12 @@ $  -pc_mg_cycles n
 @*/
 int MGSetCycles(PC pc,int n)
 { 
-  MG *mg = (MG *) pc->data;
+  MG  *mg;
   int i;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (pc->type != PCMG) return 0;
+  mg = (MG *) pc->data;
+
   for ( i=0; i<mg[0]->level; i++ ) {  
      mg[i]->cycles  = n; 
   }
@@ -414,7 +429,9 @@ int MGSetLevels(PC pc,int levels)
 {
   int ierr;
   MG  *mg;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCMG) return 0;
+
   ierr          = MGCreate_Private(pc->comm,levels,pc,&mg); CHKERRQ(ierr);
   mg[0]->am     = MGMULTIPLICATIVE;
   pc->data      = (void *) mg;
@@ -441,8 +458,11 @@ $      multiplicative, additive, full, kaskade
 @*/
 int MGSetType(PC pc,MGType form)
 {
-  MG *mg = (MG *) pc->data;
+  MG *mg;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCMG) return 0;
+  mg = (MG *) pc->data;
+
   mg[0]->am = form;
   if (form == MGMULTIPLICATIVE) pc->applyrich = MGCycleRichardson;
   else pc->applyrich = 0;

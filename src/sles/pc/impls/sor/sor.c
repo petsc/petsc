@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.52 1996/03/24 15:09:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.53 1996/05/03 19:26:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -151,9 +151,10 @@ $     -pc_type  eisenstat
 @*/
 int PCSORSetSymmetric(PC pc, MatSORType flag)
 {
-  PC_SOR *jac = (PC_SOR *) pc->data; 
+  PC_SOR *jac;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCSOR) return 0;
+  jac = (PC_SOR *) pc->data; 
   jac->sym = flag;
   return 0;
 }
@@ -174,10 +175,11 @@ $  -pc_sor_omega <omega>
 @*/
 int PCSORSetOmega(PC pc, double omega)
 {
-  PC_SOR *jac = (PC_SOR *) pc->data; 
+  PC_SOR *jac;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCSOR) return 0;
   if (omega >= 2.0 || omega <= 0.0) SETERRQ(1,"PCSORSetOmega:Relaxation out of range");
+  jac        = (PC_SOR *) pc->data; 
   jac->omega = omega;
   return 0;
 }
@@ -198,9 +200,12 @@ $  -pc_sor_its <its>
 @*/
 int PCSORSetIterations(PC pc, int its)
 {
-  PC_SOR *jac = (PC_SOR *) pc->data; 
+  PC_SOR *jac;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCSOR) return 0;
+  jac      = (PC_SOR *) pc->data; 
   jac->its = its;
   return 0;
 }
+
+
