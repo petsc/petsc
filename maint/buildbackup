@@ -21,7 +21,7 @@ find /ccsthome/petsc/userbackups -type f -name "PetscBackup-*" -mtime +2 -exec r
 # Create a new backup file
 #
 cd /home/bsmith
-tar cFFXf $XCLUDEFILE $BACKUPFILE petsc >& $LOGFILE
+tar cFFXf $XCLUDEFILE $BACKUPFILE petsc >>& $LOGFILE
 cd /ccsthome/petsc/userbackups
 gzip $BACKUPFILE
 #
@@ -32,7 +32,7 @@ cp $BACKUPFILE.gz /hsm/mcs/petsc/userbackups
 # Now Copy the backup file over to a remote site
 #
 cd /ccsthome/petsc/userbackups
-autoftp  mss.ncsa.uiuc.edu barrys  put $ZIPFILE.gz >& $LOGFILE
-date  >& $LOGFILE
+autoftp  mss.ncsa.uiuc.edu barrys  put $ZIPFILE.gz >>& $LOGFILE
+date  >>& $LOGFILE
 #
 
