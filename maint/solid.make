@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: solid.make,v 1.14 1998/09/28 20:41:37 balay Exp balay $ 
+# $Id: solid.make,v 1.15 1998/09/28 21:09:49 balay Exp balay $ 
 
 # Defaults
-hme="/home/petsc/petsc-2.0.22"
+hme="/home/petsc/petsc-2.0.23"
 src_dir=""
 action="lib"
 
@@ -26,9 +26,9 @@ for arg in "$@" ; do
         echo " "
         echo "Example Usage:"
         echo "  - To update the libraries with changes in src/sles/interface"
-        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.22 SRC_DIR=src/sles/interface ACTION=lib"
+        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.23 SRC_DIR=src/sles/interface ACTION=lib"
         echo "  - To rebuild a new version of PETSC on all the machines"
-        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.22 SRC_DIR=\"\" ACTION=\"all\" "
+        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.23 SRC_DIR=\"\" ACTION=\"all\" "
         echo " "
         echo "Defaults:"
         echo "  PETSC_DIR=$hme SRC_DIR=$src_dir ACTION=$action"
@@ -70,10 +70,10 @@ arch=solaris
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 rsh -n fire "cd $hme/$src_dir; $make BOPT=g"
 rsh -n fire "cd $hme/$src_dir; $make BOPT=O"
-rsh -n fire "cd $hme/$src_dir; $make BOPT=g_c++"
+#rsh -n fire "cd $hme/$src_dir; $make BOPT=g_c++"
 #rsh -n fire "cd $hme/$src_dir; $make BOPT=O_c++"
-rsh -n fire "cd $hme/$src_dir; $make BOPT=g_complex"
-rsh -n fire "cd $hme/$src_dir; $make BOPT=O_complex"
+#rsh -n fire "cd $hme/$src_dir; $make BOPT=g_complex"
+#rsh -n fire "cd $hme/$src_dir; $make BOPT=O_complex"
 
 arch=IRIX64
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
