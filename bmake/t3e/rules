@@ -37,13 +37,13 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 #
 
 .F.f:
-	$(RM) $*.f
-	cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
+	-$(RM) $*.f
+	-cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
 
 .F.o:
-	cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-
+	-cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+	-$(RM) $*.f 
 
 #.F.o:
 #	$(FC) -c -DPARCH_t3d $(CFLAGS) $(FFLAGS) $(FOPTFLAGS) $*.F
