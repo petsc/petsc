@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.13 2000/01/23 17:31:06 bsmith Exp bsmith $
+c  $Id: user.F,v 1.14 2000/01/23 18:28:17 bsmith Exp kaushik $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -1469,15 +1469,15 @@ c=============================================================================
      &        ubar0,pi,ui,vi,wi,unorm,
      &        phi1,phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9,
      &        eig1,eig2,eig3,eig4,dp,du,dv,dw,
-     &        ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4,
-     &        r11,r21,r31,r41,r12,r22,r32,r42,
+     &        ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4
+      Scalar  r11,r21,r31,r41,r12,r22,r32,r42,
      &        r13,r23,r33,r43,r14,r24,r34,r44,
      &        t1,t2,t3,t4,
      &        t11,t21,t31,t41,t12,t22,t32,t42,
      &        t13,t23,t33,t43,t14,t24,t34,t44,
      &        fluxp1,fluxp2,fluxp3,fluxp4, 
-     &        fluxm1,fluxm2,fluxm3,fluxm4,
-     &        res1,res2,res3,res4,
+     &        fluxm1,fluxm2,fluxm3,fluxm4
+     Scalar   res1,res2,res3,res4,
      &        rhs1,rhs2,rhs3,rhs4,   
      &       c68,c18,second,
      &       ax,ay,az,bx,by,bz,

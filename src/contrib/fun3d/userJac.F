@@ -1,4 +1,4 @@
-c  $Id: userJac.F,v 1.4 2000/01/20 16:52:55 bsmith Exp bsmith $
+c  $Id: userJac.F,v 1.5 2000/01/21 16:05:51 bsmith Exp kaushik $
 c---------------------------------------------------------------
 c The following subroutines are from node6t.f in the original
 c code.
@@ -68,12 +68,13 @@ c     Scalar A(nnz,4,4)
       MatStructure flag
 
 c     integer ia(1),ja(1),iau(1),fhelp(nedge,2)
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       Scalar gamma,gm1,gp1,gm1g,gp1g,ggm1
       Scalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      Scalar cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
-     &       nstage,ncyct,iramp,nitfo
+      Scalar  cfl1,cfl2
+      integer nsmoth,iflim,itran,nbtran,jupdate,
+     &        nstage,ncyct,iramp,nitfo
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
@@ -88,22 +89,21 @@ c     integer ia(1),ja(1),iau(1),fhelp(nedge,2)
      &       X1,Y1,Z1,X2,Y2,Z2,size,area,
      &       pL,uL,vL,wL,ubarL,c2L,cL,
      &       pR,uR,vR,wR,ubarR,c2R,cR,
-     &       pi,ui,vi,wi,unorm,c20,ubar0,
-     &       prp,uru,vrv,wrw,
+     &       pi,ui,vi,wi,unorm,c20,ubar0
+      Scalar prp,uru,vrv,wrw,
      &       p,u,v,w,ubar,c2,c,eig1,eig2,eig3,eig4,eigeps,
      &       phi1,phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9,
      &       rhs1,rhs1p,rhs1u,rhs1v,rhs1w,
      &       rhs2,rhs2p,rhs2u,rhs2v,rhs2w,
      &       rhs3,rhs3p,rhs3u,rhs3v,rhs3w,
-     &       rhs4,rhs4p,rhs4u,rhs4v,rhs4w,
-     &       c2inv,
-     &       y11,y21,y31,y41,y12,y22,y32,y42,
+     &       rhs4,rhs4p,rhs4u,rhs4v,rhs4w,c2inv
+      Scalar y11,y21,y31,y41,y12,y22,y32,y42,
      &       y13,y23,y33,y43,y14,y24,y34,y44,
      &       t11,t21,t31,t41,t12,t22,t32,t42,
      &       t13,t23,t33,t43,t14,t24,t34,t44,
      &       ti11,ti21,ti31,ti41,ti12,ti22,ti32,ti42,
-     &       ti13,ti23,ti33,ti43,ti14,ti24,ti34,ti44,
-     &       a11,a21,a31,a41,a12,a22,a32,a42,
+     &       ti13,ti23,ti33,ti43,ti14,ti24,ti34,ti44
+      Scalar a11,a21,a31,a41,a12,a22,a32,a42,
      &       a13,a23,a33,a43,a14,a24,a34,a44,
      &       pb,pbp,pbu,pbv,pbw,ub,ubp,ubu,ubv,ubw,
      &       vb,vbp,vbu,vbv,vbw,wb,wbp,wbu,wbv,wbw,
