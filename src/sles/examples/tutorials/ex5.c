@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.28 1995/08/23 17:17:49 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.29 1995/08/31 21:49:01 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -34,6 +34,7 @@ int main(int argc,char **args)
 
   /* Create and assemble matrix */
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
+  ierr = MatSetOption(C,SYMMETRIC_MATRIX); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) { 
     for ( j=2*mytid; j<2*mytid+2; j++ ) {
       v = -1.0;  I = j + n*i;
