@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.63 2001/03/09 18:50:16 balay Exp balay $*/
+/*$Id: isltog.c,v 1.64 2001/03/23 23:21:16 balay Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -56,7 +56,6 @@ int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscViewer viewer
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(mapping->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscCheckSameComm(mapping,viewer);
 
   ierr = MPI_Comm_rank(mapping->comm,&rank);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
@@ -293,7 +292,7 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis
 .  out - indices in global numbering
 
    Synopsis:
-   ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int in[],int out[])
+   int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int in[],int out[])
 
    Notes: 
    The in and out array parameters may be identical.
