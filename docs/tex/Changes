@@ -70,6 +70,8 @@ add to it).
 
     VIEWER_DRAWX_.... replaced with VIEWER_DRAW_....
 
+    The arguments of ViewerDrawGetDraw have been changed
+
   General
 
     Added OptionsGetLogical()
