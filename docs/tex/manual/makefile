@@ -10,7 +10,7 @@ GONULL    = > /dev/null 2>&1
 # Build the entire manual as well as the intro part
 
 clean:
-	rm -f  *.aux *.toc *.log *.bbl *.blg part1tmp.tex part2tmp.tex *.ilg *.idx *.ind *.out htmlmap tmp manual.pdf anchors
+	rm -f  *.aux *.toc *.log *.bbl *.blg part1tmp.tex part2tmp.tex *.ilg *.idx *.ind *.out htmlmap tmp anchors manual.pdf intro.pdf ../manual.pdf
 
 manual.pdf:  intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex gettinginfo.tex
 # Generate a list of labels

@@ -269,10 +269,6 @@ chk_loc:
 	  echo "*********************** ERROR ************************" ; \
 	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc"; \
 	  echo "******************************************************";  false; fi
-# Deletes man pages (HTML version)
-deletemanualpages: chk_loc
-	find ${LOC}/docs/manualpages -type f -name "*.html" -exec ${RM} {} \;
-	${RM} ${LOC}/docs/manualpages/manualpages.cit
 
 # Builds all the documentation - should be done every night
 alldoc: alldoc1 alldoc2
@@ -294,7 +290,18 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 alldoc2: chk_loc
 	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
 
+alldocclean: deletemanualpages allcleanhtml
+
+# Deletes man pages (HTML version)
+deletemanualpages: chk_loc
+	find ${LOC}/docs/manualpages -type f -name "*.html" -exec ${RM} {} \;
+	${RM} ${LOC}/docs/tex/exampleconcepts
+	${RM} ${LOC}/docs/tex/manconcepts
+	${RM} ${LOC}/docs/manualpages/manualpages.cit
+	-maint/update-docs.py ${LOC} clean
+
 allcleanhtml: 
+	-${RM} include/adic/*.h.html include/esi/petsc/*.h.html
 	-${OMAKE} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} alltree
 
 chk_concepts_dir: chk_loc

@@ -150,7 +150,7 @@ def printdata(LOC,fd,dict):
 		  # If prim_key exists in the concepts directory, 
 		  # create a link to it.
                   concept_filename = replace(lower(prim_key)," ","_")
-                  concept_filename = "concepts/" + concept_filename + ".htm"
+                  concept_filename = "concepts/" + concept_filename + ".html"
                   
                   #if os.access(concept_filename,os.F_OK):
                   fd_tmp = os.popen('ls '+ LOC + '/docs/manualpages/'+ concept_filename)
@@ -177,7 +177,7 @@ def printdata(LOC,fd,dict):
 		  # If prim_key exists in the concepts directory, 
 		  # create a link to it.
                   concept_filename = replace(lower(prim_key)," ","_")
-                  concept_filename = "concepts/" + concept_filename + ".htm"
+                  concept_filename = "concepts/" + concept_filename + ".html"
                   
                   #if os.access(concept_filename,os.F_OK):
                   fd_tmp = os.popen('ls '+ LOC + '/docs/manualpages/' + concept_filename)
