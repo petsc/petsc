@@ -105,7 +105,6 @@ Lois - Add table of all preconditioners and options to PETSc manual.
 
   - Currently no support for MatGetSubMatrices_SeqBDIAG()  MAT_SAME_NON_ZERO_STRUCTURE. (Satish)
 
-  - Make src/sys/src/cputime.c compile and run correctly on all machines.
 
   - Have PETSc put some header information in front of -log and -log_all files indicating
     how PETSc generated, where and on what code
@@ -859,3 +858,5 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
 
   X add documentation on -ksp_smonitor and -snes_smonitor
+
+  X Make src/sys/src/cputime.c compile and run correctly on all machines.

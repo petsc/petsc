@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.7 1997/07/18 00:42:39 balay Exp bsmith $";
+static char vcid[] = "$Id: cputime.c,v 1.8 1997/07/23 02:17:38 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -46,6 +46,8 @@ extern int getrusage(int,struct rusage*);
          One should use PetscGetTime() or the -log_summary option of 
          PETSc for profiling. The CPU time is not a realistic number to
          use since it does not include the time for message passing etc.
+         Also on many systems the accuracy is only on the order of 
+         microseconds.
 
     Returns:
     Time in seconds charged to the process.
