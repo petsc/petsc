@@ -156,7 +156,6 @@ extern void   *malloc(long unsigned int );
 extern int    abort();
 extern void   exit(int);
 extern int    strcasecmp(const char *,const char *);
-extern char*  mktemp(char*);
 }
 
 #else

@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.3 1997/11/28 16:18:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.4 1997/11/29 15:35:56 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,7 +12,11 @@ static char vcid[] = "$Id: shvec.c,v 1.3 1997/11/28 16:18:25 bsmith Exp bsmith $
 #include <math.h>
 #include "src/vec/impls/mpi/pvecimpl.h"   /*I  "vec.h"   I*/
 
-#if defined(USE_SHARED_MEMORY)
+/*
+     Could not get the include files to work properly on the SGI with 
+  the C++ compiler.
+*/
+#if defined(USE_SHARED_MEMORY) && !defined(__cplusplus)
 
 extern void *PetscSharedMalloc(int,int,MPI_Comm);
 
@@ -141,19 +145,6 @@ int PetscSharedMemorySetSize(int s)
 
 #include "pinclude/petscfix.h"
 
-/*
-   The following is to force k_sigset_t to be defined!
-*/
-#if defined(__cplusplus)
-#define _NO_POSIX 
-#define _NO_XOPEN4
-#endif
-#include <sys/types.h>
-#if defined(__cplusplus)
-#undef _NO_POSIX 
-#undef _NO_XOPEN4
-#endif
-
 #include <ulocks.h>
 
 #undef __FUNC__  
@@ -161,7 +152,7 @@ int PetscSharedMemorySetSize(int s)
 int PetscSharedInitialize(MPI_Comm comm)
 {
   int     rank,len,ierr,flag;
-  char    *filename;
+  char    filename[256];
   usptr_t **arena;
 
   PetscFunctionBegin;
@@ -185,20 +176,15 @@ int PetscSharedInitialize(MPI_Comm comm)
 
     MPI_Comm_rank(comm,&rank);
     if (!rank) {
-      filename = mktemp("/tmp/PETScArenaXXXXXX");
+      PetscStrcpy(filename,"/tmp/PETScArenaXXXXXX");
+      mktemp(filename);
       len      = PetscStrlen(filename);
     } 
-    ierr = MPI_Bcast(&len,1,MPI_INT,0,comm);CHKERRQ(ierr);
-    if (rank) {
-      filename = (char *) PetscMalloc((len+1)*sizeof(char));CHKPTRQ(filename);
-    }
+    ierr     = MPI_Bcast(&len,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr     = MPI_Bcast(filename,len+1,MPI_CHAR,0,comm);CHKERRQ(ierr);
     ierr     = OptionsGetInt(PETSC_NULL,"-shared_size",&Petsc_Shared_size,&flag);CHKERRQ(ierr);
     usconfig(CONF_INITSIZE,Petsc_Shared_size);
     *arena   = usinit(filename); 
-    if (rank) {
-      PetscFree(filename);
-    }
     ierr     = MPI_Attr_put(comm,Petsc_Shared_keyval, arena);CHKERRQ(ierr);
   } 
 
