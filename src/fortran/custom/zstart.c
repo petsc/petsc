@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.5 1996/05/28 21:29:31 balay Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.6 1996/07/19 17:16:49 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: zstart.c,v 1.5 1996/05/28 21:29:31 balay Exp bsmith $
   and their mpi.h file should be declared not up to the standard.
 */
 #define T3DMPI_FORTRAN
-#include "zpetsc.h" 
+#include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
 #include <stdio.h>
 #include "pinclude/pviewer.h"
@@ -146,6 +146,8 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
     if (*__ierr) {fprintf(stderr,"PetscInitialize:");return;}
     PetscBeganMPI = 1;
   }
+  *__ierr = ViewerInitialize_Private(); 
+  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
   PetscInitializeFortran();
 #if defined(PETSC_COMPLEX)
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
@@ -159,8 +161,7 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   PetscFree(args);
   *__ierr = OptionsCheckInitial_Private(); 
   if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
-  *__ierr = ViewerInitialize_Private(); 
-  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
+
 
   if (PetscBeganMPI) {
     int rank,size;
