@@ -1,0 +1,32 @@
+#
+#
+#  If you are not using the Gnu C compiler then replace the compiler name 
+# gcc with your own and remove the -D__USE_FIXED_PROTOTYPES__.
+#
+CC       = gcc -D__USE_FIXED_PROTOTYPES__ -DPARCH_sun4
+FC       = f77
+AR       = ar
+RM       = rm -f
+OMAKE    = make
+RANLIB   = ranlib
+SHELL    = /bin/sh
+CLINKER  = gcc $(COPTFLAGS)
+FLINKER  = f77 $(FOPTFLAGS)
+CONF     = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STRING_H \
+           -DHAVE_MALLOC_H -DHAVE_X11 -DHAVE_FORTRAN_UNDERSCORE \
+           -DHAVE_DRAND48 -DHAVE_GETDOMAINNAME  -DHAVE_UNISTD_H \
+           -DHAVE_SYS_TIME_H
+
+include $(PETSC_DIR)/bmake/common
+
+libc: $(LIBNAME)($(OBJSC))
+libf: $(LIBNAME)($(OBJSF))
+
+#############
+
+.F.o: 
+	$(FC)  -c $(FFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
+.F.a: 
+	$(FC)  -c $(FFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
+	$(AR) clr $(LIBNAME) $*.o
+	$(RM) $*.o
