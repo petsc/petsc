@@ -14,6 +14,8 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   PetscTruth flag;
   Viewer binary;
   char   filename[256];
+  AppView *view;  /*added by H. */
+  AppElement *element; /*added by H. */
 
   (*appctx) = (AppCtx *) PetscMalloc(sizeof(AppCtx));CHKPTRQ(*appctx);
   (*appctx)->comm = comm;
@@ -32,6 +34,11 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   ierr = AODataLoadBasic(binary,&(*appctx)->aodata); CHKERRQ(ierr);
   ierr = ViewerDestroy(binary); CHKERRQ(ierr);
 
+  /* moved from AppCtxGraphics -- H */
+  /* ierr = OptionsHasName(PETSC_NULL,"-show_grid",&appctx->view.show_grid);CHKERRQ(ierr);
+   */ 
+  ierr = OptionsHasName(PETSC_NULL,"-show_griddata",&appctx->view.show_griddata);CHKERRQ(ierr);
+  printf("in AppCtxCreate, appctx->view.show_griddata= %d\n", appctx->view.show_griddata);
 
   /*------------------------------------------------------------------------
       Setup the local data structures 
@@ -191,9 +198,11 @@ int AppCtxGraphics(AppCtx *appctx)
      Setup  the graphics windows
      ------------------------------------------------------------------------*/
 
+  /* moved to AppCtxCreate -- H
   ierr = OptionsHasName(PETSC_NULL,"-show_grid",&appctx->view.show_grid);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-show_griddata",&appctx->view.show_griddata);CHKERRQ(ierr);
   printf("in AppCtxGraphics, appctx->view.show_griddata= %d\n", appctx->view.show_griddata);
+  */
 
   if ((appctx)->view.show_grid) {
     ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,400,400,

@@ -18,11 +18,6 @@ int main( int argc, char **argv )
      --------------------- ---------------------------------------------------*/
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  /*      Initialize graphics, moved by Hong 
-  ierr = AppCtxGraphics(appctx); CHKERRA(ierr);
-  printf("in main, appctx->view.show_griddata= %d\n", appctx->view.show_griddata); 
-  */
-
   /*  Load the grid database*/
   ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx); CHKERRA(ierr);
 
