@@ -9,7 +9,7 @@ SOURCEC	  = adebug.c err.c signal.c fp.c mtr.c arch.c file.c nreg.c \
             ffpath.c fwfile.c fwd.c  grpath.c ghome.c \
             rhome.c mhost.c mpiuopen.c pname.c pgname.c \
             gcomm.c inherit.c gtype.c prefix.c psleep.c gcookie.c \
-            cookie.c
+            cookie.c plogmpe.c
 SOURCEF	  =
 SOURCEH	  = files.h
 OBJSC	  = adebug.o err.o signal.o fp.o mtr.o arch.o file.o nreg.o \
@@ -19,7 +19,7 @@ OBJSC	  = adebug.o err.o signal.o fp.o mtr.o arch.o file.o nreg.o \
             ffpath.o fwfile.o fwd.o grpath.o ghome.o \
             rhome.o mhost.o mpiuopen.o pname.o pgname.o \
             gcomm.o inherit.o gtype.o prefix.o psleep.o gcookie.o \
-            cookie.o
+            cookie.o plogmpe.o
 OBJSF	  =
 MANSEC	  = 7
 LIBBASE	  = libpetscsys
