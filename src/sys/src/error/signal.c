@@ -73,7 +73,6 @@ EXTERN_C_END
 int PetscDefaultSignalHandler(int sig,void *ptr)
 {
   int         ierr;
-  static char buf[1024];
   const char  *SIGNAME[64];
 
   PetscFunctionBegin;
@@ -85,7 +84,7 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
   /* SIGNAME[SIGALRM] = "Alarm"; */
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
-  SIGNAME[SIGBUS]  = "BUS: \nPETSC ERROR: Bus Error, possibly illegal memory access";
+  SIGNAME[SIGBUS]  = "BUS: Bus Error, possibly illegal memory access";
 #endif
 #if !defined(PETSC_MISSING_SIGCHLD)
   SIGNAME[SIGCHLD] = "CHLD";
@@ -94,7 +93,7 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
   SIGNAME[SIGCONT] = "CONT";
 #endif
 #if !defined(PETSC_MISSING_SIGFPE)
-  SIGNAME[SIGFPE]  = "FPE:\nPETSC ERROR: Floating Point Exception,probably divide by zero";
+  SIGNAME[SIGFPE]  = "FPE: Floating Point Exception,probably divide by zero";
 #endif
 #if !defined(PETSC_MISSING_SIGHUP)
   SIGNAME[SIGHUP]  = "Hang up";
@@ -115,7 +114,7 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
   SIGNAME[SIGQUIT] = "Quit";
 #endif
 #if !defined(PETSC_MISSING_SIGSEGV)
-  SIGNAME[SIGSEGV] = "SEGV:\nPETSC ERROR: Segmentation Violation, probably memory access out of range";
+  SIGNAME[SIGSEGV] = "SEGV: Segmentation Violation, probably memory access out of range";
 #endif
 #if !defined(PETSC_MISSING_SIGSTOP)
   SIGNAME[SIGSTOP] = "STOP";
@@ -144,30 +143,28 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
 
   signal(sig,SIG_DFL);
   if (sig >= 0 && sig <= 20) {
-    sprintf(buf,"Caught signal number %d %s\n",sig,SIGNAME[sig]);
+    (*PetscErrorPrintf)("Caught signal number %d %s\n",sig,SIGNAME[sig]);
   } else {
-    ierr = PetscStrcpy(buf,"Caught signal\n");CHKERRQ(ierr);
+    (*PetscErrorPrintf)("Caught signal\n");
   }
-  ierr = PetscStrcat(buf,"PETSC ERROR: Try option -start_in_debugger or ");CHKERRQ(ierr);
-  ierr = PetscStrcat(buf,"-on_error_attach_debugger ");CHKERRQ(ierr);
-  ierr = PetscStrcat(buf,"to\nPETSC ERROR: determine where problem occurs\n");CHKERRQ(ierr);
+  (*PetscErrorPrintf)("Try option -start_in_debugger or -on_error_attach_debugger\n");
 #if defined(PETSC_USE_STACK)
   if (!PetscStackActive) {
-    ierr = PetscStrcat(buf,"PETSC ERROR: or try option -log_stack\n");CHKERRQ(ierr);
+    (*PetscErrorPrintf)("  or try option -log_stack\n");
   } else {
     PetscStackPop;  /* remove stack frames for error handlers */
     PetscStackPop;
-    ierr = PetscStrcat(buf,"PETSC ERROR: likely location of problem given above in stack\n");CHKERRQ(ierr);
+    (*PetscErrorPrintf)("likely location of problem given in stack below\n");
     (*PetscErrorPrintf)("--------------- Stack Frames ---------------\n");
     PetscStackView(PETSC_VIEWER_STDOUT_WORLD);
     (*PetscErrorPrintf)("--------------------------------------------\n");
   }
 #endif
 #if !defined(PETSC_USE_BOPT_g)
-  ierr = PetscStrcat(buf,"PETSC ERROR: compile, link, and run with BOPT=g or g_c++ or g_complex\n");CHKERRQ(ierr);
-  ierr = PetscStrcat(buf,"PETSC ERROR: to get more information on the crash.\n");CHKERRQ(ierr);
+  (*PetscErrorPrintf)("compile, link, and run with BOPT=g or g_c++ or g_complex\n");
+  (*PetscErrorPrintf)("to get more information on the crash.\n");
 #endif
-  ierr =  PetscError(0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_SIG,1,buf);
+  ierr =  PetscError(0,"User provided function"," unknown file","unknown directory",PETSC_ERR_SIG,1," ");
   MPI_Abort(PETSC_COMM_WORLD,ierr);
   PetscFunctionReturn(0);
 }

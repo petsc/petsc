@@ -454,7 +454,7 @@ int PetscErrorPrintfDefault(const char format[],...)
 
   if (!InPetscErrorPrintfDefault) {
     va_start(Argp,format);
-    fprintf(fd,"[%d]PETSC ERROR:",PetscGlobalRank);
+    fprintf(fd,"[%d]PETSC ERROR: ",PetscGlobalRank);
     PetscVFPrintf(fd,format,Argp);
     fflush(fd);
     va_end(Argp);
