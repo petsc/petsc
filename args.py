@@ -7,20 +7,38 @@ import re
 import string
 import sys
 import types
-import UserDict
 import readline   #allows editing of raw_input line as typed (so delete works :-)
 
-class ArgDict (UserDict.UserDict, logging.Logger):
+class ArgDict (dict, logging.Logger):
   def __init__(self, filename = None, defaultParent = None):
-    UserDict.UserDict.__init__(self)
+    dict.__init__(self)
     self.filename      = filename
-    self.load(filename)
     atexit.register(self.save)
     self.interactive   = 1
     self.metadata      = {'help' : {}, 'default' : {}, 'parent' : {}, 'tester' : {}, 'dir' : {}, 'saveinparent' : {}}
     self.argRE         = re.compile(r'\$(\w+|\{[^}]*\})')
-    self.defaultParent = defaultParent
+    self.defaultParent = self.resolveParent(defaultParent)
+    return
 
+  def resolveParent(self, parent):
+    '''The parent databse can be specified as:
+     - A filename, where $var and ${var} in the name will be expanded
+     - A module name, so that the parent database will be <name>Arg.db in the module root
+     - An ArgDict object
+     The return value is an ArgDict object representing the parent
+    '''
+    if not parent is None:
+      if isinstance(parent, str):
+        parent = self.expandVars(parent)
+        if not os.path.exists(parent) and sys.modules.has_key(parent):
+          parent = os.path.join(os.path.dirname(sys.modules[parent].__file__), parent+'Arg.db')
+        if not os.path.exists(parent):
+          parent = None
+        else:
+          parent = ArgDict(parent)
+      elif not isinstance(parent, ArgDict):
+        parent = None
+    return parent
 #  If requested key is a directory try to use Filebrowser to get it
   def getDirectory(self,key,exist):
     try:
@@ -42,16 +60,16 @@ class ArgDict (UserDict.UserDict, logging.Logger):
       self.data[key] = value
     
   def __getitem__(self, key):
-    if self.data.has_key(key):    return self.data[key]
+    if dict.has_key(self, key): return self.data[key]
     (ok, item) = self.getMissingItem(key)
     if ok:
-      self[key] = item
+      dict.__setitem__.(self, key, item)
       return item
-    else: return None
-
+    else:
+      return None
 
   def has_key(self, key):
-    if self.data.has_key(key):
+    if dict.has_key(self, key):
       return 1
     elif self.getParent(key):
       return self.getParent(key).has_key(key)
@@ -78,30 +96,24 @@ class ArgDict (UserDict.UserDict, logging.Logger):
       
     if self.metadata['help'].has_key(key): print self.metadata['help'][key]
     while 1:
-	try:
-	    value = self.parseArg(raw_input('Please enter value for '+key+':'))
-	except KeyboardInterrupt:
-	    return (0, None)
-	if self.metadata['tester'].has_key(key): 
-            (result,value) = self.metadata['tester'][key].test(value)
-	    if result:
-		return (1,value)
-	    else:
-		print 'Try again'
-	else:
-	    return (1,value)
-
-
-  def load(self, filename):
-    if filename and os.path.exists(filename):
-      dbFile    = open(filename, 'r')
-      self.data = cPickle.load(dbFile)
-      dbFile.close()
+      try:
+        value = self.parseArg(raw_input('Please enter value for '+key+':'))
+      except KeyboardInterrupt:
+        return (0, None)
+      if self.metadata['tester'].has_key(key): 
+        (result, value) = self.metadata['tester'][key].test(value)
+        if result:
+          break
+        else:
+          print 'Try again'
+      else:
+        break
+    return (1, value)
 
   def save(self):
     self.debugPrint('Saving argument database in '+self.filename, 2, 'argDB')
     dbFile = open(self.filename, 'w')
-    cPickle.dump(self.data, dbFile)
+    cPickle.dump(self, dbFile)
     dbFile.close()
 
   def inputDefaultArgs(self):
@@ -149,33 +161,24 @@ class ArgDict (UserDict.UserDict, logging.Logger):
     self.metadata['saveinparent'][key] = 1
 
   def setParent(self, key, parent):
-    """This can be a filename or an ArgDict object. Arguments of form $var and ${var} in the filename will be expanded"""
+    '''Specify the parent for a specific key. Allowable parents are discussed in resolveParent()'''
+    if not parent is None:
+      db = self.resolveParent(parent)
+      if db is None:
+        raise RuntimeError('Invalid parent database ('+parent+') for '+key)
+      parent = db
     self.metadata['parent'][key] = parent
+    return
 
   def getParent(self, key):
     isdefault = 0
     if self.metadata['parent'].has_key(key):
-      parent = self.metadata['parent'][key]
-    elif self.defaultParent:
-      parent = self.defaultParent
-      self.metadata['parent'][key] = parent
-      isdefault = 1
-    else:
-      parent = None
 
-    if parent:
-      if type(parent) == types.StringType:
-        parent = self.expandVars(parent)
-        if not os.path.exists(parent):
-          raise RuntimeError('Invalid parent database ('+parent+') for '+key)
-        self.metadata['parent'][key] = ArgDict(parent)
-        if isdefault:
-          self.defaultParent = self.metadata['parent'][key]
-      elif not isinstance(parent, ArgDict):
-        raise RuntimeError('Invalid parent database ('+parent+') for '+key)
+
       return self.metadata['parent'][key]
-    else:
-      return None
+    elif self.defaultParent:
+      return self.defaultParent
+    return None
 
   def parseArg(self, arg):
     if arg and arg[0] == '[' and arg[-1] == ']':

@@ -35,15 +35,18 @@ class BS (maker.Maker):
 
   def setupArgDB(self, clArgs):
     global argDB
-    parent = None
+    filename = 'bsArg.db'
+    parent   = 'bs'
 
-    if sys.modules.has_key('bs'):
-      filename = os.path.join(os.path.dirname(sys.modules['bs'].__file__), 'bsArg.db')
-      if os.path.exists(filename):
-        parent = filename
-    argDB = args.ArgDict(os.path.join(os.getcwd(), 'bsArg.db'), parent)
+    if os.path.exists(filename):
+      f     = file(filename)
+      argDB = cPickle.load(f)
+      f.close()
+    else:
+      argDB = args.ArgDict(os.path.join(os.getcwd(), filename), parent)
     self.setupDefaultArgs()
     argDB.input(clArgs)
+    return argDB
 
   def saveSourceDB(self):
     self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
