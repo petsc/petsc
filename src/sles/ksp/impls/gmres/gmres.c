@@ -191,7 +191,7 @@ int GMREScycle(int *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        SETERRQ1(0,"You reached the happy break down, but convergence was not indicated. Residual norm = %",res);
+        SETERRQ1(0,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",res);
       }
       break;
     }
