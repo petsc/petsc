@@ -60,7 +60,9 @@ class Configure(config.base.Configure):
     incl.extend(self.mpi.include)
     oldFlags = self.framework.argDB['CPPFLAGS']
     for inc in incl:
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+      if not self.mpi.include is None:
+        mpiincl = ' -I' + ' -I'.join(self.mpi.include)
+      self.framework.argDB['CPPFLAGS'] += ' -I'+inc+mpiincl
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     if found:
@@ -85,7 +87,7 @@ class Configure(config.base.Configure):
     return
         
   def checkLib(self,lib,func):
-    '''We  need the BLAS/Lapack libraries here plus (possibly) Fortran'''
+    '''We need the BLAS/Lapack libraries here plus (possibly) Fortran, and may need the MPI libraries'''
     oldLibs = self.framework.argDB['LIBS']
     otherLibs=self.blasLapack.lib
     if hasattr(self.compilers,'flibs'): otherLibs += ' '+self.compilers.flibs
@@ -105,7 +107,6 @@ class Configure(config.base.Configure):
       if not isinstance(lib, list): lib = [lib]
       self.framework.log.write('Checking for library '+configstr+': '+str(lib)+'\n')
       foundLibrary = self.executeTest(self.checkLib, [lib, 'ML_Set_PrintLevel'])  
-      #foundLibrary = 1
       if foundLibrary:
         self.lib = lib
         break

@@ -58,7 +58,9 @@ class Configure(config.base.Configure):
     incl.extend(self.mpi.include)
     oldFlags = self.framework.argDB['CPPFLAGS']
     for inc in incl:
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+      if not self.mpi.include is None:
+        mpiincl = ' -I' + ' -I'.join(self.mpi.include)
+      self.framework.argDB['CPPFLAGS'] += ' -I'+inc+mpiincl
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     if found:
@@ -84,8 +86,8 @@ class Configure(config.base.Configure):
         
   def checkLib(self,lib,func):
     '''We may need the MPI libraries here'''
-    oldLibs = self.framework.argDB['LIBS']  
-    found   = self.libraries.check(lib,func)
+    oldLibs = self.framework.argDB['LIBS']
+    found = self.libraries.check(lib,func,otherLibs=' '.join(map(self.libraries.getLibArgument, self.mpi.lib)))
     self.framework.argDB['LIBS'] = oldLibs
     if found:
       self.framework.log.write('Found function '+func+' in '+str(lib)+'\n')
@@ -100,7 +102,7 @@ class Configure(config.base.Configure):
     for configstr, lib in self.generateLibGuesses():
       if not isinstance(lib, list): lib = [lib]
       self.framework.log.write('Checking for library '+configstr+': '+str(lib)+'\n')
-      foundLibrary = self.executeTest(self.checkLib, [lib, 'dallocateA_dist'])  
+      foundLibrary = self.executeTest(self.checkLib, [lib, 'set_default_options_dist']) 
       if foundLibrary:
         self.lib = lib
         break
@@ -121,10 +123,7 @@ class Configure(config.base.Configure):
 
   def setFoundOutput(self):
     PACKAGE = self.name.upper()
-    incl_str = ''
-    for i in range(len(self.include)):
-      incl_str += self.include[i]+ ' '
-    self.addSubstitution(PACKAGE+'_INCLUDE','-I' +incl_str)
+    self.addSubstitution(PACKAGE+'_INCLUDE','-I'+self.include[0])
     self.addSubstitution(PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
     self.addDefine('HAVE_'+PACKAGE,1)
     
