@@ -71,7 +71,7 @@ class Configure(config.base.Configure):
       arch = self.framework.argDB['PETSC_ARCH']
     archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', arch)
     self.framework.argDB['PETSC_ARCH']      = arch
-    self.framework.argDB['PETSC_ARCH_BASE'] = archBase
+    self.framework.argDB['PETSC_ARCH_BASE'] = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.host_os)
     self.addArgumentSubstitution('ARCH', 'PETSC_ARCH')
     self.addDefine('ARCH', archBase)
     self.addDefine('ARCH_NAME', '"'+arch+'"')
