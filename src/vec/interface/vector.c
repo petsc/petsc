@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.23 1995/04/25 16:20:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.24 1995/04/26 18:21:47 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -8,12 +8,12 @@ static char vcid[] = "$Id: vector.c,v 1.23 1995/04/25 16:20:25 bsmith Exp bsmith
 #include "vecimpl.h"    /*I "vec.h" I*/
 
 /*@
-     VecValidVector - Returns 1 if this is a valid vector else 0.
+   VecValidVector - Returns 1 if this is a valid vector; otherwise returns 0.
 
-  Input Parameter:
+   Input Parameter:
 .  v - the object to check
 
-  Keywords: vector, valid
+.keywords: vector, valid
 @*/
 int VecValidVector(Vec v)
 {
@@ -22,15 +22,17 @@ int VecValidVector(Vec v)
   return 1;
 }
 /*@
-     VecDot  - Computes vector dot product.
+   VecDot  - Computes vector dot product.
 
-  Input Parameters:
-.  x,y - the vectors
+   Input Parameters:
+.  x, y - the vectors
 
-  Output Parameter:
+   Output Parameter:
 .  val - the dot product
 
-  Keywords: vector, dot product, inner product
+.keywords: vector, dot product, inner product
+
+.seealso: VecMDot(), VecDot()
 @*/
 int VecDot(Vec x, Vec y, Scalar *val)
 {
@@ -44,15 +46,17 @@ int VecDot(Vec x, Vec y, Scalar *val)
 }
 
 /*@
-     VecNorm  - Computes vector two norm.
+   VecNorm  - Computes the vector two norm.
 
-  Input Parameters:
+   Input Parameters:
 .  x - the vector
 
-  Output Parameter:
+   Output Parameter:
 .  val - the norm 
 
-  Keywords: vector, norm
+.keywords: vector, norm
+
+.seealso: VecASum()
 @*/
 int VecNorm(Vec x,double *val)  
 {
@@ -64,15 +68,17 @@ int VecNorm(Vec x,double *val)
   return 0;
 }
 /*@
-     VecASum  - Computes vector one norm.
+   VecASum - Computes the vector one norm (sum of component's absolute values).
 
-  Input Parameters:
+   Input Parameter:
 .  x - the vector
 
-  Output Parameter:
+   Output Parameter:
 .  val - the sum 
 
-  Keywords: vector, sum
+.keywords: vector, sum, absolute value, norm
+
+.seealso: VecNorm()
 @*/
 int VecASum(Vec x,double *val)
 {
@@ -85,16 +91,19 @@ int VecASum(Vec x,double *val)
 }
 
 /*@
-     VecAMax  - Computes maximum of vector and its location.
+   VecAMax - Determines the vector infinity norm (component with maximum
+   absolute value) and its location.
 
-  Input Parameters:
+   Input Parameter:
 .  x - the vector
 
-  Output Parameter:
-.  val - the max 
-.  p - the location
+   Output Parameters:
+.  val - the component with maximum absolute value
+.  p - the location of val
 
-  Keywords: vector, max
+.keywords: vector, maximum, norm, absolute value
+
+.seealso: VecMax(), VecNorm(), VecASum()
 @*/
 int VecAMax(Vec x,int *p,double *val)
 {
@@ -107,16 +116,18 @@ int VecAMax(Vec x,int *p,double *val)
 }
 
 /*@
-     VecMax  - Computes maximum of vector and its location.
+   VecMax - Determines the maximum vector component and its location.
 
-  Input Parameters:
+   Input Parameter:
 .  x - the vector
 
-  Output Parameter:
-.  val - the max 
-.  p - the location
+   Output Parameters:
+.  val - the maximum component
+.  p - the location of val
 
-  Keywords: vector, max
+.keywords: vector, maximum
+
+.seealso: VecAMax(), VecMin()
 @*/
 int VecMax(Vec x,int *p,double *val)
 {
@@ -129,16 +140,18 @@ int VecMax(Vec x,int *p,double *val)
 }
 
 /*@
-     VecMin  - Computes minimum of vector and its location.
+   VecMin - Determines the minimum vector component and its location.
 
-  Input Parameters:
+   Input Parameters:
 .  x - the vector
 
-  Output Parameter:
-.  val - the minimum 
-.  p - the location
+   Output Parameter:
+.  val - the minimum component
+.  p - the location of val
 
-  Keywords: vector, max
+.keywords: vector, minimum
+
+.seealso: VecMax()
 @*/
 int VecMin(Vec x,int *p,double *val)
 {
@@ -151,16 +164,18 @@ int VecMin(Vec x,int *p,double *val)
 }
 
 /*@
-     VecTDot  - Non-Hermitian vector dot product. That is, it does NOT
-              use the complex conjugate.
+   VecTDot - Computes non-Hermitian vector dot product. That is, this
+   routine does NOT use the complex conjugate.
 
-  Input Parameters:
+   Input Parameters:
 .  x, y - the vectors
 
-  Output Parameter:
+   Output Parameter:
 .  val - the dot product
 
-  Keywords: vector, dot product, inner product, non-hermitian
+.keywords: vector, dot product, inner product, non-Hermitian
+
+.seealso: VecDot(), VecMTDot()
 @*/
 int VecTDot(Vec x,Vec y,Scalar *val) 
 {
@@ -174,13 +189,13 @@ int VecTDot(Vec x,Vec y,Scalar *val)
 }
 
 /*@
-     VecScale  - Scales a vector. 
+   VecScale - Scales a vector. 
 
-  Input Parameters:
+   Input Parameters:
 .  x - the vector
 .  alpha - the scalar
 
-  Keywords: vector, scale
+.keywords: vector, scale
 @*/
 int VecScale(Scalar *alpha,Vec x)
 {
@@ -193,15 +208,15 @@ int VecScale(Scalar *alpha,Vec x)
 }
 
 /*@
-     VecCopy  - Copys a vector. 
+   VecCopy - Copies a vector. 
 
-  Input Parameters:
+   Input Parameter:
 .  x  - the vector
 
-  Output Parameters:
+   Output Parameter:
 .  y  - the copy
 
-  Keywords: vector, copy
+.keywords: vector, copy
 @*/
 int VecCopy(Vec x,Vec y)
 {
@@ -214,15 +229,16 @@ int VecCopy(Vec x,Vec y)
 }
  
 /*@
-     VecSet  - Sets all components of a vector to a scalar. 
+   VecSet - Sets all components of a vector to a scalar. 
 
-  Input Parameters:
+   Input Parameters:
 .  alpha - the scalar
-
-  Output Parameters:
 .  x  - the vector
 
-  Keywords: vector, set
+   Output Parameter:
+.  x  - the scaled vector
+
+.keywords: vector, set
 @*/
 int VecSet(Scalar *alpha,Vec x) 
 {
@@ -235,13 +251,18 @@ int VecSet(Scalar *alpha,Vec x)
 } 
 
 /*@
-     VecAXPY  -  Computes y <- alpha x + y. 
+   VecAXPY - Computes y <- alpha x + y. 
 
-  Input Parameters:
+   Input Parameters:
 .  alpha - the scalar
-.  x,y  - the vectors
+.  x, y  - the vectors
 
-  Keywords: vector, saxpy
+   Output Parameter:
+.  y - output vector
+
+.keywords: vector, saxpy
+
+.seealso: VecAYPX(), VecMAXPY(), VecWAXPY()
 @*/
 int VecAXPY(Scalar *alpha,Vec x,Vec y)
 {
@@ -254,12 +275,18 @@ int VecAXPY(Scalar *alpha,Vec x,Vec y)
   return 0;
 } 
 /*@
-     VecAYPX  -  Computes y <- x + alpha y.
+   VecAYPX - Computes y <- x + alpha y.
 
-  Input Parameters:
+   Input Parameters:
 .  alpha - the scalar
-.  x,y  - the vectors
+.  x, y  - the vectors
 
+   Output Parameter:
+.  y - output vector
+
+.keywords: vector, saypx
+
+.seealso: VecAXPY(), VecWAXPY()
 @*/
 int VecAYPX(Scalar *alpha,Vec x,Vec y)
 {
@@ -272,10 +299,12 @@ int VecAYPX(Scalar *alpha,Vec x,Vec y)
   return 0;
 } 
 /*@
-     VecSwap  -  Swaps x and y.
+   VecSwap - Swaps the vectors x and y.
 
-  Input Parameters:
-.  x,y  - the vectors
+   Input Parameters:
+.  x, y  - the vectors
+
+.keywords: vector, swap
 @*/
 int VecSwap(Vec x,Vec y)
 {
@@ -288,14 +317,18 @@ int VecSwap(Vec x,Vec y)
   return 0;
 }
 /*@
-     VecWAXPY  -  Computes w <- alpha x + y.
+   VecWAXPY - Computes w <- alpha x + y.
 
-  Input Parameters:
+   Input Parameters:
 .  alpha - the scalar
-.  x,y  - the vectors
+.  x, y  - the vectors
 
-  Output Parameter:
+   Output Parameter:
 .  w - the result
+
+.keywords: vector, waxpy
+
+.seealso: VecAXPY(), VecAYPX()
 @*/
 int VecWAXPY(Scalar *alpha,Vec x,Vec y,Vec w)
 {
@@ -309,14 +342,17 @@ int VecWAXPY(Scalar *alpha,Vec x,Vec y,Vec w)
   return 0;
 }
 /*@
-     VecPMult  -  Computes the componentwise multiplication w = x*y.
+   VecPMult - Computes the componentwise multiplication w = x*y.
 
-  Input Parameters:
-.  x,y  - the vectors
+   Input Parameters:
+.  x, y  - the vectors
 
-  Output Parameter:
+   Output Parameter:
 .  w - the result
 
+.keywords: vector, multiply, componentwise
+
+.seealso: VecPDiv()
 @*/
 int VecPMult(Vec x,Vec y,Vec w)
 {
@@ -329,13 +365,17 @@ int VecPMult(Vec x,Vec y,Vec w)
   return 0;
 } 
 /*@
-     VecPDiv  -  Computes the componentwise division w = x/y.
+   VecPDiv - Computes the componentwise division w = x/y.
 
-  Input Parameters:
-.  x,y  - the vectors
+   Input Parameters:
+.  x, y  - the vectors
 
-  Output Parameter:
+   Output Parameter:
 .  w - the result
+
+.keywords: vector, divide, componentwise
+
+.seealso: VecPMult()
 @*/
 int VecPDiv(Vec x,Vec y,Vec w)
 {
@@ -345,15 +385,21 @@ int VecPDiv(Vec x,Vec y,Vec w)
   return (*x->ops->pdiv)(x,y,w);
 }
 /*@
-     VecCreate  -  Creates a vector from another vector. Use VecDestroy()
-                 to free the space. Use VecGetVecs() to get several 
-                 vectors.
+   VecCreate - Creates a vector from another vector. 
 
-  Input Parameters:
+   Input Parameters:
 .  v - a vector to mimic
 
-  Output Parameter:
+   Output Parameter:
 .  newv - location to put new vector
+
+   Notes:
+   Use VecDestroy() to free the space. Use VecGetVecs() to get several
+   vectors. 
+
+.keywords: vector, create
+
+.seealso: VecDestroy(), VecGetVecs(), VecCreateInitialVector()
 @*/
 int VecCreate(Vec v,Vec *newv) 
 {
@@ -361,10 +407,14 @@ int VecCreate(Vec v,Vec *newv)
   return   (*v->ops->create_vector)(v,newv);
 }
 /*@
-     VecDestroy  -  Destroys  a vector created with VecCreate().
+   VecDestroy - Destroys  a vector created with VecCreate().
 
-  Input Parameters:
+   Input Parameters:
 .  v  - the vector
+
+.keywords: vector, destroy
+
+.seealso: VecCreate()
 @*/
 int VecDestroy(Vec v)
 {
@@ -373,15 +423,22 @@ int VecDestroy(Vec v)
 }
 
 /*@
-     VecGetVecs  -  Obtains several vectors. Use VecFreeVecs() to free the 
-                  space. Use VecCreate() to get a single vector.
+   VecGetVecs - Creates several vectors from another vector. 
 
-  Input Parameters:
+   Input Parameters:
 .  m - the number of vectors to obtain
-.  v - a vector
+.  v - a vector to mimic
 
-  Output Parameters:
-.  V - location to put pointer to array of vectors.
+   Output Parameter:
+.  V - location to put pointer to array of vectors
+
+   Notes:
+   Use VecFreeVecs() to free the space. Use VecCreate() to get a single
+   vector.
+
+.keywords: vector, get 
+
+.seealso:  VecFreeVecs(), VecCreate(), VecCreateInitialVector()
 @*/
 int VecGetVecs(Vec v,int m,Vec **V)  
 {
@@ -390,11 +447,15 @@ int VecGetVecs(Vec v,int m,Vec **V)
 }
 
 /*@
-     VecFreeVecs  -  Frees a block of vectors obtained with VecGetVecs().
+   VecFreeVecs - Frees a block of vectors obtained with VecGetVecs().
 
-  Input Parameters:
+   Input Parameters:
 .  vv - pointer to array of vector pointers
 .  m - the number of vectors previously obtained
+
+.keywords: vector, free
+
+.seealso: VecGetVecs()
 @*/
 int VecFreeVecs(Vec *vv,int m)
 {
@@ -403,27 +464,28 @@ int VecFreeVecs(Vec *vv,int m)
   return (*(*vv)->ops->release_vectors)( vv, m );
 }
 
-
-
-
 /*@
-     VecSetValues - Insert or add values into certain locations in vector. 
-         These
-         values may be cached, you must call VecBeginAssembly() and 
-         VecEndAssembly() after you have completed all calls to 
-         VecSetValues() or VecInsertValues(). Note: calls with SetValues
-         and InsertValues may not be interlaced.
+   VecSetValues - Inserts or adds values into certain locations of a vector. 
+   These values may be cached, so VecBeginAssembly() and VecEndAssembly() 
+   MUST be called after all calls to VecSetValues() have been completed.
 
-  Input Parameters:
+   Input Parameters:
 .  x - vector to insert in
 .  ni - number of elements to add
 .  ix - indices where to add
 .  y - array of values
 .  iora - either InsertValues or AddValues
 
-  Notes:
-.  x[ix[i]] = y[i], for i=0,...,ni-1.
+   Notes: 
+   x[ix[i]] = y[i], for i=0,...,ni-1.
 
+   Calls to VecSetValues() with the InsertValues and AddValues 
+   options cannot be mixed without intervening calls to the assembly
+   routines.
+
+.keywords: vector, set, values
+
+.seealso:  VecBeginAssembly(), VecEndAsembly()
 @*/
 int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
 {
@@ -431,14 +493,16 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
   return (*x->ops->insertvalues)( x, ni,ix, y,iora );
 }
 
-
 /*@
-    VecBeginAssembly - Begins assembling global vector. Call after
-      all calls to VecAddValues() or VecInsertValues(). Note that you cannot
-      mix calls to VecAddValues() and VecInsertValues().
+   VecBeginAssembly - Begins assembling the vector.  This routine should
+   be called after completing all calls to VecSetValues().
 
-  Input Parameter:
-.   vec - the vector to assemble
+   Input Parameter:
+.  vec - the vector
+
+.keywords: vector, begin, assembly, assemble
+
+.seealso: VecEndAssembly(), VecSetValues()
 @*/
 int VecBeginAssembly(Vec vec)
 {
@@ -451,11 +515,15 @@ int VecBeginAssembly(Vec vec)
 }
 
 /*@
-    VecEndAssembly - End assembling global vector. Call after
-      VecBeginAssembly().
+   VecEndAssembly - Completes assembling the matrix.  This routine should
+   be called after all calls to VecSetValues() and after VecBeginAssembly().
 
-  Input Parameter:
-.   vec - the vector to assemble
+   Input Parameter:
+.  vec - the vector
+
+.keywords: vector, end, assembly, assemble
+
+.seealso: VecBeginAssembly(), VecSetValues()
 @*/
 int VecEndAssembly(Vec vec)
 {
@@ -468,16 +536,20 @@ int VecEndAssembly(Vec vec)
 }
 
 /*@
-     VecMTDot  - Non-Hermitian vector multiple dot product. 
-         That is, it does NOT use the complex conjugate.
+   VecMTDot - Computes non-Hermitian vector multiple dot product. 
+   That is, it does NOT use the complex conjugate.
 
-  Input Parameters:
+   Input Parameters:
 .  nv - number of vectors
 .  x - one vector
 .  y - array of vectors.  Note that vectors are pointers
 
-  Output Parameter:
+   Output Parameter:
 .  val - array of the dot products
+
+.keywords: vector, dot product, inner product, non-Hermitian, multiple
+
+.seealso: VecMDot(), VecTDot()
 @*/
 int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
 {
@@ -490,15 +562,19 @@ int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
   return 0;
 }
 /*@
-     VecMDot  - Vector multiple dot product. 
+   VecMDot - Computes vector multiple dot product. 
 
-  Input Parameters:
+   Input Parameters:
 .  nv - number of vectors
 .  x - one vector
 .  y - array of vectors. 
 
-  Output Parameter:
+   Output Parameter:
 .  val - array of the dot products
+
+.keywords: vector, dot product, inner product, multiple
+
+.seealso: VecMTDot(), VecDot()
 @*/
 int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
 {
@@ -512,13 +588,20 @@ int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
 }
 
 /*@
-     VecMAXPY  -  Computes y <- alpha[j] x[j] + y. 
+   VecMAXPY - Computes y <- alpha[j] x[j] + y. 
 
-  Input Parameters:
+   Input Parameters:
 .  nv - number of scalars and x-vectors
 .  alpha - array of scalars
-.  x  - one vectors
+.  x  - one vector
 .  y  - array of vectors
+
+   Output Parameter:
+.  y  - array of vectors
+
+.keywords: vector, saxpy, maxpy, multiple
+
+.seealso: VecAXPY(), VecWAXPY(), VecAYPX()
 @*/
 int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 {
@@ -532,16 +615,20 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 } 
 
 /*@
-   VecGetArray - Return pointer to vector data. For default seqential 
-        vectors returns pointer to array containing data. Otherwise 
-        implementation dependent. You must call VecRestoreArray() 
-        when you no longer need access to the array.
+   VecGetArray - Returns a pointer to vector data. For default seqential 
+   vectors, VecGetArray() returns a pointer to the data array. Otherwise,
+   this routine is implementation dependent. You MUST call VecRestoreArray() 
+   when you no longer need access to the array.
 
-  Input Parameters:
-.   x - the vector
+   Input Parameter:
+.  x - the vector
 
-   Output Parameters:
-.   a - location to put pointer to the array.
+   Output Parameter:
+.  a - location to put pointer to the array
+
+.keywords: vector, get, array
+
+.seealso: VecRestoreArray()
 @*/
 int VecGetArray(Vec x,Scalar **a)
 {
@@ -550,13 +637,15 @@ int VecGetArray(Vec x,Scalar **a)
 }
 
 /*@
-   VecRestoreArray - Restores array in vector.
+   VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
-  Input Parameters:
-.   x - the vector
-.   a - location of pointer to array obtained from VecGetArray().
+   Input Parameters:
+.  x - the vector
+.  a - location of pointer to array obtained from VecGetArray()
 
+.keywords: vector, restore, array
 
+.seealso: VecGetArray()
 @*/
 int VecRestoreArray(Vec x,Scalar **a)
 {
@@ -566,12 +655,33 @@ int VecRestoreArray(Vec x,Scalar **a)
 }
 
 /*@
-    VecView  - Allows the user to view a vector. This routines is intended
-               to be replacable with fancy graphical based viewing.
+   VecView - Views a vector object. This routines is intended
+   to be replacable with fancy graphical based viewing.
 
-  Input Parameters:
+   Input Parameters:
 .  v - the vector
-.  ptr - a pointer to a viewer ctx
+.  ptr - an optional visualization context
+
+   Notes:
+   The available visualization contexts include
+$     STDOUT_VIEWER - standard output (the default)
+$     SYNC_STDOUT_VIEWER - synchronized standard
+$        output, where only the first processor opens
+$        the file.  All other processors send their 
+$        data to the first processor to print. 
+
+   The user can open alternative vistualization contexts with
+$    ViewerFileOpen() - output to a specified file
+$    ViewerSyncFileOpen() - synchronized output to a 
+$         specified file
+$    DrawOpenX() - output vector to an X window display
+$    DrawLGCreate() - output vector as a line graph to an X window display
+$    ViewerMatlabOpen() - output vector to Matlab viewer
+
+.keywords: Vec, view, visualize
+
+.seealso: ViewerFileOpen(), ViewerSyncFileOpen(), DrawOpenX(), 
+          DrawLGCreate(), ViewerMatlabOpen()
 @*/
 int VecView(Vec v,Viewer ptr)
 {
@@ -580,16 +690,17 @@ int VecView(Vec v,Viewer ptr)
 }
 
 /*@
-    VecGetSize - Returns the global number of elements of the vector.
+   VecGetSize - Returns the global number of elements of the vector.
 
-  Input Parameter:
-.   x - the vector
+   Input Parameter:
+.  x - the vector
 
-  Output Parameters:
-.  size - the length of the vector
+   Output Parameters:
+.  size - the global length of the vector
 
-  Note:
-  A related routine is VecGetLocalSize().
+.keywords: vector, get, size, global, dimension
+
+.seealso: VecGetLocalSize()
 @*/
 int VecGetSize(Vec x,int *size)
 {
@@ -598,18 +709,19 @@ int VecGetSize(Vec x,int *size)
 }
 
 /*@
-    VecGetLocalSize - Returns the number of elements of the vector stored 
-               in local memory. This may mean different things 
-               for different implementations, so use with care.
+   VecGetLocalSize - Returns the number of elements of the vector stored 
+   in local memory. This routine may be implementation dependent, so use 
+   with care.
 
-  Input Parameter:
-.   x - the vector
+   Input Parameter:
+.  x - the vector
 
-  Output Parameters:
+   Output Parameter:
 .  size - the length of the local piece of the vector
 
-  Note:
-  A related routine is VecGetSize().
+.keywords: vector, get, dimension, size, local
+
+.seealso: VecGetSize()
 @*/
 int VecGetLocalSize(Vec x,int *size)
 {
@@ -618,16 +730,20 @@ int VecGetLocalSize(Vec x,int *size)
 }
 
 /*@
-    VecGetOwnershipRange - Returns the range of indices owned by 
-        this processor. Assumes the vectors are laid out with 
-        first n1 elements on first processor, next n2 on second, etc..
+   VecGetOwnershipRange - Returns the range of indices owned by 
+   this processor, assuming that the vectors are laid out with the
+   first n1 elements on the first processor, next n2 elements on the
+   second, etc.  For certain parallel layouts this range may not be 
+   well-defined. 
 
-  Input Parameter:
-.   x - the vector
+   Input Parameter:
+.  x - the vector
 
-  Output Parameters:
-.  low - first local element
-.  high - one more then last local element.
+   Output Parameters:
+.  low - the first local element
+.  high - one more than the last local element
+
+.keywords: vector, get, range, ownership
 @*/
 int VecGetOwnershipRange(Vec x,int *low,int *high)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.12 1995/04/15 17:23:18 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.13 1995/04/23 00:14:12 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -8,16 +8,40 @@ static char vcid[] = "$Id: gcreate.c,v 1.12 1995/04/15 17:23:18 curfman Exp curf
 #include "mat.h"
 
 /*@C
-      MatCreateInitialMatrix - Reads from command line to determine 
-           what type of matrix to create.  Also uses MPI matrices if 
-           number processors in MPI_COMM_WORLD is greater then one.
+   MatCreateInitialMatrix - Creates a matrix, reading from the command
+   line to determine the matrix type.  Generates a parallel MPI matrix
+   if the communicator has more than one processor.
 
-  Input Parameters:
-.   m,n - global matrix dimensions
-.   comm - MPI communicator
+   Input Parameters:
+.  m - number of global rows
+.  n - number of global columns
+.  comm - MPI communicator
  
-  Output Parameter:
-.   V - location to stash resulting matrix
+   Output Parameter:
+.  V - location to stash resulting matrix
+
+   Options Database Keywords:
+$  -dense_mat : dense type, uses MatCreateSequentialDense()
+$  -row_mat   : row type, uses MatCreateSequentialRow()
+$               and MatCreateMPIRow()
+$  -rowbs_mat : rowbs type (for parallel symmetric matrices),
+$               uses MatCreateMPIRowbs()
+$  -bdiag_mat : block diagonal type, uses 
+$               MatCreateSequentialBDiag() and
+$               MatCreateMPIBDiag()
+$
+$  -mpi_objects : uses MPI matrices, even for uniprocessor case
+
+   Notes:
+   The default matrix type is AIJ, using MatCreateSequentialAIJ() and
+   MatCreateMPIAIJ().
+
+.keywords: matrix, create, initial
+
+.seealso: MatCreateSequentialAIJ((), MatCreateMPIAIJ(), 
+          MatCreateSequentialRow(), MatCreateMPIRow(), 
+          MatCreateSequentialDense(), MatCreateSequentialBDiag(),
+          MatCreateMPIRowbs()
 @*/
 int MatCreateInitialMatrix(MPI_Comm comm,int m,int n,Mat *V)
 {

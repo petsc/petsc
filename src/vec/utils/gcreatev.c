@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.10 1995/04/15 03:26:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.11 1995/04/17 19:58:12 bsmith Exp curfman $";
 #endif
 
 
@@ -10,16 +10,23 @@ static char vcid[] = "$Id: gcreate.c,v 1.10 1995/04/15 03:26:19 bsmith Exp bsmit
 #include "vec.h"
 
 /*@C
-      VecCreateInitialVector - Reads from command line to determine 
-           what type of vector to create. Also generates parallel vector
-           if MPI_COMM_WORLD has more then one processor.
+    VecCreateInitialVector - Creates a vector, reading from the command
+    line to determine the vector type.  Generates a parallel MPI vector
+    if the communicator has more than one processor.
 
-  Input Parameters:
+    Input Parameters:
 .   comm - MPI communicator
-.   n - total vector length
+.   n - global vector length
  
-  Output Parameter:
-.   V - location to stash resulting vector.
+    Output Parameter:
+.   V - location to stash resulting vector
+
+    Options Database Key:
+$   -mpi_objects : use MPI vectors, even for the uniprocessor case
+
+.keywords: vector, create, initial
+
+.seealso: VecCreateSequential(), VecCreateMPI()
 @*/
 int VecCreateInitialVector(MPI_Comm comm,int n,Vec *V)
 {
