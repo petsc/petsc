@@ -120,15 +120,19 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         }
       }
       if (app->cfl_begin_advancement) {
-        /* Modify the CFL if we are past the threshold ratio */
-        if (app->cfl_advance == ADVANCE_GLOBAL) {
-          app->cfl = app->cfl * app->fnorm_last / fnorm;
-        } else if (app->cfl_advance == ADVANCE_LOCAL) {
-          app->cfl = app->cfl_init * app->fnorm_init / fnorm;
-        } else SETERRQ(1,1,"Unsupported CFL advancement strategy");
-        app->cfl = PetscMin(app->cfl,app->cfl_max);
-        app->cfl = PetscMax(app->cfl,app->cfl_init);
-        if (!app->no_output) PetscPrintf(comm,"CFL: cfl=%g\n",app->cfl);
+        /* Modify the CFL if we are past the threshold ratio and we're not at a plateau */
+        if (!(its%app->cfl_snes_its)) {
+          if (app->cfl_advance == ADVANCE_GLOBAL) {
+            app->cfl = app->cfl * app->fnorm_last / fnorm;
+          } else if (app->cfl_advance == ADVANCE_LOCAL) {
+            app->cfl = app->cfl_init * app->fnorm_init / fnorm;
+          } else SETERRQ(1,1,"Unsupported CFL advancement strategy");
+          app->cfl = PetscMin(app->cfl,app->cfl_max);
+          app->cfl = PetscMax(app->cfl,app->cfl_init);
+          if (!app->no_output) PetscPrintf(comm,"CFL: cfl=%g\n",app->cfl);
+        } else {
+          if (!app->no_output) PetscPrintf(comm,"Hold CFL\n");
+        }
       }
     }
     app->fnorm_last = fnorm;

@@ -632,6 +632,28 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
     }
   }
 
+  if (iter == 10) {
+    ierr = OptionsHasName(PETSC_NULL,"-switch_matrix_free",&flg); CHKERRQ(ierr);
+    if (flg) {
+      /* Use matrix-free Jacobian to define Newton system; use finite difference
+         approximation of Jacobian for preconditioner */
+      if (app->bctype != IMPLICIT) SETERRQ(1,1,"Matrix-free method requires implicit BCs!");
+      ierr = UserMatrixFreeMatCreate(snes,app,app->X,&app->Jmf); CHKERRQ(ierr); 
+      ierr = SNESSetJacobian(snes,app->Jmf,*pjac,ComputeJacobian,app); CHKERRQ(ierr);
+
+      /* Set matrix-free parameters and view matrix context */
+      ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_err",&app->eps_mf_default,&flg); CHKERRQ(ierr);
+      ierr = UserSetMatrixFreeParameters(snes,app->eps_mf_default,PETSC_DEFAULT); CHKERRQ(ierr);
+      if (!app->no_output) {
+        ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0); CHKERRQ(ierr);
+        PetscPrintf(app->comm,"Using matrix-free KSP method: linear system matrix:\n");
+        ierr = MatView(app->Jmf,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+        ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+      }
+      jac = &app->Jmf;
+    }
+  }
+
   /* Convert vector.  If using explicit boundary conditions, this passes along
      any changes in X due to their application to the component arrays in the
      Julianne code */
@@ -1162,6 +1184,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->cfl_init              = 0;        /* Initial CFL is set within Julianne code */
   app->cfl_max               = 100000.0; /* maximum CFL value */
   app->cfl_switch            = 10.0;     /* CFL at which to dump binary linear system */
+  app->cfl_snes_its          = 2;        /* Do this may iterations with each CFL */
   app->cfl_begin_advancement = 0;        /* flag - indicates CFL advancement has begun */
   app->f_reduction           = 0.3;      /* fnorm reduction ratio before beginning to advance CFL */
   app->cfl_advance           = CONSTANT; /* flag - by default we don't advance CFL */
@@ -1191,14 +1214,15 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
 
   /* Override default with runtime options */
   ierr = OptionsHasName(PETSC_NULL,"-cfl_advance_local",&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-cfl_snes_its",&app->cfl_snes_its,&flg); CHKERRQ(ierr);
   if (flg) {
     app->cfl_advance = ADVANCE_LOCAL;
-    PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_local method\n");
+    PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_local method, cfl_snes_its = %d\n",app->cfl_snes_its);
   } else {
     ierr = OptionsHasName(PETSC_NULL,"-cfl_advance_global",&flg); CHKERRQ(ierr);
     if (flg) {
       app->cfl_advance = ADVANCE_GLOBAL;
-      PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_global method\n");
+      PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_global method, cfl_snes_its = %d\n",app->cfl_snes_its);
     } else PetscPrintf(comm,"CFL remains constant\n");
   }
   ierr = OptionsHasName(PETSC_NULL,"-mf_adaptive",&app->mf_adaptive); CHKERRQ(ierr);
