@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zpc.c,v 1.5 1995/12/13 23:01:52 curfman Exp bsmith $";
+static char vcid[] = "$Id: zpc.c,v 1.6 1996/01/09 15:50:55 curfman Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -125,21 +125,36 @@ void pcgetfactoredmatrix_(PC pc,Mat *mat, int *__ierr ){
   *__ierr = PCGetFactoredMatrix((PC)MPIR_ToPointer( *(int*)(pc) ),&m);
   *(int*) mat = MPIR_FromPointer(m);
 }
-void pcsetoptionsprefix_(PC pc,char *prefix, int *__ierr,int len ){
-  char *t;
+ 
+void pcsetoptionsprefix_(PC pc,char *prefix, int *flg, int *__ierr,int len ){
+  char *t=0;
   if (prefix[len] != 0) {
     t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
     PetscStrncpy(t,prefix,len);
     t[len] = 0;
   }
   else t = prefix;
-  *__ierr = PCSetOptionsPrefix((PC)MPIR_ToPointer( *(int*)(pc) ),t);
+  *__ierr = PCSetOptionsPrefix((PC)MPIR_ToPointer( *(int*)(pc) ),t, flg);
+  if( t != prefix) PetscFree(t);
+}
+
+void pcappendoptionsprefix_(PC pc,char *prefix, int *flg, int *__ierr,int len ){
+  char *t=0;
+  if (prefix[len] != 0) {
+    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
+    PetscStrncpy(t,prefix,len);
+    t[len] = 0;
+  }
+  else t = prefix;
+  *__ierr = PCAppendOptionsPrefix((PC)MPIR_ToPointer( *(int*)(pc) ),t, flg);
+  if( t != prefix) PetscFree(t);
 }
 
 void pcdestroy_(PC pc, int *__ierr ){
   *__ierr = PCDestroy((PC)MPIR_ToPointer( *(int*)(pc) ));
   MPIR_RmPointer( *(int*)(pc) );
 }
+
 void pccreate_(MPI_Comm comm,PC *newpc, int *__ierr ){
   PC p;
   *__ierr = PCCreate((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),&p);
