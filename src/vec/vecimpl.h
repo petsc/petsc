@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.29 1996/07/31 03:07:17 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.30 1996/08/04 23:10:54 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -13,8 +13,8 @@
 /* vector operations */
 struct _VeOps {
   int  (*duplicate)(Vec,Vec*),           /* get single vector */
-       (*getvecs)(Vec,int,Vec**),        /* get array of vectors */
-       (*destroyvecs)(Vec*,int),            /* free array of vectors */
+       (*duplicatevecs)(Vec,int,Vec**),  /* get array of vectors */
+       (*destroyvecs)(Vec*,int),         /* free array of vectors */
        (*dot)(Vec,Vec,Scalar*),          /* z = x^H * y */
        (*mdot)(int,Vec,Vec*,Scalar*),    /* z[j] = x dot y[j] */
        (*norm)(Vec,NormType,double*),    /* z = sqrt(x^H * x) */
@@ -51,8 +51,8 @@ struct _Vec {
 };
 
 /*
-     Common header shared by array based vectors, currently Vec_Seq
-   and Vec_MPI
+     Common header shared by array based vectors, 
+   currently Vec_Seq and Vec_MPI
 */
 #define VECHEADER                         \
   int    n;                               \
@@ -62,12 +62,16 @@ typedef struct {
   VECHEADER
 } Vec_ArrayBased;
 
-#define VecGetArray_Fast(x,a) a = ((Vec_ArrayBased *)(x->data))->array
+/*
+    Macros for accessing array-based vector fields quickly to
+  avoid function call overhead.
+*/
+#define VecGetArray_Fast(x,a)     a = ((Vec_ArrayBased *)(x->data))->array
 #define VecRestoreArray_Fast(x,a)
 #define VecGetLocalSize_Fast(x,a) a = x->n;
 
 /* Default obtain and release vectors; can be used by any implementation */
-extern int     VecGetVecs_Default(Vec, int, Vec **);
+extern int     VecDuplicateVecs_Default(Vec, int, Vec **);
 extern int     VecDestroyVecs_Default(Vec *,int);
 
 /* --------------------------------------------------------------------*/
@@ -85,14 +89,14 @@ typedef struct {
   int            n;                    /* number of components to scatter */
   int            *slots;               /* locations of components */
   /*
-       The next three fields are used on in parallel scatters they contain optimization
-     in the special case that the "to" vector and the "from" vector are the same, so
-     one only needs copy components that truly copies instead of just y[idx[i]] = y[jdx[i]]
-     where idx[i] == jdx[i].
+       The next three fields are used on in parallel scatters they contain 
+       optimization in the special case that the "to" vector and the "from" 
+       vector are the same, so one only needs copy components that truly 
+       copies instead of just y[idx[i]] = y[jdx[i]] where idx[i] == jdx[i].
   */
   int            nonmatching_computed;
-  int            n_nonmatching;        /* number of "from" components != "to" components */
-  int            *slots_nonmatching;   /* locations of components that must be copied */
+  int            n_nonmatching;        /* number of "from"s  != "to"s */
+  int            *slots_nonmatching;   /* locations of "from"s  != "to"s */
 } VecScatter_Seq_General;
 
 typedef struct {
@@ -128,8 +132,6 @@ typedef struct {
                                       in scatter */
   MPI_Request            *requests;
   Scalar                 *values;  /* buffer for all sends or receives */
-                                   /* note that we pack/unpack ourselves;
-                                      we do not use MPI packing */
   VecScatter_Seq_General local;    /* any part that happens to be local */
   MPI_Status             *sstatus;
 } VecScatter_MPI_General;
@@ -142,6 +144,5 @@ struct _VecScatter {
   int     (*copy)(VecScatter,VecScatter);
   void    *fromdata,*todata;
 };
-
 
 #endif
