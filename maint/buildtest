@@ -9,7 +9,7 @@ set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
   set M =(snake            maverick   cyan       elvis         doc          ptera               maverick     tiamat     )
   set B =(O                O_complex  g          g_c++         O_c++        Opg                 O            O_c++      )
-  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha               sun4_uni     solaris    )
+  set A =(hpux             sun4       IRIX       freebsd       rs6000_local alpha               sun4_uni     solaris    )
   set S =(shared           noshared   shared     noshared      noshared     shared              shared       shared     )
   set J1=(1                1          1          1             1            1                   4            4          )
   set J2=(0                2          2          2             2            2                   9            9          )
@@ -22,7 +22,7 @@ endif
 if ($day == Mon) then
   set M =(snake            maverick   cyan       elvis         doc          ptera                maverick    tiamat     )
   set B =(g                Opg_c++    O_c++      g             O            g_c++                Opg         O          )
-  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha_nolog          sun4        solaris    )
+  set A =(hpux             sun4       IRIX       freebsd       rs6000_local alpha_nolog          sun4        solaris    )
   set S =(shared           noshared   shared     noshared      noshared     shared               noshared    shared     )
   set J1=(0                1          1          1             1            1                    1           1          )
   set J2=(1                2          2          2             2            2                    2           2          )
@@ -35,7 +35,7 @@ endif
 if ($day == Tue) then
   set M =(snake            maverick   cyan       elvis         doc          ptera                maverick    tiamat     )
   set B =(O                g          O_complex  O             g            O                    Opg_c++     g          )
-  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha                sun4        solaris    )
+  set A =(hpux             sun4       IRIX       freebsd       rs6000_local alpha                sun4        solaris    )
   set S =(shared           noshared   shared     noshared      noshared     shared               noshared    shared     )
   set J1=(0                1          1          1             1            1                    1           1          )
   set J2=(2                2          2          2             2            2                    2           2          )
@@ -48,7 +48,7 @@ endif
 if ($day == Wed) then
   set M =(snake            maverick   cyan       elvis         doc          ptera                maverick    tiamat     )
   set B =(g                g_c++      Opg        g_complex     Opg_complex  O_c++                Opg_c++     Opg_complex)
-  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha                sun4_uni    solaris    )
+  set A =(hpux             sun4       IRIX       freebsd       rs6000_local alpha                sun4_uni    solaris    )
   set S =(shared           noshared   shared     noshared      noshared     shared               noshared    shared     )
   set J1=(3                1          1          1             1            1                    4           1          )
   set J2=(0                2          3          2             2            2                    9           2          )
@@ -61,7 +61,7 @@ endif
 if ($day == Thu) then
   set M =(snake            maverick   cyan       elvis         doc          ptera                maverick    tiamat     )
   set B =(O                g_complex  g_c++      O_c++         g_c++        O_complex            Opg_complex g_c++      )
-  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha                sun4        solaris    )
+  set A =(hpux             sun4       IRIX       freebsd       rs6000_local alpha                sun4        solaris    )
   set S =(shared           noshared   shared     noshared      noshared     shared               noshared    shared     )
   set J1=(0                1          1          1             1            1                    1           1          )
   set J2=(0                2          2          2             2            2                    2           2          )
@@ -74,7 +74,7 @@ endif
 if ($day == Fri) then
   set M =(snake            maverick   cyan       elvis         doc          ptera                maverick    tiamat     )
   set B =(g                O_c++      g_complex  O_complex     g_complex    g_complex            Opg         g_complex  )
-  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha                sun4        solaris    )
+  set A =(hpux             sun4       IRIX       freebsd       rs6000_local alpha                sun4        solaris    )
   set S =(shared           noshared   shared     noshared      noshared     shared               noshared    shared     )
   set J1=(0                1          1          1             1            1                    1           1          )
   set J2=(2                2          2          2             2            2                    2           2          )
@@ -87,7 +87,7 @@ endif
 if ($day == Sat) then
   set M =(snake            maverick   cyan       elvis         doc          ptera                maverick    tiamat     )
   set B =(O                O          O          Opg_complex   g_complex    Opg_c++              g_complex   Opg        )
-  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha                sun4_uni    solaris    )
+  set A =(hpux             sun4       IRIX       freebsd       rs6000_local alpha                sun4_uni    solaris    )
   set S =(shared           noshared   shared     noshared      noshared     shared               shared      shared     )
   set J1=(1                1          1          1             1            1                    4           1          )
   set J2=(0                2          2          2             2            2                    9           2          )
