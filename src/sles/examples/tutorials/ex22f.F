@@ -1,4 +1,4 @@
-! $Id: ex22f.F,v 1.4 2001/04/20 15:13:04 bsmith Exp balay $
+! $Id: ex22f.F,v 1.5 2001/08/10 16:44:04 balay Exp bsmith $
 !
 !   Laplacian in 3D. Modeled by the partial differential equation
 !
@@ -34,6 +34,7 @@
       double precision norm
       DA               da
       external         ComputeRHS,ComputeJacobian
+      Vec              x
 
       call  PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
@@ -50,6 +51,8 @@
 
       call DMMGSolve(dmmg,ierr)
 
+      call DMMGGetx(dmmg,x,ierr)
+!      call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
       call DMMGDestroy(dmmg,ierr)
       call PetscFinalize(ierr)
