@@ -1,4 +1,4 @@
-/* $Id: petscarchiverfe.h,v 1.5 2001/04/17 21:10:12 buschelm Exp $ */
+/* $Id: petscarchiverfe.h,v 1.6 2001/05/03 11:03:46 buschelm Exp buschelm $ */
 #ifndef PETScArchiverFE_h_
 #define PETScArchiverFE_h_
 
@@ -17,6 +17,8 @@ namespace PETScFE {
     virtual void Help(void);
 
     virtual void FoundFlag(LI &);
+    virtual void DisplayVersion(void);
+    virtual bool IsAKnownTool(void);
     virtual void Merge(string &,list<string> &,LI &);
 
     list<string> archivearg;

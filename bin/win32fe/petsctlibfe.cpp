@@ -1,4 +1,4 @@
-/* $Id: petsctlibfe.cpp,v 1.10 2001/05/03 11:03:30 buschelm Exp $ */
+/* $Id: petsctlibfe.cpp,v 1.11 2001/05/05 02:16:22 buschelm Exp buschelm $ */
 #include "Windows.h"
 #include "petsctlibfe.h"
 
@@ -7,8 +7,8 @@ using namespace std;
 
 void tlib::Execute() {
   archiver::Execute();
-  Archive();
-  if (!helpfound) {
+  if ((!helpfound) || (!versionfound)) {
+    Archive();
     string backup = file.front();
     backup = backup.substr(1,backup.rfind(".")-1);
     backup = backup + ".BAK";
@@ -23,8 +23,10 @@ void tlib::Execute() {
 void tlib::Help(void) {
   archiver::Help();
   cout << "tlib specific help:" << endl;
+  cout << "  win32fe requires the use of - to denote flags instead of /." << endl;
+  cout << "        The translation from - to / for tlib is managed automatically." << endl;
   cout << "  Note: tlib operators +, -+, *, etc. are not supported by win32fe." << endl;
-  cout << "        Instead, use the flags -a, -u, -e, etc. accordingly." << endl << endl;
+  cout << "        Instead, use the arguments -a, -u, -e, etc. accordingly." << endl << endl;
   cout << "=========================================================================" << endl << endl;
   string help = archivearg.front();
   system(help.c_str());

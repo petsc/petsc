@@ -1,11 +1,9 @@
-/* $Id: petsccompilerfe.cpp,v 1.15 2001/05/04 21:29:54 buschelm Exp $ */
+/* $Id: petsccompilerfe.cpp,v 1.16 2001/05/05 02:16:22 buschelm Exp buschelm $ */
 #include <stdlib.h>
 #include <Windows.h>
 #include "petsccompilerfe.h"
 
 using namespace PETScFE;
-
-#define UNKNOWN '*'
 
 compiler::compiler() {
   compileoutflag = linkoutflag = "-o ";
@@ -70,7 +68,7 @@ void compiler::AddSystemLib(void) {
 
 void compiler::Execute(void) {
   tool::Execute();
-  if (!helpfound) {
+  if (!(helpfound || versionfound)) {
     FixOutput();
     /* Determine if we are compiling, or linking */ 
     LI i=linkarg.begin();
@@ -88,6 +86,7 @@ void compiler::Help(void) {
   cout << "For compilers:" << endl;
   cout << "  win32fe will map the following <tool options> to their native options:" << endl;
   cout << "    -c:          Compile Only, generates an object file with .o extension" << endl;
+  cout << "                 This will invoke the compiler once for each file listed." << endl;
   cout << "    -l<library>: Link the file lib<library>.lib" << endl;
   cout << "    -o <file>:   Output=<file> context dependent" << endl;
   cout << "    -D<macro>:   Define <macro>" << endl;
@@ -95,6 +94,11 @@ void compiler::Help(void) {
   cout << "    -L<path>:    Add <path> to the link path" << endl;
   cout << "    -help:       <tool> specific help for win32fe" << endl << endl;
   cout << "Ex: win32fe cl -Zi -c foo.c --verbose -Iinclude" << endl << endl;
+  cout << "Note: win32fe will automatically find the system library paths and" << endl;
+  cout << "      system include paths, relieving the user of the need to invoke a" << endl;
+  cout << "      particular shell.  The only requirement is that the compiler be" << endl;
+  cout << "      found in the path, or have the path specified with --use <compiler>" << endl;
+  cout << "      or --path <bin directory>." << endl << endl;
   cout << "=========================================================================" << endl << endl;
 }
 
@@ -189,7 +193,9 @@ void compiler::FoundI(LI &i) {
     shortpath = "-I"+shortpath;
     compilearg.push_back(shortpath);
   } else {
-    cerr << "Warning: win32fe Include Path Not Found: " << i->substr(2) << endl;
+    if (!woff) {
+      cerr << "Warning: win32fe Include Path Not Found: " << i->substr(2) << endl;
+    }
   }
 }
 
@@ -200,7 +206,9 @@ void compiler::FoundL(LI &i) {
     shortpath = "-L"+shortpath;
     linkarg.push_back(shortpath);
   } else {
-    cerr << "Warning: win32fe Library Path Not Found:" << i->substr(2) << endl;
+    if (!woff) {
+      cerr << "Warning: win32fe Library Path Not Found:" << i->substr(2) << endl;
+    }
   }
 }
 
@@ -258,4 +266,16 @@ void compiler::FixOutput(void) {
       OutputFlag = --linkarg.begin();
     }
   }
+}
+
+void compiler::DisplayVersion(void) {
+  tool::DisplayVersion();
+  version = compilearg.front();
+  version += " 2>&1 | head -1";
+  if (verbose) cout << version << endl;
+  system(version.c_str());
+}
+
+bool compiler::IsAKnownTool(void) {
+  return(true);
 }

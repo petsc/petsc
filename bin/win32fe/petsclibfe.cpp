@@ -1,11 +1,11 @@
-/* $Id: petsclibfe.cpp,v 1.10 2001/05/05 02:16:22 buschelm Exp buschelm $ */
+/* $Id: petsclibfe.cpp,v 1.11 2001/05/06 07:41:18 buschelm Exp buschelm $ */
 #include "petsclibfe.h"
 
 using namespace PETScFE;
   
 void lib::Execute(void) {
   archiver::Execute();
-  if (!helpfound) {
+  if ((!helpfound) || (!versionfound)) {
     string temp, archivename = file.front();
     file.pop_front();
     archivearg.push_back("-out:" + archivename);
@@ -13,8 +13,8 @@ void lib::Execute(void) {
     if (GetShortPath(temp)) {
       file.push_front(archivename);
     }
+    Archive();
   }
-  Archive();
 }
 
 void lib::Archive(void) {
@@ -78,7 +78,9 @@ void lib::AddPaths(void) {
     addpath = VisualStudioDir + "Common7\\IDE";
     KnownVersion=true;
   } else {
-    cerr << "Warning: win32fe Visual Studio version not recognized." << endl;
+    if (!woff) {
+      cerr << "Warning: win32fe Visual Studio version not recognized." << endl;
+    }
   }
   if (KnownVersion) {
     arg.push_back("--path");

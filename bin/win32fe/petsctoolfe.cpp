@@ -1,23 +1,33 @@
-/* $Id: petsctoolfe.cpp,v 1.15 2001/05/04 17:05:13 buschelm Exp $ */
+/* $Id: petsctoolfe.cpp,v 1.16 2001/05/05 02:16:22 buschelm Exp buschelm $ */
 #include "Windows.h"
 #include "petsctoolfe.h"
 
 using namespace PETScFE;
 
 tool::tool(void) {
-  tool::OptionTags= "uvhp";
+  tool::OptionTags= "uvhpV";
   tool::Options['u'] = &tool::FoundUse;
   tool::Options['v'] = &tool::FoundVerbose;
   tool::Options['h'] = &tool::FoundHelp;
   tool::Options['p'] = &tool::FoundPath;
+  tool::Options['w'] = &tool::FoundWoff;
+  tool::Options['V'] = &tool::FoundVersion;
+  tool::Options[UNKNOWN] = &tool::FoundUnknown;
+  version   = "PETSc's Win32 Front End, version 1.1";
+  woff      = false;
   verbose   = false;
   helpfound = false;
+  versionfound = false;
   inpath    = false;
 }
   
 void tool::GetArgs(int argc,char *argv[]) {
-    for (int i=2;i<argc;i++) arg.push_back(argv[i]);
-    if (argc == 2) arg.push_back("-help");
+  for (int i=2;i<argc;i++) arg.push_back(argv[i]);
+  if (argc == 2) {
+    if (!((arg.front()=="--Version") || (arg.front()=="--help"))) {
+      arg.push_back("--help");
+    }
+  }
 }
 
 void tool::Parse() {
@@ -26,14 +36,28 @@ void tool::Parse() {
     string temp = *i;
     if (temp.substr(0,2)=="--") {
       char flag = temp[2];
-      if (tool::OptionTags.find(flag)!=string::npos) {
+      if (tool::OptionTags.find(flag)==string::npos) {
+        (this->*tool::Options[UNKNOWN])(i);
+      } else {
         (this->*tool::Options[flag])(i);
       }
     } else {
       i++;
     }
   }
-  AddSystemInfo();
+  if (IsAKnownTool()) {
+    AddSystemInfo();
+  } else {
+    if (!(helpfound || versionfound)) {
+      if (arg.begin()!=arg.end()) {
+        cerr << endl << "Error: win32fe: Unknown Tool: " << arg.front() << endl;
+        cerr << "  Use --help for more information on win32fe options." << endl << endl;
+      } else {
+        cerr << endl << "Error: win32fe: Unknown Tool:" << endl;
+        cerr << "  Use --help for more information on win32fe options." << endl << endl;
+      }
+    }
+  }
 }
 
 void tool::AddSystemInfo(void) {
@@ -44,31 +68,38 @@ void tool::AddSystemInfo(void) {
 void tool::FindInstallation(void) {
   /* Find location of tool */
   InstallDir = arg.front();
+  bool ierr = false;
   
-  /* First check if a full path was specified with --use */
+    /* First check if a full path was specified with --use */
   string::size_type n = InstallDir.find(":");
   if (n==string::npos) {
     char tmppath[MAX_PATH],*tmp;
     int length = MAX_PATH*sizeof(char);
     string extension = ".exe";
     if (SearchPath(NULL,InstallDir.c_str(),extension.c_str(),length,tmppath,&tmp)) {
+      /*
+        Note: There are 6 locations searched, the 6th of these is the PATH variable.
+        But, in reality, the first 5 don't make any sense for this tool, so it is 
+        assumed that the tool was found in the PATH variable.
+      */
       InstallDir = (string)tmppath;
-      inpath = true;
     } else {
-      string tool=arg.front();
-      cerr << endl << "Error: win32fe: Compiler Not Found: ";
-      cerr << tool << endl;
-      cerr << "\tSpecify the complete path to ";
-      cerr << tool;
-      cerr << " with --use" << endl;
-      cerr << "\tUse --help for more information on win32fe options." << endl << endl;
-      return;
+      ierr = true;
     }
   }
-  
-  /* Tool is located in InstallDir/bin/compiler.exe */
-  /* Note: InstallDir includes the trailing / */
-  InstallDir = InstallDir.substr(0,InstallDir.find_last_of("\\",InstallDir.find_last_of("\\")-1)+1);
+  InstallDir = InstallDir.substr(0,InstallDir.find_last_of("\\"));
+  InstallDir = InstallDir.substr(0,InstallDir.find_last_of("\\")+1);
+  if (GetShortPath(InstallDir)) {
+    inpath = true;
+  } else {
+    ierr = true;
+  }
+  if (ierr) {
+    string tool=arg.front();
+    cerr << endl << "Error: win32fe: Tool Not Found: " << tool << endl;
+    cerr << "  Specify the complete path to " << tool << " with --use" << endl;
+    cerr << "  Use --help for more information on win32fe options." << endl << endl;
+  }
 }
 
 void tool::AddPaths(void) {
@@ -82,15 +113,22 @@ void tool::AddPaths(void) {
 }
 
 void tool::Execute(void) {
+  if (helpfound) {
+    Help();
+    return;
+  }
+  if (versionfound) {
+    DisplayVersion();
+    return;
+  }
   if (verbose) cout << "PETSc Front End v1.1" << endl;
-  if (helpfound) Help();
 }
 
 void tool::Help(void) {
   cout << endl << "PETSc's Win32 Tool Front End v1.0" << endl << endl;  
   cout << "Usage: win32fe <tool> --<win32fe options> -<tool options> <files>" << endl;
-  cout << "  <tool> must follow win32fe" << endl << endl;
-  cout << "<tool>: {cl,df,f90,bcc32,lib,tlib}" << endl;
+  cout << "  <tool> must be the first argument to win32fe" << endl << endl;
+  cout << "<tool>: {cl,icl,df,f90,ifl,bcc32,lib,tlib}" << endl;
   cout << "  cl:    Microsoft 32-bit C/C++ Optimizing Compiler" << endl;
   cout << "  icl:   Intel C/C++ Optimizing Compiler" << endl;
   cout << "  df:    Compaq Visual Fortran Optimizing Compiler" << endl;
@@ -99,13 +137,19 @@ void tool::Help(void) {
   cout << "  bcc32: Borland C++ for Win32" << endl;
   cout << "  lib:   Microsoft Library Manager" << endl;
   cout << "  tlib:  Borland Library Manager" << endl << endl;
-  cout << "<win32fe options>: {use,path,verbose,help}" << endl;
-  cout << "  --use <arg>:  <arg> Specifies the variant of <tool> to use" << endl;
-  cout << "  --path <arg>: <arg> Specifies an addition to the PATH that is required" << endl;
-  cout << "                for your tool (ex. the location of a required .dll)" << endl;
-  cout << "  --verbose:    Echo to stdout the translated commandline" << endl;
+  cout << "<win32fe options>: {help,path,use,verbose,Version,woff}" << endl;
   cout << "  --help:       Output this help message and help for <tool>" << endl << endl;
+  cout << "  --path <arg>: <arg> specifies an addition to the PATH that is required" << endl;
+  cout << "                (ex. the location of a required .dll)" << endl;
+  cout << "  --use <arg>:  <arg> specifies the variant of <tool> to use" << endl;
+  cout << "  --verbose:    Echo to stdout the translated commandline" << endl;
+  cout << "  --Version:    Output Version info for win32fe and <tool>" << endl;
+  cout << "  --woff:       Suppress win32fe specific warning messages" << endl << endl;
   cout << "=========================================================================" << endl << endl;
+}
+
+void tool::FoundUnknown(LI &i) {
+  i++;
 }
 
 void tool::FoundPath(LI &i) {
@@ -145,19 +189,41 @@ void tool::FoundUse(LI &i) {
   }
 }
 
+void tool::FoundWoff(LI &i) {
+  if (*i == "--woff") {
+    woff = true;
+    i = arg.erase(i);
+    cout << endl;
+  } else {
+    i++;
+  }
+}
+
 void tool::FoundVerbose(LI &i) {
   if (*i == "--verbose") {
     verbose = true;
     i = arg.erase(i);
     cout << endl;
+  } else {
+    i++;
+  }
+}
+
+void tool::FoundVersion(LI &i) {
+  if (*i == "--Version") {
+    versionfound=true;
+    i = arg.erase(i);
+  } else {
+    i++;
   }
 }
 
 void tool::FoundHelp(LI &i) {
   if (*i == "--help") {
     helpfound = true;
-    arg.push_back("-help");
     i = arg.erase(i);
+  } else {
+    i++;
   }
 }
 
@@ -222,4 +288,12 @@ void tool::Merge(string &str,list<string> &liststr,LI &i) {
   while (i!=liststr.end()) {
     str += " " + *i++;
   }
+}
+
+void tool::DisplayVersion(void) {
+  cout << version << endl;
+}
+
+bool tool::IsAKnownTool(void) {
+  return(false);
 }

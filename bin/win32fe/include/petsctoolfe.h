@@ -1,8 +1,10 @@
-/* $Id: petsctoolfe.h,v 1.9 2001/05/04 02:40:31 buschelm Exp $ */
+/* $Id: petsctoolfe.h,v 1.10 2001/05/05 02:16:52 buschelm Exp buschelm $ */
 #ifndef PETScToolFE_h_
 #define PETScToolFE_h_
 
 #include "petscfe.h"
+
+#define UNKNOWN '*'
 
 namespace PETScFE {
 
@@ -22,11 +24,16 @@ namespace PETScFE {
     void FoundPath(LI &);
     void FoundUse(LI &);
     void FoundVerbose(LI &);
+    void FoundVersion(LI &);
+    void FoundWoff(LI &);
+    void FoundUnknown(LI &);
 
     virtual void FoundFile(LI &);
     virtual void AddSystemInfo(void);
     virtual void FindInstallation(void);
     virtual void AddPaths(void);
+    virtual void DisplayVersion(void);
+    virtual bool IsAKnownTool(void);
 
     void PrintListString(list<string> &);
     int GetShortPath(string &);
@@ -37,8 +44,11 @@ namespace PETScFE {
     list<string> arg;
     list<string> file;
     string InstallDir;
+    string version;
+    bool woff;
     bool verbose;
     bool helpfound;
+    bool versionfound;
     bool inpath;
   private:
     string OptionTags;

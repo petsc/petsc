@@ -1,4 +1,4 @@
-/* $Id:$ */
+/* $Id: petsciclfe.cpp,v 1.2 2001/05/04 22:02:13 buschelm Exp buschelm $ */
 #include <stdlib.h>
 #include <Windows.h>
 #include "petsciclfe.h"
@@ -16,18 +16,6 @@ void icl::Parse(void) {
 
 void icl::Help(void) {
   compiler::Help();
-  cout << "icl specific help:" << endl;
-  cout << "  icl requires the use of the Microsoft Linker (link.exe), which is" << endl;
-  cout << "      invoked seamlessly.  However certain .dll's may be required which" << endl;
-  cout << "      may not be found in the PATH.  The needed path can be specified" << endl;
-  cout << "      with --path <directory>" << endl;
-  cout << "  icl also requires the use of the Microsoft Compiler (cl) header files" << endl;
-  cout << "      and system libraries.  However, these system files are installed" << endl;
-  cout << "      independently from icl, and must be specified either in the" << endl;
-  cout << "      environment variables INCLUDE and LIB, or with -I<dir> -L<dir>" << endl;
-  cout << "  Alternatively, win32fe and icl can be invoked within a command prompt" << endl;
-  cout << "      provided with the icl installation." << endl << endl;
-  cout << "=========================================================================" << endl << endl;
   string help = compilearg.front();
   help += " -? 2>&1";
   system(help.c_str());
@@ -58,13 +46,17 @@ void icl::FindInstallation(void) {
       VisualStudioDir += "\\";
       GetShortPath(VisualStudioDir);
     } else {
-      cout << "Warning: win32fe Cannot Find Visual Studio Installation" << endl;
-      cout << "         Registry Key could not be queried." << endl;
+      if (!woff) {
+        cout << "Warning: win32fe Cannot Find Visual Studio Installation" << endl;
+        cout << "         Registry Key could not be queried." << endl;
+      }
     }
     RegCloseKey(key);
   } else {
-    cout << "Warning: win32fe Cannot Find Visual Studio Installation" << endl;
-    cout << "         Registry Key could not be found." << endl;
+    if (!woff) {
+      cout << "Warning: win32fe Cannot Find Visual Studio Installation" << endl;
+      cout << "         Registry Key could not be found." << endl;
+    }
   }
 }
 
@@ -88,12 +80,6 @@ void icl::AddSystemLib(void) {
 
 void ifl::Help(void) {
   compiler::Help();
-  cout << "ifl specific help:" << endl;
-  cout << "  ifl requires the use of the Microsoft Linker (link.exe), which is" << endl;
-  cout << "      invoked seamlessly.  However certain .dll's are required which" << endl;
-  cout << "      may not be found in the PATH.  The needed path can be specified" << endl;
-  cout << "      with --path <directory>" << endl << endl;
-  cout << "=========================================================================" << endl << endl;
   string help = compilearg.front();
   help += " -? 2>&1";
   system(help.c_str());

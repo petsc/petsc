@@ -1,4 +1,4 @@
-/* $Id: petsccompilerfe.h,v 1.8 2001/05/04 21:30:26 buschelm Exp $ */
+/* $Id: petsccompilerfe.h,v 1.9 2001/05/05 02:16:52 buschelm Exp buschelm $ */
 #ifndef PETScCompilerFE_h_
 #define PETScCompilerFE_h_
 
@@ -26,11 +26,13 @@ namespace PETScFE {
     virtual void Foundo(LI &);
     virtual void FoundUnknown(LI &);
 
-    virtual void FixOutput(void);
     virtual void AddSystemInfo(void);
     virtual void AddPaths(void) {}
     virtual void AddSystemInclude(void);
     virtual void AddSystemLib(void);
+    virtual void DisplayVersion(void);
+    virtual bool IsAKnownTool(void);
+    virtual void FixOutput(void);
 
     string OptionTags;
     list<string> compilearg;

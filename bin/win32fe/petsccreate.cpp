@@ -1,4 +1,4 @@
-/* $Id: petsccreate.cpp,v 1.11 2001/04/17 21:16:55 buschelm Exp $ */
+/* $Id: petsccreate.cpp,v 1.14 2001/05/04 02:43:26 buschelm Exp buschelm $ */
 #include "petscclfe.h"
 #include "petsciclfe.h"
 #include "petscbccfe.h"
@@ -30,7 +30,6 @@ namespace PETScFE {
     CreateTool["tlib"] = PETScFE::CreateTLIB;
 
     if (KnownTools.find(argv)==string::npos) {
-      argv = "--help";
       Tool = new(tool);
     } else {
       CreateTool[argv](Tool);

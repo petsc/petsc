@@ -1,4 +1,4 @@
-/* $Id: petscarchiverfe.cpp,v 1.15 2001/05/04 00:39:01 buschelm Exp $ */
+/* $Id: petscarchiverfe.cpp,v 1.16 2001/05/05 02:16:22 buschelm Exp buschelm $ */
 #include <stdlib.h>
 #include <process.h>
 #include "petscarchiverfe.h"
@@ -25,7 +25,7 @@ void archiver::Parse(void) {
 
 void archiver::Execute(void) {
   tool::Execute();
-  if (!helpfound) {
+  if ((!helpfound) || (!versionfound)) {
     string archivename = file.front();
     file.pop_front();
     string::size_type n = archivename.find_last_of("\\");
@@ -64,6 +64,7 @@ void archiver::Help(void) {
   cout << "  The first file specified will be the archive name." << endl;
   cout << "  All subsequent files will be inserted into the archive." << endl << endl;
   cout << "Ex: win32fe tlib -u libfoo.lib foo.o bar.o" << endl << endl;
+  cout << "Note: Long lists of files are automatically split into smaller lists." << endl << endl;
   cout << "=========================================================================" << endl << endl;
   
 }
@@ -91,3 +92,16 @@ void archiver::Merge(string &str,list<string> &liststr,LI &i) {
     }
   }
 }
+
+void archiver::DisplayVersion(void) {
+  tool::DisplayVersion();
+  version = archivearg.front();
+  version += " 2>&1 | head -1";
+  if (verbose) cout << version << endl;
+  system(version.c_str());
+}
+ 
+bool archiver::IsAKnownTool(void) {
+  return(true);
+}
+ 
