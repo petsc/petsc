@@ -1,5 +1,5 @@
 
-C      "$Id: ex21.F,v 1.12 1996/07/08 22:16:40 bsmith Exp curfman $";
+C      "$Id: ex21.F,v 1.13 1996/08/27 20:24:00 curfman Exp curfman $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -7,15 +7,15 @@ C      "$Id: ex21.F,v 1.12 1996/07/08 22:16:40 bsmith Exp curfman $";
 C  This Fortran example illustrates the use of VecSetValues() to set
 C  multiple values at once.  This also demonstrates VecGetArray().
 
-       Scalar           xwork(6)
-       Scalar           vxx(1), vyy(1)
-       integer          i, n, ierr, loc(6), ixx, iyy
-       Vec              x, y
+       Scalar  xwork(6)
+       Scalar  xx_v(1), yy_v(1)
+       integer i, n, ierr, loc(6), xx_i, yy_i
+       Vec     x, y
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-#define xx(ib)  vxx(ixx + (ib))
-#define yy(ib)  vyy(iyy + (ib))
+#define xx_a(ib)  xx_v(xx_i + (ib))
+#define yy_a(ib)  yy_v(yy_i + (ib))
 
 C  Note that the vector indices are 0-based in PETSc (for both Fortran
 C  and C vectors)
@@ -37,14 +37,14 @@ C Create initial vector and set values
        call VecCopy(x,y,ierr)
 
 C Extract vector elements and modify them
-       call VecGetArray(x,vxx,ixx,ierr)
-       call VecGetArray(y,vyy,iyy,ierr)
+       call VecGetArray(x,xx_v,xx_i,ierr)
+       call VecGetArray(y,yy_v,yy_i,ierr)
        do 30 i=1,n
-          xx(i) = 100.0*i
-          yy(i) = 1000.0*i
+          xx_a(i) = 100.0*i
+          yy_a(i) = 1000.0*i
   30   continue
-       call VecRestoreArray(x,vxx,ixx,ierr)
-       call VecRestoreArray(y,vyy,iyy,ierr)
+       call VecRestoreArray(x,xx_v,xx_i,ierr)
+       call VecRestoreArray(y,yy_v,yy_i,ierr)
 
        write(6,40)
   40   format('new vector 1:')
