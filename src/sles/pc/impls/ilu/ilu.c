@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.152 2000/08/19 14:30:16 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.153 2000/09/02 02:48:52 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -470,7 +470,7 @@ int PCILUSetUseInPlace(PC pc)
 #define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_ILU"
 static int PCSetFromOptions_ILU(PC pc)
 {
-  int        ierr,dtmax = 3;
+  int        ierr,dtmax = 3,itmp;
   PetscTruth flg;
   PetscReal  dt[3];
   char       tname[256];
@@ -478,9 +478,11 @@ static int PCSetFromOptions_ILU(PC pc)
 
   PetscFunctionBegin;
   ierr = OptionsHead("ILU Options");CHKERRQ(ierr);
-    ierr = OptionsInt("-pc_ilu_levels","levels of fill","PCILUSetLevels",(int)ilu->info.levels,(int*)&ilu->info.levels,0);CHKERRQ(ierr);
+    ierr = OptionsInt("-pc_ilu_levels","levels of fill","PCILUSetLevels",(int)ilu->info.levels,&itmp,&flg);CHKERRQ(ierr);
+    if (flg) ilu->info.levels = (double) itmp;
     ierr = OptionsName("-pc_ilu_in_place","do factorization in place","PCILUSetUseInPlace",&ilu->inplace);CHKERRQ(ierr);
-    ierr = OptionsName("-pc_ilu_diagonal_fill","Allow fill into empty diagonal entry","PCILUSetAllowDiagonalFill",(PetscTruth*)&ilu->info.diagonal_fill);CHKERRQ(ierr);
+    ierr = OptionsName("-pc_ilu_diagonal_fill","Allow fill into empty diagonal entry","PCILUSetAllowDiagonalFill",&flg);CHKERRQ(ierr);
+    ilu->info.diagonal_fill = (double) flg;
     ierr = OptionsName("-pc_iludt_reuse_fill","Reuse fill from previous ILUdt","PCILUDTSetReuseFill",&ilu->reusefill);CHKERRQ(ierr);
     ierr = OptionsName("-pc_ilu_reuse_ordering","Reuse previous reordering","PCILUSetReuseOrdering",&ilu->reuseordering);CHKERRQ(ierr);
     ierr = OptionsHasName(pc->prefix,"-pc_ilu_damping",&flg);CHKERRQ(ierr);
