@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.58 1999/05/04 20:35:43 balay Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.59 1999/05/12 03:32:27 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -156,3 +156,39 @@ int SNESDefaultComputeHessian(SNES snes,Vec x1,Mat *J,Mat *B,
   ierr = SNESDefaultComputeJacobian(snes,x1,J,B,flag,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
+
+#undef __FUNC__  
+#define __FUNC__ "SNESDefaultComputeHessianColor"
+/*@C
+   SNESDefaultComputeHessianColor - Computes the Hessian using colored finite differences. 
+
+   Collective on SNES
+
+   Input Parameters:
++  x1 - compute Hessian at this point
+-  ctx - application's gradient context, as set with SNESSetGradient()
+
+   Output Parameters:
++  J - Hessian matrix (not altered in this routine)
+.  B - newly computed Hessian matrix to use with preconditioner (generally the same as J)
+-  flag - flag indicating whether the matrix sparsity structure has changed
+
+    Options Database Keys:
+.  -mat_fd_coloring_freq <freq> - Activates SNESDefaultComputeJacobianColor()
+
+   Level: intermediate
+
+ .keywords: SNES, finite differences, Hessian, coloring, sparse
+
+.seealso: SNESSetHessian()
+@*/
+int SNESDefaultComputeHessianColor(SNES snes,Vec x1,Mat *J,Mat *B,
+                              MatStructure *flag,void *ctx)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = SNESDefaultComputeJacobianColor(snes,x1,J,B,flag,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+}
+
