@@ -20,6 +20,9 @@ ex2: ex2.o  chkopts
 
 ex4: ex4.o  chkopts
 	-${CLINKER}  -o ex4 ex4.o ${PETSC_MAT_LIB}
+	${RM} ex4.o
+
+runex1: 
 	${MPIRUN} ex1 -f0 ${DATAFILESPATH}/matrices/medium
 
 #-------------------------------------------------------------
