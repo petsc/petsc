@@ -41,7 +41,7 @@ int main( int argc, char **argv)
     PetscFree(arr[i]);
   }
   
-  fprintf(stderr,"%-15s : %e sec , with options : ","PLogEvent",(y-x)/10.0);
+  fprintf(stderr,"%-15s : %e sec , with options : ","PLogEvent",(y-x)/500.0);
   if(OptionsHasName(PETSC_NULL,"-trmalloc",&flg),flg) fprintf(stderr,"-trmalloc ");
   fprintf(stderr,"\n"); 
   

@@ -57,6 +57,7 @@ runtest:
 	-@$(MPIRUN) PLogEvent -log_all           > /dev/null
 	-@$(MPIRUN) PLogEvent -log_mpe           > /dev/null
 	-@$(MPIRUN) PLogEvent -log_mpe -log      > /dev/null
+	-@echo " "
 	-@echo "PetscMalloc and PetscFree together  with options"
 	-@echo "------------------------------------------------"
 	-@$(MPIRUN) PetscMalloc                    > /dev/null
