@@ -559,7 +559,7 @@ class SIDLMake(Make):
     config   = builder.pushConfiguration(language+' Stub '+baseName)
     for f in generatedSource['Client '+language]['Cxx']:
       builder.compile([f])
-      builder.link([builder.getCompilerTarget(f)], shared = 1)
+      builder.link([builder.getCompilerTarget(f)], builder.getSharedLinkerTarget(builder.getCompilerTarget(f), 1, None), shared = 1)
     builder.popConfiguration()
     builder.saveConfiguration(language+' Stub '+baseName)
     if 'Linked ELF' in config.outputFiles:
@@ -601,7 +601,8 @@ class SIDLMake(Make):
     config   = builder.pushConfiguration(language+' Stub '+baseName)
     for f in generatedSource['Client '+language]['Cxx']:
       builder.compile([f])
-      builder.link([builder.getCompilerTarget(f)], shared = 1)
+      if builder.getCompilerTarget(f):
+        builder.link([builder.getCompilerTarget(f)], builder.getSharedLinkerTarget(builder.getCompilerTarget(f), 1, None), shared = 1)
     builder.popConfiguration()
     builder.saveConfiguration(language+' Stub '+baseName)
     if 'Linked ELF' in config.outputFiles:

@@ -393,8 +393,8 @@ class Builder(logging.Logger):
   def setSharedLinkerExtraArguments(self, args):
     return self.getLanguageProcessor().getSharedLinkerObject(self.language[-1]).setExtraArguments(args)
 
-  def getSharedLinkerTarget(self, source, shared):
-    return self.getLanguageProcessor().getSharedLinkerObject(self.language[-1]).getTarget(source, shared)
+  def getSharedLinkerTarget(self, source, shared, prefix = 'lib'):
+    return self.getLanguageProcessor().getSharedLinkerObject(self.language[-1]).getTarget(source, shared, prefix)
 
   def getSharedLinkerObject(self):
     compiler = self.getLanguageProcessor().getSharedLinkerObject(self.language[-1])
