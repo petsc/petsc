@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.19 1998/01/06 16:51:59 balay Exp $ 
+# $Id: base.site,v 1.1 1998/02/10 16:37:29 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -33,9 +33,9 @@ X11_LIB        = -L/usr/openwin/lib -lX11
 #
 # Note: if ch_shmem version of mpich is used, replace -lsocket by -lthread
 #
-MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpi -lnsl -lsocket -lgen
-MPI_INCLUDE    = -I/home/petsc/mpich/include 
-MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
+MPI_LIB        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)/libmpiuni.a
+MPI_INCLUDE    = -I$(PETSC_DIR)/src/mpiuni -DUSES_INT_MPI_COMM
+MPIRUN         = $(PETSC_DIR)/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
@@ -44,13 +44,13 @@ MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
 #
 # Optional location of MPE
 #
-MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpe -lpmpi
-MPE_INCLUDE   = -I/home/petsc/mpich/mpe
+MPE_LIB       = 
+MPE_INCLUDE   = 
 #
 # Optional location of BlockSolve (MPI version)
 #
-BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+BS_INCLUDE = 
+BS_LIB     = 
 #
 # Optional Matlab location
 #
@@ -82,7 +82,7 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE 
+PCONF         = 
 #PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
 EXTERNAL_LIB  = $(BS_LIB)  $(MPE_LIB) $(PVODE_LIB) $(ADIC_LIB)
 #
@@ -91,4 +91,4 @@ EXTERNAL_LIB  = $(BS_LIB)  $(MPE_LIB) $(PVODE_LIB) $(ADIC_LIB)
 # If you are using dynamic libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-DYLIBPATH     = /opt/SUNWspro/SC4.0/lib
+DYLIBPATH     = 
