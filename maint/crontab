@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.149 2000/12/05 19:59:10 balay Exp bsmith $ 
+# $Id: crontab,v 1.150 2001/01/15 15:49:20 bsmith Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -20,6 +20,12 @@
 20  2 * * * /home/bsmith/petsc/maint/buildtest solaris_uni
 30  2 * * * /home/bsmith/petsc/maint/buildtest IRIX64
 40  2 * * * /home/bsmith/petsc/maint/buildtest rs6000_sp
+#
+#
+# configure buids on various machines
+#
+50  2 * * * /home/bsmith/petsc/maint/buildconfigtest linux
+#
 #
 # Check for and Zap unfinished processes
 #
