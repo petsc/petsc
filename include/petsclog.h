@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.58 1996/03/01 01:51:38 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.59 1996/03/04 05:17:33 bsmith Exp balay $ */
 
 /*
     Defines high level logging in PETSc.
@@ -137,7 +137,7 @@ extern double _TotalFlops;
 
     Example of Usage:
 $     int USER_EVENT;
-$     PLogEventRegister(&USER_EVENT,"User event","Color");
+$     PLogEventRegister(&USER_EVENT,"User event","Color:");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
 $     [code segment to monitor]
 $     PLogFlops(user_flops)
@@ -193,7 +193,7 @@ extern int PLogEventRegister(int*,char*,char*);
     Example of Usage:
 $     int USER_EVENT;
 $     int user_event_flops;
-$     PLogEventRegister(&USER_EVENT,"User event","Color");
+$     PLogEventRegister(&USER_EVENT,"User event","Color:");
 $     PLogEventBegin(&USER_EVENT,0,0,0,0);
 $        [code segment to monitor]
 $        PLogFlops(user_event_flops);
@@ -243,7 +243,7 @@ M*/
     Example of Usage:
 $     int USER_EVENT;
 $     int user_event_flops;
-$     PLogEventRegister(&USER_EVENT,"User event","Color");
+$     PLogEventRegister(&USER_EVENT,"User event","Color:");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
 $        [code segment to monitor]
 $        PLogFlops(user_event_flops);
