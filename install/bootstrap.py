@@ -157,7 +157,7 @@ class BootstrapInstall (object):
 
 # ---------------------------------------------------------------------------------------------------------------------
 class ScrollingWindow:
-  def __init__(self,stdscr,y,x,h,w):
+  def __init__(self,stdscr,y,x,h,w,pwd):
     ''' Create subwindow with box around it'''
     curses.textpad.rectangle(stdscr,y,x,y+h,x+w)
     self.stdscr = stdscr
@@ -166,26 +166,30 @@ class ScrollingWindow:
     self.y  = y+1
     self.h  = h - 2
     self.w  = w - 2
+    self.pwd = pwd
     self.lines = []
     for i in range(0,self.h):
       self.lines.append('\n')
     self.mess = ''
+    self.tabsize = 0
 
+  def tab(self,size):
+    self.tabsize = size
+    
   def write(self,mess):
     import re
-    if not re.search('\n',mess):
-      self.mess = self.mess + mess
-    else:
-      nmess = self.mess + mess[0:-1]
+    nmess = mess.split('\n')
+    for mess in nmess:
+      if mess == '': continue
       for i in range(0,self.h-1):
         self.lines[i] = self.lines[i+1]
-      self.lines[self.h-1] = nmess
+      self.lines[self.h-1] = '                     '[0:self.tabsize]+mess
       for i in range(0,self.h):
         amess = self.lines[i]+'                                                                                                          '
+        amess = amess.replace(self.pwd,'')
         self.stdscr.addstr(self.y+i,self.x,amess[0:self.w])
       curses.textpad.rectangle(self.stdscr,self.y-1,self.x-1,self.y+self.h+1,self.x+self.w+1)
       self.stdscr.refresh()
-      self.mess = ''
        
 #-----------------------------------------------------------------------------------------------------------------------
     
@@ -495,11 +499,12 @@ class CursesInstall (BootstrapInstall):
 
   def cursesRunInstaller(self,stdscr,args):
     stdscr.clear()
-    CursesInstall.CenterAddStr(stdscr,2,'Installing the BuildSystem, Runtime and Compiler')
+    CursesInstall.CenterAddStr(stdscr,1,'Installing the BuildSystem, Runtime and Compiler')
+    CursesInstall.CenterAddStr(stdscr,3,'Complete log file: make.log    Error file: installer_err.log')
     import install.installer
     import logging
     (y,x) = stdscr.getmaxyx()
-    logging.dW = ScrollingWindow(stdscr,3,3,y-7,x-6)
+    logging.dW = ScrollingWindow(stdscr,4,3,y-7,x-6,self.installPath)
     install.installer.runinstaller(args)
 
   def runInstaller(self,args):
