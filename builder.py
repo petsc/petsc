@@ -4,7 +4,7 @@ import script
 try:
   import sets
 except ImportError:
-  import config.setsBackport
+  import config.setsBackport as sets
 
 class CompileError(RuntimeError):
   pass
