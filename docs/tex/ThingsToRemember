@@ -52,12 +52,6 @@ PETScView info:
 
 ------------Accounts (around the world and around the block) -----
 
-NCSA Power Challenge 
-Machine: sif.ncsa.uiuc.edu loki.ncsa.uiuc.edu  odin
-Userid: barrys
-password: petsc-passwd
-Account (whatever that means?) ryc
-
 NCSA Convex Exemplar account
 Machine: lena.ncsa.uiuc.edu
 userid: barrys
@@ -73,7 +67,19 @@ UT account:
 ---------
 
 SGI Power Challenge (IRIX64): 
-   machine:  inca.usi.utah.edu
+
+1) machine: davinci@nas.nasa.gov
+   login ID: mcinnes
+   password: petsc-password
+   info: http://lovelace.nas.nasa.gov/Parallel/Cluster/
+   
+2) NCSA Power Challenge 
+   Machine: sif.ncsa.uiuc.edu loki.ncsa.uiuc.edu  odin
+   Userid: barrys
+   password: petsc-passwd
+   Account (whatever that means?) ryc
+
+3) machine:  inca.usi.utah.edu
    login ID:  usilcm
    general info:  http://www.usi.utah.edu 
                   http://usi.utah.edu/user_guides/cug/cug.html
@@ -83,7 +89,6 @@ SGI Power Challenge (IRIX64):
        version of PETSc
    time left in acount:  http://usi.utah.edu/general/allocations.html
 
-   Also, Paul Plassman has access to an account at NCSA.
 
 ---------
 
