@@ -392,7 +392,7 @@ typedef struct {
       SETERRQ(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner");\
     } else if (sctx.nshift == sctx.nshift_max) {\
       info->shift_fraction = sctx.shift_hi;\
-      sctx.lushift        = PETSC_FALSE;\
+      sctx.lushift        = PETSC_TRUE;\
     } else {\
       sctx.shift_lo = info->shift_fraction;\
       info->shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;\

@@ -552,10 +552,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   ierr = PetscLogFlops(C->n);CHKERRQ(ierr);
   if (sctx.nshift){
     if (shift_nz) {
-      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_nz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
+      PetscLogInfo(0,"MatLUFactorNumeric_SeqAIJ: number of shift_nz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
     } else if (shift_pd) {
       b->lu_shift_fraction = info->shift_fraction;
-      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_pd tries %D, shift_amount %g, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,shift_top);
+      PetscLogInfo(0,"MatLUFactorNumeric_SeqAIJ: number of shift_pd tries %D, shift_amount %g, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,shift_top);
     }
   }
   PetscFunctionReturn(0);
