@@ -1,4 +1,7 @@
 
-ksp/interface/itXXXX -> kspXXX
+PETSc names that should be changed.
 
-VecAXBY -> VecAXPBY
+ - files: ksp/interface/itXXXX -> kspXXX
+
+ - VecAXBY -> VecAXPBY
+
