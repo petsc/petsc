@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base.site,v 1.7 1997/09/10 18:32:43 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,10 +10,10 @@
 # FCLIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes). 
 #
+#FC_LIB         = 
+FC_LIB         =  -lfor -lutil -lFutil -lots
 #FC_LIB         =  /usr/lib/libfor.a /usr/lib/libutil.a \
 #                 /usr/lib/libFutil.a /usr/lib/libots.a 
-#FC_LIB         =  -lutil -lFutil -lots -lUfor -lfor
-#FC_LIB         = 
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
@@ -21,13 +21,13 @@
 # your machine. The library name is dxml as indicated below, it contains
 # both BLAS and Lapack.
 #
-#BLAS_LIB        = -ldxml
-#LAPACK_LIB      = 
+BLAS_LIB        = -ldxml
+LAPACK_LIB      = 
 #
 #BLAS_LIB       = /home/bsmith/lapack/blas_alpha.a $(FC_LIB)
 #LAPACK_LIB     = /home/bsmith/lapack/lapack_alpha.a 
-BLAS_LIB        = -lpetscblas
-LAPACK_LIB      = 
+#BLAS_LIB        = -lpetscblas
+#LAPACK_LIB      = 
 
 #
 # Location of X-windows software
