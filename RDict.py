@@ -121,7 +121,13 @@ Arg class, which wraps the usual value.'''
   def setupLogFile(self, filename = 'RDict.log'):
     if not self.logFile is None:
       self.logFile.close()
-    self.logFile = file('RDict.log', 'a')
+    if os.path.isfile(filename) and os.stat(filename).st_size > 10*1024*1024:
+      if os.path.isfile(filename+'.bkp'):
+        os.remove(filename+'.bkp')
+      os.rename(filename, filename+'.bkp')
+      self.logFile = file(filename, 'w')
+    else:
+      self.logFile = file(filename, 'a')
     return
 
   def writeLogLine(self, message):
