@@ -233,18 +233,22 @@ int PetscSharedMalloc(MPI_Comm comm,int llen,int len,void **result)
 #else
 
 EXTERN_C_BEGIN
+extern int VecCreate_Seq(Vec);
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Shared"
-int VecCreate_Shared(MPI_Comm comm,int n,int N,Vec *vv)
+int VecCreate_Shared(Vec vv)
 {
   int ierr,size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(vv->comm,&size);CHKERRQ(ierr);
   if (size > 1) {
     SETERRQ(1,"No supported for shared memory vector objects on this machine");
   }
-  ierr = VecCreateSeq(comm,PetscMax(n,N),vv);CHKERRQ(ierr);
+  ierr = VecCreate_Seq(vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -54,9 +54,10 @@ static int PCSetUp_ESI(PC pc)
 {
   PC_ESI                      *jac = (PC_ESI*)pc->data;
   int                         ierr;
-  ::esi::Operator<double,int> *em = new ::esi::petsc::Matrix<double,int>(pc->mat);
+  ::esi::Operator<double,int> *em;
 
   PetscFunctionBegin;
+  ierr = MatESIWrap(pc->mat,&em);CHKERRQ(ierr);
   ierr = jac->epc->setOperator(*em);CHKERRQ(ierr);
   ierr = jac->epc->setup();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -238,7 +239,8 @@ int PCCreate_PetscESI(PC V)
   V->ops->destroy = 0;  /* since this is called from PCSetType() we have to make sure it doesn't get destroyed twice */
   ierr = PCSetType(V,PCESI);CHKERRQ(ierr);
   ierr = PCCreate(V->comm,&v);CHKERRQ(ierr);
-  ierr = PCSetType(v,PCNONE);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)v,"esi_");CHKERRQ(ierr);
+  ierr = PCSetFromOptions(v);CHKERRQ(ierr);
   ve   = new esi::petsc::Preconditioner<double,int>(v);
   ierr = PCESISetPreconditioner(V,ve);CHKERRQ(ierr);
   ierr = ve->deleteReference();CHKERRQ(ierr);

@@ -185,6 +185,7 @@ struct _p_Mat {
   MatStencilInfo         stencil;          /* information for structured grid */
   PetscTruth             symmetric,structurally_symmetric;
   void                   *spptr;          /* pointer for special library like SuperLU */
+  void                   *esimat;
 };
 
 #define MatPreallocated(A) {int _e;if (!(A)->preallocated) {_e = MatSetUpPreallocation(A);CHKERRQ(_e);}}

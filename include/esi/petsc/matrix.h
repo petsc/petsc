@@ -79,7 +79,7 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
 
   private:
     Mat                        mat;
-    esi::IndexSpace<Ordinal> *rmap,*cmap;
+    ::esi::IndexSpace<Ordinal> *rmap,*cmap;
 };
 
 /**=========================================================================**/
@@ -146,8 +146,8 @@ class Matrix<double,int> : public virtual esi::Operator<double,int>,
     virtual esi::ErrorCode copyOutRowCoefficients(int, double *,int,int&) {return 1;};
 
   private:
-    Mat                        mat;
-    esi::IndexSpace<int> *rmap,*cmap;
+    Mat                    mat;
+    ::esi::IndexSpace<int> *rmap,*cmap;
 };
 
 }
@@ -174,6 +174,7 @@ template<class Scalar,class Ordinal> class OperatorFactory
 };
 
 }
+EXTERN int MatESIWrap(Mat,esi::Operator<double,int>**);
 
 
 #endif
