@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.122 2001/05/29 03:40:33 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.123 2001/06/21 21:18:42 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -219,7 +219,6 @@ int MatSNESMFAssemblyEnd_Private(Mat J)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFMult_Private"
 /*
@@ -299,6 +298,62 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
   ierr = PetscLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFGetDiagonal_Private"
+/*
+  MatSNESMFGetDiagonal_Private - Gets the diagonal for a matrix free matrix
+
+        y ~= (F(u + ha) - F(u))/h, 
+  where F = nonlinear function, as set by SNESSetFunction()
+        u = current iterate
+        h = difference interval
+*/
+int MatSNESMFGetDiagonal_Private(Mat mat,Vec a)
+{
+  MatSNESMFCtx ctx;
+  Scalar       h,h1,mone = -1.0,*aa,*ww,v,epsilon = 1.e-8,umin = 1.e-6;
+  Vec          w,U,F;
+  int          i,ierr,rstart,rend;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  if (!ctx->funci) {
+    SETERRQ(1,"Requirers calling MatSNESMFSetFunctioni() first");
+  }
+
+  w    = ctx->w;
+  U    = ctx->current_u;
+  ierr = (*ctx->func)(0,U,a,ctx->funcctx);CHKERRQ(ierr);
+  ierr = (*ctx->funcisetbase)(U,ctx->funcctx);CHKERRQ(ierr);
+  ierr = VecCopy(U,w);CHKERRQ(ierr);
+
+  ierr = VecGetOwnershipRange(a,&rstart,&rend);CHKERRQ(ierr);
+  ierr = VecGetArray(a,&aa);CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++) {
+    ierr = VecGetArray(w,&ww);CHKERRQ(ierr);
+    h  = ww[i-rstart];
+    if (h == 0.0) h = 1.0;
+#if !defined(PETSC_USE_COMPLEX)
+    if (h < umin && h >= 0.0)      h = umin;
+    else if (h < 0.0 && h > -umin) h = -umin;
+#else
+    if (PetscAbsScalar(h) < umin && PetscRealPart(h) >= 0.0)     h = umin;
+    else if (PetscRealPart(h) < 0.0 && PetscAbsScalar(h) < umin) h = -umin;
+#endif
+    h     *= epsilon;
+    
+    ww[i-rstart] += h;
+    ierr = VecRestoreArray(w,&ww);CHKERRQ(ierr);
+    ierr          = (*ctx->funci)(i,w,&v,ctx->funcctx);CHKERRQ(ierr);
+    aa[i-rstart]  = (v - aa[i-rstart])/h;
+    ierr = VecGetArray(w,&ww);CHKERRQ(ierr);
+    ww[i-rstart] -= h;
+    ierr = VecRestoreArray(w,&ww);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(a,&aa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -482,6 +537,7 @@ int MatCreateMF(Vec x,Mat *J)
   ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)())MatSNESMFDestroy_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)())MatSNESMFView_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_ASSEMBLY_END,(void(*)())MatSNESMFAssemblyEnd_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_GET_DIAGONAL,(void(*)())MatSNESMFGetDiagonal_Private);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)*J,"MatSNESMFSetBase_C","MatSNESMFSetBase_FD",MatSNESMFSetBase_FD);CHKERRQ(ierr);
   PetscLogObjectParent(*J,mfctx->w);
 
@@ -661,6 +717,80 @@ int MatSNESMFSetFunction(Mat mat,Vec v,int (*func)(SNES,Vec,Vec,void *),void *fu
     ctx->func    = func;
     ctx->funcctx = funcctx;
     ctx->funcvec = v;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetFunctioni"
+/*@C
+   MatSNESMFSetFunctioni - Sets the function for a single component
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix free matrix created via MatCreateSNESMF()
+-  funci - the function to use
+
+   Level: advanced
+
+   Notes:
+    If you use this you MUST call MatAssemblyBegin()/MatAssemblyEnd() on the matrix free
+    matrix inside your compute Jacobian routine
+
+
+.keywords: SNES, matrix-free, function
+
+.seealso: MatCreateSNESMF(),MatSNESMFGetH(),
+          MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
+          MatSNESMFKSPMonitor(), SNESetFunction()
+@*/
+int MatSNESMFSetFunctioni(Mat mat,int (*funci)(int,Vec,Scalar*,void *))
+{
+  MatSNESMFCtx ctx;
+  int          ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  if (ctx) {
+    ctx->funci   = funci;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetFunctioniBase"
+/*@C
+   MatSNESMFSetFunctioniBase - Sets the base vector for a single component function evaluation
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix free matrix created via MatCreateSNESMF()
+-  func - the function to use
+
+   Level: advanced
+
+   Notes:
+    If you use this you MUST call MatAssemblyBegin()/MatAssemblyEnd() on the matrix free
+    matrix inside your compute Jacobian routine
+
+
+.keywords: SNES, matrix-free, function
+
+.seealso: MatCreateSNESMF(),MatSNESMFGetH(),
+          MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
+          MatSNESMFKSPMonitor(), SNESetFunction()
+@*/
+int MatSNESMFSetFunctioniBase(Mat mat,int (*func)(Vec,void *))
+{
+  MatSNESMFCtx ctx;
+  int          ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  if (ctx) {
+    ctx->funcisetbase   = func;
   }
   PetscFunctionReturn(0);
 }
@@ -894,3 +1024,12 @@ int MatSNESMFSetBase(Mat J,Vec U)
   }
   PetscFunctionReturn(0);
 }
+
+
+
+
+
+
+
+
+
