@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.28 1998/04/27 17:01:39 curfman Exp curfman $";
+static char vcid[] = "$Id: block.c,v 1.29 1998/06/11 02:32:42 curfman Exp balay $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -204,7 +204,7 @@ static struct _ISOps myops = { ISGetSize_Block,
 
 .seealso: ISCreateStride(), ISCreateGeneral()
 @*/
-int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
+int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
 {
   int      i, sorted = 1, min, max;
   IS       Nindex;
@@ -257,7 +257,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
 
 .seealso: ISGetIndices(), ISBlockRestoreIndices()
 @*/
-int ISBlockGetIndices(IS in,int **idx)
+int ISBlockGetIndices(IS in,int *idx[])
 {
   IS_Block *sub;
 
@@ -288,7 +288,7 @@ int ISBlockGetIndices(IS in,int **idx)
 
 .seealso: ISRestoreIndices(), ISBlockGetIndices()
 @*/
-int ISBlockRestoreIndices(IS is,int **idx)
+int ISBlockRestoreIndices(IS is,int *idx[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);

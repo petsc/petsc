@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.71 1998/04/27 17:01:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.72 1998/06/11 19:54:35 bsmith Exp balay $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -182,7 +182,7 @@ static struct _ISOps myops = { ISGetSize_General,
 
 .seealso: ISCreateStride(), ISCreateBlock()
 @*/
-int ISCreateGeneral(MPI_Comm comm,int n,int *idx,IS *is)
+int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
 {
   int        i, sorted = 1, min, max, flg, ierr;
   IS         Nindex;

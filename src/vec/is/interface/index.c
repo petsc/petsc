@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.57 1998/05/20 13:46:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: index.c,v 1.58 1998/06/05 15:17:16 curfman Exp balay $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -220,7 +220,7 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
 .seealso: ISRestoreIndices(), ISGetIndicesF90()
 @*/
-int ISGetIndices(IS is,int **ptr)
+int ISGetIndices(IS is,int *ptr[])
 {
   int ierr;
 
@@ -264,7 +264,7 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
 .seealso: ISGetIndices(), ISRestoreIndicesF90()
 @*/
-int ISRestoreIndices(IS is,int **ptr)
+int ISRestoreIndices(IS is,int *ptr[])
 {
   int ierr;
 

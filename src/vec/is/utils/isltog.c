@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.21 1998/04/13 17:25:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: isltog.c,v 1.22 1998/04/27 17:14:05 curfman Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -89,7 +89,7 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
 @*/
-int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n, int *indices,ISLocalToGlobalMapping *mapping)
+int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalToGlobalMapping *mapping)
 {
   PetscFunctionBegin;
   PetscValidIntPointer(indices);
@@ -209,7 +209,7 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
 .keywords: local-to-global, mapping, apply
 
 @*/
-int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int *in,int *out)
+int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,const int in[],int out[])
 {
   int i,*idx = mapping->indices,Nmax = mapping->n;
 
@@ -291,7 +291,7 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
           ISLocalToGlobalMappingDestroy()
 @*/
 int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping, ISGlobalToLocalMappingType type,
-                                  int n, int *idx,int *nout,int *idxout)
+                                  int n, const int idx[],int *nout,int idxout[])
 {
   int i,ierr, *globals,nf = 0,tmp,start,end;
 

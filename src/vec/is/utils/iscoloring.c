@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.30 1998/06/07 19:36:05 curfman Exp curfman $";
+static char vcid[] = "$Id: iscoloring.c,v 1.31 1998/06/07 20:00:24 curfman Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -93,7 +93,7 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
 
 .seealso: ISColoringView()
 @*/
-int ISColoringGetIS(ISColoring iscoloring,int *n,IS **is)
+int ISColoringGetIS(ISColoring iscoloring,int *n,IS *is[])
 {
   PetscFunctionBegin;
   PetscValidPointer(iscoloring);
@@ -126,7 +126,7 @@ int ISColoringGetIS(ISColoring iscoloring,int *n,IS **is)
 
 .seealso: MatColoringCreate(), ISColoringView(),ISColoringDestroy()
 @*/
-int ISColoringCreate(MPI_Comm comm,int n,int *colors,ISColoring *iscoloring)
+int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscoloring)
 {
   int        ierr,size,rank,base,top,tag,nc,ncwork,*mcolors,**ii,i,flg;
   MPI_Status status;
@@ -295,7 +295,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
 .seealso: PartitioningCreate(), AOCreateBasic(), ISPartitioningToNumbering()
 
 @*/
-int ISPartitioningCount(IS part,int *count)
+int ISPartitioningCount(IS part,int count[])
 {
   MPI_Comm comm;
   int      i,ierr,size, *indices,np,n,*lsizes;
