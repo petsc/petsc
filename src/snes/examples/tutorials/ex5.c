@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.61 1996/08/23 23:52:57 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.62 1996/08/24 03:36:34 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -63,6 +63,7 @@ typedef struct {
    int         mx,my;          /* discretization in x, y directions */
    Vec         localX, localF; /* ghosted local vector */
    DA          da;             /* distributed array data structure */
+   int         rank;           /* processor rank */
 } AppCtx;
 
 /* 
@@ -85,6 +86,7 @@ int main( int argc, char **argv )
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
+  MPI_Comm_rank(MPI_COMM_WORLD,&user.rank);
 
   /*
      Initialize problem parameters
@@ -198,7 +200,7 @@ int main( int argc, char **argv )
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i, j, row, mx, my, ierr, xs, ys, xm, ym, Xm, Ym, Xs, Ys;
+  int     i, j, row, mx, my, ierr, xs, ys, xm, ym, gxm, gym, gxs, gys;
   double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
   Scalar  *x;
   Vec     localX = user->localX;
@@ -219,13 +221,13 @@ int FormInitialGuess(AppCtx *user,Vec X)
 
   /*
      Get local grid boundaries (for 2-dimensional DA):
-       xs, ys - starting grid indices (no ghost points)
-       xm, ym - widths of local grid (no ghost points)
-       Xs, Ys - starting grid indices (including ghost points)
-       Xm, Ym - widths of local grid (including ghost points)
+       xs, ys   - starting grid indices (no ghost points)
+       xm, ym   - widths of local grid (no ghost points)
+       gxs, gys - starting grid indices (including ghost points)
+       gxm, gym - widths of local grid (including ghost points)
   */
   ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -233,7 +235,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
   for (j=ys; j<ys+ym; j++) {
     temp = (double)(PetscMin(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
-      row = i - Xs + (j - Ys)*Xm; 
+      row = i - gxs + (j - gys)*gxm; 
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
         x[row] = 0.0; 
         continue;
@@ -268,7 +270,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;
-  int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym;
+  int     ierr, i, j, row, mx, my, xs, ys, xm, ym, gxs, gys, gxm, gym;
   double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx,sc;
   Scalar  u, uxx, uyy, *x,*f;
   Vec     localX = user->localX, localF = user->localF; 
@@ -296,13 +298,13 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
      Get local grid boundaries
   */
   ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
   */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - Ys)*Xm + xs - Xs - 1; 
+    row = (j - gys)*gxm + xs - gxs - 1; 
     for (i=xs; i<xs+xm; i++) {
       row++;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
@@ -311,7 +313,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
       }
       u = x[row];
       uxx = (two*u - x[row-1] - x[row+1])*hydhx;
-      uyy = (two*u - x[row-Xm] - x[row+Xm])*hxdhy;
+      uyy = (two*u - x[row-gxm] - x[row+gxm])*hxdhy;
       f[row] = uxx + uyy - sc*exp(u);
     }
   }
@@ -357,7 +359,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   Vec     localX = user->localX;   /* local vector */
   int     *ltog;                   /* local-to-global mapping */
   int     ierr, i, j, row, mx, my, col[5];
-  int     nloc, xs, ys, xm, ym, Xs, Ys, Xm, Ym, grow;
+  int     nloc, xs, ys, xm, ym, gxs, gys, gxm, gym, grow;
   Scalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
@@ -382,7 +384,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
      Get local grid boundaries
   */
   ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
 
   /*
      Get the global node numbers for all local nodes, including ghost points
@@ -402,7 +404,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       - Here, we set all entries for a particular row at once.
   */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - Ys)*Xm + xs - Xs - 1; 
+    row = (j - gys)*gxm + xs - gxs - 1; 
     for (i=xs; i<xs+xm; i++) {
       row++;
       grow = ltog[row];
@@ -412,11 +414,11 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
         continue;
       }
       /* interior grid points */
-      v[0] = -hxdhy; col[0] = ltog[row - Xm];
+      v[0] = -hxdhy; col[0] = ltog[row - gxm];
       v[1] = -hydhx; col[1] = ltog[row - 1];
       v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = grow;
       v[3] = -hydhx; col[3] = ltog[row + 1];
-      v[4] = -hxdhy; col[4] = ltog[row + Xm];
+      v[4] = -hxdhy; col[4] = ltog[row + gxm];
       ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
     }
   }
