@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stash.c,v 1.26 1999/03/17 21:14:34 balay Exp balay $";
+static char vcid[] = "$Id: matstash.c,v 1.27 1999/03/18 00:33:52 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: stash.c,v 1.26 1999/03/17 21:14:34 balay Exp balay $"
 #define __FUNC__ "MatStashCreate_Private"
 int MatStashCreate_Private(MPI_Comm comm,int bs, MatStash *stash)
 {
-  int ierr,flg,max=DEFAULT_STASH_SIZE/(bs*bs);
+  int ierr,flg,max=DEFAULT_STASH_SIZE;
 
   PetscFunctionBegin;
   /* Require 2 tags, get the second using PetscCommGetNewTag() */
@@ -85,7 +85,7 @@ int MatStashDestroy_Private(MatStash *stash)
 #define __FUNC__ "MatStashScatterEnd_Private"
 int MatStashScatterEnd_Private(MatStash *stash)
 { 
-  int         nsends=stash->nsends,ierr;
+  int         nsends=stash->nsends,ierr,bs2;
   MPI_Status  *send_status;
 
   PetscFunctionBegin;
@@ -98,7 +98,8 @@ int MatStashScatterEnd_Private(MatStash *stash)
 
   /* Now update nmaxold to be app 10% more than max n used, this way the
      wastage of space is reduced the next time this stash is used */
-  stash->oldnmax    = (int)(stash->n * 1.1) + 5;
+  bs2               = stash->bs*stash->bs;
+  stash->oldnmax    = ((int)(stash->n * 1.1) + 5)*bs2;
   stash->nmax       = 0;
   stash->n          = 0;
   stash->reallocs   = -1;
@@ -125,7 +126,7 @@ int MatStashScatterEnd_Private(MatStash *stash)
 
    Input Parameters:
    stash    - the stash
-   nstash   - the size of the stash
+   nstash   - the size of the stash. Indicates the number of values stored.
    reallocs - the number of additional mallocs incurred.
    
 */
@@ -133,8 +134,10 @@ int MatStashScatterEnd_Private(MatStash *stash)
 #define __FUNC__ "MatStashGetInfo_Private"
 int MatStashGetInfo_Private(MatStash *stash,int *nstash, int *reallocs)
 {
+  int bs2 = stash->bs*stash->bs;
+
   PetscFunctionBegin;
-  *nstash   = stash->n;
+  *nstash   = stash->n*bs2;
   *reallocs = stash->reallocs;
   PetscFunctionReturn(0);
 }
@@ -178,11 +181,11 @@ static int MatStashExpand_Private(MatStash *stash,int incr)
 
   PetscFunctionBegin;
   /* allocate a larger stash */
-  if (stash->nmax == 0) newnmax = stash->oldnmax;
+  bs2     = stash->bs*stash->bs; 
+  if (stash->nmax == 0) newnmax = stash->oldnmax/bs2;
   else                  newnmax = stash->nmax*2;
   if (newnmax  < (stash->nmax + incr)) newnmax += 2*incr;
 
-  bs2     = stash->bs*stash->bs; 
   n_array = (Scalar *)PetscMalloc((newnmax)*(2*sizeof(int)+bs2*sizeof(Scalar)));CHKPTRQ(n_array);
   n_idx   = (int *) (n_array + bs2*newnmax);
   n_idy   = (int *) (n_idx + newnmax);
@@ -194,7 +197,7 @@ static int MatStashExpand_Private(MatStash *stash,int incr)
   stash->idx     = n_idx; 
   stash->idy     = n_idy;
   stash->nmax    = newnmax;
-  stash->oldnmax = newnmax;
+  stash->oldnmax = newnmax*bs2;
   stash->reallocs++;
   PetscFunctionReturn(0);
 }

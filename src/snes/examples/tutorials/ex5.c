@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.105 1999/03/18 00:28:07 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.106 1999/03/18 00:34:27 curfman Exp balay $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -89,7 +89,7 @@ int main( int argc, char **argv )
   int      Nx, Ny;               /* number of preocessors in x- and y- directions */
   int      matrix_free;          /* flag - 1 indicates matrix-free version */
   int      size;                 /* number of processors */
-  int      m, flg, N, ierr, nloc, *ltog;
+  int      m, flg, N, ierr;
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.,fnorm;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
