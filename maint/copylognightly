@@ -15,5 +15,7 @@ foreach CONF ($*)
   $SCP $USR@${MACH}:$LOC/examples.log /home/petsc/logs/nightly/examples_$CONF.$MACH.log &
   $SCP $USR@${MACH}:$LOC/configure.log /home/petsc/logs/nightly/configure__$CONF.$MACH.log &
 end
+sleep 300
+chmod ugo+r /home/petsc/logs/nightly/*
 wait
 chmod ugo+r /home/petsc/logs/nightly/*
