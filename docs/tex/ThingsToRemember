@@ -41,8 +41,14 @@ UT account:
 SGI Power Challenge (IRIX64): 
    machine:  inca.usi.utah.edu
    login ID:  usilcm
-   info:  http://www.usi.utah.edu 
-          http://usi.utah.edu/user_guides/cug/cug.html
+   general info:  http://www.usi.utah.edu 
+                  http://usi.utah.edu/user_guides/cug/cug.html
+   info on CaseVision/Workshop tools:
+          http://usi.utah.edu/user_guides/cug/CUG-10cv.html
+   see the directory ~usilcm/work/petsc for latest working
+       version of PETSc
+
+   Also, Paul Plassman has access to an account at NCSA.
 
 ICASE/NASA paragon: crabcake.larc.nasa.gov, account: mcinnes
    See the file ~mcinnes/README on crabcake for up-to-date info on
