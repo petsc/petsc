@@ -5,7 +5,7 @@
                   Message Passing Interface standard},
   journal =      {Parallel Computing},
   year =         1996,
-  number =       22,
+  volume =       22,
   pages =        {789--828}
 }
 
@@ -68,16 +68,6 @@
     Year   = "1995"
 }
 
-@Article{ MPI-final, 
-	Title = "{MPI}: A Message-Passing Interface Standard",
-	Author = "Message Passing Interface Forum",
-        Journal = "International J. Supercomputing Applications",
-        Volume  = 8, 
-	Number = "3/4",
-	Year = 1994, 
-	Key = "MPI Standard - final"
-}
-
 @Unpublished{ tcl-tk-web-page,
   title = 	 "{Tcl/Tk} {W}orld {W}ide {W}eb page",
   note = 	 "http://www.sunlabs.com/research/tcl/",
@@ -86,15 +76,26 @@
 }
 
 @Unpublished{ mpich-web-page,
+  key =          "MPICH",
   title = 	 "{MPICH} home page",
   note = 	 "http://www.mcs.anl.gov/mpi/mpich/index.html",
   year =	 1996,
   month =	 Dec
 }
 
+@Article{ MPI-final, 
+	Title = "{MPI}: A Message-Passing Interface Standard",
+        Journal = "International J. Supercomputing Applications",
+        Volume  = 8, 
+	Number = "3/4",
+	Year = 1994, 
+	Key = "MPI Standard - final"
+}
+
 @Unpublished{ npb-web-page,
+  key =          "NAS Parallel Benchmarks",
   title = 	 "{NAS} {P}arallel {B}enchmarks home page",
-  note = 	 "http://www.nas.nasa.\-gov/\-NAS/\-NPB/",
+  note = 	 "http://www.nas.nasa.\-gov/\-NAS/\-NPB/\-index.html",
   year =	 1996,
   month =	 Dec
 }
@@ -167,9 +168,10 @@
 
 @inproceedings{parti,
     Author    =      "Gagan Agrawal and Alan Sussman and Joel Saltz",
-    Title     =       "{PARTI} Primitives for Unstructured and Block
+    Title     =       "Compiler and Runtime Support for Unstructured and Block
                   Structured Problems",
     BOOKTITLE = "Proceedings of Supercomputing '93",
+    pages     = "578--587",
     YEAR      = "1993"
 }
 
@@ -206,15 +208,15 @@
     Number = "SAND95/1559"
     )
 
-@Article{pooma, 
-	Title = "{OOPS}: An Object-Oriented Particle Simulation Class Library
-                  for Disributed Architectures",
-	Author = "J. V. W. Reynders and D. W. Forslund and
-                  P. J. Hinker and M. Tholburn and D. G. Kilman and
-                  W. F. Humphrey",
-        Journal = "Computational Physics Communications",
-        note = 	"To appear",
-	Year = 1995, 
+@inbook{pooma, 
+	Title = "{POOMA}: A FrameWork for Scientific Computing Applications on Parallel
+                Architectures",
+	Author = "J. V. W. Reynders and J. C. Cummings and
+                  P. J. Hinker and M. Tholburn and S. Banerjee,
+                  M. Srikant and S. Karmesin and S. Atlas and K. Keahey and W. F. Humphrey",
+        book = "Parallel Programming using C++",
+        chapter = 14,
+	Year = 1996
 }
 
 @Book{taylor-chandy:pcn,
@@ -440,17 +442,15 @@
              computing"
 }
 
-@TechReport( dsneutral,
-    Author = "William D. Gropp and Barry F. Smith",
+@article( dsneutral,
+    Author = "Barry F. Smith and William D. Gropp",
     Title  = "The design of data-structure-neutral libraries for the iterative
 		solution of sparse linear systems",
-    Institution = "Mathematics and Computer Science Division, 
-                   Argonne National Laboratory",
-    Month  = MAY,
-    Year   = 1993,
-    Number = "MCS-P356-0393",
-    Key    = "GroppSmith93 ! KSP design",
-    Note   = "To appear in Scientific Programming"		  
+    Year   = 1996,
+    Journal = "Scientific Programming",
+    Volume = 5,
+    pages  = "329--336",
+    Key    = "GroppSmith96 ! KSP design",
     )
 
 @TechReport( mpi-chameleon, 
@@ -609,7 +609,6 @@ Reference Release 2.0",
   author = 	 "R. W. Hockney and C. R. Jesshope",
   title = 	 "Parallel Computers 2",
   publisher = 	 "Adam Hilger",
- ADDRESS	= "Philadelphia",
   year = 	 "1988"
 }
 
@@ -1037,3 +1036,13 @@ year = {1977}
    volume=6,
    year=1985,
    pages="793-832"}
+
+@InProceedings{whitfield91,
+  author    = "D. Whitfield and L. Taylor",
+  title     = "Discretized {N}ewton-Relaxation Solution of High
+                  Resolution Flux-Difference Split Schemes",
+  booktitle = "AIAA Tenth Computational Fluid Dynamics Conference",
+  misc      = "AIAA-91-1539",
+  pages     = "134-145",
+  year      = 1991,
+}
