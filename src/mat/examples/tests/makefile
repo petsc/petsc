@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.205 1998/10/02 14:04:37 balay Exp bsmith $ 
+# $Id: makefile,v 1.206 1998/10/09 19:23:15 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -15,7 +15,8 @@ TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		   ex15.PETSc runex15 ex15.rm ex19.PETSc ex19.rm ex20.PETSc runex20 \
 		   ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm \
                    ex16.PETSc runex16 ex16.rm ex59.PETSc runex59 runex59_2 runex59_3 \
-                   ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm clean
+                   ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm \
+                   ex65.PETSc ex65.rm ex66.PETSc ex66.rm clean
 TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.PETSc \
 		   runex7 ex7.rm ex12.PETSc runex12 runex12_2 ex12.rm  ex13.PETSc runex13 \
 		   ex13.rm ex17.PETSc ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc \
@@ -71,7 +72,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c\
 		   ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c ex52.c \
 		   ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c ex61.c ex62.c \
-                   ex64.c
+                   ex64.c ex65.c ex66.c
 EXAMPLESF	 = ex36.F ex16f90.F ex58f.F ex16f90.F ex63.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -339,6 +340,14 @@ ex63: ex63.o chkopts
 ex64: ex64.o chkopts
 	-${CLINKER} -o ex64 ex64.o ${PETSC_LIB}
 	${RM} ex64.o
+
+ex65: ex65.o chkopts
+	-${CLINKER} -o ex65 ex65.o ${PETSC_LIB}
+	${RM} ex65.o
+
+ex66: ex66.o chkopts
+	-${CLINKER} -o ex66 ex66.o ${PETSC_LIB}
+	${RM} ex66.o
 
 NPROCS    = 1 3
 MATTYPES  = -mat_aij -mat_dense -mat_bdiag
