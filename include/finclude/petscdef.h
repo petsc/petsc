@@ -129,13 +129,11 @@
 #if defined(PETSC_USE_DEBUG)
 #define SETERRQ(n,s,ierr) call MPI_Abort(PETSC_COMM_WORLD,n,ierr)
 #define CHKERRQ(n) if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n,n)
-#define CHKMEMQ call chkmemfortran(__LINE__,__FILE__)
-#define CHKMEMA CHKMEMQ
+#define CHKMEMQ call chkmemfortran(__LINE__,__FILE__,ierr)
 #else
 #define SETERRQ(n,s,ierr)
 #define CHKERRQ(n)
 #define CHKMEMQ
-#define CHKMEMA
 #endif
 
 #define PetscMatlabEngine PetscFortranAddr
