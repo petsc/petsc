@@ -724,8 +724,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetInitialGuess"
 /*@C
-    DMMGSetInitialGuess - Sets the function that computes an initial guess, if not given
-    uses 0.
+    DMMGSetInitialGuess - Sets the function that computes an initial guess.
 
     Collective on DMMG and SNES
 
@@ -733,7 +732,18 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
 +   dmmg - the context
 -   guess - the function
 
-    Level: advanced
+    Notes: For nonlinear problems, if this is not set, then the current value in the 
+             solution vector (obtained with DMMGGetX()) is used. Thus is if you doing 'time
+             stepping' it will use your current solution as the guess for the next timestep.
+           If grid sequencing is used (via -dmmg_grid_sequence) then the "guess" function
+             is used only on the coarsest grid.
+           For linear problems, if this is not set, then 0 is used as an initial guess.
+             If you would like the linear solver to also (like the nonlinear solver) use
+             the current solution vector as the initial guess then provide a dummy guess
+             function that does nothing.
+
+    Level: intermediate
+
 
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP()
 

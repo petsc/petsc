@@ -7,10 +7,12 @@ static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C;
-  PetscScalar v;
-  int         i,j,ierr,m = 4,n = 4,rank,size;
-  PetscViewer viewer;
+  Mat            C;
+  PetscScalar    v;
+  PetscInt       i,j,m = 4,n = 4;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  PetscViewer    viewer;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

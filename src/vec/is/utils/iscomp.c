@@ -36,9 +36,9 @@ $    is2 = {2, 3} {0, 1}
 @*/
 PetscErrorCode ISEqual(IS is1,IS is2,PetscTruth *flg)
 {
-  PetscInt        sz1,sz2,*ptr1,*ptr2,*a1,*a2;
-  PetscTruth flag;
-  MPI_Comm   comm;
+  PetscInt       sz1,sz2,*ptr1,*ptr2,*a1,*a2;
+  PetscTruth     flag;
+  MPI_Comm       comm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -82,7 +82,7 @@ PetscErrorCode ISEqual(IS is1,IS is2,PetscTruth *flg)
       ierr = PetscFree(a2);CHKERRQ(ierr);
     }
     ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);  
-    ierr = MPI_Allreduce(&flag,flg,1,MPIU_INT,MPI_MIN,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

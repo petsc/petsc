@@ -23,13 +23,15 @@ int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat          C; 
-  Vec          u,b;
-  int          i,m = 5,rank,size,N,start,end,M,ierr,idx[4];
-  int          j,nrsub,ncsub,*rsub,*csub,mystart,myend;
-  PetscTruth   flg;
-  PetscScalar  one = 1.0,Ke[16],*vals;
-  PetscReal    h,norm;
+  Mat            C; 
+  Vec            u,b;
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank;
+  PetscInt       i,m = 5,N,start,end,M,idx[4];
+  PetscInt       j,nrsub,ncsub,*rsub,*csub,mystart,myend;
+  PetscTruth     flg;
+  PetscScalar    one = 1.0,Ke[16],*vals;
+  PetscReal      h,norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

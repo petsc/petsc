@@ -45,7 +45,7 @@ T*/
 #include "petscmg.h"
 
 #ifdef HAVE_DA_HDF
-PetscInt DAVecHDFOutput(DA da, Vec X, char *fname);
+PetscInt DAVecHDFOutput(DA,Vec,char*);
 #endif
 
 #define D_x(x,m,i,j)  (p5 * (x[(j)][(i)+1].m - x[(j)][(i)-1].m) * dhx)
@@ -107,9 +107,9 @@ typedef struct {
 extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
 extern PetscErrorCode Update(DMMG *);
 extern PetscErrorCode Initialize(DMMG *);
-extern PetscErrorCode AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
-extern PetscErrorCode AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
-extern PetscErrorCode Gnuplot(DA da, Vec X, double time);
+extern PetscErrorCode AddTSTermLocal(DALocalInfo*,Field **,Field **,AppCtx *);
+extern PetscErrorCode AddTSTermLocal2(DALocalInfo*,Field **,Field **,AppCtx *);
+extern PetscErrorCode Gnuplot(DA, Vec, double);
 extern PetscErrorCode FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
 extern PetscErrorCode CreateNullSpace(DMMG,Vec*);
 
@@ -294,7 +294,7 @@ int main(int argc,char **argv)
 #undef __FUNCT__
 #define __FUNCT__ "Gnuplot"
 /* ------------------------------------------------------------------- */
-PetscErrorCode Gnuplot(DA da, Vec X, double time)
+PetscErrorCode Gnuplot(DA da, Vec X, double mtime)
 {
   PetscInt       i,j,xs,ys,xm,ym;
   PetscInt       xints,xinte,yints,yinte;
@@ -306,7 +306,7 @@ PetscErrorCode Gnuplot(DA da, Vec X, double time)
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  sprintf(fname, "out-%g-%d.dat", time, rank);
+  sprintf(fname, "out-%g-%d.dat", mtime, rank);
 
   f = fopen(fname, "w");
 

@@ -7,14 +7,15 @@ static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C; 
-  int         i,j,m = 3,n = 3,I,J,ierr;
-  PetscTruth  flg;
-  PetscScalar v,mone = -1.0,one = 1.0,alpha = 2.0;
-  IS          perm,iperm;
-  Vec         x,u,b,y;
-  PetscReal   norm;
-  MatFactorInfo   info;
+  Mat            C; 
+  PetscInt       i,j,m = 3,n = 3,I,J;
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscScalar    v,mone = -1.0,one = 1.0,alpha = 2.0;
+  IS             perm,iperm;
+  Vec            x,u,b,y;
+  PetscReal      norm;
+  MatFactorInfo  info;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

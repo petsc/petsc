@@ -7,9 +7,10 @@ static char help[] = "Tests MatGetArray().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         A; 
-  int         i,j,m = 3,n = 2,ierr,rstart,rend;
-  PetscScalar v,*array;
+  Mat              A; 
+  PetscInt         i,j,m = 3,n = 2,rstart,rend;
+  PetscErrorCode   ierr;
+  PetscScalar      v,*array;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

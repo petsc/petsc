@@ -41,3 +41,4 @@ years:
           echo -n $${i};\
           grep $${i} tex/petscapp.bib | grep -i year | wc -l;\
         done
+

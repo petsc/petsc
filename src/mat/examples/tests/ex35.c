@@ -7,10 +7,11 @@ static char help[] = "Tests MatGetSubMatrices().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat    A,B,*Bsub;
-  int    i,j,m = 6,n = 6,N = 36,ierr,I,J;
-  PetscScalar v;
-  IS     isrow;
+  Mat            A,B,*Bsub;
+  PetscInt       i,j,m = 6,n = 6,N = 36,I,J;
+  PetscErrorCode ierr;
+  PetscScalar    v;
+  IS             isrow;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

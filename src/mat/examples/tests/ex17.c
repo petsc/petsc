@@ -7,12 +7,14 @@ static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat          C,A;
-  int          i,j,m = 5,n = 5,I,J,ierr;
-  PetscScalar  v,five = 5.0,one = 1.0,mone = -1.0;
-  IS           isrow,row,col;
-  Vec          x,u,b;
-  PetscReal    norm;
+  Mat            C,A;
+  PetscInt       i,j,m = 5,n = 5,I,J;
+  PetscErrorCode ierr;
+  PetscScalar    v,five = 5.0,one = 1.0,mone = -1.0;
+  IS             isrow,row,col;
+  Vec            x,u,b;
+  PetscReal      norm;
+  MatFactorInfo  info;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -48,7 +50,8 @@ int main(int argc,char **args)
      orderings from the options database */
   ierr = MatGetOrdering(C,MATORDERING_QMD,&row,&col);CHKERRQ(ierr);
 
-  ierr = MatLUFactorSymbolic(C,row,col,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(C,row,col,&info,&A);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(C,&A);CHKERRQ(ierr);
   ierr = MatSolveTranspose(A,b,x);CHKERRQ(ierr);
 

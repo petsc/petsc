@@ -20,8 +20,8 @@
    src/mat/impls/baij/seq
 */
 
-EXTERN PetscErrorCode  LINPACKdgefa(MatScalar*,int,int*);
-EXTERN PetscErrorCode  LINPACKdgedi(MatScalar*,int,int*,MatScalar*);
+EXTERN PetscErrorCode  LINPACKdgefa(MatScalar*,PetscInt,PetscInt*);
+EXTERN PetscErrorCode  LINPACKdgedi(MatScalar*,PetscInt,PetscInt*,MatScalar*);
 EXTERN PetscErrorCode  Kernel_A_gets_inverse_A_2(MatScalar*);
 EXTERN PetscErrorCode  Kernel_A_gets_inverse_A_3(MatScalar*);
 
@@ -283,12 +283,12 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 #define msgemm_  msgemm
 #endif
 EXTERN_C_BEGIN
-EXTERN void msgemv_(int*,int *,MatScalar*,PetscScalar*,PetscScalar*);
-EXTERN void msgemvp_(int*,int *,MatScalar*,PetscScalar*,PetscScalar*);
-EXTERN void msgemvm_(int*,int *,MatScalar*,PetscScalar*,PetscScalar*);
-EXTERN void msgemvt_(int*,int *,MatScalar*,PetscScalar*,PetscScalar*);
-EXTERN void msgemmi_(int*,MatScalar*,MatScalar*,MatScalar*);
-EXTERN void msgemm_(int*,MatScalar*,MatScalar*,MatScalar*);
+EXTERN void msgemv_(PetscInt*,PetscInt *,MatScalar*,PetscScalar*,PetscScalar*);
+EXTERN void msgemvp_(PetscInt*,PetscInt *,MatScalar*,PetscScalar*,PetscScalar*);
+EXTERN void msgemvm_(PetscInt*,PetscInt *,MatScalar*,PetscScalar*,PetscScalar*);
+EXTERN void msgemvt_(PetscInt*,PetscInt *,MatScalar*,PetscScalar*,PetscScalar*);
+EXTERN void msgemmi_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
+EXTERN void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
 EXTERN_C_END
 
 /*
@@ -300,7 +300,7 @@ EXTERN_C_END
 */
 #define Kernel_A_gets_A_times_B(bs,A,B,W) \
 { \
-  int _ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(_ierr); \
+  PetscErrorCode _ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(_ierr); \
   msgemmi_(&bs,A,B,W); \
 }
 

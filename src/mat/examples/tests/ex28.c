@@ -7,11 +7,12 @@ static char help[] = "Tests MatReorderForNonzeroDiagonal()\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat    A,LU;
-  Vec    x,y;
-  int    nnz[4]={2,1,1,1},col[4],i,ierr;
-  PetscScalar values[4];
-  IS     rowperm,colperm;
+  Mat            A,LU;
+  Vec            x,y;
+  PetscInt       nnz[4]={2,1,1,1},col[4],i;
+  PetscErrorCode ierr;
+  PetscScalar    values[4];
+  IS             rowperm,colperm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

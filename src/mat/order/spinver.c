@@ -6,9 +6,9 @@
  */
 #undef __FUNCT__  
 #define __FUNCT__ "MatInvertPermutation_Private"
-void MatInvertPermutation_Private(int n,int *perm,int *iperm)
+void MatInvertPermutation_Private(PetscInt n,PetscInt *perm,PetscInt *iperm)
 {
-  int i;
+  PetscInt i;
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {

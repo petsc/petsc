@@ -42,22 +42,22 @@
 /*                                                                */
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKgenqmd" 
-PetscErrorCode SPARSEPACKgenqmd(int *neqns, int *xadj, int *adjncy, 
-	int *perm, int *invp, int *deg, int *marker, int *
-	rchset, int *nbrhd, int *qsize, int *qlink, int *nofsub)
+PetscErrorCode SPARSEPACKgenqmd(PetscInt *neqns, PetscInt *xadj, PetscInt *adjncy, 
+	PetscInt *perm, PetscInt *invp, PetscInt *deg, PetscInt *marker, PetscInt *
+	rchset, PetscInt *nbrhd, PetscInt *qsize, PetscInt *qlink, PetscInt *nofsub)
 {
     /* System generated locals */
-    int i__1;
+    PetscInt i__1;
 
     /* Local variables */
-    int ndeg, irch, node, nump1, j, inode;
-    EXTERN PetscErrorCode SPARSEPACKqmdqt(int*, int *, int *, int *, int *, int *, int *);
-    int ip, np, mindeg, search;
-    EXTERN PetscErrorCode SPARSEPACKqmdrch(int*, int *, int *, 
-	      int *, int *, int *, int *, int *, int *),
-	   SPARSEPACKqmdupd(int*, int *, int *, int *, int *, 
-	      int *, int *, int *, int *, int *);
-    int nhdsze, nxnode, rchsze, thresh, num;
+    PetscInt ndeg, irch, node, nump1, j, inode;
+    EXTERN PetscErrorCode SPARSEPACKqmdqt(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+    PetscInt ip, np, mindeg, search;
+    EXTERN PetscErrorCode SPARSEPACKqmdrch(PetscInt*, PetscInt *, PetscInt *, 
+	      PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *),
+	   SPARSEPACKqmdupd(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, 
+	      PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+    PetscInt nhdsze, nxnode, rchsze, thresh, num;
 
 /*       INITIALIZE DEGREE VECTOR AND OTHER WORKING VARIABLES.   */
 

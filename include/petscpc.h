@@ -219,9 +219,9 @@ EXTERN PetscErrorCode PCCholeskySetPivotInBlocks(PC,PetscTruth);
 EXTERN PetscErrorCode PCILUSetMatOrdering(PC,MatOrderingType);
 EXTERN PetscErrorCode PCILUSetUseInPlace(PC);
 EXTERN PetscErrorCode PCILUSetFill(PC,PetscReal);
-EXTERN PetscErrorCode PCILUSetLevels(PC,int);
+EXTERN PetscErrorCode PCILUSetLevels(PC,PetscInt);
 EXTERN PetscErrorCode PCILUSetReuseOrdering(PC,PetscTruth);
-EXTERN PetscErrorCode PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,int);
+EXTERN PetscErrorCode PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,PetscInt);
 EXTERN PetscErrorCode PCILUDTSetReuseFill(PC,PetscTruth);
 EXTERN PetscErrorCode PCILUSetAllowDiagonalFill(PC);
 EXTERN PetscErrorCode PCILUSetDamping(PC,PetscReal);
@@ -231,15 +231,15 @@ EXTERN PetscErrorCode PCILUSetZeroPivot(PC,PetscReal);
 
 EXTERN PetscErrorCode PCICCSetMatOrdering(PC,MatOrderingType);
 EXTERN PetscErrorCode PCICCSetFill(PC,PetscReal);
-EXTERN PetscErrorCode PCICCSetLevels(PC,int);
+EXTERN PetscErrorCode PCICCSetLevels(PC,PetscInt);
 EXTERN PetscErrorCode PCICCSetDamping(PC,PetscReal);
 EXTERN PetscErrorCode PCICCSetShift(PC,PetscTruth);
 EXTERN PetscErrorCode PCICCSetPivotInBlocks(PC,PetscTruth);
 EXTERN PetscErrorCode PCICCSetZeroPivot(PC,PetscReal);
 
-EXTERN PetscErrorCode PCASMSetLocalSubdomains(PC,int,IS[]);
-EXTERN PetscErrorCode PCASMSetTotalSubdomains(PC,int,IS[]);
-EXTERN PetscErrorCode PCASMSetOverlap(PC,int);
+EXTERN PetscErrorCode PCASMSetLocalSubdomains(PC,PetscInt,IS[]);
+EXTERN PetscErrorCode PCASMSetTotalSubdomains(PC,PetscInt,IS[]);
+EXTERN PetscErrorCode PCASMSetOverlap(PC,PetscInt);
 /*E
     PCASMType - Type of additive Schwarz method to use
 

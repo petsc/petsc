@@ -2,6 +2,7 @@
 
 #include "petsc.h"
 #include "src/mat/order/order.h"
+EXTERN PetscErrorCode SPARSEPACKfnroot(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 
 /*****************************************************************/
 /********     FN1WD ..... FIND ONE-WAY DISSECTORS        *********/
@@ -30,22 +31,20 @@
 /*****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKfn1wd" 
-PetscErrorCode SPARSEPACKfn1wd(int *root, int *xadj, int *adjncy, 
-	int *mask, int *nsep, int *sep, int *nlvl, int *
-	xls, int *ls)
+PetscErrorCode SPARSEPACKfn1wd(PetscInt *root, PetscInt *xadj, PetscInt *adjncy, 
+                               PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *nlvl, PetscInt *
+                               xls, PetscInt *ls)
 {
     /* System generated locals */
-    int i__1, i__2;
+    PetscInt  i__1, i__2;
 
     /* Local variables */
-    int node, i, j, k;
+    PetscInt  node, i, j, k;
     PetscReal width, fnlvl;
-    int kstop, kstrt, lp1beg, lp1end;
+    PetscInt  kstop, kstrt, lp1beg, lp1end;
     PetscReal deltp1;
-    int lvlbeg, lvlend;
-    EXTERN PetscErrorCode SPARSEPACKfnroot(int*, int *, int *, 
-	    int *, int *, int *, int *);
-    int nbr, lvl;
+    PetscInt  lvlbeg, lvlend;
+    PetscInt  nbr, lvl;
 
     PetscFunctionBegin;
     /* Parameter adjustments */
@@ -62,15 +61,15 @@ PetscErrorCode SPARSEPACKfn1wd(int *root, int *xadj, int *adjncy,
     width = (PetscReal) (*nsep) / fnlvl;
     deltp1 = sqrt((width * 3.f + 13.f) / 2.f) + 1.f;
     if (*nsep >= 50 && deltp1 <= fnlvl * .5f) {
-	goto L300;
+        goto L300;
     }
 /*       THE COMPONENT IS TOO SMALL, OR THE LEVEL STRUCTURE */
 /*       IS VERY LONG AND NARROW. RETURN THE WHOLE COMPONENT.*/
     i__1 = *nsep;
     for (i = 1; i <= i__1; ++i) {
-	node = ls[i];
-	sep[i] = node;
-	mask[node] = 0;
+        node = ls[i];
+        sep[i] = node;
+        mask[node] = 0;
     }
     PetscFunctionReturn(0);
 /*       FIND THE PARALLEL DISSECTORS.*/
@@ -79,9 +78,9 @@ L300:
     i = 0;
 L400:
     ++i;
-    lvl = (int)((PetscReal) i * deltp1 + .5f);
+    lvl = (PetscInt)((PetscReal) i * deltp1 + .5f);
     if (lvl >= *nlvl) {
-	PetscFunctionReturn(0);
+        PetscFunctionReturn(0);
     }
     lvlbeg = xls[lvl];
     lp1beg = xls[lvl + 1];
@@ -89,17 +88,17 @@ L400:
     lp1end = xls[lvl + 2] - 1;
     i__1 = lp1end;
     for (j = lp1beg; j <= i__1; ++j) {
-	node = ls[j];
-	xadj[node] = -xadj[node];
+        node = ls[j];
+        xadj[node] = -xadj[node];
     }
 /*          NODES IN LEVEL LVL ARE CHOSEN TO FORM DISSECTOR. */
 /*          INCLUDE ONLY THOSE WITH NEIGHBORS IN LVL+1 LEVEL. */
 /*          XADJ IS USED TEMPORARILY TO MARK NODES IN LVL+1.  */
     i__1 = lvlend;
     for (j = lvlbeg; j <= i__1; ++j) {
-	node = ls[j];
-	kstrt = xadj[node];
-	kstop = (i__2 = xadj[node + 1], (int)PetscAbsInt(i__2)) - 1;
+        node = ls[j];
+        kstrt = xadj[node];
+        kstop = (i__2 = xadj[node + 1], (PetscInt)PetscAbsInt(i__2)) - 1;
 	i__2 = kstop;
 	for (k = kstrt; k <= i__2; ++k) {
 	    nbr = adjncy[k];
