@@ -567,7 +567,9 @@ class LinkExecutable (Action):
       products = Action.execute(self)
       for source in files:
         self.updateSourceDB(source)
-      return products
+    else:
+      products = FileGroup()
+    return products
 
 class Target (Transform):
   def __init__(self, sources, transforms = []):
@@ -580,6 +582,7 @@ class Target (Transform):
       self.debugPrint('Executing transform '+str(transform)+' with sources '+self.debugListStr(files))
       transform.sources.extend(sources)
       products = transform.execute()
+      self.debugPrint('Transform products '+self.debugListStr(products.getFiles()))
     elif isinstance(transform, types.ListType):
       for t in transform:
         products = self.executeTransform(sources, t)
@@ -590,6 +593,7 @@ class Target (Transform):
         products.extend(self.executeTransform(sources, t))
     else:
       raise RuntimeError('Invalid transform type '+type(transform))
+    self.debugPrint('Target products '+self.debugListStr(products.getFiles()))
     return products
 
   def execute(self):
