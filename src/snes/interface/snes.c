@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.82 1996/08/19 23:03:01 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.83 1996/08/20 16:03:15 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -233,6 +233,7 @@ int SNESPrintHelp(SNES snes)
      " Options for solving systems of nonlinear equations only:\n");
     PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);
+    PetscPrintf(snes->comm,"   %ssnes_mf_operator:use matrix-free Jacobian,not preconditioner\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf_err: relative error in function evaluation for matrix-free Jacobian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf_umin: minimum iterate parameter for matrix-free Jacobian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",p);
@@ -442,6 +443,11 @@ $      (for unconstrained minimization)
 
    Output Parameter:
 .  outsnes - the new SNES context
+
+   Options Database Key:
+$   -snes_mf - use default matrix free for Jacobian and preconditioner
+$   -snes_mf_operator - use default matrix free for Jacobian but not for preconditioner
+$   -snes_fd - use slow finite differences to compute Jacobian
 
 .keywords: SNES, nonlinear, create, context
 
@@ -992,7 +998,30 @@ int SNESSetUp(SNES snes,Vec x)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   snes->vec_sol = snes->vec_sol_always = x;
 
+  ierr = OptionsHasName(snes->prefix,"-snes_mf_operator", &flg);  CHKERRQ(ierr); 
+  /*
+      This version replaces the user provided Jacobian matrix with a
+      matrix free version but still uses the user provided preconditioner matrix
+  */
+  if (flg) {
+    Mat J;
+    ierr = SNESDefaultMatrixFreeMatCreate(snes,snes->vec_sol,&J);CHKERRQ(ierr);
+    PLogObjectParent(snes,J);
+    snes->mfshell = J;
+    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+      snes->jacobian = J;
+      PLogInfo(snes,"SNESSetUp: Setting default matrix-free operator Jacobian routines\n");
+    }
+    else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
+      snes->jacobian = J;
+      PLogInfo(snes,"SNESSetUp: Setting default matrix-free operator Hessian routines\n");
+    } else SETERRQ(1,"SNESSetUp:Method class doesn't support matrix-free operator option");
+  }
   ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);  CHKERRQ(ierr); 
+  /*
+      This version replaces both the user provided Jacobian and the user
+      provided preconditioner matrix with the default matrix free version.
+   */
   if (flg) {
     Mat J;
     ierr = SNESDefaultMatrixFreeMatCreate(snes,snes->vec_sol,&J);CHKERRQ(ierr);
