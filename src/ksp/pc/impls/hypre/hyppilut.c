@@ -467,7 +467,7 @@ static int PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
 static int PCSetFromOptions_HYPRE_ParaSails(PC pc)
 {
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
-  int        ierr;
+  int        indx,ierr;
   PetscTruth flag;
   const char *symtlist[] = {"nonsymmetric","SPD","nonsymmetric,SPD"},buff[32];
 
@@ -629,7 +629,7 @@ static int PCSetFromOptions_HYPRE(PC pc)
     if (PetscOptionsPublishCount) {   /* force the default if it was not yet set and user did not set with option */
       if (!flg && !pc->ops->apply) {
         flg   = PETSC_TRUE;
-        indx = 0
+        indx = 0;
       }
     }
     if (flg) {
