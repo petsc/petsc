@@ -7,6 +7,9 @@
 #include "src/vec/impls/dvecimpl.h" 
 #include "src/inline/dot.h"
 #include "petscblaslapack.h"
+#if defined(PETSC_HAVE_NETCDF)
+#include "pnetcdf.h"
+#endif
 #if defined(PETSC_HAVE_AMS)
 EXTERN int PetscViewerAMSGetAMSComm(PetscViewer,AMS_Comm *);
 #endif
@@ -236,12 +239,11 @@ static int VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_NETCDF)
-#include "pnetcdf.h"
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_Seq_Netcdf"
-static int VecView_Seq_Netcdf(Vec xin,PetscViewer v)
+int VecView_Seq_Netcdf(Vec xin,PetscViewer v)
 {
+#if defined(PETSC_HAVE_NETCDF)
   int         n = xin->n,ierr,ncid,xdim,xdim_num=1,xin_id,xstart=0;
   MPI_Comm    comm = xin->comm;  
   PetscScalar *values,*xarray;
@@ -264,8 +266,12 @@ static int VecView_Seq_Netcdf(Vec xin,PetscViewer v)
     PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
 #endif
   PetscFunctionReturn(0);
-}
+#else
+  PetscFunctionBegin;
+  SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
+  PetscFunctionReturn(0);
 #endif
+}
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_Seq"
 int VecView_Seq(Vec xin,PetscViewer viewer)

@@ -9,6 +9,13 @@
 #include "petsc.h"
 #include "petscsys.h"
 #include "petscvec.h"         /*I  "petscvec.h"  I*/
+#if defined(PETSC_HAVE_NETCDF)
+#include "pnetcdf.h"
+#endif
+int VecLoad_Binary(PetscViewer, Vec*);
+int VecLoad_Netcdf(PetscViewer, Vec*);
+int VecLoadIntoVector_Binary(PetscViewer, Vec);
+int VecLoadIntoVector_Netcdf(PetscViewer, Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad"
@@ -19,7 +26,8 @@
   Collective on PetscViewer 
 
   Input Parameters:
-. viewer - binary file viewer, obtained from PetscViewerBinaryOpen()
+. viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
+           NetCDF file viewer, obtained from PetscViewerNetcdfOpen()
 
   Output Parameter:
 . newvec - the newly loaded vector
@@ -60,6 +68,78 @@ and PetscWriteBinary() to see how this may be done.
 @*/  
 int VecLoad(PetscViewer viewer,Vec *newvec)
 {
+  int         ierr;
+  PetscTruth  isbinary,isnetcdf;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
+  if ((!isbinary) && (!isnetcdf)) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary or NetCDF viewer");
+
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+  if (isnetcdf) {
+    ierr = VecLoad_Netcdf(viewer,newvec); CHKERRQ(ierr);
+  } else {
+    ierr = VecLoad_Binary(viewer,newvec); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecLoad_Netcdf"
+int VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
+{
+#if defined(PETSC_HAVE_NETCDF)
+  int         i,N,ierr,n,rank,bs;
+  int         ncid,start;
+  Vec         vec;
+  PetscScalar *avec;
+  MPI_Comm    comm;
+  MPI_Request request;
+  MPI_Status  status;
+  PetscMap    map;
+  PetscTruth  isnetcdf,flag;
+  char        name[NC_MAX_NAME];
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = PetscViewerNetcdfGetID(viewer,&ncid);CHKERRQ(ierr);
+  ierr = ncmpi_inq_dim(ncid,0,name,&N); CHKERRQ(ierr); /* N gets the global vector size */
+  ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
+  ierr = VecSetSizes(vec,PETSC_DECIDE,N);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
+    }
+  }
+  ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(vec,&start,PETSC_NULL); CHKERRQ(ierr);
+  ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
+  ierr = ncmpi_get_vara_double_all(ncid,0,&start,&n,(double *)avec); CHKERRQ(ierr);
+  ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
+  *newvec = vec;
+  ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#else
+  PetscFunctionBegin;
+  SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
+  PetscFunctionReturn(0);
+#endif
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecLoad_Binary"
+int VecLoad_Binary(PetscViewer viewer,Vec *newvec)
+{
   int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs,nierr;
   Vec         vec;
   PetscScalar *avec;
@@ -67,17 +147,9 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
   MPI_Request request;
   MPI_Status  status;
   PetscMap    map;
-  PetscTruth  isbinary,flag;
+  PetscTruth  isbinary,isnetcdf,flag;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
-
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
-#endif
-
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -136,7 +208,6 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
   *newvec = vec;
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
   /* tell the other processors we've had an error */
   handleerror:
@@ -155,13 +226,80 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
   MPI_Request request;
   MPI_Status  status;
   PetscMap    map;
-  PetscTruth  isbinary,flag;
+  PetscTruth  isbinary,isnetcdf,flag;
   char        *prefix;
 
   PetscFunctionBegin;
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
+  if ((!isbinary) && (!isnetcdf)) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary or NetCDF viewer");
+
+  if (isnetcdf) {
+    ierr = VecLoadIntoVector_Netcdf(viewer,vec); CHKERRQ(ierr);
+  } else {
+    ierr = VecLoadIntoVector_Binary(viewer,vec); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecLoadIntoVector_Netcdf"
+int VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
+{
+#if defined(PETSC_HAVE_NETCDF)
+  int         i,N,rows,ierr,n,rank,bs;
+  int         ncid,start;
+  PetscScalar *avec;
+  MPI_Comm    comm;
+  MPI_Request request;
+  MPI_Status  status;
+  PetscMap    map;
+  PetscTruth  isnetcdf,flag;
+  char        name[NC_MAX_NAME];
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = PetscViewerNetcdfGetID(viewer,&ncid);CHKERRQ(ierr);
+  ierr = ncmpi_inq_dim(ncid,0,name,&N); CHKERRQ(ierr); /* N gets the global vector size */
+  if (!rank) {
+    ierr = VecGetSize(vec,&rows);CHKERRQ(ierr);
+    if (N != rows) SETERRQ(1,"Vector in file different length then input vector");
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
+    }
+  }
+  ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(vec,&start,PETSC_NULL); CHKERRQ(ierr);
+  ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
+  ierr = ncmpi_get_vara_double_all(ncid,0,&start,&n,(double *)avec); CHKERRQ(ierr);
+  ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#else
+  PetscFunctionBegin;
+  SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
+  PetscFunctionReturn(0);
+#endif
+}
+int VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
+{
+  int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;
+  PetscScalar *avec;
+  MPI_Comm    comm;
+  MPI_Request request;
+  MPI_Status  status;
+  PetscMap    map;
+  PetscTruth  isbinary,isnetcdf,flag;
+  char        *prefix;
+
+  PetscFunctionBegin;
   ierr = PetscLogEventBegin(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
@@ -222,20 +360,3 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
   ierr = PetscLogEventEnd(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#if defined(PETSC_HAVE_NETCDF)
-#include "pnetcdf.h"
-#undef __FUNCT__  
-#define __FUNCT__ "VecLoad_Netcdf"
-int VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
-{
-  int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs,nierr;
-  Vec         vec;
-  PetscScalar *avec;
-  MPI_Comm    comm;
-  MPI_Request request;
-  MPI_Status  status;
-  PetscMap    map;
-  PetscTruth  isnetcdf,flag;
-
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);

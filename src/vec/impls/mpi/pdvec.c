@@ -3,6 +3,9 @@
      Code for some of the parallel vector primatives.
 */
 #include "src/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
+#if defined(PETSC_HAVE_NETCDF)
+#include "pnetcdf.h"
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDestroy_MPI"
@@ -389,12 +392,11 @@ int VecView_MPI_Socket(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_NETCDF)
-#include "pnetcdf.h"
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Netcdf"
-static int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
+int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 {
+#if defined(PETSC_HAVE_NETCDF)
   int         n = xin->n,ierr,ncid,xdim,xdim_num=1,xin_id,xstart;
   MPI_Comm    comm = xin->comm;  
   PetscScalar *values,*xarray;
@@ -417,16 +419,12 @@ static int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
     PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
 #endif
   PetscFunctionReturn(0);
-}
 #else /* !defined(PETSC_HAVE_NETCDF) */
-#undef __FUNCT__  
-#define __FUNCT__ "VecView_MPI_Netcdf"
-static int VecView_MPI_Netcdf(Vec xin,PetscViewer v) {
   PetscFunctionBegin;
+  SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
   PetscFunctionReturn(0);
-}
 #endif
-
+}
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI"
 int VecView_MPI(Vec xin,PetscViewer viewer)
