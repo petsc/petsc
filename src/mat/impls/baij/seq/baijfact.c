@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.38 1997/01/15 16:52:46 balay Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.39 1997/02/04 01:21:08 balay Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -195,7 +195,7 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
     while (row < i) {
       pc = rtmp + bs2*row;
 /*      if (*pc) { */
-      for ( flg=0,k=0; k<bs2; k++ ) { if (pc[k]) { flg =1; break; }}
+      for ( flg=0,k=0; k<bs2; k++ ) { if (pc[k]!=0.0) { flg =1; break; }}
       if (flg) {
         pv = ba + bs2*diag_offset[row];
         pj = bj + diag_offset[row] + 1;
