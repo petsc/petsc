@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.56 1999/01/12 23:16:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.57 1999/03/17 23:21:24 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -437,8 +437,9 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 int DrawLGGetDraw(DrawLG lg,Draw *win)
 {
   PetscFunctionBegin;
-  if (!lg || lg->cookie != DRAW_COOKIE || PetscTypeCompare(lg->type_name,DRAW_NULL)) {
-    PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
+  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg->type_name,DRAW_NULL)) {
+    *win = 0;
+    PetscFunctionReturn(0);
   }
   *win = lg->win;
   PetscFunctionReturn(0);
