@@ -5,8 +5,8 @@ RM       = rm -f
 RANLIB   = true
 OMAKE    = make
 SHELL    = /bin/sh
-CLINKER  = cc $(BASEOPT) -dont_warn_unused
-FLINKER  = f77 $(BASEOPTF) -dont_warn_unused
+CLINKER  = cc $(COPTFLAGS) -dont_warn_unused
+FLINKER  = f77 $(FOPTFLAGS) -dont_warn_unused
 
 SYS_LIB    = 
 #
@@ -30,32 +30,32 @@ libf:
 libmember:    $(LIBNAME)($(LIBMEMBER))
 
 .c.a: 
-	$(CC) -c $(CFLAGS) $(BASEOPT) $*.c
+	$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.c
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 .c.o: 
-	$(CC) -c -DPARCH_IRIX $(CFLAGS) $(BASEOPT) $*.c
+	$(CC) -c -DPARCH_IRIX $(CFLAGS) $(COPTFLAGS) $*.c
 .C.a: 
-	$(CC) -c $(CFLAGS) $(BASEOPT) $*.C
+	$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.C
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 .C.o: 
-	$(CC) -c -DPARCH_IRIX $(CFLAGS) $(BASEOPT) $*.C
+	$(CC) -c -DPARCH_IRIX $(CFLAGS) $(COPTFLAGS) $*.C
 .f.o: 
-	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 
 .f.a: 
-	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
 .SUFFIXES: $(SUFFIXES) .F
 
 .F.o:
-	$(FC) -c $(PETSC_INCLUDE) $(FFLAGS) $(BASEOPTF) $*.F
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
 
 .F.a: 
-	$(FC) -c $(PETSC_INCLUDE) $(FFLAGS) $(BASEOPTF) $*.F
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
