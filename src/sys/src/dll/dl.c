@@ -141,7 +141,7 @@ int PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int ll
      so we can add to the end of it to look for something like .so.1.0 etc.
   */
   ierr = PetscStrlen(libname,&len);CHKERRQ(ierr);
-  len  = PetscMax(4*len,1024);
+  len  = PetscMax(4*len,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscMalloc(len*sizeof(char),&par2);CHKERRQ(ierr);
   ierr = PetscStrreplace(comm,libname,par2,len);CHKERRQ(ierr);
 

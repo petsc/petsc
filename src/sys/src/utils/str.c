@@ -607,7 +607,7 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len)
   ierr = PetscMalloc(len*sizeof(char*),&work);CHKERRQ(ierr);
 
   /* get values for replaced variables */
-  ierr = PetscMalloc(64*sizeof(char),&r[4]);CHKERRQ(ierr);
+  ierr = PetscMalloc(256*sizeof(char),&r[4]);CHKERRQ(ierr);
   ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[5]);CHKERRQ(ierr);
   ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[6]);CHKERRQ(ierr);
   ierr = PetscMalloc(256*sizeof(char),&r[7]);CHKERRQ(ierr);

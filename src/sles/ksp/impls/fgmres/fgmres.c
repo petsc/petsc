@@ -803,6 +803,13 @@ int KSPCreate_FGMRES(KSP ksp)
   fgmres->modifyctx           = PETSC_NULL;
   fgmres->modifydestroy       = PETSC_NULL;
 
+  /*
+        This is not great since it changes this without explicit request from the user
+     but there is no left preconditioning in the FGMRES
+  */
+  PetscLogInfo(ksp,"Warning: Setting PC_SIDE for FGMRES to right!\n");
+  ksp->pc_side                = PC_RIGHT;
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
