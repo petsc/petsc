@@ -22,7 +22,7 @@ for l=1:nargout
 
     sum_nz = sum(nnz);
     if(sum_nz ~=nz)
-      str = sprintf('No-Nonzeros sum-rowlenths do not match %d %d',nz,sum_nz);
+      str = sprintf('No-Nonzeros sum-rowlengths do not match %d %d',nz,sum_nz);
       error(str);
     end
 
