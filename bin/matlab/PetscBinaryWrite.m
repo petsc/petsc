@@ -30,6 +30,7 @@ end
 fwrite(fd,s,'double');
 
 if nargin == 3
+  [m,n] = size(b);
   fwrite(fd,[1211214,m],'int32');
   fwrite(fd,b,'double');
 end
