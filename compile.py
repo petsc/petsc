@@ -319,7 +319,7 @@ class TagF90 (transform.GenericTag):
     transform.GenericTag.__init__(self, sourceDB, tag, ext, sources, extraExt, root)
 
 class CompileF90 (Compile):
-  def __init__(self, sourceDB, library, sources = None, tag = 'f90', compiler = 'f90', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
+  def __init__(self, sourceDB, library, sources = None, tag = 'f90', compiler = 'ifc', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
     Compile.__init__(self, sourceDB, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
 
 class TagJava (transform.GenericTag):

@@ -10,11 +10,22 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     return
 
+  def configureHelp(self, help):
+    help.addOption('Compilers', '-with-cc=<prog>', 'Specify the C compiler')
+    help.addOption('Compilers', '-with-cxx=<prog>', 'Specify the C++ compiler')
+    help.addOption('Compilers', '-with-fc=<prog>', 'Specify the Fortran compiler')
+    help.addOption('Compilers', '-with-f90=<prog>', 'Specify the Fortran 90 compiler')
+    help.addOption('Compilers', '-with-f90-header=<file>', 'Specify the C header for the F90 interface')
+    help.addOption('Compilers', '-with-f90-source=<file>', 'Specify the C source for the F90 interface')
+    return
+
   def checkCCompiler(self):
-    if self.framework.argDB.has_key('CC'):
+    if self.framework.argDB.has_key('with-cc'):
+      self.CC = self.framework.argDB['with-cc']
+    elif self.framework.argDB.has_key('CC'):
       self.CC = self.framework.argDB['CC']
     else:
-      self.getArgument('CC', 'gcc', '-with-')
+      self.CC = 'gcc'
     self.addSubstitution('CC', self.CC, comment = 'C compiler')
     return
 
@@ -24,10 +35,12 @@ class Configure(config.base.Configure):
     return
 
   def checkCxxCompiler(self):
-    if self.framework.argDB.has_key('CXX'):
+    if self.framework.argDB.has_key('with-cxx'):
+      self.CXX = self.framework.argDB['with-cxx']
+    elif self.framework.argDB.has_key('CXX'):
       self.CXX = self.framework.argDB['CXX']
     else:
-      self.getArgument('CXX', 'g++', '-with-')
+      self.CXX = 'g++'
     self.addSubstitution('CXX', self.CXX, comment = 'C++ compiler')
     return
 
@@ -40,10 +53,12 @@ class Configure(config.base.Configure):
     return
 
   def checkFortranCompiler(self):
-    if self.framework.argDB.has_key('FC'):
+    if self.framework.argDB.has_key('with-fc'):
+      self.FC = self.framework.argDB['with-fc']
+    elif self.framework.argDB.has_key('FC'):
       self.FC = self.framework.argDB['FC']
     else:
-      self.getArgument('FC', 'g77', '-with-')
+      self.FC = 'g77'
     self.addSubstitution('FC', self.FC, comment = 'Fortran compiler')
     return
 
@@ -107,9 +122,21 @@ class Configure(config.base.Configure):
     self.framework.argDB['LIBS'] = oldLibs
     return
 
+  def checkFortran90Compiler(self):
+    if self.framework.argDB.has_key('with-f90'):
+      self.F90 = self.framework.argDB['with-f90']
+    elif self.framework.argDB.has_key('F90'):
+      self.F90 = self.framework.argDB['F90']
+    else:
+      self.F90 = 'f90'
+    self.addSubstitution('F90', self.F90, comment = 'Fortran 90 compiler')
+    return
+
   def checkFortran90Interface(self):
-    self.getArgument('F90Header', 'g77', '-with-', comment = 'C header for F90 interface')
-    self.getArgument('F90Source', 'g77', '-with-', comment = 'C source for F90 interface')
+    if self.framework.argDB.has_key('with-f90-header'):
+      self.addDefine('PETSC_HAVE_F90_H', self.framework.argDB['with-f90-header'])
+    if self.framework.argDB.has_key('with-f90-source'):
+      self.addDefine('PETSC_HAVE_F90_C', self.framework.argDB['with-f90-source'])
     return
 
   def checkFortranLibraries(self):
@@ -240,6 +267,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkCxxNamespace)
     self.executeTest(self.checkFortranCompiler)
     self.executeTest(self.checkFortranNameMangling)
+    self.executeTest(self.checkFortran90Compiler)
     self.executeTest(self.checkFortran90Interface)
     self.executeTest(self.checkFortranLibraries)
     return

@@ -1,11 +1,12 @@
 #
 #   Provides the BS build system dictionary
 #
-import atexit
 import os
 import re
-import readline
 import sys
+try:
+  import readline
+except ImportError: pass
 
 import RDict
 
@@ -23,18 +24,25 @@ def parseValue(arg):
     arg = d
   return arg
 
-def parseArgument(arg):
+def parseArgument(arg, ignoreDouble = 0):
   if arg[0] == '-':
+    start = 1
+    if arg[1] == '-' and not ignoreDouble:
+      start = 2
     if arg.find('=') >= 0:
-      (key, value) = arg[1:].split('=')
+      (key, value) = arg[start:].split('=')
     else:
-      (key, value) = (arg[1:], '1')
+      (key, value) = (arg[start:], '1')
     return (key, parseValue(value))
   return (None, None)
 
 def findArgument(arg, argList):
   if not isinstance(argList, list): return None
-  for a in argList:
+  # Reverse the list so that we preserve the semantics which state that the last
+  #   argument with a given key takes effect
+  l = argList[:]
+  l.reverse()
+  for a in l:
     (key, value) = parseArgument(a)
     if key == arg:
       return value
@@ -224,7 +232,7 @@ class ArgDict (RDict.RArgs):
       self.purelocal = 1
     else:
       self.purelocal = 0
-      RDict.RArgs.__init__(self, name, addr = addr)
+    RDict.RArgs.__init__(self, name, addr = addr, purelocal = self.purelocal)
     self.local  = {}
     self.target = ['default']
     #  the list of targets is always local
@@ -232,7 +240,7 @@ class ArgDict (RDict.RArgs):
     #  before the command line is parse, hence put here
     self.setLocalType('install',ArgInt())
     self.setLocalType('fileset',ArgString())
-    self.insertArgList(argList)
+    self.insertArgs(argList)
     return
 
   def __setitem__(self,key,value):
@@ -310,20 +318,28 @@ class ArgDict (RDict.RArgs):
       self.setLocalType(key,arg)
     return
 
-  def insertArgList(self, argList):
-    if not isinstance(argList, list): return
-    for arg in argList:
-      (key, value) = parseArgument(arg)
-      if not key is None:
-        if self.hasType(key):
-          self[key] = self.getType(key).convertValue(value)
-        else:
-          self[key] = value
+  def insertArg(self, key, value, arg):
+    if not key is None:
+      if self.hasType(key):
+        self[key] = self.getType(key).convertValue(value)
       else:
-        if not self.target == ['default']:
-          self.target.append(arg)
-        else:
-          self.target = [arg]
+        self[key] = value
+    else:
+      if not self.target == ['default']:
+        self.target.append(arg)
+      else:
+        self.target = [arg]
+    return
+
+  def insertArgs(self, args):
+    if isinstance(args, list):
+      for arg in args:
+        (key, value) = parseArgument(arg)
+        self.insertArg(key, value, arg)
+    elif isinstance(args, dict):
+      for key in args:
+        value = parseValue(args[key])
+        self.insertArg(key, value, arg)
     return
 
 if __name__ ==  '__main__':

@@ -14,7 +14,7 @@ class Help:
   def setTitle(self, title):
     self.title = title
 
-  def addOption(self, section, name, comment):
+  def addOption(self, section, name, comment, argType = nargs.ArgString, **kwargs):
     if self.options.has_key(section):
       if self.options[section].has_key(name):
         raise RuntimeError('Duplicate configure option '+name+' in section '+section)
@@ -22,25 +22,41 @@ class Help:
     else:
       self.sections.append(section)
       self.options[section] = {name: comment}
+    varName = name.split('=')[0]
+    self.framework.argDB.setLocalType(varName, argType('Print help message', **kwargs))
     return
 
   def output(self):
+    import sys
+
     print self.title
     for i in range(len(self.title)): sys.stdout.write('-')
     print
     nameLen = 1
+    descLen = 1
     for section in self.sections:
       nameLen = max([nameLen, max(map(len, self.options[section].keys()))+1])
+      descLen = max([descLen, max(map(len, self.options[section].values()))+1])
+    format    = '  -%-'+str(nameLen)+'s: %s'
+    formatDef = '  -%-'+str(nameLen)+'s: %-'+str(descLen)+'s  default: %s'
     for section in self.sections:
       print section+':'
-      format  = '  -%-'+str(nameLen)+'s: %s'
       for item in self.options[section].items():
-        print format % item
+        varName = item[0].split('=')[0].strip('-')
+
+        if self.framework.argDB.has_key(varName):
+          print formatDef % (item[0], item[1], str(self.framework.argDB[varName]))
+        else:
+          print format % item
     return
 
 class Framework(config.base.Configure):
-  def __init__(self, clArgs = None):
-    self.argDB      = self.setupArgDB(clArgs)
+  def __init__(self, clArgs = None, argDB = None):
+    self.clArgs     = clArgs
+    if argDB is None:
+      self.argDB    = self.setupArgDB(clArgs)
+    else:
+      self.argDB    = argDB
     self.logName    = 'configure.log'
     self.log        = file(self.logName, 'w')
     config.base.Configure.__init__(self, self)
@@ -48,24 +64,26 @@ class Framework(config.base.Configure):
     self.substRE    = re.compile(r'@(?P<name>[^@]+)@')
     self.substFiles = {}
     self.header     = 'matt_config.h'
-    self.setFromOptions()
     self.headerPrefix = ''
     self.substPrefix  = ''
+    self.setupChildren()
     return
 
   def setupArgDB(self, clArgs):
-    return nargs.ArgDict('ArgDict', clArgs, 1)
+    return nargs.ArgDict('ArgDict', localDict = 1)
 
-  def setFromOptions(self):
-    if not self.argDB.has_key('configModules'):
+  def setupChildren(self):
+    self.argDB['configModules'] = nargs.findArgument('configModules', self.clArgs)
+    if self.argDB['configModules'] is None:
       self.argDB['configModules'] = []
-    if not isinstance(self.argDB['configModules'], list):
+    elif not isinstance(self.argDB['configModules'], list):
       self.argDB['configModules'] = [self.argDB['configModules']]
     for moduleName in self.argDB['configModules']:
       try:
         self.children.append(__import__(moduleName, globals(), locals(), ['Configure']).Configure(self))
       except ImportError, e:
         print 'Could not import config module '+moduleName+': '+str(e)
+    return
 
   def require(self, moduleName, depChild = None, keywordArgs = {}):
     type   = __import__(moduleName, globals(), locals(), ['Configure']).Configure
@@ -247,39 +265,34 @@ class Framework(config.base.Configure):
     f.close()
     return
 
-  def configureHelp(self, help):
-    help.addOption('Framework', 'configModules', 'A list of Python modules with a Configure class')
+  def setupArguments(self, clArgs = None):
+    '''Set initial arguments into the database, and setup initial types'''
+    self.help = Help(self)
+    self.help.setTitle('Python Configure Help')
+
+    self.configureHelp(self.help)
+    for child in self.children:
+      if hasattr(child, 'configureHelp'): child.configureHelp(self.help)
+
+    self.argDB.insertArgs(clArgs)
+    self.argDB.insertArgs(os.environ)
     return
 
-  def configureClear(self):
-    del self.argDB['CC']
-    del self.argDB['CFLAGS']
-    del self.argDB['CXX']
-    del self.argDB['CXXFLAGS']
-    del self.argDB['FC']
-    del self.argDB['FFLAGS']
-    del self.argDB['CPP']
-    del self.argDB['CXXCPP']
-    del self.argDB['CPPFLAGS']
-    del self.argDB['LDFLAGS']
-    del self.argDB['LIBS']
-    del self.argDB['configModules']
-    del self.argDB['clear']
+  def configureHelp(self, help):
+    help.addOption('Framework', 'configModules', 'A list of Python modules with a Configure class')
+    help.addOption('Framework', 'help', 'Print this help message', nargs.ArgBool)
+    help.addOption('Framework', 'h', 'Print this help message', nargs.ArgBool)
+
+    self.argDB['h']    = 0
+    self.argDB['help'] = 0
     return
 
   def configure(self):
     '''Configure the system'''
-    if self.argDB.has_key('clear') and int(self.argDB['clear']):
-      self.configureClear()
-      return
-    if self.argDB.has_key('help') and int(self.argDB['help']):
-      help = Help(self)
-      help.setTitle('Python Configure Help')
-      self.configureHelp(help)
-      for child in self.children:
-        if hasattr(child, 'configureHelp'): child.configureHelp(help)
-      help.output()
-      del self.argDB['help']
+    # Delay database initialization until children have contributed variable types
+    self.setupArguments(self.clArgs)
+    if self.argDB['help'] or self.argDB['h']:
+      self.help.output()
       return
     for child in self.children:
       print 'Configuring '+child.__module__
