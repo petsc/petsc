@@ -54,6 +54,36 @@
 
        <strong>PETSc-CS</strong> used to be refered to, by some, as <strong>PETSc 3</strong>; the <strong>PETSc 3</strong>
        name was dropped because it was too confusing.
+
+       Performance of general purpose algebraic solvers (both linear
+       and nonlinear) is fundamentally limited by the lack of
+       additional information that can be conveyed to the solver when
+       only the matrix entries are available.  Traditionally this has
+       meant, for nontrivial models or nontrivial geometries, that if
+       one wishes to use a specific special purpose solver (say
+       linear, geometric multigrid) a custom code had to be written
+       from beginning to end.
+
+       Using object oriented techniques we have improved on this by
+       allowing applications to provide only two specific, coarse
+       grained pieces of information to our backend multigrid codes (a
+       way to compute interpolation between grids and a way to compute
+       coarse representations of the operators). Yet, while successful
+       for some applications, this is still
+       too much of a burden to impose on most end developers. The next
+       step is develop a way for users to provide, only locally, the
+       minimal extra information needed to automatically generate the
+       interpolation and coarse grid operators on the backend. 
+
+       In theory, mathematically, this is easy. In practice, unless one
+       requires the user to adopt your package's fundamental approach to
+       griding and discretion, which is completely unrealistic, it 
+       is unclear how to proceed. Of course, attempting to parse the user's
+       code and extract the information directly is just absurd.
+
+       Need to have the package adapt to the application instead of
+       the application to the package.
+
   </tr>
   <tr>
     <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
