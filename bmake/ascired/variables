@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.10 2000/03/25 00:12:54 balay Exp balay $ 
+# $Id: base_variables,v 1.11 2000/04/20 16:08:28 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -24,8 +24,8 @@ C_SYS_LIB	   = -lc -lmp  -lvect -lm -lf -lnoop_stubs -lm
 G_COPTFLAGS	   = -g
 G_FOPTFLAGS	   = -g
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS	   = -O2 -Knoieee -Mnoframe
-O_FOPTFLAGS	   = -O
+O_COPTFLAGS        = -fast -tp p6 -Knoieee
+O_FOPTFLAGS        = -fast -tp p6 -Knoieee
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = ciCC
@@ -40,14 +40,14 @@ CXX_SYS_LIB	   = -lmp  -lvect -lm -lf -lnoop_stubs -lm
 GCXX_COPTFLAGS	   = -g
 GCXX_FOPTFLAGS	   = -g
 # ------------------------- BOPT - O_c++ options ------------------------------
-OCXX_COPTFLAGS	   = -O2 -Knoieee -Mnoframe
-OCXX_FOPTFLAGS	   = -O
+OCXX_COPTFLAGS	   = -fast -tp p6 -Knoieee
+OCXX_FOPTFLAGS	   = -fast -tp p6 -Knoieee
 # -------------------------- BOPT - g_complex options ------------------------
 GCOMP_COPTFLAGS	   = -g
 GCOMP_FOPTFLAGS	   = -g
 # --------------------------- BOPT - O_complex options -------------------------
-OCOMP_COPTFLAGS	   = -O2 -Knoieee -Mnoframe
-OCOMP_FOPTFLAGS	   = -O
+OCOMP_COPTFLAGS	   = -fast -tp p6 -Knoieee
+OCOMP_FOPTFLAGS	   = -fast -tp p6 -Knoieee
 # ########################### PETSc install options ###########################
 G_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
                      -DPETSC_USE_STACK
