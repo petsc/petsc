@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: checknightly,v 1.42 1998/07/16 14:36:47 balay Exp balay $ 
+# $Id: checknightly,v 1.43 1998/09/22 22:00:20 balay Exp bsmith $ 
 #
 # Crontab job that checks if the nightly runs have finished by 7:30 am,
 # Checks if the remote jobs are done in the past 2days, and 
@@ -83,12 +83,12 @@ proc CheckFortranAutoMakefile { } {
     
     foreach cfile $cfiles {
         if { [string first    $cfile $makefilebuff ] < 0 } {
-            puts $tmpfileid "******** could'nt find $cfile"
+            puts $tmpfileid "******** could'nt find $cfile in auto/makefile"
         }
     }
     foreach ofile $ofiles {
         if { [string first $ofile $makefilebuff ] < 0 } {
-            puts $tmpfileid "******** could'nt find $ofile"
+            puts $tmpfileid "******** could'nt find $ofile in auto/makefile"
         }
     }
     return 0

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pdisplay.c,v 1.3 1998/08/26 22:01:52 balay Exp bsmith $";
+static char vcid[] = "$Id: pdisplay.c,v 1.4 1998/10/09 19:20:56 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        
@@ -11,18 +11,29 @@ static char vcid[] = "$Id: pdisplay.c,v 1.3 1998/08/26 22:01:52 balay Exp bsmith
 #include "pinclude/petscfix.h"
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetenv" /*
+#define __FUNC__ "OptionsGetenv"
+/*@C
      OptionsGetenv - Gets an environmental variable, broadcasts to all
           processors in communicator from first.
 
-    comm - communicator to share variable
+     Collective on MPI_Comm
 
-    name - name of environmental variable
-    len - amount of space allocated to hold variable
-    flag - if not PETSC_NULL tells if variable found or not
+   Input Parameters:
++    comm - communicator to share variable
+.    name - name of environmental variable
+-    len - amount of space allocated to hold variable
 
-*/
-int OptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,int *flag)
+   Output Parameters:
++    flag - if not PETSC_NULL tells if variable found or not
+-    env - value of variable
+
+   Notes:
+    If comm does not contain the 0th process in the MPIRUN it is likely on
+    many systems that the environmental variable will not be set unless you
+    put it in a universal location like a .chsrc file
+
+@*/
+int OptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,PetscTruth *flag)
 {
   int  rank,ierr;
   char *str;
@@ -37,9 +48,9 @@ int OptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,int *flag)
   }
   ierr = MPI_Bcast(env,len,MPI_CHAR,0,comm);CHKERRQ(ierr);
   if (flag && env[0]) {
-    *flag = 1;
+    *flag = PETSC_TRUE;
   } else if (flag) {
-    *flag = 0;
+    *flag = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
