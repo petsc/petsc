@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.8 1995/10/16 14:50:02 bsmith Exp gropp $";
+static char vcid[] = "$Id: borthog.c,v 1.9 1995/10/17 14:06:22 gropp Exp bsmith $";
 #endif
 
 #define RERROR  gmres_error
@@ -76,18 +76,16 @@ int GMRESUnmodifiedOrthog(KSP  itP,int it )
 int GMRESOrthogIR(KSP  itP,int it )
 {
   KSP_GMRES *gmresP = (KSP_GMRES *)(itP->data);
-  int    j;
-  Scalar *hh, *hes;
-  Scalar shh[20], *lhh;
-  double dnorm;
-  int ncnt;
+  int       j,ncnt;
+  Scalar    *hh, *hes,shh[20], *lhh;
+  double    dnorm;
 
   PLogEventBegin(KSP_GMRESOrthogonalization,itP,0,0,0);
   /* Don't allocate small arrays */
   if (it < 20) lhh = shh;
   else {
-      lhh = (Scalar *)PETSCMALLOC((it+1) * sizeof(Scalar));
-      }
+    lhh = (Scalar *)PETSCMALLOC((it+1) * sizeof(Scalar));
+  }
   
   /* update hessenberg matrix and do unmodified Gram-Schmidt */
   hh  = HH(0,it);
@@ -95,39 +93,40 @@ int GMRESOrthogIR(KSP  itP,int it )
 
   /* Clear hh and hes since we will accumulate values into them */
   for (j=0; j<=it; j++) {
-      hh[j] = 0.0;
-      hes[j] = 0.0;
-      }
+    hh[j] = 0.0;
+    hes[j] = 0.0;
+  }
 
   ncnt = 0;
   do {
-      /* 
+    /* 
 	 This is really a matrix-vector product, with the matrix stored
 	 as pointer to rows 
-	 */
-      VecMDot( it+1, VEC_VV(it+1), &(VEC_VV(0)), lhh ); /* <v,vnew> */
+    */
+    VecMDot( it+1, VEC_VV(it+1), &(VEC_VV(0)), lhh ); /* <v,vnew> */
 
-      /*
+    /*
 	 This is really a matrix vector product: 
 	 [h[0],h[1],...]*[ v[0]; v[1]; ...] subtracted from v[it].
-	 */
-      for (j=0; j<=it; j++) lhh[j] = - lhh[j];
-      VecMAXPY(it+1, lhh, VEC_VV(it+1),&VEC_VV(0) );
-      for (j=0; j<=it; j++) {
-	  hh[j]  -= lhh[j];     /* hh += <v,vnew> */
-	  hes[j] += lhh[j];     /* hes += - <v,vnew> */
-	  }
+    */
+    for (j=0; j<=it; j++) lhh[j] = - lhh[j];
+    VecMAXPY(it+1, lhh, VEC_VV(it+1),&VEC_VV(0) );
+    for (j=0; j<=it; j++) {
+      hh[j]  -= lhh[j];     /* hh += <v,vnew> */
+      hes[j] += lhh[j];     /* hes += - <v,vnew> */
+    }
 
-#if !defined(PETSC_COMPLEX) && !defined(conj)
-#define conj(a) (a)
+    /* Note that dnorm = (norm(d))**2 */
+    dnorm = 0.0;
+#if defined(PETSC_COMPLEX)
+    for (j=0; j<=it; j++) dnorm += real(lhh[j] * conj(lhh[j]));
+#else
+    for (j=0; j<=it; j++) dnorm += lhh[j] * lhh[j];
 #endif
-      dnorm = 0.0;
-      for (j=0; j<=it; j++) dnorm += real(lhh[j] * conj(lhh[j]));
-      /* Note that dnorm = (norm(d))**2 */
 
-      /* Continue until either we have only small corrections or we've done
+    /* Continue until either we have only small corrections or we've done
 	 as much work as a full orthogonalization (in terms of Mdots) */
-      } while (dnorm > 1.0e-16 && ncnt++ < it);
+  } while (dnorm > 1.0e-16 && ncnt++ < it);
 
   /* It would be nice to put ncnt somewhere.... */
 
