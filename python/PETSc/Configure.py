@@ -365,9 +365,9 @@ class Configure(config.base.Configure):
 
   def configureMissingFunctions(self):
     '''Checks for MISSING_GETPWUID and MISSING_SOCKETS'''
-    if not self.functions.defines.has_key(self.functions.getDefineName('getpwuid')):
+    if not self.functions.haveFunction('getpwuid'):
       self.addDefine('MISSING_GETPWUID', 1)
-    if not self.functions.defines.has_key(self.functions.getDefineName('socket')):
+    if not self.functions.haveFunction('socket'):
       self.addDefine('MISSING_SOCKETS', 1)
     return
 
@@ -384,10 +384,9 @@ class Configure(config.base.Configure):
   def configureMemorySize(self):
     '''Try to determine how to measure the memory usage'''
     # Should also check for using procfs and kbytes for size
-    if self.functions.defines.has_key(self.functions.getDefineName('sbreak')):
+    if self.functions.haveFunction('sbreak'):
       self.addDefine('USE_SBREAK_FOR_SIZE', 1)
-    elif not (self.headers.getDefineName('sys/resource.h') in self.headers.defines and
-              self.functions.getDefineName('getrusage') in self.functions.defines):
+    elif not (self.headers.haveHeader('sys/resource.h') and self.functions.haveFunction('getrusage')):
         self.addDefine('HAVE_NO_GETRUSAGE', 1)
     return
 
