@@ -3,12 +3,11 @@
 The solution of large-scale partial differential equations arises in
 the numerical modeling of a wide range scientific applications.
 PETSc, the Portable, Extensible Toolkit for Scientific Computation
-(http://www.mcs.anl.gov/petsc) is a suite of data structures and
-routines for the uni- and parallel-processor solution of such systems.
-The software runs under UNIX (including the Cray T3E, SGI Origin2000,
-and Linux) as well as Windows 9X/NT and is currently installed at over
-two hundred user sites around the world.  Our small team designs,
-develops, and maintains the software.
+(http://www.mcs.anl.gov/petsc) is an object oriented library for the
+solution of such systems.  The software runs under UNIX (including the
+Cray T3E, SGI Origin2000, and Linux) as well as Windows 9X/NT and is
+currently installed at over two hundred user sites around the world.
+Our small team designs, develops, and maintains the software.
 
 We invite Stephen Moser to join our group for the fall semester.  His
 contributions would include
@@ -23,5 +22,5 @@ equations.
 
 The MCS Division of Argonne National Laboratory has an 80-node IBM SP,
 a PC cluster running Linux, a 96-node SGI Origin2000, as well as two
-smaller SGI machines with InfinityReality graphics engines. In
+smaller SGI machines with InfiniteReality graphics engines. In
 addition, we have access to a 512-node Cray T3E. 
