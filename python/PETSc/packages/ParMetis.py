@@ -44,10 +44,7 @@ class Configure(PETSc.package.Package):
       oldArgsStr = ''
     if not oldArgsStr == argsStr:
       self.framework.log.write('Have to rebuild ParMetis oldargs = '+oldArgsStr+' new args '+argsStr+'\n')
-      self.framework.logClear()
-      self.logPrint('=================================================================================', debugSection='screen')
-      self.logPrint("      Configuring and compiling ParMetis; this may take several minutes\n", debugSection='screen')
-      self.logPrint('=================================================================================\n', debugSection='screen')
+      self.logPrintBox('Configuring and compiling ParMetis; this may take several minutes')
       try:
         import logging
         import sys
@@ -58,16 +55,16 @@ class Configure(PETSc.package.Package):
         logging.Logger.defaultLog = file(os.path.join(parmetisDir, 'build.log'), 'w')
         oldLevel = self.argDB['debugLevel']
         #self.argDB['debugLevel'] = 0
-        oldIgnore = self.argDB['ignoreCompileOutput']
-        #self.argDB['ignoreCompileOutput'] = 1
+        oldIgnore = self.framework.argDB['ignoreCompileOutput']
+        self.framework.argDB['ignoreCompileOutput'] = 1
         if os.path.exists('RDict.db'):
           os.remove('RDict.db')
         if os.path.exists('bsSource.db'):
           os.remove('bsSource.db')
-        make = self.getModule(parmetisDir, 'make').Make(clArgs = sys.argv[1:]+map(lambda s: s.replace('"', ''), args))
+        make = self.getModule(parmetisDir, 'make').Make(clArgs = sys.argv[1:]+map(lambda s: s.replace('"', ''), args)+['--ignoreCompileOutput=1'])
         make.prefix = installDir
         make.run()
-        self.argDB['ignoreCompileOutput'] = oldIgnore
+        self.framework.argDB['ignoreCompileOutput'] = oldIgnore
         self.argDB['debugLevel'] = oldLevel
         logging.Logger.defaultLog = oldLog
         os.chdir(oldDir)

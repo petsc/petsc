@@ -80,7 +80,7 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         pass
       try:
-        self.logPrint("Compiling Mumps; this may take several minutes\n", debugSection='screen')
+        self.logPrintBox('Compiling Mumps; this may take several minutes')
         output = config.base.Configure.executeShellCommand('cd '+mumpsDir+'; make all',timeout=2500, log = self.framework.log)[0]
         libDir     = os.path.join(installDir, self.libdir)
         includeDir = os.path.join(installDir, self.includedir)

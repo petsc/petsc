@@ -75,7 +75,7 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         pass
       try:
-        self.logPrint("Compiling Scalapack; this may take several minutes\n", debugSection='screen')
+        self.logPrintBox('Compiling Scalapack; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))

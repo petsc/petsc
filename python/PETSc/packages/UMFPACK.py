@@ -61,7 +61,7 @@ class Configure(PETSc.package.Package):
     if not oldargs == args:
       self.framework.log.write('Have to rebuild UMFPACK oldargs = '+oldargs+' new args '+args+'\n')
       try:
-        self.logPrint("Compiling umfpack; this may take several minutes\n", debugSection='screen')
+        self.logPrintBox('Compiling umfpack; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+umfpackDir+'; UMFPACK_INSTALL_DIR='+installDir+';export UMFPACK_INSTALL_DIR; cp -r UMFPACK '+self.arch.arch+'/.; cp -r AMD '+self.arch.arch+'/.; cd '+self.arch.arch+'/UMFPACK; make lib; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on UMFPACK: '+str(e))

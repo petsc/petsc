@@ -358,7 +358,7 @@ class Configure(config.base.Configure):
     if not oldargs == args:
       self.framework.log.write('Have to rebuild MPICH oldargs = '+oldargs+' new args '+args+'\n')
       try:
-        self.logPrint("Running configure on MPICH; this may take several minutes\n", debugSection='screen')
+        self.logPrintBox('Running configure on MPICH; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         if self.arch.hostOsBase.startswith('cygwin'):
@@ -371,7 +371,7 @@ class Configure(config.base.Configure):
   to specify the location of the installation when you rerun configure.')
         raise RuntimeError('Error running configure on MPICH: '+str(e))
       try:
-        self.logPrint("Running make on MPICH; this may take several minutes\n", debugSection='screen')
+        self.logPrintBox('Running make on MPICH; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         if self.arch.hostOsBase.startswith('cygwin'):

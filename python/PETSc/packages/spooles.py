@@ -49,7 +49,7 @@ class Configure(PETSc.package.Package):
     if not os.path.isfile(os.path.join(installDir,'Make.inc')) or not (self.getChecksum(os.path.join(installDir,'Make.inc')) == self.getChecksum(os.path.join(spoolesDir,'Make.inc'))):
       self.framework.log.write('Have to rebuild SPOOLES, Make.inc != '+installDir+'/Make.inc\n')
       try:
-        self.logPrint("Compiling spooles; this may take several minutes\n", debugSection='screen')
+        self.logPrintBox('Compiling spooles; this may take several minutes')
         if os.path.isfile(os.path.join(installDir,'Make.inc')):
           output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; rm -rf '+installDir, timeout=2500, log = self.framework.log)[0]
           os.mkdir(installDir)          

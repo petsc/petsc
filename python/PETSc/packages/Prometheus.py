@@ -8,15 +8,16 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
-    self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.parmetis     = self.framework.require('PETSc.packages.ParMetis',self)
-    self.download     = ['http://www.cs.berkeley.edu/~madams/Prometheus-1.8.0.tar.gz']
-    self.deps         = [self.parmetis,self.mpi,self.blasLapack]
-    self.functions    = None
-    self.includes     = None
-    self.liblist      = ['libpromfei.a','libprometheus.a'] 
-    self.cxx          = 1   # requires C++
+    self.mpi               = self.framework.require('PETSc.packages.MPI',self)
+    self.blasLapack        = self.framework.require('PETSc.packages.BlasLapack',self)
+    self.parmetis          = self.framework.require('PETSc.packages.ParMetis',self)
+    self.download          = ['http://www.cs.berkeley.edu/~madams/Prometheus-1.8.0.tar.gz']
+    self.deps              = [self.parmetis,self.mpi,self.blasLapack]
+    self.functions         = None
+    self.includes          = None
+    self.liblist           = ['libpromfei.a','libprometheus.a'] 
+    self.cxx               = 1   # requires C++
+    self.compilePrometheus = 0
     return
 
   def Install(self):
@@ -44,23 +45,26 @@ class Configure(PETSc.package.Package):
       oldargs = ''
     if not oldargs == args:
       self.framework.log.write('Have to rebuild Prometheus oldargs = '+oldargs+' new args '+args+'\n')
-      self.framework.logClear()      
-      self.logPrint('=================================================================================', debugSection='screen')
-      self.logPrint("         Configuring and compiling Prometheus; this may take several minutes\n", debugSection='screen')
-      self.logPrint('=================================================================================\n', debugSection='screen')
+      self.logPrintBox('Configuring and compiling Prometheus; this may take several minutes')
       fd = file(os.path.join(installDir,'makefile.in'),'w')
       fd.write(args)
       fd.close()
       fd = file(os.path.join(prometheusDir,'makefile.in'),'w')
       fd.write(args)
       fd.close()
-      output  = config.base.Configure.executeShellCommand('cd '+prometheusDir+'; make prometheus; mv '+os.path.join('lib','lib*.a')+' '+os.path.join(installDir,'lib'),timeout=250, log = self.framework.log)[0]
-      output  = config.base.Configure.executeShellCommand('cp '+os.path.join(prometheusDir,'include','*.*')+' '+os.path.join(prometheusDir,'fei_prom','*.h')+' '+os.path.join(installDir,'include'),timeout=250, log = self.framework.log)[0]      
+      self.compilePrometheus = 1
+      self.prometheusDir     = prometheusDir
+      self.installDir        = installDir
+    return prometheusDir
+
+def __del__(self):
+  if self.compilePrometheus:
+      output  = config.base.Configure.executeShellCommand('cd '+self.prometheusDir+'; Make prometheus; mv '+os.path.join('lib','lib*.a')+' '+os.path.join(self.installDir,'lib'),timeout=250, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cp '+os.path.join(self.prometheusDir,'include','*.*')+' '+os.path.join(self.prometheusDir,'fei_prom','*.h')+' '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)[0]      
       try:
-        output  = config.base.Configure.executeShellCommand(self.setcompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/libprometheus.a', timeout=250, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand(self.setcompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libprometheus.a', timeout=250, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on PROMETHEUS libraries: '+str(e))
-    return prometheusDir
 
 if __name__ == '__main__':
   import config.framework
