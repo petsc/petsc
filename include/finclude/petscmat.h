@@ -20,9 +20,7 @@
 #define MatOperation integer
 #define MatColoringType character*(80)
 #define MatInfo double precision
-#define MatILUInfo double precision
-#define MatLUInfo double precision
-#define MatCholeskyInfo double precision
+#define MatFactorInfo double precision
 #define MatDuplicateOption integer      
 #define MatStructure integer
 #define MatPartitioningType character*(80)
@@ -169,75 +167,37 @@
       parameter (MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3)
 
 !
-!  Note: MAT_ILUINFO_SIZE must equal # elements in MatILUInfo structure
+!  Note: MAT_FACTORINFO_SIZE must equal # elements in MatFactorInfo structure
 !  (See petsc/include/petscmat.h)
 !
-      integer   MAT_ILUINFO_SIZE
+      integer   MAT_FACTORINFO_SIZE
 
-      parameter (MAT_ILUINFO_SIZE=109)
+      parameter (MAT_FACTORINFO_SIZE=11)
 
-      integer MAT_ILUINFO_LEVELS
-      integer MAT_ILUINFO_FILL
-      integer MAT_ILUINFO_DIAGONAL_FILL
-      integer MAT_ILUINFO_DT
-      integer MAT_ILUINFO_DTCOL
-      integer MAT_ILUINFO_DTCOUNT
-      integer MAT_ILUINFO_DAMPING
-      integer MAT_ILUINFO_DAMP
-      integer MAT_ILUINFO_PIVOT_ZERO
-      integer MAT_ILUINFO_PIVOT_IN_BLOCKS
+      integer MAT_FACTORINFO_LEVELS
+      integer MAT_FACTORINFO_FILL
+      integer MAT_FACTORINFO_DIAGONAL_FILL
+      integer MAT_FACTORINFO_DT
+      integer MAT_FACTORINFO_DTCOL
+      integer MAT_FACTORINFO_DTCOUNT
+      integer MAT_FACTORINFO_DAMPING
+      integer MAT_FACTORINFO_LU_SHIFT
+      integer MAT_FACTORINFO_LU_SHIFT_FRACTION
+      integer MAT_FACTORINFO_ZERO_PIVOT
+      integer MAT_FACTORINFO_PIVOT_IN_BLOCKS
 
-      parameter (MAT_ILUINFO_LEVELS = 1)
-      parameter (MAT_ILUINFO_FILL = 2)
-      parameter (MAT_ILUINFO_DIAGONAL_FILL = 3)
-      parameter (MAT_ILUINFO_DT = 4)
-      parameter (MAT_ILUINFO_DTCOL = 5)
-      parameter (MAT_ILUINFO_DTCOUNT = 6)
-      parameter (MAT_ILUINFO_DAMPING = 7)
-      parameter (MAT_ILUINFO_DAMP = 8)
-      parameter (MAT_ILUINFO_PIVOT_ZERO = 9)
-      parameter (MAT_ILUINFO_PIVOT_IN_BLOCKS = 10)
+      parameter (MAT_FACTORINFO_DAMPING = 1)
+      parameter (MAT_FACTORINFO_LU_SHIFT = 2)
+      parameter (MAT_FACTORINFO_LU_SHIFT_FRACTION = 3)
+      parameter (MAT_FACTORINFO_DIAGONAL_FILL = 4)
+      parameter (MAT_FACTORINFO_DT = 5)
+      parameter (MAT_FACTORINFO_DTCOL = 6)
+      parameter (MAT_FACTORINFO_DTCOUNT = 7)
+      parameter (MAT_FACTORINFO_LEVELS = 8)
+      parameter (MAT_FACTORINFO_FILL = 9)
+      parameter (MAT_FACTORINFO_PIVOT_IN_BLOCKS = 10)
+      parameter (MAT_FACTORINFO_ZERO_PIVOT = 11)
 
-!
-!  Note: MAT_LUINFO_SIZE must equal # elements in MatLUInfo structure
-!  (See petsc/include/petscmat.h)
-!
-      integer   MAT_LUINFO_SIZE
-
-      parameter (MAT_LUINFO_SIZE = 6)
-
-      integer MAT_LUINFO_FILL
-      integer MAT_LUINFO_DTCOL
-      integer MAT_LUINFO_DAMPING
-      integer MAT_LUINFO_DAMP
-      integer MAT_LUINFO_PIVOT_ZERO
-      integer MAT_LUINFO_PIVOT_IN_BLOCKS
-
-      parameter (MAT_LUINFO_FILL  = 1)
-      parameter (MAT_LUINFO_DTCOL = 2)
-      parameter (MAT_LUINFO_DAMPING = 3)
-      parameter (MAT_LUINFO_DAMP = 4)
-      parameter (MAT_LUINFO_PIVOT_ZERO = 5)
-      parameter (MAT_LUINFO_PIVOT_IN_BLOCKS = 6)
-
-
-!
-!  Note: MAT_CHOLESKYINFO_SIZE must equal # elements in MatCholeskyInfo structure
-!  (See petsc/include/petscmat.h)
-!
-      integer   MAT_CHOLESKYINFO_SIZE
-
-      parameter (MAT_CHOLESKYINFO_SIZE = 4)
-
-      integer MAT_CHOLESKYINFO_FILL
-      integer MAT_CHOLESKYINFO_DAMPING
-      integer MAT_CHOLESKYINFO_DAMP
-      integer MAT_CHOLESKYINFO_PIVOTINBLOCKS
-
-      parameter (MAT_CHOLESKYINFO_FILL  = 1)
-      parameter (MAT_CHOLESKYINFO_DAMPING = 2)
-      parameter (MAT_CHOLESKYINFO_DAMP = 3)
-      parameter (MAT_CHOLESKYINFO_PIVOTINBLOCKS = 4)
 
 !
 !  Options for SOR and SSOR
