@@ -108,7 +108,7 @@ int CalcRhs(MRC mrc, Vec B, Vec X, Vec Rhs, PetscReal *cfl)
 	ierr = DAVecGetArray(da, Blocal, &f); CE;
 	ierr = DAVecGetArray(da, Rhs   , &rhs); CE;
 
-	DA_for_each_point(da, i, j) {
+	DA_for_each_point_2d(da, i, j) {
 #ifdef EQ
 		  PetscReal x = mrc->Lx*i/mx;
 		  by_eq  = sin(x);
@@ -220,7 +220,7 @@ int PoiCalcRhs(Poi poi, Vec X, Vec B)
 	ierr = DAVecGetArray(da, Xlocal, &x); CE;
 	ierr = DAVecGetArray(da, B     , &b); CE;
 
-	DA_for_each_point(da, i, j) {
+ 	DA_for_each_point_2d(da, i, j) {
 		b[j][i].U = D_2(x, phi);
 		b[j][i].F = x[j][i].psi - de2 * D_2(x, psi);
 	}
@@ -275,7 +275,7 @@ int PoiSolve(Poi poi, Vec B, Vec X)
 	// U / phi
 
 	lambda = 0;
-	DA_for_each_point(da, i, j) {
+	DA_for_each_point_2d(da, i, j) {
 		f[i + j * MXS] = b[j][i].U;
 	}
 	for (j = 0; j < MY; j++) {
@@ -288,14 +288,14 @@ int PoiSolve(Poi poi, Vec B, Vec X)
 		&xb[1], &xe[1], &MY, &nbdcnd, NULL, NULL,
 		&lambda, f, &MXS, &__pertrb[0], &ierr, w); CE;
 	
-	DA_for_each_point(da, i, j) {
+	DA_for_each_point_2d(da, i, j) {
 		x[j][i].phi = f[i + j * MXS];
 	}
 
 	// F / psi
 
 	lambda = -1./de2;
-	DA_for_each_point(da, i, j) {
+	DA_for_each_point_2d(da, i, j) {
 		f[i + j * MXS] = lambda * b[j][i].F;
 	}
 	for (j = 0; j < MY; j++) {
@@ -308,7 +308,7 @@ int PoiSolve(Poi poi, Vec B, Vec X)
 		&xb[1], &xe[1], &MY, &nbdcnd, NULL, NULL,
 		&lambda, f, &MXS, &__pertrb[1], &ierr, w); CE;
 	
-	DA_for_each_point(da, i, j) {
+	DA_for_each_point_2d(da, i, j) {
 		x[j][i].psi = f[i + j * MXS];
 	}
 
@@ -355,7 +355,7 @@ int ComputeJacobian(DMMG dmmg, Mat J)
 	HxdHy = Hx / Hy;    HydHx = Hy / Hx;
 	HxHy = Hx * Hy;     Hdiag = -2.*(HxdHy + HydHx);
 
-	DA_for_each_point(da, i, j) {
+	DA_for_each_point_2d(da, i, j) {
 		row.i = i; row.j = j; row.c = 0;
 		v[0] = HydHx;          col[0].i = i+1; col[0].j = j;   col[0].c = 0;
 		v[1] = HydHx;          col[1].i = i-1; col[1].j = j;   col[1].c = 0;
@@ -554,7 +554,7 @@ int IniPorcelli(MRC mrc)
 
 	ierr = DAGetGlobalVector(da, &X); CE;
 	ierr = DAVecGetArray(da, X, &v); CE;
-	DA_for_each_point(da, i, j) {
+	DA_for_each_point_2d(da, i, j) {
 		x = mrc->Sx + mrc->Lx*i/mx;
 		y = mrc->Sy + mrc->Ly*j/my;
 		

@@ -11,14 +11,14 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 static inline void
-__for_each_point_first(DA da, int *i, int *j)
+__for_each_point_first_2d(DA da, int *i, int *j)
 {
 	*i = da->xs / da->w - 1;
 	*j = da->ys;
 }
 
 static inline int
-__for_each_point_next(DA da, int *i, int *j)
+__for_each_point_next_2d(DA da, int *i, int *j)
 {
 	if (++(*i) >= da->xe / da->w) {
 		if (++(*j) >= da->ye)
@@ -28,9 +28,9 @@ __for_each_point_next(DA da, int *i, int *j)
 	return 1;
 }
 
-#define DA_for_each_point(da, i, j) \
-        for (__for_each_point_first(da, &(i), &(j)); \
-             __for_each_point_next(da, &(i), &(j)); )
+#define DA_for_each_point_2d(da, i, j) \
+        for (__for_each_point_first_2d(da, &(i), &(j)); \
+             __for_each_point_next_2d(da, &(i), &(j)); )
 
 
 
