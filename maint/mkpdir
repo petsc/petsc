@@ -1,5 +1,7 @@
 #! /bin/sh
 mkdir $1
 chmod g+ws $1
+chgrp pdetools $1
 mkdir $1/RCS
 chmod g+ws $1/RCS
+chgrp pdetools $1/RCS
