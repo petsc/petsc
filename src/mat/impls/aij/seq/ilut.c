@@ -1,41 +1,117 @@
+/*$Id: aijfact.c,v 1.136 1999/12/16 23:35:48 bsmith Exp bsmith $*/
 /* ilut.f -- translated by f2c (version of 25 March 1992  12:58:56).
-   You must link the resulting object file with the libraries:
-	-lF77 -lI77 -lm -lc   (in that order)
+
+        This code is protected by the GNU copyright. See the file 
+     gnu in this directory. See below for the Author.
 */
+#include "petsc.h"
 
-#include <f2c.h>
-
-/* ---------------------------------------------------------------------- */
-/* Subroutine */ int ilutp_(n, a, ja, ia, lfil, droptol, permtol, mbloc, alu, 
-	jlu, ju, iwk, w, jw, iperm, ierr)
-integer *n;
-doublereal *a;
-integer *ja, *ia, *lfil;
-doublereal *droptol, *permtol;
-integer *mbloc;
-doublereal *alu;
-integer *jlu, *ju, *iwk;
-doublereal *w;
-integer *jw, *iperm, *ierr;
+static int SPARSEKIT2qsplit(Scalar *a, int *ind, int *n, int *ncut)
 {
     /* System generated locals */
-    integer i__1, i__2;
-    doublereal d__1;
+    int i__1;
+    Scalar d__1;
 
     /* Local variables */
-    static doublereal fact;
-    static integer lenl, imax, lenu, icut, jpos;
-    static doublereal xmax;
-    static integer jrow;
-    static doublereal xmax0;
-    static integer i, j, k;
-    static doublereal s, t;
-    static integer j1, j2;
-    static doublereal tnorm;
-    static integer ii, jj;
-    extern /* Subroutine */ int qsplit_();
-    static integer ju0, len;
-    static doublereal tmp;
+    static int last, itmp, j, first;
+    double abskey;
+    static int mid;
+    static Scalar tmp;
+
+/* -----------------------------------------------------------------------
+ */
+/*     does a quick-sort split of a real array. */
+/*     on input a(1:n). is a real array */
+/*     on output a(1:n) is permuted such that its elements satisfy: */
+
+/*     abs(a(i)) .ge. abs(a(ncut)) for i .lt. ncut and */
+/*     abs(a(i)) .le. abs(a(ncut)) for i .gt. ncut */
+
+/*    ind(1:n) is an integer array which permuted in the same way as a(*).
+*/
+/* -----------------------------------------------------------------------
+ */
+/* ----- */
+    /* Parameter adjustments */
+    --ind;
+    --a;
+
+    /* Function Body */
+    first = 1;
+    last = *n;
+    if (*ncut < first || *ncut > last) {
+	return 0;
+    }
+
+/*     outer loop -- while mid .ne. ncut do */
+
+L1:
+    mid = first;
+    abskey = (d__1 = a[mid], PetscAbsScalar(d__1));
+    i__1 = last;
+    for (j = first + 1; j <= i__1; ++j) {
+	if ((d__1 = a[j], PetscAbsScalar(d__1)) > abskey) {
+	    ++mid;
+/*     interchange */
+	    tmp = a[mid];
+	    itmp = ind[mid];
+	    a[mid] = a[j];
+	    ind[mid] = ind[j];
+	    a[j] = tmp;
+	    ind[j] = itmp;
+	}
+/* L2: */
+    }
+
+/*     interchange */
+
+    tmp = a[mid];
+    a[mid] = a[first];
+    a[first] = tmp;
+
+    itmp = ind[mid];
+    ind[mid] = ind[first];
+    ind[first] = itmp;
+
+/*     test for while loop */
+
+    if (mid == *ncut) {
+	return 0;
+    }
+    if (mid > *ncut) {
+	last = mid - 1;
+    } else {
+	first = mid + 1;
+    }
+    goto L1;
+/* ----------------end-of-qsplit------------------------------------------
+ */
+/* -----------------------------------------------------------------------
+ */
+} /* qsplit_ */
+
+
+/* ---------------------------------------------------------------------- */
+static int SPARSEKIT2ilutp(int *n,Scalar *a,int *ja,int * ia,int *lfil,double *droptol,double *permtol,int *mbloc,Scalar *alu, 
+	int *jlu, int *ju, int *iwk, Scalar *w, int *jw,   int *iperm, int *ierr)
+{
+    /* System generated locals */
+    int i__1, i__2;
+    Scalar d__1;
+
+    /* Local variables */
+    static Scalar fact;
+    static int lenl, imax, lenu, icut, jpos;
+    double xmax;
+    static int jrow;
+    double xmax0;
+    static int i, j, k;
+    Scalar s, t;
+    static int j1, j2;
+    double tnorm,t1;
+    static int ii, jj;
+    static int ju0, len;
+    static Scalar tmp;
 
 /* -----------------------------------------------------------------------
  */
@@ -195,7 +271,7 @@ integer *jw, *iperm, *ierr;
 	tnorm = 0.;
 	i__2 = j2;
 	for (k = j1; k <= i__2; ++k) {
-	    tnorm += (d__1 = a[k], abs(d__1));
+	    tnorm += (d__1 = a[k], PetscAbsScalar(d__1));
 /* L501: */
 	}
 	if (tnorm == 0.) {
@@ -286,7 +362,7 @@ ect */
 
 /*     drop term if small */
 
-	if (abs(fact) <= *droptol) {
+	if (PetscAbsScalar(fact) <= *droptol) {
 	    goto L150;
 	}
 
@@ -364,11 +440,11 @@ L160:
 /*     update L-matrix */
 
 	lenl = len;
-	len = min(lenl,*lfil);
+	len = PetscMin(lenl,*lfil);
 
 /*     sort by quick-split */
 
-	qsplit_(&w[1], &jw[1], &lenl, &len);
+	SPARSEKIT2qsplit(&w[1], &jw[1], &lenl, &len);
 
 /*     store L-part -- in original coordinates .. */
 
@@ -392,29 +468,29 @@ L160:
 	len = 0;
 	i__2 = lenu - 1;
 	for (k = 1; k <= i__2; ++k) {
-	    if ((d__1 = w[ii + k], abs(d__1)) > *droptol * tnorm) {
+	    if ((d__1 = w[ii + k], PetscAbsScalar(d__1)) > *droptol * tnorm) {
 		++len;
 		w[ii + len] = w[ii + k];
 		jw[ii + len] = jw[ii + k];
 	    }
 	}
 	lenu = len + 1;
-	len = min(lenu,*lfil);
+	len = PetscMin(lenu,*lfil);
 	i__2 = lenu - 1;
-	qsplit_(&w[ii + 1], &jw[ii + 1], &i__2, &len);
+	SPARSEKIT2qsplit(&w[ii + 1], &jw[ii + 1], &i__2, &len);
 
 /*     determine next pivot -- */
 
 	imax = ii;
-	xmax = (d__1 = w[imax], abs(d__1));
+	xmax = (d__1 = w[imax], PetscAbsScalar(d__1));
 	xmax0 = xmax;
 	icut = ii - 1 + *mbloc - (ii - 1) % *mbloc;
 	i__2 = ii + len - 1;
 	for (k = ii + 1; k <= i__2; ++k) {
-	    t = (d__1 = w[k], abs(d__1));
-	    if (t > xmax && t * *permtol > xmax0 && jw[k] <= icut) {
+	    t1 = (d__1 = w[k], PetscAbsScalar(d__1));
+	    if (t1 > xmax && t1 * *permtol > xmax0 && jw[k] <= icut) {
 		imax = k;
-		xmax = t;
+		xmax = t1;
 	    }
 	}
 
@@ -521,90 +597,4 @@ L999:
 /* -----------------------------------------------------------------------
  */
 } /* ilutp_ */
-
-/* Subroutine */ int qsplit_(a, ind, n, ncut)
-doublereal *a;
-integer *ind, *n, *ncut;
-{
-    /* System generated locals */
-    integer i__1;
-    doublereal d__1;
-
-    /* Local variables */
-    static integer last, itmp, j, first;
-    static doublereal abskey;
-    static integer mid;
-    static doublereal tmp;
-
-/* -----------------------------------------------------------------------
- */
-/*     does a quick-sort split of a real array. */
-/*     on input a(1:n). is a real array */
-/*     on output a(1:n) is permuted such that its elements satisfy: */
-
-/*     abs(a(i)) .ge. abs(a(ncut)) for i .lt. ncut and */
-/*     abs(a(i)) .le. abs(a(ncut)) for i .gt. ncut */
-
-/*    ind(1:n) is an integer array which permuted in the same way as a(*).
-*/
-/* -----------------------------------------------------------------------
- */
-/* ----- */
-    /* Parameter adjustments */
-    --ind;
-    --a;
-
-    /* Function Body */
-    first = 1;
-    last = *n;
-    if (*ncut < first || *ncut > last) {
-	return 0;
-    }
-
-/*     outer loop -- while mid .ne. ncut do */
-
-L1:
-    mid = first;
-    abskey = (d__1 = a[mid], abs(d__1));
-    i__1 = last;
-    for (j = first + 1; j <= i__1; ++j) {
-	if ((d__1 = a[j], abs(d__1)) > abskey) {
-	    ++mid;
-/*     interchange */
-	    tmp = a[mid];
-	    itmp = ind[mid];
-	    a[mid] = a[j];
-	    ind[mid] = ind[j];
-	    a[j] = tmp;
-	    ind[j] = itmp;
-	}
-/* L2: */
-    }
-
-/*     interchange */
-
-    tmp = a[mid];
-    a[mid] = a[first];
-    a[first] = tmp;
-
-    itmp = ind[mid];
-    ind[mid] = ind[first];
-    ind[first] = itmp;
-
-/*     test for while loop */
-
-    if (mid == *ncut) {
-	return 0;
-    }
-    if (mid > *ncut) {
-	last = mid - 1;
-    } else {
-	first = mid + 1;
-    }
-    goto L1;
-/* ----------------end-of-qsplit------------------------------------------
- */
-/* -----------------------------------------------------------------------
- */
-} /* qsplit_ */
 

@@ -1,24 +1,19 @@
+/*$Id: aijfact.c,v 1.136 1999/12/16 23:35:48 bsmith Exp bsmith $*/
 /* unary.f -- translated by f2c (version of 25 March 1992  12:58:56).
-   You must link the resulting object file with the libraries:
-	-lF77 -lI77 -lm -lc   (in that order)
+
+        This code is protected by the GNU copyright. See the file 
+     gnu in this directory. See below for the Author.
 */
-
-#include <f2c.h>
-
+#include "petsc.h"
 /* ----------------------------------------------------------------------- */
-/* Subroutine */ int rperm_(nrow, a, ja, ia, ao, jao, iao, perm, job)
-integer *nrow;
-doublereal *a;
-integer *ja, *ia;
-doublereal *ao;
-integer *jao, *iao, *perm, *job;
+static int SPARSEKIT2rperm(int *nrow, Scalar *a,int *ja,int *ia,Scalar *ao,int *jao,int *iao,int *perm,int *job)
 {
     /* System generated locals */
-    integer i__1, i__2;
+    int i__1, i__2;
 
     /* Local variables */
-    static integer i, j, k, ii, ko;
-    static logical values;
+    static int i, j, k, ii, ko;
+    static int values;
 
 /* -----------------------------------------------------------------------
  */
@@ -119,18 +114,13 @@ integer *jao, *iao, *perm, *job;
 } /* rperm_ */
 
 /* ----------------------------------------------------------------------- */
-/* Subroutine */ int cperm_(nrow, a, ja, ia, ao, jao, iao, perm, job)
-integer *nrow;
-doublereal *a;
-integer *ja, *ia;
-doublereal *ao;
-integer *jao, *iao, *perm, *job;
+static int SPARSEKIT2cperm(int *nrow,Scalar * a,int * ja,int * ia,Scalar * ao,int * jao,int * iao,int * perm,int * job)
 {
     /* System generated locals */
-    integer i__1;
+    int i__1;
 
     /* Local variables */
-    static integer i, k, nnz;
+    static int i, k, nnz;
 
 /* -----------------------------------------------------------------------
  */
@@ -221,15 +211,9 @@ integer *jao, *iao, *perm, *job;
 } /* cperm_ */
 
 /* ----------------------------------------------------------------------- */
-/* Subroutine */ int dperm_(nrow, a, ja, ia, ao, jao, iao, perm, qperm, job)
-integer *nrow;
-doublereal *a;
-integer *ja, *ia;
-doublereal *ao;
-integer *jao, *iao, *perm, *qperm, *job;
+int SPARSEKIT2dperm(int *nrow,Scalar *a,int *ja,int *ia,Scalar *ao,int *jao,int *iao,int *perm,int *qperm,int *job)
 {
-    extern /* Subroutine */ int cperm_(), rperm_();
-    static integer locjob;
+    static int locjob;
 
 /* -----------------------------------------------------------------------
  */
@@ -305,19 +289,16 @@ integer *jao, *iao, *perm, *qperm, *job;
 
 /* permute rows first */
 
-    rperm_(nrow, &a[1], &ja[1], &ia[1], &ao[1], &jao[1], &iao[1], &perm[1], &
-	    locjob);
+    SPARSEKIT2rperm(nrow, &a[1], &ja[1], &ia[1], &ao[1], &jao[1], &iao[1], &perm[1], &locjob);
 
 /* then permute columns */
 
     locjob = 0;
 
     if (*job <= 2) {
-	cperm_(nrow, &ao[1], &jao[1], &iao[1], &ao[1], &jao[1], &iao[1], &
-		perm[1], &locjob);
+	SPARSEKIT2cperm(nrow, &ao[1], &jao[1], &iao[1], &ao[1], &jao[1], &iao[1], &perm[1], &locjob);
     } else {
-	cperm_(nrow, &ao[1], &jao[1], &iao[1], &ao[1], &jao[1], &iao[1], &
-		qperm[1], &locjob);
+	SPARSEKIT2cperm(nrow, &ao[1], &jao[1], &iao[1], &ao[1], &jao[1], &iao[1], &qperm[1], &locjob);
     }
 
     return 0;
@@ -328,22 +309,15 @@ integer *jao, *iao, *perm, *qperm, *job;
 } /* dperm_ */
 
 /* ----------------------------------------------------------------------- */
-/* Subroutine */ int msrcsr_(n, a, ja, ao, jao, iao, wk, iwk)
-integer *n;
-doublereal *a;
-integer *ja;
-doublereal *ao;
-integer *jao, *iao;
-doublereal *wk;
-integer *iwk;
+/* Subroutine */ int msrcsr_(int *n,Scalar * a,int * ja,Scalar * ao,int * jao,int * iao,Scalar * wk,int * iwk)
 {
     /* System generated locals */
-    integer i__1, i__2;
+    int i__1, i__2;
 
     /* Local variables */
-    static integer iptr;
-    static logical added;
-    static integer i, j, k, idiag, ii;
+    static int iptr;
+    static int added;
+    static int i, j, k, idiag, ii;
 
 /* -----------------------------------------------------------------------
  */
@@ -403,7 +377,7 @@ integer *iwk;
 /* --------- */
     i__1 = *n;
     for (ii = 1; ii <= i__1; ++ii) {
-	added = FALSE_;
+	added = 0;
 	idiag = iptr + (iwk[ii + 1] - iwk[ii]);
 	i__2 = iwk[ii + 1] - 1;
 	for (k = iwk[ii]; k <= i__2; ++k) {
@@ -420,7 +394,7 @@ integer *iwk;
 /* add diag element - only reserve a position for it. */
 		idiag = iptr;
 		++iptr;
-		added = TRUE_;
+		added = 1;
 /*     then other element */
 		ao[iptr] = a[k];
 		jao[iptr] = j;

@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.135 1999/12/16 23:32:24 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.136 1999/12/16 23:35:48 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -20,26 +20,9 @@ int MatOrdering_Flow_SeqAIJ(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 extern int MatMarkDiagonal_SeqAIJ(Mat);
 extern int Mat_AIJ_CheckInode(Mat);
 
-#if !defined(PETSC_USE_COMPLEX) && defined(PETSC_HAVE_SAADILUDT)
-
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dperm_  DPERM
-#define ilutp_  ILUTP
-#define ilu0_   ILU0
-#define msrcsr_ MSRCSR
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define dperm_  dperm
-#define ilutp_  ilutp
-#define ilu0_   ilu0
-#define msrcsr_ msrcsr
-#endif
-
-EXTERN_C_BEGIN
-extern void dperm_(int*,double*,int*,int*,double*,int*,int*,int*,int*,int*);
-extern void ilutp_(int*,double*,int*,int*,int*,double*,double*,int*,double*,int*,int*,int*,double*,int*,int*,int*);
-extern void msrcsr_(int*,double*,int*,double*,int*,int*,double*,int*);
-extern void ilu0_(int*,double*,int*,int*,double*,int*,int*,int*,int *);
-EXTERN_C_END
+extern int SPARSEKIT2dperm(int*,Scalar*,int*,int*,Scalar*,int*,int*,int*,int*,int*);
+extern int SPARSEKIT2ilutp(int*,Scalar*,int*,int*,int*,double*,double*,int*,Scalar*,int*,int*,int*,Scalar*,int*,int*,int*);
+extern int SPARSEKIT2msrcsr(int*,Scalar*,int*,Scalar*,int*,int*,Scalar*,int*);
 
 #undef __FUNC__  
 #define __FUNC__ "MatILUDTFactor_SeqAIJ"
@@ -48,26 +31,22 @@ EXTERN_C_END
           This interface was contribed by Tony Caola
 
      This routine is an interface to the pivoting drop-tolerance 
-     ILU routine written by Yousef Saad (saad@cs.umn.edu).  It 
-     was inspired by the non-pivoting iludt written by David
-     Hysom (hysom@cs.odu.edu).  
+     ILU routine written by Yousef Saad (saad@cs.umn.edu) as part of 
+     SPARSEKIT2.
+
+     The SPARSEKIT2 routines used here are covered by the GNU 
+     copyright; see the file gnu in this directory.
 
      Thanks to Prof. Saad, Dr. Hysom, and Dr. Smith for their
      help in getting this routine ironed out.
 
-     As of right now, there are a couple of things that could
-     be, uh, better.
+     The major drawback to this routine is that if info->fill is 
+     not large enough it fails rather than allocating more space;
+     this can be fixed by hacking/improving the f2c version of 
+     Yousef Saad's code.
 
-     1 - Since Saad's routine is Fortran based, memory cannot be
-     malloc'd.  I was trying to get the expected fill from the 
-     preconditioner and use this number as the multiplier in
-     the equation for jmax, below, but couldn't figure it out.  
-     Anyway, perhaps a better solution is to run SPARSKIT through
-     f2c and incorporate mallocs(), but I want to graduate so I'll
-     just rebuild Petsc. . .
-
-     shift = 1, ishift = 0, for indices start at 1
-     shift = 0, ishift = 1, for indices starting at 0
+     ishift = 0, for indices start at 1
+     ishift = 1, for indices starting at 0
      ------------------------------------------------------------
   */
 
@@ -76,12 +55,13 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b;
   IS         iscolf, isicol, isirow;
   PetscTruth reorder;
-  int        *c,*r,*ic,*ir, ierr, i, n = a->m;
+  int        *c,*r,*ic,ierr, i, n = a->m;
   int        *old_i = a->i, *old_j = a->j, *new_i, *old_i2, *old_j2,*new_j;
   int        *ordcol, *iwk,*iperm, *jw;
-  int        ishift = !a->indexshift,shift = -a->indexshift;
+  int        ishift = !a->indexshift;
   int        jmax,lfill,job,*o_i,*o_j;
-  Scalar     *old_a = a->a, *w, *new_a, *old_a2, *wk,permtol=0.0,*o_a;
+  Scalar     *old_a = a->a, *w, *new_a, *old_a2, *wk,*o_a;
+  double     permtol;
 
   PetscFunctionBegin;
 
@@ -139,7 +119,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
     old_i2 = (int *) PetscMalloc((n+1)*sizeof(int)); CHKPTRQ(old_i2);
     old_j2 = (int *) PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(int)); CHKPTRQ(old_j2);
     old_a2 = (Scalar *) PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(Scalar));CHKPTRQ(old_a2);
-    job = 3; dperm_(&n,old_a,old_j,old_i,old_a2,old_j2,old_i2,r,c,&job);
+    job = 3; SPARSEKIT2dperm(&n,old_a,old_j,old_i,old_a2,old_j2,old_i2,r,c,&job);
     for (i=0;i<n;i++) {
       r[i]  = r[i]-1;
       c[i]  = c[i]-1;
@@ -164,19 +144,14 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   jw      = (int *)    PetscMalloc(2*n*sizeof(int)); CHKPTRQ(jw);
   w       = (Scalar *) PetscMalloc(n*sizeof(Scalar)); CHKPTRQ(w);
 
-  ilutp_(&n,o_a,o_j,o_i,&lfill,&info->dt,&permtol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&ierr); 
+  SPARSEKIT2ilutp(&n,o_a,o_j,o_i,&lfill,&info->dt,&permtol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&ierr); 
   if (ierr) {
     switch (ierr) {
       case -3: SETERRQ1(1,1,"ilutp(), matrix U overflows, need larger info->fill value %d",jmax);
-               break;
       case -2: SETERRQ1(1,1,"ilutp(), matrix L overflows, need larger info->fill value %d",jmax);
-               break;
       case -5: SETERRQ(1,1,"ilutp(), zero row encountered");
-               break;
       case -1: SETERRQ(1,1,"ilutp(), input matrix may be wrong");
-               break;
       case -4: SETERRQ1(1,1,"ilutp(), illegal info->fill value %d",jmax);
-               break;
       default: SETERRQ1(1,1,"ilutp(), zero pivot detected on row %d",ierr);
     }
   }
@@ -193,7 +168,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   wk  = (Scalar *)    PetscMalloc(n*sizeof(Scalar)); CHKPTRQ(wk);   
   iwk = (int *) PetscMalloc((n+1)*sizeof(int)); CHKPTRQ(iwk);
 
-  msrcsr_(&n,new_a,new_j,new_a,new_j,new_i,wk,iwk);
+  SPARSEKIT2msrcsr(&n,new_a,new_j,new_a,new_j,new_i,wk,iwk);
 
   ierr = PetscFree(iwk);CHKERRQ(ierr);
   ierr = PetscFree(wk);CHKERRQ(ierr);
@@ -279,15 +254,6 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
 
   PetscFunctionReturn(0);
 }
-#else
-#undef __FUNC__  
-#define __FUNC__ "MatILUDTFactor_SeqAIJ"
-int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,1,"You must install Saad's ILUDT to use this");
-}
-#endif
 
 /*
     Factorization code for AIJ format. 
