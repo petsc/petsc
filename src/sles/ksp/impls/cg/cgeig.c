@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.11 1995/07/08 18:05:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.12 1995/07/17 03:53:53 bsmith Exp curfman $";
 #endif
 /*                       
 
@@ -19,23 +19,27 @@ static int ccgtql1_private(int *, Scalar *, Scalar *, int *);
 
 /*@
     KSPCGGetEigenvalues - Called after running KSPSolve (with KSPCG),
-    returns the extreme eigenvalues of the 
-    preconditioned problem as calculated by Lanczos. 
+    returns the extreme eigenvalues of the preconditioned problem as 
+    calculated by the Lanczos method.
 
     Input Parameters:
-.    itP  -  iterative context
-.    n    - number of iterations of CG run
+.   itP - KSP context
+.   n   - number of iterations of CG run
     
     Output Parameters:
-.    emax,emin  - the extreme eigenvalues
+.   emax, emin  - the extreme eigenvalues
 
     Notes:
-    One must call 
-    KSPSetCalculateEigenvalues() before calling KSPSetUp in order for this 
-    to work.  
+    One must call KSPSetCalculateEigenvalues() before calling KSPSetUp() 
+    in order for this routine to work correctly.  
+
+    KSPCGGetEigenvalues() is called by KSPCGDefaultMonitor().
+
+.keywords: KSP, CG, get, extreme, eigenvalues, Lanczos
+
+.seealso: KSPCGDefaultMonitor()
 @*/
 int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
-
 {
   KSP_CG *cgP;
   double *d, *e, *dd, *ee;
@@ -67,13 +71,20 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
 /*@
     KSPCGDefaultMonitor - Default iterative monitor routine for CG;
     it prints the two norm of the true residual and estimation from
-    Lanczo of the extreme eigenvalues of the preconditioned problem
-    at each iteration.
+    the Lanczos method of the extreme eigenvalues of the preconditioned 
+    problem at each iteration.
  
     Input Parameters:
 .   itP - the iterative context
 .   n  - the iteration
 .   rnorm - the two norm of the residual
+
+    Note:
+    This monitor routine calls KSPCGGetEigenvalues().
+
+.keywords: KSP, CG, default, monitor, extreme, eigenvalues, Lanczos
+
+.seealso: KSPCGGetEigenvalues()
 @*/
 int KSPCGDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
 {
@@ -104,10 +115,6 @@ int KSPCGDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
    Eispack routine to determine eigenvalues of symmetric 
    tridiagonal matrix 
 */
-
-#define MAX(a,b)           ((a) > (b) ? (a) : (b))
-#define MIN(a,b)           ((a) < (b) ? (a) : (b))
-#define ABS(a)             ((a) < 0.0 ? -(a) : (a))
 
 static double c_b10 = 1.;
 static double cgpthy_private(double*,double*);
@@ -322,15 +329,15 @@ static double cgpthy_private(double *a, double *b)
 
 
 /* Computing MAX */
-    d__1 = ABS(*a), d__2 = ABS(*b);
-    p = MAX(d__1,d__2);
+    d__1 = PETSCABS(*a), d__2 = PETSCABS(*b);
+    p = PETSCMAX(d__1,d__2);
     if (p == 0.) {
         goto L20;
     }
 /* Computing MIN */
-    d__2 = ABS(*a), d__3 = ABS(*b);
+    d__2 = PETSCABS(*a), d__3 = PETSCABS(*b);
 /* Computing 2nd power */
-    d__1 = MIN(d__2,d__3) / p;
+    d__1 = PETSCMIN(d__2,d__3) / p;
     r = d__1 * d__1;
 L10:
     t = r + 4.;
