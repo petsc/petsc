@@ -62,6 +62,7 @@ class Builder(install.urlMapping.UrlMapping):
       if 'checkpoint' in d:
         self.debugPrint('Purging checkpoint in '+p.getUrl(), 4, 'install')
         del d['checkpoint']
+        d.save(force = 1)
     os.chdir(oldDir)
     return
 
