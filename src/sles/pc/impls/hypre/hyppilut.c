@@ -513,7 +513,7 @@ static int PCSetFromOptions_HYPRE_ParaSails(PC pc)
   } else {
     jac->logging     = (int) PETSC_FALSE;
   }
-  jac->ruse = (int) PETSC_TRUE;
+  jac->ruse = (int) PETSC_FALSE;
   jac->symt   = 0;
 
   ierr = PetscOptionsHead("HYPRE ParaSails Options");CHKERRQ(ierr);

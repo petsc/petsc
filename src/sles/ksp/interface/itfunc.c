@@ -581,7 +581,7 @@ SLESSolve() (or KSPSolve()).
 
 .keywords: KSP, set, initial guess, nonzero
 
-.seealso: KSPGetIntialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
+.seealso: KSPGetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
 @*/
 int KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg)
 {
@@ -608,7 +608,7 @@ int KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg)
 
 .keywords: KSP, set, initial guess, nonzero
 
-.seealso: KSPSetIntialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
+.seealso: KSPSetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
 @*/
 int KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
 {
@@ -634,7 +634,7 @@ int KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
 
 .keywords: KSP, set, initial guess, nonzero
 
-.seealso: KSPGetIntialGuessKnoll(), KSPSetInitialGuessNonzero(), KSPGetInitialGuessNonzero()
+.seealso: KSPGetInitialGuessKnoll(), KSPSetInitialGuessNonzero(), KSPGetInitialGuessNonzero()
 @*/
 int KSPSetInitialGuessKnoll(KSP ksp,PetscTruth flg)
 {
@@ -661,7 +661,7 @@ int KSPSetInitialGuessKnoll(KSP ksp,PetscTruth flg)
 
 .keywords: KSP, set, initial guess, nonzero
 
-.seealso: KSPSetIntialGuessKnoll(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
+.seealso: KSPSetInitialGuessKnoll(), KSPSetInitialGuessNonzero(), KSPGetInitialGuessNonzero()
 @*/
 int KSPGetInitialGuessKnoll(KSP ksp,PetscTruth *flag)
 {
