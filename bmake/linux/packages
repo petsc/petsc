@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.29 1998/12/11 20:59:21 balay Exp balay $ 
+# $Id: base.site,v 1.30 1998/12/22 19:49:00 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -22,9 +22,9 @@ X11_LIB        = -L/usr/X11R6/lib -lX11
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = -L/home/petsc/mpich/lib/LINUX/ch_p4 -lmpi
-MPI_INCLUDE    = -I/home/petsc/mpich/include
-MPIRUN         = /home/petsc/mpich/lib/LINUX/ch_p4/mpirun
+MPI_LIB        = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpich
+MPI_INCLUDE    = -I/home/petsc/mpich-1.1.1/include
+MPIRUN         = /home/petsc/mpich-1.1.1/lib/LINUX/ch_p4/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
@@ -33,13 +33,13 @@ MPIRUN         = /home/petsc/mpich/lib/LINUX/ch_p4/mpirun
 #
 # Optional location of MPE
 #
-MPE_LIB       = -L/home/petsc/mpich/lib/LINUX/ch_p4 -lmpe -lpmpi
-MPE_INCLUDE   = -I/home/petsc/mpich/mpe
+MPE_LIB       = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpe -lpmpich
+MPE_INCLUDE   = -I/home/petsc/mpich-1.1.1/mpe
 #
 # Optional location of BlockSolve (MPI version)
 #
-BS_INCLUDE     = -I/home/petsc/BlockSolve95/include
-BS_LIB         =  -L/home/petsc/BlockSolve95/lib/libO/$(PETSC_ARCH) -lBS95
+#BS_INCLUDE     = -I/home/petsc/BlockSolve95/include
+#BS_LIB         =  -L/home/petsc/BlockSolve95/lib/libO/$(PETSC_ARCH) -lBS95
 #
 # Optional Matlab location
 #
@@ -71,7 +71,7 @@ BS_LIB         =  -L/home/petsc/BlockSolve95/lib/libO/$(PETSC_ARCH) -lBS95
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DHAVE_BLOCKSOLVE -DHAVE_MPE
+PCONF         = -DHAVE_MPE
 #PCONF        = -DHAVE_BLOCKSOLVE -DHAVE_MPE -DHAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
