@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.137 1996/04/03 14:39:22 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.138 1996/04/07 22:45:55 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -434,10 +434,6 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
-extern int MatMult_SeqAIJ(Mat A,Vec,Vec);
-extern int MatMultAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
-extern int MatMultTrans_SeqAIJ(Mat A,Vec,Vec);
-extern int MatMultTransAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
 static int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
@@ -689,8 +685,6 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-extern int MatMarkDiag_SeqAIJ(Mat);
-extern int MatRelax_SeqAIJ(Mat,Vec,double,MatSORType,double,int,Vec);
 /*
     This has to provide several versions.
 
