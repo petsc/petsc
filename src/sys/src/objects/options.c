@@ -1,10 +1,10 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.61 1996/01/12 22:06:00 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.62 1996/01/12 22:30:18 balay Exp balay $";
 #endif
 /*
-  These routines simplify the use of command line, file options, etc.,
-  and are used to manipulate the options database.
+   These routines simplify the use of command line, file options, etc.,
+   and are used to manipulate the options database.
 
   This file uses regular malloc and free because it cannot know 
   what malloc is being used until it has already processed the input.
@@ -319,7 +319,8 @@ int OptionsCheckInitial_Private()
   if (flg1) {
     PetscPushErrorHandler(PetscAbortErrorHandler,0);
   }
-  OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64,&flg1);
+  ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64, \
+                          &flg1); CHKERRQ(ierr);
   if (flg1) {
     char *debugger = 0, *display = 0;
     int  xterm     = 1, sfree = 0;
@@ -345,8 +346,9 @@ int OptionsCheckInitial_Private()
     if (sfree) free(display);
     PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);
   }
-  ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64, &flg1); CHKERRQ(ierr);
-if(flg1) {
+  ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64, \
+                          &flg1); CHKERRQ(ierr);
+  if(flg1) {
   char *debugger = 0, *display = 0;
   int  xterm     = 1, sfree = 0,size = 1;
   MPI_Errhandler abort_handler;
@@ -377,8 +379,9 @@ if(flg1) {
     if (PetscStrstr(string,"xldb"))    debugger = "xldb";
 #endif
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
-    if (OptionsGetString(PETSC_NULL,"-display",string,64, &flg1)){
-      display = string;
+    ierr = OptionsGetString(PETSC_NULL,"-display",string,64, &flg1); CHKERRQ(ierr);
+  if (flg1){
+    display = string;
     }
     if (!display) {
       display = (char *) malloc( 128*sizeof(char) ); CHKPTRQ(display);
@@ -424,7 +427,7 @@ if(flg1) {
     PLogBegin();
   }
 #endif
-    ierr = OptionsHasName(PETSC_NULL,"-help", &flg1);
+    ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);
      if (flg1) {
     MPIU_printf(comm,"Options for all PETSc programs:\n");
     MPIU_printf(comm," -on_error_abort: cause an abort when an error is");
