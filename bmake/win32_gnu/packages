@@ -16,8 +16,8 @@ FC_LIB         = c:/users/petsc/clapack/f2clibs/libF77.a \
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
 #
-BLAS_LIB       = c:/users/petsc/clapack/blas_alpha.a
-LAPACK_LIB     = c:/users/petsc/clapack/lapack_alpha.a
+BLAS_LIB       = c:/users/petsc/clapack/blas_nt.a
+LAPACK_LIB     = c:/users/petsc/clapack/lapack_nt.a
 #
 # Location of X-windows software
 #
