@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.25 1997/07/08 23:28:58 bsmith Exp bsmith $ */
+/* $Id: pvec2.c,v 1.26 1997/08/13 22:22:33 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -139,10 +139,11 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
 #define __FUNC__ "VecMax_MPI"
 int VecMax_MPI( Vec xin, int *idx, double *z )
 {
+  int    ierr;
   double work;
 
   /* Find the local max */
-  VecMax_Seq( xin, idx, &work );
+  ierr = VecMax_Seq( xin, idx, &work ); CHKERRQ(ierr);
 
   /* Find the global max */
   if (!idx) {
@@ -161,10 +162,11 @@ int VecMax_MPI( Vec xin, int *idx, double *z )
 #define __FUNC__ "VecMin_MPI"
 int VecMin_MPI( Vec xin, int *idx, double *z )
 {
+  int    ierr;
   double work;
 
   /* Find the local Min */
-  VecMin_Seq( xin, idx, &work );
+  ierr = VecMin_Seq( xin, idx, &work ); CHKERRQ(ierr);
 
   /* Find the global Min */
   if (!idx) {
