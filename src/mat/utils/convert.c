@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.30 1995/10/26 20:44:33 curfman Exp curfman $";
+static char vcid[] = "$Id: convert.c,v 1.31 1995/10/27 01:11:01 curfman Exp curfman $";
 #endif
 
 /* This file contains implementation-specific matrix conversion routines.
@@ -113,7 +113,8 @@ int MatConvert_SeqBDiag(Mat A, MatType newtype, Mat *B)
   Scalar       *vwork;
   int          i, ierr, nz, m = a->m, n = a->n, *cwork, rstart, rend;
 
-  nz = a->nd*a->nb; /* rough over-estimate; could refine for individual rows */
+  /* rough over-estimate; could refine for individual rows */
+  nz = PETSCMIN(n,a->nd*a->nb); 
   switch (newtype) {
     case MATSEQAIJ:
       ierr = MatCreateSeqAIJ(A->comm,m,n,nz,0,B); CHKERRQ(ierr); 
