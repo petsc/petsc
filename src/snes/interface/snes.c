@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.92 1996/10/01 16:17:14 curfman Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.93 1996/10/15 18:47:40 balay Exp balay $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1174,7 +1174,7 @@ int SNESGetTolerances(SNES snes,double *atol,double *rtol,double *stol,int *maxi
 $    -snes_trtol <tol>
 
 .keywords: SNES, nonlinear, set, trust region, tolerance
- 
+
 .seealso: SNESSetTolerances(), SNESSetMinimizationFunctionTolerance()
 @*/
 int SNESSetTrustRegionTolerance(SNES snes,double tol)
