@@ -18,7 +18,7 @@ typedef struct {
 } DIFFPAR_MORE;
 
 
-extern void dnest_(int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,PetscScalar*);
+extern int dnest_(int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,PetscScalar*);
 extern int JacMatMultCompare(SNES,Vec,Vec,double);
 extern int SNESDefaultMatrixFreeSetParameters2(Mat,double,double,double);
 extern int SNESUnSetMatrixFreeParameter(SNES snes);
@@ -153,7 +153,7 @@ int DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double *fnoise,do
     }
 
     /* Call the noise estimator */
-    dnest_(&nf,fval,&h,fnoise,&fder2,hopt,&info,eps);
+    ierr = dnest_(&nf,fval,&h,fnoise,&fder2,hopt,&info,eps);CHKERRQ(ierr);
 
     /* Output statements */
     rerrf = *fnoise/PetscAbsScalar(f);

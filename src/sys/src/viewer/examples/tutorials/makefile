@@ -8,6 +8,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/src/viewer/examples/tutorials/
 EXAMPLESC       = 
+MANSEC          = Viewer
 
 include ${PETSC_DIR}/bmake/common/base
 

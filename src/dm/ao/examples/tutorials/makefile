@@ -7,6 +7,7 @@ FPPFLAGS        =
 LOCDIR          = src/dm/ao/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c
 EXAMPLESF       = 
+MANSEC          = AO
 
 include ${PETSC_DIR}/bmake/common/base
 

@@ -56,6 +56,7 @@ typedef char *MatSerializeType;
 /* Logging support */
 #define    MAT_FILE_COOKIE 1211216    /* used to indicate matrices in binary files */
 extern int MAT_COOKIE;
+extern int MATSNESMFCTX_COOKIE;
 extern int MAT_FDCOLORING_COOKIE;
 extern int MAT_PARTITIONING_COOKIE;
 extern int MAT_NULLSPACE_COOKIE;

@@ -7,6 +7,7 @@ FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/ex10d/
 EXAMPLESC	 = ex10.c
 EXAMPLESF	 =
+MANSEC          = SNES
 
 include ${PETSC_DIR}/bmake/common/base
 

@@ -20,7 +20,7 @@ EXTERN int PCCreate_Composite(PC);
 EXTERN int PCCreate_Redundant(PC);
 EXTERN int PCCreate_NN(PC);
 EXTERN int PCCreate_Cholesky(PC);
-#if defined(PETSC_HAVE_SPAI)
+#if defined(PETSC_HAVE_SPAI) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN int PCCreate_SPAI(PC);
 #endif
 #if defined(PETSC_HAVE_RAMG)

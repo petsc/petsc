@@ -421,7 +421,7 @@ Description:
 void 
 ivec_land(register int *arg1, register int *arg2, register int n)
 {
-  while (n--) {*arg1++ = (*arg1 && *arg2); arg1++; arg2++;} 
+  while (n--) {*arg1 = (*arg1 && *arg2); arg1++; arg2++;} 
 }
 
 

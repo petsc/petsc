@@ -52,10 +52,11 @@ of components to store on the local processor, and \trl{M} is the
 total number of vector components.  Either the local or global 
 dimension, but not both, can be set to PETSC\_DECIDE to 
 \findex{PETSC_DECIDE} indicate that PETSc should determine it.
-More generally, one can use the routines \findex{VecCreate()} \findex{VecSetFromOptions()}
+More generally, one can use the routines \findex{VecCreate()} \findex{VecSetSizes()} \findex{VecSetFromOptions()}
 \begin{tabbing}
-  VecCreate(MPI\_Comm comm,int m,int M,Vec *v);\\
-  VecSetFromOptions(v);
+  VecCreate(MPI\_Comm comm,Vec *v);\\
+  VecSetSizes(Vec v, int m, int M);\\
+  VecSetFromOptions(Vec v);
 \end{tabbing}
 which automatically generates the appropriate vector type 
 (sequential or parallel) over all processors in \trl{comm}.
@@ -2083,8 +2084,10 @@ The application programmer can then directly call any of the PC or KSP
 routines to modify the corresponding default options.   
 
 To solve a linear system with a direct solver (currently supported 
-only for sequential matrices) one may use the options
-\trl{-pc_type} \trl{lu} \trl{-ksp_type} \trl{preonly} (see below).
+by PETSc for sequential matrices, and by several external solvers through
+PETSc interfaces (see Section~\ref{sec_externalsol})) one may use the options
+\trl{-pc_type} \trl{lu} 
+(see below).
 
 By default, if a direct solver is used, the factorization is {\em not} done 
 in-place. This approach is to prevent the user from the unexpected surprise
@@ -2153,7 +2156,7 @@ via
   KSPGMRESSetOrthogonalization(KSP ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);
 \end{tabbing}
 A slightly
-faster approachis to use the 
+faster approach is to use the 
 unmodified (classical) Gram-Schmidt method, which can be set \sindex{Gram-Schmidt}
 with \findex{KSPGMRESSetOrthogonalization()} 
 \findex{KSPGMRESUnmodifiedGramSchmidtOrthogonalization}
@@ -2360,7 +2363,7 @@ actually computing the residual using the formula $ r = b - Ax $, the routine
 is slow and should be used only for testing or convergence studies,
 not for timing. These monitors may be accessed with the command line options
 \trl{-ksp_monitor}, \trl{-ksp_singmonitor}, and \trl{-ksp_truemonitor}.
-\findex{-ksp_monitor} \findex{-ksp_singmonitor} \findex{-ksp_truemonitor}.
+\findex{-ksp_monitor} \findex{-ksp_singmonitor} \findex{-ksp_truemonitor}
 
 To employ the default graphical monitor, one should use the 
 commands \findex{KSPLGMonitorCreate()} \findex{KSPLGMonitorDestroy()}
@@ -2409,7 +2412,7 @@ Then after the SLES solve one calls \findex{KSPSetComputeEigenvalues()}
 \end{tabbing}
 Here, \trl{n} is the size of the two arrays and the eigenvalues are 
 inserted into those two arrays. \trl{Neig} is the number of eigenvalues computed;
-this number depend depends on the size of the Krylov space generated during the 
+this number depends on the size of the Krylov space generated during the 
 linear system solution, for GMRES it is never larger than the restart parameter.
  \findex{KSPComputeEigenvalues()}
 There is an additional routine 
@@ -2548,13 +2551,14 @@ copying time. Note that in-place factorization is not appropriate with
 any ordering besides natural and cannot be used with the drop tolerance
 factorization. These options may be set in the database with 
 \begin{tabbing}
-   -pc\_ilu\_levels <levels>\\
-   -pc\_ilu\_reuse\_ordering\\
-   -pc\_ilu\_use\_drop\_tolerance <dt>,<dtcount>\\
-   -pc\_ilu\_reuse\_fill\\
-   -pc\_ilu\_in\_place\\
-   -pc\_ilu\_nonzeros\_along\_diagonal\\
-   -pc\_ilu\_diagonal\_fill
+   \trl{-pc_ilu_levels <levels>}\\
+   \trl{-pc_ilu_reuse_ordering}\\
+   \trl{-pc_ilu_use_drop_tolerance <dt>,<dtcount>}\\
+   \trl{-pc_ilu_reuse_fill}\\
+   \trl{-pc_ilu_in_place}\\
+   \trl{-pc_ilu_nonzeros_along_diagonal}\\
+   \trl{-pc_ilu_diagonal_fill
+}
 \end{tabbing}
 \findex{-pc_ilu_levels} \findex{-pc_ilu_reuse_ordering}
 \findex{-pc_ilu_use_drop_tolerance} \findex{-pc_ilu_reuse_fill}
@@ -2652,14 +2656,18 @@ The options for SOR \sindex{SSOR} \sindex{SOR} \sindex{relaxation}
 preconditioning are \findex{PCSORSetOmega()}
 \begin{tabbing}
   PCSORSetOmega(PC pc,double omega);\\
-  PCSORSetIterations(PC pc,int its);\\
+  PCSORSetIterations(PC pc,int its,int lits);\\
   PCSORSetSymmetric(PC pc,MatSORType type);
 \end{tabbing}
 The \findex{PCSORSetIterations()} \findex{PCSORSetSymmetric()}
 first of these commands sets the relaxation factor for successive
 over (under) relaxation.  The second command sets the number of inner
-iterations of SOR, given by \trl{its}, to use between steps of the
-Krylov space method.  The third command sets the kind of SOR sweep,
+iterations \trl{its} and local iterations \trl{lits} 
+(the number of smoothing sweeps on a 
+processor before doing a ghost point update from the other processors)
+to use between steps of the
+Krylov space method. The total number of SOR sweeps is given by \trl{its*lits}.
+The third command sets the kind of SOR sweep,
 where the argument \trl{type} can be one of \trl{SOR_FORWARD_SWEEP,
 SOR_BACKWARD_SWEEP} or \trl{SOR_SYMMETRIC_SWEEP}, the default
 being \trl{SOR_FORWARD_SWEEP}. Setting the type to be \trl{
@@ -2671,7 +2679,8 @@ These \findex{SOR_FORWARD_SWEEP} \findex{SOR_BACKWARD_SWEEP}
 variants \findex{SOR_SYMMETRIC_SWEEP} \findex{SOR_LOCAL_FORWARD_SWEEP}
 can \findex{SOR_LOCAL_BACKWARD_SWEEP} \findex{SOR_LOCAL_SYMMETRIC_SWEEP}
 also be set with the options \trl{-pc_sor_omega <omega>}, 
-\trl{-pc_sor_its <its>}, \trl{-pc_sor_backward}, \trl{-pc_sor_symmetric}, 
+\trl{-pc_sor_its <its>}, \trl{-pc_sor_lits <lits>},
+\trl{-pc_sor_backward}, \trl{-pc_sor_symmetric}, 
 \break \trl{-pc_sor_local_forward}, \trl{-pc_sor_local_backward}, and 
 \trl{-pc_sor_local_symmetric}.
 \findex{-pc_sor_omega} \findex{-pc_sor_its}
@@ -2711,7 +2720,7 @@ this command is \trl{-pc_lu_in_place}. \findex{-pc_lu_in_place}
 Another direct preconditioner option is selecting the ordering
 of equations with the command \findex{-pc_lu_ordering_type} \sindex{orderings}
 \begin{tabbing}
-   -pc\_lu\_ordering\_type <ordering>
+   \trl{-pc_lu_ordering_type <ordering>}
 \end{tabbing}
 The possible orderings are
 \begin{itemize}
@@ -3156,10 +3165,58 @@ The PETSc solvers will now handle the null space during the solution processor.
 
 BUT if one chooses a direct solver (or an incomplete factorization)
 it may still detect a zero pivot. \sindex{zero pivot}
-You can run with the additional options -pc\_lu\_damping <dampingfactor> 
-\findex{-pc_lu_damping} or -pc\_ilu\_damping <dampingfactor> \findex{-pc_ilu_damping} to 
+You can run with the additional options \trl{-pc_lu_damping <dampingfactor>} 
+\findex{-pc_lu_damping} or \trl{-pc_ilu_damping <dampingfactor>} \findex{-pc_ilu_damping} to 
 prevent the zero pivot. A good choice for the \trl{damping} factor is 1.e-10.
 \sindex{damping}
+
+% ---------------------------------------------------------------
+\section{Using PETSc interface to external linear solvers}
+\label{sec_externalsol}
+
+PETSc interfaces to several external linear solvers (see Acknowledgments).
+To use these solvers, one needs to do the followings.
+
+\begin{enumerate}
+\item Install the external software.
+\item Enable using the external software from PETSc by editing \trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/packages}.
+   For example, to use SuperLU, one would specify the following variables with the appropriate paths:
+%\begin{figure}[H]
+{\footnotesize
+\begin{verbatim}                       
+SUPERLU_LIB        = /home/petsc/software/SuperLU/superlu_linux_gcc_pgf90.a 
+SUPERLU_INCLUDE    = -I/home/petsc/software/SuperLU/SRC            
+PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU        
+\end{verbatim}
+}
+%\nobreak
+%\label{fig_package}
+%\end{figure}               
+
+\item Build the PETSc libraries.
+\item Use the runtime option: \trl{-mat_<mattype>_<package>} \trl{-pc_type <pctype>}.
+\end{enumerate}
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{llll}
+{\bf Package}    &{\bf MatType}  & {\bf PCType} & {\bf Runtime Options}\\
+\hline
+SUPERLU          & aij          & lu           &  \trl{-mat_aij_superlu} \\
+SUPERLU\_DIST    & aij          & lu           &  \trl{-mat_aij_superlu_dist}\\
+SPOOLES          & aij          & lu           &  \trl{-mat_aij_spooles}\\
+                 & sbaij        & cholesky     &  \trl{-mat_sbaij_spooles}\\
+DSCPACK          & baij         & cholesky     &  \trl{-mat_baij_dscpack}\\
+\hline
+\end{tabular}
+\end{center}
+\caption{Options for External Solvers}
+\label{tab_externaloptions}
+\end{table}
+
+
+The default and available input options for each external software can be found
+by specifying -help (or -h) at runtime.
 
 
 
@@ -6807,7 +6864,7 @@ controls the generation of several example programs.
    EXAMPLES_2    = ex4
    EXAMPLES_3    = ex3
 
-   include ${PETSC_DIR}/bmake/common_test
+   include ${PETSC_DIR}/bmake/common/test
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Several Example Programs}

@@ -156,7 +156,7 @@ int VecPrintHelp(Vec vec)
 
   Collective on Vec
 
-  Input Parameter:
+  Input Parameters:
 + v - the vector
 . n - the local size (or PETSC_DECIDE to have it set)
 - N - the global size (or PETSC_DECIDE)

@@ -15,7 +15,6 @@
 #echo "(5) Rebuilt and checked all Fortran stubs?"
 #echo "(6) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run correctly?"
 #echo "(7) Made sure Fortran include files match C ones?"
-#echo "(8) Made sure the web documents are updated into the source tree - make updatewebdocs?"
 #echo "(8) Latest version of win32fe.exe is copied over into /sandbox/petsc/petsc-dist on terra"
 
 # If version specified on the commandline, set the version

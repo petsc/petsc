@@ -90,7 +90,8 @@ def main():
         'docs/installation/index.htm',
         'docs/installation/unix-ams.htm',
         'docs/installation/unix.htm',
-        'docs/installation/win.htm']
+        'docs/installation/win.htm',
+        'docs/installation/packages.htm']
 
     for basename in htmlfiles:
         urlname  = baseurl + '/' + basename
