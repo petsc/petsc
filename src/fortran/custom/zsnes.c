@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.25 1999/03/02 19:44:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.26 1999/03/19 21:24:42 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -30,6 +30,7 @@ static char vcid[] = "$Id: zsnes.c,v 1.25 1999/03/02 19:44:25 bsmith Exp bsmith 
 #define snesgetconvergencehistory_   SNESGETCONVERGENCEHISTORY
 #define snesdefaultcomputejacobian_  SNESDEFAULTCOMPUTEJACOBIAN
 #define snesdefaultcomputejacobiancolor_ SNESDEFAULTCOMPUTEJACOBIANCOLOR
+#define matsnesmfsettype_                MATSNESMFSETTYPE
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define snesregisterdestroy_         snesregisterdestroy
 #define snessetjacobian_             snessetjacobian
@@ -55,9 +56,18 @@ static char vcid[] = "$Id: zsnes.c,v 1.25 1999/03/02 19:44:25 bsmith Exp bsmith 
 #define snesgetconvergencehistory_   snesgetconvergencehistory
 #define snesdefaultcomputejacobian_  snesdefaultcomputejacobian
 #define snesdefaultcomputejacobiancolor_ snesdefaultcomputejacobiancolor
+#define matsnesmfsettype_                matsnesmfsettype
 #endif
 
 EXTERN_C_BEGIN
+
+void matsnesmfsettype_(Mat *mat,char *ftype, int *__ierr,int len )
+{
+  char *t;
+  FIXCHAR(ftype,len,t);
+  *__ierr = MatSNESMFSetType(*mat,t);
+  FREECHAR(ftype,t);
+}
 
 void snesgetconvergencehistory_(SNES *snes,int *na,int *__ierr)
 {

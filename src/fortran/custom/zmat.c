@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.63 1999/03/11 16:24:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.64 1999/04/04 00:13:42 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -81,6 +81,7 @@ static char vcid[] = "$Id: zmat.c,v 1.63 1999/03/11 16:24:18 bsmith Exp bsmith $
 #endif
 
 EXTERN_C_BEGIN
+
 
 void matpartitioningsettype_(MatPartitioning *part,CHAR type, int *__ierr,int len)
 {

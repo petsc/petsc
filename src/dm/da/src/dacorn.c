@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dacorn.c,v 1.20 1999/03/01 04:58:26 bsmith Exp balay $";
+static char vcid[] = "$Id: dacorn.c,v 1.21 1999/03/16 17:13:40 balay Exp curfman $";
 #endif
  
 /*
@@ -76,13 +76,14 @@ int DAGetCoordinates(DA da,Vec *c)
 #define __FUNC__ "DASetFieldName"
 /*@
    DASetFieldName - Sets the names of individual field components in multicomponent
-      vectors associated with a DA.
+   vectors associated with a DA.
 
    Not Collective
 
    Input Parameters:
 +  da - the distributed array
-.  no - field number 0, 1, ... dof-1 for the DA
+.  nf - field number for the DA (0, 1, ... dof-1), where dof indicates the 
+        number of degrees of freedom per node within the DA
 -  names - the name of the field (component)
 
   Level: intermediate
@@ -91,16 +92,16 @@ int DAGetCoordinates(DA da,Vec *c)
 
 .seealso: DAGetFieldName()
 @*/
-int DASetFieldName(DA da,int no,const char name[])
+int DASetFieldName(DA da,int nf,const char name[])
 {
   PetscFunctionBegin;
  
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (no < 0 || no >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid field number: %d",no);
-  if (da->fieldname[no]) PetscFree(da->fieldname[no]);
+  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid field number: %d",nf);
+  if (da->fieldname[nf]) PetscFree(da->fieldname[nf]);
   
-  da->fieldname[no] = (char *) PetscMalloc((1+PetscStrlen(name))*sizeof(char));CHKPTRQ(da->fieldname[no]);
-  PetscStrcpy(da->fieldname[no],name);
+  da->fieldname[nf] = (char *) PetscMalloc((1+PetscStrlen(name))*sizeof(char));CHKPTRQ(da->fieldname[nf]);
+  PetscStrcpy(da->fieldname[nf],name);
   PetscFunctionReturn(0);
 }
 
@@ -108,13 +109,14 @@ int DASetFieldName(DA da,int no,const char name[])
 #define __FUNC__ "DAGetFieldName"
 /*@
    DAGetFieldName - Gets the names of individual field components in multicomponent
-      vectors associated with a DA.
+   vectors associated with a DA.
 
    Not Collective
 
    Input Parameter:
 +  da - the distributed array
--  no - field number 0, 1, ... dof-1 for the DA
+-  nf - field number for the DA (0, 1, ... dof-1), where dof indicates the 
+        number of degrees of freedom per node within the DA
 
    Output Parameter:
 .  names - the name of the field (component)
@@ -125,13 +127,13 @@ int DASetFieldName(DA da,int no,const char name[])
 
 .seealso: DASetFieldName()
 @*/
-int DAGetFieldName(DA da,int no,char **name)
+int DAGetFieldName(DA da,int nf,char **name)
 {
   PetscFunctionBegin;
  
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (no < 0 || no >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid field number: %d",no);
-  *name = da->fieldname[no];
+  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid field number: %d",nf);
+  *name = da->fieldname[nf];
   PetscFunctionReturn(0);
 }
 

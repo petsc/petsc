@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.82 1999/03/24 04:29:52 curfman Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.83 1999/03/29 23:22:20 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -10,7 +10,7 @@ int   MatSNESMFRegisterAllCalled = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "MatSNESMFSetType"
-/*@
+/*@C
     MatSNESMFSetType - Sets the method that is used to compute the 
     differencing parameter for finite difference matrix-free formulations. 
 
