@@ -530,11 +530,10 @@ extern PetscFList CCAList;
 @*/
 int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace<int>*&v)
 {
-  int                         ierr;
-  ::esi::IndexSpaceFactory<int> *f;
-  void                        *(*r)(void);
-  char                        name[1024];
-  PetscTruth                  found;
+  int                           ierr;
+  ::esi::IndexSpaceFactory<int> *f,*(*r)(void);
+  char                          name[1024];
+  PetscTruth                    found;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetString(PETSC_NULL,"-is_esi_type",name,1024,&found);CHKERRQ(ierr);
@@ -548,7 +547,7 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace
   gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
   f    = dynamic_cast<esi::IndexSpaceFactory<int>*>(port);
 #else
-  f    = (::esi::IndexSpaceFactory<int> *)(*r)();
+  f    = (*r)();
 #endif
   ierr = f->getIndexSpace(commname,comm,m,v);CHKERRQ(ierr);
   delete f;
@@ -567,8 +566,7 @@ int VecESISetType(Vec V,char *name)
 {
   int                              ierr;
   ::esi::Vector<double,int>        *ve;
-  ::esi::VectorFactory<double,int> *f;
-  void                             *(*r)(void);
+  ::esi::VectorFactory<double,int> *f,*(*r)(void);
   ::esi::IndexSpace<int>           *map;
 
   PetscFunctionBegin;
@@ -579,7 +577,7 @@ int VecESISetType(Vec V,char *name)
   gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
   f    = dynamic_cast<esi::VectorFactory<double,int>*>(port);
 #else
-  f    = (::esi::VectorFactory<double,int> *)(*r)();
+  f    = (*r)();
 #endif
   if (V->n == PETSC_DECIDE) {
     ierr = PetscSplitOwnership(V->comm,&V->n,&V->N);CHKERRQ(ierr);

@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqDense"
-int MatAXPY_SeqDense(PetscScalar *alpha,Mat X,Mat Y)
+int MatAXPY_SeqDense(PetscScalar *alpha,Mat X,Mat Y,MatStructure str)
 {
   Mat_SeqDense *x = (Mat_SeqDense*)X->data,*y = (Mat_SeqDense*)Y->data;
   int          N = X->m*X->n,one = 1;

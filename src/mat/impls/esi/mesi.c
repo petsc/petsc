@@ -92,8 +92,7 @@ int MatESISetType(Mat V,char *name)
 {
   int                                ierr;
   ::esi::Operator<double,int>        *ve;
-  ::esi::OperatorFactory<double,int> *f;
-  void                               *(*r)(void);
+  ::esi::OperatorFactory<double,int> *f,*(*r)(void);
   ::esi::IndexSpace<int>             *rmap,*cmap;
 
   PetscFunctionBegin;
@@ -104,7 +103,7 @@ int MatESISetType(Mat V,char *name)
   gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
   f    = dynamic_cast<esi::OperatorFactory<double,int>*>(port);
 #else
-  f    = (::esi::OperatorFactory<double,int> *)(*r)();
+  f    = (*r)();
 #endif
   if (V->m == PETSC_DECIDE) {
     ierr = PetscSplitOwnership(V->comm,&V->m,&V->M);CHKERRQ(ierr);

@@ -282,9 +282,9 @@ gov::cca::Component *create_esi_petsc_vectorfactory(void)
   return dynamic_cast<gov::cca::Component *>(new esi::petsc::VectorFactory<double,int>);
 }
 #else
-void *create_esi_petsc_vectorfactory(void)
+::esi::VectorFactory<double,int> *create_esi_petsc_vectorfactory(void)
 {
-  return (void *)(new esi::petsc::VectorFactory<double,int>);
+  return (new esi::petsc::VectorFactory<double,int>);
 }
 #endif
 EXTERN_C_END
@@ -332,9 +332,9 @@ gov::cca::Component *create_petra_esi_vectorfactory(void)
   return dynamic_cast<gov::cca::Component *>(new Petra_ESI_VectorFactory<double,int>);
 }
 #else
-void *create_petra_esi_vectorfactory(void)
+::esi::VectorFactory<double,int> *create_petra_esi_vectorfactory(void)
 {
-  return (void *)(new Petra_ESI_VectorFactory<double,int>);
+  return (new Petra_ESI_VectorFactory<double,int>);
 }
 #endif
 EXTERN_C_END

@@ -148,9 +148,9 @@ gov::cca::Component *create_esi_petsc_indexspacefactory(void)
   return dynamic_cast<gov::cca::Component *>(new esi::petsc::IndexSpaceFactory<int>);
 }
 #else
-void *create_esi_petsc_indexspacefactory(void)
+::esi::IndexSpaceFactory<int> *create_esi_petsc_indexspacefactory(void)
 {
-  return (void *)(new esi::petsc::IndexSpaceFactory<int>);
+  return (new esi::petsc::IndexSpaceFactory<int>);
 }
 #endif
 EXTERN_C_END
@@ -194,9 +194,9 @@ gov::cca::Component *create_petra_esi_indexspacefactory(void)
   return dynamic_cast<gov::cca::Component *>(new Petra_ESI_IndexSpaceFactory<int>);
 }
 #else
-void *create_petra_esi_indexspacefactory(void)
+::esi::IndexSpaceFactory<int> *create_petra_esi_indexspacefactory(void)
 {
-  return (void *)(new Petra_ESI_IndexSpaceFactory<int>);
+  return (new Petra_ESI_IndexSpaceFactory<int>);
 }
 #endif
 EXTERN_C_END

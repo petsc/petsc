@@ -1652,7 +1652,7 @@ page and Section~\ref{sec:viewers}.
 \begin{tabular}{ll}
 {\bf Function Name} & {\bf Operation} \\
 \hline
-MatAXPY(PetscScalar *a,Mat X, Mat Y); & $ Y = Y + a*X $ \\
+MatAXPY(PetscScalar *a,Mat X, Mat Y,MatStructure); & $ Y = Y + a*X $ \\
 MatMult(Mat A,Vec x, Vec y); & $ y = A*x $ \\
 MatMultAdd(Mat A,Vec x, Vec y,Vec z); & $ z = y + A*x $ \\
 MatMultTranspose(Mat A,Vec x, Vec y); & $ y = A^{T}*x $ \\
