@@ -723,7 +723,7 @@ int PCHYPRESetType(PC pc,char *name)
   PetscFunctionReturn(0);
 }
 
-/*S
+/*MC
      PCHYPRE - Allows you to use the matrix element based preconditioners in the LLNL package hypre
 
    Options Database Keys:
@@ -739,7 +739,7 @@ int PCHYPRESetType(PC pc,char *name)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCHYPRESetType()
 
-S*/
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

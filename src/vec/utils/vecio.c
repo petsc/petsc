@@ -60,7 +60,7 @@ and PetscWriteBinary() to see how this may be done.
 @*/  
 int VecLoad(PetscViewer viewer,Vec *newvec)
 {
-  int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;
+  int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs,nierr;
   Vec         vec;
   PetscScalar *avec;
   MPI_Comm    comm;
@@ -135,9 +135,8 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
   PetscFunctionReturn(0);
   /* tell the other processors we've had an error */
   handleerror:
-    ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-    rows = -1;
-    MPI_Bcast(&rows,1,MPI_INT,0,comm);
+    nierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(nierr);
+    MPI_Bcast(&ierr,1,MPI_INT,0,comm);
     SETERRQ(ierr,"Error loading vector");
 }
 

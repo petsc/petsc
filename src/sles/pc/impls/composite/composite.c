@@ -490,7 +490,7 @@ int PCCompositeSetUseTrue(PC pc)
 
 /* -------------------------------------------------------------------------------------------*/
 
-/*S
+/*MC
      PCCOMPOSITE - Build a preconditioner by composing together several preconditioners 
 
    Options Database Keys:
@@ -511,7 +511,7 @@ int PCCompositeSetUseTrue(PC pc)
            PCSHELL, PCSLES, PCCompositeSetType(), PCCompositeSpecialSetAlpha(), PCCompositeAddPC(),
            PCCompositeGetPC(), PCCompositeSetUseTrue()
 
-S*/
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

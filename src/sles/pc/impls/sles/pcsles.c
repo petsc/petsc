@@ -216,7 +216,7 @@ int PCSLESGetSLES(PC pc,SLES *sles)
 
 /* ----------------------------------------------------------------------------------*/
 
-/*S
+/*MC
      PCSLES -    Defines a preconditioner that can consist of any SLES solver.
                  This allows, for example, embedding a Krylov method inside a preconditioner.
 
@@ -236,7 +236,7 @@ int PCSLESGetSLES(PC pc,SLES *sles)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCSHELL, PCCOMPOSITE, PCSLESUseTrue(), PCSLESGetSLES()
 
-S*/
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

@@ -279,7 +279,7 @@ int PCSORSetIterations(PC pc,int its,int lits)
   PetscFunctionReturn(0);
 }
 
-/*S
+/*MC
      PCSOR - (S)SOR (successive over relaxation, Gauss-Seidel) preconditioning
 
    Options Database Keys:
@@ -302,7 +302,7 @@ int PCSORSetIterations(PC pc,int its,int lits)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCSORSetIterations(), PCSORSetSymmetric(), PCSORSetOmega(), PCEISENSTAT
-S*/
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
