@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.13 1996/02/06 15:27:37 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.14 1996/02/06 15:32:00 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -531,3 +531,6 @@ static int FindOverlapRecievedMesg(Mat C, int nmsg, int ** rbuf, int ** xdata, i
   PLogInfo(0,"MatIncreaseOverlap_MPIAIJ:[%d] Allocated %d bytes, required %d bytes, no of mallocs = %d\n",rank,mem_estimate, ct3,no_malloc);    
   return 0;
 }  
+
+
+
