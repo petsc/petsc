@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.71 1999/01/08 15:18:36 balay Exp balay $ */
+/* $Id: mpi.h,v 1.72 1999/03/31 23:54:20 balay Exp bsmith $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -103,20 +103,35 @@ typedef int MPI_Op;
 /*
   Prototypes of some functions which are implemented in mpi.c
 */
-
-extern double MPI_Wtime(void);
-extern int    MPI_Abort(MPI_Comm,int);
-extern int    MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag);
-extern int    MPI_Keyval_free(int*);
-extern int    MPI_Attr_put(MPI_Comm, int, void *);
-extern int    MPI_Attr_delete(MPI_Comm, int);
 typedef int   (MPI_Copy_function)( MPI_Comm, int, void *, void *, void *, int *);
 typedef int   (MPI_Delete_function)( MPI_Comm, int, void *, void * );
-extern int    MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
-extern int    MPI_Comm_free(MPI_Comm*);
-extern int    MPI_Initialized(int *);
-extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 
+/*
+  In order that the PETSc MPIUNI can be used with another package that has its
+  own MPIUni we map the following function names to a unique PETSc name. Those functions
+  are defined in mpi.c
+*/
+extern int    Petsc_MPI_Abort(MPI_Comm,int);
+extern int    Petsc_MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag);
+extern int    Petsc_MPI_Keyval_free(int*);
+extern int    Petsc_MPI_Attr_put(MPI_Comm, int, void *);
+extern int    Petsc_MPI_Attr_delete(MPI_Comm, int);
+extern int    Petsc_MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
+extern int    Petsc_MPI_Comm_free(MPI_Comm*);
+extern int    Petsc_MPI_Initialized(int *);
+extern int    Petsc_MPI_Comm_dup(MPI_Comm,MPI_Comm *);
+extern int    Petsc_MPI_Finalize(void);
+
+#define MPI_Abort         Petsc_MPI_Abort
+#define MPI_Attr_get      Petsc_MPI_Attr_get
+#define MPI_Keyval_free   Petsc_MPI_Keyval_free
+#define MPI_Attr_put      Petsc_MPI_Attr_put
+#define MPI_Attr_delete   Petsc_MPI_Attr_delete
+#define MPI_Keyval_create Petsc_MPI_Keyval_create
+#define MPI_Comm_free     Petsc_MPI_Comm_free
+#define MPI_Initialized   Petsc_MPI_Initialized
+#define MPI_Comm_dup      Petsc_MPI_Comm_dup
+#define MPI_Finalize      Petsc_MPI_Finalize
 
 /* 
     Routines we have replace with macros that do nothing 
@@ -556,7 +571,6 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 #define MPI_Wtick() 1.0
 #define MPI_Wtime() 0.0
 #define MPI_Init(argc, argv) MPI_SUCCESS
-extern int MPI_Finalize(void);
 #define MPI_Pcontrol(level) MPI_SUCCESS
 
 #define MPI_NULL_COPY_FN   0
