@@ -1,5 +1,5 @@
 c
-c  "$Id: ex1f.F,v 1.16 1997/09/22 15:20:58 balay Exp $";
+c  "$Id: mat.F,v 1.17 1997/10/11 18:39:18 curfman Exp curfman $";
 c
 c ----------------------------------------------------------------------
 c
@@ -174,8 +174,8 @@ c           f(ijkx+4) = fbcej2(i,k)
 c 600    continue
 c      endif
 
-c      if (zef01 .eq. nk) then
-c        k=nk1
+c      if (zef01 .eq. nk_boundary) then
+c        k=nk1_boundary
 c        do 700 j=ysf2,yef01
 c           jk = (j-ysf)*xm + (k-zsf)*xm*ym
 c        do 700 i=xsf2,xef01
@@ -631,8 +631,8 @@ c           ijkn = southern neighbor (k=nj)
  600     continue
       endif
 
-      if (zef01 .eq. nk) then
-         k=nk1
+      if (zef01 .eq. nk_boundary) then
+         k=nk1_boundary
          do 700 j=ysf2,yef01
          do 700 i=xsf2,xef01
             ijk = ndof * ((i-gxsf) + (j-gysf)*gxm + 

@@ -1,5 +1,5 @@
 c
-c  "$Id: ex1f.F,v 1.16 1997/09/22 15:20:58 balay Exp $";
+c  "$Id: jac.F,v 1.5 1997/10/11 18:39:18 curfman Exp curfman $";
 c
 c  This file contains code for approximating the Jacobian matrix
 c  with sparse finite differences.
@@ -903,37 +903,38 @@ c         call MatSetValues(mat,5,row,1,col,bw,IV,ierr)
     6 CONTINUE
       endif
 c
-      if (zef01 .eq. nk) then
-        k=nk1
+      if (zef01 .eq. nk_boundary) then
+        k=nk1_boundary
         do 7 j=ysf2,yef01
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
         do 7 i=xsf2,xef01
            ijk = ndof * (i-gxsf + jk) - 1
            ijkn = ijk - ndof*gxm*gym
-      rnk1=R(I,J,NK1)+qel(1)
-      runk1=RU(I,J,NK1)+qel(2)
-      rvnk1=RV(I,J,NK1)+qel(3)
-      rwnk1=RW(I,J,NK1)+qel(4)
-      enk1=E(I,J,NK1)+qel(5)
-      rnk=R(I,J,NK)
-      runk=RU(I,J,NK)
-      rvnk=RV(I,J,NK)
-      rwnk=RW(I,J,NK)
-      enk=E(I,J,NK)
+      rnk1=R(I,J,NK1_BOUNDARY)+qel(1)
+      runk1=RU(I,J,NK1_BOUNDARY)+qel(2)
+      rvnk1=RV(I,J,NK1_BOUNDARY)+qel(3)
+      rwnk1=RW(I,J,NK1_BOUNDARY)+qel(4)
+      enk1=E(I,J,NK1_BOUNDARY)+qel(5)
+      rnk=R(I,J,NK_BOUNDARY)
+      runk=RU(I,J,NK_BOUNDARY)
+      rvnk=RV(I,J,NK_BOUNDARY)
+      rwnk=RW(I,J,NK_BOUNDARY)
+      enk=E(I,J,NK_BOUNDARY)
       pnk1=gm1*(enk1-p5*(runk1**2+rvnk1**2+rwnk1**2)
      * /rnk1)
       pnk=gm1*(enk-p5*(runk**2+rvnk**2+rwnk**2)
      * /rnk)
-      ADA=AKX(I,J,NK)**2+AKY(I,J,NK)**2+AKZ(I,J,NK)**2
-      QDA=RUNK*AKX(I,J,NK)+RVNK*AKY(I,J,NK)
-     *   +RWNK*AKZ(I,J,NK)
+      ADA=AKX(I,J,NK_BOUNDARY)**2+AKY(I,J,NK_BOUNDARY)**2
+     *   +AKZ(I,J,NK_BOUNDARY)**2
+      QDA=RUNK*AKX(I,J,NK_BOUNDARY)+RVNK*AKY(I,J,NK_BOUNDARY)
+     *   +RWNK*AKZ(I,J,NK_BOUNDARY)
       fb1rk2=RNK1-RNK
       fb1ek2=ENK1-ENK
       PIJNK1=PNK
       FF=two*QDA/ADA
-      fb1ruk2=RUNK1-RUNK+FF*AKX(I,J,NK)
-      fb1rvk2=RVNK1-RVNK+FF*AKY(I,J,NK)
-      fb1rwk2=RWNK1-RWNK+FF*AKZ(I,J,NK)
+      fb1ruk2=RUNK1-RUNK+FF*AKX(I,J,NK_BOUNDARY)
+      fb1rvk2=RVNK1-RVNK+FF*AKY(I,J,NK_BOUNDARY)
+      fb1rwk2=RWNK1-RWNK+FF*AKZ(I,J,NK_BOUNDARY)
 c     Diagonal term (k=nk1)
       if (nloc .eq. -1) then
          b3bc(1,m,i,j,4)=(fb1rk2-fbcrk2(i,j))*epsi
@@ -954,30 +955,31 @@ c         bw(5)=(fb1ek2-fbcek2(i,j))*epsi
          bw(10)=(fb1ek2-fbcek2(i,j))*epsi
       endif
 c
-      rnk1=R(I,J,NK1)
-      runk1=RU(I,J,NK1)
-      rvnk1=RV(I,J,NK1)
-      rwnk1=RW(I,J,NK1)
-      enk1=E(I,J,NK1)
-      rnk=R(I,J,NK)+qel(1)
-      runk=RU(I,J,NK)+qel(2)
-      rvnk=RV(I,J,NK)+qel(3)
-      rwnk=RW(I,J,NK)+qel(4)
-      enk=E(I,J,NK)+qel(5)
+      rnk1=R(I,J,NK1_BOUNDARY)
+      runk1=RU(I,J,NK1_BOUNDARY)
+      rvnk1=RV(I,J,NK1_BOUNDARY)
+      rwnk1=RW(I,J,NK1_BOUNDARY)
+      enk1=E(I,J,NK1_BOUNDARY)
+      rnk=R(I,J,NK_BOUNDARY)+qel(1)
+      runk=RU(I,J,NK_BOUNDARY)+qel(2)
+      rvnk=RV(I,J,NK_BOUNDARY)+qel(3)
+      rwnk=RW(I,J,NK_BOUNDARY)+qel(4)
+      enk=E(I,J,NK_BOUNDARY)+qel(5)
       pnk1=gm1*(enk1-p5*(runk1**2+rvnk1**2+rwnk1**2)
      * /rnk1)
       pnk=gm1*(enk-p5*(runk**2+rvnk**2+rwnk**2)
      * /rnk)
-      ADA=AKX(I,J,NK)**2+AKY(I,J,NK)**2+AKZ(I,J,NK)**2
-      QDA=RUNK*AKX(I,J,NK)+RVNK*AKY(I,J,NK)
-     *   +RWNK*AKZ(I,J,NK)
+      ADA=AKX(I,J,NK_BOUNDARY)**2+AKY(I,J,NK_BOUNDARY)**2
+     * +AKZ(I,J,NK_BOUNDARY)**2
+      QDA=RUNK*AKX(I,J,NK_BOUNDARY)+RVNK*AKY(I,J,NK_BOUNDARY)
+     *   +RWNK*AKZ(I,J,NK_BOUNDARY)
       fb1rk2=RNK1-RNK
       fb1ek2=ENK1-ENK
       PIJNK1=PNK
       FF=two*QDA/ADA
-      fb1ruk2=RUNK1-RUNK+FF*AKX(I,J,NK)
-      fb1rvk2=RVNK1-RVNK+FF*AKY(I,J,NK)
-      fb1rwk2=RWNK1-RWNK+FF*AKZ(I,J,NK)
+      fb1ruk2=RUNK1-RUNK+FF*AKX(I,J,NK_BOUNDARY)
+      fb1rvk2=RVNK1-RVNK+FF*AKY(I,J,NK_BOUNDARY)
+      fb1rwk2=RWNK1-RWNK+FF*AKZ(I,J,NK_BOUNDARY)
 c     Lower neighbor (k=nk)
       if (nloc .eq. -1) then
          b3bc(1,m,i,j,3)=(fb1rk2-fbcrk2(i,j))*epsi

@@ -1,5 +1,5 @@
 c
-c  "$Id: resid.F,v 1.4 1997/10/12 17:21:17 curfman Exp curfman $";
+c  "$Id: resid.F,v 1.5 1997/10/16 03:30:33 curfman Exp curfman $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -557,19 +557,26 @@ c      DO 6 I=2,NI
     6 CONTINUE
       endif
 c
-      if (zef01 .eq. nk) then
+      if (zef01 .eq. nk_boundary) then
         do 7 j=ysf2,yef01
         do 7 i=xsf2,xef01
-      ADA=AKX(I,J,NK)**2+AKY(I,J,NK)**2+AKZ(I,J,NK)**2
-      QDA=RU(I,J,NK)*AKX(I,J,NK)+RV(I,J,NK)*AKY(I,J,NK)
-     *   +RW(I,J,NK)*AKZ(I,J,NK)
-      fbcrk2(i,j)=R(I,J,NK1)-R(I,J,NK)
-      fbcek2(i,j)=E(I,J,NK1)-E(I,J,NK)
-      PIJNK1=P(I,J,NK)
+      ADA=AKX(I,J,NK_BOUNDARY)**2+AKY(I,J,NK_BOUNDARY)**2
+     & +AKZ(I,J,NK_BOUNDARY)**2
+      QDA=RU(I,J,NK_BOUNDARY)*AKX(I,J,NK_BOUNDARY)
+     &   +RV(I,J,NK_BOUNDARY)*AKY(I,J,NK_BOUNDARY)
+     &   +RW(I,J,NK_BOUNDARY)*AKZ(I,J,NK_BOUNDARY)
+      fbcrk2(i,j)=
+     &  R(I,J,NK1_BOUNDARY)-R(I,J,NK_BOUNDARY)
+      fbcek2(i,j)=
+     & E(I,J,NK1_BOUNDARY)-E(I,J,NK_BOUNDARY)
+      PIJNK1=P(I,J,NK_BOUNDARY)
       FF=two*QDA/ADA
-      fbcruk2(i,j)=RU(I,J,NK1)-RU(I,J,NK)+FF*AKX(I,J,NK)
-      fbcrvk2(i,j)=RV(I,J,NK1)-RV(I,J,NK)+FF*AKY(I,J,NK)
-      fbcrwk2(i,j)=RW(I,J,NK1)-RW(I,J,NK)+FF*AKZ(I,J,NK)
+      fbcruk2(i,j)=RU(I,J,NK1_BOUNDARY)
+     &  -RU(I,J,NK_BOUNDARY)+FF*AKX(I,J,NK_BOUNDARY)
+      fbcrvk2(i,j)=RV(I,J,NK1_BOUNDARY)
+     &  -RV(I,J,NK_BOUNDARY)+FF*AKY(I,J,NK_BOUNDARY)
+      fbcrwk2(i,j)=RW(I,J,NK1_BOUNDARY)
+     &  -RW(I,J,NK_BOUNDARY)+FF*AKZ(I,J,NK_BOUNDARY)
     7 CONTINUE
       endif
 c

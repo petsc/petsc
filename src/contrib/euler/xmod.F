@@ -1,5 +1,5 @@
 c
-c  "$Id: xmod.F,v 1.27 1997/10/16 03:30:13 curfman Exp curfman $";
+c  "$Id: xmod.F,v 1.28 1997/10/16 17:56:38 curfman Exp curfman $";
 c
 c  This file contains routines that are used only within the PETSc
 c  solver.  Most are interface routines to pass between the PETSc
@@ -503,7 +503,7 @@ c printjul - Prints boundary grid points
       do 20 j=gysf1,gyefp1
       do 20 i=gxsf1,gxefp1
             if (i .eq. 1 .or. j .eq. 1 .or. k .eq. 1 .or.
-     &          i.eq.ni1 .or. j.eq.nj1 .or. k.eq.nk1)
+     &          i.eq.ni1 .or. j.eq.nj1 .or. k.eq.nk1_boundary)
      &            write(unit,100) k,j,i,R(I,J,K),RU(I,J,K),
      &            rv(i,j,k),rw(i,j,k),e(i,j,k),p(i,j,k)
    20    continue

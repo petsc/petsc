@@ -1,5 +1,5 @@
 c
-c  "$Id: ex1f.F,v 1.16 1997/09/22 15:20:58 balay Exp $";
+c  "$Id: obselete.F,v 1.6 1997/10/11 18:39:18 curfman Exp curfman $";
 c
 c  This file contains routines that are now obselete.  But since
 c  these were crucial during development stages of the parallel,
@@ -528,14 +528,14 @@ c           ijkn = southern neighbor (k=nj)
  600     continue
       endif
 
-      if (zef01 .eq. nk) then
-         k=nk1
+      if (zef01 .eq. nk_boundary) then
+         k=nk1_boundary
          do 700 j=ysf2,yef01
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
          do 700 i=xsf2,xef01
             ijk = ndof * (i-gxsf + jk) - 1
             ijkn = ijk - ndof*gxm*gym
-c           ijkn = lower neighbor (k=nk)
+c           ijkn = lower neighbor (k=nk_boundary)
             do 702 l=1,ndof
                row = ltog(ijk + l)
             do 702 m=1,ndof
@@ -807,8 +807,8 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  600    continue
       endif
 
-      if (zef01 .eq. nk) then
-        k=nk1
+      if (zef01 .eq. nk_boundary) then
+        k=nk1_boundary
         do 700 j=ysf2,yef01
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
         do 700 i=xsf2,xef01

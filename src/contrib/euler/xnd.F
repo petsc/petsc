@@ -1,5 +1,5 @@
 C
-C    "$Id: ex1f.F,v 1.16 1997/09/22 15:20:58 balay Exp $";
+C    "$Id: xnd.F,v 1.24 1997/10/11 18:39:18 curfman Exp curfman $";
 C
 C This file contains routines that are used by both the Julianne 
 C and PETSc solvers.
@@ -554,21 +554,26 @@ c        DO 6 I=2,NI
     6   CONTINUE
       endif
 
-      if (zef01 .eq. nk) then
+      if (zef01 .eq. nk_boundary) then
         do 7 j=gysf2,gyef01
         do 7 i=gxsf2,gxef01
 c        DO 7 J=2,NJ
 c        DO 7 I=2,NI
-        ADA=AKX(I,J,NK)**2+AKY(I,J,NK)**2+AKZ(I,J,NK)**2
-        QDA=RU(I,J,NK)*AKX(I,J,NK)+RV(I,J,NK)*AKY(I,J,NK)
-     *     +RW(I,J,NK)*AKZ(I,J,NK)
-        R(I,J,NK1)=R(I,J,NK)
-        E(I,J,NK1)=E(I,J,NK)
-        P(I,J,NK1)=P(I,J,NK)
+        ADA=AKX(I,J,NK_BOUNDARY)**2+AKY(I,J,NK_BOUNDARY)**2
+     &      +AKZ(I,J,NK_BOUNDARY)**2
+        QDA=RU(I,J,NK_BOUNDARY)*AKX(I,J,NK_BOUNDARY)
+     &     +RV(I,J,NK_BOUNDARY)*AKY(I,J,NK_BOUNDARY)
+     &     +RW(I,J,NK_BOUNDARY)*AKZ(I,J,NK_BOUNDARY)
+        R(I,J,NK1_BOUNDARY)=R(I,J,NK_BOUNDARY)
+        E(I,J,NK1_BOUNDARY)=E(I,J,NK_BOUNDARY)
+        P(I,J,NK1_BOUNDARY)=P(I,J,NK_BOUNDARY)
         FF=two*QDA/ADA
-        RU(I,J,NK1)=RU(I,J,NK)-FF*AKX(I,J,NK)
-        RV(I,J,NK1)=RV(I,J,NK)-FF*AKY(I,J,NK)
-        RW(I,J,NK1)=RW(I,J,NK)-FF*AKZ(I,J,NK)
+        RU(I,J,NK1_BOUNDARY)=
+     &   RU(I,J,NK_BOUNDARY)-FF*AKX(I,J,NK_BOUNDARY)
+        RV(I,J,NK1_BOUNDARY)=
+     &   RV(I,J,NK_BOUNDARY)-FF*AKY(I,J,NK_BOUNDARY)
+        RW(I,J,NK1_BOUNDARY)=
+     &   RW(I,J,NK_BOUNDARY)-FF*AKZ(I,J,NK_BOUNDARY)
     7   CONTINUE
       endif
 
