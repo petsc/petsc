@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.31 2000/09/28 17:27:13 curfman Exp balay $";
+! "$Id: ex2f.F,v 1.32 2000/09/28 17:49:40 balay Exp bsmith $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Processors: n
@@ -167,7 +167,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       dt = h/two_d0
-      call TSSetInitialTimeStep(ts,0.0,dt,ierr)
+      call TSSetInitialTimeStep(ts,0.d0,dt,ierr)
       call TSSetSolution(ts,u,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -381,7 +381,6 @@
 
 !  Compute the exact solution at this time-step.  Note that the
 !  solution vector is passed via the user-defined common block.
-      write(6,*) 'step, time = ',step, time
       call ExactSolution(time,ierr)
 
 !  Print debugging information if desired
