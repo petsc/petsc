@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.151 2000/01/11 21:00:05 bsmith Exp bsmith $*/
+/*$Id: vscat.c,v 1.152 2000/02/02 20:08:39 bsmith Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -776,14 +776,14 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     PLogInfo(ctx,"VecScatterCreate:Using combined (merged) vector scatter begin and end\n");
   }
 
-  ierr = VecGetLocalSize(xin,&ctx->to_n);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(yin,&ctx->from_n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(xin,&ctx->from_n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(yin,&ctx->to_n);CHKERRQ(ierr);
 
   /*
       if ix or iy is not included; assume just grabbing entire vector
   */
   if (!ix && xin_type == VECSEQ) {
-    ierr = ISCreateStride(comm,ctx->to_n,0,1,&ix);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm,ctx->from_n,0,1,&ix);CHKERRQ(ierr);
     tix  = ix;
   } else if (!ix && xin_type == VECMPI) {
     int bign;
@@ -795,7 +795,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   }
 
   if (!iy && yin_type == VECSEQ) {
-    ierr = ISCreateStride(comm,ctx->from_n,0,1,&iy);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm,ctx->to_n,0,1,&iy);CHKERRQ(ierr);
     tiy  = iy;
   } else if (!iy && yin_type == VECMPI) {
     int bign;
@@ -825,12 +825,12 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PLogObjectMemory(ctx,2*len);
       to->slots         = (int*)(to + 1); 
       to->n             = nx; 
-      ierr = VecScatterCheckIndices_Private(ctx->from_n,ny,idy);CHKERRQ(ierr);
+      ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
       ierr = PetscMemcpy(to->slots,idy,nx*sizeof(int));CHKERRQ(ierr);
       from              = (VecScatter_Seq_General*)PetscMalloc(len);CHKPTRQ(from);
       from->slots       = (int*)(from + 1);
       from->n           = nx; 
-      ierr = VecScatterCheckIndices_Private(ctx->to_n,nx,idx);CHKERRQ(ierr);
+      ierr = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
       ierr =  PetscMemcpy(from->slots,idx,nx*sizeof(int));CHKERRQ(ierr);
       to->type          = VEC_SCATTER_SEQ_GENERAL; 
       from->type        = VEC_SCATTER_SEQ_GENERAL; 
@@ -891,7 +891,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PLogObjectMemory(ctx,len + sizeof(VecScatter_Seq_Stride));
       from9->slots   = (int*)(from9 + 1); 
       from9->n       = nx; 
-      ierr           = VecScatterCheckIndices_Private(ctx->to_n,nx,idx);CHKERRQ(ierr);
+      ierr           = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
       ierr           = PetscMemcpy(from9->slots,idx,nx*sizeof(int));CHKERRQ(ierr);
       ctx->todata    = (void*)to9; ctx->fromdata = (void*)from9;
       ctx->postrecvs = 0;
@@ -905,12 +905,12 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PLogInfo(xin,"VecScatterCreate:Special case: sequential vector general to stride\n");
       goto functionend;
     } else if (ix->type == IS_STRIDE && iy->type == IS_GENERAL){
-      int                    nx,ny,*idx,first,step;
+      int                    nx,ny,*idy,first,step;
       VecScatter_Seq_General *to10;
       VecScatter_Seq_Stride  *from10;
 
       ierr = ISGetSize(ix,&nx);CHKERRQ(ierr); 
-      ierr = ISGetIndices(iy,&idx);CHKERRQ(ierr);
+      ierr = ISGetIndices(iy,&idy);CHKERRQ(ierr);
       ierr = ISGetSize(iy,&ny);CHKERRQ(ierr); 
       ierr = ISStrideGetInfo(ix,&first,&step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
@@ -923,8 +923,8 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PLogObjectMemory(ctx,len + sizeof(VecScatter_Seq_Stride));
       to10->slots       = (int*)(to10 + 1); 
       to10->n           = nx; 
-      ierr = VecScatterCheckIndices_Private(ctx->to_n,nx,idx);CHKERRQ(ierr);
-      ierr = PetscMemcpy(to10->slots,idx,nx*sizeof(int));CHKERRQ(ierr);
+      ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
+      ierr = PetscMemcpy(to10->slots,idy,nx*sizeof(int));CHKERRQ(ierr);
       ctx->todata     = (void*)to10; 
       ctx->fromdata   = (void*)from10;
       ctx->postrecvs  = 0;
@@ -979,12 +979,12 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PLogObjectMemory(ctx,2*len);
       to11->slots       = (int*)(to11 + 1); 
       to11->n           = nx; 
-      ierr = VecScatterCheckIndices_Private(ctx->from_n,ny,idy);CHKERRQ(ierr);
+      ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
       ierr =  PetscMemcpy(to11->slots,idy,nx*sizeof(int));CHKERRQ(ierr);
       from11            = (VecScatter_Seq_General*)PetscMalloc(len);CHKPTRQ(from11);
       from11->slots     = (int*)(from11 + 1);
       from11->n         = nx; 
-      ierr = VecScatterCheckIndices_Private(ctx->to_n,nx,idx);CHKERRQ(ierr);
+      ierr = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
       ierr = PetscMemcpy(from11->slots,idx,nx*sizeof(int));CHKERRQ(ierr);
       to11->type        = VEC_SCATTER_SEQ_GENERAL; 
       from11->type      = VEC_SCATTER_SEQ_GENERAL; 
@@ -1420,8 +1420,8 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
    no error checking is performed.
   */
   if (inctx->from_n >= 0 && inctx->to_n >= 0) {
-    ierr = VecGetLocalSize(x,&to_n);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(y,&from_n);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(x,&from_n);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(y,&to_n);CHKERRQ(ierr);
     if (mode & SCATTER_REVERSE) {
       if (to_n != inctx->from_n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Vector wrong size for scatter");
       if (from_n != inctx->to_n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Vector wrong size for scatter");

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.301 2000/01/31 19:10:50 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.302 2000/02/22 14:38:21 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -41,7 +41,7 @@ info:
 	-@if [ -n "${C_FCV}" -a "${C_FCV}" != "unknown" ] ; then \
 	  echo "Fortran Compiler version:" ; ${C_FCV} ; fi
 	-@echo "-----------------------------------------"
-	-@grep PETSC_VERSION_NUMBER include/petsc.h | sed "s/........//"
+	-@grep PETSC_VERSION_NUMBER include/petscversion.h | sed "s/........//"
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "-----------------------------------------"

@@ -1,11 +1,11 @@
-/* $Id: petscversion.h,v 1.16 1999/10/05 19:46:53 curfman Exp balay $ */
+/* $Id: petscversion.h,v 1.17 1999/10/08 21:13:17 balay Exp bsmith $ */
 #if !defined(__PETSCVERSION_H)
 #define __PETSCVERSION_H
 
 /* ========================================================================== */
 /* 
    Current PETSc version number and release date, also listed in
-    docs/changes.html
+    Web page
     docs/tex/manual/manual.tex and
     docs/tex/manual/manual_tex.tex.
 */
