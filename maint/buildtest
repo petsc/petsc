@@ -16,7 +16,7 @@ set BALAY=/home/balay/petsc
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
-  set M =(snake  maverick   cyan       elvis         clyde       ptera        maverick   quad        caffeine   )
+  set M =(snake  maverick   cyan       elvis         clyde       ptera        maverick   quad        tiamat     )
   set B =(O      O_complex  g          g_c++         O_c++       Opg          O          O_c++       g          )
   set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha        sun4_uni   rs6000_quad solaris    )
   set S =(shared noshared   shared     noshared      noshared    shared       shared     shared      shared     )
@@ -29,7 +29,7 @@ if ($day == Sun) then
   set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY     )
 endif
 if ($day == Mon) then
-  set M =(snake  maverick   cyan       elvis         doc         ptera       maverick    quad        caffeine   )
+  set M =(snake  maverick   cyan       elvis         doc         ptera       maverick    quad        tiamat     )
   set B =(g      Opg_c++    O_c++      g             O           g_c++       Opg         O           Opg_complex)
   set A =(hpux   sun4       IRIX       freebsd       rs6000_p4   alpha_nolog sun4        rs6000_quad solaris    )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared     )
@@ -42,7 +42,7 @@ if ($day == Mon) then
   set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc  $LOIS       /tmp/petsc  $CCST       $BALAY     )
 endif  
 if ($day == Tue) then
-  set M =(snake  maverick   cyan       elvis         doc         ptera       maverick    quad        caffeine   )
+  set M =(snake  maverick   cyan       elvis         doc         ptera       maverick    quad        tiamat     )
   set B =(O      g          O_complex  O             g           O           Opg_c++     g           O_c++      )
   set A =(hpux   sun4       IRIX       freebsd       rs6000_p4   alpha       sun4        rs6000_quad solaris    )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared     )
@@ -55,7 +55,7 @@ if ($day == Tue) then
   set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc  $LOIS       /tmp/petsc  $CCST       $BALAY     )
 endif
 if ($day == Wed) then
-  set M =(snake  maverick   cyan       elvis         clyde       ptera       maverick    quad        caffeine   )
+  set M =(snake  maverick   cyan       elvis         clyde       ptera       maverick    quad        tiamat     )
   set B =(g      g_c++      Opg        g_complex     Opg_complex O_c++       Opg_c++     Opg_complex O          )
   set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha       sun4_uni    rs6000_quad solaris    )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared     )
@@ -68,7 +68,7 @@ if ($day == Wed) then
   set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY     )
 endif
 if ($day == Thu) then
-  set M =(snake  maverick   cyan       elvis         clyde       ptera       maverick    quad        caffeine   )
+  set M =(snake  maverick   cyan       elvis         clyde       ptera       maverick    quad        tiamat     )
   set B =(O      g_complex  g_c++      O_c++         g_c++       O_complex   Opg_complex g_c++       g          )
   set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha       sun4        rs6000_quad solaris    )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared     )
@@ -81,7 +81,7 @@ if ($day == Thu) then
   set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY     )
 endif  
 if ($day == Fri) then
-  set M =(snake  maverick   cyan       elvis         clyde       ptera       maverick    quad        caffeine   )
+  set M =(snake  maverick   cyan       elvis         clyde       ptera       maverick    quad        tiamat     )
   set B =(g      O_c++      g_complex  O_complex     g_complex   g_complex   Opg         g_complex   g_c++      )
   set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha       sun4        rs6000_quad solaris    )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared     )
@@ -94,7 +94,7 @@ if ($day == Fri) then
   set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY     )
 endif
 if ($day == Sat) then
-  set M =(snake  maverick   cyan       elvis         doc         ptera       maverick    quad        caffeine   )
+  set M =(snake  maverick   cyan       elvis         doc         ptera       maverick    quad        tiamat     )
   set B =(O      O          O          Opg_complex   O           Opg_c++     g_complex   Opg         O_complex  )
   set A =(hpux   sun4       IRIX       freebsd       rs6000_p4   alpha       sun4_uni    rs6000_quad solaris    )
   set S =(shared noshared   shared     noshared      noshared    shared      shared      shared      shared     )
