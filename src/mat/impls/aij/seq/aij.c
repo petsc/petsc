@@ -582,7 +582,7 @@ PetscErrorCode MatView_SeqAIJ(Mat A,PetscViewer viewer)
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by SeqAIJ matrices",((PetscObject)viewer)->type_name);
   }
-  /* Call parent MatView here */
+  ierr = MatView_Inode(A,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -643,7 +643,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr); 
   A->same_nonzero = PETSC_TRUE;
 
-  /* Call parent MatAssemblyEnd here */
+  ierr = MatAssemblyEnd_Inode(A,mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -693,7 +693,9 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   if (a->coloring) {ierr = ISColoringDestroy(a->coloring);CHKERRQ(ierr);}
   if (a->xtoy) {ierr = PetscFree(a->xtoy);CHKERRQ(ierr);}
   if (a->compressedrow.use){ierr = PetscFree(a->compressedrow.i);} 
-  
+
+  ierr = MatDestroy_Inode(A);CHKERRQ(ierr);
+
   ierr = PetscFree(a);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSeqAIJSetColumnIndices_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -704,8 +706,6 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatIsTranspose_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSeqAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatReorderForNonzeroDiagonal_C","",PETSC_NULL);CHKERRQ(ierr);
-
-  /* Call parent destroy anywhere in this routine */
   PetscFunctionReturn(0);
 }
 
@@ -721,7 +721,8 @@ PetscErrorCode MatCompress_SeqAIJ(Mat A)
 #define __FUNCT__ "MatSetOption_SeqAIJ"
 PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;  
   switch (op) {
@@ -773,7 +774,7 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op)
     default:
       break;
   }
-  /* Call parent MatSetOption here */
+  ierr = MatSetOption_Inode(A,op);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1877,12 +1878,12 @@ PetscErrorCode MatPrintHelp_SeqAIJ(Mat A)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = MatPrintHelp_Inode(A);CHKERRQ(ierr);
   if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
   ierr = (*PetscHelpPrintf)(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_lu_pivotthreshold <threshold>: Set pivoting threshold\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_no_compressedrow: Do not use compressedrow\n");CHKERRQ(ierr);
-  /* Call parent MatPrintHelp here */
   PetscFunctionReturn(0);
 }
 
@@ -2678,7 +2679,6 @@ PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Comm must be of size 1");
 
-  /* Call parent MatCreate -- i.e., ChangeTypeName(SeqAIJ)&MatSetType(parent) */
   B->m = B->M = PetscMax(B->m,B->M);
   B->n = B->N = PetscMax(B->n,B->N);
 
@@ -2747,6 +2747,7 @@ PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatReorderForNonzeroDiagonal_C",
                                      "MatReorderForNonzeroDiagonal_SeqAIJ",
                                       MatReorderForNonzeroDiagonal_SeqAIJ);CHKERRQ(ierr);
+  ierr = MatCreate_Inode(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -2755,7 +2756,6 @@ EXTERN_C_END
 #define __FUNCT__ "MatDuplicate_SeqAIJ"
 PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
-  /* Not sure where to call parent MatDuplicate ... end I guess */
   Mat            C;
   Mat_SeqAIJ     *c,*a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -2845,7 +2845,9 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     c->compressedrow.rindex = PETSC_NULL;
   }
   C->same_nonzero = A->same_nonzero;
-  
+
+  ierr = MatDuplicate_Inode(A,cpvalues,&C);CHKERRQ(ierr);
+
   *B = C;
   ierr = PetscFListDuplicate(A->qlist,&C->qlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);

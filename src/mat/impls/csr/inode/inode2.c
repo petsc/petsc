@@ -1,4 +1,8 @@
 #include "src/mat/impls/csr/inode/inode.h"
+EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
+EXTERN PetscErrorCode MatInodeAdjustForInodes_Inode(Mat,IS*,IS*);
+EXTERN PetscErrorCode MatInodeGetInodeSizes_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_Inode"
@@ -133,10 +137,10 @@ PetscErrorCode MatPrintHelp_Inode(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_Inode"
-PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *B)
+PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
 {
-  Mat            C=PETSC_NULL;
-  Mat_inode      *c=(Mat_inode*)C->data,*a=(Mat_inode*)A->data;
+  Mat            B=*C;
+  Mat_inode      *c=(Mat_inode*)B->data,*a=(Mat_inode*)A->data;
   PetscErrorCode ierr;
   PetscInt       m=A->m;
 

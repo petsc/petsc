@@ -23,8 +23,15 @@ typedef struct {
   MAT_INODE_HEADER;
 } Mat_inode;
 
-EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
-EXTERN PetscErrorCode MatInodeAdjustForInodes_Inode(Mat,IS*,IS*);
-EXTERN PetscErrorCode MatInodeGetInodeSizes_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
+EXTERN PetscErrorCode MatView_Inode(Mat,PetscViewer);
+EXTERN PetscErrorCode MatAssemblyEnd_Inode(Mat,MatAssemblyType);
+EXTERN PetscErrorCode MatDestroy_Inode(Mat);
+EXTERN PetscErrorCode MatCreate_Inode(Mat);
+EXTERN PetscErrorCode MatSetOption_Inode(Mat,MatOption);
+EXTERN PetscErrorCode MatPrintHelp_Inode(Mat);
+EXTERN PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *B);
+EXTERN PetscErrorCode MatILUDTFactor_Inode(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *fact);
+EXTERN PetscErrorCode MatLUFactorSymbolic_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact);
+EXTERN PetscErrorCode MatILUFactorSymbolic_Inode(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *fact);
 
 #endif
