@@ -7,8 +7,8 @@
 set DATAFILESPATH=/home/petsc/datafiles
 set NICE=''
 set APPEND='>>&'
-set RSH='ssh'
-set RCP='scp -q -B'
+set RSH='ssh -1'
+set RCP='scp -q -B -oProtocol=1'
 set CONFIGURE='no'
 
 source /sandbox/petsc/petsc-test/bmake/$1/buildtest
