@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.30 1997/09/11 21:55:35 balay Exp bsmith $ 
+# $Id: base.site,v 1.31 1997/11/03 04:39:47 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -17,7 +17,7 @@ FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /home/petsc/libm.a
 #FC_LIB        = /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# or see $(PETSC_DIR)/docs/installation.html for information on retrieving them.
 #
 # If your machine has the file /usr/lang/SC3.0.1/lib/libsunperf.a then
 # you can use -lsunperf or /usr/lang/SC3.0.1/lib/libsunperf.a below as the 
@@ -38,6 +38,9 @@ MPI_INCLUDE    = -I/usr/local/mpi/include
 #MPIRUN        = /usr/local/mpi/bin/mpirun
 MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 #
+# ----------------------------------------------------------------------------------------  
+#  Locations of optional packages. Comment out those you do not have and change the 
+#  values in PCONF below accordingly.
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
