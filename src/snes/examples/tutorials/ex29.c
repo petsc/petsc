@@ -72,11 +72,11 @@ typedef struct {
 } TstepCtx;
 
 typedef struct {
-  PetscScalar phi,U,psi,F;
+  PetscScalar phi,psi,U,F;
 } Field;
 
 typedef struct {
-  PassiveScalar phi,U,psi,F;
+  PassiveScalar phi,psi,U,F;
 } PassiveField;
 
 typedef struct {
@@ -93,6 +93,7 @@ typedef struct {
   Parameter    *param;
 } AppCtx;
 
+extern int DAGetMatrix_Specialized(DA,MatType,Mat*);
 extern int FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
 extern int Update(DMMG *);
 extern int Initialize(DMMG *);
@@ -111,6 +112,7 @@ int main(int argc,char **argv)
   int        i,ierr;
   MPI_Comm   comm;
   DA         da;
+  PetscTruth defaultnonzerostructure = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -127,6 +129,13 @@ int main(int argc,char **argv)
       for principal unknowns (x) and governing residuals (f)
     */
     ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,-6,-6,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+
+    /* overwrite the matrix allocation routine with one specific for this codes nonzero structure */
+    ierr = PetscOptionsHasName(PETSC_NULL,"-default_nonzero_structure",&defaultnonzerostructure);CHKERRQ(ierr);
+    if (!defaultnonzerostructure) {
+      ierr = DASetGetMatrix(da,DAGetMatrix_Specialized);CHKERRQ(ierr);
+    }
+
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
@@ -142,8 +151,8 @@ int main(int argc,char **argv)
     ierr = PetscOptionsHasName(PETSC_NULL,"-contours",&param.draw_contours);CHKERRQ(ierr);
 
     ierr = DASetFieldName(DMMGGetDA(dmmg),0,"phi");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDA(dmmg),1,"U");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDA(dmmg),2,"psi");CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDA(dmmg),1,"psi");CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDA(dmmg),2,"U");CHKERRQ(ierr);
     ierr = DASetFieldName(DMMGGetDA(dmmg),3,"F");CHKERRQ(ierr);
 
     /*======================================================================*/
@@ -229,6 +238,7 @@ int main(int argc,char **argv)
     }
     ierr = PetscFree(user); CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg); CHKERRQ(ierr);
+
     PreLoadEnd();
     
   ierr = PetscFinalize();CHKERRQ(ierr);
@@ -552,9 +562,13 @@ int Update(DMMG *dmmg)
     snes = DMMGGetSNES(dmmg);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d / lin = %d\n", its,lits);CHKERRQ(ierr);
+    if (print_flag) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d / lin = %d\n", its,lits);CHKERRQ(ierr);
+    }
     ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of unsuccessful = %d\n", nfails);CHKERRQ(ierr);
+    if (print_flag) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of unsuccessful = %d\n", nfails);CHKERRQ(ierr);
+    }
     nfailsCum += nfails; nfails = 0;
     if (nfailsCum >= 2) SETERRQ(1,"Unable to find a Newton Step");
 
@@ -570,13 +584,15 @@ int Update(DMMG *dmmg)
       if (param->draw_contours) {
 	ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
       }
-      /* compute maxima */
-      ComputeMaxima((DA) dmmg[param->mglevels-1]->dm, dmmg[param->mglevels-1]->x, tsCtx->t);
-      /* output */
-      if (ic_out++ == (int)(tsCtx->dt_out / tsCtx->dt + .5)) {
-	ierr = Gnuplot((DA) dmmg[param->mglevels-1]->dm,
-		       dmmg[param->mglevels-1]->x, tsCtx->t);CHKERRQ(ierr);
-	ic_out = 1;
+      if (print_flag) {
+	/* compute maxima */
+	ComputeMaxima((DA) dmmg[param->mglevels-1]->dm, dmmg[param->mglevels-1]->x, tsCtx->t);
+	/* output */
+	if (ic_out++ == (int)(tsCtx->dt_out / tsCtx->dt + .5)) {
+	  ierr = Gnuplot((DA) dmmg[param->mglevels-1]->dm,
+			 dmmg[param->mglevels-1]->x, tsCtx->t);CHKERRQ(ierr);
+	  ic_out = 1;
+        }
       }
     }
   } /* End of time step loop */
@@ -651,5 +667,198 @@ int AttachNullSpace(PC pc,Vec model)
   ierr  = VecDestroy(v);CHKERRQ(ierr);
   ierr  = PCNullSpaceAttach(pc,sp);CHKERRQ(ierr);
   ierr  = MatNullSpaceDestroy(sp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+      Computes the nonzero structure of the Jacobian matrix for exactly this problem with 
+  this discretization. Note the general (default) matrix generation will assume complete coupling 
+  within and between the 4 by 4 blocks at each grid point
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetMatrix_Specialized" 
+int DAGetMatrix_Specialized(DA da,MatType ignored,Mat *J)
+{
+  int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
+  int                    lstart,lend,pstart,pend,*dnz,*onz,size;
+  int                    dims[2],starts[2];
+  MPI_Comm               comm;
+  PetscScalar            *values;
+  ISLocalToGlobalMapping ltog;
+  DAStencilType          st;
+
+  PetscFunctionBegin;
+  /*     
+         nc - number of components per grid point 
+         col - number of colors needed in one direction for single component problem
+  
+  */
+  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,0,&st);CHKERRQ(ierr);
+  col = 2*s + 1;
+  if ((m % col)){ 
+    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+                 by 2*stencil_width + 1\n");
+  }
+  if ((n % col)){ 
+    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+                 by 2*stencil_width + 1\n");
+  }
+
+  ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  /* create empty Jacobian matrix */
+  ierr = MatCreate(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
+
+  ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+  ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc(col*col*nc*nc*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  
+  /* determine the matrix preallocation information */
+  ierr = MatPreallocateInitialize(comm,nc*nx*ny,nc*nx*ny,dnz,onz);CHKERRQ(ierr);
+  for (i=xs; i<xs+nx; i++) {
+
+    pstart = -s;
+    pend   = s;
+
+    for (j=ys; j<ys+ny; j++) {
+      slot = i - gxs + gnx*(j - gys);
+
+      lstart = -s;
+      lend   = s;
+
+      /* phi row */
+      cnt     = 0;
+      for (l=lstart; l<lend+1; l++) {
+	for (p=pstart; p<pend+1; p++) {
+	  if ((!l || !p)) {
+	    cols[cnt++]  = 0 + nc*(slot + gnx*l + p); /* coupling to phi */ 
+            if (!l && !p) {
+  	      cols[cnt++]  = 2 + nc*(slot + gnx*l + p); /* coupling to U */ 
+            }
+	  }
+	}
+      }
+      rows[0] = 0 + nc*slot;
+      ierr = MatPreallocateSetLocal(ltog,1,rows,cnt,cols,dnz,onz);CHKERRQ(ierr);
+
+      /* psi row */
+      cnt     = 0;
+      for (l=lstart; l<lend+1; l++) {
+	for (p=pstart; p<pend+1; p++) {
+	  if ((!l || !p)) {
+	    cols[cnt++]  = 1 + nc*(slot + gnx*l + p); /* coupling to psi */ 
+            if (!l && !p) {
+  	      cols[cnt++]  = 3 + nc*(slot + gnx*l + p); /* coupling to F */ 
+            }
+	  }
+	}
+      }
+      rows[0] = 1 + nc*slot;
+      ierr = MatPreallocateSetLocal(ltog,1,rows,cnt,cols,dnz,onz);CHKERRQ(ierr);
+
+      /* U and F rows */
+      cnt     = 0;
+      for (l=lstart; l<lend+1; l++) {
+	for (p=pstart; p<pend+1; p++) {
+	  if ((!l || !p)) {
+	    cols[cnt++]  = 0 + nc*(slot + gnx*l + p); /* coupling to phi */ 
+	    cols[cnt++]  = 1 + nc*(slot + gnx*l + p); /* coupling to psi */
+	    cols[cnt++]  = 2 + nc*(slot + gnx*l + p); /* coupling to U */ 
+	    cols[cnt++]  = 3 + nc*(slot + gnx*l + p); /* coupling to F */
+	  }
+	}
+      }
+      rows[0] = 2 + nc*slot;
+      rows[1] = 3 + nc*slot;
+      ierr = MatPreallocateSetLocal(ltog,2,rows,cnt,cols,dnz,onz);CHKERRQ(ierr);
+    }
+  }
+  /* set matrix type and preallocation information */
+  if (size > 1) {
+    ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
+  }
+  ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);  
+  ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);  
+  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&starts[0],&starts[1],PETSC_IGNORE,&dims[0],&dims[1],PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = MatSetStencil(*J,2,dims,starts,nc);CHKERRQ(ierr);
+
+  /*
+    For each node in the grid: we get the neighbors in the local (on processor ordering
+    that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
+    PETSc ordering.
+  */
+  for (i=xs; i<xs+nx; i++) {
+    
+    pstart = -s;
+    pend   = s;
+      
+    for (j=ys; j<ys+ny; j++) {
+      slot = i - gxs + gnx*(j - gys);
+      
+      lstart = -s;
+      lend   = s;
+
+      /* phi row */
+      cnt     = 0;
+      for (l=lstart; l<lend+1; l++) {
+	for (p=pstart; p<pend+1; p++) {
+	  if ((!l || !p)) {
+	    cols[cnt++]  = 0 + nc*(slot + gnx*l + p); /* coupling to phi */ 
+            if (!l && !p) {
+  	      cols[cnt++]  = 2 + nc*(slot + gnx*l + p); /* coupling to U */ 
+            }
+	  }
+	}
+      }
+      rows[0] = 0 + nc*slot;
+      ierr = MatSetValuesLocal(*J,1,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+
+      /* psi row */
+      cnt     = 0;
+      for (l=lstart; l<lend+1; l++) {
+	for (p=pstart; p<pend+1; p++) {
+	  if ((!l || !p)) {
+	    cols[cnt++]  = 1 + nc*(slot + gnx*l + p); /* coupling to psi */ 
+            if (!l && !p) {
+  	      cols[cnt++]  = 3 + nc*(slot + gnx*l + p); /* coupling to F */ 
+            }
+	  }
+	}
+      }
+      rows[0] = 1 + nc*slot;
+      ierr = MatSetValuesLocal(*J,1,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+
+      /* U and F rows */
+      cnt     = 0;
+      for (l=lstart; l<lend+1; l++) {
+	for (p=pstart; p<pend+1; p++) {
+	  if ((!l || !p)) {
+	    cols[cnt++]  = 0 + nc*(slot + gnx*l + p); /* coupling to phi */ 
+	    cols[cnt++]  = 1 + nc*(slot + gnx*l + p); /* coupling to psi */
+	    cols[cnt++]  = 2 + nc*(slot + gnx*l + p); /* coupling to U */ 
+	    cols[cnt++]  = 3 + nc*(slot + gnx*l + p); /* coupling to F */
+	  }
+	}
+      }
+      rows[0] = 2 + nc*slot;
+      rows[1] = 3 + nc*slot;
+      ierr = MatSetValuesLocal(*J,2,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(values);CHKERRQ(ierr);
+  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = PetscFree(cols);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }

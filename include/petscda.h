@@ -190,6 +190,7 @@ EXTERN int DAFormFunctioniTest1(DA,void*);
 #include "petscmat.h"
 EXTERN int DAGetColoring(DA,ISColoringType,ISColoring *);
 EXTERN int DAGetMatrix(DA,MatType,Mat *);
+EXTERN int DASetGetMatrix(DA,int (*)(DA,MatType,Mat *));
 EXTERN int DAGetInterpolation(DA,DA,Mat*,Vec*);
 
 EXTERN int DAGetAdicArray(DA,PetscTruth,void**,void**,int*);

@@ -877,7 +877,31 @@ int DARefine(DA da,MPI_Comm comm,DA *daref)
   } else if (da->dim == 3) {
     ierr = DACreate3d(da->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
   }
+  /* allow overloaded (user replaced) operations to be inherited by refinement clones */
+  da2->ops->getmatrix        = da->ops->getmatrix;
+  da2->ops->getinterpolation = da->ops->getinterpolation;
+  da2->ops->getcoloring      = da->ops->getcoloring;
   *daref = da2;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+     DASetGetMatrix - Sets the routine used by the DA to allocate a matrix.
+
+    Collective on DA
+
+  Input Parameters:
++    da - the DA object
+-    f - the function that allocates the matrix for that specific DA
+
+  Level: developer
+
+.seealso: DAGetMatrix()
+@*/
+int DASetGetMatrix(DA da,int (*f)(DA,MatType,Mat*))
+{
+  PetscFunctionBegin;
+  da->ops->getmatrix = f;
   PetscFunctionReturn(0);
 }
 
