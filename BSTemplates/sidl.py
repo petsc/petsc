@@ -265,7 +265,7 @@ class CompileDefaults (Defaults):
           actions.append(implAction)
 
         if lang in self.clientLanguages:
-          libraries.append(self.getClientLibrary(lang))
+          libraries.extend(self.getClientLibrary(lang))
         self.addBabelLib(libraries, package)
         if self.extraLibraries.has_key(package):
           libraries.extend(self.extraLibraries[package])
