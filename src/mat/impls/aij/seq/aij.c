@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.109 1995/11/02 04:25:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.110 1995/11/06 19:21:06 bsmith Exp balay $";
 #endif
 
 /*
@@ -1206,15 +1206,17 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   PLogObjectMemory(B,len+2*(m+1)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_SeqAIJ));
   for ( i=0; i<b->m; i++ ) { b->ilen[i] = 0;}
 
-  b->nz          = 0;
-  b->maxnz       = nz;
-  b->sorted      = 0;
-  b->roworiented = 1;
-  b->nonew       = 0;
-  b->diag        = 0;
-  b->assembled   = 0;
-  b->solve_work  = 0;
-  b->spptr       = 0;
+  b->nz               = 0;
+  b->maxnz            = nz;
+  b->sorted           = 0;
+  b->roworiented      = 1;
+  b->nonew            = 0;
+  b->diag             = 0;
+  b->assembled        = 0;
+  b->solve_work       = 0;
+  b->spptr            = 0;
+  b->inode.node_count = 0;
+  b->inode.size       = 0;
 
   *A = B;
   if (OptionsHasName(0,"-mat_aij_superlu")) {
@@ -1287,11 +1289,22 @@ int MatCopyPrivate_SeqAIJ(Mat A,Mat *B,int cpvalues)
     }
   }
   else c->diag        = 0;
+  if( a->inode.size){
+    c->inode.size       = (int *) PetscMalloc( m *sizeof(int) ); CHKPTRQ(c->inode.size);
+    c->inode.node_count = a->inode.node_count;
+    PetscMemcpy( c->inode.size, a->inode.size, m*sizeof(int));
+  } else {
+    c->inode.size       = 0;
+    c->inode.node_count = 0;
+  }
   c->assembled        = 1;
   c->nz               = a->nz;
   c->maxnz            = a->maxnz;
   c->solve_work       = 0;
   c->spptr            = 0;
+  b->inode.node_count = 0;
+  b->inode.size       = 0;
+
   *B = C;
   return 0;
 }
