@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.60 2000/04/12 04:24:17 bsmith Exp balay $*/
+/*$Id: fdmatrix.c,v 1.61 2000/05/05 22:16:39 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -10,23 +10,14 @@
 #include "src/vec/vecimpl.h"  
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringView_Draw"
-static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
+#define __FUNC__ /*<a name="MatFDColoringView_Draw_Zoom"></a>*/"MatFDColoringView_Draw_Zoom"
+static int MatFDColoringView_Draw_Zoom(Draw draw,void *Aa)
 {
-  int         ierr,i,j,pause;
-  PetscTruth  isnull;
-  Draw        draw;
-  PetscReal   xr,yr,xl,yl,h,w,x,y,xc,yc,scale = 0.0;
-  DrawButton  button;
+  MatFDColoring fd = (MatFDColoring)Aa;
+  int           ierr,i,j;
+  PetscReal     x,y;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
-  ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
-
-  xr  = fd->N; yr = fd->M; h = yr/10.0; w = xr/10.0; 
-  xr += w;    yr += h;  xl = -w;     yl = -h;
-  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
 
   /* loop over colors  */
   for (i=0; i<fd->ncolors; i++) {
@@ -36,33 +27,29 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
       ierr = DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);CHKERRQ(ierr);
     }
   }
-  ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr); 
-  ierr = DrawGetPause(draw,&pause);CHKERRQ(ierr);
-  if (pause >= 0) { PetscSleep(pause); PetscFunctionReturn(0);}
-  ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
-  while (button != BUTTON_RIGHT) {
-    ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
-    if (button == BUTTON_LEFT) scale = .5;
-    else if (button == BUTTON_CENTER) scale = 2.;
-    xl = scale*(xl + w - xc) + xc - w*scale;
-    xr = scale*(xr - w - xc) + xc + w*scale;
-    yl = scale*(yl + h - yc) + yc - h*scale;
-    yr = scale*(yr - h - yc) + yc + h*scale;
-    w *= scale; h *= scale;
-    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
-    /* loop over colors  */
-    for (i=0; i<fd->ncolors; i++) {
-      for (j=0; j<fd->nrows[i]; j++) {
-        y = fd->M - fd->rows[i][j] - fd->rstart;
-        x = fd->columnsforrow[i][j];
-        ierr = DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);CHKERRQ(ierr);
-      }
-    }
-    ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
-    ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
-  }
+  PetscFunctionReturn(0);
+}
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatFDColoringView_Draw"></a>*/"MatFDColoringView_Draw"
+static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
+{
+  int         ierr;
+  PetscTruth  isnull;
+  Draw        draw;
+  PetscReal   xr,yr,xl,yl,h,w,x,y;
+
+  PetscFunctionBegin;
+  ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+  ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+
+  ierr = PetscObjectCompose((PetscObject)fd,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
+
+  xr  = fd->N; yr = fd->M; h = yr/10.0; w = xr/10.0; 
+  xr += w;    yr += h;  xl = -w;     yl = -h;
+  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  ierr = DrawZoom(draw,MatFDColoringView_Draw_Zoom,fd);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)fd,"Zoomviewer",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -87,6 +74,11 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
         the file.  All other processors send their 
         data to the first processor to print. 
 -     VIEWER_DRAW_WORLD - graphical display of nonzero structure
+
+   Notes:
+     Since PETSc uses only a small number of basic colors (currently 33), if the coloring
+   involves moe than 33 then some seemingly identical colors are displayed making it look
+   like an illegal coloring. This is just a graphical artifact.
 
 .seealso: MatFDColoringCreate()
 
@@ -423,8 +415,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   if (M != N) SETERRQ(PETSC_ERR_SUP,0,"Only for square matrices");
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_COOKIE,0,"MatFDColoring",comm,
-                    MatFDColoringDestroy,MatFDColoringView);
+  PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_COOKIE,0,"MatFDColoring",comm,MatFDColoringDestroy,MatFDColoringView);
   PLogObjectCreate(c);
 
   if (mat->ops->fdcoloringcreate) {
@@ -515,7 +506,7 @@ int MatFDColoringDestroy(MatFDColoring c)
 int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
   int           k,ierr,N,start,end,l,row,col,srow;
-  Scalar        dx,mone = -1.0,*y,*scale = coloring->scale,*xx,*wscale = coloring->wscale;
+  Scalar        dx,mone = -1.0,*y,*scale = coloring->scale,*xx,*wscale = coloring->wscale,*w3_array;
   PetscReal     epsilon = coloring->error_rel,umin = coloring->umin; 
   MPI_Comm      comm = coloring->comm;
   Vec           w1,w2,w3;
@@ -558,6 +549,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 
   ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
   for (k=0; k<coloring->ncolors; k++) { 
+    ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
     ierr = VecCopy(x1,w3);CHKERRQ(ierr);
     /*
        Loop over each column associated with color adding the 
@@ -574,10 +566,11 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
       else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
-      dx          *= epsilon;
-      wscale[col] = 1.0/dx;
-      ierr = VecSetValues(w3,1,&col,&dx,ADD_VALUES);CHKERRQ(ierr); 
+      dx                    *= epsilon;
+      wscale[col]            = 1.0/dx;
+      w3_array[col - start] += dx;
     } 
+    ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
 
     /*
        Evaluate function at x1 + dx (here dx is a vector of perturbations)
