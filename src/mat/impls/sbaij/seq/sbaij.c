@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.25 2000/09/14 20:42:31 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.26 2000/09/15 15:11:04 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -134,6 +134,11 @@ int MatDestroy_SeqSBAIJ(Mat A)
   if (a->mult_work) {ierr = PetscFree(a->mult_work);CHKERRQ(ierr);}
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   if (a->saved_values) {ierr = PetscFree(a->saved_values);CHKERRQ(ierr);}
+
+  if (a->inew){
+    ierr = PetscFree(a->inew); CHKERRQ(ierr);
+    a->inew = 0;
+  }
   ierr = PetscFree(a);CHKERRQ(ierr);
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
@@ -961,12 +966,11 @@ extern int MatMultAdd_SeqSBAIJ_6(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqSBAIJ_7(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqSBAIJ_N(Mat,Vec,Vec,Vec);
 
-#ifdef MatIncompleteCholeskyFactor
-/* This function is modified from MatILUFactor_SeqSBAIJ. 
-   Needs further work! Don't forget to add the function to the matrix table. */
+#ifdef HAVE_MatIncompleteCholeskyFactor
+/* modefied from MatILUFactor_SeqSBAIJ, needs further work!  */
 #undef __FUNC__  
 #define __FUNC__ "MatIncompleteCholeskyFactor_SeqSBAIJ"
-int MatIncompleteCholeskyFactor_SeqSBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
+int MatIncompleteCholeskyFactor_SeqSBAIJ(Mat inA,IS row,PetscReal fill,int level)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)inA->data;
   Mat         outA;
@@ -974,18 +978,20 @@ int MatIncompleteCholeskyFactor_SeqSBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
   PetscTruth  row_identity,col_identity;
 
   PetscFunctionBegin;
-  if (info && info->levels != 0) SETERRQ(PETSC_ERR_SUP,0,"Only levels = 0 supported for in-place ILU");
+  /*
+  if (level != 0) SETERRQ(PETSC_ERR_SUP,0,"Only levels = 0 supported for in-place ILU"); 
   ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(col,&col_identity);CHKERRQ(ierr);
   if (!row_identity || !col_identity) {
-    SETERRQ(1,1,"Row and column permutations must be identity for in-place ILU");
+    SETERRQ(1,1,"Row and column permutations must be identity for in-place ICC");
   }
+  */
 
   outA          = inA; 
   inA->factor   = FACTOR_LU;
 
   if (!a->diag) {
-    ierr = MatMarkDiagonal_SeqBAIJ(inA);CHKERRQ(ierr);
+    ierr = MatMarkDiagonal_SeqSBAIJ(inA);CHKERRQ(ierr);
   }
   /*
       Blocksize 2, 3, 4, 5, 6 and 7 have a special faster factorization/solver 
@@ -993,47 +999,47 @@ int MatIncompleteCholeskyFactor_SeqSBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
   */
   switch (a->bs) {
   case 1:
-    inA->ops->solvetranspose   = MatSolveTranspose_SeqBAIJ_2_NaturalOrdering;
-    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering solvetrans BS=1\n");
+    inA->ops->solvetranspose   = MatSolve_SeqSBAIJ_2_NaturalOrdering; /* 2? */
+    PLogInfo(inA,"MatIncompleteCholeskyFactor_SeqSBAIJ:Using special in-place natural ordering solvetrans BS=1\n");
   case 2:
-    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
-    inA->ops->solve           = MatSolve_SeqBAIJ_2_NaturalOrdering;
-    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_2_NaturalOrdering;
-    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
+    inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqSBAIJ_2_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_2_NaturalOrdering;
+    PLogInfo(inA,"MatIncompleteCholeskyFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
     break;
   case 3:
-    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering;
-    inA->ops->solve           = MatSolve_SeqBAIJ_3_NaturalOrdering;
-    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_3_NaturalOrdering;
-    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=3\n");
+    inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqSBAIJ_3_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_3_NaturalOrdering;
+    PLogInfo(inA,"MatIncompleteCholeskyFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=3\n");
     break; 
   case 4:
-    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
-    inA->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
-    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering;
-    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
+    inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqSBAIJ_4_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_4_NaturalOrdering;
+    PLogInfo(inA,"MatIncompleteCholeskyFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
     break;
   case 5:
-    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
-    inA->ops->solve           = MatSolve_SeqBAIJ_5_NaturalOrdering;
-    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_5_NaturalOrdering;
-    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
+    inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqSBAIJ_5_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_5_NaturalOrdering;
+    PLogInfo(inA,"MatIncompleteCholeskyFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
     break;
   case 6: 
-    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering;
-    inA->ops->solve           = MatSolve_SeqBAIJ_6_NaturalOrdering;
-    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_6_NaturalOrdering;
-    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
+    inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqSBAIJ_6_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_6_NaturalOrdering;
+    PLogInfo(inA,"MatIncompleteCholeskyFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
     break; 
   case 7:
-    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
-    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_7_NaturalOrdering;
-    inA->ops->solve           = MatSolve_SeqBAIJ_7_NaturalOrdering;
-    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
+    inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_7_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqSBAIJ_7_NaturalOrdering;
+    PLogInfo(inA,"MatIncompleteCholeskyFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
     break; 
   default:
     a->row        = row;
-    a->col        = col;
+    a->icol       = col;
     ierr          = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
     ierr          = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
 
@@ -1047,7 +1053,7 @@ int MatIncompleteCholeskyFactor_SeqSBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
     }
   }
 
-  ierr = MatLUFactorNumeric(inA,&outA);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric(inA,&outA);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1446,6 +1452,7 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   b->jnew             = 0;
   b->anew             = 0;
   b->a2anew           = 0;
+  b->permute          = PETSC_FALSE;
   
   *A = B;
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
