@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.106 2001/07/10 02:22:22 buschelm Exp buschelm $*/
+/*$Id: umtr.c,v 1.107 2001/07/10 07:31:18 buschelm Exp buschelm $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 
@@ -103,28 +103,33 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
 
       ierr = SLESSolve(snes->sles,G,S,&qits);CHKERRQ(ierr);
       snes->linear_its += qits;
+      ierr = KSPQCGGetTrialStepNorm(ksp,&ltsnrm);CHKERRQ(ierr);
+      ierr = KSPQCGGetQuadratic(ksp,&quadratic);CHKERRQ(ierr);
       ierr = KSPGetConvergedReason(ksp,&kreason);CHKERRQ(ierr);
       if ((int)kreason < 0) SETERRQ(PETSC_ERR_PLIB,"Failure in SLESSolve");
       if (kreason != KSP_CONVERGED_QCG_NEG_CURVE && kreason != KSP_CONVERGED_QCG_CONSTRAINED) {
         newton = PETSC_TRUE;
       }
-      ierr = KSPQCGGetTrialStepNorm(ksp,&ltsnrm);CHKERRQ(ierr);
-      ierr = KSPQCGGetQuadratic(ksp,&quadratic);CHKERRQ(ierr);
       PetscLogInfo(snes,"SNESSolve_UM_TR: %d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
                i,ltsnrm,delta,quadratic,qits);
 
       ierr = VecWAXPY(&one,X,S,Xtrial);CHKERRQ(ierr); /* Xtrial <- X + S */
       ierr = VecNorm(Xtrial,NORM_2,&xnorm);CHKERRQ(ierr);
+
                            		               /* ftrial = f(Xtrial) */
       ierr = SNESComputeMinimizationFunction(snes,Xtrial,&ftrial);CHKERRQ(ierr);
 
+      /* Potentially unnecessary calls to get these values again since they might have changed */
+      /* in the Minimization Function evaluation above. */
+      ierr = KSPQCGGetQuadratic(ksp,&quadratic);CHKERRQ(ierr);
+      ierr = KSPQCGGetTrialStepNorm(ksp,&ltsnrm);CHKERRQ(ierr); 
+      /* If not unnecessary, should these values be logged? */
+
       /* Compute the function reduction and the step size */
-      ierr        = KSPQCGGetQuadratic(ksp,&quadratic);CHKERRQ(ierr); /* I don't think this is really necessary */
       neP->prered = -quadratic;
       neP->actred = snes->fc - ftrial;
 
       /* Adjust delta for the first Newton step */
-      ierr = KSPQCGGetTrialStepNorm(ksp,&ltsnrm);CHKERRQ(ierr); /* I don't think this is really necessary */
       if (!i && (newton)) delta = PetscMin(delta,ltsnrm);
 
       if (neP->actred < neP->eta1 * neP->prered) {  /* Unsuccessful step */
