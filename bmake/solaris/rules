@@ -1,4 +1,4 @@
-# $Id: base,v 1.51 1998/12/06 17:24:44 balay Exp bsmith $ 
+# $Id: base,v 1.52 1999/01/25 21:48:17 bsmith Exp bsmith $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -115,7 +115,13 @@ oshared: chkopts_basic
         echo "building ${LIBNAME}.${SLSUFFIX}"; \
 	${AR} x ${LIBNAME}.a ;\
 	${LD} -G  -h ${LIBNAME}.${SLSUFFIX} *.o  -o ${LIBNAME}.${SLSUFFIX} \
-              ${PETSC_LIB} -lC ; \
+               ${C_SYS_LIB} -lC ; \
 	cd ../ ; \
 	${RM} -rf tmp
+
+
+
+
+
+
 
