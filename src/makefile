@@ -1,7 +1,7 @@
-# $Id: makefile,v 1.45 1998/10/30 01:15:41 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.46 1999/01/27 19:45:22 bsmith Exp bsmith $ 
 
-DIRS     = inline is vec ksp sys pc mat sles draw ts dfvec \
-           viewer snes da contrib benchmarks ao
+DIRS     = inline vec sys mat sles ts dfvec \
+           snes dm contrib benchmarks 
 LOCDIR   = src/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
