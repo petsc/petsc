@@ -91,7 +91,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   int                ierr,nz,m=A->m,irow,nedges,
                      *ai,*aj,*ivec1, *ivec2, i;
   PetscScalar        *av;
-  double             *dvec;
+  double             *dvec,cputotal;
   
   PetscFunctionBegin;
   /* copy A to Spooles' InpMtx object */
@@ -247,7 +247,6 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   if(lu->options.FrontMtxInfo){
     PetscPrintf(PETSC_COMM_SELF,"\n %8d pivots, %8d pivot tests, %8d delayed rows and columns\n",\
                lu->stats[0], lu->stats[1], lu->stats[2]);
-    double cputotal;
     cputotal = lu->cpus[8] ;
     if ( cputotal > 0.0 ) {
       PetscPrintf(PETSC_COMM_SELF,

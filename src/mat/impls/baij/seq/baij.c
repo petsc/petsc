@@ -25,7 +25,7 @@ void matsetvaluesblocked4_(Mat *AA,int *mm,int *im,int *nn,int *in,MatScalar *v,
   Mat         A = *AA;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   int         *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,N,m = *mm,n = *nn;
-  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen;
+  int         *ai=a->i,*ailen=a->ilen;
   int         *aj=a->j,stepval;
   MatScalar   *value = v,*ap,*aa = a->a,*bap;
 
@@ -94,9 +94,9 @@ void matsetvalues4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *v,Inser
   Mat         A = *AA;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   int         *rp,k,low,high,t,ii,row,nrow,i,col,l,N,n = *nn,m = *mm;
-  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen;
+  int         *ai=a->i,*ailen=a->ilen;
   int         *aj=a->j,brow,bcol;
-  int         ridx,cidx,ierr;
+  int         ridx,cidx;
   MatScalar   *ap,value,*aa=a->a,*bap;
 
   PetscFunctionBegin;
