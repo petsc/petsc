@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.20 1999/04/08 18:52:33 balay Exp balay $ 
+# $Id: solid.make,v 1.21 1999/06/02 21:38:50 balay Exp balay $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.24"
@@ -70,7 +70,7 @@ arch=solaris
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 rsh -n fire "cd $hme/$src_dir; $make BOPT=g"
 rsh -n fire "cd $hme/$src_dir; $make BOPT=O"
-#rsh -n fire "cd $hme/$src_dir; $make BOPT=g_c++"
+rsh -n fire "cd $hme/$src_dir; $make BOPT=g_c++"
 #rsh -n fire "cd $hme/$src_dir; $make BOPT=O_c++"
 rsh -n fire "cd $hme/$src_dir; $make BOPT=g_complex"
 rsh -n fire "cd $hme/$src_dir; $make BOPT=O_complex"
@@ -105,6 +105,7 @@ make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 #make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action"
 rsh -n violet "cd $hme/$src_dir; $make BOPT=g"
 rsh -n violet "cd $hme/$src_dir; $make BOPT=O"
+rsh -n violet "cd $hme/$src_dir; $make BOPT=g_c++"
 
 # rs6000_shmem is used by Tom Canfeild on octa nodes
 ##arch=rs6000_shmem
