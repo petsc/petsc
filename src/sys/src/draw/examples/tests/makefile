@@ -17,6 +17,8 @@ SYSLIB   = -L$(LDIR) -lpetscdraw -lpetscsys \
            $(CLIB) $(X11LIB) $(SLIB) $(FCLIB) -lm 
 LINCLUDE = $(SOURCEH)
 
+runexamples:
+
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(SYSLIB)
 	$(RM) -f ex1.o

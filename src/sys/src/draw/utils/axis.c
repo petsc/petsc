@@ -344,14 +344,14 @@ static int XiADefTicks( double low, double high, int num, int *ntick,
 }
 
 #define EPS 1.e-6
-#if !defined(sun4) || defined(solaris)
+#if !defined(PARCH_sun4)
 static double exp10(double d )
 {
   return pow( 10.0, d );
 }
 #endif
 
-#if !defined(sun4) || defined(solaris)
+#if !defined(PARCH_sun4)
 static double Xifmod(double x,double y )
 {
   int     i;

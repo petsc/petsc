@@ -15,4 +15,6 @@ LINCLUDE  = $(SOURCEH)
 LIBBASE   = libpetscsys
 DIRS      = error
 
+runexamples:
+
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

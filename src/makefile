@@ -14,3 +14,4 @@ DIRS     = inline is vec ksp sys pc mat sles options draw
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 
+runexamples:

@@ -15,3 +15,5 @@ LINCLUDE = $(SOURCEH)
 DIRS     = general stride
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+
+runexamples:

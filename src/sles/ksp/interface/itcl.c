@@ -41,10 +41,8 @@ int KSPSetFromOptions(KSP ctx)
   */
   if (OptionsHasName(0,ctx->prefix,"-kspmonitor")){
     int mytid = 0;
-#if defined(__COMM_PACKAGE)
     MPI_Initialized(&mytid);
     if (mytid) MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-#endif
     if (!mytid) {
       KSPSetMonitor(ctx,KSPDefaultMonitor,(void *)0);
     }
@@ -56,10 +54,8 @@ int KSPSetFromOptions(KSP ctx)
   if (OptionsHasName(0,ctx->prefix,"-kspxmonitor")){
     int       ierr,mytid = 0;
     DrawLGCtx lg;
-#if defined(__COMM_PACKAGE)
     MPI_Initialized(&mytid);
     if (mytid) MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-#endif
     if (!mytid) {
       ierr = KSPLGMonitorCreate(0,0,0,0,300,300,&lg); CHKERR(ierr);
       KSPSetMonitor(ctx,KSPLGMonitor,(void *)lg);

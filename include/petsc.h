@@ -2,7 +2,12 @@
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#if PETSC_COMPLEX
+#if defined(PETSC_COMPLEX)
+/* work around for bug in alpha g++ compiler */
+#if defined(PARCH_alpha) 
+#define hypot(a,b) (double) sqrt((a)*(a)+(b)*(b)) 
+/* extern double hypot(double,double); */
+#endif
 #include <complex.h>
 #define PETSCREAL(a) real(a)
 #define Scalar       complex

@@ -15,4 +15,6 @@ LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 MANSEC   = 6
 
+runexamples:
+
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

@@ -14,4 +14,6 @@ LIBBASE  = libpetscdraw
 LINCLUDE = $(SOURCEH)
 DIRS     = x 
 
+runexamples:
+
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

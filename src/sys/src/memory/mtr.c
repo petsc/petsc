@@ -398,8 +398,8 @@ while (head) {
     key->size   = 0;
     key->lineno = head->lineno;
     key->fname  = head->fname;
-#if !defined(PARCH_IRIX) && !defined(PARCH_solaris) && !defined(PARCH_HPUX) && 
-    !defined(PARCH_rs6000)
+#if !defined(PARCH_IRIX) && !defined(PARCH_solaris) && !defined(PARCH_HPUX)\
+     && !defined(PARCH_rs6000)
     fnd    = (TRINFO **)tsearch( (char *) key, (char **) &root, IntCompare );
 #else
     fnd    = (TRINFO **)tsearch( (void *) key, (void **) &root, 
@@ -421,8 +421,7 @@ fprintf( fp, "The maximum space allocated was %d bytes [%d]\n",
   return 0;
 }
 #else
-int trSummary( fp )
-FILE *fp;
+int trSummary(FILE* fp )
 {
 fprintf( fp, "The maximum space allocated was %ld bytes [%ld]\n", 
 	 TRMaxMem, TRMaxMemId );

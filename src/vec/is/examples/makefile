@@ -16,4 +16,6 @@ SYSLIB   = -L$(LDIR) -lpetscvec -lpetscsys \
            $(BLAS) $(SLIB) -lm 
 LINCLUDE = $(SOURCEH)
 
+runexamples:
+
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

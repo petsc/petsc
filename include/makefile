@@ -1,6 +1,6 @@
 ITOOLSDIR = ../
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I$(ITOOLSDIR) $(CONF)
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(ITOOLSDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 WSOURCEC = 
@@ -13,18 +13,8 @@ LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 DIRS     = 
 
+runexamples:
+
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 
-all:
-	-cd sys; make BOPT=$(BOPT) PARCH=$(PARCH) workers
-	-@$(MAKE) BOPT=$(BOPT) PARCH=$(PARCH) libfasttree 
-
-ranlib:
-	$(RANLIB) $(LDIR)/$(COMPLEX)/*.a
-
-deletelibs:
-	-$(RM) $(LDIR)/*.o $(LDIR)/*.a $(LDIR)/complex/*
-
-deletemanpages:
-	$(RM) -f man/man*/*
 

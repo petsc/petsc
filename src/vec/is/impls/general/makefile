@@ -16,3 +16,5 @@ LINCLUDE = $(SOURCEH)
 MANSEC   = 6
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+
+runexamples:

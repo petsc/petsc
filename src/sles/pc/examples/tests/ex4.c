@@ -53,7 +53,7 @@ int main(int argc,char **args)
   }
 
   MatDestroy(mat);
-  PDDestroy(pc);
+  PCDestroy(pc);
   VecDestroy(u);
   VecDestroy(b);
   PetscFinalize();

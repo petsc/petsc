@@ -14,4 +14,6 @@ LIBBASE  = libpetscmat
 LINCLUDE = $(SOURCEH)
 DIRS     = seq
 
+runexamples:
+
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

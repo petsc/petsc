@@ -15,7 +15,8 @@ DIRS     = src include pinclude
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 
 all:
-	-@$(OMAKE) BOPT=$(BOPT) PARCH=$(PARCH) ACTION=libfast  tree 
+	-@$(OMAKE) BOPT=$(BOPT) PARCH=$(PARCH) COMPLEX=$(COMPLEX) \
+           ACTION=libfast  tree 
 	$(RANLIB) $(LDIR)/*.a
 
 ranlib:
@@ -39,7 +40,7 @@ etags:
 	$(RM) -f TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h src/*/examples/*.c
 	etags -a -f TAGS src/*/*.h */*.c src/*/src/*.c src/*/impls/*/*.c 
-	etags -a -f TAGS src/*/impls/*/*/*.c src/utils/*.c
+	etags -a -f TAGS src/*/impls/*/*/*.c src/*/utils/*.c
 	etags -a -f TAGS docs/design.tex src/sys/error/*.c
 	etags -a -f TAGS include/*.h pinclude/*.h
 
@@ -50,3 +51,5 @@ keywords:
 	cut -f3 -d: key1 > key3
 	paste key3 key2 > Keywords
 	$(RM) -f key1 key2 key3
+
+runexamples:

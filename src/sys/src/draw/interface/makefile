@@ -15,4 +15,6 @@ LIBBASE  = libpetscdraw
 LINCLUDE = $(SOURCEH)
 MANSEC   = x
 
+runexamples:
+
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

@@ -12,4 +12,6 @@ WOBJS    =
 LIBBASE  = libpetscksp
 LINCLUDE = 
 
+runexamples:
+
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

@@ -12,6 +12,8 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
-DIRS     = src tests examples
+DIRS     = src examples
+
+runexamples:
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

@@ -16,4 +16,6 @@ LINCLUDE = $(SOURCEH)
 DIRS     = complex
 MANSEC   = 2
 
+runexamples:
+
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
