@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.133 1999/03/17 23:22:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.134 1999/03/24 15:37:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -795,8 +795,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       int                    nx,ny,*idx,*idy;
       VecScatter_Seq_General *to,*from;
 
-      ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
-      ISGetSize(iy,&ny); ISGetIndices(iy,&idy);
+      ierr = ISGetSize(ix,&nx);CHKERRQ(ierr);
+      ierr = ISGetIndices(ix,&idx);CHKERRQ(ierr);
+      ierr = ISGetSize(iy,&ny); CHKERRQ(ierr);
+      ierr = ISGetIndices(iy,&idy);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       len               = sizeof(VecScatter_Seq_General) + nx*sizeof(int);
       to                = (VecScatter_Seq_General *) PetscMalloc(len); CHKPTRQ(to)
@@ -824,8 +826,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       int                    nx,ny,to_first,to_step,from_first,from_step;
       VecScatter_Seq_Stride  *from8,*to8;
 
-      ISGetSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
-      ISGetSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
+      ierr = ISGetSize(ix,&nx);CHKERRQ(ierr); 
+      ierr = ISStrideGetInfo(ix,&from_first,&from_step);CHKERRQ(ierr);
+      ierr = ISGetSize(iy,&ny);CHKERRQ(ierr); 
+      ierr = ISStrideGetInfo(iy,&to_first,&to_step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       to8                = PetscNew(VecScatter_Seq_Stride); CHKPTRQ(to8);
       to8->n             = nx; 
@@ -853,8 +857,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       VecScatter_Seq_General *from9;
       VecScatter_Seq_Stride  *to9;
 
-      ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
-      ISGetSize(iy,&ny); ISStrideGetInfo(iy,&first,&step);
+      ierr = ISGetSize(ix,&nx);CHKERRQ(ierr);
+      ierr = ISGetIndices(ix,&idx);CHKERRQ(ierr);
+      ierr = ISGetSize(iy,&ny); CHKERRQ(ierr);
+      ierr = ISStrideGetInfo(iy,&first,&step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       to9              = PetscNew(VecScatter_Seq_Stride); CHKPTRQ(to9);
       to9->n           = nx; 
@@ -883,14 +889,16 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       VecScatter_Seq_General *to10;
       VecScatter_Seq_Stride  *from10;
 
-      ISGetSize(ix,&nx); ISGetIndices(iy,&idx);
-      ISGetSize(iy,&ny); ISStrideGetInfo(ix,&first,&step);
+      ierr = ISGetSize(ix,&nx);CHKERRQ(ierr); 
+      ierr = ISGetIndices(iy,&idx);CHKERRQ(ierr);
+      ierr = ISGetSize(iy,&ny);CHKERRQ(ierr); 
+      ierr = ISStrideGetInfo(ix,&first,&step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       from10            = PetscNew(VecScatter_Seq_Stride);CHKPTRQ(from10);
       from10->n         = nx; 
       from10->first     = first; 
       from10->step      = step;
-      len             = sizeof(VecScatter_Seq_General) + nx*sizeof(int);
+      len               = sizeof(VecScatter_Seq_General) + nx*sizeof(int);
       to10              = (VecScatter_Seq_General *) PetscMalloc(len); CHKPTRQ(to10);
       PLogObjectMemory(ctx,len + sizeof(VecScatter_Seq_Stride));
       to10->slots       = (int *) (to10 + 1); 
@@ -904,8 +912,8 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ctx->destroy    = VecScatterDestroy_SGtoSG;
       ctx->end        = 0; 
       ctx->copy       = 0;
-      to10->type        = VEC_SCATTER_SEQ_GENERAL; 
-      from10->type      = VEC_SCATTER_SEQ_STRIDE; 
+      to10->type      = VEC_SCATTER_SEQ_GENERAL; 
+      from10->type    = VEC_SCATTER_SEQ_STRIDE; 
       *newctx         = ctx;
       PLogInfo(xin,"VecScatterCreate:Special case: sequential vector stride to general\n");
       goto functionend;
@@ -955,8 +963,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       VecScatter_Seq_Stride *from12,*to12;
 
       ierr = VecGetOwnershipRange(xin,&start,&end);CHKERRQ(ierr);
-      ISGetSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
-      ISGetSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
+      ierr = ISGetSize(ix,&nx); CHKERRQ(ierr);
+      ierr = ISStrideGetInfo(ix,&from_first,&from_step);CHKERRQ(ierr);
+      ierr = ISGetSize(iy,&ny);CHKERRQ(ierr); 
+      ierr = ISStrideGetInfo(iy,&to_first,&to_step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       if (ix->min >= start && ix->max < end ) islocal = 1; else islocal = 0;
       ierr = MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
@@ -993,8 +1003,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       int                  i,nx,ny,to_first,to_step,from_first,from_step,*count,N;
       VecScatter_MPI_ToAll *sto;
 
-      ISGetSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
-      ISGetSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
+      ierr = ISGetSize(ix,&nx); CHKERRQ(ierr);
+      ierr = ISStrideGetInfo(ix,&from_first,&from_step);CHKERRQ(ierr);
+      ierr = ISGetSize(iy,&ny);CHKERRQ(ierr); 
+      ierr = ISStrideGetInfo(iy,&to_first,&to_step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       ierr = VecGetSize(xin,&N);CHKERRQ(ierr);
       if (nx != N) {
@@ -1044,8 +1056,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
       ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
       MPI_Comm_rank(comm,&rank);
-      ISGetSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
-      ISGetSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
+      ierr = ISGetSize(ix,&nx); CHKERRQ(ierr);
+      ierr = ISStrideGetInfo(ix,&from_first,&from_step);CHKERRQ(ierr);
+      ierr = ISGetSize(iy,&ny); CHKERRQ(ierr);
+      ierr = ISStrideGetInfo(iy,&to_first,&to_step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       if (rank == 0) {
         ierr = VecGetSize(xin,&N);CHKERRQ(ierr);
@@ -1102,12 +1116,14 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ierr = ISBlockGetBlockSize(iy,&bsy); CHKERRQ(ierr);
         ierr = ISBlockGetBlockSize(ix,&bsx); CHKERRQ(ierr);
         if (bsx == bsy && (bsx == 12 || bsx == 5 || bsx == 4 || bsx == 3 || bsx == 2)) {
-          ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);
-          ISBlockGetSize(iy,&ny); ISBlockGetIndices(iy,&idy);
+          ierr = ISBlockGetSize(ix,&nx); CHKERRQ(ierr);
+          ierr = ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
+          ierr = ISBlockGetSize(iy,&ny); CHKERRQ(ierr);
+          ierr = ISBlockGetIndices(iy,&idy);CHKERRQ(ierr);
           if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
           ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,yin,bsx,ctx); CHKERRQ(ierr);
-          ISBlockRestoreIndices(ix,&idx);
-          ISBlockRestoreIndices(iy,&idy);
+          ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
+          ierr = ISBlockRestoreIndices(iy,&idy);CHKERRQ(ierr);
           *newctx = ctx;
           PLogInfo(xin,"VecScatterCreate:Special case: blocked indices\n");
           goto functionend;
@@ -1121,14 +1137,14 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         if (((bsx == 2) || (bsx == 3) || (bsx == 4) || (bsx == 5) || (bsx == 12)) && 
             ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
           int nx, *idx, *idy,il;
-          ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);
+          ierr = ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
           if (ysize != bsx*nx) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
           idy    = (int *) PetscMalloc( nx*sizeof(int) );CHKPTRQ(idy);
           idy[0] = ystart;
           for ( il=1; il<nx; il++ ) idy[il] = idy[il-1] + bsx; 
           ierr = VecScatterCreate_PtoS(nx,idx,nx,idy,xin,yin,bsx,ctx); CHKERRQ(ierr);
           PetscFree(idy);
-          ISBlockRestoreIndices(ix,&idx);
+          ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
           *newctx = ctx;
           PLogInfo(xin,"VecScatterCreate:Special case: blocked indices to stride\n");
           goto functionend;
@@ -1138,12 +1154,14 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     /* left over general case */
     {
       int nx,ny,*idx,*idy;
-      ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
-      ISGetSize(iy,&ny); ISGetIndices(iy,&idy);
+      ierr = ISGetSize(ix,&nx);CHKERRQ(ierr); 
+      ierr = ISGetIndices(ix,&idx);CHKERRQ(ierr);
+      ierr = ISGetSize(iy,&ny); CHKERRQ(ierr);
+      ierr = ISGetIndices(iy,&idy);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,yin,1,ctx); CHKERRQ(ierr);
-      ISRestoreIndices(ix,&idx);
-      ISRestoreIndices(iy,&idy);
+      ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
       *newctx = ctx;
       goto functionend;
     }
@@ -1157,8 +1175,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       VecScatter_Seq_Stride *from,*to;
 
       ierr = VecGetOwnershipRange(yin,&start,&end);CHKERRQ(ierr);
-      ISGetSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
-      ISGetSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
+      ierr = ISGetSize(ix,&nx); CHKERRQ(ierr);
+      ierr = ISStrideGetInfo(ix,&from_first,&from_step);CHKERRQ(ierr);
+      ierr = ISGetSize(iy,&ny);CHKERRQ(ierr); 
+      ierr = ISStrideGetInfo(iy,&to_first,&to_step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       if (iy->min >= start && iy->max < end ) islocal = 1; else islocal = 0;
       ierr = MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);CHKERRQ(ierr);
@@ -1181,6 +1201,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->end          = 0;  
         ctx->destroy      = VecScatterDestroy_SGtoSG;
         ctx->copy         = VecScatterCopy_PStoSS;
+        PLogInfo(xin,"VecScatterCreate:Special case: sequential stride to stride\n");
         *newctx           = ctx;
         goto functionend;
       }
@@ -1190,11 +1211,14 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     /* general case */
     {
       int nx,ny,*idx,*idy;
-      ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
-      ISGetSize(iy,&ny); ISGetIndices(iy,&idy);
+      ierr = ISGetSize(ix,&nx);CHKERRQ(ierr);
+      ierr = ISGetIndices(ix,&idx);CHKERRQ(ierr);
+      ierr = ISGetSize(iy,&ny); CHKERRQ(ierr);
+      ierr = ISGetIndices(iy,&idy);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       ierr = VecScatterCreate_StoP(nx,idx,ny,idy,yin,ctx); CHKERRQ(ierr);
-      ISRestoreIndices(ix,&idx); ISRestoreIndices(iy,&idy);
+      ierr = ISRestoreIndices(ix,&idx); CHKERRQ(ierr);
+      ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
       *newctx = ctx;
       goto functionend;
     }
@@ -1203,12 +1227,14 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   if (xin_type == VECMPI && yin_type == VECMPI) {
     /* no special cases for now */
     int nx,ny,*idx,*idy;
-    ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
-    ISGetSize(iy,&ny); ISGetIndices(iy,&idy);
+    ierr    = ISGetSize(ix,&nx);CHKERRQ(ierr); 
+    ierr    = ISGetIndices(ix,&idx);CHKERRQ(ierr);
+    ierr    = ISGetSize(iy,&ny);CHKERRQ(ierr); 
+    ierr    = ISGetIndices(iy,&idy);CHKERRQ(ierr);
     if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
     ierr    = VecScatterCreate_PtoP(nx,idx,ny,idy,xin,yin,ctx); CHKERRQ(ierr);
-    ISRestoreIndices(ix,&idx); 
-    ISRestoreIndices(iy,&idy);
+    ierr    = ISRestoreIndices(ix,&idx);CHKERRQ(ierr); 
+    ierr    = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
     *newctx = ctx;
     goto functionend;
   }
