@@ -243,7 +243,7 @@ class Builder(logging.Logger):
   def getCompiler(self):
     compiler = self.getLanguageProcessor().getCompilerObject(self.language[-1])
     compiler.checkSetup()
-    return self.getLanguageProcessor().argDB[compiler.name]
+    return compiler.getProcessor()
 
   def getCompilerFlags(self):
     return self.getLanguageProcessor().getCompilerObject(self.language[-1]).getFlags()
@@ -305,7 +305,7 @@ class Builder(logging.Logger):
   def getLinker(self):
     linker = self.getLanguageProcessor().getLinkerObject(self.language[-1])
     linker.checkSetup()
-    return self.getLanguageProcessor().argDB[linker.name]
+    return linker.getProcessor()
 
   def getLinkerFlags(self):
     return self.getLanguageProcessor().getLinkerObject(self.language[-1]).getFlags()

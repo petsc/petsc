@@ -431,6 +431,7 @@ class Configure(config.base.Configure):
         setattr(self, 'CPP', self.argDB['CPP'])
       setattr(self, self.getCompilerFlagsArg(), self.argDB[self.getCompilerFlagsArg()])
       setattr(self, 'CPPFLAGS', self.argDB['CPPFLAGS'])
+      setattr(self, self.getLinkerFlagsArg(), self.argDB[self.getLinkerFlagsArg()])
       self.popLanguage()
       # Define to equivalent of C99 restrict keyword, or to nothing if this is not supported.  Do not define if restrict is supported directly.
       if not self.restrictKeyword == 'restrict':
@@ -444,6 +445,7 @@ class Configure(config.base.Configure):
         setattr(self, 'CXXCPP', self.argDB['CXXCPP'])
       setattr(self, self.getCompilerFlagsArg(), self.argDB[self.getCompilerFlagsArg()])
       setattr(self, self.getCompilerFlagsArg(1), self.argDB[self.getCompilerFlagsArg(1)])
+      setattr(self, self.getLinkerFlagsArg(), self.argDB[self.getLinkerFlagsArg()])
       self.popLanguage()
       if self.cxxNamespace:
         self.addDefine('HAVE_CXX_NAMESPACE', 1)
@@ -451,6 +453,7 @@ class Configure(config.base.Configure):
       self.pushLanguage('F77')
       setattr(self, 'FC', self.argDB['FC'])
       setattr(self, self.getCompilerFlagsArg(), self.argDB[self.getCompilerFlagsArg()])
+      setattr(self, self.getLinkerFlagsArg(), self.argDB[self.getLinkerFlagsArg()])
       self.popLanguage()
       if self.fortranMangling == 'underscore':
         self.addDefine('HAVE_FORTRAN_UNDERSCORE', 1)

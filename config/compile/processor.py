@@ -63,10 +63,19 @@ class Processor(args.ArgumentProcessor):
       raise RuntimeError('Could not find a '+self.language+' '+self.__class__.__name__.lower()+'. Please set with the option --with-'+self.name.lower()+' or -'+self.name+' and load the config.compilers module.')
     return
 
+  def getProcessor(self):
+    '''Returns the processor executable'''
+    if hasattr(self, 'configCompilers'):
+      return getattr(self.configCompilers, self.name)
+    return self.argDB[self.name]
+
   def getFlags(self):
     '''Returns a string with the flags specified for running this processor.'''
     if not hasattr(self, '_flags'):
-      flags = ' '.join([self.argDB[name] for name in self.flagsName])
+      if hasattr(self, 'configCompilers'):
+        flags = ' '.join([getattr(self.configCompilers, name) for name in self.flagsName])
+      else:
+        flags = ' '.join([self.argDB[name] for name in self.flagsName])
       return flags
     return self._flags
   def setFlags(self, flags):
@@ -91,10 +100,7 @@ class Processor(args.ArgumentProcessor):
     '''Returns a shell command as a string which will invoke the processor on sourceFiles, producing outputFile if given'''
     if isinstance(sourceFiles, str):
       sourceFiles = [sourceFiles]
-    if hasattr(self, 'configCompilers'):
-      cmd = [getattr(self.configCompilers, self.name)]
-    else:
-      cmd = [self.argDB[self.name]]
+    cmd = [self.getProcessor()]
     cmd.append(self.requiredFlags[-1])
     if not outputFile is None:
       cmd.extend([self.outputFlag, outputFile])

@@ -62,7 +62,11 @@ class Linker(config.compile.processor.Processor):
       flagsName = self.flagsName
       if self.name == self.compiler.name:
         flagsName.extend(self.compiler.flagsName[:-1])
-      return ' '.join([self.argDB[name] for name in flagsName])
+      if hasattr(self, 'configCompilers'):
+        flags = ' '.join([getattr(self.configCompilers, name) for name in flagsName])
+      else:
+        flags = ' '.join([self.argDB[name] for name in flagsName])
+      return flags
     return self._flags
   flags = property(getFlags, config.compile.processor.Processor.setFlags, doc = 'The flags for the executable')
 
