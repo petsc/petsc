@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.12 1996/01/18 23:09:01 balay Exp balay $";
+static char vcid[] = "$Id: memc.c,v 1.13 1996/01/18 23:12:20 balay Exp balay $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -62,7 +62,7 @@ void PetscMemzero(void *a,int n)
          (boyh str1, str2 are addumed to be of length 'len')
 
   Output Parameters:
-     returns integer less than, equal to, or 
+.    returns integer less than, equal to, or 
      greater than 0, according as str11 is 
      less than, equal to, or greater than str2.
 
