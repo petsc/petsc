@@ -395,16 +395,13 @@ libf: ${OBJSF}
     self.framework.getExecutable('ar',   getFullPath = 1)
     self.framework.addSubstitution('AR_FLAGS', 'cr')
     if 'with-ranlib' in self.framework.argDB:
-      self.framework.getExecutable(self.framework.argDB['with-ranlib'], resultName = 'RANLIB')
-      if not hasattr(self.framework,'RANLIB'):
+      found = self.framework.getExecutable(self.framework.argDB['with-ranlib'], resultName = 'RANLIB')
+      if not found:
          raise RuntimeError('You set a value for --with-ranlib, but '+self.framework.argDB['with-ranlib']+' does not exist')
     else:
-      self.framework.getExecutable('ranlib')
-      if not hasattr(self.framework,'RANLIB'): 
-        self.addSubstitution('RANLIB', 'true')
-      else:
-        # check if -s -c options work (required by Mac OS X)
-        pass 
+      found = self.framework.getExecutable('ranlib')
+      if not found:
+        self.framework.addSubstitution('RANLIB', 'true')
     self.framework.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self.framework, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
@@ -636,6 +633,7 @@ acfindx:
     if self.archBase.startswith('darwin'):
       self.missingPrototypesC.append('int getdomainname(char *, size_t);')
       self.missingPrototypesExternC.append('int getdomainname(char *, size_t);')
+      self.framework.addSubstitution('RANLIB', 'ranlib -s -c')
     return
 
   def configureWin32NonCygwin(self):
