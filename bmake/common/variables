@@ -119,7 +119,7 @@ PCONF         = ${PETSC_HAVE_MPE}         ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_
                 ${PETSC_HAVE_SUPERLU_DIST} ${PETSC_HAVE_SUPERLU}    ${PETSC_HAVE_SPOOLES} ${PETSC_HAVE_UMFPACK}\
                 ${PETSC_HAVE_CCA}         ${PETSC_HAVE_TRILINOS}   ${PETSC_HAVE_HYPRE}   ${PETSC_HAVE_MUMPS}\
                 ${PETSC_HAVE_MATHEMATICA} ${PETSC_HAVE_TRIANGLE}   ${PETSC_HAVE_PLAPACK} ${PETSC_HAVE_SAMG} \
-                ${PETSC_HAVE_PNETCDF}     ${PETSC_HAVE_HDF4} \
+                ${PETSC_HAVE_PNETCDF}     ${PETSC_HAVE_HDF4}       ${PETSC_HAVE_ML}\
                 ${PETSC_HAVE_CHACO}       ${PETSC_HAVE_JOSTLE}     ${PETSC_HAVE_PARTY}   ${PETSC_HAVE_SCOTCH}
 
 EXTERNAL_LIB  = ${MPE_LIB}                ${BLOCKSOLVE_LIB}        ${PVODE_LIB}          ${PARMETIS_LIB} \
@@ -129,7 +129,7 @@ EXTERNAL_LIB  = ${MPE_LIB}                ${BLOCKSOLVE_LIB}        ${PVODE_LIB} 
                 ${SUPERLU_DIST_LIB}        ${SUPERLU_LIB}           ${SPOOLES_LIB}        ${UMFPACK_LIB}\
                 ${TRILINOS_LIB}          ${HYPRE_LIB}          ${MUMPS_LIB}\
                 ${MATHEMATICA_LIB}        ${TRIANGLE_LIB}          ${PLAPACK_LIB}        ${SAMG_LIB} \
-                ${PNETCDF_LIB}            ${HDF4_LIB} \
+                ${PNETCDF_LIB}            ${HDF4_LIB}              ${ML_LIB}\
                 ${CHACO_LIB}              ${JOSTLE_LIB}            ${PARTY_LIB}          ${SCOTCH_LIB}
 #
 #   Directories that depend on each external package
@@ -144,7 +144,7 @@ MATLAB_ENGINE_DIRS = src/vec/utils src/vec/impls/seq src/vec/impls/mpi src/mat/i
 LUSOL_DIRS         = src/mat/impls/aij/seq
 RAMG_DIRS          = src/contrib/lahaye/ramg src/ksp/pc/interface
 ADIFOR_DIRS        = 
-SUPERLU_DIST_DIRS  = src/mat/impls/aij
+SUPERLU_DIST_DIRS  = src/mat/impls/aij/mpi
 SUPERLU_DIRS       = src/mat/impls/aij/seq
 TRIANGLE_DIRS      = src/mesh/impls/triangular/2d
 PLAPACK_DIRS       = src/sys/src/utils src/ksp/pc/impls/ml
@@ -152,6 +152,7 @@ HYPRE_DIRS         = src/ksp/pc/impls/hypre src/vec/impls/hypre src/mat/impls/hy
 SPOOLES_DIR        = src/mat/impls/aij src/mat/impls/sbaij
 ADIC_DIRS          = src/mat/impls/aij src/snes/utils src/dm/da/src src/fortran/custom
 MATLAB_DIRS        = src/mat/impls/aij/seq
+ML_DIRS            = src/mat/impls/aij/mpi
 CHACO_DIRS         = src/mat/partition
 JOSTLE_DIRS        = src/mat/partition
 PARTY_DIRS         = src/mat/partition
