@@ -87,3 +87,9 @@
 
 /* Define if (void (*)(int)) casts are required for signals in C++ */
 #undef SIGNAL_CAST
+
+/* Define is sysinfo(int,char*,long) is available */
+#undef HAVE_SYSINFO_3ARG
+
+/* Define if linux sysinfo is available */
+#undef HAVE_SYSINFO
