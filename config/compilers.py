@@ -52,18 +52,21 @@ class Configure(config.base.Configure):
     '''Check whether the C++ compiler (IBM xlC, OSF5) need special flag for .c files which contain C++'''
     self.pushLanguage('C++')
     self.sourceExtension = '.c'
+    success=0
     for flag in ['', '-+', '-x cxx -tlocal']:
       try:
         self.addCompilerFlag(flag, body = 'class somename { int i; };')
+        success=1
         break
       except RuntimeError:
         pass
-    for flag in ['-TP']:
-      try:
-        self.addCompilerFlag(flag, body = 'class somename { int i; };', compilerOnly = 1)
-        break
-      except RuntimeError:
-        pass
+    if success==0:
+      for flag in ['-TP']:
+        try:
+          self.addCompilerFlag(flag, body = 'class somename { int i; };', compilerOnly = 1)
+          break
+        except RuntimeError:
+          pass
     self.popLanguage()
     return
 
