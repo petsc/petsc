@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.24 1995/07/09 23:16:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.25 1995/07/10 04:51:32 bsmith Exp bsmith $";
 #endif
 
 
@@ -76,7 +76,7 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
           fm = idx;
           nnz++;
         }
-  printf("i %d row %d nz %d idx %d fm %d\n",i,row,nz,idx,fm); 
+/*  printf("i %d row %d nz %d idx %d fm %d\n",i,row,nz,idx,fm);  */
       }
       row = fill[row];
     }
