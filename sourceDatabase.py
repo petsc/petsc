@@ -203,7 +203,7 @@ class SourceDB (dict, base.Base):
   def load(self):
     '''Load the source database from the saved filename'''
     filename = str(self.filename)
-    if os.path.exists(os.path.dirname(filename)):
+    if os.path.exists(filename):
       self.clear()
       self.debugPrint('Loading source database from '+filename, 2, 'sourceDB')
       dbFile = file(filename)
