@@ -32,6 +32,8 @@ def getSIDLDLLMap():
   return dllMap
 
 if __name__ ==  '__main__':
-  if len(sys.argv) > 1: sys.exit('Usage: sidldllpath.py')
-  print getSIDLDLLPath()
-
+  if len(sys.argv) > 2: sys.exit('Usage: sidldllpath.py [path | map]')
+  if len(sys.argv) == 1 or sys.argv[1] == 'path':
+    print getSIDLDLLPath()
+  elif sys.argv[1] == 'map':
+    print getSIDLDLLMap()

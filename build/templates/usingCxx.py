@@ -174,6 +174,12 @@ class UsingCxx (base.Base):
     '''Does nothing right now'''
     return
 
+  def installClasses(self, package):
+    for cls in self.usingSIDL.getClasses(package):
+      self.project.addImplementation(cls, os.path.join(self.project.getRoot(), self.usingSIDL.getServerLibrary(self.project.getName(), self.language, package, isShared = 1)), self.language)
+    return
+
   def installServer(self, package):
     '''Does nothing right now'''
+    self.installClasses(package)
     return
