@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.20 1998/06/09 21:21:55 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.21 1998/07/02 02:47:54 bsmith Exp ibrahba $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -6,6 +6,10 @@
 #define __PETSCERROR_H
 
 #include "petsc.h"
+
+#if defined(HAVE_AMS)
+#include "ams.h"
+#endif
 
 /*
    Defines the directory where the compiled source is located; used
@@ -117,6 +121,8 @@ extern int        petscstacksize_max;
 extern int        petscstacksize;
 extern PetscStack *petscstack;
 
+#if !defined(HAVE_AMS)
+
 #define PetscFunctionBegin \
   {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
     petscstack->function[petscstacksize]  = __FUNC__; \
@@ -149,6 +155,60 @@ extern PetscStack *petscstack;
   return(a);}
 
 #define PetscStackActive (petscstack != 0)
+
+#else
+
+/* Duplicate Code for HAVE_AMS */
+extern AMS_Comm stack_comm;
+extern AMS_Memory stack_mem;
+extern stack_err;
+
+#define PetscFunctionBegin \
+  {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
+    if (!(stack_mem < 0)) \
+        stack_err = AMS_Memory_take_access(stack_mem);\
+    petscstack->function[petscstacksize]  = __FUNC__; \
+    petscstack->file[petscstacksize]      = __FILE__; \
+    petscstack->directory[petscstacksize] = __SDIR__; \
+    petscstack->line[petscstacksize]      = __LINE__; \
+    petscstacksize++; \
+    if (!(stack_mem < 0)) \
+        stack_err = AMS_Memory_grant_access(stack_mem);\
+  }}
+
+#define PetscStackPush(n) \
+  {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
+    if (!(stack_mem < 0)) \
+        stack_err = AMS_Memory_take_access(stack_mem);\
+    petscstack->function[petscstacksize]  = n; \
+    petscstack->file[petscstacksize]      = 0; \
+    petscstack->directory[petscstacksize] = 0; \
+    petscstack->line[petscstacksize]      = 0; \
+    petscstacksize++; \
+    if (!(stack_mem < 0)) \
+        stack_err = AMS_Memory_grant_access(stack_mem);\
+  }}
+
+#define PetscStackPop \
+  {if (petscstack && petscstacksize > 0) {     \
+    if (!(stack_mem < 0)) \
+        stack_err = AMS_Memory_take_access(stack_mem);\
+    petscstacksize--; \
+    petscstack->function[petscstacksize]  = 0; \
+    petscstack->file[petscstacksize]      = 0; \
+    petscstack->directory[petscstacksize] = 0; \
+    petscstack->line[petscstacksize]      = 0; \
+    if (!(stack_mem < 0)) \
+        stack_err = AMS_Memory_grant_access(stack_mem);\
+  }};
+
+#define PetscFunctionReturn(a) \
+  {PetscStackPop; \
+  return(a);}
+
+#define PetscStackActive (petscstack != 0)
+
+#endif
 
 #else
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.7 1998/04/09 04:10:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stack.c,v 1.8 1998/04/24 02:14:50 bsmith Exp ibrahba $";
 #endif
 /*
 
@@ -9,14 +9,30 @@ static char vcid[] = "$Id: stack.c,v 1.7 1998/04/09 04:10:48 bsmith Exp bsmith $
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "sys.h"
 
+#if defined(HAVE_AMS)
+#include "ams.h"
+#endif
+
 #if defined(USE_PETSC_STACK)
 
 int         petscstacksize = 0;   /* current size of stack */
 int         petscstacksize_max;   /* maximum size we've allocated for */
 PetscStack *petscstack = 0;
 
+#if defined(HAVE_AMS)
+/* AMS Variables */
+AMS_Memory stack_mem = -1;
+AMS_Comm stack_comm = -1;
+int stack_err;
+char *msg;
+#endif
+
 int PetscStackCreate(int stacksize)
 {
+#if defined(HAVE_AMS)
+  int ams_flag;
+#endif
+
   PetscStack *petscstack_in;
   if (stacksize <=0 ) return 0;
   if (petscstack) return 0;
@@ -36,6 +52,26 @@ int PetscStackCreate(int stacksize)
   PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));
 
   petscstack = petscstack_in;
+
+#if defined(HAVE_AMS)
+  /* Check if AMS flag is on */
+    stack_err = OptionsHasName(0, "-ams_publish_stack", &ams_flag);CHKERRQ(stack_err);
+    if (ams_flag) {
+        /* First, create and publish a communicator */
+        stack_err = AMS_Comm_publish("stack_comm", &stack_comm, NODE_TYPE, NULL, NULL);CHKERRQ(stack_err);
+        
+        stack_err = AMS_Memory_create(stack_comm, "stack_memory", &stack_mem);CHKERRQ(stack_err);
+         
+        /* Add a field to the memory */
+        stack_err = AMS_Memory_add_field(stack_mem, "stack",petscstack_in->function ,
+	      stacksize , AMS_STRING, AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);CHKERRQ(stack_err);
+                
+	/* Publish the memory */
+        stack_err = AMS_Memory_publish(stack_mem);CHKERRQ(stack_err);
+
+            }
+#endif
+
   return 0;
 }
 
