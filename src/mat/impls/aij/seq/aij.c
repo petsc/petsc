@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.191 1996/10/24 14:30:56 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.192 1996/11/01 16:47:14 balay Exp balay $";
 #endif
 
 /*
@@ -1090,23 +1090,27 @@ static int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
   if (ll) {
     /* The local size is used so that VecMPI can be passed to this routine
        by MatDiagonalScale_MPIAIJ */
-    VecGetArray(ll,&l); VecGetLocalSize_Fast(ll,&m);
+    VecGetLocalSize_Fast(ll,m);
     if (m != a->m) SETERRQ(1,"MatDiagonalScale_SeqAIJ:Left scaling vector wrong length");
+    VecGetArray_Fast(ll,l); 
     v = a->a;
     for ( i=0; i<m; i++ ) {
       x = l[i];
       M = a->i[i+1] - a->i[i];
       for ( j=0; j<M; j++ ) { (*v++) *= x;} 
     }
+    VecRestoreArray_Fast(ll,l); 
     PLogFlops(nz);
   }
   if (rr) {
-    VecGetArray(rr,&r); VecGetLocalSize_Fast(rr,&n);
+    VecGetLocalSize_Fast(rr,n);
     if (n != a->n) SETERRQ(1,"MatDiagonalScale_SeqAIJ:Right scaling vector wrong length");
+    VecGetArray_Fast(rr,r); 
     v = a->a; jj = a->j;
     for ( i=0; i<nz; i++ ) {
       (*v++) *= r[*jj++ + shift]; 
     }
+    VecRestoreArray_Fast(rr,r);
     PLogFlops(nz);
   }
   return 0;
