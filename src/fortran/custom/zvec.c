@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.2 1995/10/09 21:58:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.3 1995/10/26 22:01:47 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -37,6 +37,11 @@ void vecload_(Viewer bview,Vec *newvec, int *__ierr )
   *(int *) newvec = MPIR_FromPointer(vv);
 }
 
+/* 
+     When you fix these to pass back integers rather then 
+  copy the array make sure you fix vec/examples/ex21.F and 
+  snes/examples/ex12.F 
+*/
 void vecrestorearray_(Vec x,Scalar *a,int *__ierr)
 {
   Vec    xin = (Vec)MPIR_ToPointer( *(int*)(x) );
