@@ -1,7 +1,11 @@
 !
-!      "$Id: ex36.F,v 1.25 1998/04/21 18:30:37 balay Exp $";
+!      "$Id: ex63.F,v 1.1 1998/10/01 21:32:40 balay Exp balay $";
 !
 !   This program tests storage of PETSc Dense matrix. 
+!   It Creates a Dense matrix, and stores it into a file,
+!   and then reads it back in as a SeqDense and MPIDense
+!   matrix, and prints out the contents.
+!
       implicit none
 #include "include/finclude/petsc.h"
 #include "include/finclude/mat.h"
