@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.135 1998/01/06 20:10:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.136 1998/01/28 21:01:46 bsmith Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -953,7 +953,8 @@ int MatSetOption_SeqDense(Mat A,MatOption op)
            op == MAT_NEW_NONZERO_LOCATION_ERROR ||
            op == MAT_NO_NEW_DIAGONALS ||
            op == MAT_YES_NEW_DIAGONALS ||
-           op == MAT_IGNORE_OFF_PROC_ENTRIES)
+           op == MAT_IGNORE_OFF_PROC_ENTRIES ||
+           op == MAT_USE_HASH_TABLE)
     PLogInfo(A,"MatSetOption_SeqDense:Option ignored\n");
   else {
     SETERRQ(PETSC_ERR_SUP,0,"unknown option");

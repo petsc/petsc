@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.123 1998/01/14 02:41:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.124 1998/01/27 16:11:14 bsmith Exp balay $";
 #endif
 
 /*
@@ -143,7 +143,8 @@ int MatSetOption_SeqBAIJ(Mat A,MatOption op)
            op == MAT_SYMMETRIC ||
            op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_YES_NEW_DIAGONALS ||
-           op == MAT_IGNORE_OFF_PROC_ENTRIES) {
+           op == MAT_IGNORE_OFF_PROC_ENTRIES ||
+           op == MAT_USE_HASH_TABLE) {
     PLogInfo(A,"MatSetOption_SeqBAIJ:Option ignored\n");
   } else if (op == MAT_NO_NEW_DIAGONALS) {
     SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.145 1998/01/06 20:10:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.146 1998/01/14 02:41:22 bsmith Exp balay $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1851,7 +1851,8 @@ int MatSetOption_SeqBDiag(Mat A,MatOption op)
            op == MAT_IGNORE_OFF_PROC_ENTRIES ||
            op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_NEW_NONZERO_LOCATION_ERROR ||
-           op == MAT_NEW_NONZERO_ALLOCATION_ERROR)
+           op == MAT_NEW_NONZERO_ALLOCATION_ERROR ||
+           op == MAT_USE_HASH_TABLE)
     PLogInfo(A,"MatSetOption_SeqBDiag:Option ignored\n");
   else { 
     SETERRQ(PETSC_ERR_SUP,0,"unknown option");

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.129 1997/12/04 19:35:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.130 1998/01/06 20:10:42 bsmith Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -694,12 +694,13 @@ int MatSetOption_MPIBDiag(Mat A,MatOption op)
     mbd->roworiented = 0;
     MatSetOption(mbd->A,op);
   } else if (op == MAT_ROWS_SORTED || 
-           op == MAT_ROWS_UNSORTED || 
-           op == MAT_COLUMNS_SORTED || 
-           op == MAT_COLUMNS_UNSORTED || 
-           op == MAT_SYMMETRIC ||
-           op == MAT_STRUCTURALLY_SYMMETRIC ||
-           op == MAT_YES_NEW_DIAGONALS) {
+             op == MAT_ROWS_UNSORTED || 
+             op == MAT_COLUMNS_SORTED || 
+             op == MAT_COLUMNS_UNSORTED || 
+             op == MAT_SYMMETRIC ||
+             op == MAT_STRUCTURALLY_SYMMETRIC ||
+             op == MAT_YES_NEW_DIAGONALS ||
+             op == MAT_USE_HASH_TABLE) {
     PLogInfo(A,"MatSetOption_MPIBDiag:Option ignored\n");
   } else {
     SETERRQ(PETSC_ERR_SUP,0,"unknown option");

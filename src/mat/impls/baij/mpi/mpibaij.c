@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.104 1998/02/18 20:37:17 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.105 1998/02/18 20:55:11 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1471,7 +1471,8 @@ int MatSetOption_MPIBAIJ(Mat A,MatOption op)
              op == MAT_ROWS_UNSORTED ||
              op == MAT_SYMMETRIC ||
              op == MAT_STRUCTURALLY_SYMMETRIC ||
-             op == MAT_YES_NEW_DIAGONALS)
+             op == MAT_YES_NEW_DIAGONALS ||
+             op == MAT_USE_HASH_TABLE)
     PLogInfo(A,"Info:MatSetOption_MPIBAIJ:Option ignored\n");
   else if (op == MAT_COLUMN_ORIENTED) {
     a->roworiented = 0;
