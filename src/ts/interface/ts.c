@@ -147,12 +147,11 @@ int TSSetFromOptions(TS ts)
 .keywords: TS, view, options, database
 .seealso: TSSetFromOptions(), TSView()
 @*/
-int TSViewFromOptions(TS ts, char *title)
+int TSViewFromOptions(TS ts,const char title[])
 {
   PetscViewer viewer;
   PetscDraw   draw;
   PetscTruth  opt;
-  char       *titleStr;
   char        typeName[1024];
   char        fileName[PETSC_MAX_PATH_LEN];
   int         len;
@@ -184,12 +183,11 @@ int TSViewFromOptions(TS ts, char *title)
     ierr = PetscViewerDrawOpen(ts->comm, 0, 0, 0, 0, 300, 300, &viewer);                                  CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);                                                      CHKERRQ(ierr);
     if (title != PETSC_NULL) {
-      titleStr = title;
+      ierr = PetscDrawSetTitle(draw, (char *)title);                                                      CHKERRQ(ierr);
     } else {
       ierr = PetscObjectName((PetscObject) ts);                                                           CHKERRQ(ierr) ;
-      titleStr = ts->name;
+      ierr = PetscDrawSetTitle(draw, ts->name);                                                           CHKERRQ(ierr);
     }
-    ierr = PetscDrawSetTitle(draw, titleStr);                                                             CHKERRQ(ierr);
     ierr = TSView(ts, viewer);                                                                            CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);                                                                      CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);                                                                          CHKERRQ(ierr);
@@ -1597,7 +1595,7 @@ int TSMonitor(TS ts,int step,PetscReal ptime,Vec x)
 .seealso: TSLGMonitorDestroy(), TSSetMonitor()
 
 @*/
-int TSLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,PetscDrawLG *draw)
+int TSLGMonitorCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw win;
   int       ierr;
@@ -1723,7 +1721,7 @@ int TSGetTime(TS ts,PetscReal* t)
 .seealso: TSSetFromOptions()
 
 @*/
-int TSSetOptionsPrefix(TS ts,char *prefix)
+int TSSetOptionsPrefix(TS ts,const char prefix[])
 {
   int ierr;
 
@@ -1768,7 +1766,7 @@ int TSSetOptionsPrefix(TS ts,char *prefix)
 .seealso: TSGetOptionsPrefix()
 
 @*/
-int TSAppendOptionsPrefix(TS ts,char *prefix)
+int TSAppendOptionsPrefix(TS ts,const char prefix[])
 {
   int ierr;
 
@@ -1811,7 +1809,7 @@ int TSAppendOptionsPrefix(TS ts,char *prefix)
 
 .seealso: TSAppendOptionsPrefix()
 @*/
-int TSGetOptionsPrefix(TS ts,char **prefix)
+int TSGetOptionsPrefix(TS ts,char *prefix[])
 {
   int ierr;
 

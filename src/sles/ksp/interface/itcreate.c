@@ -566,7 +566,7 @@ int KSPSetFromOptions(KSP ksp)
 
   Level: advanced
 @*/
-int KSPRegister(char *sname,char *path,char *name,int (*function)(KSP))
+int KSPRegister(const char sname[],const char path[],const char name[],int (*function)(KSP))
 {
   int  ierr;
   char fullname[256];

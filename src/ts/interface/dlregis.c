@@ -17,7 +17,7 @@
 .keywords: TS, initialize, package
 .seealso: PetscInitialize()
 @*/
-int TSInitializePackage(char *path) {
+int TSInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char             *className;

@@ -17,7 +17,7 @@
 .keywords: SNES, initialize, package
 .seealso: PetscInitialize()
 @*/
-int SNESInitializePackage(char *path) {
+int SNESInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char             *className;

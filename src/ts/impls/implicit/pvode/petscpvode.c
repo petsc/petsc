@@ -37,7 +37,7 @@ g
           TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
           TSPVodeSetLinearTolerance(), TSPVodeSetTolerance()
 @*/
-int TSPVodeGetParameters(TS ts,int *opt_size,long int **iopt,double **ropt)
+int TSPVodeGetParameters(TS ts,int *opt_size,long int *iopt[],double *ropt[])
 { 
   TS_PVode     *cvode = (TS_PVode*)ts->data;
 

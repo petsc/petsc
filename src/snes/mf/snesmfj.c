@@ -993,7 +993,7 @@ int MatSNESMFAddNullSpace(Mat J,MatNullSpace nullsp)
           MatSNESMFKSPMonitor(), MatSNESMFSetFunctionError()
 
 @*/
-int MatSNESMFSetHHistory(Mat J,PetscScalar *history,int nhistory)
+int MatSNESMFSetHHistory(Mat J,PetscScalar history[],int nhistory)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
 

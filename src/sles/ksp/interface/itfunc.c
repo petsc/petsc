@@ -1078,7 +1078,7 @@ int KSPGetMonitorContext(KSP ksp,void **ctx)
 .seealso: KSPGetResidualHistory()
 
 @*/
-int KSPSetResidualHistory(KSP ksp,PetscReal *a,int na,PetscTruth reset)
+int KSPSetResidualHistory(KSP ksp,PetscReal a[],int na,PetscTruth reset)
 {
   int ierr;
 
@@ -1126,7 +1126,7 @@ $   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
 .seealso: KSPGetResidualHistory()
 
 @*/
-int KSPGetResidualHistory(KSP ksp,PetscReal **a,int *na)
+int KSPGetResidualHistory(KSP ksp,PetscReal *a[],int *na)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);

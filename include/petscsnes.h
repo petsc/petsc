@@ -36,15 +36,15 @@ extern int SNES_COOKIE;
 extern int SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
 
 
-EXTERN int SNESInitializePackage(char *);
+EXTERN int SNESInitializePackage(const char[]);
 
 EXTERN int SNESCreate(MPI_Comm,SNES*);
 EXTERN int SNESDestroy(SNES);
 EXTERN int SNESSetType(SNES,SNESType);
 EXTERN int SNESSetMonitor(SNES,int(*)(SNES,int,PetscReal,void*),void *,int (*)(void *));
 EXTERN int SNESClearMonitor(SNES);
-EXTERN int SNESSetConvergenceHistory(SNES,PetscReal*,int *,int,PetscTruth);
-EXTERN int SNESGetConvergenceHistory(SNES,PetscReal**,int **,int *);
+EXTERN int SNESSetConvergenceHistory(SNES,PetscReal[],int[],int,PetscTruth);
+EXTERN int SNESGetConvergenceHistory(SNES,PetscReal*[],int *[],int *);
 EXTERN int SNESSetUp(SNES,Vec);
 EXTERN int SNESSolve(SNES,Vec,int*);
 
@@ -59,9 +59,9 @@ EXTERN int SNESDefaultUpdate(SNES, int);
 
 extern PetscFList SNESList;
 EXTERN int SNESRegisterDestroy(void);
-EXTERN int SNESRegisterAll(char *);
+EXTERN int SNESRegisterAll(const char[]);
 
-EXTERN int SNESRegister(char*,char*,char*,int(*)(SNES));
+EXTERN int SNESRegister(const char[],const char[],const char[],int(*)(SNES));
 
 /*MC
    SNESRegisterDynamic - Adds a method to the nonlinear solver package.
@@ -118,9 +118,9 @@ EXTERN int SNESGetSolutionUpdate(SNES,Vec*);
 EXTERN int SNESGetFunction(SNES,Vec*,void**,int(**)(SNES,Vec,Vec,void*));
 EXTERN int SNESView(SNES,PetscViewer);
 
-EXTERN int SNESSetOptionsPrefix(SNES,char*);
-EXTERN int SNESAppendOptionsPrefix(SNES,char*);
-EXTERN int SNESGetOptionsPrefix(SNES,char**);
+EXTERN int SNESSetOptionsPrefix(SNES,const char[]);
+EXTERN int SNESAppendOptionsPrefix(SNES,const char[]);
+EXTERN int SNESGetOptionsPrefix(SNES,char*[]);
 EXTERN int SNESSetFromOptions(SNES);
 
 EXTERN int MatCreateSNESMF(SNES,Vec,Mat*);
@@ -131,7 +131,7 @@ EXTERN int MatSNESMFSetFunction(Mat,Vec,int(*)(SNES,Vec,Vec,void*),void*);
 EXTERN int MatSNESMFSetFunctioni(Mat,int (*)(int,Vec,PetscScalar*,void*));
 EXTERN int MatSNESMFSetFunctioniBase(Mat,int (*)(Vec,void*));
 EXTERN int MatSNESMFAddNullSpace(Mat,MatNullSpace);
-EXTERN int MatSNESMFSetHHistory(Mat,PetscScalar *,int);
+EXTERN int MatSNESMFSetHHistory(Mat,PetscScalar[],int);
 EXTERN int MatSNESMFResetHHistory(Mat);
 EXTERN int MatSNESMFSetFunctionError(Mat,PetscReal);
 EXTERN int MatSNESMFSetPeriod(Mat,int);
@@ -147,7 +147,7 @@ typedef struct _p_MatSNESMFCtx   *MatSNESMFCtx;
 #define MATSNESMF_WP      "wp"
 typedef char* MatSNESMFType;
 EXTERN int MatSNESMFSetType(Mat,MatSNESMFType);
-EXTERN int MatSNESMFRegister(char *,char *,char *,int (*)(MatSNESMFCtx));
+EXTERN int MatSNESMFRegister(const char[],const char[],const char[],int (*)(MatSNESMFCtx));
 
 /*MC
    MatSNESMFRegisterDynamic - Adds a method to the MatSNESMF registry.
@@ -192,7 +192,7 @@ M*/
 #define MatSNESMFRegisterDynamic(a,b,c,d) MatSNESMFRegister(a,b,c,d)
 #endif
 
-EXTERN int MatSNESMFRegisterAll(char *);
+EXTERN int MatSNESMFRegisterAll(const char[]);
 EXTERN int MatSNESMFRegisterDestroy(void);
 EXTERN int MatSNESMFDefaultSetUmin(Mat,PetscReal);
 EXTERN int MatSNESMFWPSetComputeNormA(Mat,PetscTruth);
@@ -223,7 +223,7 @@ EXTERN int SNES_KSP_SetConvergenceTestEW(SNES);
 /*
      Reuse the default KSP monitor routines for SNES
 */
-EXTERN int SNESLGMonitorCreate(char*,char*,int,int,int,int,PetscDrawLG*);
+EXTERN int SNESLGMonitorCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
 EXTERN int SNESLGMonitor(SNES,int,PetscReal,void*);
 EXTERN int SNESLGMonitorDestroy(PetscDrawLG);
 

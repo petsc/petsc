@@ -14,7 +14,7 @@ EXTERN int  PetscOptionsGetScalar(const char[],const char[],PetscScalar *,PetscT
 EXTERN int  PetscOptionsGetIntArray(const char[],const char[],int[],int *,PetscTruth*);
 EXTERN int  PetscOptionsGetRealArray(const char[],const char[],PetscReal[],int *,PetscTruth*);
 EXTERN int  PetscOptionsGetString(const char[],const char[],char[],int,PetscTruth*);
-EXTERN int  PetscOptionsGetStringArray(const char[],const char[],char**,int*,PetscTruth*);
+EXTERN int  PetscOptionsGetStringArray(const char[],const char[],char*[],int*,PetscTruth*);
 
 EXTERN int  PetscOptionsSetAlias(const char[],const char[]);
 EXTERN int  PetscOptionsSetValue(const char[],const char[]);

@@ -42,7 +42,7 @@ EXTERN PetscTruth KSPRegisterAllCalled;
 
 .seealso:  KSPRegisterDestroy()
 @*/
-int KSPRegisterAll(char *path)
+int KSPRegisterAll(const char path[])
 {
   int ierr;
 

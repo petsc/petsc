@@ -28,7 +28,7 @@ extern PetscTruth SNESRegisterAllCalled;
 
 .seealso:  SNESRegisterDestroy()
 @*/
-int SNESRegisterAll(char *path)
+int SNESRegisterAll(const char path[])
 {
   int ierr;
 

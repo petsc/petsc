@@ -1181,7 +1181,7 @@ int SNESLGMonitor(SNES snes,int it,PetscReal norm,void *ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLGMonitorCreate"
-int SNESLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,PetscDrawLG *draw)
+int SNESLGMonitorCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   int ierr;
 
@@ -1394,7 +1394,7 @@ int SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
 .seealso: SNESGetConvergenceHistory()
 
 @*/
-int SNESSetConvergenceHistory(SNES snes,PetscReal *a,int *its,int na,PetscTruth reset)
+int SNESSetConvergenceHistory(SNES snes,PetscReal a[],int *its,int na,PetscTruth reset)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
@@ -1437,7 +1437,7 @@ $   call SNESGetConvergenceHistory(SNES snes, integer na, integer ierr)
 .seealso: SNESSetConvergencHistory()
 
 @*/
-int SNESGetConvergenceHistory(SNES snes,PetscReal **a,int **its,int *na)
+int SNESGetConvergenceHistory(SNES snes,PetscReal *a[],int *its[],int *na)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
@@ -1946,7 +1946,7 @@ int SNESGetFunction(SNES snes,Vec *r,void **ctx,int (**func)(SNES,Vec,Vec,void*)
 
 .seealso: SNESSetFromOptions()
 @*/
-int SNESSetOptionsPrefix(SNES snes,char *prefix)
+int SNESSetOptionsPrefix(SNES snes,const char prefix[])
 {
   int ierr;
 
@@ -1979,7 +1979,7 @@ int SNESSetOptionsPrefix(SNES snes,char *prefix)
 
 .seealso: SNESGetOptionsPrefix()
 @*/
-int SNESAppendOptionsPrefix(SNES snes,char *prefix)
+int SNESAppendOptionsPrefix(SNES snes,const char prefix[])
 {
   int ierr;
   
@@ -2013,7 +2013,7 @@ int SNESAppendOptionsPrefix(SNES snes,char *prefix)
 
 .seealso: SNESAppendOptionsPrefix()
 @*/
-int SNESGetOptionsPrefix(SNES snes,char **prefix)
+int SNESGetOptionsPrefix(SNES snes,char *prefix[])
 {
   int ierr;
 
@@ -2031,7 +2031,7 @@ int SNESGetOptionsPrefix(SNES snes,char **prefix)
 
   Level: advanced
 @*/
-int SNESRegister(char *sname,char *path,char *name,int (*function)(SNES))
+int SNESRegister(const char sname[],const char path[],const char name[],int (*function)(SNES))
 {
   char fullname[256];
   int  ierr;

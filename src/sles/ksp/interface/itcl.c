@@ -77,7 +77,7 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP))
 
 .seealso: KSPAppendOptionsPrefix(), KSPGetOptionsPrefix()
 @*/
-int KSPSetOptionsPrefix(KSP ksp,char *prefix)
+int KSPSetOptionsPrefix(KSP ksp,const char prefix[])
 {
   int ierr;
   PetscFunctionBegin;
@@ -108,7 +108,7 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 
 .seealso: KSPSetOptionsPrefix(), KSPGetOptionsPrefix()
 @*/
-int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
+int KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 {
   int ierr;
   PetscFunctionBegin;
@@ -140,7 +140,7 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 
 .seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix()
 @*/
-int KSPGetOptionsPrefix(KSP ksp,char **prefix)
+int KSPGetOptionsPrefix(KSP ksp,char *prefix[])
 {
   int ierr;
   PetscFunctionBegin;
