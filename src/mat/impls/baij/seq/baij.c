@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.82 1997/01/06 20:25:20 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.83 1997/01/22 18:43:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -605,14 +605,16 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int        fshift = 0,i,j,*ai = a->i, *aj = a->j, *imax = a->imax;
   int        m = a->m,*ip, N, *ailen = a->ilen;
-  int        mbs = a->mbs, bs2 = a->bs2;
+  int        mbs = a->mbs, bs2 = a->bs2,rmax;
   Scalar     *aa = a->a, *ap;
 
   if (mode == MAT_FLUSH_ASSEMBLY) return 0;
 
+  rmax = ailen[0];
   for ( i=1; i<mbs; i++ ) {
     /* move each row back by the amount of empty slots (fshift) before it*/
     fshift += imax[i-1] - ailen[i-1];
+    rmax   = PetscMax(rmax,ailen[i]);
     if (fshift) {
       ip = aj + ai[i]; ap = aa + bs2*ai[i];
       N = ailen[i];
@@ -643,6 +645,7 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
            m,a->n,a->bs,fshift*bs2,a->nz*bs2);
   PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Number of mallocs during MatSetValues is %d\n",
            a->reallocs);
+  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Most nonzeros blocks in any row is %d\n",rmax);
   a->reallocs          = 0;
   A->info.nz_unneeded  = (double)fshift*bs2;
 
@@ -1779,7 +1782,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatLUFactorSymbolic_SeqBAIJ,MatLUFactorNumeric_SeqBAIJ_N,0,0,
        MatGetSize_SeqBAIJ,MatGetSize_SeqBAIJ,MatGetOwnershipRange_SeqBAIJ,
        MatILUFactorSymbolic_SeqBAIJ,0,
-       0,0,/*  MatConvert_SeqBAIJ  */ 0,
+       0,0,
        MatConvertSameType_SeqBAIJ,0,0,
        MatILUFactor_SeqBAIJ,0,0,
        MatGetSubMatrices_SeqBAIJ,MatIncreaseOverlap_SeqBAIJ,
