@@ -91,7 +91,6 @@ EXTERN PetscErrorCode TSDefaultComputeJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStr
 EXTERN PetscErrorCode TSGetRHSMatrix(TS,Mat*,Mat*,void**);
 EXTERN PetscErrorCode TSGetRHSJacobian(TS,Mat*,Mat*,void**);
 
-EXTERN PetscErrorCode TSSetRhsBC(TS, PetscErrorCode (*)(TS, Vec, void *));
 EXTERN PetscErrorCode TSSetSystemMatrixBC(TS, PetscErrorCode (*)(TS, Mat, Mat, void *));
 EXTERN PetscErrorCode TSSetSolutionBC(TS, PetscErrorCode (*)(TS, Vec, void *));
 EXTERN PetscErrorCode TSSetPreStep(TS, PetscErrorCode (*)(TS));

@@ -1121,36 +1121,6 @@ PetscErrorCode TSSetSolution(TS ts,Vec x)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSSetRhsBC"
-/*@C
-  TSSetRhsBC - Sets the function which applies boundary conditions
-  to the Rhs of each system.
-
-  Collective on TS
-
-  Input Parameters:
-+ ts   - The TS context obtained from TSCreate()
-- func - The function
-
-  Calling sequence of func:
-. func (TS ts, Vec rhs, void *ctx);
-
-+ rhs - The current rhs vector
-- ctx - The user-context
-
-  Level: intermediate
-
-.keywords: TS, Rhs, boundary conditions
-@*/
-PetscErrorCode TSSetRhsBC(TS ts, PetscErrorCode (*func)(TS, Vec, void *))
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
-  ts->ops->applyrhsbc = func;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "TSDefaultRhsBC"
 /*@
   TSDefaultRhsBC - The default boundary condition function which does nothing.
