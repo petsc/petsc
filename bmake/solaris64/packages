@@ -48,3 +48,4 @@ CMEX           =
 #    Make sure that -DHAVE_BLOCKSOLVE is not listed below
 PCONF         = 
 #
+DYLIBPATH     =  /c2/poplar/fa/bsmith/lapack/solaris/

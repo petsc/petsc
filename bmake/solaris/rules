@@ -31,3 +31,17 @@ libf: $(LIBNAME)($(OBJSF))
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
+shared: chkopts
+	-@echo making shared libraries in $(LDIR) ;\
+	cd $(LDIR); \
+	$(RM) -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+	for LIBNAME in $(SHLIBS) ; \
+	  do \
+	    $(AR) x ../$$LIBNAME.a ;\
+	    $(LD) -G  -h $$LIBNAME.so *.o  -o ../$$LIBNAME.so ; \
+	    $(RM) -f * ; \
+	done ;\
+	cd ../ ; \
+	$(RM) -rf tmp
