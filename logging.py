@@ -198,6 +198,12 @@ class Logger(args.ArgumentProcessor):
       self.out.write('\r')
     return
 
+  def logPrintBox(self,msg, debugLevel = -1, debugSection = 'screen', indent = 1, comm = None):
+    self.logClear()
+    self.logPrint('=================================================================================', debugSection=debugSection)
+    self.logPrint('      '+msg+'\n', debugSection=debugSection)
+    self.logPrint('=================================================================================\n', debugSection=debugSection)
+
   def logWrite(self, msg, debugLevel = -1, debugSection = None, forceScroll = 0):
     '''Write the message to the log streams'''
     for writeAll, f in enumerate([self.out, self.log]):
@@ -227,6 +233,7 @@ class Logger(args.ArgumentProcessor):
         if writeAll or self.linewidth < 0:
           f.write('\n')
     return
+
 
   def getRoot(self):
     '''Return the directory containing this module

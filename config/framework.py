@@ -245,7 +245,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return output
   
   def filterCompileOutput(self, output):
-    if self.argDB['ignoreCompileOutput']:
+    if self.framework.argDB['ignoreCompileOutput']:
       output = ''
     elif output:
       lines = output.splitlines()
