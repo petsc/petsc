@@ -25,7 +25,9 @@ int MGMCycle_Private(MG *mglevels,PetscTruth *converged)
   if (converged) *converged = PETSC_FALSE;
 
   if (!mg->level) {  /* coarse grid */
+    if (mg->eventsolve) {ierr = PetscLogEventBegin(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
     ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
+    if (mg->eventsolve) {ierr = PetscLogEventEnd(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
   } else {
     ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
     ierr = (*mg->residual)(mg->A,mg->b,mg->x,mg->r);CHKERRQ(ierr);
@@ -118,6 +120,8 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **
     mg[i]->atol = 0.0;
     mg[i]->dtol = 0.0;
     mg[i]->ttol = 0.0;
+    mg[i]->eventsetup = 0;
+    mg[i]->eventsolve = 0;
   }
   *result = mg;
   PetscFunctionReturn(0);
@@ -260,6 +264,20 @@ static int PCSetFromOptions_MG(PC pc)
       else if (iscasc) mg = MGKASKADE;
       else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type: %s",buff);
       ierr = MGSetType(pc,mg);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsName("-pc_mg_log","Log times for each multigrid level","None",&flg);CHKERRQ(ierr);
+    if (flg) {
+      MG   *mg = (MG*)pc->data;
+      int  i;
+      char eventname[128];
+      if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+      levels = mg[0]->levels;
+      for (i=0; i<levels; i++) {  
+         sprintf(eventname,"MSetup Level %d",i);
+        ierr = PetscLogEventRegister(&mg[i]->eventsetup,eventname,pc->cookie);CHKERRQ(ierr);
+        sprintf(eventname,"MG SLESSolve Level %d",i);
+        ierr = PetscLogEventRegister(&mg[i]->eventsolve,eventname,pc->cookie);CHKERRQ(ierr);
+      }
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

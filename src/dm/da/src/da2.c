@@ -993,7 +993,7 @@ int DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
 #undef __FUNCT__  
 #define __FUNCT__ "DASetLocalFunction"
 /*@C
-       DASetLocalFunction - Caches in a DA a local function
+       DASetLocalFunction - Caches in a DA a local function. 
 
    Collective on DA
 
@@ -1002,6 +1002,8 @@ int DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
 -  lf - the local function
 
    Level: intermediate
+
+   Notes: The routine SNESDAFormFunction() uses this the cached function to evaluate the user provided function.
 
 .keywords:  distributed array, refine
 
@@ -1171,6 +1173,8 @@ int DASetLocalAdicMFFunction_Private(DA da,DALocalFunction1 ad_lf)
 -  lj - the local Jacobian
 
    Level: intermediate
+
+   Notes: The routine SNESDAFormFunction() uses this the cached function to evaluate the user provided function.
 
 .keywords:  distributed array, refine
 
