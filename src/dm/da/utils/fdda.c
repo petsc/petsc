@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.25 1998/04/03 23:18:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.26 1998/04/13 17:59:58 bsmith Exp curfman $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -180,7 +180,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr, xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
-  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,i1,j1,k1;
+  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,i1,j1a,k1;
   MPI_Comm               comm;
   Scalar                 *values;
   DAPeriodicType         wrap;
@@ -248,9 +248,9 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
         cnt  = 0;
         for ( l=0; l<nc; l++ ) {
           for ( i1=istart; i1<iend+1; i1++ ) {
-            for ( j1=jstart; j1<jend+1; j1++ ) {
+            for ( j1a=jstart; j1a<jend+1; j1a++ ) {
               for ( k1=kstart; k1<kend+1; k1++ ) {
-                cols[cnt++]  = l + nc*(slot + i1 + gnx*j1 + gnx*gny*k1);
+                cols[cnt++]  = l + nc*(slot + i1 + gnx*j1a + gnx*gny*k1);
               }
             }
           }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.47 1997/12/01 01:56:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.48 1998/04/13 17:55:33 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -39,7 +39,7 @@ $  -snes_fd
 @*/
 int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  Vec      j1,j2,x2;
+  Vec      j1a,j2a,x2;
   int      i,ierr,N,start,end,j;
   Scalar   dx, mone = -1.0,*y,scale,*xx,wscale;
   double   amax, epsilon = 1.e-8; /* assumes double precision */
@@ -59,16 +59,16 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     snes->nvwork = 3;
     PLogObjectParents(snes,3,snes->vwork);
   }
-  j1 = snes->vwork[0]; j2 = snes->vwork[1]; x2 = snes->vwork[2];
+  j1a = snes->vwork[0]; j2a = snes->vwork[1]; x2 = snes->vwork[2];
 
   ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
   VecGetArray(x1,&xx);
-  ierr = eval_fct(snes,x1,j1); CHKERRQ(ierr);
+  ierr = eval_fct(snes,x1,j1a); CHKERRQ(ierr);
 
   /* Compute Jacobian approximation, 1 column at a time. 
-      x1 = current iterate, j1 = F(x1)
-      x2 = perturbed iterate, j2 = F(x2)
+      x1 = current iterate, j1a = F(x1)
+      x2 = perturbed iterate, j2a = F(x2)
    */
   for ( i=0; i<N; i++ ) {
     ierr = VecCopy(x1,x2); CHKERRQ(ierr);
@@ -88,23 +88,23 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     else {
       wscale = 0.0;
     }
-    ierr = eval_fct(snes,x2,j2); CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,j1,j2); CHKERRQ(ierr);
+    ierr = eval_fct(snes,x2,j2a); CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,j1a,j2a); CHKERRQ(ierr);
     /* Communicate scale to all processors */
 #if !defined(USE_PETSC_COMPLEX)
     ierr = MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #else
     ierr = MPI_Allreduce(&wscale,&scale,2,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #endif
-    VecScale(&scale,j2);
-    VecGetArray(j2,&y);
-    VecNorm(j2,NORM_INFINITY,&amax); amax *= 1.e-14;
+    VecScale(&scale,j2a);
+    VecGetArray(j2a,&y);
+    VecNorm(j2a,NORM_INFINITY,&amax); amax *= 1.e-14;
     for ( j=start; j<end; j++ ) {
       if (PetscAbsScalar(y[j-start]) > amax) {
         ierr = MatSetValues(*B,1,&j,1,&i,y+j-start,INSERT_VALUES); CHKERRQ(ierr);
       }
     }
-    VecRestoreArray(j2,&y);
+    VecRestoreArray(j2a,&y);
   }
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
