@@ -1,8 +1,8 @@
-/* $Id: ts.c,v 1.28 2000/04/30 22:20:24 bsmith Exp balay $ */
+/* $Id: ts.c,v 1.29 2000/05/05 22:18:49 balay Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSComputeRHSJacobian"
+#define __FUNC__ /*<a name="TSComputeRHSJacobian"></a>*/"TSComputeRHSJacobian"
 /*@
    TSComputeRHSJacobian - Computes the Jacobian matrix that has been
       set with TSSetRHSJacobian().
@@ -59,7 +59,7 @@ int TSComputeRHSJacobian(TS ts,double t,Vec X,Mat *A,Mat *B,MatStructure *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSComputeRHSFunction"
+#define __FUNC__ /*<a name="TSComputeRHSFunction"></a>*/"TSComputeRHSFunction"
 /*
    TSComputeRHSFunction - Evaluates the right-hand-side function. 
 
@@ -98,7 +98,7 @@ int TSComputeRHSFunction(TS ts,double t,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetRHSFunction"
+#define __FUNC__ /*<a name="TSSetRHSFunction"></a>*/"TSSetRHSFunction"
 /*@C
     TSSetRHSFunction - Sets the routine for evaluating the function,
     F(t,u), where U_t = F(t,u).
@@ -142,7 +142,7 @@ int TSSetRHSFunction(TS ts,int (*f)(TS,double,Vec,Vec,void*),void *ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetRHSMatrix"
+#define __FUNC__ /*<a name="TSSetRHSMatrix"></a>*/"TSSetRHSMatrix"
 /*@C
    TSSetRHSMatrix - Sets the function to compute the matrix A, where U_t = A(t) U.
    Also sets the location to store A.
@@ -208,7 +208,7 @@ int TSSetRHSMatrix(TS ts,Mat A,Mat B,int (*f)(TS,double,Mat*,Mat*,MatStructure*,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetRHSJacobian"
+#define __FUNC__ /*<a name="TSSetRHSJacobian"></a>*/"TSSetRHSJacobian"
 /*@C
    TSSetRHSJacobian - Sets the function to compute the Jacobian of F,
    where U_t = F(U,t), as well as the location to store the matrix.
@@ -272,7 +272,7 @@ int TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,MatStruc
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSComputeRHSBoundaryConditions"
+#define __FUNC__ /*<a name="TSComputeRHSBoundaryConditions"></a>*/"TSComputeRHSBoundaryConditions"
 /*
    TSComputeRHSBoundaryConditions - Evaluates the boundary condition function. 
 
@@ -299,7 +299,7 @@ int TSComputeRHSBoundaryConditions(TS ts,double t,Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetRHSBoundaryConditions"
+#define __FUNC__ /*<a name="TSSetRHSBoundaryConditions"></a>*/"TSSetRHSBoundaryConditions"
 /*@C
     TSSetRHSBoundaryConditions - Sets the routine for evaluating the function,
     boundary conditions for the function F.
@@ -337,7 +337,7 @@ int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,double,Vec,void*),void *ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSView"
+#define __FUNC__ /*<a name="TSView"></a>*/"TSView"
 /*@C
     TSView - Prints the TS data structure.
 
@@ -413,7 +413,7 @@ int TSView(TS ts,Viewer viewer)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetApplicationContext"
+#define __FUNC__ /*<a name="TSSetApplicationContext"></a>*/"TSSetApplicationContext"
 /*@C
    TSSetApplicationContext - Sets an optional user-defined context for 
    the timesteppers.
@@ -439,7 +439,7 @@ int TSSetApplicationContext(TS ts,void *usrP)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSGetApplicationContext"
+#define __FUNC__ /*<a name="TSGetApplicationContext"></a>*/"TSGetApplicationContext"
 /*@C
     TSGetApplicationContext - Gets the user-defined context for the 
     timestepper.
@@ -467,7 +467,7 @@ int TSGetApplicationContext(TS ts,void **usrP)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSGetTimeStepNumber"
+#define __FUNC__ /*<a name="TSGetTimeStepNumber"></a>*/"TSGetTimeStepNumber"
 /*@
    TSGetTimeStepNumber - Gets the current number of timesteps.
 
@@ -492,7 +492,7 @@ int TSGetTimeStepNumber(TS ts,int* iter)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetInitialTimeStep"
+#define __FUNC__ /*<a name="TSSetInitialTimeStep"></a>*/"TSSetInitialTimeStep"
 /*@
    TSSetInitialTimeStep - Sets the initial timestep to be used, 
    as well as the initial time.
@@ -521,7 +521,7 @@ int TSSetInitialTimeStep(TS ts,double initial_time,double time_step)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetTimeStep"
+#define __FUNC__ /*<a name="TSSetTimeStep"></a>*/"TSSetTimeStep"
 /*@
    TSSetTimeStep - Allows one to reset the timestep at any time,
    useful for simple pseudo-timestepping codes.
@@ -547,7 +547,7 @@ int TSSetTimeStep(TS ts,double time_step)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSGetTimeStep"
+#define __FUNC__ /*<a name="TSGetTimeStep"></a>*/"TSGetTimeStep"
 /*@
    TSGetTimeStep - Gets the current timestep size.
 
@@ -574,7 +574,7 @@ int TSGetTimeStep(TS ts,double* dt)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSGetSolution"
+#define __FUNC__ /*<a name="TSGetSolution"></a>*/"TSGetSolution"
 /*@C
    TSGetSolution - Returns the solution at the present timestep. It
    is valid to call this routine inside the function that you are evaluating
@@ -604,7 +604,7 @@ int TSGetSolution(TS ts,Vec *v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSPublish_Petsc"
+#define __FUNC__ /*<a name="TSPublish_Petsc"></a>*/"TSPublish_Petsc"
 static int TSPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -633,7 +633,7 @@ static int TSPublish_Petsc(PetscObject obj)
 /* -----------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSCreate"
+#define __FUNC__ /*<a name="TSCreate"></a>*/"TSCreate"
 /*@C
    TSCreate - Creates a timestepper context.
 
@@ -688,7 +688,7 @@ int TSCreate(MPI_Comm comm,TSProblemType problemtype,TS *outts)
 /* ----- Routines to initialize and destroy a timestepper ---- */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetUp"
+#define __FUNC__ /*<a name="TSSetUp"></a>*/"TSSetUp"
 /*@
    TSSetUp - Sets up the internal data structures for the later use
    of a timestepper.  
@@ -727,7 +727,7 @@ int TSSetUp(TS ts)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSDestroy"
+#define __FUNC__ /*<a name="TSDestroy"></a>*/"TSDestroy"
 /*@C
    TSDestroy - Destroys the timestepper context that was created
    with TSCreate().
@@ -768,7 +768,7 @@ int TSDestroy(TS ts)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSGetSNES"
+#define __FUNC__ /*<a name="TSGetSNES"></a>*/"TSGetSNES"
 /*@C
    TSGetSNES - Returns the SNES (nonlinear solver) associated with 
    a TS (timestepper) context. Valid only for nonlinear problems.
@@ -803,7 +803,7 @@ int TSGetSNES(TS ts,SNES *snes)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSGetSLES"
+#define __FUNC__ /*<a name="TSGetSLES"></a>*/"TSGetSLES"
 /*@C
    TSGetSLES - Returns the SLES (linear solver) associated with 
    a TS (timestepper) context.
@@ -840,7 +840,7 @@ int TSGetSLES(TS ts,SLES *sles)
 /* ----------- Routines to set solver parameters ---------- */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetDuration"
+#define __FUNC__ /*<a name="TSSetDuration"></a>*/"TSSetDuration"
 /*@
    TSSetDuration - Sets the maximum number of timesteps to use and 
    maximum time for iteration.
@@ -873,7 +873,7 @@ int TSSetDuration(TS ts,int maxsteps,double maxtime)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetSolution"
+#define __FUNC__ /*<a name="TSSetSolution"></a>*/"TSSetSolution"
 /*@
    TSSetSolution - Sets the initial solution vector
    for use by the TS routines.
@@ -899,7 +899,7 @@ int TSSetSolution(TS ts,Vec x)
 /* ------------ Routines to set performance monitoring options ----------- */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetMonitor"
+#define __FUNC__ /*<a name="TSSetMonitor"></a>*/"TSSetMonitor"
 /*@C
    TSSetMonitor - Sets an ADDITIONAL function that is to be used at every
    timestep to display the iteration's  progress.   
@@ -919,7 +919,7 @@ $    int func(TS ts,int steps,double time,Vec x,void *mctx)
 
 +    ts - the TS context
 .    steps - iteration number
-.    time - current timestep
+.    time - current time
 .    x - current iterate
 -    mctx - [optional] monitoring context
 
@@ -947,7 +947,7 @@ int TSSetMonitor(TS ts,int (*monitor)(TS,int,double,Vec,void*),void *mctx,int (*
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSClearMonitor"
+#define __FUNC__ /*<a name="TSClearMonitor"></a>*/"TSClearMonitor"
 /*@C
    TSClearMonitor - Clears all the monitors that have been set on a time-step object.   
 
@@ -974,7 +974,7 @@ int TSClearMonitor(TS ts)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSDefaultMonitor"
+#define __FUNC__ /*<a name="TSDefaultMonitor"></a>*/"TSDefaultMonitor"
 int TSDefaultMonitor(TS ts,int step,double time,Vec v,void *ctx)
 {
   int ierr;
@@ -985,7 +985,7 @@ int TSDefaultMonitor(TS ts,int step,double time,Vec v,void *ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSStep"
+#define __FUNC__ /*<a name="TSStep"></a>*/"TSStep"
 /*@
    TSStep - Steps the requested number of timesteps.
 
@@ -1023,7 +1023,7 @@ int TSStep(TS ts,int *steps,double *time)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSMonitor"
+#define __FUNC__ /*<a name="TSMonitor"></a>*/"TSMonitor"
 /*
      Runs the user provided monitor routines, if they exists.
 */
@@ -1041,7 +1041,7 @@ int TSMonitor(TS ts,int step,double time,Vec x)
 /* ------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSLGMonitorCreate"
+#define __FUNC__ /*<a name="TSLGMonitorCreate"></a>*/"TSLGMonitorCreate"
 /*@C
    TSLGMonitorCreate - Creates a line graph context for use with 
    TS to monitor convergence of preconditioned residual norms.
@@ -1086,7 +1086,7 @@ int TSLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,DrawLG *dra
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSLGMonitor"
+#define __FUNC__ /*<a name="TSLGMonitor"></a>*/"TSLGMonitor"
 int TSLGMonitor(TS ts,int n,double time,Vec v,void *monctx)
 {
   DrawLG lg = (DrawLG) monctx;
@@ -1113,7 +1113,7 @@ int TSLGMonitor(TS ts,int n,double time,Vec v,void *monctx)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSLGMonitorDestroy" 
+#define __FUNC__ /*<a name="TSLGMonitorDestroy"></a>*/"TSLGMonitorDestroy" 
 /*@C
    TSLGMonitorDestroy - Destroys a line graph context that was created 
    with TSLGMonitorCreate().
@@ -1142,7 +1142,7 @@ int TSLGMonitorDestroy(DrawLG drawlg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSGetTime"
+#define __FUNC__ /*<a name="TSGetTime"></a>*/"TSGetTime"
 /*@
    TSGetTime - Gets the current time.
 
@@ -1171,7 +1171,7 @@ int TSGetTime(TS ts,double* t)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSGetProblemType" 
+#define __FUNC__ /*<a name="TSGetProblemType"></a>*/"TSGetProblemType" 
 /*@C
    TSGetProblemType - Returns the problem type of a TS (timestepper) context.
 
@@ -1199,7 +1199,7 @@ int TSGetProblemType(TS ts,TSProblemType *type)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSSetOptionsPrefix" 
+#define __FUNC__ /*<a name="TSSetOptionsPrefix"></a>*/"TSSetOptionsPrefix" 
 /*@C
    TSSetOptionsPrefix - Sets the prefix used for searching for all
    TS options in the database.
@@ -1244,7 +1244,7 @@ int TSSetOptionsPrefix(TS ts,char *prefix)
 
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSAppendOptionsPrefix" 
+#define __FUNC__ /*<a name="TSAppendOptionsPrefix"></a>*/"TSAppendOptionsPrefix" 
 /*@C
    TSAppendOptionsPrefix - Appends to the prefix used for searching for all
    TS options in the database.
@@ -1288,7 +1288,7 @@ int TSAppendOptionsPrefix(TS ts,char *prefix)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSGetOptionsPrefix"
+#define __FUNC__ /*<a name="TSGetOptionsPrefix"></a>*/"TSGetOptionsPrefix"
 /*@C
    TSGetOptionsPrefix - Sets the prefix used for searching for all
    TS options in the database.
@@ -1323,7 +1323,7 @@ int TSGetOptionsPrefix(TS ts,char **prefix)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSGetRHSMatrix"
+#define __FUNC__ /*<a name="TSGetRHSMatrix"></a>*/"TSGetRHSMatrix"
 /*@C
    TSGetRHSMatrix - Returns the matrix A at the present timestep.
 
@@ -1359,7 +1359,7 @@ int TSGetRHSMatrix(TS ts,Mat *A,Mat *M,void **ctx)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSGetRHSJacobian"
+#define __FUNC__ /*<a name="TSGetRHSJacobian"></a>*/"TSGetRHSJacobian"
 /*@C
    TSGetRHSJacobian - Returns the Jacobian J at the present timestep.
 
@@ -1436,7 +1436,7 @@ $     -ts_type my_solver
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSRegister"
+#define __FUNC__ /*<a name="TSRegister"></a>*/"TSRegister"
 int TSRegister(char *sname,char *path,char *name,int (*function)(TS))
 {
   char fullname[256];
