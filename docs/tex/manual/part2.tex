@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.189 1997/01/21 21:49:42 curfman Exp curfman $ 
+% $Id: part2.tex,v 1.190 1997/01/22 02:07:08 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1960,7 +1960,7 @@ Once can cancel all hardwired monitoring routines for KSP at runtime with
 \subsection{Understanding the Operators Spectrum}
 Since the convergence of Krylov subspace methods depends strongly on 
 the spectrum (eigenvalues) of the preconditioned operator, PETSc has specific
-routines for their approximation via Arnoldi or Lanczo iteration.
+routines for their approximation via Arnoldi or Lanczos iteration.
 First, before the linear solve one must call 
 \begin{verbatim}
   ierr = KSPSetComputeEigenvalues(KSP ksp);
