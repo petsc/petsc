@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.69 1998/07/12 03:46:36 bsmith Exp bsmith $ */
+/* $Id: mpi.h,v 1.70 1998/07/13 20:12:57 bsmith Exp balay $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -8,6 +8,52 @@
    For example,
    * Does not implement send to self.
    * Does not implement attributes correctly.
+*/
+
+/*
+  The following info is a response to one of the petsc-maint questions 
+  regarding MPIUNI.
+
+  MPIUNI was developed with the aim of getting PETSc compiled, and
+  usable in the absence of MPI. This is the reason each function is
+  not documented.  The development strategy was - to make enough
+  changes to it so that PETSc source compiles without errors, and runs
+  in the uni-processor mode.
+
+  Most PETSc objects have both sequential and parallel
+  implementations, which are separate. For eg: We have two types of
+  sparse matrix storage formats - SeqAIJ, and MPIAIJ. Some MPI
+  routines are used in the Seq part, but most of them are used in the
+  MPI part. The send/receive calls can be found mostly in the MPI
+  part.
+
+  When MPIUNI is used, only the Seq version of the PETSc objects are
+  used, even though the MPI variant of the objects are compiled. Since
+  there are no send/receive calls in the Seq variant, PETSc works fine
+  with MPIUNI in seq mode.
+
+  The reason some send/receive functions are defined to abort(), is to
+  detect sections of code that use send/receive functions, and gets
+  executed in the sequential mode. (which shouldn't happen in case of
+  PETSc).
+
+  One of the goals with MPIUNI, is to avoid the function call overhead
+  of a regular MPI implementation. If this was not the case, we could
+  as well have used a regular implementation of MPI as they are
+  available on almost all machines. Hence most of the functions are
+  implemented as macros. One of the additional benefits we got from
+  MPIUNI is, we were able to use PETSc on machines where using a
+  proper implementation of MPI was painful (for eg NT).
+
+  Proper implementation of send/receive would involve writing a
+  function for each of them. Inside each of these functions, we have
+  to check if the send is to self or receive is from self, and then
+  doing the buffering accordingly (until the receive is called) - or
+  what if a nonblocking receive is called, do a copy etc.. Handling
+  the buffering aspects might be complicated enough, that in this
+  case, a proper implementation of MPI might aswell be used. This is
+  the reason the send to self is not implemented in MPIUNI.
+
 */
 
 #if !defined(__MPI_H)
