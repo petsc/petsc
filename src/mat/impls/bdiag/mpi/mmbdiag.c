@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.14 1995/09/30 19:29:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.15 1995/10/22 22:23:29 bsmith Exp curfman $";
 #endif
 
 /*
@@ -12,10 +12,10 @@ static char vcid[] = "$Id: mmbdiag.c,v 1.14 1995/09/30 19:29:13 bsmith Exp bsmit
 int MatSetUpMultiply_MPIBDiag(Mat mat)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  Mat_SeqBDiag    *lmbd = (Mat_SeqBDiag *) mbd->A->data;
+  Mat_SeqBDiag *lmbd = (Mat_SeqBDiag *) mbd->A->data;
   int          ierr, N = mbd->N, *indices, *garray, ec=0;
   int          nb = lmbd->nb, d, i, j, diag;
-  IS           to_from;
+  IS           tofrom;
   Vec          gvec;
 
   /* For the first stab we make an array as long as the number of columns */
@@ -67,7 +67,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   ierr = VecCreateSeq(MPI_COMM_SELF,N,&mbd->lvec); CHKERRQ(ierr);
 
   /* create temporary index set for building scatter-gather */
-  ierr = ISCreateSeq(MPI_COMM_SELF,ec,garray,&to_from); CHKERRQ(ierr);
+  ierr = ISCreateSeq(MPI_COMM_SELF,ec,garray,&tofrom); CHKERRQ(ierr);
   CHKERRQ(ierr);
   PETSCFREE(garray);
 
@@ -79,12 +79,13 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   ierr = VecCreateMPI(mat->comm,PETSC_DECIDE,mbd->N,&gvec); CHKERRQ(ierr);
 
   /* generate the scatter context */
-  ierr = VecScatterCreate(gvec,to_from,mbd->lvec,to_from,&mbd->Mvctx); 
-  PLogObjectParent(mat,to_from);
-  CHKERRQ(ierr);
+  ierr = VecScatterCreate(gvec,tofrom,mbd->lvec,tofrom,&mbd->Mvctx); CHKERRQ(ierr);
   PLogObjectParent(mat,mbd->Mvctx);
   PLogObjectParent(mat,mbd->lvec);
-  ierr = ISDestroy(to_from); CHKERRQ(ierr);
+  PLogObjectParent(mat,tofrom);
+  PLogObjectParent(mat,gvec);
+
+  ierr = ISDestroy(tofrom); CHKERRQ(ierr);
   ierr = VecDestroy(gvec); CHKERRQ(ierr);
   return 0;
 }
