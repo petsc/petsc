@@ -3,18 +3,18 @@
 #include "petsc.h"
 #include "src/mat/color/color.h"
 
-static int c_n1 = -1;
+static PetscInt c_n1 = -1;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKido" 
-PetscErrorCode MINPACKido(int *m,int * n,int * indrow,int * jpntr,int * indcol,int * ipntr,int * ndeg,
-               int *list,int *maxclq, int *iwa1, int *iwa2, int *iwa3, int *iwa4)
+PetscErrorCode MINPACKido(PetscInt *m,PetscInt * n,PetscInt * indrow,PetscInt * jpntr,PetscInt * indcol,PetscInt * ipntr,PetscInt * ndeg,
+               PetscInt *list,PetscInt *maxclq, PetscInt *iwa1, PetscInt *iwa2, PetscInt *iwa3, PetscInt *iwa4)
 {
     /* System generated locals */
-    int i__1, i__2, i__3, i__4;
+    PetscInt i__1, i__2, i__3, i__4;
 
     /* Local variables */
-    int jcol = 0, ncomp = 0, ic, ip, jp, ir, maxinc, numinc, numord, maxlst, numwgt, numlst;
+    PetscInt jcol = 0, ncomp = 0, ic, ip, jp, ir, maxinc, numinc, numord, maxlst, numwgt, numlst;
 
 /*     Given the sparsity pattern of an m by n matrix A, this */
 /*     subroutine determines an incidence-degree ordering of the */

@@ -11,14 +11,14 @@ EXTERN_C_BEGIN
 PetscErrorCode MatOrdering_1WD(Mat mat,const MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
-  int        i,*mask,*xls,nblks,*xblk,*ls,nrow,*perm,*ia,*ja;
-  PetscTruth done;
+  PetscInt       i,*mask,*xls,nblks,*xblk,*ls,nrow,*perm,*ia,*ja;
+  PetscTruth     done;
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  ierr = PetscMalloc((5*nrow+1) * sizeof(int),&mask);CHKERRQ(ierr);
+  ierr = PetscMalloc((5*nrow+1) * sizeof(PetscInt),&mask);CHKERRQ(ierr);
   xls  = mask + nrow;
   ls   = xls + nrow + 1;
   xblk = ls + nrow;

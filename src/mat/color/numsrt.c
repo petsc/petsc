@@ -5,13 +5,13 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKnumsrt" 
-PetscErrorCode MINPACKnumsrt(int *n,int *nmax,int *num,int *mode,int *idex,int *last,int *next)
+PetscErrorCode MINPACKnumsrt(PetscInt *n,PetscInt *nmax,PetscInt *num,PetscInt *mode,PetscInt *idex,PetscInt *last,PetscInt *next)
 {
     /* System generated locals */
-    int i__1, i__2;
+    PetscInt i__1, i__2;
 
     /* Local variables */
-    int jinc, i, j, k, l, jl, ju;
+    PetscInt jinc, i, j, k, l, jl, ju;
 
 /*     Given a sequence of integers, this subroutine groups */
 /*     together those indices with the same sequence value */

@@ -29,17 +29,17 @@
     symmetric structure.  It is required since those routines call 
     SparsePak routines that expect a symmetric  matrix.
 */
-PetscErrorCode MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin,int shiftout,int **iia,int **jja)
+PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,PetscInt shiftin,PetscInt shiftout,PetscInt **iia,PetscInt **jja)
 {
   PetscErrorCode ierr;
-  int *work,*ia,*ja,*j,i,nz,row,col;
+  PetscInt       *work,*ia,*ja,*j,i,nz,row,col;
 
   PetscFunctionBegin;
   /* allocate space for row pointers */
-  ierr = PetscMalloc((m+1)*sizeof(int),&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&ia);CHKERRQ(ierr);
   *iia = ia;
-  ierr = PetscMemzero(ia,(m+1)*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMalloc((m+1)*sizeof(int),&work);CHKERRQ(ierr);
+  ierr = PetscMemzero(ia,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&work);CHKERRQ(ierr);
 
   /* determine the number of columns in each row */
   ia[0] = shiftout;
@@ -63,7 +63,7 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin,int shi
 
   /* allocate space for column pointers */
   nz   = ia[m] + (!shiftin);
-  ierr = PetscMalloc(nz*sizeof(int),&ja);CHKERRQ(ierr);
+  ierr = PetscMalloc(nz*sizeof(PetscInt),&ja);CHKERRQ(ierr);
   *jja = ja;
 
   /* loop over lower triangular part putting into ja */ 

@@ -2636,9 +2636,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_SeqAIJ"
 PetscErrorCode MatCreate_SeqAIJ(Mat B)
 {
-  Mat_SeqAIJ *b;
+  Mat_SeqAIJ     *b;
   PetscErrorCode ierr;
-  PetscInt        size;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
@@ -2813,11 +2813,13 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 #define __FUNCT__ "MatLoad_SeqAIJ"
 PetscErrorCode MatLoad_SeqAIJ(PetscViewer viewer,const MatType type,Mat *A)
 {
-  Mat_SeqAIJ   *a;
-  Mat          B;
+  Mat_SeqAIJ     *a;
+  Mat            B;
   PetscErrorCode ierr;
-  PetscInt          i,nz,fd,header[4],size,*rowlengths = 0,M,N;
-  MPI_Comm     comm;
+  PetscInt       i,nz,header[4],*rowlengths = 0,M,N;
+  int            fd;
+  PetscMPIInt    size;
+  MPI_Comm       comm;
   
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);

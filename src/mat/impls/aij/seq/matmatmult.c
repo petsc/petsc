@@ -90,7 +90,8 @@ PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
+PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -126,7 +127,8 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
 
 .seealso: MatMatMult(),MatMatMultNumeric()
 @*/
-PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) {
+PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) 
+{
   PetscErrorCode ierr;
   PetscErrorCode (*Asymbolic)(Mat,Mat,PetscReal,Mat *);
   PetscErrorCode (*Bsymbolic)(Mat,Mat,PetscReal,Mat *);
@@ -198,7 +200,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
 {
   Mat_MPIAIJ           *a=(Mat_MPIAIJ*)A->data,*b=(Mat_MPIAIJ*)B->data;
   PetscErrorCode       ierr;
-  int                  start,end;
+  PetscInt             start,end;
   Mat_MatMatMultMPI    *mult;
   PetscObjectContainer container;
  
@@ -240,9 +242,9 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscErrorCode ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
-  int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci,*cj;
-  int            am=A->M,bn=B->N,bm=B->M;
-  int            i,j,anzi,brow,bnzj,cnzi,nlnk,*lnk,nspacedouble=0;
+  PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci,*cj;
+  PetscInt       am=A->M,bn=B->N,bm=B->M;
+  PetscInt       i,j,anzi,brow,bnzj,cnzi,nlnk,*lnk,nspacedouble=0;
   MatScalar      *ca;
   PetscBT        lnkbt;
 
@@ -250,7 +252,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   /* Set up */
   /* Allocate ci array, arrays for fill computation and */
   /* free space for accumulating nonzero column info */
-  ierr = PetscMalloc(((am+1)+1)*sizeof(int),&ci);CHKERRQ(ierr);
+  ierr = PetscMalloc(((am+1)+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
   ci[0] = 0;
   
   /* create and initialize a linked list */
@@ -258,7 +260,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ierr = PetscLLCreate(bn,bn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
-  ierr = GetMoreSpace((int)(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
+  ierr = GetMoreSpace((PetscInt)(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   /* Determine symbolic info for each row of the product: */
@@ -296,7 +298,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   /* Column indices are in the list of free space */
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc((ci[am]+1)*sizeof(int),&cj);CHKERRQ(ierr);
+  ierr = PetscMalloc((ci[am]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
   ierr = MakeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
     
@@ -343,7 +345,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
 
 .seealso: MatMatMult(),MatMatMultSymbolic()
 @*/
-PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C){
+PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C)
+{
   PetscErrorCode ierr;
   PetscErrorCode (*Anumeric)(Mat,Mat,Mat);
   PetscErrorCode (*Bnumeric)(Mat,Mat,Mat);
@@ -424,14 +427,14 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
 PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr;
-  int        flops=0;
-  Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
-  Mat_SeqAIJ *b = (Mat_SeqAIJ *)B->data;
-  Mat_SeqAIJ *c = (Mat_SeqAIJ *)C->data;
-  int        *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
-  int        am=A->M,cn=C->N;
-  int        i,j,k,anzi,bnzi,cnzi,brow;
-  MatScalar  *aa=a->a,*ba=b->a,*baj,*ca=c->a,*temp;
+  PetscInt       flops=0;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data;
+  Mat_SeqAIJ     *b = (Mat_SeqAIJ *)B->data;
+  Mat_SeqAIJ     *c = (Mat_SeqAIJ *)C->data;
+  PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
+  PetscInt       am=A->M,cn=C->N;
+  PetscInt       i,j,k,anzi,bnzi,cnzi,brow;
+  MatScalar      *aa=a->a,*ba=b->a,*baj,*ca=c->a,*temp;
 
   PetscFunctionBegin;  
 
@@ -552,7 +555,7 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 {
   PetscErrorCode ierr;
   Mat            At;
-  int            *ati,*atj;
+  PetscInt       *ati,*atj;
 
   PetscFunctionBegin;
   /* create symbolic At */
@@ -575,8 +578,8 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr; 
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
-  int            am=A->m,anzi,*ai=a->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
-  int            cm=C->m,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k,flops=0;
+  PetscInt       am=A->m,anzi,*ai=a->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
+  PetscInt       cm=C->m,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k,flops=0;
   MatScalar      *aa=a->a,*ba,*ca=c->a,*caj;
  
   PetscFunctionBegin;

@@ -6,13 +6,13 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKdegr" 
-PetscErrorCode MINPACKdegr(int *n,int * indrow,int * jpntr,int * indcol,int * ipntr,int * ndeg,int * iwa)
+PetscErrorCode MINPACKdegr(PetscInt *n,PetscInt * indrow,PetscInt * jpntr,PetscInt * indcol,PetscInt * ipntr,PetscInt * ndeg,PetscInt * iwa)
 {
     /* System generated locals */
-    int i__1, i__2, i__3;
+    PetscInt i__1, i__2, i__3;
 
     /* Local variables */
-    int jcol, ic, ip, jp, ir;
+    PetscInt jcol, ic, ip, jp, ir;
 
 /*     subroutine degr */
 /*     Given the sparsity pattern of an m by n matrix A, */

@@ -73,7 +73,7 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
-PetscErrorCode MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
+PetscErrorCode MatCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A)
 {
   Mat B;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -82,8 +82,8 @@ PetscErrorCode MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
 
   PetscFunctionBegin;
   PetscValidPointer(A,6);
-  if (M > 0 && m > M) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local column size %d cannot be larger than global column size %d",m,M);
-  if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local row size %d cannot be larger than global row size %d",n,N);
+  if (M > 0 && m > M) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local column size %d cannot be larger than global column size %d",(int)m,(int)M);
+  if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local row size %d cannot be larger than global row size %d",(int)n,(int)N);
 
   *A = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES

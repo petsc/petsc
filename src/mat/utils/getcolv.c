@@ -30,28 +30,28 @@
 .seealso: MatGetRow(), MatGetDiagonal()
 
 @*/
-PetscErrorCode MatGetColumnVector(Mat A,Vec yy,int col)
+PetscErrorCode MatGetColumnVector(Mat A,Vec yy,PetscInt col)
 {
-  PetscScalar       *y,zero = 0.0;
-  const PetscScalar *v;
-  PetscErrorCode ierr;
-  int i,j,nz,N,Rs,Re,rs,re;
-  const int         *idx;
-  MPI_Comm          comm;
+  PetscScalar        *y,zero = 0.0;
+  const PetscScalar  *v;
+  PetscErrorCode     ierr;
+  PetscInt           i,j,nz,N,Rs,Re,rs,re;
+  const PetscInt     *idx;
+  MPI_Comm           comm;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1); 
   PetscValidHeaderSpecific(yy,VEC_COOKIE,2); 
 
-  if (col < 0)  SETERRQ1(1,"Requested negative column: %d",col);
+  if (col < 0)  SETERRQ1(1,"Requested negative column: %d",(int)col);
   ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);
-  if (col >= N)  SETERRQ2(1,"Requested column %d larger than number columns in matrix %d",col,N);
+  if (col >= N)  SETERRQ2(1,"Requested column %d larger than number columns in matrix %d",(int)col,(int)N);
 
   ierr = MatGetOwnershipRange(A,&Rs,&Re);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)yy,&comm);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(yy,&rs,&re);CHKERRQ(ierr);
-  if (Rs != rs || Re != re) SETERRQ4(1,"Matrix %d %d does not have same ownership range (size) as vector %d %d",Rs,Re,rs,re);
+  if (Rs != rs || Re != re) SETERRQ4(1,"Matrix %d %d does not have same ownership range (size) as vector %d %d",(int)Rs,(int)Re,(int)rs,(int)re);
 
   ierr = VecSet(&zero,yy);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);

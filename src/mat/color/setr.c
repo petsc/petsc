@@ -6,13 +6,13 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKsetr" 
-PetscErrorCode MINPACKsetr(int*m,int* n,int* indrow,int* jpntr,int* indcol, int*ipntr,int* iwa)
+PetscErrorCode MINPACKsetr(PetscInt*m,PetscInt* n,PetscInt* indrow,PetscInt* jpntr,PetscInt* indcol, PetscInt*ipntr,PetscInt* iwa)
 {
     /* System generated locals */
-    int i__1, i__2;
+    PetscInt i__1, i__2;
 
     /* Local variables */
-    int jcol, jp, ir;
+    PetscInt jcol, jp, ir;
 
 /*     Given a column-oriented definition of the sparsity pattern */
 /*     of an m by n matrix A, this subroutine determines a */

@@ -5,7 +5,7 @@
 
 #include "src/mat/matimpl.h"       /*I  "petscmat.h"  I*/
 
-#define SWAP(a,b) {int _t; _t = a; a = b; b = _t; }
+#define SWAP(a,b) {PetscInt _t; _t = a; a = b; b = _t; }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatReorderForNonzeroDiagonal"
@@ -62,8 +62,8 @@ PetscErrorCode MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
-EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
+EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -71,10 +71,10 @@ EXTERN_C_BEGIN
 PetscErrorCode MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal atol,IS ris,IS cis)
 {
   PetscErrorCode ierr;
-  int prow,k,nz,n,repl,*j,*col,*row,m,*icol,nnz,*jj,kk;
-  PetscScalar *v,*vv;
-  PetscReal   repla;
-  IS          icis;
+  PetscInt       prow,k,nz,n,repl,*j,*col,*row,m,*icol,nnz,*jj,kk;
+  PetscScalar    *v,*vv;
+  PetscReal      repla;
+  IS             icis;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(ris,&row);CHKERRQ(ierr);

@@ -10,23 +10,23 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatOrdering_QMD"
 PetscErrorCode MatOrdering_QMD(Mat mat,const MatOrderingType type,IS *row,IS *col) 
 {
-  int        i,  *deg,*marker,*rchset,*nbrhd,*qsize,*qlink,nofsub,*iperm,nrow;
+  PetscInt       i,  *deg,*marker,*rchset,*nbrhd,*qsize,*qlink,nofsub,*iperm,nrow;
   PetscErrorCode ierr;
-  int *ia,*ja,*perm;
-  PetscTruth done; 
+  PetscInt       *ia,*ja,*perm;
+  PetscTruth      done; 
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  ierr = PetscMalloc(nrow * sizeof(int),&perm);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(int),&iperm);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(int),&deg);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(int),&marker);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(int),&rchset);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(int),&nbrhd);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(int),&qsize);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(int),&qlink);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(PetscInt),&perm);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(PetscInt),&iperm);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(PetscInt),&deg);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(PetscInt),&marker);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(PetscInt),&rchset);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(PetscInt),&nbrhd);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(PetscInt),&qsize);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(PetscInt),&qlink);CHKERRQ(ierr);
   /* WARNING - genqmd trashes ja */    
   SPARSEPACKgenqmd(&nrow,ia,ja,perm,iperm,deg,marker,rchset,nbrhd,qsize,qlink,&nofsub);
   ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
