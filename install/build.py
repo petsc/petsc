@@ -20,8 +20,8 @@ class Builder(install.base.Base):
     root = maker.getRoot()
     if not ignoreDependencies:
       for url in maker.executeTarget('getDependencies'):
-        self.debugPrint('  Building dependency '+url, 2, 'install')
-        self.build(self.retriever.retrieve(url), target, setupTarget)
+        self.debugPrint('  Retrieving and activating dependency '+url, 2, 'install')
+        self.build(self.retriever.retrieve(url), target = ['activate', 'configure'])
     # Load any existing local RDict
     dictFilename = os.path.join(root, 'RDict.db')
     loadedRDict  = 0
@@ -50,6 +50,10 @@ class Builder(install.base.Base):
       for k in filter(lambda k: not k in keys, data.keys()):
         if data[k].isValueSet():
           del self.argDB[k]
+    if not ignoreDependencies:
+      for url in maker.executeTarget('getDependencies'):
+        self.debugPrint('  Installing dependency '+url, 2, 'install')
+        self.build(self.getInstallRoot(url), target = ['install'])
     # Save source database (since atexit() functions might not be called before another build)
     maker.saveSourceDB()
     return ret
