@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: PetscTime.c,v 1.6 1996/03/19 21:30:13 bsmith Exp $";
+static char vcid[] = "$Id: Index.c,v 1.9 1996/04/22 20:44:28 balay Exp balay $";
 #endif
 
 #include "stdio.h"
@@ -62,9 +62,28 @@ int test1()
   BlastCache(); 
 
   t1 = PetscGetTime(); 
+  for (i=0; i<500; i+=4) {  
+    x[i]   = y[z[i]];
+    x[1+i] = y[z[1+i]];
+    x[2+i] = y[z[2+i]];
+    x[3+i] = y[z[3+i]];
+  }
+  t2 = PetscGetTime(); 
+  fprintf(stderr,"%-19s : %e sec\n","x[i] = y[idx[i]] - unroll 4",(t2-t1)/2000.0);
+
+  BlastCache();
+
+  t1 = PetscGetTime(); 
   for (i=0; i<2000; i++) {  x[i] = y[z[i]]; }
   t2 = PetscGetTime(); 
   fprintf(stderr,"%-19s : %e sec\n","x[i] = y[idx[i]]",(t2-t1)/2000.0);
+
+  BlastCache();
+
+  t1 = PetscGetTime(); 
+  for (i=0; i<1000; i+=2) {  x[i] = y[z[i]];  x[1+i] = y[z[1+i]]; }
+  t2 = PetscGetTime(); 
+  fprintf(stderr,"%-19s : %e sec\n","x[i] = y[idx[i]] - unroll 2",(t2-t1)/2000.0);
 
   BlastCache();
 
@@ -79,7 +98,9 @@ int test1()
   for (i=0; i<2000; i++) {  x[z[i]] = y[zi[i]]; }
   t2 = PetscGetTime(); 
   fprintf(stderr,"%-19s : %e sec\n","x[z[i]] = y[zi[i]]",(t2-t1)/2000.0);
-
+  
+  PetscMemcpy(x,y,10);
+  PetscMemcpy(z,zi,10);
   PetscFree(z);
   PetscFree(zi);
   PetscFree(x);
