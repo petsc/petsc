@@ -61,6 +61,54 @@ int DAGetGlobalIndices(DA da,int *n,int **idx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetNatural_Private"
+/*
+   Gets the natural number for each global number on the process.
+
+   Used by DAGetAO() and DAGlobalToNatural_Create()
+*/
+int DAGetNatural_Private(DA da,int *outNlocal,IS *isnatural)
+{
+  int Nlocal,i,j,k,ierr,*lidx,lict = 0;
+
+  PetscFunctionBegin;
+  Nlocal = (da->xe-da->xs);
+  if (da->dim > 1) {
+    Nlocal *= (da->ye-da->ys);
+  } 
+  if (da->dim > 2) {
+    Nlocal *= (da->ze-da->zs);
+  }
+  
+  ierr = PetscMalloc(Nlocal*sizeof(int),&lidx);CHKERRQ(ierr);
+  
+  if (da->dim == 1) {
+    for (i=da->xs; i<da->xe; i++) {
+      /*  global number in natural ordering */
+      lidx[lict++] = i;
+    }
+  } else if (da->dim == 2) {
+    for (j=da->ys; j<da->ye; j++) {
+      for (i=da->xs; i<da->xe; i++) {
+	/*  global number in natural ordering */
+	lidx[lict++] = i + j*da->M*da->w;
+      }
+    }
+  } else if (da->dim == 3) {
+    for (k=da->zs; k<da->ze; k++) {
+      for (j=da->ys; j<da->ye; j++) {
+	for (i=da->xs; i<da->xe; i++) {
+	  lidx[lict++] = i + j*da->M*da->w + k*da->M*da->N*da->w;
+	}
+      }
+    }
+  }
+  *outNlocal = Nlocal;
+  ierr = ISCreateGeneral(da->comm,Nlocal,lidx,isnatural);CHKERRQ(ierr);
+  ierr = PetscFree(lidx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetAO"
@@ -99,44 +147,10 @@ int DAGetAO(DA da,AO *ao)
   */
   if (!da->ao) {
     IS  ispetsc,isnatural;
-    int ierr,i,j,k,*lidx,lict = 0,Nlocal;
+    int ierr,Nlocal;
 
-    Nlocal = (da->xe-da->xs);
-    if (da->dim > 1) {
-      Nlocal *= (da->ye-da->ys);
-    } 
-    if (da->dim > 2) {
-      Nlocal *= (da->ze-da->zs);
-    }
-
+    ierr = DAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
     ierr = ISCreateStride(da->comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
-    ierr = PetscMalloc(Nlocal*sizeof(int),&lidx);CHKERRQ(ierr);
-
-    if (da->dim == 1) {
-       for (i=da->xs; i<da->xe; i++) {
-	 /*  global number in natural ordering */
-	 lidx[lict++] = i;
-       }
-    } else if (da->dim == 2) {
-      for (j=da->ys; j<da->ye; j++) {
-	for (i=da->xs; i<da->xe; i++) {
-	  /*  global number in natural ordering */
-	  lidx[lict++] = i + j*da->M*da->w;
-	}
-      }
-    } else if (da->dim == 3) {
-      for (k=da->zs; k<da->ze; k++) {
-	for (j=da->ys; j<da->ye; j++) {
-	  for (i=da->xs; i<da->xe; i++) {
-	    lidx[lict++] = i + j*da->M*da->w + k*da->M*da->N*da->w;
-	  }
-	}
-      }
-    }
-
-    ierr = ISCreateGeneral(da->comm,Nlocal,lidx,&isnatural);CHKERRQ(ierr);
-    ierr = PetscFree(lidx);CHKERRQ(ierr);
-
     ierr = AOCreateBasicIS(isnatural,ispetsc,&da->ao);CHKERRQ(ierr);
     PetscLogObjectParent(da,da->ao);
     ierr = ISDestroy(ispetsc);CHKERRQ(ierr);

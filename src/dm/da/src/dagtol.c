@@ -179,6 +179,7 @@ int DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
+extern int DAGetNatural_Private(DA,int*,IS*);
 #undef __FUNCT__  
 #define __FUNCT__ "DAGlobalToNatural_Create"
 /*
@@ -201,9 +202,8 @@ int DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
 */
 int DAGlobalToNatural_Create(DA da)
 {
-  int ierr,m,start;
+  int ierr,m,start,Nlocal;
   IS  from,to;
-  AO  ao;
   Vec global;
 
   PetscFunctionBegin;
@@ -211,13 +211,13 @@ int DAGlobalToNatural_Create(DA da)
   if (!da->natural) {
     SETERRQ(1,"Natural layout vector not yet created; cannot scatter into it");
   }
-  ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */
   ierr = VecGetLocalSize(da->natural,&m);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(da->natural,&start,PETSC_NULL);CHKERRQ(ierr);
-  ierr = ISCreateStride(da->comm,m,start,1,&to);CHKERRQ(ierr);
-  ierr = AOPetscToApplicationIS(ao,to);CHKERRQ(ierr);
+
+  ierr = DAGetNatural_Private(da,&Nlocal,&to);CHKERRQ(ierr);
+  if (Nlocal != m) SETERRQ2(1,"Internal error: Nlocal %d local vector size %d",Nlocal,m);
   ierr = ISCreateStride(da->comm,m,start,1,&from);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(da->comm,da->Nlocal,PETSC_DETERMINE,0,&global);
   ierr = VecScatterCreate(global,from,da->natural,to,&da->gton);CHKERRQ(ierr);
