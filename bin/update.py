@@ -1,9 +1,8 @@
 #!/usr/bin/env python
+import commands
 import os
 import re
-import exceptions
 import sys
-import commands
 
 def getPETScDirectory():
   '''Checks PETSC_DIR and sets if not set'''
@@ -11,7 +10,6 @@ def getPETScDirectory():
     return os.environ['PETSC_DIR']
   else:
     return os.path.realpath(os.path.dirname(os.path.dirname(sys.argv[0])))
-
 
 def isGNUPatch(patch):
   '''Returns 1 if it is GNU patch or equivilent, exception if cannot run'''
@@ -24,8 +22,7 @@ def isGNUPatch(patch):
     if output.find('gnu.org') == -1: return 0
   return 1
 
-
-  # should only apply patch if it truly has something new in it. Keep checksum somewhere?
+# should only apply patch if it truly has something new in it. Keep checksum somewhere?
 def updatePatches():
   '''Updates the source code from any available patches'''
   log = open('patches.log','w')
