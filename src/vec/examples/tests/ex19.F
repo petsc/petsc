@@ -1,9 +1,12 @@
 
-C    "$Id: ex5.c,v 1.7 1995/09/21 20:11:42 bsmith Exp bsmith $";
+C    "$Id: ex19.F,v 1.7 1995/09/30 19:26:45 bsmith Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
-
+C
+C  This example demonstrates basic use of the PETSc Fortran interface
+C  to vectors.
+C
        integer          n, ierr
        double precision one, two, three, dot, norm
        Vec              x,y,w
@@ -16,7 +19,7 @@ C    "$Id: ex5.c,v 1.7 1995/09/21 20:11:42 bsmith Exp bsmith $";
        call  PetscInitialize(ierr)
        call  OptionsGetInt(' ','-n',n,ierr)
 
-C      /* create a vector */
+C Create a vector, then duplicate it
        call VecCreate(MPI_COMM_WORLD,n,x,ierr)
        call VecDuplicate(x,y,ierr)
        call VecDuplicate(x,w,ierr)
@@ -25,19 +28,23 @@ C      /* create a vector */
        call VecSet(two,y,ierr)
 
        call VecDot(x,y,dot,ierr)
-       print*,'Result of inner product ',dot
+       write(6,100) dot
+  100  format('Result of inner product ',e10.4)
 
        call VecScale(two,x,ierr)
        call VecNorm(x,norm,ierr)
-       print*,'Result of scaling ',norm
+       write(6,110) norm
+  110  format('Result of scaling ',e10.4)
 
        call VecCopy(x,w,ierr)
        call VecNorm(w,norm,ierr)
-       print*,'Result of copy ',norm
+       write(6,120) norm
+  120  format('Result of copy ',e10.4)
 
        call VecAXPY(three,x,y,ierr)
        call VecNorm(y,norm,ierr)
-       print*,'Result of axpy ',norm
+       write(6,130) norm
+  130  format('Result of axpy ',e10.4)
 
        call PetscFinalize(ierr)
        stop 

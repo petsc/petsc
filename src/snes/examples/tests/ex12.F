@@ -1,5 +1,5 @@
 
-C    "$Id: ex5.c,v 1.7 1995/09/21 20:11:42 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.8 1995/09/30 19:31:28 bsmith Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -7,7 +7,8 @@ C    "$Id: ex5.c,v 1.7 1995/09/21 20:11:42 bsmith Exp bsmith $";
 #include "include/finclude/mat.h"
 #include "include/finclude/snes.h"
 C
-C  In this example the application context is a Fortran integer array.
+C  This example demonstrates basic use of the SNES Fortran interface.
+C  In this example the application context is a Fortran integer array:
 C
 C      ctx(1) = da
 C          2  = F
@@ -15,7 +16,7 @@ C          3  = xl
 C          4  = mytid
 C          5  = numtid
 C          6  = N
-
+C
       integer          ctx(8),ierr
       SNES             snes
       Mat              J
@@ -85,8 +86,9 @@ C Set up nonlinear solver; then execute it
       call SNESSetUp(snes,ierr)
       call SNESSolve(snes,its,ierr)
       if (ctx(4) .eq. 0) then
-        print*,'Number of Newton iterations = ', its
+        write(6,100) its
       endif
+  100 format('Number of Newton iterations = ',i5)
 
 C Free data structures
       call VecDestroy(x,ierr)
