@@ -1,5 +1,8 @@
+
+
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.25 1998/11/04 16:23:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.26 1998/11/04 19:40:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -33,18 +36,20 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,int *icol,double r
     if (icol[j[k]] < prow && PetscAbsScalar(v[k]) > repla) {
       /* See if this one will work */
       repl  = icol[j[k]];
-      ierr = MatGetRow( mat, irow[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
+      ierr = MatGetRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
       for (kk=0; kk<nnz; kk++) {
 	if (icol[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > atol) {
 	  *rcv = PetscAbsScalar(v[k]);
 	  *rc  = repl;
-          ierr = MatRestoreRow( mat, irow[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
+          ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
 	  PetscFunctionReturn(1);
 	}
       }
-      ierr = MatRestoreRow( mat, irow[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
+      ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
     }
   }
+
+  SETERRQ(1,1," ");
   PetscFunctionReturn(0);
 }
 
