@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.111 1999/01/27 21:37:07 balay Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.112 1999/01/31 22:04:25 curfman Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -500,7 +500,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
      and SLESSolve() for each solve.  See SLESSetOperators() for
      options that can save work for such cases.
 
-   Level: beginner
+   Level: intermediate
 
 .keywords: SLES, solve, linear system
 
