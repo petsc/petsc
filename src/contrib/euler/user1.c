@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.79 1998/06/09 00:04:46 curfman Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.80 1998/08/05 03:23:58 curfman Exp bsmith $";
 #endif
 
 /***************************************************************************
@@ -1250,6 +1250,12 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
          app->Nx,app->Ny,app->Nz,1,2,PETSC_NULL,PETSC_NULL,PETSC_NULL,&app->da1); CHKERRQ(ierr);
   ierr = DACreateGlobalVector(app->da1,&app->P); CHKERRQ(ierr);
+
+  /*
+        Publish the pressure array for the AMS
+  */
+  ierr = PetscObjectPublish((PetscObject)app->P);CHKERRQ(ierr);
+
   ierr = VecDuplicate(app->P,&app->Pbc); CHKERRQ(ierr);
   ierr = DACreateLocalVector(app->da1,&app->localP); CHKERRQ(ierr);
 
