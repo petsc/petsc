@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.69 1999/06/30 23:50:29 balay Exp bsmith $"
+static char vcid[] =  "$Id: dvec2.c,v 1.70 1999/09/02 14:53:10 bsmith Exp bsmith $"
 #endif
 
 /* 
@@ -11,9 +11,9 @@ static char vcid[] =  "$Id: dvec2.c,v 1.69 1999/06/30 23:50:29 balay Exp bsmith 
 #include "src/inline/setval.h"
 #include "src/inline/axpy.h"
 
+#if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
 #undef __FUNC__  
 #define __FUNC__ "VecMDot_Seq"
-#if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
 int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
@@ -84,6 +84,8 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
 }
 
 #else
+#undef __FUNC__  
+#define __FUNC__ "VecMDot_Seq"
 int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar * restrict z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
@@ -574,30 +576,6 @@ int VecSetRandom_Seq(PetscRandom r,Vec xin)
   for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
-
-/* int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
-{
-  Vec_Seq      *x = (Vec_Seq *) xin->data;
-  register int n = x->n;
-  int          j;
-  Scalar       *xx = x->array, *yy,oalpha;
-
-  PetscFunctionBegin;
-  PLogFlops(nv*2*n);
-  for (j=0; j<nv; j++) {
-    yy     = ((Vec_Seq *)(y[j]->data))->array;
-    oalpha = alpha[j];
-    if (oalpha == -1.0) {
-      YMX(xx,yy,n);
-    } else if (oalpha == 1.0) {
-      YPX(xx,yy,n);
-    } else if (oalpha != 0.0) {
-      APXY(xx,oalpha,yy,n);
-    }
-  }
-  PetscFunctionReturn(0);
-} */
-
 
 #undef __FUNC__  
 #define __FUNC__ "VecMAXPY_Seq"

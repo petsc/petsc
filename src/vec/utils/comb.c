@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.20 1999/06/30 22:49:52 bsmith Exp balay $";
+static char vcid[] = "$Id: comb.c,v 1.21 1999/06/30 23:50:17 balay Exp bsmith $";
 #endif
 
 /*
@@ -17,7 +17,6 @@ static char vcid[] = "$Id: comb.c,v 1.20 1999/06/30 22:49:52 bsmith Exp balay $"
              VecNormEnd(Vec,NormType,double *);
 
        Limitations: 
-         - currently only works for PETSc seq and mpi vectors
          - The order of the xxxEnd() functions MUST be in the same order
            as the xxxBegin(). There is extensive error checking to try to 
            insure that the user calls the routines in the correct order
@@ -87,6 +86,7 @@ void VecSplitReduction_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype
   Scalar *xin = (Scalar *)in, *xout = (Scalar *) out;
   int    i, count = *cnt;
 
+  PetscFunctionBegin;
   if (*datatype != MPI_DOUBLE) {
     (*PetscErrorPrintf)("Can only handle MPI_DOUBLE data types");
     MPI_Abort(MPI_COMM_WORLD,1);
@@ -105,6 +105,7 @@ void VecSplitReduction_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype
       MPI_Abort(MPI_COMM_WORLD,1);
     }
   }
+  PetscStackPop;
   return;
 }
 EXTERN_C_END

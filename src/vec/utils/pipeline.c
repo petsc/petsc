@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pipeline.c,v 1.13 1999/05/04 20:30:27 balay Exp balay $";
+static char vcid[] = "$Id: pipeline.c,v 1.14 1999/06/30 23:50:17 balay Exp bsmith $";
 #endif
 
 /*
@@ -221,7 +221,6 @@ int ProcNo(int proc,PetscObject pipe_info);
 int VecPipelineSetType(VecPipeline ctx,PipelineType type,PetscObject x)
 {
   PetscFunctionBegin;
-
   ctx->pipe_type = type;
   ctx->aux_data = x;
   if (type==PIPELINE_NONE) {
@@ -446,6 +445,9 @@ int ProcUp(int proc,PetscObject pipe_info)
     PetscFunctionReturn(0);
   }
 }
+
+#undef __FUNC__
+#define __FUNC__ "ProcDown"
 int ProcDown(int proc,PetscObject pipe_info)
 { 
   int rank = ((Pipeline_sequential_info *)pipe_info)->rank;
@@ -479,6 +481,8 @@ typedef struct {
   int rank,size,*proc_colors;
 } Pipeline_colored_info;
 
+#undef __FUNC__
+#define __FUNC__ "ProcColorUp"
 int ProcColorUp(int proc,PetscObject pipe_info)
 {
   Pipeline_colored_info* comm_info = (Pipeline_colored_info *) pipe_info;
@@ -491,6 +495,8 @@ int ProcColorUp(int proc,PetscObject pipe_info)
     PetscFunctionReturn(0);
   }
 }
+#undef __FUNC__
+#define __FUNC__ "ProcColorDown"
 int ProcColorDown(int proc,PetscObject pipe_info)
 { 
   Pipeline_colored_info* comm_info = (Pipeline_colored_info *) pipe_info;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pvec2.c,v 1.40 1999/06/30 23:50:31 balay Exp bsmith $"
+static char vcid[] = "$Id: pvec2.c,v 1.41 1999/09/14 19:19:08 bsmith Exp bsmith $"
 #endif
 
 /*
@@ -184,8 +184,8 @@ EXTERN_C_BEGIN
 void VecMax_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype)
 {
   double *xin = (double *)in, *xout = (double *) out;
-  int    i, count = *cnt;
 
+  PetscFunctionBegin;
   if (*datatype != MPI_DOUBLE) {
     (*PetscErrorPrintf)("Can only handle MPI_DOUBLE data types");
     MPI_Abort(MPI_COMM_WORLD,1);
@@ -194,7 +194,8 @@ void VecMax_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype)
     xout[0] = xin[0];
     xout[1] = xin[1];
   }
-  return;
+  PetscStackPop;
+  return; /* cannot return a value */
 }
 EXTERN_C_END
 
@@ -204,8 +205,8 @@ EXTERN_C_BEGIN
 void VecMin_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype)
 {
   double *xin = (double *)in, *xout = (double *) out;
-  int    i, count = *cnt;
 
+  PetscFunctionBegin;
   if (*datatype != MPI_DOUBLE) {
     (*PetscErrorPrintf)("Can only handle MPI_DOUBLE data types");
     MPI_Abort(MPI_COMM_WORLD,1);
@@ -214,6 +215,7 @@ void VecMin_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype)
     xout[0] = xin[0];
     xout[1] = xin[1];
   }
+  PetscStackPop;
   return;
 }
 EXTERN_C_END
@@ -291,3 +293,11 @@ int VecMin_MPI( Vec xin, int *idx, double *z )
   }
   PetscFunctionReturn(0);
 }
+
+
+
+
+
+
+
+

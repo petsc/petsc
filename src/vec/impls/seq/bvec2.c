@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.163 1999/07/15 14:12:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.164 1999/09/02 14:53:10 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -344,11 +344,12 @@ static int VecPublish_Seq(PetscObject object)
 #if defined(PETSC_HAVE_AMS)
   Vec          v = (Vec) object;
   Vec_Seq      *s = (Vec_Seq *) v->data;
-  int          ierr;
-  int          (*f)(AMS_Memory,char *,Vec);
-  
+  int          ierr, (*f)(AMS_Memory,char *,Vec);
+#endif
+
   PetscFunctionBegin;
 
+#if defined(PETSC_HAVE_AMS)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
@@ -366,9 +367,6 @@ static int VecPublish_Seq(PetscObject object)
     ierr = (*f)((AMS_Memory)v->amem,"values",v);CHKERRQ(ierr);
   }
   ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
-
-#else
-  PetscFunctionBegin;
 #endif
 
   PetscFunctionReturn(0);
