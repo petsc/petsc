@@ -244,11 +244,16 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   Vec            vu,vlambda,vfu,vflambda,vglambda;
   DA             da;
   VecPack        packer = (VecPack)dmmg->dm;
+  PetscTruth     useadic = 0;
+#if defined(PETSC_HAVE_ADIC)
   AppCtx         *appctx = (AppCtx*)dmmg->user;
-  PetscTruth     skipadic;
+#endif
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(0,"-skipadic",&skipadic);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_ADIC)
+  ierr = PetscOptionsHasName(0,"-useadic",&skipadic);CHKERRQ(ierr);
+#endif
 
   ierr = VecPackGetEntries(packer,&nredundant,&da,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -264,7 +269,9 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
   /* G() */
   ierr = DAFormFunction1(da,vu,vfu,w);CHKERRQ(ierr);
-  if (!skipadic) { 
+
+#if defined(PETSC_HAVE_ADIC)
+  if (useadic) { 
     /* lambda^T G_u() */
     ierr = DAComputeJacobian1WithAdic(da,vu,appctx->J,w);CHKERRQ(ierr);  
     if (appctx->ksp) {
@@ -272,6 +279,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     }
     ierr = MatMultTranspose(appctx->J,vglambda,vflambda);CHKERRQ(ierr); 
   }
+#endif
 
   ierr = DAVecGetArray(da,vu,&u);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,vfu,&fu);CHKERRQ(ierr);
@@ -284,7 +292,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   }
 
   /* lambda^T G_u() */
-  if (skipadic) {
+  if (!useadic) {
     for (i=xs; i<xs+xm; i++) {
       if      (i == 0)   flambda[0]   = 2.*d*lambda[0]   - d*lambda[1] + h2*lambda[0]*u[0];
       else if (i == 1)   flambda[1]   = 2.*d*lambda[1]   - d*lambda[2] + h2*lambda[1]*u[1];
