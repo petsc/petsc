@@ -200,6 +200,6 @@ PetscErrorCode PetscLs(MPI_Comm comm,const char libname[],char *found,size_t tle
     ierr  = PetscStrlen(found,&len);CHKERRQ(ierr);
     f     = fgets(found+len,tlen-len,fp);
   }
-  if (*flg) PetscLogInfo(0,"ls on %s gives \n%s\n",libname,found);
+  if (*flg) PetscLogInfo(0,"PetscLS:ls on %s gives \n%s\n",libname,found);
   PetscFunctionReturn(0);
 }

@@ -61,8 +61,7 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   /* Allocate space and set pointers to beginning */
   ierr = PetscMalloc(size,&lgmres->hh_origin);CHKERRQ(ierr);
   ierr = PetscMemzero(lgmres->hh_origin,size);CHKERRQ(ierr); 
-  PetscLogObjectMemory(ksp,size);                      /* HH - modified (by plane 
-                                                      rotations) hessenburg */
+  ierr = PetscLogObjectMemory(ksp,size);CHKERRQ(ierr);  /* HH - modified (by plane rotations) hessenburg */
   lgmres->hes_origin = lgmres->hh_origin + hh;     /* HES - unmodified hessenburg */
   lgmres->rs_origin  = lgmres->hes_origin + hes;   /* RS - the right-hand-side of the 
                                                       Hessenberg system */
@@ -74,7 +73,7 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
     size = (max_k + 3)*(max_k + 9)*sizeof(PetscScalar);
     ierr = PetscMalloc(size,&lgmres->Rsvd);CHKERRQ(ierr);
     ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&lgmres->Dsvd);CHKERRQ(ierr);
-    PetscLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));
+    ierr = PetscLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
@@ -83,14 +82,14 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   lgmres->vecs_allocated = VEC_OFFSET + 2 + max_k;
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&lgmres->user_work);CHKERRQ(ierr);
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(PetscInt),&lgmres->mwork_alloc);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(PetscInt)));
+  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(PetscInt)));CHKERRQ(ierr);
 
   /* LGMRES_MOD: need array of pointers to augvecs*/
   ierr = PetscMalloc((2 * aug_dim + AUG_OFFSET)*sizeof(void*),&lgmres->augvecs);CHKERRQ(ierr);
   lgmres->aug_vecs_allocated = 2 *aug_dim + AUG_OFFSET;
   ierr = PetscMalloc((2* aug_dim + AUG_OFFSET)*sizeof(void*),&lgmres->augvecs_user_work);CHKERRQ(ierr);
   ierr = PetscMalloc(aug_dim*sizeof(PetscInt),&lgmres->aug_order);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,(aug_dim)*(4*sizeof(void*) + sizeof(PetscInt)) + AUG_OFFSET*2*sizeof(void*) );
+  ierr = PetscLogObjectMemory(ksp,(aug_dim)*(4*sizeof(void*) + sizeof(PetscInt)) + AUG_OFFSET*2*sizeof(void*));CHKERRQ(ierr);
 
  
  /* if q_preallocate = 0 then only allocate one "chunk" of space (for 
@@ -206,7 +205,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
   if (!res) {
      if (itcount) *itcount = 0;
      ksp->reason = KSP_CONVERGED_ATOL;
-     PetscLogInfo(ksp,"GMRESCycle: Converged due to zero residual norm on entry\n");
+     PetscLogInfo(ksp,"LGMRESCycle: Converged due to zero residual norm on entry\n");
      PetscFunctionReturn(0);
   }
 
@@ -279,7 +278,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
        tmp = 1.0/tt; 
        ierr = VecScale(&tmp,VEC_VV(loc_it+1));CHKERRQ(ierr); /* scale new direction by its norm */
     } else {
-       PetscLogInfo(ksp,"Detected happy breakdown, current hapbnd = %g tt = %g\n",hapbnd,tt);
+       PetscLogInfo(ksp,"GMREScycle:Detected happy breakdown, current hapbnd = %g tt = %g\n",hapbnd,tt);
        hapend = PETSC_TRUE;
     }
 
@@ -729,7 +728,7 @@ static PetscErrorCode LGMRESGetNewVectors(KSP ksp,PetscInt it)
 
   /* work vectors */
   ierr = KSPGetVecs(ksp,nalloc,&lgmres->user_work[nwork]);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,nalloc,lgmres->user_work[nwork]); 
+  PetscLogObjectParents(ksp,nalloc,lgmres->user_work[nwork]);
   /* specify size of chunk allocated */
   lgmres->mwork_alloc[nwork] = nalloc;
 
@@ -772,14 +771,14 @@ PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp,Vec ptr,Vec *result)
   if (!ptr) {
     if (!lgmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&lgmres->sol_temp);CHKERRQ(ierr);
-      PetscLogObjectParent(ksp,lgmres->sol_temp);
+      ierr = PetscLogObjectParent(ksp,lgmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = lgmres->sol_temp;
   }
   if (!lgmres->nrs) {
     /* allocate the work area */
     ierr = PetscMalloc(lgmres->max_k*sizeof(PetscScalar),&lgmres->nrs);CHKERRQ(ierr);
-    PetscLogObjectMemory(ksp,lgmres->max_k*sizeof(PetscScalar));
+    ierr = PetscLogObjectMemory(ksp,lgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
  
   ierr = BuildLgmresSoln(lgmres->nrs,ksp->vec_sol,ptr,ksp,lgmres->it);CHKERRQ(ierr);
@@ -983,7 +982,7 @@ PetscErrorCode KSPCreate_LGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscNew(KSP_LGMRES,&lgmres);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,sizeof(KSP_LGMRES));
+  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_LGMRES));CHKERRQ(ierr);
   ksp->data                              = (void*)lgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_LGMRES;
 

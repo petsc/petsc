@@ -253,7 +253,7 @@ PetscErrorCode PCCreate_KSP(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_KSP,&jac);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,sizeof(PC_KSP));
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_KSP));CHKERRQ(ierr);
   pc->ops->apply              = PCApply_KSP;
   pc->ops->applytranspose     = PCApplyTranspose_KSP;
   pc->ops->setup              = PCSetUp_KSP;

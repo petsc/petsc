@@ -1620,7 +1620,7 @@ PetscErrorCode TSLGMonitorCreate(const char host[],const char label[],int x,int 
   ierr = PetscDrawLGCreate(win,1,draw);CHKERRQ(ierr);
   ierr = PetscDrawLGIndicateDataPoints(*draw);CHKERRQ(ierr);
 
-  PetscLogObjectParent(*draw,win);
+  ierr = PetscLogObjectParent(*draw,win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

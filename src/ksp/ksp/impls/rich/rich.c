@@ -191,7 +191,7 @@ PetscErrorCode KSPCreate_Richardson(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscNew(KSP_Richardson,&richardsonP);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,sizeof(KSP_Richardson));
+  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_Richardson));CHKERRQ(ierr);
   ksp->data                        = (void*)richardsonP;
   richardsonP->scale               = 1.0;
   ksp->ops->setup                  = KSPSetUp_Richardson;

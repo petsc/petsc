@@ -281,7 +281,7 @@ PetscErrorCode MatZeroRows_MPIBDiag(Mat A,IS is,const PetscScalar *diag)
     
   /* actually zap the local rows */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);  
-  PetscLogObjectParent(A,istmp);
+  ierr = PetscLogObjectParent(A,istmp);CHKERRQ(ierr);
   ierr = PetscFree(lrows);CHKERRQ(ierr);
   ierr = MatZeroRows(l->A,istmp,diag);CHKERRQ(ierr);
   ierr = ISDestroy(istmp);CHKERRQ(ierr);
@@ -518,7 +518,7 @@ static PetscErrorCode MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
       ierr = MatSetType(A,MATMPIBDIAG);CHKERRQ(ierr);
       ierr = MatMPIBDiagSetPreallocation(A,0,mbd->A->bs,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-    PetscLogObjectParent(mat,A);
+    ierr = PetscLogObjectParent(mat,A);CHKERRQ(ierr);
 
     /* Copy the matrix ... This isn't the most efficient means,
        but it's quick for now */
@@ -919,8 +919,7 @@ PetscErrorCode MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,PetscInt nd,PetscInt b
   len  = B->M/bs + B->N/bs + 1;
   ierr = PetscMalloc(len*sizeof(PetscInt),&b->gdiag);CHKERRQ(ierr);
   k    = 0;
-  PetscLogObjectMemory(B,(nd+1)*sizeof(PetscInt) + (b->size+2)*sizeof(PetscInt)
-                        + sizeof(struct _p_Mat) + sizeof(Mat_MPIBDiag));
+  ierr = PetscLogObjectMemory(B,(nd+1)*sizeof(PetscInt) + (b->size+2)*sizeof(PetscInt) + sizeof(struct _p_Mat) + sizeof(Mat_MPIBDiag));CHKERRQ(ierr);
   if (diagv) {
     ierr = PetscMalloc((nd+1)*sizeof(PetscScalar*),&ldiagv);CHKERRQ(ierr); 
   }
@@ -953,7 +952,7 @@ PetscErrorCode MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,PetscInt nd,PetscInt b
   ierr = MatCreate(PETSC_COMM_SELF,B->m,B->N,B->m,B->N,&b->A);CHKERRQ(ierr);
   ierr = MatSetType(b->A,MATSEQBDIAG);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(b->A,k,bs,ldiag,ldiagv);CHKERRQ(ierr);
-  PetscLogObjectParent(B,b->A);
+  ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
   ierr = PetscFree(ldiag);CHKERRQ(ierr);
   if (ldiagv) {ierr = PetscFree(ldiagv);CHKERRQ(ierr);}
 

@@ -519,8 +519,7 @@ PetscErrorCode PCCreate_Shell(PC pc)
   PetscFunctionBegin;
   pc->ops->destroy    = PCDestroy_Shell;
   ierr                = PetscNew(PC_Shell,&shell);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,sizeof(PC_Shell));
-
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_Shell));CHKERRQ(ierr);
   pc->data         = (void*)shell;
   pc->name         = 0;
 

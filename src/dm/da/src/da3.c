@@ -249,7 +249,7 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   M = tM; N = tN; P = tP;
 
-  PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
+  ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);CHKERRQ(ierr);
   da->bops->publish           = DAPublish_Petsc;
   da->ops->createglobalvector = DACreateGlobalVector;
   da->ops->getinterpolation   = DAGetInterpolation;
@@ -257,7 +257,7 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   da->ops->getmatrix          = DAGetMatrix;
   da->ops->refine             = DARefine;
 
-  PetscLogObjectMemory(da,sizeof(struct _p_DA));
+  ierr = PetscLogObjectMemory(da,sizeof(struct _p_DA));CHKERRQ(ierr);
   da->dim        = 3;
   da->interptype = DA_Q1;
   da->refine_x   = refine_x;
@@ -490,9 +490,9 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   ierr = PetscFree(idx);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  PetscLogObjectParent(da,to);
-  PetscLogObjectParent(da,from);
-  PetscLogObjectParent(da,ltog);
+  ierr = PetscLogObjectParent(da,to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,from);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,ltog);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
 
@@ -778,7 +778,7 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
 
 
   ierr = PetscMalloc((Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  PetscLogObjectMemory(da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt));
+  ierr = PetscLogObjectMemory(da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt));CHKERRQ(ierr);
 
   nn = 0;
 
@@ -1011,9 +1011,9 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   base = bases[rank];
   ierr = ISCreateGeneral(comm,nn,idx,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
-  PetscLogObjectParent(da,gtol);
-  PetscLogObjectParent(da,to);
-  PetscLogObjectParent(da,from);
+  ierr = PetscLogObjectParent(da,gtol);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
   da->stencil_type = stencil_type;
@@ -1717,9 +1717,9 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  ierr  = ISLocalToGlobalMappingCreateNC(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateNC(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
-  PetscLogObjectParent(da,da->ltogmap);
+  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
 
   da->ltol = PETSC_NULL;
   da->ao   = PETSC_NULL;

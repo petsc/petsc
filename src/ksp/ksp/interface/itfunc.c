@@ -1431,11 +1431,11 @@ PetscErrorCode KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (!w) {
     ierr = VecDuplicate(ksp->vec_rhs,&w);CHKERRQ(ierr);
-    PetscLogObjectParent((PetscObject)ksp,w);
+    ierr = PetscLogObjectParent((PetscObject)ksp,w);CHKERRQ(ierr);
   }
   if (!tt) {
     ierr = VecDuplicate(ksp->vec_rhs,&tt);CHKERRQ(ierr); flag = PETSC_TRUE;
-    PetscLogObjectParent((PetscObject)ksp,tt);
+    ierr = PetscLogObjectParent((PetscObject)ksp,tt);CHKERRQ(ierr);
   }
   ierr = (*ksp->ops->buildresidual)(ksp,tt,w,V);CHKERRQ(ierr);
   if (flag) {ierr = VecDestroy(tt);CHKERRQ(ierr);}

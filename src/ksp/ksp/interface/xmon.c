@@ -40,7 +40,7 @@ PetscErrorCode KSPLGMonitorCreate(const char host[],const char label[],int x,int
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,1,draw);CHKERRQ(ierr);
-  PetscLogObjectParent(*draw,win);
+  ierr = PetscLogObjectParent(*draw,win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -146,7 +146,7 @@ PetscErrorCode KSPLGTrueMonitorCreate(MPI_Comm comm,const char host[],const char
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,2,draw);CHKERRQ(ierr);
-  PetscLogObjectParent(*draw,win);
+  ierr = PetscLogObjectParent(*draw,win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -268,7 +268,7 @@ PetscErrorCode MatCreate_Shell(Mat A)
   ierr            = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
   ierr = PetscNew(Mat_Shell,&b);CHKERRQ(ierr);
-  PetscLogObjectMemory(A,sizeof(struct _p_Mat)+sizeof(Mat_Shell));
+  ierr = PetscLogObjectMemory(A,sizeof(struct _p_Mat)+sizeof(Mat_Shell));CHKERRQ(ierr);
   A->data = (void*)b;
 
   if (A->m == PETSC_DECIDE || A->n == PETSC_DECIDE) {

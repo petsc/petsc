@@ -281,7 +281,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm,KSP *inksp)
   ierr = KSPInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_COOKIE,-1,"KSP",comm,KSPDestroy,KSPView);
+  ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_COOKIE,-1,"KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
   *inksp             = ksp;
   ksp->bops->publish = KSPPublish_Petsc;
 

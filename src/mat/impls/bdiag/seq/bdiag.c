@@ -644,9 +644,9 @@ PetscErrorCode MatSeqBDiagSetPreallocation_SeqBDiag(Mat B,PetscInt nd,PetscInt b
   sizetot   *= bs*bs;
   b->maxnz  =  sizetot;
   ierr      = PetscMalloc((B->n+1)*sizeof(PetscScalar),&b->dvalue);CHKERRQ(ierr);
-  PetscLogObjectMemory(B,(nda*(bs+2))*sizeof(PetscInt) + bs*nda*sizeof(PetscScalar)
+  ierr      = PetscLogObjectMemory(B,(nda*(bs+2))*sizeof(PetscInt) + bs*nda*sizeof(PetscScalar)
                     + nda*sizeof(PetscScalar*) + sizeof(Mat_SeqBDiag)
-                    + sizeof(struct _p_Mat) + sizetot*sizeof(PetscScalar));
+                    + sizeof(struct _p_Mat) + sizetot*sizeof(PetscScalar));CHKERRQ(ierr);
 
   if (!b->user_alloc) {
     for (i=0; i<nd; i++) {

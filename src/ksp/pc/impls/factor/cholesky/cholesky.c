@@ -232,7 +232,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,&dir->info,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
-      PetscLogObjectParent(pc,dir->fact);
+      ierr = PetscLogObjectParent(pc,dir->fact);CHKERRQ(ierr);
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!dir->reuseordering) {
         if (dir->row && dir->col && (dir->row != dir->col)) {
@@ -260,7 +260,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,&dir->info,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
-      PetscLogObjectParent(pc,dir->fact);
+      ierr = PetscLogObjectParent(pc,dir->fact);CHKERRQ(ierr);
     }
     ierr = MatCholeskyFactorNumeric(pc->pmat,&dir->info,&dir->fact);CHKERRQ(ierr);
   }
@@ -579,7 +579,7 @@ PetscErrorCode PCCreate_Cholesky(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_Cholesky,&dir);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,sizeof(PC_Cholesky));
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_Cholesky));CHKERRQ(ierr);
 
   dir->fact                   = 0;
   dir->inplace                = PETSC_FALSE;

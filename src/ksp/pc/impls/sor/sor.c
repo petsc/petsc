@@ -316,7 +316,7 @@ PetscErrorCode PCCreate_SOR(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_SOR,&jac);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,sizeof(PC_SOR));
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_SOR));CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_SOR;
   pc->ops->applyrichardson = PCApplyRichardson_SOR;

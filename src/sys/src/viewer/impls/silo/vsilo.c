@@ -97,8 +97,8 @@ PetscErrorCode PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v, _p_PetscViewer, struct _PetscViewerOps, PETSC_VIEWER_COOKIE, -1, PETSC_VIEWER_SILO, comm, PetscViewerDestroy, 0);
-  PLogObjectCreate(v);
+  ierr = PetscHeaderCreate(v, _p_PetscViewer, struct _PetscViewerOps, PETSC_VIEWER_COOKIE, -1, PETSC_VIEWER_SILO, comm, PetscViewerDestroy, 0);CHKERRQ(ierr);
+  ierr = PetscLogObjectCreate(v);CHKERRQ(ierr);
   silo            = PetscNew(Viewer_Silo); CHKPTRQ(silo);
   v->data         = silo;
   v->ops->destroy = PetscViewerDestroy_Silo;

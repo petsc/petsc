@@ -60,7 +60,7 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   PetscValidHeaderSpecific(draw, PETSC_DRAW_COOKIE,1);
   PetscValidPointer(hist,3);
   ierr = PetscObjectGetComm((PetscObject) draw, &comm);CHKERRQ(ierr);
-  PetscHeaderCreate(h, _p_DrawHG, int, DRAWHG_COOKIE, 0, "PetscDrawHG", comm, PetscDrawHGDestroy, PETSC_NULL);
+  ierr = PetscHeaderCreate(h, _p_DrawHG, int, DRAWHG_COOKIE, 0, "PetscDrawHG", comm, PetscDrawHGDestroy, PETSC_NULL);CHKERRQ(ierr);
   h->view        = PETSC_NULL;
   h->destroy     = PETSC_NULL;
   h->win         = draw;
@@ -78,11 +78,11 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   h->calcStats   = PETSC_FALSE;
   h->integerBins = PETSC_FALSE;
   ierr = PetscMalloc(h->maxValues * sizeof(PetscReal), &h->values);CHKERRQ(ierr);
-  PetscLogObjectMemory(h, (h->maxBins + h->maxValues)*sizeof(PetscReal));
+  ierr = PetscLogObjectMemory(h, (h->maxBins + h->maxValues)*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);CHKERRQ(ierr);
   if (!isnull) {
     ierr = PetscDrawAxisCreate(draw, &h->axis);CHKERRQ(ierr);
-    PetscLogObjectParent(h, h->axis);
+    ierr = PetscLogObjectParent(h, h->axis);CHKERRQ(ierr);
   } else {
     h->axis = PETSC_NULL;
   }
@@ -116,7 +116,7 @@ PetscErrorCode PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
   if (hist->maxBins < bins) {
     ierr = PetscFree(hist->bins);CHKERRQ(ierr);
     ierr = PetscMalloc(bins * sizeof(PetscReal), &hist->bins);CHKERRQ(ierr);
-    PetscLogObjectMemory(hist, (bins - hist->maxBins) * sizeof(PetscReal));
+    ierr = PetscLogObjectMemory(hist, (bins - hist->maxBins) * sizeof(PetscReal));CHKERRQ(ierr);
     hist->maxBins = bins;
   }
   hist->numBins = bins;
@@ -214,7 +214,7 @@ PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
     PetscErrorCode ierr;
 
     ierr = PetscMalloc((hist->maxValues+CHUNKSIZE) * sizeof(PetscReal), &tmp);CHKERRQ(ierr);
-    PetscLogObjectMemory(hist, CHUNKSIZE * sizeof(PetscReal));
+    ierr = PetscLogObjectMemory(hist, CHUNKSIZE * sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmp, hist->values, hist->maxValues * sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscFree(hist->values);CHKERRQ(ierr);
     hist->values     = tmp;

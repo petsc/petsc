@@ -36,7 +36,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   ierr             = PetscMalloc(nis*sizeof(PetscInt),&c->nrows);CHKERRQ(ierr);
   ierr             = PetscMalloc(nis*sizeof(PetscInt*),&c->rows);CHKERRQ(ierr);
   ierr             = PetscMalloc(nis*sizeof(PetscInt*),&c->columnsforrow);CHKERRQ(ierr);
-  PetscLogObjectMemory(c,5*nis*sizeof(PetscInt));
+  ierr = PetscLogObjectMemory(c,5*nis*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* Allow access to data structures of local part of matrix */
   if (!aij->colmap) {
@@ -68,7 +68,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     c->ncolumns[i] = n;
     if (n) {
       ierr = PetscMalloc(n*sizeof(PetscInt),&c->columns[i]);CHKERRQ(ierr);
-      PetscLogObjectMemory(c,n*sizeof(PetscInt));
+      ierr = PetscLogObjectMemory(c,n*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscMemcpy(c->columns[i],is,n*sizeof(PetscInt));CHKERRQ(ierr);
     } else {
       c->columns[i]  = 0;
@@ -132,7 +132,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       c->nrows[i]         = nrows;
       ierr                = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->rows[i]);CHKERRQ(ierr);
       ierr                = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->columnsforrow[i]);CHKERRQ(ierr);
-      PetscLogObjectMemory(c,2*(nrows+1)*sizeof(PetscInt));
+      ierr = PetscLogObjectMemory(c,2*(nrows+1)*sizeof(PetscInt));CHKERRQ(ierr);
       nrows = 0;
       for (j=0; j<M; j++) {
         if (rowhit[j]) {
@@ -193,7 +193,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       c->nrows[i]         = nrows;
       ierr = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->rows[i]);CHKERRQ(ierr);
       ierr = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->columnsforrow[i]);CHKERRQ(ierr);
-      PetscLogObjectMemory(c,(nrows+1)*sizeof(PetscInt));
+      ierr = PetscLogObjectMemory(c,(nrows+1)*sizeof(PetscInt));CHKERRQ(ierr);
       /* now store the linked list of rows into c->rows[i] */
       nrows = 0;
       fm    = rowhit[M];

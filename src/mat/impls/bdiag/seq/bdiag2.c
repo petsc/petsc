@@ -85,7 +85,7 @@ PetscErrorCode MatSetValues_SeqBDiag_1(Mat A,PetscInt m,const PetscInt im[],Pets
           if (is == ADD_VALUES) a->diagv[a->nd][row] += value;
           else                  a->diagv[a->nd][row] = value;
           a->nd++;
-          PetscLogObjectMemory(A,newnz*sizeof(PetscScalar)+2*sizeof(PetscInt)+sizeof(PetscScalar*));
+          ierr = PetscLogObjectMemory(A,newnz*sizeof(PetscScalar)+2*sizeof(PetscInt)+sizeof(PetscScalar*));CHKERRQ(ierr);
         }
       }
     }
@@ -173,7 +173,7 @@ PetscErrorCode MatSetValues_SeqBDiag_N(Mat A,PetscInt m,const PetscInt im[],Pets
           if (is == ADD_VALUES) a->diagv[k][shift + (in[j]%bs)*bs] += value;
           else                  a->diagv[k][shift + (in[j]%bs)*bs] = value;
           a->nd++;
-          PetscLogObjectMemory(A,newnz*sizeof(PetscScalar)+2*sizeof(PetscInt)+sizeof(PetscScalar*));
+          ierr = PetscLogObjectMemory(A,newnz*sizeof(PetscScalar)+2*sizeof(PetscInt)+sizeof(PetscScalar*));CHKERRQ(ierr);
         }
       }
     }

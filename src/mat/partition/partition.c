@@ -409,8 +409,8 @@ PetscErrorCode MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
   PetscFunctionBegin;
   *newp          = 0;
 
-  PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_COOKIE,-1,"MatPartitioning",comm,MatPartitioningDestroy,
-                    MatPartitioningView);
+  ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_COOKIE,-1,"MatPartitioning",comm,MatPartitioningDestroy,
+                    MatPartitioningView);CHKERRQ(ierr);
   part->type           = -1;
   part->vertex_weights = PETSC_NULL;
   part->part_weights   = PETSC_NULL;

@@ -3242,7 +3242,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
     ierr = MatCreate(A->comm,bs*n,bs*n,bs*n,bs*n,fact);CHKERRQ(ierr);
     ierr = MatSetType(*fact,A->type_name);CHKERRQ(ierr);
     ierr = MatSeqBAIJSetPreallocation(*fact,bs,0,PETSC_NULL);CHKERRQ(ierr);
-    PetscLogObjectParent(*fact,isicol);
+    ierr = PetscLogObjectParent(*fact,isicol);CHKERRQ(ierr);
     b = (Mat_SeqBAIJ*)(*fact)->data;
     ierr = PetscFree(b->imax);CHKERRQ(ierr);
     b->singlemalloc = PETSC_FALSE;
@@ -3266,7 +3266,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
     ierr = PetscMalloc((bs*n+bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
     /* In b structure:  Free imax, ilen, old a, old j.  
        Allocate dloc, solve_work, new a, new j */
-    PetscLogObjectMemory(*fact,(ainew[n]-n)*(sizeof(PetscInt))+bs2*ainew[n]*sizeof(PetscScalar));
+    ierr = PetscLogObjectMemory(*fact,(ainew[n]-n)*(sizeof(PetscInt))+bs2*ainew[n]*sizeof(PetscScalar));CHKERRQ(ierr);
     b->maxnz          = b->nz = ainew[n];
     (*fact)->factor   = FACTOR_LU;
 

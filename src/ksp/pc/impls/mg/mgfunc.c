@@ -239,7 +239,7 @@ PetscErrorCode MGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
     ierr = KSPCreate(comm,&mg[l]->smoothu);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mg[l]->smoothu,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(mg[l]->smoothu,prefix);CHKERRQ(ierr);
-    PetscLogObjectParent(pc,mg[l]->smoothu);
+    ierr = PetscLogObjectParent(pc,mg[l]->smoothu);CHKERRQ(ierr);
   }
   if (ksp) *ksp = mg[l]->smoothu;
   PetscFunctionReturn(0);

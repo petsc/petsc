@@ -68,7 +68,7 @@ PetscErrorCode VecPackCreate(MPI_Comm comm,VecPack *packer)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(p,_p_VecPack,struct _VecPackOps,DA_COOKIE,0,"VecPack",comm,VecPackDestroy,0);
+  ierr = PetscHeaderCreate(p,_p_VecPack,struct _VecPackOps,DA_COOKIE,0,"VecPack",comm,VecPackDestroy,0);CHKERRQ(ierr);
   p->n            = 0;
   p->next         = PETSC_NULL;
   p->comm         = comm;

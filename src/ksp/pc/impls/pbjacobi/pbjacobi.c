@@ -216,7 +216,7 @@ PetscErrorCode PCCreate_PBJacobi(PC pc)
      Logs the memory usage; this is not needed but allows PETSc to 
      monitor how much memory is being used for various purposes.
   */
-  PetscLogObjectMemory(pc,sizeof(PC_PBJacobi));
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_PBJacobi));CHKERRQ(ierr);
 
   /*
      Initialize the pointers to vectors to ZERO; these will be used to store

@@ -297,7 +297,7 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   M = tM; N = tN;
 
-  PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
+  ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);CHKERRQ(ierr);
   da->bops->publish           = DAPublish_Petsc;
   da->ops->createglobalvector = DACreateGlobalVector;
   da->ops->getinterpolation   = DAGetInterpolation;
@@ -308,7 +308,7 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   da->ops->getelements        = DAGetElements_2d_P1;
   da->elementtype             = DA_ELEMENT_P1;
 
-  PetscLogObjectMemory(da,sizeof(struct _p_DA));
+  ierr = PetscLogObjectMemory(da,sizeof(struct _p_DA));CHKERRQ(ierr);
   da->dim        = 2;
   da->interptype = DA_Q1;
   da->refine_x   = refine_x;
@@ -492,9 +492,9 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   ierr = PetscFree(idx);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  PetscLogObjectParent(da,to);
-  PetscLogObjectParent(da,from);
-  PetscLogObjectParent(da,ltog);
+  ierr = PetscLogObjectParent(da,to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,from);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,ltog);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
 
@@ -614,7 +614,7 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   }
 
   ierr = PetscMalloc((x+2*s_x)*(y+2*s_y)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  PetscLogObjectMemory(da,(x+2*s_x)*(y+2*s_y)*sizeof(PetscInt));
+  ierr = PetscLogObjectMemory(da,(x+2*s_x)*(y+2*s_y)*sizeof(PetscInt));CHKERRQ(ierr);
   nn = 0;
 
   xbase = bases[rank];
@@ -681,9 +681,9 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   base = bases[rank];
   ierr = ISCreateGeneral(comm,nn,idx,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
-  PetscLogObjectParent(da,to);
-  PetscLogObjectParent(da,from);
-  PetscLogObjectParent(da,gtol);
+  ierr = PetscLogObjectParent(da,to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,from);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,gtol);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
 
@@ -780,7 +780,7 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   */
   ierr = ISLocalToGlobalMappingCreateNC(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
-  PetscLogObjectParent(da,da->ltogmap);
+  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
 
   *inra = da;
 
@@ -1056,7 +1056,7 @@ PetscErrorCode DASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,MPI
     ierr     = MPI_Comm_create(comm,sub_group,outcomm);CHKERRQ(ierr);
     ierr     = MPI_Group_free(&entire_group);CHKERRQ(ierr);
     ierr     = MPI_Group_free(&sub_group);CHKERRQ(ierr);
-    PetscLogInfo(0,"Creating redundant coarse problems of size %d\n",csize);
+    PetscLogInfo(0,"DASplitComm2d:Creating redundant coarse problems of size %d\n",csize);
   } else {
     *outcomm = comm;
   }

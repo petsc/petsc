@@ -69,8 +69,8 @@ PetscErrorCode PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
     (*axis)->win = draw;
     PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_COOKIE,0,"PetscDrawAxis",obj->comm,PetscDrawAxisDestroy,0);
-  PetscLogObjectParent(draw,ad);
+  ierr = PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_COOKIE,0,"PetscDrawAxis",obj->comm,PetscDrawAxisDestroy,0);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(draw,ad);CHKERRQ(ierr);
   ad->xticks    = PetscADefTicks;
   ad->yticks    = PetscADefTicks;
   ad->xlabelstr = PetscADefLabel;

@@ -1060,7 +1060,7 @@ PetscErrorCode SNESCreate_LS(SNES snes)
   snes->nwork           = 0;
 
   ierr                  = PetscNew(SNES_LS,&neP);CHKERRQ(ierr);
-  PetscLogObjectMemory(snes,sizeof(SNES_LS));
+  ierr = PetscLogObjectMemory(snes,sizeof(SNES_LS));CHKERRQ(ierr);
   snes->data    	= (void*)neP;
   neP->alpha		= 1.e-4;
   neP->maxstep		= 1.e8;

@@ -161,7 +161,7 @@ PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer,int windownumber,Pets
 
   if (!vdraw->drawlg[windownumber]) {
     ierr = PetscDrawLGCreate(vdraw->draw[windownumber],1,&vdraw->drawlg[windownumber]);CHKERRQ(ierr);
-    PetscLogObjectParent(viewer,vdraw->drawlg[windownumber]);
+    ierr = PetscLogObjectParent(viewer,vdraw->drawlg[windownumber]);CHKERRQ(ierr);
   }
   *drawlg = vdraw->drawlg[windownumber];
   PetscFunctionReturn(0);
@@ -211,7 +211,7 @@ PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer viewer,int windownumber,Pe
 
   if (!vdraw->drawaxis[windownumber]) {
     ierr = PetscDrawAxisCreate(vdraw->draw[windownumber],&vdraw->drawaxis[windownumber]);CHKERRQ(ierr);
-    PetscLogObjectParent(viewer,vdraw->drawaxis[windownumber]);
+    ierr = PetscLogObjectParent(viewer,vdraw->drawaxis[windownumber]);CHKERRQ(ierr);
   }
   *drawaxis = vdraw->drawaxis[windownumber];
   PetscFunctionReturn(0);
@@ -230,7 +230,7 @@ PetscErrorCode PetscViewerDrawSetInfo(PetscViewer v,const char display[],const c
   ierr      = PetscStrallocpy(display,&vdraw->display);CHKERRQ(ierr);
   ierr      = PetscDrawCreate(v->comm,display,title,x,y,w,h,&vdraw->draw[0]);CHKERRQ(ierr);
   ierr      = PetscDrawSetFromOptions(vdraw->draw[0]);CHKERRQ(ierr);
-  PetscLogObjectParent(v,vdraw->draw[0]);
+  ierr = PetscLogObjectParent(v,vdraw->draw[0]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -37,9 +37,9 @@ PetscErrorCode MGMCycle_Private(MG *mglevels,PetscTruth *converged)
       if (rnorm <= mg->ttol) {
         *converged = PETSC_TRUE;
         if (rnorm < mg->abstol) {
-          PetscLogInfo(0,"Linear solver has converged. Residual norm %g is less than absolute tolerance %g\n",rnorm,mg->abstol);
+          PetscLogInfo(0,"MGMCycle_Private:Linear solver has converged. Residual norm %g is less than absolute tolerance %g\n",rnorm,mg->abstol);
         } else {
-          PetscLogInfo(0,"Linear solver has converged. Residual norm %g is less than relative tolerance times initial residual norm %g\n",rnorm,mg->ttol);
+          PetscLogInfo(0,"MGMCycle_Private:Linear solver has converged. Residual norm %g is less than relative tolerance times initial residual norm %g\n",rnorm,mg->ttol);
         }
         PetscFunctionReturn(0);
       }
@@ -78,7 +78,7 @@ static PetscErrorCode MGCreate_Private(MPI_Comm comm,PetscInt levels,PC pc,MPI_C
 
   PetscFunctionBegin;
   ierr = PetscMalloc(levels*sizeof(MG),&mg);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,levels*(sizeof(MG)+sizeof(struct _MG)));
+  ierr = PetscLogObjectMemory(pc,levels*(sizeof(MG)+sizeof(struct _MG)));CHKERRQ(ierr);
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
@@ -114,7 +114,7 @@ static PetscErrorCode MGCreate_Private(MPI_Comm comm,PetscInt levels,PC pc,MPI_C
       sprintf(tprefix,"mg_levels_%d_",(int)i);
       ierr = KSPAppendOptionsPrefix(mg[i]->smoothd,tprefix);CHKERRQ(ierr);
     }
-    PetscLogObjectParent(pc,mg[i]->smoothd);
+    ierr = PetscLogObjectParent(pc,mg[i]->smoothd);CHKERRQ(ierr);
     mg[i]->smoothu         = mg[i]->smoothd;
     mg[i]->rtol = 0.0;
     mg[i]->abstol = 0.0;

@@ -133,7 +133,7 @@ EXTERN_C_END
  \
         rp   = aj + ai[brow]; ap = aa + bs2*ai[brow]; \
         rmax = aimax[brow] = aimax[brow] + CHUNKSIZE; \
-        PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(PetscInt) + bs2*sizeof(MatScalar))); \
+        ierr = PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(PetscInt) + bs2*sizeof(MatScalar)));CHKERRQ(ierr); \
         a->maxnz += bs2*CHUNKSIZE; \
         a->reallocs++; \
         a->nz++; \
@@ -209,7 +209,7 @@ EXTERN_C_END
  \
         rp   = bj + bi[brow]; ap = ba + bs2*bi[brow]; \
         rmax = bimax[brow] = bimax[brow] + CHUNKSIZE; \
-        PetscLogObjectMemory(B,CHUNKSIZE*(sizeof(PetscInt) + bs2*sizeof(MatScalar))); \
+        ierr = PetscLogObjectMemory(B,CHUNKSIZE*(sizeof(PetscInt) + bs2*sizeof(MatScalar)));CHKERRQ(ierr); \
         b->maxnz += bs2*CHUNKSIZE; \
         b->reallocs++; \
         b->nz++; \
@@ -751,7 +751,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
     }
     ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
     ierr = MatMPISBAIJSetPreallocation(A,mat->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
-    PetscLogObjectParent(mat,A);
+    ierr = PetscLogObjectParent(mat,A);CHKERRQ(ierr);
 
     /* copy over the A part */
     Aloc  = (Mat_SeqSBAIJ*)baij->A->data;
@@ -1516,12 +1516,12 @@ PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt d
   ierr = MatCreate(PETSC_COMM_SELF,B->m,B->m,B->m,B->m,&b->A);CHKERRQ(ierr);
   ierr = MatSetType(b->A,MATSEQSBAIJ);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(b->A,bs,d_nz,d_nnz);CHKERRQ(ierr);
-  PetscLogObjectParent(B,b->A);
+  ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_SELF,B->m,B->M,B->m,B->M,&b->B);CHKERRQ(ierr);
   ierr = MatSetType(b->B,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(b->B,bs,o_nz,o_nnz);CHKERRQ(ierr);
-  PetscLogObjectParent(B,b->B);
+  ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
 
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(B->comm,bs,&B->bstash);CHKERRQ(ierr);
@@ -1571,7 +1571,7 @@ PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   ierr          = PetscMalloc(3*(b->size+2)*sizeof(PetscInt),&b->rowners);CHKERRQ(ierr);
   b->cowners    = b->rowners + b->size + 2;
   b->rowners_bs = b->cowners + b->size + 2;
-  PetscLogObjectMemory(B,3*(b->size+2)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_MPISBAIJ));
+  ierr = PetscLogObjectMemory(B,3*(b->size+2)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_MPISBAIJ));CHKERRQ(ierr);
 
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(B->comm,1,&B->stash);CHKERRQ(ierr);
@@ -1950,26 +1950,26 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
     ierr = PetscTableCreateCopy(oldmat->colmap,&a->colmap);CHKERRQ(ierr); 
 #else
     ierr = PetscMalloc((a->Nbs)*sizeof(PetscInt),&a->colmap);CHKERRQ(ierr);
-    PetscLogObjectMemory(mat,(a->Nbs)*sizeof(PetscInt));
+    ierr = PetscLogObjectMemory(mat,(a->Nbs)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(a->colmap,oldmat->colmap,(a->Nbs)*sizeof(PetscInt));CHKERRQ(ierr);
 #endif
   } else a->colmap = 0;
 
   if (oldmat->garray && (len = ((Mat_SeqBAIJ*)(oldmat->B->data))->nbs)) {
     ierr = PetscMalloc(len*sizeof(PetscInt),&a->garray);CHKERRQ(ierr);
-    PetscLogObjectMemory(mat,len*sizeof(PetscInt));
+    ierr = PetscLogObjectMemory(mat,len*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(a->garray,oldmat->garray,len*sizeof(PetscInt));CHKERRQ(ierr);
   } else a->garray = 0;
   
   ierr =  VecDuplicate(oldmat->lvec,&a->lvec);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,a->lvec);
+  ierr = PetscLogObjectParent(mat,a->lvec);CHKERRQ(ierr);
   ierr =  VecScatterCopy(oldmat->Mvctx,&a->Mvctx);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,a->Mvctx);
+  ierr = PetscLogObjectParent(mat,a->Mvctx);CHKERRQ(ierr);
 
   ierr =  VecDuplicate(oldmat->slvec0,&a->slvec0);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,a->slvec0);
+  ierr = PetscLogObjectParent(mat,a->slvec0);CHKERRQ(ierr);
   ierr =  VecDuplicate(oldmat->slvec1,&a->slvec1);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,a->slvec1);
+  ierr = PetscLogObjectParent(mat,a->slvec1);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(a->slvec1,&nt);CHKERRQ(ierr);
   ierr = VecGetArray(a->slvec1,&array);CHKERRQ(ierr);
@@ -1979,21 +1979,21 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   ierr = VecGetArray(a->slvec0,&array);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,nt-bs*mbs,array+bs*mbs,&a->slvec0b);CHKERRQ(ierr);
   ierr = VecRestoreArray(a->slvec0,&array);CHKERRQ(ierr); 
-  PetscLogObjectParent(mat,a->slvec0);
-  PetscLogObjectParent(mat,a->slvec1);
-  PetscLogObjectParent(mat,a->slvec0b);
-  PetscLogObjectParent(mat,a->slvec1a);
-  PetscLogObjectParent(mat,a->slvec1b);
+  ierr = PetscLogObjectParent(mat,a->slvec0);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(mat,a->slvec1);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(mat,a->slvec0b);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(mat,a->slvec1a);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(mat,a->slvec1b);CHKERRQ(ierr);
 
   /* ierr =  VecScatterCopy(oldmat->sMvctx,&a->sMvctx); - not written yet, replaced by the lazy trick: */
   ierr = PetscObjectReference((PetscObject)oldmat->sMvctx);CHKERRQ(ierr);
   a->sMvctx = oldmat->sMvctx;
-  PetscLogObjectParent(mat,a->sMvctx);
+  ierr = PetscLogObjectParent(mat,a->sMvctx);CHKERRQ(ierr);
 
   ierr =  MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,a->A);
+  ierr = PetscLogObjectParent(mat,a->A);CHKERRQ(ierr);
   ierr =  MatDuplicate(oldmat->B,cpvalues,&a->B);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,a->B);
+  ierr = PetscLogObjectParent(mat,a->B);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(mat->qlist,&matin->qlist);CHKERRQ(ierr);
   *newmat = mat;
   PetscFunctionReturn(0);

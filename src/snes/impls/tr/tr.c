@@ -372,7 +372,7 @@ PetscErrorCode SNESCreate_TR(SNES snes)
   snes->nwork           = 0;
   
   ierr			= PetscNew(SNES_TR,&neP);CHKERRQ(ierr);
-  PetscLogObjectMemory(snes,sizeof(SNES_TR));
+  ierr = PetscLogObjectMemory(snes,sizeof(SNES_TR));CHKERRQ(ierr);
   snes->data	        = (void*)neP;
   neP->mu		= 0.25;
   neP->eta		= 0.75;

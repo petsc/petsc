@@ -16,7 +16,7 @@ class Configure(config.base.Configure):
     self.libraries    = self.framework.require('config.libraries', self)
     self.arch         = self.framework.require('PETSc.utilities.arch', self)
     self.programs     = self.framework.require('PETSc.utilities.programs', self)
-    self.framework.require('PETSc.packages.Sowing', self)
+    self.framework.require('PETSc.packages.sowing', self)
     self.name         = 'BlasLapack'
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()

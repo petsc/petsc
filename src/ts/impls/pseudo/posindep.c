@@ -565,7 +565,7 @@ PetscErrorCode TSCreate_Pseudo(TS ts)
   ierr = SNESCreate(ts->comm,&ts->snes);CHKERRQ(ierr);
 
   ierr = PetscNew(TS_Pseudo,&pseudo);CHKERRQ(ierr);
-  PetscLogObjectMemory(ts,sizeof(TS_Pseudo));
+  ierr = PetscLogObjectMemory(ts,sizeof(TS_Pseudo));CHKERRQ(ierr);
 
   ierr     = PetscMemzero(pseudo,sizeof(TS_Pseudo));CHKERRQ(ierr);
   ts->data = (void*)pseudo;

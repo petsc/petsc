@@ -322,8 +322,8 @@ PetscErrorCode ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt s
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_STRIDE,"IS",comm,ISDestroy,ISView); 
-  PetscLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _p_IS));
+  ierr = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_STRIDE,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _p_IS));CHKERRQ(ierr);
   ierr           = PetscNew(IS_Stride,&sub);CHKERRQ(ierr);
   sub->n         = n;
   ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);

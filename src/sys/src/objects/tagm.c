@@ -84,7 +84,7 @@ PetscErrorCode PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
   if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator in PETSc object, likely memory corruption");
 
   if (tagvalp[0] < 1) {
-    PetscLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
+    PetscLogInfo(0,"PetscObjectGetNewTag:Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(PetscMPIInt*)&flg);CHKERRQ(ierr);
     if (!flg) {
       SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
@@ -133,7 +133,7 @@ PetscErrorCode PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
 
 
   if (tagvalp[0] < 1) {
-    PetscLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
+    PetscLogInfo(0,"PetscCommGetNewTag:Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(PetscMPIInt*)&flg);CHKERRQ(ierr);
     if (!flg) {
       SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
@@ -215,7 +215,7 @@ PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPIIn
   }
 
   if (tagvalp[0] < 1) {
-    PetscLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
+    PetscLogInfo(0,"PetscCommDuplicate:Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(PetscMPIInt*)&flg);CHKERRQ(ierr);
     if (!flg) {
       SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");

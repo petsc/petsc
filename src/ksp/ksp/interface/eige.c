@@ -151,7 +151,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *
     }
     ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
     ierr = MatMPIDenseSetPreallocation(A,PETSC_NULL);
-    PetscLogObjectParent(BA,A);
+    ierr = PetscLogObjectParent(BA,A);CHKERRQ(ierr);
 
     ierr = MatGetOwnershipRange(BA,&row,&dummy);CHKERRQ(ierr);
     ierr = MatGetLocalSize(BA,&m,&dummy);CHKERRQ(ierr);

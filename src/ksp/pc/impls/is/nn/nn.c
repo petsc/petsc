@@ -188,7 +188,7 @@ PetscErrorCode PCCreate_NN(PC pc)
      Logs the memory usage; this is not needed but allows PETSc to 
      monitor how much memory is being used for various purposes.
   */
-  PetscLogObjectMemory(pc,sizeof(PC_NN)+sizeof(PC_IS)); /* Is this the right thing to do? */
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_NN)+sizeof(PC_IS));CHKERRQ(ierr); /* Is this the right thing to do? */
 
   ierr = PCISCreate(pc);CHKERRQ(ierr);
   pcnn->coarse_mat  = 0;

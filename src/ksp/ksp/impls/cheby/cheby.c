@@ -240,7 +240,7 @@ PetscErrorCode KSPCreate_Chebychev(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscNew(KSP_Chebychev,&chebychevP);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,sizeof(KSP_Chebychev));
+  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_Chebychev));CHKERRQ(ierr);
 
   ksp->data                      = (void*)chebychevP;
   ksp->pc_side                   = PC_LEFT;

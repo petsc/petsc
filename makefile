@@ -108,6 +108,9 @@ build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
+	@grep -i " error " make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" = 0 ]; then \
+           echo "Error during compile, check " make_log_${PETSC_ARCH}; \
+           echo "Send it and configure.log to petsc-maint@mcs.anl.gov"; exit 1; fi
 	-@${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
 	-@echo "Completed building libraries"
 	-@echo "========================================="

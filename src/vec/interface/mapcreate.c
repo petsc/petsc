@@ -32,8 +32,8 @@ PetscErrorCode PetscMapCreate(MPI_Comm comm, PetscMap *map)
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(m, _p_PetscMap, struct _PetscMapOps, MAP_COOKIE, -1, "PetscMap", comm, PetscMapDestroy, PETSC_NULL);
-  PetscLogObjectMemory(m, sizeof(struct _p_PetscMap));
+  ierr = PetscHeaderCreate(m, _p_PetscMap, struct _PetscMapOps, MAP_COOKIE, -1, "PetscMap", comm, PetscMapDestroy, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(m, sizeof(struct _p_PetscMap));CHKERRQ(ierr);
   ierr = PetscMemzero(m->ops, sizeof(struct _PetscMapOps));CHKERRQ(ierr);
   m->bops->publish  = PETSC_NULL /* PetscMapPublish_Petsc */;
   m->type_name      = PETSC_NULL;

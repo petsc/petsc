@@ -471,7 +471,7 @@ PetscErrorCode VecNormComposedDataID(NormType type,PetscInt *type_id)
    Concepts: normalizing^vector
 
 @*/
-PetscErrorCode VecNormalize (Vec x,PetscReal *val)
+PetscErrorCode VecNormalize(Vec x,PetscReal *val)
 {
   PetscErrorCode ierr;
 
@@ -482,7 +482,7 @@ PetscErrorCode VecNormalize (Vec x,PetscReal *val)
   ierr = PetscLogEventBegin(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,val);CHKERRQ(ierr);
   if (!*val) {
-    PetscLogInfo(x,"Vector of zero norm can not be normalized; Returning only the zero norm");
+    PetscLogInfo(x,"VecNormalize:Vector of zero norm can not be normalized; Returning only the zero norm");
   } else {
     PetscScalar tmp = 1.0/(*val);
     ierr = VecScale(&tmp,x);CHKERRQ(ierr);

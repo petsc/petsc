@@ -289,9 +289,9 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp[
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_MAPPING, "AO", comm, AODestroy, AOView);
+  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_MAPPING, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
   ierr = PetscNew(AO_Mapping, &aomap);CHKERRQ(ierr);
-  PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Mapping));
+  ierr = PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Mapping));CHKERRQ(ierr);
   ierr = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);
   ao->data = (void*) aomap;
 
@@ -333,7 +333,7 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp[
 
   /* generate a list of application and PETSc node numbers */
   ierr = PetscMalloc(N*4 * sizeof(PetscInt), &aomap->app);CHKERRQ(ierr);
-  PetscLogObjectMemory(ao, 4*N * sizeof(PetscInt));
+  ierr = PetscLogObjectMemory(ao, 4*N * sizeof(PetscInt));CHKERRQ(ierr);
   aomap->appPerm   = aomap->app     + N;
   aomap->petsc     = aomap->appPerm + N;
   aomap->petscPerm = aomap->petsc   + N;

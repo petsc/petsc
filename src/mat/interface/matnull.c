@@ -42,8 +42,8 @@ PetscErrorCode MatNullSpaceCreate(MPI_Comm comm,PetscTruth has_cnst,PetscInt n,c
   PetscInt       i;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);
-  PetscLogObjectMemory(sp,sizeof(struct _p_MatNullSpace));
+  ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(sp,sizeof(struct _p_MatNullSpace));CHKERRQ(ierr);
 
   sp->has_cnst = has_cnst; 
   sp->n        = n;

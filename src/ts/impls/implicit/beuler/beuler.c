@@ -330,7 +330,7 @@ PetscErrorCode TSCreate_BEuler(TS ts)
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
 
   ierr = PetscNew(TS_BEuler,&beuler);CHKERRQ(ierr);
-  PetscLogObjectMemory(ts,sizeof(TS_BEuler));
+  ierr = PetscLogObjectMemory(ts,sizeof(TS_BEuler));CHKERRQ(ierr);
   ts->data = (void*)beuler;
 
   PetscFunctionReturn(0);

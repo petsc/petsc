@@ -177,7 +177,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     */
     for (i=0; i<n_local_true; i++) {
       ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
-      PetscLogObjectParent(pc,ksp);
+      ierr = PetscLogObjectParent(pc,ksp);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
       ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
@@ -207,7 +207,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
   for (i=0; i<n_local_true; i++) {
     ierr = PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix);CHKERRQ(ierr);
-    PetscLogObjectParent(pc,osm->pmat[i]);
+    ierr = PetscLogObjectParent(pc,osm->pmat[i]);CHKERRQ(ierr);
     ierr = KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i],pc->flag);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(osm->ksp[i]);CHKERRQ(ierr);
   }
@@ -847,7 +847,7 @@ PetscErrorCode PCCreate_ASM(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_ASM,&osm);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,sizeof(PC_ASM));
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_ASM));CHKERRQ(ierr);
   osm->n                 = PETSC_DECIDE;
   osm->n_local           = 0;
   osm->n_local_true      = PETSC_DECIDE;
