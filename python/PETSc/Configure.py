@@ -114,6 +114,21 @@ class Configure(config.base.Configure):
       self.framework.addSubstitution('F_to_o_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.fortran.none')
     return
 
+  def configureFortranCommandline(self):
+    '''Check for the mechanism to retrieve command line arguments in Fortran'''
+    self.pushLanguage('C')
+    if self.functions.check('ipxfargvc_'):
+      self.addDefine('HAVE_PXFGETARG_NEW')
+    else self.functions.check('f90_unix_MP_iargc'):
+      self.addDefine('HAVE_NAGF90')
+    else self.functions.check('PXFGETARG'):
+      self.addDefine('HAVE_PXFGETARG')
+    else self.functions.check('GETARG16'): 
+      self.addDefine('USE_NARGS')
+      self.addDefine('HAVE_IARG_COUNT_PROGNAME')
+    self.popLanguage('C')
+    return
+
   def configureDynamicLibraries(self):
     '''Checks whether dynamic libraries should be used, for which you must
       - Specify --enable-dynamic
@@ -521,6 +536,7 @@ class Configure(config.base.Configure):
     self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h')
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureFortranCPP)
+    self.executeTest(configureFortranCommandline)
     self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configurePIC)
