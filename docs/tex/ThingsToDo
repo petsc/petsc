@@ -8,7 +8,10 @@ Additional Capabilities that PETSc Needs:
 
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
- -----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+ - Fix man pages for TS stuff:  time-step ==> timestep
+   add "see also" fields for related routines
 
 Lois   * Fix VRML vector viewer interface; add documentation about VRML.
 
