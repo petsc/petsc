@@ -16,7 +16,7 @@ if ($account == bsmith) then
   set job = (2)
 endif
 if ($account == curfman) then 
-  set job = (4 5)
+  set job = (4)
 endif
 if ($account == balay) then 
   set job = (6 7)
@@ -26,7 +26,7 @@ endif
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
-  set M =(snake     eagle     ryan      oban      doc       ptera     merlin    )
+  set M =(snake     eagle     ryan      elvis      doc       ptera     merlin    )
   set B =(O         O_complex  g         g_c++     O_c++     g_complex O_complex )
   set A =(hpux      sun4_local IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1          1         1         1         1         3         )
@@ -34,7 +34,7 @@ if ($day == Sun) then
   set J3=(0         3          3         3         3         3         5         )
 endif
 if ($day == Mon) then
-  set M =(snake     eagle      puck      oban      doc       ptera     merlin    )
+  set M =(snake     eagle      puck      elvis      doc       ptera     merlin    )
   set B =(g         O          O_c++     g         O         g_c++     O         )
   set A =(hpux      sun4_local IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(0         1          1         1         1         1         3         )
@@ -42,7 +42,7 @@ if ($day == Mon) then
   set J3=(0         3          3         3         3         3         5         )
 endif
 if ($day == Tue) then
-  set M =(snake     eagle      puck      oban      doc       ptera     merlin    )
+  set M =(snake     eagle      puck      elvis      doc       ptera     merlin    )
   set B =(O         g          O_complex O         g         O         g         )
   set A =(hpux      sun4_local IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(0         1          1         1         1         1         3         )
@@ -50,7 +50,7 @@ if ($day == Tue) then
   set J3=(0         3          3         3         3         3         5         )
 endif
 if ($day == Wed) then
-  set M =(snake     eagle      ryan      oban      doc       ptera     merlin    )
+  set M =(snake     eagle      ryan      elvis      doc       ptera     merlin    )
   set B =(g         g_c++      O         O_complex g_complex O_c++     g_c++     )
   set A =(hpux      sun4_local IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(3         1          1         1         1         1         3         )
@@ -58,7 +58,7 @@ if ($day == Wed) then
   set J3=(0         3          3         3         3         3         5         )
 endif
 if ($day == Thu) then
-  set M =(snake     eagle      puck      oban      doc       ptera     merlin    )
+  set M =(snake     eagle      puck      elvis      doc       ptera     merlin    )
   set B =(O         g_complex  g_c++     O_c++     g_c++     g         g_complex )
   set A =(hpux      sun4_local IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(0         1          1         1         1         1         3         )
@@ -66,7 +66,7 @@ if ($day == Thu) then
   set J3=(3         3          3         3         3         3         5         )
 endif
 if ($day == Fri) then
-  set M =(snake     eagle      puck      oban      doc       ptera     merlin    )
+  set M =(snake     eagle      puck      elvis      doc       ptera     merlin    )
   set B =(g         O_c++      g_complex g_complex g         O_complex O_c++     )
   set A =(hpux      sun4_local IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(0         1          1         1         1         1         3         )
@@ -74,7 +74,7 @@ if ($day == Fri) then
   set J3=(0         3          3         3         3         3         5         )
 endif
 if ($day == Sat) then
-  set M =(snake     eagle      ryan      oban      doc       ptera     merlin    )
+  set M =(snake     eagle      ryan      elvis      doc       ptera     merlin    )
   set B =(O         g_complex  O         O_complex g_complex O         g_complex )
   set A =(hpux      sun4_local IRIX  freebsd_nolog rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1          1         1         1         1         3         )
