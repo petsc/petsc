@@ -1,20 +1,11 @@
-# $Id: base.g_complex,v 1.17 1998/04/23 21:22:32 balay Exp balay $ 
+# $Id: base.g_complex,v 1.18 1998/07/28 22:24:09 balay Exp balay $ 
 
-CLINKER    = g++ ${COPTFLAGS}
-FLINKER    = g++ ${COPTFLAGS}
-CC         = g++ -fPIC
-#
-# This version of PETSCFLAGS specifies the use of Fortran kernels (via
-# -DUSE_FORTRAN_KERNELS) for several low-level computational kernels for
-# complex numbers rather than using the potentially slower C++ versions.
-# To instead use the C++ routines, remove -DUSE_FORTRAN_KERNELS from this
-# list
-#
-PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g -DUSE_PETSC_COMPLEX  \
-             -DUSES_TEMPLATED_COMPLEX -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
-#
-COPTFLAGS  = -g 
-FOPTFLAGS  = -g -dalign
-SYS_LIB    = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o
+CC         = ${CXX_CC}
+FC         = ${CXX_FC}
+CLINKER    = ${CXX_CLINKER}  ${COPTFLAGS}
+FLINKER    = ${CXX_FLINKER}  ${FOPTFLAGS}
+SYS_LIB    = ${CXX_SYS_LIB}
 
-
+PETSCFLAGS = ${GCOMP_PETSCFLAGS}
+COPTFLAGS  = ${GCOMP_COPTFLAGS}
+FOPTFLAGS  = ${GCOMP_FOPTFLAGS}

@@ -1,5 +1,11 @@
-# $Id: base.O,v 1.4 1997/09/10 18:10:42 balay Exp bsmith $ 
+# $Id: base.O,v 1.5 1997/10/19 03:20:08 bsmith Exp balay $ 
 
-COPTFLAGS  = -O -Wall -Wshadow -fomit-frame-pointer
-PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
-FOPTFLAGS  = -O -dalign
+CC         = ${C_CC}
+FC         = ${C_FC}
+CLINKER    = ${C_CLINKER}  ${COPTFLAGS}
+FLINKER    = ${C_FLINKER}  ${FOPTFLAGS}
+SYS_LIB    = ${C_SYS_LIB}
+
+PETSCFLAGS = ${O_PETSCFLAGS}
+COPTFLAGS  = ${O_COPTFLAGS}
+FOPTFLAGS  = ${O_FOPTFLAGS}
