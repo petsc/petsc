@@ -20,6 +20,7 @@ int main(int argc,char **args)
   int         n,rank,size,col[3],n1,block,row;
   int         ncols,*cols,rstart,rend;
   PetscTruth  flg;
+  MatType     type;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
@@ -31,7 +32,13 @@ int main(int argc,char **args)
   n = mbs*bs;
   
   /* Assemble MPISBAIJ matrix sA */
-  ierr = MatCreateMPISBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&sA);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&sA);CHKERRQ(ierr);
+  ierr = MatSetType(sA,MATSBAIJ);CHKERRQ(ierr);
+  /* -mat_type <seqsbaij_derived type>, e.g., mpisbaijspooles, sbaijmumps */
+  ierr = MatSetFromOptions(sA);CHKERRQ(ierr);
+  ierr = MatGetType(sA,&type);CHKERRQ(ierr);
+  printf(" mattype: %s\n",type); 
+  ierr = MatMPISBAIJSetPreallocation(sA,bs,d_nz,PETSC_NULL,o_nz,PETSC_NULL);CHKERRQ(ierr);
 
   if (bs == 1){
     if (prob == 1){ /* tridiagonal matrix */
@@ -330,7 +337,7 @@ int main(int argc,char **args)
       PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDuplicate() or MatMultAdd(), err=%g \n",rank,r1);
       PetscSynchronizedFlush(PETSC_COMM_WORLD);      
     }
-  }   
+  }  
   ierr = MatDestroy(sB);CHKERRQ(ierr); 
   
   ierr = VecDestroy(u);CHKERRQ(ierr);  
