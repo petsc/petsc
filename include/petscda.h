@@ -12,11 +12,16 @@
 
 typedef struct _RA* RA;
 
-extern int   RACreate2d(MPI_Comm,int,int,int,int,int,RA *);
+extern int   RACreate2d(MPI_Comm,int,int,int,int,int,int,RA *);
 extern int   RADestroy(RA);
 extern int   RAView(RA,Viewer);
+extern int   RAGlobalToLocal(RA,Vec, InsertMode,Vec);
+extern int   RALocalToGlobal(RA,Vec, InsertMode,Vec);
 extern int   RAGetDistributedVector(RA,Vec*);
 extern int   RAGetLocalVector(RA,Vec*);
+extern int   RAGetCorners(RA,int*,int*,int*,int*,int*,int*);
+
 extern int   RAGetOwnershipRange(RA,int*,int*,int*,int*);
+
 
 #endif
