@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.3 1995/09/05 23:04:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.4 1995/09/06 03:06:00 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: matio.c,v 1.3 1995/09/05 23:04:23 curfman Exp bsmith 
 #include <unistd.h>
 #include "vec/vecimpl.h"
 #include "sysio.h"
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 #include "matimpl.h"
 #include "row.h"
 
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: matio.c,v 1.3 1995/09/05 23:04:23 curfman Exp bsmith 
    should be able to read/write to/from any implementation. */
 
 /* @
-   MatLoadBinary - Loads a matrix that has been stored in binary format
+   MatLoad - Loads a matrix that has been stored in binary format
    with MatView().
 
    Input Parameters:
