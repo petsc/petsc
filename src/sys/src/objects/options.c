@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.12 1995/06/03 04:24:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.13 1995/06/08 03:08:02 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -100,6 +100,7 @@ $  -logall : Prints log information (for code compiled
 $      with PETSC_LOG)
 $  -log : Prints log information (for code compiled 
 $      with PETSC_LOG)
+$  -logsummary : Prints summary of flop information to screen
 
 .keywords: finalize, exit, end
 
@@ -143,6 +144,9 @@ int PetscFinalize()
         OptionsGetString(0,"-log",monitorname,64)) {
       if (monitorname[0]) PLogDump(monitorname); 
       else PLogDump(0);
+    }
+    if (OptionsHasName(0,"-logsummary")) {
+       PLogPrint(MPI_COMM_WORLD,stdout);
     }
   }
 #endif
@@ -286,10 +290,10 @@ static int OptionsCheckInitial_Private()
     PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0);
   }
 #if defined(PETSC_LOG)
-  if (OptionsHasName(0,"-log")) {
-    PLogBegin();
-  }
   if (OptionsHasName(0,"-logall")) {
+    PLogAllBegin();
+  }
+  else if (OptionsHasName(0,"-log") || OptionsHasName(0,"-logsummary")) {
     PLogAllBegin();
   }
   if (OptionsHasName(0,"-info")) {
@@ -316,7 +320,7 @@ static int OptionsCheckInitial_Private()
     MPIU_printf(comm," -optionstable: dump list of options inputted\n");
     MPIU_printf(comm," -optionsleft: dump list of unused options\n");
     MPIU_printf(comm," -optionsused: print number of unused options\n");
-    MPIU_printf(comm," -monitor: logging objects and events\n");
+    MPIU_printf(comm," -log[all summary]: logging objects and events\n");
     MPIU_printf(comm," -v: prints PETSc version number and release date\n");
     MPIU_printf(comm,"-----------------------------------------------\n");
   }
@@ -366,6 +370,7 @@ static int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
   if (*argc) {options->namegiven = 1; strncpy(options->programname,**args,64);}
   else {options->namegiven = 0;}
   options->N = 0;
+  options->Naliases = 0;
   options->argc = *argc;
   options->args = *args;
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: try.c,v 1.10 1995/05/28 17:37:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: try.c,v 1.11 1995/06/08 03:08:02 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>
@@ -224,4 +224,94 @@ void MPIU_Seq_end(MPI_Comm comm,int ng )
   if (lidx == 0) {
     MPI_Recv( NULL, 0, MPI_INT, np-1, 0, local_comm, &status );
   }
+}
+/* ----------------------------------------------------------------
+   A simple way to manage tags inside a private 
+   communicator.  It uses the attribute to determine if a new communicator
+   is needed.
+
+   Notes on the implementation
+
+   The tagvalues to use are stored in a two element array.  The first element
+   is the first free tag value.  The second is used to indicate how
+   many "copies" of the commincator there are used in destroying.
+ */
+
+static int MPIU_Tag_keyval = MPI_KEYVAL_INVALID;
+
+/*
+   Private routine to delete internal storage when a communicator is freed.
+  This is called by MPI, not by users. The uglyness of checking tagvalp[1]
+  is so that we my reuse the 
+*/
+static int MPIU_DelTag(MPI_Comm *comm,int* keyval,void* attr_val,
+                       void* extra_state )
+{
+  PETSCFREE( attr_val );
+  return MPI_SUCCESS;
+}
+
+/*
+  MPIU_PetscDup - Duplicates only if communicator is not a PETSc communicator.
+
+
+  Input Parameters:
+. comm_in - Input communicator
+. ntags   - Number of tags
+
+  Output Parameters:
+. comm_out - Output communicator.  May be 'comm_in'.
+. first_tag - First tag available
+
+  Returns:
+  MPI_SUCCESS on success, MPI error class on failure.
+
+  Notes:
+  This routine returns one tag number
+*/
+int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
+{
+  int ierr = MPI_SUCCESS, *tagvalp, *maxval, flag;
+
+  if (MPIU_Tag_keyval == MPI_KEYVAL_INVALID) {
+    MPI_Keyval_create(MPI_NULL_COPY_FN, MPIU_DelTag,&MPIU_Tag_keyval,(void *)0);
+  }
+
+  if ((ierr = MPI_Attr_get(comm_in,MPIU_Tag_keyval,(void**)&tagvalp,&flag)))
+    return ierr;
+
+  if (!flag) {
+    /* This communicator is not yet known to this system, so we
+       dup it and set the first value */
+    MPI_Comm_dup( comm_in, comm_out );
+    MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );
+    tagvalp = (int *)PETSCMALLOC( 2*sizeof(int) );
+    if (!tagvalp) return MPI_ERR_EXHAUSTED;
+    tagvalp[0] = *maxval;
+    tagvalp[1] = 0;
+    MPI_Attr_put(*comm_out,MPIU_Tag_keyval, (void*)tagvalp);
+  }
+  else {
+    *comm_out = comm_in;
+  }
+
+  if (*tagvalp < 1) {
+    /* Error, out of tags.  Another solution would be to do an MPI_Comm_dup. */
+    return MPI_ERR_INTERN;
+  }
+  *first_tag = tagvalp[0]--;
+  tagvalp[1]++;
+  return MPI_SUCCESS;
+}
+
+int MPIU_Comm_free(MPI_Comm *comm)
+{
+  int ierr,*tagvalp,flag;
+  if ((ierr = MPI_Attr_get(*comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag)))
+    return ierr;
+  tagvalp[1]--;
+  if (!tagvalp[1]) {
+    MPI_Comm_free(comm);
+  }
+  return 0;
 }

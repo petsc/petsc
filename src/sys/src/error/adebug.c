@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.12 1995/05/14 16:32:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.13 1995/06/08 03:08:02 bsmith Exp bsmith $";
 #endif/*
 */
 #include "petsc.h"
@@ -53,6 +53,11 @@ int PetscAttachDebugger()
 {
   int   child;
   char *program = OptionsGetProgramName();
+#if defined(PARCH_t3d)
+  fprintf(stderr,"Cray t3d cannot start debugger\n");
+  MPI_Finalize();
+  exit(0);
+#else
   if (!program) {
     fprintf(stderr,"Cannot determine program name\n");
     return 1;
@@ -63,7 +68,7 @@ int PetscAttachDebugger()
     return -1;
   }
   if (child) { /* I am the parent will run the debugger */
-    char  *args[8],pid[8];
+    char  *args[9],pid[9];
     kill(child,SIGSTOP);
     sprintf(pid,"%d",child); 
     if (!strcmp(Debugger,"xxgdb")) {
@@ -78,6 +83,14 @@ int PetscAttachDebugger()
     else if (!Xterm) {
       args[1] = program; args[2] = pid; args[3] = 0;
       args[0] = Debugger;
+#if defined(PARCH_IRIX)
+      if (!strcmp(Debugger,"dbx")) {
+        args[1] = "-p";
+        args[2] = pid;
+        args[3] = program;
+        args[4] = 0;
+      }
+#endif
       fprintf(stderr,"Attaching %s to %s %s\n",args[0],args[1],pid);
       if (execvp(args[0], args)  < 0) {
         perror("Unable to start debugger");
@@ -96,6 +109,14 @@ int PetscAttachDebugger()
         args[2] = Display;  args[3] = "-e";
         args[4] = Debugger; args[5] = program;
         args[6] = pid;      args[7] = 0;
+#if defined(PARCH_IRIX)
+        if (!strcmp(Debugger,"dbx")) {
+          args[5] = "-p";
+          args[6] = pid;
+          args[7] = program;
+          args[8] = 0;
+        }
+#endif
         fprintf(stderr,"Attaching %s to %s %s on %s\n",args[4],args[5],pid,
                        Display);  
       }
@@ -110,6 +131,7 @@ int PetscAttachDebugger()
     sleep(10);
     return 0;
   }
+#endif
   return 0;
 }
 

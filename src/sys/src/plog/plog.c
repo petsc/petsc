@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.1 1995/05/13 17:06:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.2 1995/06/08 03:08:02 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -8,23 +8,8 @@ static char vcid[] = "$Id: plog.c,v 1.1 1995/05/13 17:06:25 bsmith Exp bsmith $"
 #include <stdarg.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/time.h>
 #include "petscfix.h"
-
-/*
-     For timing!
-*/
-
-
-#define PetscTime(v) {struct timeval _tp; \
-        gettimeofday(&_tp,(struct timezone *)0);\
-        (v) = ((double)_tp.tv_sec) + (1.0e-6)*(_tp.tv_usec);}
-#define PetscTimeSubtract(v) {struct timeval _tp; \
-        gettimeofday(&_tp,(struct timezone *)0);\
-        (v) -= ((double)_tp.tv_sec) + (1.0e-6)*(_tp.tv_usec);}
-#define PetscTimeAdd(v) {struct timeval _tp; \
-        gettimeofday(&_tp,(struct timezone *)0);\
-        (v) += ((double)_tp.tv_sec) + (1.0e-6)*(_tp.tv_usec);}
+#include "ptime.h"
 
 /*@ 
    PetscObjectSetName - Sets a string name associated with a Petsc object.
@@ -184,10 +169,10 @@ int phd(PetscObject obj)
   return 0;
 }
 /*
-    Default event begin logger
+    Event begin logger with complete logging
 */
 int plball(int event,PetscObject o1,PetscObject o2,PetscObject o3,
-                                                               PetscObject o4)
+                                                      PetscObject o4)
 {
  double time;
  if (nevents >= eventsspace) {
@@ -201,8 +186,8 @@ int plball(int event,PetscObject o1,PetscObject o2,PetscObject o3,
   PetscTime(time);
   events[nevents].time = time - BaseTime;
   events[nevents].id1     = o1->id;
-  if (o2) events[nevents].id2     = o2->id; else events[nevents].id2     = -1;
-  if (o3) events[nevents].id3     = o3->id; else events[nevents].id3     = -1;
+  if (o2) events[nevents].id2     = o2->id; else events[nevents].id2 = -1;
+  if (o3) events[nevents].id3     = o3->id; else events[nevents].id3 = -1;
   events[nevents].type   = event;
   events[nevents].cookie = 0;
   events[nevents++].event= ACTIONBEGIN;
@@ -212,7 +197,7 @@ int plball(int event,PetscObject o1,PetscObject o2,PetscObject o3,
   return 0;
 }
 /*
-     Default event end logger
+     Event end logger with complete logging
 */
 int pleall(int event,PetscObject o1,PetscObject o2,PetscObject o3,
                                                          PetscObject o4)
@@ -238,7 +223,9 @@ int pleall(int event,PetscObject o1,PetscObject o2,PetscObject o3,
   EventsType[event][FLOPS] += _TotalFlops;
   return 0;
 }
-
+/*
+     Default event begin logger
+*/
 int plb(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   EventsType[event][COUNT]++;
@@ -267,7 +254,12 @@ int PLogObjectState(PetscObject obj,char *format,...)
 }
 
 /*@
-    PLogAllBegin - Turns on logging of objects and events.
+    PLogAllBegin - Turns on logging of objects and events. Logs all 
+      events. This creates large log files and slows the program down.
+
+   Options Database Keys:
+$  -logall : Prints log information (for code compiled
+$      with PETSC_LOG)
 
 .keywords: log, begin
 
@@ -276,8 +268,8 @@ int PLogObjectState(PetscObject obj,char *format,...)
 int PLogAllBegin()
 {
   PetscTime(BaseTime);
-  events = (Events*) PETSCMALLOC( CHUNCK*sizeof(Events) ); CHKPTRQ(events);
-  objects = (Objects*) PETSCMALLOC( CHUNCK*sizeof(Objects) ); CHKPTRQ(objects);
+  events = (Events*) PETSCMALLOC(CHUNCK*sizeof(Events)); CHKPTRQ(events);
+  objects = (Objects*) PETSCMALLOC(CHUNCK*sizeof(Objects)); CHKPTRQ(objects);
   _PHC = phc;
   _PHD = phd;
   _PLB = plball;
@@ -286,7 +278,14 @@ int PLogAllBegin()
 }
 
 /*@
-    PLogBegin - Turns on logging of objects and events.
+    PLogBegin - Turns on logging of objects and events. This logs flop
+      rates and object creation. It should not slow programs down too much.
+
+   Options Database Keys:
+$  -logall : Prints log information (for code compiled
+$      with PETSC_LOG)
+$  -log : Prints log information (for code compiled 
+$      with PETSC_LOG)
 
 .keywords: log, begin
 
@@ -295,8 +294,8 @@ int PLogAllBegin()
 int PLogBegin()
 {
   PetscTime(BaseTime);
-  events = (Events*) PETSCMALLOC( CHUNCK*sizeof(Events) ); CHKPTRQ(events);
-  objects = (Objects*) PETSCMALLOC( CHUNCK*sizeof(Objects) ); CHKPTRQ(objects);
+  events = (Events*) PETSCMALLOC(CHUNCK*sizeof(Events)); CHKPTRQ(events);
+  objects = (Objects*) PETSCMALLOC(CHUNCK*sizeof(Objects)); CHKPTRQ(objects);
   _PHC = phc;
   _PHD = phd;
   _PLB = plb;
@@ -305,7 +304,8 @@ int PLogBegin()
 }
 
 /*@
-   PLogDump - Dumps logs of objects to a file.
+   PLogDump - Dumps logs of objects to a file. This file is intended to 
+              be read by petsc/bin/tkreview, it is not user friendly.
 
    Input Parameter:
 .  name - an optional file name
@@ -318,14 +318,14 @@ $      Log.<mytid>
    
 .keywords: log, dump
 
-.seealso: PLogBegin()
+.seealso: PLogBegin(), PLogPrint()
 @*/
 int PLogDump(char* name)
 {
   int    i,mytid;
   FILE   *fd;
   char   file[64];
-  double res,flops,_TotalTime;
+  double res = 0,flops,_TotalTime;
   
   PetscTime(_TotalTime);
   _TotalTime -= BaseTime;
@@ -337,11 +337,11 @@ int PLogDump(char* name)
 
   fprintf(fd,"Objects created %d Destroyed %d\n",nobjects,
                                                  ObjectsDestroyed);
-  res = MPI_Wtick();
   fprintf(fd,"Clock Resolution %g\n",res);
   fprintf(fd,"Events %d\n",nevents);
   for ( i=0; i<nevents; i++ ) {
-    fprintf(fd,"%d %d %d %d %d %d %d\n",(int) (events[i].time/res),events[i].event,
+    fprintf(fd,"%d %d %d %d %d %d %d\n",(int) (events[i].time/res),
+                              events[i].event,
                               events[i].cookie,events[i].type,events[i].id1,
                               events[i].id2,events[i].id3);
   }
@@ -360,6 +360,34 @@ int PLogDump(char* name)
   }
   fprintf(fd,"Total Flops %14e %16.8e\n",_TotalFlops,_TotalTime);
   fclose(fd);
+  return 0;
+}
+
+/*@
+   PLogPrint - Prints a summary of the logging.
+
+   Input Parameter:
+.  file - a file pointer
+.  comm - communicator, only the first processor prints
+
+   Options Database Keys:
+$  -logsummary : Prints summary of log information 
+   
+.keywords: log, dump, print
+
+.seealso: PLogBegin(), PLogDump()
+@*/
+int PLogPrint(MPI_Comm comm,FILE *fd)
+{
+  int    maxo,mino,aveo;
+  double _TotalTime,maxt,mint,avet;
+
+  PetscTime(_TotalTime);  _TotalTime -= BaseTime;
+
+  MPIU_fprintf(comm,fd,"Time: Max %g Min %g Avg %g\n",maxt,mint,avet);
+  MPIU_fprintf(comm,fd,"Objects created: Max %d Min %d Avg %d\n",
+                                                      maxo,mino,aveo);
+
   return 0;
 }
 

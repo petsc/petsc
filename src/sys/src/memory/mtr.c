@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.19 1995/06/03 04:24:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.20 1995/06/08 03:08:02 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_STRING_H)
@@ -417,6 +417,9 @@ int TrSummary( FILE *fp )
      && !defined(PARCH_rs6000)
     fnd    = (TRINFO **)tsearch( (char *) key, (char **) &root, 
                                  (int (*)(void*,void*)) IntCompare );
+#elif defined(PARCH_solaris)
+    fnd    = (TRINFO **)tsearch( (void *) key, (void **) &root, 
+			      (int (*)(const void*,const void*))IntCompare );
 #else
     fnd    = (TRINFO **)tsearch( (void *) key, (void **) &root, 
 				 (int (*)(void*,void*))IntCompare );
