@@ -193,6 +193,12 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   PetscFunctionBegin;
   mg[levels-1]->b = b; 
   mg[levels-1]->x = x;
+  if (!mg[levels-1]->r && mg[0]->am == MGADDITIVE) {
+    Vec tvec;
+    ierr = VecDuplicate(mg[levels-1]->b,&tvec);CHKERRQ(ierr);
+    ierr = MGSetR(pc,levels-1,tvec);CHKERRQ(ierr);
+    ierr = VecDestroy(tvec);CHKERRQ(ierr);
+  }
   if (mg[0]->am == MGMULTIPLICATIVE) {
     ierr = VecSet(&zero,x);CHKERRQ(ierr);
     ierr = MGMCycle_Private(mg+levels-1,PETSC_NULL);CHKERRQ(ierr);
@@ -378,6 +384,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   MPI_Comm       comm;
   Mat            dA,dB;
   MatStructure   uflag;
+  Vec            tvec;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
@@ -415,6 +422,18 @@ static PetscErrorCode PCSetUp_MG(PC pc)
         SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Need to set restriction or interpolation on level %d",(int)i);
       }
 #endif
+    }
+    for (i=0; i<n-1; i++) {
+      if (!mg[i]->r) {
+        ierr = VecDuplicate(mg[i]->b,&tvec);CHKERRQ(ierr);
+        ierr = MGSetR(pc,i,tvec);CHKERRQ(ierr);
+        ierr = VecDestroy(tvec);CHKERRQ(ierr);
+      }
+      if (!mg[i]->x) {
+        ierr = VecDuplicate(mg[i]->b,&tvec);CHKERRQ(ierr);
+        ierr = MGSetX(pc,i,tvec);CHKERRQ(ierr);
+        ierr = VecDestroy(tvec);CHKERRQ(ierr);
+      }
     }
   }
 
