@@ -1,10 +1,9 @@
 !
-!  $Id: petscdef.h,v 1.9 1999/03/24 16:21:19 bsmith Exp balay $;
+!  $Id: petscdef.h,v 1.10 1999/03/24 16:35:07 balay Exp balay $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
-!  not the declaration of variables. This is the only fortran
-! include file which is protected from multiple inclusions.
+!  not the declaration of variables.
 !
 #if !defined (__PETSCDEF_H)
 #define __PETSCDEF_H
