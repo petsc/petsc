@@ -1,9 +1,9 @@
-# $Id: base_variables,v 1.2 2001/03/09 21:02:02 balay Exp balay $ 
+# $Id: base_variables,v 1.2 2001/03/09 21:02:02 balay Exp $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
 WIN32FE            = ${PETSC_DIR}/bin/win32fe/win32fe.exe
-AR		   = ${WIN32FE} tlib -c -P128 --quiet
+AR		   = ${WIN32FE} tlib -C -P128 --quiet
 AR_FLAGS	   = -u
 LIB_SUFFIX         = lib
 RM		   = rm -f
@@ -14,7 +14,7 @@ SED		   = sed
 MKDIR              = mkdir -p
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = ${WIN32FE} bcc32 -q --quiet -w-8019 -w-8060
+C_CC		   = ${WIN32FE} bcc32 -q --quiet -w-8019 -w-8060 -w-8057
 C_FC		   = ${WIN32FE} bcf77 --quiet
 C_CLINKER_SLFLAG   = -L
 C_FLINKER_SLFLAG   = -L
@@ -24,32 +24,32 @@ C_CCV		   = bcc32 | head -1
 C_FCV              = bcf77
 C_SYS_LIB	   = 
 # ------------------------- BOPT - g_c++ options ------------------------------
-G_COPTFLAGS	   = -v -w-8057
+G_COPTFLAGS	   = -v
 G_FOPTFLAGS	   =
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS	   = -O -w-8057
+O_COPTFLAGS	   = -O
 O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
-CXX_CC		   = g++
-CXX_FC		   = g77 -Wno-globals
+CXX_CC		   = ${WIN32FE} bcc32 -P -q --quiet -w-8019 -w-8060 -w-8057
+CXX_FC		   = ${WIN32FE} bcf77 --quiet
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
-CXX_CLINKER	   = g77
-CXX_FLINKER	   = g77
-CXX_CCV		   = gcc --version
-CXX_SYS_LIB	   = -ladvapi32 -lg2c -lstdc++ -lm
+CXX_CLINKER	   = ${WIN32FE} bcc32 -P  --quiet
+CXX_FLINKER	   = ${WIN32FE} bcf77 --quiet
+CXX_CCV		   = bcc32 -P | head -1
+CXX_SYS_LIB	   = 
 # ------------------------- BOPT - g_c++ options ------------------------------
-GCXX_COPTFLAGS	   = -g 
-GCXX_FOPTFLAGS	   = -g
+GCXX_COPTFLAGS	   = -v
+GCXX_FOPTFLAGS	   = 
 # ------------------------- BOPT - O_c++ options ------------------------------
 OCXX_COPTFLAGS	   = -O
-OCXX_FOPTFLAGS	   = -O
+OCXX_FOPTFLAGS	   = 
 # -------------------------- BOPT - g_complex options ------------------------
-GCOMP_COPTFLAGS	   = -g 
-GCOMP_FOPTFLAGS	   = -g
+GCOMP_COPTFLAGS	   = -v
+GCOMP_FOPTFLAGS	   = 
 # --------------------------- BOPT - O_complex options -------------------------
 OCOMP_COPTFLAGS	   = -O
-OCOMP_FOPTFLAGS	   = -O
+OCOMP_FOPTFLAGS	   = 
 
 # ########################### PETSc install options ###########################
 #
