@@ -119,13 +119,13 @@ int PetscViewerASCIIGetPointer(PetscViewer viewer,FILE **fd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerASCIISetMode"
+#define __FUNC__ "PetscViewerASCIISetMode"
 /*@C
-    ViewerASCIISetMode - Sets the mode in which to open the file.
+    PetscViewerASCIISetMode - Sets the mode in which to open the file.
 
     Not Collective
 
-+   viewer - viewer context, obtained from ViewerASCIIOpen()
++   viewer - viewer context, obtained from PetscViewerASCIIOpen()
 -   mode   - The file mode
 
     Level: intermediate
@@ -135,11 +135,11 @@ int PetscViewerASCIIGetPointer(PetscViewer viewer,FILE **fd)
 
 .keywords: Viewer, file, get, pointer
 
-.seealso: ViewerASCIIOpen()
+.seealso: PetscViewerASCIIOpen()
 @*/
-int ViewerASCIISetMode(Viewer viewer, FileMode mode)
+int PetscViewerASCIISetMode(PetscViewer viewer, FileMode mode)
 {
-  Viewer_ASCII *vascii = (Viewer_ASCII *)viewer->data;
+  PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
   PetscFunctionBegin;
   vascii->mode = mode;
