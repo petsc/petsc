@@ -234,7 +234,7 @@ C
 c
 c -------------------------------------------------------------
 c
-      SUBROUTINE MCSTEP1(STX,FX,DX,STY,FY,DY,STP,FP,DP,IBRACKT,
+      FUNCTION MCSTEP1(STX,FX,DX,STY,FY,DY,STP,FP,DP,IBRACKT,
      &                 STPMIN,STPMAX,INFO)
       logical brackt
       integer ibrackt, info
@@ -251,5 +251,6 @@ c
       if (brackt) ibrackt = 1
       else ibrackt = 0
 
+      mcstep1 = 0
       return
       end
