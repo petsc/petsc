@@ -391,7 +391,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
-  ierr = VecSetFromOptions(v);
+  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

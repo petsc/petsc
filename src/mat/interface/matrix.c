@@ -307,6 +307,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat A)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
   ierr = MatSetUpPreallocation(A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -574,10 +575,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat A)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidType(A,1);
-  ierr = MatPreallocated(A);CHKERRQ(ierr);
   if (--A->refct > 0) PetscFunctionReturn(0);
 
+  PetscValidType(A,1);
+  ierr = MatPreallocated(A);CHKERRQ(ierr);
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(A);CHKERRQ(ierr);
   if (A->mapping) {
