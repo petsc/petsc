@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.103 1997/06/03 20:26:37 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.104 1997/06/05 12:54:29 bsmith Exp curfman $";
 #endif
 
 /*
@@ -172,9 +172,12 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
         for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
           for ( l=0; l<bs; l++ ) {
 #if defined(PETSC_COMPLEX)
-          if (imag(a->a[bs2*k + l*bs + j]) != 0.0 && real(a->a[bs2*k + l*bs + j]) != 0.0)
+          if (imag(a->a[bs2*k + l*bs + j]) > 0.0 && real(a->a[bs2*k + l*bs + j]) != 0.0)
             fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
               real(a->a[bs2*k + l*bs + j]),imag(a->a[bs2*k + l*bs + j]));
+          else if (imag(a->a[bs2*k + l*bs + j]) < 0.0 && real(a->a[bs2*k + l*bs + j]) != 0.0)
+            fprintf(fd," %d %g - %g i",bs*a->j[k]+l,
+              real(a->a[bs2*k + l*bs + j]),-imag(a->a[bs2*k + l*bs + j]));
           else if (real(a->a[bs2*k + l*bs + j]) != 0.0)
             fprintf(fd," %d %g ",bs*a->j[k]+l,real(a->a[bs2*k + l*bs + j]));
 #else
@@ -194,9 +197,13 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
         for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
           for ( l=0; l<bs; l++ ) {
 #if defined(PETSC_COMPLEX)
-          if (imag(a->a[bs2*k + l*bs + j]) != 0.0) {
+          if (imag(a->a[bs2*k + l*bs + j]) > 0.0) {
             fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
               real(a->a[bs2*k + l*bs + j]),imag(a->a[bs2*k + l*bs + j]));
+          }
+          else if (imag(a->a[bs2*k + l*bs + j]) < 0.0) {
+            fprintf(fd," %d %g - %g i",bs*a->j[k]+l,
+              real(a->a[bs2*k + l*bs + j]),-imag(a->a[bs2*k + l*bs + j]));
           }
           else {
             fprintf(fd," %d %g ",bs*a->j[k]+l,real(a->a[bs2*k + l*bs + j]));

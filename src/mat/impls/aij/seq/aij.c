@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.220 1997/06/05 12:53:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.221 1997/06/08 02:35:43 curfman Exp curfman $";
 #endif
 
 /*
@@ -355,8 +355,10 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
       fprintf(fd,"row %d:",i);
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
 #if defined(PETSC_COMPLEX)
-        if (imag(a->a[j]) != 0.0 && real(a->a[j]) != 0.0)
+        if (imag(a->a[j]) > 0.0 && real(a->a[j]) != 0.0)
           fprintf(fd," %d %g + %g i",a->j[j]+shift,real(a->a[j]),imag(a->a[j]));
+        else if (imag(a->a[j]) < 0.0 && real(a->a[j]) != 0.0)
+          fprintf(fd," %d %g - %g i",a->j[j]+shift,real(a->a[j]),-imag(a->a[j]));
         else if (real(a->a[j]) != 0.0)
           fprintf(fd," %d %g ",a->j[j]+shift,real(a->a[j]));
 #else
@@ -371,8 +373,10 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
       fprintf(fd,"row %d:",i);
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
 #if defined(PETSC_COMPLEX)
-        if (imag(a->a[j]) != 0.0) {
+        if (imag(a->a[j]) > 0.0) {
           fprintf(fd," %d %g + %g i",a->j[j]+shift,real(a->a[j]),imag(a->a[j]));
+        } else if (imag(a->a[j]) < 0.0) {
+          fprintf(fd," %d %g - %g i",a->j[j]+shift,real(a->a[j]),-imag(a->a[j]));
         }
         else {
           fprintf(fd," %d %g ",a->j[j]+shift,real(a->a[j]));
