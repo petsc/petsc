@@ -1,26 +1,28 @@
 C
-C  $Id: petsc.h,v 1.18 1996/02/12 20:26:22 bsmith Exp bsmith $;
+C  $Id: mat.h,v 1.9 1996/02/12 20:30:32 bsmith Exp balay $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
-#define Mat             integer
-#define MatType         integer
-#define MatOption       integer 
-#define MatAssemblyType integer
-#define MatOrdering     integer
-#define MATSORType      integer
-#define MatInfoType     integer
-
+#define Mat                 integer
+#define MatType             integer
+#define MatOption           integer 
+#define MatAssemblyType     integer
+#define MatOrdering         integer
+#define MATSORType          integer
+#define MatInfoType         integer
+#define MatGetSubMatrixCall integer
+#define MatOperation        integer
 C
 C  Matrix types
 C
-      integer MATSAME, MATSEQDENSE, MATSEQAIJ, MATMPIAIJ, MATSHELL, 
-     *        MATSEQROW, MATMPIROW, MATMPIROWBS, MATSEQBDIAG, 
-     *        MATMPIBDIAG
+      integer MATSAME,MATSEQDENSE,MATSEQAIJ,MATMPIAIJ, 
+     *        MATSHELL,MATMPIROWBS,MATSEQBDIAG,
+     *        MATMPIBDIAG,MATMPIDENSE,MATSEQBAIJ)
 
-      parameter(MATSAME=-1,MATSEQDENSE = 0,MATSEQAIJ = 1,MATMPIAIJ = 2, 
-     *          MATSHELL = 3, MATSEQROW = 4, MATMPIROW = 5, 
-     *          MATMPIROWBS = 6, MATSEQBDIAG = 7, MATMPIBDIAG = 8)
+      parameter (MATSAME=-1,MATSEQDENSE = 0,MATSEQAIJ = 1,
+     *           MATMPIAIJ = 2,MATSHELL = 3, MATMPIROWBS = 4,
+     *           MATSEQBDIAG = 5,MATMPIBDIAG = 6,MATMPIDENSE = 7,
+     *           MATSEQBAIJ = 8)
 C
 C  Flag for matrix assembly
 C
@@ -33,10 +35,31 @@ C
       integer ROW_ORIENTED,COLUMN_ORIENTED,ROWS_SORTED,
      *        COLUMNS_SORTED,NO_NEW_NONZERO_LOCATIONS,
      *        YES_NEW_NONZERO_LOCATIONS,SYMMETRIC_MATRIX
-
-      parameter( ROW_ORIENTED=1,COLUMN_ORIENTED=2,ROWS_SORTED=4,
+     *        STRUCTURALLY_SYMMETRIC_MATRIX,NO_NEW_DIAGONALS,
+     *        YES_NEW_DIAGONALS,INODE_LIMIT_1,INODE_LIMIT_2,
+     *        INODE_LIMIT_3,INODE_LIMIT_4,INODE_LIMIT_5
+      
+      parameter (ROW_ORIENTED=1,COLUMN_ORIENTED=2,ROWS_SORTED=4,
      *           COLUMNS_SORTED=8,NO_NEW_NONZERO_LOCATIONS=16,
-     *           YES_NEW_NONZERO_LOCATIONS=32,SYMMETRIC_MATRIX=64)
+     *           YES_NEW_NONZERO_LOCATIONS=32,SYMMETRIC_MATRIX=64,
+     *           STRUCTURALLY_SYMMETRIC_MATRIX=65,NO_NEW_DIAGONALS=66,
+     *           YES_NEW_DIAGONALS=67,INODE_LIMIT_1=68,
+     *           INODE_LIMIT_2=69,INODE_LIMIT_3=70,INODE_LIMIT_4=71,
+     *           INODE_LIMIT_5=72)
+
+C
+C  MatInfoType
+C
+      integer MAT_LOCAL,MAT_GLOBAL_MAX,MAT_GLOBAL_SUM
+
+      parameter (MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3)
+
+C
+C  MatSubMatrixCall
+C
+      integer MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX
+
+      parameter (MAT_INITIAL_MATRIX=0, MAT_REUSE_MATRIX=1)
 C
 C  Matrix orderings
 C
@@ -60,12 +83,11 @@ C
      *          SOR_LOCAL_BACKWARD_SWEEP=8,SOR_LOCAL_SYMMETRIC_SWEEP=12,
      *          SOR_ZERO_INITIAL_GUESS=16,SOR_EISENSTAT=32,
      *          SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128)
-C
-C  Flags for MatGetInfo()
-C
-      integer MAT_LOCAL,MAT_GLOBAL_MAX,MAT_GLOBAL_SUM
 
-      parameter( MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3)
+C
+C  MatOperation is too huge. Is it reguired???
+C
+
 C
 C  End of Fortran include file for the Mat package in PETSc
 
