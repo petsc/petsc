@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsnes.c,v 1.5 1996/01/15 21:58:14 bsmith Exp balay $";
+static char vcid[] = "$Id: zsnes.c,v 1.6 1996/01/15 22:08:48 balay Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -54,7 +54,7 @@ static char vcid[] = "$Id: zsnes.c,v 1.5 1996/01/15 21:58:14 bsmith Exp balay $"
 #define snesdefaultmatrixfreematcreate_ snesdefaultmatrixfreematcreate
 #endif
 
-void snessetoptionsprefix_(SNES snes,char *prefix, int *flg, int *__ierr,int len ){
+void snessetoptionsprefix_(SNES snes,char *prefix, int *__ierr,int len ){
   char *t=0;
   if (prefix[len] != 0) {
     t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
@@ -62,10 +62,10 @@ void snessetoptionsprefix_(SNES snes,char *prefix, int *flg, int *__ierr,int len
     t[len] = 0;
   }
   else t = prefix;
-  *__ierr = SNESSetOptionsPrefix((SNES)MPIR_ToPointer( *(int*)(snes) ),t, flg);
+  *__ierr = SNESSetOptionsPrefix((SNES)MPIR_ToPointer( *(int*)(snes) ),t);
   if( t != prefix) PetscFree(t);
 }
-void snesappendoptionsprefix_(SNES snes,char *prefix, int *flg, int *__ierr,int len ){
+void snesappendoptionsprefix_(SNES snes,char *prefix, int *__ierr,int len ){
   char *t=0;
   if (prefix[len] != 0) {
     t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
@@ -73,7 +73,7 @@ void snesappendoptionsprefix_(SNES snes,char *prefix, int *flg, int *__ierr,int 
     t[len] = 0;
   }
   else t = prefix;
-  *__ierr = SNESAppendOptionsPrefix((SNES)MPIR_ToPointer( *(int*)(snes) ),t, flg);
+  *__ierr = SNESAppendOptionsPrefix((SNES)MPIR_ToPointer( *(int*)(snes) ),t);
   if( t != prefix) PetscFree(t);
 }
 void snesdefaultmatrixfreematcreate_(SNES snes,Vec x,Mat *J, int *__ierr ){

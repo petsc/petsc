@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zksp.c,v 1.8 1996/01/09 15:50:12 curfman Exp balay $";
+static char vcid[] = "$Id: zksp.c,v 1.9 1996/01/15 21:46:47 balay Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -54,7 +54,7 @@ void kspgetpreconditionerside_(KSP itP,PCSide *side, int *__ierr ){
 	(KSP)MPIR_ToPointer( *(int*)(itP) ),side );
 }
 
-void kspsetoptionsprefix_(KSP ksp,char *prefix, int *flg, int *__ierr,int len ){
+void kspsetoptionsprefix_(KSP ksp,char *prefix, int *__ierr,int len ){
   char *t=0;
   if (prefix[len] != 0) {
     t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
@@ -62,11 +62,11 @@ void kspsetoptionsprefix_(KSP ksp,char *prefix, int *flg, int *__ierr,int len ){
     t[len] = 0;
   }
   else t = prefix;
-  *__ierr = KSPSetOptionsPrefix((KSP)MPIR_ToPointer( *(int*)(ksp) ),t, flg);
+  *__ierr = KSPSetOptionsPrefix((KSP)MPIR_ToPointer( *(int*)(ksp) ),t);
   if( t != prefix) PetscFree(t);
 }
 
-void kspappendoptionsprefix_(KSP ksp,char *prefix, int *flg, int *__ierr,int len ){
+void kspappendoptionsprefix_(KSP ksp,char *prefix, int *__ierr,int len ){
   char *t=0;
   if (prefix[len] != 0) {
     t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
@@ -74,7 +74,7 @@ void kspappendoptionsprefix_(KSP ksp,char *prefix, int *flg, int *__ierr,int len
     t[len] = 0;
   }
   else t = prefix;
-  *__ierr = KSPAppendOptionsPrefix((KSP)MPIR_ToPointer( *(int*)(ksp) ),t, flg);
+  *__ierr = KSPAppendOptionsPrefix((KSP)MPIR_ToPointer( *(int*)(ksp) ),t);
   if( t != prefix) PetscFree(t);
 }
 
