@@ -11,7 +11,7 @@ LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
-                   ex23.c ex24.c ex25.c ex26.c ex27.c ex29.c
+                   ex23.c ex24.c ex25.c ex26.c ex27.c ex29.c ex30.c
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F 
 EXAMPLESCH	 = 
 EXAMPLESFH       = 
@@ -120,9 +120,9 @@ ex28: ex28.o chkopts
 ex29: ex29.o chkopts
 	-${CLINKER} -o ex29 ex29.o ${PETSC_SNES_LIB}
 	${RM} ex29.o
-ex30: ex30.o chkopts
+ex30: ex30.o erf.o chkopts
 	-${CLINKER} -o ex30 ex30.o ${PETSC_SNES_LIB}
-	${RM} ex30.o
+	${RM} ex30.o erf.o
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_gmres_irorthog -snes_smonitor > ex1_1.tmp 2>&1;   \

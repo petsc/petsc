@@ -63,9 +63,9 @@ def setupfunctionC(filename):
                                 reg = re.compile('\n[ ]*Scalar ')
                                 struct = reg.sub('\nPassiveScalar ',struct)
                                 reg = re.compile('\n[ ]*double ')
-                                struct = reg.sub('\nPassiveDouble ',struct)
+                                struct = reg.sub('\nPassiveReal ',struct)
                                 reg = re.compile('\n[ ]*PetscReal ')
-                                struct = reg.sub('\nPassiveDouble ',struct)
+                                struct = reg.sub('\nPassiveReal ',struct)
                         else:
                                 reg = re.compile('^[ ]*}[ ]*')
                                 line = reg.sub('',line)
@@ -98,7 +98,7 @@ def getfunctionC(g,filename,functionname):
         g.write("/* Function "+functionname+"*/\n\n")
 	line = f.readline()
 	while line:
-                for i in split('int double PetscReal Scalar'," "):
+                for i in split('int double PetscReal PetscScalar PassiveScalar PassiveReal'," "):
                   reg = re.compile('^[ ]*'+i+'[ ]*'+functionname+'[ ]*\(')
                   fl = reg.search(line)
                   if fl:
