@@ -75,11 +75,11 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
     ierr = VecGetArrayFast(yy[2],&yy2);CHKERRQ(ierr);
     ierr = VecGetArrayFast(yy[3],&yy3);CHKERRQ(ierr);
     fortranmdot4_(x,yy0,yy1,yy2,yy3,&n,&sum0,&sum1,&sum2,&sum3);
-    yy  += 4;
     ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(yy[1],&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(yy[2],&yy2);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(yy[3],&yy3);CHKERRQ(ierr);
+    yy  += 4;
     z[0] = sum0;
     z[1] = sum1;
     z[2] = sum2;
