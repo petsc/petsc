@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.13 1995/03/25 17:26:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.14 1995/03/27 21:02:31 bsmith Exp curfman $";
 #endif
 
 /*  
@@ -188,15 +188,16 @@ int PCSetUp(PC pc)
   Input Parameters:
 .  pc - the preconditioner context
 .  mat - the matrix
-.  pmat - matrix to be used in constructing preconditioner, usually the same.
-.         If pmat is 0 it reuses the old preconditioner.
+.  pmat - matrix to be used in constructing preconditioner, usually the same
+          as mat.  If pmat is 0, the old preconditioner is used.
 .  flag - use either 0 or MAT_SAME_NONZERO_PATTERN
 
   Notes:
   The flag can be used to eliminate unnecessary repeated work in the 
   repeated solution of linear systems of the same size using the same 
-  preconditioner.  This flag indicates whether the preconditioning matrix 
-  has the same nonzero pattern during successive solves.
+  preconditioner.  The user can set flag = MAT_SAME_NONZERO_PATTERN to 
+  indicate that the preconditioning matrix has the same nonzero pattern 
+  during successive linear solves.
 @*/
 int PCSetOperators(PC pc,Mat mat,Mat pmat,int flag)
 {
