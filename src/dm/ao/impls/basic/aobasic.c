@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aodebug.c,v 1.15 1997/04/06 21:56:42 curfman Exp curfman $";
+static char vcid[] = "$Id: aodebug.c,v 1.16 1997/04/07 19:14:51 curfman Exp balay $";
 #endif
 
 /*
@@ -116,7 +116,7 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   int       *allpetsc,*allapp,*disp,ip,ia;
 
   *aoout = 0;
-  PetscHeaderCreate(ao, _AO,AO_COOKIE,AO_DEBUG,comm); 
+  PetscHeaderCreate(ao, _p_AO,AO_COOKIE,AO_DEBUG,comm); 
   PLogObjectCreate(ao);
   aodebug            = PetscNew(AO_Debug);
   PLogObjectMemory(ao,sizeof(struct _AO) + sizeof(AO_Debug));

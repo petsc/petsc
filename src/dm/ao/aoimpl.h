@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.1 1996/06/25 19:17:36 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.2 1996/07/02 18:09:18 bsmith Exp balay $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -13,7 +13,7 @@ struct _AOOps {
        (*applicationtopetsc)(AO,int,int*);   
 };
 
-struct _AO {
+struct _p_AO {
   PETSCHEADER                            /* general PETSc header */
   struct _AOOps ops;                     /* AO operations */
   void          *data;                   /* implementation-specific data */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.79 1997/05/21 02:39:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.80 1997/05/23 15:56:59 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -150,7 +150,11 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 
   (*B)->info.factor_mallocs    = realloc;
   (*B)->info.fill_ratio_given  = f;
-  (*B)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[i]);
+  if (ai[i] != 0) {
+    (*B)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[i]);
+  } else {
+    (*B)->info.fill_ratio_needed = 0.0;
+  }
 
   return 0; 
 }
