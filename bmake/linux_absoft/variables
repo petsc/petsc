@@ -23,7 +23,7 @@ C_CLINKER	   = gcc
 C_FLINKER	   = gcc
 C_CCV		   = ${C_CC} --version
 C_FCV              = ${C_FC}
-C_SYS_LIB	   = -ldl -lc -L/soft/com/packages/absoft-1.0/lib -lfio -lU77 -lV77  -lf90math -lf77math -lm
+C_SYS_LIB	   = -ldl -lc -L/soft/com/packages/absoft-7.5/opt/absoft/lib -lfio -lU77 -lV77  -lf90math -lf77math -lm
 
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
@@ -40,7 +40,7 @@ CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = g++
 CXX_FLINKER	   = g++
 CXX_CCV		   = ${CXX_CC} --version
-CXX_SYS_LIB	   = -ldl -lstdc++ -lc -L/soft/com/packages/absoft-1.0/lib -lfio -lU77 -lV77 -lf90math -lf77math -lm
+CXX_SYS_LIB	   = -ldl -lstdc++ -lc -L/soft/com/packages/absoft-7.5/opt/absoft/lib -lfio -lU77 -lV77 -lf90math -lf77math -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g
