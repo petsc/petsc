@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.79 1995/12/21 18:34:37 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.80 1996/01/01 01:05:46 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -8,7 +8,7 @@
 #define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.11, Released ?."
 
 #include <stdio.h>
-#if defined(PARCH_sun4) && !defined(__cplusplus)
+#if defined(PARCH_sun4) && !defined(__cplusplus) && !defined(_Gnu_)
 extern int fprintf(FILE*,const char*,...);
 extern int printf(const char*,...);
 extern int fflush(FILE *);
