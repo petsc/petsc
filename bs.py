@@ -54,6 +54,7 @@ class BS (maker.Maker):
     else:
       sourceDB = sourceDatabase.SourceDB()
     atexit.register(self.cleanup)
+    sourceDB.setFromArgs(argDB)
     if not int(argDB['restart']):
       for source in sourceDB:
         sourceDB.clearUpdateFlag(source)

@@ -105,31 +105,35 @@ class FileChanged (Transform):
         self.debugPrint(source+' has changed relative to the source database: '+str(sourceEntry[0])+' <> '+str(checksum), 3, 'sourceDB')
         return 1
 
-  def fileExecute(self, source):
+  def hasChanged(self, source):
     try:
       if not os.path.exists(source):
         self.debugPrint(source+' does not exist', 3, 'sourceDB')
-        self.changed.append(source)
+        return 1
       else:
         changed = 0
         if self.compare(source, bs.sourceDB[source]):
-          changed = 1
+          return 1
         else:
           for dep in bs.sourceDB[source][3]:
             try:
               if self.compare(dep, bs.sourceDB[dep]):
-                changed = 1
+                return 1
                 break
             except KeyError:
               pass
-        if changed:
-          self.changed.append(source)
-        else:
-          self.unchanged.append(source)
-          bs.sourceDB.setUpdateFlag(source)
+        return 0
     except KeyError:
       self.debugPrint(source+' does not exist in source database', 3, 'sourceDB')
+      return 1
+
+  def fileExecute(self, source):
+    if self.hasChanged(source):
       self.changed.append(source)
+    else:
+      self.unchanged.append(source)
+      bs.sourceDB.setUpdateFlag(source)
+    return
 
   def execute(self):
     self.debugPrint('Checking for changes to sources '+self.debugFileSetStr(self.sources), 2, 'sourceDB')
@@ -150,7 +154,7 @@ class GenericTag (FileChanged):
     self.changed.tag     = tag
     self.unchanged.tag   = 'old '+tag
     self.deferredUpdates = fileset.FileSet(tag = 'update '+tag)
-    self.products        = [self.changed, self.unchanged]
+    self.products        = [self.changed, self.unchanged, self.deferredUpdates]
 
   def fileExecute(self, source):
     (base, ext) = os.path.splitext(source)
@@ -158,7 +162,8 @@ class GenericTag (FileChanged):
       if ext in self.ext:
         FileChanged.fileExecute(self, source)
       elif ext in self.extraExt:
-        self.deferredUpdates.append(source)
+        if self.hasChanged(source):
+          self.deferredUpdates.append(source)
       else:
         self.currentSet.append(source)
     else:

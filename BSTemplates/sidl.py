@@ -204,8 +204,8 @@ class CompileDefaults (Defaults):
                                       cAction,
                                       cxxAction,
                                       link.TagLibrary(),
-                                      linker]))
-    targets.append(transform.Update())
+                                      linker,
+                                      transform.Update()]))
     return targets
 
   def getClientCompileTargets(self):
