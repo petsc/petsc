@@ -185,7 +185,10 @@ class Builder(logging.Logger):
       for language in self.framework.linkerObject:
         self.framework.getLinkerObject(language).copy(self.configurations[configurationName].getLinkerObject(language))
       for language in self.framework.sharedLinkerObject:
-        self.framework.getSharedLinkerObject(language).copy(self.configurations[configurationName].getSharedLinkerObject(language))
+        oldObj = self.framework.getSharedLinkerObject(language)
+        newObj = oldObj.__class__(oldObj.argDB)
+        newObj.copy(oldObj)
+        self.configurations[configurationName].setSharedLinkerObject(language, newObj)
     configuration = self.configurations[configurationName]
     configuration.compilers      = self.compilers
     configuration.libraries      = self.libraries
