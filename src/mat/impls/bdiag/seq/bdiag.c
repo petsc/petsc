@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.33 1995/07/29 04:29:32 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.34 1995/08/02 02:34:23 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -857,7 +857,6 @@ static int MatGetSubMatrix_BDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
 
   /* Determine diagonals; then create submatrix */
   nb = mat->nb; /* Default block size remains the same */
-  OptionsGetInt(0,"-mat_bdiag_bsize",&nb);     
   ierr = MatDetermineDiagonals_Private(matin,nb,newr,newc,irow,icol,
          &ndiag,&diag); CHKERRQ(ierr); 
   ierr = MatCreateSequentialBDiag(matin->comm,newr,newc,ndiag,nb,diag,
