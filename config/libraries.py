@@ -31,7 +31,7 @@ class Configure(config.base.Configure):
       return library
     if os.path.basename(library).startswith('lib'):
       name = Configure.getLibName(library)
-      if os.path.isabs(library):
+      if ((len(library) > 2 and library[1] == ':') or os.path.isabs(library)):
         flagName  = self.language[-1].replace('+', 'x')+'SharedLinkerFlag'
         flagSubst = self.language[-1].replace('+', 'x').upper()+'_LINKER_SLFLAG'
         if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
