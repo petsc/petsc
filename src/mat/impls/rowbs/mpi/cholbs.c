@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.19 1995/12/01 22:30:06 curfman Exp $";
+static char vcid[] = "$Id: cholbs.c,v 1.19 1995/12/02 19:22:47 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -56,6 +56,9 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+/* #if defined (BSMAINLOG)
+  int flop1 = MLOG_flops;
+  #endif */
   if (mat != *factp) SETERRQ(1,"MatCholeskyFactorNumeric_MPIRowbs:factored\
                                  matrix must be same context as mat");
 
@@ -79,6 +82,9 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
                      "BlockSolve: %d failed factors, err=%d, alpha=%g\n",
                                        mbs->failures, mbs->ierr, mbs->alpha ); 
   }
+/* #if defined (BSMAINLOG)
+  PLogFlops(MLOG_flops-flop1);
+  #endif */
 
   mat->factor = FACTOR_CHOLESKY;
   return 0;
@@ -120,6 +126,9 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   int          ierr;
   Scalar       *ya, *xa, *xworka;
 
+/* #if defined (BSMAINLOG)
+  int flop1 = MLOG_flops;
+  #endif */
   /* Permute and apply diagonal scaling to vector, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
     ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
@@ -131,19 +140,12 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   }
   ierr = VecGetArray(y,&ya); CHKERRQ(ierr);
 
-#if defined(PETSC_DEBUG)
-  MLOG_ELM(mbs->procinfo->procset);
-#endif
   if (mbs->procinfo->single)
     /* Use BlockSolve routine for no cliques/inodes */
     BSfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
   else
     BSfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
   CHKERRBS(0);
-#if defined(PETSC_DEBUG)
-  MLOG_ACC(MS_FORWARD);
-  MLOG_ELM(mbs->procinfo->procset);
-#endif
 
   if (mbs->procinfo->single)
     /* Use BlockSolve routine for no cliques/inodes */
@@ -151,10 +153,6 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   else
     BSback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
   CHKERRBS(0);
-
-#if defined(PETSC_LOG)
-  MLOG_ACC(MS_BACKWARD);
-#endif
 
   /* Apply diagonal scaling and unpermute, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
@@ -164,7 +162,9 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecRestoreArray(mbs->xwork,&xworka); CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(y,&ya); CHKERRQ(ierr);
-  PLogFlops(2*mbs->nz - mbs->m);
+/* #if defined (BSMAINLOG)
+  PLogFlops(MLOG_flops-flop1);
+  #endif */
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -174,6 +174,9 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   int          ierr;
   Scalar       *ya, *xa, *xworka;
 
+/* #if defined (BSMAINLOG)
+  int flop1 = MLOG_flops;
+  #endif */
   /* Permute and apply diagonal scaling to vector, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
     ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
@@ -187,20 +190,16 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   }
   ierr = VecGetArray(y,&ya); CHKERRQ(ierr);
 
-#if defined(PETSC_LOG)
-  MLOG_ELM(mbs->procinfo->procset);
-#endif
   if (mbs->procinfo->single)
     /* Use BlockSolve routine for no cliques/inodes */
     BSfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
   else
     BSfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
   CHKERRBS(0);
-#if defined(PETSC_LOG)
-  MLOG_ACC(MS_FORWARD);
-  MLOG_ELM(mbs->procinfo->procset);
-#endif
   ierr = VecRestoreArray(y,&ya); CHKERRQ(ierr);
+/* #if defined (BSMAINLOG)
+  PLogFlops(MLOG_flops-flop1);
+  #endif */
 
   return 0;
 }
@@ -211,21 +210,19 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   int          ierr;
   Scalar       *ya, *xworka;
 
+/* #if defined (BSMAINLOG)
+  int flop1 = MLOG_flops;
+  #endif */
   ierr = VecCopy( x, y ); CHKERRQ(ierr);
   ierr = VecGetArray( y, &ya );   CHKERRQ(ierr);
   ierr = VecGetArray( mbs->xwork, &xworka ); CHKERRQ(ierr);
-#if defined(PETSC_LOG)
-  MLOG_ELM(mbs->procinfo->procset);
-#endif
+
   if (mbs->procinfo->single)
     /* Use BlockSolve routine for no cliques/inodes */
     BSback_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
   else
     BSback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
   CHKERRBS(0);
-#if defined(PETSC_LOG)
-  MLOG_ACC(MS_BACKWARD);
-#endif
 
   /* Apply diagonal scaling and unpermute, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
@@ -234,6 +231,9 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   }
   ierr = VecRestoreArray( y, &ya );   CHKERRQ(ierr);
   ierr = VecRestoreArray( mbs->xwork, &xworka ); CHKERRQ(ierr);
+/* #if defined (BSMAINLOG)
+  PLogFlops(MLOG_flops-flop1);
+  #endif */
   return 0;
 }
 
