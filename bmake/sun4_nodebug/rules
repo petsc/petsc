@@ -1,4 +1,4 @@
-# $Id: base,v 1.12 1998/12/04 23:55:18 balay Exp balay $ 
+# $Id: base,v 1.13 1998/12/10 16:37:23 balay Exp bsmith $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -102,17 +102,19 @@ shared: chkopts_basic
 	cd tmp; \
 	for LIBNAME in ${SHLIBS} ; \
 	do \
-	  flag=""; \
-	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
+	    flag=""; \
+	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
               flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	  else \
+	    else \
 	      flag="true"; \
-	  fi; \
-          if [ "$$flag" != "" ]; then \
-	    echo "building $$LIBNAME.${SLSUFFIX}"; \
-	    ${AR} x ../$$LIBNAME.a ;\
-	    gcc ${COPTFLAGS} -fPIC -shared  *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
-	    ${RM} -f * ; \
+	    fi; \
+            if [ "$$flag" != "" ]; then \
+	      echo "building $$LIBNAME.${SLSUFFIX}"; \
+	      ${AR} x ../$$LIBNAME.a ;\
+	      gcc ${COPTFLAGS} -fPIC -shared  *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
+	      ${RM} -f * ; \
+	    fi; \
 	  fi; \
 	done; \
 	cd ../ ; \
