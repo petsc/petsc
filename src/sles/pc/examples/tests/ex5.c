@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.47 1996/09/12 16:26:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.48 1996/09/28 23:12:00 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -102,9 +102,14 @@ int main(int Argc, char **Args)
     ierr = PCShellGetName(pc,&shellname); CHKERRA(ierr);
     PetscPrintf(MPI_COMM_WORLD,"level=%d, PCShell name is %s\n",i,shellname);
 
-    /* this is a dummy! */
+    /* this is a dummy! since SLES requires a matrix passed in  */
     ierr = SLESSetOperators(sles[i],mat[i],mat[i],
            DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+    /* 
+        We override the matrix passed in by forcint it to use Richardson with 
+        a user provided application. This is non-standard and this practice
+        should be avoided.
+    */
     ierr = PCShellSetApplyRichardson(pc,gauss_seidel,(void *)0); CHKERRA(ierr);
     if (use_jacobi) {
       ierr = PCShellSetApplyRichardson(pc,jacobi,(void *)0); CHKERRA(ierr);
