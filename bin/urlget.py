@@ -1,5 +1,5 @@
 #!/usr/bin/env python1.5
-# $Id: urlget.py,v 1.6 1998/01/16 01:59:29 balay Exp balay $ 
+# $Id: urlget.py,v 1.7 1998/02/02 21:58:37 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
@@ -143,7 +143,9 @@ elif re.search('http',url_split[0]) >= 0 :
         print 'Error! Accessing url on the server',sys.exc_type, sys.exc_value
         h.close()
         sys.exit()
-
+else:
+    print 'Error! Unknown protocol. Use http or ftp protocol only'
+    sys.exit()
 os.chmod(outfilename,500)
 print outfilename
 sys.exit()
