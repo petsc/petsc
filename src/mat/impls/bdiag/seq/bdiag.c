@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.158 1998/05/29 22:49:25 balay Exp balay $";
+static char vcid[] = "$Id: bdiag.c,v 1.159 1998/06/03 21:31:09 balay Exp balay $";
 #endif
 
 /* Block diagonal matrix format */
@@ -22,6 +22,7 @@ extern int MatMult_SeqBDiag_5(Mat,Vec,Vec);
 extern int MatMult_SeqBDiag_N(Mat,Vec,Vec);
 extern int MatMultAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBDiag_2(Mat,Vec,Vec,Vec);
+extern int MatMultAdd_SeqBDiag_3(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBDiag_4(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBDiag_5(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);

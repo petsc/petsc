@@ -1,12 +1,12 @@
-# $Id: makefile,v 1.21 1998/03/19 02:07:51 balay Exp balay $ 
+# $Id: makefile,v 1.22 1998/04/23 23:45:06 balay Exp balay $ 
 
 ALL: lib
 
 CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' 
-SOURCEC  = bdiag.c bdfact.c
+SOURCEC  = bdiag.c bdiag2.c bdfact.c
 SOURCEF  =
 SOURCEH  = bdiag.h
-OBJSC    = bdiag.o bdfact.o
+OBJSC    = bdiag.o bdiag2.o bdfact.o
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = 2
