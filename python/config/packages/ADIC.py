@@ -1,8 +1,8 @@
-import configure
+import config.base
 
-class Configure(configure.Configure):
+class Configure(config.base.Configure):
   def __init__(self, framework):
-    configure.Configure.__init__(self, framework)
+    config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
     return
