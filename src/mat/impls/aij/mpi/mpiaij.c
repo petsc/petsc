@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.179 1996/11/30 21:40:36 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.180 1996/12/18 18:47:24 curfman Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -11,6 +11,8 @@ number to the local number in the off-diagonal part of the local
 storage of the matrix.  This is done in a non scable way since the 
 length of colmap equals the global matrix length. 
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "CreateColmap_MPIAIJ_Private"
 int CreateColmap_MPIAIJ_Private(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -26,6 +28,8 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
 
 extern int DisAssemble_MPIAIJ(Mat);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetRowIJ_MPIAIJ"
 static int MatGetRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int **ja,
                            PetscTruth *done)
 {
@@ -37,6 +41,8 @@ static int MatGetRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int 
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatRestoreRowIJ_MPIAIJ"
 static int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                PetscTruth *done)
 {
@@ -50,6 +56,8 @@ static int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,
 
 extern int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSetValues_MPIAIJ"
 static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -115,6 +123,8 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetValues_MPIAIJ"
 static int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -152,6 +162,8 @@ static int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatAssemblyBegin_MPIAIJ"
 static int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
@@ -252,6 +264,8 @@ static int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 }
 extern int MatSetUpMultiply_MPIAIJ(Mat);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatAssemblyEnd_MPIAIJ"
 static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -323,6 +337,8 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatZeroEntries_MPIAIJ"
 static int MatZeroEntries_MPIAIJ(Mat A)
 {
   Mat_MPIAIJ *l = (Mat_MPIAIJ *) A->data;
@@ -338,6 +354,8 @@ static int MatZeroEntries_MPIAIJ(Mat A)
    aij->A and aij->B directly and not through the MatZeroRows() 
    routine. 
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatZeroRows_MPIAIJ"
 static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIAIJ     *l = (Mat_MPIAIJ *) A->data;
@@ -461,6 +479,8 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMult_MPIAIJ"
 static int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
@@ -477,6 +497,8 @@ static int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultAdd_MPIAIJ"
 static int MatMultAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
@@ -488,6 +510,8 @@ static int MatMultAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultTrans_MPIAIJ"
 static int MatMultTrans_MPIAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
@@ -506,6 +530,8 @@ static int MatMultTrans_MPIAIJ(Mat A,Vec xx,Vec yy)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultTransAdd_MPIAIJ"
 static int MatMultTransAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
@@ -528,6 +554,8 @@ static int MatMultTransAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   This only works correctly for square matrices where the subblock A->A is the 
    diagonal block
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetDiagonal_MPIAIJ"
 static int MatGetDiagonal_MPIAIJ(Mat A,Vec v)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
@@ -538,6 +566,8 @@ static int MatGetDiagonal_MPIAIJ(Mat A,Vec v)
   return MatGetDiagonal(a->A,v);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatScale_MPIAIJ"
 static int MatScale_MPIAIJ(Scalar *aa,Mat A)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
@@ -547,6 +577,8 @@ static int MatScale_MPIAIJ(Scalar *aa,Mat A)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatDestroy_MPIAIJ"
 static int MatDestroy_MPIAIJ(PetscObject obj)
 {
   Mat        mat = (Mat) obj;
@@ -574,6 +606,8 @@ static int MatDestroy_MPIAIJ(PetscObject obj)
 #include "draw.h"
 #include "pinclude/pviewer.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatView_MPIAIJ_Binary"
 static int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
 {
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
@@ -586,6 +620,8 @@ static int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatView_MPIAIJ_ASCIIorDraworMatlab"
 static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
 {
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
@@ -698,6 +734,8 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatView_MPIAIJ"
 static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         mat = (Mat) obj;
@@ -722,6 +760,8 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
         b) local smoothing updating outer values each inner iteration
      3) color updating out values betwen colors.
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatRelax_MPIAIJ"
 static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
                            double fshift,int its,Vec xx)
 {
@@ -830,6 +870,8 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   return 0;
 } 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetInfo_MPIAIJ"
 static int MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
@@ -885,6 +927,8 @@ extern int MatSolveAdd_MPIAIJ(Mat,Vec,Vec,Vec);
 extern int MatSolveTrans_MPIAIJ(Mat,Vec,Vec);
 extern int MatSolveTransAdd_MPIAIJ(Mat,Vec,Vec,Vec);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSetOption_MPIAIJ"
 static int MatSetOption_MPIAIJ(Mat A,MatOption op)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
@@ -918,6 +962,8 @@ static int MatSetOption_MPIAIJ(Mat A,MatOption op)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetSize_MPIAIJ"
 static int MatGetSize_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
@@ -925,6 +971,8 @@ static int MatGetSize_MPIAIJ(Mat matin,int *m,int *n)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetLocalSize_MPIAIJ"
 static int MatGetLocalSize_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
@@ -932,6 +980,8 @@ static int MatGetLocalSize_MPIAIJ(Mat matin,int *m,int *n)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetOwnershipRange_MPIAIJ"
 static int MatGetOwnershipRange_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
@@ -942,6 +992,8 @@ static int MatGetOwnershipRange_MPIAIJ(Mat matin,int *m,int *n)
 extern int MatGetRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
 extern int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetRow_MPIAIJ"
 int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
@@ -1021,6 +1073,8 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatRestoreRow_MPIAIJ"
 int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -1031,6 +1085,8 @@ int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatNorm_MPIAIJ"
 static int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -1106,6 +1162,8 @@ static int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
   return 0; 
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatTranspose_MPIAIJ"
 static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
 { 
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
@@ -1163,6 +1221,8 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatDiagonalScale_MPIAIJ"
 int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -1196,6 +1256,8 @@ int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
 
 
 extern int MatPrintHelp_SeqAIJ(Mat);
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatPrintHelp_MPIAIJ"
 static int MatPrintHelp_MPIAIJ(Mat A)
 {
   Mat_MPIAIJ *a   = (Mat_MPIAIJ*) A->data;
@@ -1204,6 +1266,8 @@ static int MatPrintHelp_MPIAIJ(Mat A)
   else return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetBlockSize_MPIAIJ"
 static int MatGetBlockSize_MPIAIJ(Mat A,int *bs)
 {
   *bs = 1;
@@ -1242,6 +1306,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatFDColoringCreate_MPIAIJ};
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatCreateMPIAIJ"
 /*@C
    MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format
    (the default parallel PETSc format).  For good matrix assembly performance
@@ -1432,6 +1498,8 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatConvertSameType_MPIAIJ"
 static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
 {
   Mat        mat;
@@ -1498,6 +1566,8 @@ static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
 
 #include "sys.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatLoad_MPIAIJ"
 int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;
