@@ -1,37 +1,95 @@
-/* $Id: sseenabled.c,v 1.5 2001/04/16 02:59:26 bsmith Exp bsmith $ */
+/* $Id: sseenabled.c,v 1.6 2001/04/21 21:18:10 bsmith Exp buschelm $ */
 #include "petsc.h"
 
-#ifdef PETSC_HAVE_ICL
+#ifdef PETSC_HAVE_SSE
 
-/* Processor specific version for PentiumIII and Pentium4 */
-__declspec(cpu_specific(pentium_iii))
-int PetscSSEIsEnabled(PetscTruth *flag) {
+#include PETSC_HAVE_SSE
+#define SSE_FEATURE_FLAG 0x2000000 /* Mask for bit 25 (from bit 0) */
+
+#include <string.h>
+int PetscSSEHardwareTest(PetscTruth *flag) {
+  char *vendor="************";
+
+  *flag = PETSC_FALSE;
+  CPUID_GET_VENDOR(vendor);
+  if (!strcmp(vendor,"GenuineIntel")) { 
+    /* If Genuine Intel ... */
+    unsigned long eax,ebx,ecx,edx;
+    CPUID(CPUID_FEATURES,&eax,&ebx,&ecx,&edx);
+    /* SSE Feature is indicated by Bit 25 of the EDX register */
+    if (edx & SSE_FEATURE_FLAG) {
+      *flag = PETSC_TRUE;
+    }
+  }
+  return(0);
+}
+
+#ifdef PARCH_linux
+#include <signal.h>
+/* 
+   Early versions of the Linux kernel disables SSE hardware because
+   it does not know how to preserve the SSE state at a context switch.
+   To detect this feature, try an sse instruction in another process.  
+   If it works, great!  If not, an illegal instruction signal will be thrown,
+   so catch it and return an error code. 
+*/
+#define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_Linux(arg)
+
+static void SSEEnabledHandler(int sig) {
+  signal(SIGILL,SIG_IGN);
+  exit(-1);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSSEOSEnabledTest"
+int PetscSSEOSEnabledTest_Linux(PetscTruth *flag) {
+  int status,pid =0;
+  PetscFunctionBegin;
+  signal(SIGILL,SSEEnabledHandler);
+  pid = fork();
+  if (pid==0) {
+    XOR_PS(XMM0,XMM0);
+    exit(0);
+  } else {
+    wait(&status);
+  }
+  if (!status) {
+    *flag = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+#endif
+#ifdef PARCH_win32
+/* 
+   Windows 95/98/NT4 should have a Windows Update/Service Patch which enables this hardware.
+   Windows ME/2000 doesn't disable SSE Hardware 
+*/
+#define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_TRUE(arg)
+
+int PetscSSEOSEnabledTest_TRUE(PetscTruth *flag) {
   *flag = PETSC_TRUE;
   return(0);
 }
 
-__declspec(cpu_specific(pentium_iii_no_xmm_regs))
-int PetscSSEIsEnabled(PetscTruth *flag) {
-  *flag = PETSC_FALSE;
-  return(0);
-}
-/* Generic Intel processor version (i.e., not PIII,P4) */
-__declspec(cpu_specific(generic))
-int PetscSSEIsEnabled(PetscTruth *flag) {
-  *flag = PETSC_FALSE;
-  return(0);
-}
+#endif 
+#else  /* Not defined PETSC_HAVE_SSE */
 
-/* Dummy stub performs the dispatch of appropriate version */ 
-__declspec(cpu_dispatch(generic,pentium_iii_no_xmm_regs,pentium_iii))
-int PetscSSEIsEnabled(void) {}
+#define PetscSSEHardwareTest(arg) 0
+#define PetscSSEOSEnabledTest(arg) 0
 
-#else
+#endif /* defined PETSC_HAVE_SSE */
 
-/* Version to use if not compiling with ICL */
+#undef __FUNCT__
+#define __FUNCT__ "PetscSSEIsEnabled"
 int PetscSSEIsEnabled(PetscTruth *flag) {
+  PetscFunctionBegin;
   *flag = PETSC_FALSE;
-  return(0);
+  ierr = PetscSSEHardwareTest(flag);CHKERRQ(ierr);
+  if (*flag) {
+    ierr = PetscSSEOSEnabledTest(flag);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
-#endif
+
