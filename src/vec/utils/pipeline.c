@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pipeline.c,v 1.2 1998/08/19 02:56:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pipeline.c,v 1.3 1998/08/19 03:06:09 bsmith Exp balay $";
 #endif
 
 /*
@@ -340,7 +340,7 @@ int IsProcYes(int fun)
 }
 #undef __FUNC__
 #define __FUNC__ "ProcNo"
-static int ProcNo(int proc,PetscObject pipe_info)
+int ProcNo(int proc,PetscObject pipe_info)
 {
   return 0;
 }
@@ -420,7 +420,7 @@ static int PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
   info = PetscNew(Pipeline_coloured_info);
   MPI_Comm_rank(vs->scatter->comm,&(info->mytid));
   MPI_Comm_size(vs->scatter->comm,&numtids);
-  info->proc_colours = PetscMalloc(numtids*sizeof(int));CHKPTRQ(info->proc_colours);
+  info->proc_colours = (int*)PetscMalloc(numtids*sizeof(int));CHKPTRQ(info->proc_colours);
   for (i=0; i<numtids; i++) {info->proc_colours[i] = i%2;}
   *obj = (PetscObject) info;
 
@@ -438,7 +438,7 @@ static int PipelineMulticolourSetup(VecPipeline vs,PetscObject x,PetscObject *ob
   info = PetscNew(Pipeline_coloured_info);
   MPI_Comm_rank(mat->comm,&(info->mytid));
   MPI_Comm_size(mat->comm,&numtids);
-  info->proc_colours = PetscMalloc(numtids*sizeof(int));CHKPTRQ(info->proc_colours);
+  info->proc_colours = (int*)PetscMalloc(numtids*sizeof(int));CHKPTRQ(info->proc_colours);
   PetscMemzero(info->proc_colours,numtids*sizeof(int));
 
   /* colouring */
