@@ -1,4 +1,4 @@
-/*$Id: drawv.c,v 1.59 2001/04/10 19:34:07 bsmith Exp bsmith $*/
+/*$Id: drawv.c,v 1.60 2001/04/17 17:39:53 bsmith Exp buschelm $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
@@ -407,7 +407,7 @@ static int Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
      Level: intermediate
 
      Notes:
-     Unlike almost all other PETSc routines, PETSC)VIEWER_DRAW_ does not return 
+     Unlike almost all other PETSc routines, PETSC_VIEWER_DRAW_ does not return 
      an error code.  The window is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_DRAW_(comm));
 
