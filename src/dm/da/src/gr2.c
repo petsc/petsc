@@ -281,7 +281,6 @@ int VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
 #else /* !defined(PETSC_HAVE_HDF4) */
   PetscFunctionBegin;
   SETERRQ(1,"Build PETSc with HDF4 to use this viewer");
-  PetscFunctionReturn(0);
 #endif    
 }
 
@@ -361,7 +360,6 @@ int VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
 #else /* !defined(PETSC_HAVE_PNETCDF) */
   PetscFunctionBegin;
   SETERRQ(1,"Build PETSc with NETCDF to use this viewer");
-  PetscFunctionReturn(0);
 #endif    
 }
 
