@@ -1,5 +1,5 @@
-/* $Id: sseenabled.c,v 1.11 2001/07/13 14:56:05 buschelm Exp buschelm $ */
-#include "petscsys.h"
+/* $Id: sseenabled.c,v 1.12 2001/07/20 18:35:12 buschelm Exp buschelm $ */
+#include "petscsys.h" /*I "petscsys.h" I*/
 
 #ifdef PETSC_HAVE_SSE
 
@@ -11,11 +11,12 @@
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEHardwareTest"
 int PetscSSEHardwareTest(PetscTruth *flag) {
+  int  ierr;
   char *vendor;
   char Gen[13]="GenuineIntel";
 
   PetscFunctionBegin;
-  vendor = (char *)malloc(13*sizeof(char));
+  ierr = PetscMalloc(13*sizeof(char),&vendor);CHKERRQ(ierr);
   strcpy(vendor,"************");
   CPUID_GET_VENDOR(vendor);
   if (!strcmp(vendor,Gen)) { 
@@ -29,7 +30,7 @@ int PetscSSEHardwareTest(PetscTruth *flag) {
       *flag = PETSC_FALSE;
     }
   }
-  free(vendor);
+  ierr = PetscFree(vendor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -44,7 +45,7 @@ int PetscSSEHardwareTest(PetscTruth *flag) {
 */
 #define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_Linux(arg)
 
-static void SSEEnabledHandler(int sig) {
+static void PetscSSEDisabledHandler(int sig) {
   signal(SIGILL,SIG_IGN);
   exit(-1);
 }
@@ -52,9 +53,9 @@ static void SSEEnabledHandler(int sig) {
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEOSEnabledTest_Linux"
 int PetscSSEOSEnabledTest_Linux(PetscTruth *flag) {
-  int status,pid =0;
+  int status, pid = 0;
   PetscFunctionBegin;
-  signal(SIGILL,SSEEnabledHandler);
+  signal(SIGILL,PetscSSEDisabledHandler);
   pid = fork();
   if (pid==0) {
     SSE_SCOPE_BEGIN;
@@ -66,6 +67,8 @@ int PetscSSEOSEnabledTest_Linux(PetscTruth *flag) {
   }
   if (!status) {
     *flag = PETSC_TRUE;
+  } else {
+    *flag = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
@@ -81,8 +84,9 @@ int PetscSSEOSEnabledTest_Linux(PetscTruth *flag) {
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEOSEnabledTest_TRUE"
 int PetscSSEOSEnabledTest_TRUE(PetscTruth *flag) {
+  PetscFunctionBegin;
   *flag = PETSC_TRUE;
-  return(0);
+  PetscFunctionReturn(0);
 }
 
 #endif 
@@ -95,14 +99,31 @@ int PetscSSEOSEnabledTest_TRUE(PetscTruth *flag) {
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEIsEnabled"
-int PetscSSEIsEnabled(PetscTruth *flag) {
+/*@C
+     PetscSSEIsEnabled
+     Collective on comm
+
+     Input Parameter:
+.    comm - MPI Communicator
+
+     Output Parameters:
+.    lflag - Local Flag: PETSC_TRUE if enabled in this process
+.    gflag - Global Flag: PETSC_TRUE if enabled for all processes in comm
+
+     Level: developer
+
+     Concepts: architecture
+
+@*/
+int PetscSSEIsEnabled(MPI_Comm comm,PetscTruth *lflag,PetscTruth *gflag) {
   int ierr;
   PetscFunctionBegin;
-  *flag = PETSC_FALSE;
-  ierr = PetscSSEHardwareTest(flag);CHKERRQ(ierr);
-  if (*flag) {
-    ierr = PetscSSEOSEnabledTest(flag);CHKERRQ(ierr);
+  *lflag = PETSC_FALSE;
+  ierr = PetscSSEHardwareTest(lflag);CHKERRQ(ierr);
+  if (*lflag) {
+    ierr = PetscSSEOSEnabledTest(lflag);CHKERRQ(ierr);
   }
+  ierr = MPI_Allreduce(gflag,lflag,1,MPI_INT,MPI_LAND,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
