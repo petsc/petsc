@@ -104,11 +104,11 @@ int CalcRhs(MRC mrc, Vec B, Vec X, Vec Rhs, PetscReal *cfl)
 	ierr = DAGlobalToLocalBegin(da, B, INSERT_VALUES, Blocal); CE;
 	ierr = DAGlobalToLocalEnd  (da, B, INSERT_VALUES, Blocal); CE;
 
-	ierr = DAVecGetArray(da, Xlocal, (void **) &p); CE;
-	ierr = DAVecGetArray(da, Blocal, (void **) &f); CE;
-	ierr = DAVecGetArray(da, Rhs   , (void **) &rhs); CE;
+	ierr = DAVecGetArray(da, Xlocal, &p); CE;
+	ierr = DAVecGetArray(da, Blocal, &f); CE;
+	ierr = DAVecGetArray(da, Rhs   , &rhs); CE;
 
-	DA_for_each_point(da, i, j) {
+	DA_for_each_point_2d(da, i, j) {
 #ifdef EQ
 		  PetscReal x = mrc->Lx*i/mx;
 		  by_eq  = sin(x);
@@ -135,9 +135,9 @@ int CalcRhs(MRC mrc, Vec B, Vec X, Vec Rhs, PetscReal *cfl)
 		  *cfl = PetscMax(*cfl, PetscAbs(by*dt/Hy));
 	}
 
-	ierr = DAVecRestoreArray(da, Xlocal, (void **)&p); CE;
-	ierr = DAVecRestoreArray(da, Blocal, (void **)&f); CE;
-	ierr = DAVecRestoreArray(da, Rhs   , (void **)&rhs); CE;
+	ierr = DAVecRestoreArray(da, Xlocal, &p); CE;
+	ierr = DAVecRestoreArray(da, Blocal, &f); CE;
+	ierr = DAVecRestoreArray(da, Rhs   , &rhs); CE;
 
 	ierr = DARestoreLocalVector(da, &Xlocal); CE;
 	ierr = DARestoreLocalVector(da, &Blocal); CE;
@@ -217,15 +217,15 @@ int PoiCalcRhs(Poi poi, Vec X, Vec B)
 	ierr = DAGlobalToLocalBegin(da, X, INSERT_VALUES, Xlocal); CE;
 	ierr = DAGlobalToLocalEnd  (da, X, INSERT_VALUES, Xlocal); CE;
 
-	ierr = DAVecGetArray(da, Xlocal, (void *) &x); CE;
-	ierr = DAVecGetArray(da, B,      (void *) &b); CE;
+	ierr = DAVecGetArray(da, Xlocal, &x); CE;
+	ierr = DAVecGetArray(da, B     , &b); CE;
 
-	DA_for_each_point(da, i, j) {
+ 	DA_for_each_point_2d(da, i, j) {
 		b[j][i].U = D_2(x, phi);
 		b[j][i].F = x[j][i].psi - de2 * D_2(x, psi);
 	}
-	ierr = DAVecRestoreArray(da, Xlocal, (void *) &x); CE;
-	ierr = DAVecRestoreArray(da, B,      (void *) &b); CE;
+	ierr = DAVecRestoreArray(da, Xlocal, &x); CE;
+	ierr = DAVecRestoreArray(da, B     , &b); CE;
 
 	ierr = DARestoreLocalVector(da, &Xlocal); CE;
 
@@ -269,13 +269,13 @@ int PoiSolve(Poi poi, Vec B, Vec X)
 	ierr = PetscMalloc(sizeof(*w) * 
 			   (4*(MY+1) + (13+(int)(log2(MY+1)))*(MX+1)), &w); CE;
 
-	ierr = DAVecGetArray(da, B, (void *) &b); CE;
-	ierr = DAVecGetArray(da, X, (void *) &x); CE;
+	ierr = DAVecGetArray(da, B, &b); CE;
+	ierr = DAVecGetArray(da, X, &x); CE;
 
 	// U / phi
 
 	lambda = 0;
-	DA_for_each_point(da, i, j) {
+	DA_for_each_point_2d(da, i, j) {
 		f[i + j * MXS] = b[j][i].U;
 	}
 	for (j = 0; j < MY; j++) {
@@ -288,14 +288,14 @@ int PoiSolve(Poi poi, Vec B, Vec X)
 		&xb[1], &xe[1], &MY, &nbdcnd, NULL, NULL,
 		&lambda, f, &MXS, &__pertrb[0], &ierr, w); CE;
 	
-	DA_for_each_point(da, i, j) {
+	DA_for_each_point_2d(da, i, j) {
 		x[j][i].phi = f[i + j * MXS];
 	}
 
 	// F / psi
 
 	lambda = -1./de2;
-	DA_for_each_point(da, i, j) {
+	DA_for_each_point_2d(da, i, j) {
 		f[i + j * MXS] = lambda * b[j][i].F;
 	}
 	for (j = 0; j < MY; j++) {
@@ -308,12 +308,12 @@ int PoiSolve(Poi poi, Vec B, Vec X)
 		&xb[1], &xe[1], &MY, &nbdcnd, NULL, NULL,
 		&lambda, f, &MXS, &__pertrb[1], &ierr, w); CE;
 	
-	DA_for_each_point(da, i, j) {
+	DA_for_each_point_2d(da, i, j) {
 		x[j][i].psi = f[i + j * MXS];
 	}
 
-	ierr = DAVecRestoreArray(da, B, (void *) &b); CE;
-	ierr = DAVecRestoreArray(da, X, (void *) &x); CE;
+	ierr = DAVecRestoreArray(da, B, &b); CE;
+	ierr = DAVecRestoreArray(da, X, &x); CE;
 
 	ierr = PetscFree(f); CE;
 	ierr = PetscFree(w); CE;
@@ -355,7 +355,7 @@ int ComputeJacobian(DMMG dmmg, Mat J)
 	HxdHy = Hx / Hy;    HydHx = Hy / Hx;
 	HxHy = Hx * Hy;     Hdiag = -2.*(HxdHy + HydHx);
 
-	DA_for_each_point(da, i, j) {
+	DA_for_each_point_2d(da, i, j) {
 		row.i = i; row.j = j; row.c = 0;
 		v[0] = HydHx;          col[0].i = i+1; col[0].j = j;   col[0].c = 0;
 		v[1] = HydHx;          col[1].i = i-1; col[1].j = j;   col[1].c = 0;
@@ -395,7 +395,7 @@ int AttachNullSpace(PC pc, Vec model)
 	ierr  = VecGetOwnershipRange(V, &start, &end); CE;
 
 	ierr  = VecGetArray(V, (PetscScalar **) &v); CE;
-	for (i = start/w; i < end/w; i++) {
+	for (i = 0; i < (end - start)/w; i++) {
 		v[i].U = scale;
 		v[i].F = 0.;
 	}
@@ -553,8 +553,8 @@ int IniPorcelli(MRC mrc)
 	ierr = DAGetInfo(da, 0, &mx ,&my, 0, 0, 0, 0, 0, 0, 0, 0); CE;
 
 	ierr = DAGetGlobalVector(da, &X); CE;
-	ierr = DAVecGetArray(da, X, (void **)&v); CE;
-	DA_for_each_point(da, i, j) {
+	ierr = DAVecGetArray(da, X, &v); CE;
+	DA_for_each_point_2d(da, i, j) {
 		x = mrc->Sx + mrc->Lx*i/mx;
 		y = mrc->Sy + mrc->Ly*j/my;
 		
@@ -573,7 +573,7 @@ int IniPorcelli(MRC mrc)
 		v[j][i].psi = cos(x);
 #endif
 	}
-	ierr = DAVecRestoreArray(da, X, (void **)&v); CE;
+	ierr = DAVecRestoreArray(da, X, &v); CE;
 
 	ierr = PoiCalcRhs(mrc->poi, X, mrc->b); CE;
 	ierr = VecSet(&zero, X);
@@ -681,6 +681,7 @@ int MRCDestroy(MRC mrc)
 int MRCSpo1Output(MRC mrc, Vec X, FILE *spo)
 {
 	int ierr, mx, my, rank, i, j, tag, xs, ys, xm, ym;
+	Vec Xlocal;
 	DA da = mrc->da;
 	Pot **p;
 	PetscReal values[4];
@@ -697,25 +698,30 @@ int MRCSpo1Output(MRC mrc, Vec X, FILE *spo)
 	d2Hx = .5 / Hx;     d2Hy = .5 / Hy;
 	dHx2 = 1./ (Hx*Hx); dHy2 = 1./ (Hy*Hy);
 
+	ierr = DAGetLocalVector(da, &Xlocal); CE;
+	ierr = DAGlobalToLocalBegin(da, X, INSERT_VALUES, Xlocal); CE;
+	ierr = DAGlobalToLocalEnd  (da, X, INSERT_VALUES, Xlocal); CE;
+
 	ierr = MPI_Comm_rank(da->comm, &rank); CE;
 	ierr = PetscCommGetNewTag(da->comm, &tag); CE;
 	ierr = DAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0); CE;
 	if (i >= xs && i < xs + xm &&
 	    j >= ys && j < ys + ym) {
-		ierr = DAVecGetArray(da, X, (void **)&p); CE;
+		ierr = DAVecGetArray(da, Xlocal, &p); CE;
 		values[0] = D_x2(p, psi);
 		values[1] = D_y2(p, psi);
 		values[2] = D_xy(p, phi);
 		values[3] = p[j][i].psi;
-		ierr = DAVecRestoreArray(da, X, (void **)&p); CE;
+		ierr = DAVecRestoreArray(da, Xlocal, &p); CE;
 		if (rank != 0) {
 			ierr = MPI_Send(values, 4, MPIU_REAL, 0, tag, da->comm); CE;
 		}
 	} else {
 		if (rank == 0) {
-			ierr = MPI_Recv(values, 4, MPIU_REAL, 0, tag, da->comm, &status); CE;
+			ierr = MPI_Recv(values, 4, MPIU_REAL, MPI_ANY_SOURCE, tag, da->comm, &status); CE;
 		}
 	}
+	ierr = DARestoreLocalVector(da, &Xlocal); CE;
 	ierr = PetscFPrintf(da->comm, spo, "\t%g\t%g\t%g\t%g", 
 			    values[0], values[1], values[2], values[3]); CE;
 	PetscFunctionReturn(0);
