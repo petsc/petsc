@@ -46,4 +46,5 @@ def petsc_configure(configure_options):
 
 if __name__ == '__main__':
   if petsc_configure([]):
+    print 'Updated the source code, rerunning configure'
     petsc_configure([])
