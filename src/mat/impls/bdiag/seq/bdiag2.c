@@ -890,7 +890,7 @@ int MatMultTransposeAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_SeqBDiag_N"
 int MatRelax_SeqBDiag_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,
-                             PetscReal shift,int its,Vec xx)
+                             PetscReal shift,int its,int lits,Vec xx)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscScalar  *x,*b,*xb,*dd,*dv,dval,sum;
@@ -1058,7 +1058,7 @@ int MatRelax_SeqBDiag_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_SeqBDiag_1"
 int MatRelax_SeqBDiag_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,
-                               PetscReal shift,int its,Vec xx)
+                               PetscReal shift,int its,int lits,Vec xx)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscScalar  *x,*b,*xb,*dd,dval,sum;

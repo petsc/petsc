@@ -20,14 +20,14 @@ typedef struct {
 #define __FUNCT__ "PCMult_Eisenstat"
 static int PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 {
-  int          ierr;
+  int          ierr,lits=0;
   PC           pc;
   PC_Eisenstat *eis;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&pc);CHKERRQ(ierr);
   eis = (PC_Eisenstat*)pc->data;
-  ierr = MatRelax(eis->A,b,eis->omega,SOR_EISENSTAT,0.0,1,x);CHKERRQ(ierr);
+  ierr = MatRelax(eis->A,b,eis->omega,SOR_EISENSTAT,0.0,1,lits,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -70,12 +70,12 @@ static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
   /* if nonzero initial guess, modify x */
   ierr = KSPGetInitialGuessNonzero(ksp,&nonzero);CHKERRQ(ierr);
   if (nonzero) {
-    ierr = MatRelax(eis->A,x,eis->omega,SOR_APPLY_UPPER,0.0,1,x);CHKERRQ(ierr);
+    ierr = MatRelax(eis->A,x,eis->omega,SOR_APPLY_UPPER,0.0,1,1,x);CHKERRQ(ierr);
   }
 
   /* modify b by (L + D)^{-1} */
   ierr =   MatRelax(eis->A,b,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
-                                        SOR_FORWARD_SWEEP),0.0,1,b);CHKERRQ(ierr);  
+                                        SOR_FORWARD_SWEEP),0.0,1,1,b);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -88,7 +88,7 @@ static int PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 
   PetscFunctionBegin;
   ierr =   MatRelax(eis->A,x,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
-                                 SOR_BACKWARD_SWEEP),0.0,1,x);CHKERRQ(ierr);
+                                 SOR_BACKWARD_SWEEP),0.0,1,0,x);CHKERRQ(ierr);
   pc->mat = eis->A;
   /* get back true b */
   ierr = VecCopy(eis->b,b);CHKERRQ(ierr);

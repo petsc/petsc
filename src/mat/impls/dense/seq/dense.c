@@ -345,7 +345,7 @@ int MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_SeqDense"
 int MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,
-                          PetscReal shift,int its,Vec xx)
+                          PetscReal shift,int its,int lits,Vec xx)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   PetscScalar  *x,*b,*v = mat->v,zero = 0.0,xt;

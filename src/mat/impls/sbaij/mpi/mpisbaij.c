@@ -18,7 +18,7 @@ extern int MatPrintHelp_SeqSBAIJ(Mat);
 extern int MatZeroRows_SeqSBAIJ(Mat,IS,PetscScalar*);
 extern int MatZeroRows_SeqBAIJ(Mat,IS,PetscScalar *);
 extern int MatGetRowMax_MPISBAIJ(Mat,Vec);
-extern int MatRelax_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
+extern int MatRelax_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
 
 /*  UGLY, ugly, ugly
    When MatScalar == PetscScalar the function MatSetValuesBlocked_MPIBAIJ_MatScalar() does 
@@ -2336,7 +2336,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatRelax_MPISBAIJ"
-int MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
+int MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
 {
   Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
   int            ierr;
@@ -2345,40 +2345,43 @@ int MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal
   MatSORType     lflg=SOR_LOCAL_SYMMETRIC_SWEEP;
  
   PetscFunctionBegin;
-  
+
   if (mat->bs > 1)
     SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
 
-  if ( flag & SOR_ZERO_INITIAL_GUESS ) {
-    ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,1,xx);CHKERRQ(ierr);
-    its--; 
-  }
+  if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
+    if ( flag & SOR_ZERO_INITIAL_GUESS ) {
+      ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,lits,PETSC_NULL,xx);CHKERRQ(ierr);
+      its--; 
+    }
 
-  ierr = VecDuplicate(mat->lvec,&lvec1);CHKERRQ(ierr);
-  ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
-  while (its--){
-    ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr); 
+    ierr = VecDuplicate(mat->lvec,&lvec1);CHKERRQ(ierr);
+    ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
+    while (its--){
+      ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr); 
    
-    /* lower diagonal part: bb1 = bb - B^T*xx */
-    ierr = (*mat->B->ops->multtranspose)(mat->B,xx,lvec1);CHKERRQ(ierr);
-    ierr = VecScale(&mone,lvec1);CHKERRQ(ierr); 
+      /* lower diagonal part: bb1 = bb - B^T*xx */
+      ierr = (*mat->B->ops->multtranspose)(mat->B,xx,lvec1);CHKERRQ(ierr);
+      ierr = VecScale(&mone,lvec1);CHKERRQ(ierr); 
 
-    ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr); 
-    ierr = VecCopy(bb,bb1);CHKERRQ(ierr);
-    ierr = VecScatterBegin(lvec1,bb1,ADD_VALUES,SCATTER_REVERSE,mat->Mvctx);CHKERRQ(ierr);
+      ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr); 
+      ierr = VecCopy(bb,bb1);CHKERRQ(ierr);
+      ierr = VecScatterBegin(lvec1,bb1,ADD_VALUES,SCATTER_REVERSE,mat->Mvctx);CHKERRQ(ierr);
 
-    /* upper diagonal part: bb1 = bb1 - B*x */ 
-    ierr = VecScale(&mone,mat->lvec);CHKERRQ(ierr);
-    ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb1,bb1);CHKERRQ(ierr);
+      /* upper diagonal part: bb1 = bb1 - B*x */ 
+      ierr = VecScale(&mone,mat->lvec);CHKERRQ(ierr);
+      ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb1,bb1);CHKERRQ(ierr);
 
-    ierr = VecScatterEnd(lvec1,bb1,ADD_VALUES,SCATTER_REVERSE,mat->Mvctx);CHKERRQ(ierr); 
+      ierr = VecScatterEnd(lvec1,bb1,ADD_VALUES,SCATTER_REVERSE,mat->Mvctx);CHKERRQ(ierr); 
   
-    /* diagonal part */
-    ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,lflg,fshift,1,xx);CHKERRQ(ierr);
- 
+      /* diagonal sweep */
+      ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,(MatSORType)SOR_SYMMETRIC_SWEEP,fshift,lits,PETSC_NULL,xx);CHKERRQ(ierr); 
+    }
+    ierr = VecDestroy(lvec1);CHKERRQ(ierr);
+    ierr = VecDestroy(bb1);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_ERR_SUP,"MatSORType is not supported for SBAIJ matrix format");
   }
-  ierr = VecDestroy(lvec1);CHKERRQ(ierr);
-  ierr = VecDestroy(bb1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -7,6 +7,7 @@
 
 typedef struct {
   int        its;        /* inner iterations, number of sweeps */
+  int        lits;       /* local inner iterations, number of sweeps applied by the local matrix mat->A */
   MatSORType sym;        /* forward, reverse, symmetric etc. */
   PetscReal  omega;
 } PC_SOR;
@@ -31,7 +32,7 @@ static int PCApply_SOR(PC pc,Vec x,Vec y)
   int    ierr,flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
 
   PetscFunctionBegin;
-  ierr = MatRelax(pc->pmat,x,jac->omega,(MatSORType)flag,0.0,jac->its,y);CHKERRQ(ierr);
+  ierr = MatRelax(pc->pmat,x,jac->omega,(MatSORType)flag,0.0,jac->its,jac->lits,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -40,11 +41,11 @@ static int PCApply_SOR(PC pc,Vec x,Vec y)
 static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
-  int    ierr;
+  int    ierr,lits=0;
 
   PetscFunctionBegin;
   PetscLogInfo(pc,"PCApplyRichardson_SOR: Warning, convergence critera ignored, using %d iterations\n",its);
-  ierr = MatRelax(pc->mat,b,jac->omega,(MatSORType)jac->sym,0.0,its,y);CHKERRQ(ierr);
+  ierr = MatRelax(pc->mat,b,jac->omega,(MatSORType)jac->sym,0.0,its,lits,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -60,6 +61,7 @@ static int PCSetFromOptions_SOR(PC pc)
   ierr = PetscOptionsHead("(S)SOR options");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_sor_omega","relaxation factor (0 < omega < 2)","PCSORSetOmega",jac->omega,&jac->omega,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_sor_its","number of inner SOR iterations","PCSORSetIterations",jac->its,&jac->its,0);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_sor_lits","number of local inner SOR iterations","PCSORSetIterations",jac->lits,&jac->lits,0);CHKERRQ(ierr);
     ierr = PetscOptionsLogicalGroupBegin("-pc_sor_symmetric","SSOR, not SOR","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);CHKERRQ(ierr);}
     ierr = PetscOptionsLogicalGroup("-pc_sor_backward","use backward sweep instead of forward","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
@@ -141,13 +143,14 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSORSetIterations_SOR"
-int PCSORSetIterations_SOR(PC pc,int its)
+int PCSORSetIterations_SOR(PC pc,int its,int lits)
 {
   PC_SOR *jac;
 
   PetscFunctionBegin;
   jac      = (PC_SOR*)pc->data; 
   jac->its = its;
+  jac->lits = lits;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -259,15 +262,15 @@ int PCSORSetOmega(PC pc,PetscReal omega)
 
 .seealso: PCSORSetOmega(), PCSORSetSymmetric()
 @*/
-int PCSORSetIterations(PC pc,int its)
+int PCSORSetIterations(PC pc,int its,int lits)
 {
-  int ierr,(*f)(PC,int);
+  int ierr,(*f)(PC,int,int);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetIterations_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(pc,its);CHKERRQ(ierr);
+    ierr = (*f)(pc,its,lits);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -294,6 +297,7 @@ int PCCreate_SOR(PC pc)
   jac->sym           = SOR_FORWARD_SWEEP;
   jac->omega         = 1.0;
   jac->its           = 1;
+  jac->lits          =1;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSORSetSymmetric_C","PCSORSetSymmetric_SOR",
                     PCSORSetSymmetric_SOR);CHKERRQ(ierr);

@@ -1004,7 +1004,7 @@ int MatMissingDiagonal_SeqAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_SeqAIJ"
-int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
+int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   PetscScalar  *x,*b,*bs, d,*xs,sum,*v = a->a,*t=0,scale,*ts,*xb,*idiag=0;

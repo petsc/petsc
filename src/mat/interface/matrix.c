@@ -2240,6 +2240,7 @@ int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 .  flag - flag indicating the type of SOR (see below)
 .  shift -  diagonal shift
 -  its - the number of iterations
+-  lits - the number of local iterations 
 
    Output Parameters:
 .  x - the solution (can contain an initial guess)
@@ -2280,7 +2281,7 @@ int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
    Concepts: matrices^Gauss-Seidel
 
 @*/
-int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int its,Vec x)
+int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int its,int lits,Vec x)
 {
   int ierr;
 
@@ -2300,7 +2301,7 @@ int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int i
   if (mat->m != b->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %d %d",mat->m,b->n);
 
   ierr = PetscLogEventBegin(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
-  ierr =(*mat->ops->relax)(mat,b,omega,flag,shift,its,x);CHKERRQ(ierr);
+  ierr =(*mat->ops->relax)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
