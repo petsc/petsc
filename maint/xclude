@@ -1,3 +1,10 @@
+petsc/src/ec/RCS
+petsc/src/ec/interface/RCS
+petsc/src/ec/impls/RCS
+petsc/src/ec/impls/lapack/RCS
+petsc/src/ec/examples/RCS
+petsc/src/ec/examples/tutorials/RCS
+petsc/src/ec/examples/tests/RCS
 petsc/bin/petscrun
 petsc/src/gvec/RCS
 petsc/src/gvec/interface/RCS
