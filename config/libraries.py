@@ -96,7 +96,11 @@ class Configure(config.base.Configure):
 
   def checkMath(self):
     '''Check for sin() in libm, the math library'''
-    self.check('m', 'sin', prototype = 'double sin(double);', call = 'sin(1.0);\n')
+    #This check is not necessary and breaks on some win32fe compilers.
+    wfe = self.framework.argDB['CC'].split()[0]
+    import os
+    if not (os.path.splitext(os.path.basename(wfe))[0] == 'win32fe'):
+      self.check('m', 'sin', prototype = 'double sin(double);', call = 'sin(1.0);\n')
     return
 
   def configure(self):
