@@ -31,6 +31,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *path)
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
+  ierr = PetscLogClassRegister(&PETSC_OBJECT_COOKIE, "Object");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&PETSC_VIEWER_COOKIE, "Viewer");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&PETSC_DRAW_COOKIE,   "Draw");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&DRAWAXIS_COOKIE,     "Axis");CHKERRQ(ierr);

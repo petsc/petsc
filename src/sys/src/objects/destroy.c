@@ -4,9 +4,16 @@
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
+PetscCookie PETSC_OBJECT_COOKIE = 0;
+
 struct _p_Object {
   PETSCHEADER(int);
 };
+
+PetscErrorCode PetscObjectDestroy_Private(PetscObject obj)
+{
+  return 0;
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectCreate"
@@ -36,7 +43,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
   PetscFunctionBegin;
   PetscValidPointer(obj,2);
 
-  ierr = PetscHeaderCreate(o,_p_Object,PetscInt,-1,0,"PetscObject",comm,PetscObjectDestroy,0);CHKERRQ(ierr);
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+  ierr = PetscHeaderCreate(o,_p_PetscObject,-1,PETSC_OBJECT_COOKIE,0,"PetscObject",comm,PetscObjectDestroy_Private,0);CHKERRQ(ierr);
   /* records not yet defined in PetscObject 
   o->data        = 0;
   o->setupcalled = 0;

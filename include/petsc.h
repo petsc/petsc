@@ -956,6 +956,8 @@ typedef struct _PetscFList *PetscFList;
 #include "petscviewer.h"
 #include "petscoptions.h"
 
+extern PETSC_DLLEXPORT PetscCookie PETSC_OBJECT_COOKIE;
+
 /*
    Routines that get memory usage information from the OS
 */
