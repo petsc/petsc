@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.76 1996/07/13 15:14:39 curfman Exp bsmith $ */
+/* $Id: plog.h,v 1.77 1996/07/28 16:07:13 bsmith Exp bsmith $ */
 
 /*
     Defines high level logging in PETSc.
@@ -203,7 +203,11 @@ extern int PLogDump(char*);
 extern int PLogEventRegister(int*,char*,char*);
 extern double PetscGetFlops();
 
-#if !defined(PETSC_USING_MPIUNI)
+/*
+     This does not use for MPI-Uni because our src/mpiuni/mpi.h file
+   uses macros to defined the MPI operations. 
+*/
+#if !defined(PETSC_USING_MPIUNI) && !defined(PARCH_hpux)
 /*
    Logging of MPI activities
 */
@@ -214,37 +218,61 @@ extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
 #define TypeSize(buff,count,type) \
 { \
   if (type == MPIU_SCALAR) { \
-    buff += (double) count*sizeof(Scalar); \
+    buff += (double) ((count)*sizeof(Scalar)); \
   } else if (type == MPI_INT) { \
-    buff += (double) count*sizeof(int);  \
+    buff += (double) ((count)*sizeof(int));  \
   } else { \
-    int _size; MPI_Type_size(type,&_size); buff += (double) count*_size; \
+    int _size; MPI_Type_size(type,&_size); buff += (double) ((count)*_size); \
   } \
 }
 
+#if defined(PARCH_hpux)
+/*
+    This is a tacky fix. The CPP on HP-UX scans the macros twice 
+  thus it double counted the send/receive operations.
+*/ 
 #define MPI_Irecv( buf, count,  datatype, source, tag, comm, request) \
 { \
-  MPI_Irecv( buf, count,  datatype, source, tag, comm, request); \
-  irecv_ct++; TypeSize(irecv_len,count,datatype);  \
+  MPI_Irecv( buf, count,  datatype, source, tag, comm, request);\
+  irecv_ct += .5; TypeSize(irecv_len,.5*count,datatype); \
 }
-
+#define MPI_Isend( buf, count,  datatype, dest, tag, comm, request) \
+{ \
+  MPI_Isend( buf, count,  datatype, dest, tag, comm, request); \
+  isend_ct += .5;   TypeSize(isend_len,.5*count,datatype); \
+}
+#define MPI_Recv( buf, count,  datatype, source, tag, comm, status) \
+{ \
+  MPI_Recv( buf, count,  datatype, source, tag, comm, status); \
+  recv_ct += .5; TypeSize(recv_len,.5*count,datatype); \
+}
+#define MPI_Send( buf, count,  datatype, dest, tag, comm) \
+{ \
+  MPI_Send( buf, count,  datatype, dest, tag, comm); \
+  send_ct += .5;  TypeSize(send_len,.5*count,datatype); \
+}
+#else
+#define MPI_Irecv( buf, count,  datatype, source, tag, comm, request) \
+{ \
+  MPI_Irecv( buf, count,  datatype, source, tag, comm, request);\
+  irecv_ct++; TypeSize(irecv_len,count,datatype); \
+}
+#define MPI_Isend( buf, count,  datatype, dest, tag, comm, request) \
+{ \
+  MPI_Isend( buf, count,  datatype, dest, tag, comm, request); \
+  isend_ct++;   TypeSize(isend_len,count,datatype); \
+}
 #define MPI_Recv( buf, count,  datatype, source, tag, comm, status) \
 { \
   MPI_Recv( buf, count,  datatype, source, tag, comm, status); \
   recv_ct++; TypeSize(recv_len,count,datatype); \
 }
-
-#define MPI_Isend( buf, count,  datatype, dest, tag, comm, request) \
-{ \
-  MPI_Isend( buf, count,  datatype, dest, tag, comm, request); \
-  isend_ct++;  TypeSize(isend_len,count,datatype); \
-}
-
 #define MPI_Send( buf, count,  datatype, dest, tag, comm) \
 { \
   MPI_Send( buf, count,  datatype, dest, tag, comm); \
   send_ct++;  TypeSize(send_len,count,datatype); \
 }
+#endif
 
 #define MPI_Wait(request, status) \
 ( \
@@ -254,13 +282,13 @@ extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
 
 #define MPI_Waitany(a, b, c, d) \
 ( \
-  wait_any_ct++,sum_of_waits_ct++,  \
+  wait_any_ct++, sum_of_waits_ct++,  \
   MPI_Waitany(a, b, c, d)\
 )
 
 #define MPI_Waitall(count, array_of_requests, array_of_statuses) \
 ( \
-  wait_all_ct++, sum_of_waits_ct += (double) count,\
+  wait_all_ct++, sum_of_waits_ct += (double) (count),\
   MPI_Waitall(count, array_of_requests, array_of_statuses) \
 )
 
