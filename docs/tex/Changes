@@ -27,6 +27,9 @@ add to it).
    Added  VIEWER_FORMAT_ASCII_INDEX which causes 
    the index for each vector entry to be printed with the vector values
 
+   Added two new vector scatter options; -vecscatter_merge and -vecscatter_ssend
+   this may improve performance a great deal when using MPICH for MPI.
+
   MAT
 
    Added MatSeqAIJSetColumnIndices() and MatSeqBAIJSetColumnIndices().

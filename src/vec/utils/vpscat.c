@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.104 1998/06/14 15:37:18 balay Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.105 1998/06/19 15:33:45 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -565,9 +565,19 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
       out->postrecvs               = 0;
       out_to->use_readyreceiver    = 0;
       out_from->use_readyreceiver  = 0;
+      flg                          = 0;
+      ierr                         = OptionsHasName(0,"-vecscatter_ssend",&flg); CHKERRQ(ierr);
+      if (flg) {
+        PLogInfo(0,"VecScatterCopy_PtoP_X:Using VecScatter Ssend mode\n");
+      }
       for ( i=0; i<out_to->n; i++ ) {
-        ierr = MPI_Send_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,
-                             comm,swaits+i);CHKERRQ(ierr);
+        if (!flg) {
+          ierr = MPI_Send_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,
+                               comm,swaits+i);CHKERRQ(ierr);
+        } else {
+          ierr = MPI_Ssend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,
+                               comm,swaits+i);CHKERRQ(ierr);
+        }
       } 
     }
     /* Register receives for scatter reverse */
@@ -1856,7 +1866,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   from->type = VEC_SCATTER_MPI_GENERAL;
 
   if (bs > 1) {
-    int         flg;
+    int         flg,flgs = 0;
     int         *sstarts = to->starts,   *rstarts = from->starts;
     int         *sprocs  = to->procs,    *rprocs  = from->procs;
     MPI_Request *swaits  = to->requests, *rwaits  = from->requests;
@@ -1880,11 +1890,20 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
     PLogObjectMemory(ctx,(nsends+nrecvs+2)*sizeof(MPI_Request));
 
     /* Register the receives that you will use later (sends for scatter reverse) */
+    ierr = OptionsHasName(PETSC_NULL,"-vecscatter_ssend",&flgs); CHKERRQ(ierr);
+    if (flgs) {
+      PLogInfo(0,"VecScatterCreate_PtoS:Using VecScatter Ssend mode\n");
+    }
     for ( i=0; i<from->n; i++ ) {
       ierr = MPI_Recv_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tag,
                            comm,rwaits+i);CHKERRQ(ierr);
-      ierr = MPI_Send_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tag,
-                           comm,rev_swaits+i);CHKERRQ(ierr);
+      if (!flgs) {
+        ierr = MPI_Send_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tag,
+                             comm,rev_swaits+i);CHKERRQ(ierr);
+      } else {
+        ierr = MPI_Ssend_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tag,
+                              comm,rev_swaits+i);CHKERRQ(ierr);
+      }
     }
 
     ierr = OptionsHasName(0,"-vecscatter_rr",&flg); CHKERRQ(ierr);
@@ -1902,8 +1921,13 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
       to->use_readyreceiver    = 0;
       from->use_readyreceiver  = 0;
       for ( i=0; i<to->n; i++ ) {
-        ierr = MPI_Send_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,
-                             comm,swaits+i);CHKERRQ(ierr);
+        if (!flgs) {
+          ierr = MPI_Send_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,
+                               comm,swaits+i);CHKERRQ(ierr);
+	} else {
+          ierr = MPI_Ssend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,
+                               comm,swaits+i);CHKERRQ(ierr);
+        }
       } 
     }
     /* Register receives for scatter reverse */
