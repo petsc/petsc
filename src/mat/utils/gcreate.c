@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.88 1996/06/18 20:42:26 balay Exp balay $";
+static char vcid[] = "$Id: gcreate.c,v 1.89 1996/06/18 20:51:28 balay Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -27,7 +27,7 @@ static char vcid[] = "$Id: gcreate.c,v 1.88 1996/06/18 20:42:26 balay Exp balay 
 
 int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 {
-  int  size,flg1,flg2,flg3,flg4,flg5,flg8,flg9,flg10,flg12,flg13,ierr,flg11,flg14;
+  int  size,flg1,flg2,flg3,flg4,flg5,flg8,flg9,flg10,flg12,flg13,ierr,flg11,flg14,flg15;
   char p[64];
 
   PetscStrcpy(p,"-");
@@ -38,6 +38,7 @@ int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
   if (flg1) {
     PetscPrintf(comm,"Matrix format options:\n");
     PetscPrintf(comm,"  %smat_aij, %smat_seqaij, %smat_mpiaij\n",p,p,p);
+    PetscPrintf(comm,"  %smat_baij, %smat_seqbaij, %smat_mpibaij\n",p,p,p);
     PetscPrintf(comm,"  %smat_dense, %smat_seqdense, %smat_mpidense\n",p,p,p);
     PetscPrintf(comm,"  %smat_mpirowbs, %smat_bdiag, %smat_seqbdiag, %smat_mpibdiag\n",p,p,p,p); 
   }
@@ -53,6 +54,7 @@ int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
   ierr = OptionsHasName(pre,"-mat_aij",&flg10); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_bdiag",&flg12); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_dense",&flg13); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_baij",&flg15); CHKERRQ(ierr);
   if (flg1) {
     *type = MATSEQDENSE;
     *set = 1;
@@ -81,26 +83,30 @@ int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
     *type = MATSEQAIJ;
     *set = 1;
   }
-  else if (flg10){
+  else if (flg10) {
     if (size == 1) *type = MATSEQAIJ;
     else *type = MATMPIAIJ;
     *set = 1;
   }  
-  else if (flg11){
+  else if (flg11) {
     *type = MATSEQBAIJ;
     *set = 1;
   }
-  else if (flg12){
+  else if (flg12) {
     if (size == 1) *type = MATSEQBDIAG;
     else *type = MATMPIBDIAG;
     *set = 1;
   }  
-  else if (flg13){
+  else if (flg13) {
     if (size == 1) *type = MATSEQDENSE;
     else *type = MATMPIDENSE;
     *set = 1;
   } 
-  else if (flg14){
+  else if (flg14) {
+    *type = MATMPIBAIJ;
+    *set = 1;
+  }  
+  else if (flg15) {
     if (size == 1) *type = MATSEQBAIJ;
     else *type = MATMPIBAIJ;
     *set = 1;
