@@ -60,8 +60,6 @@
 
 #define PETSC_HAVE_SYS_TIMES_H
 
-#define PETSC_PREFER_DCOPY_FOR_MEMCPY
-
 #define PETSC_HAVE_F90_H "f90impl/f90_solaris.h"
 #define PETSC_HAVE_F90_C "src/sys/src/f90/f90_solaris.c"
 
