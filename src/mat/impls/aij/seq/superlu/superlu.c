@@ -577,7 +577,6 @@ EXTERN_C_END
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SuperLU solvers.
   After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU).
-  This matrix type is only supported for double precision real.
 
   This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
   supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 

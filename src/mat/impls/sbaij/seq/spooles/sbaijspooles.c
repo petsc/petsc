@@ -140,7 +140,6 @@ EXTERN_C_END
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes Spooles solvers.
   After calling MatCreate(...,A), simply call MatSetType(A,MATSEQSBAIJSPOOLES).
-  This matrix type is only supported for double precision real.
 
   This matrix inherits from MATSEQSBAIJ.  As a result, MatSeqSBAIJSetPreallocation is 
   supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
@@ -192,7 +191,6 @@ EXTERN_C_END
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes Spooles solvers.
   After calling MatCreate(...,A), simply call MatSetType(A,MATSBAIJSPOOLES).
-  This matrix type is only supported for double precision real.
 
   This matrix inherits from MATSBAIJ.  As a result, MatSeqSBAIJSetPreallocation and MatMPISBAIJSetPreallocation are 
   supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
