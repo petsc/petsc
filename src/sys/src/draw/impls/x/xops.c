@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.62 1996/10/28 22:35:09 curfman Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.63 1996/10/28 22:35:17 curfman Exp curfman $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -374,8 +374,8 @@ extern int XiQuickWindowFromWindow(Draw_X*,char*,Window,int);
 
    Input Parameters:
 .  comm - the communicator that will share X-window
-.  display - the X display on which to open, or PETSC_NULL for the local machine
-.  title - the title to put in the title bar, or PETSC_NULL
+.  display - the X display on which to open, or null for the local machine
+.  title - the title to put in the title bar, or null for no title
 .  x, y - the screen coordinates of the upper left corner of window
 .  w, h - the screen width and height in pixels
 
@@ -394,6 +394,12 @@ $     default colormap and PETSc contour plots etc. look
 $     bad, this allows PETSc graphics to look good. You
 $     must put the mouse into the graphics window to see
 $     the correct colors.
+
+   Note for Fortran Programmers:
+   Whenever indicating null character data in a Fortran code,
+   PETSC_NULL_CHARACTER must be employed; using PETSC_NULL is not
+   correct for character data!  Thus, PETSC_NULL_CHARACTER can be
+   used for the display and title input parameters.
 
 .keywords: draw, open, x
 
@@ -493,8 +499,8 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
 
    Input Parameters:
 .  comm - communicator that will share window
-.  display - the X display on which to open, or PETSC_NULL for the local machine
-.  title - the title to put in the title bar
+.  display - the X display on which to open, or null for the local machine
+.  title - the title to put in the title bar, or null for no title
 .  x, y - the screen coordinates of the upper left corner of window
 .  w, h - the screen width and height in pixels
 
@@ -513,6 +519,12 @@ $  -display <name> : name of machine for the X display
 $  -draw_pause <pause> : sets time (in seconds) that the
 $     program pauses after DrawPause() has been called
 $     (0 is default, -1 implies until user input).
+
+   Note for Fortran Programmers:
+   Whenever indicating null character data in a Fortran code,
+   PETSC_NULL_CHARACTER must be employed; using PETSC_NULL is not
+   correct for character data!  Thus, PETSC_NULL_CHARACTER can be
+   used for the display and title input parameters.
 
 .keywords: draw, open, x, viewer
 
