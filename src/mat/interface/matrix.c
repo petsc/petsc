@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.242 1997/04/04 19:58:25 curfman Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.243 1997/04/17 20:46:29 balay Exp curfman $";
 #endif
 
 /*
@@ -1922,17 +1922,22 @@ $    MAT_NEW_NONZERO_LOCATION_ERROR - generate error for new matrix entry
    format).  
 
    MAT_NO_NEW_NONZERO_LOCATIONS indicates that any add or insertion 
-   that will generate a new entry in the nonzero structure is ignored.
-   Thus, if memory has not alredy been allocated for this particular 
+   that would generate a new entry in the nonzero structure is instead
+   ignored.  Thus, if memory has not alredy been allocated for this particular 
    data, then the insertion is ignored. For dense matrices, in which
    the entire array is allocated, no entries are ever ignored. 
 
-   MAT_NEW_NONZERO_LOCATION_ERROR indicates any add or insertion 
-   that will generate a new entry in the nonzero structure generates 
-   an error. (Currently supported for AIJ and BAIJ formats only).
+   MAT_NEW_NONZERO_LOCATION_ERROR indicates that any add or insertion 
+   that would generate a new entry in the nonzero structure instead produces 
+   an error. (Currently supported for AIJ and BAIJ formats only.)
    This is a useful flag when using SAME_NONZERO_PATTERN in calling
    SLESSetOperators() to ensure that the nonzero pattern truely does 
    remain unchanged.
+
+   MAT_NEW_NONZERO_ALLOCATION_ERROR indicates that any add or insertion 
+   that would generate a new entry that has not been preallocated will 
+   instead produce an error. (Currently supported for AIJ and BAIJ formats
+   only.) This is a useful flag when debugging matrix memory preallocation.
 
    MAT_IGNORE_OFF_PROC_ENTRIES indicates entries destined for 
    other processors should be dropped, rather than stashed.
