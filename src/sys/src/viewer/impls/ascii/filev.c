@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.82 1999/01/13 21:46:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.83 1999/01/31 16:04:38 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -187,7 +187,7 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
      ViewerSetFilename - Sets the name of the file the viewer uses.
 
     Collective on Viewer
