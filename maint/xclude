@@ -166,6 +166,7 @@ petsc/src/mat/impls/dense/mpi/mdnfact.c
 petsc/src/mat/impls/csn
 petsc/src/pc/RCS
 petsc/src/sles/RCS
+petsc/src/sles/ex13f.F
 petsc/src/stencil/RCS
 petsc/src/sys/RCS
 petsc/src/vec/RCS

@@ -1,8 +1,8 @@
 !
-!    "$Id: ex13f.F,v 1.8 1998/04/15 18:02:05 balay Exp balay $";
+!    "$Id: ex13f.F,v 1.9 1998/06/18 23:07:07 balay Exp balay $";
 !
 !
-!/*T
+!/*
 !   Concepts: SLES^Solving a system of linear equations (basic sequential example)
 !   Concepts: SLES^Laplacian, 2d
 !   Concepts: Laplacian, 2d
@@ -11,7 +11,7 @@
 !   Routines: KSPSetTolerances(); PCSetType();
 !   Routines: VecGetArray(); VecPlaceArray();
 !   Processors: 1
-!T*/
+!*/
 ! -----------------------------------------------------------------------
 
       program main
