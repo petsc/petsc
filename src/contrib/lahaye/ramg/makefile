@@ -1,7 +1,6 @@
-# $Id: makefile,v 1.2 2000/11/28 17:32:36 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 2001/01/15 21:49:37 bsmith Exp bsmith $ 
 
 #requirespackage 'PETSC_HAVE_RAMG'
-#requireslanguage CONLY
 #requiresscalar real 
 
 ALL: lib
