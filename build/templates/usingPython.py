@@ -1,6 +1,7 @@
 import base
 import build.buildGraph
 import build.processor
+import build.transform
 
 import os
 
@@ -81,13 +82,15 @@ class UsingPython (base.Base):
   def getServerCompileTarget(self, package):
     '''Python code does not need compilation, so only a C compiler is necessary for the skeleton.'''
     (target, compiler) = self.getGenericCompileTarget('server '+package)
-    archiveTag = self.language.lower()+' server library'
-    sharedTag  = self.language.lower()+' server shared library'
-    library    = self.getServerLibrary(package)
-    linker     = build.buildGraph.BuildGraph()
-    vertex     = build.processor.Archiver(self.sourceDB, 'ar', compiler.output.tag, archiveTag, isSetwise = 1, library = library)
-    linker.addVertex(vertex)
-    linker.addEdges(build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag, isSetwise = 1, library = library), [vertex])
+    archiveTag   = self.language.lower()+' server library'
+    sharedTag    = self.language.lower()+' server shared library'
+    library      = self.getServerLibrary(package)
+    linker       = build.buildGraph.BuildGraph()
+    archiver     = build.processor.Archiver(self.sourceDB, 'ar', compiler.output.tag, archiveTag, isSetwise = 1, library = library)
+    sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag, isSetwise = 1, library = library)
+    linker.addVertex(archiver)
+    linker.addEdges(sharedLinker, [archiver])
+    linker.addEdges(build.transform.Operation(lambda f,tag: os.remove(f), compiler.output.tag), [sharedLinker])
     target.appendGraph(linker)
     return target
 
@@ -97,8 +100,10 @@ class UsingPython (base.Base):
     archiveTag = self.language.lower()+' client library'
     sharedTag  = self.language.lower()+' client shared library'
     linker     = build.buildGraph.BuildGraph()
-    vertex     = build.processor.Archiver(self.sourceDB, 'ar', compiler.output.tag, archiveTag)
-    linker.addVertex(vertex)
-    linker.addEdges(build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag), [vertex])
+    archiver     = build.processor.Archiver(self.sourceDB, 'ar', compiler.output.tag, archiveTag)
+    sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag)
+    linker.addVertex(archiver)
+    linker.addEdges(sharedLinker, [archiver])
+    linker.addEdges(build.transform.Operation(lambda f,tag: os.remove(f), compiler.output.tag), [sharedLinker])
     target.appendGraph(linker)
     return target

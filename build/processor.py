@@ -13,11 +13,12 @@ class Processor(build.transform.Transform):
     self.sourceDB   = sourceDB
     self.processor  = processor
     self.inputTag   = inputTag
+    if not isinstance(self.inputTag, list): self.inputTag = [self.inputTag]
     self.output.tag = outputTag
     self.isSetwise  = isSetwise
     self.updateType = updateType
     if self.updateType == 'deferred':
-      self.deferredUpdates = build.fileset.FileSet(tag = 'update '+self.inputTag)
+      self.deferredUpdates = build.fileset.FileSet(tag = 'update '+self.inputTag[0])
       self.output.children.append(self.deferredUpdates)
     return
 
@@ -40,7 +41,7 @@ class Processor(build.transform.Transform):
   def checkTag(self, f, tag):
     '''- If the tag matches the transform tag, return True
        - Otherwise return False'''
-    if tag == self.inputTag:
+    if tag in self.inputTag:
       return 1
     return 0
 
@@ -96,8 +97,9 @@ class Processor(build.transform.Transform):
 class Compiler(Processor):
   '''A Compiler processes any FileSet with source, and outputs a FileSet of the intermediate object files.'''
   def __init__(self, sourceDB, compiler, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate'):
+    if not isinstance(inputTag, list): inputTag = [inputTag]
     if outputTag is None:
-      outputTag = inputTag+' object'
+      outputTag = inputTag[0]+' object'
     Processor.__init__(self, sourceDB, compiler, inputTag, outputTag, isSetwise, updateType)
     self.includeDirs = []
     self.defines     = []
@@ -155,7 +157,7 @@ class Compiler(Processor):
 
   def processFile(self, source, tag):
     '''Compile "source"'''
-    return self.processFileSet(build.fileset.FileSet([source]))
+    return self.processFileSet(build.fileset.FileSet([source], tag = tag))
 
   def processFileSet(self, set):
     '''Compile all the files in "set"'''
@@ -212,7 +214,7 @@ class Linker(Processor):
     '''Link "source"'''
     # Leave this set unchanged
     build.transform.Transform.handleFile(self, source, tag)
-    return self.processFileSet(build.fileset.FileSet([source]))
+    return self.processFileSet(build.fileset.FileSet([source], tag = tag))
 
   def processFileSet(self, set):
     '''Link all the files in "set"'''
@@ -229,13 +231,14 @@ class Linker(Processor):
 class Archiver(Linker):
   '''An Archiver processes any FileSet with intermediate object files, and outputs a FileSet of static libraries.'''
   def __init__(self, sourceDB, archiver, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = 'a'):
+    if not isinstance(inputTag, list): inputTag = [inputTag]
     if outputTag is None:
-      outputTag = inputTag+' library'
+      outputTag = inputTag[0]+' library'
     Linker.__init__(self, sourceDB, archiver, inputTag, outputTag, isSetwise, updateType, library, libExt)
     return
 
   def __str__(self):
-    return 'Archiver('+self.processor+') for '+self.inputTag
+    return 'Archiver('+self.processor+') for '+str(self.inputTag)
 
   def getOptimizationFlags(self, source):
     '''Return a list of the archiver optimization flags. The default is empty.'''
@@ -252,13 +255,14 @@ class Archiver(Linker):
 class SharedLinker(Linker):
   '''A SharedLinker processes any FileSet oflibraries, and outputs a FileSet of shared libraries.'''
   def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = 'so'):
+    if not isinstance(inputTag, list): inputTag = [inputTag]
     if outputTag is None:
-      outputTag = inputTag+' shared library'
+      outputTag = inputTag[0]+' shared library'
     Linker.__init__(self, sourceDB, linker, inputTag, outputTag, isSetwise, updateType, library, libExt)
     return
 
   def __str__(self):
-    return 'Shared linker('+self.processor+') for '+self.inputTag
+    return 'Shared linker('+self.processor+') for '+str(self.inputTag)
 
   def checkSharedLibrary(self, source):
     '''Check that a shared library can be opened, otherwise throw a RuntimeException'''

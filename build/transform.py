@@ -35,3 +35,24 @@ class Transform(base.Base):
     map(lambda f: self.handleFile(f, set.tag), set)
     map(self.handleFileSet, set.children)
     return self.output
+
+class Operation (Transform):
+  '''An Operation applys func to every file in sets matching inputTag'''
+  def __init__(self, func, inputTag = None):
+    Transform.__init__(self)
+    self.func     = func
+    self.inputTag = inputTag
+    if not isinstance(self.inputTag, list):
+      self.inputTag = [self.inputTag]
+    return
+
+  def __str__(self):
+    return 'Operation('+str(self.func)+') for '+str(self.inputTag)
+
+  def handleFile(self, f, tag):
+    '''Call the supplied function on f (also giving tag)
+       - If inputTag was specified, only handle files with this tag'''
+    if self.inputTag is None or tag in self.inputTag:
+      self.func(f, tag)
+      return self.output
+    return Transform.handleFile(self, f, tag)

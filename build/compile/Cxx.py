@@ -11,7 +11,7 @@ class Compiler (build.processor.Compiler):
     return
 
   def __str__(self):
-    return 'Compiler for '+self.language+'('+self.processor+')'
+    return self.language+' compiler('+self.processor+') for '+str(self.inputTag)
 
   def checkCompiler(self):
     '''Checks the compatibility of the supplied compiler'''

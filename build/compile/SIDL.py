@@ -26,7 +26,7 @@ class Compiler(build.processor.Processor):
      - Servers always compile a single SIDL file'''
   def __init__(self, sourceDB, language, outputDir, isServer, usingSIDL):
     SIDLConstants.checkLanguage(language)
-    build.processor.Processor.__init__(self, sourceDB, None, 'sidl', language.lower(), not isServer, 'deferred')
+    build.processor.Processor.__init__(self, sourceDB, None, ['sidl', 'old sidl'], language.lower(), not isServer, 'deferred')
     # Can't initialize processor in constructor since I have to wait for Base to set argDB
     self.processor = self.getCompilerDriver()
     self.language  = language
@@ -107,11 +107,11 @@ class Compiler(build.processor.Processor):
 
   def processFileShell(self, source, tag):
     '''Compile "source" using a shell command'''
-    return self.processFileSetShell(build.fileset.FileSet([source]))
+    return self.processFileSetShell(build.fileset.FileSet([source], tag = tag))
 
   def processFileSetShell(self, set):
     '''Compile all the files in "set" using a shell command'''
-    if not len(set): return self.output
+    if not len(set) or set.tag.startswith('old'): return self.output
     self.debugPrint('Compiling '+str(set)+' into a '+self.language+' '+self.action, 3, 'compile')
     command = ' '.join([self.getProcessor()]+self.getFlags(set)+set)
     output  = self.executeShellCommand(command, self.handleErrors)
@@ -120,14 +120,17 @@ class Compiler(build.processor.Processor):
 
   def processFileModule(self, source, tag):
     '''Compile "source" using a module directly'''
-    return self.processFileSetModule(build.fileset.FileSet([source]))
+    return self.processFileSetModule(build.fileset.FileSet([source], tag = tag))
 
   def processFileSetModule(self, set):
     '''Compile all the files in "set" using a module directly'''
     if not len(set): return self.output
-    self.debugPrint('Compiling '+str(set)+' into a '+self.language+' '+self.action, 3, 'compile')
     compiler = self.getCompilerModule().Scandal(self.getFlags(set)+set)
-    compiler.run()
+    if not set.tag.startswith('old'):
+      self.debugPrint('Compiling '+str(set)+' into a '+self.language+' '+self.action, 3, 'compile')
+      compiler.run()
+    self.debugPrint('Reporting on '+str(set)+' for a '+self.language+' '+self.action, 3, 'compile')
+    compiler.report()
     self.output.extend(compiler.outputFiles)
     return self.output
 
