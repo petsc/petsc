@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.83 1995/12/23 04:52:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.84 1996/01/01 01:03:06 bsmith Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -48,9 +48,7 @@ static int MatLUFactor_SeqDense(Mat A,IS row,IS col,double f)
 }
 static int MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,double f,Mat *fact)
 {
-  int ierr;
-  ierr = MatConvert(A,MATSAME,fact); CHKERRQ(ierr);
-  return 0;
+  return MatConvert(A,MATSAME,fact);
 }
 static int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
 {
@@ -58,9 +56,7 @@ static int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
 }
 static int MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,double f,Mat *fact)
 {
-  int ierr;
-  ierr = MatConvert(A,MATSAME,fact); CHKERRQ(ierr);
-  return 0;
+  return MatConvert(A,MATSAME,fact);
 }
 static int MatCholeskyFactorNumeric_SeqDense(Mat A,Mat *fact)
 {
@@ -86,10 +82,10 @@ static int MatCholeskyFactor_SeqDense(Mat A,IS perm,double f)
 static int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
-  int          one = 1, info;
+  int          one = 1, info, ierr;
   Scalar       *x, *y;
   
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr); ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
   PetscMemcpy(y,x,mat->m*sizeof(Scalar));
   if (A->factor == FACTOR_LU) {
     LAgetrs_( "N", &mat->m, &one, mat->v, &mat->m, mat->pivots,y, &mat->m, &info );
