@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: beuler.c,v 1.25 1997/07/09 20:58:28 balay Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.26 1997/08/22 15:16:44 bsmith Exp balay $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -78,7 +78,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
     /*
         evaluate matrix function 
     */
-    ierr = (*ts->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->funP);CHKERRQ(ierr);
+    ierr = (*ts->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
     if (!ts->Ashell) {
       ierr = MatScale(&mone,ts->A); CHKERRQ(ierr);
       ierr = MatShift(&mdt,ts->A); CHKERRQ(ierr);
