@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.14 1995/03/23 22:59:30 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.15 1995/03/23 23:12:56 curfman Exp $";
 #endif
 
 #include "mpiaij.h"
@@ -63,9 +63,12 @@ static int CreateColmap(Mat mat)
   Mat_AIJ    *B = (Mat_AIJ*) aij->B->data;
   int        n = B->n,i;
   aij->colmap = (int *) MALLOC( aij->N*sizeof(int) ); CHKPTR(aij->colmap);
+  aij->invcolmap = (int *) MALLOC( aij->N*sizeof(int) ); CHKPTR(aij->invcolmap);
   MEMSET(aij->colmap,0,aij->N*sizeof(int));
+  MEMSET(aij->invcolmap,0,aij->N*sizeof(int));
   for ( i=0; i<n; i++ ) {
     aij->colmap[aij->garray[i]] = i+1;
+    aij->invcolmap[i+1] = aij->garray[i];
   }
   return 0;
 }
@@ -919,12 +922,62 @@ static int MatRange_MPIAIJ(Mat matin,int *m,int *n)
   return 0;
 }
 
+static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
+{
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) matin->data;
+  Mat        A = aij->A, B = aij->B;
+  Mat_AIJ    *Ad = (Mat_AIJ *)(A->data), *Bd = (Mat_AIJ *)(B->data);
+  Scalar     *vworkA, *vworkB;
+  int        ierr, *cworkA, *cworkB;
+  int        nztot, nzA, nzB, i, rstart = aij->rstart, rend = aij->rend;
+  int        cstart = aij->cstart;
+
+  if (!aij->assembled) 
+    SETERR(1,"MatGetRow_MPIAIJ: Must assemble matrix first.");
+  if (row < rstart || row >= rend) 
+    SETERR(1,"MatGetRow_MPIAIJ: Currently you can get only the local rows.")
+
+  ierr = MatGetRow(A,row,&nzA,&cworkA,&vworkA);	CHKERR(ierr);
+  for (i=0; i<nzA; i++) cworkA[i] += cstart;
+  ierr = MatGetRow(B,row,&nzB,&cworkB,&vworkB);	CHKERR(ierr);
+  for (i=0; i<nzB; i++) {
+      printf("i=%d, invcolmap[i]=%d, cwork=%d, vwork=%g\n",
+               i, aij->invcolmap[i], cworkB[i], vworkB[i] );
+/*    cworkB[i] = aij->invcolmap[cworkB[i]]; */
+   }
+
+  if (nztot = nzA + nzB) {
+    *idx = (int *) MALLOC( (nztot)*sizeof(int) ); CHKPTR(*idx);
+    *v   = (Scalar *) MALLOC( (nztot)*sizeof(Scalar) ); CHKPTR(*v);
+    for ( i=0; i<nzA; i++ ) {
+      (*idx)[i] = cworkA[i];
+      (*v)[i] = vworkA[i];
+    }
+    for ( i=0; i<nzB; i++ ) {
+      (*idx)[i+nzA] = cworkB[i];
+      (*v)[i] = vworkB[i];
+    }
+  }
+  else {*idx = 0; *v=0;}
+  *nz = nztot;
+  ierr = MatRestoreRow(A,row,&nzA,&cworkA,&vworkA);	CHKERR(ierr);
+  ierr = MatRestoreRow(B,row,&nzB,&cworkB,&vworkB);	CHKERR(ierr);
+  return 0;
+}
+
+static int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
+{
+  if (*idx) FREE(*idx);
+  if (*v) FREE(*v);
+  return 0;
+}
+
 static int MatCopy_MPIAIJ(Mat,Mat *);
 extern int MatConvert_MPIAIJ(Mat,MATTYPE,Mat *);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatInsertValues_MPIAIJ,
-       0, 0,
+       MatGetRow_MPIAIJ,MatRestoreRow_MPIAIJ,
        MatMult_MPIAIJ,MatMultAdd_MPIAIJ,
        MatMultTrans_MPIAIJ,MatMultTransAdd_MPIAIJ,
        0,0,0,0,
