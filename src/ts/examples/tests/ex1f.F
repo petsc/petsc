@@ -21,6 +21,8 @@
 #include "finclude/petscdraw.h"
 #include "finclude/petscviewer.h"
 
+#include "ex1f.h"
+
       integer   linear_no_matrix,linear_no_time,linear
       integer   nonlinear_no_jacobian,nonlinear
       parameter (linear_no_matrix = 0,linear_no_time = 1,linear = 2)
@@ -40,18 +42,7 @@
       PetscViewer      viewer
       character*(60)   type,tsinfo
       character*(5)    etype
-      PetscInt         flg
-
-!
-!    Application context data, stored in common block
-!
-      Vec              localwork,csolution
-      DA               da
-      PetscViewer           viewer1,viewer2
-      PetscInt          M,i1,i60
-      double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1 ,viewer2,              &
-     &               h,nrm_2,nrm_max,nox,M
+      PetscInt         flg,i1,i60
 
       external Monitor,RHSFunctionHeat,RHSMatrixFree,Initial
       external RHSMatrixHeat,RHSJacobianHeat
@@ -283,6 +274,9 @@
 #include "finclude/petscsnes.h"
 #include "finclude/petscts.h"
 #include "finclude/petscviewer.h"
+
+#include "ex1f.h"
+
       Vec         global
       PetscObject    ctx
 
@@ -290,17 +284,6 @@
       PetscInt     i,mybase,myend
       PetscErrorCode ierr
       PetscOffset idx
-
-!
-!    Application context data, stored in common block
-!
-      Vec              localwork,csolution
-      DA               da
-      PetscViewer           viewer1,viewer2
-      PetscInt          M
-      double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1 ,viewer2,              &
-     &               h,nrm_2,nrm_max,nox,M
 
 !   determine starting point of each processor 
 
@@ -333,6 +316,9 @@
 #include "finclude/petscsnes.h"
 #include "finclude/petscts.h"
 #include "finclude/petscviewer.h"
+
+#include "ex1f.h"
+
       double precision  t
       Vec               sol
       integer           ctx
@@ -341,17 +327,6 @@
       PetscInt           i,mybase,myend
       PetscErrorCode ierr
       PetscOffset       idx
-
-!
-!    Application context data, stored in common block
-!
-      Vec               localwork,csolution
-      DA                da
-      PetscViewer            viewer1,viewer2
-      PetscInt           M
-      double precision  h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1 ,viewer2,              &
-     &               h,nrm_2,nrm_max,nox,M
 
 !   determine starting point of each processor 
 
@@ -385,6 +360,8 @@
 #include "finclude/petscts.h"
 #include "finclude/petscdraw.h"
 #include "finclude/petscviewer.h"
+
+#include "ex1f.h"
       TS                ts
       PetscInt           step
       integer ctx
@@ -392,17 +369,6 @@
       double precision  time,lnrm_2,lnrm_max
       Vec               global
       PetscScalar       mone
-
-!
-!    Application context data, stored in common block
-!
-      Vec              localwork,csolution
-      DA               da
-      PetscViewer           viewer1,viewer2
-      PetscInt          M
-      double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1 ,viewer2,              &
-     &               h,nrm_2,nrm_max,nox,M
 
       call VecView(global,viewer1,ierr) 
 
@@ -467,6 +433,8 @@
 #include "finclude/petscsnes.h"
 #include "finclude/petscts.h"
 #include "finclude/petscviewer.h"
+
+#include "ex1f.h"
       TS               ts
       double precision t
       Vec              globalin,globalout
@@ -476,16 +444,6 @@
       PetscInt i,localsize
       PetscOffset      ldx,cdx 
       PetscScalar      copyptr(1),localptr(1),sc
-!
-!    Application context data, stored in common block
-!
-      Vec              localwork,csolution
-      DA               da
-      PetscViewer           viewer1,viewer2
-      PetscInt          M
-      double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1 ,viewer2,              &
-     &               h,nrm_2,nrm_max,nox,M
 
 !  Extract local array  
 
@@ -534,6 +492,8 @@
 #include "finclude/petscsnes.h"
 #include "finclude/petscts.h"
 #include "finclude/petscviewer.h"
+
+#include "ex1f.h"
       Mat              AA,BB
       double precision t
       TS               ts
@@ -545,17 +505,7 @@
       PetscInt       i,mstart,mend,idx(3)
       PetscMPIInt rank,size
       PetscScalar      v(3),stwo,sone
-
-!
-!    Application context data, stored in common block
-!
-      Vec              localwork,csolution
-      DA               da
-      PetscViewer           viewer1,viewer2
-      PetscInt          M,i1,i3
-      double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1 ,viewer2,              &
-     &               h,nrm_2,nrm_max,nox,M
+      PetscInt          i1,i3
 
       i1 = 1
       i3 = 3
