@@ -41,6 +41,7 @@ esi::petsc::Vector<double,int>::~Vector()
 {
   int ierr;
   this->map->deleteReference();
+  ierr = VecDestroy(this->vec);
 }
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */

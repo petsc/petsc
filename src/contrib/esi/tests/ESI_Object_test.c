@@ -1,16 +1,16 @@
 
 /*
-       Tests the ESI_Object interface
+       Tests the esi::Object interface
 */
 #include "esi/ESI.h"
 #include "mpi.h"
 
 int ESI_Object_test(esi::Object *obj)
 {
-  MPI_Comm *comm;
-  int      rank;
-  esi_int  ierr;
-  void     **interface;
+  MPI_Comm       *comm;
+  int            rank;
+  esi::ErrorCode ierr;
+  void           **interface;
 
   /* test query interface */
   ierr = obj->getInterface("DummyInterface",static_cast<void *>(interface));

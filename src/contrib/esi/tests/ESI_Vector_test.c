@@ -6,19 +6,19 @@
 */
 #include "esi/ESI.h"
 
-extern int ESI_Map_test(esi::Map<int> *);
+extern int ESI_IndexSpace_test(esi::IndexSpace<int> *);
 
 int ESI_Vector_test(esi::Vector<double,int> *vector)
 {
   int            ierr;
-  esi::MapPartition<int>        *map;
+  esi::IndexSpace<int>        *map;
   esi::Vector<double,int>     *newvector;
   double         mdot[1],dot,norm1,norm2,norm2squared,norminfinity;
 
-  ierr = vector->getMapPartition(map);
-  if (ierr) {printf("error calling vector->getMapPartition()\n");return ierr;}
-  ierr = ESI_Map_test(map); 
-  if (ierr) {printf("error calling ESI_Map_test\n");return ierr;}
+  ierr = vector->getIndexSpace(map);
+  if (ierr) {printf("error calling vector->getIndexSpace()\n");return ierr;}
+  ierr = ESI_IndexSpace_test(map); 
+  if (ierr) {printf("error calling ESI_IndexSpace_test\n");return ierr;}
 
   ierr = vector->clone(newvector);
   if (ierr) {printf("error calling vector->clone() \n");return ierr;}
@@ -81,10 +81,4 @@ int ESI_Vector_test(esi::Vector<double,int> *vector)
 
   return 0;
 }
-
-
-
-
-
-
 

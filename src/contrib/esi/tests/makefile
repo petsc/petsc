@@ -1,13 +1,13 @@
-# $Id: makefile,v 1.4 2001/08/24 21:03:37 bsmith Exp bsmith $
+# $Id: makefile,v 1.5 2001/09/27 17:50:26 balay Exp balay $
 
 ALL: lib
 
-CFLAGS   = -I../include ${ESI_INCLUDE}
+CFLAGS   = ${ESI_INCLUDE} ${CCA_INCLUDE}
 #CFLAGS   = -I/home/bsmith/esi -features=castop,rtti
 FFLAGS   =
-SOURCEC  = ESI_Object_test.c ESI_Map_test.c ESI_MapPartition_test.c \
+SOURCEC  = ESI_Object_test.c ESI_IndexSpace_test.c \
            ESI_Vector_test.c ESI_Matrix_test.c
-OBJSC    = ESI_Object_test.o ESI_Map_test.o ESI_MapPartition_test.o \
+OBJSC    = ESI_Object_test.o ESI_IndexSpace_test.o \
            ESI_Vector_test.o ESI_Matrix_test.o
 LIBBASE  = libpetscesi
 MANSEC   = 1

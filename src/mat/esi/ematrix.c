@@ -1,7 +1,5 @@
-
-
 /*
-      Wrappers for PETSc_Matrix ESI implementation
+      Wrappers for esi::petsc::Matrix ESI implementation
 */
 
 #include "esi/petsc/matrix.h"
@@ -17,6 +15,7 @@ esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSp
   ierr = inrmap->getLocalSize(cn);
   ierr = inrmap->getGlobalSize(cN);
   ierr = MatCreate(*comm,rn,cn,rN,cN,&this->mat);if (ierr) return;
+  ierr = MatSetFromOptions(this->mat);
 
   this->rmap = inrmap;
   this->cmap = incmap;

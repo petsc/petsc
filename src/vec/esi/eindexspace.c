@@ -44,6 +44,7 @@ esi::petsc::IndexSpace<int>::IndexSpace(PetscMap sourceIndexSpace)
 esi::petsc::IndexSpace<int>::~IndexSpace()
 {
   int ierr;
+  ierr = PetscMapDestroy(this->map); 
 }
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */
@@ -91,8 +92,11 @@ esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalPartitionOffset(int &localof
 esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionOffsets(int *globaloffsets)
 { 
   int ierr,*iglobaloffsets;
+  int size;   
+
   ierr = PetscMapGetGlobalRange(this->map,&iglobaloffsets);
-  int size;  ierr = PetscMemcpy(globaloffsets,iglobaloffsets,(size+1)*sizeof(int));
+  ierr = MPI_Comm_size(this->comm,&size);
+  ierr = PetscMemcpy(globaloffsets,iglobaloffsets,(size+1)*sizeof(int));
   return ierr;
 }
 

@@ -1,7 +1,7 @@
 
-#include "esi/petsc/map.h"
+#include "esi/petsc/indexspace.h"
 
-int innerMap(esi::Map<int> *map)
+int innerIndexSpace(esi::IndexSpace<int> *map)
 {
   MPI_Comm        *comm;
   esi::ErrorCode  ierr;
@@ -13,8 +13,8 @@ int innerMap(esi::Map<int> *map)
   MPI_Comm_rank(*comm,&rank);
 
   int localsize,offset;
-  esi::MapPartition<int> *lmap;
-  ierr = map->getInterface("esi::MapPartition",static_cast<void*>(lmap));
+  esi::IndexSpace<int> *lmap;
+  ierr = map->getInterface("esi::IndexSpace",static_cast<void*>(lmap));
 
   lmap->getLocalSize(localsize);
   lmap->getLocalPartitionOffset(offset);
@@ -23,16 +23,16 @@ int innerMap(esi::Map<int> *map)
   return 0;
 }
 
-extern int ESI_MapPartition_test(esi::MapPartition<int>*);
+extern int ESI_IndexSpace_test(esi::IndexSpace<int>*);
 
 int main(int argc,char **args)
 {
   esi::ErrorCode ierr;
 
   PetscInitialize(&argc,&args,0,0);
-  esi::petsc::Map<int> *map = new esi::petsc::Map<int>(MPI_COMM_WORLD,5,PETSC_DECIDE);
+  esi::petsc::IndexSpace<int> *map = new esi::petsc::IndexSpace<int>(MPI_COMM_WORLD,5,PETSC_DECIDE);
 
-  ierr = ESI_MapPartition_test(map); if (ierr) return 1;
+  ierr = ESI_IndexSpace_test(map); if (ierr) return 1;
 
   MPI_Comm *comm;
   map->getRunTimeModel("MPI",static_cast<void*>(comm));
@@ -48,9 +48,9 @@ int main(int argc,char **args)
   PetscSynchronizedPrintf(*comm,"[%d]My start %d end %d\n",rank,offset,offset+localsize);
   PetscSynchronizedFlush(*comm);
 
-  esi::Map<int> *emap = (esi::Map<int> *)map;
+  esi::IndexSpace<int> *emap = map;
 
-  innerMap((esi::Map<int> *)map);
+  innerIndexSpace(map);
 
 
   int globalsize;
@@ -65,12 +65,11 @@ int main(int argc,char **args)
 
 
   delete emap;
-
   PetscMap pmap;
 
   ierr = PetscMapCreateMPI(MPI_COMM_WORLD,5,PETSC_DECIDE,&pmap);
 
-  esi::petsc::Map<int> *Pmap = new esi::petsc::Map<int>(pmap);
+  esi::petsc::IndexSpace<int> *Pmap = new esi::petsc::IndexSpace<int>(pmap);
 
   PetscMapDestroy(pmap);
 
