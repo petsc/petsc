@@ -306,7 +306,8 @@ static const char *convergedreasons[] = {"preconditioner is indefinite",        
 int KSPSolve(KSP ksp,Vec b,Vec x) 
 {
   int          ierr,rank;
-  PetscTruth   flag1,flag2,flg;
+  PetscTruth   flag1,flag2,viewed,flg;
+  char         view[10];
   PetscScalar  zero = 0.0;
 
   PetscFunctionBegin;
@@ -328,6 +329,14 @@ int KSPSolve(KSP ksp,Vec b,Vec x)
 
   /* reset the residual history list if requested */
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
+
+  ierr = PetscOptionsGetString(ksp->prefix,"-ksp_view",view,10,&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscStrcmp(view,"before",&viewed); CHKERRQ(ierr);
+    if (viewed){
+      ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
+    }
+  }
 
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
@@ -486,9 +495,11 @@ int KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = MatView(B,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
+  if (!viewed) {
+    ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
