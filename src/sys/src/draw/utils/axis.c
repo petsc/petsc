@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.42 1997/10/19 03:28:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.43 1998/03/06 00:17:18 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: axis.c,v 1.42 1997/10/19 03:28:11 bsmith Exp bsmith $
 #include <math.h>
 
 struct _p_DrawAxis {
-    PETSCHEADER(int dummy)
+    PETSCHEADER(int)
     double  xlow, ylow, xhigh, yhigh;     /* User - coord limits */
     char    *(*ylabelstr)(double,double), /* routines to generate labels */ 
             *(*xlabelstr)(double,double);
@@ -63,7 +63,7 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
     ierr = DrawOpenNull(vobj->comm,(Draw*)ctx); CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(ad,_p_DrawAxis,DRAWAXIS_COOKIE,0,vobj->comm,DrawAxisDestroy,0);
+  PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_COOKIE,0,vobj->comm,DrawAxisDestroy,0);
   PLogObjectCreate(ad);
   PLogObjectParent(win,ad);
   ad->xticks    = PetscADefTicks;

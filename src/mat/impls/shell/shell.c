@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.52 1997/11/03 04:45:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.53 1997/11/28 16:19:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -54,7 +54,8 @@ int MatGetSize_Shell(Mat mat,int *M,int *N)
   Mat_Shell *shell = (Mat_Shell *) mat->data;
 
   PetscFunctionBegin;
-  *M = shell->M; *N = shell->N;
+  if (M) *M = shell->M;
+  if (N) *N = shell->N;
   PetscFunctionReturn(0);
 }
 
@@ -65,7 +66,8 @@ int MatGetLocalSize_Shell(Mat mat,int *m,int *n)
   Mat_Shell *shell = (Mat_Shell *) mat->data;
 
   PetscFunctionBegin;
-  *m = shell->n; *n = shell->n;
+  if (m) *m = shell->m;
+  if (n) *n = shell->n;
   PetscFunctionReturn(0);
 }
 
@@ -200,12 +202,12 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
   Mat_Shell *b;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSHELL,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSHELL,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->factor    = 0;
   B->destroy   = MatDestroy_Shell;
   B->assembled = PETSC_TRUE;
-  PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
 
   b          = PetscNew(Mat_Shell); CHKPTRQ(b);
   PLogObjectMemory(B,sizeof(struct _p_Mat)+sizeof(Mat_Shell));
@@ -269,7 +271,7 @@ int MatShellSetOperation(Mat mat,MatOperation op, void *f)
     else mat->destroy                 = (int (*)(PetscObject)) f;
   } 
   else if (op == MATOP_VIEW) mat->view  = (int (*)(PetscObject,Viewer)) f;
-  else      (((void**)&mat->ops)[op]) = f;
+  else      (((void**)mat->ops)[op]) = f;
 
   PetscFunctionReturn(0);
 }

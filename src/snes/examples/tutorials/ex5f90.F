@@ -1,5 +1,5 @@
 
-C "$Id: ex5f90.F,v 1.8 1997/08/22 15:18:29 bsmith Exp balay $";
+C "$Id: ex5f90.F,v 1.9 1997/09/22 15:19:17 balay Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -122,15 +122,17 @@ C     size        - number of processors
 C     rank        - processor rank
 C     lambda      - nonlinearity parameter
 C
-      SNES     snes
-      Vec      x, r, localX, localF
-      DA       da
-      Mat      J
+      SNES                   snes
+      Vec                    x, r, localX, localF
+      DA                     da
+      Mat                    J
       ISLocalToGlobalMapping isltog
-      integer  its, Nx, Ny, matrix_free, size, flg, N, ierr, m
-      integer  user(6), mx, my, rank
-      double precision   lambda_max, lambda_min, lambda
-      integer  ltog_a(0:1), ltog_i, nloc
+      integer                its, Nx, Ny, matrix_free, size, flg
+      integer                N, ierr, m
+      integer                user(6), mx, my, rank
+      double precision       lambda_max, lambda_min, lambda
+      integer                ltog_a(0:1),  nloc
+      PetscOffset            ltog_i
 
 C  Store nonlinearity parameter in common block
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.110 1998/02/20 17:13:29 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.111 1998/03/04 16:07:09 balay Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -940,8 +940,8 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
 #endif
   if (baij->ht_flag && !baij->ht && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatCreateHashTable_MPIBAIJ_Private(mat,baij->ht_fact); CHKERRQ(ierr);
-    mat->ops.setvalues        = MatSetValues_MPIBAIJ_HT;
-    mat->ops.setvaluesblocked = MatSetValuesBlocked_MPIBAIJ_HT;
+    mat->ops->setvalues        = MatSetValues_MPIBAIJ_HT;
+    mat->ops->setvaluesblocked = MatSetValuesBlocked_MPIBAIJ_HT;
   }
 
   if (baij->rowvalues) {PetscFree(baij->rowvalues); baij->rowvalues = 0;}
@@ -1151,9 +1151,9 @@ int MatMult_MPIBAIJ(Mat A,Vec xx,Vec yy)
     SETERRQ(PETSC_ERR_ARG_SIZ,0,"Incompatible parition of A and yy");
   }
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
-  ierr = (*a->A->ops.mult)(a->A,xx,yy); CHKERRQ(ierr);
+  ierr = (*a->A->ops->mult)(a->A,xx,yy); CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
-  ierr = (*a->B->ops.multadd)(a->B,a->lvec,yy,yy); CHKERRQ(ierr);
+  ierr = (*a->B->ops->multadd)(a->B,a->lvec,yy,yy); CHKERRQ(ierr);
   ierr = VecScatterPostRecvs(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1167,9 +1167,9 @@ int MatMultAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
-  ierr = (*a->A->ops.multadd)(a->A,xx,yy,zz); CHKERRQ(ierr);
+  ierr = (*a->A->ops->multadd)(a->A,xx,yy,zz); CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
-  ierr = (*a->B->ops.multadd)(a->B,a->lvec,zz,zz); CHKERRQ(ierr);
+  ierr = (*a->B->ops->multadd)(a->B,a->lvec,zz,zz); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1182,11 +1182,11 @@ int MatMultTrans_MPIBAIJ(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   /* do nondiagonal part */
-  ierr = (*a->B->ops.multtrans)(a->B,xx,a->lvec); CHKERRQ(ierr);
+  ierr = (*a->B->ops->multtrans)(a->B,xx,a->lvec); CHKERRQ(ierr);
   /* send it on its way */
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   /* do local part */
-  ierr = (*a->A->ops.multtrans)(a->A,xx,yy); CHKERRQ(ierr);
+  ierr = (*a->A->ops->multtrans)(a->A,xx,yy); CHKERRQ(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
@@ -1203,11 +1203,11 @@ int MatMultTransAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   /* do nondiagonal part */
-  ierr = (*a->B->ops.multtrans)(a->B,xx,a->lvec); CHKERRQ(ierr);
+  ierr = (*a->B->ops->multtrans)(a->B,xx,a->lvec); CHKERRQ(ierr);
   /* send it on its way */
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   /* do local part */
-  ierr = (*a->A->ops.multtransadd)(a->A,xx,yy,zz); CHKERRQ(ierr);
+  ierr = (*a->A->ops->multtransadd)(a->A,xx,yy,zz); CHKERRQ(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
@@ -1264,7 +1264,7 @@ int MatGetLocalSize_MPIBAIJ(Mat matin,int *m,int *n)
   Mat_MPIBAIJ *mat = (Mat_MPIBAIJ *) matin->data;
 
   PetscFunctionBegin;
-  *m = mat->m; *n = mat->N;
+  *m = mat->m; *n = mat->n;
   PetscFunctionReturn(0);
 }
 
@@ -1317,8 +1317,8 @@ int MatGetRow_MPIBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   pvA = &vworkA; pcA = &cworkA; pvB = &vworkB; pcB = &cworkB;
   if (!v)   {pvA = 0; pvB = 0;}
   if (!idx) {pcA = 0; if (!v) pcB = 0;}
-  ierr = (*mat->A->ops.getrow)(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
-  ierr = (*mat->B->ops.getrow)(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
+  ierr = (*mat->A->ops->getrow)(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
+  ierr = (*mat->B->ops->getrow)(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
   nztot = nzA + nzB;
 
   cmap  = mat->garray;
@@ -1359,8 +1359,8 @@ int MatGetRow_MPIBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
     }
   }
   *nz = nztot;
-  ierr = (*mat->A->ops.restorerow)(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
-  ierr = (*mat->B->ops.restorerow)(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
+  ierr = (*mat->A->ops->restorerow)(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
+  ierr = (*mat->B->ops->restorerow)(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1545,6 +1545,9 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   if (matout != PETSC_NULL) {
     *matout = B;
   } else {
+    PetscOps       *Abops;
+    struct _MatOps *Aops;
+
     /* This isn't really an in-place transpose .... but free data structures from baij */
     PetscFree(baij->rowners); 
     ierr = MatDestroy(baij->A); CHKERRQ(ierr);
@@ -1554,7 +1557,18 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
     if (baij->lvec) VecDestroy(baij->lvec);
     if (baij->Mvctx) VecScatterDestroy(baij->Mvctx);
     PetscFree(baij); 
-    PetscMemcpy(A,B,sizeof(struct _p_Mat)); 
+
+    /*
+       This is horrible, horrible code. We need to keep the 
+      A pointers for the bops and ops but copy everything 
+      else from C.
+    */
+    Abops = A->bops;
+    Aops  = A->ops;
+    PetscMemcpy(A,B,sizeof(struct _p_Mat));
+    A->bops = Abops;
+    A->ops  = Aops;
+
     PetscHeaderDestroy(B);
   }
   PetscFunctionReturn(0);
@@ -1860,11 +1874,11 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   }
 
   *A = 0;
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATMPIBAIJ,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIBAIJ,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data       = (void *) (b = PetscNew(Mat_MPIBAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIBAIJ));
-  PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
 
   B->destroy    = MatDestroy_MPIBAIJ;
   B->view       = MatView_MPIBAIJ;
@@ -2005,10 +2019,10 @@ static int MatConvertSameType_MPIBAIJ(Mat matin,Mat *newmat,int cpvalues)
 
   PetscFunctionBegin;
   *newmat       = 0;
-  PetscHeaderCreate(mat,_p_Mat,MAT_COOKIE,MATMPIBAIJ,matin->comm,MatDestroy,MatView);
+  PetscHeaderCreate(mat,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIBAIJ,matin->comm,MatDestroy,MatView);
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIBAIJ)); CHKPTRQ(a);
-  PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(mat->ops,&MatOps,sizeof(struct _MatOps));
   mat->destroy    = MatDestroy_MPIBAIJ;
   mat->view       = MatView_MPIBAIJ;
   mat->factor     = matin->factor;

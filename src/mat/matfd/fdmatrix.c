@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.27 1997/11/03 04:45:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.28 1998/01/14 02:40:40 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -376,11 +376,11 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   if (M != N) SETERRQ(PETSC_ERR_SUP,0,"Only for square matrices");
 
   PetscObjectGetComm((PetscObject)mat,&comm);
-  PetscHeaderCreate(c,_p_MatFDColoring,MAT_FDCOLORING_COOKIE,0,comm,MatFDColoringDestroy,MatFDColoringView);
+  PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_COOKIE,0,comm,MatFDColoringDestroy,MatFDColoringView);
   PLogObjectCreate(c);
 
-  if (mat->ops.fdcoloringcreate) {
-    ierr = (*mat->ops.fdcoloringcreate)(mat,iscoloring,c); CHKERRQ(ierr);
+  if (mat->ops->fdcoloringcreate) {
+    ierr = (*mat->ops->fdcoloringcreate)(mat,iscoloring,c); CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,0,"Code not yet written for this matrix type");
   }

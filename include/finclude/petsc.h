@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.54 1997/12/09 23:09:06 bsmith Exp bsmith $;
+C  $Id: petsc.h,v 1.55 1998/03/06 00:21:29 bsmith Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -85,6 +85,15 @@ C     Prototypes for functions which return a value.
 C
       external PetscGetTime,PetscGetCPUTime,PetscGetFlops
       double precision PetscGetTime,PetscGetCPUTime,PetscGetFlops
+C
+C
+C
+#if defined(HAVE_64BITS)
+#define PetscOffset integer*8
+#else
+#define PetscOffset integer
+#endif
+
 C
 C
 C     End of base Fortran include file for the PETSc package

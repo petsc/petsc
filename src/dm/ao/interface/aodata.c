@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.19 1997/12/12 19:40:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.20 1998/01/12 00:32:45 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -209,7 +209,7 @@ int AODataKeyGetActive(AOData aodata,char *name,char *segment,int n,int *keys,in
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.keygetactive)(aodata,name,segment,n,keys,wl,is); CHKERRQ(ierr);
+  ierr = (*aodata->ops->keygetactive)(aodata,name,segment,n,keys,wl,is); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -278,7 +278,7 @@ int AODataKeyGetActiveLocal(AOData aodata,char *name,char *segment,int n,int *ke
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.keygetactivelocal)(aodata,name,segment,n,keys,wl,is); CHKERRQ(ierr);
+  ierr = (*aodata->ops->keygetactivelocal)(aodata,name,segment,n,keys,wl,is); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -348,7 +348,7 @@ int AODataSegmentGet(AOData aodata,char *name,char *segment,int n,int *keys,void
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.segmentget)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentget)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -379,7 +379,7 @@ int AODataSegmentRestore(AOData aodata,char *name,char *segment,int n,int *keys,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.segmentrestore)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentrestore)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -413,7 +413,7 @@ int AODataSegmentGetIS(AOData aodata,char *name,char *segment,IS is,void **data)
 
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
-  ierr = (*aodata->ops.segmentget)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentget)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -445,7 +445,7 @@ int AODataSegmentRestoreIS(AOData aodata,char *name,char *segment,IS is,void **d
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
-  ierr = (*aodata->ops.segmentrestore)(aodata,name,segment,0,0,data);CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentrestore)(aodata,name,segment,0,0,data);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -481,7 +481,7 @@ int AODataSegmentGetLocal(AOData aodata,char *name,char *segment,int n,int *keys
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.segmentgetlocal)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentgetlocal)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -512,7 +512,7 @@ int AODataSegmentRestoreLocal(AOData aodata,char *name,char *segment,int n,int *
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.segmentrestorelocal)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentrestorelocal)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -547,7 +547,7 @@ int AODataSegmentGetLocalIS(AOData aodata,char *name,char *segment,IS is,void **
 
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
-  ierr = (*aodata->ops.segmentgetlocal)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentgetlocal)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -578,7 +578,7 @@ int AODataSegmentRestoreLocalIS(AOData aodata,char *name,char *segment,IS is,voi
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.segmentrestorelocal)(aodata,name,segment,0,0,data);CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentrestorelocal)(aodata,name,segment,0,0,data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -702,7 +702,7 @@ int AODataSegmentGetReduced(AOData aodata,char *name,char *segment,int n,int *ke
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.segmentgetreduced)(aodata,name,segment,n,keys,is); CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentgetreduced)(aodata,name,segment,n,keys,is); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -734,7 +734,7 @@ int AODataSegmentGetExtrema(AOData aodata,char *name,char *segment,void *vmax,vo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.segmentgetextrema)(aodata,name,segment,vmax,vmin); CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentgetextrema)(aodata,name,segment,vmax,vmin); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -774,7 +774,7 @@ int AODataSegmentGetReducedIS(AOData aodata,char *name,char *segment,IS is,IS *i
 
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
-  ierr = (*aodata->ops.segmentgetreduced)(aodata,name,segment,n,keys,isout); CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentgetreduced)(aodata,name,segment,n,keys,isout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -869,7 +869,7 @@ int AODataKeyRemove(AOData aodata,char *name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.keyremove)(aodata,name);CHKERRQ(ierr);
+  ierr = (*aodata->ops->keyremove)(aodata,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -895,7 +895,7 @@ int AODataSegmentRemove(AOData aodata,char *name,char *segname)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.segmentremove)(aodata,name,segname);CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentremove)(aodata,name,segname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -998,7 +998,7 @@ int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *ke
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
-  ierr = (*aodata->ops.segmentadd)(aodata,name,segment,bs,n,keys,data,dtype); CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentadd)(aodata,name,segment,bs,n,keys,data,dtype); CHKERRQ(ierr);
 
   /*
   ierr = OptionsHasName(PETSC_NULL,"-ao_data_view",&flg1); CHKERRQ(ierr);
@@ -1046,7 +1046,7 @@ int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void 
 
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
-  ierr = (*aodata->ops.segmentadd)(aodata,name,segment,bs,n,keys,data,dtype); CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentadd)(aodata,name,segment,bs,n,keys,data,dtype); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1252,7 +1252,7 @@ int AODataKeyRemap(AOData aodata, char *key,AO ao)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   PetscValidHeaderSpecific(ao,AO_COOKIE);
-  ierr = (*aodata->ops.keyremap)(aodata,key,ao);CHKERRQ(ierr);
+  ierr = (*aodata->ops->keyremap)(aodata,key,ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1280,7 +1280,7 @@ int AODataKeyGetAdjacency(AOData aodata, char *key,Mat *adj)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.keygetadjacency)(aodata,key,adj);CHKERRQ(ierr);
+  ierr = (*aodata->ops->keygetadjacency)(aodata,key,adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1306,7 +1306,7 @@ int AODataSegmentPartition(AOData aodata,char *key,char *seg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.segmentpartition)(aodata,key,seg);CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentpartition)(aodata,key,seg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

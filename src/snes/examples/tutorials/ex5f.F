@@ -1,4 +1,4 @@
-C "$Id: ex5f.F,v 1.36 1997/10/07 14:49:48 balay Exp bsmith $";
+C "$Id: ex5f.F,v 1.37 1997/10/10 04:06:27 bsmith Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -65,13 +65,14 @@ C     matrix_free - flag - 1 indicates matrix-free version
 C
 C  See additional variable declarations in the file ex5f.h
 C
-      SNES     snes
-      Vec      x, r
-      Mat      J
+      SNES                   snes
+      Vec                    x, r
+      Mat                    J
       ISLocalToGlobalMapping isltog
-      integer  its, Nx, Ny, matrix_free, flg, N, ierr, m
-      double precision   lambda_max, lambda_min
-      integer  ltog_a(0:1), ltog_i, nloc
+      integer                its, Nx, Ny, matrix_free, flg, N, ierr, m
+      double precision       lambda_max, lambda_min
+      integer                ltog_a(0:1), nloc
+      PetscOffset            ltog_i
 
 C  Note: Any user-defined Fortran routines (such as FormJacobian)
 C  MUST be declared as external.
@@ -283,8 +284,8 @@ C  Input/output variables:
       integer  ierr
 
 C  Declarations for use with local arrays:
-      Scalar   lx_v(0:1)
-      integer  lx_i
+      Scalar      lx_v(0:1)
+      PetscOffset lx_i
 
       ierr = 0
 
@@ -401,8 +402,8 @@ C  Input/output variables:
       integer  ierr
 
 C  Declarations for use with local arrays:
-      Scalar   lx_v(0:1), lf_v(0:1)
-      integer  lx_i, lf_i 
+      Scalar      lx_v(0:1), lf_v(0:1)
+      PetscOffset lx_i, lf_i 
 
 C  Scatter ghost points to local vector, using the 2-step process
 C     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
@@ -562,8 +563,8 @@ C  Input/output variables:
       integer      ierr
 
 C  Declarations for use with local arrays:
-      Scalar   lx_v(0:1)
-      integer  lx_i
+      Scalar      lx_v(0:1)
+      PetscOffset lx_i
 
 C  Scatter ghost points to local vector, using the 2-step process
 C     DAGlobalToLocalBegin(), DAGlobalToLocalEnd()

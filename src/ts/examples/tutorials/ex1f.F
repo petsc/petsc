@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.13 1997/09/22 15:18:42 balay Exp bsmith $"
+C "$Id: ex1f.F,v 1.14 1997/10/10 04:05:15 bsmith Exp bsmith $"
 C
 C   Solves the time dependent Bratu problem using pseudo-timestepping
 C
@@ -201,7 +201,8 @@ C
 #include "FINCLUDE/ts.h"
       Vec              X
       double precision user(3)
-      integer          i, j, row, mx, my, ierr,xidx
+      integer          i, j, row, mx, my, ierr
+      PetscOffset      xidx
       double precision two, one, lambda
       double precision temp1, temp, hx, hy, hxdhy, hydhx
       double precision sc
@@ -254,7 +255,8 @@ C
       double precision  t
       Vec               X,F
       double precision  user(3)
-      integer           ierr, i, j, row, mx, my,xidx,fidx
+      integer           ierr, i, j, row, mx, my
+      PetscOffset       xidx,fidx
       double precision  two, one, lambda
       double precision  hx, hy, hxdhy, hydhx
       Scalar            ut, ub, ul, ur, u, uxx, uyy, sc
@@ -317,7 +319,8 @@ C
       MatStructure     flag
       double precision user(3),ctime
       Mat              jac
-      integer          i, j, row, mx, my, col(5), ierr,xidx
+      integer          i, j, row, mx, my, col(5), ierr
+      PetscOffset      xidx
       Scalar           two, one, lambda, v(5), sc, xx(1)
       double precision hx, hy, hxdhy, hydhx
 

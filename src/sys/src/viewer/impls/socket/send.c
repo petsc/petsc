@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.64 1997/12/01 01:56:33 bsmith Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.65 1998/03/06 20:35:02 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -209,7 +209,7 @@ int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
 
   PetscFunctionBegin;
   if (port <= 0) port = DEFAULTPORT;
-  PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,MATLAB_VIEWER,comm,ViewerDestroy,0);
+  PetscHeaderCreate(v,_p_Viewer,int,VIEWER_COOKIE,MATLAB_VIEWER,comm,ViewerDestroy,0);
   PLogObjectCreate(v);
   MPI_Comm_rank(comm,&rank);
   if (!rank) {

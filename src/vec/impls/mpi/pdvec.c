@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.85 1997/12/01 01:52:47 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.86 1997/12/12 19:36:34 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -723,13 +723,11 @@ int VecAssemblyEnd_MPI(Vec vec)
       for ( i=0; i<n; i++ ) {
         x->array[((int) PetscReal(values[2*i])) - base] += values[2*i+1];
       }
-    }
-    else if (x->insertmode == INSERT_VALUES) {
+    } else if (x->insertmode == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {
         x->array[((int) PetscReal(values[2*i])) - base] = values[2*i+1];
       }
-    }
-    else { 
+    } else { 
       SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Insert mode is not set correctly; corrupted vector");
     }
     count--;

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.111 1998/01/28 21:00:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.112 1998/03/06 00:10:28 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -93,7 +93,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
 
   PetscFunctionBegin;
   *ksp = 0;
-  PetscHeaderCreate(ctx,_p_KSP,KSP_COOKIE,-1,comm,KSPDestroy,KSPView);
+  PetscHeaderCreate(ctx,_p_KSP,int,KSP_COOKIE,-1,comm,KSPDestroy,KSPView);
   PLogObjectCreate(ctx);
   *ksp               = ctx;
   ctx->view          = 0;

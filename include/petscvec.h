@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.68 1997/11/28 16:23:01 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.69 1997/12/12 19:40:34 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -100,7 +100,7 @@ extern int VecSetValuesLocal(Vec,int,int*,Scalar*,InsertMode);
 extern int VecSetLocalToGlobalMappingBlocked(Vec, ISLocalToGlobalMapping);
 extern int VecSetValuesBlockedLocal(Vec,int,int*,Scalar*,InsertMode);
 
-typedef enum {VEC_IGNORE_OFF_PROCESSOR_VALUES} VecOption;
+typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES} VecOption;
 extern int VecSetOption(Vec,VecOption);
 
 extern int VecContourScale(Vec,double,double);

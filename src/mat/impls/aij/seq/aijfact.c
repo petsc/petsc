@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.93 1998/01/06 20:10:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.94 1998/03/06 00:14:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -285,9 +285,11 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 #define __FUNC__ "MatLUFactor_SeqAIJ"
 int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
 {
-  Mat_SeqAIJ *mat = (Mat_SeqAIJ *) A->data;
-  int        ierr;
-  Mat        C;
+  Mat_SeqAIJ     *mat = (Mat_SeqAIJ *) A->data;
+  int            ierr;
+  Mat            C;
+  PetscOps       *Abops;
+  struct _MatOps *Aops;
 
   PetscFunctionBegin;
   ierr = MatLUFactorSymbolic(A,row,col,f,&C); CHKERRQ(ierr);
@@ -303,7 +305,17 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   if (mat->inode.size) PetscFree(mat->inode.size);
   PetscFree(mat);
 
+  /*
+       This is horrible, horrible code. We need to keep the 
+    A pointers for the bops and ops but copy everything 
+    else from C.
+  */
+  Abops = A->bops;
+  Aops  = A->ops;
   PetscMemcpy(A,C,sizeof(struct _p_Mat));
+  A->bops = Abops;
+  A->ops  = Aops;
+
   PetscHeaderDestroy(C);
   PetscFunctionReturn(0);
 }
@@ -601,7 +613,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
     b->col             = iscol;
     b->icol            = isicol;
     b->solve_work      = (Scalar *) PetscMalloc((b->m+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
-    (*fact)->ops.solve = MatSolve_SeqAIJ_NaturalOrdering;
+    (*fact)->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
     PetscFunctionReturn(0);
   }
 

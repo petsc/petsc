@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.21 1997/12/05 20:01:54 balay Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.22 1998/01/28 21:02:12 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -141,7 +141,6 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatGetSubMatr
         *mat_j++ = tcol - 1;
         PetscMemcpy(mat_a,a->a+k*bs2,bs2*sizeof(Scalar)); mat_a+=bs2;
         (*mat_ilen)++;
-        
       }
     }
   }

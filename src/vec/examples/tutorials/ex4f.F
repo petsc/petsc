@@ -1,5 +1,5 @@
 
-C      "$Id: ex4f.F,v 1.17 1997/04/10 00:00:39 bsmith Exp bsmith $";
+C      "$Id: ex4f.F,v 1.18 1997/10/10 04:02:19 bsmith Exp bsmith $";
 
 C  Description:  Illustrates the use of VecSetValues() to set
 C  multiple values at once; demonstrates VecGetArray().
@@ -46,10 +46,11 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                 Beginning of program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-       Scalar  xwork(6)
-       Scalar  xx_v(1), yy_v(1)
-       integer i, n, ierr, loc(6), xx_i, yy_i
-       Vec     x, y
+       Scalar      xwork(6)
+       Scalar      xx_v(1), yy_v(1)
+       integer     i, n, ierr, loc(6)
+       PetscOffset xx_i, yy_i
+       Vec         x, y
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
        n = 6

@@ -1,5 +1,5 @@
 C
-C "$Id: ex2f.F,v 1.12 1997/09/22 15:18:31 balay Exp curfman $";
+C "$Id: ex2f.F,v 1.13 1998/03/01 03:56:54 curfman Exp bsmith $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -235,7 +235,8 @@ C  Input/output parameters:
 
 C  Local variables:
       double  precision localptr(1), x
-      integer           i, mybase, myend, ierr, idx
+      integer           i, mybase, myend, ierr
+      PetscOffset       idx
 
 C  Determine starting and ending point of each processor's range of
 C  grid values.  Note that we shift by 1 to convert from the 0-based
@@ -298,7 +299,8 @@ C  Input/output parameters:
 
 C  Local variables:
       double precision  localptr(1)
-      integer           i, mybase, myend, idx
+      integer           i, mybase, myend
+      PetscOffset       idx
 
 C  Determine starting and ending point of each processors range of
 C  grid values.  Note that we shift by 1 to convert from the 0-based
@@ -439,7 +441,8 @@ C  Input/output parameters:
 C  Local variables:
       Vec              local
       double precision localptr(1), copyptr(1), sc
-      integer          i, il, ierr, idx_c, idx_l, localsize
+      integer          i, il, ierr, localsize
+      PetscOffset      idx_c, idx_l
 
 C  The vector 'local' will be a workspace that contains the ghost region
 
@@ -543,8 +546,9 @@ C  Input/output parameters:
 C  Local variables:
       Vec              local
       double precision localptr(1), sc, v(3)
-      integer          i, ierr, idx, col(3), is
+      integer          i, ierr,  col(3), is
       integer          mstart, mend, mstarts, mends
+      PetscOffset      idx
 
 C  Extract local array
       call DAGetLocalVector(da,local,ierr)
@@ -596,7 +600,7 @@ C  We construct the matrix one row at a time.
 
 C  Restore vector
 
-      call VecGetArray(local,localptr,idx,ierr) 
+      call VecRestoreArray(local,localptr,idx,ierr) 
 
 C  Assemble matrix, using the 2-step process:
 C       MatAssemblyBegin(), MatAssemblyEnd()

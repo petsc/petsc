@@ -1,5 +1,5 @@
 
-C      "$Id: ex36.F,v 1.20 1997/09/22 15:23:56 balay Exp bsmith $";
+C      "$Id: ex36.F,v 1.21 1997/10/10 04:04:09 bsmith Exp bsmith $";
 C
 C   This program demonstrates use of PETSc dense matrices.
 C
@@ -37,9 +37,10 @@ C
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/viewer.h"
 
-      Mat      A
-      integer  ia, n, m, err
-      Scalar   aa(1)
+      Mat         A
+      integer     n, m, err
+      Scalar      aa(1)
+      PetscOffset ia
 
       n = 4
       m = 5

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.91 1997/12/01 01:57:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.92 1998/01/14 02:45:34 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -158,7 +158,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (w < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node");
   if (s < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative");
 
-  PetscHeaderCreate(da,_p_DA,DA_COOKIE,0,comm,DADestroy,DAView);
+  PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,comm,DADestroy,DAView);
   PLogObjectCreate(da);
   PLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim = 2;

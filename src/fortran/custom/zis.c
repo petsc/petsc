@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zis.c,v 1.19 1997/12/01 01:51:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zis.c,v 1.20 1998/01/14 02:34:51 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -81,22 +81,16 @@ void isstride_(IS is,PetscTruth *flag, int *__ierr )
   *__ierr = ISStride((IS)PetscToPointer( *(int*)(is) ),flag);
 }
 
-void isblockgetindices_(IS x,int *fa,int *ia,int *__ierr)
+void isblockgetindices_(IS x,int *fa,long *ia,int *__ierr)
 {
   IS    xin = (IS)PetscToPointer( *(int*)(x) );
   int   *lx;
 
-#if defined(PARCH_IRIX64)
-  (*PetscErrorPrintf)("PETSC ERROR: Cannot use ISBlockGetIndices() from Fortran under IRIX\n");
-  (*PetscErrorPrintf)("PETSC ERROR: Refer to troubleshooting.html for more details\n");
-  MPI_Abort(PETSC_COMM_WORLD,1);
-#else
   *__ierr = ISGetIndices(xin,&lx); if (*__ierr) return;
   *ia      = PetscIntAddressToFortran(fa,lx);
-#endif
 }
 
-void isblockrestoreindices_(IS x,int *fa,int *ia,int *__ierr)
+void isblockrestoreindices_(IS x,int *fa,long *ia,int *__ierr)
 {
   IS    xin = (IS)PetscToPointer( *(int*)(x) );
   int *lx = PetscIntAddressFromFortran(fa,*ia);
@@ -109,22 +103,16 @@ void isblock_(IS is,PetscTruth *flag, int *__ierr )
   *__ierr = ISBlock((IS)PetscToPointer( *(int*)(is) ),flag);
 }
 
-void isgetindices_(IS x,int *fa,int *ia,int *__ierr)
+void isgetindices_(IS x,int *fa,long *ia,int *__ierr)
 {
   IS    xin = (IS)PetscToPointer( *(int*)(x) );
   int   *lx;
 
-#if defined(PARCH_IRIX64)
-  (*PetscErrorPrintf)("PETSC ERROR: Cannot use ISGetIndices() from Fortran under IRIX\n");
-  (*PetscErrorPrintf)("PETSC ERROR: Refer to troubleshooting.html for more details\n");
-  MPI_Abort(PETSC_COMM_WORLD,1);
-#else
   *__ierr = ISGetIndices(xin,&lx); if (*__ierr) return;
   *ia      = PetscIntAddressToFortran(fa,lx);
-#endif
 }
 
-void isrestoreindices_(IS x,int *fa,int *ia,int *__ierr)
+void isrestoreindices_(IS x,int *fa,long *ia,int *__ierr)
 {
   IS    xin = (IS)PetscToPointer( *(int*)(x) );
   int *lx = PetscIntAddressFromFortran(fa,*ia);

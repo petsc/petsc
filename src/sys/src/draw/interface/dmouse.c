@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dmouse.c,v 1.13 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dmouse.c,v 1.14 1997/11/03 04:47:30 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -33,8 +33,8 @@ int DrawGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_use
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   *button = BUTTON_NONE;
   if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
-  if (!draw->ops.getmousebutton) PetscFunctionReturn(0);
-  ierr = (*draw->ops.getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys);CHKERRQ(ierr);
+  if (!draw->ops->getmousebutton) PetscFunctionReturn(0);
+  ierr = (*draw->ops->getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

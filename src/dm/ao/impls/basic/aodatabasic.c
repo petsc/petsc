@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.20 1997/12/04 05:24:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.21 1997/12/12 19:40:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -865,11 +865,11 @@ int AODataCreateBasic(MPI_Comm comm,AOData *aoout)
 
   PetscFunctionBegin;
   *aoout = 0;
-  PetscHeaderCreate(ao, _p_AOData,AODATA_COOKIE,AODATA_BASIC,comm,AODataDestroy,AODataView); 
+  PetscHeaderCreate(ao, _p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,comm,AODataDestroy,AODataView); 
   PLogObjectCreate(ao);
   PLogObjectMemory(ao,sizeof(struct _p_AOData));
 
-  PetscMemcpy(&ao->ops,&myops,sizeof(myops));
+  PetscMemcpy(ao->ops,&myops,sizeof(myops));
   ao->destroy  = AODataDestroy_Basic;
   ao->view     = AODataView_Basic;
 
@@ -925,11 +925,11 @@ int AODataLoadBasic(Viewer viewer,AOData *aoout)
   /* read in number of segments */
   ierr = PetscBinaryRead(fd,&nkeys,1,PETSC_INT);CHKERRQ(ierr);
 
-  PetscHeaderCreate(ao, _p_AOData,AODATA_COOKIE,AODATA_BASIC,comm,AODataDestroy,AODataView); 
+  PetscHeaderCreate(ao, _p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,comm,AODataDestroy,AODataView); 
   PLogObjectCreate(ao);
   PLogObjectMemory(ao,sizeof(struct _p_AOData) + nkeys*sizeof(void *));
 
-  PetscMemcpy(&ao->ops,&myops,sizeof(myops));
+  PetscMemcpy(ao->ops,&myops,sizeof(myops));
   ao->destroy  = AODataDestroy_Basic;
   ao->view     = AODataView_Basic;
 

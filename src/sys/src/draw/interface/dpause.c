@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dpause.c,v 1.12 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dpause.c,v 1.13 1997/11/09 03:59:15 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -27,8 +27,8 @@ int DrawPause(Draw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
-  if (draw->ops.pause) {
-    ierr = (*draw->ops.pause)(draw);CHKERRQ(ierr);
+  if (draw->ops->pause) {
+    ierr = (*draw->ops->pause)(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

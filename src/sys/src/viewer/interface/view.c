@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.21 1997/10/19 03:29:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.22 1998/03/06 00:18:33 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h" /*I "petsc.h" I*/
 
 struct _p_Viewer {
-   PETSCHEADER(int dummy)
+   PETSCHEADER(int)
    int         (*flush)(Viewer);
 };
 

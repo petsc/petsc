@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.165 1998/02/26 18:29:50 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.166 1998/03/06 00:12:03 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -293,6 +293,7 @@ int PetscInitializeOptions()
 }
 
 extern int PetscInitialize_DynamicLibraries();
+extern int PetscFinalize_DynamicLibraries();
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsSetProgramName"
@@ -492,6 +493,7 @@ int PetscFinalize()
   ViewerDestroy_Private();
   ViewerDestroyDrawX_Private();
   ViewerDestroyMatlab_Private();
+  PetscFinalize_DynamicLibraries();
 
   ierr = OptionsHasName(PETSC_NULL,"-get_resident_set_size",&flg1);CHKERRQ(ierr);
   if (flg1) {
@@ -571,6 +573,19 @@ int PetscFinalize()
     PLogCloseHistoryFile(&petsc_history);
     petsc_history = 0;
   }
+
+  /*
+     Destroy all the function registration lists created
+  */
+  NRDestroyAll();
+  ierr = DLRegisterDestroyAll(); CHKERRQ(ierr); 
+
+  /*
+       Destroy PETSC_COMM_SELF as a MPI_Comm with the PETSc 
+     attribute.
+  */
+  ierr = PetscCommFree_Private(&PETSC_COMM_SELF);CHKERRQ(ierr);
+
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trinfo",&flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3); CHKERRQ(ierr);
@@ -597,17 +612,6 @@ int PetscFinalize()
 #endif
   OptionsDestroy_Private();
 
-  /*
-     Destroy all the function registration lists created
-  */
-  NRDestroyAll();
-  ierr = DLRegisterDestroyAll(); CHKERRQ(ierr); 
-
-  /*
-       Destroy PETSC_COMM_SELF as a MPI_Comm with the PETSc 
-     attribute.
-  */
-  ierr = PetscCommFree_Private(&PETSC_COMM_SELF);CHKERRQ(ierr);
 
   if (PetscBeganMPI) {
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
@@ -1321,7 +1325,7 @@ int OptionsSetAlias_Private(char *newname,char *oldname)
   PetscFunctionBegin;
   if (newname[0] != '-') SETERRQ(PETSC_ERR_ARG_WRONG,0,"aliased must have -");
   if (oldname[0] != '-') SETERRQ(PETSC_ERR_ARG_WRONG,0,"aliasee must have -");
-  if (n >= MAXALIASES) {SETERRQ(PETSC_ERR_ARG_WRONG,0,"You have defined to many PETSc options aliases");}
+  if (n >= MAXALIASES) {SETERRQ(PETSC_ERR_MEM,0,"You have defined to many PETSc options aliases");}
 
   newname++; oldname++;
   len = (PetscStrlen(newname)+1)*sizeof(char);

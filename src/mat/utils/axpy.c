@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.29 1997/10/19 03:27:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.30 1997/12/01 01:55:30 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -31,8 +31,8 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
   MatGetSize(X,&m1,&n1);  MatGetSize(Y,&m2,&n2);
   if (m1 != m2 || n1 != n2) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Non conforming matrix add");
 
-  if (X->ops.axpy) {
-    ierr = (*X->ops.axpy)(a,X,Y); CHKERRQ(ierr);
+  if (X->ops->axpy) {
+    ierr = (*X->ops->axpy)(a,X,Y); CHKERRQ(ierr);
   } else {
     ierr = MatGetOwnershipRange(X,&start,&end); CHKERRQ(ierr);
     if (*a == 1.0) {
@@ -80,8 +80,8 @@ int MatShift(Scalar *a,Mat Y)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_COOKIE);
   PetscValidScalarPointer(a);
-  if (Y->ops.shift) {
-    ierr = (*Y->ops.shift)(a,Y); CHKERRQ(ierr);
+  if (Y->ops->shift) {
+    ierr = (*Y->ops->shift)(a,Y); CHKERRQ(ierr);
   }
   else {
     ierr = MatGetOwnershipRange(Y,&start,&end); CHKERRQ(ierr);
@@ -118,8 +118,8 @@ int MatDiagonalShift(Mat Y,Vec D)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_COOKIE);
   PetscValidHeaderSpecific(D,VEC_COOKIE);
-  if (Y->ops.shift) {
-    ierr = (*Y->ops.diagonalshift)(D,Y); CHKERRQ(ierr);
+  if (Y->ops->shift) {
+    ierr = (*Y->ops->diagonalshift)(D,Y); CHKERRQ(ierr);
   }
   else {
     int    vstart,vend;

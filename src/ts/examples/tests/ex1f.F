@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.16 1998/02/15 16:28:17 bsmith Exp bsmith $";
+C "$Id: ex1f.F,v 1.17 1998/03/06 00:17:45 bsmith Exp bsmith $";
 C
 C       Formatted test for TS routines.
 C
@@ -258,11 +258,12 @@ C  -------------------------------------------------------------------
 #include "FINCLUDE/snes.h"
 #include "FINCLUDE/ts.h"
 #include "FINCLUDE/viewer.h"
-      Vec     global
-      integer ctx
+      Vec         global
+      integer     ctx
 
-      Scalar  localptr(1)
-      integer i,mybase,myend,ierr,idx
+      Scalar      localptr(1)
+      integer     i,mybase,myend,ierr
+      PetscOffset idx
 
 C
 C    Application context data, stored in common block
@@ -310,8 +311,9 @@ C
       Vec               sol
       integer           ctx
 
-      Scalar  localptr(1),ex1,ex2,sc1,sc2
-      integer i,mybase,myend,ierr,idx
+      Scalar            localptr(1),ex1,ex2,sc1,sc2
+      integer           i,mybase,myend,ierr
+      PetscOffset       idx
 
 C
 C    Application context data, stored in common block
@@ -439,7 +441,8 @@ C -------------------------------------------------------------------------
       Vec              globalin, globalout
       integer          ctx
       Vec              local
-      integer          ierr,i,localsize,cdx,ldx 
+      integer          ierr,i,localsize
+      PetscOffset      ldx,cdx 
       Scalar           copyptr(1), localptr(1),sc
 C
 C    Application context data, stored in common block

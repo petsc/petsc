@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dxml.c,v 1.11 1997/08/22 15:13:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dxml.c,v 1.12 1997/10/19 03:25:18 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -35,7 +35,7 @@ int MatUseDXML_SeqAIJ(Mat A)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);  
   if (A->type != MATSEQAIJ) PetscFunctionReturn(0);
-  A->ops.mult    = MatMult_SeqAIJ_DXML;
+  A->ops->mult    = MatMult_SeqAIJ_DXML;
   PetscFunctionReturn(0);
 }
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.92 1997/12/12 19:36:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.93 1998/01/04 21:01:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -64,7 +64,7 @@ int VecSetOption_MPI(Vec v,VecOption op)
   Vec_MPI *w = (Vec_MPI *) v->data;
 
   PetscFunctionBegin;
-  if (op == VEC_IGNORE_OFF_PROCESSOR_VALUES) {
+  if (op == VEC_IGNORE_OFF_PROC_ENTRIES) {
     w->stash.donotstash = 1;
   }
   PetscFunctionReturn(0);
@@ -72,7 +72,7 @@ int VecSetOption_MPI(Vec v,VecOption op)
     
 int VecDuplicate_MPI(Vec,Vec *);
 
-static struct _VeOps DvOps = { VecDuplicate_MPI, 
+static struct _VecOps DvOps = { VecDuplicate_MPI, 
             VecDuplicateVecs_Default, 
             VecDestroyVecs_Default, 
             VecDot_MPI, 
@@ -119,11 +119,11 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
   *vv = 0;
 
   mem           = sizeof(Vec_MPI)+(size+1)*sizeof(int);
-  PetscHeaderCreate(v,_p_Vec,VEC_COOKIE,VECMPI,comm,VecDestroy,VecView);
+  PetscHeaderCreate(v,_p_Vec,struct _VecOps,VEC_COOKIE,VECMPI,comm,VecDestroy,VecView);
   PLogObjectCreate(v);
   PLogObjectMemory(v,mem + sizeof(struct _p_Vec) + (n+nghost+1)*sizeof(Scalar));
   s              = (Vec_MPI *) PetscMalloc(mem); CHKPTRQ(s);
-  PetscMemcpy(&v->ops,&DvOps,sizeof(DvOps));
+  PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));
   v->data        = (void *) s;
   v->destroy     = VecDestroy_MPI;
   v->view        = VecView_MPI;

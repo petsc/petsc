@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.93 1997/10/28 14:23:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.94 1998/01/14 02:42:42 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -223,7 +223,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
 
   PetscFunctionBegin;
   *outsles = 0;
-  PetscHeaderCreate(sles,_p_SLES,SLES_COOKIE,0,comm,SLESDestroy,SLESView);
+  PetscHeaderCreate(sles,_p_SLES,int,SLES_COOKIE,0,comm,SLESDestroy,SLESView);
   PLogObjectCreate(sles);
   ierr = KSPCreate(comm,&sles->ksp); CHKERRQ(ierr);
   ierr = PCCreate(comm,&sles->pc); CHKERRQ(ierr);
@@ -378,9 +378,9 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   if (b == x) SETERRQ(PETSC_ERR_ARG_IDN,0,"b and x must be different vectors");
   ksp = sles->ksp; pc = sles->pc;
-  KSPSetRhs(ksp,b);
-  KSPSetSolution(ksp,x);
-  KSPSetPC(ksp,pc);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+  ierr = KSPSetPC(ksp,pc);CHKERRQ(ierr);
   if (!sles->setupcalled) {
     ierr = SLESSetUp(sles,b,x); CHKERRQ(ierr);
   }

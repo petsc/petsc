@@ -1,4 +1,4 @@
-C "$Id: ex1f.F,v 1.16 1997/09/25 15:30:37 balay Exp bsmith $";
+C "$Id: ex1f.F,v 1.17 1997/10/10 04:06:27 bsmith Exp bsmith $";
 C
 C/*T
 C  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -199,8 +199,8 @@ C
 
 C  Declarations for use with local arrays
 
-      Scalar   lx_v(1), lf_v(1)
-      integer  lx_i, lf_i 
+      Scalar       lx_v(1), lf_v(1)
+      PetscOffset  lx_i, lf_i 
 
 C  Get pointers to vector data.
 C    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -260,8 +260,8 @@ C
 
 C  Declarations for use with local arrays
 
-      Scalar  lx_v(1)
-      integer lx_i
+      Scalar      lx_v(1)
+      PetscOffset lx_i
 
 C  Get pointer to vector data
 

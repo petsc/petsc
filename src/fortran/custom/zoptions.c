@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.35 1997/12/01 01:51:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.36 1998/01/14 02:34:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -195,19 +195,19 @@ void petscgetprogramname_(CHAR name, int *__ierr,int len_in )
 void   *PETSC_NULL_Fortran;
 char   *PETSC_NULL_CHARACTER_Fortran;
 
-int PetscIntAddressToFortran(int *base,int *addr)
+long PetscIntAddressToFortran(int *base,int *addr)
 {
   unsigned long tmp1 = (unsigned long) base,tmp2 = tmp1/sizeof(int);
   unsigned long tmp3 = (unsigned long) addr;
-  int           itmp2;
+  long          itmp2;
 
   if (tmp3 > tmp1) {
     tmp2  = (tmp3 - tmp1)/sizeof(int);
-    itmp2 = (int) tmp2;
+    itmp2 = (long) tmp2;
   }
   else {
     tmp2  = (tmp1 - tmp3)/sizeof(int);
-    itmp2 = -((int) tmp2);
+    itmp2 = -((long) tmp2);
   }
   if (base + itmp2 != addr) {
     (*PetscErrorPrintf)("PetscIntAddressToFortran:C and Fortran arrays are\n");
@@ -218,24 +218,24 @@ int PetscIntAddressToFortran(int *base,int *addr)
   return itmp2;
 }
 
-int *PetscIntAddressFromFortran(int *base,int addr)
+int *PetscIntAddressFromFortran(int *base,long addr)
 {
   return base + addr;
 }
 
-int PetscScalarAddressToFortran(Scalar *base,Scalar *addr)
+long PetscScalarAddressToFortran(Scalar *base,Scalar *addr)
 {
   unsigned long tmp1 = (unsigned long) base,tmp2 = tmp1/sizeof(Scalar);
   unsigned long tmp3 = (unsigned long) addr;
-  int           itmp2;
+  long          itmp2;
 
   if (tmp3 > tmp1) {
     tmp2  = (tmp3 - tmp1)/sizeof(Scalar);
-    itmp2 = (int) tmp2;
+    itmp2 = (long) tmp2;
   }
   else {
     tmp2  = (tmp1 - tmp3)/sizeof(Scalar);
-    itmp2 = -((int) tmp2);
+    itmp2 = -((long) tmp2);
   }
   if (base + itmp2 != addr) {
     (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
@@ -248,7 +248,7 @@ int PetscScalarAddressToFortran(Scalar *base,Scalar *addr)
   return itmp2;
 }
 
-Scalar *PetscScalarAddressFromFortran(Scalar *base,int addr)
+Scalar *PetscScalarAddressFromFortran(Scalar *base,long addr)
 {
   return base + addr;
 }

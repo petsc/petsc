@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.124 1998/01/27 16:11:14 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.125 1998/02/18 21:01:14 balay Exp bsmith $";
 #endif
 
 /*
@@ -275,6 +275,9 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
   if (B != PETSC_NULL) {
     *B = C;
   } else {
+    PetscOps       *Abops;
+    struct _MatOps *Aops;
+
     /* This isn't really an in-place transpose */
     PetscFree(a->a); 
     if (!a->singlemalloc) {PetscFree(a->i); PetscFree(a->j);}
@@ -283,7 +286,18 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
     if (a->imax) PetscFree(a->imax);
     if (a->solve_work) PetscFree(a->solve_work);
     PetscFree(a); 
-    PetscMemcpy(A,C,sizeof(struct _p_Mat)); 
+
+    /*
+       This is horrible, horrible code. We need to keep the 
+      A pointers for the bops and ops but copy everything 
+      else from C.
+    */
+    Abops = A->bops;
+    Aops  = A->ops;
+    PetscMemcpy(A,C,sizeof(struct _p_Mat));
+    A->bops = Abops;
+    A->ops  = Aops;
+
     PetscHeaderDestroy(C);
   }
   PetscFunctionReturn(0);
@@ -887,7 +901,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
   } 
   if (diag) {
     for ( j=0; j<is_n; j++ ) {
-      ierr = (*A->ops.setvalues)(A,1,rows+j,1,rows+j,diag,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = (*A->ops->setvalues)(A,1,rows+j,1,rows+j,diag,INSERT_VALUES);CHKERRQ(ierr);
       /* ierr = MatSetValues(A,1,rows+j,1,rows+j,diag,INSERT_VALUES);CHKERRQ(ierr); */
     }
   }
@@ -1086,7 +1100,7 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
     with natural ordering 
   */
   if (a->bs == 4) {
-    inA->ops.solve = MatSolve_SeqBAIJ_4_NaturalOrdering;
+    inA->ops->solve = MatSolve_SeqBAIJ_4_NaturalOrdering;
   }
 
   PetscFunctionReturn(0);
@@ -1191,48 +1205,48 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   }
 
   *A = 0;
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQBAIJ,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQBAIJ,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data = (void *) (b = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqBAIJ));
-  PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
   ierr = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg); CHKERRQ(ierr);
   if (!flg) {
     switch (bs) {
     case 1:
-      B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;  
-      B->ops.solve           = MatSolve_SeqBAIJ_1;
-      B->ops.mult            = MatMult_SeqBAIJ_1;
-      B->ops.multadd         = MatMultAdd_SeqBAIJ_1;
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;  
+      B->ops->solve           = MatSolve_SeqBAIJ_1;
+      B->ops->mult            = MatMult_SeqBAIJ_1;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_1;
       break;
     case 2:
-      B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;  
-      B->ops.solve           = MatSolve_SeqBAIJ_2;
-      B->ops.mult            = MatMult_SeqBAIJ_2;
-      B->ops.multadd         = MatMultAdd_SeqBAIJ_2;
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;  
+      B->ops->solve           = MatSolve_SeqBAIJ_2;
+      B->ops->mult            = MatMult_SeqBAIJ_2;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_2;
       break;
     case 3:
-      B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3;  
-      B->ops.solve           = MatSolve_SeqBAIJ_3;
-      B->ops.mult            = MatMult_SeqBAIJ_3;
-      B->ops.multadd         = MatMultAdd_SeqBAIJ_3;
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3;  
+      B->ops->solve           = MatSolve_SeqBAIJ_3;
+      B->ops->mult            = MatMult_SeqBAIJ_3;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_3;
       break;
     case 4:
-      B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4;  
-      B->ops.solve           = MatSolve_SeqBAIJ_4;
-      B->ops.mult            = MatMult_SeqBAIJ_4;
-      B->ops.multadd         = MatMultAdd_SeqBAIJ_4;
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4;  
+      B->ops->solve           = MatSolve_SeqBAIJ_4;
+      B->ops->mult            = MatMult_SeqBAIJ_4;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_4;
       break;
     case 5:
-      B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5;  
-      B->ops.solve           = MatSolve_SeqBAIJ_5; 
-      B->ops.mult            = MatMult_SeqBAIJ_5;
-      B->ops.multadd         = MatMultAdd_SeqBAIJ_5;
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5;  
+      B->ops->solve           = MatSolve_SeqBAIJ_5; 
+      B->ops->mult            = MatMult_SeqBAIJ_5;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_5;
       break;
     case 7:
-      B->ops.mult            = MatMult_SeqBAIJ_7; 
-      B->ops.solve           = MatSolve_SeqBAIJ_7;
-      B->ops.multadd         = MatMultAdd_SeqBAIJ_7;
+      B->ops->mult            = MatMult_SeqBAIJ_7; 
+      B->ops->solve           = MatSolve_SeqBAIJ_7;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_7;
       break;
     }
   }
@@ -1311,10 +1325,10 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   if (a->i[mbs] != nz) SETERRQ(PETSC_ERR_PLIB,0,"Corrupt matrix");
 
   *B = 0;
-  PetscHeaderCreate(C,_p_Mat,MAT_COOKIE,MATSEQBAIJ,A->comm,MatDestroy,MatView);
+  PetscHeaderCreate(C,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQBAIJ,A->comm,MatDestroy,MatView);
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(c);
-  PetscMemcpy(&C->ops,&A->ops,sizeof(struct _MatOps));
+  PetscMemcpy(C->ops,&A->ops,sizeof(struct _MatOps));
   C->destroy    = MatDestroy_SeqBAIJ;
   C->view       = MatView_SeqBAIJ;
   C->factor     = A->factor;

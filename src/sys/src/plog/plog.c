@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.177 1997/11/28 16:22:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.178 1997/12/01 01:57:33 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1007,7 +1007,7 @@ int PLogDump(char* sname)
   if (sname) sprintf(file,"%s.%d",sname,rank);
   else  sprintf(file,"Log.%d",rank);
   ierr = PetscFixFilename(file);CHKERRQ(ierr);
-  fd   = fopen(file,"w"); if (!fd) SETERRQ(PETSC_ERR_FILE_WRITE,0,"cannot open file");
+  fd   = fopen(file,"w"); if (!fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"cannot open file");
 
   fprintf(fd,"Objects created %d Destroyed %d\n",nobjects,ObjectsDestroyed);
   fprintf(fd,"Clock Resolution %g\n",0.0);

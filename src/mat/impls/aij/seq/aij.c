@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.249 1998/02/18 21:01:23 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.250 1998/03/06 00:14:28 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1285,6 +1285,9 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
   if (B != PETSC_NULL) {
     *B = C;
   } else {
+    PetscOps       *Abops;
+    struct _MatOps *Aops;
+
     /* This isn't really an in-place transpose */
     PetscFree(a->a); 
     if (!a->singlemalloc) {PetscFree(a->i); PetscFree(a->j);}
@@ -1293,8 +1296,19 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
     if (a->imax) PetscFree(a->imax);
     if (a->solve_work) PetscFree(a->solve_work);
     if (a->inode.size) PetscFree(a->inode.size);
-    PetscFree(a); 
-    PetscMemcpy(A,C,sizeof(struct _p_Mat)); 
+    PetscFree(a);
+ 
+    /*
+        This is horrible, horrible code. We need to keep the 
+      A pointers for the bops and ops but copy everything 
+      else from C.
+    */
+    Abops = A->bops;
+    Aops  = A->ops;
+    PetscMemcpy(A,C,sizeof(struct _p_Mat));
+    A->bops = Abops;
+    A->ops  = Aops;
+
     PetscHeaderDestroy(C);
   }
   PetscFunctionReturn(0);
@@ -1537,6 +1551,7 @@ int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall 
 #define __FUNC__ "MatGetBlockSize_SeqAIJ"
 int MatGetBlockSize_SeqAIJ(Mat A, int *bs)
 {
+  PetscFunctionBegin;
   *bs = 1;
   PetscFunctionReturn(0);
 }
@@ -1759,11 +1774,11 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   if (size > 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Comm must be of size 1");
 
   *A                  = 0;
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQAIJ,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQAIJ,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data             = (void *) (b = PetscNew(Mat_SeqAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqAIJ));
-  PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
   B->destroy          = MatDestroy_SeqAIJ;
   B->view             = MatView_SeqAIJ;
   B->factor           = 0;
@@ -1856,10 +1871,10 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
 
   PetscFunctionBegin;
   *B = 0;
-  PetscHeaderCreate(C,_p_Mat,MAT_COOKIE,MATSEQAIJ,A->comm,MatDestroy,MatView);
+  PetscHeaderCreate(C,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQAIJ,A->comm,MatDestroy,MatView);
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqAIJ)); CHKPTRQ(c);
-  PetscMemcpy(&C->ops,&A->ops,sizeof(struct _MatOps));
+  PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));
   C->destroy    = MatDestroy_SeqAIJ;
   C->view       = MatView_SeqAIJ;
   C->factor     = A->factor;

@@ -1,4 +1,4 @@
-# $Id: base,v 1.29 1997/09/24 18:34:10 balay Exp bsmith $ 
+# $Id: base,v 1.30 1997/11/19 04:11:42 bsmith Exp bsmith $ 
 
 PARCH    = IRIX
 CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
@@ -21,7 +21,7 @@ LD       = ld -64
 
 SYS_LIB  = 
 
-FCONF    = -DHAVE_FORTRAN_UNDERSCORE
+FCONF    = -DHAVE_FORTRAN_UNDERSCORE -DHAVE_64BITS
 CONF     = -DHAVE_PWD_H -DHAVE_STRING_H -DHAVE_STROPTS_H -DHAVE_MALLOC_H \
            -DHAVE_64BITS -DHAVE_X11 $(FCONF) \
            -DHAVE_DRAND48  -DHAVE_GETDOMAINNAME \
@@ -41,10 +41,10 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 
 ###################
 .F.o:
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
+	$(FC) -c $(FFLAGS) $(FCONF) $(FOPTFLAGS) $(CFLAGS) $*.F
 
 .F.a: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
+	$(FC) -c $(FFLAGS) $(FCONF) $(FOPTFLAGS) $(CFLAGS) $*.F
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 

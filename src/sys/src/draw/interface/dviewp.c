@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dviewp.c,v 1.15 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dviewp.c,v 1.16 1997/10/28 14:23:49 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -32,8 +32,8 @@ int DrawSetViewPort(Draw draw,double xl,double yl,double xr,double yr)
   }
   draw->port_xl = xl; draw->port_yl = yl;
   draw->port_xr = xr; draw->port_yr = yr;
-  if (draw->ops.setviewport) {
-    ierr = (*draw->ops.setviewport)(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  if (draw->ops->setviewport) {
+    ierr = (*draw->ops->setviewport)(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -81,8 +81,8 @@ int DrawSplitViewPort(Draw draw)
   draw->port_yl = yl;
   draw->port_yr = yr;
 
-  if (draw->ops.setviewport) {
-    ierr =  (*draw->ops.setviewport)(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  if (draw->ops->setviewport) {
+    ierr =  (*draw->ops->setviewport)(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

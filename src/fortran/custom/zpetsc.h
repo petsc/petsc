@@ -3,10 +3,10 @@
 
 #include "petsc.h"
 
-       int     PetscScalarAddressToFortran(Scalar*,Scalar*);
-       Scalar* PetscScalarAddressFromFortran(Scalar*,int);
-       int     PetscIntAddressToFortran(int*,int*);
-       int    *PetscIntAddressFromFortran(int*,int); 
+       long    PetscScalarAddressToFortran(Scalar*,Scalar*);
+       Scalar* PetscScalarAddressFromFortran(Scalar*,long);
+       long    PetscIntAddressToFortran(int*,int*);
+       int    *PetscIntAddressFromFortran(int*,long); 
 extern void   *PETSC_NULL_Fortran;
 extern char   *PETSC_NULL_CHARACTER_Fortran;
 

@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.102 1997/12/12 19:38:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.103 1997/12/31 18:25:51 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -637,9 +637,9 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,Dr
   }
 
   *inctx = 0;
-  PetscHeaderCreate(ctx,_p_Draw,DRAW_COOKIE,DRAW_XWINDOW,comm,DrawDestroy,0);
+  PetscHeaderCreate(ctx,_p_Draw,struct _DrawOps,DRAW_COOKIE,DRAW_XWINDOW,comm,DrawDestroy,0);
   PLogObjectCreate(ctx);
-  PetscMemcpy(&ctx->ops,&DvOps,sizeof(DvOps));
+  PetscMemcpy(ctx->ops,&DvOps,sizeof(DvOps));
   ctx->destroy = DrawDestroy_X;
   ctx->view    = 0;
   ctx->pause   = 0;
@@ -769,7 +769,7 @@ int ViewerDrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,
   Viewer ctx;
 
   *viewer = 0;
-  PetscHeaderCreate(ctx,_p_Viewer,VIEWER_COOKIE,DRAW_VIEWER,comm,ViewerDestroy,0);
+  PetscHeaderCreate(ctx,_p_Viewer,int,VIEWER_COOKIE,DRAW_VIEWER,comm,ViewerDestroy,0);
   PLogObjectCreate(ctx);
   ierr = DrawOpenX(comm,display,title,x,y,w,h,&ctx->draw);CHKERRQ(ierr);
   PLogObjectParent(ctx,ctx->draw);

@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.43 1998/01/28 21:00:24 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.44 1998/03/06 00:09:26 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -11,7 +11,7 @@
 #include "vec.h"
 
 /* vector operations */
-struct _VeOps {
+struct _VecOps {
   int  (*duplicate)(Vec,Vec*),           /* get single vector */
        (*duplicatevecs)(Vec,int,Vec**),  /* get array of vectors */
        (*destroyvecs)(Vec*,int),         /* free array of vectors */
@@ -46,7 +46,7 @@ struct _VeOps {
 };
 
 struct _p_Vec {
-  PETSCHEADER(struct _VeOps ops)
+  PETSCHEADER(struct _VecOps)
   void                   *data;     /* implementation-specific data */
   int                    N, n;      /* global, local vector size */
   int                    bs;
@@ -142,7 +142,7 @@ typedef struct {
 } VecScatter_MPI_General;
 
 struct _p_VecScatter {
-  PETSCHEADER(int dummy)
+  PETSCHEADER(int)
   int     to_n,from_n;
   int     inuse;   /* prevents corruption from mixing two scatters */
   int     (*postrecvs)(Vec,Vec,InsertMode,ScatterMode,VecScatter);

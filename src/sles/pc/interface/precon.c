@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.139 1998/01/06 20:09:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.140 1998/03/06 00:13:26 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -61,7 +61,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   PetscFunctionBegin;
   *newpc          = 0;
 
-  PetscHeaderCreate(pc,_p_PC,PC_COOKIE,-1,comm,PCDestroy,PCView);
+  PetscHeaderCreate(pc,_p_PC,int,PC_COOKIE,-1,comm,PCDestroy,PCView);
   PLogObjectCreate(pc);
   pc->vec                = 0;
   pc->mat                = 0;

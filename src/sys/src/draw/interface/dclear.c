@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dclear.c,v 1.15 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dclear.c,v 1.16 1997/10/28 14:23:49 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -25,8 +25,8 @@ int DrawClear(Draw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
-  if (draw->ops.clear) {
-    ierr = (*draw->ops.clear)(draw);CHKERRQ(ierr);
+  if (draw->ops->clear) {
+    ierr = (*draw->ops->clear)(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -50,8 +50,8 @@ int DrawBOP( Draw draw )
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
-  if (draw->ops.beginpage) {
-    ierr = (*draw->ops.beginpage)(draw);CHKERRQ(ierr);
+  if (draw->ops->beginpage) {
+    ierr = (*draw->ops->beginpage)(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -74,8 +74,8 @@ int DrawEOP( Draw draw )
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
-  if (draw->ops.endpage) {
-    ierr =  (*draw->ops.endpage)(draw);CHKERRQ(ierr);
+  if (draw->ops->endpage) {
+    ierr =  (*draw->ops->endpage)(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

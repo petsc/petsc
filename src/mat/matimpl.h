@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.80 1998/01/28 21:01:41 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.81 1998/03/06 00:14:09 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -83,7 +83,7 @@ struct _MatOps {
 #define FACTOR_CHOLESKY 2
 
 struct _p_Mat {
-  PETSCHEADER(struct _MatOps ops)
+  PETSCHEADER(struct _MatOps)
   void                   *data;            /* implementation-specific data */
   int                    factor;           /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
   double                 lupivotthreshold; /* threshold for pivoting */
@@ -132,7 +132,7 @@ extern int MatView_Private(Mat);
 */
 
 struct _p_Partitioning {
-  PETSCHEADER(int dummy)
+  PETSCHEADER(int)
   Mat         adj;
   int         (*apply)(Partitioning,IS*);
   int         (*setfromoptions)(Partitioning);
@@ -178,7 +178,7 @@ struct _p_Partitioning {
 */
 
 struct  _p_MatFDColoring{
-  PETSCHEADER(int dummy)
+  PETSCHEADER(int)
   int    M,N,m;            /* total rows, columns; local rows */
   int    rstart;           /* first row owned by local processor */
   int    ncolors;          

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.10 1998/01/29 21:05:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.11 1998/03/06 00:12:03 bsmith Exp bsmith $";
 #endif
 /*
          Provides a general mechanism to allow one to register
@@ -86,10 +86,36 @@ int PetscInitialize_DynamicLibraries()
 
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "PetscFinalize_DynamicLibraries"
+/*
+      PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries
+*/ 
+int PetscFinalize_DynamicLibraries()
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = DLLibraryClose(DLLibrariesLoaded);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #else
+
+#undef __FUNC__  
+#define __FUNC__ "PetscInitalize_DynamicLibraries"
 int PetscInitialize_DynamicLibraries()
 {
- PetscFunctionBegin;
+  PetscFunctionBegin;
+
+  PetscFunctionReturn(0);
+}
+#undef __FUNC__  
+#define __FUNC__ "PetscFinalize_DynamicLibraries"
+int PetscFinalize_DynamicLibraries()
+{
+  PetscFunctionBegin;
 
   PetscFunctionReturn(0);
 }
@@ -117,13 +143,13 @@ struct _DLList {
 static DLList dlallhead = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "DLCreate"
+#define __FUNC__ "DLRegisterCreate"
 /*
-  DLCreate - create a name registry.
+  DLRegisterCreate - create a name registry.
 
 .seealso: DLRegister(), DLRegisterDestroy()
 */
-int DLCreate(DLList *fl )
+int DLRegisterCreate(DLList *fl )
 {
   PetscFunctionBegin;
   *fl                = PetscNew(struct _DLList);CHKPTRQ(*fl);
@@ -181,7 +207,7 @@ int DLRegister_Private( DLList *fl, char *name, char *rname,int (*fnc)(void *))
   entry->routine = fnc;
 
   if (!*fl) {
-    ierr = DLCreate(fl);CHKERRQ(ierr);
+    ierr = DLRegisterCreate(fl);CHKERRQ(ierr);
   }
 
   entry->next = 0;

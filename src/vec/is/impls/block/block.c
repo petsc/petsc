@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.20 1997/10/19 03:22:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.21 1997/12/01 01:52:28 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -205,7 +205,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
 
   PetscFunctionBegin;
   *is = 0;
-  PetscHeaderCreate(Nindex, _p_IS,IS_COOKIE,IS_BLOCK,comm,ISDestroy,ISView); 
+  PetscHeaderCreate(Nindex, _p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,comm,ISDestroy,ISView); 
   PLogObjectCreate(Nindex);
   sub            = PetscNew(IS_Block); CHKPTRQ(sub);
   PLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(int)+sizeof(struct _p_IS));
@@ -225,7 +225,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
   Nindex->min     = min;
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
-  PetscMemcpy(&Nindex->ops,&myops,sizeof(myops));
+  PetscMemcpy(Nindex->ops,&myops,sizeof(myops));
   Nindex->destroy = ISDestroy_Block;
   Nindex->view    = ISView_Block;
   Nindex->isperm  = 0;

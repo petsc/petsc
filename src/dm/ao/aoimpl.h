@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.12 1997/12/12 19:40:07 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.13 1998/03/06 00:20:21 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -16,7 +16,7 @@ struct _AOOps {
 };
 
 struct _p_AO {
-  PETSCHEADER(struct _AOOps ops)
+  PETSCHEADER(struct _AOOps)
   void          *data;                   /* implementation-specific data */
   int           N, n;                    /* global, local vector size */
 };
@@ -91,7 +91,7 @@ struct __AODataKey {
 };
 
 struct _p_AOData {
-  PETSCHEADER(struct _AODataOps ops)
+  PETSCHEADER(struct _AODataOps)
   int               nkeys;                   /* current number of keys */
   AODataKey         *keys;
   void              *data;

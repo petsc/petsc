@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.25 1997/10/10 14:53:50 balay Exp bsmith $";
+C "$Id: ex4f.F,v 1.26 1997/11/28 16:22:00 bsmith Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -259,8 +259,8 @@ C  Input/output variables:
       integer  ierr
 
 C  Declarations for use with local arrays:
-      Scalar   lx_v(0:1)
-      integer  lx_i
+      Scalar      lx_v(0:1)
+      PetscOffset lx_i
 
       ierr   = 0
 
@@ -386,8 +386,8 @@ C  Local variables:
       integer  ierr
 
 C  Declarations for use with local arrays:
-      Scalar   lx_v(0:1), lf_v(0:1)
-      integer  lx_i, lf_i 
+      Scalar      lx_v(0:1), lf_v(0:1)
+      PetscOffset lx_i, lf_i 
 
 C  Get pointers to vector data.
 C    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -524,8 +524,8 @@ C  Local variables:
       integer      ierr
 
 C  Declarations for use with local array:
-      Scalar   lx_v(0:1)
-      integer  lx_i
+      Scalar      lx_v(0:1)
+      PetscOffset lx_i
 
 C  Get a pointer to vector data
 

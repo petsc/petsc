@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.7 1997/12/01 01:55:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.8 1998/01/14 02:42:04 bsmith Exp bsmith $";
 #endif
  
 
@@ -252,7 +252,7 @@ int PartitioningCreate(MPI_Comm comm,Partitioning *newp)
   PetscFunctionBegin;
   *newp          = 0;
 
-  PetscHeaderCreate(part,_p_Partitioning,PARTITIONING_COOKIE,initialtype,comm,PartitioningDestroy,
+  PetscHeaderCreate(part,_p_Partitioning,int,PARTITIONING_COOKIE,initialtype,comm,PartitioningDestroy,
                     PartitioningView);
   PLogObjectCreate(part);
   part->type               = -1;

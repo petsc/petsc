@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.67 1998/01/14 02:40:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.68 1998/03/06 00:13:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -111,11 +111,12 @@ static int PCDestroy_Eisenstat(PetscObject obj)
 {
   PC           pc = (PC) obj;
   PC_Eisenstat *eis = ( PC_Eisenstat  *) pc->data; 
+  int          ierr;
 
   PetscFunctionBegin;
-  if (eis->b) VecDestroy(eis->b);
-  if (eis->shell) MatDestroy(eis->shell);
-  if (eis->diag) VecDestroy(eis->diag);
+  if (eis->b)     {ierr = VecDestroy(eis->b);CHKERRQ(ierr);}
+  if (eis->shell) {ierr = MatDestroy(eis->shell);CHKERRQ(ierr);}
+  if (eis->diag)  {ierr = VecDestroy(eis->diag);CHKERRQ(ierr);}
   PetscFree(eis);
   PetscFunctionReturn(0);
 }

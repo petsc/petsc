@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.82 1997/12/04 19:35:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.83 1998/03/06 00:14:28 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -785,15 +785,15 @@ int Mat_AIJ_CheckInode(Mat A)
     PetscFree(ns);
     PLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes out of %d rows. Not using Inode routines\n",node_count,m);
   } else {
-    A->ops.mult            = MatMult_SeqAIJ_Inode;
-    A->ops.multadd         = MatMultAdd_SeqAIJ_Inode;
-    A->ops.solve           = MatSolve_SeqAIJ_Inode;
-    A->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
-    A->ops.getrowij        = MatGetRowIJ_SeqAIJ_Inode;
-    A->ops.restorerowij    = MatRestoreRowIJ_SeqAIJ_Inode;
-    A->ops.getcolumnij     = MatGetColumnIJ_SeqAIJ_Inode;
-    A->ops.restorecolumnij = MatRestoreColumnIJ_SeqAIJ_Inode;
-    A->ops.coloringpatch   = MatColoringPatch_SeqAIJ_Inode;
+    A->ops->mult            = MatMult_SeqAIJ_Inode;
+    A->ops->multadd         = MatMultAdd_SeqAIJ_Inode;
+    A->ops->solve           = MatSolve_SeqAIJ_Inode;
+    A->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
+    A->ops->getrowij        = MatGetRowIJ_SeqAIJ_Inode;
+    A->ops->restorerowij    = MatRestoreRowIJ_SeqAIJ_Inode;
+    A->ops->getcolumnij     = MatGetColumnIJ_SeqAIJ_Inode;
+    A->ops->restorecolumnij = MatRestoreColumnIJ_SeqAIJ_Inode;
+    A->ops->coloringpatch   = MatColoringPatch_SeqAIJ_Inode;
     a->inode.node_count    = node_count;
     a->inode.size          = ns;
     PLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes of %d. Limit used: %d. Using Inode routines\n",node_count,m,a->inode.limit);
@@ -1212,14 +1212,14 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
     b->inode.node_count    = node_max;
     b->inode.limit         = a->inode.limit;
     b->inode.max_limit     = a->inode.max_limit;
-    C->ops.mult            = MatMult_SeqAIJ_Inode;
-    C->ops.multadd         = MatMultAdd_SeqAIJ_Inode;
-    C->ops.solve           = MatSolve_SeqAIJ_Inode;
-    C->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
-    C->ops.getrowij        = MatGetRowIJ_SeqAIJ_Inode;
-    C->ops.restorerowij    = MatRestoreRowIJ_SeqAIJ_Inode;
-    C->ops.getcolumnij     = MatGetColumnIJ_SeqAIJ_Inode;
-    C->ops.restorerowij    = MatRestoreRowIJ_SeqAIJ_Inode;
+    C->ops->mult            = MatMult_SeqAIJ_Inode;
+    C->ops->multadd         = MatMultAdd_SeqAIJ_Inode;
+    C->ops->solve           = MatSolve_SeqAIJ_Inode;
+    C->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
+    C->ops->getrowij        = MatGetRowIJ_SeqAIJ_Inode;
+    C->ops->restorerowij    = MatRestoreRowIJ_SeqAIJ_Inode;
+    C->ops->getcolumnij     = MatGetColumnIJ_SeqAIJ_Inode;
+    C->ops->restorerowij    = MatRestoreRowIJ_SeqAIJ_Inode;
     for (i = 0, row = 0; i< node_max; ++i){
       nsz = nsa[i];
       for( j = 0; j < nsz; ++j, ++row)

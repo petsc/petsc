@@ -1,5 +1,5 @@
 C
-C  "$Id: ex2f.F,v 1.8 1997/04/10 00:00:00 bsmith Exp balay $"
+C  "$Id: ex2f.F,v 1.9 1997/07/10 15:43:37 balay Exp bsmith $"
 C
 C  Formatted Test for IS stride routines
 C
@@ -7,9 +7,10 @@ C
 #include "FINCLUDE/petsc.h"
 #include "FINCLUDE/is.h"
 
-      integer    i, n, ierr,ii(1),iis,start,stride
-      IS         is
-      PetscTruth flag
+      integer     i, n, ierr,ii(1),start,stride
+      IS          is
+      PetscTruth  flag
+      PetscOffset iis
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 

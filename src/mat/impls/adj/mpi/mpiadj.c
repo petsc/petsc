@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.6 1998/01/06 20:11:04 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiadj.c,v 1.7 1998/02/18 19:28:50 balay Exp bsmith $";
 #endif
 
 /*
@@ -286,11 +286,11 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
   MPI_Comm_rank(comm,&rank);
 
   *A                  = 0;
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATMPIADJ,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIADJ,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data             = (void *) (b = PetscNew(Mat_MPIAdj)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIAdj));
-  PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
   B->destroy          = MatDestroy_MPIAdj;
   B->view             = MatView_MPIAdj;
   B->factor           = 0;

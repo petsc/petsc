@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.46 1997/11/03 04:47:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.47 1997/11/28 16:20:48 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -20,8 +20,8 @@ int DrawResizeWindow(Draw draw,int w,int h)
 {
   int ierr;
   PetscFunctionBegin;
-  if (draw->ops.resizewindow) {
-    ierr = (*draw->ops.resizewindow)(draw,w,h);CHKERRQ(ierr);
+  if (draw->ops->resizewindow) {
+    ierr = (*draw->ops->resizewindow)(draw,w,h);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -42,8 +42,8 @@ int DrawCheckResizedWindow(Draw draw)
 {
   int ierr;
   PetscFunctionBegin;
-  if (draw->ops.checkresizedwindow) {
-    ierr = (*draw->ops.checkresizedwindow)(draw);CHKERRQ(ierr);
+  if (draw->ops->checkresizedwindow) {
+    ierr = (*draw->ops->checkresizedwindow)(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -93,8 +93,8 @@ int DrawSetTitle(Draw draw,char *title)
   } else {
     draw->title = 0;
   }
-  if (draw->ops.settitle) {
-    ierr = (*draw->ops.settitle)(draw,title);CHKERRQ(ierr);
+  if (draw->ops->settitle) {
+    ierr = (*draw->ops->settitle)(draw,title);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -133,8 +133,8 @@ int DrawAppendTitle(Draw draw,char *title)
     PLogObjectMemory(draw,(len+1)*sizeof(char*));
     PetscStrcpy(draw->title,title);
   }
-  if (draw->ops.settitle) {
-    ierr = (*draw->ops.settitle)(draw,draw->title);CHKERRQ(ierr);
+  if (draw->ops->settitle) {
+    ierr = (*draw->ops->settitle)(draw,draw->title);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -181,8 +181,8 @@ int DrawGetPopup(Draw draw,Draw *popup)
   PetscValidPointer(popup);
 
   if (draw->popup) {*popup = draw->popup; PetscFunctionReturn(0);}
-  if (draw->ops.getpopup) {
-    ierr = (*draw->ops.getpopup)(draw,popup);CHKERRQ(ierr);
+  if (draw->ops->getpopup) {
+    ierr = (*draw->ops->getpopup)(draw,popup);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -214,9 +214,9 @@ int DrawOpenNull(MPI_Comm comm,Draw *win)
   Draw draw;
   PetscFunctionBegin;
   *win = 0;
-  PetscHeaderCreate(draw,_p_Draw,DRAW_COOKIE,DRAW_NULLWINDOW,comm,DrawDestroy,0);
+  PetscHeaderCreate(draw,_p_Draw,struct _DrawOps,DRAW_COOKIE,DRAW_NULLWINDOW,comm,DrawDestroy,0);
   PLogObjectCreate(draw);
-  PetscMemzero(&draw->ops,sizeof(struct _DrawOps));
+  PetscMemzero(draw->ops,sizeof(struct _DrawOps));
   draw->destroy = DrawDestroy_Null;
   draw->view    = 0;
   draw->pause   = 0;

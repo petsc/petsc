@@ -1,4 +1,4 @@
-/* $Id: tsimpl.h,v 1.13 1997/05/23 18:35:55 balay Exp bsmith $ */
+/* $Id: tsimpl.h,v 1.14 1998/03/06 00:17:22 bsmith Exp bsmith $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -17,7 +17,7 @@
 #define MAXTSMONITORS 5 
 
 struct _p_TS {
-  PETSCHEADER(int dummy)
+  PETSCHEADER(int)
 
   TSProblemType problem_type;
 

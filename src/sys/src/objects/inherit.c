@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.25 1998/01/06 20:09:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.26 1998/03/06 00:12:03 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -22,7 +22,7 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,MPI_Comm comm,in
   h->type          = type;
   h->prefix        = 0;
   h->refct         = 1;
-  h->destroypublic = des;
+  h->bops->destroy  = des;
   h->viewpublic    = vie;
   PetscCommDup_Private(comm,&h->comm,&h->tag);
   PetscFunctionReturn(0);
@@ -39,6 +39,8 @@ int PetscHeaderDestroy_Private(PetscObject h)
 
   PetscFunctionBegin;
   PetscCommFree_Private(&h->comm);
+  PetscFree(h->bops);
+  PetscFree(h->ops);
   ierr = DLRegisterDestroy(h->qlist); CHKERRQ(ierr);
   if (h->type_name) PetscFree(h->type_name);
   h->cookie = PETSCFREEDHEADER;
@@ -82,7 +84,7 @@ static int PetscObjectCompose_DefaultDestroy(void *in)
   PetscObject obj = (PetscObject) in;
 
   PetscFunctionBegin;
-  ierr = (*obj->destroypublic)(obj); CHKERRQ(ierr);
+  ierr = (*obj->bops->destroy)(obj); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -126,8 +128,8 @@ int PetscObjectDereference(PetscObject obj)
 
   PetscFunctionBegin;
   PetscValidHeader(obj);
-  if (obj->destroypublic) {
-    ierr = (*obj->destroypublic)(obj); CHKERRQ(ierr);
+  if (obj->bops->destroy) {
+    ierr = (*obj->bops->destroy)(obj); CHKERRQ(ierr);
   } else if (--obj->refct == 0) {
     SETERRQ(PETSC_ERR_SUP,0,"This PETSc object does not have a generic destroy routine");
   }

@@ -1,5 +1,5 @@
 
-C      "$Id: ex2f.F,v 1.8 1997/04/10 00:00:03 bsmith Exp balay $";
+C      "$Id: ex2f.F,v 1.9 1997/07/10 15:44:16 balay Exp bsmith $";
 C
 C/*T
 C    Concepts: Index sets^Manipulating a stride index set;
@@ -17,8 +17,9 @@ C
 #include "FINCLUDE/petsc.h"
 #include "FINCLUDE/is.h"
 
-      integer i, n, ierr, iss, index(1), first, step
-      IS      set
+      integer     i, n, ierr,  index(1), first, step
+      IS          set
+      PetscOffset iss
 
 #define indices(ib)  index(iss + (ib))
 

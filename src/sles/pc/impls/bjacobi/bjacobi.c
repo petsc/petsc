@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.101 1998/01/14 02:40:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.102 1998/03/06 00:13:41 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -253,8 +253,7 @@ int PCBJacobiSetLocalBlocks_BJacobi(PC pc, int blocks,int *lens)
   jac->n_local = blocks;
   if (!lens) {
     jac->l_lens = 0;
-  }
-  else {
+  } else {
     jac->l_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->l_lens);
     PLogObjectMemory(pc,blocks*sizeof(int));
     PetscMemcpy(jac->l_lens,lens,blocks*sizeof(int));

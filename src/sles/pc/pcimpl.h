@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.19 1998/01/12 15:54:59 bsmith Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.20 1998/03/06 00:13:24 bsmith Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -12,7 +12,7 @@
    Preconditioner context
 */
 struct _p_PC {
-  PETSCHEADER(int dummy)
+  PETSCHEADER(int)
   int          setupcalled;
   MatStructure flag;
   int          (*apply)(PC,Vec,Vec),(*setup)(PC),(*applyrich)(PC,Vec,Vec,Vec,int),
@@ -31,7 +31,7 @@ struct _p_PC {
 };
 
 struct _p_PCNullSpace {
-  PETSCHEADER(int dummy)
+  PETSCHEADER(int)
   int         has_cnst;
   int         n;
   Vec*        vecs;

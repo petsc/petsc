@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.43 1998/02/27 14:49:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.44 1998/03/05 22:59:18 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -110,6 +110,7 @@ int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
   int                     depth, border_width;
   unsigned long           wmask;
 
+  PetscFunctionBegin;
   /* get the available widths */
   wavail              = DisplayWidth(  XiWin->disp, XiWin->screen );
   havail              = DisplayHeight( XiWin->disp, XiWin->screen );

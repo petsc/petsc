@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.209 1998/03/05 22:38:58 balay Exp balay $ 
+# $Id: makefile,v 1.210 1998/03/05 22:40:57 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -263,6 +263,7 @@ alletags:
 	-make etags_complete
 	-make etags
 	-make etags_noexamples
+	-make etags_examples
 	-make etags_makefiles
 
 # Builds the basic etags file.	This should be employed by most users.

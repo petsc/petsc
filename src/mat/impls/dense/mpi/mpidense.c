@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.78 1998/01/06 20:10:12 bsmith Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.79 1998/02/18 21:00:46 balay Exp bsmith $";
 #endif
 
 /*
@@ -838,13 +838,27 @@ int MatTranspose_MPIDense(Mat A,Mat *matout)
   if (matout != PETSC_NULL) {
     *matout = B;
   } else {
+    PetscOps       *Abops;
+    struct _MatOps *Aops;
+
     /* This isn't really an in-place transpose, but free data struct from a */
     PetscFree(a->rowners); 
     ierr = MatDestroy(a->A); CHKERRQ(ierr);
     if (a->lvec) VecDestroy(a->lvec);
     if (a->Mvctx) VecScatterDestroy(a->Mvctx);
-    PetscFree(a); 
-    PetscMemcpy(A,B,sizeof(struct _p_Mat)); 
+    PetscFree(a);
+ 
+    /*
+         This is horrible, horrible code. We need to keep the 
+      A pointers for the bops and ops but copy everything 
+      else from C.
+    */
+    Abops = A->bops;
+    Aops  = A->ops;
+    PetscMemcpy(A,B,sizeof(struct _p_Mat));
+    A->bops = Abops;
+    A->ops  = Aops;
+
     PetscHeaderDestroy(B);
   }
   PetscFunctionReturn(0);
@@ -943,10 +957,10 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
    allocates the local dense storage space.  We should add error checking. */
 
   *A = 0;
-  PetscHeaderCreate(mat,_p_Mat,MAT_COOKIE,MATMPIDENSE,comm,MatDestroy,MatView);
+  PetscHeaderCreate(mat,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIDENSE,comm,MatDestroy,MatView);
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
-  PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(mat->ops,&MatOps,sizeof(struct _MatOps));
   mat->destroy    = MatDestroy_MPIDense;
   mat->view       = MatView_MPIDense;
   mat->factor     = 0;
@@ -1016,10 +1030,10 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
 
   PetscFunctionBegin;
   *newmat       = 0;
-  PetscHeaderCreate(mat,_p_Mat,MAT_COOKIE,MATMPIDENSE,A->comm,MatDestroy,MatView);
+  PetscHeaderCreate(mat,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIDENSE,A->comm,MatDestroy,MatView);
   PLogObjectCreate(mat);
   mat->data      = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
-  PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(mat->ops,&MatOps,sizeof(struct _MatOps));
   mat->destroy   = MatDestroy_MPIDense;
   mat->view      = MatView_MPIDense;
   mat->factor    = A->factor;

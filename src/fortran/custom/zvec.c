@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.29 1998/03/03 19:27:38 bsmith Exp balay $";
+static char vcid[] = "$Id: zvec.c,v 1.30 1998/03/03 19:29:41 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -90,7 +90,7 @@ void vecload_(Viewer viewer,Vec *newvec, int *__ierr )
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
-void vecrestorearray_(Vec x,Scalar *fa,int *ia,int *__ierr)
+void vecrestorearray_(Vec x,Scalar *fa,long *ia,int *__ierr)
 {
   Vec    xin = (Vec)PetscToPointer( *(int*)(x) );
   Scalar *lx = PetscScalarAddressFromFortran(fa,*ia);
@@ -98,19 +98,13 @@ void vecrestorearray_(Vec x,Scalar *fa,int *ia,int *__ierr)
   *__ierr = VecRestoreArray(xin,&lx);
 }
 
-void vecgetarray_(Vec x,Scalar *fa,int *ia,int *__ierr)
+void vecgetarray_(Vec x,Scalar *fa,long *ia,int *__ierr)
 {
   Vec    xin = (Vec)PetscToPointer( *(int*)(x) );
   Scalar *lx;
 
-#if defined(PARCH_IRIX64)
-  (*PetscErrorPrintf)("PETSC ERROR: Cannot use VecGetArray() from Fortran under IRIX\n");
-  (*PetscErrorPrintf)("PETSC ERROR: Refer to troubleshooting.html for more details\n");
-  MPI_Abort(PETSC_COMM_WORLD,1);
-#else
   *__ierr = VecGetArray(xin,&lx); if (*__ierr) return;
   *ia      = PetscScalarAddressToFortran(fa,lx);
-#endif
 }
 
 void vecscatterdestroy_(VecScatter ctx, int *__ierr )

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.33 1997/12/01 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.34 1998/03/06 00:12:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: random.c,v 1.33 1997/12/01 01:53:22 bsmith Exp bsmith
 
 /* Private data */
 struct _p_PetscRandom {
-  PETSCHEADER(int dummy)
+  PETSCHEADER(int)
   unsigned long seed;
   Scalar        low, width;       /* lower bound and width of the interval over
                                      which the random numbers are distributed */
@@ -155,7 +155,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   if (type != RANDOM_DEFAULT && type != RANDOM_DEFAULT_REAL 
                              && type != RANDOM_DEFAULT_IMAGINARY)
     SETERRQ(PETSC_ERR_SUP,0,"Not for this random number type");
-  PetscHeaderCreate(rr,_p_PetscRandom,PETSCRANDOM_COOKIE,type,comm,PetscRandomDestroy,0);
+  PetscHeaderCreate(rr,_p_PetscRandom,int,PETSCRANDOM_COOKIE,type,comm,PetscRandomDestroy,0);
   PLogObjectCreate(rr);
   rr->low   = 0.0;
   rr->width = 1.0;
@@ -232,7 +232,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   PetscFunctionBegin;
   *r = 0;
   if (type != RANDOM_DEFAULT) SETERRQ(PETSC_ERR_SUP,0,"Not for this random number type");
-  PetscHeaderCreate(rr,_p_PetscRandom,PETSCRANDOM_COOKIE,type,comm,PetscRandomDestroy,0);
+  PetscHeaderCreate(rr,_p_PetscRandom,int,PETSCRANDOM_COOKIE,type,comm,PetscRandomDestroy,0);
   PLogObjectCreate(rr);
   *r = rr;
   PetscGetArchType(arch,10);

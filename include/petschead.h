@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.53 1997/10/19 03:31:51 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.54 1998/03/06 00:21:12 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -18,7 +18,7 @@ extern int PetscRegisterCookie(int *);
 
    PetscHeaderCreate() should be used whenever creating a PETSc structure.
 
-      destroypublic() is the routine for destroying the entire PETSc object; for
+      bops->destroy() is the routine for destroying the entire PETSc object; for
                       example, MatDestroy() is the general matrix destruction routine.
       destroy() is the analogous private routine that is specific for a particular 
                       subclass; for example, MatDestroy_SeqAIJ() is the matrix 
@@ -30,17 +30,26 @@ extern int PetscRegisterCookie(int *);
                       routine for MATSEQAIJ matrices.
 */
 
-#define PETSCHEADER(SOPS)                              \
-  PLogDouble  flops,time,mem;                          \
+typedef struct {
+   int (*view)(PetscObject,Viewer);
+   int (*destroy)(PetscObject);
+   int (*queryfunction)(PetscObject,int (*)());
+   int (*queryobject)(PetscObject,void **);
+   int (*reference)(PetscObject);
+} PetscOps;
+
+#define PETSCHEADER(ObjectOps)                         \
   int         cookie;                                  \
+  MPI_Comm    comm;                                    \
+  PetscOps    *bops;                                   \
+  ObjectOps   *ops;                                    \
   int         type;                                    \
+  PLogDouble  flops,time,mem;                          \
   int         id;                                      \
   int         refct;                                   \
   int         tag;                                     \
-  int         (*destroypublic)(PetscObject);           \
   int         (*copypublic)(PetscObject,PetscObject*); \
   int         (*viewpublic)(PetscObject,Viewer);       \
-  MPI_Comm    comm;                                    \
   DLList      qlist;                                   \
   char        *type_name;                              \
   PetscObject parent;                                  \
@@ -51,8 +60,7 @@ extern int PetscRegisterCookie(int *);
   int         (*childdestroy)(void *);                 \
   int         (*destroy)(PetscObject);                 \
   int         (*view)(PetscObject,Viewer);             \
-  void**      fortran_func_pointers;                   \
-  SOPS;
+  void**      fortran_func_pointers;       
 
   /*  ... */                               
 
@@ -62,10 +70,13 @@ extern int PetscHeaderCreate_Private(PetscObject,int,int,MPI_Comm,int (*)(PetscO
                                      int (*)(PetscObject,Viewer));
 extern int PetscHeaderDestroy_Private(PetscObject);
 
-#define PetscHeaderCreate(h,tp,cook,t,com,des,vie)                                          \
+#define PetscHeaderCreate(h,tp,pops,cook,t,com,des,vie)                                     \
   { int _ierr;                                                                              \
-    h = (struct tp *) PetscNew(struct tp);CHKPTRQ((h));                                     \
+    h       = PetscNew(struct tp);CHKPTRQ((h));                                             \
     PetscMemzero(h,sizeof(struct tp));                                                      \
+    (h)->bops = PetscNew(PetscOps);CHKPTRQ(((h)->bops));                                    \
+    PetscMemzero((h)->bops,sizeof(sizeof(PetscOps)));                                         \
+    (h)->ops  = PetscNew(pops);CHKPTRQ(((h)->ops));                                         \
     _ierr = PetscHeaderCreate_Private((PetscObject)h,cook,t,com,                            \
                                        (int (*)(PetscObject))des,                           \
                                        (int (*)(PetscObject,Viewer))vie); CHKERRQ(_ierr);   \
@@ -187,7 +198,7 @@ extern void *PetscLow,*PetscHigh;
    from which all objects are derived.
 */
 struct _p_PetscObject {
-  PETSCHEADER(int dummy)
+  PETSCHEADER(int)
 };
 
 extern int PetscObjectSetOptionsPrefix(PetscObject,char*);

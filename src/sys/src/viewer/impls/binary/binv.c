@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.41 1997/11/28 16:21:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.42 1997/12/01 01:56:38 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -109,7 +109,7 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
   Viewer v;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,BINARY_FILE_VIEWER,comm,ViewerDestroy,0);
+  PetscHeaderCreate(v,_p_Viewer,int,VIEWER_COOKIE,BINARY_FILE_VIEWER,comm,ViewerDestroy,0);
   PLogObjectCreate(v);
   v->destroy = ViewerDestroy_BinaryFile;
   v->flush   = 0;

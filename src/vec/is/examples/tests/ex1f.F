@@ -1,5 +1,5 @@
 C
-C static char vcid[] = "$Id: ex1f.F,v 1.7 1997/07/10 15:43:17 balay Exp balay $"
+C static char vcid[] = "$Id: ex1f.F,v 1.8 1997/09/22 15:24:43 balay Exp bsmith $"
 C
 C  Formatted test for IS general routines
 C
@@ -8,9 +8,10 @@ C
 #include "FINCLUDE/is.h"
 
 
-       integer    i, n, ierr,indices(1000),rank,size,ii(1),iis
-       IS         is,newis
-       PetscTruth flag
+       integer     i, n, ierr,indices(1000),rank,size,ii(1)
+       PetscOffset iis
+       IS          is,newis
+       PetscTruth  flag
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
             CHKERRA(ierr)

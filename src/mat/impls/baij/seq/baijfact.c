@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact.c,v 1.54 1997/12/05 19:10:22 balay Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.55 1998/01/06 20:10:49 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -997,9 +997,11 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
 #define __FUNC__ "MatLUFactor_SeqBAIJ"
 int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
 {
-  Mat_SeqBAIJ *mat = (Mat_SeqBAIJ *) A->data;
-  int         ierr;
-  Mat         C;
+  Mat_SeqBAIJ    *mat = (Mat_SeqBAIJ *) A->data;
+  int            ierr;
+  Mat            C;
+  PetscOps       *Abops;
+  struct _MatOps *Aops;
 
   PetscFunctionBegin;
   ierr = MatLUFactorSymbolic(A,row,col,f,&C); CHKERRQ(ierr);
@@ -1015,7 +1017,17 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
   if (mat->mult_work) PetscFree(mat->mult_work);
   PetscFree(mat);
 
+  /*
+       This is horrible, horrible code. We need to keep the 
+    A pointers for the bops and ops but copy everything 
+    else from C.
+  */
+  Abops = A->bops;
+  Aops  = A->ops;
   PetscMemcpy(A,C,sizeof(struct _p_Mat));
+  A->bops = Abops;
+  A->ops  = Aops;
+
   PetscHeaderDestroy(C);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.146 1998/01/14 02:41:22 bsmith Exp balay $";
+static char vcid[] = "$Id: bdiag.c,v 1.147 1998/02/18 21:00:51 balay Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -2216,11 +2216,11 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,
   if ((n%bs) || (m%bs)) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Invalid block size");
   if (!nd) nda = nd + 1;
   else     nda = nd;
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQBDIAG,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQBDIAG,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data    = (void *) (b = PetscNew(Mat_SeqBDiag)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqBDiag));
-  PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
   B->destroy = MatDestroy_SeqBDiag;
   B->view    = MatView_SeqBDiag;
   B->factor  = 0;
@@ -2230,36 +2230,36 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,
   if (!flg1) {
     switch (bs) {
       case 1:
-        B->ops.setvalues       = MatSetValues_SeqBDiag_1;
-        B->ops.getvalues       = MatGetValues_SeqBDiag_1;
-        B->ops.getdiagonal     = MatGetDiagonal_SeqBDiag_1;
-        B->ops.mult            = MatMult_SeqBDiag_1;
-        B->ops.multadd         = MatMultAdd_SeqBDiag_1;
-        B->ops.multtrans       = MatMultTrans_SeqBDiag_1;
-        B->ops.multtransadd    = MatMultTransAdd_SeqBDiag_1;
-        B->ops.relax           = MatRelax_SeqBDiag_1;
-        B->ops.solve           = MatSolve_SeqBDiag_1;
-        B->ops.lufactornumeric = MatLUFactorNumeric_SeqBDiag_1;
+        B->ops->setvalues       = MatSetValues_SeqBDiag_1;
+        B->ops->getvalues       = MatGetValues_SeqBDiag_1;
+        B->ops->getdiagonal     = MatGetDiagonal_SeqBDiag_1;
+        B->ops->mult            = MatMult_SeqBDiag_1;
+        B->ops->multadd         = MatMultAdd_SeqBDiag_1;
+        B->ops->multtrans       = MatMultTrans_SeqBDiag_1;
+        B->ops->multtransadd    = MatMultTransAdd_SeqBDiag_1;
+        B->ops->relax           = MatRelax_SeqBDiag_1;
+        B->ops->solve           = MatSolve_SeqBDiag_1;
+        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBDiag_1;
         break;
       case 2:
-	B->ops.mult            = MatMult_SeqBDiag_2; 
-        B->ops.multadd         = MatMultAdd_SeqBDiag_2;
-        B->ops.solve           = MatSolve_SeqBDiag_2;
+	B->ops->mult            = MatMult_SeqBDiag_2; 
+        B->ops->multadd         = MatMultAdd_SeqBDiag_2;
+        B->ops->solve           = MatSolve_SeqBDiag_2;
         break;
       case 3:
-	B->ops.mult            = MatMult_SeqBDiag_3; 
-        B->ops.multadd         = MatMultAdd_SeqBDiag_3;
-	B->ops.solve           = MatSolve_SeqBDiag_3; 
+	B->ops->mult            = MatMult_SeqBDiag_3; 
+        B->ops->multadd         = MatMultAdd_SeqBDiag_3;
+	B->ops->solve           = MatSolve_SeqBDiag_3; 
         break;
       case 4:
-	B->ops.mult            = MatMult_SeqBDiag_4; 
-        B->ops.multadd         = MatMultAdd_SeqBDiag_4;
-	B->ops.solve           = MatSolve_SeqBDiag_4; 
+	B->ops->mult            = MatMult_SeqBDiag_4; 
+        B->ops->multadd         = MatMultAdd_SeqBDiag_4;
+	B->ops->solve           = MatSolve_SeqBDiag_4; 
         break;
       case 5:
-	B->ops.mult            = MatMult_SeqBDiag_5; 
-        B->ops.multadd         = MatMultAdd_SeqBDiag_5;
-	B->ops.solve           = MatSolve_SeqBDiag_5; 
+	B->ops->mult            = MatMult_SeqBDiag_5; 
+        B->ops->multadd         = MatMultAdd_SeqBDiag_5;
+	B->ops->solve           = MatSolve_SeqBDiag_5; 
         break;
    }
   }

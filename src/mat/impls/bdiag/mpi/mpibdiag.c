@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.130 1998/01/06 20:10:42 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.131 1998/02/18 21:01:09 balay Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -409,7 +409,7 @@ int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
-  ierr = (*mbd->A->ops.mult)(mbd->A,mbd->lvec,yy); CHKERRQ(ierr);
+  ierr = (*mbd->A->ops->mult)(mbd->A,mbd->lvec,yy); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -423,7 +423,7 @@ int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   PetscFunctionBegin;
   ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
-  ierr = (*mbd->A->ops.multadd)(mbd->A,mbd->lvec,yy,zz); CHKERRQ(ierr);
+  ierr = (*mbd->A->ops->multadd)(mbd->A,mbd->lvec,yy,zz); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -437,7 +437,7 @@ int MatMultTrans_MPIBDiag(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,yy); CHKERRQ(ierr);
-  ierr = (*a->A->ops.multtrans)(a->A,xx,a->lvec); CHKERRQ(ierr);
+  ierr = (*a->A->ops->multtrans)(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -452,7 +452,7 @@ int MatMultTransAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz); CHKERRQ(ierr);
-  ierr = (*a->A->ops.multtrans)(a->A,xx,a->lvec); CHKERRQ(ierr);
+  ierr = (*a->A->ops->multtrans)(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -726,7 +726,7 @@ int MatGetLocalSize_MPIBDiag(Mat mat,int *m,int *n)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
 
   PetscFunctionBegin;
-  *m = mbd->m; *n = mbd->N;
+  *m = mbd->m; *n = mbd->n;
   PetscFunctionReturn(0);
 }
 
@@ -940,10 +940,10 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
 
   if (bs <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Blocksize must be positive");
   if ((N%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size - bad column number");
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATMPIBDIAG,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIBDIAG,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data	= (void *) (b = PetscNew(Mat_MPIBDiag)); CHKPTRQ(b);
-  PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
   B->destroy	= MatDestroy_MPIBDiag;
   B->view	= MatView_MPIBDiag;
   B->factor	= 0;

@@ -4,7 +4,7 @@
 #include "sles.h"
 
 struct _p_SLES {
-  PETSCHEADER(int dummy)
+  PETSCHEADER(int)
   int setupcalled;
   PC  pc;
   KSP ksp;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.66 1998/01/14 02:38:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.67 1998/03/06 00:11:02 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -32,10 +32,11 @@ int KSPSetUp_CG(KSP ksp)
 
   PetscFunctionBegin;
   /* check user parameters and functions */
-  if (ksp->pc_side == PC_RIGHT)
-    {SETERRQ(2,0,"no right preconditioning for KSPCG");}
-  else if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,0,"no symmetric preconditioning for KSPCG");}
+  if (ksp->pc_side == PC_RIGHT) {
+    SETERRQ(2,0,"no right preconditioning for KSPCG");
+  } else if (ksp->pc_side == PC_SYMMETRIC) {
+    SETERRQ(2,0,"no symmetric preconditioning for KSPCG");
+  }
 
   /* get work vectors from user code */
   ierr = KSPDefaultGetWork( ksp, 3 ); CHKERRQ(ierr);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorti.c,v 1.11 1997/09/11 20:38:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorti.c,v 1.12 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -23,6 +23,9 @@ static char vcid[] = "$Id: sorti.c,v 1.11 1997/09/11 20:38:50 bsmith Exp bsmith 
    This quick-sort is from George Karypis's METIS, and he says it
      originally comes from Donald Earvin Knuth's TeX. 
 
+   Reportedly it runs faster on some machines than quicksort; with PETSc 
+   we haven't seen faster performance, hence it is not used by default.
+
    Contributed by: Matthew Knepley
 
 */
@@ -42,6 +45,7 @@ static int TeXqsort_Private(int *base, int *max)
   int lo;
   int hi;
 
+  PetscFunctionBegin;
   lo = max - base;              /* number of elements as ints */
   do
   {
@@ -130,6 +134,7 @@ static int PetsciIqsort(int *base, int right)
   register int c;
   int *max;
 
+  PetscFunctionBegin;
   max = base + right + 1;
 
   if (right >= THRESH + 1)
@@ -189,6 +194,8 @@ static int PetsciIqsort(int *v,int right)
 {
   int          tmp;
   register int i, vl, last;
+
+  PetscFunctionBegin;
   if (right <= 1) {
     if (right == 1) {
       if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
@@ -226,6 +233,7 @@ int PetscSortInt( int n, int *i )
 {
   register int j, k, tmp, ik;
 
+  PetscFunctionBegin;
   if (n<8) {
     for (k=0; k<n; k++) {
       ik = i[k];

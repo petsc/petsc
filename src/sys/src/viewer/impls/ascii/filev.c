@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.66 1997/11/28 16:21:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.67 1997/12/01 01:56:36 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -287,9 +287,9 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 
   PetscFunctionBegin;
   if (comm == PETSC_COMM_SELF) {
-    PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,ASCII_FILE_VIEWER,comm,ViewerDestroy,0);
+    PetscHeaderCreate(v,_p_Viewer,int,VIEWER_COOKIE,ASCII_FILE_VIEWER,comm,ViewerDestroy,0);
   } else {
-    PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,ASCII_FILES_VIEWER,comm,ViewerDestroy,0);
+    PetscHeaderCreate(v,_p_Viewer,int,VIEWER_COOKIE,ASCII_FILES_VIEWER,comm,ViewerDestroy,0);
   }
   PLogObjectCreate(v);
   v->destroy     = ViewerDestroy_File;

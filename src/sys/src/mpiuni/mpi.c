@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.40 1997/12/01 01:57:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.41 1997/12/12 19:39:52 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: mpi.c,v 1.40 1997/12/01 01:57:24 bsmith Exp bsmith $"
 #include "pinclude/petscfix.h" 
 #define MPI_SUCCESS 0
 void    *MPIUNI_TMP   = 0;
-int     MPIUNI_DUMMY[2] = {100000,0};
+int     MPIUNI_DUMMY[2] = {100000000,0};
 int     MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),
                                2*sizeof(double),sizeof(char)};
 
@@ -34,7 +34,7 @@ typedef struct {
 } MPI_Attr;
 
 static MPI_Attr attr[MAX_ATTR];
-static int      num_attr = 1,mpi_tag_ub = 10000;
+static int      num_attr = 1,mpi_tag_ub = 100000000;
 
 /*
    Used to set the built-in MPI_TAG_UB attribute

@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.5 1997/12/03 14:39:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.6 1997/12/12 19:36:38 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -49,7 +49,7 @@ int VecDuplicate_Shared( Vec win, Vec *v)
   if (win->child) {
     ierr = (*win->childcopy)(win->child,&(*v)->child);CHKERRQ(ierr);
   }
-  (*v)->ops.duplicate = VecDuplicate_Shared;
+  (*v)->ops->duplicate = VecDuplicate_Shared;
   PetscFunctionReturn(0);
 }
 
@@ -105,7 +105,7 @@ int VecCreateShared(MPI_Comm comm,int n,int N,Vec *vv)
 
   ierr = VecCreateMPI_Private(comm,n,N,0,size,rank,rowners,array,vv);CHKERRQ(ierr);
   PetscFree(rowners);
-  (*vv)->ops.duplicate = VecDuplicate_Shared;
+  (*vv)->ops->duplicate = VecDuplicate_Shared;
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.107 1998/01/28 21:00:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.108 1998/03/06 00:09:28 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -502,7 +502,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   if (size > 1) comm = yin->comm; 
 
   /* generate the Scatter context */
-  PetscHeaderCreate(ctx,_p_VecScatter,VEC_SCATTER_COOKIE,0,comm,VecScatterDestroy,VecScatterView);
+  PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,comm,VecScatterDestroy,VecScatterView);
   PLogObjectCreate(ctx);
   PLogObjectMemory(ctx,sizeof(struct _p_VecScatter));
   ctx->inuse = 0;
@@ -1142,7 +1142,7 @@ int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
   PetscValidHeaderSpecific(sctx,VEC_SCATTER_COOKIE);
   PetscValidPointer(ctx);
   if (!sctx->copy) SETERRQ(PETSC_ERR_SUP,0,"Cannot copy this type");
-  PetscHeaderCreate(*ctx,_p_VecScatter,VEC_SCATTER_COOKIE,0,sctx->comm,VecScatterDestroy,VecScatterView);
+  PetscHeaderCreate(*ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,sctx->comm,VecScatterDestroy,VecScatterView);
   PLogObjectCreate(*ctx);
   PLogObjectMemory(*ctx,sizeof(struct _p_VecScatter));
   (*ctx)->to_n   = sctx->to_n;

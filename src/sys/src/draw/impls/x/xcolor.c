@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.36 1997/12/20 04:37:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.37 1998/01/06 20:11:31 bsmith Exp bsmith $";
 #endif
 
 
@@ -345,10 +345,11 @@ int XiHlsHelper(int h,int n1,int n2 )
 int XiHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,unsigned char *b)
 {
   int m1, m2;         /* in 0 to 100 */
+
+  PetscFunctionBegin;
   if (l <= 50) m2 = l * ( 100 + s ) / 100 ;           /* not sure of "/100" */
   else         m2 = l + s - l*s/100;
 
-  PetscFunctionBegin;
   m1  = 2*l - m2;
   if (s == 0) {
     /* ignore h */
@@ -490,11 +491,13 @@ int XiSetCmapLight(unsigned char *red, unsigned char *green,unsigned char *blue,
 
 int XiGetNumcolors( Draw_X *XiWin )
 {
+  PetscFunctionBegin;
   PetscFunctionReturn(XiWin->numcolors);
 }
 #else
 int dummy_xcolor()
 {
+  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #endif
