@@ -50,7 +50,7 @@ typedef struct {
 } PetscOps;
 
 #define PETSCHEADER(ObjectOps)                                  \
-  int            cookie;                                        \
+  PetscCookie    cookie;                                        \
   PetscOps       *bops;                                         \
   ObjectOps      *ops;                                          \
   MPI_Comm       comm;                                          \
