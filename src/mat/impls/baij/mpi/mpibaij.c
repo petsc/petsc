@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.3 1996/06/19 23:03:32 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.4 1996/06/21 23:12:01 balay Exp balay $";
 #endif
 
 #include "mpibaij.h"
@@ -100,6 +100,111 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   return 0;
 }
 
+static int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
+{
+  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
+  int        bs=baij->bs,ierr,i,j, bsrstart = baij->rstart*bs, bsrend = baij->rend*bs;
+  int        bscstart = baij->cstart*bs, bscend = baij->cend*bs,row,col;
+
+  for ( i=0; i<m; i++ ) {
+    if (idxm[i] < 0) SETERRQ(1,"MatGetValues_MPIBAIJ:Negative row");
+    if (idxm[i] >= baij->M) SETERRQ(1,"MatGetValues_MPIBAIJ:Row too large");
+    if (idxm[i] >= bsrstart && idxm[i] < bsrend) {
+      row = idxm[i] - bsrstart;
+      for ( j=0; j<n; j++ ) {
+        if (idxn[j] < 0) SETERRQ(1,"MatGetValues_MPIBAIJ:Negative column");
+        if (idxn[j] >= baij->N) SETERRQ(1,"MatGetValues_MPIBAIJ:Col too large");
+        if (idxn[j] >= bscstart && idxn[j] < bscend){
+          col = idxn[j] - bscstart;
+          ierr = MatGetValues(baij->A,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
+        }
+        else {
+          col = baij->colmap[idxn[j]/bs]*bs + col%bs;
+          ierr = MatGetValues(baij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
+        }
+      }
+    } 
+    else {
+      SETERRQ(1,"MatGetValues_MPIBAIJ:Only local values currently supported");
+    }
+  }
+  return 0;
+}
+
+static int MatNorm_MPIBAIJ(Mat mat,NormType type,double *norm)
+{
+  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
+  Mat_SeqBAIJ *amat = (Mat_SeqBAIJ*) baij->A->data, *bmat = (Mat_SeqBAIJ*) baij->B->data;
+  int        ierr, i, j, cstart = baij->cstart,bs2=baij->bs2;
+  double     sum = 0.0;
+  Scalar     *v;
+
+  if (baij->size == 1) {
+    ierr =  MatNorm(baij->A,type,norm); CHKERRQ(ierr);
+  } else {
+    if (type == NORM_FROBENIUS) {
+      v = amat->a;
+      for (i=0; i<amat->nz*bs2; i++ ) {
+#if defined(PETSC_COMPLEX)
+        sum += real(conj(*v)*(*v)); v++;
+#else
+        sum += (*v)*(*v); v++;
+#endif
+      }
+      v = bmat->a;
+      for (i=0; i<bmat->nz*bs2; i++ ) {
+#if defined(PETSC_COMPLEX)
+        sum += real(conj(*v)*(*v)); v++;
+#else
+        sum += (*v)*(*v); v++;
+#endif
+      }
+      MPI_Allreduce(&sum,norm,1,MPI_DOUBLE,MPI_SUM,mat->comm);
+      *norm = sqrt(*norm);
+    }
+    else if (type == NORM_1) { /* max column norm */
+      double *tmp, *tmp2;
+      int    *jj, *garray = baij->garray;
+      tmp  = (double *) PetscMalloc( baij->N*sizeof(double) ); CHKPTRQ(tmp);
+      tmp2 = (double *) PetscMalloc( baij->N*sizeof(double) ); CHKPTRQ(tmp2);
+      PetscMemzero(tmp,baij->N*sizeof(double));
+      *norm = 0.0;
+      v = amat->a; jj = amat->j;
+      for ( j=0; j<amat->nz; j++ ) {
+        tmp[cstart + *jj++ ] += PetscAbsScalar(*v);  v++;
+      }
+      v = bmat->a; jj = bmat->j;
+      for ( j=0; j<bmat->nz; j++ ) {
+        tmp[garray[*jj++ ]] += PetscAbsScalar(*v); v++;
+      }
+      MPI_Allreduce(tmp,tmp2,baij->N,MPI_DOUBLE,MPI_SUM,mat->comm);
+      for ( j=0; j<baij->N; j++ ) {
+        if (tmp2[j] > *norm) *norm = tmp2[j];
+      }
+      PetscFree(tmp); PetscFree(tmp2);
+    }
+    else if (type == NORM_INFINITY) { /* max row norm */
+      double ntemp = 0.0;
+      for ( j=0; j<amat->m; j++ ) {
+        v = amat->a + amat->i[j];
+        sum = 0.0;
+        for ( i=0; i<amat->i[j+1]-amat->i[j]; i++ ) {
+          sum += PetscAbsScalar(*v); v++;
+        }
+        v = bmat->a + bmat->i[j];
+        for ( i=0; i<bmat->i[j+1]-bmat->i[j]; i++ ) {
+          sum += PetscAbsScalar(*v); v++;
+        }
+        if (sum > ntemp) ntemp = sum;
+      }
+      MPI_Allreduce(&ntemp,norm,1,MPI_DOUBLE,MPI_MAX,mat->comm);
+    }
+    else {
+      SETERRQ(1,"MatNorm_MPIBAIJ:No support for two norm");
+    }
+  }
+  return 0; 
+}
 
 static int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
 { 
