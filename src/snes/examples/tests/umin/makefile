@@ -23,8 +23,6 @@ FOBJ1 = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
         depths.o dgl1hs.o dgl2hs.o dmsahs.o dodchs.o dpjbhs.o dsschs.o \
         dmsabc.o dodcps.o dgl2co.o mpinter.o
 
-FOBJ4 = dgl2fg.o dgl2hs.o dgl2co.o
-
 ex1: ex1.o $(FOBJ1) chkopts
 	-$(CLINKER) -o ex1 ex1.o $(FOBJ1)  $(PETSC_LIB)
 	$(RM) ex1.o $(FOBJ1)
@@ -36,21 +34,6 @@ ex2: ex2.o chkopts
 ex3: ex3.o chkopts
 	-$(CLINKER) -o ex3 ex3.o $(PETSC_LIB)
 	$(RM) ex3.o
-
-ex4: ex4.o $(FOBJ4) chkopts
-	-$(CLINKER) -o ex4 ex4.o $(FOBJ4)  $(PETSC_LIB)
-	$(RM) ex4.o
-#	$(RM) ex4.o $(FOBJ4)
-
-ex5: ex5.o $(FOBJ4) chkopts
-	-$(CLINKER) -o ex5 ex5.o $(FOBJ4)  $(PETSC_LIB)
-	$(RM) ex5.o
-#	$(RM) ex5.o $(FOBJ4)
-
-ex6: ex6.o $(FOBJ4) chkopts
-	-$(CLINKER) -o ex6 ex6.o $(FOBJ4)  $(PETSC_LIB)
-	$(RM) ex6.o
-#	$(RM) ex6.o $(FOBJ4)
 
 runex1:
 	-@$(MPIRUN) ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
