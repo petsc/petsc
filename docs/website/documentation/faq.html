@@ -196,34 +196,10 @@
     machines using PETSc someday. Domain is no longer available or supported.</p>
     <p><strong><a name="mpi-vec-to-seq-vec"><font color="#FF0000">How do I collect all the
     values from a parallel PETSc vector into a sequential vector on each processor?</font></a></strong></p>
-    <p>You can do this by first creating a SEQ vector on each processor with as many entries
-    as the global vector. Say <em>mpivec</em> is your parallel vector and <em>seqvec</em> a
-    sequential vector where you want to store all the values from <em>mpivec</em>, but on a
-    single node.<br>
-    <em>int N;<br>
-    ierr = VecGetSize(mpivec,&amp;N);<br>
-    Vec seqvec;<br>
-    ierr = VecCreateSeq(PETSC_COMM_SELF,N,&amp;seqvec); or<br>
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,N,array,&amp;seqvec);<br>
-    </em><br>
-    then create a vector scatter that gathers together the values from all processors into the
-    large sequential vector on each processor.<br>
-    <em>IS is;<br>
-    ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&amp;is);CHKERRA(ierr);<br>
-    VecScatter ctx;<br>
-    ierr = VecScatterCreate(mpivec,is,seqvec,is,&amp;ctx);CHKERRA(ierr);<br>
-    </em><br>
-    Now to get the values into the seq vector from the parallel vector use <br>
-    <em>ierr =
-    VecScatterBegin(mpivec,seqvec,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);<br>
-    ierr =
-    VecScatterEnd(mpivec,seqvec,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);<br>
-    </em><br>
-    To get the values from the seq vector into the parallel vector use<br>
-    <em>ierr =
-    VecScatterBegin(seqvec,mpivec,INSERT_VALUES,SCATTER_REVERSE,ctx);CHKERRA(ierr);<br>
-    ierr = VecScatterEnd(seqvec,mpivec,INSERT_VALUES,SCATTER_REVERSE,ctx);CHKERRA(ierr);<br>
-    </em></p>
+    <p>Use VecConvertMPIToSeqAll(). See also VecConvertMPIToMPIZero(). Note that this simply concatenates in the 
+    parallel ordering of the vector. If you are using a vector from DACreateGlobalVector() you likely want to 
+    first call DAGlobalToNaturalBegin/End() before calling VecConvertMPIToSeqAll()</p>
+
     <p><strong><a name="binder"><font color="#FF0000">How do I print out all of
     the PETSc manual pages to put into a binder?</font></a></strong></p>
     <p>Obtain the software tool <a href="http://www.tdb.uu.se/~jan/html2ps.html">html2ps</a>
