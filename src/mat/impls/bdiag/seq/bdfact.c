@@ -22,7 +22,7 @@ static char vcid[] = "$Id: bdfact.c,v 1.15 1995/10/12 04:20:09 curfman Exp curfm
 static int BlockMatMult_Private(int nrow,int ncol,Scalar *A,Scalar *B,Scalar *C)
 {
   Scalar B_i, *Apt = A, temp;
-  int    i, j, k;
+  int    i, j, k, jnr;
 
   if (ncol == 1) {
     for (i=0; i<nrow; i++) {
@@ -32,9 +32,10 @@ static int BlockMatMult_Private(int nrow,int ncol,Scalar *A,Scalar *B,Scalar *C)
     }
   } else {
     for (j=0; j<ncol; j++) {
+      jnr = j*nrow;
       for (i=0; i<nrow; i++) {
-        B_i = B[i];
-        for (k=0; k<nrow; k++) C[k] -= Apt[k] * B_i;
+        B_i = B[i+jnr];
+        for (k=0; k<nrow; k++) C[k+jnr] -= Apt[k] * B_i;
         Apt += nrow;
       }
     }
@@ -44,25 +45,21 @@ static int BlockMatMult_Private(int nrow,int ncol,Scalar *A,Scalar *B,Scalar *C)
 
 int MatLUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,Mat *B)
 {
-  int          ierr;
   PLogInfo((PetscObject)A,"MatLUFactorSymbolic_SeqBDiag: Currently no fill.\n");
-  ierr = MatConvert(A,MATSAME,B); CHKERRQ(ierr);
-  return 0;
+  return MatConvert(A,MATSAME,B);
 }
 
 int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
                                   int levels,Mat *B)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          ierr;
 
   if (a->m != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Matrix must be square");
   if (isrow || iscol) PLogInfo((PetscObject)A,
     "MatILUFactorSymbolic_SeqBDiag: row and col permutations not supported.\n");
   if (levels != 0)
     SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Only ILU(0) is supported");
-  ierr = MatConvert(A,MATSAME,B); CHKERRQ(ierr);
-  return 0;
+  return MatConvert(A,MATSAME,B);
 }
 
 int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
@@ -70,7 +67,7 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
   Mat          C = *B;
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data;
   int          info, k, d, d2, dgk, elim_row, elim_col, nb = a->nb, knb, knb2, nb2;
-  int          dnum,  nd = a->nd, mbk = a->mblock, nbk = a->nblock, **pivot, ierr;
+  int          dnum,  nd = a->nd, mblock = a->mblock, nblock = a->nblock, **pivot;
   int          *diag = a->diag, n = a->n, m = a->m, mainbd = a->mainbd, *dgptr;
   Scalar       **dv = a->diagv, *dd = dv[mainbd], mult;
 
@@ -112,34 +109,33 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
     }
     pivot = a->pivot;
     nb2 = nb*nb;
-    dgptr = (int *) PETSCMALLOC((mbk+nbk)*sizeof(int)); CHKPTRQ(dgptr);
-    PetscZero(dgptr,(mbk+nbk)*sizeof(int));
-    for ( k=0; k<nd; k++ ) dgptr[diag[k]+mbk] = k+1;
-    for ( k=0; k<mbk; k++ ) { /* k = block pivot_row */
+    dgptr = (int *) PETSCMALLOC((mblock+nblock)*sizeof(int)); CHKPTRQ(dgptr);
+    PetscZero(dgptr,(mblock+nblock)*sizeof(int));
+    for ( k=0; k<nd; k++ ) dgptr[diag[k]+mblock] = k+1;
+    for ( k=0; k<mblock; k++ ) { /* k = block pivot_row */
       knb = k*nb; knb2 = knb*nb;
       LAgetf2_(&nb,&nb,&dv[0][knb2],&nb,&pivot[0][knb],&info);
-      if (info) SETERRQ(1,"MatLUFactorNumeric_SeqBDiag:Bad LU factorization");
+      if (info) SETERRQ(1,"MatLUFactorNumeric_SeqBDiag:Bad component LU factorization");
       for ( d=mainbd-1; d>=0; d-- ) {
         elim_row = k + diag[d];
-        if (elim_row < mbk) { /* sweep down */
+        if (elim_row < mblock) { /* sweep down */
     /*    if (dv[d][k] != 0) test if entire block is zero? */
-            LAgetrs_("N",&nb,&nb,&dv[0][knb2],&nb,&pivot[d][knb],
+            LAgetrs_("N",&nb,&nb,&dv[0][knb2],&nb,&pivot[0][knb],
                      &dv[d][knb2],&nb,&info);
-            if (info) SETERRQ(1,"MatLUFactorNumeric_SeqBDiag:Bad triangular solve");
+            if (info) SETERRQ(1,"MatLUFactorNumeric_SeqBDiag:Bad component triangular solve");
             for ( d2=d+1; d2<nd; d2++ ) {
               elim_col = elim_row - diag[d2];
-              if (elim_col >=0 && elim_col < nbk) {
+              if (elim_col >=0 && elim_col < nblock) {
                 dgk = k - elim_col;
                 if (dgk > 0) SETERRQ(1,
                    "MatLUFactorNumeric_SeqBDiag:Bad elimination column");
-                if ((dnum = dgptr[dgk+mbk])) {
-                  if (diag[d2] > 0) {
-                    ierr = BMatMult(nb,nb,&dv[d][knb2],&dv[dnum-1][knb2],
-                                    &dv[d2][elim_col*nb2]); CHKERRQ(ierr);
-                  } else {
-                    ierr = BMatMult(nb,nb,&dv[d][knb2],&dv[dnum-1][knb2],
-                                    &dv[d2][elim_row*nb2]); CHKERRQ(ierr);
-                  }
+                if ((dnum = dgptr[dgk+mblock])) {
+                  if (diag[d2] > 0)
+                    BMatMult(nb,nb,&dv[d][knb2],&dv[dnum-1][knb2],
+                                    &dv[d2][elim_col*nb2]);
+                  else
+                    BMatMult(nb,nb,&dv[d][knb2],&dv[dnum-1][knb2],
+                                    &dv[d2][elim_row*nb2]);
                 }
               }
             }
@@ -184,7 +180,7 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          one = 1, info, i, d, loc, ierr, mainbd = a->mainbd;
-  int          mbk = a->mblock, nbk = a->nblock, inb, inb2;
+  int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
   int          nb = a->nb, n = a->n, m = a->m, *diag = a->diag, col;
   Scalar       *x, *y, *dd = a->diagv[mainbd], sum, **dv = a->diagv;
 
@@ -215,7 +211,7 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
     PetscMemcpy(y,x,m*sizeof(Scalar));
 
     /* forward solve the lower triangular part */
-    for (i=0; i<mbk; i++) {
+    for (i=0; i<mblock; i++) {
       inb = i*nb;
       for (d=0; d<mainbd; d++) {
         loc = i - diag[d];
@@ -225,17 +221,17 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
       }
     }
     /* backward solve the upper triangular part */
-    for ( i=mbk-1; i>=0; i-- ) {
+    for ( i=mblock-1; i>=0; i-- ) {
       inb = i*nb; inb2 = inb*nb;
       for (d=mainbd+1; d<a->nd; d++) {
         col = i - diag[d];
-        if (col < nbk) {
+        if (col < nblock) {
           ierr = BMatMult(nb,1,&dv[d][inb2],&y[col*nb],&y[inb]); CHKERRQ(ierr);
         }
       }
       LAgetrs_("N",&nb,&one,&dv[i][inb2],&nb,&a->pivot[i][inb],
                &y[inb],&nb,&info);
-      if (info) SETERRQ(1,"MatSolve_SeqBDiag:Bad triangular solve");
+      if (info) SETERRQ(1,"MatSolve_SeqBDiag:Bad component triangular solve");
     }
   }
   return 0;
@@ -259,7 +255,7 @@ int MatSolveTrans_SeqBDiag(Mat A,Vec xx,Vec yy)
     }
   }
   else SETERRQ(1,"MatSolveTrans_SeqBDiag:Matrix must be factored to solve");
-  if (info) SETERRQ(1,"MatSolveTrans_SeqBDiag:Bad solve");
+  if (info) SETERRQ(1,"MatSolveTrans_SeqBDiag:Bad component triangular solve");
   return 0;
 }
 
@@ -285,7 +281,7 @@ int MatSolveAdd_SeqBDiag(Mat A,Vec xx,Vec zz,Vec yy)
       LAgetrs_("N",&nb,&one,&submat[i*nb*nb],&nb,&a->pivot[0][i*nb],y+i*nb,&nb,&info);
     }
   }
-  if (info) SETERRQ(1,"MatSolveAdd_SeqBDiag:Bad solve");
+  if (info) SETERRQ(1,"MatSolveAdd_SeqBDiag:Bad component triangular solve");
   if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
   else VecAXPY(&sone,zz,yy);
   return 0;
@@ -312,7 +308,7 @@ int MatSolveTransAdd_SeqBDiag(Mat A,Vec xx,Vec zz,Vec yy)
       LAgetrs_("T",&nb,&one,&submat[i*nb*nb],&nb,&a->pivot[0][i*nb],y+i*nb,&nb,&info);
     }
   }
-  if (info) SETERRQ(1,"MatSolveTransAdd_SeqBDiag:Bad solve");
+  if (info) SETERRQ(1,"MatSolveTransAdd_SeqBDiag:Bad component triangular solve");
   if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
   else VecAXPY(&sone,zz,yy);
   return 0;
