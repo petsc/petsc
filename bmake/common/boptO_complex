@@ -1,4 +1,4 @@
-# $Id: common.O_complex,v 1.1 1998/12/04 20:42:03 balay Exp balay $ 
+# $Id: common_O_complex,v 1.2 1998/12/04 23:33:45 balay Exp balay $ 
 
 CC         = ${CXX_CC}
 FC         = ${CXX_FC}
@@ -9,3 +9,5 @@ SYS_LIB    = ${CXX_SYS_LIB}
 PETSCFLAGS = ${OCOMP_PETSCFLAGS}
 COPTFLAGS  = ${OCOMP_COPTFLAGS}
 FOPTFLAGS  = ${OCOMP_FOPTFLAGS}
+
+BBOPT      = ${GCXX_BBOPT}
