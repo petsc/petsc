@@ -1,4 +1,4 @@
-/*$Id: appctx.h,v 1.9 2000/01/16 03:29:38 bsmith Exp bsmith $*/
+/*$Id: appctx.h,v 1.10 2000/01/17 00:06:13 bsmith Exp bsmith $*/
 /*
        Defines data structures for writing a simple cell (element) based PDE code
     for solving scalar PDE problems like the Laplacian.
@@ -7,8 +7,9 @@
 #if !defined(__APPCTX_H)
 #define __APPCTX_H
 
-#include "ao.h"           /* allows using the PETSc AOData-base routines for grid information */
-#include "sles.h"         /* allows using PETSc linear solvers */
+#include "petscao.h"           /* allows using the PETSc AOData-base routines for grid information */
+#include "petscsles.h"         /* allows using PETSc linear solvers */
+#include "petscpf.h"
 
 /*-------------------------------------------------------------------
 
@@ -93,12 +94,13 @@ typedef struct {
   double dx[4][4], dy[4][4];/* values of the local interpolating functions at the Gauss pts */
   double detDh[4];
 
-  double x[4], y[4];  /* the images of the Gauss pts in the local element */
+  double xy[8];  /* the images of the Gauss pts in the local element */
 
   double rhsresult[4];  /* results of local integrations */
   double stiffnessresult[4][4];
 
   double *coords;  /* pointer to coords of current cell */
+  PF     rhs;
 } AppElement;
 
 /*----------------------------------------------------
@@ -113,6 +115,7 @@ typedef struct {
   AppAlgebra algebra;  
   AppView    view;
   AppElement element;
+  PF         bc;
 } AppCtx;
 
 /*-----------------------------------------------------*/
@@ -127,9 +130,6 @@ extern int AppCtxGraphics(AppCtx *appctx);
 
 extern int AppCtxSetLocal(AppCtx *);
 extern int AppCtxSolve(AppCtx*);
-
-double pde_f(double, double);
-double pde_bc(double, double);
 
 extern int AppCtxCreateRhs(AppCtx*);
 extern int AppCtxCreateMatrix(AppCtx*);
