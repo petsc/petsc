@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.116 2000/05/10 16:43:30 bsmith Exp bsmith $*/
+/*$Id: da1.c,v 1.117 2000/07/21 03:49:44 bsmith Exp bsmith $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -150,8 +150,6 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   PLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 1;
   da->gtog1      = 0;
-  da->localused  = PETSC_FALSE;
-  da->globalused = PETSC_FALSE;
   da->fieldname  = (char**)PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 

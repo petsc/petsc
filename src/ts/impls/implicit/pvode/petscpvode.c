@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.59 2000/05/08 15:09:13 balay Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.60 2000/09/02 02:49:59 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 /*
@@ -231,6 +231,7 @@ int TSSetUp_PVode_Nonlinear(TS ts)
   machEnvType machEnv;
 
   PetscFunctionBegin;
+  ierr = PCSetFromOptions(cvode->pc);CHKERRQ(ierr);
   /* get the vector size */
   ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
@@ -320,7 +321,6 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
     ierr = OptionsName("-ts_pvode_not_exact_final_time","Allow PVODE to stop near the final time, not exactly on it","TSPVodeSetExactFinalTime",&cvode->exact_final_time);CHKERRQ(ierr);
   ierr = OptionsTail();CHKERRQ(ierr);
 
-  ierr = PCSetFromOptions(cvode->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

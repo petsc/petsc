@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.23 2000/07/25 21:00:32 bsmith Exp bsmith $*/
+/*$Id: redundant.c,v 1.24 2000/09/02 02:48:57 bsmith Exp bsmith $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -61,6 +61,7 @@ static int PCSetUp_Redundant(PC pc)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
+  ierr = PCSetFromOptions(red->pc);CHKERRQ(ierr);
   ierr = VecGetSize(pc->vec,&m);CHKERRQ(ierr);
   if (!pc->setupcalled) {
     ierr = VecGetLocalSize(pc->vec,&mlocal);CHKERRQ(ierr);
@@ -175,11 +176,7 @@ static int PCDestroy_Redundant(PC pc)
 #define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_Redundant"
 static int PCSetFromOptions_Redundant(PC pc)
 {
-  int          ierr;
-  PC_Redundant *red = (PC_Redundant*)pc->data;
-
   PetscFunctionBegin;
-  ierr = PCSetFromOptions(red->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,6 +1,6 @@
 
 !
-!    "$Id: esmffield.F,v 1.1 2000/09/07 15:22:58 bsmith Exp bsmith $"
+!    "$Id: esmffield.F,v 1.2 2000/09/11 15:46:41 bsmith Exp bsmith $"
 !
       module esmff
       use esmfg
@@ -89,13 +89,13 @@
 !--------------------------------------------------------------
       contains
 
-       ESMFFieldView_SR(field) result (ierr)
+      subroutine ESMFFieldView_SR(field,ierr)
         implicit none
         type (esmffieldstructuredrectangular), pointer :: field
         integer         ierr,i,nc
 
         ierr = 0
-        ierr = ESMFGridView(field%grid)
+        call ESMFGridView(field%grid,ierr)
 !   currently not coordinating between various processors; hence
 !   print results will be jumbled
         do nc=1,field%grid%nc
@@ -103,45 +103,45 @@
             print "(1000f8.3)", field%localindexaccess(nc,i,:)
           enddo
         enddo
-      end function ESMFFieldView_SR
+      end subroutine ESMFFieldView_SR
 
 !--------------------------------------------------------------
 
-      function ESMFFieldDuplicate_SR(field) result (nfield)
+      function ESMFFieldDuplicate_SR(field,ierr) result (nfield)
         implicit none
         type (esmffieldstructuredrectangular), pointer :: field
         type (esmffieldstructuredrectangular), pointer :: nfield
         integer         ierr
 
         ierr = 0
-        nfield => ESMFFieldCreate(field%grid)
+        nfield => ESMFFieldCreate(field%grid,ierr)
       end function ESMFFieldDuplicate_SR
 
 !--------------------------------------------------------------
 
-      function ESMFFieldRead_SR(field,io) result (ierr)
+      subroutine ESMFFieldRead_SR(field,io,ierr)
         implicit none
         type (esmffieldstructuredrectangular), pointer :: field
         type (esmfio), pointer :: io
         integer         ierr
 
         ierr = 0
-      end function ESMFFieldRead_SR
+      end subroutine ESMFFieldRead_SR
 
 !--------------------------------------------------------------
 
-      function ESMFFieldWrite_SR(field,io) result (ierr)
+      subroutine ESMFFieldWrite_SR(field,io,ierr)
         implicit none
         type (esmffieldstructuredrectangular), pointer :: field
         type (esmfio), pointer :: io
         integer         ierr
 
         ierr = 0
-      end function ESMFFieldWrite_SR
+      end subroutine ESMFFieldWrite_SR
 
 !--------------------------------------------------------------
 
-      function ESMFFieldCopy_SR(field,nfield) result (ierr)
+      subroutine ESMFFieldCopy_SR(field,nfield,ierr)
         implicit none
         type (esmffieldstructuredrectangular), pointer :: field
         type (esmffieldstructuredrectangular), pointer :: nfield
@@ -154,11 +154,11 @@
 !          return
 !        endif
         nfield%localindexaccess = field%localindexaccess
-      end function ESMFFieldCopy_SR
+      end subroutine ESMFFieldCopy_SR
 
 !-------------------------------------------------------------
 
-      function ESMFFieldUpdate_SR(field1,field2) result (ierr)
+      subroutine ESMFFieldUpdate_SR(field1,field2,ierr)
         implicit none
         type (esmffieldstructuredrectangular), pointer :: field1
         type (esmffieldstructuredrectangular), pointer :: field2
@@ -177,20 +177,20 @@
         call DALocalToLocalEnd(field1%grid%da,v1,INSERT_VALUES,v2)
         call VecDestroy(v1,ierr)
         call VecDestroy(v2,ierr)
-      end function ESMFFieldUpdate_SR
+      end subroutine ESMFFieldUpdate_SR
 
 !-------------------------------------------------------------
 
-      function ESMFFieldUpdate_SR1(field) result (ierr)
+      subroutine ESMFFieldUpdate_SR1(field,ierr)
         implicit none
         type (esmffieldstructuredrectangular), pointer :: field
         integer         ierr
-        ierr = ESMFFieldUpdate(field,field)
-      end function ESMFFieldUpdate_SR1
+        call ESMFFieldUpdate(field,field,ierr)
+      end subroutine ESMFFieldUpdate_SR1
 
 !-------------------------------------------------------------
 
-      function ESMFFieldSet_SR(field,value) result (ierr)
+      subroutine ESMFFieldSet_SR(field,value,ierr)
         implicit none
         type (esmffieldstructuredrectangular), pointer :: field
         double precision, pointer :: value(:)
@@ -199,22 +199,22 @@
         do i=1,field%grid%nc
           field%localindexaccess(i,:,:) = value(i)
         enddo
-      end function ESMFFieldSet_SR
+      end subroutine ESMFFieldSet_SR
 
 !-------------------------------------------------------------
 
-      function ESMFFieldSet_SR1(field,value) result (ierr)
+      subroutine ESMFFieldSet_SR1(field,value,ierr)
         implicit none
         type (esmffieldstructuredrectangular), pointer :: field
         double precision value
         integer         ierr
         ierr = 0
         field%localindexaccess = value
-      end function ESMFFieldSet_SR1
+      end subroutine ESMFFieldSet_SR1
 
 !-------------------------------------------------------------
 
-      function ESMFFieldScale_SR(field,value) result (ierr)
+      subroutine ESMFFieldScale_SR(field,value,ierr)
         implicit none
         type (esmffieldstructuredrectangular), pointer :: field
         double precision, pointer :: value(:)
@@ -224,30 +224,30 @@
           field%localindexaccess(i,:,:) =                               &
      &                       field%localindexaccess(i,:,:)*value(i)
         enddo
-      end function ESMFFieldScale_SR
+      end subroutine ESMFFieldScale_SR
 
 !-------------------------------------------------------------
 
-      function ESMFFieldScale_SR1(field,value) result (ierr)
+      subroutine ESMFFieldScale_SR1(field,value,ierr)
         implicit none
         type (esmffieldstructuredrectangular), pointer :: field
         double precision value
         integer         ierr
         ierr = 0
         field%localindexaccess = field%localindexaccess*value
-      end function ESMFFieldScale_SR1
+      end subroutine ESMFFieldScale_SR1
 
 !--------------------------------------------------------------
 !
-      function ESMFFieldCreate_SR(grid) result (field)
+      function ESMFFieldCreate_SR(grid,ierr) result (field)
         implicit none
         type (esmfgridstructuredrectangular), pointer :: grid
         type (esmffieldstructuredrectangular), pointer :: field
+        integer ierr
 
-
-        integer                                          ierr
         type (esmffieldstructuredrectangular), pointer :: f
-
+ 
+        ierr = 0
         allocate(f)
         f%field%base%refcount = 0
         f%field%base%comm     = grid%grid%base%comm
@@ -264,7 +264,7 @@
 
 !--------------------------------------------------------------
 
-      function ESMFFieldDestroy_SR(field) result (ierr)
+      subroutine ESMFFieldDestroy_SR(field,ierr)
         implicit none
         integer  ierr
         type (esmffieldstructuredrectangular), pointer :: field
@@ -274,9 +274,9 @@
           field%field%base%refcount = field%field%base%refcount - 1
           return
         endif
-        ierr = ESMFGridDestroy(field%grid)
+        call ESMFGridDestroy(field%grid,ierr)
         deallocate(field)
-      end function ESMFFieldDestroy_SR
+      end subroutine ESMFFieldDestroy_SR
 
 !--------------------------------------------------------------
 

@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.147 2000/08/01 20:58:01 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.148 2000/08/06 03:48:16 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -298,8 +298,6 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 2;
   da->gtog1      = 0;
-  da->localused  = PETSC_FALSE;
-  da->globalused = PETSC_FALSE;
   da->fieldname  = (char**)PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 

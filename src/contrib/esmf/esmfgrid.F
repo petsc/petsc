@@ -1,7 +1,5 @@
-
-
 !
-!    "$Id: esmfgrid.F,v 1.4 2000/09/09 17:33:11 bsmith Exp bsmith $"
+!    "$Id: esmfgrid.F90,v 1.5 2000/09/11 16:30:19 bsmith Exp bsmith $"
 !
       module esmfg
         use esmf
@@ -50,8 +48,7 @@
 !     Defines the polymorphic functions for grids
 !--------------------------------------------------------------
       interface ESMFGridView
-        module procedure ESMFGridView_Base,ESMFGridView_SR,             &
-     &                   ESMFGridView_UQ
+        module procedure ESMFGridView_Base,ESMFGridView_SR,ESMFGridView_UQ
       end interface
 
 !--------------------------------------------------------------
@@ -114,15 +111,13 @@
 !        sw - stencil width
 !        nx,ny - number of grid points in each direction
 !
-      function ESMFGridCreate_SR(comm,nx,ny,coors,nc,sw,ierr)           &
-     &                           result (grid)
+      function ESMFGridCreate_SR(comm,nx,ny,coors,nc,sw,ierr) result (grid)
         implicit none
         type (esmfgridstructuredrectangular), pointer :: grid
         MPI_Comm                              comm
         integer                               nx,ny,nc,sw,ierr
         double precision                      coors(2,2)
 
-        integer                                          ierr
         type (esmfgridstructuredrectangular), pointer :: g
 
         ierr = 0
@@ -140,29 +135,29 @@
 !   create private data structure that contains the information about
 !   the distributed grid
 !        
-        call DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,nx,ny,        &
-     &                  PETSC_DECIDE,PETSC_DECIDE,nc,sw,                  &
-     &                  PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,            &
-     &                  g%da,ierr)
-        call DASetUniformCoordinates(g%da,coors(1,1),coors(2,1),          &
-     &                               coors(1,2),coors(2,2),0,0,ierr)
+        call DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,nx,ny,&
+                        PETSC_DECIDE,PETSC_DECIDE,nc,sw,&
+                        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,&
+                        g%da,ierr)
+        call DASetUniformCoordinates(g%da,coors(1,1),coors(2,1),&        
+                                     coors(1,2),coors(2,2),0,0,ierr)
 
         g%globalsizes(1) = nx
         g%globalsizes(2) = ny
 
-        call DAGetGhostCorners(g%da,g%ghostranges(1,1),                   &
-     &                         g%ghostranges(1,2),PETSC_NULL_INTEGER,     &
-     &                         g%ghostsizes(1),g%ghostsizes(2),           &
-     &                         PETSC_NULL_INTEGER,ierr)
+        call DAGetGhostCorners(g%da,g%ghostranges(1,1),&               
+                               g%ghostranges(1,2),PETSC_NULL_INTEGER,&
+                               g%ghostsizes(1),g%ghostsizes(2),&
+                               PETSC_NULL_INTEGER,ierr)
         g%ghostranges(1,1) = g%ghostranges(1,1) + 1
         g%ghostranges(1,2) = g%ghostranges(1,2) + 1
 
         g%ghostranges(2,1) = g%ghostranges(1,1) + g%ghostsizes(1) - 1
         g%ghostranges(2,2) = g%ghostranges(1,2) + g%ghostsizes(2) - 1
-        call DAGetCorners(g%da,g%localranges(1,1),                        &
-     &                         g%localranges(1,2),PETSC_NULL_INTEGER,     &
-     &                         g%localsizes(1),g%localsizes(2),           &
-     &                         PETSC_NULL_INTEGER,ierr)
+        call DAGetCorners(g%da,g%localranges(1,1),&
+                              g%localranges(1,2),PETSC_NULL_INTEGER,&
+                              g%localsizes(1),g%localsizes(2),&
+                              PETSC_NULL_INTEGER,ierr)
  
         g%localranges(1,1) = g%localranges(1,1) + 1
         g%localranges(1,2) = g%localranges(1,2) + 1
@@ -182,7 +177,6 @@
         integer ierr
 
         type (esmfgridunstructuredquads), pointer :: g
-        integer                                      ierr
 
         ierr = 0
         allocate(g)

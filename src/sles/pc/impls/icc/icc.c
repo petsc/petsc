@@ -1,4 +1,4 @@
-/*$Id: icc.c,v 1.69 2000/09/02 02:48:53 bsmith Exp balay $*/
+/*$Id: icc.c,v 1.70 2000/09/05 18:24:25 balay Exp bsmith $*/
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
@@ -11,12 +11,11 @@
 static int PCSetup_ICC(PC pc)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
-  IS     perm;
+  IS     perm,cperm;
   int    ierr;
 
   PetscFunctionBegin;
-  ierr = MatGetOrdering(pc->pmat,icc->ordering,&perm,&perm);CHKERRQ(ierr);
-  perm = 0;
+  ierr = MatGetOrdering(pc->pmat,icc->ordering,&perm,&cperm);CHKERRQ(ierr);
 
   if (!pc->setupcalled) {
     ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,icc->levels,&icc->fact);CHKERRQ(ierr);
@@ -24,6 +23,8 @@ static int PCSetup_ICC(PC pc)
     ierr = MatDestroy(icc->fact);CHKERRQ(ierr);
     ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,icc->levels,&icc->fact);CHKERRQ(ierr);
   }
+  ierr = ISDestroy(cperm);CHKERRQ(ierr);
+  ierr = ISDestroy(perm);CHKERRQ(ierr);
   ierr = MatCholeskyFactorNumeric(pc->pmat,&icc->fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

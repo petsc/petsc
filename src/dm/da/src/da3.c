@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.118 2000/05/27 15:11:45 bsmith Exp bsmith $*/
+/*$Id: da3.c,v 1.119 2000/07/21 03:49:31 bsmith Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -236,8 +236,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   PLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 3;
   da->gtog1      = 0;
-  da->localused  = PETSC_FALSE;
-  da->globalused = PETSC_FALSE;
   da->fieldname  = (char**)PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 

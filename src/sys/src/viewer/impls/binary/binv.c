@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.88 2000/08/30 21:17:19 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.89 2000/08/31 17:18:47 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -48,6 +48,8 @@ int ViewerRestoreSingleton_Binary(Viewer viewer,Viewer *outviewer)
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscFree((*outviewer)->data);CHKERRQ(ierr);
+    PLogObjectDestroy((PetscObject)*outviewer);
+    PetscHeaderDestroy((PetscObject)*outviewer); 
   }
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.75 2000/08/17 04:51:59 bsmith Exp balay $*/
+/*$Id: sorder.c,v 1.76 2000/09/07 15:18:34 balay Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -143,7 +143,8 @@ EXTERN_C_END
    Then, your partitioner can be chosen with the procedural interface via
 $     MatOrderingSetType(part,"my_order)
    or at runtime via the option
-$     -mat_ordering_type my_order
+$     -pc_ilu_mat_ordering_type my_order
+$     -pc_lu_mat_ordering_type my_order
 
    $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
 
@@ -214,11 +215,6 @@ $      MATORDERING_QMD - Quotient Minimum Degree
 +  rperm - row permutation indices
 -  cperm - column permutation indices
 
-   Options Database Keys:
-   To specify the ordering through the options database, use one of
-   the following 
-$    -mat_ordering_type natural, -mat_ordering_type nd, -mat_ordering_type 1wd, 
-$    -mat_ordering_type rcm, -mat_ordering_type qmd
 
    Level: intermediate
 
@@ -262,12 +258,6 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 
   if (!MatOrderingRegisterAllCalled) {
     ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  }
-
-  /* look for type on command line */
-  ierr = OptionsGetString(mat->prefix,"-mat_ordering_type",tname,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    type = tname;
   }
 
   ierr = PLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);

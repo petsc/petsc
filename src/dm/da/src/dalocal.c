@@ -1,4 +1,4 @@
-/*$Id: dalocal.c,v 1.24 2000/04/12 04:26:20 bsmith Exp balay $*/
+/*$Id: dalocal.c,v 1.25 2000/05/05 22:19:22 balay Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -38,16 +38,7 @@ int DACreateLocalVector(DA da,Vec* g)
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (da->localused) {
-    ierr = VecDuplicate(da->local,g);CHKERRQ(ierr);
-  } else {
-    /* 
-     compose the DA into the vectors so they have access to the 
-     distribution information. 
-    */
-    ierr = PetscObjectCompose((PetscObject)da->local,"DA",(PetscObject)da);CHKERRQ(ierr);
-    da->localused = PETSC_TRUE;
-    *g = da->local;
-  }
+  ierr = VecDuplicate(da->local,g);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,16 +1,18 @@
-# $Id: makefile,v 1.2 2000/09/06 12:30:02 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 2000/09/11 17:47:42 bsmith Exp bsmith $ 
 
 ALL: lib
+
+#requirespackage  '-DPETSC_HAVE_F90_C'
 
 CFLAGS     =
 FFLAGS     =
 SOURCEC    = cesmfgrid.c
 OBJSC      = cesmfgrid.o
-SOURCEF    = esmf.F90 esmfgrid.F90 esmffield.F90
+SOURCEF    = esmf.F esmfgrid.F esmffield.F
 OBJSF      = esmf.o esmfgrid.o esmffield.o 
 SOURCEH    = esmf.h esmfgrid.h
 EXAMPLESC  = ex1.c
-EXAMPLESF  = ex1f90.F90
+EXAMPLESF  = ex1F.F
 LIBBASE    = libpetscfortran
 LOCDIR     = src/contrib/esmf
 TESTS      = 

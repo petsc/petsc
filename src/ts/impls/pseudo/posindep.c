@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.46 2000/09/02 02:50:00 bsmith Exp balay $*/
+/*$Id: posindep.c,v 1.47 2000/09/07 15:17:44 balay Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -288,6 +288,7 @@ static int TSSetUp_Pseudo(TS ts)
   int       ierr,M,m;
 
   PetscFunctionBegin;
+  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&pseudo->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&pseudo->func);CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,pseudo->func,TSPseudoFunction,ts);CHKERRQ(ierr);
@@ -336,7 +337,6 @@ static int TSSetFromOptions_Pseudo(TS ts)
     ierr = OptionsDouble("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,0);CHKERRQ(ierr);
   ierr = OptionsTail();CHKERRQ(ierr);
 
-  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.5 2000/08/17 04:50:47 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.6 2000/09/02 02:47:00 bsmith Exp bsmith $ 
 
 #requirespackage  '-DPETSC_HAVE_JAVA'
 
@@ -27,11 +27,9 @@ TCLASSPATH  = ".:${AMS_HOME}/java/src:${AMS_HOME}/java/client/AMSBean.jar:${CLAS
 amsoptions:
 	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} amsoptions.java
 
-amsoptionsapplet:
-	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} amsoptionsapplet.java
-
 AMSPETScOptions:
 	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} AMSPETScOptions.java
+	-@jar cf AMSPETScOptions.jar *.class
 
 runamsoptions:
 	-@LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${AMS_LIBDIR}/; export LD_LIBRARY_PATH; ${JAVA} -cp ${TCLASSPATH} amsoptions ${AMS_OPTIONS} 2>&1 | grep -v font.properties
