@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.67 1998/04/20 16:51:06 curfman Exp curfman $ */
+/* $Id: snes.h,v 1.68 1998/04/21 23:48:34 curfman Exp curfman $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -16,7 +16,6 @@ typedef struct _p_SNES* SNES;
 #define SNES_EQ_TEST        "test"
 #define SNES_UM_LS          "umls"
 #define SNES_UM_TR          "umtr"
-#define SNES_LS_LM          "lslm"
 
 typedef char *SNESType;
 

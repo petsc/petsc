@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.117 1998/04/09 04:09:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.118 1998/04/13 17:28:14 bsmith Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -488,5 +488,50 @@ int KSPSetFromOptions(KSP ksp)
     ierr = (*ksp->setfromoptions)(ksp);CHKERRQ(ierr);
   }
 
+  PetscFunctionReturn(0);
+}
+
+/*M
+   KSPRegister - Adds a method to the Krylov subspace solver package.
+
+   Synopsis:
+   KSPRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(KSP))
+
+   Input Parameters:
+.  name_solver - name of a new user-defined solver
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+.  routine_create - routine to create method context
+
+   Notes:
+   KSPRegister() may be called multiple times to add several user-defined solvers.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+   KSPRegister("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
+                "MySolverCreate",MySolverCreate);
+
+   Then, your solver can be chosen with the procedural interface via
+$     KSPSetType(ksp,"my_solver")
+   or at runtime via the option
+$     -ksp_type my_solver
+
+.keywords: KSP, register
+
+.seealso: KSPRegisterAll(), KSPRegisterDestroy()
+M*/
+
+#undef __FUNC__  
+#define __FUNC__ "KSPRegister_Private"
+int KSPRegister_Private(char *sname,char *path,char *name,int (*function)(KSP))
+{
+  int ierr;
+  char fullname[256];
+
+  PetscFunctionBegin;
+  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = DLRegister_Private(&KSPList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
