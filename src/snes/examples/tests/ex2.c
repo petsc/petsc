@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.8 1995/04/27 20:17:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.9 1995/05/02 16:06:38 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton method to solve a two variable system\n";
@@ -15,7 +15,7 @@ int  FormJacobian(SNES snes,Vec,Mat*,Mat*,int*,void*),
 int main( int argc, char **argv )
 {
   SNES         snes;
-  SNESMETHOD   method = SNES_NLS;  /* nonlinear solution method */
+  SNESMethod   method = SNES_NLS;  /* nonlinear solution method */
   Vec          x,r;
   Mat          J;
   int          ierr, its; 

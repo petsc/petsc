@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.8 1995/04/28 19:03:42 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.9 1995/05/02 02:21:55 bsmith Exp curfman $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -13,12 +13,12 @@ typedef enum { SNES_NLS,
                SNES_NTR2_LIN,
                SUMS_NLS,
                SUMS_NTR }
-  SNESMETHOD;
+  SNESMethod;
 
 typedef enum { SNES_T, SUMS_T } SNESTYPE;
 
 extern int SNESCreate(MPI_Comm,SNES*);
-extern int SNESSetMethod(SNES,SNESMETHOD);
+extern int SNESSetMethod(SNES,SNESMethod);
 extern int SNESSetMonitor(SNES, int (*)(SNES,int,double,void*),void *);
 extern int SNESSetSolution(SNES,Vec,int (*)(SNES,Vec,void*),void *);
 extern int SNESSetFunction(SNES, Vec, int (*)(SNES,Vec,Vec,void*),void *,int);
@@ -38,7 +38,7 @@ extern int SNESGetFunction(SNES,Vec*);
 
 extern int SNESPrintHelp(SNES);
 extern int SNESSetFromOptions(SNES);
-extern int SNESGetMethodName(SNESMETHOD,char **);
+extern int SNESGetMethodName(SNESMethod,char **);
 extern int SNESDefaultMonitor(SNES,int,double,void *);
 extern int SNESDefaultConverged(SNES,double,double,double,void*);
 

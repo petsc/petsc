@@ -6,13 +6,12 @@
 #include "sles.h"
 
 /*  Possible Multigrid Variants */
-typedef enum { MG_Multiplicative, MG_Additive, MG_FullMultigrid,
-               MG_Kaskade } MGMETHOD;
+typedef enum { MGMULTIPLICATIVE, MGADDITIVE, MGFULL, MGKASKADE } MGMethod;
 
 #define MG_V_CYCLE     1
 #define MG_W_CYCLE     2
 
-extern int MGSetMethod(PC,MGMETHOD);
+extern int MGSetMethod(PC,MGMethod);
 extern int MGCheck(PC);
 extern int MGSetLevels(PC,int);
 
