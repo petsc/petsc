@@ -783,7 +783,7 @@ int PCASMGetSubKSP(PC pc,int *n_local,int *first_local,KSP *ksp[])
 
 /* -------------------------------------------------------------------------------------*/
 /*MC
-   PCASM - Use the additive Schwarz method, each block is (approximately) solved with 
+   PCASM - Use the (restricted) additive Schwarz method, each block is (approximately) solved with 
            its own KSP object.
 
    Options Database Keys:
@@ -793,15 +793,20 @@ int PCASMGetSubKSP(PC pc,int *n_local,int *first_local,KSP *ksp[])
 .  -pc_asm_overlap <ovl> - Sets overlap
 -  -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
 
+     IMPORTANT: If you run with, for example, 3 blocks on 1 processor or 3 blocks on 3 processors you 
+      will get a different convergence rate due to the default option of -pc_asm_type restrict. Use
+      -pc_asm_type basic to use the standard ASM. 
+
    Notes: Each processor can have one or more blocks, but a block cannot be shared by more
      than one processor. Defaults to one block per processor.
 
-     To set options on the solvers for each block append -sub_ to all the KSP, KSP, and PC
+     To set options on the solvers for each block append -sub_ to all the KSP, and PC
         options database keys. For example, -sub_pc_type ilu -sub_pc_ilu_levels 1 -sub_ksp_type preonly
         
      To set the options on the solvers seperate for each block call PCASMGetSubKSP()
          and set the options directly on the resulting KSP object (you can access its PC
          with KSPGetPC())
+
 
    Level: beginner
 

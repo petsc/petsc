@@ -743,6 +743,34 @@ int  MGSetNumberSmoothUp(PC pc,int n)
 
 /* ----------------------------------------------------------------------------------------*/
 
+/*MC
+   PCMG - Use geometric multigrid preconditioning. This preconditioner requires you provide additional
+    information about the coarser grid matrices and restriction/interpolation operators.
+
+   Options Database Keys:
++  -pc_mg_levels <nlevels> - number of levels including finest
+.  -pc_mg_cycles 1 or 2 - for V or W-cycle
+.  -pc_mg_smoothup <n> - number of smoothing steps before interpolation
+.  -pc_mg_smoothdown <n> - number of smoothing steps before applying restriction operator
+.  -pc_mg_type <additive,multiplicative,full,cascade> - multiplicative is the default
+.  -pc_mg_log - log information about time spent on each level of the solver
+.  -pc_mg_monitor - print information on the multigrid convergence
+-  -pc_mg_dump_matlab - dumps the matrices for each level and the restriction/interpolation matrices
+                        to the Socket viewer for reading from Matlab.
+
+   Notes:
+
+   Level: intermediate
+
+   Concepts: multigrid
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType, 
+           MGSetLevels(), MGGetLevels(), MGSetType(), MPSetCycles(), MGSetNumberSmoothDown(),
+           MGSetNumberSmoothUp(), MGGetCoarseSolve(), MGSetResidual(), MGSetInterpolation(),
+           MGSetRestriction(), MGGetSmoother(), MGGetSmootherUp(), MGGetSmootherDown(),
+           MGSetCyclesOnLevel(), MGSetRhs(), MGSetX(), MGSetR()           
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_MG"
