@@ -389,6 +389,7 @@ chk_concepts_dir: chk_loc
 # Builds Fortran stub files
 allfortranstubs:
 	-@${RM} -f src/fortran/auto/*.c
+	-@touch src/fortran/auto/makefile.src
 	-${OMAKE} ACTION=fortranstubs tree_basic
 	-@cd src/fortran/auto; ${RM} makefile.src; echo SOURCEC = `find . -type f -name "*.c" -printf "%f "` > makefile.src
 	-@cd src/fortran/auto; ${OMAKE} fixfortran

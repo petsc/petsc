@@ -4,7 +4,7 @@
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
 set TMP=/sandbox/petsc/petsc-test
-set MACH=lyre
+set MACH=spinetta
 set ARCH=linux_gcc_pgf90
 set TEST=testexamples_
 #
