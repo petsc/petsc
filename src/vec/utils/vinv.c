@@ -610,6 +610,8 @@ int VecReciprocal_Default(Vec v)
   Output Parameter:
 . v - The vector square root
 
+  Level: beginner
+
   Note: The actual function is sqrt(|x_i|)
 
 .keywords: vector, sqrt, square root
@@ -743,6 +745,8 @@ int VecAbs(Vec v)
 + vec   - The vector
 . order - The ordering
 - inv   - The flag for inverting the permutation
+
+  Level: beginner
 
   Note: This function does not yet support parallel Index Sets
 

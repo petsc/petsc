@@ -2135,6 +2135,8 @@ int SNESSetUpdate(SNES snes, int (*func)(SNES, int))
 . snes - The nonlinear solver context
 . step - The current step of the iteration
 
+  Level: intermediate
+
 .keywords: SNES, update
 .seealso SNESSetUpdate(), SNESDefaultRhsBC(), SNESDefaultSolutionBC()
 @*/

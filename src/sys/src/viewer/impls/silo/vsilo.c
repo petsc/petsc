@@ -51,8 +51,9 @@ int PetscViewerFlush_Silo(PetscViewer viewer)
   Output Parameter:
 . fd     - file pointer
 
-.keywords: PetscViewer, file, get, pointer
+  Level: advanced
 
+.keywords: PetscViewer, file, get, pointer
 .seealso: PetscViewerSiloOpen()
 @*/
 int PetscViewerSiloGetFilePointer(PetscViewer viewer, DBfile **fd)
@@ -177,6 +178,8 @@ int PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
   Output Parameter:
 . name   - The name for new objects created in Silo
 
+  Level: intermediate
+
 .keywords PetscViewer, Silo, name
 .seealso PetscViewerSiloSetName(), PetscViewerSiloClearName()
 @*/
@@ -200,6 +203,8 @@ int PetscViewerSiloGetName(PetscViewer viewer, char **name)
 . viewer - The Silo viewer
 . name   - The name for new objects created in Silo
 
+  Level: intermediate
+
 .keywords PetscViewer, Silo, name
 .seealso PetscViewerSiloSetName(), PetscViewerSiloClearName()
 @*/
@@ -221,6 +226,8 @@ int PetscViewerSiloSetName(PetscViewer viewer, char *name)
 
   Input Parameter:
 . viewer - The Silo viewer
+
+  Level: intermediate
 
 .keywords PetscViewer, Silo, name
 .seealso PetscViewerSiloGetName(), PetscViewerSiloSetName()
@@ -246,6 +253,8 @@ int PetscViewerSiloClearName(PetscViewer viewer)
   Output Parameter:
 . name   - The name for new objects created in Silo
 
+  Level: intermediate
+
 .keywords PetscViewer, Silo, name, mesh
 .seealso PetscViewerSiloSetMeshName(), PetscViewerSiloClearMeshName()
 @*/
@@ -269,6 +278,8 @@ int PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
 + viewer - The Silo viewer
 - name   - The name for new objects created in Silo
 
+  Level: intermediate
+
 .keywords PetscViewer, Silo, name, mesh
 .seealso PetscViewerSiloSetMeshName(), PetscViewerSiloClearMeshName()
 @*/
@@ -290,6 +301,8 @@ int PetscViewerSiloSetMeshName(PetscViewer viewer, char *name)
 
   Input Parameter:
 . viewer - The Silo viewer
+
+  Level: intermediate
 
 .keywords PetscViewer, Silo, name, mesh
 .seealso PetscViewerSiloGetMeshName(), PetscViewerSiloSetMeshName()
