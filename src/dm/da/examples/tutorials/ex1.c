@@ -8,7 +8,9 @@ static char help[] = "Tests VecView() contour plotting for 2d DAs.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
+  PetscMPIInt    rank;
+  PetscInt       M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE;
+  PetscErrorCode ierr;
   PetscTruth     flg;
   DA             da;
   PetscViewer    viewer;

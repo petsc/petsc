@@ -19,13 +19,14 @@
    Level: intermediate
 
 @*/
-PetscErrorCode DALoad(PetscViewer viewer,int M,int N,int P,DA *da)
+PetscErrorCode DALoad(PetscViewer viewer,PetscInt M,PetscInt N,PetscInt P,DA *da)
 {
   PetscErrorCode ierr;
-  int info[8],nmax = 8,fd,i;
-  MPI_Comm   comm;
-  char       fieldnametag[32],fieldname[64];
-  PetscTruth isbinary,flag;
+  PetscInt       info[8],nmax = 8,i;
+  int            fd;
+  MPI_Comm       comm;
+  char           fieldnametag[32],fieldname[64];
+  PetscTruth     isbinary,flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -69,7 +70,7 @@ PetscErrorCode DALoad(PetscViewer viewer,int M,int N,int P,DA *da)
   if (flag) {
     DA  dac;
     Vec natural,global;
-    int mlocal;
+    PetscInt mlocal;
 
     if (info[0] == 1) {
       ierr = DACreate1d(comm,DA_NONPERIODIC,info[1],1,0,0,&dac);CHKERRQ(ierr);

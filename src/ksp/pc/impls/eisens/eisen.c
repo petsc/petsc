@@ -19,8 +19,8 @@ typedef struct {
 static PetscErrorCode PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 {
   PetscErrorCode ierr;
-  PC           pc;
-  PC_Eisenstat *eis;
+  PC             pc;
+  PC_Eisenstat   *eis;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&pc);CHKERRQ(ierr);
@@ -33,7 +33,7 @@ static PetscErrorCode PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 #define __FUNCT__ "PCApply_Eisenstat"
 static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
+  PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -46,8 +46,8 @@ static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCPre_Eisenstat"
 static PetscErrorCode PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
-  PetscTruth   nonzero;
+  PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
+  PetscTruth     nonzero;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -81,7 +81,7 @@ static PetscErrorCode PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 #define __FUNCT__ "PCPost_Eisenstat"
 static PetscErrorCode PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
+  PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -97,7 +97,7 @@ static PetscErrorCode PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 #define __FUNCT__ "PCDestroy_Eisenstat"
 static PetscErrorCode PCDestroy_Eisenstat(PC pc)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat *)pc->data; 
+  PC_Eisenstat   *eis = (PC_Eisenstat *)pc->data; 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -112,9 +112,9 @@ static PetscErrorCode PCDestroy_Eisenstat(PC pc)
 #define __FUNCT__ "PCSetFromOptions_Eisenstat"
 static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data; 
+  PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data; 
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Eisenstat SSOR options");CHKERRQ(ierr);
@@ -131,9 +131,9 @@ static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc)
 #define __FUNCT__ "PCView_Eisenstat"
 static PetscErrorCode PCView_Eisenstat(PC pc,PetscViewer viewer)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data; 
+  PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data; 
   PetscErrorCode ierr;
-  PetscTruth   iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -155,8 +155,8 @@ static PetscErrorCode PCView_Eisenstat(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetUp_Eisenstat(PC pc)
 {
   PetscErrorCode ierr;
-  int M,N,m,n;
-  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
+  PetscInt       M,N,m,n;
+  PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
@@ -318,7 +318,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PCCreate_Eisenstat(PC pc)
 {
   PetscErrorCode ierr;
-  PC_Eisenstat *eis;
+  PC_Eisenstat   *eis;
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_Eisenstat,&eis);CHKERRQ(ierr);

@@ -152,21 +152,21 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
    Note:  This is not coded correctly for complex arithmetic!
  */
 
-  KSP_QCG      *pcgP = (KSP_QCG*)ksp->data;
-  MatStructure pflag;
-  Mat          Amat,Pmat;
-  Vec          W,WA,WA2,R,P,ASP,BS,X,B;
-  PetscScalar  zero = 0.0,negone = -1.0,scal,nstep,btx,xtax,beta,rntrn,step;
-  PetscReal    ptasp,q1,q2,wtasp,bstp,rtr,xnorm,step1,step2,rnrm,p5 = 0.5;
-  PetscReal    dzero = 0.0,bsnrm;
+  KSP_QCG        *pcgP = (KSP_QCG*)ksp->data;
+  MatStructure   pflag;
+  Mat            Amat,Pmat;
+  Vec            W,WA,WA2,R,P,ASP,BS,X,B;
+  PetscScalar    zero = 0.0,negone = -1.0,scal,nstep,btx,xtax,beta,rntrn,step;
+  PetscReal      ptasp,q1,q2,wtasp,bstp,rtr,xnorm,step1,step2,rnrm,p5 = 0.5;
+  PetscReal      dzero = 0.0,bsnrm;
   PetscErrorCode ierr;
-  int          i,maxit;
-  PC           pc = ksp->pc;
-  PCSide       side;
+  PetscInt       i,maxit;
+  PC             pc = ksp->pc;
+  PCSide         side;
 #if defined(PETSC_USE_COMPLEX)
-  PetscScalar  cstep1,cstep2,cbstp,crtr,cwtasp,cptasp;
+  PetscScalar    cstep1,cstep2,cbstp,crtr,cwtasp,cptasp;
 #endif
-  PetscTruth   diagonalscale;
+  PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -393,7 +393,7 @@ PetscErrorCode KSPSetUp_QCG(KSP ksp)
 #define __FUNCT__ "KSPDestroy_QCG" 
 PetscErrorCode KSPDestroy_QCG(KSP ksp)
 {
-  KSP_QCG *cgP = (KSP_QCG*)ksp->data;
+  KSP_QCG        *cgP = (KSP_QCG*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -448,9 +448,9 @@ EXTERN_C_END
 PetscErrorCode KSPSetFromOptions_QCG(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscReal  delta;
-  KSP_QCG    *cgP = (KSP_QCG*)ksp->data;
-  PetscTruth flg;
+  PetscReal      delta;
+  KSP_QCG        *cgP = (KSP_QCG*)ksp->data;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP QCG Options");CHKERRQ(ierr);
@@ -481,7 +481,7 @@ EXTERN_C_BEGIN
 PetscErrorCode KSPCreate_QCG(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_QCG *cgP;
+  KSP_QCG        *cgP;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(KSP_QCG),&cgP);CHKERRQ(ierr);
@@ -534,7 +534,7 @@ EXTERN_C_END
 */
 static PetscErrorCode QuadraticRoots_Private(Vec s,Vec p,PetscReal *delta,PetscReal *step1,PetscReal *step2)
 { 
-  PetscReal zero = 0.0,dsq,ptp,pts,rad,sts;
+  PetscReal      zero = 0.0,dsq,ptp,pts,rad,sts;
   PetscErrorCode ierr;
 #if defined(PETSC_USE_COMPLEX)
   PetscScalar    cptp,cpts,csts;

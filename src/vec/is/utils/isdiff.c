@@ -121,6 +121,7 @@ PetscErrorCode ISSum(IS *is1,IS is2)
 {
   MPI_Comm       comm;
   PetscTruth     f;
+  PetscMPIInt    size;
   PetscInt       *i1,*i2,n1,n2,n3, p1,p2, *iout;
   PetscErrorCode ierr;
 
@@ -128,8 +129,8 @@ PetscErrorCode ISSum(IS *is1,IS is2)
   PetscValidHeaderSpecific(*is1,IS_COOKIE,1);
   PetscValidHeaderSpecific(is2,IS_COOKIE,2);
   ierr = PetscObjectGetComm((PetscObject)(*is1),&comm); CHKERRQ(ierr);
-  MPI_Comm_size(comm,&n1);
-  if (n1>1) SETERRQ(1,"ISSum currently only for uni-processor IS");
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size>1) SETERRQ(1,"ISSum currently only for uni-processor IS");
 
   ierr = ISSorted(*is1,&f); CHKERRQ(ierr);
   if (!f) SETERRQ(1,"Arg 1 is not sorted");

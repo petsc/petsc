@@ -103,7 +103,7 @@ PetscErrorCode DAGetCoordinateDA(DA da,DA *cda)
 {
   DAStencilType  st;
   PetscErrorCode ierr;
-  int            size;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   if (da->da_coordinates) {
@@ -115,12 +115,12 @@ PetscErrorCode DAGetCoordinateDA(DA da,DA *cda)
     if (da->w == 1) {
       da->da_coordinates = da;
     } else {
-      int            s,m,*lc,l;
+      PetscInt            s,m,*lc,l;
       DAPeriodicType pt;
       ierr = DAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&pt,0);CHKERRQ(ierr);
       ierr = DAGetCorners(da,0,0,0,&l,0,0);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(int),&lc);CHKERRQ(ierr);
-      ierr = MPI_Allgather(&l,1,MPI_INT,lc,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,da->comm);CHKERRQ(ierr);
       ierr = DACreate1d(da->comm,pt,m,1,s,lc,&da->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree(lc);CHKERRQ(ierr);
     }
@@ -129,16 +129,16 @@ PetscErrorCode DAGetCoordinateDA(DA da,DA *cda)
     if (da->w == 2 && st == DA_STENCIL_BOX) {
       da->da_coordinates = da;
     } else {
-      int            i,s,m,*lc,*ld,l,k,n,M,N;
+      PetscInt            i,s,m,*lc,*ld,l,k,n,M,N;
       DAPeriodicType pt;
       ierr = DAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&pt,0);CHKERRQ(ierr);
       ierr = DAGetCorners(da,0,0,0,&l,&k,0);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(int),&lc);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(int),&ld);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(PetscInt),&ld);CHKERRQ(ierr);
       /* only first M values in lc matter */
-      ierr = MPI_Allgather(&l,1,MPI_INT,lc,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,da->comm);CHKERRQ(ierr);
       /* every Mth value in ld matters */
-      ierr = MPI_Allgather(&k,1,MPI_INT,ld,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,da->comm);CHKERRQ(ierr);
       for ( i=0; i<N; i++) {
         ld[i] = ld[M*i];
       }
@@ -151,21 +151,21 @@ PetscErrorCode DAGetCoordinateDA(DA da,DA *cda)
     if (da->w == 3 && st == DA_STENCIL_BOX) {
       da->da_coordinates = da;
     } else {
-      int            i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;
+      PetscInt            i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;
       DAPeriodicType pt;
       ierr = DAGetInfo(da,0,&m,&n,&p,&M,&N,&P,0,&s,&pt,0);CHKERRQ(ierr);
       ierr = DAGetCorners(da,0,0,0,&l,&k,&q);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(int),&lc);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(int),&ld);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(int),&le);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(PetscInt),&ld);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(PetscInt),&le);CHKERRQ(ierr);
       /* only first M values in lc matter */
-      ierr = MPI_Allgather(&l,1,MPI_INT,lc,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,da->comm);CHKERRQ(ierr);
       /* every Mth value in ld matters */
-      ierr = MPI_Allgather(&k,1,MPI_INT,ld,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,da->comm);CHKERRQ(ierr);
       for ( i=0; i<N; i++) {
         ld[i] = ld[M*i];
       }
-      ierr = MPI_Allgather(&q,1,MPI_INT,le,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&q,1,MPIU_INT,le,1,MPIU_INT,da->comm);CHKERRQ(ierr);
       for ( i=0; i<P; i++) {
         le[i] = le[M*N*i];
       }
@@ -247,7 +247,7 @@ PetscErrorCode DAGetGhostedCoordinates(DA da,Vec *c)
 
 .seealso: DAGetFieldName()
 @*/
-PetscErrorCode DASetFieldName(DA da,int nf,const char name[])
+PetscErrorCode DASetFieldName(DA da,PetscInt nf,const char name[])
 {
   PetscErrorCode ierr;
 
@@ -283,7 +283,7 @@ PetscErrorCode DASetFieldName(DA da,int nf,const char name[])
 
 .seealso: DASetFieldName()
 @*/
-PetscErrorCode DAGetFieldName(DA da,int nf,char **name)
+PetscErrorCode DAGetFieldName(DA da,PetscInt nf,char **name)
 {
   PetscFunctionBegin;
  
@@ -324,9 +324,9 @@ PetscErrorCode DAGetFieldName(DA da,int nf,char **name)
 
 .seealso: DAGetGhostCorners()
 @*/
-PetscErrorCode DAGetCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p)
+PetscErrorCode DAGetCorners(DA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
-  int w;
+  PetscInt w;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

@@ -9,11 +9,11 @@
 #define __FUNCT__ "PCISSetUp"
 PetscErrorCode PCISSetUp(PC pc)
 {
-  PC_IS      *pcis = (PC_IS*)(pc->data);
-  Mat_IS     *matis = (Mat_IS*)pc->mat->data; 
-  int        i;
+  PC_IS           *pcis = (PC_IS*)(pc->data);
+  Mat_IS          *matis = (Mat_IS*)pc->mat->data; 
+  PetscInt        i;
   PetscErrorCode  ierr;
-  PetscTruth flg;
+  PetscTruth      flg;
   
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)pc->mat,MATIS,&flg);CHKERRQ(ierr);
@@ -48,14 +48,14 @@ PetscErrorCode PCISSetUp(PC pc)
     inteface nodes. Notice that interior nodes have D[i]==1.0.
   */
   {
-    int     n_I;
-    int    *idx_I_local,*idx_B_local,*idx_I_global,*idx_B_global;
+    PetscInt     n_I;
+    PetscInt    *idx_I_local,*idx_B_local,*idx_I_global,*idx_B_global;
     PetscScalar *array;
     /* Identifying interior and interface nodes, in local numbering */
     ierr = VecGetSize(pcis->vec1_N,&pcis->n);CHKERRQ(ierr);
     ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-    ierr = PetscMalloc(pcis->n*sizeof(int),&idx_I_local);CHKERRQ(ierr);
-    ierr = PetscMalloc(pcis->n*sizeof(int),&idx_B_local);CHKERRQ(ierr);
+    ierr = PetscMalloc(pcis->n*sizeof(PetscInt),&idx_I_local);CHKERRQ(ierr);
+    ierr = PetscMalloc(pcis->n*sizeof(PetscInt),&idx_B_local);CHKERRQ(ierr);
     for (i=0, pcis->n_B=0, n_I=0; i<pcis->n; i++) {
       if (array[i] == 1.0) { idx_I_local[n_I]       = i; n_I++;       }
       else                 { idx_B_local[pcis->n_B] = i; pcis->n_B++; }
@@ -197,7 +197,6 @@ PetscErrorCode PCISSetUp(PC pc)
 
   ierr = ISLocalToGlobalMappingGetInfo(((Mat_IS*)(pc->mat->data))->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
   pcis->ISLocalToGlobalMappingGetInfoWasCalled = PETSC_TRUE;
-
   PetscFunctionReturn(0);
 }
 
@@ -209,11 +208,10 @@ PetscErrorCode PCISSetUp(PC pc)
 #define __FUNCT__ "PCISDestroy"
 PetscErrorCode PCISDestroy(PC pc)
 {
-  PC_IS *pcis = (PC_IS*)(pc->data);
+  PC_IS          *pcis = (PC_IS*)(pc->data);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (pcis->is_B_local)  {ierr = ISDestroy(pcis->is_B_local);CHKERRQ(ierr);}
   if (pcis->is_I_local)  {ierr = ISDestroy(pcis->is_I_local);CHKERRQ(ierr);}
   if (pcis->is_B_global) {ierr = ISDestroy(pcis->is_B_global);CHKERRQ(ierr);}
@@ -241,7 +239,6 @@ PetscErrorCode PCISDestroy(PC pc)
   if (pcis->ISLocalToGlobalMappingGetInfoWasCalled) {
     ierr = ISLocalToGlobalMappingRestoreInfo((ISLocalToGlobalMapping)0,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -256,7 +253,6 @@ PetscErrorCode PCISCreate(PC pc)
   PC_IS *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
-
   pcis->is_B_local  = 0;
   pcis->is_I_local  = 0;
   pcis->is_B_global = 0;
@@ -282,7 +278,6 @@ PetscErrorCode PCISCreate(PC pc)
   pcis->N_to_B      = 0;
   pcis->global_to_B = 0;
   pcis->ISLocalToGlobalMappingGetInfoWasCalled = PETSC_FALSE;
-
   PetscFunctionReturn(0);
 }
 
@@ -306,19 +301,17 @@ PetscErrorCode PCISCreate(PC pc)
 PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   PetscErrorCode ierr;
-  PetscScalar m_one = -1.0;
-  PC_IS       *pcis = (PC_IS*)(pc->data);
+  PetscScalar    m_one = -1.0;
+  PC_IS          *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
-
-  if (vec2_B == (Vec)0) { vec2_B = v; }
+  if (!vec2_B) { vec2_B = v; }
 
   ierr = MatMult(pcis->A_BB,v,vec1_B);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_IB,v,vec1_D);CHKERRQ(ierr);
   ierr = KSPSolve(pcis->ksp_D,vec1_D,vec2_D);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_BI,vec2_D,vec2_B);CHKERRQ(ierr);
   ierr = VecAXPY(&m_one,vec2_B,vec1_B);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -344,13 +337,12 @@ PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, 
 #define __FUNCT__ "PCISScatterArrayNToVecB"
 PetscErrorCode PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
 {
-  int         i, *idex;
+  PetscInt       i, *idex;
   PetscErrorCode ierr;
-  PetscScalar *array_B;
-  PC_IS       *pcis = (PC_IS*)(pc->data);
+  PetscScalar    *array_B;
+  PC_IS          *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
-
   ierr = VecGetArray(v_B,&array_B);CHKERRQ(ierr);
   ierr = ISGetIndices(pcis->is_B_local,&idex);CHKERRQ(ierr);
 
@@ -367,10 +359,8 @@ PetscErrorCode PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMod
       for (i=0; i<pcis->n_B; i++) { array_N[idex[i]] += array_B[i]; }
     }
   }
-
   ierr = ISRestoreIndices(pcis->is_B_local,&idex);CHKERRQ(ierr);
   ierr = VecRestoreArray(v_B,&array_B);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -398,11 +388,10 @@ PetscErrorCode PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMod
 PetscErrorCode PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 {
   PetscErrorCode ierr;
-  PC_IS       *pcis = (PC_IS*)(pc->data);
-  PetscScalar zero  = 0.0;
+  PC_IS          *pcis = (PC_IS*)(pc->data);
+  PetscScalar    zero  = 0.0;
 
   PetscFunctionBegin;
-
   /*
     Neumann solvers. 
     Applying the inverse of the local Schur complement, i.e, solving a Neumann
@@ -437,7 +426,6 @@ PetscErrorCode PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
   /* Extracting the local interface vector out of the solution */
   ierr = VecScatterBegin(vec2_N,x,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);
   ierr = VecScatterEnd  (vec2_N,x,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

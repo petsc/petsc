@@ -32,11 +32,12 @@
 
 .keywords: distributed array, get, processor subset
 @*/
-PetscErrorCode DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
+PetscErrorCode DAGetProcessorSubset(DA da,DADirection dir,PetscInt gp,MPI_Comm *comm)
 {
-  MPI_Group group,subgroup;
+  MPI_Group      group,subgroup;
   PetscErrorCode ierr;
-  int i,ict,flag,size,*ranks,*owners,xs,xm,ys,ym,zs,zm;
+  PetscInt       i,ict,flag,*owners,xs,xm,ys,ym,zs,zm;
+  PetscMPIInt    size,*ranks;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -56,9 +57,8 @@ PetscErrorCode DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
     if (gp >= xs && gp < xs+xm) flag = 1;
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
-  ierr = PetscMalloc(2*size*sizeof(int),&owners);CHKERRQ(ierr);
-  ranks = owners + size;
-  ierr = MPI_Allgather(&flag,1,MPI_INT,owners,1,MPI_INT,da->comm);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,PetscInt,&owners,size,PetscMPIInt,&ranks);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&flag,1,MPIU_INT,owners,1,MPIU_INT,da->comm);CHKERRQ(ierr);
   ict = 0;
   PetscLogInfo(da,"DAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);
   for (i=0; i<size; i++) {
@@ -71,6 +71,6 @@ PetscErrorCode DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
   ierr = MPI_Comm_group(da->comm,&group);CHKERRQ(ierr);
   ierr = MPI_Group_incl(group,ict,ranks,&subgroup);CHKERRQ(ierr);
   ierr = MPI_Comm_create(da->comm,subgroup,comm);CHKERRQ(ierr);
-  ierr = PetscFree(owners);CHKERRQ(ierr);
+  ierr = PetscFree2(owners,ranks);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 

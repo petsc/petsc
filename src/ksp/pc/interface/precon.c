@@ -5,8 +5,8 @@
 
 /* Logging support */
 PetscCookie PC_COOKIE = 0;
-PetscEvent    PC_SetUp = 0, PC_SetUpOnBlocks = 0, PC_Apply = 0, PC_ApplyCoarse = 0, PC_ApplyMultiple = 0, PC_ApplySymmetricLeft = 0;
-PetscEvent    PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0;
+PetscEvent  PC_SetUp = 0, PC_SetUpOnBlocks = 0, PC_Apply = 0, PC_ApplyCoarse = 0, PC_ApplyMultiple = 0, PC_ApplySymmetricLeft = 0;
+PetscEvent  PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCGetDefaultType_Private"
@@ -726,7 +726,7 @@ PetscErrorCode PCApplyRichardsonExists(PC pc,PetscTruth *exists)
 
 .seealso: PCApplyRichardsonExists()
 @*/
-PetscErrorCode PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,int its)
+PetscErrorCode PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its)
 {
   PetscErrorCode ierr;
 
@@ -849,7 +849,7 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
 -  ctx - optional user-defined context (may be null)
 
    Calling sequence of func:
-$     func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
+$     func (PC pc,PetscInt nsub,IS *row,IS *col,Mat *submat,void *ctx);
 
 .  row - an array of index sets that contain the global row numbers
          that comprise each local submatrix
@@ -873,7 +873,7 @@ $     func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
 
 .seealso: PCModifySubMatrices()
 @*/
-PetscErrorCode PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,int,const IS[],const IS[],Mat[],void*),void *ctx)
+PetscErrorCode PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,PetscInt,const IS[],const IS[],Mat[],void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -921,7 +921,7 @@ PetscErrorCode PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,int,const 
 
 .seealso: PCSetModifySubMatrices()
 @*/
-PetscErrorCode PCModifySubMatrices(PC pc,int nsub,const IS row[],const IS col[],Mat submat[],void *ctx)
+PetscErrorCode PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS col[],Mat submat[],void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -1463,7 +1463,7 @@ PetscErrorCode PCComputeExplicitOperator(PC pc,Mat *mat)
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  ierr = PetscMalloc((m+1)*sizeof(int),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
   ierr = MatCreate(comm,m,m,M,M,mat);CHKERRQ(ierr);

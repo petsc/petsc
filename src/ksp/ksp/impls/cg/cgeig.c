@@ -4,17 +4,17 @@
    matrices (not complex matrices that are symmetric).
 */
 #include "src/ksp/ksp/impls/cg/cgctx.h"
-static PetscErrorCode LINPACKcgtql1(int*,PetscReal *,PetscReal *,int *);
+static PetscErrorCode LINPACKcgtql1(PetscInt*,PetscReal *,PetscReal *,PetscInt *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeEigenvalues_CG"
-PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
+PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c,PetscInt *neig)
 {
-  KSP_CG      *cgP = (KSP_CG*)ksp->data;
-  PetscScalar *d,*e;
-  PetscReal   *ee;
+  KSP_CG         *cgP = (KSP_CG*)ksp->data;
+  PetscScalar    *d,*e;
+  PetscReal      *ee;
   PetscErrorCode ierr;
-  int          j,n = ksp->its;
+  PetscInt       j,n = ksp->its;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
@@ -46,7 +46,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscR
   KSP_CG      *cgP = (KSP_CG*)ksp->data;
   PetscScalar *d,*e;
   PetscReal   *dd,*ee;
-  int         j,n = ksp->its;
+  PetscInt    j,n = ksp->its;
 
   PetscFunctionBegin;
   if (!n) {
@@ -81,21 +81,21 @@ static PetscReal LINPACKcgpthy(PetscReal*,PetscReal*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "LINPACKcgtql1"
-static PetscErrorCode LINPACKcgtql1(int *n,PetscReal *d,PetscReal *e,int *ierr)
+static PetscErrorCode LINPACKcgtql1(PetscInt *n,PetscReal *d,PetscReal *e,PetscInt *ierr)
 {
     /* System generated locals */
-    int    i__1,i__2;
+    PetscInt  i__1,i__2;
     PetscReal d__1,d__2,c_b10 = 1.0;
 
     /* Local variables */
      PetscReal c,f,g,h;
-     int    i,j,l,m;
+     PetscInt  i,j,l,m;
      PetscReal p,r,s,c2,c3 = 0.0;
-     int    l1,l2;
+     PetscInt  l1,l2;
      PetscReal s2 = 0.0;
-     int    ii;
+     PetscInt  ii;
      PetscReal dl1,el1;
-     int    mml;
+     PetscInt  mml;
      PetscReal tst1,tst2;
 
 /*     THIS SUBROUTINE IS A TRANSLATION OF THE ALGOL PROCEDURE TQL1, */

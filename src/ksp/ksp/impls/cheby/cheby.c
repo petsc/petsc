@@ -71,7 +71,7 @@ PetscErrorCode KSPSetFromOptions_Chebychev(KSP ksp)
 {
   KSP_Chebychev *cheb = (KSP_Chebychev*)ksp->data;
   PetscErrorCode ierr;
-  int            two = 2;
+  PetscInt       two = 2;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP Chebychev Options");CHKERRQ(ierr);
@@ -85,14 +85,14 @@ PetscErrorCode KSPSetFromOptions_Chebychev(KSP ksp)
 PetscErrorCode KSPSolve_Chebychev(KSP ksp)
 {
   PetscErrorCode ierr;
-  int              k,kp1,km1,maxit,ktmp,i;
-  PetscScalar      alpha,omegaprod,mu,omega,Gamma,c[3],scale,mone = -1.0,tmp;
-  PetscReal        rnorm;
-  Vec              x,b,p[3],r;
-  KSP_Chebychev    *chebychevP = (KSP_Chebychev*)ksp->data;
-  Mat              Amat,Pmat;
-  MatStructure     pflag;
-  PetscTruth       diagonalscale;
+  PetscInt       k,kp1,km1,maxit,ktmp,i;
+  PetscScalar    alpha,omegaprod,mu,omega,Gamma,c[3],scale,mone = -1.0,tmp;
+  PetscReal      rnorm;
+  Vec            x,b,p[3],r;
+  KSP_Chebychev  *chebychevP = (KSP_Chebychev*)ksp->data;
+  Mat            Amat,Pmat;
+  MatStructure   pflag;
+  PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -199,9 +199,9 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
 #define __FUNCT__ "KSPView_Chebychev" 
 PetscErrorCode KSPView_Chebychev(KSP ksp,PetscViewer viewer)
 {
-  KSP_Chebychev *cheb = (KSP_Chebychev*)ksp->data;
+  KSP_Chebychev  *cheb = (KSP_Chebychev*)ksp->data;
   PetscErrorCode ierr;
-  PetscTruth    iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -236,7 +236,7 @@ EXTERN_C_BEGIN
 PetscErrorCode KSPCreate_Chebychev(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_Chebychev *chebychevP;
+  KSP_Chebychev  *chebychevP;
 
   PetscFunctionBegin;
   ierr = PetscNew(KSP_Chebychev,&chebychevP);CHKERRQ(ierr);

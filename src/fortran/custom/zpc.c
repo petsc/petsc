@@ -422,7 +422,7 @@ EXTERN_C_END
 #if defined(__cplusplus)
 extern "C" {
 #endif
-void PETSC_STDCALL  pchypresettype_(PC pc, CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL  pchypresettype_(PC *pc, CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len) )
 {
   char *t;
   FIXCHAR(name,len,t);

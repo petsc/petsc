@@ -4,8 +4,8 @@
 
 typedef struct {
   PetscTruth use_true_matrix;       /* use mat rather than pmat in inner linear solve */
-  KSP       ksp; 
-  int        its;                   /* total number of iterations KSP uses */
+  KSP        ksp; 
+  PetscInt   its;                   /* total number of iterations KSP uses */
 } PC_KSP;
 
 #undef __FUNCT__  
@@ -13,8 +13,8 @@ typedef struct {
 static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  int its;
-  PC_KSP *jac = (PC_KSP*)pc->data;
+  PetscInt       its;
+  PC_KSP         *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
   ierr      = KSPSolve(jac->ksp,x,y);CHKERRQ(ierr);
@@ -28,8 +28,8 @@ static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
 static PetscErrorCode PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  int     its;
-  PC_KSP *jac = (PC_KSP*)pc->data;
+  PetscInt       its;
+  PC_KSP         *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
   ierr      = KSPSolveTranspose(jac->ksp,x,y);CHKERRQ(ierr);
@@ -43,8 +43,8 @@ static PetscErrorCode PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
 static PetscErrorCode PCSetUp_KSP(PC pc)
 {
   PetscErrorCode ierr;
-  PC_KSP *jac = (PC_KSP*)pc->data;
-  Mat     mat;
+  PC_KSP         *jac = (PC_KSP*)pc->data;
+  Mat            mat;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions(jac->ksp);CHKERRQ(ierr);
@@ -61,7 +61,7 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
 #define __FUNCT__ "PCDestroy_KSP"
 static PetscErrorCode PCDestroy_KSP(PC pc)
 {
-  PC_KSP *jac = (PC_KSP*)pc->data;
+  PC_KSP         *jac = (PC_KSP*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -74,9 +74,9 @@ static PetscErrorCode PCDestroy_KSP(PC pc)
 #define __FUNCT__ "PCView_KSP"
 static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
 {
-  PC_KSP    *jac = (PC_KSP*)pc->data;
+  PC_KSP         *jac = (PC_KSP*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -100,9 +100,10 @@ static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_KSP"
-static PetscErrorCode PCSetFromOptions_KSP(PC pc){
+static PetscErrorCode PCSetFromOptions_KSP(PC pc)
+{
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP preconditioner options");CHKERRQ(ierr);
@@ -247,8 +248,8 @@ EXTERN_C_BEGIN
 PetscErrorCode PCCreate_KSP(PC pc)
 {
   PetscErrorCode ierr;
-  char      *prefix;
-  PC_KSP   *jac;
+  char           *prefix;
+  PC_KSP         *jac;
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_KSP,&jac);CHKERRQ(ierr);

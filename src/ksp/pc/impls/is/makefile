@@ -1,4 +1,5 @@
 
+ALL: lib
 CFLAGS   =
 FFLAGS   =
 LIBBASE  = libpetscksp

@@ -923,6 +923,8 @@ what function one is in.
 \begin{verbatim}
    PetscFunctionReturn( somefunction(...) );
 \end{verbatim}
+\item Do {\bf not} put a blank line immediately after {\tt PetscFunctionBegin;} or 
+a blank line immediately before {\tt PetscFunctionReturn(0);}.
 \item Indentation for {\tt if} statements {\em must}  be done  as
 as
 \begin{verbatim}
@@ -955,23 +957,17 @@ or
 \item {\em No} tabs are allowed in {\em any} of the source code.
 \item The open bracket \{ should be on the same line as the {\em if ()} test, {\em for ()}, etc. never on 
       its own line. The closing bracket \} should {\bf always} be on its own line. 
+\item In function declaration the open bracket \{ should be on the {\bf next} line, not on the same line as the function name and
+      arguments. This is an exception to the rule above.
 \item {\em No} space after a ( or before a ). No space before the CHKXXX(). That is, do not write
 \begin{verbatim}
-   a = (double*)PetscMalloc( 10*sizeof(int) ); CHKPTRQ(a);
+   ierr = PetscMalloc( 10*sizeof(int),&a ); CHKERRQ(ierr);
 \end{verbatim}
 instead write
 \begin{verbatim}
-   a = (double*)PetscMalloc(10*sizeof(int));CHKPTRQ(a);
+   ierr = PetscMalloc(10*sizeof(int),&a);CHKERRQ(ierr);
 \end{verbatim}
 \item {\em No} space after the ) in a cast, no space between the type and the * in a caste.
-That is, do not write
-\begin{verbatim}
-   a = (double *) PetscMalloc(10*sizeof(int));CHKPTRQ(a);
-\end{verbatim}
-instead write
-\begin{verbatim}
-   a = (double*)PetscMalloc(10*sizeof(int));CHKPTRQ(a);
-\end{verbatim}
 \item {\em No} space before or after a , in lists
 That is, do not write
 \begin{verbatim}

@@ -41,7 +41,7 @@ PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm comm)
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stdout_keyval,0);
     if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
   }
-  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stdout_keyval,(void **)&viewer,(int*)&flg);
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stdout_keyval,(void **)&viewer,(PetscMPIInt*)&flg);
   if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscViewerASCIIOpen(comm,"stdout",&viewer);
@@ -59,7 +59,7 @@ PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm comm)
     The variable Petsc_Viewer_Stderr_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.
 */
-static int Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
+static PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_STDERR_" 
@@ -93,7 +93,7 @@ PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm comm)
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stderr_keyval,0);
     if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
   }
-  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stderr_keyval,(void **)&viewer,(int*)&flg);
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stderr_keyval,(void **)&viewer,(PetscMPIInt*)&flg);
   if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscViewerASCIIOpen(comm,"stderr",&viewer);

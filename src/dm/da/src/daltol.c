@@ -18,7 +18,7 @@
 PetscErrorCode DALocalToLocalCreate(DA da)
 {
   PetscErrorCode ierr;
-  int *idx,left,j,count,up,down,i,bottom,top,k;
+  PetscInt *idx,left,j,count,up,down,i,bottom,top,k;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -33,13 +33,13 @@ PetscErrorCode DALocalToLocalCreate(DA da)
   PetscLogObjectParent(da,da->ltol);
   if (da->dim == 1) {
     left = da->xs - da->Xs;
-    ierr = PetscMalloc((da->xe-da->xs)*sizeof(int),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc((da->xe-da->xs)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
     for (j=0; j<da->xe-da->xs; j++) {
       idx[j] = left + j;
     }  
   } else if (da->dim == 2) {
     left  = da->xs - da->Xs; down  = da->ys - da->Ys; up    = down + da->ye-da->ys;
-    ierr = PetscMalloc((da->xe-da->xs)*(up - down)*sizeof(int),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc((da->xe-da->xs)*(up - down)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
     count = 0;
     for (i=down; i<up; i++) {
       for (j=0; j<da->xe-da->xs; j++) {
@@ -51,7 +51,7 @@ PetscErrorCode DALocalToLocalCreate(DA da)
     bottom = da->ys - da->Ys; top = bottom + da->ye-da->ys ;
     down   = da->zs - da->Zs; up  = down + da->ze-da->zs;
     count  = (da->xe-da->xs)*(top-bottom)*(up-down);
-    ierr = PetscMalloc(count*sizeof(int),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
     count  = 0;
     for (i=down; i<up; i++) {
       for (j=bottom; j<top; j++) {

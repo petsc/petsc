@@ -4,24 +4,24 @@
 */
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 
-EXTERN PetscErrorCode MatSetValues_SeqSBAIJ(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
+EXTERN PetscErrorCode MatSetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt [],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPISBAIJ"
 PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 {
-  Mat_MPISBAIJ       *sbaij = (Mat_MPISBAIJ*)mat->data;
-  Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(sbaij->B->data);  
+  Mat_MPISBAIJ   *sbaij = (Mat_MPISBAIJ*)mat->data;
+  Mat_SeqBAIJ    *B = (Mat_SeqBAIJ*)(sbaij->B->data);  
   PetscErrorCode ierr;
-  int                Nbs = sbaij->Nbs,i,j,*indices,*aj = B->j,ec = 0,*garray,*sgarray;
-  int                bs = mat->bs,*stmp,mbs=sbaij->mbs, vec_size,nt;
-  IS                 from,to;
-  Vec                gvec;
-  int                rank=sbaij->rank,lsize,size=sbaij->size; 
-  int                *owners=sbaij->rowners,*sowners,*ec_owner,k; 
-  PetscMap           vecmap;
-  PetscScalar        *ptr;
+  PetscInt       Nbs = sbaij->Nbs,i,j,*indices,*aj = B->j,ec = 0,*garray,*sgarray;
+  PetscInt       bs = mat->bs,*stmp,mbs=sbaij->mbs, vec_size,nt;
+  IS             from,to;
+  Vec            gvec;
+  PetscMPIInt    rank=sbaij->rank,lsize,size=sbaij->size; 
+  PetscInt       *owners=sbaij->rowners,*sowners,*ec_owner,k; 
+  PetscMap       vecmap;
+  PetscScalar    *ptr;
 
   PetscFunctionBegin;
   if (sbaij->lvec) {
@@ -35,8 +35,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in sbaij->B */
-  ierr = PetscMalloc((Nbs+1)*sizeof(int),&indices);CHKERRQ(ierr);
-  ierr = PetscMemzero(indices,Nbs*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc((Nbs+1)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMemzero(indices,Nbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       if (!indices[aj[B->i[i] + j]]) ec++; 
@@ -45,8 +45,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   }
 
   /* form arrays of columns we need */
-  ierr = PetscMalloc((ec+1)*sizeof(int),&garray);CHKERRQ(ierr);
-  ierr = PetscMalloc((3*ec+1)*sizeof(int),&sgarray);CHKERRQ(ierr);
+  ierr = PetscMalloc((ec+1)*sizeof(PetscInt),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc((3*ec+1)*sizeof(PetscInt),&sgarray);CHKERRQ(ierr);
   ec_owner = sgarray + 2*ec;
   
   ec = 0;
@@ -75,7 +75,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&sbaij->lvec);CHKERRQ(ierr);
 
   /* create two temporary index sets for building scatter-gather */
-  ierr = PetscMalloc((2*ec+1)*sizeof(int),&stmp);CHKERRQ(ierr);
+  ierr = PetscMalloc((2*ec+1)*sizeof(PetscInt),&stmp);CHKERRQ(ierr);
   for (i=0; i<ec; i++) stmp[i] = bs*garray[i];  
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&from);CHKERRQ(ierr);   
   
@@ -158,7 +158,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   PetscLogObjectParent(mat,from);
   PetscLogObjectParent(mat,to); 
   
-  PetscLogObjectMemory(mat,(ec+1)*sizeof(int)); 
+  PetscLogObjectMemory(mat,(ec+1)*sizeof(PetscInt)); 
   ierr = ISDestroy(from);CHKERRQ(ierr);  
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = VecDestroy(gvec);CHKERRQ(ierr);
@@ -173,17 +173,17 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
 {
   Mat_MPISBAIJ       *baij = (Mat_MPISBAIJ*)mat->data;
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(baij->B->data);  
-  PetscErrorCode ierr;
-  int                i,j,*aj = B->j,ec = 0,*garray;
-  int                bs = mat->bs,*stmp;
+  PetscErrorCode     ierr;
+  PetscInt           i,j,*aj = B->j,ec = 0,*garray;
+  PetscInt           bs = mat->bs,*stmp;
   IS                 from,to;
   Vec                gvec;
 #if defined (PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
   PetscTablePosition tpos;
-  int                gid,lid;
+  PetscInt           gid,lid;
 #else
-  int                Nbs = baij->Nbs,*indices;
+  PetscInt           Nbs = baij->Nbs,*indices;
 #endif  
 
   PetscFunctionBegin;
@@ -193,7 +193,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   PetscTableCreate(B->mbs,&gid1_lid1); 
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
-      int data,gid1 = aj[B->i[i]+j] + 1;
+      PetscInt data,gid1 = aj[B->i[i]+j] + 1;
       ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
       if (!data) {
         /* one based table */ 
@@ -202,7 +202,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
     }
   } 
   /* form array of columns we need */
-  ierr = PetscMalloc((ec+1)*sizeof(int),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc((ec+1)*sizeof(PetscInt),&garray);CHKERRQ(ierr);
   ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
   while (tpos) {  
     ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr); 
@@ -217,7 +217,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   /* compact out the extra columns in B */
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
-      int gid1 = aj[B->i[i] + j] + 1;
+      PetscInt gid1 = aj[B->i[i] + j] + 1;
       ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
       lid --;
       aj[B->i[i]+j] = lid;
@@ -230,8 +230,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
 #else
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in baij->B */
-  ierr = PetscMalloc((Nbs+1)*sizeof(int),&indices);CHKERRQ(ierr);
-  ierr = PetscMemzero(indices,Nbs*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc((Nbs+1)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMemzero(indices,Nbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       if (!indices[aj[B->i[i] + j]]) ec++; 
@@ -240,7 +240,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   }
 
   /* form array of columns we need */
-  ierr = PetscMalloc((ec+1)*sizeof(int),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc((ec+1)*sizeof(PetscInt),&garray);CHKERRQ(ierr);
   ec = 0;
   for (i=0; i<Nbs; i++) {
     if (indices[i]) {
@@ -276,7 +276,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
     garray[i] = garray[i]/bs;
   }
 
-  ierr = PetscMalloc((ec+1)*sizeof(int),&stmp);CHKERRQ(ierr);
+  ierr = PetscMalloc((ec+1)*sizeof(PetscInt),&stmp);CHKERRQ(ierr);
   for (i=0; i<ec; i++) { stmp[i] = bs*i; } 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
   ierr = PetscFree(stmp);CHKERRQ(ierr);
@@ -303,7 +303,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   PetscLogObjectParent(mat,from);
   PetscLogObjectParent(mat,to);
   baij->garray = garray;
-  PetscLogObjectMemory(mat,(ec+1)*sizeof(int));
+  PetscLogObjectMemory(mat,(ec+1)*sizeof(PetscInt));
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = VecDestroy(gvec);CHKERRQ(ierr);
@@ -328,12 +328,12 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
   Mat           B = baij->B,Bnew;
   Mat_SeqBAIJ   *Bbaij = (Mat_SeqBAIJ*)B->data;
   PetscErrorCode ierr;
-  int i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
-  int           k,bs=A->bs,bs2=baij->bs2,*rvals,*nz,ec,m=A->m;
+  PetscInt i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
+  PetscInt           k,bs=A->bs,bs2=baij->bs2,*rvals,*nz,ec,m=A->m;
   MatScalar     *a = Bbaij->a;
   PetscScalar   *atmp;
 #if defined(PETSC_USE_MAT_SINGLE)
-  int           l;
+  PetscInt           l;
 #endif
 
   PetscFunctionBegin;
@@ -350,7 +350,7 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
 #else
     ierr = PetscFree(baij->colmap);CHKERRQ(ierr);
     baij->colmap = 0;
-    PetscLogObjectMemory(A,-Bbaij->nbs*sizeof(int));
+    PetscLogObjectMemory(A,-Bbaij->nbs*sizeof(PetscInt));
 #endif
   }
 
@@ -359,7 +359,7 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* invent new B and copy stuff over */
-  ierr = PetscMalloc(mbs*sizeof(int),&nz);CHKERRQ(ierr);
+  ierr = PetscMalloc(mbs*sizeof(PetscInt),&nz);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     nz[i] = Bbaij->i[i+1]-Bbaij->i[i];
   }
@@ -368,7 +368,7 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
   ierr = MatSeqBAIJSetPreallocation(Bnew,B->bs,0,nz);CHKERRQ(ierr);
   ierr = PetscFree(nz);CHKERRQ(ierr);
   
-  ierr = PetscMalloc(bs*sizeof(int),&rvals);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*sizeof(PetscInt),&rvals);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     rvals[0] = bs*i;
     for (j=1; j<bs; j++) { rvals[j] = rvals[j-1] + 1; }
@@ -391,7 +391,7 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
   ierr = PetscFree(baij->garray);CHKERRQ(ierr);
   baij->garray = 0;
   ierr = PetscFree(rvals);CHKERRQ(ierr);
-  PetscLogObjectMemory(A,-ec*sizeof(int));
+  PetscLogObjectMemory(A,-ec*sizeof(PetscInt));
   ierr = MatDestroy(B);CHKERRQ(ierr);
   PetscLogObjectParent(A,Bnew);
   baij->B = Bnew;

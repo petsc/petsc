@@ -16,7 +16,7 @@ EXTERN_C_END
         The data that is passed into the graphics callback
 */
 typedef struct {
-  int          m,n,step,k;
+  PetscInt          m,n,step,k;
   PetscReal    min,max,scale;
   PetscScalar  *xy,*v;
   PetscTruth   showgrid;
@@ -33,7 +33,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 {
   ZoomCtx     *zctx = (ZoomCtx*)ctx;
   PetscErrorCode ierr;
-  int m,n,i,j,k,step,id,c1,c2,c3,c4;
+  PetscInt m,n,i,j,k,step,id,c1,c2,c3,c4;
   PetscReal   s,min,x1,x2,x3,x4,y_1,y2,y3,y4;
   PetscScalar *v,*xy;
 
@@ -79,8 +79,9 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 {
   DA                 da,dac,dag;
-  PetscErrorCode ierr;
-  int                rank,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w;
+  PetscErrorCode     ierr;
+  PetscMPIInt        rank;
+  PetscInt           igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w;
   PetscReal          coors[4],ymin,ymax,xmin,xmax;
   PetscDraw          draw,popup;
   PetscTruth         isnull,useports;
@@ -251,7 +252,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims);
+EXTERN PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, PetscInt d, PetscInt *dims);
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_HDF4_DA2d"
@@ -259,7 +260,7 @@ PetscErrorCode VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
 {
 #if defined(PETSC_HAVE_HDF4) && !defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
-  int dims[2];
+  PetscInt dims[2];
   DA  da;
   Vec natural;
 
@@ -290,10 +291,10 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
 {
 #if defined(PETSC_HAVE_PNETCDF)
   PetscErrorCode ierr;
-  int ncid,xstart,xdim_num=1;
-  int            i,j,len,dim,m,n,p,dof,swidth,M,N,P;
-  int            xin_dim,xin_id,xin_n,xin_N,xyz_dim,xyz_id,xyz_n,xyz_N;
-  int            *lx,*ly,*lz;
+  PetscInt ncid,xstart,xdim_num=1;
+  PetscInt            i,j,len,dim,m,n,p,dof,swidth,M,N,P;
+  PetscInt            xin_dim,xin_id,xin_n,xin_N,xyz_dim,xyz_id,xyz_n,xyz_N;
+  PetscInt            *lx,*ly,*lz;
   PetscScalar    *xarray;
   DA             da,dac;
   Vec            natural,xyz;
@@ -372,7 +373,7 @@ PetscErrorCode VecView_MPI_DA(Vec xin,PetscViewer viewer)
 {
   DA         da;
   PetscErrorCode ierr;
-  int dim;
+  PetscInt dim;
   Vec        natural;
   PetscTruth isdraw,ishdf4,isnetcdf;
   char       *prefix;

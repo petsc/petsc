@@ -28,10 +28,10 @@ extern PetscEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
 
 EXTERN PetscErrorCode DMInitializePackage(const char[]);
 
-EXTERN PetscErrorCode AOCreateBasic(MPI_Comm,int,const int[],const int[],AO*);
+EXTERN PetscErrorCode AOCreateBasic(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
 EXTERN PetscErrorCode AOCreateBasicIS(IS,IS,AO*);
 
-EXTERN PetscErrorCode AOCreateMapping(MPI_Comm,int,const int[],const int[],AO*);
+EXTERN PetscErrorCode AOCreateMapping(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
 EXTERN PetscErrorCode AOCreateMappingIS(IS,IS,AO*);
 
 EXTERN PetscErrorCode AOView(AO,PetscViewer);
@@ -44,18 +44,18 @@ EXTERN PetscErrorCode AORegister_Private(const char [], const char [], const cha
 #define AORegister(a,b,c,d) AORegister_Private(a,b,c,d)
 #endif
 
-EXTERN PetscErrorCode AOPetscToApplication(AO,int,int[]);
-EXTERN PetscErrorCode AOApplicationToPetsc(AO,int,int[]);
+EXTERN PetscErrorCode AOPetscToApplication(AO,PetscInt,PetscInt[]);
+EXTERN PetscErrorCode AOApplicationToPetsc(AO,PetscInt,PetscInt[]);
 EXTERN PetscErrorCode AOPetscToApplicationIS(AO,IS);
 EXTERN PetscErrorCode AOApplicationToPetscIS(AO,IS);
 
-EXTERN PetscErrorCode AOPetscToApplicationPermuteInt(AO, int, int[]);
-EXTERN PetscErrorCode AOApplicationToPetscPermuteInt(AO, int, int[]);
-EXTERN PetscErrorCode AOPetscToApplicationPermuteReal(AO, int, double[]);
-EXTERN PetscErrorCode AOApplicationToPetscPermuteReal(AO, int, double[]);
+EXTERN PetscErrorCode AOPetscToApplicationPermuteInt(AO, PetscInt, PetscInt[]);
+EXTERN PetscErrorCode AOApplicationToPetscPermuteInt(AO, PetscInt, PetscInt[]);
+EXTERN PetscErrorCode AOPetscToApplicationPermuteReal(AO, PetscInt, double[]);
+EXTERN PetscErrorCode AOApplicationToPetscPermuteReal(AO, PetscInt, double[]);
 
-EXTERN PetscErrorCode AOMappingHasApplicationIndex(AO, int, PetscTruth *);
-EXTERN PetscErrorCode AOMappingHasPetscIndex(AO, int, PetscTruth *);
+EXTERN PetscErrorCode AOMappingHasApplicationIndex(AO, PetscInt, PetscTruth *);
+EXTERN PetscErrorCode AOMappingHasPetscIndex(AO, PetscInt, PetscTruth *);
 
 /* ----------------------------------------------------*/
 
@@ -75,9 +75,9 @@ EXTERN PetscErrorCode AODataCreateBasic(MPI_Comm,AOData *);
 EXTERN PetscErrorCode AODataView(AOData,PetscViewer);
 EXTERN PetscErrorCode AODataDestroy(AOData);
 EXTERN PetscErrorCode AODataLoadBasic(PetscViewer,AOData *);
-EXTERN PetscErrorCode AODataGetInfo(AOData,int*,char ***);
+EXTERN PetscErrorCode AODataGetInfo(AOData,PetscInt*,char ***);
 
-EXTERN PetscErrorCode AODataKeyAdd(AOData,const char[],int,int);
+EXTERN PetscErrorCode AODataKeyAdd(AOData,const char[],PetscInt,PetscInt);
 EXTERN PetscErrorCode AODataKeyRemove(AOData,const char[]);
 
 EXTERN PetscErrorCode AODataKeySetLocalToGlobalMapping(AOData,const char[],ISLocalToGlobalMapping);
@@ -85,38 +85,38 @@ EXTERN PetscErrorCode AODataKeyGetLocalToGlobalMapping(AOData,const char[],ISLoc
 EXTERN PetscErrorCode AODataKeyRemap(AOData,const char[],AO);
 
 EXTERN PetscErrorCode AODataKeyExists(AOData,const char[],PetscTruth*);
-EXTERN PetscErrorCode AODataKeyGetInfo(AOData,const char[],int *,int*,int*,char***);
-EXTERN PetscErrorCode AODataKeyGetOwnershipRange(AOData,const char[],int *,int*);
+EXTERN PetscErrorCode AODataKeyGetInfo(AOData,const char[],PetscInt *,PetscInt*,PetscInt*,char***);
+EXTERN PetscErrorCode AODataKeyGetOwnershipRange(AOData,const char[],PetscInt *,PetscInt*);
 
-EXTERN PetscErrorCode AODataKeyGetNeighbors(AOData,const char[],int,int*,IS *);
+EXTERN PetscErrorCode AODataKeyGetNeighbors(AOData,const char[],PetscInt,PetscInt*,IS *);
 EXTERN PetscErrorCode AODataKeyGetNeighborsIS(AOData,const char[],IS,IS *);
 EXTERN PetscErrorCode AODataKeyGetAdjacency(AOData,const char[],Mat*);
 
-EXTERN PetscErrorCode AODataKeyGetActive(AOData,const char[],const char[],int,int *,int,IS*);
-EXTERN PetscErrorCode AODataKeyGetActiveIS(AOData,const char[],const char[],IS,int,IS*);
-EXTERN PetscErrorCode AODataKeyGetActiveLocal(AOData,const char[],const char[],int,int *,int,IS*);
-EXTERN PetscErrorCode AODataKeyGetActiveLocalIS(AOData,const char[],const char[],IS,int,IS*);
+EXTERN PetscErrorCode AODataKeyGetActive(AOData,const char[],const char[],PetscInt,PetscInt *,PetscInt,IS*);
+EXTERN PetscErrorCode AODataKeyGetActiveIS(AOData,const char[],const char[],IS,PetscInt,IS*);
+EXTERN PetscErrorCode AODataKeyGetActiveLocal(AOData,const char[],const char[],PetscInt,PetscInt *,PetscInt,IS*);
+EXTERN PetscErrorCode AODataKeyGetActiveLocalIS(AOData,const char[],const char[],IS,PetscInt,IS*);
 
 EXTERN PetscErrorCode AODataKeyPartition(AOData,const char[]);
 
-EXTERN PetscErrorCode AODataSegmentAdd(AOData,const char[],const char[],int,int,int *,void *,PetscDataType);
+EXTERN PetscErrorCode AODataSegmentAdd(AOData,const char[],const char[],PetscInt,PetscInt,PetscInt *,void *,PetscDataType);
 EXTERN PetscErrorCode AODataSegmentRemove(AOData,const char[],const char[]);
-EXTERN PetscErrorCode AODataSegmentAddIS(AOData,const char[],const char[],int,IS,void *,PetscDataType);
+EXTERN PetscErrorCode AODataSegmentAddIS(AOData,const char[],const char[],PetscInt,IS,void *,PetscDataType);
 
 EXTERN PetscErrorCode AODataSegmentExists(AOData,const char[],const char[],PetscTruth*);
-EXTERN PetscErrorCode AODataSegmentGetInfo(AOData,const char[],const char[],int *,PetscDataType*);
+EXTERN PetscErrorCode AODataSegmentGetInfo(AOData,const char[],const char[],PetscInt *,PetscDataType*);
 
-EXTERN PetscErrorCode AODataSegmentGet(AOData,const char[],const char[],int,int*,void **);
-EXTERN PetscErrorCode AODataSegmentRestore(AOData,const char[],const char[],int,int*,void **);
+EXTERN PetscErrorCode AODataSegmentGet(AOData,const char[],const char[],PetscInt,PetscInt*,void **);
+EXTERN PetscErrorCode AODataSegmentRestore(AOData,const char[],const char[],PetscInt,PetscInt*,void **);
 EXTERN PetscErrorCode AODataSegmentGetIS(AOData,const char[],const char[],IS,void **);
 EXTERN PetscErrorCode AODataSegmentRestoreIS(AOData,const char[],const char[],IS,void **);
 
-EXTERN PetscErrorCode AODataSegmentGetLocal(AOData,const char[],const char[],int,int*,void **);
-EXTERN PetscErrorCode AODataSegmentRestoreLocal(AOData,const char[],const char[],int,int*,void **);
+EXTERN PetscErrorCode AODataSegmentGetLocal(AOData,const char[],const char[],PetscInt,PetscInt*,void **);
+EXTERN PetscErrorCode AODataSegmentRestoreLocal(AOData,const char[],const char[],PetscInt,PetscInt*,void **);
 EXTERN PetscErrorCode AODataSegmentGetLocalIS(AOData,const char[],const char[],IS,void **);
 EXTERN PetscErrorCode AODataSegmentRestoreLocalIS(AOData,const char[],const char[],IS,void **);
 
-EXTERN PetscErrorCode AODataSegmentGetReduced(AOData,const char[],const char[],int,int*,IS *);
+EXTERN PetscErrorCode AODataSegmentGetReduced(AOData,const char[],const char[],PetscInt,PetscInt*,IS *);
 EXTERN PetscErrorCode AODataSegmentGetReducedIS(AOData,const char[],const char[],IS,IS *);
 EXTERN PetscErrorCode AODataSegmentGetExtrema(AOData,const char[],const char[],void *,void *);
 
@@ -127,7 +127,7 @@ EXTERN PetscErrorCode AODataAliasAdd(AOData,const char[],const char[]);
 
    
 typedef struct _p_AOData2dGrid *AOData2dGrid;
-EXTERN PetscErrorCode AOData2dGridAddNode(AOData2dGrid, PetscReal, PetscReal, int *);
+EXTERN PetscErrorCode AOData2dGridAddNode(AOData2dGrid, PetscReal, PetscReal, PetscInt *);
 EXTERN PetscErrorCode AOData2dGridInput(AOData2dGrid,PetscDraw);
 EXTERN PetscErrorCode AOData2dGridFlipCells(AOData2dGrid);
 EXTERN PetscErrorCode AOData2dGridComputeNeighbors(AOData2dGrid);

@@ -16,7 +16,7 @@ EXTERN_C_BEGIN
 PetscErrorCode VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
-  int n,m;
+  PetscInt n,m;
   Vec          vec = (Vec)obj;
   PetscScalar  *array;
   mxArray      *mat;
@@ -170,7 +170,7 @@ PetscErrorCode DAGetLocalVector(DA da,Vec* g)
 PetscErrorCode DARestoreLocalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
-  int i,j;
+  PetscInt i,j;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -227,7 +227,7 @@ PetscErrorCode DARestoreLocalVector(DA da,Vec* g)
 PetscErrorCode DAGetGlobalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
-  int i;
+  PetscInt i;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -275,7 +275,7 @@ PetscErrorCode DAGetGlobalVector(DA da,Vec* g)
 PetscErrorCode DARestoreGlobalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
-  int i,j;
+  PetscInt i,j;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -329,10 +329,10 @@ EXTERN_C_END
 .seealso: DARestoreAdicArray()
 
 @*/
-PetscErrorCode DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int *tdof)
+PetscErrorCode DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
-  int j,i,deriv_type_size,xs,ys,xm,ym,zs,zm,itdof;
+  PetscInt j,i,deriv_type_size,xs,ys,xm,ym,zs,zm,itdof;
   char *iarray_start;
 
   PetscFunctionBegin;
@@ -468,9 +468,9 @@ PetscErrorCode DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_
 .seealso: DAGetAdicArray()
 
 @*/
-PetscErrorCode DARestoreAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int *tdof)
+PetscErrorCode DARestoreAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
-  int  i;
+  PetscInt  i;
   void *iarray_start = 0;
   
   PetscFunctionBegin;
@@ -558,7 +558,7 @@ PetscErrorCode ad_DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 PetscErrorCode DAGetArray(DA da,PetscTruth ghosted,void **iptr)
 {
   PetscErrorCode ierr;
-  int j,i,xs,ys,xm,ym,zs,zm;
+  PetscInt j,i,xs,ys,xm,ym,zs,zm;
   char *iarray_start;
 
   PetscFunctionBegin;
@@ -680,7 +680,7 @@ PetscErrorCode DAGetArray(DA da,PetscTruth ghosted,void **iptr)
 @*/
 PetscErrorCode DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 {
-  int  i;
+  PetscInt  i;
   void *iarray_start = 0;
   
   PetscFunctionBegin;
@@ -747,10 +747,10 @@ PetscErrorCode DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 .seealso: DARestoreAdicMFArray(), DAGetArray(), DAGetAdicArray()
 
 @*/
-PetscErrorCode DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int *tdof)
+PetscErrorCode DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
-  int j,i,xs,ys,xm,ym,zs,zm,itdof;
+  PetscInt j,i,xs,ys,xm,ym,zs,zm,itdof;
   char *iarray_start;
 
   PetscFunctionBegin;
@@ -884,9 +884,9 @@ PetscErrorCode DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **arra
 .seealso: DAGetAdicArray()
 
 @*/
-PetscErrorCode DARestoreAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int *tdof)
+PetscErrorCode DARestoreAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
-  int  i;
+  PetscInt  i;
   void *iarray_start = 0;
   
   PetscFunctionBegin;

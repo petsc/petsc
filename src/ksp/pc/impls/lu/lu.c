@@ -78,12 +78,12 @@ EXTERN_C_END
 #define __FUNCT__ "PCSetFromOptions_LU"
 static PetscErrorCode PCSetFromOptions_LU(PC pc)
 {
-  PC_LU      *lu = (PC_LU*)pc->data;
+  PC_LU          *lu = (PC_LU*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth flg,set;
-  char       tname[256];
-  PetscFList ordlist;
-  PetscReal  tol;
+  PetscTruth     flg,set;
+  char           tname[256];
+  PetscFList     ordlist;
+  PetscReal      tol;
 
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
@@ -136,9 +136,9 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
 #define __FUNCT__ "PCView_LU"
 static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
 {
-  PC_LU      *lu = (PC_LU*)pc->data;
+  PC_LU          *lu = (PC_LU*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth iascii,isstring;
+  PetscTruth     iascii,isstring;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -185,8 +185,8 @@ static PetscErrorCode PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 static PetscErrorCode PCSetUp_LU(PC pc)
 {
   PetscErrorCode ierr;
-  PetscTruth flg;
-  PC_LU      *dir = (PC_LU*)pc->data;
+  PetscTruth     flg;
+  PC_LU          *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
   if (dir->reusefill && pc->setupcalled) dir->info.fill = dir->actualfill;
@@ -241,7 +241,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
 #define __FUNCT__ "PCDestroy_LU"
 static PetscErrorCode PCDestroy_LU(PC pc)
 {
-  PC_LU *dir = (PC_LU*)pc->data;
+  PC_LU          *dir = (PC_LU*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -257,7 +257,7 @@ static PetscErrorCode PCDestroy_LU(PC pc)
 #define __FUNCT__ "PCApply_LU"
 static PetscErrorCode PCApply_LU(PC pc,Vec x,Vec y)
 {
-  PC_LU *dir = (PC_LU*)pc->data;
+  PC_LU          *dir = (PC_LU*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -270,7 +270,7 @@ static PetscErrorCode PCApply_LU(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplyTranspose_LU"
 static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 {
-  PC_LU *dir = (PC_LU*)pc->data;
+  PC_LU          *dir = (PC_LU*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -332,7 +332,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCLUSetMatOrdering_LU"
 PetscErrorCode PCLUSetMatOrdering_LU(PC pc,MatOrderingType ordering)
 {
-  PC_LU *dir = (PC_LU*)pc->data;
+  PC_LU          *dir = (PC_LU*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

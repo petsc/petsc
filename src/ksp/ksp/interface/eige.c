@@ -30,12 +30,13 @@
 @*/
 PetscErrorCode KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 {
-  Vec      in,out;
+  Vec            in,out;
   PetscErrorCode ierr;
-  int i,M,m,size,*rows,start,end;
-  Mat      A;
-  MPI_Comm comm;
-  PetscScalar   *array,zero = 0.0,one = 1.0;
+  PetscMPIInt    size;
+  PetscInt       i,M,m,*rows,start,end;
+  Mat            A;
+  MPI_Comm       comm;
+  PetscScalar    *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -49,7 +50,7 @@ PetscErrorCode KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
-  ierr = PetscMalloc((m+1)*sizeof(int),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
   ierr = MatCreate(comm,m,m,M,M,mat);CHKERRQ(ierr);
@@ -124,17 +125,17 @@ PetscErrorCode KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
 .seealso: KSPComputeEigenvalues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve()
 @*/
-PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c) 
+PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c) 
 {
   Mat                BA;
   PetscErrorCode     ierr;
   PetscBLASInt       lierr;
-  int                i,n,size,rank,dummy;
+  PetscMPIInt        size,rank;
   MPI_Comm           comm = ksp->comm;
   PetscScalar        *array;
   Mat                A;
-  int                m,row,nz;
-  const int          *cols;
+  PetscInt           m,row,nz,i,n,dummy;
+  const PetscInt     *cols;
   const PetscScalar  *vals;
 
   PetscFunctionBegin;
@@ -174,7 +175,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,Pet
   if (!rank) {
     PetscScalar sdummy,*cwork;
     PetscReal   *work,*realpart;
-    int         clen,idummy,lwork,*perm,zero;
+    PetscInt         clen,idummy,lwork,*perm,zero;
 
 #if !defined(PETSC_USE_COMPLEX)
     clen = n;
@@ -192,7 +193,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,Pet
 
     /* For now we stick with the convention of storing the real and imaginary
        components of evalues separately.  But is this what we really want? */
-    ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
 
 #if !defined(PETSC_USE_COMPLEX)
     for (i=0; i<n; i++) {
@@ -224,7 +225,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,Pet
     PetscScalar  *work;
     PetscReal    *realpart,*imagpart;
     PetscBLASInt idummy,lwork;
-    int          *perm;
+    PetscInt     *perm;
 
     idummy   = n;
     lwork    = 5*n;
@@ -242,7 +243,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,Pet
 #endif
     if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) { perm[i] = i;}
     ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
@@ -254,9 +255,10 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,Pet
   }
 #else
   if (!rank) {
-    PetscScalar *work,*eigs;
-    PetscReal   *rwork;
-    int         idummy,lwork,*perm;
+    PetscScalar  *work,*eigs;
+    PetscReal    *rwork;
+    PetscBLASInt idummy,lwork;
+    PetscInt     *perm;
 
     idummy   = n;
     lwork    = 5*n;
@@ -274,7 +276,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,Pet
     if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) { perm[i] = i;}
     for (i=0; i<n; i++) { r[i]    = PetscRealPart(eigs[i]);}
     ierr = PetscSortRealWithPermutation(n,r,perm);CHKERRQ(ierr);

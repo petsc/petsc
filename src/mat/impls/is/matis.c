@@ -18,7 +18,7 @@
 PetscErrorCode MatDestroy_IS(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_IS *b = (Mat_IS*)A->data;
+  Mat_IS         *b = (Mat_IS*)A->data;
 
   PetscFunctionBegin;
   if (b->A) {
@@ -46,8 +46,8 @@ PetscErrorCode MatDestroy_IS(Mat A)
 PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  Mat_IS      *is = (Mat_IS*)A->data;
-  PetscScalar zero = 0.0;
+  Mat_IS         *is = (Mat_IS*)A->data;
+  PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
   /*  scatter the global vector x into the local work vector */
@@ -69,9 +69,9 @@ PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
 #define __FUNCT__ "MatView_IS"
 PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
 {
-  Mat_IS      *a = (Mat_IS*)A->data;
+  Mat_IS         *a = (Mat_IS*)A->data;
   PetscErrorCode ierr;
-  PetscViewer sviewer;
+  PetscViewer    sviewer;
 
   PetscFunctionBegin;
   ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
@@ -85,10 +85,10 @@ PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
 PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mapping)
 {
   PetscErrorCode ierr;
-  int n;
-  Mat_IS *is = (Mat_IS*)A->data;
-  IS     from,to;
-  Vec    global;
+  PetscInt       n;
+  Mat_IS         *is = (Mat_IS*)A->data;
+  IS             from,to;
+  Vec            global;
 
   PetscFunctionBegin;
   is->mapping = mapping;
@@ -118,10 +118,10 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mappin
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesLocal_IS" 
-PetscErrorCode MatSetValuesLocal_IS(Mat A,int m,const int *rows, int n,const int *cols,const PetscScalar *values,InsertMode addv)
+PetscErrorCode MatSetValuesLocal_IS(Mat A,PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols,const PetscScalar *values,InsertMode addv)
 {
   PetscErrorCode ierr;
-  Mat_IS *is = (Mat_IS*)A->data;
+  Mat_IS         *is = (Mat_IS*)A->data;
 
   PetscFunctionBegin;
   ierr = MatSetValues(is->A,m,rows,n,cols,values,addv);CHKERRQ(ierr);
@@ -132,13 +132,12 @@ PetscErrorCode MatSetValuesLocal_IS(Mat A,int m,const int *rows, int n,const int
 #define __FUNCT__ "MatZeroRowsLocal_IS" 
 PetscErrorCode MatZeroRowsLocal_IS(Mat A,IS isrows,const PetscScalar *diag)
 {
-  Mat_IS      *is = (Mat_IS*)A->data;
+  Mat_IS         *is = (Mat_IS*)A->data;
   PetscErrorCode ierr;
-  int i,n,*rows;
-  PetscScalar *array;
+  PetscInt       i,n,*rows;
+  PetscScalar    *array;
 
   PetscFunctionBegin;
-
   {
     /*
        Set up is->x as a "counting vector". This is in order to MatMult_IS
@@ -179,7 +178,7 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,IS isrows,const PetscScalar *diag)
 #define __FUNCT__ "MatAssemblyBegin_IS" 
 PetscErrorCode MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
 {
-  Mat_IS *is = (Mat_IS*)A->data;
+  Mat_IS         *is = (Mat_IS*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -191,7 +190,7 @@ PetscErrorCode MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
 #define __FUNCT__ "MatAssemblyEnd_IS" 
 PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 {
-  Mat_IS *is = (Mat_IS*)A->data;
+  Mat_IS         *is = (Mat_IS*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -279,7 +278,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatCreate_IS(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_IS *b;
+  Mat_IS         *b;
 
   PetscFunctionBegin;
   ierr                = PetscNew(Mat_IS,&b);CHKERRQ(ierr);
@@ -300,7 +299,7 @@ PetscErrorCode MatCreate_IS(Mat A)
 
   ierr = PetscSplitOwnership(A->comm,&A->m,&A->M);CHKERRQ(ierr);
   ierr = PetscSplitOwnership(A->comm,&A->n,&A->N);CHKERRQ(ierr);
-  ierr = MPI_Scan(&A->m,&b->rend,1,MPI_INT,MPI_SUM,A->comm);CHKERRQ(ierr);
+  ierr = MPI_Scan(&A->m,&b->rend,1,MPIU_INT,MPI_SUM,A->comm);CHKERRQ(ierr);
   b->rstart = b->rend - A->m;
 
   b->A          = 0;

@@ -5,7 +5,7 @@
 */
 #include "src/ksp/ksp/impls/cg/cgctx.h"       /*I "petscksp.h" I*/
 EXTERN PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
-EXTERN PetscErrorCode KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,int *);
+EXTERN PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
 
 
 /*
@@ -18,9 +18,9 @@ EXTERN PetscErrorCode KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,i
 #define __FUNCT__ "KSPSetUp_CGNE"
 PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 {
-  KSP_CG *cgP = (KSP_CG*)ksp->data;
+  KSP_CG         *cgP = (KSP_CG*)ksp->data;
   PetscErrorCode ierr;
-  int    maxit = ksp->max_it;
+  PetscInt       maxit = ksp->max_it;
 
   PetscFunctionBegin;
   /* 
@@ -71,14 +71,14 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 {
   PetscErrorCode ierr;
-  int i,stored_max_it,eigs;
-  PetscScalar  dpi,a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0,mone = -1.0,ma;
-  PetscReal    dp = 0.0;
-  Vec          X,B,Z,R,P,T;
-  KSP_CG       *cg;
-  Mat          Amat,Pmat;
-  MatStructure pflag;
-  PetscTruth   diagonalscale,transpose_pc;
+  PetscInt       i,stored_max_it,eigs;
+  PetscScalar    dpi,a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0,mone = -1.0,ma;
+  PetscReal      dp = 0.0;
+  Vec            X,B,Z,R,P,T;
+  KSP_CG         *cg;
+  Mat            Amat,Pmat;
+  MatStructure   pflag;
+  PetscTruth     diagonalscale,transpose_pc;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -209,7 +209,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 #define __FUNCT__ "KSPDestroy_CGNE" 
 PetscErrorCode KSPDestroy_CGNE(KSP ksp)
 {
-  KSP_CG *cg = (KSP_CG*)ksp->data;
+  KSP_CG         *cg = (KSP_CG*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -218,9 +218,7 @@ PetscErrorCode KSPDestroy_CGNE(KSP ksp)
     ierr = PetscFree(cg->e);CHKERRQ(ierr);
     ierr = PetscFree(cg->ee);CHKERRQ(ierr);
   }
-
   ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
-  
   /* free the context variable */
   ierr = PetscFree(cg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -239,9 +237,9 @@ PetscErrorCode KSPDestroy_CGNE(KSP ksp)
 PetscErrorCode KSPView_CGNE(KSP ksp,PetscViewer viewer)
 {
 #if defined(PETSC_USE_COMPLEX)
-  KSP_CG     *cg = (KSP_CG *)ksp->data; 
+  KSP_CG         *cg = (KSP_CG *)ksp->data; 
   PetscErrorCode ierr;
-  PetscTruth iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -270,7 +268,7 @@ PetscErrorCode KSPSetFromOptions_CGNE(KSP ksp)
 {
 #if defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg;
 #endif
 
   PetscFunctionBegin;
@@ -337,7 +335,7 @@ EXTERN_C_BEGIN
 PetscErrorCode KSPCreate_CGNE(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_CG *cg;
+  KSP_CG         *cg;
 
   PetscFunctionBegin;
   ierr = PetscNew(KSP_CG,&cg);CHKERRQ(ierr);

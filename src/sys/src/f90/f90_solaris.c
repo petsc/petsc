@@ -3,10 +3,10 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array1dCreate"
-PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d *ptr)
+PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,PetscInt len,F90Array1d *ptr)
 {
   PetscErrorCode ierr;
-  int size;
+  PetscInt size;
 
   PetscFunctionBegin;
   PetscValidPointer(array,1);
@@ -22,10 +22,10 @@ PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,int start,int len
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array2dCreate"
-PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d *ptr)
+PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,F90Array2d *ptr)
 {
   PetscErrorCode ierr;
-  int size;
+  PetscInt size;
 
   PetscFunctionBegin;
   PetscValidPointer(array,1);

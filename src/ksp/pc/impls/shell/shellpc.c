@@ -8,13 +8,13 @@
 
 EXTERN_C_BEGIN 
 typedef struct {
-  void *ctx,*ctxrich;    /* user provided contexts for preconditioner */
+  void           *ctx,*ctxrich;    /* user provided contexts for preconditioner */
   PetscErrorCode (*setup)(void*);
   PetscErrorCode (*apply)(void*,Vec,Vec);
   PetscErrorCode (*view)(void*,PetscViewer);
   PetscErrorCode (*applytranspose)(void*,Vec,Vec);
-  PetscErrorCode (*applyrich)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
-  char *name;
+  PetscErrorCode (*applyrich)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt);
+  char           *name;
 } PC_Shell;
 EXTERN_C_END
 
@@ -22,7 +22,7 @@ EXTERN_C_END
 #define __FUNCT__ "PCApply_SetUp"
 static PetscErrorCode PCSetUp_Shell(PC pc)
 {
-  PC_Shell *shell;
+  PC_Shell       *shell;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -37,7 +37,7 @@ static PetscErrorCode PCSetUp_Shell(PC pc)
 #define __FUNCT__ "PCApply_Shell"
 static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
 {
-  PC_Shell *shell;
+  PC_Shell       *shell;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -51,7 +51,7 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplyTranspose_Shell"
 static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 {
-  PC_Shell *shell;
+  PC_Shell       *shell;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -63,10 +63,10 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_Shell"
-static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,int it)
+static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt it)
 {
   PetscErrorCode ierr;
-  PC_Shell *shell;
+  PC_Shell       *shell;
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
@@ -78,7 +78,7 @@ static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal 
 #define __FUNCT__ "PCDestroy_Shell"
 static PetscErrorCode PCDestroy_Shell(PC pc)
 {
-  PC_Shell *shell = (PC_Shell*)pc->data;
+  PC_Shell       *shell = (PC_Shell*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -91,9 +91,9 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
 #define __FUNCT__ "PCView_Shell"
 static PetscErrorCode PCView_Shell(PC pc,PetscViewer viewer)
 {
-  PC_Shell   *shell = (PC_Shell*)pc->data;
+  PC_Shell       *shell = (PC_Shell*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -172,7 +172,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCShellSetName_Shell"
 PetscErrorCode PCShellSetName_Shell(PC pc,const char name[])
 {
-  PC_Shell *shell;
+  PC_Shell       *shell;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -199,7 +199,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetApplyRichardson_Shell"
-PetscErrorCode PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void *ptr)
+PetscErrorCode PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt),void *ptr)
 {
   PC_Shell *shell;
 
@@ -228,7 +228,7 @@ EXTERN_C_END
 
    Calling sequence of setup:
 .vb
-   int setup (void *ptr)
+   PetscErrorCode setup (void *ptr)
 .ve
 
 .  ptr - the application context
@@ -266,7 +266,7 @@ PetscErrorCode PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(void*))
 
    Calling sequence of apply:
 .vb
-   int view(void *ptr,PetscViewer v)
+   PetscErrorCode view(void *ptr,PetscViewer v)
 .ve
 
 +  ptr - the application context
@@ -305,7 +305,7 @@ PetscErrorCode PCShellSetView(PC pc,PetscErrorCode (*view)(void*,PetscViewer))
 
    Calling sequence of apply:
 .vb
-   int apply (void *ptr,Vec xin,Vec xout)
+   PetscErrorCode apply (void *ptr,Vec xin,Vec xout)
 .ve
 
 +  ptr - the application context
@@ -344,7 +344,7 @@ PetscErrorCode PCShellSetApply(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec),void
 
    Calling sequence of apply:
 .vb
-   int applytranspose (void *ptr,Vec xin,Vec xout)
+   PetscErrorCode applytranspose (void *ptr,Vec xin,Vec xout)
 .ve
 
 +  ptr - the application context
@@ -455,7 +455,7 @@ PetscErrorCode PCShellGetName(PC pc,char *name[])
 
    Calling sequence of apply:
 .vb
-   int apply (void *ptr,Vec b,Vec x,Vec r,PetscReal rtol,PetscReal abstol,PetscReal dtol,int maxits)
+   PetscErrorCode apply (void *ptr,Vec b,Vec x,Vec r,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt maxits)
 .ve
 
 +  ptr - the application context
@@ -473,9 +473,9 @@ PetscErrorCode PCShellGetName(PC pc,char *name[])
 
 .seealso: PCShellSetApply()
 @*/
-PetscErrorCode PCShellSetApplyRichardson(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void *ptr)
+PetscErrorCode PCShellSetApplyRichardson(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt),void *ptr)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void *);
+  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -514,7 +514,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PCCreate_Shell(PC pc)
 {
   PetscErrorCode ierr;
-  PC_Shell *shell;
+  PC_Shell       *shell;
 
   PetscFunctionBegin;
   pc->ops->destroy    = PCDestroy_Shell;

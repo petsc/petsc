@@ -92,7 +92,7 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
     double     ymin = -1*da->s-1,ymax = da->N+da->s;
     double     xmin = -1*da->s-1,xmax = da->M+da->s;
     double     x,y;
-    PetscInt        base,*idx;
+    PetscInt   base,*idx;
     char       node[10];
     PetscTruth isnull;
  
@@ -144,7 +144,7 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
     for (y=ymin; y<ymax; y++) {
       for (x=xmin; x<xmax; x++) {
         if ((base % da->w) == 0) {
-          sprintf(node,"%d",(int)idx[base]/da->w);
+          sprintf(node,"%d",(int)(idx[base]/da->w));
           ierr = PetscDrawString(draw,x/da->w,y,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
         }
         base++;
