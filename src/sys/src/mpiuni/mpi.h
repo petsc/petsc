@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.29 1996/07/24 15:19:06 bsmith Exp balay $ */
+/* $Id: mpi.h,v 1.30 1996/07/24 17:23:01 balay Exp bsmith $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -50,7 +50,7 @@ extern double MPI_Wtime();
 
 
 /* External types */
-typedef long   MPI_Comm;         
+typedef int     MPI_Comm;         
 typedef void   *MPI_Request;
 typedef void   *MPI_Group;
 typedef struct {int MPI_TAG, MPI_SOURCE, MPI_ERROR;} MPI_Status;
