@@ -75,7 +75,7 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
 {
   int         ierr;
   static char buf[1024];
-  char        *SIGNAME[20];
+  char        *SIGNAME[64];
 
   PetscFunctionBegin;
   SIGNAME[0]       = "Unknown signal";
