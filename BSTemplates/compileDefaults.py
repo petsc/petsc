@@ -596,7 +596,7 @@ class UsingMatlab(UsingCompiler):
     if self.isActive():
       if not self.argDB.has_key('MATLAB_INCLUDE'):
         self.argDB['MATLAB_INCLUDE'] = self.argDB['MATLAB_DIR'] + '/extern/include'
-      includeDir = self.argDB['MATHEMATICA_INCLUDE']
+      includeDir = self.argDB['MATLAB_INCLUDE']
       if isinstance(includeDir, list):
         self.includeDirs[self.getLanguage()].extend(includeDir)
       else:
