@@ -250,6 +250,7 @@ int main(int argc,char **args)
       ierr = MatNullSpaceTest(nullSpace, A);CHKERRQ(ierr);
       ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
       ierr = PCNullSpaceAttach(pc, nullSpace);CHKERRQ(ierr);
+      ierr = MatNullSpaceDestroy(nullSpace);CHKERRQ(ierr); 
     }
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
