@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.155 1999/03/15 21:58:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.156 1999/03/16 16:16:09 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -665,7 +665,7 @@ M*/
 #define __FUNC__ "KSPRegister_Private"
 int KSPRegister_Private(char *sname,char *path,char *name,int (*function)(KSP))
 {
-  int ierr;
+  int  ierr;
   char fullname[256];
 
   PetscFunctionBegin;
