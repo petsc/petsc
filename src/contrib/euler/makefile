@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.17 1997/09/10 19:29:22 curfman Exp curfman $ 
+# $Id: makefile,v 1.18 1997/10/11 00:35:03 curfman Exp curfman $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -97,15 +97,18 @@ ALL: ex1
   OBJSF_COMMON     = xnd.o resid.o jac.o pvar.o
   OBJSF_JULIANNE   = xjul.o
   OBJSF_PETSC      = xmod.o mat.o obselete.o
-  OBJSF_FP         = resid_fp.o xnd_fp.o rbuild_fp.o
-#  OBJSF           = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
+
+# temporarily omit resid_fp.o and rbuild_fp.o because these do not compile.
+  OBJSF_FP         = xnd_fp.o 
+#  OBJSF_FP         = resid_fp.o xnd_fp.o rbuild_fp.o
   OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_FP) 
+#  OBJSF           = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #
 # Define C source code:
-  OBJSC_MM   = mmregis.o mmset.o mmbasic.o mmmethods.o matv.o
-  SOURCEC_MM = mmregis.c mmset.c mmbasic.c mmmethods.c matv.c
+  OBJSC_MM   = mmregis.o mmset.o mmbasic.o mmmethods.o matv.o fdda.o
+  SOURCEC_MM = mmregis.c mmset.c mmbasic.c mmmethods.c matv.c fdda.c
   OBJSC      = user1.o grid.o jacob.o bc.o misc.o mfj.o monitor.o vrml.o $(OBJSC_MM)
   SOURCEC    = user1.c grid.c jacob.c bc.c misc.c mfj.c monitor.c vrml.c $(SOURCEC_MM)
 
