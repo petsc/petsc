@@ -1,4 +1,5 @@
-# $Id: makefile,v 1.38 1997/08/22 15:09:47 bsmith Exp $ 
+#
+# $Id: makefile,v 1.16 1997/09/10 19:25:34 curfman Exp curfman $ 
 #
 # PETSc makefile for the Euler application code
 #
