@@ -1,3 +1,4 @@
+petsc/bmake/rs6000_p4
 petsc/bin/configure
 petsc/bin/config.status
 petsc/src/snes/impls/trdl
