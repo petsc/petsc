@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.14 2000/09/19 20:07:17 hzhang Exp bsmith $*/
+/*$Id: sro.c,v 1.15 2000/09/20 14:46:08 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -139,6 +139,12 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   a->inew = ai;
   a->jnew = aj;
 
+  if (a->row) {
+    ierr = ISDestroy(a->row);CHKERRQ(ierr);
+  }
+  if (a->icol) {
+    ierr = ISDestroy(a->icol);CHKERRQ(ierr);
+  }
   a->row  = perm;
   a->icol = perm;
   ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.25 2000/08/01 14:04:21 hzhang Exp bsmith $*/
+/*$Id: ex74.c,v 1.26 2000/08/13 15:05:22 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -42,7 +42,7 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(A,&I,&J);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRA(ierr);
   if (i-I || j-J){
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");CHKERRQ(ierr);
   }
 
   /* Assemble matrix */
@@ -145,13 +145,13 @@ int main(int argc,char **args)
   ierr = MatNorm(sA,NORM_FROBENIUS,&norm2);CHKERRA(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol){ 
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n",norm1);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n",norm1);CHKERRQ(ierr);
   }
   ierr = MatNorm(A,NORM_INFINITY,&norm1);CHKERRA(ierr);
   ierr = MatNorm(sA,NORM_INFINITY,&norm2);CHKERRA(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol){ 
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n",norm1);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n",norm1);CHKERRQ(ierr);
   }
   
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */
@@ -164,19 +164,19 @@ int main(int argc,char **args)
   i = (int) (minfo1.nz_used - minfo2.nz_used); 
   j = (int) (minfo1.nz_allocated - minfo2.nz_allocated);
   if (i<0 || j<0) {
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetInfo()\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetInfo()\n");CHKERRQ(ierr);
   }
 
   ierr = MatGetSize(A,&I,&J);CHKERRA(ierr);
   ierr = MatGetSize(sA,&i,&j);CHKERRA(ierr); 
   if (i-I || j-J) {
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetSize()\n");
+    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetSize()\n");CHKERRQ(ierr);
   }
  
   ierr = MatGetBlockSize(A, &I);CHKERRA(ierr);
   ierr = MatGetBlockSize(sA, &i);CHKERRA(ierr);
   if (i-I){
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetBlockSize()\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetBlockSize()\n");CHKERRQ(ierr);
   }
 
   /* Test MatGetRow() */
@@ -198,7 +198,7 @@ int main(int argc,char **args)
     }  
     ierr = VecNorm(x,NORM_1,&norm2);CHKERRA(ierr);
     if (norm2<-tol || norm2>tol) {
-      PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRow()\n");
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRow()\n");CHKERRQ(ierr);
     } 
     ierr = VecDestroy(x);CHKERRA(ierr);  
     ierr = MatRestoreRow(A,row,&J,&cols1,&vr1);CHKERRA(ierr);
@@ -218,8 +218,7 @@ int main(int argc,char **args)
     ierr = ISCreateGeneral(PETSC_COMM_SELF, j, ip_ptr, &isrow);CHKERRA(ierr);
     /* ISView(isrow, VIEWER_STDOUT_SELF);CHKERRA(ierr); */
     
-    ierr = MatGetSubMatrix(sA,isrow,isrow,PETSC_DECIDE,MAT_INITIAL_MATRIX,&sC);
-   CHKERRA(ierr);
+    ierr = MatGetSubMatrix(sA,isrow,isrow,PETSC_DECIDE,MAT_INITIAL_MATRIX,&sC);CHKERRA(ierr);
     ierr = ISDestroy(isrow);CHKERRA(ierr);
     ierr = PetscFree(ip_ptr);CHKERRA(ierr);
     printf("sA =\n");
@@ -283,8 +282,8 @@ int main(int argc,char **args)
   ierr = MatGetOrdering(A,MATORDERING_NATURAL,&isrow,&iscol);CHKERRA(ierr); 
   ip = isrow;
 
-  if(reorder){
-    ISGetIndices(ip,&ip_ptr);      
+  if (reorder){
+    ierr = ISGetIndices(ip,&ip_ptr);CHKERRQ(ierr);
     i = ip_ptr[1]; ip_ptr[1] = ip_ptr[n-2]; ip_ptr[n-2] = i; 
     i = ip_ptr[0]; ip_ptr[0] = ip_ptr[n-1]; ip_ptr[n-1] = i; 
     ierr= ISRestoreIndices(ip,&ip_ptr);CHKERRA(ierr);
