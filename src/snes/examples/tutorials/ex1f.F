@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.20 1998/03/30 22:03:11 balay Exp balay $";
+! "$Id: ex1f.F,v 1.21 1998/04/15 18:01:17 balay Exp balay $";
 !
 !/*T
 !  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -118,11 +118,12 @@
 
 !  Set function evaluation routine and vector
 
-      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL,ierr)
+      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL_OBJECT,ierr)
 
 !  Set Jacobian matrix data structure and Jacobian evaluation routine
 
-      call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL,ierr)
+      call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,     &
+     &     ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize nonlinear solver; set runtime options

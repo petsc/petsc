@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2.F,v 1.10 1998/03/30 22:02:21 balay Exp balay $"
+!    "$Id: ex2.F,v 1.11 1998/04/15 18:00:04 balay Exp balay $"
 !
 
 #include "include/finclude/petsc.h"
@@ -40,33 +40,33 @@
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-N',NN,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-dof',dof,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-stencil_width',         &
-     &                   stencil_width,flg,ierr)
+     &     stencil_width,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-periodic',periodic,     &
-     &                   flg,ierr)
+     &     flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-stencil_type',          &
-     &                   stencil_type,flg,ierr)
+     &     stencil_type,flg,ierr)
 
       call OptionsHasName(PETSC_NULL_CHARACTER,'-2d',flg2,ierr)
       call OptionsHasName(PETSC_NULL_CHARACTER,'-3d',flg3,ierr)
       if (flg2 .ne. 0) then
-        call DACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,         &
-     &                  MM,NN,m,n,dof,stencil_width,PETSC_NULL,         &
-     &                  PETSC_NULL,da,ierr)
-        call SDACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,        &
-     &                  MM,NN,m,n,dof,stencil_width,PETSC_NULL,         &
-     &                  PETSC_NULL,sda,ierr)
+         call DACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,        &
+     &        MM,NN,m,n,dof,stencil_width,PETSC_NULL_INTEGER,           &
+     &        PETSC_NULL_INTEGER,da,ierr)
+         call SDACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,       &
+     &        MM,NN,m,n,dof,stencil_width,PETSC_NULL_INTEGER,           &
+     &        PETSC_NULL_INTEGER,sda,ierr)
       else if (flg3 .ne. 0) then
-        call DACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,         &
-     &                  MM,NN,PP,m,n,p,dof,stencil_width,               &
-     &                  PETSC_NULL,PETSC_NULL,PETSC_NULL,da,ierr)
-        call SDACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,        &
-     &                  MM,NN,PP,m,n,p,dof,stencil_width,               &
-     &                  PETSC_NULL,PETSC_NULL,PETSC_NULL,sda,ierr)
+         call DACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,        &
+     &        MM,NN,PP,m,n,p,dof,stencil_width,PETSC_NULL_INTEGER,      &
+     &        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
+         call SDACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,       &
+     &        MM,NN,PP,m,n,p,dof,stencil_width,PETSC_NULL_INTEGER,      &
+     &        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,sda,ierr)
       else
-        call DACreate1d(PETSC_COMM_WORLD,periodic,MM,dof,               &
-     &                  stencil_width,PETSC_NULL,da,ierr)
-        call SDACreate1d(PETSC_COMM_WORLD,periodic,MM,dof,              &
-     &                  stencil_width,PETSC_NULL,sda,ierr)
+         call DACreate1d(PETSC_COMM_WORLD,periodic,MM,dof,              &
+     &        stencil_width,PETSC_NULL,da,ierr)
+         call SDACreate1d(PETSC_COMM_WORLD,periodic,MM,dof,             &
+     &        stencil_width,PETSC_NULL_INTEGER,sda,ierr)
       endif
 
       call DACreateGlobalVector(da,global,ierr)

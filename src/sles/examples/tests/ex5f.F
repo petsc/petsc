@@ -1,5 +1,5 @@
 !
-!      "$Id: ex5f.F,v 1.5 1998/03/25 17:13:00 balay Exp balay $";
+!      "$Id: ex5f.F,v 1.6 1998/04/15 18:02:14 balay Exp balay $";
 !
        implicit none
 
@@ -25,7 +25,8 @@
 
       call SLESCreate(PETSC_COMM_SELF,sles,ierr)
 
-      call MatCreateShell(PETSC_COMM_SELF,m,m,m,m,PETSC_NULL,A,ierr)
+      call MatCreateShell(PETSC_COMM_SELF,m,m,m,m,PETSC_NULL_OBJECT,    &
+     &     A,ierr)
       call MatShellSetOperation(A,MATOP_MULT,mymatmult,ierr)
 
       call VecCreateSeq(PETSC_COMM_SELF,m,x,ierr)

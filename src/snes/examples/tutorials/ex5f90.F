@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.16 1998/04/07 15:04:43 balay Exp balay $"
+! "$Id: ex5f90.F,v 1.17 1998/04/15 18:01:05 balay Exp balay $"
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -134,7 +134,7 @@
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
       call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,mx,&
-     &                my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,da,ierr)
+     &     my,Nx,Ny,1,1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
 
 !
 !   Visualize the distribution of the array across the processors
@@ -151,9 +151,10 @@
 
 !  Get local grid boundaries (for 2-dimensional DA)
 
-      call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,             &
-     &                                         PETSC_NULL,ierr)
+      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
+     &     PETSC_NULL_INTEGER,ierr)
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
+     &     PETSC_NULL_INTEGER,ierr)
 
 !  Here we shift the starting indices up by one so that we can easily
 !  use the Fortran convention of 1-based indices (rather 0-based indices).
@@ -170,7 +171,7 @@
 
 !  Set function evaluation routine and vector
 
-      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL,ierr)
+      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL_OBJECT,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine
@@ -200,13 +201,15 @@
      &                    ierr)
       if (matrix_free .eq. 0) then
         if (size .eq. 1) then
-          call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,J,ierr)
+           call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,                  &
+     &          PETSC_NULL_INTEGER,J,ierr)
         else
           call VecGetLocalSize(x,m,ierr)
-          call MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,   &
-     &                         3,PETSC_NULL,J,ierr)
+          call MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,               &
+     &         PETSC_NULL_INTEGER,3,PETSC_NULL_INTEGER,J,ierr)
         endif
-        call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL,ierr)
+        call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,    &
+     &       ierr)
 
 !       Get the global node numbers for all local nodes, including ghost points.
 !       Associate this mapping with the matrix for later use in setting matrix

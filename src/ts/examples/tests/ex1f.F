@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.24 1998/04/15 18:00:49 balay Exp bsmith $";
+! "$Id: ex1f.F,v 1.25 1998/04/16 16:06:13 bsmith Exp balay $";
 !
 !       Formatted test for TS routines.
 !
@@ -80,7 +80,7 @@
 !   Set up the ghost point communication pattern                       
 
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,1,1,            &
-     &                PETSC_NULL,da,ierr)
+     &     PETSC_NULL_INTEGER,da,ierr)
       call DACreateGlobalVector(da,global,ierr) 
       call VecGetLocalSize(global,m,ierr) 
       call DACreateLocalVector(da,local,ierr) 
@@ -88,11 +88,11 @@
 !   Set up display to show wave graph 
 
       call ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,       &
-     &              PETSC_NULL_CHARACTER,80,380,400,160,viewer1,ierr)
+     &     PETSC_NULL_CHARACTER,80,380,400,160,viewer1,ierr)
       call ViewerDrawGetDraw(viewer1,draw,ierr) 
       call DrawSetDoubleBuffer(draw,ierr) 
       call ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,       &
-     &              PETSC_NULL_CHARACTER,80,0,400,160,viewer2,ierr) 
+     &     PETSC_NULL_CHARACTER,80,0,400,160,viewer2,ierr) 
       call ViewerDrawGetDraw(viewer2,draw,ierr) 
       call DrawSetDoubleBuffer(draw,ierr) 
 
@@ -108,7 +108,7 @@
 
 !   set initial conditions
  
-      call Initial(global,PETSC_NULL,ierr) 
+      call Initial(global,PETSC_NULL_OBJECT,ierr) 
  
 !
 !     This example is written to allow one to easily test parts 
@@ -149,7 +149,7 @@
 !   make timestep context 
 
       call TSCreate(PETSC_COMM_WORLD,tsproblem,ts,ierr) 
-      call TSSetMonitor(ts,Monitor,PETSC_NULL,ierr) 
+      call TSSetMonitor(ts,Monitor,PETSC_NULL_OBJECT,ierr) 
 
       dt = h*h/2.01
 
@@ -157,40 +157,51 @@
 !    
 !         The user provides the RHS as a Shell matrix.
 !    
-        call MatCreateShell(PETSC_COMM_WORLD,m,M,M,M,PETSC_NULL,A,ierr)
-        call MatShellSetOperation(A,MATOP_MULT,RHSMatrixFree,ierr)
-        call TSSetRHSMatrix(ts,A,A,PETSC_NULL_FUNCTION,PETSC_NULL,ierr) 
+         call MatCreateShell(PETSC_COMM_WORLD,m,M,M,M,                  &
+     &        PETSC_NULL_OBJECT,A,ierr)
+         call MatShellSetOperation(A,MATOP_MULT,RHSMatrixFree,ierr)
+         call TSSetRHSMatrix(ts,A,A,PETSC_NULL_FUNCTION,                &
+     &        PETSC_NULL_OBJECT,ierr) 
       else if (problem .eq. linear_no_time) then
 !    
 !         The user provides the RHS as a matrix
 !    
-        call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
-        call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL,ierr)  
-        call TSSetRHSMatrix(ts,A,A,PETSC_NULL_FUNCTION,PETSC_NULL,ierr) 
+         call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
+         call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,  &
+     &        ierr)  
+         call TSSetRHSMatrix(ts,A,A,PETSC_NULL_FUNCTION,                &
+     &        PETSC_NULL_OBJECT,ierr) 
       else if (problem .eq. linear) then
 !    
 !         The user provides the RHS as a time dependent matrix
 !    
-        call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
-        call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL,ierr)  
-        call TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,PETSC_NULL,ierr) 
+         call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
+         call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,  &
+     &        ierr)  
+         call TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,PETSC_NULL_OBJECT,    &
+     &        ierr) 
       else if (problem .eq. nonlinear_no_jacobian) then
 !    
 !         The user provides the RHS and a Shell Jacobian
 !    
-        call TSSetRHSFunction(ts,RHSFunctionHeat,PETSC_NULL,ierr) 
-        call MatCreateShell(PETSC_COMM_WORLD,m,M,M,M,PETSC_NULL,A,ierr)
-        call MatShellSetOperation(A,MATOP_MULT,RHSMatrixFree,ierr)
-        call TSSetRHSJacobian(ts,A,A,PETSC_NULL_FUNCTION,               &
-     &       PETSC_NULL,ierr)   
+         call TSSetRHSFunction(ts,RHSFunctionHeat,PETSC_NULL_OBJECT,    &
+     &        ierr) 
+         call MatCreateShell(PETSC_COMM_WORLD,m,M,M,M,                  &
+     &        PETSC_NULL_OBJECT,A,ierr)
+         call MatShellSetOperation(A,MATOP_MULT,RHSMatrixFree,ierr)
+         call TSSetRHSJacobian(ts,A,A,PETSC_NULL_FUNCTION,               &
+     &        PETSC_NULL_OBJECT,ierr)   
       else if (problem .eq. nonlinear) then
 !    
 !         The user provides the RHS and Jacobian
 !    
-        call TSSetRHSFunction(ts,RHSFunctionHeat,PETSC_NULL,ierr) 
-        call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
-        call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL,ierr)  
-        call TSSetRHSJacobian(ts,A,A,RHSJacobianHeat,PETSC_NULL,ierr)   
+         call TSSetRHSFunction(ts,RHSFunctionHeat,PETSC_NULL_OBJECT,     &
+     &        ierr) 
+         call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
+         call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,   &
+     &        ierr)  
+         call TSSetRHSJacobian(ts,A,A,RHSJacobianHeat,                   &
+     &PETSC_NULL_OBJECT,ierr)   
       endif
 
       call TSSetFromOptions(ts,ierr)

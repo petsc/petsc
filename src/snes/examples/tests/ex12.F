@@ -1,5 +1,5 @@
 !
-!    "$Id: ex12.F,v 1.50 1998/03/30 22:03:13 balay Exp balay $";
+!    "$Id: ex12.F,v 1.51 1998/04/15 18:01:22 balay Exp balay $";
 !
 !  This example demonstrates basic use of the SNES Fortran interface.
 !  
@@ -47,8 +47,8 @@
       ctx(5) = size
 
 ! Set up data structures
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL, &
-     &                ctx(1),ierr)
+      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,            &
+     &     PETSC_NULL_INTEGER,ctx(1),ierr)
 
       call DACreateGlobalVector(ctx(1),x,ierr)
       call DACreateLocalVector(ctx(1),ctx(3),ierr)
@@ -60,9 +60,9 @@
       call PetscObjectSetName(U,'Exact Solution',ierr)
 
       call MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N, &
-     &                     N,3,PETSC_NULL,0,PETSC_NULL,J,ierr)
+     &     N,3,PETSC_NULL_INTEGER,0,PETSC_NULL_INTEGER,J,ierr)
 
-      call MatGetType(J,PETSC_NULL,matrixname,ierr)
+      call MatGetType(J,PETSC_NULL_OBJECT,matrixname,ierr)
 
 ! Store right-hand-side of PDE and exact solution
       call VecGetOwnershipRange(x,start,end,ierr)

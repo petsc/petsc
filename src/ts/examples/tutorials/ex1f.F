@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.17 1998/03/30 22:02:39 balay Exp balay $"
+! "$Id: ex1f.F,v 1.18 1998/04/15 18:00:45 balay Exp balay $"
 !
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !
@@ -91,8 +91,8 @@
 !
 !      Create vectors to hold the solution and function value
 !
-       call VecCreateSeq(PETSC_COMM_SELF,N,x,ierr)
-       call VecDuplicate(x,r,ierr) 
+      call VecCreateSeq(PETSC_COMM_SELF,N,x,ierr)
+      call VecDuplicate(x,r,ierr) 
 
 !
 !    Create matrix to hold Jacobian. Preallocate 5 nonzeros per row
@@ -101,7 +101,8 @@
 !    preallocating memory in sparse matrices.
 !
 
-      call MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,PETSC_NULL,J,ierr) 
+      call MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,PETSC_NULL_INTEGER,    &
+     &     J,ierr) 
 
 !
 !     Create timestepper context 

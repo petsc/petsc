@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.17 1998/03/30 22:02:37 balay Exp balay $";
+! "$Id: ex2f.F,v 1.18 1998/04/15 18:00:41 balay Exp balay $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -125,7 +125,7 @@
 !  grid values spread equally among all the processors.
 
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,1,1,            &
-     &     PETSC_NULL,da,ierr)
+     &     PETSC_NULL_INTEGER,da,ierr)
 
 !  Extract global and local vectors from DA; then duplicate for remaining
 !  vectors that are the same types.
@@ -154,8 +154,8 @@
 
       if (rank .eq. 0) write(6,*) 'Creating TS solver ...'
       call TSCreate(comm,TS_NONLINEAR,ts,ierr)
-      call TSSetMonitor(ts,Monitor,PETSC_NULL,ierr)
-      call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL,ierr)
+      call TSSetMonitor(ts,Monitor,PETSC_NULL_OBJECT,ierr)
+      call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL_OBJECT,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine;
@@ -167,7 +167,8 @@
       if (flg .eq. 1) then
          call SetCRoutineFromFortran(ts,A,A,ierr)
       else
-         call TSSetRHSJacobian(ts,A,A,RHSJacobian,PETSC_NULL,ierr)
+         call TSSetRHSJacobian(ts,A,A,RHSJacobian,PETSC_NULL_OBJECT,    &
+     &        ierr)
       endif
       call TSSetType(ts,TS_BEULER,ierr)
 

@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.70 1998/04/07 22:30:13 balay Exp balay $;
+!  $Id: petsc.h,v 1.71 1998/04/08 22:30:18 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -56,12 +56,10 @@
       parameter (VIEWER_MATLAB_WORLD = -8)
       parameter (VIEWER_DRAWX_WORLD = VIEWER_DRAWX_WORLD_0)
 
-!
-!     Fortran Null
-!
-      integer        PETSC_NULL
-      character*(80) PETSC_NULL_CHARACTER
 
+!
+!     PETSc DataTypes
+!
       integer PETSC_INT, PETSC_DOUBLE, PETSC_SHORT, PETSC_FLOAT
       integer PETSC_COMPLEX, PETSC_CHAR, PETSC_LOGICAL
 
@@ -79,15 +77,7 @@
 ! PETSc world communicator
 !
       MPI_Comm PETSC_COMM_WORLD, PETSC_COMM_SELF
-!
-!
-!     A string should be in a different common block
-!  
-      common /petscfortran1/ PETSC_NULL_CHARACTER
-      common /petscfortran2/ PETSC_NULL
-      common /petscfortran3/ VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF
-      common /petscfortran4/ VIEWER_STDOUT_WORLD
-      common /petscfortran5/ PETSC_COMM_WORLD,PETSC_COMM_SELF
+
 !
 !     Macros for error checking
 !
@@ -100,7 +90,7 @@
 #endif
 !
 !
-!     End of base Fortran include file for the PETSc package
+!     End of PART 1 of base Fortran include file for the PETSc package
 !
 ! ------------------------------------------------------------------------
 !     PETSc mathematics include file. Defines certain basic mathematical 
@@ -143,7 +133,6 @@
 #define MPIU_SCALAR  MPI_DOUBLE_PRECISION
 #endif
 
-! ----------------------------------------------------------------------------
 !
 !     Basic constants
 ! 
@@ -155,17 +144,48 @@
       parameter (PETSC_MAX = 1.d300, PETSC_MIN = -1.d300)
 
 ! ----------------------------------------------------------------------------
+!    Begin PART 2 Of base Fortran include file for the PETSc package
+!    This part requires some info from the math part of petsc.h 
+!    including certain datatype Declarations.
+
 !
-!    PLogDouble variables are used to contain double precision numbers
-!  that are not used in the numerical computations, but rather in logging,
-!  timing etc.
+!     Fortran Null
+!
+      character*(80)   PETSC_NULL_CHARACTER
+      integer          PETSC_NULL_INTEGER(1)
+      double precision PETSC_NULL_DOUBLE(1)
+!
+!     Declare PETSC_NULL_OBJECT
+!
+#define PETSC_NULL_OBJECT PETSC_NULL_INTEGER     
+!
+!      A PETSC_NULL_FUNCTION pointer
+!
+      external PETSC_NULL_FUNCTION
+      Scalar           PETSC_NULL_SCALAR(1)
+!
+!     Common Block to store some of the PETSc constants.
+!     which can be set - only at runtime.
+!
+!
+!     A string should be in a different common block
+!  
+      common /petscfortran1/ PETSC_NULL_CHARACTER
+      common /petscfortran2/ PETSC_NULL_INTEGER
+      common /petscfortran3/ PETSC_NULL_SCALAR
+      common /petscfortran3/ PETSC_NULL_DOUBLE
+      common /petscfortran4/ VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF
+      common /petscfortran5/ VIEWER_STDOUT_WORLD
+      common /petscfortran6/ PETSC_COMM_WORLD,PETSC_COMM_SELF
+!
+!     PLogDouble variables are used to contain double precision numbers
+!     that are not used in the numerical computations, but rather in logging,
+!     timing etc.
 !
 #define PetscObject PetscFortranAddr
 #define PLogDouble  double precision
 
 
 
-!
-!      A PETSC_NULL_FUNCTION pointer
-!
-      external PETSC_NULL_FUNCTION
+!     End PART 2 of petsc.h
+! ----------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex36.F,v 1.23 1998/03/24 16:46:13 balay Exp balay $";
+!      "$Id: ex36.F,v 1.24 1998/04/15 18:02:33 balay Exp balay $";
 !
 !   This program demonstrates use of PETSc dense matrices.
 !
@@ -27,7 +27,7 @@
 !  and index variable (ia), which are then used together to manipulate
 !  the array contents.
 !
-!  Note the use of PETSC_NULL in MatCreateSeqDense() to indicate that no
+!  Note the use of PETSC_NULL_SCALAR in MatCreateSeqDense() to indicate that no
 !  storage is being provided by the user. (Do NOT pass a zero in that
 !  location.)
 !
@@ -46,8 +46,9 @@
       m = 5
 
 !  Create matrix
-      call MatCreateSeqDense(PETSC_COMM_SELF,m,n,PETSC_NULL,A,err)
-!      call MatCreateMPIDense(PETSC_COMM_WORLD,m,n,m,n,PETSC_NULL,A,err)
+      call MatCreateSeqDense(PETSC_COMM_SELF,m,n,PETSC_NULL_SCALAR,     &
+     &     A,err)
+!      call MatCreateMPIDense(PETSC_COMM_WORLD,m,n,m,n,PETSC_NULL_SCALAR,A,err)
 
 !  Access array storage
       call MatGetArray(A,aa,ia,err)

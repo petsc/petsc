@@ -1,5 +1,5 @@
 
-!    "$Id: ex2f.F,v 1.47 1998/04/15 18:01:49 balay Exp curfman $";
+!    "$Id: ex2f.F,v 1.48 1998/04/16 04:14:42 curfman Exp balay $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -254,7 +254,7 @@
      &                    flg,ierr)
       if (flg .eq. 1) then
         call SLESGetKSP(sles,ksp,ierr)
-        call KSPSetMonitor(ksp,MyKSPMonitor,PETSC_NULL,ierr)
+        call KSPSetMonitor(ksp,MyKSPMonitor,PETSC_NULL_OBJECT,ierr)
       endif
 
 !  Set runtime options, e.g.,
@@ -332,7 +332,7 @@
 
 !  Build the solution vector
 
-      call KSPBuildSolution(ksp,PETSC_NULL,x,ierr)
+      call KSPBuildSolution(ksp,PETSC_NULL_OBJECT,x,ierr)
 
 !  Write the solution vector and residual norm to stdout
 !   - Note that the parallel viewer VIEWER_STDOUT_WORLD

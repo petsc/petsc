@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.30 1998/04/15 18:01:13 balay Exp balay $";
+! "$Id: ex4f.F,v 1.31 1998/04/16 20:40:39 balay Exp balay $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -148,7 +148,7 @@
 !     context that provides application-specific data for the
 !     function evaluation routine.
 
-      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL,ierr)
+      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL_OBJECT,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine
@@ -161,7 +161,8 @@
       call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,  &
      &                    ierr)
       if (matrix_free .eq. 0) then
-        call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,J,ierr)
+        call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL_INTEGER, &
+     &        J,ierr)
       endif
 
 !  Set Jacobian matrix data structure and default Jacobian evaluation
@@ -179,7 +180,8 @@
 !                          products within Newton-Krylov method
 !
       if (matrix_free .eq. 0) then
-        call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL,ierr)
+        call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,   &
+     &        ierr)
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -210,7 +212,8 @@
 
       call DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',  &
      &               300,0,300,300,draw,ierr)
-      call DrawTensorContour(draw,mx,my,PETSC_NULL,PETSC_NULL,x,ierr)
+      call DrawTensorContour(draw,mx,my,PETSC_NULL_DOUBLE,              &
+     &     PETSC_NULL_DOUBLE,x,ierr)
       call DrawSynchronizedFlush(draw,ierr)
       call DrawPause(draw,ierr)
 

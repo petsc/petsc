@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.9 1998/03/30 22:03:26 balay Exp balay $";
+!    "$Id: ex14f.F,v 1.10 1998/04/15 18:02:01 balay Exp balay $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -120,7 +120,8 @@
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
       call DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,user(1),      &
-     &          user(2),Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,user(5),ierr)
+     &     user(2),Nx,Ny,1,1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,     &
+     &     user(5),ierr)
 
 !  
 !  Extract global and local vectors from DA then duplicate for remaining
@@ -149,8 +150,8 @@
 !     for preallocating matrix memory.
 !  
       call VecGetLocalSize(X,m,ierr)
-      call MatCreateMPIAIJ(comm,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,       &
-     &                     J,ierr)
+      call MatCreateMPIAIJ(comm,m,m,N,N,5,PETSC_NULL_INTEGER,3,         &
+     &     PETSC_NULL_INTEGER,J,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Customize linear solver set runtime options
@@ -303,9 +304,10 @@
 !    gxs, gys - starting grid indices (including ghost points)
 !    gxm, gym - widths of local grid (including ghost points)
 
-       call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-       call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,            &
-     &                        PETSC_NULL,ierr)
+       call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,             &
+     &      PETSC_NULL_INTEGER,ierr)
+       call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,    &
+     &      PETSC_NULL_INTEGER,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
 
@@ -397,9 +399,10 @@
 
 !  Get local grid boundaries
 
-      call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,PETSC_NULL,  &
-     &                        ierr)
+      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
+     &     PETSC_NULL_INTEGER,ierr)
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
+     &     PETSC_NULL_INTEGER,ierr)
 
 !  Compute function over the locally owned part of the grid
 
@@ -506,9 +509,10 @@
 
 !  Get local grid boundaries
 
-      call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,             &
-     &                        PETSC_NULL,ierr)
+      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
+     &     PETSC_NULL_INTEGER,ierr)
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
+     &                        PETSC_NULL_INTEGER,ierr)
 
 !  Get the global node numbers for all local nodes, including ghost points
 
@@ -559,9 +563,3 @@
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       return 
       end
-
-
-
-
-
-

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.19 1997/09/22 15:21:32 balay Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.20 1997/10/19 03:27:22 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -46,7 +46,8 @@ int main(int argc,char **args)
   char       stagename[6][16]; /* names of profiling stages */
   PetscTruth table = PETSC_FALSE,set;
   int        ierr, its, flg, i,loops  = 2;
-  double     norm, tsetup, tsolve;
+  double     norm;
+  PLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   Scalar     zero = 0.0, none = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -153,7 +154,7 @@ int main(int argc,char **args)
     /*
        We also explicitly time this stage via PetscGetTime()
     */
-    tsetup = PetscGetTime();  
+    ierr = PetscGetTime(&tsetup1); CHKERRA(ierr);
 
     /*
        Create linear solver; set operators; set runtime options.
@@ -170,7 +171,8 @@ int main(int argc,char **args)
     */
     ierr = SLESSetUp(sles,b,x); CHKERRA(ierr);
     ierr = SLESSetUpOnBlocks(sles); CHKERRA(ierr);
-    tsetup = PetscGetTime() - tsetup;
+    ierr = PetscGetTime(&tsetup2); CHKERRA(ierr);
+    tsetup = tsetup2 - tsetup1;
 
     /*
        Conclude profiling this stage
@@ -192,9 +194,10 @@ int main(int argc,char **args)
     /*
        Solve linear system; we also explicitly time this stage.
     */
-    tsolve = PetscGetTime();
+    ierr = PetscGetTime(&tsolve1); CHKERRA(ierr);
     ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-    tsolve = PetscGetTime() - tsolve;
+    ierr = PetscGetTime(&tsolve2); CHKERRA(ierr);
+    tsolve = tsolve2 - tsolve1;
 
     /* 
        Conclude profiling this stage
