@@ -1,29 +1,32 @@
 
-    Portable, Extensible Toolkit for Scientific computation (PETSc)
-    -------------------------------------------------------------- 
+    Portable, Extensible Toolkit for Scientific Computation (PETSc)
+   ----------------------------------------------------------------- 
     
-  We are pleased to announce a public release of PETSc 2.0.
+   We are pleased to announce a public release of PETSc 2.0.
 
-  PETSc provides many tools for the parallel (and uniprocessor),
+   PETSc provides many tools for the parallel (and uniprocessor),
 numerical solution of PDEs that require solving large-scale, sparse
 nonlinear systems of equations.  PETSc includes nonlinear and linear
 equation solvers that employ a variety of Newton techniques and Krylov
 subspace methods. In addition, PETSc provides several parallel sparse
-matrix formats, including compressed row storage, block compressed
-row storage and block diagonal storage.
+matrix formats, including compressed row, block compressed row, and
+block diagonal storage.
 
-  PETSc can be used from Fortran, C and C++ and runs portably on
-on most Unix systems. PETSc uses MPI for all parallel communication.
+   PETSc is fully usable from Fortran, C and C++, and runs portably on
+on most UNIX systems.  PETSc uses MPI for all parallel communication.
 
-  One of the unique features of PETSc is that it enables the application
+   One of the unique features of PETSc is that it enables the application
 programmer to easily and efficiently assemble parallel vectors and sparse 
-matrices without writing any message-passing code.  Users can create 
+matrices without writing any message-passing code.  Thus, users can create 
 complete application programs for the parallel solution of nonlinear 
-PDEs, without writing much explicit message-passing code themselves.
+PDEs without writing much explicit message-passing code themselves.
 
-  Information regarding PETSc as well as the complete software distribution 
+   In addition, PETSc is designed to facilitate extensibility.  Thus,
+users can incorporate customized solvers and data structures when using
+the package.
+
+   Information regarding PETSc as well as the complete software distribution 
 can be obtained from http://www.mcs.anl.gov/petsc/petsc.html or 
 ftp://info.mcs.anl.gov/pub/petsc.
 
-  The PETSc Team
-    Barry Smith, Bill Gropp, and Lois C. McInnes
+The PETSc Team
