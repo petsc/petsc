@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.99 1995/10/18 03:16:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.100 1995/10/22 04:19:43 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -167,12 +167,10 @@ int MatView(Mat mat,Viewer ptr)
     MPIU_fprintf(mat->comm,fd,"Matrix Object:\n");
     ierr = MatGetName(mat,&cstring); CHKERRQ(ierr);
     ierr = MatGetSize(mat,&rows,&cols); CHKERRQ(ierr);
-    MPIU_fprintf(mat->comm,fd,
-      "  type=%s, rows=%d, cols=%d\n",cstring,rows,cols);
+    MPIU_fprintf(mat->comm,fd,"  type=%s, rows=%d, cols=%d\n",cstring,rows,cols);
     if (mat->ops.getinfo) {
-      ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRQ(ierr);
-      MPIU_fprintf(mat->comm,fd,
-        "  nonzeros=%d, allocated nonzeros=%d\n",nz,nzalloc);
+      ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&nz,&nzalloc,&mem); CHKERRQ(ierr);
+      MPIU_fprintf(mat->comm,fd,"Total:  nonzeros=%d, allocated nonzeros=%d\n",nz,nzalloc);
     }
   }
   if (mat->view) {ierr = (*mat->view)((PetscObject)mat,ptr); CHKERRQ(ierr);}
@@ -1002,8 +1000,10 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 .  type - type of assembly, either FLUSH_ASSEMBLY or FINAL_ASSEMBLY
 
    Options Database Keys:
-$  -mat_draw : Draw nonzero structure of matrix at conclusion of MatEndAssembly(),
+$  -mat_view_draw : Draw nonzero structure of matrix at conclusion of MatEndAssembly(),
                using MatView() and DrawOpenX().
+$  -mat_view_info : Prints info on matrix.
+$  -mat_view_ascii : Prints matrix out in ascii.
 $  -display <name> : Set display name (default is host)
 $  -pause <sec> : Set number of seconds to pause after display
  
@@ -1027,12 +1027,19 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
   if (mat->ops.assemblyend) {ierr = (*mat->ops.assemblyend)(mat,type); CHKERRQ(ierr);}
   PLogEventEnd(MAT_AssemblyEnd,mat,0,0,0);
   if (inassm == 1) {
-    if (OptionsHasName(0,"-mat_draw")) {
+    if (OptionsHasName(0,"-mat_view_info")) {
+      Viewer viewer;
+      ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
+      ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_INFO,0);CHKERRQ(ierr);
+      ierr = MatView(mat,viewer); CHKERRQ(ierr);
+      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    }
+    if (OptionsHasName(0,"-mat_view_draw")) {
       DrawCtx win;
-      ierr = DrawOpenX(mat->comm,0,0,0,0,300,300,&win); CHKERRA(ierr);
-      ierr = MatView(mat,(Viewer)win); CHKERRA(ierr);
-      ierr = DrawSyncFlush(win); CHKERRA(ierr);
-      ierr = DrawDestroy(win); CHKERRA(ierr);
+      ierr = DrawOpenX(mat->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
+      ierr = MatView(mat,(Viewer)win); CHKERRQ(ierr);
+      ierr = DrawSyncFlush(win); CHKERRQ(ierr);
+      ierr = DrawDestroy(win); CHKERRQ(ierr);
     }
   }
   inassm--;
