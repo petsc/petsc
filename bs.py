@@ -63,11 +63,13 @@ class Maker:
         return '('+set.tag+')'+self.debugListStr(set.getFiles())
       else:
         return self.debugListStr(set.getFiles())
-    else:
+    elif type(set) == types.ListType:
       output = '['
       for fs in set:
         output += self.debugFileSetStr(fs)
       return output+']'
+    else:
+      raise RuntimeError('Invalid fileset '+set)
 
   def debugPrint(self, msg, level = 1, section = None):
     indentLevel = len(traceback.extract_stack())-4

@@ -4,6 +4,7 @@ import fileset
 import transform
 
 import os
+import types
 
 class Process (action.Action):
   def __init__(self, products, tag, sources, compiler, compilerFlags, noUpdate = 0):
@@ -41,7 +42,7 @@ class TagSIDL (transform.GenericTag):
 
 class CompileSIDL (Process):
   def __init__(self, generatedSources, sources, compiler, compilerFlags):
-    Process.__init__(self, generatedSources, 'sidl', sources, compiler, '--suppress-timestamp '+compilerFlags)
+    Process.__init__(self, generatedSources, 'sidl', sources, compiler, '--suppress-timestamp --suppress-metadata '+compilerFlags)
     self.generatedSources = generatedSources
 
 class CompileSIDLRepository (CompileSIDL):
@@ -67,18 +68,29 @@ class Compile (action.Action):
     self.archiverFlags = archiverFlags
     self.products      = self.library
     self.includeDirs   = []
+    self.defines       = []
     self.rebuildAll    = 0
+    self.buildProducts = 0
 
   def getIncludeFlags(self):
     flags = ''
     for dir in self.includeDirs: flags += ' -I'+dir
     return flags
 
+  def getDefines(self):
+    flags = ''
+    for define in self.defines:
+      if type(define) == types.TupleType:
+        flags += ' -D'+define[0]+'='+define[1]
+      else:
+        flags += ' -D'+define
+    return flags
+
   def compile(self, source):
     self.debugPrint('Compiling '+source+' into '+self.library[0], 3, 'compile')
     # Compile file
     command  = self.compiler
-    flags    = self.compilerFlags+self.getIncludeFlags()
+    flags    = self.compilerFlags+self.getDefines()+self.getIncludeFlags()
     command += ' '+flags
     object   = self.getIntermediateFileName(source)
     if (object): command += ' -o '+object
