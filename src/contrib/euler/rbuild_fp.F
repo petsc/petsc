@@ -1,5 +1,5 @@
 c
-c  "$Id: rbuild_fp.F,v 1.3 1997/10/11 18:39:18 curfman Exp $";
+c  "$Id: rbuild_fp.F,v 1.4 1997/10/11 22:22:05 keyes Exp $";
 c
 c ----------------------------------------------------------------------
 c
@@ -60,39 +60,39 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c  Implicit boundary conditions for i=1, j=1, k=1
 c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      if (bctype .eq. IMPLICIT) then
-
-      if (zsf1 .eq. 1) then
-        k=1
-        do 100 j=ysf2,yef01
-           jk = (j-ysf)*xm + (k-zsf)*xm*ym
-        do 100 i=xsf2,xef01
-           ijkx = ndof * (i-xsf + jk)
-           f(ijkx) = fbcfpk1(i,j)
- 100    continue
-      endif
-
-      if (ysf1 .eq. 1) then
-         j=1
-         do 200 k=zsf2,zef01
-           jk = (j-ysf)*xm + (k-zsf)*xm*ym
-         do 200 i=xsf2,xef01
-           ijkx = ndof * (i-xsf + jk)
-           f(ijkx)   = fbcfpj1(i,k)
- 200    continue
-      endif
-
-      if (xsf1 .eq. 1) then
-        i=1
-        do 300 k=zsf2,zef01
-           ik = i-xsf + (k-zsf)*xm*ym
-        do 300 j=ysf2,yef01
-           ijkx = ndof * (ik + (j-ysf)*xm)
-           f(ijkx)   = fbcfpi1(j,k)
- 300     continue
-      endif
-
-      endif
+c      if (bctype .eq. IMPLICIT) then
+c
+c      if (zsf1 .eq. 1) then
+c        k=1
+c        do 100 j=ysf2,yef01
+c           jk = (j-ysf)*xm + (k-zsf)*xm*ym
+c        do 100 i=xsf2,xef01
+c           ijkx = ndof * (i-xsf + jk)
+c           f(ijkx) = fbcfpk1(i,j)
+c 100    continue
+c      endif
+c
+c      if (ysf1 .eq. 1) then
+c         j=1
+c         do 200 k=zsf2,zef01
+c           jk = (j-ysf)*xm + (k-zsf)*xm*ym
+c         do 200 i=xsf2,xef01
+c           ijkx = ndof * (i-xsf + jk)
+c           f(ijkx)   = fbcfpj1(i,k)
+c 200    continue
+c      endif
+c
+c      if (xsf1 .eq. 1) then
+c        i=1
+c        do 300 k=zsf2,zef01
+c           ik = i-xsf + (k-zsf)*xm*ym
+c        do 300 j=ysf2,yef01
+c           ijkx = ndof * (ik + (j-ysf)*xm)
+c           f(ijkx)   = fbcfpi1(j,k)
+c 300     continue
+c      endif
+c
+c      endif
 
 c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c  Interior grid points i=2,ni; j=2,nj; k=2,nk
@@ -124,39 +124,38 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c  Implicit boundary conditions for i=ni1, j=nj1, k=nk1
 c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      if (bctype .eq. IMPLICIT) then
-
-      if (xef01 .eq. ni) then
-        i=ni1
-        do 500 k=zsf2,zef01
-           ik = i-xsf + (k-zsf)*xm*ym
-        do 500 j=ysf2,yef01
-           ijkx = ndof * (ik + (j-ysf)*xm)
-           f(ijkx)   = fbcfpi2(j,k)
- 500    continue
-      endif
-
-      if (yef01 .eq. nj) then
-        j=nj1
-        do 600 k=zsf2,zef01
-           jk = (j-ysf)*xm + (k-zsf)*xm*ym
-        do 600 i=xsf2,xef01
-           ijkx = ndof * (i-xsf + jk)
-           f(ijkx)   = fbcfpj2(i,k)
- 600    continue
-      endif
-
-      if (zef01 .eq. nk) then
-        k=nk1
-        do 700 j=ysf2,yef01
-           jk = (j-ysf)*xm + (k-zsf)*xm*ym
-        do 700 i=xsf2,xef01
-           ijkx = ndof * (i-xsf + jk)
-           f(ijkx)   = fbcfpk2(i,j)
- 700    continue
-      endif
-      endif
-
+c      if (bctype .eq. IMPLICIT) then
+c
+c      if (xef01 .eq. ni) then
+c        i=ni1
+c        do 500 k=zsf2,zef01
+c           ik = i-xsf + (k-zsf)*xm*ym
+c        do 500 j=ysf2,yef01
+c           ijkx = ndof * (ik + (j-ysf)*xm)
+c           f(ijkx)   = fbcfpi2(j,k)
+c 500    continue
+c      endif
+c
+c      if (yef01 .eq. nj) then
+c        j=nj1
+c        do 600 k=zsf2,zef01
+c           jk = (j-ysf)*xm + (k-zsf)*xm*ym
+c        do 600 i=xsf2,xef01
+c           ijkx = ndof * (i-xsf + jk)
+c           f(ijkx)   = fbcfpj2(i,k)
+c 600    continue
+c      endif
+c
+c      if (zef01 .eq. nk) then
+c        k=nk1
+c        do 700 j=ysf2,yef01
+c           jk = (j-ysf)*xm + (k-zsf)*xm*ym
+c        do 700 i=xsf2,xef01
+c           ijkx = ndof * (i-xsf + jk)
+c           f(ijkx)   = fbcfpk2(i,j)
+c 700    continue
+c      endif
+c      endif
+c
       return
       end
-

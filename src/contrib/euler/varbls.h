@@ -43,7 +43,7 @@ c  Local arrays, including ghost points, for the full potential
 c  unknowns, corresponding to the X vector in PETSc code.
 c  Space is allocated in UserCreateEuler().
 c
-       double precision fp(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+c       double precision fp(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 c
 c  Uniprocessor array sizes:
 c      double precision FP(NI1,NJ1,NK1),RH(NI1,NJ1,NK1)

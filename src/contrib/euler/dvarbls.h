@@ -37,5 +37,7 @@ c  This space is used for the multi-model variant of code.
 c
 c      double precision dfp(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 
+#define DFP(i,j,k) dxx(ndof,i,j,k)
+
 #define dfp(i,j,k) dxx(ndof,i,j,k)
 
