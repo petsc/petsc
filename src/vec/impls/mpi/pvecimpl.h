@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.23 1999/02/04 22:31:12 bsmith Exp balay $ */
+/* $Id: pvecimpl.h,v 1.24 1999/02/25 19:40:57 balay Exp balay $ */
 /* 
  */
 
@@ -7,15 +7,6 @@
 
 #include "src/vec/vecimpl.h"
 #include "src/vec/impls/dvecimpl.h"
-
-typedef  struct {
-  int    donotstash;                   /* Flag indicates stash values should be ignored */
-  int    nmax;                         /* Current max-size of the array. */
-  int    oldnmax;                      /* previous max size. Used with new mallocs */
-  int    n;                            /* no of entries currently stashed */
-  int    *idx;                         /* list of indices */
-  Scalar *array;                       /* values corresponding to these indices */
-  } VecStash;
 
 typedef struct {
   VECHEADER

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.162 1999/03/16 03:50:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.163 1999/03/16 16:41:32 bsmith Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -83,7 +83,7 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   }
   mat->insertmode = addv; /* in case this processor had no cache */
   ierr = StashScatterBegin_Private(&mbd->stash,mbd->rowners); CHKERRQ(ierr);
-  ierr = StashGetInfo(&mbd->stash,&nstash,&reallocs); CHKERRQ(ierr);
+  ierr = StashGetInfo_Private(&mbd->stash,&nstash,&reallocs); CHKERRQ(ierr);
   PLogInfo(0,"MatAssemblyBegin_MPIBDiag:Stash has %d entries, uses %d mallocs.\n",
            nstash,reallocs);
   PetscFunctionReturn(0);

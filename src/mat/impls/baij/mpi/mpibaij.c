@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.161 1999/03/16 03:57:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.162 1999/03/16 16:41:19 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -802,10 +802,10 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
 
   ierr =  StashScatterBegin_Private(&baij->stash,baij->rowners_bs); CHKERRQ(ierr);
   ierr =  StashScatterBegin_Private(&baij->bstash,baij->rowners); CHKERRQ(ierr);
-  ierr = StashGetInfo(&baij->stash,&nstash,&reallocs); CHKERRQ(ierr);
+  ierr = StashGetInfo_Private(&baij->stash,&nstash,&reallocs); CHKERRQ(ierr);
   PLogInfo(0,"MatAssemblyBegin_MPIBAIJ:Stash has %d entries, uses %d mallocs.\n",
            nstash,reallocs);
-  ierr = StashGetInfo(&baij->stash,&nstash,&reallocs); CHKERRQ(ierr);
+  ierr = StashGetInfo_Private(&baij->stash,&nstash,&reallocs); CHKERRQ(ierr);
   PLogInfo(0,"MatAssemblyBegin_MPIBAIJ:Block-Stash has %d entries, uses %d mallocs.\n",
            nstash,reallocs);
   PetscFunctionReturn(0);

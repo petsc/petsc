@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.107 1999/03/11 22:30:12 balay Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.108 1999/03/11 23:21:42 balay Exp balay $";
 #endif
 
 /*
@@ -36,12 +36,9 @@ int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Inse
       }
     } else {
       if (roworiented) {
-        ierr = StashValues_Private(&A->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
-      } else { /* must stash each seperately */
-        row = idxm[i];
-        for ( j=0; j<n; j++ ) {
-          ierr = StashValues_Private(&A->stash,row,1,&idxn[j],v+i+j*m);CHKERRQ(ierr);
-        }
+        ierr = StashValuesRoworiented_Private(&A->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
+      } else {
+        ierr = StashValuesColumnoriented_Private(&A->stash,idxm[i],n,idxn,v+i,m);CHKERRQ(ierr);
       }
     }
   }
@@ -101,7 +98,7 @@ int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   MPI_Comm     comm = mat->comm;
-  int          ierr;
+  int          ierr,nstash,reallocs;
   InsertMode   addv;
 
   PetscFunctionBegin;
@@ -113,6 +110,9 @@ int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   mat->insertmode = addv; /* in case this processor had no cache */
 
   ierr =  StashScatterBegin_Private(&mdn->stash,mdn->rowners); CHKERRQ(ierr);
+  ierr = StashGetInfo_Private(&mdn->stash,&nstash,&reallocs); CHKERRQ(ierr);
+  PLogInfo(mdn->A,"MatAssemblyBegin_MPIDense:Stash has %d entries, uses %d mallocs.\n",
+           nstash,reallocs);
   PetscFunctionReturn(0);
 }
 
@@ -965,7 +965,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   PLogObjectParent(mat,a->A);
 
   /* build cache for off array entries formed */
-  ierr = StashCreate_Private(comm,1,1,&a->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(comm,1,&a->stash); CHKERRQ(ierr);
 
   /* stuff used for matrix vector multiply */
   a->lvec        = 0;
@@ -1018,7 +1018,7 @@ static int MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
   a->rowners = (int *) PetscMalloc((a->size+1)*sizeof(int)); CHKPTRQ(a->rowners);
   PLogObjectMemory(mat,(a->size+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIDense));
   PetscMemcpy(a->rowners,oldmat->rowners,(a->size+1)*sizeof(int));
-  ierr = StashCreate_Private(A->comm,1,1,&a->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(A->comm,1,&a->stash); CHKERRQ(ierr);
 
   ierr =  VecDuplicate(oldmat->lvec,&a->lvec); CHKERRQ(ierr);
   PLogObjectParent(mat,a->lvec);

@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.98 1999/03/11 16:18:39 bsmith Exp balay $ */
+/* $Id: matimpl.h,v 1.99 1999/03/11 22:30:16 balay Exp balay $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -118,7 +118,7 @@ typedef struct {
   int           nmax;                   /* maximum stash size */
   int           oldnmax;                /* the nmax value used previously */
   int           n;                      /* stash size */
-  int           bs_stash,bs_mat;        /* block size of the matrix and the stash */
+  int           bs;                     /* block size of the stash */
   int           reallocs;               /* preserve the no of mallocs invoked */           
   int           *idx;                   /* global row numbers in stash */
   int           *idy;                   /* global column numbers in stash */
@@ -137,13 +137,15 @@ typedef struct {
   int           nprocessed;             /* number of messages already processed */
 } Stash;
 
-extern int StashCreate_Private(MPI_Comm,int,int,Stash*);
+extern int StashCreate_Private(MPI_Comm,int,Stash*);
 extern int StashDestroy_Private(Stash*);
 extern int StashScatterEnd_Private(Stash*);
 extern int StashSetInitialSize_Private(Stash*,int);
-extern int StashInfo_Private(Stash*);
-extern int StashValues_Private(Stash*,int,int,int*,Scalar*);
-extern int StashValuesBlocked_Private(Stash*,int,int,int*,Scalar*,int,int,int,int);
+extern int StashGetInfo_Private(Stash*,int*,int*);
+extern int StashValuesRoworiented_Private(Stash*,int,int,int*,Scalar*);
+extern int StashValuesColumnoriented_Private(Stash*,int,int,int*,Scalar*,int);
+extern int StashValuesRoworientedBlocked_Private(Stash*,int,int,int*,Scalar*,int,int,int);
+extern int StashValuesColumnorientedBlocked_Private(Stash*,int,int,int*,Scalar*,int,int,int);
 extern int StashScatterBegin_Private(Stash*,int*);
 extern int StashScatterGetMesg_Private(Stash*,int*,int**,int**,Scalar**,int*);
 

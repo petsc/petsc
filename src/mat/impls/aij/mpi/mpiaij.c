@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.286 1999/03/09 21:32:49 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.287 1999/03/11 22:30:32 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -258,14 +258,11 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
         }
       }
     } else {
-      if (roworiented && !aij->donotstash) {
-        ierr = StashValues_Private(&aij->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
-      } else {
-        if (!aij->donotstash) {
-          row = im[i];
-          for ( j=0; j<n; j++ ) {
-            ierr = StashValues_Private(&aij->stash,row,1,in+j,v+i+j*m);CHKERRQ(ierr);
-          }
+      if (!aij->donotstash) {
+        if (roworiented) {
+          ierr = StashValuesRoworiented_Private(&aij->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
+        } else {
+          ierr = StashValuesColumnoriented_Private(&aij->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
         }
       }
     }
@@ -321,7 +318,7 @@ int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
-  int         ierr;
+  int         ierr,nstash,reallocs;
   InsertMode  addv;
 
   PetscFunctionBegin;
@@ -336,9 +333,10 @@ int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
   }
   mat->insertmode = addv; /* in case this processor had no cache */
 
-  ierr =  StashScatterBegin_Private(&aij->stash,aij->rowners); CHKERRQ(ierr);
-  /* Free cache space */
-  PLogInfo(aij->A,"MatAssemblyBegin_MPIAIJ:Number of off-processor values %d\n",aij->stash.n);
+  ierr = StashScatterBegin_Private(&aij->stash,aij->rowners); CHKERRQ(ierr);
+  ierr = StashGetInfo_Private(&aij->stash,&nstash,&reallocs); CHKERRQ(ierr);
+  PLogInfo(aij->A,"MatAssemblyBegin_MPIAIJ:Stash has %d entries, uses %d mallocs.\n",
+           nstash,reallocs);
   PetscFunctionReturn(0);
 }
 
@@ -1806,7 +1804,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   PLogObjectParent(B,b->B);
 
   /* build cache for off array entries formed */
-  ierr = StashCreate_Private(comm,1,1,&b->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(comm,1,&b->stash); CHKERRQ(ierr);
   b->donotstash  = 0;
   b->colmap      = 0;
   b->garray      = 0;
@@ -1875,7 +1873,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAIJ));
   a->cowners = a->rowners + a->size + 2;
   PetscMemcpy(a->rowners,oldmat->rowners,2*(a->size+2)*sizeof(int));
-  ierr = StashCreate_Private(matin->comm,1,1,&a->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(matin->comm,1,&a->stash); CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined (USE_CTABLE)
     ierr = TableCreateCopy(oldmat->colmap,&a->colmap); CHKERRQ(ierr);
