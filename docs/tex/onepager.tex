@@ -1,4 +1,4 @@
-% $Id: onepager.tex,v 1.19 1995/11/15 22:09:57 curfman Exp bsmith $ 
+% $Id: onepager.tex,v 1.20 1996/02/12 20:46:31 bsmith Exp bsmith $ 
 \documentstyle[epsf,sty/handpage,/home/gropp/hyper/style/anlhtext]{article}
 \pagestyle{empty}
 \begin{document}
@@ -58,6 +58,11 @@ natural for a particular problem.  Some of the components are
 \vsp
 \item \code{SNES} - data-structure-neutral implementations of Newton-like
       methods for nonlinear systems.
+\vsp
+\item \code{TS} - time-stepping code for scalably solving 
+      nonlinear ODEs arising from applying general ``methods of lines'' 
+      techniques to time dependent PDEs. Includes support for pseudo 
+      time-stepping. 
 \end{itemize}
 \vsp
 
@@ -72,23 +77,20 @@ data structures.
 
 \section*{Computational Environment}
 \code{PETSc} is available on Sun, DEC Alpha, Silicon Graphics, HP-UX, and IBM
-RS/6000 workstations; IBM PCs running FreeBSD or Linux; the Cray T3D,
-the Intel Paragon; and the IBM SP.
+RS/6000 workstations; IBM PCs running FreeBSD or Linux; the Cray T3D/T3E,
+the Intel Paragon; and the IBM SP, SGI Origin, Convex Exemplar, Windows NT.
 
 \section*{Availability}
 
-The \code{PETSc} package is freely available.
-The complete distribution can be obtained by anonymous ftp from 
+The \code{PETSc} package is freely available by anonymous ftp from 
 \URL{ftp://info.mcs.anl.gov/pub/petsc}.
-The \code{PETSc} distribution contains all source code, installation
-instructions, a users guide, {\tt man pages} for all routines, and a
-collection of examples.  Additional information is available via the
-World Wide Web at
-\URL{http://www.mcs.anl.gov/petsc/petsc.html}.
+The \code{PETSc} distribution contains all source code, 
+a users guide, {\tt man pages}, and a
+collection of examples. 
 
 \vspace{-.1cm}
 \contact{Satish Balay, William Gropp, Lois Curfman McInnes, Barry Smith}
 \email{petsc-maint@mcs.anl.gov}
-\phone{(708) 252-4318}
+\phone{http://www.mcs.anl.gov/petsc/petsc.html}
 \makeinfo
 \end{document}
