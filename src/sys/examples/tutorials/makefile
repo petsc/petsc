@@ -57,7 +57,7 @@ runex3f:
 	-@${MPIRUN} -np 1 ./ex3f
 
 runex5:
-	-@${MPIRUN} -np 1 ./ex5 -rho 44 -T true > ex5_1.tmp 5>&1; \
+	-@${MPIRUN} -np 1 ./ex5 -rho 44 -do_output true > ex5_1.tmp 5>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp 

@@ -1,15 +1,14 @@
-PetscBag Object:  MyBag Contains parameters for my physics
-  rho = 3; Some bogus real parameter
-  W = 5; Some other bogus real parameter
-  I = 2; Some other bogus int parameter
-  T = False; Some bogus logical parameter
-PetscBag Object:  MyBag Contains parameters for my physics
-  rho = 3; Some bogus real parameter
-  W = 5; Some other bogus real parameter
-  I = 2; Some other bogus int parameter
-  T = False; Some bogus logical parameter
-PetscBag Object:  MyBag Contains parameters for my physics
-  rho = 44; Some bogus real parameter
-  W = 5; Some other bogus real parameter
-  I = 2; Some other bogus int parameter
-  T = True; Some bogus logical parameter
+PetscBag Object:  ParameterBag contains parameters for simulations of top-secret, dangerous physics
+  rho = 44; Density, kg/m^3
+  W = 5; Vertical velocity, m/sec
+  modes_x = 2; Number of modes in x-direction
+  do_output = True; Write output file (yes/no)
+  x1 = 1; x position
+  x2 = 1.9; y position
+PetscBag Object:  ParameterBag contains parameters for simulations of top-secret, dangerous physics
+  rho = 44; Density, kg/m^3
+  W = 5; Vertical velocity, m/sec
+  modes_x = 2; Number of modes in x-direction
+  do_output = False; Write output file (yes/no)
+  x1 = 1; x position
+  x2 = 1.9; y position

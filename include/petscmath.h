@@ -66,7 +66,7 @@ typedef std::complex<double> PetscScalar;
 #    define MPIU_MATSCALAR        MPI_DOUBLE
 #  endif
 #  define PetscRealPart(a)      (a)
-#  define PetscImaginaryPart(a) (a)
+#  define PetscImaginaryPart(a) (0)
 #  define PetscAbsScalar(a)     (((a)<0.0)   ? -(a) : (a))
 #  define PetscConj(a)          (a)
 #  define PetscSqrtScalar(a)    sqrt(a)
