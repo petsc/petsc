@@ -65,6 +65,15 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
     return
 
+  def checkInitialLibraries(self):
+    '''Check for libraries required for all linking on an architecture
+       - Mac OSX requires an explicit reference to libc for shared linking'''
+    if self.framework.host_os.startswith('darwin'):
+      self.framework.argDB['LIBS'] = '-lc'
+    else:
+      self.framework.argDB['LIBS'] = ''
+    return
+
   def isGNU(compiler):
     '''Returns true if the compiler is a GNU compiler'''
     try:
@@ -724,7 +733,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    self.framework.argDB['LIBS'] = ''
+    self.executeTest(self.checkInitialLibraries)
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
     self.executeTest(self.checkCxxCompiler)
