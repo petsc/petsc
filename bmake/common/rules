@@ -686,7 +686,13 @@ getexlist:
 	-@${RM} -f logfile.txt
 #
 #   Rules for generating html code from C and Fortran 
-#
+#	
+checkmakefilelist:
+	-@ls makefile ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
+	ls makefile *.c *.h *.F *.m *.h90 2>/dev/null | sort | uniq > /tmp/$$USER.$$.ls; \
+	diff /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls; \
+	${RM}  /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls
+
 html:
 	-@sed -e s?man+../?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/manualpages.cit > /tmp/$$USER.htmlmap
 	-@cat ${PETSC_DIR}/docs/mpi.www.index >> /tmp/$$USER.htmlmap
