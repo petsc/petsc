@@ -27,19 +27,19 @@ endif
 #
 set RSYNC_DIR=`echo $TMP | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`
 rsync -z -e "$RSH" -C -r --exclude=BitKeeper /sandbox/petsc/petsc-test ${MACH}:$RSYNC_DIR
-if ("${ARCH}" != "t3e") then
-  $RSH $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
-endif
+#if ("${ARCH}" != "t3e") then
+#  $RSH $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
+#endif
 
 
-$RSH $MACH -n "cd $TMP/maint;rm -f build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
+#$RSH $MACH -n "cd $TMP/maint;rm -f build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH -n "cd $TMP/maint;touch build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
 
 $RSH $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH $BOPT `date` ' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
 
 # Run Configure
 if ("${CONFIGURE}" == "yes") then
-  $RSH $MACH -n "rm -f $TMP/configure.log" >& /dev/null
+  #$RSH $MACH -n "rm -f $TMP/configure.log" >& /dev/null
   $RSH $MACH -n "cd $TMP; config/configure_$ARCH.py $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
   $RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
   $RSH $MACH -n "cd $TMP; cat configure.log $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
