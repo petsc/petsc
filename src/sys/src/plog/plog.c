@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.180 1998/03/23 21:26:31 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.181 1998/03/24 20:38:45 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -757,15 +757,17 @@ PLogDouble tracetime = 0.0;
 #define __FUNC__ "PLogDefaultPLBTrace"
 int PLogDefaultPLBTrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
-  int  rank;
+  int        rank;
+  PLogDouble cur_time;
 
   PetscFunctionBegin;
-  if (!tracetime) { tracetime = PetscGetTime(); }
+  if (!tracetime) { PetscTime(tracetime);}
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   PetscStrncpy(tracespace,traceblanks,2*tracelevel);
   tracespace[2*tracelevel] = 0;
-  fprintf(tracefile,"%s[%d] %g Event begin: %s\n",tracespace,rank,PetscGetTime()-tracetime,PLogEventName[event]);
+  PetscTime(cur_time);
+  fprintf(tracefile,"%s[%d] %g Event begin: %s\n",tracespace,rank,cur_time-tracetime,PLogEventName[event]);
   fflush(tracefile);
   tracelevel++;
 
@@ -779,14 +781,16 @@ int PLogDefaultPLBTrace(int event,int t,PetscObject o1,PetscObject o2,PetscObjec
 #define __FUNC__ "PLogDefaultPLETrace"
 int PLogDefaultPLETrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
-  int rank;
+  int        rank;
+  PLogDouble cur_time;
 
   PetscFunctionBegin;
   tracelevel--;
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   PetscStrncpy(tracespace,traceblanks,2*tracelevel);
   tracespace[2*tracelevel] = 0;
-  fprintf(tracefile,"%s[%d] %g Event end: %s\n",tracespace,rank,PetscGetTime()-tracetime,PLogEventName[event]);
+  PetscTime(cur_time);
+  fprintf(tracefile,"%s[%d] %g Event end: %s\n",tracespace,rank,cur_time-tracetime,PLogEventName[event]);
   fflush(tracefile);
   PetscFunctionReturn(0);
 }
@@ -1538,10 +1542,11 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
 
 .seealso: PetscGetTime(), PLogFlops()
 @*/
-PLogDouble PetscGetFlops(void)
+int PetscGetFlops(PLogDouble *flops)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(_TotalFlops);
+  *flops = _TotalFlops;
+  PetscFunctionReturn(0);
 }
 
 /* --------- Activate version -------------  */
@@ -1761,7 +1766,7 @@ int PLogObjectState(PetscObject obj,char *format,...)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscGetTime"
-/*@C
+/*@
    PetscGetTime - Returns the current time of day in seconds. This 
      returns wall-clock time.  
 
@@ -1769,10 +1774,11 @@ int PLogObjectState(PetscObject obj,char *format,...)
 .  v - time counter
 
    Usage: 
-$     PLogDouble v;
-$     v = PetscGetTime();
+$     PLogDouble v1,v2,elapsed_time;
+$     ierr = PetscGetTime(&v1); CHKERR(ierr);
 $     .... perform some calculation ...
-$     v = PetscGetTime() -v;
+$     ierr = PetscGetTime(&v2); CHKERR(ierr);
+$     elapsed_time = v2 - v1;   
 
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations, 
@@ -1785,11 +1791,9 @@ $     v = PetscGetTime() -v;
 
 .keywords:  get, time
 @*/
-PLogDouble PetscGetTime(void)
+int PetscGetTime(PLogDouble *t)
 {
-  PLogDouble t;
-
   PetscFunctionBegin;
-  PetscTime(t);
-  PetscFunctionReturn(t);
+  PetscTime(*t);
+  PetscFunctionReturn(0);
 }

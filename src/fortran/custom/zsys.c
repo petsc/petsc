@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.46 1998/03/25 16:25:14 balay Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.47 1998/03/30 22:23:18 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -13,8 +13,6 @@ static char vcid[] = "$Id: zsys.c,v 1.46 1998/03/25 16:25:14 balay Exp balay $";
 #define petscobjectdestroy_        PETSCOBJECTDESTROY
 #define petscobjectgetcomm_        PETSCOBJECTGETCOMM
 #define petscobjectgetname_        PETSCOBJECTGETNAME
-#define petscgettime_              PETSCGETTIME
-#define petscgetcputime_           PETSCGETCPUTIME
 #define petscgetflops_             PETSCGETFLOPS
 #define petscerror_                PETSCERROR
 #define petscrandomcreate_         PETSCRANDOMCREATE
@@ -48,8 +46,6 @@ static char vcid[] = "$Id: zsys.c,v 1.46 1998/03/25 16:25:14 balay Exp balay $";
 #define petscobjectdestroy_        petscobjectdestroy
 #define petscobjectgetcomm_        petscobjectgetcomm
 #define petscobjectgetname_        petscobjectgetname
-#define petscgettime_              petscgettime  
-#define petscgetcputime_           petscgetcputime  
 #define petscgetflops_             petscgetflops 
 #define petscerror_                petscerror
 #define petscrandomcreate_         petscrandomcreate
@@ -233,21 +229,13 @@ void petscerror_(int *number,int *p,CHAR message,int *__ierr,int len)
   *__ierr = PetscError(-1,0,"fortran_interface_unknown_file",0,*number,*p,t1);
 }
 
-double petscgettime_()
-{ 
-  return PetscGetTime();
-}
-double petscgetcputime_()
-{
-  return PetscGetCPUTime();
-}
-
-double  petscgetflops_()
+void petscgetflops_(PLogDouble *d,int *__ierr)
 {
 #if defined(USE_PETSC_LOG)
-  return PetscGetFlops();
+  __ierr = PetscGetFlops(d);
 #else
-  return 0.0;
+  __ierr = 0;
+  *d     = 0.0;
 #endif
 }
 

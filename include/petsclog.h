@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.117 1998/03/23 21:27:32 bsmith Exp balay $ */
+/* $Id: petsclog.h,v 1.118 1998/03/24 20:38:54 balay Exp balay $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -259,20 +259,20 @@ extern int (*_PLogPHD)(PetscObject);
 #define PLogObjectDestroy(h)        {if (_PLogPHD) (*_PLogPHD)((PetscObject)h);}
 #define PLogObjectMemory(p,m)       {PetscValidHeader((PetscObject)p);\
                                     ((PetscObject)(p))->mem += (m);}
-extern int        PLogObjectState(PetscObject,char *,...);
-extern int        PLogDestroy(void);
-extern int        PLogStagePush(int);
-extern int        PLogStagePop(void);
-extern int        PLogStageRegister(int,char*);
-extern int        PLogPrintSummary(MPI_Comm,char *);
-extern int        PLogBegin(void);
-extern int        PLogTraceBegin(FILE *);
-extern int        PLogAllBegin(void);
-extern int        PLogSet(int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
-                          int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject));
-extern int        PLogDump(char*);
-extern int        PLogEventRegister(int*,char*,char*);
-extern PLogDouble PetscGetFlops(void);
+extern int  PLogObjectState(PetscObject,char *,...);
+extern int  PLogDestroy(void);
+extern int  PLogStagePush(int);
+extern int  PLogStagePop(void);
+extern int  PLogStageRegister(int,char*);
+extern int  PLogPrintSummary(MPI_Comm,char *);
+extern int  PLogBegin(void);
+extern int  PLogTraceBegin(FILE *);
+extern int  PLogAllBegin(void);
+extern int  PLogSet(int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
+                    int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject));
+extern int  PLogDump(char*);
+extern int  PLogEventRegister(int*,char*,char*);
+extern int  PetscGetFlops(PLogDouble*);
 
 extern PLogDouble irecv_ct, isend_ct, wait_ct, wait_any_ct, recv_ct, send_ct;
 extern PLogDouble irecv_len, isend_len, recv_len, send_len;
@@ -403,7 +403,7 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 #define _PLogPLE                        0
 #define _PLogPHC                        0
 #define _PLogPHD                        0
-#define PetscGetFlops()               0.0
+#define PetscGetFlops(a)                (*(a) = 0.0,0)
 #define PLogEventBegin(e,o1,o2,o3,o4)
 #define PLogEventEnd(e,o1,o2,o3,o4)
 #define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm)

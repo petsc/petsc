@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.13 1998/03/03 16:21:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cputime.c,v 1.14 1998/03/23 21:18:59 bsmith Exp balay $";
 #endif
 
 /*
@@ -16,15 +16,14 @@ static char vcid[] = "$Id: cputime.c,v 1.13 1998/03/03 16:21:02 bsmith Exp bsmit
 
 #include <sys/times.h>
 #include <limits.h>
-PLogDouble PetscGetCPUTime(void)
+int PetscGetCPUTime(PLogDouble *t)
 {
   struct tms temp;
-  PLogDouble t;
 
   PetscFunctionBegin;
   times(&temp);
-  t = ((double) temp.tms_utime)/((double) CLK_TCK);
-  PetscFunctionReturn(t);
+  *t = ((double) temp.tms_utime)/((double) CLK_TCK);
+  PetscFunctionReturn(0);
 }
 
 #elif defined(PARCH_hpux)  
@@ -32,26 +31,22 @@ PLogDouble PetscGetCPUTime(void)
 #include "src/sys/src/files.h"
 #include <time.h>
 #include <sys/types.h>
-PLogDouble PetscGetCPUTime()
+int PetscGetCPUTime(PLogDouble *t)
 {
-  PLogDouble t;
-
   PetscFunctionBegin;
-  t = ((double)clock()) / ((double)CLOCKS_PER_SEC);
-  PetscFunctionReturn(t);
+  *t = ((double)clock()) / ((double)CLOCKS_PER_SEC);
+  PetscFunctionReturn(0);
 }  
 
 #elif defined(PARCH_t3d) || defined (PARCH_nt)  
 
 #include "src/sys/src/files.h"
 #include <sys/types.h>
-PLogDouble PetscGetCPUTime()
+int PetscGetCPUTime(PLogDouble *t)
 {
-  PLogDouble t;
-
   PetscFunctionBegin;
-  t = ((double)clock()) / ((double)CLOCKS_PER_SEC);
-  PetscFunctionReturn(t);
+  *t = ((double)clock()) / ((double)CLOCKS_PER_SEC);
+  PetscFunctionReturn(0);
 }  
 
 #else
@@ -77,7 +72,7 @@ extern int getrusage(int,struct rusage*);
 }
 #endif
 
-/*@C
+/*@
     PetscGetCPUTime - Returns the CPU time in seconds used by the process.
          One should use PetscGetTime() or the -log_summary option of 
          PETSc for profiling. The CPU time is not a realistic number to
@@ -89,17 +84,17 @@ extern int getrusage(int,struct rusage*);
     Time in seconds charged to the process.
 
     Example:
-$   #include "system/system.h"
+$   #include "petsc.h"
 $   ...
-$   double t1, t2;
+$   PLogDouble t1, t2;
 $
-$   t1 = PetscGetCPUTime();
+$   ierr = PetscGetCPUTime(&t1); CHKERRA(ierr);
 $   ... code to time ...
-$   t2 = PetscGetCPUTime() - t1;
-$   printf( "Code took %f CPU seconds\n", t2 );
+$   ierr = PetscGetCPUTime(&t2); CHKERRA(ierr);
+$   printf( "Code took %f CPU seconds\n", t2-t1);
 $
 @*/
-PLogDouble PetscGetCPUTime()
+int PetscGetCPUTime(PLogDouble *t)
 {
   static struct rusage temp;
   double foo, foo1;
@@ -108,11 +103,8 @@ PLogDouble PetscGetCPUTime()
   getrusage(RUSAGE_SELF,&temp);
   foo     = temp.ru_utime.tv_sec;     /* seconds */
   foo1    = temp.ru_utime.tv_usec;    /* uSecs */
-  PetscFunctionReturn(foo + foo1 * 1.0e-6);
+  *t      = foo + foo1 * 1.0e-6;
+  PetscFunctionReturn(0);
 }
 
 #endif
-
-
-
-
