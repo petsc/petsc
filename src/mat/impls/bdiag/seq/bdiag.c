@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.11 1995/05/12 20:33:20 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.12 1995/05/17 00:44:36 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -677,7 +677,7 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
     }
   }
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  MPI_Comm_rank(comm,&mytid);
   for (i=0; i<nd; i++) {
     mat->diag[i] = diag[i];
     if (diag[i] > 0) /* lower triangular */
