@@ -202,7 +202,7 @@ class Configure(config.base.Configure):
       else:
         includes = self.includeGuesses(map(lambda inc: os.path.dirname(os.path.dirname(inc)), libs))
       yield ('User specified library and includes', [libs], includes)
-      raise RuntimeError('You set a value for --with-mpi-lib, but '+self.framework.argDB['with-mpi-lib']+' cannot be used.\n It could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
+      raise RuntimeError('You set a value for --with-mpi-lib, but '+str(self.framework.argDB['with-mpi-lib'])+' cannot be used.\n It could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
     # Try specified installation root
     if 'with-mpi-dir' in self.framework.argDB:
       dir = os.path.abspath(self.framework.argDB['with-mpi-dir'])
