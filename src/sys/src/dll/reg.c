@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.69 2001/03/23 23:20:29 balay Exp bsmith $*/
+/*$Id: reg.c,v 1.70 2001/04/10 19:34:28 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -274,8 +274,8 @@ int PetscFListAdd(PetscFList *fl,const char name[],const char rname[],void (*fnc
 @*/
 int PetscFListDestroy(PetscFList *fl)
 {
-  PetscFList   next,entry,tmp = dlallhead;
-  int     ierr;
+  PetscFList next,entry,tmp = dlallhead;
+  int        ierr;
 
   PetscFunctionBegin;
   if (!*fl) PetscFunctionReturn(0);
@@ -323,7 +323,7 @@ int PetscFListDestroy(PetscFList *fl)
 int PetscFListDestroyAll(void)
 {
   PetscFList tmp2,tmp1 = dlallhead;
-  int    ierr;
+  int        ierr;
 
   PetscFunctionBegin;
   while (tmp1) {
@@ -452,7 +452,7 @@ int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],void (**r)())
    Collective over MPI_Comm
 
    Input Parameters:
-+  PetscFList - the list of functions
++  list - the list of functions
 -  viewer - currently ignored
 
    Level: developer
@@ -559,7 +559,7 @@ int PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char n
 
   ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
   if (prefix) {ierr = PetscStrcat(p,prefix);CHKERRQ(ierr);}
-  ierr = PetscFPrintf(comm,fd,"  %s%s %s:(one of)",p,name,text);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"  %s%s %s:(one of)",p,name+1,text);CHKERRQ(ierr);
 
   while (list) {
     ierr = PetscFPrintf(comm,fd," %s",list->name);CHKERRQ(ierr);
