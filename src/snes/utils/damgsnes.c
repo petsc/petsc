@@ -1,31 +1,81 @@
-
-/*$Id: damgsnes.c,v 1.6 2000/08/17 04:52:55 bsmith Exp bsmith $*/
+/*$Id: dmmgsnes.c,v 1.7 2000/09/28 21:14:43 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
 
 /*
-      This evaluates the Jacobian on all of the grids. It is used by DAMG to "replace"
-   the user provided function. In fact, it calls the user provided one at each level.
+      These evaluate the Jacobian on all of the grids. It is used by DMMG to "replace"
+   the user provided Jacobian function. In fact, it calls the user provided one at each level.
+*/
+/*
+          Version for matrix-free Jacobian 
 */
 #undef __FUNC__
-#define __FUNC__ "DAMGComputeJacobian"
-int DAMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+#define __FUNC__ "DMMGComputeJacobian_MF"
+int DMMGComputeJacobian_MF(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  DAMG       *damg = (DAMG*)ptr;
-  int        ierr,i,nlevels = damg[0]->nlevels;
+  DMMG       *dmmg = (DMMG*)ptr;
+  int        ierr,i,nlevels = dmmg[0]->nlevels;
   SLES       sles,lsles;
   PC         pc;
   PetscTruth ismg;
-  void       *pptr;
 
   PetscFunctionBegin;
-  if (!damg) SETERRQ(1,"Passing null as user context which should contain DAMG");
+  if (!dmmg) SETERRQ(1,"Passing null as user context which should contain DMMG");
 
-  if (DAMGGetFine(damg)->computejacobian == SNESDefaultComputeJacobianColor) pptr = DAMGGetFine(damg)->fdcoloring;
-  else pptr = DAMGGetFine(damg);
+  /* The finest level matrix is "shared" by the corresponding SNES object so we need
+     only call MatAssemblyXXX() on it to indicate it is being used in a new solve */
+  ierr = MatAssemblyBegin(dmmg[nlevels-1]->J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(dmmg[nlevels-1]->J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = (*DAMGGetFine(damg)->computejacobian)(snes,X,J,B,flag,pptr);CHKERRQ(ierr);
+  /*
+     The other levels MUST be told the vector from which we are doing the differencing
+  */
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+  if (ismg) {
+
+    ierr = MGGetSmoother(pc,nlevels-1,&lsles);CHKERRQ(ierr);
+    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->J,*flag);CHKERRA(ierr);
+
+    for (i=nlevels-1; i>0; i--) {
+
+      /* restrict X to coarse grid */
+      ierr = MatRestrict(dmmg[i]->R,X,dmmg[i-1]->work2);CHKERRQ(ierr);
+      X    = dmmg[i-1]->work2;      
+
+      /* scale to "natural" scaling for that grid */
+      ierr = VecPointwiseMult(dmmg[i]->Rscale,X,X);CHKERRQ(ierr);
+
+      ierr = MatSNESMFSetBase(dmmg[i-1]->J,X);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(dmmg[i-1]->J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(dmmg[i-1]->J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+      ierr = MGGetSmoother(pc,i-1,&lsles);CHKERRQ(ierr);
+      ierr = SLESSetOperators(lsles,dmmg[i-1]->J,dmmg[i-1]->B,*flag);CHKERRA(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+    Version for user provided Jacobian
+*/
+#undef __FUNC__
+#define __FUNC__ "DMMGComputeJacobian_User"
+int DMMGComputeJacobian_User(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+{
+  DMMG       *dmmg = (DMMG*)ptr;
+  int        ierr,i,nlevels = dmmg[0]->nlevels;
+  SLES       sles,lsles;
+  PC         pc;
+  PetscTruth ismg;
+
+  PetscFunctionBegin;
+  if (!dmmg) SETERRQ(1,"Passing null as user context which should contain DMMG");
+
+  ierr = (*DMMGGetFine(dmmg)->computejacobian)(snes,X,J,B,flag,DMMGGetFine(dmmg));CHKERRQ(ierr);
 
   /* create coarse grid jacobian for preconditioner if multigrid is the preconditioner */
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
@@ -34,138 +84,194 @@ int DAMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *p
   if (ismg) {
 
     ierr = MGGetSmoother(pc,nlevels-1,&lsles);CHKERRQ(ierr);
-    ierr = SLESSetOperators(lsles,DAMGGetFine(damg)->J,DAMGGetFine(damg)->J,*flag);CHKERRA(ierr);
+    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->J,*flag);CHKERRA(ierr);
 
     for (i=nlevels-1; i>0; i--) {
 
       /* restrict X to coarse grid */
-      ierr = MatRestrict(damg[i]->R,X,damg[i-1]->x);CHKERRQ(ierr);
-      X    = damg[i-1]->x;      
+      ierr = MatRestrict(dmmg[i]->R,X,dmmg[i-1]->x);CHKERRQ(ierr);
+      X    = dmmg[i-1]->x;      
 
       /* scale to "natural" scaling for that grid */
-      ierr = VecPointwiseMult(damg[i]->Rscale,X,X);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(dmmg[i]->Rscale,X,X);CHKERRQ(ierr);
 
       /* form Jacobian on coarse grid */
-      if (damg[i-1]->computejacobian == SNESDefaultComputeJacobianColor) pptr = damg[i-1]->fdcoloring;
-      else pptr = damg[i-1];
-
-      ierr = (*damg[i-1]->computejacobian)(snes,X,&damg[i-1]->J,&damg[i-1]->B,flag,pptr);CHKERRQ(ierr);
+      ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,flag,dmmg[i-1]);CHKERRQ(ierr);
 
       ierr = MGGetSmoother(pc,i-1,&lsles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(lsles,damg[i-1]->J,damg[i-1]->B,*flag);CHKERRA(ierr);
+      ierr = SLESSetOperators(lsles,dmmg[i-1]->J,dmmg[i-1]->B,*flag);CHKERRA(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+/*
+    Version for Jacobian computed via PETSc finite differencing. This is the same 
+  as DMMGComputeJacobian_User() except passes in the fdcoloring as the private context
+*/
+#undef __FUNC__
+#define __FUNC__ "DMMGComputeJacobian_FD"
+int DMMGComputeJacobian_FD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+{
+  DMMG       *dmmg = (DMMG*)ptr;
+  int        ierr,i,nlevels = dmmg[0]->nlevels;
+  SLES       sles,lsles;
+  PC         pc;
+  PetscTruth ismg;
+
+  PetscFunctionBegin;
+  if (!dmmg) SETERRQ(1,"Passing null as user context which should contain DMMG");
+
+  ierr = (*DMMGGetFine(dmmg)->computejacobian)(snes,X,J,B,flag,DMMGGetFine(dmmg)->fdcoloring);CHKERRQ(ierr);
+
+  /* create coarse grid jacobian for preconditioner if multigrid is the preconditioner */
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+  if (ismg) {
+
+    ierr = MGGetSmoother(pc,nlevels-1,&lsles);CHKERRQ(ierr);
+    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->J,*flag);CHKERRA(ierr);
+
+    for (i=nlevels-1; i>0; i--) {
+
+      /* restrict X to coarse grid */
+      ierr = MatRestrict(dmmg[i]->R,X,dmmg[i-1]->x);CHKERRQ(ierr);
+      X    = dmmg[i-1]->x;      
+
+      /* scale to "natural" scaling for that grid */
+      ierr = VecPointwiseMult(dmmg[i]->Rscale,X,X);CHKERRQ(ierr);
+
+      /* form Jacobian on coarse grid */
+      ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,flag,dmmg[i-1]->fdcoloring);CHKERRQ(ierr);
+
+      ierr = MGGetSmoother(pc,i-1,&lsles);CHKERRQ(ierr);
+      ierr = SLESSetOperators(lsles,dmmg[i-1]->J,dmmg[i-1]->B,*flag);CHKERRA(ierr);
     }
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DAMGSolveSNES"></a>*/"DAMGSolveSNES"
-int DAMGSolveSNES(DAMG *damg,int level)
+#define __FUNC__ /*<a name="DMMGSolveSNES"></a>*/"DMMGSolveSNES"
+int DMMGSolveSNES(DMMG *dmmg,int level)
 {
-  int  ierr,nlevels = damg[0]->nlevels,its;
+  int  ierr,nlevels = dmmg[0]->nlevels,its;
 
   PetscFunctionBegin;
-  damg[0]->nlevels = level+1;
-  ierr = SNESSolve(damg[level]->snes,damg[level]->x,&its);CHKERRQ(ierr);
-  damg[0]->nlevels = nlevels;
+  dmmg[0]->nlevels = level+1;
+  ierr = SNESSolve(dmmg[level]->snes,dmmg[level]->x,&its);CHKERRQ(ierr);
+  dmmg[0]->nlevels = nlevels;
   PetscFunctionReturn(0);
 }
 
-EXTERN int DAMGSetUpLevel(DAMG*,SLES,int);
+EXTERN int DMMGSetUpLevel(DMMG*,SLES,int);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DAMGSetSNES"></a>*/"DAMGSetSNES"
+#define __FUNC__ /*<a name="DMMGSetSNES"></a>*/"DMMGSetSNES"
 /*@C
-    DAMGSetSNES - Sets the nonlinear solver object that will use the grid hierarchy
+    DMMGSetSNES - Sets the nonlinear solver object that will use the grid hierarchy
 
-    Collective on DAMG and SNES
+    Collective on DMMG and SNES
 
     Input Parameter:
-+   damg - the context
++   dmmg - the context
 -   snes - the nonlinear solver object
 
     Level: advanced
 
-.seealso DAMGCreate(), DAMGDestroy, DAMGSetSLES()
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES()
 
 @*/
-int DAMGSetSNES(DAMG *damg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
+int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
-  int        ierr,i,nlevels = damg[0]->nlevels;
+  int        ierr,i,nlevels = dmmg[0]->nlevels;
   PetscTruth usefd;
   SLES       sles;
 
   PetscFunctionBegin;
-  if (!damg) SETERRQ(1,"Passing null as DAMG");
+  if (!dmmg) SETERRQ(1,"Passing null as DMMG");
 
   /* create solvers for each level */
   for (i=0; i<nlevels; i++) {
-    ierr = SNESCreate(damg[i]->comm,SNES_NONLINEAR_EQUATIONS,&damg[i]->snes);CHKERRQ(ierr);
-    ierr = SNESSetFromOptions(damg[i]->snes);CHKERRQ(ierr);
-    ierr = SNESGetSLES(damg[i]->snes,&sles);CHKERRQ(ierr);
-    ierr = DAMGSetUpLevel(damg,sles,i+1);CHKERRQ(ierr);
-    damg[i]->solve = DAMGSolveSNES;
-    damg[i]->computejacobian = jacobian;
-    damg[i]->computefunction = function;
-    ierr = DACreateLocalVector(damg[i]->da,&damg[i]->localX);CHKERRQ(ierr);
-    ierr = DACreateLocalVector(damg[i]->da,&damg[i]->localF);CHKERRQ(ierr);
+    ierr = SNESCreate(dmmg[i]->comm,SNES_NONLINEAR_EQUATIONS,&dmmg[i]->snes);CHKERRQ(ierr);
+    if (dmmg[0]->matrixfree) {
+      ierr = MatCreateSNESMF(dmmg[i]->snes,dmmg[i]->x,&dmmg[i]->J);CHKERRQ(ierr);
+      if (!dmmg[i]->B) dmmg[i]->B = dmmg[i]->J;
+      if (i != nlevels-1) {
+        ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->work1);CHKERRQ(ierr);
+        ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->work2);CHKERRQ(ierr);
+        ierr = MatSNESMFSetFunction(dmmg[i]->J,dmmg[i]->work1,function,dmmg[i]);CHKERRQ(ierr);
+      }
+    }
+
+    ierr = SNESGetSLES(dmmg[i]->snes,&sles);CHKERRQ(ierr);
+    ierr = DMMGSetUpLevel(dmmg,sles,i+1);CHKERRQ(ierr);
+    ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);
+    dmmg[i]->solve = DMMGSolveSNES;
+    dmmg[i]->computejacobian = jacobian;
+    dmmg[i]->computefunction = function;
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-damg_fd",&usefd);CHKERRQ(ierr);
-  if (!jacobian || usefd) {
+  ierr = OptionsHasName(PETSC_NULL,"-dmmg_fd",&usefd);CHKERRQ(ierr);
+  if ((!jacobian && !dmmg[0]->matrixfree) || usefd) {
     ISColoring iscoloring;
-
     for (i=0; i<nlevels; i++) {
-      ierr = DAGetColoring(damg[i]->da,&iscoloring,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatFDColoringCreate(damg[i]->J,iscoloring,&damg[i]->fdcoloring);CHKERRQ(ierr);
+      ierr = DMGetColoring(dmmg[i]->dm,&iscoloring,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatFDColoringCreate(dmmg[i]->J,iscoloring,&dmmg[i]->fdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFunction(damg[i]->fdcoloring,(int(*)(void))function,damg[i]);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFromOptions(damg[i]->fdcoloring);CHKERRQ(ierr);
-      damg[i]->computejacobian = SNESDefaultComputeJacobianColor;
+      ierr = MatFDColoringSetFunction(dmmg[i]->fdcoloring,(int(*)(void))function,dmmg[i]);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFromOptions(dmmg[i]->fdcoloring);CHKERRQ(ierr);
+      dmmg[i]->computejacobian = SNESDefaultComputeJacobianColor;
     }
   }
 
   for (i=0; i<nlevels; i++) {
-    ierr = SNESSetJacobian(damg[i]->snes,damg[i]->J,damg[i]->B,DAMGComputeJacobian,damg);CHKERRQ(ierr);
-    ierr = SNESSetFunction(damg[i]->snes,damg[i]->b,function,damg[i]);CHKERRQ(ierr);
+    if (dmmg[i]->matrixfree) {
+      ierr = SNESSetJacobian(dmmg[i]->snes,dmmg[i]->J,dmmg[i]->B,DMMGComputeJacobian_MF,dmmg);CHKERRQ(ierr);
+    } else if (dmmg[i]->computejacobian == SNESDefaultComputeJacobianColor) {
+      ierr = SNESSetJacobian(dmmg[i]->snes,dmmg[i]->J,dmmg[i]->B,DMMGComputeJacobian_FD,dmmg);CHKERRQ(ierr);
+    } else {
+      ierr = SNESSetJacobian(dmmg[i]->snes,dmmg[i]->J,dmmg[i]->B,DMMGComputeJacobian_User,dmmg);CHKERRQ(ierr);
+    }
+    ierr = SNESSetFunction(dmmg[i]->snes,dmmg[i]->b,function,dmmg[i]);CHKERRQ(ierr);
   }
 
   /* Create interpolation scaling */
   for (i=1; i<nlevels; i++) {
-    ierr = DAGetInterpolationScale(damg[i-1]->da,damg[i]->da,damg[i]->R,&damg[i]->Rscale);CHKERRQ(ierr);
+    ierr = DMGetInterpolationScale(dmmg[i-1]->dm,dmmg[i]->dm,dmmg[i]->R,&dmmg[i]->Rscale);CHKERRQ(ierr);
   }
 
   for (i=0; i<nlevels-1; i++) {
-    ierr = SNESSetOptionsPrefix(damg[i]->snes,"damg_");CHKERRQ(ierr);
+    ierr = SNESSetOptionsPrefix(dmmg[i]->snes,"dmmg_levels_");CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DAMGSetInitialGuess"></a>*/"DAMGSetInitialGuess"
+#define __FUNC__ /*<a name="DMMGSetInitialGuess"></a>*/"DMMGSetInitialGuess"
 /*@C
-    DAMGSetInitialGuess - Sets the function that computes an initial guess, if not given
+    DMMGSetInitialGuess - Sets the function that computes an initial guess, if not given
          uses 0.
 
-    Collective on DAMG and SNES
+    Collective on DMMG and SNES
 
     Input Parameter:
-+   damg - the context
++   dmmg - the context
 -   guess - the function
 
     Level: advanced
 
-.seealso DAMGCreate(), DAMGDestroy, DAMGSetSLES()
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES()
 
 @*/
-int DAMGSetInitialGuess(DAMG *damg,int (*guess)(SNES,Vec,void*))
+int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
 {
-  int i,nlevels = damg[0]->nlevels;
+  int i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   for (i=0; i<nlevels; i++) {
-    damg[i]->initialguess = guess;
+    dmmg[i]->initialguess = guess;
   }
   PetscFunctionReturn(0);
 }

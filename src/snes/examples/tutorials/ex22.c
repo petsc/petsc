@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.2 2000/12/05 22:57:15 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.3 2000/12/08 17:28:28 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -37,7 +37,6 @@ static char help[] = "Solves PDE optimization problem\n\n";
 */
 
 typedef struct {
-  DA      da;
   int     nredundant;
   VecPack packer;
   Viewer  u_lambda_viewer;
@@ -56,6 +55,7 @@ int main(int argc,char **argv)
   Vec     U,FU;
   SNES    snes;
   UserCtx user;
+  DA      da;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
@@ -64,8 +64,8 @@ int main(int argc,char **argv)
   ierr = VecPackCreate(PETSC_COMM_WORLD,&user.packer);CHKERRQ(ierr);
   user.nredundant = 1;
   ierr = VecPackAddArray(user.packer,user.nredundant);CHKERRQ(ierr);
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,2,1,PETSC_NULL,&user.da);CHKERRQ(ierr);
-  ierr = VecPackAddDA(user.packer,user.da);CHKERRQ(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = VecPackAddDA(user.packer,da);CHKERRQ(ierr);
   ierr = VecPackCreateGlobalVector(user.packer,&U);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&FU);CHKERRQ(ierr);
 
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,U,&its);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
 
-  ierr = DADestroy(user.da);CHKERRQ(ierr);
+  ierr = DADestroy(da);CHKERRQ(ierr);
   ierr = VecPackDestroy(user.packer);CHKERRQ(ierr);
   ierr = VecDestroy(U);CHKERRQ(ierr);
   ierr = VecDestroy(FU);CHKERRQ(ierr);
@@ -95,23 +95,28 @@ int main(int argc,char **argv)
 /*
       Evaluates FU = Gradiant(L(w,u,lambda))
 
+     This local function acts on the ghosted version of U (accessed via VecPackGetLocalVectors() and
+   VecPackScatter()) BUT the global, nonghosted version of FU (via VecPackAccess()).
+
 */
 int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
   UserCtx *user = (UserCtx*)dummy;
-  int     ierr,xs,xm,i,N;
+  int     ierr,xs,xm,i,N,nredundant;
   Scalar  **u_lambda,*w,*fw,**fu_lambda,d;
   Vec     vu_lambda,vfu_lambda;
+  DA      da;
 
   PetscFunctionBegin;
+  ierr = VecPackGetEntries(user->packer,&nredundant,&da);CHKERRQ(ierr);
   ierr = VecPackGetLocalVectors(user->packer,&w,&vu_lambda);CHKERRQ(ierr);
-  ierr = VecPackGetLocalVectors(user->packer,&fw,&vfu_lambda);CHKERRQ(ierr);
   ierr = VecPackScatter(user->packer,U,w,vu_lambda);CHKERRQ(ierr);
+  ierr = VecPackAccess(user->packer,FU,&fw,&vfu_lambda);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(user->da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetInfo(user->da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da,vu_lambda,(void**)&u_lambda);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da,vfu_lambda,(void**)&fu_lambda);CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vu_lambda,(void**)&u_lambda);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vfu_lambda,(void**)&fu_lambda);CHKERRQ(ierr);
   d    = (N-1.0)*(N-1.0);
 
 #define u(i)        u_lambda[i][0]
@@ -138,11 +143,9 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     else               flambda(i)   = d*(u(i+1) - 2.0*u(i) + u(i-1)) - 2.0;
   } 
 
-  ierr = DAVecRestoreArray(user->da,vu_lambda,(void**)&u_lambda);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(user->da,vfu_lambda,(void**)&fu_lambda);CHKERRQ(ierr);
-  ierr = VecPackGather(user->packer,FU,fw,vfu_lambda);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vu_lambda,(void**)&u_lambda);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vfu_lambda,(void**)&fu_lambda);CHKERRQ(ierr);
   ierr = VecPackRestoreLocalVectors(user->packer,&w,&vu_lambda);CHKERRQ(ierr);
-  ierr = VecPackRestoreLocalVectors(user->packer,&fw,&vfu_lambda);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
