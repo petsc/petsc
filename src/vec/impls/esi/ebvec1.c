@@ -520,7 +520,7 @@ extern PetscFList CCAList;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ESICreateIndexSpace"
-/*@
+/*@C
     ESICreateIndexSpace - Creates an esi::IndexSpace using the -is_esi_type type 
     
 @*/
@@ -553,7 +553,7 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecESISetType"
-/*@
+/*@C
     VecESISetType - Given a PETSc vector of type ESI loads the ESI constructor
           by name and wraps the ESI vector to look like a PETSc vector.
 @*/

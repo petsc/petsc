@@ -14,7 +14,7 @@ OBJSC    = eindexspace.o evector.o
 SOURCEH  = ../../../include/esi/petsc/indexspace.h ../../../include/esi/petsc/vector.h
 LIBBASE  = libpetscvec
 MANSEC   = 
-LOCDIR   = src/vec/esi
+LOCDIR   = src/vec/esi/
 
 
 include ${PETSC_DIR}/bmake/common/base
