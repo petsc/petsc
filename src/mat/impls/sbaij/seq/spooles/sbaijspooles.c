@@ -126,6 +126,28 @@ int MatConvert_SeqSBAIJ_Spooles(Mat A,MatType type,Mat *newmat) {
 }
 EXTERN_C_END
 
+/*MC
+  MATSEQSBAIJSPOOLES - a matrix type providing direct solvers (Cholesky) for sequential symmetric
+  matrices via the external package Spooles.
+
+  If Spooles is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes Spooles solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSEQSBAIJSPOOLES).
+  This matrix type is only supported for double precision real.
+
+  This matrix inherits from MATSEQSBAIJ.  As a result, MatSeqSBAIJSetPreallocation is 
+  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
+  the MATSEQSBAIJ type without data copy.
+
+  Options Database Keys:
+. -mat_type seqsbaijspooles - sets the matrix type to seqsbaijspooles during calls to MatSetFromOptions()
+
+   Level: beginner
+
+.seealso: MATMPISBAIJSPOOLES, MATSEQAIJSPOOLES, MATMPIAIJSPOOLES, PCCHOLESKY
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqSBAIJ_Spooles"

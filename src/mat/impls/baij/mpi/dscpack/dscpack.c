@@ -642,15 +642,6 @@ int MatView_MPIBAIJ_DSCPACK(Mat A,PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseDSCPACK_MPIBAIJ"
-int MatUseDSCPACK_MPIBAIJ(Mat A)
-{
-  PetscFunctionBegin;
-  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK;
-  PetscFunctionReturn(0);
-}
-
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Base_DSCPACK"
@@ -700,6 +691,37 @@ int MatConvert_Base_DSCPACK(Mat A,MatType type,Mat *newmat) {
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+/*MC
+  MATDSCPACK - a matrix type providing direct solvers (Cholesky) for sequential 
+  or distributed matrices via the external package DSCPACK.
+
+  If DSCPACK is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes DSCPACK solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATDSCPACK).
+  This matrix type is only supported for double precision real.
+
+  This matrix inherits from MATSEQBAIJ if constructed with a single process communicator,
+  and from MATMPIBAIJ otherwise.  As a result, for sequential matrices, MatSeqBAIJSetPreallocation is 
+  supported, and similarly MatMPIBAIJSetPreallocation is supported for distributed matrices.  It is 
+  recommended that you call both of the above preallocation routines for simplicity.  Also,
+  MatConvert can be called to perform inplace conversion to and from MATSEQBAIJ or MATMPIBAIJ
+  for sequential or distributed matrices respectively.
+
+  Options Database Keys:
++ -mat_type dscpack - sets the matrix type to dscpack during a call to MatSetFromOptions()
+. -mat_dscpack_order <1,2,3> - DSCPACK ordering, 1:ND, 2:Hybrid with Minimum Degree, 3:Hybrid with Minimum Deficiency
+. -mat_dscpack_scheme <1,2> - factorization scheme, 1:standard factorization,  2: factorization with selective inversion
+. -mat_dscpack_factor <LLT,LDLT> - the type of factorization to be performed.
+. -mat_dscpack_MaxMemAllowed <n> - the maximum memory to be used during factorization
+. -mat_dscpack_stats <0,1> - display stats of the factorization and solves during MatDestroy(), 0: no display,  1: display
+. -mat_dscpack_LBLAS <LBLAS1,LBLAS2,LBLAS3> - BLAS level used in the local phase
+- -mat_dscpack_DBLAS <DBLAS1,DBLAS2> - BLAS level used in the distributed phase
+
+   Level: beginner
+
+.seealso: PCCHOLESKY
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

@@ -105,6 +105,29 @@ int MatConvert_MPISBAIJ_Spooles(Mat A,MatType type,Mat *newmat) {
 }
 EXTERN_C_END
 
+/*MC
+  MATMPISBAIJSPOOLES - a matrix type providing direct solvers (Cholesky) for distributed symmetric
+  matrices via the external package Spooles.
+
+  If Spooles is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes Spooles solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATMPISBAIJSPOOLES).
+  This matrix type is only supported for double precision real.
+
+  This matrix inherits from MATMPISBAIJ.  As a result, MatMPISBAIJSetPreallocation is 
+  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
+  the MATMPISBAIJ type without data copy.
+
+  Options Database Keys:
+. -mat_type mpisbaijspooles - sets the matrix type to mpisbaijspooles during a call to MatSetFromOptions()
+
+   Level: beginner
+
+.seealso: MATSEQSBAIJSPOOLES, MATSEQAIJSPOOLES, MATMPIAIJSPOOLES, PCCHOLESKY
+M*/
+
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPISBAIJ_Spooles"
