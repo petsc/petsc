@@ -1589,7 +1589,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   if (perm_identity){
     B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
     B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-    ierr = PetscObjectComposeFunction((PetscObject) B,"MatCholeskyFactorNumeric_NaturalOrdering","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)B,"MatCholeskyFactorNumeric_SeqAIJ_NaturalOrdering","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr);
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_NaturalOrdering;
   } else {
     (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
@@ -1714,12 +1714,12 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
   } 
 
   if (ai[mbs] != 0) {
-    PetscReal af = ((PetscReal)ui[mbs])/((PetscReal)ai[mbs]);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,fill,af);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_cholesky_fill %g or use \n",af);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCCholeskySetFill(pc,%g) for best performance.\n",af);
+    PetscReal af = ((PetscReal)(2*ui[mbs]-mbs))/((PetscReal)ai[mbs]);
+    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,fill,af);
+    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqAIJ:Run with -pc_cholesky_fill %g or use \n",af);
+    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqAIJ:PCCholeskySetFill(pc,%g) for best performance.\n",af);
   } else {
-     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Empty matrix.\n");
+     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqAIJ:Empty matrix.\n");
   }
 
   ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
