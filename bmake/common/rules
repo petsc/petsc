@@ -1,6 +1,6 @@
 
 
-LDIR        = $(PETSCLIB)/lib/lib$(BOPT)/$(PARCH)
+LDIR        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 LIBNAME     = $(LDIR)/$(LIBBASE).a
 SOURCE      = $(SOURCEC) $(SOURCEF)
 OBJS        = $(OBJSC) $(OBJSF)
@@ -18,36 +18,36 @@ SLES_LIB    = -L$(LDIR) -lpetscsles -lpetscksp -lpetscmat \
                 $(MPI_LIB) $(SYS_LIB) $(FC_LIB) -lm
 
 include $(IPETSCDIR)/bmake/common.$(COMPLEX) 
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH).site
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH).$(BOPT)
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH).$(COMPLEX)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(BOPT)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(COMPLEX)
 
 # next line cause trouble with gnumake when OBJS is empty
 #$(LIBNAME)($(OBJS)): $(LINCLUDE)
 
 # 
-# Checks that PETSCLIB variable is set
+# Checks that PETSC_DIR variable is set
 #
-chkpetsclib:
-	@-if [ Holder = Holder$(PETSCLIB) ] ; then \
-          echo "You must set the variable PETSCLIB to the petsc directory.1";\
-          elif [ ! -d $(PETSCLIB)/ ] ; then \
-          echo "You must set the variable PETSCLIB to the petsc directory.2";\
+chkpetsc_dir:
+	@-if [ Holder = Holder$(PETSC_DIR) ] ; then \
+          echo "You must set the variable PETSC_DIR to the petsc directory.1";\
+          elif [ ! -d $(PETSC_DIR)/ ] ; then \
+          echo "You must set the variable PETSC_DIR to the petsc directory.2";\
           fi
 
 examples: 
 	@-if [ "$(EXAMPLES)" != "" ] ; then \
           (for ex in $(EXAMPLES) foo ; do \
-          $(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) $$ex; done;) fi
+          $(OMAKE) -f makefile PARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex; done;) fi
 
 foo:
 
 lib: $(SOURCE)
 	@-if [ "$(SOURCEC)" != "" ] ; then \
-           $(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) \
+           $(OMAKE) -f makefile PARCH=$(PETSC_ARCH) BOPT=$(BOPT) \
                                COMPLEX=$(COMPLEX) libc; fi
 	@-if [ "$(SOURCEF)" != "" ] ; then \
-                $(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) libf; fi
+                $(OMAKE) -f makefile PARCH=$(PETSC_ARCH) BOPT=$(BOPT) libf; fi
 	@-if [ "$(OBJS)" != " " ] ; then \
         	$(RANLIB)  $(LIBNAME); \
 	        $(RM) -f $(OBJS); \
@@ -81,7 +81,7 @@ co:
 #  true is to prevent make error message from empty grep
 lint:
 	@-if [ "$(SOURCEC)" != "" ] ; then \
-           lint -cvhu -DLINT -DPARCH_$(PARCH) $(CFLAGS) $(SOURCEC)\
+           lint -cvhu -DLINT -DPARCH_$(PETSC_ARCH) $(CFLAGS) $(SOURCEC)\
                 | grep -v "never defined"\
                 | grep -v "pointer alignment problem" | grep -v\
                 "function prototype not in scope"; true ;\
@@ -103,22 +103,23 @@ C2f77lib:
 manpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	doctext -jumpfile $(IPETSCDIR)/docs/routine.list \
-                -mpath $(PETSCLIB)/docs/man/man$(MANSEC) -ext $(MANSEC)  \
-                -keyword $(PETSCLIB)/Keywords $(SOURCEC) $(SOURCEH); \
-                chmod g+w $(PETSCLIB)/docs/man/man$(MANSEC)/*; fi 
+                -mpath $(PETSC_DIR)/docs/man/man$(MANSEC) -ext $(MANSEC)  \
+                -keyword $(PETSC_DIR)/Keywords $(SOURCEC) $(SOURCEH); \
+                chmod g+w $(PETSC_DIR)/docs/man/man$(MANSEC)/*; fi 
 
 latexpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	doc2lt  \
           $(SOURCEC) $(SOURCEH) >> \
-                    $(PETSCLIB)/docs/tex/rsum/rsum$(MANSEC).tex ; fi 
+                    $(PETSC_DIR)/docs/tex/rsum/rsum$(MANSEC).tex ; fi 
 
 wwwpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	doctext -html -index $(PETSCLIB)/docs/www/www.cit \
-                -mpath $(PETSCLIB)/docs/www/man$(MANSEC) -ext $(MANSEC)\
+	doctext -html -index $(PETSC_DIR)/docs/www/www.cit \
+                -mpath $(PETSC_DIR)/docs/www/man$(MANSEC) -ext $(MANSEC)\
                 -indexdir www/man$(MANSEC)  \
-                 $(SOURCEC) $(SOURCEH); fi 
+                 $(SOURCEC) $(SOURCEH); \
+                chmod g+w $(PETSC_DIR)/docs/www/man$(MANSEC)/*; fi 
 
 clean:
 	@-$(RM) -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES) $(TESTS) \
@@ -132,7 +133,7 @@ tree: $(ACTION)
         for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
         (cd $$dir ; echo $(ACTION) in: `pwd`  ; \
         $(OMAKE) -f makefile tree ACTION=$(ACTION) BOPT=$(BOPT) \
-        PARCH=$(PARCH) COMPLEX=$(COMPLEX) ) ;fi; \
+        PARCH=$(PETSC_ARCH) COMPLEX=$(COMPLEX) ) ;fi; \
         done ; fi
 
 

@@ -21,8 +21,7 @@ petsc/bmake/freebsd/RCS
 petsc/bmake/rs6000/RCS
 petsc/bmake/sun4/RCS
 petsc/docs/man/RCS
-petsc/docs/www
-petsc/docs
+petsc/docs/www/RCS
 petsc/src/snes/RCS
 petsc/src/snes/impls/RCS
 petsc/src/snes/src/RCS
