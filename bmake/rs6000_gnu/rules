@@ -1,4 +1,4 @@
-# $Id: base,v 1.29 1998/12/04 23:22:05 bsmith Exp balay $ 
+# $Id: base,v 1.30 1998/12/04 23:46:32 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -10,9 +10,9 @@ SHELL            = /bin/sh
 # ######################### C and Fortran compiler ########################
 #
 C_CC             = /usr/local/bin/gcc
-C_FC             = /home/alice/egcs/rs6000/bin/g77
+C_FC             = /home/alice/software/egcs/rs6000/bin/g77
 C_CLINKER        = /usr/local/bin/gcc ${COPTFLAGS} -Wl,-bbigtoc 
-C_FLINKER        = /home/alice/egcs/rs6000/bin/g77 ${FOPTFLAGS} -Wl,-bbigtoc 
+C_FLINKER        = /home/alice/software/egcs/rs6000/bin/g77 ${FOPTFLAGS} -Wl,-bbigtoc 
 C_CCV            = /usr/local/bin/gcc -V
 C_SYS_LIB        = -lg2c -lisode
 # ---------------------------- BOPT=g options ----------------------------
@@ -24,7 +24,7 @@ O_FOPTFLAGS      = -O
 # ########################## C++ compiler ##################################
 #
 CXX_CC           = g++
-CXX_FC           = /home/alice/egcs/rs6000/bin/g77
+CXX_FC           = /home/alice/software/egcs/rs6000/bin/g77
 CXX_CLINKER      = g++ ${COPTFLAGS}
 CXX_FLINKER      = g++ ${COPTFLAGS}
 CXX_CCV          = g++ -V
@@ -71,28 +71,5 @@ libf:
 	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
 
 libmember:    ${LIBNAME}(${LIBMEMBER})
-#########
-
-# This F.f rule ensures that the old *.f files are removed.
-#
-.F.f:
-	-${RM} $*.f __$*.c
-	-cp $*.F __$*.c
-	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
-	-${RM} __$*.c
-
-.F.o:
-	-${RM} $*.f __$*.c
-	-cp $*.F __$*.c
-	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} $*.f
-	-${RM} $*.f __$*.c
-
-.F.a:
-	-${RM} $*.f
-	-${CC} ${FCPPFLAGS} -E $< | grep -v '^ *#' > $*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} $*.f
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} $*.o	$*.f
 
 shared:
