@@ -420,7 +420,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
     nsz  = ns[i]; 
     n    = ii[1] - ii[0];
     ii  += nsz;
-    sz   = n;                   /*No of non zeros in this row */
+    sz   = n;                   /* No of non zeros in this row */
                                 /* Switch on the size of Node */
     switch (nsz){               /* Each loop in 'case' is unrolled */
     case 1 :
@@ -610,7 +610,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
     nsz  = ns[i]; 
     n    = ii[1] - ii[0];
     ii  += nsz;
-    sz   = n;                   /*No of non zeros in this row */
+    sz   = n;                   /* No of non zeros in this row */
                                 /* Switch on the size of Node */
     switch (nsz){               /* Each loop in 'case' is unrolled */
     case 1 :
@@ -1676,7 +1676,7 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
   /* Form the inode structure for the columns of permuted matrix using inv perm*/
   for (i=0,tns[0]=0; i<nslim_col; ++i) tns[i+1] = tns[i] + ns_col[i];
 
- /*Construct permutations for columns*/
+ /* Construct permutations for columns */
   for (i=0,col=0; i<nslim_col; ++i){
     indx      = cidx[i];
     start_val = tns[indx];

@@ -568,7 +568,7 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
     ierr = MPI_Allgather(conn+base,size,MPI_INT,conn,size,MPI_INT,mat->comm);CHKERRQ(ierr);
 
     base = size;
-    /*PetscPrintf(mat->comm,"Coloring: 0->0");*/
+    /* PetscPrintf(mat->comm,"Coloring: 0->0"); */
     for (p=1; p<size; p++) {
       int q,hi=-1,nc=0;
       ierr = PetscMemzero(colr,size*sizeof(int));CHKERRQ(ierr);

@@ -128,7 +128,7 @@ static int PCDestroy_ESI(PC pc)
 #define __FUNCT__ "PCSetFromOptions_ESI"
 static int PCSetFromOptions_ESI(PC pc)
 {
-  /*PC_ESI  *jac = (PC_ESI*)pc->data;*/
+  /* PC_ESI  *jac = (PC_ESI*)pc->data; */
   int     ierr;
 
   PetscFunctionBegin;
