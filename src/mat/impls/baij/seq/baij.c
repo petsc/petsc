@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.101 1997/05/03 22:48:36 curfman Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.102 1997/05/23 18:38:09 balay Exp balay $";
 #endif
 
 /*
@@ -474,7 +474,7 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetValues_SeqBAIJ"
+#define __FUNC__ "MatSetValuesBlocked_SeqBAIJ"
 int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
