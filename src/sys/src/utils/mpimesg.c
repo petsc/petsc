@@ -185,14 +185,13 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Petsc
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((nrecvs+nsends+1)*sizeof(MPI_Request),&r_waits);CHKERRQ(ierr);
+  /* cannot use PetscMalloc5() because r_waits and s_waits must be contiquous for the call to MPI_Waitall() */
+  ierr = PetscMalloc4(nrecvs+nsends,MPI_Request,&r_waits,2*nrecvs,PetscMPIInt,&buf_r,2*nsends,PetscMPIInt,&buf_s,nrecvs+nsends,MPI_Status,&w_status);CHKERRQ(ierr);
   s_waits = r_waits + nrecvs;
 
   /* Post the Irecv to get the message length-info */
   ierr = PetscMalloc((nrecvs+1)*sizeof(PetscMPIInt),olengths1);CHKERRQ(ierr);
   ierr = PetscMalloc((nrecvs+1)*sizeof(PetscMPIInt),olengths2);CHKERRQ(ierr);
-  ierr = PetscMalloc((2*(nsends+nrecvs)+1)*sizeof(PetscMPIInt),&buf_r);CHKERRQ(ierr);
-  buf_s = buf_r + 2*nrecvs;
   for (i=0; i<nrecvs; i++) {
     buf_j = buf_r + (2*i);
     ierr = MPI_Irecv(buf_j,2,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits+i);CHKERRQ(ierr);
@@ -210,7 +209,6 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Petsc
   }
   
   /* Post waits on sends and receivs */
-  ierr = PetscMalloc((nrecvs+nsends+1)*sizeof(MPI_Status),&w_status);CHKERRQ(ierr);
   ierr = MPI_Waitall(nrecvs+nsends,r_waits,w_status);CHKERRQ(ierr);
 
   
@@ -223,10 +221,7 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Petsc
     (*olengths2)[i] = buf_j[1];
   }
 
-  ierr = PetscFree(r_waits);CHKERRQ(ierr);
-  ierr = PetscFree(w_status);CHKERRQ(ierr);
-  ierr = PetscFree(buf_r);CHKERRQ(ierr);
-  
+  ierr = PetscFree4(r_waits,buf_r,buf_s,w_status);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -249,7 +244,7 @@ PetscErrorCode PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrecv
   /* compute memory required for recv buffers */
   for (i=0; i<nrecvs; i++) len += olengths[i];  /* each message length */
   len *= sizeof(PetscInt);
-  len += (nrecvs+1)*sizeof(PetscMPIInt*); /* Array of pointers for each message */
+  len += (nrecvs+1)*sizeof(PetscInt*); /* Array of pointers for each message */
 
   /* allocate memory for recv buffers */
   ierr    = PetscMalloc(len,&rbuf_t);CHKERRQ(ierr);

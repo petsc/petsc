@@ -265,7 +265,7 @@ PetscErrorCode ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],IS 
   PetscLogObjectCreate(Nindex);
   ierr           = PetscNew(IS_General,&sub);CHKERRQ(ierr);
   PetscLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(PetscInt)+sizeof(struct _p_IS));
-  ierr           = PetscMalloc((n+1)*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
+  ierr           = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
   sub->n         = n;
 
   ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);

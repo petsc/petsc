@@ -13,9 +13,6 @@
 #define ScatterMode integer 
 #define VecOption integer
 #define VecType character*(80)
-#define PipelineDirection integer
-#define PipelineType integer
-#define VecPipeline integer
 #define VecOperation integer
 
 #define VECSEQ 'seq'
@@ -53,20 +50,6 @@
       parameter (SCATTER_FORWARD=0,SCATTER_REVERSE=1)
       parameter (SCATTER_FORWARD_LOCAL=2,SCATTER_REVERSE_LOCAL=3)
       parameter (SCATTER_LOCAL=2)
-!
-!  PipelineDirection
-!
-      integer PIPELINE_DOWN,PIPELINE_UP
-
-      parameter (PIPELINE_DOWN=0,PIPELINE_UP=1)
-!
-!  PipelineType
-!
-      integer PIPELINE_NONE,PIPELINE_SEQUENTIAL,PIPELINE_REDBLACK
-      integer PIPELINE_MULTICOLOR
-
-      parameter (PIPELINE_NONE=1,PIPELINE_SEQUENTIAL=2)
-      parameter (PIPELINE_REDBLACK=3,PIPELINE_MULTICOLOR=4)
 !
 !  VecOption
 !

@@ -114,19 +114,19 @@ PetscErrorCode ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
   if (nn)  *nn  = iscoloring->n;
   if (isis) {
     if (!iscoloring->is) {
-      PetscInt             *mcolors,**ii,nc = iscoloring->n,i,base, n = iscoloring->N;
+      PetscInt        *mcolors,**ii,nc = iscoloring->n,i,base, n = iscoloring->N;
       ISColoringValue *colors = iscoloring->colors;
       IS              *is;
       
       /* generate the lists of nodes for each color */
-      ierr = PetscMalloc((nc+1)*sizeof(PetscInt),&mcolors);CHKERRQ(ierr);
+      ierr = PetscMalloc(nc*sizeof(PetscInt),&mcolors);CHKERRQ(ierr);
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
       for (i=0; i<n; i++) {
 	mcolors[colors[i]]++;
       }
 
-      ierr = PetscMalloc((nc+1)*sizeof(PetscInt*),&ii);CHKERRQ(ierr);
-      ierr = PetscMalloc((n+1)*sizeof(PetscInt),&ii[0]);CHKERRQ(ierr);
+      ierr = PetscMalloc(nc*sizeof(PetscInt*),&ii);CHKERRQ(ierr);
+      ierr = PetscMalloc(n*sizeof(PetscInt),&ii[0]);CHKERRQ(ierr);
       for (i=1; i<nc; i++) {
 	ii[i] = ii[i-1] + mcolors[i-1];
       }
@@ -137,7 +137,7 @@ PetscErrorCode ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
       for (i=0; i<n; i++) {
 	ii[colors[i]][mcolors[colors[i]]++] = i + base;
       }
-      ierr = PetscMalloc((nc+1)*sizeof(IS),&is);CHKERRQ(ierr);
+      ierr = PetscMalloc(nc*sizeof(IS),&is);CHKERRQ(ierr);
       for (i=0; i<nc; i++) {
 	ierr = ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],is+i);CHKERRQ(ierr);
       }
@@ -284,7 +284,7 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm,PetscInt n,const ISColoringValue c
 PetscErrorCode ISPartitioningToNumbering(IS part,IS *is)
 {
   MPI_Comm       comm;
-  PetscInt            i,*indices,np,npt,n,*starts,*sums,*lsizes,*newi;
+  PetscInt       i,*indices,np,npt,n,*starts,*sums,*lsizes,*newi;
   PetscErrorCode ierr;
   PetscMPIInt    size;
 
@@ -307,9 +307,7 @@ PetscErrorCode ISPartitioningToNumbering(IS part,IS *is)
         sums - total number of "previous" nodes for any particular partition
         starts - global number of first element in each partition on this processor
   */
-  ierr   = PetscMalloc(3*np*sizeof(PetscInt),&lsizes);CHKERRQ(ierr);
-  starts = lsizes + np;
-  sums   = starts + np;
+  ierr   = PetscMalloc3(np,PetscInt,&lsizes,np,PetscInt,&starts,np,PetscInt,&sums);CHKERRQ(ierr);
   ierr   = PetscMemzero(lsizes,np*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     lsizes[indices[i]]++;
@@ -327,11 +325,11 @@ PetscErrorCode ISPartitioningToNumbering(IS part,IS *is)
   /* 
       For each local index give it the new global number
   */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&newi);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&newi);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     newi[i] = starts[indices[i]]++;
   }
-  ierr = PetscFree(lsizes);CHKERRQ(ierr);
+  ierr = PetscFree3(lsizes,starts,sums);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,n,newi,is);CHKERRQ(ierr);
@@ -396,14 +394,13 @@ PetscErrorCode ISPartitioningCount(IS part,PetscInt count[])
         starts - global number of first element in each partition on this processor
   */
   ierr = PetscMalloc(np*sizeof(PetscInt),&lsizes);CHKERRQ(ierr);
-  ierr   = PetscMemzero(lsizes,np*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(lsizes,np*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     lsizes[indices[i]]++;
   }  
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
   ierr = MPI_Allreduce(lsizes,count,np,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   ierr = PetscFree(lsizes);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -452,8 +449,7 @@ PetscErrorCode ISAllGather(IS is,IS *isout)
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*size*sizeof(PetscInt),&sizes);CHKERRQ(ierr);
-  offsets = sizes + size;
+  ierr = PetscMalloc2(size,PetscInt,&sizes,size,PetscInt,&offsets);CHKERRQ(ierr);
   
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = MPI_Allgather(&n,1,MPIU_INT,sizes,1,MPIU_INT,comm);CHKERRQ(ierr);
@@ -461,15 +457,15 @@ PetscErrorCode ISAllGather(IS is,IS *isout)
   for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
   N = offsets[size-1] + sizes[size-1];
 
-  ierr = PetscMalloc((N+1)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
   ierr = MPI_Allgatherv(lindices,(PetscMPIInt)n,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
   ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
+  ierr = PetscFree(sizes);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,isout);CHKERRQ(ierr);
-  ierr = PetscFree(indices);CHKERRQ(ierr);
+  ierr = PetscFree2(indices,offsets);CHKERRQ(ierr);
 
-  ierr = PetscFree(sizes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -510,16 +506,15 @@ PetscErrorCode ISAllGatherIndices(MPI_Comm comm,PetscInt n,const PetscInt lindic
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*size*sizeof(PetscInt),&sizes);CHKERRQ(ierr);
-  offsets = sizes + size;
+  ierr = PetscMalloc2(size,PetscInt,&sizes,size,PetscInt,&offsets);CHKERRQ(ierr);
   
   ierr = MPI_Allgather(&n,1,MPIU_INT,sizes,1,MPIU_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;
   for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
   N    = offsets[size-1] + sizes[size-1];
-  ierr = PetscFree(sizes);CHKERRQ(ierr);
+  ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((N+1)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   ierr = MPI_Allgatherv((void*)lindices,(PetscMPIInt)n,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
 
   *outindices = indices;
@@ -567,14 +562,13 @@ PetscErrorCode ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lindi
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*size*sizeof(PetscInt),&sizes);CHKERRQ(ierr);
-  offsets = sizes + size;
+  ierr = PetscMalloc2(size,PetscInt,&sizes,size,PetscInt,&offsets);CHKERRQ(ierr);
   
   ierr = MPI_Allgather(&n,1,MPIU_INT,sizes,1,MPIU_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;
   for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
   N    = offsets[size-1] + sizes[size-1];
-  ierr = PetscFree(sizes);CHKERRQ(ierr);
+  ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
 
   ierr = PetscMalloc((N+1)*sizeof(ISColoringValue),&indices);CHKERRQ(ierr);
   ierr = MPI_Allgatherv(lindices,(PetscMPIInt)n,MPIU_COLORING_VALUE,indices,sizes,offsets,MPIU_COLORING_VALUE,comm);CHKERRQ(ierr); 

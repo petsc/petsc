@@ -146,7 +146,7 @@ PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscIn
   PetscFunctionBegin;
   PetscValidIntPointer(indices,3);
   PetscValidPointer(mapping,4);
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&in);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&in);CHKERRQ(ierr);
   ierr = PetscMemcpy(in,indices,n*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateNC(cm,n,in,mapping);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -321,7 +321,7 @@ PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS i
   ierr   = ISGetIndices(is,&idxin);CHKERRQ(ierr);
   idxmap = mapping->indices;
   
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&idxout);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&idxout);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (idxin[i] >= Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Local index %d too large %d (max) at %d",idxin[i],Nmax-1,i);
     idxout[i] = idxmap[idxin[i]];
@@ -570,11 +570,11 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pets
   rstart = scale*rank;
 
   /* determine ownership ranges of global indices */
-  ierr = PetscMalloc((2*size+1)*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
   ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* determine owners of each local node  */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&owner);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&owner);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     proc             = lindices[i]/scale; /* processor that globally owns this index */
     nprocs[2*proc+1] = 1;                 /* processor globally owns at least one of ours */

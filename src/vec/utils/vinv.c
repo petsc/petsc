@@ -655,8 +655,8 @@ PetscErrorCode VecStrideMinAll(Vec v,PetscInt *idex,PetscReal *nrm)
 PetscErrorCode VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt          i,n,bs,j,k,*bss,nv,jj,nvc;
-  PetscScalar  *x,**y;
+  PetscInt       i,n,bs,j,k,*bss,nv,jj,nvc;
+  PetscScalar    *x,**y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -665,8 +665,7 @@ PetscErrorCode VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
 
-  ierr = PetscMalloc(bs*sizeof(PetscReal*),&y);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs*sizeof(PetscInt),&bss);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs,PetscReal*,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
   nv   = 0;
   nvc  = 0;
   for (i=0; i<bs; i++) {
@@ -719,8 +718,7 @@ PetscErrorCode VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   for (i=0; i<nv; i++) {
     ierr = VecRestoreArray(s[i],&y[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(y);CHKERRQ(ierr);
-  ierr = PetscFree(bss);CHKERRQ(ierr);
+  ierr = PetscFree2(y,bss);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -758,8 +756,8 @@ PetscErrorCode VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 PetscErrorCode VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt          i,n,bs,j,jj,k,*bss,nv,nvc;
-  PetscScalar  *x,**y;
+  PetscInt        i,n,bs,j,jj,k,*bss,nv,nvc;
+  PetscScalar     *x,**y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -768,8 +766,7 @@ PetscErrorCode VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
 
-  ierr = PetscMalloc(bs*sizeof(PetscReal*),&y);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs*sizeof(PetscInt*),&bss);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs,PetscScalar**,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
   nv  = 0;
   nvc = 0;
   for (i=0; i<bs; i++) {
@@ -822,8 +819,7 @@ PetscErrorCode VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
   for (i=0; i<nv; i++) {
     ierr = VecRestoreArray(s[i],&y[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(y);CHKERRQ(ierr);
-  ierr = PetscFree(bss);CHKERRQ(ierr);
+  ierr = PetscFree2(y,bss);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1180,7 +1176,7 @@ PetscErrorCode VecPermute(Vec x, IS row, PetscTruth inv)
   PetscFunctionBegin;
   ierr = ISGetIndices(row, &idx);CHKERRQ(ierr);
   ierr = VecGetArray(x, &array);CHKERRQ(ierr);
-  ierr = PetscMalloc((x->n+1) * sizeof(PetscScalar), &newArray);CHKERRQ(ierr);
+  ierr = PetscMalloc(x->n*sizeof(PetscScalar), &newArray);CHKERRQ(ierr);
 #ifdef PETSC_USE_BOPT_g
   for(i = 0; i < x->n; i++) {
     if ((idx[i] < 0) || (idx[i] >= x->n)) {

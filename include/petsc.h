@@ -286,11 +286,11 @@ M*/
 -  t2 - type of second memory elements
 
    Output Parameter:
-+  result1 - memory allocated in first chunk
--  result2 - memory allocated in second chunk
++  r1 - memory allocated in first chunk
+-  r2 - memory allocated in second chunk
 
    Synopsis:
-   PetscErrorCode PetscMalloc(size_t m1,type, t1,void **result1,size_t m2,type t2,void **result2)
+   PetscErrorCode PetscMalloc(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2)
 
    Level: beginner
 
@@ -301,10 +301,10 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_BOPT_g)
-#define PetscMalloc2(m1,t1,result1,m2,t2,result2) (PetscMalloc((m1)*sizeof(t1),result1) || PetscMalloc((m2)*sizeof(t2),result2))
+#if defined(PETSC_USE_BOPT_g)
+#define PetscMalloc2(m1,t1,r1,m2,t2,r2) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2))
 #else
-#define PetscMalloc2(m1,t1,result1,m2,t2,result2) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2),result1) || (*(result2) = (t2*)(*(result1)+m1),0))
+#define PetscMalloc2(m1,t1,r1,m2,t2,r2) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2),r1) || (*(r2) = (t2*)(*(r1)+m1),0))
 #endif
 
 /*MC
@@ -319,26 +319,63 @@ M*/
 -  t3 - type of third memory elements
 
    Output Parameter:
-+  result1 - memory allocated in first chunk
-.  result2 - memory allocated in second chunk
--  result3 - memory allocated in third chunk
++  r1 - memory allocated in first chunk
+.  r2 - memory allocated in second chunk
+-  r3 - memory allocated in third chunk
 
    Synopsis:
-   PetscErrorCode PetscMalloc(size_t m1,type, t1,void **result1,size_t m2,type t2,void **result2,size_t m3,type t3,void **result3)
+   PetscErrorCode PetscMalloc(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3)
 
    Level: beginner
 
    Notes: Memory of first chunk is always allocated at least double aligned
 
-.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(3)
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3()
 
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_BOPT_g)
-#define PetscMalloc3(m1,t1,result1,m2,t2,result2,m3,t3,result3,) (PetscMalloc((m1)*sizeof(t1),result1) || PetscMalloc((m2)*sizeof(t2),result2) || PetscMalloc((m3)*sizeof(t3),result3))
+#if defined(PETSC_USE_BOPT_g)
+#define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3))
 #else
-#define PetscMalloc3(m1,t1,result1,m2,t2,result2,m3,t3,result3) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3),result1) || (*(result2) = (t2*)(*(result1)+m1),*(result3) = (t3*)(*(result2)+m2),0))
+#define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),0))
+#endif
+
+/*MC
+   PetscMalloc4 - Allocates 4 chunks of  memory
+
+   Input Parameter:
++  m1 - number of elements to allocate in 1st chunk  (may be zero)
+.  t1 - type of first memory elements 
+.  m2 - number of elements to allocate in 2nd chunk  (may be zero)
+.  t2 - type of second memory elements
+.  m3 - number of elements to allocate in 3rd chunk  (may be zero)
+.  t3 - type of third memory elements
+.  m4 - number of elements to allocate in 4th chunk  (may be zero)
+-  t4 - type of fourth memory elements
+
+   Output Parameter:
++  r1 - memory allocated in first chunk
+.  r2 - memory allocated in second chunk
+.  r3 - memory allocated in third chunk
+-  r4 - memory allocated in fourth chunk
+
+   Synopsis:
+   PetscErrorCode PetscMalloc(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4)
+
+   Level: beginner
+
+   Notes: Memory of first chunk is always allocated at least double aligned
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3(), PetscFree4()
+
+  Concepts: memory allocation
+
+M*/
+#if defined(PETSC_USE_BOPT_g)
+#define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4))
+#else
+#define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),*(r4) = (t4*)(*(r3)+m3),0))
 #endif
 
 /*MC
@@ -402,8 +439,8 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_BOPT_g)
-#define PetscFree2(m1,m2)   (PetscFree(m1) || PetscFree(m2))
+#if defined(PETSC_USE_BOPT_g)
+#define PetscFree2(m1,m2)   (PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree2(m1,m2)   (PetscFree(m1))
 #endif
@@ -422,17 +459,45 @@ M*/
 
    Level: beginner
 
-   Notes: Memory must have been obtained with PetscMalloc2()
+   Notes: Memory must have been obtained with PetscMalloc3()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3()
 
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_BOPT_g)
-#define PetscFree3(m1,m2,m3)   (PetscFree(m1) || PetscFree(m2) || PetscFree(m3))
+#if defined(PETSC_USE_BOPT_g)
+#define PetscFree3(m1,m2,m3)   (PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree3(m1,m2,m3)   (PetscFree(m1))
+#endif
+
+/*MC
+   PetscFree4 - Frees 4 chunks of memory obtained with PetscMalloc4()
+
+   Input Parameter:
++   m1 - memory to free
+.   m2 - 2nd memory to free
+.   m3 - 3rd memory to free
+-   m4 - 4th memory to free
+
+
+   Synopsis:
+   PetscErrorCode PetscFree3(void *m1,void *m2,void *m3,void *m4)
+
+   Level: beginner
+
+   Notes: Memory must have been obtained with PetscMalloc4()
+
+.seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4()
+
+  Concepts: memory allocation
+
+M*/
+#if defined(PETSC_USE_BOPT_g)
+#define PetscFree4(m1,m2,m3,m4)   (PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
+#else
+#define PetscFree4(m1,m2,m3,m4)   (PetscFree(m1))
 #endif
 
 EXTERN PetscErrorCode  (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
