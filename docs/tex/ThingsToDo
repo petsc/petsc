@@ -7,6 +7,13 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  -  Vecscatter and DA are communication objects that manage the
+movement of data stored in Vec objects.
+ 
+  This is why I said yesterday I dislike DAGetDistributedVector()
+and DAGetLocalVector() and would like to change it to
+DAGenerateGlobalVector() and  DAGenerateLocalVector()
+
   - all XXXView() calls should either generate error or warning if viewer
     is not supported.
 
