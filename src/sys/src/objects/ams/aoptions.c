@@ -23,8 +23,8 @@
 typedef enum {OPTION_INT,OPTION_LOGICAL,OPTION_REAL,OPTION_LIST,OPTION_STRING,OPTION_REAL_ARRAY,OPTION_HEAD} OptionType;
 typedef struct _p_OptionsAMS* PetscOptionsAMS;
 struct _p_OptionsAMS {
-  char            *option;
-  char            *text;
+  const char      *option;
+  const char      *text;
   void            *data;
   void            *edata;
   int             arraylength;
@@ -51,7 +51,7 @@ int PetscOptionsPublishCount = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsBegin_Private"
-int PetscOptionsBegin_Private(MPI_Comm comm,char *prefix,char *title,char *mansec)
+int PetscOptionsBegin_Private(MPI_Comm comm,const char prefix[],const char title[],const char mansec[])
 {
   int        ierr;
 
@@ -174,7 +174,7 @@ int PetscOptionsEnd_Private(void)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCreate_Private"
-static int PetscOptionsCreate_Private(char *opt,char *text,char *man,PetscOptionsAMS *amsopt)
+static int PetscOptionsCreate_Private(const char opt[],const char text[],const char man[],PetscOptionsAMS *amsopt)
 {
   int             ierr;
   static int      mancount = 0;
@@ -242,7 +242,7 @@ static int PetscOptionsCreate_Private(char *opt,char *text,char *man,PetscOption
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsInt(char *opt,char *text,char *man,int defaultv,int *value,PetscTruth *set)
+int PetscOptionsInt(const char opt[],const char text[],const char man[],int defaultv,int *value,PetscTruth *set)
 {
   int             ierr;
 
@@ -297,7 +297,7 @@ int PetscOptionsInt(char *opt,char *text,char *man,int defaultv,int *value,Petsc
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsString(char *opt,char *text,char *man,char *defaultv,char *value,int len,PetscTruth *set)
+int PetscOptionsString(const char opt[],const char text[],const char man[],const char defaultv[],char value[],int len,PetscTruth *set)
 {
   int             ierr;
 
@@ -356,7 +356,7 @@ int PetscOptionsString(char *opt,char *text,char *man,char *defaultv,char *value
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsReal(char *opt,char *text,char *man,PetscReal defaultv,PetscReal *value,PetscTruth *set)
+int PetscOptionsReal(const char opt[],const char text[],const char man[],PetscReal defaultv,PetscReal *value,PetscTruth *set)
 {
   int             ierr;
 
@@ -411,7 +411,7 @@ int PetscOptionsReal(char *opt,char *text,char *man,PetscReal defaultv,PetscReal
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsScalar(char *opt,char *text,char *man,PetscScalar defaultv,PetscScalar *value,PetscTruth *set)
+int PetscOptionsScalar(const char opt[],const char text[],const char man[],PetscScalar defaultv,PetscScalar *value,PetscTruth *set)
 {
   int ierr;
 
@@ -457,7 +457,7 @@ int PetscOptionsScalar(char *opt,char *text,char *man,PetscScalar defaultv,Petsc
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsName(char *opt,char *text,char *man,PetscTruth *flg)
+int PetscOptionsName(const char opt[],const char text[],const char man[],PetscTruth *flg)
 {
   int             ierr;
 
@@ -518,7 +518,7 @@ int PetscOptionsName(char *opt,char *text,char *man,PetscTruth *flg)
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsList(char *opt,char *ltext,char *man,PetscFList list,char *defaultv,char *value,int len,PetscTruth *set)
+int PetscOptionsList(const char opt[],const char ltext[],const char man[],PetscFList list,const char defaultv[],char value[],int len,PetscTruth *set)
 {
   int        ierr;
 
@@ -585,7 +585,7 @@ int PetscOptionsList(char *opt,char *ltext,char *man,PetscFList list,char *defau
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char *defaultv,int *value,PetscTruth *set)
+int PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char *list[],int ntext,const char defaultv[],int *value,PetscTruth *set)
 {
   int        i,ierr,len = 0, alen;
   char       *svalue;
@@ -676,7 +676,7 @@ int PetscOptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsLogicalGroupBegin(char *opt,char *text,char *man,PetscTruth *flg)
+int PetscOptionsLogicalGroupBegin(const char opt[],const char text[],const char man[],PetscTruth *flg)
 {
   int             ierr;
 
@@ -733,7 +733,7 @@ int PetscOptionsLogicalGroupBegin(char *opt,char *text,char *man,PetscTruth *flg
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsLogicalGroup(char *opt,char *text,char *man,PetscTruth *flg)
+int PetscOptionsLogicalGroup(const char opt[],const char text[],const char man[],PetscTruth *flg)
 {
   int             ierr;
 
@@ -789,7 +789,7 @@ int PetscOptionsLogicalGroup(char *opt,char *text,char *man,PetscTruth *flg)
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsLogicalGroupEnd(char *opt,char *text,char *man,PetscTruth *flg)
+int PetscOptionsLogicalGroupEnd(const char opt[],const char text[],const char man[],PetscTruth *flg)
 {
   int             ierr;
 
@@ -844,7 +844,7 @@ int PetscOptionsLogicalGroupEnd(char *opt,char *text,char *man,PetscTruth *flg)
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTruth *flg,PetscTruth *set)
+int PetscOptionsLogical(const char opt[],const char text[],const char man[],PetscTruth deflt,PetscTruth *flg,PetscTruth *set)
 {
   int        ierr;
   PetscTruth iset;
@@ -911,7 +911,7 @@ int PetscOptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTru
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsRealArray(char *opt,char *text,char *man,PetscReal *value,int *n,PetscTruth *set)
+int PetscOptionsRealArray(const char opt[],const char text[],const char man[],PetscReal *value,int *n,PetscTruth *set)
 {
   int             ierr,i;
 
@@ -977,7 +977,7 @@ int PetscOptionsRealArray(char *opt,char *text,char *man,PetscReal *value,int *n
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList(), PetscOptionsRealArray()
 @*/
-int PetscOptionsIntArray(char *opt,char *text,char *man,int *value,int *n,PetscTruth *set)
+int PetscOptionsIntArray(const char opt[],const char text[],const char man[],int *value,int *n,PetscTruth *set)
 {
   int             ierr,i;
 
@@ -1046,7 +1046,7 @@ int PetscOptionsIntArray(char *opt,char *text,char *man,int *value,int *n,PetscT
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsStringArray(char *opt,char *text,char *man,char **value,int *nmax,PetscTruth *set)
+int PetscOptionsStringArray(const char opt[],const char text[],const char man[],char *value[],int *nmax,PetscTruth *set)
 {
   int             ierr;
 
@@ -1098,7 +1098,7 @@ int PetscOptionsStringArray(char *opt,char *text,char *man,char **value,int *nma
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsHead(const char *head)
+int PetscOptionsHead(const char head[])
 {
   int             ierr;
 

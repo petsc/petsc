@@ -246,9 +246,9 @@ M*/
 
 M*/
 #define PetscFree(a)         (*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__)
-EXTERN int  (*PetscTrMalloc)(size_t,int,char*,char*,char*,void**);
-EXTERN int  (*PetscTrFree)(void *,int,char*,char*,char*);
-EXTERN int  PetscSetMalloc(int (*)(size_t,int,char*,char*,char*,void**),int (*)(void *,int,char*,char*,char*));
+EXTERN int  (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
+EXTERN int  (*PetscTrFree)(void *,int,const char[],const char[],const char[]);
+EXTERN int  PetscSetMalloc(int (*)(size_t,int,const char[],const char[],const char[],void**),int (*)(void *,int,const char[],const char[],const char[]));
 EXTERN int  PetscClearMalloc(void);
 
 /*
@@ -321,16 +321,16 @@ EXTERN int   PetscStrcpy(char[],const char[]);
 EXTERN int   PetscStrcat(char[],const char[]);
 EXTERN int   PetscStrncat(char[],const char[],int);
 EXTERN int   PetscStrncpy(char[],const char[],int);
-EXTERN int   PetscStrchr(const char[],char,char **);
+EXTERN int   PetscStrchr(const char[],char,char *[]);
 EXTERN int   PetscStrtolower(char[]);
-EXTERN int   PetscStrrchr(const char[],char,char **);
-EXTERN int   PetscStrstr(const char[],const char[],char **);
-EXTERN int   PetscStrallocpy(const char[],char **);
-EXTERN int   PetscStrreplace(MPI_Comm,const char[],char*,int);
+EXTERN int   PetscStrrchr(const char[],char,char *[]);
+EXTERN int   PetscStrstr(const char[],const char[],char *[]);
+EXTERN int   PetscStrallocpy(const char[],char *[]);
+EXTERN int   PetscStrreplace(MPI_Comm,const char[],char[],int);
 #define      PetscStrfree(a) ((a) ? PetscFree(a) : 0) 
 typedef struct {char token;char *array;char *current;} PetscToken;
 EXTERN int   PetscTokenCreate(const char[],const char,PetscToken**);
-EXTERN int   PetscTokenFind(PetscToken*,char **);
+EXTERN int   PetscTokenFind(PetscToken*,char *[]);
 EXTERN int   PetscTokenDestroy(PetscToken*);
 
 /*
@@ -368,7 +368,7 @@ typedef struct _PetscFList *PetscFList;
 #include "petscviewer.h"
 #include "petscoptions.h"
 
-EXTERN int PetscShowMemoryUsage(PetscViewer,char*);
+EXTERN int PetscShowMemoryUsage(PetscViewer,const char[]);
 EXTERN int PetscGetTime(PetscLogDouble*);
 EXTERN int PetscGetCPUTime(PetscLogDouble*);
 EXTERN int PetscSleep(int);
@@ -447,7 +447,7 @@ EXTERN int PetscObjectComposeFunction(PetscObject,const char[],const char[],void
    Level: advanced
 
     Synopsis:
-    int PetscObjectComposeFunctionDynamic(PetscObject obj,char *name,char *fname,void *ptr)
+    int PetscObjectComposeFunctionDynamic(PetscObject obj,const char name[],const char fname[],void *ptr)
 
    Notes:
    PetscObjectComposeFunctionDynamic() can be used with any PETSc object (such as
@@ -512,7 +512,7 @@ EXTERN int PetscOListDuplicate(PetscOList,PetscOList *);
 EXTERN int PetscFListAdd(PetscFList*,const char[],const char[],void (*)(void));
 EXTERN int PetscFListDestroy(PetscFList*);
 EXTERN int PetscFListFind(MPI_Comm,PetscFList,const char[],void (**)(void));
-EXTERN int PetscFListPrintTypes(MPI_Comm,FILE*,const char[],const char[],char *,char *,PetscFList);
+EXTERN int PetscFListPrintTypes(MPI_Comm,FILE*,const char[],const char[],const char[],const char[],PetscFList);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define    PetscFListAddDynamic(a,b,p,c) PetscFListAdd(a,b,p,0)
 #else

@@ -366,7 +366,7 @@ static int PCSetFromOptions_ASM(PC pc)
   PC_ASM     *osm = (PC_ASM*)pc->data;
   int        blocks,ovl,ierr,indx;
   PetscTruth flg;
-  char       *type[] = {"basic","restrict","interpolate","none"};
+  const char *type[] = {"basic","restrict","interpolate","none"};
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Additive Schwarz options");CHKERRQ(ierr);

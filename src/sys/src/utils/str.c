@@ -70,7 +70,7 @@ int PetscStrlen(const char s[],int *len)
   Concepts: string copy
   
 @*/
-int PetscStrallocpy(const char s[],char **t)
+int PetscStrallocpy(const char s[],char *t[])
 {
   int ierr,len;
 
@@ -367,7 +367,7 @@ int PetscStrncmp(const char a[],const char b[],int n,PetscTruth *t)
    Level: intermediate
 
 @*/
-int PetscStrchr(const char a[],char b,char **c)
+int PetscStrchr(const char a[],char b,char *c[])
 {
   PetscFunctionBegin;
   *c = (char *)strchr(a,b);
@@ -392,7 +392,7 @@ int PetscStrchr(const char a[],char b,char **c)
    Level: intermediate
 
 @*/
-int PetscStrrchr(const char a[],char b,char **tmp)
+int PetscStrrchr(const char a[],char b,char *tmp[])
 {
   PetscFunctionBegin;
   *tmp = (char *)strrchr(a,b);
@@ -434,7 +434,7 @@ int PetscStrtolower(char a[])
 .  a - pointer to token
 
    Output Parameter:
-.  result - location of occurance, a if not found
+.  result - location of occurance, PETSC_NULL if not found
 
    Notes:
 
@@ -445,7 +445,7 @@ int PetscStrtolower(char a[])
 
 .seealso: PetscTokenCreate(), PetscTokenDestroy()
 @*/
-int PetscTokenFind(PetscToken *a,char **result)
+int PetscTokenFind(PetscToken *a,char *result[])
 {
   char *ptr = a->current;
 
@@ -545,7 +545,7 @@ int PetscTokenDestroy(PetscToken *a)
    Level: intermediate
 
 @*/
-int PetscStrstr(const char a[],const char b[],char **tmp)
+int PetscStrstr(const char a[],const char b[],char *tmp[])
 {
   PetscFunctionBegin;
   *tmp = (char *)strstr(a,b);
@@ -593,7 +593,7 @@ int PetscGetPetscDir(char **dir)
    Level: intermediate
 
 @*/
-int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len)
+int PetscStrreplace(MPI_Comm comm,const char a[],char b[],int len)
 {
   int        ierr,i = 0,l,l1,l2,l3;
   char       *work,*par,*epar,env[1024];

@@ -226,7 +226,7 @@ static int PCSetFromOptions_MG(PC pc)
 {
   int        ierr,indx,m,levels = 1;
   PetscTruth flg;
-  char       *type[] = {"additive","multiplicative","full","cascade","kascade"};
+  const char *type[] = {"additive","multiplicative","full","cascade","kascade"};
 
   PetscFunctionBegin;
 

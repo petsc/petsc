@@ -541,7 +541,7 @@ int KSPSetFromOptions_GMRES(KSP ksp)
   PetscReal       haptol;
   KSP_GMRES       *gmres = (KSP_GMRES*)ksp->data;
   PetscTruth      flg;
-  char            *types[] = {"none","ifneeded","always"};
+  const char      *types[] = {"none","ifneeded","always"};
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP GMRES Options");CHKERRQ(ierr);

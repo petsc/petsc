@@ -274,9 +274,9 @@ static int PCView_HYPRE_Euclid(PC pc,PetscViewer viewer)
 
 /* --------------------------------------------------------------------------------------------*/
 
-static char *HYPREBoomerAMGCoarsenType[] = {"CLJP","Ruge-Stueben","","modifiedRuge-Stueben","","","Falgout"};
-static char *HYPREBoomerAMGMeasureType[] = {"local","global"};
-static char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","","Gauss-Seidel/Jacobi","","","symmetric-Gauss-Seidel/Jacobi",
+static const char *HYPREBoomerAMGCoarsenType[] = {"CLJP","Ruge-Stueben","","modifiedRuge-Stueben","","","Falgout"};
+static const char *HYPREBoomerAMGMeasureType[] = {"local","global"};
+static const char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","","Gauss-Seidel/Jacobi","","","symmetric-Gauss-Seidel/Jacobi",
                                             "","","Gaussian-elimination"};
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_HYPRE_BoomerAMG"
@@ -469,7 +469,7 @@ static int PCSetFromOptions_HYPRE_ParaSails(PC pc)
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
   int        ierr;
   PetscTruth flag;
-  char       *symtlist[] = {"nonsymmetric","SPD","nonsymmetric,SPD"},buff[32];
+  const char *symtlist[] = {"nonsymmetric","SPD","nonsymmetric,SPD"},buff[32];
 
   PetscFunctionBegin;
   jac->nlevels     = 1;
@@ -620,7 +620,7 @@ static int PCHYPRESetType_HYPRE(PC pc,const char name[])
 static int PCSetFromOptions_HYPRE(PC pc)
 {
   int        indx,ierr;
-  char       *type[] = {"pilut","parasails","boomerAMG","euclid"};
+  const char *type[] = {"pilut","parasails","boomerAMG","euclid"};
   PetscTruth flg;
 
   PetscFunctionBegin;

@@ -34,7 +34,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMallocAlign"
-int PetscMallocAlign(size_t mem,int line,char *func,char *file,char *dir,void** result)
+int PetscMallocAlign(size_t mem,int line,const char func[],const char file[],const char dir[],void** result)
 {
   if (mem == 0) SETERRQ(PETSC_ERR_MEM_MALLOC_0,"Cannot malloc size zero");
 #if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
@@ -134,8 +134,8 @@ PetscTruth petscsetmallocvisited = PETSC_FALSE;
    Concepts: memory^allocation 
 
 @*/
-int PetscSetMalloc(int (*imalloc)(size_t,int,char*,char*,char*,void**),
-                   int (*ifree)(void*,int,char*,char*,char*))
+int PetscSetMalloc(int (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
+                   int (*ifree)(void*,int,const char[],const char[],const char[]))
 {
   PetscFunctionBegin;
   if (petscsetmallocvisited && (imalloc != PetscTrMalloc || ifree != PetscTrFree)) SETERRQ(PETSC_ERR_SUP,"cannot call multiple times");

@@ -487,7 +487,8 @@ $                    natural - see KSPSetNormType()
 int KSPSetFromOptions(KSP ksp)
 {
   int        ierr,indx;
-  char       type[256],*stype[] = {"none","preconditioned","unpreconditioned","natural"};
+  char       type[256];
+  const char *stype[] = {"none","preconditioned","unpreconditioned","natural"};
   PetscTruth flg;
 
   PetscFunctionBegin;

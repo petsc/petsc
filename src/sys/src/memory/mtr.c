@@ -17,10 +17,10 @@
 /*
      These are defined in mal.c and ensure that malloced space is PetscScalar aligned
 */
-EXTERN int   PetscMallocAlign(size_t,int,char*,char*,char*,void**);
-EXTERN int   PetscFreeAlign(void*,int,char*,char*,char*);
-EXTERN int   PetscTrMallocDefault(size_t,int,char*,char*,char*,void**);
-EXTERN int   PetscTrFreeDefault(void*,int,char*,char*,char*);
+EXTERN int   PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
+EXTERN int   PetscFreeAlign(void*,int,const char[],const char[],const char[]);
+EXTERN int   PetscTrMallocDefault(size_t,int,const char[],const char[],const char[],void**);
+EXTERN int   PetscTrFreeDefault(void*,int,const char[],const char[],const char[]);
 
 /*
   Code for checking if a pointer is out of the range 
@@ -82,9 +82,9 @@ typedef struct _trSPACE {
     unsigned long   size;
     int             id;
     int             lineno;
-    char            *filename;
-    char            *functionname;
-    char            *dirname;
+    const char      *filename;
+    const char      *functionname;
+    const char      *dirname;
     unsigned long   cookie;        
 #if defined(PETSC_USE_STACK)
     PetscStack      stack;
@@ -114,7 +114,7 @@ static long    TRMaxMem     = 0;
       Arrays to log information on all Mallocs
 */
 static int  PetscLogMallocMax = 10000,PetscLogMalloc = -1,*PetscLogMallocLength;
-static char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallocFunction;
+static const char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallocFunction;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTrValid"
@@ -207,7 +207,7 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
     double aligned pointer to requested storage, or null if not
     available.
  */
-int PetscTrMallocDefault(size_t a,int lineno,char *function,char *filename,char *dir,void**result)
+int PetscTrMallocDefault(size_t a,int lineno,const char function[],const char filename[],const char dir[],void**result)
 {
   TRSPACE          *head;
   char             *inew;
@@ -269,11 +269,11 @@ int PetscTrMallocDefault(size_t a,int lineno,char *function,char *filename,char 
     if (PetscLogMalloc == 0) {
       PetscLogMallocLength    = (int*)malloc(PetscLogMallocMax*sizeof(int));
       if (!PetscLogMallocLength) SETERRQ(PETSC_ERR_MEM," ");
-      PetscLogMallocDirectory = (char**)malloc(PetscLogMallocMax*sizeof(char**));
+      PetscLogMallocDirectory = (const char**)malloc(PetscLogMallocMax*sizeof(char**));
       if (!PetscLogMallocDirectory) SETERRQ(PETSC_ERR_MEM," ");
-      PetscLogMallocFile      = (char**)malloc(PetscLogMallocMax*sizeof(char**));
+      PetscLogMallocFile      = (const char**)malloc(PetscLogMallocMax*sizeof(char**));
       if (!PetscLogMallocFile) SETERRQ(PETSC_ERR_MEM," ");
-      PetscLogMallocFunction  = (char**)malloc(PetscLogMallocMax*sizeof(char**));
+      PetscLogMallocFunction  = (const char**)malloc(PetscLogMallocMax*sizeof(char**));
       if (!PetscLogMallocFunction) SETERRQ(PETSC_ERR_MEM," "); 
     }
     PetscLogMallocLength[PetscLogMalloc]      = nsize;
@@ -298,7 +298,7 @@ int PetscTrMallocDefault(size_t a,int lineno,char *function,char *filename,char 
 .   file  - file name where used.  Use __FILE__ for this
 .   dir - directory where file is. Use __SDIR__ for this
  */
-int PetscTrFreeDefault(void *aa,int line,char *function,char *file,char *dir)
+int PetscTrFreeDefault(void *aa,int line,const char function[],const char file[],const char dir[])
 {
   char     *a = (char*)aa;
   TRSPACE  *head;
@@ -400,7 +400,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
 
 .seealso: PetscTrDump(),PetscTrSpace(), PetscGetResidentSetSize()
  @*/
-int PetscShowMemoryUsage(PetscViewer viewer,char *message)
+int PetscShowMemoryUsage(PetscViewer viewer,const char message[])
 {
   PetscLogDouble allocated,maximum,resident;
   int            ierr,rank;
@@ -553,7 +553,7 @@ int PetscTrLogDump(FILE *fp)
 {
   int            i,rank,j,n,*shortlength,ierr,dummy,size,tag = 1212 /* very bad programming */,*perm;
   PetscTruth     match;
-  char           **shortfunction;
+  const char     **shortfunction;
   PetscLogDouble rss;
   MPI_Status     status;
 
@@ -577,7 +577,7 @@ int PetscTrLogDump(FILE *fp)
     ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory used %d OS cannot compute size of entire process\n",rank,(int)TRMaxMem);CHKERRQ(ierr);
   }
   shortlength      = (int*)malloc(PetscLogMalloc*sizeof(int));if (!shortlength) SETERRQ(1,"Out of memory");
-  shortfunction    = (char**)malloc(PetscLogMalloc*sizeof(char *));if (!shortfunction) SETERRQ(1,"Out of memory");
+  shortfunction    = (const char**)malloc(PetscLogMalloc*sizeof(char *));if (!shortfunction) SETERRQ(1,"Out of memory");
   shortfunction[0] = PetscLogMallocFunction[0];
   shortlength[0]   = PetscLogMallocLength[0]; 
   n = 1;

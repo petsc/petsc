@@ -146,7 +146,8 @@ static int PCSetFromOptions_Composite(PC pc)
   PC_Composite     *jac = (PC_Composite*)pc->data;
   int              ierr,nmax = 8,i,indx;
   PC_CompositeLink next;
-  char             *pcs[8],*types[] = {"multiplicative","additive","special"};
+  char             *pcs[8];
+  const char       *types[] = {"multiplicative","additive","special"};
   PetscTruth       flg;
 
   PetscFunctionBegin;

@@ -38,7 +38,7 @@
     put it in a universal location like a .chsrc file
 
 @*/
-int PetscOptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,PetscTruth *flag)
+int PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],int len,PetscTruth *flag)
 {
   int        rank,ierr;
   char       *str,work[256];

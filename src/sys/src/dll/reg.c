@@ -587,7 +587,7 @@ int PetscFListGet(PetscFList list,char ***array,int *n)
 
 .seealso: PetscFListAddDynamic(), PetscFList
 @*/
-int PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],char *text,char *man,PetscFList list)
+int PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFList list)
 {
   int      ierr,count = 0;
   char     p[64];

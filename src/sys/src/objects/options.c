@@ -178,7 +178,7 @@ int PetscSetProgramName(const char name[])
           PetscOptionsList(), PetscOptionsEList(), PetscOptionsInsertFile()
 
 @*/
-int PetscOptionsInsertString(const char* in_str)
+int PetscOptionsInsertString(const char in_str[])
 {
   char       *str,*first,*second,*third,*final;
   int        len,ierr;

@@ -990,7 +990,7 @@ static int SNESView_LS(SNES snes,PetscViewer viewer)
 static int SNESSetFromOptions_LS(SNES snes)
 {
   SNES_LS    *ls = (SNES_LS *)snes->data;
-  char       *lses[] = {"basic","basicnonorms","quadratic","cubic"};
+  const char *lses[] = {"basic","basicnonorms","quadratic","cubic"};
   int        ierr,indx;
   PetscTruth flg;
 
