@@ -607,8 +607,18 @@ class UsingMatlab(UsingCompiler):
   def getTagger(self, rootDir):
     return compile.TagCxx(self.usingSIDL.sourceDB, root = rootDir)
 
-  def getCompiler(self, library):
-    return compile.CompileCxx(self.usingSIDL.sourceDB, library)
+  def getClientLinkTarget(self, project, doLibraryCheck = 1):
+    libraries = fileset.FileSet([])
+    libraries.extend(self.usingSIDL.extraLibraries[self.getLanguage()])
+    libraries.extend(self.extraLibraries[self.getLanguage()])
+    for dir in self.usingSIDL.repositoryDirs:
+      for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
+        if os.path.isfile(lib):
+          libraries.append(lib)
+    linker    = link.LinkSharedLibrary(self.usingSIDL.sourceDB, extraLibraries = libraries)
+    linker.sharedext = '.mexglx'
+    linker.doLibraryCheck = doLibraryCheck
+    return [link.TagLibrary(self.usingSIDL.sourceDB), linker]
 
   def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
@@ -624,7 +634,7 @@ class UsingMatlab(UsingCompiler):
     # Server Filter
     serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['cxx', 'old cxx'])
     # Server compiler
-    compileCxx = compile.CompileCxx(self.usingSIDL.sourceDB, library)
+    compileCxx = compile.CompileMatlabCxx(self.usingSIDL.sourceDB, library)
     compileCxx.defines.extend(self.getDefines())
     compileCxx.includeDirs.append(rootDir)
     compileCxx.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])

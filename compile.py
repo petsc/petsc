@@ -308,15 +308,16 @@ class CompileCxx (Compile):
       print('\''+command+'\': '+output)
 
 class CompileMatlabCxx (CompileCxx):
-  def __init__(self, sourceDB, sources = None, tag = 'c', compiler = 'g++', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wredundant-decls -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
+  def __init__(self, sourceDB, sources = None, tag = 'cxx', compiler = 'g++', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wredundant-decls -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
     CompileCxx.__init__(self, sourceDB, None, sources, tag, compiler, compilerFlags, archiver, archiverFlags)
+    self.includeDirs.append(bs.argDB['MATLAB_INCLUDE'])
     self.products = []
 
   def getLibraryName(self, source = None):
     if not source: return None
     (dir, file) = os.path.split(source)
     (base, ext) = os.path.splitext(file)
-    libraryName = os.path.join(dir, base+'.mexglx')
+    libraryName = os.path.join(dir, base+'.a')
     return libraryName
 
   def setExecute(self, set):
