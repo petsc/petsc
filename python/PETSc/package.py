@@ -11,6 +11,7 @@ class Package(config.base.Configure):
     self.headerPrefix = 'PETSc'
     self.substPrefix  = 'PETSc'
     self.compilers    = self.framework.require('config.compilers',self)
+    self.setcompilers = self.framework.require('config.setCompilers',self)  
     self.libraries    = self.framework.require('config.libraries',self)
     self.clanguage    = self.framework.require('PETSc.utilities.clanguage',self)
     self.arch         = self.framework.require('PETSc.utilities.arch',self)        
