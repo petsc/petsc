@@ -86,7 +86,6 @@ int main( int argc, char **argv )
   return 0;
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
-
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
    Scalar *xx, *ff,*FF,d;
@@ -104,7 +103,6 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    return 0;
 }
 /* --------------------  Form initial approximation ----------------- */
-
 int FormInitialGuess(SNES snes,Vec x,void *dummy)
 {
    int    ierr;
@@ -115,7 +113,6 @@ int FormInitialGuess(SNES snes,Vec x,void *dummy)
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /* This routine demonstrates the use of different matrices for the Jacobian 
    and preconditioner */
-
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,
                  void *dummy)
 {
@@ -158,7 +155,6 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,
    is intended as a template for customized versions.  This code implements
    just the null preconditioner, which of course is not recommended for
    general use. */
-
 int MatrixFreePreconditioner(void *ctx,Vec x,Vec y)
 {
   int ierr;
