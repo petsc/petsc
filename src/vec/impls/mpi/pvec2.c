@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.14 1995/11/02 04:14:12 bsmith Exp balay $ */
+/* $Id: pvec2.c,v 1.15 1996/04/26 00:24:33 balay Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -10,16 +10,21 @@
 
 static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 {
-  Scalar *work;
+  static Scalar awork[128];
+  Scalar        *work = awork;
 
-  work = (Scalar *)PetscMalloc( nv * sizeof(Scalar) );  CHKPTRQ(work);
+  if (nv > 128) {
+    work = (Scalar *)PetscMalloc(nv * sizeof(Scalar)); CHKPTRQ(work);
+  }
   VecMDot_Seq(  nv, xin, y, work );
 #if defined(PETSC_COMPLEX)
   MPI_Allreduce( work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );
 #else
   MPI_Allreduce( work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );
 #endif
-  PetscFree(work);
+  if (nv > 128) {
+    PetscFree(work);
+  }
   return 0;
 }
 
