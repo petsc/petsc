@@ -1,25 +1,25 @@
-# $Id: base_variables,v 1.1 2001/03/07 19:00:17 buschelm Exp buschelm $ 
+# $Id: base_variables,v 1.2 2001/03/07 22:03:43 buschelm Exp balay $ 
 #
 # Regular petsc-makefile variables
 #
-WIN32FE          = $(PETSC_DIR)/bin/win32fe/win32fe.exe
-AR               = $(WIN32FE) lib -nologo
+WIN32FE          = ${PETSC_DIR}/bin/win32fe/win32fe.exe
+AR               = ${WIN32FE} lib -nologo --quiet
 AR_FLAGS         = 
 LIB_SUFFIX       = lib
 RM               = rm -f
-OMAKE            = make 
+OMAKE            = make --no-print-directory
 RANLIB           = true
 SHELL            = /bin/sh
 SED              = sed
 MKDIR            = mkdir -p
 # ######################### C and Fortran compiler ########################
 #
-C_CC             = $(WIN32FE) cl -nologo 
-C_FC             = $(WIN32FE) f90 -fpp:'"/m"' -nologo
+C_CC             = ${WIN32FE} cl -nologo --quiet
+C_FC             = ${WIN32FE} f90 -fpp:'"/m"' -nologo --quiet
 C_CLINKER_SLFLAG = -L
 C_FLINKER_SLFLAG = -L
-C_CLINKER        = $(WIN32FE) cl -nologo $(COPTFLAGS)
-C_FLINKER        = $(WIN32FE) f90 -nologo $(FOPTFLAGS)
+C_CLINKER        = ${WIN32FE} cl -nologo --quiet ${COPTFLAGS} 
+C_FLINKER        = ${WIN32FE} f90 -nologo --quiet ${FOPTFLAGS}
 C_CCV            = cl
 C_FCV            = f90
 C_SYS_LIB        =  kernel32.lib user32.lib  gdi32.lib advapi32.lib
@@ -31,18 +31,18 @@ O_COPTFLAGS      = -MT -O2 -W2
 O_FOPTFLAGS      = -threads -optimize:5 -fast
 # ########################## C++ compiler ##################################
 #
-CXX_CC           = $(WIN32FE) cl -nologo -TP -GX 
+CXX_CC           = ${WIN32FE} cl -nologo --quiet -TP -GX 
 ## patch for the cref/stdcall problem with using fortran blas
-ifeq ($(BLAS_FC),TRUE)
-CXX_FC           = $(WIN32FE) f90 -iface:(cref,nomixed_str_len_arg) -fpp:'"/m"' -nologo
+ifeq {${BLAS_FC},TRUE}
+CXX_FC           = ${WIN32FE} f90 -iface:(cref,nomixed_str_len_arg) -fpp:'"/m"' -nologo --quiet
 else
-CXX_FC           = $(WIN32FE) f90 -fpp:'"/m"' -nologo
+CXX_FC           = ${WIN32FE} f90 -fpp:'"/m"' -nologo --quiet
 endif
 
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
-CXX_CLINKER      = $(FE) cl -nologo $(COPTFLAGS)
-CXX_FLINKER      = $(FE) df -nologo $(FOPTFLAGS)
+CXX_CLINKER      = ${WIN32FE} cl -nologo --quiet ${COPTFLAGS}
+CXX_FLINKER      = ${WIN32FE} df -nologo --quiet ${FOPTFLAGS}
 CXX_CCV          = cl
 CXX_FCV          = f90
 CXX_SYS_LIB      = kernel32.lib user32.lib  gdi32.lib advapi32.lib

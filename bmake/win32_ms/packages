@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 2001/03/07 19:00:17 buschelm Exp buschelm $ 
+# $Id: base.site,v 1.2 2001/03/07 22:59:53 buschelm Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -30,22 +30,10 @@ MPIRUN         = $(PETSC_DIR)/src/sys/src/mpiuni/mpirun
 #  Locations of OPTIONAL packages. Comment out those you do not have.
 # ----------------------------------------------------------------------------------------  
 #
-# Location of X-windows software: 
-#
-#X11_INCLUDE    = 
-#X11_LIB        = 
-#PETSC_HAVE_X11 = -DPETSC_HAVE_X11
-#
 #  Optional location for ALICE Memory Snooper
 #
-#AMS_INCLUDE = -Ic:/software/ams/include
-#AMS_LIB     = amspub.lib amsutil.lib
-#LIB         =-Lc:/ams/src/pubacc/pub/Release -Lc:/ams/src/util/Release
+#AMS_HOME    = c:/Program Files/Argonne National Laboratory/Alice Memory Snooper
+#AMS_INCLUDE = -I'"$(AMS_HOME)/include"'
+#AMS_LIB     = -L'"$(AMS_HOME)/src/pubacc/pub/Release"' -L'"$(AMS_HOME)/src/util/Release"' -L'"$(AMS_HOME)/src/mpiuni/Release"'  amspub.lib amsutil.lib amsmpiuni.lib wsock32.lib
 #PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
-#
-# Optional Matlab location, remove if not needed.
-#
-#CMEX            = 
-#MCC            = 
-#MATLABCOMMAND  = matlab
-#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
+
