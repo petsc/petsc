@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.1 1995/09/04 04:38:47 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -10,6 +10,7 @@ static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmit
 #include "pinclude/petscfix.h"
 
 #ifdef FORTRANCAPS
+#define matgetreordering_         MATGETREORDERING
 #define matreorderingregisterall_ MATREORDERINGREGISTERALL
 #define matdestroy_               MATDESTROY
 #define matcreatempiaij_          MATCREATEMPIAIJ
@@ -21,6 +22,12 @@ static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmit
 #define matshellsetdestroy_       MATSHELLSETDESTROY
 #define matshellsetmult_          MATSHELLSETMULT
 #define matreorderingregisterdestroy_ MATREORDERINGREGISTERDESTROY
+#define matcreatempirow_              MATCREATEMPIROW
+#define matcreatesequentialrow_       MATCREATESEQUENTIALROW
+#define matcreatempirowbs_ MATCREATEMPIROWBS
+#define matcreatesequentialbdiag_ MATCREATESEQUENTIALBDIAG
+#define matcreatempibdiag_ MATCREATEMPIBDIAG
+#define matcreatesequentialdense_ MATCREATESEQUENTIALDENSE
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define matreorderingregisterall_ matreorderingregisterall
 #define matdestroy_               matdestroy
@@ -33,7 +40,88 @@ static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmit
 #define matshellsetmulttransadd_  matshellsetmulttransadd
 #define matshellsetdestroy_       matshellsetdestroy
 #define matreorderingregisterdestroy_ matreorderingregisterdestroy
+#define matgetreordering_             matgetreordering
+#define matcreatempirow_              matcreatempirow
+#define matcreatesequentialrow_       matcreatesequentialrow
+#define matcreatempirowbs_ matcreatempirowbs
+#define matcreatesequentialbdiag_ matcreatesequentialbdiag
+#define matcreatempibdiag_ matcreatempibdiag
+#define matcreatesequentialdense_ matcreatesequentialdense
 #endif
+
+void matcreatesequentialdense_(MPI_Comm comm,int *m,int *n,Mat *newmat, 
+                               int *__ierr ){
+  Mat mm;
+  *__ierr = MatCreateSequentialDense(
+	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*m,*n,&mm);
+  *(int*) newmat = MPIR_FromPointer(mm);
+}
+
+/* Fortran ignores diagv */
+void matcreatempibdiag_(MPI_Comm comm,int *m,int *M,int *N,int *nd,int *nb,
+                     int *diag,Scalar **diagv,Mat *newmat, int *__ierr ){
+  Mat mm;
+  *__ierr = MatCreateMPIBDiag((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),
+                              *m,*M,*N,*nd,*nb,diag,0,&mm);
+  *(int*) newmat = MPIR_FromPointer(mm);
+}
+
+/* Fortran ignores diagv */
+void matcreatesequentialbdiag_(MPI_Comm comm,int *m,int *n,int *nd,int *nb,
+                        int *diag,Scalar **diagv,Mat *newmat, int *__ierr ){
+  Mat mm;
+  *__ierr = MatCreateSequentialBDiag(
+    (MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*m,*n,*nd,*nb,diag,0,&mm);
+  *(int*) newmat = MPIR_FromPointer(mm);
+}
+
+/*  Fortran cannot pass in procinfo, hence ignored */
+void matcreatempirowbs_(MPI_Comm comm,int *m,int *M,int *nz,int *nnz,
+                       void *procinfo,Mat *newmat, int *__ierr ){
+  Mat mm;
+/*
+   The p1 is because Fortran cannot pass in a null pointer 
+*/
+  int *p1 = 0;
+  if (*nnz) p1 = nnz; 
+  *__ierr = MatCreateMPIRowbs((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),
+                               *m,*M,*nz,p1,0,&mm);
+  *(int*) newmat = MPIR_FromPointer(mm);
+}
+
+void matcreatesequentialrow_(MPI_Comm comm,int *m,int *n,int *nz,
+                           int *nnz,Mat *newmat, int *__ierr ){
+  Mat mm;
+/*
+   The p1 is because Fortran cannot pass in a null pointer 
+*/
+  int *p1 = 0;
+  if (*nnz) p1 = nnz; 
+  *__ierr = MatCreateSequentialRow(
+	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*m,*n,*nz,p1,&mm);
+  *(int*) newmat = MPIR_FromPointer(mm);
+}
+void matcreatempirow_(MPI_Comm comm,int *m,int *n,int *M,int *N,
+       int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat, int *__ierr ){
+  Mat mm;
+/*
+   The p1, p2 are because Fortran cannot pass in a null pointer 
+*/
+  int *p1 = 0, *p2 = 0;
+  if (*d_nnz) p1 = d_nnz; 
+  if (*o_nnz) p2 = o_nnz; 
+  *__ierr = MatCreateMPIRow((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),
+                            *m,*n,*M,*N,*d_nz,p1,*o_nz,p2,&mm);
+  *(int*) newmat = MPIR_FromPointer(mm);
+}
+
+void matgetreordering_(Mat mat,MatOrdering *type,IS *rperm,IS *cperm, 
+                       int *__ierr ){
+  IS i1,i2;
+  *__ierr = MatGetReordering((Mat)MPIR_ToPointer(*(int*)(mat)),*type,&i1,&i2);
+  *(int*) rperm = MPIR_FromPointer(i1);
+  *(int*) cperm = MPIR_FromPointer(i2);
+}
 
 void matreorderingregisterdestroy_(int *__ierr){
   *__ierr = MatReorderingRegisterDestroy();

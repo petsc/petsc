@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.1 1995/09/04 04:39:27 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -27,6 +27,7 @@ static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmit
 #define snesgetfunction_             SNESGETFUNCTION
 #define snesgetgradient_             SNESGETGRADIENT
 #define snesdestroy_                 SNESDESTROY
+#define snesdefaultmatrixfreematcreate_ SNESDEFAULTMATRIXFREEMATCREATE
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define snesregisterdestroy_         snesregisterdestroy
 #define snessetsolution_             snessetsolution
@@ -48,7 +49,16 @@ static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmit
 #define snesgetsolutionupdate_       snesgetsolutionupdate
 #define snesgetfunction_             snesgetfunction
 #define snesgetgradient_             snesgetgradient
+#define snesdefaultmatrixfreematcreate_ snesdefaultmatrixfreematcreate
 #endif
+
+void snesdefaultmatrixfreematcreate_(SNES snes,Vec x,Mat *J, int *__ierr ){
+  Mat mm;
+  *__ierr = SNESDefaultMatrixFreeMatCreate(
+	(SNES)MPIR_ToPointer( *(int*)(snes) ),
+	(Vec)MPIR_ToPointer( *(int*)(x) ),&mm);
+  *(int*) J = MPIR_FromPointer(mm);
+}
 
 static int (*f7)(int*,int*,double*,void*,int*);
 static int oursnesmonitor(SNES snes,int i,double d,void*ctx)

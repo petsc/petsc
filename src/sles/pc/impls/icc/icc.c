@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.15 1995/07/20 04:25:30 bsmith Exp curfman $ ";
+static char vcid[] = "$Id: icc.c,v 1.16 1995/07/26 02:24:49 curfman Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -78,15 +78,17 @@ static int PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
 
 static int PCSetFromOptions_ICC(PC pc)
 {
+#if defined(HAVE_BLOCKSOLVE) && !defined(_cplusplus)
   if (OptionsHasName(pc->prefix,"-pc_icc_bsiter")) {
     PCBSIterSetBlockSolve(pc);
   }
+#endif
   return 0;
 }
 
 int PCCreate_ICC(PC pc)
 {
-  PC_ICC *icc = PETSCNEW(PC_ICC); CHKPTRQ(icc);
+  PC_ICC      *icc = PETSCNEW(PC_ICC); CHKPTRQ(icc);
   icc->fact	   = 0;
   icc->ordering    = ORDER_ND;
   icc->levels	   = 0;

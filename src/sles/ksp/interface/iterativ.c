@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.28 1995/08/07 18:51:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.29 1995/08/21 18:11:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -86,7 +86,7 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 }
 
 /*ARGSUSED*/
-/*@
+/*@C
    KSPDefaultConverged - Default code to determine convergence of
    the iterative solvers.
 
@@ -130,7 +130,7 @@ int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
   return(0);
 }
 
-/*@
+/*
    KSPDefaultBuildSolution - Default code to create/move the solution.
 
    Input Parameters:
@@ -143,7 +143,7 @@ int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
 .keywords:  KSP, build, solution, default
 
 .seealso: KSPGetSolution(), KSPDefaultBuildResidual()
-@*/
+*/
 int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
 {
   int ierr;
@@ -164,7 +164,7 @@ int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
   return 0;
 }
 
-/*@
+/*
    KSPDefaultBuildResidual - Default code to compute the residual.
 
    Input Parameters:
@@ -178,7 +178,7 @@ int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
 .keywords:  KSP, build, residual, default
 
 .seealso: KSPDefaultBuildSolution()
-@*/
+*/
 int KSPDefaultBuildResidual(KSP itP,Vec t,Vec v,Vec *V)
 {
   int          ierr;

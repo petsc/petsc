@@ -1,6 +1,9 @@
 
 C      Include file for for Fortran use of the SNES package
 C
+#define SNES     integer
+#define SNESType integer
+
       integer SNES_NONLINEAR_EQUATIONS,
      *        SNES_UNCONSTRAINED_MINIMIZATION
 

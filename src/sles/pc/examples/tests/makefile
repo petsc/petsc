@@ -1,7 +1,7 @@
 IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS   = $(OPT)  $(CONF) $(PETSC_INCLUDE) $(BS_INCLUDE)
+CFLAGS   =   $(CONF) $(PETSC_INCLUDE) $(BS_INCLUDE)
 
 SOURCEC       = 
 SOURCEF       =

@@ -1,5 +1,5 @@
 
-#include "../../../../matimpl.h"
+#include "../../matimpl.h"
 #include "sys/nreg.h"
 #include "sys.h"
 
@@ -63,7 +63,7 @@ int  MatReorderingRegister(MatOrdering name,char *sname,
   return NRRegister(__MatReorderingList,(int)name,sname,(int (*)(void*))order);
 }
 
-/*@
+/*@C
    MatReorderingRegisterDestroy - Frees the list of ordering routines.
 
 .keywords: matrix, register, destroy

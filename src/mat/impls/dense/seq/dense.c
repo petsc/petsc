@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.51 1995/08/22 19:33:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.52 1995/08/24 22:28:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -662,7 +662,7 @@ static struct _MatOps MatOps = {MatInsert_Dense,
        MatGetSubMatrix_Dense,MatGetSubMatrixInPlace_Dense,
        MatCopyPrivate_Dense};
 
-/*@
+/*@C
    MatCreateSequentialDense - Creates a sequential dense matrix that 
    is stored in column major order (the usual Fortran 77 manner). Many 
    of the matrix operations use the BLAS and LAPACK routines.

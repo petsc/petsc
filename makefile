@@ -5,7 +5,7 @@
 
 IPETSCDIR = .
 
-CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
+CFLAGS   =  -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = Changes Machines Readme maint/addlinks maint/buildtest \

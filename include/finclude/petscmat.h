@@ -1,6 +1,15 @@
 
 C      Include file for for Fortran use of the Mat package
 C
+#define Mat             integer
+#define MatType         integer
+#define MatOption       integer 
+#define MatAssemblyType integer
+#define MatOrdering     integer
+#define MATSORType      integer
+#define MatInfoType     integer
+#define MatNormType     integer
+
       integer MATSAME, MATDENSE, MATAIJ, MATMPIAIJ, MATSHELL, MATROW, 
      *          MATMPIROW, MATMPIROW_BS, MATBDIAG, MATMPIBDIAG
 

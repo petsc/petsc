@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.24 1995/08/22 16:29:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.25 1995/08/24 22:27:16 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -222,7 +222,7 @@ int PetscAttachDebugger()
   return 0;
 }
 
-/*@
+/*@C
    PetscAttachDebuggerErrorHandler - Error handler that attaches a
    a debugger to the running process when an error is detected.
    This routine is useful for examining variables, etc. 

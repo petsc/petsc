@@ -1,33 +1,171 @@
-#ifdef HAVE_64BITS
-extern void *MPIR_ToPointer(int);
-extern int MPIR_FromPointer(void*);
-extern void MPIR_RmPointer(int);
-#else
-#define MPIR_ToPointer(a) (a)
-#define MPIR_FromPointer(a) (int)(a)
-#define MPIR_RmPointer(a)
+
+#ifndef lint
+static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmith $";
 #endif
 
-#include "sles.h"
+#include "zpetsc.h"
+#include "draw.h"
+#if defined(HAVE_STRING_H)
+#include <string.h>
+#endif
+#include "pinclude/petscfix.h"
 
 #ifdef FORTRANCAPS
-#define slesdestroy_ SLESDESTROY
-#define slescreate_  SLESCREATE
+#define drawaxisdestroy_   DRAWAXISDESTROY
+#define drawaxiscreate_    DRAWAXISCREATE
+#define drawaxissetlabels_ DRAWAXISSETLABELS
+#define drawlgcreate_      DRAWLGCREATE
+#define drawlgdestroy_     DRAWLGDESTROY
+#define drawlggetaxisctx_  DRAWLGGETAXISCTX
+#define drawlggetdrawctx_  DRAWLGGETDRAWCTX
+#define drawopenx_         DRAWOPENX
+#define drawtext_          DRAWTEXT
+#define drawtextvertical_  DRAWTEXTVERTICAL
+#define drawdestroy_       DRAWDESTROY
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define slesdestroy_ slesdestroy
-#define slescreate_  slescreate
+#define drawaxisdestroy_   drawaxisdestroy
+#define drawaxiscreate_    drawaxiscreate
+#define drawaxissetlabels_ drawaxissetlabels
+#define drawlgcreate_      drawlgcreate
+#define drawlgdestroy_     drawlgdestroy
+#define drawlggetaxisctx_  drawlggetaxisctx
+#define drawlggetdrawctx_  drawlggetdrawctx
+#define drawopenx_         drawopenx
+#define drawtext_          drawtext
+#define drawtextvertical_  drawtextvertical
+#define drawdestroy_       drawdestroy
 #endif
 
-void slesdestroy_(SLES sles, int *__ierr )
-{
-  *__ierr = SLESDestroy((SLES)MPIR_ToPointer( *(int*)(sles) ));
-  MPIR_RmPointer( *(int*)(sles) );
+void drawtext_(DrawCtx ctx,double* xl,double* yl,int* cl,char* text,
+               int *__ierr, int len){
+  char *t;
+  if (text[len] != 0) {
+    t = (char *) PETSCMALLOC( (len+1)*sizeof(char) ); 
+    strncpy(t,text,len);
+    t[len] = 0;
+  }
+  else t = text;
+  *__ierr = DrawText(
+	(DrawCtx)MPIR_ToPointer( *(int*)(ctx) ),*xl,*yl,*cl,t);
+  if (t != text) PETSCFREE(t);
+}
+void drawtextvertical_(DrawCtx ctx,double *xl,double *yl,int *cl,char *text, 
+                       int *__ierr,int len ){
+  char *t;
+  if (text[len] != 0) {
+    t = (char *) PETSCMALLOC( (len+1)*sizeof(char) ); 
+    strncpy(t,text,len);
+    t[len] = 0;
+  }
+  else t = text;
+  *__ierr = DrawTextVertical(
+	(DrawCtx)MPIR_ToPointer( *(int*)(ctx) ),*xl,*yl,*cl,t);
+  if (t != text) PETSCFREE(t);
 }
 
-void slescreate_(MPI_Comm comm,SLES *outsles, int *__ierr )
-{
-  SLES sles;
-  *__ierr = SLESCreate((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),&sles);
-  *(int*) outsles = MPIR_FromPointer(sles);
+void drawdestroy_(DrawCtx ctx, int *__ierr ){
+  *__ierr = DrawDestroy((DrawCtx)MPIR_ToPointer( *(int*)(ctx) ));
+  MPIR_RmPointer(*(int*)(ctx) );
+}
 
+void drawopenx_(MPI_Comm comm,char* display,char *title,int *x,int *y,
+                int *w,int *h,DrawCtx* inctx, int *__ierr,int len1,int len2 )
+{
+  DrawCtx a;
+  char    *t1,*t2;
+  if (display[0] == ' ') {t1 = 0; display = 0;}
+  else {
+    if (display[len1] != 0) {
+      t1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char) ); 
+      strncpy(t1,display,len1);
+      t1[len1] = 0;
+    }
+    else t1 = display;
+  }
+  if (title[0] == ' ')   {title = 0; t2 = 0;}
+  else {
+    if (title[len2] != 0) {
+      t2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char) ); 
+      strncpy(t2,title,len2);
+      t2[len2] = 0;
+    }
+    else t2 = display;
+  }  
+  *__ierr = DrawOpenX((MPI_Comm)MPIR_ToPointer( *(int*)(comm)),t1,t2,
+                       *x,*y,*w,*h,&a);
+  *(int*)inctx = MPIR_FromPointer(a);
+  if (t1 != display) PETSCFREE(t1);
+  if (t2 != title) PETSCFREE(t2);
+}
+
+void drawlggetaxisctx_(DrawLGCtx lg,DrawAxisCtx *axis, int *__ierr )
+{
+  DrawAxisCtx a;
+  *__ierr = DrawLGGetAxisCtx(
+	(DrawLGCtx)MPIR_ToPointer( *(int*)(lg) ),&a);
+  *(int*)axis = MPIR_FromPointer(a);
+}
+void drawlggetdrawctx_(DrawLGCtx lg,DrawCtx *win, int *__ierr )
+{
+  DrawCtx a;
+  *__ierr = DrawLGGetDrawCtx(
+	(DrawLGCtx)MPIR_ToPointer( *(int*)(lg) ),&a);
+  *(int*)win = MPIR_FromPointer(a);
+}
+
+void drawlgdestroy_(DrawLGCtx lg, int *__ierr )
+{
+  *__ierr = DrawLGDestroy((DrawLGCtx)MPIR_ToPointer( *(int*)(lg) ));
+  MPIR_RmPointer(*(int*)(lg));
+}
+
+void drawlgcreate_(DrawCtx win,int *dim,DrawLGCtx *outctx, int *__ierr )
+{
+  DrawLGCtx lg;
+  *__ierr = DrawLGCreate(
+	(DrawCtx)MPIR_ToPointer( *(int*)(win) ),*dim,&lg);
+  *(int*)outctx = MPIR_FromPointer(lg);
+}
+
+void drawaxissetlabels_(DrawAxisCtx axis,char* top,char *xlabel,char *ylabel,
+                        int *__ierr,int len1,int len2,int len3 )
+{
+  char *t1,*t2,*t3;
+  if (top[len1] != 0) {
+    t1 = (char *) PETSCMALLOC((len1+1)*sizeof(char)); if (!t1) *__ierr = 1;
+    strncpy(t1,top,len1);
+    t1[len1] = 0;
+  }
+  else t1 = top;
+  if (xlabel[len2] != 0) {
+    t2 = (char *) PETSCMALLOC((len2+1)*sizeof(char));if (!t2) *__ierr = 1; 
+    strncpy(t2,xlabel,len2);
+    t2[len2] = 0;
+  }
+  else t2 = xlabel;
+  if (ylabel[len3] != 0) {
+    t3 = (char *) PETSCMALLOC((len3+1)*sizeof(char));if (!t3) *__ierr = 1; 
+    strncpy(t3,ylabel,len3);
+    t3[len3] = 0;
+  }
+  else t3 = ylabel;
+
+  *__ierr = DrawAxisSetLabels(
+	 (DrawAxisCtx)MPIR_ToPointer( *(int*)(axis) ),t1,t2,t3);
+  if (t1 != top) PETSCFREE(t1);
+  if (t2 != xlabel) PETSCFREE(t2);
+  if (t3 != ylabel) PETSCFREE(t3);
+}
+
+void drawaxisdestroy_(DrawAxisCtx axis, int *__ierr )
+{
+  *__ierr = DrawAxisDestroy((DrawAxisCtx)MPIR_ToPointer(*(int*)(axis)));
+  MPIR_RmPointer(*(int*)(axis));
+}
+
+void drawaxiscreate_(DrawCtx win,DrawAxisCtx *ctx, int *__ierr )
+{
+  DrawAxisCtx tmp;
+  *__ierr = DrawAxisCreate((DrawCtx)MPIR_ToPointer( *(int*)(win) ),&tmp);
+  *(int*)ctx = MPIR_FromPointer(tmp);
 }

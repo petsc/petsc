@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.33 1995/08/22 16:29:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.34 1995/08/24 22:27:16 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -71,7 +71,11 @@ int PLogAllowInfo(PetscTruth flag)
 int PLogInfo(PetscObject obj,char *format,...)
 {
   va_list Argp;
+  int     mytid;
   if (!PrintInfo) return 0;
+  if (!obj) mytid = 0;
+  else      {MPI_Comm_rank(obj->comm,&mytid);} 
+  if (mytid) return 0;
   va_start( Argp, format );
   vfprintf(stdout,format,Argp);
   va_end( Argp );
@@ -518,7 +522,8 @@ static char *(name[]) = {"MatMult         ",
                          "VecMDot         ",
                          "VecMAXPY        ",
                          "VecPMult        ",
-                         " "," "," "," "," ",
+                         "VecSetValues    ",
+                         " "," "," "," ",
                          "SLESSolve       ",
                          "PCSetUp         ",
                          "PCApply         ",

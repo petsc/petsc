@@ -1,6 +1,10 @@
 
 C      Include file for for Fortran use of the DA package
 C
+#define DA             integer
+#define DAPeriodicType integer
+#define DAStencilType  integer
+
       integer DA_STENCIL_STAR, DA_STENCIL_BOX
 
       integer DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC,

@@ -4,7 +4,7 @@
 
        integer          n, ierr
        double precision one, two, three, dot, norm
-       integer          x,y,w
+       Vec              x,y,w
 
        n     = 20
        one   = 1.0

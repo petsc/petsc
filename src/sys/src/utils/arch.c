@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: arch.c,v 1.7 1995/08/21 18:11:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: arch.c,v 1.8 1995/08/22 16:29:51 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
@@ -19,8 +19,8 @@ static char vcid[] = "$Id: arch.c,v 1.7 1995/08/21 18:11:41 bsmith Exp bsmith $"
      Output Parameter:
 .    str - string area to contain architecture name.  Should be at least 
            10 characters long.
-@*/
-void SYGetArchType( char *str, int slen )
+  @*/
+int SYGetArchType( char *str, int slen )
 {
 #if defined(PARCH_solaris)
   strncpy(str,"solaris",7);
@@ -51,5 +51,6 @@ void SYGetArchType( char *str, int slen )
 #else
   strncpy( str, "Unknown", slen );
 #endif
+  return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.41 1995/08/22 19:32:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.42 1995/08/24 22:27:43 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -86,7 +86,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
   jac->use_true_local = 1;
   return 0;
 }
-/*@
+/*@C
    PCBJacobiGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
    

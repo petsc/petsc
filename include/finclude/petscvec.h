@@ -1,6 +1,9 @@
 
 C      Include file for for Fortran use of the Vec package
 C
+#define Vec           integer
+#define VecScatterCtx integer 
+C
       integer INSERTVALUES, ADDVALUES
       integer SCATTERREVERSE,SCATTERDOWN,SCATTERUP,SCATTERALL,
      *        SCATTERALLREVERSE

@@ -1,6 +1,9 @@
 
 C      Include file for for Fortran use of the KSP package
 C
+#define KSP       integer
+#define KSPMethod integer
+C
       integer KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, 
      *         KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR,
      *         KSPPREONLY, KSPQCG

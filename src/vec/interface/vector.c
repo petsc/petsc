@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.44 1995/08/23 17:08:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.45 1995/08/24 22:26:12 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -494,8 +494,12 @@ int VecFreeVecs(Vec *vv,int m)
 @*/
 int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
 {
+  int ierr;
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
-  return (*x->ops->setvalues)( x, ni,ix, y,iora );
+  PLogEventBegin(VEC_SetValues,x,0,0,0);
+  ierr = (*x->ops->setvalues)( x, ni,ix, y,iora ); CHKERRQ(ierr);
+  PLogEventEnd(VEC_SetValues,x,0,0,0);  
+  return 0;
 }
 
 /*@

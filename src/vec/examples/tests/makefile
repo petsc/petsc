@@ -1,8 +1,8 @@
 IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS        = $(OPT) $(PETSC_INCLUDE) $(COPT) $(CONF) -I$(IPETSCDIR)/include
-FFLAGS        = -I$(IPETSCDIR) $(MPI_INCLUDE) $(BASEOPTF)
+CFLAGS        =  $(PETSC_INCLUDE) $(COPT) $(CONF) -I$(IPETSCDIR)/include
+FFLAGS        =  $(BASEOPTF)
 SOURCEC       = 
 SOURCEF       =
 SOURCEH       =

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.17 1995/08/15 20:29:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.18 1995/08/29 21:39:22 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"   /*I  "draw.h"   I*/
@@ -56,7 +56,7 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   ierr = VecScale(&h,y); CHKERRQ(ierr);
   return 0;
 }
-/*@
+/*@C
    SNESDefaultMatrixFreeMatCreate - Creates a matrix-free matrix
    context for use with a SNES solver. You can use this matrix as the
    Jacobian argument for the routine SNESSetJacobian().

@@ -1,7 +1,7 @@
 IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS        = $(OPT) $(CONF) $(PETSC_INCLUDE) $(BS_INCLUDE)
+CFLAGS        = $(CONF) $(PETSC_INCLUDE) $(BS_INCLUDE)
 SOURCEC       = 
 SOURCEF       =
 SOURCEH       = pargrid.h
@@ -14,9 +14,10 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
                 runex3 runex3_2 runex3_3\
                 runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex5\
                 runex8 runex8_2
-EXAMPLES_2    = ex10 ex11
+EXAMPLES_2    = ex10 ex11 ex12
 RUNEXAMPLES_2 = runex10 runex11
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c\
+                ex12.c
 
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)

@@ -1,7 +1,7 @@
 ALL: lib 
 IPETSCDIR = ../../../..
 
-CFLAGS   = $(OPT) $(CONF) $(PETSC_INCLUDE) \
+CFLAGS   =  $(CONF) $(PETSC_INCLUDE) \
            -I../../ -D__DIR__='"ksp/impls/tfqmr/"'
 SOURCEC  = tfqmr.c
 SOURCEF  =

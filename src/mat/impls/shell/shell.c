@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.15 1995/08/21 18:12:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: shell.c,v 1.16 1995/08/25 02:50:32 curfman Exp bsmith $";
 #endif
 
 /*
@@ -70,7 +70,7 @@ static struct _MatOps MatOps = {0,0,
        0,0,0,0,
        0,0,0,0 };
 
-/*@
+/*@C
    MatShellCreate - Creates a new matrix class for use with a user-defined
    private data storage format. 
 
@@ -116,7 +116,7 @@ int MatShellCreate(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
   return 0;
 }
 
-/*@
+/*@C
    MatShellSetMult - Sets the routine for computing the matrix-vector product.
 
    Input Parameters:
@@ -142,7 +142,7 @@ int MatShellSetMult(Mat mat,int (*mult)(void*,Vec,Vec))
   shell->mult = mult;
   return 0;
 }
-/*@
+/*@C
    MatShellSetMultTransAdd - Sets the routine for computing v3 = v2 + A' * v1.
 
    Input Parameters:
@@ -168,7 +168,7 @@ int MatShellSetMultTransAdd(Mat mat,int (*mult)(void*,Vec,Vec,Vec))
   shell->multtransadd = mult;
   return 0;
 }
-/*@
+/*@C
    MatShellSetDestroy - Set the routine to use to destroy the 
         private contents of your MatShell.
 

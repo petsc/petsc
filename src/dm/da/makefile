@@ -2,7 +2,7 @@ IPETSCDIR = ../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
+CFLAGS   =  -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = daimpl.h

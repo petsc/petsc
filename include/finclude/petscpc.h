@@ -1,6 +1,10 @@
 
 C      Include file for for Fortran use of the PC package
 C
+#define PC           integer
+#define PCMethod     integer
+#define MatStructure integer
+C
       integer PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG,
      *        PCEISENSTAT, PCILU, PCICC, PCSPAI
 

@@ -2,7 +2,7 @@ IPETSCDIR = ../../../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../../.. -I$(IPETSCDIR) \
+CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I$(IPETSCDIR) \
            $(CONF) -D__DIR__='"is/impls/seq/stride/"'
 SOURCEC  = stride.c
 SOURCEF  =

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.7 1995/08/03 20:38:06 curfman Exp curfman $";
+static char vcid[] = "$Id: snesut.c,v 1.1 1995/08/22 19:40:03 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: snesut.c,v 1.7 1995/08/03 20:38:06 curfman Exp curfma
 #include <string.h>
 #endif
 
-/*@ 
+/*@C
    SNESDefaultMonitor - Default SNES monitoring routine.
 
    Input Parameters:
@@ -71,7 +71,7 @@ int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
   return 0;
 }
 /* ---------------------------------------------------------------- */
-/*@ 
+/*@C 
    SNESDefaultConverged - Default test for monitoring the convergence 
    of the solvers for systems of nonlinear equations.
 

@@ -15,7 +15,10 @@ C          5  = numtid
 C          6  = N
 
       integer          ctx(8),ierr
-      integer          snes,J,x,r,u,F,N,start,end,nn,i,ii,its
+      SNES             snes
+      Mat              J
+      Vec              x,r,u,F
+      integer          N,start,end,nn,i,ii,its
       double precision xp,FF,UU,h
       character*(10)   matrixname
       external         FormJacobian,FormFunction,FormInitialGuess

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.14 1995/08/30 01:27:41 curfman Exp $";
+static char vcid[] = "$Id: da2.c,v 1.16 1995/09/01 16:40:21 curfman Exp bsmith $";
 #endif
  
 /*
@@ -88,69 +88,20 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
 
     DrawSyncFlush(win);
     MPI_Barrier(da->comm);
+    /* overlay ghost numbers, useful for error checking */
+    /* put in numbers */
 
-    if (da->stencil_type == DA_STENCIL_BOX) {
-
-      /* overlay ghost numbers, useful for error checking */
-      /* put in numbers */
-
-      base = 0; idx = da->idx;
-      ymin = da->Ys; ymax = da->Ye; xmin = da->Xs; xmax = da->Xe;
-      for ( y=ymin; y<ymax; y++ ) {
-        for ( x=xmin; x<xmax; x++ ) {
-          if ((base % da->w) == 0) {
-            sprintf(node,"%d",idx[base]/da->w);
-            DrawText(win,x/da->w,y,DRAW_BLUE,node);
-          }
-          base++;
+    base = 0; idx = da->idx;
+    ymin = da->Ys; ymax = da->Ye; xmin = da->Xs; xmax = da->Xe;
+    for ( y=ymin; y<ymax; y++ ) {
+      for ( x=xmin; x<xmax; x++ ) {
+        if ((base % da->w) == 0) {
+          sprintf(node,"%d",idx[base]/da->w);
+          DrawText(win,x/da->w,y,DRAW_BLUE,node);
         }
-      }        
-    }
-    else  /* Print ghost points with star stencil */
-    {
-      /* overlay ghost numbers, useful for error checking */
-      /* put in numbers */
-
-      /* Bottom part */
-      base = 0; idx = da->idx;
-      ymin = da->Ys; ymax = da->ys; xmin = da->xs; xmax = da->xe;
-      for ( y=ymin; y<ymax; y++ ) {
-        for ( x=xmin; x<xmax; x++ ) {
-          if ((base % da->w) == 0) {
-            sprintf(node,"%d",idx[base]/da->w);
-            DrawText(win,x/da->w,y,DRAW_BLUE,node);
-          }
-          base++;
-        }
-      }      
-  
-      /* Middle part */
-      ymin = da->ys; ymax = da->ye; xmin = da->Xs; xmax = da->Xe;
-      for ( y=ymin; y<ymax; y++ ) {
-        for ( x=xmin; x<xmax; x++ ) {
-          if ((base % da->w) == 0) {
-            sprintf(node,"%d",idx[base]/da->w);
-            DrawText(win,x/da->w,y,DRAW_BLUE,node);
-          }
-          base++;
-        }
-      }      
-  
-      /* Top part */
-      ymin = da->ye; ymax = da->Ye; xmin = da->xs; xmax = da->xe;
-      for ( y=ymin; y<ymax; y++ ) {
-        for ( x=xmin; x<xmax; x++ ) {
-          if ((base % da->w) == 0) {
-            sprintf(node,"%d",idx[base]/da->w);
-            DrawText(win,x/da->w,y,DRAW_BLUE,node);
-          }
-          base++;
-        }
-      }      
-
-    }      
-
-
+        base++;
+      }
+    }        
     DrawSyncFlush(win);
   }
   return 0;
@@ -236,10 +187,10 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* determine ghost region */
   /* Assume No Periodicity */
-    if (xs-s > 0) Xs = xs - s; else Xs = 0; 
-    if (ys-s > 0) Ys = ys - s; else Ys = 0; 
-    if (xe+s <= M) Xe = xe + s; else Xe = M; 
-    if (ye+s <= N) Ye = ye + s; else Ye = N;
+  if (xs-s > 0) Xs = xs - s; else Xs = 0; 
+  if (ys-s > 0) Ys = ys - s; else Ys = 0; 
+  if (xe+s <= M) Xe = xe + s; else Xe = M; 
+  if (ye+s <= N) Ye = ye + s; else Ye = N;
 
   /* X Periodic */
   if (wrap == DA_XPERIODIC || wrap ==  DA_XYPERIODIC) {
@@ -273,11 +224,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* allocate the base parallel and sequential vectors */
   ierr = VecCreateMPI(comm,x*y,PETSC_DECIDE,&global); CHKERRQ(ierr);
-  if (stencil_type == DA_STENCIL_BOX)
-    { ierr = VecCreateSequential(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),&local);}
-  else
-    { ierr = VecCreateSequential(MPI_COMM_SELF,(Xe-Xs)*y+(Ye-ye)*x+(ys-Ys)*x,
-                                 &local);}
+  ierr = VecCreateSequential(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),&local);
   CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
@@ -285,21 +232,11 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   VecGetOwnershipRange(global,&start,&end);
   ierr = ISCreateStrideSequential(MPI_COMM_SELF,x*y,start,1,&to);CHKERRQ(ierr);
 
-  if (stencil_type == DA_STENCIL_BOX) {
-    left = xs - Xs; 
-    down = ys - Ys; up    = down + y;
-    from = 0;
-    for ( i=down; i<up; i++ ) {
-      ierr = ISAddStrideSequential(&from,x,left + i*(Xe-Xs),1); CHKERRQ(ierr);
-    }
-  }
-  else { 
-    left = xs - Xs; 
-    from = 0;
-    for ( i=0; i<y; i++ ) {
-      ierr = ISAddStrideSequential(&from,x,(ys-Ys)*x+left + i*(Xe-Xs),1); 
-      CHKERRQ(ierr);
-    }
+  left = xs - Xs; 
+  down = ys - Ys; up    = down + y;
+  from = 0;
+  for ( i=down; i<up; i++ ) {
+    ierr = ISAddStrideSequential(&from,x,left + i*(Xe-Xs),1); CHKERRQ(ierr);
   }
 
   ierr = VecScatterCtxCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
@@ -309,12 +246,38 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ISDestroy(from); ISDestroy(to);
 
   /* global to local must include ghost points */
-  if (stencil_type == DA_STENCIL_BOX)
-    { ierr = ISCreateStrideSequential(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),0,1,&to);}
-  else
-    { ierr = ISCreateStrideSequential(MPI_COMM_SELF,
-                                  (Xe-Xs)*y + (Ye-ye)*x + (ys-Ys)*x,0,1,&to);}
-  CHKERRQ(ierr); 
+  if (stencil_type == DA_STENCIL_BOX) {
+    ierr = ISCreateStrideSequential(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),0,1,&to);
+    CHKERRQ(ierr); 
+  } else {
+    /* must drop into cross shape region */
+    /*       ---------|
+            |  top    |
+         |---         ---|
+         |   middle      |
+         |               |
+         ----         ----
+            | bottom  |
+            -----------
+        Xs xs        xe  Xe */
+    /* bottom */
+    to = 0;
+    left = xs - Xs; 
+    down = ys - Ys; up    = down + y;
+    for ( i=0; i<down; i++ ) {
+      ierr = ISAddStrideSequential(&to,xe-xs,left+i*(Xe-Xs),1);CHKERRQ(ierr);
+    }
+    /* middle */
+    for ( i=down; i<up; i++ ) {
+      ierr = ISAddStrideSequential(&to,Xe-Xs,i*(Xe-Xs),1); CHKERRQ(ierr);
+    }
+    /* top */
+    for ( i=up; i<Ye-Ys; i++ ) {
+      ierr = ISAddStrideSequential(&to,xe-xs,left+i*(Xe-Xs),1);CHKERRQ(ierr);
+    }
+
+  }
+
 
   /* determine who lies on each side of use stored in    n6 n7 n8
                                                          n3    n5
@@ -716,7 +679,7 @@ int DAView(DA da, Viewer v)
   return (*da->view)((PetscObject)da,v);
 }  
 
-/*@
+/*@C
    DAGetGlobalIndices - Returns the global node number of all local nodes,
    including ghost nodes.
 

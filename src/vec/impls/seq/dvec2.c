@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.13 1995/06/21 14:14:12 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.14 1995/08/24 22:26:14 bsmith Exp bsmith $ */
 
 /*
      These are routines shared by sequential vectors and BLAS sequential 
@@ -109,12 +109,14 @@ static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec yin, Vec *x )
   PLogFlops(nv*2*n);
   for (j=0; j<nv; j++) {
     xx = ((Vec_Seq *)(x[j]->data))->array;
-    /* This should really look at the case alpha = +1 as well */
     if (alpha[j] == -1.0) {
-	YMX(yy,xx,n);
+      YMX(yy,xx,n);
     }
-    else {
-	APXY(yy,alpha[j],xx,n);
+    else if (alpha[j] == 1.0) {
+      YPX(yy,xx,n);
+    }
+    else if (alpha[j] != 0.0) {
+      APXY(yy,alpha[j],xx,n);
     }
   }
   return 0;
@@ -138,6 +140,7 @@ static int VecWAXPY_Seq(Scalar* alpha,Vec xin,Vec yin,Vec win )
   Scalar   *xx = x->array, *yy = y->array, *ww = w->array;
   if (*alpha == 1.0) {
     PLogFlops(n);
+    /* could call BLAS axpy after call to memcopy, but may be slower */
     for (i=0; i<n; i++) ww[i] = yy[i] + xx[i];
   }
   else if (*alpha == -1.0) {

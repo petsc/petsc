@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.22 1995/08/22 19:28:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.23 1995/08/24 22:26:00 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -101,7 +101,7 @@ static int ISView_Stride(PetscObject obj, Viewer viewer)
 static struct _ISOps myops = { ISGetSize_Stride,ISGetSize_Stride,
                                ISGetIndices_Stride,
                                ISRestoreIndices_Stride,0};
-/*@
+/*@C
    ISCreateStrideSequential - Creates a data structure for an index set 
    containing a list of evenly spaced integers.
 

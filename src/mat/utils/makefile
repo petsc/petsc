@@ -2,7 +2,7 @@ IPETSCDIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I..\
+CFLAGS   =  $(PETSC_INCLUDE) -I..\
            -I../impls/aij/seq -I../impls/aij/mpi \
            -I../impls/row/seq -I../impls/row/mpi \
            -I../impls/bdiag/seq -I../impls/bdiag/mpi \

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.45 1995/08/24 22:27:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.46 1995/08/27 13:58:47 bsmith Exp bsmith $";
 #endif
 
 /*  
@@ -31,7 +31,7 @@ int PCPrintHelp(PC pc)
   return 0;
 }
 
-/*@
+/*@C
    PCDestroy - Destroys PC context that was created with PCCreate().
 
    Input Parameter:
@@ -52,7 +52,7 @@ int PCDestroy(PC pc)
   return ierr;
 }
 
-/*@
+/*@C
    PCCreate - Creates a preconditioner context.
 
    Input Parameter:
@@ -319,7 +319,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 
   return 0;
 }
-/*@
+/*@C
    PCGetOperators - Gets the matrix associated with the linear system and
    possibly a different one associated with the preconditioner.
 
@@ -365,7 +365,7 @@ int PCSetVector(PC pc,Vec vec)
   return 0;
 }
 
-/*@
+/*@C
    PCGetMethodFromContext - Gets the preconditioner method from an 
    active preconditioner context.
 
@@ -386,7 +386,7 @@ int PCGetMethodFromContext(PC pc,PCMethod *method)
   return 0;
 }
 
-/*@ 
+/*@C 
    PCGetFactoredMatrix - Gets the factored matrix from the
    preconditioner context.  This routine is valid only for the LU, 
    Incomplete LU, Cholesky and Incomplete Cholesky methods.
@@ -406,7 +406,7 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
   return 0;
 }
 
-/*@
+/*@C
    PCSetOptionsPrefix - Sets the prefix used for searching for all 
    PC options in the database.
 

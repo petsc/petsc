@@ -2,8 +2,9 @@
 #include "include/finclude/petsc.h"
 #include "include/finclude/draw.h"
 
- 
-      integer           draw, lg, axis
+      DrawCtx           draw
+      DrawLGCtx         lg
+      DrawAxisCtx       axis
       integer           n,i, ierr, x, y, width, height
       double precision  xd,yd
 

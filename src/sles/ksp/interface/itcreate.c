@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.55 1995/08/23 17:09:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.56 1995/08/24 22:26:36 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -57,7 +57,7 @@ int KSPView(KSP ksp,Viewer viewer)
 }
 
 static NRList *__ITList = 0;
-/*@
+/*@C
    KSPCreate - Creates the default KSP context.
 
    Output Parameter:

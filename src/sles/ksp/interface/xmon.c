@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xmon.c,v 1.11 1995/07/30 14:56:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.12 1995/08/15 20:26:43 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: xmon.c,v 1.11 1995/07/30 14:56:59 bsmith Exp bsmith $
 #include <math.h>
 
 
-/*@
+/*@C
    KSPLGMonitorCreate - Creates a line graph context for use with 
    KSP to monitor convergence of residual norms.
 
@@ -52,7 +52,7 @@ int KSPLGMonitor(KSP itP,int n,double rnorm,void *monctx)
   return 0;
 } 
  
-/*@
+/*@C
    KSPLGMonitorDestroy - Destroys a line graph context that was created 
    with KSPLGMonitorCreate().
 

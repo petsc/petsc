@@ -1,6 +1,10 @@
 
 C      Include file for for Fortran use of the Draw package
 C
+#define DrawCtx     integer
+#define DrawLGCtx   integer
+#define DrawAxisCtx integer
+C
       integer draw_white,draw_black,draw_red,draw_yellow,draw_green,
      *        draw_cyan,draw_blue
 

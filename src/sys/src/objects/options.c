@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.38 1995/08/24 22:27:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.39 1995/08/30 20:20:17 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -79,7 +79,11 @@ MPI_Datatype  MPIU_COMPLEX;
 @*/
 int PetscInitialize(int *argc,char ***args,char *file,char *env)
 {
-  int ierr,flag;
+  int    ierr,flag;
+  static int PetscInitializedCalled = 0;
+
+  if (PetscInitializedCalled) SETERRQ(1," PetscInitialize: CANNOT call twice");
+  PetscInitializedCalled = 0;
 
   MPI_Initialized(&flag);
   if (!flag) {
@@ -93,6 +97,12 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env)
   ierr = OptionsCreate_Private(argc,args,file,env); CHKERRQ(ierr);
   ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr);
   ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
+  if (PetscBeganMPI) {
+    int mytid,numtid;
+    MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+    MPI_Comm_size(MPI_COMM_WORLD,&numtid);
+    PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",mytid,numtid);
+  }
   return 0;
 }
 
@@ -522,7 +532,7 @@ static int OptionsDestroy_Private()
   options = 0;
   return 0;
 }
-/*@
+/*@C
    OptionsSetValue - Sets an option name-value pair in the options 
    database, overriding whatever is already present.
 

@@ -1,5 +1,5 @@
 
-#include "../../../../matimpl.h"     /*I       "mat.h"   I*/
+#include "../../matimpl.h"     /*I       "mat.h"   I*/
 
 extern int MatOrderNatural(int*,int*,int*,int*,int*);
 extern int MatOrderND(int*,int*,int*,int*,int*);

@@ -1,115 +1,82 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.1 1995/08/27 00:35:57 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
-#include "vec.h"
+#include "da.h"
 #ifdef FORTRANCAPS
-#define veccreatesequential_  VECCREATESEQUENTIAL
-#define veccreate_            VECCREATE
-#define vecduplicate_         VECDUPLICATE
-#define veccreatempi_         VECCREATEMPI
-#define vecscatterctxcreate_  VECSCATTERCTXCREATE
-#define vecscatterctxcopy_    VECSCATTERCTXCOPY
-#define vecdestroy_           VECDESTROY
-#define vecscatterctxdestroy_ VECSCATTERCTXDESTROY
-#define vecrestorearray_      VECRESTOREARRAY
-#define vecgetarray_          VECGETARRAY
+#define dacreate1d_             DACREATE1D
+#define dacreate3d_             DACREATE3D
+#define dacreate2d_             DACREATE2D
+#define dadestroy_              DADESTROY
+#define dagetdistributedvector_ DAGETDISTRIBUTEDVECTOR
+#define dagetlocalvector_       DAGETLOCALVECTOR
+#define dagetscatterctx_        DAGETSCATTERCTX
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define veccreatesequential_  veccreatesequential
-#define veccreate_            veccreate
-#define vecduplicate_         vecduplicate
-#define veccreatempi_         veccreatempi
-#define vecscatterctxcreate_  vecscatterctxcreate
-#define vecscatterctxcopy_    vecscatterctxcopy
-#define vecdestroy_           vecdestroy
-#define vecscatterctxdestroy_ vecscatterctxdestroy
-#define vecrestorearray_      vecrestorearray
-#define vecgetarray_          vecgetarray
+#define dacreate1d_             dacreate1d
+#define dacreate3d_             dacreate3d
+#define dacreate2d_             dacreate2d
+#define dadestroy_              dadestroy
+#define dagetdistributedvector_ dagetdistributedvector
+#define dagetlocalvector_       dagetlocalvector
+#define dagetscatterctx_        dagetscatterctx
 #endif
 
-void vecrestorearray_(Vec x,Scalar *a,int *__ierr)
+
+void dagetdistributedvector_(DA da,Vec* g, int *__ierr )
 {
-  Vec    xin = (Vec)MPIR_ToPointer( *(int*)(x) );
-  Scalar *lx;
-  int    n,i;
-
-  *__ierr = VecGetArray(xin,&lx); if (*__ierr) return;
-  *__ierr = VecGetLocalSize(xin,&n); if (*__ierr) return;
-  for ( i=0; i<n; i++ ) {
-    lx[i] = a[i];
-  }
-  *__ierr = VecRestoreArray(xin,&lx);
+  Vec v;
+  *__ierr = DAGetDistributedVector((DA)MPIR_ToPointer(*(int*)(da)),&v);
+  *(int*) g = MPIR_FromPointer(v);
 }
-
-void vecgetarray_(Vec x,Scalar *a,int *__ierr)
+void dagetlocalvector_(DA da,Vec* l, int *__ierr )
 {
-  Vec    xin = (Vec)MPIR_ToPointer( *(int*)(x) );
-  Scalar *lx;
-  int    n,i;
-
-  *__ierr = VecGetArray(xin,&lx); if (*__ierr) return;
-  *__ierr = VecGetLocalSize(xin,&n); if (*__ierr) return;
-  for ( i=0; i<n; i++ ) {
-    a[i] = lx[i];
-  }
-  *__ierr = VecRestoreArray(xin,&lx);
+  Vec v;
+  *__ierr = DAGetLocalVector((DA)MPIR_ToPointer(*(int*)(da)),&v);
+  *(int*) l = MPIR_FromPointer(v);
 }
-   
-
-void vecscatterctxdestroy_(VecScatterCtx ctx, int *__ierr ){
-*__ierr = VecScatterCtxDestroy(
-	(VecScatterCtx)MPIR_ToPointer( *(int*)(ctx) ));
-   MPIR_RmPointer(*(int*)(ctx)); 
-}
-
-void vecdestroy_(Vec v, int *__ierr ){
-*__ierr = VecDestroy(
-	(Vec)MPIR_ToPointer( *(int*)(v) ));
-   MPIR_RmPointer(*(int*)(v)); 
-}
-
-void vecscatterctxcreate_(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx, int *__ierr ){
-  VecScatterCtx lV;
-*__ierr = VecScatterCtxCreate(
-	(Vec)MPIR_ToPointer( *(int*)(xin) ),
-	(IS)MPIR_ToPointer( *(int*)(ix) ),
-	(Vec)MPIR_ToPointer( *(int*)(yin) ),
-	(IS)MPIR_ToPointer( *(int*)(iy) ),&lV);
-  *(int*) newctx = MPIR_FromPointer(lV);
-}
-void vecscatterctxcopy_(VecScatterCtx sctx,VecScatterCtx *ctx, int *__ierr ){
-  VecScatterCtx lV;
-*__ierr = VecScatterCtxCopy(
-	(VecScatterCtx)MPIR_ToPointer( *(int*)(sctx) ),&lV);
-   *(int*) ctx = MPIR_FromPointer(lV); 
-}
-
-
-void veccreatempi_(MPI_Comm comm,int *n,int *N,Vec *vv, int *__ierr )
+void dagetscatterctx_(DA da,VecScatterCtx *ltog,VecScatterCtx *gtol,
+                      int *__ierr )
 {
-  Vec lV;
-  *__ierr = VecCreateMPI((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*n,*N,&lV);
-  *(int*)vv = MPIR_FromPointer(lV);
-}
-void veccreatesequential_(MPI_Comm comm,int *n,Vec *V, int *__ierr )
-{
-  Vec lV;
-  *__ierr = VecCreateSequential(
-	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*n,&lV);
-  *(int*)V = MPIR_FromPointer(lV);
+  VecScatterCtx l,g;
+  *__ierr = DAGetScatterCtx((DA)MPIR_ToPointer(*(int*)(da)),&l,&g);
+  *(int*) ltog = MPIR_FromPointer(l);
+  *(int*) gtol = MPIR_FromPointer(g);
 }
 
-void veccreate_(MPI_Comm comm,int *n,Vec *V, int *__ierr ){
-  Vec lV;
-  *__ierr = VecCreate(
-	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*n,&lV);
-  *(int*)V = MPIR_FromPointer(lV);
+void dadestroy_(DA da, int *__ierr ){
+  *__ierr = DADestroy(
+	(DA)MPIR_ToPointer( *(int*)(da) ));
+  MPIR_RmPointer(*(int*)(da));
 }
 
-void vecduplicate_(Vec v,Vec *newv, int *__ierr )
+void dacreate2d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
+                  *stencil_type,int *M,int *N,int *m,int *n,int *w,
+                  int *s,DA *inra, int *__ierr )
 {
-  Vec lV;
-  *__ierr = VecDuplicate((Vec)MPIR_ToPointer( *(int*)(v) ),&lV);
-  *(int*)newv = MPIR_FromPointer(lV);
+  DA da;
+  *__ierr = DACreate2d(
+	    (MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*wrap,
+            *stencil_type,*M,*N,*m,*n,*w,*s,&da);
+  *(int*) inra = MPIR_FromPointer(da);
+}
+
+void dacreate1d_(MPI_Comm comm,DAPeriodicType *wrap,int *M,int *w,int *s,
+                 DA *inra, int *__ierr )
+{
+  DA da;
+  *__ierr = DACreate1d(
+	   (MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*wrap,*M,*w,*s,&da);
+  *(int*) inra = MPIR_FromPointer(da);
+}
+
+void dacreate3d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType 
+                 *stencil_type,int *M,int *N,int *P,int *m,int *n,int *p,
+                 int *w,int *s,DA *inra, int *__ierr )
+{
+  DA da;
+  *__ierr = DACreate3d(
+	   (MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*wrap,*stencil_type,
+           *M,*N,*P,*m,*n,*p,*w,*s,&da);
+  *(int*) inra = MPIR_FromPointer(da);
 }

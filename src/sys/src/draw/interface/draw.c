@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.13 1995/07/07 17:16:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.14 1995/08/07 18:53:35 bsmith Exp bsmith $";
 #endif
 #include "drawimpl.h"  /*I "draw.h" I*/
   
@@ -35,7 +35,7 @@ int DrawLineSetWidth(DrawCtx ctx,double width)
   return (*ctx->ops->drawlinewidth)(ctx,width);
 }
 
-/*@
+/*@C
      DrawText - Draws text onto a drawable.
 
   Input Parameters:
@@ -51,7 +51,7 @@ int DrawText(DrawCtx ctx,double xl,double yl,int cl,char *text)
   return (*ctx->ops->drawtext)(ctx,xl,yl,cl,text);
 }
 
-/*@
+/*@C
      DrawTextVertical - Draws text onto a drawable.
 
   Input Parameters:
@@ -269,7 +269,7 @@ int DrawClear(DrawCtx ctx)
   if (ctx->ops->clear) return (*ctx->ops->clear)(ctx);
   return 0;
 }
-/*@
+/*@C
    DrawDestroy - Deletes a draw context.
 
   Input Parameters:

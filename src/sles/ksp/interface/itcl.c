@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.33 1995/08/14 17:27:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.34 1995/08/15 20:26:43 bsmith Exp bsmith $";
 #endif
 /*
     Command line interface for KSP
@@ -132,7 +132,7 @@ int KSPPrintHelp(KSP ctx)
   return 1;
 }
 
-/*@
+/*@C
    KSPSetOptionsPrefix - Sets the prefix used for searching for all 
    KSP options in the database.
 

@@ -2,8 +2,8 @@ IPETSCDIR = ../../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../..\
-           $(CONF) -D__DIR__='"pc/impls/ilu/"'
+CFLAGS   =  $(PETSC_INCLUDE) -I../.. $(BS_INCLUDE) -I../.. \
+           $(CONF) -I../../../../src/mat -D__DIR__='"pc/impls/ilu/"' 
 SOURCEC  = ilu.c ilubs.c
 SOURCEF  =
 SOURCEH  = 

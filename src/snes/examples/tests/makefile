@@ -1,8 +1,8 @@
 IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS        = $(OPT) $(CONF) $(PETSC_INCLUDE)
-FFLAGS        = -I$(IPETSCDIR) $(MPI_INCLUDE) $(BASEOPTF)
+CFLAGS        =  $(CONF) $(PETSC_INCLUDE)
+FFLAGS        =  $(BASEOPTF)
 SOURCEC       = 
 SOURCEF       =
 WSOURCE       = 
@@ -12,9 +12,10 @@ WOBJS         =
 OBJSF         =
 LIBBASE       = libpetscsnes
 EXAMPLES_1    = ex3 ex4 ex5 ex6
-RUNEXAMPLES_1 = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6
-EXAMPLES_2    = ex1 ex2 ex7 ex8
-RUNEXAMPLES_2 = runex1 runex2 runex7 runex8
+RUNEXAMPLES_1 = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6 \
+                runex6_2 runex6_3
+EXAMPLES_2    = ex1 ex2 ex7 ex8 ex9
+RUNEXAMPLES_2 = runex1 runex2 runex7 runex8 runex9
 EXAMPLES_3    = ex12
 RUNEXAMPLES_3 = runex12
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c
@@ -112,10 +113,21 @@ runex5_2:
            else echo "Possible problem with ex5_2, diffs above"; fi; \
            $(RM) -f ex5_2.tmp
 runex6:
-	-@$(MPIRUN) -np 4 ex6 -snes_smonitor > ex6_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 4 ex6 -Nx 4 -Ny 1 -snes_smonitor > ex6_1.tmp 2>&1;   \
            if (diff output/ex6_1.out ex6_1.tmp) then true; \
            else echo "Possible problem with ex6_1, diffs above"; fi; \
            $(RM) -f ex6_1.tmp
+runex6_2:
+	-@$(MPIRUN) -np 4 ex6 -Nx 2 -Ny 2 -snes_smonitor > ex6_2.tmp 2>&1;   \
+           if (diff output/ex6_1.out ex6_2.tmp) then true; \
+           else echo "Possible problem with ex6_3, diffs above"; fi; \
+           $(RM) -f ex6_2.tmp
+runex6_3:
+	-@$(MPIRUN) -np 4 ex6 -Nx 2 -Ny 2 -star -snes_smonitor>ex6_3.tmp 2>&1;\
+           if (diff output/ex6_1.out ex6_3.tmp) then true; \
+           else echo "Possible problem with ex6_3, diffs above"; fi; \
+           $(RM) -f ex6_3.tmp
+
 runex7:
 	-@$(MPIRUN) ex7 -snes_smonitor  > ex7_1.tmp 2>&1;   \
            if (diff output/ex7_1.out ex7_1.tmp) then true; \
@@ -126,6 +138,12 @@ runex8:
            if (diff output/ex8_1.out ex8_1.tmp) then true; \
            else echo "Possible problem with ex8_1, diffs above"; fi; \
            $(RM) -f ex8_1.tmp
+
+runex9:
+	-@$(MPIRUN) -np 2 ex9 -snes_smonitor  > ex9_1.tmp 2>&1;   \
+           if (diff output/ex9_1.out ex9_1.tmp) then true; \
+           else echo "Possible problem with ex9_1, diffs above"; fi; \
+           $(RM) -f ex9_1.tmp
 
 runex12:
 	-@$(MPIRUN) -np 2 ex12 -n 10 -snes_smonitor  > ex12_1.tmp 2>&1;   \

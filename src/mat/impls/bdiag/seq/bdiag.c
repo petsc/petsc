@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.41 1995/08/24 22:28:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.42 1995/09/03 22:21:41 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -930,7 +930,7 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
        MatGetSubMatrix_BDiag, 0,
        MatCopyPrivate_BDiag, 0, 0 };
 
-/*@
+/*@C
    MatCreateSequentialBDiag - Creates a sequential block diagonal matrix.
 
    Input Parameters:
@@ -960,6 +960,8 @@ $     diag = i/nb - j/nb  (integer division)
 
    The case nb=1 (conventional diagonal storage) is implemented as
    a special case. 
+
+   Note: Fortran programmers may not set diagv. It is ignored.
 
 .keywords: matrix, block, diagonal, sparse
 

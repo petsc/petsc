@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.32 1995/07/28 17:44:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.33 1995/08/07 18:51:04 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -56,7 +56,7 @@ int KSPSolve(KSP itP, int *its)
   return (*(itP)->solver)(itP,its);
 }
 
-/*@
+/*@C
    KSPDestroy - Destroys KSP context that was created with KSPCreate().
 
    Input Parameter:
@@ -126,7 +126,7 @@ int KSPGetPreconditionerSide(KSP itP, int *side)
   return 0;
 }
 
-/*@
+/*@C
     KSPGetMethodFromContext - Returns the chosen method type.
 
     Input Parameter:
@@ -321,7 +321,7 @@ int KSPSetRhs(KSP itP,Vec b)
   return 0;
 }
 
-/*@
+/*@C
    KSPGetRhs - Gets the right-hand-side for the linear system to
    be solved.
 
@@ -360,7 +360,7 @@ int KSPSetSolution(KSP itP, Vec x)
   return 0;
 }
 
-/*@
+/*@C
    KSPGetSolution - Gets the location of the solution for the 
    linear system to be solved. Note that this may not be where the solution
    is stored during the iterative process; see KSPBuildSolution().
@@ -403,7 +403,7 @@ int KSPSetBinv(KSP itP,PC B)
   return 0;
 }
 
-/*@
+/*@C
    KSPGetBinv - Returns a pointer to the preconditioner context
    set with KSPSetBinv().
 
@@ -423,7 +423,7 @@ int KSPGetBinv(KSP itP, PC *B)
   *B = (itP)->B; return 0;
 }
 
-/*@
+/*@C
    KSPSetMonitor - Sets the function to be used at every
    iteration of the iterative solution. 
 
@@ -463,7 +463,7 @@ int KSPSetMonitor(KSP itP, int (*monitor)(KSP,int,double,void*), void *mctx)
   return 0;
 }
 
-/*@
+/*@C
    KSPGetMonitorContext - Gets the monitoring context, as set by 
    KSPSetMonitor().
 
@@ -503,7 +503,7 @@ int KSPSetResidualHistory(KSP itP, double *a, int na)
   return 0;
 }
 
-/*@
+/*@C
    KSPSetConvergenceTest - Sets the function to be used to determine
    convergence.  
 
@@ -546,7 +546,7 @@ int KSPSetConvergenceTest(KSP itP, int (*converge)(KSP,int,double,void*),
   return 0;
 }
 
-/*@
+/*@C
    KSPGetConvergenceContext - Gets the convergence context set with 
    KSPSetConvergenceTest().  
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: foptions.c,v 1.9 1995/08/21 18:11:41 bsmith Exp $";
+static char vcid[] = "$Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmith $";
 #endif
 /*
     Fortran stub for PetscInitialize and Options routines. 
@@ -9,16 +9,35 @@ static char vcid[] = "$Id: foptions.c,v 1.9 1995/08/21 18:11:41 bsmith Exp $";
 
 
 */
+#include "zpetsc.h"
 #include "petsc.h"
 #if defined(HAVE_STRING_H)
 #include <string.h>
 #endif
 #include <stdio.h>
-#include "pviewer.h"
-#include "petscfix.h"
+#include "pinclude/pviewer.h"
+#include "pinclude/petscfix.h"
 extern int          PetscBeganMPI;
 #if defined(PETSC_COMPLEX)
 extern MPI_Datatype  MPIU_COMPLEX;
+#endif
+
+#ifdef FORTRANCAPS
+#define optionssetvalue_       OPTIONSSETVALUE
+#define optionshasname_        OPTIONSHASNAME
+#define optionsgetint_         OPTIONSGETINT
+#define optionsgetdouble_      OPTIONSGETDOUBLE
+#define optionsgetdoublearray_ OPTIONSGETDOUBLEARRAY
+#define petscfinalize_         PETSCFINALIZE
+#define petscsetcommonblock_   PETSCSETCOMMONBLOCK
+#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define optionssetvalue_       optionssetvalue
+#define optionshasname_        optionshasname
+#define optionsgetint_         optionsgetint
+#define optionsgetdouble_      optionsgetdouble
+#define optionsgetdoublearray_ optionsgetdoublearray
+#define petscfinalize_         petscfinalize
+#define petscsetcommonblock_   petscsetcommonblock
 #endif
 
 int OptionsCheckInitial_Private(),
@@ -50,6 +69,7 @@ int OptionsCheckInitial_Private(),
 extern "C" {
 #endif
 extern void mpi_init(int*);
+extern void petscsetcommonblock_(int*,int*,int*);
 #if defined(__cplusplus)
 };
 #endif
@@ -104,7 +124,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
 
 int petscinitialize(int *err)
 {
-  int  ierr,flag,argc = 0;
+  int  ierr,flag,argc = 0,s1,s2,s3;
   char **args = 0;
   *err = 1;
 
@@ -123,34 +143,24 @@ int petscinitialize(int *err)
   ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr);
   ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
 
+  s1 = MPIR_FromPointer(STDOUT_VIEWER_SELF);
+  s2 = MPIR_FromPointer(STDERR_VIEWER_SELF);
+  s3 = MPIR_FromPointer(STDOUT_VIEWER_WORLD);
+  petscsetcommonblock_(&s1,&s2,&s3);
+  if (PetscBeganMPI) {
+    int mytid,numtid;
+    MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+    MPI_Comm_size(MPI_COMM_WORLD,&numtid);
+    PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",mytid,numtid);
+  }
   *err = 0;
   return 0;
 }
-
-#ifdef FORTRANCAPS
-#define petscfinalize_ PETSCFINALIZE
-#elif !defined(FORTRANUNDERSCORE)
-#define petscfinalize_ petscfinalize
-#endif
 int  petscfinalize_(int *ierr){
   return *ierr = PetscFinalize();
 }
 
-#ifdef POINTER_64_BITS
-extern void *__ToPointer();
-extern int __FromPointer();
-extern void __RmPointer();
-#else
-#define __ToPointer(a) (a)
-#define __FromPointer(a) (int)(a)
-#define __RmPointer(a)
-#endif
 
-#ifdef FORTRANCAPS
-#define optionssetvalue_ OPTIONSSETVALUE
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define optionssetvalue_ optionssetvalue
-#endif
 int  optionssetvalue_(char *name,char *value,int *err, int len1,int len2)
 {
   char *c1,*c2;
@@ -170,11 +180,7 @@ int  optionssetvalue_(char *name,char *value,int *err, int len1,int len2)
   if (c2 != value) PETSCFREE(c2);
   return *err = ierr;
 }
-#ifdef FORTRANCAPS
-#define optionshasname_ OPTIONSHASNAME
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define optionshasname_ optionshasname
-#endif
+
 int  optionshasname_(char* pre,char *name,int *err,int len1,int len2){
   char *c1,*c2;
   int  ierr;
@@ -193,11 +199,7 @@ int  optionshasname_(char* pre,char *name,int *err,int len1,int len2){
   if (c2 != name) PETSCFREE(c2);
   return *err = ierr;
 }
-#ifdef FORTRANCAPS
-#define optionsgetint_ OPTIONSGETINT
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define optionsgetint_ optionsgetint
-#endif
+
 int  optionsgetint_(char*pre,char *name,int *ivalue,int *err,
                     int len1,int len2){
   char *c1,*c2;
@@ -217,11 +219,7 @@ int  optionsgetint_(char*pre,char *name,int *ivalue,int *err,
   if (c2 != name) PETSCFREE(c2);
   return *err = ierr;
 }
-#ifdef FORTRANCAPS
-#define optionsgetdouble_ OPTIONSGETDOUBLE
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define optionsgetdouble_ optionsgetdouble
-#endif
+
 int  optionsgetdouble_(char* pre,char *name,double *dvalue,int *err,
                        int len1,int len2){
   char *c1,*c2;
@@ -241,11 +239,7 @@ int  optionsgetdouble_(char* pre,char *name,double *dvalue,int *err,
   if (c2 != name) PETSCFREE(c2);
   return *err = ierr;
 }
-#ifdef FORTRANCAPS
-#define optionsgetdoublearray_ OPTIONSGETDOUBLEARRAY
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define optionsgetdoublearray_ optionsgetdoublearray
-#endif
+
 int  optionsgetdoublearray_(char* pre,char *name,
                       double *dvalue,int *nmax,int *err,int len1,int len2){
   char *c1,*c2;
@@ -297,7 +291,7 @@ int  optionsgetintarray_(char* pre,char *name,int *dvalue,int *nmax,int *err,
 int  optionsgetstring_(char *pre,char *name,char *string,
                        int *err, int len1, int len2,int len){
   char *c1,*c2;
-  int  ierr, maxl;
+  int  ierr;
   if (!pre[len1] == 0) {
     c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
     strncpy(c1,pre,len1);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.26 1995/08/31 16:39:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: err.c,v 1.27 1995/09/01 14:05:55 curfman Exp bsmith $";
 #endif
 #include "petsc.h"           /*I "petsc.h" I*/
 #include <stdio.h>           /*I <stdio.h> I*/
@@ -17,7 +17,7 @@ struct EH {
 
 static struct EH* eh = 0;
 
-/*@
+/*@C
    PetscAbortErrorHandler - Error handler that calls abort on error. 
    This routine is very useful when running in the debugger, because the 
    user can look directly at the stack frames and the variables.
@@ -125,7 +125,7 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
   return number;
 }
 
-/*@
+/*@C
    PetscPushErrorHandler - Sets a routine to be called on detection of errors.
 
    Input Parameters:

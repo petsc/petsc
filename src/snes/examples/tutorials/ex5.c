@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.23 1995/08/30 02:56:05 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.24 1995/08/30 03:30:59 curfman Exp bsmith $";
 #endif
 
 static char help[] =
@@ -47,18 +47,20 @@ int FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(SNES,Vec,void*);
 
 int main( int argc, char **argv )
 {
-  SLES         sles;
-  PC           pc;
-  SNES         snes;
-  SNESMethod   method = SNES_NLS;  /* nonlinear solution method */
-  Vec          x,r;
-  int          ierr, its, N, Nx, Ny, numtids; 
-  AppCtx       user;
-  double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
-  Mat          J;
+  SLES          sles;
+  PC            pc;
+  SNES          snes;
+  SNESMethod    method = SNES_NLS;  /* nonlinear solution method */
+  Vec           x,r;
+  int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, numtids; 
+  AppCtx        user;
+  double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  Mat           J;
+  DAStencilType stencil = DA_STENCIL_BOX;
 
   PetscInitialize( &argc, &argv, 0,0 );
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  if (OptionsHasName(0,"-star")) stencil = DA_STENCIL_STAR;
 
   user.mx = 4; user.my = 4; user.param = 6.0;
   OptionsGetInt(0,"-mx",&user.mx); OptionsGetInt(0,"-my",&user.my);
@@ -69,15 +71,12 @@ int main( int argc, char **argv )
   N = user.mx*user.my;
 
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
-  Ny = numtids; Nx = 1;
   OptionsGetInt(0,"-Nx",&Nx);
   OptionsGetInt(0,"-Ny",&Ny);
-  if (numtids != Nx*Ny) 
-    SETERRQ(1,"Incompatible number of processors: Nx * Ny != numtids");
   
   /* Set up distributed array */
-  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
-         user.my,Nx,Ny,1,1,&user.da); CHKERRA(ierr);
+  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,stencil,user.mx,
+                    user.my,Nx,Ny,1,1,&user.da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);

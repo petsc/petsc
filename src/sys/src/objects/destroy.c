@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.11 1995/08/22 16:29:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: destroy.c,v 1.12 1995/08/22 21:12:57 curfman Exp bsmith $";
 #endif
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
-/*@
+/*@C
    PetscObjectDestroy - Destroys any PetscObject, regardless of the type. 
    This routine should seldom be needed.
 
@@ -19,7 +19,7 @@ int PetscObjectDestroy(PetscObject obj)
   return 0;
 }
 
-/*@
+/*@C
    PetscObjectGetComm - Gets the MPI communicator for any PetscObject, 
    regardless of the type.
 

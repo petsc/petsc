@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.14 1995/07/28 04:14:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.15 1995/08/07 18:51:16 bsmith Exp bsmith $";
 #endif
 /*                       
 
@@ -68,7 +68,7 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
 }
 
 /*ARGSUSED*/
-/*@
+/*@C
     KSPCGDefaultMonitor - Default iterative monitor routine for CG;
     it prints the two norm of the true residual and estimation from
     the Lanczos method of the extreme eigenvalues of the preconditioned 

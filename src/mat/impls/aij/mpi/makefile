@@ -2,7 +2,7 @@ IPETSCDIR = ../../../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../../.. -I../seq \
+CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I../seq \
            $(CONF)
 SOURCEC  = mpiaij.c mmaij.c maijfact.c
 SOURCEF  =

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.14 1995/08/30 01:27:41 curfman Exp $";
+static char vcid[] = "$Id: da3.c,v 1.11 1995/09/01 16:40:27 curfman Exp bsmith $";
 #endif
 
 /*
@@ -106,11 +106,8 @@ int DAView_3d(PetscObject dain,Viewer ptr)
  
       }
     } 
-   
     DrawSyncFlush(win);
     MPI_Barrier(da->comm);
-
-  if (da->stencil_type == DA_STENCIL_BOX) {
     for (k=0-da->s; k<da->P+da->s; k++) {  
       /*Go through and draw for each plane*/
       if ((k >= da->Zs) && (k < da->Ze)) {
@@ -142,150 +139,6 @@ int DAView_3d(PetscObject dain,Viewer ptr)
         }
       }         
     } 
-  }
-  else
-  /* Print Ghost Points for Star Stencil */
-  {
-    /*Go through and draw for each plane*/
-    for (k=0-da->s; k<da->P+da->s; k++) {  
-  
-        /* overlay ghost numbers, useful for error checking */
-
-        /* Bottom Part */
-        if ((k<da->zs) && (k>=da->Zs)){ 
-          base = (da->ye-da->ys)*(da->xe-da->xs)*(k-da->Zs);
-          idx = da->idx;
-          plane=k;  
-          /*Keep z wrap around points on the drawing*/
-          if (k<0)    { plane=da->P+k; }  
-          if (k>=da->P) { plane=k-da->P; }
-          ymin = da->ys; ymax = da->ye; 
-          xmin = (da->M+1)*plane*da->w; 
-          xmax = (da->M+1)*plane*da->w+da->M*da->w;
-          for ( y=ymin; y<ymax; y++ ) {
-            for ( x=xmin+da->xs; x<xmin+da->xe; x+=da->w) {
-              sprintf(node,"%d",idx[base]/da->w);  
-              ycoord = y;
-              /*Keep y wrap around points on drawing */
-              if (y<0)      { ycoord = da->N+y; }   
-              if (y>=da->N) { ycoord = y-da->N; }
-              xcoord = x;   /*Keep x wrap points on drawing */          
-
-              if (x<xmin)  { xcoord = xmax - (xmin-x); } 
-              if (x>=xmax) { xcoord = xmin + (x-xmax); }
-              DrawText(win,xcoord/da->w,ycoord,DRAW_BLUE,node); 
-              base+=da->w;
-            }
-          }
-	}
-
-        
-        /* Middle Part */
-        if ((k<da->ze) && (k>=da->zs)) { 
-          base = (da->ye-da->ys)*(da->xe-da->xs)*(da->zs-da->Zs) + 
-                 ( (da->xe-da->xs)*(da->ys-da->Ys + da->Ye-da->ye) + 
-                   (da->Xe-da->Xs)*(da->ye-da->ys) ) * (k-da->zs);
-          idx=da->idx;
-          plane=k;  
-          /*Keep z wrap around points on the drawing*/
-          if (k<0)    { plane=da->P+k; }  
-          if (k>=da->P) { plane=k-da->P; }
-
-          /* below middle */
-          ymin = da->Ys; ymax = da->ys; 
-          xmin = (da->M+1)*plane*da->w; 
-          xmax = (da->M+1)*plane*da->w+da->M*da->w;
-          for ( y=ymin; y<ymax; y++ ) {
-            for ( x=xmin+da->xs; x<xmin+da->xe; x+=da->w) {
-              sprintf(node,"%d",idx[base]/da->w);
-              ycoord = y;
-              /*Keep y wrap around points on drawing */
-              if (y<0)      { ycoord = da->N+y; }   
-              if (y>=da->N) { ycoord = y-da->N; }
-              xcoord = x;   /*Keep x wrap points on drawing */          
-
-              if (x<xmin)  { xcoord = xmax - (xmin-x); }
-              if (x>=xmax) { xcoord = xmin + (x-xmax); }
-              DrawText(win,xcoord/da->w,ycoord,DRAW_BLUE,node);
-              base+=da->w;
-            }
-          }
-
-          /* center middle */
-          ymin = da->ys; ymax = da->ye; 
-          xmin = (da->M+1)*plane*da->w; 
-          xmax = (da->M+1)*plane*da->w+da->M*da->w;
-          for ( y=ymin; y<ymax; y++ ) {
-            for ( x=xmin+da->Xs; x<xmin+da->Xe; x+=da->w) {
-              sprintf(node,"%d",idx[base]/da->w);
-              ycoord = y;
-              /*Keep y wrap around points on drawing */
-              if (y<0)      { ycoord = da->N+y; }   
-              if (y>=da->N) { ycoord = y-da->N; }
-              xcoord = x;   /*Keep x wrap points on drawing */          
-
-              if (x<xmin)  { xcoord = xmax - (xmin-x); }
-              if (x>=xmax) { xcoord = xmin + (x-xmax); }
-              DrawText(win,xcoord/da->w,ycoord,DRAW_BLUE,node);
-              base+=da->w;
-            }
-          }
-          
-          /* above middle */
-          ymin = da->ye; ymax = da->Ye; 
-          xmin = (da->M+1)*plane*da->w; 
-          xmax = (da->M+1)*plane*da->w+da->M*da->w;
-          for ( y=ymin; y<ymax; y++ ) {
-            for ( x=xmin+da->xs; x<xmin+da->xe; x+=da->w) {
-              sprintf(node,"%d",idx[base]/da->w);
-              ycoord = y;
-              /*Keep y wrap around points on drawing */
-              if (y<0)      { ycoord = da->N+y; }   
-              if (y>=da->N) { ycoord = y-da->N; }
-              xcoord = x;   /*Keep x wrap points on drawing */          
-
-              if (x<xmin)  { xcoord = xmax - (xmin-x); }
-              if (x>=xmax) { xcoord = xmin + (x-xmax); }
-              DrawText(win,xcoord/da->w,ycoord,DRAW_BLUE,node);
-              base+=da->w;
-            }
-          }
-
-        }
-
-        
-        /* Top Part */
-        if ((k>=da->ze) && (k<da->Ze)) { 
-          base = (da->ye-da->ys)*(da->xe-da->xs)*(da->zs-da->Zs) + 
-                 ( (da->xe-da->xs)*(da->ys-da->Ys + da->Ye-da->ye) + 
-                   (da->Xe-da->Xs)*(da->ye-da->ys) ) * (da->ze-da->zs) +
-                   (da->ye-da->ys)*(da->xe-da->xs)*(k-da->ze); 
-          idx=da->idx;
-          plane=k;  
-          /*Keep z wrap around points on the drawing*/
-          if (k<0)    { plane=da->P+k; }  
-          if (k>=da->P) { plane=k-da->P; }
-          ymin = da->ys; ymax = da->ye; 
-          xmin = (da->M+1)*plane*da->w; 
-          xmax = (da->M+1)*plane*da->w+da->M*da->w;
-          for ( y=ymin; y<ymax; y++ ) {
-            for ( x=xmin+da->xs; x<xmin+da->xe; x+=da->w) {
-              sprintf(node,"%d",idx[base]/da->w); 
-              ycoord = y;
-              /*Keep y wrap around points on drawing */
-              if (y<0)      { ycoord = da->N+y; }   
-              if (y>=da->N) { ycoord = y-da->N; }
-              xcoord = x;   /*Keep x wrap points on drawing */          
-
-              if (x<xmin)  { xcoord = xmax - (xmin-x); } 
-              if (x>=xmax) { xcoord = xmin + (x-xmax); }
-              DrawText(win,xcoord/da->w,ycoord,DRAW_BLUE,node); 
-              base+=da->w;
-            }
-          }
-        }
-    } 
-  }
     DrawSyncFlush(win);
   }
   return 0;

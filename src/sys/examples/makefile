@@ -1,9 +1,9 @@
 IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS        = $(OPT) $(PETSC_INCLUDE) $(COPT) $(CONF) \
+CFLAGS        =  $(PETSC_INCLUDE) $(COPT) $(CONF) \
                  -D__DIR__='"sys/examples/"'
-FFLAGS        = $(MPI_INCLUDE) -I$(IPETSCDIR)
+FFLAGS        = 
 SOURCEC       = 
 SOURCEF       =
 SOURCEH       =

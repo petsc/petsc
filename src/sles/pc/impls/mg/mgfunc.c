@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: mgfunc.c,v 1.10 1995/06/14 17:23:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.11 1995/08/15 20:27:34 bsmith Exp bsmith $";
 #endif
 
 #include "mgimpl.h"
 
 
-/*@
+/*@C
    MGGetCoarseSolve - Gets the solver context to be used on the coarse grid.
 
    Input Parameter:
@@ -109,7 +109,7 @@ int MGSetRestriction(PC pc,int l,Mat mat)
   return 0;
 }
 
-/*@
+/*@C
    MGGetSmoother - Gets the SLES context to be used as smoother for 
    both pre- and post-smoothing.  Call both MGGetSmootherUp() and 
    MGGetSmootherDown() to use different functions for pre- and 
@@ -133,7 +133,7 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
   return 0;
 }
 
-/*@
+/*@C
    MGGetSmootherUp - Gets the SLES context to be used as smoother after 
    coarse grid correction (post-smoother). 
 
@@ -155,7 +155,7 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
   return 0;
 }
 
-/*@
+/*@C
    MGGetSmootherDown - Gets the SLES context to be used as smoother before 
    coarse grid correction (pre-smoother). 
 

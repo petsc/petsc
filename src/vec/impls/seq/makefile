@@ -2,7 +2,7 @@ IPETSCDIR = ../../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I.. -I../.. \
+CFLAGS   =  $(PETSC_INCLUDE) -I.. -I../.. \
            -I$(IPETSCDIR)/src/is $(CONF) \
            -D__DIR__='"vec/impls/seq/"'
 SOURCEC  = bvec2.c 

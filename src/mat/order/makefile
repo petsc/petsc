@@ -1,4 +1,4 @@
-IPETSCDIR = ../../../../../../
+IPETSCDIR = ../../../../
 #
 #  All the Sparspak routines have been converted to C with the F2C 
 # converter. We do not include in the distribution the original Fortran 77 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.37 1995/08/23 17:17:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.38 1995/08/24 22:29:38 bsmith Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -71,7 +71,7 @@ int SLESPrintHelp(SLES sles)
   return 0;
 }
 
-/*@
+/*@C
    SLESSetOptionsPrefix - Sets the prefix used for searching for all 
    SLES options in the database.
 
@@ -243,7 +243,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   return 0;
 }
 
-/*@
+/*@C
    SLESGetKSP - Returns the KSP context for a SLES solver.
 
    Input Parameter:
@@ -266,7 +266,7 @@ int SLESGetKSP(SLES sles,KSP *ksp)
   *ksp = sles->ksp;
   return 0;
 }
-/*@
+/*@C
    SLESGetPC - Returns the preconditioner (PC) context for a SLES solver.
 
    Input Parameter:

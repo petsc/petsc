@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.38 1995/08/17 01:22:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.39 1995/08/24 22:30:47 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -99,7 +99,8 @@ int SNESSolve_LS(SNES snes,int *outits)
   }
   if (i == maxits) {
     PLogInfo((PetscObject)snes,
-      "Maximum number of iterations has been reached: %d\n",maxits);
+      "SNESSolve_LS: Maximum number of iterations has been reached: %d\n",
+      maxits);
     i--;
   }
   *outits = i+1;
@@ -126,7 +127,7 @@ int SNESDestroy_LS(PetscObject obj)
 }
 /* ------------------------------------------------------------ */
 /*ARGSUSED*/
-/*@
+/*@C
    SNESNoLineSearch - This routine is not a line search at all; 
    it simply uses the full Newton step.  Thus, this routine is intended 
    to serve as a template and is not recommended for general use.  
@@ -169,7 +170,7 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   return 0;
 }
 /* ------------------------------------------------------------------ */
-/*@
+/*@C
    SNESCubicLineSearch - This routine performs a cubic line search and
    is the default line search method.
 
@@ -223,9 +224,11 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
     scale = maxstep/(*ynorm);
 #if defined(PETSC_COMPLEX)
-    PLogInfo((PetscObject)snes,"Scaling step by %g\n",real(scale));
+    PLogInfo((PetscObject)snes,
+                    "SNESCubicLineSearch: Scaling step by %g\n",real(scale));
 #else
-    PLogInfo((PetscObject)snes,"Scaling step by %g\n",scale);
+    PLogInfo((PetscObject)snes,
+                    "SNESCubicLineSearch: Scaling step by %g\n",scale);
 #endif
     ierr = VecScale(&scale,y); CHKERRQ(ierr);
     *ynorm = maxstep;
@@ -246,7 +249,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   ierr = VecNorm(g,gnorm); 
   if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
     ierr = VecCopy(w,y); CHKERRQ(ierr);
-    PLogInfo((PetscObject)snes,"Using full step\n");
+    PLogInfo((PetscObject)snes,"SNESCubicLineSearch: Using full step\n");
     goto theend;
   }
 
@@ -268,7 +271,8 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   ierr = VecNorm(g,gnorm); CHKERRQ(ierr);
   if (*gnorm <= fnorm + alpha*initslope) {      /* sufficient reduction */
     ierr = VecCopy(w,y); CHKERRQ(ierr);
-    PLogInfo((PetscObject)snes,"Quadratically determined step, lambda %g\n",lambda);
+    PLogInfo((PetscObject)snes,
+    "SNESCubicLineSearch: Quadratically determined step, lambda %g\n",lambda);
     goto theend;
   }
 
@@ -276,8 +280,10 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   count = 1;
   while (1) {
     if (lambda <= minlambda) { /* bad luck; use full step */
-      PLogInfo((PetscObject)snes,"Unable to find good step length! %d \n",count);
-      PLogInfo((PetscObject)snes, "f %g fnew %g ynorm %g lambda %g \n",
+      PLogInfo((PetscObject)snes,
+         "SNESCubicLineSearch:Unable to find good step length! %d \n",count);
+      PLogInfo((PetscObject)snes, 
+         "SNESCubicLineSearch:f %g fnew %g ynorm %g lambda %g \n",
               fnorm,*gnorm, *ynorm,lambda);
       ierr = VecCopy(w,y); CHKERRQ(ierr);
       *flag = -1; break;
@@ -314,7 +320,8 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
     ierr = VecNorm(g,gnorm); CHKERRQ(ierr);
     if (*gnorm <= fnorm + alpha*initslope) {      /* is reduction enough */
       ierr = VecCopy(w,y); CHKERRQ(ierr);
-      PLogInfo((PetscObject)snes,"Cubically determined step, lambda %g\n",lambda);
+      PLogInfo((PetscObject)snes,
+        "SNESCubicLineSearch: Cubically determined step, lambda %g\n",lambda);
       *flag = -1; break;
     }
     count++;
@@ -324,7 +331,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   return 0;
 }
 /* ------------------------------------------------------------------ */
-/*@
+/*@C
    SNESQuadraticLineSearch - This routine performs a cubic line search.
 
    Input Parameters:
@@ -394,7 +401,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   ierr = VecNorm(g,gnorm); CHKERRQ(ierr);
   if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
     ierr = VecCopy(w,y); CHKERRQ(ierr);
-    PLogInfo((PetscObject)snes,"Using full step\n");
+    PLogInfo((PetscObject)snes,"SNESQuadraticLineSearch: Using full step\n");
     goto theend;
   }
 
@@ -403,8 +410,10 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   count = 1;
   while (1) {
     if (lambda <= minlambda) { /* bad luck; use full step */
-      PLogInfo((PetscObject)snes,"Unable to find good step length! %d \n",count);
-      PLogInfo((PetscObject)snes, "f %g fnew %g ynorm %g lambda %g \n",
+      PLogInfo((PetscObject)snes,
+       "SNESQuadraticLineSearch:Unable to find good step length! %d \n",count);
+      PLogInfo((PetscObject)snes, 
+        "SNESQuadraticLineSearch:f %g fnew %g ynorm %g lambda %g \n",
                    fnorm,*gnorm, *ynorm,lambda);
       ierr = VecCopy(w,y); CHKERRQ(ierr);
       *flag = -1; break;
@@ -425,7 +434,9 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
     ierr = VecNorm(g,gnorm); CHKERRQ(ierr);
     if (*gnorm <= fnorm + alpha*initslope) {      /* sufficient reduction */
       ierr = VecCopy(w,y); CHKERRQ(ierr);
-      PLogInfo((PetscObject)snes,"Quadratically determined step, lambda %g\n",lambda);
+      PLogInfo((PetscObject)snes,
+        "SNESQuadraticLineSearch:Quadratically determined step, lambda %g\n",
+        lambda);
       break;
     }
     count++;

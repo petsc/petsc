@@ -1,14 +1,13 @@
 C
-C  "$Id: somefort.F,v 1.2 1995/09/03 14:36:10 bsmith Exp bsmith $";
+C  "$Id: somefort.F,v 1.3 1995/09/03 14:37:24 bsmith Exp bsmith $";
 C
 C    Utility routine used to set some values into a Fortran
 C  common block
 
-
       subroutine PetscSetCommonBlock(s1,s2,s3)
       integer s1,s2,s3
 
-#include      "include/finclude/petsc.h"
+#include      "../../../include/finclude/petsc.h"
 
       STDOUT_VIEWER_SELF  = s1
       STDERR_VIEWER_SELF  = s2

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.54 1995/09/01 04:52:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.55 1995/09/02 02:00:02 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -867,16 +867,7 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
       BSbackward( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
     CHKERRBS(0);
   }
-  else {
-    if (bspinfo->single)
-      BSILUbackward1( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
-    else
-      BSILUbackward( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
-    CHKERRBS(0);
-  }
-#if defined(PETSC_DEBUG)
-  MLOG_ACC(MM_BACKWARD);
-#endif
+  /* not needed for ILU version since forward does it all */
 
   /* Apply diagonal scaling to vector:  [  y = D^{1/2} * y ] */
   if (!bsif->vecs_permscale) {
@@ -1154,7 +1145,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
 
 /* ------------------------------------------------------------------- */
 
-/*@
+/*@C
    MatCreateMPIRowbs - Creates a symmetric, sparse parallel matrix in 
    the MPIRowbs format.  This format is currently only partially 
    supported and is intended primarily as a BlockSolve interface.

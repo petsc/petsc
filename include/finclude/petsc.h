@@ -1,6 +1,8 @@
 
 C      Include file for for Fortran use of the PETSc package
 C
+#define MPI_Comm integer
+C
 #include "mpif.h"
 
       integer PETSC_TRUE, PETSC_FALSE, PETSC_DECIDE, PETSC_DEFAULT

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.25 1995/08/22 19:35:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.26 1995/08/24 22:28:50 bsmith Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -562,7 +562,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
        0,0,0,
        0};
 
-/*@
+/*@C
    MatCreateMPIBDiag - Creates a sparse parallel matrix in MPIBDiag format.
 
    Input Parameters:
