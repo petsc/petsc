@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.139 1998/07/13 20:42:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.140 1998/07/14 02:38:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1380,6 +1380,10 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   
   b->m       = m; B->m = m; B->M = m;
   b->n       = n; B->n = n; B->N = n;
+
+  ierr = MapCreate(comm,m,m,B->rmap);CHKERRQ(ierr);
+  ierr = MapCreate(comm,n,n,B->cmap);CHKERRQ(ierr);
+
   b->mbs     = mbs;
   b->nbs     = nbs;
   b->imax    = (int *) PetscMalloc( (mbs+1)*sizeof(int) ); CHKPTRQ(b->imax);

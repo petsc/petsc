@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.150 1998/05/29 22:43:06 balay Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.151 1998/05/29 22:49:22 balay Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -808,8 +808,11 @@ int MatDestroy_SeqDense(Mat mat)
   if (l->pivots) PetscFree(l->pivots);
   if (!l->user_alloc) PetscFree(l->v);
   PetscFree(l);
-  if (mat->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
+  if (mat->rmap) {
+    ierr = MapDestroy(mat->rmap);CHKERRQ(ierr);
+  }
+  if (mat->cmap) {
+    ierr = MapDestroy(mat->cmap);CHKERRQ(ierr);
   }
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
@@ -1184,7 +1187,7 @@ int MatCopy_SeqDense(Mat A, Mat B)
 }
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatSetValues_SeqDense,
+static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        MatGetRow_SeqDense, 
        MatRestoreRow_SeqDense,
        MatMult_SeqDense, 
@@ -1221,11 +1224,35 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
        0, 
        MatGetArray_SeqDense, 
        MatRestoreArray_SeqDense,
-       MatConvertSameType_SeqDense,0,0,0,0,
-       MatAXPY_SeqDense,MatGetSubMatrices_SeqDense,0,
+       MatConvertSameType_SeqDense,
+       0,
+       0,
+       0,
+       0,
+       MatAXPY_SeqDense,
+       MatGetSubMatrices_SeqDense,
+       0,
        MatGetValues_SeqDense,
-       MatCopy_SeqDense,0,MatScale_SeqDense,
-       0,0,0,MatGetBlockSize_SeqDense};
+       MatCopy_SeqDense,
+       0,
+       MatScale_SeqDense,
+       0,
+       0,
+       0,
+       MatGetBlockSize_SeqDense,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatGetMaps_Petsc};
 
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSeqDense"
@@ -1270,16 +1297,20 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
   PLogObjectCreate(B);
   b             = (Mat_SeqDense *) PetscMalloc(sizeof(Mat_SeqDense)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqDense));
-  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));
   B->ops->destroy    = MatDestroy_SeqDense;
   B->ops->view       = MatView_SeqDense;
   B->factor          = 0;
   B->mapping         = 0;
   PLogObjectMemory(B,sizeof(struct _p_Mat));
-  B->data       = (void *) b;
+  B->data            = (void *) b;
 
   b->m = m;  B->m = m; B->M = m;
   b->n = n;  B->n = n; B->N = n;
+
+  ierr = MapCreate(comm,m,m,B->rmap);CHKERRQ(ierr);
+  ierr = MapCreate(comm,n,n,B->cmap);CHKERRQ(ierr);
+
   b->pivots       = 0;
   b->roworiented  = 1;
   if (data == PETSC_NULL) {

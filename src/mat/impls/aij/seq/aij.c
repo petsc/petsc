@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.274 1998/07/13 20:26:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.275 1998/07/14 02:35:46 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1861,6 +1861,10 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   
   b->m = m; B->m = m; B->M = m;
   b->n = n; B->n = n; B->N = n;
+
+  ierr = MapCreate(comm,m,m,B->rmap);CHKERRQ(ierr);
+  ierr = MapCreate(comm,n,n,B->cmap);CHKERRQ(ierr);
+
   b->imax = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(b->imax);
   if (nnz == PETSC_NULL) {
     if (nz == PETSC_DEFAULT) nz = 10;
@@ -1873,11 +1877,11 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   }
 
   /* allocate the matrix space */
-  len     = nz*(sizeof(int) + sizeof(Scalar)) + (b->m+1)*sizeof(int);
-  b->a  = (Scalar *) PetscMalloc( len ); CHKPTRQ(b->a);
-  b->j  = (int *) (b->a + nz);
+  len             = nz*(sizeof(int) + sizeof(Scalar)) + (b->m+1)*sizeof(int);
+  b->a            = (Scalar *) PetscMalloc( len ); CHKPTRQ(b->a);
+  b->j            = (int *) (b->a + nz);
   PetscMemzero(b->j,nz*sizeof(int));
-  b->i  = b->j + nz;
+  b->i            = b->j + nz;
   b->singlemalloc = 1;
 
   b->i[0] = -b->indexshift;
