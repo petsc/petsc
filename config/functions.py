@@ -89,7 +89,7 @@ class Configure(config.base.Configure):
   def checkVPrintf(self):
     self.check('vprintf')
     '''Checks whether vprintf requires a char * last argument, and if it does defines HAVE_VPRINTF_CHAR'''
-    if self.checkCompile('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;\nvprintf( "%d", Argp );\n'):
+    if not self.checkCompile('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;\nvprintf( "%d", Argp );\n'):
       self.addDefine('HAVE_VPRINTF_CHAR', 1)
     return
 
