@@ -30,9 +30,9 @@
       integer i
 
       do 10,i=1,n,4
-        sum1 = sum1 + PetscRealPart(x(i)*PetscConj(x(i)))                        &
-     &              + PetscRealPart(x(i+1)*PetscConj(x(i+1)))                    &
-     &              + PetscRealPart(x(i+2)*PetscConj(x(i+2)))                    &
+        sum1 = sum1 + PetscRealPart(x(i)*PetscConj(x(i)))                                         &
+     &              + PetscRealPart(x(i+1)*PetscConj(x(i+1)))                                     &
+     &              + PetscRealPart(x(i+2)*PetscConj(x(i+2)))                                     &
      &              + PetscRealPart(x(i+3)*PetscConj(x(i+3))) 
  10   continue
 

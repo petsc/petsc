@@ -53,12 +53,12 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     }
 #endif
 #else
-    *z = BLnrm2_(&xin->n,xx,&one);
+    *z = BLnrm2_(&n,xx,&one);
 #endif
     ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);
-    PetscLogFlops(2*xin->n-1);
+    PetscLogFlops(2*n-1);
   } else if (type == NORM_INFINITY) {
-    int          i,n = xin->n;
+    int          i;
     PetscReal    max = 0.0,tmp;
 
     ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
@@ -72,9 +72,9 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     *z   = max;
   } else if (type == NORM_1) {
     ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
-    *z = BLasum_(&xin->n,xx,&one);
+    *z = BLasum_(&n,xx,&one);
     ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);
-    PetscLogFlops(xin->n-1);
+    PetscLogFlops(n-1);
   } else if (type == NORM_1_AND_2) {
     ierr = VecNorm_Seq(xin,NORM_1,z);CHKERRQ(ierr);
     ierr = VecNorm_Seq(xin,NORM_2,z+1);CHKERRQ(ierr);
