@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.46 1996/07/02 20:13:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.47 1996/07/18 02:55:28 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -88,10 +88,10 @@ int PetscAttachDebugger()
 
   if (child) { /* I am the parent will run the debugger */
     char  *args[9],pid[9];
-#if !defined(PARCH_rs6000) && !defined(PARCH_solaris) && \
-    !defined(PARCH_IRIX) && !defined(PARCH_IRIX64) && !defined(PARCH_freebsd)
-    kill(child,SIGSTOP);
-#endif
+    /*
+       This kill does not seem to be needed and causes trouble on most machines
+       so let's try removing it.    kill(child,SIGSTOP);
+    */
     sprintf(pid,"%d",child); 
     if (!PetscStrcmp(Debugger,"xxgdb") || !PetscStrcmp(Debugger,"ups")) {
       args[1] = program; args[2] = pid; args[3] = "-display";
@@ -231,9 +231,8 @@ int PetscAttachDebugger()
     }
   }
   else { /* I am the child, continue with user code */
-  sleeptime = 8; /* default to sleep for eight seconds waiting for debugger */
-  ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,&flg);
-         CHKERRQ(ierr);
+  sleeptime = 10; /* default to sleep for eight seconds waiting for debugger */
+  ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,&flg); CHKERRQ(ierr);
 #if defined(PARCH_hpux)
     { 
       double x = 1.0;
