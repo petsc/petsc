@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.3 1998/12/03 03:56:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.4 1999/03/19 21:17:32 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests ISStrideToGeneral()\n\n";
@@ -10,7 +10,7 @@ static char help[] = "Tests ISStrideToGeneral()\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int        i, n, ierr,*ii,start,stride,step = 2;
+  int        ierr,step = 2;
   IS         is;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
