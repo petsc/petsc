@@ -147,6 +147,7 @@ class StaticLinker(SharedLinker):
 
   def getCommand(self, sourceFiles, outputFile):
     self.outputFlag = self.getOutputFlag()
+    self.libraries.clear()
     archiveCmd = SharedLinker.getCommand(self, sourceFiles, outputFile)
     ranlibCmd = ' '.join([';', self.getRanlib(), outputFile])
     return archiveCmd+ranlibCmd
