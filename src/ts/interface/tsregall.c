@@ -1,4 +1,4 @@
-/*$Id: tsregall.c,v 1.29 2000/05/05 22:18:49 balay Exp bsmith $*/
+/*$Id: tsregall.c,v 1.30 2000/05/10 16:43:04 bsmith Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"     /*I  "petscts.h"  I*/
 EXTERN_C_BEGIN
@@ -10,7 +10,7 @@ EXTERN int TSCreate_CN(TS);
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSRegisterAll"
+#define __FUNC__ "TSRegisterAll"
 /*@C
    TSRegisterAll - Registers all of the timesteppers in the TS package. 
 

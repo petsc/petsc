@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.55 2000/12/08 04:37:22 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.56 2000/12/08 15:45:39 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -9,7 +9,7 @@ EXTERN int DAGetColoring2d(DA,ISColoring *,Mat *);
 EXTERN int DAGetColoring3d(DA,ISColoring *,Mat *);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DAGetColoring"></a>*/"DAGetColoring" 
+#define __FUNC__ "DAGetColoring" 
 /*@C
     DAGetColoring - Gets the coloring required for computing the Jacobian via
     finite differences on a function defined using a stencil on the DA.
@@ -83,7 +83,7 @@ int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
 /* ---------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetColoring2d" 
+#define __FUNC__ "DAGetColoring2d" 
 int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
@@ -104,11 +104,11 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap,&st);CHKERRQ(ierr);
   nc     = w;
   col    = 2*s + 1;
-  if ((wrap == DA_XPERIODIC || wrap == DA_XYPERIODIC) && (m % col)){ 
+  if (DAXPeriodic(wrap) && (m % col)){ 
     SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 2*stencil_width + 1\n");
   }
-  if ((wrap == DA_YPERIODIC || wrap == DA_XYPERIODIC) && (n % col)){ 
+  if (DAYPeriodic(wrap) && (n % col)){ 
     SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 2*stencil_width + 1\n");
   }
@@ -119,7 +119,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 
   /* create the coloring */
   if (coloring) {
-    colors = (int*)PetscMalloc(nc*nx*ny*sizeof(int));CHKPTRQ(colors);
+ierr = PetscMalloc(nc*nx*ny*sizeof(int),&(    colors ));CHKERRQ(ierr);
     ii = 0;
     for (j=ys; j<ys+ny; j++) {
       for (i=xs; i<xs+nx; i++) {
@@ -138,10 +138,10 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
     /* create empty Jacobian matrix */
     ierr    = MatCreate(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
 
-    values  = (Scalar*)PetscMalloc(col*col*nc*nc*sizeof(Scalar));CHKPTRQ(values);
+ierr = PetscMalloc(col*col*nc*nc*sizeof(Scalar),&(    values  ));CHKERRQ(ierr);
     ierr    = PetscMemzero(values,col*col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
-    rows    = (int*)PetscMalloc(nc*sizeof(int));CHKPTRQ(rows);
-    cols    = (int*)PetscMalloc(col*col*nc*nc*sizeof(int));CHKPTRQ(cols);
+ierr = PetscMalloc(nc*sizeof(int),&(    rows    ));CHKERRQ(ierr);
+ierr = PetscMalloc(col*col*nc*nc*sizeof(int),&(    cols    ));CHKERRQ(ierr);
     ierr    = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
 
     /* determine the matrix preallocation information */
@@ -226,7 +226,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 /* ---------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetColoring3d" 
+#define __FUNC__ "DAGetColoring3d" 
 int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,slot,gxs,gys,gnx,gny;           
@@ -246,15 +246,15 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
   */
   ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
   col    = 2*s + 1;
-  if ((wrap == DA_XPERIODIC || wrap == DA_XYPERIODIC || wrap == DA_XZPERIODIC || wrap == DA_XYZPERIODIC) && (m % col)){ 
+  if (DAXPeriodic(wrap) && (m % col)){ 
     SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 2*stencil_width + 1\n");
   }
-  if ((wrap == DA_YPERIODIC || wrap == DA_XYPERIODIC || wrap == DA_YZPERIODIC || wrap == DA_XYZPERIODIC) && (n % col)){ 
+  if (DAYPeriodic(wrap) && (n % col)){ 
     SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 2*stencil_width + 1\n");
   }
-  if ((wrap == DA_ZPERIODIC || wrap == DA_XZPERIODIC || wrap == DA_YZPERIODIC || wrap == DA_XYZPERIODIC) && (p % col)){ 
+  if (DAZPeriodic(wrap) && (p % col)){ 
     SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
                  by 2*stencil_width + 1\n");
   }
@@ -266,7 +266,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 
   /* create the coloring */
   if (coloring) {
-    colors = (int*)PetscMalloc(nc*nx*ny*nz*sizeof(int));CHKPTRQ(colors);
+ierr = PetscMalloc(nc*nx*ny*nz*sizeof(int),&(    colors ));CHKERRQ(ierr);
     ii = 0;
     for (k=zs; k<zs+nz; k++) {
       for (j=ys; j<ys+ny; j++) {
@@ -286,10 +286,10 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
     int bs = nc;
     /* create empty Jacobian matrix */
     ierr    = MatCreate(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
-    values  = (Scalar*)PetscMalloc(col*col*col*nc*nc*nc*sizeof(Scalar));CHKPTRQ(values);
+ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(Scalar),&(    values  ));CHKERRQ(ierr);
     ierr    = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
-    rows    = (int*)PetscMalloc(nc*sizeof(int));CHKPTRQ(rows);
-    cols    = (int*)PetscMalloc(col*col*col*nc*sizeof(int));CHKPTRQ(cols);
+ierr = PetscMalloc(nc*sizeof(int),&(    rows    ));CHKERRQ(ierr);
+ierr = PetscMalloc(col*col*col*nc*sizeof(int),&(    cols    ));CHKERRQ(ierr);
     ierr    = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
 
     /* determine the matrix preallocation information */
@@ -382,7 +382,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 /* ---------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetColoring1d" 
+#define __FUNC__ "DAGetColoring1d" 
 int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,nx,*colors,i,i1,slot,gxs,gnx;           
@@ -402,7 +402,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
   ierr = DAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,&wrap,0);CHKERRQ(ierr);
   col    = 2*s + 1;
 
-  if ((wrap == DA_XPERIODIC) && (m % col)) {
+  if (DAXPeriodic(wrap) && (m % col)) {
     SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points is divisible\n\
                  by 2*stencil_width + 1\n");
   }
@@ -415,7 +415,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
 
   /* create the coloring */
   if (coloring) {
-    colors = (int*)PetscMalloc(nc*nx*sizeof(int));CHKPTRQ(colors);
+ierr = PetscMalloc(nc*nx*sizeof(int),&(    colors ));CHKERRQ(ierr);
     i1 = 0;
     for (i=xs; i<xs+nx; i++) {
       for (l=0; l<nc; l++) {
@@ -441,10 +441,10 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
     ierr    = MatMPIAIJSetPreallocation(*J,col*nc,0,0,0);CHKERRQ(ierr);
     ierr    = MatMPIBAIJSetPreallocation(*J,bs,col,0,0,0);CHKERRQ(ierr);
 
-    values  = (Scalar*)PetscMalloc(col*nc*nc*sizeof(Scalar));CHKPTRQ(values);
+ierr = PetscMalloc(col*nc*nc*sizeof(Scalar),&(    values  ));CHKERRQ(ierr);
     ierr    = PetscMemzero(values,col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
-    rows    = (int*)PetscMalloc(nc*sizeof(int));CHKPTRQ(rows);
-    cols    = (int*)PetscMalloc(col*nc*sizeof(int));CHKPTRQ(cols);
+ierr = PetscMalloc(nc*sizeof(int),&(    rows    ));CHKERRQ(ierr);
+ierr = PetscMalloc(col*nc*sizeof(int),&(    cols    ));CHKERRQ(ierr);
    
     ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);

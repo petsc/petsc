@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.21 2000/10/18 15:08:43 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.22 2000/10/30 18:23:51 hzhang Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -22,8 +22,8 @@ int main(int argc,char **args)
   IS          isrow;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
   
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -97,8 +97,8 @@ int main(int argc,char **args)
 
   /* Test MatView() */  
   /*
-  ierr = MatView(sA, VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
-  ierr = MatView(sA, VIEWER_DRAW_WORLD);CHKERRA(ierr);
+  ierr = MatView(sA, PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
+  ierr = MatView(sA, PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr);
   */
   /* Assemble MPIBAIJ matrix A */
   ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);CHKERRA(ierr);
@@ -243,7 +243,7 @@ int main(int argc,char **args)
 
   ierr = VecNorm(s1,NORM_1,&r1);CHKERRA(ierr);
   ierr = VecNorm(s2,NORM_1,&r2);CHKERRA(ierr);
-  /* MatView(A,VIEWER_STDOUT_WORLD);
+  /* MatView(A,PETSC_VIEWER_STDOUT_WORLD);
   PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], r1: %g, r2: %g\n",rank,r1,r2);
       PetscSynchronizedFlush(PETSC_COMM_WORLD);
       */
@@ -282,11 +282,11 @@ int main(int argc,char **args)
 
   /* Test MatZeroRows() */
   ierr = ISCreateStride(PETSC_COMM_SELF,2,rstart,2,&isrow);CHKERRA(ierr);   
-  /* ISView(isrow, VIEWER_STDOUT_SELF);CHKERRA(ierr); */
+  /* ISView(isrow, PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr); */
   ierr = MatZeroRows(sA,isrow,PETSC_NULL);CHKERRA(ierr); 
   ierr = ISDestroy(isrow);CHKERRA(ierr);
-  /* ierr = MatView(sA, VIEWER_STDOUT_WORLD);CHKERRA(ierr);  */
-  /* ierr = MatView(sA, VIEWER_DRAW_WORLD);CHKERRA(ierr);  */
+  /* ierr = MatView(sA, PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);  */
+  /* ierr = MatView(sA, PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr);  */
   
   ierr = VecDestroy(u);CHKERRA(ierr);  
   ierr = VecDestroy(x);CHKERRA(ierr);

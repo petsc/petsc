@@ -1,5 +1,5 @@
 !
-!      "$Id: ex36.F,v 1.27 2000/05/05 22:16:17 balay Exp bsmith $";
+!      "$Id: ex36.F,v 1.28 2000/09/27 20:08:07 bsmith Exp bsmith $";
 !
 !   This program demonstrates use of PETSc dense matrices.
 !
@@ -64,7 +64,7 @@
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,err)
 
 !  View matrix
-      call MatView(A,VIEWER_STDOUT_SELF,err)
+      call MatView(A,PETSC_VIEWER_STDOUT_SELF,err)
 
 !  Clean up
       call MatDestroy(A,err)     
@@ -98,7 +98,7 @@
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,err)
 
 !  View matrix
-      call MatView(A,VIEWER_STDOUT_SELF,err)
+      call MatView(A,PETSC_VIEWER_STDOUT_SELF,err)
 
 !  Clean up
       call MatDestroy(A,err)     

@@ -1,15 +1,15 @@
-/*$Id: daload.c,v 1.19 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: daload.c,v 1.20 2000/09/28 21:15:20 bsmith Exp bsmith $*/
 
 #include "src/dm/da/daimpl.h"     /*I  "petscda.h"   I*/
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DALoad"
+#define __FUNC__ "DALoad"
 /*@C
       DALoad - Creates an appropriate DA and loads its global vector from a file.
 
    Input Parameter:
-+    viewer - a binary viewer (created with ViewerBinaryOpen())
++    viewer - a binary viewer (created with PetscViewerBinaryOpen())
 .    M - number of processors in x direction
 .    N - number of processors in y direction
 -    P - number of processors in z direction
@@ -20,7 +20,7 @@
    Level: intermediate
 
 @*/
-int DALoad(Viewer viewer,int M,int N,int P,DA *da)
+int DALoad(PetscViewer viewer,int M,int N,int P,DA *da)
 {
   int        ierr,info[8],nmax = 8,fd,i;
   MPI_Comm   comm;
@@ -28,15 +28,15 @@ int DALoad(Viewer viewer,int M,int N,int P,DA *da)
   PetscTruth isbinary,flag;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscValidPointer(da);
-  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
 
-  ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
-  ierr = OptionsGetIntArray(PETSC_NULL,"-daload_info",info,&nmax,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-daload_info",info,&nmax,&flag);CHKERRQ(ierr);
   if (!flag) {
     SETERRQ(1,"No DA information in file");
   }
@@ -56,7 +56,7 @@ int DALoad(Viewer viewer,int M,int N,int P,DA *da)
   }
   for (i=0; i<info[4]; i++) {
     sprintf(fieldnametag,"-daload_fieldname_%d",i);
-    ierr = OptionsGetString(PETSC_NULL,fieldnametag,fieldname,64,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,fieldnametag,fieldname,64,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = DASetFieldName(*da,i,fieldname);CHKERRQ(ierr);
     }
@@ -65,7 +65,7 @@ int DALoad(Viewer viewer,int M,int N,int P,DA *da)
   /*
     Read in coordinate information if kept in file
   */
-  ierr = OptionsHasName(PETSC_NULL,"-daload_coordinates",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-daload_coordinates",&flag);CHKERRQ(ierr);
   if (flag) {
     DA  dac;
     Vec natural,global;

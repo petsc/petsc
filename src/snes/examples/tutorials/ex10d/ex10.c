@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.18 2000/09/28 21:14:41 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.19 2000/10/24 20:27:20 bsmith Exp bsmith $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -111,7 +111,7 @@ int main(int argc,char **argv)
   FILE     *fptr,*fptr1;
   ISLocalToGlobalMapping isl2g;
 #if defined (UNUSED_VARIABLES)
-  Draw    draw;                 /* drawing context */
+  PetscDraw    draw;                 /* drawing context */
   Scalar  *ff,*gg;
   double  tiny = 1.0e-10,zero = 0.0,one = 1.0,big = 1.0e+10;
   int     *tmp1,*tmp2;
@@ -132,12 +132,12 @@ int main(int argc,char **argv)
   */
   user.Nvglobal = 16;      /*Global # of vertices  */
   user.Neglobal = 18;      /*Global # of elements  */
-  ierr = OptionsGetInt(PETSC_NULL,"-vert",&user.Nvglobal,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-elem",&user.Neglobal,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-vert",&user.Nvglobal,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-elem",&user.Neglobal,PETSC_NULL);CHKERRA(ierr);
   user.non_lin_param = 0.06;
-  ierr = OptionsGetDouble(PETSC_NULL,"-nl_par",&user.non_lin_param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-nl_par",&user.non_lin_param,PETSC_NULL);CHKERRA(ierr);
   user.lin_param = -1.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-lin_par",&user.lin_param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-lin_par",&user.lin_param,PETSC_NULL);CHKERRA(ierr);
   user.Nvlocal = 0;
   user.Nelocal = 0;
 
@@ -174,7 +174,7 @@ int main(int argc,char **argv)
   if (!fptr1) {
       SETERRQ(0,"Could no open output file");
   }
-  user.gloInd = (int*)PetscMalloc(user.Nvglobal*sizeof(int));
+ierr = PetscMalloc(user.Nvglobal*sizeof(int),&(  user.gloInd ));
   fprintf(fptr1,"Rank is %d\n",rank);
   for (inode = 0; inode < user.Nvglobal; inode++) {
     fgets(str,256,fptr);
@@ -213,7 +213,7 @@ int main(int argc,char **argv)
   */
   ierr = MPI_Scan(&user.Nvlocal,&rstart,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);CHKERRA(ierr);
   rstart -= user.Nvlocal;
-  pordering = (int*)PetscMalloc(user.Nvlocal*sizeof(int));CHKPTRA(pordering);
+ierr = PetscMalloc(user.Nvlocal*sizeof(int),&(  pordering ));CHKPTRA(pordering);
 
   for (i=0; i < user.Nvlocal; i++) {
     pordering[i] = rstart + i;
@@ -228,8 +228,8 @@ int main(int argc,char **argv)
   /* 
     Keep the global indices for later use 
   */
-  user.locInd = (int*)PetscMalloc(user.Nvlocal*sizeof(int));
-  tmp = (int*)PetscMalloc(Nvneighborstotal*sizeof(int));
+ierr = PetscMalloc(user.Nvlocal*sizeof(int),&(  user.locInd ));
+ierr = PetscMalloc(Nvneighborstotal*sizeof(int),&(  tmp ));
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Demonstrate the use of AO functionality 
@@ -294,8 +294,8 @@ int main(int argc,char **argv)
     number of processors. Importantly, it allows us to use NO SEARCHING
     in setting up the data structures.
   */
-  vertices     = (int*)PetscMalloc(user.Nvglobal*sizeof(int));CHKPTRA(vertices);
-  verticesmask = (int*)PetscMalloc(user.Nvglobal*sizeof(int));CHKPTRA(verticesmask);
+ierr = PetscMalloc(user.Nvglobal*sizeof(int),&(  vertices     ));CHKPTRA(vertices);
+ierr = PetscMalloc(user.Nvglobal*sizeof(int),&(  verticesmask ));CHKPTRA(verticesmask);
   ierr         = PetscMemzero(verticesmask,user.Nvglobal*sizeof(int));CHKERRA(ierr);
   nvertices    = 0;
  
@@ -362,7 +362,7 @@ int main(int argc,char **argv)
     local representation
   */
   ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal);CHKERRA(ierr);
-  svertices = (int*)PetscMalloc(nvertices*sizeof(int));CHKPTRA(svertices);
+ierr = PetscMalloc(nvertices*sizeof(int),&(  svertices ));CHKPTRA(svertices);
   for (i=0; i<nvertices; i++) svertices[i] = bs*vertices[i];
   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,&isglobal);CHKERRA(ierr);
   ierr = PetscFree(svertices);CHKERRA(ierr);
@@ -454,7 +454,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(user.localX);CHKERRA(ierr);  
   ierr = VecDestroy(user.localF);CHKERRA(ierr);
   ierr = MatDestroy(Jac);CHKERRA(ierr);  ierr = SNESDestroy(snes);CHKERRA(ierr);
-  /*ierr = DrawDestroy(draw);CHKERRA(ierr);*/
+  /*ierr = PetscDrawDestroy(draw);CHKERRA(ierr);*/
   PetscFinalize();
 
   return 0;
@@ -589,7 +589,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   */
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  /*ierr = VecView(F,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+  /*ierr = VecView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
   return 0; 
 }
@@ -703,7 +703,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
      matrix. If we do, it will generate an error.
   */
   ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
-  /* MatView(jac,VIEWER_STDOUT_SELF); */
+  /* MatView(jac,PETSC_VIEWER_STDOUT_SELF); */
   return 0;
 }
 #else

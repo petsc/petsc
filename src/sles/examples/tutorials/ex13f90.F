@@ -1,5 +1,5 @@
 !
-!    "$Id: ex13f90.F,v 1.20 2000/09/22 20:45:46 bsmith Exp bsmith $";
+!    "$Id: ex13f90.F,v 1.21 2000/10/24 20:26:55 bsmith Exp bsmith $";
 !
 !
 !/*T
@@ -90,8 +90,8 @@
 !  The next two lines are for testing only; these allow the user to
 !  decide the grid size at runtime.
 
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 !  Create the empty sparse matrix and linear solver data structures
 

@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.24 2000/05/05 22:15:21 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.25 2000/09/28 21:10:40 bsmith Exp bsmith $*/
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
 a file, then forms a vector.\n\n";
@@ -12,34 +12,34 @@ int main(int argc,char **args)
   int     i,ierr,m = 10,fd,size,sz;
   Scalar  *avec,*array;
   Vec     vec;
-  Viewer  view_out,view_in;
+  PetscViewer  view_out,view_in;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&sz);CHKERRA(ierr);
   if (sz != 1) SETERRA(1,"This is a uniprocessor example only!");
   
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
 
   /* ---------------------------------------------------------------------- */
   /*          PART 1: Write some data to a file in binary format            */
   /* ---------------------------------------------------------------------- */
 
   /* Allocate array and set values */
-  array = (Scalar*)PetscMalloc(m*sizeof(Scalar));CHKPTRA(array);
+ierr = PetscMalloc(m*sizeof(Scalar),&(  array ));CHKPTRA(array);
   for (i=0; i<m; i++) {
     array[i] = i*10.0;
   }
 
   /* Open viewer for binary output */
-  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",BINARY_CREATE,&view_out);CHKERRA(ierr);
-  ierr = ViewerBinaryGetDescriptor(view_out,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",PETSC_BINARY_CREATE,&view_out);CHKERRA(ierr);
+  ierr = PetscViewerBinaryGetDescriptor(view_out,&fd);CHKERRA(ierr);
 
   /* Write binary output */
   ierr = PetscBinaryWrite(fd,&m,1,PETSC_INT,0);CHKERRA(ierr);
   ierr = PetscBinaryWrite(fd,array,m,PETSC_SCALAR,0);CHKERRA(ierr);
 
   /* Destroy the output viewer and work array */
-  ierr = ViewerDestroy(view_out);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(view_out);CHKERRA(ierr);
   ierr = PetscFree(array);CHKERRA(ierr);
 
   /* ---------------------------------------------------------------------- */
@@ -47,8 +47,8 @@ int main(int argc,char **args)
   /* ---------------------------------------------------------------------- */
 
   /* Open input binary viewer */
-  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",BINARY_RDONLY,&view_in);CHKERRA(ierr);
-  ierr = ViewerBinaryGetDescriptor(view_in,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",PETSC_BINARY_RDONLY,&view_in);CHKERRA(ierr);
+  ierr = PetscViewerBinaryGetDescriptor(view_in,&fd);CHKERRA(ierr);
 
   /* Create vector and get pointer to data space */
   ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,m,&vec);CHKERRA(ierr);
@@ -64,11 +64,11 @@ int main(int argc,char **args)
 
   /* View vector */
   ierr = VecRestoreArray(vec,&avec);CHKERRA(ierr);
-  ierr = VecView(vec,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(vec,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /* Free data structures */
   ierr = VecDestroy(vec);CHKERRA(ierr);
-  ierr = ViewerDestroy(view_in);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(view_in);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

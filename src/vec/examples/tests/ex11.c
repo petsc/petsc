@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.43 2000/01/11 21:00:17 bsmith Exp balay $*/
+/*$Id: ex11.c,v 1.44 2000/05/05 22:15:11 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\n";
 
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(x);CHKERRA(ierr);
   ierr = VecSet(&mone,y);CHKERRA(ierr);
 
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRA(ierr);
   ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   ierr = VecScatterDestroy(ctx);CHKERRA(ierr);
 
   if (!rank) 
-    {printf("----\n"); ierr = VecView(y,VIEWER_STDOUT_SELF);CHKERRA(ierr);}
+    {printf("----\n"); ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);}
 
   ierr = ISDestroy(is1);CHKERRA(ierr);
   ierr = ISDestroy(is2);CHKERRA(ierr);

@@ -1,11 +1,11 @@
-/*$Id: richscale.c,v 1.18 2000/04/12 04:25:05 bsmith Exp balay $*/
+/*$Id: richscale.c,v 1.19 2000/05/05 22:17:41 balay Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"         /*I "petscksp.h" I*/
 #include "src/sles/ksp/impls/rich/richctx.h"
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPRichardsonSetScale"
+#define __FUNC__ "KSPRichardsonSetScale"
 /*@
     KSPRichardsonSetScale - Set the damping factor; if this routine is not called, the factor 
     defaults to 1.0.

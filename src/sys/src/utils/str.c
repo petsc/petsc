@@ -1,4 +1,4 @@
-/*$Id: str.c,v 1.46 2000/07/10 03:38:56 bsmith Exp bsmith $*/
+/*$Id: str.c,v 1.47 2000/09/28 21:09:22 bsmith Exp bsmith $*/
 /*
     We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 
@@ -16,7 +16,7 @@
 #include "petscfix.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrlen"
+#define __FUNC__ "PetscStrlen"
 int PetscStrlen(const char s[],int *len)
 {
   PetscFunctionBegin;
@@ -29,16 +29,16 @@ int PetscStrlen(const char s[],int *len)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrallocpy"
+#define __FUNC__ "PetscStrallocpy"
 int PetscStrallocpy(const char s[],char **t)
 {
   int ierr,len;
 
   PetscFunctionBegin;
   if (s) {
-    ierr  = PetscStrlen(s,&len);CHKERRQ(ierr);
-    *t    = (char*)PetscMalloc((1+len)*sizeof(char));CHKPTRQ(*t);
-    ierr  = PetscStrcpy(*t,s);CHKERRQ(ierr);
+    ierr = PetscStrlen(s,&len);CHKERRQ(ierr);
+    ierr = PetscMalloc((1+len)*sizeof(char),t);CHKERRQ(ierr);
+    ierr = PetscStrcpy(*t,s);CHKERRQ(ierr);
   } else {
     *t = 0;
   }
@@ -46,7 +46,7 @@ int PetscStrallocpy(const char s[],char **t)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrcpy"
+#define __FUNC__ "PetscStrcpy"
 /*
     Handles copying null string correctly
 */
@@ -62,7 +62,7 @@ int PetscStrcpy(char s[],const char t[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrncpy"
+#define __FUNC__ "PetscStrncpy"
 int PetscStrncpy(char s[],const char t[],int n)
 {
   PetscFunctionBegin;
@@ -71,7 +71,7 @@ int PetscStrncpy(char s[],const char t[],int n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrcat"
+#define __FUNC__ "PetscStrcat"
 int PetscStrcat(char s[],const char t[])
 {
   PetscFunctionBegin;
@@ -80,7 +80,7 @@ int PetscStrcat(char s[],const char t[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrncat"
+#define __FUNC__ "PetscStrncat"
 int PetscStrncat(char s[],const char t[],int n)
 {
   PetscFunctionBegin;
@@ -89,7 +89,7 @@ int PetscStrncat(char s[],const char t[],int n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrcmp"
+#define __FUNC__ "PetscStrcmp"
 int PetscStrcmp(const char a[],const char b[],PetscTruth *flg)
 {
   int c;
@@ -108,7 +108,7 @@ int PetscStrcmp(const char a[],const char b[],PetscTruth *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrgrt"
+#define __FUNC__ "PetscStrgrt"
 int PetscStrgrt(const char a[],const char b[],PetscTruth *t)
 {
   int c;
@@ -129,7 +129,7 @@ int PetscStrgrt(const char a[],const char b[],PetscTruth *t)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrcasecmp"
+#define __FUNC__ "PetscStrcasecmp"
 /*
     Note: This is different from system strncmp() this returns PETSC_TRUE
     if the strings are the same!
@@ -152,7 +152,7 @@ int PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrncmp"
+#define __FUNC__ "PetscStrncmp"
 /*
     Note: This is different from system strncmp() this returns PETSC_TRUE
     if the strings are the same!
@@ -169,7 +169,7 @@ int PetscStrncmp(const char a[],const char b[],int n,PetscTruth *t)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrchr"
+#define __FUNC__ "PetscStrchr"
 int PetscStrchr(const char a[],char b,char **c)
 {
   PetscFunctionBegin;
@@ -183,7 +183,7 @@ int PetscStrchr(const char a[],char b,char **c)
    if it does not find it then it returns the entire string.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrrchr"
+#define __FUNC__ "PetscStrrchr"
 int PetscStrrchr(const char a[],char b,char **tmp)
 {
   PetscFunctionBegin;
@@ -193,7 +193,7 @@ int PetscStrrchr(const char a[],char b,char **tmp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrtolower"
+#define __FUNC__ "PetscStrtolower"
 int PetscStrtolower(char a[])
 {
   PetscFunctionBegin;
@@ -216,7 +216,7 @@ int PetscStrtolower(char a[])
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrtok"
+#define __FUNC__ "PetscStrtok"
 int PetscStrtok(const char a[],const char b[],char **result)
 {
   static char init[1024];
@@ -228,8 +228,7 @@ int PetscStrtok(const char a[],const char b[],char **result)
   if (a) {
     ierr = PetscStrlen(a,&len);CHKERRQ(ierr);
     if (len > 1023) {
-      ptr = (char*)PetscMalloc((len+1)*sizeof(char));
-      if (!ptr) SETERRQ(1,"Malloc failed");
+      ierr = PetscMalloc((len+1)*sizeof(char),&ptr);CHKERRQ(ierr);
     } else {
       ptr = init;
     }
@@ -240,7 +239,7 @@ int PetscStrtok(const char a[],const char b[],char **result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrstr"
+#define __FUNC__ "PetscStrstr"
 int PetscStrstr(const char a[],const char b[],char **tmp)
 {
   PetscFunctionBegin;
@@ -250,7 +249,7 @@ int PetscStrstr(const char a[],const char b[],char **tmp)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStrreplace"
+#define __FUNC__ "PetscStrreplace"
 /*
 
       No proper error checking yet
@@ -266,13 +265,13 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len)
   PetscFunctionBegin;
   if (len <= 0) SETERRQ(1,"Length of b must be greater than 0");
   if (!a || !b) SETERRQ(1,"a and b strings must be nonnull");
-  work = (char*)PetscMalloc(len*sizeof(char*));CHKPTRQ(work);
+  ierr = PetscMalloc(len*sizeof(char*),&work);CHKERRQ(ierr);
 
   /* get values for replaced variables */
-  r[4] = (char*)PetscMalloc(256*sizeof(char));CHKPTRQ(r[4]);
-  r[5] = (char*)PetscMalloc(256*sizeof(char));CHKPTRQ(r[5]);
-  r[6] = (char*)PetscMalloc(256*sizeof(char));CHKPTRQ(r[6]);
-  r[7] = (char*)PetscMalloc(256*sizeof(char));CHKPTRQ(r[7]);
+  ierr = PetscMalloc(256*sizeof(char),&r[4]);CHKERRQ(ierr);
+  ierr = PetscMalloc(256*sizeof(char),&r[5]);CHKERRQ(ierr);
+  ierr = PetscMalloc(256*sizeof(char),&r[6]);CHKERRQ(ierr);
+  ierr = PetscMalloc(256*sizeof(char),&r[7]);CHKERRQ(ierr);
   ierr = PetscGetDisplay(r[4],256);CHKERRQ(ierr);
   ierr = PetscGetHomeDirectory(r[5],256);CHKERRQ(ierr);
   ierr = PetscGetWorkingDirectory(r[6],256);CHKERRQ(ierr);
@@ -315,7 +314,7 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len)
     ierr = PetscStrstr(par,"}",&epar);CHKERRQ(ierr);
     *epar = 0;
     epar += 1;
-    ierr = OptionsGetenv(comm,par,env,256,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(comm,par,env,256,&flag);CHKERRQ(ierr);
     if (!flag) {
       SETERRQ1(1,"Substitution string ${%s} not found as environmental variable",par);
     }

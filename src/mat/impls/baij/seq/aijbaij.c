@@ -1,10 +1,10 @@
-/*$Id: aijbaij.c,v 1.2 2000/07/10 03:39:42 bsmith Exp bsmith $*/
+/*$Id: aijbaij.c,v 1.3 2000/10/24 20:25:52 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/seq/baij.h"
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatConvert_SeqBAIJ_SeqAIJ"></a>*/"MatConvert_SeqBAI_SeqAIJ"
+#define __FUNC__ "MatConvert_SeqBAI_SeqAIJ"
 int MatConvert_SeqBAIJ_SeqAIJ(Mat A,MatType newtype,Mat *B)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; 
@@ -13,7 +13,7 @@ int MatConvert_SeqBAIJ_SeqAIJ(Mat A,MatType newtype,Mat *B)
   Scalar      *aa = a->a;
 
   PetscFunctionBegin;
-  rowlengths = (int*)PetscMalloc(n*bs*sizeof(int));CHKPTRQ(rowlengths);
+ierr = PetscMalloc(n*bs*sizeof(int),&(  rowlengths ));CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     maxlen = PetscMax(maxlen,(ai[i+1] - ai[i]));
     for (j=0; j<bs; j++) {
@@ -26,8 +26,8 @@ int MatConvert_SeqBAIJ_SeqAIJ(Mat A,MatType newtype,Mat *B)
   ierr = MatSetOption(*B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
 
-  rows = (int*)PetscMalloc(bs*sizeof(int));CHKPTRQ(rows);
-  cols = (int*)PetscMalloc(bs*maxlen*sizeof(int));CHKPTRQ(cols);
+ierr = PetscMalloc(bs*sizeof(int),&(  rows ));CHKERRQ(ierr);
+ierr = PetscMalloc(bs*maxlen*sizeof(int),&(  cols ));CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     for (j=0; j<bs; j++) {
       rows[j] = i*bs+j;

@@ -1,4 +1,4 @@
-/*$Id: stack.c,v 1.30 2000/09/28 21:08:54 bsmith Exp bsmith $*/
+/*$Id: stack.c,v 1.31 2000/10/24 20:24:29 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
@@ -16,7 +16,7 @@ char       *msg;
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStackPublish"></a>*/"PetscStackPublish"
+#define __FUNC__ "PetscStackPublish"
 int PetscStackPublish(void)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -28,7 +28,7 @@ int PetscStackPublish(void)
 
   PetscFunctionBegin;
   if (!petscstack) SETERRQ(1,"Stack not available to publish");
-  ierr = ViewerAMSGetAMSComm(VIEWER_AMS_WORLD,&acomm);CHKERRQ(ierr);
+  ierr = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_WORLD,&acomm);CHKERRQ(ierr);
   ierr = AMS_Memory_create(acomm,"stack_memory",&stack_mem);CHKERRQ(ierr);
          
   /* Add a field to the memory */
@@ -44,7 +44,7 @@ int PetscStackPublish(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStackDepublish"></a>*/"PetscStackDepublish"
+#define __FUNC__ "PetscStackDepublish"
 int PetscStackDepublish(void)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -62,7 +62,7 @@ int PetscStackDepublish(void)
 }
   
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStackCreate"></a>*/"PetscStackCreate"
+#define __FUNC__ "PetscStackCreate"
 int PetscStackCreate(void)
 {
   int ierr;
@@ -70,7 +70,7 @@ int PetscStackCreate(void)
   PetscStack *petscstack_in;
   if (petscstack) return 0;
   
-  petscstack_in              = (PetscStack*)PetscMalloc(sizeof(PetscStack));CHKPTRQ(petscstack_in);
+  ierr = PetscMalloc(sizeof(PetscStack),&petscstack_in);CHKERRQ(ierr);
   ierr = PetscMemzero(petscstack_in,sizeof(PetscStack));CHKERRQ(ierr);
   petscstack_in->currentsize = 0;
   petscstack = petscstack_in;
@@ -79,14 +79,14 @@ int PetscStackCreate(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStackView"></a>*/"PetscStackView"
-int PetscStackView(Viewer viewer)
+#define __FUNC__ "PetscStackView"
+int PetscStackView(PetscViewer viewer)
 {
   int  i,ierr;
   FILE *file;
 
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
-  ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
+  ierr = PetscViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
 
   if (file == stdout) {
     (*PetscErrorPrintf)("Note: The EXACT line numbers in the stack are not available,\n");
@@ -115,7 +115,7 @@ int PetscStackView(Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStackDestroy"></a>*/"PetscStackDestroy"
+#define __FUNC__ "PetscStackDestroy"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 int PetscStackDestroy(void) 
 {
@@ -133,7 +133,7 @@ int PetscStackDestroy(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStackCopy"></a>*/"PetscStackCopy"
+#define __FUNC__ "PetscStackCopy"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 int PetscStackCopy(PetscStack* sint,PetscStack* sout)
 {
@@ -154,7 +154,7 @@ int PetscStackCopy(PetscStack* sint,PetscStack* sout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStackPrint"></a>*/"PetscStackPrint"
+#define __FUNC__ "PetscStackPrint"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 int PetscStackPrint(PetscStack* sint,FILE *fp)
 {
@@ -170,29 +170,29 @@ int PetscStackPrint(PetscStack* sint,FILE *fp)
 
 #else
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStackPublish"></a>*/"PetscStackPublish"
+#define __FUNC__ "PetscStackPublish"
 int PetscStackPublish(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStackDepublish"></a>*/"PetscStackDepublish"
+#define __FUNC__ "PetscStackDepublish"
 int PetscStackDepublish(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStackCreate"></a>*/"PetscStackCreate"
+#define __FUNC__ "PetscStackCreate"
 int PetscStackCreate(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStackView"></a>*/"PetscStackView"
-int PetscStackView(Viewer viewer)
+#define __FUNC__ "PetscStackView"
+int PetscStackView(PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

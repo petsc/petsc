@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.75 2000/09/28 21:14:25 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.76 2000/10/24 20:27:14 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
 This example employs a user-defined monitoring routine.\n\n";
@@ -34,7 +34,7 @@ extern int Monitor(SNES,int,double,void *);
    User-defined context for monitoring
 */
 typedef struct {
-   Viewer viewer;
+   PetscViewer viewer;
 } MonitorCtx;
 
 #undef __FUNC__
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   h = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   /* 
      Set an optional user-defined monitoring routine
   */
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,&monP,0);CHKERRA(ierr); 
 
   /*
@@ -175,7 +175,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRA(ierr);  ierr = VecDestroy(r);CHKERRA(ierr);
   ierr = VecDestroy(U);CHKERRA(ierr);  ierr = VecDestroy(F);CHKERRA(ierr);
   ierr = MatDestroy(J);CHKERRA(ierr);  ierr = SNESDestroy(snes);CHKERRA(ierr);
-  ierr = ViewerDestroy(monP.viewer);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(monP.viewer);CHKERRA(ierr);
   PetscFinalize();
 
   return 0;
@@ -333,7 +333,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
          monitor routine, as set by SNESSetMonitor()
 
    Note:
-   See the manpage for ViewerDrawOpen() for useful runtime options,
+   See the manpage for PetscViewerDrawOpen() for useful runtime options,
    such as -nox to deactivate all x-window output.
  */
 int Monitor(SNES snes,int its,double fnorm,void *ctx)

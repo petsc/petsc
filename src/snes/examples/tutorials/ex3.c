@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.70 2000/09/22 20:46:14 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.71 2000/10/24 20:27:14 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -62,7 +62,7 @@ typedef struct {
    User-defined context for monitoring
 */
 typedef struct {
-   Viewer viewer; 
+   PetscViewer viewer; 
 } MonitorCtx;
 
 /*
@@ -93,7 +93,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&N,PETSC_NULL);CHKERRA(ierr);
   ctx.h = 1.0/(N-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -155,7 +155,7 @@ int main(int argc,char **argv)
   /* 
      Set an optional user-defined monitoring routine
   */
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,&monP,0);CHKERRA(ierr); 
 
   /*
@@ -174,13 +174,13 @@ int main(int argc,char **argv)
      Set an optional user-defined routine to check the validity of candidate 
      iterates that are determined by line search methods
   */
-  ierr = OptionsHasName(PETSC_NULL,"-check_iterates",&step_check);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-check_iterates",&step_check);CHKERRA(ierr);
   if (step_check) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating step checking routine\n");CHKERRA(ierr);
     ierr = SNESSetLineSearchCheck(snes,StepCheck,&checkP);CHKERRA(ierr); 
     ierr = VecDuplicate(x,&(checkP.last_step));CHKERRA(ierr); 
     checkP.tolerance = 1.0;
-    ierr = OptionsGetDouble(PETSC_NULL,"-check_tol",&checkP.tolerance,PETSC_NULL);CHKERRA(ierr);
+    ierr = PetscOptionsGetDouble(PETSC_NULL,"-check_tol",&checkP.tolerance,PETSC_NULL);CHKERRA(ierr);
   }
 
 
@@ -254,7 +254,7 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = ViewerDestroy(monP.viewer);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(monP.viewer);CHKERRA(ierr);
   if (step_check) {ierr = VecDestroy(checkP.last_step);CHKERRA(ierr);}
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(ctx.xlocal);CHKERRA(ierr);
@@ -338,8 +338,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
        gxs, gxm - starting grid index, width of local grid (including ghost points)
   */
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,PETSC_NULL,PETSC_NULL,&gxm,PETSC_NULL,
-         PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,PETSC_NULL,PETSC_NULL,&gxm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecGetSize(f,&N);CHKERRQ(ierr);
 
   /*
@@ -474,7 +473,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
          monitor routine, as set by SNESSetMonitor()
 
    Note:
-   See the manpage for ViewerDrawOpen() for useful runtime options,
+   See the manpage for PetscViewerDrawOpen() for useful runtime options,
    such as -nox to deactivate all x-window output.
  */
 int Monitor(SNES snes,int its,double fnorm,void *ctx)

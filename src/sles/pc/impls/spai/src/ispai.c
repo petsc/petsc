@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.17 2000/09/28 21:12:59 bsmith Exp bsmith $*/
+/* $Id: ispai.c,v 1.18 2000/11/28 17:30:26 bsmith Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -56,7 +56,7 @@ typedef struct {
 /**********************************************************************/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp_SPAI"
+#define __FUNC__ "PCSetUp_SPAI"
 static int PCSetUp_SPAI(PC pc)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -120,7 +120,7 @@ static int PCSetUp_SPAI(PC pc)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_SPAI"
+#define __FUNC__ "PCApply_SPAI"
 static int PCApply_SPAI(PC pc,Vec x,Vec y)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -135,7 +135,7 @@ static int PCApply_SPAI(PC pc,Vec x,Vec y)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCDestroy_SPAI"
+#define __FUNC__ "PCDestroy_SPAI"
 static int PCDestroy_SPAI(PC pc)
 {
   int     ierr;
@@ -150,25 +150,25 @@ static int PCDestroy_SPAI(PC pc)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCView_SPAI"
-static int PCView_SPAI(PC pc,Viewer viewer)
+#define __FUNC__ "PCView_SPAI"
+static int PCView_SPAI(PC pc,PetscViewer viewer)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   int        ierr;
   PetscTruth isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {  
-    ierr = ViewerASCIIPrintf(viewer,"    SPAI preconditioner\n");CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"    epsilon %g\n",   ispai->epsilon);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"    nbsteps %d\n",   ispai->nbsteps);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"    max %d\n",       ispai->max);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"    maxnew %d\n",    ispai->maxnew);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"    block_size %d\n",ispai->block_size);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"    cache_size %d\n",ispai->cache_size);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"    verbose %d\n",   ispai->verbose);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"    sp %d\n",        ispai->sp);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    SPAI preconditioner\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    epsilon %g\n",   ispai->epsilon);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    nbsteps %d\n",   ispai->nbsteps);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    max %d\n",       ispai->max);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    maxnew %d\n",    ispai->maxnew);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    block_size %d\n",ispai->block_size);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    cache_size %d\n",ispai->cache_size);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    verbose %d\n",   ispai->verbose);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    sp %d\n",        ispai->sp);CHKERRQ(ierr);
 
   }
   PetscFunctionReturn(0);
@@ -176,7 +176,7 @@ static int PCView_SPAI(PC pc,Viewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetEpsilon_SPAI"
+#define __FUNC__ "PCSPAISetEpsilon_SPAI"
 int PCSPAISetEpsilon_SPAI(PC pc,double epsilon)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -190,7 +190,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetNBSteps_SPAI"
+#define __FUNC__ "PCSPAISetNBSteps_SPAI"
 int PCSPAISetNBSteps_SPAI(PC pc,int nbsteps)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -205,7 +205,7 @@ EXTERN_C_END
 /* added 1/7/99 g.h. */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetMax_SPAI"
+#define __FUNC__ "PCSPAISetMax_SPAI"
 int PCSPAISetMax_SPAI(PC pc,int max)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -219,7 +219,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetMaxNew_SPAI"
+#define __FUNC__ "PCSPAISetMaxNew_SPAI"
 int PCSPAISetMaxNew_SPAI(PC pc,int maxnew)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -233,7 +233,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetBlockSize_SPAI"
+#define __FUNC__ "PCSPAISetBlockSize_SPAI"
 int PCSPAISetBlockSize_SPAI(PC pc,int block_size)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -247,7 +247,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetCacheSize_SPAI"
+#define __FUNC__ "PCSPAISetCacheSize_SPAI"
 int PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -261,7 +261,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetVerbose_SPAI"
+#define __FUNC__ "PCSPAISetVerbose_SPAI"
 int PCSPAISetVerbose_SPAI(PC pc,int verbose)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -275,7 +275,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetSp_SPAI"
+#define __FUNC__ "PCSPAISetSp_SPAI"
 int PCSPAISetSp_SPAI(PC pc,int sp)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -288,7 +288,7 @@ EXTERN_C_END
 /* -------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetEpsilon"
+#define __FUNC__ "PCSPAISetEpsilon"
 int PCSPAISetEpsilon(PC pc,double epsilon)
 {
   int ierr,(*f)(PC,double);
@@ -303,7 +303,7 @@ int PCSPAISetEpsilon(PC pc,double epsilon)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetNBSteps"
+#define __FUNC__ "PCSPAISetNBSteps"
 int PCSPAISetNBSteps(PC pc,int nbsteps)
 {
   int ierr,(*f)(PC,int);
@@ -319,7 +319,7 @@ int PCSPAISetNBSteps(PC pc,int nbsteps)
 
 /* added 1/7/99 g.h. */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetMax"
+#define __FUNC__ "PCSPAISetMax"
 int PCSPAISetMax(PC pc,int max)
 {
   int ierr,(*f)(PC,int);
@@ -334,7 +334,7 @@ int PCSPAISetMax(PC pc,int max)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetMaxNew"
+#define __FUNC__ "PCSPAISetMaxNew"
 int PCSPAISetMaxNew(PC pc,int maxnew)
 {
   int ierr,(*f)(PC,int);
@@ -349,7 +349,7 @@ int PCSPAISetMaxNew(PC pc,int maxnew)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetBlockSize"
+#define __FUNC__ "PCSPAISetBlockSize"
 int PCSPAISetBlockSize(PC pc,int block_size)
 {
   int ierr,(*f)(PC,int);
@@ -364,7 +364,7 @@ int PCSPAISetBlockSize(PC pc,int block_size)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetCacheSize"
+#define __FUNC__ "PCSPAISetCacheSize"
 int PCSPAISetCacheSize(PC pc,int cache_size)
 {
   int ierr,(*f)(PC,int);
@@ -379,7 +379,7 @@ int PCSPAISetCacheSize(PC pc,int cache_size)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetVerbose"
+#define __FUNC__ "PCSPAISetVerbose"
 int PCSPAISetVerbose(PC pc,int verbose)
 {
   int ierr,(*f)(PC,int);
@@ -394,7 +394,7 @@ int PCSPAISetVerbose(PC pc,int verbose)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSPAISetSp"
+#define __FUNC__ "PCSPAISetSp"
 int PCSPAISetSp(PC pc,int sp)
 {
   int ierr,(*f)(PC,int);
@@ -411,7 +411,7 @@ int PCSPAISetSp(PC pc,int sp)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_SPAI"
+#define __FUNC__ "PCSetFromOptions_SPAI"
 static int PCSetFromOptions_SPAI(PC pc)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -420,41 +420,41 @@ static int PCSetFromOptions_SPAI(PC pc)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("SPAI options");CHKERRQ(ierr);
-    ierr = OptionsDouble("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("SPAI options");CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSPAISetEpsilon(pc,epsilon);CHKERRQ(ierr);
     }
-    ierr = OptionsInt("-pc_spai_nbsteps","","PCSPAISetNBSteps",ispai->nbsteps,&nbsteps,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_spai_nbsteps","","PCSPAISetNBSteps",ispai->nbsteps,&nbsteps,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSPAISetNBSteps(pc,nbsteps);CHKERRQ(ierr);
     }
     /* added 1/7/99 g.h. */
-    ierr = OptionsInt("-pc_spai_max","","PCSPAISetMax",ispai->max,&max,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_spai_max","","PCSPAISetMax",ispai->max,&max,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSPAISetMax(pc,max);CHKERRQ(ierr);
     }
-    ierr = OptionsInt("-pc_spai_maxnew","","PCSPAISetMaxNew",ispai->maxnew,&maxnew,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_spai_maxnew","","PCSPAISetMaxNew",ispai->maxnew,&maxnew,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSPAISetMaxNew(pc,maxnew);CHKERRQ(ierr);
     } 
-    ierr = OptionsInt("-pc_spai_block_size","","PCSPAISetBlockSize",ispai->block_size,&block_size,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_spai_block_size","","PCSPAISetBlockSize",ispai->block_size,&block_size,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSPAISetBlockSize(pc,block_size);CHKERRQ(ierr);
     }
-    ierr = OptionsInt("-pc_spai_cache_size","","PCSPAISetCacheSize",ispai->cache_size,&cache_size,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_spai_cache_size","","PCSPAISetCacheSize",ispai->cache_size,&cache_size,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSPAISetCacheSize(pc,cache_size);CHKERRQ(ierr);
     }
-    ierr = OptionsInt("-pc_spai_verbose","","PCSPAISetVerbose",ispai->verbose,&verbose,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_spai_verbose","","PCSPAISetVerbose",ispai->verbose,&verbose,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSPAISetVerbose(pc,verbose);CHKERRQ(ierr);
     }
-    ierr = OptionsInt("-pc_spai_sp","","PCSPAISetSp",ispai->sp,&sp,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_spai_sp","","PCSPAISetSp",ispai->sp,&sp,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSPAISetSp(pc,sp);CHKERRQ(ierr);
     }
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -467,14 +467,14 @@ EXTERN_C_BEGIN
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCreate_SPAI"
+#define __FUNC__ "PCCreate_SPAI"
 int PCCreate_SPAI(PC pc)
 {
   PC_SPAI *ispai;
   int     ierr;
 
   PetscFunctionBegin;
-  ispai              = PetscNew(PC_SPAI);CHKPTRQ(ispai);
+  ierr               = PetscNew(PC_SPAI,&ispai);CHKERRQ(ierr);
   pc->data           = (void*)ispai;
 
   pc->ops->destroy         = PCDestroy_SPAI;
@@ -530,7 +530,7 @@ EXTERN_C_END
    Converts from a PETSc matrix to an SPAI matrix 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ConvertMatToMatrix"
+#define __FUNC__ "ConvertMatToMatrix"
 int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
 {
   matrix   *M;
@@ -562,10 +562,10 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
   M->bs = 1;
   M->max_block_size = 1;
 
-  M->mnls = (int*)PetscMalloc(sizeof(int)*size);CHKPTRQ(M->mnls);
-  M->start_indices = (int*)PetscMalloc(sizeof(int)*size);CHKPTRQ(M->start_indices);
-  M->pe = (int*)PetscMalloc(sizeof(int)*n);CHKPTRQ(M->start_indices);
-  M->block_sizes = (int*)PetscMalloc(sizeof(int)*n);CHKPTRQ(M->start_indices);
+ierr = PetscMalloc(sizeof(int)*size,&(  M->mnls ));CHKERRQ(ierr);
+ierr = PetscMalloc(sizeof(int)*size,&(  M->start_indices ));CHKERRQ(ierr);
+ierr = PetscMalloc(sizeof(int)*n,&(  M->pe ));CHKERRQ(ierr);
+ierr = PetscMalloc(sizeof(int)*n,&(  M->block_sizes ));CHKERRQ(ierr);
   for (i=0; i<n; i++) M->block_sizes[i] = 1;
 
   ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
@@ -586,16 +586,16 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
   }
 
   if (AT) {
-    M->lines = new_compressed_lines(M->mnls[rank],1);CHKPTRQ(M->lines);
+    M->lines = new_compressed_lines(M->mnls[rank],1);CHKERRQ(ierr);
   }
   else {
-    M->lines = new_compressed_lines(M->mnls[rank],0);CHKPTRQ(M->lines);
+    M->lines = new_compressed_lines(M->mnls[rank],0);CHKERRQ(ierr);
   }
 
   rows     = M->lines;
 
   /* Determine the mapping from global indices to pointers */
-  mapping = (int*)PetscMalloc(M->n*sizeof(int));CHKPTRQ(mapping);
+  mapping = (int*)PetscMalloc(M->n*sizeof(int));CHKERRQ(ierr);
   pe = 0;
   local_indx = 0;
   for (i=0; i<M->n; i++) {
@@ -608,7 +608,7 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
   }
 
 
-  num_ptr = (int*)PetscMalloc(mnl*sizeof(int));CHKPTRQ(num_ptr);
+ierr = PetscMalloc(mnl*sizeof(int),&(  num_ptr ));CHKERRQ(ierr);
 
   /*********************************************************/
   /************** Set up the row structure *****************/
@@ -630,8 +630,8 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
   for (i=rstart; i<rend; i++) {
     row_indx             = i-rstart;
     len                  = num_ptr[row_indx];
-    rows->ptrs[row_indx] = (int*)PetscMalloc(len*sizeof(int));CHKPTRQ(rows->ptrs[row_indx]);
-    rows->A[row_indx]    = (double*)PetscMalloc(len*sizeof(double));CHKPTRQ(rows->A[row_indx]);
+    rows->ptrs[row_indx] = (int*)PetscMalloc(len*sizeof(int));CHKERRQ(ierr);
+    rows->A[row_indx]    = (double*)PetscMalloc(len*sizeof(double));CHKERRQ(ierr);
   }
 
   /* copy the matrix */
@@ -671,7 +671,7 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
     for (i=rstart; i<rend; i++) {
       row_indx             = i-rstart;
       len                  = num_ptr[row_indx];
-      rows->rptrs[row_indx] = (int*)PetscMalloc(len*sizeof(int));CHKPTRQ(rows->rptrs[row_indx]);
+      rows->rptrs[row_indx] = (int*)PetscMalloc(len*sizeof(int));CHKERRQ(ierr);
     }
 
     /* copy the matrix (i.e., the structure) */
@@ -706,7 +706,7 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
    COMPRESSED-ROW format.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ConvertMatrixToMat"
+#define __FUNC__ "ConvertMatrixToMat"
 int ConvertMatrixToMat(matrix *B,Mat *PB)
 {
   int size,rank;
@@ -725,8 +725,8 @@ int ConvertMatrixToMat(matrix *B,Mat *PB)
   d_nz = o_nz = 0;
 
   /* Determine preallocation for MatCreateMPIAIJ */
-  d_nnz = (int*)PetscMalloc(m*sizeof(int));
-  o_nnz = (int*)PetscMalloc(m*sizeof(int));
+ierr = PetscMalloc(m*sizeof(int),&(  d_nnz ));
+ierr = PetscMalloc(m*sizeof(int),&(  o_nnz ));
   for (i=0; i<m; i++) d_nnz[i] = o_nnz[i] = 0;
   first_diag_col = B->start_indices[rank];
   last_diag_col = first_diag_col + B->mnls[rank];
@@ -768,7 +768,7 @@ int ConvertMatrixToMat(matrix *B,Mat *PB)
    Converts from an SPAI vector v  to a PETSc vec Pv.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ConvertVectorToVec"
+#define __FUNC__ "ConvertVectorToVec"
 int ConvertVectorToVec(vector *v,Vec *Pv)
 {
   int size,rank;
@@ -785,13 +785,13 @@ int ConvertVectorToVec(vector *v,Vec *Pv)
   
   ierr = VecCreateMPI(PETSC_COMM_WORLD,m,M,Pv);CHKERRA(ierr);
 
-  mnls = (int*)PetscMalloc(size*sizeof(int));
+ierr = PetscMalloc(size*sizeof(int),&(  mnls ));
   MPI_Barrier(PETSC_COMM_WORLD);
   MPI_Allgather((void*)&v->mnl,1,MPI_INT,
 		(void*)mnls,1,MPI_INT,
 		PETSC_COMM_WORLD);
   
-  start_indices = (int*)PetscMalloc(size*sizeof(int));
+ierr = PetscMalloc(size*sizeof(int),&(  start_indices ));
   start_indices[0] = 0;
   for (i=1; i<size; i++) 
     start_indices[i] = start_indices[i-1] +mnls[i-1];
@@ -828,12 +828,12 @@ int ConvertVectorToVec(vector *v,Vec *Pv)
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MM_to_PETSC"
+#define __FUNC__ "MM_to_PETSC"
 int MM_to_PETSC(char *f0,char *f1,char *f2)
 {
   Mat        A_PETSC;          /* matrix */
   Vec        b_PETSC;          /* RHS */
-  Viewer     fd;               /* viewer */
+  PetscViewer     fd;               /* viewer */
   int        ierr;
 
   matrix *A_spai;
@@ -846,7 +846,7 @@ int MM_to_PETSC(char *f0,char *f1,char *f2)
   ierr = ConvertMatrixToMat(A_spai,&A_PETSC);CHKERRQ(ierr);
   ierr = ConvertVectorToVec(b_spai,&b_PETSC);CHKERRQ(ierr);
 
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,f1,BINARY_CREATE,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,f1,PETSC_BINARY_CREATE,&fd);CHKERRQ(ierr);
   ierr = MatView(A_PETSC,fd);CHKERRQ(ierr);
   ierr = VecView(b_PETSC,fd);CHKERRQ(ierr);
 

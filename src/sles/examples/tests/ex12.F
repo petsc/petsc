@@ -1,5 +1,5 @@
 !
-!      "$Id: ex12.F,v 1.33 2000/10/24 20:26:51 bsmith Exp bsmith $";
+!      "$Id: ex12.F,v 1.34 2000/11/05 16:39:52 bsmith Exp bsmith $";
 !
       program main
        implicit none
@@ -23,16 +23,16 @@
       Mat              A
       SLES             sles
       character*(128)  f 
-      Viewer           fd
+      PetscViewer           fd
       MatInfo          info(MAT_INFO_SIZE)
-      PLogDouble       time1,time2
+      PetscLogDouble       time1,time2
 
       none = -1.0
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
 ! Read in matrix and RHS
-      call OptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
-      call ViewerBinaryOpen(PETSC_COMM_WORLD,f,BINARY_RDONLY,           &
+      call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,PETSC_BINARY_RDONLY,           &
      &     fd,ierr)
 
       call MatLoad(fd,MATSEQAIJ,A,ierr)
@@ -49,7 +49,7 @@
 
  100  format(11(g7.1,1x))
       call VecLoad(fd,b,ierr)
-      call ViewerDestroy(fd,ierr)
+      call PetscViewerDestroy(fd,ierr)
 
 ! Set up solution
       call VecDuplicate(b,x,ierr)

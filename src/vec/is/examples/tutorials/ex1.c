@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.20 2000/09/27 03:31:23 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.21 2000/09/27 03:36:28 bsmith Exp bsmith $*/
 
 static char help[] = "Creating a general index set.\n\n";
 
@@ -31,7 +31,7 @@ int main(int argc,char **argv)
      Create an index set with 5 entries. Each processor creates
    its own index set with its own list of integers.
   */
-  indices = (int*)PetscMalloc(5*sizeof(int));CHKPTRA(indices);
+ierr = PetscMalloc(5*sizeof(int),&(  indices ));CHKPTRA(indices);
   indices[0] = rank + 1; 
   indices[1] = rank + 2; 
   indices[2] = rank + 3; 
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   /*
      Print the index set to stdout
   */
-  ierr = ISView(is,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(is,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /*
      Get the number of indices in the set 

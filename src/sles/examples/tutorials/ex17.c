@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.13 2000/09/28 21:13:46 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.14 2000/10/24 20:26:55 bsmith Exp bsmith $*/
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
 
@@ -37,8 +37,8 @@ int main(int argc,char **args)
   PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"system size: m=%d, n=%d\n",m,n);CHKERRA(ierr);
   if (m < n) SETERRA(1,"Supports m >= n only!");
 
@@ -95,7 +95,7 @@ int main(int argc,char **args)
       - Always specify global rows and columns of matrix entries.
    */
   ierr = VecGetArray(u,&ua);CHKERRA(ierr);
-  cols = (int *)PetscMalloc(n*sizeof(int));CHKPTRA(cols);
+ierr = PetscMalloc(n*sizeof(int),&(  cols ));CHKPTRA(cols);
   for (i=0; i<n; i++) { 
     cols[i] = i;
   }
@@ -121,8 +121,8 @@ int main(int argc,char **args)
   /*
      View the exact solution vector if desired
   */
-  ierr = OptionsHasName(PETSC_NULL,"-view_exact_sol",&flg);CHKERRA(ierr);
-  if (flg) {ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRA(ierr);}
+  ierr = PetscOptionsHasName(PETSC_NULL,"-view_exact_sol",&flg);CHKERRA(ierr);
+  if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);}
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                 Create the linear solver and set various options

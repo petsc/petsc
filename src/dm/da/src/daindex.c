@@ -1,4 +1,4 @@
-/*$Id: daindex.c,v 1.29 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: daindex.c,v 1.30 2000/07/25 03:09:04 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetGlobalIndices"
+#define __FUNC__ "DAGetGlobalIndices"
 /*@C
    DAGetGlobalIndices - Returns the global node number of all local nodes,
    including ghost nodes.
@@ -63,7 +63,7 @@ int DAGetGlobalIndices(DA da,int *n,int **idx)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetAO"
+#define __FUNC__ "DAGetAO"
 /*@C
    DAGetAO - Gets the application ordering context for a distributed array.
 

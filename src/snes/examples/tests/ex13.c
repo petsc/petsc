@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.24 2000/09/28 21:14:21 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.25 2000/10/24 20:27:11 bsmith Exp bsmith $*/
 
 static char help[] =
 "This program is a replica of ex6.c except that it does 2 solves to avoid paging\n\
@@ -60,13 +60,13 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   for (i=0; i<2; i++) {
-    PLogStagePush(i);
+    PetscLogStagePush(i);
     user.mx = 4; user.my = 4; user.param = 6.0;
     
     if (i!=0) {
-      ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-      ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-      ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+      ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+      ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+      ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
       if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
         SETERRA(1,"Lambda is out of range");
       }
@@ -74,8 +74,8 @@ int main(int argc,char **argv)
     N = user.mx*user.my;
 
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-    ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-    ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
     if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
       SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
     
@@ -97,14 +97,14 @@ int main(int argc,char **argv)
        (unless user explicitly sets preconditioner) 
        -snes_fd : default finite differencing approximation of Jacobian
        */
-    ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
     if (!matrix_free) {
       ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&J);CHKERRA(ierr);
       ierr = MatSetFromOptions(J);CHKERRA(ierr);
       ierr = SNESSetJacobian(snes,J,J,FormJacobian1,&user);CHKERRA(ierr);
     }
 
-    /* Set options, then solve nonlinear system */
+    /* Set PetscOptions, then solve nonlinear system */
     ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
     ierr = FormInitialGuess1(&user,x);CHKERRA(ierr);
     ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
@@ -203,7 +203,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 
   /* Insert values into global vector */
   ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = PLogFlops(11*ym*xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops(11*ym*xm);CHKERRQ(ierr);
   return 0; 
 } /* --------------------  Evaluate Jacobian F'(x) --------------------- */
 #undef __FUNC__

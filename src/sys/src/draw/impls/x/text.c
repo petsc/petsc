@@ -1,4 +1,4 @@
-/*$Id: text.c,v 1.37 2000/04/12 04:21:09 bsmith Exp bsmith $*/
+/*$Id: text.c,v 1.38 2000/09/22 20:42:03 bsmith Exp bsmith $*/
 
 /*
    This file contains simple code to manage access to fonts, insuring that
@@ -8,9 +8,9 @@
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
 
-int XiInitFonts(Draw_X *);
+int XiInitFonts(PetscDraw_X *);
 int XiMatchFontSize(XiFont*,int,int);
-int XiLoadFont(Draw_X*,XiFont*);
+int XiLoadFont(PetscDraw_X*,XiFont*);
 /*
     XiFontFixed - Return a pointer to the selected font.
 
@@ -19,16 +19,17 @@ int XiLoadFont(Draw_X*,XiFont*);
    are not intended to be high performance.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiFontFixed"></a>*/"XiFontFixed" 
-int XiFontFixed(Draw_X *XBWin,int w,int h,XiFont **outfont)
+#define __FUNC__ "XiFontFixed" 
+int XiFontFixed(PetscDraw_X *XBWin,int w,int h,XiFont **outfont)
 {
   static XiFont *curfont = 0,*font;
+  int    ierr;
 
   PetscFunctionBegin;
-  if (!curfont) { XiInitFonts(XBWin);}
-  font = (XiFont*)PetscMalloc(sizeof(XiFont));CHKPTRQ(font);
-  XiMatchFontSize(font,w,h);
-  XiLoadFont(XBWin,font);
+  if (!curfont) { ierr = XiInitFonts(XBWin);CHKERRQ(ierr);}
+  ierr = PetscMalloc(sizeof(XiFont),&font);CHKERRQ(ierr);
+  ierr = XiMatchFontSize(font,w,h);CHKERRQ(ierr);
+  ierr = XiLoadFont(XBWin,font);CHKERRQ(ierr);
   curfont = font;
   *outfont = curfont;
   PetscFunctionReturn(0);
@@ -47,8 +48,8 @@ static int act_nfonts = 0;
 */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiLoadFont"></a>*/"XiLoadFont" 
-int XiLoadFont(Draw_X *XBWin,XiFont *font)
+#define __FUNC__ "XiLoadFont" 
+int XiLoadFont(PetscDraw_X *XBWin,XiFont *font)
 {
   char        font_name[100];
   XFontStruct *FontInfo;
@@ -74,8 +75,8 @@ int XiLoadFont(Draw_X *XBWin,XiFont *font)
 
 /* Code to find fonts and their characteristics */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiInitFonts"></a>*/"XiInitFonts" 
-int XiInitFonts(Draw_X *XBWin)
+#define __FUNC__ "XiInitFonts" 
+int XiInitFonts(PetscDraw_X *XBWin)
 {
   char         **names;
   int          cnt,i,j;
@@ -125,7 +126,7 @@ int XiInitFonts(Draw_X *XBWin)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiMatchFontSize"></a>*/"XiMatchFontSize" 
+#define __FUNC__ "XiMatchFontSize" 
 int XiMatchFontSize(XiFont *font,int w,int h)
 {
   int i,max,imax,tmp;

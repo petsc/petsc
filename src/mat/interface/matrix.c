@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.386 2000/12/19 21:51:35 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.387 2000/12/19 21:52:13 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -8,7 +8,7 @@
 #include "src/vec/vecimpl.h"  
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetRow"
+#define __FUNC__ "MatGetRow"
 /*@C
    MatGetRow - Gets a row of a matrix.  You MUST call MatRestoreRow()
    for each row that you get to ensure that your application does
@@ -81,14 +81,14 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->getrow) SETERRQ(PETSC_ERR_SUP,"");
-  ierr = PLogEventBegin(MAT_GetRow,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_GetRow,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->getrow)(mat,row,ncols,cols,vals);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_GetRow,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetRow,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatRestoreRow"
+#define __FUNC__ "MatRestoreRow"
 /*@C  
    MatRestoreRow - Frees any temporary space allocated by MatGetRow().
 
@@ -136,7 +136,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatView"
+#define __FUNC__ "MatView"
 /*@C
    MatView - Visualizes a matrix object.
 
@@ -148,36 +148,36 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 
   Notes:
   The available visualization contexts include
-+    VIEWER_STDOUT_SELF - standard output (default)
-.    VIEWER_STDOUT_WORLD - synchronized standard
++    PETSC_VIEWER_STDOUT_SELF - standard output (default)
+.    PETSC_VIEWER_STDOUT_WORLD - synchronized standard
         output where only the first processor opens
         the file.  All other processors send their 
         data to the first processor to print. 
--     VIEWER_DRAW_WORLD - graphical display of nonzero structure
+-     PETSC_VIEWER_DRAW_WORLD - graphical display of nonzero structure
 
    The user can open alternative visualization contexts with
-+    ViewerASCIIOpen() - Outputs matrix to a specified file
-.    ViewerBinaryOpen() - Outputs matrix in binary to a
++    PetscViewerASCIIOpen() - Outputs matrix to a specified file
+.    PetscViewerBinaryOpen() - Outputs matrix in binary to a
          specified file; corresponding input uses MatLoad()
-.    ViewerDrawOpen() - Outputs nonzero matrix structure to 
+.    PetscViewerDrawOpen() - Outputs nonzero matrix structure to 
          an X window display
--    ViewerSocketOpen() - Outputs matrix to Socket viewer.
+-    PetscViewerSocketOpen() - Outputs matrix to Socket viewer.
          Currently only the sequential dense and AIJ
          matrix types support the Socket viewer.
 
-   The user can call ViewerSetFormat() to specify the output
-   format of ASCII printed objects (when using VIEWER_STDOUT_SELF,
-   VIEWER_STDOUT_WORLD and ViewerASCIIOpen).  Available formats include
-+    VIEWER_FORMAT_ASCII_DEFAULT - default, prints matrix contents
-.    VIEWER_FORMAT_ASCII_MATLAB - prints matrix contents in Matlab format
-.    VIEWER_FORMAT_ASCII_DENSE - prints entire matrix including zeros
-.    VIEWER_FORMAT_ASCII_COMMON - prints matrix contents, using a sparse 
+   The user can call PetscViewerSetFormat() to specify the output
+   format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
+   PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
++    PETSC_VIEWER_FORMAT_ASCII_DEFAULT - default, prints matrix contents
+.    PETSC_VIEWER_FORMAT_ASCII_MATLAB - prints matrix contents in Matlab format
+.    PETSC_VIEWER_FORMAT_ASCII_DENSE - prints entire matrix including zeros
+.    PETSC_VIEWER_FORMAT_ASCII_COMMON - prints matrix contents, using a sparse 
          format common among all matrix types
-.    VIEWER_FORMAT_ASCII_IMPL - prints matrix contents, using an implementation-specific 
+.    PETSC_VIEWER_FORMAT_ASCII_IMPL - prints matrix contents, using an implementation-specific 
          format (which is in many cases the same as the default)
-.    VIEWER_FORMAT_ASCII_INFO - prints basic information about the matrix
+.    PETSC_VIEWER_FORMAT_ASCII_INFO - prints basic information about the matrix
          size and structure (not the matrix entries)
--    VIEWER_FORMAT_ASCII_INFO_LONG - prints more detailed information about
+-    PETSC_VIEWER_FORMAT_ASCII_INFO_LONG - prints more detailed information about
          the matrix structure
 
    Level: beginner
@@ -186,10 +186,10 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
    Concepts: matrices^plotting
    Concepts: matrices^printing
 
-.seealso: ViewerSetFormat(), ViewerASCIIOpen(), ViewerDrawOpen(), 
-          ViewerSocketOpen(), ViewerBinaryOpen(), MatLoad()
+.seealso: PetscViewerSetFormat(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), 
+          PetscViewerSocketOpen(), PetscViewerBinaryOpen(), MatLoad()
 @*/
-int MatView(Mat mat,Viewer viewer)
+int MatView(Mat mat,PetscViewer viewer)
 {
   int        format,ierr,rows,cols;
   PetscTruth isascii;
@@ -199,46 +199,46 @@ int MatView(Mat mat,Viewer viewer)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidType(mat);
   MatPreallocated(mat); 
-  if (!viewer) viewer = VIEWER_STDOUT_(mat->comm);
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(mat->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscCheckSameComm(mat,viewer);
   if (!mat->assembled) SETERRQ(1,"Must call MatAssemblyBegin/End() before viewing matrix");
 
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
-    if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
-      ierr = ViewerASCIIPrintf(viewer,"Matrix Object:\n");CHKERRQ(ierr);
-      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
+    if (format == PETSC_VIEWER_FORMAT_ASCII_INFO || format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Matrix Object:\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = MatGetType(mat,&cstr);CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
-      ierr = ViewerASCIIPrintf(viewer,"type=%s, rows=%d, cols=%d\n",cstr,rows,cols);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"type=%s, rows=%d, cols=%d\n",cstr,rows,cols);CHKERRQ(ierr);
       if (mat->ops->getinfo) {
         MatInfo info;
         ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-        ierr = ViewerASCIIPrintf(viewer,"total: nonzeros=%d, allocated nonzeros=%d\n",
+        ierr = PetscViewerASCIIPrintf(viewer,"total: nonzeros=%d, allocated nonzeros=%d\n",
                           (int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
       }
     }
   }
   if (mat->ops->view) {
-    ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = (*mat->ops->view)(mat,viewer);CHKERRQ(ierr);
-    ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else if (!isascii) {
     SETERRQ1(1,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
   }
   if (isascii) {
-    ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
-    if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
-      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
+    if (format == PETSC_VIEWER_FORMAT_ASCII_INFO || format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG) {
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatScaleSystem"
+#define __FUNC__ "MatScaleSystem"
 /*@C
    MatScaleSystem - Scale a vector solution and right hand side to 
    match the scaling of a scaled matrix.
@@ -283,7 +283,7 @@ int MatScaleSystem(Mat mat,Vec x,Vec b)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatUnScaleSystem"
+#define __FUNC__ "MatUnScaleSystem"
 /*@C
    MatUnScaleSystem - Unscales a vector solution and right hand side to 
    match the original scaling of a scaled matrix.
@@ -325,7 +325,7 @@ int MatUnScaleSystem(Mat mat,Vec x,Vec b)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatUseScaledForm"
+#define __FUNC__ "MatUseScaledForm"
 /*@C
    MatUseScaledForm - For matrix storage formats that scale the 
    matrix (for example MPIRowBS matrices are diagonally scaled on
@@ -362,7 +362,7 @@ int MatUseScaledForm(Mat mat,PetscTruth scaled)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatDestroy"
+#define __FUNC__ "MatDestroy"
 /*@C
    MatDestroy - Frees space taken by a matrix.
   
@@ -400,13 +400,13 @@ int MatDestroy(Mat A)
   }
 
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  PLogObjectDestroy(A);
+  PetscLogObjectDestroy(A);
   PetscHeaderDestroy(A);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatValid"
+#define __FUNC__ "MatValid"
 /*@
    MatValid - Checks whether a matrix object is valid.
 
@@ -434,7 +434,7 @@ int MatValid(Mat m,PetscTruth *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetValues"
+#define __FUNC__ "MatSetValues"
 /*@ 
    MatSetValues - Inserts or adds a block of values into a matrix.
    These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd() 
@@ -503,15 +503,15 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
     mat->was_assembled = PETSC_TRUE; 
     mat->assembled     = PETSC_FALSE;
   }
-  ierr = PLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   if (!mat->ops->setvalues) SETERRQ(PETSC_ERR_SUP,"Not supported for this matrix type");
   ierr = (*mat->ops->setvalues)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetValuesBlocked"
+#define __FUNC__ "MatSetValuesBlocked"
 /*@ 
    MatSetValuesBlocked - Inserts or adds a block of values into a matrix.
 
@@ -585,10 +585,10 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
     mat->was_assembled = PETSC_TRUE; 
     mat->assembled     = PETSC_FALSE;
   }
-  ierr = PLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   if (!mat->ops->setvaluesblocked) SETERRQ(PETSC_ERR_SUP,"Not supported for this matrix type");
   ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -620,7 +620,7 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetValues"
+#define __FUNC__ "MatGetValues"
 /*@ 
    MatGetValues - Gets a block of values from a matrix.
 
@@ -666,14 +666,14 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->getvalues) SETERRQ(PETSC_ERR_SUP,"");
 
-  ierr = PLogEventBegin(MAT_GetValues,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_GetValues,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->getvalues)(mat,m,idxm,n,idxn,v);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_GetValues,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetLocalToGlobalMapping"
+#define __FUNC__ "MatSetLocalToGlobalMapping"
 /*@
    MatSetLocalToGlobalMapping - Sets a local-to-global numbering for use by
    the routine MatSetValuesLocal() to allow users to insert matrix entries
@@ -715,7 +715,7 @@ int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetLocalToGlobalMappingBlock"
+#define __FUNC__ "MatSetLocalToGlobalMappingBlock"
 /*@
    MatSetLocalToGlobalMappingBlock - Sets a local-to-global numbering for use
    by the routine MatSetValuesBlockedLocal() to allow users to insert matrix
@@ -754,7 +754,7 @@ int MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetValuesLocal"
+#define __FUNC__ "MatSetValuesLocal"
 /*@
    MatSetValuesLocal - Inserts or adds values into certain locations of a matrix,
    using a local ordering of the nodes. 
@@ -817,7 +817,7 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,In
     mat->was_assembled = PETSC_TRUE; 
     mat->assembled     = PETSC_FALSE;
   }
-  ierr = PLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   if (!mat->ops->setvalueslocal) {
     ierr = ISLocalToGlobalMappingApply(mat->mapping,nrow,irow,irowm);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApply(mat->mapping,ncol,icol,icolm);CHKERRQ(ierr); 
@@ -825,12 +825,12 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,In
   } else {
     ierr = (*mat->ops->setvalueslocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
   }
-  ierr = PLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetValuesBlockedLocal"
+#define __FUNC__ "MatSetValuesBlockedLocal"
 /*@
    MatSetValuesBlockedLocal - Inserts or adds values into certain locations of a matrix,
    using a local ordering of the nodes a block at a time. 
@@ -895,17 +895,17 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scala
     mat->was_assembled = PETSC_TRUE; 
     mat->assembled     = PETSC_FALSE;
   }
-  ierr = PLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(mat->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(mat->bmapping,ncol,icol,icolm);CHKERRQ(ierr);
   ierr = (*mat->ops->setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* --------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMult"
+#define __FUNC__ "MatMult"
 /*@
    MatMult - Computes the matrix-vector product, y = Ax.
 
@@ -950,9 +950,9 @@ int MatMult(Mat mat,Vec x,Vec y)
     ierr = MatNullSpaceRemove(mat->nullsp,x,&x);CHKERRQ(ierr);
   }
 
-  ierr = PLogEventBegin(MAT_Mult,mat,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Mult,mat,x,y,0);CHKERRQ(ierr);
   ierr = (*mat->ops->mult)(mat,x,y);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_Mult,mat,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Mult,mat,x,y,0);CHKERRQ(ierr);
 
   if (mat->nullsp) {
     ierr = MatNullSpaceRemove(mat->nullsp,y,PETSC_NULL);CHKERRQ(ierr);
@@ -961,7 +961,7 @@ int MatMult(Mat mat,Vec x,Vec y)
 }   
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultTranspose"
+#define __FUNC__ "MatMultTranspose"
 /*@
    MatMultTranspose - Computes matrix transpose times a vector.
 
@@ -1001,14 +1001,14 @@ int MatMultTranspose(Mat mat,Vec x,Vec y)
   if (mat->M != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %d %d",mat->M,x->N); 
   if (mat->N != y->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %d %d",mat->N,y->N);
  
-  ierr = PLogEventBegin(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   ierr = (*mat->ops->multtranspose)(mat,x,y);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }   
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultAdd"
+#define __FUNC__ "MatMultAdd"
 /*@
     MatMultAdd -  Computes v3 = v2 + A * v1.
 
@@ -1052,14 +1052,14 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   if (mat->m != v2->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v2: local dim %d %d",mat->m,v2->n); 
   if (v1 == v3) SETERRQ(PETSC_ERR_ARG_IDN,"v1 and v3 must be different vectors");
 
-  ierr = PLogEventBegin(MAT_MultAdd,mat,v1,v2,v3);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MultAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = (*mat->ops->multadd)(mat,v1,v2,v3);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_MultAdd,mat,v1,v2,v3);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }   
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultTransposeAdd"
+#define __FUNC__ "MatMultTransposeAdd"
 /*@
    MatMultTransposeAdd - Computes v3 = v2 + A' * v1.
 
@@ -1102,14 +1102,14 @@ int MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   if (mat->N != v2->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v2: global dim %d %d",mat->N,v2->N);
   if (mat->N != v3->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v3: global dim %d %d",mat->N,v3->N);
 
-  ierr = PLogEventBegin(MAT_MultTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MultTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = (*mat->ops->multtransposeadd)(mat,v1,v2,v3);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_MultTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetInfo"
+#define __FUNC__ "MatGetInfo"
 /*@C
    MatGetInfo - Returns information about matrix storage (number of
    nonzeros, memory, etc.).
@@ -1185,7 +1185,7 @@ int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 
 /* ----------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatILUDTFactor"
+#define __FUNC__ "MatILUDTFactor"
 /*@C  
    MatILUDTFactor - Performs a drop tolerance ILU factorization.
 
@@ -1229,15 +1229,15 @@ int MatILUDTFactor(Mat mat,MatILUInfo *info,IS row,IS col,Mat *fact)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->iludtfactor) SETERRQ(PETSC_ERR_SUP,"");
 
-  ierr = PLogEventBegin(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->iludtfactor)(mat,info,row,col,fact);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactor"
+#define __FUNC__ "MatLUFactor"
 /*@  
    MatLUFactor - Performs in-place LU factorization of matrix.
 
@@ -1280,14 +1280,14 @@ int MatLUFactor(Mat mat,IS row,IS col,MatLUInfo *info)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->lufactor) SETERRQ(PETSC_ERR_SUP,"");
 
-  ierr = PLogEventBegin(MAT_LUFactor,mat,row,col,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_LUFactor,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->lufactor)(mat,row,col,info);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_LUFactor,mat,row,col,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_LUFactor,mat,row,col,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatILUFactor"
+#define __FUNC__ "MatILUFactor"
 /*@  
    MatILUFactor - Performs in-place ILU factorization of matrix.
 
@@ -1330,14 +1330,14 @@ int MatILUFactor(Mat mat,IS row,IS col,MatILUInfo *info)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->ilufactor) SETERRQ(PETSC_ERR_SUP,"");
 
-  ierr = PLogEventBegin(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->ilufactor)(mat,row,col,info);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactorSymbolic"
+#define __FUNC__ "MatLUFactorSymbolic"
 /*@  
    MatLUFactorSymbolic - Performs symbolic LU factorization of matrix.
    Call this routine before calling MatLUFactorNumeric().
@@ -1382,14 +1382,14 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatLUInfo *info,Mat *fact)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->lufactorsymbolic) SETERRQ(PETSC_ERR_SUP,"");
 
-  ierr = PLogEventBegin(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->lufactorsymbolic)(mat,row,col,info,fact);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric"
+#define __FUNC__ "MatLUFactorNumeric"
 /*@  
    MatLUFactorNumeric - Performs numeric LU factorization of a matrix.
    Call this routine after first calling MatLUFactorSymbolic().
@@ -1432,26 +1432,26 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   }
   if (!(*fact)->ops->lufactornumeric) SETERRQ(PETSC_ERR_SUP,"");
 
-  ierr = PLogEventBegin(MAT_LUFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
   ierr = (*(*fact)->ops->lufactornumeric)(mat,fact);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_view_draw",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = OptionsHasName(PETSC_NULL,"-mat_view_contour",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-mat_view_contour",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = ViewerPushFormat(VIEWER_DRAW_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
     }
-    ierr = MatView(*fact,VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+    ierr = MatView(*fact,PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     if (flg) {
-      ierr = ViewerPopFormat(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCholeskyFactor"
+#define __FUNC__ "MatCholeskyFactor"
 /*@  
    MatCholeskyFactor - Performs in-place Cholesky factorization of a
    symmetric matrix. 
@@ -1492,14 +1492,14 @@ int MatCholeskyFactor(Mat mat,IS perm,PetscReal f)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->choleskyfactor) SETERRQ(PETSC_ERR_SUP,"");
 
-  ierr = PLogEventBegin(MAT_CholeskyFactor,mat,perm,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_CholeskyFactor,mat,perm,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->choleskyfactor)(mat,perm,f);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_CholeskyFactor,mat,perm,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CholeskyFactor,mat,perm,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCholeskyFactorSymbolic"
+#define __FUNC__ "MatCholeskyFactorSymbolic"
 /*@  
    MatCholeskyFactorSymbolic - Performs symbolic Cholesky factorization
    of a symmetric matrix. 
@@ -1544,14 +1544,14 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,Mat *fact)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->choleskyfactorsymbolic) SETERRQ(PETSC_ERR_SUP,"");
 
-  ierr = PLogEventBegin(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->choleskyfactorsymbolic)(mat,perm,f,fact);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCholeskyFactorNumeric"
+#define __FUNC__ "MatCholeskyFactorNumeric"
 /*@  
    MatCholeskyFactorNumeric - Performs numeric Cholesky factorization
    of a symmetric matrix. Call this routine after first calling
@@ -1592,15 +1592,15 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
             mat->M,(*fact)->M,mat->N,(*fact)->N);
   }
 
-  ierr = PLogEventBegin(MAT_CholeskyFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_CholeskyFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
   ierr = (*(*fact)->ops->choleskyfactornumeric)(mat,fact);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_CholeskyFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CholeskyFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* ----------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolve"
+#define __FUNC__ "MatSolve"
 /*@
    MatSolve - Solves A x = b, given a factored matrix.
 
@@ -1648,14 +1648,14 @@ int MatSolve(Mat mat,Vec b,Vec x)
   if (mat->M == 0 && mat->N == 0) PetscFunctionReturn(0);
 
   if (!mat->ops->solve) SETERRQ(PETSC_ERR_SUP,"");
-  ierr = PLogEventBegin(MAT_Solve,mat,b,x,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Solve,mat,b,x,0);CHKERRQ(ierr);
   ierr = (*mat->ops->solve)(mat,b,x);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_Solve,mat,b,x,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Solve,mat,b,x,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatForwardSolve"
+#define __FUNC__ "MatForwardSolve"
 /* @
    MatForwardSolve - Solves L x = b, given a factored matrix, A = LU.
 
@@ -1704,14 +1704,14 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
   if (mat->M != b->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %d %d",mat->M,b->N);
   if (mat->m != b->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %d %d",mat->m,b->n); 
 
-  ierr = PLogEventBegin(MAT_ForwardSolve,mat,b,x,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_ForwardSolve,mat,b,x,0);CHKERRQ(ierr);
   ierr = (*mat->ops->forwardsolve)(mat,b,x);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_ForwardSolve,mat,b,x,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_ForwardSolve,mat,b,x,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatBackwardSolve"
+#define __FUNC__ "MatBackwardSolve"
 /* @
    MatBackwardSolve - Solves U x = b, given a factored matrix, A = LU.
 
@@ -1760,14 +1760,14 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
   if (mat->M != b->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %d %d",mat->M,b->N);
   if (mat->m != b->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %d %d",mat->m,b->n); 
 
-  ierr = PLogEventBegin(MAT_BackwardSolve,mat,b,x,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_BackwardSolve,mat,b,x,0);CHKERRQ(ierr);
   ierr = (*mat->ops->backwardsolve)(mat,b,x);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_BackwardSolve,mat,b,x,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_BackwardSolve,mat,b,x,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolveAdd"
+#define __FUNC__ "MatSolveAdd"
 /*@
    MatSolveAdd - Computes x = y + inv(A)*b, given a factored matrix.
 
@@ -1819,7 +1819,7 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
   if (mat->m != b->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %d %d",mat->m,b->n); 
   if (x->n != y->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Vec x,Vec y: local dim %d %d",x->n,y->n); 
 
-  ierr = PLogEventBegin(MAT_SolveAdd,mat,b,x,y);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_SolveAdd,mat,b,x,y);CHKERRQ(ierr);
   if (mat->ops->solveadd)  {
     ierr = (*mat->ops->solveadd)(mat,b,y,x);CHKERRQ(ierr);
   } else {
@@ -1829,19 +1829,19 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecAXPY(&one,y,x);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
-      PLogObjectParent(mat,tmp);
+      PetscLogObjectParent(mat,tmp);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolve(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(&one,tmp,x);CHKERRQ(ierr);
       ierr = VecDestroy(tmp);CHKERRQ(ierr);
     }
   }
-  ierr = PLogEventEnd(MAT_SolveAdd,mat,b,x,y);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_SolveAdd,mat,b,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose"
+#define __FUNC__ "MatSolveTranspose"
 /*@
    MatSolveTranspose - Solves A' x = b, given a factored matrix.
 
@@ -1886,14 +1886,14 @@ int MatSolveTranspose(Mat mat,Vec b,Vec x)
   if (mat->M != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %d %d",mat->M,x->N);
   if (mat->N != b->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %d %d",mat->N,b->N);
 
-  ierr = PLogEventBegin(MAT_SolveTranspose,mat,b,x,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_SolveTranspose,mat,b,x,0);CHKERRQ(ierr);
   ierr = (*mat->ops->solvetranspose)(mat,b,x);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_SolveTranspose,mat,b,x,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_SolveTranspose,mat,b,x,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolveTransposeAdd"
+#define __FUNC__ "MatSolveTransposeAdd"
 /*@
    MatSolveTransposeAdd - Computes x = y + inv(Transpose(A)) b, given a 
                       factored matrix. 
@@ -1945,7 +1945,7 @@ int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
   if (mat->N != y->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %d %d",mat->N,y->N);
   if (x->n != y->n)   SETERRQ2(PETSC_ERR_ARG_SIZ,"Vec x,Vec y: local dim %d %d",x->n,y->n);
 
-  ierr = PLogEventBegin(MAT_SolveTransposeAdd,mat,b,x,y);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_SolveTransposeAdd,mat,b,x,y);CHKERRQ(ierr);
   if (mat->ops->solvetransposeadd) {
     ierr = (*mat->ops->solvetransposeadd)(mat,b,y,x);CHKERRQ(ierr);
   } else {
@@ -1955,20 +1955,20 @@ int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecAXPY(&one,y,x);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
-      PLogObjectParent(mat,tmp);
+      PetscLogObjectParent(mat,tmp);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolveTranspose(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(&one,tmp,x);CHKERRQ(ierr);
       ierr = VecDestroy(tmp);CHKERRQ(ierr);
     }
   }
-  ierr = PLogEventEnd(MAT_SolveTransposeAdd,mat,b,x,y);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_SolveTransposeAdd,mat,b,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatRelax"
+#define __FUNC__ "MatRelax"
 /*@
    MatRelax - Computes one relaxation sweep.
 
@@ -2040,14 +2040,14 @@ int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int i
   if (mat->M != b->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %d %d",mat->M,b->N);
   if (mat->m != b->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %d %d",mat->m,b->n);
 
-  ierr = PLogEventBegin(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
   ierr =(*mat->ops->relax)(mat,b,omega,flag,shift,its,x);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCopy_Basic"
+#define __FUNC__ "MatCopy_Basic"
 /*
       Default matrix copy routine.
 */
@@ -2070,7 +2070,7 @@ int MatCopy_Basic(Mat A,Mat B,MatStructure str)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCopy"
+#define __FUNC__ "MatCopy"
 /*@C  
    MatCopy - Copys a matrix to another matrix.
 
@@ -2114,22 +2114,22 @@ int MatCopy(Mat A,Mat B,MatStructure str)
   if (A->M != B->M || A->N != B->N) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim %d %d",A->M,B->M,
                                              A->N,B->N);
 
-  ierr = PLogEventBegin(MAT_Copy,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Copy,A,B,0,0);CHKERRQ(ierr);
   if (A->ops->copy) { 
     ierr = (*A->ops->copy)(A,B,str);CHKERRQ(ierr);
   } else { /* generic conversion */
     ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
   }
-  ierr = PLogEventEnd(MAT_Copy,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Copy,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #include "petscsys.h"
 PetscTruth MatConvertRegisterAllCalled = PETSC_FALSE;
-FList      MatConvertList              = 0;
+PetscFList      MatConvertList              = 0;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatConvertRegister"
+#define __FUNC__ "MatConvertRegister"
 /*@C
     MatConvertRegister - Allows one to register a routine that reads matrices
         from a binary file for a particular matrix type.
@@ -2151,13 +2151,13 @@ int MatConvertRegister(char *sname,char *path,char *name,int (*function)(Mat,Mat
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = FListAdd(&MatConvertList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatConvertList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatConvert"
+#define __FUNC__ "MatConvert"
 /*@C  
    MatConvert - Converts a matrix to another matrix, either of the same
    or different type.
@@ -2197,11 +2197,11 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  ierr = OptionsGetString(PETSC_NULL,"-matconvert_type",mtype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-matconvert_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     newtype = mtype;
   }
-  ierr = PLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   
   ierr = PetscTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype,"same",&issame);CHKERRQ(ierr);
@@ -2211,7 +2211,7 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
     int (*conv)(Mat,MatType,Mat*);
     ierr = PetscStrcpy(convname,"MatConvertTo_");CHKERRQ(ierr);
     ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
-    ierr =  FListFind(mat->comm,MatConvertList,convname,(int(**)(void*))&conv);CHKERRQ(ierr);
+    ierr =  PetscFListFind(mat->comm,MatConvertList,convname,(int(**)(void*))&conv);CHKERRQ(ierr);
     if (conv) {
       ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
     } else {
@@ -2232,13 +2232,13 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
       }
     }
   }
-  ierr = PLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatDuplicate"
+#define __FUNC__ "MatDuplicate"
 /*@C  
    MatDuplicate - Duplicates a matrix including the non-zero structure.
 
@@ -2271,17 +2271,17 @@ int MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
   *M  = 0;
-  ierr = PLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   if (!mat->ops->duplicate) {
     SETERRQ(PETSC_ERR_SUP,"Not written for this matrix type");
   }
   ierr = (*mat->ops->duplicate)(mat,op,M);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetDiagonal"
+#define __FUNC__ "MatGetDiagonal"
 /*@ 
    MatGetDiagonal - Gets the diagonal of a matrix.
 
@@ -2324,7 +2324,7 @@ int MatGetDiagonal(Mat mat,Vec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetRowMax"
+#define __FUNC__ "MatGetRowMax"
 /*@ 
    MatGetRowMax - Gets the maximum value (in absolute value) of each
         row of the matrix
@@ -2361,7 +2361,7 @@ int MatGetRowMax(Mat mat,Vec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatTranspose"
+#define __FUNC__ "MatTranspose"
 /*@C
    MatTranspose - Computes an in-place or out-of-place transpose of a matrix.
 
@@ -2395,7 +2395,7 @@ int MatTranspose(Mat mat,Mat *B)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatPermute"
+#define __FUNC__ "MatPermute"
 /*@C
    MatPermute - Creates a new matrix with rows and columns permuted from the 
    original.
@@ -2435,7 +2435,7 @@ int MatPermute(Mat mat,IS row,IS col,Mat *B)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatEqual"
+#define __FUNC__ "MatEqual"
 /*@
    MatEqual - Compares two matrices.
 
@@ -2475,7 +2475,7 @@ int MatEqual(Mat A,Mat B,PetscTruth *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatDiagonalScale"
+#define __FUNC__ "MatDiagonalScale"
 /*@
    MatDiagonalScale - Scales a matrix on the left and right by diagonal
    matrices that are stored as vectors.  Either of the two scaling
@@ -2513,14 +2513,14 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  ierr = PLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->diagonalscale)(mat,l,r);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatScale"
+#define __FUNC__ "MatScale"
 /*@
     MatScale - Scales all elements of a matrix by a given number.
 
@@ -2552,14 +2552,14 @@ int MatScale(Scalar *a,Mat mat)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  ierr = PLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->scale)(a,mat);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatNorm"
+#define __FUNC__ "MatNorm"
 /*@ 
    MatNorm - Calculates various norms of a matrix.
 
@@ -2600,7 +2600,7 @@ int MatNorm(Mat mat,NormType type,PetscReal *norm)
 */
 static int MatAssemblyEnd_InUse = 0;
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatAssemblyBegin"
+#define __FUNC__ "MatAssemblyBegin"
 /*@
    MatAssemblyBegin - Begins assembling the matrix.  This routine should
    be called after completing all calls to MatSetValues().
@@ -2638,9 +2638,9 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
     mat->assembled     = PETSC_FALSE;
   }
   if (!MatAssemblyEnd_InUse) {
-    ierr = PLogEventBegin(MAT_AssemblyBegin,mat,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MAT_AssemblyBegin,mat,0,0,0);CHKERRQ(ierr);
     if (mat->ops->assemblybegin){ierr = (*mat->ops->assemblybegin)(mat,type);CHKERRQ(ierr);}
-    ierr = PLogEventEnd(MAT_AssemblyBegin,mat,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_AssemblyBegin,mat,0,0,0);CHKERRQ(ierr);
   } else {
     if (mat->ops->assemblybegin){ierr = (*mat->ops->assemblybegin)(mat,type);CHKERRQ(ierr);}
   }
@@ -2648,7 +2648,7 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatAssembed"
+#define __FUNC__ "MatAssembed"
 /*@
    MatAssembled - Indicates if a matrix has been assembled and is ready for
      use; for example, in matrix-vector product.
@@ -2678,7 +2678,7 @@ int MatAssembled(Mat mat,PetscTruth *assembled)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatView_Private"
+#define __FUNC__ "MatView_Private"
 /*
     Processes command line options to determine if/how a matrix
   is to be viewed. Called by MatAssemblyEnd() and MatLoad().
@@ -2689,55 +2689,55 @@ int MatView_Private(Mat mat)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(mat->prefix,"-mat_view_info",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_info",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ViewerPushFormat(VIEWER_STDOUT_(mat->comm),VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
-    ierr = MatView(mat,VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-    ierr = ViewerPopFormat(VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(mat->prefix,"-mat_view_info_detailed",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_info_detailed",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ViewerPushFormat(VIEWER_STDOUT_(mat->comm),VIEWER_FORMAT_ASCII_INFO_LONG,0);CHKERRQ(ierr);
-    ierr = MatView(mat,VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-    ierr = ViewerPopFormat(VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_FORMAT_ASCII_INFO_LONG,0);CHKERRQ(ierr);
+    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(mat->prefix,"-mat_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(mat->prefix,"-mat_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatView(mat,VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(mat->prefix,"-mat_view_matlab",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_matlab",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ViewerPushFormat(VIEWER_STDOUT_(mat->comm),VIEWER_FORMAT_ASCII_MATLAB,"M");CHKERRQ(ierr);
-    ierr = MatView(mat,VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-    ierr = ViewerPopFormat(VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_FORMAT_ASCII_MATLAB,"M");CHKERRQ(ierr);
+    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(mat->prefix,"-mat_view_draw",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_draw",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = OptionsHasName(mat->prefix,"-mat_view_contour",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(mat->prefix,"-mat_view_contour",&flg);CHKERRQ(ierr);
     if (flg) {
-      ViewerPushFormat(VIEWER_DRAW_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+      PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
     }
-    ierr = MatView(mat,VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+    ierr = MatView(mat,PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     if (flg) {
-      ViewerPopFormat(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+      PetscViewerPopFormat(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     }
   }
-  ierr = OptionsHasName(mat->prefix,"-mat_view_socket",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_socket",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatView(mat,VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
+    ierr = MatView(mat,PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(mat->prefix,"-mat_view_binary",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_binary",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatView(mat,VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
+    ierr = MatView(mat,PETSC_VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatAssemblyEnd"
+#define __FUNC__ "MatAssemblyEnd"
 /*@
    MatAssemblyEnd - Completes assembling the matrix.  This routine should
    be called after MatAssemblyBegin().
@@ -2753,7 +2753,7 @@ int MatView_Private(Mat mat)
 .  -mat_view_info_detailed - Prints more detailed info
 .  -mat_view - Prints matrix in ASCII format
 .  -mat_view_matlab - Prints matrix in Matlab format
-.  -mat_view_draw - Draws nonzero structure of matrix, using MatView() and DrawOpenX().
+.  -mat_view_draw - PetscDraws nonzero structure of matrix, using MatView() and PetscDrawOpenX().
 .  -display <name> - Sets display name (default is host)
 -  -draw_pause <sec> - Sets number of seconds to pause after display
 
@@ -2766,7 +2766,7 @@ int MatView_Private(Mat mat)
 
    Level: beginner
 
-.seealso: MatAssemblyBegin(), MatSetValues(), DrawOpenX(), MatView(), MatAssembled()
+.seealso: MatAssemblyBegin(), MatSetValues(), PetscDrawOpenX(), MatView(), MatAssembled()
 @*/
 int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
@@ -2781,11 +2781,11 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
   inassm++;
   MatAssemblyEnd_InUse++;
   if (MatAssemblyEnd_InUse == 1) { /* Do the logging only the first time through */
-    ierr = PLogEventBegin(MAT_AssemblyEnd,mat,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MAT_AssemblyEnd,mat,0,0,0);CHKERRQ(ierr);
     if (mat->ops->assemblyend) {
       ierr = (*mat->ops->assemblyend)(mat,type);CHKERRQ(ierr);
     }
-    ierr = PLogEventEnd(MAT_AssemblyEnd,mat,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_AssemblyEnd,mat,0,0,0);CHKERRQ(ierr);
   } else {
     if (mat->ops->assemblyend) {
       ierr = (*mat->ops->assemblyend)(mat,type);CHKERRQ(ierr);
@@ -2808,7 +2808,7 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCompress"
+#define __FUNC__ "MatCompress"
 /*@
    MatCompress - Tries to store the matrix in as little space as 
    possible.  May fail if memory is already fully used, since it
@@ -2835,7 +2835,7 @@ int MatCompress(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetOption"
+#define __FUNC__ "MatSetOption"
 /*@
    MatSetOption - Sets a parameter option for a matrix. Some options
    may be specific to certain storage formats.  Some options
@@ -2950,7 +2950,7 @@ int MatSetOption(Mat mat,MatOption op)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatZeroEntries"
+#define __FUNC__ "MatZeroEntries"
 /*@
    MatZeroEntries - Zeros all entries of a matrix.  For sparse matrices
    this routine retains the old nonzero structure.
@@ -2977,14 +2977,14 @@ int MatZeroEntries(Mat mat)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->zeroentries) SETERRQ(PETSC_ERR_SUP,"");
 
-  ierr = PLogEventBegin(MAT_ZeroEntries,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_ZeroEntries,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->zeroentries)(mat);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_ZeroEntries,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_ZeroEntries,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatZeroRows"
+#define __FUNC__ "MatZeroRows"
 /*@C
    MatZeroRows - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix.
@@ -3044,7 +3044,7 @@ int MatZeroRows(Mat mat,IS is,Scalar *diag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatZeroRowsLocal"
+#define __FUNC__ "MatZeroRowsLocal"
 /*@C 
    MatZeroRowsLocal - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix; using local numbering of rows.
@@ -3103,7 +3103,7 @@ int MatZeroRowsLocal(Mat mat,IS is,Scalar *diag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSize"
+#define __FUNC__ "MatGetSize"
 /*@
    MatGetSize - Returns the numbers of rows and columns in a matrix.
 
@@ -3132,7 +3132,7 @@ int MatGetSize(Mat mat,int *m,int* n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetLocalSize"
+#define __FUNC__ "MatGetLocalSize"
 /*@
    MatGetLocalSize - Returns the number of rows and columns in a matrix
    stored locally.  This information may be implementation dependent, so
@@ -3163,7 +3163,7 @@ int MatGetLocalSize(Mat mat,int *m,int* n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetOwnershipRange"
+#define __FUNC__ "MatGetOwnershipRange"
 /*@
    MatGetOwnershipRange - Returns the range of matrix rows owned by
    this processor, assuming that the matrix is laid out with the first
@@ -3199,7 +3199,7 @@ int MatGetOwnershipRange(Mat mat,int *m,int* n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatILUFactorSymbolic"
+#define __FUNC__ "MatILUFactorSymbolic"
 /*@  
    MatILUFactorSymbolic - Performs symbolic ILU factorization of a matrix.
    Uses levels of fill only, not drop tolerance. Use MatLUFactorNumeric() 
@@ -3253,14 +3253,14 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  ierr = PLogEventBegin(MAT_ILUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_ILUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->ilufactorsymbolic)(mat,row,col,info,fact);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_ILUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_ILUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatIncompleteCholeskyFactorSymbolic"
+#define __FUNC__ "MatIncompleteCholeskyFactorSymbolic"
 /*@  
    MatIncompleteCholeskyFactorSymbolic - Performs symbolic incomplete
    Cholesky factorization for a symmetric matrix.  Use 
@@ -3307,14 +3307,14 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat
   if (!mat->ops->incompletecholeskyfactorsymbolic) SETERRQ(PETSC_ERR_SUP,"Currently only MatCreateMPIRowbs() matrices support ICC in parallel");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
 
-  ierr = PLogEventBegin(MAT_IncompleteCholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_IncompleteCholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->incompletecholeskyfactorsymbolic)(mat,perm,f,fill,fact);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_IncompleteCholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_IncompleteCholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetArray"
+#define __FUNC__ "MatGetArray"
 /*@C
    MatGetArray - Returns a pointer to the element values in the matrix.
    The result of this routine is dependent on the underlying matrix data
@@ -3373,7 +3373,7 @@ int MatGetArray(Mat mat,Scalar **v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatRestoreArray"
+#define __FUNC__ "MatRestoreArray"
 /*@C
    MatRestoreArray - Restores the matrix after MatGetArray() has been called.
 
@@ -3422,7 +3422,7 @@ int MatRestoreArray(Mat mat,Scalar **v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSubMatrices"
+#define __FUNC__ "MatGetSubMatrices"
 /*@C
    MatGetSubMatrices - Extracts several submatrices from a matrix. If submat
    points to an array of valid matrices, they may be reused to store the new
@@ -3479,15 +3479,15 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **subma
   if (!mat->ops->getsubmatrices) SETERRQ(PETSC_ERR_SUP,"");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
 
-  ierr = PLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->getsubmatrices)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatDestroyMatrices"
+#define __FUNC__ "MatDestroyMatrices"
 /*@C
    MatDestroyMatrices - Destroys a set of matrices obtained with MatGetSubMatrices().
 
@@ -3517,7 +3517,7 @@ int MatDestroyMatrices(int n,Mat **mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatIncreaseOverlap"
+#define __FUNC__ "MatIncreaseOverlap"
 /*@
    MatIncreaseOverlap - Given a set of submatrices indicated by index sets,
    replaces the index sets by larger ones that represent submatrices with
@@ -3551,14 +3551,14 @@ int MatIncreaseOverlap(Mat mat,int n,IS *is,int ov)
 
   if (!ov) PetscFunctionReturn(0);
   if (!mat->ops->increaseoverlap) SETERRQ(PETSC_ERR_SUP,"");
-  ierr = PLogEventBegin(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->increaseoverlap)(mat,n,is,ov);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatPrintHelp"
+#define __FUNC__ "MatPrintHelp"
 /*@
    MatPrintHelp - Prints all the options for the matrix.
 
@@ -3603,7 +3603,7 @@ int MatPrintHelp(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetBlockSize"
+#define __FUNC__ "MatGetBlockSize"
 /*@
    MatGetBlockSize - Returns the matrix block size; useful especially for the
    block row and block diagonal formats.
@@ -3641,7 +3641,7 @@ int MatGetBlockSize(Mat mat,int *bs)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetRowIJ"
+#define __FUNC__ "MatGetRowIJ"
 /*@C
     MatGetRowIJ - Returns the compressed row storage i and j indices for sequential matrices.
 
@@ -3683,7 +3683,7 @@ int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetColumnIJ"
+#define __FUNC__ "MatGetColumnIJ"
 /*@C
     MatGetColumnIJ - Returns the compressed column storage i and j indices for sequential matrices.
 
@@ -3726,7 +3726,7 @@ int MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** 
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatRestoreRowIJ"
+#define __FUNC__ "MatRestoreRowIJ"
 /*@C
     MatRestoreRowIJ - Call after you are completed with the ia,ja indices obtained with
     MatGetRowIJ().
@@ -3770,7 +3770,7 @@ int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int**
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatRestoreColumnIJ"
+#define __FUNC__ "MatRestoreColumnIJ"
 /*@C
     MatRestoreColumnIJ - Call after you are completed with the ia,ja indices obtained with
     MatGetColumnIJ().
@@ -3814,7 +3814,7 @@ int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,in
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatColoringPatch"
+#define __FUNC__ "MatColoringPatch"
 /*@C
     MatColoringPatch -Used inside matrix coloring routines that 
     use MatGetRowIJ() and/or MatGetColumnIJ().
@@ -3853,7 +3853,7 @@ int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetUnfactored"
+#define __FUNC__ "MatSetUnfactored"
 /*@
    MatSetUnfactored - Resets a factored matrix to be treated as unfactored.
 
@@ -3978,7 +3978,7 @@ M*/
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSubMatrix"
+#define __FUNC__ "MatGetSubMatrix"
 /*@
     MatGetSubMatrix - Gets a single submatrix on the same number of processors
                       as the original matrix.
@@ -4037,7 +4037,7 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetMaps"
+#define __FUNC__ "MatGetMaps"
 /*@C
    MatGetMaps - Returns the maps associated with the matrix.
 
@@ -4071,7 +4071,7 @@ int MatGetMaps(Mat mat,Map *rmap,Map *cmap)
       Version that works for all PETSc matrices
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetMaps_Petsc"
+#define __FUNC__ "MatGetMaps_Petsc"
 int MatGetMaps_Petsc(Mat mat,Map *rmap,Map *cmap)
 {
   PetscFunctionBegin;
@@ -4081,7 +4081,7 @@ int MatGetMaps_Petsc(Mat mat,Map *rmap,Map *cmap)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetStashInitialSize"
+#define __FUNC__ "MatSetStashInitialSize"
 /*@
    MatSetStashInitialSize - sets the sizes of the matrix stash, that is
    used during the assembly process to store values that belong to 
@@ -4128,7 +4128,7 @@ int MatSetStashInitialSize(Mat mat,int size, int bsize)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatInterpolateAdd"
+#define __FUNC__ "MatInterpolateAdd"
 /*@
    MatInterpolateAdd - w = y + A*x or A'*x depending on the shape of 
      the matrix
@@ -4170,7 +4170,7 @@ int MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatInterpolate"
+#define __FUNC__ "MatInterpolate"
 /*@
    MatInterpolate - y = A*x or A'*x depending on the shape of 
      the matrix
@@ -4209,7 +4209,7 @@ int MatInterpolate(Mat A,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatRestrict"
+#define __FUNC__ "MatRestrict"
 /*@
    MatRestrict - y = A*x or A'*x
 
@@ -4247,7 +4247,7 @@ int MatRestrict(Mat A,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatNullSpaceAttach"
+#define __FUNC__ "MatNullSpaceAttach"
 /*@C
    MatNullSpaceAttach - attaches a null space to a matrix.
         This null space will be removed from the resulting vector whenever
@@ -4287,7 +4287,7 @@ int MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatIncompleteCholeskyFactor"
+#define __FUNC__ "MatIncompleteCholeskyFactor"
 /*@  
    MatIncompleteCholeskyFactor - Performs in-place incomplete Cholesky factorization of matrix.
 

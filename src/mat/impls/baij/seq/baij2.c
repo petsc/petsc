@@ -1,4 +1,4 @@
-/*$Id: baij2.c,v 1.67 2000/09/28 21:11:23 bsmith Exp bsmith $*/
+/*$Id: baij2.c,v 1.68 2000/10/24 20:25:52 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -8,7 +8,7 @@
 #include "petscbt.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatIncreaseOverlap_SeqBAIJ"
+#define __FUNC__ "MatIncreaseOverlap_SeqBAIJ"
 int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
@@ -24,9 +24,9 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
 
   if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
 
-  ierr  = PetscBTCreate(m,table);CHKERRQ(ierr);
-  nidx  = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(nidx); 
-  nidx2 = (int *)PetscMalloc((A->m+1)*sizeof(int));CHKPTRQ(nidx2);
+  ierr = PetscBTCreate(m,table);CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(int),&nidx);CHKERRQ(ierr); 
+  ierr = PetscMalloc((A->m+1)*sizeof(int),&nidx2);CHKERRQ(ierr);
 
   for (i=0; i<is_max; i++) {
     /* Initialise the two local arrays */
@@ -73,7 +73,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSubMatrix_SeqBAIJ_Private"
+#define __FUNC__ "MatGetSubMatrix_SeqBAIJ_Private"
 int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
 {
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data,*c;
@@ -94,9 +94,9 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
   ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
 
-  smap  = (int*)PetscMalloc((1+oldcols)*sizeof(int));CHKPTRQ(smap);
+ierr = PetscMalloc((1+oldcols)*sizeof(int),&  smap  );CHKERRQ(ierr);
   ssmap = smap;
-  lens  = (int*)PetscMalloc((1+nrows)*sizeof(int));CHKPTRQ(lens);
+ierr = PetscMalloc((1+nrows)*sizeof(int),&  lens  );CHKERRQ(ierr);
   ierr  = PetscMemzero(smap,oldcols*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<ncols; i++) smap[icol[i]] = i+1;
   /* determine lens of each row */
@@ -156,7 +156,7 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSubMatrix_SeqBAIJ"
+#define __FUNC__ "MatGetSubMatrix_SeqBAIJ"
 int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
@@ -171,7 +171,7 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B
   
   /* Verify if the indices corespond to each element in a block 
    and form the IS with compressed IS */
-  vary = (int*)PetscMalloc(2*(a->mbs+1)*sizeof(int));CHKPTRQ(vary);
+  ierr = PetscMalloc(2*(a->mbs+1)*sizeof(int),&vary);CHKERRQ(ierr);
   iary = vary + a->mbs;
   ierr = PetscMemzero(vary,(a->mbs)*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
@@ -201,14 +201,14 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSubMatrices_SeqBAIJ"
+#define __FUNC__ "MatGetSubMatrices_SeqBAIJ"
 int MatGetSubMatrices_SeqBAIJ(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat **B)
 {
   int ierr,i;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    *B = (Mat*)PetscMalloc((n+1)*sizeof(Mat));CHKPTRQ(*B);
+ierr = PetscMalloc((n+1)*sizeof(Mat),&    *B );CHKERRQ(ierr);
   }
 
   for (i=0; i<n; i++) {
@@ -224,7 +224,7 @@ int MatGetSubMatrices_SeqBAIJ(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat *
 #include "petscblaslapack.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBAIJ_1"
+#define __FUNC__ "MatMult_SeqBAIJ_1"
 int MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -248,12 +248,12 @@ int MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(2*a->nz - A->m);
+  PetscLogFlops(2*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBAIJ_2"
+#define __FUNC__ "MatMult_SeqBAIJ_2"
 int MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -284,12 +284,12 @@ int MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(8*a->nz - A->m);
+  PetscLogFlops(8*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBAIJ_3"
+#define __FUNC__ "MatMult_SeqBAIJ_3"
 int MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data;
@@ -324,12 +324,12 @@ int MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(18*a->nz - A->m);
+  PetscLogFlops(18*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBAIJ_4"
+#define __FUNC__ "MatMult_SeqBAIJ_4"
 int MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -362,12 +362,12 @@ int MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(32*a->nz - A->m);
+  PetscLogFlops(32*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBAIJ_5"
+#define __FUNC__ "MatMult_SeqBAIJ_5"
 int MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -401,13 +401,13 @@ int MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(50*a->nz - A->m);
+  PetscLogFlops(50*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBAIJ_6"
+#define __FUNC__ "MatMult_SeqBAIJ_6"
 int MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -444,11 +444,11 @@ int MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(72*a->nz - A->m);
+  PetscLogFlops(72*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBAIJ_7"
+#define __FUNC__ "MatMult_SeqBAIJ_7"
 int MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -486,7 +486,7 @@ int MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(98*a->nz - A->m);
+  PetscLogFlops(98*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 
@@ -494,7 +494,7 @@ int MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
     This will not work with MatScalar == float because it calls the BLAS
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBAIJ_N"
+#define __FUNC__ "MatMult_SeqBAIJ_N"
 int MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -514,7 +514,7 @@ int MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
 
   if (!a->mult_work) {
     k = PetscMax(A->m,A->n);
-    a->mult_work = (Scalar*)PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
+ierr = PetscMalloc((k+1)*sizeof(Scalar),&    a->mult_work );CHKERRQ(ierr);
   }
   work = a->mult_work;
   for (i=0; i<mbs; i++) {
@@ -533,12 +533,12 @@ int MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(2*a->nz*bs2 - A->m);
+  PetscLogFlops(2*a->nz*bs2 - A->m);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBAIJ_1"
+#define __FUNC__ "MatMultAdd_SeqBAIJ_1"
 int MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -570,12 +570,12 @@ int MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
   if (zz != yy) {
     ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
-  PLogFlops(2*a->nz);
+  PetscLogFlops(2*a->nz);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBAIJ_2"
+#define __FUNC__ "MatMultAdd_SeqBAIJ_2"
 int MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -614,12 +614,12 @@ int MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   if (zz != yy) {
     ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
-  PLogFlops(4*a->nz);
+  PetscLogFlops(4*a->nz);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBAIJ_3"
+#define __FUNC__ "MatMultAdd_SeqBAIJ_3"
 int MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -658,12 +658,12 @@ int MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
   if (zz != yy) {
     ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
-  PLogFlops(18*a->nz);
+  PetscLogFlops(18*a->nz);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBAIJ_4"
+#define __FUNC__ "MatMultAdd_SeqBAIJ_4"
 int MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -705,12 +705,12 @@ int MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
   if (zz != yy) {
     ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
-  PLogFlops(32*a->nz);
+  PetscLogFlops(32*a->nz);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBAIJ_5"
+#define __FUNC__ "MatMultAdd_SeqBAIJ_5"
 int MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -752,11 +752,11 @@ int MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   if (zz != yy) {
     ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
-  PLogFlops(50*a->nz);
+  PetscLogFlops(50*a->nz);
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBAIJ_6"
+#define __FUNC__ "MatMultAdd_SeqBAIJ_6"
 int MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -800,12 +800,12 @@ int MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
   if (zz != yy) {
     ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
-  PLogFlops(72*a->nz);
+  PetscLogFlops(72*a->nz);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBAIJ_7"
+#define __FUNC__ "MatMultAdd_SeqBAIJ_7"
 int MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -850,12 +850,12 @@ int MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
   if (zz != yy) {
     ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
-  PLogFlops(98*a->nz);
+  PetscLogFlops(98*a->nz);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBAIJ_N"
+#define __FUNC__ "MatMultAdd_SeqBAIJ_N"
 int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
@@ -877,7 +877,7 @@ int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
   if (!a->mult_work) {
     k = PetscMax(A->m,A->n);
-    a->mult_work = (Scalar*)PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
+ierr = PetscMalloc((k+1)*sizeof(Scalar),&    a->mult_work );CHKERRQ(ierr);
   }
   work = a->mult_work;
   for (i=0; i<mbs; i++) {
@@ -896,12 +896,12 @@ int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(2*a->nz*bs2);
+  PetscLogFlops(2*a->nz*bs2);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultTranspose_SeqBAIJ"
+#define __FUNC__ "MatMultTranspose_SeqBAIJ"
 int MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
@@ -1042,7 +1042,7 @@ int MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 
       if (!a->mult_work) {
         k = PetscMax(A->m,A->n);
-        a->mult_work = (Scalar*)PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
+ierr = PetscMalloc((k+1)*sizeof(Scalar),&        a->mult_work );CHKERRQ(ierr);
       }
       work = a->mult_work;
       for (i=0; i<mbs; i++) {
@@ -1064,12 +1064,12 @@ int MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&xg);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zg);CHKERRQ(ierr);
-  PLogFlops(2*a->nz*a->bs2 - A->n);
+  PetscLogFlops(2*a->nz*a->bs2 - A->n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultTransposeAdd_SeqBAIJ"
+#define __FUNC__ "MatMultTransposeAdd_SeqBAIJ"
 int MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 {
@@ -1172,7 +1172,7 @@ int MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
       if (!a->mult_work) {
         k = PetscMax(A->m,A->n);
-        a->mult_work = (Scalar*)PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
+ierr = PetscMalloc((k+1)*sizeof(Scalar),&        a->mult_work );CHKERRQ(ierr);
       }
       work = a->mult_work;
       for (i=0; i<mbs; i++) {
@@ -1194,12 +1194,12 @@ int MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   }
   ierr = VecRestoreArray(xx,&xg);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zg);CHKERRQ(ierr);
-  PLogFlops(2*a->nz*a->bs2);
+  PetscLogFlops(2*a->nz*a->bs2);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatScale_SeqBAIJ"
+#define __FUNC__ "MatScale_SeqBAIJ"
 int MatScale_SeqBAIJ(Scalar *alpha,Mat inA)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)inA->data;
@@ -1216,12 +1216,12 @@ int MatScale_SeqBAIJ(Scalar *alpha,Mat inA)
 #else
   BLscal_(&totalnz,alpha,a->a,&one);
 #endif
-  PLogFlops(totalnz);
+  PetscLogFlops(totalnz);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatNorm_SeqBAIJ"
+#define __FUNC__ "MatNorm_SeqBAIJ"
 int MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
@@ -1262,7 +1262,7 @@ int MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatEqual_SeqBAIJ"
+#define __FUNC__ "MatEqual_SeqBAIJ"
 int MatEqual_SeqBAIJ(Mat A,Mat B,PetscTruth* flg)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data,*b = (Mat_SeqBAIJ *)B->data;
@@ -1297,7 +1297,7 @@ int MatEqual_SeqBAIJ(Mat A,Mat B,PetscTruth* flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetDiagonal_SeqBAIJ"
+#define __FUNC__ "MatGetDiagonal_SeqBAIJ"
 int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
@@ -1333,7 +1333,7 @@ int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatDiagonalScale_SeqBAIJ"
+#define __FUNC__ "MatDiagonalScale_SeqBAIJ"
 int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
@@ -1365,7 +1365,7 @@ int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
       }  
     }
     ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
-    PLogFlops(a->nz);
+    PetscLogFlops(a->nz);
   }
   
   if (rr) {
@@ -1384,14 +1384,14 @@ int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
       }  
     }
     ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
-    PLogFlops(a->nz);
+    PetscLogFlops(a->nz);
   }
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetInfo_SeqBAIJ"
+#define __FUNC__ "MatGetInfo_SeqBAIJ"
 int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
@@ -1422,7 +1422,7 @@ int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatZeroEntries_SeqBAIJ"
+#define __FUNC__ "MatZeroEntries_SeqBAIJ"
 int MatZeroEntries_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; 

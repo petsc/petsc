@@ -1,5 +1,5 @@
 
-C      "$Id: ex67f.F,v 1.6 2000/05/05 22:16:17 balay Exp bsmith $";
+C      "$Id: ex67f.F,v 1.7 2000/09/27 20:08:34 bsmith Exp bsmith $";
 C
 C   This program demonstrates use of MatGetSubMatrices() from Fortran
 C
@@ -11,13 +11,13 @@ C
 
       Mat      A,B
       integer  ierr
-      Viewer   v    
+      PetscViewer   v    
       IS       isrow
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call ViewerBinaryOpen(PETSC_COMM_WORLD,'../matbinary.ex',         &
-     &                          BINARY_RDONLY,v,ierr)
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'../matbinary.ex',         &
+     &                          PETSC_BINARY_RDONLY,v,ierr)
 
       call MatLoad(v,MATSEQAIJ,A,ierr)
 
@@ -26,17 +26,17 @@ C
       call MatGetSubmatrices(A,1,isrow,isrow,                           &
      &        MAT_INITIAL_MATRIX,B,ierr)
 
-      call MatView(B,VIEWER_STDOUT_SELF,ierr)
+      call MatView(B,PETSC_VIEWER_STDOUT_SELF,ierr)
 
       call MatGetSubmatrices(A,1,isrow,isrow,                           &
      &        MAT_REUSE_MATRIX,B,ierr)
 
-      call MatView(B,VIEWER_STDOUT_SELF,ierr)
+      call MatView(B,PETSC_VIEWER_STDOUT_SELF,ierr)
 
       call ISDestroy(isrow,ierr)
       call MatDestroy(A,ierr)
       call MatDestroy(B,ierr)
-      call ViewerDestroy(v,ierr)
+      call PetscViewerDestroy(v,ierr)
 
       call PetscFinalize(ierr)
       end

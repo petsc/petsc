@@ -1,5 +1,5 @@
 !
-!    "$Id: ex19.F,v 1.34 2000/05/05 22:15:11 balay Exp bsmith $";
+!    "$Id: ex19.F,v 1.35 2000/09/27 20:06:18 bsmith Exp bsmith $";
 !
       program main
 #include "include/finclude/petsc.h"
@@ -19,7 +19,7 @@
        three = 3.0
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)                  
-       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 ! Create a vector, then duplicate it
        call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)

@@ -1,4 +1,4 @@
-/*$Id: f90_common.c,v 1.5 2000/09/28 21:09:38 bsmith Exp balay $*/
+/*$Id: f90_common.c,v 1.6 2000/12/21 03:22:37 balay Exp bsmith $*/
 
 #include "petscf90.h"
 
@@ -12,7 +12,7 @@
 
 /*-------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"F90Array1dAccess"
+#define __FUNC__ "F90Array1dAccess"
 int F90Array1dAccess(F90Array1d *ptr,void **array)
 {
   PetscFunctionBegin;
@@ -23,7 +23,7 @@ int F90Array1dAccess(F90Array1d *ptr,void **array)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"F90Array1dDestroy"
+#define __FUNC__ "F90Array1dDestroy"
 int F90Array1dDestroy(F90Array1d *ptr)
 {
   PetscFunctionBegin;
@@ -32,7 +32,7 @@ int F90Array1dDestroy(F90Array1d *ptr)
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"F90Array1dGetNextRecord"
+#define __FUNC__ "F90Array1dGetNextRecord"
 int F90Array1dGetNextRecord(F90Array1d *ptr,void **next)
 {
   PetscFunctionBegin;
@@ -44,7 +44,7 @@ int F90Array1dGetNextRecord(F90Array1d *ptr,void **next)
 /*-------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"F90Array2dAccess"
+#define __FUNC__ "F90Array2dAccess"
 int F90Array2dAccess(F90Array2d *ptr,void **array)
 {
   PetscFunctionBegin;
@@ -55,7 +55,7 @@ int F90Array2dAccess(F90Array2d *ptr,void **array)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"F90Array2dDestroy"
+#define __FUNC__ "F90Array2dDestroy"
 int F90Array2dDestroy(F90Array2d *ptr)
 {
   PetscFunctionBegin;
@@ -64,7 +64,7 @@ int F90Array2dDestroy(F90Array2d *ptr)
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"F90Array1dGetNextRecord"
+#define __FUNC__ "F90Array1dGetNextRecord"
 int F90Array2dGetNextRecord(F90Array2d *ptr,void **next)
 {
   PetscFunctionBegin;

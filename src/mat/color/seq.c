@@ -1,4 +1,4 @@
-/*$Id: seq.c,v 1.11 2000/04/09 04:37:11 bsmith Exp bsmith $*/
+/*$Id: seq.c,v 1.12 2000/04/12 04:24:26 bsmith Exp bsmith $*/
 
 /* seq.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
 
@@ -6,7 +6,7 @@
 #include "src/mat/color/color.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MINPACKseq" 
+#define __FUNC__ "MINPACKseq" 
 int MINPACKseq(int *n,int *indrow,int *jpntr,int *indcol,int *ipntr,int *list,int *ngrp,
                int *maxgrp,int *iwa)
 {

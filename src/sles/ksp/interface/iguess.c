@@ -1,4 +1,4 @@
-/*$Id: iguess.c,v 1.32 2000/04/12 04:24:52 bsmith Exp balay $*/
+/*$Id: iguess.c,v 1.33 2000/05/05 22:17:27 balay Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"  /*I "petscksp.h" I*/
 /* 
@@ -15,7 +15,7 @@ typedef struct {
 } KSPIGUESS;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGuessCreate" 
+#define __FUNC__ "KSPGuessCreate" 
 int KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
 {
   KSPIGUESS *itg;
@@ -24,21 +24,21 @@ int KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
   *ITG = 0;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  itg  = (KSPIGUESS*)PetscMalloc(sizeof(KSPIGUESS));CHKPTRQ(itg);
+ierr = PetscMalloc(sizeof(KSPIGUESS),&(  itg  ));CHKERRQ(ierr);
   itg->curl = 0;
   itg->maxl = maxl;
-  itg->alpha = (Scalar*)PetscMalloc(maxl * sizeof(Scalar));CHKPTRQ(itg->alpha);
-  PLogObjectMemory(ksp,sizeof(KSPIGUESS) + maxl*sizeof(Scalar));
+  itg->alpha = (Scalar*)PetscMalloc(maxl * sizeof(Scalar));CHKERRQ(ierr);
+  PetscLogObjectMemory(ksp,sizeof(KSPIGUESS) + maxl*sizeof(Scalar));
   ierr = VecDuplicateVecs(ksp->vec_rhs,maxl,&itg->xtilde);CHKERRQ(ierr);
-  PLogObjectParents(ksp,maxl,itg->xtilde);
+  PetscLogObjectParents(ksp,maxl,itg->xtilde);
   ierr = VecDuplicateVecs(ksp->vec_rhs,maxl,&itg->btilde);CHKERRQ(ierr);
-  PLogObjectParents(ksp,maxl,itg->btilde);
+  PetscLogObjectParents(ksp,maxl,itg->btilde);
   *ITG = (void *)itg;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGuessDestroy" 
+#define __FUNC__ "KSPGuessDestroy" 
 int KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 {
   int ierr;
@@ -53,7 +53,7 @@ int KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGuessFormB"
+#define __FUNC__ "KSPGuessFormB"
 int KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 {
   int    i,ierr;
@@ -70,7 +70,7 @@ int KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGuessFormX"
+#define __FUNC__ "KSPGuessFormX"
 int KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
 {
   int i,ierr;
@@ -85,7 +85,7 @@ int KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGuessUpdate"
+#define __FUNC__ "KSPGuessUpdate"
 int  KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
 {
   PetscReal    normax,norm;

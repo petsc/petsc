@@ -1,4 +1,4 @@
-/* $Id: petscvec.h,v 1.111 2000/08/17 04:53:46 bsmith Exp bsmith $ */
+/* $Id: petscvec.h,v 1.112 2000/09/02 02:50:55 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -48,10 +48,10 @@ EXTERN int VecMTDot(int,Vec,const Vec[],Scalar*);
 
 typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4,NORM_1_AND_2=5} NormType;
 #define NORM_MAX NORM_INFINITY
-EXTERN int VecNorm(Vec,NormType,double *);
+EXTERN int VecNorm(Vec,NormType,PetscReal *);
 EXTERN int VecSum(Vec,Scalar*);
-EXTERN int VecMax(Vec,int*,double*);
-EXTERN int VecMin(Vec,int*,double*);
+EXTERN int VecMax(Vec,int*,PetscReal *);
+EXTERN int VecMin(Vec,int*,PetscReal *);
 EXTERN int VecScale(const Scalar*,Vec);    
 EXTERN int VecCopy(Vec,Vec);        
 EXTERN int VecSetRandom(PetscRandom,Vec);
@@ -86,7 +86,7 @@ EXTERN int VecSetValues(Vec,int,const int[],const Scalar[],InsertMode);
 EXTERN int VecAssemblyBegin(Vec);
 EXTERN int VecAssemblyEnd(Vec);
 EXTERN int VecSetStashInitialSize(Vec,int,int);
-EXTERN int VecStashView(Vec,Viewer);
+EXTERN int VecStashView(Vec,PetscViewer);
 
 #define VecSetValue(v,i,va,mode) \
 {int _ierr,_row = i; Scalar _va = va; \
@@ -113,7 +113,7 @@ EXTERN int VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatter);
 EXTERN int VecScatterEnd(Vec,Vec,InsertMode,ScatterMode,VecScatter); 
 EXTERN int VecScatterDestroy(VecScatter);
 EXTERN int VecScatterCopy(VecScatter,VecScatter *);
-EXTERN int VecScatterView(VecScatter,Viewer);
+EXTERN int VecScatterView(VecScatter,PetscViewer);
 EXTERN int VecScatterRemap(VecScatter,int *,int*);
 
 typedef enum {PIPELINE_DOWN=0,PIPELINE_UP=1} PipelineDirection;
@@ -127,7 +127,7 @@ EXTERN int VecPipelineSetType(VecPipeline,PipelineType,PetscObject);
 EXTERN int VecPipelineSetup(VecPipeline);
 EXTERN int VecPipelineBegin(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline);
 EXTERN int VecPipelineEnd(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline); 
-EXTERN int VecPipelineView(VecPipeline,Viewer);
+EXTERN int VecPipelineView(VecPipeline,PetscViewer);
 EXTERN int VecPipelineDestroy(VecPipeline);
 
 EXTERN int VecGetArray(Vec,Scalar*[]);
@@ -142,15 +142,16 @@ EXTERN int VecGetArray1d(Vec,int,int,Scalar *[]);
 EXTERN int VecRestoreArray1d(Vec,int,int,Scalar *[]);
 
 EXTERN int VecPlaceArray(Vec,const Scalar[]);
+EXTERN int VecResetArray(Vec);
 EXTERN int VecReplaceArray(Vec,const Scalar[]);
 EXTERN int VecGetArrays(const Vec[],int,Scalar**[]);
 EXTERN int VecRestoreArrays(const Vec[],int,Scalar**[]);
 
 EXTERN int VecValid(Vec,PetscTruth*);
-EXTERN int VecView(Vec,Viewer);
+EXTERN int VecView(Vec,PetscViewer);
 EXTERN int VecEqual(Vec,Vec,PetscTruth*);
-EXTERN int VecLoad(Viewer,Vec*);
-EXTERN int VecLoadIntoVector(Viewer,Vec);
+EXTERN int VecLoad(PetscViewer,Vec*);
+EXTERN int VecLoadIntoVector(PetscViewer,Vec);
 
 EXTERN int VecGetSize(Vec,int*);
 EXTERN int VecGetType(Vec,VecType*);

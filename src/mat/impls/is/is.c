@@ -1,4 +1,4 @@
-/*$Id: is.c,v 1.10 2000/11/06 16:57:18 bsmith Exp bsmith $*/
+/*$Id: is.c,v 1.11 2000/11/19 15:19:08 bsmith Exp bsmith $*/
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 
@@ -15,7 +15,7 @@
 #include "src/mat/impls/is/is.h"      /*I "mat.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatDestroy_IS"></a>*/"MatDestroy_IS" 
+#define __FUNC__ "MatDestroy_IS" 
 int MatDestroy_IS(Mat A)
 {
   int    ierr;
@@ -42,7 +42,7 @@ int MatDestroy_IS(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatMult_IS"></a>*/"MatMult_IS" 
+#define __FUNC__ "MatMult_IS" 
 int MatMult_IS(Mat A,Vec x,Vec y)
 {
   int    ierr;
@@ -66,7 +66,7 @@ int MatMult_IS(Mat A,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatSetLocalToGlobalMapping_IS"></a>*/"MatSetLocalToGlobalMapping_IS" 
+#define __FUNC__ "MatSetLocalToGlobalMapping_IS" 
 int MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mapping)
 {
   int    ierr,n;
@@ -101,7 +101,7 @@ int MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mapping)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatSetValuesLocal_IS"></a>*/"MatSetValuesLocal_IS" 
+#define __FUNC__ "MatSetValuesLocal_IS" 
 int MatSetValuesLocal_IS(Mat A,int m,int *rows,int n,int *cols,Scalar *values,InsertMode addv)
 {
   int    ierr;
@@ -113,7 +113,7 @@ int MatSetValuesLocal_IS(Mat A,int m,int *rows,int n,int *cols,Scalar *values,In
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatZeroRowsLocal_IS"></a>*/"MatZeroRowsLocal_IS" 
+#define __FUNC__ "MatZeroRowsLocal_IS" 
 int MatZeroRowsLocal_IS(Mat A,IS isrows,Scalar *diag)
 {
   Mat_IS *is = (Mat_IS*)A->data;
@@ -159,7 +159,7 @@ int MatZeroRowsLocal_IS(Mat A,IS isrows,Scalar *diag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatAssemblyBegin_IS"></a>*/"MatAssemblyBegin_IS" 
+#define __FUNC__ "MatAssemblyBegin_IS" 
 int MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
 {
   Mat_IS *is = (Mat_IS*)A->data;
@@ -170,7 +170,7 @@ int MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatAssemblyEnd_IS"></a>*/"MatAssemblyEnd_IS" 
+#define __FUNC__ "MatAssemblyEnd_IS" 
 int MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 {
   Mat_IS *is = (Mat_IS*)A->data;
@@ -182,14 +182,15 @@ int MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatCreate_IS"></a>*/"MatCreate_IS" 
+#define __FUNC__ "MatCreate_IS" 
 int MatCreate_IS(Mat A)
 {
   int    ierr;
   Mat_IS *b;
 
   PetscFunctionBegin;
-  A->data             = (void*)(b = PetscNew(Mat_IS));CHKPTRQ(b);
+  ierr                = PetscNew(Mat_IS,&b));CHKERRQ(ierr);
+  A->data             = (void*)b;
   ierr = PetscMemzero(b,sizeof(Mat_IS));CHKERRQ(ierr);
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->factor           = 0;

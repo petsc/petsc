@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
+/*$Id: appsetalg.c,v 1.2 2000/01/06 20:43:22 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 /*----------------------------------------------------------------------------
@@ -35,7 +35,7 @@ int AppCtxSolve(AppCtx* appctx)
   /* The coeff of diffusivity.  LATER call a function set equations */
   appctx->equations.eta =-0.04;  
   ierr = AppCtxSetMatrix(appctx);CHKERRQ(ierr);
-  /* MatView(algebra->A,VIEWER_STDOUT_SELF); */
+  /* MatView(algebra->A,PETSC_VIEWER_STDOUT_SELF); */
 
   /*  5) Create the nonlinear solver context  */
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
@@ -55,7 +55,7 @@ int AppCtxSolve(AppCtx* appctx)
   /*  10) Solve the non-linear system  */
   ierr = SNESSolve(snes,algebra->g,&its);CHKERRQ(ierr);
 
-  if(0){VecView(algebra->g,VIEWER_STDOUT_SELF);}
+  if(0){VecView(algebra->g,PETSC_VIEWER_STDOUT_SELF);}
 
   printf("the number of its, %d\n",its);
 
@@ -458,11 +458,11 @@ to see if they need to be recomputed */
   ierr = SetNonlinearFunction(x,appctx,f);CHKERRQ(ierr);
 
 /*  printf("output of nonlinear fun (before bc imposed)\n");    */
-/*   ierr = VecView(f,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);     */
+/*   ierr = VecView(f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);     */
 
   ierr = SetBoundaryConditions(x,appctx,f);CHKERRQ(ierr);
  /* printf("output of nonlinear fun \n");    */
-/*    ierr = VecView(f,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);     */
+/*    ierr = VecView(f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);     */
   
   PetscFunctionReturn(0);
 }

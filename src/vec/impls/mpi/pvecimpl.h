@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.31 2000/05/10 16:40:09 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.32 2000/10/24 20:25:15 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -33,12 +33,12 @@ EXTERN int VecMax_MPI(Vec,int *,double *);
 EXTERN int VecMin_MPI(Vec,int *,double *);
 EXTERN int VecGetOwnershipRange_MPI(Vec,int *,int*); 
 EXTERN int VecDestroy_MPI(Vec);
-EXTERN int VecView_MPI_File(Vec,Viewer);
-EXTERN int VecView_MPI_Files(Vec,Viewer);
-EXTERN int VecView_MPI_Binary(Vec,Viewer);
-EXTERN int VecView_MPI_Draw_LG(Vec,Viewer);
-EXTERN int VecView_MPI_Socket(Vec,Viewer);
-EXTERN int VecView_MPI(Vec,Viewer);
+EXTERN int VecView_MPI_File(Vec,PetscViewer);
+EXTERN int VecView_MPI_Files(Vec,PetscViewer);
+EXTERN int VecView_MPI_Binary(Vec,PetscViewer);
+EXTERN int VecView_MPI_Draw_LG(Vec,PetscViewer);
+EXTERN int VecView_MPI_Socket(Vec,PetscViewer);
+EXTERN int VecView_MPI(Vec,PetscViewer);
 EXTERN int VecGetSize_MPI(Vec,int *);
 EXTERN int VecSetValues_MPI(Vec,int,const int [],const Scalar[],InsertMode);
 EXTERN int VecSetValuesBlocked_MPI(Vec,int,const int [],const Scalar[],InsertMode);

@@ -1,12 +1,12 @@
-/*$Id: dlregis.c,v 1.9 2000/04/12 04:24:13 bsmith Exp balay $*/
+/*$Id: dlregis.c,v 1.10 2000/05/05 22:16:35 balay Exp bsmith $*/
 
 #include "petscmat.h"
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DLLibraryRegister"
+#define __FUNC__ "PetscDLLibraryRegister"
 /*
-  DLLibraryRegister - This function is called when the dynamic library it is in is opened.
+  PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
   This one registers all the matrix partitioners that are in the basic PETSc libpetscmat
   library.
@@ -14,7 +14,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-int DLLibraryRegister(char *path)
+int PetscDLLibraryRegister(char *path)
 {
   int ierr;
 

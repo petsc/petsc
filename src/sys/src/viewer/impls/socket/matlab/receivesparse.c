@@ -1,4 +1,4 @@
-/*$Id: receivesparse.c,v 1.13 2000/05/10 16:38:39 bsmith Exp bsmith $*/
+/*$Id: receivesparse.c,v 1.14 2000/05/11 04:49:36 bsmith Exp bsmith $*/
 /*
     Part of the MatlabSockettool Package. Receive a sparse matrix
   at a socket address, called by the receive.mex4 Matlab program.
@@ -13,7 +13,7 @@
 
 #define ERROR(a) {fprintf(stdout,"RECEIVE: %s \n",a); return -1;}
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ReceiveSparseMatrix"
+#define __FUNC__ "ReceiveSparseMatrix"
 int ReceiveSparseMatrix(Matrix *plhs[],int t)
 {
   int    *tr,*tc,compx = 0;

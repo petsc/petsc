@@ -1,4 +1,4 @@
-/*$Id: ex27.c,v 1.14 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex27.c,v 1.15 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests repeated use of assembly for matrices.\n\
  does nasty case where matrix must be rebuilt.\n\n";
@@ -53,7 +53,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* Form a couple of vectors to test matrix-vector product */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&x);CHKERRA(ierr);

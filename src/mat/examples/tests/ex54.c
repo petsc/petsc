@@ -1,4 +1,4 @@
-/*$Id: ex54.c,v 1.12 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex54.c,v 1.13 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = 
 "Tests MatIncreaseOverlap(), MatGetSubMatrices() for MatBAIJ format.\n";
@@ -23,10 +23,10 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,m*bs,m*bs,PETSC_DECIDE,PETSC_DECIDE,
                           PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,&A);CHKERRA(ierr);
@@ -38,10 +38,10 @@ int main(int argc,char **args)
   ierr = MatGetSize(A,&M,&N);
   Mbs  = M/bs;
 
-  rows  = (int*)PetscMalloc(bs*sizeof(int));CHKPTRA(rows);
-  cols  = (int*)PetscMalloc(bs*sizeof(int));CHKPTRA(cols);
-  vals  = (Scalar*)PetscMalloc(bs*bs*sizeof(Scalar));CHKPTRA(vals);
-  idx   = (int*)PetscMalloc(M*sizeof(Scalar));CHKPTRA(idx);
+ierr = PetscMalloc(bs*sizeof(int),&(  rows  ));CHKPTRA(rows);
+ierr = PetscMalloc(bs*sizeof(int),&(  cols  ));CHKPTRA(cols);
+ierr = PetscMalloc(bs*bs*sizeof(Scalar),&(  vals  ));CHKPTRA(vals);
+ierr = PetscMalloc(M*sizeof(Scalar),&(  idx   ));CHKPTRA(idx);
 
   /* Now set blocks of values */
   for (i=0; i<40*bs; i++) {

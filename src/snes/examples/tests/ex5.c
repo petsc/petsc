@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.21 2000/09/22 20:46:10 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.22 2000/09/28 21:14:21 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the modified Bratu problem in a 2D rectangular domain,\n\
@@ -94,13 +94,13 @@ int main(int argc,char **argv)
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0; user.param2 = 0.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-lambda",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-lambda",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,"Lambda is out of range");
   }
-  ierr = OptionsGetDouble(PETSC_NULL,"-kappa",&user.param2,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-kappa",&user.param2,PETSC_NULL);CHKERRA(ierr);
   if (user.param2 >= bratu_kappa_max || user.param2 < bratu_kappa_min) {
     SETERRA(1,"Kappa is out of range");
   }
@@ -123,8 +123,8 @@ int main(int argc,char **argv)
   */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
     SETERRA(1,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
@@ -132,7 +132,7 @@ int main(int argc,char **argv)
   /*
      Visualize the distribution of the array across the processors
   */
-  /* ierr =  DAView(user.da,VIEWER_DRAW_WORLD);CHKERRA(ierr); */
+  /* ierr =  DAView(user.da,PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr); */
 
 
   /*
@@ -174,7 +174,7 @@ int main(int argc,char **argv)
      Jacobian.  See the users manual for a discussion of better techniques
      for preallocating matrix memory.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
   if (!matrix_free) {
     if (size == 1) {
       ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRA(ierr);
@@ -370,7 +370,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
      Insert values into global vector
   */
   ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = PLogFlops(11*ym*xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops(11*ym*xm);CHKERRQ(ierr);
   return 0; 
 } 
 /* ------------------------------------------------------------------- */

@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.51 2000/05/05 22:18:29 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.52 2000/08/17 04:52:48 bsmith Exp bsmith $*/
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
  matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";
@@ -11,7 +11,7 @@ extern int  FormInitialGuess(SNES,Vec);
 extern int  Monitor(SNES,int,double,void *);
 
 typedef struct {
-   Viewer viewer;
+   PetscViewer viewer;
 } MonitorCtx;
 
 typedef struct {
@@ -33,12 +33,12 @@ int main(int argc,char **argv)
   int          ierr,its,n = 5,i;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-variant",&user.variant);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-variant",&user.variant);CHKERRA(ierr);
   h = 1.0/(n-1);
 
   /* Set up data structures */
-  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);
   ierr = PetscObjectSetName((PetscObject)x,"Approximate Solution");CHKERRA(ierr);
   ierr = VecDuplicate(x,&r);CHKERRA(ierr);
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(U);CHKERRA(ierr);  ierr = VecDestroy(F);CHKERRA(ierr);
   ierr = MatDestroy(J);CHKERRA(ierr);  ierr = MatDestroy(B);CHKERRA(ierr);
   ierr = SNESDestroy(snes);CHKERRA(ierr);
-  ierr = ViewerDestroy(monP.viewer);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(monP.viewer);CHKERRA(ierr);
   PetscFinalize();
 
   return 0;

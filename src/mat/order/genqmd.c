@@ -1,4 +1,4 @@
-/*$Id: genqmd.c,v 1.14 2000/04/12 04:24:20 bsmith Exp bsmith $*/
+/*$Id: genqmd.c,v 1.15 2000/05/10 16:41:27 bsmith Exp bsmith $*/
 /* genqmd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -42,7 +42,7 @@
 /*                                                                */
 /*                                                                */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SPARSEPACKgenqmd" 
+#define __FUNC__ "SPARSEPACKgenqmd" 
 int SPARSEPACKgenqmd(int *neqns, int *xadj, int *adjncy, 
 	int *perm, int *invp, int *deg, int *marker, int *
 	rchset, int *nbrhd, int *qsize, int *qlink, int *nofsub)

@@ -1,4 +1,4 @@
-/*$Id: ex29.c,v 1.10 2000/01/11 21:00:17 bsmith Exp balay $*/
+/*$Id: ex29.c,v 1.11 2000/05/05 22:15:11 balay Exp bsmith $*/
 
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors\n\
 where atleast a couple of mallocs will occur in the stash code.\n\n";
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   bs = size;
 
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n*bs,&x);CHKERRA(ierr);
   ierr = VecSetBlockSize(x,bs);CHKERRA(ierr);
 
@@ -29,11 +29,11 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(x);CHKERRA(ierr);
   ierr = VecAssemblyEnd(x);CHKERRA(ierr);
 
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* Now do the blocksetvalues */
   ierr = VecSet(&zero,x);CHKERRQ(ierr);
-  vals = (Scalar *)PetscMalloc(bs*sizeof(Scalar));CHKPTRA(vals);
+ierr = PetscMalloc(bs*sizeof(Scalar),&(  vals ));CHKPTRA(vals);
   for (i=0; i<n; i++) {
     for (j=0; j<bs; j++) {
       vals[j] = (i*bs+j)*1.0;
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(x);CHKERRA(ierr);
   ierr = VecAssemblyEnd(x);CHKERRA(ierr);
 
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = PetscFree(vals);CHKERRA(ierr);

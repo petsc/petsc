@@ -1,10 +1,10 @@
-/*$Id: gcreate.c,v 1.124 2000/10/24 20:26:14 bsmith Exp bsmith $*/
+/*$Id: gcreate.c,v 1.125 2000/11/28 17:29:54 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/matimpl.h"       /*I "petscmat.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatPublish_Base"></a>*/"MatPublish_Base"
+#define __FUNC__ "MatPublish_Base"
 static int MatPublish_Base(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -30,7 +30,7 @@ static int MatPublish_Base(PetscObject obj)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCreate"
+#define __FUNC__ "MatCreate"
 /*@C
    MatCreate - Creates a matrix where the type is determined
    from the options database. Generates a parallel MPI matrix if the
@@ -90,7 +90,7 @@ int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
 
   PetscFunctionBegin;
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);
-  PLogObjectCreate(B);
+  PetscLogObjectCreate(B);
 
   B->m = m;
   B->n = n;
@@ -104,7 +104,7 @@ int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetFromOptions"
+#define __FUNC__ "MatSetFromOptions"
 /*@C
    MatSetFromOptions - Creates a matrix where the type is determined
    from the options database. Generates a parallel MPI matrix if the
@@ -149,7 +149,7 @@ int MatSetFromOptions(Mat B)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetString(B->prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(B->prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetType(B,mtype);CHKERRQ(ierr);
   }
@@ -165,7 +165,7 @@ int MatSetFromOptions(Mat B)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetUpPreallocation"
+#define __FUNC__ "MatSetUpPreallocation"
 /*@C
    MatSetUpPreallocation
 
@@ -191,7 +191,7 @@ int MatSetUpPreallocation(Mat B)
 
   PetscFunctionBegin;
   if (B->ops->setuppreallocation) {
-    PLogInfo(B,"MatSetTpPreallocation: Warning not preallocating matrix storage");
+    PetscLogInfo(B,"MatSetTpPreallocation: Warning not preallocating matrix storage");
     ierr = (*B->ops->setuppreallocation)(B);CHKERRQ(ierr);
     B->ops->setuppreallocation = 0;
     B->preallocated            = PETSC_TRUE;
@@ -203,7 +203,7 @@ int MatSetUpPreallocation(Mat B)
         Copies from Cs header to A
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatHeaderCopy"></a>*/"MatHeaderCopy"
+#define __FUNC__ "MatHeaderCopy"
 int MatHeaderCopy(Mat A,Mat C)
 {
   int         ierr,refct;

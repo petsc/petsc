@@ -1,11 +1,11 @@
-/*$Id: precon.c,v 1.201 2000/09/28 21:12:37 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.202 2000/10/24 20:26:23 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
 #include "src/sles/pc/pcimpl.h"            /*I "petscsles.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCNullSpaceAttach"
+#define __FUNC__ "PCNullSpaceAttach"
 /*@C
    PCNullSpaceAttach - attaches a null space to a preconditioner object.
         This null space will be removed from the resulting vector whenever
@@ -43,7 +43,7 @@ int PCNullSpaceAttach(PC pc,MatNullSpace nullsp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCDestroy"
+#define __FUNC__ "PCDestroy"
 /*@C
    PCDestroy - Destroys PC context that was created with PCCreate().
 
@@ -71,13 +71,13 @@ int PCDestroy(PC pc)
 
   if (pc->ops->destroy) {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
   if (pc->nullsp) {ierr = MatNullSpaceDestroy(pc->nullsp);CHKERRQ(ierr);}
-  PLogObjectDestroy(pc);
+  PetscLogObjectDestroy(pc);
   PetscHeaderDestroy(pc);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPublish_Petsc"
+#define __FUNC__ "PCPublish_Petsc"
 static int PCPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -99,7 +99,7 @@ static int PCPublish_Petsc(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCreate"
+#define __FUNC__ "PCCreate"
 /*@C
    PCCreate - Creates a preconditioner context.
 
@@ -130,7 +130,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   *newpc          = 0;
 
   PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_COOKIE,-1,"PC",comm,PCDestroy,PCView);
-  PLogObjectCreate(pc);
+  PetscLogObjectCreate(pc);
   pc->bops->publish      = PCPublish_Petsc;
   pc->vec                = 0;
   pc->mat                = 0;
@@ -161,7 +161,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
 /* -------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply"
+#define __FUNC__ "PCApply"
 /*@
    PCApply - Applies the preconditioner to a vector.
 
@@ -198,9 +198,9 @@ int PCApply(PC pc,Vec x,Vec y)
     ierr = MatNullSpaceRemove(pc->nullsp,x,&x);CHKERRQ(ierr);
   }
 
-  ierr = PLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
-  ierr = PLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
 
   /* Remove null space from preconditioned vector y */
   if (pc->nullsp) {
@@ -210,7 +210,7 @@ int PCApply(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApplySymmetricLeft"
+#define __FUNC__ "PCApplySymmetricLeft"
 /*@
    PCApplySymmetricLeft - Applies the left part of a symmetric preconditioner to a vector.
 
@@ -245,14 +245,14 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  ierr = PLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricleft)(pc,x,y);CHKERRQ(ierr);
-  ierr = PLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApplySymmetricRight"
+#define __FUNC__ "PCApplySymmetricRight"
 /*@
    PCApplySymmetricRight - Applies the right part of a symmetric preconditioner to a vector.
 
@@ -287,14 +287,14 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  ierr = PLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricright)(pc,x,y);CHKERRQ(ierr);
-  ierr = PLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApplyTranspose"
+#define __FUNC__ "PCApplyTranspose"
 /*@
    PCApplyTranspose - Applies the transpose of preconditioner to a vector.
 
@@ -328,14 +328,14 @@ int PCApplyTranspose(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  ierr = PLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
-  ierr = PLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApplyBAorAB"
+#define __FUNC__ "PCApplyBAorAB"
 /*@
    PCApplyBAorAB - Applies the preconditioner and operator to a vector. 
 
@@ -399,7 +399,7 @@ int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApplyBAorABTranspose"
+#define __FUNC__ "PCApplyBAorABTranspose"
 /*@ 
    PCApplyBAorABTranspose - Applies the transpose of the preconditioner
    and operator to a vector. That is, applies tr(B) * tr(A) with left preconditioning,
@@ -458,7 +458,7 @@ int PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
 /* -------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApplyRichardsonExists"
+#define __FUNC__ "PCApplyRichardsonExists"
 /*@
    PCApplyRichardsonExists - Determines whether a particular preconditioner has a 
    built-in fast application of Richardson's method.
@@ -488,7 +488,7 @@ int PCApplyRichardsonExists(PC pc,PetscTruth *exists)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApplyRichardson"
+#define __FUNC__ "PCApplyRichardson"
 /*@
    PCApplyRichardson - Applies several steps of Richardson iteration with 
    the particular preconditioner. This routine is usually used by the 
@@ -540,7 +540,7 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
                      2 does not need any changes.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp"
+#define __FUNC__ "PCSetUp"
 /*@
    PCSetUp - Prepares for the use of a preconditioner.
 
@@ -563,16 +563,16 @@ int PCSetUp(PC pc)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
 
   if (pc->setupcalled > 1) {
-    PLogInfo(pc,"PCSetUp:Setting PC with identical preconditioner\n");
+    PetscLogInfo(pc,"PCSetUp:Setting PC with identical preconditioner\n");
   } else if (pc->setupcalled == 0) {
-    PLogInfo(pc,"PCSetUp:Setting up new PC\n");
+    PetscLogInfo(pc,"PCSetUp:Setting up new PC\n");
   } else if (pc->flag == SAME_NONZERO_PATTERN) {
-    PLogInfo(pc,"PCSetUp:Setting up PC with same nonzero pattern\n");
+    PetscLogInfo(pc,"PCSetUp:Setting up PC with same nonzero pattern\n");
   } else {
-    PLogInfo(pc,"PCSetUp:Setting up PC with different nonzero pattern\n");
+    PetscLogInfo(pc,"PCSetUp:Setting up PC with different nonzero pattern\n");
   }
   if (pc->setupcalled > 1) PetscFunctionReturn(0);
-  ierr = PLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (!pc->vec) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Vector must be set first");}
   if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");}
   if (!pc->type_name) {
@@ -589,12 +589,12 @@ int PCSetUp(PC pc)
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
   }
   pc->setupcalled = 2;
-  ierr = PLogEventEnd(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUpOnBlocks"
+#define __FUNC__ "PCSetUpOnBlocks"
 /*@
    PCSetUpOnBlocks - Sets up the preconditioner for each block in
    the block Jacobi, block Gauss-Seidel, and overlapping Schwarz 
@@ -618,14 +618,14 @@ int PCSetUpOnBlocks(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!pc->ops->setuponblocks) PetscFunctionReturn(0);
-  ierr = PLogEventBegin(PC_SetUpOnBlocks,pc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_SetUpOnBlocks,pc,0,0,0);CHKERRQ(ierr);
   ierr = (*pc->ops->setuponblocks)(pc);CHKERRQ(ierr);
-  ierr = PLogEventEnd(PC_SetUpOnBlocks,pc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_SetUpOnBlocks,pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetModifySubMatrices"
+#define __FUNC__ "PCSetModifySubMatrices"
 /*@
    PCSetModifySubMatrices - Sets a user-defined routine for modifying the
    submatrices that arise within certain subdomain-based preconditioners.
@@ -675,7 +675,7 @@ int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCModifySubMatrices"
+#define __FUNC__ "PCModifySubMatrices"
 /*@
    PCModifySubMatrices - Calls an optional user-defined routine within 
    certain preconditioners if one has been set with PCSetModifySubMarices().
@@ -719,14 +719,14 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
 
   PetscFunctionBegin;
   if (!pc->modifysubmatrices) PetscFunctionReturn(0);
-  ierr = PLogEventBegin(PC_ModifySubMatrices,pc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_ModifySubMatrices,pc,0,0,0);CHKERRQ(ierr);
   ierr = (*pc->modifysubmatrices)(pc,nsub,row,col,submat,ctx);CHKERRQ(ierr);
-  ierr = PLogEventEnd(PC_ModifySubMatrices,pc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_ModifySubMatrices,pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetOperators"
+#define __FUNC__ "PCSetOperators"
 /*@
    PCSetOperators - Sets the matrix associated with the linear system and 
    a (possibly) different one associated with the preconditioner.
@@ -785,7 +785,7 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
 int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
   int        ierr;
-  PetscTruth isbjacobi,isshell,ismg,isrowbs,ismatshell;
+  PetscTruth isbjacobi,isrowbs;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -800,19 +800,8 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
     ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi);CHKERRQ(ierr);
     if (isbjacobi) {
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
-      PLogInfo(pc,"PCSetOperators:Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n");
+      PetscLogInfo(pc,"PCSetOperators:Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n");
     }
-  }
-  /*
-      Shell matrix (probably) cannot support a preconditioner
-  */
-  ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&isshell);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)Pmat,MATSHELL,&ismatshell);CHKERRQ(ierr);
-  if (ismatshell && !isshell && !ismg) {
-    ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-    PLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
-    preconditioners (unless defined by the user)\n");
   }
 
   pc->mat  = Amat;
@@ -825,7 +814,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCGetOperators"
+#define __FUNC__ "PCGetOperators"
 /*@C
    PCGetOperators - Gets the matrix associated with the linear system and
    possibly a different one associated with the preconditioner.
@@ -859,7 +848,7 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetVector"
+#define __FUNC__ "PCSetVector"
 /*@
    PCSetVector - Sets a vector associated with the preconditioner.
 
@@ -891,7 +880,7 @@ int PCSetVector(PC pc,Vec vec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCGetVector"
+#define __FUNC__ "PCGetVector"
 /*@
    PCGetVector - Gets a vector associated with the preconditioner; if the 
    vector was not get set it will return a 0 pointer.
@@ -920,7 +909,7 @@ int PCGetVector(PC pc,Vec *vec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCGetFactoredMatrix"
+#define __FUNC__ "PCGetFactoredMatrix"
 /*@C 
    PCGetFactoredMatrix - Gets the factored matrix from the
    preconditioner context.  This routine is valid only for the LU, 
@@ -951,7 +940,7 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetOptionsPrefix"
+#define __FUNC__ "PCSetOptionsPrefix"
 /*@C
    PCSetOptionsPrefix - Sets the prefix used for searching for all 
    PC options in the database.
@@ -984,7 +973,7 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCAppendOptionsPrefix"
+#define __FUNC__ "PCAppendOptionsPrefix"
 /*@C
    PCAppendOptionsPrefix - Appends to the prefix used for searching for all 
    PC options in the database.
@@ -1017,7 +1006,7 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCGetOptionsPrefix"
+#define __FUNC__ "PCGetOptionsPrefix"
 /*@C
    PCGetOptionsPrefix - Gets the prefix used for searching for all 
    PC options in the database.
@@ -1050,7 +1039,7 @@ int PCGetOptionsPrefix(PC pc,char **prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPreSolve"
+#define __FUNC__ "PCPreSolve"
 /*@
    PCPreSolve - Optional pre-solve phase, intended for any
    preconditioner-specific actions that must be performed before 
@@ -1109,7 +1098,7 @@ int PCPreSolve(PC pc,KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPostSolve"
+#define __FUNC__ "PCPostSolve"
 /*@
    PCPostSolve - Optional post-solve phase, intended for any
    preconditioner-specific actions that must be performed after
@@ -1165,7 +1154,7 @@ int PCPostSolve(PC pc,KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCView"
+#define __FUNC__ "PCView"
 /*@C
    PCView - Prints the PC data structure.
 
@@ -1177,22 +1166,22 @@ int PCPostSolve(PC pc,KSP ksp)
 
    Note:
    The available visualization contexts include
-+     VIEWER_STDOUT_SELF - standard output (default)
--     VIEWER_STDOUT_WORLD - synchronized standard
++     PETSC_VIEWER_STDOUT_SELF - standard output (default)
+-     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
          the file.  All other processors send their 
          data to the first processor to print. 
 
    The user can open an alternative visualization contexts with
-   ViewerASCIIOpen() (output to a specified file).
+   PetscViewerASCIIOpen() (output to a specified file).
 
    Level: developer
 
 .keywords: PC, view
 
-.seealso: KSPView(), ViewerASCIIOpen()
+.seealso: KSPView(), PetscViewerASCIIOpen()
 @*/
-int PCView(PC pc,Viewer viewer)
+int PCView(PC pc,PetscViewer viewer)
 {
   PCType      cstr;
   int         fmt,ierr;
@@ -1200,51 +1189,51 @@ int PCView(PC pc,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_(pc->comm);
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE); 
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(pc->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE); 
   PetscCheckSameComm(pc,viewer);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"PC Object:\n");CHKERRQ(ierr);
+    ierr = PetscViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"PC Object:\n");CHKERRQ(ierr);
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
     if (cstr) {
-      ierr = ViewerASCIIPrintf(viewer,"  type: %s\n",cstr);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",cstr);CHKERRQ(ierr);
     } else {
-      ierr = ViewerASCIIPrintf(viewer,"  type: not yet set\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  type: not yet set\n");CHKERRQ(ierr);
     }
     if (pc->ops->view) {
-      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);
-      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
     ierr = PetscObjectExists((PetscObject)pc->mat,&mat_exists);CHKERRQ(ierr);
     if (mat_exists) {
-      ierr = ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
       if (pc->pmat == pc->mat) {
-        ierr = ViewerASCIIPrintf(viewer,"  linear system matrix = precond matrix:\n");CHKERRQ(ierr);
-        ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  linear system matrix = precond matrix:\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);
-        ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       } else {
         ierr = PetscObjectExists((PetscObject)pc->pmat,&mat_exists);CHKERRQ(ierr);
         if (mat_exists) {
-          ierr = ViewerASCIIPrintf(viewer,"  linear system matrix followed by preconditioner matrix:\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"  linear system matrix followed by preconditioner matrix:\n");CHKERRQ(ierr);
         } else {
-          ierr = ViewerASCIIPrintf(viewer,"  linear system matrix:\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"  linear system matrix:\n");CHKERRQ(ierr);
         }
-        ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);
         if (mat_exists) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
-        ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
-      ierr = ViewerPopFormat(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
-    ierr = ViewerStringSPrintf(viewer," %-7.7s",cstr);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," %-7.7s",cstr);CHKERRQ(ierr);
     if (pc->ops->view) {ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);}
   } else {
     SETERRQ1(1,"Viewer type %s not supported by PC",((PetscObject)viewer)->type_name);
@@ -1294,7 +1283,7 @@ $     -pc_type my_solver
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCRegister"
+#define __FUNC__ "PCRegister"
 int PCRegister(char *sname,char *path,char *name,int (*function)(PC))
 {
   int  ierr;
@@ -1302,13 +1291,13 @@ int PCRegister(char *sname,char *path,char *name,int (*function)(PC))
 
   PetscFunctionBegin;
 
-  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = FListAdd(&PCList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PCList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCComputeExplicitOperator"
+#define __FUNC__ "PCComputeExplicitOperator"
 /*@
     PCComputeExplicitOperator - Computes the explicit preconditioned operator.  
 
@@ -1352,7 +1341,7 @@ int PCComputeExplicitOperator(PC pc,Mat *mat)
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  rows = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(rows);
+ierr = PetscMalloc((m+1)*sizeof(int),&  rows );CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
   if (size == 1) {

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.66 2000/08/17 04:52:19 bsmith Exp balay $ 
+# $Id: makefile,v 1.67 2000/08/17 19:37:10 balay Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS          =
@@ -6,6 +6,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sles/pc/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
+EXAMPLESF       = ex8f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -36,6 +37,10 @@ ex6: ex6.o   chkopts
 ex7: ex7.o   chkopts
 	-${CLINKER} -o ex7 ex7.o ${PETSC_LIB}
 	${RM} ex7.o
+
+ex8f: ex8f.o   chkopts
+	-${FLINKER} -o ex8f ex8f.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	${RM} ex8f.o
 
 #------------------------------------------------------------------
 runex1:
@@ -72,10 +77,16 @@ runex6:
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   ${RM} -f ex6_1.tmp
 
+runex8f:
+	-@${MPIRUN} -np 1  ex8f 
+
 TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
 		  runex3 ex3.rm ex4.PETSc runex4 ex4.rm 
 TESTEXAMPLES_2  = ex5.PETSc runex5 ex5.rm
+TESTEXAMPLES_3  = ex8f.PETSc runex8f ex8f.rm
 TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
 		  runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 ex5.rm
 
 include ${PETSC_DIR}/bmake/common_test
+
+

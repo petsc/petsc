@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.53 2000/11/07 15:48:15 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.54 2000/11/08 15:15:20 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -7,44 +7,44 @@
 #include "src/mat/impls/adj/mpi/mpiadj.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatView_MPIAdj_ASCII"
-int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
+#define __FUNC__ "MatView_MPIAdj_ASCII"
+int MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_MPIAdj  *a = (Mat_MPIAdj*)A->data;
   int         ierr,i,j,m = A->m, format;
   char        *outputname;
 
   PetscFunctionBegin;
-  ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
-  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == VIEWER_FORMAT_ASCII_INFO) {
+  ierr = PetscViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_FORMAT_ASCII_INFO) {
     PetscFunctionReturn(0);
-  } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
+  } else if (format == PETSC_VIEWER_FORMAT_ASCII_MATLAB) {
     SETERRQ(PETSC_ERR_SUP,"Matlab format not supported");
   } else {
-    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
-      ierr = ViewerASCIISynchronizedPrintf(viewer,"row %d:",i+a->rstart);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %d:",i+a->rstart);CHKERRQ(ierr);
       for (j=a->i[i]; j<a->i[i+1]; j++) {
-        ierr = ViewerASCIISynchronizedPrintf(viewer," %d ",a->j[j]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d ",a->j[j]);CHKERRQ(ierr);
       }
-      ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } 
-  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatView_MPIAdj"
-int MatView_MPIAdj(Mat A,Viewer viewer)
+#define __FUNC__ "MatView_MPIAdj"
+int MatView_MPIAdj(Mat A,PetscViewer viewer)
 {
   int        ierr;
   PetscTruth isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
   } else {
@@ -54,7 +54,7 @@ int MatView_MPIAdj(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatDestroy_MPIAdj"
+#define __FUNC__ "MatDestroy_MPIAdj"
 int MatDestroy_MPIAdj(Mat mat)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)mat->data;
@@ -62,7 +62,7 @@ int MatDestroy_MPIAdj(Mat mat)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d, NZ=%d",mat->m,mat->n,a->nz);
+  PetscLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d, NZ=%d",mat->m,mat->n,a->nz);
 #endif
   if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
   if (a->freeaij) {
@@ -76,7 +76,7 @@ int MatDestroy_MPIAdj(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetOption_MPIAdj"
+#define __FUNC__ "MatSetOption_MPIAdj"
 int MatSetOption_MPIAdj(Mat A,MatOption op)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
@@ -85,7 +85,7 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
   if (op == MAT_STRUCTURALLY_SYMMETRIC) {
     a->symmetric = PETSC_TRUE;
   } else {
-    PLogInfo(A,"MatSetOption_MPIAdj:Option ignored\n");
+    PetscLogInfo(A,"MatSetOption_MPIAdj:Option ignored\n");
   }
   PetscFunctionReturn(0);
 }
@@ -96,15 +96,15 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
 */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMarkDiagonal_MPIAdj"
+#define __FUNC__ "MatMarkDiagonal_MPIAdj"
 int MatMarkDiagonal_MPIAdj(Mat A)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data; 
   int        i,j,*diag,m = A->m;
 
   PetscFunctionBegin;
-  diag = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(diag);
-  PLogObjectMemory(A,(m+1)*sizeof(int));
+ierr = PetscMalloc((m+1)*sizeof(int),&  diag );CHKERRQ(ierr);
+  PetscLogObjectMemory(A,(m+1)*sizeof(int));
   for (i=0; i<A->m; i++) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
       if (a->j[j] == i) {
@@ -118,7 +118,7 @@ int MatMarkDiagonal_MPIAdj(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetOwnershipRange_MPIAdj"
+#define __FUNC__ "MatGetOwnershipRange_MPIAdj"
 int MatGetOwnershipRange_MPIAdj(Mat A,int *m,int *n)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
@@ -129,7 +129,7 @@ int MatGetOwnershipRange_MPIAdj(Mat A,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetRow_MPIAdj"
+#define __FUNC__ "MatGetRow_MPIAdj"
 int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
@@ -153,7 +153,7 @@ int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatRestoreRow_MPIAdj"
+#define __FUNC__ "MatRestoreRow_MPIAdj"
 int MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   PetscFunctionBegin;
@@ -161,7 +161,7 @@ int MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetBlockSize_MPIAdj"
+#define __FUNC__ "MatGetBlockSize_MPIAdj"
 int MatGetBlockSize_MPIAdj(Mat A,int *bs)
 {
   PetscFunctionBegin;
@@ -171,7 +171,7 @@ int MatGetBlockSize_MPIAdj(Mat A,int *bs)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatEqual_MPIAdj"
+#define __FUNC__ "MatEqual_MPIAdj"
 int MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data,*b = (Mat_MPIAdj *)B->data;
@@ -198,7 +198,7 @@ int MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatGetRowIJ_MPIAdj"></a>*/"MatGetRowIJ_MPIAdj"
+#define __FUNC__ "MatGetRowIJ_MPIAdj"
 int MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int **ja,PetscTruth *done)
 {
   int        ierr,size,i;
@@ -221,7 +221,7 @@ int MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatRestoreRowIJ_MPIAdj"></a>*/"MatRestoreRowIJ_MPIAdj"
+#define __FUNC__ "MatRestoreRowIJ_MPIAdj"
 int MatRestoreRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int **ja,PetscTruth *done)
 {
   int        i;
@@ -310,7 +310,7 @@ static struct _MatOps MatOps_Values = {0,
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCreate_MPIAdj"
+#define __FUNC__ "MatCreate_MPIAdj"
 int MatCreate_MPIAdj(Mat B)
 {
   Mat_MPIAdj *b;
@@ -320,7 +320,8 @@ int MatCreate_MPIAdj(Mat B)
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(B->comm,&rank);CHKERRQ(ierr);
 
-  B->data             = (void*)(b = PetscNew(Mat_MPIAdj));CHKPTRQ(b);
+  ierr                = PetscNew(Mat_MPIAdj,&b);CHKERRQ(ierr);
+  B->data             = (void*)b;
   ierr                = PetscMemzero(b,sizeof(Mat_MPIAdj));CHKERRQ(ierr);
   ierr                = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor           = 0;
@@ -337,8 +338,8 @@ int MatCreate_MPIAdj(Mat B)
   /* we don't know the "local columns" so just use the row information :-(*/
   ierr = MapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
 
-  b->rowners = (int*)PetscMalloc((size+1)*sizeof(int));CHKPTRQ(b->rowners);
-  PLogObjectMemory(B,(size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAdj));
+ierr = PetscMalloc((size+1)*sizeof(int),&  b->rowners );CHKERRQ(ierr);
+  PetscLogObjectMemory(B,(size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAdj));
   ierr = MPI_Allgather(&B->m,1,MPI_INT,b->rowners+1,1,MPI_INT,B->comm);CHKERRQ(ierr);
   b->rowners[0] = 0;
   for (ii=2; ii<=size; ii++) {
@@ -352,7 +353,7 @@ int MatCreate_MPIAdj(Mat B)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMPIAdjSetPreallocation"
+#define __FUNC__ "MatMPIAdjSetPreallocation"
 int MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
 {
   Mat_MPIAdj *b = (Mat_MPIAdj *)B->data;
@@ -392,7 +393,7 @@ int MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCreateMPIAdj"
+#define __FUNC__ "MatCreateMPIAdj"
 /*@C
    MatCreateMPIAdj - Creates a sparse matrix representing an adjacency list.
    The matrix does not have numerical values associated with it, but is
@@ -438,7 +439,7 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatConvertTo_MPIAdj"
+#define __FUNC__ "MatConvertTo_MPIAdj"
 int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *B)
 {
   int      i,ierr,m,N,nzeros = 0,*ia,*ja,*rj,len,rstart,cnt,j,*a;
@@ -461,9 +462,9 @@ int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *B)
   }
 
   /* malloc space for nonzeros */
-  a  = (int*)PetscMalloc((nzeros+1)*sizeof(int));CHKPTRQ(a);
-  ia = (int*)PetscMalloc((N+1)*sizeof(int));CHKPTRQ(ia);
-  ja = (int*)PetscMalloc((nzeros+1)*sizeof(int));CHKPTRQ(ja);
+ierr = PetscMalloc((nzeros+1)*sizeof(int),&  a  );CHKERRQ(ierr);
+ierr = PetscMalloc((N+1)*sizeof(int),&  ia );CHKERRQ(ierr);
+ierr = PetscMalloc((nzeros+1)*sizeof(int),&  ja );CHKERRQ(ierr);
 
   nzeros = 0;
   ia[0]  = 0;

@@ -1,4 +1,4 @@
-/* $Id: petscis.h,v 1.56 2000/08/01 20:58:40 bsmith Exp bsmith $ */
+/* $Id: petscis.h,v 1.57 2000/09/28 21:16:35 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -32,7 +32,7 @@ EXTERN int   ISRestoreIndices(IS,int *[]);
 EXTERN int   ISGetSize(IS,int *);
 EXTERN int   ISGetLocalSize(IS,int *);
 EXTERN int   ISInvertPermutation(IS,int,IS*);
-EXTERN int   ISView(IS,Viewer);
+EXTERN int   ISView(IS,PetscViewer);
 EXTERN int   ISEqual(IS,IS,PetscTruth *);
 EXTERN int   ISSort(IS);
 EXTERN int   ISSorted(IS,PetscTruth *);
@@ -83,7 +83,7 @@ typedef enum {IS_GTOLM_MASK,IS_GTOLM_DROP} ISGlobalToLocalMappingType;
 
 EXTERN int ISLocalToGlobalMappingCreate(MPI_Comm,int,const int[],ISLocalToGlobalMapping*);
 EXTERN int ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMapping *);
-EXTERN int ISLocalToGlobalMappingView(ISLocalToGlobalMapping,Viewer);
+EXTERN int ISLocalToGlobalMappingView(ISLocalToGlobalMapping,PetscViewer);
 EXTERN int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);
 EXTERN int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
 EXTERN int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,int,const int[],int*,int[]);
@@ -116,7 +116,7 @@ typedef struct _p_ISColoring* ISColoring;
 
 EXTERN int ISColoringCreate(MPI_Comm,int,const int[],ISColoring*);
 EXTERN int ISColoringDestroy(ISColoring);
-EXTERN int ISColoringView(ISColoring,Viewer);
+EXTERN int ISColoringView(ISColoring,PetscViewer);
 EXTERN int ISColoringGetIS(ISColoring,int*,IS*[]);
 EXTERN int ISColoringRestoreIS(ISColoring,IS*[]);
 

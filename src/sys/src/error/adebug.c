@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.109 2000/09/22 20:42:15 bsmith Exp bsmith $*/
+/*$Id: adebug.c,v 1.110 2000/10/24 20:24:29 bsmith Exp bsmith $*/
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
@@ -21,7 +21,7 @@ static char       Debugger[256];
 static PetscTruth Xterm = PETSC_TRUE;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSetDebugger"></a>*/"PetscSetDebugger" 
+#define __FUNC__ "PetscSetDebugger" 
 /*@C
    PetscSetDebugger - Sets options associated with the debugger.
 
@@ -60,7 +60,7 @@ int PetscSetDebugger(const char debugger[],PetscTruth xterm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSetDefaultDebugger"></a>*/"PetscSetDefaultDebugger" 
+#define __FUNC__ "PetscSetDefaultDebugger" 
 int PetscSetDefaultDebugger(void)
 {
   int ierr;
@@ -77,7 +77,7 @@ int PetscSetDefaultDebugger(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSetDebuggerFromString"></a>*/"PetscSetDebuggerFromString" 
+#define __FUNC__ "PetscSetDebuggerFromString" 
 int PetscSetDebuggerFromString(char *string)
 {
   int        ierr;
@@ -109,7 +109,7 @@ int PetscSetDebuggerFromString(char *string)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscAttachDebugger"></a>*/"PetscAttachDebugger" 
+#define __FUNC__ "PetscAttachDebugger" 
 /*@C
    PetscAttachDebugger - Attaches the debugger to the running process.
 
@@ -318,7 +318,7 @@ int PetscAttachDebugger(void)
     }
   } else {   /* I am the child, continue with user code */
     sleeptime = 10; /* default to sleep waiting for debugger */
-    ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);
     if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PETSC_NEED_DEBUGGER_NO_SLEEP)
     /*
@@ -346,7 +346,7 @@ int PetscAttachDebugger(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscAttachDebuggerErrorHandler"></a>*/"PetscAttachDebuggerErrorHandler" 
+#define __FUNC__ "PetscAttachDebuggerErrorHandler" 
 /*@C
    PetscAttachDebuggerErrorHandler - Error handler that attaches
    a debugger to a running process when an error is detected.
@@ -414,7 +414,7 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStopForDebugger"></a>*/"PetscStopForDebugger" 
+#define __FUNC__ "PetscStopForDebugger" 
 /*@C
    PetscStopForDebugger - Prints a message to the screen indicating how to
          attach to the process with the debugger and then waits for the 
@@ -499,7 +499,7 @@ int PetscStopForDebugger(void)
   fflush(stdout);
 
   sleeptime = 25; /* default to sleep waiting for debugger */
-  ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);
   if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PETSC_NEED_DEBUGGER_NO_SLEEP)
   /*

@@ -1,4 +1,4 @@
-/*$Id: dmmgsnes.c,v 1.7 2000/09/28 21:14:43 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.8 2000/12/13 17:38:45 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -152,7 +152,7 @@ int DMMGComputeJacobian_FD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DMMGSolveSNES"></a>*/"DMMGSolveSNES"
+#define __FUNC__ "DMMGSolveSNES"
 int DMMGSolveSNES(DMMG *dmmg,int level)
 {
   int  ierr,nlevels = dmmg[0]->nlevels,its;
@@ -167,7 +167,7 @@ int DMMGSolveSNES(DMMG *dmmg,int level)
 EXTERN int DMMGSetUpLevel(DMMG*,SLES,int);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DMMGSetSNES"></a>*/"DMMGSetSNES"
+#define __FUNC__ "DMMGSetSNES"
 /*@C
     DMMGSetSNES - Sets the nonlinear solver object that will use the grid hierarchy
 
@@ -185,15 +185,24 @@ EXTERN int DMMGSetUpLevel(DMMG*,SLES,int);
 int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   int        ierr,i,nlevels = dmmg[0]->nlevels;
-  PetscTruth usefd;
+  PetscTruth usefd,snesmonitor;
   SLES       sles;
+  PetscViewer     ascii;
+  MPI_Comm   comm;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_snes_monitor",&snesmonitor);CHKERRQ(ierr);
   /* create solvers for each level */
   for (i=0; i<nlevels; i++) {
     ierr = SNESCreate(dmmg[i]->comm,SNES_NONLINEAR_EQUATIONS,&dmmg[i]->snes);CHKERRQ(ierr);
+    if (snesmonitor) {
+      ierr = PetscObjectGetComm((PetscObject)dmmg[i]->snes,&comm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISetTab(ascii,nlevels-i);CHKERRQ(ierr);
+      ierr = SNESSetMonitor(dmmg[i]->snes,SNESDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+    }
     if (dmmg[0]->matrixfree) {
       ierr = MatCreateSNESMF(dmmg[i]->snes,dmmg[i]->x,&dmmg[i]->J);CHKERRQ(ierr);
       if (!dmmg[i]->B) dmmg[i]->B = dmmg[i]->J;
@@ -212,7 +221,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     dmmg[i]->computefunction = function;
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-dmmg_fd",&usefd);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_fd",&usefd);CHKERRQ(ierr);
   if ((!jacobian && !dmmg[0]->matrixfree) || usefd) {
     ISColoring iscoloring;
     for (i=0; i<nlevels; i++) {
@@ -249,7 +258,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DMMGSetInitialGuess"></a>*/"DMMGSetInitialGuess"
+#define __FUNC__ "DMMGSetInitialGuess"
 /*@C
     DMMGSetInitialGuess - Sets the function that computes an initial guess, if not given
          uses 0.

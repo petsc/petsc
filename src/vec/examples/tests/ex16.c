@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.8 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex16.c,v 1.9 2000/09/28 21:10:28 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecSetValuesBlocked() on MPI vectors\n\n";
 
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   /* 
       Resulting vector should be 1 2 0 0 3 4 0 0
   */
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecDestroy(x);CHKERRA(ierr);
 

@@ -1,5 +1,4 @@
-/*<html><body><pre>*/
-/*$Id: vector.c,v 1.218 2000/09/28 21:10:18 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.219 2000/10/24 20:25:11 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -7,7 +6,7 @@
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="VecSetBlockSize"></a>*/"VecSetBlockSize"
+#define __FUNC__ "VecSetBlockSize"
 /*@
    VecSetBlockSize - Sets the blocksize for future calls to VecSetValuesBlocked()
    and VecSetValuesBlockedLocal().
@@ -43,7 +42,7 @@ int VecSetBlockSize(Vec v,int bs)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecGetBlockSize"
+#define __FUNC__ "VecGetBlockSize"
 /*@
    VecGetBlockSize - Gets the blocksize for the vector, i.e. what is used for VecSetValuesBlocked()
    and VecSetValuesBlockedLocal().
@@ -76,7 +75,7 @@ int VecGetBlockSize(Vec v,int *bs)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecValid"
+#define __FUNC__ "VecValid"
 /*@
    VecValid - Checks whether a vector object is valid.
 
@@ -103,7 +102,7 @@ int VecValid(Vec v,PetscTruth *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecDot"
+#define __FUNC__ "VecDot"
 /*@
    VecDot - Computes the vector dot product.
 
@@ -152,9 +151,9 @@ int VecDot(Vec x,Vec y,Scalar *val)
   if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,x->comm);CHKERRQ(ierr);
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
-  ierr = PLogEventBarrierEnd(VEC_DotBarrier,x,y,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierEnd(VEC_DotBarrier,x,y,0,0,x->comm);CHKERRQ(ierr);
   /*
      The next block is for incremental debugging
   */
@@ -169,7 +168,7 @@ int VecDot(Vec x,Vec y,Scalar *val)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecNorm"
+#define __FUNC__ "VecNorm"
 /*@
    VecNorm  - Computes the vector norm.
 
@@ -216,9 +215,9 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidType(x);
-  ierr = PLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
   ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
-  ierr = PLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
   /*
      The next block is for incremental debugging
   */
@@ -233,7 +232,7 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecMax"
+#define __FUNC__ "VecMax"
 /*@C
    VecMax - Determines the maximum vector component and its location.
 
@@ -264,14 +263,14 @@ int VecMax(Vec x,int *p,PetscReal *val)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidScalarPointer(val);
   PetscValidType(x);
-  ierr = PLogEventBegin(VEC_Max,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_Max,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->max)(x,p,val);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_Max,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Max,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecMin"
+#define __FUNC__ "VecMin"
 /*@
    VecMin - Determines the minimum vector component and its location.
 
@@ -302,14 +301,14 @@ int VecMin(Vec x,int *p,PetscReal *val)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidScalarPointer(val);
   PetscValidType(x);
-  ierr = PLogEventBegin(VEC_Min,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_Min,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->min)(x,p,val);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_Min,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Min,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecTDot"
+#define __FUNC__ "VecTDot"
 /*@
    VecTDot - Computes an indefinite vector dot product. That is, this
    routine does NOT use the complex conjugate.
@@ -354,14 +353,14 @@ int VecTDot(Vec x,Vec y,Scalar *val)
   if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PLogEventBegin(VEC_TDot,x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_TDot,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->tdot)(x,y,val);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_TDot,x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_TDot,x,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecScale"
+#define __FUNC__ "VecScale"
 /*@
    VecScale - Scales a vector. 
 
@@ -392,14 +391,14 @@ int VecScale(const Scalar *alpha,Vec x)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidScalarPointer(alpha);
   PetscValidType(x);
-  ierr = PLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->scale)(alpha,x);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecCopy"
+#define __FUNC__ "VecCopy"
 /*@
    VecCopy - Copies a vector. 
 
@@ -432,14 +431,14 @@ int VecCopy(Vec x,Vec y)
   if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PLogEventBegin(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->copy)(x,y);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSet"
+#define __FUNC__ "VecSet"
 /*@
    VecSet - Sets all components of a vector to a single scalar value. 
 
@@ -475,14 +474,14 @@ int VecSet(const Scalar *alpha,Vec x)
   PetscValidScalarPointer(alpha);
   PetscValidType(x);
 
-  ierr = PLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->set)(alpha,x);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_Set,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSetRandom"
+#define __FUNC__ "VecSetRandom"
 /*@C
    VecSetRandom - Sets all components of a vector to random numbers.
 
@@ -527,9 +526,9 @@ int VecSetRandom(PetscRandom rctx,Vec x)
     rctx = rand;
   }
 
-  ierr = PLogEventBegin(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->setrandom)(rctx,x);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
   
   if (rand) {
     ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
@@ -538,7 +537,7 @@ int VecSetRandom(PetscRandom rctx,Vec x)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecAXPY"
+#define __FUNC__ "VecAXPY"
 /*@
    VecAXPY - Computes y = alpha x + y. 
 
@@ -573,14 +572,14 @@ int VecAXPY(const Scalar *alpha,Vec x,Vec y)
   if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->axpy)(alpha,x,y);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecAXPBY"
+#define __FUNC__ "VecAXPBY"
 /*@
    VecAXPBY - Computes y = alpha x + beta y. 
 
@@ -616,14 +615,14 @@ int VecAXPBY(const Scalar *alpha,const Scalar *beta,Vec x,Vec y)
   if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->axpby)(alpha,beta,x,y);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecAYPX"
+#define __FUNC__ "VecAYPX"
 /*@
    VecAYPX - Computes y = x + alpha y.
 
@@ -658,14 +657,14 @@ int VecAYPX(const Scalar *alpha,Vec x,Vec y)
   if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PLogEventBegin(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
   ierr =  (*x->ops->aypx)(alpha,x,y);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSwap"
+#define __FUNC__ "VecSwap"
 /*@
    VecSwap - Swaps the vectors x and y.
 
@@ -693,14 +692,14 @@ int VecSwap(Vec x,Vec y)
   if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PLogEventBegin(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->swap)(x,y);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecWAXPY"
+#define __FUNC__ "VecWAXPY"
 /*@
    VecWAXPY - Computes w = alpha x + y.
 
@@ -737,14 +736,14 @@ int VecWAXPY(const Scalar *alpha,Vec x,Vec y,Vec w)
   if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PLogEventBegin(VEC_WAXPY,x,y,w,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_WAXPY,x,y,w,0);CHKERRQ(ierr);
   ierr =  (*x->ops->waxpy)(alpha,x,y,w);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_WAXPY,x,y,w,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_WAXPY,x,y,w,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecPointwiseMult"
+#define __FUNC__ "VecPointwiseMult"
 /*@
    VecPointwiseMult - Computes the componentwise multiplication w = x*y.
 
@@ -780,14 +779,14 @@ int VecPointwiseMult(Vec x,Vec y,Vec w)
   if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PLogEventBegin(VEC_PMult,x,y,w,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_PMult,x,y,w,0);CHKERRQ(ierr);
   ierr = (*x->ops->pointwisemult)(x,y,w);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_PMult,x,y,w,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_PMult,x,y,w,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecPointwiseDivide"
+#define __FUNC__ "VecPointwiseDivide"
 /*@
    VecPointwiseDivide - Computes the componentwise division w = x/y.
 
@@ -828,7 +827,7 @@ int VecPointwiseDivide(Vec x,Vec y,Vec w)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecDuplicate"
+#define __FUNC__ "VecDuplicate"
 /*@C
    VecDuplicate - Creates a new vector of the same type as an existing vector.
 
@@ -864,7 +863,7 @@ int VecDuplicate(Vec x,Vec *newv)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecDestroy"
+#define __FUNC__ "VecDestroy"
 /*@C
    VecDestroy - Destroys a vector.
 
@@ -898,13 +897,13 @@ int VecDestroy(Vec v)
   if (v->map) {
     ierr = MapDestroy(v->map);CHKERRQ(ierr);
   }
-  PLogObjectDestroy(v);
+  PetscLogObjectDestroy(v);
   PetscHeaderDestroy(v); 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecDuplicateVecs"
+#define __FUNC__ "VecDuplicateVecs"
 /*@C
    VecDuplicateVecs - Creates several vectors of the same type as an existing vector.
 
@@ -943,7 +942,7 @@ int VecDuplicateVecs(Vec v,int m,Vec *V[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecDestroyVecs"
+#define __FUNC__ "VecDestroyVecs"
 /*@C
    VecDestroyVecs - Frees a block of vectors obtained with VecDuplicateVecs().
 
@@ -975,7 +974,7 @@ int VecDestroyVecs(const Vec vv[],int m)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSetValues"
+#define __FUNC__ "VecSetValues"
 /*@
    VecSetValues - Inserts or adds values into certain locations of a vector. 
 
@@ -1023,14 +1022,14 @@ int VecSetValues(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora)
   PetscValidIntPointer(ix);
   PetscValidScalarPointer(y);
   PetscValidType(x);
-  ierr = PLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->setvalues)(x,ni,ix,y,iora);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSetValuesBlocked"
+#define __FUNC__ "VecSetValuesBlocked"
 /*@
    VecSetValuesBlocked - Inserts or adds blocks of values into certain locations of a vector. 
 
@@ -1079,9 +1078,9 @@ int VecSetValuesBlocked(Vec x,int ni,const int ix[],const Scalar y[],InsertMode 
   PetscValidIntPointer(ix);
   PetscValidScalarPointer(y);
   PetscValidType(x);
-  ierr = PLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->setvaluesblocked)(x,ni,ix,y,iora);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1117,7 +1116,7 @@ int VecSetValuesBlocked(Vec x,int ni,const int ix[],const Scalar y[],InsertMode 
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSetLocalToGlobalMapping"
+#define __FUNC__ "VecSetLocalToGlobalMapping"
 /*@
    VecSetLocalToGlobalMapping - Sets a local numbering to global numbering used
    by the routine VecSetValuesLocal() to allow users to insert vector entries
@@ -1160,7 +1159,7 @@ int VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSetLocalToGlobalMappingBlocked"
+#define __FUNC__ "VecSetLocalToGlobalMappingBlocked"
 /*@
    VecSetLocalToGlobalMappingBlocked - Sets a local numbering to global numbering used
    by the routine VecSetValuesBlockedLocal() to allow users to insert vector entries
@@ -1198,7 +1197,7 @@ int VecSetLocalToGlobalMappingBlocked(Vec x,ISLocalToGlobalMapping mapping)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSetValuesLocal"
+#define __FUNC__ "VecSetValuesLocal"
 /*@
    VecSetValuesLocal - Inserts or adds values into certain locations of a vector,
    using a local ordering of the nodes. 
@@ -1243,13 +1242,13 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode io
   PetscValidScalarPointer(y);
   PetscValidType(x);
 
-  ierr = PLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   if (!x->ops->setvalueslocal) {
     if (!x->mapping) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with VecSetLocalToGlobalMapping()");
     }
     if (ni > 128) {
-      lix = (int*)PetscMalloc(ni*sizeof(int));CHKPTRQ(lix);
+      ierr = PetscMalloc(ni*sizeof(int),&lix);CHKERRQ(ierr);
     }
     ierr = ISLocalToGlobalMappingApply(x->mapping,ni,(int*)ix,lix);CHKERRQ(ierr);
     ierr = (*x->ops->setvalues)(x,ni,lix,y,iora);CHKERRQ(ierr);
@@ -1259,12 +1258,12 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode io
   } else {
     ierr = (*x->ops->setvalueslocal)(x,ni,ix,y,iora);CHKERRQ(ierr);
   }
-  ierr = PLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSetValuesBlockedLocal"
+#define __FUNC__ "VecSetValuesBlockedLocal"
 /*@
    VecSetValuesBlockedLocal - Inserts or adds values into certain locations of a vector,
    using a local ordering of the nodes. 
@@ -1314,13 +1313,13 @@ int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const Scalar y[],Insert
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with VecSetLocalToGlobalMappingBlocked()");
   }
   if (ni > 128) {
-    lix = (int*)PetscMalloc(ni*sizeof(int));CHKPTRQ(lix);
+    ierr = PetscMalloc(ni*sizeof(int),&lix);CHKERRQ(ierr);
   }
 
-  ierr = PLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(x->bmapping,ni,(int*)ix,lix);CHKERRQ(ierr);
   ierr = (*x->ops->setvaluesblocked)(x,ni,lix,y,iora);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   if (ni > 128) {
     ierr = PetscFree(lix);CHKERRQ(ierr);
   }
@@ -1328,7 +1327,7 @@ int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const Scalar y[],Insert
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecAssemblyBegin"
+#define __FUNC__ "VecAssemblyBegin"
 /*@
    VecAssemblyBegin - Begins assembling the vector.  This routine should
    be called after completing all calls to VecSetValues().
@@ -1353,21 +1352,21 @@ int VecAssemblyBegin(Vec vec)
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
   PetscValidType(vec);
 
-  ierr = OptionsHasName(vec->prefix,"-vec_view_stash",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(vec->prefix,"-vec_view_stash",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = VecStashView(vec,VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+    ierr = VecStashView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
   }
 
-  ierr = PLogEventBegin(VEC_AssemblyBegin,vec,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_AssemblyBegin,vec,0,0,0);CHKERRQ(ierr);
   if (vec->ops->assemblybegin) {
     ierr = (*vec->ops->assemblybegin)(vec);CHKERRQ(ierr);
   }
-  ierr = PLogEventEnd(VEC_AssemblyBegin,vec,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_AssemblyBegin,vec,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecAssemblyEnd"
+#define __FUNC__ "VecAssemblyEnd"
 /*@
    VecAssemblyEnd - Completes assembling the vector.  This routine should
    be called after VecAssemblyBegin().
@@ -1397,47 +1396,47 @@ int VecAssemblyEnd(Vec vec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
-  ierr = PLogEventBegin(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
   PetscValidType(vec);
   if (vec->ops->assemblyend) {
     ierr = (*vec->ops->assemblyend)(vec);CHKERRQ(ierr);
   }
-  ierr = PLogEventEnd(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
-  ierr = OptionsHasName(vec->prefix,"-vec_view",&flg);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(vec->prefix,"-vec_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = VecView(vec,VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+    ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-vec_view_matlab",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_matlab",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ViewerPushFormat(VIEWER_STDOUT_(vec->comm),VIEWER_FORMAT_ASCII_MATLAB,"V");CHKERRQ(ierr);
-    ierr = VecView(vec,VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
-    ierr = ViewerPopFormat(VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(vec->comm),PETSC_VIEWER_FORMAT_ASCII_MATLAB,"V");CHKERRQ(ierr);
+    ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-vec_view_draw",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_draw",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = VecView(vec,VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
+    ierr = VecView(vec,PETSC_VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-vec_view_draw_lg",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_draw_lg",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ViewerSetFormat(VIEWER_DRAW_(vec->comm),VIEWER_FORMAT_DRAW_LG,0);CHKERRQ(ierr);
-    ierr = VecView(vec,VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(PETSC_VIEWER_DRAW_(vec->comm),PETSC_VIEWER_FORMAT_DRAW_LG,0);CHKERRQ(ierr);
+    ierr = VecView(vec,PETSC_VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-vec_view_socket",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_socket",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = VecView(vec,VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);
+    ierr = VecView(vec,PETSC_VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-vec_view_binary",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_binary",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = VecView(vec,VIEWER_BINARY_(vec->comm));CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_BINARY_(vec->comm));CHKERRQ(ierr);
+    ierr = VecView(vec,PETSC_VIEWER_BINARY_(vec->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(vec->comm));CHKERRQ(ierr);
   }
 #if defined(PETSC_HAVE_AMS)
-  ierr = OptionsHasName(PETSC_NULL,"-vec_view_ams",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_ams",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = VecView(vec,VIEWER_AMS_(vec->comm));CHKERRQ(ierr);
+    ierr = VecView(vec,PETSC_VIEWER_AMS_(vec->comm));CHKERRQ(ierr);
   }
 #endif
   PetscFunctionReturn(0);
@@ -1445,7 +1444,7 @@ int VecAssemblyEnd(Vec vec)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecMTDot"
+#define __FUNC__ "VecMTDot"
 /*@C
    VecMTDot - Computes indefinite vector multiple dot products. 
    That is, it does NOT use the complex conjugate.
@@ -1491,14 +1490,14 @@ int VecMTDot(int nv,Vec x,const Vec y[],Scalar *val)
   if (x->N != (*y)->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != (*y)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PLogEventBegin(VEC_MTDot,x,*y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_MTDot,x,*y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->mtdot)(nv,x,y,val);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_MTDot,x,*y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_MTDot,x,*y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecMDot"
+#define __FUNC__ "VecMDot"
 /*@C
    VecMDot - Computes vector multiple dot products. 
 
@@ -1543,14 +1542,14 @@ int VecMDot(int nv,Vec x,const Vec y[],Scalar *val)
   if (x->N != (*y)->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != (*y)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,x->comm);CHKERRQ(ierr);
   ierr = (*x->ops->mdot)(nv,x,y,val);CHKERRQ(ierr);
-  ierr = PLogEventBarrierEnd(VEC_MDotBarrier,x,*y,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierEnd(VEC_MDotBarrier,x,*y,0,0,x->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecMAXPY"
+#define __FUNC__ "VecMAXPY"
 /*@C
    VecMAXPY - Computes y = y + sum alpha[j] x[j]
 
@@ -1583,14 +1582,14 @@ int  VecMAXPY(int nv,const Scalar *alpha,Vec y,Vec *x)
   if (y->N != (*x)->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (y->n != (*x)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PLogEventBegin(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->maxpy)(nv,alpha,y,x);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecGetArray"
+#define __FUNC__ "VecGetArray"
 /*@C
    VecGetArray - Returns a pointer to a contiguous array that contains this 
    processor's portion of the vector data. For the standard PETSc
@@ -1646,7 +1645,7 @@ int VecGetArray(Vec x,Scalar *a[])
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecGetArrays" 
+#define __FUNC__ "VecGetArrays" 
 /*@C
    VecGetArrays - Returns a pointer to the arrays in a set of vectors
    that were created by a call to VecDuplicateVecs().  You MUST call
@@ -1677,7 +1676,7 @@ int VecGetArrays(const Vec x[],int n,Scalar **a[])
   PetscValidHeaderSpecific(*x,VEC_COOKIE);
   PetscValidPointer(a);
   if (n <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must get at least one array n = %d",n);
-  q = (Scalar**)PetscMalloc(n*sizeof(Scalar*));CHKPTRQ(q);
+  ierr = PetscMalloc(n*sizeof(Scalar*),&q);CHKERRQ(ierr);
   for (i=0; i<n; ++i) {
     ierr = VecGetArray(x[i],&q[i]);CHKERRQ(ierr);
   }
@@ -1686,7 +1685,7 @@ int VecGetArrays(const Vec x[],int n,Scalar **a[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecRestoreArrays"
+#define __FUNC__ "VecRestoreArrays"
 /*@C
    VecRestoreArrays - Restores a group of vectors after VecGetArrays()
    has been called.
@@ -1728,7 +1727,7 @@ int VecRestoreArrays(const Vec x[],int n,Scalar **a[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecRestoreArray"
+#define __FUNC__ "VecRestoreArray"
 /*@C
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
@@ -1786,7 +1785,7 @@ int VecRestoreArray(Vec x,Scalar *a[])
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecView"
+#define __FUNC__ "VecView"
 /*@C
    VecView - Views a vector object. 
 
@@ -1798,33 +1797,33 @@ int VecRestoreArray(Vec x,Scalar *a[])
 
    Notes:
    The available visualization contexts include
-+     VIEWER_STDOUT_SELF - standard output (default)
--     VIEWER_STDOUT_WORLD - synchronized standard
++     PETSC_VIEWER_STDOUT_SELF - standard output (default)
+-     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
          the file.  All other processors send their 
          data to the first processor to print. 
 
    You can change the format the vector is printed using the 
-   option ViewerSetFormat().
+   option PetscViewerSetFormat().
 
    The user can open alternative visualization contexts with
-+    ViewerASCIIOpen() - Outputs vector to a specified file
-.    ViewerBinaryOpen() - Outputs vector in binary to a
++    PetscViewerASCIIOpen() - Outputs vector to a specified file
+.    PetscViewerBinaryOpen() - Outputs vector in binary to a
          specified file; corresponding input uses VecLoad()
-.    ViewerDrawOpen() - Outputs vector to an X window display
--    ViewerSocketOpen() - Outputs vector to Socket viewer
+.    PetscViewerDrawOpen() - Outputs vector to an X window display
+-    PetscViewerSocketOpen() - Outputs vector to Socket viewer
 
-   The user can call ViewerSetFormat() to specify the output
-   format of ASCII printed objects (when using VIEWER_STDOUT_SELF,
-   VIEWER_STDOUT_WORLD and ViewerASCIIOpen).  Available formats include
-+    VIEWER_FORMAT_ASCII_DEFAULT - default, prints vector contents
-.    VIEWER_FORMAT_ASCII_MATLAB - prints vector contents in Matlab format
-.    VIEWER_FORMAT_ASCII_INDEX - prints vector contents, including indices of vector elements
-.    VIEWER_FORMAT_ASCII_COMMON - prints vector contents, using a 
+   The user can call PetscViewerSetFormat() to specify the output
+   format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
+   PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
++    PETSC_VIEWER_FORMAT_ASCII_DEFAULT - default, prints vector contents
+.    PETSC_VIEWER_FORMAT_ASCII_MATLAB - prints vector contents in Matlab format
+.    PETSC_VIEWER_FORMAT_ASCII_INDEX - prints vector contents, including indices of vector elements
+.    PETSC_VIEWER_FORMAT_ASCII_COMMON - prints vector contents, using a 
          format common among all vector types
-.    VIEWER_FORMAT_ASCII_INFO - prints basic information about the matrix
+.    PETSC_VIEWER_FORMAT_ASCII_INFO - prints basic information about the matrix
          size and structure (not the matrix entries)
--    VIEWER_FORMAT_ASCII_INFO_LONG - prints more detailed information about
+-    PETSC_VIEWER_FORMAT_ASCII_INFO_LONG - prints more detailed information about
          the matrix structure
 
    Level: beginner
@@ -1832,32 +1831,32 @@ int VecRestoreArray(Vec x,Scalar *a[])
    Concepts: vector^printing
    Concepts: vector^saving to disk
 
-.seealso: ViewerASCIIOpen(), ViewerDrawOpen(), DrawLGCreate(),
-          ViewerSocketOpen(), ViewerBinaryOpen(), VecLoad(), ViewerCreate(),
+.seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscDrawLGCreate(),
+          PetscViewerSocketOpen(), PetscViewerBinaryOpen(), VecLoad(), PetscViewerCreate(),
           PetscDoubleView(), PetscScalarView(), PetscIntView()
 @*/
-int VecView(Vec vec,Viewer viewer)
+int VecView(Vec vec,PetscViewer viewer)
 {
   int ierr,format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
   PetscValidType(vec);
-  if (!viewer) viewer = VIEWER_STDOUT_(vec->comm);
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(vec->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscCheckSameComm(vec,viewer);
   if (vec->stash.n || vec->bstash.n) SETERRQ(1,"Must call VecAssemblyBegin/End() before viewing this vector");
 
   /*
      Check if default viewer has been overridden, but user request it anyways
   */
-  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (vec->ops->viewnative && format == VIEWER_FORMAT_NATIVE) {
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (vec->ops->viewnative && format == PETSC_VIEWER_FORMAT_NATIVE) {
     char *fname;
-    ierr   = ViewerGetOutputname(viewer,&fname);CHKERRQ(ierr);
-    ierr   = ViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr   = PetscViewerGetOutputname(viewer,&fname);CHKERRQ(ierr);
+    ierr   = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = (*vec->ops->viewnative)(vec,viewer);CHKERRQ(ierr);
-    ierr   = ViewerPushFormat(viewer,VIEWER_FORMAT_NATIVE,fname);CHKERRQ(ierr);
+    ierr   = PetscViewerPushFormat(viewer,PETSC_VIEWER_FORMAT_NATIVE,fname);CHKERRQ(ierr);
   } else {
     ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
   }
@@ -1865,7 +1864,7 @@ int VecView(Vec vec,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecGetSize"
+#define __FUNC__ "VecGetSize"
 /*@
    VecGetSize - Returns the global number of elements of the vector.
 
@@ -1896,7 +1895,7 @@ int VecGetSize(Vec x,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecGetLocalSize"
+#define __FUNC__ "VecGetLocalSize"
 /*@
    VecGetLocalSize - Returns the number of elements of the vector stored 
    in local memory. This routine may be implementation dependent, so use 
@@ -1929,7 +1928,7 @@ int VecGetLocalSize(Vec x,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecGetOwnershipRange"
+#define __FUNC__ "VecGetOwnershipRange"
 /*@
    VecGetOwnershipRange - Returns the range of indices owned by 
    this processor, assuming that the vectors are laid out with the
@@ -1971,7 +1970,7 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecGetMap"
+#define __FUNC__ "VecGetMap"
 /*@C
    VecGetMap - Returns the map associated with the vector
 
@@ -1998,7 +1997,7 @@ int VecGetMap(Vec x,Map *map)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSetOption"
+#define __FUNC__ "VecSetOption"
 /*@
    VecSetOption - Sets an option for controling a vector's behavior.
 
@@ -2030,7 +2029,7 @@ int VecSetOption(Vec x,VecOption op)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecDuplicateVecs_Default"
+#define __FUNC__ "VecDuplicateVecs_Default"
 /* Default routines for obtaining and releasing; */
 /* may be used by any implementation */
 int VecDuplicateVecs_Default(Vec w,int m,Vec *V[])
@@ -2041,13 +2040,13 @@ int VecDuplicateVecs_Default(Vec w,int m,Vec *V[])
   PetscValidHeaderSpecific(w,VEC_COOKIE);
   PetscValidPointer(V);
   if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %d",m);
-  *V = (Vec*)PetscMalloc(m * sizeof(Vec *));CHKPTRQ(*V);
+  ierr = PetscMalloc(m*sizeof(Vec*),V);CHKERRQ(ierr);
   for (i=0; i<m; i++) {ierr = VecDuplicate(w,*V+i);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecDestroyVecs_Default"
+#define __FUNC__ "VecDestroyVecs_Default"
 int VecDestroyVecs_Default(const Vec v[], int m)
 {
   int i,ierr;
@@ -2061,11 +2060,11 @@ int VecDestroyVecs_Default(const Vec v[], int m)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecPlaceArray"
+#define __FUNC__ "VecPlaceArray"
 /*@
    VecPlaceArray - Allows one to replace the array in a vector with an
    array provided by the user. This is useful to avoid copying an array
-   into a vector.  FOR EXPERTS ONLY!
+   into a vector.
 
    Not Collective
 
@@ -2074,14 +2073,11 @@ int VecDestroyVecs_Default(const Vec v[], int m)
 -  array - the array
 
    Notes:
-   You can back up the original array by calling VecGetArray() followed 
-   by VecRestoreArray() and stashing the value somewhere.  Then when
-   finished using the vector, call VecPlaceArray() with that stashed value;
-   otherwise, you may lose access to the original array.
+   You can return to the original array with a call to VecResetArray()
 
    Level: developer
 
-.seealso: VecGetArray(), VecRestoreArray(), VecReplaceArray()
+.seealso: VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecResetArray()
 
 @*/
 int VecPlaceArray(Vec vec,const Scalar array[])
@@ -2100,11 +2096,42 @@ int VecPlaceArray(Vec vec,const Scalar array[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecReplaceArray"
+#define __FUNC__ "VecResetArray"
+/*@
+   VecResetArray - Resets a vector to use its default memory. Call this 
+   after the use of VecPlaceArray().
+
+   Not Collective
+
+   Input Parameters:
+.  vec - the vector
+
+   Level: developer
+
+.seealso: VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecPlaceArray()
+
+@*/
+int VecResetArray(Vec vec)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  PetscValidType(vec);
+  if (vec->ops->resetarray) {
+    ierr = (*vec->ops->resetarray)(vec);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,"Cannot reset array in this type of vector");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecReplaceArray"
 /*@C
    VecReplaceArray - Allows one to replace the array in a vector with an
    array provided by the user. This is useful to avoid copying an array
-   into a vector.  FOR EXPERTS ONLY!
+   into a vector.
 
    Not Collective
 
@@ -2271,15 +2298,15 @@ M*/
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecLoadIntoVector"
+#define __FUNC__ "VecLoadIntoVector"
 /*@C 
   VecLoadIntoVector - Loads a vector that has been stored in binary format
   with VecView().
 
-  Collective on Viewer 
+  Collective on PetscViewer 
 
   Input Parameters:
-+ viewer - binary file viewer, obtained from ViewerBinaryOpen()
++ viewer - binary file viewer, obtained from PetscViewerBinaryOpen()
 - vec - vector to contain files values (must be of correct length)
 
   Level: intermediate
@@ -2316,14 +2343,14 @@ and PetscWriteBinary() to see how this may be done.
 
    Concepts: vector^loading from file
 
-.seealso: ViewerBinaryOpen(), VecView(), MatLoad(), VecLoad() 
+.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad() 
 @*/  
-int VecLoadIntoVector(Viewer viewer,Vec vec)
+int VecLoadIntoVector(PetscViewer viewer,Vec vec)
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
   PetscValidType(vec);
   if (!vec->ops->loadintovector) {
@@ -2334,7 +2361,7 @@ int VecLoadIntoVector(Viewer viewer,Vec vec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecReciprocal"
+#define __FUNC__ "VecReciprocal"
 /*@
    VecReciprocal - Replaces each component of a vector by its reciprocal.
 
@@ -2366,7 +2393,7 @@ int VecReciprocal(Vec vec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSetOperation"
+#define __FUNC__ "VecSetOperation"
 int VecSetOperation(Vec vec,VecOperation op, void *f)
 {
   PetscFunctionBegin;
@@ -2380,7 +2407,7 @@ int VecSetOperation(Vec vec,VecOperation op, void *f)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSetStashInitialSize"
+#define __FUNC__ "VecSetStashInitialSize"
 /*@
    VecSetStashInitialSize - sets the sizes of the vec-stash, that is
    used during the assembly process to store values that belong to 
@@ -2427,7 +2454,7 @@ int VecSetStashInitialSize(Vec vec,int size,int bsize)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="VecStashView"></a>*/"VecStashView"
+#define __FUNC__ "VecStashView"
 /*@
    VecStashView - Prints the entries in the vector stash and block stash.
 
@@ -2445,7 +2472,7 @@ int VecSetStashInitialSize(Vec vec,int size,int bsize)
 .seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked()
 
 @*/
-int VecStashView(Vec v,Viewer viewer)
+int VecStashView(Vec v,PetscViewer viewer)
 {
   int        ierr,rank,i,j;
   PetscTruth match;
@@ -2453,41 +2480,41 @@ int VecStashView(Vec v,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscCheckSameComm(v,viewer);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&match);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&match);CHKERRQ(ierr);
   if (!match) SETERRQ1(1,"Stash viewer only works with ASCII viewer not %s\n",((PetscObject)v)->type_name);
-  ierr = ViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
   s = &v->bstash;
 
   /* print block stash */
-  ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %d block size %d\n",rank,s->n,s->bs);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %d block size %d\n",rank,s->n,s->bs);CHKERRQ(ierr);
   for (i=0; i<s->n; i++) {
-    ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d ",rank,s->idx[i]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d ",rank,s->idx[i]);CHKERRQ(ierr);
     for (j=0; j<s->bs; j++) {
-      ierr = ViewerASCIISynchronizedPrintf(viewer,"%g ",s->array[i*s->bs+j]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%g ",s->array[i*s->bs+j]);CHKERRQ(ierr);
     }
-    ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
   }
-  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
   s = &v->stash;
 
   /* print basic stash */
-  ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]Vector stash size %d\n",rank,s->n);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector stash size %d\n",rank,s->n);CHKERRQ(ierr);
   for (i=0; i<s->n; i++) {
-    ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d %g\n",rank,s->idx[i],s->array[i]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d %g\n",rank,s->idx[i],s->array[i]);CHKERRQ(ierr);
   }
-  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
-  ierr = ViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecGetArray2d"
+#define __FUNC__ "VecGetArray2d"
 /*@C
    VecGetArray2d - Returns a pointer to a 2d contiguous array that contains this 
    processor's portion of the vector data.  You MUST call VecRestoreArray2d() 
@@ -2534,14 +2561,14 @@ int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
   if (m*n != N) SETERRQ3(1,"Local array size %d does not match 2d array dimensions %d by %d",N,m,n);
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
-  *a = (Scalar **)PetscMalloc(m*sizeof(Scalar*));CHKPTRQ(*a);
+  ierr = PetscMalloc(m*sizeof(Scalar*),a);CHKERRQ(ierr);
   for (i=0; i<m; i++) (*a)[i] = aa + i*n -nstart;
   *a -= mstart;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecRestoreArray2d"
+#define __FUNC__ "VecRestoreArray2d"
 /*@C
    VecRestoreArray2d - Restores a vector after VecGetArray2d() has been called.
 
@@ -2582,7 +2609,7 @@ int VecRestoreArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecGetArray1d"
+#define __FUNC__ "VecGetArray1d"
 /*@C
    VecGetArray1d - Returns a pointer to a 1d contiguous array that contains this 
    processor's portion of the vector data.  You MUST call VecRestoreArray1d() 
@@ -2627,7 +2654,7 @@ int VecGetArray1d(Vec x,int m,int mstart,Scalar *a[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecRestoreArray1d"
+#define __FUNC__ "VecRestoreArray1d"
 /*@C
    VecRestoreArray1d - Restores a vector after VecGetArray1d() has been called.
 
@@ -2667,7 +2694,7 @@ int VecRestoreArray1d(Vec x,int m,int mstart,Scalar *a[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecConjugate"
+#define __FUNC__ "VecConjugate"
 /*@C
    VecConjugate - Conjugates a vector.
 

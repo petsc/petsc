@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.43 2000/05/05 22:19:31 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.44 2000/09/28 21:15:32 bsmith Exp bsmith $*/
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 
@@ -16,39 +16,39 @@ int main(int argc,char **argv)
   PetscTruth     testorder,flg;
   DAPeriodicType wrap = DA_NONPERIODIC;
   DA             da;
-  Viewer         viewer;
+  PetscViewer         viewer;
   Vec            local,global;
   Scalar         value;
   DAStencilType  st = DA_STENCIL_BOX;
   AO             ao;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRA(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRA(ierr);
  
-  /* Read options */
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-xwrap",&flg);CHKERRA(ierr); if (flg)  wrap = DA_XPERIODIC;
-  ierr = OptionsHasName(PETSC_NULL,"-ywrap",&flg);CHKERRA(ierr); if (flg)  wrap = DA_YPERIODIC;
-  ierr = OptionsHasName(PETSC_NULL,"-xywrap",&flg);CHKERRA(ierr); if (flg) wrap = DA_XYPERIODIC;
-  ierr = OptionsHasName(PETSC_NULL,"-star",&flg);CHKERRA(ierr); if (flg)   st = DA_STENCIL_STAR;
-  ierr = OptionsHasName(PETSC_NULL,"-testorder",&testorder);CHKERRA(ierr);
+  /* Readoptions */
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-xwrap",&flg);CHKERRA(ierr); if (flg)  wrap = DA_XPERIODIC;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-ywrap",&flg);CHKERRA(ierr); if (flg)  wrap = DA_YPERIODIC;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-xywrap",&flg);CHKERRA(ierr); if (flg) wrap = DA_XYPERIODIC;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-star",&flg);CHKERRA(ierr); if (flg)   st = DA_STENCIL_STAR;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-testorder",&testorder);CHKERRA(ierr);
   /*
       Test putting two nodes in x and y on each processor, exact last processor 
       in x and y gets the rest.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRA(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRA(1,"Must set -m option with -distribute option");
-    lx = (int*)PetscMalloc(m*sizeof(int));CHKPTRQ(lx);
+ierr = PetscMalloc(m*sizeof(int),&(    lx ));CHKERRQ(ierr);
     for (i=0; i<m-1; i++) { lx[i] = 4;}
     lx[m-1] = M - 4*(m-1);
     if (n == PETSC_DECIDE) SETERRA(1,"Must set -n option with -distribute option");
-    ly = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(lx);
+ierr = PetscMalloc(n*sizeof(int),&(    ly ));CHKERRQ(ierr);
     for (i=0; i<n-1; i++) { ly[i] = 2;}
     ly[n-1] = N - 2*(n-1);
   }
@@ -79,8 +79,8 @@ int main(int argc,char **argv)
 
   if (!testorder) { /* turn off printing when testing ordering mappings */
     ierr = PetscPrintf (PETSC_COMM_WORLD,"\nGlobal Vectors:\n");CHKERRA(ierr);
-    ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_NATIVE,0);CHKERRA(ierr);
-    ierr = VecView(global,VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_NATIVE,0);CHKERRA(ierr);
+    ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
     ierr = PetscPrintf (PETSC_COMM_WORLD,"\n\n");CHKERRA(ierr);
   }
 
@@ -88,13 +88,13 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-local_print",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-local_print",&flg);CHKERRA(ierr);
   if (flg) {
-    Viewer sviewer;
+    PetscViewer sviewer;
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal Vector: processor %d\n",rank);CHKERRA(ierr);
-    ierr = ViewerGetSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
+    ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
     ierr = VecView(local,sviewer);CHKERRA(ierr); 
-    ierr = ViewerRestoreSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
+    ierr = PetscViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
   }
 
   /* Tests mappings betweeen application/PETSc orderings */
@@ -102,7 +102,7 @@ int main(int argc,char **argv)
     ierr = DAGetGhostCorners(da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL);CHKERRA(ierr);
     ierr = DAGetGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
     ierr = DAGetAO(da,&ao);CHKERRA(ierr);
-    iglobal = (int*)PetscMalloc(nloc*sizeof(int));CHKPTRA(iglobal);
+ierr = PetscMalloc(nloc*sizeof(int),&(    iglobal ));CHKPTRA(iglobal);
 
     /* Set iglobal to be global indices for each processor's local and ghost nodes,
        using the DA ordering of grid points */
@@ -140,7 +140,7 @@ int main(int argc,char **argv)
   } 
 
   /* Free memory */
-  ierr = ViewerDestroy(viewer);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
   ierr = VecDestroy(local);CHKERRA(ierr);
   ierr = VecDestroy(global);CHKERRA(ierr);
   ierr = DADestroy(da);CHKERRA(ierr);

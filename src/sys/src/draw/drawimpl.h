@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.29 1999/10/22 23:58:01 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.30 1999/11/24 21:52:46 bsmith Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -8,47 +8,47 @@
 
 #include "petsc.h"
 
-struct _DrawOps {
-  int (*setdoublebuffer)(Draw);
-  int (*flush)(Draw);
-  int (*line)(Draw,double,double,double,double,int);
-  int (*linesetwidth)(Draw,double);
-  int (*linegetwidth)(Draw,double*);
-  int (*point)(Draw,double,double,int);
-  int (*pointsetsize)(Draw,double);
-  int (*string)(Draw,double,double,int,char*);
-  int (*stringvertical)(Draw,double,double,int,char*);
-  int (*stringsetsize)(Draw,double,double);
-  int (*stringgetsize)(Draw,double*,double*);
-  int (*setviewport)(Draw,double,double,double,double);
-  int (*clear)(Draw);
-  int (*synchronizedflush)(Draw);
-  int (*rectangle)(Draw,double,double,double,double,int,int,int,int);
-  int (*triangle)(Draw,double,double,double,double,double,double,int,int,int);
-  int (*getmousebutton)(Draw,DrawButton*,double *,double *,double*,double*);
-  int (*pause)(Draw);
-  int (*synchronizedclear)(Draw);
-  int (*beginpage)(Draw);
-  int (*endpage)(Draw);
-  int (*getpopup)(Draw,Draw*);
-  int (*settitle)(Draw,char *);
-  int (*checkresizedwindow)(Draw);
-  int (*resizewindow)(Draw,int,int);
-  int (*destroy)(Draw);
-  int (*view)(Draw,Viewer);
-  int (*getsingleton)(Draw,Draw*);
-  int (*restoresingleton)(Draw,Draw*);
-  int (*setcoordinates)(Draw,double,double,double,double);
+struct _PetscDrawOps {
+  int (*setdoublebuffer)(PetscDraw);
+  int (*flush)(PetscDraw);
+  int (*line)(PetscDraw,double,double,double,double,int);
+  int (*linesetwidth)(PetscDraw,double);
+  int (*linegetwidth)(PetscDraw,double*);
+  int (*point)(PetscDraw,double,double,int);
+  int (*pointsetsize)(PetscDraw,double);
+  int (*string)(PetscDraw,double,double,int,char*);
+  int (*stringvertical)(PetscDraw,double,double,int,char*);
+  int (*stringsetsize)(PetscDraw,double,double);
+  int (*stringgetsize)(PetscDraw,double*,double*);
+  int (*setviewport)(PetscDraw,double,double,double,double);
+  int (*clear)(PetscDraw);
+  int (*synchronizedflush)(PetscDraw);
+  int (*rectangle)(PetscDraw,double,double,double,double,int,int,int,int);
+  int (*triangle)(PetscDraw,double,double,double,double,double,double,int,int,int);
+  int (*getmousebutton)(PetscDraw,PetscDrawButton*,double *,double *,double*,double*);
+  int (*pause)(PetscDraw);
+  int (*synchronizedclear)(PetscDraw);
+  int (*beginpage)(PetscDraw);
+  int (*endpage)(PetscDraw);
+  int (*getpopup)(PetscDraw,PetscDraw*);
+  int (*settitle)(PetscDraw,char *);
+  int (*checkresizedwindow)(PetscDraw);
+  int (*resizewindow)(PetscDraw,int,int);
+  int (*destroy)(PetscDraw);
+  int (*view)(PetscDraw,PetscViewer);
+  int (*getsingleton)(PetscDraw,PetscDraw*);
+  int (*restoresingleton)(PetscDraw,PetscDraw*);
+  int (*setcoordinates)(PetscDraw,double,double,double,double);
 };
 
-struct _p_Draw {
-  PETSCHEADER(struct _DrawOps)
+struct _p_PetscDraw {
+  PETSCHEADER(struct _PetscDrawOps)
   int             pause;       /* sleep time after a synchronized flush */
   double          port_xl,port_yl,port_xr,port_yr;
   double          coor_xl,coor_yl,coor_xr,coor_yr;
   char            *title;
   char            *display;
-  Draw            popup;
+  PetscDraw       popup;
   int             x,y,h,w;
   void            *data;
 };

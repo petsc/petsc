@@ -1,5 +1,5 @@
 !
-!      "$Id: ex2f.F,v 1.17 2000/09/27 20:05:52 bsmith Exp bsmith $";
+!      "$Id: ex2f.F,v 1.18 2000/10/24 20:24:55 bsmith Exp bsmith $";
 !
 !/*T
 !    Concepts: index sets^manipulating a stride index set;
@@ -32,7 +32,7 @@
 !    (in this case they are all identical)
 
       call ISCreateStride(PETSC_COMM_SELF,n,first,step,set,ierr)
-      call ISView(set,VIEWER_STDOUT_SELF,ierr)
+      call ISView(set,PETSC_VIEWER_STDOUT_SELF,ierr)
 
 !  Extract the indice values from the set. Demonstrates how a Fortran code can  
 !  directly access the array storing a PETSc index set with ISGetIndices().  

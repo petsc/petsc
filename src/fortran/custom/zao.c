@@ -1,4 +1,4 @@
-/*$Id: zao.c,v 1.16 2000/05/04 16:27:10 bsmith Exp balay $*/
+/*$Id: zao.c,v 1.17 2000/05/05 22:26:47 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscao.h"
@@ -15,9 +15,9 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL aoview_(AO *ao,Viewer *viewer, int *ierr)
+void PETSC_STDCALL aoview_(AO *ao,PetscViewer *viewer, int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = AOView(*ao,v);
 }

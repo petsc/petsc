@@ -1,4 +1,4 @@
-/* $Id: dlregis.h,v 1.5 2000/04/09 04:34:47 bsmith Exp bsmith $ */
+/* $Id: dlregis.h,v 1.6 2000/04/12 04:21:38 bsmith Exp bsmith $ */
 /*
    This file is included by all the dlregis.c files to provide common information
    on the PETSC team.
@@ -10,8 +10,8 @@ static char *version = PETSC_VERSION_NUMBER;
 EXTERN_C_BEGIN
 /* --------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DLLibraryInfo"
-int DLLibraryInfo(char *path,char *type,char **mess) 
+#define __FUNC__ "PetscDLLibraryInfo"
+int PetscDLLibraryInfo(char *path,char *type,char **mess) 
 {
   PetscTruth iscon,isaut,isver;
   int        ierr;

@@ -1,4 +1,4 @@
-/*$Id: PetscGetTime.c,v 1.12 2000/01/11 21:03:44 bsmith Exp bsmith $*/
+/*$Id: PetscGetTime.c,v 1.13 2000/11/28 17:32:38 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -6,7 +6,7 @@
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  PLogDouble x,y;
+  PetscLogDouble x,y;
   int        i,ierr;
   
   PetscInitialize(&argc,&argv,0,0);

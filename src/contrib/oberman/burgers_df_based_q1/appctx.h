@@ -1,4 +1,4 @@
-/*$Id: appctx.h,v 1.7 2000/05/05 22:19:55 balay Exp balay $*/
+/*$Id: appctx.h,v 1.8 2000/05/08 15:09:37 balay Exp bsmith $*/
 /*
     Defines some simple data structures for writing cell (element) based PDE codes.
 
@@ -86,8 +86,8 @@ typedef struct {
 */
 
 typedef struct {
-  Draw       drawlocal;
-  Draw       drawglobal;
+  PetscDraw       drawlocal;
+  PetscDraw       drawglobal;
   PetscTruth matlabgraphics;
   PetscTruth show_grid;
   PetscTruth show_solution;
@@ -156,8 +156,8 @@ typedef struct {
 
 /*-------------------------------------------------------------*/
 
-extern int AppCtxView(Draw,void*);
-extern int AppCtxViewSolution(Draw,void*);
+extern int AppCtxView(PetscDraw,void*);
+extern int AppCtxViewSolution(PetscDraw,void*);
 extern int AppCtxCreate(MPI_Comm,AppCtx **);
 extern int AppCtxDestroy(AppCtx *);
 extern int AppCtxSetLocal(AppCtx *);

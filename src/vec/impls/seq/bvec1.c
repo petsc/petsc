@@ -1,4 +1,4 @@
-/*$Id: bvec1.c,v 1.36 2000/04/12 04:22:20 bsmith Exp balay $*/
+/*$Id: bvec1.c,v 1.37 2000/08/16 15:15:26 balay Exp bsmith $*/
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -10,7 +10,7 @@
 #include "petscblaslapack.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecDot_Seq"
+#define __FUNC__ "VecDot_Seq"
 int VecDot_Seq(Vec xin,Vec yin,Scalar *z)
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
@@ -33,12 +33,12 @@ int VecDot_Seq(Vec xin,Vec yin,Scalar *z)
 #else
   *z = BLdot_(&xin->n,x->array,&one,y->array,&one);
 #endif
-  PLogFlops(2*xin->n-1);
+  PetscLogFlops(2*xin->n-1);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecTDot_Seq"
+#define __FUNC__ "VecTDot_Seq"
 int VecTDot_Seq(Vec xin,Vec yin,Scalar *z)
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
@@ -59,12 +59,12 @@ int VecTDot_Seq(Vec xin,Vec yin,Scalar *z)
 #else
   *z = BLdot_(&xin->n,x->array,&one,y->array,&one);
 #endif
-  PLogFlops(2*xin->n-1);
+  PetscLogFlops(2*xin->n-1);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecScale_Seq"
+#define __FUNC__ "VecScale_Seq"
 int VecScale_Seq(const Scalar *alpha,Vec xin)
 {
   Vec_Seq *x = (Vec_Seq*)xin->data;
@@ -72,12 +72,12 @@ int VecScale_Seq(const Scalar *alpha,Vec xin)
 
   PetscFunctionBegin;
   BLscal_(&xin->n,(Scalar *)alpha,x->array,&one);
-  PLogFlops(xin->n);
+  PetscLogFlops(xin->n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecCopy_Seq"
+#define __FUNC__ "VecCopy_Seq"
 int VecCopy_Seq(Vec xin,Vec yin)
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
@@ -91,7 +91,7 @@ int VecCopy_Seq(Vec xin,Vec yin)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSwap_Seq"
+#define __FUNC__ "VecSwap_Seq"
 int VecSwap_Seq(Vec xin,Vec yin)
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
@@ -103,7 +103,7 @@ int VecSwap_Seq(Vec xin,Vec yin)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecAXPY_Seq"
+#define __FUNC__ "VecAXPY_Seq"
 int VecAXPY_Seq(const Scalar *alpha,Vec xin,Vec yin)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -114,12 +114,12 @@ int VecAXPY_Seq(const Scalar *alpha,Vec xin,Vec yin)
   ierr = VecGetArray(yin,&yarray);CHKERRQ(ierr);
   BLaxpy_(&xin->n,(Scalar *)alpha,x->array,&one,yarray,&one);
   ierr = VecRestoreArray(yin,&yarray);CHKERRQ(ierr);
-  PLogFlops(2*xin->n);
+  PetscLogFlops(2*xin->n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecAXPBY_Seq"
+#define __FUNC__ "VecAXPBY_Seq"
 int VecAXPBY_Seq(const Scalar *alpha,const Scalar *beta,Vec xin,Vec yin)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
@@ -131,7 +131,7 @@ int VecAXPBY_Seq(const Scalar *alpha,const Scalar *beta,Vec xin,Vec yin)
     yy[i] = a*xx[i] + b*yy[i];
   }
 
-  PLogFlops(3*xin->n);
+  PetscLogFlops(3*xin->n);
   PetscFunctionReturn(0);
 }
 

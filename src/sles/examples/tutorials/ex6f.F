@@ -1,5 +1,5 @@
 !
-!    "$Id: ex6f.F,v 1.31 2000/09/27 20:09:29 bsmith Exp bsmith $";
+!    "$Id: ex6f.F,v 1.32 2000/11/01 16:02:26 bsmith Exp bsmith $";
 !
 !  Description: This example demonstrates repeated linear solves as
 !  well as the use of different preconditioner and linear system
@@ -50,9 +50,9 @@
       m      = 3
       n      = 3
       nsteps = 2
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-nsteps',nsteps,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-nsteps',nsteps,flg,ierr)
 
 !  Create parallel matrix, specifying only its global dimensions.
 !  When using MatCreate(), the matrix format can be specified at
@@ -177,7 +177,7 @@
       if (count .eq. 1) then
         call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
         pflag = 0
-        call OptionsHasName(PETSC_NULL_CHARACTER,'-mat_view',pflag,ierr)
+        call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-mat_view',pflag,ierr)
         if (pflag .ne. 0) then
           if (rank .eq. 0) write(6,100)
         endif

@@ -1,4 +1,4 @@
-/*$Id: aobasic.c,v 1.56 2000/08/01 20:57:55 bsmith Exp bsmith $*/
+/*$Id: aobasic.c,v 1.57 2000/09/28 21:15:12 bsmith Exp bsmith $*/
 
 /*
     The most basic AO application ordering routines. These store the 
@@ -15,7 +15,7 @@ typedef struct {
 } AO_Basic;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AOBasicGetIndices_Private" 
+#define __FUNC__ "AOBasicGetIndices_Private" 
 int AOBasicGetIndices_Private(AO ao,int **app,int **petsc)
 {
   AO_Basic *basic = (AO_Basic*)ao->data;
@@ -27,7 +27,7 @@ int AOBasicGetIndices_Private(AO ao,int **app,int **petsc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODestroy_Basic" 
+#define __FUNC__ "AODestroy_Basic" 
 int AODestroy_Basic(AO ao)
 {
   AO_Basic *aodebug = (AO_Basic*)ao->data;
@@ -36,7 +36,7 @@ int AODestroy_Basic(AO ao)
   PetscFunctionBegin;
   ierr = PetscFree(aodebug->app);CHKERRQ(ierr);
   PetscFree(ao->data); 
-  PLogObjectDestroy(ao);
+  PetscLogObjectDestroy(ao);
   PetscHeaderDestroy(ao);
   PetscFunctionReturn(0);
 }
@@ -45,8 +45,8 @@ int AODestroy_Basic(AO ao)
        All processors have the same data so processor 1 prints it
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AOView_Basic" 
-int AOView_Basic(AO ao,Viewer viewer)
+#define __FUNC__ "AOView_Basic" 
+int AOView_Basic(AO ao,PetscViewer viewer)
 {
   int        rank,ierr,i;
   AO_Basic   *aodebug = (AO_Basic*)ao->data;
@@ -55,23 +55,23 @@ int AOView_Basic(AO ao,Viewer viewer)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(ao->comm,&rank);CHKERRQ(ierr);
   if (!rank){
-    ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
     if (isascii) { 
-      ierr = ViewerASCIIPrintf(viewer,"Number of elements in ordering %d\n",aodebug->N);CHKERRQ(ierr);
-      ierr = ViewerASCIIPrintf(viewer,"   App.   PETSc\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %d\n",aodebug->N);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"   App.   PETSc\n");CHKERRQ(ierr);
       for (i=0; i<aodebug->N; i++) {
-        ierr = ViewerASCIIPrintf(viewer,"%d   %d    %d\n",i,aodebug->app[i],aodebug->petsc[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%d   %d    %d\n",i,aodebug->app[i],aodebug->petsc[i]);CHKERRQ(ierr);
       }
     } else {
       SETERRQ1(1,"Viewer type %s not supported for AOData basic",((PetscObject)viewer)->type_name);
     }
   }
-  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AOPetscToApplication_Basic"  
+#define __FUNC__ "AOPetscToApplication_Basic"  
 int AOPetscToApplication_Basic(AO ao,int n,int *ia)
 {
   int      i;
@@ -85,7 +85,7 @@ int AOPetscToApplication_Basic(AO ao,int n,int *ia)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AOApplicationToPetsc_Basic" 
+#define __FUNC__ "AOApplicationToPetsc_Basic" 
 int AOApplicationToPetsc_Basic(AO ao,int n,int *ia)
 {
   int      i;
@@ -102,7 +102,7 @@ static struct _AOOps myops = {AOPetscToApplication_Basic,
                               AOApplicationToPetsc_Basic};
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AOCreateBasic" 
+#define __FUNC__ "AOCreateBasic" 
 /*@C
    AOCreateBasic - Creates a basic application ordering using two integer arrays.
 
@@ -138,9 +138,9 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   PetscFunctionBegin;
   *aoout = 0;
   PetscHeaderCreate(ao,_p_AO,struct _AOOps,AO_COOKIE,AO_BASIC,"AO",comm,AODestroy,AOView); 
-  PLogObjectCreate(ao);
-  aodebug            = PetscNew(AO_Basic);
-  PLogObjectMemory(ao,sizeof(struct _p_AO) + sizeof(AO_Basic));
+  PetscLogObjectCreate(ao);
+  ierr = PetscNew(AO_Basic,&aodebug);CHKERRQ(ierr);
+  PetscLogObjectMemory(ao,sizeof(struct _p_AO) + sizeof(AO_Basic));
 
   ierr             = PetscMemcpy(ao->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ao->ops->destroy = AODestroy_Basic;
@@ -150,7 +150,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   /* transmit all lengths to all processors */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  lens = (int*)PetscMalloc(2*size*sizeof(int));CHKPTRQ(lens);
+ierr = PetscMalloc(2*size*sizeof(int),&(  lens ));CHKERRQ(ierr);
   disp = lens + size;
   ierr = MPI_Allgather(&napp,1,MPI_INT,lens,1,MPI_INT,comm);CHKERRQ(ierr);
   N =  0;
@@ -165,7 +165,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   */
   if (!mypetsc) {
     start = disp[rank];
-    petsc = (int*)PetscMalloc((napp+1)*sizeof(int));CHKPTRQ(petsc);
+ierr = PetscMalloc((napp+1)*sizeof(int),&    petsc );CHKERRQ(ierr);
     for (i=0; i<napp; i++) {
       petsc[i] = start + i;
     }
@@ -174,15 +174,15 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   }
 
   /* get all indices on all processors */
-  allpetsc = (int*)PetscMalloc(2*N*sizeof(int));CHKPTRQ(allpetsc);
+ierr = PetscMalloc(2*N*sizeof(int),&(  allpetsc ));CHKERRQ(ierr);
   allapp   = allpetsc + N;
   ierr = MPI_Allgatherv(petsc,napp,MPI_INT,allpetsc,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
   ierr = MPI_Allgatherv(myapp,napp,MPI_INT,allapp,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
   ierr = PetscFree(lens);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
-  aodebug->app   = (int*)PetscMalloc(2*N*sizeof(int));CHKPTRQ(aodebug->app);
-  PLogObjectMemory(ao,2*N*sizeof(int));
+ierr = PetscMalloc(2*N*sizeof(int),&(  aodebug->app   ));CHKERRQ(ierr);
+  PetscLogObjectMemory(ao,2*N*sizeof(int));
   aodebug->petsc = aodebug->app + N;
   ierr           = PetscMemzero(aodebug->app,2*N*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<N; i++) {
@@ -201,14 +201,14 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
     aodebug->petsc[i]--;
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-ao_view",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = AOView(ao,VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+  ierr = PetscOptionsHasName(PETSC_NULL,"-ao_view",&flg1);CHKERRQ(ierr);
+  if (flg1) {ierr = AOView(ao,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
 
   *aoout = ao; PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AOCreateBasicIS" 
+#define __FUNC__ "AOCreateBasicIS" 
 /*@C
    AOCreateBasicIS - Creates a basic application ordering using two index sets.
 

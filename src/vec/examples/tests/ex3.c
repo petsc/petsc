@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.46 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.47 2000/09/28 21:10:28 bsmith Exp bsmith $*/
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
   -n <length> : local vector length\n\n";
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   int          idx;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   if (n < 5) n = 5;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(y);CHKERRA(ierr);
   ierr = VecAssemblyEnd(y);CHKERRA(ierr);
 
-  ierr = VecView(y,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(y);CHKERRA(ierr);

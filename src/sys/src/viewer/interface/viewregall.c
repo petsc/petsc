@@ -1,40 +1,40 @@
-/*$Id: viewregall.c,v 1.14 2000/07/10 03:38:34 bsmith Exp bsmith $*/
+/*$Id: viewregall.c,v 1.15 2000/09/22 20:41:53 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 EXTERN_C_BEGIN
-EXTERN int ViewerCreate_Socket(Viewer);
-EXTERN int ViewerCreate_ASCII(Viewer);
-EXTERN int ViewerCreate_Binary(Viewer);
-EXTERN int ViewerCreate_String(Viewer);
-EXTERN int ViewerCreate_Draw(Viewer);
-EXTERN int ViewerCreate_AMS(Viewer);
+EXTERN int PetscViewerCreate_Socket(PetscViewer);
+EXTERN int PetscViewerCreate_ASCII(PetscViewer);
+EXTERN int PetscViewerCreate_Binary(PetscViewer);
+EXTERN int PetscViewerCreate_String(PetscViewer);
+EXTERN int PetscViewerCreate_Draw(PetscViewer);
+EXTERN int PetscViewerCreate_AMS(PetscViewer);
 EXTERN_C_END
   
 #undef __FUNC__  
-#define __FUNC__ /*<a name=ViewerRegisterAll""></a>*/"ViewerRegisterAll" 
+#define __FUNC__ /*<a name=ViewerRegisterAll""></a>*/"PetscViewerRegisterAll" 
 /*@C
-  ViewerRegisterAll - Registers all of the graphics methods in the Viewer package.
+  PetscViewerRegisterAll - Registers all of the graphics methods in the PetscViewer package.
 
   Not Collective
 
    Level: developer
 
-.seealso:  ViewerRegisterDestroy()
+.seealso:  PetscViewerRegisterDestroy()
 @*/
-int ViewerRegisterAll(char *path)
+int PetscViewerRegisterAll(char *path)
 {
   int ierr;
 
   PetscFunctionBegin;
   
-  ierr = ViewerRegisterDynamic(ASCII_VIEWER,    path,"ViewerCreate_ASCII",      ViewerCreate_ASCII);CHKERRQ(ierr);
-  ierr = ViewerRegisterDynamic(BINARY_VIEWER,   path,"ViewerCreate_Binary",     ViewerCreate_Binary);CHKERRQ(ierr);
-  ierr = ViewerRegisterDynamic(STRING_VIEWER,   path,"ViewerCreate_String",     ViewerCreate_String);CHKERRQ(ierr);
-  ierr = ViewerRegisterDynamic(DRAW_VIEWER,     path,"ViewerCreate_Draw",       ViewerCreate_Draw);CHKERRQ(ierr);
-  ierr = ViewerRegisterDynamic(SOCKET_VIEWER,   path,"ViewerCreate_Socket",     ViewerCreate_Socket);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_ASCII,    path,"PetscViewerCreate_ASCII",      PetscViewerCreate_ASCII);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterDynamic(PETSC_BINARY_VIEWER,   path,"PetscViewerCreate_Binary",     PetscViewerCreate_Binary);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_STRING,   path,"PetscViewerCreate_String",     PetscViewerCreate_String);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterDynamic(PETSC_DRAW_VIEWER,     path,"PetscViewerCreate_Draw",       PetscViewerCreate_Draw);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_SOCKET,   path,"PetscViewerCreate_Socket",     PetscViewerCreate_Socket);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
-  ierr = ViewerRegisterDynamic(AMS_VIEWER,      path,"ViewerCreate_AMS",        ViewerCreate_AMS);CHKERRQ(ierr); 
+  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_AMS,      path,"PetscViewerCreate_AMS",        PetscViewerCreate_AMS);CHKERRQ(ierr); 
 #endif
   PetscFunctionReturn(0);
 }

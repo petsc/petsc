@@ -1,4 +1,4 @@
-/*$Id: cholesky.c,v 1.6 2000/09/26 16:46:48 balay Exp bsmith $*/
+/*$Id: cholesky.c,v 1.7 2000/09/28 21:13:03 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -19,7 +19,7 @@ typedef struct {
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCholeskySetReuseOrdering_Cholesky"></a>*/"PCCholeskySetReuseOrdering_Cholesky"
+#define __FUNC__ "PCCholeskySetReuseOrdering_Cholesky"
 int PCCholeskySetReuseOrdering_Cholesky(PC pc,PetscTruth flag)
 {
   PC_Cholesky *lu;
@@ -33,7 +33,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCholeskySetReuseFill_Cholesky"></a>*/"PCCholeskySetReuseFill_Cholesky"
+#define __FUNC__ "PCCholeskySetReuseFill_Cholesky"
 int PCCholeskySetReuseFill_Cholesky(PC pc,PetscTruth flag)
 {
   PC_Cholesky *lu;
@@ -46,69 +46,69 @@ int PCCholeskySetReuseFill_Cholesky(PC pc,PetscTruth flag)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCSetFromOptions_Cholesky"></a>*/"PCSetFromOptions_Cholesky"
+#define __FUNC__ "PCSetFromOptions_Cholesky"
 static int PCSetFromOptions_Cholesky(PC pc)
 {
   PC_Cholesky      *lu = (PC_Cholesky*)pc->data;
   int        ierr;
   PetscTruth flg;
   char       tname[256];
-  FList      ordlist;
+  PetscFList      ordlist;
   
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsHead("Cholesky options");CHKERRQ(ierr);
-  ierr = OptionsName("-pc_cholesky_in_place","Form Cholesky in the same memory as the matrix","PCCholeskySetUseInPlace",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("Cholesky options");CHKERRQ(ierr);
+  ierr = PetscOptionsName("-pc_cholesky_in_place","Form Cholesky in the same memory as the matrix","PCCholeskySetUseInPlace",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCCholeskySetUseInPlace(pc);CHKERRQ(ierr);
   }
-  ierr = OptionsDouble("-pc_cholesky_fill","Expected non-zeros in Cholesky/non-zeros in matrix","PCCholeskySetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
+  ierr = PetscOptionsDouble("-pc_cholesky_fill","Expected non-zeros in Cholesky/non-zeros in matrix","PCCholeskySetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
   
-  ierr = OptionsName("-pc_cholesky_reuse_fill","Use fill from previous factorization","PCCholeskySetReuseFill",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-pc_cholesky_reuse_fill","Use fill from previous factorization","PCCholeskySetReuseFill",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCCholeskySetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ierr = OptionsName("-pc_cholesky_reuse_ordering","Reuse ordering from previous factorization","PCCholeskySetReuseOrdering",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-pc_cholesky_reuse_ordering","Reuse ordering from previous factorization","PCCholeskySetReuseOrdering",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCCholeskySetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
   
   ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-  ierr = OptionsList("-pc_cholesky_mat_ordering_type","Reordering to reduce nonzeros in Cholesky","PCCholeskySetMatOrdering",ordlist,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-pc_cholesky_mat_ordering_type","Reordering to reduce nonzeros in Cholesky","PCCholeskySetMatOrdering",ordlist,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCCholeskySetMatOrdering(pc,tname);CHKERRQ(ierr);
   }
-  ierr = OptionsDouble("-pc_cholesky_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,0,0);CHKERRQ(ierr);
+  ierr = PetscOptionsDouble("-pc_cholesky_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,0,0);CHKERRQ(ierr);
   
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCView_Cholesky"></a>*/"PCView_Cholesky"
-static int PCView_Cholesky(PC pc,Viewer viewer)
+#define __FUNC__ "PCView_Cholesky"
+static int PCView_Cholesky(PC pc,PetscViewer viewer)
 {
   PC_Cholesky      *lu = (PC_Cholesky*)pc->data;
   int        ierr;
   PetscTruth isascii,isstring;
   
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
     MatInfo info;
     
-    if (lu->inplace) {ierr = ViewerASCIIPrintf(viewer,"  Cholesky: in-place factorization\n");CHKERRQ(ierr);}
-    else             {ierr = ViewerASCIIPrintf(viewer,"  Cholesky: out-of-place factorization\n");CHKERRQ(ierr);}
-    ierr = ViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",lu->ordering);CHKERRQ(ierr);
+    if (lu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: in-place factorization\n");CHKERRQ(ierr);}
+    else             {ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: out-of-place factorization\n");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",lu->ordering);CHKERRQ(ierr);
     if (lu->fact) {
       ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
-      ierr = ViewerASCIIPrintf(viewer,"    Cholesky nonzeros %g\n",info.nz_used);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"    Cholesky nonzeros %g\n",info.nz_used);CHKERRQ(ierr);
     }
-    if (lu->reusefill)    {ierr = ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
-    if (lu->reuseordering) {ierr = ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
+    if (lu->reusefill)    {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
+    if (lu->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
   } else if (isstring) {
-    ierr = ViewerStringSPrintf(viewer," order=%s",lu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," order=%s",lu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for PCCholesky",((PetscObject)viewer)->type_name);
   }
@@ -116,7 +116,7 @@ static int PCView_Cholesky(PC pc,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCGetFactoredMatrix_Cholesky"></a>*/"PCGetFactoredMatrix_Cholesky"
+#define __FUNC__ "PCGetFactoredMatrix_Cholesky"
 static int PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
@@ -128,7 +128,7 @@ static int PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCSetUp_Cholesky"></a>*/"PCSetUp_Cholesky"
+#define __FUNC__ "PCSetUp_Cholesky"
 static int PCSetUp_Cholesky(PC pc)
 {
   int        ierr;
@@ -144,7 +144,7 @@ static int PCSetUp_Cholesky(PC pc)
     ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
     if (dir->col && dir->row != dir->col) 
       {ierr = ISDestroy(dir->col);CHKERRQ(ierr); dir->col=0;} /* only use row ordering for SBAIJ */
-    if (dir->row) {PLogObjectParent(pc,dir->row);}
+    if (dir->row) {PetscLogObjectParent(pc,dir->row);}
     ierr = MatCholeskyFactor(pc->pmat,dir->row,dir->info.fill);CHKERRQ(ierr);
     dir->fact = pc->pmat;
   } else {
@@ -153,17 +153,17 @@ static int PCSetUp_Cholesky(PC pc)
       ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
       if (dir->col && dir->row != dir->col) 
          {ierr = ISDestroy(dir->col);CHKERRQ(ierr); dir->col=0;} /* only use row ordering for SBAIJ */
-      ierr = OptionsHasName(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
         PetscReal tol = 1.e-10;
-        ierr = OptionsGetDouble(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetDouble(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->row);CHKERRQ(ierr);
       }
-      if (dir->row) {PLogObjectParent(pc,dir->row);}
+      if (dir->row) {PetscLogObjectParent(pc,dir->row);}
       ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,dir->info.fill,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
-      PLogObjectParent(pc,dir->fact);
+      PetscLogObjectParent(pc,dir->fact);
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!dir->reuseordering) {
         if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
@@ -171,19 +171,19 @@ static int PCSetUp_Cholesky(PC pc)
         ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
         if (dir->col && dir->row != dir->col)
           {ierr = ISDestroy(dir->col);CHKERRQ(ierr); dir->col=0;} /* only use row ordering for SBAIJ */
-        ierr = OptionsHasName(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
+        ierr = PetscOptionsHasName(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
         if (flg) {
           PetscReal tol = 1.e-10;
-          ierr = OptionsGetDouble(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
+          ierr = PetscOptionsGetDouble(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->row);CHKERRQ(ierr);
         }
-        if (dir->row) {PLogObjectParent(pc,dir->row);}
+        if (dir->row) {PetscLogObjectParent(pc,dir->row);}
       }
       ierr = MatDestroy(dir->fact);CHKERRQ(ierr);
       ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,dir->info.fill,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
-      PLogObjectParent(pc,dir->fact);
+      PetscLogObjectParent(pc,dir->fact);
     }
     ierr = MatCholeskyFactorNumeric(pc->pmat,&dir->fact);CHKERRQ(ierr);
   }
@@ -191,7 +191,7 @@ static int PCSetUp_Cholesky(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCDestroy_Cholesky"></a>*/"PCDestroy_Cholesky"
+#define __FUNC__ "PCDestroy_Cholesky"
 static int PCDestroy_Cholesky(PC pc)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
@@ -207,7 +207,7 @@ static int PCDestroy_Cholesky(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCApply_Cholesky"></a>*/"PCApply_Cholesky"
+#define __FUNC__ "PCApply_Cholesky"
 static int PCApply_Cholesky(PC pc,Vec x,Vec y)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
@@ -220,7 +220,7 @@ static int PCApply_Cholesky(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCApplyTranspose_Cholesky"></a>*/"PCApplyTranspose_Cholesky"
+#define __FUNC__ "PCApplyTranspose_Cholesky"
 static int PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
@@ -236,7 +236,7 @@ static int PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCholeskySetFill_Cholesky"></a>*/"PCCholeskySetFill_Cholesky"
+#define __FUNC__ "PCCholeskySetFill_Cholesky"
 int PCCholeskySetFill_Cholesky(PC pc,PetscReal fill)
 {
   PC_Cholesky *dir;
@@ -250,7 +250,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCholeskySetDamping_Cholesky"></a>*/"PCCholeskySetDamping_Cholesky"
+#define __FUNC__ "PCCholeskySetDamping_Cholesky"
 int PCCholeskySetDamping_Cholesky(PC pc,PetscReal damping)
 {
   PC_Cholesky *dir;
@@ -265,7 +265,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCholeskySetUseInPlace_Cholesky"></a>*/"PCCholeskySetUseInPlace_Cholesky"
+#define __FUNC__ "PCCholeskySetUseInPlace_Cholesky"
 int PCCholeskySetUseInPlace_Cholesky(PC pc)
 {
   PC_Cholesky *dir;
@@ -279,7 +279,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCholeskySetMatOrdering_Cholesky"></a>*/"PCCholeskySetMatOrdering_Cholesky"
+#define __FUNC__ "PCCholeskySetMatOrdering_Cholesky"
 int PCCholeskySetMatOrdering_Cholesky(PC pc,MatOrderingType ordering)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
@@ -295,7 +295,7 @@ EXTERN_C_END
 /* -----------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCholeskySetReuseOrdering"></a>*/"PCCholeskySetReuseOrdering"
+#define __FUNC__ "PCCholeskySetReuseOrdering"
 /*@
    PCCholeskySetReuseOrdering - When similar matrices are factored, this
    causes the ordering computed in the first factor to be used for all
@@ -330,7 +330,7 @@ int PCCholeskySetReuseOrdering(PC pc,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCholeskySetReuseFill"></a>*/"PCCholeskySetReuseFill"
+#define __FUNC__ "PCCholeskySetReuseFill"
 /*@
    PCCholeskySetReuseFill - When matrices with same nonzero structure are Cholesky factored,
    this causes later ones to use the fill computed in the initial factorization.
@@ -364,7 +364,7 @@ int PCCholeskySetReuseFill(PC pc,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCholeskySetFill"></a>*/"PCCholeskySetFill"
+#define __FUNC__ "PCCholeskySetFill"
 /*@
    PCCholeskySetFill - Indicates the amount of fill you expect in the factored matrix,
    fill = number nonzeros in factor/number nonzeros in original matrix.
@@ -405,7 +405,7 @@ int PCCholeskySetFill(PC pc,PetscReal fill)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCholeskySetDamping"></a>*/"PCCholeskySetDamping"
+#define __FUNC__ "PCCholeskySetDamping"
 /*@
    PCCholeskySetDamping - Adds this quantity to the diagonal of the matrix during the 
    Cholesky numerical factorization.
@@ -439,7 +439,7 @@ int PCCholeskySetDamping(PC pc,PetscReal damping)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCholeskySetUseInPlace"></a>*/"PCCholeskySetUseInPlace"
+#define __FUNC__ "PCCholeskySetUseInPlace"
 /*@
    PCCholeskySetUseInPlace - Tells the system to do an in-place factorization.
    For dense matrices, this enables the solution of much larger problems. 
@@ -484,7 +484,7 @@ int PCCholeskySetUseInPlace(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCholeskySetMatOrdering"></a>*/"PCCholeskySetMatOrdering"
+#define __FUNC__ "PCCholeskySetMatOrdering"
 /*@
     PCCholeskySetMatOrdering - Sets the ordering routine (to reduce fill) to 
     be used it the Cholesky factorization.
@@ -518,14 +518,15 @@ int PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCreate_Cholesky"></a>*/"PCCreate_Cholesky"
+#define __FUNC__ "PCCreate_Cholesky"
 int PCCreate_Cholesky(PC pc)
 {
-  int   ierr;
-  PC_Cholesky *dir     = PetscNew(PC_Cholesky);CHKPTRQ(dir);
+  int         ierr;
+  PC_Cholesky *dir;
 
   PetscFunctionBegin;
-  PLogObjectMemory(pc,sizeof(PC_Cholesky));
+  ierr = PetscNew(PC_Cholesky,&dir);CHKERRQ(ierr);
+  PetscLogObjectMemory(pc,sizeof(PC_Cholesky));
 
   dir->fact             = 0;
   dir->inplace          = 0;

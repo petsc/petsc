@@ -1,9 +1,9 @@
-/*$Id: arch.c,v 1.41 2000/05/24 18:09:54 balay Exp bsmith $*/
+/*$Id: arch.c,v 1.42 2000/09/22 20:42:32 bsmith Exp bsmith $*/
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "petscsys.h"           /*I  "petscsys.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscGetArchType"
+#define __FUNC__ "PetscGetArchType"
 /*@C
      PetscGetArchType - Returns a standardized architecture type for the machine
      that is executing this routine. 

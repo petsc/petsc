@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.66 2000/09/28 21:13:05 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.67 2000/10/24 20:26:38 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -46,18 +46,18 @@ int main(int Argc,char **Args)
 
   PetscInitialize(&Argc,&Args,(char *)0,help);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-x",&x_mesh,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-l",&levels,PETSC_NULL);CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-c",&cycles,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-smooths",&smooths,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-a",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-x",&x_mesh,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-l",&levels,PETSC_NULL);CHKERRA(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-c",&cycles,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-smooths",&smooths,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-a",&flg);CHKERRA(ierr);
   if (flg) {am = MGADDITIVE;}
-  ierr = OptionsHasName(PETSC_NULL,"-f",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-f",&flg);CHKERRA(ierr);
   if (flg) {am = MGFULL;}
-  ierr = OptionsHasName(PETSC_NULL,"-j",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-j",&flg);CHKERRA(ierr);
   if (flg) {use_jacobi = 1;}
          
-  N = (int*)PetscMalloc(levels*sizeof(int));CHKPTRA(N);
+ierr = PetscMalloc(levels*sizeof(int),&(  N ));CHKPTRA(N);
   N[0] = x_mesh;
   for (i=1; i<levels; i++) {
     N[i] = N[i-1]/2;

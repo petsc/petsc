@@ -1,28 +1,7 @@
 !
-!    "$Id: ex11f.F,v 1.27 2000/10/27 21:27:32 bsmith Exp $";
+!    "$Id: ex8f.F,v 1.1 2000/12/13 20:56:02 bsmith Exp bsmith $";
 !
-!/*T
-!  Concepts: SLES^solving a Helmholtz equation
-!  Concepts: complex numbers
-!  Processors: n
-!T*/
-!
-!  Description: Solves a complex linear system in parallel with SLES (Fortran code).
-!
-!  The model problem:
-!     Solve Helmholtz equation on the unit square: (0,1) x (0,1)
-!          -delta u - sigma1*u + i*sigma2*u = f, 
-!           where delta = Laplace operator
-!     Dirichlet b.c.'s on all sides
-!     Use the 2-D, five-point finite difference stencil.
-!
-!  Compiling the code:
-!     This code uses the complex numbers version of PETSc, so one of the
-!     following values of BOPT must be used for compiling the PETSc libraries
-!     and this example:
-!        BOPT=g_complex   - debugging version
-!        BOPT=O_complex   - optimized version
-!        BOPT=Opg_complex - profiling version
+!   Tests MGSetResidual
 !
 ! -----------------------------------------------------------------------
 
@@ -33,25 +12,13 @@
 !                    Include files
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!  The following include statements are required for SLES Fortran programs:
-!     petsc.h       - base PETSc routines
-!     petscvec.h    - vectors
-!     petscmat.h    - matrices
-!     petscpc.h     - preconditioners
-!     petscksp.h    - Krylov subspace methods
-!     petscsles.h   - SLES interface
-!  Include the following to use PETSc random numbers:
-!     petscsys.h    - system routines
-!  Additional include statements may be needed if using other PETSc
-!  routines in a Fortran program, e.g.,
-!     petscviewer.h - viewers
-!     petscis.h     - index sets
 !
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscpc.h"
 #include "include/finclude/petscksp.h"
+#include "include/finclude/petscmg.h"
 #include "include/finclude/petscsles.h"
 #include "include/finclude/petscsys.h"
 !
@@ -71,30 +38,17 @@
       SLES             sles
       Mat              A 
       Vec              x,b,u
-      PetscRandom      rctx
-      double precision norm,h2,sigma1
-      Scalar           none,sigma2,v,pfive
-      integer          dim,flg,its,ierr,n,rank
-      integer          Istart,Iend,i,j,II,JJ
-      logical          use_random
+      PC               pc
+      integer          n,dim,ierr,istart,iend,i,j,jj,ii
+      double precision v,h2
+      external     MyResidual
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-#if !defined(PETSC_USE_COMPLEX)
-      write(6,*) "This example requires complex numbers."
-      goto 200
-#endif
-
-      none   = -1.0
       n      = 6
-      sigma1 = 100.0
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-sigma1',sigma1,      &
-     &                       flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       dim    = n*n
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -123,15 +77,6 @@
 !     appropriate processor during matrix assembly). 
 !   - Always specify global rows and columns of matrix entries.
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-norandom',flg,ierr)
-      if (flg .eq. 1) then
-         use_random = .false.
-         sigma2 = 10.0*PETSC_i
-      else
-         use_random = .true.
-         call PetscRandomCreate(PETSC_COMM_WORLD,                       &
-     &        RANDOM_DEFAULT_IMAGINARY,rctx,ierr)
-      endif
       h2 = 1.0/((n+1)*(n+1))
 
       do 10, II=Istart,Iend-1
@@ -154,11 +99,9 @@
           JJ = II + 1
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
-        if (use_random) call PetscRandomGetValue(rctx,sigma2,ierr)
-        v = 4.0 - sigma1*h2 + sigma2*h2
+        v = 4.0
         call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
  10   continue
-      if (use_random) call PetscRandomDestroy(rctx,ierr)
 
 !  Assemble matrix, using the 2-step process:
 !       MatAssemblyBegin(), MatAssemblyEnd()
@@ -181,14 +124,7 @@
 
 !  Set exact solution; then compute right-hand-side vector.
 
-      if (use_random) then
-         call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,        &
-     &                          rctx,ierr)
-         call VecSetRandom(rctx,u,ierr)
-      else
-         pfive = 0.5
-         call VecSet(pfive,u,ierr)
-      endif
+      call VecSet(.5d0,u,ierr)
       call MatMult(A,u,b,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -198,6 +134,12 @@
 !  Create linear solver context
 
       call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
+      call SLESGetPC(sles,pc,ierr)
+      call PCSetType(pc,PCMG,ierr)
+      call MGSetLevels(pc,1,PETSC_NULL_OBJECT,ierr)
+      call MGSetResidual(pc,0,MGDefaultResidual,A,ierr)
+
+      call MGSetResidual(pc,0,MyResidual,A,ierr)
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
@@ -205,39 +147,7 @@
       call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,         &
      &                      ierr)
 
-!  Set runtime options, e.g.,
-!      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
 
-      call SLESSetFromOptions(sles,ierr)
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-!                      Solve the linear system
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-      call SLESSolve(sles,b,x,its,ierr)
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-!                     Check solution and clean up
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-!  Check the error
-
-      call VecAXPY(none,u,x,ierr)
-      call VecNorm(x,NORM_2,norm,ierr)
-      if (rank .eq. 0) then
-        if (norm .gt. 1.e-12) then
-           write(6,100) norm,its
-        else
-           write(6,110) its
-        endif
-      endif
-  100 format('Norm of error ',e10.4,',iterations ',i5)
-  110 format('Norm of error < 1.e-12,iterations ',i5)
-
-!  Free work space.  All PETSc objects should be destroyed when they
-!  are no longer needed.
-
-      if (use_random) call PetscRandomDestroy(rctx,ierr)
       call SLESDestroy(sles,ierr)
       call VecDestroy(u,ierr)
       call VecDestroy(x,ierr)
@@ -246,4 +156,11 @@
 
  200  continue
       call PetscFinalize(ierr)
+      end
+
+      subroutine MyResidual(A,b,x,r,ierr)
+      Mat A
+      Vec b,x,r
+      integer ierr
+      return
       end

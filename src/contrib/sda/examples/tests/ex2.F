@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2.F,v 1.14 2000/05/05 22:19:43 balay Exp bsmith $"
+!    "$Id: ex2.F,v 1.15 2000/09/27 20:11:33 bsmith Exp bsmith $"
 !
       program main
 #include "include/finclude/petsc.h"
@@ -36,18 +36,18 @@
       stencil_type  = DA_STENCIL_STAR
 
 
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-M',MM,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-N',NN,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-dof',dof,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-stencil_width',         &
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-M',MM,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-N',NN,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-dof',dof,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-stencil_width',         &
      &     stencil_width,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-periodic',periodic,     &
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-periodic',periodic,     &
      &     flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-stencil_type',          &
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-stencil_type',          &
      &     stencil_type,flg,ierr)
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-2d',flg2,ierr)
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-3d',flg3,ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-2d',flg2,ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-3d',flg3,ierr)
       if (flg2 .ne. 0) then
          call DACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,        &
      &        MM,NN,m,n,dof,stencil_width,PETSC_NULL_INTEGER,           &

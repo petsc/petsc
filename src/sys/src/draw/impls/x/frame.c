@@ -1,4 +1,4 @@
-/*$Id: frame.c,v 1.27 2000/05/10 16:39:00 bsmith Exp bsmith $*/
+/*$Id: frame.c,v 1.28 2000/07/10 03:38:43 bsmith Exp bsmith $*/
 
 /*
    This file contains routines to draw a 3-d like frame about a given 
@@ -10,7 +10,7 @@
 
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
-EXTERN PixVal XiGetColor(Draw_X *,char *,int);
+EXTERN PixVal XiGetColor(PetscDraw_X *,char *,int);
 
 /* 50% grey stipple pattern */
 static Pixmap grey50 = (Pixmap)0;         
@@ -24,8 +24,8 @@ static PixVal HiPix=0,LoPix=0;
    Set the colors for the highlights by name 
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiFrameColors"></a>*/"XiFrameColors" 
-int XiFrameColors(Draw_X* XiWin,XiDecoration *Rgn,char *Hi,char *Lo)
+#define __FUNC__ "XiFrameColors" 
+int XiFrameColors(PetscDraw_X* XiWin,XiDecoration *Rgn,char *Hi,char *Lo)
 {
   PetscFunctionBegin;
   Rgn->Hi = XiGetColor(XiWin,Hi,1);
@@ -35,8 +35,8 @@ int XiFrameColors(Draw_X* XiWin,XiDecoration *Rgn,char *Hi,char *Lo)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiDrawFrame"></a>*/"XiDrawFrame" 
-int XiDrawFrame(Draw_X *XiWin,XiDecoration *Rgn)
+#define __FUNC__ "XiDrawFrame" 
+int XiDrawFrame(PetscDraw_X *XiWin,XiDecoration *Rgn)
 {
   int    xl = Rgn->Box.x,yl = Rgn->Box.y,xh = Rgn->Box.xh,yh = Rgn->Box.yh,
          o = Rgn->width;
@@ -107,8 +107,8 @@ int XiDrawFrame(Draw_X *XiWin,XiDecoration *Rgn)
    Set the colors for the highlights by name 
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiFrameColorsByName"></a>*/"XiFrameColorsByName" 
-int XiFrameColorsByName(Draw_X* XiWin,char *Hi,char *Lo)
+#define __FUNC__ "XiFrameColorsByName" 
+int XiFrameColorsByName(PetscDraw_X* XiWin,char *Hi,char *Lo)
 {
   PetscFunctionBegin;
   if (XiWin->numcolors > 2) {

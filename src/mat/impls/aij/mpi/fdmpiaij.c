@@ -1,4 +1,4 @@
-/*$Id: fdmpiaij.c,v 1.35 2000/07/10 03:39:35 bsmith Exp bsmith $*/
+/*$Id: fdmpiaij.c,v 1.36 2000/09/28 21:11:06 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -8,7 +8,7 @@ EXTERN int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*
 EXTERN int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringCreate_MPIAIJ"
+#define __FUNC__ "MatFDColoringCreate_MPIAIJ"
 int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
@@ -30,12 +30,12 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   c->rstart        = aij->rstart;
 
   c->ncolors       = nis;
-  c->ncolumns      = (int*)PetscMalloc(nis*sizeof(int));CHKPTRQ(c->ncolumns);
-  c->columns       = (int**)PetscMalloc(nis*sizeof(int *));CHKPTRQ(c->columns); 
-  c->nrows         = (int*)PetscMalloc(nis*sizeof(int));CHKPTRQ(c->nrows);
-  c->rows          = (int**)PetscMalloc(nis*sizeof(int *));CHKPTRQ(c->rows);
-  c->columnsforrow = (int**)PetscMalloc(nis*sizeof(int *));CHKPTRQ(c->columnsforrow);
-  PLogObjectMemory(c,5*nis*sizeof(int));
+  ierr             = PetscMalloc(nis*sizeof(int),&c->ncolumns);CHKERRQ(ierr);
+  ierr             = PetscMalloc(nis*sizeof(int*),&c->columns);CHKERRQ(ierr); 
+  ierr             = PetscMalloc(nis*sizeof(int),&c->nrows);CHKERRQ(ierr);
+  ierr             = PetscMalloc(nis*sizeof(int*),&c->rows);CHKERRQ(ierr);
+  ierr             = PetscMalloc(nis*sizeof(int*),&c->columnsforrow);CHKERRQ(ierr);
+  PetscLogObjectMemory(c,5*nis*sizeof(int));
 
   /* Allow access to data structures of local part of matrix */
   if (!aij->colmap) {
@@ -48,17 +48,17 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   ierr = MatGetColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
   ierr = MatGetColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
 
-  ierr          = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr); 
-  ncolsonproc   = (int*)PetscMalloc(2*size*sizeof(int *));CHKPTRQ(ncolsonproc);
-  disp          = ncolsonproc + size;
+  ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr); 
+  ierr = PetscMalloc(2*size*sizeof(int*),&ncolsonproc);CHKERRQ(ierr);
+  disp = ncolsonproc + size;
 
-  rowhit        = (int*)PetscMalloc((M+1)*sizeof(int));CHKPTRQ(rowhit);
-  columnsforrow = (int*)PetscMalloc((M+1)*sizeof(int));CHKPTRQ(columnsforrow);
+  ierr = PetscMalloc((M+1)*sizeof(int),&rowhit);CHKERRQ(ierr);
+  ierr = PetscMalloc((M+1)*sizeof(int),&columnsforrow);CHKERRQ(ierr);
 
   /*
      Temporary option to allow for debugging/testing
   */
-  ierr = OptionsHasName(PETSC_NULL,"-matfdcoloring_slow",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-matfdcoloring_slow",&flg);CHKERRQ(ierr);
 
   for (i=0; i<nis; i++) {
     ierr = ISGetLocalSize(isa[i],&n);CHKERRQ(ierr);
@@ -66,8 +66,8 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     c->ncolumns[i] = n;
     c->ncolumns[i] = n;
     if (n) {
-      c->columns[i]  = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(c->columns[i]);
-      PLogObjectMemory(c,n*sizeof(int));
+      ierr = PetscMalloc(n*sizeof(int),&c->columns[i]);CHKERRQ(ierr);
+      PetscLogObjectMemory(c,n*sizeof(int));
       ierr = PetscMemcpy(c->columns[i],is,n*sizeof(int));CHKERRQ(ierr);
     } else {
       c->columns[i]  = 0;
@@ -84,7 +84,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     }
     
     /* Get complete list of columns for color on each processor */
-    cols = (int*)PetscMalloc(nctot*sizeof(int));CHKPTRQ(cols);
+    ierr = PetscMalloc(nctot*sizeof(int),&cols);CHKERRQ(ierr);
     ierr = MPI_Allgatherv(is,n,MPI_INT,cols,ncolsonproc,disp,MPI_INT,mat->comm);CHKERRQ(ierr);
 
     /*
@@ -126,9 +126,9 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
         if (rowhit[j]) nrows++;
       }
       c->nrows[i]         = nrows;
-      c->rows[i]          = (int*)PetscMalloc((nrows+1)*sizeof(int));CHKPTRQ(c->rows[i]);
-      c->columnsforrow[i] = (int*)PetscMalloc((nrows+1)*sizeof(int));CHKPTRQ(c->columnsforrow[i]);
-      PLogObjectMemory(c,2*(nrows+1)*sizeof(int));
+      ierr                = PetscMalloc((nrows+1)*sizeof(int),&c->rows[i]);CHKERRQ(ierr);
+      ierr                = PetscMalloc((nrows+1)*sizeof(int),&c->columnsforrow[i]);CHKERRQ(ierr);
+      PetscLogObjectMemory(c,2*(nrows+1)*sizeof(int));
       nrows = 0;
       for (j=0; j<M; j++) {
         if (rowhit[j]) {
@@ -187,9 +187,9 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
         }
       }
       c->nrows[i]         = nrows;
-      c->rows[i]          = (int *)PetscMalloc((nrows+1)*sizeof(int));CHKPTRQ(c->rows[i]);
-      c->columnsforrow[i] = (int *)PetscMalloc((nrows+1)*sizeof(int));CHKPTRQ(c->columnsforrow[i]);
-      PLogObjectMemory(c,(nrows+1)*sizeof(int));
+      ierr = PetscMalloc((nrows+1)*sizeof(int),&c->rows[i]);CHKERRQ(ierr);
+      ierr = PetscMalloc((nrows+1)*sizeof(int),&c->columnsforrow[i]);CHKERRQ(ierr);
+      PetscLogObjectMemory(c,(nrows+1)*sizeof(int));
       /* now store the linked list of rows into c->rows[i] */
       nrows = 0;
       fm    = rowhit[M];
@@ -207,9 +207,9 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
        vscale will contain the "diagonal" on processor scalings followed by the off processor
   */
   ierr = VecCreateGhost(mat->comm,aij->A->m,PETSC_DETERMINE,aij->B->n,aij->garray,&c->vscale);CHKERRQ(ierr)
-  c->vscaleforrow   = (int**)PetscMalloc(c->ncolors*sizeof(int*));CHKPTRQ(c->vscaleforrow);
+  ierr = PetscMalloc(c->ncolors*sizeof(int*),&c->vscaleforrow);CHKERRQ(ierr);
   for (k=0; k<c->ncolors; k++) { 
-    c->vscaleforrow[k] = (int*)PetscMalloc((c->nrows[k]+1)*sizeof(int));CHKPTRQ(c->vscaleforrow[k]);
+    ierr = PetscMalloc((c->nrows[k]+1)*sizeof(int),&c->vscaleforrow[k]);CHKERRQ(ierr);
     for (l=0; l<c->nrows[k]; l++) {
       col = c->columnsforrow[k][l];
       if (col >= cstart && col < cend) {

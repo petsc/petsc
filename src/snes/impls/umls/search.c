@@ -1,4 +1,4 @@
-/*$Id: search.c,v 1.24 2000/04/12 04:25:37 bsmith Exp bsmith $*/
+/*$Id: search.c,v 1.25 2000/09/28 21:14:19 bsmith Exp bsmith $*/
 
 /*
      The subroutine mcstep is taken from the work of Jorge Nocedal.
@@ -64,7 +64,7 @@ nc
 #include "src/snes/impls/umls/umls.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESStep"
+#define __FUNC__ "SNESStep"
 int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     double *sty,double *fy,double *dy,double *stp,double *fp,double *dp)
 {

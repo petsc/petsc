@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.35 2000/05/05 22:18:59 balay Exp bsmith $";
+! "$Id: ex1f.F,v 1.36 2000/10/24 20:27:27 bsmith Exp bsmith $";
 !
 !       Formatted test for TS routines.
 !
@@ -35,8 +35,8 @@
       Mat              A
       MatStructure     A_structure
       TSProblemType    tsproblem
-      Draw             draw
-      Viewer           viewer
+      PetscDraw             draw
+      PetscViewer           viewer
       character*(60)   type,tsinfo
       character*(5)    etype
 
@@ -45,7 +45,7 @@
 !
       Vec              localwork,csolution
       DA               da
-      Viewer           viewer1,viewer2
+      PetscViewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
       common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
@@ -64,11 +64,11 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
       M = 60
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-M',M,flg,ierr) 
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-time',time_steps,flg,   &
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-M',M,flg,ierr) 
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-time',time_steps,flg,   &
      &                   ierr)
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-nox',flg,ierr) 
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-nox',flg,ierr) 
       if (flg .eq. 1) then
         nox = 1 
       else
@@ -87,14 +87,14 @@
 
 !   Set up display to show wave graph 
 
-      call ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
+      call PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
      &     PETSC_NULL_CHARACTER,80,380,400,160,viewer1,ierr)
-      call ViewerDrawGetDraw(viewer1,0,draw,ierr) 
-      call DrawSetDoubleBuffer(draw,ierr) 
-      call ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
+      call PetscViewerDrawGetDraw(viewer1,0,draw,ierr) 
+      call PetscDrawSetDoubleBuffer(draw,ierr) 
+      call PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
      &     PETSC_NULL_CHARACTER,80,0,400,160,viewer2,ierr) 
-      call ViewerDrawGetDraw(viewer2,0,draw,ierr) 
-      call DrawSetDoubleBuffer(draw,ierr) 
+      call PetscViewerDrawGetDraw(viewer2,0,draw,ierr) 
+      call PetscDrawSetDoubleBuffer(draw,ierr) 
 
 !   make work array for evaluating right hand side function 
 
@@ -115,31 +115,31 @@
 !    of TS, we do not expect users to generally need to use more
 !    then a single TSProblemType
 !
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-linear_no_matrix',     &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-linear_no_matrix',     &
      &                    flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_LINEAR
         problem   = linear_no_matrix
       endif
-      call OptionsHasName(PETSC_NULL_CHARACTER,                         &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                         &
      &                    '-linear_constant_matrix',flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_LINEAR
         problem   = linear_no_time
       endif
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-linear_variable_matrix'&
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-linear_variable_matrix'&
      &                    ,flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_LINEAR
         problem   = linear
       endif
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-nonlinear_no_jacobian',&
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-nonlinear_no_jacobian',&
      &                    flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_NONLINEAR
         problem   = nonlinear_no_jacobian
       endif
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-nonlinear_jacobian',   &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-nonlinear_jacobian',   &
      &                    flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_NONLINEAR
@@ -220,11 +220,11 @@
 
       call TSSetUp(ts,ierr) 
       call TSStep(ts,steps,ftime,ierr) 
-      call ViewerStringOpen(PETSC_COMM_WORLD,tsinfo,60,viewer,ierr) 
+      call PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,60,viewer,ierr) 
       call TSView(ts,viewer,ierr) 
       call TSGetType(ts,type,ierr)
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-test',flg,ierr) 
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-test',flg,ierr) 
       if (flg .eq. 1) then
 !   
 !         copy type to string of length 5 to ensure equality test        
@@ -247,10 +247,10 @@
      &              nrm_max/steps,tsinfo
       endif
 
-      call ViewerDestroy(viewer,ierr) 
+      call PetscViewerDestroy(viewer,ierr) 
       call TSDestroy(ts,ierr) 
-      call ViewerDestroy(viewer1,ierr) 
-      call ViewerDestroy(viewer2,ierr) 
+      call PetscViewerDestroy(viewer1,ierr) 
+      call PetscViewerDestroy(viewer2,ierr) 
       call VecDestroy(localwork,ierr) 
       call VecDestroy(csolution,ierr)
       call VecDestroy(local,ierr) 
@@ -289,7 +289,7 @@
 !
       Vec              localwork,csolution
       DA               da
-      Viewer           viewer1,viewer2
+      PetscViewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
       common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
@@ -339,7 +339,7 @@
 !
       Vec               localwork,csolution
       DA                da
-      Viewer            viewer1,viewer2
+      PetscViewer            viewer1,viewer2
       integer           M
       double precision  h,nrm_2,nrm_max,nox
       common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
@@ -388,7 +388,7 @@
 !
       Vec              localwork,csolution
       DA               da
-      Viewer           viewer1,viewer2
+      PetscViewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
       common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
@@ -467,7 +467,7 @@
 !
       Vec              localwork,csolution
       DA               da
-      Viewer           viewer1,viewer2
+      PetscViewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
       common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
@@ -535,7 +535,7 @@
 !
       Vec              localwork,csolution
       DA               da
-      Viewer           viewer1,viewer2
+      PetscViewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
       common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &

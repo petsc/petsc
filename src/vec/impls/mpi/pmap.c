@@ -1,4 +1,4 @@
-/*$Id: pmap.c,v 1.17 2000/05/05 22:15:06 balay Exp bsmith $*/
+/*$Id: pmap.c,v 1.18 2000/10/24 20:25:15 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for basic map object implementation.
@@ -8,7 +8,7 @@
 #include "src/vec/vecimpl.h"   /*I  "petscvec.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MapGetLocalSize_MPI"
+#define __FUNC__ "MapGetLocalSize_MPI"
 int MapGetLocalSize_MPI(Map m,int *n)
 {
   PetscFunctionBegin;
@@ -17,7 +17,7 @@ int MapGetLocalSize_MPI(Map m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MapGetSize_MPI"
+#define __FUNC__ "MapGetSize_MPI"
 int MapGetSize_MPI(Map m,int *N)
 {
   PetscFunctionBegin;
@@ -26,7 +26,7 @@ int MapGetSize_MPI(Map m,int *N)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MapGetLocalRange_MPI"
+#define __FUNC__ "MapGetLocalRange_MPI"
 int MapGetLocalRange_MPI(Map m,int *rstart,int *rend)
 {
   PetscFunctionBegin;
@@ -36,7 +36,7 @@ int MapGetLocalRange_MPI(Map m,int *rstart,int *rend)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MapGetGlobalRange_MPI"
+#define __FUNC__ "MapGetGlobalRange_MPI"
 int MapGetGlobalRange_MPI(Map m,int *range[])
 {
   PetscFunctionBegin;
@@ -45,7 +45,7 @@ int MapGetGlobalRange_MPI(Map m,int *range[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MapDestroy_MPI"
+#define __FUNC__ "MapDestroy_MPI"
 int MapDestroy_MPI(Map m)
 {
   int ierr;
@@ -53,7 +53,7 @@ int MapDestroy_MPI(Map m)
   PetscFunctionBegin;
   if (--m->refct > 0) PetscFunctionReturn(0);
   ierr = PetscFree(m->range);CHKERRQ(ierr);
-  PLogObjectDestroy(m);
+  PetscLogObjectDestroy(m);
   PetscHeaderDestroy(m);
   PetscFunctionReturn(0);
 }
@@ -66,7 +66,7 @@ static struct _MapOps DvOps = {
             MapDestroy_MPI};
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MapCreateMPI"
+#define __FUNC__ "MapCreateMPI"
 /*@C
    MapCreateMPI - Creates a map object.
 
@@ -103,10 +103,10 @@ int MapCreateMPI(MPI_Comm comm,int n,int N,Map *mm)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
 
   PetscHeaderCreate(m,_p_Map,struct _MapOps,MAP_COOKIE,0,"Map",comm,MapDestroy,0);
-  PLogObjectCreate(m);
-  PLogObjectMemory(m,sizeof(struct _p_Map));
-  ierr     = PetscMemcpy(m->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  m->range = (int*)PetscMalloc((size+1)*sizeof(int));CHKPTRQ(m->range);
+  PetscLogObjectCreate(m);
+  PetscLogObjectMemory(m,sizeof(struct _p_Map));
+  ierr = PetscMemcpy(m->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
+  ierr = PetscMalloc((size+1)*sizeof(int),&m->range);CHKERRQ(ierr);
   
   ierr = MPI_Allgather(&n,1,MPI_INT,m->range+1,1,MPI_INT,comm);CHKERRQ(ierr);
   m->range[0] = 0;

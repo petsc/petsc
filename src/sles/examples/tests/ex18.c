@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.18 2000/10/24 20:26:51 bsmith Exp bsmith $*/
+/*$Id: ex18.c,v 1.19 2000/10/30 17:25:03 bsmith Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -16,23 +16,23 @@ Input arguments are:\n\
 int main(int argc,char **args)
 {
   int        ierr,its,m,n,mvec;
-  PLogDouble time1,time2,time;
+  PetscLogDouble time1,time2,time;
   double     norm;
   Scalar     zero = 0.0,none = -1.0;
   Vec        x,b,u;
   Mat        A;
   SLES       sles;
   char       file[128]; 
-  Viewer     fd;
+  PetscViewer     fd;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read matrix and RHS */
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
   ierr = VecLoad(fd,&b);CHKERRA(ierr);
-  ierr = ViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
 
   /* 
      If the load matrix is larger then the vector, due to being padded 
@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,x);CHKERRA(ierr);
 
   /* Solve system */
-  PLogStagePush(1);
+  PetscLogStagePush(1);
   ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
@@ -67,7 +67,7 @@ int main(int argc,char **args)
   ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
   ierr = PetscGetTime(&time2);CHKERRA(ierr);
   time = time2 - time1;
-  PLogStagePop();
+  PetscLogStagePop();
 
   /* Show result */
   ierr = MatMult(A,x,u);

@@ -1,4 +1,4 @@
-/*$Id: pvec2.c,v 1.49 2000/04/12 04:22:23 bsmith Exp bsmith $*/
+/*$Id: pvec2.c,v 1.50 2000/07/10 03:39:19 bsmith Exp bsmith $*/
 
 /*
      Code for some of the parallel vector primatives.
@@ -36,7 +36,7 @@ int Ethernet_Allreduce(PetscReal *in,PetscReal *out,int n,MPI_Datatype type,MPI_
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecMDot_MPI"
+#define __FUNC__ "VecMDot_MPI"
 int VecMDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
 {
   Scalar awork[128],*work = awork;
@@ -44,7 +44,7 @@ int VecMDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
 
   PetscFunctionBegin;
   if (nv > 128) {
-    work = (Scalar*)PetscMalloc(nv * sizeof(Scalar));CHKPTRQ(work);
+    ierr = PetscMalloc(nv*sizeof(Scalar),&work);CHKERRQ(ierr);
   }
   ierr = VecMDot_Seq(nv,xin,y,work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
@@ -55,7 +55,7 @@ int VecMDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecMTDot_MPI"
+#define __FUNC__ "VecMTDot_MPI"
 int VecMTDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
 {
   Scalar awork[128],*work = awork;
@@ -63,7 +63,7 @@ int VecMTDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
 
   PetscFunctionBegin;
   if (nv > 128) {
-    work = (Scalar*)PetscMalloc(nv * sizeof(Scalar));CHKPTRQ(work);
+    ierr = PetscMalloc(nv*sizeof(Scalar),&work);CHKERRQ(ierr);
   }
   ierr = VecMTDot_Seq(nv,xin,y,work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ int VecMTDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecNorm_MPI"
+#define __FUNC__ "VecNorm_MPI"
 int VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 {
   Vec_MPI      *x = (Vec_MPI*)xin->data;
@@ -124,7 +124,7 @@ int VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 #endif
     ierr = MPI_Allreduce(&work,&sum,1,MPI_DOUBLE,MPI_SUM,xin->comm);CHKERRQ(ierr);
     *z = sqrt(sum);
-    PLogFlops(2*xin->n);
+    PetscLogFlops(2*xin->n);
   } else if (type == NORM_1) {
     /* Find the local part */
     ierr = VecNorm_Seq(xin,NORM_1,&work);CHKERRQ(ierr);
@@ -156,7 +156,7 @@ MPI_Op VecMin_Local_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"VecMax_Local"
+#define __FUNC__ "VecMax_Local"
 void VecMax_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
@@ -177,7 +177,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"VecMin_Local"
+#define __FUNC__ "VecMin_Local"
 void VecMin_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
@@ -197,7 +197,7 @@ void VecMin_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecMax_MPI"
+#define __FUNC__ "VecMax_MPI"
 int VecMax_MPI(Vec xin,int *idx,PetscReal *z)
 {
   int    ierr;
@@ -230,10 +230,10 @@ int VecMax_MPI(Vec xin,int *idx,PetscReal *z)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecMin_MPI"
+#define __FUNC__ "VecMin_MPI"
 int VecMin_MPI(Vec xin,int *idx,PetscReal *z)
 {
-  int    ierr;
+  int       ierr;
   PetscReal work;
 
   PetscFunctionBegin;

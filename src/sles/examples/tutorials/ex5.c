@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.84 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.85 2000/10/24 20:26:55 bsmith Exp bsmith $*/
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
@@ -9,7 +9,7 @@ also uses multiple profiling stages.  Input arguments are\n\
 
 /*T
    Concepts: SLES^repeatedly solving linear systems;
-   Concepts: PLog^profiling multiple stages of code;
+   Concepts: PetscLog^profiling multiple stages of code;
    Processors: n
 T*/
 
@@ -37,7 +37,7 @@ int main(int argc,char **args)
   PetscTruth mat_nonsymmetric;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   n = 2*size;
@@ -45,21 +45,21 @@ int main(int argc,char **args)
   /*
      Set flag if we are doing a nonsymmetric problem; the default is symmetric.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-mat_nonsym",&mat_nonsymmetric);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_nonsym",&mat_nonsymmetric);CHKERRA(ierr);
 
   /*
      Register two stages for separate profiling of the two linear solves.
      Use the runtime option -log_summary for a printout of performance
      statistics at the program's conlusion.
   */
-  ierr = PLogStageRegister(0,"Original Solve");CHKERRA(ierr);
-  ierr = PLogStageRegister(1,"Second Solve");CHKERRA(ierr);
+  ierr = PetscLogStageRegister(0,"Original Solve");CHKERRA(ierr);
+  ierr = PetscLogStageRegister(1,"Second Solve");CHKERRA(ierr);
 
   /* -------------- Stage 0: Solve Original System ---------------------- */
   /* 
      Indicate to PETSc profiling that we're beginning the first stage
   */
-  ierr = PLogStagePush(0);CHKERRA(ierr);
+  ierr = PetscLogStagePush(0);CHKERRA(ierr);
 
   /* 
      Create parallel matrix, specifying only its global dimensions.
@@ -201,11 +201,11 @@ int main(int argc,char **args)
      overhead of creating new ones.
 
      Indicate to PETSc profiling that we're concluding the first
-     stage with PLogStagePop(), and beginning the second stage with
-     PLogStagePush().
+     stage with PetscLogStagePop(), and beginning the second stage with
+     PetscLogStagePush().
   */
-  ierr = PLogStagePop();CHKERRA(ierr);
-  ierr = PLogStagePush(1);CHKERRA(ierr);
+  ierr = PetscLogStagePop();CHKERRA(ierr);
+  ierr = PetscLogStagePush(1);CHKERRA(ierr);
 
   /* 
      Initialize all matrix entries to zero.  MatZeroEntries() retains the
@@ -291,7 +291,7 @@ int main(int argc,char **args)
   /*
      Indicate to PETSc profiling that we're concluding the second stage 
   */
-  ierr = PLogStagePop();CHKERRA(ierr);
+  ierr = PetscLogStagePop();CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

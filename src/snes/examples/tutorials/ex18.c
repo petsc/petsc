@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.8 2000/12/08 04:43:02 bsmith Exp bsmith $ */
+/* $Id: ex18.c,v 1.9 2000/12/08 04:46:20 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -78,18 +78,18 @@ int main(int argc,char **argv)
   user.beta   = 2.5; 
   user.bm1    = 1.5; 
   user.coef   = 1.25;
-  ierr = OptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-coef",&user.coef,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-coef",&user.coef,PETSC_NULL);CHKERRA(ierr);
 
   /* set number of levels and grid size on coarsest level */
   mx              = 5; 
   my              = 5; 
   nlevels         = 3;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
 
   /*
       Create the multilevel DA data structure 
@@ -99,7 +99,7 @@ int main(int argc,char **argv)
   /*
       Set the DA (grid structure) for the grids.
   */
-  ierr = DMMGSetGrid(dmmg,2,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,0,1,1);CHKERRQ(ierr);
+  ierr = DMMGSetDA(dmmg,2,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,0,1,1);CHKERRQ(ierr);
 
   /*
      Create the nonlinear solver, and tell the DMMG structure to use it
@@ -344,7 +344,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
   ierr = DALocalToGlobal((DA)dmmg->dm,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localF);CHKERRQ(ierr);
-  ierr = PLogFlops((22 + 4*POWFLOP)*ym*xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops((22 + 4*POWFLOP)*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 /* --------------------  Evaluate Jacobian F(x) --------------------- */
@@ -667,7 +667,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
 
-  ierr = PLogFlops((41 + 8*POWFLOP)*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops((41 + 8*POWFLOP)*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.6 2000/01/17 00:09:14 bsmith Exp bsmith $*/
+/*$Id: appload.c,v 1.1 2000/08/17 15:47:45 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -20,17 +20,17 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  (*appctx)       = (AppCtx*)PetscMalloc(sizeof(AppCtx));CHKPTRQ(*appctx);
+  (*appctx)       = (AppCtx*)PetscMalloc(sizeof(AppCtx));CHKERRQ(ierr);
   (*appctx)->comm = comm;
 
-  ierr = OptionsGetInt   (PETSC_NULL,"-nx"  ,&Nelx,&flg);CHKERRQ(ierr); if (!flg) { Nelx = 5;   }
-  ierr = OptionsGetInt   (PETSC_NULL,"-ny"  ,&Nely,&flg);CHKERRQ(ierr); if (!flg) { Nely = 5;   }
-  ierr = OptionsGetInt   (PETSC_NULL,"-nsdx",&nsdx,&flg);CHKERRQ(ierr); if (!flg) { nsdx = 1;   }
-  ierr = OptionsGetInt   (PETSC_NULL,"-nsdy",&nsdy,&flg);CHKERRQ(ierr); if (!flg) { nsdy = 1;   }
-  ierr = OptionsGetDouble(PETSC_NULL,"-xmin",&xmin,&flg);CHKERRQ(ierr); if (!flg) { xmin = 0.0; }
-  ierr = OptionsGetDouble(PETSC_NULL,"-xmax",&xmax,&flg);CHKERRQ(ierr); if (!flg) { xmax = 1.0; }
-  ierr = OptionsGetDouble(PETSC_NULL,"-ymin",&ymin,&flg);CHKERRQ(ierr); if (!flg) { ymin = 0.0; }
-  ierr = OptionsGetDouble(PETSC_NULL,"-ymax",&ymax,&flg);CHKERRQ(ierr); if (!flg) { ymax = 1.0; }
+  ierr = PetscOptionsGetInt   (PETSC_NULL,"-nx"  ,&Nelx,&flg);CHKERRQ(ierr); if (!flg) { Nelx = 5;   }
+  ierr = PetscOptionsGetInt   (PETSC_NULL,"-ny"  ,&Nely,&flg);CHKERRQ(ierr); if (!flg) { Nely = 5;   }
+  ierr = PetscOptionsGetInt   (PETSC_NULL,"-nsdx",&nsdx,&flg);CHKERRQ(ierr); if (!flg) { nsdx = 1;   }
+  ierr = PetscOptionsGetInt   (PETSC_NULL,"-nsdy",&nsdy,&flg);CHKERRQ(ierr); if (!flg) { nsdy = 1;   }
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-xmin",&xmin,&flg);CHKERRQ(ierr); if (!flg) { xmin = 0.0; }
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-xmax",&xmax,&flg);CHKERRQ(ierr); if (!flg) { xmax = 1.0; }
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-ymin",&ymin,&flg);CHKERRQ(ierr); if (!flg) { ymin = 0.0; }
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-ymax",&ymax,&flg);CHKERRQ(ierr); if (!flg) { ymax = 1.0; }
 
   ierr = AppPartitionSetUp(&((*appctx)->part),comm,Nelx,Nely,nsdx,nsdy,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
 

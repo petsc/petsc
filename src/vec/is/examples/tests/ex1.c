@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.33 2000/05/05 22:14:45 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.34 2000/10/24 20:24:53 bsmith Exp bsmith $*/
 /*
        Formatted test for ISGeneral routines.
 */
@@ -31,7 +31,7 @@ int main(int argc,char **argv)
      Create large IS and test ISGetIndices()
   */
   n = 10000 + rank;
-  indices = (int*)PetscMalloc(n*sizeof(int));CHKERRA(ierr);
+ierr = PetscMalloc(n*sizeof(int),&(  indices ));CHKERRA(ierr);
   for (i=0; i<n; i++) {
     indices[i] = rank + i;
   }

@@ -1,11 +1,11 @@
-/*$Id: destroy.c,v 1.54 2000/09/22 20:42:24 bsmith Exp bsmith $*/
+/*$Id: destroy.c,v 1.55 2000/09/28 21:09:12 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscObjectDestroy"
+#define __FUNC__ "PetscObjectDestroy"
 /*@C
    PetscObjectDestroy - Destroys any PetscObject, regardless of the type. 
 
@@ -39,7 +39,7 @@ int PetscObjectDestroy(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscObjectView" 
+#define __FUNC__ "PetscObjectView" 
 /*@C
    PetscObjectView - Views any PetscObject, regardless of the type. 
 
@@ -54,14 +54,14 @@ int PetscObjectDestroy(PetscObject obj)
    Level: intermediate
 
 @*/
-int PetscObjectView(PetscObject obj,Viewer viewer)
+int PetscObjectView(PetscObject obj,PetscViewer viewer)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj);
-  if (!viewer) viewer = VIEWER_STDOUT_(obj->comm);
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(obj->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
 
   if (obj->bops->view) {
     ierr = (*obj->bops->view)(obj,viewer);CHKERRQ(ierr);
@@ -72,7 +72,7 @@ int PetscObjectView(PetscObject obj,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscTypeCompare"
+#define __FUNC__ "PetscTypeCompare"
 /*@C
    PetscTypeCompare - Determines whether a PETSc object is of a particular type.
 
@@ -111,7 +111,7 @@ static int         PetscObjectRegisterDestroy_Count = 0;
 static PetscObject PetscObjectRegisterDestroy_Objects[128];
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscObjectRegisterDestroy"></a>*/"PetscObjectRegisterDestroy"
+#define __FUNC__ "PetscObjectRegisterDestroy"
 /*@C
    PetscObjectRegisterDestroy - Registers a PETSc object to be destroyed when
      PetscFinalize() is called.
@@ -126,7 +126,7 @@ static PetscObject PetscObjectRegisterDestroy_Objects[128];
    Level: developer
 
    Notes:
-      This is used by, for example, VIEWER_XXX_() routines to free the viewer
+      This is used by, for example, PETSC_VIEWER_XXX_() routines to free the viewer
     when PETSc ends.
 
 .seealso: PetscObjectRegisterDestroyAll()
@@ -140,7 +140,7 @@ int PetscObjectRegisterDestroy(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscObjectRegisterDestroyAll"></a>*/"PetscObjectRegisterDestroyAll"
+#define __FUNC__ "PetscObjectRegisterDestroyAll"
 /*@C
    PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
      with PetscObjectRegisterDestroy(). Called by PetscFinalize()

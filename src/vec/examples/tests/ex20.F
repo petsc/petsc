@@ -1,5 +1,5 @@
 !
-!    "$Id: ex20.F,v 1.10 2000/05/05 22:15:11 balay Exp bsmith $";
+!    "$Id: ex20.F,v 1.11 2000/09/27 20:06:30 bsmith Exp bsmith $";
 !
       program main
       implicit none
@@ -14,7 +14,7 @@
        integer          n,ierr,i,fd,veccookie
        Scalar           array(5)
        Vec              x
-       Viewer           v
+       PetscViewer           v
 
        n         = 5
        veccookie = 1211211 + 3
@@ -26,7 +26,7 @@
  10    continue
 
 !   Open binary file for writing
-       call PetscBinaryOpen('testfile',BINARY_CREATE,fd,ierr)
+       call PetscBinaryOpen('testfile',PETSC_BINARY_CREATE,fd,ierr)
 !   Write the Vec header
        call PetscBinaryWrite(fd,veccookie,1,PETSC_INT,0,ierr)
 !   Write the array length
@@ -39,17 +39,17 @@
 !
 !  Open the file for reading by PETSc
 !
-       call ViewerBinaryOpen(PETSC_COMM_SELF,'testfile',                &
-     &                       BINARY_RDONLY,v,ierr)
+       call PetscViewerBinaryOpen(PETSC_COMM_SELF,'testfile',                &
+     &                       PETSC_BINARY_RDONLY,v,ierr)
 !
 !  Load the vector
 !
        Call VecLoad(v,x,ierr)
-       call ViewerDestroy(v,ierr)
+       call PetscViewerDestroy(v,ierr)
 !
 !  Print the vector
 !
-       call VecView(x,VIEWER_STDOUT_SELF,ierr)
+       call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
 !
 
        call VecDestroy(x,ierr)

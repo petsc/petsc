@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.39 2000/01/11 21:00:17 bsmith Exp balay $*/
+/*$Id: ex8.c,v 1.40 2000/05/05 22:15:11 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates scattering with strided index sets.\n\n";
 
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_SELF,3,1,2,&is2);CHKERRA(ierr);
 
   ierr = VecSetValues(x,6,loc,vals,INSERT_VALUES);CHKERRA(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"----\n");CHKERRA(ierr);
   ierr = VecSet(&two,y);CHKERRA(ierr);
   ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRA(ierr);
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
   ierr = VecScatterDestroy(ctx);CHKERRA(ierr);
   
-  ierr = VecView(y,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = ISDestroy(is1);CHKERRA(ierr);
   ierr = ISDestroy(is2);CHKERRA(ierr);

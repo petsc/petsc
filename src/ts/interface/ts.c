@@ -1,8 +1,8 @@
-/* $Id: ts.c,v 1.31 2000/09/07 15:17:46 balay Exp bsmith $ */
+/* $Id: ts.c,v 1.32 2000/09/28 21:14:45 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSComputeRHSJacobian"></a>*/"TSComputeRHSJacobian"
+#define __FUNC__ "TSComputeRHSJacobian"
 /*@
    TSComputeRHSJacobian - Computes the Jacobian matrix that has been
       set with TSSetRHSJacobian().
@@ -46,12 +46,12 @@ int TSComputeRHSJacobian(TS ts,double t,Vec X,Mat *A,Mat *B,MatStructure *flg)
     SETERRQ(PETSC_ERR_ARG_WRONG,"For TS_NONLINEAR only");
   }
   if (!ts->rhsjacobian) PetscFunctionReturn(0);
-  ierr = PLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
   *flg = DIFFERENT_NONZERO_PATTERN;
   PetscStackPush("TS user Jacobian function");
   ierr = (*ts->rhsjacobian)(ts,t,X,A,B,flg,ts->jacP);CHKERRQ(ierr);
   PetscStackPop;
-  ierr = PLogEventEnd(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
   /* make sure user returned a correct Jacobian and preconditioner */
   PetscValidHeaderSpecific(*A,MAT_COOKIE);
   PetscValidHeaderSpecific(*B,MAT_COOKIE);  
@@ -59,7 +59,7 @@ int TSComputeRHSJacobian(TS ts,double t,Vec X,Mat *A,Mat *B,MatStructure *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSComputeRHSFunction"></a>*/"TSComputeRHSFunction"
+#define __FUNC__ "TSComputeRHSFunction"
 /*
    TSComputeRHSFunction - Evaluates the right-hand-side function. 
 
@@ -75,7 +75,7 @@ int TSComputeRHSFunction(TS ts,double t,Vec x,Vec y)
   PetscValidHeader(x);
   PetscValidHeader(y);
 
-  ierr = PLogEventBegin(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
   if (ts->rhsfunction) {
     PetscStackPush("TS user right-hand-side function");
     ierr = (*ts->rhsfunction)(ts,t,x,y,ts->funP);CHKERRQ(ierr);
@@ -92,13 +92,13 @@ int TSComputeRHSFunction(TS ts,double t,Vec x,Vec y)
 
   /* apply user-provided boundary conditions (only needed if these are time dependent) */
   ierr = TSComputeRHSBoundaryConditions(ts,t,y);CHKERRQ(ierr);
-  ierr = PLogEventEnd(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSSetRHSFunction"></a>*/"TSSetRHSFunction"
+#define __FUNC__ "TSSetRHSFunction"
 /*@C
     TSSetRHSFunction - Sets the routine for evaluating the function,
     F(t,u), where U_t = F(t,u).
@@ -142,7 +142,7 @@ int TSSetRHSFunction(TS ts,int (*f)(TS,double,Vec,Vec,void*),void *ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSSetRHSMatrix"></a>*/"TSSetRHSMatrix"
+#define __FUNC__ "TSSetRHSMatrix"
 /*@C
    TSSetRHSMatrix - Sets the function to compute the matrix A, where U_t = A(t) U.
    Also sets the location to store A.
@@ -208,7 +208,7 @@ int TSSetRHSMatrix(TS ts,Mat A,Mat B,int (*f)(TS,double,Mat*,Mat*,MatStructure*,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSSetRHSJacobian"></a>*/"TSSetRHSJacobian"
+#define __FUNC__ "TSSetRHSJacobian"
 /*@C
    TSSetRHSJacobian - Sets the function to compute the Jacobian of F,
    where U_t = F(U,t), as well as the location to store the matrix.
@@ -272,7 +272,7 @@ int TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,MatStruc
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSComputeRHSBoundaryConditions"></a>*/"TSComputeRHSBoundaryConditions"
+#define __FUNC__ "TSComputeRHSBoundaryConditions"
 /*
    TSComputeRHSBoundaryConditions - Evaluates the boundary condition function. 
 
@@ -299,7 +299,7 @@ int TSComputeRHSBoundaryConditions(TS ts,double t,Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSSetRHSBoundaryConditions"></a>*/"TSSetRHSBoundaryConditions"
+#define __FUNC__ "TSSetRHSBoundaryConditions"
 /*@C
     TSSetRHSBoundaryConditions - Sets the routine for evaluating the function,
     boundary conditions for the function F.
@@ -337,7 +337,7 @@ int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,double,Vec,void*),void *ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSView"></a>*/"TSView"
+#define __FUNC__ "TSView"
 /*@C
     TSView - Prints the TS data structure.
 
@@ -352,22 +352,22 @@ int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,double,Vec,void*),void *ctx)
 
     Notes:
     The available visualization contexts include
-+     VIEWER_STDOUT_SELF - standard output (default)
--     VIEWER_STDOUT_WORLD - synchronized standard
++     PETSC_VIEWER_STDOUT_SELF - standard output (default)
+-     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
          the file.  All other processors send their 
          data to the first processor to print. 
 
     The user can open an alternative visualization context with
-    ViewerASCIIOpen() - output to a specified file.
+    PetscViewerASCIIOpen() - output to a specified file.
 
     Level: beginner
 
 .keywords: TS, timestep, view
 
-.seealso: ViewerASCIIOpen()
+.seealso: PetscViewerASCIIOpen()
 @*/
-int TSView(TS ts,Viewer viewer)
+int TSView(TS ts,PetscViewer viewer)
 {
   int        ierr;
   char       *type;
@@ -375,45 +375,45 @@ int TSView(TS ts,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_(ts->comm);
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ts->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscCheckSameComm(ts,viewer);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"TS Object:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"TS Object:\n");CHKERRQ(ierr);
     ierr = TSGetType(ts,(TSType *)&type);CHKERRQ(ierr);
     if (type) {
-      ierr = ViewerASCIIPrintf(viewer,"  type: %s\n",type);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",type);CHKERRQ(ierr);
     } else {
-      ierr = ViewerASCIIPrintf(viewer,"  type: not yet set\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  type: not yet set\n");CHKERRQ(ierr);
     }
     if (ts->view) {
-      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*ts->view)(ts,viewer);CHKERRQ(ierr);
-      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    ierr = ViewerASCIIPrintf(viewer,"  maximum steps=%d\n",ts->max_steps);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"  maximum time=%g\n",ts->max_time);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  maximum steps=%d\n",ts->max_steps);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%g\n",ts->max_time);CHKERRQ(ierr);
     if (ts->problem_type == TS_NONLINEAR) {
-      ierr = ViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%d\n",ts->nonlinear_its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%d\n",ts->nonlinear_its);CHKERRQ(ierr);
     }
-    ierr = ViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%d\n",ts->linear_its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%d\n",ts->linear_its);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = TSGetType(ts,(TSType *)&type);CHKERRQ(ierr);
-    ierr = ViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);
   }
-  ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   if (ts->sles) {ierr = SLESView(ts->sles,viewer);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
-  ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSSetApplicationContext"></a>*/"TSSetApplicationContext"
+#define __FUNC__ "TSSetApplicationContext"
 /*@C
    TSSetApplicationContext - Sets an optional user-defined context for 
    the timesteppers.
@@ -439,7 +439,7 @@ int TSSetApplicationContext(TS ts,void *usrP)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSGetApplicationContext"></a>*/"TSGetApplicationContext"
+#define __FUNC__ "TSGetApplicationContext"
 /*@C
     TSGetApplicationContext - Gets the user-defined context for the 
     timestepper.
@@ -467,7 +467,7 @@ int TSGetApplicationContext(TS ts,void **usrP)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSGetTimeStepNumber"></a>*/"TSGetTimeStepNumber"
+#define __FUNC__ "TSGetTimeStepNumber"
 /*@
    TSGetTimeStepNumber - Gets the current number of timesteps.
 
@@ -492,7 +492,7 @@ int TSGetTimeStepNumber(TS ts,int* iter)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSSetInitialTimeStep"></a>*/"TSSetInitialTimeStep"
+#define __FUNC__ "TSSetInitialTimeStep"
 /*@
    TSSetInitialTimeStep - Sets the initial timestep to be used, 
    as well as the initial time.
@@ -521,7 +521,7 @@ int TSSetInitialTimeStep(TS ts,double initial_time,double time_step)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSSetTimeStep"></a>*/"TSSetTimeStep"
+#define __FUNC__ "TSSetTimeStep"
 /*@
    TSSetTimeStep - Allows one to reset the timestep at any time,
    useful for simple pseudo-timestepping codes.
@@ -547,7 +547,7 @@ int TSSetTimeStep(TS ts,double time_step)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSGetTimeStep"></a>*/"TSGetTimeStep"
+#define __FUNC__ "TSGetTimeStep"
 /*@
    TSGetTimeStep - Gets the current timestep size.
 
@@ -574,7 +574,7 @@ int TSGetTimeStep(TS ts,double* dt)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSGetSolution"></a>*/"TSGetSolution"
+#define __FUNC__ "TSGetSolution"
 /*@C
    TSGetSolution - Returns the solution at the present timestep. It
    is valid to call this routine inside the function that you are evaluating
@@ -604,7 +604,7 @@ int TSGetSolution(TS ts,Vec *v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSPublish_Petsc"></a>*/"TSPublish_Petsc"
+#define __FUNC__ "TSPublish_Petsc"
 static int TSPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -633,7 +633,7 @@ static int TSPublish_Petsc(PetscObject obj)
 /* -----------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSCreate"></a>*/"TSCreate"
+#define __FUNC__ "TSCreate"
 /*@C
    TSCreate - Creates a timestepper context.
 
@@ -665,7 +665,7 @@ int TSCreate(MPI_Comm comm,TSProblemType problemtype,TS *outts)
   PetscFunctionBegin;
   *outts = 0;
   PetscHeaderCreate(ts,_p_TS,int,TS_COOKIE,-1,"TS",comm,TSDestroy,TSView);
-  PLogObjectCreate(ts);
+  PetscLogObjectCreate(ts);
   ts->bops->publish     = TSPublish_Petsc;
   ts->max_steps         = 5000;
   ts->max_time          = 5.0;
@@ -688,7 +688,7 @@ int TSCreate(MPI_Comm comm,TSProblemType problemtype,TS *outts)
 /* ----- Routines to initialize and destroy a timestepper ---- */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSSetUp"></a>*/"TSSetUp"
+#define __FUNC__ "TSSetUp"
 /*@
    TSSetUp - Sets up the internal data structures for the later use
    of a timestepper.  
@@ -727,7 +727,7 @@ int TSSetUp(TS ts)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSDestroy"></a>*/"TSDestroy"
+#define __FUNC__ "TSDestroy"
 /*@C
    TSDestroy - Destroys the timestepper context that was created
    with TSCreate().
@@ -762,13 +762,13 @@ int TSDestroy(TS ts)
       ierr = (*ts->mdestroy[i])(ts->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
-  PLogObjectDestroy((PetscObject)ts);
+  PetscLogObjectDestroy((PetscObject)ts);
   PetscHeaderDestroy((PetscObject)ts);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSGetSNES"></a>*/"TSGetSNES"
+#define __FUNC__ "TSGetSNES"
 /*@C
    TSGetSNES - Returns the SNES (nonlinear solver) associated with 
    a TS (timestepper) context. Valid only for nonlinear problems.
@@ -803,7 +803,7 @@ int TSGetSNES(TS ts,SNES *snes)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSGetSLES"></a>*/"TSGetSLES"
+#define __FUNC__ "TSGetSLES"
 /*@C
    TSGetSLES - Returns the SLES (linear solver) associated with 
    a TS (timestepper) context.
@@ -840,7 +840,7 @@ int TSGetSLES(TS ts,SLES *sles)
 /* ----------- Routines to set solver parameters ---------- */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSSetDuration"></a>*/"TSSetDuration"
+#define __FUNC__ "TSSetDuration"
 /*@
    TSSetDuration - Sets the maximum number of timesteps to use and 
    maximum time for iteration.
@@ -873,7 +873,7 @@ int TSSetDuration(TS ts,int maxsteps,double maxtime)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSSetSolution"></a>*/"TSSetSolution"
+#define __FUNC__ "TSSetSolution"
 /*@
    TSSetSolution - Sets the initial solution vector
    for use by the TS routines.
@@ -899,7 +899,7 @@ int TSSetSolution(TS ts,Vec x)
 /* ------------ Routines to set performance monitoring options ----------- */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSSetMonitor"></a>*/"TSSetMonitor"
+#define __FUNC__ "TSSetMonitor"
 /*@C
    TSSetMonitor - Sets an ADDITIONAL function that is to be used at every
    timestep to display the iteration's  progress.   
@@ -947,7 +947,7 @@ int TSSetMonitor(TS ts,int (*monitor)(TS,int,double,Vec,void*),void *mctx,int (*
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSClearMonitor"></a>*/"TSClearMonitor"
+#define __FUNC__ "TSClearMonitor"
 /*@C
    TSClearMonitor - Clears all the monitors that have been set on a time-step object.   
 
@@ -974,7 +974,7 @@ int TSClearMonitor(TS ts)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSDefaultMonitor"></a>*/"TSDefaultMonitor"
+#define __FUNC__ "TSDefaultMonitor"
 int TSDefaultMonitor(TS ts,int step,double time,Vec v,void *ctx)
 {
   int ierr;
@@ -985,7 +985,7 @@ int TSDefaultMonitor(TS ts,int step,double time,Vec v,void *ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSStep"></a>*/"TSStep"
+#define __FUNC__ "TSStep"
 /*@
    TSStep - Steps the requested number of timesteps.
 
@@ -1012,18 +1012,18 @@ int TSStep(TS ts,int *steps,double *time)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (!ts->setupcalled) {ierr = TSSetUp(ts);CHKERRQ(ierr);}
-  ierr = PLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->step)(ts,steps,time);CHKERRQ(ierr);
-  ierr = PLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
-  ierr = OptionsHasName(ts->prefix,"-ts_view",&flg);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(ts->prefix,"-ts_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = TSView(ts,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = TSView(ts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSMonitor"></a>*/"TSMonitor"
+#define __FUNC__ "TSMonitor"
 /*
      Runs the user provided monitor routines, if they exists.
 */
@@ -1041,7 +1041,7 @@ int TSMonitor(TS ts,int step,double time,Vec x)
 /* ------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSLGMonitorCreate"></a>*/"TSLGMonitorCreate"
+#define __FUNC__ "TSLGMonitorCreate"
 /*@C
    TSLGMonitorCreate - Creates a line graph context for use with 
    TS to monitor convergence of preconditioned residual norms.
@@ -1061,7 +1061,7 @@ int TSMonitor(TS ts,int step,double time,Vec x)
 .  -ts_xmonitor - automatically sets line graph monitor
 
    Notes: 
-   Use TSLGMonitorDestroy() to destroy this line graph, not DrawLGDestroy().
+   Use TSLGMonitorDestroy() to destroy this line graph, not PetscDrawLGDestroy().
 
    Level: intermediate
 
@@ -1070,55 +1070,55 @@ int TSMonitor(TS ts,int step,double time,Vec x)
 .seealso: TSLGMonitorDestroy(), TSSetMonitor()
 
 @*/
-int TSLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,DrawLG *draw)
+int TSLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,PetscDrawLG *draw)
 {
-  Draw win;
+  PetscDraw win;
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = DrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
-  ierr = DrawSetType(win,DRAW_X);CHKERRQ(ierr);
-  ierr = DrawLGCreate(win,1,draw);CHKERRQ(ierr);
-  ierr = DrawLGIndicateDataPoints(*draw);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
+  ierr = PetscDrawLGCreate(win,1,draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGIndicateDataPoints(*draw);CHKERRQ(ierr);
 
-  PLogObjectParent(*draw,win);
+  PetscLogObjectParent(*draw,win);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSLGMonitor"></a>*/"TSLGMonitor"
+#define __FUNC__ "TSLGMonitor"
 int TSLGMonitor(TS ts,int n,double time,Vec v,void *monctx)
 {
-  DrawLG lg = (DrawLG) monctx;
+  PetscDrawLG lg = (PetscDrawLG) monctx;
   double x,y = time;
   int    ierr;
 
   PetscFunctionBegin;
   if (!monctx) {
     MPI_Comm comm;
-    Viewer   viewer;
+    PetscViewer   viewer;
 
     ierr   = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
-    viewer = VIEWER_DRAW_(comm);
-    ierr   = ViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
+    viewer = PETSC_VIEWER_DRAW_(comm);
+    ierr   = PetscViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
   }
 
-  if (!n) {ierr = DrawLGReset(lg);CHKERRQ(ierr);}
+  if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
   x = (double)n;
-  ierr = DrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
+  ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
   if (n < 20 || (n % 5)) {
-    ierr = DrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSLGMonitorDestroy"></a>*/"TSLGMonitorDestroy" 
+#define __FUNC__ "TSLGMonitorDestroy" 
 /*@C
    TSLGMonitorDestroy - Destroys a line graph context that was created 
    with TSLGMonitorCreate().
 
-   Collective on DrawLG
+   Collective on PetscDrawLG
 
    Input Parameter:
 .  draw - the drawing context
@@ -1129,20 +1129,20 @@ int TSLGMonitor(TS ts,int n,double time,Vec v,void *monctx)
 
 .seealso: TSLGMonitorCreate(),  TSSetMonitor(), TSLGMonitor();
 @*/
-int TSLGMonitorDestroy(DrawLG drawlg)
+int TSLGMonitorDestroy(PetscDrawLG drawlg)
 {
-  Draw draw;
+  PetscDraw draw;
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = DrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
-  ierr = DrawDestroy(draw);CHKERRQ(ierr);
-  ierr = DrawLGDestroy(drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(drawlg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSGetTime"></a>*/"TSGetTime"
+#define __FUNC__ "TSGetTime"
 /*@
    TSGetTime - Gets the current time.
 
@@ -1171,7 +1171,7 @@ int TSGetTime(TS ts,double* t)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSGetProblemType"></a>*/"TSGetProblemType" 
+#define __FUNC__ "TSGetProblemType" 
 /*@C
    TSGetProblemType - Returns the problem type of a TS (timestepper) context.
 
@@ -1199,7 +1199,7 @@ int TSGetProblemType(TS ts,TSProblemType *type)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name="TSSetOptionsPrefix"></a>*/"TSSetOptionsPrefix" 
+#define __FUNC__ "TSSetOptionsPrefix" 
 /*@C
    TSSetOptionsPrefix - Sets the prefix used for searching for all
    TS options in the database.
@@ -1244,7 +1244,7 @@ int TSSetOptionsPrefix(TS ts,char *prefix)
 
 
 #undef __FUNC__
-#define __FUNC__ /*<a name="TSAppendOptionsPrefix"></a>*/"TSAppendOptionsPrefix" 
+#define __FUNC__ "TSAppendOptionsPrefix" 
 /*@C
    TSAppendOptionsPrefix - Appends to the prefix used for searching for all
    TS options in the database.
@@ -1288,7 +1288,7 @@ int TSAppendOptionsPrefix(TS ts,char *prefix)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name="TSGetOptionsPrefix"></a>*/"TSGetOptionsPrefix"
+#define __FUNC__ "TSGetOptionsPrefix"
 /*@C
    TSGetOptionsPrefix - Sets the prefix used for searching for all
    TS options in the database.
@@ -1323,7 +1323,7 @@ int TSGetOptionsPrefix(TS ts,char **prefix)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name="TSGetRHSMatrix"></a>*/"TSGetRHSMatrix"
+#define __FUNC__ "TSGetRHSMatrix"
 /*@C
    TSGetRHSMatrix - Returns the matrix A at the present timestep.
 
@@ -1359,7 +1359,7 @@ int TSGetRHSMatrix(TS ts,Mat *A,Mat *M,void **ctx)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name="TSGetRHSJacobian"></a>*/"TSGetRHSJacobian"
+#define __FUNC__ "TSGetRHSJacobian"
 /*@C
    TSGetRHSJacobian - Returns the Jacobian J at the present timestep.
 
@@ -1436,14 +1436,14 @@ $     -ts_type my_solver
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSRegister"></a>*/"TSRegister"
+#define __FUNC__ "TSRegister"
 int TSRegister(char *sname,char *path,char *name,int (*function)(TS))
 {
   char fullname[256];
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = FListAdd(&TSList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&TSList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

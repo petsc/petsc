@@ -1,26 +1,26 @@
-/*$Id: matioall.c,v 1.20 2000/10/24 20:26:14 bsmith Exp bsmith $*/
+/*$Id: matioall.c,v 1.21 2000/11/10 16:34:13 bsmith Exp bsmith $*/
 
 #include "petscmat.h"
 
 EXTERN_C_BEGIN
-EXTERN int MatLoad_MPIRowbs(Viewer,MatType,Mat*);
-EXTERN int MatLoad_SeqAIJ(Viewer,MatType,Mat*);
-EXTERN int MatLoad_MPIAIJ(Viewer,MatType,Mat*);
-EXTERN int MatLoad_SeqBDiag(Viewer,MatType,Mat*);
-EXTERN int MatLoad_MPIBDiag(Viewer,MatType,Mat*);
-EXTERN int MatLoad_SeqDense(Viewer,MatType,Mat*);
-EXTERN int MatLoad_MPIDense(Viewer,MatType,Mat*);
-EXTERN int MatLoad_SeqBAIJ(Viewer,MatType,Mat*);
-EXTERN int MatLoad_SeqAdj(Viewer,MatType,Mat*);
-EXTERN int MatLoad_MPIBAIJ(Viewer,MatType,Mat*);
-EXTERN int MatLoad_SeqSBAIJ(Viewer,MatType,Mat*);
-EXTERN int MatLoad_MPISBAIJ(Viewer,MatType,Mat*);
-EXTERN int MatLoad_MPIRowbs(Viewer,MatType,Mat*);
+EXTERN int MatLoad_MPIRowbs(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_SeqAIJ(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_MPIAIJ(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_SeqBDiag(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_MPIBDiag(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_SeqDense(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_MPIDense(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_SeqBAIJ(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_SeqAdj(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_MPIBAIJ(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_SeqSBAIJ(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_MPISBAIJ(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_MPIRowbs(PetscViewer,MatType,Mat*);
 EXTERN_C_END
 extern PetscTruth MatLoadRegisterAllCalled;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLoadRegisterAll"
+#define __FUNC__ "MatLoadRegisterAll"
 /*@C
     MatLoadRegisterAll - Registers all standard matrix type routines to load
         matrices from a binary file.
@@ -62,7 +62,7 @@ EXTERN int MatConvertTo_MPIAdj(Mat,MatType,Mat*);
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatConvertRegisterAll"
+#define __FUNC__ "MatConvertRegisterAll"
 /*@C
     MatConvertRegisterAll - Registers all standard matrix type routines to convert to
 

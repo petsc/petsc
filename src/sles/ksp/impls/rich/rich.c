@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.97 2000/09/28 21:13:24 bsmith Exp bsmith $*/
+/*$Id: rich.c,v 1.98 2000/11/01 21:46:25 bsmith Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -6,7 +6,7 @@
 #include "src/sles/ksp/impls/rich/richctx.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetUp_Richardson"
+#define __FUNC__ "KSPSetUp_Richardson"
 int KSPSetUp_Richardson(KSP ksp)
 {
   int ierr;
@@ -19,7 +19,7 @@ int KSPSetUp_Richardson(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSolve_Richardson"
+#define __FUNC__ "KSPSolve_Richardson"
 int  KSPSolve_Richardson(KSP ksp,int *its)
 {
   int             i,maxit,ierr;
@@ -118,17 +118,17 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPView_Richardson" 
-int KSPView_Richardson(KSP ksp,Viewer viewer)
+#define __FUNC__ "KSPView_Richardson" 
+int KSPView_Richardson(KSP ksp,PetscViewer viewer)
 {
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
   int            ierr;
   PetscTruth     isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"  Richardson: damping factor=%g\n",richardsonP->scale);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Richardson: damping factor=%g\n",richardsonP->scale);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for KSP Richardson",((PetscObject)viewer)->type_name);
   }
@@ -136,7 +136,7 @@ int KSPView_Richardson(KSP ksp,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetFromOptions_Richardson"
+#define __FUNC__ "KSPSetFromOptions_Richardson"
 int KSPSetFromOptions_Richardson(KSP ksp)
 {
   KSP_Richardson *rich = (KSP_Richardson*)ksp->data;
@@ -145,16 +145,16 @@ int KSPSetFromOptions_Richardson(KSP ksp)
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("KSP Richardson Options");CHKERRQ(ierr);
-    ierr = OptionsDouble("-ksp_richardson_scale","damping factor","KSPRichardsonSetScale",rich->scale,&tmp,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("KSP Richardson Options");CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-ksp_richardson_scale","damping factor","KSPRichardsonSetScale",rich->scale,&tmp,&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPRichardsonSetScale(ksp,tmp);CHKERRQ(ierr); }
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPRichardsonSetScale_Richardson"
+#define __FUNC__ "KSPRichardsonSetScale_Richardson"
 int KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 {
   KSP_Richardson *richardsonP;
@@ -168,14 +168,15 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPCreate_Richardson"
+#define __FUNC__ "KSPCreate_Richardson"
 int KSPCreate_Richardson(KSP ksp)
 {
   int            ierr;
-  KSP_Richardson *richardsonP = PetscNew(KSP_Richardson);CHKPTRQ(richardsonP);
+  KSP_Richardson *richardsonP;
 
   PetscFunctionBegin;
-  PLogObjectMemory(ksp,sizeof(KSP_Richardson));
+  ierr = PetscNew(KSP_Richardson,&richardsonP);CHKERRQ(ierr);
+  PetscLogObjectMemory(ksp,sizeof(KSP_Richardson));
   ksp->data                        = (void*)richardsonP;
   richardsonP->scale               = 1.0;
   ksp->calc_res                    = PETSC_TRUE;

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.62 2000/09/22 20:43:24 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.63 2000/09/28 21:10:40 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   Scalar     one = 1.0,two = 2.0,three = 3.0,dots[3],dot;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* 
      Create a vector, specifying only its global dimension.

@@ -1,4 +1,4 @@
-/*$Id: appalgebra.c,v 1.13 2000/08/24 22:43:38 bsmith Exp bsmith $*/
+/*$Id: appalgebra.c,v 1.14 2000/10/24 20:27:47 bsmith Exp bsmith $*/
 #include "appctx.h"
 #include "math.h"
 
@@ -68,7 +68,7 @@ int AppCtxSolve(AppCtx* appctx, int *its)
   /* view sparsity structure of the matrix */
   if (appctx->view.show_matrix) {  
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The stiffness matrix, before bc applied\n");CHKERRQ(ierr);
-    ierr = MatView(appctx->algebra.A,VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+    ierr = MatView(appctx->algebra.A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
 
 
@@ -78,7 +78,7 @@ int AppCtxSolve(AppCtx* appctx, int *its)
   /* view sparsity structure of the matrix */
   if(appctx->view.show_matrix) {  
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The stiffness matrix, after bc applied\n");CHKERRQ(ierr);
-    ierr = MatView(appctx->algebra.A,VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+    ierr = MatView(appctx->algebra.A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
 
   PreLoadBegin(PETSC_TRUE,"Solver setup");  
@@ -101,7 +101,7 @@ int AppCtxSolve(AppCtx* appctx, int *its)
 
     {
       PetscTruth flg;
-      ierr = OptionsHasName(PETSC_NULL,"-save_global_preconditioner",&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(PETSC_NULL,"-save_global_preconditioner",&flg);CHKERRQ(ierr);
       if (flg) {
 	PC pc;
 	KSP ksp;
@@ -111,14 +111,14 @@ int AppCtxSolve(AppCtx* appctx, int *its)
 	ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
 	ierr = PCComputeExplicitOperator(pc,&mat);CHKERRQ(ierr);
 	ierr = KSPComputeExplicitOperator(ksp,&mat2);CHKERRQ(ierr);
-	ierr = ViewerASCIIOpen(PETSC_COMM_WORLD,"pc.m",&viewer);CHKERRQ(ierr);
-	ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,"pc");
+	ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"pc.m",&viewer);CHKERRQ(ierr);
+	ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"pc");
 	ierr = MatView(mat,viewer);CHKERRQ(ierr);
-	ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,"BA");
+	ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"BA");
 	ierr = MatView(mat2,viewer);CHKERRQ(ierr);
 	ierr = MatDestroy(mat);CHKERRQ(ierr);
 	ierr = MatDestroy(mat2);CHKERRQ(ierr);
-	ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
       }
     }
 

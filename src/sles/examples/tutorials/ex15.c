@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.17 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex15.c,v 1.18 2000/10/24 20:26:55 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.  Also\n\
 illustrates setting a user-defined shell preconditioner and using the\n\
@@ -61,8 +61,8 @@ int main(int argc,char **args)
   PetscTruth    user_defined_pc;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
@@ -155,7 +155,7 @@ int main(int argc,char **args)
   /*
      Set a user-defined "shell" preconditioner if desired
   */
-  ierr = OptionsHasName(PETSC_NULL,"-user_defined_pc",&user_defined_pc);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-user_defined_pc",&user_defined_pc);CHKERRA(ierr);
   if (user_defined_pc) {
     /* (Required) Indicate to PETSc that we're using a "shell" preconditioner */
     ierr = PCSetType(pc,PCSHELL);CHKERRA(ierr);
@@ -235,9 +235,12 @@ int main(int argc,char **args)
 */
 int SampleShellPCCreate(SampleShellPC **shell)
 {
-  SampleShellPC *newctx = PetscNew(SampleShellPC);CHKPTRQ(newctx);
+  SampleShellPC *newctx;
+  int           ierr;
+
+  ierr         = PetscNew(SampleShellPC,&newctx);CHKERRQ(ierr);
   newctx->diag = 0;
-  *shell = newctx;
+  *shell       = newctx;
   return 0;
 }
 /* ------------------------------------------------------------------- */

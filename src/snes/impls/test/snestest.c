@@ -1,4 +1,4 @@
-/*$Id: snestest.c,v 1.52 2000/09/02 02:49:41 bsmith Exp bsmith $*/
+/*$Id: snestest.c,v 1.53 2000/09/28 21:14:17 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 
@@ -11,7 +11,7 @@ typedef struct {
      matches one compute via finite differences.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESSolve_Test"
+#define __FUNC__ "SNESSolve_Test"
 int SNESSolve_Test(SNES snes,int *its)
 {
   Mat          A = snes->jacobian,B;
@@ -46,7 +46,7 @@ int SNESSolve_Test(SNES snes,int *its)
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);CHKERRQ(ierr);
     if (neP->complete_print) {
       ierr = PetscPrintf(snes->comm,"Finite difference Jacobian\n");CHKERRQ(ierr);
-      ierr = MatView(B,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     /* compare */
     ierr = MatAXPY(&mone,A,B);CHKERRQ(ierr);
@@ -54,7 +54,7 @@ int SNESSolve_Test(SNES snes,int *its)
     ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
     if (neP->complete_print) {
       ierr = PetscPrintf(snes->comm,"Hand-coded Jacobian\n");CHKERRQ(ierr);
-      ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = PetscPrintf(snes->comm,"Norm of matrix ratio %g difference %g\n",norm/gnorm,norm);CHKERRQ(ierr);
   }
@@ -63,7 +63,7 @@ int SNESSolve_Test(SNES snes,int *its)
 }
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESDestroy_Test"
+#define __FUNC__ "SNESDestroy_Test"
 int SNESDestroy_Test(SNES snes)
 {
   PetscFunctionBegin;
@@ -71,7 +71,7 @@ int SNESDestroy_Test(SNES snes)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESSetFromOptions_Test"
+#define __FUNC__ "SNESSetFromOptions_Test"
 static int SNESSetFromOptions_Test(SNES snes)
 {
   SNES_Test  *ls = (SNES_Test *)snes->data;
@@ -79,16 +79,16 @@ static int SNESSetFromOptions_Test(SNES snes)
 
   PetscFunctionBegin;
 
-  ierr = OptionsHead("Hand-coded Jacobian tester options");CHKERRQ(ierr);
-    ierr = OptionsName("-snes_test_display","Display difference between approximate and handcoded Jacobian","None",&ls->complete_print);CHKERRQ(ierr);
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsHead("Hand-coded Jacobian tester options");CHKERRQ(ierr);
+    ierr = PetscOptionsName("-snes_test_display","Display difference between approximate and handcoded Jacobian","None",&ls->complete_print);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------ */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESCreate_Test"
+#define __FUNC__ "SNESCreate_Test"
 int SNESCreate_Test(SNES  snes)
 {
   SNES_Test *neP;
@@ -103,8 +103,8 @@ int SNESCreate_Test(SNES  snes)
   snes->converged	= SNESConverged_EQ_LS;
   snes->setfromoptions  = SNESSetFromOptions_Test;
 
-  neP			= PetscNew(SNES_Test);CHKPTRQ(neP);
-  PLogObjectMemory(snes,sizeof(SNES_Test));
+  ierr			= PetscNew(SNES_Test,&neP);CHKERRQ(ierr);
+  PetscLogObjectMemory(snes,sizeof(SNES_Test));
   snes->data    	= (void*)neP;
   neP->complete_print   = PETSC_FALSE;
   PetscFunctionReturn(0);

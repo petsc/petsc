@@ -1,4 +1,4 @@
-/* $Id: ximpl.h,v 1.14 2000/05/05 22:13:35 balay Exp bsmith $ */
+/* $Id: ximpl.h,v 1.15 2000/09/28 21:08:36 bsmith Exp bsmith $ */
 
 /*
       Defines the internal data structures for the X-windows 
@@ -44,7 +44,7 @@ typedef struct {
     PixVal   cmapping[256];
     int      x,y,w,h;      /* Size and location of window */
     Drawable drw;
-} Draw_X;
+} PetscDraw_X;
 
 #define XiDrawable(w) ((w)->drw ? (w)->drw : (w)->win)
 

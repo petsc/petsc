@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.13 2000/01/06 20:43:22 bsmith Exp bsmith $*/
 static char help[] ="Solves the 2d Burgers equation. \n  u*du/dx + v*du/dy - c(lap(u)) = f. \n  u*dv/dx + v*dv/dy - c(lap(v)) = g.  This has exact solution, see Fletcher.\n  This version has new indexing of Degrees of Freedom";
 
 #include "appctx.h"
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
     algebra = &appctx->algebra;
     ierr = VecScatterBegin(algebra->g,algebra->f_local,INSERT_VALUES,SCATTER_FORWARD,algebra->dfgtol);CHKERRQ(ierr);
     ierr = VecScatterEnd(algebra->g,algebra->f_local,INSERT_VALUES,SCATTER_FORWARD,algebra->dfgtol);CHKERRQ(ierr);
-    ierr = DrawZoom(appctx->view.drawglobal,AppCtxViewSolution,appctx);CHKERRA(ierr);
+    ierr = PetscDrawZoom(appctx->view.drawglobal,AppCtxViewSolution,appctx);CHKERRA(ierr);
   }
 
   /* Send solution to  matlab viewer */

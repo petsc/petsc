@@ -1,11 +1,11 @@
-/*$Id: none.c,v 1.27 2000/04/12 04:24:34 bsmith Exp balay $*/
+/*$Id: none.c,v 1.28 2000/05/05 22:17:03 balay Exp bsmith $*/
 /*
     Identity preconditioner, simply copies vector x to y.
 */
 #include "src/sles/pc/pcimpl.h"          /*I "petscpc.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_None"
+#define __FUNC__ "PCApply_None"
 int PCApply_None(PC pc,Vec x,Vec y)
 {
   int ierr;
@@ -17,7 +17,7 @@ int PCApply_None(PC pc,Vec x,Vec y)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCreate_None"
+#define __FUNC__ "PCCreate_None"
 int PCCreate_None(PC pc)
 {
   PetscFunctionBegin;

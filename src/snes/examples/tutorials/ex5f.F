@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.54 2000/09/22 20:46:14 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.55 2000/10/24 20:27:14 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -89,9 +89,9 @@
       lambda     = 6.0
       mx         = 4
       my         = 4
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
-      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
+      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRA(1,' ',ierr)
@@ -113,8 +113,8 @@
 
       Nx = PETSC_DECIDE
       Ny = PETSC_DECIDE
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
       if (Nx*Ny .ne. size .and.                                         &
      &      (Nx .ne. PETSC_DECIDE .or. Ny .ne. PETSC_DECIDE)) then
          if (rank .eq. 0)  then
@@ -130,7 +130,7 @@
 !
 !   Visualize the distribution of the array across the processors
 !
-!     call DAView(da,VIEWER_DRAW_WORLD,ierr)
+!     call DAView(da,PETSC_VIEWER_DRAW_WORLD,ierr)
 
 !  Extract global and local vectors from DA; then duplicate for remaining
 !  vectors that are the same types
@@ -188,7 +188,7 @@
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,  &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,  &
      &                    ierr)
       if (matrix_free .eq. 0) then
          if (size .eq. 1) then
@@ -430,10 +430,10 @@
 !  Insert values into global vector
 
       call DALocalToGlobal(da,localF,INSERT_VALUES,F,ierr)
-      call PLogFlops(11*ym*xm,ierr)
+      call PetscLogFlops(11*ym*xm,ierr)
 
-!      call VecView(X,VIEWER_STDOUT_WORLD,ierr)
-!      call VecView(F,VIEWER_STDOUT_WORLD,ierr)
+!      call VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr)
+!      call VecView(F,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
       return 
       end

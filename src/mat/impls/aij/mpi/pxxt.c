@@ -1,156 +1,159 @@
-/*$Id: essl.c,v 1.44 2000/09/28 21:11:00 bsmith Exp $*/
+/*$Id: xxt.c,v 1.1 2000/11/30 03:57:22 bsmith Exp bsmith $*/
 
 /* 
-        Provides an interface to the IBM RS6000 Essl sparse solver
+        Provides an interface to the Tufo-Fischer parallel direct solver
 
 */
-#include "src/mat/impls/aij/seq/aij.h"
+#include "src/mat/impls/aij/mpi/mpiaij.h"
 
-#if defined(PETSC_HAVE_ESSL) && !defined(__cplusplus)
-/* #include <essl.h> This doesn't work!  */
+#if defined(PETSC_HAVE_XXT) && !defined(__cplusplus)
+#include "xxt.h"
 
 typedef struct {
-   int       n,nz;
-   Scalar    *a;
-   int       *ia;
-   int       *ja;
-   int       lna;
-   int       iparm[5];
-   PetscReal rparm[5];
-   PetscReal oparm[5];
-   Scalar    *aux;
-   int       naux;
-} Mat_SeqAIJ_Essl;
+  xxt_ADT xxt;
+  Vec     b,xd,xo;
+  int     nd;
+} Mat_MPIAIJ_XXT;
 
 
-EXTERN int MatDestroy_SeqAIJ(Mat);
+EXTERN int MatDestroy_MPIAIJ(Mat);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatDestroy_SeqAIJ_Essl"></a>*/"MatDestroy_SeqAIJ_Essl"
-int MatDestroy_SeqAIJ_Essl(Mat A)
+#define __FUNC__ "MatDestroy_MPIAIJ_XXT"
+int MatDestroy_MPIAIJ_XXT(Mat A)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)a->spptr;
-  int             ierr;
+  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJ_XXT *xxt = (Mat_MPIAIJ_XXT*)a->spptr;
+  int            ierr;
 
   PetscFunctionBegin;
-  /* free the Essl datastructures */
-  ierr = PetscFree(essl->a);CHKERRQ(ierr);
-  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  /* free the XXT datastructures */
+  XXT_free(xxt->xxt); 
+  ierr = PetscFree(xxt);CHKERRQ(ierr);
+  ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatSolve_SeqAIJ_Essl"></a>*/"MatSolve_SeqAIJ_Essl"
-int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
+#define __FUNC__ "MatSolve_MPIAIJ_XXT"
+int MatSolve_MPIAIJ_XXT(Mat A,Vec b,Vec x)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)a->spptr;
-  Scalar          *xx;
-  int             ierr,m,zero = 0;
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJ_XXT *xxt = (Mat_MPIAIJ_XXT*)a->spptr;
+  Scalar         *bb,*xx;
+  int            ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalSize(b,&m);CHKERRQ(ierr);
-  ierr = VecCopy(b,x);CHKERRQ(ierr);
+  ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  dgss(&zero,&a->n,essl->a,essl->ia,essl->ja,&essl->lna,xx,essl->aux,&essl->naux);
+  XXT_solve(xxt->xxt,xx,bb);
+  ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatLUFactorNumeric_SeqAIJ_Essl"></a>*/"MatLUFactorNumeric_SeqAIJ_Essl"
-int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
+#define __FUNC__ "MatLUFactorNumeric_MPIAIJ_XXT"
+int MatLUFactorNumeric_MPIAIJ_XXT(Mat A,Mat *F)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)(*F)->data;
-  Mat_SeqAIJ      *aa = (Mat_SeqAIJ*)(A)->data;
-  Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)a->spptr;
-  int             i,ierr,one = 1;
-
   PetscFunctionBegin;
-  /* copy matrix data into silly ESSL data structure */
-  if (!a->indexshift) {
-    for (i=0; i<aa->m+1; i++) essl->ia[i] = aa->i[i] + 1;
-    for (i=0; i<aa->nz; i++) essl->ja[i]  = aa->j[i] + 1;
-  } else {
-    ierr = PetscMemcpy(essl->ia,aa->i,(aa->m+1)*sizeof(int));CHKERRQ(ierr);
-    ierr = PetscMemcpy(essl->ja,aa->j,(aa->nz)*sizeof(int));CHKERRQ(ierr);
-  }
-  ierr = PetscMemcpy(essl->a,aa->a,(aa->nz)*sizeof(Scalar));CHKERRQ(ierr);
-  
-  /* set Essl options */
-  essl->iparm[0] = 1; 
-  essl->iparm[1] = 5;
-  essl->iparm[2] = 1;
-  essl->iparm[3] = 0;
-  essl->rparm[0] = 1.e-12;
-  essl->rparm[1] = A->lupivotthreshold;
-
-  dgsf(&one,&aa->m,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,
-               essl->rparm,essl->oparm,essl->aux,&essl->naux);
-
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatLUFactorSymbolic_SeqAIJ_Essl"></a>*/"MatLUFactorSymbolic_SeqAIJ_Essl"
-int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatLUInfo,Mat *F)
+#define __FUNC__ "LocalMult"
+static int LocalMult(Mat_MPIAIJ *a,Scalar *xin,Scalar *xout)
 {
-  Mat             B;
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*b;
-  int             ierr,*ridx,*cidx,i,len;
-  Mat_SeqAIJ_Essl *essl;
-  PetscReal       f = 1.0;
+  int            ierr;
+  Mat_MPIAIJ_XXT *xxt = (Mat_MPIAIJ_XXT*)a->spptr;
+
+  PetscFunctionBegin;
+  ierr = VecPlaceArray(xxt->b,xout);CHKERRQ(ierr);
+  ierr = VecPlaceArray(xxt->xd,xin);CHKERRQ(ierr);
+  ierr = VecPlaceArray(xxt->xo,xin+xxt->nd);CHKERRQ(ierr);
+  ierr = MatMult(a->A,xxt->xd,xxt->b);CHKERRQ(ierr);
+  ierr = MatMultAdd(a->B,xxt->xo,xxt->b,xxt->b);CHKERRQ(ierr);
+  /*
+  PetscDoubleView(a->A->n+a->B->n,xin,PETSC_VIEWER_STDOUT_WORLD);
+  PetscDoubleView(a->A->m,xout,PETSC_VIEWER_STDOUT_WORLD);
+  */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorSymbolic_MPIAIJ_XXT"
+int MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+{
+  Mat            B;
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data,*b;
+  int            ierr,err,*localtoglobal,ncol,i;
+  Mat_MPIAIJ_XXT *xxt;
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr           = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(A->comm,A->m,A->n,A->M,A->N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
   B                       = *F;
-  B->ops->solve           = MatSolve_SeqAIJ_Essl;
-  B->ops->destroy         = MatDestroy_SeqAIJ_Essl;
-  B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Essl;
+  B->ops->solve           = MatSolve_MPIAIJ_XXT;
+  B->ops->destroy         = MatDestroy_MPIAIJ_XXT;
+  B->ops->lufactornumeric = MatLUFactorNumeric_MPIAIJ_XXT;
   B->factor               = FACTOR_LU;
-  b                       = (Mat_SeqAIJ*)B->data;
-  essl                    = PetscNew(Mat_SeqAIJ_Essl);CHKPTRQ(essl);
-  b->spptr                = (void*)essl;
+  b                       = (Mat_MPIAIJ*)B->data;
+  ierr                    = PetscNew(Mat_MPIAIJ_XXT,&xxt);CHKERRQ(ierr);
+  b->spptr = a->spptr     = (void*)xxt;
 
-  /* allocate the work arrays required by ESSL */
-  if (info) f = info->fill;
-  essl->nz   = a->nz;
-  essl->lna  = (int)a->nz*f;
-  essl->naux = 100 + 10*a->m;
+  xxt->xxt = XXT_new();
+  /* generate the local to global mapping */
+  ncol = a->A->n + a->B->n;
+  ierr = PetscMalloc((ncol)*sizeof(int),&localtoglobal);CHKERRQ(ierr);
+  for (i=0; i<a->A->n; i++) {
+    localtoglobal[i] = a->cstart + i + 1;
+  }
+  for (i=0; i<a->B->n; i++) {
+    localtoglobal[i+a->A->n] = a->garray[i] + 1;
+  }
+  /*
+  PetscIntView(ncol,localtoglobal,PETSC_VIEWER_STDOUT_WORLD);
+  */
 
-  /* since malloc is slow on IBM we try a single malloc */
-  len        = essl->lna*(2*sizeof(int)+sizeof(Scalar)) + essl->naux*sizeof(Scalar);
-  essl->a    = (Scalar*)PetscMalloc(len);CHKPTRQ(essl->a);
-  essl->aux  = essl->a + essl->lna;
-  essl->ia   = (int*)(essl->aux + essl->naux);
-  essl->ja   = essl->ia + essl->lna;
+  /* generate the vectors needed for the local solves */
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->A->m,PETSC_NULL,&xxt->b);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->A->n,PETSC_NULL,&xxt->xd);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->B->n,PETSC_NULL,&xxt->xo);CHKERRQ(ierr);
+  xxt->nd = a->A->n;
 
-  PLogObjectMemory(B,len+sizeof(Mat_SeqAIJ_Essl));
+  /* factor the beast */
+  err = XXT_factor(xxt->xxt,localtoglobal,A->m,ncol,(void*)LocalMult,a);
+  if (!err) SETERRQ(1,"Error in XXT_factor()");
+
+  ierr = VecDestroy(xxt->b);CHKERRQ(ierr);
+  ierr = VecDestroy(xxt->xd);CHKERRQ(ierr);
+  ierr = VecDestroy(xxt->xo);CHKERRQ(ierr);
+  ierr = PetscFree(localtoglobal);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatUseEssl_SeqAIJ"></a>*/"MatUseEssl_SeqAIJ"
-int MatUseEssl_SeqAIJ(Mat A)
+#define __FUNC__ "MatUseXXT_MPIAIJ"
+int MatUseXXT_MPIAIJ(Mat A)
 {
   PetscFunctionBegin;
-  A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Essl;
-  PLogInfo(0,"Using ESSL for SeqAIJ LU factorization and solves");
+  A->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJ_XXT;
+  PetscLogInfo(0,"Using XXT for MPIAIJ LU factorization and solves");
   PetscFunctionReturn(0);
 }
 
 #else
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatUseEssl_SeqAIJ"
-int MatUseEssl_SeqAIJ(Mat A)
+#define __FUNC__ "MatUseXXT_MPIAIJ"
+int MatUseXXT_MPIAIJ(Mat A)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
 #endif
+
 
 

@@ -1,15 +1,15 @@
-/*$Id: ao.c,v 1.36 2000/08/01 20:57:53 bsmith Exp bsmith $*/
+/*$Id: ao.c,v 1.37 2000/09/28 21:15:09 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
 #include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AOView" 
+#define __FUNC__ "AOView" 
 /*@C
    AOView - Displays an application ordering.
 
-   Collective on AO and Viewer
+   Collective on AO and PetscViewer
 
    Input Parameters:
 +  ao - the application ordering context
@@ -19,33 +19,33 @@
 
    Note:
    The available visualization contexts include
-+     VIEWER_STDOUT_SELF - standard output (default)
--     VIEWER_STDOUT_WORLD - synchronized standard
++     PETSC_VIEWER_STDOUT_SELF - standard output (default)
+-     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
          the file.  All other processors send their 
          data to the first processor to print. 
 
    The user can open an alternative visualization context with
-   ViewerASCIIOpen() - output to a specified file.
+   PetscViewerASCIIOpen() - output to a specified file.
 
 .keywords: application ordering
 
-.seealso: ViewerASCIIOpen()
+.seealso: PetscViewerASCIIOpen()
 @*/
-int AOView(AO ao,Viewer viewer)
+int AOView(AO ao,PetscViewer viewer)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_(ao->comm);
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ao->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   ierr = (*ao->ops->view)(ao,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODestroy" 
+#define __FUNC__ "AODestroy" 
 /*@
    AODestroy - Destroys an application ordering set.
 
@@ -79,7 +79,7 @@ int AODestroy(AO ao)
 
 /* ---------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AOPetscToApplicationIS" 
+#define __FUNC__ "AOPetscToApplicationIS" 
 /*@
    AOPetscToApplicationIS - Maps an index set in the PETSc ordering to 
    the application-defined ordering.
@@ -127,7 +127,7 @@ int AOPetscToApplicationIS(AO ao,IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AOApplicationToPetscIS" 
+#define __FUNC__ "AOApplicationToPetscIS" 
 /*@
    AOApplicationToPetscIS - Maps an index set in the application-defined
    ordering to the PETSc ordering.
@@ -174,7 +174,7 @@ int AOApplicationToPetscIS(AO ao,IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AOPetscToApplication" 
+#define __FUNC__ "AOPetscToApplication" 
 /*@
    AOPetscToApplication - Maps a set of integers in the PETSc ordering to 
    the application-defined ordering.
@@ -209,7 +209,7 @@ int AOPetscToApplication(AO ao,int n,int *ia)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AOApplicationToPetsc" 
+#define __FUNC__ "AOApplicationToPetsc" 
 /*@
    AOApplicationToPetsc - Maps a set of integers in the application-defined
    ordering to the PETSc ordering.

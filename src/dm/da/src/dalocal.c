@@ -1,4 +1,4 @@
-/*$Id: dalocal.c,v 1.25 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: dalocal.c,v 1.26 2000/09/13 03:13:00 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DACreateLocalVector"
+#define __FUNC__ "DACreateLocalVector"
 /*@C
    DACreateLocalVector - Creates a Seq PETSc vector that
    may be used with the DAXXX routines.
@@ -30,7 +30,7 @@
 
 .seealso: DACreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
           DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
-          DAGlobalToLocalEnd(), DALocalToGlobal()
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DAGetLocalVector(), DARestoreLocalVector()
 @*/
 int DACreateLocalVector(DA da,Vec* g)
 {
@@ -40,5 +40,195 @@ int DACreateLocalVector(DA da,Vec* g)
   PetscValidHeaderSpecific(da,DA_COOKIE);
   ierr = VecDuplicate(da->local,g);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DAGetLocalVector"
+/*@C
+   DAGetLocalVector - Gets a Seq PETSc vector that
+   may be used with the DAXXX routines.
+
+   Not Collective
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameter:
+.  g - the local vector
+
+   Level: beginner
+
+   Note:
+   The output parameter, g, is a regular PETSc vector that should be returned with 
+   DAVecRestoreArray() DO NOT call VecDestroy() on it.
+
+.keywords: distributed array, create, local, vector
+
+.seealso: DACreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
+          DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateLocalVector(), DARestoreLocalVector()
+@*/
+int DAGetLocalVector(DA da,Vec* g)
+{
+  int ierr,i;
+
+  PetscFunctionBegin; 
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  for (i=0; i<10; i++) {
+    if (da->localin[i]) {
+      *g             = da->localin[i];
+      da->localin[i] = PETSC_NULL;
+      goto alldone;
+    }
+  }
+  ierr = VecDuplicate(da->local,g);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
+
+  alldone:
+  for (i=0; i<10; i++) {
+    if (!da->localout[i]) {
+      da->localout[i] = *g;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DARestoreLocalVector"
+/*@C
+   DARestoreLocalVector - Returns a Seq PETSc vector that
+     obtained from DAGetLocalVector(). Do not use with vector obtained via
+     DACreateLocalVector().
+
+   Not Collective
+
+   Input Parameter:
++  da - the distributed array
+-  g - the local vector
+
+   Level: beginner
+
+.keywords: distributed array, create, local, vector
+
+.seealso: DACreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
+          DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateLocalVector(), DAGetLocalVector()
+@*/
+int DARestoreLocalVector(DA da,Vec* g)
+{
+  int ierr,i,j;
+
+  PetscFunctionBegin; 
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  for (j=0; j<10; j++) {
+    if (*g == da->localout[j]) {
+      da->localout[j] = PETSC_NULL;
+      for (i=0; i<10; i++) {
+        if (!da->localin[i]) {
+          da->localin[i] = *g;
+          goto alldone;
+        }
+      }
+    }
+  }
+  ierr = VecDestroy(*g);CHKERRQ(ierr);
+  alldone:
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DAGetGlobalVector"
+/*@C
+   DAGetGlobalVector - Gets a MPI PETSc vector that
+   may be used with the DAXXX routines.
+
+   Collective on DA
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameter:
+.  g - the global vector
+
+   Level: beginner
+
+   Note:
+   The output parameter, g, is a regular PETSc vector that should be returned with 
+   DAVecRestoreArray() DO NOT call VecDestroy() on it.
+
+.keywords: distributed array, create, Global, vector
+
+.seealso: DACreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
+          DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateLocalVector(), DARestoreLocalVector()
+@*/
+int DAGetGlobalVector(DA da,Vec* g)
+{
+  int ierr,i;
+
+  PetscFunctionBegin; 
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  for (i=0; i<10; i++) {
+    if (da->globalin[i]) {
+      *g             = da->globalin[i];
+      da->globalin[i] = PETSC_NULL;
+      goto alldone;
+    }
+  }
+  ierr = VecDuplicate(da->global,g);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
+
+  alldone:
+  for (i=0; i<10; i++) {
+    if (!da->globalout[i]) {
+      da->globalout[i] = *g;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DARestoreGlobalVector"
+/*@C
+   DARestoreGlobalVector - Returns a Seq PETSc vector that
+     obtained from DAGetGlobalVector(). Do not use with vector obtained via
+     DACreateGlobalVector().
+
+   Not Collective
+
+   Input Parameter:
++  da - the distributed array
+-  g - the global vector
+
+   Level: beginner
+
+.keywords: distributed array, create, global, vector
+
+.seealso: DACreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
+          DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToGlobalBegin(),
+          DAGlobalToGlobalEnd(), DAGlobalToGlobal(), DACreateLocalVector(), DAGetGlobalVector()
+@*/
+int DARestoreGlobalVector(DA da,Vec* g)
+{
+  int ierr,i,j;
+
+  PetscFunctionBegin; 
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  for (j=0; j<10; j++) {
+    if (*g == da->globalout[j]) {
+      da->globalout[j] = PETSC_NULL;
+      for (i=0; i<10; i++) {
+        if (!da->globalin[i]) {
+          da->globalin[i] = *g;
+          goto alldone;
+        }
+      }
+    }
+  }
+  ierr = VecDestroy(*g);CHKERRQ(ierr);
+  alldone:
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.20 2000/05/05 22:18:00 balay Exp bsmith $";
+!    "$Id: ex14f.F,v 1.21 2000/09/22 20:45:46 bsmith Exp bsmith $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -101,12 +101,12 @@
 !
       mx = 4
       my = 4
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
       N = mx*my
 
       nooutput = 0
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-no_output',nooutput,    &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-no_output',nooutput,    &
      &                    ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -124,8 +124,8 @@
 !  
       Nx = PETSC_DECIDE
       Ny = PETSC_DECIDE
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
       call DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,mx,           &
      &     my,Nx,Ny,1,1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,          &
      &     da,ierr)
@@ -169,7 +169,7 @@
 !     Note: we put B into a common block so it will be visible to the
 !     mymult() routine
       usemf = 0
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-mf',usemf,ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-mf',usemf,ierr)
       if (usemf .eq. 1) then
          call MatCreateShell(comm,m,m,N,N,PETSC_NULL_INTEGER,J,ierr)
          call MatShellSetOperation(J,MATOP_MULT,mymult,ierr)

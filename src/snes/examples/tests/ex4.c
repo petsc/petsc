@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.54 2000/09/28 21:14:21 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.55 2000/10/24 20:27:11 bsmith Exp bsmith $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
@@ -59,25 +59,25 @@ int main(int argc, char **argv)
   Vec        x, r;                 /* solution, residual vectors */
   Mat        J;                    /* Jacobian matrix */
   AppCtx     user;                 /* user-defined application context */
-  Draw       draw;                 /* drawing context */
+  PetscDraw       draw;                 /* drawing context */
   int        ierr, its, N, nfails;
   PetscTruth flg,cavity; 
   double     bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
   Scalar     *xvalues;
 
   PetscInitialize(&argc, &argv,(char *)0,help);
-  /* ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr); */
-  ierr = DrawCreate(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
-  ierr = DrawSetType(draw,DRAW_X);CHKERRA(ierr);
+  /* ierr = PetscDrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr); */
+  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
+  ierr = PetscDrawSetType(draw,PETSC_DRAW_X);CHKERRA(ierr);
 
   user.mx    = 4;
   user.my    = 4;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-cavity",&cavity);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-cavity",&cavity);CHKERRA(ierr);
   if (cavity) user.param = 100.0;
   else        user.param = 6.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (!cavity && (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
     SETERRA(1,"Lambda is out of range");
   }
@@ -111,13 +111,13 @@ int main(int argc, char **argv)
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);CHKERRA(ierr);
   ierr = VecGetArray(x,&xvalues);CHKERRA(ierr);
-  ierr = DrawTensorContour(draw,user.mx,user.my,0,0,xvalues);CHKERRA(ierr);
+  ierr = PetscDrawTensorContour(draw,user.mx,user.my,0,0,xvalues);CHKERRA(ierr);
   ierr = VecRestoreArray(x,&xvalues);CHKERRA(ierr);
 
   /* Free data structures */
   ierr = VecDestroy(x);CHKERRA(ierr);  ierr = VecDestroy(r);CHKERRA(ierr);
   ierr = MatDestroy(J);CHKERRA(ierr);  ierr = SNESDestroy(snes);CHKERRA(ierr);
-  ierr = DrawDestroy(draw);CHKERRA(ierr);
+  ierr = PetscDrawDestroy(draw);CHKERRA(ierr);
   PetscFinalize();
 
   return 0;

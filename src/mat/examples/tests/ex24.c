@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.9 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex24.c,v 1.10 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests copying an AIJ matrix.\n\n";
 
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
-  ierr = MatView(A,VIEWER_STDOUT_SELF);CHKERRA(ierr); 
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr); 
 
   ierr = MatDestroy(C);CHKERRA(ierr);
   ierr = MatDestroy(A);CHKERRA(ierr);

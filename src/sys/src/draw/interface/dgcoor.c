@@ -1,13 +1,13 @@
-/*$Id: dgcoor.c,v 1.25 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dgcoor.c,v 1.26 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
-       Provides the calling sequences for all the basic Draw routines.
+       Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawGetCoordinates"></a>*/"DrawGetCoordinates" 
+#define __FUNC__ "DrawGetCoordinates" 
 /*@
-   DrawGetCoordinates - Gets the application coordinates of the corners of
+   PetscDrawGetCoordinates - Gets the application coordinates of the corners of
    the window (or page).
 
    Not Collective
@@ -24,13 +24,13 @@
    Concepts: drawing^coordinates
    Concepts: graphics^coordinates
 
-.seealso: DrawSetCoordinates()
+.seealso: PetscDrawSetCoordinates()
 
 @*/
-int DrawGetCoordinates(Draw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)
+int PetscDrawGetCoordinates(PetscDraw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   PetscValidDoublePointer(xl);
   PetscValidDoublePointer(yl);
   PetscValidDoublePointer(xr);

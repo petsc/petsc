@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.1 2000/08/17 15:47:45 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.2 2000/08/24 22:43:40 bsmith Exp bsmith $*/
 static char help[] =
 "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
@@ -39,13 +39,13 @@ int main(int argc,char **argv)
   /* Save the solution, if this is the case. */ 
   {
     PetscTruth flg;
-    ierr = OptionsHasName(PETSC_NULL,"-save_solution",&flg);CHKERRA(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-save_solution",&flg);CHKERRA(ierr);
     if (flg) {
-      Viewer viewer;
-      ierr = ViewerASCIIOpen(PETSC_COMM_WORLD,"solution.m",&viewer);CHKERRA(ierr);
-      ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,"X");
+      PetscViewer viewer;
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"solution.m",&viewer);CHKERRA(ierr);
+      ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"X");
       ierr = VecView(appctx->algebra.x,viewer);CHKERRA(ierr);
-      ierr = ViewerDestroy(viewer);CHKERRA(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
     }
   }
 

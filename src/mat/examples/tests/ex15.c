@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.15 2000/07/10 03:39:52 bsmith Exp bsmith $*/
+/*$Id: ex15.c,v 1.16 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd().\n\n";
 
@@ -20,7 +20,7 @@ int main(int argc,char **args)
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
   ierr = MatSetFromOptions(C);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-symmetric",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-symmetric",&flg);CHKERRA(ierr);
   if (flg) {  /* Treat matrix as symmetric only if we set this flag */
     ierr = MatSetOption(C,MAT_SYMMETRIC);CHKERRA(ierr);
   }
@@ -39,8 +39,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatGetOrdering(C,MATORDERING_RCM,&perm,&iperm);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = ISView(perm,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u);CHKERRA(ierr);
   ierr = VecSet(&one,u);CHKERRA(ierr);
   ierr = VecDuplicate(u,&x);CHKERRA(ierr);
@@ -58,12 +58,12 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_SELF,"Infinity norm of matrix %g\n",norm);CHKERRA(ierr);
 
   ierr = MatLUFactor(C,perm,iperm,PETSC_NULL);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* Test MatSolve */
   ierr = MatSolve(C,b,x);CHKERRA(ierr);
-  ierr = VecView(b,VIEWER_STDOUT_SELF);CHKERRA(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = VecAXPY(&mone,u,x);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRA(ierr);

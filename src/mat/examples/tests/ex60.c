@@ -1,4 +1,4 @@
-/*$Id: ex60.c,v 1.7 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex60.c,v 1.8 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests MatGetColumnVector()";
 
@@ -14,7 +14,7 @@ int main(int argc,char **args)
   Vec         yy;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-col",&col,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-col",&col,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -35,13 +35,13 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&yy);CHKERRA(ierr);
 
   ierr = MatGetColumnVector(C,yy,col);CHKERRA(ierr);
 
-  ierr = VecView(yy,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(yy,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecDestroy(yy);CHKERRA(ierr);
   ierr = MatDestroy(C);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.62 2000/05/05 22:17:55 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.63 2000/10/24 20:26:51 bsmith Exp bsmith $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   IS          is;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */
@@ -94,7 +94,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(b);CHKERRA(ierr);
 
   /* Modify matrix and right-hand-side for Dirichlet boundary conditions */
-  rows = (int*)PetscMalloc(4*m*sizeof(int));CHKPTRQ(rows);
+ierr = PetscMalloc(4*m*sizeof(int),&(  rows ));CHKERRQ(ierr);
   for (i=0; i<m+1; i++) {
     rows[i] = i; /* bottom */
     rows[3*m - 1 +i] = m*(m+1) + i; /* top */

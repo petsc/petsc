@@ -1,4 +1,4 @@
-/* $Id: petscao.h,v 1.23 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: petscao.h,v 1.24 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 
 /* 
   An application ordering is mapping between an application-centric
@@ -25,7 +25,7 @@ EXTERN int AOPetscToApplicationIS(AO,IS);
 EXTERN int AOApplicationToPetscIS(AO,IS);
 
 EXTERN int AODestroy(AO);
-EXTERN int AOView(AO,Viewer);
+EXTERN int AOView(AO,PetscViewer);
 
 /* ----------------------------------------------------*/
 
@@ -36,9 +36,9 @@ typedef enum {AODATA_BASIC=0,AODATA_ADVANCED=1} AODataType;
 typedef struct _p_AOData* AOData;
 
 EXTERN int AODataCreateBasic(MPI_Comm,AOData *);
-EXTERN int AODataView(AOData,Viewer);
+EXTERN int AODataView(AOData,PetscViewer);
 EXTERN int AODataDestroy(AOData);
-EXTERN int AODataLoadBasic(Viewer,AOData *);
+EXTERN int AODataLoadBasic(PetscViewer,AOData *);
 EXTERN int AODataGetInfo(AOData,int*,char ***);
 
 EXTERN int AODataKeyAdd(AOData,char*,int,int);
@@ -92,11 +92,11 @@ EXTERN int AODataAliasAdd(AOData,char *,char *);
    
 typedef struct _p_AOData2dGrid *AOData2dGrid;
 EXTERN int AOData2dGridAddNode(AOData2dGrid, double, double, int *);
-EXTERN int AOData2dGridInput(AOData2dGrid,Draw);
+EXTERN int AOData2dGridInput(AOData2dGrid,PetscDraw);
 EXTERN int AOData2dGridFlipCells(AOData2dGrid);
 EXTERN int AOData2dGridComputeNeighbors(AOData2dGrid);
 EXTERN int AOData2dGridComputeVertexBoundary(AOData2dGrid);
-EXTERN int AOData2dGridDraw(AOData2dGrid,Draw);
+EXTERN int AOData2dGridDraw(AOData2dGrid,PetscDraw);
 EXTERN int AOData2dGridDestroy(AOData2dGrid);
 EXTERN int AOData2dGridCreate(AOData2dGrid*);
 EXTERN int AOData2dGridToAOData(AOData2dGrid,AOData*);

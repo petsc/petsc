@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.12 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex8.c,v 1.13 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests automatic allocation of matrix storage space.\n\n";
 
@@ -14,8 +14,8 @@ int main(int argc,char **args)
   MatInfo     info;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
@@ -32,7 +32,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = MatGetInfo(C,MAT_LOCAL,&info);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"matrix nonzeros = %d, allocated nonzeros = %d\n",

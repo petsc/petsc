@@ -1,9 +1,9 @@
-/*$Id: getcolv.c,v 1.17 2000/09/13 03:11:32 bsmith Exp bsmith $*/
+/*$Id: getcolv.c,v 1.18 2000/09/28 21:12:12 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetColumnVector"
+#define __FUNC__ "MatGetColumnVector"
 /*@
    MatGetColumnVector - Gets the values from a given column of a matrix.
 

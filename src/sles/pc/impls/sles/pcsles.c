@@ -1,4 +1,4 @@
-/*$Id: pcsles.c,v 1.35 2000/09/12 15:54:20 bsmith Exp bsmith $*/
+/*$Id: pcsles.c,v 1.36 2000/09/28 21:12:54 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of any SLES solver.
     This allows embedding a Krylov method inside a preconditioner.
@@ -13,7 +13,7 @@ typedef struct {
 } PC_SLES;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_SLES"
+#define __FUNC__ "PCApply_SLES"
 static int PCApply_SLES(PC pc,Vec x,Vec y)
 {
   int     ierr,its;
@@ -26,7 +26,7 @@ static int PCApply_SLES(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApplyTranspose_SLES"
+#define __FUNC__ "PCApplyTranspose_SLES"
 static int PCApplyTranspose_SLES(PC pc,Vec x,Vec y)
 {
   int     ierr,its;
@@ -39,7 +39,7 @@ static int PCApplyTranspose_SLES(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp_SLES"
+#define __FUNC__ "PCSetUp_SLES"
 static int PCSetUp_SLES(PC pc)
 {
   int     ierr;
@@ -58,7 +58,7 @@ static int PCSetUp_SLES(PC pc)
 
 /* Default destroy, if it has never been setup */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCDestroy_SLES"
+#define __FUNC__ "PCDestroy_SLES"
 static int PCDestroy_SLES(PC pc)
 {
   PC_SLES *jac = (PC_SLES*)pc->data;
@@ -71,46 +71,46 @@ static int PCDestroy_SLES(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCView_SLES"
-static int PCView_SLES(PC pc,Viewer viewer)
+#define __FUNC__ "PCView_SLES"
+static int PCView_SLES(PC pc,PetscViewer viewer)
 {
   PC_SLES    *jac = (PC_SLES*)pc->data;
   int        ierr;
   PetscTruth isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     if (jac->use_true_matrix) {
-      ierr = ViewerASCIIPrintf(viewer,"Using true matrix (not preconditioner matrix) on inner solve\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Using true matrix (not preconditioner matrix) on inner solve\n");CHKERRQ(ierr);
     }
-    ierr = ViewerASCIIPrintf(viewer,"KSP and PC on SLES preconditioner follow\n");CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"KSP and PC on SLES preconditioner follow\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
-  ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = SLESView(jac->sles,viewer);CHKERRQ(ierr);
-  ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_SLES"
+#define __FUNC__ "PCSetFromOptions_SLES"
 static int PCSetFromOptions_SLES(PC pc){
   int        ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("SLES preconditioner options");CHKERRQ(ierr);
-    ierr = OptionsName("-pc_sles_true","Use true matrix to define inner linear system, not preconditioner matrix","PCSLESSetUseTrue",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("SLES preconditioner options");CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_sles_true","Use true matrix to define inner linear system, not preconditioner matrix","PCSLESSetUseTrue",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSLESSetUseTrue(pc);CHKERRQ(ierr);
     }
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -118,7 +118,7 @@ static int PCSetFromOptions_SLES(PC pc){
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSLESSetUseTrue_SLES"
+#define __FUNC__ "PCSLESSetUseTrue_SLES"
 int PCSLESSetUseTrue_SLES(PC pc)
 {
   PC_SLES   *jac;
@@ -132,7 +132,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSLESGetSLES_SLES"
+#define __FUNC__ "PCSLESGetSLES_SLES"
 int PCSLESGetSLES_SLES(PC pc,SLES *sles)
 {
   PC_SLES   *jac;
@@ -145,7 +145,7 @@ int PCSLESGetSLES_SLES(PC pc,SLES *sles)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSLESSetUseTrue"
+#define __FUNC__ "PCSLESSetUseTrue"
 /*@
    PCSLESSetUseTrue - Sets a flag to indicate that the true matrix (rather than
    the matrix used to define the preconditioner) is used to compute the
@@ -183,7 +183,7 @@ int PCSLESSetUseTrue(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSLESGetSLES"
+#define __FUNC__ "PCSLESGetSLES"
 /*@C
    PCSLESGetSLES - Gets the SLES context for a SLES PC.
 
@@ -220,15 +220,16 @@ int PCSLESGetSLES(PC pc,SLES *sles)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCreate_SLES"
+#define __FUNC__ "PCCreate_SLES"
 int PCCreate_SLES(PC pc)
 {
   int       ierr;
   char      *prefix;
-  PC_SLES   *jac = PetscNew(PC_SLES);CHKPTRQ(jac);
+  PC_SLES   *jac;
 
   PetscFunctionBegin;
-  PLogObjectMemory(pc,sizeof(PC_SLES));
+  ierr = PetscNew(PC_SLES,&jac);CHKERRQ(ierr);
+  PetscLogObjectMemory(pc,sizeof(PC_SLES));
   pc->ops->apply              = PCApply_SLES;
   pc->ops->applytranspose     = PCApplyTranspose_SLES;
   pc->ops->setup              = PCSetUp_SLES;

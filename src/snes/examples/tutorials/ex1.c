@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.19 2000/09/28 21:14:25 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.20 2000/10/24 20:27:14 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,2,2,&J);CHKERRA(ierr);
   ierr = MatSetFromOptions(J);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-hard",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-hard",&flg);CHKERRQ(ierr);
   if (!flg) {
     /* 
      Set function evaluation routine and vector.
@@ -126,9 +126,9 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
   if (flg) {
     Vec f;
-    ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = SNESGetFunction(snes,&f,0,0);CHKERRQ(ierr);
-    ierr = VecView(r,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = VecView(r,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n",its);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.8 2000/09/21 19:44:33 bsmith Exp bsmith $*/
+/*$Id: symmlq.c,v 1.9 2000/09/28 21:13:37 bsmith Exp bsmith $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
@@ -75,7 +75,7 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /* z  <- B*r       */
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);             /* dp = r'*z;      */
   if (PetscAbsScalar(dp) < symmlq->haptol) {
-    PLogInfo(ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %g tolerance %g\n",dp,symmlq->haptol);
+    PetscLogInfo(ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %g tolerance %g\n",dp,symmlq->haptol);
     dp = 0.0;
   }
 
@@ -140,7 +140,7 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
     betaold = beta;                                /* beta_k                  */
     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);          /* dp <- r'*z;             */
     if (PetscAbsScalar(dp) < symmlq->haptol) {
-      PLogInfo(ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %g tolerance %g\n",dp,symmlq->haptol);
+      PetscLogInfo(ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %g tolerance %g\n",dp,symmlq->haptol);
       dp = 0.0;
     }
 
@@ -206,7 +206,7 @@ int KSPCreate_SYMMLQ(KSP ksp)
   ksp->pc_side                   = PC_LEFT;
   ksp->calc_res                  = PETSC_TRUE;
 
-  symmlq         = PetscNew(KSP_SYMMLQ);CHKPTRQ(symmlq);
+  ierr           = PetscNew(KSP_SYMMLQ,&symmlq);CHKERRQ(ierr);
   symmlq->haptol = 1.e-18;
   ksp->data      = (void*)symmlq;
 

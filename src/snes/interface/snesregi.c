@@ -1,4 +1,4 @@
-/*$Id: snesregi.c,v 1.35 2000/05/05 22:18:12 balay Exp bsmith $*/
+/*$Id: snesregi.c,v 1.36 2000/05/10 16:42:36 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"     /*I  "petscsnes.h"  I*/
 
@@ -18,7 +18,7 @@ EXTERN_C_END
 extern PetscTruth SNESRegisterAllCalled;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESRegisterAll"
+#define __FUNC__ "SNESRegisterAll"
 /*@C
    SNESRegisterAll - Registers all of the nonlinear solver methods in the SNES package.
 

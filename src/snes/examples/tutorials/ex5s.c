@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.18 2000/09/22 20:46:14 bsmith Exp bsmith $*/
+/*$Id: ex5s.c,v 1.19 2000/09/28 21:14:25 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -126,9 +126,9 @@ int main(int argc,char **argv)
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,"Lambda is out of range");
   }
@@ -153,7 +153,7 @@ int main(int argc,char **argv)
   ierr = VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);
   ierr = VecDuplicate(x,&r);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-use_fortran_function",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-use_fortran_function",&flg);CHKERRA(ierr);
   if (flg) {
     fnc = FormFunctionFortran;
   } else {
@@ -423,7 +423,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
 
-  ierr = PLogFlops(11*(mx-2)*(my-2))CHKERRQ(ierr);
+  ierr = PetscLogFlops(11*(mx-2)*(my-2))CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
   return 0; 
 } 
@@ -458,7 +458,7 @@ int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
     applicationfunctionfortran_(&user->param,&user->mx,&user->my,x,f,&ierr);
     ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
     ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-    ierr = PLogFlops(11*(user->mx-2)*(user->my-2))CHKERRQ(ierr);
+    ierr = PetscLogFlops(11*(user->mx-2)*(user->my-2))CHKERRQ(ierr);
   }
   /*
       All the non-busy processors have to wait here for process 0 to finish

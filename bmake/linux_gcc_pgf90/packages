@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.7 2000/09/28 21:06:05 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.8 2000/11/28 17:26:31 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -104,6 +104,12 @@ PETSC_HAVE_LUSOL = -DPETSC_HAVE_LUSOL
 RAMG_LIB        = /home/petsc/software/ramg/libramg_linux_pgf90.a
 PETSC_HAVE_RAMG = -DPETSC_HAVE_RAMG
 #
+# Location of Tufo-Fischer parallel direct solver
+#
+XXT_LIB        = /home/petsc/software/xxt/libxxt.a /home/petsc/software/xyt/libxyt.a
+XXT_INCLUDE    = -I/home/petsc/software/xxt/  -I/home/petsc/software/xyt/
+PETSC_HAVE_XXT = -DPETSC_HAVE_XXT
+
 # ------------------------------------------------------------------------------
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.

@@ -1,4 +1,4 @@
-/*$Id: dadestroy.c,v 1.39 2000/08/01 20:58:01 bsmith Exp bsmith $*/
+/*$Id: dadestroy.c,v 1.40 2000/09/13 03:13:00 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DADestroy"
+#define __FUNC__ "DADestroy"
 /*@C
    DADestroy - Destroys a distributed array.
 
@@ -24,22 +24,36 @@
 @*/
 int DADestroy(DA da)
 {
-  int ierr,i;
+  int ierr,i,cnt = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (--da->refct > 0) PetscFunctionReturn(0);
+
+  for (i=0; i<10; i++) {
+    if (da->localin[i])  {cnt++;}
+    if (da->globalin[i]) {cnt++;}
+  }
+
+  if (--da->refct - cnt > 0) PetscFunctionReturn(0);
   /*
          Need this test because the da references the vectors that 
      reference the da, so destroying the da calls destroy on the 
      vectors that cause another destroy on the da
   */
   if (da->refct < 0) PetscFunctionReturn(0);
+  da->refct = 0;
+
+  for (i=0; i<10; i++) {
+    if (da->localout[i]) SETERRQ(1,"Destroying a DA that has a local vector obtained with DAGetLocalVector()");
+    if (da->localin[i]) {ierr = VecDestroy(da->localin[i]);CHKERRQ(ierr);}
+    if (da->globalout[i]) SETERRQ(1,"Destroying a DA that has a global vector obtained with DAGetGlobalVector()");
+    if (da->globalin[i]) {ierr = VecDestroy(da->globalin[i]);CHKERRQ(ierr);}
+  }
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(da);CHKERRQ(ierr);
 
-  PLogObjectDestroy(da);
+  PetscLogObjectDestroy(da);
   ierr = PetscFree(da->idx);CHKERRQ(ierr);
   ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);
   ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);
@@ -74,7 +88,7 @@ int DADestroy(DA da)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetISLocalToGlobalMapping"
+#define __FUNC__ "DAGetISLocalToGlobalMapping"
 /*@C
    DAGetISLocalToGlobalMapping - Accesses the local-to-global mapping in a DA.
 

@@ -1,4 +1,4 @@
-/*$Id: ex47.c,v 1.16 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex47.c,v 1.17 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests the various routines in MatBAIJ format.\n\
@@ -13,7 +13,7 @@ Input arguments are:\n\
 int main(int argc,char **args)
 {
   Mat         A,B,C;
-  Viewer      va,vb,vc;
+  PetscViewer      va,vb,vc;
   Vec         x,y;
   int         ierr,i,j,row,m,n,ncols1,ncols2,*cols1,*cols2,ct,m2,n2;
   char        file[128];
@@ -28,22 +28,22 @@ int main(int argc,char **args)
   SETERRA(1,"This example does not work with complex numbers");
 #else
   
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
 
   /* Load the matrix as AIJ format */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&va);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&va);CHKERRA(ierr);
   ierr = MatLoad(va,MATSEQAIJ,&A);CHKERRA(ierr);
-  ierr = ViewerDestroy(va);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(va);CHKERRA(ierr);
 
   /* Load the matrix as BAIJ format */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&vb);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&vb);CHKERRA(ierr);
   ierr = MatLoad(vb,MATSEQBAIJ,&B);CHKERRA(ierr);
-  ierr = ViewerDestroy(vb);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(vb);CHKERRA(ierr);
 
   /* Load the matrix as BAIJ format */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&vc);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&vc);CHKERRA(ierr);
   ierr = MatLoad(vc,MATSEQBAIJ,&C);CHKERRA(ierr);
-  ierr = ViewerDestroy(vc);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(vc);CHKERRA(ierr);
 
   ierr = MatGetSize(A,&m,&n);CHKERRA(ierr);
   ierr = MatGetSize(B,&m2,&n2);CHKERRA(ierr);

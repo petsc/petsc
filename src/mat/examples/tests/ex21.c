@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.14 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex21.c,v 1.15 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the\n\
 parallel Row format. This also tests MatGetRow() and MatRestoreRow()\n\
@@ -36,10 +36,10 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRA(ierr);
   for (i=rstart; i<rend; i++) {
@@ -58,10 +58,10 @@ int main(int argc,char **args)
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);CHKERRA(ierr);
 
   ierr = MatConvert(C,MATSAME,&A);CHKERRA(ierr);
-  ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
-  ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
 
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(C);CHKERRA(ierr);

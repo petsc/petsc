@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.7 2000/01/11 21:03:29 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.8 2000/05/05 22:19:36 balay Exp bsmith $*/
 
 static char help[] = "Tests DAGlobalToNaturalAllCreate() using contour plotting for 2d DAs.\n\n";
 
@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   int            i,j,rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
   PetscTruth     flg;
   DA             da;
-  Viewer         viewer;
+  PetscViewer         viewer;
   Vec            localall,global;
   Scalar         value,*vlocal;
   DAPeriodicType ptype = DA_NONPERIODIC;
@@ -20,14 +20,14 @@ int main(int argc,char **argv)
   VecScatter     tolocalall,fromlocalall;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRA(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRA(ierr);
 
   /* Read options */
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-star_stencil",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-star_stencil",&flg);CHKERRA(ierr);
   if (flg) stype = DA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
@@ -69,7 +69,7 @@ int main(int argc,char **argv)
   /* Free memory */
   ierr = VecScatterDestroy(tolocalall);CHKERRA(ierr);
   ierr = VecScatterDestroy(fromlocalall);CHKERRA(ierr);
-  ierr = ViewerDestroy(viewer);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
   ierr = VecDestroy(localall);CHKERRA(ierr);
   ierr = VecDestroy(global);CHKERRA(ierr);
   ierr = DADestroy(da);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: sda2.c,v 1.19 2000/04/09 04:40:14 bsmith Exp bsmith $*/
+/*$Id: sda2.c,v 1.20 2000/04/12 04:26:38 bsmith Exp bsmith $*/
 /*
     Simplified interface to PETSC DA (distributed array) object. 
    This is for a user who is not using PETSc Vecs (vectors).
@@ -12,7 +12,7 @@ struct _SDA {
 };
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SDACreate1d"
+#define __FUNC__ "SDACreate1d"
 /*@C
     SDACreate1d - Creates a one-dimensional regular array that is
     distributed across some processors. This is the simplified 
@@ -46,7 +46,7 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
 
-  *sda = PetscNew(struct _SDA);CHKPTRQ(*sda);
+  ierr = PetscNew(struct _SDA,sda);CHKERRQ(ierr);
   ierr = DACreate1d(comm,wrap,M,w,s,lc,&da);CHKERRQ(ierr);
   (*sda)->da = da;
 
@@ -74,7 +74,7 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SDACreate2d"
+#define __FUNC__ "SDACreate2d"
 /*@C
     SDACreate2d - Creates a two-dimensional regular array that is
     distributed across some processors. This is the simplified 
@@ -115,7 +115,7 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
 
-  *sda = PetscNew(struct _SDA);CHKPTRQ(*sda);
+  ierr = PetscNew(struct _SDA,sda);CHKERRQ(ierr);
   ierr = DACreate2d(comm,wrap,stencil_type,M,N,m,n,w,s,lx,ly,&da);CHKERRQ(ierr);
   (*sda)->da = da;
 
@@ -147,7 +147,7 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SDACreate3d"
+#define __FUNC__ "SDACreate3d"
 /*@C
     SDACreate3d - Creates a three-dimensional regular array that is
     distributed across some processors. This is the simplified 
@@ -188,7 +188,7 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
 
-  *sda = PetscNew(struct _SDA);CHKPTRQ(*sda);
+  ierr = PetscNew(struct _SDA,sda);CHKERRQ(ierr);
   ierr = DACreate3d(comm,wrap,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
   (*sda)->da = da;
 
@@ -220,7 +220,7 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SDADestroy"
+#define __FUNC__ "SDADestroy"
 /*@C
     SDADestroy - Destroys simple distributed array.
 
@@ -245,7 +245,7 @@ int SDADestroy(SDA sda)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SDALocalToLocalBegin"
+#define __FUNC__ "SDALocalToLocalBegin"
 /*@C
    SDALocalToLocalBegin - Maps from a local representation (including 
        ghostpoints) to another where the ghostpoints in the second are
@@ -277,7 +277,7 @@ int SDALocalToLocalBegin(SDA sda,Scalar *g,InsertMode mode,Scalar *l)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SDALocalToLocalEnd"
+#define __FUNC__ "SDALocalToLocalEnd"
 /*@C
    SDALocalToLocalEnd - Maps from a local representation (including 
        ghostpoints) to another where the ghostpoints in the second are
@@ -309,7 +309,7 @@ int SDALocalToLocalEnd(SDA sda,Scalar *g,InsertMode mode,Scalar *l)
 }
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SDAGetCorners"
+#define __FUNC__ "SDAGetCorners"
 /*@C
    SDAGetCorners - Returns the global (x,y,z) indices of the lower left
    corner of the local region, excluding ghost points.
@@ -340,7 +340,7 @@ int SDAGetCorners(SDA da,int *x,int *y,int *z,int *m,int *n,int *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SDAGetGhostCorners"
+#define __FUNC__ "SDAGetGhostCorners"
 /*@C
     SDAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
     corner of the local region, including ghost points.

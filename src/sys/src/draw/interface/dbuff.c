@@ -1,15 +1,15 @@
-/*$Id: dbuff.c,v 1.23 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dbuff.c,v 1.24 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
-       Provides the calling sequences for all the basic Draw routines.
+       Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSetDoubleBuffer"></a>*/"DrawSetDoubleBuffer" 
+#define __FUNC__ "DrawSetDoubleBuffer" 
 /*@
-   DrawSetDoubleBuffer - Sets a window to be double buffered. 
+   PetscDrawSetDoubleBuffer - Sets a window to be double buffered. 
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameter:
 .  draw - the drawing context
@@ -21,11 +21,11 @@
    Concepts: double buffer
 
 @*/
-int DrawSetDoubleBuffer(Draw draw)
+int PetscDrawSetDoubleBuffer(PetscDraw draw)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   if (draw->ops->setdoublebuffer) {
     ierr = (*draw->ops->setdoublebuffer)(draw);CHKERRQ(ierr);
   }

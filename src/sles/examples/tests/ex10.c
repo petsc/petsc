@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.85 2000/10/24 20:26:51 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.86 2000/10/25 14:29:39 bsmith Exp bsmith $*/
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   double  norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
@@ -105,9 +105,9 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,PETSC_NULL,&mat);CHKERRQ(ierr); 
 
   /* Form stiffness for element */
-  K = (double**)PetscMalloc(81*sizeof(double *));CHKPTRQ(K);
+  K = (double**)PetscMalloc(81*sizeof(double *));CHKERRQ(ierr);
   for (i=0; i<81; i++) {
-    K[i] = (double*)PetscMalloc(81*sizeof(double));CHKPTRQ(K[i]);
+    K[i]ierr = PetscMalloc(81*sizeof(double),&( ));CHKERRQ(ierr);
   }
   ierr = Elastic20Stiff(K);CHKERRQ(ierr);
 
@@ -151,7 +151,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
   ict = 0;
-  rowkeep = (int*)PetscMalloc((N-nstart)*sizeof(int));CHKPTRQ(rowkeep);
+  rowkeep = (int*)PetscMalloc((N-nstart)*sizeof(int));CHKERRQ(ierr);
   for (i=nstart; i<N; i++) {
     ierr = MatGetRow(mat,i,&nz,0,0);CHKERRQ(ierr);
     if (nz) rowkeep[ict++] = i;
@@ -171,8 +171,8 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = MatConvert(submat,type,newmat);CHKERRQ(ierr);
   ierr = MatDestroy(submat);CHKERRQ(ierr);
 
-  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
-  ierr = MatView(*newmat,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+  ierr = MatView(*newmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatNorm(*newmat,NORM_1,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %g\n",norm);CHKERRQ(ierr);
 

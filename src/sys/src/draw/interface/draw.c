@@ -1,15 +1,15 @@
-/*$Id: draw.c,v 1.70 2000/09/22 20:41:56 bsmith Exp bsmith $*/
+/*$Id: draw.c,v 1.71 2000/09/28 21:08:23 bsmith Exp bsmith $*/
 /*
-       Provides the calling sequences for all the basic Draw routines.
+       Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawResizeWindow"></a>*/"DrawResizeWindow" 
+#define __FUNC__ "PetscDrawResizeWindow" 
 /*@
-   DrawResizeWindow - Allows one to resize a window from a program.
+   PetscDrawResizeWindow - Allows one to resize a window from a program.
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameter:
 +  draw - the window
@@ -17,9 +17,9 @@
 
    Level: intermediate
 
-.seealso: DrawCheckResizedWindow()
+.seealso: PetscDrawCheckResizedWindow()
 @*/
-int DrawResizeWindow(Draw draw,int w,int h)
+int PetscDrawResizeWindow(PetscDraw draw,int w,int h)
 {
   int ierr;
   PetscFunctionBegin;
@@ -30,21 +30,21 @@ int DrawResizeWindow(Draw draw,int w,int h)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawCheckResizedWindow"></a>*/"DrawCheckResizedWindow" 
+#define __FUNC__ "PetscDrawCheckResizedWindow" 
 /*@
-   DrawCheckResizedWindow - Checks if the user has resized the window.
+   PetscDrawCheckResizedWindow - Checks if the user has resized the window.
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameter:
 .  draw - the window
 
    Level: advanced
 
-.seealso: DrawResizeWindow()
+.seealso: PetscDrawResizeWindow()
 
 @*/
-int DrawCheckResizedWindow(Draw draw)
+int PetscDrawCheckResizedWindow(PetscDraw draw)
 {
   int ierr;
   PetscFunctionBegin;
@@ -55,9 +55,9 @@ int DrawCheckResizedWindow(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawGetTitle"></a>*/"DrawGetTitle" 
+#define __FUNC__ "PetscDrawGetTitle" 
 /*@C
-   DrawGetTitle - Gets pointer to title of a Draw context.
+   PetscDrawGetTitle - Gets pointer to title of a PetscDraw context.
 
    Not collective
 
@@ -69,20 +69,20 @@ int DrawCheckResizedWindow(Draw draw)
 
    Level: intermediate
 
-.seealso: DrawSetTitle()
+.seealso: PetscDrawSetTitle()
 @*/
-int DrawGetTitle(Draw draw,char **title)
+int PetscDrawGetTitle(PetscDraw draw,char **title)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   *title = draw->title;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSetTitle"></a>*/"DrawSetTitle" 
+#define __FUNC__ "PetscDrawSetTitle" 
 /*@C
-   DrawSetTitle - Sets the title of a Draw context.
+   PetscDrawSetTitle - Sets the title of a PetscDraw context.
 
    Not collective (any processor or all may call this)
 
@@ -96,13 +96,13 @@ int DrawGetTitle(Draw draw,char **title)
    A copy of the string is made, so you may destroy the 
    title string after calling this routine.
 
-.seealso: DrawGetTitle(), DrawAppendTitle()
+.seealso: PetscDrawGetTitle(), PetscDrawAppendTitle()
 @*/
-int DrawSetTitle(Draw draw,char *title)
+int PetscDrawSetTitle(PetscDraw draw,char *title)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   ierr = PetscStrfree(draw->title);CHKERRQ(ierr);
   ierr = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   if (draw->ops->settitle) {
@@ -112,9 +112,9 @@ int DrawSetTitle(Draw draw,char *title)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawAppendTitle"></a>*/"DrawAppendTitle" 
+#define __FUNC__ "PetscDrawAppendTitle" 
 /*@C
-   DrawAppendTitle - Appends to the title of a Draw context.
+   PetscDrawAppendTitle - Appends to the title of a PetscDraw context.
 
    Not collective (any processor or all can call this)
 
@@ -128,22 +128,22 @@ int DrawSetTitle(Draw draw,char *title)
 
    Level: advanced
 
-.seealso: DrawSetTitle(), DrawGetTitle()
+.seealso: PetscDrawSetTitle(), PetscDrawGetTitle()
 @*/
-int DrawAppendTitle(Draw draw,char *title)
+int PetscDrawAppendTitle(PetscDraw draw,char *title)
 {
   int  ierr,len1,len2,len;
   char *newtitle;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   if (!title) PetscFunctionReturn(0);
 
   if (draw->title) {
     ierr = PetscStrlen(title,&len1);CHKERRQ(ierr);
     ierr = PetscStrlen(draw->title,&len2);CHKERRQ(ierr);
     len  = len1 + len2;
-    newtitle = (char*)PetscMalloc((len + 1)*sizeof(char*));CHKPTRQ(newtitle);
+    ierr = PetscMalloc((len + 1)*sizeof(char*),&newtitle);CHKERRQ(ierr);
     ierr = PetscStrcpy(newtitle,draw->title);CHKERRQ(ierr);
     ierr = PetscStrcat(newtitle,title);CHKERRQ(ierr);
     ierr = PetscFree(draw->title);CHKERRQ(ierr);
@@ -158,25 +158,25 @@ int DrawAppendTitle(Draw draw,char *title)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawDestroy"></a>*/"DrawDestroy" 
+#define __FUNC__ "PetscDrawDestroy" 
 /*@C
-   DrawDestroy - Deletes a draw context.
+   PetscDrawDestroy - Deletes a draw context.
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameters:
 .  draw - the drawing context
 
    Level: beginner
 
-.seealso: DrawCreate()
+.seealso: PetscDrawCreate()
 
 @*/
-int DrawDestroy(Draw draw)
+int PetscDrawDestroy(PetscDraw draw)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   if (--draw->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
@@ -187,17 +187,17 @@ int DrawDestroy(Draw draw)
   }
   ierr = PetscStrfree(draw->title);CHKERRQ(ierr);
   ierr = PetscStrfree(draw->display);CHKERRQ(ierr);
-  PLogObjectDestroy(draw);
+  PetscLogObjectDestroy(draw);
   PetscHeaderDestroy(draw);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawGetPopup"></a>*/"DrawGetPopup" 
+#define __FUNC__ "PetscDrawGetPopup" 
 /*@C
-   DrawGetPopup - Creates a popup window associated with a Draw window.
+   PetscDrawGetPopup - Creates a popup window associated with a PetscDraw window.
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameter:
 .  draw - the original window
@@ -208,11 +208,11 @@ int DrawDestroy(Draw draw)
    Level: advanced
 
 @*/
-int DrawGetPopup(Draw draw,Draw *popup)
+int PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   PetscValidPointer(popup);
 
   if (draw->popup) {
@@ -226,17 +226,17 @@ int DrawGetPopup(Draw draw,Draw *popup)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawDestroy_Null"></a>*/"DrawDestroy_Null" 
-int DrawDestroy_Null(Draw draw)
+#define __FUNC__ "PetscDrawDestroy_Null" 
+int PetscDrawDestroy_Null(PetscDraw draw)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawOpenNull"></a>*/"DrawOpenNull" 
+#define __FUNC__ "PetscDrawOpenNull" 
 /*
-  DrawOpenNull - Opens a null drawing context. All draw commands to 
+  PetscDrawOpenNull - Opens a null drawing context. All draw commands to 
   it are ignored.
 
   Output Parameter:
@@ -245,33 +245,33 @@ int DrawDestroy_Null(Draw draw)
    Level: advanced
 
 */
-int DrawOpenNull(MPI_Comm comm,Draw *win)
+int PetscDrawOpenNull(MPI_Comm comm,PetscDraw *win)
 {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = DrawCreate(comm,PETSC_NULL,PETSC_NULL,0,0,1,1,win);CHKERRQ(ierr);
-  ierr = DrawSetType(*win,DRAW_NULL);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(comm,PETSC_NULL,PETSC_NULL,0,0,1,1,win);CHKERRQ(ierr);
+  ierr = PetscDrawSetType(*win,PETSC_DRAW_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawCreate_Null"></a>*/"DrawCreate_Null" 
+#define __FUNC__ "PetscDrawCreate_Null" 
 /*
-  DrawCreate_Null - Opens a null drawing context. All draw commands to 
+  PetscDrawCreate_Null - Opens a null drawing context. All draw commands to 
   it are ignored.
 
   Input Parameter:
 . win - the drawing context
 */
-int DrawCreate_Null(Draw draw)
+int PetscDrawCreate_Null(PetscDraw draw)
 {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemzero(draw->ops,sizeof(struct _DrawOps));CHKERRQ(ierr);
-  draw->ops->destroy = DrawDestroy_Null;
+  ierr = PetscMemzero(draw->ops,sizeof(struct _PetscDrawOps));CHKERRQ(ierr);
+  draw->ops->destroy = PetscDrawDestroy_Null;
   draw->ops->view    = 0;
   draw->pause   = 0;
   draw->coor_xl = 0.0;  draw->coor_xr = 1.0;
@@ -285,12 +285,12 @@ int DrawCreate_Null(Draw draw)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawGetSingleton"></a>*/"DrawGetSingleton" 
+#define __FUNC__ "PetscDrawGetSingleton" 
 /*@C
-   DrawGetSingleton - Gain access to a Draw object as if it were owned 
+   PetscDrawGetSingleton - Gain access to a PetscDraw object as if it were owned 
         by the one process.
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameter:
 .  draw - the original window
@@ -300,15 +300,15 @@ EXTERN_C_END
 
    Level: advanced
 
-.seealso: DrawRestoreSingleton(), ViewerGetSingleton(), ViewerRestoreSingleton()
+.seealso: PetscDrawRestoreSingleton(), PetscViewerGetSingleton(), PetscViewerRestoreSingleton()
 
 @*/
-int DrawGetSingleton(Draw draw,Draw *sdraw)
+int PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
 {
   int ierr,size;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   PetscValidPointer(sdraw);
 
   ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
@@ -326,12 +326,12 @@ int DrawGetSingleton(Draw draw,Draw *sdraw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawRestoreSingleton"></a>*/"DrawRestoreSingleton" 
+#define __FUNC__ "PetscDrawRestoreSingleton" 
 /*@C
-   DrawRestoreSingleton - Remove access to a Draw object as if it were owned 
+   PetscDrawRestoreSingleton - Remove access to a PetscDraw object as if it were owned 
         by the one process.
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameters:
 +  draw - the original window
@@ -339,17 +339,17 @@ int DrawGetSingleton(Draw draw,Draw *sdraw)
 
    Level: advanced
 
-.seealso: DrawGetSingleton(), ViewerGetSingleton(), ViewerRestoreSingleton()
+.seealso: PetscDrawGetSingleton(), PetscViewerGetSingleton(), PetscViewerRestoreSingleton()
 
 @*/
-int DrawRestoreSingleton(Draw draw,Draw *sdraw)
+int PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)
 {
   int ierr,size;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   PetscValidPointer(sdraw);
-  PetscValidHeaderSpecific(*sdraw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(*sdraw,PETSC_DRAW_COOKIE);
 
   ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
   if (size == 1) {

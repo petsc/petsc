@@ -1,4 +1,4 @@
-/*$Id: ex35.c,v 1.11 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex35.c,v 1.12 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests MatGetSubMatrices().\n\n";
 
@@ -28,7 +28,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /* take the first diagonal block */
   ierr = ISCreateStride(PETSC_COMM_WORLD,m,0,1,&isrow);CHKERRA(ierr);
@@ -36,7 +36,7 @@ int main(int argc,char **args)
   B = *Bsub; 
   ierr = PetscFree(Bsub);CHKERRA(ierr);
   ierr = ISDestroy(isrow);CHKERRA(ierr);
-  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = MatDestroy(B);CHKERRA(ierr);
 
   /* take a strided block */
@@ -45,7 +45,7 @@ int main(int argc,char **args)
   B = *Bsub; 
   ierr = PetscFree(Bsub);CHKERRA(ierr);
   ierr = ISDestroy(isrow);CHKERRA(ierr);
-  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = MatDestroy(B);CHKERRA(ierr);
 
   /* take the last block */
@@ -54,7 +54,7 @@ int main(int argc,char **args)
   B = *Bsub; 
   ierr = PetscFree(Bsub);CHKERRA(ierr);
   ierr = ISDestroy(isrow);CHKERRA(ierr);
-  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
  
   ierr = MatDestroy(B);CHKERRA(ierr);
   ierr = MatDestroy(A);CHKERRA(ierr);

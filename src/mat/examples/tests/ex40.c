@@ -1,4 +1,4 @@
-/*$Id: ex40.c,v 1.17 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex40.c,v 1.18 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscTruth  flg;
   Mat         A,B;
   char        file[128]; 
-  Viewer      fd;
+  PetscViewer      fd;
   IS          *is1,*is2;
   PetscRandom r;
   Scalar      rand;
@@ -26,19 +26,19 @@ int main(int argc,char **args)
 #else
   
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);  CHKERRA(ierr);
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRA(ierr);
 
   /* Read matrix and RHS */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatLoad(fd,MATMPIAIJ,&A);CHKERRA(ierr);
-  ierr = ViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
 
   /* Read the matrix again as a sequential matrix */
-  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&B);CHKERRA(ierr);
-  ierr = ViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
   
   /* Create the IS corresponding to subdomains */
   is1    = (IS*)PetscMalloc(nd*sizeof(IS **));CHKPTRA(is1);

@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.20 2000/05/05 22:18:00 balay Exp bsmith $*/
+/*$Id: ex13.c,v 1.21 2000/09/22 20:45:46 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
 
@@ -53,8 +53,8 @@ int main(int argc,char **args)
      The next two lines are for testing only; these allow the user to
      decide the grid size at runtime.
   */
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /*
      Create the empty sparse matrix and linear solver data structures
@@ -70,14 +70,14 @@ int main(int argc,char **args)
      the context of a larger application these would be provided by
      other (non-PETSc) parts of the application code.
   */
-  userx    = (Scalar*)PetscMalloc(N*sizeof(Scalar));CHKPTRA(userx);
-  userb    = (Scalar*)PetscMalloc(N*sizeof(Scalar));CHKPTRA(userb);
-  solution = (Scalar*)PetscMalloc(N*sizeof(Scalar));CHKPTRA(solution);
+ierr = PetscMalloc(N*sizeof(Scalar),&(  userx    ));CHKPTRA(userx);
+ierr = PetscMalloc(N*sizeof(Scalar),&(  userb    ));CHKPTRA(userb);
+ierr = PetscMalloc(N*sizeof(Scalar),&(  solution ));CHKPTRA(solution);
 
   /* 
       Allocate an array to hold the coefficients in the elliptic operator
   */
-  rho = (Scalar*)PetscMalloc(N*sizeof(Scalar));CHKERRA(ierr);
+ierr = PetscMalloc(N*sizeof(Scalar),&(  rho ));CHKERRA(ierr);
 
   /*
      Fill up the array rho[] with the function rho(x,y) = x; fill the

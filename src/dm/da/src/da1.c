@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.118 2000/09/13 03:13:00 bsmith Exp bsmith $*/
+/*$Id: da1.c,v 1.119 2000/09/28 21:15:20 bsmith Exp bsmith $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -14,8 +14,8 @@ EXTERN_C_END
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAView_1d"
-int DAView_1d(DA da,Viewer viewer)
+#define __FUNC__ "DAView_1d"
+int DAView_1d(DA da,PetscViewer viewer)
 {
   int        rank,ierr;
   PetscTruth isascii,isdraw,isbinary;
@@ -23,26 +23,26 @@ int DAView_1d(DA da,Viewer viewer)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
                  da->m,da->w,da->s);CHKERRQ(ierr);
-    ierr = ViewerASCIISynchronizedPrintf(viewer,"X range of indices: %d %d\n",da->xs,da->xe);CHKERRQ(ierr);
-    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %d %d\n",da->xs,da->xe);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isdraw) {
-    Draw       draw;
+    PetscDraw       draw;
     double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
     int        base;
     char       node[10];
     PetscTruth isnull;
 
-    ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
-    ierr = DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
-    ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
 
     /* first processor draws all node lines */
     if (!rank) {
@@ -51,33 +51,33 @@ int DAView_1d(DA da,Viewer viewer)
       
       /* ADIC doesn't like doubles in a for loop */
       for (xmin_tmp =0; xmin_tmp < (int)da->M; xmin_tmp++) {
-         ierr = DrawLine(draw,(double)xmin_tmp,ymin,(double)xmin_tmp,ymax,DRAW_BLACK);CHKERRQ(ierr);
+         ierr = PetscDrawLine(draw,(double)xmin_tmp,ymin,(double)xmin_tmp,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
 
       xmin = 0.0; xmax = da->M - 1;
-      ierr = DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_BLACK);CHKERRQ(ierr);
-      ierr = DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,xmin,ymax,xmax,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
     }
 
-    ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
-    ierr = DrawPause(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = PetscDrawPause(draw);CHKERRQ(ierr);
 
     /* draw my box */
     ymin = 0; ymax = 0.3; xmin = da->xs / da->w; xmax = (da->xe / da->w)  - 1;
-    ierr = DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_RED);CHKERRQ(ierr);
-    ierr = DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_RED);CHKERRQ(ierr);
-    ierr = DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_RED);CHKERRQ(ierr);
-    ierr = DrawLine(draw,xmax,ymin,xmax,ymax,DRAW_RED);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_RED);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,xmin,ymax,xmax,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,xmax,ymin,xmax,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
 
     /* Put in index numbers */
     base = da->base / da->w;
     for (x=xmin; x<=xmax; x++) {
       sprintf(node,"%d",base++);
-      ierr = DrawString(draw,x,ymin,DRAW_RED,node);CHKERRQ(ierr);
+      ierr = PetscDrawString(draw,x,ymin,PETSC_DRAW_RED,node);CHKERRQ(ierr);
     }
 
-    ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
-    ierr = DrawPause(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
   } else {
@@ -89,7 +89,7 @@ int DAView_1d(DA da,Viewer viewer)
 EXTERN int DAPublish_Petsc(PetscObject);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DACreate1d"
+#define __FUNC__ "DACreate1d"
 /*@C
    DACreate1d - Creates an object that will manage the communication of  one-dimensional 
    regular array data that is distributed across some processors.
@@ -144,13 +144,17 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %d",dof);
   if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %d",s);
 
-  PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
-  PLogObjectCreate(da);
-  da->bops->publish = DAPublish_Petsc;
-  PLogObjectMemory(da,sizeof(struct _p_DA));
+  PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
+  PetscLogObjectCreate(da);
+  da->bops->publish           = DAPublish_Petsc;
+  da->ops->createglobalvector = DACreateGlobalVector;
+  da->ops->getinterpolation   = DAGetInterpolation;
+  da->ops->getcoloring        = DAGetColoring;
+  da->ops->refine             = DARefine;
+  PetscLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 1;
   da->gtog1      = 0;
-  da->fieldname  = (char**)PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
+ierr = PetscMalloc(dof*sizeof(char*),&(  da->fieldname  ));CHKERRQ(ierr);
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
@@ -165,8 +169,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
      xs is the first local node number, x is the number of local nodes 
   */
   if (!lc) {
-    ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1);CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2);CHKERRQ(ierr);
     if (flg1) {      /* Block Comm type Distribution */
       xs = rank*M/m;
       x  = (rank + 1)*M/m - xs;
@@ -223,17 +227,18 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   ierr = ISCreateStride(comm,x,start,1,&to);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x,xs-Xs,1,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  PLogObjectParent(da,to);
-  PLogObjectParent(da,from);
-  PLogObjectParent(da,ltog);
-  ISDestroy(from); ISDestroy(to);
+  PetscLogObjectParent(da,to);
+  PetscLogObjectParent(da,from);
+  PetscLogObjectParent(da,ltog);
+  ierr = ISDestroy(from);CHKERRQ(ierr);
+  ierr = ISDestroy(to);CHKERRQ(ierr);
 
   /* Create Global to Local Vector Scatter Context */
   /* global to local must retrieve ghost points */
   ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
  
-  idx  = (int*)PetscMalloc((x+2*s)*sizeof(int));CHKPTRQ(idx);  
-  PLogObjectMemory(da,(x+2*s)*sizeof(int));
+ierr = PetscMalloc((x+2*s)*sizeof(int),&  idx  );CHKERRQ(ierr);  
+  PetscLogObjectMemory(da,(x+2*s)*sizeof(int));
 
   nn = 0;
   if (wrap == DA_XPERIODIC) {    /* Handle all cases with wrap first */
@@ -262,28 +267,29 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
 
   ierr = ISCreateGeneral(comm,nn,idx,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
-  PLogObjectParent(da,to);
-  PLogObjectParent(da,from);
-  PLogObjectParent(da,gtol);
-  ISDestroy(to); ISDestroy(from);
+  PetscLogObjectParent(da,to);
+  PetscLogObjectParent(da,from);
+  PetscLogObjectParent(da,gtol);
+  ierr = ISDestroy(to);CHKERRQ(ierr);
+  ierr = ISDestroy(from);CHKERRQ(ierr);
 
   da->M  = M;  da->N  = 1;  da->m  = m; da->n = 1;
   da->xs = xs; da->xe = xe; da->ys = 0; da->ye = 1; da->zs = 0; da->ze = 1;
   da->Xs = Xs; da->Xe = Xe; da->Ys = 0; da->Ye = 1; da->Zs = 0; da->Ze = 1;
   da->P  = 1;  da->p  = 1;  da->w = dof; da->s = s/dof;
 
-  PLogObjectParent(da,global);
-  PLogObjectParent(da,local);
+  PetscLogObjectParent(da,global);
+  PetscLogObjectParent(da,local);
 
-  da->global = global; 
-  da->local  = local;
-  da->gtol   = gtol;
-  da->ltog   = ltog;
-  da->idx    = idx;
-  da->Nl     = nn;
-  da->base   = xs;
-  da->view   = DAView_1d;
-  da->wrap   = wrap;
+  da->global       = global; 
+  da->local        = local;
+  da->gtol         = gtol;
+  da->ltog         = ltog;
+  da->idx          = idx;
+  da->Nl           = nn;
+  da->base         = xs;
+  da->ops->view    = DAView_1d;
+  da->wrap         = wrap;
   da->stencil_type = DA_STENCIL_STAR;
 
   /* 
@@ -296,7 +302,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
     ierr        = VecSetLocalToGlobalMapping(da->global,isltog);CHKERRQ(ierr);
     da->ltogmap = isltog; 
     ierr        = PetscObjectReference((PetscObject)isltog);CHKERRQ(ierr);
-    PLogObjectParent(da,isltog);
+    PetscLogObjectParent(da,isltog);
     ierr = ISLocalToGlobalMappingDestroy(isltog);CHKERRQ(ierr);
   }
 
@@ -307,9 +313,9 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
     rather then from the plain array.
   */
   ierr = VecScatterCopy(gtol,&da->ltol);CHKERRQ(ierr);
-  PLogObjectParent(da,da->ltol);
+  PetscLogObjectParent(da,da->ltol);
   left  = xs - Xs;
-  idx   = (int*)PetscMalloc((Xe-Xs)*sizeof(int));CHKPTRQ(idx);
+  idx   = (int*)PetscMalloc((Xe-Xs)*sizeof(int));CHKERRQ(ierr);
   for (j=0; j<Xe-Xs; j++) {
     idx[j] = left + j;
   }  
@@ -319,13 +325,13 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   /* 
      Build the natural ordering to PETSc ordering mappings.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-da_noao",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-da_noao",&flg1);CHKERRQ(ierr);
   if (!flg1) {
     IS is;
     
     ierr = ISCreateStride(comm,da->xe-da->xs,da->base,1,&is);CHKERRQ(ierr);
     ierr = AOCreateBasicIS(is,is,&da->ao);CHKERRQ(ierr);
-    PLogObjectParent(da,da->ao);
+    PetscLogObjectParent(da,da->ao);
     ierr = ISDestroy(is);CHKERRQ(ierr);
   } else {
     da->ao = PETSC_NULL;
@@ -345,15 +351,15 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
      Maybe we'll change in the near future.
    */
   ierr = VecGetSize(global,&gdim);CHKERRQ(ierr);
-  da->gtog1 = (int *)PetscMalloc(gdim*sizeof(int));CHKPTRQ(da->gtog1);
-  PLogObjectMemory(da,gdim*sizeof(int));
+ierr = PetscMalloc(gdim*sizeof(int),&(  da->gtog1 ));CHKERRQ(ierr);
+  PetscLogObjectMemory(da,gdim*sizeof(int));
   for (i=0; i<gdim; i++) da->gtog1[i] = i;
 
-  ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAView(da,VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}
-  ierr = OptionsHasName(PETSC_NULL,"-da_view_draw",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAView(da,VIEWER_DRAW_(da->comm));CHKERRQ(ierr);}
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
+  if (flg1) {ierr = DAView(da,PETSC_VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}
+  ierr = PetscOptionsHasName(PETSC_NULL,"-da_view_draw",&flg1);CHKERRQ(ierr);
+  if (flg1) {ierr = DAView(da,PETSC_VIEWER_DRAW_(da->comm));CHKERRQ(ierr);}
+  ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = DAPrintHelp(da);CHKERRQ(ierr);}
   *inra = da;
   ierr = PetscPublishAll(da);CHKERRQ(ierr);

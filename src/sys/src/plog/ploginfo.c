@@ -1,6 +1,6 @@
-/*$Id: ploginfo.c,v 1.19 2000/09/22 20:42:37 bsmith Exp bsmith $*/
+/*$Id: ploginfo.c,v 1.20 2000/11/28 17:27:57 bsmith Exp bsmith $*/
 /*
-      PLogInfo() is contained in a different file from the other profiling to 
+      PetscLogInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -15,21 +15,21 @@
 #endif
 #include "petscfix.h"
 
-extern PetscTruth PLogPrintInfo,PLogPrintInfoNull;
-extern int        PLogInfoFlags[];
-extern FILE       *PLogInfoFile;
+extern PetscTruth PetscLogPrintInfo,PetscLogPrintInfoNull;
+extern int        PetscLogInfoFlags[];
+extern FILE       *PetscLogInfoFile;
 
 /*
-   If the option -log_history was used, then all printed PLogInfo() 
+   If the option -log_history was used, then all printed PetscLogInfo() 
   messages are also printed to the history file, called by default
   .petschistory in ones home directory.
 */
 extern FILE *petsc_history;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PLogInfo"
+#define __FUNC__ "PetscLogInfo"
 /*@C
-    PLogInfo - Logs informative data, which is printed to standard output
+    PetscLogInfo - Logs informative data, which is printed to standard output
     or a file when the option -log_info <file> is specified.
 
     Collective over PetscObject argument
@@ -39,7 +39,7 @@ extern FILE *petsc_history;
 -   message - logging message, using standard "printf" format
 
     Options Database Key:
-$    -log_info : activates printing of PLogInfo() messages 
+$    -log_info : activates printing of PetscLogInfo() messages 
 
     Level: intermediate
 
@@ -50,14 +50,14 @@ $    -log_info : activates printing of PLogInfo() messages
 $
 $     Mat A
 $     double alpha
-$     PLogInfo(A,"Matrix uses parameter alpha=%g\n",alpha);
+$     PetscLogInfo(A,"Matrix uses parameter alpha=%g\n",alpha);
 $
 
    Concepts: runtime information
 
-.seealso: PLogInfoAllow()
+.seealso: PetscLogInfoAllow()
 @*/
-int PLogInfo(void *vobj,const char message[],...)  
+int PetscLogInfo(void *vobj,const char message[],...)  
 {
   va_list     Argp;
   int         rank,urank,len,ierr;
@@ -66,9 +66,9 @@ int PLogInfo(void *vobj,const char message[],...)
 
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj);
-  if (!PLogPrintInfo) PetscFunctionReturn(0);
-  if (!PLogPrintInfoNull && !vobj) PetscFunctionReturn(0);
-  if (obj && !PLogInfoFlags[obj->cookie - PETSC_COOKIE - 1]) PetscFunctionReturn(0);
+  if (!PetscLogPrintInfo) PetscFunctionReturn(0);
+  if (!PetscLogPrintInfoNull && !vobj) PetscFunctionReturn(0);
+  if (obj && !PetscLogInfoFlags[obj->cookie - PETSC_COOKIE - 1]) PetscFunctionReturn(0);
   if (!obj) rank = 0;
   else      {ierr = MPI_Comm_rank(obj->comm,&rank);CHKERRQ(ierr);} 
   if (rank) PetscFunctionReturn(0);
@@ -82,8 +82,8 @@ int PLogInfo(void *vobj,const char message[],...)
 #else
   vsprintf(string+len,message,Argp);
 #endif
-  fprintf(PLogInfoFile,"%s",string);
-  fflush(PLogInfoFile);
+  fprintf(PetscLogInfoFile,"%s",string);
+  fflush(PetscLogInfoFile);
   if (petsc_history) {
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
     vfprintf(petsc_history,message,(char *)Argp);

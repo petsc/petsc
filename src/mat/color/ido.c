@@ -1,4 +1,4 @@
-/*$Id: ido.c,v 1.10 2000/04/09 04:37:11 bsmith Exp bsmith $*/
+/*$Id: ido.c,v 1.11 2000/04/12 04:24:26 bsmith Exp bsmith $*/
 /* ido.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
 
 #include "petsc.h"
@@ -7,7 +7,7 @@
 static int c_n1 = -1;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MINPACKido" 
+#define __FUNC__ "MINPACKido" 
 int MINPACKido(int *m,int * n,int * indrow,int * jpntr,int * indcol,int * ipntr,int * ndeg,
                int *list,int *maxclq, int *iwa1, int *iwa2, int *iwa3, int *iwa4)
 {

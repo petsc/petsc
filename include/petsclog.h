@@ -1,19 +1,19 @@
-/* $Id: petsclog.h,v 1.148 2000/10/24 20:28:06 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.149 2000/11/28 17:33:05 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
 */
 
-#if !defined(__PLOG_H)
-#define __PLOG_H
+#if !defined(__PetscLog_H)
+#define __PetscLog_H
 #include "petsc.h"  
 
 /*
   Lists all PETSc events that are logged/profiled.
 
   If you add an event here, make sure you add it to 
-  petsc/src/plog/src/plog.c,  
-  petsc/src/plog/src/plogmpe.c, and
+  petsc/src/PetscLog/src/PetscLog.c,  
+  petsc/src/PetscLog/src/PetscLogmpe.c, and
   petsc/include/finclude/petsclog.h!!!
 */
 #define MAT_Mult                                0
@@ -125,21 +125,21 @@
 #define EC_Solve                                106
 
 /* 
-   Event numbers PLOG_USER_EVENT_LOW to PLOG_USER_EVENT_HIGH are reserved 
-   for applications.  Make sure that src/plog/src/plog.c defines enough
-   entries in (*name)[] to go up to PLOG_USER_EVENT_HIGH.
+   Event numbers PetscLog_USER_EVENT_LOW to PetscLog_USER_EVENT_HIGH are reserved 
+   for applications.  Make sure that src/PetscLog/src/PetscLog.c defines enough
+   entries in (*name)[] to go up to PetscLog_USER_EVENT_HIGH.
 */
-#define PLOG_USER_EVENT_LOW_STATIC              120
-#define PLOG_USER_EVENT_HIGH                    200
+#define PetscLog_USER_EVENT_LOW_STATIC              120
+#define PetscLog_USER_EVENT_HIGH                    200
 
 /* Global flop counter */
-extern PLogDouble _TotalFlops;
+extern PetscLogDouble _TotalFlops;
 
 /* General logging of information; different from event logging */
-EXTERN int        PLogInfo(void*,const char[],...);
-EXTERN int        PLogInfoDeactivateClass(int);
-EXTERN int        PLogInfoActivateClass(int);
-extern PetscTruth PLogPrintInfo;  /* if true, indicates PLogInfo() is turned on */
+EXTERN int        PetscLogInfo(void*,const char[],...);
+EXTERN int        PetscLogInfoDeactivateClass(int);
+EXTERN int        PetscLogInfoActivateClass(int);
+extern PetscTruth PetscLogPrintInfo;  /* if true, indicates PetscLogInfo() is turned on */
 
 #if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
 
@@ -157,126 +157,126 @@ extern PetscTruth PLogPrintInfo;  /* if true, indicates PLogInfo() is turned on 
  */
 
 #if defined(PETSC_USE_COMPLEX)
-#define PLogFlops(n) (_TotalFlops += (4*n),0)
+#define PetscLogFlops(n) (_TotalFlops += (4*n),0)
 #else
-#define PLogFlops(n) (_TotalFlops += (n),0)
+#define PetscLogFlops(n) (_TotalFlops += (n),0)
 #endif
 
 #if defined (PETSC_HAVE_MPE)
 #include "mpe.h"
 #define MPEBEGIN    1000 
-EXTERN int        PLogMPEBegin(void);
-EXTERN int        PLogMPEDump(const char[]);
+EXTERN int        PetscLogMPEBegin(void);
+EXTERN int        PetscLogMPEDump(const char[]);
 extern PetscTruth UseMPE;
-extern int        PLogEventMPEFlags[];
-EXTERN int        PLogEventMPEActivate(int);
-EXTERN int        PLogEventMPEDeactivate(int);
+extern int        PetscLogEventMPEFlags[];
+EXTERN int        PetscLogEventMPEActivate(int);
+EXTERN int        PetscLogEventMPEDeactivate(int);
 #else
-#define PLogEventMPEActivate(a) 0
-#define PLogEventMPEDeactivate(a) 0
+#define PetscLogEventMPEActivate(a) 0
+#define PetscLogEventMPEDeactivate(a) 0
 #endif
 
-EXTERN int PLogEventActivate(int);
-EXTERN int PLogEventDeactivate(int);
+EXTERN int PetscLogEventActivate(int);
+EXTERN int PetscLogEventDeactivate(int);
 
-EXTERN int PLogEventActivateClass(int);
-EXTERN int PLogEventDeactivateClass(int);
+EXTERN int PetscLogEventActivateClass(int);
+EXTERN int PetscLogEventDeactivateClass(int);
 
-extern PetscTruth PLogEventFlags[];
-EXTERN int (*_PLogPLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
-EXTERN int (*_PLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
-EXTERN int (*_PLogPHC)(PetscObject);
-EXTERN int (*_PLogPHD)(PetscObject);
+extern PetscTruth PetscLogEventFlags[];
+EXTERN int (*_PetscLogPLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
+EXTERN int (*_PetscLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
+EXTERN int (*_PetscLogPHC)(PetscObject);
+EXTERN int (*_PetscLogPHD)(PetscObject);
 
-extern int PLogEventDepth[];
+extern int PetscLogEventDepth[];
 
 #if defined(PETSC_HAVE_MPE)
-#define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
+#define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
   0; { int __ierr; \
-    if (_PLogPLB && PLogEventFlags[e]) {                         \
-      __ierr = PLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(__ierr);  \
-      if (UseMPE && PLogEventMPEFlags[(e)])                      \
+    if (_PetscLogPLB && PetscLogEventFlags[e]) {                         \
+      __ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(__ierr);  \
+      if (UseMPE && PetscLogEventMPEFlags[(e)])                      \
         MPE_Log_event(MPEBEGIN+2*(e),0,"");                      \
       __ierr = MPI_Barrier(cm);CHKERRQ(__ierr);                  \
-      __ierr = PLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(__ierr);    \
-      if (UseMPE && PLogEventMPEFlags[(e)])                      \
+      __ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(__ierr);    \
+      if (UseMPE && PetscLogEventMPEFlags[(e)])                      \
         MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");                  \
     }                                                            \
-    __ierr = PLogEventBegin(e+1,o1,o2,o3,o4);CHKERRQ(__ierr);    \
-    if (UseMPE && PLogEventMPEFlags[(e)+1])                      \
+    __ierr = PetscLogEventBegin(e+1,o1,o2,o3,o4);CHKERRQ(__ierr);    \
+    if (UseMPE && PetscLogEventMPEFlags[(e)+1])                      \
       MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");                    \
   }
-#define PLogEventBegin(e,o1,o2,o3,o4)  \
+#define PetscLogEventBegin(e,o1,o2,o3,o4)  \
   0; {  \
-   if (_PLogPLB && PLogEventFlags[(e)] && !PLogEventDepth[e]++) {\
-     (*_PLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
-   if (UseMPE && PLogEventMPEFlags[(e)])\
+   if (_PetscLogPLB && PetscLogEventFlags[(e)] && !PetscLogEventDepth[e]++) {\
+     (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
+   if (UseMPE && PetscLogEventMPEFlags[(e)])\
      MPE_Log_event(MPEBEGIN+2*(e),0,"");\
   }
 #else
-#define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
+#define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
   0; { int __ierr;\
-    if (_PLogPLB && PLogEventFlags[(e)]) {                         \
-      __ierr = PLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(__ierr);    \
+    if (_PetscLogPLB && PetscLogEventFlags[(e)]) {                         \
+      __ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(__ierr);    \
       __ierr = MPI_Barrier(cm);CHKERRQ(__ierr);                    \
-      __ierr = PLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(__ierr);      \
+      __ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(__ierr);      \
     }                                                              \
-    __ierr = PLogEventBegin((e)+1,o1,o2,o3,o4);CHKERRQ(__ierr);    \
+    __ierr = PetscLogEventBegin((e)+1,o1,o2,o3,o4);CHKERRQ(__ierr);    \
   }
-#define PLogEventBegin(e,o1,o2,o3,o4)  \
+#define PetscLogEventBegin(e,o1,o2,o3,o4)  \
   0; {  \
-   if (_PLogPLB && PLogEventFlags[(e)] && !PLogEventDepth[e]++) {\
-     (*_PLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
+   if (_PetscLogPLB && PetscLogEventFlags[(e)] && !PetscLogEventDepth[e]++) {\
+     (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   }
 #endif
 
 #if defined(PETSC_HAVE_MPE)
-#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PLogEventEnd(e+1,o1,o2,o3,o4)
-#define PLogEventEnd(e,o1,o2,o3,o4) \
+#define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PetscLogEventEnd(e+1,o1,o2,o3,o4)
+#define PetscLogEventEnd(e,o1,o2,o3,o4) \
   0; {\
-  if (_PLogPLE && PLogEventFlags[(e)] && !--PLogEventDepth[e]) {\
-    (*_PLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
-  if (UseMPE && PLogEventMPEFlags[(e)])\
+  if (_PetscLogPLE && PetscLogEventFlags[(e)] && !--PetscLogEventDepth[e]) {\
+    (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
+  if (UseMPE && PetscLogEventMPEFlags[(e)])\
      MPE_Log_event(MPEBEGIN+2*(e)+1,0,"");\
   }  
 #else
-#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PLogEventEnd(e+1,o1,o2,o3,o4)
-#define PLogEventEnd(e,o1,o2,o3,o4) \
+#define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PetscLogEventEnd(e+1,o1,o2,o3,o4)
+#define PetscLogEventEnd(e,o1,o2,o3,o4) \
   0; {\
-  if (_PLogPLE && PLogEventFlags[(e)] && !--PLogEventDepth[e]) {\
-    (*_PLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
+  if (_PetscLogPLE && PetscLogEventFlags[(e)] && !--PetscLogEventDepth[e]) {\
+    (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   } 
 #endif
 
-#define PLogObjectParent(p,c)       if (c) {PetscValidHeader((PetscObject)(c)); \
+#define PetscLogObjectParent(p,c)       if (c) {PetscValidHeader((PetscObject)(c)); \
                                      PetscValidHeader((PetscObject)(p));\
                                      ((PetscObject)(c))->parent = (PetscObject)(p);\
 				     ((PetscObject)(c))->parentid = ((PetscObject)p)->id;}
-#define PLogObjectParents(p,n,d)    {int _i; for (_i=0; _i<n; _i++) \
-                                    PLogObjectParent(p,(d)[_i]);}
-#define PLogObjectCreate(h)         {if (_PLogPHC) (*_PLogPHC)((PetscObject)h);}
-#define PLogObjectDestroy(h)        {if (_PLogPHD) (*_PLogPHD)((PetscObject)h);}
-#define PLogObjectMemory(p,m)       {PetscValidHeader((PetscObject)p);\
+#define PetscLogObjectParents(p,n,d)    {int _i; for (_i=0; _i<n; _i++) \
+                                    PetscLogObjectParent(p,(d)[_i]);}
+#define PetscLogObjectCreate(h)         {if (_PetscLogPHC) (*_PetscLogPHC)((PetscObject)h);}
+#define PetscLogObjectDestroy(h)        {if (_PetscLogPHD) (*_PetscLogPHD)((PetscObject)h);}
+#define PetscLogObjectMemory(p,m)       {PetscValidHeader((PetscObject)p);\
                                     ((PetscObject)(p))->mem += (m);}
-EXTERN int  PLogObjectState(PetscObject,const char[],...);
-EXTERN int  PLogDestroy(void);
-EXTERN int  PLogStagePush(int);
-EXTERN int  PLogStagePop(void);
-EXTERN int  PLogStageRegister(int,const char[]);
-EXTERN int  PLogStagePrint(int,PetscTruth);
-EXTERN int  PLogPrintSummary(MPI_Comm,const char[]);
-EXTERN int  PLogBegin(void);
-EXTERN int  PLogTraceBegin(FILE *);
-EXTERN int  PLogAllBegin(void);
-EXTERN int  PLogSet(int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
+EXTERN int  PetscLogObjectState(PetscObject,const char[],...);
+EXTERN int  PetscLogDestroy(void);
+EXTERN int  PetscLogStagePush(int);
+EXTERN int  PetscLogStagePop(void);
+EXTERN int  PetscLogStageRegister(int,const char[]);
+EXTERN int  PetscLogStagePrint(int,PetscTruth);
+EXTERN int  PetscLogPrintSummary(MPI_Comm,const char[]);
+EXTERN int  PetscLogBegin(void);
+EXTERN int  PetscLogTraceBegin(FILE *);
+EXTERN int  PetscLogAllBegin(void);
+EXTERN int  PetscLogSet(int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
                     int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject));
-EXTERN int  PLogDump(const char[]);
-EXTERN int  PLogEventRegister(int*,const char[],const char[]);
-EXTERN int  PetscGetFlops(PLogDouble*);
+EXTERN int  PetscLogDump(const char[]);
+EXTERN int  PetscLogEventRegister(int*,const char[],const char[]);
+EXTERN int  PetscGetFlops(PetscLogDouble*);
 
-extern PLogDouble irecv_ct,isend_ct,wait_ct,wait_any_ct,recv_ct,send_ct;
-extern PLogDouble irecv_len,isend_len,recv_len,send_len;
-extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
+extern PetscLogDouble irecv_ct,isend_ct,wait_ct,wait_any_ct,recv_ct,send_ct;
+extern PetscLogDouble irecv_len,isend_len,recv_len,send_len;
+extern PetscLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
 extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 
 /*
@@ -296,7 +296,7 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 
 #define TypeSize(buff,count,type)                                                \
 (\
-  MPI_Type_size(type,&PETSC_DUMMY_SIZE),buff += ((PLogDouble) ((count)*PETSC_DUMMY_SIZE)) \
+  MPI_Type_size(type,&PETSC_DUMMY_SIZE),buff += ((PetscLogDouble) ((count)*PETSC_DUMMY_SIZE)) \
 )
 
 #define MPI_Irecv(buf,count, datatype,source,tag,comm,request)        \
@@ -314,19 +314,19 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 #define MPI_Startall_irecv(count,number,requests)                                     \
 (\
   PETSC_DUMMY = MPI_Startall(number,requests),                                                    \
-  irecv_ct += (PLogDouble)(number),irecv_len += ((PLogDouble) ((count)*sizeof(Scalar))),PETSC_DUMMY \
+  irecv_ct += (PetscLogDouble)(number),irecv_len += ((PetscLogDouble) ((count)*sizeof(Scalar))),PETSC_DUMMY \
 )
 
 #define MPI_Startall_isend(count,number,requests)                                    \
 (\
   PETSC_DUMMY = MPI_Startall(number,requests),                                                   \
-  isend_ct += (PLogDouble)(number),isend_len += ((PLogDouble) ((count)*sizeof(Scalar))),PETSC_DUMMY \
+  isend_ct += (PetscLogDouble)(number),isend_len += ((PetscLogDouble) ((count)*sizeof(Scalar))),PETSC_DUMMY \
 )
 
 #define MPI_Start_isend(count, requests)\
 (\
   PETSC_DUMMY = MPI_Start(requests),\
-  isend_ct++,isend_len += ((PLogDouble) ((count)*sizeof(Scalar))),PETSC_DUMMY\
+  isend_ct++,isend_len += ((PetscLogDouble) ((count)*sizeof(Scalar))),PETSC_DUMMY\
 )
 
 #define MPI_Recv(buf,count, datatype,source,tag,comm,status)           \
@@ -355,7 +355,7 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 
 #define MPI_Waitall(count,array_of_requests,array_of_statuses) \
 (\
-  wait_all_ct++,sum_of_waits_ct += (PLogDouble) (count),       \
+  wait_all_ct++,sum_of_waits_ct += (PetscLogDouble) (count),       \
   MPI_Waitall(count,array_of_requests,array_of_statuses)       \
 )
 
@@ -385,50 +385,50 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 
 #else  /* ---Logging is turned off --------------------------------------------*/
 
-#define PLogFlops(n) 0
+#define PetscLogFlops(n) 0
 
 /*
      With logging turned off, then MPE has to be turned off
 */
 #define MPEBEGIN                  1000 
-#define PLogMPEBegin()            0
-#define PLogMPEDump(a)            0
-#define PLogEventMPEActivate(a)   0
-#define PLogEventMPEDeactivate(a) 0
+#define PetscLogMPEBegin()            0
+#define PetscLogMPEDump(a)            0
+#define PetscLogEventMPEActivate(a)   0
+#define PetscLogEventMPEDeactivate(a) 0
 
-#define PLogEventActivate(a)   0
-#define PLogEventDeactivate(a) 0
+#define PetscLogEventActivate(a)   0
+#define PetscLogEventDeactivate(a) 0
 
-#define PLogEventActivateClass(a)   0
-#define PLogEventDeactivateClass(a) 0
+#define PetscLogEventActivateClass(a)   0
+#define PetscLogEventDeactivateClass(a) 0
 
-#define _PLogPLB                        0
-#define _PLogPLE                        0
-#define _PLogPHC                        0
-#define _PLogPHD                        0
+#define _PetscLogPLB                        0
+#define _PetscLogPLE                        0
+#define _PetscLogPHC                        0
+#define _PetscLogPHD                        0
 #define PetscGetFlops(a)                (*(a) = 0.0,0)
-#define PLogEventBegin(e,o1,o2,o3,o4)   0
-#define PLogEventEnd(e,o1,o2,o3,o4)     0
-#define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm) 0
-#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm)   0
-#define PLogObjectParent(p,c)
-#define PLogObjectParents(p,n,c)
-#define PLogObjectCreate(h)
-#define PLogObjectDestroy(h)
-#define PLogObjectMemory(p,m)
-#define PLogDestroy()                   0
-#define PLogStagePush(a)                0
-#define PLogStagePop()                  0
-#define PLogStageRegister(a,b)          0
-#define PLogStagePrint(a,flg)           0
-#define PLogPrintSummary(comm,file)     0
-#define PLogBegin()                     0
-#define PLogTraceBegin(file)            0
-#define PLogSet(lb,le)                  0
-#define PLogAllBegin()                  0
-#define PLogDump(c)                     0
-#define PLogEventRegister(a,b,c)        0
-EXTERN int PLogObjectState(PetscObject,const char[],...);
+#define PetscLogEventBegin(e,o1,o2,o3,o4)   0
+#define PetscLogEventEnd(e,o1,o2,o3,o4)     0
+#define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) 0
+#define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm)   0
+#define PetscLogObjectParent(p,c)
+#define PetscLogObjectParents(p,n,c)
+#define PetscLogObjectCreate(h)
+#define PetscLogObjectDestroy(h)
+#define PetscLogObjectMemory(p,m)
+#define PetscLogDestroy()                   0
+#define PetscLogStagePush(a)                0
+#define PetscLogStagePop()                  0
+#define PetscLogStageRegister(a,b)          0
+#define PetscLogStagePrint(a,flg)           0
+#define PetscLogPrintSummary(comm,file)     0
+#define PetscLogBegin()                     0
+#define PetscLogTraceBegin(file)            0
+#define PetscLogSet(lb,le)                  0
+#define PetscLogAllBegin()                  0
+#define PetscLogDump(c)                     0
+#define PetscLogEventRegister(a,b,c)        0
+EXTERN int PetscLogObjectState(PetscObject,const char[],...);
 
 /* If PETSC_USE_LOG is NOT defined, these still need to be! */
 #define MPI_Startall_irecv(count,number,requests) MPI_Startall(number,requests)
@@ -442,18 +442,18 @@ EXTERN int PLogObjectState(PetscObject,const char[],...);
 extern PetscTruth PetscPreLoadingUsed;
 
 #define PreLoadBegin(flag,name) {PetscTruth PreLoading = flag; int PreLoadMax,PreLoadIt,__ierr;\
-                                 __ierr = OptionsGetLogical(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(__ierr);\
+                                 __ierr = PetscOptionsGetLogical(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(__ierr);\
                                  PreLoadMax = (int)(PreLoading);PetscPreLoadingUsed = PreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
                                  for (PreLoadIt=0; PreLoadIt<=PreLoadMax; PreLoadIt++) {\
                                    __ierr = PetscBarrier(PETSC_NULL);CHKERRQ(__ierr);\
-                                   __ierr = PLogStagePush(PETSC_DETERMINE);CHKERRQ(__ierr);\
-                                   __ierr = PLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(__ierr);\
-                                   __ierr = PLogStagePrint(PETSC_DETERMINE,(PetscTruth)(!PreLoadMax || PreLoadIt));
-#define PreLoadEnd()               __ierr = PLogStagePop();CHKERRQ(__ierr);PreLoading = PETSC_FALSE;}}
-#define PreLoadStage(name)         __ierr = PLogStagePop();CHKERRQ(__ierr);\
-                                   __ierr = PLogStagePush(PETSC_DETERMINE);CHKERRQ(__ierr);\
-                                   __ierr = PLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(__ierr);\
-                                   __ierr = PLogStagePrint(PETSC_DETERMINE,(PetscTruth)(!PreLoadMax || PreLoadIt));
+                                   __ierr = PetscLogStagePush(PETSC_DETERMINE);CHKERRQ(__ierr);\
+                                   __ierr = PetscLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(__ierr);\
+                                   __ierr = PetscLogStagePrint(PETSC_DETERMINE,(PetscTruth)(!PreLoadMax || PreLoadIt));
+#define PreLoadEnd()               __ierr = PetscLogStagePop();CHKERRQ(__ierr);PreLoading = PETSC_FALSE;}}
+#define PreLoadStage(name)         __ierr = PetscLogStagePop();CHKERRQ(__ierr);\
+                                   __ierr = PetscLogStagePush(PETSC_DETERMINE);CHKERRQ(__ierr);\
+                                   __ierr = PetscLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(__ierr);\
+                                   __ierr = PetscLogStagePrint(PETSC_DETERMINE,(PetscTruth)(!PreLoadMax || PreLoadIt));
 #endif
 
 

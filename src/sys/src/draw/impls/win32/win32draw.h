@@ -13,7 +13,7 @@
 /* Nodes that record mouse actions when needed */
 typedef struct _p_MouseNode *MouseNode;
 struct _p_MouseNode{
-  DrawButton Button;
+  PetscDrawButton Button;
   POINT      user;
   POINT      phys;
   MouseNode  mnext;

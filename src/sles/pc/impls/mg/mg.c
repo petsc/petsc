@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.116 2000/11/01 16:10:36 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.117 2000/11/27 15:26:09 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -14,7 +14,7 @@
 .   mg - structure created with  MGCreate().
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGMCycle_Private"
+#define __FUNC__ "MGMCycle_Private"
 int MGMCycle_Private(MG *mglevels)
 {
   MG     mg = *mglevels,mgc = *(mglevels - 1);
@@ -45,7 +45,7 @@ int MGMCycle_Private(MG *mglevels)
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGCreate_Private"
+#define __FUNC__ "MGCreate_Private"
 static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **result)
 {
   MG   *mg;
@@ -55,13 +55,13 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **
   PC   ipc;
 
   PetscFunctionBegin;
-  mg = (MG*)PetscMalloc(levels*sizeof(MG));CHKPTRQ(mg);
-  PLogObjectMemory(pc,levels*(sizeof(MG)+sizeof(struct _MG)));
+ierr = PetscMalloc(levels*sizeof(MG),&(  mg ));CHKERRQ(ierr);
+  PetscLogObjectMemory(pc,levels*(sizeof(MG)+sizeof(struct _MG)));
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
   for (i=0; i<levels; i++) {
-    mg[i]         = (MG)PetscMalloc(sizeof(struct _MG));CHKPTRQ(mg[i]);
+    mg[i]         = (MG)PetscMalloc(sizeof(struct _MG));CHKERRQ(ierr);
     ierr          = PetscMemzero(mg[i],sizeof(struct _MG));CHKERRQ(ierr);
     mg[i]->level  = i;
     mg[i]->levels = levels;
@@ -91,7 +91,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **
     } else {
       ierr = SLESAppendOptionsPrefix(mg[i]->smoothd,"mg_levels_");CHKERRQ(ierr);
     }
-    PLogObjectParent(pc,mg[i]->smoothd);
+    PetscLogObjectParent(pc,mg[i]->smoothd);
     mg[i]->smoothu         = mg[i]->smoothd;
     mg[i]->default_smoothu = 10000;
     mg[i]->default_smoothd = 10000;
@@ -101,7 +101,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCDestroy_MG"
+#define __FUNC__ "PCDestroy_MG"
 static int PCDestroy_MG(PC pc)
 {
   MG  *mg = (MG*)pc->data;
@@ -133,7 +133,7 @@ EXTERN int MGKCycle_Private(MG*);
   A simple wrapper which calls MGMCycle(),MGACycle(), or MGFCycle(). 
 */ 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_MG"
+#define __FUNC__ "PCApply_MG"
 static int PCApply_MG(PC pc,Vec b,Vec x)
 {
   MG     *mg = (MG*)pc->data;
@@ -160,7 +160,7 @@ static int PCApply_MG(PC pc,Vec b,Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApplyRichardson_MG"
+#define __FUNC__ "PCApplyRichardson_MG"
 static int PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,int its)
 {
   MG  *mg = (MG*)pc->data;
@@ -176,7 +176,7 @@ static int PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,int its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_MG"
+#define __FUNC__ "PCSetFromOptions_MG"
 static int PCSetFromOptions_MG(PC pc)
 {
   int        ierr,m,levels = 1;
@@ -185,24 +185,24 @@ static int PCSetFromOptions_MG(PC pc)
 
   PetscFunctionBegin;
 
-  ierr = OptionsHead("Multigrid options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead("Multigrid options");CHKERRQ(ierr);
     if (!pc->data) {
-      ierr = OptionsInt("-pc_mg_levels","Number of Levels","MGSetLevels",levels,&levels,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-pc_mg_levels","Number of Levels","MGSetLevels",levels,&levels,&flg);CHKERRQ(ierr);
       ierr = MGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = OptionsInt("-pc_mg_cycles","1 for V cycle, 2 for W-cycle","MGSetCycles",1,&m,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_mg_cycles","1 for V cycle, 2 for W-cycle","MGSetCycles",1,&m,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MGSetCycles(pc,m);CHKERRQ(ierr);
     } 
-    ierr = OptionsInt("-pc_mg_smoothup","Number of post-smoothing steps","MGSetNumberSmoothUp",1,&m,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_mg_smoothup","Number of post-smoothing steps","MGSetNumberSmoothUp",1,&m,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MGSetNumberSmoothUp(pc,m);CHKERRQ(ierr);
     }
-    ierr = OptionsInt("-pc_mg_smoothdown","Number of pre-smoothing steps","MGSetNumberSmoothDown",1,&m,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_mg_smoothdown","Number of pre-smoothing steps","MGSetNumberSmoothDown",1,&m,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MGSetNumberSmoothDown(pc,m);CHKERRQ(ierr);
     }
-    ierr = OptionsEList("-pc_mg_type","Multigrid type","MGSetType",type,4,"multiplicative",buff,15,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_mg_type","Multigrid type","MGSetType",type,4,"multiplicative",buff,15,&flg);CHKERRQ(ierr);
     if (flg) {
       MGType     mg;
       PetscTruth isadd,ismult,isfull,iskask,iscasc;
@@ -221,13 +221,13 @@ static int PCSetFromOptions_MG(PC pc)
       else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type: %s",buff);
       ierr = MGSetType(pc,mg);CHKERRQ(ierr);
     }
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCView_MG"
-static int PCView_MG(PC pc,Viewer viewer)
+#define __FUNC__ "PCView_MG"
+static int PCView_MG(PC pc,PetscViewer viewer)
 {
   MG         *mg = (MG*)pc->data;
   KSP        kspu,kspd;
@@ -237,7 +237,7 @@ static int PCView_MG(PC pc,Viewer viewer)
   PetscTruth isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = SLESGetKSP(mg[0]->smoothu,&kspu);CHKERRQ(ierr);
     ierr = SLESGetKSP(mg[0]->smoothd,&kspd);CHKERRQ(ierr);
@@ -248,20 +248,20 @@ static int PCView_MG(PC pc,Viewer viewer)
     else if (mg[0]->am == MGFULL)      cstring = "full";
     else if (mg[0]->am == MGKASKADE)   cstring = "Kaskade";
     else cstring = "unknown";
-    ierr = ViewerASCIIPrintf(viewer,"  MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
+    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
                       cstring,mg[0]->cycles,mg[0]->default_smoothu,mg[0]->default_smoothd);CHKERRQ(ierr);
     for (i=0; i<levels; i++) {
-      ierr = ViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %d -------------------------------\n",i);CHKERRQ(ierr);
-      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %d -------------------------------\n",i);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = SLESView(mg[i]->smoothd,viewer);CHKERRQ(ierr);
-      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       if (mg[i]->smoothd == mg[i]->smoothu) {
-        ierr = ViewerASCIIPrintf(viewer,"Up solver same as down solver\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Up solver same as down solver\n");CHKERRQ(ierr);
       } else {
-        ierr = ViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %d -------------------------------\n",i);CHKERRQ(ierr);
-        ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %d -------------------------------\n",i);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = SLESView(mg[i]->smoothu,viewer);CHKERRQ(ierr);
-        ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
     }
   } else {
@@ -274,12 +274,16 @@ static int PCView_MG(PC pc,Viewer viewer)
     Calls setup for the SLES on each level
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp_MG"
+#define __FUNC__ "PCSetUp_MG"
 static int PCSetUp_MG(PC pc)
 {
   MG         *mg = (MG*)pc->data;
   int        ierr,i,n = mg[0]->levels;
   KSP        ksp;
+  PC         cpc;
+  PetscTruth preonly,lu,redundant,monitor = PETSC_FALSE;
+  PetscViewer     ascii;
+  MPI_Comm   comm;
 
   PetscFunctionBegin;
   /*
@@ -289,9 +293,37 @@ static int PCSetUp_MG(PC pc)
   mg[n-1]->x = pc->vec;
   mg[n-1]->b = pc->vec;
 
+  if (pc->setupcalled == 0) {
+    ierr = PetscOptionsHasName(0,"-pc_mg_monitor",&monitor);CHKERRQ(ierr);
+     
+    for (i=1; i<n; i++) {
+      if (mg[i]->smoothd) {
+        if (monitor) {
+          ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
+          ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISetTab(ascii,n-i);CHKERRQ(ierr);
+          ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+        }
+        ierr = SLESSetFromOptions(mg[i]->smoothd);CHKERRQ(ierr);
+      }
+    }
+    for (i=0; i<n; i++) {
+      if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
+        if (monitor) {
+          ierr = SLESGetKSP(mg[i]->smoothu,&ksp);CHKERRQ(ierr);
+          ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISetTab(ascii,n-i);CHKERRQ(ierr);
+          ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+        }
+        ierr = SLESSetFromOptions(mg[i]->smoothu);CHKERRQ(ierr);
+      }
+    }
+  }
+
   for (i=1; i<n; i++) {
     if (mg[i]->smoothd) {
-      ierr = SLESSetFromOptions(mg[i]->smoothd);CHKERRQ(ierr);
       ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
       ierr = SLESSetUp(mg[i]->smoothd,mg[i]->b,mg[i]->x);CHKERRQ(ierr);
@@ -299,13 +331,37 @@ static int PCSetUp_MG(PC pc)
   }
   for (i=0; i<n; i++) {
     if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
-      ierr = SLESSetFromOptions(mg[i]->smoothu);CHKERRQ(ierr);
       ierr = SLESGetKSP(mg[i]->smoothu,&ksp);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
       ierr = SLESSetUp(mg[i]->smoothu,mg[i]->b,mg[i]->x);CHKERRQ(ierr);
     }
   }
-  ierr = SLESSetFromOptions(mg[0]->smoothd);CHKERRQ(ierr);
+
+  /*
+      If coarse solver is not direct method then DO NOT USE preonly 
+  */
+  ierr = SLESGetKSP(mg[0]->smoothd,&ksp);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)ksp,KSPPREONLY,&preonly);CHKERRQ(ierr);
+  if (preonly) {
+    ierr = SLESGetPC(mg[0]->smoothd,&cpc);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)cpc,PCLU,&lu);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)cpc,PCREDUNDANT,&redundant);CHKERRQ(ierr);
+    if (!lu && !redundant) {
+      ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
+    }
+  }
+
+  if (pc->setupcalled == 0) {
+    if (monitor) {
+      ierr = SLESGetKSP(mg[0]->smoothd,&ksp);CHKERRQ(ierr);
+      ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISetTab(ascii,n);CHKERRQ(ierr);
+      ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+    }
+    ierr = SLESSetFromOptions(mg[0]->smoothd);CHKERRQ(ierr);
+  }
+
   ierr = SLESSetUp(mg[0]->smoothd,mg[0]->b,mg[0]->x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -313,7 +369,7 @@ static int PCSetUp_MG(PC pc)
 /* -------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGSetLevels"
+#define __FUNC__ "MGSetLevels"
 /*@C
    MGSetLevels - Sets the number of levels to use with MG.
    Must be called before any other MG routine.
@@ -329,7 +385,7 @@ static int PCSetUp_MG(PC pc)
    Level: intermediate
 
    Notes:
-     If the number of levels is one then the multigrid uses the -mg_fine prefix
+     If the number of levels is one then the multigrid uses the -mg_levels prefix
   for setting the level options rather than the -mg_coarse prefix.
 
 .keywords: MG, set, levels, multigrid
@@ -356,7 +412,7 @@ int MGSetLevels(PC pc,int levels,MPI_Comm *comms)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGGetLevels"
+#define __FUNC__ "MGGetLevels"
 /*@
    MGGetLevels - Gets the number of levels to use with MG.
 
@@ -387,7 +443,7 @@ int MGGetLevels(PC pc,int *levels)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGSetType"
+#define __FUNC__ "MGSetType"
 /*@
    MGSetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
@@ -425,7 +481,7 @@ int MGSetType(PC pc,MGType form)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGSetCycles"
+#define __FUNC__ "MGSetCycles"
 /*@
    MGSetCycles - Sets the number of cycles to use. 1 denotes a
    V-cycle; 2 denotes a W-cycle. Use MGSetCyclesOnLevel() for more 
@@ -464,7 +520,7 @@ int MGSetCycles(PC pc,int n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGCheck"
+#define __FUNC__ "MGCheck"
 /*@
    MGCheck - Checks that all components of the MG structure have 
    been set.
@@ -522,7 +578,7 @@ int MGCheck(PC pc)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGSetNumberSmoothDown"
+#define __FUNC__ "MGSetNumberSmoothDown"
 /*@
    MGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
    use on all levels. Use MGGetSmootherDown() to set different 
@@ -564,7 +620,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGSetNumberSmoothUp"
+#define __FUNC__ "MGSetNumberSmoothUp"
 /*@
    MGSetNumberSmoothUp - Sets the number of post-smoothing steps to use 
    on all levels. Use MGGetSmootherUp() to set different numbers of 
@@ -609,7 +665,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCreate_MG"
+#define __FUNC__ "PCCreate_MG"
 int PCCreate_MG(PC pc)
 {
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: ex37.c,v 1.16 2000/09/28 21:11:49 bsmith Exp bsmith $*/
+/*$Id: ex37.c,v 1.17 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n"; 
 
@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&C);CHKERRA(ierr);
   ierr = MatSetFromOptions(C);CHKERRA(ierr);
@@ -44,8 +44,8 @@ int main(int argc,char **args)
   ierr = MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);CHKERRA(ierr);
   ierr = MatCopy(C,A,SAME_NONZERO_PATTERN);CHKERRA(ierr);
 
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = MatEqual(A,C,&flg);CHKERRA(ierr);
   if (flg) {

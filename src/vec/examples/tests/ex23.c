@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.11 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex23.c,v 1.12 2000/09/28 21:10:28 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector\n\
   using a blocked send and a strided receive.\n\n";
@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   ierr = VecScatterDestroy(ctx);CHKERRA(ierr); 
  
   ierr = PetscSleep(2*rank);CHKERRA(ierr);
-  ierr = VecView(y,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(y);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: xinit.c,v 1.68 2000/07/10 03:38:43 bsmith Exp bsmith $*/
+/*$Id: xinit.c,v 1.69 2000/09/28 21:08:36 bsmith Exp bsmith $*/
 
 /* 
    This file contains routines to open an X window display and window
@@ -14,19 +14,19 @@
 
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
-EXTERN int XiUniformHues(Draw_X *,int);
-EXTERN int Xi_wait_map(Draw_X*);
-EXTERN int XiInitColors(Draw_X*,Colormap);
-EXTERN int XiFontFixed(Draw_X*,int,int,XiFont**);
-EXTERN int XiInitCmap(Draw_X*);
-EXTERN int DrawSetColormap_X(Draw_X*,char *,Colormap);
+EXTERN int XiUniformHues(PetscDraw_X *,int);
+EXTERN int Xi_wait_map(PetscDraw_X*);
+EXTERN int XiInitColors(PetscDraw_X*,Colormap);
+EXTERN int XiFontFixed(PetscDraw_X*,int,int,XiFont**);
+EXTERN int XiInitCmap(PetscDraw_X*);
+EXTERN int PetscDrawSetColormap_X(PetscDraw_X*,char *,Colormap);
 
 /*
   XiOpenDisplay - Open a display
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiOpenDisplay"></a>*/"XiOpenDisplay" 
-int XiOpenDisplay(Draw_X* XiWin,char *display_name)
+#define __FUNC__ "XiOpenDisplay" 
+int XiOpenDisplay(PetscDraw_X* XiWin,char *display_name)
 {
   PetscFunctionBegin;
   XiWin->disp = XOpenDisplay(display_name);
@@ -44,8 +44,8 @@ int XiOpenDisplay(Draw_X* XiWin,char *display_name)
    XiSetGC - set the GC structure in the base window
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiSetGC"></a>*/"XiSetGC" 
-int XiSetGC(Draw_X* XiWin,PixVal fg)
+#define __FUNC__ "XiSetGC" 
+int XiSetGC(PetscDraw_X* XiWin,PixVal fg)
 {
   XGCValues       gcvalues;       /* window graphics context values */
 
@@ -67,8 +67,8 @@ int XiSetGC(Draw_X* XiWin,PixVal fg)
     (which may have been set by, for example, XiSetWindowSize)
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiDisplayWindow"></a>*/"XiDisplayWindow" 
-int XiDisplayWindow(Draw_X* XiWin,char *label,int x,int y,
+#define __FUNC__ "XiDisplayWindow" 
+int XiDisplayWindow(PetscDraw_X* XiWin,char *label,int x,int y,
                      int w,int h,PixVal backgnd_pixel)
 {
   unsigned int            wavail,havail;
@@ -175,8 +175,8 @@ int XiDisplayWindow(Draw_X* XiWin,char *label,int x,int y,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiQuickWindow"></a>*/"XiQuickWindow" 
-int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,int nx,int ny)
+#define __FUNC__ "XiQuickWindow" 
+int XiQuickWindow(PetscDraw_X* w,char* host,char* name,int x,int y,int nx,int ny)
 {
   int         ierr;
 
@@ -186,7 +186,7 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,int nx,int ny)
   w->vis    = DefaultVisual(w->disp,w->screen);
   w->depth  = DefaultDepth(w->disp,w->screen);
 
-  ierr = DrawSetColormap_X(w,host,(Colormap)0);CHKERRQ(ierr);
+  ierr = PetscDrawSetColormap_X(w,host,(Colormap)0);CHKERRQ(ierr);
 
   ierr = XiDisplayWindow(w,name,x,y,nx,ny,(PixVal)0);CHKERRQ(ierr);
   XiSetGC(w,w->cmapping[1]);
@@ -203,8 +203,8 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,int nx,int ny)
    A version from an already defined window 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiQuickWindowFromWindow"></a>*/"XiQuickWindowFromWindow" 
-int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
+#define __FUNC__ "XiQuickWindowFromWindow" 
+int XiQuickWindowFromWindow(PetscDraw_X* w,char *host,Window win)
 {
   Window            root;
   int               d,ierr;
@@ -223,7 +223,7 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
 
   w->vis    = DefaultVisual(w->disp,w->screen);
   w->depth  = DefaultDepth(w->disp,w->screen);
-  ierr      = DrawSetColormap_X(w,host,attributes.colormap);CHKERRQ(ierr);
+  ierr      = PetscDrawSetColormap_X(w,host,attributes.colormap);CHKERRQ(ierr);
 
   XGetGeometry(w->disp,w->win,&root,&d,&d,
 	      (unsigned int *)&w->w,(unsigned int *)&w->h,&ud,&ud);
@@ -240,8 +240,8 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
       XiSetWindowLabel - Sets new label in open window.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiSetWindowLabel"></a>*/"XiSetWindowLabel" 
-int XiSetWindowLabel(Draw_X* Xiwin,char *label)
+#define __FUNC__ "XiSetWindowLabel" 
+int XiSetWindowLabel(PetscDraw_X* Xiwin,char *label)
 {
   XTextProperty prop;
   int           len,ierr;
@@ -256,8 +256,8 @@ int XiSetWindowLabel(Draw_X* Xiwin,char *label)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="XiSetToBackground"></a>*/"XiSetToBackground" 
-int XiSetToBackground(Draw_X* XiWin)
+#define __FUNC__ "XiSetToBackground" 
+int XiSetToBackground(PetscDraw_X* XiWin)
 {
   PetscFunctionBegin;
   if (XiWin->gc.cur_pix != XiWin->background) { 

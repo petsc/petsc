@@ -1,4 +1,4 @@
-/*$Id: strgen.c,v 1.18 2000/09/28 21:09:56 bsmith Exp bsmith $*/
+/*$Id: strgen.c,v 1.19 2000/11/28 17:28:15 bsmith Exp bsmith $*/
 
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
@@ -9,7 +9,7 @@ EXTERN int ISRestoreIndices_General(IS,int **);
 EXTERN int ISGetSize_General(IS,int *);
 EXTERN int ISGetLocalSize_General(IS,int *);
 EXTERN int ISInvertPermutation_General(IS,int,IS *);
-EXTERN int ISView_General(IS,Viewer);
+EXTERN int ISView_General(IS,PetscViewer);
 EXTERN int ISSort_General(IS);
 EXTERN int ISSorted_General(IS,PetscTruth*);
 
@@ -25,7 +25,7 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISView_General};
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISStrideToGeneral" 
+#define __FUNC__ "ISStrideToGeneral" 
 /*@C
    ISStrideToGeneral - Converts a stride index set to a general index set.
 
@@ -51,8 +51,8 @@ int ISStrideToGeneral(IS inis)
   ierr = ISStride(inis,&stride);CHKERRQ(ierr);
   if (!stride) SETERRQ(1,"Can only convert stride index sets");
 
-  sub        = PetscNew(IS_General);CHKPTRQ(sub);
-  PLogObjectMemory(inis,sizeof(IS_General));
+  ierr = PetscNew(IS_General,&sub);CHKERRQ(ierr);
+  PetscLogObjectMemory(inis,sizeof(IS_General));
   
   ierr   = ISGetIndices(inis,&sub->idx);CHKERRQ(ierr);
   /* Note: we never restore the indices, since we need to keep the copy generated */
@@ -68,9 +68,9 @@ int ISStrideToGeneral(IS inis)
   inis->data         = (void*)sub;
   inis->isperm       = PETSC_FALSE;
   ierr = PetscMemcpy(inis->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ISView(inis,VIEWER_STDOUT_(inis->comm));CHKERRQ(ierr);
+    ierr = ISView(inis,PETSC_VIEWER_STDOUT_(inis->comm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

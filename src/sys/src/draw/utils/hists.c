@@ -1,4 +1,4 @@
-/*$Id: hists.c,v 1.21 2000/05/05 22:13:45 balay Exp bsmith $*/
+/*$Id: hists.c,v 1.22 2000/09/22 20:42:13 bsmith Exp bsmith $*/
 
 /*
   Contains the data structure for plotting a histogram in a window with an axis.
@@ -8,10 +8,10 @@
 
 struct _p_DrawHG {
   PETSCHEADER(int) 
-  int       (*destroy)(DrawSP);
-  int       (*view)(DrawSP,Viewer);
-  Draw      win;
-  DrawAxis  axis;
+  int       (*destroy)(PetscDrawSP);
+  int       (*view)(PetscDrawSP,PetscViewer);
+  PetscDraw      win;
+  PetscDrawAxis  axis;
   PetscReal xmin,xmax;
   PetscReal ymin,ymax;
   int       numBins;
@@ -25,11 +25,11 @@ struct _p_DrawHG {
 #define CHUNKSIZE 100
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawHGCreate"></a>*/"DrawHGCreate" 
+#define __FUNC__ "DrawHGCreate" 
 /*@C
-   DrawHGCreate - Creates a histogram data structure.
+   PetscDrawHGCreate - Creates a histogram data structure.
 
-   Collective over Draw
+   Collective over PetscDraw
 
    Input Parameters:
 +  draw  - The window where the graph will be made
@@ -44,51 +44,51 @@ struct _p_DrawHG {
 
    Concepts: histogram^creating
 
-.seealso: DrawHGDestroy()
+.seealso: PetscDrawHGDestroy()
 
 @*/
-int DrawHGCreate(Draw draw,int bins,DrawHG *hist)
+int PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
 {
   int         ierr;
   PetscTruth  isnull;
   PetscObject obj = (PetscObject)draw;
-  DrawHG      h;
+  PetscDrawHG      h;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   PetscValidPointer(hist);
-  ierr = PetscTypeCompare(obj,DRAW_NULL,&isnull);CHKERRQ(ierr);
+  ierr = PetscTypeCompare(obj,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
-    ierr = DrawOpenNull(obj->comm,(Draw*)hist);CHKERRQ(ierr);
+    ierr = PetscDrawOpenNull(obj->comm,(PetscDraw*)hist);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(h,_p_DrawHG,int,DRAWHG_COOKIE,0,"DrawHG",obj->comm,DrawHGDestroy,0);
+  PetscHeaderCreate(h,_p_DrawHG,int,DRAWHG_COOKIE,0,"DrawHG",obj->comm,PetscDrawHGDestroy,0);
   h->view      = 0;
   h->destroy   = 0;
   h->win       = draw;
-  h->color     = DRAW_GREEN;
+  h->color     = PETSC_DRAW_GREEN;
   h->xmin      = PETSC_MAX;
   h->xmax      = PETSC_MIN;
   h->ymin      = 0.;
   h->ymax      = 1.;
   h->numBins   = bins;
-  h->bins      = (PetscReal*)PetscMalloc(bins*sizeof(PetscReal));CHKPTRQ(h->bins);
+  ierr = PetscMalloc(bins*sizeof(PetscReal),&h->bins);CHKERRQ(ierr);
   h->numValues = 0;
   h->maxValues = CHUNKSIZE;
-  h->values    = (PetscReal*)PetscMalloc(h->maxValues * sizeof(PetscReal));CHKPTRQ(h->values);
-  PLogObjectMemory(h,bins*sizeof(PetscReal) + h->maxValues*sizeof(PetscReal));
-  ierr = DrawAxisCreate(draw,&h->axis);CHKERRQ(ierr);
-  PLogObjectParent(h,h->axis);
+  ierr         = PetscMalloc(h->maxValues*sizeof(PetscReal),&h->values);CHKERRQ(ierr);
+  PetscLogObjectMemory(h,bins*sizeof(PetscReal) + h->maxValues*sizeof(PetscReal));
+  ierr = PetscDrawAxisCreate(draw,&h->axis);CHKERRQ(ierr);
+  PetscLogObjectParent(h,h->axis);
   *hist = h;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawHGSetNumberBins"></a>*/"DrawHGSetNumberBins" 
+#define __FUNC__ "DrawHGSetNumberBins" 
 /*@
-   DrawHGSetNumberBins - Change the number of bins that are to be drawn.
+   PetscDrawHGSetNumberBins - Change the number of bins that are to be drawn.
 
-   Not Collective (ignored except on processor 0 of DrawHG)
+   Not Collective (ignored except on processor 0 of PetscDrawHG)
 
    Input Parameter:
 +  hist - The histogram context.
@@ -101,29 +101,29 @@ int DrawHGCreate(Draw draw,int bins,DrawHG *hist)
    Concepts: histogram^setting number of bins
 
 @*/
-int DrawHGSetNumberBins(DrawHG hist,int bins)
+int PetscDrawHGSetNumberBins(PetscDrawHG hist,int bins)
 {
   int ierr;
 
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
 
   PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
   if (hist->numBins == bins) PetscFunctionReturn(0);
 
   ierr          = PetscFree(hist->bins);CHKERRQ(ierr);
-  hist->bins    = (PetscReal*)PetscMalloc(bins*sizeof(PetscReal));CHKPTRQ(hist->bins);
-  PLogObjectMemory(hist,(bins - hist->numBins) * sizeof(PetscReal));
+  ierr = PetscMalloc(bins*sizeof(PetscReal),&hist->bins);CHKERRQ(ierr);
+  PetscLogObjectMemory(hist,(bins - hist->numBins) * sizeof(PetscReal));
   hist->numBins = bins;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawHGReset"></a>*/"DrawHGReset" 
+#define __FUNC__ "DrawHGReset" 
 /*@
-  DrawHGReset - Clears histogram to allow for reuse with new data.
+  PetscDrawHGReset - Clears histogram to allow for reuse with new data.
 
-  Not Collective (ignored except on processor 0 of DrawHG)
+  Not Collective (ignored except on processor 0 of PetscDrawHG)
 
   Input Parameter:
 . hist - The histogram context.
@@ -135,10 +135,10 @@ int DrawHGSetNumberBins(DrawHG hist,int bins)
    Concepts: histogram^resetting
 
 @*/
-int DrawHGReset(DrawHG hist)
+int PetscDrawHGReset(PetscDrawHG hist)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
   hist->xmin      = PETSC_MAX;
   hist->xmax      = PETSC_MIN;
@@ -149,11 +149,11 @@ int DrawHGReset(DrawHG hist)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawHGDestroy"></a>*/"DrawHGDestroy" 
+#define __FUNC__ "DrawHGDestroy" 
 /*@C
-  DrawHGDestroy - Frees all space taken up by histogram data structure.
+  PetscDrawHGDestroy - Frees all space taken up by histogram data structure.
 
-  Collective over DrawHG
+  Collective over PetscDrawHG
 
   Input Parameter:
 . hist - The histogram context
@@ -162,9 +162,9 @@ int DrawHGReset(DrawHG hist)
 
   Contributed by: Matthew Knepley
 
-.seealso:  DrawHGCreate()
+.seealso:  PetscDrawHGCreate()
 @*/
-int DrawHGDestroy(DrawHG hist)
+int PetscDrawHGDestroy(PetscDrawHG hist)
 {
   int ierr;
 
@@ -172,25 +172,25 @@ int DrawHGDestroy(DrawHG hist)
   PetscValidHeader(hist);
 
   if (--hist->refct > 0) PetscFunctionReturn(0);
-  if (hist->cookie == DRAW_COOKIE){
-    ierr = DrawDestroy((Draw) hist);CHKERRQ(ierr);
+  if (hist->cookie == PETSC_DRAW_COOKIE){
+    ierr = PetscDrawDestroy((PetscDraw) hist);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
-  ierr = DrawAxisDestroy(hist->axis);CHKERRQ(ierr);
+  ierr = PetscDrawAxisDestroy(hist->axis);CHKERRQ(ierr);
   ierr = PetscFree(hist->bins);CHKERRQ(ierr);
   ierr = PetscFree(hist->values);CHKERRQ(ierr);
-  PLogObjectDestroy(hist);
+  PetscLogObjectDestroy(hist);
   PetscHeaderDestroy(hist);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawHGAddValue"></a>*/"DrawHGAddValue" 
+#define __FUNC__ "DrawHGAddValue" 
 /*@
-  DrawHGAddValue - Adds another value to the histogram.
+  PetscDrawHGAddValue - Adds another value to the histogram.
 
-  Not Collective (ignored except on processor 0 of DrawHG)
+  Not Collective (ignored except on processor 0 of PetscDrawHG)
 
   Input Parameters:
 + hist  - The histogram
@@ -202,12 +202,12 @@ int DrawHGDestroy(DrawHG hist)
 
   Concepts: histogram^adding values
 
-.seealso: DrawHGAddValues()
+.seealso: PetscDrawHGAddValues()
 @*/
-int DrawHGAddValue(DrawHG hist,PetscReal value)
+int PetscDrawHGAddValue(PetscDrawHG hist,PetscReal value)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
 
   PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
   /* Allocate more memory if necessary */
@@ -215,8 +215,8 @@ int DrawHGAddValue(DrawHG hist,PetscReal value)
     PetscReal *tmp;
     int     ierr;
 
-    tmp = (PetscReal*)PetscMalloc((hist->maxValues + CHUNKSIZE) * sizeof(PetscReal));CHKPTRQ(tmp);
-    PLogObjectMemory(hist,CHUNKSIZE * sizeof(PetscReal));
+    ierr = PetscMalloc((hist->maxValues+CHUNKSIZE)*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
+    PetscLogObjectMemory(hist,CHUNKSIZE * sizeof(PetscReal));
     ierr = PetscMemcpy(tmp,hist->values,hist->maxValues * sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscFree(hist->values);CHKERRQ(ierr);
     hist->values     = tmp;
@@ -249,11 +249,11 @@ int DrawHGAddValue(DrawHG hist,PetscReal value)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawHGDraw"></a>*/"DrawHGDraw" 
+#define __FUNC__ "DrawHGDraw" 
 /*@
-  DrawHGDraw - Redraws a histogram.
+  PetscDrawHGDraw - Redraws a histogram.
 
-  Not Collective (ignored except on processor 0 of DrawHG)
+  Not Collective (ignored except on processor 0 of PetscDrawHG)
 
   Input Parameter:
 . hist - The histogram context
@@ -263,14 +263,14 @@ int DrawHGAddValue(DrawHG hist,PetscReal value)
   Contributed by: Matthew Knepley
 
 @*/
-int DrawHGDraw(DrawHG hist)
+int PetscDrawHGDraw(PetscDrawHG hist)
 {
-  Draw     draw;
+  PetscDraw     draw;
   PetscReal   xmin,xmax,ymin,ymax,*bins,*values,binSize,binLeft,binRight,maxHeight;
   int      numBins,numValues,i,p,ierr,bcolor,color,rank;
 
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
   if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
@@ -279,7 +279,7 @@ int DrawHGDraw(DrawHG hist)
   if (rank) PetscFunctionReturn(0);
 
   color = hist->color; 
-  if (color == DRAW_ROTATE) {bcolor = 2;} else {bcolor = color;}
+  if (color == PETSC_DRAW_ROTATE) {bcolor = 2;} else {bcolor = color;}
   draw       = hist->win;
   xmin      = hist->xmin;
   xmax      = hist->xmax;
@@ -291,7 +291,7 @@ int DrawHGDraw(DrawHG hist)
   values    = hist->values;
   binSize   = (xmax - xmin)/numBins;
 
-  ierr = DrawClear(draw);CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   /* Calculate number of points in each bin */
   ierr = PetscMemzero(bins,numBins * sizeof(PetscReal));CHKERRQ(ierr);
   maxHeight = 0;
@@ -304,55 +304,55 @@ int DrawHGDraw(DrawHG hist)
     maxHeight = PetscMax(maxHeight,bins[i]);
   }
   if (maxHeight > ymax) ymax = hist->ymax = maxHeight;
-  ierr = DrawAxisSetLimits(hist->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
-  ierr = DrawAxisDraw(hist->axis);CHKERRQ(ierr);
-  /* Draw bins */
+  ierr = PetscDrawAxisSetLimits(hist->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
+  ierr = PetscDrawAxisDraw(hist->axis);CHKERRQ(ierr);
+  /* PetscDraw bins */
   for (i = 0; i < numBins; i++) {
     binLeft   = xmin + binSize*i;
     binRight  = xmin + binSize*(i+1);
-    ierr = DrawRectangle(draw,binLeft,ymin,binRight,bins[i],bcolor,bcolor,bcolor,bcolor);CHKERRQ(ierr);
-    if (color == DRAW_ROTATE && bins[i]) bcolor++; if (bcolor > 31) bcolor = 2;
-    ierr = DrawLine(draw,binLeft,ymin,binLeft,bins[i],DRAW_BLACK);CHKERRQ(ierr);
-    ierr = DrawLine(draw,binRight,ymin,binRight,bins[i],DRAW_BLACK);CHKERRQ(ierr);
-    ierr = DrawLine(draw,binLeft,bins[i],binRight,bins[i],DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawRectangle(draw,binLeft,ymin,binRight,bins[i],bcolor,bcolor,bcolor,bcolor);CHKERRQ(ierr);
+    if (color == PETSC_DRAW_ROTATE && bins[i]) bcolor++; if (bcolor > 31) bcolor = 2;
+    ierr = PetscDrawLine(draw,binLeft,ymin,binLeft,bins[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,binRight,ymin,binRight,bins[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,binLeft,bins[i],binRight,bins[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
   }
-  ierr = DrawFlush(draw);CHKERRQ(ierr);
-  ierr = DrawPause(draw);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawHGSetColor"></a>*/"DrawHGSetColor" 
+#define __FUNC__ "DrawHGSetColor" 
 /*@
-  DrawHGSetColor - Sets the color the bars will be drawn with.
+  PetscDrawHGSetColor - Sets the color the bars will be drawn with.
 
-  Not Collective (ignored except on processor 0 of DrawHG)
+  Not Collective (ignored except on processor 0 of PetscDrawHG)
 
   Input Parameters:
 + hist - The histogram context
-- color - one of the colors defined in petscdraw.h or DRAW_ROTATE to make each bar a 
+- color - one of the colors defined in petscdraw.h or PETSC_DRAW_ROTATE to make each bar a 
           different color
 
   Level: intermediate
 
 @*/
-int DrawHGSetColor(DrawHG hist,int color)
+int PetscDrawHGSetColor(PetscDrawHG hist,int color)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
   hist->color = color;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawHGSetLimits"></a>*/"DrawHGSetLimits" 
+#define __FUNC__ "DrawHGSetLimits" 
 /*@
-  DrawHGSetLimits - Sets the axis limits for a histogram. If more
+  PetscDrawHGSetLimits - Sets the axis limits for a histogram. If more
   points are added after this call, the limits will be adjusted to
   include those additional points.
 
-  Not Collective (ignored except on processor 0 of DrawHG)
+  Not Collective (ignored except on processor 0 of PetscDrawHG)
 
   Input Parameters:
 + hist - The histogram context
@@ -365,10 +365,10 @@ int DrawHGSetColor(DrawHG hist,int color)
   Concepts: histogram^setting axis
 
 @*/
-int DrawHGSetLimits(DrawHG hist,PetscReal x_min,PetscReal x_max,int y_min,int y_max) 
+int PetscDrawHGSetLimits(PetscDrawHG hist,PetscReal x_min,PetscReal x_max,int y_min,int y_max) 
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist,DRAWHG_COOKIE);
   hist->xmin = x_min; 
   hist->xmax = x_max; 
@@ -378,14 +378,14 @@ int DrawHGSetLimits(DrawHG hist,PetscReal x_min,PetscReal x_max,int y_min,int y_
 }
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawHGGetAxis"></a>*/"DrawHGGetAxis" 
+#define __FUNC__ "DrawHGGetAxis" 
 /*@C
-  DrawHGGetAxis - Gets the axis context associated with a histogram.
+  PetscDrawHGGetAxis - Gets the axis context associated with a histogram.
   This is useful if one wants to change some axis property, such as
   labels, color, etc. The axis context should not be destroyed by the
   application code.
 
-  Not Collective (ignored except on processor 0 of DrawHG)
+  Not Collective (ignored except on processor 0 of PetscDrawHG)
 
   Input Parameter:
 . hist - The histogram context
@@ -398,10 +398,10 @@ int DrawHGSetLimits(DrawHG hist,PetscReal x_min,PetscReal x_max,int y_min,int y_
   Contributed by: Matthew Knepley
 
 @*/
-int DrawHGGetAxis(DrawHG hist,DrawAxis *axis)
+int PetscDrawHGGetAxis(PetscDrawHG hist,PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
-  if (hist && hist->cookie == DRAW_COOKIE) {
+  if (hist && hist->cookie == PETSC_DRAW_COOKIE) {
     *axis = 0;
     PetscFunctionReturn(0);
   }
@@ -411,11 +411,11 @@ int DrawHGGetAxis(DrawHG hist,DrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawHGGetDraw"></a>*/"DrawHGGetDraw" 
+#define __FUNC__ "DrawHGGetDraw" 
 /*@C
-  DrawHGGetDraw - Gets the draw context associated with a histogram.
+  PetscDrawHGGetDraw - Gets the draw context associated with a histogram.
 
-  Not Collective, Draw is parallel if DrawHG is parallel
+  Not Collective, PetscDraw is parallel if PetscDrawHG is parallel
 
   Input Parameter:
 . hist - The histogram context
@@ -428,12 +428,12 @@ int DrawHGGetAxis(DrawHG hist,DrawAxis *axis)
   Contributed by: Matthew Knepley
 
 @*/
-int DrawHGGetDraw(DrawHG hist,Draw *win)
+int PetscDrawHGGetDraw(PetscDrawHG hist,PetscDraw *win)
 {
   PetscFunctionBegin;
   PetscValidHeader(hist);
-  if (hist && hist->cookie == DRAW_COOKIE) {
-    *win = (Draw)hist;
+  if (hist && hist->cookie == PETSC_DRAW_COOKIE) {
+    *win = (PetscDraw)hist;
   } else {
     *win = hist->win;
   }

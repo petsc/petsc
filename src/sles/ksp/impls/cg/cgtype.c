@@ -1,9 +1,9 @@
-/*$Id: cgtype.c,v 1.19 2000/04/12 04:24:58 bsmith Exp balay $*/
+/*$Id: cgtype.c,v 1.20 2000/05/05 22:17:34 balay Exp bsmith $*/
 
 #include "src/sles/ksp/impls/cg/cgctx.h"       /*I "petscksp.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPCGSetType" 
+#define __FUNC__ "KSPCGSetType" 
 /*@
     KSPCGSetType - Sets the variant of the conjugate gradient method to
     use for solving a linear system with a complex coefficient matrix.

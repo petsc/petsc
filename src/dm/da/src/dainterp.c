@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.18 2000/09/28 21:15:20 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.19 2000/10/05 19:02:52 bsmith Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -8,16 +8,16 @@
 #include "petscmg.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DAGetInterpolationScale"></a>*/"DAGetInterpolationScale"
-int DAGetInterpolationScale(DA dac,DA daf,Mat mat,Vec *scale)
+#define __FUNC__ "DMGetInterpolationScale"
+int DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 {
   int    ierr;
   Vec    fine;
   Scalar one = 1.0;
 
   PetscFunctionBegin;
-  ierr = DACreateGlobalVector(daf,&fine);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(dac,scale);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(daf,&fine);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dac,scale);CHKERRQ(ierr);
   ierr = VecSet(&one,fine);CHKERRQ(ierr);
   ierr = MatRestrict(mat,fine,*scale);CHKERRQ(ierr);
   ierr = VecDestroy(fine);CHKERRQ(ierr);
@@ -29,18 +29,24 @@ int DAGetInterpolationScale(DA dac,DA daf,Mat mat,Vec *scale)
 #define __FUNC__ /*<a name="DAGetInterpolation_1D_dof"></a>*/"DAGetInterpolation_1D_dof"
 int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 {
-  int      ierr,i,i_start,m_f,Mx,*idx_f;
-  int      m_ghost,*idx_c,m_ghost_c;
-  int      row,col,i_start_ghost,mx,m_c,nc,ratio;
-  int      i_c,i_start_c,i_start_ghost_c,cols[2],dof;
-  Scalar   v[2],x;
-  Mat      mat;
+  int            ierr,i,i_start,m_f,Mx,*idx_f;
+  int            m_ghost,*idx_c,m_ghost_c;
+  int            row,col,i_start_ghost,mx,m_c,nc,ratio;
+  int            i_c,i_start_c,i_start_ghost_c,cols[2],dof;
+  Scalar         v[2],x;
+  Mat            mat;
+  DAPeriodicType pt;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  ratio = (mx-1)/(Mx-1);
-  if (ratio*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+  if (pt == DA_XPERIODIC) {
+    ratio = mx/Mx;
+    if (ratio*Mx != mx) SETERRQ2(1,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
+  } else {
+    ratio = (mx-1)/(Mx-1);
+    if (ratio*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+  }
 
   ierr = DAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
@@ -84,7 +90,7 @@ int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
-  PLogFlops(5*m_f);
+  PetscLogFlops(5*m_f);
   PetscFunctionReturn(0);
 }
 
@@ -94,22 +100,34 @@ int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 #define __FUNC__ /*<a name="DAGetInterpolation_2D_dof"></a>*/"DAGetInterpolation_2D_dof"
 int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
 {
-  int      ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
-  int      m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,*dnz,*onz;
-  int      row,col,i_start_ghost,j_start_ghost,cols[4],mx,m_c,my,nc,ratio;
-  int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
-  int      size_c,size_f,rank_f,col_shift,col_scale;
-  Scalar   v[4],x,y;
-  Mat      mat;
+  int            ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
+  int            m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,*dnz,*onz;
+  int            row,col,i_start_ghost,j_start_ghost,cols[4],mx,m_c,my,nc,ratioi,ratioj;
+  int            i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
+  int            size_c,size_f,rank_f,col_shift,col_scale;
+  Scalar         v[4],x,y;
+  Mat            mat;
+  DAPeriodicType pt;
 
   PetscFunctionBegin;
 
-
-  ierr = DAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  ratio = (mx-1)/(Mx-1);
-  if (ratio*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
-  if (ratio != (my-1)/(My-1)) SETERRQ(1,"Grid spacing ratio must be same in X and Y direction");
+  if (DAXPeriodic(pt)){
+    ratioi = mx/Mx;
+    if (ratioi*Mx != mx) SETERRQ2(1,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
+  } else {
+    ratioi = (mx-1)/(Mx-1);
+    if (ratioi*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+  }
+  if (DAYPeriodic(pt)){
+    ratioj = my/My;
+    if (ratioj*My != my) SETERRQ2(1,"Ratio between levels: my/My  must be integer: my %d My %d",my,My);
+  } else {
+    ratioj = (my-1)/(My-1);
+    if (ratioj*(My-1) != my-1) SETERRQ2(1,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %d My %d",my,My);
+  }
+
 
   ierr = DAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
@@ -141,8 +159,8 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
       /* convert to local "natural" numbering and then to PETSc global numbering */
       row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
 
-      i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
-      j_c = (j/ratio);    /* coarse grid node below fine grid node */
+      i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
+      j_c = (j/ratioj);    /* coarse grid node below fine grid node */
 
       /* 
          Only include those interpolation points that are truly 
@@ -154,15 +172,15 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
       col        = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
       cols[nc++] = col_shift + idx_c[col]/dof; 
       /* one right and below */
-      if (i_c*ratio != i) { 
+      if (i_c*ratioi != i) { 
         cols[nc++] = col_shift + idx_c[col+dof]/dof;
       }
       /* one left and above */
-      if (j_c*ratio != j) { 
+      if (j_c*ratioj != j) { 
         cols[nc++] = col_shift + idx_c[col+m_ghost_c*dof]/dof;
       }
       /* one right and above */
-      if (j_c*ratio != j && i_c*ratio != i) { 
+      if (j_c*ratioi != j && i_c*ratioj != i) { 
         cols[nc++] = col_shift + idx_c[col+(m_ghost_c+1)*dof]/dof;
       }
       ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
@@ -178,16 +196,16 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
       /* convert to local "natural" numbering and then to PETSc global numbering */
       row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
 
-      i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
-      j_c = (j/ratio);    /* coarse grid node below fine grid node */
+      i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
+      j_c = (j/ratioj);    /* coarse grid node below fine grid node */
 
       /* 
          Only include those interpolation points that are truly 
          nonzero. Note this is very important for final grid lines
          in x and y directions; since they have no right/top neighbors
       */
-      x  = ((double)(i - i_c*ratio))/((double)ratio);
-      y  = ((double)(j - j_c*ratio))/((double)ratio);
+      x  = ((double)(i - i_c*ratioi))/((double)ratioi);
+      y  = ((double)(j - j_c*ratioj))/((double)ratioj);
       /* printf("i j %d %d %g %g\n",i,j,x,y); */
       nc = 0;
       /* one left and below; or we are right on it */
@@ -199,17 +217,17 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
       cols[nc] = col_shift + idx_c[col]/dof; 
       v[nc++]  = x*y - x - y + 1.0;
       /* one right and below */
-      if (i_c*ratio != i) { 
+      if (i_c*ratioi != i) { 
         cols[nc] = col_shift + idx_c[col+dof]/dof;
         v[nc++]  = -x*y + x;
       }
       /* one left and above */
-      if (j_c*ratio != j) { 
+      if (j_c*ratioj != j) { 
         cols[nc] = col_shift + idx_c[col+m_ghost_c*dof]/dof;
         v[nc++]  = -x*y + y;
       }
       /* one right and above */
-      if (j_c*ratio != j && i_c*ratio != i) { 
+      if (j_c*ratioj != j && i_c*ratioi != i) { 
         cols[nc] = col_shift + idx_c[col+(m_ghost_c+1)*dof]/dof;
         v[nc++]  = x*y;
       }
@@ -220,7 +238,7 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
-  PLogFlops(13*m_f*n_f);
+  PetscLogFlops(13*m_f*n_f);
   PetscFunctionReturn(0);
 }
 
@@ -230,22 +248,40 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
 #define __FUNC__ /*<a name="DAGetInterpolation_3D_dof"></a>*/"DAGetInterpolation_3D_dof"
 int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
 {
-  int      ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,l;
-  int      m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,Mz,mz;
-  int      row,col,i_start_ghost,j_start_ghost,cols[8],mx,m_c,my,nc,ratio;
-  int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
-  int      l_start,p_f,l_start_ghost,p_ghost,l_start_c,p_c;
-  int      l_start_ghost_c,p_ghost_c,l_c,*dnz,*onz;
-  Scalar   v[8],x,y,z;
-  Mat      mat;
+  int            ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,l;
+  int            m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,Mz,mz;
+  int            row,col,i_start_ghost,j_start_ghost,cols[8],mx,m_c,my,nc,ratioi,ratioj,ratiok;
+  int            i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
+  int            l_start,p_f,l_start_ghost,p_ghost,l_start_c,p_c;
+  int            l_start_ghost_c,p_ghost_c,l_c,*dnz,*onz;
+  Scalar         v[8],x,y,z;
+  Mat            mat;
+  DAPeriodicType pt;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  ratio = (mx-1)/(Mx-1);
-  if (ratio*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
-  if (ratio != (my-1)/(My-1)) SETERRQ(1,"Grid spacing ratio must be same in X and Y direction");
-  if (ratio != (mz-1)/(Mz-1)) SETERRQ(1,"Grid spacing ratio must be same in X and Y direction");
+  if (DAXPeriodic(pt)){
+    ratioi = mx/Mx;
+    if (ratioi*Mx != mx) SETERRQ2(1,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
+  } else {
+    ratioi = (mx-1)/(Mx-1);
+    if (ratioi*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+  }
+  if (DAYPeriodic(pt)){
+    ratioj = my/My;
+    if (ratioj*My != my) SETERRQ2(1,"Ratio between levels: my/My  must be integer: my %d My %d",my,My);
+  } else {
+    ratioj = (my-1)/(My-1);
+    if (ratioj*(My-1) != my-1) SETERRQ2(1,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %d My %d",my,My);
+  }
+  if (DAZPeriodic(pt)){
+    ratiok = mz/Mz;
+    if (ratiok*Mz != mz) SETERRQ2(1,"Ratio between levels: mz/Mz  must be integer: mz %d Mz %d",mz,Mz);
+  } else {
+    ratiok = (mz-1)/(Mz-1);
+    if (ratiok*(Mz-1) != mz-1) SETERRQ2(1,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %d Mz %d",mz,Mz);
+  }
 
   ierr = DAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
@@ -263,9 +299,9 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
       for (i=i_start; i<i_start+m_f; i++) {
         /* convert to local "natural" numbering and then to PETSc global numbering */
         row = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
-        i_c = (i/ratio);
-        j_c = (j/ratio);
-        l_c = (l/ratio);
+        i_c = (i/ratioi);
+        j_c = (j/ratioj);
+        l_c = (l/ratiok);
 
         /* 
          Only include those interpolation points that are truly 
@@ -275,25 +311,25 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
         nc       = 0;
         col      = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
         cols[nc++] = idx_c[col]/dof; 
-        if (i_c*ratio != i) { 
+        if (i_c*ratioi != i) { 
           cols[nc++] = idx_c[col+dof]/dof;
         }
-        if (j_c*ratio != j) { 
+        if (j_c*ratioj != j) { 
           cols[nc++] = idx_c[col+m_ghost_c*dof]/dof;
         }
-        if (l_c*ratio != l) { 
+        if (l_c*ratiok != l) { 
           cols[nc++] = idx_c[col+m_ghost_c*n_ghost_c*dof]/dof;
         }
-        if (j_c*ratio != j && i_c*ratio != i) { 
+        if (j_c*ratioj != j && i_c*ratioi != i) { 
           cols[nc++] = idx_c[col+(m_ghost_c+1)*dof]/dof;
         }
-        if (j_c*ratio != j && l_c*ratio != l) { 
+        if (j_c*ratioj != j && l_c*ratiok != l) { 
           cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c)*dof]/dof;
         }
-        if (i_c*ratio != i && l_c*ratio != l) { 
+        if (i_c*ratioi != i && l_c*ratiok != l) { 
           cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+1)*dof]/dof;
         }
-        if (i_c*ratio != i && l_c*ratio != l && j_c*ratio != j) { 
+        if (i_c*ratioi != i && l_c*ratiok != l && j_c*ratioj != j) { 
           cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)*dof]/dof;
         }
         ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
@@ -311,18 +347,18 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
         /* convert to local "natural" numbering and then to PETSc global numbering */
         row = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
 
-        i_c = (i/ratio);
-        j_c = (j/ratio);
-        l_c = (l/ratio);
+        i_c = (i/ratioi);
+        j_c = (j/ratioj);
+        l_c = (l/ratiok);
 
         /* 
            Only include those interpolation points that are truly 
            nonzero. Note this is very important for final grid lines
            in x and y directions; since they have no right/top neighbors
         */
-        x  = ((double)(i - i_c*ratio))/((double)ratio);
-        y  = ((double)(j - j_c*ratio))/((double)ratio);
-        z  = ((double)(l - l_c*ratio))/((double)ratio);
+        x  = ((double)(i - i_c*ratioi))/((double)ratioi);
+        y  = ((double)(j - j_c*ratioj))/((double)ratioj);
+        z  = ((double)(l - l_c*ratiok))/((double)ratiok);
         /* printf("i j l %d %d %d %g %g %g\n",i,j,l,x,y,z); */
         nc = 0;
         /* one left and below; or we are right on it */
@@ -331,37 +367,37 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
         cols[nc] = idx_c[col]/dof; 
         v[nc++]  = .125*(1. - (2.0*x-1.))*(1. - (2.0*y-1.))*(1. - (2.0*z-1.));
 
-        if (i_c*ratio != i) { 
+        if (i_c*ratioi != i) { 
           cols[nc] = idx_c[col+dof]/dof;
           v[nc++]  = .125*(1. + (2.0*x-1.))*(1. - (2.0*y-1.))*(1. - (2.0*z-1.));
         }
 
-        if (j_c*ratio != j) { 
+        if (j_c*ratioj != j) { 
           cols[nc] = idx_c[col+m_ghost_c*dof]/dof;
           v[nc++]  = .125*(1. - (2.0*x-1.))*(1. + (2.0*y-1.))*(1. - (2.0*z-1.));
         }
 
-        if (l_c*ratio != l) { 
+        if (l_c*ratiok != l) { 
           cols[nc] = idx_c[col+m_ghost_c*n_ghost_c*dof]/dof;
           v[nc++]  = .125*(1. - (2.0*x-1.))*(1. - (2.0*y-1.))*(1. + (2.0*z-1.));
         }
 
-        if (j_c*ratio != j && i_c*ratio != i) { 
+        if (j_c*ratioj != j && i_c*ratioi != i) { 
           cols[nc] = idx_c[col+(m_ghost_c+1)*dof]/dof;
           v[nc++]  = .125*(1. + (2.0*x-1.))*(1. + (2.0*y-1.))*(1. - (2.0*z-1.));
         }
 
-        if (j_c*ratio != j && l_c*ratio != l) { 
+        if (j_c*ratioj != j && l_c*ratiok != l) { 
           cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c)*dof]/dof;
           v[nc++]  = .125*(1. - (2.0*x-1.))*(1. + (2.0*y-1.))*(1. + (2.0*z-1.));
         }
 
-        if (i_c*ratio != i && l_c*ratio != l) { 
+        if (i_c*ratioi != i && l_c*ratiok != l) { 
           cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+1)*dof]/dof;
           v[nc++]  = .125*(1. + (2.0*x-1.))*(1. - (2.0*y-1.))*(1. + (2.0*z-1.));
         }
 
-        if (i_c*ratio != i && l_c*ratio != l && j_c*ratio != j) { 
+        if (i_c*ratioi != i && l_c*ratiok != l && j_c*ratioj != j) { 
           cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)*dof]/dof;
           v[nc++]  = .125*(1. + (2.0*x-1.))*(1. + (2.0*y-1.))*(1. + (2.0*z-1.));
         }
@@ -374,12 +410,12 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
 
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
-  PLogFlops(13*m_f*n_f);
+  PetscLogFlops(13*m_f*n_f);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DAGetInterpolation"></a>*/"DAGetInterpolation"
+#define __FUNC__ "DAGetInterpolation"
 /*@C
    DAGetInterpolation - Gets an interpolation matrix that maps between 
    grids associated with two DAs.
@@ -422,18 +458,18 @@ int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
   if (wrapc != wrapf) SETERRQ(1,"Periodic type different in two DAs");CHKERRQ(ierr);
   if (stc != stf) SETERRQ(1,"Stencil type different in two DAs");CHKERRQ(ierr);
 
-  if (dimc == 1 && wrapc == DA_NONPERIODIC) {
+  if (dimc == 1){
     ierr = DAGetInterpolation_1D_dof(dac,daf,A);CHKERRQ(ierr);
-  } else if (dimc == 2 && wrapc == DA_NONPERIODIC) {
+  } else if (dimc == 2){
     ierr = DAGetInterpolation_2D_dof(dac,daf,A);CHKERRQ(ierr);
-  } else if (dimc == 3 && wrapc == DA_NONPERIODIC) {
+  } else if (dimc == 3){
     ierr = DAGetInterpolation_3D_dof(dac,daf,A);CHKERRQ(ierr);
   } else {
     SETERRQ(1,"No support for this DA yet");
   }
 
   if (scale) {
-    ierr = DAGetInterpolationScale(dac,daf,*A,scale);CHKERRQ(ierr);
+    ierr = DMGetInterpolationScale((DM)dac,(DM)daf,*A,scale);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 } 

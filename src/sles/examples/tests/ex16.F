@@ -1,5 +1,5 @@
 !
-!      "$Id: ex16.F,v 1.25 2000/09/27 20:09:01 bsmith Exp bsmith $";
+!      "$Id: ex16.F,v 1.26 2000/10/24 20:26:51 bsmith Exp bsmith $";
 !
       program main
        implicit none
@@ -30,17 +30,17 @@
       Mat              A
       SLES             sles1,sles2
       character*(128)  f 
-      Viewer           fd
+      PetscViewer           fd
       IS               isrow
-      PLogDouble       time1,time2
+      PetscLogDouble       time1,time2
 
       none = -1.0
       five = 5.0
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
 ! Read in matrix and RHS
-      call OptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
-      call ViewerBinaryOpen(PETSC_COMM_WORLD,f,BINARY_RDONLY,            &
+      call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,PETSC_BINARY_RDONLY,            &
      &     fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f
@@ -54,7 +54,7 @@
       endif
 
       call VecLoad(fd,b,ierr)
-      call ViewerDestroy(fd,ierr)
+      call PetscViewerDestroy(fd,ierr)
 
 ! Set up solution
       call VecDuplicate(b,x,ierr)

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.2 2000/05/05 22:18:59 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.3 2000/10/24 20:27:27 bsmith Exp bsmith $*/
 /*
        The Problem:
            Solve the convection-diffusion equation:
@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   Vec           global;
   double        dt,ftime;
   TS            ts;
-  Viewer	viewfile;
+  PetscViewer	viewfile;
   MatStructure  A_structure;
   Mat           A = 0;
   TSProblemType tsproblem = TS_NONLINEAR; /* Need to be TS_NONLINEAR */
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
   int 		mn;
 #if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus)
   PC		pc;
-  Viewer        viewer;
+  PetscViewer        viewer;
   char          pcinfo[120],tsinfo[120];
 #endif
 
@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   data.dy = 1.0/(data.n+1.0);
   mn = (data.m)*(data.n);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
     
   /* set initial conditions */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,mn,&global);CHKERRA(ierr);
@@ -149,16 +149,16 @@ int main(int argc,char **argv)
   ierr = TSStep(ts,&steps,&ftime);CHKERRA(ierr);
 
   ierr = TSGetSolution(ts,&global);CHKERRA(ierr);
-  ierr = ViewerASCIIOpen(PETSC_COMM_SELF,"out.m",&viewfile);CHKERRA(ierr); 
-  ierr = ViewerSetFormat(viewfile,VIEWER_FORMAT_ASCII_MATLAB,"u");CHKERRA(ierr);
+  ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"out.m",&viewfile);CHKERRA(ierr); 
+  ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"u");CHKERRA(ierr);
   ierr = VecView(global,viewfile);CHKERRA(ierr);
 
 #if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus)
   /* extracts the PC  from ts */
   ierr = TSPVodeGetPC(ts,&pc);CHKERRA(ierr);
-  ierr = ViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRA(ierr);
+  ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRA(ierr);
   ierr = TSView(ts,viewer);CHKERRA(ierr);
-  ierr = ViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRA(ierr);
+  ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRA(ierr);
   ierr = PCView(pc,viewer);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs,%s Preconditioner,%s\n",
                      size,tsinfo,pcinfo);CHKERRA(ierr);
@@ -224,7 +224,7 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  idx=(int*)PetscMalloc(n*sizeof(int));
+ierr = PetscMalloc(n*sizeof(int),&(  idx));
   for(i=0; i<n; i++) idx[i]=i;
  
   /* Create local sequential vectors */
@@ -281,7 +281,7 @@ int FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   ierr = VecGetSize(globalin,&len);CHKERRQ(ierr);
 
   /* Set the index sets */
-  idx=(int*)PetscMalloc(len*sizeof(int));
+ierr = PetscMalloc(len*sizeof(int),&(  idx));
   for(i=0; i<len; i++) idx[i]=i;
  
   /* Create local sequential vectors */

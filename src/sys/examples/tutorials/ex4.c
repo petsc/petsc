@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.12 2000/09/22 20:42:48 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.13 2000/09/28 21:09:51 bsmith Exp bsmith $*/
 
 static char help[] = "Prints loadable objects from dynamic library.\n\n";
 
@@ -28,18 +28,18 @@ int main(int argc,char **argv)
   */
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRA(ierr);
 
-  ierr = OptionsGetString(PETSC_NULL,"-library",filename,256,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-library",filename,256,&flg);CHKERRA(ierr);
   if (!flg) {
     SETERRA(1,"Must indicate library name with -library");
   }
 
 #if defined(USE_DYNAMIC_LIBRARIES)
-  ierr = DLLibraryOpen(PETSC_COMM_WORLD,filename,&handle);CHKERRA(ierr);
-  ierr = DLLibraryGetInfo(handle,"Contents",&string);CHKERRA(ierr);
+  ierr = PetscDLLibraryOpen(PETSC_COMM_WORLD,filename,&handle);CHKERRA(ierr);
+  ierr = PetscDLLibraryGetInfo(handle,"Contents",&string);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Contents:%s\n",string);CHKERRA(ierr);
-  ierr = DLLibraryGetInfo(handle,"Authors",&string);CHKERRA(ierr);
+  ierr = PetscDLLibraryGetInfo(handle,"Authors",&string);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Authors:%s\n",string);CHKERRA(ierr);
-  ierr = DLLibraryGetInfo(handle,"Version",&string);CHKERRA(ierr);
+  ierr = PetscDLLibraryGetInfo(handle,"Version",&string);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Version:%s\n",string);CHKERRA(ierr);
 #else
   /* just forces string and handle to be used so there are no compiler warnings */

@@ -1,11 +1,11 @@
-/*$Id: mgfunc.c,v 1.37 2000/05/05 22:17:11 balay Exp bsmith $*/
+/*$Id: mgfunc.c,v 1.38 2000/07/18 16:07:43 bsmith Exp bsmith $*/
 
 #include "src/sles/pc/impls/mg/mgimpl.h"       /*I "petscsles.h" I*/
                           /*I "petscmg.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGDefaultResidual"
-/*@
+#define __FUNC__ "MGDefaultResidual"
+/*@C
    MGDefaultResidual - Default routine to calculate the residual.
 
    Collective on Mat and Vec
@@ -38,7 +38,7 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 /* ---------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGGetCoarseSolve"
+#define __FUNC__ "MGGetCoarseSolve"
 /*@C
    MGGetCoarseSolve - Gets the solver context to be used on the coarse grid.
 
@@ -64,8 +64,8 @@ int MGGetCoarseSolve(PC pc,SLES *sles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGSetResidual"
-/*@
+#define __FUNC__ "MGSetResidual"
+/*@C
    MGSetResidual - Sets the function to be used to calculate the residual 
    on the lth level. 
 
@@ -88,13 +88,15 @@ int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
   MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+
   mg[l]->residual = residual;  
   mg[l]->A        = mat;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGSetInterpolate"
+#define __FUNC__ "MGSetInterpolate"
 /*@
    MGSetInterpolate - Sets the function to be used to calculate the 
    interpolation on the lth level. 
@@ -124,12 +126,13 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
   MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   mg[l]->interpolate = mat;  
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGSetRestriction"
+#define __FUNC__ "MGSetRestriction"
 /*@
    MGSetRestriction - Sets the function to be used to restrict vector
    from level l to l-1. 
@@ -159,12 +162,13 @@ int MGSetRestriction(PC pc,int l,Mat mat)
   MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   mg[l]->restrct  = mat;  
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGGetSmoother"
+#define __FUNC__ "MGGetSmoother"
 /*@C
    MGGetSmoother - Gets the SLES context to be used as smoother for 
    both pre- and post-smoothing.  Call both MGGetSmootherUp() and 
@@ -196,7 +200,7 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGGetSmootherUp"
+#define __FUNC__ "MGGetSmootherUp"
 /*@C
    MGGetSmootherUp - Gets the SLES context to be used as smoother after 
    coarse grid correction (post-smoother). 
@@ -239,14 +243,14 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
     ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix(mg[l]->smoothu,prefix);CHKERRQ(ierr);
     ierr = SLESAppendOptionsPrefix(mg[l]->smoothd,"mg_levels_");CHKERRQ(ierr);
-    PLogObjectParent(pc,mg[l]->smoothu);
+    PetscLogObjectParent(pc,mg[l]->smoothu);
   }
   *sles = mg[l]->smoothu;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGGetSmootherDown"
+#define __FUNC__ "MGGetSmootherDown"
 /*@C
    MGGetSmootherDown - Gets the SLES context to be used as smoother before 
    coarse grid correction (pre-smoother). 
@@ -276,7 +280,7 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGSetCyclesOnLevel"
+#define __FUNC__ "MGSetCyclesOnLevel"
 /*@
    MGSetCyclesOnLevel - Sets the number of cycles to run on this level. 
 
@@ -298,12 +302,13 @@ int MGSetCyclesOnLevel(PC pc,int l,int c)
   MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   mg[l]->cycles  = c;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGSetRhs"
+#define __FUNC__ "MGSetRhs"
 /*@
    MGSetRhs - Sets the vector space to be used to store the right-hand side
    on a particular level.  The user should free this space at the conclusion 
@@ -327,12 +332,13 @@ int MGSetRhs(PC pc,int l,Vec c)
   MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   mg[l]->b  = c;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGSetX"
+#define __FUNC__ "MGSetX"
 /*@
    MGSetX - Sets the vector space to be used to store the solution on a 
    particular level.  The user should free this space at the conclusion 
@@ -356,12 +362,13 @@ int MGSetX(PC pc,int l,Vec c)
   MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   mg[l]->x  = c;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGSetR"
+#define __FUNC__ "MGSetR"
 /*@
    MGSetR - Sets the vector space to be used to store the residual on a
    particular level.  The user should free this space at the conclusion of
@@ -383,6 +390,7 @@ int MGSetR(PC pc,int l,Vec c)
   MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   mg[l]->r  = c;
   PetscFunctionReturn(0);
 }

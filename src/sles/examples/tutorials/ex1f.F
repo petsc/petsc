@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.26 2000/09/22 20:45:46 bsmith Exp bsmith $";
+!    "$Id: ex1f.F,v 1.27 2000/10/24 20:26:55 bsmith Exp bsmith $";
 !
 !   Description: Solves a tridiagonal linear system with SLES.
 !
@@ -89,7 +89,7 @@
       none = -1.0
       one  = 1.0
       n    = 10
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !         Compute the matrix and right-hand-side vector that define
@@ -186,7 +186,7 @@
 
 !  View solver info; we could instead use the option -sles_view
 
-      call SLESView(sles,VIEWER_STDOUT_WORLD,ierr)
+      call SLESView(sles,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                      Check solution and clean up

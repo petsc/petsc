@@ -1,4 +1,4 @@
-/*$Id: block.c,v 1.51 2000/10/24 20:24:52 bsmith Exp bsmith $*/
+/*$Id: block.c,v 1.52 2000/11/28 17:28:17 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
@@ -14,7 +14,7 @@ typedef struct {
 } IS_Block;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISDestroy_Block" 
+#define __FUNC__ "ISDestroy_Block" 
 int ISDestroy_Block(IS is)
 {
   IS_Block *is_block = (IS_Block*)is->data;
@@ -23,22 +23,22 @@ int ISDestroy_Block(IS is)
   PetscFunctionBegin;
   ierr = PetscFree(is_block->idx);CHKERRQ(ierr);
   ierr = PetscFree(is_block);CHKERRQ(ierr);
-  PLogObjectDestroy(is);
+  PetscLogObjectDestroy(is);
   PetscHeaderDestroy(is); PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISGetIndices_Block" 
+#define __FUNC__ "ISGetIndices_Block" 
 int ISGetIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block*)in->data;
-  int      i,j,k,bs = sub->bs,n = sub->n,*ii,*jj;
+  int      i,j,k,bs = sub->bs,n = sub->n,*ii,*jj,ierr;
 
   PetscFunctionBegin;
   if (sub->bs == 1) {
     *idx = sub->idx; 
   } else {
-    jj   = (int*)PetscMalloc(sub->bs*(1+sub->n)*sizeof(int));CHKPTRQ(jj)
+    ierr = PetscMalloc(sub->bs*(1+sub->n)*sizeof(int),&jj);CHKERRQ(ierr);
     *idx = jj;
     k    = 0;
     ii   = sub->idx;
@@ -52,7 +52,7 @@ int ISGetIndices_Block(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISRestoreIndices_Block" 
+#define __FUNC__ "ISRestoreIndices_Block" 
 int ISRestoreIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block*)in->data;
@@ -70,7 +70,7 @@ int ISRestoreIndices_Block(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISGetSize_Block" 
+#define __FUNC__ "ISGetSize_Block" 
 int ISGetSize_Block(IS is,int *size)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -81,7 +81,7 @@ int ISGetSize_Block(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISGetLocalSize_Block" 
+#define __FUNC__ "ISGetLocalSize_Block" 
 int ISGetLocalSize_Block(IS is,int *size)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -92,7 +92,7 @@ int ISGetLocalSize_Block(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISInvertPermutation_Block" 
+#define __FUNC__ "ISInvertPermutation_Block" 
 int ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -101,7 +101,7 @@ int ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ii = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(ii);
+    ierr = PetscMalloc((n+1)*sizeof(int),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ii[idx[i]] = i;
     }
@@ -115,26 +115,26 @@ int ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISView_Block" 
-int ISView_Block(IS is, Viewer viewer)
+#define __FUNC__ "ISView_Block" 
+int ISView_Block(IS is, PetscViewer viewer)
 {
   IS_Block    *sub = (IS_Block *)is->data;
   int         i,n = sub->n,*idx = sub->idx,ierr;
   PetscTruth  isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) { 
     if (is->isperm) {
-      ierr = ViewerASCIISynchronizedPrintf(viewer,"Block Index set is permutation\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block Index set is permutation\n");CHKERRQ(ierr);
     }
-    ierr = ViewerASCIISynchronizedPrintf(viewer,"Block size %d\n",sub->bs);CHKERRQ(ierr);
-    ierr = ViewerASCIISynchronizedPrintf(viewer,"Number of block indices in set %d\n",n);CHKERRQ(ierr);
-    ierr = ViewerASCIISynchronizedPrintf(viewer,"The first indices of each block are\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block size %d\n",sub->bs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of block indices in set %d\n",n);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"The first indices of each block are\n");CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      ierr = ViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,idx[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,idx[i]);CHKERRQ(ierr);
     }
-    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
@@ -142,7 +142,7 @@ int ISView_Block(IS is, Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISSort_Block" 
+#define __FUNC__ "ISSort_Block" 
 int ISSort_Block(IS is)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -156,7 +156,7 @@ int ISSort_Block(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISSorted_Block" 
+#define __FUNC__ "ISSorted_Block" 
 int ISSorted_Block(IS is,PetscTruth *flg)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -167,7 +167,7 @@ int ISSorted_Block(IS is,PetscTruth *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISDuplicate_Block" 
+#define __FUNC__ "ISDuplicate_Block" 
 int ISDuplicate_Block(IS is,IS *newIS)
 {
   int      ierr;
@@ -179,7 +179,7 @@ int ISDuplicate_Block(IS is,IS *newIS)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISIdentity_Block" 
+#define __FUNC__ "ISIdentity_Block" 
 int ISIdentity_Block(IS is,PetscTruth *ident)
 {
   IS_Block *is_block = (IS_Block*)is->data;
@@ -210,7 +210,7 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISView_Block,
                                ISIdentity_Block };
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISCreateBlock" 
+#define __FUNC__ "ISCreateBlock" 
 /*@C
    ISCreateBlock - Creates a data structure for an index set containing
    a list of integers. The indices are relative to entries, not blocks. 
@@ -254,11 +254,11 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
   PetscFunctionBegin;
   *is = 0;
   PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,"IS",comm,ISDestroy,ISView); 
-  PLogObjectCreate(Nindex);
-  sub            = PetscNew(IS_Block);CHKPTRQ(sub);
-  PLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(int)+sizeof(struct _p_IS));
-  sub->idx       = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(sub->idx);
-  sub->n         = n;
+  PetscLogObjectCreate(Nindex);
+  ierr = PetscNew(IS_Block,&sub);CHKERRQ(ierr);
+  PetscLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(int)+sizeof(struct _p_IS));
+  ierr   = PetscMalloc((n+1)*sizeof(int),&sub->idx);CHKERRQ(ierr);
+  sub->n = n;
   ierr = MPI_Allreduce(&n,&sub->N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   for (i=1; i<n; i++) {
     if (idx[i] < idx[i-1]) {sorted = PETSC_FALSE; break;}
@@ -281,7 +281,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISBlockGetIndices" 
+#define __FUNC__ "ISBlockGetIndices" 
 /*@C
    ISBlockGetIndices - Gets the indices associated with each block.
 
@@ -316,7 +316,7 @@ int ISBlockGetIndices(IS in,int *idx[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISBlockRestoreIndices" 
+#define __FUNC__ "ISBlockRestoreIndices" 
 /*@C
    ISBlockRestoreIndices - Restores the indices associated with each block.
 
@@ -346,7 +346,7 @@ int ISBlockRestoreIndices(IS is,int *idx[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISBlockGetBlockSize" 
+#define __FUNC__ "ISBlockGetBlockSize" 
 /*@
    ISBlockGetBlockSize - Returns the number of elements in a block.
 
@@ -380,7 +380,7 @@ int ISBlockGetBlockSize(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISBlock" 
+#define __FUNC__ "ISBlock" 
 /*@C
    ISBlock - Checks whether an index set is blocked.
 
@@ -410,7 +410,7 @@ int ISBlock(IS is,PetscTruth *flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISBlockGetSize" 
+#define __FUNC__ "ISBlockGetSize" 
 /*@
    ISBlockGetSize - Returns the number of blocks in the index set.
 

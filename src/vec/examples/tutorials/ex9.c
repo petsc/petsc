@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.24 2000/09/22 20:43:24 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.25 2000/09/28 21:10:40 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
@@ -67,9 +67,9 @@ int main(int argc,char **argv)
      the local vector (lx) and the global vector (gx) share the same 
      array for storing vector values.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-allocate",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-allocate",&flg);CHKERRA(ierr);
   if (flg) {
-    tarray = (Scalar*)PetscMalloc((nlocal+nghost)*sizeof(Scalar));CHKPTRA(tarray);
+ierr = PetscMalloc((nlocal+nghost)*sizeof(Scalar),&    tarray );CHKPTRA(tarray);
     ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRA(ierr);
   } else {
     ierr = VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs);CHKERRA(ierr);

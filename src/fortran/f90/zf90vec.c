@@ -1,4 +1,4 @@
-/*$Id: zf90vec.c,v 1.15 2000/09/22 18:53:58 balay Exp bsmith $*/
+/*$Id: zf90vec.c,v 1.16 2000/09/28 21:16:27 bsmith Exp bsmith $*/
 
 #include "petscis.h"
 #include "petscvec.h"
@@ -72,7 +72,7 @@ void PETSC_STDCALL iscoloringgetisf90_(ISColoring *iscoloring,int *n,F90Array1d 
   PetscFortranAddr *newisint;
   int i;
   *__ierr  = ISColoringGetIS(*iscoloring,n,&lis); if (*__ierr) return;
-  newisint = (PetscFortranAddr*)PetscMalloc((*n)*sizeof(PetscFortranAddr)); 
+ierr = PetscMalloc((*n)*sizeof(PetscFortranAddr),&(  newisint )); 
   if (!newisint) {*__ierr = PETSC_ERR_MEM; return;}
   for (i=0; i<*n; i++) {
     newisint[i] = (PetscFortranAddr)lis[i];
@@ -114,7 +114,7 @@ void PETSC_STDCALL vecduplicatevecsf90_(Vec *v,int *m,F90Array1d *ptr,int *__ier
   PetscFortranAddr *newvint;
   int i;
   *__ierr = VecDuplicateVecs(*v,*m,&lV); if (*__ierr) return;
-  newvint = (PetscFortranAddr*)PetscMalloc((*m)*sizeof(PetscFortranAddr)); 
+ierr = PetscMalloc((*m)*sizeof(PetscFortranAddr),&(  newvint )); 
   if (!newvint) {*__ierr = PETSC_ERR_MEM; return;}
   for (i=0; i<*m; i++) {
     newvint[i] = (PetscFortranAddr)lV[i];

@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.110 2000/09/14 14:41:04 bsmith Exp bsmith $*/
+/*$Id: cg.c,v 1.111 2000/09/28 21:13:18 bsmith Exp bsmith $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -53,7 +53,7 @@ EXTERN int KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,int *);
      but can be called directly by KSPSetUp()
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetUp_CG"
+#define __FUNC__ "KSPSetUp_CG"
 int KSPSetUp_CG(KSP ksp)
 {
   KSP_CG *cgP = (KSP_CG*)ksp->data;
@@ -79,11 +79,11 @@ int KSPSetUp_CG(KSP ksp)
   */
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
-    cgP->e = (Scalar*)PetscMalloc(2*(maxit+1)*sizeof(Scalar));CHKPTRQ(cgP->e);
-    PLogObjectMemory(ksp,2*(maxit+1)*sizeof(Scalar));
+ierr = PetscMalloc(2*(maxit+1)*sizeof(Scalar),&    cgP->e );CHKERRQ(ierr);
+    PetscLogObjectMemory(ksp,2*(maxit+1)*sizeof(Scalar));
     cgP->d                         = cgP->e + maxit + 1; 
-    cgP->ee = (PetscReal *)PetscMalloc(2*(maxit+1)*sizeof(PetscReal));CHKPTRQ(cgP->ee);
-    PLogObjectMemory(ksp,2*(maxit+1)*sizeof(Scalar));
+ierr = PetscMalloc(2*(maxit+1)*sizeof(PetscReal),&    cgP->ee );CHKERRQ(ierr);
+    PetscLogObjectMemory(ksp,2*(maxit+1)*sizeof(Scalar));
     cgP->dd                        = cgP->ee + maxit + 1;
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
@@ -104,7 +104,7 @@ int KSPSetUp_CG(KSP ksp)
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSolve_CG"
+#define __FUNC__ "KSPSolve_CG"
 int  KSPSolve_CG(KSP ksp,int *its)
 {
   int          ierr,i,maxit,eigs,pres;
@@ -211,7 +211,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDestroy_CG" 
+#define __FUNC__ "KSPDestroy_CG" 
 int KSPDestroy_CG(KSP ksp)
 {
   KSP_CG *cg = (KSP_CG*)ksp->data;
@@ -240,8 +240,8 @@ int KSPDestroy_CG(KSP ksp)
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPView_CG" 
-int KSPView_CG(KSP ksp,Viewer viewer)
+#define __FUNC__ "KSPView_CG" 
+int KSPView_CG(KSP ksp,PetscViewer viewer)
 {
 #if defined(PETSC_USE_COMPLEX)
   KSP_CG     *cg = (KSP_CG *)ksp->data; 
@@ -249,14 +249,14 @@ int KSPView_CG(KSP ksp,Viewer viewer)
   PetscTruth isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     if (cg->type == KSP_CG_HERMITIAN) {
-      ierr = ViewerASCIIPrintf(viewer,"  CG: variant for complex, Hermitian system\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  CG: variant for complex, Hermitian system\n");CHKERRQ(ierr);
     } else if (cg->type == KSP_CG_SYMMETRIC) {
-      ierr = ViewerASCIIPrintf(viewer,"  CG: variant for complex, symmetric system\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  CG: variant for complex, symmetric system\n");CHKERRQ(ierr);
     } else {
-      ierr = ViewerASCIIPrintf(viewer,"  CG: unknown variant\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  CG: unknown variant\n");CHKERRQ(ierr);
     }
   } else {
     SETERRQ1(1,"Viewer type %s not supported for KSP cg",((PetscObject)viewer)->type_name);
@@ -270,7 +270,7 @@ int KSPView_CG(KSP ksp,Viewer viewer)
                            conjugate gradient method.
 */ 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetFromOptions_CG"
+#define __FUNC__ "KSPSetFromOptions_CG"
 int KSPSetFromOptions_CG(KSP ksp)
 {
 #if defined(PETSC_USE_COMPLEX)
@@ -280,12 +280,12 @@ int KSPSetFromOptions_CG(KSP ksp)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  ierr = OptionsHead("KSP CG options");CHKERRQ(ierr);
-    ierr = OptionsLogicalGroupBegin("-ksp_cg_Hermitian","Matrix is Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("KSP CG options");CHKERRQ(ierr);
+    ierr = PetscOptionsLogicalGroupBegin("-ksp_cg_Hermitian","Matrix is Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_HERMITIAN);CHKERRQ(ierr); }
-    ierr = OptionsLogicalGroupEnd("-ksp_cg_symmetric","Matrix is complex symmetric, not Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsLogicalGroupEnd("-ksp_cg_symmetric","Matrix is complex symmetric, not Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_SYMMETRIC);CHKERRQ(ierr); }
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -299,7 +299,7 @@ int KSPSetFromOptions_CG(KSP ksp)
 */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPCGSetType_CG" 
+#define __FUNC__ "KSPCGSetType_CG" 
 int KSPCGSetType_CG(KSP ksp,KSPCGType type)
 {
   KSP_CG *cg;
@@ -319,15 +319,15 @@ EXTERN_C_END
 */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPCreate_CG"
+#define __FUNC__ "KSPCreate_CG"
 int KSPCreate_CG(KSP ksp)
 {
   int    ierr;
-  KSP_CG *cg = (KSP_CG*)PetscMalloc(sizeof(KSP_CG));CHKPTRQ(cg);
+ierr = PetscMalloc(sizeof(KSP_CG),&(  KSP_CG *cg ));CHKERRQ(ierr);
 
   PetscFunctionBegin;
   ierr = PetscMemzero(cg,sizeof(KSP_CG));CHKERRQ(ierr);
-  PLogObjectMemory(ksp,sizeof(KSP_CG));
+  PetscLogObjectMemory(ksp,sizeof(KSP_CG));
 #if !defined(PETSC_USE_COMPLEX)
   cg->type                       = KSP_CG_SYMMETRIC;
 #else

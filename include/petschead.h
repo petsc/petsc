@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.78 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.79 2000/09/28 21:16:35 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -42,7 +42,7 @@ EXTERN int PetscRegisterCookie(int *);
 
 typedef struct {
    int (*getcomm)(PetscObject,MPI_Comm *);
-   int (*view)(PetscObject,Viewer);
+   int (*view)(PetscObject,PetscViewer);
    int (*reference)(PetscObject);
    int (*destroy)(PetscObject);
    int (*compose)(PetscObject,const char[],PetscObject);
@@ -54,34 +54,33 @@ typedef struct {
    int (*publish)(PetscObject);
 } PetscOps;
 
-#define PETSCHEADER(ObjectOps)                         \
-  int         cookie;                                  \
-  PetscOps    *bops;                                   \
-  ObjectOps   *ops;                                    \
-  MPI_Comm    comm;                                    \
-  int         type;                                    \
-  PLogDouble  flops,time,mem;                          \
-  int         id;                                      \
-  int         refct;                                   \
-  int         tag;                                     \
-  FList       qlist;                                   \
-  OList       olist;                                   \
-  char        *class_name;                             \
-  char        *type_name;                              \
-  PetscObject parent;                                  \
-  int         parentid;                                \
-  char*       name;                                    \
-  char        *prefix;                                 \
-  void        *cpp;                                    \
-  int         amem;                                    \
-  void**      fortran_func_pointers;       
+#define PETSCHEADER(ObjectOps)                            \
+  int            cookie;                                  \
+  PetscOps       *bops;                                   \
+  ObjectOps      *ops;                                    \
+  MPI_Comm       comm;                                    \
+  int            type;                                    \
+  PetscLogDouble flops,time,mem;                          \
+  int            id;                                      \
+  int            refct;                                   \
+  int            tag;                                     \
+  PetscFList     qlist;                                   \
+  PetscOList     olist;                                   \
+  char           *class_name;                             \
+  char           *type_name;                              \
+  PetscObject    parent;                                  \
+  int            parentid;                                \
+  char*          name;                                    \
+  char           *prefix;                                 \
+  void           *cpp;                                    \
+  int            amem;                                    \
+  void**         fortran_func_pointers;       
 
   /*  ... */                               
 
 #define  PETSCFREEDHEADER -1
 
-EXTERN int PetscHeaderCreate_Private(PetscObject,int,int,char *,MPI_Comm,
-                                     int (*)(PetscObject),int (*)(PetscObject,Viewer));
+EXTERN int PetscHeaderCreate_Private(PetscObject,int,int,char *,MPI_Comm,int (*)(PetscObject),int (*)(PetscObject,PetscViewer));
 EXTERN int PetscHeaderDestroy_Private(PetscObject);
 
 /*
@@ -102,15 +101,15 @@ EXTERN int PetscHeaderDestroy_Private(PetscObject);
 */ 
 #define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie)                          \
   { int _ierr;                                                                              \
-    h         = PetscNew(struct tp);CHKPTRQ((h));                                           \
-    _ierr     = PetscMemzero(h,sizeof(struct tp));CHKERRQ(_ierr);                           \
-    (h)->bops = PetscNew(PetscOps);CHKPTRQ(((h)->bops));                                    \
-    _ierr     = PetscMemzero((h)->bops,sizeof(sizeof(PetscOps)));CHKERRQ(_ierr);            \
-    (h)->ops  = PetscNew(pops);CHKPTRQ(((h)->ops));                                         \
-    _ierr     = PetscMemzero((h)->ops,sizeof(pops));CHKERRQ(_ierr);                         \
+    _ierr = PetscNew(struct tp,&h);CHKERRQ(_ierr);                                          \
+    _ierr = PetscMemzero(h,sizeof(struct tp));CHKERRQ(_ierr);                           \
+    _ierr = PetscNew(PetscOps,&(h)->bops);CHKERRQ(_ierr);                                           \
+    _ierr = PetscMemzero((h)->bops,sizeof(sizeof(PetscOps)));CHKERRQ(_ierr);            \
+    _ierr = PetscNew(pops,&(h)->ops);CHKERRQ(_ierr);                                               \
+    _ierr = PetscMemzero((h)->ops,sizeof(pops));CHKERRQ(_ierr);                         \
     _ierr = PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,                 \
                                        (int (*)(PetscObject))des,                           \
-                                       (int (*)(PetscObject,Viewer))vie);CHKERRQ(_ierr);    \
+                                       (int (*)(PetscObject,PetscViewer))vie);CHKERRQ(_ierr);    \
   }
 
 #define PetscHeaderDestroy(h)                                             \
@@ -146,7 +145,7 @@ valid
   } else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {      \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"Object already free");       \
   } else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||           \
-      ((PetscObject)(h))->cookie > LARGEST_PETSC_COOKIE) {          \
+      ((PetscObject)(h))->cookie > PETSC_LARGEST_COOKIE) {          \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid Object");            \
   }}
 
@@ -199,7 +198,7 @@ valid
   if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {      \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"Object already free");       \
   } else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||           \
-      ((PetscObject)(h))->cookie > LARGEST_PETSC_COOKIE) {          \
+      ((PetscObject)(h))->cookie > PETSC_LARGEST_COOKIE) {          \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid Object");            \
   }}
 

@@ -1,4 +1,4 @@
-/*$Id: dadist.c,v 1.26 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: dadist.c,v 1.27 2000/09/13 03:13:00 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -8,7 +8,7 @@
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetGlobalToGlobal1_Private"
+#define __FUNC__ "DAGetGlobalToGlobal1_Private"
 int DAGetGlobalToGlobal1_Private(DA da,int **gtog1)
 {
   PetscFunctionBegin;
@@ -18,7 +18,7 @@ int DAGetGlobalToGlobal1_Private(DA da,int **gtog1)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DACreateGlobalVector"
+#define __FUNC__ "DACreateGlobalVector"
 /*@C
    DACreateGlobalVector - Creates a parallel PETSc vector that
    may be used with the DAXXX routines.
@@ -55,7 +55,7 @@ int DACreateGlobalVector(DA da,Vec* g)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DACreateNaturalVector"
+#define __FUNC__ "DACreateNaturalVector"
 /*@C
    DACreateNaturalVector - Creates a parallel PETSc vector that
    will hold vector values in the natural numbering, rather than in 

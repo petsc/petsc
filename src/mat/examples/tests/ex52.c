@@ -1,4 +1,4 @@
-/*$Id: ex52.c,v 1.9 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex52.c,v 1.10 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = 
 "Tests the vatious routines in MatMPIBAIJ format.\n";
@@ -18,8 +18,8 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   /* Test MatSetValues() and MatGetValues() */
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRA(ierr);
 
   M    = m*bs*size;
   ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,M,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&A);CHKERRA(ierr);
@@ -43,7 +43,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
-  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = MatDestroy(A);
   

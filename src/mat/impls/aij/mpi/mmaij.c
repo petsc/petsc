@@ -1,4 +1,4 @@
-/*$Id: mmaij.c,v 1.54 2000/07/10 03:39:35 bsmith Exp bsmith $*/
+/*$Id: mmaij.c,v 1.55 2000/10/24 20:25:36 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel AIJ matrix vector multiply
@@ -7,7 +7,7 @@
 #include "src/vec/vecimpl.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetUpMultiply_MPIAIJ"
+#define __FUNC__ "MatSetUpMultiply_MPIAIJ"
 int MatSetUpMultiply_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ         *aij = (Mat_MPIAIJ*)mat->data;
@@ -38,15 +38,15 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
     }
   }
   /* form array of columns we need */
-  garray = (int *)PetscMalloc((ec+1)*sizeof(int));CHKPTRQ(garray);
+  ierr = PetscMalloc((ec+1)*sizeof(int),&garray);CHKERRQ(ierr);
   ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
   while (tpos) {  
     ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr); 
-    gid--; lid--;
+    gid--;
+    lid--;
     garray[lid] = gid; 
   }
   ierr = PetscSortInt(ec,garray);CHKERRQ(ierr); /* sort, and rebuild */
-  /* qsort(garray, ec, sizeof(int), intcomparc); */
   ierr = PetscTableRemoveAll(gid1_lid1);CHKERRQ(ierr);
   for (i=0; i<ec; i++) {
     ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1);CHKERRQ(ierr); 
@@ -66,7 +66,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 #else
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in aij->B */
-  indices = (int*)PetscMalloc((N+1)*sizeof(int));CHKPTRQ(indices);
+  ierr = PetscMalloc((N+1)*sizeof(int),&indices);CHKERRQ(ierr);
   ierr = PetscMemzero(indices,N*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<aij->B->m; i++) {
     for (j=0; j<B->ilen[i]; j++) {
@@ -76,7 +76,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   }
 
   /* form array of columns we need */
-  garray = (int*)PetscMalloc((ec+1)*sizeof(int));CHKPTRQ(garray);
+  ierr = PetscMalloc((ec+1)*sizeof(int),&garray);CHKERRQ(ierr);
   ec = 0;
   for (i=0; i<N; i++) {
     if (indices[i]) garray[ec++] = i;
@@ -111,12 +111,12 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx);CHKERRQ(ierr);
-  PLogObjectParent(mat,aij->Mvctx);
-  PLogObjectParent(mat,aij->lvec);
-  PLogObjectParent(mat,from);
-  PLogObjectParent(mat,to);
+  PetscLogObjectParent(mat,aij->Mvctx);
+  PetscLogObjectParent(mat,aij->lvec);
+  PetscLogObjectParent(mat,from);
+  PetscLogObjectParent(mat,to);
   aij->garray = garray;
-  PLogObjectMemory(mat,(ec+1)*sizeof(int));
+  PetscLogObjectMemory(mat,(ec+1)*sizeof(int));
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = VecDestroy(gvec);CHKERRQ(ierr);
@@ -125,7 +125,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DisAssemble_MPIAIJ"
+#define __FUNC__ "DisAssemble_MPIAIJ"
 /*
      Takes the local part of an already assembled MPIAIJ matrix
    and disassembles it. This is to allow new nonzeros into the matrix
@@ -146,7 +146,7 @@ int DisAssemble_MPIAIJ(Mat A)
 
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
-  ierr = VecGetSize(aij->lvec,&ec);CHKERRQ(ierr); /* needed for PLogObjectMemory below */
+  ierr = VecGetSize(aij->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */
   ierr = VecDestroy(aij->lvec);CHKERRQ(ierr); aij->lvec = 0;
   ierr = VecScatterDestroy(aij->Mvctx);CHKERRQ(ierr); aij->Mvctx = 0;
   if (aij->colmap) {
@@ -156,7 +156,7 @@ int DisAssemble_MPIAIJ(Mat A)
 #else
     ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
     aij->colmap = 0;
-    PLogObjectMemory(A,-aij->B->n*sizeof(int));
+    PetscLogObjectMemory(A,-aij->B->n*sizeof(int));
 #endif
   }
 
@@ -165,7 +165,7 @@ int DisAssemble_MPIAIJ(Mat A)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* invent new B and copy stuff over */
-  nz = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(nz);
+  ierr = PetscMalloc((m+1)*sizeof(int),&nz);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     nz[i] = Baij->i[i+1] - Baij->i[i];
   }
@@ -180,9 +180,9 @@ int DisAssemble_MPIAIJ(Mat A)
   }
   ierr = PetscFree(aij->garray);CHKERRQ(ierr);
   aij->garray = 0;
-  PLogObjectMemory(A,-ec*sizeof(int));
+  PetscLogObjectMemory(A,-ec*sizeof(int));
   ierr = MatDestroy(B);CHKERRQ(ierr);
-  PLogObjectParent(A,Bnew);
+  PetscLogObjectParent(A,Bnew);
   aij->B = Bnew;
   A->was_assembled = PETSC_FALSE;
   PetscFunctionReturn(0);

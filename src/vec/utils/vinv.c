@@ -1,4 +1,4 @@
-/*$Id: vinv.c,v 1.64 2000/09/28 21:10:10 bsmith Exp bsmith $*/
+/*$Id: vinv.c,v 1.65 2000/10/24 20:24:58 bsmith Exp bsmith $*/
 /*
      Some useful vector utility functions.
 */
@@ -6,7 +6,7 @@
 #include "src/vec/vecimpl.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecStrideNorm"
+#define __FUNC__ "VecStrideNorm"
 /*@C
    VecStrideNorm - Computes the norm of subvector of a vector defined 
    by a starting point and a stride.
@@ -93,7 +93,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *norm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecStrideMax"
+#define __FUNC__ "VecStrideMax"
 /*@C
    VecStrideMax - Computes the maximum of subvector of a vector defined 
    by a starting point and a stride and optionally its location.
@@ -173,7 +173,7 @@ int VecStrideMax(Vec v,int start,int *index,PetscReal *norm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecStrideMin"
+#define __FUNC__ "VecStrideMin"
 /*@C
    VecStrideMin - Computes the minimum of subvector of a vector defined 
    by a starting point and a stride and optionally its location.
@@ -253,7 +253,7 @@ int VecStrideMin(Vec v,int start,int *index,PetscReal *norm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecStrideGatherAll"
+#define __FUNC__ "VecStrideGatherAll"
 /*@
    VecStrideGatherAll - Gathers all the single components from a multi-component vector into
    seperate vectors.
@@ -298,7 +298,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
 
-  y = (Scalar**)PetscMalloc(bs*sizeof(PetscReal*));CHKPTRQ(y);
+  ierr = PetscMalloc(bs*sizeof(PetscReal*),&y);CHKERRQ(ierr);
   for (i=0; i<bs; i++) {
     ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
   }
@@ -340,7 +340,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecStrideScatterAll"
+#define __FUNC__ "VecStrideScatterAll"
 /*@
    VecStrideScatterAll - Scatters all the single components from seperate vectors into 
      a multi-component vector.
@@ -381,7 +381,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
 
-  y = (Scalar**)PetscMalloc(bs*sizeof(PetscReal*));CHKPTRQ(y);
+  ierr = PetscMalloc(bs*sizeof(PetscReal*),&y);CHKERRQ(ierr);
   for (i=0; i<bs; i++) {
     ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
   }
@@ -424,7 +424,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecStrideGather"
+#define __FUNC__ "VecStrideGather"
 /*@
    VecStrideGather - Gathers a single component from a multi-component vector into
    another vector.
@@ -504,7 +504,7 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecStrideScatter"
+#define __FUNC__ "VecStrideScatter"
 /*@
    VecStrideScatter - Scatters a single component from a vector into a multi-component vector.
 
@@ -582,7 +582,7 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecReciprocal_Default"
+#define __FUNC__ "VecReciprocal_Default"
 int VecReciprocal_Default(Vec v)
 {
   int    i,n,ierr;
@@ -599,7 +599,7 @@ int VecReciprocal_Default(Vec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSum"
+#define __FUNC__ "VecSum"
 /*@
    VecSum - Computes the sum of all the components of a vector.
 
@@ -635,7 +635,7 @@ int VecSum(Vec v,Scalar *sum)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecShift"
+#define __FUNC__ "VecShift"
 /*@
    VecShift - Shifts all of the components of a vector by computing
    x[i] = x[i] + shift.
@@ -671,7 +671,7 @@ int VecShift(const Scalar *shift,Vec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecAbs"
+#define __FUNC__ "VecAbs"
 /*@
    VecAbs - Replaces every element in a vector with its absolute value.
 
@@ -703,7 +703,7 @@ int VecAbs(Vec v)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecEqual"
+#define __FUNC__ "VecEqual"
 /*@
    VecEqual - Compares two vectors.
 

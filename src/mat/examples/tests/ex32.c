@@ -1,4 +1,4 @@
-/*$Id: ex32.c,v 1.20 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex32.c,v 1.21 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
@@ -17,12 +17,12 @@ int main(int argc,char **args)
   int    i,j,m,n,nnz,ierr,rank,size,start,end,*col,*row,*brow,length;
   Scalar *val,*bval;
   FILE*  file;
-  Viewer view;
+  PetscViewer view;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read in matrix and RHS */
-  ierr = OptionsGetString(PETSC_NULL,"-fin",filein,127,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,127,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
@@ -34,13 +34,13 @@ int main(int argc,char **args)
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,n,n,20,0,&A);CHKERRA(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRA(ierr);
 
-  col = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRA(col);
+ierr = PetscMalloc((n+1)*sizeof(int),&  col );CHKPTRA(col);
   for (i=0; i<n+1; i++)
     fscanf(file,"     I=%d%d\n",&j,&col[i]);
   fscanf(file,"  EOD JA\n");
 
-  val = (Scalar*)PetscMalloc(nnz*sizeof(Scalar));CHKPTRA(val);
-  row = (int*)PetscMalloc(nnz*sizeof(int));CHKPTRA(row);
+ierr = PetscMalloc(nnz*sizeof(Scalar),&(  val ));CHKPTRA(val);
+ierr = PetscMalloc(nnz*sizeof(int),&(  row ));CHKPTRA(row);
   fscanf(file,"  COEFFICIENT MATRIX IN SLAPSV: I, IA, A\n");
   for (i=0; i<nnz; i++) {
     fscanf(file,"    %d%d%le\n",&j,&row[i],&val[i]);
@@ -48,8 +48,8 @@ int main(int argc,char **args)
   }
   fscanf(file,"  EOD IA\n");
 
-  bval = (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRA(bval);
-  brow = (int*)PetscMalloc(n*sizeof(int));CHKPTRA(brow);
+ierr = PetscMalloc(n*sizeof(Scalar),&(  bval ));CHKPTRA(bval);
+ierr = PetscMalloc(n*sizeof(int),&(  brow ));CHKPTRA(brow);
   fscanf(file,"  RESIDUAL IN SLAPSV ;IRHS=%d\n",&j);
   for (i=0; i<n; i++) {
     fscanf(file,"      %d%le%d\n",&j,bval+i,&j);
@@ -80,11 +80,11 @@ int main(int argc,char **args)
   ierr = PetscFree(brow);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRA(ierr);
-  ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,127,PETSC_NULL);CHKERRA(ierr);
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,127,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,PETSC_BINARY_CREATE,&view);CHKERRA(ierr);
   ierr = MatView(A,view);CHKERRA(ierr);
   ierr = VecView(b,view);CHKERRA(ierr);
-  ierr = ViewerDestroy(view);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(view);CHKERRA(ierr);
 
   ierr = VecDestroy(b);CHKERRA(ierr);
   ierr = MatDestroy(A);CHKERRA(ierr);

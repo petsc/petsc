@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.50 2000/09/22 20:46:14 bsmith Exp bsmith $";
+! "$Id: ex4f.F,v 1.51 2000/10/24 20:27:14 bsmith Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -80,7 +80,7 @@
 !
       SNES               snes
       Vec                x,r
-      Draw               draw
+      PetscDraw               draw
       Mat                J
       integer            its,matrix_free,flg,N,ierr
       integer            mx,my,size,rank
@@ -124,9 +124,9 @@
       lambda     = 6.0
       mx         = 4
       my         = 4
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
-      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
+      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRA(1,' ',ierr)
@@ -165,7 +165,7 @@
 !  for the Jacobian.  See the users manual for a discussion of better 
 !  techniques for preallocating matrix memory.
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,  &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,  &
      &                    ierr)
       if (matrix_free .eq. 0) then
         call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL_INTEGER, &
@@ -177,7 +177,7 @@
 !    efficiently using a coloring of the columns of the matrix.
 !
       fd_coloring = 0
-      call OptionsHasName(PETSC_NULL_CHARACTER,"-snes_fd_coloring",     &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,"-snes_fd_coloring",     &
      &                    fd_coloring,ierr)
       if (fd_coloring .eq. 1) then
              
@@ -253,16 +253,16 @@
       endif
   100 format('Number of Newton iterations = ',i1)
 
-!  Draw contour plot of solution
+!  PetscDraw contour plot of solution
 
-!      call DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',  
+!      call PetscDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',  
 !                   300,0,300,300,draw,ierr)
-      call DrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution', &
+      call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution', &
      &               300,0,300,300,draw,ierr)
-      call DrawSetType(draw,DRAW_X,ierr)
+      call PetscDrawSetType(draw,PETSC_DRAW_X,ierr)
 
       call VecGetArray(x,lx_v,lx_i,ierr)
-      call DrawTensorContour(draw,mx,my,PETSC_NULL_DOUBLE,              &
+      call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_DOUBLE,              &
      &     PETSC_NULL_DOUBLE,lx_v(lx_i+1),ierr)
       call VecRestoreArray(x,lx_v,lx_i,ierr)
 
@@ -277,7 +277,7 @@
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
       call SNESDestroy(snes,ierr)
-      call DrawDestroy(draw,ierr)
+      call PetscDrawDestroy(draw,ierr)
       call PetscFinalize(ierr)
       end
 
@@ -461,7 +461,7 @@
       call VecRestoreArray(X,lx_v,lx_i,ierr)
       call VecRestoreArray(F,lf_v,lf_i,ierr)
 
-      call PLogFlops(11*mx*my,ierr)
+      call PetscLogFlops(11*mx*my,ierr)
 
       return 
       end

@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.7 2000/05/05 22:17:23 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.8 2000/10/24 20:26:38 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatILUFactorSymbolic() on matrix with missing diagonal.\n\n"; 
 
@@ -34,14 +34,14 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRA(ierr);
   ierr = PCSetFromOptions(pc);CHKERRA(ierr);
   ierr = PCSetOperators(pc,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = PCSetVector(pc,xtmp);CHKERRA(ierr);
   ierr = PCSetUp(pc);CHKERRA(ierr);
   ierr = PCGetFactoredMatrix(pc,&A);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = PCDestroy(pc);CHKERRA(ierr);
   ierr = VecDestroy(xtmp);CHKERRA(ierr);

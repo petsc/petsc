@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.32 2000/09/28 17:49:40 balay Exp bsmith $";
+! "$Id: ex2f.F,v 1.33 2000/09/28 17:52:11 bsmith Exp bsmith $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Processors: n
@@ -101,8 +101,8 @@
       time_total_max = 100.0
       m              = 60
       debug          = 0
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-m',M,flg,ierr)
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-debug',debug,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',M,flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-debug',debug,ierr)
       one_d0  = 1.0d0
       two_d0  = 2.0d0
       four_d0 = 4.0d0
@@ -154,7 +154,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call MatCreate(comm,PETSC_DECIDE,PETSC_DECIDE,m,m,A,ierr)
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-fdjac',flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-fdjac',flg,ierr)
       if (flg .eq. 1) then
          call SetCRoutineFromFortran(ts,A,A,ierr)
       else
@@ -274,7 +274,7 @@
 !  Print debugging information if desired
       if (debug .eq. 1) then
         if (rank .eq. 0) write(6,*) 'initial guess vector'
-        call VecView(u,VIEWER_STDOUT_WORLD,ierr)
+        call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
 
       return
@@ -361,23 +361,23 @@
 !  Local variables:
       double precision en2,en2s,enmax
       double precision mone
-      Draw             draw
+      PetscDraw             draw
 
       mone = -1.0d0
 
 !  We use the default X windows viewer
-!       VIEWER_DRAW_WORLD
+!       PETSC_VIEWER_DRAW_WORLD
 !  that is associated with the PETSC_COMM_WORLD communicator. This
-!  saves the effort of calling ViewerDrawOpen() to create the window.
+!  saves the effort of calling PetscViewerDrawOpen() to create the window.
 !  Note that if we wished to plot several items in separate windows we
-!  would create each viewer with ViewerDrawOpen() and store them in
+!  would create each viewer with PetscViewerDrawOpen() and store them in
 !  the application context, appctx.
 !
 !  Double buffering makes graphics look better.
 
-      call ViewerDrawGetDraw(VIEWER_DRAW_WORLD,0,draw,ierr)
-      call DrawSetDoubleBuffer(draw,ierr)
-      call VecView(u,VIEWER_DRAW_WORLD,ierr)
+      call PetscViewerDrawGetDraw(PETSC_VIEWER_DRAW_WORLD,0,draw,ierr)
+      call PetscDrawSetDoubleBuffer(draw,ierr)
+      call VecView(u,PETSC_VIEWER_DRAW_WORLD,ierr)
 
 !  Compute the exact solution at this time-step.  Note that the
 !  solution vector is passed via the user-defined common block.
@@ -386,9 +386,9 @@
 !  Print debugging information if desired
       if (debug .eq. 1) then
         if (rank .eq. 0) write(6,*) 'Computed solution vector'
-        call VecView(u,VIEWER_STDOUT_WORLD,ierr)
+        call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
         if (rank .eq. 0) write(6,*) 'Exact solution vector'
-        call VecView(solution,VIEWER_STDOUT_WORLD,ierr)
+        call VecView(solution,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
 
 !  Compute the 2-norm and max-norm of the error
@@ -407,7 +407,7 @@
 !  Print debugging information if desired
       if (debug .eq. 1) then
         if (rank .eq. 0) write(6,*) 'Error vector'
-        call VecView(solution,VIEWER_STDOUT_WORLD,ierr)
+        call VecView(solution,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
 
       return
@@ -506,7 +506,7 @@
 !  Print debugging information if desired
       if (debug .eq. 1) then
         if (rank .eq. 0) write(6,*) 'RHS function vector'
-        call VecView(global_out,VIEWER_STDOUT_WORLD,ierr)
+        call VecView(global_out,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
 
       return

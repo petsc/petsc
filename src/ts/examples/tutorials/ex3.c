@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.17 2000/09/28 21:15:02 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.18 2000/10/24 20:27:29 bsmith Exp bsmith $*/
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
 
@@ -70,7 +70,7 @@ typedef struct {
   int        m;                 /* total number of grid points */
   double     h;                 /* mesh width h = 1/(m-1) */
   PetscTruth debug;             /* flag (1 indicates activation of debugging printouts) */
-  Viewer     viewer1,viewer2;  /* viewers for the solution and error */
+  PetscViewer     viewer1,viewer2;  /* viewers for the solution and error */
   double     norm_2,norm_max;  /* error norms */
 } AppCtx;
 
@@ -93,7 +93,7 @@ int main(int argc,char **argv)
   Vec           u;                      /* approximate solution vector */
   double        time_total_max = 100.0; /* default max total time */
   int           time_steps_max = 100;   /* default max timesteps */
-  Draw          draw;                   /* drawing context */
+  PetscDraw          draw;                   /* drawing context */
   int           ierr,steps,size,m;
   double        dt,ftime;
   PetscTruth    flg;
@@ -107,8 +107,8 @@ int main(int argc,char **argv)
   if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
 
   m    = 60;
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRA(ierr);    
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRA(ierr);    
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);
   appctx.norm_2   = 0.0;
@@ -129,12 +129,12 @@ int main(int argc,char **argv)
      Set up displays to show graphs of the solution and error 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"",80,380,400,160,&appctx.viewer1);CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);   
-  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"",80,0,400,160,&appctx.viewer2);CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);   
+  ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"",80,380,400,160,&appctx.viewer1);CHKERRA(ierr);
+  ierr = PetscViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRA(ierr);
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRA(ierr);   
+  ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"",80,0,400,160,&appctx.viewer2);CHKERRA(ierr);
+  ierr = PetscViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRA(ierr);
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRA(ierr);   
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -156,7 +156,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m,m,&A);CHKERRA(ierr);
   ierr = MatSetFromOptions(A);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-time_dependent_rhs",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-time_dependent_rhs",&flg);CHKERRA(ierr);
   if (flg) {
     /*
        For linear problems with a time-dependent f(u,t) in the equation 
@@ -177,7 +177,7 @@ int main(int argc,char **argv)
   }
 
   /* Treat the problem as having time-dependent boundary conditions */
-  ierr = OptionsHasName(PETSC_NULL,"-time_dependent_bc",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-time_dependent_bc",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = TSSetRHSBoundaryConditions(ts,MyBCRoutine,&appctx);CHKERRA(ierr);
   }
@@ -223,7 +223,7 @@ int main(int argc,char **argv)
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",
               appctx.norm_2/steps,appctx.norm_max/steps);CHKERRA(ierr);
-  ierr = TSView(ts,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = TSView(ts,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -233,8 +233,8 @@ int main(int argc,char **argv)
   ierr = TSDestroy(ts);CHKERRA(ierr);
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = VecDestroy(u);CHKERRA(ierr);
-  ierr = ViewerDestroy(appctx.viewer1);CHKERRA(ierr);
-  ierr = ViewerDestroy(appctx.viewer2);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(appctx.viewer1);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(appctx.viewer2);CHKERRA(ierr);
   ierr = VecDestroy(appctx.solution);CHKERRA(ierr);
 
   /*
@@ -294,7 +294,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
   */
   if (appctx->debug) {
      printf("initial guess vector\n");
-     ierr = VecView(u,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+     ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   return 0;
@@ -382,9 +382,9 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   */
   if (appctx->debug) {
      printf("Computed solution vector\n");
-     ierr = VecView(u,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+     ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
      printf("Exact solution vector\n");
-     ierr = VecView(appctx->solution,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   /*
@@ -402,7 +402,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   appctx->norm_max += norm_max;
 
   dttol = .0001;
-  ierr = OptionsGetDouble(PETSC_NULL,"-dttol",&dttol,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-dttol",&dttol,PETSC_NULL);CHKERRA(ierr);
   if (dt < dttol) {
     dt *= .999;
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
@@ -418,7 +418,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   */
   if (appctx->debug) {
      printf("Error vector\n");
-     ierr = VecView(appctx->solution,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   return 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: triconvert.c,v 1.4 2000/05/08 15:09:28 balay Exp bsmith $";
+static char vcid[] = "$Id: triconvert.c,v 1.5 2000/09/28 21:15:42 bsmith Exp bsmith $";
 #endif
 /*
       Converts triangulated grid data file.node and file.ele generated
@@ -26,7 +26,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,0,0);
   ierr = PetscMemzero(filename,256*sizeof(char));CHKERRA(ierr);
 
-  ierr = OptionsGetString(0,"-f",filebase,246,&flag);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(0,"-f",filebase,246,&flag);CHKERRA(ierr);
   if (!flag) {
     SETERRA(1,"Must provide filebase name with -f");
   }
@@ -49,7 +49,7 @@ int main(int argc,char **args)
   if (dim != 2) {
     SETERRA(1,"Triangulation is not in two dimensions");
   }
-  vertex = (double *)PetscMalloc(2*nvertex*sizeof(double));CHKPTRA(vertex);
+ierr = PetscMalloc(2*nvertex*sizeof(double),&(  vertex ));CHKPTRA(vertex);
   ierr   = PetscBTCreate(nvertex,vertex_boundary);CHKERRA(ierr);
 
   if (nstuff == 1) {
@@ -84,7 +84,7 @@ int main(int argc,char **args)
   }
   fscanf(file,"%d %d %d\n",&ncell,&nc,&nstuff);ncp = nc;
 
-  cell = (int *)PetscMalloc(nc*ncell*sizeof(int));CHKPTRA(cell);
+ierr = PetscMalloc(nc*ncell*sizeof(int),&(  cell ));CHKPTRA(cell);
   if (nstuff == 0) {
     if (nc == 3) {
       for (i=0; i<ncell; i++) {
@@ -110,16 +110,16 @@ int main(int argc,char **args)
   ierr = AODataKeyAdd(ao,"cell",ncell,ncell);CHKERRA(ierr);
   ierr = AODataSegmentAdd(ao,"cell","vertex",nc,ncell,0,cell,PETSC_INT);CHKERRA(ierr);
 
-  cell_edge    = (int *)PetscMalloc(nc*ncell*sizeof(int));CHKPTRA(cell_edge);
-  edge_cell    = (int *)PetscMalloc(2*nc*ncell*sizeof(int));CHKPTRA(edge_cell);
-  edge_vertex  = (int *)PetscMalloc(2*nc*ncell*sizeof(int));CHKPTRA(edge_vertex);
-  cell_cell    = (int *)PetscMalloc(3*ncell*sizeof(int));CHKPTRA(cell_cell);
+ierr = PetscMalloc(nc*ncell*sizeof(int),&(  cell_edge    ));CHKPTRA(cell_edge);
+ierr = PetscMalloc(2*nc*ncell*sizeof(int),&(  edge_cell    ));CHKPTRA(edge_cell);
+ierr = PetscMalloc(2*nc*ncell*sizeof(int),&(  edge_vertex  ));CHKPTRA(edge_vertex);
+ierr = PetscMalloc(3*ncell*sizeof(int),&(  cell_cell    ));CHKPTRA(cell_cell);
 
   /*
       Determine edges 
   */
-  shift0 = (int *)PetscMalloc(nc*sizeof(int));CHKPTRQ(shift0);
-  shift1 = (int *)PetscMalloc(nc*sizeof(int));CHKPTRQ(shift1);
+ierr = PetscMalloc(nc*sizeof(int),&(  shift0 ));CHKERRQ(ierr);
+ierr = PetscMalloc(nc*sizeof(int),&(  shift1 ));CHKERRQ(ierr);
   for (i=0; i<nc; i++) {
     shift0[i] = i; 
     shift1[i] = (i + 1) % nc;
@@ -206,10 +206,10 @@ int main(int argc,char **args)
 
   /*  ierr = AODataView(ao,0); */
 
-  { Viewer binary;
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,filebase,BINARY_CREATE,&binary);CHKERRA(ierr);
+  { PetscViewer binary;
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filebase,PETSC_BINARY_CREATE,&binary);CHKERRA(ierr);
   ierr = AODataView(ao,binary);CHKERRA(ierr);
-  ierr = ViewerDestroy(binary);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(binary);CHKERRA(ierr);
   }
   
   return 0;

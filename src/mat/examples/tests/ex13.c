@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.11 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex13.c,v 1.12 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = 
 "Tests copying and ordering uniprocessor row-based sparse matrices.\n\n";
@@ -35,9 +35,9 @@ int main(int argc,char **args)
   ierr = MatConvert(C,MATSAME,&A);CHKERRA(ierr);
 
   ierr = MatGetOrdering(A,MATORDERING_ND,&perm,&iperm);CHKERRA(ierr);
-  ierr = ISView(perm,VIEWER_STDOUT_SELF);CHKERRA(ierr);
-  ierr = ISView(iperm,VIEWER_STDOUT_SELF);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(iperm,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = ISDestroy(perm);CHKERRA(ierr);
   ierr = ISDestroy(iperm);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.10 2000/01/11 21:03:13 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.11 2000/05/05 22:19:15 balay Exp bsmith $*/
 
 static char help[] = "Tests AOData loading\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests AOData loading\n\n";
 int main(int argc,char **argv)
 {
   AOData      aodata;
-  Viewer      binary;
+  PetscViewer      binary;
   int         ierr,indices[4],*intv,i,rank;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -18,9 +18,9 @@ int main(int argc,char **argv)
   /*
         Load the database from the file
   */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"dataoutput",BINARY_RDONLY,&binary);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"dataoutput",PETSC_BINARY_RDONLY,&binary);CHKERRA(ierr);
   ierr = AODataLoadBasic(binary,&aodata);CHKERRA(ierr);
-  ierr = ViewerDestroy(binary);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(binary);CHKERRA(ierr);
 
   /*
         Access part of the data 

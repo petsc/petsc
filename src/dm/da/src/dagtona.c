@@ -1,4 +1,4 @@
-/*$Id: dagtona.c,v 1.7 2000/08/01 20:58:01 bsmith Exp bsmith $*/
+/*$Id: dagtona.c,v 1.8 2000/09/28 21:15:20 bsmith Exp bsmith $*/
  
 /*
      Tools to help solve the coarse grid problem redundantly.
@@ -11,7 +11,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGlobalToNaturalAllCreate"
+#define __FUNC__ "DAGlobalToNaturalAllCreate"
 /*
    DAGlobalToNaturalAllCreate - Creates a scatter context that maps from the 
      global vector the entire vector to each processor in natural numbering
@@ -57,7 +57,7 @@ int DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DANaturalAllToGlobalCreate"
+#define __FUNC__ "DANaturalAllToGlobalCreate"
 /*
    DANaturalAllToGlobalCreate - Creates a scatter context that maps from a copy
      of the entire vector on each processor to its local part in the global vector.

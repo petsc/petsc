@@ -1,10 +1,10 @@
-/*$Id: gmreig.c,v 1.20 2000/08/16 15:18:04 balay Exp bsmith $*/
+/*$Id: gmreig.c,v 1.21 2000/09/28 21:13:20 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"
 #include "petscblaslapack.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPComputeExtremeSingularValues_GMRES"
+#define __FUNC__ "KSPComputeExtremeSingularValues_GMRES"
 int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
@@ -49,7 +49,7 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emi
 /* ESSL has a different calling sequence for dgeev() and zgeev() than standard LAPACK */
 #if defined(PETSC_HAVE_ESSL)
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPComputeEigenvalues_GMRES"
+#define __FUNC__ "KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
@@ -74,14 +74,14 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   /* for ESSL version need really cwork of length N (complex), 2N
      (real); already at least 5N of space has been allocated */
 
-  work     = (PetscReal*)PetscMalloc(lwork*sizeof(PetscReal));CHKPTRQ(work);
+ierr = PetscMalloc(lwork*sizeof(PetscReal),&(  work     ));CHKERRQ(ierr);
   zero     = 0;
   LAgeev_(&zero,R,&N,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
   ierr = PetscFree(work);CHKERRQ(ierr);
 
   /* For now we stick with the convention of storing the real and imaginary
      components of evalues separately.  But is this what we really want? */
-  perm = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(perm);
+ierr = PetscMalloc(n*sizeof(int),&(  perm ));CHKERRQ(ierr);
 
 #if !defined(PETSC_USE_COMPLEX)
   for (i=0; i<n; i++) {
@@ -109,7 +109,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
 }
 #elif !defined(PETSC_USE_COMPLEX)
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPComputeEigenvalues_GMRES"
+#define __FUNC__ "KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
@@ -131,7 +131,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   /* compute eigenvalues */
   LAgeev_("N","N",&n,R,&N,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
   if (ierr) SETERRQ(PETSC_ERR_LIB,"Error in LAPACK routine");
-  perm = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(perm);
+ierr = PetscMalloc(n*sizeof(int),&(  perm ));CHKERRQ(ierr);
   for (i=0; i<n; i++) { perm[i] = i;}
   ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
@@ -143,7 +143,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
 }
 #else
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPComputeEigenvalues_GMRES"
+#define __FUNC__ "KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
@@ -163,7 +163,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   /* compute eigenvalues */
   LAgeev_("N","N",&n,R,&N,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&ierr);
   if (ierr) SETERRQ(PETSC_ERR_LIB,"Error in LAPACK routine");
-  perm = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(perm);
+ierr = PetscMalloc(n*sizeof(int),&(  perm ));CHKERRQ(ierr);
   for (i=0; i<n; i++) { perm[i] = i;}
   for (i=0; i<n; i++) { r[i]    = PetscRealPart(eigs[i]);}
   ierr = PetscSortDoubleWithPermutation(n,r,perm);CHKERRQ(ierr);

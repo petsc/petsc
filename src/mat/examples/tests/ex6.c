@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.12 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.13 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests reordering a matrix.\n\n";
 
@@ -33,9 +33,9 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   ierr = MatGetOrdering(C,MATORDERING_ND,&perm,&iperm);CHKERRA(ierr);
-  ierr = ISView(perm,VIEWER_STDOUT_SELF);CHKERRA(ierr);
-  ierr = ISView(iperm,VIEWER_STDOUT_SELF);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(iperm,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = ISDestroy(perm);CHKERRA(ierr);
   ierr = ISDestroy(iperm);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.4 2000/02/02 21:21:09 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.5 2000/08/01 20:58:20 bsmith Exp bsmith $*/
 static char help[] ="Solves the 2d burgers equation.   u*du/dx + v*du/dy - c(lap(u)) = f.  u*dv/dv + v*dv/dy - c(lap(v)) =g.  This has exact solution, see fletcher.";
 
 
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   if (appctx->view.show_solution) {
     ierr = VecScatterBegin(algebra->g,algebra->w_local,INSERT_VALUES,SCATTER_FORWARD,algebra->gtol);CHKERRQ(ierr);
     ierr = VecScatterEnd(algebra->g,algebra->w_local,INSERT_VALUES,SCATTER_FORWARD,algebra->gtol);CHKERRQ(ierr);
-    ierr = DrawZoom(appctx->view.drawglobal,AppCtxViewSolution,appctx);CHKERRA(ierr);
+    ierr = PetscDrawZoom(appctx->view.drawglobal,AppCtxViewSolution,appctx);CHKERRA(ierr);
   }
 
   /* Send to  matlab viewer */
@@ -83,7 +83,7 @@ int AppCtxSolve(AppCtx* appctx)
   /*      Set the matrix entries   */
   ierr = AppCtxSetMatrix(appctx);CHKERRQ(ierr);
 
-  if(0){ ierr = MatView(algebra->A,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
+  if(0){ ierr = MatView(algebra->A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
 
   /*     Create the nonlinear solver context  */
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
@@ -104,14 +104,14 @@ int AppCtxSolve(AppCtx* appctx)
   ierr = FormInitialGuess(appctx);CHKERRQ(ierr); 
   g = algebra->g;
 /* printf("the initial guess\n"); */
-/*   ierr = VecView(g,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);   */
+/*   ierr = VecView(g,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);   */
 
   /*       Solve the non-linear system  */
   ierr = SNESSolve(snes,g,&its);CHKERRQ(ierr);
 
 /* printf("the final solution vector\n"); */
 
-/*  ierr = VecView(g,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);   */
+/*  ierr = VecView(g,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);   */
 printf("the number of its, %d\n",its);
 
   ierr = SNESDestroy(snes);CHKERRQ(ierr);  
@@ -339,8 +339,8 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   ierr = VecGetArray(x,&sdnz);CHKERRQ(ierr);
 
   /* now copy values into and integer array, adding one for the diagonal entry */
-  dnz  = (int*)PetscMalloc((vertex_local_n+1)*sizeof(int));CHKPTRQ(dnz);
-  onz  = (int*)PetscMalloc((vertex_local_n+1)*sizeof(int));CHKPTRQ(onz);
+ierr = PetscMalloc((vertex_local_n+1)*sizeof(int),&  dnz  );CHKERRQ(ierr);
+ierr = PetscMalloc((vertex_local_n+1)*sizeof(int),&  onz  );CHKERRQ(ierr);
   for (i=0; i<vertex_local_n; i++) {
     dnz[i] = 1 + (int)PetscRealPart(sdnz[i]);
     onz[i] = (int)PetscRealPart(sonz[i]);
@@ -395,7 +395,7 @@ to see if they need to be recomputed */
 
 /****** Perform computation ***********/
 /*  printf("input to nonlinear fun) \n");    */
-/* ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);    */
+/* ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);    */
 
   /* need to zero f */
   ierr = VecSet(&zero,f);CHKERRQ(ierr); /* dont need to assemble for VecSet */
@@ -403,10 +403,10 @@ to see if they need to be recomputed */
   /* add rhs to get constant part */
   ierr = VecAXPY(&mone,b,f);CHKERRQ(ierr); /* this says f = f - 1*b */
 /*  printf("zero f, add rhs (should be zero) \n");   */
-/*  ierr = VecView(f,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */  
+/*  ierr = VecView(f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */  
 
   /* printf("input vector to the function \n");   */
-  /* ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  /* ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /*apply matrix to the input vector x, to get linear part */
   /* Assuming mattrix does not need to be recomputed */
@@ -417,7 +417,7 @@ to see if they need to be recomputed */
   ierr = SetNonlinearFunction(x,appctx,f);CHKERRQ(ierr);
  
  if(0){  printf("output of nonlinear fun \n");   
-   ierr = VecView(f,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);    }
+   ierr = VecView(f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);    }
   PetscFunctionReturn(0);
 }
 
@@ -460,9 +460,9 @@ int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
   ierr = VecScatterEnd(g,f_local,INSERT_VALUES,SCATTER_FORWARD,dgtol);CHKERRQ(ierr);
 
 /* {Viewer sviewer;
-ViewerGetSingleton(VIEWER_STDOUT_WORLD,&sviewer);
+ViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);
 VecView(f_local,sviewer);
-ViewerRestoreSingleton(VIEWER_STDOUT_WORLD,&sviewer);
+ViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);
 PetscSynchronizedFlush(PETSC_COMM_WORLD);
 } */
 
@@ -496,13 +496,13 @@ PetscSynchronizedFlush(PETSC_COMM_WORLD);
 
   if(0){
  printf("output of nonlinear fun (before bc imposed)\n");   
- ierr = VecView(f,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
+ ierr = VecView(f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
 
   ierr = VecAssemblyBegin(f);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(f);CHKERRQ(ierr);
   if(0){
  printf("output of nonlinear fun (before bc imposed)\n");   
- ierr = VecView(f,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
+ ierr = VecView(f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
   /********** The process repeats for setting boundary conditions ************/
   /*  -------------------------------------------------------------
          Apply Dirichlet boundary conditions
@@ -515,7 +515,7 @@ PetscSynchronizedFlush(PETSC_COMM_WORLD);
   ierr = ISGetLocalSize(vertex_boundary,&nindices);CHKERRQ(ierr);
 
   /* create space for the array of boundary values */
-  bvs = (double*)PetscMalloc(2*(nindices+1)*sizeof(double));CHKPTRQ(bvs);
+ierr = PetscMalloc(2*(nindices+1)*sizeof(double),&  bvs );CHKERRQ(ierr);
 
  /****** Perform computation ***********/
   ierr = ISGetIndices(vertex_boundary,&indices);CHKERRQ(ierr);
@@ -568,7 +568,7 @@ ierr= MatCopy(A,*jac,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   *flag = DIFFERENT_NONZERO_PATTERN;  /*  is this right? */
 
 /*  printf("about to view jac from insize form jacobian \n");  */
-/*    ierr = MatView(*jac,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  */
+/*    ierr = MatView(*jac,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  */
   PetscFunctionReturn(0);
 }
 

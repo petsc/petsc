@@ -1,4 +1,4 @@
-/* $Id: matlab.c,v 1.10 2000/05/18 21:55:07 bsmith Exp bsmith $ #include "petsc.h" */
+/* $Id: matlab.c,v 1.11 2000/09/28 21:09:35 bsmith Exp bsmith $ #include "petsc.h" */
 
 #include "engine.h"   /* Matlab include file */
 #include "petsc.h" 
@@ -11,7 +11,7 @@ struct  _p_PetscMatlabEngine {
 };
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscMatlabEngineCreate"></a>*/"PetscMatlabEngineCreate"
+#define __FUNC__ "PetscMatlabEngineCreate"
 /*@C
     PetscMatlabEngineCreate - Creates a Matlab engine object 
 
@@ -38,10 +38,10 @@ int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *engin
 
   PetscFunctionBegin;
   PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_COOKIE,0,"MatlabEngine",comm,PetscMatlabEngineDestroy,0);
-  PLogObjectCreate(e);
+  PetscLogObjectCreate(e);
 
   if (!machine) machine = "\0";
-  PLogInfo(0,"Starting Matlab engine on %s\n",machine);
+  PetscLogInfo(0,"Starting Matlab engine on %s\n",machine);
   e->ep = engOpen(machine);
   if (!e->ep) SETERRQ1(1,"Unable to start Matlab engine on %s\n",machine);
   engOutputBuffer(e->ep,e->buffer,1024);
@@ -50,14 +50,14 @@ int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *engin
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   sprintf(buffer,"MPI_Comm_rank = %d; MPI_Comm_size = %d;\n",rank,size);
   engEvalString(e->ep, buffer);
-  PLogInfo(0,"Started Matlab engine on %s\n",machine);
+  PetscLogInfo(0,"Started Matlab engine on %s\n",machine);
   
   *engine = e;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscMatlabEngineDestroy"></a>*/"PetscMatlabEngineDestroy"
+#define __FUNC__ "PetscMatlabEngineDestroy"
 /*@C
    PetscMatlabEngineDestroy - Destroys a vector.
 
@@ -79,13 +79,13 @@ int PetscMatlabEngineDestroy(PetscMatlabEngine v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,MATLABENGINE_COOKIE);
   if (--v->refct > 0) PetscFunctionReturn(0);
-  PLogObjectDestroy(v);
+  PetscLogObjectDestroy(v);
   PetscHeaderDestroy(v); 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscMatlabEngineEvaluate"></a>*/"PetscMatlabEngineEvaluate"
+#define __FUNC__ "PetscMatlabEngineEvaluate"
 /*@C
     PetscMatlabEngineEvaluate - Evaluates a string in Matlab
 
@@ -114,7 +114,7 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine engine,char *string,...)
   va_end(Argp);
   ierr = PetscStrcat(buffer,",flops");
 
-  PLogInfo(0,"Evaluating Matlab string: %s\n",buffer);
+  PetscLogInfo(0,"Evaluating Matlab string: %s\n",buffer);
   engEvalString(engine->ep, buffer);
 
   /* 
@@ -137,18 +137,18 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine engine,char *string,...)
     if (engine->buffer[len] == '\t') break;
   }
   sscanf(engine->buffer+len," %d\n",&flops);
-  PLogFlops(flops);
+  PetscLogFlops(flops);
   /* strip out of engine->buffer the end part about flops */
   if (len < 14) SETERRQ(1,"Internal PETSc error");
   len -= 14;
   engine->buffer[len] = 0;
 
-  PLogInfo(0,"Done evaluating Matlab string: %s\n",buffer);
+  PetscLogInfo(0,"Done evaluating Matlab string: %s\n",buffer);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscMatlabEngineGetOutput"></a>*/"PetscMatlabEngineGetOutput"
+#define __FUNC__ "PetscMatlabEngineGetOutput"
 /*@C
     PetscMatlabEngineGetOutput - Gets a string buffer where the Matlab output is 
           printed
@@ -175,7 +175,7 @@ int PetscMatlabEngineGetOutput(PetscMatlabEngine engine,char **string)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscMatlabEnginePrintOutput"></a>*/"PetscMatlabEnginePrintOutput"
+#define __FUNC__ "PetscMatlabEnginePrintOutput"
 /*@C
     PetscMatlabEnginePrintOutput - prints the output from Matlab
 
@@ -202,7 +202,7 @@ int PetscMatlabEnginePrintOutput(PetscMatlabEngine engine,FILE *fd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscMatlabEnginePut"></a>*/"PetscMatlabEnginePut"
+#define __FUNC__ "PetscMatlabEnginePut"
 /*@C
     PetscMatlabEnginePut - Puts a Petsc object into the Matlab space. For parallel objects,
       each processors part is put in a seperate  Matlab process.
@@ -228,14 +228,14 @@ int PetscMatlabEnginePut(PetscMatlabEngine engine,PetscObject obj)
   if (!put) {
     SETERRQ1(1,"Object %s cannot be put into Matlab engine",obj->class_name);
   }
-  PLogInfo(0,"Putting Matlab object\n");
+  PetscLogInfo(0,"Putting Matlab object\n");
   ierr = (*put)(obj,engine->ep);CHKERRQ(ierr);
-  PLogInfo(0,"Put Matlab object: %s\n",obj->name);
+  PetscLogInfo(0,"Put Matlab object: %s\n",obj->name);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscMatlabEngineGet"></a>*/"PetscMatlabEngineGet"
+#define __FUNC__ "PetscMatlabEngineGet"
 /*@C
     PetscMatlabEngineGet - Gets a variable from Matlab into a PETSc object.
 
@@ -263,9 +263,9 @@ int PetscMatlabEngineGet(PetscMatlabEngine engine,PetscObject obj)
   if (!get) {
     SETERRQ1(1,"Object %s cannot be get into Matlab engine",obj->class_name);
   }
-  PLogInfo(0,"Getting Matlab object\n");
+  PetscLogInfo(0,"Getting Matlab object\n");
   ierr = (*get)(obj,engine->ep);CHKERRQ(ierr);
-  PLogInfo(0,"Got Matlab object: %s\n",obj->name);
+  PetscLogInfo(0,"Got Matlab object: %s\n",obj->name);
   PetscFunctionReturn(0);
 }
 
@@ -276,7 +276,7 @@ int PetscMatlabEngineGet(PetscMatlabEngine engine,PetscObject obj)
 static int Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MATLAB_ENGINE_"></a>*/"MATLAB_ENGINE_"  
+#define __FUNC__ "MATLAB_ENGINE_"  
 /*@C
    MATLAB_ENGINE_ - Creates a matlab engine shared by all processors 
                     in a communicator.
@@ -314,7 +314,7 @@ PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm comm)
   if (!flg) { /* viewer not yet created */
     char *machinename = 0,machine[64];
 
-    ierr = OptionsGetString(PETSC_NULL,"-matlab_engine_machine",machine,64,&flg);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-matlab_engine_machine",machine,64,&flg);
     if (ierr) {PetscError(__LINE__,"MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
     if (flg) machinename = machine;
     ierr = PetscMatlabEngineCreate(comm,machinename,&engine);
@@ -328,7 +328,7 @@ PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm comm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscMatlabEnginePutArray"></a>*/"PetscMatlabEnginePutArray"
+#define __FUNC__ "PetscMatlabEnginePutArray"
 /*@C
     PetscMatlabEnginePutArray - Puts a Petsc object into the Matlab space. For parallel objects,
       each processors part is put in a seperate  Matlab process.
@@ -353,7 +353,7 @@ int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int m,int n,Scalar *array
   mxArray *mat;
   
   PetscFunctionBegin;  
-  PLogInfo(0,"Putting Matlab array %s\n",name);
+  PetscLogInfo(0,"Putting Matlab array %s\n",name);
 #if !defined(PETSC_USE_COMPLEX)
   mat  = mxCreateDoubleMatrix(m,n,mxREAL);
 #else
@@ -363,12 +363,12 @@ int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int m,int n,Scalar *array
   mxSetName(mat,name);
   engPutArray(engine->ep,mat);
 
-  PLogInfo(0,"Put Matlab array %s\n",name);
+  PetscLogInfo(0,"Put Matlab array %s\n",name);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscMatlabEngineGetArray"></a>*/"PetscMatlabEngineGetArray"
+#define __FUNC__ "PetscMatlabEngineGetArray"
 /*@C
     PetscMatlabEngineGetArray - Gets a variable from Matlab into an array
 
@@ -392,11 +392,11 @@ int PetscMatlabEngineGetArray(PetscMatlabEngine engine,int m,int n,Scalar *array
   mxArray *mat;
   
   PetscFunctionBegin;  
-  PLogInfo(0,"Getting Matlab array %s\n",name);
+  PetscLogInfo(0,"Getting Matlab array %s\n",name);
   mat  = engGetArray(engine->ep,name);
   if (!mat) SETERRQ1(1,"Unable to get array %s from matlab",name);
   ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(Scalar));CHKERRQ(ierr);
-  PLogInfo(0,"Got Matlab array %s\n",name);
+  PetscLogInfo(0,"Got Matlab array %s\n",name);
   PetscFunctionReturn(0);
 }
 

@@ -1,9 +1,9 @@
-/*$Id: axpy.c,v 1.48 2000/09/28 21:12:12 bsmith Exp bsmith $*/
+/*$Id: axpy.c,v 1.49 2000/10/24 20:26:14 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatAXPY"
+#define __FUNC__ "MatAXPY"
 /*@
    MatAXPY - Computes Y = a*X + Y.
 
@@ -50,7 +50,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
         ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
       }
     } else {
-      vals = (Scalar*)PetscMalloc((n1+1)*sizeof(Scalar));CHKPTRQ(vals);
+ierr = PetscMalloc((n1+1)*sizeof(Scalar),&      vals );CHKERRQ(ierr);
       for (i=start; i<end; i++) {
         ierr = MatGetRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
         for (j=0; j<ncols; j++) {
@@ -68,7 +68,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatShift"
+#define __FUNC__ "MatShift"
 /*@
    MatShift - Computes Y =  Y + a I, where a is a scalar and I is the identity matrix.
 
@@ -105,7 +105,7 @@ int MatShift(Scalar *a,Mat Y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatDiagonalSet"></a>*/"MatDiagonalSet"
+#define __FUNC__ "MatDiagonalSet"
 /*@
    MatDiagonalSet - Computes Y = Y + D, where D is a diagonal matrix
    that is represented as a vector. Or Y[i,i] = D[i] if InsertMode is
@@ -153,7 +153,7 @@ int MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatAYPX"
+#define __FUNC__ "MatAYPX"
 /*@
    MatAYPX - Computes Y = X + a*Y.
 
@@ -192,3 +192,80 @@ int MatAYPX(Scalar *a,Mat X,Mat Y)
   ierr = MatAXPY(&one,X,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "MatComputeExplicitOperator"
+/*@
+    MatComputeExplicitOperator - Computes the explicit matrix
+
+    Collective on Mat
+
+    Input Parameter:
+.   inmat - the matrix
+
+    Output Parameter:
+.   mat - the explict preconditioned operator
+
+    Notes:
+    This computation is done by applying the operators to columns of the 
+    identity matrix.
+
+    Currently, this routine uses a dense matrix format when 1 processor
+    is used and a sparse format otherwise.  This routine is costly in general,
+    and is recommended for use only with relatively small systems.
+
+    Level: advanced
+   
+.keywords: Mat, compute, explicit, operator
+
+@*/
+int MatComputeExplicitOperator(Mat inmat,Mat *mat)
+{
+  Vec      in,out;
+  int      ierr,i,M,m,size,*rows,start,end;
+  MPI_Comm comm;
+  Scalar   *array,zero = 0.0,one = 1.0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(inmat,MAT_COOKIE);
+  PetscValidPointer(mat);
+
+  comm = inmat->comm;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  ierr = MatGetLocalSize(inmat,&m,0);
+  ierr = MatGetSize(inmat,&M,0);
+  ierr = VecCreateMPI(comm,m,M,&in);CHKERRQ(ierr);
+  ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
+ierr = PetscMalloc((m+1)*sizeof(int),&  rows );CHKERRQ(ierr);
+  for (i=0; i<m; i++) {rows[i] = start + i;}
+
+  if (size == 1) {
+    ierr = MatCreateSeqDense(comm,M,M,PETSC_NULL,mat);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateMPIAIJ(comm,m,m,M,M,0,0,0,0,mat);CHKERRQ(ierr);
+  }
+
+  for (i=0; i<M; i++) {
+
+    ierr = VecSet(&zero,in);CHKERRQ(ierr);
+    ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
+
+    ierr = MatMult(inmat,in,out);CHKERRQ(ierr);
+    
+    ierr = VecGetArray(out,&array);CHKERRQ(ierr);
+    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr); 
+    ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
+
+  }
+  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = VecDestroy(out);CHKERRQ(ierr);
+  ierr = VecDestroy(in);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+

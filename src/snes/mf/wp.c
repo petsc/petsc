@@ -1,4 +1,4 @@
-/*$Id: wp.c,v 1.27 2000/09/02 02:49:35 bsmith Exp bsmith $*/
+/*$Id: wp.c,v 1.28 2000/09/28 21:14:10 bsmith Exp bsmith $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code
@@ -32,7 +32,7 @@ typedef struct {
 } MatSNESMFWP;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFCompute_WP"
+#define __FUNC__ "MatSNESMFCompute_WP"
 /*
      MatSNESMFCompute_WP - Standard PETSc code for 
    computing h with matrix-free finite differences.
@@ -75,7 +75,7 @@ static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFView_WP"
+#define __FUNC__ "MatSNESMFView_WP"
 /*
    MatSNESMFView_WP - Prints information about this particular 
      method for computing h. Note that this does not print the general
@@ -87,19 +87,19 @@ static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
 -   viewer - the PETSc viewer
 
 */   
-static int MatSNESMFView_WP(MatSNESMFCtx ctx,Viewer viewer)
+static int MatSNESMFView_WP(MatSNESMFCtx ctx,PetscViewer viewer)
 {
   MatSNESMFWP *hctx = (MatSNESMFWP *)ctx->hctx;
   int         ierr;
   PetscTruth  isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    if (hctx->computenorma){ierr = ViewerASCIIPrintf(viewer,"    Computes normA\n");CHKERRQ(ierr);}
-    else                   {ierr =  ViewerASCIIPrintf(viewer,"    Does not compute normA\n");CHKERRQ(ierr);}
-    if (hctx->computenormU){ierr =  ViewerASCIIPrintf(viewer,"    Computes normU\n");CHKERRQ(ierr);}  
-    else                   {ierr =  ViewerASCIIPrintf(viewer,"    Does not compute normU\n");CHKERRQ(ierr);}  
+    if (hctx->computenorma){ierr = PetscViewerASCIIPrintf(viewer,"    Computes normA\n");CHKERRQ(ierr);}
+    else                   {ierr =  PetscViewerASCIIPrintf(viewer,"    Does not compute normA\n");CHKERRQ(ierr);}
+    if (hctx->computenormU){ierr =  PetscViewerASCIIPrintf(viewer,"    Computes normU\n");CHKERRQ(ierr);}  
+    else                   {ierr =  PetscViewerASCIIPrintf(viewer,"    Does not compute normU\n");CHKERRQ(ierr);}  
   } else {
     SETERRQ1(1,"Viewer type %s not supported for SNES matrix-free WP",((PetscObject)viewer)->type_name);
   }    
@@ -107,7 +107,7 @@ static int MatSNESMFView_WP(MatSNESMFCtx ctx,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFSetFromOptions_WP"
+#define __FUNC__ "MatSNESMFSetFromOptions_WP"
 /*
    MatSNESMFSetFromOptions_WP - Looks in the options database for 
      any options appropriate for this method
@@ -122,17 +122,17 @@ static int MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
   MatSNESMFWP *hctx = (MatSNESMFWP*)ctx->hctx;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("Walker-Pernice options");
-    ierr = OptionsLogical("-snes_mf_compute_norma","Compute the norm of a","MatSNESMFWPSetComputeNormA",
+  ierr = PetscOptionsHead("Walker-Pernice options");
+    ierr = PetscOptionsLogical("-snes_mf_compute_norma","Compute the norm of a","MatSNESMFWPSetComputeNormA",
                           hctx->computenorma,&hctx->computenorma,0);CHKERRQ(ierr);
-    ierr = OptionsLogical("-snes_mf_compute_normu","Compute the norm of u","MatSNESMFWPSetComputeNormU",
+    ierr = PetscOptionsLogical("-snes_mf_compute_normu","Compute the norm of u","MatSNESMFWPSetComputeNormU",
                           hctx->computenorma,&hctx->computenorma,0);CHKERRQ(ierr);
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFDestroy_WP"
+#define __FUNC__ "MatSNESMFDestroy_WP"
 /*
    MatSNESMFDestroy_WP - Frees the space allocated by 
        MatSNESMFCreate_WP(). 
@@ -153,7 +153,7 @@ static int MatSNESMFDestroy_WP(MatSNESMFCtx ctx)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFWPSetComputeNormA_P"
+#define __FUNC__ "MatSNESMFWPSetComputeNormA_P"
 int MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
 {
   MatSNESMFCtx ctx;
@@ -173,7 +173,7 @@ int MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFWPSetComputeNormA"
+#define __FUNC__ "MatSNESMFWPSetComputeNormA"
 /*@
     MatSNESMFWPSetComputeNormA - Sets whether it computes the ||a|| used by the WP
              PETSc routine for computing h. With GMRES since the ||a|| is always
@@ -207,7 +207,7 @@ int MatSNESMFWPSetComputeNormA(Mat A,PetscTruth flag)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFWPSetComputeNormU_P"
+#define __FUNC__ "MatSNESMFWPSetComputeNormU_P"
 int MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
 {
   MatSNESMFCtx ctx;
@@ -227,7 +227,7 @@ int MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFWPSetComputeNormU"
+#define __FUNC__ "MatSNESMFWPSetComputeNormU"
 /*@
     MatSNESMFWPSetComputeNormU - Sets whether it computes the ||U|| used by the WP
              PETSc routine for computing h. With any Krylov solver this need only 
@@ -261,7 +261,7 @@ int MatSNESMFWPSetComputeNormU(Mat A,PetscTruth flag)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFCreate_WP"
+#define __FUNC__ "MatSNESMFCreate_WP"
 /*
      MatSNESMFCreate_WP - Standard PETSc code for 
    computing h with matrix-free finite differences.
@@ -278,7 +278,7 @@ int MatSNESMFCreate_WP(MatSNESMFCtx ctx)
   PetscFunctionBegin;
 
   /* allocate my own private data structure */
-  hctx                     = (MatSNESMFWP *)PetscMalloc(sizeof(MatSNESMFWP));CHKPTRQ(hctx);
+ierr = PetscMalloc(sizeof(MatSNESMFWP),&(  hctx                     ));CHKERRQ(ierr);
   ctx->hctx                = (void*)hctx;
   hctx->computenormU       = PETSC_FALSE;
   hctx->computenorma       = PETSC_TRUE;

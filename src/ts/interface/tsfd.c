@@ -1,10 +1,10 @@
-/*$Id: tsfd.c,v 1.19 2000/04/12 04:25:55 bsmith Exp balay $*/
+/*$Id: tsfd.c,v 1.20 2000/05/05 22:18:49 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
 #include "src/ts/tsimpl.h"        /*I  "petscts.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSDefaultComputeJacobianColor"
+#define __FUNC__ "TSDefaultComputeJacobianColor"
 /*@C
     TSDefaultComputeJacobianColor - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity.  
@@ -48,11 +48,11 @@ int TSDefaultComputeJacobianColor(TS ts,double t,Vec x1,Mat *J,Mat *B,MatStructu
     ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
     if ((freq > 1) && ((it % freq) != 1)) {
-      PLogInfo(color,"TSDefaultComputeJacobianColor:Skipping Jacobian, it %d, freq %d\n",it,freq);
+      PetscLogInfo(color,"TSDefaultComputeJacobianColor:Skipping Jacobian, it %d, freq %d\n",it,freq);
       *flag = SAME_PRECONDITIONER;
       PetscFunctionReturn(0);
     } else {
-      PLogInfo(color,"TSDefaultComputeJacobianColor:Computing Jacobian, it %d, freq %d\n",it,freq);
+      PetscLogInfo(color,"TSDefaultComputeJacobianColor:Computing Jacobian, it %d, freq %d\n",it,freq);
       *flag = SAME_NONZERO_PATTERN;
     }
   }
@@ -61,7 +61,7 @@ int TSDefaultComputeJacobianColor(TS ts,double t,Vec x1,Mat *J,Mat *B,MatStructu
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSDefaultComputeJacobian"
+#define __FUNC__ "TSSDefaultComputeJacobian"
 /*
    TSDefaultComputeJacobian - Computes the Jacobian using finite differences.
 

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.47 2000/01/11 21:00:17 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.48 2000/05/05 22:15:11 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector into seqential vectors.\n\n";
 
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   /* create two vectors */
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
   ierr = VecScatterDestroy(ctx);CHKERRA(ierr);
   
-  if (!rank) {VecView(y,VIEWER_STDOUT_SELF);CHKERRA(ierr);}
+  if (!rank) {VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);}
 
   ierr = ISDestroy(is1);CHKERRA(ierr);
   ierr = ISDestroy(is2);CHKERRA(ierr);

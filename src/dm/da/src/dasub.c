@@ -1,4 +1,4 @@
-/*$Id: dasub.c,v 1.29 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: dasub.c,v 1.30 2000/09/28 21:15:20 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetProcessorSubset"
+#define __FUNC__ "DAGetProcessorSubset"
 /*@C
    DAGetProcessorSubset - Returns a communicator consisting only of the
    processors in a DA that own a particular global x, y, or z grid point
@@ -55,18 +55,18 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
     if (gp >= xs && gp < xs+xm) flag = 1;
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
-  owners = (int *)PetscMalloc(2*size*sizeof(int));CHKPTRQ(owners);
+ierr = PetscMalloc(2*size*sizeof(int),&(  owners ));CHKERRQ(ierr);
   ranks = owners + size;
   ierr = MPI_Allgather(&flag,1,MPI_INT,owners,1,MPI_INT,da->comm);CHKERRQ(ierr);
   ict = 0;
-  PLogInfo(da,"DAGetProcessorSubset: dim=%d, direction=%d, procs: ",da->dim,(int)dir);
+  PetscLogInfo(da,"DAGetProcessorSubset: dim=%d, direction=%d, procs: ",da->dim,(int)dir);
   for (i=0; i<size; i++) {
     if (owners[i]) {
       ranks[ict] = i; ict++;
-      PLogInfo(da,"%d ",i);
+      PetscLogInfo(da,"%d ",i);
     }
   }
-  PLogInfo(da,"\n");
+  PetscLogInfo(da,"\n");
   ierr = MPI_Comm_group(da->comm,&group);CHKERRQ(ierr);
   ierr = MPI_Group_incl(group,ict,ranks,&subgroup);CHKERRQ(ierr);
   ierr = MPI_Comm_create(da->comm,subgroup,comm);CHKERRQ(ierr);

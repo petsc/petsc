@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.117 2000/11/28 17:27:14 bsmith Exp bsmith $ */
+/* $Id: send.c,v 1.118 2000/12/04 16:41:48 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -58,10 +58,10 @@ EXTERN_C_END
 
 /*--------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerDestroy_Socket"></a>*/"ViewerDestroy_Socket" 
-static int ViewerDestroy_Socket(Viewer viewer)
+#define __FUNC__ "PetscViewerDestroy_Socket" 
+static int PetscViewerDestroy_Socket(PetscViewer viewer)
 {
-  Viewer_Socket *vmatlab = (Viewer_Socket*)viewer->data;
+  PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
   int           ierr;
 
   PetscFunctionBegin;
@@ -77,7 +77,7 @@ static int ViewerDestroy_Socket(Viewer viewer)
 
 /*--------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name="SOCKCall_Private"></a>*/"SOCKCall_Private" 
+#define __FUNC__ "SOCKCall_Private" 
 int SOCKCall_Private(char *hostname,int portnum,int *t)
 {
 #if !defined(PETSC_MISSING_SOCKETS)
@@ -133,9 +133,9 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerSocketOpen"></a>*/"ViewerSocketOpen" 
+#define __FUNC__ "PetscViewerSocketOpen" 
 /*@C
-   ViewerSocketOpen - Opens a connection to a Matlab or other socket
+   PetscViewerSocketOpen - Opens a connection to a Matlab or other socket
         based server.
 
    Collective on MPI_Comm
@@ -152,18 +152,18 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
 
    Notes:
    Most users should employ the following commands to access the 
-   Matlab viewers
+   Matlab PetscViewers
 $
-$    ViewerSocketOpen(MPI_Comm comm, char *machine,int port,Viewer &viewer)
-$    MatView(Mat matrix,Viewer viewer)
+$    PetscViewerSocketOpen(MPI_Comm comm, char *machine,int port,PetscViewer &viewer)
+$    MatView(Mat matrix,PetscViewer viewer)
 $
 $                or
 $
-$    ViewerSocketOpen(MPI_Comm comm,char *machine,int port,Viewer &viewer)
-$    VecView(Vec vector,Viewer viewer)
+$    PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer &viewer)
+$    VecView(Vec vector,PetscViewer viewer)
 
    Options Database Keys:
-   For use with the default Matlab viewer, VIEWER_SOCKET_WORLD or if 
+   For use with the default Matlab PetscViewer, PetscViewer_SOCKET_WORLD or if 
     PETSC_NULL is passed for machine or PETSC_DEFAULT is passed for port
 $    -viewer_socket_machine <machine>
 $    -viewer_socket_port <port>
@@ -178,23 +178,23 @@ $    -viewer_socket_port <port>
    Concepts: Matlab^sending data
    Concepts: sockets^sending data
 
-.seealso: MatView(), VecView(), ViewerDestroy(), ViewerCreate(), ViewerSetType(),
-          ViewerSocketSetConnection()
+.seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerCreate(), PetscViewerSetType(),
+          PetscViewerSocketSetConnection()
 @*/
-int ViewerSocketOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
+int PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
 {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = ViewerCreate(comm,lab);CHKERRQ(ierr);
-  ierr = ViewerSetType(*lab,SOCKET_VIEWER);CHKERRQ(ierr);
-  ierr = ViewerSocketSetConnection(*lab,machine,port);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*lab,PETSC_VIEWER_SOCKET);CHKERRQ(ierr);
+  ierr = PetscViewerSocketSetConnection(*lab,machine,port);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerSetFromOptions_Socket"></a>*/"ViewerSetFromOptions_Socket" 
-int ViewerSetFromOptions_Socket(Viewer v)
+#define __FUNC__ "PetscViewerSetFromOptions_Socket" 
+int PetscViewerSetFromOptions_Socket(PetscViewer v)
 {
   int           ierr,def = -1;
   char          sdef[256];
@@ -202,66 +202,67 @@ int ViewerSetFromOptions_Socket(Viewer v)
 
   PetscFunctionBegin;
   /*
-       These options are not processed here, they are processed in ViewerSocketSetConnection(), they
+       These options are not processed here, they are processed in PetscViewerSocketSetConnection(), they
     are listed here for the GUI to display
   */
-  ierr = OptionsHead("Socket Viewer Options");CHKERRQ(ierr);
-    ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("Socket PetscViewer Options");CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
     if (tflg) {
-      ierr = OptionsAtoi(sdef,&def);CHKERRQ(ierr);
+      ierr = PetscOptionsAtoi(sdef,&def);CHKERRQ(ierr);
     } else {
       def = DEFAULTPORT;
     }
-    ierr = OptionsInt("-viewer_socket_port","Port number to use for socket","ViewerSocketSetConnection",def,0,0);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-viewer_socket_port","Port number to use for socket","PetscViewerSocketSetConnection",def,0,0);CHKERRQ(ierr);
 
-    ierr = OptionsString("-viewer_socket_machine","Machine to use for socket","ViewerSocketSetConnection",sdef,0,0,0);CHKERRQ(ierr);
-    ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",sdef,256,&tflg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-viewer_socket_machine","Machine to use for socket","PetscViewerSocketSetConnection",sdef,0,0,0);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",sdef,256,&tflg);CHKERRQ(ierr);
     if (!tflg) {
       ierr = PetscGetHostName(sdef,256);CHKERRQ(ierr);
     }
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerCreate_Socket"></a>*/"ViewerCreate_Socket" 
-int ViewerCreate_Socket(Viewer v)
+#define __FUNC__ "PetscViewerCreate_Socket" 
+int PetscViewerCreate_Socket(PetscViewer v)
 {
-  Viewer_Socket *vmatlab;
+  PetscViewer_Socket *vmatlab;
+  int                ierr;
 
   PetscFunctionBegin;
-  vmatlab                = PetscNew(Viewer_Socket);CHKPTRQ(vmatlab);
+  ierr                   = PetscNew(PetscViewer_Socket,&vmatlab);CHKERRQ(ierr);
   vmatlab->port          = 0;
   v->data                = (void*)vmatlab;
-  v->ops->destroy        = ViewerDestroy_Socket;
+  v->ops->destroy        = PetscViewerDestroy_Socket;
   v->ops->flush          = 0;
-  v->ops->setfromoptions = ViewerSetFromOptions_Socket;
+  v->ops->setfromoptions = PetscViewerSetFromOptions_Socket;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerSocketSetConnection"></a>*/"ViewerSocketSetConnection" 
-int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
+#define __FUNC__ "PetscViewerSocketSetConnection" 
+int PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
 {
   int           ierr,rank;
   char          mach[256];
   PetscTruth    tflg;
-  Viewer_Socket *vmatlab = (Viewer_Socket *)v->data;
+  PetscViewer_Socket *vmatlab = (PetscViewer_Socket *)v->data;
 
   PetscFunctionBegin;
   if (port <= 0) {
     char portn[16];
-    ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
     if (tflg) {
-      ierr = OptionsAtoi(portn,&port);CHKERRQ(ierr);
+      ierr = PetscOptionsAtoi(portn,&port);CHKERRQ(ierr);
     } else {
       port = DEFAULTPORT;
     }
   }
   if (!machine) {
-    ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",mach,256,&tflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",mach,256,&tflg);CHKERRQ(ierr);
     if (!tflg) {
       ierr = PetscGetHostName(mach,256);CHKERRQ(ierr);
     }
@@ -271,7 +272,7 @@ int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
 
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    PLogInfo(0,"ViewerSocketSetConnection:Connecting to socket process on port %d machine %s\n",port,mach);
+    PetscLogInfo(0,"PetscViewerSocketSetConnection:Connecting to socket process on port %d machine %s\n",port,mach);
     ierr = SOCKCall_Private(mach,port,&vmatlab->port);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -280,25 +281,25 @@ int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
 /* ---------------------------------------------------------------------*/
 /*
     The variable Petsc_Viewer_Socket_keyval is used to indicate an MPI attribute that
-  is attached to a communicator, in this case the attribute is a Viewer.
+  is attached to a communicator, in this case the attribute is a PetscViewer.
 */
 static int Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="VIEWER_SOCKET_"></a>*/"VIEWER_SOCKET_"  
+#define __FUNC__ "VIEWER_SOCKET_"  
 /*@C
-     VIEWER_SOCKET_ - Creates a socket viewer shared by all processors 
+     PetscViewer_SOCKET_ - Creates a socket PetscViewer shared by all processors 
                      in a communicator.
 
      Collective on MPI_Comm
 
      Input Parameter:
-.    comm - the MPI communicator to share the socket viewer
+.    comm - the MPI communicator to share the socket PetscViewer
 
      Level: intermediate
 
    Options Database Keys:
-   For use with the default Matlab viewer, VIEWER_SOCKET_WORLD or if 
+   For use with the default Matlab PetscViewer, PetscViewer_SOCKET_WORLD or if 
     PETSC_NULL is passed for machine or PETSC_DEFAULT is passed for port
 $    -viewer_socket_machine <machine>
 $    -viewer_socket_port <port>
@@ -308,38 +309,38 @@ $    -viewer_socket_port <port>
 -   PETSC_VIEWER_SOCKET_MACHINE machine name
 
      Notes:
-     Unlike almost all other PETSc routines, VIEWER_SOCKET_ does not return 
-     an error code.  The socket viewer is usually used in the form
-$       XXXView(XXX object,VIEWER_SOCKET_(comm));
+     Unlike almost all other PETSc routines, PetscViewer_SOCKET_ does not return 
+     an error code.  The socket PetscViewer is usually used in the form
+$       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
 
      Currently the only socket client available is Matlab. See 
      src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
 
-     Connects to a waiting socket and stays connected until ViewerDestroy() is called.
+     Connects to a waiting socket and stays connected until PetscViewerDestroy() is called.
 
-.seealso: VIEWER_SOCKET_WORLD, VIEWER_SOCKET_SELF, ViewerSocketOpen(), ViewerCreate(),
-          ViewerSocketSetConnection(), ViewerDestroy()
+.seealso: PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF, PetscViewerSocketOpen(), PetscViewerCreate(),
+          PetscViewerSocketSetConnection(), PetscViewerDestroy()
 @*/
-Viewer VIEWER_SOCKET_(MPI_Comm comm)
+PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {
-  int        ierr;
-  PetscTruth flg;
-  Viewer     viewer;
+  int         ierr;
+  PetscTruth  flg;
+  PetscViewer viewer;
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Socket_keyval,0);
-    if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   }
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Socket_keyval,(void **)&viewer,(int *)&flg);
-  if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-  if (!flg) { /* viewer not yet created */
-    ierr = ViewerSocketOpen(comm,0,0,&viewer); 
-    if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+  if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+  if (!flg) { /* PetscViewer not yet created */
+    ierr = PetscViewerSocketOpen(comm,0,0,&viewer); 
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Socket_keyval,(void*)viewer);
-    if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
 }
@@ -348,23 +349,23 @@ Viewer VIEWER_SOCKET_(MPI_Comm comm)
  
 #include "petscviewer.h"
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerSocketOpen"></a>*/"ViewerSocketOpen" 
-int ViewerSocketOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
+#define __FUNC__ "PetscViewerSocketOpen" 
+int PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ /*<a name="VIEWER_SOCKET_"></a>*/"VIEWER_SOCKET_" 
-Viewer VIEWER_SOCKET_(MPI_Comm comm)
+#define __FUNC__ "VIEWER_SOCKET_" 
+Viewer PetscViewer_SOCKET_(MPI_Comm comm)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerCreate_Socket"></a>*/"ViewerCreate_Socket" 
-int ViewerCreate_Socket(Viewer v)
+#define __FUNC__ "PetscViewerCreate_Socket" 
+int PetscViewerCreate_Socket(PetscViewer v)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.3 2000/05/05 22:20:14 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.4 2000/09/22 20:47:35 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
 
   ierr = PFApplyVec(pf,xy,u);CHKERRA(ierr);
 
-  ierr = VecView(u,VIEWER_DRAW_WORLD);CHKERRA(ierr);
+  ierr = VecView(u,PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

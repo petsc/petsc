@@ -1,4 +1,4 @@
-/*$Id: signal.c,v 1.73 2000/11/02 19:32:03 bsmith Exp bsmith $*/
+/*$Id: signal.c,v 1.74 2000/11/03 15:00:44 bsmith Exp bsmith $*/
 /*
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
@@ -43,7 +43,7 @@ static char *SIGNAME[] = {
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSignalHandler_Private"></a>*/"PetscSignalHandler_Private"
+#define __FUNC__ "PetscSignalHandler_Private"
 /*
     PetscSignalHandler_Private - This is the signal handler called by the system. This calls 
              any signal handler set by PETSc or the application code.
@@ -78,7 +78,7 @@ static void PetscSignalHandler_Private(int sig)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscDefaultSignalHandler"></a>*/"PetscDefaultSignalHandler"
+#define __FUNC__ "PetscDefaultSignalHandler"
 /*@
    PetscDefaultSignalHandler - Default signal handler.
 
@@ -116,7 +116,7 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
     PetscStackPop;
     ierr = PetscStrcat(buf,"PETSC ERROR: likely location of problem given above in stack\n");CHKERRQ(ierr);
     (*PetscErrorPrintf)("--------------- Stack Frames ---------------\n");
-    PetscStackView(VIEWER_STDOUT_WORLD);
+    PetscStackView(PETSC_VIEWER_STDOUT_WORLD);
     (*PetscErrorPrintf)("--------------------------------------------\n");
   }
 #endif
@@ -130,7 +130,7 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscPushSignalHandler"></a>*/"PetscPushSignalHandler"
+#define __FUNC__ "PetscPushSignalHandler"
 /*@C
    PetscPushSignalHandler - Catches the usual fatal errors and 
    calls a user-provided routine.
@@ -149,6 +149,7 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
 int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
 {
   struct  SH *newsh;
+  int        ierr;
 
   PetscFunctionBegin;
   if (!SignalSet && routine) {
@@ -181,7 +182,7 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
 #endif
     SignalSet = PETSC_FALSE;
   }
-  newsh = (struct SH*)PetscMalloc(sizeof(struct SH));CHKPTRQ(newsh);
+  ierr = PetscNew(struct SH,&newsh);CHKERRQ(ierr);
   if (sh) {newsh->previous = sh;} 
   else {newsh->previous = 0;}
   newsh->handler = routine;
@@ -192,7 +193,7 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
 
 /* NO ERROR CODES RETURNED BY THIS FUNCTION */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscPopSignalHandler"></a>*/"PetscPopSignalHandler"
+#define __FUNC__ "PetscPopSignalHandler"
 int PetscPopSignalHandler(void)
 {
   struct SH *tmp;

@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.20 2000/09/02 02:49:35 bsmith Exp bsmith $*/
+/*$Id: snesmfjdef.c,v 1.21 2000/09/28 21:14:10 bsmith Exp bsmith $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -46,7 +46,7 @@ typedef struct {
 } MatSNESMFDefault;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFCompute_Default"
+#define __FUNC__ "MatSNESMFCompute_Default"
 /*
    MatSNESMFCompute_Default - Standard PETSc code for computing the
    differencing paramter (h) for use with matrix-free finite differences.
@@ -102,7 +102,7 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFView_Default"
+#define __FUNC__ "MatSNESMFView_Default"
 /*
    MatSNESMFView_Default - Prints information about this particular 
    method for computing h. Note that this does not print the general
@@ -113,7 +113,7 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
 +  ctx - the matrix free context
 -  viewer - the PETSc viewer
 */   
-static int MatSNESMFView_Default(MatSNESMFCtx ctx,Viewer viewer)
+static int MatSNESMFView_Default(MatSNESMFCtx ctx,PetscViewer viewer)
 {
   MatSNESMFDefault *hctx = (MatSNESMFDefault *)ctx->hctx;
   int              ierr;
@@ -125,9 +125,9 @@ static int MatSNESMFView_Default(MatSNESMFCtx ctx,Viewer viewer)
      could be added, but for this type of object other viewers
      make less sense
   */
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr); 
+    ierr = PetscViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr); 
   } else {
     SETERRQ1(1,"Viewer type %s not supported for this SNES matrix free matrix",((PetscObject)viewer)->type_name);
   }    
@@ -135,7 +135,7 @@ static int MatSNESMFView_Default(MatSNESMFCtx ctx,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFSetFromOptions_Default"
+#define __FUNC__ "MatSNESMFSetFromOptions_Default"
 /*
    MatSNESMFSetFromOptions_Default - Looks in the options database for 
    any options appropriate for this method.
@@ -150,14 +150,14 @@ static int MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
   MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("Default matrix free parameters");CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_mf_umin","umin","MatSNESMFDefaultSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsHead("Default matrix free parameters");CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_mf_umin","umin","MatSNESMFDefaultSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFDestroy_Default"
+#define __FUNC__ "MatSNESMFDestroy_Default"
 /*
    MatSNESMFDestroy_Default - Frees the space allocated by 
    MatSNESMFCreate_Default(). 
@@ -179,7 +179,7 @@ static int MatSNESMFDestroy_Default(MatSNESMFCtx ctx)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFDefaultSetUmin_Private"
+#define __FUNC__ "MatSNESMFDefaultSetUmin_Private"
 /*
    The following two routines use the PetscObjectCompose() and PetscObjectQuery()
    mechanism to allow the user to change the Umin parameter used in this method.
@@ -203,7 +203,7 @@ int MatSNESMFDefaultSetUmin_Private(Mat mat,PetscReal umin)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFDefaultSetUmin"
+#define __FUNC__ "MatSNESMFDefaultSetUmin"
 /*@
     MatSNESMFDefaultSetUmin - Sets the "umin" parameter used by the default
     PETSc routine for computing the differencing parameter, h, which is used
@@ -237,7 +237,7 @@ int MatSNESMFDefaultSetUmin(Mat A,PetscReal umin)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFCreate_Default"
+#define __FUNC__ "MatSNESMFCreate_Default"
 /*
    MatSNESMFCreate_Default - Standard PETSc code for 
    computing h with matrix-free finite differences.
@@ -254,7 +254,7 @@ int MatSNESMFCreate_Default(MatSNESMFCtx ctx)
   PetscFunctionBegin;
 
   /* allocate my own private data structure */
-  hctx                     = (MatSNESMFDefault *)PetscMalloc(sizeof(MatSNESMFDefault));CHKPTRQ(hctx);
+ierr = PetscMalloc(sizeof(MatSNESMFDefault),&(  hctx                     ));CHKERRQ(ierr);
   ctx->hctx                = (void*)hctx;
   /* set a default for my parameter */
   hctx->umin               = 1.e-6;

@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.23 2000/10/04 14:34:15 bsmith Exp bsmith $;
+!  $Id: petscdef.h,v 1.24 2000/11/28 17:33:11 bsmith Exp bsmith $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
@@ -98,12 +98,12 @@
 !
 #define PETSC_NULL_OBJECT PETSC_NULL_INTEGER
 !
-!     PLogDouble variables are used to contain double precision numbers
+!     PetscLogDouble variables are used to contain double precision numbers
 !     that are not used in the numerical computations, but rather in logging,
 !     timing etc.
 !
 #define PetscObject PetscFortranAddr
-#define PLogDouble PetscFortranDouble
+#define PetscLogDouble PetscFortranDouble
 !
 !     Macros for error checking
 !

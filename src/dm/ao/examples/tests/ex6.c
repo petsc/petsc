@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.10 2000/01/11 21:03:13 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.11 2000/05/05 22:19:15 balay Exp bsmith $*/
 
 static char help[] = "Tests removing entries from an AOData \n\n";
 
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   AOData      aodata;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr); n = rank + 2;
   ierr = MPI_Allreduce(&n,&nglobal,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   ierr = AODataKeyAdd(aodata,"key2",PETSC_DECIDE,nglobal);CHKERRA(ierr);
 
   /* allocate space for the keys each processor will provide */
-  keys = (int*)PetscMalloc(n*sizeof(int));CHKPTRA(keys);
+ierr = PetscMalloc(n*sizeof(int),&(  keys ));CHKPTRA(keys);
 
   /*
      We assign the first set of keys (0 to 2) to processor 0, etc.
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   /* 
       Allocate data for the first key and first segment 
   */
-  data = (int*)PetscMalloc(bs*n*sizeof(int));CHKPTRA(data);
+ierr = PetscMalloc(bs*n*sizeof(int),&(  data ));CHKPTRA(data);
   for (i=0; i<n; i++) {
     data[2*i]   = -(start + i);
     data[2*i+1] = -(start + i) - 10000;
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
       Allocate data for first key and second segment 
   */
   bs   = 3;
-  gd   = (double*)PetscMalloc(bs*n*sizeof(double));CHKPTRA(gd);
+ierr = PetscMalloc(bs*n*sizeof(double),&(  gd   ));CHKPTRA(gd);
   for (i=0; i<n; i++) {
     gd[3*i]   = -(start + i);
     gd[3*i+1] = -(start + i) - 10000;
@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   /*
      View the database
   */
-  ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /*
        Remove a key and a single segment from the database
@@ -85,7 +85,7 @@ int main(int argc,char **argv)
   ierr = AODataKeyRemove(aodata,"key2");CHKERRA(ierr); 
   ierr = AODataSegmentRemove(aodata,"key1","seg1");CHKERRA(ierr);
 
-  ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = AODataDestroy(aodata);CHKERRA(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.9 2000/08/01 20:57:07 bsmith Exp bsmith $*/
+/*$Id: ex20.c,v 1.10 2000/10/24 20:26:51 bsmith Exp bsmith $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\
@@ -38,7 +38,7 @@ int main(int argc,char **args)
   PetscRandom  rand;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */
@@ -83,7 +83,7 @@ int main(int argc,char **args)
   ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-fixnullspace",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-fixnullspace",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,1,0,PETSC_NULL,&nullsp);CHKERRA(ierr);

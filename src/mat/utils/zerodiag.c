@@ -1,4 +1,4 @@
-/*$Id: zerodiag.c,v 1.38 2000/04/12 04:24:13 bsmith Exp balay $*/
+/*$Id: zerodiag.c,v 1.39 2000/05/05 22:16:35 balay Exp bsmith $*/
 
 /*
     This file contains routines to reorder a matrix so that the diagonal
@@ -10,7 +10,7 @@
 #define SWAP(a,b) {int _t; _t = a; a = b; b = _t; }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatReorderForNonzeroDiagonal"
+#define __FUNC__ "MatReorderForNonzeroDiagonal"
 /*@
     MatReorderForNonzeroDiagonal - Changes matrix ordering to remove
     zeros from diagonal. This may help in the LU factorization to 

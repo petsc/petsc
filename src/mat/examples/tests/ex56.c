@@ -1,4 +1,4 @@
-/*$Id: ex56.c,v 1.24 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex56.c,v 1.25 2000/05/05 22:16:17 balay Exp bsmith $*/
 static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for \n\
 rectangular MatBAIJ matrix";
 
@@ -27,7 +27,7 @@ int main(int argc,char **args)
                             PETSC_NULL,1,PETSC_NULL,&A);CHKERRA(ierr);
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRA(ierr);
   if (flg) { 
     ierr = MatSetOption(A,MAT_COLUMN_ORIENTED);CHKERRA(ierr); 
     eval = 6;
@@ -35,7 +35,7 @@ int main(int argc,char **args)
     eval = 9;
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-ass_extern",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-ass_extern",&flg);CHKERRA(ierr);
   if (flg && (size != 1))    rstart = m*((rank+1)%size);
   else                       rstart = m*(rank);
 
@@ -68,7 +68,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   
-  ierr = OptionsHasName(PETSC_NULL,"-zero_rows",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-zero_rows",&flg);CHKERRA(ierr);
   if (flg) {
     col[0] = rstart*bs+0;
     col[1] = rstart*bs+1;
@@ -78,7 +78,7 @@ int main(int argc,char **args)
     ISDestroy(is);
   }
 
-  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = MatDestroy(A);CHKERRA(ierr);
   PetscFinalize();

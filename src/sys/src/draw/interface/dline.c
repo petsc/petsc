@@ -1,13 +1,13 @@
-/*$Id: dline.c,v 1.28 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dline.c,v 1.29 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
-       Provides the calling sequences for all the basic Draw routines.
+       Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
   
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawLine"></a>*/"DrawLine" 
+#define __FUNC__ "DrawLine" 
 /*@
-   DrawLine - Draws a line onto a drawable.
+   PetscDrawLine - PetscDraws a line onto a drawable.
 
    Not collective
 
@@ -22,23 +22,23 @@
    Concepts: drawing^line
 
 @*/
-int DrawLine(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
+int PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   int        ierr;
   PetscTruth isdrawnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  ierr = PetscTypeCompare((PetscObject)draw,DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) PetscFunctionReturn(0);
   ierr = (*draw->ops->line)(draw,xl,yl,xr,yr,cl);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawIsNull"></a>*/"DrawIsNull" 
+#define __FUNC__ "DrawIsNull" 
 /*@
-   DrawIsNull - Returns PETSC_TRUE if draw is a null draw object.
+   PetscDrawIsNull - Returns PETSC_TRUE if draw is a null draw object.
 
    Not collective
 
@@ -51,14 +51,14 @@ int DrawLine(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c
    Level: advanced
 
 @*/
-int DrawIsNull(Draw draw,PetscTruth *yes)
+int PetscDrawIsNull(PetscDraw draw,PetscTruth *yes)
 {
   int        ierr;
   PetscTruth isdrawnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  ierr = PetscTypeCompare((PetscObject)draw,DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) *yes = PETSC_TRUE;
   else            *yes = PETSC_FALSE;
   PetscFunctionReturn(0);

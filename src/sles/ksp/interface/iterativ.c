@@ -1,4 +1,4 @@
-/*$Id: iterativ.c,v 1.98 2000/09/23 15:04:56 balay Exp bsmith $*/
+/*$Id: iterativ.c,v 1.99 2000/09/28 21:13:11 bsmith Exp bsmith $*/
 
 /*
    This file contains some simple default routines.  
@@ -10,7 +10,7 @@
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDefaultFreeWork"
+#define __FUNC__ "KSPDefaultFreeWork"
 /*
   KSPDefaultFreeWork - Free work vectors
 
@@ -29,7 +29,7 @@ int KSPDefaultFreeWork(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGetResidualNorm"
+#define __FUNC__ "KSPGetResidualNorm"
 /*@C
    KSPGetResidualNorm - Gets the last (approximate preconditioned)
    residual norm that has been computed.
@@ -57,7 +57,7 @@ int KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGetIterationNumber"
+#define __FUNC__ "KSPGetIterationNumber"
 /*@
    KSPGetIterationNumber - Gets the current iteration number (if the 
          KSPSolve() (SLESSolve()) is complete, returns the number of iterations
@@ -88,7 +88,7 @@ int KSPGetIterationNumber(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSingularValueMonitor"
+#define __FUNC__ "KSPSingularValueMonitor"
 /*@C
     KSPSingularValueMonitor - Prints the two norm of the true residual and
     estimation of the extreme singular values of the preconditioned problem
@@ -133,7 +133,7 @@ int KSPSingularValueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPVecViewMonitor"
+#define __FUNC__ "KSPVecViewMonitor"
 /*@C
    KSPVecViewMonitor - Monitors progress of the KSP solvers by calling 
    VecView() for the approximate solution at each iteration.
@@ -160,14 +160,14 @@ int KSPVecViewMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
 {
   int    ierr;
   Vec    x;
-  Viewer viewer = (Viewer) dummy;
+  PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
   ierr = KSPBuildSolution(ksp,PETSC_NULL,&x);CHKERRQ(ierr);
   if (!viewer) {
     MPI_Comm comm;
     ierr   = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-    viewer = VIEWER_DRAW_(comm);
+    viewer = PETSC_VIEWER_DRAW_(comm);
   }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
 
@@ -175,7 +175,7 @@ int KSPVecViewMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDefaultMonitor"
+#define __FUNC__ "KSPDefaultMonitor"
 /*@C
    KSPDefaultMonitor - Print the residual norm at each iteration of an
    iterative solver.
@@ -197,16 +197,16 @@ int KSPVecViewMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
 int KSPDefaultMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 {
   int    ierr;
-  Viewer viewer = (Viewer) dummy;
+  PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) viewer = VIEWER_STDOUT_(ksp->comm);
-  ierr = ViewerASCIIPrintf(viewer,"%d KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
+  ierr = PetscViewerASCIIPrintf(viewer,"  %d KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPTrueMonitor"
+#define __FUNC__ "KSPTrueMonitor"
 /*@C
    KSPTrueMonitor - Prints the true residual norm as well as the preconditioned
    residual norm at each iteration of an iterative solver.
@@ -243,7 +243,7 @@ int KSPTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
   PetscReal    scnorm;
   PC           pc;
   Mat          A,B;
-  Viewer       viewer = (Viewer) dummy;
+  PetscViewer       viewer = (PetscViewer) dummy;
   
   PetscFunctionBegin;
   ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
@@ -262,13 +262,13 @@ int KSPTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
   }
   ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
   ierr = VecDestroy(work);CHKERRQ(ierr);
-  if (!viewer) viewer = VIEWER_STDOUT_(ksp->comm);
-  ierr = ViewerASCIIPrintf(viewer,"%d KSP preconditioned resid norm %14.12e true resid norm %14.12e\n",n,rnorm,scnorm);CHKERRQ(ierr);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
+  ierr = PetscViewerASCIIPrintf(viewer,"%d KSP preconditioned resid norm %14.12e true resid norm %14.12e\n",n,rnorm,scnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDefaultSMonitor"
+#define __FUNC__ "KSPDefaultSMonitor"
 /*
   Default (short) KSP Monitor, same as KSPDefaultMonitor() except
   it prints fewer digits of the residual as the residual gets smaller.
@@ -279,23 +279,23 @@ int KSPTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 int KSPDefaultSMonitor(KSP ksp,int its,PetscReal fnorm,void *dummy)
 {
   int    ierr;
-  Viewer viewer = (Viewer) dummy;
+  PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) viewer = VIEWER_STDOUT_(ksp->comm);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
 
   if (fnorm > 1.e-9) {
-    ierr = ViewerASCIIPrintf(viewer,"iter = %d, KSP Residual norm %g \n",its,fnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," %d KSP Residual norm %g \n",its,fnorm);CHKERRQ(ierr);
   } else if (fnorm > 1.e-11){
-    ierr = ViewerASCIIPrintf(viewer,"iter = %d, KSP Residual norm %5.3e \n",its,fnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," %d KSP Residual norm %5.3e \n",its,fnorm);CHKERRQ(ierr);
   } else {
-    ierr = ViewerASCIIPrintf(viewer,"iter = %d, KSP Residual norm < 1.e-11\n",its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," %d KSP Residual norm < 1.e-11\n",its);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSkipConverged"
+#define __FUNC__ "KSPSkipConverged"
 /*@C
    KSPSkipConverged - Convergence test that NEVER returns as converged.
 
@@ -330,7 +330,7 @@ int KSPSkipConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,vo
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDefaultConverged"
+#define __FUNC__ "KSPDefaultConverged"
 /*@C
    KSPDefaultConverged - Determines convergence of
    the iterative solvers (default code).
@@ -388,7 +388,7 @@ int KSPDefaultConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDefaultBuildSolution"
+#define __FUNC__ "KSPDefaultBuildSolution"
 /*
    KSPDefaultBuildSolution - Default code to create/move the solution.
 
@@ -434,7 +434,7 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDefaultBuildResidual"
+#define __FUNC__ "KSPDefaultBuildResidual"
 /*
    KSPDefaultBuildResidual - Default code to compute the residual.
 
@@ -470,7 +470,7 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDefaultGetWork"
+#define __FUNC__ "KSPDefaultGetWork"
 /*
   KSPDefaultGetWork - Gets a number of work vectors.
 
@@ -489,12 +489,12 @@ int  KSPDefaultGetWork(KSP ksp,int nw)
   if (ksp->work) {ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);}
   ksp->nwork = nw;
   ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&ksp->work);CHKERRQ(ierr);
-  PLogObjectParents(ksp,nw,ksp->work);
+  PetscLogObjectParents(ksp,nw,ksp->work);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDefaultDestroy"
+#define __FUNC__ "KSPDefaultDestroy"
 /*
   KSPDefaultDestroy - Destroys a iterative context variable for methods with
   no separate context.  Preferred calling sequence KSPDestroy().
@@ -516,7 +516,7 @@ int KSPDefaultDestroy(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGetConvergedReason"
+#define __FUNC__ "KSPGetConvergedReason"
 /*@C
    KSPGetConvergedReason - Gets the reason the KSP iteration was stopped.
 

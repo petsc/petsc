@@ -1,4 +1,4 @@
-/*$Id: lg.c,v 1.71 2000/09/22 20:42:13 bsmith Exp bsmith $*/
+/*$Id: lg.c,v 1.72 2000/11/28 17:27:34 bsmith Exp bsmith $*/
 /*
        Contains the data structure for plotting several line
     graphs in a window with an axis. This is intended for line 
@@ -10,11 +10,11 @@
 
 struct _p_DrawLG {
   PETSCHEADER(int) 
-  int         (*destroy)(DrawLG);
-  int         (*view)(DrawLG,Viewer);
+  int         (*destroy)(PetscDrawLG);
+  int         (*view)(PetscDrawLG,PetscViewer);
   int         len,loc;
-  Draw        win;
-  DrawAxis    axis;
+  PetscDraw        win;
+  PetscDrawAxis    axis;
   PetscReal   xmin,xmax,ymin,ymax,*x,*y;
   int         nopts,dim;
   PetscTruth  use_dots;
@@ -23,11 +23,11 @@ struct _p_DrawLG {
 #define CHUNCKSIZE 100
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawLGCreate"></a>*/"DrawLGCreate" 
+#define __FUNC__ "DrawLGCreate" 
 /*@C
-    DrawLGCreate - Creates a line graph data structure.
+    PetscDrawLGCreate - Creates a line graph data structure.
 
-    Collective over Draw
+    Collective over PetscDraw
 
     Input Parameters:
 +   draw - the window where the graph will be made.
@@ -40,24 +40,24 @@ struct _p_DrawLG {
 
     Concepts: line graph^creating
 
-.seealso:  DrawLGDestroy()
+.seealso:  PetscDrawLGDestroy()
 @*/
-int DrawLGCreate(Draw draw,int dim,DrawLG *outctx)
+int PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
 {
   int         ierr;
   PetscTruth  isnull;
   PetscObject obj = (PetscObject)draw;
-  DrawLG      lg;
+  PetscDrawLG      lg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   PetscValidPointer(outctx);
-  ierr = PetscTypeCompare(obj,DRAW_NULL,&isnull);CHKERRQ(ierr);
+  ierr = PetscTypeCompare(obj,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
-    ierr = DrawOpenNull(obj->comm,(Draw*)outctx);CHKERRQ(ierr);
+    ierr = PetscDrawOpenNull(obj->comm,(PetscDraw*)outctx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(lg,_p_DrawLG,int,DRAWLG_COOKIE,0,"DrawLG",obj->comm,DrawLGDestroy,0);
+  PetscHeaderCreate(lg,_p_DrawLG,int,DRAWLG_COOKIE,0,"DrawLG",obj->comm,PetscDrawLGDestroy,0);
   lg->view    = 0;
   lg->destroy = 0;
   lg->nopts   = 0;
@@ -67,24 +67,24 @@ int DrawLGCreate(Draw draw,int dim,DrawLG *outctx)
   lg->ymin    = 1.e20;
   lg->xmax    = -1.e20;
   lg->ymax    = -1.e20;
-  lg->x       = (PetscReal *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKPTRQ(lg->x);
-  PLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));
+  ierr = PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal),&lg->x);CHKERRQ(ierr);
+  PetscLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));
   lg->y       = lg->x + dim*CHUNCKSIZE;
   lg->len     = dim*CHUNCKSIZE;
   lg->loc     = 0;
   lg->use_dots= PETSC_FALSE;
-  ierr = DrawAxisCreate(draw,&lg->axis);CHKERRQ(ierr);
-  PLogObjectParent(lg,lg->axis);
+  ierr = PetscDrawAxisCreate(draw,&lg->axis);CHKERRQ(ierr);
+  PetscLogObjectParent(lg,lg->axis);
   *outctx = lg;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawLGSetDimension"></a>*/"DrawLGSetDimension" 
+#define __FUNC__ "DrawLGSetDimension" 
 /*@
-   DrawLGSetDimension - Change the number of lines that are to be drawn.
+   PetscDrawLGSetDimension - Change the number of lines that are to be drawn.
 
-   Collective over DrawLG
+   Collective over PetscDrawLG
 
    Input Parameter:
 +  lg - the line graph context.
@@ -95,30 +95,30 @@ int DrawLGCreate(Draw draw,int dim,DrawLG *outctx)
    Concepts: line graph^setting number of lines
 
 @*/
-int DrawLGSetDimension(DrawLG lg,int dim)
+int PetscDrawLGSetDimension(PetscDrawLG lg,int dim)
 {
   int ierr;
 
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   if (lg->dim == dim) PetscFunctionReturn(0);
 
-  ierr = PetscFree(lg->x);CHKERRQ(ierr);
+  ierr    = PetscFree(lg->x);CHKERRQ(ierr);
   lg->dim = dim;
-  lg->x       = (PetscReal *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKPTRQ(lg->x);
-  PLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));
+  ierr    = PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal),&lg->x);CHKERRQ(ierr);
+  PetscLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));
   lg->y       = lg->x + dim*CHUNCKSIZE;
   lg->len     = dim*CHUNCKSIZE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawLGReset"></a>*/"DrawLGReset" 
+#define __FUNC__ "DrawLGReset" 
 /*@
-   DrawLGReset - Clears line graph to allow for reuse with new data.
+   PetscDrawLGReset - Clears line graph to allow for reuse with new data.
 
-   Collective over DrawLG
+   Collective over PetscDrawLG
 
    Input Parameter:
 .  lg - the line graph context.
@@ -128,10 +128,10 @@ int DrawLGSetDimension(DrawLG lg,int dim)
    Concepts: line graph^restarting
 
 @*/
-int DrawLGReset(DrawLG lg)
+int PetscDrawLGReset(PetscDrawLG lg)
 {
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   lg->xmin  = 1.e20;
   lg->ymin  = 1.e20;
@@ -143,47 +143,47 @@ int DrawLGReset(DrawLG lg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawLGDestroy"></a>*/"DrawLGDestroy" 
+#define __FUNC__ "DrawLGDestroy" 
 /*@C
-   DrawLGDestroy - Frees all space taken up by line graph data structure.
+   PetscDrawLGDestroy - Frees all space taken up by line graph data structure.
 
-   Collective over DrawLG
+   Collective over PetscDrawLG
 
    Input Parameter:
 .  lg - the line graph context
 
    Level: intermediate
 
-.seealso:  DrawLGCreate()
+.seealso:  PetscDrawLGCreate()
 @*/
-int DrawLGDestroy(DrawLG lg)
+int PetscDrawLGDestroy(PetscDrawLG lg)
 {
   int ierr;
 
   PetscFunctionBegin;
-  if (!lg || lg->cookie != DRAW_COOKIE) {
+  if (!lg || lg->cookie != PETSC_DRAW_COOKIE) {
     PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   }
 
   if (--lg->refct > 0) PetscFunctionReturn(0);
-  if (lg && lg->cookie == DRAW_COOKIE) {
+  if (lg && lg->cookie == PETSC_DRAW_COOKIE) {
     ierr = PetscObjectDestroy((PetscObject)lg);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = DrawAxisDestroy(lg->axis);CHKERRQ(ierr);
+  ierr = PetscDrawAxisDestroy(lg->axis);CHKERRQ(ierr);
   ierr = PetscFree(lg->x);CHKERRQ(ierr);
-  PLogObjectDestroy(lg);
+  PetscLogObjectDestroy(lg);
   PetscHeaderDestroy(lg);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawLGAddPoint"></a>*/"DrawLGAddPoint" 
+#define __FUNC__ "DrawLGAddPoint" 
 /*@
-   DrawLGAddPoint - Adds another point to each of the line graphs. 
+   PetscDrawLGAddPoint - Adds another point to each of the line graphs. 
    The new point must have an X coordinate larger than the old points.
 
-   Not Collective, but ignored by all processors except processor 0 in DrawLG
+   Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
 
    Input Parameters:
 +  lg - the LineGraph data structure
@@ -194,20 +194,20 @@ int DrawLGDestroy(DrawLG lg)
 
    Concepts: line graph^adding points
 
-.seealso: DrawLGAddPoints()
+.seealso: PetscDrawLGAddPoints()
 @*/
-int DrawLGAddPoint(DrawLG lg,PetscReal *x,PetscReal *y)
+int PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,PetscReal *y)
 {
   int i,ierr;
 
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
 
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    tmpx = (PetscReal*)PetscMalloc((2*lg->len+2*lg->dim*CHUNCKSIZE)*sizeof(PetscReal));CHKPTRQ(tmpx);
-    PLogObjectMemory(lg,2*lg->dim*CHUNCKSIZE*sizeof(PetscReal));
+    ierr = PetscMalloc((2*lg->len+2*lg->dim*CHUNCKSIZE)*sizeof(PetscReal),&tmpx);CHKERRQ(ierr);
+    PetscLogObjectMemory(lg,2*lg->dim*CHUNCKSIZE*sizeof(PetscReal));
     tmpy = tmpx + lg->len + lg->dim*CHUNCKSIZE;
     ierr = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
@@ -229,11 +229,11 @@ int DrawLGAddPoint(DrawLG lg,PetscReal *x,PetscReal *y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawLGIndicateDataPoints"></a>*/"DrawLGIndicateDataPoints" 
+#define __FUNC__ "DrawLGIndicateDataPoints" 
 /*@
-   DrawLGIndicateDataPoints - Causes LG to draw a big dot for each data-point.
+   PetscDrawLGIndicateDataPoints - Causes LG to draw a big dot for each data-point.
 
-   Not Collective, but ignored by all processors except processor 0 in DrawLG
+   Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
 
    Input Parameters:
 .  lg - the linegraph context
@@ -243,22 +243,22 @@ int DrawLGAddPoint(DrawLG lg,PetscReal *x,PetscReal *y)
    Concepts: line graph^showing points
 
 @*/
-int DrawLGIndicateDataPoints(DrawLG lg)
+int PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
 {
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
 
   lg->use_dots = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawLGAddPoints"></a>*/"DrawLGAddPoints" 
+#define __FUNC__ "DrawLGAddPoints" 
 /*@C
-   DrawLGAddPoints - Adds several points to each of the line graphs.
+   PetscDrawLGAddPoints - Adds several points to each of the line graphs.
    The new points must have an X coordinate larger than the old points.
 
-   Not Collective, but ignored by all processors except processor 0 in DrawLG
+   Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
 
    Input Parameters:
 +  lg - the LineGraph data structure
@@ -271,23 +271,23 @@ int DrawLGIndicateDataPoints(DrawLG lg)
 
    Concepts: line graph^adding points
 
-.seealso: DrawLGAddPoint()
+.seealso: PetscDrawLGAddPoint()
 @*/
-int DrawLGAddPoints(DrawLG lg,int n,PetscReal **xx,PetscReal **yy)
+int PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscReal **yy)
 {
   int    i,j,k,ierr;
   PetscReal *x,*y;
 
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
     int    chunk = CHUNCKSIZE;
 
     if (n > chunk) chunk = n;
-    tmpx = (PetscReal*)PetscMalloc((2*lg->len+2*lg->dim*chunk)*sizeof(PetscReal));CHKPTRQ(tmpx);
-    PLogObjectMemory(lg,2*lg->dim*chunk*sizeof(PetscReal));
+    ierr = PetscMalloc((2*lg->len+2*lg->dim*chunk)*sizeof(PetscReal),&tmpx);CHKERRQ(ierr);
+    PetscLogObjectMemory(lg,2*lg->dim*chunk*sizeof(PetscReal));
     tmpy = tmpx + lg->len + lg->dim*chunk;
     ierr = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
@@ -315,11 +315,11 @@ int DrawLGAddPoints(DrawLG lg,int n,PetscReal **xx,PetscReal **yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawLGDraw"></a>*/"DrawLGDraw" 
+#define __FUNC__ "DrawLGDraw" 
 /*@
-   DrawLGDraw - Redraws a line graph.
+   PetscDrawLGDraw - Redraws a line graph.
 
-   Not Collective,but ignored by all processors except processor 0 in DrawLG
+   Not Collective,but ignored by all processors except processor 0 in PetscDrawLG
 
    Input Parameter:
 .  lg - the line graph context
@@ -327,46 +327,46 @@ int DrawLGAddPoints(DrawLG lg,int n,PetscReal **xx,PetscReal **yy)
    Level: intermediate
 
 @*/
-int DrawLGDraw(DrawLG lg)
+int PetscDrawLGDraw(PetscDrawLG lg)
 {
   PetscReal xmin=lg->xmin,xmax=lg->xmax,ymin=lg->ymin,ymax=lg->ymax;
   int       i,j,dim = lg->dim,nopts = lg->nopts,rank,ierr;
-  Draw      draw = lg->win;
+  PetscDraw      draw = lg->win;
 
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
 
-  ierr = DrawClear(draw);CHKERRQ(ierr);
-  ierr = DrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
-  ierr = DrawAxisDraw(lg->axis);CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  ierr = PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
+  ierr = PetscDrawAxisDraw(lg->axis);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(lg->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
   
     for (i=0; i<dim; i++) {
       for (j=1; j<nopts; j++) {
-        ierr = DrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
-                        lg->x[j*dim+i],lg->y[j*dim+i],DRAW_BLACK+i);CHKERRQ(ierr);
+        ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
+                        lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_BLACK+i);CHKERRQ(ierr);
         if (lg->use_dots) {
-          ierr = DrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],DRAW_RED,"x");CHKERRQ(ierr);
+          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_RED,"x");CHKERRQ(ierr);
         }
       }
     }
   }
-  ierr = DrawFlush(lg->win);CHKERRQ(ierr);
-  ierr = DrawPause(lg->win);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(lg->win);CHKERRQ(ierr);
+  ierr = PetscDrawPause(lg->win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawLGSetLimits"></a>*/"DrawLGSetLimits" 
+#define __FUNC__ "DrawLGSetLimits" 
 /*@
-   DrawLGSetLimits - Sets the axis limits for a line graph. If more
+   PetscDrawLGSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
    include those additional points.
 
-   Not Collective, but ignored by all processors except processor 0 in DrawLG
+   Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
 
    Input Parameters:
 +  xlg - the line graph context
@@ -377,10 +377,10 @@ int DrawLGDraw(DrawLG lg)
    Concepts: line graph^setting axis
 
 @*/
-int DrawLGSetLimits(DrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
+int PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
 {
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   (lg)->xmin = x_min; 
   (lg)->xmax = x_max; 
@@ -390,14 +390,14 @@ int DrawLGSetLimits(DrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,Pe
 }
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawLGGetAxis"></a>*/"DrawLGGetAxis" 
+#define __FUNC__ "DrawLGGetAxis" 
 /*@C
-   DrawLGGetAxis - Gets the axis context associated with a line graph.
+   PetscDrawLGGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
    labels, color, etc. The axis context should not be destroyed by the
    application code.
 
-   Not Collective, if DrawLG is parallel then DrawAxis is parallel
+   Not Collective, if PetscDrawLG is parallel then PetscDrawAxis is parallel
 
    Input Parameter:
 .  lg - the line graph context
@@ -408,10 +408,10 @@ int DrawLGSetLimits(DrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,Pe
    Level: advanced
 
 @*/
-int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
+int PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE) {
+  if (lg && lg->cookie == PETSC_DRAW_COOKIE) {
     *axis = 0;
     PetscFunctionReturn(0);
   }
@@ -421,11 +421,11 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawLGGetDra"></a>*/"DrawLGGetDraw" 
+#define __FUNC__ "DrawLGGetDraw" 
 /*@C
-   DrawLGGetDraw - Gets the draw context associated with a line graph.
+   PetscDrawLGGetDraw - Gets the draw context associated with a line graph.
 
-   Not Collective, if DrawLG is parallel then Draw is parallel
+   Not Collective, if PetscDrawLG is parallel then PetscDraw is parallel
 
    Input Parameter:
 .  lg - the line graph context
@@ -436,12 +436,12 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
    Level: intermediate
 
 @*/
-int DrawLGGetDraw(DrawLG lg,Draw *draw)
+int PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeader(lg);
-  if (lg->cookie == DRAW_COOKIE) {
-    *draw = (Draw)lg;
+  if (lg->cookie == PETSC_DRAW_COOKIE) {
+    *draw = (PetscDraw)lg;
   } else {
     PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
     *draw = lg->win;

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f.F,v 1.13 2000/09/22 20:43:24 bsmith Exp bsmith $";
+!      "$Id: ex3f.F,v 1.14 2000/09/27 20:14:03 bsmith Exp bsmith $";
 !
 !  Description: Displays a vector visually.
 !
@@ -31,13 +31,13 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       Vec     x
-      Viewer  viewer
+      PetscViewer  viewer
       Scalar  v
       integer i,istart,iend,n,ierr,flg
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       n = 50
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 !  Create a vector, specifying only its global dimension.
 !  When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel
@@ -70,10 +70,10 @@
 !  for the viewer as we used for the distributed vector (PETSC_COMM_WORLD).
 !    - Helpful runtime option:
 !         -draw_pause <pause> : sets time (in seconds) that the
-!               program pauses after DrawPause() has been called
+!               program pauses after PetscDrawPause() has been called
 !              (0 is default, -1 implies until user input).
 
-      call ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
+      call PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
      &                   PETSC_NULL_CHARACTER,0,0,300,300,viewer,ierr)
 
 !  View the vector
@@ -82,7 +82,7 @@
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
-      call ViewerDestroy(viewer,ierr)
+      call PetscViewerDestroy(viewer,ierr)
       call VecDestroy(x,ierr)
 
       call PetscFinalize(ierr)

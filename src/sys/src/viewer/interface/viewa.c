@@ -1,16 +1,16 @@
-/*$Id: viewa.c,v 1.14 2000/09/22 20:41:53 bsmith Exp bsmith $*/
+/*$Id: viewa.c,v 1.15 2000/09/28 21:08:19 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerSetFormat"></a>*/"ViewerSetFormat" 
+#define __FUNC__ "PetscViewerSetFormat" 
 /*@C
-   ViewerSetFormat - Sets the format for viewers.
+   PetscViewerSetFormat - Sets the format for PetscViewers.
 
-   Collective on Viewer
+   Collective on PetscViewer
 
    Input Parameters:
-+  viewer - the viewer
++  PetscViewer - the PetscViewer
 .  format - the format
 -  char - optional object name
 
@@ -18,41 +18,41 @@
 
    Notes:
    Available formats include
-+    VIEWER_FORMAT_ASCII_DEFAULT - default format
-.    VIEWER_FORMAT_ASCII_MATLAB - Matlab format
-.    VIEWER_FORMAT_ASCII_DENSE - print matrix as dense
-.    VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
++    PETSC_VIEWER_FORMAT_ASCII_DEFAULT - default format
+.    PETSC_VIEWER_FORMAT_ASCII_MATLAB - Matlab format
+.    PETSC_VIEWER_FORMAT_ASCII_DENSE - print matrix as dense
+.    PETSC_VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
       (which is in many cases the same as the default)
-.    VIEWER_FORMAT_ASCII_INFO - basic information about object
-.    VIEWER_FORMAT_ASCII_INFO_LONG - more detailed info
+.    PETSC_VIEWER_FORMAT_ASCII_INFO - basic information about object
+.    PETSC_VIEWER_FORMAT_ASCII_INFO_LONG - more detailed info
        about object
-.    VIEWER_FORMAT_ASCII_COMMON - identical output format for
+.    PETSC_VIEWER_FORMAT_ASCII_COMMON - identical output format for
        all objects of a particular type
-.    VIEWER_FORMAT_ASCII_INDEX - (for vectors) prints the vector
+.    PETSC_VIEWER_FORMAT_ASCII_INDEX - (for vectors) prints the vector
        element number next to each vector entry
-.    VIEWER_FORMAT_BINARY_NATIVE - store the object to the binary
+.    PETSC_VIEWER_FORMAT_BINARY_NATIVE - store the object to the binary
       file in its native format (for example, dense
        matrices are stored as dense)
-.    VIEWER_FORMAT_DRAW_BASIC - views the vector with a simple 1d plot
-.    VIEWER_FORMAT_DRAW_LG - views the vector with a line graph
--    VIEWER_FORMAT_DRAW_CONTOUR - views the vector with a contour plot
+.    PETSC_VIEWER_FORMAT_DRAW_BASIC - views the vector with a simple 1d plot
+.    PETSC_VIEWER_FORMAT_DRAW_LG - views the vector with a line graph
+-    PETSC_VIEWER_FORMAT_DRAW_CONTOUR - views the vector with a contour plot
 
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.
 
-   Concepts: Viewer^setting format
+   Concepts: PetscViewer^setting format
 
-.seealso: ViewerASCIIOpen(), ViewerBinaryOpen(), MatView(), VecView(),
-          ViewerPushFormat(), ViewerPopFormat(), ViewerDrawOpenX(),ViewerSocketOpen()
+.seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
+          PetscViewerPushFormat(), PetscViewerPopFormat(), PetscViewerDrawOpenX(),PetscViewerSocketOpen()
 @*/
-int ViewerSetFormat(Viewer viewer,int format,char *name)
+int PetscViewerSetFormat(PetscViewer viewer,int format,char *name)
 {
   int        ierr;
   PetscTruth isascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     viewer->format     = format;
     viewer->outputname = name;
@@ -63,14 +63,14 @@ int ViewerSetFormat(Viewer viewer,int format,char *name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerPushFormat"></a>*/"ViewerPushFormat" 
+#define __FUNC__ "PetscViewerPushFormat" 
 /*@C
-   ViewerPushFormat - Sets the format for file viewers.
+   PetscViewerPushFormat - Sets the format for file PetscViewers.
 
-   Collective on Viewer
+   Collective on PetscViewer
 
    Input Parameters:
-+  viewer - the viewer
++  PetscViewer - the PetscViewer
 .  format - the format
 -  char - optional object name
 
@@ -78,37 +78,37 @@ int ViewerSetFormat(Viewer viewer,int format,char *name)
 
    Notes:
    Available formats include
-+    VIEWER_FORMAT_ASCII_DEFAULT - default format
-.    VIEWER_FORMAT_ASCII_MATLAB - Matlab format
-.    VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
++    PETSC_VIEWER_FORMAT_ASCII_DEFAULT - default format
+.    PETSC_VIEWER_FORMAT_ASCII_MATLAB - Matlab format
+.    PETSC_VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
       (which is in many cases the same as the default)
-.    VIEWER_FORMAT_ASCII_INFO - basic information about object
-.    VIEWER_FORMAT_ASCII_INFO_LONG - more detailed info
+.    PETSC_VIEWER_FORMAT_ASCII_INFO - basic information about object
+.    PETSC_VIEWER_FORMAT_ASCII_INFO_LONG - more detailed info
        about object
-.    VIEWER_FORMAT_ASCII_COMMON - identical output format for
+.    PETSC_VIEWER_FORMAT_ASCII_COMMON - identical output format for
        all objects of a particular type
-.    VIEWER_FORMAT_ASCII_INDEX - (for vectors) prints the vector
+.    PETSC_VIEWER_FORMAT_ASCII_INDEX - (for vectors) prints the vector
        element number next to each vector entry
-.    VIEWER_FORMAT_BINARY_NATIVE - store the object to the binary
+.    PETSC_VIEWER_FORMAT_BINARY_NATIVE - store the object to the binary
       file in its native format (for example, dense
        matrices are stored as dense)
-.    VIEWER_FORMAT_DRAW_BASIC - views the vector with a simple 1d plot
-.    VIEWER_FORMAT_DRAW_LG - views the vector with a line graph
-.    VIEWER_FORMAT_DRAW_CONTOUR - views the vector with a contour plot
--    VIEWER_FORMAT_NATIVE - for DA vectors displays vectors in DA ordering, not natural
+.    PETSC_VIEWER_FORMAT_DRAW_BASIC - views the vector with a simple 1d plot
+.    PETSC_VIEWER_FORMAT_DRAW_LG - views the vector with a line graph
+.    PETSC_VIEWER_FORMAT_DRAW_CONTOUR - views the vector with a contour plot
+-    PETSC_VIEWER_FORMAT_NATIVE - for DA vectors displays vectors in DA ordering, not natural
 
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.
 
-   Concepts: Viewer^setting format
+   Concepts: PetscViewer^setting format
 
-.seealso: ViewerASCIIOpen(), ViewerBinaryOpen(), MatView(), VecView(),
-          ViewerSetFormat(), ViewerPopFormat()
+.seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
+          PetscViewerSetFormat(), PetscViewerPopFormat()
 @*/
-int ViewerPushFormat(Viewer viewer,int format,char *name)
+int PetscViewerPushFormat(PetscViewer viewer,int format,char *name)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   if (viewer->iformat > 9) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many pushes");
 
   viewer->formats[viewer->iformat]       = viewer->format;
@@ -120,26 +120,26 @@ int ViewerPushFormat(Viewer viewer,int format,char *name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerPopFormat"></a>*/"ViewerPopFormat" 
+#define __FUNC__ "PetscViewerPopFormat" 
 /*@C
-   ViewerPopFormat - Resets the format for file viewers.
+   PetscViewerPopFormat - Resets the format for file PetscViewers.
 
-   Collective on Viewer
+   Collective on PetscViewer
 
    Input Parameters:
-.  viewer - the viewer
+.  PetscViewer - the PetscViewer
 
    Level: intermediate
 
-   Concepts: Viewer^setting format
+   Concepts: PetscViewer^setting format
 
-.seealso: ViewerASCIIOpen(), ViewerBinaryOpen(), MatView(), VecView(),
-          ViewerSetFormat(), ViewerPushFormat()
+.seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
+          PetscViewerSetFormat(), PetscViewerPushFormat()
 @*/
-int ViewerPopFormat(Viewer viewer)
+int PetscViewerPopFormat(PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   if (viewer->iformat <= 0) PetscFunctionReturn(0);
 
   viewer->format     = viewer->formats[--viewer->iformat];
@@ -148,8 +148,8 @@ int ViewerPopFormat(Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerASCIIGetOutputname"></a>*/"ViewerASCIIGetOutputname" 
-int ViewerGetOutputname(Viewer viewer,char **name)
+#define __FUNC__ "PetscViewerASCIIGetOutputname" 
+int PetscViewerGetOutputname(PetscViewer viewer,char **name)
 {
   PetscFunctionBegin;
   *name = viewer->outputname;
@@ -157,8 +157,8 @@ int ViewerGetOutputname(Viewer viewer,char **name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerGetFormat"></a>*/"ViewerGetFormat" 
-int ViewerGetFormat(Viewer viewer,int *format)
+#define __FUNC__ "PetscViewerGetFormat" 
+int PetscViewerGetFormat(PetscViewer viewer,int *format)
 {
   PetscFunctionBegin;
   *format =  viewer->format;

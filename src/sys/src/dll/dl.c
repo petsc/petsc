@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.64 2000/09/28 21:09:00 bsmith Exp bsmith $*/
+/*$Id: dl.c,v 1.65 2000/10/24 20:24:32 bsmith Exp bsmith $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -48,8 +48,8 @@
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #include <dlfcn.h>
 
-struct _DLLibraryList {
-  DLLibraryList next;
+struct _PetscDLLibraryList {
+  PetscDLLibraryList next;
   void          *handle;
   char          libname[1024];
 };
@@ -59,10 +59,10 @@ extern int Petsc_DelTag(MPI_Comm,int,void*,void*);
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DLLibraryPrintPath"></a>*/"DLLibraryPrintPath"
-int DLLibraryPrintPath(void)
+#define __FUNC__ "PetscDLLibraryPrintPath"
+int PetscDLLibraryPrintPath(void)
 {
-  DLLibraryList libs;
+  PetscDLLibraryList libs;
 
   PetscFunctionBegin;
   PetscErrorPrintf("Unable to find function. Search path:\n");
@@ -75,25 +75,25 @@ int DLLibraryPrintPath(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DLLibraryGetInfo"></a>*/"DLLibraryGetInfo"
+#define __FUNC__ "PetscDLLibraryGetInfo"
 /*@C
-   DLLibraryGetInfo - Gets the text information from a PETSc
+   PetscDLLibraryGetInfo - Gets the text information from a PETSc
        dynamic library
 
      Not Collective
 
    Input Parameters:
-.   handle - library handle returned by DLLibraryOpen()
+.   handle - library handle returned by PetscDLLibraryOpen()
 
    Level: developer
 
 @*/
-int DLLibraryGetInfo(void *handle,char *type,char **mess)
+int PetscDLLibraryGetInfo(void *handle,char *type,char **mess)
 {
   int  ierr,(*sfunc)(const char *,const char*,char **);
 
   PetscFunctionBegin;
-  sfunc   = (int (*)(const char *,const char*,char **)) dlsym(handle,"DLLibraryInfo");
+  sfunc   = (int (*)(const char *,const char*,char **)) dlsym(handle,"PetscDLLibraryInfo");
   if (!sfunc) {
     *mess = "No library information in the file\n";
   } else {
@@ -103,9 +103,9 @@ int DLLibraryGetInfo(void *handle,char *type,char **mess)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DLLibraryRetrieve"></a>*/"DLLibraryRetrieve"
+#define __FUNC__ "PetscDLLibraryRetrieve"
 /*@C
-   DLLibraryRetrieve - Copies a PETSc dynamic library from a remote location
+   PetscDLLibraryRetrieve - Copies a PETSc dynamic library from a remote location
      (if it is remote), indicates if it exits and its local name.
 
      Collective on MPI_Comm
@@ -125,7 +125,7 @@ int DLLibraryGetInfo(void *handle,char *type,char **mess)
    ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
    occuring in directoryname and filename will be replaced with appropriate values.
 @*/
-int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)
+int PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)
 {
   char       *par2,buff[10],*en,*gz;
   int        ierr,len1,len2,len;
@@ -137,10 +137,9 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
      make copy of library name and replace $PETSC_ARCH and $BOPT and 
      so we can add to the end of it to look for something like .so.1.0 etc.
   */
-  ierr   = PetscStrlen(libname,&len);CHKERRQ(ierr);
-  len    = PetscMax(4*len,1024);
-  par2   = (char*)PetscMalloc(len*sizeof(char));CHKPTRQ(par2);
-
+  ierr = PetscStrlen(libname,&len);CHKERRQ(ierr);
+  len  = PetscMax(4*len,1024);
+  ierr = PetscMalloc(len*sizeof(char),&par2);CHKERRQ(ierr);
   ierr = PetscStrreplace(comm,libname,par2,len);CHKERRQ(ierr);
 
   /* 
@@ -191,9 +190,9 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""DLLibraryOpen></a>*/"DLLibraryOpen"
+#define __FUNC__ /*<a name=""PetscDLLibraryOpen></a>*/"PetscDLLibraryOpen"
 /*@C
-   DLLibraryOpen - Opens a dynamic link library
+   PetscDLLibraryOpen - Opens a dynamic link library
 
      Collective on MPI_Comm
 
@@ -212,7 +211,7 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
    ${PETSC_ARCH} and ${BOPT} occuring in directoryname and filename 
    will be replaced with appropriate values.
 @*/
-int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
+int PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 {
   char       *par2,ierr;
   PetscTruth foundlibrary;
@@ -220,8 +219,8 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 
   PetscFunctionBegin;
 
-  par2 = (char*)PetscMalloc(1024*sizeof(char));CHKPTRQ(par2);
-  ierr = DLLibraryRetrieve(comm,libname,par2,1024,&foundlibrary);CHKERRQ(ierr);
+  ierr = PetscMalloc(1024*sizeof(char),&par2);CHKERRQ(ierr);
+  ierr = PetscDLLibraryRetrieve(comm,libname,par2,1024,&foundlibrary);CHKERRQ(ierr);
   if (!foundlibrary) {
     SETERRQ1(1,"Unable to locate dynamic library:\n  %s\n",libname);
   }
@@ -239,7 +238,7 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
      symbols required can be contained in other libraries also opened
      with dlopen()
   */
-  PLogInfo(0,"DLLibraryOpen:Opening %s\n",libname);
+  PetscLogInfo(0,"PetscDLLibraryOpen:Opening %s\n",libname);
 #if defined(PETSC_HAVE_RTLD_GLOBAL)
   *handle = dlopen(par2,RTLD_LAZY  |  RTLD_GLOBAL); 
 #else
@@ -251,29 +250,29 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
              libname,par2,dlerror());
   }
 
-  /* run the function FListAddDynamic() if it is in the library */
-  func  = (int (*)(const char *)) dlsym(*handle,"DLLibraryRegister");
+  /* run the function PetscFListAddDynamic() if it is in the library */
+  func  = (int (*)(const char *)) dlsym(*handle,"PetscDLLibraryRegister");
   if (func) {
     ierr = (*func)(libname);CHKERRQ(ierr);
-    PLogInfo(0,"DLLibraryOpen:Loading registered routines from %s\n",libname);
+    PetscLogInfo(0,"PetscDLLibraryOpen:Loading registered routines from %s\n",libname);
   }
-  if (PLogPrintInfo) {
+  if (PetscLogPrintInfo) {
     int  (*sfunc)(const char *,const char*,char **);
     char *mess;
 
-    sfunc   = (int (*)(const char *,const char*,char **)) dlsym(*handle,"DLLibraryInfo");
+    sfunc   = (int (*)(const char *,const char*,char **)) dlsym(*handle,"PetscDLLibraryInfo");
     if (sfunc) {
       ierr = (*sfunc)(libname,"Contents",&mess);CHKERRQ(ierr);
       if (mess) {
-        PLogInfo(0,"Contents:\n %s",mess);
+        PetscLogInfo(0,"Contents:\n %s",mess);
       }
       ierr = (*sfunc)(libname,"Authors",&mess);CHKERRQ(ierr);
       if (mess) {
-        PLogInfo(0,"Authors:\n %s",mess);
+        PetscLogInfo(0,"Authors:\n %s",mess);
       }
       ierr = (*sfunc)(libname,"Version",&mess);CHKERRQ(ierr);
       if (mess) {
-        PLogInfo(0,"Version:\n %s\n",mess);
+        PetscLogInfo(0,"Version:\n %s\n",mess);
       }
     }
   }
@@ -283,9 +282,9 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DLLibrarySym"></a>*/"DLLibrarySym"
+#define __FUNC__ "PetscDLLibrarySym"
 /*@C
-   DLLibrarySym - Load a symbol from the dynamic link libraries.
+   PetscDLLibrarySym - Load a symbol from the dynamic link libraries.
 
    Collective on MPI_Comm
 
@@ -304,20 +303,20 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
         Will attempt to (retrieve and) open the library if it is not yet been opened.
 
 @*/
-int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],const char insymbol[],void **value)
+int PetscDLLibrarySym(MPI_Comm comm,PetscDLLibraryList *inlist,const char path[],const char insymbol[],void **value)
 {
   char          *par1,*symbol;
   int           ierr,len;
-  DLLibraryList nlist,prev,list;
+  PetscDLLibraryList nlist,prev,list;
 
   PetscFunctionBegin;
   if (inlist) list = *inlist; else list = PETSC_NULL;
   *value = 0;
 
   /* make copy of symbol so we can edit it in place */
-  ierr   = PetscStrlen(insymbol,&len);CHKERRQ(ierr);
-  symbol = (char*)PetscMalloc((len+1)*sizeof(char));CHKPTRQ(symbol);
-  ierr   = PetscStrcpy(symbol,insymbol);CHKERRQ(ierr);
+  ierr = PetscStrlen(insymbol,&len);CHKERRQ(ierr);
+  ierr = PetscMalloc((len+1)*sizeof(char),&symbol);CHKERRQ(ierr);
+  ierr = PetscStrcpy(symbol,insymbol);CHKERRQ(ierr);
 
   /* 
       If symbol contains () then replace with a NULL, to support functionname() 
@@ -349,9 +348,9 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],const cha
       prev  = nlist;
       nlist = nlist->next;
     }
-    ierr = DLLibraryOpen(comm,path,&handle);CHKERRQ(ierr);
+    ierr = PetscDLLibraryOpen(comm,path,&handle);CHKERRQ(ierr);
 
-    nlist = (DLLibraryList)PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(nlist);
+    ierr          = PetscNew(struct _PetscDLLibraryList,&nlist);CHKERRQ(ierr);
     nlist->next   = 0;
     nlist->handle = handle;
     ierr = PetscStrcpy(nlist->libname,path);CHKERRQ(ierr);
@@ -360,16 +359,16 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],const cha
       prev->next = nlist;
     } else {
       if (inlist) *inlist = nlist;
-      else {ierr = DLLibraryClose(nlist);CHKERRQ(ierr);}
+      else {ierr = PetscDLLibraryClose(nlist);CHKERRQ(ierr);}
     }
-    PLogInfo(0,"DLLibraryAppend:Appending %s to dynamic library search path\n",symbol);
+    PetscLogInfo(0,"PetscDLLibraryAppend:Appending %s to dynamic library search path\n",symbol);
 
     done:; 
     *value   = dlsym(handle,symbol);
     if (!*value) {
       SETERRQ2(1,"Unable to locate function %s in dynamic library %s",insymbol,path);
     }
-    PLogInfo(0,"DLLibrarySym:Loading function %s from dynamic library %s\n",insymbol,path);
+    PetscLogInfo(0,"PetscDLLibrarySym:Loading function %s from dynamic library %s\n",insymbol,path);
 
   /*
        Function name does not include library so search path
@@ -379,7 +378,7 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],const cha
     while (list) {
       *value =  dlsym(list->handle,symbol);
       if (*value) {
-        PLogInfo(0,"DLLibrarySym:Loading function %s from dynamic library %s\n",symbol,list->libname);
+        PetscLogInfo(0,"PetscDLLibrarySym:Loading function %s from dynamic library %s\n",symbol,list->libname);
         break;
       }
       list = list->next;
@@ -391,9 +390,9 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],const cha
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DLLibraryAppend"></a>*/"DLLibraryAppend"
+#define __FUNC__ "PetscDLLibraryAppend"
 /*@C
-     DLLibraryAppend - Appends another dynamic link library to the seach list, to the end
+     PetscDLLibraryAppend - Appends another dynamic link library to the seach list, to the end
                 of the search path.
 
      Collective on MPI_Comm
@@ -409,9 +408,9 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],const cha
 
      Notes: if library is already in path will not add it.
 @*/
-int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
+int PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char libname[])
 {
-  DLLibraryList list,prev;
+  PetscDLLibraryList list,prev;
   void*         handle;
   int           ierr;
 
@@ -430,9 +429,9 @@ int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
     list = list->next;
   }
 
-  ierr = DLLibraryOpen(comm,libname,&handle);CHKERRQ(ierr);
+  ierr = PetscDLLibraryOpen(comm,libname,&handle);CHKERRQ(ierr);
 
-  list = (DLLibraryList)PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
+  ierr         = PetscNew(struct _PetscDLLibraryList,&list);CHKERRQ(ierr);
   list->next   = 0;
   list->handle = handle;
   ierr = PetscStrcpy(list->libname,libname);CHKERRQ(ierr);
@@ -442,14 +441,14 @@ int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
   } else {
     prev->next = list;
   }
-  PLogInfo(0,"DLLibraryAppend:Appending %s to dynamic library search path\n",libname);
+  PetscLogInfo(0,"PetscDLLibraryAppend:Appending %s to dynamic library search path\n",libname);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DLLibraryPrepend"></a>*/"DLLibraryPrepend"
+#define __FUNC__ "PetscDLLibraryPrepend"
 /*@C
-     DLLibraryPrepend - Add another dynamic library to search for symbols to the beginning of
+     PetscDLLibraryPrepend - Add another dynamic library to search for symbols to the beginning of
                  the search path.
 
      Collective on MPI_Comm
@@ -466,9 +465,9 @@ int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
      Notes: If library is already in path will remove old reference.
 
 @*/
-int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
+int PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibraryList *outlist,const char libname[])
 {
-  DLLibraryList list,prev;
+  PetscDLLibraryList list,prev;
   void*         handle;
   int           ierr;
 
@@ -492,11 +491,11 @@ int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
   }
 
   /* open the library and add to front of list */
-  ierr = DLLibraryOpen(comm,libname,&handle);CHKERRQ(ierr);
+  ierr = PetscDLLibraryOpen(comm,libname,&handle);CHKERRQ(ierr);
 
-  PLogInfo(0,"DLLibraryPrepend:Prepending %s to dynamic library search path\n",libname);
+  PetscLogInfo(0,"PetscDLLibraryPrepend:Prepending %s to dynamic library search path\n",libname);
 
-  list         = (DLLibraryList)PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
+  ierr         = PetscNew(struct _PetscDLLibraryList,&list);CHKERRQ(ierr);
   list->handle = handle;
   list->next   = *outlist;
   ierr = PetscStrcpy(list->libname,libname);CHKERRQ(ierr);
@@ -506,11 +505,11 @@ int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DLLibraryClose"></a>*/"DLLibraryClose"
+#define __FUNC__ "PetscDLLibraryClose"
 /*@C
-     DLLibraryClose - Destroys the search path of dynamic libraries and closes the libraries.
+     PetscDLLibraryClose - Destroys the search path of dynamic libraries and closes the libraries.
 
-    Collective on DLLibrary
+    Collective on PetscDLLibrary
 
     Input Parameter:
 .     next - library list
@@ -518,9 +517,9 @@ int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
      Level: developer
 
 @*/
-int DLLibraryClose(DLLibraryList next)
+int PetscDLLibraryClose(PetscDLLibraryList next)
 {
-  DLLibraryList prev;
+  PetscDLLibraryList prev;
   int           ierr;
 
   PetscFunctionBegin;

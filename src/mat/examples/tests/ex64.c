@@ -1,4 +1,4 @@
-/*$Id: ex64.c,v 1.9 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex64.c,v 1.10 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = "Saves 4by4 block matrix.\n\n";
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat     A;
   int     i,j,ierr,size;
-  Viewer  fd;
+  PetscViewer  fd;
   Scalar  values[16],one = 1.0;
   Vec     x;
 
@@ -19,10 +19,10 @@ int main(int argc,char **args)
   if (size > 1) SETERRA(1,"Can only run on one processor");
 
   /* 
-     Open binary file.  Note that we use BINARY_CREATE to indicate
+     Open binary file.  Note that we use PETSC_BINARY_CREATE to indicate
      writing to this file.
   */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"4by4",BINARY_CREATE,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"4by4",PETSC_BINARY_CREATE,&fd);CHKERRA(ierr);
 
   ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,4,12,12,0,0,&A);CHKERRA(ierr);
 
@@ -55,7 +55,7 @@ int main(int argc,char **args)
   ierr = VecView(x,fd);CHKERRA(ierr);
   ierr = VecDestroy(x);CHKERRA(ierr);
 
-  ierr = ViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

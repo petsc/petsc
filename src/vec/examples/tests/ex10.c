@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.11 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.12 2000/09/28 21:10:28 bsmith Exp bsmith $*/
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
 uses block index sets\n\n";
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
 
   if (size != 2) SETERRQ(1,"Must run with 2 processors");
 
-  ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
   n = bs*n;
 
   /* create two vectors */
@@ -54,7 +54,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(x);CHKERRA(ierr);
   ierr = VecAssemblyEnd(x);CHKERRA(ierr);
 
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* fill local part of parallel vector */
   for (i=0; i<n; i++) {
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_REVERSE,newctx);CHKERRA(ierr);
   ierr = VecScatterDestroy(newctx);CHKERRA(ierr);
 
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = ISDestroy(isx);CHKERRA(ierr);
   ierr = ISDestroy(isy);CHKERRA(ierr);

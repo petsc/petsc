@@ -1,4 +1,4 @@
-/*$Id: ex28.c,v 1.15 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex28.c,v 1.16 2000/07/10 03:39:52 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal()\n\n";
 
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   ierr = MatSetValues(A,1,&i,1,col,values,INSERT_VALUES);CHKERRA(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = MatGetOrdering(A,MATORDERING_NATURAL,&rowperm,&colperm);CHKERRA(ierr);
   ierr = MatReorderForNonzeroDiagonal(A,1.e-12,rowperm,colperm);CHKERRA(ierr);
@@ -42,7 +42,7 @@ int main(int argc,char **args)
   ierr = ISView(colperm,0);CHKERRA(ierr);
   ierr = MatLUFactorSymbolic(A,rowperm,colperm,PETSC_NULL,&LU);CHKERRA(ierr);
   ierr = MatLUFactorNumeric(A,&LU);CHKERRA(ierr);
-  ierr = MatView(LU,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(LU,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,4,&x);CHKERRA(ierr);
   ierr = VecSetFromOptions(x);CHKERRA(ierr);
   ierr = VecDuplicate(x,&y);CHKERRA(ierr);
@@ -51,10 +51,10 @@ int main(int argc,char **args)
   ierr = VecSetValues(x,4,col,values,INSERT_VALUES);CHKERRA(ierr);
   ierr = VecAssemblyBegin(x);CHKERRA(ierr);
   ierr = VecAssemblyEnd(x);CHKERRA(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = MatSolve(LU,x,y);CHKERRA(ierr);
-  ierr = VecView(y,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = ISDestroy(rowperm);CHKERRA(ierr);
   ierr = ISDestroy(colperm);CHKERRA(ierr);

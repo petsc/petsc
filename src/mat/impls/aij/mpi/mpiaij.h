@@ -1,4 +1,4 @@
-/* $Id: mpiaij.h,v 1.19 2000/01/11 21:00:41 bsmith Exp bsmith $ */
+/* $Id: mpiaij.h,v 1.20 2000/10/24 20:25:36 bsmith Exp bsmith $ */
 
 #if !defined(__MPIAIJ_H)
 #define __MPIAIJ_H
@@ -28,7 +28,7 @@ typedef struct {
 #else
   int           *colmap;                /* local col number of off-diag col */
 #endif
-  int           *garray;                /* work array */
+  int           *garray;                /* global index of all off-processor columns */
 
   /* The following variables are used for matrix-vector products */
 
@@ -41,6 +41,9 @@ typedef struct {
   int           *rowindices;       /* column indices for row */
   Scalar        *rowvalues;        /* nonzero values in row */
   PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
+
+  /* for factorization codes to hide stuff */
+  void          *spptr;
 } Mat_MPIAIJ;
 
 #endif

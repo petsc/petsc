@@ -1,4 +1,4 @@
-/* $Id: ex1.c,v 1.15 2000/01/11 21:03:13 bsmith Exp balay $ */
+/* $Id: ex1.c,v 1.16 2000/05/05 22:19:15 balay Exp bsmith $ */
 
 static char help[] = "Demonstrates constructing an application ordering\n\n";
 
@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   AO       ao;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(ispetsc);CHKERRA(ierr);
   ierr = ISDestroy(isapp);CHKERRA(ierr);
 
-  ierr = AOView(ao,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = AOPetscToApplication(ao,4,getapp);CHKERRA(ierr);
   ierr = AOApplicationToPetsc(ao,3,getpetsc);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.15 2000/09/28 21:11:49 bsmith Exp bsmith $*/
+/*$Id: ex20.c,v 1.16 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
 
@@ -36,19 +36,19 @@ int main(int argc,char **args)
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   
   ierr = PetscStrcpy(mtype,MATSAME);CHKERRQ(ierr);
-  ierr = OptionsGetString(PETSC_NULL,"-conv_mat_type",mtype,256,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-conv_mat_type",mtype,256,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatConvert(C,mtype,&A);CHKERRA(ierr);
-  ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_IMPL,0);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_IMPL,0);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* Free data structures */
   ierr = MatDestroy(A);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: rs6000_time.c,v 1.7 2000/04/09 04:34:46 bsmith Exp bsmith $*/
+/*$Id: rs6000_time.c,v 1.8 2000/04/12 04:21:36 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #if defined (PETSC_USE_READ_REAL_TIME)
@@ -6,11 +6,11 @@
 #include <sys/systemcfg.h>
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"rs6000_time"
-PLogDouble rs6000_time(void) 
+#define __FUNC__ "rs6000_time"
+PetscLogDouble rs6000_time(void) 
 {
    timebasestruct_t t;
-   PLogDouble time;
+   PetscLogDouble time;
 
    PetscFunctionBegin;
 

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.18 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.19 2000/10/24 20:26:04 bsmith Exp bsmith $*/
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose(),\n\
 MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
@@ -17,12 +17,12 @@ int main(int argc,char **args)
   PetscTruth flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,0);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_COMMON,0);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   n = m;
-  ierr = OptionsHasName(PETSC_NULL,"-rectA",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-rectA",&flg);CHKERRA(ierr);
   if (flg) n += 2;
-  ierr = OptionsHasName(PETSC_NULL,"-rectB",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-rectB",&flg);CHKERRA(ierr);
   if (flg) n -= 2;
 
   /* ---------- Assemble matrix and vectors ----------- */
@@ -84,7 +84,7 @@ int main(int argc,char **args)
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMult()\n");CHKERRA(ierr);
   ierr = MatMult(C,y,x);CHKERRA(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultAdd()\n");CHKERRA(ierr);
   ierr = MatMultAdd(C,y,z,w);CHKERRA(ierr);
   ierr = VecAXPY(&one,z,x);CHKERRA(ierr);
@@ -104,7 +104,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(x);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTranspose()\n");CHKERRA(ierr);
   ierr = MatMultTranspose(C,x,y);CHKERRA(ierr);
-  ierr = VecView(y,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTransposeAdd()\n");CHKERRA(ierr);
   ierr = MatMultTransposeAdd(C,x,u,s);CHKERRA(ierr);
@@ -118,20 +118,20 @@ int main(int argc,char **args)
   /* -------------------- Test MatGetDiagonal() ------------------ */
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatGetDiagonal(), MatDiagonalScale()\n");CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = VecSet(&one,x);CHKERRA(ierr);
   ierr = MatGetDiagonal(C,x);CHKERRA(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   for (i=vstart; i<vend; i++) {
     v = one*((double)(i+1));
     ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
   }
 
   /* -------------------- Test () MatDiagonalScale ------------------ */
-  ierr = OptionsHasName(PETSC_NULL,"-test_diagonalscale",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-test_diagonalscale",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = MatDiagonalScale(C,x,y);CHKERRA(ierr);
-    ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
+    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
   }
   /* Free data structures */
   ierr = VecDestroy(u);CHKERRA(ierr); ierr = VecDestroy(s);CHKERRA(ierr); 

@@ -1,10 +1,10 @@
-/*$Id: cookie.c,v 1.23 2000/09/28 21:09:12 bsmith Exp bsmith $*/
+/*$Id: cookie.c,v 1.24 2000/10/24 20:24:36 bsmith Exp bsmith $*/
 
 #include "petsc.h"  /*I "petsc.h" I*/
-int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_PREDEFINED;
+int PETSC_LARGEST_COOKIE = PETSC_LARGEST_COOKIE_PREDEFINED;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscRegisterCookie"
+#define __FUNC__ "PetscRegisterCookie"
 /*@
     PetscRegisterCookie - Registers a new cookie for use with a
     newly created PETSc object class.  The user should pass in
@@ -29,9 +29,9 @@ int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_PREDEFINED;
 int PetscRegisterCookie(int *cookie)
 {
   PetscFunctionBegin;
-  if (LARGEST_PETSC_COOKIE >= LARGEST_PETSC_COOKIE_ALLOWED) { 
+  if (PETSC_LARGEST_COOKIE >= PETSC_LARGEST_COOKIE_ALLOWED) { 
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"You have used too many PETSc cookies");
   }
-  if (!*cookie) *cookie = LARGEST_PETSC_COOKIE++;
+  if (!*cookie) *cookie = PETSC_LARGEST_COOKIE++;
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.41 2000/01/11 21:00:17 bsmith Exp balay $*/
+/*$Id: ex14.c,v 1.42 2000/05/05 22:15:11 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
 This does the tricky case.\n\n";
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,y,ADD_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
   ierr = VecScatterDestroy(ctx);CHKERRA(ierr);
   
-  ierr = VecView(y,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(y);CHKERRA(ierr);

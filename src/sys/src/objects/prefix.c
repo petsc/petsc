@@ -1,11 +1,11 @@
-/*$Id: prefix.c,v 1.27 2000/09/22 20:42:24 bsmith Exp bsmith $*/
+/*$Id: prefix.c,v 1.28 2000/09/28 21:09:12 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscObjectSetOptionsPrefix"
+#define __FUNC__ "PetscObjectSetOptionsPrefix"
 /*
    PetscObjectSetOptionsPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database. 
@@ -38,7 +38,7 @@ int PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscObjectAppendOptionsPrefix"
+#define __FUNC__ "PetscObjectAppendOptionsPrefix"
 /*
    PetscObjectAppendOptionsPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database. 
@@ -68,17 +68,17 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
   }
   if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hypen");
 
-  ierr        = PetscStrlen(prefix,&len1);CHKERRQ(ierr);
-  ierr        = PetscStrlen(buf,&len2);CHKERRQ(ierr);
-  obj->prefix = (char*)PetscMalloc((1+len1+len2)*sizeof(char));CHKPTRQ(obj->prefix);
-  ierr        = PetscStrcpy(obj->prefix,buf);CHKERRQ(ierr);
-  ierr        = PetscStrcat(obj->prefix,prefix);CHKERRQ(ierr);
-  ierr        = PetscFree(buf);CHKERRQ(ierr);
+  ierr  = PetscStrlen(prefix,&len1);CHKERRQ(ierr);
+  ierr  = PetscStrlen(buf,&len2);CHKERRQ(ierr);
+  ierr  = PetscMalloc((1+len1+len2)*sizeof(char),&obj->prefix);CHKERRQ(ierr);
+  ierr  = PetscStrcpy(obj->prefix,buf);CHKERRQ(ierr);
+  ierr  = PetscStrcat(obj->prefix,prefix);CHKERRQ(ierr);
+  ierr  = PetscFree(buf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscObjectGetOptionsPrefix"
+#define __FUNC__ "PetscObjectGetOptionsPrefix"
 /*
    PetscObjectGetOptionsPrefix - Gets the prefix of the PetscObject.
 
@@ -99,7 +99,7 @@ int PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscObjectPrependOptionsPrefix"
+#define __FUNC__ "PetscObjectPrependOptionsPrefix"
 /*
    PetscObjectPrependOptionsPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database. 
@@ -129,12 +129,12 @@ int PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
   }
   if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hypen");
 
-  ierr        = PetscStrlen(prefix,&len1);CHKERRQ(ierr);
-  ierr        = PetscStrlen(buf,&len2);CHKERRQ(ierr);
-  obj->prefix = (char*)PetscMalloc((1+len1+len2)*sizeof(char));CHKPTRQ(obj->prefix);
-  ierr        = PetscStrcpy(obj->prefix,prefix);CHKERRQ(ierr);
-  ierr        = PetscStrcat(obj->prefix,buf);CHKERRQ(ierr);
-  ierr        = PetscFree(buf);CHKERRQ(ierr);
+  ierr = PetscStrlen(prefix,&len1);CHKERRQ(ierr);
+  ierr = PetscStrlen(buf,&len2);CHKERRQ(ierr);
+  ierr = PetscMalloc((1+len1+len2)*sizeof(char),&obj->prefix);CHKERRQ(ierr);
+  ierr = PetscStrcpy(obj->prefix,prefix);CHKERRQ(ierr);
+  ierr = PetscStrcat(obj->prefix,buf);CHKERRQ(ierr);
+  ierr = PetscFree(buf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

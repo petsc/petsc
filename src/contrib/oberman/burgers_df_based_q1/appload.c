@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.14 2000/01/06 20:43:22 bsmith Exp bsmith $*/
+/*$Id: appload.c,v 1.15 2000/08/01 20:58:21 bsmith Exp bsmith $*/
 /*
      Loads the quadrilateral grid database from a file  and sets up the local 
      data structures. 
@@ -15,29 +15,29 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
 {
   int        ierr;
   PetscTruth flag;
-  Viewer     binary;
+  PetscViewer     binary;
   char       filename[256];
   AppView    *view;  /*added by H. */
 
-  (*appctx) = (AppCtx*)PetscMalloc(sizeof(AppCtx));CHKPTRQ(*appctx);
+  (*appctx) = (AppCtx*)PetscMalloc(sizeof(AppCtx));CHKERRQ(ierr);
   (*appctx)->comm = comm;
   view    = &(*appctx)->view; /*added by H. */
 
   /*-----------------------------------------------------------------------
      Load in the grid database
     ---------------------------------------------------------------------------*/
-  ierr = OptionsGetString(0,"-f",filename,256,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(0,"-f",filename,256,&flag);CHKERRQ(ierr);
   if (!flag) PetscStrcpy(filename,"gridfile");
-  ierr = ViewerBinaryOpen((*appctx)->comm,filename,BINARY_RDONLY,&binary);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen((*appctx)->comm,filename,PETSC_BINARY_RDONLY,&binary);CHKERRQ(ierr);
   ierr = AODataLoadBasic(binary,&(*appctx)->aodata);CHKERRQ(ierr);
-  ierr = ViewerDestroy(binary);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(binary);CHKERRQ(ierr);
 
   /*----------------------------------------------------
     setup viewing options (moved from AppCtxGraphics by H)
    --------------------------------------------------------*/
-  ierr = OptionsHasName(PETSC_NULL,"-show_grid",&view->show_grid);CHKERRQ(ierr); 
-  ierr = OptionsHasName(PETSC_NULL,"-show_solution",&view->show_solution);CHKERRQ(ierr); 
-  ierr = OptionsHasName(PETSC_NULL,"-show_griddata",&view->show_griddata);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-show_grid",&view->show_grid);CHKERRQ(ierr); 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-show_solution",&view->show_solution);CHKERRQ(ierr); 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-show_griddata",&view->show_griddata);CHKERRQ(ierr);
 
   /*------------------------------------------------------------------------
       Setup the local data structures 
@@ -89,7 +89,7 @@ int AppCtxSetLocal(AppCtx *appctx)
 
   if (appctx->view.show_griddata) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The Application Ordering Database (AO)\n:");CHKERRQ(ierr);
-    AODataView(ao,VIEWER_STDOUT_SELF);
+    AODataView(ao,PETSC_VIEWER_STDOUT_SELF);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\n-------- end of AO -------\n");CHKERRQ(ierr);  
   }
 
@@ -116,9 +116,9 @@ int AppCtxSetLocal(AppCtx *appctx)
  
   if(appctx->view.show_griddata){  
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\n [%d], vertex_global \n",rank);CHKERRQ(ierr);  
-    ISView(grid->vertex_global,VIEWER_STDOUT_WORLD);
+    ISView(grid->vertex_global,PETSC_VIEWER_STDOUT_WORLD);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\n [%d], df_global \n",rank);CHKERRQ(ierr);  
-    ISView(grid->df_global,VIEWER_STDOUT_WORLD);
+    ISView(grid->df_global,PETSC_VIEWER_STDOUT_WORLD);
   }
  
   /*    Get the coords corresponding to each cell */
@@ -132,7 +132,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   /*
     if(appctx->view.show_griddata){ 
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d],grid->dfltog,the local to global mapping \n",rank);CHKERRQ(ierr);  
-    ierr = ISLocalToGlobalMappingView(grid->dfltog,VIEWER_STDOUT_SELF);
+    ierr = ISLocalToGlobalMappingView(grid->dfltog,PETSC_VIEWER_STDOUT_SELF);
     }
     */
 
@@ -162,10 +162,10 @@ int AppCtxSetLocal(AppCtx *appctx)
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], cell_n= %d, vertex_n_ghosted=%d, df_n_ghosted=%d,\n",rank,grid->cell_n,grid->vertex_n_ghosted,grid->df_n_ghosted);CHKERRQ(ierr);
     /* 
        ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], grid->cell_df:\n",rank);CHKERRQ(ierr); 
-       PetscIntView(grid->cell_n*8,grid->cell_df,VIEWER_STDOUT_SELF); 
+       PetscIntView(grid->cell_n*8,grid->cell_df,PETSC_VIEWER_STDOUT_SELF); 
        */
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], grid->vertex_df:\n");CHKERRQ(ierr);
-    ierr = PetscIntView(2*grid->vertex_n_ghosted,grid->vertex_df,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(2*grid->vertex_n_ghosted,grid->vertex_df,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   } 
 
   /* Get  the number of local vertices (rather than the number of ghosted vertices) */
@@ -192,18 +192,18 @@ int AppCtxSetLocal(AppCtx *appctx)
   /* Create some boundary information */
   ierr = ISGetIndices(grid->isvertex_boundary,&grid->vertex_boundary);CHKERRQ(ierr);
   ierr = ISGetLocalSize(grid->isvertex_boundary,&grid->vertex_boundary_count);CHKERRQ(ierr);
-  grid->boundary_df = (int*)PetscMalloc(2*grid->vertex_boundary_count*sizeof(int));CHKPTRQ(grid->boundary_df);
-  grid->bvs = (double*)PetscMalloc(2*grid->vertex_boundary_count*sizeof(double));CHKPTRQ(grid->bvs);
+  grid->boundary_df = (int*)PetscMalloc(2*grid->vertex_boundary_count*sizeof(int));CHKERRQ(ierr);
+  grid->bvs = (double*)PetscMalloc(2*grid->vertex_boundary_count*sizeof(double));CHKERRQ(ierr);
   for(i = 0; i < grid->vertex_boundary_count; i++){
     grid->boundary_df[2*i] = grid->vertex_df[2*grid->vertex_boundary[i]];
     grid->boundary_df[2*i+1] = grid->vertex_df[2*grid->vertex_boundary[i]+1];
   }
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,2*grid->vertex_boundary_count,grid->boundary_df,&grid->isboundary_df);
 
-  if(0){printf("here  comes boundary df\n"); PetscIntView(2*grid->vertex_boundary_count,grid->boundary_df,VIEWER_STDOUT_SELF); }
+  if(0){printf("here  comes boundary df\n"); PetscIntView(2*grid->vertex_boundary_count,grid->boundary_df,PETSC_VIEWER_STDOUT_SELF); }
 
   /* need a list of x,y coors corresponding to the boundary vertices only */
-  grid->bvc = (double*)PetscMalloc(2*grid->vertex_boundary_count*sizeof(double));CHKPTRQ(grid->bvc);
+  grid->bvc = (double*)PetscMalloc(2*grid->vertex_boundary_count*sizeof(double));CHKERRQ(ierr);
   for(i = 0; i < grid->vertex_boundary_count; i++){
     grid->bvc[2*i] = grid->vertex_value[2*grid->vertex_boundary[i]];
     grid->bvc[2*i+1]  = grid->vertex_value[2*grid->vertex_boundary[i]+1];
@@ -236,8 +236,8 @@ int AppCtxDestroy(AppCtx *appctx)
   ierr = VecScatterDestroy(appctx->algebra.dfgtol);CHKERRQ(ierr);
 
   if (appctx->view.drawglobal) {
-    ierr = DrawDestroy(appctx->view.drawglobal);CHKERRQ(ierr);
-    ierr = DrawDestroy(appctx->view.drawlocal);CHKERRQ(ierr);
+    ierr = PetscDrawDestroy(appctx->view.drawglobal);CHKERRQ(ierr);
+    ierr = PetscDrawDestroy(appctx->view.drawlocal);CHKERRQ(ierr);
   }
 
   ierr = ISDestroy(appctx->grid.vertex_global);CHKERRQ(ierr);

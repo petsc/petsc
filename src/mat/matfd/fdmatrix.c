@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.78 2000/09/28 21:12:18 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.79 2001/01/04 22:21:25 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -9,8 +9,8 @@
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatFDColoringView_Draw_Zoom"></a>*/"MatFDColoringView_Draw_Zoom"
-static int MatFDColoringView_Draw_Zoom(Draw draw,void *Aa)
+#define __FUNC__ "MatFDColoringView_Draw_Zoom"
+static int MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
 {
   MatFDColoring fd = (MatFDColoring)Aa;
   int           ierr,i,j;
@@ -23,37 +23,37 @@ static int MatFDColoringView_Draw_Zoom(Draw draw,void *Aa)
     for (j=0; j<fd->nrows[i]; j++) {
       y = fd->M - fd->rows[i][j] - fd->rstart;
       x = fd->columnsforrow[i][j];
-      ierr = DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);CHKERRQ(ierr);
+      ierr = PetscDrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatFDColoringView_Draw"></a>*/"MatFDColoringView_Draw"
-static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
+#define __FUNC__ "MatFDColoringView_Draw"
+static int MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
 {
   int         ierr;
   PetscTruth  isnull;
-  Draw        draw;
+  PetscDraw        draw;
   PetscReal   xr,yr,xl,yl,h,w;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+  ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   ierr = PetscObjectCompose((PetscObject)fd,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
 
   xr  = fd->N; yr = fd->M; h = yr/10.0; w = xr/10.0; 
   xr += w;     yr += h;    xl = -w;     yl = -h;
-  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
-  ierr = DrawZoom(draw,MatFDColoringView_Draw_Zoom,fd);CHKERRQ(ierr);
+  ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  ierr = PetscDrawZoom(draw,MatFDColoringView_Draw_Zoom,fd);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)fd,"Zoomviewer",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringView"
+#define __FUNC__ "MatFDColoringView"
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
 
@@ -67,58 +67,58 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
 
    Notes:
    The available visualization contexts include
-+     VIEWER_STDOUT_SELF - standard output (default)
-.     VIEWER_STDOUT_WORLD - synchronized standard
++     PETSC_VIEWER_STDOUT_SELF - standard output (default)
+.     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
         output where only the first processor opens
         the file.  All other processors send their 
         data to the first processor to print. 
--     VIEWER_DRAW_WORLD - graphical display of nonzero structure
+-     PETSC_VIEWER_DRAW_WORLD - graphical display of nonzero structure
 
    Notes:
      Since PETSc uses only a small number of basic colors (currently 33), if the coloring
-   involves moe than 33 then some seemingly identical colors are displayed making it look
+   involves more than 33 then some seemingly identical colors are displayed making it look
    like an illegal coloring. This is just a graphical artifact.
 
 .seealso: MatFDColoringCreate()
 
 .keywords: Mat, finite differences, coloring, view
 @*/
-int MatFDColoringView(MatFDColoring c,Viewer viewer)
+int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
 {
   int        i,j,format,ierr;
   PetscTruth isdraw,isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_(c->comm);
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE); 
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(c->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE); 
   PetscCheckSameComm(c,viewer);
 
-  ierr  = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr  = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isdraw) { 
     ierr = MatFDColoringView_Draw(c,viewer);CHKERRQ(ierr);
   } else if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"MatFDColoring Object:\n");CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"  Error tolerance=%g\n",c->error_rel);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"  Umin=%g\n",c->umin);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"  Number of colors=%d\n",c->ncolors);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"MatFDColoring Object:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Error tolerance=%g\n",c->error_rel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Umin=%g\n",c->umin);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors=%d\n",c->ncolors);CHKERRQ(ierr);
 
-    ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format != VIEWER_FORMAT_ASCII_INFO) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format != PETSC_VIEWER_FORMAT_ASCII_INFO) {
       for (i=0; i<c->ncolors; i++) {
-        ierr = ViewerASCIIPrintf(viewer,"  Information for color %d\n",i);CHKERRQ(ierr);
-        ierr = ViewerASCIIPrintf(viewer,"    Number of columns %d\n",c->ncolumns[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  Information for color %d\n",i);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    Number of columns %d\n",c->ncolumns[i]);CHKERRQ(ierr);
         for (j=0; j<c->ncolumns[i]; j++) {
-          ierr = ViewerASCIIPrintf(viewer,"      %d\n",c->columns[i][j]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"      %d\n",c->columns[i][j]);CHKERRQ(ierr);
         }
-        ierr = ViewerASCIIPrintf(viewer,"    Number of rows %d\n",c->nrows[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    Number of rows %d\n",c->nrows[i]);CHKERRQ(ierr);
         for (j=0; j<c->nrows[i]; j++) {
-          ierr = ViewerASCIIPrintf(viewer,"      %d %d \n",c->rows[i][j],c->columnsforrow[i][j]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"      %d %d \n",c->rows[i][j],c->columnsforrow[i][j]);CHKERRQ(ierr);
         }
       }
     }
-    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for MatFDColoring",((PetscObject)viewer)->type_name);
   }
@@ -126,7 +126,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringSetParameters"
+#define __FUNC__ "MatFDColoringSetParameters"
 /*@
    MatFDColoringSetParameters - Sets the parameters for the sparse approximation of
    a Jacobian matrix using finite differences.
@@ -163,7 +163,7 @@ int MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umi
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringSetFrequency"
+#define __FUNC__ "MatFDColoringSetFrequency"
 /*@
    MatFDColoringSetFrequency - Sets the frequency for computing new Jacobian
    matrices. 
@@ -199,7 +199,7 @@ int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringGetFrequency"
+#define __FUNC__ "MatFDColoringGetFrequency"
 /*@
    MatFDColoringGetFrequency - Gets the frequency for computing new Jacobian
    matrices. 
@@ -237,7 +237,7 @@ int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringSetFunction"
+#define __FUNC__ "MatFDColoringSetFunction"
 /*@C
    MatFDColoringSetFunction - Sets the function to use for computing the Jacobian.
 
@@ -269,7 +269,7 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringSetFromOptions"
+#define __FUNC__ "MatFDColoringSetFromOptions"
 /*@
    MatFDColoringSetFromOptions - Sets coloring finite difference parameters from 
    the options database.
@@ -307,46 +307,46 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
 
-  ierr = OptionsBegin(matfd->comm,matfd->prefix,"Jacobian computation via finite differences option","MatFD");CHKERRQ(ierr);
-    ierr = OptionsDouble("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
-    ierr = OptionsInt("-mat_fd_coloring_freq","How often Jacobian is recomputed","MatFDColoringSetFrequency",matfd->freq,&matfd->freq,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(matfd->comm,matfd->prefix,"Jacobian computation via finite differences option","MatFD");CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_fd_coloring_freq","How often Jacobian is recomputed","MatFDColoringSetFrequency",matfd->freq,&matfd->freq,0);CHKERRQ(ierr);
     /* not used here; but so they are presented in the GUI */
-    ierr = OptionsName("-mat_fd_coloring_view","Print entire datastructure used for Jacobian","None",0);CHKERRQ(ierr);
-    ierr = OptionsName("-mat_fd_coloring_view_info","Print number of colors etc for Jacobian","None",0);CHKERRQ(ierr);
-    ierr = OptionsName("-mat_fd_coloring_view_draw","Plot nonzero structure ofJacobian","None",0);CHKERRQ(ierr);
-  OptionsEnd();CHKERRQ(ierr);
+    ierr = PetscOptionsName("-mat_fd_coloring_view","Print entire datastructure used for Jacobian","None",0);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-mat_fd_coloring_view_info","Print number of colors etc for Jacobian","None",0);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-mat_fd_coloring_view_draw","Plot nonzero structure ofJacobian","None",0);CHKERRQ(ierr);
+  PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringView_Private"
+#define __FUNC__ "MatFDColoringView_Private"
 int MatFDColoringView_Private(MatFDColoring fd)
 {
   int        ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatFDColoringView(fd,VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,PETSC_VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_info",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_info",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ViewerPushFormat(VIEWER_STDOUT_(fd->comm),VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatFDColoringView(fd,VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
-    ierr = ViewerPopFormat(VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(fd->comm),PETSC_VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,PETSC_VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatFDColoringView(fd,VIEWER_DRAW_(fd->comm));CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_DRAW_(fd->comm));CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,PETSC_VIEWER_DRAW_(fd->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(fd->comm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringCreate" 
+#define __FUNC__ "MatFDColoringCreate" 
 /*@C
    MatFDColoringCreate - Creates a matrix coloring context for finite difference 
    computation of Jacobians.
@@ -377,13 +377,13 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   int           ierr,M,N;
 
   PetscFunctionBegin;
-  ierr = PLogEventBegin(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
   if (M != N) SETERRQ(PETSC_ERR_SUP,"Only for square matrices");
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_COOKIE,0,"MatFDColoring",comm,MatFDColoringDestroy,MatFDColoringView);
-  PLogObjectCreate(c);
+  PetscLogObjectCreate(c);
 
   if (mat->ops->fdcoloringcreate) {
     ierr = (*mat->ops->fdcoloringcreate)(mat,iscoloring,c);CHKERRQ(ierr);
@@ -400,12 +400,12 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   ierr = MatFDColoringView_Private(c);CHKERRQ(ierr);
 
   *color = c;
-  ierr = PLogEventEnd(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringDestroy"
+#define __FUNC__ "MatFDColoringDestroy"
 /*@C
     MatFDColoringDestroy - Destroys a matrix coloring context that was created
     via MatFDColoringCreate().
@@ -444,13 +444,13 @@ int MatFDColoringDestroy(MatFDColoring c)
     ierr = VecDestroy(c->w2);CHKERRQ(ierr);
     ierr = VecDestroy(c->w3);CHKERRQ(ierr);
   }
-  PLogObjectDestroy(c);
+  PetscLogObjectDestroy(c);
   PetscHeaderDestroy(c);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringApply"
+#define __FUNC__ "MatFDColoringApply"
 /*@
     MatFDColoringApply - Given a matrix for which a MatFDColoring context 
     has been created, computes the Jacobian for a function via finite differences.
@@ -498,21 +498,21 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     }
   }
 
-  ierr = PLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   if (!coloring->w1) {
     ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
-    PLogObjectParent(coloring,coloring->w1);
+    PetscLogObjectParent(coloring,coloring->w1);
     ierr = VecDuplicate(x1,&coloring->w2);CHKERRQ(ierr);
-    PLogObjectParent(coloring,coloring->w2);
+    PetscLogObjectParent(coloring,coloring->w2);
     ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
-    PLogObjectParent(coloring,coloring->w3);
+    PetscLogObjectParent(coloring,coloring->w3);
   }
   w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
   if (flg) {
-    PLogInfo(coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n");
+    PetscLogInfo(coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n");
   } else {
     ierr = MatZeroEntries(J);CHKERRQ(ierr);
   }
@@ -549,6 +549,9 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   vscale_array = vscale_array + start;ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  ierr = VecView(coloring->vscale,PETSC_VIEWER_STDOUT_WORLD);
+  ierr = VecView(x1,PETSC_VIEWER_STDOUT_WORLD);
 
   if (coloring->vscaleforrow) vscaleforrow = coloring->vscaleforrow;
   else                        vscaleforrow = coloring->columnsforrow;
@@ -605,9 +608,9 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   xx = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-mat_null_space_test",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_null_space_test",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatNullSpaceTest(J->nullsp,J);CHKERRQ(ierr);
   }
@@ -615,7 +618,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringApplyTS"
+#define __FUNC__ "MatFDColoringApplyTS"
 /*@
     MatFDColoringApplyTS - Given a matrix for which a MatFDColoring context 
     has been created, computes the Jacobian for a function via finite differences.
@@ -653,21 +656,21 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE);
   PetscValidHeaderSpecific(x1,VEC_COOKIE);
 
-  ierr = PLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   if (!coloring->w1) {
     ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
-    PLogObjectParent(coloring,coloring->w1);
+    PetscLogObjectParent(coloring,coloring->w1);
     ierr = VecDuplicate(x1,&coloring->w2);CHKERRQ(ierr);
-    PLogObjectParent(coloring,coloring->w2);
+    PetscLogObjectParent(coloring,coloring->w2);
     ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
-    PLogObjectParent(coloring,coloring->w3);
+    PetscLogObjectParent(coloring,coloring->w3);
   }
   w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
   if (flg) {
-    PLogInfo(coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n");
+    PetscLogInfo(coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n");
   } else {
     ierr = MatZeroEntries(J);CHKERRQ(ierr);
   }
@@ -758,13 +761,13 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
   xx    = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = PLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
+  ierr  = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringSetRecompute()"
+#define __FUNC__ "MatFDColoringSetRecompute()"
 /*@C
    MatFDColoringSetRecompute - Indicates that the next time a Jacobian preconditioner
      is needed it sholuld be recomputed. Once this is called and the new Jacobian is computed

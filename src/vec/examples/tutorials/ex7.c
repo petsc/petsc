@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.27 2000/05/05 22:15:21 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.28 2000/05/10 16:40:22 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
 Also demonstrates passing  PETSc objects, MPI Communicators from C to Fortran\n\
@@ -48,7 +48,7 @@ int main(int argc,char **args)
 
   ex7f_(&vec,&fcomm);
 
-  ierr = VecView(vec,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(vec,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = VecDestroy(vec);CHKERRA(ierr);
   PetscFinalize();
   return 0;

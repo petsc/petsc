@@ -1,19 +1,19 @@
-/*$Id: dlregis.c,v 1.16 2000/04/12 04:25:55 bsmith Exp balay $*/
+/*$Id: dlregis.c,v 1.17 2000/05/05 22:18:49 balay Exp bsmith $*/
 
 #include "petscts.h"
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DLLibraryRegister"
+#define __FUNC__ "PetscDLLibraryRegister"
 /*
-  DLLibraryRegister - This function is called when the dynamic library it is in is opened.
+  PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
   This one registers all the TS methods that are in the basic PETSc libpetscts library.
 
   Input Parameter:
   path - library path
  */
-int DLLibraryRegister(char *path)
+int PetscDLLibraryRegister(char *path)
 {
   int ierr;
 

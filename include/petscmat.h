@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.209 2000/11/19 00:41:25 bsmith Exp bsmith $ */
+/* $Id: petscmat.h,v 1.210 2000/12/01 16:07:39 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -48,7 +48,7 @@ EXTERN int MatRegister(char*,char*,char*,int(*)(Mat));
 #define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
 #endif
 extern PetscTruth MatRegisterAllCalled;
-extern FList      MatList;
+extern PetscFList      MatList;
 
 EXTERN int MatCreate(MPI_Comm,int,int,int,int,Mat*);
 EXTERN int MatCreateSeqDense(MPI_Comm,int,int,Scalar*,Mat*);
@@ -160,7 +160,7 @@ EXTERN int MatConvertRegister(char*,char*,char*,int (*)(Mat,MatType,Mat*));
 EXTERN int MatConvertRegisterAll(char*);
 EXTERN int MatConvertRegisterDestroy(void);
 extern PetscTruth MatConvertRegisterAllCalled;
-extern FList      MatConvertList;
+extern PetscFList      MatConvertList;
 EXTERN int MatConvert(Mat,MatType,Mat*);
 EXTERN int MatDuplicate(Mat,MatDuplicateOption,Mat*);
 
@@ -176,9 +176,9 @@ E*/
 typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER} MatStructure;
 
 EXTERN int MatCopy(Mat,Mat,MatStructure);
-EXTERN int MatView(Mat,Viewer);
+EXTERN int MatView(Mat,PetscViewer);
 
-EXTERN int MatLoadRegister(char*,char*,char*,int (*)(Viewer,MatType,Mat*));
+EXTERN int MatLoadRegister(char*,char*,char*,int (*)(PetscViewer,MatType,Mat*));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatLoadRegisterDynamic(a,b,c,d) MatLoadRegister(a,b,c,0)
 #else
@@ -187,8 +187,8 @@ EXTERN int MatLoadRegister(char*,char*,char*,int (*)(Viewer,MatType,Mat*));
 EXTERN int MatLoadRegisterAll(char*);
 EXTERN int MatLoadRegisterDestroy(void);
 extern PetscTruth MatLoadRegisterAllCalled;
-extern FList      MatLoadList;
-EXTERN int MatLoad(Viewer,MatType,Mat*);
+extern PetscFList      MatLoadList;
+EXTERN int MatLoad(PetscViewer,MatType,Mat*);
 
 EXTERN int MatGetRowIJ(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *);
 EXTERN int MatRestoreRowIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *);
@@ -207,15 +207,15 @@ EXTERN int MatRestoreColumnIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth 
 .seealso:  MatGetInfo()
 S*/
 typedef struct {
-  PLogDouble rows_global,columns_global;         /* number of global rows and columns */
-  PLogDouble rows_local,columns_local;           /* number of local rows and columns */
-  PLogDouble block_size;                         /* block size */
-  PLogDouble nz_allocated,nz_used,nz_unneeded;   /* number of nonzeros */
-  PLogDouble memory;                             /* memory allocated */
-  PLogDouble assemblies;                         /* number of matrix assemblies called */
-  PLogDouble mallocs;                            /* number of mallocs during MatSetValues() */
-  PLogDouble fill_ratio_given,fill_ratio_needed; /* fill ratio for LU/ILU */
-  PLogDouble factor_mallocs;                     /* number of mallocs during factorization */
+  PetscLogDouble rows_global,columns_global;         /* number of global rows and columns */
+  PetscLogDouble rows_local,columns_local;           /* number of local rows and columns */
+  PetscLogDouble block_size;                         /* block size */
+  PetscLogDouble nz_allocated,nz_used,nz_unneeded;   /* number of nonzeros */
+  PetscLogDouble memory;                             /* memory allocated */
+  PetscLogDouble assemblies;                         /* number of matrix assemblies called */
+  PetscLogDouble mallocs;                            /* number of mallocs during MatSetValues() */
+  PetscLogDouble fill_ratio_given,fill_ratio_needed; /* fill ratio for LU/ILU */
+  PetscLogDouble factor_mallocs;                     /* number of mallocs during factorization */
 } MatInfo;
 
 typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
@@ -284,7 +284,7 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
   int __ierr,__tmp = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
-  dnz = (int*)PetscMalloc(2*__tmp*sizeof(int));CHKPTRQ(dnz);onz = dnz + __tmp;\
+ierr = PetscMalloc(2*__tmp*sizeof(int),&(  dnz ));CHKERRQ(ierr);onz = dnz + __tmp;\
   __ierr = PetscMemzero(dnz,2*__tmp*sizeof(int));CHKERRQ(__ierr);\
   __ierr = MPI_Scan(&__ctmp,&__end,1,MPI_INT,MPI_SUM,comm);CHKERRQ(__ierr); __start = __end - __ctmp;\
   __ierr = MPI_Scan(&__tmp,&__rstart,1,MPI_INT,MPI_SUM,comm);CHKERRQ(__ierr); __rstart = __rstart - __tmp;
@@ -360,7 +360,7 @@ EXTERN int MatOrderingRegister(char*,char*,char*,int(*)(Mat,MatOrderingType,IS*,
 EXTERN int        MatOrderingRegisterDestroy(void);
 EXTERN int        MatOrderingRegisterAll(char*);
 extern PetscTruth MatOrderingRegisterAllCalled;
-extern FList      MatOrderingList;
+extern PetscFList      MatOrderingList;
 
 EXTERN int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
 
@@ -497,7 +497,7 @@ typedef struct _p_MatFDColoring *MatFDColoring;
 
 EXTERN int MatFDColoringCreate(Mat,ISColoring,MatFDColoring *);
 EXTERN int MatFDColoringDestroy(MatFDColoring);
-EXTERN int MatFDColoringView(MatFDColoring,Viewer);
+EXTERN int MatFDColoringView(MatFDColoring,PetscViewer);
 EXTERN int MatFDColoringSetFunction(MatFDColoring,int (*)(void),void*);
 EXTERN int MatFDColoringSetParameters(MatFDColoring,double,double);
 EXTERN int MatFDColoringSetFrequency(MatFDColoring,int);
@@ -536,7 +536,7 @@ EXTERN int        MatPartitioningRegisterAll(char *);
 extern PetscTruth MatPartitioningRegisterAllCalled;
 EXTERN int        MatPartitioningRegisterDestroy(void);
 
-EXTERN int MatPartitioningView(MatPartitioning,Viewer);
+EXTERN int MatPartitioningView(MatPartitioning,PetscViewer);
 EXTERN int MatPartitioningSetFromOptions(MatPartitioning);
 EXTERN int MatPartitioningGetType(MatPartitioning,MatPartitioningType*);
 
@@ -619,7 +619,7 @@ EXTERN int MatShellSetContext(Mat,void*);
 /*
    Codes for matrices stored on disk. By default they are
  stored in a universal format. By changing the format with 
- ViewerSetFormat(viewer,VIEWER_FORMAT_BINARY_NATIVE); the matrices will
+ PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_BINARY_NATIVE); the matrices will
  be stored in a way natural for the matrix, for example dense matrices
  would be stored as dense. Matrices stored this way may only be
  read into matrices of the same time.
@@ -677,6 +677,8 @@ EXTERN int MatMAIJRedimension(Mat,int,Mat*);
 EXTERN int MatMAIJGetAIJ(Mat,Mat*);
 
 EXTERN int MatMPIAdjSetValues(Mat,int*,int*,int*);
+
+EXTERN int MatComputeExplicitOperator(Mat,Mat*);
 
 #endif
 

@@ -1,4 +1,4 @@
-/*$Id: zdraw.c,v 1.36 2000/01/11 21:03:48 bsmith Exp balay $*/
+/*$Id: zdraw.c,v 1.37 2000/09/26 19:11:19 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 
@@ -16,8 +16,8 @@
 #define drawstring_          DRAWSTRING
 #define drawstringvertical_  DRAWSTRINGVERTICAL
 #define drawdestroy_         DRAWDESTROY
-#define viewerdrawgetdraw_   VIEWERDRAWGETDRAW
-#define viewerdrawgetdrawlg_ VIEWERDRAWGETDRAWLG
+#define viewerdrawgetdraw_   PETSC_VIEWERDRAWGETDRAW
+#define viewerdrawgetdrawlg_ PETSC_VIEWERDRAWGETDRAWLG
 #define drawgettitle_        DRAWGETTITLE
 #define drawsettitle_        DRAWSETTITLE
 #define drawappendtitle_     DRAWAPPENDTITLE
@@ -48,8 +48,8 @@
 
 EXTERN_C_BEGIN
 
-static void (PETSC_STDCALL *f1)(Draw *,void *,int *);
-static int ourdrawzoom(Draw draw,void *ctx)
+static void (PETSC_STDCALL *f1)(PetscDraw *,void *,int *);
+static int ourdrawzoom(PetscDraw draw,void *ctx)
 {
   int ierr = 0;
 
@@ -57,104 +57,104 @@ static int ourdrawzoom(Draw draw,void *ctx)
   return 0;
 }
 
-void PETSC_STDCALL drawzoom_(Draw *draw,void (PETSC_STDCALL *f)(Draw *,void *,int *),void *ctx,int *ierr)
+void PETSC_STDCALL drawzoom_(PetscDraw *draw,void (PETSC_STDCALL *f)(PetscDraw *,void *,int *),void *ctx,int *ierr)
 {
   f1      = f;
-  *ierr = DrawZoom(*draw,ourdrawzoom,ctx);
+  *ierr = PetscDrawZoom(*draw,ourdrawzoom,ctx);
 }
 
-void PETSC_STDCALL viewerdrawgetdraw_(Viewer *vin,int *win,Draw *draw,int *ierr)
+void PETSC_STDCALL viewerdrawgetdraw_(PetscViewer *vin,int *win,PetscDraw *draw,int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
-  *ierr = ViewerDrawGetDraw(v,*win,draw);
+  *ierr = PetscViewerDrawGetDraw(v,*win,draw);
 }
 
-void PETSC_STDCALL viewerdrawgetdrawlg_(Viewer *vin,int *win,DrawLG *drawlg,int *ierr)
+void PETSC_STDCALL viewerdrawgetdrawlg_(PetscViewer *vin,int *win,PetscDrawLG *drawlg,int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
-  *ierr = ViewerDrawGetDrawLG(v,*win,drawlg);
+  *ierr = PetscViewerDrawGetDrawLG(v,*win,drawlg);
 }
 
-void PETSC_STDCALL drawsettype_(Draw *ctx,CHAR text PETSC_MIXED_LEN(len),
+void PETSC_STDCALL drawsettype_(PetscDraw *ctx,CHAR text PETSC_MIXED_LEN(len),
                int *ierr PETSC_END_LEN(len)){
   char *t;
   FIXCHAR(text,len,t);
-  *ierr = DrawSetType(*ctx,t);
+  *ierr = PetscDrawSetType(*ctx,t);
   FREECHAR(text,t);
 }
 
-void PETSC_STDCALL drawstring_(Draw *ctx,double* xl,double* yl,int* cl,CHAR text PETSC_MIXED_LEN(len),
+void PETSC_STDCALL drawstring_(PetscDraw *ctx,double* xl,double* yl,int* cl,CHAR text PETSC_MIXED_LEN(len),
                int *ierr PETSC_END_LEN(len)){
   char *t;
   FIXCHAR(text,len,t);
-  *ierr = DrawString(*ctx,*xl,*yl,*cl,t);
+  *ierr = PetscDrawString(*ctx,*xl,*yl,*cl,t);
   FREECHAR(text,t);
 }
-void PETSC_STDCALL drawstringvertical_(Draw *ctx,double *xl,double *yl,int *cl,
+void PETSC_STDCALL drawstringvertical_(PetscDraw *ctx,double *xl,double *yl,int *cl,
                    CHAR text PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(text,len,t);
-  *ierr = DrawStringVertical(*ctx,*xl,*yl,*cl,t);
+  *ierr = PetscDrawStringVertical(*ctx,*xl,*yl,*cl,t);
   FREECHAR(text,t);
 }
 
-void PETSC_STDCALL drawdestroy_(Draw *ctx,int *ierr)
+void PETSC_STDCALL drawdestroy_(PetscDraw *ctx,int *ierr)
 {
-  *ierr = DrawDestroy(*ctx);
+  *ierr = PetscDrawDestroy(*ctx);
 }
 
 void PETSC_STDCALL drawcreate_(MPI_Comm *comm,CHAR display PETSC_MIXED_LEN(len1),
-                    CHAR title PETSC_MIXED_LEN(len2),int *x,int *y,int *w,int *h,Draw* inctx,
+                    CHAR title PETSC_MIXED_LEN(len2),int *x,int *y,int *w,int *h,PetscDraw* inctx,
                     int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *t1,*t2;
 
   FIXCHAR(display,len1,t1);
   FIXCHAR(title,len2,t2);
-  *ierr = DrawCreate((MPI_Comm)PetscToPointerComm(*comm),t1,t2,*x,*y,*w,*h,inctx);
+  *ierr = PetscDrawCreate((MPI_Comm)PetscToPointerComm(*comm),t1,t2,*x,*y,*w,*h,inctx);
   FREECHAR(display,t1);
   FREECHAR(title,t2);
 }
 
 #if defined(PETSC_HAVE_X11)
 void PETSC_STDCALL drawopenx_(MPI_Comm *comm,CHAR display PETSC_MIXED_LEN(len1),
-                    CHAR title PETSC_MIXED_LEN(len2),int *x,int *y,int *w,int *h,Draw* inctx,
+                    CHAR title PETSC_MIXED_LEN(len2),int *x,int *y,int *w,int *h,PetscDraw* inctx,
                     int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *t1,*t2;
 
   FIXCHAR(display,len1,t1);
   FIXCHAR(title,len2,t2);
-  *ierr = DrawOpenX((MPI_Comm)PetscToPointerComm(*comm),t1,t2,*x,*y,*w,*h,inctx);
+  *ierr = PetscDrawOpenX((MPI_Comm)PetscToPointerComm(*comm),t1,t2,*x,*y,*w,*h,inctx);
   FREECHAR(display,t1);
   FREECHAR(title,t2);
 }
 #endif
 
-void PETSC_STDCALL drawlggetaxis_(DrawLG *lg,DrawAxis *axis,int *ierr)
+void PETSC_STDCALL drawlggetaxis_(PetscDrawLG *lg,PetscDrawAxis *axis,int *ierr)
 {
-  *ierr = DrawLGGetAxis(*lg,axis);
+  *ierr = PetscDrawLGGetAxis(*lg,axis);
 }
 
-void PETSC_STDCALL drawlggetdraw_(DrawLG *lg,Draw *win,int *ierr)
+void PETSC_STDCALL drawlggetdraw_(PetscDrawLG *lg,PetscDraw *win,int *ierr)
 {
-  *ierr = DrawLGGetDraw(*lg,win);
+  *ierr = PetscDrawLGGetDraw(*lg,win);
 }
 
-void PETSC_STDCALL drawlgdestroy_(DrawLG *lg,int *ierr)
+void PETSC_STDCALL drawlgdestroy_(PetscDrawLG *lg,int *ierr)
 {
-  *ierr = DrawLGDestroy(*lg);
+  *ierr = PetscDrawLGDestroy(*lg);
 }
 
-void PETSC_STDCALL drawlgcreate_(Draw *win,int *dim,DrawLG *outctx,int *ierr)
+void PETSC_STDCALL drawlgcreate_(PetscDraw *win,int *dim,PetscDrawLG *outctx,int *ierr)
 {
-  *ierr = DrawLGCreate(*win,*dim,outctx);
+  *ierr = PetscDrawLGCreate(*win,*dim,outctx);
 }
 
-void PETSC_STDCALL drawaxissetlabels_(DrawAxis *axis,CHAR top PETSC_MIXED_LEN(len1),
+void PETSC_STDCALL drawaxissetlabels_(PetscDrawAxis *axis,CHAR top PETSC_MIXED_LEN(len1),
                     CHAR xlabel PETSC_MIXED_LEN(len2),CHAR ylabel PETSC_MIXED_LEN(len3),
                     int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3))
 {
@@ -163,23 +163,23 @@ void PETSC_STDCALL drawaxissetlabels_(DrawAxis *axis,CHAR top PETSC_MIXED_LEN(le
   FIXCHAR(top,len1,t1);
   FIXCHAR(xlabel,len2,t2);
   FIXCHAR(ylabel,len3,t3);
-  *ierr = DrawAxisSetLabels(*axis,t1,t2,t3);
+  *ierr = PetscDrawAxisSetLabels(*axis,t1,t2,t3);
   FREECHAR(top,t1);
   FREECHAR(xlabel,t2);
   FREECHAR(ylabel,t3);
 }
 
-void PETSC_STDCALL drawaxisdestroy_(DrawAxis *axis,int *ierr)
+void PETSC_STDCALL drawaxisdestroy_(PetscDrawAxis *axis,int *ierr)
 {
-  *ierr = DrawAxisDestroy(*axis);
+  *ierr = PetscDrawAxisDestroy(*axis);
 }
 
-void PETSC_STDCALL drawaxiscreate_(Draw *win,DrawAxis *ctx,int *ierr)
+void PETSC_STDCALL drawaxiscreate_(PetscDraw *win,PetscDrawAxis *ctx,int *ierr)
 {
-  *ierr = DrawAxisCreate(*win,ctx);
+  *ierr = PetscDrawAxisCreate(*win,ctx);
 }
 
-void PETSC_STDCALL drawgettitle_(Draw *draw,CHAR title PETSC_MIXED_LEN(len),
+void PETSC_STDCALL drawgettitle_(PetscDraw *draw,CHAR title PETSC_MIXED_LEN(len),
                                  int *ierr PETSC_END_LEN(len))
 {
   char *c3,*t;
@@ -191,31 +191,31 @@ void PETSC_STDCALL drawgettitle_(Draw *draw,CHAR title PETSC_MIXED_LEN(len),
     c3   = title;
     len3 = len - 1;
 #endif
-  *ierr = DrawGetTitle(*draw,&t);
+  *ierr = PetscDrawGetTitle(*draw,&t);
   *ierr = PetscStrncpy(c3,t,len3);
 }
 
-void PETSC_STDCALL drawsettitle_(Draw *draw,CHAR title PETSC_MIXED_LEN(len),
+void PETSC_STDCALL drawsettitle_(PetscDraw *draw,CHAR title PETSC_MIXED_LEN(len),
                                  int *ierr PETSC_END_LEN(len))
 {
   char *t1;
   FIXCHAR(title,len,t1);
-  *ierr = DrawSetTitle(*draw,t1);
+  *ierr = PetscDrawSetTitle(*draw,t1);
   FREECHAR(title,t1);
 }
 
-void PETSC_STDCALL drawappendtitle_(Draw *draw,CHAR title PETSC_MIXED_LEN(len),
+void PETSC_STDCALL drawappendtitle_(PetscDraw *draw,CHAR title PETSC_MIXED_LEN(len),
                                     int *ierr PETSC_END_LEN(len))
 {
   char *t1;
   FIXCHAR(title,len,t1);
-  *ierr = DrawAppendTitle(*draw,t1);
+  *ierr = PetscDrawAppendTitle(*draw,t1);
   FREECHAR(title,t1);
 }
 
-void PETSC_STDCALL drawgetpopup_(Draw *draw,Draw *popup,int *ierr)
+void PETSC_STDCALL drawgetpopup_(PetscDraw *draw,PetscDraw *popup,int *ierr)
 {
-  *ierr = DrawGetPopup(*draw,popup);
+  *ierr = PetscDrawGetPopup(*draw,popup);
 }
 
 EXTERN_C_END

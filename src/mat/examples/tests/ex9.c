@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.16 2000/09/28 21:11:49 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.17 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
@@ -70,15 +70,15 @@ int main(int argc,char **args)
 
   ierr = MatMult(C,u,b);CHKERRA(ierr);
 
-  ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = VecView(b,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecDestroy(u);CHKERRA(ierr);
   ierr = VecDestroy(b);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-view_info",&flg);CHKERRA(ierr);
-  if (flg)  {ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);}
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-view_info",&flg);CHKERRA(ierr);
+  if (flg)  {ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);}
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix information (global sums):\n\

@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.44 2000/11/07 16:25:51 bsmith Exp bsmith $*/
+/*$Id: baijfact2.c,v 1.45 2001/01/06 15:35:13 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -47,7 +47,7 @@ int MatSolveTranspose_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*(a->nz) - A->n);
+  PetscLogFlops(2*(a->nz) - A->n);
   PetscFunctionReturn(0);
 }
 
@@ -104,7 +104,7 @@ int MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*4*(a->nz) - 2*A->n);
+  PetscLogFlops(2*4*(a->nz) - 2*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -164,7 +164,7 @@ int MatSolveTranspose_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*9*(a->nz) - 3*A->n);
+  PetscLogFlops(2*9*(a->nz) - 3*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -227,7 +227,7 @@ int MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*16*(a->nz) - 4*A->n);
+  PetscLogFlops(2*16*(a->nz) - 4*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -293,7 +293,7 @@ int MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*25*(a->nz) - 5*A->n);
+  PetscLogFlops(2*25*(a->nz) - 5*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -365,7 +365,7 @@ int MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*36*(a->nz) - 6*A->n);
+  PetscLogFlops(2*36*(a->nz) - 6*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -440,7 +440,7 @@ int MatSolveTranspose_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*49*(a->nz) - 7*A->n);
+  PetscLogFlops(2*49*(a->nz) - 7*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -502,7 +502,7 @@ int MatSolveTranspose_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*(a->nz) - A->n);
+  PetscLogFlops(2*(a->nz) - A->n);
   PetscFunctionReturn(0);
 }
 
@@ -585,7 +585,7 @@ int MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*4*(a->nz) - 2*A->n);
+  PetscLogFlops(2*4*(a->nz) - 2*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -673,7 +673,7 @@ int MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*9*(a->nz) - 3*A->n);
+  PetscLogFlops(2*9*(a->nz) - 3*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -766,7 +766,7 @@ int MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*16*(a->nz) - 4*A->n);
+  PetscLogFlops(2*16*(a->nz) - 4*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -864,7 +864,7 @@ int MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*25*(a->nz) - 5*A->n);
+  PetscLogFlops(2*25*(a->nz) - 5*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -970,7 +970,7 @@ int MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*36*(a->nz) - 6*A->n);
+  PetscLogFlops(2*36*(a->nz) - 6*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1081,7 +1081,7 @@ int MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*49*(a->nz) - 7*A->n);
+  PetscLogFlops(2*49*(a->nz) - 7*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1137,7 +1137,7 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*(a->bs2)*(a->nz) - a->bs*A->n);
+  PetscLogFlops(2*(a->bs2)*(a->nz) - a->bs*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1238,7 +1238,7 @@ int MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*49*(a->nz) - 7*A->n);
+  PetscLogFlops(2*49*(a->nz) - 7*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1333,7 +1333,7 @@ int MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PLogFlops(2*36*(a->nz) - 6*A->n);
+  PetscLogFlops(2*36*(a->nz) - 6*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1427,7 +1427,7 @@ int MatSolve_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*36*(a->nz) - 6*A->n);
+  PetscLogFlops(2*36*(a->nz) - 6*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1506,7 +1506,7 @@ int MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PLogFlops(2*36*(a->nz) - 6*A->n);
+  PetscLogFlops(2*36*(a->nz) - 6*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1592,7 +1592,7 @@ int MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*25*(a->nz) - 5*A->n);
+  PetscLogFlops(2*25*(a->nz) - 5*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1662,7 +1662,7 @@ int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PLogFlops(2*25*(a->nz) - 5*A->n);
+  PetscLogFlops(2*25*(a->nz) - 5*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1738,7 +1738,7 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*16*(a->nz) - 4*A->n);
+  PetscLogFlops(2*16*(a->nz) - 4*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1832,7 +1832,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PLogFlops(2*16*(a->nz) - 4*A->n);
+  PetscLogFlops(2*16*(a->nz) - 4*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1900,7 +1900,7 @@ int MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PLogFlops(2*9*(a->nz) - 3*A->n);
+  PetscLogFlops(2*9*(a->nz) - 3*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1969,7 +1969,7 @@ int MatSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PLogFlops(2*9*(a->nz) - 3*A->n);
+  PetscLogFlops(2*9*(a->nz) - 3*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -2034,7 +2034,7 @@ int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PLogFlops(2*4*(a->nz) - 2*A->n);
+  PetscLogFlops(2*4*(a->nz) - 2*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -2097,7 +2097,7 @@ int MatSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PLogFlops(2*4*(a->nz) - 2*A->n);
+  PetscLogFlops(2*4*(a->nz) - 2*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -2150,7 +2150,7 @@ int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*1*(a->nz) - A->n);
+  PetscLogFlops(2*1*(a->nz) - A->n);
   PetscFunctionReturn(0);
 }
 /*
@@ -2209,7 +2209,7 @@ int MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PLogFlops(2*(a->nz) - A->n);
+  PetscLogFlops(2*(a->nz) - A->n);
   PetscFunctionReturn(0);
 }
 
@@ -2270,26 +2270,26 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
     ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
     b->icol       = isicol;
-    b->solve_work = (Scalar*)PetscMalloc(((*fact)->m+1+b->bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
+    ierr          = PetscMalloc(((*fact)->m+1+b->bs)*sizeof(Scalar),&b->solve_work);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else { /* general case perform the symbolic factorization */
     ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
     ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
     /* get new row pointers */
-    ainew = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(ainew);
+ierr = PetscMalloc((n+1)*sizeof(int),&    ainew );CHKERRQ(ierr);
     ainew[0] = 0;
     /* don't know how many column pointers are needed so estimate */
     jmax = (int)(f*ai[n] + 1);
-    ajnew = (int*)PetscMalloc((jmax)*sizeof(int));CHKPTRQ(ajnew);
+ierr = PetscMalloc((jmax)*sizeof(int),&(    ajnew ));CHKERRQ(ierr);
     /* ajfill is level of fill for each fill entry */
-    ajfill = (int*)PetscMalloc((jmax)*sizeof(int));CHKPTRQ(ajfill);
+ierr = PetscMalloc((jmax)*sizeof(int),&(    ajfill ));CHKERRQ(ierr);
     /* fill is a linked list of nonzeros in active row */
-    fill = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(fill);
+ierr = PetscMalloc((n+1)*sizeof(int),&    fill );CHKERRQ(ierr);
     /* im is level for each filled value */
-    im = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(im);
+ierr = PetscMalloc((n+1)*sizeof(int),&    im );CHKERRQ(ierr);
     /* dloc is location of diagonal in factor */
-    dloc = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(dloc);
+ierr = PetscMalloc((n+1)*sizeof(int),&    dloc );CHKERRQ(ierr);
     dloc[0]  = 0;
     for (prow=0; prow<n; prow++) {
 
@@ -2368,11 +2368,11 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
 	jmax += maxadd;
 
 	/* allocate a longer ajnew and ajfill */
-	xi = (int*)PetscMalloc(jmax*sizeof(int));CHKPTRQ(xi);
+	ierr = PetscMalloc(jmax*sizeof(int),&(xi ));CHKERRQ(ierr);
 	ierr = PetscMemcpy(xi,ajnew,ainew[prow]*sizeof(int));CHKERRQ(ierr);
 	ierr = PetscFree(ajnew);CHKERRQ(ierr);
 	ajnew = xi;
-	xi = (int*)PetscMalloc(jmax*sizeof(int));CHKPTRQ(xi);
+	ierr = PetscMalloc(jmax*sizeof(int),&(xi ));CHKERRQ(ierr);
 	ierr = PetscMemcpy(xi,ajfill,ainew[prow]*sizeof(int));CHKERRQ(ierr);
 	ierr = PetscFree(ajfill);CHKERRQ(ierr);
 	ajfill = xi;
@@ -2401,18 +2401,18 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
 
     {
       PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
-      PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
-      PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Run with -pc_ilu_fill %g or use \n",af);
-      PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:PCILUSetFill(pc,%g);\n",af);
-      PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:for best performance.\n");
+      PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
+      PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Run with -pc_ilu_fill %g or use \n",af);
+      PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:PCILUSetFill(pc,%g);\n",af);
+      PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:for best performance.\n");
       if (diagonal_fill) {
-	PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Detected and replace %d missing diagonals",dcount);
+	PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Detected and replace %d missing diagonals",dcount);
       }
     }
 
     /* put together the new matrix */
     ierr = MatCreateSeqBAIJ(A->comm,bs,bs*n,bs*n,0,PETSC_NULL,fact);CHKERRQ(ierr);
-    PLogObjectParent(*fact,isicol);
+    PetscLogObjectParent(*fact,isicol);
     b = (Mat_SeqBAIJ*)(*fact)->data;
     ierr = PetscFree(b->imax);CHKERRQ(ierr);
     b->singlemalloc = PETSC_FALSE;
@@ -2420,7 +2420,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     /* the next line frees the default space generated by the Create() */
     ierr = PetscFree(b->a);CHKERRQ(ierr);
     ierr = PetscFree(b->ilen);CHKERRQ(ierr);
-    b->a          = (MatScalar*)PetscMalloc(len);CHKPTRQ(b->a);
+ierr = PetscMalloc(len,&(    b->a          ));CHKERRQ(ierr);
     b->j          = ajnew;
     b->i          = ainew;
     for (i=0; i<n; i++) dloc[i] += ainew[i];
@@ -2432,10 +2432,10 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
     ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
     b->icol       = isicol;
-    b->solve_work = (Scalar*)PetscMalloc((bs*n+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
+ierr = PetscMalloc((bs*n+bs)*sizeof(Scalar),&    b->solve_work );CHKERRQ(ierr);
     /* In b structure:  Free imax, ilen, old a, old j.  
        Allocate dloc, solve_work, new a, new j */
-    PLogObjectMemory(*fact,(ainew[n]-n)*(sizeof(int))+bs2*ainew[n]*sizeof(Scalar));
+    PetscLogObjectMemory(*fact,(ainew[n]-n)*(sizeof(int))+bs2*ainew[n]*sizeof(Scalar));
     b->maxnz          = b->nz = ainew[n];
     (*fact)->factor   = FACTOR_LU;
 
@@ -2449,32 +2449,32 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
       case 2:
         (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
         (*fact)->ops->solve           = MatSolve_SeqBAIJ_2_NaturalOrdering;
-        PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
+        PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
         break;
       case 3:
         (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering;
         (*fact)->ops->solve           = MatSolve_SeqBAIJ_3_NaturalOrdering;
-        PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:sing special in-place natural ordering factor and solve BS=3\n");
+        PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:sing special in-place natural ordering factor and solve BS=3\n");
         break; 
       case 4:
         (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
         (*fact)->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
-        PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
+        PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
         break;
       case 5:
         (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
         (*fact)->ops->solve           = MatSolve_SeqBAIJ_5_NaturalOrdering;
-        PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
+        PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
         break;
       case 6: 
         (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering;
         (*fact)->ops->solve           = MatSolve_SeqBAIJ_6_NaturalOrdering;
-        PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
+        PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
         break; 
       case 7:
         (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
         (*fact)->ops->solve           = MatSolve_SeqBAIJ_7_NaturalOrdering;
-        PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
+        PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
       break; 
     }
   }

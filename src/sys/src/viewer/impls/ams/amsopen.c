@@ -1,11 +1,11 @@
-/*$Id: amsopen.c,v 1.12 2000/05/10 16:38:45 bsmith Exp bsmith $*/
+/*$Id: amsopen.c,v 1.13 2000/09/22 20:41:49 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerAMSOpen"></a>*/"ViewerAMSOpen" 
+#define __FUNC__ "PetscViewerAMSOpen" 
 /*@C
-    ViewerAMSOpen - Opens an AMS memory snooper viewer. 
+    PetscViewerAMSOpen - Opens an AMS memory snooper PetscViewer. 
 
     Collective on MPI_Comm
 
@@ -14,7 +14,7 @@
 -   name - name of AMS communicator being created
 
     Output Parameter:
-.   lab - the viewer
+.   lab - the PetscViewer
 
     Options Database Keys:
 +   -ams_port <port number>
@@ -33,7 +33,7 @@
     tools that can monitor PETSc objects that have been published.
 
     Notes:
-    This viewer can be destroyed with ViewerDestroy().
+    This PetscViewer can be destroyed with PetscViewerDestroy().
 
     Information about the AMS (ALICE Memory Snooper) is available via
     http://www.mcs.anl.gov/ams.
@@ -42,16 +42,16 @@
    Concepts: ALICE Memory Snooper
    Concepts: Asynchronous Memory Snooper
 
-.seealso: PetscObjectPublish(), ViewerDestroy(), ViewerStringSPrintf()
+.seealso: PetscObjectPublish(), PetscViewerDestroy(), PetscViewerStringSPrintf()
 
 @*/
-int ViewerAMSOpen(MPI_Comm comm,const char name[],Viewer *lab)
+int PetscViewerAMSOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
 {
   int ierr;
   
   PetscFunctionBegin;
-  ierr = ViewerCreate(comm,lab);CHKERRQ(ierr);
-  ierr = ViewerSetType(*lab,AMS_VIEWER);CHKERRQ(ierr);
-  ierr = ViewerAMSSetCommName(*lab,name);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*lab,PETSC_VIEWER_AMS);CHKERRQ(ierr);
+  ierr = PetscViewerAMSSetCommName(*lab,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

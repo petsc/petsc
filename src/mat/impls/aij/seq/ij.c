@@ -1,9 +1,9 @@
-/*$Id: ij.c,v 1.35 2000/04/09 04:36:00 bsmith Exp bsmith $*/
+/*$Id: ij.c,v 1.36 2000/04/12 04:23:03 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatToSymmetricIJ_SeqAIJ"
+#define __FUNC__ "MatToSymmetricIJ_SeqAIJ"
 /*
   MatToSymmetricIJ_SeqAIJ - Convert a (generally nonsymmetric) sparse AIJ matrix
            to IJ format (ignore the "A" part) Allocates the space needed. Uses only 
@@ -36,9 +36,10 @@ int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin,int shiftout,int *
 
   PetscFunctionBegin;
   /* allocate space for row pointers */
-  *iia = ia = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(ia);
+  ierr = PetscMalloc((m+1)*sizeof(int),&ia);CHKERRQ(ierr);
+  *iia = ia;
   ierr = PetscMemzero(ia,(m+1)*sizeof(int));CHKERRQ(ierr);
-  work = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(work);
+  ierr = PetscMalloc((m+1)*sizeof(int),&work);CHKERRQ(ierr);
 
   /* determine the number of columns in each row */
   ia[0] = shiftout;
@@ -61,8 +62,9 @@ int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin,int shiftout,int *
   }
 
   /* allocate space for column pointers */
-  nz = ia[m] + (!shiftin);
-  *jja = ja = (int*)PetscMalloc(nz*sizeof(int));CHKPTRQ(ja);
+  nz   = ia[m] + (!shiftin);
+  ierr = PetscMalloc(nz*sizeof(int),&ja);CHKERRQ(ierr);
+  *jja = ja;
 
   /* loop over lower triangular part putting into ja */ 
   for (row = 0; row < m; row++) {

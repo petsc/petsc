@@ -4,9 +4,9 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> Draw Manual Pages 
+<H2> PetscDraw Manual Pages 
 </H2>
 
-The Draw routines are used to produce simple on-screen graphics.
+The PetscDraw routines are used to produce simple on-screen graphics.
 
 <P>

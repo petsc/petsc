@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.44 2000/10/24 20:26:55 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.45 2000/10/30 03:24:57 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -14,7 +14,7 @@ users manual for a discussion of preloading.  Input parameters include\n\
 
 /*T
    Concepts: SLES^solving a linear system
-   Concepts: PLog^profiling multiple stages of code;
+   Concepts: PetscLog^profiling multiple stages of code;
    Processors: n
 T*/
 
@@ -35,31 +35,31 @@ int main(int argc,char **args)
   SLES       sles;             /* linear solver context */
   Mat        A;                /* matrix */
   Vec        x,b,u;          /* approx solution, RHS, exact solution */
-  Viewer     fd;               /* viewer */
+  PetscViewer     fd;               /* viewer */
   char       file[2][128];     /* input file name */
   PetscTruth table,flg,trans;
   int        ierr,its;
   double     norm;
-  PLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
+  PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   Scalar     zero = 0.0,none = -1.0;
   PetscTruth preload = PETSC_TRUE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = OptionsHasName(PETSC_NULL,"-table",&table);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-trans",&trans);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-table",&table);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-trans",&trans);CHKERRQ(ierr);
 
   /* 
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = OptionsGetString(PETSC_NULL,"-f",file[0],127,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file[0],127,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscStrcpy(file[1],file[0]);CHKERRA(ierr);
+    ierr = PetscStrcpy(file[1],file[0]);CHKERRQ(ierr);
   } else {
-    ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRQ(ierr);
     if (!flg) SETERRA(1,"Must indicate binary file with the -f0 or -f option");
-    ierr = OptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRA(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRQ(ierr);
     if (!flg) {preload = PETSC_FALSE;} /* don't bother with second system */
   }
 
@@ -82,17 +82,24 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /* 
-       Open binary file.  Note that we use BINARY_RDONLY to indicate
+       Open binary file.  Note that we use PETSC_BINARY_RDONLY to indicate
        reading from this file.
     */
-    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],BINARY_RDONLY,&fd);CHKERRA(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],PETSC_BINARY_RDONLY,&fd);CHKERRQ(ierr);
 
     /*
        Load the matrix and vector; then destroy the viewer.
     */
-    ierr = MatLoad(fd,MATMPIAIJ,&A);CHKERRA(ierr);
-    ierr = VecLoad(fd,&b);CHKERRA(ierr);
-    ierr = ViewerDestroy(fd);CHKERRA(ierr);
+    ierr = MatLoad(fd,MATMPIAIJ,&A);CHKERRQ(ierr);
+    ierr = VecLoad(fd,&b);
+    if (ierr) { /* if file contains no RHS, then use a vector of all ones */
+      int    m;
+      Scalar one = 1.0;
+      ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
+      ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&b);CHKERRQ(ierr);
+      ierr = VecSet(&one,b);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
     /* 
        If the loaded matrix is larger than the vector (due to being padded 
@@ -104,24 +111,24 @@ int main(int argc,char **args)
       Scalar *bold;
 
       /* Create a new vector b by padding the old one */
-      ierr = MatGetLocalSize(A,&m,&n);CHKERRA(ierr);
-      ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&tmp);
-      ierr = VecGetOwnershipRange(b,&start,&end);CHKERRA(ierr);
-      ierr = VecGetLocalSize(b,&mvec);CHKERRA(ierr);
-      ierr = VecGetArray(b,&bold);CHKERRA(ierr);
+      ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+      ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&tmp);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
+      ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
       for (j=0; j<mvec; j++) {
         index = start+j;
-        ierr  = VecSetValues(tmp,1,&index,bold+j,INSERT_VALUES);CHKERRA(ierr);
+        ierr  = VecSetValues(tmp,1,&index,bold+j,INSERT_VALUES);CHKERRQ(ierr);
       }
-      ierr = VecRestoreArray(b,&bold);CHKERRA(ierr);
-      ierr = VecDestroy(b);CHKERRA(ierr);
-      ierr = VecAssemblyBegin(tmp);CHKERRA(ierr);
-      ierr = VecAssemblyEnd(tmp);CHKERRA(ierr);
+      ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
+      ierr = VecDestroy(b);CHKERRQ(ierr);
+      ierr = VecAssemblyBegin(tmp);CHKERRQ(ierr);
+      ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
       b = tmp;
     }
-    ierr = VecDuplicate(b,&x);CHKERRA(ierr);
-    ierr = VecDuplicate(b,&u);CHKERRA(ierr);
-    ierr = VecSet(&zero,x);CHKERRA(ierr);
+    ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+    ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
+    ierr = VecSet(&zero,x);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                       Setup solve for system
@@ -135,14 +142,14 @@ int main(int argc,char **args)
     /*
        We also explicitly time this stage via PetscGetTime()
     */
-    ierr = PetscGetTime(&tsetup1);CHKERRA(ierr);
+    ierr = PetscGetTime(&tsetup1);CHKERRQ(ierr);
 
     /*
        Create linear solver; set operators; set runtime options.
     */
-    ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
-    ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-    ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
+    ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
+    ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
 
     /* 
        Here we explicitly call SLESSetUp() and SLESSetUpOnBlocks() to
@@ -150,9 +157,9 @@ int main(int argc,char **args)
        These calls are optional, since both will be called within
        SLESSolve() if they haven't been called already.
     */
-    ierr = SLESSetUp(sles,b,x);CHKERRA(ierr);
-    ierr = SLESSetUpOnBlocks(sles);CHKERRA(ierr);
-    ierr = PetscGetTime(&tsetup2);CHKERRA(ierr);
+    ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
+    ierr = SLESSetUpOnBlocks(sles);CHKERRQ(ierr);
+    ierr = PetscGetTime(&tsetup2);CHKERRQ(ierr);
     tsetup = tsetup2 - tsetup1;
 
 
@@ -168,13 +175,13 @@ int main(int argc,char **args)
     /*
        Solve linear system; we also explicitly time this stage.
     */
-    ierr = PetscGetTime(&tsolve1);CHKERRA(ierr);
+    ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
     if (trans) {
-      ierr = SLESSolveTranspose(sles,b,x,&its);CHKERRA(ierr);
+      ierr = SLESSolveTranspose(sles,b,x,&its);CHKERRQ(ierr);
     } else {
-      ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
+      ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
     }
-    ierr = PetscGetTime(&tsolve2);CHKERRA(ierr);
+    ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
     tsolve = tsolve2 - tsolve1;
 
    /* 
@@ -190,12 +197,12 @@ int main(int argc,char **args)
        Check error
     */
     if (trans) {
-      ierr = MatMultTranspose(A,x,u);CHKERRA(ierr);
+      ierr = MatMultTranspose(A,x,u);CHKERRQ(ierr);
     } else {
-      ierr = MatMult(A,x,u);CHKERRA(ierr);
+      ierr = MatMult(A,x,u);CHKERRQ(ierr);
     }
-    ierr = VecAXPY(&none,b,u);CHKERRA(ierr);
-    ierr = VecNorm(u,NORM_2,&norm);CHKERRA(ierr);
+    ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
+    ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
 
     /*
        Write output (optinally using table for solver details).
@@ -205,21 +212,21 @@ int main(int argc,char **args)
     */
     if (table) {
       char   *matrixname,slesinfo[120];
-      Viewer viewer;
+      PetscViewer viewer;
 
       /*
          Open a string viewer; then write info to it.
       */
-      ierr = ViewerStringOpen(PETSC_COMM_WORLD,slesinfo,120,&viewer);CHKERRA(ierr);
-      ierr = SLESView(sles,viewer);CHKERRA(ierr);
-      ierr = PetscStrrchr(file[PreLoadIt],'/',&matrixname);CHKERRA(ierr);
+      ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,slesinfo,120,&viewer);CHKERRQ(ierr);
+      ierr = SLESView(sles,viewer);CHKERRQ(ierr);
+      ierr = PetscStrrchr(file[PreLoadIt],'/',&matrixname);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
                 matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,slesinfo);CHKERRQ(ierr);
 
       /*
          Destroy the viewer
       */
-      ierr = ViewerDestroy(viewer);CHKERRA(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
@@ -228,9 +235,9 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
     */
-    ierr = MatDestroy(A);CHKERRA(ierr); ierr = VecDestroy(b);CHKERRA(ierr);
-    ierr = VecDestroy(u);CHKERRA(ierr); ierr = VecDestroy(x);CHKERRA(ierr);
-    ierr = SLESDestroy(sles);CHKERRA(ierr); 
+    ierr = MatDestroy(A);CHKERRQ(ierr); ierr = VecDestroy(b);CHKERRQ(ierr);
+    ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = SLESDestroy(sles);CHKERRQ(ierr); 
   PreLoadEnd();
   /* -----------------------------------------------------------
                       End of linear solver loop

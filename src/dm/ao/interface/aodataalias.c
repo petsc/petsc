@@ -1,9 +1,9 @@
-/*$Id: aodataalias.c,v 1.5 2000/04/12 04:26:11 bsmith Exp balay $*/
+/*$Id: aodataalias.c,v 1.6 2000/05/05 22:19:09 balay Exp bsmith $*/
 
 #include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataAddAlias" 
+#define __FUNC__ "AODataAddAlias" 
 /*@C
     AODataAddAlias - Allows accessing a key or field using an alternative
           name.
@@ -29,7 +29,7 @@ int AODataAddAlias(AOData ao,char *alias,char *name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AODATA_COOKIE);
 
-  aoalias       = PetscNew(AODataAlias);CHKPTRQ(aoalias);
+  ierr          = PetscNew(AODataAlias,&aoalias);CHKERRQ(ierr);
   ierr          = PetscStrallocpy(alias,&aoalias->alias);CHKERRQ(ierr);
   ierr          = PetscStrallocpy(name,&aoalias->name);CHKERRQ(ierr);
   aoalias->next = PETSC_NULL;

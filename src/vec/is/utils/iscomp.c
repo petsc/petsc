@@ -1,10 +1,10 @@
-/*$Id: iscomp.c,v 1.32 2000/08/24 02:07:42 bsmith Exp bsmith $*/
+/*$Id: iscomp.c,v 1.33 2000/10/24 20:24:56 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ISEqual"></a>*/"ISEqual"
+#define __FUNC__ "ISEqual"
 /*@C
    ISEqual  - Compares if two index sets have the same set of indices.
 
@@ -61,8 +61,8 @@ int ISEqual(IS is1,IS is2,PetscTruth *flg)
       ierr = ISGetIndices(is1,&ptr1);CHKERRQ(ierr);
       ierr = ISGetIndices(is2,&ptr2);CHKERRQ(ierr);
   
-      a1   = (int*)PetscMalloc((sz1+1)*sizeof(int));
-      a2   = (int*)PetscMalloc((sz2+1)*sizeof(int));
+      ierr = PetscMalloc((sz1+1)*sizeof(int),&a1);CHKERRQ(ierr);
+      ierr = PetscMalloc((sz2+1)*sizeof(int),&a2);CHKERRQ(ierr);
 
       ierr = PetscMemcpy(a1,ptr1,sz1*sizeof(int));CHKERRQ(ierr);
       ierr = PetscMemcpy(a2,ptr2,sz2*sizeof(int));CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.279 2000/11/28 17:33:05 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.280 2000/11/29 21:44:12 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -62,12 +62,12 @@ EXTERN int        PetscSetHelpVersionFunctions(int (*)(MPI_Comm),int (*)(MPI_Com
 /*
     Defines the malloc employed by PETSc. Users may use these routines as well. 
 */
-#define PetscMalloc(a)       (*PetscTrMalloc)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
-#define PetscNew(A)          (A*)PetscMalloc(sizeof(A))
+#define PetscMalloc(a,b)     (*PetscTrMalloc)(a,__LINE__,__FUNC__,__FILE__,__SDIR__,(void**)b)
+#define PetscNew(A,b)        PetscMalloc(sizeof(A),b)
 #define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
-EXTERN void *(*PetscTrMalloc)(int,int,char*,char*,char*);
+EXTERN int  (*PetscTrMalloc)(int,int,char*,char*,char*,void**);
 EXTERN int  (*PetscTrFree)(void *,int,char*,char*,char*);
-EXTERN int  PetscSetMalloc(void *(*)(int,int,char*,char*,char*),int (*)(void *,int,char*,char*,char*));
+EXTERN int  PetscSetMalloc(int (*)(int,int,char*,char*,char*,void**),int (*)(void *,int,char*,char*,char*));
 EXTERN int  PetscClearMalloc(void);
 
 /*
@@ -75,12 +75,12 @@ EXTERN int  PetscClearMalloc(void);
    memory allocation
 */
 EXTERN int   PetscTrDump(FILE *);
-EXTERN int   PetscTrSpace(PLogDouble *,PLogDouble *,PLogDouble *);
+EXTERN int   PetscTrSpace(PetscLogDouble *,PetscLogDouble *,PetscLogDouble *);
 EXTERN int   PetscTrValid(int,const char[],const char[],const char[]);
 EXTERN int   PetscTrDebugLevel(int);
 EXTERN int   PetscTrLog(void);
 EXTERN int   PetscTrLogDump(FILE *);
-EXTERN int   PetscGetResidentSetSize(PLogDouble *);
+EXTERN int   PetscGetResidentSetSize(PetscLogDouble *);
 
 
 /*
@@ -176,19 +176,19 @@ EXTERN MPI_Op PetscSum_Op;
 */
 #define PETSC_COOKIE                    1211211
 #define PETSC_MAX_COOKIES               60
-#define LARGEST_PETSC_COOKIE_PREDEFINED PETSC_COOKIE + 30
-#define LARGEST_PETSC_COOKIE_ALLOWED    PETSC_COOKIE + PETSC_MAX_COOKIES
-extern int LARGEST_PETSC_COOKIE;
+#define PETSC_LARGEST_COOKIE_PREDEFINED PETSC_COOKIE + 30
+#define PETSC_LARGEST_COOKIE_ALLOWED    PETSC_COOKIE + PETSC_MAX_COOKIES
+extern int PETSC_LARGEST_COOKIE;
 
 typedef struct _p_PetscObject* PetscObject;
-typedef struct _FList *FList;
+typedef struct _PetscFList *PetscFList;
 
 #include "petscviewer.h"
 #include "petscoptions.h"
 
-EXTERN int PetscShowMemoryUsage(Viewer,char*);
-EXTERN int PetscGetTime(PLogDouble*);
-EXTERN int PetscGetCPUTime(PLogDouble*);
+EXTERN int PetscShowMemoryUsage(PetscViewer,char*);
+EXTERN int PetscGetTime(PetscLogDouble*);
+EXTERN int PetscGetCPUTime(PetscLogDouble*);
 EXTERN int PetscSleep(int);
 
 /*
@@ -214,7 +214,7 @@ EXTERN int PetscObjectGetReference(PetscObject,int*);
 EXTERN int PetscObjectDereference(PetscObject);
 EXTERN int PetscObjectGetNewTag(PetscObject,int *);
 EXTERN int PetscCommGetNewTag(MPI_Comm,int *);
-EXTERN int PetscObjectView(PetscObject,Viewer);
+EXTERN int PetscObjectView(PetscObject,PetscViewer);
 EXTERN int PetscObjectCompose(PetscObject,const char[],PetscObject);
 EXTERN int PetscObjectQuery(PetscObject,const char[],PetscObject *);
 EXTERN int PetscObjectComposeFunction(PetscObject,const char[],const char[],void *);
@@ -244,46 +244,46 @@ EXTERN int PetscTypeCompare(PetscObject,char*,PetscTruth*);
     Mechanism for managing lists of objects attached (composed) with 
    a PETSc object.
 */
-typedef struct _OList *OList;
-EXTERN int OListDestroy(OList *);
-EXTERN int OListFind(OList,const char[],PetscObject*);
-EXTERN int OListReverseFind(OList,PetscObject,char**);
-EXTERN int OListAdd(OList *,const char[],PetscObject);
-EXTERN int OListDuplicate(OList,OList *);
+typedef struct _PetscOList *PetscOList;
+EXTERN int PetscOListDestroy(PetscOList *);
+EXTERN int PetscOListFind(PetscOList,const char[],PetscObject*);
+EXTERN int PetscOListReverseFind(PetscOList,PetscObject,char**);
+EXTERN int PetscOListAdd(PetscOList *,const char[],PetscObject);
+EXTERN int PetscOListDuplicate(PetscOList,PetscOList *);
 
 /*
     Dynamic library lists. Lists of names of routines in dynamic 
   link libraries that will be loaded as needed.
 */
-EXTERN int FListAdd(FList*,const char[],const char[],int (*)(void *));
-EXTERN int FListDestroy(FList*);
-EXTERN int FListFind(MPI_Comm,FList,const char[],int (**)(void*));
-EXTERN int FListPrintTypes(MPI_Comm,FILE*,const char[],const char[],char *,char *,FList);
+EXTERN int PetscFListAdd(PetscFList*,const char[],const char[],int (*)(void *));
+EXTERN int PetscFListDestroy(PetscFList*);
+EXTERN int PetscFListFind(MPI_Comm,PetscFList,const char[],int (**)(void*));
+EXTERN int PetscFListPrintTypes(MPI_Comm,FILE*,const char[],const char[],char *,char *,PetscFList);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define    FListAddDynamic(a,b,p,c) FListAdd(a,b,p,0)
+#define    PetscFListAddDynamic(a,b,p,c) PetscFListAdd(a,b,p,0)
 #else
-#define    FListAddDynamic(a,b,p,c) FListAdd(a,b,p,(int (*)(void *))c)
+#define    PetscFListAddDynamic(a,b,p,c) PetscFListAdd(a,b,p,(int (*)(void *))c)
 #endif
-EXTERN int FListDuplicate(FList,FList *);
-EXTERN int FListView(FList,Viewer);
-EXTERN int FListConcat(const char [],const char [],char []);
-EXTERN int FListGet(FList,char ***,int*);
+EXTERN int PetscFListDuplicate(PetscFList,PetscFList *);
+EXTERN int PetscFListView(PetscFList,PetscViewer);
+EXTERN int PetscFListConcat(const char [],const char [],char []);
+EXTERN int PetscFListGet(PetscFList,char ***,int*);
 
 /*
    Routines for handling dynamic libraries. PETSc uses dynamic libraries
   by default on most machines (except IBM). This is controlled by the
   flag PETSC_USE_DYNAMIC_LIBRARIES in petscconf.h
 */
-typedef struct _DLLibraryList *DLLibraryList;
-extern DLLibraryList DLLibrariesLoaded;
-EXTERN int DLLibraryRetrieve(MPI_Comm,const char[],char *,int,PetscTruth *);
-EXTERN int DLLibraryOpen(MPI_Comm,const char[],void **);
-EXTERN int DLLibrarySym(MPI_Comm,DLLibraryList *,const char[],const char[],void **);
-EXTERN int DLLibraryAppend(MPI_Comm,DLLibraryList *,const char[]);
-EXTERN int DLLibraryPrepend(MPI_Comm,DLLibraryList *,const char[]);
-EXTERN int DLLibraryClose(DLLibraryList);
-EXTERN int DLLibraryPrintPath(void);
-EXTERN int DLLibraryGetInfo(void *,char *,char **);
+typedef struct _PetscDLLibraryList *PetscDLLibraryList;
+extern PetscDLLibraryList DLLibrariesLoaded;
+EXTERN int PetscDLLibraryRetrieve(MPI_Comm,const char[],char *,int,PetscTruth *);
+EXTERN int PetscDLLibraryOpen(MPI_Comm,const char[],void **);
+EXTERN int PetscDLLibrarySym(MPI_Comm,PetscDLLibraryList *,const char[],const char[],void **);
+EXTERN int PetscDLLibraryAppend(MPI_Comm,PetscDLLibraryList *,const char[]);
+EXTERN int PetscDLLibraryPrepend(MPI_Comm,PetscDLLibraryList *,const char[]);
+EXTERN int PetscDLLibraryClose(PetscDLLibraryList);
+EXTERN int PetscDLLibraryPrintPath(void);
+EXTERN int PetscDLLibraryGetInfo(void *,char *,char **);
 
 /*
     Mechanism for translating PETSc object representations between languages
@@ -394,9 +394,9 @@ EXTERN int        PetscCompareInt(int);
    For use in debuggers 
 */
 extern int PetscGlobalRank,PetscGlobalSize;
-EXTERN int PetscIntView(int,int[],Viewer);
-EXTERN int PetscDoubleView(int,double[],Viewer);
-EXTERN int PetscScalarView(int,Scalar[],Viewer);
+EXTERN int PetscIntView(int,int[],PetscViewer);
+EXTERN int PetscDoubleView(int,double[],PetscViewer);
+EXTERN int PetscScalarView(int,Scalar[],PetscViewer);
 
 /*
     Allows accessing Matlab Engine

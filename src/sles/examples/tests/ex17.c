@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.35 2000/09/28 21:13:39 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.36 2000/10/24 20:26:51 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
@@ -23,8 +23,8 @@ int main(int argc,char **args)
   PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRA(ierr);
   switch (p) {
     case 1:  type = TEST_1;      dim = n;   break;
     case 2:  type = TEST_2;      dim = n;   break;
@@ -41,7 +41,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&u);CHKERRA(ierr);
 
   use_random = 1;
-  ierr = OptionsHasName(PETSC_NULL,"-norandom",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-norandom",&flg);CHKERRA(ierr);
   if (flg) {
     use_random = 0;
     ierr = VecSet(&pfive,u);CHKERRA(ierr);
@@ -55,11 +55,11 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(A);CHKERRA(ierr);
   ierr = FormTestMatrix(A,n,type);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-printout",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-printout",&flg);CHKERRA(ierr);
   if (flg) {
-    ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-    ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-    ierr = VecView(b,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   }
 
   /* Create SLES context; set operators and options; solve linear system */
@@ -68,7 +68,7 @@ int main(int argc,char **args)
  CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
-  ierr = SLESView(sles,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* Check error */
   ierr = VecAXPY(&none,u,x);CHKERRA(ierr);
@@ -146,7 +146,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
     PetscRandom rctx;
     double      h2,sigma1 = 5.0;
     Scalar      sigma2;
-    ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
+    ierr = PetscOptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
     for (I=Istart; I<Iend; I++) { 
@@ -175,7 +175,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
      */
     double  h2,sigma1 = 200.0;
     Scalar alpha_h;
-    ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
+    ierr = PetscOptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
     h2 = 1.0/((n+1)*(n+1));
     alpha_h = (PETSC_i * 10.0) / (double)(n+1);  /* alpha_h = alpha * h */
     for (I=Istart; I<Iend; I++) { 

@@ -1,4 +1,4 @@
-/*$Id: ftest.c,v 1.30 2000/10/24 20:24:33 bsmith Exp balay $*/
+/*$Id: ftest.c,v 1.31 2000/12/21 03:21:32 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -32,7 +32,7 @@
 
 #if defined (PETSC_HAVE_U_ACCESS) || defined(PETSC_HAVE_ACCESS)
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscTestFile"></a>*/"PetscTestFile"
+#define __FUNC__ "PetscTestFile"
 /*+
   PetscTestFile - Test for a file existing with a specified mode.
 
@@ -63,7 +63,7 @@ int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
 }
 #else 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscTestFile"></a>*/"PetscTestFile"
+#define __FUNC__ "PetscTestFile"
 int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
 {
   struct stat statbuf;

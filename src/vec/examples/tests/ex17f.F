@@ -1,5 +1,5 @@
 !
-! "$Id: ex17f.F,v 1.5 1999/03/26 15:37:35 bsmith Exp balay $";
+! "$Id: ex17f.F,v 1.6 2000/05/05 22:15:11 balay Exp bsmith $";
 !
 !
 !   "Scatters from a parallel vector to a sequential vector.  In
@@ -47,7 +47,7 @@
 !
 !   View the parallel vector
 !
-      call VecView(y,VIEWER_STDOUT_WORLD,ierr)
+      call VecView(y,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
 !     create two index sets and the scatter context to move the contents of
 !     of the parallel vector to each sequential vector. If you want the
@@ -64,7 +64,7 @@
 !   View the sequential vector on the 0th processor
 !  
       if (rank .eq. 0) then
-        call VecView(x,VIEWER_STDOUT_SELF,ierr)
+        call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
       endif
 
       call VecDestroy(x,ierr)

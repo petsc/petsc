@@ -1,9 +1,9 @@
-/*$Id: pcomm.c,v 1.21 2000/09/22 20:42:24 bsmith Exp bsmith $*/
+/*$Id: pcomm.c,v 1.22 2000/09/28 21:09:12 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSetCommWorld"></a>*/"PetscSetCommWorld"
+#define __FUNC__ "PetscSetCommWorld"
 /*@C 
    PetscSetCommWorld - Sets a communicator to be PETSc world communicator
    (default is MPI_COMM_WORLD).  Must call BEFORE PetscInitialize().

@@ -1,4 +1,4 @@
-/*$Id: shell.c,v 1.82 2000/09/28 21:11:11 bsmith Exp bsmith $*/
+/*$Id: shell.c,v 1.83 2000/10/24 20:25:38 bsmith Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -15,7 +15,7 @@ typedef struct {
 } Mat_Shell;      
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatShellGetContext"
+#define __FUNC__ "MatShellGetContext"
 /*@
     MatShellGetContext - Returns the user-provided context associated with a shell matrix.
 
@@ -51,7 +51,7 @@ int MatShellGetContext(Mat mat,void **ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatDestroy_Shell"
+#define __FUNC__ "MatDestroy_Shell"
 int MatDestroy_Shell(Mat mat)
 {
   int       ierr;
@@ -65,7 +65,7 @@ int MatDestroy_Shell(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetOwnershipRange_Shell"
+#define __FUNC__ "MatGetOwnershipRange_Shell"
 int MatGetOwnershipRange_Shell(Mat mat,int *rstart,int *rend)
 {
   int ierr,tmp;
@@ -155,7 +155,7 @@ static struct _MatOps MatOps_Values = {0,
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCreate_Shell"
+#define __FUNC__ "MatCreate_Shell"
 int MatCreate_Shell(Mat A)
 {
   Mat_Shell *b;
@@ -164,8 +164,8 @@ int MatCreate_Shell(Mat A)
   PetscFunctionBegin;
   ierr            = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
-  b       = PetscNew(Mat_Shell);CHKPTRQ(b);
-  PLogObjectMemory(A,sizeof(struct _p_Mat)+sizeof(Mat_Shell));
+  ierr = PetscNew(Mat_Shell,&b);CHKERRQ(ierr);
+  PetscLogObjectMemory(A,sizeof(struct _p_Mat)+sizeof(Mat_Shell));
   ierr    = PetscMemzero(b,sizeof(Mat_Shell));CHKERRQ(ierr);
   A->data = (void*)b;
 
@@ -187,7 +187,7 @@ int MatCreate_Shell(Mat A)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCreateShell"
+#define __FUNC__ "MatCreateShell"
 /*@C
    MatCreateShell - Creates a new matrix class for use with a user-defined
    private data storage format. 
@@ -261,7 +261,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatShellSetContext"
+#define __FUNC__ "MatShellSetContext"
 /*@C
     MatShellSetContext - sets the context for a shell matrix
 
@@ -292,7 +292,7 @@ int MatShellSetContext(Mat mat,void *ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatShellSetOperation"
+#define __FUNC__ "MatShellSetOperation"
 /*@C
     MatShellSetOperation - Allows user to set a matrix operation for
                            a shell matrix.
@@ -345,14 +345,14 @@ int MatShellSetOperation(Mat mat,MatOperation op,void *f)
        shell->destroy                 = (int (*)(Mat)) f;
     } else mat->ops->destroy            = (int (*)(Mat)) f;
   } 
-  else if (op == MATOP_VIEW) mat->ops->view  = (int (*)(Mat,Viewer)) f;
+  else if (op == MATOP_VIEW) mat->ops->view  = (int (*)(Mat,PetscViewer)) f;
   else                       (((void**)mat->ops)[op]) = f;
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatShellGetOperation"
+#define __FUNC__ "MatShellGetOperation"
 /*@C
     MatShellGetOperation - Gets a matrix function for a shell matrix.
 

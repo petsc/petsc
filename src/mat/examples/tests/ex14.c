@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.13 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex14.c,v 1.14 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatGetRow() and MatRestoreRow().\n";
 
@@ -29,7 +29,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   for (i=0; i<m*n; i++) {
     ierr = MatGetRow(C,i,&nz,&idx,&values);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.3 2000/09/07 15:18:18 balay Exp bsmith $*/
+/*$Id: nn.c,v 1.4 2000/09/28 21:13:02 bsmith Exp bsmith $*/
 
 #include "src/sles/pc/impls/is/nn/nn.h"
 
@@ -17,7 +17,7 @@
    the user, but instead is called by PCApply() if necessary.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp_NN"
+#define __FUNC__ "PCSetUp_NN"
 static int PCSetUp_NN(PC pc)
 {
   int ierr;
@@ -48,7 +48,7 @@ static int PCSetUp_NN(PC pc)
    Application Interface Routine: PCApply()
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_NN"
+#define __FUNC__ "PCApply_NN"
 static int PCApply_NN(PC pc,Vec r,Vec z)
 {
   PC_IS *pcis = (PC_IS*)(pc->data);
@@ -117,7 +117,7 @@ static int PCApply_NN(PC pc,Vec r,Vec z)
    Application Interface Routine: PCDestroy()
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCDestroy_NN"
+#define __FUNC__ "PCDestroy_NN"
 static int PCDestroy_NN(PC pc)
 {
   PC_NN *pcnn = (PC_NN*)pc->data;
@@ -156,7 +156,7 @@ static int PCDestroy_NN(PC pc)
 */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCreate_NN"
+#define __FUNC__ "PCCreate_NN"
 int PCCreate_NN(PC pc)
 {
   int ierr;
@@ -168,14 +168,14 @@ int PCCreate_NN(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  pcnn       = PetscNew(PC_NN);CHKPTRQ(pcnn);
+  ierr      = PetscNew(PC_NN,&pcnn);CHKERRQ(ierr);
   pc->data  = (void*)pcnn;
 
   /*
      Logs the memory usage; this is not needed but allows PETSc to 
      monitor how much memory is being used for various purposes.
   */
-  PLogObjectMemory(pc,sizeof(PC_NN)+sizeof(PC_IS)); /* Is this the right thing to do? */
+  PetscLogObjectMemory(pc,sizeof(PC_NN)+sizeof(PC_IS)); /* Is this the right thing to do? */
 
   ierr = PCISCreate(pc);CHKERRQ(ierr);
   pcnn->coarse_mat  = 0;
@@ -210,7 +210,7 @@ EXTERN_C_END
    PCNNCreateCoarseMatrix - 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCNNCreateCoarseMatrix"
+#define __FUNC__ "PCNNCreateCoarseMatrix"
 int PCNNCreateCoarseMatrix (PC pc)
 {
   MPI_Request *send_request, *recv_request;
@@ -231,20 +231,20 @@ int PCNNCreateCoarseMatrix (PC pc)
   PetscFunctionBegin;
 
   /* Allocate memory for mat (the +1 is to handle the case n_neigh equal to zero) */
-  mat = (Scalar*) PetscMalloc((n_neigh*n_neigh+1)*sizeof(Scalar));CHKPTRQ(mat);
+  mat = (Scalar*) PetscMalloc((n_neigh*n_neigh+1)*sizeof(Scalar));CHKERRQ(ierr);
 
   /* Allocate memory for DZ */
   /* Notice that DZ_OUT[0] is allocated some space that is never used. */
   /* This is just in order to DZ_OUT and DZ_IN to have exactly the same form. */
   {
     int size_of_Z = 0;
-    pcnn->DZ_IN  = (Scalar**) PetscMalloc ((n_neigh+1)*sizeof(Scalar*));CHKPTRQ(pcnn->DZ_IN); DZ_IN = pcnn->DZ_IN;
-    DZ_OUT       = (Scalar**) PetscMalloc ((n_neigh+1)*sizeof(Scalar*));CHKPTRQ(DZ_OUT);
+    pcnn->DZ_IN  = (Scalar**) PetscMalloc ((n_neigh+1)*sizeof(Scalar*));CHKERRQ(ierr); DZ_IN = pcnn->DZ_IN;
+    DZ_OUT       = (Scalar**) PetscMalloc ((n_neigh+1)*sizeof(Scalar*));CHKERRQ(ierr);
     for (i=0; i<n_neigh; i++) {
       size_of_Z += n_shared[i];
     }
-    DZ_IN[0]  = (Scalar*) PetscMalloc ((size_of_Z+1)*sizeof(Scalar));CHKPTRQ(DZ_IN[0]);
-    DZ_OUT[0] = (Scalar*) PetscMalloc ((size_of_Z+1)*sizeof(Scalar));CHKPTRQ(DZ_OUT[0]);
+    DZ_IN[0]  = (Scalar*) PetscMalloc ((size_of_Z+1)*sizeof(Scalar));CHKERRQ(ierr);
+    DZ_OUT[0] = (Scalar*) PetscMalloc ((size_of_Z+1)*sizeof(Scalar));CHKERRQ(ierr);
   }
   for (i=1; i<n_neigh; i++) {
     DZ_IN[i]  = DZ_IN [i-1] + n_shared[i-1];
@@ -266,7 +266,7 @@ int PCNNCreateCoarseMatrix (PC pc)
   {
     int tag;
     ierr = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
-    send_request = (MPI_Request*) PetscMalloc((2*(n_neigh)+1)*sizeof(MPI_Request));CHKPTRQ(send_request);
+    send_request = (MPI_Request*) PetscMalloc((2*(n_neigh)+1)*sizeof(MPI_Request));CHKERRQ(ierr);
     recv_request = send_request + (n_neigh);
     for (i=1; i<n_neigh; i++) {
       ierr = MPI_Isend((void*)(DZ_OUT[i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,pc->comm,&(send_request[i]));CHKERRQ(ierr);
@@ -312,7 +312,7 @@ int PCNNCreateCoarseMatrix (PC pc)
 
   /* Complete the sending. */
   if (n_neigh>1) {
-    MPI_Status *stat = (MPI_Status*) PetscMalloc((n_neigh-1)*sizeof(MPI_Status));CHKPTRQ(stat);
+    MPI_Status *stat = (MPI_Status*) PetscMalloc((n_neigh-1)*sizeof(MPI_Status));CHKERRQ(ierr);
     ierr = MPI_Waitall(n_neigh-1,&(send_request[1]),stat);CHKERRQ(ierr);
     ierr = PetscFree(stat);CHKERRQ(ierr);
   }
@@ -379,13 +379,13 @@ int PCNNCreateCoarseMatrix (PC pc)
   /* for DEBUGGING, save the coarse matrix to a file. */
   {
     PetscTruth flg;
-    ierr = OptionsHasName(PETSC_NULL,"-save_coarse_matrix",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-save_coarse_matrix",&flg);CHKERRQ(ierr);
     if (flg) {
-      Viewer viewer;
-      ierr = ViewerASCIIOpen(PETSC_COMM_WORLD,"coarse.m",&viewer);CHKERRQ(ierr);
-      ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,"C");
+      PetscViewer viewer;
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"coarse.m",&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"C");
       ierr = MatView(pcnn->coarse_mat,viewer);CHKERRQ(ierr);
-      ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
   }
 
@@ -416,7 +416,7 @@ int PCNNCreateCoarseMatrix (PC pc)
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCNNApplySchurToChunk"
+#define __FUNC__ "PCNNApplySchurToChunk"
 int PCNNApplySchurToChunk(PC pc, int n, int* idx, Scalar *chunk, Scalar* array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   int i, ierr;
@@ -457,7 +457,7 @@ int PCNNApplySchurToChunk(PC pc, int n, int* idx, Scalar *chunk, Scalar* array_N
 
 */
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PCNNApplyInterfacePreconditioner"
+#define __FUNC__ "PCNNApplyInterfacePreconditioner"
 int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, Scalar* work_N, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D,
                                       Vec vec2_D, Vec vec1_N, Vec vec2_N)
 {
@@ -472,7 +472,7 @@ int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, Scalar* work_N, Vec v
   */
   {
     PetscTruth flg;
-    ierr = OptionsHasName(PETSC_NULL,"-turn_off_first_balancing",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-turn_off_first_balancing",&flg);CHKERRQ(ierr);
     if (!flg) {
       ierr = PCNNBalancing(pc,r,(Vec)0,z,vec1_B,vec2_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {
@@ -495,7 +495,7 @@ int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, Scalar* work_N, Vec v
   */
   {
     PetscTruth flg;
-    ierr = OptionsHasName(PETSC_NULL,"-turn_off_second_balancing",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-turn_off_second_balancing",&flg);CHKERRQ(ierr);
     if (!flg) {
       ierr = PCNNBalancing(pc,r,vec1_B,z,vec2_B,vec3_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {
@@ -534,7 +534,7 @@ int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, Scalar* work_N, Vec v
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCNNBalancing"
+#define __FUNC__ "PCNNBalancing"
 int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B,
                    Vec vec1_D, Vec vec2_D, Scalar *work_N)
 {
@@ -547,7 +547,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
   PC_IS* pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
-  ierr = PLogEventBegin(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
 
   if (u) { 
     if (!vec3_B) { vec3_B = u; }
@@ -598,7 +598,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
   }
   ierr = VecScatterBegin(vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
   ierr = VecScatterEnd  (vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
-  ierr = PLogEventEnd(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -634,7 +634,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
 
     {
       PetscTruth flg;
-      ierr = OptionsHasName(PETSC_NULL,"-pcnn_new_scaling",&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(PETSC_NULL,"-pcnn_new_scaling",&flg);CHKERRQ(ierr);
       if (flg) {
         Vec    counter;
         Scalar one=1.0, zero=0.0;
@@ -671,7 +671,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
   /*  Set the variable pcnn->factor_coarse_rhs. */
   {
     PetscTruth flg;
-    ierr = OptionsHasName(PETSC_NULL,"-enforce_preserving_constants",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-enforce_preserving_constants",&flg);CHKERRQ(ierr);
     if (!flg) { pcnn->factor_coarse_rhs = (pcnn->pure_neumann) ? 1.0 : 0.0; }
     else {
       Scalar zero = 0.0, one = 1.0;

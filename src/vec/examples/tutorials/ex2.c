@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.36 2000/05/05 22:15:21 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.37 2000/09/22 20:43:24 bsmith Exp bsmith $*/
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
 processor, 2 on the second, etc.  Then each processor adds one to all\n\
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   /*
       View the vector; then destroy it.
   */
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = VecDestroy(x);CHKERRA(ierr);
 
   PetscFinalize();

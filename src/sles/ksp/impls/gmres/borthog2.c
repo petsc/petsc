@@ -1,4 +1,4 @@
-/*$Id: borthog2.c,v 1.16 2000/04/12 04:25:01 bsmith Exp balay $*/
+/*$Id: borthog2.c,v 1.17 2000/09/07 15:18:14 balay Exp bsmith $*/
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 
@@ -14,7 +14,7 @@
   when running in a parallel environment.
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGMRESUnmodifiedGramSchmidtOrthogonalization"
+#define __FUNC__ "KSPGMRESUnmodifiedGramSchmidtOrthogonalization"
 int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP  ksp,int it)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
@@ -22,7 +22,7 @@ int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP  ksp,int it)
   Scalar    *hh,*hes;
 
   PetscFunctionBegin;
-  ierr = PLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   /* update Hessenberg matrix and do unmodified Gram-Schmidt */
   hh  = HH(0,it);
   hes = HES(0,it);
@@ -40,7 +40,7 @@ int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP  ksp,int it)
   for (j=0; j<=it; j++) hh[j] = -hes[j];
   ierr = VecMAXPY(it+1,hh,VEC_VV(it+1),&VEC_VV(0));CHKERRQ(ierr);
   for (j=0; j<=it; j++) hh[j] = -hh[j];
-  ierr = PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

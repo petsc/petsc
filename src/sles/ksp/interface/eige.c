@@ -1,9 +1,9 @@
-/*$Id: eige.c,v 1.27 2000/08/16 15:18:07 balay Exp bsmith $*/
+/*$Id: eige.c,v 1.28 2000/09/28 21:13:11 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPComputeExplicitOperator"
+#define __FUNC__ "KSPComputeExplicitOperator"
 /*@
     KSPComputeExplicitOperator - Computes the explicit preconditioned operator.  
 
@@ -49,7 +49,7 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
-  rows = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(rows);
+ierr = PetscMalloc((m+1)*sizeof(int),&  rows );CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
   if (size == 1) {
@@ -87,7 +87,7 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 #include "petscblaslapack.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPComputeEigenvaluesExplicitly"
+#define __FUNC__ "KSPComputeEigenvaluesExplicitly"
 /*@
    KSPComputeEigenvaluesExplicitly - Computes all of the eigenvalues of the 
    preconditioned operator using LAPACK.  
@@ -141,7 +141,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
     else {
       ierr = MatCreateMPIDense(ksp->comm,0,n,n,n,PETSC_NULL,&A);CHKERRQ(ierr);
     }
-    PLogObjectParent(BA,A);
+    PetscLogObjectParent(BA,A);
 
     ierr = MatGetOwnershipRange(BA,&row,&dummy);CHKERRQ(ierr);
     ierr = MatGetLocalSize(BA,&m,&dummy);CHKERRQ(ierr);
@@ -171,18 +171,18 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
 #else
     clen = 2*n;
 #endif
-    cwork    = (Scalar*)PetscMalloc(clen*sizeof(Scalar));CHKPTRQ(cwork);
+ierr = PetscMalloc(clen*sizeof(Scalar),&(    cwork    ));CHKERRQ(ierr);
     idummy   = n;
     lwork    = 5*n;
-    work     = (PetscReal*)PetscMalloc(lwork*sizeof(PetscReal));CHKPTRQ(work);
-    realpart = (PetscReal*)PetscMalloc(n*sizeof(PetscReal));CHKPTRQ(realpart);
+ierr = PetscMalloc(lwork*sizeof(PetscReal),&(    work     ));CHKERRQ(ierr);
+ierr = PetscMalloc(n*sizeof(PetscReal),&(    realpart ));CHKERRQ(ierr);
     zero     = 0;
     LAgeev_(&zero,array,&n,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
     ierr = PetscFree(work);CHKERRQ(ierr);
 
     /* For now we stick with the convention of storing the real and imaginary
        components of evalues separately.  But is this what we really want? */
-    perm = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(perm);
+ierr = PetscMalloc(n*sizeof(int),&(    perm ));CHKERRQ(ierr);
 
 #if !defined(PETSC_USE_COMPLEX)
     for (i=0; i<n; i++) {
@@ -217,13 +217,13 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
 
     idummy   = n;
     lwork    = 5*n;
-    realpart = (PetscReal*)PetscMalloc(2*n*sizeof(PetscReal));CHKPTRQ(realpart);
+ierr = PetscMalloc(2*n*sizeof(PetscReal),&(    realpart ));CHKERRQ(ierr);
     imagpart = realpart + n;
-    work     = (PetscReal*)PetscMalloc(5*n*sizeof(PetscReal));CHKPTRQ(work);
+ierr = PetscMalloc(5*n*sizeof(PetscReal),&(    work     ));CHKERRQ(ierr);
     LAgeev_("N","N",&n,array,&n,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
     if (ierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",ierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
-    perm = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(perm);
+ierr = PetscMalloc(n*sizeof(int),&(    perm ));CHKERRQ(ierr);
     for (i=0; i<n; i++) { perm[i] = i;}
     ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
@@ -241,14 +241,14 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
 
     idummy   = n;
     lwork    = 5*n;
-    work     = (Scalar*)PetscMalloc(5*n*sizeof(Scalar));CHKPTRQ(work);
-    rwork    = (PetscReal*)PetscMalloc(2*n*sizeof(PetscReal));CHKPTRQ(rwork);
-    eigs     = (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRQ(eigs);
+ierr = PetscMalloc(5*n*sizeof(Scalar),&(    work     ));CHKERRQ(ierr);
+ierr = PetscMalloc(2*n*sizeof(PetscReal),&(    rwork    ));CHKERRQ(ierr);
+ierr = PetscMalloc(n*sizeof(Scalar),&(    eigs     ));CHKERRQ(ierr);
     LAgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&ierr);
     if (ierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",ierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
-    perm = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(perm);
+ierr = PetscMalloc(n*sizeof(int),&(    perm ));CHKERRQ(ierr);
     for (i=0; i<n; i++) { perm[i] = i;}
     for (i=0; i<n; i++) { r[i]    = PetscRealPart(eigs[i]);}
     ierr = PetscSortDoubleWithPermutation(n,r,perm);CHKERRQ(ierr);

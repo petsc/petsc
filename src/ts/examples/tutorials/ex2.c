@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.31 2000/09/22 20:46:37 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.32 2000/10/24 20:27:29 bsmith Exp bsmith $*/
 static char help[] ="Solves a time-dependent nonlinear PDE. Uses implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
@@ -96,8 +96,8 @@ int main(int argc,char **argv)
 
   appctx.comm = PETSC_COMM_WORLD;
   appctx.m    = 60;
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&appctx.m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&appctx.m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRA(ierr);
   appctx.h    = 1.0/(appctx.m-1.0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -150,7 +150,7 @@ int main(int argc,char **argv)
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,appctx.m,appctx.m,&A);CHKERRA(ierr);
   ierr = MatSetFromOptions(A);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-fdjac",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-fdjac",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianFD,&appctx);CHKERRA(ierr);
   } else {
@@ -270,7 +270,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
   */
   if (appctx->debug) {
      ierr = PetscPrintf(appctx->comm,"initial guess vector\n");CHKERRQ(ierr);
-     ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+     ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   return 0;
@@ -345,22 +345,22 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   int      ierr;
   double   en2,en2s,enmax;
   Scalar   mone = -1.0;
-  Draw     draw;
+  PetscDraw     draw;
 
   /*
      We use the default X windows viewer
-             VIEWER_DRAW_(appctx->comm)
+             PETSC_VIEWER_DRAW_(appctx->comm)
      that is associated with the current communicator. This saves
-     the effort of calling ViewerDrawOpen() to create the window.
+     the effort of calling PetscViewerDrawOpen() to create the window.
      Note that if we wished to plot several items in separate windows we
-     would create each viewer with ViewerDrawOpen() and store them in
+     would create each viewer with PetscViewerDrawOpen() and store them in
      the application context, appctx.
 
      Double buffering makes graphics look better.
   */
-  ierr = ViewerDrawGetDraw(VIEWER_DRAW_(appctx->comm),0,&draw);CHKERRQ(ierr);
-  ierr = DrawSetDoubleBuffer(draw);CHKERRQ(ierr);
-  ierr = VecView(u,VIEWER_DRAW_(appctx->comm));CHKERRQ(ierr);
+  ierr = PetscViewerDrawGetDraw(PETSC_VIEWER_DRAW_(appctx->comm),0,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
+  ierr = VecView(u,PETSC_VIEWER_DRAW_(appctx->comm));CHKERRQ(ierr);
 
   /*
      Compute the exact solution at this timestep
@@ -372,9 +372,9 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   */
   if (appctx->debug) {
      ierr = PetscPrintf(appctx->comm,"Computed solution vector\n");CHKERRQ(ierr);
-     ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+     ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
      ierr = PetscPrintf(appctx->comm,"Exact solution vector\n");CHKERRQ(ierr);
-     ierr = VecView(appctx->solution,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /*
@@ -397,7 +397,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   */
   if (appctx->debug) {
      ierr = PetscPrintf(appctx->comm,"Error vector\n");CHKERRQ(ierr);
-     ierr = VecView(appctx->solution,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   return 0;
 }
@@ -499,7 +499,7 @@ int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
   /* Print debugging information if desired */
   if (appctx->debug) {
      ierr = PetscPrintf(appctx->comm,"RHS function vector\n");CHKERRQ(ierr);
-     ierr = VecView(global_out,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+     ierr = VecView(global_out,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   return 0;

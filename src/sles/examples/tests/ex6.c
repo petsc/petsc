@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.65 2000/10/24 20:26:51 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.66 2000/11/28 17:30:48 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -15,31 +15,31 @@ int main(int argc,char **args)
 {
   int        ierr,its;
   double     norm;
-  PLogDouble tsetup1,tsetup2,tsetup,tsolve1,tsolve2,tsolve;
+  PetscLogDouble tsetup1,tsetup2,tsetup,tsolve1,tsolve2,tsolve;
   Scalar     zero = 0.0,none = -1.0;
   Vec        x,b,u;
   Mat        A;
   SLES       sles;
   char       file[128];
-  Viewer     fd;
+  PetscViewer     fd;
   PetscTruth table,flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = OptionsHasName(PETSC_NULL,"-table",&table);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-table",&table);CHKERRA(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
   SETERRA(1,"This example does not work with complex numbers");
 #else
 
   /* Read matrix and RHS */
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,"Must indicate binary file with the -f option");
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
 
   ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
   ierr = VecLoad(fd,&b);CHKERRA(ierr);
-  ierr = ViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
 
   /* 
    If the load matrix is larger then the vector, due to being padded 
@@ -71,7 +71,7 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,x);CHKERRA(ierr);
   ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
 
-  PLogStagePush(1);
+  PetscLogStagePush(1);
   ierr = PetscGetTime(&tsetup1);CHKERRA(ierr);
   ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
@@ -80,15 +80,15 @@ int main(int argc,char **args)
   ierr = SLESSetUpOnBlocks(sles);CHKERRA(ierr);
   ierr = PetscGetTime(&tsetup2);CHKERRA(ierr);
   tsetup = tsetup2 -tsetup1;
-  PLogStagePop();
+  PetscLogStagePop();
   ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
 
-  PLogStagePush(2);
+  PetscLogStagePush(2);
   ierr = PetscGetTime(&tsolve1);CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
   ierr = PetscGetTime(&tsolve2);CHKERRA(ierr);
   tsolve = tsolve2 - tsolve1;
-  PLogStagePop();
+  PetscLogStagePop();
 
   /* Show result */
   ierr = MatMult(A,x,u);
@@ -97,13 +97,13 @@ int main(int argc,char **args)
   /*  matrix PC   KSP   Options       its    residual setuptime solvetime  */
   if (table) {
     char   *matrixname,slesinfo[120];
-    Viewer viewer;
-    ierr = ViewerStringOpen(PETSC_COMM_WORLD,slesinfo,120,&viewer);CHKERRA(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,slesinfo,120,&viewer);CHKERRA(ierr);
     ierr = SLESView(sles,viewer);CHKERRA(ierr);
     ierr = PetscStrrchr(file,'/',&matrixname);CHKERRA(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
                        matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,slesinfo);CHKERRA(ierr);
-    ierr = ViewerDestroy(viewer);CHKERRA(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRA(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %A\n",norm);CHKERRA(ierr);

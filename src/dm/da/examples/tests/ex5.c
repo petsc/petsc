@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.35 2000/01/11 21:03:26 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.36 2000/05/05 22:19:31 balay Exp bsmith $*/
 
 /* This file created by Peter Mell   6/30/95 */ 
 
@@ -13,8 +13,8 @@ int main(int argc,char **argv)
 {
   int       rank,size,M = 14,ierr,time_steps = 1000,w=1,s=1;
   DA        da;
-  Viewer    viewer;
-  Draw      draw;
+  PetscViewer    viewer;
+  PetscDraw      draw;
   Vec       local,global,copy;
   Scalar    *localptr,*copyptr;
   double    h,k;
@@ -22,8 +22,8 @@ int main(int argc,char **argv)
  
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
     
   /* Set up the array */ 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,w,s,PETSC_NULL,&da);CHKERRA(ierr);
@@ -36,9 +36,9 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(local,&copy);CHKERRA(ierr);
 
   /* Set Up Display to Show Heat Graph */
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,480,500,160,&viewer);CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,480,500,160,&viewer);CHKERRA(ierr);
+  ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRA(ierr);
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRA(ierr);
 
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(global,&mybase,&myend);CHKERRA(ierr);
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
 
   }
 
-  ierr = ViewerDestroy(viewer);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
   ierr = VecDestroy(copy);CHKERRA(ierr);
   ierr = VecDestroy(local);CHKERRA(ierr);
   ierr = VecDestroy(global);CHKERRA(ierr);

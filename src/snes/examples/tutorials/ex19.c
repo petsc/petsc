@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.6 2000/09/22 20:46:14 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.7 2000/09/28 14:45:23 bsmith Exp bsmith $*/
 
 static char help[] = "Solves nonlinear driven cavity with multigrid.\n\
   \n\
@@ -87,20 +87,20 @@ typedef struct {
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  DAMG          *damg;               /* multilevel grid structure */
-  AppCtx        user;                /* user-defined work context */
-  int           mx,my,its;
-  int           ierr,nlevels = 2;
-  MPI_Comm      comm;
-  SNES          snes;
+  DMMG     *dmmg;               /* multilevel grid structure */
+  AppCtx   user;                /* user-defined work context */
+  int      mx,my,its;
+  int      ierr,nlevels = 2;
+  MPI_Comm comm;
+  SNES     snes;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
 
   mx = 4; 
   my = 4; 
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
 
   /* 
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
@@ -108,24 +108,24 @@ int main(int argc,char **argv)
   user.lidvelocity = 1.0/(mx*my);
   user.prandtl     = 1.0;
   user.grashof     = 1.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-lidvelocity",&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-prandtl",&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-lidvelocity",&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-prandtl",&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
 
   PreLoadBegin(PETSC_TRUE,"SetUp");
-  ierr = DAMGCreate(comm,nlevels,&user,&damg);CHKERRQ(ierr);
+  ierr = DMMGCreate(comm,nlevels,&user,&dmmg);CHKERRQ(ierr);
 
   /*
-     Create distributed array multigrid object (DAMG) to manage parallel grid and vectors
+     Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
      for principal unknowns (x) and governing residuals (f)
   */
 
-  ierr = DAMGSetGrid(damg,2,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,0,4,1);CHKERRQ(ierr);
-  ierr = DASetFieldName(DAMGGetDA(damg),0,"x-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DAMGGetDA(damg),1,"y-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DAMGGetDA(damg),2,"Omega");CHKERRQ(ierr);
-  ierr = DASetFieldName(DAMGGetDA(damg),3,"temperature");CHKERRQ(ierr);
+  ierr = DMMGSetDA(dmmg,2,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,0,4,1);CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDA(dmmg),2,"Omega");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDA(dmmg),3,"temperature");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create user context, set problem data, create vector data structures.
@@ -136,7 +136,7 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = DAMGSetSNES(damg,FormFunction,0);
+  ierr = DMMGSetSNES(dmmg,FormFunction,0);
   ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",
                      user.lidvelocity,user.prandtl,user.grashof);CHKERRA(ierr);
 
@@ -144,12 +144,12 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DAMGSetInitialGuess(damg,FormInitialGuess);CHKERRQ(ierr);
+  ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
 
   PreLoadStage("Solve");
-  ierr = DAMGSolve(damg);CHKERRA(ierr); 
+  ierr = DMMGSolve(dmmg);CHKERRA(ierr); 
 
-  snes = DAMGGetSNES(damg);
+  snes = DMMGGetSNES(dmmg);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRA(ierr);
   ierr = PetscPrintf(comm,"Number of Newton iterations = %d\n", its);CHKERRA(ierr);
 
@@ -158,7 +158,7 @@ int main(int argc,char **argv)
   */
 
   if (user.draw_contours) {
-    ierr = VecView(DAMGGetx(damg),VIEWER_DRAW_WORLD);CHKERRA(ierr);
+    ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -166,7 +166,7 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = DAMGDestroy(damg);CHKERRA(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRA(ierr);
   PreLoadEnd();
 
   PetscFinalize();
@@ -200,14 +200,15 @@ int main(int argc,char **argv)
  */
 int FormInitialGuess(SNES snes,Vec X,void *ptr)
 {
-  DAMG    damg = (DAMG)ptr;
-  AppCtx  *user = (AppCtx*)damg->user;
-  DA      da = damg->da;
+  DMMG    dmmg = (DMMG)ptr;
+  AppCtx  *user = (AppCtx*)dmmg->user;
+  DA      da = (DA)dmmg->dm;
   int     i,j,row,mx,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
   double  grashof,dx;
   Scalar  *x;
-  Vec     localX = damg->localX;
+  Vec     localX;
   
+  ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
   grashof = user->grashof;
 
   ierr = DAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -255,6 +256,7 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
      Insert values into global vector
   */
   ierr = DALocalToGlobal(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
   return 0;
 } 
 /* ------------------------------------------------------------------- */
@@ -278,17 +280,19 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  DAMG    damg = (DAMG)ptr;
-  AppCtx  *user = (AppCtx*)damg->user;
+  DMMG    dmmg = (DMMG)ptr;
+  AppCtx  *user = (AppCtx*)dmmg->user;
   int     ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
   int     xints,xinte,yints,yinte;
   double  two = 2.0,one = 1.0,p5 = 0.5,hx,hy,dhx,dhy,hxdhy,hydhx;
   double  grashof,prandtl,lid;
   Scalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
   Scalar  *x,*f;
-  Vec     localX = damg->localX,localF = damg->localF; 
-  DA      da = damg->da;
+  Vec     localX,localF; 
+  DA      da = (DA)dmmg->dm;
 
+  ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
+  ierr = DAGetLocalVector((DA)dmmg->dm,&localF);CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
   grashof = user->grashof;  
@@ -444,11 +448,13 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
      Insert values into global vector
   */
   ierr = DALocalToGlobal(da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector((DA)dmmg->dm,&localF);CHKERRQ(ierr);
 
   /*
      Flop count (multiply-adds are counted as 2 operations)
   */
-  ierr = PLogFlops(84*ym*xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops(84*ym*xm);CHKERRQ(ierr);
 
   return 0; 
 } 

@@ -1,12 +1,12 @@
-/*$Id: tsreg.c,v 1.64 2000/09/22 20:46:27 bsmith Exp bsmith $*/
+/*$Id: tsreg.c,v 1.65 2000/09/28 21:14:45 bsmith Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 
-FList      TSList              = 0;
+PetscFList      TSList              = 0;
 PetscTruth TSRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetType"
+#define __FUNC__ "TSSetType"
 /*@C
    TSSetType - Sets the method for the timestepping solver.  
 
@@ -57,7 +57,7 @@ int TSSetType(TS ts,TSType type)
 
   /* Get the function pointers for the method requested */
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr =  FListFind(ts->comm,TSList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(ts->comm,TSList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type: %s",type);}
 
   if (ts->sles) {ierr = SLESDestroy(ts->sles);CHKERRQ(ierr);}
@@ -74,10 +74,10 @@ int TSSetType(TS ts,TSType type)
 
 /* --------------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSRegisterDestroy"
+#define __FUNC__ "TSRegisterDestroy"
 /*@C
    TSRegisterDestroy - Frees the list of timesteppers that were
-   registered by FListAddDynamic().
+   registered by PetscFListAddDynamic().
 
    Not Collective
 
@@ -93,7 +93,7 @@ int TSRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (TSList) {
-    ierr = FListDestroy(&TSList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(&TSList);CHKERRQ(ierr);
     TSList = 0;
   }
   TSRegisterAllCalled = PETSC_FALSE;
@@ -101,7 +101,7 @@ int TSRegisterDestroy(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSGetType"
+#define __FUNC__ "TSGetType"
 /*@C
    TSGetType - Gets the TS method type (as a string).
 
@@ -128,7 +128,7 @@ int TSGetType(TS ts,TSType *type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetFromOptions"
+#define __FUNC__ "TSSetFromOptions"
 /*@
    TSSetFromOptions - Sets various TS parameters from user options.
 
@@ -159,34 +159,34 @@ int TSSetFromOptions(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
 
-  ierr = OptionsBegin(ts->comm,ts->prefix,"Time step options","TS");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(ts->comm,ts->prefix,"Time step options","TS");CHKERRQ(ierr);
     if (ts->type_name) {
       deft = ts->type_name;
     } else {  
       deft = TS_EULER;
     }
     if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr = OptionsList("-ts_type","Timestep method","TSSetType",TSList,deft,type,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-ts_type","Timestep method","TSSetType",TSList,deft,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = TSSetType(ts,type);CHKERRQ(ierr);
     } else if (!ts->type_name) {
       ierr = TSSetType(ts,deft);CHKERRQ(ierr);
     }
 
-    ierr = OptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
-    ierr = OptionsDouble("-ts_max_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
-    ierr = OptionsName("-ts_monitor","Monitor timestep size","TSDefaultMonitor",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-ts_max_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_monitor","Monitor timestep size","TSDefaultMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = TSSetMonitor(ts,TSDefaultMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = OptionsName("-ts_xmonitor","Monitor timestep size graphically","TSLGMonitor",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_xmonitor","Monitor timestep size graphically","TSLGMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = TSSetMonitor(ts,TSLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
     if (ts->setfromoptions) {
       ierr = (*ts->setfromoptions)(ts);CHKERRQ(ierr);
     }
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

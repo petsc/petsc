@@ -1,4 +1,4 @@
-/*$Id: appalgebra.c,v 1.2 2000/08/24 22:43:40 bsmith Exp bsmith $*/
+/*$Id: appalgebra.c,v 1.3 2000/11/06 17:04:37 bsmith Exp bsmith $*/
 #include "appctx.h"
 #include "math.h"
 
@@ -76,7 +76,7 @@ int AppCtxSolve(AppCtx* appctx, int *its)
     ierr = SLESSetOperators(sles,algebra->A,algebra->A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     {
       PetscTruth flg;
-      ierr = OptionsHasName(PETSC_NULL,"-use_zero_initial_guess",&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(PETSC_NULL,"-use_zero_initial_guess",&flg);CHKERRQ(ierr);
       if (!flg) {
         KSP ksp;
         ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ int AppCtxSolve(AppCtx* appctx, int *its)
 
     {
       PetscTruth flg;
-      ierr = OptionsHasName(PETSC_NULL,"-save_global_preconditioner",&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(PETSC_NULL,"-save_global_preconditioner",&flg);CHKERRQ(ierr);
       if (flg) {
 	PC pc;
 	KSP ksp;
@@ -101,14 +101,14 @@ int AppCtxSolve(AppCtx* appctx, int *its)
 	ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
 	ierr = PCComputeExplicitOperator(pc,&mat);CHKERRQ(ierr);
 	ierr = KSPComputeExplicitOperator(ksp,&mat2);CHKERRQ(ierr);
-	ierr = ViewerASCIIOpen(PETSC_COMM_WORLD,"pc.m",&viewer);CHKERRQ(ierr);
-	ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,"pc");
+	ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"pc.m",&viewer);CHKERRQ(ierr);
+	ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"pc");
 	ierr = MatView(mat,viewer);CHKERRQ(ierr);
-	ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,"BA");
+	ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"BA");
 	ierr = MatView(mat2,viewer);CHKERRQ(ierr);
 	ierr = MatDestroy(mat);CHKERRQ(ierr);
 	ierr = MatDestroy(mat2);CHKERRQ(ierr);
-	ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
       }
     }
 
@@ -139,7 +139,7 @@ int AppCtxCreateRhsAndMatrix (AppCtx *appctx)
 
   PetscFunctionBegin;
   /*  Create vector to contain load,  local size should be number of  vertices  on this proc.  */
-  ierr = OptionsHasName(PETSC_NULL,"-vec_type",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vec_type",&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = VecCreateMPI(comm,part->m,PETSC_DETERMINE,&algebra->b);CHKERRQ(ierr);
   } else {
@@ -285,7 +285,7 @@ int SetBoundaryConditions(AppCtx *appctx)
 
   /* get list of vertices on the boundary and their coordinates */
   ierr = AppPartitionGetBoundaryNodesAndCoords(part,&n,&vertex_ptr,&coord_ptr);CHKERRQ(ierr);
-  values = (double*)PetscMalloc((n+1)*sizeof(double));CHKPTRQ(values);
+ierr = PetscMalloc((n+1)*sizeof(double),&  values );CHKERRQ(ierr);
   for(i=0;i<n;i++){
     /* evaluate boundary condition function at point */
     ierr = PFApply(appctx->bc,1,coord_ptr+(2*i),values+i);CHKERRQ(ierr);

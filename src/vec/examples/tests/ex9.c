@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.44 2000/01/11 21:00:17 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.45 2000/05/05 22:15:11 balay Exp bsmith $*/
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\n";
 
@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(x);CHKERRA(ierr);
   ierr = VecAssemblyEnd(x);CHKERRA(ierr);
 
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecSet(&mone,y);CHKERRA(ierr);
 
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
 
   if (!rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"scattered vector\n");CHKERRA(ierr);
-    ierr = VecView(y,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+    ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   }
   ierr = ISDestroy(is1);CHKERRA(ierr);
   ierr = ISDestroy(is2);CHKERRA(ierr);

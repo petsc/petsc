@@ -1,4 +1,4 @@
-/*$Id: ex31.c,v 1.2 2000/05/05 18:29:33 bsmith Exp balay $*/
+/*$Id: ex31.c,v 1.3 2000/05/05 22:15:11 balay Exp bsmith $*/
 
 /* 
    Demonstrates PetscMatlabEngineXXX()
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]The result is %s",rank,output);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   PetscFinalize();
   return 0;

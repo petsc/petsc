@@ -1,9 +1,9 @@
-/*$Id: xmon.c,v 1.46 2000/04/12 04:24:52 bsmith Exp balay $*/
+/*$Id: xmon.c,v 1.47 2000/05/05 22:17:27 balay Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"              /*I  "petscksp.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPLGMonitorCreate"
+#define __FUNC__ "KSPLGMonitorCreate"
 /*@C
    KSPLGMonitorCreate - Creates a line graph context for use with 
    KSP to monitor convergence of preconditioned residual norms.
@@ -24,7 +24,7 @@
 .  -ksp_xmonitor - Sets line graph monitor
 
    Notes: 
-   Use KSPLGMonitorDestroy() to destroy this line graph; do not use DrawLGDestroy().
+   Use KSPLGMonitorDestroy() to destroy this line graph; do not use PetscDrawLGDestroy().
 
    Level: intermediate
 
@@ -32,49 +32,49 @@
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPLGTrueMonitorCreate()
 @*/
-int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,DrawLG *draw)
+int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,PetscDrawLG *draw)
 {
-  Draw win;
+  PetscDraw win;
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = DrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
-  ierr = DrawSetType(win,DRAW_X);CHKERRQ(ierr);
-  ierr = DrawLGCreate(win,1,draw);CHKERRQ(ierr);
-  PLogObjectParent(*draw,win);
+  ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
+  ierr = PetscDrawLGCreate(win,1,draw);CHKERRQ(ierr);
+  PetscLogObjectParent(*draw,win);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPLGMonitor"
+#define __FUNC__ "KSPLGMonitor"
 int KSPLGMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 {
-  DrawLG    lg = (DrawLG) monctx;
+  PetscDrawLG    lg = (PetscDrawLG) monctx;
   int       ierr;
   PetscReal x,y;
 
   PetscFunctionBegin;
   if (!monctx) {
     MPI_Comm comm;
-    Viewer   viewer;
+    PetscViewer   viewer;
 
     ierr   = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-    viewer = VIEWER_DRAW_(comm);
-    ierr   = ViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
+    viewer = PETSC_VIEWER_DRAW_(comm);
+    ierr   = PetscViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
   }
 
-  if (!n) {ierr = DrawLGReset(lg);CHKERRQ(ierr);}
+  if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
   x = (PetscReal) n;
   if (rnorm > 0.0) y = log10(rnorm); else y = -15.0;
-  ierr = DrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
+  ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
   if (n < 20 || (n % 5)) {
-    ierr = DrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 } 
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPLGMonitorDestroy"
+#define __FUNC__ "KSPLGMonitorDestroy"
 /*@C
    KSPLGMonitorDestroy - Destroys a line graph context that was created 
    with KSPLGMonitorCreate().
@@ -90,20 +90,20 @@ int KSPLGMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 
 .seealso: KSPLGMonitorCreate(), KSPLGTrueMonitorDestroy(), KSPSetMonitor()
 @*/
-int KSPLGMonitorDestroy(DrawLG drawlg)
+int KSPLGMonitorDestroy(PetscDrawLG drawlg)
 {
-  Draw draw;
+  PetscDraw draw;
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = DrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
-  if (draw) { ierr = DrawDestroy(draw);CHKERRQ(ierr);}
-  ierr = DrawLGDestroy(drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
+  if (draw) { ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);}
+  ierr = PetscDrawLGDestroy(drawlg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPLGTrueMonitorCreate"
+#define __FUNC__ "KSPLGTrueMonitorCreate"
 /*@C
    KSPLGTrueMonitorCreate - Creates a line graph context for use with 
    KSP to monitor convergence of true residual norms (as opposed to
@@ -126,7 +126,7 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
 
    Notes: 
    Use KSPLGTrueMonitorDestroy() to destroy this line graph, not
-   DrawLGDestroy().
+   PetscDrawLGDestroy().
 
    Level: intermediate
 
@@ -134,27 +134,27 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
-int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int m,int n,DrawLG *draw)
+int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int m,int n,PetscDrawLG *draw)
 {
-  Draw win;
+  PetscDraw win;
   int  ierr,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) { *draw = 0; PetscFunctionReturn(0);}
 
-  ierr = DrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
-  ierr = DrawSetType(win,DRAW_X);CHKERRQ(ierr);
-  ierr = DrawLGCreate(win,2,draw);CHKERRQ(ierr);
-  PLogObjectParent(*draw,win);
+  ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
+  ierr = PetscDrawLGCreate(win,2,draw);CHKERRQ(ierr);
+  PetscLogObjectParent(*draw,win);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPLGTrueMonitor"
+#define __FUNC__ "KSPLGTrueMonitor"
 int KSPLGTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 {
-  DrawLG    lg = (DrawLG) monctx;
+  PetscDrawLG    lg = (PetscDrawLG) monctx;
   PetscReal x[2],y[2],scnorm;
   int       ierr,rank;
   Vec       resid,work;
@@ -162,16 +162,16 @@ int KSPLGTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
   PetscFunctionBegin;
   if (!monctx) {
     MPI_Comm comm;
-    Viewer   viewer;
+    PetscViewer   viewer;
 
     ierr   = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-    viewer = VIEWER_DRAW_(comm);
-    ierr   = ViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
+    viewer = PETSC_VIEWER_DRAW_(comm);
+    ierr   = PetscViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
   }
 
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
   if (!rank) { 
-    if (!n) {ierr = DrawLGReset(lg);CHKERRQ(ierr);}
+    if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
     x[0] = x[1] = (PetscReal) n;
     if (rnorm > 0.0) y[0] = log10(rnorm); else y[0] = -15.0;
   }
@@ -183,16 +183,16 @@ int KSPLGTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 
   if (!rank) {
     if (scnorm > 0.0) y[1] = log10(scnorm); else y[1] = -15.0;
-    ierr = DrawLGAddPoint(lg,x,y);CHKERRQ(ierr);
+    ierr = PetscDrawLGAddPoint(lg,x,y);CHKERRQ(ierr);
     if (n <= 20 || (n % 3)) {
-      ierr = DrawLGDraw(lg);CHKERRQ(ierr);
+      ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
 } 
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPLGTrueMonitorDestroy"
+#define __FUNC__ "KSPLGTrueMonitorDestroy"
 /*@C
    KSPLGTrueMonitorDestroy - Destroys a line graph context that was created 
    with KSPLGTrueMonitorCreate().
@@ -208,15 +208,15 @@ int KSPLGTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 
 .seealso: KSPLGTrueMonitorCreate(), KSPSetMonitor()
 @*/
-int KSPLGTrueMonitorDestroy(DrawLG drawlg)
+int KSPLGTrueMonitorDestroy(PetscDrawLG drawlg)
 {
   int  ierr;
-  Draw draw;
+  PetscDraw draw;
 
   PetscFunctionBegin;
-  ierr = DrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
-  ierr = DrawDestroy(draw);CHKERRQ(ierr);
-  ierr = DrawLGDestroy(drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(drawlg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,14 +1,14 @@
-/* $Id: senddense.c,v 1.43 2000/09/22 20:41:42 bsmith Exp bsmith $ */
+/* $Id: senddense.c,v 1.44 2000/10/24 20:24:13 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerSocketPutScalar"></a>*/"ViewerSocketPutScalar" 
+#define __FUNC__ "PetscViewerSocketPutScalar" 
 /*@C
-   ViewerSocketPutScalar - Passes an Scalar array to a Socket viewer.
+   PetscViewerSocketPutScalar - Passes an Scalar array to a Socket PetscViewer.
 
   Input Parameters:
-.  viewer - obtained from ViewerSocketOpen()
+.  PetscViewer - obtained from PetscViewerSocketOpen()
 .  m, n - number of rows and columns of array
 .  array - the array stored in Fortran 77 style (matrix or vector data) 
 
@@ -18,19 +18,19 @@
    Most users should not call this routine, but instead should employ
    either
 .vb
-     MatView(Mat matrix,Viewer viewer)
+     MatView(Mat matrix,PetscViewer viewer)
               or
-     VecView(Vec vector,Viewer viewer)
+     VecView(Vec vector,PetscViewer viewer)
 .ve
 
    Concepts: Matlab^sending data
    Concepts: sockets^sending data
 
-.seealso: ViewerSocketOpen(), MatView(), VecView(), ViewerSocketPutReal(), ViewerSocketPutScalar()
+.seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutReal(), PetscViewerSocketPutScalar()
 @*/
-int ViewerSocketPutScalar(Viewer viewer,int m,int n,Scalar *array)
+int PetscViewerSocketPutScalar(PetscViewer viewer,int m,int n,Scalar *array)
 {
-  Viewer_Socket *vmatlab = (Viewer_Socket*)viewer->data;
+  PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
   int           ierr,t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
@@ -48,13 +48,13 @@ int ViewerSocketPutScalar(Viewer viewer,int m,int n,Scalar *array)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerSocketPutReal"></a>*/"ViewerSocketPutReal" 
+#define __FUNC__ "PetscViewerSocketPutReal" 
 /*@C
-   ViewerSocketPutReal - Passes a double (or single) precision array to 
-   a Matlab viewer.
+   PetscViewerSocketPutReal - Passes a double (or single) precision array to 
+   a Matlab PetscViewer.
 
   Input Parameters:
-+  viewer - obtained from ViewerSocketOpen()
++  PetscViewer - obtained from PetscViewerSocketOpen()
 .  m, n - number of rows and columns of array
 -  array - the array stored in Fortran 77 style (matrix or vector data) 
 
@@ -64,19 +64,19 @@ int ViewerSocketPutScalar(Viewer viewer,int m,int n,Scalar *array)
    Most users should not call this routine, but instead should employ
    either
 .vb
-     MatView(Mat matrix,Viewer viewer)
+     MatView(Mat matrix,PetscViewer viewer)
               or
-     VecView(Vec vector,Viewer viewer)
+     VecView(Vec vector,PetscViewer viewer)
 .ve
 
    Concepts: Matlab^sending data
    Concepts: sockets^sending data
 
-.seealso: ViewerSocketOpen(), MatView(), VecView(), ViewerSocketPutInt(), ViewerSocketPutReal()
+.seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutInt(), PetscViewerSocketPutReal()
 @*/
-int ViewerSocketPutReal(Viewer viewer,int m,int n,PetscReal *array)
+int PetscViewerSocketPutReal(PetscViewer viewer,int m,int n,PetscReal *array)
 {
-  Viewer_Socket *vmatlab = (Viewer_Socket*)viewer->data;
+  PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
   int           ierr,t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
@@ -91,12 +91,12 @@ int ViewerSocketPutReal(Viewer viewer,int m,int n,PetscReal *array)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerSocketPutInt"></a>*/"ViewerSocketPutInt" 
+#define __FUNC__ "PetscViewerSocketPutInt" 
 /*@C
-   ViewerSocketPutInt - Passes an integer array to a Socket viewer.
+   PetscViewerSocketPutInt - Passes an integer array to a Socket PetscViewer.
 
    Input Parameters:
-+  viewer - obtained from ViewerSocketOpen()
++  PetscViewer - obtained from PetscViewerSocketOpen()
 .  m - number of rows of array
 -  array - the array stored in Fortran 77 style (matrix or vector data) 
 
@@ -105,19 +105,19 @@ int ViewerSocketPutReal(Viewer viewer,int m,int n,PetscReal *array)
    Notes:
    Most users should not call this routine, but instead should employ either
 .vb
-     MatView(Mat matrix,Viewer viewer)
+     MatView(Mat matrix,PetscViewer viewer)
               or
-     VecView(Vec vector,Viewer viewer)
+     VecView(Vec vector,PetscViewer viewer)
 .ve
 
    Concepts: Matlab^sending data
    Concepts: sockets^sending data
 
-.seealso: ViewerSocketOpen(), MatView(), VecView(), ViewerSocketPutScalar(), ViewerSocketPutReal()
+.seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutScalar(), PetscViewerSocketPutReal()
 @*/
-int ViewerSocketPutInt(Viewer viewer,int m,int *array)
+int PetscViewerSocketPutInt(PetscViewer viewer,int m,int *array)
 {
-  Viewer_Socket *vmatlab = (Viewer_Socket*)viewer->data;
+  PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
   int           ierr,t = vmatlab->port,type = DENSEINT;
 
   PetscFunctionBegin;

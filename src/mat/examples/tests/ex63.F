@@ -1,5 +1,5 @@
 !
-!      "$Id: ex63.F,v 1.6 2000/05/05 22:16:17 balay Exp bsmith $";
+!      "$Id: ex63.F,v 1.7 2000/09/27 20:08:27 bsmith Exp bsmith $";
 !
 !   This program tests storage of PETSc Dense matrix. 
 !   It Creates a Dense matrix, and stores it into a file,
@@ -15,7 +15,7 @@
       integer ierr,row,col,rank
       Scalar  v
       Mat     A
-      Viewer  view
+      PetscViewer  view
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       
@@ -38,28 +38,28 @@
          call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
          write (6,100)
  100     format('The Contents of the Original Matrix')
-         call MatView(A,VIEWER_STDOUT_SELF,ierr)
+         call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
 !         
 !        Now Write this matrix to a binary file
 !
-         call ViewerBinaryOpen(PETSC_COMM_SELF,'dense.mat',             &
-     &        BINARY_CREATE,view,ierr)
-         call ViewerSetFormat(view,VIEWER_FORMAT_BINARY_NATIVE,         &
+         call PetscViewerBinaryOpen(PETSC_COMM_SELF,'dense.mat',             &
+     &        PETSC_BINARY_CREATE,view,ierr)
+         call PetscViewerSetFormat(view,PETSC_VIEWER_FORMAT_BINARY_NATIVE,         &
      &        PETSC_NULL_CHARACTER,ierr)
          call MatView(A,view,ierr)
-         call ViewerDestroy(view,ierr)
+         call PetscViewerDestroy(view,ierr)
          call MatDestroy(A,ierr)
 !
 !        Read this matrix into a SeqDense matrix
 
-         call ViewerBinaryOpen(PETSC_COMM_SELF,'dense.mat',             &
+         call PetscViewerBinaryOpen(PETSC_COMM_SELF,'dense.mat',             &
      &        Binary_rdonly,view,ierr)
          call MatLoad(view,MATSEQDENSE,A,ierr)
          write (6,200)
  200     format('The Contents of SeqDense Matrix read in from file')
-         call MatView(A,VIEWER_STDOUT_SELF,ierr)
+         call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
          call MatDestroy(A,ierr)
-         call ViewerDestroy(view,ierr)
+         call PetscViewerDestroy(view,ierr)
       endif
 
 !
@@ -68,15 +68,15 @@
 !
       call MPI_Barrier(PETSC_COMM_WORLD,ierr)
 
-      call ViewerBinaryOpen(PETSC_COMM_WORLD,'dense.mat',               &
-     &     BINARY_RDONLY,view,ierr)
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'dense.mat',               &
+     &     PETSC_BINARY_RDONLY,view,ierr)
       call MatLoad(view,MATMPIDENSE,A,ierr)
       if (rank .eq. 0) then
          write (6,300)
  300     format('The Contents of MPIDense Matrix read in from file')
       endif
-      call MatView(A,VIEWER_STDOUT_WORLD,ierr)
+      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
       call MatDestroy(A,ierr)
-      call ViewerDestroy(view,ierr)
+      call PetscViewerDestroy(view,ierr)
       call PetscFinalize(ierr)
       end

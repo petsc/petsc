@@ -1,4 +1,4 @@
-  /* $Id: tsimpl.h,v 1.21 2000/05/10 16:43:03 bsmith Exp bsmith $ */
+  /* $Id: tsimpl.h,v 1.22 2000/09/02 02:49:52 bsmith Exp bsmith $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -71,7 +71,7 @@ struct _p_TS {
   int           nwork;              
   Vec           *work;
   int           (*destroy)(TS);
-  int           (*view)(TS,Viewer);
+  int           (*view)(TS,PetscViewer);
 };
 
 EXTERN int TSMonitor(TS,int,double,Vec);

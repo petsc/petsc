@@ -1,4 +1,4 @@
-/*$Id: sp1wd.c,v 1.35 2000/05/05 22:16:44 balay Exp bsmith $*/
+/*$Id: sp1wd.c,v 1.36 2000/09/28 21:12:22 bsmith Exp bsmith $*/
 
 #include "petscmat.h"
 #include "src/mat/order/order.h"
@@ -8,7 +8,7 @@ EXTERN_C_BEGIN
     MatOrdering_1WD - Find the 1-way dissection ordering of a given matrix.
 */    
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatOrdering_1WD"
+#define __FUNC__ "MatOrdering_1WD"
 int MatOrdering_1WD(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   int        i,*mask,*xls,nblks,*xblk,*ls,nrow,*perm,ierr,*ia,*ja;
@@ -18,7 +18,7 @@ int MatOrdering_1WD(Mat mat,MatOrderingType type,IS *row,IS *col)
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  mask = (int *)PetscMalloc((5*nrow+1) * sizeof(int));CHKPTRQ(mask);
+  mask = (int *)PetscMalloc((5*nrow+1) * sizeof(int));CHKERRQ(ierr);
   xls  = mask + nrow;
   ls   = xls + nrow + 1;
   xblk = ls + nrow;

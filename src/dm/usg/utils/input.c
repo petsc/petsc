@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.4 2000/05/08 15:09:28 balay Exp bsmith $ */
+/* $Id: input.c,v 1.5 2000/09/28 21:15:42 bsmith Exp bsmith $ */
 static char help[] ="Allows inputing a 2d  grid into a AO database.\n";
 
 /*
@@ -13,8 +13,8 @@ int main(int argc, char **argv)
   int          size, ierr;
   AOData2dGrid agrid;
   AOData       aodata;
-  Viewer       binary;
-  Draw         draw;
+  PetscViewer       binary;
+  PetscDraw         draw;
 
   /* ---------------------------------------------------------------------
      Initialize PETSc
@@ -29,8 +29,8 @@ int main(int argc, char **argv)
   /*---------------------------------------------------------------------
      Open the graphics window
      ------------------------------------------------------------------------*/
-  ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Input grid",PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&draw);CHKERRQ(ierr);
-  ierr = DrawSetFromOptions(draw);CHKERRA(ierr);
+  ierr = PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Input grid",PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetFromOptions(draw);CHKERRA(ierr);
 
   ierr = AOData2dGridCreate(&agrid);CHKERRA(ierr);
 
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
   */
   ierr = AOData2dGridDraw(agrid,draw);CHKERRA(ierr);
 
-  ierr = DrawPause(draw);CHKERRA(ierr);
+  ierr = PetscDrawPause(draw);CHKERRA(ierr);
 
   /*
       Create the database 
@@ -66,15 +66,15 @@ int main(int argc, char **argv)
   /*
       Save the grid database to a file
   */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"gridfile",BINARY_CREATE,&binary);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"gridfile",PETSC_BINARY_CREATE,&binary);CHKERRA(ierr);
   ierr = AODataView(aodata,binary);CHKERRA(ierr);
-  ierr = ViewerDestroy(binary);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(binary);CHKERRA(ierr);
 
 
   /*
      Close the graphics window and cleanup
   */
-  ierr = DrawDestroy(draw);CHKERRA(ierr);
+  ierr = PetscDrawDestroy(draw);CHKERRA(ierr);
 
   ierr = AODataDestroy(aodata);CHKERRA(ierr);
 

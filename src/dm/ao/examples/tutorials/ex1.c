@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.13 2000/09/22 20:46:48 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.14 2000/09/28 21:15:17 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads an AODatabase and displays the key and segment names. Runtime options include:\n\
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
 {
   int            ierr,bs,zero = 0,edited = 0;
   char           filename[256],string[256],*segname,*value,keyname[256],*ikeyname;
-  Viewer         binary;
+  PetscViewer         binary;
   AOData         aodata;
   PetscTruth     keyexists,flag;
 
@@ -45,23 +45,23 @@ int main(int argc,char **argv)
   /*
      Load in the grid database
   */
-  ierr = OptionsGetString(PETSC_NULL,"-f",filename,256,&flag);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",filename,256,&flag);CHKERRA(ierr);
   if (!flag) SETERRA(1,"Unable to open database, must run with: ex1 -f filename");
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,filename,BINARY_RDONLY,&binary);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,PETSC_BINARY_RDONLY,&binary);CHKERRA(ierr);
   ierr = AODataLoadBasic(binary,&aodata);CHKERRA(ierr);
-  ierr = ViewerDestroy(binary);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(binary);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-d",&flag);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-d",&flag);CHKERRA(ierr);
   if (!flag) {
-    ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr)
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr)
   }
-  ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
 
   /*
        Allow user to add text keys to database
   */
-  ierr = OptionsHasName(PETSC_NULL,"-e",&flag);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-e",&flag);CHKERRA(ierr);
   if (flag) {
     edited = 1;
     printf("Enter keyname: (or return to end) ");
@@ -85,14 +85,14 @@ int main(int argc,char **argv)
       printf("Enter keyname: (or return to end) ");
       gets(string);
     } 
-    ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr)
-    ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr)
+    ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   }
 
   /*
       Allow user to remove keys and segements from database
   */
-  ierr = OptionsHasName(PETSC_NULL,"-r",&flag);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-r",&flag);CHKERRA(ierr);
   if (flag) {
     edited = 1;
     printf("Enter keyname to remove: (or return to end) ");
@@ -111,15 +111,15 @@ int main(int argc,char **argv)
       printf("Enter keyname segment name to remove: (or return to end) ");
       gets(string);
     }
-    ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr)
-    ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr)
+    ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   }
 
   if (edited) {
     PetscStrcat(filename,".new");
-    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,filename,BINARY_CREATE,&binary);CHKERRA(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,PETSC_BINARY_CREATE,&binary);CHKERRA(ierr);
     ierr = AODataView(aodata,binary);CHKERRA(ierr);
-    ierr = ViewerDestroy(binary);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(binary);CHKERRQ(ierr);
   }
 
   ierr = AODataDestroy(aodata);CHKERRA(ierr);

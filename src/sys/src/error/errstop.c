@@ -1,9 +1,9 @@
-/*$Id: errstop.c,v 1.13 2000/10/24 20:24:29 bsmith Exp bsmith $*/
+/*$Id: errstop.c,v 1.14 2000/11/28 17:27:36 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStopErrorHandler"></a>*/"PetscStopErrorHandler" 
+#define __FUNC__ "PetscStopErrorHandler" 
 /*@C
    PetscStopErrorHandler - Calls MPI_abort() and exists.
 
@@ -41,7 +41,7 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,ch
 {
   int        rank;
   PetscTruth flg1,flg2;
-  PLogDouble mem,rss;
+  PetscLogDouble mem,rss;
 
   PetscFunctionBegin;
   if (!mess) mess = " ";
@@ -53,8 +53,8 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,ch
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   too large an object or bleeding by not properly\n",rank);
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   destroying unneeded objects.\n",rank);
     PetscTrSpace(&mem,PETSC_NULL,PETSC_NULL); PetscGetResidentSetSize(&rss);
-    OptionsHasName(PETSC_NULL,"-trdump",&flg1);
-    OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg2);
+    PetscOptionsHasName(PETSC_NULL,"-trdump",&flg1);
+    PetscOptionsHasName(PETSC_NULL,"-trmalloc_log",&flg2);
     if (flg2) {
       PetscTrLogDump(stdout);
     } else if (flg1) {

@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.63 2000/09/22 20:46:14 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.64 2000/09/28 21:14:25 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
 matrices are used for the Jacobian and the preconditioner.  The code also\n\
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   h = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -91,11 +91,11 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* Set preconditioner for matrix-free method */
-  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-user_precond",&flg);CHKERRA(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-user_precond",&flg);CHKERRA(ierr);
     if (flg) { /* user-defined precond */
       ierr = PCSetType(pc,PCSHELL);CHKERRA(ierr);
       ierr = PCShellSetApply(pc,MatrixFreePreconditioner,PETSC_NULL);CHKERRA(ierr);
@@ -114,14 +114,14 @@ int main(int argc,char **argv)
      following is a good option when monitoring code performance, for example
      when using -log_summary.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRA(ierr);
   if (flg) {
     ierr    = SNESGetSLES(snes,&sles);CHKERRA(ierr);
     ierr    = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
-    Khist   = (double*)PetscMalloc(Khistl*sizeof(double));CHKPTRA(Khist);
+ierr = PetscMalloc(Khistl*sizeof(double),&(    Khist   ));CHKPTRA(Khist);
     ierr    = KSPSetResidualHistory(ksp,Khist,Khistl,PETSC_FALSE);CHKERRA(ierr);
-    Shist   = (double*)PetscMalloc(Shistl*sizeof(double));CHKPTRA(Shist);
-    Shistit = (int*)PetscMalloc(Shistl*sizeof(int));CHKPTRA(Shistit);
+ierr = PetscMalloc(Shistl*sizeof(double),&(    Shist   ));CHKPTRA(Shist);
+ierr = PetscMalloc(Shistl*sizeof(int),&(    Shistit ));CHKPTRA(Shistit);
     ierr    = SNESSetConvergenceHistory(snes,Shist,Shistit,Shistl,PETSC_FALSE);CHKERRA(ierr);
   }
 
@@ -145,14 +145,14 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,x,&it);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Newton iterations = %d\n\n",it);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = KSPGetResidualHistory(ksp,PETSC_NULL,&Khistl);CHKERRA(ierr);
-    PetscDoubleView(Khistl,Khist,VIEWER_STDOUT_SELF);
+    PetscDoubleView(Khistl,Khist,PETSC_VIEWER_STDOUT_SELF);
     ierr = PetscFree(Khist);CHKERRA(ierr);
     ierr = SNESGetConvergenceHistory(snes,PETSC_NULL,PETSC_NULL,&Shistl);CHKERRA(ierr);
-    PetscDoubleView(Shistl,Shist,VIEWER_STDOUT_SELF);
-    PetscIntView(Shistl,Shistit,VIEWER_STDOUT_SELF);
+    PetscDoubleView(Shistl,Shist,PETSC_VIEWER_STDOUT_SELF);
+    PetscIntView(Shistl,Shistit,PETSC_VIEWER_STDOUT_SELF);
     ierr = PetscFree(Shist);CHKERRA(ierr);
     ierr = PetscFree(Shistit);CHKERRA(ierr);
   }

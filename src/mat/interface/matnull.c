@@ -1,4 +1,4 @@
-/*$Id: matnull.c,v 1.33 2000/08/01 20:01:52 bsmith Exp balay $*/
+/*$Id: matnull.c,v 1.34 2000/08/03 16:06:11 balay Exp bsmith $*/
 /*
     Routines to project vectors out of null spaces.
 */
@@ -7,7 +7,7 @@
 #include "petscsys.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatNullSpaceCreate"
+#define __FUNC__ "MatNullSpaceCreate"
 /*@C
    MatNullSpaceCreate - Creates a data structure used to project vectors 
    out of null spaces.
@@ -36,8 +36,8 @@ int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,MatNullSpace *
 
   PetscFunctionBegin;
   PetscHeaderCreate(sp,_p_MatNullSpace,int,MATNULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);
-  PLogObjectCreate(sp);
-  PLogObjectMemory(sp,sizeof(struct _p_MatNullSpace));
+  PetscLogObjectCreate(sp);
+  PetscLogObjectMemory(sp,sizeof(struct _p_MatNullSpace));
 
   sp->has_cnst = has_cnst; 
   sp->n        = n;
@@ -49,7 +49,7 @@ int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,MatNullSpace *
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatNullSpaceDestroy"
+#define __FUNC__ "MatNullSpaceDestroy"
 /*@
    MatNullSpaceDestroy - Destroys a data structure used to project vectors 
    out of null spaces.
@@ -74,13 +74,13 @@ int MatNullSpaceDestroy(MatNullSpace sp)
 
   if (sp->vec) {ierr = VecDestroy(sp->vec);CHKERRQ(ierr);}
 
-  PLogObjectDestroy(sp);
+  PetscLogObjectDestroy(sp);
   PetscHeaderDestroy(sp);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatNullSpaceRemove"
+#define __FUNC__ "MatNullSpaceRemove"
 /*@
    MatNullSpaceRemove - Removes all the components of a null space from a vector.
 
@@ -129,7 +129,7 @@ int MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatNullSpaceTest"
+#define __FUNC__ "MatNullSpaceTest"
 /*@
    MatNullSpaceTest  - Tests if the claimed null space is really a
      null space of a matrix
@@ -156,8 +156,8 @@ int MatNullSpaceTest(MatNullSpace sp,Mat mat)
   PetscTruth flg1,flg2;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(PETSC_NULL,"-mat_null_space_test_view",&flg1);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-mat_null_space_test_view_draw",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_null_space_test_view",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_null_space_test_view_draw",&flg2);CHKERRQ(ierr);
 
   if (!sp->vec) {
     if (n) {
@@ -179,8 +179,8 @@ int MatNullSpaceTest(MatNullSpace sp,Mat mat)
     if (nrm < 1.e-7) {ierr = PetscPrintf(comm,"Constants are likely null vector");CHKERRQ(ierr);}
     else {ierr = PetscPrintf(comm,"Constants are unlikely null vector ");CHKERRQ(ierr);}
     ierr = PetscPrintf(comm,"|| A * 1 || = %g\n",nrm);CHKERRQ(ierr);
-    if (nrm > 1.e-7 && flg1) {ierr = VecView(r,VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
-    if (nrm > 1.e-7 && flg2) {ierr = VecView(r,VIEWER_DRAW_(comm));CHKERRQ(ierr);}
+    if (nrm > 1.e-7 && flg1) {ierr = VecView(r,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
+    if (nrm > 1.e-7 && flg2) {ierr = VecView(r,PETSC_VIEWER_DRAW_(comm));CHKERRQ(ierr);}
     ierr = VecDestroy(r);CHKERRQ(ierr);
   }
 
@@ -190,8 +190,8 @@ int MatNullSpaceTest(MatNullSpace sp,Mat mat)
     if (nrm < 1.e-7) {ierr = PetscPrintf(comm,"Null vector %d is likely null vector",j);CHKERRQ(ierr);}
     else {ierr = PetscPrintf(comm,"Null vector %d unlikely null vector ",j);CHKERRQ(ierr);}
     ierr = PetscPrintf(comm,"|| A * v[%d] || = %g\n",j,nrm);CHKERRQ(ierr);
-    if (nrm > 1.e-7 && flg1) {ierr = VecView(l,VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
-    if (nrm > 1.e-7 && flg2) {ierr = VecView(l,VIEWER_DRAW_(comm));CHKERRQ(ierr);}
+    if (nrm > 1.e-7 && flg1) {ierr = VecView(l,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
+    if (nrm > 1.e-7 && flg2) {ierr = VecView(l,PETSC_VIEWER_DRAW_(comm));CHKERRQ(ierr);}
   }
   
   PetscFunctionReturn(0);

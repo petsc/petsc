@@ -1,8 +1,8 @@
-/*$Id: gmres2.c,v 1.30 2000/08/24 22:42:47 bsmith Exp bsmith $*/
+/*$Id: gmres2.c,v 1.31 2000/09/28 21:13:20 bsmith Exp bsmith $*/
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="KSPGMRESSetHapTol"></a>*/"KSPGMRESSetHapTol" 
+#define __FUNC__ "KSPGMRESSetHapTol" 
 /*@
     KSPGMRESSetHapTol - Sets the tolerence for GMRES to declare happy breakdown.
     for GMRES before restart.
@@ -38,7 +38,7 @@ int KSPGMRESSetHapTol(KSP ksp,double tol)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="KSPGMRESSetRestart"></a>*/"KSPGMRESSetRestart" 
+#define __FUNC__ "KSPGMRESSetRestart" 
 /*@
     KSPGMRESSetRestart - Sets the number of search directions 
     for GMRES before restart.
@@ -77,7 +77,7 @@ int KSPGMRESSetRestart(KSP ksp,int max_k)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="KSPGMRESSetOrthogonalization"></a>*/"KSPGMRESSetOrthogonalization" 
+#define __FUNC__ "KSPGMRESSetOrthogonalization" 
 /*@C
    KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES.
 

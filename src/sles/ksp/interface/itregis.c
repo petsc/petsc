@@ -1,4 +1,4 @@
-/*$Id: itregis.c,v 1.52 2000/05/10 16:42:00 bsmith Exp balay $*/
+/*$Id: itregis.c,v 1.53 2000/08/18 20:03:05 balay Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"  /*I "petscksp.h" I*/
 
@@ -29,7 +29,7 @@ EXTERN_C_END
 EXTERN PetscTruth KSPRegisterAllCalled;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPRegisterAll"
+#define __FUNC__ "KSPRegisterAll"
 /*@C
   KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
 

@@ -1,4 +1,4 @@
-/*$Id: ex76.c,v 1.9 2000/11/03 18:43:31 hzhang Exp bsmith $*/
+/*$Id: ex76.c,v 1.10 2000/11/05 16:36:56 bsmith Exp bsmith $*/
 
 static char help[] = "Tests matrix permutation for factorization and solve on matrix with MatSBAIJ format. Modified from ex74.c\n";
 
@@ -23,8 +23,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
-  ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRA(ierr);
 
   n = mbs*bs;
   ierr=MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &A);CHKERRA(ierr);
@@ -39,7 +39,7 @@ int main(int argc,char **args)
 
   /* Assemble matrix */
   if (bs == 1){
-    ierr = OptionsGetInt(PETSC_NULL,"-test_problem",&prob,PETSC_NULL);CHKERRA(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-test_problem",&prob,PETSC_NULL);CHKERRA(ierr);
     if (prob == 1){ /* tridiagonal matrix */
       value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
       for (i=1; i<n-1; i++) {
@@ -131,14 +131,14 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   /* PetscPrintf(PETSC_COMM_SELF,"\n The Matrix: \n");
-  MatView(A, VIEWER_DRAW_WORLD);
-  MatView(A, VIEWER_STDOUT_WORLD); */ 
+  MatView(A, PETSC_VIEWER_DRAW_WORLD);
+  MatView(A, PETSC_VIEWER_STDOUT_WORLD); */ 
 
   ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);  
   /* PetscPrintf(PETSC_COMM_SELF,"\n Symmetric Part of Matrix: \n"); */
-  /* MatView(sA, VIEWER_DRAW_WORLD); */
-  /* MatView(sA, VIEWER_STDOUT_WORLD); */
+  /* MatView(sA, PETSC_VIEWER_DRAW_WORLD); */
+  /* MatView(sA, PETSC_VIEWER_STDOUT_WORLD); */
 
   /* Vectors */
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
@@ -148,7 +148,7 @@ int main(int argc,char **args)
   ierr = VecSetRandom(rand,x);CHKERRA(ierr);
 
   /* Test MatReordering() */
-  ip_ptr = (int*)PetscMalloc(mbs*sizeof(int));CHKERRA(ierr);
+ierr = PetscMalloc(mbs*sizeof(int),&(  ip_ptr ));CHKERRA(ierr);
   for (i=0; i<mbs; i++) ip_ptr[i] = i;
   if(reorder){
     i = ip_ptr[1]; ip_ptr[1] = ip_ptr[mbs-2]; ip_ptr[mbs-2] = i; 
@@ -169,8 +169,8 @@ int main(int argc,char **args)
       ierr = MatIncompleteCholeskyFactorSymbolic(sA,perm,fill,lf,&sC);CHKERRA(ierr);
     }      
     ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRA(ierr);  
-    /* MatView(sC, VIEWER_DRAW_WORLD);  */ /* view factored matrix */
-    /* MatView(sC, VIEWER_STDOUT_WORLD); */
+    /* MatView(sC, PETSC_VIEWER_DRAW_WORLD);  */ /* view factored matrix */
+    /* MatView(sC, PETSC_VIEWER_STDOUT_WORLD); */
        
     ierr = MatMult(sA,x,b);CHKERRA(ierr);
     ierr = MatSolve(sC,b,y);CHKERRA(ierr); 

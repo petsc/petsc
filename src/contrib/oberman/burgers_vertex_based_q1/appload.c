@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.4 2000/02/02 21:21:09 bsmith Exp bsmith $*/
+/*$Id: appload.c,v 1.5 2000/08/01 20:58:20 bsmith Exp bsmith $*/
 
 /*
      Loads the qquadrilateral grid database from a file  and sets up the local 
@@ -13,10 +13,10 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
 {
   int    ierr;
   PetscTruth flag;
-  Viewer binary;
+  PetscViewer binary;
   char   filename[256];
 
-  (*appctx) = (AppCtx*)PetscMalloc(sizeof(AppCtx));CHKPTRQ(*appctx);
+  (*appctx) = (AppCtx*)PetscMalloc(sizeof(AppCtx));CHKERRQ(ierr);
   (*appctx)->comm = comm;
 
 /*  ---------------
@@ -27,11 +27,11 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   /*-----------------------------------------------------------------------
      Load in the grid database
     ---------------------------------------------------------------------------*/
-  ierr = OptionsGetString(0,"-f",filename,256,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(0,"-f",filename,256,&flag);CHKERRQ(ierr);
   if (!flag) PetscStrcpy(filename,"gridfile");
-  ierr = ViewerBinaryOpen((*appctx)->comm,filename,BINARY_RDONLY,&binary);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen((*appctx)->comm,filename,PETSC_BINARY_RDONLY,&binary);CHKERRQ(ierr);
   ierr = AODataLoadBasic(binary,&(*appctx)->aodata);CHKERRQ(ierr);
-  ierr = ViewerDestroy(binary);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(binary);CHKERRQ(ierr);
 
 
   /*------------------------------------------------------------------------
@@ -81,7 +81,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   /* make the extra index set needed for MatZeroRows */
   ierr = ISGetIndices(isvertex,&vertex_indices);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isvertex,&vertex_size);CHKERRQ(ierr);
-  vertex_blocked = (int*)PetscMalloc(((2*vertex_size)+1)*sizeof(int));CHKPTRQ(vertex_blocked);
+ierr = PetscMalloc(((2*vertex_size)+1)*sizeof(int),&  vertex_blocked );CHKERRQ(ierr);
   for(i=0;i<vertex_size;i++){
     vertex_blocked[2*i] = 2*vertex_indices[i];
     vertex_blocked[2*i+1] =  2*vertex_indices[i] + 1;
@@ -116,7 +116,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   /*  Now create a blocked IS for MatZeroRowsLocal */
   ierr = ISGetIndices(vertex_boundary,&vertex_indices);CHKERRQ(ierr);
   ierr = ISGetLocalSize(vertex_boundary,&vertex_boundary_size);CHKERRQ(ierr); 
-  vertex_boundary_blocked = (int*)PetscMalloc((2*vertex_boundary_size)*sizeof(int));CHKPTRQ(vertex_boundary_blocked); 
+ierr = PetscMalloc((2*vertex_boundary_size)*sizeof(int),&(  vertex_boundary_blocked ));CHKERRQ(ierr); 
   for(i=0;i<vertex_boundary_size;i++){ 
      vertex_boundary_blocked[2*i] = 2*vertex_indices[i]; 
      vertex_boundary_blocked[2*i+1] = 2*vertex_indices[i] + 1; 
@@ -156,18 +156,18 @@ int AppCtxGraphics(AppCtx *appctx)
      Setup  the graphics windows
      ------------------------------------------------------------------------*/
 
-  ierr = OptionsHasName(PETSC_NULL,"-show_grid",&appctx->view.show_grid);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-show_solution",&appctx->view.show_solution);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-show_grid",&appctx->view.show_grid);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-show_solution",&appctx->view.show_solution);CHKERRQ(ierr);
 
   if (appctx->view.show_grid || appctx->view.show_solution) {
-    ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,400,400,
+    ierr = PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,400,400,
                      &appctx->view.drawglobal);CHKERRQ(ierr);
-    ierr = DrawSetFromOptions(appctx->view.drawglobal);CHKERRA(ierr);
+    ierr = PetscDrawSetFromOptions(appctx->view.drawglobal);CHKERRA(ierr);
 
-    ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,400,400,
+    ierr = PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,400,400,
                      &appctx->view.drawlocal);CHKERRQ(ierr);
-    ierr = DrawSetFromOptions(appctx->view.drawlocal);CHKERRA(ierr);
-    ierr = DrawSplitViewPort((appctx)->view.drawlocal);CHKERRQ(ierr);
+    ierr = PetscDrawSetFromOptions(appctx->view.drawlocal);CHKERRA(ierr);
+    ierr = PetscDrawSplitViewPort((appctx)->view.drawlocal);CHKERRQ(ierr);
 
     /*
        Set the window coordinates based on the values in vertices
@@ -175,17 +175,17 @@ int AppCtxGraphics(AppCtx *appctx)
     ierr = AODataSegmentGetExtrema((appctx)->aodata,"vertex","values",maxs,mins);CHKERRQ(ierr);
     hx = maxs[0] - mins[0]; xmin = mins[0] - .1*hx; xmax = maxs[0] + .1*hx;
     hy = maxs[1] - mins[1]; ymin = mins[1] - .1*hy; ymax = maxs[1] + .1*hy;
-    ierr = DrawSetCoordinates((appctx)->view.drawglobal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
-    ierr = DrawSetCoordinates((appctx)->view.drawlocal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    ierr = PetscDrawSetCoordinates((appctx)->view.drawglobal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    ierr = PetscDrawSetCoordinates((appctx)->view.drawlocal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
     /*
        Visualize the grid 
     */
   }
 
   if (appctx->view.show_grid) {
-    ierr = DrawZoom((appctx)->view.drawglobal,AppCtxView,appctx);CHKERRA(ierr);
+    ierr = PetscDrawZoom((appctx)->view.drawglobal,AppCtxView,appctx);CHKERRA(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-matlab_graphics",&(appctx)->view.matlabgraphics);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-matlab_graphics",&(appctx)->view.matlabgraphics);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -224,8 +224,8 @@ int AppCtxDestroy(AppCtx *appctx)
   ierr = VecScatterDestroy(appctx->algebra.gtol);CHKERRQ(ierr);
 
   if (appctx->view.show_grid || appctx->view.show_solution) {
-    ierr = DrawDestroy(appctx->view.drawglobal);CHKERRQ(ierr);
-    ierr = DrawDestroy(appctx->view.drawlocal);CHKERRQ(ierr);
+    ierr = PetscDrawDestroy(appctx->view.drawglobal);CHKERRQ(ierr);
+    ierr = PetscDrawDestroy(appctx->view.drawlocal);CHKERRQ(ierr);
   }
 
   ierr = ISDestroy(appctx->grid.vertex_global);CHKERRQ(ierr);

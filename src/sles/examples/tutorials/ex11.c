@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.29 2000/09/28 21:13:46 bsmith Exp bsmith $*/
+/*$Id: ex11.c,v 1.30 2000/10/24 20:26:55 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 
@@ -57,8 +57,8 @@ int main(int argc,char **args)
   SETERRA(1,"This example requires complex numbers");
 #endif
 
-  ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   dim = n*n;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -89,7 +89,7 @@ int main(int argc,char **args)
       - Always specify global rows and columns of matrix entries.
   */
 
-  ierr = OptionsHasName(PETSC_NULL,"-norandom",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-norandom",&flg);CHKERRA(ierr);
   if (flg) use_random = 0;
   else     use_random = 1;
   if (use_random) {
@@ -181,7 +181,7 @@ int main(int argc,char **args)
       Print the first 3 entries of x; this demonstrates extraction of the
       real and imaginary components of the complex vector, x.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-print_x3",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-print_x3",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = VecGetArray(x,&xa);CHKERRA(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");CHKERRA(ierr);

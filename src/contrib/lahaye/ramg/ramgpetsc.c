@@ -51,7 +51,10 @@
 
 int RamgShellPCCreate(RamgShellPC **shell)
 {
-   RamgShellPC *newctx = PetscNew(RamgShellPC); CHKPTRQ(newctx);
+   RamgShellPC *newctx;
+   int         ierr;
+
+   ierr = PetscNew(RamgShellPC,&newctx); CHKERRQ(ierr);
    *shell = newctx; 
    return 0; 
 }
@@ -118,13 +121,13 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    ndig   = 8*nnu; 
 
    /*..Allocate memory for RAMG variables..*/ 
-   Asky     = (double *) PetscMalloc(nda  * sizeof(double)); CHKPTRQ(Asky); 
-   ia       = (int*)     PetscMalloc(ndia * sizeof(int)); CHKPTRQ(ia); 
-   ja       = (int*)     PetscMalloc(ndja * sizeof(int)); CHKPTRQ(ja); 
+   Asky     = (double *) PetscMalloc(nda  * sizeof(double)); CHKERRQ(ierr); 
+   ia       = (int*)     PetscMalloc(ndia * sizeof(int)); CHKERRQ(ierr); 
+   ja       = (int*)     PetscMalloc(ndja * sizeof(int)); CHKERRQ(ierr); 
    u_approx = (double *) PetscMalloc(ndu  * sizeof(double)); 
-                         CHKPTRQ(u_approx); 
-   rhs      = (double *) PetscMalloc(ndf  * sizeof(double)); CHKPTRQ(rhs); 
-   ig       = (int*)     PetscMalloc(ndig * sizeof(int)); CHKPTRQ(ig); 
+                         CHKERRQ(ierr); 
+   rhs      = (double *) PetscMalloc(ndf  * sizeof(double)); CHKERRQ(ierr); 
+   ig       = (int*)     PetscMalloc(ndig * sizeof(int)); CHKERRQ(ierr); 
 
    /*..Store PETSc matrix in compressed skyline format required by RAMG..*/ 
    nnz_count = 0;
@@ -161,7 +164,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
        ja[j]++;
 
    /*..Allocate memory for RAMG parameters..*/
-   ramg_param = (struct RAMG_PARAM*) PetscMalloc(sizeof(struct RAMG_PARAM));CHKPTRQ(ramg_param);
+   ramg_param = (struct RAMG_PARAM*) PetscMalloc(sizeof(struct RAMG_PARAM));CHKERRQ(ierr);
 
    /*..Set RAMG parameters..*/
    RamgGetParam(ramg_param); 
@@ -343,7 +346,7 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
               &ecg2, &ewt2, &nwt, &ntr, &ierr); 
 
    /*..Create auxilary vector..*/ 
-   cols        = (int *) PetscMalloc(numnodes * sizeof(int));CHKPTRQ(cols);
+   cols        = (int *) PetscMalloc(numnodes * sizeof(int));CHKERRQ(ierr);
    for (I=0;I<numnodes;I++)
        cols[I] = I; 
 
@@ -395,7 +398,7 @@ int RamgGetParam(struct RAMG_PARAM *ramg_param)
   (*ramg_param).MATRIX    = 12;
   /*....Class 2 RAMG parameters....*/
   (*ramg_param).ISWTCH    = 4;
-  if (PLogPrintInfo) {
+  if (PetscLogPrintInfo) {
     (*ramg_param).IOUT    = 13;
   } else { /* no output by default */
     (*ramg_param).IOUT    = 1;
@@ -422,9 +425,9 @@ int RamgGetParam(struct RAMG_PARAM *ramg_param)
 
   /*..Overwrite default values by values specified at runtime..*/
   /*....Class 2 RAMG parameters....*/ 
-  ierr = OptionsGetInt(PETSC_NULL,"-pc_ramg_iswtch",&(*ramg_param).ISWTCH,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_iswtch",&(*ramg_param).ISWTCH,PETSC_NULL);CHKERRA(ierr);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-pc_ramg_iout",&(*ramg_param).IOUT,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_iout",&(*ramg_param).IOUT,PETSC_NULL);CHKERRA(ierr);
 
   return 0; 
 }
@@ -434,7 +437,7 @@ int RamgGetParam(struct RAMG_PARAM *ramg_param)
 #include "src/sles/pc/pcimpl.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp_RAMG"
+#define __FUNC__ "PCSetUp_RAMG"
 static int PCSetUp_RAMG(PC pc)
 {
   int        ierr;
@@ -445,7 +448,7 @@ static int PCSetUp_RAMG(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_RAMG"
+#define __FUNC__ "PCApply_RAMG"
 static int PCApply_RAMG(PC pc,Vec x,Vec y)
 {
   int       ierr;
@@ -456,7 +459,7 @@ static int PCApply_RAMG(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCDestroy_RAMG"
+#define __FUNC__ "PCDestroy_RAMG"
 static int PCDestroy_RAMG(PC pc)
 {
   int       ierr;
@@ -468,7 +471,7 @@ static int PCDestroy_RAMG(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCreate_RAMG"
+#define __FUNC__ "PCCreate_RAMG"
 int PCCreate_RAMG(PC pc)
 {
   int       ierr;

@@ -1,4 +1,4 @@
-/*$Id: cmatlab.c,v 1.4 2000/09/02 02:50:43 bsmith Exp bsmith $*/
+/*$Id: cmatlab.c,v 1.5 2000/09/28 21:16:17 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
@@ -11,23 +11,23 @@ typedef struct {
 } PF_Matlab;
   
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFView_Matlab"></a>*/"PFView_Matlab"
-int PFView_Matlab(void *value,Viewer viewer)
+#define __FUNC__ "PFView_Matlab"
+int PFView_Matlab(void *value,PetscViewer viewer)
 {
   int        ierr;
   PetscTruth isascii;
   PF_Matlab  *matlab = (PF_Matlab*)value;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"Matlab Matlab = %s\n",matlab->string);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Matlab Matlab = %s\n",matlab->string);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFDestroy_Matlab"></a>*/"PFDestroy_Matlab"
+#define __FUNC__ "PFDestroy_Matlab"
 int PFDestroy_Matlab(void *value)
 {
   int        ierr;
@@ -41,7 +41,7 @@ int PFDestroy_Matlab(void *value)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFApply_Matlab"></a>*/"PFApply_Matlab"
+#define __FUNC__ "PFApply_Matlab"
 int PFApply_Matlab(void *value,int n,Scalar *in,Scalar *out)
 {
   PF_Matlab  *matlab = (PF_Matlab*)value;
@@ -56,7 +56,7 @@ int PFApply_Matlab(void *value,int n,Scalar *in,Scalar *out)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFSetFromOptions_Matlab"></a>*/"PFSetFromOptions_Matlab"
+#define __FUNC__ "PFSetFromOptions_Matlab"
 int PFSetFromOptions_Matlab(PF pf)
 {
   int        ierr;
@@ -65,26 +65,26 @@ int PFSetFromOptions_Matlab(PF pf)
   PF_Matlab  *matlab = (PF_Matlab*)pf->data;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("Matlab function options");CHKERRQ(ierr);
-    ierr = OptionsString("-pf_matlab","Matlab function","None","",value,256,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("Matlab function options");CHKERRQ(ierr);
+    ierr = PetscOptionsString("-pf_matlab","Matlab function","None","",value,256,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = PetscStrallocpy((char*)value,&matlab->string);CHKERRQ(ierr);
     }
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);    
 }
 
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFCreate_Matlab"></a>*/"PFCreate_Matlab"
+#define __FUNC__ "PFCreate_Matlab"
 int PFCreate_Matlab(PF pf,void *value)
 {
   int       ierr;
   PF_Matlab *matlab;
 
   PetscFunctionBegin;
-  matlab = PetscNew(PF_Matlab);CHKPTRQ(matlab);
+  ierr           = PetscNew(PF_Matlab,&matlab);CHKERRQ(ierr);
   matlab->dimin  = pf->dimin;
   matlab->dimout = pf->dimout;
 

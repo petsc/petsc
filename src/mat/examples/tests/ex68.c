@@ -1,4 +1,4 @@
-/*$Id: ex68.c,v 1.9 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex68.c,v 1.10 2000/07/10 03:39:52 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal().\n\n";
 
@@ -38,24 +38,24 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   printf("Original matrix\n");
-  ierr = ViewerSetFormat(VIEWER_STDOUT_SELF,VIEWER_FORMAT_ASCII_DENSE,0);CHKERRA(ierr);
-  ierr = MatView(mat,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_FORMAT_ASCII_DENSE,0);CHKERRA(ierr);
+  ierr = MatView(mat,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = MatGetOrdering(mat,MATORDERING_NATURAL,&isrow,&iscol);CHKERRA(ierr);
 
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
   printf("Original matrix permuted by identity\n"); 
-  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = MatDestroy(B);CHKERRA(ierr);
 
   ierr = MatReorderForNonzeroDiagonal(mat,1.e-8,isrow,iscol);CHKERRA(ierr);
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
   printf("Original matrix permuted by identity + NonzeroDiagonal()\n"); 
-  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   printf("Row permutation\n"); 
-  ierr = ISView(isrow,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(isrow,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   printf("Column permutation\n"); 
-  ierr = ISView(iscol,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(iscol,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = MatDestroy(B);CHKERRA(ierr);
 
   ierr = ISDestroy(isrow);CHKERRA(ierr);
@@ -64,22 +64,22 @@ int main(int argc,char **argv)
   ierr = MatGetOrdering(mat,MATORDERING_ND,&isrow,&iscol);CHKERRA(ierr);
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
   printf("Original matrix permuted by ND\n"); 
-  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = MatDestroy(B);CHKERRA(ierr);
   printf("ND row permutation\n"); 
-  ierr = ISView(isrow,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(isrow,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   printf("ND column permutation\n"); 
-  ierr = ISView(iscol,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(iscol,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = MatReorderForNonzeroDiagonal(mat,1.e-8,isrow,iscol);CHKERRA(ierr);
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
   printf("Original matrix permuted by ND + NonzeroDiagonal()\n"); 
-  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = MatDestroy(B);CHKERRA(ierr);
   printf("ND + NonzeroDiagonal() row permutation\n"); 
-  ierr = ISView(isrow,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(isrow,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   printf("ND + NonzeroDiagonal() column permutation\n"); 
-  ierr = ISView(iscol,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(iscol,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = ISDestroy(isrow);CHKERRA(ierr);
   ierr = ISDestroy(iscol);CHKERRA(ierr);
@@ -87,26 +87,26 @@ int main(int argc,char **argv)
   ierr = MatGetOrdering(mat,MATORDERING_RCM,&isrow,&iscol);CHKERRA(ierr);
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
   printf("Original matrix permuted by RCM\n"); 
-  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = MatDestroy(B);CHKERRA(ierr);
   printf("RCM row permutation\n"); 
-  ierr = ISView(isrow,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(isrow,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   printf("RCM column permutation\n"); 
-  ierr = ISView(iscol,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(iscol,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = MatReorderForNonzeroDiagonal(mat,1.e-8,isrow,iscol);CHKERRA(ierr);
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
   printf("Original matrix permuted by RCM + NonzeroDiagonal()\n"); 
-  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = MatDestroy(B);CHKERRA(ierr);
   printf("RCM + NonzeroDiagonal() row permutation\n"); 
-  ierr = ISView(isrow,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(isrow,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   printf("RCM + NonzeroDiagonal() column permutation\n"); 
-  ierr = ISView(iscol,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(iscol,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
    ierr = MatLUFactor(mat,isrow,iscol,PETSC_NULL);CHKERRA(ierr); 
   printf("Factored matrix permuted by RCM + NonzeroDiagonal()\n"); 
-  ierr = MatView(mat,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(mat,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /* Free data structures */  
   ierr = ISDestroy(isrow);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/* $Id: petscts.h,v 1.42 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petscts.h,v 1.43 2000/09/02 02:50:55 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -74,7 +74,7 @@ EXTERN int TSComputeRHSFunction(TS,double,Vec,Vec);
 EXTERN int TSComputeRHSBoundaryConditions(TS,double,Vec);
 EXTERN int TSComputeRHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*);
 
-extern FList      TSList;
+extern PetscFList      TSList;
 EXTERN int        TSRegisterAll(char*);
 EXTERN int        TSRegisterDestroy(void);
 extern PetscTruth TSRegisterAllCalled;
@@ -89,14 +89,14 @@ EXTERN int TSRegister(char*,char*,char*,int(*)(TS));
 EXTERN int TSGetSNES(TS,SNES*);
 EXTERN int TSGetSLES(TS,SLES*);
 
-EXTERN int TSView(TS,Viewer);
+EXTERN int TSView(TS,PetscViewer);
 
 EXTERN int TSSetApplicationContext(TS,void *);
 EXTERN int TSGetApplicationContext(TS,void **);
 
-EXTERN int TSLGMonitorCreate(char *,char *,int,int,int,int,DrawLG *);
+EXTERN int TSLGMonitorCreate(char *,char *,int,int,int,int,PetscDrawLG *);
 EXTERN int TSLGMonitor(TS,int,double,Vec,void *);
-EXTERN int TSLGMonitorDestroy(DrawLG);
+EXTERN int TSLGMonitorDestroy(PetscDrawLG);
 
 /*
        PETSc interface to PVode

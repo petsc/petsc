@@ -1,11 +1,11 @@
-/*$Id: general.c,v 1.100 2000/09/28 21:09:56 bsmith Exp bsmith $*/
+/*$Id: general.c,v 1.101 2000/11/28 17:28:15 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISDuplicate_General" 
+#define __FUNC__ "ISDuplicate_General" 
 int ISDuplicate_General(IS is,IS *newIS)
 {
   int        ierr;
@@ -17,7 +17,7 @@ int ISDuplicate_General(IS is,IS *newIS)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISDestroy_General" 
+#define __FUNC__ "ISDestroy_General" 
 int ISDestroy_General(IS is)
 {
   IS_General *is_general = (IS_General*)is->data;
@@ -26,13 +26,13 @@ int ISDestroy_General(IS is)
   PetscFunctionBegin;
   ierr = PetscFree(is_general->idx);CHKERRQ(ierr);
   ierr = PetscFree(is_general);CHKERRQ(ierr);
-  PLogObjectDestroy(is);
+  PetscLogObjectDestroy(is);
   PetscHeaderDestroy(is);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISIdentity_General" 
+#define __FUNC__ "ISIdentity_General" 
 int ISIdentity_General(IS is,PetscTruth *ident)
 {
   IS_General *is_general = (IS_General*)is->data;
@@ -52,7 +52,7 @@ int ISIdentity_General(IS is,PetscTruth *ident)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISGetIndices_General" 
+#define __FUNC__ "ISGetIndices_General" 
 int ISGetIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General*)in->data;
@@ -63,7 +63,7 @@ int ISGetIndices_General(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISRestoreIndices_General" 
+#define __FUNC__ "ISRestoreIndices_General" 
 int ISRestoreIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General*)in->data;
@@ -76,7 +76,7 @@ int ISRestoreIndices_General(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISGetSize_General" 
+#define __FUNC__ "ISGetSize_General" 
 int ISGetSize_General(IS is,int *size)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -87,7 +87,7 @@ int ISGetSize_General(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ISGetLocalSize_General"></a>*/"ISGetLocalSize_General" 
+#define __FUNC__ "ISGetLocalSize_General" 
 int ISGetLocalSize_General(IS is,int *size)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -98,7 +98,7 @@ int ISGetLocalSize_General(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ISInvertPermutation_General"></a>*/"ISInvertPermutation_General" 
+#define __FUNC__ "ISInvertPermutation_General" 
 int ISInvertPermutation_General(IS is,int nlocal,IS *isout)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -108,7 +108,7 @@ int ISInvertPermutation_General(IS is,int nlocal,IS *isout)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ii = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(ii);
+    ierr = PetscMalloc(n*sizeof(int),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ii[idx[i]] = i;
     }
@@ -133,15 +133,15 @@ int ISInvertPermutation_General(IS is,int nlocal,IS *isout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ISView_General"></a>*/"ISView_General" 
-int ISView_General(IS is,Viewer viewer)
+#define __FUNC__ "ISView_General" 
+int ISView_General(IS is,PetscViewer viewer)
 {
   IS_General  *sub = (IS_General *)is->data;
   int         i,n = sub->n,*idx = sub->idx,ierr;
   PetscTruth  isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     MPI_Comm comm;
     int      rank,size;
@@ -152,22 +152,22 @@ int ISView_General(IS is,Viewer viewer)
 
     if (size > 1) {
       if (is->isperm) {
-        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
       }
-      ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in set %d\n",rank,n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in set %d\n",rank,n);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] %d %d\n",rank,i,idx[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d %d\n",rank,i,idx[i]);CHKERRQ(ierr);
       }
     } else {
       if (is->isperm) {
-        ierr = ViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
       }
-      ierr = ViewerASCIISynchronizedPrintf(viewer,"Number of indices in set %d\n",n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of indices in set %d\n",n);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        ierr = ViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,idx[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,idx[i]);CHKERRQ(ierr);
       }
     }
-    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
@@ -175,7 +175,7 @@ int ISView_General(IS is,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISSort_General" 
+#define __FUNC__ "ISSort_General" 
 int ISSort_General(IS is)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -189,7 +189,7 @@ int ISSort_General(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISSorted_General" 
+#define __FUNC__ "ISSorted_General" 
 int ISSorted_General(IS is,PetscTruth *flg)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -212,7 +212,7 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISIdentity_General };
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISCreateGeneral" 
+#define __FUNC__ "ISCreateGeneral" 
 /*@C
    ISCreateGeneral - Creates a data structure for an index set 
    containing a list of integers.
@@ -254,10 +254,10 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
 
   *is = 0;
   PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView); 
-  PLogObjectCreate(Nindex);
-  sub            = PetscNew(IS_General);CHKPTRQ(sub);
-  PLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(int)+sizeof(struct _p_IS));
-  sub->idx       = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(sub->idx);
+  PetscLogObjectCreate(Nindex);
+  ierr           = PetscNew(IS_General,&sub);CHKERRQ(ierr);
+  PetscLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(int)+sizeof(struct _p_IS));
+  ierr           = PetscMalloc((n+1)*sizeof(int),&sub->idx);CHKERRQ(ierr);
   sub->n         = n;
 
   ierr = MPI_Allreduce(&n,&sub->N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
@@ -277,9 +277,9 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
   ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   Nindex->isperm     = PETSC_FALSE;
   Nindex->isidentity = PETSC_FALSE;
-  ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm));CHKERRQ(ierr);
+    ierr = ISView(Nindex,PETSC_VIEWER_STDOUT_(Nindex->comm));CHKERRQ(ierr);
   }
   *is = Nindex;
   PetscFunctionReturn(0);

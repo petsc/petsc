@@ -1,4 +1,4 @@
-/* $Id: psimpl.h,v 1.2 1999/11/24 21:52:54 bsmith Exp balay $ */
+/* $Id: psimpl.h,v 1.3 2000/05/05 22:13:39 balay Exp bsmith $ */
 
 /*
       Defines the internal data structures for the Postscript
@@ -12,10 +12,10 @@
 #define _PSIMPL_H
 
 typedef struct {
-    Viewer   ps_file;
+    PetscViewer   ps_file;
     double   xl,xr,yl,yr;
     int      ixl,ixr,iyl,iyr;
     int      currentcolor;
-} Draw_PS;
+} PetscDraw_PS;
 
 #endif

@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.21 2000/05/05 22:17:55 balay Exp bsmith $*/
+/*$Id: ex15.c,v 1.22 2000/10/24 20:26:51 bsmith Exp bsmith $*/
 
 static char help[] = "SLES on an operator with a null space.\n\n";
 
@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PC      pc;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* Create vectors */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRA(ierr);
@@ -62,7 +62,7 @@ int main(int argc,char **args)
 
   ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
-  /* ierr = SLESView(sles,VIEWER_STDOUT_WORLD);CHKERRA(ierr); */
+  /* ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr); */
 
   /* Check error */
   ierr = VecAXPY(&none,u,x);CHKERRA(ierr);

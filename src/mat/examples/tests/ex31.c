@@ -1,4 +1,4 @@
-/*$Id: ex31.c,v 1.20 2000/09/08 17:56:29 bsmith Exp bsmith $*/
+/*$Id: ex31.c,v 1.21 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";
@@ -16,20 +16,20 @@ int main(int argc,char **args)
   Mat     C;
   Scalar  v;
   int     i,j,I,J,ierr,Istart,Iend,N,m = 4,n = 4,rank,size;
-  Viewer  viewer;
+  PetscViewer  viewer;
   int     MATRIX_GENERATE,MATRIX_READ;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   N = m*n;
 
   /* PART 1:  Generate matrix, then write it in binary format */
 
-  ierr = PLogEventRegister(&MATRIX_GENERATE,"Generate Matrix",PETSC_NULL);CHKERRA(ierr);
-  ierr = PLogEventBegin(MATRIX_GENERATE,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventRegister(&MATRIX_GENERATE,"Generate Matrix",PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscLogEventBegin(MATRIX_GENERATE,0,0,0,0);CHKERRA(ierr);
 
   /* Generate matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&C);CHKERRA(ierr);
@@ -45,28 +45,28 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"writing matrix in binary to matrix.dat ...\n");CHKERRA(ierr);
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",BINARY_CREATE,&viewer);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",PETSC_BINARY_CREATE,&viewer);CHKERRA(ierr);
   ierr = MatView(C,viewer);CHKERRA(ierr);
-  ierr = ViewerDestroy(viewer);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
   ierr = MatDestroy(C);CHKERRA(ierr);
-  ierr = PLogEventEnd(MATRIX_GENERATE,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventEnd(MATRIX_GENERATE,0,0,0,0);CHKERRA(ierr);
 
   /* PART 2:  Read in matrix in binary format */
 
   /* All processors wait until test matrix has been dumped */
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRA(ierr);
 
-  ierr = PLogEventRegister(&MATRIX_READ,"Read Matrix",PETSC_NULL);CHKERRA(ierr);
-  ierr = PLogEventBegin(MATRIX_READ,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventRegister(&MATRIX_READ,"Read Matrix",PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscLogEventBegin(MATRIX_READ,0,0,0,0);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"reading matrix in binary from matrix.dat ...\n");CHKERRA(ierr);
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",PETSC_BINARY_RDONLY,&viewer);CHKERRA(ierr);
   ierr = MatLoad(viewer,MATMPIAIJ,&C);CHKERRA(ierr);
-  ierr = ViewerDestroy(viewer);CHKERRA(ierr);
-  ierr = PLogEventEnd(MATRIX_READ,0,0,0,0);CHKERRQ(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
+  ierr = PetscLogEventEnd(MATRIX_READ,0,0,0,0);CHKERRQ(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* Free data structures */
   ierr = MatDestroy(C);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.17 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex16.c,v 1.18 2000/10/24 20:26:55 bsmith Exp bsmith $*/
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
 
@@ -41,8 +41,8 @@ int main(int argc,char **args)
   Scalar      v,one = 1.0,neg_one = -1.0,rhs;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix for use in solving a series of
@@ -140,7 +140,7 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ntimes = 2;
-  ierr = OptionsGetInt(PETSC_NULL,"-ntimes",&ntimes,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-ntimes",&ntimes,PETSC_NULL);CHKERRA(ierr);
   for (k=1; k<ntimes+1; k++) {
 
     /* 
@@ -154,8 +154,8 @@ int main(int argc,char **args)
     /*
        View the exact solution vector if desired
     */
-    ierr = OptionsHasName(PETSC_NULL,"-view_exact_sol",&flg);CHKERRA(ierr);
-    if (flg) {ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRA(ierr);}
+    ierr = PetscOptionsHasName(PETSC_NULL,"-view_exact_sol",&flg);CHKERRA(ierr);
+    if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);}
 
     ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
 

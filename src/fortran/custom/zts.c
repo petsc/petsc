@@ -1,4 +1,4 @@
-/*$Id: zts.c,v 1.33 2000/06/24 03:57:08 balay Exp balay $*/
+/*$Id: zts.c,v 1.34 2000/09/26 19:11:19 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscts.h"
@@ -72,9 +72,9 @@ void PETSC_STDCALL tsgetrhsmatrix_(TS *ts,Mat *J,Mat *M,void **ctx,int *ierr)
   *ierr = TSGetRHSMatrix(*ts,J,M,ctx);
 }
 
-void PETSC_STDCALL tsview_(TS *ts,Viewer *viewer, int *ierr)
+void PETSC_STDCALL tsview_(TS *ts,PetscViewer *viewer, int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = TSView(*ts,v);
 }

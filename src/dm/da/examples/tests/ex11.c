@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.11 2000/02/02 20:10:34 bsmith Exp balay $*/
+/*$Id: ex11.c,v 1.12 2000/05/05 22:19:31 balay Exp bsmith $*/
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
@@ -11,25 +11,25 @@ int main(int argc,char **argv)
 {
   int    M = 5,N = 4,ierr,dof=1,s=1,wrap=0,i,n,j,k,m,cnt;
   DA     da;
-  Viewer viewer;
+  PetscViewer viewer;
   Vec    local,locala,global,coors;
   Scalar *xy,*alocal;
-  Draw   draw;
+  PetscDraw   draw;
   char   fname[16];
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* Create viewers */
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",PETSC_DECIDE,PETSC_DECIDE,600,200,&viewer);CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",PETSC_DECIDE,PETSC_DECIDE,600,200,&viewer);CHKERRA(ierr);
+  ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRA(ierr);
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRA(ierr);
 
   /* Read options */
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-periodic",&wrap,PETSC_NULL);CHKERRA(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRA(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",&wrap,PETSC_NULL);CHKERRA(ierr); 
 
   /* Create distributed array and get vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,(DAPeriodicType)wrap,DA_STENCIL_BOX,M,N,PETSC_DECIDE,
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   ierr = DAGetCoordinates(da,&coors);CHKERRA(ierr);
   ierr = VecGetArray(coors,&xy);CHKERRA(ierr);
 
-ierr = VecView(coors,VIEWER_STDOUT_SELF);
+ierr = VecView(coors,PETSC_VIEWER_STDOUT_SELF);
 
   /* Set values into local vectors */
   ierr = VecGetArray(local,&alocal);CHKERRA(ierr);
@@ -74,7 +74,7 @@ ierr = VecView(coors,VIEWER_STDOUT_SELF);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,locala);CHKERRA(ierr);
 
   /* Free memory */
-  ierr = ViewerDestroy(viewer);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
   ierr = VecDestroy(global);CHKERRA(ierr);
   ierr = VecDestroy(local);CHKERRA(ierr);
   ierr = VecDestroy(locala);CHKERRA(ierr);

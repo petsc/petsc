@@ -1,5 +1,5 @@
 !
-!    "$Id: ex11f.F,v 1.26 2000/09/22 20:45:46 bsmith Exp bsmith $";
+!    "$Id: ex11f.F,v 1.27 2000/10/27 21:27:32 bsmith Exp bsmith $";
 !
 !/*T
 !  Concepts: SLES^solving a Helmholtz equation
@@ -92,9 +92,9 @@
       n      = 6
       sigma1 = 100.0
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-sigma1',sigma1,      &
+      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-sigma1',sigma1,      &
      &                       flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       dim    = n*n
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -123,7 +123,7 @@
 !     appropriate processor during matrix assembly). 
 !   - Always specify global rows and columns of matrix entries.
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-norandom',flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-norandom',flg,ierr)
       if (flg .eq. 1) then
          use_random = .false.
          sigma2 = 10.0*PETSC_i

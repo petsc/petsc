@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.19 2000/09/22 20:45:42 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.20 2000/10/24 20:26:51 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
 
@@ -51,8 +51,8 @@ int slesex(int argc,char **args)
   ierr = PetscSetCommWorld(PETSC_COMM_SELF);CHKERRA(ierr);
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define

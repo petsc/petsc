@@ -1,4 +1,4 @@
-/* $Id: petscdraw.h,v 1.73 2000/06/07 17:41:41 balay Exp balay $ */
+/* $Id: petscdraw.h,v 1.74 2000/06/07 17:42:13 balay Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -6,228 +6,228 @@
 #define __PETSCDRAW_H
 #include "petsc.h"
 
-#define DRAW_COOKIE PETSC_COOKIE+6
+#define PETSC_DRAW_COOKIE PETSC_COOKIE+6
 
 /* types of draw contexts */
-#define DRAW_X     "x"
-#define DRAW_NULL  "null"
-#define DRAW_PS    "ps"
-#define DRAW_WIN32 "win32"
+#define PETSC_DRAW_X     "x"
+#define PETSC_DRAW_NULL  "null"
+#define PETSC_DRAW_PS    "ps"
+#define PETSC_DRAW_WIN32 "win32"
  
-typedef struct _p_Draw* Draw;
+typedef struct _p_PetscDraw* PetscDraw;
 
-typedef char* DrawType;
-extern FList DrawList;
-EXTERN int DrawRegisterAll(char *);
-EXTERN int DrawRegisterDestroy(void);
+typedef char* PetscDrawType;
+extern PetscFList PetscDrawList;
+EXTERN int PetscDrawRegisterAll(char *);
+EXTERN int PetscDrawRegisterDestroy(void);
 
-EXTERN int DrawRegister(char*,char*,char*,int(*)(Draw));
+EXTERN int PetscDrawRegister(char*,char*,char*,int(*)(PetscDraw));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define DrawRegisterDynamic(a,b,c,d) DrawRegister(a,b,c,0)
+#define PetscDrawRegisterDynamic(a,b,c,d) PetscDrawRegister(a,b,c,0)
 #else
-#define DrawRegisterDynamic(a,b,c,d) DrawRegister(a,b,c,d)
+#define PetscDrawRegisterDynamic(a,b,c,d) PetscDrawRegister(a,b,c,d)
 #endif
-EXTERN int DrawGetType(Draw,DrawType*);
-EXTERN int DrawSetType(Draw,DrawType);
-EXTERN int DrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,Draw*);
-EXTERN int DrawSetFromOptions(Draw);
+EXTERN int PetscDrawGetType(PetscDraw,PetscDrawType*);
+EXTERN int PetscDrawSetType(PetscDraw,PetscDrawType);
+EXTERN int PetscDrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
+EXTERN int PetscDrawSetFromOptions(PetscDraw);
 
 /*
    Number of basic colors in the draw routines, the others are used
    for a uniform colormap.
 */
-#define DRAW_BASIC_COLORS 33
+#define PETSC_DRAW_BASIC_COLORS 33
 
-#define DRAW_ROTATE          -1         /* will rotate through the colors, start with 2 */
-#define DRAW_WHITE            0
-#define DRAW_BLACK            1
-#define DRAW_RED              2
-#define DRAW_GREEN            3
-#define DRAW_CYAN             4
-#define DRAW_BLUE             5
-#define DRAW_MAGENTA          6
-#define DRAW_AQUAMARINE       7
-#define DRAW_FORESTGREEN      8
-#define DRAW_ORANGE           9
-#define DRAW_VIOLET          10
-#define DRAW_BROWN           11
-#define DRAW_PINK            12
-#define DRAW_CORAL           13
-#define DRAW_GRAY            14
-#define DRAW_YELLOW          15
+#define PETSC_DRAW_ROTATE          -1         /* will rotate through the colors, start with 2 */
+#define PETSC_DRAW_WHITE            0
+#define PETSC_DRAW_BLACK            1
+#define PETSC_DRAW_RED              2
+#define PETSC_DRAW_GREEN            3
+#define PETSC_DRAW_CYAN             4
+#define PETSC_DRAW_BLUE             5
+#define PETSC_DRAW_MAGENTA          6
+#define PETSC_DRAW_AQUAMARINE       7
+#define PETSC_DRAW_FORESTGREEN      8
+#define PETSC_DRAW_ORANGE           9
+#define PETSC_DRAW_VIOLET          10
+#define PETSC_DRAW_BROWN           11
+#define PETSC_DRAW_PINK            12
+#define PETSC_DRAW_CORAL           13
+#define PETSC_DRAW_GRAY            14
+#define PETSC_DRAW_YELLOW          15
 
-#define DRAW_GOLD            16
-#define DRAW_LIGHTPINK       17
-#define DRAW_MEDIUMTURQUOISE 18
-#define DRAW_KHAKI           19
-#define DRAW_DIMGRAY         20
-#define DRAW_YELLOWGREEN     21
-#define DRAW_SKYBLUE         22
-#define DRAW_DARKGREEN       23
-#define DRAW_NAVYBLUE        24
-#define DRAW_SANDYBROWN      25
-#define DRAW_CADETBLUE       26
-#define DRAW_POWDERBLUE      27
-#define DRAW_DEEPPINK        28
-#define DRAW_THISTLE         29
-#define DRAW_LIMEGREEN       30
-#define DRAW_LAVENDERBLUSH   31
-#define DRAW_PLUM            32
+#define PETSC_DRAW_GOLD            16
+#define PETSC_DRAW_LIGHTPINK       17
+#define PETSC_DRAW_MEDIUMTURQUOISE 18
+#define PETSC_DRAW_KHAKI           19
+#define PETSC_DRAW_DIMGRAY         20
+#define PETSC_DRAW_YELLOWGREEN     21
+#define PETSC_DRAW_SKYBLUE         22
+#define PETSC_DRAW_DARKGREEN       23
+#define PETSC_DRAW_NAVYBLUE        24
+#define PETSC_DRAW_SANDYBROWN      25
+#define PETSC_DRAW_CADETBLUE       26
+#define PETSC_DRAW_POWDERBLUE      27
+#define PETSC_DRAW_DEEPPINK        28
+#define PETSC_DRAW_THISTLE         29
+#define PETSC_DRAW_LIMEGREEN       30
+#define PETSC_DRAW_LAVENDERBLUSH   31
+#define PETSC_DRAW_PLUM            32
 
-EXTERN int DrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,Draw*);
-EXTERN int DrawOpenPS(MPI_Comm,char *,Draw *);
-#define DRAW_FULL_SIZE    -3
-#define DRAW_HALF_SIZE    -4
-#define DRAW_THIRD_SIZE   -5
-#define DRAW_QUARTER_SIZE -6
+EXTERN int PetscDrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
+EXTERN int PetscDrawOpenPS(MPI_Comm,char *,PetscDraw *);
+#define PETSC_DRAW_FULL_SIZE    -3
+#define PETSC_DRAW_HALF_SIZE    -4
+#define PETSC_DRAW_THIRD_SIZE   -5
+#define PETSC_DRAW_QUARTER_SIZE -6
 
-EXTERN int DrawOpenNull(MPI_Comm,Draw *);
-EXTERN int DrawDestroy(Draw);
-EXTERN int DrawIsNull(Draw,PetscTruth*);
+EXTERN int PetscDrawOpenNull(MPI_Comm,PetscDraw *);
+EXTERN int PetscDrawDestroy(PetscDraw);
+EXTERN int PetscDrawIsNull(PetscDraw,PetscTruth*);
 
-EXTERN int DrawGetPopup(Draw,Draw*);
-EXTERN int DrawCheckResizedWindow(Draw);
-EXTERN int DrawResizeWindow(Draw,int,int);
+EXTERN int PetscDrawGetPopup(PetscDraw,PetscDraw*);
+EXTERN int PetscDrawCheckResizedWindow(PetscDraw);
+EXTERN int PetscDrawResizeWindow(PetscDraw,int,int);
 
-EXTERN int DrawScalePopup(Draw,double min,double max); 
+EXTERN int PetscDrawScalePopup(PetscDraw,double min,double max); 
 
-EXTERN int DrawLine(Draw,double,double,double,double,int);
-EXTERN int DrawLineSetWidth(Draw,double);
-EXTERN int DrawLineGetWidth(Draw,double*);
+EXTERN int PetscDrawLine(PetscDraw,double,double,double,double,int);
+EXTERN int PetscDrawLineSetWidth(PetscDraw,double);
+EXTERN int PetscDrawLineGetWidth(PetscDraw,double*);
 
-EXTERN int DrawPoint(Draw,double,double,int);
-EXTERN int DrawPointSetSize(Draw,double);
+EXTERN int PetscDrawPoint(PetscDraw,double,double,int);
+EXTERN int PetscDrawPointSetSize(PetscDraw,double);
 
-EXTERN int DrawRectangle(Draw,double,double,double,double,int,int,int,int);
-EXTERN int DrawTriangle(Draw,double,double,double,double,double,double,int,int,int);
-EXTERN int DrawTensorContourPatch(Draw,int,int,double*,double*,double,double,Scalar*);
-EXTERN int DrawTensorContour(Draw,int,int,const double[],const double[],Scalar *);
+EXTERN int PetscDrawRectangle(PetscDraw,double,double,double,double,int,int,int,int);
+EXTERN int PetscDrawTriangle(PetscDraw,double,double,double,double,double,double,int,int,int);
+EXTERN int PetscDrawTensorContourPatch(PetscDraw,int,int,double*,double*,double,double,Scalar*);
+EXTERN int PetscDrawTensorContour(PetscDraw,int,int,const double[],const double[],Scalar *);
 
-EXTERN int DrawString(Draw,double,double,int,char*);
-EXTERN int DrawStringVertical(Draw,double,double,int,char*);
-EXTERN int DrawStringSetSize(Draw,double,double);
-EXTERN int DrawStringGetSize(Draw,double*,double*);
+EXTERN int PetscDrawString(PetscDraw,double,double,int,char*);
+EXTERN int PetscDrawStringVertical(PetscDraw,double,double,int,char*);
+EXTERN int PetscDrawStringSetSize(PetscDraw,double,double);
+EXTERN int PetscDrawStringGetSize(PetscDraw,double*,double*);
 
-EXTERN int DrawSetViewPort(Draw,double,double,double,double);
-EXTERN int DrawSplitViewPort(Draw);
+EXTERN int PetscDrawSetViewPort(PetscDraw,double,double,double,double);
+EXTERN int PetscDrawSplitViewPort(PetscDraw);
 
-EXTERN int DrawSetCoordinates(Draw,double,double,double,double);
-EXTERN int DrawGetCoordinates(Draw,double*,double*,double*,double*);
+EXTERN int PetscDrawSetCoordinates(PetscDraw,double,double,double,double);
+EXTERN int PetscDrawGetCoordinates(PetscDraw,double*,double*,double*,double*);
 
-EXTERN int DrawSetTitle(Draw,char *);
-EXTERN int DrawAppendTitle(Draw,char *);
-EXTERN int DrawGetTitle(Draw,char **);
+EXTERN int PetscDrawSetTitle(PetscDraw,char *);
+EXTERN int PetscDrawAppendTitle(PetscDraw,char *);
+EXTERN int PetscDrawGetTitle(PetscDraw,char **);
 
-EXTERN int DrawSetPause(Draw,int);
-EXTERN int DrawGetPause(Draw,int*);
-EXTERN int DrawPause(Draw);
-EXTERN int DrawSetDoubleBuffer(Draw);
-EXTERN int DrawFlush(Draw);
-EXTERN int DrawSynchronizedFlush(Draw);
-EXTERN int DrawClear(Draw);
-EXTERN int DrawSynchronizedClear(Draw);
-EXTERN int DrawBOP(Draw);
-EXTERN int DrawEOP(Draw);
+EXTERN int PetscDrawSetPause(PetscDraw,int);
+EXTERN int PetscDrawGetPause(PetscDraw,int*);
+EXTERN int PetscDrawPause(PetscDraw);
+EXTERN int PetscDrawSetDoubleBuffer(PetscDraw);
+EXTERN int PetscDrawFlush(PetscDraw);
+EXTERN int PetscDrawSynchronizedFlush(PetscDraw);
+EXTERN int PetscDrawClear(PetscDraw);
+EXTERN int PetscDrawSynchronizedClear(PetscDraw);
+EXTERN int PetscDrawBOP(PetscDraw);
+EXTERN int PetscDrawEOP(PetscDraw);
 
-EXTERN int DrawGetSingleton(Draw,Draw*);
-EXTERN int DrawRestoreSingleton(Draw,Draw*);
+EXTERN int PetscDrawGetSingleton(PetscDraw,PetscDraw*);
+EXTERN int PetscDrawRestoreSingleton(PetscDraw,PetscDraw*);
 
-typedef enum {BUTTON_NONE,BUTTON_LEFT,BUTTON_CENTER,BUTTON_RIGHT } DrawButton;
-EXTERN int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
-EXTERN int DrawSynchronizedGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
+typedef enum {BUTTON_NONE,BUTTON_LEFT,BUTTON_CENTER,BUTTON_RIGHT } PetscDrawButton;
+EXTERN int PetscDrawGetMouseButton(PetscDraw,PetscDrawButton *,double*,double *,double *,double *);
+EXTERN int PetscDrawSynchronizedGetMouseButton(PetscDraw,PetscDrawButton *,double*,double *,double *,double *);
 
-EXTERN int DrawZoom(Draw,int (*)(Draw,void *),void *);
+EXTERN int PetscDrawZoom(PetscDraw,int (*)(PetscDraw,void *),void *);
 
 /*   Allows one to maintain a subset of viewports for a single window */
 typedef struct {
   int    nports;
   double *xl,*xr,*yl,*yr;
-  Draw   draw;
-} DrawViewPorts;
-EXTERN int DrawViewPortsCreate(Draw,int,DrawViewPorts**);
-EXTERN int DrawViewPortsDestroy(DrawViewPorts*);
-EXTERN int DrawViewPortsSet(DrawViewPorts*,int);
+  PetscDraw   draw;
+} PetscDrawViewPorts;
+EXTERN int PetscDrawViewPortsCreate(PetscDraw,int,PetscDrawViewPorts**);
+EXTERN int PetscDrawViewPortsDestroy(PetscDrawViewPorts*);
+EXTERN int PetscDrawViewPortsSet(PetscDrawViewPorts*,int);
 
 /*
-    Routines for drawing X-Y axises in a Draw object
+    Routines for drawing X-Y axises in a PetscDraw object
 */
-typedef struct _p_DrawAxis* DrawAxis;
+typedef struct _p_DrawAxis* PetscDrawAxis;
 #define DRAWAXIS_COOKIE PETSC_COOKIE+16
-EXTERN int DrawAxisCreate(Draw,DrawAxis *);
-EXTERN int DrawAxisDestroy(DrawAxis);
-EXTERN int DrawAxisDraw(DrawAxis);
-EXTERN int DrawAxisSetLimits(DrawAxis,double,double,double,double);
-EXTERN int DrawAxisSetColors(DrawAxis,int,int,int);
-EXTERN int DrawAxisSetLabels(DrawAxis,char*,char*,char*);
+EXTERN int PetscDrawAxisCreate(PetscDraw,PetscDrawAxis *);
+EXTERN int PetscDrawAxisDestroy(PetscDrawAxis);
+EXTERN int PetscDrawAxisDraw(PetscDrawAxis);
+EXTERN int PetscDrawAxisSetLimits(PetscDrawAxis,double,double,double,double);
+EXTERN int PetscDrawAxisSetColors(PetscDrawAxis,int,int,int);
+EXTERN int PetscDrawAxisSetLabels(PetscDrawAxis,char*,char*,char*);
 
 /*
     Routines to draw line curves in X-Y space
 */
-typedef struct _p_DrawLG*   DrawLG;
+typedef struct _p_DrawLG*   PetscDrawLG;
 #define DRAWLG_COOKIE PETSC_COOKIE+7
-EXTERN int DrawLGCreate(Draw,int,DrawLG *);
-EXTERN int DrawLGDestroy(DrawLG);
-EXTERN int DrawLGAddPoint(DrawLG,double*,double*);
-EXTERN int DrawLGAddPoints(DrawLG,int,double**,double**);
-EXTERN int DrawLGDraw(DrawLG);
-EXTERN int DrawLGReset(DrawLG);
-EXTERN int DrawLGSetDimension(DrawLG,int);
-EXTERN int DrawLGGetAxis(DrawLG,DrawAxis *);
-EXTERN int DrawLGGetDraw(DrawLG,Draw *);
-EXTERN int DrawLGIndicateDataPoints(DrawLG);
-EXTERN int DrawLGSetLimits(DrawLG,double,double,double,double); 
+EXTERN int PetscDrawLGCreate(PetscDraw,int,PetscDrawLG *);
+EXTERN int PetscDrawLGDestroy(PetscDrawLG);
+EXTERN int PetscDrawLGAddPoint(PetscDrawLG,double*,double*);
+EXTERN int PetscDrawLGAddPoints(PetscDrawLG,int,double**,double**);
+EXTERN int PetscDrawLGDraw(PetscDrawLG);
+EXTERN int PetscDrawLGReset(PetscDrawLG);
+EXTERN int PetscDrawLGSetDimension(PetscDrawLG,int);
+EXTERN int PetscDrawLGGetAxis(PetscDrawLG,PetscDrawAxis *);
+EXTERN int PetscDrawLGGetDraw(PetscDrawLG,PetscDraw *);
+EXTERN int PetscDrawLGIndicateDataPoints(PetscDrawLG);
+EXTERN int PetscDrawLGSetLimits(PetscDrawLG,double,double,double,double); 
 
 /*
     Routines to draw scatter plots in complex space
 */
-typedef struct _p_DrawSP*   DrawSP;
+typedef struct _p_DrawSP*   PetscDrawSP;
 #define DRAWSP_COOKIE PETSC_COOKIE+27
-EXTERN int DrawSPCreate(Draw,int,DrawSP *);
-EXTERN int DrawSPDestroy(DrawSP);
-EXTERN int DrawSPAddPoint(DrawSP,double*,double*);
-EXTERN int DrawSPAddPoints(DrawSP,int,double**,double**);
-EXTERN int DrawSPDraw(DrawSP);
-EXTERN int DrawSPReset(DrawSP);
-EXTERN int DrawSPSetDimension(DrawSP,int);
-EXTERN int DrawSPGetAxis(DrawSP,DrawAxis *);
-EXTERN int DrawSPGetDraw(DrawSP,Draw *);
-EXTERN int DrawSPSetLimits(DrawSP,double,double,double,double); 
+EXTERN int PetscDrawSPCreate(PetscDraw,int,PetscDrawSP *);
+EXTERN int PetscDrawSPDestroy(PetscDrawSP);
+EXTERN int PetscDrawSPAddPoint(PetscDrawSP,double*,double*);
+EXTERN int PetscDrawSPAddPoints(PetscDrawSP,int,double**,double**);
+EXTERN int PetscDrawSPDraw(PetscDrawSP);
+EXTERN int PetscDrawSPReset(PetscDrawSP);
+EXTERN int PetscDrawSPSetDimension(PetscDrawSP,int);
+EXTERN int PetscDrawSPGetAxis(PetscDrawSP,PetscDrawAxis *);
+EXTERN int PetscDrawSPGetDraw(PetscDrawSP,PetscDraw *);
+EXTERN int PetscDrawSPSetLimits(PetscDrawSP,double,double,double,double); 
 
 /*
     Routines to draw histograms
 */
-typedef struct _p_DrawHG*   DrawHG;
+typedef struct _p_DrawHG*   PetscDrawHG;
 #define DRAWHG_COOKIE PETSC_COOKIE+15
-EXTERN int DrawHGCreate(Draw,int,DrawHG *);
-EXTERN int DrawHGDestroy(DrawHG);
-EXTERN int DrawHGAddValue(DrawHG,double);
-EXTERN int DrawHGDraw(DrawHG);
-EXTERN int DrawHGReset(DrawHG);
-EXTERN int DrawHGGetAxis(DrawHG,DrawAxis *);
-EXTERN int DrawHGGetDraw(DrawHG,Draw *);
-EXTERN int DrawHGSetLimits(DrawHG,double,double,int,int);
-EXTERN int DrawHGSetNumberBins(DrawHG,int);
-EXTERN int DrawHGSetColor(DrawHG,int);
+EXTERN int PetscDrawHGCreate(PetscDraw,int,PetscDrawHG *);
+EXTERN int PetscDrawHGDestroy(PetscDrawHG);
+EXTERN int PetscDrawHGAddValue(PetscDrawHG,double);
+EXTERN int PetscDrawHGDraw(PetscDrawHG);
+EXTERN int PetscDrawHGReset(PetscDrawHG);
+EXTERN int PetscDrawHGGetAxis(PetscDrawHG,PetscDrawAxis *);
+EXTERN int PetscDrawHGGetDraw(PetscDrawHG,PetscDraw *);
+EXTERN int PetscDrawHGSetLimits(PetscDrawHG,double,double,int,int);
+EXTERN int PetscDrawHGSetNumberBins(PetscDrawHG,int);
+EXTERN int PetscDrawHGSetColor(PetscDrawHG,int);
 
 /*
-    Viewer routines that allow you to access underlying Draw objects
+    PetscViewer routines that allow you to access underlying PetscDraw objects
 */
-EXTERN int ViewerDrawGetDraw(Viewer,int,Draw*);
-EXTERN int ViewerDrawGetDrawLG(Viewer,int,DrawLG*);
-EXTERN int ViewerDrawGetDrawAxis(Viewer,int,DrawAxis*);
+EXTERN int PetscViewerDrawGetDraw(PetscViewer,int,PetscDraw*);
+EXTERN int PetscViewerDrawGetDrawLG(PetscViewer,int,PetscDrawLG*);
+EXTERN int PetscViewerDrawGetDrawAxis(PetscViewer,int,PetscDrawAxis*);
 
-EXTERN int DrawUtilitySetCmapHue(unsigned char *,unsigned char *,unsigned char *,int);
-EXTERN int DrawUtilitySetGamma(double);
+EXTERN int PetscDrawUtilitySetCmapHue(unsigned char *,unsigned char *,unsigned char *,int);
+EXTERN int PetscDrawUtilitySetGamma(double);
 
 /* Mesh management routines */
-typedef struct _p_DrawMesh* DrawMesh;
-int DrawMeshCreate(DrawMesh *,
+typedef struct _p_DrawMesh* PetscDrawMesh;
+int PetscDrawMeshCreate(PetscDrawMesh *,
 		    double *,double *,double *,
 		    int,int,int,int,int,int,int,int,int,
 		    int,int,int,int,double *,int);
-int DrawMeshCreateSimple(DrawMesh *,double *,double *,double *,
+int PetscDrawMeshCreateSimple(PetscDrawMesh *,double *,double *,double *,
 			  int,int,int,int,double *,int);
-int DrawMeshDestroy(DrawMesh *);
+int PetscDrawMeshDestroy(PetscDrawMesh *);
 
 
 

@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.190 2000/10/24 20:25:29 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.191 2000/10/30 03:25:58 bsmith Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -7,7 +7,7 @@
 #include "petscblaslapack.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatAXPY_SeqDense"
+#define __FUNC__ "MatAXPY_SeqDense"
 int MatAXPY_SeqDense(Scalar *alpha,Mat X,Mat Y)
 {
   Mat_SeqDense *x = (Mat_SeqDense*)X->data,*y = (Mat_SeqDense*)Y->data;
@@ -15,12 +15,12 @@ int MatAXPY_SeqDense(Scalar *alpha,Mat X,Mat Y)
 
   PetscFunctionBegin;
   BLaxpy_(&N,alpha,x->v,&one,y->v,&one);
-  PLogFlops(2*N-1);
+  PetscLogFlops(2*N-1);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetInfo_SeqDense"
+#define __FUNC__ "MatGetInfo_SeqDense"
 int MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
@@ -49,7 +49,7 @@ int MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatScale_SeqDense"
+#define __FUNC__ "MatScale_SeqDense"
 int MatScale_SeqDense(Scalar *alpha,Mat A)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
@@ -58,7 +58,7 @@ int MatScale_SeqDense(Scalar *alpha,Mat A)
   PetscFunctionBegin;
   nz = A->m*A->n;
   BLscal_(&nz,alpha,a->v,&one);
-  PLogFlops(nz);
+  PetscLogFlops(nz);
   PetscFunctionReturn(0);
 }
   
@@ -66,28 +66,28 @@ int MatScale_SeqDense(Scalar *alpha,Mat A)
 /* COMMENT: I have chosen to hide row permutation in the pivots,
    rather than put it in the Mat->row slot.*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactor_SeqDense"
+#define __FUNC__ "MatLUFactor_SeqDense"
 int MatLUFactor_SeqDense(Mat A,IS row,IS col,MatLUInfo *minfo)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
-  int          info;
+  int          info,ierr;
 
   PetscFunctionBegin;
   if (!mat->pivots) {
-    mat->pivots = (int*)PetscMalloc((A->m+1)*sizeof(int));CHKPTRQ(mat->pivots);
-    PLogObjectMemory(A,A->m*sizeof(int));
+    ierr = PetscMalloc((A->m+1)*sizeof(int),&mat->pivots);CHKERRQ(ierr);
+    PetscLogObjectMemory(A,A->m*sizeof(int));
   }
   A->factor = FACTOR_LU;
   if (!A->m || !A->n) PetscFunctionReturn(0);
   LAgetrf_(&A->m,&A->n,mat->v,&A->m,mat->pivots,&info);
   if (info<0) SETERRQ(PETSC_ERR_LIB,"Bad argument to LU factorization");
   if (info>0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
-  PLogFlops((2*A->n*A->n*A->n)/3);
+  PetscLogFlops((2*A->n*A->n*A->n)/3);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatDuplicate_SeqDense"
+#define __FUNC__ "MatDuplicate_SeqDense"
 int MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data,*l;
@@ -106,7 +106,7 @@ int MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactorSymbolic_SeqDense"
+#define __FUNC__ "MatLUFactorSymbolic_SeqDense"
 int MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,MatLUInfo *info,Mat *fact)
 {
   int ierr;
@@ -117,7 +117,7 @@ int MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,MatLUInfo *info,Mat *fact)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqDense"
+#define __FUNC__ "MatLUFactorNumeric_SeqDense"
 int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data,*l = (Mat_SeqDense*)(*fact)->data;
@@ -132,7 +132,7 @@ int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCholeskyFactorSymbolic_SeqDense"
+#define __FUNC__ "MatCholeskyFactorSymbolic_SeqDense"
 int MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,PetscReal f,Mat *fact)
 {
   int ierr;
@@ -143,7 +143,7 @@ int MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,PetscReal f,Mat *fact)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCholeskyFactorNumeric_SeqDense"
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqDense"
 int MatCholeskyFactorNumeric_SeqDense(Mat A,Mat *fact)
 {
   int ierr;
@@ -163,19 +163,19 @@ int MatCholeskyFactor_SeqDense(Mat A,IS perm,PetscReal f)
   PetscFunctionBegin;
   if (mat->pivots) {
     ierr = PetscFree(mat->pivots);CHKERRQ(ierr);
-    PLogObjectMemory(A,-A->m*sizeof(int));
+    PetscLogObjectMemory(A,-A->m*sizeof(int));
     mat->pivots = 0;
   }
   if (!A->m || !A->n) PetscFunctionReturn(0);
   LApotrf_("L",&A->n,mat->v,&A->m,&info);
   if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
   A->factor = FACTOR_CHOLESKY;
-  PLogFlops((A->n*A->n*A->n)/3);
+  PetscLogFlops((A->n*A->n*A->n)/3);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqDense"
+#define __FUNC__ "MatSolve_SeqDense"
 int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -196,12 +196,12 @@ int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
   if (info) SETERRQ(PETSC_ERR_LIB,"MBad solve");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*A->n*A->n - A->n);
+  PetscLogFlops(2*A->n*A->n - A->n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqDense"
+#define __FUNC__ "MatSolveTranspose_SeqDense"
 int MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -222,12 +222,12 @@ int MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*A->n*A->n - A->n);
+  PetscLogFlops(2*A->n*A->n - A->n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolveAdd_SeqDense"
+#define __FUNC__ "MatSolveAdd_SeqDense"
 int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -241,7 +241,7 @@ int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   if (!A->m || !A->n) PetscFunctionReturn(0);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp);CHKERRQ(ierr);
-    PLogObjectParent(A,tmp);
+    PetscLogObjectParent(A,tmp);
     ierr = VecCopy(yy,tmp);CHKERRQ(ierr);
   } 
   ierr = PetscMemcpy(y,x,A->m*sizeof(Scalar));CHKERRQ(ierr);
@@ -256,12 +256,12 @@ int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   else     {ierr = VecAXPY(&sone,zz,yy);CHKERRQ(ierr);}
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*A->n*A->n);
+  PetscLogFlops(2*A->n*A->n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolveTransposeAdd_SeqDense"
+#define __FUNC__ "MatSolveTransposeAdd_SeqDense"
 int MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense  *mat = (Mat_SeqDense*)A->data;
@@ -275,7 +275,7 @@ int MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp);CHKERRQ(ierr);
-    PLogObjectParent(A,tmp);
+    PetscLogObjectParent(A,tmp);
     ierr = VecCopy(yy,tmp);CHKERRQ(ierr);
   } 
   ierr = PetscMemcpy(y,x,A->m*sizeof(Scalar));CHKERRQ(ierr);
@@ -294,12 +294,12 @@ int MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*A->n*A->n);
+  PetscLogFlops(2*A->n*A->n);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatRelax_SeqDense"
+#define __FUNC__ "MatRelax_SeqDense"
 int MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,
                           PetscReal shift,int its,Vec xx)
 {
@@ -360,7 +360,7 @@ int MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 
 /* -----------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultTranspose_SeqDense"
+#define __FUNC__ "MatMultTranspose_SeqDense"
 int MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -374,12 +374,12 @@ int MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   LAgemv_("T",&(A->m),&(A->n),&_DOne,v,&(A->m),x,&_One,&_DZero,y,&_One);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*A->m*A->n - A->n);
+  PetscLogFlops(2*A->m*A->n - A->n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqDense"
+#define __FUNC__ "MatMult_SeqDense"
 int MatMult_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -393,12 +393,12 @@ int MatMult_SeqDense(Mat A,Vec xx,Vec yy)
   LAgemv_("N",&(A->m),&(A->n),&_DOne,v,&(A->m),x,&_One,&_DZero,y,&_One);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*A->m*A->n - A->m);
+  PetscLogFlops(2*A->m*A->n - A->m);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqDense"
+#define __FUNC__ "MatMultAdd_SeqDense"
 int MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -413,12 +413,12 @@ int MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   LAgemv_("N",&(A->m),&(A->n),&_DOne,v,&(A->m),x,&_One,&_DOne,y,&_One);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*A->m*A->n);
+  PetscLogFlops(2*A->m*A->n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatMultTransposeAdd_SeqDense"
+#define __FUNC__ "MatMultTransposeAdd_SeqDense"
 int MatMultTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -434,35 +434,35 @@ int MatMultTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   LAgemv_("T",&(A->m),&(A->n),&_DOne,v,&(A->m),x,&_One,&_DOne,y,&_One);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*A->m*A->n);
+  PetscLogFlops(2*A->m*A->n);
   PetscFunctionReturn(0);
 }
 
 /* -----------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetRow_SeqDense"
+#define __FUNC__ "MatGetRow_SeqDense"
 int MatGetRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   Scalar       *v;
-  int          i;
+  int          i,ierr;
   
   PetscFunctionBegin;
   *ncols = A->n;
   if (cols) {
-    *cols = (int*)PetscMalloc((A->n+1)*sizeof(int));CHKPTRQ(*cols);
+    ierr = PetscMalloc((A->n+1)*sizeof(int),cols);CHKERRQ(ierr);
     for (i=0; i<A->n; i++) (*cols)[i] = i;
   }
   if (vals) {
-    *vals = (Scalar*)PetscMalloc((A->n+1)*sizeof(Scalar));CHKPTRQ(*vals);
-    v = mat->v + row;
+    ierr = PetscMalloc((A->n+1)*sizeof(Scalar),vals);CHKERRQ(ierr);
+    v    = mat->v + row;
     for (i=0; i<A->n; i++) {(*vals)[i] = *v; v += A->m;}
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatRestoreRow_SeqDense"
+#define __FUNC__ "MatRestoreRow_SeqDense"
 int MatRestoreRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 {
   int ierr;
@@ -473,7 +473,7 @@ int MatRestoreRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 }
 /* ----------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetValues_SeqDense"
+#define __FUNC__ "MatSetValues_SeqDense"
 int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
                                     int *indexn,Scalar *v,InsertMode addv)
 { 
@@ -546,7 +546,7 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetValues_SeqDense"
+#define __FUNC__ "MatGetValues_SeqDense"
 int MatGetValues_SeqDense(Mat A,int m,int *indexm,int n,int *indexn,Scalar *v)
 { 
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -569,8 +569,8 @@ int MatGetValues_SeqDense(Mat A,int m,int *indexm,int n,int *indexn,Scalar *v)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLoad_SeqDense"
-int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
+#define __FUNC__ "MatLoad_SeqDense"
+int MatLoad_SeqDense(PetscViewer viewer,MatType type,Mat *A)
 {
   Mat_SeqDense *a;
   Mat          B;
@@ -582,7 +582,7 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"view must have one processor");
-  ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
@@ -594,7 +594,7 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
     v    = a->v;
     /* Allocate some temp space to read in the values and then flip them
        from row major to column major */
-    w = (Scalar*)PetscMalloc((M*N+1)*sizeof(Scalar));CHKPTRQ(w);
+    ierr = PetscMalloc((M*N+1)*sizeof(Scalar),&w);CHKERRQ(ierr);
     /* read in nonzero values */
     ierr = PetscBinaryRead(fd,w,M*N,PETSC_SCALAR);CHKERRQ(ierr);
     /* now flip the values and store them in the matrix*/
@@ -608,7 +608,7 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   } else {
     /* read row lengths */
-    rowlengths = (int*)PetscMalloc((M+1)*sizeof(int));CHKPTRQ(rowlengths);
+    ierr = PetscMalloc((M+1)*sizeof(int),&rowlengths);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
 
     /* create our matrix */
@@ -618,9 +618,11 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
     v = a->v;
 
     /* read column indices and nonzeros */
-    cols = scols = (int*)PetscMalloc((nz+1)*sizeof(int));CHKPTRQ(cols);
+    ierr = PetscMalloc((nz+1)*sizeof(int),&scols);CHKERRQ(ierr);
+    cols = scols;
     ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
-    vals = svals = (Scalar*)PetscMalloc((nz+1)*sizeof(Scalar));CHKPTRQ(vals);
+    ierr = PetscMalloc((nz+1)*sizeof(Scalar),&svals);CHKERRQ(ierr);
+    vals = svals;
     ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
 
     /* insert into matrix */  
@@ -642,8 +644,8 @@ EXTERN_C_END
 #include "petscsys.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatView_SeqDense_ASCII"
-static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
+#define __FUNC__ "MatView_SeqDense_ASCII"
+static int MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
   int          ierr,i,j,format;
@@ -651,34 +653,34 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
   Scalar       *v;
 
   PetscFunctionBegin;
-  ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
-  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
+  ierr = PetscViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_FORMAT_ASCII_INFO || format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG) {
     PetscFunctionReturn(0);  /* do nothing for now */
-  } else if (format == VIEWER_FORMAT_ASCII_COMMON) {
-    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+  } else if (format == PETSC_VIEWER_FORMAT_ASCII_COMMON) {
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<A->m; i++) {
       v = a->v + i;
-      ierr = ViewerASCIIPrintf(viewer,"row %d:",i);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"row %d:",i);CHKERRQ(ierr);
       for (j=0; j<A->n; j++) {
 #if defined(PETSC_USE_COMPLEX)
         if (PetscRealPart(*v) != 0.0 && PetscImaginaryPart(*v) != 0.0) {
-          ierr = ViewerASCIIPrintf(viewer," %d %g + %g i",j,PetscRealPart(*v),PetscImaginaryPart(*v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," %d %g + %g i",j,PetscRealPart(*v),PetscImaginaryPart(*v));CHKERRQ(ierr);
         } else if (PetscRealPart(*v)) {
-          ierr = ViewerASCIIPrintf(viewer," %d %g ",j,PetscRealPart(*v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," %d %g ",j,PetscRealPart(*v));CHKERRQ(ierr);
         }
 #else
         if (*v) {
-          ierr = ViewerASCIIPrintf(viewer," %d %g ",j,*v);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," %d %g ",j,*v);CHKERRQ(ierr);
         }
 #endif
         v += A->m;
       }
-      ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else {
-    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
     PetscTruth allreal = PETSC_TRUE;
     /* determine if matrix has all real values */
@@ -687,12 +689,12 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
       if (PetscImaginaryPart(v[i])) { allreal = PETSC_FALSE; break ;}
     }
 #endif
-    if (format == VIEWER_FORMAT_ASCII_MATLAB) {
-      ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_FORMAT_ASCII_MATLAB) {
+      ierr = PetscViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
       if (!outputname) outputname = "A";
-      ierr = ViewerASCIIPrintf(viewer,"%% Size = %d %d \n",A->m,A->n);CHKERRQ(ierr);
-      ierr = ViewerASCIIPrintf(viewer,"%s = zeros(%d,%d);\n",outputname,A->m,A->n);CHKERRQ(ierr);
-      ierr = ViewerASCIIPrintf(viewer,"%s = [\n",outputname);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%% Size = %d %d \n",A->m,A->n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%s = zeros(%d,%d);\n",outputname,A->m,A->n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%s = [\n",outputname);CHKERRQ(ierr);
     }
 
     for (i=0; i<A->m; i++) {
@@ -700,28 +702,28 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
       for (j=0; j<A->n; j++) {
 #if defined(PETSC_USE_COMPLEX)
         if (allreal) {
-          ierr = ViewerASCIIPrintf(viewer,"%6.4e ",PetscRealPart(*v));CHKERRQ(ierr); v += A->m;
+          ierr = PetscViewerASCIIPrintf(viewer,"%6.4e ",PetscRealPart(*v));CHKERRQ(ierr); v += A->m;
         } else {
-          ierr = ViewerASCIIPrintf(viewer,"%6.4e + %6.4e i ",PetscRealPart(*v),PetscImaginaryPart(*v));CHKERRQ(ierr); v += A->m;
+          ierr = PetscViewerASCIIPrintf(viewer,"%6.4e + %6.4e i ",PetscRealPart(*v),PetscImaginaryPart(*v));CHKERRQ(ierr); v += A->m;
         }
 #else
-        ierr = ViewerASCIIPrintf(viewer,"%6.4e ",*v);CHKERRQ(ierr); v += A->m;
+        ierr = PetscViewerASCIIPrintf(viewer,"%6.4e ",*v);CHKERRQ(ierr); v += A->m;
 #endif
       }
-      ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    if (format == VIEWER_FORMAT_ASCII_MATLAB) {
-      ierr = ViewerASCIIPrintf(viewer,"];\n");CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_FORMAT_ASCII_MATLAB) {
+      ierr = PetscViewerASCIIPrintf(viewer,"];\n");CHKERRQ(ierr);
     }
-    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   }
-  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatView_SeqDense_Binary"
-static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
+#define __FUNC__ "MatView_SeqDense_Binary"
+static int MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
   int          ict,j,n = A->n,m = A->m,i,fd,*col_lens,ierr,nz = m*n;
@@ -729,12 +731,12 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
   Scalar       *v,*anonz,*vals;
   
   PetscFunctionBegin;
-  ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
 
-  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == VIEWER_FORMAT_BINARY_NATIVE) {
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_FORMAT_BINARY_NATIVE) {
     /* store the matrix as a dense matrix */
-    col_lens = (int*)PetscMalloc(4*sizeof(int));CHKPTRQ(col_lens);
+    ierr = PetscMalloc(4*sizeof(int),&col_lens);CHKERRQ(ierr);
     col_lens[0] = MAT_COOKIE;
     col_lens[1] = m;
     col_lens[2] = n;
@@ -743,7 +745,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
     ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
     /* write out matrix, by rows */
-    vals = (Scalar*)PetscMalloc((m*n+1)*sizeof(Scalar));CHKPTRQ(vals);
+    ierr = PetscMalloc((m*n+1)*sizeof(Scalar),&vals);CHKERRQ(ierr);
     v    = a->v;
     for (i=0; i<m; i++) {
       for (j=0; j<n; j++) {
@@ -753,7 +755,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
     ierr = PetscBinaryWrite(fd,vals,n*m,PETSC_SCALAR,0);CHKERRQ(ierr);
     ierr = PetscFree(vals);CHKERRQ(ierr);
   } else {
-    col_lens = (int*)PetscMalloc((4+nz)*sizeof(int));CHKPTRQ(col_lens);
+    ierr = PetscMalloc((4+nz)*sizeof(int),&col_lens);CHKERRQ(ierr);
     col_lens[0] = MAT_COOKIE;
     col_lens[1] = m;
     col_lens[2] = n;
@@ -773,8 +775,8 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
     ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
     /* store nonzero values */
-    anonz = (Scalar*)PetscMalloc((nz+1)*sizeof(Scalar));CHKPTRQ(anonz);
-    ict = 0;
+    ierr = PetscMalloc((nz+1)*sizeof(Scalar),&anonz);CHKERRQ(ierr);
+    ict  = 0;
     for (i=0; i<m; i++) {
       v = a->v + i;
       for (j=0; j<n; j++) {
@@ -788,27 +790,27 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatView_SeqDense_Draw_Zoom"
-int MatView_SeqDense_Draw_Zoom(Draw draw,void *Aa)
+#define __FUNC__ "MatView_SeqDense_Draw_Zoom"
+int MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
 {
   Mat           A = (Mat) Aa;
   Mat_SeqDense  *a = (Mat_SeqDense*)A->data;
   int           m = A->m,n = A->n,format,color,i,j,ierr;
   Scalar        *v = a->v;
-  Viewer        viewer;
-  Draw          popup;
+  PetscViewer        viewer;
+  PetscDraw          popup;
   PetscReal     xl,yl,xr,yr,x_l,x_r,y_l,y_r,scale,maxv = 0.0;
 
   PetscFunctionBegin; 
 
   ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*)&viewer);CHKERRQ(ierr); 
-  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  ierr = DrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
 
   /* Loop over matrix elements drawing boxes */
-  if (format != VIEWER_FORMAT_DRAW_CONTOUR) {
+  if (format != PETSC_VIEWER_FORMAT_DRAW_CONTOUR) {
     /* Blue for negative and Red for positive */
-    color = DRAW_BLUE;
+    color = PETSC_DRAW_BLUE;
     for(j = 0; j < n; j++) {
       x_l = j;
       x_r = x_l + 1.0;
@@ -817,22 +819,22 @@ int MatView_SeqDense_Draw_Zoom(Draw draw,void *Aa)
         y_r = y_l + 1.0;
 #if defined(PETSC_USE_COMPLEX)
         if (PetscRealPart(v[j*m+i]) >  0.) {
-          color = DRAW_RED;
+          color = PETSC_DRAW_RED;
         } else if (PetscRealPart(v[j*m+i]) <  0.) {
-          color = DRAW_BLUE;
+          color = PETSC_DRAW_BLUE;
         } else {
           continue;
         }
 #else
         if (v[j*m+i] >  0.) {
-          color = DRAW_RED;
+          color = PETSC_DRAW_RED;
         } else if (v[j*m+i] <  0.) {
-          color = DRAW_BLUE;
+          color = PETSC_DRAW_BLUE;
         } else {
           continue;
         }
 #endif
-        ierr = DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
+        ierr = PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
       } 
     }
   } else {
@@ -841,17 +843,17 @@ int MatView_SeqDense_Draw_Zoom(Draw draw,void *Aa)
     for(i = 0; i < m*n; i++) {
       if (PetscAbsScalar(v[i]) > maxv) maxv = PetscAbsScalar(v[i]);
     }
-    scale = (245.0 - DRAW_BASIC_COLORS)/maxv; 
-    ierr  = DrawGetPopup(draw,&popup);CHKERRQ(ierr);
-    if (popup) {ierr  = DrawScalePopup(popup,0.0,maxv);CHKERRQ(ierr);}
+    scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/maxv; 
+    ierr  = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
+    if (popup) {ierr  = PetscDrawScalePopup(popup,0.0,maxv);CHKERRQ(ierr);}
     for(j = 0; j < n; j++) {
       x_l = j;
       x_r = x_l + 1.0;
       for(i = 0; i < m; i++) {
         y_l   = m - i - 1.0;
         y_r   = y_l + 1.0;
-        color = DRAW_BASIC_COLORS + (int)(scale*PetscAbsScalar(v[j*m+i]));
-        ierr  = DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
+        color = PETSC_DRAW_BASIC_COLORS + (int)(scale*PetscAbsScalar(v[j*m+i]));
+        ierr  = PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
       } 
     }
   }
@@ -859,44 +861,44 @@ int MatView_SeqDense_Draw_Zoom(Draw draw,void *Aa)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatView_SeqDense_Draw"
-int MatView_SeqDense_Draw(Mat A,Viewer viewer)
+#define __FUNC__ "MatView_SeqDense_Draw"
+int MatView_SeqDense_Draw(Mat A,PetscViewer viewer)
 {
-  Draw       draw;
+  PetscDraw       draw;
   PetscTruth isnull;
   PetscReal  xr,yr,xl,yl,h,w;
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull == PETSC_TRUE) PetscFunctionReturn(0);
 
   ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
   xr  = A->n; yr = A->m; h = yr/10.0; w = xr/10.0; 
   xr += w;    yr += h;  xl = -w;     yl = -h;
-  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
-  ierr = DrawZoom(draw,MatView_SeqDense_Draw_Zoom,A);CHKERRQ(ierr);
+  ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  ierr = PetscDrawZoom(draw,MatView_SeqDense_Draw_Zoom,A);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatView_SeqDense"
-int MatView_SeqDense(Mat A,Viewer viewer)
+#define __FUNC__ "MatView_SeqDense"
+int MatView_SeqDense(Mat A,PetscViewer viewer)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
   int          ierr;
   PetscTruth   issocket,isascii,isbinary,isdraw;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
 
   if (issocket) {
-    ierr = ViewerSocketPutScalar(viewer,A->m,A->n,a->v);CHKERRQ(ierr);
+    ierr = PetscViewerSocketPutScalar(viewer,A->m,A->n,a->v);CHKERRQ(ierr);
   } else if (isascii) {
     ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
@@ -910,7 +912,7 @@ int MatView_SeqDense(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatDestroy_SeqDense"
+#define __FUNC__ "MatDestroy_SeqDense"
 int MatDestroy_SeqDense(Mat mat)
 {
   Mat_SeqDense *l = (Mat_SeqDense*)mat->data;
@@ -918,7 +920,7 @@ int MatDestroy_SeqDense(Mat mat)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PLogObjectState((PetscObject)mat,"Rows %d Cols %d",mat->m,mat->n);
+  PetscLogObjectState((PetscObject)mat,"Rows %d Cols %d",mat->m,mat->n);
 #endif
   if (l->pivots) {ierr = PetscFree(l->pivots);CHKERRQ(ierr);}
   if (!l->user_alloc) {ierr = PetscFree(l->v);CHKERRQ(ierr);}
@@ -927,7 +929,7 @@ int MatDestroy_SeqDense(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatTranspose_SeqDense"
+#define __FUNC__ "MatTranspose_SeqDense"
 int MatTranspose_SeqDense(Mat A,Mat *matout)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -938,7 +940,8 @@ int MatTranspose_SeqDense(Mat A,Mat *matout)
   v = mat->v; m = A->m; n = A->n;
   if (!matout) { /* in place transpose */
     if (m != n) { /* malloc temp to hold transpose */
-      Scalar *w = (Scalar*)PetscMalloc((m+1)*(n+1)*sizeof(Scalar));CHKPTRQ(w);
+      Scalar *w;
+      ierr = PetscMalloc((m+1)*(n+1)*sizeof(Scalar),&w);CHKERRQ(ierr);
       for (j=0; j<m; j++) {
         for (k=0; k<n; k++) {
           w[k + j*n] = v[j + k*m];
@@ -973,7 +976,7 @@ int MatTranspose_SeqDense(Mat A,Mat *matout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatEqual_SeqDense"
+#define __FUNC__ "MatEqual_SeqDense"
 int MatEqual_SeqDense(Mat A1,Mat A2,PetscTruth *flg)
 {
   Mat_SeqDense *mat1 = (Mat_SeqDense*)A1->data;
@@ -996,7 +999,7 @@ int MatEqual_SeqDense(Mat A1,Mat A2,PetscTruth *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetDiagonal_SeqDense"
+#define __FUNC__ "MatGetDiagonal_SeqDense"
 int MatGetDiagonal_SeqDense(Mat A,Vec v)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -1017,7 +1020,7 @@ int MatGetDiagonal_SeqDense(Mat A,Vec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatDiagonalScale_SeqDense"
+#define __FUNC__ "MatDiagonalScale_SeqDense"
 int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -1035,7 +1038,7 @@ int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
       for (j=0; j<n; j++) { (*v) *= x; v+= m;} 
     }
     ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
-    PLogFlops(n*m);
+    PetscLogFlops(n*m);
   }
   if (rr) {
     ierr = VecGetSize(rr,&n);CHKERRQ(ierr);
@@ -1047,13 +1050,13 @@ int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
       for (j=0; j<m; j++) { (*v++) *= x;} 
     }
     ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
-    PLogFlops(n*m);
+    PetscLogFlops(n*m);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatNorm_SeqDense"
+#define __FUNC__ "MatNorm_SeqDense"
 int MatNorm_SeqDense(Mat A,NormType type,PetscReal *norm)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -1071,7 +1074,7 @@ int MatNorm_SeqDense(Mat A,NormType type,PetscReal *norm)
 #endif
     }
     *norm = sqrt(sum);
-    PLogFlops(2*A->n*A->m);
+    PetscLogFlops(2*A->n*A->m);
   } else if (type == NORM_1) {
     *norm = 0.0;
     for (j=0; j<A->n; j++) {
@@ -1081,7 +1084,7 @@ int MatNorm_SeqDense(Mat A,NormType type,PetscReal *norm)
       }
       if (sum > *norm) *norm = sum;
     }
-    PLogFlops(A->n*A->m);
+    PetscLogFlops(A->n*A->m);
   } else if (type == NORM_INFINITY) {
     *norm = 0.0;
     for (j=0; j<A->m; j++) {
@@ -1092,7 +1095,7 @@ int MatNorm_SeqDense(Mat A,NormType type,PetscReal *norm)
       }
       if (sum > *norm) *norm = sum;
     }
-    PLogFlops(A->n*A->m);
+    PetscLogFlops(A->n*A->m);
   } else {
     SETERRQ(PETSC_ERR_SUP,"No two norm");
   }
@@ -1100,7 +1103,7 @@ int MatNorm_SeqDense(Mat A,NormType type,PetscReal *norm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetOption_SeqDense"
+#define __FUNC__ "MatSetOption_SeqDense"
 int MatSetOption_SeqDense(Mat A,MatOption op)
 {
   Mat_SeqDense *aij = (Mat_SeqDense*)A->data;
@@ -1121,7 +1124,7 @@ int MatSetOption_SeqDense(Mat A,MatOption op)
            op == MAT_YES_NEW_DIAGONALS ||
            op == MAT_IGNORE_OFF_PROC_ENTRIES ||
            op == MAT_USE_HASH_TABLE) {
-    PLogInfo(A,"MatSetOption_SeqDense:Option ignored\n");
+    PetscLogInfo(A,"MatSetOption_SeqDense:Option ignored\n");
   } else {
     SETERRQ(PETSC_ERR_SUP,"unknown option");
   }
@@ -1129,7 +1132,7 @@ int MatSetOption_SeqDense(Mat A,MatOption op)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatZeroEntries_SeqDense"
+#define __FUNC__ "MatZeroEntries_SeqDense"
 int MatZeroEntries_SeqDense(Mat A)
 {
   Mat_SeqDense *l = (Mat_SeqDense*)A->data;
@@ -1141,7 +1144,7 @@ int MatZeroEntries_SeqDense(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetBlockSize_SeqDense"
+#define __FUNC__ "MatGetBlockSize_SeqDense"
 int MatGetBlockSize_SeqDense(Mat A,int *bs)
 {
   PetscFunctionBegin;
@@ -1150,7 +1153,7 @@ int MatGetBlockSize_SeqDense(Mat A,int *bs)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatZeroRows_SeqDense"
+#define __FUNC__ "MatZeroRows_SeqDense"
 int MatZeroRows_SeqDense(Mat A,IS is,Scalar *diag)
 {
   Mat_SeqDense *l = (Mat_SeqDense*)A->data;
@@ -1175,7 +1178,7 @@ int MatZeroRows_SeqDense(Mat A,IS is,Scalar *diag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetOwnershipRange_SeqDense"
+#define __FUNC__ "MatGetOwnershipRange_SeqDense"
 int MatGetOwnershipRange_SeqDense(Mat A,int *m,int *n)
 {
   PetscFunctionBegin;
@@ -1185,7 +1188,7 @@ int MatGetOwnershipRange_SeqDense(Mat A,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetArray_SeqDense"
+#define __FUNC__ "MatGetArray_SeqDense"
 int MatGetArray_SeqDense(Mat A,Scalar **array)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -1196,7 +1199,7 @@ int MatGetArray_SeqDense(Mat A,Scalar **array)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatRestoreArray_SeqDense"
+#define __FUNC__ "MatRestoreArray_SeqDense"
 int MatRestoreArray_SeqDense(Mat A,Scalar **array)
 {
   PetscFunctionBegin;
@@ -1205,7 +1208,7 @@ int MatRestoreArray_SeqDense(Mat A,Scalar **array)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSubMatrix_SeqDense"
+#define __FUNC__ "MatGetSubMatrix_SeqDense"
 static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
@@ -1252,14 +1255,14 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSubMatrices_SeqDense"
+#define __FUNC__ "MatGetSubMatrices_SeqDense"
 int MatGetSubMatrices_SeqDense(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat **B)
 {
   int ierr,i;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    *B = (Mat*)PetscMalloc((n+1)*sizeof(Mat));CHKPTRQ(*B);
+    ierr = PetscMalloc((n+1)*sizeof(Mat),B);CHKERRQ(ierr);
   }
 
   for (i=0; i<n; i++) {
@@ -1269,7 +1272,7 @@ int MatGetSubMatrices_SeqDense(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat 
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCopy_SeqDense"
+#define __FUNC__ "MatCopy_SeqDense"
 int MatCopy_SeqDense(Mat A,Mat B,MatStructure str)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data,*b = (Mat_SeqDense *)B->data;
@@ -1288,7 +1291,7 @@ int MatCopy_SeqDense(Mat A,Mat B,MatStructure str)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatSetUpPreallocation_SeqDense"></a>*/"MatSetUpPreallocation_SeqDense"
+#define __FUNC__ "MatSetUpPreallocation_SeqDense"
 int MatSetUpPreallocation_SeqDense(Mat A)
 {
   int        ierr;
@@ -1367,7 +1370,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        MatGetMaps_Petsc};
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCreateSeqDense"
+#define __FUNC__ "MatCreateSeqDense"
 /*@C
    MatCreateSeqDense - Creates a sequential dense matrix that 
    is stored in column major order (the usual Fortran 77 manner). Many 
@@ -1408,7 +1411,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSeqDensePreallocation"
+#define __FUNC__ "MatSeqDensePreallocation"
 /*@C
    MatSeqDenseSetPreallocation - Sets the array used for storing the matrix elements
 
@@ -1441,10 +1444,10 @@ int MatSeqDenseSetPreallocation(Mat B,Scalar *data)
   B->preallocated = PETSC_TRUE;
   b               = (Mat_SeqDense*)B->data;
   if (!data) {
-    b->v          = (Scalar*)PetscMalloc((B->m*B->n+1)*sizeof(Scalar));CHKPTRQ(b->v);
+    ierr          = PetscMalloc((B->m*B->n+1)*sizeof(Scalar),&b->v);CHKERRQ(ierr);
     ierr          = PetscMemzero(b->v,B->m*B->n*sizeof(Scalar));CHKERRQ(ierr);
     b->user_alloc = PETSC_FALSE;
-    PLogObjectMemory(B,B->n*B->m*sizeof(Scalar));
+    PetscLogObjectMemory(B,B->n*B->m*sizeof(Scalar));
   } else { /* user-allocated storage */
     b->v          = data;
     b->user_alloc = PETSC_TRUE;
@@ -1454,7 +1457,7 @@ int MatSeqDenseSetPreallocation(Mat B,Scalar *data)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCreate_SeqDense"
+#define __FUNC__ "MatCreate_SeqDense"
 int MatCreate_SeqDense(Mat B)
 {
   Mat_SeqDense *b;
@@ -1467,12 +1470,12 @@ int MatCreate_SeqDense(Mat B)
   B->m = B->M = PetscMax(B->m,B->M);
   B->n = B->N = PetscMax(B->n,B->N);
 
-  b               = (Mat_SeqDense*)PetscMalloc(sizeof(Mat_SeqDense));CHKPTRQ(b);
+  ierr            = PetscNew(Mat_SeqDense,&b);CHKERRQ(ierr);
   ierr            = PetscMemzero(b,sizeof(Mat_SeqDense));CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;
   B->mapping      = 0;
-  PLogObjectMemory(B,sizeof(struct _p_Mat));
+  PetscLogObjectMemory(B,sizeof(struct _p_Mat));
   B->data         = (void*)b;
 
   ierr = MapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);

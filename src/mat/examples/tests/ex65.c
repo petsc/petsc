@@ -1,4 +1,4 @@
-/*$Id: ex65.c,v 1.7 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex65.c,v 1.8 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Saves a rectangular sparse matrix to disk\n\n";
 
@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Mat    A;
   int    m = 100,n = 11,ierr,js[11],i,j,cnt;
   Scalar values[11];
-  Viewer view;
+  PetscViewer view;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -33,9 +33,9 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"rect",BINARY_CREATE,&view);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"rect",PETSC_BINARY_CREATE,&view);CHKERRA(ierr);
   ierr = MatView(A,view);CHKERRA(ierr);
-  ierr = ViewerDestroy(view);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(view);CHKERRA(ierr);
 
   ierr = MatDestroy(A);CHKERRA(ierr);
 

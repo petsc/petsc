@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.43 2000/09/28 21:13:46 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.44 2000/10/24 20:26:55 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
 Schwarz Method) for solving a linear system in parallel with SLES.  The\n\
@@ -58,12 +58,12 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-overlap",&overlap,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-user_set_subdomains",&user_subdomains);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-overlap",&overlap,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-user_set_subdomains",&user_subdomains);CHKERRA(ierr);
 
   /* -------------------------------------------------------------------
          Compute the matrix and right-hand-side vector that define
@@ -181,7 +181,7 @@ int main(int argc,char **args)
        equivalent to the ASM method with zero overlap).
   */
 
-  ierr = OptionsHasName(PETSC_NULL,"-user_set_subdomain_solvers",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-user_set_subdomain_solvers",&flg);CHKERRA(ierr);
   if (flg) {
     SLES       *subsles;       /* array of SLES contexts for local subblocks */
     int        nlocal,first;  /* number of local subblocks, first local subblock */

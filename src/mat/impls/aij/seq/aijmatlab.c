@@ -1,4 +1,4 @@
-/*$Id: aijmatlab.c,v 1.7 2000/09/28 21:11:00 bsmith Exp bsmith $*/
+/*$Id: aijmatlab.c,v 1.8 2000/10/24 20:25:32 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface for the Matlab engine sparse solver
@@ -11,7 +11,7 @@
 #include "mex.h"      /* Matlab include file */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatSolve_SeqAIJ_Matlab"></a>*/"MatSolve_SeqAIJ_Matlab"
+#define __FUNC__ "MatSolve_SeqAIJ_Matlab"
 int MatSolve_SeqAIJ_Matlab(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
@@ -34,7 +34,7 @@ int MatSolve_SeqAIJ_Matlab(Mat A,Vec b,Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatLUFactorNumeric_SeqAIJ_Matlab"></a>*/"MatLUFactorNumeric_SeqAIJ_Matlab"
+#define __FUNC__ "MatLUFactorNumeric_SeqAIJ_Matlab"
 int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
 {
   Mat_SeqAIJ      *f = (Mat_SeqAIJ*)(*F)->data;
@@ -48,7 +48,7 @@ int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
   ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(A->comm),"[l_%s,u_%s,p_%s] = lu(%s',%g);",_A,_A,_A,_A,f->lu_dtcol);CHKERRQ(ierr);
 
   ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
-  name = (char*)PetscMalloc((len+2)*sizeof(char));CHKPTRQ(name);
+  ierr = PetscMalloc((len+2)*sizeof(char),&name);CHKERRQ(ierr);
   sprintf(name,"_%s",_A);
   ierr = PetscObjectSetName((PetscObject)*F,name);CHKERRQ(ierr);
   ierr = PetscFree(name);CHKERRQ(ierr);
@@ -56,7 +56,7 @@ int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatLUFactorSymbolic_SeqAIJ_Matlab"></a>*/"MatLUFactorSymbolic_SeqAIJ_Matlab"
+#define __FUNC__ "MatLUFactorSymbolic_SeqAIJ_Matlab"
 int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*f;
@@ -75,7 +75,7 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatILUDTFactor_SeqAIJ_Matlab"></a>*/"MatILUDTFactor_SeqAIJ_Matlab"
+#define __FUNC__ "MatILUDTFactor_SeqAIJ_Matlab"
 int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *F)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
@@ -95,7 +95,7 @@ int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *F
   ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(A->comm),"[l_%s,u_%s,p_%s] = luinc(%s',info_%s);",_A,_A,_A,_A,_A);CHKERRQ(ierr);
 
   ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
-  name = (char*)PetscMalloc((len+2)*sizeof(char));CHKPTRQ(name);
+  ierr = PetscMalloc((len+2)*sizeof(char),&name);CHKERRQ(ierr);
   sprintf(name,"_%s",_A);
   ierr = PetscObjectSetName((PetscObject)*F,name);CHKERRQ(ierr);
   ierr = PetscFree(name);CHKERRQ(ierr);
@@ -103,20 +103,20 @@ int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *F
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatUseMatlab_SeqAIJ"></a>*/"MatUseMatlab_SeqAIJ"
+#define __FUNC__ "MatUseMatlab_SeqAIJ"
 int MatUseMatlab_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Matlab;
   A->ops->iludtfactor      = MatILUDTFactor_SeqAIJ_Matlab;
-  PLogInfo(0,"Using Matlab for SeqAIJ LU and ILUDT factorization and solves");
+  PetscLogInfo(0,"Using Matlab for SeqAIJ LU and ILUDT factorization and solves");
   PetscFunctionReturn(0);
 }
 
 #else
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatUseMatlab_SeqAIJ"
+#define __FUNC__ "MatUseMatlab_SeqAIJ"
 int MatUseMatlab_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;

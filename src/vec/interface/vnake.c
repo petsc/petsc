@@ -1,11 +1,11 @@
-/*$Id: vnake.c,v 1.21 2000/09/22 20:43:08 bsmith Exp bsmith $*/
+/*$Id: vnake.c,v 1.22 2000/10/24 20:25:11 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
-extern FList VecList;
+extern PetscFList VecList;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="VecCreate"></a>*/"VecCreate"
+#define __FUNC__ "VecCreate"
 /*@C
    VecCreate - Creates an empty vector object. The type can then
    be set with VecSetType().
@@ -43,8 +43,8 @@ int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
   *V             = 0;
 
   PetscHeaderCreate(v,_p_Vec,struct _VecOps,VEC_COOKIE,0,"Vec",comm,VecDestroy,VecView);
-  PLogObjectCreate(v);
-  PLogObjectMemory(v,sizeof(struct _p_Vec));
+  PetscLogObjectCreate(v);
+  PetscLogObjectMemory(v,sizeof(struct _p_Vec));
 
   ierr = PetscMemzero(v->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
   v->n               = n; 
@@ -60,7 +60,7 @@ int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecSetFromOptions"
+#define __FUNC__ "VecSetFromOptions"
 /*@C
    VecSetFromOptions - Sets the vector type from the options database.
    Defaults to a PETSc sequential vector on one processor and a
@@ -90,9 +90,9 @@ int VecSetFromOptions(Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
 
-  ierr = OptionsBegin(vec->comm,vec->prefix,"Vector options","Vec");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(vec->comm,vec->prefix,"Vector options","Vec");CHKERRQ(ierr);
     if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr = OptionsList("-vec_type","Type of vector","VecSetType",VecList,(char*)(vec->type_name?vec->type_name:VEC_MPI),vtype,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-vec_type","Type of vector","VecSetType",VecList,(char*)(vec->type_name?vec->type_name:VEC_MPI),vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = VecSetType(vec,vtype);CHKERRQ(ierr);
     }
@@ -107,7 +107,7 @@ int VecSetFromOptions(Vec vec)
       }
     }
 
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

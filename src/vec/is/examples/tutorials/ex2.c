@@ -1,5 +1,5 @@
 
-/*      "$Id: ex2.c,v 1.14 2000/09/27 03:39:25 bsmith Exp bsmith $"; */
+/*      "$Id: ex2.c,v 1.15 2000/09/28 21:10:03 bsmith Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a stride index set.\n\n";
 
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
     (in this case they are all identical)
   */
   ierr = ISCreateStride(PETSC_COMM_SELF,n,first,step,&set);CHKERRA(ierr);
-  ierr = ISView(set,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(set,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /*
     Extract indices from set.

@@ -96,8 +96,8 @@ typedef struct {
 */
 
 typedef struct {
-  Draw       drawlocal;
-  Draw       drawglobal;
+  PetscDraw       drawlocal;
+  PetscDraw       drawglobal;
   PetscTruth matlabgraphics;
   PetscTruth show_grid;
   PetscTruth show_solution;
@@ -152,8 +152,8 @@ typedef struct {
 } AppCtx;
 
 
-extern int AppCtxView(Draw,void*);
-extern int AppCtxViewSolution(Draw,void*);
+extern int AppCtxView(PetscDraw,void*);
+extern int AppCtxViewSolution(PetscDraw,void*);
 extern int AppCtxCreate(MPI_Comm,AppCtx **);
 extern int AppCtxDestroy(AppCtx *);
 extern int AppCtxSetLocal(AppCtx *);

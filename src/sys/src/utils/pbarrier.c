@@ -1,9 +1,9 @@
-/*$Id: pbarrier.c,v 1.13 2000/09/07 15:19:07 balay Exp bsmith $*/
+/*$Id: pbarrier.c,v 1.14 2000/09/22 20:42:32 bsmith Exp bsmith $*/
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscBarrier"
+#define __FUNC__ "PetscBarrier"
 /*@C
     PetscBarrier - Blocks until this routine is executed by all
                    processors owning the object A.
@@ -27,14 +27,14 @@ int PetscBarrier(PetscObject obj)
 
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj); 
-  ierr = PLogEventBegin(Petsc_Barrier,obj,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(Petsc_Barrier,obj,0,0,0);CHKERRQ(ierr);
   if (obj) {
     ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
   } else {
     comm = PETSC_COMM_WORLD;
   }
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-  ierr = PLogEventEnd(Petsc_Barrier,obj,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(Petsc_Barrier,obj,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

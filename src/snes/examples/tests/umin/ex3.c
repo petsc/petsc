@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.61 2000/09/28 21:14:23 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.62 2000/10/24 20:27:13 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems in parallel.  This example is based on the\n\
@@ -59,16 +59,16 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
     SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
 
   /* Set up user-defined work space */
   user.param = 5.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
   user.ndim = mx * my; user.mx = mx; user.my = my;
   user.hx = one/(mx+1); user.hy = one/(my+1);
 
@@ -92,7 +92,7 @@ int main(int argc,char **argv)
   ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user);CHKERRA(ierr);
 
   /* Either explicitly form Hessian matrix approx or use matrix-free version */
-  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = VecGetLocalSize(x,&ldim);CHKERRA(ierr);
     ierr = MatCreateShell(PETSC_COMM_WORLD,ldim,user.ndim,user.ndim,user.ndim,
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
     ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,user.ndim,user.ndim,&H);CHKERRA(ierr);
     ierr = MatSetFromOptions(H);CHKERRA(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC);CHKERRA(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-defaultH",&flg);CHKERRA(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-defaultH",&flg);CHKERRA(ierr);
     if (flg) ierr = SNESSetHessian(snes,H,H,SNESDefaultComputeHessian,(void *)&user);
     else     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user);CHKERRA(ierr);
   }
@@ -119,7 +119,7 @@ int main(int argc,char **argv)
   ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRA(ierr);
-  ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = SNESView(snes,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"number of unsuccessful steps = %d\n\n",nfails);CHKERRA(ierr);
 

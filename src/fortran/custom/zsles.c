@@ -1,4 +1,4 @@
-/*$Id: zsles.c,v 1.25 2000/05/04 03:15:23 bsmith Exp balay $*/
+/*$Id: zsles.c,v 1.26 2000/05/05 22:26:47 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -25,9 +25,9 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL slesview_(SLES *sles,Viewer *viewer, int *ierr)
+void PETSC_STDCALL slesview_(SLES *sles,PetscViewer *viewer, int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = SLESView(*sles,v);
 }

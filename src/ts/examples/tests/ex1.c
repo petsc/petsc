@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.38 2000/10/24 20:27:27 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.39 2000/11/28 17:31:30 bsmith Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -18,7 +18,7 @@ static char help[] = "Solves 1D heat equation.\n\n";
 typedef struct {
   Vec    global,local,localwork,solution;    /* location for local work (with ghost points) vector */
   DA     da;                    /* manages ghost point communication */
-  Viewer viewer1,viewer2;
+  PetscViewer viewer1,viewer2;
   int    M;                     /* total number of grid points */
   double h;                     /* mesh width h = 1/(M-1) */
   double norm_2,norm_max;
@@ -51,18 +51,18 @@ int main(int argc,char **argv)
   Mat           A = 0;
   MatStructure  A_structure;
   TSProblemType tsproblem = TS_LINEAR;
-  Draw          draw;
-  Viewer        viewer;
+  PetscDraw          draw;
+  PetscViewer        viewer;
   char          tsinfo[120];
  
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   appctx.M = 60;
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&appctx.M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&appctx.M,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
     
-  ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRA(ierr); 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRA(ierr); 
   if (flg) appctx.nox = 1; else appctx.nox = 0;
   appctx.norm_2 = 0.0; appctx.norm_max = 0.0;
 
@@ -74,12 +74,12 @@ int main(int argc,char **argv)
 
   /* Set up display to show wave graph */
 
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);   
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2);CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);   
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRA(ierr);
+  ierr = PetscViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRA(ierr);
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRA(ierr);   
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2);CHKERRA(ierr);
+  ierr = PetscViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRA(ierr);
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRA(ierr);   
 
 
   /* make work array for evaluating right hand side function */
@@ -98,27 +98,27 @@ int main(int argc,char **argv)
     of TS, we do not expect users to generally need to use more
     then a single TSProblemType
   */
-  ierr = OptionsHasName(PETSC_NULL,"-linear_no_matrix",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-linear_no_matrix",&flg);CHKERRA(ierr);
   if (flg) {
     tsproblem = TS_LINEAR;
     problem   = linear_no_matrix;
   }
-  ierr = OptionsHasName(PETSC_NULL,"-linear_constant_matrix",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-linear_constant_matrix",&flg);CHKERRA(ierr);
   if (flg) {
     tsproblem = TS_LINEAR;
     problem   = linear_no_time;
   }
-  ierr = OptionsHasName(PETSC_NULL,"-linear_variable_matrix",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-linear_variable_matrix",&flg);CHKERRA(ierr);
   if (flg) {
     tsproblem = TS_LINEAR;
     problem   = linear;
   }
-  ierr = OptionsHasName(PETSC_NULL,"-nonlinear_no_jacobian",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-nonlinear_no_jacobian",&flg);CHKERRA(ierr);
   if (flg) {
     tsproblem = TS_NONLINEAR;
     problem   = nonlinear_no_jacobian;
   }
-  ierr = OptionsHasName(PETSC_NULL,"-nonlinear_jacobian",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-nonlinear_jacobian",&flg);CHKERRA(ierr);
   if (flg) {
     tsproblem = TS_NONLINEAR;
     problem   = nonlinear;
@@ -181,10 +181,10 @@ int main(int argc,char **argv)
 
   ierr = TSSetUp(ts);CHKERRA(ierr);
   ierr = TSStep(ts,&steps,&ftime);CHKERRA(ierr);
-  ierr = ViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRA(ierr);
+  ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRA(ierr);
   ierr = TSView(ts,viewer);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-test",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-test",&flg);CHKERRA(ierr);
   if (flg) {
     PetscTruth iseuler;
     ierr = PetscTypeCompare((PetscObject)ts,"euler",&iseuler);CHKERRA(ierr);
@@ -202,10 +202,10 @@ int main(int argc,char **argv)
                 size,appctx.norm_2/steps,appctx.norm_max/steps,tsinfo);CHKERRA(ierr);
   }
 
-  ierr = ViewerDestroy(viewer);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
   ierr = TSDestroy(ts);CHKERRA(ierr);
-  ierr = ViewerDestroy(appctx.viewer1);CHKERRA(ierr);
-  ierr = ViewerDestroy(appctx.viewer2);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(appctx.viewer1);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(appctx.viewer2);CHKERRA(ierr);
   ierr = VecDestroy(appctx.localwork);CHKERRA(ierr);
   ierr = VecDestroy(appctx.solution);CHKERRA(ierr);
   ierr = VecDestroy(appctx.local);CHKERRA(ierr);

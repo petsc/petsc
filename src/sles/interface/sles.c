@@ -1,9 +1,9 @@
-/*$Id: sles.c,v 1.144 2000/09/28 21:12:34 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.145 2000/11/28 01:07:02 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESPublish_Petsc"
+#define __FUNC__ "SLESPublish_Petsc"
 static int SLESPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -19,7 +19,7 @@ static int SLESPublish_Petsc(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESView"
+#define __FUNC__ "SLESView"
 /*@C 
    SLESView - Prints the SLES data structure.
 
@@ -34,22 +34,22 @@ static int SLESPublish_Petsc(PetscObject obj)
 
    Note:
    The available visualization contexts include
-+     VIEWER_STDOUT_SELF - standard output (default)
--     VIEWER_STDOUT_WORLD - synchronized standard
++     PETSC_VIEWER_STDOUT_SELF - standard output (default)
+-     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
          the file.  All other processors send their 
          data to the first processor to print. 
 
    The user can open alternative visualization contexts with
-.    ViewerASCIIOpen() - output to a specified file
+.    PetscViewerASCIIOpen() - output to a specified file
 
    Level: beginner
 
 .keywords: SLES, view
 
-.seealso: ViewerASCIIOpen()
+.seealso: PetscViewerASCIIOpen()
 @*/
-int SLESView(SLES sles,Viewer viewer)
+int SLESView(SLES sles,PetscViewer viewer)
 {
   KSP         ksp;
   PC          pc;
@@ -57,8 +57,8 @@ int SLESView(SLES sles,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_(sles->comm);
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(sles->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
 
   ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
@@ -68,7 +68,7 @@ int SLESView(SLES sles,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESSetOptionsPrefix"
+#define __FUNC__ "SLESSetOptionsPrefix"
 /*@C
    SLESSetOptionsPrefix - Sets the prefix used for searching for all 
    SLES options in the database.
@@ -107,7 +107,7 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESAppendOptionsPrefix"
+#define __FUNC__ "SLESAppendOptionsPrefix"
 /*@C
    SLESAppendOptionsPrefix - Appends to the prefix used for searching for all 
    SLES options in the database.
@@ -146,7 +146,7 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESGetOptionsPrefix"
+#define __FUNC__ "SLESGetOptionsPrefix"
 /*@C
    SLESGetOptionsPrefix - Gets the prefix used for searching for all 
    SLES options in the database.
@@ -184,7 +184,7 @@ int SLESGetOptionsPrefix(SLES sles,char **prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESSetFromOptions"
+#define __FUNC__ "SLESSetFromOptions"
 /*@
    SLESSetFromOptions - Sets various SLES parameters from user options.
    Also takes all KSP and PC options.
@@ -208,16 +208,16 @@ int SLESSetFromOptions(SLES sles)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = OptionsBegin(sles->comm,sles->prefix,"Linear solver (SLES) options","SLES");CHKERRQ(ierr);
-    ierr = OptionsName("-sles_diagonal_scale","Diagonal scale matrix before building preconditioner","SLESSetDiagonalScale",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(sles->comm,sles->prefix,"Linear solver (SLES) options","SLES");CHKERRQ(ierr);
+    ierr = PetscOptionsName("-sles_diagonal_scale","Diagonal scale matrix before building preconditioner","SLESSetDiagonalScale",&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = SLESSetDiagonalScale(sles,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = OptionsName("-sles_diagonal_scale_fix","Fix diagonaled scaled matrix after solve","SLESSetDiagonalScaleFix",&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-sles_diagonal_scale_fix","Fix diagonaled scaled matrix after solve","SLESSetDiagonalScaleFix",&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = SLESSetDiagonalScaleFix(sles);CHKERRQ(ierr);
     }
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = KSPSetPC(sles->ksp,sles->pc);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(sles->ksp);CHKERRQ(ierr);
   ierr = PCSetFromOptions(sles->pc);CHKERRQ(ierr);
@@ -225,7 +225,7 @@ int SLESSetFromOptions(SLES sles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESCreate"
+#define __FUNC__ "SLESCreate"
 /*@C
    SLESCreate - Creates a linear equation solver context.
 
@@ -251,12 +251,12 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   PetscFunctionBegin;
   *outsles = 0;
   PetscHeaderCreate(sles,_p_SLES,int,SLES_COOKIE,0,"SLES",comm,SLESDestroy,SLESView);
-  PLogObjectCreate(sles);
+  PetscLogObjectCreate(sles);
   sles->bops->publish = SLESPublish_Petsc;
   ierr = KSPCreate(comm,&sles->ksp);CHKERRQ(ierr);
   ierr = PCCreate(comm,&sles->pc);CHKERRQ(ierr);
-  PLogObjectParent(sles,sles->ksp);
-  PLogObjectParent(sles,sles->pc);
+  PetscLogObjectParent(sles,sles->ksp);
+  PetscLogObjectParent(sles,sles->pc);
   sles->setupcalled = 0;
   sles->dscale      = PETSC_FALSE;
   sles->dscalefix   = PETSC_FALSE;
@@ -267,7 +267,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESDestroy"
+#define __FUNC__ "SLESDestroy"
 /*@C
    SLESDestroy - Destroys the SLES context.
 
@@ -294,13 +294,13 @@ int SLESDestroy(SLES sles)
   ierr = KSPDestroy(sles->ksp);CHKERRQ(ierr);
   ierr = PCDestroy(sles->pc);CHKERRQ(ierr);
   if (sles->diagonal) {ierr = VecDestroy(sles->diagonal);CHKERRQ(ierr);}
-  PLogObjectDestroy(sles);
+  PetscLogObjectDestroy(sles);
   PetscHeaderDestroy(sles);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESSetUp"
+#define __FUNC__ "SLESSetUp"
 /*@
    SLESSetUp - Performs set up required for solving a linear system.
 
@@ -343,7 +343,7 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
   ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
   if (!sles->setupcalled) {
-    ierr = PLogEventBegin(SLES_SetUp,sles,b,x,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(SLES_SetUp,sles,b,x,0);CHKERRQ(ierr);
     ierr = KSPSetPC(ksp,pc);CHKERRQ(ierr);
     ierr = PCSetVector(pc,b);CHKERRQ(ierr);
     ierr = KSPSetUp(sles->ksp);CHKERRQ(ierr);
@@ -372,7 +372,7 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
         }
         ierr = VecRestoreArray(sles->diagonal,&xx);CHKERRQ(ierr);
         if (zeroflag) {
-          PLogInfo(pc,"SLESSetUp:Zero detected in diagonal of matrix, using 1 at those locations\n");
+          PetscLogInfo(pc,"SLESSetUp:Zero detected in diagonal of matrix, using 1 at those locations\n");
         }
         ierr = MatDiagonalScale(mat,sles->diagonal,sles->diagonal);CHKERRQ(ierr);
         sles->dscalefix2 = PETSC_FALSE;
@@ -381,13 +381,13 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
 
     ierr = PCSetUp(sles->pc);CHKERRQ(ierr);
     sles->setupcalled = 1;
-    ierr = PLogEventEnd(SLES_SetUp,sles,b,x,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(SLES_SetUp,sles,b,x,0);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESSolve"
+#define __FUNC__ "SLESSolve"
 /*@
    SLESSolve - Solves a linear system.
 
@@ -471,18 +471,18 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   PetscCheckSameComm(sles,x);
   if (b == x) SETERRQ(PETSC_ERR_ARG_IDN,"b and x must be different vectors");
 
-  ierr = OptionsHasName(sles->prefix,"-sles_view_binary",&flg);CHKERRQ(ierr); 
+  ierr = PetscOptionsHasName(sles->prefix,"-sles_view_binary",&flg);CHKERRQ(ierr); 
   if (flg) {
     Mat mat;
     ierr = PCGetOperators(sles->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatView(mat,VIEWER_BINARY_(sles->comm));CHKERRQ(ierr);
-    ierr = VecView(b,VIEWER_BINARY_(sles->comm));CHKERRQ(ierr);
+    ierr = MatView(mat,PETSC_VIEWER_BINARY_(sles->comm));CHKERRQ(ierr);
+    ierr = VecView(b,PETSC_VIEWER_BINARY_(sles->comm));CHKERRQ(ierr);
   }
   ksp  = sles->ksp;
   pc   = sles->pc;
   ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
   ierr = SLESSetUpOnBlocks(sles);CHKERRQ(ierr);
-  ierr = PLogEventBegin(SLES_Solve,sles,b,x,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(SLES_Solve,sles,b,x,0);CHKERRQ(ierr);
   /* diagonal scale RHS if called for */
   if (sles->dscale) {
     ierr = VecPointwiseMult(sles->diagonal,b,b);CHKERRQ(ierr);
@@ -512,14 +512,14 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
       sles->dscalefix2 = PETSC_TRUE;
     }
   }
-  ierr = PLogEventEnd(SLES_Solve,sles,b,x,0);CHKERRQ(ierr);
-  ierr = OptionsHasName(sles->prefix,"-sles_view",&flg);CHKERRQ(ierr); 
-  if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
+  ierr = PetscLogEventEnd(SLES_Solve,sles,b,x,0);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(sles->prefix,"-sles_view",&flg);CHKERRQ(ierr); 
+  if (flg) { ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESSolveTranspose"
+#define __FUNC__ "SLESSolveTranspose"
 /*@
    SLESSolveTranspose - Solves the transpose of a linear system.
 
@@ -600,16 +600,16 @@ int SLESSolveTranspose(SLES sles,Vec b,Vec x,int *its)
     ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
   }
   ierr = PCSetUpOnBlocks(pc);CHKERRQ(ierr);
-  ierr = PLogEventBegin(SLES_Solve,sles,b,x,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(SLES_Solve,sles,b,x,0);CHKERRQ(ierr);
   ierr = KSPSolveTranspose(ksp,its);CHKERRQ(ierr);
-  ierr = PLogEventEnd(SLES_Solve,sles,b,x,0);CHKERRQ(ierr);
-  ierr = OptionsHasName(sles->prefix,"-sles_view",&flg);CHKERRQ(ierr); 
-  if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
+  ierr = PetscLogEventEnd(SLES_Solve,sles,b,x,0);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(sles->prefix,"-sles_view",&flg);CHKERRQ(ierr); 
+  if (flg) { ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESGetKSP"
+#define __FUNC__ "SLESGetKSP"
 /*@C
    SLESGetKSP - Returns the KSP context for a SLES solver.
 
@@ -640,7 +640,7 @@ int SLESGetKSP(SLES sles,KSP *ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESGetPC"
+#define __FUNC__ "SLESGetPC"
 /*@C
    SLESGetPC - Returns the preconditioner (PC) context for a SLES solver.
 
@@ -672,7 +672,7 @@ int SLESGetPC(SLES sles,PC *pc)
 
 #include "src/mat/matimpl.h"
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESSetOperators"
+#define __FUNC__ "SLESSetOperators"
 /*@
    SLESSetOperators - Sets the matrix associated with the linear system
    and a (possibly) different one associated with the preconditioner. 
@@ -734,7 +734,7 @@ int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESSetUpOnBlocks"
+#define __FUNC__ "SLESSetUpOnBlocks"
 /*@
    SLESSetUpOnBlocks - Sets up the preconditioner for each block in
    the block Jacobi, block Gauss-Seidel, and overlapping Schwarz 
@@ -773,7 +773,7 @@ int SLESSetUpOnBlocks(SLES sles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESSetDiagonalScale"
+#define __FUNC__ "SLESSetDiagonalScale"
 /*@C
    SLESSetDiagonalScale - Tells SLES to diagonally scale the system
      before solving. This actually CHANGES the matrix (and right hand side).
@@ -811,7 +811,7 @@ int SLESSetDiagonalScale(SLES sles,PetscTruth scale)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESGetDiagonalScale"
+#define __FUNC__ "SLESGetDiagonalScale"
 /*@C
    SLESGetDiagonalScale - Checks if SLES solver scales the matrix and
                           right hand side
@@ -847,7 +847,7 @@ int SLESGetDiagonalScale(SLES sles,PetscTruth *scale)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESSetDiagonalScaleFix"
+#define __FUNC__ "SLESSetDiagonalScaleFix"
 /*@C
    SLESSetDiagonalScaleFix - Tells SLES to diagonally scale the system
      back after solving.

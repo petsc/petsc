@@ -1,12 +1,12 @@
-/*$Id: dlregis.c,v 1.15 2000/04/12 04:25:27 bsmith Exp balay $*/
+/*$Id: dlregis.c,v 1.16 2000/05/05 22:18:12 balay Exp bsmith $*/
 
 #include "petscsnes.h"
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DLLibraryRegister"
+#define __FUNC__ "PetscDLLibraryRegister"
 /*
-  DLLibraryRegister - This function is called when the dynamic library it is in is opened.
+  PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
   This registers all of the SNES methods that are in the basic PETSc libpetscsnes library.
 
@@ -14,7 +14,7 @@ EXTERN_C_BEGIN
   path - library path
 
  */
-int DLLibraryRegister(char *path)
+int PetscDLLibraryRegister(char *path)
 {
   int ierr;
 

@@ -1,4 +1,4 @@
-/*$Id: cputime.c,v 1.35 2000/05/05 22:14:10 balay Exp balay $*/
+/*$Id: cputime.c,v 1.36 2000/08/16 15:12:17 balay Exp bsmith $*/
 /*
   This is to allow one to measure CPU time usage of their job, 
   NOT real time usage. Do not use this for reported timings, speedup etc.
@@ -34,8 +34,8 @@
 #include <sys/times.h>
 #include <limits.h>
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscGetCPUTime"
-int PetscGetCPUTime(PLogDouble *t)
+#define __FUNC__ "PetscGetCPUTime"
+int PetscGetCPUTime(PetscLogDouble *t)
 {
   struct tms temp;
 
@@ -51,8 +51,8 @@ int PetscGetCPUTime(PLogDouble *t)
 #include <sys/types.h>
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscGetCPUTime"
-int PetscGetCPUTime(PLogDouble *t)
+#define __FUNC__ "PetscGetCPUTime"
+int PetscGetCPUTime(PetscLogDouble *t)
 {
   PetscFunctionBegin;
   *t = ((double)clock()) / ((double)CLOCKS_PER_SEC);
@@ -66,7 +66,7 @@ int PetscGetCPUTime(PLogDouble *t)
 #include <sys/resource.h>
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscGetCPUTime"
+#define __FUNC__ "PetscGetCPUTime"
 /*@
     PetscGetCPUTime - Returns the CPU time in seconds used by the process.
 
@@ -79,7 +79,7 @@ int PetscGetCPUTime(PLogDouble *t)
 .vb
     #include "petsc.h"
     ...
-    PLogDouble t1, t2;
+    PetscLogDouble t1, t2;
  
     ierr = PetscGetCPUTime(&t1);CHKERRA(ierr);
     ... code to time ...
@@ -95,10 +95,10 @@ int PetscGetCPUTime(PLogDouble *t)
     use since it does not include the time for message passing etc.
     Also on many systems the accuracy is only on the order of microseconds.
 @*/
-int PetscGetCPUTime(PLogDouble *t)
+int PetscGetCPUTime(PetscLogDouble *t)
 {
   static struct rusage temp;
-  PLogDouble           foo,foo1;
+  PetscLogDouble           foo,foo1;
 
   PetscFunctionBegin;
   getrusage(RUSAGE_SELF,&temp);

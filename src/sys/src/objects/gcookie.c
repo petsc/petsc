@@ -1,11 +1,11 @@
-/*$Id: gcookie.c,v 1.22 2000/09/22 20:42:24 bsmith Exp bsmith $*/
+/*$Id: gcookie.c,v 1.23 2000/09/28 21:09:12 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscObjectGetCookie"
+#define __FUNC__ "PetscObjectGetCookie"
 /*@C
    PetscObjectGetCookie - Gets the cookie for any PetscObject, 
 
@@ -31,7 +31,7 @@ int PetscObjectGetCookie(PetscObject obj,int *cookie)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscObjectExists"
+#define __FUNC__ "PetscObjectExists"
 /*@
    PetscObjectExists - Determines whether a PETSc object has been destroyed.
 
@@ -53,7 +53,7 @@ int PetscObjectExists(PetscObject obj,PetscTruth *exists)
   PetscFunctionBegin;
   *exists = PETSC_FALSE;
   if (!obj) PetscFunctionReturn(0);
-  if (obj->cookie >= PETSC_COOKIE && obj->cookie <= LARGEST_PETSC_COOKIE) *exists = PETSC_TRUE;
+  if (obj->cookie >= PETSC_COOKIE && obj->cookie <= PETSC_LARGEST_COOKIE) *exists = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

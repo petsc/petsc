@@ -1,4 +1,4 @@
-/*$Id: ex80.c,v 1.3 2000/09/22 20:44:16 bsmith Exp bsmith $*/
+/*$Id: ex80.c,v 1.4 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Partition tiny grid\n\n";
@@ -32,8 +32,8 @@ int main(int argc,char **args)
   if (size != 4) SETERRQ(1,"Must run with 4 processors");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
-  ia = (int*)PetscMalloc(5*sizeof(int));CHKPTRQ(ia);
-  ja = (int*)PetscMalloc(16*sizeof(int));CHKPTRQ(ja);
+ierr = PetscMalloc(5*sizeof(int),&(  ia ));CHKERRQ(ierr);
+ierr = PetscMalloc(16*sizeof(int),&(  ja ));CHKERRQ(ierr);
   if (rank == 0) {
     ja[0] = 1; ja[1] = 4; ja[2] = 0; ja[3] = 2; ja[4] = 5; ja[5] = 1; ja[6] = 3; ja[7] = 6;
     ja[8] = 2; ja[9] = 7;
@@ -53,7 +53,7 @@ int main(int argc,char **args)
   }
 
   ierr = MatCreateMPIAdj(PETSC_COMM_WORLD,4,16,ia,ja,PETSC_NULL,&A);CHKERRQ(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
        Partition the graph of the matrix 
@@ -65,7 +65,7 @@ int main(int argc,char **args)
   ierr = MatPartitioningApply(part,&is);CHKERRA(ierr);
   /* get new global number of each old global number */
   ierr = ISPartitioningToNumbering(is,&isn);CHKERRA(ierr);
-  ierr = ISView(isn,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ISView(isn,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRA(ierr);
 
   ierr = ISDestroy(isn);CHKERRA(ierr);

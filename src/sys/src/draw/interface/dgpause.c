@@ -1,14 +1,14 @@
-/*$Id: dgpause.c,v 1.24 2000/09/22 20:41:56 bsmith Exp bsmith $*/
+/*$Id: dgpause.c,v 1.25 2000/10/24 20:24:21 bsmith Exp bsmith $*/
 /*
-       Provides the calling sequences for all the basic Draw routines.
+       Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawGetPause"></a>*/"DrawGetPause" 
+#define __FUNC__ "DrawGetPause" 
 /*@
-   DrawGetPause - Gets the amount of time that program pauses after 
-   a DrawPause() is called. 
+   PetscDrawGetPause - Gets the amount of time that program pauses after 
+   a PetscDrawPause() is called. 
 
    Not collective
 
@@ -25,12 +25,12 @@
    Concepts: drawing^waiting
    Concepts: graphics^waiting
 
-.seealso: DrawSetPause(), DrawPause()
+.seealso: PetscDrawSetPause(), PetscDrawPause()
 @*/
-int DrawGetPause(Draw draw,int *pause)
+int PetscDrawGetPause(PetscDraw draw,int *pause)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   PetscValidIntPointer(pause);
   *pause = draw->pause;
   PetscFunctionReturn(0);

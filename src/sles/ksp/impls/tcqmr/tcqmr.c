@@ -1,4 +1,4 @@
-/*$Id: tcqmr.c,v 1.54 2000/09/14 14:41:17 bsmith Exp bsmith $*/
+/*$Id: tcqmr.c,v 1.55 2000/09/28 21:13:28 bsmith Exp bsmith $*/
 
 /*
     This file contains an implementation of Tony Chan's transpose-free QMR.
@@ -11,7 +11,7 @@
 #include "src/sles/ksp/impls/tcqmr/tcqmrp.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSolve_TCQMR"
+#define __FUNC__ "KSPSolve_TCQMR"
 static int KSPSolve_TCQMR(KSP ksp,int *its)
 {
   PetscReal   rnorm0,rnorm,dp1,Gamma;
@@ -146,7 +146,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetUp_TCQMR"
+#define __FUNC__ "KSPSetUp_TCQMR"
 static int KSPSetUp_TCQMR(KSP ksp)
 {
   int ierr;
@@ -161,7 +161,7 @@ static int KSPSetUp_TCQMR(KSP ksp)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPCreate_TCQMR"
+#define __FUNC__ "KSPCreate_TCQMR"
 int KSPCreate_TCQMR(KSP ksp)
 {
   PetscFunctionBegin;

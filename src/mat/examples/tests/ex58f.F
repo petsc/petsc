@@ -1,5 +1,5 @@
 !
-!      "$Id: ex58f.F,v 1.9 2000/05/05 22:16:17 balay Exp bsmith $";
+!      "$Id: ex58f.F,v 1.10 2000/09/27 20:08:18 bsmith Exp bsmith $";
 !
 !   This program demonstrates use of MatGetRow() from Fortran
 !
@@ -11,16 +11,16 @@
       Mat      A
       integer  err,i,cols(500),ncols
       Scalar   values(500)
-      Viewer   v    
+      PetscViewer   v    
 
       call PetscInitialize(PETSC_NULL_CHARACTER,err)
 
-      call ViewerBinaryOpen(PETSC_COMM_WORLD,'small',BINARY_RDONLY,     &
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'small',PETSC_BINARY_RDONLY,     &
      &                          v,err)
 
       call MatLoad(v,MATSEQAIJ,A,err)
 
-      call MatView(A,VIEWER_STDOUT_WORLD,err)
+      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,err)
 
       call MatGetRow(A,2,ncols,cols,values,err)
       do 10, i=1,ncols
@@ -35,7 +35,7 @@
       call MatRestoreRow(A,2,ncols,cols,values,err)
 
       call MatDestroy(A,err)
-      call ViewerDestroy(v,err)
+      call PetscViewerDestroy(v,err)
 
       call PetscFinalize(err)
       end

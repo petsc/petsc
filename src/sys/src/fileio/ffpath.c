@@ -1,4 +1,4 @@
-/*$Id: ffpath.c,v 1.33 2000/09/22 20:42:19 bsmith Exp bsmith $*/
+/*$Id: ffpath.c,v 1.34 2000/10/24 20:24:33 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -35,7 +35,7 @@
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscGetFileFromPath"></a>*/"PetscGetFileFromPath"
+#define __FUNC__ "PetscGetFileFromPath"
 /*@C
    PetscGetFileFromPath - Finds a file from a name and a path string.  A 
                           default can be provided.

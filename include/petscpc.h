@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.111 2000/09/25 18:50:22 curfman Exp bsmith $ */
+/* $Id: petscpc.h,v 1.112 2000/11/22 23:02:44 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -11,7 +11,7 @@
     PCList contains the list of preconditioners currently registered
    These are added with the PCRegisterDynamic() macro
 */
-extern FList PCList;
+extern PetscFList PCList;
 typedef char *PCType;
 
 /*
@@ -81,7 +81,7 @@ EXTERN int PCGetOperators(PC,Mat*,Mat*,MatStructure*);
 
 EXTERN int PCSetVector(PC,Vec);
 EXTERN int PCGetVector(PC,Vec*);
-EXTERN int PCView(PC,Viewer);
+EXTERN int PCView(PC,PetscViewer);
 
 EXTERN int PCSetOptionsPrefix(PC,char*);
 EXTERN int PCAppendOptionsPrefix(PC,char*);
@@ -162,7 +162,7 @@ EXTERN int PCCompositeGetPC(PC pc,int n,PC *);
 EXTERN int PCRedundantSetScatter(PC,VecScatter,VecScatter);
 EXTERN int PCRedundantGetOperators(PC,Mat*,Mat*);
 EXTERN int PCRedundantGetPC(PC,PC*);
-EXTERN int MatGetOrderingList(FList *list);
+EXTERN int MatGetOrderingList(PetscFList *list);
 #endif
 
 

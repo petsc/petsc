@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.70 2000/06/19 19:49:21 balay Exp balay $ */
+/* $Id: ptime.h,v 1.71 2000/12/21 03:22:15 balay Exp bsmith $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -25,10 +25,10 @@ EXTERN_C_END
 .  v - time counter
 
    Synopsis:
-   PetscTime(PLogDouble v)
+   PetscTime(PetscLogDouble v)
 
    Usage: 
-     PLogDouble v;
+     PetscLogDouble v;
      PetscTime(v);
      .... perform some calculation ...
      printf("Time for operation %g\n",v);
@@ -55,7 +55,7 @@ EXTERN_C_END
 .  v - time counter (v = v - current time)
 
    Synopsis:
-   PetscTimeSubtract(PLogDouble v)
+   PetscTimeSubtract(PetscLogDouble v)
 
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations, 
@@ -78,7 +78,7 @@ EXTERN_C_END
 .  v - time counter (v = v + current time)
 
    Synopsis:
-   PetscTimeAdd(PLogDouble v)
+   PetscTimeAdd(PetscLogDouble v)
 
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations, 
@@ -105,7 +105,7 @@ EXTERN_C_END
    Power1,2,3,PC machines have a fast clock read_real_time()
 */ 
 #elif defined(PETSC_USE_READ_REAL_TIME)
-EXTERN PLogDouble rs6000_time(void);
+EXTERN PetscLogDouble rs6000_time(void);
 #define PetscTime(v)         (v)=rs6000_time();
 
 #define PetscTimeSubtract(v) (v)-=rs6000_time();
@@ -124,22 +124,22 @@ EXTERN_C_END
 
 #define PetscTime(v)         {static struct  timespec _tp; \
                              getclock(TIMEOFDAY,&_tp); \
-                             (v)=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+                             (v)=((PetscLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 #define PetscTimeSubtract(v) {static struct timespec  _tp; \
                              getclock(TIMEOFDAY,&_tp); \
-                             (v)-=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+                             (v)-=((PetscLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 #define PetscTimeAdd(v)      {static struct timespec  _tp; \
                              getclock(TIMEOFDAY,&_tp); \
-                             (v)+=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+                             (v)+=((PetscLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 /* ------------------------------------------------------------------
    ASCI RED machine has a fast clock accessiable through dclock() 
 */
 #elif defined (PETSC_USE_DCLOCK)
 EXTERN_C_BEGIN
-EXTERN PLogDouble dclock();
+EXTERN PetscLogDouble dclock();
 EXTERN_C_END
 
 #define PetscTime(v)         (v)=dclock();
@@ -154,7 +154,7 @@ EXTERN_C_END
 */
 #elif defined (PETSC_USE_NT_TIME)
 #include <time.h>
-EXTERN PLogDouble nt_time(void);
+EXTERN PetscLogDouble nt_time(void);
 #define PetscTime(v)         (v)=nt_time();
 
 #define PetscTimeSubtract(v) (v)-=nt_time();
@@ -167,15 +167,15 @@ EXTERN PLogDouble nt_time(void);
 #else
 #define PetscTime(v)         {static struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
-                             (v)=((PLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+                             (v)=((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
 
 #define PetscTimeSubtract(v) {static struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
-                             (v)-=((PLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+                             (v)-=((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
 
 #define PetscTimeAdd(v)      {static struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
-                             (v)+=((PLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+                             (v)+=((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
 #endif
 
 #endif

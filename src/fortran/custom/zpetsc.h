@@ -1,4 +1,4 @@
-/*$Id: zpetsc.h,v 1.55 2000/05/04 16:27:10 bsmith Exp bsmith $*/
+/*$Id: zpetsc.h,v 1.56 2000/05/10 16:44:11 bsmith Exp bsmith $*/
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
@@ -110,7 +110,7 @@ Fortran.
       b = 0; \
   } else {  \
     while((n > 0) && (b[n-1] == ' ')) n--; \
-    b = (char*)PetscMalloc((n+1)*sizeof(char)); \
+ierr = PetscMalloc((n+1)*sizeof(char),&    b ); \
     if (!b) {*ierr = PETSC_ERR_MEM; return; } \
     *ierr = PetscStrncpy(b,_fcdtocp(a),n); \
     if(*ierr) return; \
@@ -129,7 +129,7 @@ Fortran.
   } else { \
     while((n > 0) && (a[n-1] == ' ')) n--; \
     if (a[n] != 0) { \
-      b = (char*)PetscMalloc((n+1)*sizeof(char)); \
+ierr = PetscMalloc((n+1)*sizeof(char),&      b ); \
       if (!b) {*ierr = PETSC_ERR_MEM; return; } \
       *ierr = PetscStrncpy(b,a,n); \
       if(*ierr) return; \
@@ -155,33 +155,33 @@ Fortran.
 
     The numbers here must match the numbers in include/finclude/petsc.h
 */
-#define VIEWER_DRAW_WORLD_FORTRAN     -4
-#define VIEWER_DRAW_SELF_FORTRAN      -5
-#define VIEWER_SOCKET_WORLD_FORTRAN   -6 
-#define VIEWER_SOCKET_SELF_FORTRAN    -7
-#define VIEWER_STDOUT_WORLD_FORTRAN   -8 
-#define VIEWER_STDOUT_SELF_FORTRAN    -9
-#define VIEWER_STDERR_WORLD_FORTRAN   -10 
-#define VIEWER_STDERR_SELF_FORTRAN    -11
+#define PETSC_VIEWER_DRAW_WORLD_FORTRAN     -4
+#define PETSC_VIEWER_DRAW_SELF_FORTRAN      -5
+#define PETSC_VIEWER_SOCKET_WORLD_FORTRAN   -6 
+#define PETSC_VIEWER_SOCKET_SELF_FORTRAN    -7
+#define PETSC_VIEWER_STDOUT_WORLD_FORTRAN   -8 
+#define PETSC_VIEWER_STDOUT_SELF_FORTRAN    -9
+#define PETSC_VIEWER_STDERR_WORLD_FORTRAN   -10 
+#define PETSC_VIEWER_STDERR_SELF_FORTRAN    -11
 
 #define PetscPatchDefaultViewers_Fortran(vin,v) \
 { \
-    if ((*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_FORTRAN) { \
-      v = VIEWER_DRAW_WORLD; \
-    } else if ((*(PetscFortranAddr*)vin) == VIEWER_DRAW_SELF_FORTRAN) { \
-      v = VIEWER_DRAW_SELF; \
-    } else if ((*(PetscFortranAddr*)vin) == VIEWER_SOCKET_WORLD_FORTRAN) { \
-      v = VIEWER_SOCKET_WORLD; \
-    } else if ((*(PetscFortranAddr*)vin) == VIEWER_SOCKET_SELF_FORTRAN) { \
-      v = VIEWER_SOCKET_SELF; \
-    } else if ((*(PetscFortranAddr*)vin) == VIEWER_STDOUT_WORLD_FORTRAN) { \
-      v = VIEWER_STDOUT_WORLD; \
-    } else if ((*(PetscFortranAddr*)vin) == VIEWER_STDOUT_SELF_FORTRAN) { \
-      v = VIEWER_STDOUT_SELF; \
-    } else if ((*(PetscFortranAddr*)vin) == VIEWER_STDERR_WORLD_FORTRAN) { \
-      v = VIEWER_STDERR_WORLD; \
-    } else if ((*(PetscFortranAddr*)vin) == VIEWER_STDERR_SELF_FORTRAN) { \
-      v = VIEWER_STDERR_SELF; \
+    if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_DRAW_WORLD_FORTRAN) { \
+      v = PETSC_VIEWER_DRAW_WORLD; \
+    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_DRAW_SELF_FORTRAN) { \
+      v = PETSC_VIEWER_DRAW_SELF; \
+    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_SOCKET_WORLD_FORTRAN) { \
+      v = PETSC_VIEWER_SOCKET_WORLD; \
+    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_SOCKET_SELF_FORTRAN) { \
+      v = PETSC_VIEWER_SOCKET_SELF; \
+    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_STDOUT_WORLD_FORTRAN) { \
+      v = PETSC_VIEWER_STDOUT_WORLD; \
+    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_STDOUT_SELF_FORTRAN) { \
+      v = PETSC_VIEWER_STDOUT_SELF; \
+    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_STDERR_WORLD_FORTRAN) { \
+      v = PETSC_VIEWER_STDERR_WORLD; \
+    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_STDERR_SELF_FORTRAN) { \
+      v = PETSC_VIEWER_STDERR_SELF; \
     } else { \
       v = *vin; \
     } \

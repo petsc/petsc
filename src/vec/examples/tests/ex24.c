@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.11 2000/01/11 21:00:17 bsmith Exp balay $*/
+/*$Id: ex24.c,v 1.12 2000/05/05 22:15:11 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 Tests where the local part of the scatter is a copy.\n\n";
@@ -15,12 +15,12 @@ int main(int argc,char **argv)
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;
-  Viewer        sviewer;
+  PetscViewer        sviewer;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   } else {
     m = n;
   }
-  blks = (int*)PetscMalloc((m)*sizeof(int));CHKPTRA(blks);
+ierr = PetscMalloc((m)*sizeof(int),&(  blks ));CHKPTRA(blks);
   blks[0] = n*rank*bs;
   for (i=1; i<m; i++) {
     blks[i] = blks[i-1] + bs;   
@@ -53,16 +53,16 @@ int main(int argc,char **argv)
   }
   ierr = VecAssemblyBegin(x);CHKERRA(ierr);
   ierr = VecAssemblyEnd(x);CHKERRA(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRA(ierr);
   ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
 
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"----\n");CHKERRA(ierr); 
-  ierr = ViewerGetSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
+  ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
   ierr = VecView(y,sviewer);CHKERRA(ierr); fflush(stdout);
-  ierr = ViewerRestoreSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
+  ierr = PetscViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
 
   ierr = VecScatterDestroy(ctx);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex48.c,v 1.15 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex48.c,v 1.16 2000/07/10 03:39:52 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests the vatious routines in MatBAIJ format.\n";
@@ -21,8 +21,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   
   /* Test MatSetValues() and MatGetValues() */
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRA(ierr);
   M    = m*bs;
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,PETSC_NULL,&A);CHKERRA(ierr);
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,M,M,15,PETSC_NULL,&B);CHKERRA(ierr);
@@ -169,7 +169,7 @@ int main(int argc,char **args)
   
   
   /* Do LUFactor() on both the matrices */
-  idx  = (int *)PetscMalloc(M*sizeof(int));CHKPTRA(idx);
+ierr = PetscMalloc(M*sizeof(int),&(  idx  ));CHKPTRA(idx);
   for (i=0; i<M; i++) idx[i] = i;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,&is1);CHKERRA(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,&is2);CHKERRA(ierr);

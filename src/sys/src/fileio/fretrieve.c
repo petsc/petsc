@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.35 2000/09/11 15:42:36 bsmith Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.36 2000/09/28 21:09:02 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -40,7 +40,7 @@ EXTERN int Petsc_DelTag(MPI_Comm,int,void*,void*);
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscGetTmp"
+#define __FUNC__ "PetscGetTmp"
 /*@C
    PetscGetTmp - Gets the name of the tmp directory
 
@@ -76,7 +76,7 @@ int PetscGetTmp(MPI_Comm comm,char *dir,int len)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetenv(comm,"PETSC_TMP",dir,len,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_TMP",dir,len,&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = PetscStrncpy(dir,"/tmp",len);CHKERRQ(ierr);
   }
@@ -84,7 +84,7 @@ int PetscGetTmp(MPI_Comm comm,char *dir,int len)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSharedTmp"
+#define __FUNC__ "PetscSharedTmp"
 /*@C
    PetscSharedTmp - Determines if all processors in a communicator share a
          /tmp or have different ones.
@@ -140,13 +140,13 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
     PetscFunctionReturn(0);
   }
 
-  ierr = OptionsGetenv(comm,"PETSC_SHARED_TMP",PETSC_NULL,0,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_SHARED_TMP",PETSC_NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
 
-  ierr = OptionsGetenv(comm,"PETSC_NOT_SHARED_TMP",PETSC_NULL,0,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_TMP",PETSC_NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_FALSE;
     PetscFunctionReturn(0);
@@ -162,10 +162,10 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 ;
 
     /* This communicator does not yet have a shared tmp attribute */
-    tagvalp    = (int*)PetscMalloc(sizeof(int));CHKPTRQ(tagvalp);
-    ierr       = MPI_Attr_put(comm,Petsc_Tmp_keyval,tagvalp);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(int),&tagvalp);CHKERRQ(ierr);
+    ierr = MPI_Attr_put(comm,Petsc_Tmp_keyval,tagvalp);CHKERRQ(ierr);
 
-    ierr = OptionsGetenv(comm,"PETSC_TMP",tmpname,238,&iflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(comm,"PETSC_TMP",tmpname,238,&iflg);CHKERRQ(ierr);
     if (!iflg) {
       ierr = PetscStrcpy(filename,"/tmp");CHKERRQ(ierr);
     } else {
@@ -209,7 +209,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
       }
     }
     *tagvalp = (int)*shared;
-    PLogInfo(0,"PetscSharedTmp: processors %s %s\n",(*shared == PETSC_TRUE) ? "share":"do NOT share",(iflg ? tmpname:"/tmp"));
+    PetscLogInfo(0,"PetscSharedTmp: processors %s %s\n",(*shared == PETSC_TRUE) ? "share":"do NOT share",(iflg ? tmpname:"/tmp"));
   } else {
     *shared = (PetscTruth) *tagvalp;
   }
@@ -217,7 +217,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSharedWorkingDirectory"
+#define __FUNC__ "PetscSharedWorkingDirectory"
 /*@C
    PetscSharedWorkingDirectory - Determines if all processors in a communicator share a
          working directory or have different ones.
@@ -268,13 +268,13 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
     PetscFunctionReturn(0);
   }
 
-  ierr = OptionsGetenv(comm,"PETSC_SHARED_WORKING_DIRECTORY",PETSC_NULL,0,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_SHARED_WORKING_DIRECTORY",PETSC_NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
 
-  ierr = OptionsGetenv(comm,"PETSC_NOT_SHARED_WORKING_DIRECTORY",PETSC_NULL,0,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_WORKING_DIRECTORY",PETSC_NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_FALSE;
     PetscFunctionReturn(0);
@@ -289,8 +289,8 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
     char       filename[256];
 
     /* This communicator does not yet have a shared  attribute */
-    tagvalp    = (int*)PetscMalloc(sizeof(int));CHKPTRQ(tagvalp);
-    ierr       = MPI_Attr_put(comm,Petsc_WD_keyval,tagvalp);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(int),&tagvalp);CHKERRQ(ierr);
+    ierr = MPI_Attr_put(comm,Petsc_WD_keyval,tagvalp);CHKERRQ(ierr);
 
     ierr = PetscGetWorkingDirectory(filename,240);CHKERRQ(ierr);
     ierr = PetscStrcat(filename,"/petsctestshared");CHKERRQ(ierr);
@@ -333,13 +333,13 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
   } else {
     *shared = (PetscTruth) *tagvalp;
   }
-  PLogInfo(0,"PetscSharedWorkingDirectory: processors %s working directory\n",(*shared == PETSC_TRUE) ? "shared" : "do NOT share");
+  PetscLogInfo(0,"PetscSharedWorkingDirectory: processors %s working directory\n",(*shared == PETSC_TRUE) ? "shared" : "do NOT share");
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscFileRetrieve"
+#define __FUNC__ "PetscFileRetrieve"
 /*@C
     PetscFileRetrieve - Obtains a library from a URL or compressed 
         and copies into local disk space as uncompressed.
@@ -382,13 +382,13 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
 
   /* Determine if all processors share a common /tmp */
   ierr = PetscSharedTmp(comm,&sharedtmp);CHKERRQ(ierr);
-  ierr = OptionsGetenv(comm,"PETSC_TMP",tmpdir,256,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_TMP",tmpdir,256,&flg1);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank || !sharedtmp) {
   
     /* Construct the Python script to get URL file */
-    par = (char*)PetscMalloc(1024*sizeof(char));CHKPTRQ(par);
+    ierr = PetscMalloc(1024*sizeof(char),&par);CHKERRQ(ierr);
 #if !defined(PETSC_PYTHON)
 #define PETSC_PYTHON "python"
 #endif
@@ -422,7 +422,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
     if (!fgets(buf,1024,fp)) {
       SETERRQ1(1,"No output from ${PETSC_DIR}/bin/urlget.py in getting file %s",libname);
     }
-    PLogInfo(0,"PetscFileRetrieve:Message back from Python: %s\n",buf);
+    PetscLogInfo(0,"PetscFileRetrieve:Message back from Python: %s\n",buf);
 
     ierr = PetscStrncmp(buf,"Error",5,&flg1);CHKERRQ(ierr);
     ierr = PetscStrncmp(buf,"Traceback",9,&flg2);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex57.c,v 1.17 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex57.c,v 1.18 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another\
  binary file.\n\
@@ -16,7 +16,7 @@ Options:\n\
 int main(int argc,char **args)
 {  
   char       fin[128],fout[128] ="default.mat";
-  Viewer     fdin,fdout;               
+  PetscViewer     fdin,fdout;               
   Vec        b;   
   MatType    mtype = MATSEQBAIJ;            
   Mat        A,*B;             
@@ -27,21 +27,21 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
 
-  ierr = OptionsGetString(PETSC_NULL,"-fin",fin,127,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",fin,127,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,"Must indicate binary file with the -fin option");
-  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,fin,BINARY_RDONLY,&fdin);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,fin,PETSC_BINARY_RDONLY,&fdin);CHKERRA(ierr);
 
-  ierr = OptionsGetString(PETSC_NULL,"-fout",fout,127,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fout,127,&flg);CHKERRA(ierr);
   if (!flg) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Writing submatrix to file : %s\n",fout);CHKERRA(ierr);}
-  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,fout,BINARY_CREATE,&fdout);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,fout,PETSC_BINARY_CREATE,&fdout);CHKERRA(ierr);
 
   ierr = MatLoad(fdin,mtype,&A);CHKERRA(ierr);
-  ierr = ViewerDestroy(fdin);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(fdin);CHKERRA(ierr);
   
   ierr = MatGetSize(A,&size,&size);CHKERRA(ierr);
   size /= 2;
-  ierr = OptionsGetInt(PETSC_NULL,"-start",&start,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-size",&size,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-start",&start,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-size",&size,PETSC_NULL);CHKERRA(ierr);
   
   ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&isrow);CHKERRA(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&iscol);CHKERRA(ierr);
@@ -51,7 +51,7 @@ int main(int argc,char **args)
   ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,size,&b);CHKERRA(ierr);
   ierr = VecSetFromOptions(b);CHKERRA(ierr);
   ierr = MatView(B[0],fdout);CHKERRA(ierr);
-  ierr = ViewerDestroy(fdout);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(fdout);CHKERRA(ierr);
 
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(B[0]);CHKERRA(ierr);

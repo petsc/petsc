@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.62 2000/09/13 15:20:47 balay Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.63 2000/09/28 21:14:55 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 /*
@@ -16,7 +16,7 @@
 
 */
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSPrecond_PVode"
+#define __FUNC__ "TSPrecond_PVode"
 int TSPrecond_PVode(integer N,real tn,N_Vector y,N_Vector fy,bool jok,
                     bool *jcurPtr,real _gamma,N_Vector ewt,real h,
                     real uround,long int *nfePtr,void *P_data,
@@ -52,7 +52,7 @@ int TSPrecond_PVode(integer N,real tn,N_Vector y,N_Vector fy,bool jok,
     /* copy the Jacobian matrix */
     if (!cvode->pmat) {
       ierr = MatDuplicate(Jac,MAT_COPY_VALUES,&cvode->pmat);CHKERRQ(ierr);
-      PLogObjectParent(ts,cvode->pmat); 
+      PetscLogObjectParent(ts,cvode->pmat); 
     }
     ierr = MatCopy(Jac,cvode->pmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
@@ -75,7 +75,7 @@ int TSPrecond_PVode(integer N,real tn,N_Vector y,N_Vector fy,bool jok,
 
 */    
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSPSolve_PVode"
+#define __FUNC__ "TSPSolve_PVode"
 int TSPSolve_PVode(integer N,real tn,N_Vector y,N_Vector fy,N_Vector vtemp,
                    real _gamma,N_Vector ewt,real delta,long int *nfePtr,
                    N_Vector r,int lr,void *P_data,N_Vector z)
@@ -107,7 +107,7 @@ int TSPSolve_PVode(integer N,real tn,N_Vector y,N_Vector fy,N_Vector vtemp,
     Contributed by: Liyang Xu
 */  
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSFunction_PVode"
+#define __FUNC__ "TSFunction_PVode"
 void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
 {
   TS        ts = (TS) ctx;
@@ -132,7 +132,7 @@ void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
     Contributed by: Liyang Xu
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSStep_PVode_Nonlinear"
+#define __FUNC__ "TSStep_PVode_Nonlinear"
 /* 
     TSStep_PVode_Nonlinear - 
   
@@ -200,7 +200,7 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
     Contributed by: Liyang Xu
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSDestroy_PVode"
+#define __FUNC__ "TSDestroy_PVode"
 int TSDestroy_PVode(TS ts)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -223,7 +223,7 @@ int TSDestroy_PVode(TS ts)
     Contributed by: Liyang Xu
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetUp_PVode_Nonlinear"
+#define __FUNC__ "TSSetUp_PVode_Nonlinear"
 int TSSetUp_PVode_Nonlinear(TS ts)
 {
   TS_PVode    *cvode = (TS_PVode*)ts->data;
@@ -247,8 +247,8 @@ int TSSetUp_PVode_Nonlinear(TS ts)
   /* initializing vector update and func */
   ierr = VecDuplicate(ts->vec_sol,&cvode->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cvode->func);CHKERRQ(ierr);  
-  PLogObjectParent(ts,cvode->update);
-  PLogObjectParent(ts,cvode->func);
+  PetscLogObjectParent(ts,cvode->update);
+  PetscLogObjectParent(ts,cvode->func);
 
   /* 
       Create work vectors for the TSPSolve_PVode() routine. Note these are
@@ -257,8 +257,8 @@ int TSSetUp_PVode_Nonlinear(TS ts)
   */
   ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
-  PLogObjectParent(ts,cvode->w1);
-  PLogObjectParent(ts,cvode->w2);
+  PetscLogObjectParent(ts,cvode->w1);
+  PetscLogObjectParent(ts,cvode->w2);
 
   ierr = PCSetVector(cvode->pc,ts->vec_sol);CHKERRQ(ierr);
 
@@ -266,7 +266,7 @@ int TSSetUp_PVode_Nonlinear(TS ts)
   ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
   cvode->mem = CVodeMalloc(M,TSFunction_PVode,ts->ptime,cvode->y,cvode->cvode_type,
                            NEWTON,SS,&cvode->reltol,&cvode->abstol,ts,NULL,FALSE,cvode->iopt,
-                           cvode->ropt,machEnv);CHKPTRQ(cvode->mem);
+                           cvode->ropt,machEnv);CHKERRQ(ierr);
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -276,7 +276,7 @@ int TSSetUp_PVode_Nonlinear(TS ts)
     Contributed by: Liyang Xu
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSSetFromOptions_PVode_Nonlinear"
+#define __FUNC__ "TSSetFromOptions_PVode_Nonlinear"
 int TSSetFromOptions_PVode_Nonlinear(TS ts)
 {
   TS_PVode   *cvode = (TS_PVode*)ts->data;
@@ -285,8 +285,8 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
   PetscTruth flag;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("PVODE ODE solver options");CHKERRQ(ierr);
-    ierr = OptionsEList("-ts_pvode_type","Scheme","TSPVodeSetType",btype,2,"bdf",method,127,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("PVODE ODE solver options");CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_pvode_type","Scheme","TSPVodeSetType",btype,2,"bdf",method,127,&flag);CHKERRQ(ierr);
     if (flag) {
       PetscTruth isbdf,isadams;
 
@@ -300,7 +300,7 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
         SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PVode type.\n");
       }
     }
-    ierr = OptionsEList("-ts_pvode_gramschmidt_type","Type of orthogonalization","TSPVodeSetGramSchmidtType",otype,2,"unmodified",method,127,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_pvode_gramschmidt_type","Type of orthogonalization","TSPVodeSetGramSchmidtType",otype,2,"unmodified",method,127,&flag);CHKERRQ(ierr);
     if (flag) {
       PetscTruth ismodified,isunmodified;
 
@@ -314,12 +314,12 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
         SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PVode Gram-Schmidt orthogonalization type \n");
       }
     }
-    ierr = OptionsDouble("-ts_pvode_atol","Absolute tolerance for convergence","TSPVodeSetTolerance",cvode->abstol,&cvode->abstol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = OptionsDouble("-ts_pvode_rtol","Relative tolerance for convergence","TSPVodeSetTolerance",cvode->reltol,&cvode->reltol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = OptionsDouble("-ts_pvode_linear_tolerance","Convergence tolerance for linear solve","TSPVodeSetLinearTolerance",cvode->linear_tol,&cvode->linear_tol,&flag);CHKERRQ(ierr);
-    ierr = OptionsInt("-ts_pvode_gmres_restart","Number of GMRES orthogonalization directions","TSPVodeSetGMRESRestart",cvode->restart,&cvode->restart,&flag);CHKERRQ(ierr);
-    ierr = OptionsName("-ts_pvode_not_exact_final_time","Allow PVODE to stop near the final time, not exactly on it","TSPVodeSetExactFinalTime",&cvode->exact_final_time);CHKERRQ(ierr);
-  ierr = OptionsTail();CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-ts_pvode_atol","Absolute tolerance for convergence","TSPVodeSetTolerance",cvode->abstol,&cvode->abstol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-ts_pvode_rtol","Relative tolerance for convergence","TSPVodeSetTolerance",cvode->reltol,&cvode->reltol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-ts_pvode_linear_tolerance","Convergence tolerance for linear solve","TSPVodeSetLinearTolerance",cvode->linear_tol,&cvode->linear_tol,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_pvode_gmres_restart","Number of GMRES orthogonalization directions","TSPVodeSetGMRESRestart",cvode->restart,&cvode->restart,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_pvode_not_exact_final_time","Allow PVODE to stop near the final time, not exactly on it","TSPVodeSetExactFinalTime",&cvode->exact_final_time);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -329,7 +329,7 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
     Contributed by: Liyang Xu
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSPrintHelp_PVode" 
+#define __FUNC__ "TSPrintHelp_PVode" 
 int TSPrintHelp_PVode(TS ts,char *p)
 {
   int      ierr;
@@ -352,8 +352,8 @@ int TSPrintHelp_PVode(TS ts,char *p)
     Contributed by: Liyang Xu
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSView_PVode" 
-int TSView_PVode(TS ts,Viewer viewer)
+#define __FUNC__ "TSView_PVode" 
+int TSView_PVode(TS ts,PetscViewer viewer)
 {
   TS_PVode   *cvode = (TS_PVode*)ts->data;
   int        ierr;
@@ -364,27 +364,27 @@ int TSView_PVode(TS ts,Viewer viewer)
   if (cvode->cvode_type == PVODE_ADAMS) {type = "Adams";}
   else                                  {type = "BDF: backward differentiation formula";}
 
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"PVode integrater does not use SNES!\n");CHKERRQ(ierr); 
-    ierr = ViewerASCIIPrintf(viewer,"PVode integrater type %s\n",type);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"PVode abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"PVode linear solver tolerance factor %g\n",cvode->linear_tol);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"PVode GMRES max iterations (same as restart in PVODE) %d\n",cvode->restart);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"PVode integrater does not use SNES!\n");CHKERRQ(ierr); 
+    ierr = PetscViewerASCIIPrintf(viewer,"PVode integrater type %s\n",type);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"PVode abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"PVode linear solver tolerance factor %g\n",cvode->linear_tol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"PVode GMRES max iterations (same as restart in PVODE) %d\n",cvode->restart);CHKERRQ(ierr);
     if (cvode->gtype == PVODE_MODIFIED_GS) {
-      ierr = ViewerASCIIPrintf(viewer,"PVode using modified Gram-Schmidt for orthogonalization in GMRES\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"PVode using modified Gram-Schmidt for orthogonalization in GMRES\n");CHKERRQ(ierr);
     } else {
-      ierr = ViewerASCIIPrintf(viewer,"PVode using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"PVode using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n");CHKERRQ(ierr);
     }
   } else if (isstring) {
-    ierr = ViewerStringSPrintf(viewer,"Pvode type %s",type);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer,"Pvode type %s",type);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported by TS PVode",((PetscObject)viewer)->type_name);
   }
-  ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PCView(cvode->pc,viewer);CHKERRQ(ierr);
-  ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -393,7 +393,7 @@ int TSView_PVode(TS ts,Viewer viewer)
 /* --------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeSetType_Pvode"
+#define __FUNC__ "TSPVodeSetType_Pvode"
 int TSPVodeSetType_PVode(TS ts,TSPVodeType type)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -406,7 +406,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeSetGMRESRestart_PVode"
+#define __FUNC__ "TSPVodeSetGMRESRestart_PVode"
 int TSPVodeSetGMRESRestart_PVode(TS ts,int restart)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -419,7 +419,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeSetLinearTolerance_PVode"
+#define __FUNC__ "TSPVodeSetLinearTolerance_PVode"
 int TSPVodeSetLinearTolerance_PVode(TS ts,double tol)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -432,7 +432,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeSetGramSchmidtType_PVode"
+#define __FUNC__ "TSPVodeSetGramSchmidtType_PVode"
 int TSPVodeSetGramSchmidtType_PVode(TS ts,TSPVodeGramSchmidtType type)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -446,7 +446,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeSetTolerance_PVode"
+#define __FUNC__ "TSPVodeSetTolerance_PVode"
 int TSPVodeSetTolerance_PVode(TS ts,double aabs,double rel)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -460,7 +460,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeGetPC_PVode"
+#define __FUNC__ "TSPVodeGetPC_PVode"
 int TSPVodeGetPC_PVode(TS ts,PC *pc)
 { 
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -474,7 +474,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeGetIterations_PVode"
+#define __FUNC__ "TSPVodeGetIterations_PVode"
 int TSPVodeGetIterations_PVode(TS ts,int *nonlin,int *lin)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -488,7 +488,7 @@ EXTERN_C_END
   
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeSetExactFinalTime_PVode"
+#define __FUNC__ "TSPVodeSetExactFinalTime_PVode"
 int TSPVodeSetExactFinalTime_PVode(TS ts,PetscTruth s)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -501,7 +501,7 @@ EXTERN_C_END
 /* -------------------------------------------------------------------------------------------*/
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeGetIterations"
+#define __FUNC__ "TSPVodeGetIterations"
 /*@C
    TSPVodeGetIterations - Gets the number of nonlinear and linear iterations used so far by PVode.
 
@@ -538,7 +538,7 @@ int TSPVodeGetIterations(TS ts,int *nonlin,int *lin)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeSetType"
+#define __FUNC__ "TSPVodeSetType"
 /*@
    TSPVodeSetType - Sets the method that PVode will use for integration.
 
@@ -573,7 +573,7 @@ int TSPVodeSetType(TS ts,TSPVodeType type)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeSetGMRESRestart"
+#define __FUNC__ "TSPVodeSetGMRESRestart"
 /*@
    TSPVodeSetGMRESRestart - Sets the dimension of the Krylov space used by 
        GMRES in the linear solver in PVODE. PVODE DOES NOT use restarted GMRES so
@@ -610,7 +610,7 @@ int TSPVodeSetGMRESRestart(TS ts,int restart)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeSetLinearTolerance"
+#define __FUNC__ "TSPVodeSetLinearTolerance"
 /*@
    TSPVodeSetLinearTolerance - Sets the tolerance used to solve the linear
        system by PVODE.
@@ -646,7 +646,7 @@ int TSPVodeSetLinearTolerance(TS ts,double tol)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeSetGramSchmidtType"
+#define __FUNC__ "TSPVodeSetGramSchmidtType"
 /*@
    TSPVodeSetGramSchmidtType - Sets type of orthogonalization used
         in GMRES method by PVODE linear solver.
@@ -681,7 +681,7 @@ int TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeSetTolerance"
+#define __FUNC__ "TSPVodeSetTolerance"
 /*@
    TSPVodeSetTolerance - Sets the absolute and relative tolerance used by 
                          PVode for error control.
@@ -719,7 +719,7 @@ int TSPVodeSetTolerance(TS ts,double aabs,double rel)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeGetPC"
+#define __FUNC__ "TSPVodeGetPC"
 /*@
    TSPVodeGetPC - Extract the PC context from a time-step context for PVode.
 
@@ -754,7 +754,7 @@ int TSPVodeGetPC(TS ts,PC *pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSPVodeSetExactFinalTime"
+#define __FUNC__ "TSPVodeSetExactFinalTime"
 /*@
    TSPVodeSetExactFinalTime - Determines if PVode interpolates solution to the 
       exact final time requested by the user or just returns it at the final time
@@ -792,7 +792,7 @@ int TSPVodeSetExactFinalTime(TS ts,PetscTruth ft)
 */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSCreate_PVode"
+#define __FUNC__ "TSCreate_PVode"
 int TSCreate_PVode(TS ts)
 {
   TS_PVode *cvode;
@@ -809,10 +809,10 @@ int TSCreate_PVode(TS ts)
   ts->step            = TSStep_PVode_Nonlinear;
   ts->setfromoptions  = TSSetFromOptions_PVode_Nonlinear;
 
-  cvode = PetscNew(TS_PVode);CHKPTRQ(cvode);
+  ierr  = PetscNew(TS_PVode,&cvode);CHKERRQ(ierr);
   ierr  = PetscMemzero(cvode,sizeof(TS_PVode));CHKERRQ(ierr);
   ierr  = PCCreate(ts->comm,&cvode->pc);CHKERRQ(ierr);
-  PLogObjectParent(ts,cvode->pc);
+  PetscLogObjectParent(ts,cvode->pc);
   ts->data          = (void*)cvode;
   cvode->cvode_type = BDF;
   cvode->gtype      = PVODE_UNMODIFIED_GS;

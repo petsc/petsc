@@ -1,4 +1,4 @@
-/*$Id: olist.c,v 1.19 2000/05/05 22:14:00 balay Exp bsmith $*/
+/*$Id: olist.c,v 1.20 2000/08/06 03:55:09 bsmith Exp bsmith $*/
 /*
          Provides a general mechanism to maintain a linked list of PETSc objects.
      This is used to allow PETSc objects to carry a list of "composed" objects
@@ -6,24 +6,24 @@
 #include "petsc.h"
 #include "petscsys.h"
 
-struct _OList {
+struct _PetscOList {
     char        name[128];
     PetscObject obj;
-    OList       next;
+    PetscOList       next;
 };
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"OListAdd"
+#define __FUNC__ "PetscOListAdd"
 /*
 
        Notes: Replaces item if it is already in list. Removes item if you pass in a 
               PETSC_NULL object.    
 
-.seealso: OListDestroy()
+.seealso: PetscOListDestroy()
 */
-int OListAdd(OList *fl,const char name[],PetscObject obj)
+int PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
 {
-  OList      olist,nlist,prev;
+  PetscOList olist,nlist,prev;
   int        ierr;
   PetscTruth match;
 
@@ -64,7 +64,7 @@ int OListAdd(OList *fl,const char name[],PetscObject obj)
 
   /* add it to list, because it was not already there */
 
-  olist       = PetscNew(struct _OList);CHKPTRQ(olist);
+  ierr        = PetscNew(struct _PetscOList,&olist);CHKERRQ(ierr);
   olist->next = 0;
   olist->obj  = obj;
   ierr = PetscObjectReference(obj);CHKERRQ(ierr);
@@ -83,16 +83,16 @@ int OListAdd(OList *fl,const char name[],PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"OListDestroy"
+#define __FUNC__ "PetscOListDestroy"
 /*
-    OListDestroy - Destroy a list of objects
+    PetscOListDestroy - Destroy a list of objects
 
     Input Parameter:
 .   fl   - pointer to list
 */
-int OListDestroy(OList *fl)
+int PetscOListDestroy(PetscOList *fl)
 {
-  OList   tmp, entry = *fl;
+  PetscOList   tmp, entry = *fl;
   int     ierr;
 
   PetscFunctionBegin;
@@ -108,9 +108,9 @@ int OListDestroy(OList *fl)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"OListFind"
+#define __FUNC__ "PetscOListFind"
 /*
-    OListFind - givn a name, find the matching object
+    PetscOListFind - givn a name, find the matching object
 
     Input Parameters:
 +   fl   - pointer to list
@@ -120,13 +120,13 @@ int OListDestroy(OList *fl)
 .   ob - the PETSc object
 
     Notes:
-    The name must have been registered with the OListAdd() before calling this 
+    The name must have been registered with the PetscOListAdd() before calling this 
     routine.
 
-.seealso: OListReverseFind()
+.seealso: PetscOListReverseFind()
 
 */
-int OListFind(OList fl,const char name[],PetscObject *obj)
+int PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 {
   int        ierr;
   PetscTruth match;
@@ -146,9 +146,9 @@ int OListFind(OList fl,const char name[],PetscObject *obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"OListReverseFind"
+#define __FUNC__ "PetscOListReverseFind"
 /*
-    OListReverseFind - given a object, find the matching name if it exists
+    PetscOListReverseFind - given a object, find the matching name if it exists
 
     Input Parameters:
 +   fl   - pointer to list
@@ -158,13 +158,13 @@ int OListFind(OList fl,const char name[],PetscObject *obj)
 .   name - name string
 
     Notes:
-    The name must have been registered with the OListAdd() before calling this 
+    The name must have been registered with the PetscOListAdd() before calling this 
     routine.
 
-.seealso: OListFind()
+.seealso: PetscOListFind()
 
 */
-int OListReverseFind(OList fl,PetscObject obj,char **name)
+int PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
 {
   PetscFunctionBegin;
 
@@ -181,9 +181,9 @@ int OListReverseFind(OList fl,PetscObject obj,char **name)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"OListDuplicate"
+#define __FUNC__ "PetscOListDuplicate"
 /*
-    OListDuplicate - Creates a new list from a give object list.
+    PetscOListDuplicate - Creates a new list from a give object list.
 
     Input Parameters:
 .   fl   - pointer to list
@@ -193,13 +193,13 @@ int OListReverseFind(OList fl,PetscObject obj,char **name)
 
 
 */
-int OListDuplicate(OList fl,OList *nl)
+int PetscOListDuplicate(PetscOList fl,PetscOList *nl)
 {
   int ierr;
 
   PetscFunctionBegin;
   while (fl) {
-    ierr = OListAdd(nl,fl->name,fl->obj);CHKERRQ(ierr);
+    ierr = PetscOListAdd(nl,fl->name,fl->obj);CHKERRQ(ierr);
     fl = fl->next;
   }
   PetscFunctionReturn(0);

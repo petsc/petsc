@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.53 2000/09/06 23:01:02 balay Exp balay $*/
+/*$Id: zsnes.c,v 1.54 2000/09/26 19:11:19 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsnes.h"
@@ -112,9 +112,9 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL snesview_(SNES *snes,Viewer *viewer, int *ierr)
+void PETSC_STDCALL snesview_(SNES *snes,PetscViewer *viewer, int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = SNESView(*snes,v);
 }

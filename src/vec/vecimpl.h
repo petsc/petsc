@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.80 2000/12/01 19:55:53 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.81 2001/01/03 22:23:12 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -62,16 +62,16 @@ struct _VecOps {
        (*setoption)(Vec,VecOption),
        (*setvaluesblocked)(Vec,int,const int[],const Scalar[],InsertMode),
        (*destroy)(Vec),
-       (*view)(Vec,Viewer),
+       (*view)(Vec,PetscViewer),
        (*placearray)(Vec,const Scalar*),     /* place data array */
        (*replacearray)(Vec,const Scalar*),     /* replace data array */
        (*getmap)(Vec,Map*),
        (*dot_local)(Vec,Vec,Scalar*),
        (*tdot_local)(Vec,Vec,Scalar*),
        (*norm_local)(Vec,NormType,double*),
-       (*loadintovector)(Viewer,Vec),
+       (*loadintovector)(PetscViewer,Vec),
        (*reciprocal)(Vec),
-       (*viewnative)(Vec,Viewer),
+       (*viewnative)(Vec,PetscViewer),
        (*conjugate)(Vec),
        (*setlocaltoglobalmapping)(Vec,ISLocalToGlobalMapping),
        (*setvalueslocal)(Vec,int,const int *,const Scalar *,InsertMode),
@@ -131,7 +131,7 @@ struct _p_Vec {
 EXTERN int VecDuplicateVecs_Default(Vec,int,Vec *[]);
 EXTERN int VecDestroyVecs_Default(const Vec [],int);
 
-EXTERN int VecLoadIntoVector_Default(Viewer,Vec);
+EXTERN int VecLoadIntoVector_Default(PetscViewer,Vec);
 
 /* --------------------------------------------------------------------*/
 /*                                                                     */
@@ -210,7 +210,7 @@ struct _p_VecScatter {
   int        (*end)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
   int        (*copy)(VecScatter,VecScatter);
   int        (*destroy)(VecScatter);
-  int        (*view)(VecScatter,Viewer);
+  int        (*view)(VecScatter,PetscViewer);
   void       *fromdata,*todata;
 };
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.20 2000/08/17 04:53:13 bsmith Exp balay $ 
+# $Id: makefile,v 1.21 2000/08/17 19:50:55 balay Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS	        =
@@ -56,10 +56,10 @@ runex2_2:
 	   ${RM} -f ex2_2.tmp
 
 TESTEXAMPLES_1  =
-TESTEXAMPLES_2  =
+TESTEXAMPLES_2  = ex2.PETSc ex2.rm 
 TESTEXAMPLES_3  =
 TESTEXAMPLES_4  =
-TESTEXAMPLES_16 = ex2.PETSc runex2 runex2_2 ex2.rm 
 TESTEXAMPLES_13 = ex1.PETSc ex1.rm
+TESTEXAMPLES_16 = ex2.PETSc runex2 runex2_2 ex2.rm 
 
 include ${PETSC_DIR}/bmake/common_test

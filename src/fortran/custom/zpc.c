@@ -1,10 +1,15 @@
-/*$Id: zpc.c,v 1.40 2000/09/26 19:11:19 balay Exp bsmith $*/
+/*$Id: zpc.c,v 1.41 2000/11/28 17:32:51 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
 #include "petscmg.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define mgdefaultresidual_         MGDEFAULTRESIDUAL
+#define mgsetresidual_             MGSETRESIDUAL
+#define pcasmsetlocalsubdomains_   PCASMSETLOCALSUBDOMAINS
+#define pcasmsetglobalsubdomains_  PCASMSETGLOBALSUBDOMAINS
+#define pcasmgetlocalsubdomains_   PCASMGETLOCALSUBDOMAINS
 #define pcregisterdestroy_         PCREGISTERDESTROY
 #define pcdestroy_                 PCDESTROY
 #define pccreate_                  PCCREATE
@@ -28,6 +33,11 @@
 #define pcview_                    PCVIEW
 #define mgsetlevels_               MGSETLEVELS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define mgdefaultresidual_         mgdefaultresidual
+#define mgsetresidual_             mgsetresidual
+#define pcasmsetlocalsubdomains_   pcasmsetlocalsubdomains
+#define pcasmsetglobalsubdomains_  pcasmsetglobalsubdomains
+#define pcasmgetlocalsubdomains_   pcasmgetlocalsubdomains
 #define matnullspacecreate_        matnullspacecreate
 #define pcnullspaceattach_         pcnullspaceattach
 #define pcregisterdestroy_         pcregisterdestroy
@@ -61,9 +71,9 @@ void PETSC_STDCALL mgsetlevels_(PC *pc,int *levels,MPI_Comm *comms, int *__ierr 
   *__ierr = MGSetLevels(*pc,*levels,comm);
 }
 
-void PETSC_STDCALL pcview_(PC *pc,Viewer *viewer, int *ierr)
+void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PCView(*pc,v);
 }
@@ -260,7 +270,49 @@ void PETSC_STDCALL pcgetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
 #endif
 }
 
+void PETSC_STDCALL pcasmsetlocalsubdomains_(PC *pc,int *n,IS *is, int *ierr )
+{
+  if (FORTRANNULLOBJECT(is)) is = PETSC_NULL;
+  *ierr = PCASMSetLocalSubdomains(*pc,*n,is);
+}
 
+void PETSC_STDCALL pcasmsettotalsubdomains_(PC *pc,int *N,IS *is, int *ierr )
+{
+  if (FORTRANNULLOBJECT(is)) is = PETSC_NULL;
+  *ierr = PCASMSetTotalSubdomains(*pc,*N,is);
+}
 
+void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,int *n,IS **is, int *ierr )
+{
+  if (FORTRANNULLOBJECT(is)) is = PETSC_NULL;
+  if (FORTRANNULLINTEGER(n)) n  = PETSC_NULL;
+  *ierr = PCASMGetLocalSubdomains(*pc,n,is);
+}
+
+void PETSC_STDCALL mgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, int *ierr )
+{
+  *ierr = MGDefaultResidual(*mat,*b,*x,*r);
+}
+
+static int ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
+{
+  int ierr = 0;
+  (*(void (PETSC_STDCALL *)(Mat*,Vec*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat,&b,&x,&R,&ierr);
+  return 0;
+}
+
+void PETSC_STDCALL mgsetresidual_(PC *pc,int *l,int (*residual)(Mat*,Vec*,Vec*,Vec*,int*),Mat *mat, int *ierr )
+{
+  int (*rr)(Mat,Vec,Vec,Vec);
+  if ((void*)residual == (void*)mgdefaultresidual_) rr = MGDefaultResidual;
+  else {
+    if (!((PetscObject)*mat)->fortran_func_pointers) {
+      ((PetscObject)*mat)->fortran_func_pointers = (void**)PetscMalloc(1*sizeof(void *));
+    }
+    ((PetscObject)*mat)->fortran_func_pointers[0] = (void*)residual;
+    rr = ourresidualfunction;
+  }
+  *ierr = MGSetResidual(*pc,*l,rr,*mat);
+}
 EXTERN_C_END
 

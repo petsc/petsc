@@ -1,4 +1,4 @@
-/*$Id: daview.c,v 1.45 2000/08/01 20:58:01 bsmith Exp bsmith $*/
+/*$Id: daview.c,v 1.46 2000/09/28 21:15:20 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAView"
+#define __FUNC__ "DAView"
 /*@C
    DAView - Visualizes a distributed array object.
 
@@ -19,16 +19,16 @@
 
    Notes:
    The available visualization contexts include
-+     VIEWER_STDOUT_SELF - standard output (default)
-.     VIEWER_STDOUT_WORLD - synchronized standard
++     PETSC_VIEWER_STDOUT_SELF - standard output (default)
+.     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
          the file.  All other processors send their 
          data to the first processor to print. 
--     VIEWER_DRAW_WORLD - to default window
+-     PETSC_VIEWER_DRAW_WORLD - to default window
 
    The user can open alternative visualization contexts with
-+    ViewerASCIIOpen() - Outputs vector to a specified file
--    ViewerDrawOpen() - Outputs vector to an X window display
++    PetscViewerASCIIOpen() - Outputs vector to a specified file
+-    PetscViewerDrawOpen() - Outputs vector to an X window display
 
    Default Output Format:
   (for 3d arrays)
@@ -60,20 +60,20 @@
 
 .keywords: distributed array, view, visualize
 
-.seealso: ViewerASCIIOpen(), ViewerDrawOpen(), DAGetInfo(), DAGetCorners(),
+.seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), DAGetInfo(), DAGetCorners(),
           DAGetGhostCorners()
 @*/
-int DAView(DA da,Viewer viewer)
+int DAView(DA da,PetscViewer viewer)
 {
   int        ierr,i,dof = da->w;
   PetscTruth isascii,fieldsnamed = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_(da->comm);
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(da->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     for (i=0; i<dof; i++) {
       if (da->fieldname[i]) {
@@ -82,23 +82,23 @@ int DAView(DA da,Viewer viewer)
       }
     }
     if (fieldsnamed) {
-      ierr = ViewerASCIIPrintf(viewer,"FieldNames: ");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"FieldNames: ");CHKERRQ(ierr);
       for (i=0; i<dof; i++) {
         if (da->fieldname[i]) {
-          ierr = ViewerASCIIPrintf(viewer,"%s ",da->fieldname[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%s ",da->fieldname[i]);CHKERRQ(ierr);
         } else {
-          ierr = ViewerASCIIPrintf(viewer,"(not named) ",da->fieldname[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"(not named) ",da->fieldname[i]);CHKERRQ(ierr);
         }
       }
-      ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
   }
-  ierr = (*da->view)(da,viewer);CHKERRQ(ierr);
+  ierr = (*da->ops->view)(da,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetInfo"
+#define __FUNC__ "DAGetInfo"
 /*@C
    DAGetInfo - Gets information about a given distributed array.
 
@@ -120,7 +120,7 @@ int DAView(DA da,Viewer viewer)
    Level: beginner
   
    Note:
-   Use PETSC_NULL in place of any output parameter that is not of interest.
+   Use PETSC_NULL (PETSC_NULL_INTEGER in Fortran) in place of any output parameter that is not of interest.
 
 .keywords: distributed array, get, information
 
@@ -145,8 +145,8 @@ int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,
 }  
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAView_Binary"
-int DAView_Binary(DA da,Viewer viewer)
+#define __FUNC__ "DAView_Binary"
+int DAView_Binary(DA da,PetscViewer viewer)
 {
   int            rank,ierr;
   int            i,j,len,dim,m,n,p,dof,swidth,M,N,P;
@@ -162,7 +162,7 @@ int DAView_Binary(DA da,Viewer viewer)
   if (!rank) {
     FILE *file;
 
-    ierr = ViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
     if (file) {
       char           fieldname[256];
 

@@ -1,4 +1,4 @@
-/*$Id: ex61.c,v 1.6 1999/11/05 14:45:44 bsmith Exp balay $*/
+/*$Id: ex61.c,v 1.7 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests MatSeq(B)AIJSetColumnIndices()";
 
@@ -22,7 +22,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = OptionsHasName(PETSC_NULL,"-baij",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-baij",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,1,3,3,PETSC_NULL,rowlens,&A);CHKERRA(ierr);
     ierr = MatSeqBAIJSetColumnIndices(A,cols);CHKERRA(ierr);
@@ -48,7 +48,7 @@ int main(int argc,char **args)
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = MatDestroy(A);CHKERRA(ierr);
   PetscFinalize();

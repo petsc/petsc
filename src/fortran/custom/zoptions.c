@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.70 2000/09/28 21:16:19 bsmith Exp bsmith $*/
+/*$Id: zoptions.c,v 1.71 2000/12/23 00:35:58 bsmith Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -12,125 +12,125 @@ extern PetscTruth PetscBeganMPI;
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscgetarchtype_             PETSCGETARCHTYPE
-#define optionsgetintarray_           OPTIONSGETINTARRAY
-#define optionssetvalue_              OPTIONSSETVALUE
-#define optionsclearvalue_            OPTIONSCLEARVALUE
-#define optionshasname_               OPTIONSHASNAME
-#define optionsgetint_                OPTIONSGETINT
-#define optionsgetdouble_             OPTIONSGETDOUBLE
-#define optionsgetdoublearray_        OPTIONSGETDOUBLEARRAY
-#define optionsgetstring_             OPTIONSGETSTRING
+#define petscoptionsgetintarray_           PETSCOPTIONSGETINTARRAY
+#define petscoptionssetvalue_              PETSCOPTIONSSETVALUE
+#define petscoptionsclearvalue_            PETSCOPTIONSCLEARVALUE
+#define petscoptionshasname_               PETSCOPTIONSHASNAME
+#define petscpetscoptionsgetint_           PETSCOPTIONSGETINT
+#define petscoptionsgetdouble_             PETSCOPTIONSGETDOUBLE
+#define petscoptionsgetdoublearray_        PETSCOPTIONSGETDOUBLEARRAY
+#define petscoptionsgetstring_             PETSCOPTIONSGETSTRING
 #define petscgetprogramname           PETSCGETPROGRAMNAME
-#define optionsinsertfile_            OPTIONSINSERTFILE
+#define petscoptionsinsertfile_            PETSCOPTIONSINSERTFILE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscgetarchtype_             petscgetarchtype
-#define optionssetvalue_              optionssetvalue
-#define optionsclearvalue_            optionsclearvalue
-#define optionshasname_               optionshasname
-#define optionsgetint_                optionsgetint
-#define optionsgetdouble_             optionsgetdouble
-#define optionsgetdoublearray_        optionsgetdoublearray
-#define optionsgetstring_             optionsgetstring
-#define optionsgetintarray_           optionsgetintarray
+#define petscoptionssetvalue_              petscoptionssetvalue
+#define petscoptionsclearvalue_            petscoptionsclearvalue
+#define petscoptionshasname_               petscoptionshasname
+#define petscoptionsgetint_                petscoptionsgetint
+#define petscoptionsgetdouble_             petscoptionsgetdouble
+#define petscoptionsgetdoublearray_        petscoptionsgetdoublearray
+#define petscoptionsgetstring_             petscoptionsgetstring
+#define petscoptionsgetintarray_           petscoptionsgetintarray
 #define petscgetprogramname_          petscgetprogramname
-#define optionsinsertfile_            optionsinsertfile
+#define petscoptionsinsertfile_            petscoptionsinsertfile
 #endif
 
 EXTERN_C_BEGIN
 
 /* ---------------------------------------------------------------------*/
 
-void PETSC_STDCALL optionsinsertfile_(CHAR file PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petscoptionsinsertfile_(CHAR file PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
   FIXCHAR(file,len,c1);
-  *ierr = OptionsInsertFile(c1);
+  *ierr = PetscOptionsInsertFile(c1);
   FREECHAR(file,c1);
 }
 
-void PETSC_STDCALL optionssetvalue_(CHAR name PETSC_MIXED_LEN(len1),CHAR value PETSC_MIXED_LEN(len2),
+void PETSC_STDCALL petscoptionssetvalue_(CHAR name PETSC_MIXED_LEN(len1),CHAR value PETSC_MIXED_LEN(len2),
                    int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
   FIXCHAR(name,len1,c1);
   FIXCHAR(value,len2,c2);
-  *ierr = OptionsSetValue(c1,c2);
+  *ierr = PetscOptionsSetValue(c1,c2);
   FREECHAR(name,c1);
   FREECHAR(value,c2);
 }
 
-void PETSC_STDCALL optionsclearvalue_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petscoptionsclearvalue_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
   FIXCHAR(name,len,c1);
-  *ierr = OptionsClearValue(c1);
+  *ierr = PetscOptionsClearValue(c1);
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL optionshasname_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+void PETSC_STDCALL petscoptionshasname_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                     PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = OptionsHasName(c1,c2,flg);
+  *ierr = PetscOptionsHasName(c1,c2,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-void PETSC_STDCALL optionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+void PETSC_STDCALL petscoptionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                     int *ivalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = OptionsGetInt(c1,c2,ivalue,flg);
+  *ierr = PetscOptionsGetInt(c1,c2,ivalue,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-void PETSC_STDCALL optionsgetdouble_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+void PETSC_STDCALL petscoptionsgetdouble_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                     double *dvalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = OptionsGetDouble(c1,c2,dvalue,flg);
+  *ierr = PetscOptionsGetDouble(c1,c2,dvalue,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-void PETSC_STDCALL optionsgetdoublearray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+void PETSC_STDCALL petscoptionsgetdoublearray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                 double *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = OptionsGetDoubleArray(c1,c2,dvalue,nmax,flg);
+  *ierr = PetscOptionsGetDoubleArray(c1,c2,dvalue,nmax,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-void PETSC_STDCALL optionsgetintarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+void PETSC_STDCALL petscoptionsgetintarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                    int *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = OptionsGetIntArray(c1,c2,dvalue,nmax,flg);
+  *ierr = PetscOptionsGetIntArray(c1,c2,dvalue,nmax,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-void PETSC_STDCALL optionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+void PETSC_STDCALL petscoptionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                     CHAR string PETSC_MIXED_LEN(len),PetscTruth *flg,
                     int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len))
 {
@@ -147,7 +147,7 @@ void PETSC_STDCALL optionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PE
     len3 = len - 1;
 #endif
 
-  *ierr = OptionsGetString(c1,c2,c3,len3,flg);
+  *ierr = PetscOptionsGetString(c1,c2,c3,len3,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
@@ -275,7 +275,7 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
     Scalar               *work;
     PetscObjectContainer container;
 
-    work = (Scalar*)PetscMalloc((N+1)*sizeof(Scalar));CHKPTRQ(work); 
+ierr = PetscMalloc((N+1)*sizeof(Scalar),&    work );CHKERRQ(ierr); 
 
     /* shift work by that number of bytes */
     work = (Scalar*)(((char*)work) + shift);
@@ -306,7 +306,7 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
                          ((double)tmp3)/(double)sizeof(Scalar),((double)tmp1)/(double)sizeof(Scalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
-    PLogInfo((void *)obj,"PetscScalarAddressToFortran:Efficiency warning, copying array in XXXGetArray() due\n\
+    PetscLogInfo((void *)obj,"PetscScalarAddressToFortran:Efficiency warning, copying array in XXXGetArray() due\n\
     to alignment differences between C and Fortran\n");
   }
   *res = itmp2;
@@ -345,7 +345,7 @@ int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,S
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MPICCommToFortranComm"></a>*/"MPICCommToFortranComm"
+#define __FUNC__ "MPICCommToFortranComm"
 /*@C
     MPICCommToFortranComm - Converts a MPI_Comm represented
     in C to one appropriate to pass to a Fortran routine.
@@ -383,7 +383,7 @@ int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MPIFortranCommToCComm"></a>*/"MPIFortranCommToCComm"
+#define __FUNC__ "MPIFortranCommToCComm"
 /*@C
     MPIFortranCommToCComm - Converts a MPI_Comm represented
     int Fortran (as an integer) to a MPI_Comm in C.

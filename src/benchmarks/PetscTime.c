@@ -1,14 +1,14 @@
-/*$Id: PetscTime.c,v 1.15 2000/08/16 15:11:25 balay Exp bsmith $*/
+/*$Id: PetscTime.c,v 1.16 2000/11/28 17:32:38 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscfix.h"
-#include "src/sys/src/plog/ptime.h"
+#include "src/sys/src/PetscLog/ptime.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  PLogDouble x,y;
+  PetscLogDouble x,y;
   int        i;
 
   PetscInitialize(&argc,&argv,0,0);

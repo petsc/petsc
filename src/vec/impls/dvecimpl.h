@@ -1,4 +1,4 @@
-/* $Id: dvecimpl.h,v 1.16 2000/05/10 16:40:07 bsmith Exp buschelm $ */
+/* $Id: dvecimpl.h,v 1.17 2000/06/23 15:01:29 buschelm Exp bsmith $ */
 /* 
    This should not be included in users code.
 
@@ -30,6 +30,7 @@ EXTERN int VecPointwiseDivide_Seq(Vec,Vec,Vec);
 EXTERN int VecGetArray_Seq(Vec,Scalar *[]);
 EXTERN int VecRestoreArray_Seq(Vec,Scalar *[]);
 EXTERN int VecPlaceArray_Seq(Vec,const Scalar *);
+EXTERN int VecResetArray_Seq(Vec);
 EXTERN int VecReplaceArray_Seq(Vec,const Scalar *);
 EXTERN int VecGetSize_Seq(Vec,int *);
 EXTERN int VecDot_Seq(Vec,Vec,Scalar *);

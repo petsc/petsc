@@ -1,4 +1,4 @@
-/*$Id: mal.c,v 1.50 2000/09/22 20:42:22 bsmith Exp bsmith $*/
+/*$Id: mal.c,v 1.51 2000/09/28 21:09:09 bsmith Exp bsmith $*/
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
@@ -22,12 +22,12 @@
 */
 #define SHIFT_COOKIE 456123
 
-void *PetscMallocAlign(int mem,int line,char *func,char *file,char *dir)
+int PetscMallocAlign(int mem,int line,char *func,char *file,char *dir,void** result)
 {
 #if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && !defined(PETSC_USE_COMPLEX)
-  return malloc(mem);
+  *result = malloc(mem);
 #elif defined(PETSC_HAVE_MEMALIGN)
-  return memalign(sizeof(Scalar),mem);
+  *result = memalign(sizeof(Scalar),mem);
 #else
   {
     int *ptr,shift;
@@ -35,14 +35,16 @@ void *PetscMallocAlign(int mem,int line,char *func,char *file,char *dir)
       malloc space for two extra Scalar and shift ptr 1 + enough to get it Scalar aligned
     */
     ptr = (int*)malloc(mem + 2*sizeof(Scalar));
-    if (!ptr) return 0;
+    if (!ptr) return 1;
     shift = (int)(((unsigned long) ptr) % sizeof(Scalar));
     shift = (2*sizeof(Scalar) - shift)/sizeof(int);
     ptr     += shift;
     ptr[-1]  = shift + SHIFT_COOKIE ;
-    return (void*)ptr;
+    *result = (void*)ptr;
   }
 #endif
+  if (!*result) return 1;
+  return 0;
 }
 
 int PetscFreeAlign(void *ptr,int line,char *func,char *file,char *dir)
@@ -88,21 +90,13 @@ int PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
   return 0;
 }
 
-/*
-    Set the default malloc and free to be the usual system versions unless using complex
-*/
-#if defined(PETSC_USE_COMPLEX)
-void *(*PetscTrMalloc)(int,int,char*,char*,char*)  = PetscMallocAlign;
-int  (*PetscTrFree)(void *,int,char*,char *,char*) = PetscFreeAlign;
-#else
-void *(*PetscTrMalloc)(int,int,char*,char*,char*)  = (void *(*)(int,int,char*,char*,char*))malloc;
-int  (*PetscTrFree)(void *,int,char*,char *,char*) = PetscFreeDefault;
-#endif
+int  (*PetscTrMalloc)(int,int,char*,char*,char*,void**)  = PetscMallocAlign;
+int  (*PetscTrFree)(void *,int,char*,char *,char*)       = PetscFreeAlign;
 
 PetscTruth petscsetmallocvisited = PETSC_FALSE;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSetMalloc"
+#define __FUNC__ "PetscSetMalloc"
 /*@C
    PetscSetMalloc - Sets the routines used to do mallocs and frees.
    This routine MUST be called before PetscInitialize() and may be
@@ -120,7 +114,7 @@ PetscTruth petscsetmallocvisited = PETSC_FALSE;
    Concepts: memory^allocation 
 
 @*/
-int PetscSetMalloc(void *(*imalloc)(int,int,char*,char*,char*),
+int PetscSetMalloc(int (*imalloc)(int,int,char*,char*,char*,void**),
                    int (*ifree)(void*,int,char*,char*,char*))
 {
   PetscFunctionBegin;
@@ -132,7 +126,7 @@ int PetscSetMalloc(void *(*imalloc)(int,int,char*,char*,char*),
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscClearMalloc"
+#define __FUNC__ "PetscClearMalloc"
 /*@C
    PetscClearMalloc - Resets the routines used to do mallocs and frees to the 
         defaults.
@@ -150,13 +144,8 @@ int PetscSetMalloc(void *(*imalloc)(int,int,char*,char*,char*),
 int PetscClearMalloc(void)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_MEMALIGN) && defined(PETSC_USE_COMPLEX)
-  PetscTrMalloc               = (void*(*)(int,int,char*,char*,char*))PetscMallocAlign;
-  PetscTrFree                 = (int (*)(void*,int,char*,char*,char*))PetscFreeAlign;
-#else
-  PetscTrMalloc               = (void*(*)(int,int,char*,char*,char*))malloc;
-  PetscTrFree                 = PetscFreeDefault;
-#endif
-  petscsetmallocvisited       = PETSC_FALSE;
+  PetscTrMalloc         = PetscMallocAlign;
+  PetscTrFree           = PetscFreeAlign;
+  petscsetmallocvisited = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.23 2000/05/05 22:19:01 balay Exp bsmith $"
+! "$Id: ex1f.F,v 1.24 2000/09/22 20:46:37 bsmith Exp bsmith $"
 !
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !
@@ -70,10 +70,10 @@
 !
 !     Allow user to set the grid dimensions and nonlinearity parameter at run-time
 !
-      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-mx',user(lmx),flg,   &
+      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-mx',user(lmx),flg,   &
      &                      ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',user(lmy),flg,ierr)
-      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-param',user(param),  &
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',user(lmy),flg,ierr)
+      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-param',user(param),  &
      &                      flg,ierr)
       if (user(param) .ge. param_max .or.                               &
      &                                user(param) .le. param_min) then
@@ -84,7 +84,7 @@
       else
         dt = .5/user(lmy)
       endif
-      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-dt',dt,flg,ierr)
+      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-dt',dt,flg,ierr)
       N          = user(lmx)*user(lmy)
   
 !

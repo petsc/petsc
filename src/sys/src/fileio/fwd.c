@@ -1,4 +1,4 @@
-/*$Id: fwd.c,v 1.31 2000/10/24 20:24:33 bsmith Exp balay $*/
+/*$Id: fwd.c,v 1.32 2000/12/21 03:22:22 balay Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -33,7 +33,7 @@
 #include "petscfix.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscGetWorkingDirectory"></a>*/"PetscGetWorkingDirectory"
+#define __FUNC__ "PetscGetWorkingDirectory"
 /*@C
    PetscGetWorkingDirectory - Gets the current working directory.
 

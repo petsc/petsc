@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.12 2000/09/27 20:13:57 bsmith Exp bsmith $"
+!    "$Id: ex2f.F,v 1.13 2000/10/24 20:25:21 bsmith Exp bsmith $"
 !
 !  Description: Builds a parallel vector with 1 component on the first
 !               processor, 2 on the second, etc.  Then each processor adds
@@ -79,7 +79,7 @@
 
 !  View the vector; then destroy it.
 
-      call VecView(x,VIEWER_STDOUT_WORLD,ierr)
+      call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr)
       call VecDestroy(x,ierr)
 
       call PetscFinalize(ierr)

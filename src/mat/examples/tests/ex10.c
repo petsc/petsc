@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.12 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.13 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests repeated use of assembly for matrices.\n\n";
 
@@ -46,7 +46,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = MatDestroy(C);CHKERRA(ierr);
   PetscFinalize();

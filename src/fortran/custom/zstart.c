@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.75 2000/09/06 20:37:10 balay Exp balay $*/
+/*$Id: zstart.c,v 1.76 2000/09/06 20:53:53 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -98,8 +98,8 @@ EXTERN_C_BEGIN
 extern void PetscMaxSum_Local(void *,void *,int *,MPI_Datatype *);
 EXTERN_C_END
 
-EXTERN int OptionsCheckInitial(void);
-EXTERN int OptionsCheckInitial_Components(void);
+EXTERN int PetscOptionsCheckInitial(void);
+EXTERN int PetscOptionsCheckInitial_Components(void);
 EXTERN int PetscInitialize_DynamicLibraries(void);
 
 /*
@@ -128,7 +128,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   }
   ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD); if (ierr) return ierr;
 
-  *argv = (char**)PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*)));CHKPTRQ(*argv);
+ierr = PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*)),&  *argv );CHKERRQ(ierr);
   (*argv)[0] = (char*)(*argv + *argc + 1);
 
   if (!rank) {
@@ -188,7 +188,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   *ierr = PetscMemzero(name,256); if (*ierr) return;
   if (PetscInitializeCalled) {*ierr = 0; return;}
   
-  *ierr = OptionsCreate(); 
+  *ierr = PetscOptionsCreate(); 
   if (*ierr) return;
   i = 0;
 #if defined(PETSC_HAVE_PXFGETARG)
@@ -248,20 +248,20 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
 
   /*
      PetscInitializeFortran() is called twice. Here it initializes
-     PETSC_NULLCHARACTOR_Fortran. Below it initializes the VIEWERs.
-     The VIEWERs have not been created yet, so they must be initialized
+     PETSC_NULLCHARACTOR_Fortran. Below it initializes the PETSC_VIEWERs.
+     The PETSC_VIEWERs have not been created yet, so they must be initialized
      below.
   */
   PetscInitializeFortran();
 
   PETScParseFortranArgs_Private(&argc,&args);
   FIXCHAR(filename,len,t1);
-  *ierr = OptionsInsert(&argc,&args,t1); 
+  *ierr = PetscOptionsInsert(&argc,&args,t1); 
   FREECHAR(filename,t1);
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Creating options database");return;}
   *ierr = PetscFree(args);
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Freeing args");return;}
-  *ierr = OptionsCheckInitial(); 
+  *ierr = PetscOptionsCheckInitial(); 
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
 
   /*
@@ -279,12 +279,12 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
 
   *ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
   if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Getting MPI_Comm_size()");return;}
-  PLogInfo(0,"PetscInitialize(Fortran):PETSc successfully started: procs %d\n",size);
+  PetscLogInfo(0,"PetscInitialize(Fortran):PETSc successfully started: procs %d\n",size);
   *ierr = PetscGetHostName(hostname,16);
   if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Getting hostname");return;}
-  PLogInfo(0,"Running on machine: %s\n",hostname);
+  PetscLogInfo(0,"Running on machine: %s\n",hostname);
   
-  *ierr = OptionsCheckInitial_Components(); 
+  *ierr = PetscOptionsCheckInitial_Components(); 
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
 
 }

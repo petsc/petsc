@@ -1,16 +1,16 @@
-/*$Id: dsclear.c,v 1.24 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dsclear.c,v 1.25 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
-       Provides the calling sequences for all the basic Draw routines.
+       Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSynchronizedClear"></a>*/"DrawSynchronizedClear" 
+#define __FUNC__ "DrawSynchronizedClear" 
 /*@
-   DrawSynchronizedClear - Clears graphical output. All processors must call this routine.
+   PetscDrawSynchronizedClear - Clears graphical output. All processors must call this routine.
    Does not return until the draw in context is clear.
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameters:
 .  draw - the drawing context
@@ -20,11 +20,11 @@
    Concepts: clear^window
 
 @*/
-int DrawSynchronizedClear(Draw draw)
+int PetscDrawSynchronizedClear(PetscDraw draw)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   if (draw->ops->synchronizedclear) {
     ierr = (*draw->ops->synchronizedclear)(draw);CHKERRQ(ierr);
   }

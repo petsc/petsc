@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.10 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex15.c,v 1.11 2000/09/28 21:10:28 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecSetValuesBlocked() on Seq vectors\n\n";
 
@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   /* 
       Resulting vector should be 0 4 8  0 0 0 12 16 20
   */
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecDestroy(x);CHKERRA(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.122 2000/11/13 21:35:18 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.123 2000/12/13 17:19:27 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -30,58 +30,58 @@ typedef struct {
 } PC_ASM;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCView_ASM"
-static int PCView_ASM(PC pc,Viewer viewer)
+#define __FUNC__ "PCView_ASM"
+static int PCView_ASM(PC pc,PetscViewer viewer)
 {
   PC_ASM     *jac = (PC_ASM*)pc->data;
   int        rank,ierr,i;
   char       *cstring = 0;
   PetscTruth isascii,isstring;
-  Viewer     sviewer;
+  PetscViewer     sviewer;
 
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks = %d, amount of overlap = %d\n",jac->n,jac->overlap);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks = %d, amount of overlap = %d\n",jac->n,jac->overlap);CHKERRQ(ierr);
     if (jac->type == PC_ASM_NONE)             cstring = "limited restriction and interpolation (PC_ASM_NONE)";
     else if (jac->type == PC_ASM_RESTRICT)    cstring = "full restriction (PC_ASM_RESTRICT)";
     else if (jac->type == PC_ASM_INTERPOLATE) cstring = "full interpolation (PC_ASM_INTERPOLATE)";
     else if (jac->type == PC_ASM_BASIC)       cstring = "full restriction and interpolation (PC_ASM_BASIC)";
     else                                      cstring = "Unknown ASM type";
-    ierr = ViewerASCIIPrintf(viewer,"  Additive Schwarz: type - %s\n",cstring);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: type - %s\n",cstring);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
     if (jac->same_local_solves) {
-      ierr = ViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
-      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
+      ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
       if (!rank && jac->sles) {
-        ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = SLESView(jac->sles[0],sviewer);CHKERRQ(ierr);
-        ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
-      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     } else {
-      ierr = ViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
-      ierr = ViewerASCIISynchronizedPrintf(viewer,"Proc %d: number of local blocks = %d\n",rank,jac->n_local);CHKERRQ(ierr);
-      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Proc %d: number of local blocks = %d\n",rank,jac->n_local);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       for (i=0; i<jac->n_local; i++) {
-        ierr = ViewerASCIISynchronizedPrintf(viewer,"Proc %d: local block number %d\n",rank,i);CHKERRQ(ierr);
-        ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Proc %d: local block number %d\n",rank,i);CHKERRQ(ierr);
+        ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
         ierr = SLESView(jac->sles[i],sviewer);CHKERRQ(ierr);
-        ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
         if (i != jac->n_local-1) {
-          ierr = ViewerASCIISynchronizedPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
         }
       }
-      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
-    ierr = ViewerStringSPrintf(viewer," blks=%d, overlap=%d, type=%d",jac->n,jac->overlap,jac->type);CHKERRQ(ierr);
-    ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," blks=%d, overlap=%d, type=%d",jac->n,jac->overlap,jac->type);CHKERRQ(ierr);
+    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
       if (jac->sles) {ierr = SLESView(jac->sles[0],sviewer);CHKERRQ(ierr);}
-    ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for PCASM",((PetscObject)viewer)->type_name);
   }
@@ -89,7 +89,7 @@ static int PCView_ASM(PC pc,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp_ASM"
+#define __FUNC__ "PCSetUp_ASM"
 static int PCSetUp_ASM(PC pc)
 {
   PC_ASM   *osm  = (PC_ASM*)pc->data;
@@ -119,7 +119,7 @@ static int PCSetUp_ASM(PC pc)
     n_local      = osm->n_local;
     n_local_true = osm->n_local_true;  
     if (!osm->is){ /* build the index sets */
-      osm->is    = (IS*)PetscMalloc((n_local_true+1)*sizeof(IS **));CHKPTRQ(osm->is);
+      osm->is    = (IS*)PetscMalloc((n_local_true+1)*sizeof(IS **));CHKERRQ(ierr);
       ierr  = MatGetOwnershipRange(pc->pmat,&start_val,&end_val);CHKERRQ(ierr);
       ierr  = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
       sz    = end_val - start_val;
@@ -136,9 +136,9 @@ static int PCSetUp_ASM(PC pc)
       osm->is_flg = PETSC_TRUE;
     }
 
-    osm->sles = (SLES*)PetscMalloc((n_local_true+1)*sizeof(SLES **));CHKPTRQ(osm->sles);
-    osm->scat = (VecScatter*)PetscMalloc(n_local*sizeof(VecScatter **));CHKPTRQ(osm->scat);
-    osm->x    = (Vec*)PetscMalloc(2*n_local*sizeof(Vec **));CHKPTRQ(osm->x);
+    osm->sles = (SLES*)PetscMalloc((n_local_true+1)*sizeof(SLES **));CHKERRQ(ierr);
+    osm->scat = (VecScatter*)PetscMalloc(n_local*sizeof(VecScatter **));CHKERRQ(ierr);
+    osm->x    = (Vec*)PetscMalloc(2*n_local*sizeof(Vec **));CHKERRQ(ierr);
     osm->y    = osm->x + n_local;
 
     /*  Extend the "overlapping" regions by a number of steps  */
@@ -169,7 +169,7 @@ static int PCSetUp_ASM(PC pc)
     */
     for (i=0; i<n_local_true; i++) {
       ierr = SLESCreate(PETSC_COMM_SELF,&sles);CHKERRQ(ierr);
-      PLogObjectParent(pc,sles);
+      PetscLogObjectParent(pc,sles);
       ierr = SLESGetKSP(sles,&subksp);CHKERRQ(ierr);
       ierr = KSPSetType(subksp,KSPPREONLY);CHKERRQ(ierr);
       ierr = SLESGetPC(sles,&subpc);CHKERRQ(ierr);
@@ -202,14 +202,14 @@ static int PCSetUp_ASM(PC pc)
   ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
   for (i=0; i<n_local_true; i++) {
     ierr = PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix);CHKERRQ(ierr);
-    PLogObjectParent(pc,osm->pmat[i]);
+    PetscLogObjectParent(pc,osm->pmat[i]);
     ierr = SLESSetOperators(osm->sles[i],osm->pmat[i],osm->pmat[i],pc->flag);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUpOnBlocks_ASM"
+#define __FUNC__ "PCSetUpOnBlocks_ASM"
 static int PCSetUpOnBlocks_ASM(PC pc)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
@@ -230,7 +230,7 @@ static int PCSetUpOnBlocks_ASM(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_ASM"
+#define __FUNC__ "PCApply_ASM"
 static int PCApply_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM      *osm = (PC_ASM*)pc->data;
@@ -276,7 +276,7 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApplyTranspose_ASM"
+#define __FUNC__ "PCApplyTranspose_ASM"
 static int PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM      *osm = (PC_ASM*)pc->data;
@@ -325,7 +325,7 @@ static int PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCDestroy_ASM"
+#define __FUNC__ "PCDestroy_ASM"
 static int PCDestroy_ASM(PC pc)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
@@ -355,7 +355,7 @@ static int PCDestroy_ASM(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_ASM"
+#define __FUNC__ "PCSetFromOptions_ASM"
 static int PCSetFromOptions_ASM(PC pc)
 {
   PC_ASM     *osm = (PC_ASM*)pc->data;
@@ -364,14 +364,14 @@ static int PCSetFromOptions_ASM(PC pc)
   char       buff[16],*type[] = {"basic","restrict","interpolate","none"};
 
   PetscFunctionBegin;
-  ierr = OptionsHead("Additive Schwarz options");CHKERRQ(ierr);
-    ierr = OptionsInt("-pc_asm_blocks","Number of subdomains","PCASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("Additive Schwarz options");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_asm_blocks","Number of subdomains","PCASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCASMSetTotalSubdomains(pc,blocks,PETSC_NULL);CHKERRQ(ierr); }
-    ierr = OptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr); }
-    ierr = OptionsName("-pc_asm_in_place","Perform matrix factorization inplace","PCASMSetUseInPlace",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_asm_in_place","Perform matrix factorization inplace","PCASMSetUseInPlace",&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCASMSetUseInPlace(pc);CHKERRQ(ierr); }
-    ierr = OptionsEList("-pc_asm_type","Type of restriction/extension","PCASMSetType",type,4,"restrict",buff,15,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_asm_type","Type of restriction/extension","PCASMSetType",type,4,"restrict",buff,15,&flg);CHKERRQ(ierr);
     if (flg) {
       PCASMType  atype;
       PetscTruth isbasic,isrestrict,isinterpolate,isnone;
@@ -388,7 +388,7 @@ static int PCSetFromOptions_ASM(PC pc)
       else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
       ierr = PCASMSetType(pc,atype);CHKERRQ(ierr);
     }
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -396,7 +396,7 @@ static int PCSetFromOptions_ASM(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMSetLocalSubdomains_ASM"
+#define __FUNC__ "PCASMSetLocalSubdomains_ASM"
 int PCASMSetLocalSubdomains_ASM(PC pc,int n,IS *is)
 {
   PC_ASM *osm;
@@ -417,7 +417,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMSetTotalSubdomains_ASM"
+#define __FUNC__ "PCASMSetTotalSubdomains_ASM"
 int PCASMSetTotalSubdomains_ASM(PC pc,int N,IS *is)
 {
   PC_ASM *osm;
@@ -446,7 +446,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMSetOverlap_ASM"
+#define __FUNC__ "PCASMSetOverlap_ASM"
 int PCASMSetOverlap_ASM(PC pc,int ovl)
 {
   PC_ASM *osm;
@@ -462,7 +462,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMSetType_ASM"
+#define __FUNC__ "PCASMSetType_ASM"
 int PCASMSetType_ASM(PC pc,PCASMType type)
 {
   PC_ASM *osm;
@@ -476,7 +476,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMGetSubSLES_ASM"
+#define __FUNC__ "PCASMGetSubSLES_ASM"
 int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
 {
   PC_ASM   *jac = (PC_ASM*)pc->data;
@@ -502,7 +502,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMSetUseInPlace_ASM"
+#define __FUNC__ "PCASMSetUseInPlace_ASM"
 int PCASMSetUseInPlace_ASM(PC pc)
 {
   PC_ASM *dir;
@@ -516,7 +516,7 @@ EXTERN_C_END
 
 /*----------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMSetUseInPlace"
+#define __FUNC__ "PCASMSetUseInPlace"
 /*@
    PCASMSetUseInPlace - Tells the system to destroy the matrix after setup is done.
 
@@ -554,7 +554,7 @@ int PCASMSetUseInPlace(PC pc)
 /*----------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMSetLocalSubdomains"
+#define __FUNC__ "PCASMSetLocalSubdomains"
 /*@C
     PCASMSetLocalSubdomains - Sets the local subdomains (for this processor
     only) for the additive Schwarz preconditioner. 
@@ -598,7 +598,7 @@ int PCASMSetLocalSubdomains(PC pc,int n,IS *is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMSetTotalSubdomains"
+#define __FUNC__ "PCASMSetTotalSubdomains"
 /*@C
     PCASMSetTotalSubdomains - Sets the subdomains for all processor for the 
     additive Schwarz preconditioner.  Either all or no processors in the
@@ -648,7 +648,7 @@ int PCASMSetTotalSubdomains(PC pc,int N,IS *is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMSetOverlap"
+#define __FUNC__ "PCASMSetOverlap"
 /*@
     PCASMSetOverlap - Sets the overlap between a pair of subdomains for the
     additive Schwarz preconditioner.  Either all or no processors in the
@@ -702,7 +702,7 @@ int PCASMSetOverlap(PC pc,int ovl)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMSetType"
+#define __FUNC__ "PCASMSetType"
 /*@
     PCASMSetType - Sets the type of restriction and interpolation used
     for local problems in the additive Schwarz method.
@@ -743,7 +743,7 @@ int PCASMSetType(PC pc,PCASMType type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMGetSubSLES"
+#define __FUNC__ "PCASMGetSubSLES"
 /*@C
    PCASMGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
@@ -793,14 +793,15 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 /* -------------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCreate_ASM"
+#define __FUNC__ "PCCreate_ASM"
 int PCCreate_ASM(PC pc)
 {
   int    ierr;
-  PC_ASM *osm = PetscNew(PC_ASM);CHKPTRQ(osm);
+  PC_ASM *osm;
 
   PetscFunctionBegin;
-  PLogObjectMemory(pc,sizeof(PC_ASM));
+  ierr = PetscNew(PC_ASM,&osm);CHKERRQ(ierr);
+  PetscLogObjectMemory(pc,sizeof(PC_ASM));
   ierr = PetscMemzero(osm,sizeof(PC_ASM));CHKERRQ(ierr);
   osm->n                 = PETSC_DECIDE;
   osm->n_local           = 0;
@@ -844,7 +845,7 @@ EXTERN_C_END
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMCreateSubdomains2D"
+#define __FUNC__ "PCASMCreateSubdomains2D"
 /*@
    PCASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz 
    preconditioner for a two-dimensional problem on a regular grid.
@@ -882,7 +883,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
   if (dof != 1) SETERRQ(PETSC_ERR_SUP,"");
 
   *Nsub = N*M;
-  *is = (IS*)PetscMalloc((*Nsub)*sizeof(IS **));CHKPTRQ(is);
+  *is = (IS*)PetscMalloc((*Nsub)*sizeof(IS **));CHKERRQ(ierr);
   ystart = 0;
   loc_outter = 0;
   for (i=0; i<N; i++) {
@@ -897,7 +898,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
       xleft  = xstart - overlap; if (xleft < 0) xleft = 0;
       xright = xstart + width + overlap; if (xright > m) xright = m;
       nidx   = (xright - xleft)*(yright - yleft);
-      idx    = (int*)PetscMalloc(nidx*sizeof(int));CHKPTRQ(idx);
+ierr = PetscMalloc(nidx*sizeof(int),&(      idx    ));CHKERRQ(ierr);
       loc    = 0;
       for (ii=yleft; ii<yright; ii++) {
         count = m*ii + xleft;
@@ -916,7 +917,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCASMGetLocalSubdomains"
+#define __FUNC__ "PCASMGetLocalSubdomains"
 /*@C
     PCASMGetLocalSubdomains - Gets the local subdomains (for this processor
     only) for the additive Schwarz preconditioner. 

@@ -1,15 +1,15 @@
-/*$Id: dflush.c,v 1.23 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dflush.c,v 1.24 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
-       Provides the calling sequences for all the basic Draw routines.
+       Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawFlush"></a>*/"DrawFlush" 
+#define __FUNC__ "DrawFlush" 
 /*@
-   DrawFlush - Flushs graphical output.
+   PetscDrawFlush - Flushs graphical output.
 
-   Not collective (Use DrawSynchronizedFlush() for collective)
+   Not collective (Use PetscDrawSynchronizedFlush() for collective)
 
    Input Parameters:
 .  draw - the drawing context
@@ -18,13 +18,13 @@
 
    Concepts: flushing^graphics
 
-.seealso: DrawSynchronizedFlush()
+.seealso: PetscDrawSynchronizedFlush()
 @*/
-int DrawFlush(Draw draw)
+int PetscDrawFlush(PetscDraw draw)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   if (draw->ops->flush) {
     ierr = (*draw->ops->flush)(draw);CHKERRQ(ierr);
   }

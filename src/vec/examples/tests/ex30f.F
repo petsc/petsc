@@ -1,5 +1,5 @@
 !
-!    "$Id: ex30f.F,v 1.2 2000/05/05 22:15:11 balay Exp bsmith $";
+!    "$Id: ex30f.F,v 1.3 2000/09/27 20:06:41 bsmith Exp bsmith $";
 !
 !  Tests parallel to parallel scatter where a to from index are 
 !  duplicated
@@ -86,12 +86,12 @@
      +     SCATTER_FORWARD,scat2,ierr)
       
       if (irank.eq.0) print *, "V1"
-      call VecView(v1,VIEWER_STDOUT_WORLD,ierr)
+      call VecView(v1,PETSC_VIEWER_STDOUT_WORLD,ierr)
       if (irank.eq.0) print *, "V2"
-      call VecView(v2,VIEWER_STDOUT_WORLD,ierr)
+      call VecView(v2,PETSC_VIEWER_STDOUT_WORLD,ierr)
       if (irank.eq.0) then
          print *, "V3"
-         call VecView(v3,VIEWER_STDOUT_SELF,ierr)
+         call VecView(v3,PETSC_VIEWER_STDOUT_SELF,ierr)
       end if
 
       call VecScatterDestroy(scat1,ierr)

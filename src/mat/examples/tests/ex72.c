@@ -1,4 +1,4 @@
-/*$Id: ex72.c,v 1.11 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex72.c,v 1.12 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   int         i,m,n,nnz,ierr,size,col,row;
   Scalar      val;
   FILE*       file;
-  Viewer      view;
+  PetscViewer      view;
   PetscRandom r;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -29,7 +29,7 @@ int main(int argc,char **args)
   if (size > 1) SETERRA(1,"Uniprocessor Example only\n");
 
   /* Read in matrix and RHS */
-  ierr = OptionsGetString(PETSC_NULL,"-fin",filein,127,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,127,PETSC_NULL);CHKERRA(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRA(ierr);
 
   /* Ignore the first line */
@@ -58,11 +58,11 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRA(ierr);
-  ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,127,PETSC_NULL);CHKERRA(ierr);
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,127,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,PETSC_BINARY_CREATE,&view);CHKERRA(ierr);
   ierr = MatView(A,view);CHKERRA(ierr);
   ierr = VecView(b,view);CHKERRA(ierr);
-  ierr = ViewerDestroy(view);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(view);CHKERRA(ierr);
 
   ierr = VecDestroy(b);CHKERRA(ierr);
   ierr = MatDestroy(A);CHKERRA(ierr);

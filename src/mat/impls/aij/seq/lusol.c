@@ -1,4 +1,4 @@
-/*$Id: lusol.c,v 1.5 2000/10/24 20:25:32 bsmith Exp bsmith $*/
+/*$Id: lusol.c,v 1.6 2000/11/28 17:28:56 bsmith Exp bsmith $*/
 /* 
         Provides an interface to the LUSOL package of ....
 
@@ -289,7 +289,7 @@ int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
 
 	  if (nnz > lusol->nnz){
 	       ierr = PetscFree(lusol->indc);CHKERRQ(ierr);
-	       lusol->indc = (int *)PetscMalloc((sizeof(double) + 2*sizeof(int))*nnz);CHKPTRQ(lusol->indc);
+	       ierr        = PetscMalloc((sizeof(double)+2*sizeof(int))*nnz,&lusol->indc);CHKERRQ(ierr);
 	       lusol->indr = lusol->indc + nnz;
 	       lusol->data = (double *)(lusol->indr + nnz);
 	       lusol->nnz  = nnz;
@@ -414,7 +414,7 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatLUInfo *info, Mat *F)
      (*F)->ops->solve = MatSolve_SeqAIJ_LUSOL;
      (*F)->factor = FACTOR_LU;
 
-     lusol = PetscNew(Mat_SeqAIJ_LUSOL);CHKPTRQ(lusol);
+     ierr = PetscNew(Mat_SeqAIJ_LUSOL,&lusol);CHKERRQ(ierr);
      ((Mat_SeqAIJ *)(*F)->data)->spptr = (void *)lusol;
 
      /************************************************************************/
@@ -456,21 +456,20 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatLUInfo *info, Mat *F)
      lusol->nnz = nnz;
      lusol->luroom = 1.75;
 
-     lusol->ip = (int *)PetscMalloc(sizeof(int)*n);
-     lusol->iq = (int *)PetscMalloc(sizeof(int)*n);
-     lusol->lenc = (int *)PetscMalloc(sizeof(int)*n);
-     lusol->lenr = (int *)PetscMalloc(sizeof(int)*n);
-     lusol->locc = (int *)PetscMalloc(sizeof(int)*n);
-     lusol->locr = (int *)PetscMalloc(sizeof(int)*n);
-     lusol->iploc = (int *)PetscMalloc(sizeof(int)*n);
-     lusol->iqloc = (int *)PetscMalloc(sizeof(int)*n);
-     lusol->ipinv = (int *)PetscMalloc(sizeof(int)*n);
-     lusol->iqinv = (int *)PetscMalloc(sizeof(int)*n);
+     ierr = PetscMalloc(sizeof(int)*n,&lusol->ip);
+     ierr = PetscMalloc(sizeof(int)*n,&lusol->iq);
+     ierr = PetscMalloc(sizeof(int)*n,&lusol->lenc);
+     ierr = PetscMalloc(sizeof(int)*n,&lusol->lenr);
+     ierr = PetscMalloc(sizeof(int)*n,&lusol->locc);
+     ierr = PetscMalloc(sizeof(int)*n,&lusol->locr);
+     ierr = PetscMalloc(sizeof(int)*n,&lusol->iploc);
+     ierr = PetscMalloc(sizeof(int)*n,&lusol->iqloc);
+     ierr = PetscMalloc(sizeof(int)*n,&lusol->ipinv);
+     ierr = PetscMalloc(sizeof(int)*n,&lusol->iqinv);
+     ierr = PetscMalloc(sizeof(double)*n,&lusol->mnsw);
+     ierr = PetscMalloc(sizeof(double)*n,&lusol->mnsv);
 
-     lusol->mnsw = (double *)PetscMalloc(sizeof(double)*n);
-     lusol->mnsv = (double *)PetscMalloc(sizeof(double)*n);
-
-     lusol->indc = (int *)PetscMalloc((sizeof(double) + 2*sizeof(int))*nnz);
+     ierr        = PetscMalloc((sizeof(double)+2*sizeof(int))*nnz,&lusol->indc);
      lusol->indr = lusol->indc + nnz;
      lusol->data = (double *)(lusol->indr + nnz);
      PetscFunctionReturn(0);
@@ -497,7 +496,7 @@ int MatUseLUSOL_SeqAIJ(Mat A)
   }
 							    
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_LUSOL;
-  PLogInfo(0,"Using LUSOL for SeqAIJ LU factorization and solves.");
+  PetscLogInfo(0,"Using LUSOL for SeqAIJ LU factorization and solves.");
   PetscFunctionReturn(0);
 }
 

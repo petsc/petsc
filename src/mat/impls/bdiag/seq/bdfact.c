@@ -1,4 +1,4 @@
-/*$Id: bdfact.c,v 1.59 2000/09/28 21:11:17 bsmith Exp bsmith $*/
+/*$Id: bdfact.c,v 1.60 2000/10/24 20:25:42 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format - factorization and triangular solves */
 
@@ -7,7 +7,7 @@
 #include "src/inline/ilu.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatILUFactorSymbolic_SeqBDiag"
+#define __FUNC__ "MatILUFactorSymbolic_SeqBDiag"
 int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *B)
 {
   PetscTruth   idn;
@@ -34,7 +34,7 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatILUFactor_SeqBDiag"
+#define __FUNC__ "MatILUFactor_SeqBDiag"
 int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info)
 {
   PetscTruth   idn;
@@ -59,7 +59,7 @@ int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info)
 
 /* --------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatLUFactorNumeric_SeqBDiag_N"></a>*/"MatLUFactorNumeric_SeqBDiag_N"
+#define __FUNC__ "MatLUFactorNumeric_SeqBDiag_N"
 int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
 {
   Mat          C = *B;
@@ -88,12 +88,12 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
   }
 
   if (!a->pivot) {
-    a->pivot = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(a->pivot);
-    PLogObjectMemory(C,m*sizeof(int));
+    ierr = PetscMalloc((m+1)*sizeof(int),&a->pivot);CHKERRQ(ierr);
+    PetscLogObjectMemory(C,m*sizeof(int));
   }
-  v_work     = (Scalar*)PetscMalloc((bs2+bs+1)*sizeof(Scalar));CHKPTRQ(v_work);
+  ierr       = PetscMalloc((bs2+bs+1)*sizeof(Scalar),&v_work);CHKERRQ(ierr);
   multiplier = v_work + bs;
-  dgptr      = (int*)PetscMalloc((mblock+nblock+1)*sizeof(int));CHKPTRQ(dgptr);
+  ierr       = PetscMalloc((mblock+nblock+1)*sizeof(int),&dgptr);CHKERRQ(ierr);
   ierr       = PetscMemzero(dgptr,(mblock+nblock)*sizeof(int));CHKERRQ(ierr);
   for (k=0; k<nd; k++) dgptr[diag[k]+mblock] = k+1;
   for (k=0; k<mblock; k++) { /* k = block pivot_row */
@@ -151,7 +151,7 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
     }
   }
 
-  dgptr = (int*)PetscMalloc((m+n+1)*sizeof(int));CHKPTRQ(dgptr);
+  ierr = PetscMalloc((m+n+1)*sizeof(int),&dgptr);CHKERRQ(ierr);
   ierr  = PetscMemzero(dgptr,(m+n)*sizeof(int));CHKERRQ(ierr);
   for (k=0; k<nd; k++) dgptr[diag[k]+m] = k+1;
   for (k=0; k<m; k++) { /* k = pivot_row */
@@ -183,7 +183,7 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
 /* -----------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBDiag_1"
+#define __FUNC__ "MatSolve_SeqBDiag_1"
 int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -214,12 +214,12 @@ int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*a->nz - A->n);
+  PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBDiag_2"
+#define __FUNC__ "MatSolve_SeqBDiag_2"
 int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -273,12 +273,12 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*a->nz - A->n);
+  PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBDiag_3"
+#define __FUNC__ "MatSolve_SeqBDiag_3"
 int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -334,12 +334,12 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*a->nz - A->n);
+  PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBDiag_4"
+#define __FUNC__ "MatSolve_SeqBDiag_4"
 int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -398,12 +398,12 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*a->nz - A->n);
+  PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBDiag_5"
+#define __FUNC__ "MatSolve_SeqBDiag_5"
 int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -471,12 +471,12 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*a->nz - A->n);
+  PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBDiag_N"
+#define __FUNC__ "MatSolve_SeqBDiag_N"
 int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -520,7 +520,7 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*a->nz - A->n);
+  PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.34 2000/09/22 20:42:48 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.35 2000/09/27 03:30:36 bsmith Exp bsmith $*/
 
 static char help[] = "Augmenting PETSc profiling by add events.\n\
 Run this program with one of the\n\
@@ -9,9 +9,9 @@ codes.  Note that the code must be compiled with the flag -DPETSC_USE_LOG\n\
 (the default) to activate logging.\n\n";
 
 /*T
-   Concepts: PLog^user-defined event profiling
+   Concepts: PetscLog^user-defined event profiling
    Concepts: profiling^user-defined event
-   Concepts: PLog^activating/deactivating events for profiling
+   Concepts: PetscLog^activating/deactivating events for profiling
    Concepts: profiling^activating/deactivating events
    Processors: n
 T*/
@@ -31,19 +31,19 @@ int main(int argc,char **argv)
 
   /* 
      Create a new user-defined event.
-      - Note that PLogEventRegister() returns to the user a unique
+      - Note that PetscLogEventRegister() returns to the user a unique
         integer event number, which should then be used for profiling
-        the event via PLogEventBegin() and PLogEventEnd().
+        the event via PetscLogEventBegin() and PetscLogEventEnd().
       - The user can also optionally log floating point operations
-        with the routine PLogFlops().
+        with the routine PetscLogFlops().
   */
-  ierr = PLogEventRegister(&USER_EVENT,"User event","Red:");CHKERRA(ierr);
-  ierr = PLogEventBegin(USER_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventRegister(&USER_EVENT,"User event","Red:");CHKERRA(ierr);
+  ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRA(ierr);
   icount = 0;
   for (i=0; i<imax; i++) icount++;
-  ierr = PLogFlops(imax);CHKERRA(ierr);
+  ierr = PetscLogFlops(imax);CHKERRA(ierr);
   ierr = PetscSleep(1);CHKERRA(ierr);
-  ierr = PLogEventEnd(USER_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRA(ierr);
 
   /* 
      We disable the logging of an event.
@@ -52,20 +52,20 @@ int main(int argc,char **argv)
       - Note that the user can activate/deactive both user-defined
         events and predefined PETSc events.
   */
-  ierr = PLogEventMPEDeactivate(USER_EVENT);CHKERRA(ierr);
-  ierr = PLogEventDeactivate(USER_EVENT);CHKERRA(ierr);
-  ierr = PLogEventBegin(USER_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventMPEDeactivate(USER_EVENT);CHKERRA(ierr);
+  ierr = PetscLogEventDeactivate(USER_EVENT);CHKERRA(ierr);
+  ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = PetscSleep(1);CHKERRA(ierr);
-  ierr = PLogEventEnd(USER_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRA(ierr);
 
   /* 
      We next enable the logging of an event
   */
-  ierr = PLogEventMPEActivate(USER_EVENT);CHKERRA(ierr);
-  ierr = PLogEventActivate(USER_EVENT);CHKERRA(ierr);
-  ierr = PLogEventBegin(USER_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventMPEActivate(USER_EVENT);CHKERRA(ierr);
+  ierr = PetscLogEventActivate(USER_EVENT);CHKERRA(ierr);
+  ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = PetscSleep(1);CHKERRA(ierr);
-  ierr = PLogEventEnd(USER_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.6 2001/01/05 16:00:38 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.7 2001/01/08 19:13:02 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint\n\n";
 
@@ -55,23 +55,23 @@ int main(int argc,char **argv)
 
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   /* Hardwire several options; can be changed at command line */
-  ierr = OptionsSetValue("-dmmg_grid_sequence",PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsSetValue("-ksp_type","fgmres");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-ksp_max_it","5");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-pc_mg_type","full");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-mg_coarse_ksp_type","gmres");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-mg_levels_ksp_type","gmres");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-mg_coarse_ksp_max_it","6");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-mg_levels_ksp_max_it","3");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-snes_mf_type","wp");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
-  /* ierr = OptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
-  ierr = OptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsSetValue("-dmmg_grid_sequence",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-ksp_type","fgmres");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-ksp_max_it","5");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-pc_mg_type","full");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-mg_coarse_ksp_type","gmres");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-mg_levels_ksp_type","gmres");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-mg_coarse_ksp_max_it","6");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-mg_levels_ksp_max_it","3");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-snes_mf_type","wp");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
+  /* ierr = PetscOptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
+  ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
   
   /* Create a global vector from a da arrays */
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
@@ -149,7 +149,7 @@ int PDEFormFunction(Scalar *w,Vec U,Vec FU,DA da)
   ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,FU,(void**)&fu);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&vu);CHKERRQ(ierr);
-  PLogFlops(6*N);
+  PetscLogFlops(6*N);
   PetscFunctionReturn(0);
 }
 
@@ -188,8 +188,8 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = MatFDColoringApply((Mat)dmmg->user,fd,vu,PETSC_NULL,w);CHKERRQ(ierr);
   ierr = MatMultTranspose((Mat)dmmg->user,vglambda,vflambda);CHKERRQ(ierr);
 
-  ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_MATLAB,"joe");
-  ierr = MatView((Mat)dmmg->user,VIEWER_STDOUT_WORLD); 
+  PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"joe");
+  ierr = MatView((Mat)dmmg->user,PETSC_VIEWER_STDOUT_WORLD); 
 
   /* derivative of constraint portion of L() w.r.t. u */
   ierr = PDEFormFunction(w,vu,vfu,da);CHKERRQ(ierr);
@@ -236,7 +236,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = VecPackRestoreAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
   ierr = VecPackRestoreAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
 
-  PLogFlops(13*N);
+  PetscLogFlops(13*N);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.10 2000/01/11 21:03:33 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.11 2000/05/05 22:19:43 balay Exp bsmith $*/
 
 static char help[] = "Tests SDALocalToLocal().\n\n";
 
@@ -26,23 +26,23 @@ int main(int argc,char **argv)
   Vec            local,global,local_copy;
   Scalar         value,mone = -1.0,*in,*out;
   double         norm,work;
-  Viewer         viewer;
+  PetscViewer         viewer;
   char           filename[64];
   FILE           *file;
 
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,PETSC_NULL);CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-periodic",(int*)&periodic,PETSC_NULL);CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-stencil_type",(int*)&stencil_type,PETSC_NULL);CHKERRA(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,PETSC_NULL);CHKERRA(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",(int*)&periodic,PETSC_NULL);CHKERRA(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",(int*)&stencil_type,PETSC_NULL);CHKERRA(ierr); 
 
-  ierr = OptionsHasName(PETSC_NULL,"-2d",&flg2);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-3d",&flg3);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-2d",&flg2);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-3d",&flg3);CHKERRA(ierr);
   if (flg2) {
     ierr = DACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,m,n,dof,stencil_width,0,0,&da);
           CHKERRA(ierr);
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
 
 
-  ierr = OptionsHasName(PETSC_NULL,"-same_array",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-same_array",&flg);CHKERRA(ierr);
   if (flg) {
     /* test the case where the input and output array is the same */
     ierr = VecCopy(local,local_copy);CHKERRA(ierr);
@@ -98,16 +98,16 @@ int main(int argc,char **argv)
     ierr = SDALocalToLocalEnd(sda,out,INSERT_VALUES,in);CHKERRA(ierr);
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-save",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-save",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
     sprintf(filename,"local.%d",rank);
-    ierr = ViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer);CHKERRA(ierr);
-    ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRA(ierr);
+    ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer);CHKERRA(ierr);
+    ierr = PetscViewerASCIIGetPointer(viewer,&file);CHKERRA(ierr);
     ierr = VecView(local,viewer);CHKERRA(ierr);
     fprintf(file,"Vector with correct ghost points\n");
     ierr = VecView(local_copy,viewer);CHKERRA(ierr);
-    ierr = ViewerDestroy(viewer);CHKERRA(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
   }
 
   ierr = VecAXPY(&mone,local,local_copy);CHKERRA(ierr);

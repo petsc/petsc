@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.13 2000/01/11 21:03:13 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.14 2000/05/05 22:19:15 balay Exp bsmith $*/
 
 static char help[] = "Tests application ordering\n\n";
 
@@ -13,12 +13,12 @@ int main(int argc,char **argv)
   AO          ao;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr); n = rank + 2;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   /* create the orderings */
-  ispetsc = (int*)PetscMalloc(2*n*sizeof(int));CHKPTRA(ispetsc);
+ierr = PetscMalloc(2*n*sizeof(int),&(  ispetsc ));CHKPTRA(ispetsc);
   isapp   = ispetsc + n;
 
   ierr = MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   /* create the application ordering */
   ierr = AOCreateBasic(PETSC_COMM_WORLD,n,isapp,ispetsc,&ao);CHKERRA(ierr);
 
-  ierr = AOView(ao,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* check the mapping */
   ierr = AOPetscToApplication(ao,n,ispetsc);CHKERRA(ierr);

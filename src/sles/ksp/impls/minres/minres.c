@@ -1,4 +1,4 @@
-/*$Id: minres.c,v 1.9 2000/09/27 19:40:16 bsmith Exp bsmith $*/
+/*$Id: minres.c,v 1.10 2000/09/28 21:13:36 bsmith Exp bsmith $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
@@ -82,7 +82,7 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
 
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
   if (PetscAbsScalar(dp) < minres->haptol) {
-    PLogInfo(ksp,"KSPSolve_MINRES:Detected happy breakdown %g tolerance %g\n",dp,minres->haptol);
+    PetscLogInfo(ksp,"KSPSolve_MINRES:Detected happy breakdown %g tolerance %g\n",dp,minres->haptol);
     dp = PetscAbsScalar(dp); /* tiny number, can't use 0.0, cause divided by below */
     if (dp == 0.0) {
       ksp->reason = KSP_CONVERGED_ATOL;
@@ -132,7 +132,7 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
 
      ierr = VecDot(R,Z,&dp);CHKERRQ(ierr); 
      if (PetscAbsScalar(dp) < minres->haptol) {
-       PLogInfo(ksp,"KSPSolve_MINRES:Detected happy breakdown %g tolerance %g\n",dp,minres->haptol);
+       PetscLogInfo(ksp,"KSPSolve_MINRES:Detected happy breakdown %g tolerance %g\n",dp,minres->haptol);
        dp = PetscAbsScalar(dp); /* tiny number, can we use 0.0? */
      }
 
@@ -206,7 +206,7 @@ int KSPCreate_MINRES(KSP ksp)
 
   ksp->pc_side   = PC_LEFT;
   ksp->calc_res  = PETSC_TRUE;
-  minres         = PetscNew(KSP_MINRES);CHKPTRQ(minres);
+  ierr           = PetscNew(KSP_MINRES,&minres);CHKERRQ(ierr);
   minres->haptol = 1.e-18;
   ksp->data      = (void*)minres;
 

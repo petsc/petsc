@@ -1,4 +1,4 @@
-/*$Id: zda.c,v 1.37 2000/05/05 22:26:47 balay Exp bsmith $*/
+/*$Id: zda.c,v 1.38 2000/10/24 20:28:01 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -72,9 +72,9 @@ void PETSC_STDCALL dagetfieldname(DA *da,int *nf,CHAR name PETSC_MIXED_LEN(len),
 #endif
 }
 
-void PETSC_STDCALL daload_(Viewer *viewer,int *M,int *N,int *P,DA *da,int *ierr)
+void PETSC_STDCALL daload_(PetscViewer *viewer,int *M,int *N,int *P,DA *da,int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = DALoad(v,*M,*N,*P,da);
 }
@@ -86,12 +86,14 @@ void PETSC_STDCALL dagetislocaltoglobalmapping_(DA *da,ISLocalToGlobalMapping *m
 
 void PETSC_STDCALL dagetcoloring_(DA *da,ISColoring *coloring,Mat *J,int *ierr)
 {
+  if (FORTRANNULLOBJECT(coloring)) coloring = PETSC_NULL;
+  if (FORTRANNULLOBJECT(J))        J        = PETSC_NULL;
   *ierr = DAGetColoring(*da,coloring,J);
 }
 
-void PETSC_STDCALL daview_(DA *da,Viewer *vin,int *ierr)
+void PETSC_STDCALL daview_(DA *da,PetscViewer *vin,int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = DAView(*da,v);
 }
@@ -100,7 +102,7 @@ void PETSC_STDCALL dagetglobalindices_(DA *da,int *n,int *indices,long *ia,int *
 {
   int *idx;
   *ierr = DAGetGlobalIndices(*da,n,&idx);
-  *ia     = PetscIntAddressToFortran(indices,idx);
+  *ia   = PetscIntAddressToFortran(indices,idx);
 }
 
 void PETSC_STDCALL dacreateglobalvector_(DA *da,Vec* g,int *ierr)
@@ -113,8 +115,7 @@ void PETSC_STDCALL dacreatelocalvector_(DA *da,Vec* l,int *ierr)
   *ierr = DACreateLocalVector(*da,l);
 }
 
-void PETSC_STDCALL dagetscatter_(DA *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,
-                   int *ierr)
+void PETSC_STDCALL dagetscatter_(DA *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,int *ierr)
 {
   if (!FORTRANNULLINTEGER(ltog)) ltog = PETSC_NULL;
   if (!FORTRANNULLINTEGER(gtol)) gtol = PETSC_NULL;
@@ -158,8 +159,20 @@ void PETSC_STDCALL dacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
 void PETSC_STDCALL dagetinfo_(DA *da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,
                 DAPeriodicType *wrap,DAStencilType *st,int *ierr)
 {
+  if (FORTRANNULLINTEGER(dim)) dim  = PETSC_NULL;
+  if (FORTRANNULLINTEGER(M))   M    = PETSC_NULL;
+  if (FORTRANNULLINTEGER(N))   N    = PETSC_NULL;
+  if (FORTRANNULLINTEGER(P))   P    = PETSC_NULL;
+  if (FORTRANNULLINTEGER(m))   m    = PETSC_NULL;
+  if (FORTRANNULLINTEGER(n))   n    = PETSC_NULL;
+  if (FORTRANNULLINTEGER(p))   p    = PETSC_NULL;
+  if (FORTRANNULLINTEGER(w))   w    = PETSC_NULL;
+  if (FORTRANNULLINTEGER(s))   s    = PETSC_NULL;
+  if (FORTRANNULLINTEGER(wrap))wrap = PETSC_NULL;
+  if (FORTRANNULLINTEGER(st))  st   = PETSC_NULL;
   *ierr = DAGetInfo(*da,dim,M,N,P,m,n,p,w,s,wrap,st);
 }
 
 EXTERN_C_END
+
 

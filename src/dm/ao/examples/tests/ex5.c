@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.11 2000/01/11 21:03:13 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.12 2000/05/05 22:19:15 balay Exp bsmith $*/
 
 static char help[] = "Tests AODataRemap \n\n";
 
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   AO          ao;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr); n = rank + 2;
   ierr = MPI_Allreduce(&n,&nglobal,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   ierr = AODataKeyAdd(aodata,"key1",PETSC_DECIDE,nglobal);CHKERRA(ierr);
 
   /* allocate space for the keys each processor will provide */
-  keys = (int*)PetscMalloc(n*sizeof(int));CHKPTRA(keys);
+ierr = PetscMalloc(n*sizeof(int),&(  keys ));CHKPTRA(keys);
 
   /*
      We assign the first set of keys (0 to 2) to processor 0, etc.
@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   /* 
       Allocate data for the first key and first segment 
   */
-  data = (int*)PetscMalloc(bs*n*sizeof(int));CHKPTRA(data);
+ierr = PetscMalloc(bs*n*sizeof(int),&(  data ));CHKPTRA(data);
   for (i=0; i<n; i++) {
     data[i]   = start + i + 1; /* the data is the neighbor to the right */
   }
@@ -58,12 +58,12 @@ int main(int argc,char **argv)
   /*
         View the database
   */
-  ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
  
   /*
          Remap the database so that i -> nglobal - i - 1
   */
-  news = (int*)PetscMalloc(n*sizeof(int));CHKPTRA(news);
+ierr = PetscMalloc(n*sizeof(int),&(  news ));CHKPTRA(news);
   for (i=0; i<n; i++) {
     news[i] = nglobal - i - start - 1;
   }
@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   ierr = PetscFree(news);CHKERRA(ierr);
   ierr = AODataKeyRemap(aodata,"key1",ao);CHKERRA(ierr);
   ierr = AODestroy(ao);CHKERRA(ierr);
-  ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = AODataDestroy(aodata);CHKERRA(ierr);
 
   PetscFinalize();

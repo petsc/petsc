@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.27 2000/09/27 20:13:50 bsmith Exp bsmith $"
+!    "$Id: ex1f.F,v 1.28 2000/10/24 20:25:21 bsmith Exp bsmith $"
 !
 !   Program usage:  mpirun ex1f [-help] [all PETSc options] 
 !
@@ -51,7 +51,7 @@
       two   = 2.0
       three = 3.0
       n     = 20
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 !  Create a vector, specifying only its global dimension.

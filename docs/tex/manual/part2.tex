@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.346 2000/11/07 18:52:14 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.347 2000/11/10 16:48:29 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -134,7 +134,7 @@ below for \url{VecGetArray()}.
 
 One can examine a vector with the command \findex{VecView()}
 \begin{verbatim}
-   ierr = VecView(Vec x,Viewer v);
+   ierr = VecView(Vec x,PetscViewer v);
 \end{verbatim}
 To print the vector to the screen, one can use the viewer
 \findex{VIEWER_STDOUT_WORLD} \url{VIEWER_STDOUT_WORLD}, which ensures
@@ -416,7 +416,7 @@ created with a \url{AOCreateBasic()} or \url{AOCreateBasicIS()}.
 
 \findex{AODestroy()}  \findex{AOView}
 The \url{AO} context should be destroyed with \url{AODestroy(AO ao)}
-and viewed with \url{AOView(AO ao,Viewer viewer)}.
+and viewed with \url{AOView(AO ao,PetscViewer viewer)}.
 
 Although we refer to the two orderings as ``PETSc'' and
 ``application'' orderings, the user is free to use them both for
@@ -1601,17 +1601,17 @@ but we allow it anyway.
 One can print a matrix (sequential or parallel) to the screen with the 
 command \findex{MatView()}
 \begin{verbatim}
-   ierr = MatView(Mat mat,VIEWER_STDOUT_WORLD);
+   ierr = MatView(Mat mat,PETSC_VIEWER_STDOUT_WORLD);
 \end{verbatim}
 Other viewers can be used as well. For instance, one can draw the
 nonzero stucture of the matrix into the default X-window with the 
 command 
 \begin{verbatim}
-   ierr = MatView(Mat mat,VIEWER_DRAW_WORLD);
+   ierr = MatView(Mat mat,PETSC_VIEWER_DRAW_WORLD);
 \end{verbatim}
 Use \findex{VIEWER_DRAW_WORLD}
 \begin{verbatim}
-   ierr = MatView(Mat mat,Viewer viewer);
+   ierr = MatView(Mat mat,PetscViewer viewer);
 \end{verbatim}
 where \url{viewer} was obtained with \url{ViewerDrawOpenX()}.
 \findex{ViewerDrawOpenX} 
@@ -2340,15 +2340,15 @@ not for timing. These monitors may be accessed with the command line options
 To employ the default graphical monitor, one should use the 
 commands \findex{KSPLGMonitorCreate()} \findex{KSPLGMonitorDestroy()}
 \begin{verbatim}
-   DrawLG lg;
+   PetscDrawLG lg;
    ierr = KSPLGMonitorCreate(char *display,char *title,int x,int y,int w,int h,
-                             DrawLG *lg);
+                             PetscDrawLG *lg);
    ierr = KSPSetMonitor(KSP ksp,KSPLGMonitor,lg,0);
 \end{verbatim}
 When no longer needed, the line graph should be destroyed 
 with the command
 \begin{verbatim}
-   ierr = KSPLGMonitorDestroy(DrawLG lg);
+   ierr = KSPLGMonitorDestroy(PetscDrawLG lg);
 \end{verbatim}
 The user can change aspects of the graphs with the \url{DrawLG*()} and 
 \url{DrawAxis*()} routines. \findex{DrawAxis*()} \findex{DrawLG*()}
@@ -4077,7 +4077,7 @@ destroys it with \findex{TSDestroy()}
 \end{verbatim}
 and views it with \findex{TSView()}
 \begin{verbatim}
-  ierr = TSView(TS ts,Viewer viewer);
+  ierr = TSView(TS ts,PetscViewer viewer);
 \end{verbatim}
 
 \subsection{Solving Time-dependent Problems}
@@ -4288,19 +4288,19 @@ certain packages in PETSc, he or she should send a message to
 petsc-maint@mcs.anl.gov, and we will see whether it is reasonable
 to try to provide direct interfaces.
 
-\section{Windows as Viewers}
+\section{Windows as PetscViewers}
 For drawing predefined PETSc objects such as matrices and vectors, one must 
 first create a viewer using the 
 command \findex{ViewerDrawOpenX()}
 \begin{verbatim}
-   ierr = ViewerDrawOpenX(MPI_Comm comm,char *display,char *title,int x,int y,int w,
-                          int h,Viewer *viewer);
+   ierr = PetscViewerDrawOpenX(MPI_Comm comm,char *display,char *title,int x,int y,int w,
+                          int h,PetscViewer *viewer);
 \end{verbatim}
 This viewer may be passed to any of the \url{XXXView()} routines.
 To draw into the viewer, one must obtain the \url{Draw} object with the
 command \findex{ViewerDrawGetDraw()}
 \begin{verbatim}
-   ierr = ViewerDrawGetDraw(Viewer viewer,Draw *draw);
+   ierr = PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
 \end{verbatim}
 Then one can call any of the \url{DrawXXX} commands on the \url{draw}
 object. If one obtains the \url{draw} object in this manner, 
@@ -4320,14 +4320,14 @@ Unfortunately, this causes flashing of colors as the mouse is moved
 between the PETSc windows and other windows.  Alternatively, a shared
 colormap can be used via the option \url{-draw_x_shared_colormap}.
 
-\section{Simple Drawing}
+\section{Simple PetscDrawing}
 
 One can open a window that is not associated with a viewer directly 
 under the X11 Window System with the
 command \findex{DrawOpenX()} \sindex{X windows}
 \begin{verbatim}
-   ierr = DrawOpenX(MPI_Comm comm,char *display,char *title,int x,int y,int w,
-                    int h,Draw *win);
+   ierr = PetscDrawOpenX(MPI_Comm comm,char *display,char *title,int x,int y,int w,
+                    int h,PetscDraw *win);
 \end{verbatim}
 All drawing routines are done relative to the windows coordinate system 
 and viewport. By default the drawing coordinates are from \url{(0,0)} to 
@@ -4335,13 +4335,13 @@ and viewport. By default the drawing coordinates are from \url{(0,0)} to
 window. The application program can change the window coordinates with the 
 command \findex{DrawSetCoordinates()} \sindex{coordinates}
 \begin{verbatim}
-   ierr = DrawSetCoordinates(Draw win,double xl,double yl,double xr,double yr);
+   ierr = PetscDrawSetCoordinates(PetscDraw win,double xl,double yl,double xr,double yr);
 \end{verbatim}
 By default, graphics will be drawn in the entire window. To restrict the 
 drawing to a portion of the window, one may 
 use the command \findex{DrawSetViewPort()}
 \begin{verbatim}
-   ierr = DrawSetViewPort(Draw win,double xl,double yl,double xr,double yr);
+   ierr = PetscDrawSetViewPort(PetscDraw win,double xl,double yl,double xr,double yr);
 \end{verbatim}
 These arguments, which indicate the fraction of the window in which the 
 drawing should be done, must satisfy 
@@ -4350,7 +4350,7 @@ $ 0 \le {\tt xl} \le {\tt xr} \le 1 $ and $ 0 \le {\tt yl} \le {\tt yr} \le 1.$
 To draw a line, one uses
  the command \findex{DrawLine()} \sindex{lines, drawing}
 \begin{verbatim}
-   ierr = DrawLine(Draw win,double xl,double yl,double xr,double yr,int cl);
+   ierr = PetscDrawLine(PetscDraw win,double xl,double yl,double xr,double yr,int cl);
 \end{verbatim}
 The argument \url{cl} indicates the color (which is an integer between 0 and 255)
 of the line. A list of predefined colors may be found in \url{include/petscdraw.h}
@@ -4360,16 +4360,16 @@ To ensure that all graphics actually have been displayed, one should use
 \sindex{flushing, graphics} the
 command \findex{DrawFlush()}
 \begin{verbatim}
-   ierr = DrawFlush(Draw win);
+   ierr = PetscDrawFlush(PetscDraw win);
 \end{verbatim}
 When displaying by using double buffering, which is set with the
 command \findex{DrawSetDoubleBuffer()} \sindex{double buffer}
 \begin{verbatim}
-   ierr = DrawSetDoubleBuffer(Draw win);
+   ierr = PetscDrawSetDoubleBuffer(PetscDraw win);
 \end{verbatim}
 {\em all} processors must call \findex{DrawSynchronizedFlush()}
 \begin{verbatim}
-   ierr = DrawSynchronizedFlush(Draw win);
+   ierr = PetscDrawSynchronizedFlush(PetscDraw win);
 \end{verbatim}
 in order to swap the buffers. From the options database one may use 
 \url{-draw_pause n}, which \findex{-draw_pause} causes the PETSc application 
@@ -4380,14 +4380,14 @@ input from the user.
 Text can be drawn with either of the two \findex{DrawStringVertical()}
 commands \findex{DrawString()} \sindex{text, drawing}
 \begin{verbatim}
-   ierr = DrawString(Draw win,double x,double y,int color,char *text);
-   ierr = DrawStringVertical(Draw win,double x,double y,int color,char *text);
+   ierr = PetscDrawString(PetscDraw win,double x,double y,int color,char *text);
+   ierr = PetscDrawStringVertical(PetscDraw win,double x,double y,int color,char *text);
 \end{verbatim}
 The user can set the text font size or determine it with the 
 commands \findex{DrawStringSetSize()} \findex{DrawStringGetSize()}
 \begin{verbatim}
-   ierr = DrawStringSetSize(Draw win,double width,double height);
-   ierr = DrawStringGetSize(Draw win,double *width,double *height);
+   ierr = PetscDrawStringSetSize(PetscDraw win,double width,double height);
+   ierr = PetscDrawStringGetSize(PetscDraw win,double *width,double *height);
 \end{verbatim}
 
 \section{Line Graphs}
@@ -4398,60 +4398,60 @@ employs the line graph routines to draw simple line graphs.
 As shown in the program, within Figure~\ref{fig:plot}, line graphs 
 are created with the command \findex{DrawLGCreate()} \sindex{line graphs}
 \begin{verbatim}
-   ierr = DrawLGCreate(Draw win,int ncurves,DrawLG *ctx);
+   ierr = PetscDrawLGCreate(PetscDraw win,int ncurves,PetscDrawLG *ctx);
 \end{verbatim}
 The argument \url{ncurves} indicates how many curves are to be drawn.
 Points can be added to each of the curves with the 
 command \findex{DrawLGAddPoint()}
 \begin{verbatim}
-   ierr = DrawLGAddPoint(DrawLG ctx,double *x,double *y);
+   ierr = PetscDrawLGAddPoint(PetscDrawLG ctx,double *x,double *y);
 \end{verbatim}
 The arguments \url{x} and \url{y} are arrays containing the next 
 point value for each curve.
 Several points for each curve may be added with \findex{DrawLGAddPoints()}
 \begin{verbatim}
-   ierr = DrawLGAddPoints(DrawLG ctx,int n,double **x,double **y);
+   ierr = PetscDrawLGAddPoints(PetscDrawLG ctx,int n,double **x,double **y);
 \end{verbatim}
 
 The line graph is drawn (or redrawn) with the command \findex{DrawLGDraw()}
 \begin{verbatim}
-   ierr = DrawLGDraw(DrawLG ctx);
+   ierr = PetscDrawLGDraw(PetscDrawLG ctx);
 \end{verbatim}
 A line graph that is no longer needed can be destroyed with the 
 command \findex{DrawLGDestroy()}
 \begin{verbatim}
-   ierr = DrawLGDestroy(DrawLG ctx);
+   ierr = PetscDrawLGDestroy(PetscDrawLG ctx);
 \end{verbatim}
 To plot new curves, one can reset a linegraph with the
 command \findex{DrawLGReset()}
 \begin{verbatim}
-   ierr = DrawLGReset(DrawLG ctx);
+   ierr = PetscDrawLGReset(PetscDrawLG ctx);
 \end{verbatim}
 The line graph automatically determines the range of values to 
 display on the two axes.  The user can change these defaults with the 
 command \findex{DrawLGSetLimits()}
 \begin{verbatim}
-   ierr = DrawLGSetLimits(DrawLG ctx,double xmin,double xmax,double ymin,double ymax);
+   ierr = PetscDrawLGSetLimits(PetscDrawLG ctx,double xmin,double xmax,double ymin,double ymax);
 \end{verbatim}
 
 It is also possible to change the display of the axes and to label
 them. This procedure is done by first obtaining the axes context with the 
 command \findex{DrawLGGetAxis()} \sindex{axis, drawing}
 \begin{verbatim}
-   ierr = DrawLGGetAxis(DrawLG ctx,DrawAxis *axis);
+   ierr = PetscDrawLGGetAxis(PetscDrawLG ctx,PetscDrawAxis *axis);
 \end{verbatim}
 One can set the axes' colors and labels, respectively, by using the
 commands \findex{DrawAxisSetColors()} \findex{DrawAxisSetLabels()}
 \begin{verbatim}
-   ierr = DrawAxisSetColors(DrawAxis axis,int axis_lines,int ticks,int text);
-   ierr = DrawAxisSetLabels(DrawAxis axis,char *top,char *x,char *y);
+   ierr = PetscDrawAxisSetColors(PetscDrawAxis axis,int axis_lines,int ticks,int text);
+   ierr = PetscDrawAxisSetLabels(PetscDrawAxis axis,char *top,char *x,char *y);
 \end{verbatim}
 
 \begin{figure}[H]
 {\small
 \fileinclude{../../../src/sys/src/draw/examples/tests/ex3.c}
 }
-\caption{Example of Drawing Plots}
+\caption{Example of PetscDrawing Plots}
 \label{fig:plot}
 \end{figure}
 
@@ -4502,18 +4502,18 @@ is called. \findex{-vec_view_matlab} \findex{-mat_view_matlab} To provide finer 
 over when and what vectors and matrices are dumped one can use the VecView() and 
 MatView() functions with a viewer type of ASCII (see \url{ViewerASCIIOpen()}, 
 \url{VIEWER_STDOUT_WORLD}, \url{VIEWER_STDOUT_SELF}, or \url{VIEWER_STDOUT_(MPI_Comm)}). Before calling
-the viewer set the output type with \url{ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,char *name)} or
-\url{ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,char *name)}. \findex{VIEWER_FORMAT_ASCII_MATLAB}
+the viewer set the output type with \url{ViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,char *name)} or
+\url{ViewerPushFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,char *name)}. \findex{VIEWER_FORMAT_ASCII_MATLAB}
 \begin{verbatim}
-  ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_MATLAB,''VecA'');
-  VecView(A,VIEWER_STDOUT_WORLD);
-  ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_MATLAB,''MatB'');
-  MatView(B,VIEWER_STDOUT_WORLD);
+  PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_MATLAB,''VecA'');
+  VecView(A,PETSC_VIEWER_STDOUT_WORLD);
+  PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_MATLAB,''MatB'');
+  MatView(B,PETSC_VIEWER_STDOUT_WORLD);
 \end{verbatim}
 
 \section{Sending Data to Running Matlab}
 
-One creates a viewer to Matlab via \url{ViewerSocketOpen(MPI_Comm,char *machine,int port,Viewer *v)}
+One creates a viewer to Matlab via \url{ViewerSocketOpen(MPI_Comm,char *machine,int port,PetscViewer *v)}
 (port is usally set to \url{PETSC_DEFAULT}) and then sends matrices or vectors via
 \begin{verbatim}
   VecView(Vec A,v);
@@ -4521,9 +4521,9 @@ One creates a viewer to Matlab via \url{ViewerSocketOpen(MPI_Comm,char *machine,
 \end{verbatim}
 One can also send arrays or integer arrays via
 \begin{verbatim}
-  ViewerSocketPutScalar(v,int m,int n,Scalar *array);
-  ViewerSocketPutReal(v,int m,int n,double *array);
-  ViewerSocketPutInt(v,int m,int *array);
+  PetscViewerSocketPutScalar(v,int m,int n,Scalar *array);
+  PetscViewerSocketPutReal(v,int m,int n,double *array);
+  PetscViewerSocketPutInt(v,int m,int *array);
 \end{verbatim}
 One may start the Matlab program manually or use the PETSc command
 \url{PetscStartMatlab(MPI_Comm,char *machine,char *script,FILE **fp);} where machine and script may be \url{PETSC_NULL}.
@@ -4999,7 +4999,7 @@ since PETSc usage within the two languages differs only slightly.
 {\small
 \fileinclude{../../../src/sys/src/draw/examples/tests/ex5.F}
 }
-\caption{Sample Fortran Program:  Using PETSc Draw Routines}
+\caption{Sample Fortran Program:  Using PETSc PetscDraw Routines}
 \label{fig:draw-Fortran}
 \end{figure}
 
@@ -5973,7 +5973,7 @@ misspelled.
 PETSc employs a consistent scheme for examining, printing, and 
 saving objects through commands of the form
 \begin{verbatim}
-   ierr = XXXView(XXX obj,Viewer viewer);
+   ierr = XXXView(XXX obj,PetscViewer viewer);
 \end{verbatim}
 Here \url{obj} is any PETSc object of type
 \url{XXX}, \findex{Viewer} where \url{XXX} 
@@ -6000,32 +6000,32 @@ predefined viewers:
       \url{ViewerDrawOpenX()} causes the object to be displayed graphically.
 \item To save an object to a file in ASCII format, the user creates
       the viewer object with the command
-      \url{ViewerASCIIOpen(MPI_Comm comm, char* file, Viewer *viewer)}.  
+      \url{ViewerASCIIOpen(MPI_Comm comm, char* file, PetscViewer *viewer)}.  
       This object is \findex{ViewerASCIIOpen()}
       analogous to \url{VIEWER_STDOUT_SELF} (for a communicator of
       \url{MPI_COMM_SELF}) and 
       \url{VIEWER_STDOUT_WORLD} (for a parallel communicator).
 \item To save an object to a file in binary format, the user creates
       the viewer object with the command
-      \url{ViewerBinaryOpen(MPI_Comm comm,char* file,ViewerBinaryType type,
-      Viewer *viewer)}. \findex{ViewerBinaryOpen}  Details of binary
+      \url{ViewerBinaryOpen(MPI_Comm comm,char* file,PetscViewerBinaryType type,
+      PetscViewer *viewer)}. \findex{ViewerBinaryOpen}  Details of binary
       I/O are discussed below.
 \item Vector and matrix objects can be passed to a running Matlab process
       with a viewer created by \url{ViewerMatlabOpen(MPI_Comm comm,
-      char *machine, int port, Viewer *viewer)}. \findex{ViewerMatlabOpen()} 
+      char *machine, int port, PetscViewer *viewer)}. \findex{ViewerMatlabOpen()} 
       On the Matlab side, one must first run \url{v = openport(int port)}
       and then \url{A = receive(v)} to obtain the matrix or vector. Once all
       objects have been received, the port can be closed from the Matlab end
       with \url{closeport(v)}. On the PETSc side, one should destroy
       the viewer object with \findex{ViewerDestroy()} \url{
-      ViewerDestroy()}. The corresponding Matlab \url{mex}
+      PetscViewerDestroy()}. The corresponding Matlab \url{mex}
       files are located in \url{${PETSC_DIR}/src/viewer/impls/matlab}.
 \end{itemize}
 
 The user can control the format of ASCII printed objects with viewers 
 created by \url{ViewerASCIIOpen()} by calling
 \begin{verbatim}
-   ierr = ViewerSetFormat(Viewer viewer,int format,char *name);
+   ierr = PetscViewerSetFormat(PetscViewer viewer,int format,char *name);
 \end{verbatim}  
 \findex{VIEWER_FORMAT_ASCII_DEFAULT} \findex{VIEWER_FORMAT_ASCII_MATLAB} 
 \findex{VIEWER_FORMAT_ASCII_IMPL} \findex{ViewerSetFormat()}
@@ -6040,8 +6040,8 @@ uses the conventional row-oriented format.
 
 The routines
 \begin{verbatim}
-   ierr = ViewerPushFormat(Viewer viewer,int format,char *name);
-   ierr = ViewerPopFormat(Viewer viewer);
+   ierr = PetscViewerPushFormat(PetscViewer viewer,int format,char *name);
+   ierr = PetscViewerPopFormat(PetscViewer viewer);
 \end{verbatim} 
 allow one to temporarily change the format of a viewer.
 \findex{ViewerPushFormat()} \findex{ViewerPopFormat}
@@ -6053,8 +6053,8 @@ routines for input of a binary object have the form \url{XXXLoad()}.  In
 particular, matrix and vector binary input is handled by the
 following routines: \findex{MatLoad()} \findex{VecLoad()}
 \begin{verbatim}
-   ierr = MatLoad(Viewer viewer,MatType outtype,Mat *newmat);
-   ierr = VecLoad(Viewer viewer,Vec *newvec);
+   ierr = MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat);
+   ierr = VecLoad(PetscViewer viewer,Vec *newvec);
 \end{verbatim}
 These routines generate parallel matrices and vectors if the viewer's
 communicator has more than one processor.  The particular matrix and
@@ -6194,7 +6194,7 @@ possibly user-defined routines as well) with
 \end{verbatim}
 Likewise, all memory allocations should be checked with 
 \begin{verbatim}
-   ptr = (double*)PetscMalloc(n*sizeof(double));CHKPTRQ(void *ptr);
+ierr = PetscMalloc(n*sizeof(double),&(   ptr ));CHKPTRQ(void *ptr);
 \end{verbatim}
 If this procedure is followed throughout all of the user's libraries 
 and codes, any error will by default generate a clean traceback of 

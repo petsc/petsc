@@ -1,11 +1,11 @@
-/*$Id: aoreduced.c,v 1.24 2000/05/08 15:09:19 balay Exp bsmith $*/
+/*$Id: aoreduced.c,v 1.25 2000/09/28 21:15:12 bsmith Exp bsmith $*/
 
 #include "src/dm/ao/aoimpl.h"     /*I   "petscao.h"  I*/
 #include "petscsys.h"
 #include "petscbt.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentGetReduced_Basic"
+#define __FUNC__ "AODataSegmentGetReduced_Basic"
 int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *keys,IS *is)
 {
   AODataSegment *segment; 
@@ -28,7 +28,7 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
   */
   ierr  = PetscDataTypeGetSize(segment->datatype,&dsize);CHKERRQ(ierr);
   bs    = segment->bs;
-  odata = (char*)PetscMalloc((n+1)*bs*dsize);CHKPTRQ(odata);
+ierr = PetscMalloc((n+1)*bs*dsize,&  odata );CHKERRQ(ierr);
   idata = (char*)segment->data;
   for (i=0; i<n; i++) {
     ierr = PetscMemcpy(odata + i*bs*dsize,idata + keys[i]*bs*dsize,bs*dsize);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
     if (!PetscBTLookupSet(mask,found[i] - imin)) count++;
   }
   ierr = PetscBTMemzero(imax-imin,mask);CHKERRQ(ierr);
-  out = (int*)PetscMalloc((count+1)*sizeof(int));CHKPTRQ(out);
+ierr = PetscMalloc((count+1)*sizeof(int),&  out );CHKERRQ(ierr);
   count = 0;
   for (i=0; i<n; i++) {
     if (found[i] < 0) continue;

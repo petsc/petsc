@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.119 2000/09/02 02:49:40 bsmith Exp bsmith $*/
+/*$Id: tr.c,v 1.120 2000/09/28 21:14:16 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
@@ -7,7 +7,7 @@
    solution lies outside the trust region, if so it halts.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNES_EQ_TR_KSPConverged_Private"
+#define __FUNC__ "SNES_EQ_TR_KSPConverged_Private"
 int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n,double rnorm,KSPConvergedReason *reason,void *ctx)
 {
   SNES                snes = (SNES) ctx;
@@ -25,15 +25,15 @@ int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n,double rnorm,KSPConvergedReaso
   }
   ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
   if (*reason) {
-    PLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: regular convergence test KSP iterations=%d, rnorm=%g\n",n,rnorm);
+    PetscLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: regular convergence test KSP iterations=%d, rnorm=%g\n",n,rnorm);
   }
 
   /* Determine norm of solution */
   ierr = KSPBuildSolution(ksp,0,&x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   if (norm >= neP->delta) {
-    PLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
-    PLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: Ending linear iteration early, delta=%g, length=%g\n",neP->delta,norm);
+    PetscLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
+    PetscLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: Ending linear iteration early, delta=%g, length=%g\n",neP->delta,norm);
     *reason = KSP_CONVERGED_STEP_LENGTH;
   }
   PetscFunctionReturn(0);
@@ -52,7 +52,7 @@ int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n,double rnorm,KSPConvergedReaso
    implementations.  
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESSolve_EQ_TR"
+#define __FUNC__ "SNESSolve_EQ_TR"
 static int SNESSolve_EQ_TR(SNES snes,int *its)
 {
   SNES_EQ_TR          *neP = (SNES_EQ_TR*)snes->data;
@@ -105,7 +105,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SLESSolve(snes->sles,F,Ytmp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
-    PLogInfo(snes,"SNESSolve_EQ_TR: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
+    PetscLogInfo(snes,"SNESSolve_EQ_TR: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
     ierr = VecNorm(Ytmp,NORM_2,&norm);CHKERRQ(ierr);
     norm1 = norm;
     while(1) {
@@ -117,13 +117,13 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
         norm = delta/norm;
         gpnorm = (1.0 - norm)*fnorm;
         cnorm = norm;
-        PLogInfo(snes,"SNESSolve_EQ_TR: Scaling direction by %g\n",norm);
+        PetscLogInfo(snes,"SNESSolve_EQ_TR: Scaling direction by %g\n",norm);
         ierr = VecScale(&cnorm,Y);CHKERRQ(ierr);
         norm = gpnorm;
         ynorm = delta;
       } else {
         gpnorm = 0.0;
-        PLogInfo(snes,"SNESSolve_EQ_TR: Direction is in Trust Region\n");
+        PetscLogInfo(snes,"SNESSolve_EQ_TR: Direction is in Trust Region\n");
         ynorm = norm;
       }
       ierr = VecAYPX(&mone,X,Y);CHKERRQ(ierr);            /* Y <- X - Y */
@@ -137,11 +137,11 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
       if      (rho < neP->mu)  delta *= neP->delta1;
       else if (rho < neP->eta) delta *= neP->delta2;
       else                     delta *= neP->delta3;
-      PLogInfo(snes,"SNESSolve_EQ_TR: fnorm=%g, gnorm=%g, ynorm=%g\n",fnorm,gnorm,ynorm);
-      PLogInfo(snes,"SNESSolve_EQ_TR: gpred=%g, rho=%g, delta=%g\n",gpnorm,rho,delta);
+      PetscLogInfo(snes,"SNESSolve_EQ_TR: fnorm=%g, gnorm=%g, ynorm=%g\n",fnorm,gnorm,ynorm);
+      PetscLogInfo(snes,"SNESSolve_EQ_TR: gpred=%g, rho=%g, delta=%g\n",gpnorm,rho,delta);
       neP->delta = delta;
       if (rho > neP->sigma) break;
-      PLogInfo(snes,"SNESSolve_EQ_TR: Trying again in smaller region\n");
+      PetscLogInfo(snes,"SNESSolve_EQ_TR: Trying again in smaller region\n");
       /* check to see if progress is hopeless */
       neP->itflag = 0;
       ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
@@ -184,7 +184,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   snes->vec_sol_always  = snes->vec_sol;
   snes->vec_func_always = snes->vec_func; 
   if (i == maxits) {
-    PLogInfo(snes,"SNESSolve_EQ_TR: Maximum number of iterations has been reached: %d\n",maxits);
+    PetscLogInfo(snes,"SNESSolve_EQ_TR: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
     reason = SNES_DIVERGED_MAX_IT;
   }
@@ -196,7 +196,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESSetUp_EQ_TR"
+#define __FUNC__ "SNESSetUp_EQ_TR"
 static int SNESSetUp_EQ_TR(SNES snes)
 {
   int ierr;
@@ -204,13 +204,13 @@ static int SNESSetUp_EQ_TR(SNES snes)
   PetscFunctionBegin;
   snes->nwork = 4;
   ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
-  PLogObjectParents(snes,snes->nwork,snes->work);
+  PetscLogObjectParents(snes,snes->nwork,snes->work);
   snes->vec_sol_update_always = snes->work[3];
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESDestroy_EQ_TR"
+#define __FUNC__ "SNESDestroy_EQ_TR"
 static int SNESDestroy_EQ_TR(SNES snes)
 {
   int  ierr;
@@ -225,39 +225,39 @@ static int SNESDestroy_EQ_TR(SNES snes)
 /*------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESSetFromOptions_EQ_TR"
+#define __FUNC__ "SNESSetFromOptions_EQ_TR"
 static int SNESSetFromOptions_EQ_TR(SNES snes)
 {
   SNES_EQ_TR *ctx = (SNES_EQ_TR *)snes->data;
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("SNES trust region options for nonlinear equations");CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_eq_tr_mu","mu","None",ctx->mu,&ctx->mu,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_eq_tr_eta","eta","None",ctx->eta,&ctx->eta,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_eq_tr_sigma","sigma","None",ctx->sigma,&ctx->sigma,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_eq_tr_delta0","delta0","None",ctx->delta0,&ctx->delta0,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_eq_tr_delta1","delta1","None",ctx->delta1,&ctx->delta1,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_eq_tr_delta2","delta2","None",ctx->delta2,&ctx->delta2,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_eq_tr_delta3","delta3","None",ctx->delta3,&ctx->delta3,0);CHKERRQ(ierr);
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsHead("SNES trust region options for nonlinear equations");CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_eq_tr_mu","mu","None",ctx->mu,&ctx->mu,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_eq_tr_eta","eta","None",ctx->eta,&ctx->eta,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_eq_tr_sigma","sigma","None",ctx->sigma,&ctx->sigma,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_eq_tr_delta0","delta0","None",ctx->delta0,&ctx->delta0,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_eq_tr_delta1","delta1","None",ctx->delta1,&ctx->delta1,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_eq_tr_delta2","delta2","None",ctx->delta2,&ctx->delta2,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_eq_tr_delta3","delta3","None",ctx->delta3,&ctx->delta3,0);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESView_EQ_TR"
-static int SNESView_EQ_TR(SNES snes,Viewer viewer)
+#define __FUNC__ "SNESView_EQ_TR"
+static int SNESView_EQ_TR(SNES snes,PetscViewer viewer)
 {
   SNES_EQ_TR *tr = (SNES_EQ_TR *)snes->data;
   int        ierr;
   PetscTruth isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"  mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"  delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",tr->delta0,tr->delta1,tr->delta2,tr->delta3);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",tr->delta0,tr->delta1,tr->delta2,tr->delta3);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for SNES EQ TR",((PetscObject)viewer)->type_name);
   }
@@ -266,7 +266,7 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
 
 /* ---------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESConverged_EQ_TR"
+#define __FUNC__ "SNESConverged_EQ_TR"
 /*@C
    SNESConverged_EQ_TR - Monitors the convergence of the trust region
    method SNESEQTR for solving systems of nonlinear equations (default).
@@ -319,15 +319,15 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,SNESCon
   }
 
   if (fnorm != fnorm) {
-    PLogInfo(snes,"SNESConverged_EQ_TR:Failed to converged, function norm is NaN\n");
+    PetscLogInfo(snes,"SNESConverged_EQ_TR:Failed to converged, function norm is NaN\n");
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if (neP->delta < xnorm * snes->deltatol) {
-    PLogInfo(snes,"SNESConverged_EQ_TR: Converged due to trust region param %g<%g*%g\n",neP->delta,xnorm,snes->deltatol);
+    PetscLogInfo(snes,"SNESConverged_EQ_TR: Converged due to trust region param %g<%g*%g\n",neP->delta,xnorm,snes->deltatol);
     *reason = SNES_CONVERGED_TR_DELTA;
   } else if (neP->itflag) {
     ierr = SNESConverged_EQ_LS(snes,xnorm,pnorm,fnorm,reason,dummy);CHKERRQ(ierr);
   } else if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo(snes,"SNESConverged_EQ_TR: Exceeded maximum number of function evaluations: %d > %d\n",snes->nfuncs,snes->max_funcs);
+    PetscLogInfo(snes,"SNESConverged_EQ_TR: Exceeded maximum number of function evaluations: %d > %d\n",snes->nfuncs,snes->max_funcs);
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   } else {
     *reason = SNES_CONVERGED_ITERATING;
@@ -337,7 +337,7 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,SNESCon
 /* ------------------------------------------------------------ */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESCreate_EQ_TR"
+#define __FUNC__ "SNESCreate_EQ_TR"
 int SNESCreate_EQ_TR(SNES snes)
 {
   SNES_EQ_TR *neP;
@@ -354,8 +354,8 @@ int SNESCreate_EQ_TR(SNES snes)
   snes->view            = SNESView_EQ_TR;
   snes->nwork           = 0;
   
-  neP			= PetscNew(SNES_EQ_TR);CHKPTRQ(neP);
-  PLogObjectMemory(snes,sizeof(SNES_EQ_TR));
+  ierr			= PetscNew(SNES_EQ_TR,&neP);CHKERRQ(ierr);
+  PetscLogObjectMemory(snes,sizeof(SNES_EQ_TR));
   snes->data	        = (void*)neP;
   neP->mu		= 0.25;
   neP->eta		= 0.75;

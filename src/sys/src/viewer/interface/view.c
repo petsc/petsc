@@ -1,28 +1,28 @@
-/*$Id: view.c,v 1.39 2000/05/10 16:38:49 bsmith Exp bsmith $*/
+/*$Id: view.c,v 1.40 2000/09/22 20:41:53 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerDestroy"></a>*/"ViewerDestroy" 
+#define __FUNC__ "PetscViewerDestroy" 
 /*@C
-   ViewerDestroy - Destroys a viewer.
+   PetscViewerDestroy - Destroys a PetscViewer.
 
-   Collective on Viewer
+   Collective on PetscViewer
 
    Input Parameters:
-.  viewer - the viewer to be destroyed.
+.  PetscViewer - the PetscViewer to be destroyed.
 
    Level: beginner
 
-.seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerCreate(), ViewerDrawOpen()
+.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen()
 
 @*/
-int ViewerDestroy(Viewer viewer)
+int PetscViewerDestroy(PetscViewer viewer)
 {
   int         ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   if (--viewer->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
@@ -31,46 +31,46 @@ int ViewerDestroy(Viewer viewer)
   if (viewer->ops->destroy) {
     ierr = (*viewer->ops->destroy)(viewer);CHKERRQ(ierr);
   }
-  PLogObjectDestroy((PetscObject)viewer);
+  PetscLogObjectDestroy((PetscObject)viewer);
   PetscHeaderDestroy((PetscObject)viewer);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerGetType"></a>*/"ViewerGetType" 
+#define __FUNC__ "PetscViewerGetType" 
 /*@C
-   ViewerGetType - Returns the type of a viewer.
+   PetscViewerGetType - Returns the type of a PetscViewer.
 
    Not Collective
 
    Input Parameter:
-.   viewer - the viewer
+.   PetscViewer - the PetscViewer
 
    Output Parameter:
-.  type - viewer type (see below)
+.  type - PetscViewer type (see below)
 
    Available Types Include:
-.  SOCKET_VIEWER - Socket viewer
-.  ASCII_VIEWER - ASCII viewer
-.  BINARY_VIEWER - binary file viewer
-.  STRING_VIEWER - string viewer
-.  DRAW_VIEWER - drawing viewer
+.  PETSC_VIEWER_SOCKET - Socket PetscViewer
+.  PETSC_VIEWER_ASCII - ASCII PetscViewer
+.  PETSC_BINARY_VIEWER - binary file PetscViewer
+.  PETSC_VIEWER_STRING - string PetscViewer
+.  PETSC_DRAW_VIEWER - drawing PetscViewer
 
    Level: intermediate
 
    Note:
-   See include/petscviewer.h for a complete list of viewers.
+   See include/petscviewer.h for a complete list of PetscViewers.
 
-   ViewerType is actually a string
+   PetscViewerType is actually a string
 
-.seealso: ViewerCreate(), ViewerSetType()
+.seealso: PetscViewerCreate(), PetscViewerSetType()
 
 @*/
-int ViewerGetType(Viewer viewer,ViewerType *type)
+int PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
-  *type = (ViewerType) viewer->type_name;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  *type = (PetscViewerType) viewer->type_name;
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.76 2000/09/22 20:46:14 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.77 2000/09/28 21:14:25 bsmith Exp bsmith $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   Vec            x,r;                 /* solution, residual vectors */
   Mat            J;                    /* Jacobian matrix */
   AppCtx         user;                 /* user-defined application context */
-  Draw           draw;                 /* drawing context */
+  PetscDraw           draw;                 /* drawing context */
   int            i,ierr,its,N,size,hist_its[50]; 
   double         bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
   MatFDColoring  fdcoloring;           
@@ -88,9 +88,9 @@ int main(int argc,char **argv)
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,"Lambda is out of range");
   }
@@ -129,7 +129,7 @@ int main(int argc,char **argv)
      for the Jacobian.  See the users manual for a discussion of better 
      techniques for preallocating matrix memory.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
   if (!matrix_free) {
     ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRA(ierr);
   }
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
      This option will cause the Jacobian to be computed via finite differences
     efficiently using a coloring of the columns of the matrix.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-snes_fd_coloring",&fd_coloring);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_fd_coloring",&fd_coloring);CHKERRA(ierr);
 
   if (matrix_free && fd_coloring)  SETERRA(1,"Use only one of -snes_mf, -snes_fd_coloring options!\n\
                                                 You can do -snes_mf_operator -snes_fd_coloring");
@@ -222,21 +222,21 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
 
   /*
-     Draw contour plot of solution
+     PetscDraw contour plot of solution
   */
-  /* ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr); */
-  ierr = DrawCreate(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
-  ierr = DrawSetType(draw,DRAW_X);CHKERRA(ierr);
+  /* ierr = PetscDrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr); */
+  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
+  ierr = PetscDrawSetType(draw,PETSC_DRAW_X);CHKERRA(ierr);
 
   ierr = VecGetArray(x,&array);CHKERRQ(ierr);
-  ierr = DrawTensorContour(draw,user.mx,user.my,0,0,array);CHKERRA(ierr);
+  ierr = PetscDrawTensorContour(draw,user.mx,user.my,0,0,array);CHKERRA(ierr);
   ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
 
   /* 
      Print the convergence history.  This is intended just to demonstrate
      use of the data attained via SNESSetConvergenceHistory().  
   */
-  ierr = OptionsHasName(PETSC_NULL,"-print_history",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-print_history",&flg);CHKERRA(ierr);
   if (flg) {
     for (i=0; i<its+1; i++) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %d: Linear iterations %d Function norm = %g\n",i,hist_its[i],history[i]);CHKERRA(ierr);
@@ -256,7 +256,7 @@ int main(int argc,char **argv)
   }
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(r);CHKERRA(ierr);
-  ierr = DrawDestroy(draw);CHKERRA(ierr);
+  ierr = PetscDrawDestroy(draw);CHKERRA(ierr);
   ierr = SNESDestroy(snes);CHKERRA(ierr);
   PetscFinalize();
 

@@ -1,15 +1,15 @@
-/*$Id: dclear.c,v 1.29 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dclear.c,v 1.30 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
-       Provides the calling sequences for all the basic Draw routines.
+       Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawClear"></a>*/"DrawClear" 
+#define __FUNC__ "DrawClear" 
 /*@
-   DrawClear - Clears graphical output.
+   PetscDrawClear - Clears graphical output.
 
-   Not collective (Use DrawSynchronizedClear() for collective)
+   Not collective (Use PetscDrawSynchronizedClear() for collective)
 
    Input Parameter:
 .  draw - the drawing context
@@ -18,14 +18,14 @@
 
    Concepts: clear^window
 
-.seealso: DrawBOP(), DrawEOP(), DrawSynchronizedClear()
+.seealso: PetscDrawBOP(), PetscDrawEOP(), PetscDrawSynchronizedClear()
 @*/
-int DrawClear(Draw draw)
+int PetscDrawClear(PetscDraw draw)
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   if (draw->ops->clear) {
     ierr = (*draw->ops->clear)(draw);CHKERRQ(ierr);
   }
@@ -33,50 +33,50 @@ int DrawClear(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawBOP"></a>*/"DrawBOP" 
+#define __FUNC__ "DrawBOP" 
 /*@
-   DrawBOP - Begins a new page or frame on the selected graphical device.
+   PetscDrawBOP - Begins a new page or frame on the selected graphical device.
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameter:
 .  draw - the drawing context
 
    Level: advanced
 
-.seealso: DrawEOP(), DrawClear()
+.seealso: PetscDrawEOP(), PetscDrawClear()
 @*/
-int DrawBOP(Draw draw)
+int PetscDrawBOP(PetscDraw draw)
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   if (draw->ops->beginpage) {
     ierr = (*draw->ops->beginpage)(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawEOP"></a>*/"DrawEOP" 
+#define __FUNC__ "DrawEOP" 
 /*@
-   DrawEOP - Ends a page or frame on the selected graphical device.
+   PetscDrawEOP - Ends a page or frame on the selected graphical device.
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameter:
 .  draw - the drawing context
 
    Level: advanced
 
-.seealso: DrawBOP(), DrawClear()
+.seealso: PetscDrawBOP(), PetscDrawClear()
 @*/
-int DrawEOP(Draw draw)
+int PetscDrawEOP(PetscDraw draw)
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   if (draw->ops->endpage) {
     ierr =  (*draw->ops->endpage)(draw);CHKERRQ(ierr);
   }

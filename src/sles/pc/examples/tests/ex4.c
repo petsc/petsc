@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.38 2000/01/11 21:01:53 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.39 2000/05/05 22:17:23 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR and tests\n\
 the MatRelax() routines.\n\n";
@@ -48,7 +48,7 @@ int main(int argc,char **args)
     ierr = VecSet(&zero,u);CHKERRA(ierr);
     ierr = VecSetValues(u,1,&i,value,INSERT_VALUES);CHKERRA(ierr);
     ierr = PCApply(pc,u,b);CHKERRA(ierr);
-    ierr = VecView(b,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+    ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   }
 
   /* Free data structures */

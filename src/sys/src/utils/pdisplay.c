@@ -1,4 +1,4 @@
-/*$Id: pdisplay.c,v 1.20 2000/05/05 22:14:11 balay Exp bsmith $*/
+/*$Id: pdisplay.c,v 1.21 2000/07/10 03:38:56 bsmith Exp bsmith $*/
 
 #include "petsc.h"        
 #include "petscsys.h"             /*I    "petscsys.h"   I*/
@@ -9,9 +9,9 @@
 #include "petscfix.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"OptionsGetenv"
+#define __FUNC__ "PetscOptionsGetenv"
 /*@C
-     OptionsGetenv - Gets an environmental variable, broadcasts to all
+     PetscOptionsGetenv - Gets an environmental variable, broadcasts to all
           processors in communicator from first.
 
      Collective on MPI_Comm
@@ -38,7 +38,7 @@
     put it in a universal location like a .chsrc file
 
 @*/
-int OptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,PetscTruth *flag)
+int PetscOptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,PetscTruth *flag)
 {
   int        rank,ierr;
   char       *str,work[256];
@@ -56,7 +56,7 @@ int OptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,PetscTruth *
     ierr = PetscStrcat(work,name);CHKERRQ(ierr);
   }
   ierr = PetscStrtolower(work);CHKERRQ(ierr);
-  ierr = OptionsGetString(PETSC_NULL,work,env,len,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,work,env,len,&flg);CHKERRQ(ierr);
   if (flg) {
     if (flag) *flag = PETSC_TRUE;
   } else { /* now check environment */
@@ -83,7 +83,7 @@ int OptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,PetscTruth *
 static char PetscDisplay[128]; 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSetDisplay" 
+#define __FUNC__ "PetscSetDisplay" 
 int PetscSetDisplay(void)
 {
   int        size,rank,len,ierr;
@@ -91,7 +91,7 @@ int PetscSetDisplay(void)
   char       *str,display[128];
 
   PetscFunctionBegin;
-  ierr = OptionsGetString(PETSC_NULL,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -114,7 +114,7 @@ int PetscSetDisplay(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscGetDisplay" 
+#define __FUNC__ "PetscGetDisplay" 
 /*
      PetscGetDisplay - Gets the display variable for all processors.
 

@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.21 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex19.c,v 1.22 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
 To test the parallel matrix assembly, this example intentionally lays out\n\
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   double     h,norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
 
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m;         /* number of elements */
@@ -87,17 +87,17 @@ int main(int argc,char **args)
   }
 
   /* Now test MatGetValues() */
-  ierr = OptionsHasName(PETSC_NULL,"-get_values",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-get_values",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = MatGetOwnershipRange(C,&mystart,&myend);CHKERRA(ierr);
     nrsub = myend - mystart; ncsub = 4;
-    vals = (Scalar*)PetscMalloc(nrsub*ncsub*sizeof(Scalar));CHKPTRA(vals);
-    rsub = (int*)PetscMalloc(nrsub*sizeof(int));CHKPTRA(rsub);
-    csub = (int*)PetscMalloc(ncsub*sizeof(int));CHKPTRA(csub);
+ierr = PetscMalloc(nrsub*ncsub*sizeof(Scalar),&(    vals ));CHKPTRA(vals);
+ierr = PetscMalloc(nrsub*sizeof(int),&(    rsub ));CHKPTRA(rsub);
+ierr = PetscMalloc(ncsub*sizeof(int),&(    csub ));CHKPTRA(csub);
     for (i=myend-1; i>=mystart; i--) rsub[myend-i-1] = i;
     for (i=0; i<ncsub; i++) csub[i] = 2*(ncsub-i) + mystart;
     ierr = MatGetValues(C,nrsub,rsub,ncsub,csub,vals);CHKERRA(ierr);
-    ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"processor number %d: start=%d, end=%d, mystart=%d, myend=%d\n",
             rank,start,end,mystart,myend);CHKERRQ(ierr);
     for (i=0; i<nrsub; i++) {

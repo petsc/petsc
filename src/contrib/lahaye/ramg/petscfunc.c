@@ -102,7 +102,7 @@ int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
 {
   Scalar   *values; 
   Vec      t, v, V; 
-  Viewer   viewer; 
+  PetscViewer   viewer; 
   char     filename[161];
   int      ierr, i, numnodes; 
   CONVHIST *convhist;
@@ -118,11 +118,11 @@ int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
 
   ierr = KSPBuildResidual(ksp, t, v, &V); CHKERRA(ierr); 
   
-  //  ierr = ViewerFileOpenASCII(MPI_COMM_WORLD,filename,&viewer); CHKERRA(ierr);
-  //  ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,PETSC_NULL); 
+  //  ierr = PetscViewerFileOpenASCII(MPI_COMM_WORLD,filename,&viewer); CHKERRA(ierr);
+  //  ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,PETSC_NULL); 
   //         CHKERRA(ierr);
   //  ierr = VecView(V, viewer); CHKERRA(ierr);
-  //  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
+  //  ierr = PetscViewerDestroy(viewer); CHKERRA(ierr);
   ierr = VecGetArray(V,&values); CHKERRA(ierr); 
   PetscFOpen(MPI_COMM_WORLD,filename,"w",&fout);
   for (i=0;i<numnodes;i++)
@@ -134,16 +134,6 @@ int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
   return 0;
 }
 
-/* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "ConvhistCtxCreate"
-int ConvhistCtxCreate(CONVHIST **convhist)
-{
-   CONVHIST *newctx = PetscNew(CONVHIST);  CHKPTRQ(newctx); 
-   newctx->BNRM2 =0.;
-   *convhist = newctx; 
-   return 0; 
-}
 
 /* ------------------------------------------------------------------- */
 #undef __FUNC__
@@ -218,17 +208,17 @@ int PrintSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 int ViewSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 {
   int    i, ierr;
-  Viewer viewer; 
-  Draw   draw; 
+  PetscViewer viewer; 
+  PetscDraw   draw; 
 
   for (i=0; i<nsub; i++) {
     // ierr = MatView(submat[i],PETSC_NULL); CHKERRA(ierr);
-     ierr = ViewerDrawOpen(MPI_COMM_WORLD,PETSC_NULL, PETSC_NULL, 
+     ierr = PetscViewerDrawOpen(MPI_COMM_WORLD,PETSC_NULL, PETSC_NULL, 
             0, 0, 500,500,&viewer); 
-     ierr = ViewerDrawGetDraw(viewer, 0, &draw); CHKERRA(ierr);
+     ierr = PetscViewerDrawGetDraw(viewer, 0, &draw); CHKERRA(ierr);
      ierr = MatView(submat[i], viewer); CHKERRA(ierr);
-     ierr = DrawPause(draw); CHKERRA(ierr);
-     ierr = ViewerDestroy(viewer); CHKERRA(ierr);
+     ierr = PetscDrawPause(draw); CHKERRA(ierr);
+     ierr = PetscViewerDestroy(viewer); CHKERRA(ierr);
   }
 
   return 0;
@@ -257,16 +247,16 @@ int SamgShellPCSetUpOnFem(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
 int MyMatView(Mat mat,void *dummy)
 {
   int    i, ierr;
-  Viewer viewer; 
-  Draw   draw; 
+  PetscViewer viewer; 
+  PetscDraw   draw; 
 
-  ierr = ViewerDrawOpen(MPI_COMM_WORLD,PETSC_NULL, PETSC_NULL, 
+  ierr = PetscViewerDrawOpen(MPI_COMM_WORLD,PETSC_NULL, PETSC_NULL, 
 	 0, 0, 500,500,&viewer); 
-  ierr = ViewerDrawGetDraw(viewer, 0, &draw); CHKERRA(ierr);
+  ierr = PetscViewerDrawGetDraw(viewer, 0, &draw); CHKERRA(ierr);
   ierr = MatView(mat, viewer); CHKERRA(ierr);
-  ierr = DrawSetPause(draw, 5); CHKERRA(ierr);
-  ierr = DrawPause(draw); CHKERRA(ierr);
-  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
+  ierr = PetscDrawSetPause(draw, 5); CHKERRA(ierr);
+  ierr = PetscDrawPause(draw); CHKERRA(ierr);
+  ierr = PetscViewerDestroy(viewer); CHKERRA(ierr);
 
   return 0;
 }
@@ -277,7 +267,7 @@ int MyMatView(Mat mat,void *dummy)
 int PrintMatrix(Mat mat, char* path, char* base)
 {
    int      ierr;
-   Viewer   viewer; 
+   PetscViewer   viewer; 
    char     filename[80]; 
    Scalar   *vals_getrow; 
    int      numrows, numcols, numnonzero, I, j, ncols_getrow, *cols_getrow;
@@ -291,15 +281,15 @@ int PrintMatrix(Mat mat, char* path, char* base)
    /*..Set file and open file for reading..*/ 
    sprintf(filename, "%s%s", path, base);
    printf("   [PrintMatrix]::Generating file %s ...\n", filename); 
-   ierr = ViewerASCIIOpen(MPI_COMM_WORLD,filename,&viewer); 
+   ierr = PetscViewerASCIIOpen(MPI_COMM_WORLD,filename,&viewer); 
           CHKERRA(ierr);
  
    /*..Print file header..*/
-   ierr = ViewerASCIIPrintf(viewer,"%% \n"); 
+   ierr = PetscViewerASCIIPrintf(viewer,"%% \n"); 
    if (numrows==numcols)    /*..square matrix..*/  
-     ierr = ViewerASCIIPrintf(viewer,"%% %d %d \n", numrows, numnonzero); 
+     ierr = PetscViewerASCIIPrintf(viewer,"%% %d %d \n", numrows, numnonzero); 
    else                     /*..rectangular matrix..*/ 
-     ierr = ViewerASCIIPrintf(viewer,"%% %d %d %d \n", numrows, numcols,  
+     ierr = PetscViewerASCIIPrintf(viewer,"%% %d %d %d \n", numrows, numcols,  
                                                     numnonzero); 
  
    /*..Print matrix to rowwise file..*/ 
@@ -310,18 +300,18 @@ int PrintMatrix(Mat mat, char* path, char* base)
      /*....Print row I of matrix....*/ 
      for (j=0;j<ncols_getrow;j++){
        #if defined(PETSC_USE_COMPLEX)
-         ierr = ViewerASCIIPrintf( viewer,"%d %d %22.18e %22.18e\n", 
+         ierr = PetscViewerASCIIPrintf( viewer,"%d %d %22.18e %22.18e\n", 
                 I+1, cols_getrow[j]+1, real(vals_getrow[j]), 
                 imag(vals_getrow[j]) ); 
        #else
-         ierr = ViewerASCIIPrintf( viewer,"%d %d %22.18e \n", 
+         ierr = PetscViewerASCIIPrintf( viewer,"%d %d %22.18e \n", 
                 I+1, cols_getrow[j]+1, vals_getrow[j] ); 
        #endif 
      }
    }
 
    /*..Close file..*/ 
-   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
+   ierr = PetscViewerDestroy(viewer); CHKERRA(ierr);
    printf("   [PrintMatrix]::Done Generating file !\n", filename);       
    return 0; 
 }
@@ -332,7 +322,7 @@ int PrintMatrix(Mat mat, char* path, char* base)
 int PrintVector(Vec vec, char* path, char* base) 
 {
    int    ierr;
-   Viewer viewer; 
+   PetscViewer viewer; 
    char   filename[80]; 
    Scalar *values; 
    int    size, i; 
@@ -341,27 +331,27 @@ int PrintVector(Vec vec, char* path, char* base)
    printf("   [PrintVector]::Generating file %s ...\n", filename); 
    ierr = VecGetSize(vec, &size); CHKERRA(ierr);
    values = (Scalar *) PetscMalloc(size * sizeof(Scalar)); 
-            CHKPTRQ(values); 
+            CHKERRQ(ierr); 
    ierr = VecGetArray(vec, &values); CHKERRA(ierr);
-   ierr = ViewerASCIIOpen(MPI_COMM_WORLD,filename,&viewer); 
+   ierr = PetscViewerASCIIOpen(MPI_COMM_WORLD,filename,&viewer); 
           CHKERRA(ierr);
-   ierr = ViewerASCIIPrintf(viewer,"function [z] = %s()\n",base); 
+   ierr = PetscViewerASCIIPrintf(viewer,"function [z] = %s()\n",base); 
           CHKERRA(ierr);
-   ierr = ViewerASCIIPrintf(viewer,"z = [\n"); 
+   ierr = PetscViewerASCIIPrintf(viewer,"z = [\n"); 
           CHKERRA(ierr);
    for (i=0;i<size;i++){
      #if defined(PETSC_USE_COMPLEX)
-       ierr = ViewerASCIIPrintf(viewer, "%22.18e %22.18e \n",
+       ierr = PetscViewerASCIIPrintf(viewer, "%22.18e %22.18e \n",
                                 real( values[i] ), imag( values[i] )); 
               CHKERRA(ierr);
      #else 
-       ierr = ViewerASCIIPrintf(viewer, "%22.18e \n", values[i] ); 
+       ierr = PetscViewerASCIIPrintf(viewer, "%22.18e \n", values[i] ); 
               CHKERRA(ierr);
      #endif 
    }
-  ierr = ViewerASCIIPrintf(viewer,"]; \n"); 
+  ierr = PetscViewerASCIIPrintf(viewer,"]; \n"); 
           CHKERRA(ierr);
-   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
+   ierr = PetscViewerDestroy(viewer); CHKERRA(ierr);
    ierr = VecRestoreArray(vec, &values); CHKERRA(ierr);
    printf("   [PrintVector]::Done Generating file !\n", filename);    
    return 0; 

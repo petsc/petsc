@@ -1,32 +1,32 @@
-/*$Id: flush.c,v 1.27 2000/05/10 16:38:49 bsmith Exp bsmith $*/
+/*$Id: flush.c,v 1.28 2000/09/22 20:41:53 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=ViewerFlush""></a>*/"ViewerFlush" 
+#define __FUNC__ /*<a name=ViewerFlush""></a>*/"PetscViewerFlush" 
 /*@
-   ViewerFlush - Flushes a viewer (i.e. tries to dump all the 
-   data that has been printed through a viewer).
+   PetscViewerFlush - Flushes a PetscViewer (i.e. tries to dump all the 
+   data that has been printed through a PetscViewer).
 
-   Collective on Viewer
+   Collective on PetscViewer
 
    Input Parameter:
-.  viewer - the viewer to be flushed
+.  PetscViewer - the PetscViewer to be flushed
 
    Level: intermediate
 
    Concepts: flushing^Viewer data
    Concepts: redrawing^flushing 
 
-.seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerDrawOpen(), ViewerCreate(), ViewerDestroy(),
-          ViewerSetType()
+.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerCreate(), PetscViewerDestroy(),
+          PetscViewerSetType()
 @*/
-int ViewerFlush(Viewer viewer)
+int PetscViewerFlush(PetscViewer viewer)
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   if (viewer->ops->flush) {
     ierr = (*viewer->ops->flush)(viewer);CHKERRQ(ierr);
   }

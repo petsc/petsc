@@ -1,13 +1,13 @@
-/*$Id: dlinew.c,v 1.28 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dlinew.c,v 1.29 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
-       Provides the calling sequences for all the basic Draw routines.
+       Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawLineSetWidth"></a>*/"DrawLineSetWidth" 
+#define __FUNC__ "DrawLineSetWidth" 
 /*@
-   DrawLineSetWidth - Sets the line width for future draws.  The width is
+   PetscDrawLineSetWidth - Sets the line width for future draws.  The width is
    relative to the user coordinates of the window; 0.0 denotes the natural
    width; 1.0 denotes the entire viewport. 
 
@@ -21,16 +21,16 @@
 
    Concepts: line^width
 
-.seealso:  DrawLineGetWidth()
+.seealso:  PetscDrawLineGetWidth()
 @*/
-int DrawLineSetWidth(Draw draw,PetscReal width)
+int PetscDrawLineSetWidth(PetscDraw draw,PetscReal width)
 {
   int        ierr;
   PetscTruth isdrawnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  ierr = PetscTypeCompare((PetscObject)draw,DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) PetscFunctionReturn(0);
   ierr = (*draw->ops->linesetwidth)(draw,width);CHKERRQ(ierr);
   PetscFunctionReturn(0);

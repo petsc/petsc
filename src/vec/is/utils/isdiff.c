@@ -1,11 +1,11 @@
-/*$Id: isdiff.c,v 1.21 2000/07/10 03:39:12 bsmith Exp bsmith $*/
+/*$Id: isdiff.c,v 1.22 2000/10/24 20:24:56 bsmith Exp bsmith $*/
 
 #include "petscis.h"                    /*I "petscis.h"  I*/
 #include "petsc.h"
 #include "petscbt.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISDifference"
+#define __FUNC__ "ISDifference"
 /*@
    ISDifference - Computes the difference between two index sets.
 
@@ -80,7 +80,7 @@ int ISDifference(IS is1,IS is2,IS *isout)
   }
 
   /* create the new IS containing the difference */
-  iout = (int*)PetscMalloc((nout+1)*sizeof(int));CHKPTRQ(iout);
+  ierr = PetscMalloc((nout+1)*sizeof(int),&iout);CHKERRQ(ierr);
   nout = 0;
   for (i=0; i<imax-imin+1; i++) {
     if (PetscBTLookup(mask,i)) iout[nout++] = i + imin;
@@ -94,7 +94,7 @@ int ISDifference(IS is1,IS is2,IS *isout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISSum"
+#define __FUNC__ "ISSum"
 /*@
    ISSum - Computes the sum (union) of two index sets.
 
@@ -153,7 +153,7 @@ int ISSum(IS is1,IS is2,IS *isout)
   } else {
     imin = imax = 0;
   }
-  iout = (int*)PetscMalloc((n1+n2+1)*sizeof(int));CHKPTRQ(iout);
+  ierr = PetscMalloc((n1+n2+1)*sizeof(int),&iout);CHKERRQ(ierr);
   nout = 0;
   ierr = PetscBTCreate(imax-imin,mask);CHKERRQ(ierr);
   /* Put the values from is1 */

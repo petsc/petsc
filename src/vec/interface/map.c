@@ -1,4 +1,4 @@
-/*$Id: map.c,v 1.11 2000/09/15 18:53:37 balay Exp bsmith $*/
+/*$Id: map.c,v 1.12 2000/10/24 20:25:11 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all map operations.
    These are the map functions the user calls.
@@ -6,7 +6,7 @@
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MapGetLocalSize"
+#define __FUNC__ "MapGetLocalSize"
 /*@C
    MapGetLocalSize - Gets the number of elements associated with this processor.
 
@@ -36,7 +36,7 @@ int MapGetLocalSize(Map m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MapGetSize"
+#define __FUNC__ "MapGetSize"
 /*@C
    MapGetSize - Gets the total number of elements associated with this map.
 
@@ -65,7 +65,7 @@ int MapGetSize(Map m,int *N)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MapGetLocalRange"
+#define __FUNC__ "MapGetLocalRange"
 /*@C
    MapGetLocalRange - Gets the local ownership range for this procesor.
 
@@ -94,7 +94,7 @@ int MapGetLocalRange(Map m,int *rstart,int *rend)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MapGetGlobalRange"
+#define __FUNC__ "MapGetGlobalRange"
 /*@C
    MapGetGlobalRange - Gets the ownership ranges for all processors.
 
@@ -124,7 +124,7 @@ int MapGetGlobalRange(Map m,int *range[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MapDestroy"
+#define __FUNC__ "MapDestroy"
 /*@C
    MapDestroy - Destroys a map object.
 

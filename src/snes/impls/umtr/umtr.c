@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.99 2000/09/23 15:04:48 balay Exp bsmith $*/
+/*$Id: umtr.c,v 1.100 2000/09/28 21:14:18 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
@@ -29,7 +29,7 @@
            previously specified.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESSolve_UM_TR"
+#define __FUNC__ "SNESSolve_UM_TR"
 static int SNESSolve_UM_TR(SNES snes,int *outits)
 {
   SNES_UM_TR          *neP = (SNES_UM_TR*)snes->data;
@@ -73,7 +73,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPQCG);CHKERRQ(ierr);
-  PLogInfo(snes,"SNESSolve_UM_TR: setting KSPType = KSPQCG\n");
+  PetscLogInfo(snes,"SNESSolve_UM_TR: setting KSPType = KSPQCG\n");
   qcgP = (KSP_QCG*)ksp->data;
 
   for (i=0; i<maxits && !nlconv; i++) {
@@ -92,7 +92,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
         else delta = neP->delta0;
         ierr = MatNorm(snes->jacobian,NORM_1,&max_val);CHKERRQ(ierr);
         if (ierr == PETSC_ERR_SUP) {
-          PLogInfo(snes,"SNESSolve_UM_TR: Initial delta computed without matrix norm info\n");
+          PetscLogInfo(snes,"SNESSolve_UM_TR: Initial delta computed without matrix norm info\n");
         } else {
           if (PetscAbsDouble(max_val)<1.e-14)SETERRQ(PETSC_ERR_PLIB,"Hessian norm is too small");
           delta = PetscMax(delta,snes->norm/max_val);
@@ -111,7 +111,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       if (kreason != KSP_CONVERGED_QCG_NEG_CURVE && kreason != KSP_CONVERGED_QCG_CONSTRAINED) {
         newton = PETSC_TRUE;
       }
-      PLogInfo(snes,"SNESSolve_UM_TR: %d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
+      PetscLogInfo(snes,"SNESSolve_UM_TR: %d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
                i,qcgP->ltsnrm,delta,qcgP->quadratic,qits);
 
       ierr = VecWAXPY(&one,X,S,Xtrial);CHKERRQ(ierr); /* Xtrial <- X + S */
@@ -128,7 +128,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
 
       if (neP->actred < neP->eta1 * neP->prered) {  /* Unsuccessful step */
 
-         PLogInfo(snes,"SNESSolve_UM_TR: Rejecting step\n");
+         PetscLogInfo(snes,"SNESSolve_UM_TR: Rejecting step\n");
          snes->nfailures += 1;
 
          /* If iterate is Newton step, reduce delta to current step length */
@@ -141,7 +141,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       } else {          /* Successful iteration; adjust trust radius */
 
         neP->success = 1;
-        PLogInfo(snes,"SNESSolve_UM_TR: Accepting step\n");
+        PetscLogInfo(snes,"SNESSolve_UM_TR: Accepting step\n");
         if (newton) {
            delta = sqrt(qcgP->ltsnrm*delta);
            if (neP->actred < neP->eta2 * neP->prered) delta /= two;
@@ -182,7 +182,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     snes->vec_func_always = snes->vec_func; 
   }
   if (i == maxits) {
-    PLogInfo(snes,"SNESSolve_UM_TR: Maximum number of iterations reached: %d\n",maxits);
+    PetscLogInfo(snes,"SNESSolve_UM_TR: Maximum number of iterations reached: %d\n",maxits);
     i--;
     reason = SNES_DIVERGED_MAX_IT;
   }
@@ -194,7 +194,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESSetUp_UM_TR"
+#define __FUNC__ "SNESSetUp_UM_TR"
 static int SNESSetUp_UM_TR(SNES snes)
 {
   int ierr;
@@ -202,13 +202,13 @@ static int SNESSetUp_UM_TR(SNES snes)
   PetscFunctionBegin;
   snes->nwork = 4;
   ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
-  PLogObjectParents(snes,snes->nwork,snes->work);
+  PetscLogObjectParents(snes,snes->nwork,snes->work);
   snes->vec_sol_update_always = snes->work[3];
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESDestroy_UM_TR"
+#define __FUNC__ "SNESDestroy_UM_TR"
 static int SNESDestroy_UM_TR(SNES snes)
 {
   int  ierr;
@@ -222,7 +222,7 @@ static int SNESDestroy_UM_TR(SNES snes)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESConverged_UM_TR"
+#define __FUNC__ "SNESConverged_UM_TR"
 /*@C
    SNESConverged_UM_TR - Monitors the convergence of the SNESSolve_UM_TR()
    routine (default). 
@@ -274,26 +274,26 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,SNESConverg
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   } else if (f != f) {
-    PLogInfo(snes,"SNESConverged_UM_TR:Failed to converged, function is NaN\n");
+    PetscLogInfo(snes,"SNESConverged_UM_TR:Failed to converged, function is NaN\n");
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if ((!neP->success || neP->sflag) && (delta <= snes->deltatol * xnorm)) {
     neP->sflag = 0;
-    PLogInfo(snes,"SNESConverged_UM_TR: Trust region param satisfies tolerance: %g<=%g*%g\n",
+    PetscLogInfo(snes,"SNESConverged_UM_TR: Trust region param satisfies tolerance: %g<=%g*%g\n",
              delta,snes->deltatol,xnorm);  
     *reason = SNES_CONVERGED_TR_DELTA;
   } else if ((PetscAbsDouble(ared) <= PetscAbsDouble(f) * rtol) && (pred) <= rtol*PetscAbsDouble(f)) {
-    PLogInfo(snes,"SNESConverged_UM_TR:Actual (%g) and predicted (%g) reductions<%g*%g\n",
+    PetscLogInfo(snes,"SNESConverged_UM_TR:Actual (%g) and predicted (%g) reductions<%g*%g\n",
              PetscAbsDouble(ared),pred,rtol,PetscAbsDouble(f));
     *reason = SNES_CONVERGED_TR_REDUCTION;
   } else if (f < snes->fmin) {
-    PLogInfo(snes,"SNESConverged_UM_TR:Function value (%g)<f_{minimum} (%g)\n",f,snes->fmin);
+    PetscLogInfo(snes,"SNESConverged_UM_TR:Function value (%g)<f_{minimum} (%g)\n",f,snes->fmin);
     *reason = SNES_CONVERGED_FNORM_ABS ;
   } else if ((PetscAbsDouble(ared) <= epsmch) && pred <= epsmch) {
-    PLogInfo(snes,"SNESConverged_UM_TR:Actual (%g) and predicted (%g) reductions<epsmch (%g)\n",
+    PetscLogInfo(snes,"SNESConverged_UM_TR:Actual (%g) and predicted (%g) reductions<epsmch (%g)\n",
              PetscAbsDouble(ared),pred,epsmch);
     *reason = SNES_DIVERGED_TR_REDUCTION;
   } else if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo(snes,"SNESConverged_UM_TR:Exceeded maximum number of function evaluations:%d>%d\n",
+    PetscLogInfo(snes,"SNESConverged_UM_TR:Exceeded maximum number of function evaluations:%d>%d\n",
              snes->nfuncs,snes->max_funcs); 
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   } else {
@@ -303,39 +303,39 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,SNESConverg
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESSetFromOptions_UM_TR"
+#define __FUNC__ "SNESSetFromOptions_UM_TR"
 static int SNESSetFromOptions_UM_TR(SNES snes)
 {
   SNES_UM_TR *ctx = (SNES_UM_TR *)snes->data;
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("SNES trust region options for minimization");CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_um_eta1","eta1","None",ctx->eta1,&ctx->eta1,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_um_eta2","step unsuccessful if reduction < eta1 * predicted reduction","None",ctx->eta2,&ctx->eta2,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_um_eta3","eta3","None",ctx->eta3,&ctx->eta3,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_um_eta4","eta4","None",ctx->eta4,&ctx->eta4,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_um_delta0","delta0","None",ctx->delta,&ctx->delta,0);CHKERRQ(ierr);
-    ierr = OptionsDouble("-snes_um_factor1","factor1","None",ctx->factor1,&ctx->factor1,0);CHKERRQ(ierr);
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsHead("SNES trust region options for minimization");CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_um_eta1","eta1","None",ctx->eta1,&ctx->eta1,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_um_eta2","step unsuccessful if reduction < eta1 * predicted reduction","None",ctx->eta2,&ctx->eta2,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_um_eta3","eta3","None",ctx->eta3,&ctx->eta3,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_um_eta4","eta4","None",ctx->eta4,&ctx->eta4,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_um_delta0","delta0","None",ctx->delta,&ctx->delta,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-snes_um_factor1","factor1","None",ctx->factor1,&ctx->factor1,0);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESView_UM_TR"
-static int SNESView_UM_TR(SNES snes,Viewer viewer)
+#define __FUNC__ "SNESView_UM_TR"
+static int SNESView_UM_TR(SNES snes,PetscViewer viewer)
 {
   SNES_UM_TR *tr = (SNES_UM_TR *)snes->data;
   int        ierr;
   PetscTruth isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"  eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",tr->eta1,tr->eta2,tr->eta3,tr->eta4);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"  delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",tr->eta1,tr->eta2,tr->eta3,tr->eta4);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for SNES UM TR",((PetscObject)viewer)->type_name);
   }
@@ -344,7 +344,7 @@ static int SNESView_UM_TR(SNES snes,Viewer viewer)
 /*------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESCreate_UM_TR"
+#define __FUNC__ "SNESCreate_UM_TR"
 int SNESCreate_UM_TR(SNES snes)
 {
   SNES_UM_TR *neP;
@@ -365,8 +365,8 @@ int SNESCreate_UM_TR(SNES snes)
 
   snes->nwork           = 0;
 
-  neP			= PetscNew(SNES_UM_TR);CHKPTRQ(neP);
-  PLogObjectMemory(snes,sizeof(SNES_UM_TR));
+  ierr			= PetscNew(SNES_UM_TR,&neP);CHKERRQ(ierr);
+  PetscLogObjectMemory(snes,sizeof(SNES_UM_TR));
   snes->data	        = (void*)neP;
   neP->delta0		= 1.0e-6;
   neP->delta 		= 0.0;

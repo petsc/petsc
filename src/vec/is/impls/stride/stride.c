@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.100 2000/09/28 21:09:57 bsmith Exp bsmith $*/
+/*$Id: stride.c,v 1.101 2000/11/28 17:28:16 bsmith Exp bsmith $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
@@ -10,7 +10,7 @@ typedef struct {
 } IS_Stride;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISIdentity_Stride" 
+#define __FUNC__ "ISIdentity_Stride" 
 int ISIdentity_Stride(IS is,PetscTruth *ident)
 {
   IS_Stride *is_stride = (IS_Stride*)is->data;
@@ -26,7 +26,7 @@ int ISIdentity_Stride(IS is,PetscTruth *ident)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ISDuplicate_Stride"></a>*/"ISDuplicate_Stride" 
+#define __FUNC__ "ISDuplicate_Stride" 
 int ISDuplicate_Stride(IS is,IS *newIS)
 {
   int       ierr;
@@ -38,7 +38,7 @@ int ISDuplicate_Stride(IS is,IS *newIS)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ISInvertPermutation_Stride"></a>*/"ISInvertPermutation_Stride" 
+#define __FUNC__ "ISInvertPermutation_Stride" 
 int ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
 {
   IS_Stride *isstride = (IS_Stride*)is->data;
@@ -61,7 +61,7 @@ int ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
 }
     
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISStrideGetInfo" 
+#define __FUNC__ "ISStrideGetInfo" 
 /*@
    ISStrideGetInfo - Returns the first index in a stride index set and 
    the stride width.
@@ -103,7 +103,7 @@ int ISStrideGetInfo(IS is,int *first,int *step)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISStride" 
+#define __FUNC__ "ISStride" 
 /*@C
    ISStride - Determines if an IS is based on a stride.
 
@@ -135,14 +135,14 @@ int ISStride(IS is,PetscTruth *flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISDestroy_Stride" 
+#define __FUNC__ "ISDestroy_Stride" 
 int ISDestroy_Stride(IS is)
 {
   int ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(is->data);CHKERRQ(ierr);
-  PLogObjectDestroy(is);
+  PetscLogObjectDestroy(is);
   PetscHeaderDestroy(is); PetscFunctionReturn(0);
 }
 
@@ -151,21 +151,21 @@ int ISDestroy_Stride(IS is)
    the stride index set is empty.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISGetIndices_Stride" 
+#define __FUNC__ "ISGetIndices_Stride" 
 int ISGetIndices_Stride(IS in,int **idx)
 {
   IS_Stride *sub = (IS_Stride*)in->data;
-  int       i;
+  int       i,ierr;
 
   PetscFunctionBegin;
-  *idx = (int*)PetscMalloc((sub->n+1)*sizeof(int));CHKPTRQ(idx);
+  ierr      = PetscMalloc((sub->n+1)*sizeof(int),idx);CHKERRQ(ierr);
   (*idx)[0] = sub->first;
   for (i=1; i<sub->n; i++) (*idx)[i] = (*idx)[i-1] + sub->step;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISRestoreIndices_Stride" 
+#define __FUNC__ "ISRestoreIndices_Stride" 
 int ISRestoreIndices_Stride(IS in,int **idx)
 {
   int ierr;
@@ -176,7 +176,7 @@ int ISRestoreIndices_Stride(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISGetSize_Stride" 
+#define __FUNC__ "ISGetSize_Stride" 
 int ISGetSize_Stride(IS is,int *size)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
@@ -187,7 +187,7 @@ int ISGetSize_Stride(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ISGetLocalSize_Stride"></a>*/"ISGetLocalSize_Stride" 
+#define __FUNC__ "ISGetLocalSize_Stride" 
 int ISGetLocalSize_Stride(IS is,int *size)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
@@ -198,36 +198,36 @@ int ISGetLocalSize_Stride(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISView_Stride" 
-int ISView_Stride(IS is,Viewer viewer)
+#define __FUNC__ "ISView_Stride" 
+int ISView_Stride(IS is,PetscViewer viewer)
 {
   IS_Stride   *sub = (IS_Stride *)is->data;
   int         i,n = sub->n,ierr,rank,size;
   PetscTruth  isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) { 
     ierr = MPI_Comm_rank(is->comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
       if (is->isperm) {
-        ierr = ViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
       }
-      ierr = ViewerASCIISynchronizedPrintf(viewer,"Number of indices in (stride) set %d\n",n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of indices in (stride) set %d\n",n);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        ierr = ViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,sub->first + i*sub->step);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
     } else {
       if (is->isperm) {
-        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
       }
-      ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in (stride) set %d\n",rank,n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in (stride) set %d\n",rank,n);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
     }
-    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
@@ -235,7 +235,7 @@ int ISView_Stride(IS is,Viewer viewer)
 }
   
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISSort_Stride" 
+#define __FUNC__ "ISSort_Stride" 
 int ISSort_Stride(IS is)
 {
   IS_Stride *sub = (IS_Stride*)is->data;
@@ -248,7 +248,7 @@ int ISSort_Stride(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISSorted_Stride" 
+#define __FUNC__ "ISSorted_Stride" 
 int ISSorted_Stride(IS is,PetscTruth* flg)
 {
   IS_Stride *sub = (IS_Stride*)is->data;
@@ -272,7 +272,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISIdentity_Stride };
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISCreateStride" 
+#define __FUNC__ "ISCreateStride" 
 /*@C
    ISCreateStride - Creates a data structure for an index set 
    containing a list of evenly spaced integers.
@@ -313,9 +313,9 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Number of indices < 0");
 
   PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_STRIDE,"IS",comm,ISDestroy,ISView); 
-  PLogObjectCreate(Nindex);
-  PLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _p_IS));
-  sub            = PetscNew(IS_Stride);CHKPTRQ(sub);
+  PetscLogObjectCreate(Nindex);
+  PetscLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _p_IS));
+  ierr           = PetscNew(IS_Stride,&sub);CHKERRQ(ierr);
   sub->n         = n;
   ierr = MPI_Allreduce(&n,&sub->N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   sub->first     = first;
@@ -328,9 +328,9 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   Nindex->data    = (void*)sub;
   ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   Nindex->isperm  = PETSC_FALSE;
-  ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm));CHKERRQ(ierr);
+    ierr = ISView(Nindex,PETSC_VIEWER_STDOUT_(Nindex->comm));CHKERRQ(ierr);
   }
   *is = Nindex; 
   PetscFunctionReturn(0);

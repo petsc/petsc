@@ -1,9 +1,9 @@
-/*$Id: pname.c,v 1.37 2000/09/22 20:42:24 bsmith Exp bsmith $*/
+/*$Id: pname.c,v 1.38 2000/09/28 21:09:12 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscObjectSetName"></a>*/"PetscObjectSetName"
+#define __FUNC__ "PetscObjectSetName"
 /*@C 
    PetscObjectSetName - Sets a string name associated with a PETSc object.
 
@@ -33,7 +33,7 @@ int PetscObjectSetName(PetscObject obj,const char name[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscObjectName"></a>*/"PetscObjectName"
+#define __FUNC__ "PetscObjectName"
 /*@C
    PetscObjectName - Gives an object a name if it does not have one
 
@@ -65,7 +65,7 @@ int PetscObjectName(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscObjectPublish"></a>*/"PetscObjectPublish"
+#define __FUNC__ "PetscObjectPublish"
 /*@C 
    PetscObjectPublish - Publishs an object for the ALICE Memory Snooper
 
@@ -83,7 +83,7 @@ int PetscObjectName(PetscObject obj)
    Concepts: ALICE Memory Snooper
    Concepts: Asynchronous Memory Snooper
 
-.seealso: PetscObjectSetName(), ViewerAMSOpen()
+.seealso: PetscObjectSetName(), PetscViewerAMSOpen()
 
 @*/
 int PetscObjectPublish(PetscObject obj)

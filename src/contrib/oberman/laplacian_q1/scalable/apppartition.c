@@ -1,4 +1,4 @@
-/*$Id: apppartition.c,v 1.2 2000/08/24 22:43:40 bsmith Exp bsmith $*/
+/*$Id: apppartition.c,v 1.3 2000/09/28 21:15:52 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 int AppPartitionGetOwnedSize(AppPartition *part, int *m);
@@ -165,7 +165,7 @@ int AppPartitionCreateLocalToGlobalMapping(AppPartition *part, ISLocalToGlobalMa
 
   PetscFunctionBegin;
 
-  p = indices = (int*)PetscMalloc((part->nelx+1)*(part->nely+1)*sizeof(int));CHKPTRQ(indices);
+  p = indices = (int*)PetscMalloc((part->nelx+1)*(part->nely+1)*sizeof(int));CHKERRQ(ierr);
 
   I = (part->rank / part->nsdy);
   J = (part->rank % part->nsdy);
@@ -253,7 +253,7 @@ int AppPartitionGetBoundaryNodesAndCoords(AppPartition *part, int *n, int **boun
   double *pc, offsetx, offsety;
   PetscTruth flg;
 
-  ierr = OptionsHasName(PETSC_NULL,"-dirichlet_on_left",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dirichlet_on_left",&flg);CHKERRQ(ierr);
 
   PetscFunctionBegin;
 
@@ -283,8 +283,8 @@ int AppPartitionGetBoundaryNodesAndCoords(AppPartition *part, int *n, int **boun
     *n = counter;
 
     counter++; /* This is to avoid zero-length allocations. */
-    pb = *boundary = (int*)PetscMalloc(counter*sizeof(int));CHKPTRQ(boundary);
-    pc = *coords   = (double*)PetscMalloc(2*counter*sizeof(double));CHKPTRQ(coords);
+    pb =ierr = PetscMalloc(counter*sizeof(int),&( *boundary ));CHKERRQ(ierr);
+    pc =ierr = PetscMalloc(2*counter*sizeof(double),&( *coords   ));CHKERRQ(ierr);
   }
 
   if (I==0) {

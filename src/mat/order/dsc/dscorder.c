@@ -1,4 +1,4 @@
-/*$Id: dsc.c,v 1.1 2000/12/15 18:21:57 balay Exp balay $*/
+/*$Id: dscorder.c,v 1.2 2000/12/21 03:22:41 balay Exp bsmith $*/
 /* 
         Provides an interface to the DSCPACK-S ordering routines.
 */
@@ -11,7 +11,7 @@ extern int dsc_s_nz; /* golbal communication mechanism for dscpack */
 EXTERN_C_BEGIN
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"MatOrdering_DSC"
+#define __FUNC__ "MatOrdering_DSC"
 int MatOrdering_DSC(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   int             ierr,order_code,m,*ai,*aj;

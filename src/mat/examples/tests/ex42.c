@@ -1,4 +1,4 @@
-/*$Id: ex42.c,v 1.17 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex42.c,v 1.18 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests MatIncreaseOverlap() and MatGetSubmatrices() for the parallel case.\n\
@@ -19,7 +19,7 @@ int main(int argc,char **args)
   PetscTruth  flg;
   Mat         A,B,*submatA,*submatB;
   char        file[128]; 
-  Viewer      fd;
+  PetscViewer      fd;
   IS          *is1,*is2;
   PetscRandom r;
   Scalar      rand;
@@ -30,19 +30,19 @@ int main(int argc,char **args)
 #else
   
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);  CHKERRA(ierr);
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRA(ierr);
 
   /* Read matrix and RHS */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatLoad(fd,MATMPIAIJ,&A);CHKERRA(ierr);
-  ierr = ViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
 
   /* Read the matrix again as a seq matrix */
-  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&B);CHKERRA(ierr);
-  ierr = ViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
   
   /* Create the Random no generator */
   ierr = MatGetSize(A,&m,&n);CHKERRA(ierr);  

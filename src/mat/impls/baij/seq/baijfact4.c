@@ -1,4 +1,4 @@
-/*$Id: baijfact.c,v 1.86 2000/11/28 17:29:14 bsmith Exp $*/
+/*$Id: baijfact4.c,v 1.1 2001/01/06 15:35:15 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -8,7 +8,7 @@
 
 /* ----------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatLUFactorNumeric_SeqBAIJ_N"></a>*/"MatLUFactorNumeric_SeqBAIJ_N"
+#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_N"
 int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -22,10 +22,10 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  rtmp = (MatScalar*)PetscMalloc(bs2*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
+ierr = PetscMalloc(bs2*(n+1)*sizeof(MatScalar),&  rtmp );CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*(n+1)*sizeof(MatScalar));CHKERRQ(ierr);
   /* generate work space needed by dense LU factorization */
-  v_work     = (MatScalar*)PetscMalloc(bs*sizeof(int) + (bs+bs2)*sizeof(MatScalar));CHKPTRQ(v_work);
+  v_work     = (MatScalar*)PetscMalloc(bs*sizeof(int) + (bs+bs2)*sizeof(MatScalar));CHKERRQ(ierr);
   multiplier = v_work + bs;
   v_pivots   = (int*)(multiplier + bs2);
 
@@ -59,7 +59,7 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
         for (j=0; j<nz; j++) {
           Kernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
         }
-        PLogFlops(bslog*(nz+1)-bs);
+        PetscLogFlops(bslog*(nz+1)-bs);
       } 
         row = *ajtmp++;
     }
@@ -82,6 +82,6 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  PLogFlops(1.3333*bs*bs2*b->mbs); /* from inverting diagonal blocks */
+  PetscLogFlops(1.3333*bs*bs2*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }

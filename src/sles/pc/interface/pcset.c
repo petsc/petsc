@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.109 2000/09/28 21:12:37 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.110 2001/01/06 03:42:13 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -10,10 +10,10 @@ PetscTruth PCRegisterAllCalled = PETSC_FALSE;
 /*
    Contains the list of registered KSP routines
 */
-FList PCList = 0;
+PetscFList PCList = 0;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetType"
+#define __FUNC__ "PCSetType"
 /*@C
    PCSetType - Builds PC for a particular preconditioner.
 
@@ -65,7 +65,7 @@ int PCSetType(PC pc,PCType type)
   if (match) PetscFunctionReturn(0);
 
   if (pc->ops->destroy) {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
-  ierr = FListDestroy(&pc->qlist);CHKERRQ(ierr);
+  ierr = PetscFListDestroy(&pc->qlist);CHKERRQ(ierr);
   pc->data        = 0;
   pc->setupcalled = 0;
 
@@ -73,12 +73,12 @@ int PCSetType(PC pc,PCType type)
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
 
   /* Determine the PCCreateXXX routine for a particular preconditioner */
-  ierr =  FListFind(pc->comm,PCList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(pc->comm,PCList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unable to find requested PC type %s",type);
   if (pc->data) {ierr = PetscFree(pc->data);CHKERRQ(ierr);}
 
   pc->ops->destroy             = (int (*)(PC)) 0;
-  pc->ops->view                = (int (*)(PC,Viewer)) 0;
+  pc->ops->view                = (int (*)(PC,PetscViewer)) 0;
   pc->ops->apply               = (int (*)(PC,Vec,Vec)) 0;
   pc->ops->setup               = (int (*)(PC)) 0;
   pc->ops->applyrichardson     = (int (*)(PC,Vec,Vec,Vec,int)) 0;
@@ -102,7 +102,7 @@ int PCSetType(PC pc,PCType type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCRegisterDestroy"
+#define __FUNC__ "PCRegisterDestroy"
 /*@C
    PCRegisterDestroy - Frees the list of preconditioners that were
    registered by PCRegisterDynamic().
@@ -122,7 +122,7 @@ int PCRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (PCList) {
-    ierr = FListDestroy(&PCList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(&PCList);CHKERRQ(ierr);
     PCList = 0;
   }
   PCRegisterAllCalled = PETSC_FALSE;
@@ -130,7 +130,7 @@ int PCRegisterDestroy(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCGetType"
+#define __FUNC__ "PCGetType"
 /*@C
    PCGetType - Gets the PC method type and name (as a string) from the PC
    context.
@@ -158,7 +158,7 @@ int PCGetType(PC pc,PCType *meth)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions"
+#define __FUNC__ "PCSetFromOptions"
 /*@
    PCSetFromOptions - Sets PC options from the options database.
    This routine must be called before PCSetUp() if the user is to be
@@ -186,7 +186,7 @@ int PCSetFromOptions(PC pc)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
 
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = OptionsBegin(pc->comm,pc->prefix,"Preconditioner (PC) Options","PC");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(pc->comm,pc->prefix,"Preconditioner (PC) Options","PC");CHKERRQ(ierr);
     if (!pc->type_name) {
       PetscTruth ismg,isshell,ismatshell;
       int        size;
@@ -196,10 +196,14 @@ int PCSetFromOptions(PC pc)
       ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&isshell);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSHELL,&ismatshell);CHKERRQ(ierr);
+      if (pc->pmat) {
+        ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSHELL,&ismatshell);CHKERRQ(ierr);
+      } else {
+        ismatshell = PETSC_FALSE;
+      }
       if (ismatshell && !isshell && !ismg) {
         def = PCNONE;
-        PLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
+        PetscLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
     preconditioners (unless defined by the user)\n");
       } else if (size == 1) {
         def = PCILU;
@@ -210,7 +214,7 @@ int PCSetFromOptions(PC pc)
       def = pc->type_name;
     }
 
-    ierr = OptionsList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSetType(pc,type);CHKERRQ(ierr);
     }
@@ -224,6 +228,6 @@ int PCSetFromOptions(PC pc)
     if (pc->ops->setfromoptions) {
       ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
     }
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

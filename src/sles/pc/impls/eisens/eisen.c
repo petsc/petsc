@@ -1,4 +1,4 @@
-/*$Id: eisen.c,v 1.106 2000/09/02 02:48:51 bsmith Exp bsmith $*/
+/*$Id: eisen.c,v 1.107 2000/09/28 21:12:50 bsmith Exp bsmith $*/
 
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 
@@ -17,7 +17,7 @@ typedef struct {
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCMult_Eisenstat"
+#define __FUNC__ "PCMult_Eisenstat"
 static int PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 {
   int          ierr;
@@ -32,7 +32,7 @@ static int PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_Eisenstat"
+#define __FUNC__ "PCApply_Eisenstat"
 static int PCApply_Eisenstat(PC pc,Vec x,Vec y)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
@@ -45,7 +45,7 @@ static int PCApply_Eisenstat(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPre_Eisenstat"
+#define __FUNC__ "PCPre_Eisenstat"
 static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
@@ -61,7 +61,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 
   if (!eis->b) {
     ierr = VecDuplicate(b,&eis->b);CHKERRQ(ierr);
-    PLogObjectParent(pc,eis->b);
+    PetscLogObjectParent(pc,eis->b);
   }
   
   /* save true b, other option is to swap pointers */
@@ -80,7 +80,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPost_Eisenstat"
+#define __FUNC__ "PCPost_Eisenstat"
 static int PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
@@ -96,7 +96,7 @@ static int PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCDestroy_Eisenstat"
+#define __FUNC__ "PCDestroy_Eisenstat"
 static int PCDestroy_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data; 
@@ -111,7 +111,7 @@ static int PCDestroy_Eisenstat(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_Eisenstat"
+#define __FUNC__ "PCSetFromOptions_Eisenstat"
 static int PCSetFromOptions_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data; 
@@ -119,32 +119,32 @@ static int PCSetFromOptions_Eisenstat(PC pc)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("Eisenstat SSOR options");CHKERRQ(ierr);
-    ierr = OptionsDouble("-pc_eisenstat_omega","Relaxation factor 0 < omega < 2","PCEisenstatSetOmega",eis->omega,&eis->omega,0);CHKERRQ(ierr);
-    ierr = OptionsName("-pc_eisenstat_no_diagonal_scaling","Do not use standard diagonal scaling","PCEisenstatNoDiagonalScaling",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("Eisenstat SSOR options");CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-pc_eisenstat_omega","Relaxation factor 0 < omega < 2","PCEisenstatSetOmega",eis->omega,&eis->omega,0);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_eisenstat_no_diagonal_scaling","Do not use standard diagonal scaling","PCEisenstatNoDiagonalScaling",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCEisenstatNoDiagonalScaling(pc);CHKERRQ(ierr);
     }
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCView_Eisenstat"
-static int PCView_Eisenstat(PC pc,Viewer viewer)
+#define __FUNC__ "PCView_Eisenstat"
+static int PCView_Eisenstat(PC pc,PetscViewer viewer)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data; 
   int          ierr;
   PetscTruth   isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"Eisenstat: omega = %g\n",eis->omega);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: omega = %g\n",eis->omega);CHKERRQ(ierr);
     if (eis->usediag) {
-      ierr = ViewerASCIIPrintf(viewer,"Eisenstat: Using diagonal scaling (default)\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: Using diagonal scaling (default)\n");CHKERRQ(ierr);
     } else {
-      ierr = ViewerASCIIPrintf(viewer,"Eisenstat: Not using diagonal scaling\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: Not using diagonal scaling\n");CHKERRQ(ierr);
     }
   } else {
     SETERRQ1(1,"Viewer type not supported for Eisenstat PC",((PetscObject)viewer)->type_name);
@@ -153,7 +153,7 @@ static int PCView_Eisenstat(PC pc,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp_Eisenstat"
+#define __FUNC__ "PCSetUp_Eisenstat"
 static int PCSetUp_Eisenstat(PC pc)
 {
   int          ierr,M,N,m,n;
@@ -164,13 +164,13 @@ static int PCSetUp_Eisenstat(PC pc)
     ierr = MatGetSize(pc->mat,&M,&N);CHKERRA(ierr);
     ierr = MatGetLocalSize(pc->mat,&m,&n);CHKERRA(ierr);
     ierr = MatCreateShell(pc->comm,m,N,M,N,(void*)pc,&eis->shell);CHKERRQ(ierr);
-    PLogObjectParent(pc,eis->shell);
+    PetscLogObjectParent(pc,eis->shell);
     ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void*)PCMult_Eisenstat);CHKERRQ(ierr);
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (!pc->setupcalled) {
     ierr = VecDuplicate(pc->vec,&eis->diag);CHKERRQ(ierr);
-    PLogObjectParent(pc,eis->diag);
+    PetscLogObjectParent(pc,eis->diag);
   }
   ierr = MatGetDiagonal(pc->pmat,eis->diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -180,7 +180,7 @@ static int PCSetUp_Eisenstat(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCEisenstatSetOmega_Eisenstat"
+#define __FUNC__ "PCEisenstatSetOmega_Eisenstat"
 int PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
 {
   PC_Eisenstat  *eis;
@@ -195,7 +195,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCEisenstatNoDiagonalScaling_Eisenstat"
+#define __FUNC__ "PCEisenstatNoDiagonalScaling_Eisenstat"
 int PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis;
@@ -208,7 +208,7 @@ int PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCEisenstatSetOmega"
+#define __FUNC__ "PCEisenstatSetOmega"
 /*@ 
    PCEisenstatSetOmega - Sets the SSOR relaxation coefficient, omega,
    to use with Eisenstat's trick (where omega = 1.0 by default).
@@ -252,7 +252,7 @@ int PCEisenstatSetOmega(PC pc,PetscReal omega)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCEisenstatNoDiagonalScaling"
+#define __FUNC__ "PCEisenstatNoDiagonalScaling"
 /*@
    PCEisenstatNoDiagonalScaling - Causes the Eisenstat preconditioner
    not to do additional diagonal preconditioning. For matrices with a constant 
@@ -293,14 +293,15 @@ int PCEisenstatNoDiagonalScaling(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCreate_Eisenstat"
+#define __FUNC__ "PCCreate_Eisenstat"
 int PCCreate_Eisenstat(PC pc)
 {
   int          ierr;
-  PC_Eisenstat *eis = PetscNew(PC_Eisenstat);CHKPTRQ(eis);
+  PC_Eisenstat *eis;
 
   PetscFunctionBegin;
-  PLogObjectMemory(pc,sizeof(PC_Eisenstat));
+  ierr = PetscNew(PC_Eisenstat,&eis);CHKERRQ(ierr);
+  PetscLogObjectMemory(pc,sizeof(PC_Eisenstat));
 
   pc->ops->apply           = PCApply_Eisenstat;
   pc->ops->presolve        = PCPre_Eisenstat;

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.36 2000/08/17 04:50:37 bsmith Exp balay $
+# $Id: makefile,v 1.37 2000/08/17 19:57:12 balay Exp bsmith $
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    = axis.o lg.o dscatter.o hists.o zoom.o hue.o
 OBJSF    =
 LIBBASE  = libpetsc
-MANSEC   = Draw
+MANSEC   = PetscDraw
 LOCDIR   = src/sys/src/draw/utils/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

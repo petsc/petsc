@@ -1,4 +1,4 @@
-/* $Id: petscsys.h,v 1.52 2000/08/15 22:18:00 balay Exp bsmith $ */
+/* $Id: petscsys.h,v 1.53 2000/09/22 20:47:47 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -59,14 +59,14 @@ EXTERN int PetscFileRetrieve(MPI_Comm,const char *,char *,int,PetscTruth*);
   machine. Use these rather then sizeof() in computing sizes for 
   PetscBinarySeek().
 */
-#define BINARY_INT_SIZE    (32/8)
-#define BINARY_FLOAT_SIZE  (32/8)
-#define BINARY_CHAR_SIZE    (8/8)
-#define BINARY_SHORT_SIZE  (16/8)
-#define BINARY_DOUBLE_SIZE (64/8)
-#define BINARY_SCALAR_SIZE sizeof(Scalar)
+#define PETSC_BINARY_INT_SIZE    (32/8)
+#define PETSC_BINARY_FLOAT_SIZE  (32/8)
+#define PETSC_BINARY_CHAR_SIZE    (8/8)
+#define PETSC_BINARY_SHORT_SIZE  (16/8)
+#define PETSC_BINARY_DOUBLE_SIZE (64/8)
+#define PETSC_BINARY_SCALAR_SIZE sizeof(Scalar)
 
-typedef enum {BINARY_SEEK_SET = 0,BINARY_SEEK_CUR = 1,BINARY_SEEK_END = 2} PetscBinarySeekType;
+typedef enum {PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1,PETSC_BINARY_SEEK_END = 2} PetscBinarySeekType;
 EXTERN int PetscBinarySeek(int,int,PetscBinarySeekType,int*);
 EXTERN int PetscSynchronizedBinarySeek(MPI_Comm,int,int,PetscBinarySeekType,int*);
 

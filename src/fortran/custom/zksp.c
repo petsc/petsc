@@ -1,4 +1,4 @@
-/*$Id: zksp.c,v 1.48 2000/09/21 18:47:30 bsmith Exp balay $*/
+/*$Id: zksp.c,v 1.49 2000/09/26 19:11:19 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscksp.h"
@@ -84,9 +84,9 @@ void PETSC_STDCALL kspgetconvergedreason_(KSP *ksp,KSPConvergedReason *reason,in
 }
 
 /* function */
-void PETSC_STDCALL kspview_(KSP *ksp,Viewer *viewer, int *ierr)
+void PETSC_STDCALL kspview_(KSP *ksp,PetscViewer *viewer, int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = KSPView(*ksp,v);
 }
@@ -276,7 +276,7 @@ void PETSC_STDCALL kspgetrhs_(KSP *ksp,Vec *r,int *ierr)
    Possible bleeds memory but cannot be helped.
 */
 void PETSC_STDCALL ksplgmonitorcreate_(CHAR host PETSC_MIXED_LEN(len1),
-                    CHAR label PETSC_MIXED_LEN(len2),int *x,int *y,int *m,int *n,DrawLG *ctx,
+                    CHAR label PETSC_MIXED_LEN(len2),int *x,int *y,int *m,int *n,PetscDrawLG *ctx,
                     int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char   *t1,*t2;
@@ -286,7 +286,7 @@ void PETSC_STDCALL ksplgmonitorcreate_(CHAR host PETSC_MIXED_LEN(len1),
   *ierr = KSPLGMonitorCreate(t1,t2,*x,*y,*m,*n,ctx);
 }
 
-void PETSC_STDCALL ksplgmonitordestroy_(DrawLG *ctx,int *ierr)
+void PETSC_STDCALL ksplgmonitordestroy_(PetscDrawLG *ctx,int *ierr)
 {
   *ierr = KSPLGMonitorDestroy(*ctx);
 }

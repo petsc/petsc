@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.14 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex17.c,v 1.15 2000/07/10 03:39:52 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 
@@ -16,8 +16,8 @@ int main(int argc,char **args)
   double  norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C);CHKERRA(ierr);
 
@@ -53,7 +53,7 @@ int main(int argc,char **args)
   ierr = MatLUFactorNumeric(C,&A);CHKERRA(ierr);
   ierr = MatSolveTranspose(A,b,x);CHKERRA(ierr);
 
-  ierr = ISView(row,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(row,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = VecAXPY(&mone,u,x);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);CHKERRA(ierr);

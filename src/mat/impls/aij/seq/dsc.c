@@ -1,4 +1,4 @@
-/*$Id: dsc.c,v 1.1 2000/12/15 18:21:57 balay Exp balay $*/
+/*$Id: dsc.c,v 1.2 2000/12/21 03:23:06 balay Exp bsmith $*/
 /* 
         Provides an interface to the DSCPACK-S
 */
@@ -163,7 +163,7 @@ int MatSeqAIJUseDSC(Mat A)
   if (!flg) SETERRQ(PETSC_ERR_ARG_SIZ, "matrix must be SeqAIJ"); 
     
   A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ_DSC; 
-  PLogInfo(0,"Using DSC for SeqAIJ Cholesky factorization and solve.");
+  PetscLogInfo(0,"Using DSC for SeqAIJ Cholesky factorization and solve.");
   PetscFunctionReturn(0);
 }
 
@@ -175,7 +175,7 @@ int MatSeqAIJUseDSC(Mat A)
 {
      PetscFunctionBegin;
      PetscValidHeaderSpecific(A,MAT_COOKIE);
-     PLogInfo(0,"DSCPACK not istalled. Not using DSC.");
+     PetscLogInfo(0,"DSCPACK not istalled. Not using DSC.");
      PetscFunctionReturn(0);
 }
 

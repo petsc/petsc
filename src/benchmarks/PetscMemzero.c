@@ -1,4 +1,4 @@
-/*$Id: PetscMemzero.c,v 1.14 2000/01/11 21:03:44 bsmith Exp bsmith $*/
+/*$Id: PetscMemzero.c,v 1.15 2000/11/28 17:32:38 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -6,7 +6,7 @@
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  PLogDouble x,y,z;
+  PetscLogDouble x,y,z;
   Scalar     A[10000];
   int        ierr;
 

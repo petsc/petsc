@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.11 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex22.c,v 1.12 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests matrix ordering routines.\n\n";
 
@@ -32,17 +32,17 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   ierr = MatGetOrdering(C,MATORDERING_ND,&perm,&iperm);CHKERRA(ierr);
-  ierr = ISView(perm,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = ISDestroy(perm);CHKERRA(ierr);
   ierr = ISDestroy(iperm);CHKERRA(ierr);
 
   ierr = MatGetOrdering(C,MATORDERING_RCM,&perm,&iperm);CHKERRA(ierr);
-  ierr = ISView(perm,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = ISDestroy(perm);CHKERRA(ierr);
   ierr = ISDestroy(iperm);CHKERRA(ierr);
 
   ierr = MatGetOrdering(C,MATORDERING_QMD,&perm,&iperm);CHKERRA(ierr);
-  ierr = ISView(perm,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = ISDestroy(perm);CHKERRA(ierr);
   ierr = ISDestroy(iperm);CHKERRA(ierr);
 

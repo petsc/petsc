@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.22 2000/05/08 15:09:17 balay Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.23 2000/05/10 16:43:19 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -14,7 +14,7 @@ struct _AOOps {
   int (*petsctoapplication)(AO,int,int*),  /* map a set of integers to application order */
       (*applicationtopetsc)(AO,int,int*);   
   int (*destroy)(AO);
-  int (*view)(AO,Viewer);
+  int (*view)(AO,PetscViewer);
 };
 
 struct _p_AO {
@@ -42,7 +42,7 @@ struct _AODataOps {
   int (*keyremove)(AOData,char*);
   int (*segmentremove)(AOData,char*,char*);
   int (*destroy)(AOData);
-  int (*view)(AOData,Viewer);
+  int (*view)(AOData,PetscViewer);
 };
 
 /*

@@ -1,7 +1,7 @@
-/*$Id: ex14.c,v 1.5 1999/10/24 14:01:38 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.6 2000/01/11 20:59:47 bsmith Exp bsmith $*/
 
 /* 
-   Tests OptionsGetScalar() for complex numbers
+   Tests PetscOptionsGetScalar() for complex numbers
  */
 
 #include "petsc.h"
@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   Scalar a;
 
   PetscInitialize(&argc,&argv,(char *)0,0);
-  ierr = OptionsGetScalar(PETSC_NULL,"-a",&a,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetScalar(PETSC_NULL,"-a",&a,PETSC_NULL);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Scalar a = %g + %gi\n",PetscRealPart(a),PetscImaginaryPart(a));CHKERRA(ierr);
   PetscFinalize();
   return 0;

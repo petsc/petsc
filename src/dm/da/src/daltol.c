@@ -1,4 +1,4 @@
-/*$Id: daltol.c,v 1.21 2000/04/12 04:26:20 bsmith Exp balay $*/
+/*$Id: daltol.c,v 1.22 2000/05/05 22:19:22 balay Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DALocalToLocalBegin"
+#define __FUNC__ "DALocalToLocalBegin"
 /*@
    DALocalToLocalBegin - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost
@@ -46,7 +46,7 @@ int DALocalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DALocalToLocalEnd"
+#define __FUNC__ "DALocalToLocalEnd"
 /*@
    DALocalToLocalEnd - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost

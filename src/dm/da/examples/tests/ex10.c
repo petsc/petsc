@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.12 2000/02/02 20:10:34 bsmith Exp balay $*/
+/*$Id: ex10.c,v 1.13 2000/05/05 22:19:31 balay Exp bsmith $*/
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
@@ -11,23 +11,23 @@ int main(int argc,char **argv)
 {
   int    M = 13,ierr,dof=1,s=1,wrap=0,i,n,j;
   DA     da;
-  Viewer viewer;
+  PetscViewer viewer;
   Vec    local,locala,global,coors;
   Scalar *x,*alocal;
-  Draw   draw;
+  PetscDraw   draw;
   char   fname[16];
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* Create viewers */
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",PETSC_DECIDE,PETSC_DECIDE,600,200,&viewer);CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",PETSC_DECIDE,PETSC_DECIDE,600,200,&viewer);CHKERRA(ierr);
+  ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRA(ierr);
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRA(ierr);
 
   /* Read options */
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-periodic",&wrap,PETSC_NULL);CHKERRA(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRA(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",&wrap,PETSC_NULL);CHKERRA(ierr); 
 
   /* Create distributed array and get vectors */
   ierr = DACreate1d(PETSC_COMM_WORLD,(DAPeriodicType)wrap,M,dof,s,PETSC_NULL,&da);CHKERRA(ierr);
@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,locala);CHKERRA(ierr);
 
   /* Free memory */
-  ierr = ViewerDestroy(viewer);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
   ierr = VecDestroy(global);CHKERRA(ierr);
   ierr = VecDestroy(local);CHKERRA(ierr);
   ierr = VecDestroy(locala);CHKERRA(ierr);

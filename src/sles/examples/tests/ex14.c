@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.24 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.25 2000/09/28 21:13:46 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -111,15 +111,15 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm,&user.rank);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-no_output",&no_output);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-no_output",&no_output);CHKERRA(ierr);
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,"Lambda is out of range");
   }
@@ -140,8 +140,8 @@ int main(int argc,char **argv)
   */
   ierr = MPI_Comm_size(comm,&size);CHKERRA(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
     SETERRA(1,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
@@ -432,7 +432,7 @@ int ComputeFunction(AppCtx *user,Vec X,Vec F)
      Insert values into global vector
   */
   ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = PLogFlops(11*ym*xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops(11*ym*xm);CHKERRQ(ierr);
   return 0; 
 } 
 /* ------------------------------------------------------------------- */

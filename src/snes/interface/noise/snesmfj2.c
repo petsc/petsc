@@ -1,4 +1,4 @@
-/*$Id: snesmfj2.c,v 1.27 2000/09/07 15:17:59 balay Exp bsmith $*/
+/*$Id: snesmfj2.c,v 1.28 2000/09/28 21:14:09 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 
@@ -24,7 +24,7 @@ typedef struct {  /* default context for matrix-free SNES */
 } MFCtx_Private;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESMatrixFreeDestroy2_Private" /* ADIC Ignore */
+#define __FUNC__ "SNESMatrixFreeDestroy2_Private" /* ADIC Ignore */
 int SNESMatrixFreeDestroy2_Private(Mat mat)
 {
   int           ierr;
@@ -40,11 +40,11 @@ int SNESMatrixFreeDestroy2_Private(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESMatrixFreeView2_Private" /* ADIC Ignore */
+#define __FUNC__ "SNESMatrixFreeView2_Private" /* ADIC Ignore */
 /*
    SNESMatrixFreeView2_Private - Views matrix-free parameters.
  */
-int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
+int SNESMatrixFreeView2_Private(Mat J,PetscViewer viewer)
 {
   int           ierr;
   MFCtx_Private *ctx;
@@ -52,16 +52,16 @@ int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-     ierr = ViewerASCIIPrintf(viewer,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
+     ierr = PetscViewerASCIIPrintf(viewer,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
      if (ctx->jorge) {
-       ierr = ViewerASCIIPrintf(viewer,"    using Jorge's method of determining differencing parameter\n");CHKERRQ(ierr);
+       ierr = PetscViewerASCIIPrintf(viewer,"    using Jorge's method of determining differencing parameter\n");CHKERRQ(ierr);
      }
-     ierr = ViewerASCIIPrintf(viewer,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
-     ierr = ViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",ctx->umin);CHKERRQ(ierr);
+     ierr = PetscViewerASCIIPrintf(viewer,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
+     ierr = PetscViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",ctx->umin);CHKERRQ(ierr);
      if (ctx->compute_err) {
-       ierr = ViewerASCIIPrintf(viewer,"    freq_err=%d (frequency for computing err)\n",ctx->compute_err_freq);CHKERRQ(ierr);
+       ierr = PetscViewerASCIIPrintf(viewer,"    freq_err=%d (frequency for computing err)\n",ctx->compute_err_freq);CHKERRQ(ierr);
      }
   } else {
     SETERRQ1(1,"Viewer type %s not supported by SNES matrix free Jorge",((PetscObject)viewer)->type_name);
@@ -70,7 +70,7 @@ int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESMatrixFreeMult2_Private"
+#define __FUNC__ "SNESMatrixFreeMult2_Private"
 /*
   SNESMatrixFreeMult2_Private - Default matrix-free form for Jacobian-vector
   product, y = F'(u)*a:
@@ -95,7 +95,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
      with particular objects, hence alleviating the more general problem. */
-  ierr = PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
         /* Use Jorge's method to compute noise */
         ierr = DiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h);CHKERRQ(ierr);
         ctx->error_rel = sqrt(noise);
-        PLogInfo(snes,"SNESMatrixFreeMult2_Private: Using Jorge's noise: noise=%g, sqrt(noise)=%g, h_more=%g\n",noise,ctx->error_rel,h);
+        PetscLogInfo(snes,"SNESMatrixFreeMult2_Private: Using Jorge's noise: noise=%g, sqrt(noise)=%g, h_more=%g\n",noise,ctx->error_rel,h);
         ctx->compute_err_iter = iter;
         ctx->need_err = 0;
       }
@@ -157,7 +157,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   } else {
     h = ctx->h;
   }
-  if (!ctx->jorge || !ctx->need_h) PLogInfo(snes,"SNESMatrixFreeMult2_Private: h = %g\n",h);
+  if (!ctx->jorge || !ctx->need_h) PetscLogInfo(snes,"SNESMatrixFreeMult2_Private: h = %g\n",h);
 
   /* Evaluate function at F(u + ha) */
   hs = h;
@@ -168,12 +168,12 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   ierr = VecScale(&hs,y);CHKERRQ(ierr);
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr = PLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESMatrixFreeMatCreate2"
+#define __FUNC__ "SNESMatrixFreeMatCreate2"
 /*@C
    SNESMatrixFreeMatCreate2 - Creates a matrix-free matrix
    context for use with a SNES solver.  This matrix can be used as
@@ -229,9 +229,9 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   char          p[64];
 
   PetscFunctionBegin;
-  mfctx = (MFCtx_Private*)PetscMalloc(sizeof(MFCtx_Private));CHKPTRQ(mfctx);
+ierr = PetscMalloc(sizeof(MFCtx_Private),&(  mfctx ));CHKERRQ(ierr);
   ierr  = PetscMemzero(mfctx,sizeof(MFCtx_Private));CHKERRQ(ierr);
-  PLogObjectMemory(snes,sizeof(MFCtx_Private));
+  PetscLogObjectMemory(snes,sizeof(MFCtx_Private));
   mfctx->sp   = 0;
   mfctx->snes = snes;
   mfctx->error_rel        = 1.e-8; /* assumes PetscReal precision */
@@ -242,11 +242,11 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   mfctx->compute_err      = 0;
   mfctx->compute_err_freq = 0;
   mfctx->compute_err_iter = -1;
-  ierr = OptionsGetDouble(snes->prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_mf_umin",&mfctx->umin,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsHasName(snes->prefix,"-snes_mf_jorge",&mfctx->jorge);CHKERRQ(ierr);
-  ierr = OptionsHasName(snes->prefix,"-snes_mf_compute_err",&mfctx->compute_err);CHKERRQ(ierr);
-  ierr = OptionsGetInt(snes->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(snes->prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(snes->prefix,"-snes_mf_umin",&mfctx->umin,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_jorge",&mfctx->jorge);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_compute_err",&mfctx->compute_err);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(snes->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);
   if (flg) {
     if (mfctx->compute_err_freq < 0) mfctx->compute_err_freq = 0;
     mfctx->compute_err = 1; 
@@ -256,7 +256,7 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
     ierr = DiffParameterCreate_More(snes,x,&mfctx->data);CHKERRQ(ierr);
   } else mfctx->data = 0;
 
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
   if (snes->prefix) PetscStrcat(p,snes->prefix);
   if (flg) {
@@ -277,13 +277,13 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void *)SNESMatrixFreeDestroy2_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_VIEW,(void *)SNESMatrixFreeView2_Private);CHKERRQ(ierr);
 
-  PLogObjectParent(*J,mfctx->w);
-  PLogObjectParent(snes,*J);
+  PetscLogObjectParent(*J,mfctx->w);
+  PetscLogObjectParent(snes,*J);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESDefaultMatrixFreeSetParameters2"
+#define __FUNC__ "SNESDefaultMatrixFreeSetParameters2"
 /*@
    SNESDefaultMatrixFreeSetParameters2 - Sets the parameters for the approximation of
    matrix-vector products using finite differences.

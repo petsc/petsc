@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.19 2000/09/21 14:24:28 bsmith Exp bsmith $*/
+/*$Id: sro.c,v 1.20 2000/09/28 21:11:41 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -57,7 +57,7 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   
   if (!a->inew){ 
     len = (mbs+1 + 2*(a->i[mbs]))*sizeof(int);
-    ai  = (int*)PetscMalloc(len);CHKPTRQ(ai);
+ierr = PetscMalloc(len,&(    ai  ));CHKERRQ(ierr);
     aj  = ai + mbs+1;    
   } else {
     ai = a->inew; aj = a->jnew;
@@ -72,8 +72,8 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
               s.t. a(perm(r),perm(aj)) will fall into upper triangle part.
   */
 
-  nzr = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(nzr); 
-  r   = (int*)PetscMalloc(ai[mbs]*sizeof(int));CHKPTRQ(r); 
+ierr = PetscMalloc(mbs*sizeof(int),&(  nzr ));CHKERRQ(ierr); 
+  r   = (int*)PetscMalloc(ai[mbs]*sizeof(int));CHKERRQ(ierr); 
   for (i=0; i<mbs; i++) nzr[i] = 0;
   for (i=0; i<ai[mbs]; i++) r[i] = 0; 
                                                               

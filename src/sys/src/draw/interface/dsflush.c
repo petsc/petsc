@@ -1,17 +1,17 @@
-/*$Id: dsflush.c,v 1.25 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dsflush.c,v 1.26 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
-       Provides the calling sequences for all the basic Draw routines.
+       Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSynchronizedFlush"></a>*/"DrawSynchronizedFlush" 
+#define __FUNC__ "DrawSynchronizedFlush" 
 /*@
-   DrawSynchronizedFlush - Flushes graphical output. This waits until all 
+   PetscDrawSynchronizedFlush - Flushes graphical output. This waits until all 
    processors have arrived and flushed, then does a global flush.
    This is usually done to change the frame for double buffered graphics.
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameters:
 .  draw - the drawing context
@@ -20,14 +20,14 @@
 
    Concepts: flushing^graphics
 
-.seealso: DrawFlush()
+.seealso: PetscDrawFlush()
 
 @*/
-int DrawSynchronizedFlush(Draw draw)
+int PetscDrawSynchronizedFlush(PetscDraw draw)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   if (draw->ops->synchronizedflush) {
     ierr = (*draw->ops->synchronizedflush)(draw);CHKERRQ(ierr);
   }

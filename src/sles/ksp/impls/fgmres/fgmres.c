@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.20 2000/09/02 02:49:20 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.21 2000/09/28 21:13:34 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -29,7 +29,7 @@ static int    BuildFgmresSoln(Scalar*,Vec,Vec,KSP,int);
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetUp_FGMRES"
+#define __FUNC__ "KSPSetUp_FGMRES"
 int    KSPSetUp_FGMRES(KSP ksp)
 {
   unsigned  int size,hh,hes,rs,cc;
@@ -48,8 +48,8 @@ int    KSPSetUp_FGMRES(KSP ksp)
   size          = (hh + hes + rs + 2*cc) * sizeof(Scalar);
 
   /* Allocate space and set pointers to beginning */
-  fgmres->hh_origin  = (Scalar*)PetscMalloc(size);CHKPTRQ(fgmres->hh_origin);
-  PLogObjectMemory(ksp,size);                      /* HH - modified (by plane 
+ierr = PetscMalloc(size,&(  fgmres->hh_origin  ));CHKERRQ(ierr);
+  PetscLogObjectMemory(ksp,size);                      /* HH - modified (by plane 
                                                       rotations) hessenburg */
   fgmres->hes_origin = fgmres->hh_origin + hh;     /* HES - unmodified hessenburg */
   fgmres->rs_origin  = fgmres->hes_origin + hes;   /* RS - the right-hand-side of the 
@@ -60,24 +60,24 @@ int    KSPSetUp_FGMRES(KSP ksp)
   if (ksp->calc_sings) {
     /* Allocate workspace to hold Hessenberg matrix needed by Eispack */
     size = (max_k + 3)*(max_k + 9)*sizeof(Scalar);
-    fgmres->Rsvd = (Scalar*)PetscMalloc(size);CHKPTRQ(fgmres->Rsvd);
-    fgmres->Dsvd = (PetscReal*)PetscMalloc(5*(max_k+2)*sizeof(PetscReal));CHKPTRQ(fgmres->Dsvd);
-    PLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));
+ierr = PetscMalloc(size,&(    fgmres->Rsvd ));CHKERRQ(ierr);
+ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&    fgmres->Dsvd );CHKERRQ(ierr);
+    PetscLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
    4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
-  fgmres->vecs = (Vec*)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(fgmres->vecs);
+  fgmres->vecs = (Vec*)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKERRQ(ierr);
   fgmres->vecs_allocated = VEC_OFFSET + 2 + max_k;
-  fgmres->user_work   = (Vec **)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(fgmres->user_work);
-  fgmres->mwork_alloc = (int*)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(int));CHKPTRQ(fgmres->mwork_alloc);
-  PLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)+sizeof(int)));
+  fgmres->user_work   = (Vec **)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKERRQ(ierr);
+ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(int),&  fgmres->mwork_alloc );CHKERRQ(ierr);
+  PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)+sizeof(int)));
 
   /* New for FGMRES - Allocate array to hold pointers to preconditioned 
      vectors - same sizes as user vectors above */
-  fgmres->prevecs = (Vec*)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(fgmres->prevecs);
-  fgmres->prevecs_user_work  = (Vec **)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(fgmres->prevecs_user_work);
-  PLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)));
+  fgmres->prevecs = (Vec*)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKERRQ(ierr);
+  fgmres->prevecs_user_work  = (Vec **)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKERRQ(ierr);
+  PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)));
 
 
   /* if q_preallocate = 0 then only allocate one "chunck" of space (for 
@@ -91,14 +91,14 @@ int    KSPSetUp_FGMRES(KSP ksp)
 
   /* space for work vectors */
   ierr = VecDuplicateVecs(VEC_RHS,fgmres->vv_allocated,&fgmres->user_work[0]);CHKERRQ(ierr);
-  PLogObjectParents(ksp,fgmres->vv_allocated,fgmres->user_work[0]);
+  PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->user_work[0]);
   for (k=0; k < fgmres->vv_allocated; k++) {
     fgmres->vecs[k] = fgmres->user_work[0][k];
   } 
 
   /* space for preconditioned vectors */
   ierr = VecDuplicateVecs(VEC_RHS,fgmres->vv_allocated,&fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
-  PLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);
+  PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);
   for (k=0; k < fgmres->vv_allocated; k++) {
     fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
   } 
@@ -119,7 +119,7 @@ int    KSPSetUp_FGMRES(KSP ksp)
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FGMRESResidual"
+#define __FUNC__ "FGMRESResidual"
 static int FGMRESResidual(KSP ksp)
 {
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)(ksp->data);
@@ -158,7 +158,7 @@ static int FGMRESResidual(KSP ksp)
 
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FGMREScycle"
+#define __FUNC__ "FGMREScycle"
 int FGMREScycle(int *itcount,KSP ksp)
 {
 
@@ -332,7 +332,7 @@ int FGMREScycle(int *itcount,KSP ksp)
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSolve_FGMRES"
+#define __FUNC__ "KSPSolve_FGMRES"
 
 int KSPSolve_FGMRES(KSP ksp,int *outits)
 {
@@ -382,7 +382,7 @@ int KSPSolve_FGMRES(KSP ksp,int *outits)
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDestroy_FGMRES" 
+#define __FUNC__ "KSPDestroy_FGMRES" 
 int KSPDestroy_FGMRES(KSP ksp)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES*)ksp->data;
@@ -433,7 +433,7 @@ int KSPDestroy_FGMRES(KSP ksp)
      This is an internal routine that knows about the FGMRES internals.
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"BuildFgmresSoln"
+#define __FUNC__ "BuildFgmresSoln"
 static int BuildFgmresSoln(Scalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
 {
   Scalar     tt,zero = 0.0,one = 1.0;
@@ -495,7 +495,7 @@ static int BuildFgmresSoln(Scalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
 	
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FGMRESUpdateHessenberg"
+#define __FUNC__ "FGMRESUpdateHessenberg"
 static int FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
 {
   Scalar     *hh,*cc,*ss,tt;
@@ -580,7 +580,7 @@ static int FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *re
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FGMRESGetNewVectors" 
+#define __FUNC__ "FGMRESGetNewVectors" 
 static int FGMRESGetNewVectors(KSP ksp,int it)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
@@ -603,7 +603,7 @@ static int FGMRESGetNewVectors(KSP ksp,int it)
 
   /* work vectors */
   ierr = VecDuplicateVecs(VEC_RHS,nalloc,&fgmres->user_work[nwork]);CHKERRQ(ierr);
-  PLogObjectParents(ksp,nalloc,fgmres->user_work[nwork]); 
+  PetscLogObjectParents(ksp,nalloc,fgmres->user_work[nwork]); 
   for (k=0; k < nalloc; k++) {
     fgmres->vecs[it+VEC_OFFSET+k] = fgmres->user_work[nwork][k];
   }
@@ -612,7 +612,7 @@ static int FGMRESGetNewVectors(KSP ksp,int it)
 
   /* preconditioned vectors */
   ierr = VecDuplicateVecs(VEC_RHS,nalloc,&fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
-  PLogObjectParents(ksp,nalloc,fgmres->prevecs_user_work[nwork]);CHKPTRQ(fgmres->prevecs_user_work[nwork]);
+  PetscLogObjectParents(ksp,nalloc,fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
   for (k=0; k < nalloc; k++) {
     fgmres->prevecs[it+VEC_OFFSET+k] = fgmres->prevecs_user_work[nwork][k];
   } 
@@ -638,7 +638,7 @@ static int FGMRESGetNewVectors(KSP ksp,int it)
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPBuildSolution_FGMRES"
+#define __FUNC__ "KSPBuildSolution_FGMRES"
 int KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data; 
@@ -648,14 +648,14 @@ int KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
   if (!ptr) {
     if (!fgmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&fgmres->sol_temp);CHKERRQ(ierr);
-      PLogObjectParent(ksp,fgmres->sol_temp);
+      PetscLogObjectParent(ksp,fgmres->sol_temp);
     }
     ptr = fgmres->sol_temp;
   }
   if (!fgmres->nrs) {
     /* allocate the work area */
-    fgmres->nrs = (Scalar *)PetscMalloc(fgmres->max_k*sizeof(Scalar));CHKPTRQ(fgmres->nrs);
-    PLogObjectMemory(ksp,fgmres->max_k*sizeof(Scalar));
+    fgmres->nrs = (Scalar *)PetscMalloc(fgmres->max_k*sizeof(Scalar));CHKERRQ(ierr);
+    PetscLogObjectMemory(ksp,fgmres->max_k*sizeof(Scalar));
   }
  
   ierr = BuildFgmresSoln(fgmres->nrs,VEC_SOLN,ptr,ksp,fgmres->it);CHKERRQ(ierr);
@@ -671,8 +671,8 @@ int KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
 
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPView_FGMRES" 
-int KSPView_FGMRES(KSP ksp,Viewer viewer)
+#define __FUNC__ "KSPView_FGMRES" 
+int KSPView_FGMRES(KSP ksp,PetscViewer viewer)
 {
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)ksp->data; 
   char         *cstr;
@@ -680,7 +680,7 @@ int KSPView_FGMRES(KSP ksp,Viewer viewer)
   PetscTruth   isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     if (fgmres->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) {
       cstr = "Unmodified Gram-Schmidt Orthogonalization";
@@ -691,7 +691,7 @@ int KSPView_FGMRES(KSP ksp,Viewer viewer)
     } else {
       cstr = "unknown orthogonalization";
     }
-    ierr = ViewerASCIIPrintf(viewer,"  FGMRES: restart=%d, using %s\n",fgmres->max_k,cstr);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  FGMRES: restart=%d, using %s\n",fgmres->max_k,cstr);CHKERRQ(ierr);
   } else {
     SETERRQ(1,"Viewer type not supported for this object");
   }
@@ -699,7 +699,7 @@ int KSPView_FGMRES(KSP ksp,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetFromOptions_FGMRES"
+#define __FUNC__ "KSPSetFromOptions_FGMRES"
 int KSPSetFromOptions_FGMRES(KSP ksp)
 {
   int         ierr,restart;
@@ -708,36 +708,36 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
   PetscTruth  flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("KSP flexible GMRES Options");CHKERRQ(ierr);
-    ierr = OptionsInt("-ksp_gmres_restart","Number of Krylov search directions","KSPGMRESSetRestart",gmres->max_k,&restart,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("KSP flexible GMRES Options");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ksp_gmres_restart","Number of Krylov search directions","KSPGMRESSetRestart",gmres->max_k,&restart,&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
-    ierr = OptionsDouble("-ksp_gmres_haptol","Tolerance for declaring exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-ksp_gmres_haptol","Tolerance for declaring exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPGMRESSetHapTol(ksp,haptol);CHKERRQ(ierr); }
-    ierr = OptionsName("-ksp_gmres_preallocate","Preallocate all Krylov vectors","KSPGMRESSetPreAllocateVectors",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ksp_gmres_preallocate","Preallocate all Krylov vectors","KSPGMRESSetPreAllocateVectors",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);}
-    ierr = OptionsLogicalGroupBegin("-ksp_gmres_unmodifiedgramschmidt","Use classical (unmodified) Gram-Schmidt (fast)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsLogicalGroupBegin("-ksp_gmres_unmodifiedgramschmidt","Use classical (unmodified) Gram-Schmidt (fast)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-    ierr = OptionsLogicalGroup("-ksp_gmres_modifiedgramschmidt","Use modified Gram-Schmidt (slow but more stable)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsLogicalGroup("-ksp_gmres_modifiedgramschmidt","Use modified Gram-Schmidt (slow but more stable)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-    ierr = OptionsLogicalGroupEnd("-ksp_gmres_irorthog","Use classical Gram-Schmidt with iterative refinement","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsLogicalGroupEnd("-ksp_gmres_irorthog","Use classical Gram-Schmidt with iterative refinement","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESIROrthogonalization);CHKERRQ(ierr);}
-    ierr = OptionsName("-ksp_gmres_krylov_monitor","Graphically plot the Krylov directions","KSPSetMonitor",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ksp_gmres_krylov_monitor","Graphically plot the Krylov directions","KSPSetMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
-      Viewers viewers;
-      ierr = ViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
-      ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(int (*)(void*))ViewersDestroy);CHKERRQ(ierr);
+      PetscViewers viewers;
+      ierr = PetscViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
+      ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(int (*)(void*))PetscViewersDestroy);CHKERRQ(ierr);
     }
-    ierr = OptionsLogicalGroupBegin("-ksp_fgmres_modifypcnochange","do not vary the preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsLogicalGroupBegin("-ksp_fgmres_modifypcnochange","do not vary the preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,0,0);CHKERRQ(ierr);} 
-    ierr = OptionsLogicalGroupEnd("-ksp_fgmres_modifypcsles","vary the SLES based preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsLogicalGroupEnd("-ksp_fgmres_modifypcsles","vary the SLES based preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCSLES,0,0);CHKERRQ(ierr);} 
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPFGMRESSetModifyPC_FGMRES" 
+#define __FUNC__ "KSPFGMRESSetModifyPC_FGMRES" 
 int KSPFGMRESSetModifyPC_FGMRES(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void *ctx,int (*d)(void*))
 {
   PetscFunctionBegin;
@@ -757,16 +757,16 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPCreate_FGMRES"
+#define __FUNC__ "KSPCreate_FGMRES"
 int KSPCreate_FGMRES(KSP ksp)
 {
   KSP_FGMRES *fgmres;
   int        ierr;
 
   PetscFunctionBegin;
-  fgmres = (KSP_FGMRES*)PetscMalloc(sizeof(KSP_FGMRES));CHKPTRQ(fgmres);
+ierr = PetscMalloc(sizeof(KSP_FGMRES),&(  fgmres ));CHKERRQ(ierr);
   PetscMemzero(fgmres,sizeof(KSP_FGMRES));
-  PLogObjectMemory(ksp,sizeof(KSP_FGMRES));
+  PetscLogObjectMemory(ksp,sizeof(KSP_FGMRES));
   ksp->data                              = (void*)fgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_FGMRES;
 

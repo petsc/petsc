@@ -1,4 +1,4 @@
-/*$Id: ex59.c,v 1.12 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex59.c,v 1.13 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatGetSubmatrix() in parallel";
 
@@ -21,7 +21,7 @@ int main(int argc,char **args)
   n = 2*size;
 
   ierr = PetscStrcpy(type,MATSAME);CHKERRQ(ierr);
-  ierr = OptionsGetString(PETSC_NULL,"-mat_type",type,256,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_type",type,256,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscStrcmp(type,MATMPIDENSE,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -44,8 +44,8 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* 
      Generate a new matrix consisting of every second row and column of
@@ -57,10 +57,10 @@ int main(int argc,char **args)
   /* list ALL the columns we want */
   ierr = ISCreateStride(PETSC_COMM_WORLD,(m*n)/2,0,2,&iscol);CHKERRA(ierr);
   ierr = MatGetSubMatrix(C,isrow,iscol,PETSC_DECIDE,MAT_INITIAL_MATRIX,&A);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
 
   ierr = MatGetSubMatrix(C,isrow,iscol,PETSC_DECIDE,MAT_REUSE_MATRIX,&A);CHKERRA(ierr); 
-  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
 
   ierr = ISDestroy(isrow);CHKERRA(ierr);
   ierr = ISDestroy(iscol);CHKERRA(ierr);

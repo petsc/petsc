@@ -1,4 +1,4 @@
-/*$Id: tone.c,v 1.32 2000/04/12 04:21:09 bsmith Exp bsmith $*/
+/*$Id: tone.c,v 1.33 2000/09/22 20:42:03 bsmith Exp bsmith $*/
 
 /*
     Code for drawing color interpolated triangles using X-windows.
@@ -8,8 +8,8 @@
 #define SHIFT_VAL 6
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawInterpolatedTriangle_X"></a>*/"DrawInterpolatedTriangle_X" 
-int DrawInterpolatedTriangle_X(Draw_X* win,int x1,int y_1,int t1,int x2,int y2,int t2,int x3,int y3,int t3)
+#define __FUNC__ "DrawInterpolatedTriangle_X" 
+int PetscDrawInterpolatedTriangle_X(PetscDraw_X* win,int x1,int y_1,int t1,int x2,int y2,int t2,int x3,int y3,int t3)
 {
   PetscReal rfrac,lfrac;
   PetscReal R_y2_y_1,R_y3_y_1,R_y3_y2;
@@ -50,7 +50,7 @@ int DrawInterpolatedTriangle_X(Draw_X* win,int x1,int y_1,int t1,int x2,int y2,i
   t3_t1   = t3 - t1;
   x3_x1   = x3 - x1;
   for (y=y_1; y<=y2; y++) {
-    /* Draw a line with the correct color from t1-t2 to t1-t3 */
+    /* PetscDraw a line with the correct color from t1-t2 to t1-t3 */
     /* Left color is (y-y_1)/(y2-y_1) * (t2-t1) + t1 */
     lfrac = ((double)(y-y_1)) * R_y2_y_1; 
     lc    = (int)(lfrac * (t2_t1) + t1);
@@ -59,7 +59,7 @@ int DrawInterpolatedTriangle_X(Draw_X* win,int x1,int y_1,int t1,int x2,int y2,i
     rfrac = ((double)(y - y_1)) * R_y3_y_1; 
     rc    = (int)(rfrac * (t3_t1) + t1);
     rx    = (int)(rfrac * (x3_x1) + x1);
-    /* Draw the line */
+    /* PetscDraw the line */
     rc_lc = rc - lc; 
     rx_lx = rx - lx;
     if (rx > lx) {
@@ -97,7 +97,7 @@ int DrawInterpolatedTriangle_X(Draw_X* win,int x1,int y_1,int t1,int x2,int y2,i
   if (y3 != y2) R_y3_y2 = 1.0/((double)(y3-y2)); else R_y3_y2 = 0.0;
   if (y3 != y_1) R_y3_y_1 = 1.0/((double)(y3-y_1)); else R_y3_y_1 = 0.0;
   for (y=y2; y<=y3; y++) {
-    /* Draw a line with the correct color from t2-t3 to t1-t3 */
+    /* PetscDraw a line with the correct color from t2-t3 to t1-t3 */
     /* Left color is (y-y_1)/(y2-y_1) * (t2-t1) + t1 */
     lfrac = ((double)(y-y2)) * R_y3_y2; 
     lc    = (int)(lfrac * (t3_t2) + t2);
@@ -106,7 +106,7 @@ int DrawInterpolatedTriangle_X(Draw_X* win,int x1,int y_1,int t1,int x2,int y2,i
     rfrac = ((double)(y - y_1)) * R_y3_y_1; 
     rc    = (int)(rfrac * (t3_t1) + t1);
     rx    = (int)(rfrac * (x3_x1) + x1);
-    /* Draw the line */
+    /* PetscDraw the line */
     rc_lc = rc - lc; 
     rx_lx = rx - lx;
     if (rx > lx) {

@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.35 2000/09/13 03:12:58 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.36 2000/12/05 02:02:03 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -8,13 +8,31 @@
 #define _DAIMPL_H
 #include "petscda.h"
 
+/*
+   The DM interface is shared by DA, VecPack, and any other object that may 
+  be used with the DMMG class. If you change this MAKE SURE you change
+  struct _DAOps and struct _VecPackOps!
+*/
+typedef struct _DMOps *DMOps;
+struct _DMOps {
+  int  (*view)(DM,PetscViewer);
+  int  (*createglobalvector)(DM,Vec*);
+  int  (*getcoloring)(DM,ISColoring*,Mat*);
+  int  (*getinterpolation)(DM,DM,Mat*,Vec*);
+  int  (*refine)(DM,MPI_Comm,DM*);
+};
+
+struct _p_DM {
+  PETSCHEADER(struct _DMOps)
+};
+
 typedef struct _DAOps *DAOps;
 struct _DAOps {
-  int  (*view)(DA,Viewer);
-  int  (*destroy)(DA);
+  int  (*view)(DA,PetscViewer);
   int  (*createglobalvector)(DA,Vec*);
   int  (*getcoloring)(DA,ISColoring*,Mat*);
   int  (*getinterpolation)(DA,DA,Mat*,Vec*);
+  int  (*refine)(DA,MPI_Comm,DA*);
 };
 
 struct _p_DA {
@@ -45,6 +63,8 @@ struct _p_DA {
   int                    *lx,*ly,*lz;   /* number of nodes in each partition block along 3 axis */
   Vec                    natural;       /* global vector for storing items in natural order */
   VecScatter             gton;          /* vector scatter from global to natural */
+  Vec                    localin[10],localout[10]; /* work vectors available to users */
+  Vec                    globalin[10],globalout[10]; /* work vectors available to users */
 };
 
 /*
@@ -62,10 +82,10 @@ struct _p_DA {
             nearest neighbor timestepping.
 */
 
-EXTERN int DAView_Binary(DA,Viewer);
+EXTERN int DAView_Binary(DA,PetscViewer);
 EXTERN_C_BEGIN
-EXTERN int VecView_MPI_DA(Vec,Viewer);
-EXTERN int VecLoadIntoVector_Binary_DA(Viewer,Vec);
+EXTERN int VecView_MPI_DA(Vec,PetscViewer);
+EXTERN int VecLoadIntoVector_Binary_DA(PetscViewer,Vec);
 EXTERN_C_END
 
 EXTERN int DAGetGlobalToGlobal1_Private(DA,int**);

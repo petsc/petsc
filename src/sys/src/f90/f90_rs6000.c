@@ -1,9 +1,9 @@
-/*$Id: f90_rs6000.c,v 1.14 2000/09/22 18:38:47 balay Exp bsmith $*/
+/*$Id: f90_rs6000.c,v 1.15 2000/09/28 21:09:38 bsmith Exp bsmith $*/
 
 /*-------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"F90GetID"
+#define __FUNC__ "F90GetID"
 int F90GetID(PetscDataType type,int *id)
 {
   PetscFunctionBegin;
@@ -26,7 +26,7 @@ int F90GetID(PetscDataType type,int *id)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"F90Array1dCreate"
+#define __FUNC__ "F90Array1dCreate"
 int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d *ptr)
 {
   int size,size_int,ierr,id;
@@ -51,7 +51,7 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"F90Array2dCreate"
+#define __FUNC__ "F90Array2dCreate"
 int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d *ptr)
 {
 

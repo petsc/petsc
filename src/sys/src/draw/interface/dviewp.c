@@ -1,16 +1,16 @@
-/*$Id: dviewp.c,v 1.41 2000/09/22 20:41:56 bsmith Exp bsmith $*/
+/*$Id: dviewp.c,v 1.42 2000/09/28 21:08:23 bsmith Exp bsmith $*/
 /*
-       Provides the calling sequences for all the basic Draw routines.
+       Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSetViewPort"></a>*/"DrawSetViewPort" 
+#define __FUNC__ "DrawSetViewPort" 
 /*@
-   DrawSetViewPort - Sets the portion of the window (page) to which draw
+   PetscDrawSetViewPort - Sets the portion of the window (page) to which draw
    routines will write.
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameters:
 +  xl,yl,xr,yr - upper right and lower left corners of subwindow
@@ -24,11 +24,11 @@
    Concepts: graphics^in subset of window
 
 @*/
-int DrawSetViewPort(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
+int PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl) {
     SETERRQ4(PETSC_ERR_ARG_OUTOFRANGE,"ViewPort values must be >= 0 and <= 1: Instead %g %g %g %g",xl,yl,xr,yr); 
   }
@@ -41,12 +41,12 @@ int DrawSetViewPort(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal y
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSplitViewPort"></a>*/"DrawSplitViewPort" 
+#define __FUNC__ "DrawSplitViewPort" 
 /*@
-   DrawSplitViewPort - Splits a window shared by several processes into smaller
+   PetscDrawSplitViewPort - Splits a window shared by several processes into smaller
    view ports. One for each process. 
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameter:
 .  draw - the drawing context
@@ -55,18 +55,18 @@ int DrawSetViewPort(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal y
 
    Concepts: drawing^in subset of window
 
-.seealso: DrawDivideViewPort(), DrawSetViewPort()
+.seealso: PetscDrawDivideViewPort(), PetscDrawSetViewPort()
 
 @*/
-int DrawSplitViewPort(Draw draw)
+int PetscDrawSplitViewPort(PetscDraw draw)
 {
   int        rank,size,n,ierr;
   PetscTruth isnull;
   PetscReal  xl,xr,yl,yr,h;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  ierr = PetscTypeCompare((PetscObject)draw,DRAW_NULL,&isnull);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
@@ -81,11 +81,11 @@ int DrawSplitViewPort(Draw draw)
   yl = (rank/n)*h;
   yr = yl + h;
 
-  ierr = DrawLine(draw,xl,yl,xl,yr,DRAW_BLACK);CHKERRQ(ierr);
-  ierr = DrawLine(draw,xl,yr,xr,yr,DRAW_BLACK);CHKERRQ(ierr);
-  ierr = DrawLine(draw,xr,yr,xr,yl,DRAW_BLACK);CHKERRQ(ierr);
-  ierr = DrawLine(draw,xr,yl,xl,yl,DRAW_BLACK);CHKERRQ(ierr);
-  ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLine(draw,xl,yl,xl,yr,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+  ierr = PetscDrawLine(draw,xl,yr,xr,yr,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+  ierr = PetscDrawLine(draw,xr,yr,xr,yl,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+  ierr = PetscDrawLine(draw,xr,yl,xl,yl,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
   draw->port_xl = xl + .1*h;
   draw->port_xr = xr - .1*h;
@@ -99,41 +99,41 @@ int DrawSplitViewPort(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawViewPortsCreate"></a>*/"DrawViewPortsCreate" 
+#define __FUNC__ "DrawViewPortsCreate" 
 /*@C
-   DrawViewPortsCreate - Splits a window into smaller
+   PetscDrawViewPortsCreate - Splits a window into smaller
        view ports. Each processor shares all the viewports.
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameter:
 .  draw - the drawing context
 
    Output Parameter:
-.  divide - a DrawViewPorts context (C structure)
+.  divide - a PetscDrawViewPorts context (C structure)
 
    Level: advanced
 
    Concepts: drawing^in subset of window
 
-.seealso: DrawSplitViewPort(), DrawSetViewPort(), DrawViewPortsSet(), DrawViewPortsDestroy()
+.seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsDestroy()
 
 @*/
-int DrawViewPortsCreate(Draw draw,int nports,DrawViewPorts **ports)
+int PetscDrawViewPortsCreate(PetscDraw draw,int nports,PetscDrawViewPorts **ports)
 {
   int        i,ierr,n;
   PetscTruth isnull;
   PetscReal  *xl,*xr,*yl,*yr,h;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  ierr = PetscTypeCompare((PetscObject)draw,DRAW_NULL,&isnull);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
     *ports = PETSC_NULL;
     PetscFunctionReturn(0);
   }
 
-  *ports = PetscNew(DrawViewPorts);CHKPTRQ(*ports);
+  ierr             = PetscNew(PetscDrawViewPorts,ports);CHKERRQ(ierr);
   (*ports)->draw   = draw;
   (*ports)->nports = nports;
 
@@ -142,10 +142,10 @@ int DrawViewPortsCreate(Draw draw,int nports,DrawViewPorts **ports)
   n = (int)(.1 + sqrt((double)nports));
   while (n*n < nports) {n++;}
   
-  (*ports)->xl = xl = (PetscReal*)PetscMalloc(n*n*sizeof(PetscReal));CHKPTRQ(xl);
-  (*ports)->xr = xr = (PetscReal*)PetscMalloc(n*n*sizeof(PetscReal));CHKPTRQ(xr);
-  (*ports)->yl = yl = (PetscReal*)PetscMalloc(n*n*sizeof(PetscReal));CHKPTRQ(yl);
-  (*ports)->yr = yr = (PetscReal*)PetscMalloc(n*n*sizeof(PetscReal));CHKPTRQ(yr);
+  ierr = PetscMalloc(n*n*sizeof(PetscReal),&xl);CHKERRQ(ierr);(*ports)->xl = xl; 
+  ierr = PetscMalloc(n*n*sizeof(PetscReal),&xr);CHKERRQ(ierr);(*ports)->xr = xr; 
+  ierr = PetscMalloc(n*n*sizeof(PetscReal),&yl);CHKERRQ(ierr);(*ports)->yl = yl; 
+  ierr = PetscMalloc(n*n*sizeof(PetscReal),&yr);CHKERRQ(ierr);(*ports)->yr = yr; 
 
   h  = 1.0/n;
 
@@ -155,44 +155,44 @@ int DrawViewPortsCreate(Draw draw,int nports,DrawViewPorts **ports)
     yl[i] = (i/n)*h;
     yr[i] = yl[i] + h;
 
-    ierr = DrawLine(draw,xl[i],yl[i],xl[i],yr[i],DRAW_BLACK);CHKERRQ(ierr);
-    ierr = DrawLine(draw,xl[i],yr[i],xr[i],yr[i],DRAW_BLACK);CHKERRQ(ierr);
-    ierr = DrawLine(draw,xr[i],yr[i],xr[i],yl[i],DRAW_BLACK);CHKERRQ(ierr);
-    ierr = DrawLine(draw,xr[i],yl[i],xl[i],yl[i],DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,xl[i],yl[i],xl[i],yr[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,xl[i],yr[i],xr[i],yr[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,xr[i],yr[i],xr[i],yl[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,xr[i],yl[i],xl[i],yl[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
 
     xl[i] += .1*h;
     xr[i] -= .1*h;
     yl[i] += .1*h;
     yr[i] -= .1*h;
   }
-  ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawViewPortsDestroy"></a>*/"DrawViewPortsDestroy" 
+#define __FUNC__ "DrawViewPortsDestroy" 
 /*@C
-   DrawViewPortsDestroy - frees a DrawViewPorts object
+   PetscDrawViewPortsDestroy - frees a PetscDrawViewPorts object
 
-   Collective on Draw inside DrawViewPorts
+   Collective on PetscDraw inside PetscDrawViewPorts
 
    Input Parameter:
-.  ports - the DrawViewPorts object
+.  ports - the PetscDrawViewPorts object
 
    Level: advanced
 
-.seealso: DrawSplitViewPort(), DrawSetViewPort(), DrawViewPortsSet(), DrawViewPortsCreate()
+.seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsCreate()
 
 @*/
-int DrawViewPortsDestroy(DrawViewPorts *ports)
+int PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 {
   int        ierr;
 
   PetscFunctionBegin;
 
   if (!ports) PetscFunctionReturn(0);  
-  if (ports->draw) {ierr = DrawDestroy(ports->draw);CHKERRQ(ierr);}
+  if (ports->draw) {ierr = PetscDrawDestroy(ports->draw);CHKERRQ(ierr);}
   ierr = PetscFree(ports->xl);CHKERRQ(ierr);
   ierr = PetscFree(ports->xr);CHKERRQ(ierr);
   ierr = PetscFree(ports->yl);CHKERRQ(ierr);
@@ -203,24 +203,24 @@ int DrawViewPortsDestroy(DrawViewPorts *ports)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawViewPortsSet"></a>*/"DrawViewPortsSet" 
+#define __FUNC__ "DrawViewPortsSet" 
 /*@C
-   DrawViewPortsSet - sets a draw object to use a particular subport
+   PetscDrawViewPortsSet - sets a draw object to use a particular subport
 
-   Collective on Draw inside DrawViewPorts
+   Collective on PetscDraw inside PetscDrawViewPorts
 
    Input Parameter:
-+  ports - the DrawViewPorts object
++  ports - the PetscDrawViewPorts object
 -  port - the port number, from 0 to nports-1
 
    Level: advanced
 
    Concepts: drawing^in subset of window
 
-.seealso: DrawSplitViewPort(), DrawSetViewPort(), DrawViewPortsDestroy(), DrawViewPortsCreate()
+.seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsDestroy(), PetscDrawViewPortsCreate()
 
 @*/
-int DrawViewPortsSet(DrawViewPorts *ports,int port)
+int PetscDrawViewPortsSet(PetscDrawViewPorts *ports,int port)
 {
   int        ierr;
 
@@ -229,7 +229,7 @@ int DrawViewPortsSet(DrawViewPorts *ports,int port)
     if (port < 0 || port > ports->nports-1) {
       SETERRQ2(1,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
     }
-    ierr = DrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
+    ierr = PetscDrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

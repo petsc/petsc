@@ -1,4 +1,4 @@
-/*$Id: ex51.c,v 1.12 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex51.c,v 1.13 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = 
 "Tests MatIncreaseOverlap(), MatGetSubMatrices() for MatBAIJ format.\n";
@@ -21,20 +21,20 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
  
 
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRA(ierr);
   M    = m*bs;
 
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,PETSC_NULL,&A);CHKERRA(ierr);
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,M,M,15,PETSC_NULL,&B);CHKERRA(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
 
-  rows  = (int*)PetscMalloc(bs*sizeof(int));CHKPTRA(rows);
-  cols  = (int*)PetscMalloc(bs*sizeof(int));CHKPTRA(cols);
-  vals  = (Scalar*)PetscMalloc(bs*bs*sizeof(Scalar));CHKPTRA(vals);
-  idx   = (int*)PetscMalloc(M*sizeof(Scalar));CHKPTRA(idx);
+ierr = PetscMalloc(bs*sizeof(int),&(  rows  ));CHKPTRA(rows);
+ierr = PetscMalloc(bs*sizeof(int),&(  cols  ));CHKPTRA(cols);
+ierr = PetscMalloc(bs*bs*sizeof(Scalar),&(  vals  ));CHKPTRA(vals);
+ierr = PetscMalloc(M*sizeof(Scalar),&(  idx   ));CHKPTRA(idx);
 
   /* Now set blocks of values */
   for (i=0; i<20*bs; i++) {

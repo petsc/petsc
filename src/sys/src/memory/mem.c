@@ -1,4 +1,4 @@
-/*$Id: mem.c,v 1.51 2000/09/22 20:42:22 bsmith Exp bsmith $*/
+/*$Id: mem.c,v 1.52 2000/09/28 21:09:09 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 #include "petscsys.h"
@@ -48,7 +48,7 @@
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscGetResidentSetSize"
+#define __FUNC__ "PetscGetResidentSetSize"
 /*@
    PetscGetResidentSetSize - Returns the maximum resident set size (memory used)
    for the program.
@@ -77,7 +77,7 @@
    Concepts: memory usage
 
 @*/
-int PetscGetResidentSetSize(PLogDouble *foo)
+int PetscGetResidentSetSize(PetscLogDouble *foo)
 {
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
   int             fd;
@@ -103,7 +103,7 @@ int PetscGetResidentSetSize(PLogDouble *foo)
   *foo = (double)prusage.pr_byrssize;
   close(fd);
 #elif defined(PETSC_USE_SBREAK_FOR_SIZE)
-  *foo = (PLogDouble)(8*fd - 4294967296); /* 2^32 - upper bits */
+  *foo = (PetscLogDouble)(8*fd - 4294967296); /* 2^32 - upper bits */
 #elif defined(PETSC_HAVE_NO_GETRUSAGE)
   *foo = 0.0;
 #else

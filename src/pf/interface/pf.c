@@ -1,14 +1,14 @@
-/*$Id: pf.c,v 1.16 2000/09/22 20:47:31 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.17 2000/09/28 21:16:13 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
-FList      PFList = 0; /* list of all registered PD functions */
+PetscFList      PPetscFList = 0; /* list of all registered PD functions */
 PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFSet"></a>*/"PFSet"
+#define __FUNC__ "PFSet"
 /*@C
    PFSet - Sets the C/C++/Fortran functions to be used by the PF function
 
@@ -28,7 +28,7 @@ PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 .seealso: PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec()
 @*/
-int PFSet(PF pf,int(*apply)(void*,int,Scalar*,Scalar*),int(*applyvec)(void*,Vec,Vec),int(*view)(void*,Viewer),int(*destroy)(void*),void*ctx)
+int PFSet(PF pf,int(*apply)(void*,int,Scalar*,Scalar*),int(*applyvec)(void*,Vec,Vec),int(*view)(void*,PetscViewer),int(*destroy)(void*),void*ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE);
@@ -43,7 +43,7 @@ int PFSet(PF pf,int(*apply)(void*,int,Scalar*,Scalar*),int(*applyvec)(void*,Vec,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFDestroy"></a>*/"PFDestroy"
+#define __FUNC__ "PFDestroy"
 /*@C
    PFDestroy - Destroys PF context that was created with PFCreate().
 
@@ -67,22 +67,22 @@ int PFDestroy(PF pf)
   PetscValidHeaderSpecific(pf,PF_COOKIE);
   if (--pf->refct > 0) PetscFunctionReturn(0);
 
-  ierr = OptionsHasName(pf->prefix,"-pf_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(pf->prefix,"-pf_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PFView(pf,VIEWER_STDOUT_(pf->comm));CHKERRQ(ierr);
+    ierr = PFView(pf,PETSC_VIEWER_STDOUT_(pf->comm));CHKERRQ(ierr);
   }
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(pf);CHKERRQ(ierr);
 
   if (pf->ops->destroy) {ierr =  (*pf->ops->destroy)(pf->data);CHKERRQ(ierr);}
-  PLogObjectDestroy(pf);
+  PetscLogObjectDestroy(pf);
   PetscHeaderDestroy(pf);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFPublish_Petsc"></a>*/"PFPublish_Petsc"
+#define __FUNC__ "PFPublish_Petsc"
 static int PFPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -104,7 +104,7 @@ static int PFPublish_Petsc(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFCreate"></a>*/"PFCreate"
+#define __FUNC__ "PFCreate"
 /*@C
    PFCreate - Creates a mathematical function context.
 
@@ -133,7 +133,7 @@ int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
   *pf          = 0;
 
   PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_COOKIE,-1,"PF",comm,PFDestroy,PFView);
-  PLogObjectCreate(newpf);
+  PetscLogObjectCreate(newpf);
   newpf->bops->publish    = PFPublish_Petsc;
   newpf->data             = 0;
 
@@ -153,7 +153,7 @@ int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
 /* -------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFApplyVec"></a>*/"PFApplyVec"
+#define __FUNC__ "PFApplyVec"
 /*@
    PFApplyVec - Applies the mathematical function to a vector
 
@@ -218,7 +218,7 @@ int PFApplyVec(PF pf,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFApply"></a>*/"PFApply"
+#define __FUNC__ "PFApply"
 /*@
    PFApply - Applies the mathematical function to an array of values.
 
@@ -252,11 +252,11 @@ int PFApply(PF pf,int n,Scalar* x,Scalar* y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFView"></a>*/"PFView"
+#define __FUNC__ "PFView"
 /*@ 
    PFView - Prints information about a mathematical function
 
-   Collective on PF unless Viewer is VIEWER_STDOUT_SELF  
+   Collective on PF unless PetscViewer is PETSC_VIEWER_STDOUT_SELF  
 
    Input Parameters:
 +  PF - the PF context
@@ -264,22 +264,22 @@ int PFApply(PF pf,int n,Scalar* x,Scalar* y)
 
    Note:
    The available visualization contexts include
-+     VIEWER_STDOUT_SELF - standard output (default)
--     VIEWER_STDOUT_WORLD - synchronized standard
++     PETSC_VIEWER_STDOUT_SELF - standard output (default)
+-     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
          the file.  All other processors send their 
          data to the first processor to print. 
 
    The user can open an alternative visualization contexts with
-   ViewerASCIIOpen() (output to a specified file).
+   PetscViewerASCIIOpen() (output to a specified file).
 
    Level: developer
 
 .keywords: PF, view
 
-.seealso: ViewerCreate(), ViewerASCIIOpen()
+.seealso: PetscViewerCreate(), PetscViewerASCIIOpen()
 @*/
-int PFView(PF pf,Viewer viewer)
+int PFView(PF pf,PetscViewer viewer)
 {
   PFType      cstr;
   int         fmt,ierr;
@@ -287,24 +287,24 @@ int PFView(PF pf,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_(pf->comm);
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE); 
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(pf->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE); 
   PetscCheckSameComm(pf,viewer);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"PF Object:\n");CHKERRQ(ierr);
+    ierr = PetscViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"PF Object:\n");CHKERRQ(ierr);
     ierr = PFGetType(pf,&cstr);CHKERRQ(ierr);
     if (cstr) {
-      ierr = ViewerASCIIPrintf(viewer,"  type: %s\n",cstr);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",cstr);CHKERRQ(ierr);
     } else {
-      ierr = ViewerASCIIPrintf(viewer,"  type: not yet set\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  type: not yet set\n");CHKERRQ(ierr);
     }
     if (pf->ops->view) {
-      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*pf->ops->view)(pf->data,viewer);CHKERRQ(ierr);
-      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   } else {
     SETERRQ1(1,"Viewer type %s not supported by PF",((PetscObject)viewer)->type_name);
@@ -354,22 +354,22 @@ $     -pf_type my_function
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFRegister"></a>*/"PFRegister"
+#define __FUNC__ "PFRegister"
 int PFRegister(char *sname,char *path,char *name,int (*function)(PF,void*))
 {
   int  ierr;
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = FListAdd(&PFList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PPetscFList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFGetType"></a>*/"PFGetType"
+#define __FUNC__ "PFGetType"
 /*@C
    PFGetType - Gets the PF method type and name (as a string) from the PF
    context.
@@ -398,7 +398,7 @@ int PFGetType(PF pf,PFType *meth)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFSetType"></a>*/"PFSetType"
+#define __FUNC__ "PFSetType"
 /*@C
    PFSetType - Builds PF for a particular function
 
@@ -443,7 +443,7 @@ int PFSetType(PF pf,PFType type,void *ctx)
   if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
 
   /* Determine the PFCreateXXX routine for a particular function */
-  ierr =  FListFind(pf->comm,PFList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(pf->comm,PPetscFList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unable to find requested PF type %s",type);
 
   pf->ops->destroy             = 0;
@@ -459,7 +459,7 @@ int PFSetType(PF pf,PFType type,void *ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PFSetFromOptions"></a>*/"PFSetFromOptions"
+#define __FUNC__ "PFSetFromOptions"
 /*@
    PFSetFromOptions - Sets PF options from the options database.
 
@@ -490,15 +490,15 @@ int PFSetFromOptions(PF pf)
   PetscValidHeaderSpecific(pf,PF_COOKIE);
 
   if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
-  ierr = OptionsBegin(pf->comm,pf->prefix,"Mathematical functions options","Vec");CHKERRQ(ierr);
-    ierr = OptionsList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(pf->comm,pf->prefix,"Mathematical functions options","Vec");CHKERRQ(ierr);
+    ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PPetscFList,0,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);
     }
     if (pf->ops->setfromoptions) {
       ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
     }
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

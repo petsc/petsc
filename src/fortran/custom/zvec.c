@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.62 2000/07/11 20:30:14 balay Exp bsmith $*/
+/*$Id: zvec.c,v 1.63 2000/10/24 20:28:01 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -90,9 +90,9 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL vecloadintovector_(Viewer *viewer,Vec *vec,int *ierr)
+void PETSC_STDCALL vecloadintovector_(PetscViewer *viewer,Vec *vec,int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = VecLoadIntoVector(v,*vec);
 }
@@ -102,7 +102,7 @@ void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x,int *ierr)
   *ierr = VecSetRandom(*r,*x);
 }
 
-void PETSC_STDCALL drawtensorcontour_(Draw *win,int *m,int *n,double *x,double *y,Scalar *V,int *ierr)
+void PETSC_STDCALL drawtensorcontour_(PetscDraw *win,int *m,int *n,double *x,double *y,Scalar *V,int *ierr)
 {
   double *xx,*yy;
   if (FORTRANNULLDOUBLE(x)) xx = PETSC_NULL; 
@@ -110,7 +110,7 @@ void PETSC_STDCALL drawtensorcontour_(Draw *win,int *m,int *n,double *x,double *
   if (FORTRANNULLDOUBLE(y)) yy = PETSC_NULL; 
   else yy = y;
 
-  *ierr = DrawTensorContour(*win,*m,*n,xx,yy,V);
+  *ierr = PetscDrawTensorContour(*win,*m,*n,xx,yy,V);
 }
 
 void PETSC_STDCALL vecsetfromoptions_(Vec *x,int *ierr)
@@ -163,9 +163,9 @@ void PETSC_STDCALL vecsetvalue_(Vec *v,int *i,Scalar *va,InsertMode *mode)
   VecSetValues(*v,1,i,va,*mode);
 }
 
-void PETSC_STDCALL vecview_(Vec *x,Viewer *vin,int *ierr)
+void PETSC_STDCALL vecview_(Vec *x,PetscViewer *vin,int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = VecView(*x,v);
 }
@@ -185,9 +185,9 @@ void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(len),int *ierr 
 
 }
 
-void PETSC_STDCALL vecload_(Viewer *viewer,Vec *newvec,int *ierr)
+void PETSC_STDCALL vecload_(PetscViewer *viewer,Vec *newvec,int *ierr)
 { 
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = VecLoad(v,newvec);
 }
@@ -225,6 +225,8 @@ void PETSC_STDCALL vecdestroy_(Vec *v,int *ierr)
 
 void PETSC_STDCALL vecscattercreate_(Vec *xin,IS *ix,Vec *yin,IS *iy,VecScatter *newctx,int *ierr)
 {
+  if (FORTRANNULLOBJECT(ix)) ix = PETSC_NULL;
+  if (FORTRANNULLOBJECT(iy)) iy = PETSC_NULL;
   *ierr = VecScatterCreate(*xin,*ix,*yin,*iy,newctx);
 }
 
@@ -255,11 +257,13 @@ void PETSC_STDCALL veccreateseq_(MPI_Comm *comm,int *n,Vec *V,int *ierr)
 
 void PETSC_STDCALL veccreateseqwitharray_(MPI_Comm *comm,int *n,Scalar *s,Vec *V,int *ierr)
 {
+  if (FORTRANNULLDOUBLE(s)) s = PETSC_NULL;
   *ierr = VecCreateSeqWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,s,V);
 }
 
 void PETSC_STDCALL veccreatempiwitharray_(MPI_Comm *comm,int *n,int *N,Scalar *s,Vec *V,int *ierr)
 {
+  if (FORTRANNULLDOUBLE(s)) s = PETSC_NULL;
   *ierr = VecCreateMPIWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,*N,s,V);
 }
 
@@ -321,6 +325,7 @@ void PETSC_STDCALL vecstridenorm_(Vec *x,int *start,NormType *type,double *val,i
 void PETSC_STDCALL veccreateghostblockwitharray_(MPI_Comm *comm,int *bs,int *n,int *N,int *nghost,int *ghosts,
                               Scalar *array,Vec *vv,int *ierr)
 {
+  if (FORTRANNULLDOUBLE(array)) array = PETSC_NULL;
   *ierr = VecCreateGhostBlockWithArray((MPI_Comm)PetscToPointerComm(*comm),*bs,*n,*N,*nghost,
                                     ghosts,array,vv);
 }
@@ -334,6 +339,7 @@ void PETSC_STDCALL veccreateghostblock_(MPI_Comm *comm,int *bs,int *n,int *N,int
 void PETSC_STDCALL veccreateghostwitharray_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,Scalar *array,
                               Vec *vv,int *ierr)
 {
+  if (FORTRANNULLDOUBLE(array)) array = PETSC_NULL;
   *ierr = VecCreateGhostWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,*N,*nghost,
                                     ghosts,array,vv);
 }
@@ -360,3 +366,5 @@ void PETSC_STDCALL vecmax_(Vec *x,int *p,double *val,int *ierr)
 }
 
 EXTERN_C_END
+
+

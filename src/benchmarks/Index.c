@@ -1,4 +1,4 @@
-/*$Id: Index.c,v 1.25 2000/01/11 21:03:44 bsmith Exp balay $*/
+/*$Id: Index.c,v 1.26 2000/05/05 22:20:03 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -26,18 +26,18 @@ int main(int argc,char **argv)
 #define __FUNC__ "test1"
 int test1(void)
 {
-  PLogDouble  t1,t2;
+  PetscLogDouble  t1,t2;
   double      value;
   int         i,ierr,*z,*zi,intval;
   Scalar      *x,*y;
   PetscRandom r;
 
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
-  x    = (Scalar *)PetscMalloc(20000*sizeof(Scalar));CHKPTRA(x);
-  y    = (Scalar *)PetscMalloc(20000*sizeof(Scalar));CHKPTRA(y);
+ierr = PetscMalloc(20000*sizeof(Scalar),&(  x    ));CHKPTRA(x);
+ierr = PetscMalloc(20000*sizeof(Scalar),&(  y    ));CHKPTRA(y);
 
-  z     = (int *)PetscMalloc(2000*sizeof(int));CHKPTRA(z); 
-  zi    = (int *)PetscMalloc(2000*sizeof(int));CHKPTRA(zi); 
+ierr = PetscMalloc(2000*sizeof(int),&(  z     ));CHKPTRA(z); 
+ierr = PetscMalloc(2000*sizeof(int),&(  zi    ));CHKPTRA(zi); 
 
 
 
@@ -119,7 +119,7 @@ int test1(void)
 #define __FUNC__ "test2"
 int test2(void)
 {
-  PLogDouble   t1,t2;
+  PetscLogDouble   t1,t2;
   double       value;
   int          i,ierr,z[20000],zi[20000],intval,tmp;
   Scalar       x[20000],y[20000];
@@ -195,7 +195,7 @@ int BlastCache(void)
   int    i,n = 1000000;
   Scalar *x,*y,*z,*a,*b;
 
-  x = (Scalar*)PetscMalloc(5*n*sizeof(Scalar));CHKPTRA(x);
+ierr = PetscMalloc(5*n*sizeof(Scalar),&(  x ));CHKPTRA(x);
   y = x + n;
   z = y + n;
   a = z + n;

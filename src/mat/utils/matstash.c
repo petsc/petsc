@@ -1,4 +1,4 @@
-/*$Id: matstash.c,v 1.45 2000/07/10 03:39:59 bsmith Exp bsmith $*/
+/*$Id: matstash.c,v 1.46 2000/11/28 17:29:54 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"
 
@@ -23,7 +23,7 @@
   stash    - the newly created stash
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatStashCreate_Private"
+#define __FUNC__ "MatStashCreate_Private"
 int MatStashCreate_Private(MPI_Comm comm,int bs,MatStash *stash)
 {
   int        ierr,max,*opt,nopt;
@@ -38,8 +38,8 @@ int MatStashCreate_Private(MPI_Comm comm,int bs,MatStash *stash)
   ierr = MPI_Comm_rank(stash->comm,&stash->rank);CHKERRQ(ierr);
 
   nopt = stash->size;
-  opt  = (int*)PetscMalloc(nopt*sizeof(int));CHKPTRQ(opt);
-  ierr = OptionsGetIntArray(PETSC_NULL,"-matstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
+ierr = PetscMalloc(nopt*sizeof(int),&(  opt  ));CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-matstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
   if (flg) {
     if (nopt == 1)                max = opt[0];
     else if (nopt == stash->size) max = opt[stash->rank];
@@ -78,7 +78,7 @@ int MatStashCreate_Private(MPI_Comm comm,int bs,MatStash *stash)
    MatStashDestroy_Private - Destroy the stash
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatStashDestroy_Private"
+#define __FUNC__ "MatStashDestroy_Private"
 int MatStashDestroy_Private(MatStash *stash)
 {
   int ierr;
@@ -100,7 +100,7 @@ int MatStashDestroy_Private(MatStash *stash)
    so that the same value can be used the next time through.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatStashScatterEnd_Private"
+#define __FUNC__ "MatStashScatterEnd_Private"
 int MatStashScatterEnd_Private(MatStash *stash)
 { 
   int         nsends=stash->nsends,ierr,bs2,oldnmax;
@@ -109,7 +109,7 @@ int MatStashScatterEnd_Private(MatStash *stash)
   PetscFunctionBegin;
   /* wait on sends */
   if (nsends) {
-    send_status = (MPI_Status *)PetscMalloc(2*nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
+ierr = PetscMalloc(2*nsends*sizeof(MPI_Status),&(    send_status ));CHKERRQ(ierr);
     ierr        = MPI_Waitall(2*nsends,stash->send_waits,send_status);CHKERRQ(ierr);
     ierr        = PetscFree(send_status);CHKERRQ(ierr);
   }
@@ -169,7 +169,7 @@ int MatStashScatterEnd_Private(MatStash *stash)
    
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatStashGetInfo_Private"
+#define __FUNC__ "MatStashGetInfo_Private"
 int MatStashGetInfo_Private(MatStash *stash,int *nstash,int *reallocs)
 {
   int bs2 = stash->bs*stash->bs;
@@ -191,7 +191,7 @@ int MatStashGetInfo_Private(MatStash *stash,int *nstash,int *reallocs)
             this value is used while allocating memory.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatStashSetInitialSize_Private"
+#define __FUNC__ "MatStashSetInitialSize_Private"
 int MatStashSetInitialSize_Private(MatStash *stash,int max)
 {
   PetscFunctionBegin;
@@ -211,7 +211,7 @@ int MatStashSetInitialSize_Private(MatStash *stash,int max)
    This routine doubles the currently used memory. 
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatStashExpand_Private"
+#define __FUNC__ "MatStashExpand_Private"
 static int MatStashExpand_Private(MatStash *stash,int incr)
 { 
   int       *n_idx,*n_idy,newnmax,bs2,ierr;
@@ -229,7 +229,7 @@ static int MatStashExpand_Private(MatStash *stash,int incr)
   } else                              newnmax = stash->nmax*2;
   if (newnmax  < (stash->nmax + incr)) newnmax += 2*incr;
 
-  n_array = (MatScalar*)PetscMalloc((newnmax)*(2*sizeof(int)+bs2*sizeof(MatScalar)));CHKPTRQ(n_array);
+ierr = PetscMalloc((newnmax)*(2*sizeof(int)+bs2*sizeof(MatScalar)),&  n_array );CHKERRQ(ierr);
   n_idx   = (int*)(n_array + bs2*newnmax);
   n_idy   = (int*)(n_idx + newnmax);
   ierr = PetscMemcpy(n_array,stash->array,bs2*stash->nmax*sizeof(MatScalar));CHKERRQ(ierr);
@@ -256,7 +256,7 @@ static int MatStashExpand_Private(MatStash *stash,int incr)
   values - the values inserted
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatStashValuesRow_Private"
+#define __FUNC__ "MatStashValuesRow_Private"
 int MatStashValuesRow_Private(MatStash *stash,int row,int n,int *idxn,MatScalar *values)
 {
   int    ierr,i; 
@@ -289,7 +289,7 @@ int MatStashValuesRow_Private(MatStash *stash,int row,int n,int *idxn,MatScalar 
             this happens because the input is columnoriented.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatStashValuesCol_Private"
+#define __FUNC__ "MatStashValuesCol_Private"
 int MatStashValuesCol_Private(MatStash *stash,int row,int n,int *idxn,MatScalar *values,int stepval)
 {
   int    ierr,i; 
@@ -327,7 +327,7 @@ int MatStashValuesCol_Private(MatStash *stash,int row,int n,int *idxn,MatScalar 
   idx    - the index of the current block-row in the original block.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatStashValuesRowBlocked_Private"
+#define __FUNC__ "MatStashValuesRowBlocked_Private"
 int MatStashValuesRowBlocked_Private(MatStash *stash,int row,int n,int *idxn,MatScalar *values,int rmax,int cmax,int idx)
 {
   int       ierr,i,j,k,bs2,bs=stash->bs; 
@@ -375,7 +375,7 @@ int MatStashValuesRowBlocked_Private(MatStash *stash,int row,int n,int *idxn,Mat
   idx    - the index of the current block-row in the original block.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatStashValuesColBlocked_Private"
+#define __FUNC__ "MatStashValuesColBlocked_Private"
 int MatStashValuesColBlocked_Private(MatStash *stash,int row,int n,int *idxn,MatScalar *values,int rmax,int cmax,int idx)
 {
   int       ierr,i,j,k,bs2,bs=stash->bs; 
@@ -419,7 +419,7 @@ int MatStashValuesColBlocked_Private(MatStash *stash,int row,int n,int *idxn,Mat
   the proper global indices.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatStashScatterBegin_Private"
+#define __FUNC__ "MatStashScatterBegin_Private"
 int MatStashScatterBegin_Private(MatStash *stash,int *owners)
 { 
   int         *owner,*startv,*starti,tag1=stash->tag1,tag2=stash->tag2,bs2;
@@ -433,10 +433,10 @@ int MatStashScatterBegin_Private(MatStash *stash,int *owners)
 
   bs2 = stash->bs*stash->bs;
   /*  first count number of contributors to each processor */
-  nprocs = (int*)PetscMalloc(2*size*sizeof(int));CHKPTRQ(nprocs);
+ierr = PetscMalloc(2*size*sizeof(int),&(  nprocs ));CHKERRQ(ierr);
   ierr   = PetscMemzero(nprocs,2*size*sizeof(int));CHKERRQ(ierr);
   procs  = nprocs + size;
-  owner  = (int*)PetscMalloc((stash->n+1)*sizeof(int));CHKPTRQ(owner);
+  owner  = (int*)PetscMalloc((stash->n+1)*sizeof(int));CHKERRQ(ierr);
 
   for (i=0; i<stash->n; i++) {
     idx = stash->idx[i];
@@ -449,7 +449,7 @@ int MatStashScatterBegin_Private(MatStash *stash,int *owners)
   nsends = 0;  for (i=0; i<size; i++) { nsends += procs[i];} 
   
   /* inform other processors of number of messages and max length*/
-  work      = (int *)PetscMalloc(2*size*sizeof(int));CHKPTRQ(work);
+ierr = PetscMalloc(2*size*sizeof(int),&(  work      ));CHKERRQ(ierr);
   ierr      = MPI_Allreduce(nprocs,work,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
   nmax      = work[rank];
   nreceives = work[size+rank]; 
@@ -459,9 +459,9 @@ int MatStashScatterBegin_Private(MatStash *stash,int *owners)
      allocate the largest needed buffer for each receive. Potentially 
      this is a lot of wasted space.
   */
-  rvalues    = (MatScalar*)PetscMalloc((nreceives+1)*(nmax+1)*(bs2*sizeof(MatScalar)+2*sizeof(int)));CHKPTRQ(rvalues);
+ierr = PetscMalloc((nreceives+1)*(nmax+1)*(bs2*sizeof(MatScalar)+2*sizeof(int)),&  rvalues    );CHKERRQ(ierr);
   rindices   = (int*)(rvalues + bs2*nreceives*nmax);
-  recv_waits = (MPI_Request *)PetscMalloc((nreceives+1)*2*sizeof(MPI_Request));CHKPTRQ(recv_waits);
+ierr = PetscMalloc((nreceives+1)*2*sizeof(MPI_Request),&  recv_waits );CHKERRQ(ierr);
   for (i=0,count=0; i<nreceives; i++) {
     ierr = MPI_Irecv(rvalues+bs2*nmax*i,bs2*nmax,MPIU_MATSCALAR,MPI_ANY_SOURCE,tag1,comm,
                      recv_waits+count++);CHKERRQ(ierr);
@@ -472,10 +472,10 @@ int MatStashScatterBegin_Private(MatStash *stash,int *owners)
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  svalues    = (MatScalar*)PetscMalloc((stash->n+1)*(bs2*sizeof(MatScalar)+2*sizeof(int)));CHKPTRQ(svalues);
+  svalues    = (MatScalar*)PetscMalloc((stash->n+1)*(bs2*sizeof(MatScalar)+2*sizeof(int)));CHKERRQ(ierr);
   sindices   = (int*)(svalues + bs2*stash->n);
-  send_waits = (MPI_Request*)PetscMalloc(2*(nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
-  startv     = (int*)PetscMalloc(2*size*sizeof(int));CHKPTRQ(startv);
+ierr = PetscMalloc(2*(nsends+1)*sizeof(MPI_Request),&  send_waits );CHKERRQ(ierr);
+ierr = PetscMalloc(2*size*sizeof(int),&(  startv     ));CHKERRQ(ierr);
   starti     = startv + size;
   /* use 2 sends the first with all_a, the next with all_i and all_j */
   startv[0]  = 0; starti[0] = 0;
@@ -541,12 +541,12 @@ int MatStashScatterBegin_Private(MatStash *stash,int *owners)
              other output parameters nvals,rows,cols,vals are set appropriately.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatStashScatterGetMesg_Private"
+#define __FUNC__ "MatStashScatterGetMesg_Private"
 int MatStashScatterGetMesg_Private(MatStash *stash,int *nvals,int **rows,int** cols,MatScalar **vals,int *flg)
 {
   int         i,ierr,size=stash->size,*flg_v,*flg_i,i1,i2,*rindices,bs2;
   MPI_Status  recv_status;
-  PetscTruth  match_found;
+  PetscTruth  match_found = PETSC_FALSE;
 
   PetscFunctionBegin;
 

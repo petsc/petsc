@@ -1,4 +1,4 @@
-/*$Id: jacobi.c,v 1.70 2000/10/26 14:21:18 bsmith Exp bsmith $*/
+/*$Id: jacobi.c,v 1.71 2000/10/26 14:21:56 bsmith Exp bsmith $*/
 
 /*  -------------------------------------------------------------------- 
 
@@ -65,7 +65,7 @@ typedef struct {
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCJacobiSetUseRowMax_Jacobi"
+#define __FUNC__ "PCJacobiSetUseRowMax_Jacobi"
 int PCJacobiSetUseRowMax_Jacobi(PC pc)
 {
   PC_Jacobi *j;
@@ -92,7 +92,7 @@ EXTERN_C_END
    the user, but instead is called by PCApply() if necessary.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp_Jacobi"
+#define __FUNC__ "PCSetUp_Jacobi"
 static int PCSetUp_Jacobi(PC pc)
 {
   PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
@@ -107,7 +107,7 @@ static int PCSetUp_Jacobi(PC pc)
 
   if (pc->setupcalled == 0) { allocate space the first time this is ever called
     ierr = VecDuplicate(pc->vec,&jac->diag);CHKERRQ(ierr);
-    PLogObjectParent(pc,jac->diag);
+    PetscLogObjectParent(pc,jac->diag);
   }
 
     But for this preconditioner we want to support use of both the matrix' diagonal
@@ -161,7 +161,7 @@ static int PCSetUp_Jacobi(PC pc)
     ierr = VecRestoreArray(diagsqrt,&x);CHKERRQ(ierr);
   }
   if (zeroflag) {
-    PLogInfo(pc,"PCSetUp_Jacobi:Zero detected in diagonal of matrix, using 1 at those locations\n");
+    PetscLogInfo(pc,"PCSetUp_Jacobi:Zero detected in diagonal of matrix, using 1 at those locations\n");
   }
 
   PetscFunctionReturn(0);
@@ -176,7 +176,7 @@ static int PCSetUp_Jacobi(PC pc)
 .  pc - the preconditioner context
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp_Jacobi_Symmetric"
+#define __FUNC__ "PCSetUp_Jacobi_Symmetric"
 static int PCSetUp_Jacobi_Symmetric(PC pc)
 {
   int        ierr;
@@ -185,7 +185,7 @@ static int PCSetUp_Jacobi_Symmetric(PC pc)
   PetscFunctionBegin;
 
   ierr = VecDuplicate(pc->vec,&jac->diagsqrt);CHKERRQ(ierr);
-  PLogObjectParent(pc,jac->diagsqrt);
+  PetscLogObjectParent(pc,jac->diagsqrt);
   ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -199,7 +199,7 @@ static int PCSetUp_Jacobi_Symmetric(PC pc)
 .  pc - the preconditioner context
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp_Jacobi_NonSymmetric"
+#define __FUNC__ "PCSetUp_Jacobi_NonSymmetric"
 static int PCSetUp_Jacobi_NonSymmetric(PC pc)
 {
   int        ierr;
@@ -208,7 +208,7 @@ static int PCSetUp_Jacobi_NonSymmetric(PC pc)
   PetscFunctionBegin;
 
   ierr = VecDuplicate(pc->vec,&jac->diag);CHKERRQ(ierr);
-  PLogObjectParent(pc,jac->diag);
+  PetscLogObjectParent(pc,jac->diag);
   ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -226,7 +226,7 @@ static int PCSetUp_Jacobi_NonSymmetric(PC pc)
    Application Interface Routine: PCApply()
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_Jacobi"
+#define __FUNC__ "PCApply_Jacobi"
 static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi *jac = (PC_Jacobi*)pc->data;
@@ -254,7 +254,7 @@ static int PCApply_Jacobi(PC pc,Vec x,Vec y)
    Application Interface Routines: PCApplySymmetricLeft(), PCApplySymmetricRight()
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApplySymmetricLeftOrRight_Jacobi"
+#define __FUNC__ "PCApplySymmetricLeftOrRight_Jacobi"
 static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 {
   int       ierr;
@@ -278,7 +278,7 @@ static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
    Application Interface Routine: PCDestroy()
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCDestroy_Jacobi"
+#define __FUNC__ "PCDestroy_Jacobi"
 static int PCDestroy_Jacobi(PC pc)
 {
   PC_Jacobi *jac = (PC_Jacobi*)pc->data;
@@ -296,17 +296,17 @@ static int PCDestroy_Jacobi(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_Jacobi"
+#define __FUNC__ "PCSetFromOptions_Jacobi"
 static int PCSetFromOptions_Jacobi(PC pc)
 {
   PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("Jacobi options");CHKERRQ(ierr);
-    ierr = OptionsLogical("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
+  ierr = PetscOptionsHead("Jacobi options");CHKERRQ(ierr);
+    ierr = PetscOptionsLogical("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
                           &jac->userowmax,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -323,7 +323,7 @@ static int PCSetFromOptions_Jacobi(PC pc)
 */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCreate_Jacobi"
+#define __FUNC__ "PCCreate_Jacobi"
 int PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi *jac;
@@ -335,14 +335,14 @@ int PCCreate_Jacobi(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  jac       = PetscNew(PC_Jacobi);CHKPTRQ(jac);
+  ierr      = PetscNew(PC_Jacobi,&jac);CHKERRQ(ierr);
   pc->data  = (void*)jac;
 
   /*
      Logs the memory usage; this is not needed but allows PETSc to 
      monitor how much memory is being used for various purposes.
   */
-  PLogObjectMemory(pc,sizeof(PC_Jacobi));
+  PetscLogObjectMemory(pc,sizeof(PC_Jacobi));
 
   /*
      Initialize the pointers to vectors to ZERO; these will be used to store
@@ -375,7 +375,7 @@ int PCCreate_Jacobi(PC pc)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCJacobiSetUseRowMax"
+#define __FUNC__ "PCJacobiSetUseRowMax"
 /*@
    PCJacobiSetUseRowMax - Causes the Jacobi preconditioner to use the 
       maximum entry in each row as the diagonal preconditioner, instead of

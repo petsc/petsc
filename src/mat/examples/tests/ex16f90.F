@@ -1,5 +1,5 @@
 !
-!  "$Id: ex16f90.F,v 1.14 2000/09/27 20:14:43 bsmith Exp balay $";
+!  "$Id: ex16f90.F,v 1.15 2000/11/01 17:59:59 balay Exp bsmith $";
 !
 !
 !  Tests MatGetArray() on a dense matrix
@@ -58,7 +58,7 @@
 !
 !       Print the matrix to the screen 
 !
-      call MatView(A,VIEWER_STDOUT_WORLD,ierr) 
+      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr) 
 
 
 !

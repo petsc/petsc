@@ -1,4 +1,4 @@
-/* $Id: petscpf.h,v 1.7 2000/08/01 20:58:40 bsmith Exp bsmith $ */
+/* $Id: petscpf.h,v 1.8 2000/08/24 22:43:56 bsmith Exp bsmith $ */
 
 /*
       mathematical function module. 
@@ -8,10 +8,10 @@
 #include "petscmat.h"
 
 /*
-    PFList contains the list of preconditioners currently registered
+    PPetscFList contains the list of preconditioners currently registered
    These are added with the PFRegisterDynamic() macro
 */
-extern FList PFList;
+extern PetscFList PPetscFList;
 typedef char *PFType;
 
 /*
@@ -30,7 +30,7 @@ typedef struct _p_PF* PF;
 
 EXTERN int PFCreate(MPI_Comm,int,int,PF*);
 EXTERN int PFSetType(PF,PFType,void*);
-EXTERN int PFSet(PF,int(*)(void*,int,Scalar*,Scalar*),int(*)(void*,Vec,Vec),int(*)(void*,Viewer),int(*)(void*),void*);
+EXTERN int PFSet(PF,int(*)(void*,int,Scalar*,Scalar*),int(*)(void*,Vec,Vec),int(*)(void*,PetscViewer),int(*)(void*),void*);
 EXTERN int PFApply(PF,int,Scalar*,Scalar*);
 EXTERN int PFApplyVec(PF,Vec,Vec);
 
@@ -50,7 +50,7 @@ EXTERN int PFSetFromOptions(PF);
 EXTERN int PFSetTypeFromOptions(PF);
 EXTERN int PFGetType(PF,PFType*);
 
-EXTERN int PFView(PF,Viewer);
+EXTERN int PFView(PF,PetscViewer);
 
 #define PFSetOptionsPrefix(a,s) PetscObjectSetOptionsPrefix((PetscObject)(a),s)
 #endif

@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.22 2000/05/10 16:41:02 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.23 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\
 This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ matrices";
@@ -88,13 +88,13 @@ int TestMatZeroRows_Basic(Mat A,IS is,Scalar *diag)
   /* Now copy A into B, and test it with MatZeroRows() */
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-keep_zeroed_rows",&keepzeroedrows);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-keep_zeroed_rows",&keepzeroedrows);CHKERRA(ierr);
   if (keepzeroedrows) {
     ierr = MatSetOption(B,MAT_KEEP_ZEROED_ROWS);CHKERRA(ierr);
   }
 
   ierr = MatZeroRows(B,is,diag);CHKERRQ(ierr);
-  ierr = MatView(B,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
   ierr = MatDestroy(B);CHKERRQ(ierr);
   return 0;
 }
@@ -112,7 +112,7 @@ int TestMatZeroRows_with_no_allocation(Mat A,IS is,Scalar *diag)
   ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR);CHKERRQ(ierr);
 
   ierr = MatZeroRows(B,is,diag);CHKERRQ(ierr);
-  ierr = MatView(B,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
   ierr = MatDestroy(B);CHKERRQ(ierr);
   return 0;
 }

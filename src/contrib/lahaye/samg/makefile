@@ -1,6 +1,6 @@
-# $Id: makefile,v 1.1 2000/12/21 18:56:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.1 2000/12/21 18:57:34 bsmith Exp bsmith $ 
 
-#requirespackage 'PETSC_HAVE_RAMG'
+#requirespackage 'PETSC_HAVE_SAMG'
 #requireslanguage CONLY
 #requiresscalar real 
 
@@ -8,14 +8,14 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = petscfunc.c  ramgpetsc.c
+SOURCEC  = 
 SOURCEF  = 
-SOURCEH  = petscfunc.h  ramgfunc.h
-OBJSC    = petscfunc.o  ramgpetsc.o
+SOURCEH  = 
+OBJSC    = 
 OBJSF    =
 LIBBASE  = libpetscsles
 MANSEC   = PC
-LOCDIR   = src/contrib/lahaye
+LOCDIR   = src/contrib/lahaye/samg
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 include ${PETSC_DIR}/bmake/common_test

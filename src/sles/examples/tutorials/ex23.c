@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.4 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex23.c,v 1.5 2000/10/24 20:26:55 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex23 [-help] [all PETSc options] */
 
@@ -35,7 +35,7 @@ int main(int argc,char **args)
   Scalar  neg_one = -1.0,one = 1.0,value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
@@ -168,7 +168,7 @@ int main(int argc,char **args)
      View solver info; we could instead use the option -sles_view to
      print this info to the screen at the conclusion of SLESSolve().
   */
-  ierr = SLESView(sles,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up

@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.28 2000/09/22 20:46:14 bsmith Exp bsmith $";
+! "$Id: ex1f.F,v 1.29 2000/10/24 20:27:14 bsmith Exp bsmith $";
 !
 !/*T
 !  Concepts: SNES^basic uniprocessor example
@@ -150,7 +150,7 @@
 
       call SNESSetFromOptions(snes,ierr)
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-setls',setls,ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-setls',setls,ierr)
 
       if (setls .eq. PETSC_TRUE) then
         call SNESSetLineSearch(snes,MyLineSearch,                       &

@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.93 2000/11/15 20:21:21 balay Exp bsmith $;
+!  $Id: petsc.h,v 1.94 2000/11/19 15:25:29 bsmith Exp bsmith $;
 !
 !  Base include file for Fortran use of the PETSc package.
 !
@@ -30,29 +30,29 @@
       parameter (PETSC_DEFAULT_DOUBLE_PRECISION=-2.0d0)
 
 !
-!     Default Viewers.
+!     Default PetscViewers.
 !
-      PetscFortranAddr VIEWER_DRAW_WORLD
-      PetscFortranAddr VIEWER_DRAW_SELF
-      PetscFortranAddr VIEWER_SOCKET_WORLD
-      PetscFortranAddr VIEWER_SOCKET_SELF
-      PetscFortranAddr VIEWER_STDOUT_WORLD
-      PetscFortranAddr VIEWER_STDOUT_SELF
-      PetscFortranAddr VIEWER_STDERR_WORLD
-      PetscFortranAddr VIEWER_STDERR_SELF
+      PetscFortranAddr PETSC_VIEWER_DRAW_WORLD
+      PetscFortranAddr PETSC_VIEWER_DRAW_SELF
+      PetscFortranAddr PETSC_VIEWER_SOCKET_WORLD
+      PetscFortranAddr PETSC_VIEWER_SOCKET_SELF
+      PetscFortranAddr PETSC_VIEWER_STDOUT_WORLD
+      PetscFortranAddr PETSC_VIEWER_STDOUT_SELF
+      PetscFortranAddr PETSC_VIEWER_STDERR_WORLD
+      PetscFortranAddr PETSC_VIEWER_STDERR_SELF
 
 !
 !     The numbers used below should match those in 
 !     src/fortran/custom/zpetsc.h
 !
-      parameter (VIEWER_DRAW_WORLD   = -4) 
-      parameter (VIEWER_DRAW_SELF    = -5)
-      parameter (VIEWER_SOCKET_WORLD = -6)
-      parameter (VIEWER_SOCKET_SELF  = -7)
-      parameter (VIEWER_STDOUT_WORLD = -8)
-      parameter (VIEWER_STDOUT_SELF  = -9)
-      parameter (VIEWER_STDERR_WORLD = -10)
-      parameter (VIEWER_STDERR_SELF  = -11)
+      parameter (PETSC_VIEWER_DRAW_WORLD   = -4) 
+      parameter (PETSC_VIEWER_DRAW_SELF    = -5)
+      parameter (PETSC_VIEWER_SOCKET_WORLD = -6)
+      parameter (PETSC_VIEWER_SOCKET_SELF  = -7)
+      parameter (PETSC_VIEWER_STDOUT_WORLD = -8)
+      parameter (PETSC_VIEWER_STDOUT_SELF  = -9)
+      parameter (PETSC_VIEWER_STDERR_WORLD = -10)
+      parameter (PETSC_VIEWER_STDERR_SELF  = -11)
 !
 !     PETSc DataTypes
 !

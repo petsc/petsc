@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.73 2000/10/24 20:26:14 bsmith Exp bsmith $*/
+/*$Id: matio.c,v 1.74 2000/11/28 17:29:54 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
@@ -8,10 +8,10 @@
 #include "src/mat/matimpl.h"             /*I  "petscmat.h"  I*/
 #include "petscsys.h"
 PetscTruth MatLoadRegisterAllCalled = PETSC_FALSE;
-FList      MatLoadList              = 0;
+PetscFList      MatLoadList              = 0;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLoadRegister"
+#define __FUNC__ "MatLoadRegister"
 /*@C
     MatLoadRegister - Allows one to register a routine that reads matrices
         from a binary file for a particular matrix type.
@@ -27,19 +27,19 @@ FList      MatLoadList              = 0;
 .seealso: MatLoadRegisterAll(), MatLoad()
 
 @*/
-int MatLoadRegister(char *sname,char *path,char *name,int (*function)(Viewer,MatType,Mat*))
+int MatLoadRegister(char *sname,char *path,char *name,int (*function)(PetscViewer,MatType,Mat*))
 {
   int  ierr;
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = FListAdd(&MatLoadList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatLoadList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLoadPrintHelp_Private"
+#define __FUNC__ "MatLoadPrintHelp_Private"
 static int MatLoadPrintHelp_Private(Mat A)
 {
   static PetscTruth called = PETSC_FALSE; 
@@ -57,17 +57,17 @@ static int MatLoadPrintHelp_Private(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatLoad"
+#define __FUNC__ "MatLoad"
 /*@C
    MatLoad - Loads a matrix that has been stored in binary format
    with MatView().  The matrix format is determined from the options database.
    Generates a parallel MPI matrix if the communicator has more than one
    processor.  The default matrix type is AIJ.
 
-   Collective on Viewer
+   Collective on PetscViewer
 
    Input Parameters:
-+  viewer - binary file viewer, created with ViewerBinaryOpen()
++  viewer - binary file viewer, created with PetscViewerBinaryOpen()
 -  outtype - type of matrix desired, for example MATSEQAIJ,
              MATMPIROWBS, etc.  See types in petsc/include/petscmat.h.
 
@@ -98,7 +98,7 @@ static int MatLoadPrintHelp_Private(Mat A)
    Notes:
    MatLoad() automatically loads into the options database any options
    given in the file filename.info where filename is the name of the file
-   that was passed to the ViewerBinaryOpen(). The options in the info
+   that was passed to the PetscViewerBinaryOpen(). The options in the info
    file will be ignored if you use the -matload_ignore_info option.
 
    In parallel, each processor can load a subset of rows (or the
@@ -138,49 +138,49 @@ and PetscWriteBinary() to see how this may be done.
 
 .keywords: matrix, load, binary, input
 
-.seealso: ViewerBinaryOpen(), MatView(), VecLoad(), MatLoadRegister(),
+.seealso: PetscViewerBinaryOpen(), MatView(), VecLoad(), MatLoadRegister(),
           MatLoadRegisterAll()
 
  @*/  
-int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
+int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
 {
   int         ierr;
   PetscTruth  isbinary,flg;
   MPI_Comm    comm;
-  int         (*r)(Viewer,MatType,Mat*);
+  int         (*r)(PetscViewer,MatType,Mat*);
   char        mtype[256];
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   *newmat  = 0;
 
   if (!MatLoadRegisterAllCalled) {
     ierr = MatLoadRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
   if (!isbinary) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with ViewerBinaryOpen()");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
   }
 
-  ierr = OptionsGetString(PETSC_NULL,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     outtype = mtype;
   }
-  ierr = OptionsGetString(PETSC_NULL,"-matload_type",mtype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-matload_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     outtype = mtype;
   }
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   if (!outtype) outtype = MATMPIAIJ;
-  ierr =  FListFind(comm,MatLoadList,outtype,(int(**)(void*))&r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(comm,MatLoadList,outtype,(int(**)(void*))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unknown Mat type given: %s",outtype);
 
-  ierr = PLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = (*r)(viewer,outtype,newmat);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatLoadPrintHelp_Private(*newmat);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }

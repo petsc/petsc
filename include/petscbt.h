@@ -1,4 +1,4 @@
-/* $Id: petscbt.h,v 1.15 2000/01/11 21:04:04 bsmith Exp balay $ */
+/* $Id: petscbt.h,v 1.16 2000/05/08 15:09:50 balay Exp bsmith $ */
 
 /*    
 
@@ -39,16 +39,16 @@ extern int  _BT_idx;
 
 #define PetscBTView(m,bt,viewer) {\
   int    __i,__ierr; \
-  Viewer __viewer = viewer; \
-  if (!__viewer) __viewer = VIEWER_STDOUT_SELF;\
+  PetscViewer __viewer = viewer; \
+  if (!__viewer) __viewer = PETSC_VIEWER_STDOUT_SELF;\
   for (__i=0; __i<m; __i++) { \
     __ierr = PetscPrintf(((PetscObject)__viewer)->comm,"%d %d\n",__i,PetscBTLookup(bt,__i));CHKERRQ(__ierr);\
   }}
 
 #define PetscBTLength(m)        ((m)/BITSPERBYTE+1)*sizeof(char)
 
-#define PetscBTCreate(m,array)  (array = (char *)PetscMalloc(((m)/BITSPERBYTE+1)*sizeof(char)),\
-                           (!array) ? 1 : PetscBTMemzero(m,array))
+#define PetscBTCreate(m,array)  (PetscMalloc(((m)/BITSPERBYTE+1)*sizeof(char),array)\
+                           ? 1 : PetscBTMemzero(m,array))
 
 #define PetscBTMemzero(m,array) PetscMemzero(array,(m)/BITSPERBYTE+1)
 

@@ -1,9 +1,9 @@
-/*$Id: mpiu.c,v 1.97 2000/09/22 20:42:32 bsmith Exp bsmith $*/
+/*$Id: mpiu.c,v 1.98 2000/09/28 21:09:22 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSequentialPhaseBegin_Private" 
+#define __FUNC__ "PetscSequentialPhaseBegin_Private" 
 int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
 {
   int        lidx,np,tag = 0,ierr;
@@ -24,7 +24,7 @@ int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSequentialPhaseEnd_Private" 
+#define __FUNC__ "PetscSequentialPhaseEnd_Private" 
 int PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
 {
   int        lidx,np,tag = 0,ierr;
@@ -53,7 +53,7 @@ int PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
 static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSequentialPhaseBegin" 
+#define __FUNC__ "PetscSequentialPhaseBegin" 
 /*@C
    PetscSequentialPhaseBegin - Begins a sequential section of code.  
 
@@ -103,7 +103,7 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
   }
 
   ierr = MPI_Comm_dup(comm,&local_comm);CHKERRQ(ierr);
-  addr_local_comm  = (MPI_Comm*)PetscMalloc(sizeof(MPI_Comm));CHKPTRQ(addr_local_comm);
+  ierr = PetscMalloc(sizeof(MPI_Comm),&addr_local_comm);CHKERRQ(ierr);
   *addr_local_comm = local_comm;
   ierr = MPI_Attr_put(comm,Petsc_Seq_keyval,(void*)addr_local_comm);CHKERRQ(ierr);
   ierr = PetscSequentialPhaseBegin_Private(local_comm,ng);CHKERRQ(ierr);
@@ -111,7 +111,7 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSequentialPhaseEnd" 
+#define __FUNC__ "PetscSequentialPhaseEnd" 
 /*@C
    PetscSequentialPhaseEnd - Ends a sequential section of code.
 

@@ -1,4 +1,4 @@
-/* $Id: socket.h,v 1.16 1999/01/31 16:04:29 bsmith Exp balay $ */
+/* $Id: socket.h,v 1.17 2000/05/05 22:13:05 balay Exp bsmith $ */
 /* 
      This is the definition of the Matlab viewer structure. Note: 
   each viewer has a different data structure.
@@ -9,7 +9,7 @@
 
 typedef struct {
   int           port;
-} Viewer_Socket;
+} PetscViewer_Socket;
 
 #define DEFAULTPORT    5005
 

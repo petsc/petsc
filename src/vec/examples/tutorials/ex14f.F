@@ -1,5 +1,5 @@
 !
-!     "$Id: ex14f.F,v 1.5 2000/09/27 20:14:37 bsmith Exp bsmith $";
+!     "$Id: ex14f.F,v 1.6 2000/10/24 20:25:21 bsmith Exp bsmith $";
 !
 ! Description: Illustrates the use of VecCreateGhost()
 !
@@ -78,7 +78,7 @@
 !     the local vector (lx) and the global vector (gx) share the same 
 !     array for storing vector values.
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-allocate',flag,ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-allocate',flag,ierr)
       if (flag .ne. 0) then
         call VecCreateGhostBlockWithArray(PETSC_COMM_WORLD,bs,nlocal,    &
      &        PETSC_DECIDE,nghost,ifrom,tarray,gxs,ierr)
@@ -114,7 +114,7 @@
 
 !     Print out each vector, including the ghost padding region. 
 
-       call VecView(lx,VIEWER_STDOUT_SELF,ierr)
+       call VecView(lx,PETSC_VIEWER_STDOUT_SELF,ierr)
 
        call VecGhostRestoreLocalForm(gx,lx,ierr) 
        call VecDestroy(gx,ierr)

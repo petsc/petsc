@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.4 2000/01/16 02:59:43 bsmith Exp bsmith $*/
+/*$Id: appview.c,v 1.5 2000/01/17 00:09:20 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 
@@ -18,13 +18,13 @@
 int AppCtxViewMatlab(AppCtx* appctx)
 {
   int    ierr;
-  Viewer viewer;
+  PetscViewer viewer;
   FILE   *fp;
 
   PetscFunctionBegin;
   /* start up the companion Matlab processor to receive the data */
   ierr = PetscStartMatlab(PETSC_COMM_WORLD,PETSC_NULL,"bscript(0)",&fp);CHKERRQ(ierr);
-  viewer = VIEWER_SOCKET_WORLD;
+  viewer = PETSC_VIEWER_SOCKET_WORLD;
   
   /* send the cell_coordinates */
   ierr = PetscDoubleView(2*4*appctx->grid.cell_n,appctx->grid.cell_coords,viewer);CHKERRQ(ierr);
@@ -54,13 +54,13 @@ int AppCtxGraphics(AppCtx *appctx)
        drawlocal - shows each subgrid (one for each processor)
      ------------------------------------------------------------------------*/
   if (appctx->view.show_grid) {
-    ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,DRAW_HALF_SIZE,DRAW_HALF_SIZE,
+    ierr = PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,PETSC_DRAW_HALF_SIZE,PETSC_DRAW_HALF_SIZE,
                      &appctx->view.drawglobal);CHKERRQ(ierr);
-    ierr = DrawSetFromOptions(appctx->view.drawglobal);CHKERRA(ierr);
-    ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,DRAW_HALF_SIZE,DRAW_HALF_SIZE,
+    ierr = PetscDrawSetFromOptions(appctx->view.drawglobal);CHKERRA(ierr);
+    ierr = PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,PETSC_DRAW_HALF_SIZE,PETSC_DRAW_HALF_SIZE,
                      &appctx->view.drawlocal);CHKERRQ(ierr);
-    ierr = DrawSetFromOptions(appctx->view.drawlocal);CHKERRA(ierr);
-    ierr = DrawSplitViewPort((appctx)->view.drawlocal);CHKERRQ(ierr);
+    ierr = PetscDrawSetFromOptions(appctx->view.drawlocal);CHKERRA(ierr);
+    ierr = PetscDrawSplitViewPort((appctx)->view.drawlocal);CHKERRQ(ierr);
 
     /*
        Set the window coordinates based on the values in vertices
@@ -68,17 +68,17 @@ int AppCtxGraphics(AppCtx *appctx)
     ierr = AODataSegmentGetExtrema((appctx)->aodata,"vertex","coords",maxs,mins);CHKERRQ(ierr);
     hx = maxs[0] - mins[0]; xmin = mins[0] - .1*hx; xmax = maxs[0] + .1*hx;
     hy = maxs[1] - mins[1]; ymin = mins[1] - .1*hy; ymax = maxs[1] + .1*hy;
-    ierr = DrawSetCoordinates(appctx->view.drawglobal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
-    ierr = DrawSetCoordinates(appctx->view.drawlocal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    ierr = PetscDrawSetCoordinates(appctx->view.drawglobal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    ierr = PetscDrawSetCoordinates(appctx->view.drawlocal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
 
     /*
       Visualize the grid 
     */
-    ierr = DrawZoom((appctx)->view.drawglobal,AppCtxViewGrid,appctx);CHKERRA(ierr);
-    ierr = DrawZoom((appctx)->view.drawlocal,AppCtxViewGrid,appctx);CHKERRA(ierr);
+    ierr = PetscDrawZoom((appctx)->view.drawglobal,AppCtxViewGrid,appctx);CHKERRA(ierr);
+    ierr = PetscDrawZoom((appctx)->view.drawlocal,AppCtxViewGrid,appctx);CHKERRA(ierr);
 
-    ierr = DrawDestroy((appctx)->view.drawglobal);CHKERRQ(ierr);
-    ierr = DrawDestroy((appctx)->view.drawlocal);CHKERRQ(ierr);
+    ierr = PetscDrawDestroy((appctx)->view.drawglobal);CHKERRQ(ierr);
+    ierr = PetscDrawDestroy((appctx)->view.drawlocal);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -86,7 +86,7 @@ int AppCtxGraphics(AppCtx *appctx)
 
 /*
        Actually draw the grid. This routine is called indirectly by the PETSc graphics function
-    DrawZoom() allowing the user to zoom in and out on the grid. 
+    PetscDrawZoom() allowing the user to zoom in and out on the grid. 
 
          left mouse button - zoom in 
          center button - zoom out
@@ -94,7 +94,7 @@ int AppCtxGraphics(AppCtx *appctx)
 */
 #undef __FUNC__
 #define __FUNC__ "AppCxtViewGrid"
-int AppCtxViewGrid(Draw draw,void *iappctx)
+int AppCtxViewGrid(PetscDraw draw,void *iappctx)
 {
   AppCtx  *appctx = (AppCtx *)iappctx;  
   AppGrid *grid = &appctx->grid;
@@ -108,7 +108,7 @@ int AppCtxViewGrid(Draw draw,void *iappctx)
   ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRQ(ierr); c = rank + 2;
 
   /*
-        Draw edges of local cells and number the cells and vertices
+        PetscDraw edges of local cells and number the cells and vertices
   */
   for (i=0; i<grid->cell_n; i++) {   
     xp = 0.0;
@@ -120,14 +120,14 @@ int AppCtxViewGrid(Draw draw,void *iappctx)
       /* attach number to each vertex */
       if (draw == appctx->view.drawlocal) {
         sprintf(num,"%d",grid->cell_vertex[4*i+j]); /* local number of vertex */
-        ierr = DrawString(draw,xl,yl,c+1,num);CHKERRQ(ierr);
+        ierr = PetscDrawString(draw,xl,yl,c+1,num);CHKERRQ(ierr);
       } else {
         sprintf(num,"%d",grid->global_cell_vertex[4*i+j]); /* global number of vertex */
-        ierr = DrawString(draw,xl,yl,DRAW_BLACK,num);CHKERRQ(ierr);
+        ierr = PetscDrawString(draw,xl,yl,PETSC_DRAW_BLACK,num);CHKERRQ(ierr);
       }
       xr   = grid->cell_coords[2*4*i + 2*jnext];
       yr   = grid->cell_coords[2*4*i + 2*jnext +1];
-      ierr = DrawLine(draw,xl,yl,xr,yr,c);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,xl,yl,xr,yr,c);CHKERRQ(ierr);
       xp   += xl;
       yp   += yl;
     }
@@ -136,10 +136,10 @@ int AppCtxViewGrid(Draw draw,void *iappctx)
     yp *= 0.25;
     if (draw == appctx->view.drawlocal) {  
       sprintf(num,"%d",i); /* local number of cell */
-      ierr = DrawString(draw,xp,yp,c,num);CHKERRQ(ierr);
+      ierr = PetscDrawString(draw,xp,yp,c,num);CHKERRQ(ierr);
     } else {
       sprintf(num,"%d",iscell[i]); /* global number of cell */
-      ierr = DrawString(draw,xp,yp,DRAW_RED,num);CHKERRQ(ierr);
+      ierr = PetscDrawString(draw,xp,yp,PETSC_DRAW_RED,num);CHKERRQ(ierr);
     }
   }
   ierr = ISRestoreIndices(grid->iscell,&iscell);CHKERRQ(ierr); 
@@ -148,12 +148,12 @@ int AppCtxViewGrid(Draw draw,void *iappctx)
      Loop over boundary nodes and label them
   */
   if (draw == appctx->view.drawlocal) {
-    ierr = DrawStringGetSize(draw,&w,&h);CHKERRQ(ierr);
+    ierr = PetscDrawStringGetSize(draw,&w,&h);CHKERRQ(ierr);
     for (i=0; i<grid->boundary_n; i++) {
       xp = grid->boundary_coords[2*i] - 4.0*w;
       yp = grid->boundary_coords[2*i+1] - 4.0*h;
       sprintf(num,"%d",i);
-      ierr = DrawString(draw,xp,yp,DRAW_BROWN,num);CHKERRQ(ierr);
+      ierr = PetscDrawString(draw,xp,yp,PETSC_DRAW_BROWN,num);CHKERRQ(ierr);
     }
   }
 

@@ -1,4 +1,4 @@
-/*$Id: cstring.c,v 1.10 2000/08/24 22:43:49 bsmith Exp bsmith $*/
+/*$Id: cstring.c,v 1.11 2000/09/02 02:50:42 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
@@ -7,22 +7,22 @@
 */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFView_String"
-int PFView_String(void *value,Viewer viewer)
+#define __FUNC__ "PFView_String"
+int PFView_String(void *value,PetscViewer viewer)
 {
   int        ierr;
   PetscTruth isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"String = %s\n",(char*)value);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"String = %s\n",(char*)value);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFDestroy_String"
+#define __FUNC__ "PFDestroy_String"
 int PFDestroy_String(void *value)
 {
   int       ierr;
@@ -33,7 +33,7 @@ int PFDestroy_String(void *value)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFStringCreateFunction"
+#define __FUNC__ "PFStringCreateFunction"
 int PFStringCreateFunction(PF pf,char *string,void **f)
 {
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
@@ -62,7 +62,7 @@ int PFStringCreateFunction(PF pf,char *string,void **f)
     ierr = PetscStrcpy(tmp,".");CHKERRQ(ierr);
     comm = pf->comm;
   } 
-  ierr = OptionsHasName(pf->prefix,"-pf_string_keep_files",&keeptmpfiles);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(pf->prefix,"-pf_string_keep_files",&keeptmpfiles);CHKERRQ(ierr);
   if (keeptmpfiles) {
     sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./petscmakefile ; make BOPT=${BOPT} MIN=%d NOUT=%d -f petscmakefile petscdlib STRINGFUNCTION=\"%s\" ; sync\n",tmp,pf->dimin,pf->dimout,string);
   } else {
@@ -76,13 +76,13 @@ int PFStringCreateFunction(PF pf,char *string,void **f)
   /* load the apply function from the dynamic library */
   ierr = PetscGetUserName(username,64);CHKERRQ(ierr);
   sprintf(lib,"%s/%s/libpetscdlib",tmp,username);
-  ierr = DLLibrarySym(comm,PETSC_NULL,lib,"PFApply_String",f);CHKERRQ(ierr);
+  ierr = PetscDLLibrarySym(comm,PETSC_NULL,lib,"PFApply_String",f);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);    
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFSetFromOptions_String"
+#define __FUNC__ "PFSetFromOptions_String"
 int PFSetFromOptions_String(PF pf)
 {
   int        ierr;
@@ -91,20 +91,20 @@ int PFSetFromOptions_String(PF pf)
   int        (*f)(void *,int,Scalar*,Scalar*) = 0;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("String function options");CHKERRQ(ierr);
-    ierr = OptionsString("-pf_string","Enter the function","PFStringCreateFunction","",value,256,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("String function options");CHKERRQ(ierr);
+    ierr = PetscOptionsString("-pf_string","Enter the function","PFStringCreateFunction","",value,256,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = PFStringCreateFunction(pf,value,(void**)&f);CHKERRQ(ierr);
       pf->ops->apply = f;
     }
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);    
 }
 
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFCreate_String"
+#define __FUNC__ "PFCreate_String"
 int PFCreate_String(PF pf,void *value)
 {
   int        ierr;

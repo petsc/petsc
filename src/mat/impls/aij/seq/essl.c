@@ -1,4 +1,4 @@
-/*$Id: essl.c,v 1.43 2000/09/11 18:18:11 bsmith Exp bsmith $*/
+/*$Id: essl.c,v 1.44 2000/09/28 21:11:00 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver
@@ -26,7 +26,7 @@ typedef struct {
 EXTERN int MatDestroy_SeqAIJ(Mat);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatDestroy_SeqAIJ_Essl"></a>*/"MatDestroy_SeqAIJ_Essl"
+#define __FUNC__ "MatDestroy_SeqAIJ_Essl"
 int MatDestroy_SeqAIJ_Essl(Mat A)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
@@ -41,7 +41,7 @@ int MatDestroy_SeqAIJ_Essl(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatSolve_SeqAIJ_Essl"></a>*/"MatSolve_SeqAIJ_Essl"
+#define __FUNC__ "MatSolve_SeqAIJ_Essl"
 int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
@@ -59,7 +59,7 @@ int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatLUFactorNumeric_SeqAIJ_Essl"></a>*/"MatLUFactorNumeric_SeqAIJ_Essl"
+#define __FUNC__ "MatLUFactorNumeric_SeqAIJ_Essl"
 int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)(*F)->data;
@@ -93,8 +93,8 @@ int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatLUFactorSymbolic_SeqAIJ_Essl"></a>*/"MatLUFactorSymbolic_SeqAIJ_Essl"
-int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatLUInfo,Mat *F)
+#define __FUNC__ "MatLUFactorSymbolic_SeqAIJ_Essl"
+int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat             B;
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*b;
@@ -111,7 +111,7 @@ int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatLUInfo,Mat *F)
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Essl;
   B->factor               = FACTOR_LU;
   b                       = (Mat_SeqAIJ*)B->data;
-  essl                    = PetscNew(Mat_SeqAIJ_Essl);CHKPTRQ(essl);
+  ierr                    = PetscNew(Mat_SeqAIJ_Essl,&essl);CHKERRQ(ierr);
   b->spptr                = (void*)essl;
 
   /* allocate the work arrays required by ESSL */
@@ -122,29 +122,29 @@ int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatLUInfo,Mat *F)
 
   /* since malloc is slow on IBM we try a single malloc */
   len        = essl->lna*(2*sizeof(int)+sizeof(Scalar)) + essl->naux*sizeof(Scalar);
-  essl->a    = (Scalar*)PetscMalloc(len);CHKPTRQ(essl->a);
+  ierr       = PetscMalloc(len,&essl->a);CHKERRQ(ierr);
   essl->aux  = essl->a + essl->lna;
   essl->ia   = (int*)(essl->aux + essl->naux);
   essl->ja   = essl->ia + essl->lna;
 
-  PLogObjectMemory(B,len+sizeof(Mat_SeqAIJ_Essl));
+  PetscLogObjectMemory(B,len+sizeof(Mat_SeqAIJ_Essl));
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatUseEssl_SeqAIJ"></a>*/"MatUseEssl_SeqAIJ"
+#define __FUNC__ "MatUseEssl_SeqAIJ"
 int MatUseEssl_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Essl;
-  PLogInfo(0,"Using ESSL for SeqAIJ LU factorization and solves");
+  PetscLogInfo(0,"Using ESSL for SeqAIJ LU factorization and solves");
   PetscFunctionReturn(0);
 }
 
 #else
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatUseEssl_SeqAIJ"
+#define __FUNC__ "MatUseEssl_SeqAIJ"
 int MatUseEssl_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;

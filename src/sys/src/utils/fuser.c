@@ -1,4 +1,4 @@
-/*$Id: fuser.c,v 1.28 2000/05/05 22:14:11 balay Exp bsmith $*/
+/*$Id: fuser.c,v 1.29 2000/09/22 20:42:32 bsmith Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -35,7 +35,7 @@
 
 #if defined(PETSC_HAVE_GET_USER_NAME)
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscGetUserName"
+#define __FUNC__ "PetscGetUserName"
 int PetscGetUserName(char name[],int nlen)
 {
   PetscFunctionBegin;
@@ -45,7 +45,7 @@ int PetscGetUserName(char name[],int nlen)
 
 #elif defined(PETSC_HAVE_PWD_H)
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscGetUserName"
+#define __FUNC__ "PetscGetUserName"
 /*@C
     PetscGetUserName - Returns the name of the user.
 
@@ -78,7 +78,7 @@ int PetscGetUserName(char name[],int nlen)
 #else
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscGetUserName"
+#define __FUNC__ "PetscGetUserName"
 int PetscGetUserName(char *name,int nlen)
 {
   int ierr;

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.61 2000/09/22 20:45:46 bsmith Exp bsmith $";
+!    "$Id: ex2f.F,v 1.62 2000/10/24 20:26:55 bsmith Exp bsmith $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -110,8 +110,8 @@
       n = 3
       one  = 1.0
       neg_one = -1.0
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
@@ -200,7 +200,7 @@
 !  elements of 1.0;  Alternatively, using the runtime option
 !  -random_sol forms a solution vector with random components.
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,                         &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                         &
      &             "-random_exact_sol",flg,ierr)
       if (flg .eq. 1) then
          call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,        &
@@ -214,10 +214,10 @@
 
 !  View the exact solution vector if desired
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,                         &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                         &
      &             "-view_exact_sol",flg,ierr)
       if (flg .eq. 1) then
-         call VecView(u,VIEWER_STDOUT_WORLD,ierr)
+         call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !         Create the linear solver and set various options
@@ -255,7 +255,7 @@
 
 !  Set user-defined monitoring routine if desired
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',       &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',       &
      &                    flg,ierr)
       if (flg .eq. 1) then
         call SLESGetKSP(sles,ksp,ierr)
@@ -274,7 +274,7 @@
 
 !  Set convergence test routine if desired
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_convergence',   &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_convergence',   &
      &                    flg,ierr)
       if (flg .eq. 1) then
         call SLESGetKSP(sles,ksp,ierr)
@@ -352,13 +352,13 @@
       call KSPBuildSolution(ksp,PETSC_NULL_OBJECT,x,ierr)
 
 !  Write the solution vector and residual norm to stdout
-!   - Note that the parallel viewer VIEWER_STDOUT_WORLD
+!   - Note that the parallel viewer PETSC_VIEWER_STDOUT_WORLD
 !     handles data from multiple processors so that the
 !     output is not jumbled.
 
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       if (rank .eq. 0) write(6,100) n
-      call VecView(x,VIEWER_STDOUT_WORLD,ierr)
+      call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr)
       if (rank .eq. 0) write(6,200) n,rnorm
 
  100  format('iteration ',i5,' solution vector:')

@@ -1,4 +1,4 @@
-!  $Id: user.F,v 1.31 2000/10/30 18:39:43 kaushik Exp bsmith $
+!  $Id: user.F,v 1.32 2000/10/31 18:28:45 bsmith Exp bsmith $
 !---------------------------------------------------------------
 ! The following subroutines are from node2t.f in the original
 ! code - D. K. Kaushik (1/17/97)
@@ -896,7 +896,7 @@
             cdt(n) = 1.0d0
  1070    continue
       end if
-      call PLogFlops(flops,ierr)
+      call PetscLogFlops(flops,ierr)
 !
 ! End of subroutine DELTAT2
 !
@@ -1089,10 +1089,10 @@
        data flag/-1/,flux_label/'FluxEvaluation  '/
        save flux_event, flag, flux_label
        if (flag .eq. -1) then
-          call PLogEventRegister(flux_event,flux_label,'blue:',ierr)         
+          call PetscLogEventRegister(flux_event,flux_label,'blue:',ierr)         
           flag = 1
        endif
-       call PLogEventBegin(flux_event,0,0,0,0,ierr)
+       call PetscLogEventBegin(flux_event,0,0,0,0,ierr)
        flops = 0
        second = 1.0d0
 !      if(ntt.le.nitfo)second = 0.0
@@ -1419,8 +1419,8 @@
 #endif
 #else
 #endif
-      call PLogFlops(flops,ierr)
-      call PLogEventEnd(flux_event,0,0,0,0,ierr)
+      call PetscLogFlops(flops,ierr)
+      call PetscLogEventEnd(flux_event,0,0,0,0,ierr)
 !     c68 = 6./8.
 !     c18 = 1./8.
       c68 = 0.75d0
@@ -1743,7 +1743,7 @@
         endif
 !
        enddo
-       call PLogFlops(flops,ierr)
+       call PetscLogFlops(flops,ierr)
 !
 ! End of subroutine FLUX
 !
@@ -2082,12 +2082,12 @@
 !     save node1_event,node2_event,node1_label, node2_label
 
 !     if (flag .eq. -1) then
-!        call PLogEventRegister(grad_event,grad_label,'blue:',ierr)
-!        call PLogEventRegister(node1_event,node1_label,'red:',ierr)
-!        call PLogEventRegister(node2_event,node2_label,'green:',ierr)
+!        call PetscLogEventRegister(grad_event,grad_label,'blue:',ierr)
+!        call PetscLogEventRegister(node1_event,node1_label,'red:',ierr)
+!        call PetscLogEventRegister(node2_event,node2_label,'green:',ierr)
 !        flag = 1
 !     endif
-!     call PLogEventBegin(grad_event,0,0,0,0,ierr)
+!     call PetscLogEventBegin(grad_event,0,0,0,0,ierr)
 
       flops = 0
 ! For checking out the code input a linear distribution
@@ -2151,7 +2151,7 @@
 
            flops = flops + 6
 !
-!         call PLogEventBegin(node1_event,0,0,0,0,ierr)
+!         call PetscLogEventBegin(node1_event,0,0,0,0,ierr)
           if (node1 .le. nnodes) then
            dq1 = weight*(qnode(1,node2) - qnode(1,node1))
            dq2 = weight*(qnode(2,node2) - qnode(2,node1))
@@ -2199,11 +2199,11 @@
 !
            flops = flops + 49
           endif
-!         call PLogEventEnd(node1_event,0,0,0,0,ierr)
+!         call PetscLogEventEnd(node1_event,0,0,0,0,ierr)
 !
 ! Now do the other node
 !
-!         call PLogEventBegin(node2_event,0,0,0,0,ierr)
+!         call PetscLogEventBegin(node2_event,0,0,0,0,ierr)
           if (node2 .le. nnodes) then
            dx2 = -dx1
            dy2 = -dy1
@@ -2255,13 +2255,13 @@
 !
            flops = flops + 52
           endif
-!         call PLogEventEnd(node2_event,0,0,0,0,ierr)
+!         call PetscLogEventEnd(node2_event,0,0,0,0,ierr)
 !       endif
 !
  1020  continue
 !     end if
-      call PLogFlops(flops,ierr)
-!     call PLogEventEnd(grad_event,0,0,0,0,ierr)
+      call PetscLogFlops(flops,ierr)
+!     call PetscLogEventEnd(grad_event,0,0,0,0,ierr)
 !
 ! End of LSTGS
 !
@@ -2416,21 +2416,21 @@
 !
 
 !     if (flag .eq. -1) then
-!        call PLogEventRegister(delta2_event,delta2_label,'red:',ierr)
-!        call PLogEventRegister(flux_event,flux_label,'blue:',ierr)         
+!        call PetscLogEventRegister(delta2_event,delta2_label,'red:',ierr)
+!        call PetscLogEventRegister(flux_event,flux_label,'blue:',ierr)         
 !        flag = 1
 !     endif
 !
 ! Calculate the time step
 !
       if(ires.eq.1) goto 888
-!     call PLogEventBegin(delta2_event,0,0,0,0,ierr)
+!     call PetscLogEventBegin(delta2_event,0,0,0,0,ierr)
       call DELTAT2(nnodes,nedge,qvec,cdt,                                   &
      &             xyz,area,xyzn,evec,                                      &
      &             sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,                     &
      &             nsnode,nvnode,nfnode,isnode,ivnode,ifnode,               &
      &             LocalTS,irank,nvertices)
-!     call PLogEventEnd(delta2_event,0,0,0,0,ierr)
+!     call PetscLogEventEnd(delta2_event,0,0,0,0,ierr)
   888 continue
 !/*
 !   Calculate the gradients 
@@ -2485,7 +2485,7 @@
 !*/
 !   Split the fluxes and perform the flux balance
 !
-!       call PLogEventBegin(flux_event,0,0,0,0,ierr)
+!       call PetscLogEventBegin(flux_event,0,0,0,0,ierr)
 
 #if defined(_OPENMP)
 #if defined(HAVE_EDGE_COLORING)
@@ -2536,7 +2536,7 @@
      &          sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                  &
      &          irank,nvertices)
 #endif  
-!          call PLogEventEnd(flux_event,0,0,0,0,ierr)
+!          call PetscLogEventEnd(flux_event,0,0,0,0,ierr)
 !/*
 ! calculate viscous fluxes
 !

@@ -1,4 +1,4 @@
-/*$Id: tagm.c,v 1.29 2000/09/22 20:42:24 bsmith Exp bsmith $*/
+/*$Id: tagm.c,v 1.30 2000/09/28 21:09:12 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites
 */
@@ -24,7 +24,7 @@ static int Petsc_Tag_keyval = MPI_KEYVAL_INVALID;
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"Petsc_DelTag" 
+#define __FUNC__ "Petsc_DelTag" 
 /*
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
@@ -41,14 +41,14 @@ int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
   int ierr;
 
   PetscFunctionBegin;
-  PLogInfo(0,"Petsc_DelTag:Deleting tag data in an MPI_Comm %d\n",(long)comm);
+  PetscLogInfo(0,"Petsc_DelTag:Deleting tag data in an MPI_Comm %d\n",(long)comm);
   ierr = PetscFree(attr_val);CHKERRQ(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscObjectGetNewTag" 
+#define __FUNC__ "PetscObjectGetNewTag" 
 /*@C
     PetscObjectGetNewTag - Gets a unique new tag from a PETSc object. All 
     processors that share the object MUST call this routine EXACTLY the same
@@ -85,7 +85,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
   if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator in PETSc object, likely memory corruption");
 
   if (tagvalp[0] < 1) {
-    PLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
+    PetscLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
     if (!flg) {
       SETERRQ(1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
@@ -98,7 +98,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscCommGetNewTag" 
+#define __FUNC__ "PetscCommGetNewTag" 
 /*@C
     PetscCommGetNewTag - Gets a unique new tag from a PETSc communicator. All 
     processors that share the communicator MUST call this routine EXACTLY the same
@@ -134,7 +134,7 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
 
 
   if (tagvalp[0] < 1) {
-    PLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
+    PetscLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
     if (!flg) {
       SETERRQ(1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
@@ -147,7 +147,7 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscCommDuplicate_Private" 
+#define __FUNC__ "PetscCommDuplicate_Private" 
 /*
   PetscCommDuplicate_Private - Duplicates the communicator only if it is not already a PETSc 
                          communicator.
@@ -189,11 +189,11 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
     if (!flg) {
       SETERRQ(1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
     }
-    tagvalp    = (int*)PetscMalloc(2*sizeof(int));CHKPTRQ(tagvalp);
+    ierr = PetscMalloc(2*sizeof(int),&tagvalp);CHKERRQ(ierr);
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
     ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval,tagvalp);CHKERRQ(ierr);
-    PLogInfo(0,"PetscCommDuplicate_Private: Duplicating a communicator %d %d max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval);
+    PetscLogInfo(0,"PetscCommDuplicate_Private: Duplicating a communicator %d %d max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval);
   } else {
 #if defined(PETSC_USE_BOPT_g)
     int tag;
@@ -206,7 +206,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
   }
 
   if (tagvalp[0] < 1) {
-    PLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
+    PetscLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
     if (!flg) {
       SETERRQ(1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
@@ -220,7 +220,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscCommDestroy_Private" 
+#define __FUNC__ "PetscCommDestroy_Private" 
 /*
   PetscCommDestroy_Private - Frees communicator.  Use in conjunction with PetscCommDuplicate_Private().
 */
@@ -236,7 +236,7 @@ int PetscCommDestroy_Private(MPI_Comm *comm)
   }
   tagvalp[1]--;
   if (!tagvalp[1]) {
-    PLogInfo(0,"PetscCommDestroy_Private:Deleting MPI_Comm %d\n",(long)*comm);
+    PetscLogInfo(0,"PetscCommDestroy_Private:Deleting MPI_Comm %d\n",(long)*comm);
     ierr = MPI_Comm_free(comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

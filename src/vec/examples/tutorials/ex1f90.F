@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f90.F,v 1.23 2000/09/27 20:14:15 bsmith Exp bsmith $"
+!    "$Id: ex1f90.F,v 1.24 2000/10/24 20:25:21 bsmith Exp bsmith $"
 !
 !/*T
 !   Concepts: vectors^using basic vector routines;
@@ -54,7 +54,7 @@
       two   = 2.0
       three = 3.0
       n     = 20
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 !  Create a vector, specifying only its global dimension.

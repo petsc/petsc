@@ -1,5 +1,5 @@
 !
-!    "$Id: ex32f.F,v 1.2 2000/07/10 03:39:23 bsmith Exp bsmith $";
+!    "$Id: ex32f.F,v 1.3 2000/09/27 20:06:55 bsmith Exp bsmith $";
 !
 !  Tests PescOffsetFortran()
 !  duplicated
@@ -33,7 +33,7 @@
         v_v1(i_v1 + i) = i
  10   continue
 
-      call VecView(v,VIEWER_STDOUT_WORLD,ierr)
+      call VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
       do 20, i=1,n
         print*,i,v_v2(i_v2 + i)

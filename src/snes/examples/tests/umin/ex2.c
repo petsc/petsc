@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.61 2000/09/28 21:14:23 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.62 2000/10/24 20:27:13 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems on a single processor.  These examples are based on\n\
@@ -69,16 +69,16 @@ int main(int argc,char **argv)
 
   /* Set up user-defined work space */
   user.problem = 1;
-  ierr = OptionsGetInt(PETSC_NULL,"-p",&user.problem,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&user.problem,PETSC_NULL);CHKERRA(ierr);
   user.param = 5.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.problem != 1 && user.problem != 2) SETERRA(1,"Invalid problem number");
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
   user.ndim = mx * my; user.mx = mx; user.my = my;
   user.hx = one/(mx+1); user.hy = one/(my+1);
   if (user.problem == 2) {
-    user.work = (Scalar*)PetscMalloc(2*(mx+my+4)*sizeof(Scalar));CHKPTRQ(user.work);
+ierr = PetscMalloc(2*(mx+my+4)*sizeof(Scalar),&    user.work );CHKERRQ(ierr);
   } else {
     user.work = 0;
   }
@@ -105,7 +105,7 @@ int main(int argc,char **argv)
       -my_snes_mf : employ user-defined matrix-free code (since we just happen to
                     have a routine for matrix-vector products in this example) 
    */
-  ierr = OptionsHasName(PETSC_NULL,"-my_snes_mf",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-my_snes_mf",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = MatCreateShell(PETSC_COMM_SELF,ldim,user.ndim,user.ndim,user.ndim,(void*)&user,&H);CHKERRA(ierr);
     if (user.problem == 1) {
@@ -136,7 +136,7 @@ int main(int argc,char **argv)
   }
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRA(ierr);
-  ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = SNESView(snes,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);CHKERRA(ierr);
 

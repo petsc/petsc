@@ -1,11 +1,11 @@
-/*$Id: mhas.c,v 1.21 2000/08/01 20:01:52 bsmith Exp bsmith $*/
+/*$Id: mhas.c,v 1.22 2000/10/24 20:25:24 bsmith Exp bsmith $*/
 
 
 #include "petsc.h"
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
        
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatHasOperation"
+#define __FUNC__ "MatHasOperation"
 /*@
     MatHasOperation - Determines whether the given matrix supports the particular
     operation.

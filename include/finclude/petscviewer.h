@@ -1,21 +1,21 @@
 !
-!  $Id: petscviewer.h,v 1.25 2000/01/11 21:04:11 bsmith Exp balay $;
+!  $Id: petscviewer.h,v 1.26 2000/09/25 18:05:08 balay Exp bsmith $;
 !
-!  Include file for Fortran use of the Viewer package in PETSc
+!  Include file for Fortran use of the PetscViewer package in PETSc
 !
 #if !defined (__VIEWER_H)
 #define __VIEWER_H
 
-#define Viewer PetscFortranAddr
-#define ViewerBinaryType integer
-#define ViewerType character*(80)
+#define PetscViewer PetscFortranAddr
+#define PetscViewerBinaryType integer
+#define PetscViewerType character*(80)
 
-#define SOCKET_VIEWER 'socket'
-#define ASCII_VIEWER 'ascii'
-#define BINARY_VIEWER 'binary'
-#define STRING_VIEWER 'string'
-#define DRAW_VIEWER 'draw'
-#define AMS_VIEWER 'ams'
+#define PETSC_VIEWER_SOCKET 'socket'
+#define PETSC_VIEWER_ASCII 'ascii'
+#define PETSC_BINARY_VIEWER 'binary'
+#define PETSC_VIEWER_STRING 'string'
+#define PETSC_DRAW_VIEWER 'draw'
+#define PETSC_VIEWER_AMS 'ams'
 
 #endif
 
@@ -24,50 +24,56 @@
 !
 !  Flags for binary I/O
 !
-      integer  BINARY_RDONLY,BINARY_WRONLY,BINARY_CREATE
+      integer  PETSC_BINARY_RDONLY,PETSC_BINARY_WRONLY,PETSC_BINARY_CREATE
 
-      parameter (BINARY_RDONLY = 0,BINARY_WRONLY = 1)
-      parameter (BINARY_CREATE = 2)
+      parameter (PETSC_BINARY_RDONLY = 0,PETSC_BINARY_WRONLY = 1)
+      parameter (PETSC_BINARY_CREATE = 2)
 !
-!  Viewer formats
+!  PetscViewer formats
 !
-      integer  VIEWER_FORMAT_ASCII_DEFAULT
-      integer  VIEWER_FORMAT_ASCII_MATLAB
-      integer  VIEWER_FORMAT_ASCII_IMPL
-      integer  VIEWER_FORMAT_ASCII_INFO
-      integer  VIEWER_FORMAT_ASCII_INFO_LONG
-      integer  VIEWER_FORMAT_ASCII_COMMON
-      integer  VIEWER_FORMAT_ASCII_SYMMODU
-      integer  VIEWER_FORMAT_ASCII_INDEX
-      integer  VIEWER_FORMAT_ASCII_DENSE
+      integer  PETSC_VIEWER_FORMAT_ASCII_DEFAULT
+      integer  PETSC_VIEWER_FORMAT_ASCII_MATLAB
+      integer  PETSC_VIEWER_FORMAT_ASCII_IMPL
+      integer  PETSC_VIEWER_FORMAT_ASCII_INFO
+      integer  PETSC_VIEWER_FORMAT_ASCII_INFO_LONG
+      integer  PETSC_VIEWER_FORMAT_ASCII_COMMON
+      integer  PETSC_VIEWER_FORMAT_ASCII_SYMMODU
+      integer  PETSC_VIEWER_FORMAT_ASCII_INDEX
+      integer  PETSC_VIEWER_FORMAT_ASCII_DENSE
 
-      parameter (VIEWER_FORMAT_ASCII_DEFAULT = 0)
-      parameter (VIEWER_FORMAT_ASCII_MATLAB = 1)
-      parameter (VIEWER_FORMAT_ASCII_IMPL = 2)
-      parameter (VIEWER_FORMAT_ASCII_INFO = 3)
-      parameter (VIEWER_FORMAT_ASCII_INFO_LONG = 4)
-      parameter (VIEWER_FORMAT_ASCII_COMMON = 5)
-      parameter (VIEWER_FORMAT_ASCII_SYMMODU = 6)
-      parameter (VIEWER_FORMAT_ASCII_INDEX = 7)
-      parameter (VIEWER_FORMAT_ASCII_DENSE = 8)
+      parameter (PETSC_VIEWER_FORMAT_ASCII_DEFAULT = 0)
+      parameter (PETSC_VIEWER_FORMAT_ASCII_MATLAB = 1)
+      parameter (PETSC_VIEWER_FORMAT_ASCII_IMPL = 2)
+      parameter (PETSC_VIEWER_FORMAT_ASCII_INFO = 3)
+      parameter (PETSC_VIEWER_FORMAT_ASCII_INFO_LONG = 4)
+      parameter (PETSC_VIEWER_FORMAT_ASCII_COMMON = 5)
+      parameter (PETSC_VIEWER_FORMAT_ASCII_SYMMODU = 6)
+      parameter (PETSC_VIEWER_FORMAT_ASCII_INDEX = 7)
+      parameter (PETSC_VIEWER_FORMAT_ASCII_DENSE = 8)
 
-      integer  VIEWER_FORMAT_BINARY_DEFAULT
-      integer  VIEWER_FORMAT_BINARY_NATIVE
+      integer  PETSC_VIEWER_FORMAT_BINARY_DEFAULT
+      integer  PETSC_VIEWER_FORMAT_BINARY_NATIVE
 
-      parameter (VIEWER_FORMAT_BINARY_DEFAULT = 9) 
-      parameter (VIEWER_FORMAT_BINARY_NATIVE = 10)
+      parameter (PETSC_VIEWER_FORMAT_BINARY_DEFAULT = 9) 
+      parameter (PETSC_VIEWER_FORMAT_BINARY_NATIVE = 10)
 
-      integer VIEWER_FORMAT_DRAW_BASIC
-      integer VIEWER_FORMAT_DRAW_LG
-      integer VIEWER_FORMAT_DRAW_CONTOUR
+      integer PETSC_VIEWER_FORMAT_DRAW_BASIC
+      integer PETSC_VIEWER_FORMAT_DRAW_LG
+      integer PETSC_VIEWER_FORMAT_DRAW_CONTOUR
 
-      parameter (VIEWER_FORMAT_DRAW_BASIC = 11)
-      parameter (VIEWER_FORMAT_DRAW_LG = 12)
-      parameter (VIEWER_FORMAT_DRAW_CONTOUR = 13)
+      parameter (PETSC_VIEWER_FORMAT_DRAW_BASIC = 11)
+      parameter (PETSC_VIEWER_FORMAT_DRAW_LG = 12)
+      parameter (PETSC_VIEWER_FORMAT_DRAW_CONTOUR = 13)
 
-      integer VIEWER_FORMAT_NATIVE
-      parameter (VIEWER_FORMAT_NATIVE = 14)
+      integer PETSC_VIEWER_FORMAT_NATIVE
+      parameter (PETSC_VIEWER_FORMAT_NATIVE = 14)
 !
-!  End of Fortran include file for the Viewer package in PETSc
+!  End of Fortran include file for the PetscViewer package in PETSc
 
 #endif
+
+
+
+
+
+

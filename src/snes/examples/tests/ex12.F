@@ -1,5 +1,5 @@
 !
-!    "$Id: ex12.F,v 1.57 2000/09/27 20:10:20 bsmith Exp bsmith $";
+!    "$Id: ex12.F,v 1.58 2000/11/28 17:31:06 bsmith Exp bsmith $";
 !
 !  This example demonstrates basic use of the SNES Fortran interface.
 !  
@@ -43,7 +43,7 @@
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       N = 10
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',N,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',N,flg,ierr)
       h = 1.d0/(N-1.d0)
       ctx(6) = N
 

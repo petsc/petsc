@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.32 2000/02/02 20:10:34 bsmith Exp balay $*/
+/*$Id: ex12.c,v 1.33 2000/05/05 22:19:31 balay Exp bsmith $*/
 
 /*
    Simple example to show how PETSc programs can be run from Matlab. 
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
 {
   int       rank,size,M = 14,ierr,time_steps = 20,w=1,s=1;
   DA        da;
-  Viewer    viewer;
+  PetscViewer    viewer;
   Vec       local,global,copy;
   Scalar    *localptr,*copyptr;
   double    h,k;
@@ -24,8 +24,8 @@ int main(int argc,char **argv)
  
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
     
   /* Set up the array */ 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,w,s,PETSC_NULL,&da);CHKERRA(ierr);
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray (copy,&copyptr);CHKERRA(ierr);
 
   /* Set Up Display to Show Heat Graph */
-  viewer = VIEWER_SOCKET_WORLD; 
+  viewer = PETSC_VIEWER_SOCKET_WORLD; 
 
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(global,&mybase,&myend);CHKERRA(ierr);

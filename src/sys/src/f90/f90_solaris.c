@@ -1,9 +1,9 @@
-/*$Id: f90_solaris.c,v 1.5 2000/09/07 03:18:50 balay Exp balay $*/
+/*$Id: f90_solaris.c,v 1.6 2000/09/22 18:38:47 balay Exp bsmith $*/
 
 /*-------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"F90Array1dCreate"
+#define __FUNC__ "F90Array1dCreate"
 int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d *ptr)
 {
   int size,ierr;
@@ -21,7 +21,7 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"F90Array2dCreate"
+#define __FUNC__ "F90Array2dCreate"
 int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d *ptr)
 {
   int size,ierr;

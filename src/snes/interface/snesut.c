@@ -1,9 +1,9 @@
-/*$Id: snesut.c,v 1.59 2000/08/24 22:43:02 bsmith Exp bsmith $*/
+/*$Id: snesut.c,v 1.60 2000/09/28 21:14:05 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESVecViewMonitor"
+#define __FUNC__ "SNESVecViewMonitor"
 /*@C
    SNESVecViewMonitor - Monitors progress of the SNES solvers by calling 
    VecView() for the approximate solution at each iteration.
@@ -26,14 +26,14 @@ int SNESVecViewMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
   int    ierr;
   Vec    x;
-  Viewer viewer = (Viewer) dummy;
+  PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
   if (!viewer) {
     MPI_Comm comm;
     ierr   = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-    viewer = VIEWER_DRAW_(comm);
+    viewer = PETSC_VIEWER_DRAW_(comm);
   }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
 
@@ -41,7 +41,7 @@ int SNESVecViewMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESVecViewUpdateMonitor"
+#define __FUNC__ "SNESVecViewUpdateMonitor"
 /*@C
    SNESVecViewUpdateMonitor - Monitors progress of the SNES solvers by calling 
    VecView() for the UPDATE to the solution at each iteration.
@@ -64,14 +64,14 @@ int SNESVecViewUpdateMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
   int    ierr;
   Vec    x;
-  Viewer viewer = (Viewer) dummy;
+  PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
   ierr = SNESGetSolutionUpdate(snes,&x);CHKERRQ(ierr);
   if (!viewer) {
     MPI_Comm comm;
     ierr   = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-    viewer = VIEWER_DRAW_(comm);
+    viewer = PETSC_VIEWER_DRAW_(comm);
   }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
 
@@ -79,7 +79,7 @@ int SNESVecViewUpdateMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESDefaultMonitor"
+#define __FUNC__ "SNESDefaultMonitor"
 /*@C
    SNESDefaultMonitor - Monitoring progress of the SNES solvers (default).
 
@@ -107,22 +107,22 @@ int SNESVecViewUpdateMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 int SNESDefaultMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
   int    ierr;
-  Viewer viewer = (Viewer) dummy;
+  PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) viewer = VIEWER_STDOUT_(snes->comm);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(snes->comm);
 
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-    ierr = ViewerASCIIPrintf(viewer,"iter = %d, SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%d SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-    ierr = ViewerASCIIPrintf(viewer,"iter = %d, SNES Function value %14.12e, Gradient norm %14.12e \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%d SNES Function value %14.12e, Gradient norm %14.12e \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown method class");
   PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESDefaultSMonitor"
+#define __FUNC__ "SNESDefaultSMonitor"
 /*
      Default (short) SNES Monitor, same as SNESDefaultMonitor() except
   it prints fewer digits of the residual as the residual gets smaller.
@@ -137,26 +137,26 @@ int SNESDefaultSMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
   PetscFunctionBegin;
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     if (fgnorm > 1.e-9) {
-      ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"%d SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
     } else if (fgnorm > 1.e-11){
-      ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function norm %5.3e \n",its,fgnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"%d SNES Function norm %5.3e \n",its,fgnorm);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"%d SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
     }
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     if (fgnorm > 1.e-9) {
-      ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"%d SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
     } else if (fgnorm > 1.e-11) {
-      ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function value %g, Gradient norm %5.3e \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"%d SNES Function value %g, Gradient norm %5.3e \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function value %g, Gradient norm < 1.e-11\n",its,snes->fc);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"%d SNES Function value %g, Gradient norm < 1.e-11\n",its,snes->fc);CHKERRQ(ierr);
     }
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown method class");
   PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESConverged_EQ_LS"
+#define __FUNC__ "SNESConverged_EQ_LS"
 /*@C 
    SNESConverged_EQ_LS - Monitors the convergence of the solvers for
    systems of nonlinear equations (default).
@@ -201,19 +201,19 @@ int SNESConverged_EQ_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnor
   }
 
   if (fnorm != fnorm) {
-    PLogInfo(snes,"SNESConverged_EQ_LS:Failed to converged, function norm is NaN\n");
+    PetscLogInfo(snes,"SNESConverged_EQ_LS:Failed to converged, function norm is NaN\n");
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if (fnorm <= snes->ttol) {
-    PLogInfo(snes,"SNESConverged_EQ_LS:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
+    PetscLogInfo(snes,"SNESConverged_EQ_LS:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
     *reason = SNES_CONVERGED_FNORM_RELATIVE;
   } else if (fnorm < snes->atol) {
-    PLogInfo(snes,"SNESConverged_EQ_LS:Converged due to function norm %g < %g\n",fnorm,snes->atol);
+    PetscLogInfo(snes,"SNESConverged_EQ_LS:Converged due to function norm %g < %g\n",fnorm,snes->atol);
     *reason = SNES_CONVERGED_FNORM_ABS;
   } else if (pnorm < snes->xtol*(xnorm)) {
-    PLogInfo(snes,"SNESConverged_EQ_LS:Converged due to small update length: %g < %g * %g\n",pnorm,snes->xtol,xnorm);
+    PetscLogInfo(snes,"SNESConverged_EQ_LS:Converged due to small update length: %g < %g * %g\n",pnorm,snes->xtol,xnorm);
     *reason = SNES_CONVERGED_PNORM_RELATIVE;
   } else if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo(snes,"SNESConverged_EQ_LS:Exceeded maximum number of function evaluations: %d > %d\n",snes->nfuncs,snes->max_funcs);
+    PetscLogInfo(snes,"SNESConverged_EQ_LS:Exceeded maximum number of function evaluations: %d > %d\n",snes->nfuncs,snes->max_funcs);
     *reason = SNES_DIVERGED_FUNCTION_COUNT ;
   } else {
     *reason = SNES_CONVERGED_ITERATING;
@@ -222,7 +222,7 @@ int SNESConverged_EQ_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnor
 }
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNES_KSP_SetConvergenceTestEW"
+#define __FUNC__ "SNES_KSP_SetConvergenceTestEW"
 /*@
    SNES_KSP_SetConvergenceTestEW - Sets alternative convergence test
    for the linear solvers within an inexact Newton method.  
@@ -255,7 +255,7 @@ int SNES_KSP_SetConvergenceTestEW(SNES snes)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNES_KSP_SetParametersEW"
+#define __FUNC__ "SNES_KSP_SetParametersEW"
 /*@
    SNES_KSP_SetParametersEW - Sets parameters for Eisenstat-Walker
    convergence criteria for the linear solvers within an inexact
@@ -325,7 +325,7 @@ int SNES_KSP_SetParametersEW(SNES snes,int version,PetscReal rtol_0,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNES_KSP_EW_ComputeRelativeTolerance_Private"
+#define __FUNC__ "SNES_KSP_EW_ComputeRelativeTolerance_Private"
 int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
 {
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
@@ -350,14 +350,14 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
   }
   rtol = PetscMin(rtol,kctx->rtol_max);
   kctx->rtol_last = rtol;
-  PLogInfo(snes,"SNES_KSP_EW_ComputeRelativeTolerance_Private: iter %d, Eisenstat-Walker (version %d) KSP rtol = %g\n",snes->iter,kctx->version,rtol);
+  PetscLogInfo(snes,"SNES_KSP_EW_ComputeRelativeTolerance_Private: iter %d, Eisenstat-Walker (version %d) KSP rtol = %g\n",snes->iter,kctx->version,rtol);
   ierr = KSPSetTolerances(ksp,rtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   kctx->norm_last = snes->norm;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNES_KSP_EW_Converged_Private"
+#define __FUNC__ "SNES_KSP_EW_Converged_Private"
 int SNES_KSP_EW_Converged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   SNES                snes = (SNES)ctx;
@@ -370,7 +370,7 @@ int SNES_KSP_EW_Converged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReas
   ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
   kctx->lresid_last = rnorm;
   if (*reason) {
-    PLogInfo(snes,"SNES_KSP_EW_Converged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
+    PetscLogInfo(snes,"SNES_KSP_EW_Converged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
   }
   PetscFunctionReturn(0);
 }

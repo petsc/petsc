@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.11 2001/01/05 04:59:53 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.12 2001/01/05 05:06:04 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -37,8 +37,8 @@ static char help[] = "Solves PDE optimization problem\n\n";
 */
 
 typedef struct {
-  Viewer  u_lambda_viewer;
-  Viewer  fu_lambda_viewer;
+  PetscViewer  u_lambda_viewer;
+  PetscViewer  fu_lambda_viewer;
 } UserCtx;
 
 extern int FormFunction(SNES,Vec,Vec,void*);
@@ -56,23 +56,23 @@ int main(int argc,char **argv)
   VecPack packer;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   /* Hardwire several options; can be changed at command line */
-  ierr = OptionsSetValue("-dmmg_grid_sequence",PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsSetValue("-ksp_type","fgmres");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-ksp_max_it","5");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-pc_mg_type","full");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-mg_coarse_ksp_type","gmres");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-mg_levels_ksp_type","gmres");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-mg_coarse_ksp_max_it","6");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-mg_levels_ksp_max_it","3");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-snes_mf_type","wp");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
-  /* ierr = OptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
-  ierr = OptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsSetValue("-dmmg_grid_sequence",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-ksp_type","fgmres");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-ksp_max_it","5");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-pc_mg_type","full");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-mg_coarse_ksp_type","gmres");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-mg_levels_ksp_type","gmres");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-mg_coarse_ksp_max_it","6");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-mg_levels_ksp_max_it","3");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-snes_mf_type","wp");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
+  /* ierr = PetscOptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
+  ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
   
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
@@ -81,8 +81,8 @@ int main(int argc,char **argv)
   ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
 
   /* create graphics windows */
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"u_lambda - state variables and Lagrange multipliers",-1,-1,-1,-1,&user.u_lambda_viewer);CHKERRQ(ierr);
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"fu_lambda - derivate w.r.t. state variables and Lagrange multipliers",-1,-1,-1,-1,&user.fu_lambda_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"u_lambda - state variables and Lagrange multipliers",-1,-1,-1,-1,&user.u_lambda_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"fu_lambda - derivate w.r.t. state variables and Lagrange multipliers",-1,-1,-1,-1,&user.fu_lambda_viewer);CHKERRQ(ierr);
 
   /* create nonlinear multi-level solver */
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,&user,&dmmg);CHKERRQ(ierr);
@@ -97,8 +97,8 @@ int main(int argc,char **argv)
 
   ierr = DADestroy(da);CHKERRQ(ierr);
   ierr = VecPackDestroy(packer);CHKERRQ(ierr);
-  ierr = ViewerDestroy(user.u_lambda_viewer);CHKERRQ(ierr);
-  ierr = ViewerDestroy(user.fu_lambda_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(user.u_lambda_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(user.fu_lambda_viewer);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;
@@ -145,9 +145,9 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
   /* derivative of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   fu(0)   = h*u(0)   + 2.*d*lambda(0)   - d*lambda(1);
+    if      (i == 0)   fu(0)   =    h*u(0)   + 2.*d*lambda(0)   - d*lambda(1);
     else if (i == 1)   fu(1)   = 2.*h*u(1)   + 2.*d*lambda(1)   - d*lambda(2);
-    else if (i == N-1) fu(N-1) = h*u(N-1) + 2.*d*lambda(N-1) - d*lambda(N-2);
+    else if (i == N-1) fu(N-1) =    h*u(N-1) + 2.*d*lambda(N-1) - d*lambda(N-2);
     else if (i == N-2) fu(N-2) = 2.*h*u(N-2) + 2.*d*lambda(N-2) - d*lambda(N-3);
     else               fu(i)   = 2.*h*u(i)   - d*(lambda(i+1) - 2.0*lambda(i) + lambda(i-1));
   } 
@@ -163,7 +163,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = DAVecRestoreArray(da,vfu_lambda,(void**)&fu_lambda);CHKERRQ(ierr);
   ierr = VecPackRestoreLocalVectors(packer,&w,&vu_lambda);CHKERRQ(ierr);
   ierr = VecPackRestoreAccess(packer,FU,&fw,&vfu_lambda);CHKERRQ(ierr);
-  PLogFlops(13*N);
+  PetscLogFlops(13*N);
   PetscFunctionReturn(0);
 }
 

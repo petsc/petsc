@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.87 2000/10/24 20:27:14 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.88 2000/11/30 15:59:18 bsmith Exp bsmith $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -7,7 +7,8 @@ FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5c.c ex6.c ex7.c ex8.c ex5s.c ex9.c \
-                   common8and9.c ex12.c ex13.c ex14.c ex15.c ex16.c ex5d.c ex5m.c ex18.c ex19.c ex20.c
+                   common8and9.c ex12.c ex13.c ex14.c ex15.c ex16.c ex5d.c ex5m.c ex18.c ex19.c ex20.c ex21.c ex22.c \
+                   ex23.c ex24.c
 EXAMPLESF	 = ex1f.F ex4f.F ex5f.F ex5f90.F ex5fs.F 
 EXAMPLESCH	 = ex8and9.h 
 EXAMPLESFH       = ex5f.h
@@ -105,6 +106,18 @@ ex19: ex19.o chkopts
 ex20: ex20.o chkopts
 	-${CLINKER} -o ex20 ex20.o ${PETSC_SNES_LIB}
 	${RM} ex20.o
+ex21: ex21.o chkopts
+	-${CLINKER} -o ex21 ex21.o ${PETSC_SNES_LIB}
+	${RM} ex21.o
+ex22: ex22.o chkopts
+	-${CLINKER} -o ex22 ex22.o ${PETSC_SNES_LIB}
+	${RM} ex22.o
+ex23: ex23.o chkopts
+	-${CLINKER} -o ex23 ex23.o ${PETSC_SNES_LIB}
+	${RM} ex23.o
+ex24: ex24.o chkopts
+	-${CLINKER} -o ex24 ex24.o ${PETSC_SNES_LIB}
+	${RM} ex24.o
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_gmres_irorthog -snes_smonitor > ex1_1.tmp 2>&1;   \
@@ -353,7 +366,8 @@ TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
 		   ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex6.PETSc runex6 runex6_2 \
 		   ex6.rm ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc  \
                    ex5.rm ex5d.PETSc ex5d.rm ex8.PETSc runex8 runex8_3 ex8.rm ex12.PETSc ex12.rm \
-                   ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc ex15.rm
+                   ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc ex15.rm ex21.PETSc ex21.rm \
+                   ex22.PETSc ex22.rm ex18.PETSc ex18.rm ex19.PETSc ex19.rm ex23.PETSc ex23.rm ex24.PETSc ex24.rm
 TESTEXAMPLES_2	 = ex5.PETSc runex5_8 runex5_9 \
 		   runex5_10 ex5.rm ex5d.PETSc runex5d_8 runex5d_9 \
 		   runex5d_10 ex5d.rm ex8.PETSc runex8_2 ex8.rm ex9.PETSc ex9.rm

@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.23 2000/09/02 02:48:58 bsmith Exp bsmith $*/
+/*$Id: milu.c,v 1.24 2000/09/28 21:12:57 bsmith Exp bsmith $*/
 
 /*
     Contributed by  Victor Eijkhout <eijkhout@cs.utk.edu>, September 1998
@@ -29,7 +29,7 @@
   User interface routines
 ****************************************************************/
 #undef __FUNC__
-#define __FUNC__ /*<a name="PCmILUSetLevels"></a>*/"PCmILUSetLevels"
+#define __FUNC__ "PCmILUSetLevels"
 int PCmILUSetLevels(PC pc,int levels)
 {
   PC  base_pc = (PC) pc->data;
@@ -42,7 +42,7 @@ int PCmILUSetLevels(PC pc,int levels)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name="PCmILUSetBaseType"></a>*/"PCmILUSetBaseType"
+#define __FUNC__ "PCmILUSetBaseType"
 int PCmILUSetBaseType(PC pc,PCType type)
 {
   PC  base_pc = (PC) pc->data;
@@ -59,7 +59,7 @@ int PCmILUSetBaseType(PC pc,PCType type)
 ****************************************************************/
 
 #undef __FUNC__
-#define __FUNC__ /*<a name="PCSetup_mILU"></a>*/"PCSetup_mILU"
+#define __FUNC__ "PCSetup_mILU"
 static int PCSetup_mILU(PC pc)
 {
   PC     base_pc = (PC) pc->data;
@@ -72,7 +72,7 @@ static int PCSetup_mILU(PC pc)
   PetscFunctionBegin;
   ierr  = MatGetOwnershipRange(omat,&first,&last);CHKERRQ(ierr);
   lsize = last-first;
-  mprop = (double*)PetscMalloc((lsize+1)*sizeof(double));CHKPTRQ(mprop);
+ierr = PetscMalloc((lsize+1)*sizeof(double),&  mprop );CHKERRQ(ierr);
   {
     int irow;
     for (irow=first; irow<last; irow++) {
@@ -133,7 +133,7 @@ static int PCSetup_mILU(PC pc)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name="PCApply_mILU"></a>*/"PCApply_mILU"
+#define __FUNC__ "PCApply_mILU"
 static int PCApply_mILU(PC pc,Vec x,Vec y)
 {
   PC  base_pc = (PC) pc->data;
@@ -146,7 +146,7 @@ static int PCApply_mILU(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PCDestroy_mILU"
+#define __FUNC__ "PCDestroy_mILU"
 static int PCDestroy_mILU(PC pc)
 {
   PC  base_pc = (PC) pc->data;
@@ -160,19 +160,19 @@ static int PCDestroy_mILU(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCView_mILU"
-static int PCView_mILU(PC pc,Viewer viewer)
+#define __FUNC__ "PCView_mILU"
+static int PCView_mILU(PC pc,PetscViewer viewer)
 {
   PC         base_pc = (PC) pc->data;
   int        ierr;
   PetscTruth isascii;
  
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"  modified ILU preconditioner\n");CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"    see src/sles/pc/milu/milu.c\n");CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"    base PC used by mILU next\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  modified ILU preconditioner\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    see src/sles/pc/milu/milu.c\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    base PC used by mILU next\n");CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for mILU PC",((PetscObject)viewer)->type_name);
   }
@@ -182,7 +182,7 @@ static int PCView_mILU(PC pc,Viewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ /*<a name="PCCreate_mILU"></a>*/"PCCreate_mILU"
+#define __FUNC__ "PCCreate_mILU"
 int PCCreate_mILU(PC pc)
 {
   PC  base_pc;

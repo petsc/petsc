@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.147 2000/09/22 20:42:22 bsmith Exp bsmith $*/
+/*$Id: mtr.c,v 1.148 2000/09/28 21:09:09 bsmith Exp bsmith $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -16,9 +16,9 @@
 /*
      These are defined in mal.c and ensure that malloced space is Scalar aligned
 */
-EXTERN void *PetscMallocAlign(int,int,char*,char*,char*);
+EXTERN int   PetscMallocAlign(int,int,char*,char*,char*,void**);
 EXTERN int   PetscFreeAlign(void*,int,char*,char*,char*);
-EXTERN void *PetscTrMallocDefault(int,int,char*,char*,char*);
+EXTERN int   PetscTrMallocDefault(int,int,char*,char*,char*,void**);
 EXTERN int   PetscTrFreeDefault(void*,int,char*,char*,char*);
 
 /*
@@ -33,7 +33,7 @@ void *PetscLow  = (void*)0x0,*PetscHigh = (void*)0xEEEEEEEE;
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSetUseTrMalloc_Private"
+#define __FUNC__ "PetscSetUseTrMalloc_Private"
 int PetscSetUseTrMalloc_Private(void)
 {
   int ierr;
@@ -116,7 +116,7 @@ static int  PetscLogMallocMax = 10000,PetscLogMalloc = -1,*PetscLogMallocLength;
 static char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallocFunction;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscTrValid"
+#define __FUNC__ "PetscTrValid"
 /*@C
    PetscTrValid - Test the memory for corruption.  This can be used to
    check for memory overwrites.
@@ -191,7 +191,7 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscTrMallocDefault"
+#define __FUNC__ "PetscTrMallocDefault"
 /*
     PetscTrMallocDefault - Malloc with tracing.
 
@@ -206,7 +206,7 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
     double aligned pointer to requested storage, or null if not
     available.
  */
-void *PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *dir)
+int PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *dir,void**result)
 {
   TRSPACE          *head;
   char             *inew;
@@ -216,21 +216,21 @@ void *PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *
 
   PetscFunctionBegin;
   if (TRdebugLevel > 0) {
-    ierr = PetscTrValid(lineno,function,filename,dir); if (ierr) PetscFunctionReturn(0);
+    ierr = PetscTrValid(lineno,function,filename,dir); if (ierr) PetscFunctionReturn(ierr);
   }
 
   if (!a) {
     (*PetscErrorPrintf)("PETSC ERROR: PetscTrMalloc: malloc zero length, this is illegal!\n");
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(1);
   }
   if (a < 0) {
     (*PetscErrorPrintf)("PETSC ERROR: PetscTrMalloc: malloc negative length, this is illegal!\n");
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(1);
   }
   nsize = a;
   if (nsize & TR_ALIGN_MASK) nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
-  inew = (char*)PetscMallocAlign((unsigned)(nsize+sizeof(TrSPACE)+sizeof(Scalar)),lineno,function,filename,dir);  
-  if (!inew) PetscFunctionReturn(0);
+  ierr = PetscMallocAlign((unsigned)(nsize+sizeof(TrSPACE)+sizeof(Scalar)),lineno,function,filename,dir,(void**)&inew);  
+  if (ierr) PetscFunctionReturn(ierr);
 
 
   /*
@@ -266,7 +266,7 @@ void *PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *
   TRfrags++;
 
 #if defined(PETSC_USE_STACK)
-  ierr = PetscStackCopy(petscstack,&head->stack); if (ierr) PetscFunctionReturn(0);
+  ierr = PetscStackCopy(petscstack,&head->stack); if (ierr) PetscFunctionReturn(ierr);
 #endif
 
   /*
@@ -275,26 +275,26 @@ void *PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *
   if (PetscLogMalloc > -1 && PetscLogMalloc < PetscLogMallocMax) {
     if (PetscLogMalloc == 0) {
       PetscLogMallocLength    = (int*)malloc(PetscLogMallocMax*sizeof(int));
-      if (!PetscLogMallocLength) PetscFunctionReturn(0);
+      if (!PetscLogMallocLength) PetscFunctionReturn(ierr);
       PetscLogMallocDirectory = (char**)malloc(PetscLogMallocMax*sizeof(char**));
-      if (!PetscLogMallocDirectory) PetscFunctionReturn(0);
+      if (!PetscLogMallocDirectory) PetscFunctionReturn(ierr);
       PetscLogMallocFile      = (char**)malloc(PetscLogMallocMax*sizeof(char**));
-      if (!PetscLogMallocFile) PetscFunctionReturn(0);
+      if (!PetscLogMallocFile) PetscFunctionReturn(ierr);
       PetscLogMallocFunction  = (char**)malloc(PetscLogMallocMax*sizeof(char**));
-      if (!PetscLogMallocFunction) PetscFunctionReturn(0);
+      if (!PetscLogMallocFunction) PetscFunctionReturn(ierr);
     }
     PetscLogMallocLength[PetscLogMalloc]      = nsize;
     PetscLogMallocDirectory[PetscLogMalloc]   = dir;
     PetscLogMallocFile[PetscLogMalloc]        = filename;
     PetscLogMallocFunction[PetscLogMalloc++]  = function; 
   }
-
-  PetscFunctionReturn((void *)inew);
+  *result = (void*)inew;
+  PetscFunctionReturn(0);
 }
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscTrFreeDefault"
+#define __FUNC__ "PetscTrFreeDefault"
 /*
    PetscTrFreeDefault - Free with tracing.
 
@@ -390,12 +390,12 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscShowMemoryUsage"></a>*/"PetscShowMemoryUsage"
+#define __FUNC__ "PetscShowMemoryUsage"
 /*@
     PetscShowMemoryUsage - Shows the amount of memory currently being used 
         in a communicator.
    
-    Collective on Viewer
+    Collective on PetscViewer
 
     Input Parameter:
 +    viewer - the viewer that defines the communicator
@@ -407,9 +407,9 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
 
 .seealso: PetscTrDump(),PetscTrSpace(), PetscGetResidentSetSize()
  @*/
-int PetscShowMemoryUsage(Viewer viewer,char *message)
+int PetscShowMemoryUsage(PetscViewer viewer,char *message)
 {
-  PLogDouble allocated,maximum,resident;
+  PetscLogDouble allocated,maximum,resident;
   int        ierr,rank;
   MPI_Comm   comm;
 
@@ -418,14 +418,14 @@ int PetscShowMemoryUsage(Viewer viewer,char *message)
   ierr = PetscGetResidentSetSize(&resident);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = ViewerASCIIPrintf(viewer,message);CHKERRQ(ierr);
-  ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]Space allocated %g, max space allocated %g, process memory %g\n",rank,allocated,maximum,resident);CHKERRQ(ierr);
-  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,message);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Space allocated %g, max space allocated %g, process memory %g\n",rank,allocated,maximum,resident);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscTrSpace"></a>*/"PetscTrSpace"
+#define __FUNC__ "PetscTrSpace"
 /*@
     PetscTrSpace - Returns space statistics.
    
@@ -442,18 +442,18 @@ int PetscShowMemoryUsage(Viewer viewer,char *message)
 
 .seealso: PetscTrDump()
  @*/
-int PetscTrSpace(PLogDouble *space,PLogDouble *fr,PLogDouble *maxs)
+int PetscTrSpace(PetscLogDouble *space,PetscLogDouble *fr,PetscLogDouble *maxs)
 {
   PetscFunctionBegin;
 
-  if (space) *space = (PLogDouble) TRallocated;
-  if (fr)    *fr    = (PLogDouble) TRfrags;
-  if (maxs)  *maxs  = (PLogDouble) TRMaxMem;
+  if (space) *space = (PetscLogDouble) TRallocated;
+  if (fr)    *fr    = (PetscLogDouble) TRfrags;
+  if (maxs)  *maxs  = (PetscLogDouble) TRMaxMem;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscTrDump"
+#define __FUNC__ "PetscTrDump"
 /*@C
    PetscTrDump - Dumps the allocated memory blocks to a file. The information 
    printed is: size of space (in bytes), address of space, id of space, 
@@ -509,7 +509,7 @@ int PetscTrDump(FILE *fp)
 /* ---------------------------------------------------------------------------- */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscTrLog"
+#define __FUNC__ "PetscTrLog"
 /*@C
     PetscTrLog - Activates logging of all calls to malloc.
 
@@ -531,7 +531,7 @@ int PetscTrLog(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscTrLogDump"
+#define __FUNC__ "PetscTrLogDump"
 /*@C
     PetscTrLogDump - Dumps the log of all calls to malloc; also calls 
     PetscGetResidentSetSize().
@@ -557,7 +557,7 @@ int PetscTrLogDump(FILE *fp)
   int        i,rank,j,n,*shortlength,ierr,dummy,size,tag = 1212 /* very bad programming */;
   PetscTruth match;
   char       **shortfunction;
-  PLogDouble rss;
+  PetscLogDouble rss;
   MPI_Status status;
 
   PetscFunctionBegin;
@@ -577,8 +577,8 @@ int PetscTrLogDump(FILE *fp)
   ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
   ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);CHKERRQ(ierr);
 
-  shortlength   = (int*)malloc(PetscLogMalloc*sizeof(int));CHKPTRQ(shortlength);
-  shortfunction = (char**)malloc(PetscLogMalloc*sizeof(char *));CHKPTRQ(shortfunction);
+  shortlength   = (int*)malloc(PetscLogMalloc*sizeof(int));CHKERRQ(ierr);
+  shortfunction = (char**)malloc(PetscLogMalloc*sizeof(char *));CHKERRQ(ierr);
   shortfunction[0] = PetscLogMallocFunction[0];
   shortlength[0]   = PetscLogMallocLength[0]; 
   n = 1;
@@ -613,7 +613,7 @@ int PetscTrLogDump(FILE *fp)
 /* ---------------------------------------------------------------------------- */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscTrDebugLevel"
+#define __FUNC__ "PetscTrDebugLevel"
 /*
     PetscTrDebugLevel - Set the level of debugging for the space management 
                    routines.

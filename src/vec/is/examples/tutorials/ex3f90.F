@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f90.F,v 1.14 2000/09/27 20:06:10 bsmith Exp bsmith $"; */
+!      "$Id: ex3f90.F,v 1.15 2000/10/24 20:24:55 bsmith Exp bsmith $"; */
 !
 !
 !/*T
@@ -44,7 +44,7 @@
 !    (in this case they are all identical)
 !
       call ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,set,ierr) 
-      call ISView(set,VIEWER_STDOUT_SELF,ierr) 
+      call ISView(set,PETSC_VIEWER_STDOUT_SELF,ierr) 
 
 !
 !    Extract indices from set.

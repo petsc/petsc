@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.3 2000/06/19 20:31:50 bsmith Exp bsmith $*/
+/*$Id: ex16.c,v 1.4 2000/08/01 20:58:08 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecPack routines.\n\n";
 
@@ -15,21 +15,21 @@ int main(int argc,char **argv)
   Vec     global,local1,local2;
   PF      pf;
   DA      da1,da2;
-  Viewer  sviewer;
+  PetscViewer  sviewer;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
 
-  redundant1 = (Scalar*)PetscMalloc(nredundant1*sizeof(Scalar));CHKPTRQ(redundant1);
+ierr = PetscMalloc(nredundant1*sizeof(Scalar),&(  redundant1 ));CHKERRQ(ierr);
   ierr = VecPackAddArray(packer,nredundant1);CHKERRQ(ierr);
 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,8,1,1,PETSC_NULL,&da1);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da1,&local1);CHKERRQ(ierr);
   ierr = VecPackAddDA(packer,da1);CHKERRQ(ierr);
 
-  redundant2 = (Scalar*)PetscMalloc(nredundant2*sizeof(Scalar));CHKPTRQ(redundant2);
+ierr = PetscMalloc(nredundant2*sizeof(Scalar),&(  redundant2 ));CHKERRQ(ierr);
   ierr = VecPackAddArray(packer,nredundant2);CHKERRQ(ierr);
 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,6,1,1,PETSC_NULL,&da2);CHKERRQ(ierr);
@@ -41,41 +41,41 @@ int main(int argc,char **argv)
   ierr = PFSetType(pf,PFIDENTITY,PETSC_NULL);CHKERRQ(ierr);
   ierr = PFApplyVec(pf,PETSC_NULL,global);CHKERRQ(ierr);
   ierr = PFDestroy(pf);CHKERRQ(ierr);
-  ierr = VecView(global,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = VecPackScatter(packer,global,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
-  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] My part of redundant1 array\n",rank);CHKERRQ(ierr);
-  ierr = PetscScalarView(nredundant1,redundant1,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] My part of da1 vector\n",rank);CHKERRQ(ierr);
-  ierr = ViewerGetSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] My part of redundant1 array\n",rank);CHKERRQ(ierr);
+  ierr = PetscScalarView(nredundant1,redundant1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] My part of da1 vector\n",rank);CHKERRQ(ierr);
+  ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
   ierr = VecView(local1,sviewer);CHKERRQ(ierr);
-  ierr = ViewerRestoreSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
-  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] My part of redundant2 array\n",rank);CHKERRQ(ierr);
-  ierr = PetscScalarView(nredundant2,redundant2,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] My part of da2 vector\n",rank);CHKERRQ(ierr);
-  ierr = ViewerGetSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] My part of redundant2 array\n",rank);CHKERRQ(ierr);
+  ierr = PetscScalarView(nredundant2,redundant2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] My part of da2 vector\n",rank);CHKERRQ(ierr);
+  ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
   ierr = VecView(local2,sviewer);CHKERRQ(ierr);
-  ierr = ViewerRestoreSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
 
   for (i=0; i<nredundant1; i++) redundant1[i] = (rank+2)*i;
   for (i=0; i<nredundant2; i++) redundant2[i] = (rank+10)*i;
 
   ierr = VecPackGather(packer,global,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
-  ierr = VecView(global,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* get the global numbering for each subvector/array element */
   ierr = VecPackGetGlobalIndices(packer,&ridx1,&lidx1,&ridx2,&lidx2);CHKERRQ(ierr);
   
-  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] Global numbering of redundant1 array\n",rank);CHKERRQ(ierr);
-  ierr = PetscIntView(nredundant1,ridx1,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] Global numbering of local1 vector\n",rank);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] Global numbering of redundant1 array\n",rank);CHKERRQ(ierr);
+  ierr = PetscIntView(nredundant1,ridx1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] Global numbering of local1 vector\n",rank);CHKERRQ(ierr);
   ierr = VecGetSize(local1,&nlocal);CHKERRQ(ierr);
-  ierr = PetscIntView(nlocal,lidx1,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] Global numbering of redundant2 array\n",rank);CHKERRQ(ierr);
-  ierr = PetscIntView(nredundant2,ridx2,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] Global numbering of local2 vector\n",rank);CHKERRQ(ierr);
+  ierr = PetscIntView(nlocal,lidx1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] Global numbering of redundant2 array\n",rank);CHKERRQ(ierr);
+  ierr = PetscIntView(nredundant2,ridx2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] Global numbering of local2 vector\n",rank);CHKERRQ(ierr);
   ierr = VecGetSize(local2,&nlocal);CHKERRQ(ierr);
-  ierr = PetscIntView(nlocal,lidx2,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscIntView(nlocal,lidx2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   
   ierr = PetscFree(ridx1);CHKERRQ(ierr);
   ierr = PetscFree(lidx1);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex62.c,v 1.15 2000/09/28 21:11:49 bsmith Exp bsmith $*/
+/*$Id: ex62.c,v 1.16 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 
@@ -13,7 +13,7 @@ int main(int argc,char **args)
   IS         row,col;
   Vec        x,u,b;
   double     norm;
-  Viewer     fd;
+  PetscViewer     fd;
   char       type[256];
   char       file[128];
   Scalar     one = 1.0,mone = -1.0;
@@ -23,27 +23,27 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size > 1) SETERRA(1,"Can only run on one processor");
 
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,"Must indicate binary file with the -f option");
   /* 
-     Open binary file.  Note that we use BINARY_RDONLY to indicate
+     Open binary file.  Note that we use PETSC_BINARY_RDONLY to indicate
      reading from this file.
   */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
 
   /* 
      Determine matrix format to be used (specified at runtime).
      See the manpage for MatLoad() for available formats.
   */
   ierr = PetscStrcpy(type,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = OptionsGetString(PETSC_NULL,"-mat_type",type,256,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_type",type,256,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Load the matrix and vector; then destroy the viewer.
   */
   ierr = MatLoad(fd,type,&C);CHKERRA(ierr);
   ierr = VecLoad(fd,&u);CHKERRA(ierr);
-  ierr = ViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
 
   ierr = VecDuplicate(u,&x);CHKERRA(ierr);
   ierr = VecDuplicate(u,&b);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.378 2000/08/17 04:51:22 bsmith Exp $*/
+/*$Id: is.c,v 1.2 2000/08/24 22:42:38 bsmith Exp bsmith $*/
 #include "src/sles/pc/impls/is/is.h"
 
 /* -------------------------------------------------------------------------- */
@@ -6,7 +6,7 @@
    PCISSetUp - 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCISSetUp"
+#define __FUNC__ "PCISSetUp"
 int PCISSetUp(PC pc)
 {
   PC_IS  *pcis = (PC_IS*)(pc->data);
@@ -48,8 +48,8 @@ int PCISSetUp(PC pc)
     /* Identifying interior and interface nodes, in local numbering */
     ierr = VecGetSize(pcis->vec1_N,&pcis->n);CHKERRQ(ierr);
     ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-    idx_I_local = (int*)PetscMalloc(pcis->n*sizeof(int));CHKPTRQ(idx_I_local);
-    idx_B_local = (int*)PetscMalloc(pcis->n*sizeof(int));CHKPTRQ(idx_B_local);
+    idx_I_local = (int*)PetscMalloc(pcis->n*sizeof(int));CHKERRQ(ierr);
+    idx_B_local = (int*)PetscMalloc(pcis->n*sizeof(int));CHKERRQ(ierr);
     for (i=0, pcis->n_B=0, n_I=0; i<pcis->n; i++) {
       if (array[i] == 1.0) { idx_I_local[n_I]       = i; n_I++;       }
       else                 { idx_B_local[pcis->n_B] = i; pcis->n_B++; }
@@ -102,7 +102,7 @@ int PCISSetUp(PC pc)
     ierr = PCGetVector(pc,&global);CHKERRQ(ierr);
     ierr = VecDuplicate(global,&pcis->vec1_global);CHKERRQ(ierr);
   }
-  pcis->work_N = (Scalar*)PetscMalloc((pcis->n)*sizeof(Scalar));CHKPTRQ(pcis->work_N);
+  pcis->work_N = (Scalar*)PetscMalloc((pcis->n)*sizeof(Scalar));CHKERRQ(ierr);
 
   /* Creating the scatter contexts */
   ierr = VecScatterCreate(pc->vec,pcis->is_I_global,pcis->vec1_D,(IS)0,&pcis->global_to_D);CHKERRQ(ierr);
@@ -152,21 +152,21 @@ int PCISSetUp(PC pc)
       double     fixed_factor,
                  floating_factor;
 
-      ierr = OptionsGetDouble(pc_ctx->prefix,"-pc_is_damp_fixed",&fixed_factor,&damp_fixed);CHKERRQ(ierr);
+      ierr = PetscOptionsGetDouble(pc_ctx->prefix,"-pc_is_damp_fixed",&fixed_factor,&damp_fixed);CHKERRQ(ierr);
       if (!damp_fixed) { fixed_factor = 0.0; }
-      ierr = OptionsHasName(pc_ctx->prefix,"-pc_is_damp_fixed",&damp_fixed);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(pc_ctx->prefix,"-pc_is_damp_fixed",&damp_fixed);CHKERRQ(ierr);
 
-      ierr = OptionsHasName(pc_ctx->prefix,"-pc_is_remove_nullspace_fixed",&remove_nullspace_fixed);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(pc_ctx->prefix,"-pc_is_remove_nullspace_fixed",&remove_nullspace_fixed);CHKERRQ(ierr);
 
-      ierr = OptionsGetDouble(pc_ctx->prefix,"-pc_is_set_damping_factor_floating",
+      ierr = PetscOptionsGetDouble(pc_ctx->prefix,"-pc_is_set_damping_factor_floating",
 			      &floating_factor,&set_damping_factor_floating);CHKERRQ(ierr);
       if (!set_damping_factor_floating) { floating_factor = 0.0; }
-      ierr = OptionsHasName(pc_ctx->prefix,"-pc_is_set_damping_factor_floating",&set_damping_factor_floating);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(pc_ctx->prefix,"-pc_is_set_damping_factor_floating",&set_damping_factor_floating);CHKERRQ(ierr);
       if (!set_damping_factor_floating) { floating_factor = 1.e-12; }
 
-      ierr = OptionsHasName(pc_ctx->prefix,"-pc_is_not_damp_floating",&not_damp_floating);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(pc_ctx->prefix,"-pc_is_not_damp_floating",&not_damp_floating);CHKERRQ(ierr);
 
-      ierr = OptionsHasName(pc_ctx->prefix,"-pc_is_not_remove_nullspace_floating",&not_remove_nullspace_floating);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(pc_ctx->prefix,"-pc_is_not_remove_nullspace_floating",&not_remove_nullspace_floating);CHKERRQ(ierr);
 
       if (pcis->pure_neumann) {  /* floating subdomain */ 
 	if (!(not_damp_floating)) {
@@ -208,7 +208,7 @@ int PCISSetUp(PC pc)
    PCISDestroy -
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCISDestroy"
+#define __FUNC__ "PCISDestroy"
 int PCISDestroy(PC pc)
 {
   PC_IS *pcis = (PC_IS*)(pc->data);
@@ -252,7 +252,7 @@ int PCISDestroy(PC pc)
    PCISCreate - 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCISCreate"
+#define __FUNC__ "PCISCreate"
 int PCISCreate(PC pc)
 {
   PC_IS *pcis = (PC_IS*)(pc->data);
@@ -304,7 +304,7 @@ int PCISCreate(PC pc)
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCIterSuApplySchur"
+#define __FUNC__ "PCIterSuApplySchur"
 int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   int    ierr, its;
@@ -343,7 +343,7 @@ int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
    The entries in the array that do not correspond to interface nodes remain unaltered.
 */
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PCISScatterArrayNToVecB"
+#define __FUNC__ "PCISScatterArrayNToVecB"
 int PCISScatterArrayNToVecB (Scalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
 {
   int    i, ierr, *index;
@@ -395,7 +395,7 @@ int PCISScatterArrayNToVecB (Scalar *array_N, Vec v_B, InsertMode imode, Scatter
 
 */
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PCISApplyInvSchur"
+#define __FUNC__ "PCISApplyInvSchur"
 int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 {
   int    ierr, its;
@@ -418,19 +418,19 @@ int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
   /* Checking for consistency of the RHS */
   {
     PetscTruth flg;
-    ierr = OptionsHasName(PETSC_NULL,"-check_consistency",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-check_consistency",&flg);CHKERRQ(ierr);
     if (flg) {
       Scalar average;
       ierr = VecSum(vec1_N,&average);CHKERRQ(ierr);
       average = average / ((PetscReal)pcis->n);
       if (pcis->pure_neumann) {
-        ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_(pc->comm),"Subdomain %04d is floating. Average = % 1.14e\n",
+        ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_(pc->comm),"Subdomain %04d is floating. Average = % 1.14e\n",
                                              PetscGlobalRank,average);CHKERRQ(ierr);
       } else {
-        ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_(pc->comm),"Subdomain %04d is fixed.    Average = % 1.14e\n",
+        ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_(pc->comm),"Subdomain %04d is fixed.    Average = % 1.14e\n",
                                              PetscGlobalRank,average);CHKERRQ(ierr);
       }
-      ViewerFlush(VIEWER_STDOUT_(pc->comm));
+      PetscViewerFlush(PETSC_VIEWER_STDOUT_(pc->comm));
     }
   }
   /* Solving the system for vec2_N */

@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.12 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex11.c,v 1.13 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the use of MatZeroRows() for uniprocessor matrices.\n\n";
 
@@ -34,14 +34,14 @@ int main(int argc,char **args)
 
   ierr = ISCreateStride(PETSC_COMM_SELF,(m*n)/2,0,2,&isrow);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-keep_zeroed_rows",&keepzeroedrows);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-keep_zeroed_rows",&keepzeroedrows);CHKERRA(ierr);
   if (keepzeroedrows) {
     ierr = MatSetOption(C,MAT_KEEP_ZEROED_ROWS);CHKERRA(ierr);
   }
 
   ierr = MatZeroRows(C,isrow,&five);CHKERRA(ierr);
 
-  ierr = MatView(C,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = ISDestroy(isrow);CHKERRA(ierr);
   ierr = MatDestroy(C);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.13 2000/07/10 03:39:52 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.14 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests matrix factorization.  Note that most users should\n\
 employ the SLES interface to the linear solvers instead of using the factorization\n\
@@ -36,12 +36,12 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatGetOrdering(C,MATORDERING_RCM,&perm,&iperm);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = ISView(perm,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = MatLUFactorSymbolic(C,perm,iperm,PETSC_NULL,&LU);CHKERRA(ierr);
   ierr = MatLUFactorNumeric(C,&LU);CHKERRA(ierr);
-  ierr = MatView(LU,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(LU,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u);CHKERRA(ierr);
   ierr = VecSet(&one,u);CHKERRA(ierr);
@@ -51,8 +51,8 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,b);CHKERRA(ierr);
   ierr = MatSolve(LU,b,x);CHKERRA(ierr);
 
-  ierr = VecView(b,VIEWER_STDOUT_SELF);CHKERRA(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = VecAXPY(&mone,u,x);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex21f.F,v 1.4 2000/05/05 22:18:00 balay Exp bsmith $";
+!    "$Id: ex21f.F,v 1.5 2000/09/22 20:45:46 bsmith Exp bsmith $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -75,8 +75,8 @@
       neg_one = -1.0
       m       = 8
       n       = 7
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

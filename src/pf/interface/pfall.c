@@ -1,4 +1,4 @@
-/*$Id: pfall.c,v 1.7 2000/05/10 16:44:06 bsmith Exp bsmith $*/
+/*$Id: pfall.c,v 1.8 2000/08/01 20:58:26 bsmith Exp bsmith $*/
 
 #include "petscpf.h"          /*I   "petscpf.h"   I*/
 
@@ -13,7 +13,7 @@ EXTERN int PFCreate_Matlab(PF,void*);
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFRegisterAll"
+#define __FUNC__ "PFRegisterAll"
 /*@C
    PFRegisterAll - Registers all of the preconditioners in the PF package.
 

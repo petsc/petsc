@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.57 2000/08/17 04:53:46 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.58 2000/12/06 04:37:08 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -16,6 +16,10 @@ typedef enum { DA_STENCIL_STAR,DA_STENCIL_BOX } DAStencilType;
 typedef enum { DA_NONPERIODIC,DA_XPERIODIC,DA_YPERIODIC,DA_XYPERIODIC,
                DA_XYZPERIODIC,DA_XZPERIODIC,DA_YZPERIODIC,DA_ZPERIODIC} 
                DAPeriodicType;
+#define DAXPeriodic(pt) ((pt) == DA_XPERIODIC || (pt) == DA_XYPERIODIC || (pt) == DA_XZPERIODIC || (pt) == DA_XYZPERIODIC)
+#define DAYPeriodic(pt) ((pt) == DA_YPERIODIC || (pt) == DA_XYPERIODIC || (pt) == DA_YZPERIODIC || (pt) == DA_XYZPERIODIC)
+#define DAZPeriodic(pt) ((pt) == DA_ZPERIODIC || (pt) == DA_XZPERIODIC || (pt) == DA_YZPERIODIC || (pt) == DA_XYZPERIODIC)
+
 typedef enum { DA_X,DA_Y,DA_Z } DADirection;
 
 EXTERN int   DACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,DA *);
@@ -23,7 +27,7 @@ EXTERN int   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,in
 EXTERN int   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,
                         int,int,int,int,int,int,int,int,int *,int *,int *,DA *);
 EXTERN int   DADestroy(DA);
-EXTERN int   DAView(DA,Viewer);
+EXTERN int   DAView(DA,PetscViewer);
 
 EXTERN int   DAPrintHelp(DA);
 
@@ -42,12 +46,14 @@ EXTERN int   DACreateNaturalVector(DA,Vec *);
 EXTERN int   DACreateLocalVector(DA,Vec *);
 EXTERN int   DAGetLocalVector(DA,Vec *);
 EXTERN int   DARestoreLocalVector(DA,Vec *);
-EXTERN int   DALoad(Viewer,int,int,int,DA *);
+EXTERN int   DAGetGlobalVector(DA,Vec *);
+EXTERN int   DARestoreGlobalVector(DA,Vec *);
+EXTERN int   DALoad(PetscViewer,int,int,int,DA *);
 EXTERN int   DAGetCorners(DA,int*,int*,int*,int*,int*,int*);
 EXTERN int   DAGetGhostCorners(DA,int*,int*,int*,int*,int*,int*);
 EXTERN int   DAGetInfo(DA,int*,int*,int*,int*,int*,int*,int*,int*,int*,DAPeriodicType*,DAStencilType*);
 EXTERN int   DAGetProcessorSubset(DA,DADirection,int,MPI_Comm*);
-EXTERN int   DARefine(DA,DA*);
+EXTERN int   DARefine(DA,MPI_Comm,DA*);
 
 EXTERN int   DAGlobalToNaturalAllCreate(DA,VecScatter*);
 EXTERN int   DANaturalAllToGlobalCreate(DA,VecScatter*);
@@ -90,20 +96,25 @@ EXTERN int VecPackAddDA(VecPack,DA);
 EXTERN int VecPackAddVecScatter(VecPack,VecScatter);
 EXTERN int VecPackScatter(VecPack,Vec,...);
 EXTERN int VecPackGather(VecPack,Vec,...);
-EXTERN int VecPackAccess(VecPack,Vec,...);
+EXTERN int VecPackGetAccess(VecPack,Vec,...);
+EXTERN int VecPackRestoreAccess(VecPack,Vec,...);
 EXTERN int VecPackGetLocalVectors(VecPack,...);
+EXTERN int VecPackGetEntries(VecPack,...);
 EXTERN int VecPackRestoreLocalVectors(VecPack,...);
 EXTERN int VecPackCreateGlobalVector(VecPack,Vec*);
 EXTERN int VecPackGetGlobalIndices(VecPack,...);
+EXTERN int VecPackRefine(VecPack,MPI_Comm,VecPack*);
+EXTERN int VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
 
 #include "petscsnes.h"
 
 typedef struct _p_DM* DM;
-EXTERN int DMView(DM,Viewer);
+EXTERN int DMView(DM,PetscViewer);
 EXTERN int DMDestroy(DM);
 EXTERN int DMCreateGlobalVector(DM,Vec*);
 EXTERN int DMGetColoring(DM,ISColoring*,Mat*);
 EXTERN int DMGetInterpolation(DM,DM,Mat*,Vec*);
+EXTERN int DMRefine(DM,MPI_Comm,DM*);
 EXTERN int DMGetInterpolationScale(DM,DM,Mat,Vec*);
 
 /*
@@ -126,6 +137,7 @@ struct _p_DMMG {
   int        (*rhs)(DMMG,Vec);
 
   /* SNES only */
+  PetscTruth    matrixfree;
   Mat           B;
   Vec           Rscale;                /* scaling to restriction before computing Jacobian */
   int           (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
@@ -133,16 +145,19 @@ struct _p_DMMG {
   MatFDColoring fdcoloring;            /* only used with finite difference coloring for Jacobian */  
   SNES          snes;                  
   int           (*initialguess)(SNES,Vec,void*);
+  Vec           work1,work2;
 };
 EXTERN int DMMGCreate(MPI_Comm,int,void*,DMMG**);
 EXTERN int DMMGDestroy(DMMG*);
-EXTERN int DMMGSetGrid(DMMG*,int,DAPeriodicType,DAStencilType,int,int,int,int,int);
+EXTERN int DMMGSetDA(DMMG*,int,DAPeriodicType,DAStencilType,int,int,int,int,int);
 EXTERN int DMMGSetUp(DMMG*);
 EXTERN int DMMGSetSLES(DMMG*,int (*)(DMMG,Vec),int (*)(DMMG,Mat));
 EXTERN int DMMGSetSNES(DMMG*,int (*)(SNES,Vec,Vec,void*),int (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
 EXTERN int DMMGSetInitialGuess(DMMG*,int (*)(SNES,Vec,void*));
-EXTERN int DMMGView(DMMG*,Viewer);
+EXTERN int DMMGView(DMMG*,PetscViewer);
 EXTERN int DMMGSolve(DMMG*);
+EXTERN int DMMGSetUseMatrixFree(DMMG*);
+EXTERN int DMMGSetDM(DMMG*,DM);
 
 #define DMMGGetb(ctx)    (ctx)[(ctx)[0]->nlevels-1]->b
 #define DMMGGetr(ctx)    (ctx)[(ctx)[0]->nlevels-1]->r
@@ -154,7 +169,8 @@ EXTERN int DMMGSolve(DMMG*);
 #define DMMGGetSNES(ctx) (ctx)[(ctx)[0]->nlevels-1]->snes
 #define DMMGGetDA(ctx)   (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
 #define DMMGGetVecPack(ctx)   (VecPack)((ctx)[(ctx)[0]->nlevels-1]->dm)
-
+#define DMMGGetUser(ctx)      (VecPack)((ctx)[(ctx)[0]->nlevels-1]->user)
+#define DMMGGetLevels(ctx)  (ctx)[0]->nlevels
 
 #endif
 

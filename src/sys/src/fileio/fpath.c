@@ -1,4 +1,4 @@
-/*$Id: fpath.c,v 1.36 2000/10/24 20:24:33 bsmith Exp bsmith $*/
+/*$Id: fpath.c,v 1.37 2000/11/28 17:27:45 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -40,7 +40,7 @@
 #if defined(PETSC_HAVE_PWD_H)
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscGetFullPath"></a>*/"PetscGetFullPath"
+#define __FUNC__ "PetscGetFullPath"
 /*@C
    PetscGetFullPath - Given a filename, returns the fully qualified file name.
 
@@ -127,7 +127,7 @@ int PetscGetFullPath(const char path[],char fullpath[],int flen)
 }
 #elif defined (PARCH_win32)
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscGetFullPath"></a>*/"PetscGetFullPath"
+#define __FUNC__ "PetscGetFullPath"
 int PetscGetFullPath(const char path[],char fullpath[],int flen)
 {
   PetscFunctionBegin;
@@ -136,7 +136,7 @@ int PetscGetFullPath(const char path[],char fullpath[],int flen)
 }
 #else
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscGetFullPath"></a>*/"PetscGetFullPath"
+#define __FUNC__ "PetscGetFullPath"
 int PetscGetFullPath(const char path[],char fullpath[],int flen)
 {
   int ierr;

@@ -1,16 +1,16 @@
-/*$Id: dsetpause.c,v 1.22 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dsetpause.c,v 1.23 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
-       Provides the calling sequences for all the basic Draw routines.
+       Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSetPause"></a>*/"DrawSetPause" 
+#define __FUNC__ "DrawSetPause" 
 /*@
-   DrawSetPause - Sets the amount of time that program pauses after 
-   a DrawPause() is called. 
+   PetscDrawSetPause - Sets the amount of time that program pauses after 
+   a PetscDrawPause() is called. 
 
-   Collective on Draw
+   Collective on PetscDraw
 
    Input Parameters:
 +  draw - the drawing object
@@ -20,16 +20,16 @@
 
    Note:
    By default the pause time is zero unless the -draw_pause option is given 
-   during DrawOpenX().
+   during PetscDrawOpenX().
 
    Concepts: drawing^waiting
 
-.seealso: DrawGetPause(), DrawPause()
+.seealso: PetscDrawGetPause(), PetscDrawPause()
 @*/
-int DrawSetPause(Draw draw,int pause)
+int PetscDrawSetPause(PetscDraw draw,int pause)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   draw->pause = pause;
   PetscFunctionReturn(0);
 }

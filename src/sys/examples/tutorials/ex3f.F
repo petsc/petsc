@@ -1,12 +1,12 @@
 !
-!    "$Id: ex3f.F,v 1.13 2000/09/08 19:16:30 balay Exp bsmith $";
+!    "$Id: ex3f.F,v 1.14 2000/09/22 20:42:48 bsmith Exp bsmith $";
 !
 !   Description: Demonstrates how users can augment the PETSc profiling by
 !                nserting their own event logging.
 !
 !/*T
-!   Concepts: PLog^user-defined event profiling (basic example);
-!   Concepts: PLog^activating/deactivating events for profiling (basic example);
+!   Concepts: PetscLog^user-defined event profiling (basic example);
+!   Concepts: PetscLog^activating/deactivating events for profiling (basic example);
 !   Processors: n
 !T*/
 ! -----------------------------------------------------------------------
@@ -18,7 +18,7 @@
 !                    Include files
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!  The following include statements are required for using PLog Routines
+!  The following include statements are required for using PetscLog Routines
 !
 #include "include/finclude/petsc.h"
 #include "include/finclude/petsclog.h"
@@ -40,91 +40,91 @@
 
 !
 !     Create a new user-defined event.
-!      - Note that PLogEventRegister() returns to the user a unique
+!      - Note that PetscLogEventRegister() returns to the user a unique
 !        integer event number, which should then be used for profiling
-!        the event via PLogEventBegin() and PLogEventEnd().
+!        the event via PetscLogEventBegin() and PetscLogEventEnd().
 !      - The user can also optionally log floating point operations
-!        with the routine PLogFlops().
+!        with the routine PetscLogFlops().
 !
-      call PLogEventRegister(USER_EVENT1,'User event 1','Red:',ierr)
-      call PLogEventRegister(USER_EVENT2,'User event 2','Red:',ierr)
-      call PLogEventRegister(USER_EVENT3,'User event 3','Red:',ierr)
-      call PLogEventRegister(USER_EVENT4,'User event 4','Red:',ierr)
-      call PLogEventRegister(USER_EVENT5,'User event 5','Red:',ierr)
-      call PLogEventRegister(USER_EVENT6,'User event 6','Red:',ierr)
-      call PLogEventRegister(USER_EVENT7,'User event 7','Red:',ierr)
-      call PLogEventRegister(USER_EVENT8,'User event 8','Red:',ierr)
-      call PLogEventRegister(USER_EVENT9,'User event 9','Red:',ierr)
-      call PLogEventBegin(USER_EVENT1,PETSC_NULL_OBJECT,                &
+      call PetscLogEventRegister(USER_EVENT1,'User event 1','Red:',ierr)
+      call PetscLogEventRegister(USER_EVENT2,'User event 2','Red:',ierr)
+      call PetscLogEventRegister(USER_EVENT3,'User event 3','Red:',ierr)
+      call PetscLogEventRegister(USER_EVENT4,'User event 4','Red:',ierr)
+      call PetscLogEventRegister(USER_EVENT5,'User event 5','Red:',ierr)
+      call PetscLogEventRegister(USER_EVENT6,'User event 6','Red:',ierr)
+      call PetscLogEventRegister(USER_EVENT7,'User event 7','Red:',ierr)
+      call PetscLogEventRegister(USER_EVENT8,'User event 8','Red:',ierr)
+      call PetscLogEventRegister(USER_EVENT9,'User event 9','Red:',ierr)
+      call PetscLogEventBegin(USER_EVENT1,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogFlops(imax,ierr)
+      call PetscLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT1,PETSC_NULL_OBJECT,                  &
+      call PetscLogEventEnd(USER_EVENT1,PETSC_NULL_OBJECT,                  &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT2,PETSC_NULL_OBJECT,                &
+      call PetscLogEventBegin(USER_EVENT2,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogFlops(imax,ierr)
+      call PetscLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT2,PETSC_NULL_OBJECT,                  &
+      call PetscLogEventEnd(USER_EVENT2,PETSC_NULL_OBJECT,                  &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT3,PETSC_NULL_OBJECT,                &
+      call PetscLogEventBegin(USER_EVENT3,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogFlops(imax,ierr)
+      call PetscLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT3,PETSC_NULL_OBJECT,                  &
+      call PetscLogEventEnd(USER_EVENT3,PETSC_NULL_OBJECT,                  &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT4,PETSC_NULL_OBJECT,                &
+      call PetscLogEventBegin(USER_EVENT4,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogFlops(imax,ierr)
+      call PetscLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT4,PETSC_NULL_OBJECT,                  &
+      call PetscLogEventEnd(USER_EVENT4,PETSC_NULL_OBJECT,                  &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      & PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT5,PETSC_NULL_OBJECT,                &
+      call PetscLogEventBegin(USER_EVENT5,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogFlops(imax,ierr)
+      call PetscLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT5,PETSC_NULL_OBJECT,                  &
+      call PetscLogEventEnd(USER_EVENT5,PETSC_NULL_OBJECT,                  &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT6,PETSC_NULL_OBJECT,                &
+      call PetscLogEventBegin(USER_EVENT6,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogFlops(imax,ierr)
+      call PetscLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT6,PETSC_NULL_OBJECT,                  &
+      call PetscLogEventEnd(USER_EVENT6,PETSC_NULL_OBJECT,                  &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT7,PETSC_NULL_OBJECT,                &
+      call PetscLogEventBegin(USER_EVENT7,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogFlops(imax,ierr)
+      call PetscLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT7,PETSC_NULL_OBJECT,                  &
+      call PetscLogEventEnd(USER_EVENT7,PETSC_NULL_OBJECT,                  &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT8,PETSC_NULL_OBJECT,                &
+      call PetscLogEventBegin(USER_EVENT8,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogFlops(imax,ierr)
+      call PetscLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT8,PETSC_NULL_OBJECT,                  &
+      call PetscLogEventEnd(USER_EVENT8,PETSC_NULL_OBJECT,                  &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogEventBegin(USER_EVENT9,PETSC_NULL_OBJECT,                &
+      call PetscLogEventBegin(USER_EVENT9,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
-      call PLogFlops(imax,ierr)
+      call PetscLogFlops(imax,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT9,PETSC_NULL_OBJECT,                  &
+      call PetscLogEventEnd(USER_EVENT9,PETSC_NULL_OBJECT,                  &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
 !
@@ -134,25 +134,25 @@
 !      - Note that the user can activate/deactive both user-defined
 !        events and predefined PETSc events.
 !
-      call PLogEventMPEDeactivate(USER_EVENT1,ierr)
-      call PLogEventDeactivate(USER_EVENT1,ierr)
-      call PLogEventBegin(USER_EVENT1,PETSC_NULL_OBJECT,                &
+      call PetscLogEventMPEDeactivate(USER_EVENT1,ierr)
+      call PetscLogEventDeactivate(USER_EVENT1,ierr)
+      call PetscLogEventBegin(USER_EVENT1,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT1,PETSC_NULL_OBJECT,                  &
+      call PetscLogEventEnd(USER_EVENT1,PETSC_NULL_OBJECT,                  &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
 !
 !    We next enable the logging of an event
 !
-      call PLogEventMPEActivate(USER_EVENT1,ierr)
-      call PLogEventActivate(USER_EVENT1,ierr)
-      call PLogEventBegin(USER_EVENT1,PETSC_NULL_OBJECT,                &
+      call PetscLogEventMPEActivate(USER_EVENT1,ierr)
+      call PetscLogEventActivate(USER_EVENT1,ierr)
+      call PetscLogEventBegin(USER_EVENT1,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
       call PetscSleep(1,ierr)
-      call PLogEventEnd(USER_EVENT1,PETSC_NULL_OBJECT,                  &
+      call PetscLogEventEnd(USER_EVENT1,PETSC_NULL_OBJECT,                  &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
      &     PETSC_NULL_OBJECT,ierr)
 

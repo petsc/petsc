@@ -1,4 +1,4 @@
-/*$Id: ex73.c,v 1.4 2000/09/22 20:44:16 bsmith Exp bsmith $*/
+/*$Id: ex73.c,v 1.5 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix from a file partitions it\n\n";
@@ -24,7 +24,7 @@ int main(int argc,char **args)
 {
   MatType         mtype = MATSEQSBAIJ;            /* matrix format */
   Mat             A,B;                /* matrix */
-  Viewer          fd;               /* viewer */
+  PetscViewer          fd;               /* viewer */
   char            file[128];        /* input file name */
   PetscTruth      flg;
   int             ierr,*nlocal,rank,size;
@@ -38,21 +38,21 @@ int main(int argc,char **args)
   /* 
      Determine file from which we read the matrix
   */
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
 
   /* 
-       Open binary file.  Note that we use BINARY_RDONLY to indicate
+       Open binary file.  Note that we use PETSC_BINARY_RDONLY to indicate
        reading from this file.
   */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
 
   /*
       Load the matrix and vector; then destroy the viewer.
   */
   ierr = MatLoad(fd,mtype,&A);CHKERRA(ierr);
-  ierr = ViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
 
-  ierr = MatView(A,VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
 
   /*
        Partition the graph of the matrix 
@@ -64,7 +64,7 @@ int main(int argc,char **args)
   ierr = MatPartitioningApply(part,&is);CHKERRA(ierr);
   /* get new global number of each old global number */
   ierr = ISPartitioningToNumbering(is,&isn);CHKERRA(ierr);
-  nlocal = (int*)PetscMalloc(size*sizeof(int));CHKPTRA(nlocal);
+ierr = PetscMalloc(size*sizeof(int),&(  nlocal ));CHKPTRA(nlocal);
   /* get number of new vertices for each processor */
   ierr = ISPartitioningCount(is,nlocal);CHKERRA(ierr); 
   ierr = ISDestroy(is);CHKERRA(ierr);
@@ -83,7 +83,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(is);CHKERRA(ierr);
   ierr = ISDestroy(isn);CHKERRA(ierr);
 
-  ierr = MatView(B,VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  ierr = MatView(B,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
 
   /*
        Free work space.  All PETSc objects should be destroyed when they

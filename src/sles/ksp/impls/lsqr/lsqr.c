@@ -1,4 +1,4 @@
-/*$Id: lsqr.c,v 1.63 2000/04/12 04:25:06 bsmith Exp bsmith $*/
+/*$Id: lsqr.c,v 1.64 2000/09/28 21:13:26 bsmith Exp bsmith $*/
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
@@ -18,7 +18,7 @@ typedef struct {
 } KSP_LSQR;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetUp_LSQR"
+#define __FUNC__ "KSPSetUp_LSQR"
 static int KSPSetUp_LSQR(KSP ksp)
 {
   int      ierr,nw;
@@ -35,20 +35,20 @@ static int KSPSetUp_LSQR(KSP ksp)
     ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
   }
   ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&lsqr->vwork_m);CHKERRQ(ierr);
-  PLogObjectParents(ksp,nw,lsqr->vwork_m);
+  PetscLogObjectParents(ksp,nw,lsqr->vwork_m);
 
   lsqr->nwork_n = nw = 3;
   if (lsqr->vwork_n) {
     ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n);CHKERRQ(ierr);
   }
   ierr = VecDuplicateVecs(ksp->vec_sol,nw,&lsqr->vwork_n);CHKERRQ(ierr);
-  PLogObjectParents(ksp,nw,lsqr->vwork_n);
+  PetscLogObjectParents(ksp,nw,lsqr->vwork_n);
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSolve_LSQR"
+#define __FUNC__ "KSPSolve_LSQR"
 static int KSPSolve_LSQR(KSP ksp,int *its)
 {
   int          i,maxit,ierr;
@@ -159,7 +159,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDestroy_LSQR" 
+#define __FUNC__ "KSPDestroy_LSQR" 
 int KSPDestroy_LSQR(KSP ksp)
 {
   KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
@@ -180,16 +180,16 @@ int KSPDestroy_LSQR(KSP ksp)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPCreate_LSQR"
+#define __FUNC__ "KSPCreate_LSQR"
 int KSPCreate_LSQR(KSP ksp)
 {
   KSP_LSQR *lsqr;
   int      ierr;
 
   PetscFunctionBegin;
-  lsqr = (KSP_LSQR*)PetscMalloc(sizeof(KSP_LSQR));CHKPTRQ(lsqr);
+ierr = PetscMalloc(sizeof(KSP_LSQR),&(  lsqr ));CHKERRQ(ierr);
   ierr = PetscMemzero(lsqr,sizeof(KSP_LSQR));CHKERRQ(ierr);
-  PLogObjectMemory(ksp,sizeof(KSP_LSQR));
+  PetscLogObjectMemory(ksp,sizeof(KSP_LSQR));
   ksp->data                      = (void*)lsqr;
   ksp->pc_side                   = PC_LEFT;
   ksp->calc_res                  = PETSC_TRUE;

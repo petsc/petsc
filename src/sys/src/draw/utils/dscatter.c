@@ -1,4 +1,4 @@
-/*$Id: dscatter.c,v 1.33 2000/04/16 16:41:34 bsmith Exp bsmith $*/
+/*$Id: dscatter.c,v 1.34 2000/09/22 20:42:13 bsmith Exp bsmith $*/
 /*
        Contains the data structure for drawing scatter plots
     graphs in a window with an axis. This is intended for scatter
@@ -9,11 +9,11 @@
 
 struct _p_DrawSP {
   PETSCHEADER(int) 
-  int         (*destroy)(DrawSP);
-  int         (*view)(DrawSP,Viewer);
+  int         (*destroy)(PetscDrawSP);
+  int         (*view)(PetscDrawSP,PetscViewer);
   int         len,loc;
-  Draw        win;
-  DrawAxis    axis;
+  PetscDraw        win;
+  PetscDrawAxis    axis;
   PetscReal   xmin,xmax,ymin,ymax,*x,*y;
   int         nopts,dim;
 };
@@ -21,11 +21,11 @@ struct _p_DrawSP {
 #define CHUNCKSIZE 100
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSPCreate"></a>*/"DrawSPCreate" 
+#define __FUNC__ "DrawSPCreate" 
 /*@C
-    DrawSPCreate - Creates a scatter plot data structure.
+    PetscDrawSPCreate - Creates a scatter plot data structure.
 
-    Collective over Draw
+    Collective over PetscDraw
 
     Input Parameters:
 +   win - the window where the graph will be made.
@@ -38,24 +38,24 @@ struct _p_DrawSP {
 
    Concepts: scatter plot^creating
 
-.seealso:  DrawSPDestroy()
+.seealso:  PetscDrawSPDestroy()
 @*/
-int DrawSPCreate(Draw draw,int dim,DrawSP *drawsp)
+int PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 {
   int         ierr;
   PetscTruth  isnull;
   PetscObject obj = (PetscObject)draw;
-  DrawSP      sp;
+  PetscDrawSP      sp;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   PetscValidPointer(drawsp);
-  ierr = PetscTypeCompare(obj,DRAW_NULL,&isnull);CHKERRQ(ierr);
+  ierr = PetscTypeCompare(obj,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
-    ierr = DrawOpenNull(obj->comm,(Draw*)drawsp);CHKERRQ(ierr);
+    ierr = PetscDrawOpenNull(obj->comm,(PetscDraw*)drawsp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(sp,_p_DrawSP,int,DRAWSP_COOKIE,0,"DrawSP",obj->comm,DrawSPDestroy,0);
+  PetscHeaderCreate(sp,_p_DrawSP,int,DRAWSP_COOKIE,0,"DrawSP",obj->comm,PetscDrawSPDestroy,0);
   sp->view    = 0;
   sp->destroy = 0;
   sp->nopts   = 0;
@@ -65,23 +65,23 @@ int DrawSPCreate(Draw draw,int dim,DrawSP *drawsp)
   sp->ymin    = 1.e20;
   sp->xmax    = -1.e20;
   sp->ymax    = -1.e20;
-  sp->x       = (PetscReal *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKPTRQ(sp->x);
-  PLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));
+  ierr = PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal),&sp->x);CHKERRQ(ierr);
+  PetscLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));
   sp->y       = sp->x + dim*CHUNCKSIZE;
   sp->len     = dim*CHUNCKSIZE;
   sp->loc     = 0;
-  ierr = DrawAxisCreate(draw,&sp->axis);CHKERRQ(ierr);
-  PLogObjectParent(sp,sp->axis);
+  ierr = PetscDrawAxisCreate(draw,&sp->axis);CHKERRQ(ierr);
+  PetscLogObjectParent(sp,sp->axis);
   *drawsp = sp;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSPSetDimension"></a>*/"DrawSPSetDimension" 
+#define __FUNC__ "DrawSPSetDimension" 
 /*@
-   DrawSPSetDimension - Change the number of sets of points  that are to be drawn.
+   PetscDrawSPSetDimension - Change the number of sets of points  that are to be drawn.
 
-   Not Collective (ignored on all processors except processor 0 of DrawSP)
+   Not Collective (ignored on all processors except processor 0 of PetscDrawSP)
 
    Input Parameter:
 +  sp - the line graph context.
@@ -92,30 +92,30 @@ int DrawSPCreate(Draw draw,int dim,DrawSP *drawsp)
    Concepts: scatter plot^setting number of data types
 
 @*/
-int DrawSPSetDimension(DrawSP sp,int dim)
+int PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 {
   int ierr;
 
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (sp && sp->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   if (sp->dim == dim) PetscFunctionReturn(0);
 
   ierr = PetscFree(sp->x);CHKERRQ(ierr);
   sp->dim     = dim;
-  sp->x       = (PetscReal *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKPTRQ(sp->x);
-  PLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));
+  ierr = PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal),&sp->x);CHKERRQ(ierr);
+  PetscLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));
   sp->y       = sp->x + dim*CHUNCKSIZE;
   sp->len     = dim*CHUNCKSIZE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSPReset"></a>*/"DrawSPReset" 
+#define __FUNC__ "DrawSPReset" 
 /*@
-   DrawSPReset - Clears line graph to allow for reuse with new data.
+   PetscDrawSPReset - Clears line graph to allow for reuse with new data.
 
-   Not Collective (ignored on all processors except processor 0 of DrawSP)
+   Not Collective (ignored on all processors except processor 0 of PetscDrawSP)
 
    Input Parameter:
 .  sp - the line graph context.
@@ -125,10 +125,10 @@ int DrawSPSetDimension(DrawSP sp,int dim)
   Concepts: scatter plot^resetting
 
 @*/
-int DrawSPReset(DrawSP sp)
+int PetscDrawSPReset(PetscDrawSP sp)
 {
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (sp && sp->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   sp->xmin  = 1.e20;
   sp->ymin  = 1.e20;
@@ -140,20 +140,20 @@ int DrawSPReset(DrawSP sp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSPDestroy"></a>*/"DrawSPDestroy" 
+#define __FUNC__ "DrawSPDestroy" 
 /*@C
-   DrawSPDestroy - Frees all space taken up by scatter plot data structure.
+   PetscDrawSPDestroy - Frees all space taken up by scatter plot data structure.
 
-   Collective over DrawSP
+   Collective over PetscDrawSP
 
    Input Parameter:
 .  sp - the line graph context
 
    Level: intermediate
 
-.seealso:  DrawSPCreate()
+.seealso:  PetscDrawSPCreate()
 @*/
-int DrawSPDestroy(DrawSP sp)
+int PetscDrawSPDestroy(PetscDrawSP sp)
 {
   int ierr;
 
@@ -161,23 +161,23 @@ int DrawSPDestroy(DrawSP sp)
   PetscValidHeader(sp);
 
   if (--sp->refct > 0) PetscFunctionReturn(0);
-  if (sp->cookie == DRAW_COOKIE){
-    ierr = DrawDestroy((Draw) sp);CHKERRQ(ierr);
+  if (sp->cookie == PETSC_DRAW_COOKIE){
+    ierr = PetscDrawDestroy((PetscDraw) sp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = DrawAxisDestroy(sp->axis);CHKERRQ(ierr);
+  ierr = PetscDrawAxisDestroy(sp->axis);CHKERRQ(ierr);
   ierr = PetscFree(sp->x);CHKERRQ(ierr);
-  PLogObjectDestroy(sp);
+  PetscLogObjectDestroy(sp);
   PetscHeaderDestroy(sp);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSPAddPoint"></a>*/"DrawSPAddPoint" 
+#define __FUNC__ "DrawSPAddPoint" 
 /*@
-   DrawSPAddPoint - Adds another point to each of the scatter plots.
+   PetscDrawSPAddPoint - Adds another point to each of the scatter plots.
 
-   Not Collective (ignored on all processors except processor 0 of DrawSP)
+   Not Collective (ignored on all processors except processor 0 of PetscDrawSP)
 
    Input Parameters:
 +  sp - the scatter plot data structure
@@ -188,20 +188,20 @@ int DrawSPDestroy(DrawSP sp)
 
    Concepts: scatter plot^adding points
 
-.seealso: DrawSPAddPoints()
+.seealso: PetscDrawSPAddPoints()
 @*/
-int DrawSPAddPoint(DrawSP sp,PetscReal *x,PetscReal *y)
+int PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 {
   int i,ierr;
 
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (sp && sp->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
 
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    tmpx = (PetscReal*)PetscMalloc((2*sp->len+2*sp->dim*CHUNCKSIZE)*sizeof(PetscReal));CHKPTRQ(tmpx);
-    PLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));
+    ierr = PetscMalloc((2*sp->len+2*sp->dim*CHUNCKSIZE)*sizeof(PetscReal),&tmpx);CHKERRQ(ierr);
+    PetscLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));
     tmpy = tmpx + sp->len + sp->dim*CHUNCKSIZE;
     ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
@@ -224,11 +224,11 @@ int DrawSPAddPoint(DrawSP sp,PetscReal *x,PetscReal *y)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSPAddPoints"></a>*/"DrawSPAddPoints" 
+#define __FUNC__ "DrawSPAddPoints" 
 /*@C
-   DrawSPAddPoints - Adds several points to each of the scatter plots.
+   PetscDrawSPAddPoints - Adds several points to each of the scatter plots.
 
-   Not Collective (ignored on all processors except processor 0 of DrawSP)
+   Not Collective (ignored on all processors except processor 0 of PetscDrawSP)
 
    Input Parameters:
 +  sp - the LineGraph data structure
@@ -240,22 +240,22 @@ int DrawSPAddPoint(DrawSP sp,PetscReal *x,PetscReal *y)
 
    Concepts: scatter plot^adding points
 
-.seealso: DrawSPAddPoint()
+.seealso: PetscDrawSPAddPoint()
 @*/
-int DrawSPAddPoints(DrawSP sp,int n,PetscReal **xx,PetscReal **yy)
+int PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscReal **yy)
 {
   int       i,j,k,ierr;
   PetscReal *x,*y;
 
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (sp && sp->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   if (sp->loc+n*sp->dim >= sp->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
     int    chunk = CHUNCKSIZE;
     if (n > chunk) chunk = n;
-    tmpx = (PetscReal*)PetscMalloc((2*sp->len+2*sp->dim*chunk)*sizeof(PetscReal));CHKPTRQ(tmpx);
-    PLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));
+    ierr = PetscMalloc((2*sp->len+2*sp->dim*chunk)*sizeof(PetscReal),&tmpx);CHKERRQ(ierr);
+    PetscLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));
     tmpy = tmpx + sp->len + sp->dim*chunk;
     ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
@@ -283,11 +283,11 @@ int DrawSPAddPoints(DrawSP sp,int n,PetscReal **xx,PetscReal **yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSPDraw"></a>*/"DrawSPDraw" 
+#define __FUNC__ "DrawSPDraw" 
 /*@
-   DrawSPDraw - Redraws a scatter plot.
+   PetscDrawSPDraw - Redraws a scatter plot.
 
-   Not Collective (ignored on all processors except processor 0 of DrawSP)
+   Not Collective (ignored on all processors except processor 0 of PetscDrawSP)
 
    Input Parameter:
 .  sp - the line graph context
@@ -295,42 +295,42 @@ int DrawSPAddPoints(DrawSP sp,int n,PetscReal **xx,PetscReal **yy)
    Level: intermediate
 
 @*/
-int DrawSPDraw(DrawSP sp)
+int PetscDrawSPDraw(PetscDrawSP sp)
 {
   PetscReal xmin=sp->xmin,xmax=sp->xmax,ymin=sp->ymin,ymax=sp->ymax;
   int       ierr,i,j,dim = sp->dim,nopts = sp->nopts,rank;
-  Draw      draw = sp->win;
+  PetscDraw      draw = sp->win;
 
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (sp && sp->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
 
   if (nopts < 1) PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
-  ierr = DrawClear(draw);CHKERRQ(ierr);
-  ierr = DrawAxisSetLimits(sp->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
-  ierr = DrawAxisDraw(sp->axis);CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  ierr = PetscDrawAxisSetLimits(sp->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
+  ierr = PetscDrawAxisDraw(sp->axis);CHKERRQ(ierr);
   
   ierr = MPI_Comm_rank(sp->comm,&rank);CHKERRQ(ierr);
   if (rank)   PetscFunctionReturn(0);
   for (i=0; i<dim; i++) {
     for (j=0; j<nopts; j++) {
-      ierr = DrawString(draw,sp->x[j*dim+i],sp->y[j*dim+i],DRAW_RED,"x");CHKERRQ(ierr);
+      ierr = PetscDrawString(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED,"x");CHKERRQ(ierr);
     }
   }
-  ierr = DrawFlush(sp->win);CHKERRQ(ierr);
-  ierr = DrawPause(sp->win);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(sp->win);CHKERRQ(ierr);
+  ierr = PetscDrawPause(sp->win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSPSetLimits"></a>*/"DrawSPSetLimits" 
+#define __FUNC__ "DrawSPSetLimits" 
 /*@
-   DrawSPSetLimits - Sets the axis limits for a line graph. If more
+   PetscDrawSPSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
    include those additional points.
 
-   Not Collective (ignored on all processors except processor 0 of DrawSP)
+   Not Collective (ignored on all processors except processor 0 of PetscDrawSP)
 
    Input Parameters:
 +  xsp - the line graph context
@@ -341,10 +341,10 @@ int DrawSPDraw(DrawSP sp)
    Concepts: scatter plot^setting axis
 
 @*/
-int DrawSPSetLimits(DrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
+int PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
 {
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
+  if (sp && sp->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   sp->xmin = x_min; 
   sp->xmax = x_max; 
@@ -354,14 +354,14 @@ int DrawSPSetLimits(DrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,Pe
 }
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSPGetAxis"></a>*/"DrawSPGetAxis" 
+#define __FUNC__ "DrawSPGetAxis" 
 /*@C
-   DrawSPGetAxis - Gets the axis context associated with a line graph.
+   PetscDrawSPGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
    labels, color, etc. The axis context should not be destroyed by the
    application code.
 
-   Not Collective (except DrawAxis can only be used on processor 0 of DrawSP)
+   Not Collective (except PetscDrawAxis can only be used on processor 0 of PetscDrawSP)
 
    Input Parameter:
 .  sp - the line graph context
@@ -372,10 +372,10 @@ int DrawSPSetLimits(DrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,Pe
    Level: intermediate
 
 @*/
-int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
+int PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE) {
+  if (sp && sp->cookie == PETSC_DRAW_COOKIE) {
     *axis = 0;
     PetscFunctionReturn(0);
   }
@@ -385,11 +385,11 @@ int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawSPGetDraw"></a>*/"DrawSPGetDraw" 
+#define __FUNC__ "DrawSPGetDraw" 
 /*@C
-   DrawSPGetDraw - Gets the draw context associated with a line graph.
+   PetscDrawSPGetDraw - Gets the draw context associated with a line graph.
 
-   Not Collective, Draw is parallel if DrawSP is parallel
+   Not Collective, PetscDraw is parallel if PetscDrawSP is parallel
 
    Input Parameter:
 .  sp - the line graph context
@@ -400,12 +400,12 @@ int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
    Level: intermediate
 
 @*/
-int DrawSPGetDraw(DrawSP sp,Draw *draw)
+int PetscDrawSPGetDraw(PetscDrawSP sp,PetscDraw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeader(sp);
-  if (sp && sp->cookie == DRAW_COOKIE) {
-    *draw = (Draw)sp;
+  if (sp && sp->cookie == PETSC_DRAW_COOKIE) {
+    *draw = (PetscDraw)sp;
   } else {
     *draw = sp->win;
   }

@@ -1,39 +1,39 @@
-/*$Id: dupl.c,v 1.10 2000/09/22 20:41:53 bsmith Exp bsmith $*/
+/*$Id: dupl.c,v 1.11 2000/09/28 21:08:19 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerGetSingleton"></a>*/"ViewerGetSingleton" 
+#define __FUNC__ "PetscViewerGetSingleton" 
 /*@
-   ViewerGetSingleton - Creates a new viewer (same type as the old)
+   PetscViewerGetSingleton - Creates a new PetscViewer (same type as the old)
     that lives on a single processor (with MPI_comm PETSC_COMM_SELF)
 
-    Collective on Viewer
+    Collective on PetscViewer
 
    Input Parameter:
-.  viewer - the viewer to be duplicated
+.  PetscViewer - the PetscViewer to be duplicated
 
    Output Parameter:
-.  outviewer - new viewer
+.  outviewer - new PetscViewer
 
    Level: advanced
 
-   Notes: Call ViewerRestoreSingleton() to return this viewer, NOT ViewerDestroy()
+   Notes: Call PetscViewerRestoreSingleton() to return this PetscViewer, NOT PetscViewerDestroy()
 
      This is most commonly used to view a sequential object that is part of a 
     parallel object. For example block Jacobi PC view could use this to obtain a
-    viewer that is used with the sequential SLES on one block of the preconditioner.
+    PetscViewer that is used with the sequential SLES on one block of the preconditioner.
 
-   Concepts: Viewer^sequential version
+   Concepts: PetscViewer^sequential version
 
-.seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerDrawOpen(), ViewerRestoreSingleton()
+.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerRestoreSingleton()
 @*/
-int ViewerGetSingleton(Viewer viewer,Viewer *outviewer)
+int PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer)
 {
   int ierr,size;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscValidPointer(outviewer);
   ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
@@ -42,34 +42,34 @@ int ViewerGetSingleton(Viewer viewer,Viewer *outviewer)
   } else if (viewer->ops->getsingleton) {
     ierr = (*viewer->ops->getsingleton)(viewer,outviewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Cannot get singleton viewer for type %s",viewer->type_name);
+    SETERRQ1(1,"Cannot get singleton PetscViewer for type %s",viewer->type_name);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerRestoreSingleton"></a>*/"ViewerRestoreSingleton" 
+#define __FUNC__ "PetscViewerRestoreSingleton" 
 /*@
-   ViewerRestoreSingleton - Restores a new viewer obtained with ViewerGetSingleton().
+   PetscViewerRestoreSingleton - Restores a new PetscViewer obtained with PetscViewerGetSingleton().
 
-    Collective on Viewer
+    Collective on PetscViewer
 
    Input Parameters:
-+  viewer - the viewer to be duplicated
--  outviewer - new viewer
++  PetscViewer - the PetscViewer to be duplicated
+-  outviewer - new PetscViewer
 
    Level: advanced
 
-   Notes: Call ViewerGetSingleton() to get this viewer, NOT ViewerCreate()
+   Notes: Call PetscViewerGetSingleton() to get this PetscViewer, NOT PetscViewerCreate()
 
-.seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerDrawOpen(), ViewerGetSingleton()
+.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerGetSingleton()
 @*/
-int ViewerRestoreSingleton(Viewer viewer,Viewer *outviewer)
+int PetscViewerRestoreSingleton(PetscViewer viewer,PetscViewer *outviewer)
 {
   int ierr,size;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
 
   ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
   if (size == 1) {

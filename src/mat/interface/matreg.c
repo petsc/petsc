@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.11 2000/10/24 20:25:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matreg.c,v 1.12 2000/11/28 17:28:46 bsmith Exp bsmith $";
 #endif
 /*
      Mechanism for register PETSc matrix types
@@ -12,7 +12,7 @@ PetscTruth MatRegisterAllCalled = PETSC_FALSE;
 /*
    Contains the list of registered Mat routines
 */
-FList MatList = 0;
+PetscFList MatList = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "MatSetType"
@@ -51,7 +51,7 @@ int MatSetType(Mat mat,MatType matype)
 
     /* Get the function pointers for the matrix requested */
     if (!MatRegisterAllCalled) {ierr = MatRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr =  FListFind(mat->comm,MatList,matype,(int(**)(void*))&r);CHKERRQ(ierr);
+    ierr =  PetscFListFind(mat->comm,MatList,matype,(int(**)(void*))&r);CHKERRQ(ierr);
     if (!r) SETERRQ1(1,"Unknown Mat type given: %s",matype);
 
     /* free the old data structure if it existed */
@@ -97,7 +97,7 @@ int MatRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (MatList) {
-    ierr = FListDestroy(&MatList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(&MatList);CHKERRQ(ierr);
     MatList = 0;
   }
   MatRegisterAllCalled = PETSC_FALSE;
@@ -179,8 +179,8 @@ int MatRegister(char *sname,char *path,char *name,int (*function)(Mat))
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = FListAdd(&MatList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

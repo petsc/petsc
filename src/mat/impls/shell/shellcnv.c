@@ -1,10 +1,10 @@
-/*$Id: shellcnv.c,v 1.15 2000/09/28 21:11:11 bsmith Exp bsmith $*/
+/*$Id: shellcnv.c,v 1.16 2000/10/24 20:25:38 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"  
   
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatConvert_Shell"
+#define __FUNC__ "MatConvert_Shell"
 int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *mat)
 {
   Vec      in,out;
@@ -22,7 +22,7 @@ int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *mat)
   ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  rows = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(rows);
+  ierr = PetscMalloc((m+1)*sizeof(int),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
   ierr = MatCreate(comm,m,M,M,M,mat);CHKERRQ(ierr);

@@ -1,35 +1,35 @@
-/*$Id: viewers.c,v 1.12 2000/09/22 20:41:53 bsmith Exp bsmith $*/
+/*$Id: PetscViewers.c,v 1.13 2000/09/28 21:08:19 bsmith Exp bsmith $*/
 
 #include "petscviewer.h"
 
-struct _p_Viewers {
-   MPI_Comm comm;
-   Viewer   *viewer;
-   int      n;
+struct _p_PetscViewers {
+   MPI_Comm    comm;
+   PetscViewer *viewer;
+   int         n;
 } ;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewersDestroy"></a>*/"ViewersDestroy" 
+#define __FUNC__ "PetscViewersDestroy" 
 /*@C
-   ViewersDestroy - Destroys a set of viewers created with ViewersCreate().
+   PetscViewersDestroy - Destroys a set of PetscViewers created with PetscViewersCreate().
 
-   Collective on Viewers
+   Collective on PetscViewers
 
    Input Parameters:
-.  viewers - the viewer to be destroyed.
+.  PetscViewers - the PetscViewer to be destroyed.
 
    Level: intermediate
 
-.seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerCreate(), ViewerDrawOpen(), ViewersCreate()
+.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen(), PetscViewersCreate()
 
 @*/
-int ViewersDestroy(Viewers v)
+int PetscViewersDestroy(PetscViewers v)
 {
   int         i,ierr;
 
   PetscFunctionBegin;
   for (i=0; i<v->n; i++) {
-    if (v->viewer[i]) {ierr = ViewerDestroy(v->viewer[i]);CHKERRQ(ierr);}
+    if (v->viewer[i]) {ierr = PetscViewerDestroy(v->viewer[i]);CHKERRQ(ierr);}
   }
   ierr = PetscFree(v->viewer);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
@@ -37,9 +37,9 @@ int ViewersDestroy(Viewers v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewersCreate"></a>*/"ViewersCreate" 
+#define __FUNC__ "PetscViewersCreate" 
 /*@C
-   ViewersCreate - Creates a container to hold a set of viewers.
+   PetscViewersCreate - Creates a container to hold a set of PetscViewers.
 
    Collective on MPI_Comm
 
@@ -47,67 +47,67 @@ int ViewersDestroy(Viewers v)
 .   comm - the MPI communicator
 
    Output Parameter:
-.  viewers - the collection of viewers
+.  PetscViewers - the collection of PetscViewers
 
    Level: intermediate
 
-   Concepts: Viewer^array of
+   Concepts: PetscViewer^array of
 
-.seealso: ViewerCreate(), ViewersDestroy()
+.seealso: PetscViewerCreate(), PetscViewersDestroy()
 
 @*/
-int ViewersCreate(MPI_Comm comm,Viewers *v)
+int PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 {
   int ierr;
 
   PetscFunctionBegin;
-  *v           = PetscNew(struct _p_Viewers);CHKPTRQ(*v);
+  ierr         = PetscNew(struct _p_PetscViewers,v);CHKERRQ(ierr);
   (*v)->n      = 64;
   (*v)->comm   = comm;
-  (*v)->viewer = (Viewer*)PetscMalloc(64*sizeof(Viewer));CHKPTRQ(v);
-  ierr = PetscMemzero((*v)->viewer,64*sizeof(Viewer));CHKERRQ(ierr);
+  ierr = PetscMalloc(64*sizeof(PetscViewer),&(*v)->viewer);CHKERRQ(ierr);
+  ierr = PetscMemzero((*v)->viewer,64*sizeof(PetscViewer));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewersGetViewer"></a>*/"ViewersGetViewer" 
+#define __FUNC__ "PetscViewersGetViewer" 
 /*@C
-   ViewersGetViewer - Gets a viewer from a viewer collection
+   PetscViewersGetViewer - Gets a PetscViewer from a PetscViewer collection
 
-   Not Collective, but Viewer will be collective object on Viewers
+   Not Collective, but PetscViewer will be collective object on PetscViewers
 
    Input Parameter:
-+   viewers - object created with ViewersCreate()
--   n - number of viewer you want
++   PetscViewers - object created with PetscViewersCreate()
+-   n - number of PetscViewer you want
 
    Output Parameter:
-.  viewer - the viewer
+.  PetscViewer - the PetscViewer
 
    Level: intermediate
 
-   Concepts: Viewer^array of
+   Concepts: PetscViewer^array of
 
-.seealso: ViewersCreate(), ViewersDestroy()
+.seealso: PetscViewersCreate(), PetscViewersDestroy()
 
 @*/
-int ViewersGetViewer(Viewers viewers,int n,Viewer *viewer)
+int PetscViewersGetViewer(PetscViewers viewers,int n,PetscViewer *viewer)
 {
   int ierr;
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Cannot access using a negative index - %d\n",n);
   if (n >= viewers->n) {
-    Viewer *v;
+    PetscViewer *v;
     int    newn = n + 64; /* add 64 new ones at a time */
      
-    v    = (Viewer*)PetscMalloc(newn*sizeof(Viewer));CHKPTRQ(v);
-    ierr = PetscMemzero(v,newn*sizeof(Viewer));CHKERRQ(ierr);
-    ierr = PetscMemcpy(v,viewers->viewer,viewers->n*sizeof(Viewer));CHKERRQ(ierr);
+    ierr = PetscMalloc(newn*sizeof(PetscViewer),&v);CHKERRQ(ierr);
+    ierr = PetscMemzero(v,newn*sizeof(PetscViewer));CHKERRQ(ierr);
+    ierr = PetscMemcpy(v,viewers->viewer,viewers->n*sizeof(PetscViewer));CHKERRQ(ierr);
     ierr = PetscFree(viewers->viewer);CHKERRQ(ierr);
     viewers->viewer = v;
   }
   if (!viewers->viewer[n]) {
-    ierr = ViewerCreate(viewers->comm,&viewers->viewer[n]);CHKERRQ(ierr);
+    ierr = PetscViewerCreate(viewers->comm,&viewers->viewer[n]);CHKERRQ(ierr);
   }
   *viewer = viewers->viewer[n];
   PetscFunctionReturn(0);

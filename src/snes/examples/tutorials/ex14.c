@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.11 2000/09/22 20:46:14 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.12 2000/09/28 21:14:25 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -101,11 +101,11 @@ int main(int argc,char **argv)
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.mz = 4; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mz",&user.mz,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-debug",&user.debug);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mz",&user.mz,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&user.debug);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,"Lambda is out of range");
   }
@@ -128,9 +128,9 @@ int main(int argc,char **argv)
   */
 
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE; Nz = PETSC_DECIDE;
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Nz",&Nz,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nz",&Nz,PETSC_NULL);CHKERRA(ierr);
   if (Nx*Ny*Nz != user.size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE
                         || Nz != PETSC_DECIDE))
     SETERRA(1,"Incompatible number of processors:  Nx*Ny*Nz != user.size");
@@ -141,7 +141,7 @@ int main(int argc,char **argv)
   /*
      Visualize the distribution of the array across the processors
   */
-  /* ierr =  DAView(user.da,VIEWER_DRAWX_WORLD);CHKERRA(ierr); */
+  /* ierr =  DAView(user.da,PETSC_VIEWER_DRAWX_WORLD);CHKERRA(ierr); */
 
   /*
      Extract global and local vectors from DA; then duplicate for remaining
@@ -186,7 +186,7 @@ int main(int argc,char **argv)
      Jacobian.  See the users manual for a discussion of better techniques
      for preallocating matrix memory.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
   if (!matrix_free) {
     if (user.size == 1) {
       ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,7,PETSC_NULL,&J);CHKERRA(ierr);
@@ -423,9 +423,9 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   */
   if (user->debug) {
      ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector X:\n");CHKERRQ(ierr);
-     ierr = VecView(X,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
      ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector F(X):\n");CHKERRQ(ierr);
-     ierr = VecView(F,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+     ierr = VecView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   return 0; 

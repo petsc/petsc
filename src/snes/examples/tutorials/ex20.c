@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.5 2000/09/22 20:46:14 bsmith Exp bsmith $ */
+/* $Id: ex20.c,v 1.6 2000/10/05 20:44:38 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -113,19 +113,19 @@ int main(int argc,char **argv)
   my              = 5; 
   mz              = 5; 
 
-  ierr = OptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Application options","None");
-  ierr = OptionsDouble("-tleft","left value","Manualpage",user.tleft,&user.tleft,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsDouble("-tright","right value","Manualpage",user.tright,&user.tright,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsDouble("-beta","beta","Manualpage",user.beta,&user.beta,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsDouble("-bm1","bm1","Manualpage",user.bm1,&user.bm1,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsDouble("-coef","coefficient","Manualpage",user.coef,&user.coef,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Application PetscOptions","None");
+  ierr = PetscOptionsDouble("-tleft","left value","Manualpage",user.tleft,&user.tleft,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsDouble("-tright","right value","Manualpage",user.tright,&user.tright,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsDouble("-beta","beta","Manualpage",user.beta,&user.beta,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsDouble("-bm1","bm1","Manualpage",user.bm1,&user.bm1,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsDouble("-coef","coefficient","Manualpage",user.coef,&user.coef,PETSC_NULL);CHKERRA(ierr);
 
-  ierr = OptionsInt("-ratio","grid ration","Manualpage",user.ratio,&user.ratio,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsInt("-nlevels","number levels","Manualpage",user.nlevels,&user.nlevels,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsInt("-mx","grid points in x","Manualpage",mx,&mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsInt("-my","grid points in y","Manualpage",my,&my,&flag);CHKERRA(ierr);
+  ierr = PetscOptionsInt("-ratio","grid ration","Manualpage",user.ratio,&user.ratio,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsInt("-nlevels","number levels","Manualpage",user.nlevels,&user.nlevels,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsInt("-mx","grid points in x","Manualpage",mx,&mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsInt("-my","grid points in y","Manualpage",my,&my,&flag);CHKERRA(ierr);
   if (!flag) { my = mx;}
-  ierr = OptionsInt("-mz","grid points in z","Manualpage",mz,&mz,&flag);CHKERRA(ierr);
+  ierr = PetscOptionsInt("-mz","grid points in z","Manualpage",mz,&mz,&flag);CHKERRA(ierr);
   if (!flag) { mz = mx;}
 
   /* Set grid size for all finer levels */
@@ -133,10 +133,10 @@ int main(int argc,char **argv)
   }
 
   /* set partitioning of domains accross processors */
-  ierr = OptionsInt("-Nx","Nx","Manualpage",Nx,&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsInt("-Ny","Ny","Manualpage",Ny,&Ny,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsInt("-Nz","Nz","Manualpage",Nz,&Nz,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsEnd();
+  ierr = PetscOptionsInt("-Nx","Nx","Manualpage",Nx,&Nx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsInt("-Ny","Ny","Manualpage",Ny,&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsInt("-Nz","Nz","Manualpage",Nz,&Nz,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsEnd();
 
   /* Set up distributed array for each level */
   for (i=0; i<user.nlevels; i++) {
@@ -203,10 +203,10 @@ int main(int argc,char **argv)
   /* Reset options, then solve nonlinear system */
   ierr = SNESSetTolerances(snes,atol,rtol,stol,maxit,maxf);CHKERRA(ierr);
   ierr = FormInitialGuess1(&user,finegrid->x);CHKERRA(ierr);
-  ierr = PLogStagePush(1);CHKERRA(ierr);
+  ierr = PetscLogStagePush(1);CHKERRA(ierr);
   ierr = SNESSolve(snes,finegrid->x,&its);CHKERRA(ierr);
-  ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = PLogStagePop();CHKERRA(ierr);
+  ierr = SNESView(snes,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = PetscLogStagePop();CHKERRA(ierr);
   ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRA(ierr);
   litspit = ((double)lits)/((double)its);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
@@ -589,7 +589,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   
   /* Insert values into global vector */ 
   ierr = DALocalToGlobal(finegrid->da,localF,INSERT_VALUES,F);CHKERRQ(ierr); 
-  ierr = PLogFlops((33 + 6*POWFLOP)*ym*xm*zm);CHKERRQ(ierr);
+  ierr = PetscLogFlops((33 + 6*POWFLOP)*ym*xm*zm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 /* --------------------  Evaluate Jacobian F(x) --------------------- */ 
@@ -1555,7 +1555,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X,Mat *J,Mat *B)
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PLogFlops((61 + 12*POWFLOP)*xm*ym*zm);CHKERRQ(ierr);
+  ierr = PetscLogFlops((61 + 12*POWFLOP)*xm*ym*zm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

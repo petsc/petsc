@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.45 2000/09/21 14:24:54 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.46 2000/09/22 20:43:24 bsmith Exp bsmith $*/
 
 static char help[] = "Parallel vector layout.\n\n";
 
@@ -24,12 +24,12 @@ int main(int argc,char **argv)
   int        i,istart,iend,n = 6,ierr,rank,nlocal;
   Scalar     v,*array;
   Vec        x;
-  Viewer     viewer;
+  PetscViewer     viewer;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   
   /* 
      Create a vector, specifying only its global dimension.
@@ -73,12 +73,12 @@ int main(int argc,char **argv)
      for the viewer as we used for the distributed vector (PETSC_COMM_WORLD).
        - Helpful runtime option:
             -draw_pause <pause> : sets time (in seconds) that the
-                  program pauses after DrawPause() has been called
+                  program pauses after PetscDrawPause() has been called
                   (0 is default, -1 implies until user input).
 
   */
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,PETSC_NULL,0,0,300,300,&viewer);CHKERRA(ierr);
-  ierr = ViewerPushFormat(viewer,VIEWER_FORMAT_DRAW_LG,"Line graph Plot");CHKERRA(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,PETSC_NULL,0,0,300,300,&viewer);CHKERRA(ierr);
+  ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_FORMAT_DRAW_LG,"Line graph Plot");CHKERRA(ierr);
   /*
      View the vector
   */
@@ -105,7 +105,7 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = ViewerDestroy(viewer);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRA(ierr);
   ierr = VecDestroy(x);CHKERRA(ierr);
 
   PetscFinalize();

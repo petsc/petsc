@@ -1,4 +1,4 @@
-/*$Id: composite.c,v 1.39 2000/09/02 02:48:56 bsmith Exp bsmith $*/
+/*$Id: composite.c,v 1.40 2000/09/28 21:12:55 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
@@ -21,7 +21,7 @@ typedef struct {
 } PC_Composite;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_Composite_Multiplicative"
+#define __FUNC__ "PCApply_Composite_Multiplicative"
 static int PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 {
   int              ierr;
@@ -56,7 +56,7 @@ where first preconditioner is built from alpha I + S and second from
 alpha I + R
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_Composite_Special"
+#define __FUNC__ "PCApply_Composite_Special"
 static int PCApply_Composite_Special(PC pc,Vec x,Vec y)
 {
   int              ierr;
@@ -77,7 +77,7 @@ static int PCApply_Composite_Special(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_Composite_Additive"
+#define __FUNC__ "PCApply_Composite_Additive"
 static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 {
   int              ierr;
@@ -99,7 +99,7 @@ static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp_Composite"
+#define __FUNC__ "PCSetUp_Composite"
 static int PCSetUp_Composite(PC pc)
 {
   int              ierr;
@@ -120,7 +120,7 @@ static int PCSetUp_Composite(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCDestroy_Composite"
+#define __FUNC__ "PCDestroy_Composite"
 static int PCDestroy_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -140,7 +140,7 @@ static int PCDestroy_Composite(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_Composite"
+#define __FUNC__ "PCSetFromOptions_Composite"
 static int PCSetFromOptions_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -151,8 +151,8 @@ static int PCSetFromOptions_Composite(PC pc)
   PetscTruth       flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHead("Composite preconditioner options");CHKERRQ(ierr);
-    ierr = OptionsEList("-pc_composite_type","Type of composition","PCCompositeSetType",types,3,"multiplicative",stype,16,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("Composite preconditioner options");CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_composite_type","Type of composition","PCCompositeSetType",types,3,"multiplicative",stype,16,&flg);CHKERRQ(ierr);
     if (flg) {
       PetscTruth ismult,isadd,isspecial;
 
@@ -167,17 +167,17 @@ static int PCSetFromOptions_Composite(PC pc)
 
       ierr = PCCompositeSetType(pc,type);CHKERRQ(ierr);
     }
-    ierr = OptionsName("-pc_composite_true","Use true matrix for inner solves","PCCompositeSetUseTrue",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_composite_true","Use true matrix for inner solves","PCCompositeSetUseTrue",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCCompositeSetUseTrue(pc);CHKERRQ(ierr);
     }
-    ierr = OptionsStringArray("-pc_composite_pcs","List of composite solvers","PCCompositeAddPC",pcs,&nmax,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsStringArray("-pc_composite_pcs","List of composite solvers","PCCompositeAddPC",pcs,&nmax,&flg);CHKERRQ(ierr);
     if (flg) {
       for (i=0; i<nmax; i++) {
         ierr = PCCompositeAddPC(pc,pcs[i]);CHKERRQ(ierr);
       }
     }
-  ierr = OptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   next = jac->head;
   while (next) {
@@ -188,8 +188,8 @@ static int PCSetFromOptions_Composite(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCView_Composite"
-static int PCView_Composite(PC pc,Viewer viewer)
+#define __FUNC__ "PCView_Composite"
+static int PCView_Composite(PC pc,PetscViewer viewer)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
   int              ierr;
@@ -197,23 +197,23 @@ static int PCView_Composite(PC pc,Viewer viewer)
   PetscTruth       isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n");CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for PCComposite",((PetscObject)viewer)->type_name);
   }
   if (isascii) {
-    ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   }
   while (next) {
     ierr = PCView(next->pc,viewer);CHKERRQ(ierr);
     next = next->next;
   }
   if (isascii) {
-    ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -222,7 +222,7 @@ static int PCView_Composite(PC pc,Viewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCompositeSpecialSetAlpha_Composite"
+#define __FUNC__ "PCCompositeSpecialSetAlpha_Composite"
 int PCCompositeSpecialSetAlpha_Composite(PC pc,Scalar alpha)
 {
   PC_Composite *jac = (PC_Composite*)pc->data;
@@ -234,7 +234,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCompositeSetType_Composite"
+#define __FUNC__ "PCCompositeSetType_Composite"
 int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 {
   PetscFunctionBegin;
@@ -253,7 +253,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCompositeAddPC_Composite"
+#define __FUNC__ "PCCompositeAddPC_Composite"
 int PCCompositeAddPC_Composite(PC pc,PCType type)
 {
   PC_Composite     *jac;
@@ -262,7 +262,7 @@ int PCCompositeAddPC_Composite(PC pc,PCType type)
   char             *prefix,newprefix[8];
 
   PetscFunctionBegin;
-  link       = PetscNew(struct _PC_CompositeLink);CHKPTRQ(link);
+  ierr       = PetscNew(struct _PC_CompositeLink,&link);CHKERRQ(ierr);
   link->next = 0;
   ierr = PCCreate(pc->comm,&link->pc);CHKERRQ(ierr);
 
@@ -291,7 +291,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCompositeGetPC_Composite"
+#define __FUNC__ "PCCompositeGetPC_Composite"
 int PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
 {
   PC_Composite     *jac;
@@ -314,7 +314,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCompositeSetUseTrue_Composite"
+#define __FUNC__ "PCCompositeSetUseTrue_Composite"
 int PCCompositeSetUseTrue_Composite(PC pc)
 {
   PC_Composite   *jac;
@@ -328,7 +328,7 @@ EXTERN_C_END
 
 /* -------------------------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCompositeSetType"
+#define __FUNC__ "PCCompositeSetType"
 /*@C
    PCCompositeSetType - Sets the type of composite preconditioner.
    
@@ -359,7 +359,7 @@ int PCCompositeSetType(PC pc,PCCompositeType type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCompositeSpecialSetAlpha"
+#define __FUNC__ "PCCompositeSpecialSetAlpha"
 /*@C
    PCCompositeSpecialSetAlpha - Sets alpha for the special composite preconditioner
      for alphaI + R + S
@@ -388,7 +388,7 @@ int PCCompositeSpecialSetAlpha(PC pc,Scalar alpha)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCompositeAddPC"
+#define __FUNC__ "PCCompositeAddPC"
 /*@C
    PCCompositeAddPC - Adds another PC to the composite PC.
    
@@ -416,7 +416,7 @@ int PCCompositeAddPC(PC pc,PCType type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCompositeGetPC"
+#define __FUNC__ "PCCompositeGetPC"
 /*@C
    PCCompositeGetPC - Gets one of the PC objects in the composite PC.
    
@@ -451,7 +451,7 @@ int PCCompositeGetPC(PC pc,int n,PC *subpc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCompositeSetUseTrue"
+#define __FUNC__ "PCCompositeSetUseTrue"
 /*@
    PCCompositeSetUseTrue - Sets a flag to indicate that the true matrix (rather than
                       the matrix used to define the preconditioner) is used to compute
@@ -492,14 +492,15 @@ int PCCompositeSetUseTrue(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCreate_Composite"
+#define __FUNC__ "PCCreate_Composite"
 int PCCreate_Composite(PC pc)
 {
   int            ierr;
-  PC_Composite   *jac = PetscNew(PC_Composite);CHKPTRQ(jac);
+  PC_Composite   *jac;
 
   PetscFunctionBegin;
-  PLogObjectMemory(pc,sizeof(PC_Composite));
+  ierr = PetscNew(PC_Composite,&jac);CHKERRQ(ierr);
+  PetscLogObjectMemory(pc,sizeof(PC_Composite));
   pc->ops->apply              = PCApply_Composite_Additive;
   pc->ops->setup              = PCSetUp_Composite;
   pc->ops->destroy            = PCDestroy_Composite;

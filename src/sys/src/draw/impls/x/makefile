@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.39 2000/08/17 19:56:38 balay Exp bsmith $
+# $Id: makefile,v 1.40 2000/10/24 20:24:24 bsmith Exp bsmith $
 
 #requirespackage 'PETSC_HAVE_X11'
 
@@ -12,7 +12,7 @@ SOURCEF   =
 SOURCEH   = ximpl.h
 OBJSC     = xinit.o frame.o wmap.o xcolor.o xops.o text.o tone.o drawopenx.o
 OBJSF     =
-MANSEC    = Draw
+MANSEC    = PetscDraw
 LIBBASE   = libpetsc
 DIRS      = 
 LOCDIR    = src/sys/src/draw/impls/x/

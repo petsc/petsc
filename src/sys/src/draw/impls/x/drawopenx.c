@@ -1,14 +1,14 @@
-/*$Id: drawopenx.c,v 1.15 2000/04/12 04:21:09 bsmith Exp bsmith $*/
+/*$Id: drawopenx.c,v 1.16 2000/09/22 20:42:03 bsmith Exp bsmith $*/
 /*
-    Defines the operations for the X Draw implementation.
+    Defines the operations for the X PetscDraw implementation.
 */
 
 #include "src/sys/src/draw/impls/x/ximpl.h"         /*I  "petsc.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawOpenX"></a>*/"DrawOpenX" 
+#define __FUNC__ "DrawOpenX" 
 /*@C
-   DrawOpenX - Opens an X-window for use with the Draw routines.
+   PetscDrawOpenX - Opens an X-window for use with the PetscDraw routines.
 
    Collective on MPI_Comm
 
@@ -19,8 +19,8 @@
 .  x,y - the screen coordinates of the upper left corner of window
           may use PETSC_DECIDE for these two arguments, then PETSc places the 
           window
--  w, h - the screen width and height in pixels,  or DRAW_HALF_SIZE, DRAW_FULL_SIZE,
-          or DRAW_THIRD_SIZE or DRAW_QUARTER_SIZE
+-  w, h - the screen width and height in pixels,  or PETSC_DRAW_HALF_SIZE, PETSC_DRAW_FULL_SIZE,
+          or PETSC_DRAW_THIRD_SIZE or PETSC_DRAW_QUARTER_SIZE
 
    Output Parameters:
 .  draw - the drawing context.
@@ -29,7 +29,7 @@
 +  -nox - Disables all x-windows output
 .  -display <name> - Sets name of machine for the X display
 .  -draw_pause <pause> - Sets time (in seconds) that the
-       program pauses after DrawPause() has been called
+       program pauses after PetscDrawPause() has been called
        (0 is default, -1 implies until user input).
 .  -draw_x_shared_colormap - Causes PETSc to use a shared
        colormap. By default PETSc creates a seperate color 
@@ -45,7 +45,7 @@
 
    Note:
    When finished with the drawing context, it should be destroyed
-   with DrawDestroy().
+   with PetscDrawDestroy().
 
    Note for Fortran Programmers:
    Whenever indicating null character data in a Fortran code,
@@ -55,15 +55,15 @@
 
    Concepts: X windows^drawing to
 
-.seealso: DrawSynchronizedFlush(), DrawDestroy()
+.seealso: PetscDrawSynchronizedFlush(), PetscDrawDestroy()
 @*/
-int DrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,Draw* draw)
+int PetscDrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw* draw)
 {
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = DrawCreate(comm,display,title,x,y,w,h,draw);CHKERRQ(ierr);
-  ierr = DrawSetType(*draw,DRAW_X);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(comm,display,title,x,y,w,h,draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetType(*draw,PETSC_DRAW_X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

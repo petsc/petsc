@@ -1,4 +1,4 @@
-!  $Id: userJac.F,v 1.10 2000/09/15 19:30:11 bsmith Exp kaushik $
+!  $Id: userJac.F,v 1.11 2000/09/20 15:16:47 kaushik Exp bsmith $
 !---------------------------------------------------------------
 ! The following subroutines are from node6t.f in the original
 ! code.
@@ -809,11 +809,11 @@
 !     print *, "Finished doing far field nodes"
 
 !  Assemble matrix
-      call PLogFlops(flops,ierr)
+      call PetscLogFlops(flops,ierr)
 
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
-!     call MatView(A, VIEWER_STDOUT_SELF,ierr)
+!     call MatView(A, PETSC_VIEWER_STDOUT_SELF,ierr)
       flag = SAME_NONZERO_PATTERN
 !
 ! End of subroutine FILLA

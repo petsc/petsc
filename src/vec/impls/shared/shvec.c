@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.45 2000/09/28 21:10:26 bsmith Exp bsmith $*/
+/*$Id: shvec.c,v 1.46 2000/10/24 20:25:16 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -14,7 +14,7 @@
 EXTERN void *PetscSharedMalloc(int,int,MPI_Comm);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecDuplicate_Shared"
+#define __FUNC__ "VecDuplicate_Shared"
 int VecDuplicate_Shared(Vec win,Vec *v)
 {
   int     ierr;
@@ -24,7 +24,7 @@ int VecDuplicate_Shared(Vec win,Vec *v)
   PetscFunctionBegin;
 
   /* first processor allocates entire array and sends it's address to the others */
-  array = (Scalar*)PetscSharedMalloc(win->n*sizeof(Scalar),win->N*sizeof(Scalar),win->comm);CHKPTRQ(array);
+  array = (Scalar*)PetscSharedMalloc(win->n*sizeof(Scalar),win->N*sizeof(Scalar),win->comm);CHKERRQ(ierr);
 
   ierr = VecCreate(win->comm,win->n,win->N,v);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,w->nghost,array,win->map);CHKERRQ(ierr);
@@ -33,8 +33,8 @@ int VecDuplicate_Shared(Vec win,Vec *v)
   /* New vector should inherit stashing property of parent */
   vw->donotstash = w->donotstash;
   
-  ierr = OListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
-  ierr = FListDuplicate(win->qlist,&(*v)->qlist);CHKERRQ(ierr);
+  ierr = PetscOListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
+  ierr = PetscFListDuplicate(win->qlist,&(*v)->qlist);CHKERRQ(ierr);
 
   if (win->mapping) {
     (*v)->mapping = win->mapping;
@@ -49,7 +49,7 @@ int VecDuplicate_Shared(Vec win,Vec *v)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecCreate_Shared"
+#define __FUNC__ "VecCreate_Shared"
 int VecCreate_Shared(Vec vv)
 {
   int     ierr;
@@ -57,7 +57,7 @@ int VecCreate_Shared(Vec vv)
 
   PetscFunctionBegin;
   ierr = PetscSplitOwnership(vv->comm,&vv->n,&vv->N);CHKERRQ(ierr);
-  array = (Scalar*)PetscSharedMalloc(vv->n*sizeof(Scalar),vv->N*sizeof(Scalar),vv->comm);CHKPTRQ(array); 
+  array = (Scalar*)PetscSharedMalloc(vv->n*sizeof(Scalar),vv->N*sizeof(Scalar),vv->comm);CHKERRQ(ierr); 
 
   ierr = VecCreate_MPI_Private(vv,0,array,PETSC_NULL);CHKERRQ(ierr);
   vv->ops->duplicate = VecDuplicate_Shared;
@@ -109,7 +109,7 @@ static int Petsc_Shared_keyval = MPI_KEYVAL_INVALID;
 static int Petsc_Shared_size   = 100000000;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"Petsc_DeleteShared" 
+#define __FUNC__ "Petsc_DeleteShared" 
 /*
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
@@ -127,7 +127,7 @@ static int Petsc_DeleteShared(MPI_Comm comm,int keyval,void* attr_val,void* extr
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSharedMemorySetSize"
+#define __FUNC__ "PetscSharedMemorySetSize"
 int PetscSharedMemorySetSize(int s)
 {
   PetscFunctionBegin;
@@ -140,7 +140,7 @@ int PetscSharedMemorySetSize(int s)
 #include <ulocks.h>
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSharedInitialize"
+#define __FUNC__ "PetscSharedInitialize"
 int PetscSharedInitialize(MPI_Comm comm)
 {
   int     rank,len,ierr,flag;
@@ -164,7 +164,7 @@ int PetscSharedInitialize(MPI_Comm comm)
 
   if (!flag) {
     /* This communicator does not yet have a shared memory areana */
-    arena    = (usptr_t**)PetscMalloc(sizeof(usptr_t*));CHKPTRQ(arena);
+    ierr = PetscMalloc(sizeof(usptr_t*),&arena);CHKERRQ(ierr);
 
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     if (!rank) {
@@ -174,7 +174,7 @@ int PetscSharedInitialize(MPI_Comm comm)
     } 
     ierr     = MPI_Bcast(&len,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr     = MPI_Bcast(filename,len+1,MPI_CHAR,0,comm);CHKERRQ(ierr);
-    ierr     = OptionsGetInt(PETSC_NULL,"-shared_size",&Petsc_Shared_size,&flag);CHKERRQ(ierr);
+    ierr     = PetscOptionsGetInt(PETSC_NULL,"-shared_size",&Petsc_Shared_size,&flag);CHKERRQ(ierr);
     usconfig(CONF_INITSIZE,Petsc_Shared_size);
     *arena   = usinit(filename); 
     ierr     = MPI_Attr_put(comm,Petsc_Shared_keyval,arena);CHKERRQ(ierr);
@@ -184,7 +184,7 @@ int PetscSharedInitialize(MPI_Comm comm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSharedMalloc"
+#define __FUNC__ "PetscSharedMalloc"
 void *PetscSharedMalloc(int llen,int len,MPI_Comm comm)
 {
   char    *value;
@@ -229,7 +229,7 @@ void *PetscSharedMalloc(int llen,int len,MPI_Comm comm)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecCreate_Shared"
+#define __FUNC__ "VecCreate_Shared"
 int VecCreate_Shared(MPI_Comm comm,int n,int N,Vec *vv)
 {
   int ierr,size;
@@ -247,7 +247,7 @@ EXTERN_C_END
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecCreateShared"
+#define __FUNC__ "VecCreateShared"
 /*@C
    VecCreateShared - Creates a parallel vector that uses shared memory.
 

@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.73 2000/09/23 15:04:51 balay Exp bsmith $*/
+/*$Id: qcg.c,v 1.74 2000/09/28 21:13:31 bsmith Exp bsmith $*/
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -10,7 +10,7 @@
 static int QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSolve_QCG"
+#define __FUNC__ "KSPSolve_QCG"
 /* 
   KSPSolve_QCG - Use preconditioned conjugate gradient to compute 
   an approximate minimizer of the quadratic function 
@@ -173,9 +173,9 @@ int KSPSolve_QCG(KSP ksp,int *its)
        pcgP->ltsnrm = pcgP->delta;                       /* convergence in direction of */
        ksp->reason  = KSP_CONVERGED_QCG_NEG_CURVE;  /* negative curvature */
        if (!i) {
-         PLogInfo(ksp,"KSPSolve_QCG: negative curvature: delta=%g\n",pcgP->delta);
+         PetscLogInfo(ksp,"KSPSolve_QCG: negative curvature: delta=%g\n",pcgP->delta);
        } else {
-         PLogInfo(ksp,"KSPSolve_QCG: negative curvature: step1=%g, step2=%g, delta=%g\n",step1,step2,pcgP->delta);
+         PetscLogInfo(ksp,"KSPSolve_QCG: negative curvature: step1=%g, step2=%g, delta=%g\n",step1,step2,pcgP->delta);
        }
          
     } else {
@@ -210,9 +210,9 @@ int KSPSolve_QCG(KSP ksp,int *its)
          pcgP->ltsnrm = pcgP->delta;
          ksp->reason  = KSP_CONVERGED_QCG_CONSTRAINED;	/* convergence along constrained step */
          if (!i) {
-           PLogInfo(ksp,"KSPSolve_QCG: constrained step: delta=%g\n",pcgP->delta);
+           PetscLogInfo(ksp,"KSPSolve_QCG: constrained step: delta=%g\n",pcgP->delta);
          } else {
-           PLogInfo(ksp,"KSPSolve_QCG: constrained step: step1=%g, step2=%g, delta=%g\n",step1,step2,pcgP->delta);
+           PetscLogInfo(ksp,"KSPSolve_QCG: constrained step: step1=%g, step2=%g, delta=%g\n",step1,step2,pcgP->delta);
          }
 
        } else {
@@ -232,9 +232,9 @@ int KSPSolve_QCG(KSP ksp,int *its)
          ierr = (*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
          if (ksp->reason) {                 /* convergence for */
 #if defined(PETSC_USE_COMPLEX)               
-           PLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",PetscRealPart(step),rnrm,pcgP->delta);
+           PetscLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",PetscRealPart(step),rnrm,pcgP->delta);
 #else
-           PLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",step,rnrm,pcgP->delta);
+           PetscLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",step,rnrm,pcgP->delta);
 #endif
          }
       }
@@ -273,7 +273,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetUp_QCG"
+#define __FUNC__ "KSPSetUp_QCG"
 int KSPSetUp_QCG(KSP ksp)
 {
   int ierr;
@@ -292,7 +292,7 @@ int KSPSetUp_QCG(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDestroy_QCG" 
+#define __FUNC__ "KSPDestroy_QCG" 
 int KSPDestroy_QCG(KSP ksp)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
@@ -308,16 +308,16 @@ int KSPDestroy_QCG(KSP ksp)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPCreate_QCG"
+#define __FUNC__ "KSPCreate_QCG"
 int KSPCreate_QCG(KSP ksp)
 {
   int     ierr;
   KSP_QCG *cgP;
 
   PetscFunctionBegin;
-  cgP  = (KSP_QCG*)PetscMalloc(sizeof(KSP_QCG));CHKPTRQ(cgP);
+ierr = PetscMalloc(sizeof(KSP_QCG),&(  cgP  ));CHKERRQ(ierr);
   ierr = PetscMemzero(cgP,sizeof(KSP_QCG));CHKERRQ(ierr);
-  PLogObjectMemory(ksp,sizeof(KSP_QCG));
+  PetscLogObjectMemory(ksp,sizeof(KSP_QCG));
   ksp->data                      = (void*)cgP;
   ksp->pc_side                   = PC_SYMMETRIC;
   ksp->calc_res                  = PETSC_TRUE;
@@ -334,7 +334,7 @@ EXTERN_C_END
 
 /* ---------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"QuadraticRoots_Private"
+#define __FUNC__ "QuadraticRoots_Private"
 /* 
   QuadraticRoots_Private - Computes the roots of the quadratic,
          ||s + step*p|| - delta = 0 

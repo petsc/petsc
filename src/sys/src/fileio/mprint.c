@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.55 2000/09/28 21:09:02 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.56 2000/11/25 03:41:48 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -16,7 +16,7 @@ int         queuelength = 0;
 FILE        *queuefile  = PETSC_NULL;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSynchronizedPrintf"></a>*/"PetscSynchronizedPrintf" 
+#define __FUNC__ "PetscSynchronizedPrintf" 
 /*@C
     PetscSynchronizedPrintf - Prints synchronized output from several processors.
     Output of the first processor is followed by that of the second, etc.
@@ -36,7 +36,7 @@ FILE        *queuefile  = PETSC_NULL;
     The length of the formatted message cannot exceed QUEUESTRINGSIZE charactors.
 
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
-          PetscPrintf(), ViewerASCIIPrintf(), ViewerASCIISynchronizedPrintf()
+          PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
 @*/
 int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 {
@@ -67,7 +67,9 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
   } else { /* other processors add to local queue */
     int         len;
     va_list     Argp;
-    PrintfQueue next = PetscNew(struct _PrintfQueue);CHKPTRQ(next);
+    PrintfQueue next;
+
+    ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
     if (queue) {queue->next = next; queue = next; queue->next = 0;}
     else       {queuebase   = queue = next;}
     queuelength++;
@@ -86,7 +88,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 }
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSynchronizedFPrintf"></a>*/"PetscSynchronizedFPrintf" 
+#define __FUNC__ "PetscSynchronizedFPrintf" 
 /*@C
     PetscSynchronizedFPrintf - Prints synchronized output to the specified file from
     several processors.  Output of the first processor is followed by that of the 
@@ -110,7 +112,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     Contributed by: Matthew Knepley
 
 .seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), PetscFPrintf(),
-          PetscFOpen(), ViewerASCIISynchronizedPrintf(), ViewerASCIIPrintf()
+          PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
 int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
@@ -143,7 +145,8 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
   } else { /* other processors add to local queue */
     int         len;
     va_list     Argp;
-    PrintfQueue next = PetscNew(struct _PrintfQueue);CHKPTRQ(next);
+    PrintfQueue next;
+    ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
     if (queue) {queue->next = next; queue = next; queue->next = 0;}
     else       {queuebase   = queue = next;}
     queuelength++;
@@ -162,7 +165,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSynchronizedFlush"></a>*/"PetscSynchronizedFlush" 
+#define __FUNC__ "PetscSynchronizedFlush" 
 /*@C
     PetscSynchronizedFlush - Flushes to the screen output from all processors 
     involved in previous PetscSynchronizedPrintf() calls.
@@ -178,8 +181,8 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
     Usage of PetscSynchronizedPrintf() and PetscSynchronizedFPrintf() with
     different MPI communicators REQUIRES an intervening call to PetscSynchronizedFlush().
 
-.seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), ViewerASCIIPrintf(),
-          ViewerASCIISynchronizedPrintf()
+.seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), PetscViewerASCIIPrintf(),
+          PetscViewerASCIISynchronizedPrintf()
 @*/
 int PetscSynchronizedFlush(MPI_Comm comm)
 {
@@ -232,7 +235,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 /* ---------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscFPrintf"></a>*/"PetscFPrintf" 
+#define __FUNC__ "PetscFPrintf" 
 /*@C
     PetscFPrintf - Prints to a file, only from the first
     processor in the communicator.
@@ -252,8 +255,8 @@ int PetscSynchronizedFlush(MPI_Comm comm)
    Concepts: printing^in parallel
    Concepts: printf^in parallel
 
-.seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIPrintf(),
-          ViewerASCIISynchronizedPrintf(), PetscSynchronizedFlush()
+.seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
+          PetscViewerASCIISynchronizedPrintf(), PetscSynchronizedFlush()
 @*/
 int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 {
@@ -284,7 +287,7 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscPrintf"></a>*/"PetscPrintf" 
+#define __FUNC__ "PetscPrintf" 
 /*@C
     PetscPrintf - Prints to standard out, only from the first
     processor in the communicator.
@@ -326,7 +329,7 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
       ierr = PetscStrstr(format,"%",&sub2);CHKERRQ(ierr);
       if (sub1 != sub2) SETERRQ(1,"%A format must be first in format string");
       ierr    = PetscStrlen(format,&len);CHKERRQ(ierr);
-      nformat = (char*)PetscMalloc((len+16)*sizeof(char));CHKPTRQ(nformat);
+      ierr    = PetscMalloc((len+16)*sizeof(char),&nformat);CHKERRQ(ierr);
       ierr    = PetscStrcpy(nformat,format);CHKERRQ(ierr);
       ierr    = PetscStrstr(nformat,"%",&sub2);CHKERRQ(ierr);
       sub2[0] = 0;
@@ -364,7 +367,7 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
 
 /* ---------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscHelpPrintfDefault"></a>*/"PetscHelpPrintfDefault" 
+#define __FUNC__ "PetscHelpPrintfDefault" 
 /*@C
     PetscHelpPrintfDefault - Prints to standard out, only from the first
     processor in the communicator.
@@ -416,7 +419,7 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 
 /* ---------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscErrorPrintfDefault"></a>*/"PetscErrorPrintfDefault" 
+#define __FUNC__ "PetscErrorPrintfDefault" 
 /*@C
     PetscErrorPrintfDefault - Prints error messages.
 
@@ -461,7 +464,7 @@ int PetscErrorPrintfDefault(const char format[],...)
     PetscErrorPrintfCalled    = PETSC_TRUE;
     InPetscErrorPrintfDefault = PETSC_TRUE;
 
-    OptionsHasName(PETSC_NULL,"-error_output_stderr",&use_stderr);
+    PetscOptionsHasName(PETSC_NULL,"-error_output_stderr",&use_stderr);
     if (use_stderr) {
       fd = stderr;
     } else {
@@ -519,7 +522,7 @@ int PetscErrorPrintfDefault(const char format[],...)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSynchronizedFGets"></a>*/"PetscSynchronizedFGets" 
+#define __FUNC__ "PetscSynchronizedFGets" 
 /*@C
     PetscSynchronizedFGets - Several processors all get the same line from a file.
 
@@ -536,7 +539,7 @@ int PetscErrorPrintfDefault(const char format[],...)
     Level: intermediate
 
 .seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), 
-          PetscFOpen(), ViewerASCIISynchronizedPrintf(), ViewerASCIIPrintf()
+          PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
 int PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,int len,char string[])

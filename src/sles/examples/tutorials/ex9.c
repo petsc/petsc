@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.43 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.44 2000/10/24 20:26:55 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\
@@ -7,8 +7,8 @@ structures throughout the process.  Note the various stages of event logging.\n\
 
 /*T
    Concepts: SLES^repeatedly solving linear systems;
-   Concepts: PLog^profiling multiple stages of code;
-   Concepts: PLog^user-defined event profiling;
+   Concepts: PetscLog^profiling multiple stages of code;
+   Concepts: PetscLog^user-defined event profiling;
    Processors: n
 T*/
 
@@ -45,8 +45,8 @@ int main(int argc,char **args)
   Scalar     v;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-t",&ntimes,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-t",&ntimes,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   n = 2*size;
@@ -54,21 +54,21 @@ int main(int argc,char **args)
   /* 
      Register various stages for profiling
   */
-  ierr = PLogStageRegister(0,"Prelim setup");CHKERRA(ierr);
-  ierr = PLogStageRegister(1,"Linear System 1");CHKERRA(ierr);
-  ierr = PLogStageRegister(2,"Linear System 2");CHKERRA(ierr);
+  ierr = PetscLogStageRegister(0,"Prelim setup");CHKERRA(ierr);
+  ierr = PetscLogStageRegister(1,"Linear System 1");CHKERRA(ierr);
+  ierr = PetscLogStageRegister(2,"Linear System 2");CHKERRA(ierr);
 
   /* 
      Register a user-defined event for profiling (error checking).
   */
   CHECK_ERROR = 0;
-  ierr = PLogEventRegister(&CHECK_ERROR,"Check Error","Red:");CHKERRA(ierr);
+  ierr = PetscLogEventRegister(&CHECK_ERROR,"Check Error","Red:");CHKERRA(ierr);
 
   /* - - - - - - - - - - - - Stage 0: - - - - - - - - - - - - - -
                         Preliminary Setup
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PLogStagePush(0);CHKERRA(ierr);
+  ierr = PetscLogStagePush(0);CHKERRA(ierr);
 
   /* 
      Create data structures for first linear system.
@@ -103,7 +103,7 @@ int main(int argc,char **args)
      Set user-defined monitoring routine for first linear system.
   */
   ierr = SLESGetKSP(sles1,&ksp1);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-my_ksp_monitor",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-my_ksp_monitor",&flg);CHKERRA(ierr);
   if (flg) {ierr = KSPSetMonitor(ksp1,MyKSPMonitor,PETSC_NULL,0);CHKERRA(ierr);}
 
   /*
@@ -144,12 +144,12 @@ int main(int argc,char **args)
   /* 
      Log the number of flops for computing vector entries
   */
-  ierr = PLogFlops(2*ldim);CHKERRA(ierr);
+  ierr = PetscLogFlops(2*ldim);CHKERRA(ierr);
 
   /*
      End curent profiling stage
   */
-  ierr = PLogStagePop();CHKERRA(ierr);
+  ierr = PetscLogStagePop();CHKERRA(ierr);
 
   /* -------------------------------------------------------------- 
                         Linear solver loop:
@@ -165,7 +165,7 @@ int main(int argc,char **args)
     /*
        Begin profiling stage #1
     */
-    ierr = PLogStagePush(1);CHKERRA(ierr);
+    ierr = PetscLogStagePush(1);CHKERRA(ierr);
 
     /* 
        Initialize all matrix entries to zero.  MatZeroEntries() retains
@@ -193,7 +193,7 @@ int main(int argc,char **args)
       v = -1.0*(t+0.5); i = I/n;
       if (i>0)   {J = I - n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
     }
-    ierr = PLogFlops(2*(Istart-Iend));CHKERRA(ierr);
+    ierr = PetscLogFlops(2*(Istart-Iend));CHKERRA(ierr);
 
     /* 
        Assemble matrix, using the 2-step process:
@@ -269,8 +269,8 @@ int main(int argc,char **args)
     /*
        Conclude profiling stage #1; begin profiling stage #2
     */
-    ierr = PLogStagePop();CHKERRA(ierr);
-    ierr = PLogStagePush(2);CHKERRA(ierr);
+    ierr = PetscLogStagePop();CHKERRA(ierr);
+    ierr = PetscLogStagePush(2);CHKERRA(ierr);
 
     /*
        Initialize all matrix entries to zero
@@ -304,7 +304,7 @@ int main(int argc,char **args)
     }
     ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
     ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY);CHKERRA(ierr); 
-    ierr = PLogFlops(2*(Istart-Iend));CHKERRA(ierr);
+    ierr = PetscLogFlops(2*(Istart-Iend));CHKERRA(ierr);
 
     /* 
        Indicate same nonzero structure of successive linear system matrices
@@ -338,7 +338,7 @@ int main(int argc,char **args)
     /* 
        Conclude profiling stage #2
     */
-    PLogStagePop();
+    PetscLogStagePop();
   }
   /* -------------------------------------------------------------- 
                        End of linear solver loop
@@ -374,10 +374,10 @@ int main(int argc,char **args)
     Notes:
     In order to profile this section of code separately from the
     rest of the program, we register it as an "event" with
-    PLogEventRegister() in the main program.  Then, we indicate
+    PetscLogEventRegister() in the main program.  Then, we indicate
     the start and end of this event by respectively calling
-        PLogEventBegin(CHECK_ERROR,u,x,b,0);
-        PLogEventEnd(CHECK_ERROR,u,x,b,0);
+        PetscLogEventBegin(CHECK_ERROR,u,x,b,0);
+        PetscLogEventEnd(CHECK_ERROR,u,x,b,0);
     Here, we specify the objects most closely associated with
     the event (the vectors u,x,b).  Such information is optional;
     we could instead just use 0 instead for all objects.
@@ -388,7 +388,7 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
   double norm;
   int    ierr;
 
-  ierr = PLogEventBegin(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);
 
   /*
      Compute error of the solution, using b as a work vector.
@@ -397,7 +397,7 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
   ierr = VecAXPY(&none,u,b);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
-  ierr = PLogEventEnd(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------- */
@@ -427,12 +427,12 @@ int MyKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
      Write the solution vector and residual norm to stdout.
       - PetscPrintf() handles output for multiprocessor jobs 
         by printing from only one processor in the communicator.
-      - The parallel viewer VIEWER_STDOUT_WORLD handles
+      - The parallel viewer PETSC_VIEWER_STDOUT_WORLD handles
         data from multiple processors so that the output
         is not jumbled.
   */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %d solution vector:\n",n);CHKERRQ(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %d KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.93 2000/09/28 21:08:13 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.94 2000/10/24 20:24:16 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -12,26 +12,26 @@
 
 typedef struct  {
   int              fdes;            /* file descriptor */
-  ViewerBinaryType btype;           /* read or write? */
+  PetscViewerBinaryType btype;           /* read or write? */
   FILE             *fdes_info;      /* optional file containing info on binary file*/
   PetscTruth       storecompressed; /* gzip the write binary file when closing it*/
   char             *filename;
-} Viewer_Binary;
+} PetscViewer_Binary;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerGetSingleton_Binary"></a>*/"ViewerGetSingleton_Binary" 
-int ViewerGetSingleton_Binary(Viewer viewer,Viewer *outviewer)
+#define __FUNC__ "PetscViewerGetSingleton_Binary" 
+int PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
 {
   int           rank,ierr;
-  Viewer_Binary *vbinary = (Viewer_Binary*)viewer->data,*obinary;
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data,*obinary;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr    = ViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr);
-    ierr    = ViewerSetType(*outviewer,BINARY_VIEWER);CHKERRQ(ierr);
-    obinary = (Viewer_Binary*)(*outviewer)->data;
-    ierr    = PetscMemcpy(obinary,vbinary,sizeof(Viewer_Binary));CHKERRQ(ierr);
+    ierr    = PetscViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr);
+    ierr    = PetscViewerSetType(*outviewer,PETSC_BINARY_VIEWER);CHKERRQ(ierr);
+    obinary = (PetscViewer_Binary*)(*outviewer)->data;
+    ierr    = PetscMemcpy(obinary,vbinary,sizeof(PetscViewer_Binary));CHKERRQ(ierr);
   } else {
     *outviewer = 0;
   }
@@ -39,8 +39,8 @@ int ViewerGetSingleton_Binary(Viewer viewer,Viewer *outviewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerRestoreSingleton_Binary"></a>*/"ViewerRestoreSingleton_Binary" 
-int ViewerRestoreSingleton_Binary(Viewer viewer,Viewer *outviewer)
+#define __FUNC__ "PetscViewerRestoreSingleton_Binary" 
+int PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
 {
   int           ierr,rank;
 
@@ -48,27 +48,27 @@ int ViewerRestoreSingleton_Binary(Viewer viewer,Viewer *outviewer)
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscFree((*outviewer)->data);CHKERRQ(ierr);
-    PLogObjectDestroy((PetscObject)*outviewer);
+    PetscLogObjectDestroy((PetscObject)*outviewer);
     PetscHeaderDestroy((PetscObject)*outviewer); 
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerBinaryGetDescriptor"></a>*/"ViewerBinaryGetDescriptor" 
+#define __FUNC__ "PetscViewerBinaryGetDescriptor" 
 /*@C
-    ViewerBinaryGetDescriptor - Extracts the file descriptor from a viewer.
+    PetscViewerBinaryGetDescriptor - Extracts the file descriptor from a PetscViewer.
 
     Not Collective
 
-+   viewer - viewer context, obtained from ViewerBinaryOpen()
++   PetscViewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
 -   fdes - file descriptor
 
     Level: advanced
 
     Notes:
-      For writable binary viewers, the descriptor will only be valid for the 
-    first processor in the communicator that shares the viewer. For readable 
+      For writable binary PetscViewers, the descriptor will only be valid for the 
+    first processor in the communicator that shares the PetscViewer. For readable 
     files it will only be valid on nodes that have the file. If node 0 does not
     have the file it generates an error even if another node does have the file.
  
@@ -76,13 +76,13 @@ int ViewerRestoreSingleton_Binary(Viewer viewer,Viewer *outviewer)
     This routine is not supported in Fortran.
 
   Concepts: file descriptor^getting
-  Concepts: ViewerBinary^accessing file descriptor
+  Concepts: PetscViewerBinary^accessing file descriptor
 
-.seealso: ViewerBinaryOpen(),ViewerBinaryGetInfoPointer()
+.seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer()
 @*/
-int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
+int PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 {
-  Viewer_Binary *vbinary = (Viewer_Binary*)viewer->data;
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
   PetscFunctionBegin;
   *fdes = vbinary->fdes;
@@ -90,32 +90,32 @@ int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerBinaryGetInfoPointer"></a>*/"ViewerBinaryGetInfoPointer" 
+#define __FUNC__ "PetscViewerBinaryGetInfoPointer" 
 /*@C
-    ViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
+    PetscViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
           info file associated with a binary file.
 
     Not Collective
 
-+   viewer - viewer context, obtained from ViewerBinaryOpen()
++   PetscViewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
 -   file - file pointer
 
     Level: advanced
 
     Notes:
-      For writable binary viewers, the descriptor will only be valid for the 
-    first processor in the communicator that shares the viewer.
+      For writable binary PetscViewers, the descriptor will only be valid for the 
+    first processor in the communicator that shares the PetscViewer.
  
     Fortran Note:
     This routine is not supported in Fortran.
 
-  Concepts: ViewerBinary^accessing info file
+  Concepts: PetscViewerBinary^accessing info file
 
-.seealso: ViewerBinaryOpen(),ViewerBinaryGetDescriptor()
+.seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetDescriptor()
 @*/
-int ViewerBinaryGetInfoPointer(Viewer viewer,FILE **file)
+int PetscViewerBinaryGetInfoPointer(PetscViewer viewer,FILE **file)
 {
-  Viewer_Binary *vbinary = (Viewer_Binary*)viewer->data;
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
   PetscFunctionBegin;
   *file = vbinary->fdes_info;
@@ -123,10 +123,10 @@ int ViewerBinaryGetInfoPointer(Viewer viewer,FILE **file)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerDestroy_Binary"></a>*/"ViewerDestroy_Binary" 
-int ViewerDestroy_Binary(Viewer v)
+#define __FUNC__ "PetscViewerDestroy_Binary" 
+int PetscViewerDestroy_Binary(PetscViewer v)
 {
-  Viewer_Binary *vbinary = (Viewer_Binary*)v->data;
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)v->data;
   int           ierr,rank;
 
   PetscFunctionBegin;
@@ -153,9 +153,9 @@ int ViewerDestroy_Binary(Viewer v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerBinaryOpen"></a>*/"ViewerBinaryOpen" 
+#define __FUNC__ "PetscViewerBinaryOpen" 
 /*@C
-   ViewerBinaryOpen - Opens a file for binary input/output.
+   PetscViewerBinaryOpen - Opens a file for binary input/output.
 
    Collective on MPI_Comm
 
@@ -163,17 +163,17 @@ int ViewerDestroy_Binary(Viewer v)
 +  comm - MPI communicator
 .  name - name of file 
 -  type - type of file
-$    BINARY_CREATE - create new file for binary output
-$    BINARY_RDONLY - open existing file for binary input
-$    BINARY_WRONLY - open existing file for binary output
+$    PETSC_BINARY_CREATE - create new file for binary output
+$    PETSC_BINARY_RDONLY - open existing file for binary input
+$    PETSC_BINARY_WRONLY - open existing file for binary output
 
    Output Parameter:
-.  binv - viewer for binary input/output to use with the specified file
+.  binv - PetscViewer for binary input/output to use with the specified file
 
    Level: beginner
 
    Note:
-   This viewer should be destroyed with ViewerDestroy().
+   This PetscViewer should be destroyed with PetscViewerDestroy().
 
     For reading files, the filename may begin with ftp:// or http:// and/or
     end with .gz; in this case file is brought over and uncompressed.
@@ -187,53 +187,53 @@ $    BINARY_WRONLY - open existing file for binary output
     do have the file.
 
    Concepts: binary files
-   Concepts: ViewerBinary^creating
+   Concepts: PetscViewerBinary^creating
    Concepts: gzip
    Concepts: accessing remote file
    Concepts: remote file
 
-.seealso: ViewerASCIIOpen(), ViewerSetFormat(), ViewerDestroy(),
-          VecView(), MatView(), VecLoad(), MatLoad(), ViewerBinaryGetDescriptor(),
-          ViewerBinaryGetInfoPointer()
+.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
+          VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
+          PetscViewerBinaryGetInfoPointer()
 @*/
-int ViewerBinaryOpen(MPI_Comm comm,const char name[],ViewerBinaryType type,Viewer *binv)
+int PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscViewerBinaryType type,PetscViewer *binv)
 {
   int ierr;
   
   PetscFunctionBegin;
-  ierr = ViewerCreate(comm,binv);CHKERRQ(ierr);
-  ierr = ViewerSetType(*binv,BINARY_VIEWER);CHKERRQ(ierr);
-  ierr = ViewerBinarySetType(*binv,type);CHKERRQ(ierr);
-  ierr = ViewerSetFilename(*binv,name);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*binv,PETSC_BINARY_VIEWER);CHKERRQ(ierr);
+  ierr = PetscViewerBinarySetType(*binv,type);CHKERRQ(ierr);
+  ierr = PetscViewerSetFilename(*binv,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerBinarySetType"></a>*/"ViewerBinarySetType" 
+#define __FUNC__ "PetscViewerBinarySetType" 
 /*@C
-     ViewerBinarySetType - Sets the type of binary file to be open
+     PetscViewerBinarySetType - Sets the type of binary file to be open
 
-    Collective on Viewer
+    Collective on PetscViewer
 
   Input Parameters:
-+  viewer - the viewer; must be a binary viewer
++  PetscViewer - the PetscViewer; must be a binary PetscViewer
 -  type - type of file
-$    BINARY_CREATE - create new file for binary output
-$    BINARY_RDONLY - open existing file for binary input
-$    BINARY_WRONLY - open existing file for binary output
+$    PETSC_BINARY_CREATE - create new file for binary output
+$    PETSC_BINARY_RDONLY - open existing file for binary input
+$    PETSC_BINARY_WRONLY - open existing file for binary output
 
   Level: advanced
 
-.seealso: ViewerCreate(), ViewerSetType(), ViewerBinaryOpen()
+.seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
 
 @*/
-int ViewerBinarySetType(Viewer viewer,ViewerBinaryType type)
+int PetscViewerBinarySetType(PetscViewer viewer,PetscViewerBinaryType type)
 {
-  int ierr,(*f)(Viewer,ViewerBinaryType);
+  int ierr,(*f)(PetscViewer,PetscViewerBinaryType);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"ViewerBinarySetType_C",(void **)&f);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerBinarySetType_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,type);CHKERRQ(ierr);
   }
@@ -243,10 +243,10 @@ int ViewerBinarySetType(Viewer viewer,ViewerBinaryType type)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerBinarySetType_Binary"></a>*/"ViewerBinarySetType_Binary" 
-int ViewerBinarySetType_Binary(Viewer viewer,ViewerBinaryType type)
+#define __FUNC__ "PetscViewerBinarySetType_Binary" 
+int PetscViewerBinarySetType_Binary(PetscViewer viewer,PetscViewerBinaryType type)
 {
-  Viewer_Binary    *vbinary = (Viewer_Binary*)viewer->data;
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
   PetscFunctionBegin;
   vbinary->btype = type;
@@ -255,12 +255,12 @@ int ViewerBinarySetType_Binary(Viewer viewer,ViewerBinaryType type)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerBinaryLoadInfo"></a>*/"ViewerBinaryLoadInfo" 
+#define __FUNC__ "PetscViewerBinaryLoadInfo" 
 /*
-    ViewerBinaryLoadInfo options from the name.info file
+    PetscViewerBinaryLoadInfo options from the name.info file
     if it exists.
 */
-int ViewerBinaryLoadInfo(Viewer viewer)
+int PetscViewerBinaryLoadInfo(PetscViewer viewer)
 {
   FILE       *file;
   char       string[128],*first,*second,*final;
@@ -268,10 +268,10 @@ int ViewerBinaryLoadInfo(Viewer viewer)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(PETSC_NULL,"-load_ignore_info",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-load_ignore_info",&flg);CHKERRQ(ierr);
   if (flg) PetscFunctionReturn(0);
 
-  ierr = ViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (!file) PetscFunctionReturn(0);
 
   /* read rows of the file adding them to options database */
@@ -304,7 +304,7 @@ int ViewerBinaryLoadInfo(Viewer viewer)
       while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
         len--; final[len] = 0;
       }
-      ierr = OptionsSetValue(first,second);CHKERRQ(ierr);
+      ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -316,19 +316,19 @@ int ViewerBinaryLoadInfo(Viewer viewer)
 */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerSetFilename_Binary"></a>*/"ViewerSetFilename_Binary" 
-int ViewerSetFilename_Binary(Viewer viewer,const char name[])
+#define __FUNC__ "PetscViewerSetFilename_Binary" 
+int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
 {
   int              rank,ierr,len;
-  Viewer_Binary    *vbinary = (Viewer_Binary*)viewer->data;
+  PetscViewer_Binary    *vbinary = (PetscViewer_Binary*)viewer->data;
   const char       *fname;
   char             bname[1024],*gz;
   PetscTruth       found;
-  ViewerBinaryType type = vbinary->btype;
+  PetscViewerBinaryType type = vbinary->btype;
 
   PetscFunctionBegin;
-  if (type == (ViewerBinaryType) -1) {
-    SETERRQ(1,"Must call ViewerBinarySetType() before ViewerSetFilename()");
+  if (type == (PetscViewerBinaryType) -1) {
+    SETERRQ(1,"Must call PetscViewerBinarySetType() before PetscViewerSetFilename()");
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
 
@@ -337,7 +337,7 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
 
   /* if ends in .gz strip that off and note user wants file compressed */
   vbinary->storecompressed = PETSC_FALSE;
-  if (!rank && type == BINARY_CREATE) {
+  if (!rank && type == PETSC_BINARY_CREATE) {
     /* remove .gz if it ends library name */
     ierr = PetscStrstr(vbinary->filename,".gz",&gz);CHKERRQ(ierr);
     if (gz) {
@@ -350,16 +350,16 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
   }
 
   /* only first processor opens file if writeable */
-  if (!rank || type == BINARY_RDONLY) {
+  if (!rank || type == PETSC_BINARY_RDONLY) {
 
-    if (type == BINARY_RDONLY){
+    if (type == PETSC_BINARY_RDONLY){
       /* possibly get the file from remote site or compressed file */
       ierr  = PetscFileRetrieve(viewer->comm,vbinary->filename,bname,1024,&found);CHKERRQ(ierr);
       fname = bname;
       if (!rank && !found) {
         SETERRQ1(1,"Cannot locate file: %s on node zero",vbinary->filename);
       } else if (!found) {
-        PLogInfo(viewer,"Nonzero processor did not locate readonly file");
+        PetscLogInfo(viewer,"Nonzero processor did not locate readonly file");
         fname = 0;
       }
     } else {
@@ -367,15 +367,15 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
     }
 
 #if defined(PARCH_win32_gnu) || defined(PARCH_win32) 
-    if (type == BINARY_CREATE) {
+    if (type == PETSC_BINARY_CREATE) {
       if ((vbinary->fdes = open(fname,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file %s for writing",fname);
       }
-    } else if (type == BINARY_RDONLY && fname) {
+    } else if (type == PETSC_BINARY_RDONLY && fname) {
       if ((vbinary->fdes = open(fname,O_RDONLY|O_BINARY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for reading",fname);
       }
-    } else if (type == BINARY_WRONLY) {
+    } else if (type == PETSC_BINARY_WRONLY) {
       if ((vbinary->fdes = open(fname,O_WRONLY|O_BINARY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for writing",fname);
       }
@@ -383,15 +383,15 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
       SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
     }
 #else
-    if (type == BINARY_CREATE) {
+    if (type == PETSC_BINARY_CREATE) {
       if ((vbinary->fdes = creat(fname,0666)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file %s for writing",fname);
       }
-    } else if (type == BINARY_RDONLY && fname) {
+    } else if (type == PETSC_BINARY_RDONLY && fname) {
       if ((vbinary->fdes = open(fname,O_RDONLY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for reading",fname);
       }
-    } else if (type == BINARY_WRONLY) {
+    } else if (type == PETSC_BINARY_WRONLY) {
       if ((vbinary->fdes = open(fname,O_WRONLY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for writing",fname);
       }
@@ -405,7 +405,7 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
   /* 
       try to open info file: all processors open this file if read only
   */
-  if (!rank || type == BINARY_RDONLY) {
+  if (!rank || type == PETSC_BINARY_RDONLY) {
     char infoname[256],iname[256];
   
     ierr = PetscStrcpy(infoname,name);CHKERRQ(ierr);
@@ -420,12 +420,12 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
     
     ierr = PetscStrcat(infoname,".info");CHKERRQ(ierr);
     ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
-    if (type == BINARY_RDONLY) {
+    if (type == PETSC_BINARY_RDONLY) {
       ierr = PetscFileRetrieve(viewer->comm,iname,infoname,256,&found);CHKERRQ(ierr);
       if (found) {
         vbinary->fdes_info = fopen(infoname,"r");
         if (vbinary->fdes_info) {
-          ierr = ViewerBinaryLoadInfo(viewer);CHKERRQ(ierr);
+          ierr = PetscViewerBinaryLoadInfo(viewer);CHKERRQ(ierr);
           fclose(vbinary->fdes_info);
         }
         vbinary->fdes_info = fopen(infoname,"r");
@@ -439,7 +439,7 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
   }
 
 #if defined(PETSC_USE_LOG)
-  PLogObjectState((PetscObject)viewer,"File: %s",name);
+  PetscLogObjectState((PetscObject)viewer,"File: %s",name);
 #endif
   PetscFunctionReturn(0);
 }
@@ -447,32 +447,32 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerCreate_Binary"></a>*/"ViewerCreate_Binary" 
-int ViewerCreate_Binary(Viewer v)
+#define __FUNC__ "PetscViewerCreate_Binary" 
+int PetscViewerCreate_Binary(PetscViewer v)
 {  
   int           ierr;
-  Viewer_Binary *vbinary;
+  PetscViewer_Binary *vbinary;
 
   PetscFunctionBegin;
-  vbinary            = PetscNew(Viewer_Binary);CHKPTRQ(vbinary);
+  ierr               = PetscNew(PetscViewer_Binary,&vbinary);CHKERRQ(ierr);
   v->data            = (void*)vbinary;
-  v->ops->destroy    = ViewerDestroy_Binary;
+  v->ops->destroy    = PetscViewerDestroy_Binary;
   v->ops->flush      = 0;
   v->iformat         = 0;
   vbinary->fdes_info = 0;
   vbinary->fdes      = 0;
-  v->ops->getsingleton     = ViewerGetSingleton_Binary;
-  v->ops->restoresingleton = ViewerRestoreSingleton_Binary;
-  vbinary->btype     = (ViewerBinaryType) -1; 
+  v->ops->getsingleton     = PetscViewerGetSingleton_Binary;
+  v->ops->restoresingleton = PetscViewerRestoreSingleton_Binary;
+  vbinary->btype     = (PetscViewerBinaryType) -1; 
   vbinary->storecompressed = PETSC_FALSE;
   vbinary->filename        = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"ViewerSetFilename_C",
-                                    "ViewerSetFilename_Binary",
-                                     ViewerSetFilename_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"ViewerBinarySetType_C",
-                                    "ViewerBinarySetType_Binary",
-                                     ViewerBinarySetType_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerSetFilename_C",
+                                    "PetscViewerSetFilename_Binary",
+                                     PetscViewerSetFilename_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinarySetType_C",
+                                    "PetscViewerBinarySetType_Binary",
+                                     PetscViewerBinarySetType_Binary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -481,43 +481,43 @@ EXTERN_C_END
 /* ---------------------------------------------------------------------*/
 /*
     The variable Petsc_Viewer_Binary_keyval is used to indicate an MPI attribute that
-  is attached to a communicator, in this case the attribute is a Viewer.
+  is attached to a communicator, in this case the attribute is a PetscViewer.
 */
 static int Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="VIEWER_BINARY_"></a>*/"VIEWER_BINARY_"  
+#define __FUNC__ "VIEWER_BINARY_"  
 /*@C
-     VIEWER_BINARY_ - Creates a binary viewer shared by all processors 
+     PETSC_VIEWER_BINARY_ - Creates a binary PetscViewer shared by all processors 
                      in a communicator.
 
      Collective on MPI_Comm
 
      Input Parameter:
-.    comm - the MPI communicator to share the binary viewer
+.    comm - the MPI communicator to share the binary PetscViewer
     
      Level: intermediate
 
    Options Database Keys:
-$    -viewer_binary_filename <name>
+$    -viewer_BINARY_filename <name>
 
    Environmental variables:
 -   PETSC_VIEWER_BINARY_FILENAME
 
      Notes:
-     Unlike almost all other PETSc routines, VIEWER_BINARY_ does not return 
-     an error code.  The binary viewer is usually used in the form
-$       XXXView(XXX object,VIEWER_BINARY_(comm));
+     Unlike almost all other PETSc routines, PETSC_VIEWER_BINARY_ does not return 
+     an error code.  The binary PetscViewer is usually used in the form
+$       XXXView(XXX object,PETSC_VIEWER_BINARY_(comm));
 
-.seealso: VIEWER_BINARY_WORLD, VIEWER_BINARY_SELF, ViewerBinaryOpen(), ViewerCreate(),
-          ViewerDestroy()
+.seealso: PETSC_VIEWER_BINARY_WORLD, PETSC_VIEWER_BINARY_SELF, PetscViewerBinaryOpen(), PetscViewerCreate(),
+          PetscViewerDestroy()
 @*/
-Viewer VIEWER_BINARY_(MPI_Comm comm)
+PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm comm)
 {
-  int        ierr;
-  PetscTruth flg;
-  Viewer     viewer;
-  char       fname[256];
+  int         ierr;
+  PetscTruth  flg;
+  PetscViewer viewer;
+  char        fname[256];
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Binary_keyval == MPI_KEYVAL_INVALID) {
@@ -526,14 +526,14 @@ Viewer VIEWER_BINARY_(MPI_Comm comm)
   }
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Binary_keyval,(void **)&viewer,(int *)&flg);
   if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-  if (!flg) { /* viewer not yet created */
-    ierr = OptionsGetenv(comm,"PETSC_VIEWER_BINARY_FILENAME",fname,256,&flg);
+  if (!flg) { /* PetscViewer not yet created */
+    ierr = PetscOptionsGetenv(comm,"PETSC_VIEWER_BINARY_FILENAME",fname,256,&flg);
     if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     if (!flg) {
       ierr = PetscStrcpy(fname,"binaryoutput");
       if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     }
-    ierr = ViewerBinaryOpen(comm,fname,BINARY_CREATE,&viewer); 
+    ierr = PetscViewerBinaryOpen(comm,fname,PETSC_BINARY_CREATE,&viewer); 
     if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}

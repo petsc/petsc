@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.9 2000/01/11 21:03:26 bsmith Exp balay $*/
+/*$Id: ex14.c,v 1.10 2000/05/05 22:19:31 balay Exp bsmith $*/
 
 static char help[] = "Tests saving DA vectors to files\n\n";
 
@@ -14,16 +14,16 @@ int main(int argc,char **argv)
   DA       da;
   Vec      local,global,natural;
   Scalar   value;
-  Viewer   bviewer;
+  PetscViewer   bviewer;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* Read options */
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr);
 
   /* Create distributed array and get vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
@@ -46,12 +46,12 @@ int main(int argc,char **argv)
   ierr = DAGlobalToNaturalEnd(da,global,INSERT_VALUES,natural);CHKERRA(ierr);
 
   ierr = DASetFieldName(da,0,"First field");CHKERRA(ierr);
-  ierr = VecView(global,VIEWER_DRAW_WORLD);CHKERRA(ierr); 
+  ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr); 
 
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",BINARY_CREATE,&bviewer);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",PETSC_BINARY_CREATE,&bviewer);CHKERRA(ierr);
   ierr = DAView(da,bviewer);CHKERRA(ierr);
   ierr = VecView(global,bviewer);CHKERRA(ierr);
-  ierr = ViewerDestroy(bviewer);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(bviewer);CHKERRA(ierr);
 
   /* Free memory */
   ierr = VecDestroy(local);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: errtrace.c,v 1.20 2000/10/24 20:24:29 bsmith Exp bsmith $*/
+/*$Id: errtrace.c,v 1.21 2000/12/15 15:31:27 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -34,7 +34,7 @@ static char *PetscErrorStrings[] = {
 extern char PetscErrorBaseMessage[1024];
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscErrorMessage"></a>*/"PetscErrorMessage" 
+#define __FUNC__ "PetscErrorMessage" 
 /*@C
    PetscErrorMessage - returns the text string associated with a PETSc error code.
 
@@ -69,7 +69,7 @@ int PetscErrorMessage(int errnum,char **text,char **specific)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscTraceBackErrorHandler"></a>*/"PetscTraceBackErrorHandler" 
+#define __FUNC__ "PetscTraceBackErrorHandler" 
 /*@C
    PetscTraceBackErrorHandler - Default error handler routine that generates
    a traceback on error detection.
@@ -107,7 +107,7 @@ $     SETERRQ(number,p,mess)
  @*/
 int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int p,char *mess,void *ctx)
 {
-  PLogDouble        mem,rss;
+  PetscLogDouble        mem,rss;
   int               rank;
   PetscTruth        flg1,flg2;
 
@@ -122,8 +122,8 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
       (*PetscErrorPrintf)("[%d]PETSC ERROR:   destroying unneeded objects.\n",rank);
       PetscTrSpace(&mem,PETSC_NULL,PETSC_NULL);
       PetscGetResidentSetSize(&rss);
-      OptionsHasName(PETSC_NULL,"-trdump",&flg1);
-      OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg2);
+      PetscOptionsHasName(PETSC_NULL,"-trdump",&flg1);
+      PetscOptionsHasName(PETSC_NULL,"-trmalloc_log",&flg2);
       if (flg2) {
         PetscTrLogDump(stdout);
       } else if (flg1) {

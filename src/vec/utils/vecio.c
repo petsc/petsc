@@ -1,9 +1,9 @@
-/*$Id: vecio.c,v 1.67 2000/09/28 21:10:10 bsmith Exp bsmith $*/
+/*$Id: vecio.c,v 1.68 2000/10/24 20:24:58 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The
    analogous output routines are within each vector implementation's 
-   VecView (with viewer types BINARY_VIEWER)
+   VecView (with viewer types PETSC_BINARY_VIEWER)
  */
 
 #include "petsc.h"
@@ -11,15 +11,15 @@
 #include "petscvec.h"         /*I  "petscvec.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecLoad"
+#define __FUNC__ "VecLoad"
 /*@C 
   VecLoad - Loads a vector that has been stored in binary format
   with VecView().
 
-  Collective on Viewer 
+  Collective on PetscViewer 
 
   Input Parameters:
-. viewer - binary file viewer, obtained from ViewerBinaryOpen()
+. viewer - binary file viewer, obtained from PetscViewerBinaryOpen()
 
   Output Parameter:
 . newvec - the newly loaded vector
@@ -56,9 +56,9 @@ and PetscWriteBinary() to see how this may be done.
 
   Concepts: vector^loading from file
 
-.seealso: ViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
+.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
 @*/  
-int VecLoad(Viewer viewer,Vec *newvec)
+int VecLoad(PetscViewer viewer,Vec *newvec)
 {
   int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;
   Vec         vec;
@@ -70,11 +70,11 @@ int VecLoad(Viewer viewer,Vec *newvec)
   PetscTruth  isbinary,flag;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
-  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
-  ierr = PLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-  ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);CHKERRQ(ierr);
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,PETSC_DECIDE,rows,&vec);CHKERRQ(ierr);
-    ierr = OptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
     }
@@ -105,8 +105,8 @@ int VecLoad(Viewer viewer,Vec *newvec)
       for (i=1; i<size; i++) {
         n = PetscMax(n,range[i] - range[i-1]);
       }
-      avec     = (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRQ(avec);
-      ierr     = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
+      ierr = PetscMalloc(n*sizeof(Scalar),&avec);CHKERRQ(ierr);
+      ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
       for (i=1; i<size; i++) {
         n    = range[i+1] - range[i];
         ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
@@ -128,13 +128,13 @@ int VecLoad(Viewer viewer,Vec *newvec)
   *newvec = vec;
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecLoadIntoVector_Default"
-int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
+#define __FUNC__ "VecLoadIntoVector_Default"
+int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
 {
   int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;
   Scalar      *avec;
@@ -146,11 +146,11 @@ int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
 
   PetscFunctionBegin;
 
-  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
-  ierr = PLogEventBegin(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
 
-  ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -164,7 +164,7 @@ int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
     if (n != rows) SETERRQ(1,"Vector in file different length then input vector");
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
 
-    ierr = OptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
     }
@@ -183,8 +183,8 @@ int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
       for (i=1; i<size; i++) {
         n = PetscMax(n,range[i] - range[i-1]);
       }
-      avec     = (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRQ(avec);
-      ierr     = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
+      ierr = PetscMalloc(n*sizeof(Scalar),&avec);CHKERRQ(ierr);
+      ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
       for (i=1; i<size; i++) {
         n    = range[i+1] - range[i];
         ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
@@ -204,7 +204,7 @@ int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
   }
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

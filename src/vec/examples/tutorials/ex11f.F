@@ -1,5 +1,5 @@
 !
-! "$Id: ex11f.F,v 1.7 2000/09/22 20:43:24 bsmith Exp bsmith $";
+! "$Id: ex11f.F,v 1.8 2000/09/27 20:14:32 bsmith Exp bsmith $";
 !
 !
 ! Program usage:  mpirun ex1 [-help] [all PETSc options] 
@@ -37,7 +37,7 @@
 
       n   = 20
       one = 1.d0
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 !
 !     Create a vector, specifying only its global dimension.

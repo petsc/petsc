@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.10 2000/01/11 20:59:59 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.11 2000/05/05 22:14:45 balay Exp bsmith $*/
 /*
        Tests ISAllGather()
 */
@@ -22,7 +22,7 @@ int main(int argc,char **argv)
      Create IS
   */
   n = 4 + rank;
-  indices = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(indices);
+ierr = PetscMalloc(n*sizeof(int),&(  indices ));CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     indices[i] = rank + i;
   }
@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   ierr = ISAllGather(is,&newis);CHKERRA(ierr);
 
   if (!rank) {
-    ierr = ISView(newis,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+    ierr = ISView(newis,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
   }
 
   ierr = ISDestroy(newis);CHKERRA(ierr);

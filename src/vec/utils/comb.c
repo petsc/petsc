@@ -1,4 +1,4 @@
-/*$Id: comb.c,v 1.33 2000/09/07 15:18:55 balay Exp bsmith $*/
+/*$Id: comb.c,v 1.34 2000/09/28 21:10:10 bsmith Exp bsmith $*/
 
 /*
       Split phase global vector reductions with support for combining the
@@ -48,23 +48,25 @@ some of each.
 */
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PetscSplitReductionCreate"
+#define __FUNC__ "PetscSplitReductionCreate"
 /*
    PetscSplitReductionCreate - Creates a data structure to contain the queued information.
 */
 int PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReduction **sr)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  (*sr)              = PetscNew(PetscSplitReduction);CHKPTRQ((*sr));
+  ierr               = PetscNew(PetscSplitReduction,sr);CHKERRQ(ierr);
   (*sr)->numopsbegin = 0;
   (*sr)->numopsend   = 0;
   (*sr)->state       = STATE_BEGIN;
   (*sr)->maxops      = 32;
-  (*sr)->lvalues     = (Scalar*)PetscMalloc(2*32*sizeof(Scalar));CHKPTRQ((*sr)->lvalues);
-  (*sr)->gvalues     = (Scalar*)PetscMalloc(2*32*sizeof(Scalar));CHKPTRQ((*sr)->gvalues);
-  (*sr)->invecs      = (void**)PetscMalloc(32*sizeof(void*));CHKPTRQ((*sr)->invecs);
+  ierr               = PetscMalloc(2*32*sizeof(Scalar),&(*sr)->lvalues);CHKERRQ(ierr);
+  ierr               = PetscMalloc(2*32*sizeof(Scalar),&(*sr)->gvalues);CHKERRQ(ierr);
+  ierr               = PetscMalloc(32*sizeof(void*),&(*sr)->invecs);CHKERRQ(ierr);
   (*sr)->comm        = comm;
-  (*sr)->reducetype  = (int*)PetscMalloc(32*sizeof(int));CHKPTRQ((*sr)->reducetype);
+  ierr               = PetscMalloc(32*sizeof(int),&(*sr)->reducetype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -78,7 +80,7 @@ MPI_Op PetscSplitReduction_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PetscSplitReduction_Local"
+#define __FUNC__ "PetscSplitReduction_Local"
 void PetscSplitReduction_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   Scalar *xin = (Scalar *)in,*xout = (Scalar*)out;
@@ -111,7 +113,7 @@ void PetscSplitReduction_Local(void *in,void *out,int *cnt,MPI_Datatype *datatyp
 EXTERN_C_END
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PetscSplitReductionApply"
+#define __FUNC__ "PetscSplitReductionApply"
 /*
    PetscSplitReductionApply - Actually do the communication required for a split phase reduction
 */
@@ -127,7 +129,7 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
     SETERRQ(1,"Cannot call this after VecxxxEnd() has been called");
   }
 
-  ierr = PLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,comm);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr); 
   if (size == 1) {
     ierr = PetscMemcpy(gvalues,lvalues,numops*sizeof(Scalar));CHKERRQ(ierr);
@@ -183,13 +185,13 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
   }
   sr->state     = STATE_END;
   sr->numopsend = 0;
-  ierr = PLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PetscSplitReductionExtend"
+#define __FUNC__ "PetscSplitReductionExtend"
 /*
    PetscSplitReductionExtend - Double the amount of space (slots) allocated for a split reduction object.
 */
@@ -201,10 +203,10 @@ int PetscSplitReductionExtend(PetscSplitReduction *sr)
 
   PetscFunctionBegin;
   sr->maxops     = 2*maxops;
-  sr->lvalues    = (Scalar*)PetscMalloc(2*2*maxops*sizeof(Scalar));CHKPTRQ(sr->lvalues);
-  sr->gvalues    = (Scalar*)PetscMalloc(2*2*maxops*sizeof(Scalar));CHKPTRQ(sr->gvalues);
-  sr->reducetype = (int*)PetscMalloc(2*maxops*sizeof(int));CHKPTRQ(sr->reducetype);
-  sr->invecs     = (void**)PetscMalloc(2*maxops*sizeof(void*));CHKPTRQ(sr->invecs);
+  ierr = PetscMalloc(2*2*maxops*sizeof(Scalar),&sr->lvalues);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*2*maxops*sizeof(Scalar),&sr->gvalues);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*maxops*sizeof(int),&sr->reducetype);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*maxops*sizeof(void*),&sr->invecs);CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->lvalues,lvalues,maxops*sizeof(Scalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->gvalues,gvalues,maxops*sizeof(Scalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->reducetype,reducetype,maxops*sizeof(int));CHKERRQ(ierr);
@@ -217,7 +219,7 @@ int PetscSplitReductionExtend(PetscSplitReduction *sr)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PetscSplitReductionDestroy"
+#define __FUNC__ "PetscSplitReductionDestroy"
 int PetscSplitReductionDestroy(PetscSplitReduction *sr)
 {
   int ierr;
@@ -235,7 +237,7 @@ static int Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"Petsc_DelReduction" 
+#define __FUNC__ "Petsc_DelReduction" 
 /*
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
@@ -248,7 +250,7 @@ int Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
   int ierr;
 
   PetscFunctionBegin;
-  PLogInfo(0,"Petsc_DelReduction:Deleting reduction data in an MPI_Comm %d\n",(long)comm);
+  PetscLogInfo(0,"Petsc_DelReduction:Deleting reduction data in an MPI_Comm %d\n",(long)comm);
   ierr = PetscSplitReductionDestroy((PetscSplitReduction *)attr_val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -260,7 +262,7 @@ EXTERN_C_END
 
 */
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PetscSplitReductionGet"
+#define __FUNC__ "PetscSplitReductionGet"
 int PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 {
   int      ierr,flag;
@@ -284,7 +286,7 @@ int PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
   if (!flag) {  /* doesn't exist yet so create it and put it in */
     ierr = PetscSplitReductionCreate(comm,sr);CHKERRQ(ierr);
     ierr = MPI_Attr_put(comm,Petsc_Reduction_keyval,*sr);CHKERRQ(ierr);
-    PLogInfo(0,"PetscSplitReductionGet:Putting reduction data in an MPI_Comm %d\n",(long)comm);
+    PetscLogInfo(0,"PetscSplitReductionGet:Putting reduction data in an MPI_Comm %d\n",(long)comm);
   }
 
   PetscFunctionReturn(0);
@@ -293,7 +295,7 @@ int PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 /* ----------------------------------------------------------------------------------------------------*/
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"VecDotBegin"
+#define __FUNC__ "VecDotBegin"
 /*@
    VecDotBegin - Starts a split phase dot product computation.
 
@@ -328,14 +330,14 @@ int VecDotBegin(Vec x,Vec y,Scalar *result)
   sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = (void*)x;
   if (!x->ops->dot_local) SETERRQ(1,"Vector does not suppport local dots");
-  ierr = PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->dot_local)(x,y,sr->lvalues+sr->numopsbegin++);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"VecDotEnd"
+#define __FUNC__ "VecDotEnd"
 /*@
    VecDotEnd - Ends a split phase dot product computation.
 
@@ -391,7 +393,7 @@ int VecDotEnd(Vec x,Vec y,Scalar *result)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"VecTDotBegin"
+#define __FUNC__ "VecTDotBegin"
 /*@
    VecTDotBegin - Starts a split phase transpose dot product computation.
 
@@ -427,14 +429,14 @@ int VecTDotBegin(Vec x,Vec y,Scalar *result)
   sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = (void*)x;
   if (!x->ops->tdot_local) SETERRQ(1,"Vector does not suppport local dots");
-  ierr = PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->dot_local)(x,y,sr->lvalues+sr->numopsbegin++);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"VecTDotEnd"
+#define __FUNC__ "VecTDotEnd"
 /*@
    VecTDotEnd - Ends a split phase transpose dot product computation.
 
@@ -466,7 +468,7 @@ int VecTDotEnd(Vec x,Vec y,Scalar *result)
 /* -------------------------------------------------------------------------*/
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"VecNormBegin"
+#define __FUNC__ "VecNormBegin"
 /*@
    VecNormBegin - Starts a split phase norm computation.
 
@@ -502,9 +504,9 @@ int VecNormBegin(Vec x,NormType ntype,PetscReal *result)
   
   sr->invecs[sr->numopsbegin]     = (void*)x;
   if (!x->ops->norm_local) SETERRQ(1,"Vector does not support local norms");
-  ierr = PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->norm_local)(x,ntype,lresult);CHKERRQ(ierr);
-  ierr = PLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   if (ntype == NORM_2)         lresult[0]                = lresult[0]*lresult[0];
   if (ntype == NORM_1_AND_2)   lresult[1]                = lresult[1]*lresult[1];
   if (ntype == NORM_MAX) sr->reducetype[sr->numopsbegin] = REDUCE_MAX;
@@ -518,7 +520,7 @@ int VecNormBegin(Vec x,NormType ntype,PetscReal *result)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"VecNormBegin"
+#define __FUNC__ "VecNormBegin"
 /*@
    VecNormEnd - Ends a split phase norm computation.
 

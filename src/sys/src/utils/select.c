@@ -1,9 +1,9 @@
-/*$Id: select.c,v 1.6 2000/09/22 20:42:32 bsmith Exp bsmith $*/
+/*$Id: select.c,v 1.7 2000/09/28 21:09:22 bsmith Exp bsmith $*/
 #include "petsc.h"              /*I  "petsc.h"  I*/
 #include "petscsys.h"           /*I  "petscsys.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscPopUpSelect"></a>*/"PetscPopUpSelect"
+#define __FUNC__ "PetscPopUpSelect"
 /*@C
      PetscPopUpSelect - Pops up a windows with a list of choices; allows one to be chosen
 

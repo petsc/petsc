@@ -1,4 +1,4 @@
-/*$Id: ex53.c,v 1.16 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex53.c,v 1.17 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
 
@@ -10,7 +10,7 @@ static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
 int main(int argc,char **args)
 {
   Mat         A,B,C,At,Bt;
-  Viewer      fd;
+  PetscViewer      fd;
   char        file[128];
   PetscRandom rand;
   Vec         xx,yy,s1,s2;
@@ -29,11 +29,11 @@ int main(int argc,char **args)
 #else
 
  /* Check out if MatLoad() works */
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,"Input file not specified");
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatLoad(fd,MATMPIBAIJ,&A);CHKERRA(ierr);
-  ierr = ViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
 
   ierr = MatConvert(A,MATMPIAIJ,&B);CHKERRA(ierr);
  

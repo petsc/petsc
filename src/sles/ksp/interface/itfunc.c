@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.148 2000/08/01 20:56:48 bsmith Exp bsmith $*/
+/*$Id: itfunc.c,v 1.149 2000/09/28 21:13:11 bsmith Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -6,7 +6,7 @@
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPComputeExtremeSingularValues"
+#define __FUNC__ "KSPComputeExtremeSingularValues"
 /*@
    KSPComputeExtremeSingularValues - Computes the extreme singular values
    for the preconditioned operator. Called after or during KSPSolve()
@@ -53,7 +53,7 @@ int KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPComputeEigenvalues"
+#define __FUNC__ "KSPComputeEigenvalues"
 /*@
    KSPComputeEigenvalues - Computes the extreme eigenvalues for the
    preconditioned operator. Called after or during KSPSolve() (SLESSolve()).
@@ -117,7 +117,7 @@ int KSPComputeEigenvalues(KSP ksp,int n,PetscReal *r,PetscReal *c,int *neig)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetUp"
+#define __FUNC__ "KSPSetUp"
 /*@
    KSPSetUp - Sets up the internal data structures for the
    later use of an iterative solver.
@@ -155,7 +155,7 @@ int KSPSetUp(KSP ksp)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSolve"
+#define __FUNC__ "KSPSolve"
 /*@
    KSPSolve - Solves linear system; usually not called directly, rather 
    it is called by a call to SLESSolve().
@@ -222,8 +222,8 @@ int KSPSolve(KSP ksp,int *its)
 
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flag1);CHKERRQ(ierr);
-  ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues",&flag2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flag1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues",&flag2);CHKERRQ(ierr);
   if (flag1 || flag2) {
     int       n = nits + 2,i,neig;
     PetscReal *r,*c;
@@ -231,7 +231,7 @@ int KSPSolve(KSP ksp,int *its)
     if (!n) {
       ierr = PetscPrintf(ksp->comm,"Zero iterations in solver, cannot approximate any eigenvalues\n");CHKERRQ(ierr);
     } else {
-      r = (PetscReal*)PetscMalloc(2*n*sizeof(PetscReal));CHKPTRQ(r);
+ierr = PetscMalloc(2*n*sizeof(PetscReal),&(      r ));CHKERRQ(ierr);
       c = r + n;
       ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig);CHKERRQ(ierr);
       if (flag1) {
@@ -242,32 +242,32 @@ int KSPSolve(KSP ksp,int *its)
         }
       }
       if (flag2 && !rank) {
-        Viewer    viewer;
-        Draw      draw;
-        DrawSP    drawsp;
+        PetscViewer    viewer;
+        PetscDraw      draw;
+        PetscDrawSP    drawsp;
 
-        ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",
+        ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",
                                PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);CHKERRQ(ierr);
-        ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-        ierr = DrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
+        ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+        ierr = PetscDrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
         for (i=0; i<neig; i++) {
-          ierr = DrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
+          ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
         }
-        ierr = DrawSPDraw(drawsp);CHKERRQ(ierr);
-        ierr = DrawSPDestroy(drawsp);CHKERRQ(ierr);
-        ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
+        ierr = PetscDrawSPDraw(drawsp);CHKERRQ(ierr);
+        ierr = PetscDrawSPDestroy(drawsp);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
       }
       ierr = PetscFree(r);CHKERRQ(ierr);
     }
   }
 
-  ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1);CHKERRQ(ierr);
-  ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2);CHKERRQ(ierr);
   if (flag1 || flag2) {
     int       n,i;
     PetscReal *r,*c;
     ierr = VecGetSize(ksp->vec_sol,&n);CHKERRQ(ierr);
-    r = (PetscReal*)PetscMalloc(2*n*sizeof(PetscReal));CHKPTRQ(r);
+ierr = PetscMalloc(2*n*sizeof(PetscReal),&(    r ));CHKERRQ(ierr);
     c = r + n;
     ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr); 
     if (flag1) {
@@ -278,27 +278,38 @@ int KSPSolve(KSP ksp,int *its)
       }
     }
     if (flag2 && !rank) {
-      Viewer    viewer;
-      Draw      draw;
-      DrawSP    drawsp;
+      PetscViewer    viewer;
+      PetscDraw      draw;
+      PetscDrawSP    drawsp;
 
-      ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,300,300,&viewer);CHKERRQ(ierr);
-      ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-      ierr = DrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
+      ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,300,300,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+      ierr = PetscDrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        ierr = DrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
+        ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
-      ierr = DrawSPDraw(drawsp);CHKERRQ(ierr);
-      ierr = DrawSPDestroy(drawsp);CHKERRQ(ierr);
-      ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscDrawSPDraw(drawsp);CHKERRQ(ierr);
+      ierr = PetscDrawSPDestroy(drawsp);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
     ierr = PetscFree(r);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_operator",&flag2);CHKERRQ(ierr);
+  if (flag2) {
+    Mat A,B;
+    ierr = PCGetOperators(ksp->B,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(ksp->comm),PETSC_VIEWER_FORMAT_ASCII_MATLAB,"A");CHKERRQ(ierr);
+    ierr = MatView(B,PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
+    ierr = MatDestroy(B);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSolveTranspose"
+#define __FUNC__ "KSPSolveTranspose"
 /*@
    KSPSolveTranspose - Solves the transpose of a linear system. Usually
    accessed through SLESSolveTranspose().
@@ -343,7 +354,7 @@ int KSPSolveTranspose(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDestroy"
+#define __FUNC__ "KSPDestroy"
 /*@C
    KSPDestroy - Destroys KSP context.
 
@@ -377,13 +388,13 @@ int KSPDestroy(KSP ksp)
       ierr = (*ksp->monitordestroy[i])(ksp->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
-  PLogObjectDestroy(ksp);
+  PetscLogObjectDestroy(ksp);
   PetscHeaderDestroy(ksp);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetPreconditionerSide"
+#define __FUNC__ "KSPSetPreconditionerSide"
 /*@
     KSPSetPreconditionerSide - Sets the preconditioning side.
 
@@ -426,7 +437,7 @@ int KSPSetPreconditionerSide(KSP ksp,PCSide side)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGetPreconditionerSide"
+#define __FUNC__ "KSPGetPreconditionerSide"
 /*@C
     KSPGetPreconditionerSide - Gets the preconditioning side.
 
@@ -458,7 +469,7 @@ int KSPGetPreconditionerSide(KSP ksp,PCSide *side)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGetTolerances"
+#define __FUNC__ "KSPGetTolerances"
 /*@
    KSPGetTolerances - Gets the relative, absolute, divergence, and maximum
    iteration tolerances used by the default KSP convergence tests. 
@@ -496,7 +507,7 @@ int KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *atol,PetscReal *dtol,int
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetTolerances"
+#define __FUNC__ "KSPSetTolerances"
 /*@
    KSPSetTolerances - Sets the relative, absolute, divergence, and maximum
    iteration tolerances used by the default KSP convergence testers. 
@@ -546,7 +557,7 @@ int KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,int ma
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetComputeResidual"
+#define __FUNC__ "KSPSetComputeResidual"
 /*@
    KSPSetComputeResidual - Sets a flag to indicate whether the two norm 
    of the residual is calculated at each iteration.
@@ -573,7 +584,7 @@ int KSPSetComputeResidual(KSP ksp,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetUsePreconditionedResidual"
+#define __FUNC__ "KSPSetUsePreconditionedResidual"
 /*@
    KSPSetUsePreconditionedResidual - Sets a flag so that the two norm of the 
    preconditioned residual is used rather than the true residual, in the 
@@ -606,7 +617,7 @@ int KSPSetUsePreconditionedResidual(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetInitialGuessNonzero"
+#define __FUNC__ "KSPSetInitialGuessNonzero"
 /*@
    KSPSetInitialGuessNonzero - Tells the iterative solver that the 
    initial guess is nonzero; otherwise KSP assumes the initial guess
@@ -635,7 +646,7 @@ int KSPSetInitialGuessNonzero(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGetInitialGuessNonzero"
+#define __FUNC__ "KSPGetInitialGuessNonzero"
 /*@
    KSPGetInitialGuessNonzero - Determines whether the KSP solver is using
    a zero initial guess.
@@ -663,7 +674,7 @@ int KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetComputeSingularValues"
+#define __FUNC__ "KSPSetComputeSingularValues"
 /*@
    KSPSetComputeSingularValues - Sets a flag so that the extreme singular 
    values will be calculated via a Lanczos or Arnoldi process as the linear 
@@ -699,7 +710,7 @@ int KSPSetComputeSingularValues(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetComputeEigenvalues"
+#define __FUNC__ "KSPSetComputeEigenvalues"
 /*@
    KSPSetComputeEigenvalues - Sets a flag so that the extreme eigenvalues
    values will be calculated via a Lanczos or Arnoldi process as the linear 
@@ -728,7 +739,7 @@ int KSPSetComputeEigenvalues(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetRhs"
+#define __FUNC__ "KSPSetRhs"
 /*@
    KSPSetRhs - Sets the right-hand-side vector for the linear system to
    be solved.
@@ -755,7 +766,7 @@ int KSPSetRhs(KSP ksp,Vec b)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGetRhs"
+#define __FUNC__ "KSPGetRhs"
 /*@C
    KSPGetRhs - Gets the right-hand-side vector for the linear system to
    be solved.
@@ -783,7 +794,7 @@ int KSPGetRhs(KSP ksp,Vec *r)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetSolution"
+#define __FUNC__ "KSPSetSolution"
 /*@
    KSPSetSolution - Sets the location of the solution for the 
    linear system to be solved.
@@ -810,7 +821,7 @@ int KSPSetSolution(KSP ksp,Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGetSolution" 
+#define __FUNC__ "KSPGetSolution" 
 /*@C
    KSPGetSolution - Gets the location of the solution for the 
    linear system to be solved.  Note that this may not be where the solution
@@ -839,7 +850,7 @@ int KSPGetSolution(KSP ksp,Vec *v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetPC"
+#define __FUNC__ "KSPSetPC"
 /*@
    KSPSetPC - Sets the preconditioner to be used to calculate the 
    application of the preconditioner on a vector. 
@@ -871,7 +882,7 @@ int KSPSetPC(KSP ksp,PC B)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGetPC"
+#define __FUNC__ "KSPGetPC"
 /*@C
    KSPGetPC - Returns a pointer to the preconditioner context
    set with KSPSetPC().
@@ -899,7 +910,7 @@ int KSPGetPC(KSP ksp,PC *B)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetMonitor"
+#define __FUNC__ "KSPSetMonitor"
 /*@C
    KSPSetMonitor - Sets an ADDITIONAL function to be called at every iteration to monitor 
    the residual/error etc.
@@ -966,7 +977,7 @@ int KSPSetMonitor(KSP ksp,int (*monitor)(KSP,int,PetscReal,void*),void *mctx,int
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPClearMonitor"
+#define __FUNC__ "KSPClearMonitor"
 /*@
    KSPClearMonitor - Clears all monitors for a KSP object.
 
@@ -995,7 +1006,7 @@ int KSPClearMonitor(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGetMonitorContext"
+#define __FUNC__ "KSPGetMonitorContext"
 /*@C
    KSPGetMonitorContext - Gets the monitoring context, as set by 
    KSPSetMonitor() for the FIRST monitor only.
@@ -1023,7 +1034,7 @@ int KSPGetMonitorContext(KSP ksp,void **ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetResidualHistory"
+#define __FUNC__ "KSPSetResidualHistory"
 /*@
    KSPSetResidualHistory - Sets the array used to hold the residual history.
    If set, this array will contain the residual norms computed at each
@@ -1058,7 +1069,7 @@ int KSPSetResidualHistory(KSP ksp,PetscReal *a,int na,PetscTruth reset)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGetResidualHistory"
+#define __FUNC__ "KSPGetResidualHistory"
 /*@C
    KSPGetResidualHistory - Gets the array used to hold the residual history
    and the number of residuals it contains.
@@ -1095,7 +1106,7 @@ int KSPGetResidualHistory(KSP ksp,PetscReal **a,int *na)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetConvergenceTest"
+#define __FUNC__ "KSPSetConvergenceTest"
 /*@C
    KSPSetConvergenceTest - Sets the function to be used to determine
    convergence.  
@@ -1144,7 +1155,7 @@ int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,PetscReal,KSPConverged
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGetConvergenceContext"
+#define __FUNC__ "KSPGetConvergenceContext"
 /*@C
    KSPGetConvergenceContext - Gets the convergence context set with 
    KSPSetConvergenceTest().  
@@ -1172,7 +1183,7 @@ int KSPGetConvergenceContext(KSP ksp,void **ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPBuildSolution"
+#define __FUNC__ "KSPBuildSolution"
 /*@C
    KSPBuildSolution - Builds the approximate solution in a vector provided.
    This routine is NOT commonly needed (see SLESSolve()).
@@ -1222,7 +1233,7 @@ int KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPBuildResidual"
+#define __FUNC__ "KSPBuildResidual"
 /*@C
    KSPBuildResidual - Builds the residual in a vector provided.
 
@@ -1256,11 +1267,11 @@ int KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (!w) {
     ierr = VecDuplicate(ksp->vec_rhs,&w);CHKERRQ(ierr);
-    PLogObjectParent((PetscObject)ksp,w);
+    PetscLogObjectParent((PetscObject)ksp,w);
   }
   if (!tt) {
     ierr = VecDuplicate(ksp->vec_rhs,&tt);CHKERRQ(ierr); flag = 1;
-    PLogObjectParent((PetscObject)ksp,tt);
+    PetscLogObjectParent((PetscObject)ksp,tt);
   }
   ierr = (*ksp->ops->buildresidual)(ksp,tt,w,V);CHKERRQ(ierr);
   if (flag) {ierr = VecDestroy(tt);CHKERRQ(ierr);}

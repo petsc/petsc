@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.1 2000/07/20 03:34:44 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.2 2000/08/01 20:58:08 bsmith Exp bsmith $*/
 
 static char help[] = "Tests DA interpolation for coarse DA on a subset of processors\n\n";
 
@@ -18,11 +18,11 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-dim",&dim,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-sw",&s,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&ratio,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-dim",&dim,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-sw",&s,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&ratio,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr);
 
   comm_f = PETSC_COMM_WORLD;
   ierr = DASplitComm2d(comm_f,M,M,s,&comm_c);CHKERRQ(ierr);
@@ -42,9 +42,9 @@ int main(int argc,char **argv)
   ierr = VecSet(&one,v_c);CHKERRQ(ierr);
   ierr = DAGetInterpolation(da_c,da_f,&I,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatInterpolate(I,v_c,v_f);CHKERRQ(ierr);
-  ierr = VecView(v_f,VIEWER_STDOUT_(comm_f));CHKERRQ(ierr);
+  ierr = VecView(v_f,PETSC_VIEWER_STDOUT_(comm_f));CHKERRQ(ierr);
   ierr = MatRestrict(I,v_f,v_c);CHKERRQ(ierr);
-  ierr = VecView(v_c,VIEWER_STDOUT_(comm_c));CHKERRQ(ierr);
+  ierr = VecView(v_c,PETSC_VIEWER_STDOUT_(comm_c));CHKERRQ(ierr);
 
   ierr = MatDestroy(I);CHKERRQ(ierr);
   ierr = VecDestroy(v_c);CHKERRA(ierr);

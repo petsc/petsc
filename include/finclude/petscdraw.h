@@ -1,26 +1,26 @@
 !
-!  $Id: petscdraw.h,v 1.26 2000/08/01 20:58:48 bsmith Exp balay $;
+!  $Id: petscdraw.h,v 1.27 2000/09/25 17:56:19 balay Exp bsmith $;
 !
-!  Include file for Fortran use of the Draw package in PETSc
+!  Include file for Fortran use of the PetscDraw package in PETSc
 !
 
 #if !defined (__PETSCDRAW_H)
 #define __PETSCDRAW_H
 
-#define Draw PetscFortranAddr
-#define DrawLG PetscFortranAddr
-#define DrawAxis PetscFortranAddr
-#define DrawSP PetscFortranAddr
-#define DrawHG PetscFortranAddr
-#define DrawMesh PetscFortranAddr
-#define DrawButton integer
-#define DrawType character*(80)
+#define PetscDraw PetscFortranAddr
+#define PetscDrawLG PetscFortranAddr
+#define PetscDrawAxis PetscFortranAddr
+#define PetscDrawSP PetscFortranAddr
+#define PetscDrawHG PetscFortranAddr
+#define PetscDrawMesh PetscFortranAddr
+#define PetscDrawButton integer
+#define PetscDrawType character*(80)
 
 !
 !  types of draw context
 !
-#define DRAW_X 'x'
-#define DRAW_NULL 'null'
+#define PETSC_DRAW_X 'x'
+#define PETSC_DRAW_NULL 'null'
 
 #endif
 
@@ -28,37 +28,37 @@
 !
 !  Flags for draw
 !
-      integer DRAW_BASIC_COLORS,DRAW_ROTATE
-      parameter (DRAW_BASIC_COLORS=33,DRAW_ROTATE=-1)
+      integer PETSC_DRAW_BASIC_COLORS,PETSC_DRAW_ROTATE
+      parameter (PETSC_DRAW_BASIC_COLORS=33,PETSC_DRAW_ROTATE=-1)
 !
 !  Colors for drawing
 !
-      integer DRAW_WHITE,DRAW_BLACK,DRAW_RED,DRAW_GREEN,DRAW_CYAN
-      integer DRAW_BLUE,DRAW_MAGENTA,DRAW_AQUAMARINE,DRAW_FORESTGREEN
-      integer DRAW_ORANGE,DRAW_VIOLET,DRAW_BROWN,DRAW_PINK,DRAW_CORAL
-      integer DRAW_GRAY,DRAW_YELLOW,DRAW_GOLD,DRAW_LIGHTPINK
-      integer DRAW_MEDIUMTURQUOISE,DRAW_KHAKI,DRAW_DIMGRAY
-      integer DRAW_YELLOWGREEN,DRAW_SKYBLUE,DRAW_DARKGREEN
-      integer DRAW_NAVYBLUE,DRAW_SANDYBROWN,DRAW_CADETBLUE
-      integer DRAW_POWDERBLUE,DRAW_DEEPPINK,DRAW_THISTLE,DRAW_LIMEGREEN
-      integer DRAW_LAVENDERBLUSH,DRAW_PLUM
+      integer PETSC_DRAW_WHITE,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_GREEN,PETSC_DRAW_CYAN
+      integer PETSC_DRAW_BLUE,PETSC_DRAW_MAGENTA,PETSC_DRAW_AQUAMARINE,PETSC_DRAW_FORESTGREEN
+      integer PETSC_DRAW_ORANGE,PETSC_DRAW_VIOLET,PETSC_DRAW_BROWN,PETSC_DRAW_PINK,PETSC_DRAW_CORAL
+      integer PETSC_DRAW_GRAY,PETSC_DRAW_YELLOW,PETSC_DRAW_GOLD,PETSC_DRAW_LIGHTPINK
+      integer PETSC_DRAW_MEDIUMTURQUOISE,PETSC_DRAW_KHAKI,PETSC_DRAW_DIMGRAY
+      integer PETSC_DRAW_YELLOWGREEN,PETSC_DRAW_SKYBLUE,PETSC_DRAW_DARKGREEN
+      integer PETSC_DRAW_NAVYBLUE,PETSC_DRAW_SANDYBROWN,PETSC_DRAW_CADETBLUE
+      integer PETSC_DRAW_POWDERBLUE,PETSC_DRAW_DEEPPINK,PETSC_DRAW_THISTLE,PETSC_DRAW_LIMEGREEN
+      integer PETSC_DRAW_LAVENDERBLUSH,PETSC_DRAW_PLUM
 
 
-      parameter (DRAW_WHITE = 0,DRAW_BLACK = 1,DRAW_RED = 2)
-      parameter (DRAW_GREEN = 3,DRAW_CYAN = 4,DRAW_BLUE = 5)
-      parameter (DRAW_MAGENTA = 6,DRAW_AQUAMARINE = 7)
-      parameter (DRAW_FORESTGREEN = 8,DRAW_ORANGE = 9)
-      parameter (DRAW_VIOLET = 10,DRAW_BROWN = 11,DRAW_PINK = 12)
-      parameter (DRAW_CORAL = 13,DRAW_GRAY = 14,DRAW_YELLOW = 15)
-      parameter (DRAW_GOLD = 16,DRAW_LIGHTPINK = 17)
-      parameter (DRAW_MEDIUMTURQUOISE = 18,DRAW_KHAKI = 19)
-      parameter (DRAW_DIMGRAY = 20,DRAW_YELLOWGREEN = 21)
-      parameter (DRAW_SKYBLUE = 22,DRAW_DARKGREEN = 23)
-      parameter (DRAW_NAVYBLUE = 24,DRAW_SANDYBROWN = 25)
-      parameter (DRAW_CADETBLUE = 26,DRAW_POWDERBLUE = 27)
-      parameter (DRAW_DEEPPINK = 28,DRAW_THISTLE = 29)
-      parameter (DRAW_LIMEGREEN = 30,DRAW_LAVENDERBLUSH = 31)
-      parameter (DRAW_PLUM = 32)
+      parameter (PETSC_DRAW_WHITE = 0,PETSC_DRAW_BLACK = 1,PETSC_DRAW_RED = 2)
+      parameter (PETSC_DRAW_GREEN = 3,PETSC_DRAW_CYAN = 4,PETSC_DRAW_BLUE = 5)
+      parameter (PETSC_DRAW_MAGENTA = 6,PETSC_DRAW_AQUAMARINE = 7)
+      parameter (PETSC_DRAW_FORESTGREEN = 8,PETSC_DRAW_ORANGE = 9)
+      parameter (PETSC_DRAW_VIOLET = 10,PETSC_DRAW_BROWN = 11,PETSC_DRAW_PINK = 12)
+      parameter (PETSC_DRAW_CORAL = 13,PETSC_DRAW_GRAY = 14,PETSC_DRAW_YELLOW = 15)
+      parameter (PETSC_DRAW_GOLD = 16,PETSC_DRAW_LIGHTPINK = 17)
+      parameter (PETSC_DRAW_MEDIUMTURQUOISE = 18,PETSC_DRAW_KHAKI = 19)
+      parameter (PETSC_DRAW_DIMGRAY = 20,PETSC_DRAW_YELLOWGREEN = 21)
+      parameter (PETSC_DRAW_SKYBLUE = 22,PETSC_DRAW_DARKGREEN = 23)
+      parameter (PETSC_DRAW_NAVYBLUE = 24,PETSC_DRAW_SANDYBROWN = 25)
+      parameter (PETSC_DRAW_CADETBLUE = 26,PETSC_DRAW_POWDERBLUE = 27)
+      parameter (PETSC_DRAW_DEEPPINK = 28,PETSC_DRAW_THISTLE = 29)
+      parameter (PETSC_DRAW_LIMEGREEN = 30,PETSC_DRAW_LAVENDERBLUSH = 31)
+      parameter (PETSC_DRAW_PLUM = 32)
 
       integer BUTTON_NONE,BUTTON_LEFT,BUTTON_CENTER,BUTTON_RIGHT
 
@@ -66,6 +66,6 @@
       parameter (BUTTON_CENTER = 2,BUTTON_RIGHT = 3)
 
 !
-!  End of Fortran include file for the Draw package in PETSc
+!  End of Fortran include file for the PetscDraw package in PETSc
 
 #endif

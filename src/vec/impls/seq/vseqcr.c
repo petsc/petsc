@@ -1,4 +1,4 @@
-/*$Id: vseqcr.c,v 1.15 2000/09/28 21:10:22 bsmith Exp bsmith $*/
+/*$Id: vseqcr.c,v 1.16 2000/10/24 20:25:14 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -7,7 +7,7 @@
 #include "src/vec/impls/dvecimpl.h" 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecCreateSeq"
+#define __FUNC__ "VecCreateSeq"
 /*@C
    VecCreateSeq - Creates a standard, sequential array-style vector.
 

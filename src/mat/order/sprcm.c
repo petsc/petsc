@@ -1,4 +1,4 @@
-/*$Id: sprcm.c,v 1.36 2000/05/05 22:16:44 balay Exp bsmith $*/
+/*$Id: sprcm.c,v 1.37 2000/09/28 21:12:22 bsmith Exp bsmith $*/
 
 #include "petscmat.h"
 #include "src/mat/order/order.h"
@@ -8,7 +8,7 @@ EXTERN_C_BEGIN
     MatOrdering_RCM - Find the Reverse Cuthill-McKee ordering of a given matrix.
 */    
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatOrdering_RCM"
+#define __FUNC__ "MatOrdering_RCM"
 int MatOrdering_RCM(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   int        ierr,i,  *mask,*xls,nrow,*ia,*ja,*perm;
@@ -18,7 +18,7 @@ int MatOrdering_RCM(Mat mat,MatOrderingType type,IS *row,IS *col)
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  mask = (int *)PetscMalloc(4*nrow * sizeof(int));CHKPTRQ(mask);
+  mask = (int *)PetscMalloc(4*nrow * sizeof(int));CHKERRQ(ierr);
   perm = mask + nrow;
   xls  = perm + nrow;
 

@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.63 2000/10/05 21:22:02 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.64 2000/12/05 23:53:10 kaushik Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -14,8 +14,8 @@ and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 #endif
 #endif
 
-#define ICALLOC(size,y) *(y) = (int*)PetscMalloc((PetscMax(size,1))*sizeof(int));CHKPTRQ(*(y))
-#define FCALLOC(size,y) *(y) = (Scalar*)PetscMalloc((PetscMax(size,1))*sizeof(Scalar));CHKPTRQ(*(y))
+#define ICALLOC(size,y) *(y) = (int*)PetscMalloc((PetscMax(size,1))*sizeof(int));CHKERRQ(ierr);
+#define FCALLOC(size,y) *(y) = (Scalar*)PetscMalloc((PetscMax(size,1))*sizeof(Scalar));CHKERRQ(ierr);
  
 typedef struct {
  Vec     qnew,qold,func;
@@ -117,12 +117,12 @@ int main(int argc,char **args)
   tsCtx.max_steps = 50;   tsCtx.max_time    = 1.0e+12; tsCtx.iramp   = -50;
   tsCtx.dt        = -5.0; tsCtx.fnorm_ratio = 1.0e+10;
   tsCtx.LocalTimeStepping = 1;
-  ierr = OptionsGetInt(PETSC_NULL,"-max_st",&tsCtx.max_steps,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max",&tsCtx.cfl_max,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-max_st",&tsCtx.max_steps,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-cfl_max",&tsCtx.cfl_max,PETSC_NULL);CHKERRQ(ierr);
   tsCtx.print_freq = tsCtx.max_steps; 
-  ierr = OptionsGetInt(PETSC_NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRA(ierr);
 
   c_info->alpha  = 3.0;
   c_info->beta   = 15.0;
@@ -135,14 +135,14 @@ int main(int argc,char **args)
 
   f_pntr.jvisc   = c_info->ivisc;
   f_pntr.ileast  = 4;
-  ierr = OptionsGetDouble(PETSC_NULL,"-alpha",&c_info->alpha,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-beta",&c_info->beta,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-alpha",&c_info->alpha,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-beta",&c_info->beta,PETSC_NULL);CHKERRQ(ierr);
   
   /*======================================================================*/
 
   /*Set the maximum number of threads for OpenMP */
 #if defined(_OPENMP)
-  ierr = OptionsGetInt(PETSC_NULL,"-max_threads",&max_threads,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-max_threads",&max_threads,&flg);CHKERRQ(ierr);
   omp_set_num_threads(max_threads);
   ierr = PetscPrintf(comm,"Using %d threads for each MPI process\n",max_threads);CHKERRQ(ierr);
 #endif
@@ -223,7 +223,7 @@ int main(int argc,char **args)
     /* Add cells field */
     /* First read the cells*/
     if (!rank) {
-     ierr = PetscBinaryOpen("cells.msh",BINARY_RDONLY,&fdes);CHKERRQ(ierr);
+     ierr = PetscBinaryOpen("cells.msh",PETSC_BINARY_RDONLY,&fdes);CHKERRQ(ierr);
     }
     ICALLOC(4*user.grid->ncell,&itmp);
     ICALLOC(4*user.grid->ncell,&user.grid->c2n);
@@ -323,7 +323,7 @@ int main(int argc,char **args)
 
     /* Set various routines and options */
     ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-matrix_free",&flg);CHKERRQ(ierr);
     if (flg) {
       /* Use matrix-free to define Newton system; use explicit (approx) Jacobian for preconditioner */
       ierr = MatCreateSNESMF(snes,user.grid->qnode,&Jpc);CHKERRQ(ierr);
@@ -368,9 +368,9 @@ int main(int argc,char **args)
     */
 
     ierr = VecRestoreArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-mem_use",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-mem_use",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscShowMemoryUsage(VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
+      ierr = PetscShowMemoryUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
     }
 
 #ifdef HAVE_AMS
@@ -393,14 +393,14 @@ int main(int argc,char **args)
     ierr = VecDestroy(user.grid->grad);CHKERRQ(ierr);
     ierr = VecDestroy(user.grid->gradLoc);CHKERRQ(ierr);
     ierr = MatDestroy(user.grid->A);CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-matrix_free",&flg);CHKERRQ(ierr);
     if (flg) { ierr = MatDestroy(Jpc);CHKERRQ(ierr);}
     ierr = SNESDestroy(snes);CHKERRQ(ierr);
     ierr = VecScatterDestroy(user.grid->scatter);CHKERRQ(ierr);
     ierr = VecScatterDestroy(user.grid->gradScatter);CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-mem_use",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-mem_use",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscShowMemoryUsage(VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
+      ierr = PetscShowMemoryUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
     }
   PreLoadEnd();
 
@@ -572,12 +572,12 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
   *flag = SAME_NONZERO_PATTERN;
 #if defined(MATRIX_VIEW)
   if ((tsCtx->itstep != 0) &&(tsCtx->itstep % tsCtx->print_freq) == 0) {
-    Viewer viewer;
+    PetscViewer viewer;
     char mat_file[256];
     sprintf(mat_file,"mat_bin.%d",tsCtx->itstep);
-    ierr = ViewerBinaryOpen(MPI_COMM_WORLD,mat_file,BINARY_CREATE,&viewer);
+    ierr = PetscViewerBinaryOpen(MPI_COMM_WORLD,mat_file,PETSC_BINARY_CREATE,&viewer);
     ierr = MatView(pc_mat,viewer);CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer);
+    ierr = PetscViewerDestroy(viewer);
     /*ierr = MPI_Abort(MPI_COMM_WORLD,1);*/
   }
 #endif
@@ -612,7 +612,7 @@ int Update(SNES snes,void *ctx)
 
   PetscFunctionBegin;
 
-  ierr = OptionsHasName(PETSC_NULL,"-print",&print_flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-print",&print_flag);CHKERRQ(ierr);
   if (print_flag) {
     ierr = PetscFOpen(PETSC_COMM_WORLD,"history.out","w",&fptr);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_WORLD,fptr,"VARIABLES = iter,cfl,fnorm,clift,cdrag,cmom,cpu\n");CHKERRQ(ierr);
@@ -628,8 +628,8 @@ int Update(SNES snes,void *ctx)
 #if defined (PARCH_IRIX64) && defined(USE_HW_COUNTERS)
  /*if (!user->PreLoading) {
   PetscTruth flg = PETSC_FALSE;
-  ierr = OptionsGetInt(PETSC_NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
   ierr = PetscGetTime(&time_start_counters);CHKERRQ(ierr);
   if ((gen_start = start_counters(event0,event1)) < 0)
    SETERRQ(1,"Error in start_counters\n"); 
@@ -808,12 +808,12 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(grid_param,&tmp);
   if (!rank) {
    PetscTruth exists;
-   ierr = OptionsGetString(PETSC_NULL,"-mesh",mesh_file,256,&flg);CHKERRQ(ierr);
+   ierr = PetscOptionsGetString(PETSC_NULL,"-mesh",mesh_file,256,&flg);CHKERRQ(ierr);
    ierr = PetscTestFile(mesh_file,'r',&exists);CHKERRQ(ierr);
    if (!exists) { /* try uns3d.msh as the file name */
       ierr = PetscStrcpy(mesh_file,"uns3d.msh");CHKERRQ(ierr);
    }
-   ierr = PetscBinaryOpen(mesh_file,BINARY_RDONLY,&fdes);CHKERRQ(ierr);
+   ierr = PetscBinaryOpen(mesh_file,PETSC_BINARY_RDONLY,&fdes);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp,grid_param,PETSC_INT);CHKERRQ(ierr);
   grid->ncell   = tmp[0];
@@ -861,7 +861,7 @@ int GetLocalOrdering(GRID *grid)
     char       spart_file[256],part_file[256];
     PetscTruth exists;
    
-    ierr = OptionsGetString(PETSC_NULL,"-partition",spart_file,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-partition",spart_file,256,&flg);CHKERRQ(ierr);
     ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
     if (!exists) { /* try appending the number of processors */
       sprintf(part_file,"part_vec.part.%d",size);
@@ -909,15 +909,15 @@ int GetLocalOrdering(GRID *grid)
   nedgeLocEst = PetscMin(nedge,1000000); 
   remEdges = nedge;
   ICALLOC(2*nedgeLocEst,&tmp);
-  ierr = PetscSynchronizedBinarySeek(comm,fdes,0,BINARY_SEEK_CUR,&currentPos);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinarySeek(comm,fdes,0,PETSC_BINARY_SEEK_CUR,&currentPos);CHKERRQ(ierr);
   ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst); 
     /*time_ini = PetscGetTime();*/
     ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscSynchronizedBinarySeek(comm,fdes,(nedge-readEdges)*BINARY_INT_SIZE,BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+    ierr = PetscSynchronizedBinarySeek(comm,fdes,(nedge-readEdges)*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
     ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp+readEdges,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscSynchronizedBinarySeek(comm,fdes,-nedge*BINARY_INT_SIZE,BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+    ierr = PetscSynchronizedBinarySeek(comm,fdes,-nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
     /*time_fin += PetscGetTime()-time_ini;*/
     for (j = 0; j < readEdges; j++) {
       node1 = tmp[j]-1;
@@ -951,16 +951,16 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(nedgeLoc,&eperm);
   i = 0; j = 0; k = 0;
   remEdges = nedge;
-  ierr = PetscSynchronizedBinarySeek(comm,fdes,currentPos,BINARY_SEEK_SET,&newPos);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinarySeek(comm,fdes,currentPos,PETSC_BINARY_SEEK_SET,&newPos);CHKERRQ(ierr);
   currentPos = newPos;
 
   ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst); 
     ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscSynchronizedBinarySeek(comm,fdes,(nedge-readEdges)*BINARY_INT_SIZE,BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+    ierr = PetscSynchronizedBinarySeek(comm,fdes,(nedge-readEdges)*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
     ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp+readEdges,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscSynchronizedBinarySeek(comm,fdes,-nedge*BINARY_INT_SIZE,BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+    ierr = PetscSynchronizedBinarySeek(comm,fdes,-nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
     for (j = 0; j < readEdges; j++) {
       node1 = tmp[j]-1;
       node2 = tmp[j+readEdges]-1;
@@ -976,7 +976,7 @@ int GetLocalOrdering(GRID *grid)
     remEdges = remEdges - readEdges; 
     ierr = MPI_Barrier(comm);
   }
-  ierr = PetscSynchronizedBinarySeek(comm,fdes,currentPos+2*nedge*BINARY_INT_SIZE,BINARY_SEEK_SET,&newPos);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinarySeek(comm,fdes,currentPos+2*nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_SET,&newPos);CHKERRQ(ierr);
   ierr = PetscGetTime(&time_fin);CHKERRQ(ierr);
   time_fin -= time_ini;
   ierr = PetscPrintf(comm,"Local edges stored\n");CHKERRQ(ierr);
@@ -995,7 +995,7 @@ int GetLocalOrdering(GRID *grid)
   for (i=0; i<6; i++)
    printf("%d %d %d\n",i,tmp[i],eperm[i]);
   */
-  ierr = OptionsHasName(0,"-no_edge_reordering",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(0,"-no_edge_reordering",&flg);CHKERRQ(ierr);
   if (!flg) {
    ierr = PetscSortIntWithPermutation(nedgeLoc,tmp,eperm);CHKERRQ(ierr);
   }
@@ -1193,7 +1193,7 @@ int GetLocalOrdering(GRID *grid)
                                 &wgtflag,&numflag,&max_threads,options,&edgecut,grid->part_thr);
    PetscPrintf(MPI_COMM_WORLD,"The number of cut edges is %d\n", edgecut);
    /* Write the partition vector to disk */
-   ierr = OptionsHasName(0,"-omp_partitioning",&flg);CHKERRQ(ierr);
+   ierr = PetscOptionsHasName(0,"-omp_partitioning",&flg);CHKERRQ(ierr);
    if (flg) {  
      int *partv_loc, *partv_glo;
      int *disp,*counts,*loc2glo_glo;
@@ -1719,9 +1719,9 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscFree(ftmp);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Free boundaries partitioned\n");CHKERRQ(ierr);
 
-  ierr = OptionsHasName(0,"-mem_use",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(0,"-mem_use",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscShowMemoryUsage(VIEWER_STDOUT_WORLD,"Memory usage after partitioning\n");CHKERRQ(ierr);
+    ierr = PetscShowMemoryUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after partitioning\n");CHKERRQ(ierr);
   }
 
  /* Put different mappings and other info into grid */
@@ -1808,7 +1808,7 @@ int GetLocalOrdering(GRID *grid)
               partMin[6],partMax[6],partSum[6]/size,partSum[6]);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"------------------------------------------------------------\n");CHKERRQ(ierr);
  }
- ierr = OptionsHasName(0,"-partition_info",&flg);CHKERRQ(ierr);
+ ierr = PetscOptionsHasName(0,"-partition_info",&flg);CHKERRQ(ierr);
  if (flg) {
   char part_file[256];
   sprintf(part_file,"output.%d",rank);
@@ -2102,9 +2102,9 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
    ierr = PetscFree(val_offd);CHKERRQ(ierr);
 #endif
 
-   ierr = OptionsHasName(0,"-mem_use",&flg);CHKERRQ(ierr);
+   ierr = PetscOptionsHasName(0,"-mem_use",&flg);CHKERRQ(ierr);
    if (flg) {
-    ierr = PetscShowMemoryUsage(VIEWER_STDOUT_WORLD,"Memory usage after allocating PETSc data structures\n");CHKERRQ(ierr);
+    ierr = PetscShowMemoryUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after allocating PETSc data structures\n");CHKERRQ(ierr);
    }
 
 /* Set local to global mapping for setting the matrix elements in

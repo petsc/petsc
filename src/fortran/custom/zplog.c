@@ -1,46 +1,46 @@
-/*$Id: zplog.c,v 1.24 2000/09/06 21:03:24 balay Exp balay $*/
+/*$Id: zPetscLog.c,v 1.25 2000/09/06 22:50:45 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define plogeventbegin_       PLOGEVENTBEGIN
-#define plogeventend_         PLOGEVENTEND
-#define plogflops_            PLOGFLOPS
-#define plogallbegin_         PLOGALLBEGIN
-#define plogdestroy_          PLOGDESTROY
-#define plogbegin_            PLOGBEGIN
-#define plogdump_             PLOGDUMP
-#define plogeventregister_    PLOGEVENTREGISTER
-#define plogstagepop_         PLOGSTAGEPOP
-#define plogstageregister_    PLOGSTAGEREGISTER
-#define plogstagepush_        PLOGSTAGEPUSH
+#define PetscLogeventbegin_       PetscLogEVENTBEGIN
+#define PetscLogeventend_         PetscLogEVENTEND
+#define PetscLogflops_            PetscLogFLOPS
+#define PetscLogallbegin_         PetscLogALLBEGIN
+#define PetscLogdestroy_          PetscLogDESTROY
+#define PetscLogbegin_            PetscLogBEGIN
+#define PetscLogdump_             PetscLogDUMP
+#define PetscLogeventregister_    PetscLogEVENTREGISTER
+#define PetscLogstagepop_         PetscLogSTAGEPOP
+#define PetscLogstageregister_    PetscLogSTAGEREGISTER
+#define PetscLogstagepush_        PetscLogSTAGEPUSH
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define plogeventbegin_       plogeventbegin
-#define plogeventend_         plogeventend
-#define plogflops_            plogflops
-#define plogallbegin_         plogallbegin
-#define plogdestroy_          plogdestroy
-#define plogbegin_            plogbegin
-#define plogeventregister_    plogeventregister
-#define plogdump_             plogdump
-#define plogstagepop_         plogstagepop  
-#define plogstageregister_    plogstageregister
-#define plogstagepush_        plogstagepush
+#define PetscLogeventbegin_       PetscLogeventbegin
+#define PetscLogeventend_         PetscLogeventend
+#define PetscLogflops_            PetscLogflops
+#define PetscLogallbegin_         PetscLogallbegin
+#define PetscLogdestroy_          PetscLogdestroy
+#define PetscLogbegin_            PetscLogbegin
+#define PetscLogeventregister_    PetscLogeventregister
+#define PetscLogdump_             PetscLogdump
+#define PetscLogstagepop_         PetscLogstagepop  
+#define PetscLogstageregister_    PetscLogstageregister
+#define PetscLogstagepush_        PetscLogstagepush
 #endif
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL plogdump_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL PetscLogdump_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t1;
   FIXCHAR(name,len,t1);
-  *ierr = PLogDump(t1);
+  *ierr = PetscLogDump(t1);
   FREECHAR(name,t1);
 #endif
 }
-void PETSC_STDCALL plogeventregister_(int *e,CHAR string PETSC_MIXED_LEN(len1),
+void PETSC_STDCALL PetscLogeventregister_(int *e,CHAR string PETSC_MIXED_LEN(len1),
                CHAR color PETSC_MIXED_LEN(len2),int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
 #if defined(PETSC_USE_LOG)
@@ -48,62 +48,62 @@ void PETSC_STDCALL plogeventregister_(int *e,CHAR string PETSC_MIXED_LEN(len1),
   FIXCHAR(string,len1,t1);
   FIXCHAR(color,len2,t2);
 
-  *ierr = PLogEventRegister(e,t1,t2);
+  *ierr = PetscLogEventRegister(e,t1,t2);
   FREECHAR(string,t1);
   FREECHAR(color,t2);
 #endif
 }
 
-void PETSC_STDCALL plogallbegin_(int *ierr){
+void PETSC_STDCALL PetscLogallbegin_(int *ierr){
 #if defined(PETSC_USE_LOG)
-  *ierr = PLogAllBegin();
+  *ierr = PetscLogAllBegin();
 #endif
 }
 
-void PETSC_STDCALL plogdestroy_(int *ierr){
+void PETSC_STDCALL PetscLogdestroy_(int *ierr){
 #if defined(PETSC_USE_LOG)
-  *ierr = PLogDestroy();
+  *ierr = PetscLogDestroy();
 #endif
 }
 
-void PETSC_STDCALL plogbegin_(int *ierr){
+void PETSC_STDCALL PetscLogbegin_(int *ierr){
 #if defined(PETSC_USE_LOG)
-  *ierr = PLogBegin();
+  *ierr = PetscLogBegin();
 #endif
 }
 
-void PETSC_STDCALL plogeventbegin_(int *e,PetscObject *o1,PetscObject *o2,PetscObject *o3,PetscObject *o4, int *_ierr){
-  *_ierr = PLogEventBegin(*e,*o1,*o2,*o3,*o4);
+void PETSC_STDCALL PetscLogeventbegin_(int *e,PetscObject *o1,PetscObject *o2,PetscObject *o3,PetscObject *o4, int *_ierr){
+  *_ierr = PetscLogEventBegin(*e,*o1,*o2,*o3,*o4);
 }
 
-void PETSC_STDCALL plogeventend_(int *e,PetscObject *o1,PetscObject *o2,PetscObject *o3,PetscObject *o4, int *_ierr){
-  *_ierr = PLogEventEnd(*e,*o1,*o2,*o3,*o4);
+void PETSC_STDCALL PetscLogeventend_(int *e,PetscObject *o1,PetscObject *o2,PetscObject *o3,PetscObject *o4, int *_ierr){
+  *_ierr = PetscLogEventEnd(*e,*o1,*o2,*o3,*o4);
 }
 
-void PETSC_STDCALL plogflops_(int *f,int *_ierr) {
-  *_ierr = PLogFlops(*f);
+void PETSC_STDCALL PetscLogflops_(int *f,int *_ierr) {
+  *_ierr = PetscLogFlops(*f);
 }
 
-void PETSC_STDCALL plogstagepop_(int *ierr)
+void PETSC_STDCALL PetscLogstagepop_(int *ierr)
 {
 #if defined(PETSC_USE_LOG)
-  *ierr = PLogStagePop();
+  *ierr = PetscLogStagePop();
 #endif
 }
 
-void PETSC_STDCALL plogstageregister_(int *stage,CHAR sname PETSC_MIXED_LEN(len),
+void PETSC_STDCALL PetscLogstageregister_(int *stage,CHAR sname PETSC_MIXED_LEN(len),
                                       int *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t;
   FIXCHAR(sname,len,t);
-  *ierr = PLogStageRegister(*stage,t);
+  *ierr = PetscLogStageRegister(*stage,t);
 #endif
 }
 
-void PETSC_STDCALL plogstagepush_(int *stage,int *ierr){
+void PETSC_STDCALL PetscLogstagepush_(int *stage,int *ierr){
 #if defined(PETSC_USE_LOG)
-  *ierr = PLogStagePush(*stage);
+  *ierr = PetscLogStagePush(*stage);
 #endif
 }
 

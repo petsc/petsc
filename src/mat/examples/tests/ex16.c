@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.11 2000/05/05 22:16:17 balay Exp balay $*/
+/*$Id: ex16.c,v 1.12 2000/11/01 17:05:53 balay Exp bsmith $*/
 
 static char help[] = "Tests MatGetArray().\n\n";
 
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   /*
        Print the matrix to the screen 
   */
-  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
 
   /*

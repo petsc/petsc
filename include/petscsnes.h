@@ -1,4 +1,4 @@
-/* $Id: petscsnes.h,v 1.104 2000/08/17 04:53:46 bsmith Exp bsmith $ */
+/* $Id: petscsnes.h,v 1.105 2000/08/24 22:43:56 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -30,7 +30,7 @@ EXTERN int SNESGetConvergenceHistory(SNES,double**,int **,int *);
 EXTERN int SNESSetUp(SNES,Vec);
 EXTERN int SNESSolve(SNES,Vec,int*);
 
-extern FList SNESList;
+extern PetscFList SNESList;
 EXTERN int SNESRegisterDestroy(void);
 EXTERN int SNESRegisterAll(char *);
 
@@ -45,7 +45,7 @@ EXTERN int SNESGetSLES(SNES,SLES*);
 EXTERN int SNESGetSolution(SNES,Vec*);
 EXTERN int SNESGetSolutionUpdate(SNES,Vec*);
 EXTERN int SNESGetFunction(SNES,Vec*,void**,int(**)(SNES,Vec,Vec,void*));
-EXTERN int SNESView(SNES,Viewer);
+EXTERN int SNESView(SNES,PetscViewer);
 
 EXTERN int SNESSetOptionsPrefix(SNES,char*);
 EXTERN int SNESAppendOptionsPrefix(SNES,char*);
@@ -101,9 +101,9 @@ EXTERN int SNES_KSP_SetConvergenceTestEW(SNES);
 /*
      Reuse the default KSP monitor routines for SNES
 */
-EXTERN int SNESLGMonitorCreate(char*,char*,int,int,int,int,DrawLG*);
+EXTERN int SNESLGMonitorCreate(char*,char*,int,int,int,int,PetscDrawLG*);
 EXTERN int SNESLGMonitor(SNES,int,double,void*);
-EXTERN int SNESLGMonitorDestroy(DrawLG);
+EXTERN int SNESLGMonitorDestroy(PetscDrawLG);
 
 EXTERN int SNESSetApplicationContext(SNES,void *);
 EXTERN int SNESGetApplicationContext(SNES,void **);

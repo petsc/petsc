@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.88 2000/11/19 00:40:43 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.89 2001/01/04 16:51:17 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -142,9 +142,9 @@ void PETSC_STDCALL matpartitioningsetadjacency_(MatPartitioning *part,Mat *mat,i
   *ierr = MatPartitioningSetAdjacency(*part,*mat);
 }
 
-void PETSC_STDCALL matpartitioningview_(MatPartitioning  *part,Viewer *viewer, int *ierr)
+void PETSC_STDCALL matpartitioningview_(MatPartitioning  *part,PetscViewer *viewer, int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = MatPartitioningView(*part,v);
 }
@@ -233,9 +233,9 @@ void PETSC_STDCALL matrestorerow_(Mat *mat,int *row,int *ncols,int *cols,Scalar 
   matgetrowactive = 0;
 }
 
-void PETSC_STDCALL matview_(Mat *mat,Viewer *vin,int *ierr)
+void PETSC_STDCALL matview_(Mat *mat,PetscViewer *vin,int *ierr)
 {
-  Viewer v;
+  PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = MatView(*mat,v);
 }
@@ -276,10 +276,10 @@ void PETSC_STDCALL mattranspose_(Mat *mat,Mat *B,int *ierr)
   *ierr = MatTranspose(*mat,B);
 }
 
-void PETSC_STDCALL matload_(Viewer *viewer,CHAR outtype PETSC_MIXED_LEN(len),Mat *newmat,int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL matload_(PetscViewer *viewer,CHAR outtype PETSC_MIXED_LEN(len),Mat *newmat,int *ierr PETSC_END_LEN(len))
 {
   char *t;
-  Viewer v;
+  PetscViewer v;
   FIXCHAR(outtype,len,t);
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = MatLoad(v,t,newmat);

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex4f90.F,v 1.10 2000/09/22 20:43:24 bsmith Exp bsmith $";
+!      "$Id: ex4f90.F,v 1.11 2000/09/27 20:14:21 bsmith Exp bsmith $";
 !
 !  Description:  Illustrates the use of VecSetValues() to set
 !  multiple values at once; demonstrates VecGetArrayF90().
@@ -72,7 +72,7 @@
 
        write(6,20)
   20   format('initial vector:')
-       call VecView(x,VIEWER_STDOUT_SELF,ierr)
+       call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
        call VecCopy(x,y,ierr)
 
 !  Get a pointer to vector data.
@@ -100,11 +100,11 @@
 
        write(6,40)
   40   format('new vector 1:')
-       call VecView(x,VIEWER_STDOUT_SELF,ierr)
+       call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
 
        write(6,50)
   50   format('new vector 2:')
-       call VecView(y,VIEWER_STDOUT_SELF,ierr)
+       call VecView(y,PETSC_VIEWER_STDOUT_SELF,ierr)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.

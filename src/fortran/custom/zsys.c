@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.85 2000/09/28 21:16:19 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.86 2000/09/29 02:34:59 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
@@ -405,7 +405,7 @@ void PETSC_STDCALL petscerror_(int *number,int *p,CHAR message PETSC_MIXED_LEN(l
   FREECHAR(message,t1);
 }
 
-void PETSC_STDCALL petscgetflops_(PLogDouble *d,int *ierr)
+void PETSC_STDCALL petscgetflops_(PetscLogDouble *d,int *ierr)
 {
 #if defined(PETSC_USE_LOG)
   *ierr = PetscGetFlops(d);

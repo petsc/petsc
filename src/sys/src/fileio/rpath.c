@@ -1,4 +1,4 @@
-/*$Id: rpath.c,v 1.28 2000/09/22 20:42:19 bsmith Exp bsmith $*/
+/*$Id: rpath.c,v 1.29 2000/10/24 20:24:33 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -31,7 +31,7 @@
 #include "petscfix.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscGetRelativePath"></a>*/"PetscGetRelativePath"
+#define __FUNC__ "PetscGetRelativePath"
 /*@C
    PetscGetRelativePath - Given a filename, returns the relative path (removes
    all directory specifiers).

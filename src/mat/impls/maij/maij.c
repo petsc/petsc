@@ -1,4 +1,4 @@
-/*$Id: maij.c,v 1.11 2000/10/24 20:25:58 bsmith Exp bsmith $*/
+/*$Id: maij.c,v 1.12 2000/12/01 03:12:25 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the MAIJ  matrix storage format.
   This format is used for restriction and interpolation operations for 
@@ -32,7 +32,7 @@ typedef struct {
 } Mat_MPIMAIJ;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatMAIJGetAIJ"></a>*/"MatMAIJGetAIJ" 
+#define __FUNC__ "MatMAIJGetAIJ" 
 int MatMAIJGetAIJ(Mat A,Mat *B)
 {
   int         ierr;
@@ -56,7 +56,7 @@ int MatMAIJGetAIJ(Mat A,Mat *B)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatMAIJRedimension"></a>*/"MatMAIJRedimension" 
+#define __FUNC__ "MatMAIJRedimension" 
 int MatMAIJRedimension(Mat A,int dof,Mat *B)
 {
   int ierr;
@@ -69,7 +69,7 @@ int MatMAIJRedimension(Mat A,int dof,Mat *B)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatDestroy_SeqMAIJ"></a>*/"MatDestroy_SeqMAIJ" 
+#define __FUNC__ "MatDestroy_SeqMAIJ" 
 int MatDestroy_SeqMAIJ(Mat A)
 {
   int         ierr;
@@ -84,7 +84,7 @@ int MatDestroy_SeqMAIJ(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatDestroy_MPIMAIJ"></a>*/"MatDestroy_MPIMAIJ" 
+#define __FUNC__ "MatDestroy_MPIMAIJ" 
 int MatDestroy_MPIMAIJ(Mat A)
 {
   int         ierr;
@@ -112,14 +112,15 @@ int MatDestroy_MPIMAIJ(Mat A)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatCreate_MAIJ"></a>*/"MatCreate_MAIJ" 
+#define __FUNC__ "MatCreate_MAIJ" 
 int MatCreate_MAIJ(Mat A)
 {
   int         ierr;
   Mat_MPIMAIJ *b;
 
   PetscFunctionBegin;
-  A->data             = (void*)(b = PetscNew(Mat_MPIMAIJ));CHKPTRQ(b);
+  ierr     = PetscNew(Mat_MPIMAIJ,&b);CHKERRQ(ierr);
+  A->data  = (void*)b;
   ierr = PetscMemzero(b,sizeof(Mat_MPIMAIJ));CHKERRQ(ierr);
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->factor           = 0;
@@ -169,7 +170,7 @@ int MatMult_SeqMAIJ_2(Mat A,Vec xx,Vec yy)
     y[2*i+1] = sum2;
   }
 
-  PLogFlops(4*a->nz - 2*m);
+  PetscLogFlops(4*a->nz - 2*m);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -197,7 +198,7 @@ int MatMultTranspose_SeqMAIJ_2(Mat A,Vec xx,Vec yy)
     alpha2 = x[2*i+1];
     while (n-->0) {y[2*(*idx)] += alpha1*(*v); y[2*(*idx)+1] += alpha2*(*v); idx++; v++;}
   }
-  PLogFlops(4*a->nz - 2*b->AIJ->n);
+  PetscLogFlops(4*a->nz - 2*b->AIJ->n);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -238,7 +239,7 @@ int MatMultAdd_SeqMAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
     y[2*i+1] += sum2;
   }
 
-  PLogFlops(4*a->nz - 2*m);
+  PetscLogFlops(4*a->nz - 2*m);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -265,7 +266,7 @@ int MatMultTransposeAdd_SeqMAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
     alpha2 = x[2*i+1];
     while (n-->0) {y[2*(*idx)] += alpha1*(*v); y[2*(*idx)+1] += alpha2*(*v); idx++; v++;}
   }
-  PLogFlops(4*a->nz - 2*b->AIJ->n);
+  PetscLogFlops(4*a->nz - 2*b->AIJ->n);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -308,7 +309,7 @@ int MatMult_SeqMAIJ_3(Mat A,Vec xx,Vec yy)
     y[3*i+2] = sum3;
   }
 
-  PLogFlops(6*a->nz - 3*m);
+  PetscLogFlops(6*a->nz - 3*m);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -342,7 +343,7 @@ int MatMultTranspose_SeqMAIJ_3(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PLogFlops(6*a->nz - 3*b->AIJ->n);
+  PetscLogFlops(6*a->nz - 3*b->AIJ->n);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -386,7 +387,7 @@ int MatMultAdd_SeqMAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
     y[3*i+2] += sum3;
   }
 
-  PLogFlops(6*a->nz);
+  PetscLogFlops(6*a->nz);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -419,7 +420,7 @@ int MatMultTransposeAdd_SeqMAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  PLogFlops(6*a->nz);
+  PetscLogFlops(6*a->nz);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -466,7 +467,7 @@ int MatMult_SeqMAIJ_4(Mat A,Vec xx,Vec yy)
     y[4*i+3] = sum4;
   }
 
-  PLogFlops(8*a->nz - 4*m);
+  PetscLogFlops(8*a->nz - 4*m);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -502,7 +503,7 @@ int MatMultTranspose_SeqMAIJ_4(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PLogFlops(8*a->nz - 4*b->AIJ->n);
+  PetscLogFlops(8*a->nz - 4*b->AIJ->n);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -549,7 +550,7 @@ int MatMultAdd_SeqMAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
     y[4*i+3] += sum4;
   }
 
-  PLogFlops(8*a->nz - 4*m);
+  PetscLogFlops(8*a->nz - 4*m);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -584,7 +585,7 @@ int MatMultTransposeAdd_SeqMAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  PLogFlops(8*a->nz - 4*b->AIJ->n);
+  PetscLogFlops(8*a->nz - 4*b->AIJ->n);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -634,7 +635,7 @@ int MatMult_SeqMAIJ_5(Mat A,Vec xx,Vec yy)
     y[5*i+4] = sum5;
   }
 
-  PLogFlops(10*a->nz - 5*m);
+  PetscLogFlops(10*a->nz - 5*m);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -672,7 +673,7 @@ int MatMultTranspose_SeqMAIJ_5(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PLogFlops(10*a->nz - 5*b->AIJ->n);
+  PetscLogFlops(10*a->nz - 5*b->AIJ->n);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -722,7 +723,7 @@ int MatMultAdd_SeqMAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
     y[5*i+4] += sum5;
   }
 
-  PLogFlops(10*a->nz);
+  PetscLogFlops(10*a->nz);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -760,7 +761,7 @@ int MatMultTransposeAdd_SeqMAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  PLogFlops(10*a->nz);
+  PetscLogFlops(10*a->nz);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -813,7 +814,7 @@ int MatMult_SeqMAIJ_6(Mat A,Vec xx,Vec yy)
     y[6*i+5] = sum6;
   }
 
-  PLogFlops(12*a->nz - 6*m);
+  PetscLogFlops(12*a->nz - 6*m);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -853,7 +854,7 @@ int MatMultTranspose_SeqMAIJ_6(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PLogFlops(12*a->nz - 6*b->AIJ->n);
+  PetscLogFlops(12*a->nz - 6*b->AIJ->n);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -906,7 +907,7 @@ int MatMultAdd_SeqMAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
     y[6*i+5] += sum6;
   }
 
-  PLogFlops(12*a->nz);
+  PetscLogFlops(12*a->nz);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -946,7 +947,7 @@ int MatMultTransposeAdd_SeqMAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  PLogFlops(12*a->nz);
+  PetscLogFlops(12*a->nz);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -954,7 +955,7 @@ int MatMultTransposeAdd_SeqMAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 
 /*===================================================================================*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatMult_MPIMAIJ_dof"></a>*/"MatMult_MPIMAIJ_dof"
+#define __FUNC__ "MatMult_MPIMAIJ_dof"
 int MatMult_MPIMAIJ_dof(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIMAIJ *b = (Mat_MPIMAIJ*)A->data;
@@ -970,7 +971,7 @@ int MatMult_MPIMAIJ_dof(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultTranspose_MPIMAIJ_dof"></a>*/"MatMultTranspose_MPIMAIJ_dof"
+#define __FUNC__ "MatMultTranspose_MPIMAIJ_dof"
 int MatMultTranspose_MPIMAIJ_dof(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIMAIJ *b = (Mat_MPIMAIJ*)A->data;
@@ -984,7 +985,7 @@ int MatMultTranspose_MPIMAIJ_dof(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultAdd_MPIMAIJ_dof"></a>*/"MatMultAdd_MPIMAIJ_dof"
+#define __FUNC__ "MatMultAdd_MPIMAIJ_dof"
 int MatMultAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIMAIJ *b = (Mat_MPIMAIJ*)A->data;
@@ -1000,7 +1001,7 @@ int MatMultAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultTransposeAdd_MPIMAIJ_dof"></a>*/"MatMultTransposeAdd_MPIMAIJ_dof"
+#define __FUNC__ "MatMultTransposeAdd_MPIMAIJ_dof"
 int MatMultTransposeAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIMAIJ *b = (Mat_MPIMAIJ*)A->data;
@@ -1015,7 +1016,7 @@ int MatMultTransposeAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
 
 /* ---------------------------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatCreateMAIJ"></a>*/"MatCreateMAIJ" 
+#define __FUNC__ "MatCreateMAIJ" 
 int MatCreateMAIJ(Mat A,int dof,Mat *maij)
 {
   int         ierr,size,n;
@@ -1084,7 +1085,7 @@ int MatCreateMAIJ(Mat A,int dof,Mat *maij)
       ierr = VecCreateSeq(PETSC_COMM_SELF,n*dof,&b->w);CHKERRQ(ierr);
 
       /* create two temporary Index sets for build scatter gather */
-      garray = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(garray);
+ierr = PetscMalloc((n+1)*sizeof(int),&      garray );CHKERRQ(ierr);
       for (i=0; i<n; i++) garray[i] = dof*mpiaij->garray[i];
       ierr = ISCreateBlock(A->comm,dof,n,garray,&from);CHKERRQ(ierr);
       ierr = PetscFree(garray);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.26 2000/08/01 20:57:47 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.27 2000/10/24 20:27:27 bsmith Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
  
-  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
     
   /* set initial conditions */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,3,&global);CHKERRA(ierr);
@@ -125,7 +125,7 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  idx=(int*)PetscMalloc(n*sizeof(int));
+ierr = PetscMalloc(n*sizeof(int),&(  idx));
   for(i=0; i<n; i++) idx[i]=i;
  
   /* Create local sequential vectors */
@@ -166,7 +166,7 @@ int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
   ierr = VecGetSize(globalin,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  idx=(int*)PetscMalloc(n*sizeof(int));
+ierr = PetscMalloc(n*sizeof(int),&(  idx));
   for(i=0; i<n; i++) idx[i]=i;
   
   /* Create local sequential vectors */

@@ -1,4 +1,4 @@
-/*$Id: baijfact.c,v 1.86 2000/11/28 17:29:14 bsmith Exp bsmith $*/
+/*$Id: baijfact.c,v 1.87 2001/01/06 15:35:10 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -27,7 +27,7 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  rtmp  = (MatScalar*)PetscMalloc(4*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
+ierr = PetscMalloc(4*(n+1)*sizeof(MatScalar),&  rtmp  );CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
@@ -68,7 +68,7 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
           x[3] -= m2*x3 + m4*x4;
           pv   += 4;
         }
-        PLogFlops(16*nz+12);
+        PetscLogFlops(16*nz+12);
       } 
       row = *ajtmp++;
     }
@@ -91,7 +91,7 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  PLogFlops(1.3333*8*b->mbs); /* from inverting diagonal blocks */
+  PetscLogFlops(1.3333*8*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
 /*
@@ -111,7 +111,7 @@ int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
   MatScalar          *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
-  rtmp  = (MatScalar*)PetscMalloc(4*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
+ierr = PetscMalloc(4*(n+1)*sizeof(MatScalar),&  rtmp  );CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
@@ -152,7 +152,7 @@ int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
           x[3] -= m2*x3 + m4*x4;
           pv   += 4;
         }
-        PLogFlops(16*nz+12);
+        PetscLogFlops(16*nz+12);
       } 
       row = *ajtmp++;
     }
@@ -174,7 +174,7 @@ int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  PLogFlops(1.3333*8*b->mbs); /* from inverting diagonal blocks */
+  PetscLogFlops(1.3333*8*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
 
@@ -198,7 +198,7 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  rtmp  = (MatScalar*)PetscMalloc((n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
+ierr = PetscMalloc((n+1)*sizeof(MatScalar),&  rtmp  );CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
@@ -221,7 +221,7 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
         *pc        = multiplier;
         nz         = bi[row+1] - diag_offset[row] - 1;
         for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
-        PLogFlops(1+2*nz);
+        PetscLogFlops(1+2*nz);
       }
       row = *ajtmp++;
     }
@@ -243,14 +243,14 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  PLogFlops(C->n);
+  PetscLogFlops(C->n);
   PetscFunctionReturn(0);
 }
 
 
 /* ----------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatLUFactor_SeqBAIJ"></a>*/"MatLUFactor_SeqBAIJ"
+#define __FUNC__ "MatLUFactor_SeqBAIJ"
 int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatLUInfo *info)
 {
   int         ierr;
@@ -260,7 +260,7 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatLUInfo *info)
   ierr = MatLUFactorSymbolic(A,row,col,info,&C);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(A,&C);CHKERRQ(ierr);
   ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
-  PLogObjectParent(A,((Mat_SeqBAIJ*)(A->data))->icol); 
+  PetscLogObjectParent(A,((Mat_SeqBAIJ*)(A->data))->icol); 
   PetscFunctionReturn(0);
 }
 

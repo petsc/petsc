@@ -1,4 +1,4 @@
-/*$Id: PetscMalloc.c,v 1.20 2000/05/05 22:20:03 balay Exp bsmith $*/
+/*$Id: PetscMalloc.c,v 1.21 2000/11/28 17:32:38 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -7,7 +7,7 @@
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  PLogDouble  x,y;
+  PetscLogDouble  x,y;
   double      value;
   void        *arr[1000],*dummy;
   int         ierr,i,rand1[1000],rand2[1000];
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   }
   
   fprintf(stdout,"%-15s : %e sec, with options : ","PetscMalloc",(y-x)/500.0);
-  if(OptionsHasName(PETSC_NULL,"-trmalloc",&flg),flg) fprintf(stdout,"-trmalloc ");
+  if(PetscOptionsHasName(PETSC_NULL,"-trmalloc",&flg),flg) fprintf(stdout,"-trmalloc ");
   fprintf(stdout,"\n"); 
   
   ierr = PetscRandomDestroy(r);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.3 2000/12/04 21:36:24 bsmith Exp bsmith $*/
+/*$Id: ex21.c,v 1.4 2000/12/04 22:19:51 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -37,12 +37,10 @@ static char help[] = "Solves PDE optimization problem\n\n";
 
 typedef struct {
   DA      da1,da2;
-  Vec     u,fu,lambda,flambda;
-  Scalar  *w,*fw;
   int     nredundant;
   VecPack packer;
-  Viewer  u_viewer,lambda_viewer;
-  Viewer  fu_viewer,flambda_viewer;
+  PetscViewer  u_viewer,lambda_viewer;
+  PetscViewer  fu_viewer,flambda_viewer;
 } UserCtx;
 
 extern int FormFunction(SNES,Vec,Vec,void*);
@@ -59,7 +57,7 @@ int main(int argc,char **argv)
   UserCtx user;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = VecPackCreate(PETSC_COMM_WORLD,&user.packer);CHKERRQ(ierr);
@@ -72,19 +70,11 @@ int main(int argc,char **argv)
   ierr = VecPackCreateGlobalVector(user.packer,&U);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&FU);CHKERRQ(ierr);
 
-  /* create local work vectors (that include ghost points where appropriate */
-  user.w = (Scalar*)PetscMalloc(user.nredundant*sizeof(Scalar));CHKPTRQ(user.w);
-  ierr = DACreateLocalVector(user.da1,&user.u);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(user.da2,&user.lambda);CHKERRQ(ierr);
-  user.fw = (Scalar*)PetscMalloc(user.nredundant*sizeof(Scalar));CHKPTRQ(user.fw);
-  ierr = DACreateLocalVector(user.da1,&user.fu);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(user.da2,&user.flambda);CHKERRQ(ierr);
-
   /* create graphics windows */
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"u - state variables",-1,-1,-1,-1,&user.u_viewer);CHKERRQ(ierr);
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"lambda - Lagrange multipliers",-1,-1,-1,-1,&user.lambda_viewer);CHKERRQ(ierr);
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"fu - derivate w.r.t. state variables",-1,-1,-1,-1,&user.fu_viewer);CHKERRQ(ierr);
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"flambda - derivate w.r.t. Lagrange multipliers",-1,-1,-1,-1,&user.flambda_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"u - state variables",-1,-1,-1,-1,&user.u_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"lambda - Lagrange multipliers",-1,-1,-1,-1,&user.lambda_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"fu - derivate w.r.t. state variables",-1,-1,-1,-1,&user.fu_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"flambda - derivate w.r.t. Lagrange multipliers",-1,-1,-1,-1,&user.flambda_viewer);CHKERRQ(ierr);
 
 
   /* create nonlinear solver */
@@ -95,70 +85,73 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,U,&its);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
 
-
   ierr = DADestroy(user.da1);CHKERRQ(ierr);
   ierr = DADestroy(user.da2);CHKERRQ(ierr);
-  ierr = VecDestroy(user.u);CHKERRQ(ierr);
-  ierr = VecDestroy(user.fu);CHKERRQ(ierr);
-  ierr = VecDestroy(user.lambda);CHKERRQ(ierr);
-  ierr = VecDestroy(user.flambda);CHKERRQ(ierr);
-  ierr = PetscFree(user.w);CHKERRQ(ierr);
-  ierr = PetscFree(user.fw);CHKERRQ(ierr);
   ierr = VecPackDestroy(user.packer);CHKERRQ(ierr);
   ierr = VecDestroy(U);CHKERRQ(ierr);
   ierr = VecDestroy(FU);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(user.u_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(user.lambda_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(user.fu_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(user.flambda_viewer);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }
  
 /*
-      Evaluates FU = Gradiant( L(w,u,lambda) )
+      Evaluates FU = Gradiant(L(w,u,lambda))
 
 */
 int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
   UserCtx *user = (UserCtx*)dummy;
   int     ierr,xs,xm,i,N;
-  Scalar  *u,*lambda,*w = user->w,*fu,*fw = user->fw,*flambda,d;
+  Scalar  *u,*lambda,*w,*fu,*fw,*flambda,d,h;
+  Vec     vu,vlambda,vfu,vflambda;
 
   PetscFunctionBegin;
-
-  ierr = VecPackScatter(user->packer,U,user->w,user->u,user->lambda);CHKERRQ(ierr);
+  ierr = VecPackGetLocalVectors(user->packer,&w,&vu,&vlambda);CHKERRQ(ierr);
+  ierr = VecPackGetLocalVectors(user->packer,&fw,&vfu,&vflambda);CHKERRQ(ierr);
+  ierr = VecPackScatter(user->packer,U,w,vu,vlambda);CHKERRQ(ierr);
 
   ierr = DAGetCorners(user->da1,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetInfo(user->da1,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da1,user->u,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da1,user->fu,(void**)&fu);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da1,user->lambda,(void**)&lambda);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da1,user->flambda,(void**)&flambda);CHKERRQ(ierr);
-  d    = (N-1.0)*(N-1.0);
+  ierr = DAVecGetArray(user->da1,vu,(void**)&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da1,vfu,(void**)&fu);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da1,vlambda,(void**)&lambda);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da1,vflambda,(void**)&flambda);CHKERRQ(ierr);
+  d    = (N-1.0);
+  h    = 1.0/d;
 
   /* derivative of L() w.r.t. w */
   if (xs == 0) { /* only first processor computes this */
-    fw[0] = -d*lambda[0];
+    fw[0] = -2.*d*lambda[0];
   }
 
   /* derivative of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   fu[0]   = 2.*u[0]   + d*lambda[0]   + d*lambda[1];
-    else if (i == N-1) fu[N-1] = 2.*u[N-1] + d*lambda[N-1] + d*lambda[N-2];
-    else               fu[i]   = 2.*u[i]   + d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]);
+    if      (i == 0)   flambda[0]   =    h*u[0]   + 2.*d*lambda[0]   - d*lambda[1];
+    else if (i == 1)   flambda[1]   = 2.*h*u[1]   + 2.*d*lambda[1]   - d*lambda[2];
+    else if (i == N-1) flambda[N-1] =    h*u[N-1] + 2.*d*lambda[N-1] - d*lambda[N-2];
+    else if (i == N-2) flambda[N-2] = 2.*h*u[N-2] + 2.*d*lambda[N-2] - d*lambda[N-3];
+    else               flambda[i]   = 2.*h*u[i]   - d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]);
   } 
 
   /* derivative of L() w.r.t. lambda */
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   flambda[0]   = d*u[0] - d*w[0];
-    else if (i == N-1) flambda[N-1] = d*u[N-1];
-    else               flambda[i]   = d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0;
+    if      (i == 0)   fu[0]   = 2.0*d*(u[0] - w[0]);
+    else if (i == N-1) fu[N-1] = 2.0*d*u[N-1];
+    else               fu[i]   = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h);
   } 
 
-  ierr = DAVecRestoreArray(user->da1,user->u,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(user->da1,user->fu,(void**)&fu);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(user->da1,user->lambda,(void**)&lambda);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(user->da1,user->flambda,(void**)&flambda);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da1,vu,(void**)&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da1,vfu,(void**)&fu);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da1,vlambda,(void**)&lambda);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da1,vflambda,(void**)&flambda);CHKERRQ(ierr);
 
-  ierr = VecPackGather(user->packer,FU,user->fw,user->fu,user->flambda);CHKERRQ(ierr);
-
+  ierr = VecPackGather(user->packer,FU,fw,vfu,vflambda);CHKERRQ(ierr);
+  ierr = VecPackRestoreLocalVectors(user->packer,&w,&vu,&vlambda);CHKERRQ(ierr);
+  ierr = VecPackRestoreLocalVectors(user->packer,&fw,&vfu,&vflambda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -171,14 +164,16 @@ int Monitor(SNES snes,int its,PetscReal rnorm,void *dummy)
 
   PetscFunctionBegin;
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);
-  ierr = VecPackAccess(user->packer,U,&w,&u,&lambda);CHKERRQ(ierr);
+  ierr = VecPackGetAccess(user->packer,U,&w,&u,&lambda);CHKERRQ(ierr);
   ierr = VecView(u,user->u_viewer);
   ierr = VecView(lambda,user->lambda_viewer);
+  ierr = VecPackRestoreAccess(user->packer,U,&w,&u,&lambda);CHKERRQ(ierr);
 
   ierr = SNESGetFunction(snes,&F,0,0);CHKERRQ(ierr);
-  ierr = VecPackAccess(user->packer,F,&w,&u,&lambda);CHKERRQ(ierr);
+  ierr = VecPackGetAccess(user->packer,F,&w,&u,&lambda);CHKERRQ(ierr);
   ierr = VecView(u,user->fu_viewer);
   ierr = VecView(lambda,user->flambda_viewer);
+  ierr = VecPackRestoreAccess(user->packer,F,&w,&u,&lambda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -204,7 +199,7 @@ int u_solution(void *dummy,int n,Scalar *x,Scalar *u)
   ierr = PFSetType(pf,PFQUICK,(void*)u_solution);CHKERRQ(ierr);
   ierr = DASetUniformCoordinates(user.da1,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
   ierr = DAGetCoordinates(user.da1,&x);CHKERRQ(ierr);
-  ierr = VecPackAccess(user.packer,U,&w,&u_global,0);CHKERRQ(ierr);
+  ierr = VecPackGetAccess(user.packer,U,&w,&u_global,0);CHKERRQ(ierr);
   w[0] = .25;
   ierr = PFApplyVec(pf,x,u_global);CHKERRQ(ierr);
   ierr = PFDestroy(pf);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.18 2000/01/11 21:04:04 bsmith Exp bsmith $ */
+/* $Id: petscmath.h,v 1.19 2000/04/09 03:11:53 bsmith Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -74,22 +74,27 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 
 /* Compiling for real numbers only */
 #else
-#define MPIU_SCALAR           MPI_DOUBLE
-#if defined(PETSC_USE_MAT_SINGLE)
-#define MPIU_MATSCALAR        MPI_FLOAT
-#else
-#define MPIU_MATSCALAR        MPI_DOUBLE
-#endif
-#define PetscRealPart(a)      (a)
-#define PetscImaginaryPart(a) (a)
-#define PetscAbsScalar(a)     (((a)<0.0)   ? -(a) : (a))
-#define Scalar                double
-#define PetscConj(a)          (a)
-#define PetscSqrtScalar(a)    sqrt(a)
-#define PetscPowScalar(a,b)   pow(a,b)
-#define PetscExpScalar(a)     exp(a)
-#define PetscSinScalar(a)     sin(a)
-#define PetscCosScalar(a)     cos(a)
+#  define MPIU_SCALAR           MPI_DOUBLE
+#  if defined(PETSC_USE_MAT_SINGLE)
+#    define MPIU_MATSCALAR        MPI_FLOAT
+#  else
+#    define MPIU_MATSCALAR        MPI_DOUBLE
+#  endif
+#  define PetscRealPart(a)      (a)
+#  define PetscImaginaryPart(a) (a)
+#  define PetscAbsScalar(a)     (((a)<0.0)   ? -(a) : (a))
+#  define PetscConj(a)          (a)
+#  define PetscSqrtScalar(a)    sqrt(a)
+#  define PetscPowScalar(a,b)   pow(a,b)
+#  define PetscExpScalar(a)     exp(a)
+#  define PetscSinScalar(a)     sin(a)
+#  define PetscCosScalar(a)     cos(a)
+
+#  if defined(PETSC_USE_SINGLE)
+#    define Scalar            float
+#  else
+#    define Scalar            double
+#  endif
 #endif
 
 /*
@@ -152,22 +157,24 @@ extern  Scalar            PETSC_i;
 
 /* ----------------------------------------------------------------------------*/
 /*
-    PLogDouble variables are used to contain double precision numbers
+    PetscLogDouble variables are used to contain double precision numbers
   that are not used in the numerical computations, but rather in logging,
   timing etc.
 */
-typedef double PLogDouble;
+typedef double PetscLogDouble;
 /*
       Once PETSc is compiling with a ADIC enhanced version of MPI
    we will create a new MPI_Datatype for the inactive double variables.
 */
 #if defined(AD_DERIV_H)
-/* extern  MPI_Datatype  MPIU_PLOGDOUBLE; */
+/* extern  MPI_Datatype  MPIU_PetscLogDOUBLE; */
 #else
 #if !defined(USING_MPIUNI)
-#define MPIU_PLOGDOUBLE MPI_DOUBLE
+#define MPIU_PetscLogDOUBLE MPI_DOUBLE
 #endif
 #endif
 
-
+#define PETSCMAP1_a(a,b)  a ## _ ## b
+#define PETSCMAP1_b(a,b)  PETSCMAP1_a(a,b)
+#define PETSCMAP1(a)      PETSCMAP1_b(a,Scalar)
 #endif

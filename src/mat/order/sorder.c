@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.82 2000/11/28 17:30:04 bsmith Exp bsmith $*/
+/*$Id: sorder.c,v 1.83 2000/12/01 16:34:43 bsmith Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -6,13 +6,13 @@
 #include "src/mat/matimpl.h"
 #include "petscsys.h"
 
-FList      MatOrderingList = 0;
+PetscFList      MatOrderingList = 0;
 PetscTruth MatOrderingRegisterAllCalled = PETSC_FALSE;
 
 EXTERN int MatOrdering_Flow_SeqAIJ(Mat,MatOrderingType,IS *,IS *);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatOrdering_Flow"
+#define __FUNC__ "MatOrdering_Flow"
 int MatOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscFunctionBegin;
@@ -24,7 +24,7 @@ int MatOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatOrdering_Natural"
+#define __FUNC__ "MatOrdering_Natural"
 int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   int        n,ierr,i,*ii;
@@ -42,7 +42,7 @@ int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
       ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,irow);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,icol);CHKERRQ(ierr);
     */
-    ii = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(ii);
+ierr = PetscMalloc(n*sizeof(int),&(    ii ));CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[i] = i;
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,irow);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,icol);CHKERRQ(ierr);
@@ -67,7 +67,7 @@ EXTERN_C_BEGIN
    matrix with symmetric non-zero structure.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatOrdering_RowLength"
+#define __FUNC__ "MatOrdering_RowLength"
 int MatOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   int        ierr,n,*ia,*ja,*permr,*lens,i;
@@ -77,7 +77,7 @@ int MatOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  lens  = (int*)PetscMalloc(2*n*sizeof(int));CHKPTRQ(lens);
+ierr = PetscMalloc(2*n*sizeof(int),&(  lens  ));CHKERRQ(ierr);
   permr = lens + n;
   for (i=0; i<n; i++) { 
     lens[i]  = ia[i+1] - ia[i];
@@ -134,20 +134,20 @@ $     -pc_lu_mat_ordering_type my_order
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatOrderingRegister" 
+#define __FUNC__ "MatOrderingRegister" 
 int MatOrderingRegister(char *sname,char *path,char *name,int (*function)(Mat,MatOrderingType,IS*,IS*))
 {
   int  ierr;
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = FListAdd(&MatOrderingList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatOrderingList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatOrderingRegisterDestroy"
+#define __FUNC__ "MatOrderingRegisterDestroy"
 /*@C
    MatOrderingRegisterDestroy - Frees the list of ordering routines.
 
@@ -165,7 +165,7 @@ int MatOrderingRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (MatOrderingList) {
-    ierr = FListDestroy(&MatOrderingList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(&MatOrderingList);CHKERRQ(ierr);
     MatOrderingList = 0;
   }
   PetscFunctionReturn(0);
@@ -175,7 +175,7 @@ EXTERN int MatAdjustForInodes(Mat,IS *,IS *);
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetOrdering"
+#define __FUNC__ "MatGetOrdering"
 /*@C
    MatGetOrdering - Gets a reordering for a matrix to reduce fill or to
    improve numerical stability of LU factorization.
@@ -248,8 +248,8 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
 
-  ierr = PLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
-  ierr =  FListFind(mat->comm,MatOrderingList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
+  ierr =  PetscFListFind(mat->comm,MatOrderingList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
 
   ierr = (*r)(mat,type,rperm,cperm);CHKERRQ(ierr);
@@ -266,19 +266,19 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = MatAdjustForInodes(mat,rperm,cperm);CHKERRQ(ierr);
   }
 
-  ierr = PLogEventEnd(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view_ordering_draw",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_view_ordering_draw",&flg);CHKERRQ(ierr);
   if (flg) {
     Mat tmat;
-    ierr = OptionsHasName(PETSC_NULL,"-mat_view_contour",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-mat_view_contour",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = ViewerPushFormat(VIEWER_DRAW_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
     }
     ierr = MatPermute(mat,*rperm,*cperm,&tmat);CHKERRQ(ierr);
-    ierr = MatView(tmat,VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+    ierr = MatView(tmat,PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     if (flg) {
-      ierr = ViewerPopFormat(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     }
     ierr = MatDestroy(tmat);CHKERRQ(ierr);
   }
@@ -287,8 +287,8 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetOrderingList"
-int MatGetOrderingList(FList *list)
+#define __FUNC__ "MatGetOrderingList"
+int MatGetOrderingList(PetscFList *list)
 {
   PetscFunctionBegin;
   *list = MatOrderingList;

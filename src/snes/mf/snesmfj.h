@@ -1,4 +1,4 @@
-/* "$Id: snesmfj.h,v 1.12 2000/08/17 04:52:42 bsmith Exp bsmith $"; */
+/* "$Id: snesmfj.h,v 1.13 2000/09/02 02:49:35 bsmith Exp bsmith $"; */
 /*
     This file should be included in NEW routines that compute the
     differencing parameter for finite difference based matrix-free
@@ -21,7 +21,7 @@
 */
 struct _MFOps {
   int (*compute)(MatSNESMFCtx,Vec,Vec,Scalar *);
-  int (*view)(MatSNESMFCtx,Viewer);
+  int (*view)(MatSNESMFCtx,PetscViewer);
   int (*destroy)(MatSNESMFCtx);
   int (*setfromoptions)(MatSNESMFCtx);
 };
@@ -47,9 +47,12 @@ struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
   Vec              funcvec;                      /* location to store func(u) */
   Vec              current_f;                    /* location of F(u); used with F(u+h) */
   Vec              current_u;                    /* location of u; used with F(u+h) */
+
+  PetscTruth       usesnes;                      /* if false indicates that one should (*func) 
+                                                    instead of SNES even if snes is present */
 };
 
-EXTERN FList      MatSNESMFList;
+EXTERN PetscFList      MatSNESMPetscFList;
 EXTERN PetscTruth MatSNESMFRegisterAllCalled;
 
 #endif

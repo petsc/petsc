@@ -1,4 +1,4 @@
-/*$Id: borthog3.c,v 1.19 2000/04/12 04:25:01 bsmith Exp balay $*/
+/*$Id: borthog3.c,v 1.20 2000/09/07 15:18:12 balay Exp bsmith $*/
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 
@@ -17,7 +17,7 @@
   Care is taken to accumulate the updated HH/HES values.
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGMRESIROrthogonalization"
+#define __FUNC__ "KSPGMRESIROrthogonalization"
 int KSPGMRESIROrthogonalization(KSP  ksp,int it)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
@@ -25,11 +25,11 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it)
   Scalar    *hh,*hes,shh[100],*lhh;
 
   PetscFunctionBegin;
-  ierr = PLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   /* Don't allocate small arrays */
   if (it < 100) lhh = shh;
   else {
-    lhh = (Scalar *)PetscMalloc((it+1) * sizeof(Scalar));CHKPTRQ(lhh);
+    lhh = (Scalar *)PetscMalloc((it+1) * sizeof(Scalar));CHKERRQ(ierr);
   }
   
   /* update Hessenberg matrix and do unmodified Gram-Schmidt */
@@ -63,7 +63,7 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it)
   } while (ncnt++ < 2);
 
   if (it >= 100) {ierr = PetscFree(lhh);CHKERRQ(ierr);}
-  ierr = PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

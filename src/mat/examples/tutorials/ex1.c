@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.22 2000/10/24 20:26:14 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.23 2000/10/31 17:23:10 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and reorders it.\n\
@@ -15,7 +15,7 @@ users manual for a discussion of preloading.  Input parameters include\n\
    Concepts: Mat^ordering a matrix - loading a binary matrix and vector;
    Concepts: Mat^loading a binary matrix and vector;
    Concepts: Vec^loading a binary vector;
-   Concepts: PLog^preloading executable
+   Concepts: PetscLog^preloading executable
    Processors: 1
 T*/
 
@@ -33,7 +33,7 @@ T*/
 int main(int argc,char **args)
 {
   Mat               A;                /* matrix */
-  Viewer            fd;               /* viewer */
+  PetscViewer            fd;               /* viewer */
   char              file[2][128];     /* input file name */
   IS                isrow,iscol;      /* row and column permutations */
   int               ierr;
@@ -47,9 +47,9 @@ int main(int argc,char **args)
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,"Must indicate binary file with the -f0 option");
-  ierr = OptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRA(ierr);
   if (flg) PreLoad = PETSC_TRUE;
 
   /* -----------------------------------------------------------
@@ -71,16 +71,16 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /* 
-       Open binary file.  Note that we use BINARY_RDONLY to indicate
+       Open binary file.  Note that we use PETSC_BINARY_RDONLY to indicate
        reading from this file.
     */
-    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],BINARY_RDONLY,&fd);CHKERRA(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
 
     /*
        Load the matrix; then destroy the viewer.
     */
     ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
-    ierr = ViewerDestroy(fd);CHKERRA(ierr);
+    ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
 
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -

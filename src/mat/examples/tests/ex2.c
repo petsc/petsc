@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.16 2000/09/28 21:11:49 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.17 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 
@@ -15,14 +15,14 @@ int main(int argc,char **argv)
   double     normf,normi,norm1;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,0);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_COMMON,0);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n = m;
-  ierr = OptionsHasName(PETSC_NULL,"-rectA",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-rectA",&flg);CHKERRA(ierr);
   if (flg) {n += 2; rect = 1;}
-  ierr = OptionsHasName(PETSC_NULL,"-rectB",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-rectB",&flg);CHKERRA(ierr);
   if (flg) {n -= 2; rect = 1;}
 
   /* ------- Assemble matrix, test MatValid() --------- */
@@ -51,11 +51,11 @@ int main(int argc,char **argv)
   ierr = MatNorm(mat,NORM_INFINITY,&normi);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"original: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
                      normf,norm1,normi);CHKERRA(ierr);
-  ierr = MatView(mat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* --------------- Test MatTranspose()  -------------- */
 
-  ierr = OptionsHasName(PETSC_NULL,"-in_place",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-in_place",&flg);CHKERRA(ierr);
   if (!rect && flg) {
     ierr = MatTranspose(mat,0);CHKERRA(ierr);   /* in-place transpose */
     tmat = mat; mat = 0;
@@ -71,16 +71,16 @@ int main(int argc,char **argv)
   ierr = MatNorm(tmat,NORM_INFINITY,&normi);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
                      normf,norm1,normi);CHKERRA(ierr);
-  ierr = MatView(tmat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* ----------------- Test MatAXPY()  ----------------- */
 
   if (mat && !rect) {
     Scalar alpha = 1.0;
-    ierr = OptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRA(ierr);
+    ierr = PetscOptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRA(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");CHKERRA(ierr);
     ierr = MatAXPY(&alpha,mat,tmat);CHKERRA(ierr); 
-    ierr = MatView(tmat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   }
 
   /* Free data structures */  

@@ -1,9 +1,9 @@
-/*$Id: snesj.c,v 1.67 2000/08/31 17:10:59 bsmith Exp bsmith $*/
+/*$Id: snesj.c,v 1.68 2000/09/28 21:14:05 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"    /*I  "petscsnes.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESDefaultComputeJacobian"
+#define __FUNC__ "SNESDefaultComputeJacobian"
 /*@C
    SNESDefaultComputeJacobian - Computes the Jacobian using finite differences. 
 
@@ -49,7 +49,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
   int      (*eval_fct)(SNES,Vec,Vec)=0;
 
   PetscFunctionBegin;
-  ierr = OptionsGetDouble(snes->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetDouble(snes->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) eval_fct = SNESComputeFunction;
   else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) eval_fct = SNESComputeGradient;
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid method class");
@@ -59,7 +59,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
   if (!snes->nvwork) {
     ierr = VecDuplicateVecs(x1,3,&snes->vwork);CHKERRQ(ierr);
     snes->nvwork = 3;
-    PLogObjectParents(snes,3,snes->vwork);
+    PetscLogObjectParents(snes,3,snes->vwork);
   }
   j1a = snes->vwork[0]; j2a = snes->vwork[1]; x2 = snes->vwork[2];
 
@@ -111,7 +111,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESDefaultComputeHessian"
+#define __FUNC__ "SNESDefaultComputeHessian"
 /*@C
    SNESDefaultComputeHessian - Computes the Hessian using finite differences. 
 
@@ -153,7 +153,7 @@ int SNESDefaultComputeHessian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESDefaultComputeHessianColor"
+#define __FUNC__ "SNESDefaultComputeHessianColor"
 /*@C
    SNESDefaultComputeHessianColor - Computes the Hessian using colored finite differences. 
 

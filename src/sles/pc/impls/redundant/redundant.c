@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.25 2000/09/13 03:11:54 bsmith Exp bsmith $*/
+/*$Id: redundant.c,v 1.26 2000/09/28 21:12:56 bsmith Exp bsmith $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -15,34 +15,34 @@ typedef struct {
 } PC_Redundant;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCView_Redundant"
-static int PCView_Redundant(PC pc,Viewer viewer)
+#define __FUNC__ "PCView_Redundant"
+static int PCView_Redundant(PC pc,PetscViewer viewer)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
   int          ierr,rank;
   PetscTruth   isascii,isstring;
-  Viewer       sviewer;
+  PetscViewer       sviewer;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: Actual PC follows\n");CHKERRQ(ierr);
-    ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: Actual PC follows\n");CHKERRQ(ierr);
+    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
-      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PCView(red->pc,sviewer);CHKERRQ(ierr);
-      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
   } else if (isstring) {
-    ierr = ViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
-    ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
+    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
       ierr = PCView(red->pc,sviewer);CHKERRQ(ierr);
     }
-    ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for PC redundant",((PetscObject)viewer)->type_name);
   }
@@ -50,7 +50,7 @@ static int PCView_Redundant(PC pc,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp_Redundant"
+#define __FUNC__ "PCSetUp_Redundant"
 static int PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red  = (PC_Redundant*)pc->data;
@@ -128,7 +128,7 @@ static int PCSetUp_Redundant(PC pc)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_Redundant"
+#define __FUNC__ "PCApply_Redundant"
 static int PCApply_Redundant(PC pc,Vec x,Vec y)
 {
   PC_Redundant      *red = (PC_Redundant*)pc->data;
@@ -150,7 +150,7 @@ static int PCApply_Redundant(PC pc,Vec x,Vec y)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCDestroy_Redundant"
+#define __FUNC__ "PCDestroy_Redundant"
 static int PCDestroy_Redundant(PC pc)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -173,7 +173,7 @@ static int PCDestroy_Redundant(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_Redundant"
+#define __FUNC__ "PCSetFromOptions_Redundant"
 static int PCSetFromOptions_Redundant(PC pc)
 {
   PetscFunctionBegin;
@@ -182,7 +182,7 @@ static int PCSetFromOptions_Redundant(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCRedundantSetScatter_Redundant"
+#define __FUNC__ "PCRedundantSetScatter_Redundant"
 int PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -198,7 +198,7 @@ int PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCRedundantSetScatter"
+#define __FUNC__ "PCRedundantSetScatter"
 /*@
    PCRedundantSetScatter - Sets the scatter used to copy values into the
      redundant local solve and the scatter to move them back into the global
@@ -230,7 +230,7 @@ int PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCRedundantGetPC_Redundant"
+#define __FUNC__ "PCRedundantGetPC_Redundant"
 int PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -242,7 +242,7 @@ int PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCRedundantGetPC"
+#define __FUNC__ "PCRedundantGetPC"
 /*@
    PCRedundantGetPC - Gets the sequential PC created by the redundant PC.
 
@@ -273,7 +273,7 @@ int PCRedundantGetPC(PC pc,PC *innerpc)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCRedundantGetOperators_Redundant"
+#define __FUNC__ "PCRedundantGetOperators_Redundant"
 int PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -286,7 +286,7 @@ int PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCRedundantGetOperators"
+#define __FUNC__ "PCRedundantGetOperators"
 /*@
    PCRedundantGetOperators - gets the sequential matrix and preconditioner matrix
 
@@ -319,7 +319,7 @@ int PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 /* -------------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCreate_Redundant"
+#define __FUNC__ "PCCreate_Redundant"
 int PCCreate_Redundant(PC pc)
 {
   int          ierr;
@@ -327,8 +327,8 @@ int PCCreate_Redundant(PC pc)
   char         *prefix;
 
   PetscFunctionBegin;
-  red = PetscNew(PC_Redundant);CHKPTRQ(red);
-  PLogObjectMemory(pc,sizeof(PC_Redundant));
+  ierr = PetscNew(PC_Redundant,&red);CHKERRQ(ierr);
+  PetscLogObjectMemory(pc,sizeof(PC_Redundant));
   ierr = PetscMemzero(red,sizeof(PC_Redundant));CHKERRQ(ierr);
   red->useparallelmat   = PETSC_TRUE;
 

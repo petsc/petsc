@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.30 2000/09/22 20:46:48 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.31 2000/09/28 21:15:17 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -135,27 +135,27 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  PLogEventRegister(&READ_EVENT,             "Read Data","red");
-  PLogEventRegister(&PARTITION_ELEMENT_EVENT,"Partition elemen","blue");
-  PLogEventRegister(&MOVE_ELEMENT_EVENT,     "Move elements","green");
-  PLogEventRegister(&PARTITION_VERTEX_EVENT, "Partition vertic","orange");
-  PLogEventRegister(&MOVE_VERTEX_EVENT,      "Move vertices","yellow");
+  PetscLogEventRegister(&READ_EVENT,             "Read Data","red");
+  PetscLogEventRegister(&PARTITION_ELEMENT_EVENT,"Partition elemen","blue");
+  PetscLogEventRegister(&MOVE_ELEMENT_EVENT,     "Move elements","green");
+  PetscLogEventRegister(&PARTITION_VERTEX_EVENT, "Partition vertic","orange");
+  PetscLogEventRegister(&MOVE_VERTEX_EVENT,      "Move vertices","yellow");
 
-  ierr = PLogEventBegin(READ_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventBegin(READ_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = DataRead(&gdata);CHKERRA(ierr);
-  ierr = PLogEventEnd(READ_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = PLogEventBegin(PARTITION_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventEnd(READ_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventBegin(PARTITION_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = DataPartitionElements(&gdata);CHKERRA(ierr);
-  ierr = PLogEventEnd(PARTITION_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = PLogEventBegin(MOVE_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventEnd(PARTITION_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventBegin(MOVE_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = DataMoveElements(&gdata);CHKERRA(ierr);
-  ierr = PLogEventEnd(MOVE_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = PLogEventBegin(PARTITION_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventEnd(MOVE_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventBegin(PARTITION_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = DataPartitionVertices(&gdata);CHKERRA(ierr);
-  ierr = PLogEventEnd(PARTITION_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
-  ierr = PLogEventBegin(MOVE_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventEnd(PARTITION_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventBegin(MOVE_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = DataMoveVertices(&gdata);CHKERRA(ierr);
-  ierr = PLogEventEnd(MOVE_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PetscLogEventEnd(MOVE_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = DataDestroy(&gdata);CHKERRA(ierr);
 
   PetscFinalize();
@@ -212,7 +212,7 @@ int DataRead(GridData *gdata)
       vertices are assigned to each processor. Splitting vertices equally amoung
       all processors.
     */ 
-    mmlocal_vert = (int*)PetscMalloc(size*sizeof(int));CHKPTRA(mmlocal_vert);
+ierr = PetscMalloc(size*sizeof(int),&(    mmlocal_vert ));CHKPTRA(mmlocal_vert);
     for (i=0; i<size; i++) {
       mmlocal_vert[i] = n_vert/size + ((n_vert % size) > i);
       printf("Processor %d assigned %d vertices\n",i,mmlocal_vert[i]);
@@ -256,7 +256,7 @@ int DataRead(GridData *gdata)
       Allocate enough room for the first processor to keep track of how many 
       elements are assigned to each processor.
     */ 
-    mmlocal_ele = (int*)PetscMalloc(size*sizeof(int));CHKPTRA(mmlocal_ele);
+ierr = PetscMalloc(size*sizeof(int),&(    mmlocal_ele ));CHKPTRA(mmlocal_ele);
     for (i=0; i<size; i++) {
       mmlocal_ele[i] = n_ele/size + ((n_ele % size) > i);
       printf("Processor %d assigned %d elements\n",i,mmlocal_ele[i]);
@@ -291,8 +291,8 @@ int DataRead(GridData *gdata)
          We don't know how many spaces in ja[] to allocate so we allocate 
        3*the number of local elements, this is the maximum it could be
     */
-    ia    = (int*)PetscMalloc((mlocal_ele+1)*sizeof(int));CHKPTRA(ia);
-    ja    = (int*)PetscMalloc((3*mlocal_ele+1)*sizeof(int));CHKPTRA(ja);
+ierr = PetscMalloc((mlocal_ele+1)*sizeof(int),&    ia    );CHKPTRA(ia);
+ierr = PetscMalloc((3*mlocal_ele+1)*sizeof(int),&    ja    );CHKPTRA(ja);
     net   = 0;
     ia[0] = 0;
     printf("Element neighbors on processor 0\n");
@@ -320,8 +320,8 @@ int DataRead(GridData *gdata)
     /*
        Read in element neighbor information for all other processors
     */
-    iatmp    = (int*)PetscMalloc((mlocal_ele+1)*sizeof(int));CHKPTRA(iatmp);
-    jatmp    = (int*)PetscMalloc((3*mlocal_ele+1)*sizeof(int));CHKPTRA(jatmp);
+ierr = PetscMalloc((mlocal_ele+1)*sizeof(int),&    iatmp    );CHKPTRA(iatmp);
+ierr = PetscMalloc((3*mlocal_ele+1)*sizeof(int),&    jatmp    );CHKPTRA(jatmp);
     for (j=1; j<size; j++) {
       net   = 0;
       iatmp[0] = 0;
@@ -366,7 +366,7 @@ int DataRead(GridData *gdata)
     mlocal_vert = n_vert/size + ((n_vert % size) > rank);
 
     /* receive vertices */
-    vert = (double*)PetscMalloc(2*(mlocal_vert+1)*sizeof(double));CHKPTRQ(vert);
+ierr = PetscMalloc(2*(mlocal_vert+1)*sizeof(double),&    vert );CHKERRQ(ierr);
     ierr = MPI_Recv(vert,2*mlocal_vert,MPI_DOUBLE,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
     /* receive total number of elements */
@@ -374,11 +374,11 @@ int DataRead(GridData *gdata)
     mlocal_ele = n_ele/size + ((n_ele % size) > rank);
 
     /* receive elements */
-    ele = (int*)PetscMalloc(3*(mlocal_ele+1)*sizeof(int));CHKPTRQ(ele);
+ierr = PetscMalloc(3*(mlocal_ele+1)*sizeof(int),&    ele );CHKERRQ(ierr);
     ierr = MPI_Recv(ele,3*mlocal_ele,MPI_INT,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
     /* receive element adjacency graph */
-    ia    = (int*)PetscMalloc((mlocal_ele+1)*sizeof(int));CHKPTRA(ia);
+ierr = PetscMalloc((mlocal_ele+1)*sizeof(int),&    ia    );CHKPTRA(ia);
     ierr = MPI_Recv(ia,mlocal_ele+1,MPI_INT,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
     ja    = (int*)PetscMalloc((ia[mlocal_ele]+1)*sizeof(int));CHKPTRA(ja);
@@ -439,7 +439,7 @@ int DataPartitionElements(GridData *gdata)
        isnewproc - indicates for each local element the new processor it is assigned to
   */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"New processor assignment for each element\n");CHKERRQ(ierr);
-  ierr = ISView(isnewproc,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ISView(isnewproc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   gdata->isnewproc = isnewproc;
 
   /*
@@ -473,7 +473,7 @@ int DataMoveElements(GridData *gdata)
   /* 
       Determine how many elements are assigned to each processor 
   */
-  counts = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(counts);
+ierr = PetscMalloc(size*sizeof(int),&(  counts ));CHKERRQ(ierr);
   ierr   = ISPartitioningCount(gdata->isnewproc,counts);CHKERRQ(ierr);
 
   /* 
@@ -625,7 +625,7 @@ int DataPartitionVertices(GridData *gdata)
   /* 
      Now we know how many are local, allocated enough space for them and mark them 
   */
-  localvert = (int*)PetscMalloc((nmax+1)*sizeof(int));CHKPTRQ(localvert);
+ierr = PetscMalloc((nmax+1)*sizeof(int),&  localvert );CHKERRQ(ierr);
 
   /* generate local list and fill in mask */
   nlocal = 0;
@@ -662,7 +662,7 @@ int DataPartitionVertices(GridData *gdata)
   /* print lists of owned vertices */
   PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number vertices assigned %d\n",rank,nlocal);
   PetscSynchronizedFlush(PETSC_COMM_WORLD);
-  ierr = PetscIntView(nlocal,localvert,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscIntView(nlocal,localvert,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

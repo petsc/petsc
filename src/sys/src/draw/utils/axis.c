@@ -1,4 +1,4 @@
-/*$Id: axis.c,v 1.69 2000/05/10 16:39:10 bsmith Exp bsmith $*/
+/*$Id: axis.c,v 1.70 2000/09/22 20:42:13 bsmith Exp bsmith $*/
 /*
    This file contains a simple routine for generating a 2-d axis.
 */
@@ -13,7 +13,7 @@ struct _p_DrawAxis {
     int     (*xticks)(PetscReal,PetscReal,int,int*,PetscReal*,int),
             (*yticks)(PetscReal,PetscReal,int,int*,PetscReal*,int);  
                                           /* location and size of ticks */
-    Draw    win;
+    PetscDraw    win;
     int     ac,tc,cc;                     /* axis,tick, charactor color */
     char    *xlabel,*ylabel,*toplabel;
 };
@@ -26,7 +26,7 @@ static int    PetscAGetNice(PetscReal,PetscReal,int,PetscReal*);
 static int    PetscAGetBase(PetscReal,PetscReal,int,PetscReal*,int*);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscRint"></a>*/"PetscRint" 
+#define __FUNC__ "PetscRint" 
 static int PetscRint(PetscReal x,PetscReal *result)
 {
   PetscFunctionBegin;
@@ -36,14 +36,14 @@ static int PetscRint(PetscReal x,PetscReal *result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawAxisCreate"></a>*/"DrawAxisCreate" 
+#define __FUNC__ "DrawAxisCreate" 
 /*@C
-   DrawAxisCreate - Generate the axis data structure.
+   PetscDrawAxisCreate - Generate the axis data structure.
 
-   Collective over Draw
+   Collective over PetscDraw
 
    Input Parameters:
-.  win - Draw object where axis to to be made
+.  win - PetscDraw object where axis to to be made
 
    Ouput Parameters:
 .  axis - the axis datastructure
@@ -51,33 +51,33 @@ static int PetscRint(PetscReal x,PetscReal *result)
    Level: advanced
 
 @*/
-int DrawAxisCreate(Draw draw,DrawAxis *axis)
+int PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 {
-  DrawAxis    ad;
+  PetscDrawAxis    ad;
   PetscObject obj = (PetscObject)draw;
   int         ierr;
   PetscTruth  isnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
   PetscValidPointer(axis);
-  ierr = PetscTypeCompare(obj,DRAW_NULL,&isnull);CHKERRQ(ierr);
+  ierr = PetscTypeCompare(obj,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
-    ierr = DrawOpenNull(obj->comm,(Draw*)axis);CHKERRQ(ierr);
+    ierr = PetscDrawOpenNull(obj->comm,(PetscDraw*)axis);CHKERRQ(ierr);
     (*axis)->win = draw;
     PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_COOKIE,0,"DrawAxis",obj->comm,DrawAxisDestroy,0);
-  PLogObjectCreate(ad);
-  PLogObjectParent(draw,ad);
+  PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_COOKIE,0,"DrawAxis",obj->comm,PetscDrawAxisDestroy,0);
+  PetscLogObjectCreate(ad);
+  PetscLogObjectParent(draw,ad);
   ad->xticks    = PetscADefTicks;
   ad->yticks    = PetscADefTicks;
   ad->xlabelstr = PetscADefLabel;
   ad->ylabelstr = PetscADefLabel;
   ad->win       = draw;
-  ad->ac        = DRAW_BLACK;
-  ad->tc        = DRAW_BLACK;
-  ad->cc        = DRAW_BLACK;
+  ad->ac        = PETSC_DRAW_BLACK;
+  ad->tc        = PETSC_DRAW_BLACK;
+  ad->cc        = PETSC_DRAW_BLACK;
   ad->xlabel    = 0;
   ad->ylabel    = 0;
   ad->toplabel  = 0;
@@ -87,11 +87,11 @@ int DrawAxisCreate(Draw draw,DrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawAxisDestroy"></a>*/"DrawAxisDestroy" 
+#define __FUNC__ "DrawAxisDestroy" 
 /*@C
-    DrawAxisDestroy - Frees the space used by an axis structure.
+    PetscDrawAxisDestroy - Frees the space used by an axis structure.
 
-    Collective over DrawAxis
+    Collective over PetscDrawAxis
 
     Input Parameters:
 .   axis - the axis context
@@ -99,24 +99,24 @@ int DrawAxisCreate(Draw draw,DrawAxis *axis)
     Level: advanced
 
 @*/
-int DrawAxisDestroy(DrawAxis axis)
+int PetscDrawAxisDestroy(PetscDrawAxis axis)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
   if (--axis->refct > 0) PetscFunctionReturn(0);
 
-  PLogObjectDestroy(axis);
+  PetscLogObjectDestroy(axis);
   PetscHeaderDestroy(axis);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawAxisSetColors"></a>*/"DrawAxisSetColors" 
+#define __FUNC__ "DrawAxisSetColors" 
 /*@
-    DrawAxisSetColors -  Sets the colors to be used for the axis,       
+    PetscDrawAxisSetColors -  Sets the colors to be used for the axis,       
                          tickmarks, and text.
 
-    Not Collective (ignored on all processors except processor 0 of DrawAxis)
+    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
 
     Input Parameters:
 +   axis - the axis
@@ -127,7 +127,7 @@ int DrawAxisDestroy(DrawAxis axis)
     Level: advanced
 
 @*/
-int DrawAxisSetColors(DrawAxis axis,int ac,int tc,int cc)
+int PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -136,11 +136,11 @@ int DrawAxisSetColors(DrawAxis axis,int ac,int tc,int cc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawAxisSetLabels"></a>*/"DrawAxisSetLabels" 
+#define __FUNC__ "DrawAxisSetLabels" 
 /*@C
-    DrawAxisSetLabels -  Sets the x and y axis labels.
+    PetscDrawAxisSetLabels -  Sets the x and y axis labels.
 
-    Not Collective (ignored on all processors except processor 0 of DrawAxis)
+    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
 
     Input Parameters:
 +   axis - the axis
@@ -150,7 +150,7 @@ int DrawAxisSetColors(DrawAxis axis,int ac,int tc,int cc)
     Level: advanced
 
 @*/
-int DrawAxisSetLabels(DrawAxis axis,char* top,char *xlabel,char *ylabel)
+int PetscDrawAxisSetLabels(PetscDrawAxis axis,char* top,char *xlabel,char *ylabel)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -161,11 +161,11 @@ int DrawAxisSetLabels(DrawAxis axis,char* top,char *xlabel,char *ylabel)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawAxisSetLimits"></a>*/"DrawAxisSetLimits" 
+#define __FUNC__ "DrawAxisSetLimits" 
 /*@
-    DrawAxisSetLimits -  Sets the limits (in user coords) of the axis
+    PetscDrawAxisSetLimits -  Sets the limits (in user coords) of the axis
     
-    Not Collective (ignored on all processors except processor 0 of DrawAxis)
+    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
 
     Input Parameters:
 +   axis - the axis
@@ -175,7 +175,7 @@ int DrawAxisSetLabels(DrawAxis axis,char* top,char *xlabel,char *ylabel)
     Level: advanced
 
 @*/
-int DrawAxisSetLimits(DrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax)
+int PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -187,11 +187,11 @@ int DrawAxisSetLimits(DrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DrawAxisDraw"></a>*/"DrawAxisDraw" 
+#define __FUNC__ "DrawAxisDraw" 
 /*@
-    DrawAxisDraw - Draws an axis.
+    PetscDrawAxisDraw - PetscDraws an axis.
 
-    Not Collective (ignored on all processors except processor 0 of DrawAxis)
+    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
 
     Input Parameter:
 .   axis - Axis structure
@@ -204,12 +204,12 @@ int DrawAxisSetLimits(DrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin
     effects may be generated.  These routines are part of the Axis
     structure (axis).
 @*/
-int DrawAxisDraw(DrawAxis axis)
+int PetscDrawAxisDraw(PetscDrawAxis axis)
 {
   int       i,ierr,ntick,numx,numy,ac = axis->ac,tc = axis->tc,cc = axis->cc,rank,len;
   PetscReal tickloc[MAXSEGS],sep,h,w,tw,th,xl,xr,yl,yr;
   char      *p;
-  Draw      draw = axis->win;
+  PetscDraw      draw = axis->win;
   
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -219,32 +219,32 @@ int DrawAxisDraw(DrawAxis axis)
   if (axis->xlow == axis->xhigh) {axis->xlow -= .5; axis->xhigh += .5;}
   if (axis->ylow == axis->yhigh) {axis->ylow -= .5; axis->yhigh += .5;}
   xl = axis->xlow; xr = axis->xhigh; yl = axis->ylow; yr = axis->yhigh;
-  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
-  ierr = DrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
+  ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
   numx = (int)(.15*(xr-xl)/tw); if (numx > 6) numx = 6; if (numx< 2) numx = 2;
   numy = (int)(.5*(yr-yl)/th); if (numy > 6) numy = 6; if (numy< 2) numy = 2;
   xl -= 8*tw; xr += 2*tw; yl -= 2.5*th; yr += 2*th;
   if (axis->xlabel) yl -= 2*th;
   if (axis->ylabel) xl -= 2*tw;
-  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
-  ierr = DrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
+  ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
 
-  ierr = DrawLine(draw,axis->xlow,axis->ylow,axis->xhigh,axis->ylow,ac);CHKERRQ(ierr);
-  ierr = DrawLine(draw,axis->xlow,axis->ylow,axis->xlow,axis->yhigh,ac);CHKERRQ(ierr);
+  ierr = PetscDrawLine(draw,axis->xlow,axis->ylow,axis->xhigh,axis->ylow,ac);CHKERRQ(ierr);
+  ierr = PetscDrawLine(draw,axis->xlow,axis->ylow,axis->xlow,axis->yhigh,ac);CHKERRQ(ierr);
 
   if (axis->toplabel) {
     ierr =  PetscStrlen(axis->toplabel,&len);CHKERRQ(ierr);
     w    = xl + .5*(xr - xl) - .5*len*tw;
     h    = axis->yhigh;
-    ierr = DrawString(draw,w,h,cc,axis->toplabel);CHKERRQ(ierr);
+    ierr = PetscDrawString(draw,w,h,cc,axis->toplabel);CHKERRQ(ierr);
   }
 
-  /* Draw the ticks and labels */
+  /* PetscDraw the ticks and labels */
   if (axis->xticks) {
     ierr = (*axis->xticks)(axis->xlow,axis->xhigh,numx,&ntick,tickloc,MAXSEGS);CHKERRQ(ierr);
-    /* Draw in tick marks */
+    /* PetscDraw in tick marks */
     for (i=0; i<ntick; i++) {
-      ierr = DrawLine(draw,tickloc[i],axis->ylow-.5*th,tickloc[i],axis->ylow+.5*th,tc);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,tickloc[i],axis->ylow-.5*th,tickloc[i],axis->ylow+.5*th,tc);CHKERRQ(ierr);
     }
     /* label ticks */
     for (i=0; i<ntick; i++) {
@@ -255,7 +255,7 @@ int DrawAxisDraw(DrawAxis axis)
 	    ierr = (*axis->xlabelstr)(tickloc[i],sep,&p);CHKERRQ(ierr);
             ierr = PetscStrlen(p,&len);CHKERRQ(ierr);
 	    w    = .5*len*tw;
-	    ierr = DrawString(draw,tickloc[i]-w,axis->ylow-1.2*th,cc,p);CHKERRQ(ierr);
+	    ierr = PetscDrawString(draw,tickloc[i]-w,axis->ylow-1.2*th,cc,p);CHKERRQ(ierr);
         }
     }
   }
@@ -263,13 +263,13 @@ int DrawAxisDraw(DrawAxis axis)
     ierr = PetscStrlen(axis->xlabel,&len);CHKERRQ(ierr);
     w    = xl + .5*(xr - xl) - .5*len*tw;
     h    = axis->ylow - 2.5*th;
-    ierr = DrawString(draw,w,h,cc,axis->xlabel);CHKERRQ(ierr);
+    ierr = PetscDrawString(draw,w,h,cc,axis->xlabel);CHKERRQ(ierr);
   }
   if (axis->yticks) {
     ierr = (*axis->yticks)(axis->ylow,axis->yhigh,numy,&ntick,tickloc,MAXSEGS);CHKERRQ(ierr);
-    /* Draw in tick marks */
+    /* PetscDraw in tick marks */
     for (i=0; i<ntick; i++) {
-      ierr = DrawLine(draw,axis->xlow -.5*tw,tickloc[i],axis->xlow+.5*tw,tickloc[i],tc);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,axis->xlow -.5*tw,tickloc[i],axis->xlow+.5*tw,tickloc[i],tc);CHKERRQ(ierr);
     }
     /* label ticks */
     for (i=0; i<ntick; i++) {
@@ -280,7 +280,7 @@ int DrawAxisDraw(DrawAxis axis)
 	    ierr = (*axis->xlabelstr)(tickloc[i],sep,&p);CHKERRQ(ierr);
             ierr = PetscStrlen(p,&len);CHKERRQ(ierr);
 	    w    = axis->xlow - len * tw - 1.2*tw;
-	    ierr = DrawString(draw,w,tickloc[i]-.5*th,cc,p);CHKERRQ(ierr);
+	    ierr = PetscDrawString(draw,w,tickloc[i]-.5*th,cc,p);CHKERRQ(ierr);
         }
     }
   }
@@ -288,13 +288,13 @@ int DrawAxisDraw(DrawAxis axis)
     ierr = PetscStrlen(axis->ylabel,&len);CHKERRQ(ierr);
     h    = yl + .5*(yr - yl) + .5*len*th;
     w    = xl + .5*tw;
-    ierr = DrawStringVertical(draw,w,h,cc,axis->ylabel);CHKERRQ(ierr);
+    ierr = PetscDrawStringVertical(draw,w,h,cc,axis->ylabel);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStripAllZeros"></a>*/"PetscStripAllZeros" 
+#define __FUNC__ "PetscStripAllZeros" 
 /*
     Removes all zeros but one from .0000 
 */
@@ -314,7 +314,7 @@ static int PetscStripAllZeros(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStripTrailingZeros"></a>*/"PetscStripTrailingZeros" 
+#define __FUNC__ "PetscStripTrailingZeros" 
 /*
     Removes trailing zeros
 */
@@ -344,7 +344,7 @@ static int PetscStripTrailingZeros(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStripInitialZero"></a>*/"PetscStripInitialZero" 
+#define __FUNC__ "PetscStripInitialZero" 
 /*
     Removes leading 0 from 0.22 or -0.22
 */
@@ -367,7 +367,7 @@ static int PetscStripInitialZero(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStripZeros"></a>*/"PetscStripZeros" 
+#define __FUNC__ "PetscStripZeros" 
 /*
      Removes the extraneous zeros in numbers like 1.10000e6
 */
@@ -389,7 +389,7 @@ static int PetscStripZeros(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscStripZerosPlus"></a>*/"PetscStripZerosPlus" 
+#define __FUNC__ "PetscStripZerosPlus" 
 /*
       Removes the plus in something like 1.1e+2
 */
@@ -420,7 +420,7 @@ static int PetscStripZerosPlus(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscADefLabel"></a>*/"PetscADefLabel" 
+#define __FUNC__ "PetscADefLabel" 
 /*
    val is the label value.  sep is the separation to the next (or previous)
    label; this is useful in determining how many significant figures to   
@@ -490,7 +490,7 @@ int PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscADefTicks"></a>*/"PetscADefTicks" 
+#define __FUNC__ "PetscADefTicks" 
 /* Finds "nice" locations for the ticks */
 int PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal * tickloc,int  maxtick)
 {
@@ -541,7 +541,7 @@ static int PetscExp10(PetscReal d,PetscReal *result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscMod"></a>*/"PetscMod" 
+#define __FUNC__ "PetscMod" 
 static int PetscMod(PetscReal x,PetscReal y,PetscReal *result)
 {
   int     i;
@@ -555,7 +555,7 @@ static int PetscMod(PetscReal x,PetscReal y,PetscReal *result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscCopysign"></a>*/"PetscCopysign" 
+#define __FUNC__ "PetscCopysign" 
 static int PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
 {
   PetscFunctionBegin;
@@ -565,7 +565,7 @@ static int PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscAGetNice"></a>*/"PetscAGetNice" 
+#define __FUNC__ "PetscAGetNice" 
 /*
     Given a value "in" and a "base", return a nice value.
     based on "sign", extend up (+1) or down (-1)
@@ -588,7 +588,7 @@ static int PetscAGetNice(PetscReal in,PetscReal base,int sign,PetscReal *result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscAGetBase"></a>*/"PetscAGetBase" 
+#define __FUNC__ "PetscAGetBase" 
 static int PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal*Base,int*power)
 {
   PetscReal        base,ftemp,e10;

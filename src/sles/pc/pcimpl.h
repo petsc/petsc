@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.28 2000/08/01 20:02:56 bsmith Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.29 2000/09/02 02:48:42 bsmith Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -22,7 +22,7 @@ struct _PCOps {
   int          (*applysymmetricright)(PC,Vec,Vec);
   int          (*setuponblocks)(PC);
   int          (*destroy)(PC);
-  int          (*view)(PC,Viewer);
+  int          (*view)(PC,PetscViewer);
 };
 
 /*

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.83 2000/09/28 21:13:46 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.84 2000/10/24 20:26:55 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -37,7 +37,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
@@ -140,7 +140,7 @@ int main(int argc,char **args)
      View solver info; we could instead use the option -sles_view to
      print this info to the screen at the conclusion of SLESSolve().
   */
-  ierr = SLESView(sles,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up

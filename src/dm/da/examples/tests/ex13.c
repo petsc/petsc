@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.8 1999/11/05 14:47:57 bsmith Exp balay $*/
+/*$Id: ex13.c,v 1.9 2000/05/05 22:19:31 balay Exp bsmith $*/
 
 static char help[] = "Tests loading DA vector from file\n\n";
 
@@ -12,22 +12,22 @@ int main(int argc,char **argv)
   int      ierr,M = PETSC_DECIDE,N = PETSC_DECIDE;
   DA       da;
   Vec      global;
-  Viewer   bviewer;
+  PetscViewer   bviewer;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* Read options */
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
 
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",BINARY_RDONLY,&bviewer);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",PETSC_BINARY_RDONLY,&bviewer);CHKERRA(ierr);
   ierr = DALoad(bviewer,M,N,PETSC_DECIDE,&da);CHKERRA(ierr);
   ierr = DACreateGlobalVector(da,&global);CHKERRA(ierr); 
   ierr = VecLoadIntoVector(bviewer,global);CHKERRA(ierr); 
-  ierr = ViewerDestroy(bviewer);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(bviewer);CHKERRA(ierr);
 
 
-  ierr = VecView(global,VIEWER_DRAW_WORLD);CHKERRA(ierr);
+  ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr);
 
 
   /* Free memory */

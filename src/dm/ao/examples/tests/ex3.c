@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.19 2000/05/05 22:19:15 balay Exp balay $*/
+/*$Id: ex3.c,v 1.20 2000/05/08 15:09:20 balay Exp bsmith $*/
 
 static char help[] = "Tests AOData \n\n";
 
@@ -12,11 +12,11 @@ int main(int argc,char **argv)
   int     n = 2,nglobal,bs = 2,*keys,*data,ierr,rank,size,i,start;
   double  *gd;
   AOData  aodata;
-  Viewer  binary;
+  PetscViewer  binary;
   PetscBT ld;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); n = n + rank;CHKERRA(ierr);
   ierr = MPI_Allreduce(&n,&nglobal,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   ierr = AODataKeyAdd(aodata,"key2",PETSC_DECIDE,nglobal);CHKERRA(ierr);
 
   /* allocate space for the keys each processor will provide */
-  keys = (int*)PetscMalloc(n*sizeof(int));CHKPTRA(keys);
+ierr = PetscMalloc(n*sizeof(int),&(  keys ));CHKPTRA(keys);
 
   /*
      We assign the first set of keys (0 to 2) to processor 0, etc.
@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   /* 
       Allocate data for the first key and first segment 
   */
-  data = (int*)PetscMalloc(bs*n*sizeof(int));CHKPTRA(data);
+ierr = PetscMalloc(bs*n*sizeof(int),&(  data ));CHKPTRA(data);
   for (i=0; i<n; i++) {
     data[2*i]   = -(start + i);
     data[2*i+1] = -(start + i) - 10000;
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
       Allocate data for first key and second segment 
   */
   bs   = 3;
-  gd   = (double*)PetscMalloc(bs*n*sizeof(double));CHKPTRA(gd);
+ierr = PetscMalloc(bs*n*sizeof(double),&(  gd   ));CHKPTRA(gd);
   for (i=0; i<n; i++) {
     gd[3*i]   = -(start + i);
     gd[3*i+1] = -(start + i) - 10000;
@@ -85,14 +85,14 @@ int main(int argc,char **argv)
   ierr = PetscFree(gd);CHKERRA(ierr);
   ierr = PetscFree(keys);CHKERRA(ierr);
 
-  ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /*
         Save the database to a file
   */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"dataoutput",BINARY_CREATE,&binary);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"dataoutput",PETSC_BINARY_CREATE,&binary);CHKERRA(ierr);
   ierr = AODataView(aodata,binary);CHKERRA(ierr);
-  ierr = ViewerDestroy(binary);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(binary);CHKERRA(ierr);
  
   ierr = AODataDestroy(aodata);CHKERRA(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: aodata.c,v 1.49 2000/08/01 20:57:53 bsmith Exp bsmith $*/
+/*$Id: aodata.c,v 1.50 2000/09/28 21:15:09 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AOData
 */
@@ -6,7 +6,7 @@
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataGetInfo" 
+#define __FUNC__ "AODataGetInfo" 
 /*@C
     AODataGetInfo - Gets the number of keys and their names in a database.
 
@@ -35,7 +35,7 @@ int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
 
   *nkeys = n = ao->nkeys;
   if (keys) {
-    *keys = (char**)PetscMalloc((n+1)*sizeof(char *));CHKPTRQ(keys);
+    *keys = (char**)PetscMalloc((n+1)*sizeof(char *));CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       if (!key) SETERRQ(PETSC_ERR_COR,"Less keys in database then indicated");
       (*keys)[i] = key->name;
@@ -46,7 +46,7 @@ int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyFind_Private" 
+#define __FUNC__ "AODataKeyFind_Private" 
 /*
    AODataKeyFind_Private - Given a keyname  finds the key. Generates a flag if not found.
 
@@ -101,7 +101,7 @@ int AODataKeyFind_Private(AOData aodata,char *keyname,PetscTruth *flag,AODataKey
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyExists" 
+#define __FUNC__ "AODataKeyExists" 
 /*@C
    AODataKeyExists - Determines if a key exists in the database.
 
@@ -132,7 +132,7 @@ int AODataKeyExists(AOData aodata,char *keyname,PetscTruth *flag)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentFind_Private" 
+#define __FUNC__ "AODataSegmentFind_Private" 
 /*
    AODataSegmentFind_Private - Given a key and segment finds the int key, segment
    coordinates. Generates a flag if not found.
@@ -196,7 +196,7 @@ int AODataSegmentFind_Private(AOData aodata,char *keyname,char *segname,PetscTru
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentExists" 
+#define __FUNC__ "AODataSegmentExists" 
 /*@C
    AODataSegmentExists - Determines if a key  and segment exists in the database.
 
@@ -230,7 +230,7 @@ int AODataSegmentExists(AOData aodata,char *keyname,char *segname,PetscTruth *fl
 /* ------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyGetActive" 
+#define __FUNC__ "AODataKeyGetActive" 
 /*@C
    AODataKeyGetActive - Get a sublist of key indices that have a logical flag on.
 
@@ -266,7 +266,7 @@ int AODataKeyGetActive(AOData aodata,char *name,char *segment,int n,int *keys,in
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyGetActiveIS" 
+#define __FUNC__ "AODataKeyGetActiveIS" 
 /*@C
    AODataKeyGetActiveIS - Get a sublist of key indices that have a logical flag on.
 
@@ -303,7 +303,7 @@ int AODataKeyGetActiveIS(AOData aodata,char *name,char *segname,IS in,int wl,IS 
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyGetActiveLocal" 
+#define __FUNC__ "AODataKeyGetActiveLocal" 
 /*@C
    AODataKeyGetActiveLocal - Get a sublist of key indices that have a logical flag on.
 
@@ -339,7 +339,7 @@ int AODataKeyGetActiveLocal(AOData aodata,char *name,char *segment,int n,int *ke
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyGetActiveLocalIS" 
+#define __FUNC__ "AODataKeyGetActiveLocalIS" 
 /*@C
    AODataKeyGetActiveLocalIS - Get a sublist of key indices that have a logical flag on.
 
@@ -378,7 +378,7 @@ int AODataKeyGetActiveLocalIS(AOData aodata,char *name,char *segname,IS in,int w
 /* ------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentGet" 
+#define __FUNC__ "AODataSegmentGet" 
 /*@C
    AODataSegmentGet - Get data from a particular segment of a database.
 
@@ -413,7 +413,7 @@ int AODataSegmentGet(AOData aodata,char *name,char *segment,int n,int *keys,void
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentRestore" 
+#define __FUNC__ "AODataSegmentRestore" 
 /*@C
    AODataSegmentRestore - Restores data from a particular segment of a database.
 
@@ -446,7 +446,7 @@ int AODataSegmentRestore(AOData aodata,char *name,char *segment,int n,int *keys,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentGetIS" 
+#define __FUNC__ "AODataSegmentGetIS" 
 /*@C
    AODataSegmentGetIS - Get data from a particular segment of a database.
 
@@ -482,7 +482,7 @@ int AODataSegmentGetIS(AOData aodata,char *name,char *segment,IS is,void **data)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentRestoreIS" 
+#define __FUNC__ "AODataSegmentRestoreIS" 
 /*@C
    AODataSegmentRestoreIS - Restores data from a particular segment of a database.
 
@@ -517,7 +517,7 @@ int AODataSegmentRestoreIS(AOData aodata,char *name,char *segment,IS is,void **d
 
 /* ------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentGetLocal" 
+#define __FUNC__ "AODataSegmentGetLocal" 
 /*@C
    AODataSegmentGetLocal - Get data from a particular segment of a database. Returns the 
    values in the local numbering; valid only for integer segments.
@@ -553,7 +553,7 @@ int AODataSegmentGetLocal(AOData aodata,char *name,char *segment,int n,int *keys
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentRestoreLocal" 
+#define __FUNC__ "AODataSegmentRestoreLocal" 
 /*@C
    AODataSegmentRestoreLocal - Restores data from a particular segment of a database.
 
@@ -585,7 +585,7 @@ int AODataSegmentRestoreLocal(AOData aodata,char *name,char *segment,int n,int *
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentGetLocalIS" 
+#define __FUNC__ "AODataSegmentGetLocalIS" 
 /*@C
    AODataSegmentGetLocalIS - Get data from a particular segment of a database. Returns the 
    values in the local numbering; valid only for integer segments.
@@ -623,7 +623,7 @@ int AODataSegmentGetLocalIS(AOData aodata,char *name,char *segment,IS is,void **
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentRestoreLocalIS" 
+#define __FUNC__ "AODataSegmentRestoreLocalIS" 
 /*@C
    AODataSegmentRestoreLocalIS - Restores data from a particular segment of a database.
 
@@ -657,7 +657,7 @@ int AODataSegmentRestoreLocalIS(AOData aodata,char *name,char *segment,IS is,voi
 /* ------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyGetNeighbors" 
+#define __FUNC__ "AODataKeyGetNeighbors" 
 /*@C
    AODataKeyGetNeighbors - Given a list of keys generates a new list containing
    those keys plus neighbors found in a neighbors list.
@@ -702,7 +702,7 @@ int AODataKeyGetNeighbors(AOData aodata,char *name,int n,int *keys,IS *is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyGetNeighborsIS" 
+#define __FUNC__ "AODataKeyGetNeighborsIS" 
 /*@C
    AODataKeyGetNeighborsIS - Given a list of keys generates a new list containing
    those keys plus neighbors found in a neighbors list.
@@ -744,7 +744,7 @@ int AODataKeyGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentGetReduced" 
+#define __FUNC__ "AODataSegmentGetReduced" 
 /*@C
    AODataSegmentGetReduced - Gets the unique list of segment values, by removing 
    duplicates.
@@ -787,7 +787,7 @@ int AODataSegmentGetReduced(AOData aodata,char *name,char *segment,int n,int *ke
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentGetExtrema" 
+#define __FUNC__ "AODataSegmentGetExtrema" 
 /*@C
    AODataSegmentGetExtrema - Gets the largest and smallest values for each entry in the block
 
@@ -821,7 +821,7 @@ int AODataSegmentGetExtrema(AOData aodata,char *name,char *segment,void *vmax,vo
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentGetReducedIS" 
+#define __FUNC__ "AODataSegmentGetReducedIS" 
 /*@C
    AODataSegmentGetReducedIS -  Gets the unique list of segment values, by removing 
    duplicates.
@@ -869,7 +869,7 @@ int AODataSegmentGetReducedIS(AOData aodata,char *name,char *segment,IS is,IS *i
 /* ------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeySetLocalTolGobalMapping" 
+#define __FUNC__ "AODataKeySetLocalTolGobalMapping" 
 /*@C
    AODataKeySetLocalToGlobalMapping - Add a local to global mapping for a key in the 
      in the database
@@ -911,7 +911,7 @@ int AODataKeySetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyGetLocalToGlobalMapping" 
+#define __FUNC__ "AODataKeyGetLocalToGlobalMapping" 
 /*@C
    AODataKeyGetLocalToGlobalMapping - gets a local to global mapping from a database
 
@@ -948,7 +948,7 @@ int AODataKeyGetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyGetOwnershipRange"
+#define __FUNC__ "AODataKeyGetOwnershipRange"
 /*@C
    AODataKeyGetOwnershipRange - Gets the ownership range to this key type.
 
@@ -987,7 +987,7 @@ int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyGetInfo"
+#define __FUNC__ "AODataKeyGetInfo"
 /*@C
    AODataKeyGetInfo - Gets the global size, local size and number of segments in a key.
 
@@ -1026,7 +1026,7 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
   if (nlocal)    *nlocal    = key->nlocal;
   if (nsegments) *nsegments = n = key->nsegments;
   if (nsegments && segnames) {
-    *segnames = (char**)PetscMalloc((n+1)*sizeof(char *));CHKPTRQ(segnames);
+    *segnames = (char**)PetscMalloc((n+1)*sizeof(char *));CHKERRQ(ierr);
     seg       = key->segments;
     for (i=0; i<n; i++) {
       if (!seg) SETERRQ(PETSC_ERR_COR,"Less segments in database then indicated");
@@ -1039,7 +1039,7 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentGetInfo"
+#define __FUNC__ "AODataSegmentGetInfo"
 /*@C
    AODataSegmentGetInfo - Gets the blocksize and type of a data segment
 
@@ -1079,11 +1079,11 @@ int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs,Petsc
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataView" 
+#define __FUNC__ "AODataView" 
 /*@C
    AODataView - Displays an application ordering.
 
-   Collective on AOData and Viewer
+   Collective on AOData and PetscViewer
 
    Input Parameters:
 +  aodata - the database
@@ -1092,34 +1092,34 @@ int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs,Petsc
    Level: intermediate
 
    The available visualization contexts include
-+     VIEWER_STDOUT_SELF - standard output (default)
--     VIEWER_STDOUT_WORLD - synchronized standard
++     PETSC_VIEWER_STDOUT_SELF - standard output (default)
+-     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
          the file.  All other processors send their 
          data to the first processor to print. 
 
    The user can open an alternative visualization context with
-   ViewerASCIIOpen() - output to a specified file.
+   PetscViewerASCIIOpen() - output to a specified file.
 
 
 .keywords: database viewing
 
-.seealso: ViewerASCIIOpen()
+.seealso: PetscViewerASCIIOpen()
 @*/
-int AODataView(AOData aodata,Viewer viewer)
+int AODataView(AOData aodata,PetscViewer viewer)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_(aodata->comm);
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(aodata->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   ierr = (*aodata->ops->view)(aodata,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataAliasDestroy_Private" 
+#define __FUNC__ "AODataAliasDestroy_Private" 
 static int AODataAliasDestroy_Private(AODataAlias *aliases)
 {
   AODataAlias *t = aliases;
@@ -1143,7 +1143,7 @@ static int AODataAliasDestroy_Private(AODataAlias *aliases)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataAliasAdd" 
+#define __FUNC__ "AODataAliasAdd" 
 int AODataAliasAdd(AOData aodata,char *alias,char *name)
 {
   AODataAlias *t = aodata->aliases;
@@ -1152,10 +1152,11 @@ int AODataAliasAdd(AOData aodata,char *alias,char *name)
   PetscFunctionBegin;
   if (t) {
     while (t->next) t = t->next;
-    t->next = PetscNew(AODataAlias);CHKPTRQ(t->next);
-    t       = t->next;
+    ierr = PetscNew(AODataAlias,&t->next);CHKERRQ(ierr);
+    t    = t->next;
   } else {
-    aodata->aliases = t = PetscNew(AODataAlias);CHKPTRQ(t);
+    ierr            = PetscNew(AODataAlias,&t);CHKERRQ(ierr);
+    aodata->aliases = t;
   }
   ierr    = PetscStrallocpy(alias,&t->alias);CHKERRQ(ierr);
   ierr    = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
@@ -1164,7 +1165,7 @@ int AODataAliasAdd(AOData aodata,char *alias,char *name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataDestroy" 
+#define __FUNC__ "AODataDestroy" 
 /*@C
    AODataDestroy - Destroys an application ordering set.
 
@@ -1196,7 +1197,7 @@ int AODataDestroy(AOData aodata)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyRemap" 
+#define __FUNC__ "AODataKeyRemap" 
 /*@C
    AODataKeyRemap - Remaps a key and all references to a key to a new numbering 
    scheme where each processor indicates its new nodes by listing them in the
@@ -1227,7 +1228,7 @@ int AODataKeyRemap(AOData aodata,char *key,AO ao)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyGetAdjacency" 
+#define __FUNC__ "AODataKeyGetAdjacency" 
 /*@C
    AODataKeyGetAdjacency - Gets the adjacency graph for a key.
 
@@ -1257,7 +1258,7 @@ int AODataKeyGetAdjacency(AOData aodata,char *key,Mat *adj)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentPartition"
+#define __FUNC__ "AODataSegmentPartition"
 /*@C
     AODataSegmentPartition - Partitions a segment type across processors 
     relative to a key that is partitioned. This will try to keep as
@@ -1286,7 +1287,7 @@ int AODataSegmentPartition(AOData aodata,char *key,char *seg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataPublish_Petsc"
+#define __FUNC__ "AODataPublish_Petsc"
 int AODataPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -1341,7 +1342,7 @@ int AODataPublish_Petsc(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyRemove" 
+#define __FUNC__ "AODataKeyRemove" 
 /*@C
    AODataKeyRemove - Remove a data key from a AOData database.
 
@@ -1368,7 +1369,7 @@ int AODataKeyRemove(AOData aodata,char *name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentRemove" 
+#define __FUNC__ "AODataSegmentRemove" 
 /*@C
    AODataSegmentRemove - Remove a data segment from a AOData database.
 
@@ -1396,7 +1397,7 @@ int AODataSegmentRemove(AOData aodata,char *name,char *segname)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyAdd" 
+#define __FUNC__ "AODataKeyAdd" 
 /*@C
    AODataKeyAdd - Add another data key to a AOData database.
 
@@ -1427,11 +1428,11 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
   ierr = AODataKeyFind_Private(aodata,name,&flag,&oldkey);CHKERRQ(ierr);
   if (flag)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Key already exists with given name: %s",name);
 
-  key                = PetscNew(AODataKey);CHKPTRQ(key);
+  ierr = PetscNew(AODataKey,&key);CHKERRQ(ierr);
   if (oldkey) { oldkey->next = key;} 
   else        { aodata->keys = key;} 
   ierr           = PetscStrlen(name,&len);CHKERRQ(ierr);
-  key->name      = (char*)PetscMalloc((len+1)*sizeof(char));CHKPTRQ(key->name);
+ierr = PetscMalloc((len+1)*sizeof(char),&  key->name      );CHKERRQ(ierr);
   ierr           = PetscStrcpy(key->name,name);CHKERRQ(ierr);
   key->N         = N;
   key->nsegments = 0;
@@ -1444,7 +1445,7 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
 
   /*  Set nlocal and ownership ranges */
   ierr         = PetscSplitOwnership(comm,&nlocal,&N);CHKERRQ(ierr);
-  key->rowners = (int*)PetscMalloc((size+1)*sizeof(int));CHKPTRQ(key->rowners);
+ierr = PetscMalloc((size+1)*sizeof(int),&  key->rowners );CHKERRQ(ierr);
   ierr = MPI_Allgather(&nlocal,1,MPI_INT,key->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   key->rowners[0] = 0;
   for (i=2; i<=size; i++) {
@@ -1471,7 +1472,7 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentAdd" 
+#define __FUNC__ "AODataSegmentAdd" 
 /*@C
    AODataSegmentAdd - Adds another data segment to a AOData database.
 
@@ -1503,22 +1504,22 @@ int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *ke
   ierr = (*aodata->ops->segmentadd)(aodata,name,segment,bs,n,keys,data,dtype);CHKERRQ(ierr);
 
   /*
-  ierr = OptionsHasName(PETSC_NULL,"-ao_data_view",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-ao_data_view",&flg1);CHKERRQ(ierr);
   if (flg1) {
-    ierr = AODataView(aodata,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+    ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-ao_data_view_info",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-ao_data_view_info",&flg1);CHKERRQ(ierr);
   if (flg1) {
-    ierr = ViewerPushFormat(VIEWER_STDOUT_(comm),VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
-    ierr = AODataView(aodata,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-    ierr = ViewerPopFormat(VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(comm),PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+    ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
   }
   */
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"AODataSegmentAddIS" 
+#define __FUNC__ "AODataSegmentAddIS" 
 /*@C
    AODataSegmentAddIS - Add another data segment to a AOData database.
 

@@ -1,4 +1,4 @@
-/*$Id: cholbs.c,v 1.59 2000/04/12 04:23:21 bsmith Exp bsmith $*/
+/*$Id: cholbs.c,v 1.60 2000/07/10 03:39:37 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -10,7 +10,7 @@
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCholeskyFactorNumeric_MPIRowbs"
+#define __FUNC__ "MatCholeskyFactorNumeric_MPIRowbs"
 int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
@@ -34,11 +34,11 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
     /* Increment the diagonal shift */
     mbs->alpha += 0.1;
     BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo);CHKERRBS(0);
-    PLogInfo(mat,"MatCholeskyFactorNumeric_MPIRowbs:BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
+    PetscLogInfo(mat,"MatCholeskyFactorNumeric_MPIRowbs:BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
                                  mbs->failures,mbs->ierr,mbs->alpha); 
   }
 #if defined(PETSC_USE_LOG)
-  PLogFlops((int)(BSlocal_flops()-flop1));
+  PetscLogFlops((int)(BSlocal_flops()-flop1));
 #endif
 
   mbs->factor = FACTOR_CHOLESKY;
@@ -46,7 +46,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatLUFactorNumeric_MPIRowbs"></a>*/"MatLUFactorNumeric_MPIRowbs"
+#define __FUNC__ "MatLUFactorNumeric_MPIRowbs"
 int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
@@ -70,19 +70,19 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
     /* Increment the diagonal shift */
     mbs->alpha += 0.1;
     BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo);CHKERRBS(0);
-    PLogInfo(mat,"MatLUFactorNumeric_MPIRowbs:BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
+    PetscLogInfo(mat,"MatLUFactorNumeric_MPIRowbs:BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
                                        mbs->failures,mbs->ierr,mbs->alpha); 
   }
   mbs->factor = FACTOR_LU;
   (*factp)->assembled = PETSC_TRUE;
 #if defined(PETSC_USE_LOG)
-  PLogFlops((int)(BSlocal_flops()-flop1));
+  PetscLogFlops((int)(BSlocal_flops()-flop1));
 #endif
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSolve_MPIRowbs"
+#define __FUNC__ "MatSolve_MPIRowbs"
 int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
@@ -128,14 +128,14 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecRestoreArray(mbs->xwork,&xworka);CHKERRQ(ierr);
   }
 #if defined(PETSC_USE_LOG)
-  PLogFlops((int)(BSlocal_flops()-flop1));
+  PetscLogFlops((int)(BSlocal_flops()-flop1));
 #endif
   PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatForwardSolve_MPIRowbs"
+#define __FUNC__ "MatForwardSolve_MPIRowbs"
 int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
@@ -170,7 +170,7 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   ierr = VecRestoreArray(y,&ya);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
-  PLogFlops((int)(BSlocal_flops()-flop1));
+  PetscLogFlops((int)(BSlocal_flops()-flop1));
 #endif
 
   PetscFunctionReturn(0);
@@ -178,7 +178,7 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 
 /* ------------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatBackwardSolve_MPIRowbs"
+#define __FUNC__ "MatBackwardSolve_MPIRowbs"
 int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
@@ -212,7 +212,7 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecRestoreArray(mbs->xwork,&xworka);CHKERRQ(ierr);
   }
 #if defined (PETSC_USE_LOG)
-  PLogFlops((int)(BSlocal_flops()-flop1));
+  PetscLogFlops((int)(BSlocal_flops()-flop1));
 #endif
   PetscFunctionReturn(0);
 }

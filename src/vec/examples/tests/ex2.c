@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.47 2000/01/11 21:00:17 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.48 2000/05/05 22:15:11 balay Exp bsmith $*/
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
   -n <length> : vector length\n\n";
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* create two vector */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);
@@ -33,14 +33,14 @@ int main(int argc,char **argv)
   ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
   
-  ierr = VecView(y,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = VecScatterBegin(y,x,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
   ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
   ierr = VecScatterDestroy(ctx);CHKERRA(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"-------\n");CHKERRA(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = ISDestroy(is1);CHKERRA(ierr);
   ierr = ISDestroy(is2);CHKERRA(ierr);

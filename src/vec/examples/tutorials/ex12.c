@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.10 2000/05/05 22:15:21 balay Exp bsmith $*/
+/*$Id: ex12.c,v 1.11 2000/09/22 20:43:24 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   Scalar   one = 1.0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* 
       Create multi-component vector with 2 components
@@ -52,14 +52,14 @@ int main(int argc,char **argv)
   */
   ierr = VecStrideGather(v,0,s,INSERT_VALUES);CHKERRA(ierr);
 
-  ierr = VecView(s,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(s,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /*
      Put the values back into the second component 
   */
   ierr = VecStrideScatter(s,1,v,ADD_VALUES);CHKERRA(ierr);
 
-  ierr = VecView(v,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(v,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

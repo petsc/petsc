@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.11 2000/09/22 20:45:42 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.12 2000/09/28 21:13:39 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -7,7 +7,7 @@ static char help[] =
 
 /*T
    Concepts: SLES^solving a linear system
-   Concepts: PLog^profiling multiple stages of code;
+   Concepts: PetscLog^profiling multiple stages of code;
    Processors: n
 T*/
 
@@ -28,7 +28,7 @@ int main(int argc,char **args)
   SLES       sles;             /* linear solver context */
   Mat        A,B;                /* matrix */
   Vec        x,b,u;          /* approx solution, RHS, exact solution */
-  Viewer     fd;               /* viewer */
+  PetscViewer     fd;               /* viewer */
   char       file[2][128];     /* input file name */
   int        ierr,its;
   PetscTruth flg;
@@ -41,15 +41,15 @@ int main(int argc,char **args)
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,"Must indicate binary file with the -f0 option");
 
 
   /* 
-       Open binary file.  Note that we use BINARY_RDONLY to indicate
+       Open binary file.  Note that we use PETSC_BINARY_RDONLY to indicate
        reading from this file.
   */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[0],BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],PETSC_BINARY_RDONLY,&fd);CHKERRA(ierr);
 
   /*
        Load the matrix and vector; then destroy the viewer.
@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = MatLoad(fd,MATSEQBAIJ,&A);CHKERRA(ierr);
   ierr = MatConvert(A,MATSAME,&B);CHKERRQ(ierr);
   ierr = VecLoad(fd,&b);CHKERRA(ierr);
-  ierr = ViewerDestroy(fd);CHKERRA(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
 
   /* 
        If the loaded matrix is larger than the vector (due to being padded 

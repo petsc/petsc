@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.87 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.88 2000/10/24 20:26:55 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
 
@@ -41,8 +41,8 @@ int main(int argc,char **args)
   KSP         ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
@@ -131,7 +131,7 @@ int main(int argc,char **args)
      elements of 1.0;  Alternatively, using the runtime option
      -random_sol forms a solution vector with random components.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-random_exact_sol",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-random_exact_sol",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRA(ierr);
     ierr = VecSetRandom(rctx,u);CHKERRA(ierr);
@@ -144,8 +144,8 @@ int main(int argc,char **args)
   /*
      View the exact solution vector if desired
   */
-  ierr = OptionsHasName(PETSC_NULL,"-view_exact_sol",&flg);CHKERRA(ierr);
-  if (flg) {ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRA(ierr);}
+  ierr = PetscOptionsHasName(PETSC_NULL,"-view_exact_sol",&flg);CHKERRA(ierr);
+  if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);}
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                 Create the linear solver and set various options

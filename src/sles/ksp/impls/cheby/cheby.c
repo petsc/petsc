@@ -1,4 +1,4 @@
-/*$Id: cheby.c,v 1.88 2000/09/14 14:41:10 bsmith Exp bsmith $*/
+/*$Id: cheby.c,v 1.89 2000/09/28 21:13:23 bsmith Exp bsmith $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
@@ -7,7 +7,7 @@
 #include "src/sles/ksp/impls/cheby/chebctx.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetUp_Chebychev"
+#define __FUNC__ "KSPSetUp_Chebychev"
 int KSPSetUp_Chebychev(KSP ksp)
 {
   int ierr;
@@ -20,7 +20,7 @@ int KSPSetUp_Chebychev(KSP ksp)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPChebychevSetEigenvalues_Chebychev"
+#define __FUNC__ "KSPChebychevSetEigenvalues_Chebychev"
 int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,PetscReal emax,PetscReal emin)
 {
   KSP_Chebychev *chebychevP = (KSP_Chebychev*)ksp->data;
@@ -33,7 +33,7 @@ int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,PetscReal emax,PetscReal emin)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPChebychevSetEigenvalues"
+#define __FUNC__ "KSPChebychevSetEigenvalues"
 /*@
    KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
    of the preconditioned problem.
@@ -62,7 +62,7 @@ int KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"KSPSolve_Chebychev"
+#define __FUNC__ "KSPSolve_Chebychev"
 int KSPSolve_Chebychev(KSP ksp,int *its)
 {
   int              k,kp1,km1,maxit,ktmp,i,ierr;
@@ -175,17 +175,17 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPView_Chebychev" 
-int KSPView_Chebychev(KSP ksp,Viewer viewer)
+#define __FUNC__ "KSPView_Chebychev" 
+int KSPView_Chebychev(KSP ksp,PetscViewer viewer)
 {
   KSP_Chebychev *cheb = (KSP_Chebychev*)ksp->data;
   int           ierr;
   PetscTruth    isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"  Chebychev: eigenvalue estimates:  min = %g, max = %g\n",cheb->emin,cheb->emax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Chebychev: eigenvalue estimates:  min = %g, max = %g\n",cheb->emin,cheb->emax);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for KSP Chebychev",((PetscObject)viewer)->type_name);
   }
@@ -194,14 +194,15 @@ int KSPView_Chebychev(KSP ksp,Viewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPCreate_Chebychev"
+#define __FUNC__ "KSPCreate_Chebychev"
 int KSPCreate_Chebychev(KSP ksp)
 {
   int           ierr;
-  KSP_Chebychev *chebychevP = PetscNew(KSP_Chebychev);CHKPTRQ(chebychevP);
+  KSP_Chebychev *chebychevP;
 
   PetscFunctionBegin;
-  PLogObjectMemory(ksp,sizeof(KSP_Chebychev));
+  ierr = PetscNew(KSP_Chebychev,&chebychevP);CHKERRQ(ierr);
+  PetscLogObjectMemory(ksp,sizeof(KSP_Chebychev));
 
   ksp->data                      = (void*)chebychevP;
   ksp->pc_side                   = PC_LEFT;

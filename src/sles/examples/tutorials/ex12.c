@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.17 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.18 2000/10/24 20:26:55 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex12 [-help] [all PETSc options] */
 
@@ -57,8 +57,8 @@ int main(int argc,char **args)
   PC          pc;      /* preconditioner context */
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define

@@ -1,4 +1,4 @@
-/*$Id: nt_time.c,v 1.20 2000/04/09 04:34:46 bsmith Exp bsmith $*/
+/*$Id: nt_time.c,v 1.21 2000/04/12 04:21:36 bsmith Exp bsmith $*/
 
 #include <petsc.h>
 #if defined (PARCH_win32_gnu) || defined (PARCH_win32)
@@ -6,18 +6,18 @@
 #define FACTOR   4294967296.0 /* pow(2,32) */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"nt_time"
-PLogDouble nt_time(void) 
+#define __FUNC__ "nt_time"
+PetscLogDouble nt_time(void) 
 {
   static PetscTruth flag = PETSC_TRUE;
   int               ierr;
 
   static LARGE_INTEGER StartTime,PerfFreq,CurTime; 
-  static PLogDouble SecInTick=0.0;
+  static PetscLogDouble SecInTick=0.0;
   
   DWORD      dwStartHigh,dwCurHigh;
-  PLogDouble dTime,dHigh;
-  PLogDouble time;
+  PetscLogDouble dTime,dHigh;
+  PetscLogDouble time;
   
   
   PetscFunctionBegin;

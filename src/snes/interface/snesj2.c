@@ -1,10 +1,10 @@
-/*$Id: snesj2.c,v 1.24 2000/05/05 22:18:12 balay Exp balay $*/
+/*$Id: snesj2.c,v 1.25 2000/09/07 15:18:01 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
 #include "src/snes/snesimpl.h"    /*I  "petscsnes.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESDefaultComputeJacobianColor"
+#define __FUNC__ "SNESDefaultComputeJacobianColor"
 /*@C
     SNESDefaultComputeJacobianColor - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity. 
@@ -44,21 +44,21 @@ int SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure 
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
   if ((freq > 1) && ((it % freq) != 1)) {
-    PLogInfo(color,"SNESDefaultComputeJacobianColor:Skipping Jacobian, it %d, freq %d\n",it,freq);
+    PetscLogInfo(color,"SNESDefaultComputeJacobianColor:Skipping Jacobian, it %d, freq %d\n",it,freq);
     *flag = SAME_PRECONDITIONER;
     PetscFunctionReturn(0);
   } else {
-    PLogInfo(color,"SNESDefaultComputeJacobianColor:Computing Jacobian, it %d, freq %d\n",it,freq);
+    PetscLogInfo(color,"SNESDefaultComputeJacobianColor:Computing Jacobian, it %d, freq %d\n",it,freq);
     *flag = SAME_NONZERO_PATTERN;
   }
 
 
-  ierr = PLogEventBegin(SNES_FunctionEval,snes,x1,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x1,0,0);CHKERRQ(ierr);
   PetscStackPush("SNES user function");
   ierr = MatFDColoringApply(*B,color,x1,flag,snes);CHKERRQ(ierr);
   PetscStackPop;
   snes->nfuncs++;
-  ierr = PLogEventEnd(SNES_FunctionEval,snes,x1,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x1,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

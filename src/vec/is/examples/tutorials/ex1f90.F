@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f90.F,v 1.16 2000/09/27 20:06:00 bsmith Exp bsmith $";
+!  "$Id: ex1f90.F,v 1.17 2000/10/24 20:24:55 bsmith Exp bsmith $";
 !
 !/*T
 !    Concepts: index sets^manipulating a general index set;
@@ -41,7 +41,7 @@
 
 !  Print the index set to stdout
 
-      call ISView(is,VIEWER_STDOUT_SELF,ierr)
+      call ISView(is,PETSC_VIEWER_STDOUT_SELF,ierr)
 
 !  Get the number of indices in the set 
 

@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.9 2000/09/28 14:46:50 bsmith Exp balay $*/
+/*$Id: ex22.c,v 1.10 2000/10/13 22:59:50 balay Exp bsmith $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -26,40 +26,40 @@ The command line options are:\n\
 
 
 
-extern int ComputeJacobian(DAMG,Mat);
-extern int ComputeRHS(DAMG,Vec);
+extern int ComputeJacobian(DMMG,Mat);
+extern int ComputeRHS(DMMG,Vec);
 
 #undef __FUNC__
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int       ierr,sw = 1,dof = 1,mx = 2,my = 2,mz = 2,nlevels = 3;
-  DAMG      *damg;
+  DMMG      *dmmg;
   Scalar    mone = -1.0;
   PetscReal norm;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = OptionsGetInt(0,"-stencil_width",&sw,0);CHKERRQ(ierr);
-  ierr = OptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(0,"-stencil_width",&sw,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mz",&mz,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mz",&mz,PETSC_NULL);CHKERRA(ierr);
 
-  ierr = DAMGCreate(PETSC_COMM_WORLD,nlevels,PETSC_NULL,&damg);CHKERRQ(ierr);
+  ierr = DMMGCreate(PETSC_COMM_WORLD,nlevels,PETSC_NULL,&dmmg);CHKERRQ(ierr);
 
-  ierr = DAMGSetGrid(damg,3,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,mz,sw,dof);CHKERRQ(ierr);  
+  ierr = DMMGSetDA(dmmg,3,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,mz,sw,dof);CHKERRQ(ierr);  
 
-  ierr = DAMGSetSLES(damg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
+  ierr = DMMGSetSLES(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
 
-  ierr = DAMGSolve(damg);CHKERRQ(ierr);
+  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
-  ierr = MatMult(DAMGGetJ(damg),DAMGGetx(damg),DAMGGetr(damg));CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,DAMGGetb(damg),DAMGGetr(damg));CHKERRQ(ierr);
-  ierr = VecNorm(DAMGGetr(damg),NORM_2,&norm);CHKERRQ(ierr);
+  ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
+  ierr = VecAXPY(&mone,DMMGGetb(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
+  ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",norm);CHKERRQ(ierr);
 
-  ierr = DAMGDestroy(damg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PetscFinalize();
 
   return 0;
@@ -67,13 +67,13 @@ int main(int argc,char **argv)
 
 #undef __FUNC__
 #define __FUNC__ "ComputeRHS"
-int ComputeRHS(DAMG damg,Vec b)
+int ComputeRHS(DMMG dmmg,Vec b)
 {
   int    ierr,mx,my,mz;
   Scalar h;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(damg->da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
   ierr = VecSet(&h,b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -81,9 +81,9 @@ int ComputeRHS(DAMG damg,Vec b)
     
 #undef __FUNC__
 #define __FUNC__ "ComputeJacobian"
-int ComputeJacobian(DAMG damg,Mat jac)
+int ComputeJacobian(DMMG dmmg,Mat jac)
 {
-  DA     da = damg->da;
+  DA     da = (DA)dmmg->dm;
   int    *ltog,ierr,i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,Xm,Ym,Zm,Xs,Ys,Zs,row,nloc,col[7],base1,grow;
   Scalar two = 2.0,one = 1.0,v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
 

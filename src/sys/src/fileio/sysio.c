@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.75 2000/09/28 21:09:02 bsmith Exp bsmith $*/
+/*$Id: sysio.c,v 1.76 2000/10/24 20:24:33 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -20,7 +20,7 @@
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscByteSwapInt"></a>*/"PetscByteSwapInt"
+#define __FUNC__ "PetscByteSwapInt"
 /*
   PetscByteSwapInt - Swap bytes in an integer
 */
@@ -42,7 +42,7 @@ int PetscByteSwapInt(int *buff,int n)
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscByteSwapShort"></a>*/"PetscByteSwapShort"
+#define __FUNC__ "PetscByteSwapShort"
 /*
   PetscByteSwapShort - Swap bytes in a short
 */
@@ -65,7 +65,7 @@ int PetscByteSwapShort(short *buff,int n)
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscByteSwapScalar"></a>*/"PetscByteSwapScalar"
+#define __FUNC__ "PetscByteSwapScalar"
 /*
   PetscByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
@@ -92,7 +92,7 @@ int PetscByteSwapScalar(Scalar *buff,int n)
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscByteSwapDouble"></a>*/"PetscByteSwapDouble"
+#define __FUNC__ "PetscByteSwapDouble"
 /*
   PetscByteSwapDouble - Swap bytes in a double
 */
@@ -116,7 +116,7 @@ int PetscByteSwapDouble(double *buff,int n)
 #endif
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscBinaryRead"></a>*/"PetscBinaryRead"
+#define __FUNC__ "PetscBinaryRead"
 /*@C
    PetscBinaryRead - Reads from a binary file.
 
@@ -167,8 +167,8 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   if (!n) PetscFunctionReturn(0);
 
   if (!longintset) {
-    ierr = OptionsHasName(PETSC_NULL,"-binary_longints",&longintfile);CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-binary_longints",&longintfile);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = (*PetscHelpPrintf)(PETSC_COMM_SELF,"-binary_longints - for binary file generated\n\
    on a Cray vector machine (not T3E/T3D)\n");CHKERRQ(ierr);
@@ -183,7 +183,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     } else {
       /* read them in as shorts, later stretch into ints */
       m   *= sizeof(short);
-      pp   = (char*)PetscMalloc(m);CHKPTRQ(pp);
+      ierr = PetscMalloc(m),&pp);CHKERRQ(ierr);
       ptmp = (void*)pp;
     }
   }
@@ -201,7 +201,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     if (longintfile) {
        /* read in twice as many ints and later discard every other one */
        m    *= 2*sizeof(int);
-       pp   =  (char*)PetscMalloc(m);CHKPTRQ(pp);
+       ierr = PetscMalloc(m,&pp);CHKERRQ(ierr);
        ptmp =  (void*)pp;
     } else {
        m *= sizeof(int);
@@ -263,7 +263,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscBinaryWrite"></a>*/"PetscBinaryWrite"
+#define __FUNC__ "PetscBinaryWrite"
 /*@C
    PetscBinaryWrite - Writes to a binary file.
 
@@ -329,7 +329,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
     int   *p_int = (int*)p,i;
     short *p_short;
     m       *= sizeof(short);
-    pp      = (char*)PetscMalloc(m);CHKPTRQ(pp);
+    ierr    = PetscMalloc(m,&pp);CHKERRQ(ierr);
     ptmp    = (void*)pp;
     p_short = (short*)pp;
 
@@ -374,7 +374,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscBinaryOpen"></a>*/"PetscBinaryOpen" 
+#define __FUNC__ "PetscBinaryOpen" 
 /*@C
    PetscBinaryOpen - Opens a PETSc binary file.
 
@@ -382,7 +382,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 
    Input Parameters:
 +  name - filename
--  type - type of binary file, on of BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE
+-  type - type of binary file, on of PETSC_BINARY_RDONLY, PETSC_BINARY_WRONLY, PETSC_BINARY_CREATE
 
    Output Parameter:
 .  fd - the file
@@ -398,29 +398,29 @@ int PetscBinaryOpen(const char name[],int type,int *fd)
 {
   PetscFunctionBegin;
 #if defined(PARCH_win32_gnu) || defined(PARCH_win32) 
-  if (type == BINARY_CREATE) {
+  if (type == PETSC_BINARY_CREATE) {
     if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
     }
-  } else if (type == BINARY_RDONLY) {
+  } else if (type == PETSC_BINARY_RDONLY) {
     if ((*fd = open(name,O_RDONLY|O_BINARY,0)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
     }
-  } else if (type == BINARY_WRONLY) {
+  } else if (type == PETSC_BINARY_WRONLY) {
     if ((*fd = open(name,O_WRONLY|O_BINARY,0)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
     }
 #else
-  if (type == BINARY_CREATE) {
+  if (type == PETSC_BINARY_CREATE) {
     if ((*fd = creat(name,0666)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
     }
-  } else if (type == BINARY_RDONLY) {
+  } else if (type == PETSC_BINARY_RDONLY) {
     if ((*fd = open(name,O_RDONLY,0)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
     }
   }
-  else if (type == BINARY_WRONLY) {
+  else if (type == PETSC_BINARY_WRONLY) {
     if ((*fd = open(name,O_WRONLY,0)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
     }
@@ -430,7 +430,7 @@ int PetscBinaryOpen(const char name[],int type,int *fd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscBinaryClose"></a>*/"PetscBinaryClose" 
+#define __FUNC__ "PetscBinaryClose" 
 /*@C
    PetscBinaryClose - Closes a PETSc binary file.
 
@@ -452,7 +452,7 @@ int PetscBinaryClose(int fd)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscBinarySeek"></a>*/"PetscBinarySeek" 
+#define __FUNC__ "PetscBinarySeek" 
 /*@C
    PetscBinarySeek - Moves the file pointer on a PETSc binary file.
 
@@ -460,10 +460,10 @@ int PetscBinaryClose(int fd)
 
    Input Parameters:
 +  fd - the file
-.  whence - if BINARY_SEEK_SET then size is an absolute location in the file
-            if BINARY_SEEK_CUR then size is offset from current location
-            if BINARY_SEEK_END then size is offset from end of file
--  size - number of bytes to move. Use BINARY_INT_SIZE, BINARY_SCALAR_SIZE,
+.  whence - if PETSC_BINARY_SEEK_SET then size is an absolute location in the file
+            if PETSC_BINARY_SEEK_CUR then size is offset from current location
+            if PETSC_BINARY_SEEK_END then size is offset from end of file
+-  size - number of bytes to move. Use PETSC_BINARY_INT_SIZE, PETSC_BINARY_SCALAR_SIZE,
             etc. in your calculation rather than sizeof() to compute byte lengths.
 
    Output Parameter:
@@ -487,11 +487,11 @@ int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence,int *offset)
   int iwhence=0;
 
   PetscFunctionBegin;
-  if (whence == BINARY_SEEK_SET) {
+  if (whence == PETSC_BINARY_SEEK_SET) {
     iwhence = SEEK_SET;
-  } else if (whence == BINARY_SEEK_CUR) {
+  } else if (whence == PETSC_BINARY_SEEK_CUR) {
     iwhence = SEEK_CUR;
-  } else if (whence == BINARY_SEEK_END) {
+  } else if (whence == PETSC_BINARY_SEEK_END) {
     iwhence = SEEK_END;
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown seek location");
@@ -506,7 +506,7 @@ int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence,int *offset)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSynchronizedBinaryRead"></a>*/"PetscSynchronizedBinaryRead"
+#define __FUNC__ "PetscSynchronizedBinaryRead"
 /*@C
    PetscSynchronizedBinaryRead - Reads from a binary file.
 
@@ -562,7 +562,7 @@ int PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,int n,PetscDataType
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSynchronizedBinarySeek"></a>*/"PetscSynchronizedBinarySeek" 
+#define __FUNC__ "PetscSynchronizedBinarySeek" 
 /*@C
    PetscSynchronizedBinarySeek - Moves the file pointer on a PETSc binary file.
 
@@ -570,10 +570,10 @@ int PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,int n,PetscDataType
 
    Input Parameters:
 +  fd - the file
-.  whence - if BINARY_SEEK_SET then size is an absolute location in the file
-            if BINARY_SEEK_CUR then size is offset from current location
-            if BINARY_SEEK_END then size is offset from end of file
--  size - number of bytes to move. Use BINARY_INT_SIZE, BINARY_SCALAR_SIZE,
+.  whence - if PETSC_BINARY_SEEK_SET then size is an absolute location in the file
+            if PETSC_BINARY_SEEK_CUR then size is offset from current location
+            if PETSC_BINARY_SEEK_END then size is offset from end of file
+-  size - number of bytes to move. Use PETSC_BINARY_INT_SIZE, PETSC_BINARY_SCALAR_SIZE,
             etc. in your calculation rather than sizeof() to compute byte lengths.
 
    Output Parameter:

@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.54 2000/08/24 22:43:01 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.55 2000/09/02 02:49:31 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -107,7 +107,7 @@ struct _p_SNES {
   Vec         *vwork;            /* more work vectors for Jacobian/Hessian approx */
   int         nvwork;
   int        (*destroy)(SNES);
-  int        (*view)(SNES,Viewer);
+  int        (*view)(SNES,PetscViewer);
 };
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */

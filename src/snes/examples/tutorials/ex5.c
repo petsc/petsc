@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.122 2000/09/28 21:14:25 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.123 2000/10/24 20:27:14 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -97,9 +97,9 @@ int main(int argc,char **argv)
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,"Lambda is out of range");
   }
@@ -120,8 +120,8 @@ int main(int argc,char **argv)
   */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
     SETERRA(1,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
@@ -130,7 +130,7 @@ int main(int argc,char **argv)
   /*
      Visualize the distribution of the array across the processors
   */
-  /* ierr =  DAView(user.da,VIEWER_DRAW_WORLD);CHKERRA(ierr); */
+  /* ierr =  DAView(user.da,PETSC_VIEWER_DRAW_WORLD);CHKERRA(ierr); */
 
 
   /*
@@ -173,13 +173,13 @@ int main(int argc,char **argv)
      Jacobian.  See the users manual for a discussion of better techniques
      for preallocating matrix memory.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
   if (!matrix_free) {
     PetscTruth usegenericmatcreate;
 
     ierr = VecGetLocalSize(x,&m);CHKERRA(ierr);
 
-    ierr = OptionsHasName(PETSC_NULL,"-use_generic_matcreate",&usegenericmatcreate);CHKERRA(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-use_generic_matcreate",&usegenericmatcreate);CHKERRA(ierr);
     if (usegenericmatcreate) {
       ierr = MatCreate(PETSC_COMM_WORLD,m,m,N,N,&J);CHKERRA(ierr);
       ierr = MatSetFromOptions(J);CHKERRA(ierr);
@@ -381,7 +381,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
      Insert values into global vector
   */
   ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = PLogFlops(11*ym*xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops(11*ym*xm);CHKERRQ(ierr);
   return 0; 
 } 
 /* ------------------------------------------------------------------- */

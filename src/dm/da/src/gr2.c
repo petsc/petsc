@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.40 2000/05/10 16:43:30 bsmith Exp bsmith $*/
+/*$Id: gr2.c,v 1.41 2000/09/28 21:15:20 bsmith Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
@@ -19,11 +19,11 @@ typedef struct {
 /*
        This does the drawing for one particular field 
     in one particular set of coordinates. It is a callback
-    called from DrawZoom()
+    called from PetscDrawZoom()
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecView_MPI_Draw_DA2d_Zoom"
-int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
+#define __FUNC__ "VecView_MPI_Draw_DA2d_Zoom"
+int VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 {
   ZoomCtx *zctx = (ZoomCtx*)ctx;
   int     ierr,m,n,i,j,k,step,id,c1,c2,c3,c4;
@@ -40,27 +40,27 @@ int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
   s    = zctx->scale;
   min  = zctx->min;
    
-  /* Draw the contour plot patch */
+  /* PetscDraw the contour plot patch */
   for (j=0; j<n-1; j++) {
     for (i=0; i<m-1; i++) {
 #if !defined(PETSC_USE_COMPLEX)
-      id = i+j*m;    x1 = xy[2*id];y_1 = xy[2*id+1];c1 = (int)(DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
-      id = i+j*m+1;  x2 = xy[2*id];y2  = y_1;       c2 = (int)(DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
-      id = i+j*m+1+m;x3 = x2;      y3  = xy[2*id+1];c3 = (int)(DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
-      id = i+j*m+m;  x4 = x1;      y4  = y3;        c4 = (int)(DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
+      id = i+j*m;    x1 = xy[2*id];y_1 = xy[2*id+1];c1 = (int)(PETSC_DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
+      id = i+j*m+1;  x2 = xy[2*id];y2  = y_1;       c2 = (int)(PETSC_DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
+      id = i+j*m+1+m;x3 = x2;      y3  = xy[2*id+1];c3 = (int)(PETSC_DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
+      id = i+j*m+m;  x4 = x1;      y4  = y3;        c4 = (int)(PETSC_DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
 #else
-      id = i+j*m;    x1 = PetscRealPart(xy[2*id]);y_1 = PetscRealPart(xy[2*id+1]);c1 = (int)(DRAW_BASIC_COLORS+s*(PetscRealPart(v[k+step*id])-min));
-      id = i+j*m+1;  x2 = PetscRealPart(xy[2*id]);y2  = y_1;       c2 = (int)(DRAW_BASIC_COLORS+s*(PetscRealPart(v[k+step*id])-min));
-      id = i+j*m+1+m;x3 = x2;      y3  = PetscRealPart(xy[2*id+1]);c3 = (int)(DRAW_BASIC_COLORS+s*(PetscRealPart(v[k+step*id])-min));
-      id = i+j*m+m;  x4 = x1;      y4  = y3;        c4 = (int)(DRAW_BASIC_COLORS+s*(PetscRealPart(v[k+step*id])-min));
+      id = i+j*m;    x1 = PetscRealPart(xy[2*id]);y_1 = PetscRealPart(xy[2*id+1]);c1 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscRealPart(v[k+step*id])-min));
+      id = i+j*m+1;  x2 = PetscRealPart(xy[2*id]);y2  = y_1;       c2 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscRealPart(v[k+step*id])-min));
+      id = i+j*m+1+m;x3 = x2;      y3  = PetscRealPart(xy[2*id+1]);c3 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscRealPart(v[k+step*id])-min));
+      id = i+j*m+m;  x4 = x1;      y4  = y3;        c4 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscRealPart(v[k+step*id])-min));
 #endif
-      ierr = DrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
-      ierr = DrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
+      ierr = PetscDrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
+      ierr = PetscDrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
       if (zctx->showgrid) {
-        ierr = DrawLine(draw,x1,y_1,x2,y2,DRAW_BLACK);CHKERRQ(ierr);
-        ierr = DrawLine(draw,x2,y2,x3,y3,DRAW_BLACK);CHKERRQ(ierr);
-        ierr = DrawLine(draw,x3,y3,x4,y4,DRAW_BLACK);CHKERRQ(ierr);
-        ierr = DrawLine(draw,x4,y4,x1,y_1,DRAW_BLACK);CHKERRQ(ierr);
+        ierr = PetscDrawLine(draw,x1,y_1,x2,y2,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        ierr = PetscDrawLine(draw,x2,y2,x3,y3,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        ierr = PetscDrawLine(draw,x3,y3,x4,y4,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        ierr = PetscDrawLine(draw,x4,y4,x1,y_1,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
     }
   }
@@ -68,24 +68,24 @@ int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecView_MPI_Draw_DA2d"
-int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
+#define __FUNC__ "VecView_MPI_Draw_DA2d"
+int VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 {
   DA             da,dac,dag;
   int            rank,ierr,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w,format;
   double         coors[4],ymin,ymax,xmin,xmax;
-  Draw           draw,popup;
+  PetscDraw           draw,popup;
   PetscTruth     isnull,useports;
   MPI_Comm       comm;
   Vec            xlocal,xcoor,xcoorl;
   DAPeriodicType periodic;
   DAStencilType  st;
   ZoomCtx        zctx;
-  DrawViewPorts  *ports;
+  PetscDrawViewPorts  *ports;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+  ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(1,"Vector not generated from a DA");
@@ -109,7 +109,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
          create a special DA to handle one level of ghost points for graphics
       */
       ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac);CHKERRQ(ierr); 
-      PLogInfo(da,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics ghost points\n");
+      PetscLogInfo(da,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics ghost points\n");
     } else {
       /* otherwise we can use the da we already have */
       dac = da;
@@ -158,7 +158,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   ierr = VecStrideMax(xcoor,1,PETSC_NULL,&ymax);CHKERRQ(ierr);
   coors[0] = xmin - .05*(xmax- xmin); coors[2] = xmax + .05*(xmax - xmin);
   coors[1] = ymin - .05*(ymax- ymin); coors[3] = ymax + .05*(ymax - ymin);
-  PLogInfo(da,"VecView_MPI_Draw_DA2d:Preparing DA 2d contour plot coordinates %g %g %g %g\n",coors[0],coors[1],coors[2],coors[3]);
+  PetscLogInfo(da,"VecView_MPI_Draw_DA2d:Preparing DA 2d contour plot coordinates %g %g %g %g\n",coors[0],coors[1],coors[2],coors[3]);
 
   /*
        get local ghosted version of coordinates 
@@ -167,7 +167,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   if (!xcoorl) {
     /* create DA to get local version of graphics */
     ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr); 
-    PLogInfo(dag,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics coordinates ghost points\n");
+    PetscLogInfo(dag,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics coordinates ghost points\n");
     ierr = DACreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
     ierr = DADestroy(dag);CHKERRQ(ierr);/* dereference dag */
@@ -186,23 +186,23 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   ierr = DAGetGhostCorners(dac,&igstart,&jgstart,0,&zctx.m,&zctx.n,0);CHKERRQ(ierr);
   ierr = DAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-draw_contour_grid",&zctx.showgrid);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-draw_contour_grid",&zctx.showgrid);CHKERRQ(ierr);
 
-  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-draw_ports",&useports);CHKERRQ(ierr);
-  if (useports || format == VIEWER_FORMAT_DRAW_PORTS){
-    ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
-    ierr = DrawViewPortsCreate(draw,zctx.step,&ports);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-draw_ports",&useports);CHKERRQ(ierr);
+  if (useports || format == PETSC_VIEWER_FORMAT_DRAW_PORTS){
+    ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
+    ierr = PetscDrawViewPortsCreate(draw,zctx.step,&ports);CHKERRQ(ierr);
   }
   /*
      Loop over each field; drawing each in a different window
   */
   for (zctx.k=0; zctx.k<zctx.step; zctx.k++) {
     if (useports) {
-      ierr = DrawViewPortsSet(ports,zctx.k);CHKERRQ(ierr);
+      ierr = PetscDrawViewPortsSet(ports,zctx.k);CHKERRQ(ierr);
     } else {
-      ierr = ViewerDrawGetDraw(viewer,zctx.k,&draw);CHKERRQ(ierr);
-      ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
+      ierr = PetscViewerDrawGetDraw(viewer,zctx.k,&draw);CHKERRQ(ierr);
+      ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
     }
 
     /*
@@ -220,21 +220,21 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 
       ierr = DAGetFieldName(da,zctx.k,&title);CHKERRQ(ierr);
       if (title) {
-        ierr = DrawSetTitle(draw,title);CHKERRQ(ierr);
+        ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);
       }
     }
-    ierr = DrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
-    PLogInfo(da,"VecView_MPI_Draw_DA2d:DA 2d contour plot min %g max %g\n",zctx.min,zctx.max);
+    ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
+    PetscLogInfo(da,"VecView_MPI_Draw_DA2d:DA 2d contour plot min %g max %g\n",zctx.min,zctx.max);
 
-    ierr = DrawGetPopup(draw,&popup);CHKERRQ(ierr);
-    if (popup) {ierr = DrawScalePopup(popup,zctx.min,zctx.max);CHKERRQ(ierr);}
+    ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
+    if (popup) {ierr = PetscDrawScalePopup(popup,zctx.min,zctx.max);CHKERRQ(ierr);}
 
-    zctx.scale = (245.0 - DRAW_BASIC_COLORS)/(zctx.max - zctx.min);
+    zctx.scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/(zctx.max - zctx.min);
 
-    ierr = DrawZoom(draw,VecView_MPI_Draw_DA2d_Zoom,&zctx);CHKERRQ(ierr);
+    ierr = PetscDrawZoom(draw,VecView_MPI_Draw_DA2d_Zoom,&zctx);CHKERRQ(ierr);
   }
   if (useports){
-    ierr = DrawViewPortsDestroy(ports);CHKERRQ(ierr);
+    ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
   }
 
   ierr = VecRestoreArray(xcoorl,&zctx.xy);CHKERRQ(ierr);
@@ -242,12 +242,12 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN int VecView_MPI_Draw_DA1d(Vec,Viewer);
+EXTERN int VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecView_MPI_DA"
-int VecView_MPI_DA(Vec xin,Viewer viewer)
+#define __FUNC__ "VecView_MPI_DA"
+int VecView_MPI_DA(Vec xin,PetscViewer viewer)
 {
   DA         da;
   int        ierr,dim;
@@ -257,7 +257,7 @@ int VecView_MPI_DA(Vec xin,Viewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(1,"Vector not generated from a DA");
-  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (isdraw) {
     ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
     if (dim == 1) {
@@ -281,8 +281,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VecLoadIntoVector_Binary_DA"
-int VecLoadIntoVector_Binary_DA(Viewer viewer,Vec xin)
+#define __FUNC__ "VecLoadIntoVector_Binary_DA"
+int VecLoadIntoVector_Binary_DA(PetscViewer viewer,Vec xin)
 {
   DA             da;
   int            ierr;
@@ -296,7 +296,7 @@ int VecLoadIntoVector_Binary_DA(Viewer viewer,Vec xin)
   ierr = DANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = DANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = VecDestroy(natural);CHKERRQ(ierr);
-  PLogInfo(xin,"VecLoadIntoVector_Binary_DA:Loading vector from natural ordering into DA\n");
+  PetscLogInfo(xin,"VecLoadIntoVector_Binary_DA:Loading vector from natural ordering into DA\n");
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.5 2000/09/26 15:38:06 hzhang Exp bsmith $*/
+/*$Id: ex24.c,v 1.6 2000/10/24 20:26:51 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests CG, MINRES and SYMMLQ on symmetric matrices with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
@@ -23,8 +23,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   N = m*n;
 
 
@@ -45,7 +45,7 @@ int main(int argc,char **args)
 
   /* a shift can make C indefinite. Preconditioners LU, ILU (for BAIJ format) and ICC may fail */
   /* ierr = MatShift(&alpha, C);CHKERRA(ierr); */
-  /* ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr); */
+  /* ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr); */
 
   /* Setup and solve for system */
     

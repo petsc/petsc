@@ -1,4 +1,4 @@
-/*$Id: baijfact.c,v 1.86 2000/11/28 17:29:14 bsmith Exp $*/
+/*$Id: baijfact5.c,v 1.1 2001/01/06 15:35:15 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -35,7 +35,7 @@ int MatLUFactorNumeric_SeqBAIJ_7(Mat A,Mat *B)
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  rtmp  = (MatScalar*)PetscMalloc(49*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
+ierr = PetscMalloc(49*(n+1)*sizeof(MatScalar),&  rtmp  );CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
@@ -245,7 +245,7 @@ int MatLUFactorNumeric_SeqBAIJ_7(Mat A,Mat *B)
 	  x[48] -= m7*x43 + m14*x44 + m21*x45 + m28*x46 + m35*x47 + m42*x48 + m49*x49;
           pv   += 49;
         }
-        PLogFlops(686*nz+637);
+        PetscLogFlops(686*nz+637);
       } 
       row = *ajtmp++;
     }
@@ -280,6 +280,6 @@ int MatLUFactorNumeric_SeqBAIJ_7(Mat A,Mat *B)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  PLogFlops(1.3333*343*b->mbs); /* from inverting diagonal blocks */
+  PetscLogFlops(1.3333*343*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }

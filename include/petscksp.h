@@ -1,4 +1,4 @@
-/* $Id: petscksp.h,v 1.96 2000/09/23 01:05:25 buschelm Exp balay $ */
+/* $Id: petscksp.h,v 1.97 2000/09/23 15:05:00 balay Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -35,7 +35,7 @@ EXTERN int KSPSolve(KSP,int *);
 EXTERN int KSPSolveTranspose(KSP,int *);
 EXTERN int KSPDestroy(KSP);
 
-extern FList KSPList;
+extern PetscFList KSPList;
 EXTERN int KSPRegisterAll(char *);
 EXTERN int KSPRegisterDestroy(void);
 
@@ -118,7 +118,7 @@ EXTERN int KSPSetOptionsPrefix(KSP,char*);
 EXTERN int KSPAppendOptionsPrefix(KSP,char*);
 EXTERN int KSPGetOptionsPrefix(KSP,char**);
 
-EXTERN int KSPView(KSP,Viewer);
+EXTERN int KSPView(KSP,PetscViewer);
 
 /*  this table must match finclude/petscksp.h */
 typedef enum {/* converged */
@@ -152,12 +152,12 @@ EXTERN int KSPCGSetType(KSP,KSPCGType);
 EXTERN int PCPreSolve(PC,KSP);
 EXTERN int PCPostSolve(PC,KSP);
 
-EXTERN int KSPLGMonitorCreate(char*,char*,int,int,int,int,DrawLG*);
+EXTERN int KSPLGMonitorCreate(char*,char*,int,int,int,int,PetscDrawLG*);
 EXTERN int KSPLGMonitor(KSP,int,double,void*);
-EXTERN int KSPLGMonitorDestroy(DrawLG);
-EXTERN int KSPLGTrueMonitorCreate(MPI_Comm,char*,char*,int,int,int,int,DrawLG*);
+EXTERN int KSPLGMonitorDestroy(PetscDrawLG);
+EXTERN int KSPLGTrueMonitorCreate(MPI_Comm,char*,char*,int,int,int,int,PetscDrawLG*);
 EXTERN int KSPLGTrueMonitor(KSP,int,double,void*);
-EXTERN int KSPLGTrueMonitorDestroy(DrawLG);
+EXTERN int KSPLGTrueMonitorDestroy(PetscDrawLG);
 
 #endif
 

@@ -1,9 +1,9 @@
-/*$Id: aopart.c,v 1.13 2000/04/12 04:26:18 bsmith Exp balay $*/
+/*$Id: aopart.c,v 1.14 2000/05/05 22:19:20 balay Exp bsmith $*/
 
 #include "petscao.h"       /*I  "petscao.h"  I*/
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"AODataKeyPartition"
+#define __FUNC__ "AODataKeyPartition"
 /*@C
     AODataKeyPartition - Partitions a key across the processors to reduce
     communication costs.

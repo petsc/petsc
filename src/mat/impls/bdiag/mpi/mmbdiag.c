@@ -1,4 +1,4 @@
-/*$Id: mmbdiag.c,v 1.37 2000/07/10 03:39:41 bsmith Exp bsmith $*/
+/*$Id: mmbdiag.c,v 1.38 2000/10/24 20:25:50 bsmith Exp bsmith $*/
 
 /*
    Support for the MPIBDIAG matrix-vector multiply
@@ -7,7 +7,7 @@
 #include "src/vec/vecimpl.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSetUpMultiply_MPIBDiag"
+#define __FUNC__ "MatSetUpMultiply_MPIBDiag"
 int MatSetUpMultiply_MPIBDiag(Mat mat)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
@@ -20,7 +20,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   PetscFunctionBegin;
   /* We make an array as long as the number of columns */
   /* mark those columns that are in mbd->A */
-  indices = (int*)PetscMalloc((N+1)*sizeof(int));CHKPTRQ(indices);
+  ierr = PetscMalloc((N+1)*sizeof(int),&indices);CHKERRQ(ierr);
   ierr    = PetscMemzero(indices,N*sizeof(int));CHKERRQ(ierr);
 
   if (bs == 1) {
@@ -56,8 +56,8 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   }
 
   /* form array of columns we need */
-  garray = (int*)PetscMalloc((ec+1)*sizeof(int));CHKPTRQ(garray);
-  ec = 0;
+  ierr = PetscMalloc((ec+1)*sizeof(int),&garray);CHKERRQ(ierr);
+  ec   = 0;
   for (i=0; i<N; i++) {
     if (indices[i]) garray[ec++] = i;
   }
@@ -82,11 +82,11 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,mbd->lvec,to,&mbd->Mvctx);CHKERRQ(ierr);
-  PLogObjectParent(mat,mbd->Mvctx);
-  PLogObjectParent(mat,mbd->lvec);
-  PLogObjectParent(mat,to);
-  PLogObjectParent(mat,from);
-  PLogObjectParent(mat,gvec);
+  PetscLogObjectParent(mat,mbd->Mvctx);
+  PetscLogObjectParent(mat,mbd->lvec);
+  PetscLogObjectParent(mat,to);
+  PetscLogObjectParent(mat,from);
+  PetscLogObjectParent(mat,gvec);
 
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);

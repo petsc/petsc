@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.10 2000/05/05 22:19:15 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.11 2000/08/01 20:57:57 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates constructing an application ordering\n\n";
 
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   AO       ao;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
@@ -25,13 +25,13 @@ int main(int argc,char **argv)
   ierr = AOCreateBasicIS(isapp,ispetsc,&ao);CHKERRA(ierr);
 
 
-  ierr = AOView(ao,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-  ierr = ISView(ispetsc,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = ISView(isapp,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = ISView(isapp,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = AOPetscToApplicationIS(ao,ispetsc);CHKERRA(ierr);
-  ierr = ISView(isapp,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = ISView(ispetsc,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = ISView(isapp,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
 
   ierr = ISDestroy(ispetsc);CHKERRA(ierr);

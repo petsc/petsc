@@ -1,4 +1,4 @@
-/*$Id: ex70.c,v 1.7 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex70.c,v 1.8 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests Vec/MatSetValues() with negative row and column indices.\n\n"; 
 
@@ -28,8 +28,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = MatDestroy(C);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.51 2000/10/03 19:26:12 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.52 2000/10/03 19:36:12 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -266,7 +266,7 @@ extern int        stack_err;
 #endif
 
 EXTERN int PetscStackCreate(void);
-EXTERN int PetscStackView(Viewer);
+EXTERN int PetscStackView(PetscViewer);
 EXTERN int PetscStackDestroy(void);
 EXTERN int PetscStackPublish(void);
 EXTERN int PetscStackDepublish(void);
