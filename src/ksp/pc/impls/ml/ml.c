@@ -85,7 +85,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ML                   *ml_object;
   ML_Aggregate         *agg_object;
   ML_Operator          *mlmat;
-  PetscInt             nlocal_allcols,Nlevels,mllevel,level,m,fine_level;
+  PetscInt             nlocal_allcols,Nlevels,mllevel,level,level1,m,fine_level;
   Mat                  A,Aloc; 
   GridCtx              *gridctx; 
   PC_ML                *pc_ml=PETSC_NULL;
@@ -194,45 +194,39 @@ PetscErrorCode PCSetUp_ML(PC pc)
   }
 
   /* create coarse level and the interpolation between the levels */
-  level = fine_level; 
-  while ( level >= 0 ){  
-    if (level != fine_level){
-      ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].x);CHKERRQ(ierr); 
-      ierr = VecSetSizes(gridctx[level].x,gridctx[level].A->n,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetType(gridctx[level].x,VECMPI);CHKERRQ(ierr); 
-      ierr = MGSetX(pc,level,gridctx[level].x);CHKERRQ(ierr); 
+  for (level=0; level<fine_level; level++){  
+    ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].x);CHKERRQ(ierr); 
+    ierr = VecSetSizes(gridctx[level].x,gridctx[level].A->n,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetType(gridctx[level].x,VECMPI);CHKERRQ(ierr); 
+    ierr = MGSetX(pc,level,gridctx[level].x);CHKERRQ(ierr); 
     
-      ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].b);CHKERRQ(ierr); 
-      ierr = VecSetSizes(gridctx[level].b,gridctx[level].A->m,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetType(gridctx[level].b,VECMPI);CHKERRQ(ierr); 
-      ierr = MGSetRhs(pc,level,gridctx[level].b);CHKERRQ(ierr); 
-    }
-    if (level) { 
-      ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].r);CHKERRQ(ierr); 
-      ierr = VecSetSizes(gridctx[level].r,gridctx[level].A->m,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetType(gridctx[level].r,VECMPI);CHKERRQ(ierr);    
-      ierr = MGSetR(pc,level,gridctx[level].r);CHKERRQ(ierr); 
-    }
+    ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].b);CHKERRQ(ierr); 
+    ierr = VecSetSizes(gridctx[level].b,gridctx[level].A->m,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetType(gridctx[level].b,VECMPI);CHKERRQ(ierr); 
+    ierr = MGSetRhs(pc,level,gridctx[level].b);CHKERRQ(ierr); 
+    
+    level1 = level + 1;
+    ierr = VecCreate(gridctx[level1].A->comm,&gridctx[level1].r);CHKERRQ(ierr); 
+    ierr = VecSetSizes(gridctx[level1].r,gridctx[level1].A->m,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetType(gridctx[level1].r,VECMPI);CHKERRQ(ierr);    
+    ierr = MGSetR(pc,level1,gridctx[level1].r);CHKERRQ(ierr); 
+
+    ierr = MGSetInterpolate(pc,level1,gridctx[level].P);CHKERRQ(ierr);
+    ierr = MGSetRestriction(pc,level1,gridctx[level].R);CHKERRQ(ierr); 
 
     if (level == 0){
       ierr = MGGetCoarseSolve(pc,&gridctx[level].ksp);CHKERRQ(ierr); 
     } else {
       ierr = MGGetSmoother(pc,level,&gridctx[level].ksp);CHKERRQ(ierr);
       ierr = MGSetResidual(pc,level,MGDefaultResidual,gridctx[level].A);CHKERRQ(ierr);
-      if (level == fine_level){
-        ierr = KSPSetOptionsPrefix(gridctx[level].ksp,"mg_fine_");CHKERRQ(ierr);
-        ierr = MGSetR(pc,level,gridctx[level].r);CHKERRQ(ierr);
-      }
     }
-    ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    
-    if (level < fine_level){
-      ierr = MGSetInterpolate(pc,level+1,gridctx[level].P);CHKERRQ(ierr);
-      ierr = MGSetRestriction(pc,level+1,gridctx[level].R);CHKERRQ(ierr); 
-    }
-    level--;
-  }
-
+    ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);    
+  }  
+  ierr = MGGetSmoother(pc,fine_level,&gridctx[fine_level].ksp);CHKERRQ(ierr);
+  ierr = MGSetResidual(pc,fine_level,MGDefaultResidual,gridctx[fine_level].A);CHKERRQ(ierr); 
+  ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(gridctx[fine_level].ksp,"mg_fine_");CHKERRQ(ierr);
+  
   /* now call PCSetUp_MG()         */
   /*--------------------------------*/
   ierr = (*pc_ml->PCSetUp)(pc);CHKERRQ(ierr);
@@ -253,23 +247,17 @@ PetscErrorCode PetscObjectContainerDestroy_PC_ML(void *ptr)
   ML_Destroy(&pc_ml->ml_object);
 
   ierr = PetscFree(pc_ml->PetscMLdata->pwork);CHKERRQ(ierr);
-  ierr = VecDestroy(pc_ml->PetscMLdata->x);CHKERRQ(ierr);
-  ierr = VecDestroy(pc_ml->PetscMLdata->y);CHKERRQ(ierr); 
+  if (pc_ml->PetscMLdata->x){ierr = VecDestroy(pc_ml->PetscMLdata->x);CHKERRQ(ierr);}
+  if (pc_ml->PetscMLdata->y){ierr = VecDestroy(pc_ml->PetscMLdata->y);CHKERRQ(ierr);}
   ierr = PetscFree(pc_ml->PetscMLdata);CHKERRQ(ierr);
 
-  level = pc_ml->fine_level;
-  while ( level>= 0 ){ 
-    if (level != pc_ml->fine_level){
-      ierr = MatDestroy(pc_ml->gridctx[level].A);CHKERRQ(ierr);
-      ierr = MatDestroy(pc_ml->gridctx[level].P);CHKERRQ(ierr);
-      ierr = MatDestroy(pc_ml->gridctx[level].R);CHKERRQ(ierr);
-      ierr = VecDestroy(pc_ml->gridctx[level].x);CHKERRQ(ierr);
-      ierr = VecDestroy(pc_ml->gridctx[level].b);CHKERRQ(ierr);
-    }
-    if (level){
-      ierr = VecDestroy(pc_ml->gridctx[level].r);CHKERRQ(ierr);
-    }
-    level--;
+  for (level=0; level<pc_ml->fine_level; level++){
+    if (pc_ml->gridctx[level].A){ierr = MatDestroy(pc_ml->gridctx[level].A);CHKERRQ(ierr);}
+    if (pc_ml->gridctx[level].P){ierr = MatDestroy(pc_ml->gridctx[level].P);CHKERRQ(ierr);}
+    if (pc_ml->gridctx[level].R){ierr = MatDestroy(pc_ml->gridctx[level].R);CHKERRQ(ierr);}
+    if (pc_ml->gridctx[level].x){ierr = VecDestroy(pc_ml->gridctx[level].x);CHKERRQ(ierr);}
+    if (pc_ml->gridctx[level].b){ierr = VecDestroy(pc_ml->gridctx[level].b);CHKERRQ(ierr);}
+    if (pc_ml->gridctx[level+1].r){ierr = VecDestroy(pc_ml->gridctx[level+1].r);CHKERRQ(ierr);}
   }
   ierr = PetscFree(pc_ml->gridctx);CHKERRQ(ierr);
   ierr = PetscFree(pc_ml);CHKERRQ(ierr); 

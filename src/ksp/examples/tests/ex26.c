@@ -53,9 +53,9 @@ int main(int argc,char **argv)
   Mat            A; 
   GridCtx        fine_ctx; 
   KSP            ksp; 
-  PetscTruth     flg;
+  PetscTruth     flg,useML=PETSC_FALSE;
 
-  PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  PetscInitialize(&argc,&argv,(char *)0,help);
   /* set up discretization matrix for fine grid */
   fine_ctx.mx = 9; fine_ctx.my = 9;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,&flg);CHKERRQ(ierr);
@@ -68,6 +68,8 @@ int main(int argc,char **argv)
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscOptionsHasName(0,"-use_pcml",&useML);CHKERRQ(ierr);
 
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,fine_ctx.mx,
                     fine_ctx.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&fine_ctx.da);CHKERRQ(ierr);
@@ -82,7 +84,11 @@ int main(int argc,char **argv)
   /* create linear solver */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCML);CHKERRQ(ierr); /* calls PCCreate_ML() */
+  if (useML){
+    ierr = PCSetType(pc,PCML);CHKERRQ(ierr); /* calls PCCreate_ML() */
+  } else {
+    ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
+  }
 
   /* set values for rhs vector */
   ierr = VecSet(&one,fine_ctx.b);CHKERRQ(ierr);
