@@ -1,0 +1,47 @@
+
+CC       = gcc  -DPARCH_linux
+FC       = f77
+AR       = ar
+RM       = rm -f
+OMAKE    = make  --no-print-directory
+RANLIB   = ranlib
+SHELL    = /bin/sh
+CLINKER  = gcc $(BASEOPT)
+FLINKER  = f77 $(BASEOPTF)
+CONF     = -DHAVE_PWD_H -DHAVE_MALLOC_H -DHAVE_STRING_H -DHAVE_X11 \
+           -DHAVE_FORTRAN_UNDERSCORE
+SYS_LIB  = -lc
+
+include $(PETSC_DIR)/bmake/common
+
+libc: $(LIBNAME)($(OBJSC))
+libf: $(OBJSF)
+	ar crl $(LIBNAME) $(OBJSF)
+
+#############
+.PRECIOUS: $(LIBNAME)
+.c.a:
+	$(CC) -pipe -c $(CFLAGS) $(BASEOPT) $*.c
+	$(AR) clr $(LIBNAME) $*.o
+	$(RM) $*.o
+.c.o:
+	$(CC) -pipe -c $(CFLAGS) $(BASEOPT) $*.c
+.f.o: 
+	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+.f.a: 
+	$(FC)  -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(AR) clr $(LIBNAME) $*.o
+	$(RM) $*.o
+
+#
+#  We ignore error messages from FC since they seem to be bogus
+#
+.F.o:
+	$(RM) $*.f $*.c
+	cp $*.F $*.c
+	$(CC) -E $(PETSC_INCLUDE)  $*.c  > $*.f
+	-$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(RM) $*.f $*.c
+
+
+
