@@ -7,6 +7,10 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - Fix up TS to support boundary conditions. User could provide an IS indicating
+    which nodes are boundary nodes and then the "adjustment" of the nonlinear function
+    and Jacobian would not be done for those rows of the vector and matrix
+
   - SNESSetFromOptions() manual page needs list of options it supports.
 
 
