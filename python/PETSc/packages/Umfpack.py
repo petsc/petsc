@@ -11,15 +11,14 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     self.compilers    = self.framework.require('config.compilers',self)
     self.libraries    = self.framework.require('config.libraries',self)
-    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
-    self.foundUMF = 0
+    self.found        = 0
     self.lib          = ''
     self.include      = ''
     return
 
   def __str__(self):
     output=''
-    if self.foundUMF:
+    if self.found:
       output  = 'Umfpack:\n'
       output += '  Includes: '+ str(self.include)+'\n'
       output += '  Library: '+str(self.lib)+'\n'
@@ -35,26 +34,26 @@ class Configure(config.base.Configure):
 
   def generateIncludeGuesses(self):
     if 'with-umfpack' in self.framework.argDB:
+      if 'with-umfpack-lib' in self.framework.argDB:
+        incl = self.lib[0]
+        # We have ~umfpack/umfpack.a so remove the last element from the path
+        (incl,dummy) = os.path.split(incl)
+        yield('based on found library location',incl)
       if 'with-umfpack-include' in self.framework.argDB:
         yield('User specified UMFPACK header location',self.framework.argDB['with-umfpack-include'])
-      bsroot = self.lib[0]
-      # We have /home/user/Umfpack/lib/libO/bsarch/libUMF.a so remove the last 4 elements from the path
-      for i in 1,2,3,4:
-        (bsroot,dummy) = os.path.split(bsroot)
-      yield('based on found library location',os.path.join(bsroot,'include'))
+      if 'with-umfpack-dir' in self.framework.argDB:
+        yield('User specified UMFPACK header location',self.framework.argDB['with-umfpack-dir'])
 
-  def checkInclude(self,umfincl):
+  def checkInclude(self,incl):
     '''Check that umfpack.h is present'''
-    if not isinstance(umfincl,list):umfincl = [umfincl]
+    if not isinstance(incl,list):incl = [incl]
     oldFlags = self.framework.argDB['CPPFLAGS']
-    for inc in umfincl:
-      if not self.mpi.include is None:
-        mpiincl = ' -I' + ' -I'.join(self.mpi.include)
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc+mpiincl
+    for inc in incl:
+      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
     found = self.checkPreprocess('#include <umfpack.h>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     if found:
-      self.include = umfincl
+      self.include = incl
       self.framework.log.write('Found Umfpack header file umfpack.h: '+str(self.include)+'\n')
     return found
 
@@ -62,24 +61,20 @@ class Configure(config.base.Configure):
     if 'with-umfpack' in self.framework.argDB:
       if 'with-umfpack-lib' in self.framework.argDB:
         yield ('User specified UMFPACK library',self.framework.argDB['with-umfpack-lib'])
-      if 'with-umfpack-dir' in self.framework.argDB and 'with-umfpack-bopt' in self.framework.argDB and 'with-umfpack-arch' in self.framework.argDB:
-        dir    = self.framework.argDB['with-umfpack-dir']
-        bopt   = self.framework.argDB['with-umfpack-bopt']
-        bsarch = self.framework.argDB['with-umfpack-arch']
-        yield('User specified UMFPACK installation',os.path.join(dir,'lib','lib'+bopt,bsarch,'umfpack.a'))
-      # Perhaps we could also check all possible umfpack installations based on just with-umfpack-dir trying all bopt and bsarch available....
+      if 'with-umfpack-include' in self.framework.argDB:
+        dir = self.framework.argDB['with-umfpack-include']
+        yield('User specified UMFPACK installation',os.path.join(dir,'umfpack.a'))
+      if 'with-umfpack-dir' in self.framework.argDB:
+        dir = self.framework.argDB['with-umfpack-dir']
+        yield('User specified UMFPACK installation',os.path.join(dir,'umfpack.a'))
 
-  def checkLib(self,umflib):
-    if not isinstance(umflib,list): umflib = [umflib]
+  def checkLib(self,lib):
+    if not isinstance(lib,list): lib = [lib]
     oldLibs = self.framework.argDB['LIBS']  
-    # This next line is really ugly
-    # ' '.join(map(self.libraries.getLibArgument',self.mpi.lib)
-    # takes the location of the MPI library and separates it into a string that looks like:
-    # -L<MPI_DIR> -l<mpi library>
-    found = self.libraries.check(umflib,'umfpack_di_report_info',otherLibs=' '.join(map(self.libraries.getLibArgument, self.mpi.lib)))
+    found = self.libraries.check(lib,'umfpack_di_report_info')
     self.framework.argDB['LIBS']=oldLibs  
     if found:
-      self.lib    = umflib
+      self.lib = lib
       self.framework.log.write('Found functional Umfpack: '+str(self.lib)+'\n')
     return found
 
@@ -87,16 +82,16 @@ class Configure(config.base.Configure):
     '''Find a Umfpack installation and check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
     found = 0
-    for (configstr,umflib) in self.generateLibGuesses():
+    for (configstr,lib) in self.generateLibGuesses():
       self.framework.log.write('Checking for a functional Umfpack in '+configstr+'\n')
-      found = self.executeTest(self.checkLib,umflib)
+      found = self.executeTest(self.checkLib,lib)
       if found: break
     if found:
-      for (inclstr,umfincl) in self.generateIncludeGuesses():
-        self.framework.log.write('Checking for Umfpack headers in '+inclstr+': '+umfincl + '\n')
-        if self.executeTest(self.checkInclude,umfincl):
-          self.include = umfincl
-          self.foundUMF = 1
+      for (inclstr,incl) in self.generateIncludeGuesses():
+        self.framework.log.write('Checking for Umfpack headers in '+inclstr+': '+incl + '\n')
+        if self.executeTest(self.checkInclude,incl):
+          self.include = incl
+          self.found   = 1
           self.setFoundOutput()
           break
     else:
@@ -110,7 +105,6 @@ class Configure(config.base.Configure):
     self.addDefine('HAVE_UMFPACK',1)
     
   def setEmptyOutput(self):
-    #self.addDefine('HAVE_UMFPACK', 0)
     self.addSubstitution('UMFPACK_INCLUDE', '')
     self.addSubstitution('UMFPACK_LIB', '')
     return
