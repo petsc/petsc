@@ -28,7 +28,7 @@ class Make(script.Script):
     import install.urlMapping
 
     self.logPrint('Adding project dependency: '+url)
-    path   = os.path.join('/PETSc3', install.urlMapping.UrlMappingNew.getRepositoryPath(url))
+    path   = os.path.join(self.argDB['defaultRoot'], install.urlMapping.UrlMappingNew.getRepositoryPath(url))
     oldDir = os.getcwd()
     os.chdir(path)
     make   = self.getModule(path, 'make').Make()
@@ -41,6 +41,7 @@ class Make(script.Script):
 
     help = script.Script.setupHelp(self, help)
     help.addArgument('Make', 'forceConfigure', nargs.ArgBool(None, 0, 'Force a reconfiguration', isTemporary = 1))
+    help.addArgument('Make', 'defaultRoot', nargs.ArgDir(None, '../..', 'Directory root for all packages', isTemporary = 1))
     return help
 
   def setupDependencies(self, sourceDB):
