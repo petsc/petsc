@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.15 1997/09/30 16:42:36 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.16 1997/10/28 14:25:35 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -6,7 +6,9 @@ CFLAGS	        = $(CPPFLAGS) -D__SDIR__='"$(LOCDIR)"'
 FFLAGS	        =	 
 LOCDIR          = src/ao/examples/tests/
 TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm \
-                  ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm clean
+                  ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm \
+                  ex3.PETSc runex3 ex3.rm \
+                  ex5.PETSc runex5 ex5.rm clean
 TESTEXAMPLES_2  = 
 TESTEXAMPLES_3  = 
 TESTEXAMPLES_4  = 
@@ -71,4 +73,14 @@ runex2_3:
 	   else echo "Possible problem with ex2_3, diffs above"; fi;\
 	   $(RM) -f ex2_3.tmp
 
+runex3:
+	-@$(MPIRUN) -np 2 ex3 > ex3_1.tmp 2>&1;   \
+	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
+	   else echo "Possible problem with ex3_1, diffs above"; fi; \
+	   $(RM) -f ex3_1.tmp
 
+runex5:
+	-@$(MPIRUN) -np 2 ex5 > ex5_1.tmp 2>&1;   \
+	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
+	   else echo "Possible problem with ex5_1, diffs above"; fi; \
+	   $(RM) -f ex5_1.tmp
