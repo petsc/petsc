@@ -60,5 +60,6 @@ int main(int argc, char **argv)
   printf("command:%s\n",command);
   system(command);
   return 0;
+
 }
     
