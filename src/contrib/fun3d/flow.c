@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.21 2000/04/16 04:35:38 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.22 2000/04/16 16:43:13 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -107,50 +107,13 @@ int main(int argc,char **args)
  
   c_runge->nitfo = 0;
 
-/* Read & process the grid */
-  /*  f77RDGPAR(&f_pntr.nnodes,  &f_pntr.ncell,   &f_pntr.nedge,
-             &f_pntr.nccolor, &f_pntr.ncolor,
-             &f_pntr.nnbound, &f_pntr.nvbound, &f_pntr.nfbound,
-             &f_pntr.nnfacet, &f_pntr.nvfacet, &f_pntr.nffacet,
-             &f_pntr.nsnode,  &f_pntr.nvnode,  &f_pntr.nfnode,
-             &f_pntr.ntte,
-             &f_pntr.nsface,  &f_pntr.nvface,  &f_pntr.nfface,
-             &rank);*/
-
- 
-/* Read the grid information */
-
-   /*f77README(&f_pntr.nnodes,  &f_pntr.ncell,   &f_pntr.nedge,
-             &f_pntr.ncolor,  &f_pntr.nccolor,
-             &f_pntr.nnbound, &f_pntr.nvbound, &f_pntr.nfbound,
-             &f_pntr.nnfacet, &f_pntr.nvfacet, &f_pntr.nffacet,
-             &f_pntr.nsnode,  &f_pntr.nvnode,  &f_pntr.nfnode,
-             &f_pntr.ntte,
-              f_pntr.eptr,
-              f_pntr.x,        f_pntr.y,        f_pntr.z,
-              f_pntr.area,     f_pntr.c2n,      f_pntr.c2e,
-              f_pntr.xn,       f_pntr.yn,       f_pntr.zn,
-              f_pntr.rl,
-              f_pntr.nntet,    f_pntr.nnpts,    f_pntr.nvtet,
-              f_pntr.nvpts,    f_pntr.nftet,    f_pntr.nfpts,
-              f_pntr.f2ntn,    f_pntr.f2ntv,    f_pntr.f2ntf,
-              f_pntr.isnode,   f_pntr.sxn,      f_pntr.syn,
-              f_pntr.szn,      f_pntr.ivnode,   f_pntr.vxn,
-              f_pntr.vyn,      f_pntr.vzn,      f_pntr.ifnode,
-              f_pntr.fxn,      f_pntr.fyn,      f_pntr.fzn,
-              f_pntr.slen,
-             &rank);*/
-
-/* Get the grid information into local ordering */
+   /* Get the grid information into local ordering */
    ierr = GetLocalOrdering(&f_pntr);CHKERRQ(ierr);
 
-/* Allocate Memory for Some Other Grid Arrays */ 
+   /* Allocate Memory for Some Other Grid Arrays */ 
    ierr = set_up_grid(&f_pntr);CHKERRQ(ierr);
  
-/* Now set up PETSc datastructure */
-   /* ierr = SetPetscDS(&f_pntr, &tsCtx);CHKERRQ(ierr);*/
- 
-/* If using least squares for the gradients, calculate the r's */
+   /* If using least squares for the gradients, calculate the r's */
    if (f_pntr.ileast == 4) {
      f77SUMGS(&f_pntr.nnodesLoc,&f_pntr.nedgeLoc,f_pntr.eptr,f_pntr.xyz,f_pntr.rxy,&rank,&f_pntr.nvertices);
    }
