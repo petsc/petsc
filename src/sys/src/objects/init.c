@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.9 1998/05/15 16:22:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.10 1998/05/22 20:00:17 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -850,7 +850,7 @@ int AliceFinalize(void)
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-optionstable",&flg1); CHKERRQ(ierr);
   if (flg1) {
-    if (!rank) OptionsPrint(stdout);
+    if (!rank) {ierr = OptionsPrint(stdout);CHKERRQ(ierr);}
   }
   ierr = OptionsHasName(PETSC_NULL,"-optionsleft",&flg1); CHKERRQ(ierr);
   nopt = OptionsAllUsed();
@@ -868,15 +868,17 @@ int AliceFinalize(void)
   }
 
 #if (USE_PETSC_BOPT_g)
-  if (nopt && !flg1) {
+  flg2 = 0;
+  ierr = OptionsHasName(PETSC_NULL,"-optionsleft_off",&flg2); CHKERRQ(ierr);
+  if (nopt && !flg1 && !flg2) {
     PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");
     PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");
   }
-  if (nopt || flg1) {
+  if ((nopt || flg1) && !flg2) {
 #else 
   if (flg1) {
 #endif
-    ierr = OptionsLeft();
+    ierr = OptionsLeft(); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-log_history",&flg1); CHKERRQ(ierr);
   if (flg1) {
