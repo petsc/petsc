@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.29 1999/03/19 21:24:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.30 1999/05/04 20:37:40 balay Exp balay $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -79,7 +79,7 @@ int main(int argc,char **argv)
     /* Note: I don't do anything for the first and last entry */
     for (i=1; i< localsize-1; i++) {
       copyptr[i] = localptr[i] + (k/(h*h)) *
-                           (localptr[i+1]-2*localptr[i]+localptr[i-1]);
+                           (localptr[i+1]-2.0*localptr[i]+localptr[i-1]);
     }
   
     ierr = VecRestoreArray(copy,&copyptr);CHKERRA(ierr);

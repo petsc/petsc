@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.52 1999/05/04 20:36:14 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.53 1999/05/12 03:32:55 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -246,13 +246,13 @@ int FormInitialGuess(AppCtx *user,Vec X)
   xe = xs+xm;
   ye = ys+ym;
   for (j=ys; j<ye; j++) {  /*  for (j=0; j<ny; j++) */
-    temp = PetscMin(j+1,ny-j)*hy;
+    temp = (double)PetscMin(j+1,ny-j)*hy;
     for (i=xs; i<xe; i++) {  /*  for (i=0; i<nx; i++) */
       k = (j-Ys)*Xm + i-Xs;
 #if !defined(PETSC_USE_COMPLEX)
       x[k] = PetscMin((PetscMin(i+1,nx-i))*hx,temp);
 #else
-      x[k] = PetscMin(PetscReal((PetscMin(i+1,nx-i))*hx),PetscReal(temp));
+      x[k] = PetscMin(PetscReal((double)(PetscMin(i+1,nx-i))*hx),PetscReal(temp));
 #endif
     }
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.5 1999/04/16 16:10:57 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.6 1999/05/04 20:36:56 balay Exp balay $";
 #endif
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
@@ -325,7 +325,7 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
   ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   for (i=0; i<appctx->m; i++) {
-    s_localptr[i] = cos(i*sc1)*ex1 + 3.*cos(i*sc2)*ex2;
+    s_localptr[i] = cos(sc1*(double)i)*ex1 + 3.*cos(sc2*(double)i)*ex2;
   }
 
   /* 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.14 1999/04/16 16:09:19 bsmith Exp balay $";
+static char vcid[] = "$Id: ex15.c,v 1.15 1999/05/04 20:35:14 balay Exp balay $";
 #endif
 
 static char help[] = "SLES on an operator with a null space.\n\n";
@@ -36,7 +36,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(u);CHKERRA(ierr);
   ierr = VecAssemblyEnd(u);CHKERRA(ierr);
   ierr = VecSum(u,&avalue);CHKERRA(ierr);
-  avalue = -avalue/n;
+  avalue = -avalue/(double)n;
   ierr = VecShift(&avalue,u);CHKERRA(ierr);
 
   /* Create and assemble matrix */

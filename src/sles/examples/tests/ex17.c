@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.27 1999/05/04 20:35:14 balay Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.28 1999/05/12 03:32:04 bsmith Exp balay $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -181,7 +181,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
     Scalar alpha_h;
     ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,&flg);CHKERRA(ierr);
     h2 = 1.0/((n+1)*(n+1));
-    alpha_h = (PETSC_i * 10.0) / (n+1);  /* alpha_h = alpha * h */
+    alpha_h = (PETSC_i * 10.0) / (double)(n+1);  /* alpha_h = alpha * h */
     for ( I=Istart; I<Iend; I++ ) { 
       *val = -1.0; i = I/n; j = I - i*n;  
       if ( i>0 ) {

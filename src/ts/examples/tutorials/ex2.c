@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.22 1999/04/16 16:10:57 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.23 1999/05/04 20:36:56 balay Exp balay $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
 timestepping.  Runtime options include:\n\
@@ -259,7 +259,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
      VecSetValues() or VecSetValuesLocal().
   */
   for (i=mybase; i<myend; i++) {
-    x = h*i; /* current location in global grid */
+    x = h*(double)i; /* current location in global grid */
     u_localptr[i-mybase] = 1.0 + x*x;
   }
 
@@ -313,7 +313,7 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
      Alternatively, we could use VecSetValues() or VecSetValuesLocal().
   */
   for (i=mybase; i<myend; i++) {
-    x = i*h;
+    x = h*(double)i;
     s_localptr[i-mybase] = (t + 1.0)*(1.0 + x*x);
   }
 
