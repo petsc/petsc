@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.18 1996/03/23 03:00:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.19 1996/04/04 22:03:06 bsmith Exp curfman $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -145,13 +145,14 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
 
 /* hqr.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
 
-/*
+/* Cannot find d_sign in hpux libraries */
+#if defined(PARCH_hpux)
 double d_sign(double *x,double *y)
 {
   if (*y >= 0.0) return *x;
   return -*x;
 }
-*/
+#endif
 
 int KSPhqr_Private(int *nm, int *n, int *low, int *igh, double *h, 
                    double *wr, double *wi, int *ierr)
