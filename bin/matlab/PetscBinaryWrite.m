@@ -18,7 +18,8 @@ fd = fopen(filename,'w','ieee-be');
 
 nz   = nnz(A);
 header = fwrite(fd,[1211216,m,n,nz],'int32');
-n_nz = sum(A' ~= 0);
+n_nz = full(sum(A' ~= 0));
+
 fwrite(fd,n_nz,'int32');  %nonzeros per row
 [i,j,s] = find(A');
 fwrite(fd,i-1,'int32');
