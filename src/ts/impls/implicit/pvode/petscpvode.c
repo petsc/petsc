@@ -326,7 +326,7 @@ int TSSetUp_PVode_Nonlinear(TS ts)
   ierr = VecGetArray(ts->vec_sol,&tmp);CHKERRQ(ierr);
   N_VSetData(tmp,cvode->y);
   cvode->mem = CVodeMalloc(M,TSFunction_PVode,ts->ptime,cvode->y,cvode->cvode_type,
-                           NEWTON,SS,&cvode->reltol,&cvode->abstol,ts,NULL,FALSE,cvode->iopt,
+                           NEWTON,SS,&cvode->reltol,&cvode->abstol,ts,NULL,TRUE,cvode->iopt,
                            cvode->ropt,machEnv);CHKERRQ(ierr);
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
