@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.21 2000/06/16 16:32:05 bsmith Exp bsmith $ 
+# $Id: base_variables,v 1.22 2000/08/10 20:45:41 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -12,7 +12,7 @@ SED		   = /bin/sed
 SH_LD		   = gcc
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = gcc
+C_CC		   = gcc -fPIC
 C_FC		   = g77 -Wno-globals
 C_CLINKER_SLFLAG   = -Wl,-rpath,
 C_FLINKER_SLFLAG   = -Wl,-rpath,
