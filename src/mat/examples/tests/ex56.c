@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex56.c,v 1.6 1997/03/31 20:21:11 balay Exp bsmith $";
+static char vcid[] = "$Id: ex56.c,v 1.7 1997/04/10 00:03:45 bsmith Exp balay $";
 #endif
 static char help[] = "Test the use of MatSetValuesBlocked for MatBAIJ";
 
@@ -51,8 +51,16 @@ int main(int argc,char **args)
   ierr = MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES); CHKERRQ(ierr);
 
 
-  MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
-  MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
+  ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY); CHKERRQ(ierr);
+
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRQ(ierr);    
+  ierr = MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES); CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  
 
   MatDestroy(A);
   PetscFinalize();
