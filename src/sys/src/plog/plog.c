@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.147 1997/02/06 19:25:46 balay Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.148 1997/02/22 02:29:54 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1224,7 +1224,7 @@ int PLogEventActivate(int event)
    PLogPrintSummary - Prints a summary of the logging.
 
    Input Parameter:
-.  file - a file pointer
+.  file - an optional file name
 .  comm - MPI communicator (one processor prints)
 
    Options Database Keys:
@@ -1232,6 +1232,7 @@ $  -log_summary : Prints summary of log information (for code
    compiled with PETSC_LOG)
 
    Notes:
+   By defult the summary is printed to stdout.
    More extensive examination of the log information can be done with 
    PLogDump(), which is activated by the option -log or -log_all, in 
    combination with petsc/bin/petscview.
@@ -1240,7 +1241,7 @@ $  -log_summary : Prints summary of log information (for code
 
 .seealso: PLogBegin(), PLogDump()
 @*/
-int PLogPrintSummary(MPI_Comm comm,FILE *fd)
+int PLogPrintSummary(MPI_Comm comm,char* filename)
 {
   double maxo,mino,aveo,mem,totmem,maxmem,minmem,mlensmcounts;
   double maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott,ratio;
@@ -1249,14 +1250,24 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
   double minm,maxm,avem,totm,minr,maxr,maxml,minml,totml,aveml,totr;
   double rp,mp,lp,rpg,mpg,lpg,totms,totmls,totrs,mps,lps,rps,lpmp;
   double pstime,psflops1,psflops,flopr;
-  int    size,i,j;
+  int    size,rank,i,j;
   char   arch[10],hostname[64],username[16];
+  FILE   *fd;
 
   /* pop off any stages the user forgot to remove */
   while (EventsStagePushed) PLogStagePop();
 
   PetscTime(_TotalTime);  _TotalTime -= BaseTime;
   MPI_Comm_size(comm,&size);
+  MPI_Comm_rank(comm,&rank);
+
+  /* Open the summary file */
+  if (filename) {
+    fd = fopen(filename,"w"); 
+    if (!fd) SETERRQ(1,0,"cannot open file");
+  } else {
+    fd = stdout;
+  }
 
   PetscFPrintf(comm,fd,"************************************************************************************************************************\n");
   PetscFPrintf(comm,fd,"***                   WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r' to print this document                 ***\n");
@@ -1464,7 +1475,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
 
   }
   PetscFPrintf(comm,fd,"\n");
-
+  if (filename) fclose(fd);
   return 0;
 }
 

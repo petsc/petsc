@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.122 1997/02/22 16:48:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.123 1997/03/01 15:45:33 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -389,8 +389,9 @@ $      BOPT=[g,g_c++,g_complex] only!)
    Options Database Keys for Profiling:
    See the 'Profiling' chapter of the users manual for
    details.
-$  -log_summary : Prints summary of flop and timing
-$      information to screen (for code compiled with 
+$  -log_summary [filename] : Prints summary of flop and timing
+$      information to screen. If the filename is specified the
+$      summary is written to the file. (for code compiled with 
 $      PETSC_LOG).  See PLogPrintSummary().
 $  -log_all [filename]: Logs extensive profiling information
 $      (for code compiled with PETSC_LOG). See PLogDump(). 
@@ -424,8 +425,13 @@ int PetscFinalize()
       else          PLogMPEDump(0);
     }
 #endif
-    ierr = OptionsHasName(PETSC_NULL,"-log_summary",&flg1); CHKERRQ(ierr);
-    if (flg1) { PLogPrintSummary(PETSC_COMM_WORLD,stdout); }
+    mname[0] = 0;
+    ierr = OptionsGetString(PETSC_NULL,"-log_summary",mname,64,&flg1); CHKERRQ(ierr);
+    if (flg1) { 
+      if (mname[0])  PLogPrintSummary(PETSC_COMM_WORLD,mname); 
+      else           PLogPrintSummary(PETSC_COMM_WORLD,0); 
+    }
+
     mname[0] = 0;
     ierr = OptionsGetString(PETSC_NULL,"-log_all",mname,64,&flg1); CHKERRQ(ierr);
     ierr = OptionsGetString(PETSC_NULL,"-log",mname,64,&flg2); CHKERRQ(ierr);

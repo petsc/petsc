@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.101 1997/03/04 15:26:08 balay Exp balay $ */
+/* $Id: petsclog.h,v 1.102 1997/03/04 15:26:59 balay Exp balay $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -204,7 +204,7 @@ extern int    PLogDestroy();
 extern int    PLogStagePush(int);
 extern int    PLogStagePop();
 extern int    PLogStageRegister(int,char*);
-extern int    PLogPrintSummary(MPI_Comm,FILE *);
+extern int    PLogPrintSummary(MPI_Comm,char *);
 extern int    PLogBegin();
 extern int    PLogTraceBegin(FILE *);
 extern int    PLogAllBegin();
