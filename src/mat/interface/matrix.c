@@ -2371,7 +2371,7 @@ int MatCopy(Mat A,Mat B,MatStructure str)
   PetscCheckSameComm(A,B);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (A->M != B->M || A->N != B->N) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim %d %d",A->M,B->M,
+  if (A->M != B->M || A->N != B->N) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim (%d,%d) (%d,%d)",A->M,B->M,
                                              A->N,B->N);
 
   ierr = PetscLogEventBegin(MAT_Copy,A,B,0,0);CHKERRQ(ierr);
@@ -3626,7 +3626,7 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
   PetscValidPointer(fact);
   PetscValidHeaderSpecific(row,IS_COOKIE);
   PetscValidHeaderSpecific(col,IS_COOKIE);
-  if (info && info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Levels of fill negative %d",info->levels);
+  if (info && info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Levels of fill negative %d",(int)info->levels);
   if (info && info->fill < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",info->fill);
   if (!mat->ops->ilufactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ILU",mat->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");

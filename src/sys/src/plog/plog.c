@@ -1016,7 +1016,7 @@ int PetscLogDump(const char sname[])
     } else {
       flops = 0.0;
     }
-    ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "%d %16g %16g %16g %16g\n", event, eventInfo[event].count,
+    ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "%d %16d %16g %16g %16g\n", event, eventInfo[event].count,
                         eventInfo[event].flops, eventInfo[event].time, flops);
   }
   ierr = PetscFClose(PETSC_COMM_WORLD, fd);                                                               CHKERRQ(ierr);

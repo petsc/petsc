@@ -163,13 +163,13 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
       (*PetscErrorPrintf)("error detected at  %s() line %d in %s%s\n",function,line,dir,file);
       (*PetscErrorPrintf)("Memory at address %p is corrupted\n",head);
       (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
-      SETERRQ(PETSC_ERR_MEMC,"");
+      SETERRQ(PETSC_ERR_MEMC," ");
     }
     if (head->size <=0) {
       (*PetscErrorPrintf)("error detected at  %s() line %d in %s%s\n",function,line,dir,file);
       (*PetscErrorPrintf)("Memory at address %p is corrupted\n",head);
       (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
-      SETERRQ(PETSC_ERR_MEMC,"");
+      SETERRQ(PETSC_ERR_MEMC," ");
     }
     a    = (char *)(((TrSPACE*)head) + 1);
     nend = (unsigned long *)(a + head->size);
@@ -182,7 +182,7 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
 	        head->id,head->size,a);
         (*PetscErrorPrintf)("Memory originally allocated in %s() line %d in %s%s\n",head->functionname,
                 head->lineno,head->dirname,head->filename);
-        SETERRQ(PETSC_ERR_MEMC,"");
+        SETERRQ(PETSC_ERR_MEMC," ");
       }
     }
     head = head->next;
@@ -275,13 +275,13 @@ int PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *di
   if (PetscLogMalloc > -1 && PetscLogMalloc < PetscLogMallocMax) {
     if (PetscLogMalloc == 0) {
       PetscLogMallocLength    = (int*)malloc(PetscLogMallocMax*sizeof(int));
-      if (!PetscLogMallocLength) SETERRQ(PETSC_ERR_MEM,"");
+      if (!PetscLogMallocLength) SETERRQ(PETSC_ERR_MEM," ");
       PetscLogMallocDirectory = (char**)malloc(PetscLogMallocMax*sizeof(char**));
-      if (!PetscLogMallocDirectory) SETERRQ(PETSC_ERR_MEM,"");
+      if (!PetscLogMallocDirectory) SETERRQ(PETSC_ERR_MEM," ");
       PetscLogMallocFile      = (char**)malloc(PetscLogMallocMax*sizeof(char**));
-      if (!PetscLogMallocFile) SETERRQ(PETSC_ERR_MEM,"");
+      if (!PetscLogMallocFile) SETERRQ(PETSC_ERR_MEM," ");
       PetscLogMallocFunction  = (char**)malloc(PetscLogMallocMax*sizeof(char**));
-      if (!PetscLogMallocFunction) SETERRQ(PETSC_ERR_MEM,""); 
+      if (!PetscLogMallocFunction) SETERRQ(PETSC_ERR_MEM," "); 
     }
     PetscLogMallocLength[PetscLogMalloc]      = nsize;
     PetscLogMallocDirectory[PetscLogMalloc]   = dir;

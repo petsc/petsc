@@ -101,7 +101,7 @@ int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,VecScatter_Se
   if (!n_nonmatching) {
     gen_to->nonmatching_computed = PETSC_TRUE;
     gen_to->n_nonmatching        = gen_from->n_nonmatching = 0;
-    PetscLogInfo(0,"VecScatterLocalOptimize_Private:Reduced %d to 0\n");
+    PetscLogInfo(0,"VecScatterLocalOptimize_Private:Reduced %d to 0\n", n);
   } else if (n_nonmatching == n) {
     gen_to->nonmatching_computed = PETSC_FALSE;
     PetscLogInfo(0,"VecScatterLocalOptimize_Private:All values non-matching\n");

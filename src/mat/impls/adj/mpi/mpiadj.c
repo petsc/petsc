@@ -360,7 +360,7 @@ int MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
   if (i[0] != 0) SETERRQ1(1,"First i[] index must be zero, instead it is %d\n",i[0]);
   for (ii=1; ii<B->m; ii++) {
     if (i[ii] < 0 || i[ii] < i[ii-1]) {
-      SETERRQ4(1,"i[%d] index is out of range: i[%d]",ii,i[ii],ii-1,i[ii-1]);
+      SETERRQ4(1,"i[%d]=%d index is out of range: i[%d]=%d",ii,i[ii],ii-1,i[ii-1]);
     }
   }
   for (ii=0; ii<i[B->m]; ii++) {

@@ -559,23 +559,23 @@ PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm comm)
   PetscFunctionBegin;
   if (Petsc_Viewer_Binary_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Binary_keyval,0);
-    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   }
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Binary_keyval,(void **)&viewer,(int *)&flg);
-  if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+  if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscOptionsGetenv(comm,"PETSC_VIEWER_BINARY_FILENAME",fname,256,&flg);
-    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     if (!flg) {
       ierr = PetscStrcpy(fname,"binaryoutput");
-      if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+      if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     }
     ierr = PetscViewerBinaryOpen(comm,fname,PETSC_BINARY_CREATE,&viewer); 
-    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Binary_keyval,(void*)viewer);
-    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
 }

@@ -147,7 +147,7 @@ static int PCView_Eisenstat(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: Not using diagonal scaling\n");CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(1,"Viewer type not supported for Eisenstat PC",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for Eisenstat PC",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -395,16 +395,16 @@ int SNES_KSP_SetParametersEW(SNES snes,int version,PetscReal rtol_0,
     SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_0 < 1.0: %g",kctx->rtol_0);
   }
   if (kctx->rtol_max < 0.0 || kctx->rtol_max >= 1.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_max < 1.0\n",kctx->rtol_max);
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_max (%g) < 1.0\n",kctx->rtol_max);
   }
   if (kctx->threshold <= 0.0 || kctx->threshold >= 1.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 < threshold < 1.0\n",kctx->threshold);
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 < threshold (%g) < 1.0\n",kctx->threshold);
   }
   if (kctx->gamma < 0.0 || kctx->gamma > 1.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= alpha <= 1.0\n",kctx->gamma);
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= gamma (%g) <= 1.0\n",kctx->gamma);
   }
   if (kctx->alpha <= 1.0 || kctx->alpha > 2.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"1.0 < alpha <= 2.0\n",kctx->alpha);
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"1.0 < alpha (%g) <= 2.0\n",kctx->alpha);
   }
   if (kctx->version != 1 && kctx->version !=2) {
     SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1 and 2 are supported: %d",kctx->version);
