@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.85 1998/04/03 23:14:40 bsmith Exp balay $ */
+/* $Id: matimpl.h,v 1.86 1998/04/15 18:05:14 balay Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -78,7 +78,8 @@ struct _MatOps {
             (*setvaluesblocked)(Mat,int,int *,int,int *,Scalar *,InsertMode),
             (*getsubmatrix)(Mat,IS,IS,int,MatGetSubMatrixCall,Mat*),
             (*destroy)(Mat),
-            (*view)(Mat,Viewer);
+            (*view)(Mat,Viewer),
+            (*getmaps)(Mat,Map*,Map*);
 };
 
 #define FACTOR_LU       1
