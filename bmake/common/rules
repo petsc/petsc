@@ -1,7 +1,7 @@
 
 LDIR        = $(IPETSCDIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 PDIR        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
-LIBNAME     = $$(PDIR)/$(LIBBASE).a
+LIBNAME     = $(PDIR)/$(LIBBASE).a
 SOURCE      = $(SOURCEC) $(SOURCEF)
 OBJS        = $(OBJSC) $(OBJSF)
 INCLUDEDIRS = -I$(IPETSCDIR) -I$(IPETSCDIR)/include $(MPI_INCLUDE) \
@@ -124,7 +124,7 @@ wwwpages:
 
 clean:
 	@-$(RM) -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES) $(TESTS) \
-               PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log
+               PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out
 
 testexamples: examples runexamples clean
 
