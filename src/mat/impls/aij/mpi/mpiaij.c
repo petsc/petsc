@@ -3030,7 +3030,6 @@ PetscErrorCode MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
 
 PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat) 
 {
-  Mat               B_mpi;
   PetscErrorCode       ierr; 
   Mat                  B_mpi;
   Mat_SeqAIJ           *a=(Mat_SeqAIJ*)seqmat->data;
@@ -3289,6 +3288,8 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
   PetscFunctionReturn(0);
 }
 
+PetscEvent GetLocalMat = 0;
+
 #undef __FUNCT__
 #define __FUNCT__ "MatGetLocalMat"
 /*@C
@@ -3311,7 +3312,7 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc)
 {
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data;
   PetscErrorCode    ierr;
-i,start,end,ncols,nzA,nzB,*cmap,imark;
+  PetscInt          i,start,end,ncols,nzA,nzB,*cmap,imark,*idx;
   IS                isrowa,iscola;
   Mat               *aloc;
 
