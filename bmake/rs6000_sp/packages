@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.7 1997/11/12 15:38:49 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.8 1997/11/12 15:40:16 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -38,7 +38,7 @@ LAPACK_LIB     =  -lesslp2 /ccst/balay/blaslapack/lapack.a
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = /home/petsc/mpich/lib/rs6000/ch_p4/libmpe.a /usr/lpp/ppe.poe/lib/libmpi.a
+MPI_LIB        = /home/petsc/mpich/lib/rs6000/ch_mpe/libmpe.a /usr/lpp/ppe.poe/lib/libmpi.a
 MPI_INCLUDE    = -I/usr/lpp/ppe.poe/include -I/home/petsc/mpich/mpe
 MPIRUN         = mpirun
 #
