@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.53 2000/11/10 16:18:04 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.54 2000/12/08 04:31:02 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -102,10 +102,16 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
   
   */
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap,&st);CHKERRQ(ierr);
-  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
-
   nc     = w;
   col    = 2*s + 1;
+  if ((DA_XPERIODIC || DA_XYPERIODIC) && (m % col)){ 
+    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+                 by 2*stencil_width + 1\n");
+  }
+  if ((DA_YPERIODIC || DA_XYPERIODIC) && (n % col)){ 
+    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+                 by 2*stencil_width + 1\n");
+  }
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
@@ -239,8 +245,19 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
   
   */
   ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
-  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
   col    = 2*s + 1;
+  if ((DA_XPERIODIC || DA_XYPERIODIC || DA_XZPERIODIC || DA_XYZPERIODIC) && (m % col)){ 
+    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+                 by 2*stencil_width + 1\n");
+  }
+  if ((DA_YPERIODIC || DA_XYPERIODIC || DA_YZPERIODIC || DA_XYZPERIODIC) && (n % col)){ 
+    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+                 by 2*stencil_width + 1\n");
+  }
+  if ((DA_ZPERIODIC || DA_XZPERIODIC || DA_YZPERIODIC || DA_XYZPERIODIC) && (p % col)){ 
+    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
+                 by 2*stencil_width + 1\n");
+  }
 
   ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
