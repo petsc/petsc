@@ -1,0 +1,35 @@
+IPETSCDIR = ../../../../
+ALL: ex1
+
+CFLAGS    = $(OPT) $(CONF) $(INCLUDEDIRS)
+SOURCEC   = 
+SOURCEF   =
+WSOURCEC  = 
+SOURCEH   =
+OBJSC     =
+WOBJS     = 
+OBJSF     =
+LIBBASE   = libpetscsnes
+EXAMPLES  = ex1
+REXAMPLES = runex1
+CEXAMPLES = ex1 
+EXAMPLESC = ex1.c
+LINCLUDE  = $(SOURCEH)
+
+FOBJ = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
+       depths.o dgl1hs.o dgl2hs.o dmsahs.o dodchs.o dpjbhs.o dsschs.o \
+       dmsabc.o dodcps.o dgl2co.o mpinter.o
+
+EX1= ex1.o $(FOBJ)
+
+ex1: $(EX1) chkopts
+	-$(CLINKER) -o ex1 $(EX1) $(PETSC_LIB)
+#	$(RM) ex1.o
+
+runex1:
+	-@$(MPIRUN) ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
+           if (diff output/ex1_1.out ex1_1.tmp) then true; \
+           else echo "Possible problem with ex1_1, diffs above"; fi; \
+           $(RM) -f ex1_1.tmp
+
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
