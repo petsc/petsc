@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.104 1999/02/15 20:16:39 bsmith Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.105 1999/02/15 21:55:24 balay Exp balay $";
 #endif
 
 /*
@@ -180,7 +180,7 @@ int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
 
   /* Free cache space */
   PLogInfo(mat,"MatAssemblyBegin_MPIDense:Number of off-processor values %d\n",mdn->stash.n);
-  ierr = StashDestroy_Private(&mdn->stash); CHKERRQ(ierr);
+  ierr = StashReset_Private(&mdn->stash); CHKERRQ(ierr);
 
   mdn->svalues    = svalues;    mdn->rvalues = rvalues;
   mdn->nsends     = nsends;     mdn->nrecvs = nreceives;
@@ -487,6 +487,7 @@ int MatDestroy_MPIDense(Mat mat)
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",mdn->M,mdn->N);
 #endif
+  ierr = StashDestroy_Private(&mdn->stash); CHKERRQ(ierr);
   PetscFree(mdn->rowners); 
   ierr = MatDestroy(mdn->A); CHKERRQ(ierr);
   if (mdn->lvec)   VecDestroy(mdn->lvec);
@@ -1051,7 +1052,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   PLogObjectParent(mat,a->A);
 
   /* build cache for off array entries formed */
-  ierr = StashBuild_Private(&a->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(comm,1,&a->stash); CHKERRQ(ierr);
 
   /* stuff used for matrix vector multiply */
   a->lvec        = 0;
@@ -1104,8 +1105,8 @@ static int MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
   a->rowners = (int *) PetscMalloc((a->size+1)*sizeof(int)); CHKPTRQ(a->rowners);
   PLogObjectMemory(mat,(a->size+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIDense));
   PetscMemcpy(a->rowners,oldmat->rowners,(a->size+1)*sizeof(int));
-  ierr = StashInitialize_Private(&a->stash); CHKERRQ(ierr);
-  
+  ierr = StashCreate_Private(A->comm,1,&a->stash); CHKERRQ(ierr);
+
   ierr =  VecDuplicate(oldmat->lvec,&a->lvec); CHKERRQ(ierr);
   PLogObjectParent(mat,a->lvec);
   ierr =  VecScatterCopy(oldmat->Mvctx,&a->Mvctx); CHKERRQ(ierr);

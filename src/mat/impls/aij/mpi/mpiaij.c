@@ -1,10 +1,17 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.284 1999/02/18 16:54:15 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.285 1999/02/26 17:08:13 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
+
+extern int MatSetUpMultiply_MPIAIJ(Mat);
+extern int DisAssemble_MPIAIJ(Mat);
+extern int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
+extern int MatGetRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
+extern int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
+extern int MatPrintHelp_SeqAIJ(Mat);
 
 /* local utility routine that creates a mapping from the global column 
 number to the local number in the off-diagonal part of the local 
@@ -36,8 +43,6 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
 #endif
   PetscFunctionReturn(0);
 }
-
-extern int DisAssemble_MPIAIJ(Mat);
 
 #define CHUNKSIZE   15
 #define MatSetValues_SeqAIJ_A_Private(row,col,value,addv) \
@@ -182,7 +187,6 @@ extern int DisAssemble_MPIAIJ(Mat);
       bilen[row] = nrow; \
 }
 
-extern int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
 #undef __FUNC__  
 #define __FUNC__ "MatSetValues_MPIAIJ"
 int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
@@ -311,6 +315,7 @@ int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
   }
   PetscFunctionReturn(0);
 }
+#if defined (__JUNK__)
 
 #undef __FUNC__  
 #define __FUNC__ "MatAssemblyBegin_MPIAIJ"
@@ -409,7 +414,7 @@ int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 
   /* Free cache space */
   PLogInfo(aij->A,"MatAssemblyBegin_MPIAIJ:Number of off-processor values %d\n",aij->stash.n);
-  ierr = StashDestroy_Private(&aij->stash); CHKERRQ(ierr);
+  ierr = StashReset_Private(&aij->stash); CHKERRQ(ierr);
 
   aij->svalues    = svalues;    aij->rvalues    = rvalues;
   aij->nsends     = nsends;     aij->nrecvs     = nreceives;
@@ -418,7 +423,6 @@ int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 
   PetscFunctionReturn(0);
 }
-extern int MatSetUpMultiply_MPIAIJ(Mat);
 
 #undef __FUNC__  
 #define __FUNC__ "MatAssemblyEnd_MPIAIJ"
@@ -505,6 +509,94 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   if (aij->rowvalues) {PetscFree(aij->rowvalues); aij->rowvalues = 0;}
   PetscFunctionReturn(0);
 }
+
+#else
+
+#undef __FUNC__  
+#define __FUNC__ "MatAssemblyBegin_MPIAIJ"
+int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
+{ 
+  Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
+  int         ierr;
+  InsertMode  addv;
+
+  PetscFunctionBegin;
+  if (aij->donotstash) {
+    PetscFunctionReturn(0);
+  }
+
+  /* make sure all processors are either in INSERTMODE or ADDMODE */
+  ierr = MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,mat->comm);CHKERRQ(ierr);
+  if (addv == (ADD_VALUES|INSERT_VALUES)) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Some processors inserted others added");
+  }
+  mat->insertmode = addv; /* in case this processor had no cache */
+
+  ierr =  StashScatterBegin_Private(&aij->stash,aij->rowners); CHKERRQ(ierr);
+  /* Free cache space */
+  PLogInfo(aij->A,"MatAssemblyBegin_MPIAIJ:Number of off-processor values %d\n",aij->stash.n);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNC__  
+#define __FUNC__ "MatAssemblyEnd_MPIAIJ"
+int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
+{ 
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
+  int         imdex,i,j,rstart,ncols,n,ierr;
+  int         *row,*col,other_disassembled;
+  Scalar      *val;
+  InsertMode  addv = mat->insertmode;
+
+  PetscFunctionBegin;
+  if (!aij->donotstash) {
+    ierr = StashScatterEnd_Private(&aij->stash); CHKERRQ(ierr);
+    for (imdex=0; imdex<aij->stash.nrecvs; imdex++ ) {
+      n   = aij->stash.rdata[imdex].n;
+      row = aij->stash.rdata[imdex].i;
+      col = aij->stash.rdata[imdex].j;
+      val = aij->stash.rdata[imdex].a;
+      for ( i=0; i<n; ) {
+        /* Now identify the consecutive vals belonging to the same row */
+        for ( j=i,rstart=row[j]; j<n; j++ ) { if (row[j] != rstart) break; }
+        if (j < n) ncols = j-i;
+        else       ncols = n-i;
+        /* Now assemble all these values with a single function call */
+        ierr = MatSetValues_MPIAIJ(mat,1,row+i,ncols,col+i,val+i,addv); CHKERRQ(ierr);
+        i = j;
+      }
+    }
+    ierr = StashReset_Private(&aij->stash); CHKERRQ(ierr);
+  }
+ 
+  ierr = MatAssemblyBegin(aij->A,mode); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(aij->A,mode); CHKERRQ(ierr);
+
+  /* determine if any processor has disassembled, if so we must 
+     also disassemble ourselfs, in order that we may reassemble. */
+  /*
+     if nonzero structure of submatrix B cannot change then we know that
+     no processor disassembled thus we can skip this stuff
+  */
+  if (!((Mat_SeqAIJ*) aij->B->data)->nonew)  {
+    ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,mat->comm);CHKERRQ(ierr);
+    if (mat->was_assembled && !other_disassembled) {
+      ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
+    }
+  }
+
+  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
+    ierr = MatSetUpMultiply_MPIAIJ(mat); CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(aij->B,mode); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(aij->B,mode); CHKERRQ(ierr);
+
+  if (aij->rowvalues) {PetscFree(aij->rowvalues); aij->rowvalues = 0;}
+  PetscFunctionReturn(0);
+}
+
+#endif
 
 #undef __FUNC__  
 #define __FUNC__ "MatZeroEntries_MPIAIJ"
@@ -822,7 +914,7 @@ int MatDestroy_MPIAIJ(Mat mat)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_MPIAIJ_Binary"
-extern int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
+int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
 {
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   int         ierr;
@@ -837,7 +929,7 @@ extern int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_MPIAIJ_ASCIIorDraworSocket"
-extern int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
+int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 {
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   Mat_SeqAIJ* C = (Mat_SeqAIJ*)aij->A->data;
@@ -1207,9 +1299,6 @@ int MatGetOwnershipRange_MPIAIJ(Mat matin,int *m,int *n)
   PetscFunctionReturn(0);
 }
 
-extern int MatGetRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
-extern int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
-
 #undef __FUNC__  
 #define __FUNC__ "MatGetRow_MPIAIJ"
 int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
@@ -1491,7 +1580,6 @@ int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
 }
 
 
-extern int MatPrintHelp_SeqAIJ(Mat);
 #undef __FUNC__  
 #define __FUNC__ "MatPrintHelp_MPIAIJ"
 int MatPrintHelp_MPIAIJ(Mat A)
@@ -1918,7 +2006,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   PLogObjectParent(B,b->B);
 
   /* build cache for off array entries formed */
-  ierr = StashBuild_Private(&b->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(comm,1,&b->stash); CHKERRQ(ierr);
   b->donotstash  = 0;
   b->colmap      = 0;
   b->garray      = 0;
@@ -1987,7 +2075,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAIJ));
   a->cowners = a->rowners + a->size + 2;
   PetscMemcpy(a->rowners,oldmat->rowners,2*(a->size+2)*sizeof(int));
-  ierr = StashInitialize_Private(&a->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(matin->comm,1,&a->stash); CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined (USE_CTABLE)
     ierr = TableCreateCopy(oldmat->colmap,&a->colmap); CHKERRQ(ierr);
