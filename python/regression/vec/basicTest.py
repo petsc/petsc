@@ -6,7 +6,7 @@ import unittest
 import Numeric
 
 class BasicTest(unittest.TestCase):
-  '''Tests Base implementation'''
+  '''Tests the Vec implementation'''
   def __init__(self, methodName):
     unittest.TestCase.__init__(self, methodName)
     import PETSc.Base

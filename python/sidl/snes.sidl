@@ -141,9 +141,115 @@ package PETSc {
     void equal(in Vec y, out bool result);
   }
 
+  enum MatAssemblyType {MAT_FINAL_ASSEMBLY, MAT_FLUSH_ASSEMBLY};
+
+  enum MatReuse {MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX};
+
+  enum MatDuplicateOption {MAT_DO_NOT_COPY_VALUES, MAT_COPY_VALUES};
+
+  enum MatStructure {SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, SAME_PRECONDITIONER, SUBSET_NONZERO_PATTERN};
+
+  enum MatOption {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
+      MAT_COLUMNS_SORTED=8,MAT_NO_NEW_NONZERO_LOCATIONS=16,
+      MAT_YES_NEW_NONZERO_LOCATIONS=32,MAT_SYMMETRIC=64,
+      MAT_STRUCTURALLY_SYMMETRIC=65,MAT_NO_NEW_DIAGONALS=66,
+      MAT_YES_NEW_DIAGONALS=67,MAT_INODE_LIMIT_1=68,MAT_INODE_LIMIT_2=69,
+      MAT_INODE_LIMIT_3=70,MAT_INODE_LIMIT_4=71,MAT_INODE_LIMIT_5=72,
+      MAT_IGNORE_OFF_PROC_ENTRIES=73,MAT_ROWS_UNSORTED=74,
+      MAT_COLUMNS_UNSORTED=75,MAT_NEW_NONZERO_LOCATION_ERR=76,
+      MAT_NEW_NONZERO_ALLOCATION_ERR=77,MAT_USE_HASH_TABLE=78,
+      MAT_KEEP_ZEROED_ROWS=79,MAT_IGNORE_ZERO_ENTRIES=80,MAT_USE_INODES=81,
+      MAT_DO_NOT_USE_INODES=82,MAT_NOT_SYMMETRIC=83,MAT_HERMITIAN=84,
+      MAT_NOT_STRUCTURALLY_SYMMETRIC=85,MAT_NOT_HERMITIAN=86,
+      MAT_SYMMETRY_ETERNAL=87,MAT_NOT_SYMMETRY_ETERNAL=88,
+      MAT_USE_COMPRESSEDROW=89,MAT_DO_NOT_USE_COMPRESSEDROW=90,
+      MAT_IGNORE_LOWER_TRIANGULAR=91,MAT_ERROR_LOWER_TRIANGULAR=92};
+
   class Mat implements PetscObject {
     // Set the local and global number of rows and columns
     void setSizes(in int m, in int n, in int M, in int N);
+    // Get values from the matrix
+    void getValues(in array<int> rowIndices, in array<int> colIndices, in array<double> values);
+    // Set values into the matrix
+    void setValues(in array<int> rowIndices, in array<int> colIndices, in array<double> values, in InsertMode mode);
+    // Get the block size
+    void getBlockSize(out int size);
+    // Set the block size
+    void setBlockSize(in int size);
+    // Set values into the matrix
+    void setValuesBlocked(in array<int> rowIndices, in array<int> colIndices, in array<double> values, in InsertMode mode);
+    // Set the grid information for setting values into a matrix stencil
+    //   sizes: The number of grid points in each dimension
+    //   starts: The first node in each dimension in this domain (including ghost points)
+    //   dof: The number of degrees of freedom per node
+    void setStencil(in array<int> sizes, in array<int> starts, in int dof);
+    // Set values into the matrix
+    void setValuesStencil(in array<int> rowIndices, in array<int> colIndices, in array<double> values, in InsertMode mode);
+    // Set values into the matrix
+    void setValuesBlockedStencil(in array<int> rowIndices, in array<int> colIndices, in array<double> values, in InsertMode mode);
+    // Get the local storage
+    void getArray(out array<double> values);
+    // Return the local storage
+    void restoreArray(inout array<double> values);
+    // Begin the assembly phase
+    void assemblyBegin(in MatAssemblyType assemblyType);
+    // End the assembly phase
+    void assemblyEnd(in MatAssemblyType assemblyType);
+    // Load the matrix from a viewer
+    static void load(in PetscViewer viewer, in string typename, out Mat A);
+
+    // The matrix-vector product y = Ax
+    void mult(in Vec x, in Vec y);
+    // The matrix-vector product z = Ax + y
+    void multAdd(in Vec x, in Vec y, in Vec z);
+    // The transposed matrix-vector product y = A^T x
+    void multTranspose(in Vec x, in Vec y);
+    // The transposed matrix-vector product z = A^T x + y
+    void multTransposeAdd(in Vec x, in Vec y, in Vec z);
+
+    // Get the global sizes
+    void getSize(out int numRows, out int numCols);
+    // Get the local sizes
+    void getLocalSize(out int numLocalRows, out int numLocalCols);
+    // Get the range of local rows
+    void getOwnershipRange(out int startRow, out int endRow);
+    // Get the row and column layouts
+    void getPetscMaps(out PetscMap rowLayout, out PetscMap colLayout);
+    // Getthe diagonal entires as a Vec
+    void getDiagonal(in Vec diag);
+    // Test for equality A = B
+    void equal(in Mat B, out bool isEqual);
+    // Test for transpose identity A^T = B
+    void isTranspose(in Mat B, in double tol, out bool isTranpose);
+    // Test for symmetry
+    void isSymmetric(in double tol, out bool isSymmetric);
+    // Test for structural symmetry
+    void isStructurallySymmetric(out bool isSymmetric);
+    // Test for complex symmetry
+    void isHermitian(out bool isHermitian);
+
+    // Customize the matrix
+    void setOption(in MatOption option);
+    // Convert the matrix to a different type
+    void convert(in string newType, in MatReuse reuseFlag, out Mat newMat);
+    // Duplicate the matrix
+    void duplicate(in MatDuplicateOption duplicationFlag, out Mat newMat);
+    // Copy the matrix
+    void copy(in Mat B, in MatStructure copyFlag);
+    // Return the transpose B = A^T
+    void transpose(out Mat B);
+    // Replace A with its Hermitian conjugate A^{\dagger}
+    void conjugate();
+    // Scale by a diagonal matrix on the left and right (represented as a Vec)
+    void diagonalScale(in Vec left, in Vec right);
+    // Set A = 0
+    void zeroEntries();
+    // Replace rows of A with a single diagonal element
+    void zeroRows(in array<int> indices, in double diagValue);
+    // Scale all elements by alpha
+    void scale(in double alpha);
+    // Shift all elements by alpha
+    void shift(in double alpha);
   }
 
   enum MatStructure {SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, SAME_PRECONDITIONER, SUBSET_NONZERO_PATTERN};
