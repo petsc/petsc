@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj2.c,v 1.8 1998/05/13 20:02:02 curfman Exp balay $";
+static char vcid[] = "$Id: snesmfj2.c,v 1.9 1998/05/29 22:51:12 balay Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -214,7 +214,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESDefaultMatrixFreeMatCreate2"
+#define __FUNC__ "SNESMatrixFreeMatCreate2"
 /*@C
    SNESMatrixFreeMatCreate2 - Creates a matrix-free matrix
    context for use with a SNES solver.  This matrix can be used as
