@@ -5,15 +5,16 @@
 #define __MAT_PACKAGE
 #include "vec.h"
 
-#define MAT_COOKIE 0x404040
+#define MAT_COOKIE PETSC_COOKIE+5
 
 typedef struct _Mat*           Mat;
 typedef struct _MatScatterCtx* MatScatterCtx;
 
 
-#define MATDENSESEQ  1
-#define MATAIJSEQ    2
-#define MATAIJMPI    3
+#define MATDENSESEQ  0
+#define MATAIJSEQ    1
+#define MATAIJMPI    2
+#define MATSHELL     3
 
 extern int MatCreateSequentialDense(int,int,Mat*);
 extern int MatCreateSequentialAIJ(int,int,int,int *,Mat*);
@@ -78,6 +79,8 @@ extern int MatSolveTransAdd(Mat,Vec,Vec,Vec);
 #define SOR_LOCAL_SYMMETRIC_SWEEP    12
 #define SOR_ZERO_INITIAL_GUESS       16
 #define SOR_EISENSTAT                32
+#define SOR_APPLY_UPPER              64
+#define SOR_APPLY_LOWER              128
 extern int MatRelax(Mat,Vec,double,int,double,int,Vec);
 
 extern int MatCopy(Mat,Mat*);
