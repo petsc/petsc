@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.41 1997/10/16 02:13:07 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.42 1997/10/16 04:57:38 curfman Exp curfman $";
 #endif
 
 /*
@@ -196,7 +196,9 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       Scalar *xa;
       ierr = SNESGetSolution(snes,&X); CHKERRQ(ierr);
       ierr = VecGetArray(X,&xa); CHKERRQ(ierr);
-      ierr = ComputeMachDuct(its,app,xa); CHKERRQ(ierr);
+      if (app->mmtype == MMFP) {
+        ierr = VisualizeFP_Matlab(its,app,xa); CHKERRQ(ierr);
+      } else SETERRQ(1,0,"Option not supported yet");
       ierr = VecRestoreArray(X,&xa); CHKERRQ(ierr);
     }
 
@@ -310,7 +312,7 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
 }
 /* --------------------------------------------------------------- */
 /*
-   ComputeMachDuct - Computes the mach contour for the duct problem
+   VisualizeFP_Matlab - Computes the mach contour for the duct problem
 
    Input Parameters:
    app   - user-defined application context
@@ -318,13 +320,13 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
    iter  - iteration number
 
  */
-int ComputeMachDuct(int iter,Euler *app,Scalar *x)
+int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
 {
   int    foo, i, j, k, ni1 = app->ni1, nj1 = app->nj1;
   int    ni = app->ni, nj = app->nj;
   int    kj,ijk, jstart, jend, istart, iend;
   Scalar sfluid, ssound, smach, r, gm1, gamma1, xv, yv;
-  Scalar *xc = app->xc, *yc = app->yc;
+  Scalar *xc = app->xc, *yc = app->yc, *zc = app->zc;
   FILE   *fp2;
   char   filename[64];
 
@@ -342,6 +344,7 @@ int ComputeMachDuct(int iter,Euler *app,Scalar *x)
 
 #define xcoord(i,j) xc[(k)*nj*ni + (j)*ni + (i)]
 #define ycoord(i,j) yc[(k)*nj*ni + (j)*ni + (i)]
+#define zcoord(i,j) zc[(k)*nj*ni + (j)*ni + (i)]
 #define pot(i,j) x[(k)*nj1*ni1 + (j)*ni1 + (i)]
 
   foo = 1;
@@ -356,7 +359,7 @@ int ComputeMachDuct(int iter,Euler *app,Scalar *x)
     fprintf(fp2,"X = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ", xcoord(i,j));
+        fprintf(fp2,"%8.4f ", xcoord(i-1,j-1));
       }
       fprintf(fp2,"\n");
     }
@@ -364,7 +367,7 @@ int ComputeMachDuct(int iter,Euler *app,Scalar *x)
     fprintf(fp2,"Y = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ", ycoord(i,j));
+        fprintf(fp2,"%8.4f ", ycoord(i-1,j-1));
       }
       fprintf(fp2,"\n");
     }
@@ -374,7 +377,7 @@ int ComputeMachDuct(int iter,Euler *app,Scalar *x)
       kj = k*nj*ni + j*ni;
       for (i=istart; i<iend; i++) {
         ijk = kj + i;
-        fprintf(fp2,"%8.4f ",app->zc[ijk]);
+        fprintf(fp2,"%8.4f ",zcoord(i-1,j-1));
       }
       fprintf(fp2,"\n");
     }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.7 1997/10/16 00:48:48 curfman Exp curfman $";
+static char vcid[] = "$Id: jacob.c,v 1.8 1997/10/16 04:57:19 curfman Exp curfman $";
 #endif
 
 #include "user.h"
@@ -233,7 +233,7 @@ extern int MatView_Hybrid(Mat,Viewer);
 int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *ptr)
 {
   Euler         *app = (Euler *)ptr;
-  int           iter, ierr;
+  int           flg, iter, ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set some options; do some preliminary work
@@ -292,26 +292,27 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
     ierr = FixJacobianEdges(app,*pjac); CHKERRQ(ierr);
   }
 
-  /* Finish the matrix assembly process.  For the Euler code, the matrix
-     assembly is done completely locally, so no message-pasing is performed
-     during these phases. */
-  ierr = MatAssemblyBegin(*pjac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*pjac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-
   /* Fix points on edges of the 3D domain, where diagonal of Jacobian is 1.
-     edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.) */
-  { Vec diagv; int i, rstart, rend; Scalar *diagv_a, one = 1.0;
-  ierr = VecDuplicate(X,&diagv); CHKERRQ(ierr);
-  ierr = MatGetDiagonal(*pjac,diagv); CHKERRQ(ierr);
-  ierr = VecGetArray(diagv,&diagv_a); CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(*pjac,&rstart,&rend); CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) {
-    if (!diagv_a[i-rstart]) {
-      ierr = MatSetValues(*pjac,1,&i,1,&i,&one,INSERT_VALUES); CHKERRQ(ierr);
+     edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.) 
+     SHOULD NOT BE NECESSARY NOW! */
+
+  ierr = OptionsHasName(PETSC_NULL,"-fix_jac",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Vec diagv; int i, rstart, rend; Scalar *diagv_a, one = 1.0;
+
+    ierr = MatAssemblyBegin(*pjac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*pjac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = VecDuplicate(X,&diagv); CHKERRQ(ierr);
+    ierr = MatGetDiagonal(*pjac,diagv); CHKERRQ(ierr);
+    ierr = VecGetArray(diagv,&diagv_a); CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(*pjac,&rstart,&rend); CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++) {
+      if (!diagv_a[i-rstart]) {
+        ierr = MatSetValues(*pjac,1,&i,1,&i,&one,INSERT_VALUES); CHKERRQ(ierr);
+      }
     }
-  }
-  ierr = VecRestoreArray(diagv,&diagv_a); CHKERRQ(ierr);
-  ierr = VecDestroy(diagv); CHKERRQ(ierr);
+    ierr = VecRestoreArray(diagv,&diagv_a); CHKERRQ(ierr);
+    ierr = VecDestroy(diagv); CHKERRQ(ierr);
   }
 
   /* Finish the matrix assembly process.  For the Euler code, the matrix
