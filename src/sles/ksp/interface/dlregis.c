@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.4 1998/03/20 22:46:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: dlregis.c,v 1.5 1998/04/20 17:43:17 curfman Exp curfman $";
 #endif
 
 #include "sles.h"
@@ -30,7 +30,7 @@ int DLLibraryRegister(char *path)
 }
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc Krylov Subspace and Preconditioner library\n\
+static char *contents = "PETSc Krylov subspace method and preconditioner library\n\
   Contains:\n\
      GMRES, PCG, Bi-CG-stab, ...\n\
      Jacobi, ILU, Block Jacobi, LU, Additive Schwarz, ...\n";
