@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ghome.c,v 1.14 1997/11/13 17:42:52 bsmith Exp balay $";
+static char vcid[] = "$Id: ghome.c,v 1.15 1997/11/13 18:59:22 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -41,8 +41,17 @@ int PetscGetHomeDirectory(int maxlen,char *dir)
 #endif
   PetscFunctionReturn(0);
 }
+/*@
+    PetscFixFilename - Fixes a file name so that it is correct for both Unix and 
+       Windows by using the correct / or \ to seperate directories.
 
-int PetscFlipSlash_Private(char *file)
+  Input Parameter:
+.   name - name of file (must be in writable memory)
+
+   Notes: Call just before fopen()
+
+@*/
+int PetscFixFilename(char *file)
 {
   int i,n;
 

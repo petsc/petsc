@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.37 1997/10/09 17:53:02 balay Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.38 1997/10/19 03:18:54 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -35,7 +35,9 @@ static char vcid[] = "$Id: zsys.c,v 1.37 1997/10/09 17:53:02 balay Exp bsmith $"
 #define petscbinarywrite_          PETSCBINARYWRITE
 #define petscbinaryclose_          PETSCBINARYCLOSE
 #define petscbinaryseek_           PETSCBINARYSEEK
+#define petscfixfilename_          PETSCFIXFILENAME
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define petscfixfilename_          petscfixfilename
 #define petsctrlog_                petsctrlog
 #define petscattachdebugger_       petscattachdebugger
 #define petscobjectsetname_        petscobjectsetname
@@ -68,6 +70,28 @@ static char vcid[] = "$Id: zsys.c,v 1.37 1997/10/09 17:53:02 balay Exp bsmith $"
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void petscfixfilename_(CHAR file, int *__ierr,int len )
+{
+  int  i,n;
+  char *b;
+
+#if defined(PARCH_t3d)
+  b = _fcdtocp(file); 
+  n = _fcdlen (file); 
+#else
+  b = file;
+  n = len;
+#endif
+
+  for (i=0; i<n; i++) {
+#if defined(PARCH_nt)
+    if (b[i] == '/') b[i] = '\\';
+#else
+    if (b[i] == '\\') b[i] = '/';
+#endif
+  }
+}
 
 void petscbinaryopen_(CHAR name,int *type,int *fd,int *__ierr,int len)
 {
