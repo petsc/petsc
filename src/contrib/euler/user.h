@@ -49,8 +49,10 @@ typedef struct {
     int    global_grid;          /* flag: 1: store global grid instead of just local part */
     int    iter;                 /* nonlinear iteration number */
     int    sles_tot;             /* total linear solve iterations */
+    int    fct_tot;              /* total function evaluations */
     Scalar fstagnate_ratio;      /* stagnation detection */
     Scalar ksp_rtol_max;         /* maximum KSP relative tolerance */
+    Scalar ksp_rtol_min;         /* minimum KSP relative tolerance */
     int    ksp_max_it;           /* maximum KSP iterations per linear solve */
     int    bcswitch;             /* iteration for activating BC switch for impermeability */
 
@@ -99,7 +101,8 @@ typedef struct {
   /* ----------------- Parallel information ------------------- */
 
     MPI_Comm   comm;               /* communicator for entire problem */
-    int        fort_xcomm;         /* Fortran pointer to subsidiary communicator */
+    int        wing;               /* flag: 1: this processor owns part of the wing */
+    int        fort_wing_comm;     /* communicator of procs that own the wing (Fortran pointer) */
     VecScatter Xbcscatter;         /* scatter context for vector BCs */
     VecScatter Pbcscatter;         /* scatter context for pressure BCs */
     int        rank;               /* my processor number */
@@ -192,6 +195,7 @@ typedef struct {
     Scalar *fbcrk1, *fbcruk1, *fbcrvk1, *fbcrwk1, *fbcek1;
     Scalar *fbcrk2, *fbcruk2, *fbcrvk2, *fbcrwk2, *fbcek2;
 
+    int refine;
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
@@ -263,7 +267,7 @@ int UserMatrixFreeMatDestroy(Mat);
 int UserSetMatrixFreeParameters(SNES,double,double);
 int UserSetGridParameters(Euler*);
 int UserSetGrid(Euler*);
-int GetWingCommunicator(Euler*,int*);
+int GetWingCommunicator(Euler*,int*,int*);
 int BoundaryConditionsImplicit(Euler*,Vec);
 int BoundaryConditionsExplicit(Euler*,Vec);
 int BCScatterSetUp(Euler*);
@@ -391,7 +395,7 @@ extern int buildmat_(int*,ScaleType*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
 extern int nzmat_(MatType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
 extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,
-                      Scalar*,Scalar*,int*);
+                      Scalar*,Scalar*,int*,int*);
 
 /* Fortran interface definitions */
 

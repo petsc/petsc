@@ -237,15 +237,12 @@ c Set up mesh metrics, once and for all
       CALL METRIC(sadai,sadaj,sadak,
      &            aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,x,y,z)
 
-
 c Apply boundary conditions only for original solver!
 c For SNES version, boundary conditions are handled elsewhere.
 #if defined(ACTIVATE_JULIANNE)
       if (jsolve .eq. 1) 
      &   CALL BC_UNI(xx,p,sadai,sadaj,sadak,
      &               aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
-c     &   CALL BC_UNI(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
-c     &               aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
       epsi = one/eps
 #endif
       if (rank .eq. 0) WRITE (6,300) NB,NT

@@ -201,8 +201,10 @@ c       Using local grid
         czn = gzef01
       endif
 
-      if (rank .eq. 0) write(6,*) 'Problem is ',problem,', nc = ',nc,
-     & ', iteration for BC impermeability switch is',bcswitch
+      if (rank .eq. 0) then 
+        write(6,*) 'Problem is ',problem,', nc = ',nc
+        write(6,*) 'Iteration for BC impermeability switch is',bcswitch
+      endif
       if (printg .eq. 1) then
       call PetscSequentialPhaseBegin(comm,1,ierr)
       ctot = (cxn-cx1+1)*(cyn-cy1+1)*(czn-cz1+1)

@@ -20,12 +20,14 @@
 #   PETSC_DIR = /sphome/curfman/petsc
 # Origin2000 and Power Challenge - NCSA
 #   PETSC_DIR = /u/ac/barrys/petsc
+# Origin2000 in Norway
+#   PETSC_DIR = /Home/origin/keyes/petsc
 # Cray T3E - NERSC
 #   PETSC_DIR = /u3/bsmith/petsc
 # Cray T3D - NERSC
 #   PETSC_DIR = /u/ddscf/bsmith/petsc
 # SP2 - NASA
-#   PETSC_DIR = /ump/hpcc/home3/mcinnes/work/petsc
+#   PETSC_DIR = /u/mcinnes/work/petsc
 
 #
 # Compiler flags:  Set variable CFLAGS
@@ -49,8 +51,8 @@
 # CONF     - needed for handling 64-bit pointer conversion to Fortran
 #             (shouldn't be needed by most applications)
 
-# CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -DACTIVATE_JULIANNE
-  CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -DACTIVATE_PVAR 
+ CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -DACTIVATE_JULIANNE
+# CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -DACTIVATE_PVAR 
 
 # -----------------------------------------------------------------------
 # Define application source code
@@ -85,20 +87,20 @@ ALL: ex1
 #
   SOURCEF_COMMON   = xnd.F xmod2.F pvar.F
   SOURCEF_JULIANNE = xjul.F
-  SOURCEF_PETSC    = xmod.F implbc.F mat.F dnest.F obselete.F 
+  SOURCEF_PETSC    = xmod.F implbc.F mat.F obselete.F 
   SOURCEF          = $(SOURCEF_COMMON) $(SOURCEF_PETSC) $(SOURCEF_JULIANNE)
 
   OBJSF_COMMON     = xnd.o xmod2.o pvar.o
   OBJSF_JULIANNE   = xjul.o
-  OBJSF_PETSC      = xmod.o implbc.o mat.o dnest.o 
-#  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
-  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
+  OBJSF_PETSC      = xmod.o implbc.o mat.o obselete.o
+  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
+#  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #
 # Define C source code:
-  OBJSC     = user1.o grid.o bc.o misc.o mfj.o monitor.o vrml.o utils.o noise.o
-  SOURCEC   = user1.c grid.c bc.c misc.c mfj.c monitor.c vrml.c utils.c noise.c
+  OBJSC     = user1.o grid.o bc.o misc.o mfj.o monitor.o vrml.o 
+  SOURCEC   = user1.c grid.c bc.c misc.c mfj.c monitor.c vrml.c 
 
 # Source no longer used.
 # SOURCE_SURPLUS = regmpimat.c matbd.F

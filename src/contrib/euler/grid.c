@@ -387,14 +387,15 @@ int UserSetGrid(Euler *app)
 
    Ouput Parameter:
    fxcomm - the newly created communicator (Fortran version)
+   wing - flag (1 if this processor owns part of the wing surface;
+                0 otherwise)
  */
 
-int GetWingCommunicator(Euler *app,int* fxcomm)
+int GetWingCommunicator(Euler *app,int* fxcomm,int *wing)
 {
   MPI_Group group_all, group_x;
   MPI_Comm  comm_x;
   int       ierr, ict, i, *ranks_x, *recv, send[2];
-
 
   ranks_x = (int *)PetscMalloc(3*app->size*sizeof(int)); CHKPTRQ(ranks_x);
   PetscMemzero(ranks_x,3*app->size*sizeof(int));
@@ -411,6 +412,7 @@ int GetWingCommunicator(Euler *app,int* fxcomm)
   ierr = MPI_Comm_create(app->comm,group_x,&comm_x); CHKERRQ(ierr);
   PetscFree(ranks_x);
   *(int*)fxcomm = PetscFromPointerComm(comm_x);
+  *wing = send[0];
 
   return 0;
 }

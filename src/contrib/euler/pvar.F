@@ -1,7 +1,7 @@
 
       integer function PVAR(xx,p,
      &                      aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &                      x,y,z,pprint,tcl,tcd,xcomm)
+     &                      x,y,z,pprint,tcl,tcd,wcomm,wing)
 c
 c PVAR - post-processes the solution for physical quanities of interest
 c This parallel version relies on the fact that currently each processor
@@ -33,11 +33,10 @@ c      COMMON /WING/ ITL,ITU,ILE,KTIP
       Double  AREA(D_NK),AREA1(D_NK),ZLOC(D_NK)
       Double  S(D_NI),CL(D_NI),CD(D_NI)
       Double  chord,pbody,tcl,tcd,areas,cls,cds
-      integer i,k,pprint,ierr,btot,xcomm
+      integer i,k,pprint,ierr,btot,wcomm,wing
 
       pvar = 0
 
-      if (pprint .eq. 1) then
       do 5 k=1,d_nk
       do 5 i=1,d_ni
  5         cp21(i,k) = 0.0
@@ -81,8 +80,6 @@ c            DO 10 I=ITL,ITU+1
          WRITE (6,81) (ZLOC(K),K=2,KTIP)
          WRITE (6,83) (S(I),(CP2(I,K),K=2,KTIP),I=ITL,ITU+1)
       ENDIF
-
-      endif
       endif
 
    20 FORMAT (/,4X,'WING SURFACE PRESSURE COEFFICIENTS FOR',
@@ -126,15 +123,17 @@ c            CN=CN-(PBODY-RGAM)*AJY(I,1,K)
 c            CC=CC-(PBODY-RGAM)*AJX(I,1,K)
  41     CONTINUE
 
-c  Sum over each section of mesh, using the communicator xcomm
-        call MPI_Allreduce(cn1,cn,d_nk,MPI_DOUBLE_PRECISION,
-     &                     MPI_SUM,xcomm,ierr)
-        call MPI_Allreduce(cc1,cc,d_nk,MPI_DOUBLE_PRECISION,
-     &                     MPI_SUM,xcomm,ierr)
-        call MPI_Allreduce(area1,area,d_nk,MPI_DOUBLE_PRECISION,
-     &                     MPI_SUM,xcomm,ierr)
+c  Sum over each section of mesh, using the communicator wcomm
+        if (wing .ne. 0) then
+          call MPI_Allreduce(cn1,cn,d_nk,MPI_DOUBLE_PRECISION,
+     &                       MPI_SUM,wcomm,ierr)
+          call MPI_Allreduce(cc1,cc,d_nk,MPI_DOUBLE_PRECISION,
+     &                       MPI_SUM,wcomm,ierr)
+          call MPI_Allreduce(area1,area,d_nk,MPI_DOUBLE_PRECISION,
+     &                       MPI_SUM,wcomm,ierr)
+        endif
 
-        if (rank .eq. 0) then
+        if (wing .eq. 2) then
           TCL=zero
           TCD=zero
           AREAS=zero
@@ -149,13 +148,10 @@ c  Sum over each section of mesh, using the communicator xcomm
  42       CONTINUE
           TCL = TCL/AREAS
           TCD = TCD/AREAS
-
-          if (pprint .eq. 1) then
-            WRITE (6,43)
-            WRITE (6,44)
-            WRITE (6,45) (ZLOC(K),CL(K),CD(K),K=2,KTIP)
-            WRITE (6,46) TCL,TCD
-          endif
+          WRITE (6,43)
+          WRITE (6,44)
+          WRITE (6,45) (ZLOC(K),CL(K),CD(K),K=2,KTIP)
+          WRITE (6,46) TCL,TCD
         endif
       endif
 
@@ -172,12 +168,13 @@ c -------------------------------------------------------------------
 c
 c  wingsurface - Determines whether this processor's local mesh
 c                includes part of the wing surface.  This routine
-c                is called by GetXCommunicator() in preparation
+c                is called by GetWingCommunicator() in preparation
 c                for generating a subsidiary communicator that
 c                is used in pvar().
 c
 c  Output Parameter:
-c    surface - 1 if this processor owns part of wing surface;
+c    surface - 2 if this processor owns the point (itl1,2,2)
+c              1 if this processor owns any other part of wing surface;
 c              0 otherwise
 c
       integer function wingsurface(surface)
@@ -206,11 +203,15 @@ c
             surface = 0
           endif
         endif
+        if (zsf2 .eq. 2 .and. itl1 .ge. xsf2 .and.
+     &      itl1 .le. xef01) surface = 2
       endif
 
       if (printg .eq. 1) then
-        if (surface .ne.0) then
+        if (surface .ne. 0) then
           write(6,*) 'part of wing surface: rank',rank
+          if (surface .eq. 2) 
+     &       write(6,*) 'own point (itl1,2,2): rank',rank
         else 
           write(6,*) 'NOT part of wing surface: rank ',rank
         endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesmfj2.c,v 1.2 1997/07/04 18:57:55 curfman Exp curfman $";
+static char vcid[] = "$Id: snesmfj2.c,v 1.3 1997/07/06 16:37:32 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -11,17 +11,20 @@ extern int DiffParameterCompute_More(SNES,void*,Vec,Vec,double*,double*);
 extern int DiffParameterDestroy_More(void*);
 
 typedef struct {  /* default context for matrix-free SNES */
-  SNES        snes;      /* SNES context */
-  Vec         w;         /* work vector */
-  PCNullSpace sp;        /* null space context */
-  double      error_rel; /* square root of relative error in computing function */
-  double      umin;      /* minimum allowable u'a value relative to |u|_1 */
-  int         jorge;     /* flag indicating use of Jorge's method for determining
-                            the differencing parameter */
-  Scalar      h;         /* differencing parameter */
-  int         need_h;    /* flag indicating whether we must compute h */
-  int         need_err;  /* flag indicating whether we must compute error_rel */
-  void        *data;     /* implementation-specific data */
+  SNES        snes;             /* SNES context */
+  Vec         w;                /* work vector */
+  PCNullSpace sp;               /* null space context */
+  double      error_rel;        /* square root of relative error in computing function */
+  double      umin;             /* minimum allowable u'a value relative to |u|_1 */
+  int         jorge;            /* flag indicating use of Jorge's method for determining
+                                   the differencing parameter */
+  Scalar      h;                /* differencing parameter */
+  int         need_h;           /* flag indicating whether we must compute h */
+  int         need_err;         /* flag indicating whether we must currently compute error_rel */
+  int         compute_err;      /* flag indicating whether we must ever compute error_rel */
+  int         compute_err_iter; /* last iter where we've computer error_rel */
+  int         compute_err_freq; /* frequency of computing error_rel */
+  void        *data;            /* implementation-specific data */
 } MFCtx_Private;
 
 #undef __FUNC__  
@@ -35,7 +38,7 @@ int SNESMatrixFreeDestroy2_Private(PetscObject obj)
   ierr = MatShellGetContext(mat,(void **)&ctx);
   ierr = VecDestroy(ctx->w); CHKERRQ(ierr);
   if (ctx->sp) {ierr = PCNullSpaceDestroy(ctx->sp); CHKERRQ(ierr);}
-  if (ctx->jorge || ctx->need_err) {ierr = DiffParameterDestroy_More(ctx->data); CHKERRQ(ierr);}
+  if (ctx->jorge || ctx->compute_err) {ierr = DiffParameterDestroy_More(ctx->data); CHKERRQ(ierr);}
   PetscFree(ctx);
   return 0;
 }
@@ -63,6 +66,8 @@ int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
        PetscFPrintf(comm,fd,"    using Jorge's method of determining differencing parameter\n");
      PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);
      PetscFPrintf(comm,fd,"    umin=%g (minimum iterate parameter)\n",ctx->umin);
+     if (ctx->compute_err)
+       PetscFPrintf(comm,fd,"    freq_err=%d (frequency for computing err)\n",ctx->compute_err_freq);
   }
   return 0;
 }
@@ -87,9 +92,8 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   double        norm, sum, umin, noise, ovalues[3],values[3];
   Scalar        h, dot, mone = -1.0;
   Vec           w,U,F;
-  int           ierr, (*eval_fct)(SNES,Vec,Vec);
+  int           ierr, iter, (*eval_fct)(SNES,Vec,Vec);
   MPI_Comm      comm;
-
 
   /* We log matrix-free matrix-vector products separately, so that we can
      separate the performance monitoring from the cases that use conventional
@@ -114,6 +118,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   }
   else SETERRQ(1,0,"Invalid method class");
 
+
   /* Determine a "good" step size, h */
   if (ctx->need_h) {
 
@@ -123,13 +128,16 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 
     /* Use the Brown/Saad method to compute h */
     } else { 
-      if (ctx->need_err) {
+      /* Compute error if desired */
+      ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
+      if ((ctx->need_err) ||
+          ((ctx->compute_err_freq) && (ctx->compute_err_iter != iter) && (!((iter-1)%ctx->compute_err_freq)))) {
         /* Use Jorge's method to compute noise */
         ierr = DiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h); CHKERRQ(ierr);
         ctx->error_rel = sqrt(noise);
         PLogInfo(snes,"SNESMatrixFreeMult2_Private: Using Jorge's noise: noise=%g, sqrt(noise)=%g, h_more=%g\n",
             noise,ctx->error_rel,h);
-
+        ctx->compute_err_iter = iter;
         ctx->need_err = 0;
       }
 
@@ -239,9 +247,10 @@ $          -snes_mf_jorge
    matrix context.
 
    Options Database Keys:
-$  -snes_mf_compute_err
 $  -snes_mf_err <error_rel>
 $  -snes_mf_unim <umin>
+$  -snes_mf_compute_err
+$  -snes_mf_freq_err <freq>
 $  -snes_mf_jorge
 
 .keywords: SNES, default, matrix-free, create, matrix
@@ -259,16 +268,25 @@ int SNESMatrixFreeMatCreate2(SNES snes,Vec x, Mat *J)
   PLogObjectMemory(snes,sizeof(MFCtx_Private));
   mfctx->sp   = 0;
   mfctx->snes = snes;
-  mfctx->error_rel = 1.e-8; /* assumes double precision */
-  mfctx->umin      = 1.e-6;
-  mfctx->h         = 0.0;
-  mfctx->need_h    = 1;
-  mfctx->need_err  = 0;
+  mfctx->error_rel        = 1.e-8; /* assumes double precision */
+  mfctx->umin             = 1.e-6;
+  mfctx->h                = 0.0;
+  mfctx->need_h           = 1;
+  mfctx->need_err         = 0;
+  mfctx->compute_err      = 0;
+  mfctx->compute_err_freq = 0;
+  mfctx->compute_err_iter = -1;
   ierr = OptionsGetDouble(snes->prefix,"-snes_mf_err",&mfctx->error_rel,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(snes->prefix,"-snes_mf_umin",&mfctx->umin,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(snes->prefix,"-snes_mf_jorge",&mfctx->jorge); CHKERRQ(ierr);
-  ierr = OptionsHasName(snes->prefix,"-snes_mf_compute_err",&mfctx->need_err); CHKERRQ(ierr);
-  if (mfctx->jorge || mfctx->need_err) {
+  ierr = OptionsHasName(snes->prefix,"-snes_mf_compute_err",&mfctx->compute_err); CHKERRQ(ierr);
+  ierr = OptionsGetInt(snes->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg); CHKERRQ(ierr);
+  if (flg) {
+    if (mfctx->compute_err_freq < 0) mfctx->compute_err_freq = 0;
+    mfctx->compute_err = 1; 
+  }
+  if (mfctx->compute_err == 1) mfctx->need_err = 1;
+  if (mfctx->jorge || mfctx->compute_err) {
     ierr = DiffParameterCreate_More(snes,x,&mfctx->data); CHKERRQ(ierr);
   } else mfctx->data = 0;
 
@@ -276,11 +294,13 @@ int SNESMatrixFreeMatCreate2(SNES snes,Vec x, Mat *J)
   PetscStrcpy(p,"-");
   if (snes->prefix) PetscStrcat(p,snes->prefix);
   if (flg) {
-    PetscPrintf(snes->comm," Matrix-free Options (via SNES)\n");
-    PetscPrintf(snes->comm,"   %ssnes_mf_jorge: use Jorge More's method\n",p);
-    PetscPrintf(snes->comm,"   %ssnes_mf_compute_err: compute sqrt or relative error in function\n",p);
+    PetscPrintf(snes->comm," Matrix-free Options (via SNES):\n");
     PetscPrintf(snes->comm,"   %ssnes_mf_err <err>: set sqrt of relative error in function (default %g)\n",p,mfctx->error_rel);
     PetscPrintf(snes->comm,"   %ssnes_mf_umin <umin>: see users manual (default %g)\n",p,mfctx->umin);
+    PetscPrintf(snes->comm,"   %ssnes_mf_jorge: use Jorge More's method\n",p);
+    PetscPrintf(snes->comm,"   %ssnes_mf_compute_err: compute sqrt or relative error in function\n",p);
+    PetscPrintf(snes->comm,"   %ssnes_mf_freq_err <freq>: frequency to recompute this (default only once)\n",p);
+    PetscPrintf(snes->comm,"   %ssnes_mf_noise_file <file>: set file for printing noise info\n",p);
   }
   ierr = VecDuplicate(x,&mfctx->w); CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)x,&comm); CHKERRQ(ierr);
