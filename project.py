@@ -73,14 +73,6 @@ class Project:
     '''Gets package names'''
     return self.packages
 
-  def getMatlabPath(self):
-    '''Return the path for the matlab directory for this project'''
-    return self.matlabPath
-
-  def setMatlabPath(self,path):
-    '''Sets the path for the matlab directory for this project'''
-    self.matlabPath = path
-
 class ArgumentPath (base.Base):
   '''This class represents a relocatable path based upon an argument in RDict
      - If "path" is given it is appended to the argument value'''
