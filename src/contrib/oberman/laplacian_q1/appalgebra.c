@@ -1,4 +1,4 @@
-/*$Id: appalgebra.c,v 1.14 2000/10/24 20:27:47 bsmith Exp bsmith $*/
+/*$Id: appalgebra.c,v 1.15 2001/01/15 21:49:23 bsmith Exp balay $*/
 #include "appctx.h"
 #include "math.h"
 
@@ -112,9 +112,9 @@ int AppCtxSolve(AppCtx* appctx, int *its)
 	ierr = PCComputeExplicitOperator(pc,&mat);CHKERRQ(ierr);
 	ierr = KSPComputeExplicitOperator(ksp,&mat2);CHKERRQ(ierr);
 	ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"pc.m",&viewer);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"pc");
+	ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB,"pc");
 	ierr = MatView(mat,viewer);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"BA");
+	ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB,"BA");
 	ierr = MatView(mat2,viewer);CHKERRQ(ierr);
 	ierr = MatDestroy(mat);CHKERRQ(ierr);
 	ierr = MatDestroy(mat2);CHKERRQ(ierr);
