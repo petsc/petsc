@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.56 2000/04/12 04:21:23 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.57 2000/04/27 03:12:59 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -313,6 +313,9 @@ int FListDestroy(FList fl)
   PetscFunctionReturn(0);
 }
 
+/*
+   Destroys all the function lists that anyone has every registered, such as KSPList, VecList, etc.
+*/
 #undef __FUNC__  
 #define __FUNC__ /*<a name="FListDestroyAll"></a>*/"FListDestroyAll"
 int FListDestroyAll(void)
