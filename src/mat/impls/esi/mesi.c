@@ -34,9 +34,9 @@ typedef struct {
 
   PetscFunctionBegin;
 
-  ierr = v->getInterface("esi::MatrixData",static_cast<void*>(x->emat));
-  ierr = v->getInterface("esi::MatrixRowReadAccess",static_cast<void*>(x->rmat));CHKERRQ(ierr);
-  ierr = v->getInterface("esi::MatrixRowWriteAccess",static_cast<void*>(x->wmat));CHKERRQ(ierr);
+  ierr = v->getInterface("esi::MatrixData",reinterpret_cast<void*&>(x->emat));
+  ierr = v->getInterface("esi::MatrixRowReadAccess",reinterpret_cast<void*&>(x->rmat));CHKERRQ(ierr);
+  ierr = v->getInterface("esi::MatrixRowWriteAccess",reinterpret_cast<void*&>(x->wmat));CHKERRQ(ierr);
   if (!x->emat) SETERRQ(1,"PETSc currently requires esi::Operator to support esi::MatrixData interface");
 
   ierr = PetscTypeCompare((PetscObject)xin,0,&tesi);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ typedef struct {
 
     ierr = rmap->getLocalSize(m);CHKERRQ(ierr);
     if (xin->m == -1) xin->m = m;
-    else if (xin->m != m) SETERRQ2(1,"Local rows of Mat %d not equal size of esi::MatrixData %d",xin->n,n);
+    else if (xin->m != m) SETERRQ2(1,"Local rows of Mat %d not equal size of esi::MatrixData %d",xin->m,m);
 
     ierr = cmap->getLocalSize(n);CHKERRQ(ierr);
     if (xin->n == -1) xin->n = n;

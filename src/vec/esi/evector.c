@@ -13,7 +13,7 @@ esi::petsc::Vector<double,int>::Vector( ::esi::IndexSpace<int> *inmap)
   int               n,N;
   MPI_Comm          *comm;
 
-  ierr = inmap->getRunTimeModel("MPI",static_cast<void *>(comm));
+  ierr = inmap->getRunTimeModel("MPI",reinterpret_cast<void *&>(comm));
 
   ierr = inmap->getLocalSize(n);
   ierr = inmap->getGlobalSize(N);
@@ -108,7 +108,7 @@ esi::petsc::Vector<double,int>::~Vector()
   ::esi::IndexSpace<int> *amap; 
 
   ierr = this->getIndexSpace(lmap);CHKERRQ(ierr);
-  ierr = lmap->getInterface("esi::IndexSpace",static_cast<void *>(amap));CHKERRQ(ierr);
+  ierr = lmap->getInterface("esi::IndexSpace",reinterpret_cast<void *&>(amap));CHKERRQ(ierr);
   outvector = (::esi::Vector<double,int> *) new esi::petsc::Vector<double,int>(amap);
   return 0;
 }
@@ -121,7 +121,7 @@ esi::petsc::Vector<double,int>::~Vector()
   esi::petsc::Vector<double,int> *y = 0;  
   int                            ierr;
 
-  ierr = yy.getInterface("esi::petsc::Vector",static_cast<void*>(y));CHKERRQ(ierr);
+  ierr = yy.getInterface("esi::petsc::Vector",reinterpret_cast<void *&>(y));CHKERRQ(ierr);
   if (!y) return 1;
 
   return VecCopy(y->vec,this->vec);
@@ -145,7 +145,7 @@ esi::petsc::Vector<double,int>::~Vector()
   ::esi::ErrorCode                 ierr;
   esi::petsc::Vector<double,int> *y;  
   
-  ierr = yy.getInterface("esi::petsc::Vector",static_cast<void*>(y));CHKERRQ(ierr);
+  ierr = yy.getInterface("esi::petsc::Vector",reinterpret_cast<void *&>(y));CHKERRQ(ierr);
   if (!y) return 1;
 
   return VecPointwiseMult(y->vec,this->vec,this->vec);
@@ -180,7 +180,7 @@ esi::petsc::Vector<double,int>::~Vector()
 {
   int ierr;
 
-  esi::petsc::Vector<double,int> *y;  ierr = yy.getInterface("esi::petsc::Vector",static_cast<void*>(y));CHKERRQ(ierr);
+  esi::petsc::Vector<double,int> *y;  ierr = yy.getInterface("esi::petsc::Vector",reinterpret_cast<void *&>(y));CHKERRQ(ierr);
   if (!y) return 1;
   return  VecDot(this->vec,y->vec,&product);
 }
@@ -192,7 +192,7 @@ esi::petsc::Vector<double,int>::~Vector()
 {
   int ierr;
 
-  esi::petsc::Vector<double,int> *y;  ierr = yy.getInterface("esi::petsc::Vector",static_cast<void*>(y));CHKERRQ(ierr);
+  esi::petsc::Vector<double,int> *y;  ierr = yy.getInterface("esi::petsc::Vector",reinterpret_cast<void *&>(y));CHKERRQ(ierr);
   if (!y) return 1;
   return VecAXPY(&scalar,y->vec,this->vec);
 }
@@ -201,9 +201,9 @@ esi::petsc::Vector<double,int>::~Vector()
 {
   int ierr;
 
-  esi::petsc::Vector<double,int> *y;  ierr = yy1.getInterface("esi::petsc::Vector",static_cast<void*>(y));CHKERRQ(ierr);
+  esi::petsc::Vector<double,int> *y;  ierr = yy1.getInterface("esi::petsc::Vector",reinterpret_cast<void *&>(y));CHKERRQ(ierr);
   if (!y) return 1;
-  esi::petsc::Vector<double,int> *w;  ierr = yy2.getInterface("esi::petsc::Vector",static_cast<void*>(w));CHKERRQ(ierr);
+  esi::petsc::Vector<double,int> *w;  ierr = yy2.getInterface("esi::petsc::Vector",reinterpret_cast<void *&>(w));CHKERRQ(ierr);
   if (!w) return 1;
   ierr = VecCopy(y->vec,this->vec); CHKERRQ(ierr);
   ierr = VecScale(&y1,this->vec); CHKERRQ(ierr);
@@ -218,7 +218,7 @@ esi::petsc::Vector<double,int>::~Vector()
 {
   int ierr;
   
-  esi::petsc::Vector<double,int> *y;  ierr = yy.getInterface("esi::petsc::Vector",static_cast<void*>(y));CHKERRQ(ierr);
+  esi::petsc::Vector<double,int> *y;  ierr = yy.getInterface("esi::petsc::Vector",reinterpret_cast<void *&>(y));CHKERRQ(ierr);
   if (!y) return 1;
   return VecAYPX(&scalar,y->vec,this->vec);
 }
@@ -312,7 +312,7 @@ template<class Scalar,class Ordinal> class Petra_ESI_VectorFactory : public virt
     virtual ::esi::ErrorCode getVector(::esi::IndexSpace<Ordinal>&lmap,::esi::Vector<Scalar,Ordinal>*&v)
     {
       Petra_ESI_IndexSpace<Ordinal> *map;
-      int ierr = lmap.getInterface("Petra_ESI_IndexSpace",static_cast<void *>(map));CHKERRQ(ierr);
+      int ierr = lmap.getInterface("Petra_ESI_IndexSpace",reinterpret_cast<void *&>(map));CHKERRQ(ierr);
       if (!map) SETERRQ(1,"Requires Petra_ESI_IndexSpace");
       v = new Petra_ESI_Vector<Scalar,Ordinal>(*map);
       //      ierr = map->addReference();CHKERRQ(ierr);  /* Petra has bug and does not increase reference count */

@@ -9,7 +9,7 @@ esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSp
   int      ierr,rn,rN,cn,cN;
   MPI_Comm *comm;
 
-  ierr = inrmap->getRunTimeModel("MPI",static_cast<void *>(comm));
+  ierr = inrmap->getRunTimeModel("MPI",reinterpret_cast<void *&>(comm));
   ierr = inrmap->getLocalSize(rn);
   ierr = inrmap->getGlobalSize(rN);
   ierr = incmap->getLocalSize(cn);
@@ -88,8 +88,8 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::apply( esi::Vector<double,int> &x
   int ierr;
   Vec py,px;
 
-  ierr = yy.getInterface("Vec",static_cast<void*>(py));
-  ierr = xx.getInterface("Vec",static_cast<void*>(px));
+  ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));
+  ierr = xx.getInterface("Vec",reinterpret_cast<void*&>(px));
 
   return MatMult(this->mat,px,py);
 }
@@ -134,7 +134,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getDiagonal(esi::Vector<double,in
   int ierr;
   Vec py;
 
-  ierr = diagVector.getInterface("Vec",static_cast<void*>(py));
+  ierr = diagVector.getInterface("Vec",reinterpret_cast<void*&>(py));
   return MatGetDiagonal(this->mat,py);
 }
 
@@ -247,7 +247,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getRowSum(esi::Vector<double,int>
   PetscScalar *values,sum;
   Vec         py;
 
-  ierr = rowSumVector.getInterface("Vec",static_cast<void*>(py));
+  ierr = rowSumVector.getInterface("Vec",reinterpret_cast<void*&>(py));
 
   ierr = MatGetOwnershipRange(this->mat,&rstart,&rend);CHKERRQ(ierr);
   for ( i=rstart; i<rend; i++) {
@@ -360,9 +360,9 @@ template<class Scalar,class Ordinal> class Petra_ESI_CRS_OperatorFactory : publi
     {
       int       ierr;
       Petra_Map *rowmap,*colmap;
-      ierr = rmap.getInterface("Petra_Map",static_cast<void *>(rowmap));CHKERRQ(ierr);
+      ierr = rmap.getInterface("Petra_Map",reinterpret_cast<void *&>(rowmap));CHKERRQ(ierr);
       if (!rowmap) SETERRQ(1,"Petra requires all IndexSpaces be Petra_ESI_IndexSpaces");
-      ierr = cmap.getInterface("Petra_Map",static_cast<void *>(colmap));CHKERRQ(ierr);
+      ierr = cmap.getInterface("Petra_Map",reinterpret_cast<void *&>(colmap));CHKERRQ(ierr);
       if (!colmap) SETERRQ(1,"Petra requires all IndexSpaces be Petra_ESI_IndexSpaces");
       Petra_CRS_Graph  *graph = new Petra_CRS_Graph(Copy,*(Petra_BlockMap*)rowmap,*(Petra_BlockMap*)colmap,200);
       ierr = rmap.addReference();CHKERRQ(ierr);
