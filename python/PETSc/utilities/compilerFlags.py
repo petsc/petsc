@@ -19,53 +19,35 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc Compiler Flags', 'optionsModule=<module name>', nargs.Arg(None, None,      'The Python module used to determine compiler options and versions'))
-    help.addArgument('PETSc Compiler Flags', 'C_VERSION',                   nargs.Arg(None, 'Unknown', 'The version of the C compiler'))
-    help.addArgument('PETSc Compiler Flags', 'CFLAGS_g',                    nargs.Arg(None, 'Unknown', 'Flags for the C compiler with debugging'))
-    help.addArgument('PETSc Compiler Flags', 'CFLAGS_O',                    nargs.Arg(None, 'Unknown', 'Flags for the C compiler without debugging'))
-    help.addArgument('PETSc Compiler Flags', 'CFLAGS_g_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler with debugging'))
-    help.addArgument('PETSc Compiler Flags', 'CFLAGS_O_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler without debugging'))
-    help.addArgument('PETSc Compiler Flags', 'CXX_VERSION',                 nargs.Arg(None, 'Unknown', 'The version of the C++ compiler'))
-    help.addArgument('PETSc Compiler Flags', 'CXXFLAGS_g',                  nargs.Arg(None, 'Unknown', 'Flags for the C++ compiler with debugging'))
-    help.addArgument('PETSc Compiler Flags', 'CXXFLAGS_O',                  nargs.Arg(None, 'Unknown', 'Flags for the C++ compiler without debugging'))
-    help.addArgument('PETSc Compiler Flags', 'CXXFLAGS_g_complex',          nargs.Arg(None, 'Unknown', 'Flags for the C compiler with debugging'))
-    help.addArgument('PETSc Compiler Flags', 'CXXFLAGS_O_complex',          nargs.Arg(None, 'Unknown', 'Flags for the C compiler without debugging'))
-    help.addArgument('PETSc Compiler Flags', 'F_VERSION',                   nargs.Arg(None, 'Unknown', 'The version of the Fortran compiler'))
-    help.addArgument('PETSc Compiler Flags', 'FFLAGS_g',                    nargs.Arg(None, 'Unknown', 'Flags for the Fortran compiler with debugging'))
-    help.addArgument('PETSc Compiler Flags', 'FFLAGS_O',                    nargs.Arg(None, 'Unknown', 'Flags for the Fortran compiler without debugging'))
-    help.addArgument('PETSc Compiler Flags', 'FFLAGS_g_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler with debugging'))
-    help.addArgument('PETSc Compiler Flags', 'FFLAGS_O_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler without debugging'))
-
+    help.addArgument('PETSc Compiler Flags', 'C_VERSION',   nargs.Arg(None, 'Unknown', 'The version of the C compiler'))
+    help.addArgument('PETSc Compiler Flags', 'CXX_VERSION', nargs.Arg(None, 'Unknown', 'The version of the C++ compiler'))
+    help.addArgument('PETSc Compiler Flags', 'F_VERSION',   nargs.Arg(None, 'Unknown', 'The version of the Fortran compiler'))
+    help.addArgument('PETSc Compiler Flags', 'COPTFLAGS',   nargs.Arg(None, None, 'User flags for the C compiler'))
+    help.addArgument('PETSc Compiler Flags', 'CXXOPTFLAGS', nargs.Arg(None, None, 'User flags for the C++ compiler'))
+    help.addArgument('PETSc Compiler Flags', 'FOPTFLAGS',   nargs.Arg(None, None, 'User flags for the Fortran compiler'))
     # not sure where to put this, currently gcov is handled in ../compilerOptions.py
-    help.addArgument('PETSc', '-with-gcov=<bool>',             nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
-
-    self.framework.argDB['PETSCFLAGS'] = ''
-    self.framework.argDB['COPTFLAGS']  = ''
-    self.framework.argDB['FOPTFLAGS']  = ''
+    help.addArgument('PETSc', '-with-gcov=<bool>',          nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
     return
 
   def configureCompilerFlags(self):
     '''Get all compiler flags from the Petsc database'''
     options = None
     try:
-      mod     = __import__('PETSc.compilerOptions', locals(), globals(), ['compilerOptions'])
+      mod     = __import__('PETSc.compilerOptions', locals(), globals(), ['compilerOptionsFromArgDB'])
       options = mod.compilerOptions(self.framework)
     except ImportError:
-      self.framework.log.write('Failed to load generic options\n')
-      print 'Failed to load generic options'
+      self.framework.logPrint('ERROR: Failed to load PETSc options module')
     try:
       if self.framework.argDB.has_key('optionsModule'):
         mod     = __import__(self.framework.argDB['optionsModule'], locals(), globals(), ['compilerOptions'])
         options = mod.compilerOptions(self.framework)
     except ImportError:
-      self.framework.log.write('Failed to load custom options\n')
-      print 'Failed to load custom options'
+      self.framework.logPrint('ERROR: Failed to load user options module')
     if options:
-      lang = self.clanguage.language
-      # Need C++ if using C for building external packages
-      if lang == 'C': languages = [('C', 'CFLAGS'), ('FC', 'FFLAGS')]
-      else:           languages = [('C', 'CFLAGS'), ('Cxx', 'CXXFLAGS'), ('FC', 'FFLAGS')]
+      languages = [('C', 'CFLAGS'), ('FC', 'FFLAGS')]
+      if self.clanguage.language == 'Cxx':
+        languages.append(('Cxx', 'CXXFLAGS'))
       for language, flags in languages:
-        # Calling getCompiler() will raise an exception if a language is missing
         self.pushLanguage(language)
         try:
           # Check compiler version
@@ -86,17 +68,17 @@ class Configure(config.base.Configure):
           for bopt in bopts:
             for testFlag in options.getCompilerFlags(language, self.getCompiler(), bopt):
               try:
-                self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
+                self.framework.logPrint('Trying '+language+' compiler flag '+testFlag+'\n')
                 self.addCompilerFlag(testFlag)
               except RuntimeError:
-                self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
+                self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag+'\n')
                 self.framework.argDB['REJECTED_'+flags].append(testFlag)
         except RuntimeError: pass
         self.popLanguage()
-
-    self.framework.addArgumentSubstitution('PETSCFLAGS', 'PETSCFLAGS')
-    self.framework.addArgumentSubstitution('COPTFLAGS',  'COPTFLAGS')
-    self.framework.addArgumentSubstitution('FOPTFLAGS',  'FOPTFLAGS')
+    # We just give empty string since we already put the flags into CFLAGS, etc.
+    self.framework.addSubstitution('COPTFLAGS', '')
+    self.framework.addSubstitution('COPTFLAGS', '')
+    self.framework.addSubstitution('FOPTFLAGS', '')
     return
 
   def configure(self):
