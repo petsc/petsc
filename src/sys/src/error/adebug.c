@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.98 1999/11/10 03:17:52 bsmith Exp bsmith $*/
+/*$Id: adebug.c,v 1.99 1999/11/24 21:43:03 balay Exp balay $*/
 /*
       Code to handle PETSc starting up in debuggers, etc.
 */
@@ -412,7 +412,7 @@ int PetscStopForDebugger(void)
   if (isxxgdb || isups) {
     (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
   }
-#if definedPETSC_USE_A_FOR_DEBUGGER)
+#if defined(PETSC_USE_A_FOR_DEBUGGER)
   else if (isxldb) {
     (*PetscErrorPrintf)("{%d]%s>>%s -a %d %s\n",rank,hostname,Debugger,ppid,program);
   }
