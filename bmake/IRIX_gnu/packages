@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.26 1999/09/14 18:30:30 balay Exp bsmith $ 
+# $Id: base.site,v 1.1 1999/09/27 16:04:19 balay Exp balay $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -22,8 +22,8 @@
 # BLAS usually comes with SGI. Do NOT use the parallel (library names with 
 # mp in them) version of the SGI BLAS.
 #
-BLAS_LIB       = -lblas
-LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX.a ${FC_LIB}
+BLAS_LIB       = /home/petsc/software/blaslapack/blas_IRIX_gnu.a
+LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX_gnu.a ${FC_LIB}
 #
 # Location of X-windows software
 #
@@ -32,14 +32,9 @@ X11_LIB        = -lX11
 #
 # Location of MPI (Message Passing Interface) software  
 #
-#MPI_LIB        = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpi
-#MPI_INCLUDE    = -I/home/petsc/mpich/include
-#MPIRUN         = /home/petsc/mpich/lib/IRIX/ch_shmem/mpirun.ch_shmem
-MPI_HOME       = /home/petsc/software/mpich-1.1.2
-MPI_BUILD_HOME = ${MPI_HOME}/build/IRIX/ch_shmem
-MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
-MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
-MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
+MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
+MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
+MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
@@ -49,15 +44,13 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
 # Optional location of MPE
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
-#MPE_INCLUDE   = -I/home/petsc/mpich/mpe 
-#MPE_LIB       = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpe -lpmpi
-MPE_INCLUDE   = -I${MPI_HOME}/mpe 
-MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+#MPE_INCLUDE   = -I${MPI_HOME}/mpe 
+#MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
 #
 # Optional location of BlockSolve (MPI version)
 #
-BS_INCLUDE    = -I/home/petsc/software/BlockSolve95/include
-BS_LIB        = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+#BS_INCLUDE    = -I/home/petsc/software/BlockSolve95/include
+#BS_LIB        = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # Optional Matlab location
 #
@@ -90,7 +83,7 @@ BS_LIB        = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS9
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         =   -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_MPE
+PCONF         =
 #PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
@@ -100,6 +93,6 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 # point to the directories where all your shared libraries are stored.
 
 #
-C_DYLIBPATH     = ${CLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/IRIX
-F_DYLIBPATH     = ${FLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/IRIX
+C_DYLIBPATH     =
+F_DYLIBPATH     =
 
