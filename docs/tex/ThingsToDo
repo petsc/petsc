@@ -54,6 +54,12 @@ Everyone  - Aim for more exhaustive PETSc testing.  See
   To do sometime soon:
 -----------------------------------------------------------------------
 
+ - Features in TS wanted by Carl:
+      - Crank-Nicholson
+      - Multi-stage explicit methods
+
+ - Suggestion by Carl - provide SNES example showing user computing most
+   of Jacobian in function eval routine.
 
  - Add feature to SNESDefatulComputeJacobian() for user to set differencing
    parameter (similar to matrix-free stuff)
