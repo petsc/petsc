@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.107 1997/07/02 22:28:35 bsmith Exp balay $ */
+/* $Id: petsclog.h,v 1.108 1997/07/23 18:22:46 balay Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -104,6 +104,12 @@
 #define TS_PseudoComputeTimeStep                91
 
 #define Petsc_Barrier                           100
+/* 
+   Time spent by processors synchronousing for reduction 
+   and then performing it.
+*/
+#define MPI_ReduceSync                          101
+#define MPI_ReduceComp                          102
 
 #define EC_SetUp                                105
 #define EC_Solve                                106
