@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.2 1998/12/23 22:53:37 bsmith Exp balay $";
+static char vcid[] = "$Id: gr2.c,v 1.3 1999/01/08 14:52:28 balay Exp bsmith $";
 #endif
 
 /* 
@@ -14,15 +14,14 @@ EXTERN_C_BEGIN
 int VecView_MPI_Draw_DA2d(Vec xin,Viewer v)
 {
   DA             da;
-  int            i,rank,size,ierr,n,tag1,tag2,igstart,igsize,N,step;
+  int            i,rank,size,ierr,n,igstart,igsize,N,step;
   int            istart,isize,j,M,jgsize,jgstart;
-  double         coors[4],ymin,ymax,min,max,xmin,xmax;
+  double         coors[4],ymin,ymax,min,max,xmin,xmax,xminw,xmaxw,yminw,ymaxw;
   Scalar         *array,*xy;
   Draw           draw;
   PetscTruth     isnull;
   MPI_Comm       comm;
-  DrawAxis       axis;
-  Vec            xcoor;
+  Vec            xlocal,xcoor;
   DAPeriodicType periodic;
 
   PetscFunctionBegin;
@@ -32,12 +31,17 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer v)
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*) &da);CHKERRQ(ierr);
   if (!da) SETERRQ(1,1,"Vector not generated from a DA");
 
+  /*
+      Get local (ghosted) values of vector
+  */
+  ierr = DACreateLocalVector(da,&xlocal);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+
   ierr = DAGetInfo(da,0,&M,&N,0,0,0,0,&step,0,&periodic);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&igstart,&jgstart,0,&igsize,&jgsize,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
-  ierr = VecGetArray(xin,&array); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(xin,&n); CHKERRQ(ierr);
-  n    = n/step;
+  ierr = VecGetArray(xlocal,&array); CHKERRQ(ierr);
 
   /* get coordinates of nodes */
   ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
@@ -54,13 +58,22 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer v)
   /*
       Determine the min and max x coordinate in plot 
   */
-  min = 1.e20; max = -1.e20;
-  for ( i=0; i<igsize*jgsize; i++ ) {
-    min = PetscMin(min,PetscReal(xy[2*i]));
-    max = PetscMax(max,PetscReal(xy[2*i]));
+  n   = igsize*jgsize;
+  xminw = 1.e20; xmaxw = -1.e20;
+  yminw = 1.e20; ymaxw = -1.e20;
+  for ( i=0; i<n; i++ ) {
+    xminw = PetscMin(xminw,PetscReal(xy[2*i]));
+    xmaxw = PetscMax(xmaxw,PetscReal(xy[2*i]));
+    yminw = PetscMin(yminw,PetscReal(xy[2*i+1]));
+    ymaxw = PetscMax(ymaxw,PetscReal(xy[2*i+1]));
   }
-  ierr = MPI_Allreduce(&min,&xmin,1,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-
+  ierr = MPI_Allreduce(&xminw,&xmin,1,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&xmaxw,&xmax,1,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&yminw,&ymin,1,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&ymaxw,&ymax,1,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+  coors[0] = xmin - .05*(xmax- xmin); coors[2] = xmax + .05*(xmax - xmin);
+  coors[1] = ymin - .05*(ymax- ymin); coors[3] = ymax + .05*(ymax - ymin);
+  ierr = MPI_Bcast(coors,4,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
 
   for ( j=0; j<step; j++ ) {
     ierr = ViewerDrawGetDraw(v,j,&draw);CHKERRQ(ierr);
@@ -87,25 +100,15 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer v)
     ierr = MPI_Reduce(&max,&ymax,1,MPI_DOUBLE,MPI_MAX,0,comm);CHKERRQ(ierr);
 
     ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
-    ierr = ViewerDrawGetDrawAxis(v,j,&axis); CHKERRQ(ierr);
-    PLogObjectParent(draw,axis);
+
     if (!rank) {
       char *title;
 
-      ierr = DrawAxisSetLimits(axis,xmin,xmax,ymin,ymax); CHKERRQ(ierr);
-      ierr = DrawAxisDraw(axis); CHKERRQ(ierr);
       ierr = DrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);CHKERRQ(ierr);
       ierr = DAGetFieldName(da,j,&title);CHKERRQ(ierr);
       ierr = DrawSetTitle(draw,title);CHKERRQ(ierr);
     }
-    ierr = MPI_Bcast(coors,4,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
-    if (rank) {
-      ierr = DrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
-    }
-
-    /* draw local part of vector */
-    PetscObjectGetNewTag((PetscObject)xin,&tag1);CHKERRQ(ierr);
-    PetscObjectGetNewTag((PetscObject)xin,&tag2);CHKERRQ(ierr);
+    ierr = DrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
 
     ierr = DrawSynchronizedFlush(draw); CHKERRQ(ierr);
     ierr = DrawPause(draw); CHKERRQ(ierr);
