@@ -1,4 +1,4 @@
-/*$Id: comb.c,v 1.25 2000/01/11 21:00:05 bsmith Exp bsmith $*/
+/*$Id: comb.c,v 1.26 2000/03/06 04:40:12 bsmith Exp bsmith $*/
 
 /*
       Split phase global vector reductions with support for combining the
@@ -62,7 +62,7 @@ int PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReduction **sr)
   (*sr)->maxops      = 32;
   (*sr)->lvalues     = (Scalar*)PetscMalloc(2*32*sizeof(Scalar));CHKPTRQ((*sr)->lvalues);
   (*sr)->gvalues     = (Scalar*)PetscMalloc(2*32*sizeof(Scalar));CHKPTRQ((*sr)->gvalues);
-  (*sr)->invecs      = (void*)PetscMalloc(32*sizeof(void**));CHKPTRQ((*sr)->invecs);
+  (*sr)->invecs      = (void**)PetscMalloc(32*sizeof(void*));CHKPTRQ((*sr)->invecs);
   (*sr)->comm        = comm;
   (*sr)->reducetype  = (int*)PetscMalloc(32*sizeof(int));CHKPTRQ((*sr)->reducetype);
   PetscFunctionReturn(0);
