@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: icc.c,v 1.51 1998/04/03 23:14:29 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.52 1998/10/19 22:17:40 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -7,24 +7,6 @@ static char vcid[] = "$Id: icc.c,v 1.51 1998/04/03 23:14:29 bsmith Exp bsmith $ 
 */
 
 #include "src/pc/impls/icc/icc.h"   /*I "icc.h" I*/
-
-extern int PCSetUp_ICC_MPIRowbs(PC);
-
-static int (*setups[])(PC) = {0,
-                              0,
-                              0,
-                              0,
-#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
-                              PCSetUp_ICC_MPIRowbs,
-#else
-                              0,
-#endif
-                              0,
-                              0,
-                              0,   
-                              0,
-                              0,0,0,0,0};
-
 
 #undef __FUNC__  
 #define __FUNC__ "PCSetup_ICC"
@@ -40,15 +22,16 @@ static int PCSetup_ICC(PC pc)
   perm = 0;
 
   if (!pc->setupcalled) {
-    if (setups[pc->pmat->type]) {
-      ierr = (*setups[pc->pmat->type])(pc); CHKERRQ(ierr);
+    int (*setup)(PC);
+
+    ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"PCSetUp_ICC_C",(void**)&setup);CHKERRQ(ierr);
+    if (setup) {
+      ierr = (*setup)(pc);CHKERRQ(ierr);
     }
-    ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,
-				icc->levels,&icc->fact); CHKERRQ(ierr);
+    ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,icc->levels,&icc->fact); CHKERRQ(ierr);
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
     ierr = MatDestroy(icc->fact); CHKERRQ(ierr);
-    ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,
-				icc->levels,&icc->fact); CHKERRQ(ierr);
+    ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,icc->levels,&icc->fact); CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorNumeric(pc->pmat,&icc->fact); CHKERRQ(ierr);
   PetscFunctionReturn(0);
