@@ -10,6 +10,11 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Consider changing the default parallel solver from
+        GMRES with Block-Jacobi/ILU(0)
+    to
+        GMRES with Block-Jacobi/ILU(0) in-place.
+
   - Make a variant of SNES-TR method that doesn't use KSPBuildSolution() in
     the convergence test.  Talk to Jorge about the importance of this test.
 
