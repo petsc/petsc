@@ -21,7 +21,8 @@ Additional Capabilities that PETSc Needs:
           cons: still not necessarily good output format.
       - Send info to 1 proc, then print from it.
           pros: nice output format
-          cons: a pain to do, unless there were a new routine like SLESViewInfo().
+          cons: a pain to do, unless there were a new routine like SLESGetInfo().
+      - Maybe should have SLESGetInfo() anyway??
     
   - What to do for ASM, BJacobi PCs for -use_true_local and
     PCModifySubmatrices()?
