@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.51 1996/01/02 20:15:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.52 1996/01/12 03:52:47 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -83,11 +83,13 @@ int PCILUSetUseInPlace(PC pc)
 
 static int PCSetFromOptions_ILU(PC pc)
 {
-  int         levels;
-  if (OptionsGetInt(pc->prefix,"-pc_ilu_levels",&levels)) {
+  int         levels,ierr,flg;
+  ierr = OptionsGetInt(pc->prefix,"-pc_ilu_levels",&levels,&flg); CHKERRQ(ierr);
+  if (flg) {
     PCILUSetLevels(pc,levels);
   }
-  if (OptionsHasName(pc->prefix,"-pc_ilu_in_place")) {
+  ierr = OptionsHasName(pc->prefix,"-pc_ilu_in_place",&flg); CHKERRQ(ierr);
+  if (flg) {
     PCILUSetUseInPlace(pc);
   }
   return 0;

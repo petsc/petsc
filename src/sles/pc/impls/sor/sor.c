@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.42 1996/01/01 01:02:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.43 1996/01/12 03:52:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -28,36 +28,42 @@ static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,int its)
   PC_SOR *jac = (PC_SOR *) pc->data;
   int    ierr, flag;
   flag = jac->sym;
-  ierr = MatRelax(pc->mat,b,jac->omega,(MatSORType)flag,0.0,its,y);
-  CHKERRQ(ierr);
+  ierr = MatRelax(pc->mat,b,jac->omega,(MatSORType)flag,0.0,its,y);CHKERRQ(ierr);
   return 0;
 }
 
 /* parses arguments of the form -pc_sor [symmetric,forward,back][omega=...] */
 static int PCSetFromOptions_SOR(PC pc)
 {
-  int    its;
+  int    its,ierr,flg;
   double omega;
 
-  if (OptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega)) {
+  iOptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega,&flg);CHKERRQ(ierr);
+  if (flg) {
     PCSORSetOmega(pc,omega);
   } 
-  if (OptionsGetInt(pc->prefix,"-pc_sor_its",&its)) {
+  OptionsGetInt(pc->prefix,"-pc_sor_its",&its,&flg);CHKERRQ(ierr);
+  if (flg) {
     PCSORSetIterations(pc,its);
   }
-  if (OptionsHasName(pc->prefix,"-pc_sor_symmetric")) {
+  OptionsHasName(pc->prefix,"-pc_sor_symmetric",&flg);CHKERRQ(ierr);
+  if (flg) {
     PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);
   }
-  if (OptionsHasName(pc->prefix,"-pc_sor_backward")) {
+  OptionsHasName(pc->prefix,"-pc_sor_backward",&flg);CHKERRQ(ierr);
+  if (flg) {
     PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);
   }
-  if (OptionsHasName(pc->prefix,"-pc_sor_local_symmetric")) {
+  iOptionsHasName(pc->prefix,"-pc_sor_local_symmetric",&flg);CHKERRQ(ierr);
+  if (flg) {
     PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);
   }
-  if (OptionsHasName(pc->prefix,"-pc_sor_local_backward")) {
+  OptionsHasName(pc->prefix,"-pc_sor_local_backward",&flg);CHKERRQ(ierr);
+  if (flg) {
     PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);
   }
-  if (OptionsHasName(pc->prefix,"-pc_sor_local_forward")) {
+  OptionsHasName(pc->prefix,"-pc_sor_local_forward",&flg);CHKERRQ(ierr);
+  if (flg) {
     PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);
   }
   return 0;

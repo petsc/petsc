@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.34 1996/01/01 01:02:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.35 1996/01/02 20:15:34 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -36,7 +36,7 @@ int  amult(void*,Vec,Vec);
 int main(int Argc, char **Args)
 {
   int         x_mesh = 15,levels = 3,cycles = 1;
-  int         i,smooths = 1;
+  int         i,smooths = 1,flg;
   int         *N, use_jacobi = 0;
   MGType      am = MGMULTIPLICATIVE;
   Mat         cmat,mat[20],fmat;
@@ -50,13 +50,16 @@ int main(int Argc, char **Args)
 
   PetscInitialize(&Argc,&Args,0,0,help);
 
-  OptionsGetInt(PETSC_NULL,"-x",&x_mesh);  
-  OptionsGetInt(PETSC_NULL,"-l",&levels);  
-  OptionsGetInt(PETSC_NULL,"-c",&cycles);  
-  OptionsGetInt(PETSC_NULL,"-smooths",&smooths);  
-  if (OptionsHasName(PETSC_NULL,"-a")) {am = MGADDITIVE;}
-  if (OptionsHasName(PETSC_NULL,"-f")) {am = MGFULL;}
-  if (OptionsHasName(PETSC_NULL,"-j")) {use_jacobi = 1;}
+  OptionsGetInt(PETSC_NULL,"-x",&x_mesh,&flg);  
+  OptionsGetInt(PETSC_NULL,"-l",&levels,&flg);  
+  OptionsGetInt(PETSC_NULL,"-c",&cycles,&flg);  
+  OptionsGetInt(PETSC_NULL,"-smooths",&smooths,&flg);  
+  OptionsHasName(PETSC_NULL,"-a",&flg);
+  if (flg) {am = MGADDITIVE;}
+  OptionsHasName(PETSC_NULL,"-f",&flg);
+  if (flg) {am = MGFULL;}
+  OptionsHasName(PETSC_NULL,"-j",&flg);
+  if (flg) {use_jacobi = 1;}
          
   N = (int *) PetscMalloc(levels*sizeof(int)); CHKPTRA(N);
   N[0] = x_mesh;

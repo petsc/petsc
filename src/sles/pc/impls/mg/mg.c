@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.40 1996/01/02 20:15:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.41 1996/01/12 03:52:42 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -270,24 +270,28 @@ static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
 
 static int PCSetFromOptions_MG(PC pc)
 {
-  int    ierr, m,levels = 1;
+  int    ierr, m,levels = 1,flg;
   char   buff[16];
 
   if (pc->type != PCMG) return 0;
   if (!pc->data) {
-    OptionsGetInt(pc->prefix,"-pc_mg_levels",&levels);
+    ierr = OptionsGetInt(pc->prefix,"-pc_mg_levels",&levels,&flg);CHKERRQ(ierr);
     ierr = MGSetLevels(pc,levels); CHKERRQ(ierr);
   }
-  if (OptionsGetInt(pc->prefix,"-pc_mg_cycles",&m)) {
+  ierr = OptionsGetInt(pc->prefix,"-pc_mg_cycles",&m,&flg);CHKERRQ(ierr);
+  if (flg) {
     MGSetCycles(pc,m);
   } 
-  if (OptionsGetInt(pc->prefix,"-pc_mg_smoothup",&m)) {
+  ierr = OptionsGetInt(pc->prefix,"-pc_mg_smoothup",&m,&flg);CHKERRQ(ierr);
+  if (flg) {
     MGSetNumberSmoothUp(pc,m);
   }
-  if (OptionsGetInt(pc->prefix,"-pc_mg_smoothdown",&m)) {
+  ierr = OptionsGetInt(pc->prefix,"-pc_mg_smoothdown",&m,&flg);CHKERRQ(ierr);
+  if (flg) {
     MGSetNumberSmoothDown(pc,m);
   }
-  if (OptionsGetString(pc->prefix,"-pc_mg_method",buff,15)) {
+  ierr = OptionsGetString(pc->prefix,"-pc_mg_method",buff,15,&flg);CHKERRQ(ierr);
+  if (flg) {
     MGType mg;
     if (!PetscStrcmp(buff,"additive")) mg = MGADDITIVE;
     else if (!PetscStrcmp(buff,"multiplicative")) mg = MGMULTIPLICATIVE;

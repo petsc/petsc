@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.14 1995/12/21 18:33:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.15 1996/01/01 01:04:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for solving\n\
@@ -12,7 +12,7 @@ using different linear solvers on the individual blocks.\n\n";
 int main(int argc,char **args)
 {
   int       i, j, I, J, ierr, m = 3, n = 2;
-  int       rank, size, its, nlocal, first, Istart, Iend;
+  int       rank, size, its, nlocal, first, Istart, Iend,flg;
   Scalar    v, zero = 0.0, one = 1.0, none = -1.0;
   Vec       x, u, b;
   Mat       A; 
@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PCType    pcmethod;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PETSC_NULL,"-m",&m);
+  OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);  n = 2*size;
 
@@ -85,7 +85,8 @@ int main(int argc,char **args)
     }
   }
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  if (!OptionsHasName(PETSC_NULL,"-noslesview")) {
+  OptionsHasName(PETSC_NULL,"-noslesview",&flg);
+  if (!flg) {
     ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
   }
 

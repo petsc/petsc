@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.30 1996/01/01 01:02:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.31 1996/01/03 14:42:17 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
@@ -17,12 +17,12 @@ int main(int argc,char **args)
   Vec    b, ustar, u;  /* vectors (RHS, exact solution, approx solution) */
   PC     pc;           /* PC context */
   KSP    ksp;          /* KSP context */
-  int    ierr, n = 10, i, its, col[3];
+  int    ierr, n = 10, i, its, col[3],flg;
   Scalar value[3], one = 1.0, zero = 0.0;
   char   *kspname, *pcname;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n);
+  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
 
   /* Create and initialize vectors */
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&b);     CHKERRA(ierr);

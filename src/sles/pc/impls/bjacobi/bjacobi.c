@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.64 1996/01/09 15:52:21 balay Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.65 1996/01/12 03:52:40 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -47,12 +47,14 @@ static int PCDestroy_BJacobi(PetscObject obj)
 
 static int PCSetFromOptions_BJacobi(PC pc)
 {
-  int        blocks;
+  int        blocks,flg,ierr;
 
-  if (OptionsGetInt(pc->prefix,"-pc_bjacobi_blocks",&blocks)) {
+  ierr = OptionsGetInt(pc->prefix,"-pc_bjacobi_blocks",&blocks,&flg); CHKERRQ(ierr);
+  if (ierr) {
     PCBJacobiSetTotalBlocks(pc,blocks,PETSC_NULL,PETSC_NULL);
   }
-  if (OptionsHasName(pc->prefix,"-pc_bjacobi_truelocal")) {
+  ierr = OptionsHasName(pc->prefix,"-pc_bjacobi_truelocal",&flg);  CHKERRQ(ierr);
+  if (flg) {
     PCBJacobiSetUseTrueLocal(pc);
   }
   return 0;
@@ -60,15 +62,18 @@ static int PCSetFromOptions_BJacobi(PC pc)
 
 static int PCSetFromOptions_BGS(PC pc)
 {
-  int        blocks;
+  int        blocks,ierr,flg;
 
-  if (OptionsGetInt(pc->prefix,"-pc_bgs_blocks",&blocks)) {
+  ierr = OptionsGetInt(pc->prefix,"-pc_bgs_blocks",&blocks,&flg);  CHKERRQ(ierr);
+  if (flg) {
     PCBGSSetTotalBlocks(pc,blocks,PETSC_NULL,PETSC_NULL);
   }
-  if (OptionsHasName(pc->prefix,"-pc_bgs_truelocal")) {
+  ierr = OptionsHasName(pc->prefix,"-pc_bgs_truelocal",&flg);  CHKERRQ(ierr);
+  if (flg) {
     PCBGSSetUseTrueLocal(pc);
   }
-  if (OptionsHasName(pc->prefix,"-pc_bgs_symmetric")) {
+  ierr = OptionsHasName(pc->prefix,"-pc_bgs_symmetric",&flg);  CHKERRQ(ierr);
+  if (flg) {
     PCBGSSetSymmetric(pc,BGS_SYMMETRIC_SWEEP);
   }
   return 0;

@@ -1,5 +1,5 @@
 
-C    "$Id: ex19.F,v 1.14 1995/12/13 16:49:51 bsmith Exp bsmith $";
+C    "$Id: ex19.F,v 1.15 1995/12/21 18:29:41 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -7,7 +7,7 @@ C
 C  This example demonstrates basic use of the PETSc Fortran interface
 C  to vectors.
 C
-       integer          n, ierr
+       integer          n, ierr,flg
        double precision one, two, three, dot, norm
        Vec              x,y,w
 
@@ -17,7 +17,7 @@ C
        three = 3.0
 
        call PetscInitialize(ierr)                  
-       call OptionsGetInt(PETSC_NULL,'-n',n,ierr)
+       call OptionsGetInt(PETSC_NULL,'-n',n,flg,ierr)
 
 C Create a vector, then duplicate it
        call VecCreate(MPI_COMM_WORLD,n,x,ierr)

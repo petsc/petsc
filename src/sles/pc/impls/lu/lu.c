@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.52 1996/01/01 01:02:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.53 1996/01/12 03:52:37 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -49,7 +49,10 @@ int PCLUSetUseInPlace(PC pc)
 
 static int PCSetFromOptions_LU(PC pc)
 {
-  if (OptionsHasName(pc->prefix,"-pc_lu_in_place")) {
+  int ierr,flg;
+
+  ierr = OptionsHasName(pc->prefix,"-pc_lu_in_place",&flg); CHKERRQ(ierr);
+  if (flg) {
     PCLUSetUseInPlace(pc);
   }
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.15 1995/11/30 22:36:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.16 1995/12/21 18:34:32 bsmith Exp bsmith $";
 #endif
 
 /* This file was created by Peter Mell  6/30/95 */
@@ -15,7 +15,7 @@ static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  int      rank, M = 13, ierr, w=1, s=1, wrap=1;
+  int      rank, M = 13, ierr, w=1, s=1, wrap=1,flg;
   DA       da;
   Draw  win1,win2;
   Vec      local,global;
@@ -26,13 +26,12 @@ int main(int argc,char **argv)
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",280,258,600,200,&win2); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(win1); CHKERRA(ierr);
 
-  OptionsGetInt(PETSC_NULL,"-M",&M);
-  OptionsGetInt(PETSC_NULL,"-w",&w);  /* degrees of freedom */ 
-  OptionsGetInt(PETSC_NULL,"-s",&s);  /* stencil width */
-  OptionsGetInt(PETSC_NULL,"-wrap",&wrap);  /* wrap or not */
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,&flg);  CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,&flg);  CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-wrap",&wrap,&flg);  CHKERRA(ierr); 
 
-  ierr = DACreate1d(MPI_COMM_WORLD,(DAPeriodicType)wrap,M,w,s,&da); 
-  CHKERRA(ierr);
+  ierr = DACreate1d(MPI_COMM_WORLD,(DAPeriodicType)wrap,M,w,s,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
 

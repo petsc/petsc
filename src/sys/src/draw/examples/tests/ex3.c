@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.21 1995/12/01 14:49:19 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.22 1995/12/21 18:33:32 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Plots a simple line graph\n";
@@ -12,16 +12,18 @@ int main(int argc,char **argv)
   Draw     draw;
   DrawLG   lg;
   DrawAxis axis;
-  int      n = 20, i, ierr, x = 0, y = 0, width = 300, height = 300;
+  int      n = 20, i, ierr, x = 0, y = 0, width = 300, height = 300,flg;
   char     *xlabel, *ylabel, *toplabel;
   double   xd, yd;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-width",&width); OptionsGetInt(0,"-height",&height);
-  OptionsGetInt(PETSC_NULL,"-n",&n);
-  if (OptionsHasName(PETSC_NULL,"-nolabels")) {
+  OptionsGetInt(PETSC_NULL,"-width",&width,&flg); 
+  OptionsGetInt(0,"-height",&height,&flg);
+  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  OptionsHasName(PETSC_NULL,"-nolabels",&flg); 
+  if (flg) {
     xlabel = (char *)0; toplabel = (char *)0;
   }
   ierr = DrawOpenX(MPI_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);

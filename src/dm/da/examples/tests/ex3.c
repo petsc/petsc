@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.15 1995/12/21 18:34:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.16 1996/01/11 20:15:30 bsmith Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -17,7 +17,7 @@ static char help[] = "Creates a 1-dimensional wave equation.\n\n";
 
 int main(int argc,char **argv)
 {
-  int       rank, size, M = 60, ierr,  time_steps = 100;
+  int       rank, size, M = 60, ierr,  time_steps = 100,flg;
   DA        da;
   Draw      win;
   Vec       local, global, copy;
@@ -27,8 +27,8 @@ int main(int argc,char **argv)
  
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
 
-  OptionsGetInt(PETSC_NULL,"-M",&M);
-  OptionsGetInt(PETSC_NULL,"-time",&time_steps);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg); CHKERRA(ierr);
     
   /* Set up the array */ 
   ierr = DACreate1d(MPI_COMM_WORLD,DA_XPERIODIC,M,1,1,&da); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.19 1996/01/01 01:05:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.20 1996/01/11 20:15:19 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -24,12 +24,12 @@ int main( int argc, char **argv )
   SNESType     method = SNES_EQ_NLS;  /* nonlinear solution method */
   Vec          x,r,F,U;
   Mat          J,B;                   /* Jacobian matrix-free,explicit preconditioner */
-  int          ierr, its, n = 5,i;
+  int          ierr, its, n = 5,i,flg;
   Scalar       h,xp = 0.0,v;
   MonitorCtx   monP;                  /* monitoring context */
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  OptionsGetInt(PETSC_NULL,"-n",&n);
+  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
   h = 1.0/(n-1);
 
   /* Set up data structures */

@@ -1,7 +1,7 @@
 /* Peter Mell Modified this file   8/95 */
 
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.12 1996/01/01 01:05:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.13 1996/01/11 20:15:19 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -54,24 +54,26 @@ int main( int argc, char **argv )
   SNESType      method = SNES_EQ_NLS;  /* nonlinear solution method */
   Vec           x,r;
   int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, Nz = PETSC_DECIDE; 
+  int           flg;
   AppCtx        user;
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
   DAStencilType stencil = DA_STENCIL_BOX;
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  if (OptionsHasName(PETSC_NULL,"-star")) stencil = DA_STENCIL_STAR;
+  OptionsHasName(PETSC_NULL,"-star",&flg);
+  if (flg) stencil = DA_STENCIL_STAR;
 
   user.mx    = 4; 
   user.my    = 4; 
   user.mz    = 4; 
   user.param = 6.0;
-  OptionsGetInt(PETSC_NULL,"-mx",&user.mx); 
-  OptionsGetInt(PETSC_NULL,"-my",&user.my);
-  OptionsGetInt(PETSC_NULL,"-mz",&user.mz);
-  OptionsGetInt(PETSC_NULL,"-Nx",&Nx); 
-  OptionsGetInt(PETSC_NULL,"-Ny",&Ny);
-  OptionsGetInt(PETSC_NULL,"-Nz",&Nz);
-  OptionsGetDouble(PETSC_NULL,"-par",&user.param);
+  OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); 
+  OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);
+  OptionsGetInt(PETSC_NULL,"-mz",&user.mz,&flg);
+  OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); 
+  OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);
+  OptionsGetInt(PETSC_NULL,"-Nz",&Nz,&flg);
+  OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,"Lambda is out of range");
   }

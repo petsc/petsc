@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.34 1996/01/08 23:47:10 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.35 1996/01/12 03:52:28 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -111,9 +111,11 @@ $ -pc_type  method
 */
 int PCGetTypeFromOptions_Private(PC pc,PCType *method )
 {
-  int  ierr;
+  int  ierr,flg;
   char sbuf[50];
-  if (OptionsGetString( pc->prefix,"-pc_type", sbuf, 50 )) {
+
+  ierr = OptionsGetString( pc->prefix,"-pc_type", sbuf, 50,&flg );CHKERRQ(ierr);
+  if (flg) {
     if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
     *method = (PCType)NRFindID( __PCList, sbuf );
     return 1;
@@ -181,12 +183,15 @@ int PCPrintTypes_Private(char *prefix,char *name)
 int PCSetFromOptions(PC pc)
 {
   PCType method;
+  int    ierr,flg;
+
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
 
   if (PCGetTypeFromOptions_Private(pc,&method)) {
     PCSetType(pc,method);
   }
-  if (OptionsHasName(PETSC_NULL,"-help")){
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); 
+  if (flg){
     PCPrintHelp(pc);
   }
   if (pc->setfrom) return (*pc->setfrom)(pc);

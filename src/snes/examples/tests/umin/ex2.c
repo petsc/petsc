@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.17 1996/01/03 22:50:08 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.18 1996/01/09 03:33:29 curfman Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   Vec        x, g;                  /* solution, gradient vectors */
   Mat        H;                     /* Hessian matrix */
   AppCtx     user;                  /* application context */
-  int        ierr, its, nfails;
+  int        ierr, its, nfails,flg;
   int        mx=10;   /* discretization of problem in x-direction */
   int        my=10;   /* discretization of problem in y-direction */
   double     one = 1.0;
@@ -71,20 +71,19 @@ int main(int argc,char **argv)
 
   /* Set up user-defined work space */
   user.problem = 1;
-  OptionsGetInt(PETSC_NULL,"-p",&user.problem);
+  OptionsGetInt(PETSC_NULL,"-p",&user.problem,&flg);
   user.param = 5.0;
-  OptionsGetDouble(PETSC_NULL,"-par",&user.param);
+  OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);
   if (user.problem != 1 && user.problem != 2) SETERRA(1,"Invalid problem number");
-  OptionsGetInt(PETSC_NULL,"-my",&my);
-  OptionsGetInt(PETSC_NULL,"-mx",&mx);
+  OptionsGetInt(PETSC_NULL,"-my",&my,&flg);
+  OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg);
   user.ndim = mx * my;
   user.mx = mx;
   user.my = my;
   user.hx = one/(double)(mx+1);
   user.hy = one/(double)(my+1);
   if (user.problem == 2) {
-    user.work = (double*)PetscMalloc(2*(mx+my+4)*sizeof(double)); 
-    CHKPTRQ(user.work);
+    user.work = (double*)PetscMalloc(2*(mx+my+4)*sizeof(double));CHKPTRQ(user.work);
   } else {
     user.work = 0;
   }
@@ -112,7 +111,8 @@ int main(int argc,char **argv)
   ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user); CHKERRA(ierr);
 
   /* Either explicitly form Hessian matrix approx or use matrix-free version */
-  if (OptionsHasName(PETSC_NULL,"-snes_mf")) {
+  OptionsHasName(PETSC_NULL,"-snes_mf",&flg);
+  if (flg) {
     ierr = MatShellCreate(MPI_COMM_SELF,user.ndim,user.ndim,(void*)&user,&H);
            CHKERRA(ierr);
     if (user.problem == 1) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.29 1996/01/01 01:05:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.30 1996/01/11 20:15:19 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -58,7 +58,7 @@ int main( int argc, char **argv )
   SNESType     method = SNES_EQ_NLS;  /* nonlinear solution method */
   Vec          x,r;
   Mat          J;
-  int          ierr, its, N, nfails; 
+  int          ierr, its, N, nfails,flg; 
   AppCtx       user;
   Draw         win;
   double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
@@ -69,11 +69,11 @@ int main( int argc, char **argv )
   user.mx    = 4;
   user.my    = 4;
   user.param = 6.0;
-  OptionsGetInt(PETSC_NULL,"-mx",&user.mx);
-  OptionsGetInt(PETSC_NULL,"-my",&user.my);
-  OptionsGetDouble(PETSC_NULL,"-par",&user.param);
-  if (!OptionsHasName(PETSC_NULL,"-cavity") && 
-      (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
+  OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);
+  OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);
+  OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);
+  OptionsHasName(PETSC_NULL,"-cavity",&flg);
+  if (!flg && (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
     SETERRA(1,"Lambda is out of range");
   }
   N          = user.mx*user.my;
@@ -88,7 +88,8 @@ int main( int argc, char **argv )
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  if (OptionsHasName(PETSC_NULL,"-cavity")){
+  OptionsHasName(PETSC_NULL,"-cavity",&flg);
+  if (flg){
     ierr = SNESSetSolution(snes,x,FormInitialGuess2,(void *)&user); CHKERRA(ierr);
     ierr = SNESSetFunction(snes,r,FormFunction2,(void *)&user); CHKERRA(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian2,(void *)&user); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.86 1996/01/07 22:41:33 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.87 1996/01/08 23:45:31 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -1279,7 +1279,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *procinfo,M
   Mat_MPIRowbs *a;
   BSmapping    *bsmap;
   BSoff_map    *bsoff;
-  int          i, ierr, Mtemp, *offset, low, high;
+  int          i, ierr, Mtemp, *offset, low, high,flg1,flg2,flg3;
   BSprocinfo   *bspinfo = (BSprocinfo *) procinfo;
   
   *newA = 0;
@@ -1363,12 +1363,14 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *procinfo,M
   BSctx_set_err(bspinfo,1); CHKERRBS(0);  /* BS error checking */
 #endif
   BSctx_set_rt(bspinfo,1); CHKERRBS(0);
-  if (OptionsHasName(PETSC_NULL,"-info")) {
+  ierr = OptionsHasName(PETSC_NULL,"-info",&flg1); CHKERRQ(ierr);
+  if (flg1) {
     BSctx_set_pr(bspinfo,1); CHKERRBS(0);
   }
-  if ((OptionsHasName(PETSC_NULL,"-pc_ilu_factorpointwise")) ||
-    (OptionsHasName(PETSC_NULL,"-pc_icc_factorpointwise")) ||
-    (OptionsHasName(PETSC_NULL,"-mat_rowbs_no_inode"))) {
+  ierr = OptionsHasName(PETSC_NULL,"-pc_ilu_factorpointwise",&flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-pc_icc_factorpointwise",&flg2); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_rowbs_no_inode",&flg3); CHKERRQ(ierr);
+  if (flg1 || flg2 || flg3) {
     BSctx_set_si(bspinfo,1); CHKERRBS(0);
   } else {
     BSctx_set_si(bspinfo,0); CHKERRBS(0);
@@ -1400,7 +1402,8 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *procinfo,M
   bsmap->free_g2p	= BSfree_off_map;
 
   ierr = MatCreateMPIRowbs_local(A,nz,nnz); CHKERRQ(ierr);
-  if (OptionsHasName(PETSC_NULL,"-help")) {
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
+  if (flg1) {
     ierr = MatPrintHelp(A); CHKERRQ(ierr);
   }
   *newA = A;

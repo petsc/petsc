@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.59 1995/12/21 18:30:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.60 1996/01/12 03:52:10 bsmith Exp bsmith $";
 #endif
 /*
   These routines simplify the use of command line, file options, etc.,
@@ -123,7 +123,7 @@ $       call PetscInitialize(ierr)
 @*/
 int PetscInitialize(int *argc,char ***args,char *file,char *env,char *help)
 {
-  int        ierr,flag;
+  int        ierr,flag,flg;
   static int PetscInitializedCalled = 0;
 
   if (PetscInitializedCalled) SETERRQ(1," PetscInitialize:CANNOT call twice");
@@ -147,7 +147,8 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env,char *help)
     MPI_Comm_size(MPI_COMM_WORLD,&size);
     PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",rank,size);
   }
-  if (help && OptionsHasName(PETSC_NULL,"-help")) {
+  OptionsHasName(PETSC_NULL,"-help",&flg);
+  if (help && flg) {
     MPIU_printf(MPI_COMM_WORLD,help);
   }
   return 0;
@@ -179,30 +180,36 @@ $             this slows your code by at least a factor of 10.
 @*/
 int PetscFinalize()
 {
-  int  ierr,i,rank = 0;
+  int  ierr,i,rank = 0,flg1,flg2;
   char mname[64];
 
   ViewerDestroy_Private();
 #if defined(PETSC_LOG)
-  if (OptionsHasName(PETSC_NULL,"-log_summary")) {
+  OptionsHasName(PETSC_NULL,"-log_summary",&flg1);
+  if (flg1) {
     PLogPrint(MPI_COMM_WORLD,stdout);
   }
   mname[0] = 0;
-  if (OptionsGetString(PETSC_NULL,"-log_all",mname,64)||OptionsGetString(0,"-log",mname,64)){
+  OptionsGetString(PETSC_NULL,"-log_all",mname,64,&flg1);
+  OptionsGetString(PETSC_NULL,"-log",mname,64,&flg2);
+  if (flg1 || flg2){
     if (mname[0]) PLogDump(mname); 
     else PLogDump(0);
   }
   PLogDestroy();
 #endif
-  if (!OptionsHasName(PETSC_NULL,"-no_signal_handler")) {
+  OptionsHasName(PETSC_NULL,"-no_signal_handler",&flg1);
+  if (!flg1) {
     PetscPopSignalHandler();
   }
-  OptionsHasName(PETSC_NULL,"-trdump");
+  OptionsHasName(PETSC_NULL,"-trdump",&flg1);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  if (OptionsHasName(PETSC_NULL,"-optionstable")) {
+  OptionsHasName(PETSC_NULL,"-optionstable",&flg1);
+  if (flg1) {
     if (!rank) OptionsPrint(stdout);
   }
-  if (OptionsHasName(PETSC_NULL,"-optionsleft")) {
+  OptionsHasName(PETSC_NULL,"-optionsleft",&flg1);
+  if (flg1) {
     if (!rank) {
       int nopt = OptionsAllUsed();
       if (nopt == 0) 
@@ -219,11 +226,13 @@ int PetscFinalize()
       }
     } 
   }
-  if (OptionsHasName(PETSC_NULL,"-log_history")) {
+  OptionsHasName(PETSC_NULL,"-log_history",&flg1);
+  if (flg1) {
     PLogCloseHistoryFile(&petsc_history);
     petsc_history = 0;
   }
-  if (OptionsHasName(PETSC_NULL,"-trdump")) {
+  OptionsHasName(PETSC_NULL,"-trdump",&flg1);
+  if (flg1) {
     OptionsDestroy_Private();
     NRDestroyAll();
     MPIU_Seq_begin(MPI_COMM_WORLD,1);
@@ -271,24 +280,31 @@ int OptionsCheckInitial_Private()
 {
   char     string[64];
   MPI_Comm comm = MPI_COMM_WORLD;
+  int      flg1,flg2,flg3;
 
 #if defined(PETSC_BOPT_g)
-  if (!OptionsHasName(PETSC_NULL,"-notrmalloc")) {
+  OptionsHasName(PETSC_NULL,"-notrmalloc",&flg1);
+ if (!flg1) {
     PetscSetUseTrMalloc_Private();
   }
 #else
-  if (OptionsHasName(PETSC_NULL,"-trdump") || OptionsHasName(PETSC_NULL,"-trmalloc")) {
+  OptionsHasName(PETSC_NULL,"-trdump",&flg1);
+  OptionsHasName(PETSC_NULL,"-trmalloc",&flg2);
+  if (flg1 || flg2)) {
     PetscSetUseTrMalloc_Private();
   }
 #endif
-  if (OptionsHasName(PETSC_NULL,"-malloc_debug")) {
+  OptionsHasName(PETSC_NULL,"-malloc_debug",&flg1);
+  if (flg1) {
     TrDebugLevel(1);
 #if defined(PARCH_sun4) && defined(PETSC_BOPT_g)
     malloc_debug(2);
 #endif
   }
-  if (OptionsHasName(PETSC_NULL,"-v")||OptionsHasName(PETSC_NULL,"-version")||
-      OptionsHasName(PETSC_NULL,"-help")){
+  OptionsHasName(PETSC_NULL,"-v",&flg1);
+  OptionsHasName(PETSC_NULL,"-version",&flg2)
+  OptionsHasName(PETSC_NULL,"-help",&flg3)
+  if (flg1 || flg2 || flg3 ){
     MPIU_printf(comm,"--------------------------------------------\
 ------------------------------\n");
     MPIU_printf(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
@@ -299,13 +315,16 @@ int OptionsCheckInitial_Private()
     MPIU_printf(comm,"--------------------------------------------\
 ---------------------------\n");
   }
-  if (OptionsHasName(PETSC_NULL,"-fp_trap")) {
+  OptionsHasName(PETSC_NULL,"-fp_trap",&flg1);
+  if (flg1) {
     PetscSetFPTrap(FP_TRAP_ALWAYS);
   }
-  if (OptionsHasName(PETSC_NULL,"-on_error_abort")) {
+  OptionsHasName(PETSC_NULL,"-on_error_abort",&flg1);
+  if (flg1) {
     PetscPushErrorHandler(PetscAbortErrorHandler,0);
   }
-  if (OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64)) {
+  OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64,&flg1);
+  if (flg1) {
     char *debugger = 0, *display = 0;
     int  xterm     = 1, sfree = 0;
     if (PetscStrstr(string,"noxterm")) xterm = 0;
@@ -732,21 +751,21 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value)
 .  name - the option one is seeking 
 .  pre - string to prepend to the name or PETSC_NULL
 
-   Returns:
-$   1 if the option is found;
-$   0 if the option is not found;
-$  -1 if an error is detected.
+   Output Parameters:
+.   flg - 1 if found else 0.
+
 
 .keywords: options, database, has, name
 
 .seealso: OptionsGetInt(), OptionsGetDouble(),
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsHasName(char* pre,char *name)
+int OptionsHasName(char* pre,char *name,int *flg)
 {
   char *value;
-  if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
-  return 1;
+  if (!OptionsFindPair_Private(pre,name,&value)) *flg = 0;
+  else *flg = 1;
+  return 0;
 }
 
 /*@C
@@ -759,24 +778,20 @@ int OptionsHasName(char* pre,char *name)
 
    Output Parameter:
 .  ivalue - the integer value to return
-
-   Returns:
-$   1 if the option is found;
-$   0 if the option is not found;
-$  -1 if an error is detected.
+.  flg - 1 if found, else 0
 
 .keywords: options, database, get, int
 
 .seealso: OptionsGetDouble(), OptionsHasName(), OptionsGetString(),
           OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetInt(char*pre,char *name,int *ivalue)
+int OptionsGetInt(char*pre,char *name,int *ivalue,int *flg)
 {
   char *value;
-  if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
+  if (!OptionsFindPair_Private(pre,name,&value)) {*flg = 0; return 0;}
   if (!value) SETERRQ(-1,"OptionsGetInt:Missing value for option");
   *ivalue = atoi(value);
-  return 1; 
+  *flg = 1; return 0; 
 } 
 
 /*@C
@@ -789,24 +804,20 @@ int OptionsGetInt(char*pre,char *name,int *ivalue)
 
    Output Parameter:
 .  dvalue - the double value to return
-
-   Returns:
-$   1 if the option is found;
-$   0 if the option is not found;
-$  -1 if an error is detected.
+.  flg - 1 if found, 0 if not found
 
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetDouble(char* pre,char *name,double *dvalue)
+int OptionsGetDouble(char* pre,char *name,double *dvalue,int *flg)
 {
   char *value;
-  if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
+  if (!OptionsFindPair_Private(pre,name,&value)) {*flg = 0; return 0;}
   if (!value) SETERRQ(-1,"OptionsGetDouble:Missing value for option");
   *dvalue = atof(value);
-  return 1; 
+  *flg = 1; return 0; 
 } 
 
 /*@C
@@ -820,24 +831,20 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue)
 
    Output Parameter:
 .  dvalue - the double value to return
-
-   Returns:
-$   1 if the option is found;
-$   0 if the option is not found;
-$  -1 if an error is detected.
+.  flg - 1 if found, else 0
 
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetScalar(char* pre,char *name,Scalar *dvalue)
+int OptionsGetScalar(char* pre,char *name,Scalar *dvalue,int *flg)
 {
   char *value;
-  if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
+  if (!OptionsFindPair_Private(pre,name,&value)) {*flg = 0; return 0;}
   if (!value) SETERRQ(-1,"OptionsGetScalar:Missing value for option");
   *dvalue = atof(value);
-  return 1; 
+  *flg = 1; return 0; 
 } 
 
 /*@C
@@ -853,21 +860,19 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue)
    Output Parameters:
 .  dvalue - the double value to return
 .  nmax - actual number of values retreived
-
-   Returns:
-$   1 if the option is found;
-$   0 if the option is not found;
-$  -1 if an error is detected.
+.  flg - 1 if found, else 0
 
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray()
 @*/
-int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax)
+int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *flg)
 {
   char *value;
   int  n = 0;
+   
+  *flg = 0;
   if (!OptionsFindPair_Private(pre,name,&value)) {*nmax = 0; return 0;}
   value = PetscStrtok(value,",");
   while (n < *nmax) {
@@ -877,7 +882,8 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax)
     n++;
   }
   *nmax = n;
-  return 1; 
+  *flg = 1;
+  return 0; 
 } 
 
 /*@C
@@ -893,21 +899,19 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax)
    Output Parameter:
 .  dvalue - the integer values to return
 .  nmax - actual number of values retreived
-
-   Returns:
-$   1 if the option is found;
-$   0 if the option is not found;
-$  -1 if an error is detected.
+.  flg - 1 if found, else 0
 
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetDoubleArray()
 @*/
-int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax)
+int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
 {
   char *value;
   int  n = 0;
+
+  *flg = 0;
   if (!OptionsFindPair_Private(pre,name,&value)) {*nmax = 0; return 0;}
   value = PetscStrtok(value,",");
   while (n < *nmax) {
@@ -917,6 +921,7 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax)
     n++;
   }
   *nmax = n;
+  *flg = 1;
   return 1; 
 } 
 
@@ -931,21 +936,18 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax)
 
    Output Parameter:
 .  string - location to copy string
-
-   Returns:
-$   1 if the option is found;
-$   0 if the option is not found;
-$  -1 if an error is detected.
+.  flg - 1 if found, else 0
 
 .keywords: options, database, get, string
 
 .seealso: OptionsGetInt(), OptionsGetDouble(),  
            OptionsHasName(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetString(char *pre,char *name,char *string,int len)
+int OptionsGetString(char *pre,char *name,char *string,int len, int *flg)
 {
   char *value;
-  if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
+  if (!OptionsFindPair_Private(pre,name,&value)) {*flg = 0; return 0;}
+  *flg = 1;
   if (value) PetscStrncpy(string,value,len);
   else PetscMemzero(string,len);
   return 1; 

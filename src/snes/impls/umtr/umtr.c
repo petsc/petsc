@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.25 1996/01/08 23:48:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.26 1996/01/12 03:56:03 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -276,13 +276,21 @@ int SNESConverged_UMTR(SNES snes,double xnorm,double gnorm,double f,
 static int SNESSetFromOptions_UMTR(SNES snes)
 {
   SNES_UMTR *ctx = (SNES_UMTR *)snes->data;
-  double  tmp;
-  if (OptionsGetDouble(snes->prefix,"-eta1",&tmp)) {ctx->eta1 = tmp;}
-  if (OptionsGetDouble(snes->prefix,"-eta2",&tmp)) {ctx->eta2 = tmp;}
-  if (OptionsGetDouble(snes->prefix,"-eta3",&tmp)) {ctx->eta3 = tmp;}
-  if (OptionsGetDouble(snes->prefix,"-eta4",&tmp)) {ctx->eta4 = tmp;}
-  if (OptionsGetDouble(snes->prefix,"-delta0",&tmp)) {ctx->delta0 = tmp;}
-  if (OptionsGetDouble(snes->prefix,"-factor1",&tmp)) {ctx->factor1 = tmp;}
+  double    tmp;
+  int       ierr, flg;
+
+  ierr = OptionsGetDouble(snes->prefix,"-eta1",&tmp,&flg); CHKERRQ(ierr);
+  if (flg) {ctx->eta1 = tmp;}
+  ierr = OptionsGetDouble(snes->prefix,"-eta2",&tmp,&flg) CHKERRQ(ierr);
+  if (flg) {ctx->eta2 = tmp;}
+  ierr = OptionsGetDouble(snes->prefix,"-eta3",&tmp,&flg) CHKERRQ(ierr);
+  if (flg) {ctx->eta3 = tmp;}
+  ierr = OptionsGetDouble(snes->prefix,"-eta4",&tmp,&flg) CHKERRQ(ierr);
+  if (flg) {ctx->eta4 = tmp;}
+  ierr = OptionsGetDouble(snes->prefix,"-delta0",&tmp,&flg) CHKERRQ(ierr);
+  if (flg) {ctx->delta0 = tmp;}
+  ierr = OptionsGetDouble(snes->prefix,"-factor1",&tmp,&flg) CHKERRQ(ierr);
+  if (flg) {ctx->factor1 = tmp;}
   return 0;
 }
 /*------------------------------------------------------------*/

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.27 1995/12/21 18:29:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.28 1996/01/01 01:01:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests various vector routines\n\n";
@@ -13,13 +13,13 @@ static char help[] = "Tests various vector routines\n\n";
 
 int main(int argc,char **argv)
 {
-  int      n = 20, ierr;
+  int      n = 20, ierr,flg;
   Scalar   one = 1.0, two = 2.0, three = 3.0, dots[3],dot;
   double   norm,v;
   Vec      x,y,w,*z;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n);
+  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
 
   /* create a vector */
   ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);

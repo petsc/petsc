@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.21 1995/11/30 22:36:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.22 1995/12/21 18:34:32 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests various DA routines.\n\n";
@@ -13,19 +13,19 @@ static char help[] = "Tests various DA routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  int      rank, M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr;
+  int      rank, M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr,flg;
   DA       da;
-  Draw  win;
+  Draw     win;
   Vec      local, global;
   Scalar   value;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,300,300,&win); CHKERRA(ierr);
 
-  OptionsGetInt(PETSC_NULL,"-M",&M);
-  OptionsGetInt(PETSC_NULL,"-N",&N);
-  OptionsGetInt(PETSC_NULL,"-m",&m);
-  OptionsGetInt(PETSC_NULL,"-n",&n);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
                     M,N,m,n,1,1,&da); CHKERRA(ierr);

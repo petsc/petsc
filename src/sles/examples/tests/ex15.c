@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex15.c,v 1.1 1995/12/23 23:18:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.2 1996/01/01 01:04:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "SLES on an operator with a null space.\n\n";
@@ -12,13 +12,13 @@ int main(int argc,char **args)
   Vec     x, b, u;      /* approx solution, RHS, exact solution */
   Mat     A;            /* linear system matrix */
   SLES    sles;         /* SLES context */
-  int     ierr, i, n = 10, col[3], its,i1,i2;
+  int     ierr, i, n = 10, col[3], its,i1,i2,flg;
   Scalar  none = -1.0, value[3],avalue;
   double  norm;
   PC      pc;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n);
+  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
 
   /* Create vectors */
   ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);

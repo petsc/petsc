@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.16 1996/01/03 22:49:56 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.17 1996/01/09 03:33:16 curfman Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -54,23 +54,23 @@ int main(int argc,char **argv)
   int        my=10;                 /* discretization in y-direction */
   int        Nx=PETSC_DECIDE;       /* processors in x-direction */
   int        Ny=PETSC_DECIDE;       /* processors in y-direction */
-  int        ierr, its, nfails, size;
+  int        ierr, its, nfails, size,flg;
   double     one = 1.0;
   SLES       sles;
   PC         pc;
 
   PetscInitialize(&argc,&argv,0,0,help);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
-  OptionsGetInt(PETSC_NULL,"-Nx",&Nx);
-  OptionsGetInt(PETSC_NULL,"-Ny",&Ny);
+  OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg);
+  OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
     SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
 
   /* Set up user-defined work space */
   user.param = 5.0;
-  OptionsGetDouble(PETSC_NULL,"-par",&user.param);
-  OptionsGetInt(PETSC_NULL,"-my",&my);
-  OptionsGetInt(PETSC_NULL,"-mx",&mx);
+  OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);
+  OptionsGetInt(PETSC_NULL,"-my",&my,&flg);
+  OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg);
   user.ndim = mx * my;
   user.mx = mx;
   user.my = my;
@@ -99,7 +99,8 @@ int main(int argc,char **argv)
   ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user); CHKERRA(ierr);
 
   /* Either explicitly form Hessian matrix approx or use matrix-free version */
-  if (OptionsHasName(PETSC_NULL,"-snes_mf")) {
+  OptionsHasName(PETSC_NULL,"-snes_mf",&flg);
+  if (flg) {
     ierr = MatShellCreate(MPI_COMM_WORLD,user.ndim,user.ndim,(void*)&user,&H);
            CHKERRA(ierr);
     ierr = MatShellSetMult(H,HessianProduct); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.19 1996/01/06 19:32:52 curfman Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.20 1996/01/12 03:56:05 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -125,15 +125,22 @@ static int SNESSetFromOptions_UMLS(SNES snes)
 {
   SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
   double    tmp;
-  int       itmp;
+  int       itmp,ierr,flg;
 
-  if (OptionsGetDouble(snes->prefix,"-gamma_factor",&tmp)) {ctx->gamma_factor = tmp;}
-  if (OptionsGetInt(snes->prefix,"-maxfev",&itmp)) {ctx->maxfev = itmp;}
-  if (OptionsGetDouble(snes->prefix,"-ftol",&tmp)) {ctx->ftol = tmp;}
-  if (OptionsGetDouble(snes->prefix,"-gtol",&tmp)) {ctx->gtol = tmp;}
-  if (OptionsGetDouble(snes->prefix,"-rtol",&tmp)) {ctx->rtol = tmp;}
-  if (OptionsGetDouble(snes->prefix,"-stepmin",&tmp)) {ctx->stepmin = tmp;}
-  if (OptionsGetDouble(snes->prefix,"-stepmax",&tmp)) {ctx->stepmax = tmp;}
+  ierr = OptionsGetDouble(snes->prefix,"-gamma_factor",&tmp); CHKERRQ(ierr);
+  if (flg) {ctx->gamma_factor = tmp;}
+  ierr = OptionsGetInt(snes->prefix,"-maxfev",&itmp); CHKERRQ(ierr);
+  if (flg) {ctx->maxfev = itmp;}
+  ierr = OptionsGetDouble(snes->prefix,"-ftol",&tmp); CHKERRQ(ierr);
+  if (flg) {ctx->ftol = tmp;}
+  ierr = OptionsGetDouble(snes->prefix,"-gtol",&tmp); CHKERRQ(ierr);
+  if (flg) {ctx->gtol = tmp;}
+  ierr = OptionsGetDouble(snes->prefix,"-rtol",&tmp); CHKERRQ(ierr);
+  if (flg) {ctx->rtol = tmp;}
+  ierr = OptionsGetDouble(snes->prefix,"-stepmin",&tmp); CHKERRQ(ierr);
+  if (flg) {ctx->stepmin = tmp;}
+  ierr = OptionsGetDouble(snes->prefix,"-stepmax",&tmp); CHKERRQ(ierr);
+  if (flg) {ctx->stepmax = tmp;}
   return 0;
 }
 /*------------------------------------------------------------*/

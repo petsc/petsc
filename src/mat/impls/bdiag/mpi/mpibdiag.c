@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.65 1996/01/02 20:16:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.66 1996/01/03 16:10:11 curfman Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -807,21 +807,22 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
 {
   Mat          mat;
   Mat_MPIBDiag *mbd;
-  int          ierr, i, k, *ldiag, len, dset = 0, nd2;
+  int          ierr, i, k, *ldiag, len, dset = 0, nd2,ierr,flg1,flg2;
   Scalar       **ldiagv = 0;
 
   *newmat       = 0;
   if (nb == PETSC_DEFAULT) nb = 1;
   if (nd == PETSC_DEFAULT) nd = 0;
-  OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb);
-  OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg1); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd,&flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag_dvals",&flg2); CHKERRQ(ierr);
   if (nd && diag == PETSC_NULL) {
     diag = (int *)PetscMalloc(nd * sizeof(int)); CHKPTRQ(diag);
     nd2 = nd; dset = 1;
-    OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_dvals",diag,&nd2);
+    ierr = OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_dvals",diag,&nd2,&flg1);CHKERRQ(ierr);
     if (nd2 != nd)
       SETERRQ(1,"MatCreateSeqBDiag: Incompatible number of diags and diagonal vals");
-  } else if (OptionsHasName(PETSC_NULL,"-mat_bdiag_dvals")) {
+  } else if (flg2) {
     SETERRQ(1,"MatCreate: Must specify number of diagonals with -mat_bdiag_ndiag");
   }
 
@@ -921,7 +922,8 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   /* used for MatSetValues() input */
   mbd->roworiented = 1;
 
-  if (OptionsHasName(PETSC_NULL,"-help")) {
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
+  if (flg1) {
     ierr = MatPrintHelp(mat); CHKERRQ(ierr);
   }
 
@@ -1072,7 +1074,7 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
 
   nb = 1;   /* uses a block size of 1 by default; maybe need a different options
               database key, since this is used for MatCreate() also? */
-  OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg);CHKERRQ(ierr);
   ierr = MatCreateMPIBDiag(comm,m,M,N,0,nb,PETSC_NULL,PETSC_NULL,newmat); CHKERRQ(ierr);
   A = *newmat;
 

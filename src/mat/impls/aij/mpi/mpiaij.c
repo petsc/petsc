@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.107 1996/01/04 15:53:01 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.108 1996/01/04 15:58:58 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1454,7 +1454,7 @@ static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
 {
   Mat        mat;
   Mat_MPIAIJ *a,*oldmat = (Mat_MPIAIJ *) matin->data;
-  int        ierr, len;
+  int        ierr, len,flg;
 
   if (!oldmat->assembled) SETERRQ(1,"MatConvertSameType_MPIAIJ:Must assemble matrix");
   *newmat       = 0;
@@ -1503,7 +1503,8 @@ static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
   PLogObjectParent(mat,a->A);
   ierr =  MatConvert(oldmat->B,MATSAME,&a->B); CHKERRQ(ierr);
   PLogObjectParent(mat,a->B);
-  if (OptionsHasName(PETSC_NULL,"-help")) {
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg) CHKERRQ(ierr);
+  if (flg) {
     ierr = MatPrintHelp(mat); CHKERRQ(ierr);
   }
   *newmat = mat;

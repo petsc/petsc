@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.15 1995/11/30 22:36:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.16 1995/12/21 18:34:32 bsmith Exp bsmith $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -13,29 +13,28 @@ static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  int            rank,M = 10, N = 8, m = PETSC_DECIDE,ierr;
+  int            rank,M = 10, N = 8, m = PETSC_DECIDE,ierr,flg;
   int            s=2, w=2,n = PETSC_DECIDE ;
   DAPeriodicType wrap = DA_NONPERIODIC;
   DA             da;
-  Draw        win;
+  Draw           win;
   Vec            local,global;
   Scalar         value;
   DAStencilType  st = DA_STENCIL_BOX;
  
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,400,400,&win);
-  CHKERRA(ierr);
+  ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,400,400,&win);CHKERRA(ierr);
  
-  OptionsGetInt(PETSC_NULL,"-M",&M);
-  OptionsGetInt(PETSC_NULL,"-N",&N);
-  OptionsGetInt(PETSC_NULL,"-m",&m);
-  OptionsGetInt(PETSC_NULL,"-n",&n);
-  OptionsGetInt(PETSC_NULL,"-s",&s);
-  OptionsGetInt(PETSC_NULL,"-w",&w);
-  if (OptionsHasName(PETSC_NULL,"-xwrap")) wrap = DA_XPERIODIC;
-  if (OptionsHasName(PETSC_NULL,"-ywrap")) wrap = DA_YPERIODIC;
-  if (OptionsHasName(PETSC_NULL,"-xywrap")) wrap = DA_XYPERIODIC;
-  if (OptionsHasName(PETSC_NULL,"-star")) st = DA_STENCIL_STAR;
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,&flg);CHKERRA(ierr);
+  OptionsHasName(PETSC_NULL,"-xwrap",&flg); if (flg) wrap = DA_XPERIODIC;
+  OptionsHasName(PETSC_NULL,"-ywrap",&flg); if(flg)  wrap = DA_YPERIODIC;
+  OptionsHasName(PETSC_NULL,"-xywrap",&flg); if(flg) wrap = DA_XYPERIODIC;
+  OptionsHasName(PETSC_NULL,"-star",&flg); if(flg)   st = DA_STENCIL_STAR;
 
   ierr = DACreate2d(MPI_COMM_WORLD,wrap,st,M,N,m,n,w,s,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);

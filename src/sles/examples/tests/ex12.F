@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.7 1995/12/07 21:24:05 balay Exp bsmith $";
+C      "$Id: ex12.F,v 1.8 1995/12/21 18:33:14 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -14,7 +14,7 @@ C        -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil
 C                          use the file petsc/src/mat/examples/mat.ex.binary
 C
 
-      integer          ierr, its
+      integer          ierr, its, flg
       double precision time, norm,none
       Vec              x, b, u
       Mat              A
@@ -27,7 +27,7 @@ C
       call PetscInitialize(ierr)
 
 C Read in matrix and RHS
-      call OptionsGetString(PETSC_NULL,'-f',f,ierr)
+      call OptionsGetString(PETSC_NULL,'-f',f,flg,ierr)
       call ViewerFileOpenBinary(MPI_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f

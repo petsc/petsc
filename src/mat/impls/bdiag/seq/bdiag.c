@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.81 1996/01/03 15:35:50 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.82 1996/01/03 16:09:53 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1478,21 +1478,22 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
 {
   Mat          A;
   Mat_SeqBDiag *a;
-  int          i, nda, sizetot, ierr, dset = 0, nd2;
+  int          i, nda, sizetot, ierr, dset = 0, nd2,ierr,flg1,flg2;
 
   *newmat       = 0;
   if (nb == PETSC_DEFAULT) nb = 1;
   if (nd == PETSC_DEFAULT) nd = 0;
-  OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb);
-  OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg1); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd,&flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag_dvals",&flg2); CHKERRQ(ierr);
   if (nd && diag == PETSC_NULL) {
     diag = (int *)PetscMalloc(nd * sizeof(int)); CHKPTRQ(diag);
     nd2 = nd; dset = 1;
-    OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_dvals",diag,&nd2);
+    ierr = OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_dvals",diag,&nd2,&flg1);CHKERRQ(ierr);
     if (nd2 != nd)
-      SETERRQ(1,"MatCreateSeqBDiag: Incompatible number of diags and diagonal vals");
-  } else if (OptionsHasName(PETSC_NULL,"-mat_bdiag_dvals")) {
-    SETERRQ(1,"MatCreate: Must specify number of diagonals with -mat_bdiag_ndiag");
+      SETERRQ(1,"MatCreateSeqBDiag:Incompatible number of diags and diagonal vals");
+  } else if (flg2) {
+    SETERRQ(1,"MatCreate:Must specify number of diagonals with -mat_bdiag_ndiag");
   }
 
   if ((n%nb) || (m%nb)) SETERRQ(1,"MatCreateSeqBDiag:Invalid block size");
@@ -1562,7 +1563,8 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   a->nz          = a->maxnz; /* Currently not keeping track of exact count */
   a->assembled   = 0;
   a->roworiented = 1;
-  if (OptionsHasName(PETSC_NULL,"-help")) {
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
+  if (flg) {
     ierr = MatPrintHelp(A); CHKERRQ(ierr);
   }
   if (dset) PetscFree(diag);
@@ -1600,7 +1602,7 @@ int MatLoad_SeqBDiag(Viewer bview,MatType type,Mat *A)
   Mat_SeqBDiag *a;
   Mat          B;
   int          *scols, i, nz, ierr, fd, header[4], size;
-  int          nb, *rowlengths = 0,M,N,*cols;
+  int          nb, *rowlengths = 0,M,N,*cols,flg;
   Scalar       *vals, *svals;
   PetscObject  vobj = (PetscObject) bview;
   MPI_Comm     comm = vobj->comm;
@@ -1618,7 +1620,7 @@ int MatLoad_SeqBDiag(Viewer bview,MatType type,Mat *A)
 
   /* create our matrix */
   nb = 1;
-  OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg); CHKERRQ(ierr);
   ierr = MatCreateSeqBDiag(comm,M,N,0,nb,PETSC_NULL,PETSC_NULL,A); CHKERRQ(ierr);
   B = *A;
   a = (Mat_SeqBDiag *) B->data;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.65 1996/01/03 16:11:06 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.66 1996/01/12 03:54:11 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -27,72 +27,86 @@ static char vcid[] = "$Id: gcreate.c,v 1.65 1996/01/03 16:11:06 curfman Exp bsmi
 
 int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 {
-  int  size;
+  int  size,flg1,flg2,flg3,flg4,flg5,flg6,flg7,flg8,flg9,flg10,flg11,flg12,flg13,ierr;
   char p[64];
 
   PetscStrcpy(p,"-");
   if (pre) PetscStrcat(p,pre);
 
   MPI_Comm_size(comm,&size);
-  if (OptionsHasName(PETSC_NULL,"-help")) {
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
+  if (flg1) {
     MPIU_printf(comm,"Matrix format options:\n");
     MPIU_printf(comm,"  %smat_aij, %smat_seqaij, %smat_mpiaij\n",p,p,p);
     MPIU_printf(comm,"  %smat_row, %smat_seqrow, %smat_mpirow\n",p,p,p);
     MPIU_printf(comm,"  %smat_dense, %smat_seqdense, %smat_mpidense\n",p,p,p);
     MPIU_printf(comm,"  %smat_mpirowbs, %smat_bdiag, %smat_seqbdiag, %smat_mpibdiag\n",p,p,p,p); 
   }
-  if (OptionsHasName(pre,"-mat_seqdense")) {
+  ierr = OptionsHasName(pre,"-mat_seqdense",&flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_mpidense",&flg2); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_seqbdiag",&flg3); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_mpibdiag",&flg4); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_mpirowbs",&flg5); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_mpirow",&flg6); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_seqrow",&flg7); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_mpiaij",&flg8); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_seqaij",&flg9); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_aij",&flg10); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_row",&flg11); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_bdiag",&flg12); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_dense",&flg13); CHKERRQ(ierr);
+  if (flg1) {
     *type = MATSEQDENSE;
     *set = 1;
   }
-  else if (OptionsHasName(pre,"-mat_mpidense")) {
+  else if (flg2) {
     *type = MATMPIDENSE;
     *set = 1;
   }
-  else if (OptionsHasName(pre,"-mat_seqbdiag")) {
+  else if (flg3) {
     *type = MATSEQBDIAG;
     *set = 1;
   }
-  else if (OptionsHasName(pre,"-mat_mpibdiag")) {
+  else if (flg4) {
     *type = MATMPIBDIAG;
     *set = 1;
   }
-  else if (OptionsHasName(pre,"-mat_mpirowbs")) {
+  else if (flg5) {
     *type = MATMPIROWBS;
     *set = 1;
   }
-  else if (OptionsHasName(pre,"-mat_mpirow")) {
+  else if (flg6) {
     *type = MATMPIROW;
     *set = 1;
   }
-  else if (OptionsHasName(pre,"-mat_seqrow")){
+  else if (flg7){
     *type = MATSEQROW;
     *set = 1;
   }
-  else if (OptionsHasName(pre,"-mat_mpiaij")) {
+  else if (flg8) {
     *type = MATMPIAIJ;
     *set = 1;
   }
-  else if (OptionsHasName(pre,"-mat_seqaij")){
+  else if (flg9){
     *type = MATSEQAIJ;
     *set = 1;
   }
-  else if (OptionsHasName(pre,"-mat_aij")){
+  else if (flg10){
     if (size == 1) *type = MATSEQAIJ;
     else *type = MATMPIAIJ;
     *set = 1;
   }  
-  else if (OptionsHasName(pre,"-mat_row")){
+  else if (flg11){
     if (size == 1) *type = MATSEQROW;
     else *type = MATMPIROW;
     *set = 1;
   }  
-  else if (OptionsHasName(pre,"-mat_bdiag")){
+  else if (flg12){
     if (size == 1) *type = MATSEQBDIAG;
     else *type = MATMPIBDIAG;
     *set = 1;
   }  
-  else if (OptionsHasName(pre,"-mat_dense")){
+  else if (flg13){
     if (size == 1) *type = MATSEQDENSE;
     else *type = MATMPIDENSE;
     *set = 1;

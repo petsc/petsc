@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.28 1996/01/01 01:05:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.29 1996/01/11 20:15:19 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -26,12 +26,12 @@ int main( int argc, char **argv )
   PC           pc;                   /* PC context */
   Vec          x, r, F;              /* solution, residual, work vector */
   Mat          J, JPrec;             /* Jacobian, preconditioner matrices */
-  int          ierr, its, n = 5, i;
+  int          ierr, its, n = 5, i,flg;
   double       h, xp = 0.0;
   Scalar       v;
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  OptionsGetInt(PETSC_NULL,"-n",&n);
+  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
   h = 1.0/(n-1);
 
   /* Set up data structures */
@@ -58,10 +58,12 @@ int main( int argc, char **argv )
   ierr = SNESSetJacobian(snes,J,JPrec,FormJacobian,0); CHKERRA(ierr);
 
   /* Set preconditioner for matrix-free method */
-  if (OptionsHasName(PETSC_NULL,"-snes_mf")) {
+  OptionsHasName(PETSC_NULL,"-snes_mf",&flg);
+  if (flg) {
     ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    if (OptionsHasName(PETSC_NULL,"-user_precond")) { /* user-defined precond */
+    OptionsHasName(PETSC_NULL,"-user_precond",&flg)
+    if (flg) { /* user-defined precond */
       ierr = PCSetType(pc,PCSHELL); CHKERRA(ierr);
       ierr = PCShellSetApply(pc,MatrixFreePreconditioner,PETSC_NULL); CHKERRA(ierr);
     } else {ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);}

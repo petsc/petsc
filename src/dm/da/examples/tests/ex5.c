@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.13 1995/12/21 18:34:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.14 1996/01/11 20:15:30 bsmith Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -17,7 +17,7 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 
 int main(int argc,char **argv)
 {
-  int       rank, size, M = 14, ierr, time_steps = 1000, w=1, s=1, a=1;
+  int       rank, size, M = 14, ierr, time_steps = 1000, w=1, s=1, a=1,flg;
   DA        da;
   Draw   win;
   Vec       local, global, copy;
@@ -27,8 +27,8 @@ int main(int argc,char **argv)
  
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
 
-  OptionsGetInt(PETSC_NULL,"-M",&M);
-  OptionsGetInt(PETSC_NULL,"-time",&time_steps);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg); CHKERRA(ierr);
     
   /* Set up the array */ 
   ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,w,s,&da); CHKERRA(ierr);

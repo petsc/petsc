@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.71 1996/01/09 15:12:01 curfman Exp balay $";
+static char vcid[] = "$Id: itcreate.c,v 1.72 1996/01/12 15:11:34 balay Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -220,7 +220,10 @@ int KSPRegisterDestroy()
 int KSPGetTypeFromOptions_Private(KSP ctx,KSPType *itmethod)
 {
   char sbuf[50];
-  if (OptionsGetString(ctx->prefix,"-ksp_type", sbuf, 50 )) {
+  int  flg,ierr;
+
+  ierr = OptionsGetString(ctx->prefix,"-ksp_type", sbuf, 50,&flg); CHKERRQ(ierr);
+  if (flg) {
     if (!__KSPList) KSPRegisterAll();
     *itmethod = (KSPType)NRFindID( __KSPList, sbuf );
     return 1;

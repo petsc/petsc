@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.124 1996/01/08 19:17:05 balay Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.125 1996/01/09 03:30:08 curfman Exp bsmith $";
 #endif
 
 /*
@@ -467,11 +467,11 @@ int MatILUFactor(Mat mat,IS row,IS col,double f,int level)
 @*/
 int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
 {
-  int ierr;
+  int ierr,flg;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!fact) SETERRQ(1,"MatLUFactorSymbolic:Missing factor matrix argument");
   if (!mat->ops.lufactorsymbolic) SETERRQ(PETSC_ERR_SUP,"MatLUFactorSymbolic");
-  OptionsGetDouble(PETSC_NULL,"-mat_lu_fill",&f);
+  ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_fill",&f,&flg); CHKERRQ(ierr);
   PLogEventBegin(MAT_LUFactorSymbolic,mat,row,col,0); 
   ierr = (*mat->ops.lufactorsymbolic)(mat,row,col,f,fact); CHKERRQ(ierr);
   PLogEventEnd(MAT_LUFactorSymbolic,mat,row,col,0); 
@@ -499,14 +499,16 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
 @*/
 int MatLUFactorNumeric(Mat mat,Mat *fact)
 {
-  int ierr;
+  int ierr,flg;
+
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!fact) SETERRQ(1,"MatLUFactorNumeric:Missing factor matrix argument");
   if (!mat->ops.lufactornumeric) SETERRQ(PETSC_ERR_SUP,"MatLUFactorNumeric");
   PLogEventBegin(MAT_LUFactorNumeric,mat,*fact,0,0); 
   ierr = (*mat->ops.lufactornumeric)(mat,fact); CHKERRQ(ierr);
   PLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0); 
-  if (OptionsHasName(PETSC_NULL,"-mat_view_draw")) {
+  ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw"); CHKERRQ(ierr);
+  if (flg) {
     Draw    win;
     ierr = DrawOpenX((*fact)->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
     ierr = MatView(*fact,(Viewer)win); CHKERRQ(ierr);
@@ -1120,29 +1122,33 @@ $  -draw_pause <sec> : Set number of seconds to pause after display
 @*/
 int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
-  int        ierr;
+  int        ierr,flg;
   static int inassm = 0;
+
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   inassm++;
   PLogEventBegin(MAT_AssemblyEnd,mat,0,0,0);
   if (mat->ops.assemblyend) {ierr = (*mat->ops.assemblyend)(mat,type); CHKERRQ(ierr);}
   PLogEventEnd(MAT_AssemblyEnd,mat,0,0,0);
   if (inassm == 1) {
-    if (OptionsHasName(PETSC_NULL,"-mat_view_info")) {
+    ierr = OptionsHasName(PETSC_NULL,"-mat_view_info",&flg); CHKERRQ(ierr);
+    if (flg) {
       Viewer viewer;
       ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
       ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_INFO,0);CHKERRQ(ierr);
       ierr = MatView(mat,viewer); CHKERRQ(ierr);
       ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     }
-    if (OptionsHasName(PETSC_NULL,"-mat_view_info_detailed")) {
+    ierr = OptionsHasName(PETSC_NULL,"-mat_view_info_detailed",&flg); CHKERRQ(ierr);
+    if (flg) {
       Viewer viewer;
       ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
       ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_INFO_DETAILED,0);CHKERRQ(ierr);
       ierr = MatView(mat,viewer); CHKERRQ(ierr);
       ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     }
-    if (OptionsHasName(PETSC_NULL,"-mat_view_draw")) {
+    ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
+    if (flg) {
       Draw    win;
       ierr = DrawOpenX(mat->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
       ierr = MatView(mat,(Viewer)win); CHKERRQ(ierr);
@@ -1358,15 +1364,15 @@ int MatGetOwnershipRange(Mat mat,int *m,int* n)
 @*/
 int MatILUFactorSymbolic(Mat mat,IS row,IS col,double f,int fill,Mat *fact)
 {
-  int ierr;
+  int ierr,flg;
+
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (fill < 0) SETERRQ(1,"MatILUFactorSymbolic:Levels of fill negative");
   if (!fact) SETERRQ(1,"MatILUFactorSymbolic:Fact argument is missing");
   if (!mat->ops.ilufactorsymbolic) SETERRQ(PETSC_ERR_SUP,"MatILUFactorSymbolic");
-  OptionsGetDouble(PETSC_NULL,"-mat_ilu_fill",&f);
+  ierr = OptionsGetDouble(PETSC_NULL,"-mat_ilu_fill",&f,&flg); CHKERRQ(ierr);
   PLogEventBegin(MAT_ILUFactorSymbolic,mat,row,col,0);
-  ierr = (*mat->ops.ilufactorsymbolic)(mat,row,col,f,fill,fact); 
-  CHKERRQ(ierr);
+  ierr = (*mat->ops.ilufactorsymbolic)(mat,row,col,f,fill,fact); CHKERRQ(ierr);
   PLogEventEnd(MAT_ILUFactorSymbolic,mat,row,col,0);
   return 0;
 }

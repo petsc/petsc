@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.23 1996/01/09 00:46:34 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.24 1996/01/09 01:13:54 curfman Exp bsmith $";
 #endif
 
 /*
@@ -825,7 +825,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *ne
 {
   Mat          mat;
   Mat_MPIDense *a;
-  int          ierr, i;
+  int          ierr, i,flg;
 
 /* Note:  For now, when data is specified above, this assumes the user correctly
    allocates the local dense storage space.  We should add error checking. */
@@ -887,7 +887,8 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *ne
   a->roworiented = 1;
 
   *newmat = mat;
-  if (OptionsHasName(PETSC_NULL,"-help")) {
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
+  if (flg) {
     ierr = MatPrintHelp(mat); CHKERRQ(ierr);
   }
   return 0;

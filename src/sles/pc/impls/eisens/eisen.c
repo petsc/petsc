@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.37 1996/01/01 01:02:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.38 1996/01/12 03:52:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -120,11 +120,14 @@ static int PCDestroy_Eisenstat(PetscObject obj)
 static int PCSetFrom_Eisenstat(PC pc)
 {
   double  omega;
+  int     ierr,flg
 
-  if (OptionsGetDouble(pc->prefix,"-pc_eisenstat_omega",&omega)) {
+  ierr = OptionsGetDouble(pc->prefix,"-pc_eisenstat_omega",&omega,&flg); CHKERRQ(ierr);
+  if (flg) {
     PCEisenstatSetOmega(pc,omega);
   }
-  if (OptionsHasName(pc->prefix,"-pc_eisenstat_diagonal_scaling")) {
+  ierr = OptionsHasName(pc->prefix,"-pc_eisenstat_diagonal_scaling",&flg);CHKERRQ(ierr);
+  if (flg) {
     PCEisenstatUseDiagonalScaling(pc);
   }
   return 0;

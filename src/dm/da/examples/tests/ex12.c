@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.3 1995/11/30 22:35:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.4 1995/12/21 18:33:48 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -20,7 +20,7 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 
 int main(int argc,char **argv)
 {
-  int       rank, size, M = 14, ierr, time_steps = 1000, w=1, s=1, a=1;
+  int       rank, size, M = 14, ierr, time_steps = 1000, w=1, s=1, a=1, flg;
   DA        da;
   Viewer    viewer;
   Vec       local, global, copy;
@@ -30,8 +30,8 @@ int main(int argc,char **argv)
  
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
 
-  OptionsGetInt(PETSC_NULL,"-M",&M);
-  OptionsGetInt(PETSC_NULL,"-time",&time_steps);
+  OptionsGetInt(PETSC_NULL,"-M",&M,&flg);
+  OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);
     
   /* Set up the array */ 
   ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,w,s,&da); CHKERRA(ierr);

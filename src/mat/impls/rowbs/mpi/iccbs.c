@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.4 1995/12/02 19:22:23 curfman Exp curfman $";
+static char vcid[] = "$Id: iccbs.c,v 1.5 1995/12/13 15:47:04 curfman Exp curfman $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve interface.
@@ -176,21 +176,18 @@ int PCBSIterSetFromOptions(PC pc)
 {
   PC_ICC *icc = (PC_ICC *) pc->data;
   PCiBS  *iccbs;
+  int    ierr,flg;
 
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->pmat->type != MATMPIROWBS) return 0;
   iccbs = (PCiBS *) icc->implctx;
-  OptionsGetInt(pc->prefix,"-pc_bs_max_it",&iccbs->max_it);
-  OptionsGetInt(pc->prefix,"-pc_bs_blocksize",&iccbs->blocksize);
-  OptionsGetDouble(pc->prefix,"-pc_bs_rtol",&iccbs->rtol);
-  if (OptionsHasName(pc->prefix,"-pc_bs_guess_zero")) 
+  ierr = OptionsGetInt(pc->prefix,"-pc_bs_max_it",&iccbs->max_it,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(pc->prefix,"-pc_bs_blocksize",&iccbs->blocksize,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(pc->prefix,"-pc_bs_rtol",&iccbs->rtol,&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_bs_guess_zero",&flg);CHKERRQ(ierr); 
+  if (flg) { 
     iccbs->guess_zero = 1;
-/*  if (OptionsHasName(pc->prefix,"-pc_bs_ssor")) 
-    iccbs->pre_option = PRE_SSOR;
-  else if (OptionsHasName(pc->prefix,"-pc_bs_bjacobi")) 
-    iccbs->pre_option = PRE_BJACOBI;
-  else if (OptionsHasName(pc->prefix,"-pc_bs_diag")) 
-    iccbs->pre_option = PRE_DIAG; */
+  }
   return 0;
 }
 

@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.9 1995/11/30 22:34:58 bsmith Exp bsmith $";
+C    "$Id: ex7.F,v 1.10 1995/12/21 18:33:14 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -10,7 +10,7 @@ C
 C  This example demonstrates basic use of the SLES Fortran interface.
 C
       integer          i, j, II, JJ, ierr, m, n
-      integer          rank, size, its, Istart, Iend
+      integer          rank, size, its, Istart, Iend,flg
       double precision v, zero, one, none
       Vec              x, u, b
       Mat              A 
@@ -23,8 +23,8 @@ C
       call PetscInitialize(ierr)
       m = 3
       n = 3
-      call OptionsGetInt(PETSC_NULL,'-m',m,ierr)
-      call OptionsGetInt(PETSC_NULL,'-n',n,ierr)
+      call OptionsGetInt(PETSC_NULL,'-m',m,flg,ierr)
+      call OptionsGetInt(PETSC_NULL,'-n',n,flg,ierr)
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
 

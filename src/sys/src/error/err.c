@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.34 1995/11/30 22:32:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.35 1995/12/21 18:30:34 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -98,7 +98,8 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,int number,
                              char *message,void *ctx)
 {
   static int out_of_memory = 0, no_support = 0;
-  int tid;
+  int        tid,flg;
+
   MPI_Comm_rank(MPI_COMM_WORLD,&tid);
   if (number == PETSC_ERR_MEM && !out_of_memory) {
     if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s %d\n",tid,file,line);
@@ -107,7 +108,8 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,int number,
     fprintf(stderr,"[%d]PETSC ERROR: allocating too large an object or\n",tid);
     fprintf(stderr,"[%d]PETSC ERROR: bleeding by not properly destroying\n",tid);
     fprintf(stderr,"[%d]PETSC ERROR: unneeded objects.\n",tid);
-    if (OptionsHasName(PETSC_NULL,"-trdump")) {
+    OptionsHasName(PETSC_NULL,"-trdump",&flg);
+    if (flg) {
       TrDump(stderr);
     }
     else {

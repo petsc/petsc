@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.30 1995/11/30 22:31:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.31 1995/12/21 18:29:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
@@ -14,13 +14,13 @@ static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
 
 int main(int argc,char **argv)
 {
-  int          n = 5, ierr, size,rank;
+  int          n = 5, ierr, size,rank,flg;
   Scalar       one = 1.0, two = 2.0, three = 3.0;
   Vec          x,y;
   int          idx;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n); if (n < 5) n = 5;
+  OptionsGetInt(PETSC_NULL,"-n",&n,&flg); if (n < 5) n = 5;
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
 

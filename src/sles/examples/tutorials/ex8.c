@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.5 1995/12/21 18:33:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.6 1996/01/01 01:04:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the preconditioner ASM\n\n";
@@ -12,7 +12,7 @@ int main(int argc,char **args)
 {
   Mat     C;
   int     i, j, m = 15, n = 17, its, I, J, ierr, Istart, Iend, N = 1, M = 2;
-  int     overlap = 1, Nsub;
+  int     overlap = 1, Nsub, flg;
   Scalar  v,  one = 1.0;
   Vec     u,b,x;
   SLES    sles;
@@ -20,11 +20,11 @@ int main(int argc,char **args)
   IS      *is;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PETSC_NULL,"-m",&m);   /* mesh lines in x */
-  OptionsGetInt(PETSC_NULL,"-n",&n);   /* mesh lines in y */
-  OptionsGetInt(PETSC_NULL,"-M",&M);   /* subdomains in x */
-  OptionsGetInt(PETSC_NULL,"-N",&N);   /* subdomains in y */
-  OptionsGetInt(PETSC_NULL,"-overlap",&overlap);
+  OptionsGetInt(PETSC_NULL,"-m",&m,&flg);   /* mesh lines in x */
+  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);   /* mesh lines in y */
+  OptionsGetInt(PETSC_NULL,"-M",&M,&flg);   /* subdomains in x */
+  OptionsGetInt(PETSC_NULL,"-N",&N,&flg);   /* subdomains in y */
+  OptionsGetInt(PETSC_NULL,"-overlap",&overlap,&flg);
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,m*n,m*n,5,PETSC_NULL,&C); CHKERRA(ierr);

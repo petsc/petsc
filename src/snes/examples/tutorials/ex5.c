@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.39 1996/01/01 01:05:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.40 1996/01/11 20:15:19 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -59,23 +59,24 @@ int main( int argc, char **argv )
   Mat           J;                         /* Jacobian matrix */
   AppCtx        user;                      /* user's work context */
   DAStencilType stencil = DA_STENCIL_BOX;  /* stencil type for DA */
-  int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, size; 
+  int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE,size,flg1,flg2; 
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  if (OptionsHasName(PETSC_NULL,"-star")) stencil = DA_STENCIL_STAR;
+  OptionsHasName(PETSC_NULL,"-star",&flg1);
+  if (flg1) stencil = DA_STENCIL_STAR;
 
   user.mx = 4; user.my = 4; user.param = 6.0;
-  OptionsGetInt(PETSC_NULL,"-mx",&user.mx); OptionsGetInt(0,"-my",&user.my);
-  OptionsGetDouble(PETSC_NULL,"-par",&user.param);
+  OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg1); OptionsGetInt(0,"-my",&user.my,&flg1);
+  OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg1);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,"Lambda is out of range");
   }
   N = user.mx*user.my;
 
   MPI_Comm_size(MPI_COMM_WORLD,&size);
-  OptionsGetInt(PETSC_NULL,"-Nx",&Nx);
-  OptionsGetInt(PETSC_NULL,"-Ny",&Ny);
+  OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg1);
+  OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg1);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
     SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
  
@@ -96,11 +97,13 @@ int main( int argc, char **argv )
   ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user); CHKERRA(ierr);
 
   /* Set Jacobian evaluation routine */
-  if (OptionsHasName(PETSC_NULL,"-defaultJ")) { /* default finite differences */
+  OptionsHasName(PETSC_NULL,"-defaultJ",&flg1);
+  OptionsHasName(PETSC_NULL,"-matrix_freeJ",&flg2);
+  if (flg1) { /* default finite differences */
     ierr = MatCreate(MPI_COMM_WORLD,N,N,&J); CHKERRA(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,(void *)&user); 
            CHKERRA(ierr);
-  } else if (OptionsHasName(PETSC_NULL,"-matrix_freeJ")) { /* default matrix-free */
+  } else if (flg2) { /* default matrix-free */
     ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
     ierr = SNESSetJacobian(snes,J,J,0,(void *)&user); CHKERRA(ierr);
   } else { /* explicit analytic formation */
@@ -110,7 +113,7 @@ int main( int argc, char **argv )
 
   /* Set up nonlinear solver; then execute it */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  if (OptionsHasName(PETSC_NULL,"-matrix_freeJ")) {
+  if (flg2) {
     /* Force no preconditioning to be used for matrix-free case */
     ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.25 1996/01/01 01:05:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.26 1996/01/11 20:15:19 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -29,11 +29,11 @@ int main( int argc, char **argv )
   ApplicationCtx ctx;                   /* user-defined context */
   Vec            x, r, U, F;
   Scalar         xp, *FF, *UU;
-  int            ierr, its, N = 5, i, start, end, n, set;
+  int            ierr, its, N = 5, i, start, end, n, set,flg;
   MatType        mtype;
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  OptionsGetInt(PETSC_NULL,"-n",&N);
+  OptionsGetInt(PETSC_NULL,"-n",&N,&flg);
   ctx.h = 1.0/(N-1);
 
   MPI_Comm_rank(MPI_COMM_WORLD,&ctx.rank);

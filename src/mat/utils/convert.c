@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.39 1995/12/12 22:55:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.40 1995/12/21 18:33:04 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -15,7 +15,8 @@ static char vcid[] = "$Id: convert.c,v 1.39 1995/12/12 22:55:20 curfman Exp bsmi
 int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
 {
   Scalar *vwork;
-  int    ierr, i, nz, m, n, *cwork, rstart, rend;
+  int    ierr, i, nz, m, n, *cwork, rstart, rend,flg;
+
   ierr = MatGetSize(mat,&m,&n); CHKERRQ(ierr);
   if (newtype == MATSAME) newtype = (MatType)mat->type;
   switch (newtype) {
@@ -48,14 +49,14 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
     case MATSEQBDIAG:
       {
       int nb = 1; /* Default block size = 1 */ 
-      OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb);     
+      ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg);  CHKERRQ(ierr);    
       ierr = MatCreateSeqBDiag(mat->comm,m,n,0,nb,PETSC_NULL,PETSC_NULL,M); CHKERRQ(ierr); 
       break;
       }
     case MATMPIBDIAG:
       {
       int nb = 1; /* Default block size = 1 */ 
-      OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb);     
+      ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg);   CHKERRQ(ierr);   
       ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,0,nb,PETSC_NULL,
              PETSC_NULL,M); CHKERRQ(ierr); 
       break;
@@ -111,14 +112,14 @@ int MatConvert_SeqAIJ(Mat A, MatType newtype, Mat *B)
     case MATSEQBDIAG:
       {
       int nb = 1; /* Default block size = 1 */ 
-      OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb);     
+      ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg);  CHKERRQ(ierr);    
       ierr = MatCreateSeqBDiag(A->comm,m,n,0,nb,PETSC_NULL,PETSC_NULL,B); CHKERRQ(ierr); 
       break;
       }
     case MATMPIBDIAG:
       {
       int nb = 1; /* Default block size = 1 */ 
-      OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb);     
+      ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg); CHKERRQ(ierr);     
       ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,0,nb,PETSC_NULL,
              PETSC_NULL,B); CHKERRQ(ierr); 
       break;

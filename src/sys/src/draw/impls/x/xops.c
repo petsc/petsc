@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.37 1995/12/13 04:16:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.38 1995/12/21 18:33:27 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -327,10 +327,11 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
 {
   Draw   ctx;
   Draw_X *Xwin;
-  int    ierr,size,rank;
+  int    ierr,size,rank,flg;
   char   string[128];
 
-  if (OptionsHasName(PETSC_NULL,"-nox")) {
+  ierr = OptionsHasName(PETSC_NULL,"-nox"); CHKERRQ(ierr);
+  if (flg) {
     return DrawOpenNull(comm,inctx);
   }
 
@@ -346,7 +347,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   ctx->port_xl = 0.0;  ctx->port_xr = 1.0;
   ctx->port_yl = 0.0;  ctx->port_yr = 1.0;
 
-  OptionsGetInt(PETSC_NULL,"-draw_pause",&ctx->pause);
+  ierr = OptionsGetInt(PETSC_NULL,"-draw_pause",&ctx->pause,&flg); CHKERRQ(ierr);
 
   /* actually create and open the window */
   Xwin         = (Draw_X *) PetscMalloc( sizeof(Draw_X) ); CHKPTRQ(Xwin);
@@ -355,7 +356,8 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
   if (rank == 0) {
-    if (!display && OptionsGetString(PETSC_NULL,"-display",string,128)) {
+    ierr = OptionsGetString(PETSC_NULL,"-display",string,128,&flg); CHKERRQ(ierr);
+    if (!display && flg) {
       display = string;
     }
     if (!display) {
@@ -368,7 +370,8 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   }
   else {
     unsigned long win;
-    if (!display && OptionsGetString(PETSC_NULL,"-display",string,128)) {
+    ierr = OptionsGetString(PETSC_NULL,"-display",string,128,&flg); CHKERRQ(ierr);
+    if (!display && flg) {
       display = string;
     }
     if (!display) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.53 1996/01/11 20:15:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.54 1996/01/12 03:55:48 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -507,17 +507,22 @@ static int SNESSetFromOptions_LS(SNES snes)
   SNES_LS *ls = (SNES_LS *)snes->data;
   char    ver[16];
   double  tmp;
+  int     ierr,flg;
 
-  if (OptionsGetDouble(snes->prefix,"-snes_line_search_alpa",&tmp)) {
+  ierr = OptionsGetDouble(snes->prefix,"-snes_line_search_alpa",&tmp);CHKERRQ(ierr);
+  if (flg) {
     ls->alpha = tmp;
   }
-  if (OptionsGetDouble(snes->prefix,"-snes_line_search_maxstep",&tmp)) {
+  ierr = OptionsGetDouble(snes->prefix,"-snes_line_search_maxstep",&tmp);CHKERRQ(ierr);
+  if (flg) {
     ls->maxstep = tmp;
   }
-  if (OptionsGetDouble(snes->prefix,"-snes_line_search_steptol",&tmp)) {
+  ierr = OptionsGetDouble(snes->prefix,"-snes_line_search_steptol",&tmp);CHKERRQ(ierr);
+  if (flg) {
     ls->steptol = tmp;
   }
-  if (OptionsGetString(snes->prefix,"-snes_line_search",ver,16)) {
+  ierr = OptionsGetString(snes->prefix,"-snes_line_search",ver,16);CHKERRQ(ierr);
+  if (flg) {
     if (!PetscStrcmp(ver,"basic")) {
       SNESSetLineSearchRoutine(snes,SNESNoLineSearch);
     }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.49 1995/12/21 18:33:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.50 1996/01/01 01:04:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -27,7 +27,7 @@ extern int paulintegrate20(double K[60][60]);
 int main(int argc,char **args)
 {
   Mat     mat;
-  int     ierr, i, its, m = 3, rdim, cdim, rstart, rend, rank, size;
+  int     ierr, i, its, m = 3, rdim, cdim, rstart, rend, rank, size,flg;
   Scalar  v, neg1 = -1.0;
   Vec     u, x, b;
   SLES    sles;
@@ -35,7 +35,7 @@ int main(int argc,char **args)
   double  norm;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PETSC_NULL,"-m",&m);
+  OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
 

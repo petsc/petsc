@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.20 1996/01/01 01:05:24 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.21 1996/01/11 20:15:19 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -16,7 +16,7 @@ C          4  = rank
 C          5  = size
 C          6  = N
 C
-      integer          ctx(8),ierr,N,start,end,nn,i,ii,its
+      integer          ctx(8),ierr,N,start,end,nn,i,ii,its,flg
       SNES             snes
       Mat              J
       Vec              x,r,u,F
@@ -26,7 +26,7 @@ C
 
       call PetscInitialize(ierr)
       N = 10
-      call OptionsGetInt(PETSC_NULL,'-n',N,ierr)
+      call OptionsGetInt(PETSC_NULL,'-n',N,flg,ierr)
       h = 1.d0/(N-1.d0)
       ctx(6) = N
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.14 1995/11/30 22:36:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.15 1995/12/21 18:34:32 bsmith Exp bsmith $";
 #endif
       
 /* Peter Mell created this file on 7/25/95 */
@@ -15,11 +15,11 @@ static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  int            rank,M = 3, N = 5, P=3; 
+  int            rank,M = 3, N = 5, P=3,s=1, w=2,flg; 
   int            m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, ierr;
-  int            s=1, w=2;
+  int            ;
   DA             da;
-  Draw        win;
+  Draw           win;
   Vec            local,global;
   Scalar         value;
   DAPeriodicType wrap = DA_XYPERIODIC;
@@ -28,16 +28,16 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,400,300,&win); CHKERRA(ierr);
   
-  OptionsGetInt(PETSC_NULL,"-M",&M);
-  OptionsGetInt(PETSC_NULL,"-N",&N);
-  OptionsGetInt(PETSC_NULL,"-P",&P);
-  OptionsGetInt(PETSC_NULL,"-m",&m);
-  OptionsGetInt(PETSC_NULL,"-n",&n);
-  OptionsGetInt(PETSC_NULL,"-p",&p);
-  OptionsGetInt(PETSC_NULL,"-s",&s);
-  OptionsGetInt(PETSC_NULL,"-w",&w);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-P",&P,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-p",&p,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,&flg); CHKERRA(ierr);
 
-  if (OptionsHasName(PETSC_NULL,"-star")) stencil_type =  DA_STENCIL_STAR;
+  OptionsHasName(PETSC_NULL,"-star",&flg); if (flg) stencil_type =  DA_STENCIL_STAR;
 
   ierr = DACreate3d(MPI_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,w,s,&da); 
   CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.40 1995/12/30 03:24:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.41 1996/01/11 20:15:19 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
@@ -22,12 +22,12 @@ int main( int argc, char **argv )
   SNES         snes;               /* SNES context */
   Vec          x,r,F,U;
   Mat          J;                  /* Jacobian matrix */
-  int          ierr, its, n = 5,i;
+  int          ierr, its, n = 5,i,flg;
   Scalar       h,xp = 0.0,v;
   MonitorCtx   monP;               /* monitoring context */
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  OptionsGetInt(PETSC_NULL,"-n",&n);
+  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
   h = 1.0/(n-1);
 
   /* Set up data structures */
