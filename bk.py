@@ -7,20 +7,62 @@ import transform
 import os
 import string
 
-class TagBKOpen (transform.Transform):
-  def __init__(self, sources = None, root = None):
+class TagBK (transform.Transform):
+  def __init__(self, mode, sources = None, roots = None):
     transform.Transform.__init__(self, sources)
-    if root: self.root = root
-    else:    self.root = os.getcwd()
+    self.mode = mode
+    if roots:
+      self.roots = roots
+    else:
+      self.roots = fileset.FileSet([os.getcwd()])
 
-  def getBKFiles(self, set):
-    return string.split(self.executeShellCommand('bk sfiles -g '+self.root))
+  def getExistingFiles(self, set):
+    files = []
+    for root in self.roots:
+      if not os.path.isdir(root): raise RuntimeError("Invalid BK source root directory: "+root)
+      files.extend(string.split(self.executeShellCommand('bk sfiles -g '+root)))
+    return files
+
+  def getNewFiles(self, set):
+    newFiles = []
+    for root in self.roots:
+      fileList = string.split(self.executeShellCommand('bk sfiles -ax '+root))
+      for file in fileList:
+        if (file[-1] == '~'): continue
+        if (file[-1] == '#'): continue
+        newFiles.append(file)
+    return newFiles
+
+  def getUnchangedFiles(self, set):
+    lockedFiles  = []
+    changedFiles = []
+    for root in self.roots:
+      lockedFiles.extend(string.split(self.executeShellCommand('bk sfiles -lg '+root)))
+      changedFiles.extend(string.split(self.executeShellCommand('bk sfiles -cg '+root)))
+    map(lockedFiles.remove, changedFiles)
+    return lockedFiles
 
   def execute(self):
-    if isinstance(self.sources, fileset.FileSet): self.products = [self.sources]
-    else:                                         self.products = self.sources[:]
-    self.products.append(fileset.FileSet(func = self.getBKFiles, tag = 'bkedit'))
+    if isinstance(self.sources, fileset.FileSet):
+      self.products = [self.sources]
+    else:
+      self.products = self.sources[:]
+    if self.mode == 'open':
+      self.products.append(fileset.FileSet(func = self.getExistingFiles, tag = 'bkedit'))
+    elif self.mode == 'close':
+      self.products.append(fileset.FileSet(func = self.getNewFiles,       tag = 'bkadd'))
+      self.products.append(fileset.FileSet(func = self.getUnchangedFiles, tag = 'bkrevert'))
+    else:
+      raise RuntimeError('Invalid BK tag mode: '+self.mode)
     return self.products
+
+class TagBKOpen (TagBK):
+  def __init__(self, sources = None, roots = None):
+    TagBK.__init__(self, 'open', sources, roots)
+
+class TagBKClose (TagBK):
+  def __init__(self, sources = None, roots = None):
+    TagBK.__init__(self, 'close', sources, roots)
 
 class BKOpen (action.Action):
   def __init__(self):
@@ -45,37 +87,10 @@ class BKOpen (action.Action):
         self.products = [self.products]
       self.products.append(set)
 
-class TagBKClose (transform.Transform):
-  def __init__(self, sources = None, root = None):
-    transform.Transform.__init__(self, sources)
-    if root: self.root = root
-    else:    self.root = os.getcwd()
-
-  def getNewFiles(self, set):
-    fileList = string.split(self.executeShellCommand('bk sfiles -ax '+self.root))
-    newFiles = []
-    for file in fileList:
-      if (file[-1] == '~'): continue
-      if (file[-1] == '#'): continue
-      newFiles.append(file)
-    return newFiles
-
-  def getUnchangedFiles(self, set):
-    lockedFiles  = string.split(self.executeShellCommand('bk sfiles -lg '+self.root))
-    changedFiles = string.split(self.executeShellCommand('bk sfiles -cg '+self.root))
-    map(lockedFiles.remove, changedFiles)
-    return lockedFiles
-
-  def execute(self):
-    if isinstance(self.sources, fileset.FileSet): self.products = [self.sources]
-    else:                                         self.products = self.sources[:]
-    self.products.append(fileset.FileSet(func = self.getNewFiles,       tag = 'bkadd'))
-    self.products.append(fileset.FileSet(func = self.getUnchangedFiles, tag = 'bkrevert'))
-    return self.products
-
 class BKClose (action.Action):
   def __init__(self):
     action.Action.__init__(self, self.close, None, 1)
+    self.buildProducts = 0
 
   def addFiles(self, set):
     self.debugPrint('Putting new files under version control', 2, 'bk')
@@ -112,9 +127,9 @@ class BKClose (action.Action):
       raise RuntimeError('Not yet supported')
     return self.products
 
-  def shellSetAction(self, set):
+  def setAction(self, set):
     if set.tag in ['bkadd', 'bkrevert', 'bkcheckin']:
-      action.Action.shellSetAction(self, set)
+      action.Action.setAction(self, set)
     else:
       if isinstance(self.products, fileset.FileSet):
         self.products = [self.products]

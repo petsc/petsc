@@ -9,15 +9,25 @@ import os
 import types
 
 class Process (action.Action):
-  def __init__(self, products, tag, sources, compiler, compilerFlags, updateType = 'immediate'):
-    action.Action.__init__(self, compiler, sources, compilerFlags, 1)
-    if products:
-      self.products    = products
+  def __init__(self, products, tag, sources, compiler, compilerFlags, setwiseExecute, updateType = 'immediate'):
+    if setwiseExecute:
+      action.Action.__init__(self, compiler,     sources, compilerFlags, setwiseExecute)
     else:
-      self.products    = fileset.FileSet()
-    self.tag           = tag
-    self.buildProducts = 0
-    self.updateType    = updateType
+      action.Action.__init__(self, self.process, sources, compilerFlags, setwiseExecute)
+    self.compiler        = compiler
+    self.buildProducts   = 0
+    if products:
+      self.products      = products
+    else:
+      self.products      = fileset.FileSet()
+    self.tag             = tag
+    self.updateType      = updateType
+    if updateType == 'deferred':
+      self.deferredUpdates = fileset.FileSet(tag = 'update '+self.tag)
+      if isinstance(self.products, fileset.FileSet):
+        self.products = [self.products, self.deferredUpdates]
+      else:
+        self.products.append(self.deferredUpdates)
 
   def shellSetAction(self, set):
     if set.tag == self.tag:
@@ -33,6 +43,28 @@ class Process (action.Action):
         self.products.append(set)
     elif set.tag == 'old '+self.tag:
       pass
+    else:
+      if isinstance(self.products, fileset.FileSet):
+        self.products = [self.products]
+      self.products.append(set)
+
+  def process(self, source):
+    self.debugPrint(self.compiler+' processing '+source, 3, 'compile')
+    # Compile file
+    command  = self.compiler
+    command += ' '+self.constructFlags(source, self.flags)
+    command += ' '+source
+    output   = self.executeShellCommand(command, self.errorHandler)
+    # Update source DB if it compiled successfully
+    if self.updateType == 'immediate':
+      self.updateSourceDB(source)
+    elif self.updateType == 'deferred':
+      self.deferredUpdates.append(source)
+    return source
+
+  def setExecute(self, set):
+    if set.tag == self.tag:
+      transform.Transform.setExecute(self, set)
     else:
       if isinstance(self.products, fileset.FileSet):
         self.products = [self.products]
@@ -142,4 +174,4 @@ class TagEtags (transform.GenericTag):
 
 class CompileEtags (Process):
   def __init__(self, tagsFile, sources = None, compiler = 'etags', compilerFlags = '-a'):
-    Process.__init__(self, tagsFile, 'etags', sources, compiler, compilerFlags+' -f '+tagsFile[0], 'deferred')
+    Process.__init__(self, tagsFile, 'etags', sources, compiler, compilerFlags+' -f '+tagsFile[0], 1, 'deferred')

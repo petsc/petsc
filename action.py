@@ -19,6 +19,9 @@ class Action (transform.Transform):
     self.errorHandler   = errorHandler
     self.buildProducts  = 1
 
+  def constructFlags(self, source, baseFlags):
+    return baseFlags
+
   def fileExecute(self, file):
     self.func(file)
     if self.buildProducts: self.products.append(file)
@@ -32,15 +35,15 @@ class Action (transform.Transform):
         self.products.append(set)
 
   def shellAction(self, file):
-    command = self.program+' '+self.flags+' '+file
+    command = self.program+' '+self.constructFlags(file, self.flags)+' '+file
     output  = self.executeShellCommand(command, self.errorHandler)
     if self.buildProducts: self.products.append(file)
     return output
 
   def shellSetAction(self, set):
-    command = self.program+' '+self.flags
     files   = set.getFiles()
     if (not files): return ''
+    command = self.program+' '+self.constructFlags(set, self.flags)
     for file in files:
       command += ' '+file
     output  = self.executeShellCommand(command, self.errorHandler)
