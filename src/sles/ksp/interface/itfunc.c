@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.112 1999/01/31 16:08:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.113 1999/01/31 21:25:34 curfman Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -621,7 +621,7 @@ int KSPSetInitialGuessNonzero(KSP ksp)
    Output Parameter:
 .  flag - PETSC_TRUE if guess is nonzero, else PETSC_FALSE
 
-   Level: beginner
+   Level: intermediate
 
 .keywords: KSP, set, initial guess, nonzero
 
