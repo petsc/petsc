@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.274 1999/01/12 23:15:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.275 1999/01/27 19:47:24 bsmith Exp curfman $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1839,6 +1839,8 @@ EXTERN_C_END
 .ve
    Here the space allocated is sum of all the above values i.e 34, and
    hence pre-allocation is perfect.
+
+   Level: intermediate
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 

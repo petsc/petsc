@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.101 1999/01/12 23:15:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.102 1999/01/27 19:47:10 bsmith Exp curfman $";
 #endif
 
 /*
@@ -978,6 +978,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
 
    Currently, the only parallel dense matrix decomposition is by rows,
    so that n=N and each submatrix owns all of the global columns.
+
+   Level: intermediate
 
 .keywords: matrix, dense, parallel
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.144 1999/01/12 23:15:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.145 1999/01/27 19:47:51 bsmith Exp curfman $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -1993,6 +1993,8 @@ EXTERN_C_END
    one expects d_nz >> o_nz.   For large problems you MUST preallocate memory
    or you will get TERRIBLE performance; see the users' manual chapter on
    matrices.
+
+   Level: intermediate
 
 .keywords: matrix, block, aij, compressed row, sparse, parallel
 

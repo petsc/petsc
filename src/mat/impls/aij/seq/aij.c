@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.294 1999/01/18 21:55:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.295 1999/01/27 19:47:15 bsmith Exp curfman $";
 #endif
 
 /*
@@ -2099,6 +2099,8 @@ int MatRetrieveValues(Mat mat)
 -  -mat_aij_oneindex - Internally use indexing starting at 1
         rather than 0.  Note that when calling MatSetValues(),
         the user still MUST index entries starting at 0!
+
+   Level: intermediate
 
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices()
 @*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.153 1999/01/05 19:54:17 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.154 1999/01/27 19:47:42 bsmith Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -977,6 +977,8 @@ $     diag = i/bs - j/bs  (integer division)
 
    Fortran Notes:
    Fortran programmers cannot set diagv; this variable is ignored.
+
+   Level: intermediate
 
 .keywords: matrix, block, diagonal, parallel, sparse
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.155 1999/01/19 18:44:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.156 1999/01/27 19:47:47 bsmith Exp curfman $";
 #endif
 
 /*
@@ -1302,6 +1302,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
    Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
    allocation.  For additional details, see the users manual chapter on
    matrices.
+
+   Level: intermediate
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIBAIJ()
 @*/

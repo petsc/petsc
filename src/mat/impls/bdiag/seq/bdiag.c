@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.169 1999/01/12 23:15:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.170 1999/01/27 19:47:36 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -536,6 +536,8 @@ $     diag = i/bs - j/bs  (integer division)
 
    Fortran Note:
    Fortran programmers cannot set diagv; this value is ignored.
+
+   Level: intermediate
 
 .keywords: matrix, block, diagonal, sparse
 
