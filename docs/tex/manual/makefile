@@ -51,7 +51,7 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
             > manual.html
 	-@/bin/rm  ../../splitmanual/*
 	-mv manual.html *.xbm ../../manual
-	-@chmod ug+w ../../manual/manual.html www.cit ../../manual/*.xbm
+	-@chmod ug+w www.cit ../../manual/*
 	rm -f  latex.err findex.tex sindex.tex tmp.html manual_html.html
 
 #
