@@ -20,9 +20,9 @@ options=$*
 #
 # Please modify the following path to point to the correct location of LAM's mpirun
 #
-lam_path=/home/petsc/software/lam62b/solaris/bin
+lam_path=/home/petsc/software/lam-6.3-b1/solaris
 #
 # Now execute the mpirun comman
 #
-$lam_path/mpirun -w -D -c $np -s n0 $progname -- $options
+$lam_path/mpirun -w -c $np -s n0 $progname -- $options
 $lam_path/lamclean
