@@ -22,6 +22,9 @@
    in the bmake/common_variables definition of PETSC_INCLUDE
 */
 #include "petscconf.h"
+#if !defined(PETSC_HAVE_COMPILER_ATTRIBTE_CHECKING)
+  #define __attribute__(a)
+#endif
 
 /* ========================================================================== */
 
