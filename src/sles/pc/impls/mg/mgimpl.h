@@ -35,6 +35,8 @@ struct _MG
   int       default_smoothu;              /* number of smooths per level if not over-ridden */
   int       default_smoothd;              /*  with calls to KSPSetTolerances() */
   PetscReal rtol,atol,dtol,ttol;          /* tolerances for when running with PCApplyRichardson_MG */
+  int       eventsetup;                   /* if logging times for each level */
+  int       eventsolve;      
 };
 
 
