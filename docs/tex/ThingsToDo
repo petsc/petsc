@@ -41,7 +41,7 @@ Additional Capabilities that PETSc Needs:
  - Fix VRML vector viewer interface; add documentation about VRML.
 
  - Add feature to SNESDefatulComputeJacobian() for user to set differencing
-   parameter (similar to matrix-free stuff)
+   parameter (similar to matrix-free stuff) as is already supported for coloring version?
 
  - Finish converting examples to tutorials/tests formats
 
@@ -53,13 +53,18 @@ Additional Capabilities that PETSc Needs:
 
     - Write an example of using MatCreateShell().
 
+  - ILUDT() - made MatILUDTFactor_SeqAIJ() stub.
+
+
+  - Add support for stashing ghostvalues at end of local values in array???
+    How to do this reasonably? Or is it even possible reasonably or desirable?
 
 -----------------------------------------------------------------------
   To do sometime soon:
 -----------------------------------------------------------------------
 
   - change KSPSetMonitor()... to use functoids with function,context,destroy in
-    one object?
+    one object????
 
   - More test cases that involve, zero size vectors, matrices, IS's etc.
 
@@ -88,8 +93,6 @@ Additional Capabilities that PETSc Needs:
 
   * Have all preconditioners (including LU) support null space, see 
             tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
-
-  - ILUDT() - made MatILUDTFactor_SeqAIJ() stub.
 
   * add -mpidump option that lists all unfinished MPI operations at end, 
          including PetscMPIDump()
