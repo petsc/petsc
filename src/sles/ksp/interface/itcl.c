@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.107 1999/01/13 22:28:38 curfman Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.108 1999/01/13 22:29:35 curfman Exp curfman $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -26,11 +26,11 @@ int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
     Input Parameter:
 .   kspcheck - function that checks for options
 
-    Level: developer
-
 .keywords: KSP, add, options, checker
 
 .seealso: KSPSetFromOptions()
+
+    Level: developer
 @*/
 int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
 {
@@ -55,8 +55,6 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
 +  ksp - the Krylov context
 -  prefix - the prefix string to prepend to all KSP option requests
 
-   Level: advanced
-
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the
@@ -78,6 +76,8 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
 .keywords: KSP, set, options, prefix, database
 
 .seealso: KSPAppendOptionsPrefix(), KSPGetOptionsPrefix()
+
+   Level: advanced
 @*/
 int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 {
@@ -100,8 +100,6 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 +  ksp - the Krylov context
 -  prefix - the prefix string to prepend to all KSP option requests
 
-   Level: advanced
-
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the hyphen.
@@ -109,6 +107,8 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 .keywords: KSP, append, options, prefix, database
 
 .seealso: KSPSetOptionsPrefix(), KSPGetOptionsPrefix()
+
+   Level: advanced
 @*/
 int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 {
@@ -133,11 +133,11 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
    Output Parameters:
 .  prefix - pointer to the prefix string used is returned
 
-   Level: advanced
-
 .keywords: KSP, set, options, prefix, database
 
 .seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix()
+
+   Level: advanced
 @*/
 int KSPGetOptionsPrefix(KSP ksp,char **prefix)
 {

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itregis.c,v 1.39 1999/01/12 23:13:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: itregis.c,v 1.40 1999/01/13 22:18:03 curfman Exp curfman $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -35,11 +35,11 @@ extern int KSPRegisterAllCalled;
 
   Not Collective
 
-  Level: advanced
-
 .keywords: KSP, register, all
 
 .seealso:  KSPRegisterDestroy()
+
+  Level: advanced
 @*/
 int KSPRegisterAll(char *path)
 {
