@@ -1,4 +1,4 @@
-/*$Id: signal.c,v 1.69 2000/05/05 22:13:49 balay Exp bsmith $*/
+/*$Id: signal.c,v 1.70 2000/05/10 16:39:12 bsmith Exp bsmith $*/
 /*
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
@@ -90,7 +90,8 @@ EXTERN_C_END
 +  sig - signal value
 -  ptr - unused pointer
 
-.keywords: default, signal, handler
+   Concepts: signal handler^default
+
 @*/
 int PetscDefaultSignalHandler(int sig,void *ptr)
 {
@@ -138,7 +139,8 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
 
   Level: developer
 
-.keywords: push, signal, handler
+   Concepts: signal handler^setting
+
 @*/
 int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
 {

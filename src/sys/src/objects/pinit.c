@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.36 2000/05/13 04:36:48 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.37 2000/07/10 03:38:52 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -272,8 +272,8 @@ $       call PetscInitialize(file,ierr)
    in the C version.  See the users manual for details.
 
 
-.keywords: initialize, options, database, startup
-
+   Concepts: initializing PETSc
+   
 .seealso: PetscFinalize(), PetscInitializeFortran()
 @*/
 int PetscInitialize(int *argc,char ***args,char file[],const char help[])
@@ -415,8 +415,6 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 
    Note:
    See PetscInitialize() for more general runtime options.
-
-.keywords: finalize, exit, end
 
 .seealso: PetscInitialize(), OptionsPrint(), PetscTrDump(), PetscMPIDump()
 @*/

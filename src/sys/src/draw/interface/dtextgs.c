@@ -1,4 +1,4 @@
-/*$Id: dtextgs.c,v 1.29 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dtextgs.c,v 1.30 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -20,7 +20,7 @@
 
    Level: advanced
 
-.keywords: draw, text, get, size
+   Concepts: string^drawing size
 
 .seealso: DrawString(), DrawStringVertical(), DrawStringSetSize()
 

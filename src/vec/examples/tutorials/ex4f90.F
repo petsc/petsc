@@ -1,15 +1,13 @@
 !
-!      "$Id: ex4f90.F,v 1.8 2000/01/11 21:00:24 bsmith Exp balay $";
+!      "$Id: ex4f90.F,v 1.9 2000/05/05 22:15:21 balay Exp bsmith $";
 !
 !  Description:  Illustrates the use of VecSetValues() to set
 !  multiple values at once; demonstrates VecGetArrayF90().
 !
 !/*T
-!   Concepts: Vectors^Assembling vectors; Using vector arrays;
+!   Concepts: vectors^assembling vectors;
+!   Concepts: vectors^arrays;
 !   Concepts: Fortran90;
-!   Routines: VecCreateSeq(); VecDuplicate(); VecSetValues(); VecView();
-!   Routines: VecCopy(); VecView(); VecGetArrayF90(); VecRestoreArrayF90();
-!   Routines: VecAssemblyBegin(); VecAssemblyEnd(); VecDestroy();
 !   Processors: 1
 !T*/
 ! -----------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.15 2000/01/07 04:53:43 bsmith Exp balay $*/
+/*$Id: ex12.c,v 1.16 2000/05/05 22:18:00 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex12 [-help] [all PETSc options] */
 
@@ -8,12 +8,9 @@ Input parameters include:\n\
   -n <mesh_n>       : number of mesh points in y-direction\n\n";
 
 /*T
-   Concepts: SLES^Solving a system of linear equations (basic parallel example);
+   Concepts: SLES^solving a system of linear equations
    Concepts: SLES^Laplacian, 2d
-   Concepts: PC^Registering preconditioners
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC();
-   Routines: PCRegisterDynamic(); PCSetType();
+   Concepts: PC^registering preconditioners
    Processors: n
 T*/
 

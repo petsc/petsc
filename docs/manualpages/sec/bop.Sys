@@ -1,12 +1,12 @@
 <HTML>
 <HEAD>
-<TITLE>Manual Pages for System Routines</TITLE>
+<TITLE>PETSc System Routines</TITLE>
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> System Manual Pages 
-</H2>
+<H2>PETSc System routines</H2>
 
-PETSc provides a variety of "system" level routines.
+PETSc provides a variety of "system" level routines, including parallel file
+access, synchronized printing to screen.
 
 <P>

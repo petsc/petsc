@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.33 2000/07/27 18:11:37 balay Exp balay $ 
+# $Id: base.site,v 1.34 2000/09/13 15:18:32 balay Exp bsmith $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -83,6 +83,22 @@ PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #PARMETIS_LIB     = -L/home/petsc/software/ParMetis-2.0/lib/${PETSC_ARCH} -lparmetis -lmetis
 #PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
+#
+# Location of the LUSOL sparse LU factorization code (part of MINOS)
+# developed by Michael Saunders, saunders@stanford.edu at the
+# Systems Optimization Laboratory, Stanford University.
+#  http://www.sbsi-sol-optimize.com/
+#
+#
+# Put the two files mi25bfac.f and mi15blas.f (or LUSOL.f LUSOL_BLAS.f
+# depending on how they are named) into src/mat/impls/aij/seq and 
+# uncomment the appropriate lines below
+#
+PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
+#PETSC_LUSOL_SOURCE_F = LUSOL.f LUSOL_BLAS.f
+#PETSC_LUSOL_SOURCE_O = LUSOL.o LUSOL_BLAS.o
+PETSC_LUSOL_SOURCE_F = mi25bfac.f mi15blas.f
+PETSC_LUSOL_SOURCE_O = mi25bfac.o mi15blas.o
 # ---------------------------------------------------------------------------------------
 #
 # If you are using shared version of any external libraries you must make this

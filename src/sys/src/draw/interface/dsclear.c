@@ -1,4 +1,4 @@
-/*$Id: dsclear.c,v 1.23 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dsclear.c,v 1.24 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -17,7 +17,8 @@
 
    Level: intermediate
 
-.keywords: draw, clear
+   Concepts: clear^window
+
 @*/
 int DrawSynchronizedClear(Draw draw)
 {

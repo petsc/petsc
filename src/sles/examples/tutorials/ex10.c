@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.40 2000/04/18 16:04:03 bsmith Exp balay $*/
+/*$Id: ex10.c,v 1.41 2000/05/05 22:18:00 balay Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -13,14 +13,8 @@ users manual for a discussion of preloading.  Input parameters include\n\
   -trans  : solve transpose system instead\n\n";
 
 /*T
-   Concepts: SLES^Solving a linear system - loading a binary matrix and vector;
-   Concepts: PLog^Profiling multiple stages of code;
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESSetUp(); SLESSetUpOnBlocks(); SLESView();
-   Routines: PreLoadBegin(); PreLoadStage(); PreLoadEnd(); PLogFlops();
-   Routines: PetscGetTime();
-   Routines: MatGetTypeFromOptions(); MatLoad(); VecLoad();
-   Routines: ViewerBinaryOpen(); ViewerStringOpen(); ViewerDestroy();
+   Concepts: SLES^solving a linear system
+   Concepts: PLog^profiling multiple stages of code;
    Processors: n
 T*/
 

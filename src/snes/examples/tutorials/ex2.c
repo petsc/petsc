@@ -1,14 +1,11 @@
-/*$Id: ex2.c,v 1.72 2000/01/11 21:02:45 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.73 2000/05/05 22:18:34 balay Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
 This example employs a user-defined monitoring routine.\n\n";
 
 /*T
-   Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
-   Concepts: SNES^Setting a user-defined monitoring routine
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); SNESSolve();
-   Routines: SNESGetTolerances(); SNESSetFromOptions(); SNESSetMonitor();
-   Routines: SNESGetSolution(); ViewerDrawOpen(); PetscObjectSetName();
+   Concepts: SNES^basic uniprocessor example
+   Concepts: SNES^setting a user-defined monitoring routine
    Processors: 1
 T*/
 

@@ -1,4 +1,4 @@
-/* $Id: petscoptions.h,v 1.40 2000/08/24 22:43:56 bsmith Exp bsmith $ */
+/* $Id: petscoptions.h,v 1.41 2000/09/02 02:50:55 bsmith Exp bsmith $ */
 /*
    Routines to determine options set in the options database.
 */
@@ -38,11 +38,11 @@ EXTERN int  OptionsAtod(const char[],double*);
 
 extern PetscTruth OptionsPublish;
 extern int        OptionsPublishCount;
-#define    OptionsBegin(comm,prefix,mess) 0; {\
+#define    OptionsBegin(comm,prefix,mess,sec) 0; {\
              for (OptionsPublishCount=(OptionsPublish?-1:1); OptionsPublishCount<2; OptionsPublishCount++) {\
-             int __ierr = OptionsBegin_Private(comm,prefix,mess);CHKERRQ(__ierr);
+             int __ierr = OptionsBegin_Private(comm,prefix,mess,sec);CHKERRQ(__ierr);
 #define    OptionsEnd() __ierr = OptionsEnd_Private();CHKERRQ(__ierr);}}
-EXTERN int OptionsBegin_Private(MPI_Comm,char*,char*);
+EXTERN int OptionsBegin_Private(MPI_Comm,char*,char*,char*);
 EXTERN int OptionsEnd_Private(void);
 EXTERN int OptionsHead(char*);
 #define    OptionsTail() 0; {if (OptionsPublishCount != 1) PetscFunctionReturn(0);}

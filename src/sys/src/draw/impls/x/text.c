@@ -1,4 +1,4 @@
-/*$Id: text.c,v 1.36 2000/04/09 04:34:12 bsmith Exp bsmith $*/
+/*$Id: text.c,v 1.37 2000/04/12 04:21:09 bsmith Exp bsmith $*/
 
 /*
    This file contains simple code to manage access to fonts, insuring that
@@ -19,7 +19,7 @@ int XiLoadFont(Draw_X*,XiFont*);
    are not intended to be high performance.
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"XiFontFixed" 
+#define __FUNC__ /*<a name="XiFontFixed"></a>*/"XiFontFixed" 
 int XiFontFixed(Draw_X *XBWin,int w,int h,XiFont **outfont)
 {
   static XiFont *curfont = 0,*font;
@@ -47,7 +47,7 @@ static int act_nfonts = 0;
 */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"XiLoadFont" 
+#define __FUNC__ /*<a name="XiLoadFont"></a>*/"XiLoadFont" 
 int XiLoadFont(Draw_X *XBWin,XiFont *font)
 {
   char        font_name[100];
@@ -74,7 +74,7 @@ int XiLoadFont(Draw_X *XBWin,XiFont *font)
 
 /* Code to find fonts and their characteristics */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"XiInitFonts" 
+#define __FUNC__ /*<a name="XiInitFonts"></a>*/"XiInitFonts" 
 int XiInitFonts(Draw_X *XBWin)
 {
   char         **names;
@@ -125,7 +125,7 @@ int XiInitFonts(Draw_X *XBWin)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"XiMatchFontSize" 
+#define __FUNC__ /*<a name="XiMatchFontSize"></a>*/"XiMatchFontSize" 
 int XiMatchFontSize(XiFont *font,int w,int h)
 {
   int i,max,imax,tmp;

@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.353 2000/08/16 15:15:11 balay Exp bsmith $*/
+/*$Id: aij.c,v 1.354 2000/09/19 14:16:05 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -1837,6 +1837,9 @@ int MatPrintHelp_SeqAIJ(Mat A)
 #if defined(PETSC_HAVE_ESSL)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_essl: Use IBM sparse LU factorization and solve.\n");CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_LUSOL)
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_lusol: Use the Stanford LUSOL sparse factorization and solve.\n");CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_matlab: Use Matlab engine sparse LU factorization and solve.\n");CHKERRQ(ierr);
 #endif
@@ -1937,6 +1940,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 
 EXTERN int MatUseSuperLU_SeqAIJ(Mat);
 EXTERN int MatUseEssl_SeqAIJ(Mat);
+EXTERN int MatUseLUSOL_SeqAIJ(Mat);
 EXTERN int MatUseMatlab_SeqAIJ(Mat);
 EXTERN int MatUseDXML_SeqAIJ(Mat);
 
@@ -2349,6 +2353,8 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz,Mat *A)
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-mat_aij_essl",&flg);CHKERRQ(ierr);
   if (flg) { ierr = MatUseEssl_SeqAIJ(B);CHKERRQ(ierr); }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_aij_lusol",&flg);CHKERRQ(ierr);
+  if (flg) { ierr = MatUseLUSOL_SeqAIJ(B);CHKERRQ(ierr); }
   ierr = OptionsHasName(PETSC_NULL,"-mat_aij_matlab",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatUseMatlab_SeqAIJ(B);CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-mat_aij_dxml",&flg);CHKERRQ(ierr);

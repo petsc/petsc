@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.20 2000/01/11 21:02:20 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.21 2000/05/05 22:18:00 balay Exp bsmith $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\
@@ -8,12 +8,8 @@ differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
 /*T
-   Concepts: SLES^Solving a system of linear equations (basic parallel example);
-   Concepts: Matrices^Inserting matrix elements by blocks
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); PCSetType();
-   Routines: KSPSetTolerances(); KSPSetInitialGuessNonzero(); 
-   Routines: PetscObjectSetName();
+   Concepts: SLES^basic parallel example
+   Concepts: Matrices^inserting elements by blocks
    Processors: n
 T*/
 

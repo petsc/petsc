@@ -1,5 +1,5 @@
-/*$Id: ex2.c,v 1.29 2000/01/11 21:03:05 bsmith Exp balay $*/
-static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
+/*$Id: ex2.c,v 1.30 2000/05/05 22:19:01 balay Exp bsmith $*/
+static char help[] ="Solves a time-dependent nonlinear PDE. Uses implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
   -debug : Activate debugging printouts\n\
@@ -7,9 +7,6 @@ timestepping.  Runtime options include:\n\
 
 /*
    Concepts: TS^time-dependent nonlinear problems
-   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
-   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration();
-   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); TSSetMonitor();
    Processors: n
 */
 

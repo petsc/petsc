@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.184 2000/06/23 20:14:59 buschelm Exp balay $*/
+/*$Id: bvec2.c,v 1.185 2000/08/16 15:15:28 balay Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -159,7 +159,6 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
   ierr = PetscFree(xx);CHKERRQ(ierr);
   ierr = DrawLGDraw(lg);CHKERRQ(ierr);
   ierr = DrawSynchronizedFlush(win);CHKERRQ(ierr);
-  ierr = DrawPause(win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: select.c,v 1.4 2000/05/04 16:24:51 bsmith Exp balay $*/
+/*$Id: select.c,v 1.5 2000/05/05 22:14:11 balay Exp bsmith $*/
 #include "petsc.h"              /*I  "petsc.h"  I*/
 #include "petscsys.h"           /*I  "petscsys.h"  I*/
 
@@ -29,7 +29,10 @@
        xterm; hence this program must share a common file system with the machine
        parameter passed in below.
 
-.keywords: architecture, machine     
+   Concepts: popup
+   Concepts: user selection
+   Concepts: menu
+
 @*/
 int PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choices,int *choice)
 {

@@ -1,4 +1,4 @@
-/*$Id: view.c,v 1.38 2000/05/05 22:13:21 balay Exp bsmith $*/
+/*$Id: view.c,v 1.39 2000/05/10 16:38:49 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -16,7 +16,6 @@
 
 .seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerCreate(), ViewerDrawOpen()
 
-.keywords: Viewer, destroy
 @*/
 int ViewerDestroy(Viewer viewer)
 {
@@ -63,8 +62,6 @@ int ViewerDestroy(Viewer viewer)
    See include/petscviewer.h for a complete list of viewers.
 
    ViewerType is actually a string
-
-.keywords: Viewer, get, type
 
 .seealso: ViewerCreate(), ViewerSetType()
 

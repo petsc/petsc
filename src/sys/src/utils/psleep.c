@@ -1,4 +1,4 @@
-/*$Id: psleep.c,v 1.24 2000/04/09 04:34:47 bsmith Exp bsmith $*/
+/*$Id: psleep.c,v 1.25 2000/04/12 04:21:38 bsmith Exp bsmith $*/
 
 #include "petsc.h"                 /*I   "petsc.h"    I*/
 #if defined (PETSC_HAVE_UNISTD_H)
@@ -24,7 +24,10 @@
 
    Level: intermediate
 
-.keywords: sleep, wait
+   Concepts: sleeping
+   Concepts: pause
+   Concepts: waiting
+
 @*/
 int PetscSleep(int s)
 {

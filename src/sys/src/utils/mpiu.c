@@ -1,4 +1,4 @@
-/*$Id: mpiu.c,v 1.95 2000/04/09 04:34:47 bsmith Exp bsmith $*/
+/*$Id: mpiu.c,v 1.96 2000/04/12 04:21:38 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
@@ -85,7 +85,8 @@ static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 
 .seealso: PetscSequentialPhaseEnd()
 
-.keywords: sequential, phase, begin
+   Concepts: sequential stage
+
 @*/
 int PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 {
@@ -128,7 +129,8 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 
 .seealso: PetscSequentialPhaseBegin()
 
-.keywords: sequential, phase, end
+   Concepts: sequential stage
+
 @*/
 int PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
 {

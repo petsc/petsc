@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.110 2000/09/02 02:49:35 bsmith Exp balay $*/
+/*$Id: snesmfj.c,v 1.111 2000/09/07 15:17:55 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -501,7 +501,7 @@ int MatSNESMFSetFromOptions(Mat mat)
   if (mfctx) {
     if (!MatSNESMFRegisterAllCalled) {ierr = MatSNESMFRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   
-    ierr = OptionsBegin(mfctx->comm,mfctx->prefix,"Set matrix free computation parameters");CHKERRQ(ierr);
+    ierr = OptionsBegin(mfctx->comm,mfctx->prefix,"Set matrix free computation parameters","MatSNESMF");CHKERRQ(ierr);
       ierr = OptionsList("-snes_mf_type","Matrix free type","MatSNESMFSetType",MatSNESMFList,mfctx->type_name,ftype,256,&flg);CHKERRQ(ierr);
       if (flg) {
         ierr = MatSNESMFSetType(mat,ftype);CHKERRQ(ierr);

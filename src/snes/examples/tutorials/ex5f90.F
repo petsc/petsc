@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.31 2000/09/06 16:15:55 balay Exp balay $";
+! "$Id: ex5f90.F,v 1.32 2000/09/06 21:01:29 balay Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -12,14 +12,8 @@
 !    -Ny <npy>, where <npy> = number of processors in the y-direction
 !
 !/*T
-!  Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
-!  Concepts: DA^Using distributed arrays;
-!  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-!  Routines: SNESSolve(); SNESSetFromOptions(); DAView();
-!  Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
-!  Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-!  Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndicesF90();
-!  Routines: VecGetArrayF90(); VecRestoreArrayF90();
+!  Concepts: SNES^parallel Bratu example
+!  Concepts: DA^using distributed arrays;
 !  Processors: n
 !T*/
 !

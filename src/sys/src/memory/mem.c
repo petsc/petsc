@@ -1,4 +1,4 @@
-/*$Id: mem.c,v 1.49 2000/05/05 22:13:59 balay Exp balay $*/
+/*$Id: mem.c,v 1.50 2000/08/16 15:12:19 balay Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 #include "petscsys.h"
@@ -73,7 +73,9 @@
 
 .seealso: PetscTrSpace()
 
-.keywords: get, resident, set, size
+   Concepts: resident set size
+   Concepts: memory usage
+
 @*/
 int PetscGetResidentSetSize(PLogDouble *foo)
 {

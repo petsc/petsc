@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.154 2000/09/12 20:56:27 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.155 2000/09/12 21:00:59 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -477,6 +477,7 @@ static int PCSetFromOptions_ILU(PC pc)
   PC_ILU     *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
+  ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsHead("ILU Options");CHKERRQ(ierr);
     ierr = OptionsInt("-pc_ilu_levels","levels of fill","PCILUSetLevels",(int)ilu->info.levels,&itmp,&flg);CHKERRQ(ierr);
     if (flg) ilu->info.levels = (double) itmp;

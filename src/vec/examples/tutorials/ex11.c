@@ -1,12 +1,11 @@
-/*$Id: ex11.c,v 1.10 2000/01/11 21:00:24 bsmith Exp balay $*/
+/*$Id: ex11.c,v 1.11 2000/05/05 22:15:21 balay Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
 static char help[] = "Demonstrates VecStrideNorm().\n\n";
 
 /*T
-   Concepts: Vectors^Norms of sub-vectors;
-   Routines: VecCreate(); VecSetFromOptions(); VecSet(); VecSetBlockSize(); VecStrideNorm(); VecNorm(); 
+   Concepts: vectors^norms of sub-vectors;
    Processors: n
 T*/
 

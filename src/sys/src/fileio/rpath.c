@@ -1,4 +1,4 @@
-/*$Id: rpath.c,v 1.26 2000/04/12 04:21:24 bsmith Exp balay $*/
+/*$Id: rpath.c,v 1.27 2000/05/05 22:13:54 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -45,7 +45,8 @@
 
    Level: developer
 
-.keywords: system, get, relative, path
+   Concepts: relative path
+   Concepts: path^relative
 
 .seealso: PetscGetFullPath()
 @*/

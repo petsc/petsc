@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.145 2000/06/29 15:28:34 balay Exp bsmith $*/
+/*$Id: mtr.c,v 1.146 2000/08/17 04:50:43 bsmith Exp bsmith $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -403,7 +403,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
 
     Level: intermediate
 
-.keywords: memory, allocation, tracing, space, statistics
+    Concepts: memory usage
 
 .seealso: PetscTrDump(),PetscTrSpace(), PetscGetResidentSetSize()
  @*/
@@ -438,7 +438,7 @@ int PetscShowMemoryUsage(Viewer viewer,char *message)
 
     Level: intermediate
 
-.keywords: memory, allocation, tracing, space, statistics
+    Concepts: memory usage
 
 .seealso: PetscTrDump()
  @*/
@@ -477,7 +477,9 @@ int PetscTrSpace(PLogDouble *space,PLogDouble *fr,PLogDouble *maxs)
    Notes: uses MPI_COMM_WORLD, because this may be called in PetscFinalize() after PETSC_COMM_WORLD
           has been freed.
 
-.keywords: memory, allocation, tracing, space, statistics
+   Concepts: memory usage
+   Concepts: memory bleeding
+   Concepts: bleeding memory
 
 .seealso:  PetscTrSpace(), PetscTrLogDump() 
 @*/

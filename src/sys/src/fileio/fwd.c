@@ -1,4 +1,4 @@
-/*$Id: fwd.c,v 1.28 2000/04/12 04:21:24 bsmith Exp balay $*/
+/*$Id: fwd.c,v 1.29 2000/05/05 22:13:54 balay Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -48,7 +48,8 @@
 
    Level: developer
 
-.keywords, system, get, current, working, directory
+   Concepts: working directory
+
 @*/
 int PetscGetWorkingDirectory(char path[],int len)
 {

@@ -1,14 +1,10 @@
 !
-!      "$Id: ex3f90.F,v 1.11 2000/05/05 22:14:48 balay Exp bsmith $"; */
+!      "$Id: ex3f90.F,v 1.12 2000/07/10 03:39:11 bsmith Exp bsmith $"; */
 !
 !
 !/*T
-!    Concepts: Index sets^Manipulating a block index set;
+!    Concepts: Index sets^manipulating a block index set;
 !    Concepts: Fortran90;
-!    Routines: ISCreateBlock(); ISDestroy(); ISView()
-!    Routines: ISGetIndicesF90(); ISRestoreIndicesF90(); ISBlockGetSize()
-!    Routines: ISBlockGetBlockSize(); ISBlockGetIndicesF90(); ISBlockRestoreIndicesF90()
-!    Routines: ISBlock()
 !
 !    Comment:  Creates an index set based on blocks of integers. Views that index set
 !    and then destroys it.

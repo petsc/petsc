@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.14 2000/01/11 21:02:53 bsmith Exp balay $*/
+/*$Id: ex10.c,v 1.15 2000/05/05 22:18:47 balay Exp bsmith $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -24,15 +24,9 @@ The command line options include:\n\
   -lin_par <alpha>, where alpha is the multiplier for the linear term (u) \n";
 
 /*T
-   Concepts: SNES^Solving a system of nonlinear equations (Pseudo Laplacian example);
-   Concepts: AO^Applying application to PETSc ordering or vice versa;
-   Concepts: VecScatter^Using vector scatter operations;
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions();
-   Routines: VecScatterCreate(); VecScatterBegin(); VecScatterEnd();
-   Routines: AOCreateBasic(); AOApplicationToPetsc(); AOPetscToApplication();
-   Routines: ISCreateStride(); ISCreateBlock(); ISLocalToGlobalMappingCreate();
-   Routines: MatSetLocalToGlobalMapping();
+   Concepts: SNES^unstructured grid
+   Concepts: AO^application to PETSc ordering or vice versa;
+   Concepts: VecScatter^using vector scatter operations;
    Processors: n
 T*/
 

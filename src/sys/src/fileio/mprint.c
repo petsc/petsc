@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.52 2000/05/18 19:20:31 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.53 2000/07/10 03:38:51 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -249,7 +249,8 @@ int PetscSynchronizedFlush(MPI_Comm comm)
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: parallel, fprintf
+   Concepts: printing^in parallel
+   Concepts: printf^in parallel
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIPrintf(),
           ViewerASCIISynchronizedPrintf(), PetscSynchronizedFlush()
@@ -302,7 +303,8 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
    Notes: %A is replace with %g unless the value is < 1.e-12 when it is 
           replaced with < 1.e-12
 
-.keywords: parallel, printf
+   Concepts: printing^in parallel
+   Concepts: printf^in parallel
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/
@@ -378,7 +380,8 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: parallel, printf
+    Concepts: help messages^printing
+    Concepts: printing^help messages
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/
@@ -427,7 +430,8 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: parallel, printf
+    Concepts: error messages^printing
+    Concepts: printing^error messages
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/

@@ -1,4 +1,4 @@
-/*$Id: dclear.c,v 1.28 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dclear.c,v 1.29 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -16,7 +16,7 @@
 
    Level: beginner
 
-.keywords: draw, clear
+   Concepts: clear^window
 
 .seealso: DrawBOP(), DrawEOP(), DrawSynchronizedClear()
 @*/
@@ -44,8 +44,6 @@ int DrawClear(Draw draw)
 
    Level: advanced
 
-.keywords: draw, page, frame
-
 .seealso: DrawEOP(), DrawClear()
 @*/
 int DrawBOP(Draw draw)
@@ -70,8 +68,6 @@ int DrawBOP(Draw draw)
 .  draw - the drawing context
 
    Level: advanced
-
-.keywords: draw, page, frame
 
 .seealso: DrawBOP(), DrawClear()
 @*/

@@ -1,14 +1,12 @@
 !
-!    "$Id: ex2f.F,v 1.9 2000/01/11 21:00:24 bsmith Exp balay $"
+!    "$Id: ex2f.F,v 1.10 2000/05/05 22:15:21 balay Exp bsmith $"
 !
 !  Description: Builds a parallel vector with 1 component on the first
 !               processor, 2 on the second, etc.  Then each processor adds
 !               one to all elements except the last rank.
 !
 !/*T
-!   Concepts: Vectors^Assembling vectors;
-!   Routines: VecCreateMPI(); VecGetSize(); VecSet(); VecSetValues();
-!   Routines: VecView(); VecDestroy();
+!   Concepts: Vectors^assembling vectors;
 !   Processors: n
 !T*/
 ! -----------------------------------------------------------------------

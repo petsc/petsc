@@ -1,4 +1,4 @@
-/*$Id: lg.c,v 1.69 2000/04/09 04:34:21 bsmith Exp bsmith $*/
+/*$Id: lg.c,v 1.70 2000/04/12 04:21:18 bsmith Exp bsmith $*/
 /*
        Contains the data structure for plotting several line
     graphs in a window with an axis. This is intended for line 
@@ -23,7 +23,7 @@ struct _p_DrawLG {
 #define CHUNCKSIZE 100
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawLGCreate" 
+#define __FUNC__ /*<a name="DrawLGCreate"></a>*/"DrawLGCreate" 
 /*@C
     DrawLGCreate - Creates a line graph data structure.
 
@@ -38,7 +38,7 @@ struct _p_DrawLG {
 
     Level: intermediate
 
-.keywords:  draw, line, graph, create
+    Concepts: line graph^creating
 
 .seealso:  DrawLGDestroy()
 @*/
@@ -80,7 +80,7 @@ int DrawLGCreate(Draw draw,int dim,DrawLG *outctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawLGSetDimension" 
+#define __FUNC__ /*<a name="DrawLGSetDimension"></a>*/"DrawLGSetDimension" 
 /*@
    DrawLGSetDimension - Change the number of lines that are to be drawn.
 
@@ -92,7 +92,8 @@ int DrawLGCreate(Draw draw,int dim,DrawLG *outctx)
 
    Level: intermediate
 
-.keywords:  draw, line, graph, reset
+   Concepts: line graph^setting number of lines
+
 @*/
 int DrawLGSetDimension(DrawLG lg,int dim)
 {
@@ -113,7 +114,7 @@ int DrawLGSetDimension(DrawLG lg,int dim)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawLGReset" 
+#define __FUNC__ /*<a name="DrawLGReset"></a>*/"DrawLGReset" 
 /*@
    DrawLGReset - Clears line graph to allow for reuse with new data.
 
@@ -124,7 +125,8 @@ int DrawLGSetDimension(DrawLG lg,int dim)
 
    Level: intermediate
 
-.keywords:  draw, line, graph, reset
+   Concepts: line graph^restarting
+
 @*/
 int DrawLGReset(DrawLG lg)
 {
@@ -141,7 +143,7 @@ int DrawLGReset(DrawLG lg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawLGDestroy" 
+#define __FUNC__ /*<a name="DrawLGDestroy"></a>*/"DrawLGDestroy" 
 /*@C
    DrawLGDestroy - Frees all space taken up by line graph data structure.
 
@@ -151,8 +153,6 @@ int DrawLGReset(DrawLG lg)
 .  lg - the line graph context
 
    Level: intermediate
-
-.keywords:  draw, line, graph, destroy
 
 .seealso:  DrawLGCreate()
 @*/
@@ -178,7 +178,7 @@ int DrawLGDestroy(DrawLG lg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawLGAddPoint" 
+#define __FUNC__ /*<a name="DrawLGAddPoint"></a>*/"DrawLGAddPoint" 
 /*@
    DrawLGAddPoint - Adds another point to each of the line graphs. 
    The new point must have an X coordinate larger than the old points.
@@ -192,7 +192,7 @@ int DrawLGDestroy(DrawLG lg)
 
    Level: intermediate
 
-.keywords:  draw, line, graph, add, point
+   Concepts: line graph^adding points
 
 .seealso: DrawLGAddPoints()
 @*/
@@ -229,7 +229,7 @@ int DrawLGAddPoint(DrawLG lg,PetscReal *x,PetscReal *y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawLGIndicateDataPoints" 
+#define __FUNC__ /*<a name="DrawLGIndicateDataPoints"></a>*/"DrawLGIndicateDataPoints" 
 /*@
    DrawLGIndicateDataPoints - Causes LG to draw a big dot for each data-point.
 
@@ -240,7 +240,8 @@ int DrawLGAddPoint(DrawLG lg,PetscReal *x,PetscReal *y)
 
    Level: intermediate
 
-.keywords:  draw, line, graph, indicate, data, points
+   Concepts: line graph^showing points
+
 @*/
 int DrawLGIndicateDataPoints(DrawLG lg)
 {
@@ -252,7 +253,7 @@ int DrawLGIndicateDataPoints(DrawLG lg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawLGAddPoints" 
+#define __FUNC__ /*<a name="DrawLGAddPoints"></a>*/"DrawLGAddPoints" 
 /*@C
    DrawLGAddPoints - Adds several points to each of the line graphs.
    The new points must have an X coordinate larger than the old points.
@@ -267,7 +268,8 @@ int DrawLGIndicateDataPoints(DrawLG lg)
 
    Level: intermediate
 
-.keywords:  draw, line, graph, add, points
+
+   Concepts: line graph^adding points
 
 .seealso: DrawLGAddPoint()
 @*/
@@ -313,7 +315,7 @@ int DrawLGAddPoints(DrawLG lg,int n,PetscReal **xx,PetscReal **yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawLGDraw" 
+#define __FUNC__ /*<a name="DrawLGDraw"></a>*/"DrawLGDraw" 
 /*@
    DrawLGDraw - Redraws a line graph.
 
@@ -324,7 +326,6 @@ int DrawLGAddPoints(DrawLG lg,int n,PetscReal **xx,PetscReal **yy)
 
    Level: intermediate
 
-.keywords:  draw, line, graph
 @*/
 int DrawLGDraw(DrawLG lg)
 {
@@ -336,21 +337,20 @@ int DrawLGDraw(DrawLG lg)
   if (lg && lg->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
 
-  if (nopts < 2) PetscFunctionReturn(0);
-  if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
   ierr = DrawClear(draw);CHKERRQ(ierr);
   ierr = DrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = DrawAxisDraw(lg->axis);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(lg->comm,&rank);CHKERRQ(ierr);
-  if (rank) PetscFunctionReturn(0);
-
-  for (i=0; i<dim; i++) {
-    for (j=1; j<nopts; j++) {
-      ierr = DrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
-                   lg->x[j*dim+i],lg->y[j*dim+i],DRAW_BLACK+i);CHKERRQ(ierr);
-      if (lg->use_dots) {
-        ierr = DrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],DRAW_RED,"x");CHKERRQ(ierr);
+  if (!rank) {
+  
+    for (i=0; i<dim; i++) {
+      for (j=1; j<nopts; j++) {
+        ierr = DrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
+                        lg->x[j*dim+i],lg->y[j*dim+i],DRAW_BLACK+i);CHKERRQ(ierr);
+        if (lg->use_dots) {
+          ierr = DrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],DRAW_RED,"x");CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -360,7 +360,7 @@ int DrawLGDraw(DrawLG lg)
 } 
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawLGSetLimits" 
+#define __FUNC__ /*<a name="DrawLGSetLimits"></a>*/"DrawLGSetLimits" 
 /*@
    DrawLGSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
@@ -374,7 +374,8 @@ int DrawLGDraw(DrawLG lg)
 
    Level: intermediate
 
-.keywords:  draw, line, graph, set limits
+   Concepts: line graph^setting axis
+
 @*/
 int DrawLGSetLimits(DrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
 {
@@ -389,7 +390,7 @@ int DrawLGSetLimits(DrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,Pe
 }
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawLGGetAxis" 
+#define __FUNC__ /*<a name="DrawLGGetAxis"></a>*/"DrawLGGetAxis" 
 /*@C
    DrawLGGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
@@ -406,7 +407,6 @@ int DrawLGSetLimits(DrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,Pe
 
    Level: advanced
 
-.keywords: draw, line, graph, get, axis
 @*/
 int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 {
@@ -421,7 +421,7 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawLGGetDraw" 
+#define __FUNC__ /*<a name="DrawLGGetDra"></a>*/"DrawLGGetDraw" 
 /*@C
    DrawLGGetDraw - Gets the draw context associated with a line graph.
 
@@ -435,7 +435,6 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 
    Level: intermediate
 
-.keywords: draw, line, graph, get, context
 @*/
 int DrawLGGetDraw(DrawLG lg,Draw *draw)
 {

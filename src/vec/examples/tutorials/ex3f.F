@@ -1,13 +1,10 @@
 !
-!      "$Id: ex3f.F,v 1.11 2000/01/11 21:00:24 bsmith Exp balay $";
+!      "$Id: ex3f.F,v 1.12 2000/05/05 22:15:21 balay Exp bsmith $";
 !
 !  Description: Displays a vector visually.
 !
 !/*T
-!   Concepts: Vectors^Drawing vectors;
-!   Routines: VecCreate(); VecSetFromOptions(); VecSetValues(); VecView(); VecDestroy();
-!   Routines: VecAssemblyBegin(); VecAssemblyEnd(); VecGetOwnershipRange();
-!   Routines: ViewerDrawOpen(); ViewerDestroy();
+!   Concepts: vectors^drawing vectors;
 !   Processors: n
 !T*/
 ! -----------------------------------------------------------------------

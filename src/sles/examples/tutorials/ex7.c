@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.47 2000/01/11 21:02:20 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.48 2000/05/05 22:18:00 balay Exp bsmith $*/
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
 solving a linear system in parallel with SLES.  The code indicates the\n\
@@ -15,12 +15,7 @@ linear solvers on the individual blocks.\n\n";
  */
 
 /*T
-   Concepts: SLES^Customizing the block Jacobi preconditioner
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESGetPC(); SLESGetKSP(); SLESSolve(); SLESView();
-   Routines: PCSetType(); PCGetType();
-   Routines: PCBJacobiSetTotalBlocks(); PCBJacobiGetSubSLES();
-   Routines: KSPSetType(); KSPSetTolerances();
+   Concepts: SLES^customizing the block Jacobi preconditioner
    Processors: n
 T*/
 

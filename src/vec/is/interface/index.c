@@ -1,4 +1,4 @@
-/*$Id: index.c,v 1.75 2000/05/05 22:14:38 balay Exp bsmith $*/
+/*$Id: index.c,v 1.76 2000/06/26 17:41:56 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
@@ -20,7 +20,8 @@
 
    Level: intermediate
 
-.keywords: IS, index set, identity
+   Concepts: identity mapping
+   Concepts: index set^is identity
 
 .seealso: ISSetIdentity()
 @*/
@@ -31,7 +32,7 @@ int ISIdentity(IS is,PetscTruth *ident)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(ident);
-  *ident = (PetscTruth) is->isidentity;
+  *ident = is->isidentity;
   if (*ident) PetscFunctionReturn(0);
   if (is->ops->identity) {
     ierr = (*is->ops->identity)(is,ident);CHKERRQ(ierr);
@@ -51,7 +52,8 @@ int ISIdentity(IS is,PetscTruth *ident)
 
    Level: intermediate
 
-.keywords: IS, index set, identity
+   Concepts: identity mapping
+   Concepts: index set^is identity
 
 .seealso: ISIdentity()
 @*/
@@ -59,7 +61,7 @@ int ISSetIdentity(IS is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
-  is->isidentity = 1;
+  is->isidentity = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -79,7 +81,8 @@ int ISSetIdentity(IS is)
 
    Level: intermediate
 
-.keywords: IS, index set, permutation
+  Concepts: permutation
+  Concepts: index set^is permutation
 
 .seealso: ISSetPermutation()
 @*/
@@ -104,7 +107,8 @@ int ISPermutation(IS is,PetscTruth *perm)
 
    Level: intermediate
 
-.keywords: IS, index set, permutation
+  Concepts: permutation
+  Concepts: index set^permutation
 
 .seealso: ISPermutation()
 @*/
@@ -127,8 +131,6 @@ int ISSetPermutation(IS is)
 .  is - the index set
 
    Level: beginner
-
-.keywords: IS, index set, destroy
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlocked()
 @*/
@@ -168,7 +170,9 @@ int ISDestroy(IS is)
    Notes: For parallel index sets this does the complete parallel permutation, but the 
     code is not efficient for huge index sets (10,000,000 indices).
 
-.keywords: IS, index set, invert, inverse, permutation
+   Concepts: inverse permutation
+   Concepts: permutation^inverse
+   Concepts: index set^invert
 @*/
 int ISInvertPermutation(IS is,int nlocal,IS *isout)
 {
@@ -196,7 +200,8 @@ int ISInvertPermutation(IS is,int nlocal,IS *isout)
 
    Level: beginner
 
-.keywords: IS, index set, get, global, size
+   Concepts: size^of index set
+   Concepts: index set^size
 
 @*/
 int ISGetSize(IS is,int *size)
@@ -225,8 +230,10 @@ int ISGetSize(IS is,int *size)
 
    Level: beginner
 
-.keywords: IS, index set, get, global, size
-
+   Concepts: size^of index set
+   Concepts: local size^of index set
+   Concepts: index set^local size
+  
 @*/
 int ISGetLocalSize(IS is,int *size)
 {
@@ -273,7 +280,8 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
    Level: intermediate
 
-.keywords: IS, index set, get, indices
+   Concepts: index set^getting indices
+   Concepts: indices of index set
 
 .seealso: ISRestoreIndices(), ISGetIndicesF90()
 @*/
@@ -319,8 +327,6 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
    Level: intermediate
 
-.keywords: IS, index set, restore, indices
-
 .seealso: ISGetIndices(), ISRestoreIndicesF90()
 @*/
 int ISRestoreIndices(IS is,int *ptr[])
@@ -348,8 +354,6 @@ int ISRestoreIndices(IS is,int *ptr[])
 -  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
 
    Level: intermediate
-
-.keywords: IS, index set, indices
 
 .seealso: ViewerASCIIOpen()
 @*/
@@ -379,7 +383,8 @@ int ISView(IS is,Viewer viewer)
 
    Level: intermediate
 
-.keywords: IS, index set, sort, indices
+   Concepts: index set^sorting
+   Concepts: sorting index set
 
 .seealso: ISSorted()
 @*/
@@ -409,8 +414,6 @@ int ISSort(IS is)
 
    Level: intermediate
 
-.keywords: IS, index set, sort, indices
-
 .seealso: ISSort()
 @*/
 int ISSorted(IS is,PetscTruth *flg)
@@ -439,7 +442,7 @@ int ISSorted(IS is,PetscTruth *flg)
 
    Level: beginner
 
-.keywords: IS, index set, identity
+   Concepts: index set^duplicating
 
 .seealso: ISCreateGeneral()
 @*/
@@ -488,7 +491,9 @@ int ISDuplicate(IS is,IS *newIS)
 
 .seealso:  ISRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices()
 
-.keywords:  IS, index set, get, indices, f90
+  Concepts: index set^getting indices in f90
+  Concepts: indices of index set in f90
+
 M*/
 
 /*MC
@@ -524,7 +529,6 @@ M*/
 
 .seealso:  ISGetIndicesF90(), ISGetIndices(), ISRestoreIndices()
 
-.keywords:  IS, index set, restore, indices, f90
 M*/
 
 /*MC
@@ -560,7 +564,10 @@ M*/
 .seealso:  ISBlockRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices(),
            ISRestoreIndices()
 
-.keywords:  IS, index set, get, indices, f90
+  Concepts: index set^getting block indices in f90
+  Concepts: indices of index set in f90
+  Concepts: block indices of index set in f90
+
 M*/
 
 /*MC
@@ -593,7 +600,6 @@ M*/
 
 .seealso:  ISBlockGetIndicesF90(), ISGetIndices(), ISRestoreIndices(), ISRestoreIndicesF90()
 
-.keywords:  IS, index set, restore, indices, f90
 M*/
 
 

@@ -1,4 +1,4 @@
-/*$Id: dcoor.c,v 1.23 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dcoor.c,v 1.24 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -19,7 +19,8 @@
 
    Level: advanced
 
-.keywords:  draw, set, coordinates
+   Concepts: drawing^coordinates
+   Concepts: graphics^coordinates
 
 .seealso: DrawGetCoordinates()
 

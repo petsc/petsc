@@ -1,4 +1,4 @@
-/*$Id: dpoints.c,v 1.31 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dpoints.c,v 1.32 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -22,7 +22,7 @@
    Note: 
    Even a size of zero insures that a single pixel is colored.
 
-.keywords: draw, point, set, size
+   Concepts: point^drawing size
 
 .seealso: DrawPoint()
 @*/

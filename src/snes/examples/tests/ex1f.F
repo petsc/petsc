@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.48 2000/09/06 16:16:03 balay Exp balay $";
+! "$Id: ex4f.F,v 1.49 2000/09/06 22:19:29 balay Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -9,12 +9,7 @@
 !    -my <yg>, where <yg> = number of grid points in the y-direction
 !
 !/*T
-!  Concepts: SNES^Solving a system of nonlinear equations (sequential Bratu example);
-!  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-!  Routines: SNESSolve(); SNESSetFromOptions();
-!  Routines: MatGetColoring(); MatFDColoringCreate(); MatFDColoringSetFromOptions();
-!  Routines: MatFDColoringDestroy(); ISColoringDestroy(); SNESDefaultComputeJacobianColor();
-!  Routines: DrawOpenX(); DrawTensorContour(); DrawDestroy();
+!  Concepts: SNES^sequential Bratu example
 !  Processors: 1
 !T*/
 !

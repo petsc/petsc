@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.14 2000/08/24 22:43:47 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.15 2000/09/02 02:50:39 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -490,7 +490,7 @@ int PFSetFromOptions(PF pf)
   PetscValidHeaderSpecific(pf,PF_COOKIE);
 
   if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
-  ierr = OptionsBegin(pf->comm,pf->prefix,"Mathematical functions options");CHKERRQ(ierr);
+  ierr = OptionsBegin(pf->comm,pf->prefix,"Mathematical functions options","Vec");CHKERRQ(ierr);
     ierr = OptionsList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);

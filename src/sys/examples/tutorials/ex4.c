@@ -1,10 +1,9 @@
-/*$Id: ex4.c,v 1.10 1999/11/10 03:18:22 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.11 2000/01/11 20:59:51 bsmith Exp bsmith $*/
 
 static char help[] = "Prints loadable objects from dynamic library.\n\n";
 
 /*T
-   Concepts: Dynamic libraries;
-   Routines: PetscInitialize(); PetscPrintf(); PetscFinalize();
+   Concepts: dynamic libraries;
    Processors: n
 T*/
  

@@ -1,4 +1,4 @@
-/*$Id: tagm.c,v 1.27 2000/07/10 03:38:52 bsmith Exp balay $*/
+/*$Id: tagm.c,v 1.28 2000/07/13 16:40:02 balay Exp bsmith $*/
 /*
       Some PETSc utilites
 */
@@ -66,7 +66,9 @@ EXTERN_C_END
 
     Level: developer
 
-.keywords: object, get, new, tag
+    Concepts: tag^getting
+    Concepts: message tag^getting
+    Concepts: MPI message tag^getting
 
 .seealso: PetscCommGetNewTag()
 @*/
@@ -113,7 +115,9 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 
     Level: developer
 
-.keywords: comm, get, new, tag
+    Concepts: tag^getting
+    Concepts: message tag^getting
+    Concepts: MPI message tag^getting
 
 .seealso: PetscObjectGetNewTag()
 @*/

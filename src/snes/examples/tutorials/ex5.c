@@ -1,8 +1,8 @@
-/*$Id: ex5.c,v 1.119 2000/08/17 04:52:51 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.120 2000/09/06 22:20:06 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
-static char help[] = "Solves nonlinear system in parallel.\n\
+static char help[] = "Solves nonlinear PDE system.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
 domain, using distributed arrays (DAs) to partition the parallel grid.\n\
 The command line options include:\n\
@@ -14,14 +14,8 @@ The command line options include:\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
 /*T
-   Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
-   Concepts: DA^Using distributed arrays;
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions(); DAView();
-   Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
-   Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetISLocalToGlobalMapping();
-   Routines: MatSetLocalToGlobalMapping(); VecGetArray(); VecRestoreArray();
+   Concepts: SNES^parallel Bratu example
+   Concepts: DA^using distributed arrays;
    Processors: n
 T*/
 

@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.20 2000/09/08 20:42:42 bsmith Exp balay $*/
+/*$Id: aoptions.c,v 1.21 2000/09/13 15:22:38 balay Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -51,14 +51,14 @@ int OptionsPublishCount;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"OptionsBegin_Private"
-int OptionsBegin_Private(MPI_Comm comm,char *prefix,char *title)
+int OptionsBegin_Private(MPI_Comm comm,char *prefix,char *title,char *mansec)
 {
   int        ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrallocpy(prefix,&amspub.prefix);CHKERRQ(ierr);
   ierr = PetscStrallocpy(title,&amspub.title);CHKERRQ(ierr);
-  amspub.comm = comm;
+  amspub.comm   = comm;
   ierr = OptionsHasName(PETSC_NULL,"-help",&amspub.printhelp);CHKERRQ(ierr);
   if (amspub.printhelp && OptionsPublishCount) {
     ierr = (*PetscHelpPrintf)(comm,"%s -------------------------------------------------\n",title);CHKERRQ(ierr);
@@ -74,7 +74,9 @@ int OptionsBegin_Private(MPI_Comm comm,char *prefix,char *title)
     sprintf(options,"Options_%d",count++);
     ierr = AMS_Memory_create(acomm,options,&amspub.amem);CHKERRQ(ierr);
     ierr = AMS_Memory_take_access(amspub.amem);CHKERRQ(ierr); 
+    amspub.mprefix = amspub.prefix;
     ierr = AMS_Memory_add_field(amspub.amem,title,&amspub.mprefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    ierr = AMS_Memory_add_field(amspub.amem,mansec,&amspub.mprefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
     amspub.changedmethod = PETSC_FALSE;
     ierr = AMS_Memory_add_field(amspub.amem,"ChangedMethod",&amspub.changedmethod,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   }

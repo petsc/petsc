@@ -1,11 +1,9 @@
 !
-!      "$Id: ex2f.F,v 1.14 2000/01/11 21:00:01 bsmith Exp balay $";
+!      "$Id: ex2f.F,v 1.15 2000/05/05 22:14:48 balay Exp bsmith $";
 !
 !/*T
-!    Concepts: Index sets^Manipulating a stride index set;
-!    Concepts: Index sets^Accessing indices from Fortran
-!    Routines: ISCreateStride(); ISDestroy(); ISView()
-!    Routines: ISGetIndices(); ISRestoreIndices()
+!    Concepts: Index sets^manipulating a stride index set;
+!    Concepts: Index sets^accessing indices from Fortran
 !T*/
 !    
 !    Comment: Creates an index set based on a stride. Views that index set

@@ -1,4 +1,4 @@
-/*$Id: destroy.c,v 1.52 2000/04/12 04:21:29 bsmith Exp bsmith $*/
+/*$Id: destroy.c,v 1.53 2000/05/04 16:24:45 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -18,7 +18,10 @@
 
    Level: intermediate
 
-.keywords: object, destroy
+    Concepts: destroying object
+    Concepts: freeing object
+    Concepts: deleting object
+
 @*/
 int PetscObjectDestroy(PetscObject obj)
 {
@@ -50,7 +53,6 @@ int PetscObjectDestroy(PetscObject obj)
 
    Level: intermediate
 
-.keywords: object, view
 @*/
 int PetscObjectView(PetscObject obj,Viewer viewer)
 {
@@ -89,7 +91,10 @@ int PetscObjectView(PetscObject obj,Viewer viewer)
 
 .seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType()
 
-.keywords: comparing types
+   Concepts: comparing^object types
+   Concepts: types^comparing
+   Concepts: object type^comparing
+
 @*/
 int PetscTypeCompare(PetscObject obj,char *type_name,PetscTruth *same)
 {
@@ -124,8 +129,6 @@ static PetscObject PetscObjectRegisterDestroy_Objects[128];
       This is used by, for example, VIEWER_XXX_() routines to free the viewer
     when PETSc ends.
 
-.keywords: object, destroy
-
 .seealso: PetscObjectRegisterDestroyAll()
 @*/
 int PetscObjectRegisterDestroy(PetscObject obj)
@@ -146,8 +149,6 @@ int PetscObjectRegisterDestroy(PetscObject obj)
    Collective on individual PetscObjects
 
    Level: developer
-
-.keywords: object, destroy
 
 .seealso: PetscObjectRegisterDestroy()
 @*/

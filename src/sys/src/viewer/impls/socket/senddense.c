@@ -1,4 +1,4 @@
-/* $Id: senddense.c,v 1.41 2000/06/23 03:21:57 bsmith Exp bsmith $ */
+/* $Id: senddense.c,v 1.42 2000/07/07 16:05:56 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
@@ -23,7 +23,8 @@
      VecView(Vec vector,Viewer viewer)
 .ve
 
-.keywords: Viewer, Matlab, put, dense, array, vector
+   Concepts: Matlab^sending data
+   Concepts: Sockets^sending data
 
 .seealso: ViewerSocketOpen(), MatView(), VecView(), ViewerSocketPutReal(), ViewerSocketPutScalar()
 @*/
@@ -68,7 +69,8 @@ int ViewerSocketPutScalar(Viewer viewer,int m,int n,Scalar *array)
      VecView(Vec vector,Viewer viewer)
 .ve
 
-.keywords: Viewer, Socket, put, dense, array, vector
+   Concepts: Matlab^sending data
+   Concepts: Sockets^sending data
 
 .seealso: ViewerSocketOpen(), MatView(), VecView(), ViewerSocketPutInt(), ViewerSocketPutReal()
 @*/
@@ -108,7 +110,8 @@ int ViewerSocketPutReal(Viewer viewer,int m,int n,PetscReal *array)
      VecView(Vec vector,Viewer viewer)
 .ve
 
-.keywords: Viewer, Socket, put, dense, array, vector
+   Concepts: Matlab^sending data
+   Concepts: Sockets^sending data
 
 .seealso: ViewerSocketOpen(), MatView(), VecView(), ViewerSocketPutScalar(), ViewerSocketPutReal()
 @*/

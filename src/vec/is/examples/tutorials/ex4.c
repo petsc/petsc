@@ -1,12 +1,11 @@
 
-/*      "$Id: ex4.c,v 1.6 2000/01/11 21:00:01 bsmith Exp balay $"; */
+/*      "$Id: ex4.c,v 1.7 2000/05/05 22:14:48 balay Exp bsmith $"; */
 
 static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 
 /*T
-    Concepts: Local to global mappings, global to local mappings
-    Routines: ISLocalToGlobalMappingCreate(); ISLocalToGlobalMappingApply()
-    Routines: ISGlobalToLocalMappingApply(); ISLocalToGlobalMappingDestroy()
+    Concepts: local to global mappings
+    Concepts: global to local mappings
 
     Comment:  Creates an index set based on blocks of integers. Views that index set
     and then destroys it.

@@ -1,4 +1,4 @@
-/*$Id: dlinegw.c,v 1.27 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dlinegw.c,v 1.28 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -24,7 +24,7 @@
    Notes:
    Not currently implemented.
 
-.keywords:  draw, line, get, width
+   Concepts: line^width
 
 .seealso:  DrawLineSetWidth()
 @*/

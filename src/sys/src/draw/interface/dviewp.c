@@ -1,4 +1,4 @@
-/*$Id: dviewp.c,v 1.39 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dviewp.c,v 1.40 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -20,7 +20,9 @@
 
    Level: advanced
 
-.keywords:  draw, set, view, port
+   Concepts: drawing^in subset of window
+   Concepts: graphics^in subset of window
+
 @*/
 int DrawSetViewPort(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
@@ -51,7 +53,7 @@ int DrawSetViewPort(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal y
 
    Level: advanced
 
-.keywords:  draw, set, view, port, split
+   Concepts: drawing^in subset of window
 
 .seealso: DrawDivideViewPort(), DrawSetViewPort()
 
@@ -112,7 +114,7 @@ int DrawSplitViewPort(Draw draw)
 
    Level: advanced
 
-.keywords:  draw, set, view, port, split
+   Concepts: drawing^in subset of window
 
 .seealso: DrawSplitViewPort(), DrawSetViewPort(), DrawViewPortsSet(), DrawViewPortsDestroy()
 
@@ -180,8 +182,6 @@ int DrawViewPortsCreate(Draw draw,int nports,DrawViewPorts **ports)
 
    Level: advanced
 
-.keywords:  draw, set, view, port, split
-
 .seealso: DrawSplitViewPort(), DrawSetViewPort(), DrawViewPortsSet(), DrawViewPortsCreate()
 
 @*/
@@ -215,7 +215,7 @@ int DrawViewPortsDestroy(DrawViewPorts *ports)
 
    Level: advanced
 
-.keywords:  draw, set, view, port, split
+   Concepts: drawing^in subset of window
 
 .seealso: DrawSplitViewPort(), DrawSetViewPort(), DrawViewPortsDestroy(), DrawViewPortsCreate()
 

@@ -1,12 +1,10 @@
-/*$Id: ex8.c,v 1.14 2000/01/11 21:00:24 bsmith Exp balay $*/
+/*$Id: ex8.c,v 1.15 2000/05/05 22:15:21 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
 a parallel vector.\n\n";
 
 /*T
-   Concepts: Vectors^Assembling vectors with local ordering;
-   Routines: VecCreateMPI(); VecGetSize(); VecSet(); VecSetValuesLocal();
-   Routines: VecView(); VecDestroy(); VecSetLocalToGlobalMapping(); 
+   Concepts: vectors^assembling vectors with local ordering;
    Processors: n
 T*/
 

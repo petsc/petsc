@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.35 2000/08/24 22:40:56 bsmith Exp balay $*/
+/*$Id: drawreg.c,v 1.36 2000/08/25 16:45:26 balay Exp bsmith $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
@@ -29,7 +29,8 @@ FList DrawList              = 0;
 
    Level: beginner
 
-.keywords: Draw, create, context
+   Concepts: graphics^creating context
+   Concepts: drawing^creating context
 
 .seealso: DrawSetFromOptions(), DrawDestroy(), DrawSetType()
 @*/
@@ -86,7 +87,11 @@ int DrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y
    See "petsc/include/petscdraw.h" for available methods (for instance,
    DRAW_X)
 
-.keywords: Draw, set, method
+   Concepts: drawing^X windows
+   Concepts: X windows^graphics
+   Concepts: drawing^postscript
+   Concepts: postscript^graphics
+   Concepts: drawing^Microsoft Windows
 
 .seealso: DrawSetFromOptions(), DrawCreate(), DrawDestroy()
 @*/
@@ -152,8 +157,6 @@ int DrawSetType(Draw draw,DrawType type)
 
    Level: developer
 
-.keywords: Draw, register, destroy
-
 .seealso: DrawRegisterDynamic(), DrawRegisterAll()
 @*/
 int DrawRegisterDestroy(void)
@@ -183,7 +186,6 @@ int DrawRegisterDestroy(void)
 
    Level: advanced
 
-.keywords: Draw, get, method, name
 @*/
 int DrawGetType(Draw draw,DrawType *type)
 {
@@ -225,7 +227,8 @@ $     DrawSetType(ksp,"my_draw_type")
    or at runtime via the option
 $     -draw_type my_draw_type
 
-.keywords: KSP, register
+   Concepts: graphics^registering new Draw classes
+   Concepts: Draw^registering new Draw classes
 
 .seealso: DrawRegisterAll(), DrawRegisterDestroy()
 M*/
@@ -264,7 +267,8 @@ int DrawRegister(char *sname,char *path,char *name,int (*function)(Draw))
    Notes: 
     Must be called after DrawCreate() before the Drawtor is used.
 
-.keywords: draw
+    Concepts: drawing^setting options
+    Concepts: graphics^setting options
 
 .seealso: DrawCreate(), DrawSetType()
 
@@ -298,7 +302,7 @@ int DrawSetFromOptions(Draw draw)
     }
 #endif
   }
-  ierr = OptionsBegin(draw->comm,draw->prefix,"Graphics (Draw) Options");CHKERRQ(ierr);
+  ierr = OptionsBegin(draw->comm,draw->prefix,"Graphics (Draw) Options","Draw");CHKERRQ(ierr);
     ierr = OptionsList("-draw_type","Type of graphical output","DrawSetType",DrawList,def,vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = DrawSetType(draw,vtype);CHKERRQ(ierr);

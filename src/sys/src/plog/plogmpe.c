@@ -1,4 +1,4 @@
-/*$Id: plogmpe.c,v 1.51 2000/04/12 04:21:43 bsmith Exp balay $*/
+/*$Id: plogmpe.c,v 1.52 2000/05/05 22:14:18 balay Exp bsmith $*/
 /*
       PETSc code to log PETSc events using MPE
 */
@@ -306,7 +306,8 @@ extern char *PLogEventName[];
 
    Level: advanced
 
-.keywords: log, all, begin
+   Concepts: logging^MPE
+   Concepts: logging^message passing
 
 .seealso: PLogDump(), PLogBegin(), PLogAllBegin(), PLogEventActivate(),
           PLogEventDeactivate()
@@ -371,8 +372,6 @@ int PLogMPEBegin(void)
 
    Level: advanced
 
-.keywords: log, MPE, begin
-
 .seealso: PLogEventMPEActivate(), PlogEventActivate(), PlogEventDeactivate()
 @*/
 int PLogEventMPEDeactivate(int event)
@@ -405,8 +404,6 @@ int PLogEventMPEDeactivate(int event)
 
    Level: advanced
 
-.keywords: log, MPE, begin
-
 .seealso: PLogEventMPEDeactivate(), PLogEventActivate(), PLogEventDeactivate()
 @*/
 int PLogEventMPEActivate(int event)
@@ -424,8 +421,6 @@ int PLogEventMPEActivate(int event)
    Collective over PETSC_COMM_WORLD
 
    Level: advanced
-
-.keywords: log, destroy
 
 .seealso: PLogDump(), PLogAllBegin(), PLogMPEBegin()
 @*/

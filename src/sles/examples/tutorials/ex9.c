@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.41 2000/09/06 22:19:19 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.42 2000/09/08 17:49:40 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\
@@ -6,15 +6,9 @@ solution of linear systems, while reusing matrix, vector, and solver data\n\
 structures throughout the process.  Note the various stages of event logging.\n\n";
 
 /*T
-   Concepts: SLES^Repeatedly solving linear systems;
-   Concepts: PLog^Profiling multiple stages of code;
-   Concepts: PLog^User-defined event profiling;
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions(); SLESSetUp()
-   Routines: SLESSolve(); SLESGetKSP(); SLESAppendOptionsPrefix()
-   Routines: PLogEventRegister(); PLogEventBegin(); PLogEventEnd()
-   Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops()
-   Routines: MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS)
-   Routines: KSPSetInitialGuessNonzero(); KSPSetMonitor()
+   Concepts: SLES^repeatedly solving linear systems;
+   Concepts: PLog^profiling multiple stages of code;
+   Concepts: PLog^user-defined event profiling;
    Processors: n
 T*/
 

@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.141 2000/09/02 02:48:41 bsmith Exp balay $*/
+/*$Id: sles.c,v 1.142 2000/09/07 15:18:28 balay Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
@@ -208,7 +208,7 @@ int SLESSetFromOptions(SLES sles)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = OptionsBegin(sles->comm,sles->prefix,"Linear solver (SLES) options");CHKERRQ(ierr);
+  ierr = OptionsBegin(sles->comm,sles->prefix,"Linear solver (SLES) options","SLES");CHKERRQ(ierr);
     ierr = OptionsName("-sles_diagonal_scale","Diagonal scale matrix before building preconditioner","SLESSetDiagonalScale",&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = SLESSetDiagonalScale(sles,PETSC_TRUE);CHKERRQ(ierr);

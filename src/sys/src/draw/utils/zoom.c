@@ -1,4 +1,4 @@
-/*$Id: zoom.c,v 1.14 2000/04/12 04:21:18 bsmith Exp balay $*/
+/*$Id: zoom.c,v 1.15 2000/05/05 22:13:45 balay Exp bsmith $*/
 
 #include "petscdraw.h"     /*I "petscdraw.h"  I*/
 
@@ -16,7 +16,9 @@
 
   Level: advanced
 
-.keywords:  draw, zoom
+  Concepts: graphics^zooming
+  Concepts: drawing^zooming
+  Concepts: zooming^in graphics
 
 .seealso:  
 @*/

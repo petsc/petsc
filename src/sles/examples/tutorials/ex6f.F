@@ -1,5 +1,5 @@
 !
-!    "$Id: ex6f.F,v 1.28 2000/01/11 21:02:20 bsmith Exp balay $";
+!    "$Id: ex6f.F,v 1.29 2000/05/05 22:18:00 balay Exp bsmith $";
 !
 !  Description: This example demonstrates repeated linear solves as
 !  well as the use of different preconditioner and linear system
@@ -7,11 +7,8 @@
 !  in common blocks.
 !
 !/*T
-!  Concepts: SLES^Repeatedly solving linear systems;
-!  Concepts: SLES^Different matrices for linear system and preconditioner;
-!  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-!  Routines: SLESSolve(); SLESGetKSP(); KSPSetMonitor();
-!  Routines: KSPBuildSolution();
+!  Concepts: SLES^repeatedly solving linear systems;
+!  Concepts: SLES^different matrices for linear system and preconditioner;
 !  Processors: n
 !T*/
 !

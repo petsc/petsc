@@ -1,4 +1,4 @@
-/*$Id: viewregall.c,v 1.13 2000/05/10 16:38:49 bsmith Exp bsmith $*/
+/*$Id: viewregall.c,v 1.14 2000/07/10 03:38:34 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -19,8 +19,6 @@ EXTERN_C_END
   Not Collective
 
    Level: developer
-
-.keywords: Viewer, register, all
 
 .seealso:  ViewerRegisterDestroy()
 @*/

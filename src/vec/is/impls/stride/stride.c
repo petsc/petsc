@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.94 2000/05/05 22:14:42 balay Exp bsmith $*/
+/*$Id: stride.c,v 1.95 2000/07/10 03:39:07 bsmith Exp bsmith $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
@@ -16,12 +16,12 @@ int ISIdentity_Stride(IS is,PetscTruth *ident)
   IS_Stride *is_stride = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  is->isidentity = 0;
+  is->isidentity = PETSC_FALSE;
   *ident         = PETSC_FALSE;
   if (is_stride->first != 0) PetscFunctionReturn(0);
   if (is_stride->step  != 1) PetscFunctionReturn(0);
   *ident          = PETSC_TRUE;
-  is->isidentity  = 1;
+  is->isidentity  = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

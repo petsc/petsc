@@ -1,4 +1,4 @@
-/*$Id: mpitr.c,v 1.24 2000/04/12 04:21:43 bsmith Exp bsmith $*/
+/*$Id: mpitr.c,v 1.25 2000/05/10 16:39:35 bsmith Exp bsmith $*/
 
 /*
     Code for tracing mistakes in MPI usage. For example, sends that are never received,
@@ -24,8 +24,6 @@
 .  -mpidump - Dumps MPI incompleteness during call to PetscFinalize()
 
     Level: developer
-
-.keywords: MPI errors
 
 .seealso:  PetscTrDump()
  @*/

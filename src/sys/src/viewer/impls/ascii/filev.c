@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.108 2000/06/09 16:35:21 bsmith Exp bsmith $ */
+/* $Id: filev.c,v 1.109 2000/07/10 03:38:30 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -102,7 +102,8 @@ int ViewerFlush_ASCII(Viewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: Viewer, file, get, pointer
+  Concepts: Viewer^file pointer
+  Concepts: File pointer^getting from Viewer
 
 .seealso: ViewerASCIIOpen(), ViewerDestroy(), ViewerSetType(), ViewerCreate(), ViewerASCIIPrintf(),
           ViewerASCIISynchronizedPrintf(), ViewerFlush()
@@ -138,7 +139,8 @@ extern FILE *petsc_history;
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: parallel, fprintf
+  Concepts: ViewerASCII^formating
+  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIPrintf(),
           ViewerASCIIPopTab(), ViewerASCIISynchronizedPrintf(), ViewerASCIIOpen(),
@@ -175,7 +177,8 @@ int ViewerASCIIPushTab(Viewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: parallel, fprintf
+  Concepts: ViewerASCII^formating
+  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIPrintf(),
           ViewerASCIIPushTab(), ViewerASCIISynchronizedPrintf(), ViewerASCIIOpen(),
@@ -213,7 +216,8 @@ int ViewerASCIIPopTab(Viewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: parallel, fprintf
+  Concepts: ViewerASCII^formating
+  Concepts: tab^setting
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIPrintf(),
           ViewerASCIIPopTab(), ViewerASCIISynchronizedPrintf(), ViewerASCIIPushTab(), ViewerASCIIOpen(),
@@ -260,7 +264,9 @@ int ViewerASCIIUseTabs(Viewer viewer,PetscTruth flg)
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: parallel, fprintf
+  Concepts: ViewerASCII^printing
+  Concepts: printing^to file
+  Concepts: printf
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIOpen(),
           ViewerASCIIPushTab(), ViewerASCIIPopTab(), ViewerASCIISynchronizedPrintf(),

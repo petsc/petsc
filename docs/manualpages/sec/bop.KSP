@@ -1,11 +1,10 @@
 <HTML>
 <HEAD>
-<TITLE>KSP Manual Pages</TITLE>
+<TITLE>Krylov Methods - KSP</TITLE>
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> KSP Manual Pages
-</H2> 
+<H2> Krylov Methods - KSP</H2> 
 
 The
 <A HREF="../SLES/index.html">Scalable Linear Equations Solvers (SLES)</A>

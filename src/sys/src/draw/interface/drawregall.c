@@ -1,4 +1,4 @@
-/*$Id: drawregall.c,v 1.15 2000/06/07 17:36:20 balay Exp balay $*/
+/*$Id: drawregall.c,v 1.16 2000/06/07 17:42:17 balay Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -19,8 +19,6 @@ EXTERN_C_END
   Not Collective
 
   Level: developer
-
-.keywords: Draw, register, all
 
 .seealso:  DrawRegisterDestroy()
 @*/

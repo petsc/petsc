@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.19 2000/05/05 22:18:29 balay Exp balay $*/
+/*$Id: ex5.c,v 1.20 2000/09/06 22:20:17 balay Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the modified Bratu problem in a 2D rectangular domain,\n\
@@ -12,13 +12,8 @@ The command line options include:\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
 /*T
-   Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
-   Concepts: DA^Using distributed arrays;
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions(); DAView();
-   Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
-   Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
+   Concepts: SNES^solving a system of nonlinear equations (parallel Bratu example);
+   Concepts: DA^using distributed arrays;
    Processors: n
 T*/
 

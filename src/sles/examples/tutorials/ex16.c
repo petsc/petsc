@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.15 2000/01/11 21:02:20 bsmith Exp balay $*/
+/*$Id: ex16.c,v 1.16 2000/05/05 22:18:00 balay Exp bsmith $*/
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
 
@@ -11,11 +11,9 @@ Input parameters include:\n\
   -n <mesh_n>       : number of mesh points in y-direction\n\n";
 
 /*T
-   Concepts: SLES^Repeatedly solving linear systems;
+   Concepts: SLES^repeatedly solving linear systems;
    Concepts: SLES^Laplacian, 2d
    Concepts: Laplacian, 2d
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve();
    Processors: n
 T*/
 

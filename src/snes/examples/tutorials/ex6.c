@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.61 2000/05/05 22:18:34 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.62 2000/07/27 14:45:45 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
 matrices are used for the Jacobian and the preconditioner.  The code also\n\
@@ -9,13 +9,11 @@ with a user-provided preconditioner.  Input arguments are:\n\
                    matrix-free methods in this example.\n\n";
 
 /*T
-   Concepts: SNES^Using different matrices for the Jacobian and preconditioner;
-   Concepts: SNES^Using matrix-free methods and a user-provided preconditioner;
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions(); SNESGetSLES();
-   Routines: SLESGetPC(); PCSetType(); PCShellSetApply(); PCSetType();
-   Routines: SNESSetConvergenceHistory(); SNESGetConvergenceHistory();
-   Routines: KSPSetResidualHistory(); KSPGetResidualHistory();
+   Concepts: SNES^different matrices for the Jacobian and preconditioner;
+   Concepts: SNES^matrix-free methods
+   Concepts: SNES^user-provided preconditioner;
+   Concepts: matrix-free methods
+   Concepts: user-provided preconditioner;
    Processors: 1
 T*/
 

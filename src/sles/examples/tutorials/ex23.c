@@ -1,14 +1,11 @@
-/*$Id: ex23.c,v 1.2 2000/09/10 21:58:48 curfman Exp bsmith $*/
+/*$Id: ex23.c,v 1.3 2000/09/12 16:32:56 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex23 [-help] [all PETSc options] */
 
-static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
+static char help[] = "Solves a tridiagonal linear system.\n\n";
 
 /*T
-   Concepts: SLES^Solving a system of linear equations (basic parallel example);
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESGetPC();
-   Routines: KSPSetTolerances(); PCSetType();
+   Concepts: SLES^basic parallel example;
    Processors: n
 T*/
 

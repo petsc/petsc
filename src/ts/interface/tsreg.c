@@ -1,4 +1,4 @@
-/*$Id: tsreg.c,v 1.62 2000/08/17 04:52:57 bsmith Exp bsmith $*/
+/*$Id: tsreg.c,v 1.63 2000/09/02 02:49:53 bsmith Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 
@@ -159,7 +159,7 @@ int TSSetFromOptions(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
 
-  ierr = OptionsBegin(ts->comm,ts->prefix,"Time step options");CHKERRQ(ierr);
+  ierr = OptionsBegin(ts->comm,ts->prefix,"Time step options","TS");CHKERRQ(ierr);
     if (ts->type_name) {
       deft = ts->type_name;
     } else {  

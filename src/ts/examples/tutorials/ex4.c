@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.17 2000/01/11 21:03:05 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.18 2000/05/05 22:19:01 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
 
@@ -13,9 +13,6 @@ Input parameters include:\n\
    Concepts: TS^time-dependent linear problems
    Concepts: TS^heat equation
    Concepts: TS^diffusion equation
-   Routines: TSCreate(); TSSetSolution(); TSSetRHSMatrix();
-   Routines: TSSetInitialTimeStep(); TSSetDuration(); TSSetMonitor();
-   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); 
    Processors: n
 */
 

@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.214 2000/08/15 19:17:16 bsmith Exp balay $*/
+/*$Id: vector.c,v 1.215 2000/09/07 15:17:21 balay Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -25,7 +25,7 @@
 
 .seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlocked(), VecGetBlockSize()
 
-.keywords: block size, vectors
+  Concepts: block size^vectors
 @*/
 int VecSetBlockSize(Vec v,int bs)
 {

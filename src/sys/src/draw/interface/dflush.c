@@ -1,4 +1,4 @@
-/*$Id: dflush.c,v 1.22 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dflush.c,v 1.23 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -16,7 +16,7 @@
 
    Level: beginner
 
-.keywords:  draw, flush
+   Concepts: flushing^graphics
 
 .seealso: DrawSynchronizedFlush()
 @*/

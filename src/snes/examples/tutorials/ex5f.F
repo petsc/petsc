@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.52 2000/09/06 16:15:59 balay Exp balay $";
+! "$Id: ex5f.F,v 1.53 2000/09/06 22:19:27 balay Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -14,14 +14,8 @@
 !    -Ny <npy>, where <npy> = number of processors in the y-direction
 !
 !/*T
-!  Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
-!  Concepts: DA^Using distributed arrays;
-!  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-!  Routines: SNESSolve(); SNESSetFromOptions(); DAView();
-!  Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
-!  Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-!  Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetISLocalToGlobalMapping();
-!  Routines: MatSetLocalToGlobalMapping();
+!  Concepts: SNES^parallel Bratu example
+!  Concepts: DA^using distributed arrays;
 !  Processors: n
 !T*/
 !

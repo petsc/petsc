@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.219 2000/09/02 02:49:32 bsmith Exp balay $*/
+/*$Id: snes.c,v 1.220 2000/09/07 15:18:03 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -153,7 +153,7 @@ int SNESSetFromOptions(SNES snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
-  ierr = OptionsBegin(snes->comm,snes->prefix,"Nonlinear solver (SNES) options");CHKERRQ(ierr); 
+  ierr = OptionsBegin(snes->comm,snes->prefix,"Nonlinear solver (SNES) options","SNES");CHKERRQ(ierr); 
     if (snes->type_name) {
       deft = snes->type_name;
     } else {  
@@ -1755,8 +1755,7 @@ int SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
    Input Parameters:
 +  snes - iterative context obtained from SNESCreate()
 .  a   - array to hold history
-.  its - integer array holds the number of linear iterations (or
-         negative if not converged) for each solve.
+.  its - integer array holds the number of linear iterations for each solve.
 .  na  - size of a and its
 -  reset - PETSC_TRUTH indicates each new nonlinear solve resets the history counter to zero,
            else it continues storing new values for new nonlinear solves after the old ones

@@ -1,4 +1,4 @@
-/*$Id: mpiuopen.c,v 1.31 2000/05/05 22:13:54 balay Exp bsmith $*/
+/*$Id: mpiuopen.c,v 1.32 2000/08/17 04:50:42 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */
@@ -34,7 +34,8 @@
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: file, open
+    Concepts: opening ASCII file
+    Concepts: files^opening ASCII
 
 .seealso: PetscFClose()
 @*/
@@ -82,7 +83,8 @@ int PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FILE **fp)
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: file, close
+    Concepts: files^closing ASCII
+    Concepts: closing file
 
 .seealso: PetscFOpen()
 @*/

@@ -1,4 +1,4 @@
-/*$Id: flush.c,v 1.26 2000/05/05 22:13:21 balay Exp bsmith $*/
+/*$Id: flush.c,v 1.27 2000/05/10 16:38:49 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 
@@ -15,7 +15,8 @@
 
    Level: intermediate
 
-.keywords: Viewer, flush
+   Concepts: flushing^Viewer data
+   Concepts: redrawing^flushing 
 
 .seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerDrawOpen(), ViewerCreate(), ViewerDestroy(),
           ViewerSetType()

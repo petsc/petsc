@@ -1,16 +1,12 @@
 !
-!    "$Id: ex3f.F,v 1.12 2000/09/08 18:00:28 bsmith Exp balay $";
+!    "$Id: ex3f.F,v 1.13 2000/09/08 19:16:30 balay Exp bsmith $";
 !
 !   Description: Demonstrates how users can augment the PETSc profiling by
 !                nserting their own event logging.
 !
 !/*T
-!   Concepts: PLog^User-defined event profiling (basic example);
-!   Concepts: PLog^Activating/deactivating events for profiling (basic example);
-!   Routines: PLogEventRegister(); PLogEventBegin(); PLogEventEnd();
-!   Routines: PLogEventDeactivate(); PLogEventActivate(); PLogFlops();
-!   Routines: PLogEventMPEDeactivate(); PLogEventMPEActivate();
-!   Routines: PetscSleep();
+!   Concepts: PLog^user-defined event profiling (basic example);
+!   Concepts: PLog^activating/deactivating events for profiling (basic example);
 !   Processors: n
 !T*/
 ! -----------------------------------------------------------------------

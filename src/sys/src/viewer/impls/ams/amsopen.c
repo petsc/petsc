@@ -1,4 +1,4 @@
-/*$Id: amsopen.c,v 1.11 2000/04/12 04:20:55 bsmith Exp bsmith $*/
+/*$Id: amsopen.c,v 1.12 2000/05/10 16:38:45 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  */
 
@@ -38,7 +38,9 @@
     Information about the AMS (ALICE Memory Snooper) is available via
     http://www.mcs.anl.gov/ams.
 
-.keywords: Viewer, open, AMS memory snooper
+   Concepts: AMS
+   Concepts: ALICE Memory Snooper
+   Concepts: Asynchronous Memory Snooper
 
 .seealso: PetscObjectPublish(), ViewerDestroy(), ViewerStringSPrintf()
 

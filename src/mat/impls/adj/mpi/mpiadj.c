@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.45 2000/07/24 21:09:28 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.46 2000/09/19 14:18:40 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -381,13 +381,13 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
 #if defined(PETSC_USE_BOPT_g)
   if (i[0] != 0) SETERRQ1(1,1,"First i[] index must be zero, instead it is %d\n",i[0]);
   for (ii=1; ii<m; ii++) {
-    if (i[ii] < 0 || i[ii] > i[ii-1]) {
+    if (i[ii] < 0 || i[ii] < i[ii-1]) {
       SETERRQ4(1,1,"i[%d] index is out of range: i[%d]",ii,i[ii],ii-1,i[ii-1]);
     }
   }
   for (ii=0; ii<i[m]; ii++) {
-    if (i[ii] < 0 || i[ii] >= B->N) {
-      SETERRQ2(1,1,"Column index %d out of range %d\n",ii,i[ii]);
+    if (j[ii] < 0 || j[ii] >= B->N) {
+      SETERRQ2(1,1,"Column index %d out of range %d\n",ii,j[ii]);
     }
   } 
 #endif

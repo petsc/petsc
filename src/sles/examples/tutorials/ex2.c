@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.85 2000/05/05 22:18:00 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.86 2000/06/14 15:28:01 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
 
@@ -10,13 +10,9 @@ Input parameters include:\n\
   -n <mesh_n>       : number of mesh points in y-direction\n\n";
 
 /*T
-   Concepts: SLES^Solving a system of linear equations (basic parallel example);
+   Concepts: SLES^basic parallel example;
    Concepts: SLES^Laplacian, 2d
    Concepts: Laplacian, 2d
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC();
-   Routines: KSPSetTolerances(); PCSetType();
-   Routines: PetscRandomCreate(); PetscRandomDestroy(); VecSetRandom();
    Processors: n
 T*/
 

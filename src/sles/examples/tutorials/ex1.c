@@ -1,14 +1,11 @@
-/*$Id: ex1.c,v 1.80 2000/05/05 22:18:00 balay Exp curfman $*/
+/*$Id: ex1.c,v 1.81 2000/09/22 14:41:02 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
 
 /*T
-   Concepts: SLES^Solving a system of linear equations (basic uniprocessor example);
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESGetPC();
-   Routines: KSPSetTolerances(); PCSetType();
+   Concepts: SLES^solving a system of linear equations
    Processors: 1
 T*/
 

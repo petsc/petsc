@@ -1,4 +1,4 @@
-/*$Id: dtext.c,v 1.27 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dtext.c,v 1.28 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -19,7 +19,8 @@
 
    Level: beginner
 
-.keywords:  draw, text
+   Concepts: drawing^string
+   Concepts: string^drawing
 
 .seealso: DrawStringVertical()
 

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.18 2000/07/13 03:03:24 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.19 2000/08/01 20:02:41 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and reorders it.\n\
@@ -12,11 +12,10 @@ users manual for a discussion of preloading.  Input parameters include\n\
   -f1 <input_file> : second file to load (larger system)\n\n";
 
 /*T
-   Concepts: Mat^Ordering a matrix - loading a binary matrix and vector;
-   Concepts: PLog^Preloading executable
-   Routines: MatGetOrdering(); PreLoadBegin(); PreLoadEnd(); PreLoadStage();
-   Routines: MatGetTypeFromOptions(); MatLoad(); VecLoad();
-   Routines: ViewerBinaryOpen(); ViewerDestroy();
+   Concepts: Mat^ordering a matrix - loading a binary matrix and vector;
+   Concepts: Mat^loading a binary matrix and vector;
+   Concepts: Vec^loading a binary vector;
+   Concepts: PLog^preloading executable
    Processors: 1
 T*/
 

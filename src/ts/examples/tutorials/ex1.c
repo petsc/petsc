@@ -1,12 +1,11 @@
-/*$Id: ex1.c,v 1.20 2000/01/11 21:03:05 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.21 2000/05/05 22:19:01 balay Exp bsmith $*/
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
 
 /*
-   Concepts: TS^Pseudo-timestepping^nonlinear problems
-   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
-   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration();
-   Routines: TSPseudoSetTimeStep(); TSSetFromOptions(); TSStep(); TSDestroy();
+   Concepts: TS^pseudo-timestepping
+   Concepts: pseudo-timestepping
+   Concepts: nonlinear problems
    Processors: 1
 
 */

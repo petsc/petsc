@@ -1,4 +1,4 @@
-/*$Id: sortip.c,v 1.31 2000/04/23 19:01:00 bsmith Exp balay $*/
+/*$Id: sortip.c,v 1.32 2000/05/05 22:14:11 balay Exp bsmith $*/
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 
@@ -54,7 +54,7 @@ static int PetscSortIntWithPermutation_Private(const int v[],int vdx[],int right
    Notes: 
    i is unchanged on output.
 
-.keywords: sort, integer, permutation
+   Concepts: sorting^ints with permutation
 
 .seealso: PetscSortInt(), PetscSortDoubleWithPermutation()
  @*/
@@ -125,7 +125,7 @@ static int PetscSortDoubleWithPermutation_Private(const double v[],int vdx[],int
    Notes: 
    i is unchanged on output.
 
-.keywords: sort, double, permutation
+   Concepts: sorting^doubles with permutation
 
 .seealso: PetscSortDouble(), PetscSortIntWithPermutation()
  @*/

@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.9 2000/01/11 21:02:16 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.10 2000/05/05 22:17:55 balay Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -6,14 +6,8 @@ static char help[] =
   -f0 <input_file> : first file to load (small system)\n\n";
 
 /*T
-   Concepts: SLES^Solving a linear system - loading a binary matrix and vector;
-   Concepts: PLog^Profiling multiple stages of code;
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESSetUp(); SLESSetUpOnBlocks(); SLESView();
-   Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops();
-   Routines: PetscBarrier(); PetscGetTime();
-   Routines: MatGetTypeFromOptions(); MatLoad(); VecLoad();
-   Routines: ViewerBinaryOpen(); ViewerStringOpen(); ViewerDestroy();
+   Concepts: SLES^solving a linear system
+   Concepts: PLog^profiling multiple stages of code;
    Processors: n
 T*/
 

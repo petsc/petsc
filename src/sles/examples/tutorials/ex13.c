@@ -1,15 +1,11 @@
-/*$Id: ex13.c,v 1.19 2000/01/11 21:02:20 bsmith Exp balay $*/
+/*$Id: ex13.c,v 1.20 2000/05/05 22:18:00 balay Exp bsmith $*/
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
 
 /*T
-   Concepts: SLES^Solving a system of linear equations (basic sequential example)
+   Concepts: SLES^basic sequential example
    Concepts: SLES^Laplacian, 2d
    Concepts: Laplacian, 2d
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); MatCreateSeqAIJ();
-   Routines: KSPSetTolerances(); PCSetType();
-   Routines: VecCreateSeqWithArray(); VecPlaceArray();
    Processors: 1
 T*/
 

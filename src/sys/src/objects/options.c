@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.236 2000/08/30 03:04:11 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.237 2000/09/02 02:46:58 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -237,7 +237,7 @@ int OptionsInsertFile(const char file[])
    the user does not typically need to call this routine. OptionsInsert()
    can be called several times, adding additional entries into the database.
 
-.keywords: options, database, create
+   Concepts: options database^adding
 
 .seealso: OptionsDestroy_Private(), OptionsPrint()
 */
@@ -353,7 +353,7 @@ int OptionsInsert(int *argc,char ***args,const char file[])
 
    Level: advanced
 
-.keywords: options, database, print, table
+   Concepts: options database^printing
 
 .seealso: OptionsAllUsed()
 @*/
@@ -386,7 +386,7 @@ int OptionsPrint(FILE *fd)
 
    Level: advanced
 
-.keywords: options, database, print, table
+   Concepts: options database^listing
 
 .seealso: OptionsAllUsed(), OptionsPrintf()
 @*/
@@ -431,8 +431,6 @@ int OptionsGetAll(char *copts[])
     Since OptionsDestroy() is called by PetscFinalize(), the user 
     typically does not need to call this routine.
 
-.keywords: options, database, destroy
-
 .seealso: OptionsInsert()
 */
 int OptionsDestroy(void)
@@ -473,7 +471,7 @@ int OptionsDestroy(void)
    Only some options have values associated with them, such as
    -ksp_rtol tol.  Other options stand alone, such as -ksp_monitor.
 
-.keywords: options, database, set, value
+  Concepts: options database^adding option
 
 .seealso: OptionsInsert()
 @*/
@@ -558,8 +556,7 @@ int OptionsSetValue(const char iname[],const char value[])
 
    Level: intermediate
 
-.keywords: options, database, set, value, clear
-
+   Concepts: options database^removing option
 .seealso: OptionsInsert()
 @*/
 int OptionsClearValue(const char iname[])
@@ -674,7 +671,7 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
 
    Level: advanced
 
-.keywords: options, database, has, name
+   Concepts: options database^rejection option
 
 .seealso: OptionsGetInt(), OptionsGetDouble(),OptionsHasName(),
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
@@ -712,7 +709,7 @@ int OptionsReject(const char name[],const char mess[])
 
    Level: beginner
 
-.keywords: options, database, has, name
+   Concepts: options database^has option name
 
 .seealso: OptionsGetInt(), OptionsGetDouble(),
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
@@ -760,7 +757,7 @@ int OptionsHasName(const char pre[],const char name[],PetscTruth *flg)
 
    Level: beginner
 
-.keywords: options, database, get, int
+   Concepts: options database^has int
 
 .seealso: OptionsGetDouble(), OptionsHasName(), OptionsGetString(),
           OptionsGetIntArray(), OptionsGetDoubleArray()
@@ -807,7 +804,7 @@ int OptionsGetInt(const char pre[],const char name[],int *ivalue,PetscTruth *flg
        TRUE, true, YES, yes, nostring, and 1 all translate to PETSC_TRUE
        FALSE, false, NO, no, and 0 all translate to PETSC_FALSE
 
-.keywords: options, database, get, logical
+   Concepts: options database^has logical
 
 .seealso: OptionsGetDouble(), OptionsHasName(), OptionsGetString(),
           OptionsGetIntArray(), OptionsGetDoubleArray(), OptionsGetInt()
@@ -877,7 +874,7 @@ int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,Pets
 
    Level: beginner
 
-.keywords: options, database, get, double
+   Concepts: options database^has double
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
@@ -921,7 +918,7 @@ int OptionsGetDouble(const char pre[],const char name[],double *dvalue,PetscTrut
    A complex number 2+3i can be specified as 2,3 at the command line.
    or a number 2.0e-10 - 3.3e-20 i  can be specified as 2.0e-10,3.3e-20
 
-.keywords: options, database, get, double
+   Concepts: options database^has scalar
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
@@ -984,7 +981,7 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,PetscTrut
 
    Level: beginner
 
-.keywords: options, database, get, double
+   Concepts: options database^array of doubles
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray()
@@ -1038,7 +1035,7 @@ int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[],int
 
    Level: beginner
 
-.keywords: options, database, get, double
+   Concepts: options database^array of ints
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetDoubleArray()
@@ -1100,7 +1097,7 @@ int OptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax
       call OptionsGetString(PETSC_NULL_CHARACTER,'-s',string,flg,ierr)
 .ve
 
-.keywords: options, database, get, string
+   Concepts: options database^string
 
 .seealso: OptionsGetInt(), OptionsGetDouble(),  
            OptionsHasName(), OptionsGetIntArray(), OptionsGetDoubleArray()
@@ -1155,7 +1152,7 @@ int OptionsGetString(const char pre[],const char name[],char string[],int len,Pe
 
    Contributed by Matthew Knepley.
 
-.keywords: options, database, get, string
+   Concepts: options database^array of strings
 
 .seealso: OptionsGetInt(), OptionsGetDouble(),  
            OptionsHasName(), OptionsGetIntArray(), OptionsGetDoubleArray()
@@ -1204,8 +1201,6 @@ int OptionsGetStringArray(const char pre[],const char name[],char **strings,int 
 .   N - count of options not used
 
    Level: advanced
-
-.keywords: options, database, missed, unused, all, used
 
 .seealso: OptionsPrint()
 @*/

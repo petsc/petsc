@@ -1,50 +1,52 @@
-#include <assert.h>
-#include <math.h>
-#include <float.h>
+/*$Id: essl.c,v 1.43 2000/09/11 18:18:11 bsmith Exp bsmith $*/
+/* 
+        Provides an interface to the LUSOL package of ....
+
+*/
 #include "src/mat/impls/aij/seq/aij.h"
 
-#define PETSC_HAVE_LUSOL
+EXTERN int MatDestroy_SeqAIJ(Mat);
 
-#if defined(PETSC_HAVE_LUSOL) && !defined(__cplusplus)
-
-#if ! defined(F_CALLCONV)
-# define F_CALLCONV
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define LU1FAC   lu1fac_
+#define LU6SOL   lu6sol_
+#define M1PAGE   m1page_
+#define M5SETX   m5setx_
+#define M6RDEL   m6rdel_
+#elif !defined(PETSC_HAVE_FORTRAN_CAPS)
+#define LU1FAC   lu1fac
+#define LU6SOL   lu6sol
+#define M1PAGE   m1page
+#define M5SETX   m5setx
+#define M6RDEL   m6rdel
 #endif
 
-#if   defined(FNAME_LCASE_DECOR) /* fortran names: lower case, trailing _ */
-# define LU1FAC   lu1fac_
-# define LU6SOL   lu6sol_
-#elif defined(FNAME_LCASE_NODECOR) /* fortran names: lower case, no _ */
-# define LU1FAC   lu1fac
-# define LU6SOL   lu6sol
-#elif defined(FNAME_UCASE_DECOR) /* fortran names: upper case, trailing _ */
-# define LU1FAC   LU1FAC_
-# define LU6SOL   LU6SOL_
-#elif defined(FNAME_UCASE_NODECOR) /* fortran names: upper case, no _ */
-# define LU1FAC   LU1FAC
-# define LU6SOL   LU6SOL
-#else
-#error "No compile define for fortran naming convention"
-No_compile_define_for_fortran_naming_convention;
-#endif
+EXTERN_C_BEGIN
+/*
+    Dummy symbols that the MINOS files mi25bfac.f and mi15blas.f may require
+*/
+void PETSC_STDCALL M1PAGE() {
+  ;
+}
+void PETSC_STDCALL M5SETX() {
+  ;
+}
 
-#if defined(WAT) || defined(WPL)
-# if defined(POSTUC) || ! defined(FNAME_LCASE_NODECOR)
-#   error "Bad compiler defines"
-    bad_compile_defines__DO_NOT_USE_POSTUC_WITH_WATCOM ;
-    bad_compile_defines__PLEASE_USE_FNAME_LCASE_NODECOR_WITH_WATCOM ;
-# endif
-# pragma aux lu1fac "^";
-# pragma aux lu6sol "^";
-#endif
+void PETSC_STDCALL M6RDEL() {
+  ;
+}
+EXTERN_C_END
 
-void F_CALLCONV LU1FAC (int *m, int *n, int *nnz, int *size, int *luparm,
+#if defined(PETSC_HAVE_LUSOL) && !defined(PETSC_USE_COMPLEX)
+
+EXTERN_C_BEGIN
+extern void PETSC_STDCALL LU1FAC (int *m, int *n, int *nnz, int *size, int *luparm,
                         double *parmlu, double *data, int *indc, int *indr,
                         int *rowperm, int *colperm, int *collen, int *rowlen,
                         int *colstart, int *rowstart, int *rploc, int *cploc,
                         int *rpinv, int *cpinv, double *w, int *inform);
 
-void F_CALLCONV LU6SOL (int *mode, int *m, int *n, double *rhs, double *x,
+extern void PETSC_STDCALL LU6SOL (int *mode, int *m, int *n, double *rhs, double *x,
                         int *size, int *luparm, double *parmlu, double *data,
                         int *indc, int *indr, int *rowperm, int *colperm,
                         int *collen, int *rowlen, int *colstart, int *rowstart,
@@ -84,8 +86,8 @@ typedef struct
  *
  *  Input parameters                                        Typical value
  *
- *  luparm( 0) = nout     File number for printed messages.         6
- *  luparm( 1) = lprint   Print level.                              0
+ *  luparm(0) = nout     File number for printed messages.         6
+ *  luparm(1) = lprint   Print level.                              0
  *                    < 0 suppresses output.
  *                    = 0 gives error messages.
  *                    = 1 gives debug output from some of the
@@ -93,7 +95,7 @@ typedef struct
  *                   >= 2 gives the pivot row and column and the
  *                        no. of rows and columns involved at
  *                        each elimination step in lu1fac.
- *  luparm( 2) = maxcol   lu1fac: maximum number of columns         5
+ *  luparm(2) = maxcol   lu1fac: maximum number of columns         5
  *                        searched allowed in a Markowitz-type
  *                        search for the next pivot element.
  *                        For some of the factorization, the
@@ -103,7 +105,7 @@ typedef struct
  *
  *  Output parameters
  *
- *  luparm( 9) = inform   Return code from last call to any LU routine.
+ *  luparm(9) = inform   Return code from last call to any LU routine.
  *  luparm(10) = nsing    No. of singularities marked in the
  *                        output array w(*).
  *  luparm(11) = jsing    Column index of last singularity.
@@ -131,25 +133,25 @@ typedef struct
  *
  *  Input parameters                                        Typical value
  *
- *  parmlu( 0) = elmax1   Max multiplier allowed in  L           10.0
+ *  parmlu(0) = elmax1   Max multiplier allowed in  L           10.0
  *                        during factor.
- *  parmlu( 1) = elmax2   Max multiplier allowed in  L           10.0
+ *  parmlu(1) = elmax2   Max multiplier allowed in  L           10.0
  *                        during updates.
- *  parmlu( 2) = small    Absolute tolerance for             eps**0.8
+ *  parmlu(2) = small    Absolute tolerance for             eps**0.8
  *                        treating reals as zero.     IBM double: 3.0d-13
- *  parmlu( 3) = utol1    Absolute tol for flagging          eps**0.66667
+ *  parmlu(3) = utol1    Absolute tol for flagging          eps**0.66667
  *                        small diagonals of U.       IBM double: 3.7d-11
- *  parmlu( 4) = utol2    Relative tol for flagging          eps**0.66667
+ *  parmlu(4) = utol2    Relative tol for flagging          eps**0.66667
  *                        small diagonals of U.       IBM double: 3.7d-11
- *  parmlu( 5) = uspace   Factor limiting waste space in  U.      3.0
+ *  parmlu(5) = uspace   Factor limiting waste space in  U.      3.0
  *                        In lu1fac, the row or column lists
  *                        are compressed if their length
  *                        exceeds uspace times the length of
  *                        either file after the last compression.
- *  parmlu( 6) = dens1    The density at which the Markowitz      0.3
+ *  parmlu(6) = dens1    The density at which the Markowitz      0.3
  *                        strategy should search maxcol columns
  *                        and no rows.
- *  parmlu( 7) = dens2    the density at which the Markowitz      0.6
+ *  parmlu(7) = dens2    the density at which the Markowitz      0.6
  *                        strategy should search only 1 column
  *                        or (preferably) use a dense LU for
  *                        all the remaining rows and columns.
@@ -157,7 +159,7 @@ typedef struct
  *
  *  Output parameters
  *
- *  parmlu( 9) = amax     Maximum element in  A.
+ *  parmlu(9) = amax     Maximum element in  A.
  *  parmlu(10) = elmax    Maximum multiplier in current  L.
  *  parmlu(11) = umax     Maximum element in current  U.
  *  parmlu(12) = dumax    Maximum diagonal in  U.
@@ -172,15 +174,13 @@ typedef struct
  *  parmlu(29) =
  */
 
-#define Factorization_Tolerance 1e-1
-#define Factorization_Pivot_Tolerance pow(DBL_EPSILON, 2.0 / 3.0) 
+#define Factorization_Tolerance       1e-1
+#define Factorization_Pivot_Tolerance pow(2.2204460492503131E-16, 2.0 / 3.0) 
 #define Factorization_Small_Tolerance 1e-15 /* pow(DBL_EPSILON, 0.8) */
 
-EXTERN int MatDestroy_SeqAIJ(Mat);
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_SeqAIJ_LUSOL"
-
 int MatDestroy_SeqAIJ_LUSOL(Mat A)
 {
      Mat_SeqAIJ *a;
@@ -192,29 +192,28 @@ int MatDestroy_SeqAIJ_LUSOL(Mat A)
      a = (Mat_SeqAIJ *)A->data;
      lusol = (Mat_SeqAIJ_LUSOL *)a->spptr;
 
-     ierr = PetscFree(lusol->ip); CHKERRQ(ierr);
-     ierr = PetscFree(lusol->iq); CHKERRQ(ierr);
-     ierr = PetscFree(lusol->lenc); CHKERRQ(ierr);
-     ierr = PetscFree(lusol->lenr); CHKERRQ(ierr);
-     ierr = PetscFree(lusol->locc); CHKERRQ(ierr);
-     ierr = PetscFree(lusol->locr); CHKERRQ(ierr);
-     ierr = PetscFree(lusol->iploc); CHKERRQ(ierr);
-     ierr = PetscFree(lusol->iqloc); CHKERRQ(ierr);
-     ierr = PetscFree(lusol->ipinv); CHKERRQ(ierr);
-     ierr = PetscFree(lusol->iqinv); CHKERRQ(ierr);
-     ierr = PetscFree(lusol->mnsw); CHKERRQ(ierr);
-     ierr = PetscFree(lusol->mnsv); CHKERRQ(ierr);
+     ierr = PetscFree(lusol->ip);CHKERRQ(ierr);
+     ierr = PetscFree(lusol->iq);CHKERRQ(ierr);
+     ierr = PetscFree(lusol->lenc);CHKERRQ(ierr);
+     ierr = PetscFree(lusol->lenr);CHKERRQ(ierr);
+     ierr = PetscFree(lusol->locc);CHKERRQ(ierr);
+     ierr = PetscFree(lusol->locr);CHKERRQ(ierr);
+     ierr = PetscFree(lusol->iploc);CHKERRQ(ierr);
+     ierr = PetscFree(lusol->iqloc);CHKERRQ(ierr);
+     ierr = PetscFree(lusol->ipinv);CHKERRQ(ierr);
+     ierr = PetscFree(lusol->iqinv);CHKERRQ(ierr);
+     ierr = PetscFree(lusol->mnsw);CHKERRQ(ierr);
+     ierr = PetscFree(lusol->mnsv);CHKERRQ(ierr);
 
-     ierr = PetscFree(lusol->indc); CHKERRQ(ierr);
-     ierr = PetscFree(lusol); CHKERRQ(ierr);
+     ierr = PetscFree(lusol->indc);CHKERRQ(ierr);
+     ierr = PetscFree(lusol);CHKERRQ(ierr);
 
-     ierr = MatDestroy_SeqAIJ(A); CHKERRQ(ierr);
+     ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
      PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__  "MatSolve_SeqAIJ_LUSOL"
-
 int MatSolve_SeqAIJ_LUSOL(Mat A,Vec b,Vec x)
 {
      Mat_SeqAIJ_LUSOL *lusol = 
@@ -224,8 +223,8 @@ int MatSolve_SeqAIJ_LUSOL(Mat A,Vec b,Vec x)
      int i, m, n, nnz, status, ierr;
 
      PetscFunctionBegin;
-     ierr = VecGetArray(x, &xx); CHKERRQ(ierr);
-     ierr = VecGetArray(b, &bb); CHKERRQ(ierr);
+     ierr = VecGetArray(x, &xx);CHKERRQ(ierr);
+     ierr = VecGetArray(b, &bb);CHKERRQ(ierr);
 
      m = n = lusol->n;
      nnz = lusol->nnz;
@@ -245,14 +244,13 @@ int MatSolve_SeqAIJ_LUSOL(Mat A,Vec b,Vec x)
 	  SETERRQ(PETSC_ERR_ARG_SIZ, 0, "solve failed"); 
      }
 
-     ierr = VecRestoreArray(x, &xx); CHKERRQ(ierr);
-     ierr = VecRestoreArray(b, &bb); CHKERRQ(ierr);
+     ierr = VecRestoreArray(x, &xx);CHKERRQ(ierr);
+     ierr = VecRestoreArray(b, &bb);CHKERRQ(ierr);
      PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "MatLUFactorNumeric_SeqAIJ_LUSOL"
-
 int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
 {
      Mat_SeqAIJ *a;
@@ -400,9 +398,7 @@ int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
 
 #undef __FUNC__  
 #define __FUNC__ "MatLUFactorSymbolic_SeqAIJ_LUSOL"
-
-int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c, 
-				     MatLUInfo *info, Mat *F)
+int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatLUInfo *info, Mat *F)
 {
      /************************************************************************/
      /* Input                                                                */
@@ -443,15 +439,14 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,
      /* Create the factorization.                                            */
      /************************************************************************/
 
-     ierr = MatCreateSeqAIJ(A->comm, m, n, 0, PETSC_NULL, F); 
-     CHKERRQ(ierr);
+     ierr = MatCreateSeqAIJ(A->comm, m, n, 0, PETSC_NULL, F);CHKERRQ(ierr);
 
      (*F)->ops->destroy = MatDestroy_SeqAIJ_LUSOL;
      (*F)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_LUSOL;
      (*F)->ops->solve = MatSolve_SeqAIJ_LUSOL;
      (*F)->factor = FACTOR_LU;
 
-     lusol = PetscNew(Mat_SeqAIJ_LUSOL); CHKPTRQ(lusol);
+     lusol = PetscNew(Mat_SeqAIJ_LUSOL);CHKPTRQ(lusol);
      ((Mat_SeqAIJ *)(*F)->data)->spptr = (void *)lusol;
 
      /************************************************************************/
@@ -512,38 +507,35 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,
      lusol->data = (double *)(lusol->indr + nnz);
      PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "MatUseLUSOL_SeqAIJ"
-
 int MatUseLUSOL_SeqAIJ(Mat A)
 {
-     MatType type;
-     int m, n;
-
-     PetscFunctionBegin;
-     MatGetSize(A, &m, &n);
-     if (m != n)
-     {
-          SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be square");
-     }
+  MatType type;
+  int     ierr, m, n;
+     
+  PetscFunctionBegin;
+  ierr = MatGetSize(A, &m, &n);CHKERRQ(ierr);
+  if (m != n) {
+    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be square");
+  }
 			      
-     MatGetType(A, &type, PETSC_NULL);
-     if (type != MATSEQAIJ)
-     {
-          SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be Seq_AIJ");
-     }
+  ierr = MatGetType(A, &type, PETSC_NULL);CHKERRQ(ierr);
+  if (type != MATSEQAIJ){
+    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be Seq_AIJ");
+  }
 							    
-     A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_LUSOL;
-     PLogInfo(0,"Using LUSOL for SeqAIJ LU factorization and solves.");
-     PetscFunctionReturn(0);
+  A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_LUSOL;
+  PLogInfo(0,"Using LUSOL for SeqAIJ LU factorization and solves.");
+  PetscFunctionReturn(0);
 }
 
 #else
 
 #undef __FUNC__  
 #define __FUNC__ "MatUseLUSOL_SeqAIJ"
-
 int MatUseLUSOL_SeqAIJ(Mat A)
 {
      PetscFunctionBegin;

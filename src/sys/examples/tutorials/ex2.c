@@ -1,14 +1,15 @@
-/*$Id: ex2.c,v 1.8 1999/10/24 14:01:41 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.9 2000/01/11 20:59:51 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex2 [-help] [all PETSc options] */
 
-static char help[] = "This is an introductory PETSc example that illustrates\n\
-the use of synchronized print statements.\n\n";
+static char help[] = "Synchronized printing.\n\n";
 
 /*T
-   Concepts: Introduction to PETSc;
-   Routines: PetscInitialize(); PetscPrintf(); PetscSynchronizedPrintf();
-   Routines: PetscSynchronizedFlush(); PetscFinalize();
+   Concepts: introduction to PETSc;
+   Concepts: printing^synchronized
+   Concepts: printing^parallel
+   Concepts: printf^synchronized
+   Concepts: printf^parallel
    Processors: n
 T*/
  
@@ -26,7 +27,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRA(ierr);
+  ierr = PetscInitialize(&argc,&argv,PETSC_NULL,help);CHKERRA(ierr);
 
   /* 
      The following MPI calls return the number of processes

@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.195 2000/08/24 14:23:30 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.196 2000/09/02 02:49:07 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -393,7 +393,7 @@ int KSPSetFromOptions(KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = OptionsBegin(ksp->comm,ksp->prefix,"Krylov Method (KSP) Options");CHKERRQ(ierr);
+  ierr = OptionsBegin(ksp->comm,ksp->prefix,"Krylov Method (KSP) Options","KSP");CHKERRQ(ierr);
     ierr = OptionsList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(ksp->type_name?ksp->type_name:KSPGMRES),type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetType(ksp,type);CHKERRQ(ierr);

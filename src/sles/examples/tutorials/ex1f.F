@@ -1,13 +1,10 @@
 !
-!    "$Id: ex1f.F,v 1.24 2000/05/05 22:18:00 balay Exp balay $";
+!    "$Id: ex1f.F,v 1.25 2000/08/03 20:15:17 balay Exp bsmith $";
 !
 !   Description: Solves a tridiagonal linear system with SLES.
 !
 !/*T
-!   Concepts: SLES^Solving a system of linear equations (basic uniprocessor example);
-!   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-!   Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESGetPC();
-!   Routines: KSPSetTolerances(); PCSetType();
+!   Concepts: SLES^solving a system of linear equations
 !   Processors: 1
 !T*/
 ! -----------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.2 2000/04/09 03:11:45 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.3 2000/05/05 22:20:14 balay Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -6,8 +6,6 @@ static char help[] = "Demonstrates various vector routines.\n\n";
 
 /*T
    Concepts: mathematical functions
-   Routines: PFCreate(); PFDestroy(); PFSet(); PFApplyVec(); DASetUniformCoordinates();
-  
    Processors: n
 T*/
 

@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.3 2000/09/06 22:19:32 balay Exp bsmith $ */
+/* $Id: ex20.c,v 1.4 2000/09/08 17:48:55 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -26,17 +26,9 @@ options are:\n\
   -coef <c>, where <c> = beta / 2\n\n";
 
 /*T
-   Concepts: SNES^Solving a system of nonlinear equations (parallel example);
-   Concepts: DA^Using distributed arrays
-   Concepts: Multigrid;
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions(); DAView();
-   Routines: DACreate3d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
-   Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetISLocalToGlobalMapping();
-   Routines: DAGetInterpolation(); MatRestrict(); PetscTypeCompare();
-   Routines: MGSetLevels(); MGSetType(); MGGetSmoother(); MGSetX(); MGSetRhs(); MGSetR();
-   Routines: MGSetInterpolate(); MGSetRestriction(); MGSetResidual()
+   Concepts: SNES^solving a system of nonlinear equations (parallel example);
+   Concepts: DA^using distributed arrays
+   Concepts: multigrid;
    Processors: n
 T*/
 

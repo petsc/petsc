@@ -1,4 +1,4 @@
-/*$Id: fuser.c,v 1.27 2000/04/12 04:21:38 bsmith Exp balay $*/
+/*$Id: fuser.c,v 1.28 2000/05/05 22:14:11 balay Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -59,7 +59,7 @@ int PetscGetUserName(char name[],int nlen)
 
     Level: developer
 
-.keywords: system, get, user, name
+    Concepts: user name
 
 .seealso: PetscGetHostName()
 @*/

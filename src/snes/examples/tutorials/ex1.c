@@ -1,12 +1,9 @@
-/*$Id: ex1.c,v 1.16 2000/05/05 22:18:34 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.17 2000/08/01 20:57:32 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 
 /*T
-   Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example);
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); SNESGetSLES();
-   Routines: SNESSolve(); SNESSetFromOptions(); 
-   Routines: SLESGetPC(); SLESGetKSP(); KSPSetTolerances(); PCSetType();
+   Concepts: SNES^basic uniprocessor example
    Processors: 1
 T*/
 

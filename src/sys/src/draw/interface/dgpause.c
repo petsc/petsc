@@ -1,4 +1,4 @@
-/*$Id: dgpause.c,v 1.22 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dgpause.c,v 1.23 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -20,9 +20,10 @@
 
    Note:
    By default the pause time is zero unless the -draw_pause option is given 
-   during DrawOpenX().
  
-.keywords: draw, set, pause
+   Concepts: waiting for user input
+   Concepts: drawing^waiting
+   Concepts: graphics^waiting
 
 .seealso: DrawSetPause(), DrawPause()
 @*/

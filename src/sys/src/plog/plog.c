@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.244 2000/09/06 22:20:45 balay Exp balay $*/
+/*$Id: plog.c,v 1.245 2000/09/19 14:55:28 balay Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -52,7 +52,8 @@ FILE *PLogInfoFile;
 
     Level: advanced
 
-.keywords: allow, information, printing, monitoring
+   Concepts: debugging^detailed runtime information
+   Concepts: dumping detailed runtime information
 
 .seealso: PLogInfo()
 @*/
@@ -536,7 +537,7 @@ int PLogStagePrint(int stage,PetscTruth flg)
 
    Level: intermediate
 
-.keywords: log, push, stage
+   Concepts: logging^stages
 
 .seealso: PLogStagePop(), PLogStageRegister(), PetscBarrier(), PreLoadBegin(), PreLoadEnd(),
           PreLoadStage()
@@ -597,7 +598,7 @@ int PLogStagePush(int stage)
 
    Level: intermediate
 
-.keywords: log, pop, stage
+   Concepts: logging^stages
 
 .seealso: PLogStagePush(), PLogStageRegister(), PetscBarrier()
 @*/
@@ -988,7 +989,7 @@ int PLogSet(int (*b)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
 
    Level: advanced
 
-.keywords: log, all, begin
+   Concepts: logging^detailed
 
 .seealso: PLogDump(), PLogBegin(), PLogTraceBegin()
 @*/
@@ -1022,8 +1023,6 @@ int PLogAllBegin(void)
    PLogStagePush() and PLogStagePop().
 
    Level: developer
-
-.keywords: log, destroy
 
 .seealso: PLogDump(), PLogAllBegin(), PLogPrintSummary(), PLogStagePush(), PlogStagePop()
 @*/
@@ -1075,7 +1074,7 @@ int PLogDestroy(void)
 
     Level: advanced
 
-.keywords: log, begin
+    Concepts: logging
 
 .seealso: PLogDump(), PLogAllBegin(), PLogPrintSummary(), PLogTraceBegin()
 @*/
@@ -1164,7 +1163,7 @@ $      Log.<rank>
 
    Level: advanced
 
-.keywords: log, dump
+   Concepts: logging
 
 .seealso: PLogBegin(), PLogAllBegin(), PLogPrintSummary()
 @*/
@@ -1264,7 +1263,7 @@ extern int  PLogEventColorMalloced[];
 
     Level: intermediate
 
-.keywords: log, event, register
+    Concepts: logging^events
 
 .seealso: PLogEventBegin(), PLogEventEnd(), PLogFlops(),
           PLogEventMPEActivate(), PLogEventMPEDeactivate(),
@@ -1422,7 +1421,7 @@ PetscTruth PetscPreLoadingUsed = PETSC_FALSE;
 
    Level: beginner
    
-.keywords: log, dump, print
+    Concepts: logging^summary
 
 .seealso: PLogBegin(), PLogDump()
 @*/
@@ -1804,7 +1803,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
 
    Level: intermediate
 
-.keywords: log, flops, floating point operations
+   Concepts: flops^amount done
 
 .seealso: PetscGetTime(), PLogFlops()
 @*/
@@ -2067,7 +2066,9 @@ int PLogObjectState(PetscObject obj,const char format[],...)
 .seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(),  PLogStagePush(), 
           PLogStagePop(), PLogStageRegister(), PetscGetFlops()
 
-.keywords:  get, time
+   Concepts: time
+   Concepts: runtime
+
 @*/
 int PetscGetTime(PLogDouble *t)
 {
@@ -2110,7 +2111,8 @@ int PetscGetTime(PLogDouble *t)
 
 .seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(), PetscGetFlops()
 
-.keywords: log, flops, floating point operations
+  Concepts: flops^logging
+
 M*/
 
 
@@ -2150,7 +2152,8 @@ M*/
 
 .seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops()
 
-.keywords: log, event, begin
+   Concepts: logging^events
+
 M*/
 
 /*MC
@@ -2189,7 +2192,8 @@ M*/
 
 .seealso: PLogEventRegister(), PLogEventBegin(), PLogFlops()
 
-.keywords: log, event, end
+   Concepts: logging^events
+
 M*/
 
 /*MC
@@ -2224,7 +2228,8 @@ M*/
 .seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops(), PLogEventBegin(),
           PLogEventBarrierEnd()
 
-.keywords: log, event, begin, barrier
+   Concepts: logging^events
+
 M*/
 
 /*MC
@@ -2259,7 +2264,8 @@ M*/
 .seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops(), PLogEventBegin(),
           PLogEventBarrierBegin()
 
-.keywords: log, event, begin, barrier
+   Concepts: logging^events
+
 M*/
 
 /*MC
@@ -2288,7 +2294,11 @@ M*/
 
 .seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(), PreLoadEnd(), PreLoadStage()
 
-.keywords: timing, preloading
+   Concepts: preloading
+   Concepts: timing^accurate
+   Concepts: paging^eliminating effects of
+
+
 M*/
 
 /*MC
@@ -2311,7 +2321,6 @@ M*/
 
 .seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(), PreLoadBegin(), PreLoadStage()
 
-.keywords: timing, preloading
 M*/
 
 /*MC
@@ -2334,6 +2343,5 @@ M*/
 
 .seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(), PreLoadBegin(), PreLoadEnd()
 
-.keywords: timing, preloading
 M*/
 

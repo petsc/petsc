@@ -1,4 +1,4 @@
-/*$Id: dtexts.c,v 1.30 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dtexts.c,v 1.31 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -21,7 +21,7 @@
    Note:
    Only a limited range of sizes are available.
 
-.keywords: draw, text, set, size
+   Concepts: string^drawing size
 
 .seealso: DrawString(), DrawStringVertical(), DrawStringGetSize()
 

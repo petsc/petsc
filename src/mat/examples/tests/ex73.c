@@ -1,12 +1,10 @@
-/*$Id: ex73.c,v 1.2 2000/02/02 16:44:34 bsmith Exp balay $*/
+/*$Id: ex73.c,v 1.3 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix from a file partitions it\n\n";
 
 /*T
-   Concepts: Partitioning
-   Routines: MatGetTypeFromOptions(); MatLoad(); VecLoad();
-   Routines: ViewerBinaryOpen(); ViewerStringOpen(); ViewerDestroy();
+   Concepts: partitioning
    Processors: n
 T*/
 

@@ -1,14 +1,10 @@
 !
-!    "$Id: ex1f.F,v 1.24 2000/05/05 22:15:21 balay Exp balay $"
+!    "$Id: ex1f.F,v 1.25 2000/08/03 20:15:20 balay Exp bsmith $"
 !
 !   Program usage:  mpirun ex1f [-help] [all PETSc options] 
 !
 !/*T
-!   Concepts: Vectors^Using basic vector routines;
-!   Routines: VecCreate(); VecSetFromOptions(); VecDuplicate(); VecSet(); VecValid(); 
-!   Routines: VecDot(); VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); 
-!   Routines: VecAYPX(); VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); 
-!   Routines: VecSwap(); VecMAXPY(); VecDestroy(); VecDestroyVecs(); VecDuplicateVecs();
+!   Concepts: Vectors^using basic vector routines;
 !   Processors: n
 !T*/
 !

@@ -1,13 +1,11 @@
-/*$Id: ex2.c,v 1.35 2000/01/11 21:00:24 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.36 2000/05/05 22:15:21 balay Exp bsmith $*/
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
 processor, 2 on the second, etc.  Then each processor adds one to all\n\
 elements except the last rank.\n\n";
 
 /*T
-   Concepts: Vectors^Assembling vectors;
-   Routines: VecCreateMPI(); VecGetSize(); VecSet(); VecSetValues();
-   Routines: VecView(); VecDestroy();
+   Concepts: vectors^assembling vectors;
    Processors: n
 T*/
 

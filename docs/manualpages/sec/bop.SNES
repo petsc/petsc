@@ -1,11 +1,10 @@
 <HTML>
 <HEAD>
-<TITLE>SNES Manual Pages</TITLE>
+<TITLE>Nonlinear solvers - SNES</TITLE>
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> SNES Manual Pages
-</H2>
+<H2> Nonlinear solvers - SNES</H2>
 
 The Scalable Nonlinear Equations Solvers (SNES) component provides an
 easy-to-use interface to Newton-based methods for solving systems of

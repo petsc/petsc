@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.15 2000/04/20 16:05:47 balay Exp balay $ 
+# $Id: common_variables,v 1.16 2000/09/13 15:18:49 balay Exp bsmith $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -65,7 +65,7 @@ PETSC_LIB   = -L${LDIR} -lpetscts -lpetscsnes  -lpetscsles -lpetscdm -lpetscmat 
 #
 PCONF         = ${PETSC_HAVE_MPE}  ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVODE} ${PETSC_HAVE_PARMETIS} \
                 ${PETSC_HAVE_AMS}  ${PETSC_HAVE_SPAI}       ${PETSC_HAVE_X11}   ${PETSC_HAVE_MATLAB} \
-                ${PETSC_HAVE_ADIC} ${PETSC_HAVE_JAVA}
+                ${PETSC_HAVE_ADIC} ${PETSC_HAVE_JAVA}       ${PETSC_HAVE_LUSOL}
 EXTERNAL_LIB  = ${MPE_LIB}        ${BLOCKSOLVE_LIB}        ${PVODE_LIB}        ${PARMETIS_LIB} \
                 ${AMS_LIB}        ${SPAI_LIB}              ${X11_LIB}          ${MATLAB_LIB}   \
                 ${ADIC_LIB} 

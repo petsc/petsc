@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.65 2000/07/10 03:38:52 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.66 2000/08/24 22:41:09 bsmith Exp bsmith $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -330,7 +330,8 @@ int (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
 
    Level: developer
 
-.keywords: version information, help information
+   Concepts: package help message
+
 @*/
 int PetscSetHelpVersionFunctions(int (*help)(MPI_Comm),int (*version)(MPI_Comm))
 {
@@ -444,37 +445,12 @@ int OptionsCheckInitial(void)
   /*
       Setup debugger information
   */
-#if defined(PETSC_USE_DBX_DEBUGGER)
-  ierr = PetscSetDebugger("dbx",PETSC_TRUE);CHKERRQ(ierr);
-#elif defined(PETSC_USE_XDB_DEBUGGER) 
-  ierr = PetscSetDebugger("xdb",PETSC_TRUE);CHKERRQ(ierr);
-#else  /* Default is gdb */
-  ierr = PetscSetDebugger("gdb",PETSC_TRUE);CHKERRQ(ierr);
-#endif
+  ierr = PetscSetDefaultDebugger();CHKERRQ(ierr);
   ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64,&flg1);CHKERRQ(ierr);
   if (flg1) {
-    char           *debugger = 0;
-    PetscTruth     xterm     = PETSC_TRUE;
     MPI_Errhandler err_handler;
 
-    ierr = PetscStrstr(string,"noxterm",&f);CHKERRQ(ierr);
-    if (f) xterm = PETSC_FALSE;
-    ierr = PetscStrstr(string,"xdb",&f);CHKERRQ(ierr);
-    if (f)     debugger = "xdb";
-    ierr = PetscStrstr(string,"dbx",&f);CHKERRQ(ierr);
-    if (f)     debugger = "dbx";
-    ierr = PetscStrstr(string,"xldb",&f);CHKERRQ(ierr);
-    if (f)     debugger = "xldb";
-    ierr = PetscStrstr(string,"gdb",&f);CHKERRQ(ierr);
-    if (f)     debugger = "gdb";
-    ierr = PetscStrstr(string,"xxgdb",&f);CHKERRQ(ierr);
-    if (f)     debugger = "xxgdb";
-    ierr = PetscStrstr(string,"ups",&f);CHKERRQ(ierr);
-    if (f)     debugger = "ups";
-    ierr = PetscStrstr(string,"workshop",&f);CHKERRQ(ierr);
-    if (f)     debugger = "workshop";
-
-    ierr = PetscSetDebugger(debugger,xterm);CHKERRQ(ierr);
+    ierr = PetscSetDebuggerFromString(string);CHKERRQ(ierr);
     ierr = MPI_Errhandler_create((MPI_Handler_function*)Petsc_MPI_DebuggerOnError,&err_handler);CHKERRQ(ierr);
     ierr = MPI_Errhandler_set(comm,err_handler);CHKERRQ(ierr);
     ierr = PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);CHKERRQ(ierr);
@@ -482,8 +458,6 @@ int OptionsCheckInitial(void)
   ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64,&flg1);CHKERRQ(ierr);
   ierr = OptionsGetString(PETSC_NULL,"-stop_for_debugger",string,64,&flg2);CHKERRQ(ierr);
   if (flg1 || flg2) {
-    char           *debugger = 0;
-    PetscTruth     xterm     = PETSC_TRUE;
     int            size;
     MPI_Errhandler err_handler;
     /*
@@ -512,24 +486,7 @@ int OptionsCheckInitial(void)
       }
     }
     if (!flag) {        
-      ierr = PetscStrstr(string,"noxterm",&f);CHKERRQ(ierr);
-      if (f) xterm = PETSC_FALSE;
-      ierr = PetscStrstr(string,"xdb",&f);CHKERRQ(ierr);
-      if (f)     debugger = "xdb";
-      ierr = PetscStrstr(string,"dbx",&f);CHKERRQ(ierr);
-      if (f)     debugger = "dbx";
-      ierr = PetscStrstr(string,"xldb",&f);CHKERRQ(ierr);
-      if (f)     debugger = "xldb";
-      ierr = PetscStrstr(string,"gdb",&f);CHKERRQ(ierr);
-      if (f)     debugger = "gdb";
-      ierr = PetscStrstr(string,"xxgdb",&f);CHKERRQ(ierr);
-      if (f)     debugger = "xxgdb";
-      ierr = PetscStrstr(string,"ups",&f);CHKERRQ(ierr);
-      if (f)     debugger = "ups";
-      ierr = PetscStrstr(string,"workshop",&f);CHKERRQ(ierr);
-      if (f)     debugger = "workshop";
-
-      ierr = PetscSetDebugger(debugger,xterm);CHKERRQ(ierr);
+      ierr = PetscSetDebuggerFromString(string);CHKERRQ(ierr);
       ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);
       if (flg1) {
         ierr = PetscAttachDebugger();CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: xops.c,v 1.148 2000/05/10 16:39:00 bsmith Exp bsmith $*/
+/* $Id: xops.c,v 1.149 2000/07/10 03:38:43 bsmith Exp bsmith $*/
 
 /*
     Defines the operations for the X Draw implementation.
@@ -391,7 +391,7 @@ static int DrawSetTitle_X(Draw draw,char *title)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawResizeWindow_X" 
+#define __FUNC__ /*<a name="DrawResizeWindow_X"></a>*/"DrawResizeWindow_X" 
 static int DrawResizeWindow_X(Draw draw,int w,int h)
 {
   Draw_X       *win = (Draw_X*)draw->data;
@@ -408,7 +408,7 @@ static int DrawResizeWindow_X(Draw draw,int w,int h)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawCheckResizedWindow_X" 
+#define __FUNC__ /*<a name="DrawCheckResizedWindow_X"></a>*/"DrawCheckResizedWindow_X" 
 static int DrawCheckResizedWindow_X(Draw draw)
 {
   Draw_X       *win = (Draw_X*)draw->data;
@@ -454,7 +454,7 @@ static int DrawGetSingleton_X(Draw,Draw*);
 static int DrawRestoreSingleton_X(Draw,Draw*);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawDestroy_X" 
+#define __FUNC__ /*<a name="DrawDestroy_X"></a>*/"DrawDestroy_X" 
 int DrawDestroy_X(Draw draw)
 {
   Draw_X *win = (Draw_X*)draw->data;
@@ -503,7 +503,7 @@ EXTERN int XiQuickWindow(Draw_X*,char*,char*,int,int,int,int);
 EXTERN int XiQuickWindowFromWindow(Draw_X*,char*,Window);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawGetSingleton_X" 
+#define __FUNC__ /*<a name="DrawGetSingleton_X"></a>*/"DrawGetSingleton_X" 
 static int DrawGetSingleton_X(Draw draw,Draw *sdraw)
 {
   int      ierr;
@@ -542,7 +542,7 @@ static int DrawGetSingleton_X(Draw draw,Draw *sdraw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawRestoreSingleton_X" 
+#define __FUNC__ /*<a name="DrawRestoreSingleton_X"></a>*/"DrawRestoreSingleton_X" 
 static int DrawRestoreSingleton_X(Draw draw,Draw *sdraw)
 {
   int      ierr;
@@ -561,7 +561,7 @@ static int DrawRestoreSingleton_X(Draw draw,Draw *sdraw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawXGetDisplaySize_Private" 
+#define __FUNC__ /*<a name="DrawXGetDisplaySize_Private"></a>*/"DrawXGetDisplaySize_Private" 
 int DrawXGetDisplaySize_Private(const char name[],int *width,int *height)
 {
   Display *display;
@@ -585,7 +585,7 @@ int DrawXGetDisplaySize_Private(const char name[],int *width,int *height)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawCreate_X" 
+#define __FUNC__ /*<a name="DrawCreate_X"></a>*/"DrawCreate_X" 
 int DrawCreate_X(Draw draw)
 {
   Draw_X     *Xwin;

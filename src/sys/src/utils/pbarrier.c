@@ -1,4 +1,4 @@
-/*$Id: pbarrier.c,v 1.12 2000/05/04 16:24:51 bsmith Exp balay $*/
+/*$Id: pbarrier.c,v 1.13 2000/09/07 15:19:07 balay Exp bsmith $*/
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
@@ -17,7 +17,7 @@
   Notes: 
   This routine calls MPI_Barrier with the communicator of the PETSc Object "A". 
 
-.keywords: barrier, petscobject
+   Concepts: barrier
 
 @*/
 int PetscBarrier(PetscObject obj)

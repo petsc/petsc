@@ -1,4 +1,4 @@
-/*$Id: ffpath.c,v 1.31 2000/04/12 04:21:24 bsmith Exp balay $*/
+/*$Id: ffpath.c,v 1.32 2000/05/05 22:13:54 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -57,7 +57,8 @@
 
    Level: developer
 
-.keywords: system, get, file, from, path
+   Concepts: files^finding in path
+   Concepts: path^searching for file
 
 @*/
 int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mode)

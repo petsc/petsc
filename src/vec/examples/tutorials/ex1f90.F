@@ -1,13 +1,9 @@
 !
-!    "$Id: ex1f90.F,v 1.20 2000/05/05 22:15:21 balay Exp bsmith $"
+!    "$Id: ex1f90.F,v 1.21 2000/08/07 22:20:00 bsmith Exp bsmith $"
 !
 !/*T
-!   Concepts: Vectors^Using basic vector routines;
+!   Concepts: vectors^using basic vector routines;
 !   Concepts: Fortran90;
-!   Routines: VecCreate(); VecSetFromOptions(); VecDuplicate(); VecSet(); VecValid(); VecDot();
-!   Routines: VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); VecAYPX();
-!   Routines: VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); VecSwap();
-!   Routines: VecMAXPY(); VecDestroy(); VecDestroyVecsF90(); VecDuplicateVecsF90();
 !   Processors: n
 !T*/
 !

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.74 2000/01/11 21:02:45 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.75 2000/05/05 22:18:34 balay Exp bsmith $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 
@@ -11,12 +11,7 @@ This example also illustrates the use of matrix coloring.  Runtime options inclu
   -my <yg>, where <yg> = number of grid points in the y-direction\n\n";
 
 /*T
-   Concepts: SNES^Solving a system of nonlinear equations (sequential Bratu example);
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions(); SNESSetConvergenceHistory();
-   Routines: MatGetColoring(); MatFDColoringCreate(); MatFDColoringSetFromOptions();
-   Routines: MatFDColoringDestroy(); ISColoringDestroy();SNESDefaultComputeJacobianColor();
-   Routines: DrawOpenX(); DrawTensorContour(); DrawDestroy();
+   Concepts: SNES^sequential Bratu example
    Processors: 1
 T*/
 

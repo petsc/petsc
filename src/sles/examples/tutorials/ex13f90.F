@@ -1,15 +1,11 @@
 !
-!    "$Id: ex13f90.F,v 1.18 2000/05/05 22:18:00 balay Exp bsmith $";
+!    "$Id: ex13f90.F,v 1.19 2000/08/07 22:20:47 bsmith Exp bsmith $";
 !
 !
 !/*T
-!   Concepts: SLES^Solving a system of linear equations (basic sequential example)
+!   Concepts: SLES^basic sequential example
 !   Concepts: SLES^Laplacian, 2d
 !   Concepts: Laplacian, 2d
-!   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-!   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); MatCreateSeqAIJ();
-!   Routines: KSPSetTolerances(); PCSetType();
-!   Routines: VecCreateSeqWithArray(); VecPlaceArray();
 !   Processors: 1
 !T*/
 ! -----------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.15 2000/01/11 21:02:20 bsmith Exp balay $*/
+/*$Id: ex15.c,v 1.16 2000/05/05 22:18:00 balay Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.  Also\n\
 illustrates setting a user-defined shell preconditioner and using the\n\
@@ -7,12 +7,9 @@ Input parameters include:\n\
   -user_defined_pc : Activate a user-defined preconditioner\n\n";
 
 /*T
-   Concepts: SLES^Solving a system of linear equations (basic parallel example);
-   Concepts: PC^Setting a user-defined "shell" preconditioner
-   Concepts: Error Handling^Using the macro __FUNC__ to define routine names;
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); KSPSetTolerances(); 
-   Routines: PCSetType(); PCShellSetApply(); PCShellSetName();
+   Concepts: SLES^basic parallel example
+   Concepts: PC^setting a user-defined shell preconditioner
+   Concepts: error handling^Using the macro __FUNC__ to define routine names;
    Processors: n
 T*/
 

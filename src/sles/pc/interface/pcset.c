@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.106 2000/08/24 22:42:28 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.107 2000/09/02 02:48:43 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -186,7 +186,7 @@ int PCSetFromOptions(PC pc)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
 
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = OptionsBegin(pc->comm,pc->prefix,"Preconditioner (PC) Options");CHKERRQ(ierr);
+  ierr = OptionsBegin(pc->comm,pc->prefix,"Preconditioner (PC) Options","PC");CHKERRQ(ierr);
     if (!pc->type_name) {
       int size;
 

@@ -1,4 +1,4 @@
-/*$Id: drawv.c,v 1.51 2000/05/10 16:38:46 bsmith Exp bsmith $*/
+/*$Id: drawv.c,v 1.52 2000/06/24 19:16:39 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
@@ -55,7 +55,8 @@ int ViewerFlush_Draw(Viewer v)
 
     Level: intermediate
 
-.keywords: viewer, draw, get
+   Concepts: drawing^accessing Draw context from Viewer
+   Concepts: graphics
 
 .seealso: ViewerDrawGetLG(), ViewerDrawGetAxis(), ViewerDrawOpen()
 @*/
@@ -104,7 +105,7 @@ int ViewerDrawGetDraw(Viewer viewer,int windownumber,Draw *draw)
 
     Level: intermediate
 
-.keywords: viewer, draw, get, line graph
+  Concepts: line graph^accessing context
 
 .seealso: ViewerDrawGetDraw(), ViewerDrawGetAxis(), ViewerDrawOpen()
 @*/
@@ -155,7 +156,7 @@ int ViewerDrawGetDrawLG(Viewer viewer,int windownumber,DrawLG *drawlg)
 
     Level: advanced
 
-.keywords: viewer, draw, get, line graph
+  Concepts: line graph^accessing context
 
 .seealso: ViewerDrawGetDraw(), ViewerDrawGetLG(), ViewerDrawOpen()
 @*/
@@ -247,7 +248,9 @@ int ViewerDrawSetInfo(Viewer v,const char display[],const char title[],int x,int
    correct for character data!  Thus, PETSC_NULL_CHARACTER can be
    used for the display and title input parameters.
 
-.keywords: draw, open, x, viewer
+  Concepts: graphics^opening Viewer
+  Concepts: drawing^opening Viewer
+
 
 .seealso: DrawOpen(), ViewerDestroy(), ViewerDrawGetDraw(), ViewerCreate(), VIEWER_DRAW_,
           VIEWER_DRAW_WORLD, VIEWER_DRAW_SELF

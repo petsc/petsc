@@ -1,4 +1,4 @@
-/* $Id: petscsys.h,v 1.51 2000/08/01 20:58:40 bsmith Exp balay $ */
+/* $Id: petscsys.h,v 1.52 2000/08/15 22:18:00 balay Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -71,6 +71,8 @@ EXTERN int PetscBinarySeek(int,int,PetscBinarySeekType,int*);
 EXTERN int PetscSynchronizedBinarySeek(MPI_Comm,int,int,PetscBinarySeekType,int*);
 
 EXTERN int PetscSetDebugger(const char[],PetscTruth);
+EXTERN int PetscSetDefaultDebugger(void);
+EXTERN int PetscSetDebuggerFromString(char*);
 EXTERN int PetscAttachDebugger(void);
 EXTERN int PetscStopForDebugger(void);
 

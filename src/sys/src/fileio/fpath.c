@@ -1,4 +1,4 @@
-/*$Id: fpath.c,v 1.33 2000/04/12 04:21:24 bsmith Exp balay $*/
+/*$Id: fpath.c,v 1.34 2000/05/05 22:13:54 balay Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -53,7 +53,8 @@
 
    Level: developer
 
-.keywords: system, get, full, path
+   Concepts: full path
+   Concepts: path^full
 
 .seealso: PetscGetRelativePath()
 @*/

@@ -1,4 +1,4 @@
-/*$Id: block.c,v 1.47 2000/05/05 22:14:43 balay Exp bsmith $*/
+/*$Id: block.c,v 1.48 2000/07/10 03:39:08 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
@@ -186,11 +186,11 @@ int ISIdentity_Block(IS is,PetscTruth *ident)
   int      i,n = is_block->n,*idx = is_block->idx,bs = is_block->bs;
 
   PetscFunctionBegin;
-  is->isidentity = 1;
+  is->isidentity = PETSC_TRUE;
   *ident         = PETSC_TRUE;
   for (i=0; i<n; i++) {
     if (idx[i] != bs*i) {
-      is->isidentity = 0;
+      is->isidentity = PETSC_FALSE;
       *ident         = PETSC_FALSE;
       PetscFunctionReturn(0);
     }

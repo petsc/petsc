@@ -1,10 +1,10 @@
-/*$Id: ex80.c,v 1.1 2000/07/25 03:12:39 bsmith Exp bsmith $*/
+/*$Id: ex80.c,v 1.2 2000/08/01 20:02:39 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Partition tiny grid\n\n";
 
 /*T
-   Concepts: Partitioning
+   Concepts: partitioning
    Processors: 4
 T*/
 

@@ -1,11 +1,11 @@
-/*$Id: ex2.c,v 1.28 2000/05/08 15:09:21 balay Exp balay $*/
+/*$Id: ex2.c,v 1.29 2000/09/06 22:19:17 balay Exp bsmith $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
 and distributes the grid data accordingly\n\n";
 
 /*T
-   Concepts: Mat^Partitioning a matrix;
+   Concepts: Mat^partitioning a matrix;
    Processors: n
 T*/
 

@@ -1,11 +1,9 @@
 !
-!  "$Id: ex1f90.F,v 1.13 2000/07/26 20:59:17 balay Exp bsmith $";
+!  "$Id: ex1f90.F,v 1.14 2000/08/06 03:52:30 bsmith Exp bsmith $";
 !
 !/*T
-!    Concepts: Index sets^Manipulating a general index set;
+!    Concepts: Index sets^manipulating a general index set;
 !    Concepts: Fortran90;
-!    Routines: ISCreateGeneral(); ISDestroy(); ISView(); ISGetLocalSize()
-!    Routines: ISGetIndicesF90(); ISRestoreIndicesF90()
 !T*/
 !    
 !  Comment: Creates an index set based on a set of integers. Views that index set

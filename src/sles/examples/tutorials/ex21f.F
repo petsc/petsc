@@ -1,5 +1,5 @@
 !
-!    "$Id: ex21f.F,v 1.3 2000/01/11 21:02:20 bsmith Exp balay $";
+!    "$Id: ex21f.F,v 1.4 2000/05/05 22:18:00 balay Exp bsmith $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -8,11 +8,8 @@
 !  Program usage: mpirun ex15f [-help] [all PETSc options]
 !
 !/*T
-!   Concepts: SLES^Solving a system of linear equations (basic parallel example);
-!   Concepts: PC^Setting a user-defined shell preconditioner
-!   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-!   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); KSPSetTolerances(); 
-!   Routines: PCSetType(); PCShellSetApply(); 
+!   Concepts: SLES^basic parallel example
+!   Concepts: PC^setting a user-defined shell preconditioner
 !   Processors: n
 !T*/
 !

@@ -1,4 +1,4 @@
-/* $Id: petscksp.h,v 1.93 2000/08/18 20:03:00 balay Exp bsmith $ */
+/* $Id: petscksp.h,v 1.94 2000/08/24 22:43:56 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -120,11 +120,12 @@ EXTERN int KSPGetOptionsPrefix(KSP,char**);
 
 EXTERN int KSPView(KSP,Viewer);
 
+/*  this table must match finclude/petscksp.h */
 typedef enum {/* converged */
               KSP_CONVERGED_RTOL               =  2,
               KSP_CONVERGED_ATOL               =  3,
               KSP_CONVERGED_ITS                =  4,
-              KSP_CONVERGED_QCG_NEGATIVE_CURVE =  5,
+              KSP_CONVERGED_QCG_NEG_CURVE      =  5,
               KSP_CONVERGED_QCG_CONSTRAINED    =  6,
               KSP_CONVERGED_STEP_LENGTH        =  7,
               /* diverged */

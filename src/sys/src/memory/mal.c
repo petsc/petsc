@@ -1,4 +1,4 @@
-/*$Id: mal.c,v 1.48 2000/04/09 04:34:35 bsmith Exp bsmith $*/
+/*$Id: mal.c,v 1.49 2000/04/12 04:21:28 bsmith Exp bsmith $*/
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
@@ -116,7 +116,9 @@ PetscTruth petscsetmallocvisited = PETSC_FALSE;
 
    Level: developer
 
-.keywords: Petsc, set, malloc, free, memory allocation
+   Concepts: malloc
+   Concepts: memory^allocation 
+
 @*/
 int PetscSetMalloc(void *(*imalloc)(int,int,char*,char*,char*),
                    int (*ifree)(void*,int,char*,char*,char*))
@@ -144,7 +146,6 @@ int PetscSetMalloc(void *(*imalloc)(int,int,char*,char*,char*),
     free() settings for different parts; this is because one NEVER wants to 
     free() an address that was malloced by a different memory management system
 
-.keywords: Petsc, set, malloc, free, memory allocation
 @*/
 int PetscClearMalloc(void)
 {

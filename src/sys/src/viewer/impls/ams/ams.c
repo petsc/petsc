@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.37 2000/05/10 16:38:45 bsmith Exp bsmith $*/
+/*$Id: ams.c,v 1.38 2000/08/17 04:50:22 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -117,7 +117,9 @@ int ViewerAMSSetCommName(Viewer v,const char name[])
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: Viewer, open, AMS memory snooper
+  Concepts: publishing variables
+  Concepts: AMS^getting communicator
+  Concepts: communicator^accessing AMS communicator
 
 .seealso: ViewerDestroy(), ViewerAMSOpen(), VIEWER_AMS_, VIEWER_AMS_WORLD, VIEWER_AMS_SELF
 

@@ -1,4 +1,4 @@
-/*$Id: gcookie.c,v 1.20 2000/04/09 04:34:38 bsmith Exp bsmith $*/
+/*$Id: gcookie.c,v 1.21 2000/04/12 04:21:29 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -21,7 +21,6 @@
 
    Level: developer
 
-.keywords: object, get, cookie
 @*/
 int PetscObjectGetCookie(PetscObject obj,int *cookie)
 {
@@ -48,7 +47,6 @@ int PetscObjectGetCookie(PetscObject obj,int *cookie)
 
    Level: developer
 
-.keywords: object, exists
 @*/
 int PetscObjectExists(PetscObject obj,PetscTruth *exists)
 {

@@ -1,4 +1,4 @@
-/*$Id: sortd.c,v 1.23 2000/04/12 04:21:38 bsmith Exp balay $*/
+/*$Id: sortd.c,v 1.24 2000/05/05 22:14:11 balay Exp bsmith $*/
 /*
    This file contains routines for sorting doubles.  Values are sorted in place.
    These are provided because the general sort routines incur a great deal
@@ -53,7 +53,7 @@ static int PetsciDqsort(double *v,int right)
 
    Level: intermediate
 
-.keywords: sort, double
+   Concepts: sorting^doubles
 
 .seealso: PetscSortInt(), PetscSortDoubleWithPermutation()
 @*/

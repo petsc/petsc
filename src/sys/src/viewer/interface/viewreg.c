@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.29 2000/08/28 19:02:00 balay Exp bsmith $*/
+/*$Id: viewreg.c,v 1.30 2000/09/02 02:46:39 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -19,7 +19,9 @@ FList ViewerList              = 0;
 
    Level: advanced
 
-.keywords: Viewer, create, context
+   Concepts: graphics^creating Viewer
+   Concepts: file input/output^creating Viewer
+   Concepts: sockets^creating Viewer
 
 .seealso: ViewerDestroy(), ViewerSetType()
 
@@ -58,8 +60,6 @@ int ViewerCreate(MPI_Comm comm,Viewer *inviewer)
    Notes:  
    See "include/petscviewer.h" for available methods (for instance,
    SOCKET_VIEWER)
-
-.keywords: Viewer, set, method, type
 
 .seealso: ViewerCreate(), ViewerGetType()
 @*/
@@ -105,8 +105,6 @@ int ViewerSetType(Viewer viewer,ViewerType type)
    Not Collective
 
    Level: developer
-
-.keywords: Viewer, register, destroy
 
 .seealso: ViewerRegisterDynamic(), ViewerRegisterAll()
 @*/
@@ -155,7 +153,7 @@ $     ViewerSetType(ksp,"my_viewer_type")
    or at runtime via the option
 $     -viewer_type my_viewer_type
 
-.keywords: KSP, register
+  Concepts: registering^Viewers
 
 .seealso: ViewerRegisterAll(), ViewerRegisterDestroy()
 M*/
@@ -189,7 +187,7 @@ int ViewerRegister(char *sname,char *path,char *name,int (*function)(Viewer))
    Notes: 
     Must be called after ViewerCreate() before the Viewer is used.
 
-.keywords: viewer
+  Concepts: Viewer^setting options
 
 .seealso: ViewerCreate(), ViewerSetType()
 
@@ -204,7 +202,7 @@ int ViewerSetFromOptions(Viewer viewer)
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
   if (!ViewerList) SETERRQ(1,1,"No viewer implementations registered");
-  ierr = OptionsBegin(viewer->comm,viewer->prefix,"Viewer options");CHKERRQ(ierr);
+  ierr = OptionsBegin(viewer->comm,viewer->prefix,"Viewer options","Viewer");CHKERRQ(ierr);
     ierr = OptionsList("-viewer_type","Type of viewer","None",ViewerList,(char *)(viewer->type_name?viewer->type_name:ASCII_VIEWER),vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = ViewerSetType(viewer,vtype);CHKERRQ(ierr);

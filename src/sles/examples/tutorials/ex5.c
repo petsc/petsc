@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.82 2000/01/11 21:02:20 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.83 2000/05/05 22:18:00 balay Exp bsmith $*/
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
@@ -8,12 +8,8 @@ also uses multiple profiling stages.  Input arguments are\n\
   -mat_nonsym : use nonsymmetric matrix (default is symmetric)\n\n";
 
 /*T
-   Concepts: SLES^Repeatedly solving linear systems;
-   Concepts: PLog^Profiling multiple stages of code;
-   Routines: SLESCreate(); SLESSetFromOptions(); SLESSetUp(); SLESSolve();
-   Routines: SLESSetOperators(A,A,SAME_NONZERO_PATTERN);
-   Routines: MatZeroEntries(); MatSetOption(A,MAT_SYMMETRIC);
-   Routines: PLogStagePush(); PLogStagePop(); PLogStageRegister();
+   Concepts: SLES^repeatedly solving linear systems;
+   Concepts: PLog^profiling multiple stages of code;
    Processors: n
 T*/
 

@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.6 2000/08/01 20:57:12 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.7 2000/08/17 04:52:37 bsmith Exp bsmith $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -14,7 +14,7 @@ with boundary conditions
    See ex18.c for a simpler example that does not use multigrid
 */
 
-static char help[] = "Solves Laplacian in 3D using multigrid\n\
+static char help[] = "Solves 3D Laplacian using multigrid.\n\
 The command line options are:\n\
    -mx <xg>, where <xg> = number of grid points in the x-direction\n\
    -my <yg>, where <yg> = number of grid points in the y-direction\n\

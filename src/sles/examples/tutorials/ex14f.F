@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.19 2000/01/11 21:02:20 bsmith Exp balay $";
+!    "$Id: ex14f.F,v 1.20 2000/05/05 22:18:00 balay Exp bsmith $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -23,13 +23,8 @@
 !  -mf use matrix free for matrix vector product
 !
 !/*T
-!   Concepts: SLES^Writing a user-defined nonlinear solver (parallel Bratu example)
-!   Concepts: DA^Using distributed arrays
-!   Routines: SLESCreate(); SLESSetOperators(); SLESSolve(); SLESSetFromOptions();
-!   Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
-!   Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-!   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
-!   Routines: MatCreateShell(); MatShellSetOperation();
+!   Concepts: SLES^writing a user-defined nonlinear solver
+!   Concepts: DA^using distributed arrays
 !   Processors: n
 !T*/
 !  ------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.75 2000/08/25 16:45:21 balay Exp balay $*/
+/*$Id: fdmatrix.c,v 1.76 2000/09/07 15:18:40 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -307,7 +307,7 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
 
-  ierr = OptionsBegin(matfd->comm,matfd->prefix,"Jacobian computation via finite differences option");CHKERRQ(ierr);
+  ierr = OptionsBegin(matfd->comm,matfd->prefix,"Jacobian computation via finite differences option","MatFD");CHKERRQ(ierr);
     ierr = OptionsDouble("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
     ierr = OptionsInt("-mat_fd_coloring_freq","How often Jacobian is recomputed","MatFDColoringSetFrequency",matfd->freq,&matfd->freq,0);CHKERRQ(ierr);

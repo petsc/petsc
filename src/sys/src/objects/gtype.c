@@ -1,4 +1,4 @@
-/*$Id: gtype.c,v 1.19 2000/04/09 04:34:38 bsmith Exp bsmith $*/
+/*$Id: gtype.c,v 1.20 2000/04/12 04:21:29 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -21,7 +21,8 @@
 
    Level: advanced
 
-.keywords: object, get, type
+   Concepts: object type
+
 @*/
 int PetscObjectGetType(PetscObject obj,int *type)
 {

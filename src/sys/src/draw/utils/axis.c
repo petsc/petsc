@@ -1,4 +1,4 @@
-/*$Id: axis.c,v 1.68 2000/04/12 04:21:18 bsmith Exp bsmith $*/
+/*$Id: axis.c,v 1.69 2000/05/10 16:39:10 bsmith Exp bsmith $*/
 /*
    This file contains a simple routine for generating a 2-d axis.
 */
@@ -26,7 +26,7 @@ static int    PetscAGetNice(PetscReal,PetscReal,int,PetscReal*);
 static int    PetscAGetBase(PetscReal,PetscReal,int,PetscReal*,int*);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscRint" 
+#define __FUNC__ /*<a name="PetscRint"></a>*/"PetscRint" 
 static int PetscRint(PetscReal x,PetscReal *result)
 {
   PetscFunctionBegin;
@@ -36,7 +36,7 @@ static int PetscRint(PetscReal x,PetscReal *result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawAxisCreate" 
+#define __FUNC__ /*<a name="DrawAxisCreate"></a>*/"DrawAxisCreate" 
 /*@C
    DrawAxisCreate - Generate the axis data structure.
 
@@ -87,7 +87,7 @@ int DrawAxisCreate(Draw draw,DrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawAxisDestroy" 
+#define __FUNC__ /*<a name="DrawAxisDestroy"></a>*/"DrawAxisDestroy" 
 /*@C
     DrawAxisDestroy - Frees the space used by an axis structure.
 
@@ -111,7 +111,7 @@ int DrawAxisDestroy(DrawAxis axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawAxisSetColors" 
+#define __FUNC__ /*<a name="DrawAxisSetColors"></a>*/"DrawAxisSetColors" 
 /*@
     DrawAxisSetColors -  Sets the colors to be used for the axis,       
                          tickmarks, and text.
@@ -136,7 +136,7 @@ int DrawAxisSetColors(DrawAxis axis,int ac,int tc,int cc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawAxisSetLabels" 
+#define __FUNC__ /*<a name="DrawAxisSetLabels"></a>*/"DrawAxisSetLabels" 
 /*@C
     DrawAxisSetLabels -  Sets the x and y axis labels.
 
@@ -161,7 +161,7 @@ int DrawAxisSetLabels(DrawAxis axis,char* top,char *xlabel,char *ylabel)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawAxisSetLimits" 
+#define __FUNC__ /*<a name="DrawAxisSetLimits"></a>*/"DrawAxisSetLimits" 
 /*@
     DrawAxisSetLimits -  Sets the limits (in user coords) of the axis
     
@@ -187,7 +187,7 @@ int DrawAxisSetLimits(DrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawAxisDraw" 
+#define __FUNC__ /*<a name="DrawAxisDraw"></a>*/"DrawAxisDraw" 
 /*@
     DrawAxisDraw - Draws an axis.
 
@@ -294,7 +294,7 @@ int DrawAxisDraw(DrawAxis axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStripAllZeros" 
+#define __FUNC__ /*<a name="PetscStripAllZeros"></a>*/"PetscStripAllZeros" 
 /*
     Removes all zeros but one from .0000 
 */
@@ -314,7 +314,7 @@ static int PetscStripAllZeros(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStripTrailingZeros" 
+#define __FUNC__ /*<a name="PetscStripTrailingZeros"></a>*/"PetscStripTrailingZeros" 
 /*
     Removes trailing zeros
 */
@@ -344,7 +344,7 @@ static int PetscStripTrailingZeros(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStripInitialZero" 
+#define __FUNC__ /*<a name="PetscStripInitialZero"></a>*/"PetscStripInitialZero" 
 /*
     Removes leading 0 from 0.22 or -0.22
 */
@@ -367,7 +367,7 @@ static int PetscStripInitialZero(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStripZeros" 
+#define __FUNC__ /*<a name="PetscStripZeros"></a>*/"PetscStripZeros" 
 /*
      Removes the extraneous zeros in numbers like 1.10000e6
 */
@@ -389,7 +389,7 @@ static int PetscStripZeros(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscStripZerosPlus" 
+#define __FUNC__ /*<a name="PetscStripZerosPlus"></a>*/"PetscStripZerosPlus" 
 /*
       Removes the plus in something like 1.1e+2
 */
@@ -420,7 +420,7 @@ static int PetscStripZerosPlus(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscADefLabel" 
+#define __FUNC__ /*<a name="PetscADefLabel"></a>*/"PetscADefLabel" 
 /*
    val is the label value.  sep is the separation to the next (or previous)
    label; this is useful in determining how many significant figures to   
@@ -490,7 +490,7 @@ int PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscADefTicks" 
+#define __FUNC__ /*<a name="PetscADefTicks"></a>*/"PetscADefTicks" 
 /* Finds "nice" locations for the ticks */
 int PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal * tickloc,int  maxtick)
 {
@@ -532,7 +532,7 @@ int PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal * t
 #define EPS 1.e-6
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscExp10" 
+#define __FUNC__ /*<a name="PetscExp10"></a>*/"PetscExp10" 
 static int PetscExp10(PetscReal d,PetscReal *result)
 {
   PetscFunctionBegin;
@@ -541,7 +541,7 @@ static int PetscExp10(PetscReal d,PetscReal *result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscMod" 
+#define __FUNC__ /*<a name="PetscMod"></a>*/"PetscMod" 
 static int PetscMod(PetscReal x,PetscReal y,PetscReal *result)
 {
   int     i;
@@ -555,7 +555,7 @@ static int PetscMod(PetscReal x,PetscReal y,PetscReal *result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscCopysign" 
+#define __FUNC__ /*<a name="PetscCopysign"></a>*/"PetscCopysign" 
 static int PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
 {
   PetscFunctionBegin;
@@ -565,7 +565,7 @@ static int PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscAGetNice" 
+#define __FUNC__ /*<a name="PetscAGetNice"></a>*/"PetscAGetNice" 
 /*
     Given a value "in" and a "base", return a nice value.
     based on "sign", extend up (+1) or down (-1)
@@ -588,7 +588,7 @@ static int PetscAGetNice(PetscReal in,PetscReal base,int sign,PetscReal *result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscAGetBase" 
+#define __FUNC__ /*<a name="PetscAGetBase"></a>*/"PetscAGetBase" 
 static int PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal*Base,int*power)
 {
   PetscReal        base,ftemp,e10;

@@ -1,4 +1,4 @@
-/*$Id: sendsparse.c,v 1.29 2000/04/09 04:33:46 bsmith Exp bsmith $*/
+/*$Id: sendsparse.c,v 1.30 2000/04/12 04:20:47 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
@@ -25,7 +25,8 @@ $     MatView(Mat matrix,Viewer viewer)
    ViewerSocketPutSparse_Private() actually passes the matrix transpose, since 
    Matlab prefers column oriented storage.
 
-.keywords: Viewer, Socket, put, sparse, AIJ
+   Concepts: Matlab^sending data, sparse matrices
+   Concepts: Sockets^sending data, sparse matrices
 
 .seealso: ViewerSocketOpen(), MatView()
 */

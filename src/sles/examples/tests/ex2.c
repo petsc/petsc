@@ -1,13 +1,9 @@
-/*$Id: ex2.c,v 1.17 2000/05/05 22:17:55 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.18 2000/05/10 16:42:22 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
 
 /*T
-   Concepts: SLES (solving linear equations)
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESGetPC();
-   Routines: KSPSetTolerances(); PCSetType(); PetscSetCommWorld();
-
+   Concepts: SLES^solving linear equations
    Processors: n
 
    Comments: Demonstrates how to use PetscSetCommWorld() to tell a subset of

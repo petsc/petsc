@@ -1,11 +1,8 @@
 !
-! "$Id: ex1f.F,v 1.26 2000/05/05 22:18:34 balay Exp balay $";
+! "$Id: ex1f.F,v 1.27 2000/08/03 20:15:13 balay Exp bsmith $";
 !
 !/*T
-!  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
-!  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); 
-!  Routines: SNESSolve(); SNESSetFromOptions(); SNESGetSLES();
-!  Routines: SLESGetPC(); SLESGetKSP(); KSPSetTolerances(); PCSetType();
+!  Concepts: SNES^basic uniprocessor example
 !  Processors: 1
 !T*/
 !

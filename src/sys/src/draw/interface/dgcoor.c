@@ -1,4 +1,4 @@
-/*$Id: dgcoor.c,v 1.24 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dgcoor.c,v 1.25 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -21,7 +21,8 @@
 .  xl,yl,xr,yr - the coordinates of the lower left corner and upper
                  right corner of the drawing region.
 
-.keywords:  draw, get, coordinates
+   Concepts: drawing^coordinates
+   Concepts: graphics^coordinates
 
 .seealso: DrawSetCoordinates()
 

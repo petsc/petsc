@@ -1,4 +1,4 @@
-/*$Id: dsetpause.c,v 1.21 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dsetpause.c,v 1.22 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -22,7 +22,7 @@
    By default the pause time is zero unless the -draw_pause option is given 
    during DrawOpenX().
 
-.keywords: draw, set, pause
+   Concepts: drawing^waiting
 
 .seealso: DrawGetPause(), DrawPause()
 @*/

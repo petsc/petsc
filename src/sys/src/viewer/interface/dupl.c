@@ -1,4 +1,4 @@
-/*$Id: dupl.c,v 1.8 2000/07/10 03:38:34 bsmith Exp bsmith $*/
+/*$Id: dupl.c,v 1.9 2000/08/31 17:19:01 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 
@@ -24,7 +24,7 @@
     parallel object. For example block Jacobi PC view could use this to obtain a
     viewer that is used with the sequential SLES on one block of the preconditioner.
 
-.keywords: Viewer, duplication
+   Concepts: Viewer^sequential version
 
 .seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerDrawOpen(), ViewerRestoreSingleton()
 @*/
@@ -61,8 +61,6 @@ int ViewerGetSingleton(Viewer viewer,Viewer *outviewer)
    Level: advanced
 
    Notes: Call ViewerGetSingleton() to get this viewer, NOT ViewerCreate()
-
-.keywords: Viewer, duplication
 
 .seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerDrawOpen(), ViewerGetSingleton()
 @*/

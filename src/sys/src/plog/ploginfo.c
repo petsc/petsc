@@ -1,4 +1,4 @@
-/*$Id: ploginfo.c,v 1.17 2000/04/12 04:21:43 bsmith Exp balay $*/
+/*$Id: ploginfo.c,v 1.18 2000/05/05 22:14:18 balay Exp bsmith $*/
 /*
       PLogInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.
@@ -53,7 +53,7 @@ $     double alpha
 $     PLogInfo(A,"Matrix uses parameter alpha=%g\n",alpha);
 $
 
-.keywords: information, printing, monitoring
+   Concepts: runtime information
 
 .seealso: PLogInfoAllow()
 @*/

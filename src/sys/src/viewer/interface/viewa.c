@@ -1,4 +1,4 @@
-/*$Id: viewa.c,v 1.12 2000/04/12 04:20:59 bsmith Exp bsmith $*/
+/*$Id: viewa.c,v 1.13 2000/07/10 03:38:34 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -40,7 +40,7 @@
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.
 
-.keywords: Viewer, file, set, format
+   Concepts: Viewer^setting format
 
 .seealso: ViewerASCIIOpen(), ViewerBinaryOpen(), MatView(), VecView(),
           ViewerPushFormat(), ViewerPopFormat(), ViewerDrawOpenX(),ViewerSocketOpen()
@@ -100,7 +100,7 @@ int ViewerSetFormat(Viewer viewer,int format,char *name)
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.
 
-.keywords: Viewer, file, set, format
+   Concepts: Viewer^setting format
 
 .seealso: ViewerASCIIOpen(), ViewerBinaryOpen(), MatView(), VecView(),
           ViewerSetFormat(), ViewerPopFormat()
@@ -131,7 +131,7 @@ int ViewerPushFormat(Viewer viewer,int format,char *name)
 
    Level: intermediate
 
-.keywords: Viewer, file, set, format, push, pop
+   Concepts: Viewer^setting format
 
 .seealso: ViewerASCIIOpen(), ViewerBinaryOpen(), MatView(), VecView(),
           ViewerSetFormat(), ViewerPushFormat()

@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.107 2000/08/16 16:28:53 balay Exp balay $*/
+/*$Id: adebug.c,v 1.108 2000/09/06 22:57:18 balay Exp bsmith $*/
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
@@ -42,7 +42,7 @@ static PetscTruth Xterm = PETSC_TRUE;
    Fortran Note:
    This routine is not supported in Fortran.
 
-.keywords: Set, debugger, options
+  Concepts: debugger^setting
 
 .seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler()
 @*/
@@ -60,6 +60,55 @@ int PetscSetDebugger(const char debugger[],PetscTruth xterm)
 }
 
 #undef __FUNC__  
+#define __FUNC__ /*<a name="PetscSetDefaultDebugger"></a>*/"PetscSetDefaultDebugger" 
+int PetscSetDefaultDebugger(void)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DBX_DEBUGGER)
+  ierr = PetscSetDebugger("dbx",PETSC_TRUE);CHKERRQ(ierr);
+#elif defined(PETSC_USE_XDB_DEBUGGER) 
+  ierr = PetscSetDebugger("xdb",PETSC_TRUE);CHKERRQ(ierr);
+#else  /* Default is gdb */
+  ierr = PetscSetDebugger("gdb",PETSC_TRUE);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PetscSetDebuggerFromString"></a>*/"PetscSetDebuggerFromString" 
+int PetscSetDebuggerFromString(char *string)
+{
+  int        ierr;
+  PetscTruth xterm = PETSC_TRUE;
+  char       *f,*debugger = 0;
+
+  PetscFunctionBegin;
+  ierr = PetscStrstr(string,"noxterm",&f);CHKERRQ(ierr);
+  if (f) xterm = PETSC_FALSE;
+  ierr = PetscStrstr(string,"xdb",&f);CHKERRQ(ierr);
+  if (f)     debugger = "xdb";
+  ierr = PetscStrstr(string,"dbx",&f);CHKERRQ(ierr);
+  if (f)     debugger = "dbx";
+  ierr = PetscStrstr(string,"xldb",&f);CHKERRQ(ierr);
+  if (f)     debugger = "xldb";
+  ierr = PetscStrstr(string,"gdb",&f);CHKERRQ(ierr);
+  if (f)     debugger = "gdb";
+  ierr = PetscStrstr(string,"xxgdb",&f);CHKERRQ(ierr);
+  if (f)     debugger = "xxgdb";
+  ierr = PetscStrstr(string,"ups",&f);CHKERRQ(ierr);
+  if (f)     debugger = "ups";
+  ierr = PetscStrstr(string,"workshop",&f);CHKERRQ(ierr);
+  if (f)     debugger = "workshop";
+  ierr = PetscStrstr(string,"pgdbg",&f);CHKERRQ(ierr);
+  if (f)     debugger = "pgdbg";
+  ierr = PetscSetDebugger(debugger,xterm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PetscAttachDebugger" 
 /*@C
    PetscAttachDebugger - Attaches the debugger to the running process.
@@ -68,7 +117,7 @@ int PetscSetDebugger(const char debugger[],PetscTruth xterm)
 
    Level: advanced
 
-.keywords: attach, debugger
+   Concepts: debugger^starting from program
 
 .seealso: PetscSetDebugger()
 @*/
@@ -338,7 +387,8 @@ $    PetscAttachDebuggerErrorHandler()
 $    PetscAbortErrorHandler()
    or you may write your own.
 
-.keywords: attach, debugger, error, handler
+   Concepts: debugger^error handler
+   Concepts: error handler^attach debugger
 
 .seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
            PetscAbortErrorHandler()
@@ -374,7 +424,7 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
 
    Level: advanced
 
-.keywords: attach, debugger
+   Concepts: debugger^waiting for attachment
 
 .seealso: PetscSetDebugger(), PetscAttachDebugger()
 @*/

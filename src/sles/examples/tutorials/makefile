@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.83 2000/09/12 21:28:13 curfman Exp balay $ 
+# $Id: makefile,v 1.84 2000/09/12 21:33:35 balay Exp bsmith $ 
 
 CFLAGS	         =
 FFLAGS	         = 
@@ -8,6 +8,8 @@ LOCDIR           = src/sles/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
                    ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex20.c ex22.c ex23.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F
+TUTORIALS        = ex23.c ex22.c
+MANSEC           = SLES
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -327,6 +329,11 @@ runex10_12:
 	   if (diff output/ex10_12.out ex10_12.tmp) then true; \
 	   else echo "Possible problem with ex10_12, diffs above"; fi; \
 	   ${RM} -f ex10_12.tmp
+runex10_13:
+	-@${MPIRUN} -np 1 ex10 -options_left_off -mat_aij_lusol -pc_type lu -f0 /home/petsc/matrices/arco1 > ex10_13.tmp 2>&1;\
+	   if (diff output/ex10_13.out ex10_13.tmp) then true; \
+	   else echo "Possible problem with ex10_13, diffs above"; fi; \
+	   ${RM} -f ex10_13.tmp
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_irorthog > ex11_1.tmp 2>&1; \
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \
@@ -436,7 +443,9 @@ TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
                    ex10.PETSc runex10_7 runex10_8 runex10_9 \
                    runex10_5 runex10_6 runex10_8 runex10_10 ex10.rm
 TESTEXAMPLES_7   = ex5.PETSc runex5_3 runex5_4 ex5.rm
-TESTEXAMPLES_8   = 
+# even though ex10.c is a C example to run with -mat_aij_lusol requires a Fortran compiler, hence
+# we list it with the fortran examples
+TESTEXAMPLES_8   = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm
 TESTEXAMPLES_12  = ex13f90.PETSc runex13f90 ex13f90.rm
 TESTEXAMPLES_13  = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm

@@ -1,14 +1,11 @@
-/*$Id: ex4.c,v 1.44 2000/01/11 21:02:20 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.45 2000/05/05 22:18:00 balay Exp bsmith $*/
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
 linear system matrix in the SLES solvers.  Note that different storage formats\n\
 can be used for the different matrices.\n\n";
 
 /*T
-   Concepts: SLES^Different matrices for linear system and preconditioner;
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); VecSetRandom();
-   Routines: PetscRandomCreate(); PetscRandomDestroy()
+   Concepts: SLES^different matrices for linear system and preconditioner;
    Processors: n
 T*/
 

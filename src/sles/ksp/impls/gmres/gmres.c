@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.152 2000/08/24 22:42:47 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.153 2000/09/02 02:49:12 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -293,7 +293,6 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
   }
   /* mark lack of convergence  */
   if (itcount >= ksp->max_it) {
-    itcount--;
     ksp->reason = KSP_DIVERGED_ITS;
   }
 

@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.136 2000/08/24 22:42:31 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.137 2000/08/31 15:28:39 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -56,9 +56,7 @@ static int PCSetFromOptions_LU(PC pc)
   char       tname[256];
 
   PetscFunctionBegin;
-  if (!MatOrderingRegisterAllCalled) {
-    ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  }
+  ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsHead("LU options");CHKERRQ(ierr);
     ierr = OptionsName("-pc_lu_in_place","Form LU in the same memory as the matrix","PCLUSetUseInPlace",&flg);CHKERRQ(ierr);
     if (flg) {

@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.140 2000/07/10 03:39:19 bsmith Exp bsmith $*/
+/* $Id: pdvec.c,v 1.141 2000/08/17 04:51:12 bsmith Exp bsmith $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -236,12 +236,11 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer viewer)
   if (isnull) PetscFunctionReturn(0);
 
   ierr = ViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
-  ierr = DrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
   if (!rank) {
-    DrawLGReset(lg);
+    ierr = DrawLGReset(lg);CHKERRQ(ierr);
     xx   = (PetscReal*)PetscMalloc(2*(N+1)*sizeof(PetscReal));CHKPTRQ(xx);
     for (i=0; i<N; i++) {xx[i] = (PetscReal) i;}
     yy   = xx + N;
@@ -265,7 +264,6 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer viewer)
     ierr = PetscFree(lens);CHKERRQ(ierr);
     ierr = DrawLGAddPoints(lg,N,&xx,&yy);CHKERRQ(ierr);
     ierr = PetscFree(xx);CHKERRQ(ierr);
-    ierr = DrawLGDraw(lg);CHKERRQ(ierr);
   } else {
 #if !defined(PETSC_USE_COMPLEX)
     ierr = MPI_Gatherv(x->array,xin->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
@@ -281,8 +279,8 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer viewer)
     }
 #endif
   }
+  ierr = DrawLGDraw(lg);CHKERRQ(ierr);
   ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
-  ierr = DrawPause(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

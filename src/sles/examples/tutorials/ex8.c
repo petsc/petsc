@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.40 2000/01/11 21:02:20 bsmith Exp balay $*/
+/*$Id: ex8.c,v 1.41 2000/05/05 22:18:00 balay Exp bsmith $*/
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
 Schwarz Method) for solving a linear system in parallel with SLES.  The\n\
@@ -24,10 +24,7 @@ parameters include:\n\
 */
 
 /*T
-   Concepts: SLES^Using the Additive Schwarz Method (ASM) with user-defined subdomains
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions(); SLESSolve();
-   Routines: PCSetType(); PCASMCreateSubdomains2D(); PCASMSetLocalSubdomains();
-   Routines: PCASMSetOverlap(); PCASMGetSubSLES();
+   Concepts: SLES^Additive Schwarz Method (ASM) with user-defined subdomains
    Processors: n
 T*/
 

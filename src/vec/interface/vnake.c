@@ -1,4 +1,4 @@
-/*$Id: vnake.c,v 1.19 2000/08/01 20:01:33 bsmith Exp bsmith $*/
+/*$Id: vnake.c,v 1.20 2000/08/24 22:41:29 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
@@ -89,7 +89,7 @@ int VecSetFromOptions(Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
 
-  ierr = OptionsBegin(vec->comm,vec->prefix,"Vector options");CHKERRQ(ierr);
+  ierr = OptionsBegin(vec->comm,vec->prefix,"Vector options","Vec");CHKERRQ(ierr);
     if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
     ierr = OptionsList("-vec_type","Type of vector","VecSetType",VecList,(char*)(vec->type_name?vec->type_name:VEC_MPI),vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {

@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.112 2000/08/15 22:17:55 balay Exp bsmith $ */
+/* $Id: send.c,v 1.113 2000/09/02 02:46:28 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -172,7 +172,8 @@ $    -viewer_socket_port <port>
      Currently the only socket client available is Matlab. See 
      src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
 
-.keywords: Viewer, Socket, open, matlab, graphics
+   Concepts: Matlab^sending data
+   Concepts: Sockets^sending data
 
 .seealso: MatView(), VecView(), ViewerDestroy(), ViewerCreate(), ViewerSetType(),
           ViewerSocketSetConnection()

@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.52 2000/09/02 02:48:33 bsmith Exp balay $*/
+/*$Id: partition.c,v 1.53 2000/09/07 15:18:37 balay Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
@@ -528,7 +528,7 @@ int MatPartitioningSetFromOptions(MatPartitioning part)
 
   PetscFunctionBegin;
   if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
-  ierr = OptionsBegin(part->comm,part->prefix,"Partitioning options");CHKERRQ(ierr);
+  ierr = OptionsBegin(part->comm,part->prefix,"Partitioning options","MatOrderings");CHKERRQ(ierr);
     if (!part->type_name) {
 #if defined(PETSC_HAVE_PARMETIS)
       def = MATPARTITIONING_PARMETIS;

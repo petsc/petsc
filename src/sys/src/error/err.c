@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.114 2000/04/20 03:34:35 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.115 2000/07/10 03:38:48 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -54,7 +54,8 @@ $     SETERRQ(number,p,mess)
    currently available PETSc error handlers include PetscTraceBackErrorHandler(),
    PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscStopErrorHandler()
 
-.keywords: default, error, handler, traceback
+   Concepts: emacs^going to on error
+   Concepts: error handler^going to line in emacs
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler()
@@ -138,7 +139,7 @@ int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,vo
    Fortran Note:
    This routine is not supported in Fortran.
 
-.keywords: pop, error, handler
+   Concepts: error handler^setting
 
 .seealso: PetscPushErrorHandler()
 @*/
@@ -183,7 +184,7 @@ $     SETERRQ(n,p,mess)
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 
-.keywords: error, SETERRQ, SETERRA
+   Concepts: error^setting condition
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler()
 @*/

@@ -1,6 +1,6 @@
-/*$Id: ex19.c,v 1.4 2000/08/17 04:52:51 bsmith Exp balay $*/
+/*$Id: ex19.c,v 1.5 2000/09/06 22:19:34 balay Exp bsmith $*/
 
-static char help[] = "Solves a nonlinear system in parallel with SNES and multigrid.\n\
+static char help[] = "Solves nonlinear driven cavity with multigrid.\n\
   \n\
 The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\
 The flow can be driven with the lid or with bouyancy or both:\n\
@@ -18,17 +18,9 @@ Parallelism can be invoked based on the DA construct:\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
 /*T
-   Concepts: SNES^Solving a system of nonlinear equations (parallel multicomponent example);
-   Concepts: DA^Using distributed arrays;
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions(); DAView(); DAGetColoring();
-   Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
-   Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal(); DASetFieldName();
-   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); 
-   Routines: MatFDColoringCreate(); MatFDColoringSetFunction();
-   Routines: MatFDColoringSetFromOptions(); MatFDColoringDestroy(); 
-   Routines: ISColoringGetIS(); ISView(); ISColoringDestroy(); 
-
+   Concepts: SNES^solving a system of nonlinear equations (parallel multicomponent example);
+   Concepts: DA^using distributed arrays;
+   Concepts: multicomponent
    Processors: n
 T*/
 

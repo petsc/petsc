@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.84 2000/08/17 04:52:51 bsmith Exp balay $ 
+# $Id: makefile,v 1.85 2000/09/06 22:19:40 balay Exp bsmith $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -13,7 +13,7 @@ EXAMPLESCH	 = ex8and9.h
 EXAMPLESFH       = ex5f.h
 DOCS		 = readme ex5m.m
 DIRS		 = ex10d
-TUTORIALS        = ex5.c ex5f.F ex5f90.F
+TUTORIALS        = ex5.c ex5f.F ex5f90.F ex18.c ex19.c
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -319,12 +319,12 @@ runex9_2:
            else echo "Possible problem with ex9_2, diffs above"; fi; \
            ${RM} -f ex9_2.tmp
 runex12:
-	-@echo "path(path,['${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab']); path(path,['${AMS_HOME}/matlab']); ex12(1) ; exit" | ${MATLABCOMMAND} -display dreamcast:0.0 > ex12_1.tmp 2>&1; \
+	-@echo "path(path,['${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab']); path(path,['${AMS_HOME}/matlab']); ex12(1) ; exit" | ${MATLABCOMMAND} -display twister:0.0 > ex12_1.tmp 2>&1; \
                 egrep '(Unable To Connect|Warning)' ex12_1.tmp ; \
                 if [ "$$?" != 1 ]; then cat ex12_1.tmp; echo "Possible problem with AMS MEMORY SNOOPER ex12_1"; fi; \
 	        ${RM} -f ex12_1.tmp
 runex12_2:
-	-@echo "path(path,['${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab']); path(path,['${AMS_HOME}/matlab']); ex12(2) ; exit" | ${MATLABCOMMAND} -display dreamcast:0.0 > ex12_2.tmp 2>&1; \
+	-@echo "path(path,['${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab']); path(path,['${AMS_HOME}/matlab']); ex12(2) ; exit" | ${MATLABCOMMAND} -display twister:0.0 > ex12_2.tmp 2>&1; \
             egrep '(Unable To Connect|Warning)' ex12_2.tmp ; \
               if [ "$$?" != 1 ]; then cat ex12_2.tmp; echo "Possible problem with AMS MEMORY SNOOPER ex12_2"; fi; \
          ${RM} -f ex12_2.tmp ex12_2.tmp2

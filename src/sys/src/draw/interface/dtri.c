@@ -1,4 +1,4 @@
-/*$Id: dtri.c,v 1.43 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dtri.c,v 1.44 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -18,7 +18,10 @@
 
    Level: beginner
 
-.keywords: draw, triangle
+   Concepts: drawing^triangle
+   Concepts: graphics^triangle
+   Concepts: triangle
+
 @*/
 int DrawTriangle(Draw draw,PetscReal x1,PetscReal y_1,PetscReal x2,PetscReal y2,PetscReal x3,PetscReal y3,
                  int c1,int c2,int c3)
@@ -130,7 +133,8 @@ static int DrawTensorContour_Zoom(Draw win,void *dctx)
 
    Level: intermediate
 
-.keywords: Draw, tensor, contour, vector
+   Concepts: contour plot
+   Concepts: drawing^contour plot
 
 .seealso: DrawTensorContourPatch()
 
@@ -226,7 +230,7 @@ int DrawTensorContour(Draw win,int m,int n,const PetscReal xi[],const PetscReal 
    This is a lower level support routine, usually the user will call
    DrawTensorContour(). 
 
-.keywords: Draw, tensor, contour, vector
+   Concepts: contour plot
 
 .seealso: DrawTensorContour()
 

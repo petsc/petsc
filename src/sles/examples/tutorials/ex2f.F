@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.59 2000/05/05 22:18:00 balay Exp bsmith $";
+!    "$Id: ex2f.F,v 1.60 2000/05/16 02:47:57 bsmith Exp bsmith $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -7,12 +7,8 @@
 !  Program usage: mpirun -np <procs> ex2f [-help] [all PETSc options]
 !
 !/*T
-!  Concepts: SLES^Solving a system of linear equations (basic parallel example);
-!  Concepts: SLES^Setting a user-defined monitoring routine when solving a linear system;
-!  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-!  Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); PCSetType();
-!  Routines: KSPBuildSolution(); KSPSetMonitor(); KSPSetTolerances();
-!  Routines: PetscRandomCreate(); PetscRandomGetValue(); PetscRandomDestroy();
+!  Concepts: SLES^basic parallel example
+!  Concepts: SLES^setting a user-defined monitoring routine
 !  Processors: n
 !T*/
 !

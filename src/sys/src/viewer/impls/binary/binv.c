@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.89 2000/08/31 17:18:47 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.90 2000/09/13 03:09:42 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -75,7 +75,8 @@ int ViewerRestoreSingleton_Binary(Viewer viewer,Viewer *outviewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: Viewer, file, get, descriptor
+  Concepts: file descriptor^getting
+  Concepts: ViewerBinary^accessing file descriptor
 
 .seealso: ViewerBinaryOpen(),ViewerBinaryGetInfoPointer()
 @*/
@@ -108,7 +109,7 @@ int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
     Fortran Note:
     This routine is not supported in Fortran.
 
-.keywords: Viewer, file, get, descriptor
+  Concepts: ViewerBinary^accessing info file
 
 .seealso: ViewerBinaryOpen(),ViewerBinaryGetDescriptor()
 @*/
@@ -185,7 +186,11 @@ $    BINARY_WRONLY - open existing file for binary output
     node 0 does not have the file it generates an error even if other nodes
     do have the file.
 
-.keywords: binary, file, open, input, output, url, gzip, compression
+   Concepts: binary file
+   Concepts: ViewerBinary^creating
+   Concepts: gzip
+   Concepts: accessing remote file
+   Concepts: remote file, accessing
 
 .seealso: ViewerASCIIOpen(), ViewerSetFormat(), ViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), ViewerBinaryGetDescriptor(),

@@ -1,15 +1,11 @@
-/*$Id: ex1e.c,v 1.2 2000/01/11 21:00:24 bsmith Exp balay $*/
+/*$Id: ex1e.c,v 1.3 2000/05/05 22:15:21 balay Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
 static char help[] = "Demonstrates various vector routines.\n\n";
 
 /*T
-   Concepts: Vectors^Using basic vector routines;
-   Routines: VecCreate(); VecSetFromOptions(); VecDuplicate(); VecSet(); VecValid(); 
-   Routines: VecDot(); VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); 
-   Routines: VecAYPX(); VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); 
-   Routines: VecSwap(); VecMAXPY(); VecDestroy(); VecDestroyVecs(); VecDuplicateVecs();
+   Concepts: vectors^basic routines;
    Processors: n
 T*/
 

@@ -1,4 +1,4 @@
-/*$Id: memc.c,v 1.62 2000/05/05 22:14:11 balay Exp balay $*/
+/*$Id: memc.c,v 1.63 2000/05/08 15:07:34 balay Exp bsmith $*/
 /*
     We define the memory operations here. The reason we just do not use 
   the standard memory routines in the PETSc code is that on some machines 
@@ -48,8 +48,9 @@
    Note:
    This routine is analogous to memcpy().
 
-.keywords: Petsc, copy, memory
-
+  Concepts: memory^copying
+  Concepts: copying^memory
+  
 .seealso: PetscMemmove()
 
 @*/
@@ -105,7 +106,8 @@ int PetscMemcpy(void *a,const void *b,int n)
    This routine is analogous to PetscMemcpy(), except when the data type is 
    PETSC_LOGICAL.
 
-.keywords: Petsc, copy, memory
+   Concepts: memory^comparing
+   Concepts: comparing^memory
 
 .seealso: PetscMemmove(), PetscMemcpy()
 
@@ -147,7 +149,8 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
    PETSC_PREFER_BZERO - on certain machines (the IBM RS6000) the bzero() routine happens
   to be faster than the memset() routine. This flag causes the bzero() routine to be used.
 
-.keywords: Petsc, zero, initialize, memory
+   Concepts: memory^zeroing
+   Concepts: zeroing^memory
 
 .seealso: PetscMemcpy()
 @*/
@@ -220,7 +223,8 @@ int PetscMemcmp(const void *str1,const void *str2,int len,PetscTruth *e)
 
    Contributed by: Matthew Knepley
 
-.keywords: Petsc, copy, memory
+   Concepts: memory^copying with overlap
+   Concepts: copying^memory with overlap
 
 .seealso: PetscMemcpy()
 @*/

@@ -1,4 +1,4 @@
-/*$Id: random.c,v 1.52 2000/04/12 04:21:38 bsmith Exp balay $*/
+/*$Id: random.c,v 1.53 2000/05/05 22:14:11 balay Exp bsmith $*/
 /*
     This file contains routines for interfacing to random number generators.
     This provides more than just an interface to some system random number
@@ -39,8 +39,6 @@ struct _p_PetscRandom {
 
    Level: intermediate
 
-.keywords: random, destroy
-
 .seealso: PetscRandomGetValue(), PetscRandomCreate(), VecSetRandom()
 @*/
 int PetscRandomDestroy(PetscRandom r)
@@ -76,7 +74,7 @@ int PetscRandomDestroy(PetscRandom r)
 
    Level: intermediate
 
-.keywords: random, set, interval
+   Concepts: random numbers^range
 
 .seealso: PetscRandomCreate()
 @*/
@@ -146,7 +144,7 @@ EXTERN_C_END
       PetscRandomDestroy(r);
 .ve
 
-.keywords: random, create
+   Concepts: random numbers^creating
 
 .seealso: PetscRandomGetValue(), PetscRandomSetInterval(), PetscRandomDestroy(), VecSetRandom()
 @*/
@@ -200,7 +198,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
       PetscRandomDestroy(r);
 .ve
 
-.keywords: random, get, value
+   Concepts: random numbers^getting
 
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
 @*/

@@ -1,4 +1,4 @@
-/*$Id: dpoint.c,v 1.26 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dpoint.c,v 1.27 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -18,7 +18,8 @@
 
    Level: beginner
 
-.keywords:  draw, point
+   Concepts: point^drawing
+   Concepts: drawing^point
 
 .seealso: DrawPointSetSize()
 

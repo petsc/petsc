@@ -1,4 +1,4 @@
-/*$Id: general.c,v 1.96 2000/05/25 22:45:13 bsmith Exp bsmith $*/
+/*$Id: general.c,v 1.97 2000/05/25 22:48:26 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
@@ -39,11 +39,11 @@ int ISIdentity_General(IS is,PetscTruth *ident)
   int        i,n = is_general->n,*idx = is_general->idx;
 
   PetscFunctionBegin;
-  is->isidentity = 1;
+  is->isidentity = PETSC_TRUE;
   *ident         = PETSC_TRUE;
   for (i=0; i<n; i++) {
     if (idx[i] != i) {
-      is->isidentity = 0;
+      is->isidentity = PETSC_FALSE;
       *ident         = PETSC_FALSE;
       break;
     }
@@ -275,7 +275,7 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
   Nindex->data    = (void*)sub;
   ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   Nindex->isperm     = 0;
-  Nindex->isidentity = 0;
+  Nindex->isidentity = PETSC_FALSE;
   ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm));CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.22 2000/05/05 22:18:00 balay Exp balay $*/
+/*$Id: ex14.c,v 1.23 2000/09/06 22:20:19 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -22,12 +22,8 @@ The command line options include:\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
 /*T
-   Concepts: SLES^Writing a user-defined nonlinear solver (parallel Bratu example);
-   Concepts: DA^Using distributed arrays;
-   Routines: SLESCreate(); SLESSetOperators(); SLESSolve(); SLESSetFromOptions();
-   Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
-   Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
+   Concepts: SLES^writing a user-defined nonlinear solver (parallel Bratu example);
+   Concepts: DA^using distributed arrays;
    Processors: n
 T*/
 

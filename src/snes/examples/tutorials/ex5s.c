@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.16 2000/05/05 22:18:34 balay Exp balay $*/
+/*$Id: ex5s.c,v 1.17 2000/09/06 22:19:37 balay Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -15,9 +15,8 @@ The command line options include:\n\
             ========================================
 */
 /*T
-   Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions(); VecCreateShared();
+   Concepts: SNES^parallel Bratu example
+   Concepts: shared memory
    Processors: n
 T*/
 

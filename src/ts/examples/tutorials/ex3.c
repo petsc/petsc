@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.14 2000/01/11 21:03:05 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.15 2000/05/05 22:19:01 balay Exp bsmith $*/
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
 
@@ -14,10 +14,6 @@ Input parameters include:\n\
    Concepts: TS^time-dependent linear problems
    Concepts: TS^heat equation
    Concepts: TS^diffusion equation
-   Routines: TSCreate(); TSSetSolution(); TSSetRHSMatrix();
-   Routines: TSSetInitialTimeStep(); TSSetDuration(); TSSetMonitor();
-   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); 
-   Routines: TSSetTimeStep(); TSGetTimeStep();
    Processors: 1
 */
 

@@ -1,12 +1,9 @@
 !
-!    "$Id: ex11f.F,v 1.24 2000/01/11 21:02:20 bsmith Exp balay $";
+!    "$Id: ex11f.F,v 1.25 2000/05/05 22:18:00 balay Exp bsmith $";
 !
 !/*T
-!  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
-!  Concepts: Complex numbers
-!  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-!  Routines: SLESSolve(); PetscRandomCreate(); PetscRandomGetValue();
-!  Routines: PetscRandomDestroy();
+!  Concepts: SLES^solving a Helmholtz equation
+!  Concepts: complex numbers
 !  Processors: n
 !T*/
 !

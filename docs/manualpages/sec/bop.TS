@@ -1,11 +1,10 @@
 <HTML>
 <HEAD>
-<TITLE>TS Manual Pages</TITLE>
+<TITLE>Time-steppers - ODE integrators - TS</TITLE>
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> TS Manual Pages 
-</H2>
+<H2>Time-steppers - ODE integrators - TS</H2>
 
 The time-stepping (TS) component provides ODE integrators and
 pseudo-timestepping.  TS internally

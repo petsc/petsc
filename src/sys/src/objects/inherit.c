@@ -1,4 +1,4 @@
-/*$Id: inherit.c,v 1.62 2000/08/17 04:50:45 bsmith Exp balay $*/
+/*$Id: inherit.c,v 1.63 2000/08/24 16:06:35 balay Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -292,7 +292,8 @@ int PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void **ptr)
    PetscObjectContainerCreate() for info on how to create an object from a 
    user-provided pointer that may then be composed with PETSc objects.
    
-.keywords: object, composition
+   Concepts: objects^composing
+   Concepts: composing objects
 
 .seealso: PetscObjectQuery(), PetscObjectContainerCreate()
 @*/
@@ -322,7 +323,10 @@ int PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
 
    Level: advanced
 
-.keywords: object, composition
+   Concepts: objects^composing
+   Concepts: composing objects
+   Concepts: objects^querying
+   Concepts: querying objects
 
 .seealso: PetscObjectQuery()
 @*/
@@ -353,8 +357,6 @@ int PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
 
    Level: developer
 
-.keywords: language, object wrappers
-
 .seealso: PetscObjectQuery()
 @*/
 int PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void **ptr)
@@ -381,8 +383,6 @@ int PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void **ptr)
 -  ptr - the language specific interface
 
    Level: developer
-
-.keywords: language, object wrappers
 
 .seealso: PetscObjectQuery()
 @*/
@@ -424,7 +424,11 @@ int PetscObjectComposeFunction(PetscObject obj,const char name[],const char fnam
 
    Level: advanced
 
-.keywords: object, composition
+   Concepts: objects^composing functions
+   Concepts: composing functions
+   Concepts: functions^querying
+   Concepts: objects^querying
+   Concepts: querying objects
 
 .seealso: PetscObjectComposeFunctionDynamic()
 @*/
@@ -564,7 +568,11 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
    work in C++/complex with dynamic link libraries (PETSC_USE_DYNAMIC_LIBRARIES)
    enabled.
 
-.keywords: object, composition
+   Concepts: objects^composing functions
+   Concepts: composing functions
+   Concepts: functions^querying
+   Concepts: objects^querying
+   Concepts: querying objects
 
 .seealso: PetscObjectQueryFunction()
 M*/

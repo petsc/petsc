@@ -1,4 +1,4 @@
-/*$Id: prefix.c,v 1.25 2000/04/09 04:34:38 bsmith Exp bsmith $*/
+/*$Id: prefix.c,v 1.26 2000/04/12 04:21:29 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -19,7 +19,8 @@
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
 
-.keywords: object, set, options, prefix, database
+   Concepts: prefix^setting
+
 */
 int PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
 {
@@ -51,7 +52,8 @@ int PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
 
-.keywords: object, append, options, prefix, database
+   Concepts: prefix^setting
+
 */
 int PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
 {
@@ -86,7 +88,8 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
    Output Parameters:
 .  prefix - pointer to the prefix string used is returned
 
-.keywords: object, get, options, prefix, database
+   Concepts: prefix^getting
+
 */
 int PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
 {
@@ -110,7 +113,8 @@ int PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
 
-.keywords: object, append, options, prefix, database
+   Concepts: prefix^setting
+
 */
 int PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
 {

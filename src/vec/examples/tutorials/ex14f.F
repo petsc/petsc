@@ -1,15 +1,10 @@
 !
-!     "$Id: ex14f.F,v 1.2 1999/06/30 22:50:14 bsmith Exp balay $";
+!     "$Id: ex14f.F,v 1.3 2000/05/05 22:15:21 balay Exp bsmith $";
 !
 ! Description: Illustrates the use of VecCreateGhost()
 !
 !/*T
-!   Concepts: Vectors^Assembling vectors; Ghost padding
-!   Routines: VecCreateGhostBlock(); VecGetSize(); VecSet(); VecSetValues();
-!   Routines: VecView(); VecDestroy(); PetscSynchronizedPrintf();
-!   Routines: VecGhostGetLocalForm(); VecGhostUpdateEnd();
-!   Routines: VecGhostRestoreLocalForm(); VecGhostUpdateBegin();
-!   Routines: PetscSynchronizedFlush();
+!   Concepts: vectors^assembling vectors; ghost padding
 !   Processors: n
 !
 !   Comment: Ghost padding is one way to handle local calculations that

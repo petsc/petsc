@@ -1,12 +1,11 @@
-/*$Id: ex12.c,v 1.9 2000/01/11 21:00:24 bsmith Exp balay $*/
+/*$Id: ex12.c,v 1.10 2000/05/05 22:15:21 balay Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
 static char help[] = "Demonstrates VecStrideScatter() and VecStrideGather().\n\n";
 
 /*T
-   Concepts: Vectors^Sub-vectors;
-   Routines: VecCreate(); VecSetFromOptions(); VecSet(); VecSetBlockSize(); VecStrideScatter(), VecStrideGather(); 
+   Concepts: vectors^sub-vectors;
    Processors: n
 T*/
 

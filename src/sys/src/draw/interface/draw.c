@@ -1,4 +1,4 @@
-/*$Id: draw.c,v 1.68 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: draw.c,v 1.69 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -168,8 +168,6 @@ int DrawAppendTitle(Draw draw,char *title)
 .  draw - the drawing context
 
    Level: beginner
-
-.keywords: draw, destroy
 
 .seealso: DrawCreate()
 

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.11 2000/01/11 21:03:15 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.12 2000/05/05 22:19:18 balay Exp bsmith $*/
 
 static char help[] = 
 "Reads an AODatabase and displays the key and segment names. Runtime options include:\n\
@@ -8,9 +8,7 @@ static char help[] =
     -r : Allows removal of items from the database\n\n";
 
 /*T
-   Concepts: AOData^Using an AOData database for grid information;
-   Routines: AODataLoadBasic(); AODataKeyExists(); AODataKeyAdd();
-   Routines: AODataSegmentAdd(); AODataView();
+   Concepts: AOData^using an AOData database for grid information;
    Processors: n
 T*/
 

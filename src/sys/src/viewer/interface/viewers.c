@@ -1,4 +1,4 @@
-/*$Id: viewers.c,v 1.10 2000/05/05 22:13:21 balay Exp bsmith $*/
+/*$Id: viewers.c,v 1.11 2000/07/10 03:38:34 bsmith Exp bsmith $*/
 
 #include "petscviewer.h"
 
@@ -22,7 +22,6 @@ struct _p_Viewers {
 
 .seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerCreate(), ViewerDrawOpen(), ViewersCreate()
 
-.keywords: Viewer, destroy
 @*/
 int ViewersDestroy(Viewers v)
 {
@@ -52,7 +51,7 @@ int ViewersDestroy(Viewers v)
 
    Level: intermediate
 
-.keywords: Viewers, get, type
+   Concepts: Viewer^array of
 
 .seealso: ViewerCreate(), ViewersDestroy()
 
@@ -86,7 +85,7 @@ int ViewersCreate(MPI_Comm comm,Viewers *v)
 
    Level: intermediate
 
-.keywords: Viewers, get, type
+   Concepts: Viewer^array of
 
 .seealso: ViewersCreate(), ViewersDestroy()
 

@@ -1,4 +1,4 @@
-/*$Id: drawopenx.c,v 1.14 2000/04/09 04:34:12 bsmith Exp bsmith $*/
+/*$Id: drawopenx.c,v 1.15 2000/04/12 04:21:09 bsmith Exp bsmith $*/
 /*
     Defines the operations for the X Draw implementation.
 */
@@ -6,7 +6,7 @@
 #include "src/sys/src/draw/impls/x/ximpl.h"         /*I  "petsc.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawOpenX" 
+#define __FUNC__ /*<a name="DrawOpenX"></a>*/"DrawOpenX" 
 /*@C
    DrawOpenX - Opens an X-window for use with the Draw routines.
 
@@ -53,7 +53,7 @@
    correct for character data!  Thus, PETSC_NULL_CHARACTER can be
    used for the display and title input parameters.
 
-.keywords: draw, open, x
+   Concepts: X windows^drawing to
 
 .seealso: DrawSynchronizedFlush(), DrawDestroy()
 @*/

@@ -1,4 +1,4 @@
-/*$Id: grpath.c,v 1.35 2000/04/12 04:21:24 bsmith Exp balay $*/
+/*$Id: grpath.c,v 1.36 2000/05/05 22:13:54 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -59,7 +59,8 @@
    the head of the line.  This may cause problems if, for some reason,
    /tmp_mnt is valid and not the result of the automounter.
 
-.keywords, system, get, real, path
+   Concepts: real path
+   Concepts: path^real
 
 .seealso: PetscGetFullPath()
 @*/

@@ -1,10 +1,8 @@
 !
-!  "$Id: ex1f.F,v 1.19 2000/05/05 22:14:48 balay Exp bsmith $";
+!  "$Id: ex1f.F,v 1.20 2000/07/10 03:39:11 bsmith Exp bsmith $";
 !
 !/*T
-!    Concepts: Index sets^Manipulating a general index set;
-!    Routines: ISCreateGeneral(); ISDestroy(); ISView(); ISGetLocalSize()
-!    Routines: ISGetIndices(); ISRestoreIndices()
+!    Concepts: Index sets^manipulating a general index set;
 !T*/
 !    
 !  Comment: Creates an index set based on a set of integers. Views that index set

@@ -1,4 +1,4 @@
-/*$Id: errstop.c,v 1.10 2000/04/12 04:21:20 bsmith Exp bsmith $*/
+/*$Id: errstop.c,v 1.11 2000/05/10 16:39:12 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -32,7 +32,7 @@ $     SETERRQ(n,p,mess)
    currently available PETSc error handlers include PetscTraceBackErrorHandler(),
    PetscStopErrorHandler(), PetscAttachDebuggerErrorHandler(), and PetscAbortErrorHandler().
 
-.keywords: default, error, handler, traceback
+   Concepts: error handler^stopping
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
            PetscAbortErrorHandler(), PetscTraceBackErrorHandler()

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.15 2000/02/14 23:03:10 balay Exp balay $ 
+# $Id: base.site,v 1.16 2000/09/13 15:17:46 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -46,6 +46,22 @@ X11_INCLUDE    = -I/usr/openwin/include
 X11_LIB        = -L/usr/openwin/lib -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
+#
+#
+# Location of the LUSOL sparse LU factorization code (part of MINOS)
+# developed by Michael Saunders, saunders@stanford.edu at the
+# Systems Optimization Laboratory, Stanford University.
+#  http://www.sbsi-sol-optimize.com/
+#
+# Put the two files mi25bfac.f and mi15blas.f (or LUSOL.f LUSOL_BLAS.f
+# depending on how they are named) into src/mat/impls/aij/seq and 
+# uncomment the appropriate lines below
+#
+PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
+#PETSC_LUSOL_SOURCE_F = LUSOL.f LUSOL_BLAS.f
+#PETSC_LUSOL_SOURCE_O = LUSOL.o LUSOL_BLAS.o
+PETSC_LUSOL_SOURCE_F = mi25bfac.f mi15blas.f
+PETSC_LUSOL_SOURCE_O = mi25bfac.o mi15blas.o
 #
 # ---------------------------------------------------------------------------------------
 #

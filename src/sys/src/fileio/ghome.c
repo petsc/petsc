@@ -1,4 +1,4 @@
-/*$Id: ghome.c,v 1.33 2000/04/12 04:21:24 bsmith Exp balay $*/
+/*$Id: ghome.c,v 1.34 2000/05/05 22:13:54 balay Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -50,8 +50,7 @@
    Note:
    On Windows NT machine the enviornmental variable HOME specifies the home directory.
 
-.keywords: system, get, real, path
-
+   Concepts: home directory
 @*/
 int PetscGetHomeDirectory(char dir[],int maxlen)
 {

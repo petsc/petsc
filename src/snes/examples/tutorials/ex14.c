@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.9 2000/01/11 21:02:45 bsmith Exp balay $*/
+/*$Id: ex14.c,v 1.10 2000/05/05 22:18:34 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -21,13 +21,8 @@ The command line options include:\n\
 */
 
 /*T
-   Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
-   Concepts: DA^Using distributed arrays;
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions(); DAView();
-   Routines: DACreate3d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
-   Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
+   Concepts: SNES^parallel Bratu example
+   Concepts: DA^using distributed arrays;
    Processors: n
 T*/
 

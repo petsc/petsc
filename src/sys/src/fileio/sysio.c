@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.72 2000/07/07 14:43:21 bsmith Exp balay $*/
+/*$Id: sysio.c,v 1.73 2000/08/15 22:18:09 balay Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -148,7 +148,8 @@ int PetscByteSwapDouble(double *buff,int n)
    C90 on non-C90 machines. Cray T3E/T3D are the same as other Unix
    machines, not the same as the C90.
 
-.keywords: binary, input, read
+   Concepts: files^reading binary
+   Concepts: binary files^reading
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose()
 @*/
@@ -293,7 +294,8 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
    byte-swapping operation is not done, thus saving some computation,
    but the buffer corrupted is corrupted.
 
-.keywords: binary, output, write
+   Concepts: files^writing binary
+   Concepts: binary files^writing
 
 .seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose()
 @*/
@@ -387,7 +389,8 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 
    Level: advanced
 
-.keywords: binary, output, write
+  Concepts: files^opening binary
+  Concepts: binary files^opening
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite()
 @*/
@@ -438,8 +441,6 @@ int PetscBinaryOpen(const char name[],int type,int *fd)
 
    Level: advanced
 
-.keywords: binary, output, write
-
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
 @*/
 int PetscBinaryClose(int fd)
@@ -476,7 +477,8 @@ int PetscBinaryClose(int fd)
    binary file may be read on any machine. Hence you CANNOT use sizeof()
    to determine the offset or location.
 
-.keywords: binary, output, write
+   Concepts: files^binary seeking
+   Concepts: binary files^seeking
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
 @*/
@@ -539,7 +541,8 @@ int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence,int *offset)
    C90 on non-C90 machines. Cray T3E/T3D are the same as other Unix
    machines, not the same as the C90.
 
-.keywords: binary, input, read
+   Concepts: files^synchronized reading of binary files
+   Concepts: binary files^synchronized reading
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead()
 @*/
@@ -584,7 +587,8 @@ int PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,int n,PetscDataType
    binary file may be read on any machine. Hence you CANNOT use sizeof()
    to determine the offset or location.
 
-.keywords: binary, output, write
+   Concepts: binary files^seeking
+   Concepts: files^seeking in binary 
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
 @*/

@@ -1,4 +1,4 @@
-/*$Id: fhost.c,v 1.44 2000/04/12 04:21:38 bsmith Exp balay $*/
+/*$Id: fhost.c,v 1.45 2000/05/05 22:14:11 balay Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -44,7 +44,8 @@
 
     Level: developer
 
-.keywords: system, get, host, name
+    Concepts: machine name
+    Concepts: host name
 
 .seealso: PetscGetUserName()
 @*/

@@ -1,11 +1,11 @@
-/*$Id: ex3.c,v 1.44 2000/09/20 21:10:35 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.45 2000/09/21 14:24:54 bsmith Exp bsmith $*/
 
 static char help[] = "Parallel vector layout.\n\n";
 
 /*T
-   Concepts: Vectors^setting values
-   Concepts: Vectors^local access to
-   Concepts: Vectors^drawing vectors;
+   Concepts: vectors^setting values
+   Concepts: vectors^local access to
+   Concepts: vectors^drawing vectors;
    Processors: n
 T*/
 

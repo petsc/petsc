@@ -1,4 +1,4 @@
-/*$Id: arch.c,v 1.40 2000/05/18 17:10:51 balay Exp balay $*/
+/*$Id: arch.c,v 1.41 2000/05/24 18:09:54 balay Exp bsmith $*/
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "petscsys.h"           /*I  "petscsys.h"  I*/
 
@@ -19,7 +19,9 @@
 
      Level: developer
 
-.keywords: architecture, machine     
+     Concepts: machine type
+     Concepts: architecture
+
 @*/
 int PetscGetArchType(char str[],int slen)
 {

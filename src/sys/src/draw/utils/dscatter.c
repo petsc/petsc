@@ -1,4 +1,4 @@
-/*$Id: dscatter.c,v 1.32 2000/04/12 04:21:18 bsmith Exp bsmith $*/
+/*$Id: dscatter.c,v 1.33 2000/04/16 16:41:34 bsmith Exp bsmith $*/
 /*
        Contains the data structure for drawing scatter plots
     graphs in a window with an axis. This is intended for scatter
@@ -21,7 +21,7 @@ struct _p_DrawSP {
 #define CHUNCKSIZE 100
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSPCreate" 
+#define __FUNC__ /*<a name="DrawSPCreate"></a>*/"DrawSPCreate" 
 /*@C
     DrawSPCreate - Creates a scatter plot data structure.
 
@@ -36,7 +36,7 @@ struct _p_DrawSP {
 
    Level: intermediate
 
-.keywords:  draw, scatter plot, graph, create
+   Concepts: scatter plot^creating
 
 .seealso:  DrawSPDestroy()
 @*/
@@ -77,7 +77,7 @@ int DrawSPCreate(Draw draw,int dim,DrawSP *drawsp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSPSetDimension" 
+#define __FUNC__ /*<a name="DrawSPSetDimension"></a>*/"DrawSPSetDimension" 
 /*@
    DrawSPSetDimension - Change the number of sets of points  that are to be drawn.
 
@@ -89,7 +89,8 @@ int DrawSPCreate(Draw draw,int dim,DrawSP *drawsp)
 
    Level: intermediate
 
-.keywords:  draw, line, graph, reset
+   Concepts: scatter plot^setting number of data types
+
 @*/
 int DrawSPSetDimension(DrawSP sp,int dim)
 {
@@ -110,7 +111,7 @@ int DrawSPSetDimension(DrawSP sp,int dim)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSPReset" 
+#define __FUNC__ /*<a name="DrawSPReset"></a>*/"DrawSPReset" 
 /*@
    DrawSPReset - Clears line graph to allow for reuse with new data.
 
@@ -121,7 +122,8 @@ int DrawSPSetDimension(DrawSP sp,int dim)
 
    Level: intermediate
 
-.keywords:  draw, line, graph, reset
+  Concepts: scatter plot^resetting
+
 @*/
 int DrawSPReset(DrawSP sp)
 {
@@ -138,7 +140,7 @@ int DrawSPReset(DrawSP sp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSPDestroy" 
+#define __FUNC__ /*<a name="DrawSPDestroy"></a>*/"DrawSPDestroy" 
 /*@C
    DrawSPDestroy - Frees all space taken up by scatter plot data structure.
 
@@ -148,8 +150,6 @@ int DrawSPReset(DrawSP sp)
 .  sp - the line graph context
 
    Level: intermediate
-
-.keywords:  draw, line, graph, destroy
 
 .seealso:  DrawSPCreate()
 @*/
@@ -173,7 +173,7 @@ int DrawSPDestroy(DrawSP sp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSPAddPoint" 
+#define __FUNC__ /*<a name="DrawSPAddPoint"></a>*/"DrawSPAddPoint" 
 /*@
    DrawSPAddPoint - Adds another point to each of the scatter plots.
 
@@ -186,7 +186,7 @@ int DrawSPDestroy(DrawSP sp)
 
    Level: intermediate
 
-.keywords:  draw, line, graph, add, point
+   Concepts: scatter plot^adding points
 
 .seealso: DrawSPAddPoints()
 @*/
@@ -224,7 +224,7 @@ int DrawSPAddPoint(DrawSP sp,PetscReal *x,PetscReal *y)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSPAddPoints" 
+#define __FUNC__ /*<a name="DrawSPAddPoints"></a>*/"DrawSPAddPoints" 
 /*@C
    DrawSPAddPoints - Adds several points to each of the scatter plots.
 
@@ -238,7 +238,7 @@ int DrawSPAddPoint(DrawSP sp,PetscReal *x,PetscReal *y)
 
    Level: intermediate
 
-.keywords:  draw, line, graph, add, points
+   Concepts: scatter plot^adding points
 
 .seealso: DrawSPAddPoint()
 @*/
@@ -283,7 +283,7 @@ int DrawSPAddPoints(DrawSP sp,int n,PetscReal **xx,PetscReal **yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSPDraw" 
+#define __FUNC__ /*<a name="DrawSPDraw"></a>*/"DrawSPDraw" 
 /*@
    DrawSPDraw - Redraws a scatter plot.
 
@@ -294,7 +294,6 @@ int DrawSPAddPoints(DrawSP sp,int n,PetscReal **xx,PetscReal **yy)
 
    Level: intermediate
 
-.keywords:  draw, line, graph
 @*/
 int DrawSPDraw(DrawSP sp)
 {
@@ -325,7 +324,7 @@ int DrawSPDraw(DrawSP sp)
 } 
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSPSetLimits" 
+#define __FUNC__ /*<a name="DrawSPSetLimits"></a>*/"DrawSPSetLimits" 
 /*@
    DrawSPSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
@@ -339,7 +338,8 @@ int DrawSPDraw(DrawSP sp)
 
    Level: intermediate
 
-.keywords:  draw, line, graph, set limits
+   Concepts: scatter plot^setting axis
+
 @*/
 int DrawSPSetLimits(DrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
 {
@@ -354,7 +354,7 @@ int DrawSPSetLimits(DrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,Pe
 }
  
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSPGetAxis" 
+#define __FUNC__ /*<a name="DrawSPGetAxis"></a>*/"DrawSPGetAxis" 
 /*@C
    DrawSPGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
@@ -371,7 +371,6 @@ int DrawSPSetLimits(DrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,Pe
 
    Level: intermediate
 
-.keywords: draw, line, graph, get, axis
 @*/
 int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
 {
@@ -386,7 +385,7 @@ int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawSPGetDraw" 
+#define __FUNC__ /*<a name="DrawSPGetDraw"></a>*/"DrawSPGetDraw" 
 /*@C
    DrawSPGetDraw - Gets the draw context associated with a line graph.
 
@@ -400,7 +399,6 @@ int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
 
    Level: intermediate
 
-.keywords: draw, line, graph, get, context
 @*/
 int DrawSPGetDraw(DrawSP sp,Draw *draw)
 {

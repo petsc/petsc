@@ -1,4 +1,4 @@
-/*$Id: pgname.c,v 1.20 2000/04/09 04:34:38 bsmith Exp bsmith $*/
+/*$Id: pgname.c,v 1.21 2000/04/12 04:21:29 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -17,7 +17,7 @@
 
    Level: intermediate
 
-.keywords: object, get, name
+   Concepts: object name
 
 .seealso: PetscObjectSetName()
 @*/

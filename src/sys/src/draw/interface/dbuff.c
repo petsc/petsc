@@ -1,4 +1,4 @@
-/*$Id: dbuff.c,v 1.22 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dbuff.c,v 1.23 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -16,7 +16,10 @@
 
    Level: intermediate
 
-.keywords:  draw, set, double, buffer
+   Concepts: drawing^double buffer
+   Concepts: graphics^double buffer
+   Concepts: double buffer
+
 @*/
 int DrawSetDoubleBuffer(Draw draw)
 {

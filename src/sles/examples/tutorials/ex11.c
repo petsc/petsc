@@ -1,14 +1,11 @@
-/*$Id: ex11.c,v 1.26 2000/01/11 21:02:20 bsmith Exp balay $*/
+/*$Id: ex11.c,v 1.27 2000/05/05 22:18:00 balay Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 
 /*T
-   Concepts: SLES^Solving a Helmholtz equation (basic parallel example);
-   Concepts: Complex numbers;
+   Concepts: SLES^solving a Helmholtz equation
+   Concepts: complex numbers;
    Concepts: Helmholtz equation
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); PetscRandomCreate(); PetscRandomGetValue();
-   Routines: PetscRandomDestroy();
    Processors: n
 T*/
 

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.32 2000/09/06 22:19:06 balay Exp balay $*/
+/*$Id: ex3.c,v 1.33 2000/09/07 15:24:03 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
 inserting their own event logging.  Run this program with one of the\n\
@@ -9,12 +9,8 @@ codes.  Note that the code must be compiled with the flag -DPETSC_USE_LOG\n\
 (the default) to activate logging.\n\n";
 
 /*T
-   Concepts: PLog^User-defined event profiling (basic example);
-   Concepts: PLog^Activating/deactivating events for profiling (basic example);
-   Routines: PLogEventRegister(); PLogEventBegin(); PLogEventEnd();
-   Routines: PLogEventDeactivate(); PLogEventActivate(); PLogFlops();
-   Routines: PLogEventMPEDeactivate(); PLogEventMPEActivate();
-   Routines: PetscSleep();
+   Concepts: PLog^user-defined event profiling
+   Concepts: PLog^activating/deactivating events for profiling
    Processors: n
 T*/
 

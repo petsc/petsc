@@ -1,4 +1,4 @@
-/*$Id: fp.c,v 1.65 2000/04/12 04:21:20 bsmith Exp balay $*/
+/*$Id: fp.c,v 1.66 2000/05/05 22:13:49 balay Exp bsmith $*/
 /*
 *	IEEE error handler for all machines. Since each machine has 
 *   enough slight differences we have completely separate codes for each one.
@@ -79,7 +79,9 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
    On certain machines, in particular the IBM rs6000, floating point 
    trapping is VERY slow!
 
-.keywords: floating point trap, overflow, divide-by-zero, invalid-operand
+   Concepts: floating point exceptions^trapping
+   Concepts: divide by zero
+
 @*/
 int PetscSetFPTrap(PetscFPTrap flag)
 {

@@ -1,4 +1,4 @@
-/*$Id: sorti.c,v 1.25 2000/04/23 04:20:27 bsmith Exp balay $*/
+/*$Id: sorti.c,v 1.26 2000/05/05 22:14:11 balay Exp bsmith $*/
 /*
    This file contains routines for sorting integers. Values are sorted in place.
 
@@ -57,7 +57,7 @@ static int PetscSortInt_Private(int *v,int right)
 
    Level: intermediate
 
-.keywords: sort, integer
+   Concepts: sorting^ints
 
 .seealso: PetscSortDouble(), PetscSortIntWithPermutation()
 @*/
@@ -131,7 +131,7 @@ static int PetscSortIntWithArray_Private(int *v,int *V,int right)
 
    Level: intermediate
 
-.keywords: sort, integer
+   Concepts: sorting^ints with array
 
 .seealso: PetscSortDouble(), PetscSortIntPermutation(), PetscSortInt()
 @*/

@@ -1,4 +1,4 @@
-/*$Id: errabort.c,v 1.7 2000/04/09 04:34:23 bsmith Exp bsmith $*/
+/*$Id: errabort.c,v 1.8 2000/04/12 04:21:20 bsmith Exp bsmith $*/
 /*
        The default error handlers and code that allows one to change
    error handlers.
@@ -47,7 +47,8 @@ $     SETERRQ(number,p,mess)
    currently available PETSc error handlers include PetscTraceBackErrorHandler(),
    PetscAttachDebuggerErrorHandler(), and PetscAbortErrorHandler().
 
-.keywords: abort, error, handler
+   Concepts: error handler^aborting
+   Concepts: aborting on error
 
 .seealso: PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
           PetscAttachDebuggerErrorHandler()

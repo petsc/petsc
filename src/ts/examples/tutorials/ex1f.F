@@ -1,12 +1,11 @@
 !
-! "$Id: ex1f.F,v 1.22 2000/01/02 04:44:49 bsmith Exp balay $"
+! "$Id: ex1f.F,v 1.23 2000/05/05 22:19:01 balay Exp bsmith $"
 !
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !
-!   Concepts: TS^Pseudo-timestepping^nonlinear problems
-!   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian(); 
-!   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration(); 
-!   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); 
+!   Concepts: TS^pseudo-timestepping
+!   Concepts: pseudo-timestepping
+!   Concepts: nonlinear problems
 !   Processors: 1
 !
 !   This code demonstrates how one may solve a nonlinear problem 

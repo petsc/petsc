@@ -1,4 +1,4 @@
-/*$Id: vcreatea.c,v 1.15 2000/04/12 04:20:52 bsmith Exp bsmith $*/
+/*$Id: vcreatea.c,v 1.16 2000/05/04 16:24:23 bsmith Exp bsmith $*/
 
 #include "petsc.h"  /*I     "petsc.h"   I*/
 
@@ -140,7 +140,11 @@ Viewer VIEWER_STDERR_(MPI_Comm comm)
      MatView(matrix,viewer);
 .ve
 
-.keywords: Viewer, file, open
+  Concepts: ViewerASCII^creating
+  Concepts: printf
+  Concepts: printing
+  Concepts: accessing remote file
+  Concepts: remote file
 
 .seealso: MatView(), VecView(), ViewerDestroy(), ViewerBinaryOpen(),
           ViewerASCIIGetPointer(), ViewerSetFormat(), VIEWER_STDOUT_, VIEWER_STDERR_,

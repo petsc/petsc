@@ -1,4 +1,4 @@
-/*$Id: pname.c,v 1.35 2000/04/12 04:21:29 bsmith Exp bsmith $*/
+/*$Id: pname.c,v 1.36 2000/05/09 04:27:27 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -17,7 +17,7 @@
 
    Level: advanced
 
-.keywords: object, set, name
+   Concepts: object name^setting
 
 .seealso: PetscObjectGetName()
 @*/
@@ -46,7 +46,7 @@ int PetscObjectSetName(PetscObject obj,const char name[])
 
    Level: advanced
 
-.keywords: object, set, name
+   Concepts: object name^setting default
 
 .seealso: PetscObjectGetName(), PetscObjectSetName()
 @*/
@@ -78,7 +78,10 @@ int PetscObjectName(PetscObject obj)
 
    Level: advanced
 
-.keywords: object, monitoring, publishing
+   Concepts: publishing object
+   Concepts: AMS
+   Concepts: ALICE Memory Snooper
+   Concepts: Asynchronous Memory Snooper
 
 .seealso: PetscObjectSetName(), ViewerAMSOpen()
 

@@ -1,4 +1,4 @@
-/*$Id: cookie.c,v 1.20 2000/04/09 04:34:38 bsmith Exp bsmith $*/
+/*$Id: cookie.c,v 1.21 2000/04/12 04:21:29 bsmith Exp bsmith $*/
 
 #include "petsc.h"  /*I "petsc.h" I*/
 int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_PREDEFINED;
@@ -23,7 +23,8 @@ int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_PREDEFINED;
     The initial cookie variable MUST be set to zero on the
     first call to this routine.
 
-.keywords:  register, cookie
+    Concepts: Cookie^getting new one
+
 @*/
 int PetscRegisterCookie(int *cookie)
 {

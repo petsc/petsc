@@ -1,4 +1,4 @@
-/* $Id: isimpl.h,v 1.22 2000/05/05 22:14:37 balay Exp bsmith $ */
+/* $Id: isimpl.h,v 1.23 2000/07/10 03:39:05 bsmith Exp bsmith $ */
 
 /*
     Index sets for scatter-gather type operations in vectors
@@ -29,7 +29,7 @@ struct _p_IS {
   int          isperm;          /* if is a permutation */
   int          max,min;         /* range of possible values */
   void         *data;
-  int          isidentity;
+  PetscTruth   isidentity;
 };
 
 

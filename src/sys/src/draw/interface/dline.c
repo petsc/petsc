@@ -1,4 +1,4 @@
-/*$Id: dline.c,v 1.27 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: dline.c,v 1.28 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -18,7 +18,9 @@
 
    Level: beginner
 
-.keywords:  draw, line
+   Concepts: line^drawing
+   Concepts: drawing^line
+
 @*/
 int DrawLine(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
