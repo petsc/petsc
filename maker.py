@@ -4,7 +4,6 @@ import nargs
 
 import commands
 import os
-import pwd
 import string
 import sys
 import tempfile
@@ -71,7 +70,9 @@ class Maker (logging.Logger):
       self.argDB['TMPDIR'] = os.environ['TMPDIR']
 
     if not self.argDB.has_key('TMPDIR') or self.argDB['TMPDIR'] == '/tmp':
-      self.argDB['TMPDIR'] = os.path.join('/tmp', pwd.getpwuid(os.getuid())[0])
+      import getpass
+
+      self.argDB['TMPDIR'] = os.path.join('/tmp', getpass.getuser())
     if not os.path.exists(self.argDB['TMPDIR']):
       try:
         os.makedirs(self.argDB['TMPDIR'])
