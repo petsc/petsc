@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.111 2000/08/03 14:22:07 balay Exp balay $ 
+# $Id: makefile,v 1.112 2000/08/03 14:39:32 balay Exp balay $ 
 
 ALL: lib
 
@@ -51,6 +51,7 @@ MANSEC	 = Sys
 LOCDIR   = src/fortran/auto/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/common_test
 
 fixfortran:
 	@echo "Fixing pointers in src/fortran/auto"
