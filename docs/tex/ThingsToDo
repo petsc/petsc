@@ -40,6 +40,8 @@ West Bethesda, Md.  20817-5700
 (301) 227-5753 (fax)
 rcheng@oasys.dt.navy.mil
 
+  - Add NaN initialization to eigenvalue computations (else what seem to be zero e-values
+    can be just uninitialized yet uncomputed data -- misleading, comment by Frank Elliott).
 
   - add map object to vectors and matrices to replace current local size, ownership range etc.
 
