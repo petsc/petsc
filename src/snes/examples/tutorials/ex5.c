@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.98 1998/11/20 15:31:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.99 1998/12/03 04:05:59 bsmith Exp balay $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -288,9 +288,9 @@ int FormInitialGuess(AppCtx *user,Vec X)
       row = i - gxs + (j - gys)*gxm; 
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
         x[row] = 0.0; 
-        continue;
+      } else {
+        x[row] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
       }
-      x[row] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
     }
   }
 
