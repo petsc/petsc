@@ -15,7 +15,7 @@ dnl
 dnl To build a new version of configure, execute the following:
 dnl    autoheader
 dnl    autoconf
-dnl These should correspond to at least version 2.12; these are in 
+dnl These should correspond to at least version 2.13; these are in 
 dnl /mcs/bin at Argonne.
 dnl
 dnl The documentation for configure is available through Emacs info; look
@@ -42,21 +42,28 @@ dnl that must be present.  Initialize configure (this will process the
 dnl command line)
 AC_INIT(../include/petsc.h)
 dnl
-dnl  Turn off printing tests to screen
+dnl  Turn off printing tests to screen (but allow them as an option)
 dnl
-exec 6>config.log6
-exec 9>&1
-exec 1>config.log1
+AC_ARG_ENABLE(print-tests,
+[ --enable-print-tests -- Turn on configure-style printing of tests],
+print_tests=$enableval,print_tests=no)
+
+if test "$print_tests" != "yes" ; then
+    exec 6>config.log6
+    exec 9>&1
+    exec 1>config.log1
+fi
 
 dnl
 dnl Insist on autoconf 2.13 or later
 AC_PREREQ(2.13)
+dnl Find other required files in the config subdirectory
 AC_CONFIG_AUX_DIR(config)
 dnl
 dnl Find the root PETSC directory if it hasn't been specified
 if test -z "$PETSC_DIR" ; then 
     PETSC_DIR=`pwd`
-    PETSC_DIR_NO_SET=yes
+    PETSC_DIR_NOT_SET=yes
 fi
 dnl
 dnl Try to determine the architecture if PETSC_ARCH is not defined.
@@ -104,28 +111,29 @@ dnl converts friendly formated command line args to the uglier configure
 dnl arguments, and then invokes configure.  Similar things can be done
 dnl for the environment variables.
 dnl
-AC_ARG_ENABLE(echo,Turn on strong echoing,set -x)
-AC_ARG_WITH(mpi, mpi - Choose MPI implementation,USE_MPI=1,USE_MPI=0)
-AC_ARG_ENABLE(opt, opt=flagsChoose compiler optimization,
+AC_ARG_ENABLE(echo,[ --enable-echo - Turn on strong echoing],set -x)
+AC_ARG_WITH(mpi, [ --with-mpi - Choose MPI implementation],USE_MPI=yes,USE_MPI=no)
+AC_ARG_ENABLE(opt, [ --enable-opt=flags - Choose compiler optimization],
               COPTFLAGS="$COPTFLAGS $enable_opt")
-AC_ARG_ENABLE(optname, optname=name - Choose BOPT name,
+AC_ARG_ENABLE(optname, [ --enable-optname=name - Choose BOPT name],
               BOPTNAME="$enable_optname")
-AC_ARG_ENABLE(installsite, installsite - Install bmake site files,install_sitefiles=1,
-install_sitefiles=0)
+AC_ARG_ENABLE(installsite,
+[ --enable-installsite - Install bmake site files],install_sitefiles=yes,
+install_sitefiles=no)
 dnl
-AC_ARG_WITH(matlab,Include matlab interface,MATLABPATH=$withval)
+AC_ARG_WITH(matlab,[ --with-matlab=path - Include matlab interface],MATLABPATH=$withval)
 dnl
 dnl   
 dnl
-AC_ARG_WITH(bmakedir, bmakedir=dir - Use BMAKEDIR,BMAKEDIR=$withval)
+AC_ARG_WITH(bmakedir,[ --with-bmakedir=dir - Use BMAKEDIR],BMAKEDIR=$withval)
 dnl
-AC_ARG_WITH(blas, blas=library - Use system-provided BLAS,BLAS_LIB=$withval)
+AC_ARG_WITH(blas,[ --with-blas=library - Use system-provided BLAS],BLAS_LIB=$withval)
 AC_SUBST(BLAS_LIB)
-AC_ARG_WITH(lapack, lapack=library - Use system-provide LAPACK,LAPACK_LIB=$withval)
+AC_ARG_WITH(lapack,[ --with-lapack=library - Use system-provide LAPACK],LAPACK_LIB=$withval)
 AC_SUBST(LAPACK_LIB)
 dnl
-AC_ARG_WITH(blocksolve, blocksolve=library - Use BlockSolve95,BLOCKSOLVE_LIB=$withval)
-AC_ARG_WITH(blocksolve-inc, blocksolve-inc=dir - Use BlockSolve95 (include path),BLOCKSOLVE_INCLUDE=$withval)
+AC_ARG_WITH(blocksolve,[ --with-blocksolve=library - Use BlockSolve95],BLOCKSOLVE_LIB=$withval)
+AC_ARG_WITH(blocksolve-inc,[ --with-blocksolve-inc=dir - Use BlockSolve95 (include path)],BLOCKSOLVE_INCLUDE=$withval)
 dnl
 dnl convert the BlockSolve include into a CPP command
 if test -n "$BLOCKSOLVE_INCLUDE" ; then
@@ -151,8 +159,8 @@ AC_SUBST(BLOCKSOLVE_LIB)
 AC_SUBST(BLOCKSOLVE_INCLUDE)
 AC_SUBST(PETSC_HAVE_BLOCKSOLVE)
 dnl
-AC_ARG_WITH(pvode, pvode=library - Use PVODE,PVODE_LIB=$withval)
-AC_ARG_WITH(pvode-inc, pvode-inc=dir - Use PVODE (include path),PVODE_INCLUDE=$withval)
+AC_ARG_WITH(pvode,[ --with-pvode=library - Use PVODE],PVODE_LIB=$withval)
+AC_ARG_WITH(pvode-inc,[ --with-pvode-inc=dir - Use PVODE (include path)],PVODE_INCLUDE=$withval)
 dnl
 dnl as for BLOCKSOLVE
 if test -n "$PVODE_INCLUDE" ; then
@@ -165,11 +173,11 @@ AC_SUBST(PVODE_LIB)
 AC_SUBST(PVODE_INCLUDE)
 AC_SUBST(PETSC_HAVE_PVODE)
 dnl
-AC_ARG_WITH(adic-inc, adic-inc=dir - Specify ADIC include directories,
+AC_ARG_WITH(adic-inc,[ --with-adic-inc=dir - Specify ADIC include directories],
             ADIC_INCLUDE="$withval")
-AC_ARG_WITH(adic-lib, adic-lib=liblist - Specify ADIC library list,
+AC_ARG_WITH(adic-lib,[ --with-adic-lib=liblist - Specify ADIC library list],
             ADIC_LIB="$withval")
-AC_ARG_WITH(adic-cc, adic-cc=program - Specify ADIC compiler,
+AC_ARG_WITH(adic-cc,[ --with-adic-cc=program - Specify ADIC compiler],
             ADIC_CC="$withval")
 if test -n "$ADIC_INCLUDE" -a -n "$ADIC_LIB" ; then 
     PETSC_HAVE_ADIC="-DPETSC_HAVE_ADIC"
@@ -179,7 +187,7 @@ AC_SUBST(ADIC_LIB)
 AC_SUBST(ADIC_CC)
 AC_SUBST(PETSC_HAVE_ADIC)
 dnl
-AC_ARG_WITH(sitefile, sitefile=file - Specify sitefile,sitefile=$withval)
+AC_ARG_WITH(sitefile,[ --with-sitefile=file - Specify sitefile],sitefile=$withval)
 dnl
 dnl
 dnl This defines a file that will contain the definitions that configure
@@ -247,7 +255,19 @@ AC_SUBST(AR_FLAGS)
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
+dnl
+dnl PROG_MAKE_SET sets the variable SET_MAKE to MAKE = ${MAKE} it
+dnl makefiles require it
+AC_PROG_MAKE_SET
+dnl
+dnl
 AC_CHECK_PROGS(MATLAB,matlab)
+
+AC_CHECK_PROGS(UCBPS,/usr/ucb/ps,/usr/usb/ps)
+if test -n "$UCBPS" ; then
+    AC_DEFINE(HAVE_UCBPS)
+fi
+
 AC_CHECK_PROGS(FC,f77)
 if test -z "$CCC" ; then
       AC_PROG_CXX
@@ -266,13 +286,19 @@ dnl Check for UNIX variants
 AC_AIX
 AC_MINIX
 
+dnl Check for recursive use of macros ok
+PAC_MACRO_NAME_IN_MACRO(,[AC_DEFINE(HAVE_BROKEN_RECURSIVE_MACRO)])
+
 dnl Checks for libraries.
 dnl Math library
 dnl AC_CHECK_LIB(m, sin)
 
 # libnsl needed on Solaris for socket and gethostbyname calls
-AC_CHECK_LIB(nsl,gethostbyname)
-AC_CHECK_LIB(socket,socket)
+dnl These autoconf 2.13 functions add the library only if it is needed for
+dnl the function in the first argument.  Some systems provide gethostbyname
+dnl in the default libaries, for example.
+AC_SEARCH_LIBS(gethostbyname,nsl)
+AC_SEARCH_LIBS(socket,socket)
 #
 # BLAS are in sunperf.  They include a C version, so we need only test for
 # the C name
@@ -285,62 +311,67 @@ AC_CHECK_LIB(socket,socket)
 #
 # Check that the specified libraries exist
 if test -n "$BLAS_LIB" -a ! -f "$BLAS_LIB" ; then
-    echo "BLAS library $BLAS_LIB does not exist!"
+    AC_MSG_WARN([BLAS library $BLAS_LIB does not exist!])
     BLAS_LIB=""
 fi
 if test -n "$LAPACK_LIB" -a ! -f "$LAPACK_LIB" ; then
-    echo "LAPACK library $LAPACK_LIB does not exist!"
+    AC_MSG_WARN([LAPACK library $LAPACK_LIB does not exist!])
     LAPACK_LIB=""
 fi
 if test -z "$BLAS_LIB" -a -z "$LAPACK_LIB" ; then 
     SAVE_LIBS="$LIBS"
     LIBS="$LIBS -xlic_lib=sunperf"
-    AC_CHECK_FUNC(dgemm,found_insunperf=1,found_insunperf=0)
-    if test $found_insunperf = 1 ; then
+    AC_CHECK_FUNC(dgemm,found_insunperf=yes,found_insunperf=no)
+    if test $found_insunperf = "yes" ; then
 	:
     else
         LIBS="$SAVE_LIBS"
     fi
 fi
 
-if test $USE_MPI = 1 ; then 
+dnl Eventually, we should use the sowing version
+if test $USE_MPI = "yes" ; then 
     dnl MPI library; if not found, select uniprocessor version
     dnl We could look for the library in the directory MPILIBPATH
     dnl or check the PETSc arch for likely locations.  On some vendor
     dnl systems, the simple check below will work
     dnl
-    AC_CHECK_LIB(mpi, MPI_Init,,USE_MPI=0)
-    if test $USE_MPI = 0 ; then
+    AC_SEARCH_LIBS(MPI_Init, mpi mpich,,USE_MPI=no)
+    if test "$USE_MPI" = "no" ; then
 	# Try harder
         LDFLAGSSAV=$LDFLAGS
         LDFLAGS="$LDFLAGS $MPILIBPATH"
-        USE_MPI=1
-        AC_CHECK_LIB(mpi, MPI_Init,,USE_MPI=0)
+        USE_MPI="yes"
+        AC_SEARCH_LIBS(MPI_Init, mpi mpich,,USE_MPI="no")
 	LDFLAGS="$LDFLAGSSAV"
-        if test $USE_MPI = 0 ; then
+        if test $USE_MPI = "no" ; then
 	    LDFLAGS="$LDFLAGSSAV"
 	fi
     fi
-    if test $USE_MPI = 0 ; then
-        echo "No MPI library; PETSc will be compiled in uniprocessor mode" 
-	echo "You can set a library path with the environment variable"
-	echo "MPILIBPATH.  For example, "
-	echo "setenv MPILIBPATH /usr/local/mpich/lib/sun4/ch_p4/libmpich.a"
+    if test $USE_MPI = "no" ; then
+        AC_MSG_WARN([No MPI library; PETSc will be compiled in uniprocessor mode
+	You can set a library path with the environment variable
+	MPILIBPATH.  For example, 
+	setenv MPILIBPATH /usr/local/mpich/lib/sun4/ch_p4/libmpich.a])
+    else
+        if test "$ac_cv_search_MPI_Init" != "none required" ; then
+            MPI_LIB=$ac_cv_search_MPI_Init
+        fi
     fi
 fi
-if test $USE_MPI = 0 ; then
+if test $USE_MPI = "no" ; then
     MPI_LIB="-lmpiuni"
     MPI_INCLUDE="-I$PETSC_DIR/src/sys/src/mpiuni"
     MPIRUN="$PETSC_DIR/src/sys/src/mpiuni/mpirun"
     # The location of mpi.h in PETSc has moved
     if test ! -s $PETSC_DIR/src/sys/src/mpiuni/mpi.h ; then
-	echo "Could not find PETSc's mpi.h file!"
-	echo "configure expected to find PETSc's mpi.h (for running in"
-        echo "single processor mode) in  $PETSC_DIR/src/sys/src/mpiuni/mpi.h"
-        echo "Check that you have PETSC_DIR set correctly, and that the"
-	echo "PETSc source tree has been correctly unpacked (for example,"
-        echo "check that the extraction was not terminated due to low disk"
-        echo "space)."
+        AC_MSG_WARN([Could not find PETSc's mpi.h file!
+	configure expected to find PETSc's mpi.h (for running in
+        single processor mode) in  $PETSC_DIR/src/sys/src/mpiuni/mpi.h
+        Check that you have PETSC_DIR set correctly, and that the
+	PETSc source tree has been correctly unpacked (for example,
+        check that the extraction was not terminated due to low disk
+        space).])
 	exit 1
     fi
 fi
@@ -358,6 +389,7 @@ AC_SUBST(PETSC_HAVE_MPE)
 dnl
 dnl
 dnl Fortran support
+dnl Autoconf 2.13 has a macro for this that we should consider
 export CC
 export FC
 FC_LIB=`bin/config/findftnlibs | tr '\012' ' '`
@@ -428,7 +460,7 @@ AC_SUBST(CC_SHARED_OPT)
 AC_SUBST(FC_SHARED_OPT)
 dnl
 dnl This is needed on some older IRIX systems
-AC_CHECK_LIB(sun,getpwnam)
+AC_SEARCH_LIBS(getpwnam,sun)
 
 dnl Checks for header files.
 AC_PATH_X
@@ -455,7 +487,7 @@ AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h limits.h malloc.h strings.h sys/time.h unistd.h)
 AC_CHECK_HEADERS(stropts.h search.h pwd.h string.h sys/systeminfo.h)
-AC_CHECK_HEADERS( sys/resource.h sys/procfs.h)
+AC_CHECK_HEADERS(sys/resource.h sys/procfs.h)
 dnl io.h is really only an NT header; we include this as part of unifying
 dnl the configuration
 AC_CHECK_HEADERS(io.h)
@@ -474,6 +506,9 @@ dnl If this discovers that const doesn't work, defines const as empty
 dnl so that you can use const in the program without fear.
 AC_C_BIGENDIAN
 AC_C_CONST
+dnl
+dnl Eventually, these should look at an environment variable for the
+dnl cross-compilation values, rather than assuming 4.
 AC_CHECK_SIZEOF(void *,4)
 AC_CHECK_SIZEOF(int,4)
 dnl
@@ -490,21 +525,105 @@ dnl Checks for library functions.
 dnl This tests for needing -traditional on gcc when using ioctl.
 AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MEMCMP
+dnl
+dnl Check for return type from free
+dnl (who needs this?)
+AC_CACHE_CHECK(whether free returns void, ac_cv_func_free_void,
+[AC_TRY_COMPILE([#include <stdlib.h>],
+[int free(void *);void *p; return free(p);],
+  ac_cv_func_free_void=no, ac_cv_func_free_void=yes, ac_cv_func_free_void=yes)])
+if test $ac_cv_func_free_void != yes; then
+  AC_DEFINE(HAVE_FREE_RETURN_INT)
+fi
+dnl
 AC_TYPE_SIGNAL
+dnl
+dnl Check for specific signal values: SIGSYS, SIGBUS, SIGQUIT
+AC_CACHE_CHECK([whether SIGSYS is defined],ac_cv_have_sigsys,
+[AC_TRY_COMPILE([#include <signal.h>],[int i=SIGSYS;],
+ac_cv_have_sigsys=yes,ac_cv_have_sigsys=no)])
+if test "$ac_cv_have_sigsys" = "no" ; then
+    AC_DEFINE(MISSING_SIGSYS)
+fi
+AC_CACHE_CHECK([whether SIGBUS is defined],ac_cv_have_sigbus,
+[AC_TRY_COMPILE([#include <signal.h>],[int i=SIGBUS;],
+ac_cv_have_sigbus=yes,ac_cv_have_sigbus=no)])
+if test "$ac_cv_have_sigbus" = "no" ; then
+    AC_DEFINE(MISSING_SIGBUS)
+fi
+AC_CACHE_CHECK([whether SIGQUIT is defined],ac_cv_have_sigquit,
+[AC_TRY_COMPILE([#include <signal.h>],[int i=SIGQUIT;],
+ac_cv_have_sigquit=yes,ac_cv_have_sigquit=no)])
+if test "$ac_cv_have_sigquit" = "no" ; then
+    AC_DEFINE(MISSING_SIGQUIT)
+fi
+
 AC_FUNC_VPRINTF
 dnl
 dnl PETSc also wants the check that VPRINTF takes void * or char * pointers.
+AC_CACHE_CHECK([whether vprintf requires a char * last argument],
+ac_cv_func_vprintf_char_p,
+[AC_TRY_COMPILE([#include <stdio.h>
+#include <stdarg.h>],[
+va_list Argp;
+vprintf( "%d", Argp );],ac_cv_func_vprintf_char_p=no,ac_cv_func_vprintf_char_p=yes)])
+if test "$ac_cv_func_vprintf_char_p" = "yes" ; then
+    AC_DEFINE(HAVE_VPRINTF_CHAR)
+fi
 dnl
 dnl This is an example of a general test for the named functions)
-AC_CHECK_FUNCS(getcwd gethostname gettimeofday getwd socket strstr uname drand48 memmove realpath readlink)
-AC_CHECK_FUNCS(rand)
+AC_CHECK_FUNCS(getcwd gethostname gettimeofday getwd socket strstr uname)
+AC_CHECK_FUNCS(getpwuid memmove realpath readlink)
+AC_CHECK_FUNCS(memalign)
+AC_CHECK_FUNCS(rand drand48)
 AC_CHECK_FUNCS(sigaction signal sigset)
+dnl
+dnl Some PETSc checks look for MISSING_xxx instead of HAVE_xxx.  The 
+dnl following handles that
+if test "$ac_cv_func_getpwuid" != "yes" ; then
+    AC_DEFINE(MISSING_GETPWUID)
+fi
+if test "$ac_cv_func_socket" != "yes" ; then
+    AC_DEFINE(MISSING_SOCKETS)
+fi
+dnl
+dnl Test Fortran issues
+AC_LANG_FORTRAN77
+AC_CACHE_CHECK([whether integer*4 etc handled in Fortran],ac_cv_prog_f77_stars,[AC_TRY_COMPILE(,[
+        integer*4 i
+        real*8 d
+],ac_cv_prog_f77_stars=yes,ac_cv_prog_f77_stars=no)])
+if test "$ac_cv_prog_f77_stars" != "yes" ; then
+   AC_DEFINE(MISSING_FORTRANSTAR)
+fi
+AC_CACHE_CHECK([whether dreal is provided in Fortran],ac_cv_prog_f77_dreal,
+[AC_TRY_LINK(,[
+       double precision d
+       d = dreal(3.0)
+],ac_cv_prog_f77_dreal=yes,ac_cv_prog_f77_dreal=no)])
+if test "$ac_cv_prog_f77_dreal" != "yes" ; then
+    AC_DEFINE(MISSING_DREAL)
+fi
+dnl
+dnl
+AC_LANG_CPLUSPLUS
+AC_CACHE_CHECK([whether signal casts are needed for C++],ac_cv_prog_cxx_signal_cast,[
+AC_TRY_COMPILE([#include <signal.h>
+static void myhandler(int sig){ exit(1);}],[
+signal(SIGFPE,myhandler);],
+ac_cv_prog_cxx_signal_cast=no,ac_cv_prog_cxx_signal_cast=yes)])
+if test "$ac_cv_prog_cxx_signal_cast" = "yes" ; then
+    AC_DEFINE(SIGNAL_CAST)
+fi
+dnl
+dnl Return to C
+AC_LANG_C
 dnl
 dnl T3D didn't provide DGESVD
 dnl AC_CHECK_FUNCS(dgesvd_)
 dnl
 dnl IBM MPI needs
-dnl (nee a test for this)
+dnl (need a test for this)
 dnl AC_DEFINE(HAVE_BROKEN_REQUEST_FREE)
 dnl
 dnl Fortran BLAS should define
@@ -523,7 +642,8 @@ dnl
     # Despite the documentation, the IEEE functions are in libm,
     # at least in SunOS 4.1.4.  We need to do this to get 
     # the compiler to link against -lm .
-    AC_CHECK_LIB(m,sin)
+    AC_SEARCH_LIBS(ieee_flags, m)
+    dnl AC_CHECK_LIB(m,sin)
     HAVE_SUN4_STYLE_FPTRAP="yes"
   fi
 
@@ -552,7 +672,9 @@ dnl
 dnl
 dnl  Make stdout come back to the screen
 dnl
-exec 1>&9
+if test "$print_tests" != "yes" ; then
+    exec 1>&9
+fi
 
 echo "********** Configuring PETSc for your system *************"
 if test -z "$BMAKEDIR" ; then
@@ -574,7 +696,7 @@ echo "***************************************************************"
 dnl Move the files into the bmake area in their own directory
 
 rm  -rf                                                                                  bmake/$BMAKEDIR
-mkdir                                                                                    bmake/$BMAKEDIR
+if test ! -d bmake/$BMAKEDIR ; then mkdir bmake/$BMAKEDIR ; fi
 mv  -f bmake/config/base.site                                                            bmake/$BMAKEDIR/base.site
 mv  -f bmake/config/base_variables                                                       bmake/$BMAKEDIR/base_variables
 mv  -f bmake/config/base                                                                 bmake/$BMAKEDIR/base
