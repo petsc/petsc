@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.41 2001/04/13 13:21:38 balay Exp balay $ 
+# $Id: solid.make,v 1.42 2001/04/13 20:50:42 balay Exp balay $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.29"
@@ -67,11 +67,11 @@ set -x
 
 arch=linux
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh -n shakey "cd $hme/$src_dir; $make BOPT=g"
-rsh -n shakey "cd $hme/$src_dir; $make BOPT=O"
-rsh -n shakey "cd $hme/$src_dir; $make BOPT=g_c++"
-rsh -n shakey "cd $hme/$src_dir; $make BOPT=O_c++"
-rsh -n shakey "cd $hme/$src_dir; $make BOPT=g_complex"
+rsh -n terra "cd $hme/$src_dir; $make BOPT=g"
+rsh -n terra "cd $hme/$src_dir; $make BOPT=O"
+rsh -n terra "cd $hme/$src_dir; $make BOPT=g_c++"
+rsh -n terra "cd $hme/$src_dir; $make BOPT=O_c++"
+rsh -n terra "cd $hme/$src_dir; $make BOPT=g_complex"
 
 arch=IRIX64
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
@@ -81,7 +81,6 @@ rsh -n denali "cd $hme/$src_dir; $make BOPT=g_c++"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=O_c++"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=g_complex"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=O_complex"
-
 
 # rs6000_sp
 arch=rs6000_sp
@@ -104,6 +103,7 @@ arch=solaris
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 rsh -n lava "cd $hme/$src_dir; $make BOPT=g"
 rsh -n lava "cd $hme/$src_dir; $make BOPT=g_c++"
+rsh -n lava "cd $hme/$src_dir; $make BOPT=O_c++"
 rsh -n lava "cd $hme/$src_dir; $make BOPT=g_complex"
 
 # solaris_uni
