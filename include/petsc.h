@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.65 1995/11/01 23:22:08 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.66 1995/11/06 17:15:04 balay Exp balay $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -55,7 +55,7 @@ extern char* PetscStrrchr(char *,char);
 extern char* PetscStrstr(char*,char*);
 extern char* PetscStrtok(char*,char*);
 extern char* PetscStrrtok(char*,char*);
-extern int   PetscBcmp(char*, char*, int);
+extern int   PetscMemcmp(char*, char*, int);
 
 #define PetscMin(a,b)      ( ((a)<(b)) ? (a) : (b) )
 #define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
