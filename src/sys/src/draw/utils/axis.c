@@ -49,7 +49,6 @@ return floor( x - 0.5 );
 int DrawAxisCreate(DrawCtx win,DrawAxisCtx *ctx)
 {
   DrawAxisCtx ad;
-  int         leftwidth, bottomheight, topheight, rightwidth;
 
   ad            = (DrawAxisCtx) MALLOC(sizeof(struct _DrawAxisCtx)); 
   CHKPTR(ad);
@@ -146,12 +145,12 @@ int DrawAxisSetLimits(DrawAxisCtx ad,double xmin,double xmax,double ymin,
 @*/
 int DrawAxis(DrawAxisCtx ad )
 {
-  int       i,  ntick, numx, numy, width, height, ac = ad->ac, tc = ad->tc;
+  int       i,  ntick, numx, numy, ac = ad->ac, tc = ad->tc;
   int       cc = ad->cc;
-  double    sc, tickloc[MAXSEGS], sep,xpos;
+  double    tickloc[MAXSEGS], sep;
   char      *p;
   DrawCtx   awin = ad->win;
-  double    h,w,tw,th,xl,xr,yl,yr,ow,oh;
+  double    h,w,tw,th,xl,xr,yl,yr;
 
   if (ad->xlow == ad->xhigh) {ad->xlow -= .5; ad->xhigh += .5;}
   if (ad->ylow == ad->yhigh) {ad->ylow -= .5; ad->yhigh += .5;}

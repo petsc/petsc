@@ -91,15 +91,20 @@ extern int PetscPushSignalHandler(int (*)(int,void *),void*);
 extern int PetscPopSignalHandler();
 extern int PetscSetFPTrap(int);
 
+#if defined(PETSC_MALLOC)
 extern void *trmalloc(unsigned int,int,char*);
 extern int  trfree(void *,int,char*);
-#include <stdio.h> /* I don't like this, but? */
 extern int  trdump(FILE *);
+#else
+#include <malloc.h>
+#endif
 
 #if defined(PARCH_cray) || defined(PARCH_NCUBE)
 #define FORTRANCAPS
 #elif !defined(PARCH_rs6000) && !defined(PACRH_NeXT) && !defined(PACRH_HPUX)
 #define FORTRANUNDERSCORE
 #endif
+
+#include <stdio.h> /* I don't like this, but? */
 
 #endif

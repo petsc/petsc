@@ -443,7 +443,6 @@ PixVal XiSimColor(XiWindow *XiWin,PixVal pixel, int intensity, int is_fore)
   XColor   colordef, colorsdef;
   char     RGBcolor[20];
   PixVal   red, green, blue;
-  int      st;
 
   colordef.pixel = pixel;
   XQueryColor( XiWin->disp, XiWin->cmap, &colordef );

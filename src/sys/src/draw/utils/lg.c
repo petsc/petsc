@@ -32,7 +32,7 @@ struct _DrawLGCtx {
 @*/
 int DrawLGCreate(DrawCtx win,int dim,DrawLGCtx *outctx)
 {
-  int         i,ierr;
+  int         ierr;
   DrawLGCtx   lg = (DrawLGCtx) MALLOC(sizeof(struct _DrawLGCtx));CHKPTR(lg);
 
   lg->cookie  = LG_COOKIE;
@@ -97,7 +97,7 @@ int DrawLGDestroy(DrawLGCtx lg)
 @*/
 int DrawLGAddPoint(DrawLGCtx lg,double *x,double *y)
 {
-  int i, j;
+  int i;
   VALIDHEADER(lg,LG_COOKIE);
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
     double *tmpx,*tmpy;

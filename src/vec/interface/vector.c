@@ -517,10 +517,9 @@ int Veirelease_vectors( Vec *v, int m )
 
 int VeiDestroyVector(PetscObject obj )
 {
-  int ierr;
   Vec v = (Vec ) obj;
-  ierr = FREE(v->data); CHKERR(ierr);
-  ierr = FREE(v); CHKERR(ierr);
+  FREE(v->data);
+  FREE(v); 
   return 0;
 }
  

@@ -106,7 +106,6 @@ int XiDisplayWindow( XiWindow* XiWin, char *label, int x, int y,
 {
   unsigned int            wavail, havail;
   XSizeHints              size_hints;
-  int                     q_user_pos;
   XWindowAttributes       in_window_attributes;
   XSetWindowAttributes    window_attributes;
   int                     depth, border_width;

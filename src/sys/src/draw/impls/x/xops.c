@@ -101,6 +101,8 @@ int XiFlush(DrawCtx Win )
   return 0;
 }
 
+extern void sleep(int);
+
 int XiSFlush(DrawCtx Win )
 {
   int       rank;
@@ -197,7 +199,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
 {
   DrawCtx  ctx;
   XiWindow *Xwin;
-  int      ierr,len,numtid,mytid;
+  int      ierr,numtid,mytid;
   char     string[128];
 
   *inctx = 0;

@@ -25,12 +25,13 @@ void *PetscLow = (void *) 0xEEEEEEEE  , *PetscHigh = (void *) 0x0;
 extern "C" {
 #endif
 #if !defined(PARCH_rs6000)
-extern char *malloc(int );
+extern void *malloc(long unsigned int );
 #endif
 #if defined(__cplusplus)
 };
 #endif
 
+#if defined(PETSC_MALLOC)
 
 /*D
     trspace - Routines for tracing space usage.
@@ -91,6 +92,7 @@ static int     TRstackp = 0;
 static int     TRdebugLevel = 0;
 static long    TRMaxMem = 0;
 static long    TRMaxMemId = 0;
+
 
 /*@C
    trvalid - Test the allocated blocks for validity.  This can be used to
@@ -645,7 +647,7 @@ return trImerge( l1, l2 );
 
 int trSortBlocks()
 {
-TRSPACE *head, *next;
+TRSPACE *head;
 int     cnt;
 
 head = TRhead;
@@ -684,6 +686,12 @@ while (head) {
 	     (nblocks > 1) ? 's' : ' ' );
     head = cur;
     }
-fflush( fp );
-return 0;
+  fflush( fp );
+  return 0;
 }
+
+#else
+void super_dummy() {
+ fprintf(stderr,"A dummy function");
+}
+#endif
