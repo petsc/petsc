@@ -193,8 +193,8 @@ etags:
 # Builds complete etags list; only for PETSc developers.
 etags_complete:
 	$(RM) TAGS_COMPLETE
-	etags -f TAGS_COMPLETE $(TAGS_INCLUDE_FILES) 
-	etags -a -f TAGS_COMPLETE $(TAGS_SRC_FILES) 
+	etags -f TAGS_COMPLETE $(TAGS_SRC_FILES) 
+	etags -a -f TAGS_COMPLETE $(TAGS_INCLUDE_FILES) 
 	etags -a -f TAGS_COMPLETE $(TAGS_EXAMPLE_FILES)
 	etags -a -f TAGS_COMPLETE $(TAGS_MAKEFILE_FILES) 
 	etags -a -f TAGS_COMPLETE $(TAGS_BMAKE_FILES) 
@@ -204,8 +204,8 @@ etags_complete:
 # Builds the etags file that excludes the examples directories
 etags_noexamples:
 	$(RM) TAGS_NO_EXAMPLES
-	etags -f TAGS_NO_EXAMPLES $(TAGS_INCLUDE_FILES) 
-	etags -a -f TAGS_NO_EXAMPLES $(TAGS_SRC_FILES)
+	etags -f TAGS_NO_EXAMPLES $(TAGS_SRC_FILES)
+	etags -a -f TAGS_NO_EXAMPLES $(TAGS_INCLUDE_FILES) 
 	etags -a -f TAGS_NO_EXAMPLES $(TAGS_MAKEFILE_FILES) 
 	etags -a -f TAGS_NO_EXAMPLES $(TAGS_BMAKE_FILES) 
 	etags -a -f TAGS_NO_EXAMPLES $(TAGS_DOC_FILES)
@@ -227,8 +227,8 @@ etags_makefiles:
 # 
 ctags:  
 	$(RM) tags
-	ctags -w -f tags $(TAGS_INCLUDE_FILES) 
-	ctags -w -a -f tags $(TAGS_SRC_FILES) 
+	ctags -w -f tags $(TAGS_SRC_FILES) 
+	ctags -w -a -f tags $(TAGS_INCLUDE_FILES) 
 	ctags -w -a -f tags $(TAGS_EXAMPLE_FILES)
 	ctags -w -a -f tags $(TAGS_MAKEFILE_FILES) 
 	ctags -w -a -f tags $(TAGS_BMAKE_FILES)
