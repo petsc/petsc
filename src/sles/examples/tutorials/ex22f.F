@@ -1,108 +1,168 @@
+! $Id: ex22f.F,v 1.1 2001/03/28 21:02:47 bsmith Exp bsmith $
+!
+!   Laplacian in 3D. Modeled by the partial differential equation
+!
+!   Laplacian u = 1,0 < x,y,z < 1,
+!
+!   with boundary conditions
+!
+!   u = 1 for x = 0, x = 1, y = 0, y = 1, z = 0, z = 1.
+!
+!   This uses multigrid to solve the linear system
 
-/*$Id: ex22.c,v 1.15 2001/03/23 23:23:55 balay Exp bsmith $*/
-/*
-Laplacian in 3D. Modeled by the partial differential equation
+      program main
+      implicit none
 
-   Laplacian u = 1,0 < x,y,z < 1,
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                    Include files
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!     petsc.h  - base PETSc routines      petscvec.h - vectors
+!     petscsys.h    - system routines          petscmat.h - matrices
+!     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
+!     petscsles.h   - SLES interface
 
-with boundary conditions
+#include "include/finclude/petsc.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscda.h"
+      DMMG             dmmg
+      integer          ierr
+      double precision norm
+      DA               da;
+      external         ComputeRHS,ComputeJacobian
 
-   u = 1 for x = 0, x = 1, y = 0, y = 1, z = 0, z = 1.
+      call  PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-   This uses multigrid to solve the linear system
+      call DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL_INTEGER,dmmg,ierr)
+      call DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,3,            &
+     &                3,3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,               &
+     &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
+     &                PETSC_NULL_INTEGER,da,ierr)  
+      call DMMGSetDM(dmmg,da,ierr)
+      call DADestroy(da,ierr)
 
-*/
 
-static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
+      call DMMGSetSLES(dmmg,ComputeRHS,ComputeJacobian,ierr)
 
-#include "petscda.h"
-#include "petscsles.h"
+      call DMMGSolve(dmmg,ierr)
 
-extern int ComputeJacobian(DMMG,Mat);
-extern int ComputeRHS(DMMG,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
-int main(int argc,char **argv)
-{
-  int       ierr;
-  DMMG      *dmmg;
-  Scalar    mone = -1.0;
-  PetscReal norm;
-  DA        da;
+      call DMMGDestroy(dmmg,ierr)
+      call PetscFinalize(ierr)
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+      end
 
-  ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,3,3,3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
-  ierr = DMMGSetDM(dmmg,(DM)da);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+      subroutine ComputeRHS(dmmg,b,ierr)
+      implicit none
 
-  ierr = DMMGSetSLES(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
+#include "include/finclude/petsc.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscda.h"
 
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
+      integer ierr,mx,my,mz
+      Scalar  h
+      Vec     b
+      DMMG    dmmg
+      DA      da
 
-  ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,DMMGGetb(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
-  ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",norm);CHKERRQ(ierr);
+      call DMMGGetDA(dmmg,da,ierr)
+      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                         &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+      h    = 1.d0/((mx-1)*(my-1)*(mz-1))
 
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+      call VecSet(h,b,ierr)
+      return
+      end
 
-  return 0;
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRHS"
-int ComputeRHS(DMMG dmmg,Vec b)
-{
-  int    ierr,mx,my,mz;
-  Scalar h;
-
-  PetscFunctionBegin;
-  ierr = DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  h    = 1.0/((mx-1)*(my-1)*(mz-1));
-  ierr = VecSet(&h,b);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
     
-#undef __FUNCT__
-#define __FUNCT__ "ComputeJacobian"
-int ComputeJacobian(DMMG dmmg,Mat jac)
-{
-  DA         da = (DA)dmmg->dm;
-  int        ierr,i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
-  Scalar     two = 2.0,one = 1.0,v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
-  MatStencil row,col[7];
+      subroutine ComputeJacobian(dmmg,jac,ierr)
+      implicit none
 
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
-  Hx = one / (double)(mx-1); Hy = one / (double)(my-1); Hz = one / (double)(mz-1);
-  HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+#include "include/finclude/petsc.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscda.h"
+
+      DMMG    dmmg
+      Mat     jac
+      integer ierr
+
+      DA         da
+      integer    ierr,i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs
+      Scalar     v(7),Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy
+      MatStencil row(4),col(4,7)
+
+      call DMMGGetDA(dmmg,da,ierr)
+      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                       &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+
+      Hx = 1.d0 / (mx-1)
+      Hy = 1.d0 / (my-1)
+      Hz = 1.d0 / (mz-1)
+      HxHydHz = Hx*Hy/Hz
+      HxHzdHy = Hx*Hz/Hy
+      HyHzdHx = Hy*Hz/Hx
+      call DAGetCorners(da,xs,ys,zs,xm,ym,zm,ierr)                            
   
-  for (k=zs; k<zs+zm; k++){
-    for (j=ys; j<ys+ym; j++){
-      for(i=xs; i<xs+xm; i++){
-        row.i = i; row.j = j; row.k = k;
-	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
-	  ierr = MatSetValuesStencil(jac,1,&row,1,&row,&one,INSERT_VALUES);CHKERRQ(ierr);
-	} else {
-	  v[0] = -HxHydHz;col[0].i = i; col[0].j = j; col[0].k = k-1;
-	  v[1] = -HxHzdHy;col[1].i = i; col[1].j = j-1; col[1].k = k;
-	  v[2] = -HyHzdHx;col[2].i = i-1; col[2].j = j; col[2].k = k;
-	  v[3] = two*(HxHydHz + HxHzdHy + HyHzdHx);col[3].i = row.i; col[3].j = row.j; col[3].k = row.k;
-	  v[4] = -HyHzdHx;col[4].i = i+1; col[4].j = j; col[4].k = k;
-	  v[5] = -HxHzdHy;col[5].i = i; col[5].j = j+1; col[5].k = k;
-	  v[6] = -HxHydHz;col[6].i = i; col[6].j = j; col[6].k = k+1;
-	  ierr = MatSetValuesStencil(jac,1,&row,7,col,v,INSERT_VALUES);CHKERRQ(ierr);
-        }
-      }
-    }
-  }
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  return 0;
-}
+      do 10,k=zs,zs+zm-1                                                      
+        do 20,j=ys,ys+ym-1                                                            
+          do 30,i=xs,xs+xm-1
+          row(MatStencil_i) = i                                                    
+          row(MatStencil_j) = j
+          row(MatStencil_k) = k                                                   
+	  if (i.eq.0 .or. j.eq.0 .or. k.eq.0 .or. i.eq.mx-1 .or.           &
+     &         j.eq.my-1 .or. k.eq.mz-1) then
+            v(1) = 2.d0*(HxHydHz + HxHzdHy + HyHzdHx)
+	    call MatSetValuesStencil(jac,1,row,1,row,v,INSERT_VALUES,    &
+     &                               ierr)
+	  else 
+            v(1) = -HxHydHz
+             col(MatStencil_i,1) = i
+             col(MatStencil_j,1) = j
+             col(MatStencil_k,1) = k-1
+            v(2) = -HxHzdHy
+             col(MatStencil_i,2) = i
+             col(MatStencil_j,2) = j-1
+             col(MatStencil_k,2) = k
+            v(3) = -HyHzdHx
+             col(MatStencil_i,3) = i-1 
+             col(MatStencil_j,3) = j
+             col(MatStencil_k,3) = k
+            v(4) = 2.d0*(HxHydHz + HxHzdHy + HyHzdHx)
+             col(MatStencil_i,4) = i 
+             col(MatStencil_j,4) = j
+             col(MatStencil_k,4) = k
+            v(5) = -HyHzdHx
+             col(MatStencil_i,5) = i+1 
+             col(MatStencil_j,5) = j 
+             col(MatStencil_k,5) = k
+            v(6) = -HxHzdHy
+             col(MatStencil_i,6) = i 
+             col(MatStencil_j,6) = j+1 
+             col(MatStencil_k,6) = k
+            v(7) = -HxHydHz
+             col(MatStencil_i,7) = i 
+             col(MatStencil_j,7) = j 
+             col(MatStencil_k,7) = k+1
+	    call MatSetValuesStencil(jac,1,row,7,col,v,INSERT_VALUES,ierr)
+          endif
+ 30       continue
+ 20     continue
+ 10   continue
+
+      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+      return 
+      end
 
 

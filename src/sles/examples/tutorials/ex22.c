@@ -1,9 +1,9 @@
 
-/*$Id: ex22.c,v 1.14 2001/03/22 20:31:44 bsmith Exp balay $*/
+/*$Id: ex22.c,v 1.15 2001/03/23 23:23:55 balay Exp bsmith $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
-   Laplacian u = 0,0 < x,y,z < 1,
+   Laplacian u = 1,0 < x,y,z < 1,
 
 with boundary conditions
 
@@ -11,20 +11,12 @@ with boundary conditions
 
    This uses multigrid to solve the linear system
 
-   See ex18.c for a simpler example that does not use multigrid
 */
 
-static char help[] = "Solves 3D Laplacian using multigrid.\n\
-The command line options are:\n\
-   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
-   -my <yg>, where <yg> = number of grid points in the y-direction\n\
-   -mz <zg>, where <zg> = number of grid points in the z-direction\n\n";
+static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 
 #include "petscda.h"
 #include "petscsles.h"
-#include "petscmg.h"
-
-
 
 extern int ComputeJacobian(DMMG,Mat);
 extern int ComputeRHS(DMMG,Vec);
@@ -33,26 +25,18 @@ extern int ComputeRHS(DMMG,Vec);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int       ierr,sw = 1,dof = 1,mx = 2,my = 2,mz = 2,nlevels = 3;
+  int       ierr;
   DMMG      *dmmg;
   Scalar    mone = -1.0;
   PetscReal norm;
   DA        da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = PetscOptionsGetInt(0,"-stencil_width",&sw,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mz",&mz,PETSC_NULL);CHKERRQ(ierr);
-
-  ierr = DMMGCreate(PETSC_COMM_WORLD,nlevels,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,sw,dof,0,0,0,&da);CHKERRQ(ierr);  
+  ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
+  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,3,3,3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);
   ierr = DADestroy(da);CHKERRQ(ierr);
-
 
   ierr = DMMGSetSLES(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
 
@@ -87,36 +71,33 @@ int ComputeRHS(DMMG dmmg,Vec b)
 #define __FUNCT__ "ComputeJacobian"
 int ComputeJacobian(DMMG dmmg,Mat jac)
 {
-  DA     da = (DA)dmmg->dm;
-  int    *ltog,ierr,i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,Xm,Ym,Zm,Xs,Ys,Zs,row,nloc,col[7],base1,grow;
-  Scalar two = 2.0,one = 1.0,v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
+  DA         da = (DA)dmmg->dm;
+  int        ierr,i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
+  Scalar     v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
+  MatStencil row,col[7];
 
   ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
-  Hx = one / (double)(mx-1); Hy = one / (double)(my-1); Hz = one / (double)(mz-1);
+  Hx = 1.0 / (double)(mx-1); Hy = 1.0 / (double)(my-1); Hz = 1.0 / (double)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
   ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&Xs,&Ys,&Zs,&Xm,&Ym,&Zm);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
   
   for (k=zs; k<zs+zm; k++){
-    base1 = (k-Zs)*(Xm*Ym);
     for (j=ys; j<ys+ym; j++){
-      row = base1 + (j-Ys)*Xm + xs - Xs - 1;
       for(i=xs; i<xs+xm; i++){
-	row++;
-	grow = ltog[row];
+        row.i = i; row.j = j; row.k = k;
 	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
-	  ierr = MatSetValues(jac,1,&grow,1,&grow,&one,INSERT_VALUES);   CHKERRQ(ierr);
-	  continue;
-	}
-	v[0] = -HxHydHz; col[0] = ltog[row - Xm*Ym];
-	v[1] = -HxHzdHy; col[1] = ltog[row - Xm];
-	v[2] = -HyHzdHx; col[2] = ltog[row - 1];
-	v[3] = two*(HxHydHz + HxHzdHy + HyHzdHx); col[3]=grow;
-	v[4] = -HyHzdHx; col[4] = ltog[row + 1];
-	v[5] = -HxHzdHy; col[5] = ltog[row + Xm];
-	v[6] = -HxHydHz; col[6] = ltog[row + Xm*Ym];
-	ierr = MatSetValues(jac,1,&grow,7,col,v,INSERT_VALUES);CHKERRQ(ierr);
+          v[0] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
+	  ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+	} else {
+	  v[0] = -HxHydHz;col[0].i = i; col[0].j = j; col[0].k = k-1;
+	  v[1] = -HxHzdHy;col[1].i = i; col[1].j = j-1; col[1].k = k;
+	  v[2] = -HyHzdHx;col[2].i = i-1; col[2].j = j; col[2].k = k;
+	  v[3] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);col[3].i = row.i; col[3].j = row.j; col[3].k = row.k;
+	  v[4] = -HyHzdHx;col[4].i = i+1; col[4].j = j; col[4].k = k;
+	  v[5] = -HxHzdHy;col[5].i = i; col[5].j = j+1; col[5].k = k;
+	  v[6] = -HxHydHz;col[6].i = i; col[6].j = j; col[6].k = k+1;
+	  ierr = MatSetValuesStencil(jac,1,&row,7,col,v,INSERT_VALUES);CHKERRQ(ierr);
+        }
       }
     }
   }
