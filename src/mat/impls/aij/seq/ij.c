@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.18 1996/08/08 14:42:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.19 1996/09/14 03:07:52 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -46,7 +46,7 @@ int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shiftin, int shiftout,
     nz = ai[row+1] - ai[row];
     j  = aj + ai[row];
     while (nz--) {
-       col = *j++ + shiftin;
+       col = *j + shiftin;
        if (col > row) { break;}
        if (col != row) ia[row+1]++;
        ia[col+1]++;
@@ -69,7 +69,7 @@ int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shiftin, int shiftout,
     nz = ai[row+1] - ai[row];
     j  = aj + ai[row];
     while (nz--) {
-      col = *j++ + shiftin;
+      col = *j + shiftin;
       if (col > row) { break;}
       if (col != row) {ja[work[col]++] = row + shiftout; }
       ja[work[row]++] = col + shiftout;
