@@ -3,15 +3,14 @@
 # Location of BLAS and LAPACK. See ${PETSC_DIR}/docs/intallation.html for
 # information on retrieving them.
 #
-BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/solaris_gnu -lflapack -lfblas 
+BLASLAPACK_LIB = -L/home/petsc/software/fblaslapack/solaris_gnu -lflapack -lfblas 
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /home/petsc/software/mpich-1.1.2
-MPI_BUILD_HOME = ${MPI_HOME}/build/solaris/ch_shmem
-MPI_LIB        = -L${MPI_BUILD_HOME}/lib  -lpmpich -lmpich -lthread -lnsl
-MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
-MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
+MPI_HOME       = /home/petsc/software/mpich-1.2.2.3/solaris_gnu
+MPI_LIB        = -L${MPI_HOME}/lib  -lmpich -lnsl -lthread -lnsl
+MPI_INCLUDE    = -I${MPI_HOME}/include
+MPIRUN         =  ${MPI_HOME}/bin/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
@@ -25,7 +24,7 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 # Location of MPE - which is part of MPICH
 #
-MPE_INCLUDE   = -I${MPI_HOME}/mpe
-MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+MPE_INCLUDE    = 
+MPE_LIB        = -lmpe
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
