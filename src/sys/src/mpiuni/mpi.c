@@ -1,4 +1,4 @@
-/*$Id: mpi.c,v 1.57 2000/02/02 20:08:27 bsmith Exp bsmith $*/
+/*$Id: mpi.c,v 1.58 2000/02/12 02:45:47 bsmith Exp bsmith $*/
 
 /*
       This provides a few of the MPI-uni functions that cannot be implemented
@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 #define MPI_SUCCESS 0
+#define MPI_FAILURE 1
 void    *MPIUNI_TMP        = 0;
 int     MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),2*sizeof(double),sizeof(char)};
 /*
