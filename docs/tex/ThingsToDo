@@ -23,7 +23,6 @@ describes what effects performance for that routine. For examplle, memory bandwi
 communication latency, synchronization
 
 
-  Parmetis for mpiaij matrices
 
   MatFDColoring() stuff for BAIJ.
 
@@ -1179,3 +1178,7 @@ X  Add Tony Coaola's ILUDT stuff to PETSc, see src/contrib/tonycoaloailu
 
 X add MatSolveTrans_SeqBAIj_....
 
+X  Add link to MPI manual pages from Main PETSc mainual pages pate; also to system dependent?
+  how to run mpi? + link to AMS manual pages.
+
+X  Parmetis for mpiaij matrices
