@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.151 1999/02/17 19:29:46 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.152 1999/02/17 21:37:14 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -1026,12 +1026,12 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
-    ierr = ViewerGetFormat(viewer,&format);
+    ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
       MPI_Comm_rank(mat->comm,&rank);
       ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-      ierr = MatGetInfo(mat,MAT_LOCAL,&info);
+      ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
       PetscSequentialPhaseBegin(mat->comm,1);
       fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d bs %d mem %d\n",
               rank,baij->m,(int)info.nz_used*bs,(int)info.nz_allocated*bs,
@@ -1493,6 +1493,8 @@ int MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
     info->nz_unneeded  = irecv[2];
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
+  } else {
+    SETERRQ1(1,1,"Unknown MatInfoType argument %d",flag);
   }
   info->rows_global       = (double)a->M;
   info->columns_global    = (double)a->N;
