@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.27 1996/04/05 16:20:05 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.28 1996/04/05 21:52:51 balay Exp balay $";
 #endif
 
 /*
@@ -416,6 +416,7 @@ static int MatTranspose_SeqBAIJ(Mat A,Mat *B)
       array += bs2;
     }
   }
+  PetscFree(rows);
   if (shift) { 
     for ( i=0; i<ai[mbs]-1; i++ ) aj[i] += 1;
   }
@@ -1035,7 +1036,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   b->solve_work       = 0;
   b->mult_work        = 0;
   b->spptr            = 0;
-
+  b->indexshift       = 0;
   *A = B;
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) {ierr = MatPrintHelp(B); CHKERRQ(ierr); }
@@ -1067,6 +1068,7 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   c->bs         = a->bs;
   c->mbs        = a->mbs;
   c->nbs        = a->nbs;
+  c->indexshift = 0;
 
   c->imax       = (int *) PetscMalloc((mbs+1)*sizeof(int)); CHKPTRQ(c->imax);
   c->ilen       = (int *) PetscMalloc((mbs+1)*sizeof(int)); CHKPTRQ(c->ilen);

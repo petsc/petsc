@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.166 1996/03/31 19:59:18 curfman Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.167 1996/04/05 16:56:58 balay Exp balay $";
 #endif
 
 /*
@@ -982,6 +982,7 @@ static int MatTranspose_SeqAIJ(Mat A,Mat *B)
     if (a->ilen) PetscFree(a->ilen);
     if (a->imax) PetscFree(a->imax);
     if (a->solve_work) PetscFree(a->solve_work);
+    if (a->inode.size) PetscFree(a->inode.size);
     PetscFree(a); 
     PetscMemcpy(A,C,sizeof(struct _Mat)); 
     PetscHeaderDestroy(C);
