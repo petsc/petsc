@@ -151,8 +151,8 @@ class Configure(config.base.Configure):
     self.functionalBlasLapack = []
     self.foundBlas       = 0
     self.foundLapack     = 0
-    if self.framework.argDB.has_key('with-c-blas-lapack') or self.framework.argDB.has_key('with-f-blas-lapack'):
-      if self.framework.argDB.has_key('with-c-blas-lapack'):
+    if self.framework.argDB['with-c-blas-lapack'] or self.framework.argDB['with-f-blas-lapack']:
+      if self.framework.argDB['with-c-blas-lapack']:
         f2c = 'f2c'
         l   = 'c'
       else:
@@ -172,8 +172,8 @@ class Configure(config.base.Configure):
             break
 
     if not (self.foundBlas and self.foundLapack):
-      if self.framework.argDB.has_key('with-c-blas-lapack-if-needed') or self.framework.argDB.has_key('with-f-blas-lapack-if-needed'):
-        if self.framework.argDB.has_key('with-c-blas-lapack-if-needed'):
+      if self.framework.argDB['with-c-blas-lapack-if-needed'] or self.framework.argDB['with-f-blas-lapack-if-needed']:
+        if self.framework.argDB['with-c-blas-lapack-if-needed']:
           f2c = 'f2c'
           l   = 'c'
         else:
