@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.85 1996/09/08 22:49:01 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.86 1996/09/08 22:52:35 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1004,7 +1004,7 @@ int SNESSetUp(SNES snes,Vec x)
   ierr = OptionsHasName(snes->prefix,"-snes_mf_operator", &flg);  CHKERRQ(ierr); 
   /*
       This version replaces the user provided Jacobian matrix with a
-      matrix free version but still uses the user provided preconditioner matrix
+      matrix-free version but still employs the user-provided preconditioner matrix
   */
   if (flg) {
     Mat J;
@@ -1022,7 +1022,7 @@ int SNESSetUp(SNES snes,Vec x)
   }
   ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);  CHKERRQ(ierr); 
   /*
-      This version replaces both the user provided Jacobian and the user
+      This version replaces both the user-provided Jacobian and the user-
       provided preconditioner matrix with the default matrix free version.
    */
   if (flg) {
