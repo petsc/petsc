@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.18 1995/05/18 22:45:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.19 1995/05/23 14:24:08 curfman Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -15,12 +15,14 @@ static char vcid[] = "$Id: bjacobi.c,v 1.18 1995/05/18 22:45:11 bsmith Exp curfm
 
 extern int PCSetUp_BJacobiMPIAIJ(PC);
 extern int PCSetUp_BJacobiMPIRow(PC);
+extern int PCSetUp_BJacobiMPIBDiag(PC);
 
 static int PCSetUp_BJacobi(PC pc)
 {
   Mat        mat = pc->mat;
-  if (mat->type == MATMPIAIJ)      return PCSetUp_BJacobiMPIAIJ(pc);
-  else if (mat->type == MATMPIROW) return PCSetUp_BJacobiMPIRow(pc);
+  if (mat->type == MATMPIAIJ)        return PCSetUp_BJacobiMPIAIJ(pc);
+  else if (mat->type == MATMPIROW)   return PCSetUp_BJacobiMPIRow(pc);
+  else if (mat->type == MATMPIBDIAG) return PCSetUp_BJacobiMPIBDiag(pc);
   SETERR(1,"Cannot use block Jacobi on this matrix type\n");
 }
 
