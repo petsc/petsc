@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.13 1998/04/23 22:48:53 balay Exp bsmith $ 
+# $Id: makefile,v 1.14 1998/04/28 15:10:32 bsmith Exp bsmith $ 
 
 ALL:
 
@@ -11,8 +11,11 @@ OBJSC	        =
 OBJSF	        =
 LIBBASE	        = libpetscsys
 LOCDIR          = src/sys/examples/tutorials
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm clean
-TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm clean
+TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
+                   ex3.PETSc runex3 ex3.rm clean
+TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
+                   ex3.PETSc runex3 ex3.rm clean
+TESTEXAMPLES_3  = ex3f.PETSc runex3f ex3f.rm clean
 BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean
 BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean
 
