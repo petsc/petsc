@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.180 1999/06/30 23:50:25 balay Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.181 1999/08/10 02:30:26 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1607,6 +1607,9 @@ int VecRestoreArrays(const Vec x[],int n,Scalar **a[])
    any special vectors that do not store local vector data in a contiguous
    array, this routine will copy the data back into the underlying 
    vector data structure from the array obtained with VecGetArray().
+
+   This routine actually zeros out the a pointer. This is to prevent accidental
+   us of the array after it has been restored.
 
    Fortran Note:
    This routine is used differently from Fortran
