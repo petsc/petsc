@@ -48,6 +48,7 @@ class BuildChecker(script.Script):
                'linux-mcs':            ['gcc'],
                'macosx-gnu':           ['gcc'],
                'macosx-ibm':           ['ibm'],
+               'macosx-nagf90':        ['gcc'],
                'osf5.0':               ['mipsUltrix'],
                'solaris2.9':           ['solaris'],
                'solaris-gnu':          ['gcc'],

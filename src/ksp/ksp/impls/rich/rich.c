@@ -49,7 +49,8 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   ierr = PCApplyRichardsonExists(ksp->pc,&exists);CHKERRQ(ierr);
   if (exists && !ksp->numbermonitors && !ksp->transpose_solve) {
     ierr = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit);CHKERRQ(ierr);
-    ksp->reason = KSP_DIVERGED_ITS; /* what should we really put here? */
+    ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
+    ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 

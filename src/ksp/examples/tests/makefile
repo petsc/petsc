@@ -16,6 +16,10 @@ ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_KSP_LIB}
 	${RM} ex1.o
 
+ex2: ex2.o  chkopts
+	-${CLINKER} -o ex2 ex2.o  ${PETSC_KSP_LIB}
+	${RM} ex2.o
+
 ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_KSP_LIB}
 	${RM} ex3.o
