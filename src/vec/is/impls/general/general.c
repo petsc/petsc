@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.82 1999/05/04 20:30:08 balay Exp balay $";
+static char vcid[] = "$Id: general.c,v 1.83 1999/06/30 23:50:05 balay Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: general.c,v 1.82 1999/05/04 20:30:08 balay Exp balay 
 #define __FUNC__ "ISDuplicate_General" 
 int ISDuplicate_General(IS is, IS *newIS)
 {
-  int ierr;
+  int        ierr;
   IS_General *sub = (IS_General *)is->data;
 
   PetscFunctionBegin;
@@ -23,13 +23,14 @@ int ISDuplicate_General(IS is, IS *newIS)
 int ISDestroy_General(IS is)
 {
   IS_General *is_general = (IS_General *) is->data;
-  int ierr;
+  int        ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(is_general->idx);CHKERRQ(ierr);
   ierr = PetscFree(is_general); CHKERRQ(ierr);
   PLogObjectDestroy(is);
-  PetscHeaderDestroy(is); PetscFunctionReturn(0);
+  PetscHeaderDestroy(is);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -46,7 +47,7 @@ int ISIdentity_General(IS is,PetscTruth *ident)
     if (idx[i] != i) {
       is->isidentity = 0;
       *ident         = PETSC_FALSE;
-      PetscFunctionReturn(0);
+      break;
     }
   }
   PetscFunctionReturn(0);
@@ -59,7 +60,8 @@ int ISGetIndices_General(IS in,int **idx)
   IS_General *sub = (IS_General *) in->data;
 
   PetscFunctionBegin;
-  *idx = sub->idx; PetscFunctionReturn(0);
+  *idx = sub->idx; 
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -82,7 +84,8 @@ int ISGetSize_General(IS is,int *size)
   IS_General *sub = (IS_General *)is->data;
 
   PetscFunctionBegin;
-  *size = sub->n; PetscFunctionReturn(0);
+  *size = sub->n; 
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -98,7 +101,7 @@ int ISInvertPermutation_General(IS is, IS *isout)
     ii[idx[i]] = i;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,isout);CHKERRQ(ierr);
-  ISSetPermutation(*isout);
+  ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
   ierr = PetscFree(ii);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
