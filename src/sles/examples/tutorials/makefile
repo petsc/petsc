@@ -214,13 +214,13 @@ runex9:
 	   $(RM) -f ex9_1.tmp
 
 runex11:
-	-@$(MPIRUN) ex11 -n 6 -pc_type none -ksp_smonitor > ex11_1.tmp 2>&1; \
+	-@$(MPIRUN) ex11 -n 6 -norandom -pc_type none -ksp_smonitor > ex11_1.tmp 2>&1; \
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   $(RM) -f ex11_1.tmp
 
 runex11f:
-	-@$(MPIRUN) ex11f -n 6 -pc_type none -ksp_smonitor > ex11f_1.tmp 2>&1; \
+	-@$(MPIRUN) ex11f -n 6 -norandom -pc_type none -ksp_smonitor > ex11f_1.tmp 2>&1; \
 	   if (diff output/ex11f_1.out ex11f_1.tmp) then true; \
 	   else echo "Possible problem with ex11f_1, diffs above"; fi; \
 	   $(RM) -f ex11f_1.tmp
