@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.194 1998/05/13 14:19:00 bsmith Exp balay $ 
+# $Id: makefile,v 1.195 1998/06/01 15:34:50 balay Exp balay $ 
 
 ALL: ex1
 
@@ -590,7 +590,6 @@ runex54:
 	      for ov in ${OVERLAP}; do\
 	        for nd in ${NODOMAINS}; do \
 		  for np in ${NPROCS}; do \
-		    sleep 1; \
                     ${MPIRUN} -np $$np ex54 -mat_block_size $$bs -ov $$ov \
                        -mat_size $$matsize -nd $$nd ;\
 		  done; \
