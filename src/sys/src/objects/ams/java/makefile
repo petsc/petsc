@@ -72,8 +72,9 @@ PETScPlugins:
 
 PETScRund:
 	-@${JAVAC} -deprecation PETScRund.java PumpStream.java
-	-@${JAR} cf PETScRund.jar PETScRund*.class PumpStream*.class
-	-@${RM}  ../../../../../../bin/PETScRund.jar
+	-@echo "Main-Class: PETScRund" > manifest
+	-@${JAR} cmf manifest PETScRund.jar PETScRund*.class PumpStream*.class
+	-@${RM}  ../../../../../../bin/PETScRund.jar manifest
 	-@${MV} -f PETScRund.jar ../../../../../../bin
 	-@${RM} *.class
 	-@chmod g+w  ../../../../../../bin/PETScRund.jar

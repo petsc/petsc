@@ -1,7 +1,6 @@
 # $Id: makefile,v 1.11 2001/08/22 18:01:31 balay Exp $ 
 
 #requirespackage   'PETSC_HAVE_SPAI'
-#requireslanguage  CONLY
 #requiresprecision double
 
 ALL: lib

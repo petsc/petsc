@@ -304,7 +304,7 @@ int PetscLogTraceBegin(FILE *file)
   runs. Long running programs should consider turning this feature off.
 
   Options Database Keys:
-. log_exclude_actions - Turns off actions logging
+. -log_exclude_actions - Turns off actions logging
 
 .keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()
@@ -331,7 +331,7 @@ int PetscLogActions(PetscTruth flag) {
   runs. Long running programs should consider turning this feature off.
 
   Options Database Keys:
-. log_exclude_objects - Turns off objects logging
+. -log_exclude_objects - Turns off objects logging
 
 .keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()

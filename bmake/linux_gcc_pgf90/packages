@@ -46,9 +46,12 @@ PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 #JAVAC           = /nfs/software-linux/apps/packages/jdk-1.2.2/bin/javac
 #JAVA            = /nfs/software-linux/apps/packages/jdk-1.2.2/bin/java
 #JAR             = /nfs/software-linux/apps/packages/jdk-1.2.2/bin/jar
-JAVAC            = /home/petsc/software/jdk1.3-linux/bin/javac
-JAVA             = /home/petsc/software/jdk1.3-linux/bin/java
-JAR              = /home/petsc/software/jdk1.3-linux/bin/jar
+#JAVAC            = /home/petsc/software/jdk1.3-linux/bin/javac
+#JAVA             = /home/petsc/software/jdk1.3-linux/bin/java
+#JAR              = /home/petsc/software/jdk1.3-linux/bin/jar
+JAVAC            = /home/petsc/software/j2sdk1.4.0-linux/bin/javac
+JAVA             = /home/petsc/software/j2sdk1.4.0-linux/bin/java
+JAR              = /home/petsc/software/j2sdk1.4.0-linux/bin/jar
 PETSC_HAVE_JAVA = -DPETSC_HAVE_JAVA
 #
 # Location of MPE
