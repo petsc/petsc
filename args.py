@@ -20,13 +20,14 @@ class ArgDict (UserDict.UserDict, logging.Logger):
     self.argRE       = re.compile(r'\$(\w+|\{[^}]*\})')
 
   def __getitem__(self, key):
-    if self.interactive and not self.data.has_key(key):
+    ok = 1
+    if not self.data.has_key(key):
       (ok, item) = self.getMissingItem(key)
       if ok:
         self.data[key] = item
-      else:
-        print
-        sys.exit('Unable to get argument \''+key+'\'')
+    if not ok:
+      print
+      sys.exit('Unable to get argument \''+key+'\'')
     return self.data[key]
 
   def has_key(self, key):
