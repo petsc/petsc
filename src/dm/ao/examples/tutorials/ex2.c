@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.36 2001/01/23 19:09:36 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.37 2001/01/23 20:57:52 balay Exp bsmith $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -88,7 +88,7 @@ typedef struct {
       vert            - x,y coordinates of local vertices
 
       n_ele           - total number of elements
-      mlocal_ele      - number of vertices on this processor
+      mlocal_ele      - number of elements on this processor
       ele             - vertices of elements on this processor
 
       ia, ja          - adjacency graph of elements (for partitioning)
@@ -403,8 +403,8 @@ int DataRead(GridData *gdata)
 #define __FUNC__ "DataPartitionElements"
 /*
          Given the grid data spread across the processors, determines a
-   new partitioning of the CELLS to reduce the number of cut edges between
-   cells.
+   new partitioning of the CELLS (elements) to reduce the number of cut edges between
+   cells (elements).
 */
 int DataPartitionElements(GridData *gdata)
 {
@@ -493,7 +493,7 @@ int DataMoveElements(GridData *gdata)
   ierr = ISPartitioningToNumbering(gdata->isnewproc,&isnum);CHKERRQ(ierr);
   ierr = ISDestroy(gdata->isnewproc);
   /* 
-      There are three data items per cell, the integer vertex numbers of its three 
+      There are three data items per cell (element), the integer vertex numbers of its three 
     coordinates (we convert to double to use the scatter) (one can think 
     of the vectors of having a block size of 3 and there is one index in idx[] for each block)
   */
@@ -553,7 +553,7 @@ int DataMoveElements(GridData *gdata)
 #undef __FUNC__
 #define __FUNC__ "DataPartitionVertice"
 /*
-         Given the newly partitioned cells, this routine partitions the 
+         Given the newly partitioned cells (elements), this routine partitions the 
      vertices.
 
      The code is not completely scalable since it requires
