@@ -250,7 +250,7 @@ wwwpages:
 		chmod g+w $(PETSC_DIR)/docs/www/man$(MANSEC)/*; fi 
 
 
-.PRECIOUS: $(PRECIOUS) $(LIBNAME)
+#.PRECIOUS: $(PRECIOUS) $(LIBNAME)
 .SUFFIXES: .F $(SUFFIXES) .PETSc .C .cc .cpp .r .rm .so
 
 .c.a: 
