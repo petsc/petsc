@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog3.c,v 1.8 1998/05/29 22:50:33 balay Exp bsmith $";
+static char vcid[] = "$Id: borthog3.c,v 1.9 1998/08/18 22:28:03 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -75,7 +75,7 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
 
     /* Continue until either we have only small corrections or we've done
 	 as much work as a full orthogonalization (in terms of Mdots) */
-  } while (dnorm > 1.0e-16 && ncnt++ < it);
+  } while (dnorm > 1.0e-16 && ncnt++ < 2);
 
   /* It would be nice to put ncnt somewhere.... */
   PLogInfo(ksp,"KSPGMRESIROrthogonalization: Number of iterative refinement steps %d dnorm %g\n",ncnt,sqrt(dnorm));
