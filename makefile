@@ -48,7 +48,7 @@ Makefile.am: $(AUTOMAKE_ADD_FILES)
 Makefile.in: Makefile.am
 	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
 	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
-	@${AUTOMAKE} --foreign Makefile >> $(CONFIGURE_LOG_FILE)
+	@${AUTOMAKE} --foreign --add-missing --copy Makefile >> $(CONFIGURE_LOG_FILE)
 
 configure: configure.in config/acsite.m4 aclocal.m4 bmake/config/petscconf.h.in $(AUTOMAKE_ADD_FILES)
 	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
