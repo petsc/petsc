@@ -274,7 +274,7 @@ int ISColoringCreate(MPI_Comm comm,int n,const ISColoringValue colors[],ISColori
 
    Level: advanced
 
-.seealso: MatPartitioningCreate(), AOCreateBasic(), ISPartioningCount()
+.seealso: MatPartitioningCreate(), AOCreateBasic(), ISPartitioningCount()
 
 @*/
 int ISPartitioningToNumbering(IS part,IS *is)

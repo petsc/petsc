@@ -224,8 +224,8 @@ $    -mat_partitioning_view
 
 .keywords: matrix, get, partitioning
 
-.seealso:  MatPartitioningGetTypeFromOptions(), MatPartitioningRegisterDynamic(), MatPartitioningCreate(),
-           MatPartitioningDestroy(), MatPartitiongSetAdjacency(), ISPartitioningToNumbering(),
+.seealso:  MatPartitioningRegisterDynamic(), MatPartitioningCreate(),
+           MatPartitioningDestroy(), MatPartitioningSetAdjacency(), ISPartitioningToNumbering(),
            ISPartitioningCount()
 @*/
 int MatPartitioningApply(MatPartitioning matp,IS *partitioning)
@@ -364,7 +364,7 @@ int MatPartitioningSetVertexWeights(MatPartitioning part,int *weights)
 
 .keywords: Partitioning, create, context
 
-.seealso: MatPartitioningSetUp(), MatPartitioningApply(), MatPartitioningDestroy(),
+.seealso: MatPartitioningSetType(), MatPartitioningApply(), MatPartitioningDestroy(),
           MatPartitioningSetAdjacency()
 
 @*/
