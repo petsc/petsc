@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.5 1996/04/04 22:04:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.6 1996/04/09 02:24:16 curfman Exp bsmith $";
 #endif
 
 /*
@@ -29,12 +29,12 @@ typedef struct {
   int    nox;
 } AppCtx;
 
-int Monitor(TS, int, Scalar , Vec, void *);
-int RHSFunctionHeat(TS,Scalar,Vec,Vec,void*);
+int Monitor(TS, int, double , Vec, void *);
+int RHSFunctionHeat(TS,double,Vec,Vec,void*);
 int RHSMatrixFree(Mat,Vec,Vec);
 int Initial(Vec, void*);
-int RHSMatrixHeat(TS,Scalar,Mat *,Mat *, MatStructure *,void *);
-int RHSJacobianHeat(TS,Scalar,Vec,Mat*,Mat*,MatStructure *,void*);
+int RHSMatrixHeat(TS,double,Mat *,Mat *, MatStructure *,void *);
+int RHSJacobianHeat(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 
 #define linear_no_matrix       0
 #define linear_no_time         1
@@ -44,15 +44,16 @@ int RHSJacobianHeat(TS,Scalar,Vec,Mat*,Mat*,MatStructure *,void*);
 
 int main(int argc,char **argv)
 {
-  int           M = 60, ierr,  time_steps = 100, steps, flg, problem, size, m;
+  int           M = 60, ierr,  time_steps = 100, steps, flg, size, m;
+  int           problem = linear_no_matrix;
   AppCtx        appctx;
   Vec           local, global;
-  Scalar        h, dt,ftime;
+  double        h, dt,ftime;
   TS            ts;
   TSType        type;
   Mat           A = 0;
   MatStructure  A_structure;
-  TSProblemType tsproblem;
+  TSProblemType tsproblem = TS_LINEAR;
   Draw          draw;
   Viewer        viewer;
   char          tsinfo[120];
@@ -223,7 +224,7 @@ int Initial(Vec global, void *ctx)
   return 0;
 }
 
-int Solution(Scalar t,Vec solution, void *ctx)
+int Solution(double t,Vec solution, void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
   Scalar *localptr,h = appctx->h,ex1,ex2,sc1,sc2;
@@ -283,7 +284,7 @@ int RHSMatrixFree(Mat mat,Vec x,Vec y)
   return 0;
 }
 
-int RHSFunctionHeat(TS ts, Scalar t,Vec globalin, Vec globalout, void *ctx)
+int RHSFunctionHeat(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
   DA     da = appctx->da;
@@ -318,7 +319,7 @@ int RHSFunctionHeat(TS ts, Scalar t,Vec globalin, Vec globalout, void *ctx)
 }
 
 /* ---------------------------------------------------------------------*/
-int RHSMatrixHeat(TS ts,Scalar t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
+int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 {
   Mat    A = *AA;
   AppCtx *appctx = (AppCtx*) ctx;
@@ -356,7 +357,7 @@ int RHSMatrixHeat(TS ts,Scalar t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
   return 0;
 }
 
-int RHSJacobianHeat(TS ts,Scalar t,Vec x,Mat *AA,Mat *BB, MatStructure *str,
+int RHSJacobianHeat(TS ts,double t,Vec x,Mat *AA,Mat *BB, MatStructure *str,
                     void *ctx)
 {
   return RHSMatrixHeat(ts,t,AA,BB,str,ctx);
