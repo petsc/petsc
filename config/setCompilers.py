@@ -628,6 +628,7 @@ class Configure(config.base.Configure):
     # Mac OSX
     yield ('libtool', ['-noprebind', '-dynamic'], 'dylib')
     # Default to static linker
+    self.framework.argDB['with-shared']=0
     self.framework.argDB['LD_SHARED'] = ''
     language = self.framework.normalizeLanguage(self.language[-1])
     linker = self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
