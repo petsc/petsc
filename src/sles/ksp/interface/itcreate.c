@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.198 2000/09/28 21:13:11 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.199 2001/01/15 21:47:10 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -136,6 +136,16 @@ static int KSPPublish_Petsc(PetscObject obj)
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Residual",&v->rnorm,1,AMS_DOUBLE,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+
+  if (ksp->res_hist_max > 0) {
+    ierr = AMS_Memory_add_field((AMS_Memory)ksp->amem,"ResidualNormsCount",&ksp->res_hist_len,1,AMS_INT,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    ierr = AMS_Memory_add_field((AMS_Memory)ksp->amem,"ResidualNormsCountMax",&ksp->res_hist_max,1,AMS_INT,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    ierr = AMS_Memory_add_field((AMS_Memory)ksp->amem,"ResidualNorms",ksp->res_hist,ksp->res_hist_max,AMS_DOUBLE,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  }
+
   ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
 #endif
 
