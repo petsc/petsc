@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.192 2000/08/23 17:24:02 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.193 2000/08/23 19:28:03 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -202,7 +202,6 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;
 
   ksp->ops->setfromoptions = 0;
-  ksp->ops->printhelp      = 0;
 
   ksp->vec_sol         = 0;
   ksp->vec_rhs         = 0;
@@ -347,50 +346,6 @@ int KSPGetType(KSP ksp,KSPType *type)
   PetscFunctionReturn(0);
 }
 
-#define MAXSETFROMOPTIONS 5
-extern int numberofsetfromoptions;
-EXTERN int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSetTypeFromOptions"
-/*@
-   KSPSetTypeFromOptions - Sets KSP type from the options database, if not
-       given then sets default.
-
-   Collective on KSP
-
-   Input Parameters:
-.  ksp - the Krylov space context
-
-   Level: developer
-
-.keywords: KSP, set, from, options, database
-
-.seealso: KSPSetFromOptions(), SLESSetFromOptions()
-
-@*/
-int KSPSetTypeFromOptions(KSP ksp)
-{
-  PetscTruth flg;
-  int        ierr;
-  char       type[256];
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-
-  ierr = OptionsGetString(ksp->prefix,"-ksp_type",type,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = KSPSetType(ksp,type);CHKERRQ(ierr);
-  }
-  /*
-    Set the type if it was never set.
-  */
-  if (!ksp->type_name) {
-    ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPSetFromOptions"
 /*@
@@ -431,7 +386,7 @@ int KSPSetTypeFromOptions(KSP ksp)
 @*/
 int KSPSetFromOptions(KSP ksp)
 {
-  int        ierr,i;
+  int        ierr;
   char       type[256];
   PetscTruth flg;
 

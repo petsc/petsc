@@ -1,7 +1,8 @@
-/*$Id: pams.c,v 1.4 2000/04/12 04:21:35 bsmith Exp bsmith $*/
+/*$Id: pams.c,v 1.5 2000/05/09 04:27:31 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
+#if defined(PETSC_HAVE_AMS)
 
 /*
     Publishes the common header part of any PETSc object. 
@@ -50,7 +51,16 @@ int PetscObjectPublishBaseEnd(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
+#else
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"mydummy"
+int mydummy(void)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
 
+#endif
 
 
