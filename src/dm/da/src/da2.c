@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.46 1996/04/17 16:38:03 curfman Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.47 1996/05/01 21:52:27 curfman Exp curfman $";
 #endif
  
 #include "daimpl.h"    /*I   "da.h"   I*/
@@ -668,7 +668,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
    Note:
    Currently, refinement consists of just doubling the number of grid spaces
-   in each dimentsion of the DA.
+   in each dimension of the DA.
 
 .keywords:  distributed array, refine
 
