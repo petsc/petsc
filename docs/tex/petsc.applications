@@ -10,6 +10,7 @@ PETSc use in grand challenge projects:
 PETSc in DOE applications:
  - Jim Kercher, Livermore - 9/97 - starting to parallelize reactive transport
    code with up to 12 chemical species
+ - Pete Eltgroth, Livermore - 9/25 - integrated PETSc into Odyssey, an ASCI AMR code
 
 Argonne
   disk brake analysis
