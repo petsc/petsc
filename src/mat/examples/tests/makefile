@@ -25,20 +25,20 @@ TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
 		  ex35.rm ex37.PETSc ex37.rm ex38.PETSc ex38.rm \
 		  ex43.PETSc ex43.rm ex46.PETSc runex46 ex46.rm ex48.PETSc runex48 \
 		  ex48.rm ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm \
-		  ex52.PETSc ex52.rm clean
+		  ex52.PETSc runex52 ex52.rm ex53 runex53.PETSc ex53.rm clean
 TESTEXAMPLES_3  = ex36.PETSc runex36 ex36.rm clean
 TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		  runex4 ex4.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 ex6.rm\
 		  ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm ex15.PETSc\
 		  runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 \
-		  ex21.rm ex35.PETSc runex35 ex35.rm  clean
+		  ex21.rm ex35.PETSc runex35 ex35.rm  ex48.PETSc runex48 ex48.rm clean
 TESTEXAMPLES_6  = ex40.PETSc runex40 ex40.rm ex42.PETSc runex42 ex42.rm \
                   ex41.PETSc ex41.rm ex47.PETSc ex47.rm  clean
 BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex3.PETSc ex3.rm ex5.PETSc ex5.rm ex6.PETSc \
 		  ex6.rm ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm\
 		  ex11.PETSc ex11.rm ex14.PETSc ex14.rm	ex15.PETSc ex15.rm \
 		  ex19.PETSc ex19.rm ex20.PETSc \
-		  ex20.rm ex21.PETSc ex21.rm ex22.PETSc ex22.rm clean
+		  ex20.rm ex21.PETSc ex21.rm ex22.PETSc ex22.rm  clean
 BUILDEXAMPLES_2 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex7.PETSc ex7.rm ex12.PETSc \
 		  ex12.rm  ex13.PETSc ex13.rm ex17.PETSc ex17.rm ex19.PETSc \
 		  ex19.rm ex24.PETSc ex24.rm ex25.PETSc ex25.rm ex27.PETSc ex27.rm\
@@ -46,13 +46,14 @@ BUILDEXAMPLES_2 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex7.PETSc ex7.rm ex12.PETSc 
 		  ex31.rm ex32.PETSc ex32.rm ex33.PETSc ex33.rm ex34.PETSc ex34.rm \
 		  ex35.PETSc ex35.rm ex37.PETSc ex37.rm ex38.PETSc ex38.rm \
 		  ex43.PETSc ex43.rm ex46.PETSc ex46.rm ex48.PETSc ex48.rm  \
-		  ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm
+		  ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm \
+		  ex53.PETSc ex53.rm clean
 BUILDEXAMPLES_3 = ex36.PETSc ex36.rm clean
 BUILDEXAMPLES_4 = ex1.PETSc  ex1.rm ex2.PETSc ex2.rm ex4.PETSc\
 		  ex4.rm ex5.PETSc ex5.rm ex6.PETSc ex6.rm\
 		  ex10.PETSc ex10.rm ex14.PETSc ex14.rm ex15.PETSc\
 		  ex15.rm ex20.PETSc ex20.rm ex21.PETSc \
-		  ex21.rm ex35.PETSc ex35.rm  clean
+		  ex21.rm ex35.PETSc ex35.rm  ex48.PETSc ex48.rm clean
 BUILDEXAMPLES_6 = ex40.PETSc ex40.rm ex42.PETSc ex42.rm \
                   ex41.PETSc ex41.rm ex47.PETSc ex47.rm  clean
 
@@ -469,9 +470,9 @@ runex47:
 
 MATBLOCKSIZE   = 1 2 3 4 5 6
 runex48:
-	-@touch ex51_1.tmp;\
+	-@touch ex48_1.tmp;\
 	for bs in $(MATBLOCKSIZE); do \
-	  $(MPIRUN)  ex48 -mat_block_size  $$bs > ex48_1.tmp 2>&1; \
+	  $(MPIRUN)  ex48 -mat_block_size  $$bs >> ex48_1.tmp 2>&1; \
 	done; \
 	if (diff /dev/null ex48_1.tmp) then true; \
 	else echo "Possible problem with ex48_1, diffs above"; fi; \
@@ -497,5 +498,15 @@ runex51:
 	  else echo "Possible problem with ex51_1, diffs above"; fi; \
 	  $(RM) -f ex51_1.tmp ex51_12.tmp
 
+runex53:
+	$(MPIRUN) -np 3 ex53 -matload_block_size 1 -f matrices/small > ex53_1.tmp 2>&1;\
+	$(MPIRUN) -np 3 ex53 -matload_block_size 2 -f matrices/small >> ex53_1.tmp 2>&1;\
+	$(MPIRUN) -np 4 ex53 -matload_block_size 3 -f matrices/small >> ex53_1.tmp 2>&1;\
+	$(MPIRUN) -np 3 ex53 -matload_block_size 4 -f matrices/small >> ex53_1.tmp 2>&1;\
+	if (diff /dev/null ex53_1.tmp) then true; \
+	else echo "Possible problem with ex53_1, diffs above"; fi; \
+	$(RM) -f ex53_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
+
