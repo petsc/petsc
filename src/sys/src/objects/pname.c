@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.17 1998/11/12 04:16:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pname.c,v 1.18 1998/11/20 15:28:14 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -66,8 +66,8 @@ int PetscObjectPublish(PetscObject obj)
     Publishes the common header part of any PETSc object. 
  */
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectPublishHeaderBegin"
-int PetscObjectPublishBaseBegin(PetscObject obj,char *memname)
+#define __FUNC__ "PetscObjectPublishBaseBegin"
+int PetscObjectPublishBaseBegin(PetscObject obj)
 {
 #if defined(HAVE_AMS)
   AMS_Memory amem;
@@ -79,7 +79,7 @@ int PetscObjectPublishBaseBegin(PetscObject obj,char *memname)
   if (obj->name) {
     PetscStrncpy(name,obj->name,16);
   } else {
-    sprintf(name,"%s_%d",memname,counter++);
+    sprintf(name,"n_%d",counter++);
   }
 
   PetscFunctionBegin;
@@ -88,6 +88,8 @@ int PetscObjectPublishBaseBegin(PetscObject obj,char *memname)
   obj->amem = (int) amem;
 
   ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr); 
+  ierr = AMS_Memory_add_field(amem,"Class",&obj->class_name,1,AMS_STRING,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amem,"Type",&obj->type_name,1,AMS_STRING,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amem,"Id",&obj->id,1,AMS_INT,AMS_READ,
@@ -101,7 +103,7 @@ int PetscObjectPublishBaseBegin(PetscObject obj,char *memname)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectPublishHeaderEnd"
+#define __FUNC__ "PetscObjectPublishBaseEnd"
 int PetscObjectPublishBaseEnd(PetscObject obj)
 {
 #if defined(HAVE_AMS)
