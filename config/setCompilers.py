@@ -110,20 +110,27 @@ class Configure(config.base.Configure):
           yield 'mpicc'
         if not Configure.isGNU('mpxlc') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
           yield 'mpxlc'
-      if self.framework.argDB['with-gnu-compilers']:
-        yield 'gcc'
       vendor = self.framework.argDB['with-vendor-compilers']
+      if (not vendor or vendor == '0') and self.framework.argDB['with-gnu-compilers']:
+        yield 'gcc'
       if not vendor == '0':
         if not vendor and not Configure.isGNU('cc'):
           yield 'cc'
+        if vendor == 'borland' or not vendor:
+          yield 'win32fe bcc32'
         if vendor == 'kai' or not vendor:
           yield 'kcc'
         if vendor == 'ibm' or not vendor:
           yield 'xlc'
         if vendor == 'intel' or not vendor:
           yield 'icc'
+          yield 'win32fe icl'
+        if vendor == 'microsoft' or not vendor:
+          yield 'win32fe cl'
         if vendor == 'portland' or not vendor:
           yield 'pgcc'
+      if self.framework.argDB['with-gnu-compilers']:
+        yield 'gcc'
     return
 
   def checkCCompiler(self):
@@ -214,9 +221,9 @@ class Configure(config.base.Configure):
           yield 'mpic++'
         if not Configure.isGNU('mpCC') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
           yield 'mpCC'
-      if self.framework.argDB['with-gnu-compilers']:
-        yield 'g++'
       vendor = self.framework.argDB['with-vendor-compilers']
+      if (not vendor or vendor == '0') and self.framework.argDB['with-gnu-compilers']:
+        yield 'g++'
       if not vendor == '0':
         if not vendor:
           if not Configure.isGNU('c++'):
@@ -225,14 +232,19 @@ class Configure(config.base.Configure):
             yield 'CC'
           yield 'cxx'
           yield 'cc++'
+        if vendor == 'borland' or not vendor:
+          yield 'win32fe bcc32'
         if vendor == 'ibm' or not vendor:
           yield 'xlC'
         if vendor == 'intel' or not vendor:
           yield 'icc -Kc++'
+          yield 'win32fe icl'
         if vendor == 'microsoft' or not vendor:
           yield 'cl'
         if vendor == 'portland' or not vendor:
           yield 'pgCC'
+      if self.framework.argDB['with-gnu-compilers']:
+        yield 'g++'
     return
 
   def checkCxxCompiler(self):
@@ -258,8 +270,8 @@ class Configure(config.base.Configure):
         break
     if 'CXX' in self.framework.argDB:
       self.addArgumentSubstitution('CXX', 'CXX')
-      self.addArgumentSubstitution('CXXFLAGS', 'CXXFLAGS')
       self.addArgumentSubstitution('CXX_CXXFLAGS', 'CXX_CXXFLAGS')
+      self.addArgumentSubstitution('CXXFLAGS', 'CXXFLAGS')
       self.isGCXX = Configure.isGNU(self.framework.argDB['CXX'])
     else:
       self.addSubstitution('CXX', '')
@@ -331,9 +343,9 @@ class Configure(config.base.Configure):
           yield 'mpif77'
         if not Configure.isGNU('mpxlf') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
           yield 'mpxlf'
-      if self.framework.argDB['with-gnu-compilers']:
-        yield 'g77'
       vendor = self.framework.argDB['with-vendor-compilers']
+      if (not vendor or vendor == '0') and self.framework.argDB['with-gnu-compilers']:
+        yield 'g77'
       if not vendor == '0':
         if not vendor:
           yield 'f90'
@@ -341,12 +353,17 @@ class Configure(config.base.Configure):
           yield 'xlf90'
           yield 'xlf'
         if vendor == 'intel' or not vendor:
+          yield 'win32fe ifort'
+          yield 'win32fe ifl'
+          yield 'ifort'
           yield 'icf'
         if vendor == 'portland' or not vendor:
           yield 'pgf90'
           yield 'pgf77'
         if not vendor:
           yield 'f77'
+      if self.framework.argDB['with-gnu-compilers']:
+        yield 'g77'
     return
 
   def checkFortranCompiler(self):
