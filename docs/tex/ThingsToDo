@@ -10,6 +10,8 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Consider adding test for NaNs to convegence tests.
+
   - Consider changing the default parallel solver from
         GMRES with Block-Jacobi/ILU(0)
     to
