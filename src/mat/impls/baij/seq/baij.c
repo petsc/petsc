@@ -1547,15 +1547,11 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
 
   /* check for zero rows. If found a large number of nonzero rows, use CompressedRow functions */
-  if (!a->compressedrow.checked && a->compressedrow.use){ /* fshift=!samestructure? NO. */
+  if (a->compressedrow.use && !A->same_nonzero){ 
     ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,ratio);CHKERRQ(ierr);
-  } else if (a->compressedrow.checked && a->compressedrow.use){ 
-    /* mat structure likely has been changed. Do not use compressed row format until a better
-       flag on changing mat structure is introduced */
-    ierr = PetscFree(a->compressedrow.i);CHKERRQ(ierr); 
-    a->compressedrow.use    = PETSC_FALSE;
-    a->compressedrow.rindex = PETSC_NULL;
-  }
+  } 
+
+  A->same_nonzero = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1628,8 +1624,10 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,IS is,const PetscScalar *diag)
   if (baij->keepzeroedrows) {
     for (i=0; i<is_n; i++) { sizes[i] = 1; }
     bs_max = is_n;
+    A->same_nonzero = PETSC_TRUE;
   } else {
     ierr = MatZeroRows_SeqBAIJ_Check_Blocks(rows,is_n,bs,sizes,&bs_max);CHKERRQ(ierr);
+    A->same_nonzero = PETSC_FALSE;
   }
   ierr = ISRestoreIndices(is,&is_idx);CHKERRQ(ierr);
 
@@ -1779,6 +1777,7 @@ PetscErrorCode MatSetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
     }
     ailen[brow] = nrow;
   }
+  A->same_nonzero = PETSC_FALSE;
   PetscFunctionReturn(0);
 } 
 
@@ -2367,6 +2366,7 @@ PetscErrorCode MatCreate_SeqBAIJ(Mat B)
   b->compressedrow.i       = PETSC_NULL;
   b->compressedrow.rindex  = PETSC_NULL;
   b->compressedrow.checked = PETSC_FALSE;
+  B->same_nonzero          = PETSC_FALSE;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_SeqBAIJ",
@@ -2458,6 +2458,22 @@ PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->mult_work          = 0;
   C->preallocated       = PETSC_TRUE;
   C->assembled          = PETSC_TRUE;
+
+  c->compressedrow.use     = a->compressedrow.use;
+  c->compressedrow.nrows   = a->compressedrow.nrows;
+  c->compressedrow.checked = a->compressedrow.checked;
+  if ( a->compressedrow.checked && a->compressedrow.use){
+    i = a->compressedrow.nrows;
+    ierr = PetscMalloc((2*i+1)*sizeof(PetscInt),&c->compressedrow.i);CHKERRQ(ierr);
+    c->compressedrow.rindex = c->compressedrow.i + i + 1;
+    ierr = PetscMemcpy(c->compressedrow.i,a->compressedrow.i,(i+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(c->compressedrow.rindex,a->compressedrow.rindex,i*sizeof(PetscInt));CHKERRQ(ierr); 
+  } else {
+    c->compressedrow.use    = PETSC_FALSE;
+    c->compressedrow.i      = PETSC_NULL;
+    c->compressedrow.rindex = PETSC_NULL;
+  }
+  C->same_nonzero = A->same_nonzero;
   *B = C;
   ierr = PetscFListDuplicate(A->qlist,&C->qlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
