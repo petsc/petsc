@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.12 1998/03/20 13:43:18 curfman Exp balay $";
+static char vcid[] = "$Id: jacob.c,v 1.13 1998/03/31 17:15:46 balay Exp curfman $";
 #endif
 
 #include "user.h"
@@ -413,10 +413,11 @@ int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag
 {
   Euler            *app = (Euler *)ptr;
   int              iter;                   /* nonlinear solver iteration number */
-  int              flg, ierr, i, rstart, rend;
+  int              flg, ierr, i, rstart, rend, mditer;
   Vec              fvec;
   Scalar           *fvec_array, one = 1.0;
-  PetscFortranAddr fortmat;
+  int fortmat;
+  /*  PetscFortranAddr fortmat; */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set some options; do some preliminary work
@@ -600,18 +601,22 @@ int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag
     /* Dump Jacobian and residual in binary format to file euler.dat 
        (for use in separate experiments with linear system solves) */
     ierr = OptionsHasName(PETSC_NULL,"-mat_dump",&flg); CHKERRQ(ierr);
-    if (flg && app->cfl_switch <= app->cfl) {
-      Viewer viewer;
-      PetscPrintf(app->comm,"writing matrix in binary to euler.dat ...\n"); 
-      ierr = ViewerFileOpenBinary(app->comm,"euler.dat",BINARY_CREATE,&viewer); 
-  	   CHKERRQ(ierr);
-      ierr = MatView(*pjac,viewer); CHKERRQ(ierr);
+    if (flg) {
+      mditer = -1;
+      ierr = OptionsGetInt(PETSC_NULL,"-mat_dump_iter",&mditer,&flg); CHKERRQ(ierr);
+      if (app->cfl_switch <= app->cfl || iter >= mditer) {
+        Viewer viewer;
+        PetscPrintf(app->comm,"writing matrix in binary to euler.dat at iteration %d...\n",iter); 
+        ierr = ViewerFileOpenBinary(app->comm,"euler.dat",BINARY_CREATE,&viewer); 
+  	       CHKERRQ(ierr);
+        ierr = MatView(*pjac,viewer); CHKERRQ(ierr);
   
-      ierr = ComputeFunctionBasic(snes,X,app->F,ptr); CHKERRQ(ierr);
-      PetscPrintf(app->comm,"writing vector in binary to euler.dat ...\n"); 
-      ierr = VecView(app->F,viewer); CHKERRQ(ierr);
-      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
-      PetscFinalize(); exit(0);
+        ierr = ComputeFunctionBasic(snes,X,app->F,ptr); CHKERRQ(ierr);
+        PetscPrintf(app->comm,"writing vector in binary to euler.dat ...\n"); 
+        ierr = VecView(app->F,viewer); CHKERRQ(ierr);
+        ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+        PetscFinalize(); exit(0);
+      }
     }
   
     /* Check matrix-vector products, run with -matrix_free and -debug option */
