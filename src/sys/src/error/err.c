@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.56 1997/02/22 02:23:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.57 1997/03/01 15:45:33 bsmith Exp balay $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -145,6 +145,7 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int numbe
   else {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,message);
   }
+  fflush(stderr);
   return number;
 }
 
