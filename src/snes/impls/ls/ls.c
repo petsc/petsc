@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.7 1995/04/17 03:35:40 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.8 1995/04/17 14:59:15 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -44,7 +44,7 @@ int SNESSolve_LS( SNES snes, int *outits )
 
   ierr = SNESComputeInitialGuess(snes,X); CHKERR(ierr);  /* X <- X_0 */
   VecNorm( X, &xnorm );		       /* xnorm = || X || */
-  ierr = SNESComputeResidual(snes,X,F); CHKERR(ierr); /* (+/-) F(X) */
+  ierr = SNESComputeFunction(snes,X,F); CHKERR(ierr); /* (+/-) F(X) */
   VecNorm(F, &fnorm );	        	/* fnorm <- || F || */  
   snes->norm = fnorm;
   if (history && history_len > 0) history[0] = fnorm;
@@ -113,7 +113,7 @@ int SNESDestroy_LS(PetscObject obj)
 
    Notes:
    f is either the residual or its negative, depending on the user's
-   preference, as set with SNESSetResidual().
+   preference, as set with SNESSetFunction().
 
 .keywords: SNES, nonlinear, default, monitor, residual, norm
 
@@ -214,7 +214,7 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   Scalar one = 1.0;
   VecNorm(y, ynorm );	/* ynorm = || y ||    */
   VecAXPY(&one, x, y );	/* y <- x + y         */
-  ierr = SNESComputeResidual(snes,y,g); CHKERR(ierr);
+  ierr = SNESComputeFunction(snes,y,g); CHKERR(ierr);
   VecNorm( g, gnorm ); 	/* gnorm = || g ||    */
   return 1;
 }
@@ -289,7 +289,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 
   VecCopy(y, w );
   VecAXPY(&one, x, w );
-  ierr = SNESComputeResidual(snes,w,g); CHKERR(ierr);
+  ierr = SNESComputeFunction(snes,w,g); CHKERR(ierr);
   VecNorm(g, gnorm ); 
   if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
       VecCopy(w, y );
@@ -311,7 +311,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 #else
   VecAXPY(&lambda, y, w );
 #endif
-  ierr = SNESComputeResidual(snes,w,g); CHKERR(ierr);
+  ierr = SNESComputeFunction(snes,w,g); CHKERR(ierr);
   VecNorm(g, gnorm ); 
   if (*gnorm <= fnorm + alpha*initslope) {      /* sufficient reduction */
       VecCopy(w, y );
@@ -357,7 +357,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 #else
       VecAXPY(&lambda, y, w );
 #endif
-      ierr = SNESComputeResidual(snes,w,g); CHKERR(ierr);
+      ierr = SNESComputeFunction(snes,w,g); CHKERR(ierr);
       VecNorm(g, gnorm ); 
       if (*gnorm <= fnorm + alpha*initslope) {      /* is reduction enough */
          VecCopy(w, y );
@@ -431,7 +431,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 
   VecCopy(y, w );
   VecAXPY(&one, x, w );
-  ierr = SNESComputeResidual(snes,w,g); CHKERR(ierr);
+  ierr = SNESComputeFunction(snes,w,g); CHKERR(ierr);
   VecNorm(g, gnorm ); 
   if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
       VecCopy(w, y );
@@ -462,7 +462,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 #else
     VecAXPY(&lambda, y, w );
 #endif
-    ierr = SNESComputeResidual(snes,w,g); CHKERR(ierr);
+    ierr = SNESComputeFunction(snes,w,g); CHKERR(ierr);
     VecNorm(g, gnorm ); 
     if (*gnorm <= fnorm + alpha*initslope) {      /* sufficient reduction */
       VecCopy(w, y );
