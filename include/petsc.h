@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.93 1996/01/26 04:35:46 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.94 1996/02/08 18:28:49 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -110,6 +110,8 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #endif
 
 #define PETSC_COOKIE         1211211
+extern int LARGEST_PETSC_COOKIE;
+
 #define PETSC_DECIDE         -1
 #define PETSC_DEFAULT        -2
 

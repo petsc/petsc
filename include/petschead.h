@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.26 1996/01/12 15:09:37 balay Exp balay $ */
+/* $Id: phead.h,v 1.27 1996/01/12 17:25:10 balay Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -8,6 +8,7 @@
 #define _PHEAD_H
 #include "petsc.h"  
 
+extern int PetscRegisterCookie(int *);
 
 /*
      All Major PETSc Data structures have a common core; this 
@@ -80,7 +81,7 @@ extern void *PetscLow,*PetscHigh;
       SETERRQ(PETSC_ERR_OBJ,"Object already free");                \
   }                                                                \
   else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||            \
-      ((PetscObject)(h))->cookie > PETSC_COOKIE+20) {              \
+      ((PetscObject)(h))->cookie > LARGEST_PETSC_COOKIE) {         \
       SETERRQ(PETSC_ERR_OBJ,"Invalid or Wrong Object");            \
   }}
 #else
@@ -100,7 +101,7 @@ extern void *PetscLow,*PetscHigh;
       SETERRQ(PETSC_ERR_OBJ,"Object already free");                \
   }                                                                \
   else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||            \
-      ((PetscObject)(h))->cookie > PETSC_COOKIE+20) {              \
+      ((PetscObject)(h))->cookie > LARGEST_PETSC_COOKIE) {         \
       SETERRQ(PETSC_ERR_OBJ,"Invalid or Wrong Object");            \
   }}
 #endif

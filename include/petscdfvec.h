@@ -1,5 +1,5 @@
 
-/* $Id: vgrid.h,v 1.3 1996/01/29 14:19:20 curfman Exp curfman $ */
+/* $Id: vgrid.h,v 1.4 1996/02/09 00:28:00 curfman Exp bsmith $ */
 
 /* This file declares some utility routines for manipulating vectors that are
    associated with multicomponent problems on grids */
@@ -16,7 +16,7 @@ typedef enum {ORDER_1,ORDER_2} GridComponentOrdering;
      ORDER_2 - ordering by segregating unknowns according to type
           (1 component for whole grid, then the next component, etc.) */
 
-#define VECGRID_COOKIE         PETSC_COOKIE+40 /* need to set range for petsc cookies */
+extern int VECGRID_COOKIE;
 
 typedef struct _VecGridInfo* VecGridInfo;
 
