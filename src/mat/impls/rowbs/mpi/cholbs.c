@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.3 1995/04/16 17:23:06 curfman Exp curfman $";
+static char vcid[] = "$Id: cholbs.c,v 1.4 1995/04/18 02:17:15 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -46,49 +46,34 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs( Mat mat,IS perm,
 /* 
    MatCholeskyFactorNumeric_MPIRowbs - Performs numeric factorization 
    of a symmetric parallel matrix, using BlockSolve.
-   
-.  failout - number of failures
-.  alphaout -  alpha
  */
 int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 {
   Mat           fact = *factp;
   Mat_MPIRowbs  *mbs = (Mat_MPIRowbs *) mat->data;
-  int           i, ierr, ldim;
-  Scalar        *da;
+  Mat_MPIRowbs  *fbs = (Mat_MPIRowbs *) fact->data;
+  int           i, ierr, ldim, low, iwork;
+  Scalar        v;
 
   VALIDHEADER(mat,MAT_COOKIE); VALIDHEADER(fact,MAT_COOKIE);
   /* Do prep work if same nonzero structure as previously factored matrix */
   if (fact->factor == FACTOR_CHOLESKY) {
-    /* Repermute the matrix */
-    BSmain_reperm(mbs->procinfo,mbs->A,mbs->pA); CHKERRBS(0);
-    /* Symmetrically scale the matrix by the diagonal */
-    BSscale_diag(mbs->pA,mbs->pA->diag,mbs->procinfo); CHKERRBS(0);
+    if (!mbs->nonew) SETERR(1,
+      "Must call MatSetOption(mat,NO_NEW_NONZERO_LOCATIONS) for re-solve.");
     /* Copy only the nonzeros */
     BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
-    /* Store inverse of square root of permuted diagonal scaling matrix;
-       this is done the first time in MatEndAssembly. */
-    ierr = VecGetLocalSize( mbs->diag, &ldim ); CHKERR(ierr);
-    ierr = VecGetArray( mbs->diag, &da ); CHKERR(ierr);
-    for (i=0; i<ldim; i++) {
-      da[i] = 1.0/sqrt(mbs->pA->scale_diag[i]);
-    }
-    ierr = VecBeginAssembly( mbs->diag ); CHKERR(ierr);
-    ierr = VecEndAssembly( mbs->diag ); CHKERR(ierr);
   }
   /* Form incomplete Cholesky factor */
   mbs->ierr = 0; mbs->failures = 0; mbs->alpha = 1.0;
-  while ((mbs->ierr = BSfactor( mbs->fpA, mbs->comm_fpA, mbs->procinfo))) {
-    CHKERRBS(0);	mbs->failures++;
+  while ((mbs->ierr = BSfactor(mbs->fpA,mbs->comm_fpA,mbs->procinfo))) {
+    CHKERRBS(0); mbs->failures++;
     /* Copy only the nonzeros */
-    BScopy_nz( mbs->pA, mbs->fpA );			CHKERRBS(0);
+    BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
     /* Increment the diagonal shift */
     mbs->alpha += 0.1;
-    BSset_diag( mbs->fpA, mbs->alpha, mbs->procinfo );		CHKERRBS(0);
-#if defined(PETSC_DEBUG)
-    MPE_printf(mat->comm,"BlockSolve failed factors=%d, ierr=%d, alpha=%g\n",
-               mbs->failures, mbs->ierr, mbs->alpha ); 
-#endif
+    BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo); CHKERRBS(0);
+    PLogInfo((PetscObject)fact,
+     "BlockSolve error: %d failed factors, err=%d, alpha=%g\n",mbs->failures, mbs->ierr, mbs->alpha ); 
   }
   fact->factor = FACTOR_CHOLESKY;
   return 0;
