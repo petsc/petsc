@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.39 1997/09/10 19:40:00 balay Exp curfman $ 
+# $Id: builddist,v 1.40 1997/10/05 23:28:27 curfman Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -16,7 +16,6 @@ echo "(7) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run cor
 echo "(8) Made sure Fortran include files match C ones?"
 echo "(9) Converted hpux/base.* files to nonshared mode?"
 echo "(10) Taken away chmod g+* from petsc/makefile?"
-echo "(11) Taken away chmod g+* from petsc/makefile?"
 echo "(12) Fixed default flag -DUSE_FORTRAN_KERNELS (or not) in base.O_complex, base.g_complex files?"
 #
 if ($#argv == 1) then
@@ -67,4 +66,5 @@ tar cf ~/petsc$version.tar petsc$version
 #
 # 1. Add chmod u+* back to petsc/makefile
 # 2. Change HPUX back to shared mode
-
+# 3. Add the flag -u to bmake/sun4/base.g to FOPTFLAGS
+# 4. fix DUSE_FORTRAN_KERNELS in sun4/bmake.*complex
