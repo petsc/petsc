@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.4 2001/01/03 21:31:58 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.5 2001/01/04 22:07:07 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint\n\n";
 
@@ -182,7 +182,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = MatFDColoringApply((Mat)dmmg->user,fd,vu,PETSC_NULL,w);CHKERRQ(ierr);
   ierr = MatMultTranspose((Mat)dmmg->user,vglambda,vflambda);CHKERRQ(ierr);
 
-  ierr = MatView((Mat)dmmg->user,VIEWER_STDOUT_WORLD);
+  /*  ierr = MatView((Mat)dmmg->user,VIEWER_STDOUT_WORLD); */
 
   /* derivative of L() w.r.t. lambda */
   ierr = PDEFormFunction(w,vu,vfu,da);CHKERRQ(ierr);
@@ -201,23 +201,13 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     fw[0] = -2.*d*lambda[0];
   }
 
-  /* compare the J^T*lambda with that computed below */
-  for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   printf("i %d %g\n",i,flambda[0] -(2.*d*lambda[0]   - d*lambda[1]));
-    else if (i == 1)   printf("i %d %g\n",i,flambda[1]   - -(-2.*d*lambda[1]   + d*lambda[2]));
-    else if (i == N-1) printf("i %d %g\n",i,flambda[N-1] - (2.*d*lambda[N-1] - d*lambda[N-2]));
-    else if (i == N-2) printf("i %d %g\n",i,flambda[N-2] - -(- 2.*d*lambda[N-2] + d*lambda[N-3]));
-    else               printf("i %d %g\n",i,flambda[i]   - -((d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]))));
-  } 
-
-
   /* derivative of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   flambda[0]   = (2.*h*u[0]   + 2.*d*lambda[0]   - d*lambda[1]);
-    else if (i == 1)   flambda[1]   = -(2.*h*u[1]   - 2.*d*lambda[1]   + d*lambda[2]);
-    else if (i == N-1) flambda[N-1] = (2.*h*u[N-1] + 2.*d*lambda[N-1] - d*lambda[N-2]);
-    else if (i == N-2) flambda[N-2] = -(2.*h*u[N-2] - 2.*d*lambda[N-2] + d*lambda[N-3]);
-    else               flambda[i]   = -((2.*h*u[i]   + d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1])));
+    if      (i == 0)   flambda[0]   =    h*u[0]   + 2.*d*lambda[0]   - d*lambda[1];
+    else if (i == 1)   flambda[1]   = 2.*h*u[1]   + 2.*d*lambda[1]   - d*lambda[2];
+    else if (i == N-1) flambda[N-1] =    h*u[N-1] + 2.*d*lambda[N-1] - d*lambda[N-2];
+    else if (i == N-2) flambda[N-2] = 2.*h*u[N-2] + 2.*d*lambda[N-2] - d*lambda[N-3];
+    else               flambda[i]   = 2.*h*u[i]   - d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]);
   } 
 
   ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
