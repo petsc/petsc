@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.23 1996/04/09 23:08:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.24 1996/04/10 13:43:35 bsmith Exp balay $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -186,7 +186,7 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,Scalar *emax,Scalar *emin)
 
 int KSPComputeExtremeSingularValues_GMRES(KSP ksp,Scalar *emax,Scalar *emin)
 {
-  SETERRQ(1,"KSPComputeExtremeSingularValues_GMRES:No code for complex\n");
+  SETERRQ(1,"KSPComputeExtremeSingularValues_GMRES:No code for complex");
 }
 
 #endif
