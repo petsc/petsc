@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.2 1999/02/03 04:29:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.3 1999/03/19 21:17:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Prints loadable objects from dynamic library.\n\n";
@@ -35,14 +35,15 @@ int main(int argc,char **argv)
     SETERRA(1,1,"Must indicate library name with -library");
   }
 
+#if defined(USE_DYNAMIC_LIBRARIES)
   ierr = DLLibraryOpen(PETSC_COMM_WORLD,filename,&handle);CHKERRA(ierr);
-
   ierr = DLLibraryGetInfo(handle,"Contents",&string);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Contents:%s\n",string);CHKERRA(ierr);
   ierr = DLLibraryGetInfo(handle,"Authors",&string);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Authors:%s\n",string);CHKERRA(ierr);
   ierr = DLLibraryGetInfo(handle,"Version",&string);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Version:%s\n",string);CHKERRA(ierr);
+#endif
 
   ierr = PetscFinalize(); CHKERRA(ierr);
   return 0;
