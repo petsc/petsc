@@ -10,29 +10,37 @@ Variables in a PETSc makefile
 
 
 Organization of base makefiles (files in bmake)
-  sun4      - basic definitions (usually need not be changed except for 
-              major change in compilers or make on your system.
-  sun4.site - contains the locations of various libraries. May have
-              to be hcanged to match your site.
-  sun4.g    - defines debugging mode for system
-  sun4.O    - defines optimizations for system.
-  sun4.Opg  - optimization with profiler
-  sun4.     - so that if user compiles without BOPT will not crash
+
+  common       - contains rules common to all systems.
+  (For each PARCH there are the following files)
+  sun4         - basic definitions (usually need not be changed except for 
+                 major change in compilers or make on your system.
+  sun4.site    - contains the locations of various libraries. May have
+                 to be changed to match your site.
+  sun4.g       - defines debugging mode for system
+  sun4.O       - defines optimizations for system.
+  sun4.Opg     - optimization with profiler
+  sun4.        - so that if user compiles without BOPT will not crash
+  sun4.complex - compiler for version with complex numbers for scalars,
+                 this is usually (probably always) a C++ compiler.
 
 Variables and rules defined in base make files:
-  lib - rebuild the library in this directory if is is out of date.
-        may be slow if large numbers of files need recompiling.
-  libfast - compiles all the source in directory for library.
+  lib      - rebuild the library in this directory if is is out of date.
+             may be slow if large numbers of files need recompiling.
+  libfast  - compiles all the source in directory for library.
   manpages - build manual pages for directory
-  C2f77 - builds Fortran 77 wrappers for all C functions.
+  wwwpages - builds HTML version of man pages
+  C2f77    - builds Fortran 77 wrappers for all C functions.
   C2f77lib - compiles all the wrappers
 
   Each rule also has a corresponding *tree version that applies
   the rule to all subdirectories as well.
 
-  CONF - the macros define by the configure program. For instance
-         HAS_PWD_H. This way we can ifdef not by machine but
-         instead by properties the machines has.
+  CONF -  the macros define by the configure program. For instance
+          HAS_PWD_H. This way we can ifdef not by machine but
+          instead by properties the machines has.
+  PCONF - this is defined in $(PARCH).site and indicates what 
+          packages are available.
   
 Limitations:
   1) Makefile must be called makefile.
