@@ -58,8 +58,6 @@ Additional Capabilities that PETSc Needs:
     properly set.
 
   - Do something about viewer formats - maybe use enum?
-    Make ViewerGetFormat() a real public routine (seems good to me); else
-    make it obviously private.
 
   * Test PETSc with LAM.
     
@@ -234,6 +232,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
                 Accomplishments!  :) :)
 -----------------------------------------------------------------------
+
+  X Make ViewerGetFormat() a real public routine (seems good to me); else
+    make it obviously private.
 
   X Fix MPIRowbs so factorization routiens return NEW matrix, NOT the 
     original matrix. Then fix MatMult() etc to make sure one does not
