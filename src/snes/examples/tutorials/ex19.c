@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.12 2001/03/16 21:31:18 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.13 2001/03/16 21:44:21 bsmith Exp bsmith $*/
 
 static char help[] = "Solves nonlinear driven cavity with multigrid.\n\
   \n\
@@ -281,12 +281,11 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   double  two = 2.0,one = 1.0,p5 = 0.5,hx,hy,dhx,dhy,hxdhy,hydhx;
   double  grashof,prandtl,lid;
   Scalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
-  Scalar  *x,*f;
-  Vec     localX,localF; 
+  Field   **x,**f;
+  Vec     localX;
   DA      da = (DA)dmmg->dm;
 
   ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
-  ierr = DAGetLocalVector((DA)dmmg->dm,&localF);CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
   grashof = user->grashof;  
@@ -314,14 +313,13 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(localF,&f);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
   */
   ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -331,119 +329,111 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
   /* Test whether we are on the bottom edge of the global array */
   if (yints == 0) {
+    j = 0;
     yints = yints + 1;
     /* bottom edge */
-    row = xs - gxs - 1; 
     for (i=xs; i<xs+xm; i++) {
-      row++;
-        f[U(row)]     = x[U(row)];
-        f[V(row)]     = x[V(row)];
-        f[Omega(row)] = x[Omega(row)] + (x[U(row+gxm)] - x[U(row)])*dhy; 
-	f[Temp(row)]  = x[Temp(row)]-x[Temp(row+gxm)];
+        f[j][i].u     = x[j][i].u;
+        f[j][i].v     = x[j][i].v;
+        f[j][i].omega = x[j][i].omega + (x[j+1][i].u - x[j][i].u)*dhy; 
+	f[j][i].temp  = x[j][i].temp-x[j+1][i].temp;
     }
   }
 
   /* Test whether we are on the top edge of the global array */
   if (yinte == my) {
+    j = my - 1;
     yinte = yinte - 1;
     /* top edge */
-    row = (ys + ym - 1 - gys)*gxm + xs - gxs - 1; 
     for (i=xs; i<xs+xm; i++) {
-      row++;
-        f[U(row)]     = x[U(row)] - lid;
-        f[V(row)]     = x[V(row)];
-        f[Omega(row)] = x[Omega(row)] + (x[U(row)] - x[U(row-gxm)])*dhy; 
-	f[Temp(row)]  = x[Temp(row)]-x[Temp(row-gxm)];
+        f[j][i].u     = x[j][i].u - lid;
+        f[j][i].v     = x[j][i].v;
+        f[j][i].omega = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy; 
+	f[j][i].temp  = x[j][i].temp-x[j-1][i].temp;
     }
   }
 
   /* Test whether we are on the left edge of the global array */
   if (xints == 0) {
+    i = 0;
     xints = xints + 1;
     /* left edge */
     for (j=ys; j<ys+ym; j++) {
-      row = (j - gys)*gxm + xs - gxs; 
-      f[U(row)]     = x[U(row)];
-      f[V(row)]     = x[V(row)];
-      f[Omega(row)] = x[Omega(row)] - (x[V(row+1)] - x[V(row)])*dhx; 
-      f[Temp(row)]  = x[Temp(row)];
+      f[j][i].u     = x[j][i].u;
+      f[j][i].v     = x[j][i].v;
+      f[j][i].omega = x[j][i].omega - (x[j][i+1].v - x[j][i].v)*dhx; 
+      f[j][i].temp  = x[j][i].temp;
     }
   }
 
   /* Test whether we are on the right edge of the global array */
   if (xinte == mx) {
+    i = mx - 1;
     xinte = xinte - 1;
     /* right edge */ 
     for (j=ys; j<ys+ym; j++) {
-      row = (j - gys)*gxm + xs + xm - gxs - 1; 
-      f[U(row)]     = x[U(row)];
-      f[V(row)]     = x[V(row)];
-      f[Omega(row)] = x[Omega(row)] - (x[V(row)] - x[V(row-1)])*dhx; 
-      f[Temp(row)]  = x[Temp(row)] - (double)(grashof>0);
+      f[j][i].u     = x[j][i].u;
+      f[j][i].v     = x[j][i].v;
+      f[j][i].omega = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx; 
+      f[j][i].temp  = x[j][i].temp - (double)(grashof>0);
     }
   }
 
   /* Compute over the interior points */
   for (j=yints; j<yinte; j++) {
-    row = (j - gys)*gxm + xints - gxs - 1; 
     for (i=xints; i<xinte; i++) {
-      row++;
 
 	/*
 	  convective coefficients for upwinding
         */
-	vx = x[U(row)]; avx = PetscAbsScalar(vx);
+	vx = x[j][i].u; avx = PetscAbsScalar(vx);
         vxp = p5*(vx+avx); vxm = p5*(vx-avx);
-	vy = x[V(row)]; avy = PetscAbsScalar(vy);
+	vy = x[j][i].v; avy = PetscAbsScalar(vy);
         vyp = p5*(vy+avy); vym = p5*(vy-avy);
 
 	/* U velocity */
-        u          = x[U(row)];
-        uxx        = (two*u - x[U(row-1)] - x[U(row+1)])*hydhx;
-        uyy        = (two*u - x[U(row-gxm)] - x[U(row+gxm)])*hxdhy;
-        f[U(row)]  = uxx + uyy - p5*(x[Omega(row+gxm)]-x[Omega(row-gxm)])*hx;
+        u          = x[j][i].u;
+        uxx        = (two*u - x[j][i-1].u - x[j][i+1].u)*hydhx;
+        uyy        = (two*u - x[j-1][i].u - x[j+1][i].u)*hxdhy;
+        f[j][i].u  = uxx + uyy - p5*(x[j+1][i].omega-x[j-1][i].omega)*hx;
 
 	/* V velocity */
-        u          = x[V(row)];
-        uxx        = (two*u - x[V(row-1)] - x[V(row+1)])*hydhx;
-        uyy        = (two*u - x[V(row-gxm)] - x[V(row+gxm)])*hxdhy;
-        f[V(row)]  = uxx + uyy + p5*(x[Omega(row+1)]-x[Omega(row-1)])*hy;
+        u          = x[j][i].v;
+        uxx        = (two*u - x[j][i-1].v - x[j][i+1].v)*hydhx;
+        uyy        = (two*u - x[j-1][i].v - x[j+1][i].v)*hxdhy;
+        f[j][i].v  = uxx + uyy + p5*(x[j][i+1].omega-x[j][i-1].omega)*hy;
 
 	/* Omega */
-        u          = x[Omega(row)];
-        uxx        = (two*u - x[Omega(row-1)] - x[Omega(row+1)])*hydhx;
-        uyy        = (two*u - x[Omega(row-gxm)] - x[Omega(row+gxm)])*hxdhy;
-	f[Omega(row)] = uxx + uyy + 
-			(vxp*(u - x[Omega(row-1)]) +
-			  vxm*(x[Omega(row+1)] - u)) * hy +
-			(vyp*(u - x[Omega(row-gxm)]) +
-			  vym*(x[Omega(row+gxm)] - u)) * hx -
-			p5 * grashof * (x[Temp(row+1)] - x[Temp(row-1)]) * hy;
+        u          = x[j][i].omega;
+        uxx        = (two*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
+        uyy        = (two*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;
+	f[j][i].omega = uxx + uyy + 
+			(vxp*(u - x[j][i-1].omega) +
+			  vxm*(x[j][i+1].omega - u)) * hy +
+			(vyp*(u - x[j-1][i].omega) +
+			  vym*(x[j+1][i].omega - u)) * hx -
+			p5 * grashof * (x[j][i+1].temp - x[j][i-1].temp) * hy;
 
         /* Temperature */
-        u             = x[Temp(row)];
-        uxx           = (two*u - x[Temp(row-1)] - x[Temp(row+1)])*hydhx;
-        uyy           = (two*u - x[Temp(row-gxm)] - x[Temp(row+gxm)])*hxdhy;
-	f[Temp(row)] =  uxx + uyy  + prandtl * (
-			(vxp*(u - x[Temp(row-1)]) +
-			  vxm*(x[Temp(row+1)] - u)) * hy +
-		        (vyp*(u - x[Temp(row-gxm)]) +
-		       	  vym*(x[Temp(row+gxm)] - u)) * hx);
+        u             = x[j][i].temp;
+        uxx           = (two*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
+        uyy           = (two*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
+	f[j][i].temp =  uxx + uyy  + prandtl * (
+			(vxp*(u - x[j][j-1].temp) +
+			  vxm*(x[j][i+1].temp - u)) * hy +
+		        (vyp*(u - x[j-1][i].temp) +
+		       	  vym*(x[j+1][i].temp - u)) * hx);
     }
   }
 
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(localF,&f);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
 
-  /*
-     Insert values into global vector
-  */
-  ierr = DALocalToGlobal(da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector((DA)dmmg->dm,&localF);CHKERRQ(ierr);
+  VecView(F,PETSC_VIEWER_STDOUT_WORLD);
 
   /*
      Flop count (multiply-adds are counted as 2 operations)
