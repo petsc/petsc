@@ -81,6 +81,20 @@ class Project:
     '''Sets the path for the matlab directory for this project'''
     self.matlabPath = path
 
+class ArgumentPath (base.Base):
+  '''This class represents a relocatable path based upon an argument in RDict
+     - If "path" is given it is appended to the argument value'''
+  def __init__(self, key, path = None):
+    base.Base.__init__(self)
+    self.key  = key
+    self.path = path
+    return
+
+  def __str__(self):
+    if self.path is None:
+      return self.argDB[self.key]
+    return os.path.join(self.argDB[key], self.path)
+
 class ProjectPath (base.Base):
   '''This class represents a relocatable path based upon a project root. If not project is specified,
 then the path remains unchanged. If an absolute path is given which conflicts with the project root,
