@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.39 1996/04/03 19:35:33 curfman Exp balay $";
+static char vcid[] = "$Id: umls.c,v 1.40 1996/07/15 18:05:32 balay Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -73,7 +73,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
           neP->gamma_factor,neP->gamma);
 #else
         PLogInfo(snes,"  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g\n",
-          real(neP->gamma_factor),real(neP->gamma));
+          neP->gamma_factor,real(neP->gamma));
 #endif
         ierr = MatShift(&neP->gamma,snes->jacobian); CHKERRQ(ierr);
         if ((snes->jacobian_pre != snes->jacobian) && (flg != SAME_PRECONDITIONER))
