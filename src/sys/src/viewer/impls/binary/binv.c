@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.17 1996/03/18 00:42:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: binv.c,v 1.18 1996/04/01 03:12:06 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -62,8 +62,8 @@ $    BINARY_WRONLY - open existing file for binary output
 
 .keywords: binary, file, open, input, output
 
-.seealso: ViewerFileOpenASCII(), ViewerDestroy(), VecView(), 
-          MatView(), VecLoad(), MatLoad(), ViewerBinaryGetDescriptor()
+.seealso: ViewerFileOpenASCII(), ViewerFileSetFormat(), ViewerDestroy(),
+          VecView(), MatView(), VecLoad(), MatLoad(), ViewerBinaryGetDescriptor()
 @*/
 int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *binv)
 {  
