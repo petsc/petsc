@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.49 2000/06/30 03:11:57 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.50 2000/07/03 16:03:08 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -417,14 +417,25 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
 {
   int         i,n = mapping->n,ierr,Ng,ng = PETSC_DECIDE,max = 0,*lindices = mapping->indices;
   int         size,rank,*nprocs,*owner,nsends,*sends,j,*starts,*work,nmax,nrecvs,*recvs,proc;
-  int         tag,cnt,*len,*source,imdex,scale,*ownedsenders,*nownedsenders,rstart,nowned;
+  int         tag1,tag2,tag3,cnt,*len,*source,imdex,scale,*ownedsenders,*nownedsenders,rstart,nowned;
   int         node,nownedm,nt,*sends2,nsends2,*starts2,*lens2,*dest,nrecvs2,*starts3,*recvs2,k,*bprocs,*tmp;
+  int         first_procs,first_numprocs,*first_indices;
   MPI_Request *recv_waits,*send_waits;
   MPI_Status  recv_status,*send_status,*recv_statuses;
   MPI_Comm    comm = mapping->comm;
   PetscTruth  debug = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (size == 1) {
+    *nproc    = 0;
+    *procs    = PETSC_NULL;
+    *numprocs = PETSC_NULL;
+    *indices  = PETSC_NULL;
+    PetscFunctionReturn(0);
+  }
+
   ierr = OptionsHasName(PETSC_NULL,"-islocaltoglobalmappinggetinfo_debug",&debug);CHKERRQ(ierr);
 
   /*
@@ -441,7 +452,9 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
     nontrivial locally owned node - node that is not in the interior (i.e. has more than one
            local subdomain
   */
-  ierr = PetscObjectGetNewTag((PetscObject)mapping,&tag);CHKERRQ(ierr);
+  ierr = PetscObjectGetNewTag((PetscObject)mapping,&tag1);CHKERRQ(ierr);
+  ierr = PetscObjectGetNewTag((PetscObject)mapping,&tag2);CHKERRQ(ierr);
+  ierr = PetscObjectGetNewTag((PetscObject)mapping,&tag3);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
     if (lindices[i] > max) max = lindices[i];
@@ -481,7 +494,7 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   recvs      = (int*)PetscMalloc((2*nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(recvs);
   recv_waits = (MPI_Request*)PetscMalloc((nrecvs+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
   for (i=0; i<nrecvs; i++) {
-    ierr = MPI_Irecv(recvs+2*nmax*i,2*nmax,MPI_INT,MPI_ANY_SOURCE,tag,comm,recv_waits+i);CHKERRQ(ierr);
+    ierr = MPI_Irecv(recvs+2*nmax*i,2*nmax,MPI_INT,MPI_ANY_SOURCE,tag1,comm,recv_waits+i);CHKERRQ(ierr);
   }
 
   /* pack messages containing lists of local nodes to owners */
@@ -503,7 +516,7 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   cnt = 0;
   for (i=0; i<size; i++) {
     if (nprocs[i]) {
-      ierr      = MPI_Isend(sends+starts[i],2*nprocs[i],MPI_INT,i,tag,comm,send_waits+cnt);CHKERRQ(ierr);
+      ierr      = MPI_Isend(sends+starts[i],2*nprocs[i],MPI_INT,i,tag1,comm,send_waits+cnt);CHKERRQ(ierr);
       dest[cnt] = i;
       cnt++;
     }
@@ -628,7 +641,7 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
 
   /* send the message lengths */
   for (i=0; i<nsends2; i++) {
-    ierr = MPI_Send(&nprocs[i],1,MPI_INT,source[i],tag-1,comm);CHKERRQ(ierr);
+    ierr = MPI_Send(&nprocs[i],1,MPI_INT,source[i],tag2,comm);CHKERRQ(ierr);
   }
 
   /* receive the message lengths */
@@ -637,7 +650,7 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   starts3 = (int*)PetscMalloc((nrecvs2+1)*sizeof(int));CHKPTRQ(starts3);  
   nt      = 0;
   for (i=0; i<nrecvs2; i++) {
-    ierr =  MPI_Recv(&lens2[i],1,MPI_INT,dest[i],tag-1,comm,&recv_status);CHKERRQ(ierr);
+    ierr =  MPI_Recv(&lens2[i],1,MPI_INT,dest[i],tag2,comm,&recv_status);CHKERRQ(ierr);
     nt   += lens2[i];
   }
   starts3[0] = 0;
@@ -647,13 +660,13 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   recvs2     = (int*)PetscMalloc((nt+1)*sizeof(int));CHKPTRQ(recvs2);
   recv_waits = (MPI_Request*)PetscMalloc((nrecvs2+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
   for (i=0; i<nrecvs2; i++) {
-    ierr = MPI_Irecv(recvs2+starts3[i],lens2[i],MPI_INT,dest[i],tag-2,comm,recv_waits+i);CHKERRQ(ierr);
+    ierr = MPI_Irecv(recvs2+starts3[i],lens2[i],MPI_INT,dest[i],tag3,comm,recv_waits+i);CHKERRQ(ierr);
   }
   
   /* send the messages */
   send_waits = (MPI_Request*)PetscMalloc((nsends2+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
   for (i=0; i<nsends2; i++) {
-    ierr = MPI_Isend(sends2+starts2[i],nprocs[i],MPI_INT,source[i],tag-2,comm,send_waits+i);CHKERRQ(ierr);
+    ierr = MPI_Isend(sends2+starts2[i],nprocs[i],MPI_INT,source[i],tag3,comm,send_waits+i);CHKERRQ(ierr);
   }
 
   /* wait on receives */
@@ -768,6 +781,23 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   ierr = PetscFree(recvs);CHKERRQ(ierr);
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
   ierr = PetscFree(sends2);CHKERRQ(ierr);
+
+  /* put the information about myself as the first entry in the list */
+  first_procs    = (*procs)[0];
+  first_numprocs = (*numprocs)[0];
+  first_indices  = (*indices)[0];
+  for (i=0; i<*nproc; i++) {
+    if ((*procs)[i] == rank) {
+      (*procs)[0]    = (*procs)[i];
+      (*numprocs)[0] = (*numprocs)[i];
+      (*indices)[0]  = (*indices)[i];
+      (*procs)[i]    = first_procs; 
+      (*numprocs)[i] = first_numprocs;
+      (*indices)[i]  = first_indices;
+      break;
+    }
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -799,14 +829,17 @@ int ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,int *nproc,
   int ierr,i;
 
   PetscFunctionBegin;
-  ierr = PetscFree(*procs);CHKERRQ(ierr);
-  ierr = PetscFree(*numprocs);CHKERRQ(ierr);
-  for (i=0; i<*nproc; i++) {
-    ierr = PetscFree((*indices)[i]);CHKERRQ(ierr);
+  if (procs) {ierr = PetscFree(*procs);CHKERRQ(ierr);}
+  if (numprocs) {ierr = PetscFree(*numprocs);CHKERRQ(ierr);}
+  if (indices) {
+    for (i=0; i<*nproc; i++) {
+      if ((*indices)[i]) {ierr = PetscFree((*indices)[i]);CHKERRQ(ierr);}
+    }
+    ierr = PetscFree(*indices);CHKERRQ(ierr);
   }
-  ierr = PetscFree(*indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 
 

@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.20 2000/05/05 22:17:21 balay Exp bsmith $*/
+/*$Id: redundant.c,v 1.21 2000/07/03 15:41:06 bsmith Exp bsmith $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -249,7 +249,6 @@ EXTERN_C_BEGIN
 int PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
-  int          ierr;
 
   PetscFunctionBegin;
   *innerpc = red->pc;
@@ -293,7 +292,6 @@ EXTERN_C_BEGIN
 int PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
-  int          ierr;
 
   PetscFunctionBegin;
   if (mat)  *mat  = red->mats[0];
