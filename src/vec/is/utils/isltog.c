@@ -3,6 +3,8 @@
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
 
+EXTERN int VecInitializePackage(char *);
+
 #undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingGetSize"
 /*@C
@@ -137,6 +139,10 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
   PetscFunctionBegin;
   PetscValidIntPointer(indices);
   PetscValidPointer(mapping);
+  *mapping = PETSC_NULL;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+#endif
 
   PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_COOKIE,0,"ISLocalToGlobalMapping",
                     cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);

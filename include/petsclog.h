@@ -101,6 +101,7 @@ EXTERN int PetscLogStagePush(int);
 EXTERN int PetscLogStagePop(void);
 EXTERN int PetscLogStageSetVisible(int, PetscTruth);
 EXTERN int PetscLogStageGetVisible(int, PetscTruth *);
+EXTERN int PetscLogStageGetId(const char [], int *);
 /* Event functions */
 EXTERN int PetscLogEventRegister(int *, const char[], const char[], int);
 EXTERN int PetscLogEventActivate(int);
@@ -416,18 +417,29 @@ EXTERN int PetscLogObjectState(PetscObject,const char[],...);
 extern PetscTruth PetscPreLoadingUsed;       /* true if we are or have done preloading */
 extern PetscTruth PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
 
-#define PreLoadBegin(flag,name) {PetscTruth PreLoading = flag; int PreLoadMax,PreLoadIt,_3_ierr;\
+#define PreLoadBegin(flag,name) {PetscTruth PreLoading = flag; \
+                                 int        PreLoadMax,PreLoadIt,_stageNum,_3_ierr;\
                                  _3_ierr = PetscOptionsGetLogical(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(_3_ierr);\
                                  PreLoadMax = (int)(PreLoading);PetscPreLoadingUsed = PreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
                                  for (PreLoadIt=0; PreLoadIt<=PreLoadMax; PreLoadIt++) {\
                                    PetscPreLoadingOn = PreLoading;\
                                    _3_ierr = PetscBarrier(PETSC_NULL);CHKERRQ(_3_ierr);\
-                                   _3_ierr = PetscLogStagePush(PETSC_DETERMINE);CHKERRQ(_3_ierr);\
-                                   _3_ierr = PetscLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(_3_ierr);\
-                                   _3_ierr = PetscLogStagePrint(PETSC_DETERMINE,(PetscTruth)(!PreLoadMax || PreLoadIt));
+                                   if (PreLoadIt>0) {\
+                                     _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
+                                   } else {\
+                                     _3_ierr = PetscLogStageRegister(&_stageNum,name);CHKERRQ(_3_ierr);\
+                                     _3_ierr = PetscLogStageSetVisible(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
+                                   }\
+                                   _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
+
 #define PreLoadEnd()               _3_ierr = PetscLogStagePop();CHKERRQ(_3_ierr);PreLoading = PETSC_FALSE;}}
+
 #define PreLoadStage(name)         _3_ierr = PetscLogStagePop();CHKERRQ(_3_ierr);\
-                                   _3_ierr = PetscLogStagePush(PETSC_DETERMINE);CHKERRQ(_3_ierr);\
-                                   _3_ierr = PetscLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(_3_ierr);\
-                                   _3_ierr = PetscLogStagePrint(PETSC_DETERMINE,(PetscTruth)(!PreLoadMax || PreLoadIt));
+                                   if (PreLoadIt>0) {\
+                                     _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
+                                   } else {\
+                                     _3_ierr = PetscLogStageRegister(&_stageNum,name);CHKERRQ(_3_ierr);\
+                                     _3_ierr = PetscLogStageSetVisible(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
+                                   }\
+                                   _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
 #endif

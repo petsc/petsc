@@ -97,6 +97,11 @@ int PetscMapCreateMPI(MPI_Comm comm,int n,int N,PetscMap *mm)
   PetscMap m;
 
   PetscFunctionBegin;
+  PetscValidPointer(mm);
+  *mm = PETSC_NULL;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+#endif
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

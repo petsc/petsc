@@ -35,6 +35,7 @@ int main(int argc,char **args)
   int          I,J,ldim,ierr,low,high,iglobal,Istart,Iend;
   int          i,j,m = 3,n = 2,rank,size,its;
   PetscTruth   mat_nonsymmetric;
+  int          stages[2];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -52,14 +53,14 @@ int main(int argc,char **args)
      Use the runtime option -log_summary for a printout of performance
      statistics at the program's conlusion.
   */
-  ierr = PetscLogStageRegister(0,"Original Solve");CHKERRQ(ierr);
-  ierr = PetscLogStageRegister(1,"Second Solve");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister(&stages[0],"Original Solve");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister(&stages[1],"Second Solve");CHKERRQ(ierr);
 
   /* -------------- Stage 0: Solve Original System ---------------------- */
   /* 
      Indicate to PETSc profiling that we're beginning the first stage
   */
-  ierr = PetscLogStagePush(0);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
 
   /* 
      Create parallel matrix, specifying only its global dimensions.
@@ -206,7 +207,7 @@ int main(int argc,char **args)
      PetscLogStagePush().
   */
   ierr = PetscLogStagePop();CHKERRQ(ierr);
-  ierr = PetscLogStagePush(1);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
 
   /* 
      Initialize all matrix entries to zero.  MatZeroEntries() retains the

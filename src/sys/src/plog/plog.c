@@ -504,6 +504,34 @@ int PetscLogStageGetVisible(int stage, PetscTruth *isVisible)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogStageGetId"
+/*@C
+  PetscLogStageGetId - Returns the stage id when given the stage name.
+
+  Not Collective 
+
+  Input Parameter:
+. name  - The stage name
+
+  Output Parameter:
+. stage - The stage
+
+  Level: intermediate
+
+.seealso: PetscLogStagePush(), PetscLogStagePop(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
+@*/
+int PetscLogStageGetId(const char name[], int *stage)
+{
+  StageLog stageLog;
+  int      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
+  ierr = StageLogGetStage(stageLog, name, stage);                                                         CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*------------------------------------------------ Event Functions --------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "PetscLogEventRegister"

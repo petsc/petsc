@@ -41,6 +41,7 @@ int main(int argc,char **args)
   int          CHECK_ERROR;    /* event number for error checking */
   int          ldim,ierr,low,high,iglobal,Istart,Iend,Istart2,Iend2;
   int          I,J,i,j,m = 3,n = 2,rank,size,its,t;
+  int          stages[3];
   PetscTruth   flg;
   PetscScalar  v;
 
@@ -54,9 +55,9 @@ int main(int argc,char **args)
   /* 
      Register various stages for profiling
   */
-  ierr = PetscLogStageRegister(0,"Prelim setup");CHKERRQ(ierr);
-  ierr = PetscLogStageRegister(1,"Linear System 1");CHKERRQ(ierr);
-  ierr = PetscLogStageRegister(2,"Linear System 2");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister(&stages[0],"Prelim setup");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister(&stages[1],"Linear System 1");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister(&stages[2],"Linear System 2");CHKERRQ(ierr);
 
   /* 
      Register a user-defined event for profiling (error checking).
@@ -68,7 +69,7 @@ int main(int argc,char **args)
                         Preliminary Setup
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscLogStagePush(0);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
 
   /* 
      Create data structures for first linear system.
@@ -166,7 +167,7 @@ int main(int argc,char **args)
     /*
        Begin profiling stage #1
     */
-    ierr = PetscLogStagePush(1);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
 
     /* 
        Initialize all matrix entries to zero.  MatZeroEntries() retains
@@ -271,7 +272,7 @@ int main(int argc,char **args)
        Conclude profiling stage #1; begin profiling stage #2
     */
     ierr = PetscLogStagePop();CHKERRQ(ierr);
-    ierr = PetscLogStagePush(2);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stages[2]);CHKERRQ(ierr);
 
     /*
        Initialize all matrix entries to zero

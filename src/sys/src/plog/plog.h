@@ -83,6 +83,7 @@ EXTERN int StageLogSetVisible(StageLog, int, PetscTruth);
 EXTERN int StageLogGetVisible(StageLog, int, PetscTruth *);
 EXTERN int StageLogGetClassLog(StageLog, int, ClassLog *);
 EXTERN int StageLogGetEventLog(StageLog, int, EventLog *);
+EXTERN int StageLogGetStage(StageLog, const char [], int *);
 /* Stack Functions */
 EXTERN int StackCreate(IntStack *);
 EXTERN int StackDestroy(IntStack);

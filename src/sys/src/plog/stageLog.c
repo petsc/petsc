@@ -429,6 +429,43 @@ int StageLogGetVisible(StageLog stageLog, int stage, PetscTruth *isVisible)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "StageLogGetStage"
+/*@C
+  StageLogGetStage - This function the stage id given the stage name.
+
+  Not Collective
+
+  Input Parameters:
++ stageLog - The StageLog
+- name     - The stage name
+
+  Output Parameter:
+. stage    - The stage id
+
+  Level: intermediate
+
+.keywords: log, stage
+.seealso: StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
+@*/
+int StageLogGetStage(StageLog stageLog, const char name[], int *stage)
+{
+  PetscTruth match;
+  int        s;
+  int        ierr;
+
+  PetscFunctionBegin;
+  PetscValidCharPointer(name);
+  *stage = -1;
+  for(s = 0; s < stageLog->numStages; s++) {
+    ierr = PetscStrcasecmp(stageLog->stageInfo[s].name, name, &match);                                    CHKERRQ(ierr);
+    if (match == PETSC_TRUE) break;
+  }
+  if (s == stageLog->numStages) SETERRQ1(PETSC_ERR_ARG_WRONG, "No stage named %s", name);
+  *stage = s;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "StageLogCreate"
 /*
   StageLogCreate - This creates a StageLog object.
