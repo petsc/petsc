@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.52 1999/01/27 19:49:35 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.53 1999/03/14 22:27:33 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -498,9 +498,8 @@ int Monitor(SNES snes,int its,double fnorm,void *ctx)
 #undef __FUNC__
 #define __FUNC__ "StepCheck"
 /*
-   StepCheck - Optional user-defined routine that checks the validity
-   of candidate steps of a line search method.  Set by
-   SNESSetLineSearchCheck().
+   StepCheck - Optional user-defined routine that checks the validity of
+   candidate steps of a line search method.  Set by SNESSetLineSearchCheck().
 
    Input Parameters:
    snes - the SNES context
@@ -521,31 +520,35 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
   Scalar         *xa, *xa_last, rdiff;
 
   *flag = PETSC_FALSE;
-  ierr = SNESGetApplicationContext(snes,(void*)&user); CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration = %d with tolerance %g\n",iter,check->tolerance);
 
-  /* Access local array data */
-  ierr = VecGetArray(check->last_step,&xa_last); CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&ldim); CHKERRQ(ierr);
+  if (iter > 1) {
+    ierr = SNESGetApplicationContext(snes,(void*)&user); CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration = %d with tolerance %g\n",iter,check->tolerance);
 
-  /* 
-     If we fail the user-defined check for validity of the candidate iterate,
-     then modify the iterate as we like.  (Note that the particular modification 
-     below is intended simply to demonstrate how to manipulate this data, not
-     as a meaningful or even appropriate choice.)
-  */
-  for (i=0; i<ldim; i++) {
-    rdiff = PetscAbsScalar((xa[i] - xa_last[i])/xa[i]);
-    if (rdiff > check->tolerance) {
-      xa[i] = (xa[i] + xa_last[i])/2.0;
-      *flag = PETSC_TRUE;
-      PetscPrintf(PETSC_COMM_WORLD,"  Altering entry = %i\n",i);
+    /* Access local array data */
+    ierr = VecGetArray(check->last_step,&xa_last); CHKERRQ(ierr);
+    ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
+    ierr = VecGetLocalSize(x,&ldim); CHKERRQ(ierr);
+
+    /* 
+       If we fail the user-defined check for validity of the candidate iterate,
+       then modify the iterate as we like.  (Note that the particular modification 
+       below is intended simply to demonstrate how to manipulate this data, not
+       as a meaningful or even appropriate choice.)
+    */
+    for (i=0; i<ldim; i++) {
+      rdiff = PetscAbsScalar((xa[i] - xa_last[i])/xa[i]);
+      if (rdiff > check->tolerance) {
+        xa[i] = (xa[i] + xa_last[i])/2.0;
+        *flag = PETSC_TRUE;
+        PetscPrintf(PETSC_COMM_WORLD,"  Altering entry = %i\n",i);
+      }
     }
+    ierr = VecRestoreArray(check->last_step,&xa_last); CHKERRQ(ierr);
+    ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(check->last_step,&xa_last); CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
+  ierr = VecCopy(x,check->last_step); CHKERRQ(ierr);
 
   return 0;
 }
