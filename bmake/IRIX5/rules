@@ -1,35 +1,70 @@
-# $Id: base,v 1.41 1998/06/13 22:53:51 balay Exp balay $ 
+# $Id: base,v 1.42 1998/06/13 23:04:26 balay Exp balay $ 
+#
+#     See the file .... for a complete explanation of all these fields
+#
+#     For SGI 64 bit machines use the PETSC_ARCH IRIX64
+#
+LD               = ld -32
+AR               = ar
+RM               = rm -f
+SHELL            = /bin/sh
+RANLIB	         = true
+OMAKE            = make
+SHELL            = /bin/sh
+
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = cc -32 -woff 3262,3666
+C_FC             = f77 -32
+C_CLINKER        = cc  -32 -rpath ${LDIR}:${DYLIBPATH}
+C_FLINKER        = f77 -32 -rpath ${LDIR}:${DYLIBPATH}
+C_CCV            = unknown
+C_SYS_LIB        = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g
+G_FOPTFLAGS      = -g
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O2 -Olimit 6000 
+O_FOPTFLAGS      = -O2
+# ########################## C++ compiler ##################################
+#
+CC               = CC -32
+CLINKER          = CC -32 -rpath ${LDIR}:${DYLIBPATH}  
+FLINKER          = CC -32 -rpath ${LDIR}:${DYLIBPATH}
+SYS_LIB          = -lcomplex -lfpe -lsun -lF77 -lU77 -lI77 -lisam
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g 
+GCXX_FOPTFLAGS   = -g
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O -Olimit 6000
+OCXX_FOPTFLAGS   = -O
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g
+GCOMP_FOPTFLAGS  = -g
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O -Olimit 6000 
+OCOMP_FOPTFLAGS  = -O
+# ########################### PETSc install options ###########################
+#
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+O_PETSCFLAGS     = -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_O  -DUSE_PETSC_LOG 
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK  
+OCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O  
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK -DUSE_PETSC_COMPLEX -DUSE_FORTRAN_KERNELS \
+	           -D_NON_TEMPLATE_COMPLEX 
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX -DUSE_FORTRAN_KERNELS -D_NON_TEMPLATE_COMPLEX 
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
 
 PARCH    = IRIX5
-CC       = cc -32
-#
-#  Indicates the version of the compiler you are using; if you do not know
-#  how to get the version number then use: unknown
-#
-CCV      = unknown
-#
-FC       = f77 -32
-AR       = ar
-RM       = rm -f
-#
-# the  following is used to convert petsclib into dynamic libraries 
-#
-#RANLIB   = ${PETSC_DIR}/bmake/${PETSC_ARCH}/make_dso_IRIX ${LDIR}
-RANLIB	 = true
-OMAKE    = make
-SHELL    = /bin/sh
-#
-# -rpath is required to specify the location of any dynamic libraries
-# which are not found in the standard locations (/lib:/usr/lib:) etc
-#
-CLINKER  = cc  -32 ${COPTFLAGS} -rpath ${LDIR}:${DYLIBPATH}
-FLINKER  = f77 -32 ${FOPTFLAGS} -rpath ${LDIR}:${DYLIBPATH}
-
-SYS_LIB  = -lfpe -lsun 
-#
-#  For SGI 64 bit machines use the PETSC_ARCH IRIX64
-#
-SHELL    = /bin/sh
 
 include ${PETSC_DIR}/bmake/common
 
