@@ -1,4 +1,4 @@
-/*$Id: user.h,v 1.8 2000/01/24 03:57:48 bsmith Exp bsmith $*/
+/*$Id: user.h,v 1.9 2000/04/26 01:30:39 bsmith Exp kaushik $*/
 #include "petsc.h" 
                   
 #define max_colors  200
@@ -90,6 +90,7 @@ typedef struct gxy{                            /* GRID STRUCTURE             */
    REAL *us, *vs, *ws, *as;                   /* For linearizing viscous    */
    REAL *phi;                                 /* Flux limiter               */
    REAL *rxy;                                 /*                            */
+   REAL *resd;                                /*                            */
 
    int  *icoefup;                             /* Surrounding nodes          */
    REAL *rcoefup;                             /* Coefficients               */

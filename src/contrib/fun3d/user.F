@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.18 2000/01/27 16:33:35 bsmith Exp kaushik $
+c  $Id: user.F,v 1.19 2000/04/30 17:00:00 kaushik Exp kaushik $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -1402,7 +1402,7 @@ c=============================================================================
      &                grad,
      &                evec, qvec,
      &                xyz,
-     &                resvec,
+     &                resvec,resd,
      &                xyzn,
      &                sxn, syn, szn,
      &                vxn, vyn, vzn,
@@ -1467,6 +1467,7 @@ c=============================================================================
       Scalar qvec(4,nvertices) 
       Scalar grad(3,4,nvertices) 
       Scalar resvec(4,nnodes)
+      Scalar resd(4,nnodes)
       Scalar xyz(3,nvertices)
       Scalar xyzn(4,nedge)
       integer evec(2,nedge)
@@ -1487,6 +1488,7 @@ c=============================================================================
       Scalar qvec(nvertices,4) 
       Scalar grad(nvertices,4,3) 
       Scalar resvec(nnodes,4)
+      Scalar resd(nnodes,4)
       Scalar xyz(nvertices,3)
       Scalar xyzn(nedge,4)
       integer evec(nedge,2)
@@ -1504,14 +1506,39 @@ c=============================================================================
 #define ra(i) xyzn(i,4)
 #define eptr(i,j) evec(i,j)
 #endif
+#if defined(_OPENMP)
+       integer my_thread_id,omp_get_thread_num
+#undef res(a,b)
+#define res(a,b) resd(a,b)
+       call PetscMemzero(resd,8*4*nnodes)
+#endif
 
-c Loop over all the faces and calculate a flux 
-c
        flops = 0
        second = 1.0d0
 c      if(ntt.le.nitfo)second = 0.0
 c      print *, 'Second is' , second
-       do 1010 n = 1, nedge
+c Loop over all the faces and calculate flux 
+c
+!$omp  parallel default(shared) private(n,node1,node2,xmean,ymean,
+!$omp1 zmean,xnorm,ynorm,znorm,rlen,dot,x1,y1,z1,size,x2,y2,z2,rx,
+!$omp2 ry,rz,pL,uL,vL,wL,ubarL,pR,uR,vR,wR,ubarR,p,u,v,w,ubar,phi1,
+!$omp3 phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9,c2,c,eig1,eig2,eig3,
+!$omp4 eig4,dp,du,dv,dw,ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4,r11,r21,
+!$omp5 r31,r41,r12,r22,r32,r42,r13,r23,r33,r43,r14,r24,r34,r44,t1,t2,
+!$omp6 t3,t4,fluxp1,fluxp2,fluxp3,fluxp4,fluxm1,fluxm2,fluxm3,fluxm4,
+!$omp7 res1,res2,res3,res4) firstprivate(resd)
+c!$omp8 private(my_thread_id)
+c!$omp1 shared(evec,qvec,resvec,xyz,xyzn,grad,nedge,nnodes,second,flops,
+c!$omp2 title,beta,alpha,Re,dt,tot,res0,resc,ntt,mseq,ivisc,irest,icyc,
+c!$omp3 ihane,ntturb,gamma,gm1,gp1,gm1g,gp1g,ggm1,p0,rho0,c0,u0,v0,w0,
+c!$omp4 et0,h0,pt0,rms,clw,cdw,cmw,xres,cfl1,cfl2,nsmoth,iflim,
+c!$omp5 itran,nbtran,jupdate,nstage,ncyct,iramp,nitfo)
+c!$      my_thread_id = omp_get_thread_num()
+c!$omp   critical
+c!$      print *, 'My thread id on processor ',irank,' is ',my_thread_id
+c!$omp   end critical
+!$omp   do reduction(+:flops)
+       do n = 1, nedge
         node1 = eptr(n,1)
         node2 = eptr(n,2)
         if ((node1 .le. nnodes).or.(node2 .le. nnodes)) then
@@ -1725,7 +1752,23 @@ c          call PLogFlops(4)
           endif
         endif
 c
- 1010 continue
+      enddo
+!$omp enddo
+!$omp critical (residual_update)
+#if defined(_OPENMP)
+       do n = 1,nnodes
+          resvec(1,n)=resvec(1,n)+res(1,n)
+          resvec(2,n)=resvec(2,n)+res(2,n)
+          resvec(3,n)=resvec(3,n)+res(3,n)
+          resvec(4,n)=resvec(4,n)+res(4,n)
+       enddo
+       flops = flops + 4*nnodes
+c      print *, 'For thread ', omp_get_thread_num(),', n is',n
+#endif
+!$omp end critical (residual_update)
+!$omp end parallel  
+#undef res(a,b)
+#define res(a,b) resvec(a,b)
   
 c     c68 = 6./8.
 c     c18 = 1./8.
@@ -2608,7 +2651,7 @@ c=====================================================================72
      3                  sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
      4                  xyzn,qvec,cdt,xyz,area,
      5                  grad,
-     5                  resvec,
+     5                  resvec,resd,
      6                  turbre,slen,c2n,c2e,
      7                  us,vs,as,phi,
      &                  amut,ires,
@@ -2639,7 +2682,7 @@ c
       Scalar xyz(nvertices,3),area(nvertices)
       Scalar xyzn(nedge,4)
       Scalar turbre(1),slen(1)
-      Scalar qvec(nvertices,4)
+      Scalar qvec(nvertices,4),resd(4,nnodes)
       Scalar phi(nvertices,4)
       Scalar cdt(nvertices)
       Scalar grad(3,4,nvertices)
@@ -2758,7 +2801,7 @@ c       call PLogEventBegin(flux_event,0,0,0,0,ierr)
      &            nvfacet,f2ntv,nvbound,
      &            nffacet,f2ntf,nfbound,
      &            grad,evec,qvec,
-     &            xyz,resvec,xyzn,sxn,syn,szn,vxn,vyn,vzn,
+     &            xyz,resvec,resd,xyzn,sxn,syn,szn,vxn,vyn,vzn,
      &            fxn,fyn,fzn,phi,irank,nvertices)
 c        call PLogEventEnd(flux_event,0,0,0,0,ierr)
 c /*'

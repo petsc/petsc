@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.30 2000/04/26 02:53:41 bsmith Exp kaushik $";*/
+/* "$Id: flow.c,v 1.31 2000/05/01 05:41:05 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -301,7 +301,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
               qnode,        grid->cdt,
               grid->xyz,    grid->area,
               grad,
-              res,          
+              res,  grid->resd,         
               grid->turbre,
               grid->slen,   grid->c2n,
               grid->c2e,
