@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.21 1999/06/02 21:38:50 balay Exp balay $ 
+# $Id: solid.make,v 1.22 1999/06/15 19:16:42 balay Exp balay $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.24"
@@ -68,12 +68,18 @@ set -x
 # solaris
 arch=solaris
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh -n fire "cd $hme/$src_dir; $make BOPT=g"
-rsh -n fire "cd $hme/$src_dir; $make BOPT=O"
-rsh -n fire "cd $hme/$src_dir; $make BOPT=g_c++"
-#rsh -n fire "cd $hme/$src_dir; $make BOPT=O_c++"
-rsh -n fire "cd $hme/$src_dir; $make BOPT=g_complex"
-rsh -n fire "cd $hme/$src_dir; $make BOPT=O_complex"
+rsh -n maple "cd $hme/$src_dir; $make BOPT=g"
+rsh -n maple "cd $hme/$src_dir; $make BOPT=O"
+rsh -n maple "cd $hme/$src_dir; $make BOPT=g_c++"
+#rsh -n maple "cd $hme/$src_dir; $make BOPT=O_c++"
+rsh -n maple "cd $hme/$src_dir; $make BOPT=g_complex"
+rsh -n maple "cd $hme/$src_dir; $make BOPT=O_complex"
+
+# solaris_uni
+arch=solaris_uni
+make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
+rsh -n maple "cd $hme/$src_dir; $make BOPT=g"
+
 
 arch=IRIX64
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action deleteshared shared"
