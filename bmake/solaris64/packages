@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.13 1997/09/11 23:00:38 balay Exp bsmith $ 
+# $Id: base.site,v 1.14 1997/11/03 04:39:47 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,7 +10,7 @@
 # FC_LIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes).  
 #
-FC_LIB         = -L/opt/SUNWspro/SC4.0/lib -lF77 -lM77 -lsunmath
+FC_LIB         = -L/opt/SUNWspro/SC4.0/lib -lF77 -lM77 -lsunmath 
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
@@ -19,8 +19,10 @@ FC_LIB         = -L/opt/SUNWspro/SC4.0/lib -lF77 -lM77 -lsunmath
 # can use -lsunperf or /opt/SUNWspro/SC4.0/lib/libsunperf.a below instead of
 # installing BLAS and LAPACK yourself.
 #
-BLAS_LIB       =  /home/bsmith/libraries/blaslapack/blas_solaris.a  $(FC_LIB)
-LAPACK_LIB     =  /home/bsmith/libraries/blaslapack/lapack_solaris.a
+#BLAS_LIB       =  /home/bsmith/libraries/blaslapack/blas_solaris.a  $(FC_LIB)
+#LAPACK_LIB     =  /home/bsmith/libraries/blaslapack/lapack_solaris.a
+BLAS_LIB       =  -lsunperf $(FC_LIB) -lSUNWPro_lic
+
 #
 # Location of X-windows software
 #
