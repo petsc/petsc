@@ -216,12 +216,6 @@ int main(int argc,char **args)
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
   }  
 
-  /* Test MatGetRow(): can only obtain rows associated with the given processor */
-  for (i=rstart; i<rstart+1; i++) {
-    ierr = MatGetRow(sA,i,&ncols,&cols,&vr);CHKERRQ(ierr);
-    ierr = MatRestoreRow(sA,i,&ncols,&cols,&vr);CHKERRQ(ierr);
-  } 
-
   /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sA,x,x);CHKERRQ(ierr);

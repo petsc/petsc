@@ -379,6 +379,8 @@ EXTERN PetscErrorCode MatDiagonalSet(Mat,Vec,InsertMode);
 EXTERN PetscErrorCode MatEqual(Mat,Mat,PetscTruth*);
 EXTERN PetscErrorCode MatMultEqual(Mat,Mat,PetscInt,PetscTruth*);
 EXTERN PetscErrorCode MatMultAddEqual(Mat,Mat,PetscInt,PetscTruth*);
+EXTERN PetscErrorCode MatMultTransposeEqual(Mat,Mat,PetscInt,PetscTruth*);
+EXTERN PetscErrorCode MatMultTransposeAddEqual(Mat,Mat,PetscInt,PetscTruth*);
 
 EXTERN PetscErrorCode MatNorm(Mat,NormType,PetscReal *);
 EXTERN PetscErrorCode MatZeroEntries(Mat);
