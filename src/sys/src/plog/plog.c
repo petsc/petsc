@@ -1,9 +1,10 @@
-/*$Id: plog.c,v 1.224 1999/12/21 21:36:44 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.225 1999/12/22 03:27:20 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include "ts.h"      /* This include is to define all the PETSc cookies */
+#include "petscmachineinfo.h"
 #if defined(PETSC_HAVE_MPE)
 #include "mpe.h"
 #endif
@@ -1417,9 +1418,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* Open the summary file */
-  if (filename) {
-    ierr = PetscFOpen(comm,filename,"w",&fd);CHKERRQ(ierr);
-  }
+  ierr = PetscFOpen(comm,filename,"w",&fd);CHKERRQ(ierr);
 
   ierr = PetscFPrintf(comm,fd,"************************************************************************************************************************\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"***             WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document            ***\n");CHKERRQ(ierr);
@@ -1700,14 +1699,12 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
 #else
   ierr = PetscFPrintf(comm,fd,"Compiled with double precision matrices (default)\n");CHKERRQ(ierr);
 #endif
-  ierr = PetscFPrintf(comm,fd,"sizeof(int) %d sizeof(long) %d sizeof(void *) %d",sizeof(int),sizeof(long),sizeof(void*));CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"sizeof(short) %d sizeof(int) %d sizeof(long) %d sizeof(void *) %d",sizeof(short),sizeof(int),sizeof(long),sizeof(void*));CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"%s",petscmachineinfo);CHKERRQ(ierr);
 
 
   ierr = PetscFPrintf(comm,fd,"\n");CHKERRQ(ierr);
-  if (filename) {
-    ierr = PetscFClose(comm,fd);CHKERRQ(ierr);
-  }
+  ierr = PetscFClose(comm,fd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
