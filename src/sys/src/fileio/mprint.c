@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.3 1997/12/01 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.4 1997/12/04 19:33:53 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -344,18 +344,30 @@ int PetscErrorPrintf(char *format,...)
   va_list     Argp;
   static  int PetscErrorPrintfCalled = 0;
 
-  PetscFunctionBegin;
+  /*
+      This function does not call PetscFunctionBegin and PetscFunctionReturn() because
+    it may be called by PetscStackView()
+  */
+
   /*
        On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
     different processors, the messages are printed all jumbled up; to try to 
     prevent this we have each processor wait based on their rank
   */
   if (!PetscErrorPrintfCalled) {
-    int rank;
+    int  rank;
+    char arch[10],hostname[64],username[16],pname[256];
+
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     if (rank > 8) rank = 8;
     PetscSleep(rank);
     fprintf(stderr,"%s\n",PETSC_VERSION_NUMBER);
+    PetscGetArchType(arch,10);
+    PetscGetHostName(hostname,64);
+    PetscGetUserName(username,16);
+    PetscGetProgramName(pname,256);
+    fprintf(stderr,"%s on a %s named %s by %s %s",pname,arch,hostname,username,PetscGetDate());
+    fflush(stderr);
     PetscErrorPrintfCalled = 1;
   }
 
@@ -367,5 +379,5 @@ int PetscErrorPrintf(char *format,...)
 #endif
   fflush(stderr);
   va_end( Argp );
-  PetscFunctionReturn(0);
+  return 0;
 }
