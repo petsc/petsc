@@ -524,7 +524,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   out_to->local.n_nonmatching        = 0;
   out_to->local.slots_nonmatching    = 0;
   if (in_to->local.n) {
-    ierr = PetscMalloc2(in_to->local.n,PetscInt,out_to->local.slots,in_from->local.n,PetscInt,&out_from->local.slots);CHKERRQ(ierr);
+    ierr = PetscMalloc2(in_to->local.n,PetscInt,&out_to->local.slots,in_from->local.n,PetscInt,&out_from->local.slots);CHKERRQ(ierr);
     ierr = PetscMemcpy(out_to->local.slots,in_to->local.slots,in_to->local.n*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(out_from->local.slots,in_from->local.slots,in_from->local.n*sizeof(PetscInt));CHKERRQ(ierr);
   } else {
