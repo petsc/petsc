@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.39 1995/09/30 19:28:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.40 1995/10/01 21:52:19 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -8,6 +8,23 @@ static char vcid[] = "$Id: ilu.c,v 1.39 1995/09/30 19:28:25 bsmith Exp bsmith $"
 #include "ilu.h"
 #include "matimpl.h"
 #include "pinclude/pviewer.h"
+
+extern int PCSetUp_ILU_MPIRowbs(PC);
+
+static int (*setups[])(PC) = {0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
+                              PCSetUp_ILU_MPIRowbs,
+#else
+                              0,
+#endif
+                              0,   
+                              0,
+                              0,0,0,0,0};
 
 /*@
    PCILUSetLevels - Sets the number of levels of fill to use.
@@ -85,22 +102,18 @@ static int PCSetUp_ILU(PC pc)
   ierr = MatGetReordering(pc->pmat,ORDER_NATURAL,&ilu->row,&ilu->col); CHKERRQ(ierr);
   if (ilu->row) {PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);}
   if (!pc->setupcalled) {
-#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
-    if (pc->pmat->type == MATMPIROWBS) {
-      ilu->ImplCreate = PCImplCreate_ILU_MPIRowbs;
+    if (setups[pc->pmat->type]) {
+      ierr = (*setups[pc->pmat->type])(pc);
     }
-#endif
-    /* this is a heuristic guess for how much fill there will be */
-    if (ilu->ImplCreate) {ierr = (*ilu->ImplCreate)(pc); CHKERRQ(ierr);}
     f = 1.0 + .5*ilu->levels;
     ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,f,ilu->levels,
-           &ilu->fact); CHKERRQ(ierr);
+                                &ilu->fact); CHKERRQ(ierr);
     PLogObjectParent(pc,ilu->fact);
   }
   else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) { 
     ierr = MatDestroy(ilu->fact); CHKERRQ(ierr);
     ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,2.0,ilu->levels,
-           &ilu->fact); CHKERRQ(ierr);
+                                &ilu->fact); CHKERRQ(ierr);
     PLogObjectParent(pc,ilu->fact);
   }
   ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact); CHKERRQ(ierr);
@@ -111,10 +124,8 @@ static int PCDestroy_ILU(PetscObject obj)
 {
   PC     pc   = (PC) obj;
   PC_ILU *ilu = (PC_ILU*) pc->data;
-  int    ierr;
 
   MatDestroy(ilu->fact);
-  if (ilu->ImplDestroy) {ierr = (*ilu->ImplDestroy)(pc); CHKERRQ(ierr);}
   if (ilu->row && ilu->col && ilu->row != ilu->col) ISDestroy(ilu->row);
   if (ilu->col) ISDestroy(ilu->col);
   PETSCFREE(ilu); 
@@ -141,8 +152,6 @@ int PCCreate_ILU(PC pc)
   ilu->levels    = 0;
   ilu->col       = 0;
   ilu->row       = 0;
-  ilu->ImplCreate  = 0;
-  ilu->ImplDestroy = 0;
   pc->destroy    = PCDestroy_ILU;
   pc->apply      = PCApply_ILU;
   pc->setup      = PCSetUp_ILU;
