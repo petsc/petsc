@@ -5,8 +5,8 @@ configure_options = [
   '--with-cc=gcc',
   '--with-fc=pgf90',
   '--with-cxx=0',
-  '--with-blas-lapack-dir=/home/petsc/soft/linux-rh73-intel/fblaslapack',
-  '--with-mpi-dir=/home/petsc/soft/linux-rh73-gcc-pgf90/mpich-1.2.5'
+  '--download-f-blas-lapack=1',
+  '--download-mpich=1'
   ]
 
 if __name__ == '__main__':

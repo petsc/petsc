@@ -4,7 +4,8 @@
 configure_options = [
   '--with-cc=gcc',
   '--with-fc=ifc',
-  '--with-cxx=0',
+  '--with-cxx=g++',
+  '--with-scalar-type=complex',
   '--with-blas-lapack-dir=/home/petsc/soft/linux-rh73-intel/fblaslapack',
   '--with-mpi=0'
   ]
