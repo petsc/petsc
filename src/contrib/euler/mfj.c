@@ -130,7 +130,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
   double        ovalues[3],values[3], norm, sum, umin, noise;
   Scalar        h, dot, mone = -1.0, *ya, *aa, *dt, one = 1.0, dti;
   Vec           w,U,F;
-  int           ierr, i, j, k, ijkv, ijkx, nc, jkx, dim, ikx;
+  int           ierr, i, j, k, ijkv, ijkx, ndof, jkx, dim, ikx;
   int           xsi, xei, ysi, yei, zsi, zei, mx, my, mz, iter;
   int           xm, ym, zm, xs, ys, zs, xe, ye, ze, ijx;
   Euler         *user;
@@ -143,7 +143,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
   umin = ctx->umin;
   user = (Euler *)ctx->user;
   dt   = user->dt;
-  nc   = user->nc;
+  ndof = user->ndof;
   if (user->bctype != IMPLICIT) 
     SETERRQ(1,1,"Only bctype = IMPLICIT supports matrix-free methods!");
 
@@ -263,7 +263,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
         jkx = (j-ys)*xm + (k-zs)*xm*ym;
         for (i=xsi; i<xei; i++) {
           ijkv = jkx + i-xs;
-          ijkx = nc * ijkv;
+          ijkx = ndof * ijkv;
           dti = one/dt[ijkv];
 	  ya[ijkx]   += aa[ijkx]   * dti;
           ya[ijkx+1] += aa[ijkx+1] * dti;
@@ -284,7 +284,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
           if (j == 0 || j == my-1) {
             jkx = (j-ys)*xm + (k-zs)*xm*ym;
             for (i=xs; i<xe; i++) {
-              ijkx = nc * (jkx + i-xs);
+              ijkx = ndof * (jkx + i-xs);
               ya[ijkx]   = aa[ijkx];
               ya[ijkx+1] = aa[ijkx+1];
               ya[ijkx+2] = aa[ijkx+2];
@@ -297,7 +297,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
           if (i == 0 || i == mx-1) {
             ikx = i-xs + (k-zs)*xm*ym;
             for (j=ys; j<ye; j++) {
-              ijkx = nc * (ikx + (j-ys)*xm);
+              ijkx = ndof * (ikx + (j-ys)*xm);
               ya[ijkx]   = aa[ijkx];
               ya[ijkx+1] = aa[ijkx+1];
               ya[ijkx+2] = aa[ijkx+2];
@@ -314,7 +314,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
           if (i == 0 || i == mx-1) {
             ijx = (j-ys)*xm + i-xs;
             for (k=zs; k<ze; k++) {
-              ijkx = nc * (ijx + (k-zs)*xm*ym);
+              ijkx = ndof * (ijx + (k-zs)*xm*ym);
               ya[ijkx]   = aa[ijkx];
               ya[ijkx+1] = aa[ijkx+1];
               ya[ijkx+2] = aa[ijkx+2];
