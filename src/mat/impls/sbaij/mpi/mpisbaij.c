@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.4 2000/07/17 16:40:34 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.5 2000/07/17 18:41:49 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   
 #include "src/vec/vecimpl.h"
@@ -1077,6 +1077,7 @@ static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
   Mat_MPISBAIJ  *baij = (Mat_MPISBAIJ*)mat->data;
   int          ierr,format,bs = baij->bs,size = baij->size,rank = baij->rank;
   PetscTruth   isascii,isdraw;
+  Viewer       sviewer;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
@@ -1115,7 +1116,8 @@ static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
   } else {
     /* assemble the entire matrix onto first processor. */
     Mat         A;
-    Mat_SeqBAIJ *Aloc;
+    Mat_SeqSBAIJ *Aloc;
+    Mat_SeqBAIJ *Bloc;
     int         M = baij->M,N = baij->N,*ai,*aj,col,i,j,k,*rvals,mbs = baij->mbs;
     MatScalar   *a;
 
@@ -1127,7 +1129,7 @@ static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
     PLogObjectParent(mat,A);
 
     /* copy over the A part */
-    Aloc  = (Mat_SeqBAIJ*)baij->A->data;
+    Aloc  = (Mat_SeqSBAIJ*)baij->A->data;
     ai    = Aloc->i; aj = Aloc->j; a = Aloc->a;
     rvals = (int*)PetscMalloc(bs*sizeof(int));CHKPTRQ(rvals);
 
@@ -1143,8 +1145,8 @@ static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
       }
     } 
     /* copy over the B part */
-    Aloc = (Mat_SeqBAIJ*)baij->B->data;
-    ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
+    Bloc = (Mat_SeqBAIJ*)baij->B->data;
+    ai = Bloc->i; aj = Bloc->j; a = Bloc->a;
     for (i=0; i<mbs; i++) {
       rvals[0] = bs*(baij->rstart + i);
       for (j=1; j<bs; j++) { rvals[j] = rvals[j-1] + 1; }
@@ -1163,12 +1165,11 @@ static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
        Everyone has to call to draw the matrix since the graphics waits are
        synchronized across all processors that share the Draw object
     */
+    ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
-      Viewer sviewer;
-      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
       ierr = MatView(((Mat_MPISBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
-      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     }
+    ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1261,6 +1262,20 @@ int MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
   if (nt != a->m) {
     SETERRQ(PETSC_ERR_ARG_SIZ,0,"Incompatible parition of A and yy");
   }
+
+  /* do diagonal part */
+  ierr = (*a->A->ops->mult)(a->A,xx,yy);CHKERRQ(ierr);
+
+  /* do supperdiagonal part */
+  ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr); 
+  ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
+  ierr = (*a->B->ops->multadd)(a->B,a->lvec,yy,yy);CHKERRQ(ierr);
+
+  /* do subdiagonal part */
+  ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+#ifdef old
   /* do subdiagonal part */
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
   /* send it on its way */
@@ -1270,7 +1285,7 @@ int MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
   ierr = (*a->A->ops->multadd)(a->A,xx,yy,yy);CHKERRQ(ierr); 
   /* receive remote parts */
   ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
-
+#endif
   PetscFunctionReturn(0);
 }
 
