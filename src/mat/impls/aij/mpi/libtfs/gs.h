@@ -56,44 +56,5 @@ extern void   gs_free(gs_ADT gs_handle);
 extern void   gs_init_msg_buf_sz(int buf_size);
 extern void   gs_init_vec_sz(int size);
 
-#if defined UPCASE
-extern int GS_INIT  (int *elms, int *nel, int *level);
-#else
-extern int gs_init_ (int *elms, int *nel, int *level);
-#endif
-
-#if defined UPCASE
-extern void GS_GOP  (int *gs, REAL *vals, char *op);
-#else
-extern void gs_gop_ (int *gs, REAL *vals, char *op);
-#endif
-
-#if defined UPCASE
-extern void GS_GOP_VEC  (int *gs, REAL *vals, char *op, int *step);
-#else
-extern void gs_gop_vec_ (int *gs, REAL *vals, char *op, int *step);
-#endif
-
-#if defined UPCASE
-extern void GS_FREE  (int *gs);
-#else
-extern void gs_free_ (int *gs);
-#endif
-
-
-#if defined UPCASE
-extern void GS_INIT_MSG_BUF_SZ (int *buf_size);
-#else
-extern void gs_init_msg_buf_sz_ (int *buf_size);
-#endif
-
-#if defined UPCASE
-extern void GS_INIT_VEC_SZ  (int *size);
-#else
-extern void gs_init_vec_sz_ (int *size);
-#endif
-
-
-
 #endif
 

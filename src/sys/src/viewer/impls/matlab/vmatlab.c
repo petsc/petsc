@@ -39,8 +39,8 @@ $                xnew(:) = x;    % reshape one dimensional vector back to two di
 M*/
 
 typedef struct {
-  MATFile               *ep;
-  int                   rank;
+  MATFile             *ep;
+  int                 rank;
   PetscViewerFileType btype;
 } PetscViewer_Matlab;
 

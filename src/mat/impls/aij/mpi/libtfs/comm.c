@@ -59,32 +59,6 @@ static void sgl_radd(double *vals, int level);
 static void hmt_concat(REAL *vals, REAL *work, int size);
 
 
-
-
-
-
-
-/***********************************comm.c*************************************
-Function: comm_init_ ()
-
-Input : 
-Output: 
-Return: 
-Description: legacy ...
-***********************************comm.c*************************************/
-#if defined UPCASE
-void
-COMM_INIT (void)
-#else
-void
-comm_init_ (void)
-#endif
-{
-  comm_init();
-}
-
-
-
 /***********************************comm.c*************************************
 Function: giop()
 
@@ -139,27 +113,6 @@ comm_init (void)
 #ifdef DEBUG  
   error_msg_warning("c_init() done :: my_id=%d, num_nodes=%d",my_id,num_nodes);
 #endif
-}
-
-
-
-/***********************************comm.c*************************************
-Function: giop_ ()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version (Fortran)
-***********************************comm.c*************************************/
-#if defined UPCASE
-void
-GIOP (int *vals, int *work, int *n, int *oprs)
-#else
-void
-giop_ (int *vals, int *work, int *n, int *oprs)
-#endif
-{
-  giop(vals, work, *n, oprs);
 }
 
 
@@ -335,32 +288,6 @@ giop(int *vals, int *work, int n, int *oprs)
 #endif
 }  
 
-
-
-/***********************************comm.c*************************************
-Function: grop_ ()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version (Fortran)
-***********************************comm.c*************************************/
-#if defined UPCASE
-void
-FGROP (REAL *vals, REAL *work, int *n, int *foprs)
-#elif  IBM
-void
-fgrop (REAL *vals, REAL *work, int *n, int *foprs)
-#else
-void
-fgrop_ (REAL *vals, REAL *work, int *n, int *foprs)
-#endif
-{
-  grop(vals, work, *n, foprs);
-}
-
-
-
 /***********************************comm.c*************************************
 Function: grop()
 
@@ -529,28 +456,6 @@ grop(REAL *vals, REAL *work, int n, int *oprs)
 }  
 
 
-
-/***********************************comm.c*************************************
-Function: grop_hc_ ()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version (Fortran)
-***********************************comm.c*************************************/
-#if defined UPCASE
-void
-GROP_HC (REAL *vals, REAL *work, int *n, int *oprs, int *dim)
-#else
-void
-grop_hc_ (REAL *vals, REAL *work, int *n, int *oprs, int *dim)
-#endif
-{
-  grop_hc(vals, work, *n, oprs, *dim);
-}
-
-
-
 /***********************************comm.c*************************************
 Function: grop()
 
@@ -683,28 +588,6 @@ grop_hc(REAL *vals, REAL *work, int n, int *oprs, int dim)
   return;
 #endif
 }  
-
-
-
-/***********************************comm.c*************************************
-Function: grop_hc_ ()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version (Fortran)
-***********************************comm.c*************************************/
-#if defined UPCASE
-void
-GROP_HC_VVL  (REAL *vals, REAL *work, int *len_vec, int *oprs, int *dim)
-#else
-void
-grop_hc_vvl_ (REAL *vals, REAL *work, int *len_vec, int *oprs, int *dim)
-#endif
-{
-  grop_hc_vvl(vals, work, len_vec, oprs, *dim);
-}
-
 
 
 /***********************************comm.c*************************************
@@ -1157,34 +1040,6 @@ grop_hc_vvl(REAL *vals, REAL *work, int *segs, int *oprs, int dim)
 
 
 #ifdef INPROG
-
-#if defined UPCASE
-extern void PROC_SYNC  ();
-#else
-extern void proc_sync_ ();
-#endif
-
-
-/***********************************comm.c*************************************
-Function: proc_sync_ ()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version (Fortran)
-***********************************comm.c*************************************/
-#if defined UPCASE
-void
-PROC_SYNC  ()
-#else
-void
-proc_sync_ ()
-#endif
-{
-  proc_sync()
-}
-
-
 
 /***********************************comm.c*************************************
 Function: proc_sync()
@@ -2077,26 +1932,6 @@ new_ssgl_radd(register REAL *vals, register REAL *work, register int level,
   return;
 #endif
 }  
-
-
-/***********************************comm.c*************************************
-Function: giop_hc_ ()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version (Fortran)
-***********************************comm.c*************************************/
-#if defined UPCASE
-void
-GIOP_HC (int *vals, int *work, int *n, int *oprs, int *dim)
-#else
-void
-giop_hc_ (int *vals, int *work, int *n, int *oprs, int *dim)
-#endif
-{
-  giop_hc(vals, work, *n, oprs, *dim);
-}
 
 
 

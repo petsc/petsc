@@ -83,8 +83,6 @@ struct xyt_CDT{
 
 static int n_xyt=0;
 static int n_xyt_handles=0;
-static int fn_xyt_handles=0;
-static xyt_ADT fhandles[MAX_FORTRAN_HANDLES+1];
 
 /* prototypes */
 static void do_xyt_solve(xyt_ADT xyt_handle, REAL *rhs);
@@ -100,44 +98,6 @@ void ML_XYT_solve(xyt_ADT xyt_handle, int lx, double *x, int lb, double *b);
 int  ML_XYT_factor(xyt_ADT xyt_handle, int *local2global, int n, int m,
 		   void *matvec, void *grid_data, int grid_tag, ML *my_ml);
 #endif
-
-
-/*************************************xyt.c************************************
-Function: xyt_new_()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xyt.c***********************************/
-int
-#if defined UPCASE
-XYT_NEW (void)
-#else
-xyt_new_(void)
-#endif
-{
-  int i;
-  xyt_ADT xyt_handle;
-
-
-#ifdef DEBUG
-  error_msg_warning("xyt_new_() :: start %d\n");
-#endif
-
-  if (fn_xyt_handles==MAX_FORTRAN_HANDLES)
-    {error_msg_fatal("xyt_new_() :: too many xyt handles %d\n",MAX_FORTRAN_HANDLES);}
-
-  fn_xyt_handles++;
-  xyt_handle = XYT_new();
-
-  for (i=1;i<MAX_FORTRAN_HANDLES;i++)
-    {
-      if (!fhandles[i])
-	{fhandles[i]=xyt_handle; return(i);}
-    }
-  return(-1);
-}
 
 
 /*************************************xyt.c************************************
@@ -172,34 +132,6 @@ XYT_new(void)
   return(xyt_handle);
 }
 
-
-/*************************************xyt.c************************************
-Function: XYT_factor()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xyt.c***********************************/
-int 
-#if defined UPCASE
-XYT_FACTOR
-#else
-xyt_factor_
-#endif
-
-           (int *ixyt_handle,   /* prev. allocated xyt  handle */
-	    int *local2global, /* global column mapping       */
-	    int *n,           /* local num rows              */
-	    int *m,           /* local num cols              */
-	    void *matvec,      /* b_loc=A_local.x_loc         */
-	    void *grid_data    /* grid data for matvec        */
-	    )
-
-{
-  return(XYT_factor(fhandles[*ixyt_handle],local2global,*n,*m,matvec,grid_data));
-}
-	 
 
 /*************************************xyt.c************************************
 Function: XYT_factor()
@@ -251,31 +183,6 @@ XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
   return(flag);
 #else
   return(do_xyt_factor(xyt_handle));
-#endif
-}
-
-
-/*************************************xyt.c************************************
-Function: xyt_solve_()
-
-Input :
-Output:
-Return:
-Description:
-pot. problem with NULL b ... how do you ensure that FORTRAN is 
-pushing suf. num bytes on stack?
-**************************************xyt.c***********************************/
-int
-#if defined UPCASE
-XYT_SOLVE (int *n, double *x, double *b)
-#else
-xyt_solve_(int *n, double *x, double *b)
-#endif
-{
-#ifdef NEK5000  
-  return(XYT_solve(fhandles[*n],x,NULL));
-#else
-  return(XYT_solve(fhandles[*n],x,b));
 #endif
 }
 
@@ -348,32 +255,6 @@ XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
 
   return(0);
 }
-
-
-/*************************************xyt.c************************************
-Function: xyt_free_()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xyt.c***********************************/
-int
-#if defined UPCASE
-XYT_FREE (int n)
-#else
-xyt_free_(int n)
-#endif
-{
-  xyt_ADT xyt_handle;
-
-
-  fn_xyt_handles--;
-  xyt_handle=fhandles[n];
-  fhandles[n]=NULL; 
-  return(XYT_free(xyt_handle));
-}
-
 
 
 /*************************************xyt.c************************************
@@ -500,25 +381,6 @@ ML_XYT_solve(xyt_ADT xyt_handle, int lx, double *sol, int lb, double *rhs)
   XYT_solve(xyt_handle, sol, rhs);
 }
 #endif
-
-
-/*************************************xyt.c************************************
-Function: 
-
-Input : 
-Output: 
-Return: 
-Description:  
-**************************************xyt.c***********************************/
-int 
-#if defined UPCASE
-XYT_STATS (int *ixyt_handle)
-#else
-xyt_stats_(int *ixyt_handle)
-#endif
-{
-  return(XYT_stats(fhandles[*ixyt_handle]));
-}
 
 
 /*************************************xyt.c************************************

@@ -45,40 +45,7 @@ extern void comm_init(void);
 extern void giop_hc(int *vals, int *work, int n, int *oprs, int dim);
 extern void grop_hc(REAL *vals, REAL *work, int n, int *oprs, int dim);
 extern void grop_hc_vvl(REAL *vals, REAL *work, int *n, int *oprs, int dim);
-
-
 extern void ssgl_radd(REAL *vals, REAL *work, int level, int *segs);
-
-
-#if defined UPCASE
-extern void GROP_HC_VVL (REAL *vals, REAL *work, int *len_vec, int *oprs, int *dim);
-#else
-extern void grop_hc_vvl_(REAL *vals, REAL *work, int *len_vec, int *oprs, int *dim);
-#endif
-
-#if defined UPCASE
-extern void GROP_HC (REAL *vals, REAL *work, int *n, int *oprs, int *dim);
-#else
-extern void grop_hc_ (REAL *vals, REAL *work, int *n, int *oprs, int *dim);
-#endif
-
-#if defined UPCASE
-extern void COMM_INIT  (void);
-#else
-extern void comm_init_ (void);
-#endif
-
-#if defined UPCASE
-extern void GROP (REAL *vals, REAL *work, int *n, int *oprs);
-#else
-extern void grop_ (REAL *vals, REAL *work, int *n, int *oprs);
-#endif
-
-#if defined UPCASE
-extern void GIOP (int *vals, int *work, int *n, int *oprs);
-#else
-extern void giop_ (int *vals, int *work, int *n, int *oprs);
-#endif
 
 #if defined(_CRAY)
 #define MSGTAG0 101

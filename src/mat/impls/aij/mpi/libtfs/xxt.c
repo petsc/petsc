@@ -80,8 +80,6 @@ struct xxt_CDT{
 
 static int n_xxt=0;
 static int n_xxt_handles=0;
-static int fn_xxt_handles=0;
-static xxt_ADT fhandles[MAX_FORTRAN_HANDLES+1];
 
 /* prototypes */
 static void do_xxt_solve(xxt_ADT xxt_handle, REAL *rhs);
@@ -97,43 +95,6 @@ void ML_XXT_solve(xxt_ADT xxt_handle, int lx, double *x, int lb, double *b);
 int  ML_XXT_factor(xxt_ADT xxt_handle, int *local2global, int n, int m,
 		   void *matvec, void *grid_data, int grid_tag, ML *my_ml);
 #endif
-
-
-/*************************************xxt.c************************************
-Function: xxt_new_()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xxt.c***********************************/
-int 
-#if defined UPCASE
-XXT_NEW (void)
-#else
-xxt_new_(void)
-#endif
-{
-  int i;
-  xxt_ADT xxt_handle;
-
-
-#ifdef DEBUG
-  error_msg_warning("xxt_new_() :: start %d\n");
-#endif
-
-  if (fn_xxt_handles==MAX_FORTRAN_HANDLES)
-    {error_msg_fatal("xxt_new_() :: too many xxt handles %d\n",MAX_FORTRAN_HANDLES);}
-
-  fn_xxt_handles++;
-  xxt_handle = XXT_new();
-  for (i=1;i<MAX_FORTRAN_HANDLES;i++)
-    {
-      if (!fhandles[i])
-	{fhandles[i]=xxt_handle; return(i);}
-    }
-  return(-1);
-}
 
 
 /*************************************xxt.c************************************
@@ -165,32 +126,6 @@ XXT_new(void)
 #endif
 
   return(xxt_handle);
-}
-
-
-/*************************************xxt.c************************************
-Function: XXT_factor()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xxt.c***********************************/
-int 
-#if defined UPCASE
-XXT_FACTOR
-#else
-xxt_factor_
-#endif
-           (int *ixxt_handle,   /* prev. allocated xxt  handle */
-	    int *local2global,  /* global column mapping       */
-	    int *n,             /* local num rows              */
-	    int *m,             /* local num cols              */
-	    void *matvec,       /* b_loc=A_local.x_loc         */
-	    void *grid_data     /* grid data for matvec        */
-	    )
-{
-  return(XXT_factor(fhandles[*ixxt_handle],local2global,*n,*m,matvec,grid_data));
 }
 
 
@@ -244,31 +179,6 @@ XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
   return(flag);
 #else
   return(do_xxt_factor(xxt_handle));
-#endif
-}
-
-
-/*************************************xxt.c************************************
-Function: xxt_solve_()
-
-Input :
-Output:
-Return:
-Description:
-pot. problem with NULL b ... how do you ensure that FORTRAN is 
-pushing suf. num bytes on stack?
-**************************************xxt.c***********************************/
-int
-#if defined UPCASE
-XXT_SOLVE (int *n, double *x, double *b)
-#else
-xxt_solve_(int *n, double *x, double *b)
-#endif
-{
-#ifdef NEK5000  
-  return(XXT_solve(fhandles[*n],x,NULL));
-#else
-  return(XXT_solve(fhandles[*n],x,b));
 #endif
 }
 
@@ -341,32 +251,6 @@ XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
 
   return(0);
 }
-
-
-/*************************************xxt.c************************************
-Function: xxt_free_()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xxt.c***********************************/
-int
-#if defined UPCASE
-XXT_FREE (int n)
-#else
-xxt_free_(int n)
-#endif
-{
-  xxt_ADT xxt_handle;
-
-
-  fn_xxt_handles--;
-  xxt_handle=fhandles[n];
-  fhandles[n]=NULL; 
-  return(XXT_free(xxt_handle));
-}
-
 
 
 /*************************************xxt.c************************************
@@ -489,25 +373,6 @@ ML_XXT_solve(xxt_ADT xxt_handle, int lx, double *sol, int lb, double *rhs)
   XXT_solve(xxt_handle, sol, rhs);
 }
 #endif
-
-
-/*************************************xxt.c************************************
-Function: 
-
-Input : 
-Output: 
-Return: 
-Description:  
-**************************************xxt.c***********************************/
-int 
-#if defined UPCASE
-XXT_STATS (int *ixxt_handle)
-#else
-xxt_stats_(int *ixxt_handle)
-#endif
-{
-  return(XXT_stats(fhandles[*ixxt_handle]));
-}
 
 
 /*************************************xxt.c************************************

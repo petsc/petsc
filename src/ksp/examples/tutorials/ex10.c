@@ -39,7 +39,7 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  KSP           ksp;             /* linear solver context */
+  KSP            ksp;             /* linear solver context */
   Mat            A,B;            /* matrix */
   Vec            x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
@@ -186,7 +186,7 @@ int main(int argc,char **args)
       MatPartitioning mpart;
       IS              mis,nis,isn,is;
       int             *count,size,rank;
-      Mat             B;
+      Mat             BB;
       ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
       ierr = PetscMalloc(size*sizeof(int),&count);CHKERRQ(ierr);
@@ -204,13 +204,13 @@ int main(int argc,char **args)
       ierr = ISDestroy(nis);CHKERRQ(ierr);
       ierr = ISSort(is);CHKERRQ(ierr);
       ierr = ISAllGather(is,&isn);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(A,is,isn,PETSC_DECIDE,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(A,is,isn,PETSC_DECIDE,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
 
       /* need to move the vector also */
       ierr = ISDestroy(is);CHKERRQ(ierr);
       ierr = ISDestroy(isn);CHKERRQ(ierr);
       ierr = MatDestroy(A);CHKERRQ(ierr);
-      A    = B;
+      A    = BB;
     }
  
     /*

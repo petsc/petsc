@@ -30,7 +30,6 @@ def petsc_configure(configure_options):
   sys.path.insert(0, os.path.join(pythonDir, 'BuildSystem'))
   sys.path.insert(0, pythonDir)
   import config.framework
-  import PETSc.packages.update
 
   
   framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options, loadArgDB = 0)
@@ -38,8 +37,6 @@ def petsc_configure(configure_options):
   framework.argDB['LIBS'] = ''
   try:
     framework.configure(out = sys.stdout)
-  except PETSc.packages.update.UpdateException, e:
-    return 1
   except Exception, e:
     import traceback
 
@@ -57,6 +54,5 @@ if __name__ == '__main__':
     if opt.startswith('--prefix') or opt.startswith('-prefix'):
       print '=====================================================================\nPETSc does NOT support the --prefix options. All installs are done in-place.\nMove your petsc directory to the location you wish it installed, before running configure\n'
       sys.exit(1)
-  if petsc_configure([]):
-    print 'Updated the source code, rerunning configure'
-    petsc_configure([])
+  petsc_configure([]):
+

@@ -262,7 +262,6 @@ static void gs_gop_tree_binary(gs_id *gs, REAL *vals, rbfp fct);
 static int num_gs_ids = 0;
 
 /* should make this dynamic ... later */
-static gs_id *gs_handles[MAX_GS_IDS];
 /*static queue_ADT elms_q, mask_q;*/
 static int msg_buf=MAX_MSG_BUF;
 /*static int msg_ch=FALSE;*/
@@ -273,53 +272,6 @@ static int vec_sz=GS_VEC_SZ;
 static int *tree_buf=NULL;
 static int tree_buf_sz=0;
 static int ntree=0;
-
-
-
-/******************************************************************************
-Function: ()
-
-Input : 
-Output: 
-Return: 
-Description:  
-******************************************************************************/
-#if defined UPCASE
-void FLUSH_IO  (void)
-#elif  IBM
-void flush_io  (void)
-#else
-void flush_io_ (void)
-#endif
-{
-#ifdef DELTA
-  fflush(stdout);
-#else
-  fflush(stdout);
-#endif
-}
-
-
-
-/******************************************************************************
-Function: ()
-
-Input : 
-Output: 
-Return: 
-Description:  
-******************************************************************************/
-#if defined UPCASE
-void GS_INIT_VEC_SZ  (int *size)
-#elif  IBM
-void fgs_init_vec_sz  (int *size)
-#else
-void gs_init_vec_sz_ (int *size)
-#endif
-{
-  gs_init_vec_sz(*size);
-}
-
 
 
 /******************************************************************************
@@ -337,27 +289,6 @@ void gs_init_vec_sz(int size)
   vec_sz = size;
 }
 
-
-
-/******************************************************************************
-Function: ()
-
-Input : 
-Output: 
-Return: 
-Description:  
-******************************************************************************/
-#if defined UPCASE
-void GS_INIT_MSG_BUF_SZ (int *buf_size)
-#elif  IBM
-void  fgs_init_msg_buf_sz  (int *buf_size)
-#else
-void  gs_init_msg_buf_sz_ (int *buf_size)
-#endif
-{
-  gs_init_msg_buf_sz(*buf_size);
-}
-
 /******************************************************************************
 Function: gs_init_()
 
@@ -372,130 +303,6 @@ void gs_init_msg_buf_sz(int buf_size)
 
   msg_buf = buf_size;
 }
-
-
-
-/******************************************************************************
-Function: gs_init_()
-
-Input : 
-Output: 
-Return: 
-Description:  
-******************************************************************************/
-#if defined UPCASE
-int 
-GS_INIT  (int *elms, int *nel, int *level)
-#elif  IBM
-int 
-fgs_init  (int *elms, int *nel, int *level)
-#else
-int 
-gs_init_ (int *elms, int *nel, int *level)
-#endif
-{
-  gs_id *gsh;
-  
-  if (num_gs_ids==MAX_GS_IDS)
-    {error_msg_fatal("gs_init_() :: no more than %d gs handles",MAX_GS_IDS);}
-
-  gsh =  gs_init(elms, *nel, *level);
-
-  gs_handles[gsh->id - 1] = gsh;
-
-  return(gsh->id);
-}
-
-
-
-/******************************************************************************
-Function: gs_gop_ ()
-
-Input : 
-
-Output: 
-
-RETURN: 
-
-Description:  
-******************************************************************************/
-#if defined UPCASE
-extern void GS_GOP  (int *gs, REAL *vals, char *op)
-#elif  IBM
-extern void fgs_gop  (int *gs, REAL *vals, char *op)
-#else
-extern void gs_gop_ (int *gs, REAL *vals, char *op)
-#endif
-{
-  gs_id *gsh;
-
-
-  gsh = gs_handles[*gs-1];
-
-  
-  gs_gop(gsh,vals,op);
-}
-
-
-
-/******************************************************************************
-Function: gs_gop_vec_ ()
-
-Input : 
-
-Output: 
-
-RETURN: 
-
-Description:  
-******************************************************************************/
-#if defined UPCASE
-extern void GS_GOP_VEC  (int *gs, REAL *vals, char *op, int *step)
-#elif  IBM
-extern void fgs_gop_vec  (int *gs, REAL *vals, char *op, int *step)
-#else
-extern void gs_gop_vec_ (int *gs, REAL *vals, char *op, int *step)
-#endif
-{
-  gs_id *gsh;
-
-
-  gsh = gs_handles[*gs-1];
-
-  
-  gs_gop_vec(gsh,vals,op,*step);
-}
-
-
-
-/******************************************************************************
-Function: gs_free_ ()
-
-Input : 
-
-Output: 
-
-RETURN: 
-
-Description:  
-******************************************************************************/
-#if defined UPCASE
-extern void GS_FREE  (int *gs)
-#elif  IBM
-extern void fgs_free  (int *gs)
-#else
-extern void gs_free_ (int *gs)
-#endif
-{
-  gs_id *gsh;
-
-
-  gsh = gs_handles[*gs-1];
-
-  gs_free(gsh);
-}
-
-
 
 /******************************************************************************
 Function: gs_init()
