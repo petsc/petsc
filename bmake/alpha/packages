@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.47 1999/10/04 22:25:01 balay Exp bsmith $ 
+# $Id: base.site,v 1.48 1999/11/05 14:42:55 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -46,9 +46,11 @@ MPIRUN         = /home/petsc/mpich/lib/alpha/ch_p4/mpirun
 #MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
 #MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
-# If you are using the DEC implementation of MPI you can use the following
+# If you are using the Compaq/DEC implementation of MPI you can use the following
+# If the machine has prun instead of mpirun or dmpirun you can use 
+# ${PETSC_DIR}/bin/mpirun.prun below for MPIRUN
 #
-#MPI_LIB        = -lmpi
+#MPI_LIB        = -lmpi -lelan
 #MPI_INCLUDE    = -DPETSC_HAVE_INT_MPI_COMM
 #MPIRUN         =  dmpirun
 #
