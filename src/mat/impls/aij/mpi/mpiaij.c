@@ -619,8 +619,8 @@ int MatMultTranspose_MPIAIJ(Mat A,Vec xx,Vec yy)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatIsSymmetric_MPIAIJ"
-int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
+#define __FUNCT__ "MatIsTranspose_MPIAIJ"
+int MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
 {
   MPI_Comm comm;
   Mat_MPIAIJ *Aij = (Mat_MPIAIJ *) Amat->data, *Bij;
@@ -632,7 +632,7 @@ int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
 
   /* Easy test: symmetric diagonal block */
   Bij = (Mat_MPIAIJ *) Bmat->data; Bdia = Bij->A;
-  ierr = MatIsSymmetric(Adia,Bdia,f); CHKERRQ(ierr);
+  ierr = MatIsTranspose(Adia,Bdia,f); CHKERRQ(ierr);
   if (!*f) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)Amat,&comm); CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&ntids); CHKERRQ(ierr);
@@ -650,7 +650,7 @@ int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
   Aoff = Aoffs[0];
   ierr = MatGetSubMatrices(Bmat,1,&Notme,&Me,MAT_INITIAL_MATRIX,&Boffs); CHKERRQ(ierr);
   Boff = Boffs[0];
-  ierr = MatIsSymmetric(Aoff,Boff,f); CHKERRQ(ierr);
+  ierr = MatIsTranspose(Aoff,Boff,f); CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&Aoffs); CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&Boffs); CHKERRQ(ierr);
   ierr = ISDestroy(Me); CHKERRQ(ierr);
@@ -1803,9 +1803,9 @@ int MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetDiagonalBlock_C",
 				     "MatGetDiagonalBlock_MPIAIJ",
                                      MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsSymmetric_C",
-				     "MatIsSymmetric_MPIAIJ",
-				     MatIsSymmetric_MPIAIJ); CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsTranspose_C",
+				     "MatIsTranspose_MPIAIJ",
+				     MatIsTranspose_MPIAIJ); CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAIJSetPreallocation_C",
 				     "MatMPIAIJSetPreallocation_MPIAIJ",
 				     MatMPIAIJSetPreallocation_MPIAIJ); CHKERRQ(ierr);

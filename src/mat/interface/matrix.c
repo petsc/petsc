@@ -2679,7 +2679,7 @@ int MatGetRowMax(Mat mat,Vec v)
 
    Concepts: matrices^transposing
 
-.seealso: MatMultTranspose(), MatMultTransposeAdd(), MatIsSymmetric()
+.seealso: MatMultTranspose(), MatMultTransposeAdd(), MatIsTranspose()
 @*/
 int MatTranspose(Mat mat,Mat *B)
 {
@@ -2701,9 +2701,9 @@ int MatTranspose(Mat mat,Mat *B)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatIsSymmetric"
+#define __FUNCT__ "MatIsTranspose"
 /*@C
-   MatIsSymmetric - Test whether a matrix is another one's transpose, 
+   MatIsTranspose - Test whether a matrix is another one's transpose, 
         or its own, in which case it tests symmetry.
 
    Collective on Mat
@@ -2724,17 +2724,17 @@ int MatTranspose(Mat mat,Mat *B)
 
    Concepts: matrices^transposing, matrix^symmetry
 
-.seealso: MatTranspose()
+.seealso: MatTranspose(), MatIsSymmetric(), MatIsHermitian()
 @*/
-int MatIsSymmetric(Mat A,Mat B,PetscTruth *flg)
+int MatIsTranspose(Mat A,Mat B,PetscTruth *flg)
 {
   int ierr,(*f)(Mat,Mat,PetscTruth*),(*g)(Mat,Mat,PetscTruth*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
   PetscValidHeaderSpecific(B,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatIsSymmetric_C",(void (**)(void))&f);CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatIsSymmetric_C",(void (**)(void))&g);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatIsTranspose_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatIsTranspose_C",(void (**)(void))&g);CHKERRQ(ierr);
   if (f && g) {
     if (f==g) {
       ierr = (*f)(A,B,flg);CHKERRQ(ierr);

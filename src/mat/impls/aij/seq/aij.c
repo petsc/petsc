@@ -1390,8 +1390,8 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatIsSymmetric_SeqAIJ"
-int MatIsSymmetric_SeqAIJ(Mat A,Mat B,PetscTruth *f)
+#define __FUNCT__ "MatIsTranspose_SeqAIJ"
+int MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscTruth *f)
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *) A->data,*bij = (Mat_SeqAIJ*) A->data;
   int *adx,*bdx,*aii,*bii,*aptr,*bptr; PetscScalar *va,*vb;
@@ -2693,9 +2693,9 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqbaij_C",
                                      "MatConvert_SeqAIJ_SeqBAIJ",
                                       MatConvert_SeqAIJ_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsSymmetric_C",
-                                     "MatIsSymmetric_SeqAIJ",
-                                      MatIsSymmetric_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsTranspose_C",
+                                     "MatIsTranspose_SeqAIJ",
+                                      MatIsTranspose_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetPreallocation_C",
                                      "MatSeqAIJSetPreallocation_SeqAIJ",
                                       MatSeqAIJSetPreallocation_SeqAIJ);CHKERRQ(ierr);
