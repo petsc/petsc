@@ -65,8 +65,6 @@ class Configure(config.base.Configure):
             'Euclid',
             'IJ_mv',
             'LSI',
-            'superlu',
-            'blas',
             'MatrixMatrix',
             'ParaSails',
             'krylov',
