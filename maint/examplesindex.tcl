@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: examplesindex.tcl,v 1.23 1997/10/08 14:59:06 balay Exp bsmith $ 
+# $Id: examplesindex.tcl,v 1.24 1998/01/03 22:36:02 bsmith Exp balay $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -15,17 +15,11 @@
 # options:                                     #
 #    -www    : also update the wwwmanpages     #
 #              with links to examples          #
-#    -wwwhome: update the wwwmanpages with     #
-#              links to examples at petsc ftp  #
-#              site. These man pages can be    #
-#              placed at petsc home page       #
 #                                              #
 # purpose: To get cute tables which contain    #
 # information like Concept:XXX is demonstrated #
 # in ex1, ex2, ex3 etc..                       #
 #                                              #
-# NOTE: -wwwhome => -www.                      #
-#       Use either one or none                 #
 ################################################
 
 
@@ -410,15 +404,11 @@ proc main { }  {
     # Process the command line arguments
     # Do the brute force way
     set UPDATE_WWW false
-    if { $argc == 1  && ([lindex $argv 0 ] == "-www" || [lindex $argv 0 ] == "-wwwhome") } {
+    if { $argc == 1  && [lindex $argv 0 ] == "-www" } {
         set UPDATE_WWW true
     }
     set PETSC_DIR_www     ../..
     set PETSC_DIR_www_man ../../..
-    if { $argc == 1  &&  [lindex $argv 0 ] == "-wwwhome" } {
-        set PETSC_DIR_www     ftp://info.mcs.anl.gov/pub/petsc/petsc
-        set PETSC_DIR_www_man ftp://info.mcs.anl.gov/pub/petsc/petsc
-    }   
     
     # All the tutorial files containg formated comments
     set files [ glob src/*/examples/{,tutorials}/{*.f,*.F,*.c} src/*/examples/tutorials/umin/{*.F,*.c}]

@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: htmlkeywords.tcl,v 1.6 1997/09/10 19:44:00 balay Exp bsmith $ 
+# $Id: htmlkeywords.tcl,v 1.7 1998/01/03 22:36:29 bsmith Exp balay $ 
 
 ################################################
 # This program scans the WWW man pages         #
@@ -8,12 +8,6 @@
 # index of keywords.                           #
 #                                              #
 # usage: htmlkeywords.tcl                      #
-#                                              #
-# options:                                     #
-#    -wwwhome: update the wwwmanpages with     #
-#              links to examples at petsc ftp  #
-#              site. These man pages can be    #
-#              placed at petsc home page       #
 #                                              #
 ################################################
 
@@ -161,9 +155,6 @@ proc main { }  {
     cd $PETSC_HOME
 
     set PETSC_DIR ../..
-    if { $argc == 1  &&  [lindex $argv 0 ] == "-wwwhome" } {
-        set PETSC_DIR ftp://info.mcs.anl.gov/pub/petsc/petsc
-    }   
 
     set files [ glob docs/manualpages/man*/*.html]
     set keywords {}
