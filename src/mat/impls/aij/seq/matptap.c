@@ -654,7 +654,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPNumeric_SeqAIJ_SeqAIJ_ReducedPt"
 /*@
-   MatPtAP_SeqAIJ_SeqAIJ_ReducedPt - Creates C = P[rstart:rend,:]^T * A * P of seqaij matrices, 
+   MatPtAPNumeric_SeqAIJ_SeqAIJ_ReducedPt - Creates C = P[rstart:rend,:]^T * A * P of seqaij matrices, 
                 used by MatPtAP_MPIAIJ_MPIAIJ() 
 
    Collective on Mat
