@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.14 1995/07/14 18:35:58 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.15 1995/07/14 21:56:56 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -80,8 +80,8 @@ static int SNESSolve_TR(SNES snes,int *its)
   if (history && history_len > 0) history[0] = fnorm;
   delta = neP->delta0*fnorm;         
   neP->delta = delta;
-  if (snes->Monitor)
-    {ierr = (*snes->Monitor)(snes,0,fnorm,snes->monP); CHKERRQ(ierr);}
+  if (snes->monitor)
+    {ierr = (*snes->monitor)(snes,0,fnorm,snes->monP); CHKERRQ(ierr);}
 
   /* Set the stopping criteria to use the More' trick. */
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
@@ -93,7 +93,7 @@ static int SNESSolve_TR(SNES snes,int *its)
      snes->iter = i+1;
 
      ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,
-                                             &flg,snes->jacP); CHKERRQ(ierr);
+                                             &flg); CHKERRQ(ierr);
      ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,
                             flg); CHKERRQ(ierr);
      ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERRQ(ierr);
@@ -144,11 +144,11 @@ static int SNESSolve_TR(SNES snes,int *its)
      TMP = F; F = G; snes->vec_func_always = F; G = TMP;
      TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
      VecNorm(X, &xnorm );		/* xnorm = || X || */
-     if (snes->Monitor) 
-       {(*snes->Monitor)(snes,i+1,fnorm,snes->monP); CHKERRQ(ierr);}
+     if (snes->monitor) 
+       {(*snes->monitor)(snes,i+1,fnorm,snes->monP); CHKERRQ(ierr);}
 
      /* Test for convergence */
-     if ((*snes->Converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
+     if ((*snes->converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
        /* Verify solution is in corect location */
        if (X != snes->vec_sol) {
          VecCopy(X, snes->vec_sol );
@@ -233,7 +233,7 @@ int SNESCreate_TR(SNES snes )
   snes->setup		= SNESSetUp_TR;
   snes->solve		= SNESSolve_TR;
   snes->destroy		= SNESDestroy_TR;
-  snes->Converged	= SNESDefaultConverged;
+  snes->converged	= SNESDefaultConverged;
   snes->printhelp       = SNESPrintHelp_TR;
   snes->setfromoptions  = SNESSetFromOptions_TR;
   snes->view            = SNESView_TR;

@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.24 1995/07/10 19:04:03 curfman Exp curfman $ */
+/* $Id: snes.h,v 1.25 1995/07/14 21:56:04 curfman Exp bsmith $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -71,7 +71,7 @@ extern int SNESDefaultMatrixFreeComputeJacobian(SNES,Vec,Mat*,Mat*,
 extern int SNESDefaultMatrixFreeMatCreate(SNES,Vec x,Mat*);
 
 extern int SNESComputeFunction(SNES,Vec,Vec);
-extern int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
 extern int SNESDestroy(SNES);
 
 

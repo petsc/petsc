@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.5 1995/06/21 15:29:45 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.6 1995/07/07 17:17:35 bsmith Exp bsmith $ */
 /*
    This is to provide some name space protection from Lapack and Blas 
 allow the appropriate single or double precision version to be used.
@@ -62,9 +62,9 @@ Cray T3D. Yet another reason to hate ...
 #endif
 
 #if defined(PARCH_t3d)
-#define LAormqr_(a,b,c,d,f,g,h,i,j,k,l,m,n)  SORMQR(cptofcd((a),1),\
-             cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
-#define LAtrtrs_ STRTRS(_cptofcd((a),1),_cptofcd((b),1),\
+#define LAormqr_(a,b,c,d,e,f,g,h,i,j,k,l,m)  SORMQR(_cptofcd((a),1),\
+             _cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
+#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j) STRTRS(_cptofcd((a),1),_cptofcd((b),1),\
                              _cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
 #define LApotrf_(a,b,c,d,e) SPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
 #define LApotrs_(a,b,c,d,e,f,g,h) SPOTRS(_cptofcd((a),1),(b),(c),(d),(e),\
@@ -158,9 +158,7 @@ Cray T3D. Yet another reason to hate ...
 #endif
 
 #if defined(PARCH_t3d)
-#define LAormqr_(a,b,c,d,f,g,h,i,j,k,l,m,n)  CORMQR(cptofcd((a),1),\
-             cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
-#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j)  CTRTRS(_cptofcd((a),1),_cptofcd((b),1),\
+#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j) CTRTRS(_cptofcd((a),1),_cptofcd((b),1),\
                               _cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
 #define LApotrf_(a,b,c,d,e)       CPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
 #define LApotrs_(a,b,c,d,e,f,g,h) CPOTRS(_cptofcd((a),1),(b),(c),(d),(e),\
@@ -181,7 +179,6 @@ Cray T3D. Yet another reason to hate ...
 #define LAtrmv_  CTRMV
 #define LAtrsl_  CTRSL
 #elif defined(FORTRANCAPS)
-#define LAormqr_ ZORMQR
 #define LAtrtrs_ ZTRTRS
 #define LApotrf_ ZPOTRF
 #define LApotrs_ ZPOTRS
@@ -191,7 +188,6 @@ Cray T3D. Yet another reason to hate ...
 #define LAtrmv_  ZTRMV
 #define LAtrsl_  ZTRSL
 #elif !defined(FORTRANUNDERSCORE)
-#define LAormqr_ zormqr
 #define LAtrtrs_ ztrtrs
 #define LApotrf_ zpotrf
 #define LApotrs_ zpotrs
@@ -200,7 +196,6 @@ Cray T3D. Yet another reason to hate ...
 #define LAtrmv_  ztrmv
 #define LAtrsl_  ztrsl
 #else
-#define LAormqr_ zormqr_
 #define LAtrtrs_ ztrtrs_
 #define LApotrf_ zpotrf_
 #define LApotrs_ zpotrs_

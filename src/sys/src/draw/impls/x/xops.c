@@ -1,10 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.21 1995/06/23 12:41:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.22 1995/07/07 17:16:38 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
-
 #if defined(HAVE_X11)
 #include "ximpl.h"
+#if defined(HAVE_STRING_H)
+#include <string.h>
+#endif
 
 #define XTRANS(win,xwin,x) \
    (int)(((xwin)->w)*((win)->port_xl + (((x - (win)->coor_xl)*\

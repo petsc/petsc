@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.59 1995/07/13 15:15:39 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.60 1995/07/13 16:15:46 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -31,7 +31,7 @@ static int MatGetReordering_MPIAIJ(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
   if (aij->numtids == 1) {
     ierr = MatGetReordering(aij->A,type,rperm,cperm); CHKERRQ(ierr);
   } else 
-    SETERRQ(1,"MatGetReordering_MPIAIJ:  not yet supported in parallel.");
+    SETERRQ(1,"MatGetReordering_MPIAIJ:  not yet supported in parallel");
   return 0;
 }
 
@@ -43,17 +43,17 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
   int        cstart = aij->cstart, cend = aij->cend,row,col;
 
   if (aij->insertmode != NOTSETVALUES && aij->insertmode != addv) {
-    SETERRQ(1,"You cannot mix inserts and adds");
+    SETERRQ(1,"MatSetValues_MPIAIJ:You cannot mix inserts and adds");
   }
   aij->insertmode = addv;
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0) SETERRQ(1,"Negative row index");
-    if (idxm[i] >= aij->M) SETERRQ(1,"Row index too large");
+    if (idxm[i] < 0) SETERRQ(1,"MatSetValues_MPIAIJ:Negative row");
+    if (idxm[i] >= aij->M) SETERRQ(1,"MatSetValues_MPIAIJ:Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (idxn[j] < 0) SETERRQ(1,"Negative column index");
-        if (idxn[j] >= aij->N) SETERRQ(1,"Column index too large");
+        if (idxn[j] < 0) SETERRQ(1,"MatSetValues_MPIAIJ:Negative column");
+        if (idxn[j] >= aij->N) SETERRQ(1,"MatSetValues_MPIAIJ:Col too large");
         if (idxn[j] >= cstart && idxn[j] < cend){
           col = idxn[j] - cstart;
           ierr = MatSetValues(aij->A,1,&row,1,&col,v+i*n+j,addv);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ static int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
   MPI_Allreduce((void *) &aij->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
   if (addv == (ADDVALUES|INSERTVALUES)) {
-    SETERRQ(1,"Some processors have inserted while others have added");
+    SETERRQ(1,"MatAssemblyBegin_MPIAIJ:Some processors inserted others added");
   }
   aij->insertmode = addv; /* in case this processor had no cache */
 
@@ -293,7 +293,7 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   IS             istmp;
 
   if (!l->assembled) 
-    SETERRQ(1,"MatZeroRows_MPIAIJ: Must assemble matrix first");
+    SETERRQ(1,"MatZeroRows_MPIAIJ:Must assemble matrix first");
   ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
 
@@ -309,7 +309,7 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"Index out of range.");
+    if (!found) SETERRQ(1,"MatZeroRows_MPIAIJ:Index out of range");
   }
   nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
 
@@ -410,7 +410,7 @@ static int MatMult_MPIAIJ(Mat aijin,Vec xx,Vec yy)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) aijin->data;
   int        ierr;
-  if (!aij->assembled) SETERRQ(1,"MatMult_MPIAIJ: must assemble matrix first");
+  if (!aij->assembled) SETERRQ(1,"MatMult_MPIAIJ:must assemble matrix first");
   ierr = VecScatterBegin(xx,aij->lvec,INSERTVALUES,SCATTERALL,aij->Mvctx);
   CHKERRQ(ierr);
   ierr = MatMult(aij->A,xx,yy); CHKERRQ(ierr);
@@ -424,7 +424,7 @@ static int MatMultAdd_MPIAIJ(Mat aijin,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) aijin->data;
   int        ierr;
-  if (!aij->assembled) SETERRQ(1,"MatMult_MPIAIJ: must assemble matrix first");
+  if (!aij->assembled) SETERRQ(1,"MatMult_MPIAIJ:must assemble matrix first");
   ierr = VecScatterBegin(xx,aij->lvec,INSERTVALUES,SCATTERALL,aij->Mvctx);
   CHKERRQ(ierr);
   ierr = MatMultAdd(aij->A,xx,yy,zz); CHKERRQ(ierr);
@@ -440,7 +440,7 @@ static int MatMultTrans_MPIAIJ(Mat aijin,Vec xx,Vec yy)
   int        ierr;
 
   if (!aij->assembled) 
-    SETERRQ(1,"MatMulTrans_MPIAIJ: must assemble matrix first");
+    SETERRQ(1,"MatMulTrans_MPIAIJ:must assemble matrix first");
   /* do nondiagonal part */
   ierr = MatMultTrans(aij->B,xx,aij->lvec); CHKERRQ(ierr);
   /* send it on its way */
@@ -462,7 +462,7 @@ static int MatMultTransAdd_MPIAIJ(Mat aijin,Vec xx,Vec yy,Vec zz)
   int        ierr;
 
   if (!aij->assembled) 
-    SETERRQ(1,"MatMulTransAdd_MPIAIJ: must assemble matrix first");
+    SETERRQ(1,"MatMulTransAdd_MPIAIJ:must assemble matrix first");
   /* do nondiagonal part */
   ierr = MatMultTrans(aij->B,xx,aij->lvec); CHKERRQ(ierr);
   /* send it on its way */
@@ -485,7 +485,7 @@ static int MatMultTransAdd_MPIAIJ(Mat aijin,Vec xx,Vec yy,Vec zz)
 static int MatGetDiagonal_MPIAIJ(Mat Ain,Vec v)
 {
   Mat_MPIAIJ *A = (Mat_MPIAIJ *) Ain->data;
-  if (!A->assembled) SETERRQ(1,"MatGetDiag_MPIAIJ: must assemble matrix first");
+  if (!A->assembled) SETERRQ(1,"MatGetDiag_MPIAIJ:must assemble matrix first");
   return MatGetDiagonal(A->A,v);
 }
 
@@ -519,7 +519,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   int        ierr;
   PetscObject vobj = (PetscObject) viewer;
  
-  if (!aij->assembled) SETERRQ(1,"MatView_MPIAIJ: must assemble matrix first");
+  if (!aij->assembled) SETERRQ(1,"MatView_MPIAIJ:must assemble matrix first");
   if (!viewer) { /* so that viewers may be used from debuggers */
     viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
   }
@@ -612,7 +612,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   int        n = mat->n, m = mat->m, i;
   Vec        tt;
 
-  if (!mat->assembled) SETERRQ(1,"MatRelax_MPIAIJ: must assemble matrix first");
+  if (!mat->assembled) SETERRQ(1,"MatRelax_MPIAIJ:must assemble matrix first");
 
   VecGetArray(xx,&x); VecGetArray(bb,&b); VecGetArray(mat->lvec,&ls);
   xs = x -1; /* shift by one for index start of 1 */
@@ -620,7 +620,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   if (!A->diag) {if ((ierr = MatMarkDiag_AIJ(A))) return ierr;}
   diag = A->diag;
   if (flag == SOR_APPLY_UPPER || flag == SOR_APPLY_LOWER) {
-    SETERRQ(1,"That option not yet support for parallel AIJ matrices");
+    SETERRQ(1,"MatRelax_MPIAIJ:option not yet support");
   }
   if (flag & SOR_EISENSTAT) {
     /* Let  A = L + U + D; where L is lower trianglar,
@@ -961,7 +961,8 @@ static int MatSetOption_MPIAIJ(Mat aijin,MatOption op)
     MatSetOption(aij->A,op);
     MatSetOption(aij->B,op);
   }
-  else if (op == COLUMN_ORIENTED) SETERRQ(1,"Column oriented not supported");
+  else if (op == COLUMN_ORIENTED) 
+    SETERRQ(1,"MatSetOption_MPIAIJ:Column oriented not supported");
   return 0;
 }
 
@@ -994,7 +995,7 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   int        nztot, nzA, nzB, lrow, rstart = mat->rstart, rend = mat->rend;
 
   if (row < rstart || row >= rend) 
-    SETERRQ(1,"MatGetRow_MPIAIJ: Currently you can get only local rows.")
+    SETERRQ(1,"MatGetRow_MPIAIJ:Currently you can get only local rows")
   lrow = row - rstart;
 
   pvA = &vworkA; pcA = &cworkA; pvB = &vworkB; pcB = &cworkB;
@@ -1055,7 +1056,7 @@ static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
   if (aij->numtids == 1) {
     ierr =  MatNorm(aij->A,type,norm); CHKERRQ(ierr);
   } else 
-    SETERRQ(1,"MatNorm_MPIAIJ:  not yet supported in parallel.");
+    SETERRQ(1,"MatNorm_MPIAIJ:not yet supported in parallel");
   return 0; 
 }
 
@@ -1258,7 +1259,8 @@ static int MatCopyPrivate_MPIAIJ(Mat matin,Mat *newmat)
   int        ierr, len;
   *newmat      = 0;
 
-  if (!oldmat->assembled) SETERRQ(1,"Cannot copy unassembled matrix");
+  if (!oldmat->assembled) 
+    SETERRQ(1,"MatCopyPrivate_MPIAIJ:Cannot copy unassembled matrix");
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIAIJ,matin->comm);
   PLogObjectCreate(mat);
   mat->data       = (void *) (aij = PETSCNEW(Mat_MPIAIJ)); CHKPTRQ(aij);

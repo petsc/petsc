@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.30 1995/07/06 17:20:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.31 1995/07/12 20:22:11 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -59,12 +59,12 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     int nb = 1, ndiag = 0, ndiag2,  *d, ierr;
     OptionsGetInt(0,"-mat_bdiag_bsize",&nb);
     OptionsGetInt(0,"-mat_bdiag_ndiag",&ndiag);
-    if (!ndiag) SETERRQ(1,"Must set diagonals before creating matrix.");
+    if (!ndiag) SETERRQ(1,"MatCreate:Must set diagonals before creating mat");
     d = (int *)PETSCMALLOC( ndiag * sizeof(int) ); CHKPTRQ(d);
     ndiag2 = ndiag;
     OptionsGetIntArray(0,"-mat_bdiag_dvals",d,&ndiag2);
     if (ndiag2 != ndiag) { 
-      SETERRQ(1,"Incompatible number of diagonals and diagonal values.");
+      SETERRQ(1,"MatCreate:Incompatible number of diags and diagonal vals");
     }
     if (numtid > 1 || OptionsHasName(0,"-mpi_objects"))
       ierr = MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,ndiag,nb,d,0,V); 

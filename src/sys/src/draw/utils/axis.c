@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.12 1995/06/14 17:24:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.13 1995/07/07 17:16:47 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -9,6 +9,10 @@ static char vcid[] = "$Id: axis.c,v 1.12 1995/06/14 17:24:39 bsmith Exp bsmith $
 #include "ptscimpl.h"
 #include "draw.h"              /*I "draw.h" I*/
 #include <math.h>
+#if defined(HAVE_STRING_H)
+#include <string.h>
+#endif
+#include "petscfix.h"
 
 struct _DrawAxisCtx {
     double  xlow, ylow, xhigh, yhigh;     /* User - coord limits */
@@ -31,11 +35,10 @@ static double XiAGetNice(double,double,int );
 static int    XiAGetBase(double,double,int,double*,int*);
 
 #if defined(PARCH_cray) || defined(PARCH_t3d)
-static double rint( x )
-double x;
+static double rint(double x )
 {
-if (x > 0) return floor( x + 0.5 );
-return floor( x - 0.5 );
+  if (x > 0) return floor( x + 0.5 );
+  return floor( x - 0.5 );
 }
 #endif
 
@@ -175,7 +178,7 @@ int DrawAxis(DrawAxisCtx ad )
   DrawLine( awin, ad->xlow,ad->ylow,ad->xlow,ad->yhigh,ac);
 
   if (ad->toplabel) {
-    w = xl + .5*(xr - xl) - .5*strlen(ad->toplabel)*tw;
+    w = xl + .5*(xr - xl) - .5*((int)strlen(ad->toplabel))*tw;
     h = ad->yhigh;
     DrawText(awin,w,h,cc,ad->toplabel); 
   }
@@ -195,13 +198,13 @@ int DrawAxis(DrawAxisCtx ad )
 	    else if (i > 0)    sep = tickloc[i]   - tickloc[i-1];
 	    else               sep = 0.0;
 	    p = (*ad->xlabelstr)( tickloc[i], sep );
-	    w = .5*strlen(p) * tw;
+	    w = .5*((int)strlen(p)) * tw;
 	    DrawText( awin, tickloc[i]-w,ad->ylow-1.2*th,cc,p); 
         }
     }
   }
   if (ad->xlabel) {
-    w = xl + .5*(xr - xl) - .5*strlen(ad->xlabel)*tw;
+    w = xl + .5*(xr - xl) - .5*((int)strlen(ad->xlabel))*tw;
     h = ad->ylow - 2.5*th;
     DrawText(awin,w,h,cc,ad->xlabel); 
   }
@@ -219,13 +222,13 @@ int DrawAxis(DrawAxisCtx ad )
 	    else if (i > 0)    sep = tickloc[i]   - tickloc[i-1];
 	    else               sep = 0.0;
 	    p = (*ad->xlabelstr)( tickloc[i], sep );
-	    w = ad->xlow - strlen(p) * tw - 1.2*tw;
+	    w = ad->xlow - ((int)strlen(p)) * tw - 1.2*tw;
 	    DrawText( awin, w,tickloc[i]-.5*th,cc,p); 
         }
     }
   }
   if (ad->ylabel) {
-    h = yl + .5*(yr - yl) + .5*strlen(ad->ylabel)*th;
+    h = yl + .5*(yr - yl) + .5*((int)strlen(ad->ylabel))*th;
     w = xl + .5*tw;
     DrawTextVertical(awin,w,h,cc,ad->ylabel); 
   }
@@ -237,7 +240,7 @@ int DrawAxis(DrawAxisCtx ad )
 */
 static int StripZeros(char *buf)
 {
-  int i,j,n = strlen(buf);
+  int i,j,n = (int) strlen(buf);
   if (n<5) return 0;
   for ( i=1; i<n-1; i++ ) {
     if (buf[i] == 'e' && buf[i-1] == '0') {
@@ -250,7 +253,7 @@ static int StripZeros(char *buf)
 }
 static int StripZerosPlus(char *buf)
 {
-  int i,j,n = strlen(buf);
+  int i,j,n = (int) strlen(buf);
   if (n<5) return 0;
   for ( i=1; i<n-2; i++ ) {
     if (buf[i] == '+') {

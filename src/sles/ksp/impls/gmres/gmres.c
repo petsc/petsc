@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.29 1995/07/14 15:57:19 curfman Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.30 1995/07/17 03:53:59 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -205,9 +205,9 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
   while (!(converged = cerr = (*itP->converged)(itP,it+itsSoFar,res,itP->cnvP))
            && it < max_k && it + itsSoFar < max_it) {
     if (nres && hist_len > it + itsSoFar) nres[it+itsSoFar]   = res;
-    if (itP->usr_monitor) {
+    if (itP->monitor) {
 	gmresP->it = (it - 1);
-        (*itP->usr_monitor)( itP,  it + itsSoFar, res,itP->monP );
+        (*itP->monitor)( itP,  it + itsSoFar, res,itP->monP );
 	}
     if (gmresP->vv_allocated <= it + VEC_OFFSET + 1) {
 	/* get more vectors */
@@ -247,9 +247,9 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
   if (nres) 
     itP->res_act_size = (hist_len < it + itsSoFar) ? hist_len : 
 	it + itsSoFar + 1;
-  if (itP->usr_monitor) {
+  if (itP->monitor) {
     gmresP->it = it - 1;
-    (*itP->usr_monitor)( itP,  it + itsSoFar, res, itP->monP );
+    (*itP->monitor)( itP,  it + itsSoFar, res, itP->monP );
   }
   if (itcount) *itcount    = it;
 

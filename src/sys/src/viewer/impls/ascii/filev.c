@@ -1,8 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.11 1995/06/08 03:11:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.12 1995/06/13 17:04:34 curfman Exp bsmith $";
 #endif
 
+
 #include "ptscimpl.h"
+#if defined(HAVE_STRING_H)
+#include <string.h>
+#endif
 #include <stdarg.h>
 
 struct _Viewer {
@@ -78,7 +82,8 @@ int ViewerFileOpen(char *name,Viewer *lab)
   if (!strcmp(name,"stderr")) v->fd = stderr;
   else if (!strcmp(name,"stdout")) v->fd = stdout;
   else {
-    v->fd          = fopen(name,"w"); if (!v->fd) SETERRQ(1,0);
+    v->fd          = fopen(name,"w"); 
+    if (!v->fd) SETERRQ(1,"ViewerFileOpen: cannot open file");
   }
   v->format        = FILE_FORMAT_DEFAULT;
   v->outputname    = 0;
@@ -121,7 +126,8 @@ int ViewerFileOpenSync(char *name,MPI_Comm comm,Viewer *lab)
   if (!strcmp(name,"stderr")) v->fd = stderr;
   else if (!strcmp(name,"stdout")) v->fd = stdout;
   else {
-    v->fd        = fopen(name,"w"); if (!v->fd) SETERRQ(1,0);
+    v->fd        = fopen(name,"w"); 
+    if (!v->fd) SETERRQ(1,"ViewerFileOpenSync: cannot open file");
   }
   v->format        = FILE_FORMAT_DEFAULT;
   v->outputname    = 0;

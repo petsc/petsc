@@ -1,10 +1,25 @@
-/* $Id: ptime.h,v 1.3 1995/06/14 17:25:18 bsmith Exp curfman $ */
+/* $Id: ptime.h,v 1.4 1995/07/11 14:31:37 curfman Exp bsmith $ */
 
 #if !defined(__PTIME_PACKAGE)
 #define __PTIME_PACKAGE
 
+#if defined(PARCH_IRIX) && defined(__cplusplus)
+struct timeval {
+        long    tv_sec;         /* seconds */
+        long    tv_usec;        /* and microseconds */
+};
+
+struct timezone {
+        int     tz_minuteswest; /* minutes west of Greenwich */
+        int     tz_dsttime;     /* type of dst correction */
+};
+extern "C" {
+extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
+};
+#else
 #include <sys/types.h>
 #include <sys/time.h>
+#endif
 
 /*
     Macros for timing. In the future some of these may be 

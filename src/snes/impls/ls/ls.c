@@ -1,10 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.30 1995/07/14 18:36:07 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.31 1995/07/14 21:57:05 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
 #include "ls.h"
 #include "pviewer.h"
+#if defined(HAVE_STRING_H)
+#include <string.h>
+#endif
 
 /*
      Implements a line search variant of Newton's Method 
@@ -47,15 +50,15 @@ int SNESSolve_LS(SNES snes,int *outits)
   VecNorm(F,&fnorm);	        	                 /* fnorm <- ||F|| */
   snes->norm = fnorm;
   if (history && history_len > 0) history[0] = fnorm;
-  if (snes->Monitor) 
-    {ierr = (*snes->Monitor)(snes,0,fnorm,snes->monP); CHKERRQ(ierr);}
+  if (snes->monitor) 
+    {ierr = (*snes->monitor)(snes,0,fnorm,snes->monP); CHKERRQ(ierr);}
         
   for ( i=0; i<maxits; i++ ) {
        snes->iter = i+1;
 
        /* Solve J Y = -F, where J is Jacobian matrix */
        ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,
-                                &flg,snes->jacP); CHKERRQ(ierr);
+                                &flg); CHKERRQ(ierr);
        ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,
                                 flg); CHKERRQ(ierr);
        ierr = SLESSolve(snes->sles,F,Y,&lits); CHKERRQ(ierr);
@@ -71,11 +74,11 @@ int SNESSolve_LS(SNES snes,int *outits)
        snes->norm = fnorm;
        if (history && history_len > i+1) history[i+1] = fnorm;
        VecNorm(X,&xnorm);		/* xnorm = || X || */
-       if (snes->Monitor) 
-         {(*snes->Monitor)(snes,i+1,fnorm,snes->monP); CHKERRQ(ierr);}
+       if (snes->monitor) 
+         {(*snes->monitor)(snes,i+1,fnorm,snes->monP); CHKERRQ(ierr);}
 
        /* Test for convergence */
-       if ((*snes->Converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
+       if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
            if (X != snes->vec_sol) {
              VecCopy(X,snes->vec_sol);
              snes->vec_sol_always = snes->vec_sol;
@@ -627,7 +630,7 @@ int SNESCreate_LS(SNES  snes )
   snes->setup		= SNESSetUp_LS;
   snes->solve		= SNESSolve_LS;
   snes->destroy		= SNESDestroy_LS;
-  snes->Converged	= SNESDefaultConverged;
+  snes->converged	= SNESDefaultConverged;
   snes->printhelp       = SNESPrintHelp_LS;
   snes->setfromoptions  = SNESSetFromOptions_LS;
   snes->view            = SNESView_LS;

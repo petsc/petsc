@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.10 1995/05/18 22:44:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tcqmr.c,v 1.11 1995/07/17 03:54:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -52,8 +52,8 @@ rhom1 = 1.0;
  CALCULATE SQUARED LANCZOS  vectors
  */
   while (!(cerr=(*itP->converged)(itP,it,rnorm,itP->cnvP))) {     
-    if (itP->usr_monitor) {
-        (*itP->usr_monitor)( itP, it, rnorm,itP->monP );
+    if (itP->monitor) {
+        (*itP->monitor)( itP, it, rnorm,itP->monP );
     }
     PCApplyBAorAB(itP->B,itP->right_pre, u, y, vtmp );   /* y = A*u */
     VecDot( v0, y, &dp11 );

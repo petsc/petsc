@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.43 1995/07/09 23:16:42 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.44 1995/07/13 14:51:42 curfman Exp bsmith $";
 #endif
 
 /*
@@ -44,7 +44,7 @@ static int MatLUFactor_Dense(Mat matin,IS row,IS col,double f)
     CHKPTRQ(mat->pivots);
   }
   LAgetrf_(&mat->m,&mat->n,mat->v,&mat->m,mat->pivots,&info);
-  if (info) SETERRQ(1,"Bad LU factorization");
+  if (info) SETERRQ(1,"MatLUFactor_Dense:Bad LU factorization");
   matin->factor = FACTOR_LU;
   return 0;
 }
@@ -52,7 +52,7 @@ static int MatLUFactorSymbolic_Dense(Mat matin,IS row,IS col,double f,
                                      Mat *fact)
 {
   int ierr;
-  if ((ierr = MatConvert(matin,MATSAME,fact))) SETERRQ(ierr,0);
+  ierr = MatConvert(matin,MATSAME,fact); CHKERRQ(ierr);
   return 0;
 }
 static int MatLUFactorNumeric_Dense(Mat matin,Mat *fact)
@@ -62,7 +62,7 @@ static int MatLUFactorNumeric_Dense(Mat matin,Mat *fact)
 static int MatCholeskyFactorSymbolic_Dense(Mat matin,IS row,double f,Mat *fact)
 {
   int ierr;
-  if ((ierr = MatConvert(matin,MATSAME,fact))) SETERRQ(ierr,0);
+  ierr = MatConvert(matin,MATSAME,fact); CHKERRQ(ierr);
   return 0;
 }
 static int MatCholeskyFactorNumeric_Dense(Mat matin,Mat *fact)
@@ -75,7 +75,7 @@ static int MatCholeskyFactor_Dense(Mat matin,IS perm,double f)
   int       info;
   if (mat->pivots) {PETSCFREE(mat->pivots); mat->pivots = 0;}
   LApotrf_("L",&mat->n,mat->v,&mat->m,&info);
-  if (info) SETERRQ(1,"Bad Cholesky factorization");
+  if (info) SETERRQ(1,"MatCholeskyFactor_Dense:Bad factorization");
   matin->factor = FACTOR_CHOLESKY;
   return 0;
 }
@@ -95,8 +95,8 @@ static int MatSolve_Dense(Mat matin,Vec xx,Vec yy)
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
               y, &mat->m, &info );
   }
-  else SETERRQ(1,"Matrix must be factored to solve");
-  if (info) SETERRQ(1,"Bad solve");
+  else SETERRQ(1,"MatSolve_Dense:Matrix must be factored to solve");
+  if (info) SETERRQ(1,"MatSolve_Dense:Bad solve");
   return 0;
 }
 static int MatSolveTrans_Dense(Mat matin,Vec xx,Vec yy)
@@ -115,7 +115,7 @@ static int MatSolveTrans_Dense(Mat matin,Vec xx,Vec yy)
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
               y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,"Bad solve");
+  if (info) SETERRQ(1,"MatSolveTrans_Dense:Bad solve");
   return 0;
 }
 static int MatSolveAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
@@ -139,7 +139,7 @@ static int MatSolveAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
               y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,"Bad solve");
+  if (info) SETERRQ(1,"MatSolveAdd_Dense:Bad solve");
   if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
   else VecAXPY(&sone,zz,yy);
   return 0;
@@ -165,7 +165,7 @@ static int MatSolveTransAdd_Dense(Mat matin,Vec xx,Vec zz, Vec yy)
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
               y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,"Bad solve");
+  if (info) SETERRQ(1,"MatSolveTransAdd_Dense:Bad solve");
   if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
   else VecAXPY(&sone,zz,yy);
   return 0;
@@ -181,7 +181,7 @@ static int MatRelax_Dense(Mat matin,Vec bb,double omega,MatSORType flag,
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     /* this is a hack fix, should have another version without 
        the second BLdot */
-    if ((ierr = VecSet(&zero,xx))) SETERRQ(ierr,0);
+    ierr = VecSet(&zero,xx); CHKERRQ(ierr);
   }
   VecGetArray(xx,&x); VecGetArray(bb,&b);
   while (its--) {
@@ -322,8 +322,8 @@ static int MatCopyPrivate_Dense(Mat matin,Mat *newmat)
   int ierr;
   Mat newi;
   Mat_Dense *l;
-  if ((ierr = MatCreateSequentialDense(matin->comm,mat->m,mat->n,&newi)))
-                                                          SETERRQ(ierr,0);
+  ierr = MatCreateSequentialDense(matin->comm,mat->m,mat->n,&newi);
+  CHKERRQ(ierr);
   l = (Mat_Dense *) newi->data;
   PETSCMEMCPY(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
   *newmat = newi;
@@ -422,7 +422,7 @@ static int MatGetDiagonal_Dense(Mat matin,Vec v)
   int       i, n;
   Scalar    *x;
   VecGetArray(v,&x); VecGetSize(v,&n);
-  if (n != mat->m) SETERRQ(1,"Nonconforming matrix and vector");
+  if (n != mat->m) SETERRQ(1,"MatGetDiagonal_Dense:Nonconforming mat and vec");
   for ( i=0; i<mat->m; i++ ) {
     x[i] = mat->v[i*mat->m + i];
   }
@@ -436,7 +436,7 @@ static int MatScale_Dense(Mat matin,Vec ll,Vec rr)
   int    i,j,m = mat->m, n = mat->n;
   if (ll) {
     VecGetArray(ll,&l); VecGetSize(ll,&m);
-    if (m != mat->m) SETERRQ(1,"Left scaling vector wrong length");
+    if (m != mat->m) SETERRQ(1,"MatScale_Dense:Left scaling vec wrong size");
     for ( i=0; i<m; i++ ) {
       x = l[i];
       v = mat->v + i;
@@ -445,7 +445,7 @@ static int MatScale_Dense(Mat matin,Vec ll,Vec rr)
   }
   if (rr) {
     VecGetArray(rr,&r); VecGetSize(rr,&n);
-    if (n != mat->n) SETERRQ(1,"Right scaling vector wrong length");
+    if (n != mat->n) SETERRQ(1,"MatScale_Dense:Right scaling vec wrong size");
     for ( i=0; i<n; i++ ) {
       x = r[i];
       v = mat->v + i*m;
@@ -501,7 +501,7 @@ static int MatNorm_Dense(Mat matin,MatNormType type,double *norm)
     }
   }
   else {
-    SETERRQ(1,"No support for the two norm yet");
+    SETERRQ(1,"MatNorm_Dense:No two norm yet");
   }
   return 0;
 }
@@ -560,7 +560,7 @@ static int MatGetArray_Dense(Mat matin,Scalar **array)
 
 static int MatGetSubMatrixInPlace_Dense(Mat matin,IS isrow,IS iscol)
 {
-  SETERRQ(1,"MatGetSubMatrixInPlace_Dense not yet done.");
+  SETERRQ(1,"MatGetSubMatrixInPlace_Dense: not done");
 }
 
 static int MatGetSubMatrix_Dense(Mat matin,IS isrow,IS iscol,Mat *submat)

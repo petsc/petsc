@@ -1,10 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.9 1995/06/08 03:10:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.10 1995/06/23 12:41:11 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
-
 #if defined(HAVE_X11)
 #include "ximpl.h"
+#if defined(HAVE_STRING_H)
+#include <string.h>
+#endif
 
 extern int  XiUniformHues(DrawCtx_X *,int);
 extern int  Xi_wait_map( DrawCtx_X*);
@@ -206,8 +208,9 @@ int XiQuickWindow(DrawCtx_X* mywindow,char* host,char* name,int x,int y,
 {
   int ierr;
   if (XiOpenDisplay( mywindow, host )) {
-    fprintf( stderr, "Could not open display\n" );
-    return 1;
+    SETERRQ(1,"Could not open display: make sure your DISPLAY variable\n\
+    is set, or you use the -display name option and xhost + has been\n\
+    run on your displaying machine.\n" );
   }
   if (XiSetVisual( mywindow, 1, (Colormap)0, nc )) {
     fprintf( stderr, "Could not set visual to default\n" );
@@ -227,16 +230,20 @@ int XiQuickWindow(DrawCtx_X* mywindow,char* host,char* name,int x,int y,
 }
 
 /* 
-   A version from an already defined window
- */
+   A version from an already defined window 
+*/
 int XiQuickWindowFromWindow(DrawCtx_X* mywindow,char *host,Window win,int nc)
 {
   Window       root;
   int          d,ierr;
   unsigned int ud;
-  if (XiOpenDisplay( mywindow, host )) {SETERRQ(1,"Cannot open display");}
+  if (XiOpenDisplay( mywindow, host )) {
+    SETERRQ(1,"Could not open display: make sure your DISPLAY variable\n\
+    is set, or you use the [-display name] option and xhost + has been\n\
+    run on your displaying machine.\n" );
+  }
   if (XiSetVisual( mywindow, 1, (Colormap)0, 0 )) {
-    SETERRQ(1,"Cannot set visual in display");
+    SETERRQ(1,"DrawFromDrawable_X: Cannot set visual in display");
   }
 
   mywindow->win = win;
@@ -251,7 +258,6 @@ int XiQuickWindowFromWindow(DrawCtx_X* mywindow,char *host,Window win,int nc)
   ierr = XiFontFixed( mywindow,6, 10,&mywindow->font ); CHKERRQ(ierr);
   return 0;
 }
-
 
 /*
       XiSetWindowLabel - Sets new label in open window.

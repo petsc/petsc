@@ -12,8 +12,8 @@ OBJSF     =
 LIBBASE   = libpetscsnes
 EXAMPLES  = ex3 ex4 ex5 ex6
 REXAMPLES = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6
-CEXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7
-EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
+CEXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8
+EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c
 LINCLUDE  = $(SOURCEH)
 
 ex1: ex1.o  chkopts
@@ -43,6 +43,10 @@ ex6: ex6.o  chkopts
 ex7: ex7.o  chkopts
 	-$(CLINKER) -o ex7 ex7.o $(PETSC_LIB)
 	$(RM) ex7.o
+
+ex8: ex8.o  chkopts
+	-$(CLINKER) -o ex8 ex8.o $(PETSC_LIB)
+	$(RM) ex8.o
 
 runex3:
 	-@$(MPIRUN) ex3 -nox -snes_smonitor > ex3_1.tmp 2>&1;   \

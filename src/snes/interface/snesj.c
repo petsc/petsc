@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.16 1995/06/23 12:41:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.17 1995/06/29 23:54:14 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -36,11 +36,13 @@ $  -snes_fd
 int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
                                MatStructure *flag,void *ctx)
 {
-  Vec    j1,j2,x2;
-  int    i,ierr,N,start,end,j;
-  Scalar dx, mone = -1.0,*y,scale,*xx;
-  double epsilon = 1.e-8,amax; /* assumes double precision */
+  Vec      j1,j2,x2;
+  int      i,ierr,N,start,end,j;
+  Scalar   dx, mone = -1.0,*y,scale,*xx,wscale;
+  double   epsilon = 1.e-8,amax; /* assumes double precision */
+  MPI_Comm comm;
 
+  PetscObjectGetComm((PetscObject)x1,&comm);
   MatZeroEntries(*J);
   ierr = VecDuplicate(x1,&j1); CHKERRQ(ierr);
   ierr = VecDuplicate(x1,&j2); CHKERRQ(ierr);
@@ -62,11 +64,20 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
       else if (real(dx) < 0.0 && abs(dx) > -1.e-16) dx = -1.e-1;
 #endif
       dx *= epsilon;
-      scale = -1.0/dx;
+      wscale = -1.0/dx;
       VecSetValues(x2,1,&i,&dx,ADDVALUES); 
     } 
+    else {
+      wscale = 0.0;
+    }
     ierr = SNESComputeFunction(snes,x2,j2); CHKERRQ(ierr);
     ierr = VecAXPY(&mone,j1,j2); CHKERRQ(ierr);
+/* communicate scale to all processors */
+#if !defined(PETSC_COMPLEX)
+    MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);
+#else
+    MPI_Allreduce(&wscale,&scale,2,MPI_DOUBLE,MPI_SUM,comm);
+#endif
     VecScale(&scale,j2);
     VecGetArray(j2,&y);
     VecAMax(j2,0,&amax); amax *= 1.e-14;

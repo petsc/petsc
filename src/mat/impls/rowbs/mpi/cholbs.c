@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.12 1995/07/10 04:22:30 curfman Exp curfman $";
+static char vcid[] = "$Id: cholbs.c,v 1.13 1995/07/15 20:02:12 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -36,12 +36,13 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
   VALIDHEADER(mat,MAT_COOKIE);
-  if (mat != *factp) SETERRQ(1,"factored matrix must be same context as mat.");
+  if (mat != *factp) SETERRQ(1,"MatCholeskyFactorNumeric_MPIRowbs:factored\
+                                 matrix must be same context as mat");
 
   /* Do prep work if same nonzero structure as previously factored matrix */
   if (mat->factor == FACTOR_CHOLESKY) {
-    if (!mbs->nonew) SETERRQ(1,
-      "Must call MatSetOption(mat,NO_NEW_NONZERO_LOCATIONS) for re-solve.");
+    if (!mbs->nonew) SETERRQ(1,"MatCholeskyFactorNumeric_MPIRowbs:\
+      Must call MatSetOption(mat,NO_NEW_NONZERO_LOCATIONS) for re-solve.");
     /* Copy only the nonzeros */
     BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
   }

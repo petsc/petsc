@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.15 1995/06/23 13:44:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.16 1995/07/06 17:19:56 bsmith Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -13,20 +13,20 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
   int        ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
 
   if (mbd->insertmode != NOTSETVALUES && mbd->insertmode != addv) {
-    SETERRQ(1,"MatSetValues_MPIBDiag: You cannot mix inserts and adds.");
+    SETERRQ(1,"MatSetValues_MPIBDiag:You cannot mix inserts and adds");
   }
   mbd->insertmode = addv;
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0) SETERRQ(1,"MatSetValues_MPIBDiag: Negative row index.");
+    if (idxm[i] < 0) SETERRQ(1,"MatSetValues_MPIBDiag:Negative row");
     if (idxm[i] >= mbd->M) 
-      SETERRQ(1,"MatSetValues_MPIBDiag: Row index too large.");
+      SETERRQ(1,"MatSetValues_MPIBDiag:Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
         if (idxn[j] < 0) 
-          SETERRQ(1,"MatSetValues_MPIBDiag: Negative column index.");
+          SETERRQ(1,"MatSetValues_MPIBDiag:Negative column");
         if (idxn[j] >= mbd->N) 
-          SETERRQ(1,"MatSetValues_MPIBDiag: Column index too large.");
+          SETERRQ(1,"MatSetValues_MPIBDiag:Column too large");
         ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j,addv);
         CHKERRQ(ierr);
       }
@@ -55,7 +55,7 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   MPI_Allreduce((void *) &mbd->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
   if (addv == (ADDVALUES|INSERTVALUES)) { SETERRQ(1,
-    "MatAssemblyBegin_MPIBDiag:  Cannot mix adds/inserts on different procs.");
+    "MatAssemblyBegin_MPIBDiag:Cannot mix adds/inserts on different procs");
     }
   mbd->insertmode = addv; /* in case this processor had no cache */
 
@@ -165,7 +165,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
       if (col >= 0 && col < mbd->N) {
         MatSetValues(mbd->A,1,&row,1,&col,&val,addv);
       } 
-      else {SETERRQ(1,"MatAssemblyEnd_MPIBDiag: Invalid column index.");}
+      else {SETERRQ(1,"MatAssemblyEnd_MPIBDiag:Invalid column");}
     }
     count--;
   }
@@ -222,7 +222,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   IS             istmp;
 
   if (!l->assembled) 
-    SETERRQ(1,"MatZeroRows_MPIRowBDiag: Must assemble matrix first");
+    SETERRQ(1,"MatZeroRows_MPIRowBDiag:Must assemble matrix");
   ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
 
@@ -238,7 +238,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"MatZeroRows_MPIRowBDiag: Index out of range.");
+    if (!found) SETERRQ(1,"MatZeroRows_MPIRowBDiag:row out of range");
   }
   nsends = 0;  for ( i=0; i<numtids; i++ ) {nsends += procs[i];} 
 
@@ -338,7 +338,7 @@ static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int        ierr;
   if (!mbd->assembled) 
-    SETERRQ(1,"MatMult_MPIBDiag: Must assemble matrix first.");
+    SETERRQ(1,"MatMult_MPIBDiag:Must assemble matrix first");
   ierr = VecScatterBegin(xx,mbd->lvec,INSERTVALUES,SCATTERALL,mbd->Mvctx);
   CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERTVALUES,SCATTERALL,mbd->Mvctx);
@@ -352,7 +352,7 @@ static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int        ierr;
   if (!mbd->assembled) 
-    SETERRQ(1,"MatMultAdd_MPIBDiag: Must assemble matrix first.");
+    SETERRQ(1,"MatMultAdd_MPIBDiag:Must assemble matrix first");
   ierr = VecScatterBegin(xx,mbd->lvec,ADDVALUES,SCATTERALL,mbd->Mvctx);
   CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,ADDVALUES,SCATTERALL,mbd->Mvctx);
@@ -385,7 +385,7 @@ static int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 {
   Mat_MPIBDiag *A = (Mat_MPIBDiag *) mat->data;
   if (!A->assembled) 
-    SETERRQ(1,"MatGetDiag_MPIBDiag: Must assemble matrix first.");
+    SETERRQ(1,"MatGetDiag_MPIBDiag:Must assemble matrix first");
   return MatGetDiagonal(A->A,v);
 }
 
@@ -418,7 +418,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
   PetscObject  vobj = (PetscObject) viewer;
 
   if (!mbd->assembled)
-    SETERRQ(1,"MatView_MPIBDiag: Must assemble matrix first.");
+    SETERRQ(1,"MatView_MPIBDiag:Must assemble matrix first");
   if (!viewer) { /* so that viewers may be used from debuggers */
     viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
   }
@@ -481,7 +481,7 @@ static int MatSetOption_MPIBDiag(Mat mat,MatOption op)
   if      (op == NO_NEW_NONZERO_LOCATIONS)  MatSetOption(mbd->A,op);
   else if (op == YES_NEW_NONZERO_LOCATIONS) MatSetOption(mbd->A,op);
   else if (op == COLUMN_ORIENTED) 
-    SETERRQ(1,"MatSetOption_MPIBDiag: Column-oriented option not supported.");
+    SETERRQ(1,"MatSetOption_MPIBDiag:Column-oriented not supported");
   return 0;
 }
 
@@ -511,9 +511,9 @@ static int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
   int          lrow;
   if (!mat->assembled) 
-    SETERRQ(1,"MatGetRow_MPIBDiag: Must assemble matrix first.");
+    SETERRQ(1,"MatGetRow_MPIBDiag:Must assemble matrix first");
   if (row < mat->rstart || row >= mat->rend) 
-    SETERRQ(1,"MatGetRow_MPIBDiag: Currently you can get only local rows.")
+    SETERRQ(1,"MatGetRow_MPIBDiag:you can get only local rows")
   lrow = row - mat->rstart;
   return MatGetRow(mat->A,lrow,nz,idx,v);
 }
@@ -598,7 +598,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
 
   *newmat       = 0;
   if ((N%nb)) 
-    SETERRQ(1,"MatCreateMPIBDiag: Invalid block size - bad column number.");
+    SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad column number");
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIBDIAG,comm);
   PLogObjectCreate(mat);
   mat->data	= (void *) (mbd = PETSCNEW(Mat_MPIBDiag)); CHKPTRQ(mbd);
@@ -613,15 +613,15 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
 
   if (M == PETSC_DECIDE) {
     if ((m%nb)) SETERRQ(1,
-       "MatCreateMPIBDiag: Invalid block size - bad local row number.");
+       "MatCreateMPIBDiag:Invalid block size - bad local row number");
     MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);
   }
   if (m == PETSC_DECIDE) {
     if ((M%nb)) SETERRQ(1,
-      "MatCreateMPIBDiag: Invalid block size - bad global row number.");
+      "MatCreateMPIBDiag:Invalid block size - bad global row number");
     m = M/mbd->numtids + ((M % mbd->numtids) > mbd->mytid);
     if ((m%nb)) SETERRQ(1,
-       "MatCreateMPIBDiag: Invalid block size - bad local row number.");
+       "MatCreateMPIBDiag:Invalid block size - bad local row number");
   }
   mbd->N   = N;
   mbd->M   = M;

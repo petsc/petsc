@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.18 1995/05/23 14:28:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.19 1995/06/08 03:10:22 bsmith Exp bsmith $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -35,7 +35,8 @@ int MatDetermineDiagonals_Private(Mat mat,int nb,int newr,int newc,
   Scalar *v;
 
   VALIDHEADER(mat,MAT_COOKIE);
-  if ((newr%nb) || (newc%nb)) SETERRQ(1,"Invalid block size.");
+  if ((newr%nb) || (newc%nb))
+    SETERRQ(1,"MatDetermineDiagonals_Private:Invalid block size");
   cfirst = colrange[0];
   clast  = colrange[newc-1];
   nnc    = clast - cfirst + 1;
@@ -104,7 +105,6 @@ int MatConvert_AIJ(Mat mat, MatType newtype, Mat *newmat)
   Scalar  *vwork;
   int     i, ierr, nz, m = aij->m, n = aij->n, *cwork, rstart, rend;
 
-  if (mat->type != MATAIJ) SETERRQ(1,"Input matrix must be MATAIJ.");
   switch (newtype) {
     case MATROW:
       ierr = MatCreateSequentialRow(mat->comm,m,n,0,aij->ilen,newmat);
@@ -151,7 +151,7 @@ int MatConvert_AIJ(Mat mat, MatType newtype, Mat *newmat)
       CHKERRQ(ierr); break;
     }
     default:
-      SETERRQ(1,"Matrix type is not currently supported.");
+      SETERRQ(1,"MatConvert_AIJ:Matrix type is not currently supported");
   }
   ierr = MatGetOwnershipRange(*newmat,&rstart,&rend); CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
@@ -176,7 +176,6 @@ int MatConvert_MPIAIJ(Mat mat, MatType newtype, Mat *newmat)
   int        ierr, nz, i, ig,rstart = aij->rstart, m = aij->m, *cwork;
   Scalar     *vwork;
 
-  if (mat->type != MATMPIAIJ) SETERRQ(1,"Input matrix must be MATMPIAIJ.");
   switch (newtype) {
     case MATMPIROW:
       for (i=0; i<m; i++)
@@ -184,7 +183,7 @@ int MatConvert_MPIAIJ(Mat mat, MatType newtype, Mat *newmat)
 			0,Bd->ilen,newmat); CHKERRQ(ierr); }
       break;
     default:
-      SETERRQ(1,"Only MATMPIROW is currently suported.");
+      SETERRQ(1,"MatConvert_MPIAIJ:Only MATMPIROW is currently suported");
   }
   /* Each processor converts its local rows */
   for (i=0; i<m; i++) {

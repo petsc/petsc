@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.7 1995/05/25 22:48:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.8 1995/06/08 03:11:55 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -29,7 +29,8 @@ int SNESSolve_Test(SNES snes,int *its)
   double       norm,gnorm;
   SNES_Test    *neP = (SNES_Test*) snes->data;
 
-  if (A != snes->jacobian_pre) SETERRQ(1,"Cannot test with alternative pre");
+  if (A != snes->jacobian_pre) 
+    SETERRQ(1,"SNESSolve_Test: Cannot test with alternative pre");
 
   MPIU_printf(snes->comm,"Testing handcoded Jacobian, if the ratio is\n");
   MPIU_printf(snes->comm,"O(1.e-8) it is probably correct.\n");
@@ -44,7 +45,7 @@ int SNESSolve_Test(SNES snes,int *its)
     else {VecSet(&one,x);}
  
     /* compute both versions of Jacobian */
-    ierr = (*snes->ComputeJacobian)(snes,x,&A,&A,&flg,snes->jacP);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
     if (i == 0) MatConvert(A,MATSAME,&B); 
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);
     CHKERRQ(ierr);
@@ -101,7 +102,7 @@ int SNESCreate_Test(SNES  snes )
   snes->setup		= 0;
   snes->solve		= SNESSolve_Test;
   snes->destroy		= SNESDestroy_Test;
-  snes->Converged	= SNESDefaultConverged;
+  snes->converged	= SNESDefaultConverged;
   snes->printhelp       = SNESPrintHelp_Test;
   snes->setfromoptions  = SNESSetFromOptions_Test;
 

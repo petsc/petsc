@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.18 1995/06/25 20:03:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.19 1995/07/17 03:54:01 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -38,7 +38,7 @@ int KSPChebychevSetEigenvalues(KSP itP,double emax,double emin)
 
 int  KSPSolve_Chebychev(KSP itP,int *its)
 {
-  int              k,kp1,km1,maxit,ktmp,i = 0,pres,brokeout = 0;
+  int              k,kp1,km1,maxit,ktmp,i = 0,pres;
   int              hist_len,cerr,ierr;
   Scalar           alpha,omegaprod;
   Scalar           mu,omega,Gamma,c[3],scale;
@@ -103,7 +103,7 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
       itP->vec_sol = p[k]; 
       MONITOR(itP,rnorm,i);
       cerr = (*itP->converged)(itP,i,rnorm,itP->cnvP);
-      if (cerr) {brokeout = 1; break;}
+      if (cerr) break;
     }
 
     /* y^{k+1} = omega( y^{k} - y^{k-1} + Gamma*r^{k}) + y^{k-1} */
@@ -117,7 +117,7 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
     k    = kp1;
     kp1  = ktmp;
   }
-  if (!brokeout && itP->calc_res) {
+  if (!cerr && itP->calc_res) {
     MatMult(Amat,p[k],r);              /*  r = b - Ap[k]    */
     VecAYPX(&mone,b,r);                        
     if (!pres) VecNorm(r,&rnorm);

@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.6 1995/06/07 16:36:00 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.7 1995/07/17 03:53:44 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -36,7 +36,7 @@ struct _KSP {
 				      */
 
   /* --------User (or default) routines (most return -1 on error) --------*/
-  int  (*usr_monitor)(KSP,int,double,void*); /* returns control to user after
+  int  (*monitor)(KSP,int,double,void*); /* returns control to user after
                                       residual calculation, allows user to, for 
                                       instance, print residual norm, etc. */
   int (*converged)(KSP,int,double,void*);
@@ -68,8 +68,8 @@ struct _KSP {
   char  *prefix;
 };
 
-#define MONITOR(itP,rnorm,it) if (itP->usr_monitor) { \
-                                (*itP->usr_monitor)(itP,it,rnorm,itP->monP);\
+#define MONITOR(itP,rnorm,it) if (itP->monitor) { \
+                                (*itP->monitor)(itP,it,rnorm,itP->monP);\
                               }
 
 

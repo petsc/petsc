@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.26 1995/06/18 16:23:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.27 1995/07/07 17:15:09 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -511,7 +511,7 @@ $  -ksp_monitor   : key for setting KSPDefaultMonitor()
 int KSPSetMonitor(KSP itP, int (*monitor)(KSP,int,double,void*), void *mctx)
 {
   VALIDHEADER(itP,KSP_COOKIE);
-  (itP)->usr_monitor = monitor;(itP)->monP = (void*)mctx;
+  (itP)->monitor = monitor;(itP)->monP = (void*)mctx;
   return 0;
 }
 

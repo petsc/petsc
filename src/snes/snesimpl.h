@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.14 1995/06/14 20:41:38 curfman Exp curfman $ */
+/* $Id: snesimpl.h,v 1.15 1995/07/16 21:59:22 curfman Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -17,30 +17,30 @@ struct _SNES {
   /*  ----------------- User provided stuff ------------------------*/
   void  *user;		             /* User context */
 
-  int   (*ComputeInitialGuess)(SNES,Vec,void*); /* Calculates initial guess */
+  int   (*computeinitialguess)(SNES,Vec,void*); /* Calculates initial guess */
   Vec   vec_sol,vec_sol_always;     /* Pointer to solution */
   Vec   vec_sol_update_always;      /* Pointer to solution update */
   void  *gusP;
 
-  int   (*ComputeFunction)(SNES,Vec,Vec,void*);
+  int   (*computefunction)(SNES,Vec,Vec,void*);
   Vec   vec_func,vec_func_always;   /* Pointer to function or gradient */
   void  *funP;
   int   rsign;                      /* sign (+/-)  of residual */
 
-  int   (*ComputeJacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  int   (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
   Mat   jacobian;                   /* Jacobian (or Hessian) matrix context */
   Mat   jacobian_pre;
   void  *jacP;
   SLES  sles;
 
-  int   (*ComputeScaling)(Vec,Vec,void*);
+  int   (*computescaling)(Vec,Vec,void*);
   Vec   scaling;
   void  *scaP;
 
   /* ---------------- Petsc (or user) Provided stuff ---------------------*/
-  int   (*Monitor)(SNES,int,double,void*);   
+  int   (*monitor)(SNES,int,double,void*);   
   void  *monP;		
-  int   (*Converged)(SNES,double,double,double,void*);     
+  int   (*converged)(SNES,double,double,double,void*);     
   void  *cnvP;		
 
   /* --- Routines and data that are unique to each particular solver --- */
@@ -80,7 +80,7 @@ struct _SNES {
      with the nonlinear equations code.  We should find a better way to deal 
      with this; the naming conventions are confusing.   Perhaps use unions? */
 
-  int      (*ComputeUMFunction)(SNES,Vec,Scalar*,void*);
+  int      (*computeumfunction)(SNES,Vec,Scalar*,void*);
   Scalar   fc;
   void     *umfunP;
   SNESType method_class;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: wmap.c,v 1.5 1995/03/25 01:27:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: wmap.c,v 1.6 1995/06/23 12:41:11 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -24,7 +24,8 @@ int Xi_wait_map( DrawCtx_X *XiWin)
   while (1) {
     XMaskEvent( XiWin->disp, ExposureMask | StructureNotifyMask, &event );
     if (event.xany.window != XiWin->win) {
-	/* Bug for now */
+      break;
+      /* Bug for now */
     }
     else {
       switch (event.type) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.25 1995/07/10 04:51:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.26 1995/07/10 05:02:25 bsmith Exp bsmith $";
 #endif
 
 
@@ -18,11 +18,11 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
   int     *idnew, idx, row,m,fm, nnz, nzi,len, realloc = 0,nzbd,*im;
  
   if (n != aij->n) 
-    SETERRQ(1,"MatLUFactorSymbolic_AIJ: Matrix must be square.");
+    SETERRQ(1,"MatLUFactorSymbolic_AIJ:Matrix must be square");
   if (!isrow) 
-    SETERRQ(1,"MatLUFactorSymbolic_AIJ: Matrix must have row permutation.");
+    SETERRQ(1,"MatLUFactorSymbolic_AIJ:Matrix must have row permutation");
   if (!iscol) 
-    SETERRQ(1,"MatLUFactorSymbolic_AIJ: Matrix must have column permutation.");
+    SETERRQ(1,"MatLUFactorSymbolic_AIJ:Matrix must have column permutation");
 
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
@@ -31,7 +31,7 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
   ainew = (int *) PETSCMALLOC( (n+1)*sizeof(int) ); CHKPTRQ(ainew);
   ainew[0] = 1;
   /* don't know how many column pointers are needed so estimate */
-  jmax = f*ai[n];
+  jmax = (int) (f*ai[n]);
   ajnew = (int *) PETSCMALLOC( (jmax)*sizeof(int) ); CHKPTRQ(ajnew);
   /* fill is a linked list of nonzeros in active row */
   fill = (int *) PETSCMALLOC( (2*n+1)*sizeof(int)); CHKPTRQ(fill);
@@ -85,8 +85,8 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
     if (ainew[i+1] > jmax+1) {
       /* allocate a longer ajnew */
       int maxadd;
-      maxadd = (f*ai[n]*(n-i+5))/n;
-      if (maxadd < nnz) maxadd = nnz+1;
+      maxadd = (int) ((f*ai[n]*(n-i+5))/n);
+      if (maxadd < nnz) maxadd = (n-i)*(nnz+1);
       jmax += maxadd;
       ajtmp = (int *) PETSCMALLOC( jmax*sizeof(int) );CHKPTRQ(ajtmp);
       PETSCMEMCPY(ajtmp,ajnew,(ainew[i]-1)*sizeof(int));
@@ -107,7 +107,8 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
   }
 
   PLogInfo((PetscObject)mat,
-             "Number of reallocs in LU symbolic factorization %d\n",realloc);
+    "Info:MatLUFactorSymbolic_AIJ:Reallocs %d Fill ratio:given %g needed %g\n",
+                             realloc,f,((double)ainew[n])/((double)ai[i]));
 
   ISDestroy(isicol); PETSCFREE(fill);
 
@@ -185,7 +186,7 @@ int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
     pv = aijnew->a + ai[i] - 1;
     pj = aijnew->j + ai[i] - 1;
     nz = ai[i+1] - ai[i];
-    if (rtmp[i] == 0.0) {SETERRQ(1,"Zero pivot detected, sorry");}
+    if (rtmp[i] == 0.0) {SETERRQ(1,"MatLUFactorNumeric_AIJ:Zero pivot");}
     rtmp[i] = 1.0/rtmp[i];
     for ( j=0; j<nz; j++ ) {pv[j] = rtmp[pj[j]-1];}
   } 
@@ -232,7 +233,7 @@ int MatSolve_AIJ(Mat mat,Vec bb, Vec xx)
   Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
 
   if (mat->factor != FACTOR_LU) 
-    SETERRQ(1,"MatSolve_AIJ: Cannot solve with factor.");
+    SETERRQ(1,"MatSolve_AIJ:Cannot solve with unfactored matrix");
 
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
@@ -274,7 +275,7 @@ int MatSolveAdd_AIJ(Mat mat,Vec bb, Vec yy, Vec xx)
   Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
 
   if (mat->factor != FACTOR_LU) 
-    SETERRQ(1,"MatSolveAdd_AIJ: Cannot solve with factor.");
+    SETERRQ(1,"MatSolveAdd_AIJ: Cannot solve with unfactored matrix");
   if (yy != xx) {ierr = VecCopy(yy,xx); CHKERRQ(ierr);}
 
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
@@ -319,7 +320,7 @@ int MatSolveTrans_AIJ(Mat mat,Vec bb, Vec xx)
   Scalar  *x,*b,*tmp, *aa = aij->a, *v;
 
   if (mat->factor != FACTOR_LU) 
-    SETERRQ(1,"MatSolveTrans_AIJ: Cannot solve with factor.");
+    SETERRQ(1,"MatSolveTrans_AIJ:Cannot solve with unfactored matrix");
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp = aij->solve_work;
@@ -374,7 +375,7 @@ int MatSolveTransAdd_AIJ(Mat mat,Vec bb, Vec zz,Vec xx)
   Scalar  *x,*b,*tmp, *aa = aij->a, *v;
 
   if (mat->factor != FACTOR_LU) 
-    SETERRQ(1,"MatSolveTransAdd_AIJ: Cannot solve with factor.");
+    SETERRQ(1,"MatSolveTransAdd_AIJ:Cannot solve with unfactored matrix");
   if (zz != xx) VecCopy(zz,xx);
 
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
@@ -429,14 +430,14 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
   IS      isicol;
   int     *r,*ic, ierr, i, n = aij->m, *ai = aij->i, *aj = aij->j;
   int     *ainew,*ajnew, jmax,*fill, *ajtmp, nz, *lfill,*ajfill,*ajtmpf;
-  int     *idnew, idx, row,m,fm, nnz, nzi,len;
+  int     *idnew, idx, row,m,fm, nnz, nzi,len, *im, nzbd, realloc = 0;
  
   if (n != aij->n) 
-    SETERRQ(1,"MatILUFactorSymbolic_AIJ: Matrix must be square.");
+    SETERRQ(1,"MatILUFactorSymbolic_AIJ:Matrix must be square");
   if (!isrow) 
-    SETERRQ(1,"MatILUFactorSymbolic_AIJ: Matrix must have row permutation.");
+    SETERRQ(1,"MatILUFactorSymbolic_AIJ:Matrix must have row permutation");
   if (!iscol) SETERRQ(1,
-    "MatILUFactorSymbolic_AIJ: Matrix must have column permutation.");
+    "MatILUFactorSymbolic_AIJ:Matrix must have column permutation");
 
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
@@ -445,12 +446,13 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
   ainew = (int *) PETSCMALLOC( (n+1)*sizeof(int) ); CHKPTRQ(ainew);
   ainew[0] = 1;
   /* don't know how many column pointers are needed so estimate */
-  jmax = 2*ai[n];
+  jmax = (int) (f*ai[n]);
   ajnew = (int *) PETSCMALLOC( (jmax)*sizeof(int) ); CHKPTRQ(ajnew);
   /* ajfill is level of fill for each fill entry */
   ajfill = (int *) PETSCMALLOC( (jmax)*sizeof(int) ); CHKPTRQ(ajfill);
   /* fill is a linked list of nonzeros in active row */
-  fill = (int *) PETSCMALLOC( (n+1)*sizeof(int)); CHKPTRQ(fill);
+  fill = (int *) PETSCMALLOC( (2*n+1)*sizeof(int)); CHKPTRQ(fill);
+  im   = fill + n + 1;
   /* lfill is level for each filled value */
   lfill = (int *) PETSCMALLOC( (n+1)*sizeof(int)); CHKPTRQ(lfill);
   /* idnew is location of diagonal in factor */
@@ -472,20 +474,25 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
       fill[m] = idx;
       fill[idx] = fm;
       lfill[idx] = -1;
+ /* printf("i %d cols %d %d\n",i,nz,idx);  */
     }
     row = fill[n];
     while ( row < i ) {
-      ajtmp  = ajnew + idnew[row] - 1;
-      ajtmpf = ajfill + idnew[row] - 1;
-      nz = ainew[row+1] - idnew[row];
-      fm = row;
-      while (nz--) {
-        fm = n;
+      ajtmp  = ajnew + idnew[row];
+      ajtmpf = ajfill + idnew[row];
+
+      nzbd = 1 + idnew[row] - ainew[row];
+      nz = im[row] - nzbd;
+
+      fm = fill[row]; m = row;
+      while (nz-- > 0) {
         idx = *ajtmp++ - 1;
-        do {
+        nzbd++;
+        if (idx == i) im[row] = nzbd;
+        while (fm < idx) {
           m = fm;
           fm = fill[m];
-        } while (fm < idx);
+        }
         if (fm != idx) {
           lfill[idx] = *ajtmpf + 1;
           if (lfill[idx] < levels) {
@@ -495,6 +502,7 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
             nnz++;
           }
         }
+ /* printf("i %d row %d nz %d idx %d fm %d level %d nnz %d\n",i,row,nz,idx,fm,*ajtmpf + 1,nnz); */
         ajtmpf++;
       }
       row = fill[row];
@@ -503,7 +511,10 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
     ainew[i+1] = ainew[i] + nnz;
     if (ainew[i+1] > jmax+1) {
       /* allocate a longer ajnew */
-      jmax += nnz*(n-i);
+      int maxadd;
+      maxadd = (int) ((f*ai[n]*(n-i+5))/n);
+      if (maxadd < nnz) maxadd = (n-i)*(nnz+1);
+      jmax += maxadd;
       ajtmp = (int *) PETSCMALLOC( jmax*sizeof(int) );CHKPTRQ(ajtmp);
       PETSCMEMCPY(ajtmp,ajnew,(ainew[i]-1)*sizeof(int));
       PETSCFREE(ajnew);
@@ -513,21 +524,28 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
       PETSCMEMCPY(ajtmp,ajfill,(ainew[i]-1)*sizeof(int));
       PETSCFREE(ajfill);
       ajfill = ajtmp;
+      realloc++;
     }
     ajtmp  = ajnew + ainew[i] - 1;
     ajtmpf = ajfill + ainew[i] - 1;
     fm = fill[n];
+    im[i] = nnz;
     nzi = 0;
     while (nnz--) {
       if (fm < i) nzi++;
       *ajtmp++  = fm + 1;
       *ajtmpf++ = lfill[fm];
+/* printf("i %d col %d level %d\n",i,fm,lfill[fm]); */
       fm = fill[fm];
     }
     idnew[i] = ainew[i] + nzi;
   }
   PETSCFREE(ajfill); 
   ISDestroy(isicol); PETSCFREE(fill); PETSCFREE(lfill);
+
+  PLogInfo((PetscObject)mat,
+    "Info:MatILUFactorSymbolic_AIJ:Realloc %d Fill ratio:given %g needed %g\n",
+                             realloc,f,((double)ainew[n])/((double)ai[i]));
 
   /* put together the new matrix */
   ierr = MatCreateSequentialAIJ(mat->comm,n, n, 0, 0, fact); CHKERRQ(ierr);

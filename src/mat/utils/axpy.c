@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.4 1995/06/08 03:10:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.5 1995/07/06 17:20:03 bsmith Exp bsmith $";
 #endif
 
 #include "matimpl.h"  /*I   "mat.h"  I*/
@@ -21,7 +21,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
 
   VALIDHEADER(X,MAT_COOKIE);  VALIDHEADER(Y,MAT_COOKIE);
   MatGetSize(X,&m1,&n1);  MatGetSize(X,&m2,&n2);
-  if (m1 != m2 || n1 != n2) SETERRQ(1,"Non conforming matrix add");
+  if (m1 != m2 || n1 != n2) SETERRQ(1,"MatAXPY:Non conforming matrix add");
   vals = (Scalar *) PETSCMALLOC( n1*sizeof(Scalar) ); CHKPTRQ(vals);
   MatGetOwnershipRange(X,&start,&end);
   for ( i=start; i<end; i++ ) {

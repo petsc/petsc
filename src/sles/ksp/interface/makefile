@@ -6,12 +6,14 @@ CFLAGS   = $(OPT) -I.. $(INCLUDEDIRS) \
            -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"ksp/src/"'
 SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c \
            xmon.c
-SOURCEF  =
+SOURCEF  = 
 SOURCEH  = 
 OBJSC    = itcl.o itfunc.o iguess.o itcreate.o iterativ.o itres.o itregis.o \
            xmon.o
-WSOURCEC = itfuncf.c itcreatef.c iterativf.c itresf.c itclf.c itregisf.c
-WOBJS    = itfuncf.o itcreatef.o iterativf.o itresf.o itclf.o itregisf.o
+WSOURCEC = itfuncf.c itcreatef.c iterativf.c itresf.c itclf.c itregisf.c \
+           xmonf.c
+WOBJS    = itfuncf.o itcreatef.o iterativf.o itresf.o itclf.o itregisf.o \
+           xmonf.o
 LIBBASE  = libpetscksp
 LINCLUDE = 
 DIRS     =

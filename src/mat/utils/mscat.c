@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.29 1995/06/22 19:21:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: mscat.c,v 1.2 1995/07/06 17:20:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -66,10 +66,10 @@ int MatScatterCtxCreate(Mat X,IS xr,IS xc,Mat Y,IS yr,IS yc,
   MPI_Comm_rank(comm,&mytid);
 
   if (X->type != (int) MATMPIAIJ) {
-    SETERRQ(1,"MatScatterCtxCreate: only supports scatter from MPIAIJ");
+    SETERRQ(1,"MatScatterCtxCreate:only supports scatter from MPIAIJ");
   }
   if (Y->type != (int) MATAIJ) {
-    SETERRQ(1,"MatScatterCtxCreate: only supports scatter to AIJ");
+    SETERRQ(1,"MatScatterCtxCreate:only supports scatter to AIJ");
   }
 
   ierr = ISGetSize(xr,&nrows); CHKERRQ(ierr);
@@ -245,7 +245,7 @@ int MatScatterBegin(Mat x,Mat y,InsertMode addv,MatScatterCtx inctx)
   VALIDHEADER(x,MAT_COOKIE); VALIDHEADER(y,MAT_COOKIE);
   VALIDHEADER(inctx,MAT_SCATTER_COOKIE);
   if (inctx->inuse) 
-    SETERRQ(1,"MatScatterBegin: Scatter ctx already in use");
+    SETERRQ(1,"MatScatterBegin:Scatter ctx already in use");
   return (*(inctx)->begin)(x,y,addv,inctx);
 }
 
