@@ -15,14 +15,16 @@
 /*
    Include files specific for PVODE
 */
-#if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus) 
+#if defined(PETSC_HAVE_PVODE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+
+EXTERN_C_BEGIN
 #include "sundialstypes.h"
 #include "cvode.h"
 #include "nvector.h"
 #include "nvector_parallel.h"
 #include "iterativ.h"
 #include "cvspgmr.h"
-
+EXTERN_C_END
 
 typedef struct {
   Vec  update;    /* work vector where new solution is formed */

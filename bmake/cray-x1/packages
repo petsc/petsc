@@ -1,0 +1,29 @@
+# $Id: base.site,v 1.72 2001/06/21 18:03:31 curfman Exp $ 
+
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# Location of BLAS and LAPACK. See ${PETSC_DIR}/docs/installation.html for
+# information on retrieving them.
+#
+BLASLAPACK_LIB = -lsci
+#
+# Location of MPI (Message Passing Interface) software  
+#
+MPI_LIB        = -lmpi
+MPI_INCLUDE    = 
+MPIRUN         = mpirun
+#
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ----------------------------------------------------------------------------------------  
+#
+# Location of X-windows software
+#
+#X11_INCLUDE    = 
+#X11_LIB        = -lX11
+#PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#

@@ -1315,6 +1315,22 @@ Major opcode of failed request:  78 (X_CreateColormap)<br>
 Serial number of failed request:  8<br>
 Current serial number in output stream:  9<br>
           <br>
+          <p><font color="#ff0000"><strong>Problem:</strong></font> This
+problem         might occur when using 25 color mode or 32bit color
+mode on windows. </p>
+          <p><font color="#ff0000"><strong>Cure:</strong></font> This
+can be         fixed by changing the display settings on windows to 16
+bit colors or 24         bit colors.<br>
+          </p>
+        </li>
+        <li><font color="#ff0000"><strong>Symptom</strong>:</font> Some
+Krylov         methods seem to print two residual norms per iteration,
+for example <br>
+          <font face="Terminal"><br>
+&gt; 1198 KSP Residual norm 1.366052062216e-04<br>
+&gt; 1198 KSP Residual norm 1.931875025549e-04<br>
+&gt; 1199 KSP Residual norm 1.366026406067e-04<br>
+&gt; 1199 KSP Residual norm 1.931819426344e-04 </font>
           </font> <font color="#ff0000"><strong>Problem:</strong></font>
 Some Krylov methods, for example         tfqmr, actually have a
 "sub-iteration"<br>
@@ -1326,22 +1342,6 @@ like&nbsp;<br>
 there are two residual norms per iteration. You can also think of it as
 twice<br>
 as many iterations.</p>
-        </li>
-        <li><font color="#ff0000"><strong>Symptom</strong>:</font> Some
-Krylov         methods seem to print two residual norms per iteration,
-for example <br>
-          <font face="Terminal"><br>
-&gt; 1198 KSP Residual norm 1.366052062216e-04<br>
-&gt; 1198 KSP Residual norm 1.931875025549e-04<br>
-&gt; 1199 KSP Residual norm 1.366026406067e-04<br>
-&gt; 1199 KSP Residual norm 1.931819426344e-04 </font>
-          <p><font color="#ff0000"><strong>Problem:</strong></font> This
-problem         might occur when using 25 color mode or 32bit color
-mode on windows. </p>
-          <p><font color="#ff0000"><strong>Cure:</strong></font> This
-can be         fixed by changing the display settings on windows to 16
-bit colors or 24         bit colors.<br>
-          </p>
         </li>
         <li><font color="#ff0000"><strong>Symptom</strong>:</font>
 Unresolved symbols on macx (Mac OS X) when building the examples, but

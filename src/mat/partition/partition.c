@@ -198,6 +198,34 @@ int MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *typ
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningSetNParts"
+/*@C
+   MatPartitioningSetNParts - Set how many partitions need to be created;
+        by default this is one per processor. Certain partitioning schemes may
+        in fact only support that option.
+
+   Not collective
+
+   Input Parameter:
+.  partitioning - the partitioning context
+.  n - the number of partitions
+
+   Level: intermediate
+
+   Not Collective
+
+.keywords: Partitioning, set
+
+.seealso: MatPartitioningCreate(), MatPartitioningApply()
+@*/
+int MatPartitioningSetNParts(MatPartitioning part,int n)
+{
+  PetscFunctionBegin;
+  part->n = n;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningApply" 
 /*@C
    MatPartitioningApply - Gets a partitioning for a matrix.

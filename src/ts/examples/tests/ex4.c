@@ -68,7 +68,7 @@ int main(int argc,char **argv)
   Vec 		x;
   Data		data;
   int 		mn;
-#if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_PVODE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   PC		pc;
   PetscViewer   viewer;
   char          pcinfo[120],tsinfo[120];
@@ -140,7 +140,7 @@ int main(int argc,char **argv)
 
   /* Pick up a Petsc preconditioner */
   /* one can always set method or preconditioner during the run time */
-#if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_PVODE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = TSPVodeGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
   ierr = TSPVodeSetType(ts,PVODE_BDF);CHKERRQ(ierr);
@@ -155,7 +155,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
   ierr = VecView(global,viewfile);CHKERRQ(ierr);
 
-#if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_PVODE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   /* extracts the PC  from ts */
   ierr = TSPVodeGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRQ(ierr);

@@ -280,41 +280,40 @@ int ISColoringCreate(MPI_Comm comm,int n,const ISColoringValue colors[],ISColori
 int ISPartitioningToNumbering(IS part,IS *is)
 {
   MPI_Comm comm;
-  int      i,ierr,size,*indices,np,n,*starts,*sums,*lsizes,*newi;
+  int      i,ierr,size,*indices,np,npt,n,*starts,*sums,*lsizes,*newi;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  /* count the number of partitions, make sure <= size */
+  /* count the number of partitions, i.e., virtual processors */
   ierr = ISGetLocalSize(part,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(part,&indices);CHKERRQ(ierr);
   np = 0;
   for (i=0; i<n; i++) {
     np = PetscMax(np,indices[i]);
-  }  
-  if (np >= size) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Number of partitions %d larger than number of processors %d",np,size);
   }
+  ierr = MPI_Allreduce(&np,&npt,1,MPI_INT,MPI_MAX,comm); CHKERRQ(ierr);
+  np = npt+1; /* so that it looks like a MPI_Comm_size output */
 
   /*
         lsizes - number of elements of each partition on this particular processor
         sums - total number of "previous" nodes for any particular partition
         starts - global number of first element in each partition on this processor
   */
-  ierr   = PetscMalloc(3*size*sizeof(int),&lsizes);CHKERRQ(ierr);
-  starts = lsizes + size;
-  sums   = starts + size;
-  ierr   = PetscMemzero(lsizes,size*sizeof(int));CHKERRQ(ierr);
+  ierr   = PetscMalloc(3*np*sizeof(int),&lsizes);CHKERRQ(ierr);
+  starts = lsizes + np;
+  sums   = starts + np;
+  ierr   = PetscMemzero(lsizes,np*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     lsizes[indices[i]]++;
   }  
-  ierr = MPI_Allreduce(lsizes,sums,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  ierr = MPI_Scan(lsizes,starts,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  for (i=0; i<size; i++) {
+  ierr = MPI_Allreduce(lsizes,sums,np,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Scan(lsizes,starts,np,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  for (i=0; i<np; i++) {
     starts[i] -= lsizes[i];
   }
-  for (i=1; i<size; i++) {
+  for (i=1; i<np; i++) {
     sums[i]    += sums[i-1];
     starts[i]  += sums[i-1];
   }

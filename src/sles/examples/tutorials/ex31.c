@@ -47,6 +47,8 @@ struct _p_MRC {
 	PetscReal dt_spec_out;
 	PetscReal Sx, Sy;
 	PetscReal Lx, Ly;
+
+        Vec allvariables;
 };
 
 typedef struct {
@@ -58,6 +60,10 @@ typedef struct {
 	PetscScalar phi;
 	PetscScalar psi;
 } Pot;
+
+typedef struct {
+  PetscScalar phi,psi,U,F;
+} PotentialField;
 
 static MRC _mrc; // FIXME
 
@@ -406,7 +412,7 @@ int AttachNullSpace(PC pc, Vec model)
 #define __FUNCT__ "PoiCreate"
 int PoiCreate(MRC mrc, Poi *in_poi)
 {
-	int ierr, i;
+	int ierr, i,m,n;
 	Poi poi;
 	DA da;
 	SLES sles, subsles;
@@ -418,12 +424,19 @@ int PoiCreate(MRC mrc, Poi *in_poi)
 	ierr = PetscMalloc(sizeof(*poi), &poi); CE;
 	
 	poi->mrc = mrc;
-	ierr = DMMGCreate(PETSC_COMM_WORLD, 6, PETSC_NULL, &poi->dmmg); CE;
+	ierr = DMMGCreate(PETSC_COMM_WORLD, 1, PETSC_NULL, &poi->dmmg); CE;
 	ierr = DACreate2d(PETSC_COMM_WORLD,DA_XYPERIODIC, DA_STENCIL_STAR,
-			  8, 8, PETSC_DECIDE, PETSC_DECIDE,
+			  5,5, PETSC_DECIDE, PETSC_DECIDE,
 			  w, 1, 0, 0, &da); CE;
 	ierr = DMMGSetDM(poi->dmmg,(DM)da);
 	ierr = DADestroy(da); CE;
+
+        /* create DA and vector type to hold both potential and field interlaced */
+        ierr = DAGetInfo(DMMGGetDA(poi->dmmg),0,&m,&n,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+        ierr = DACreate2d(DMMGGetComm(poi->dmmg),DA_XYPERIODIC,DA_STENCIL_STAR,m,n,PETSC_DECIDE,PETSC_DECIDE,
+                          4,1,0,0,&da);CHKERRQ(ierr);
+        ierr = DACreateGlobalVector(da,&mrc->allvariables);CHKERRQ(ierr);
+        ierr = DADestroy(da);CHKERRQ(ierr);
 
 	ierr = DMMGSetSLES(poi->dmmg, ComputeRHS, ComputeJacobian); CE;
 
@@ -458,6 +471,7 @@ int PoiDestroy(Poi poi)
 	PetscFunctionBegin;
 
 	ierr = DMMGDestroy(poi->dmmg); CE;
+        ierr = VecDestroy(poi->mrc->allvariables);CHKERRQ(ierr);
 	ierr = PetscFree(poi); CE;
 
 	PetscFunctionReturn(0);
@@ -564,6 +578,7 @@ int IniPorcelli(MRC mrc)
 	ierr = PoiCalcRhs(mrc->poi, X, mrc->b); CE;
 	ierr = VecSet(&zero, X);
 	ierr = DARestoreGlobalVector(da, &X); CE;
+
 
 	PetscFunctionReturn(0);
 }
@@ -742,7 +757,7 @@ int MRCSpecOutput(MRC mrc, Vec X)
 #define __FUNCT__ "MRCOutput"
 int MRCOutput(MRC mrc, const char *s, Vec V)
 {
-	int ierr;
+  /*	int ierr; */
 	char fname[256];
 
 	PetscFunctionBegin;
@@ -774,6 +789,12 @@ int MRCRun(MRC mrc)
 
 	ierr = PoiSolve(mrc->poi, b, x); CE;
 
+        {
+          Vec vecs[2]; vecs[0] = x; vecs[1] = b;
+          ierr = VecStrideScatterAll(vecs,mrc->allvariables,INSERT_VALUES);CHKERRQ(ierr);
+          VecView(mrc->allvariables,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
+        }
+
 	ierr = MRCOutput(mrc, "b", b); CE;
 	ierr = MRCOutput(mrc, "x", x); CE;
 
@@ -783,6 +804,7 @@ int MRCRun(MRC mrc)
 	ierr = VecCopy(rhs, bp); CE;
 	ierr = VecAXPY(&mrc->dt, rhs, b); CE;
 	mrc->t += mrc->dt;
+
 
 	do {
 		ierr = PoiSolve(mrc->poi, b, x); CE;

@@ -3,8 +3,8 @@
 ALL: lib
 
 #requirespackage   'PETSC_HAVE_PVODE'
-#requireslanguage  CONLY
 #requiresprecision double
+#requiresscalar    real
 
 CFLAGS   =
 FFLAGS   =
