@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildremotetest,v 1.41 1998/03/30 22:17:42 balay Exp balay $ 
+# $Id: buildremotetest,v 1.42 1998/04/23 22:39:01 balay Exp balay $ 
 
 # 
 # Builds and transports the petsc.tar.gz file for remote 
@@ -23,8 +23,9 @@ builddist >>& /dev/null
 #
 #  Wait 6.5 hours then retrieve the results
 #
+echo sleeping 30000 >> nightlylogs/ftp.log
 sleep 30000
-echo sleeping >> nightlylogs/ftp.log
+echo done sleeping >> nightlylogs/ftp.log
 #/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
 #autoftp joshua.math.ucla.edu bsmith get buildtest.log /home/bsmith/petsc/maint/nightlylogs/solaris.log >>& nightlylogs/ftp.log
 #/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log

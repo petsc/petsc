@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.126 1998/09/25 15:03:18 balay Exp balay $ 
+# $Id: crontab,v 1.127 1998/10/07 19:00:23 balay Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -6,9 +6,6 @@
 # Run "crontab crontab" to install the nightly build;
 # use "crontab -r" to remove it.
 # 
-# Some jobs are run on maverick, as they require 'expect' 
-# which is not avilable on solaris machines.
-#
 #  The timing between these runs IS not important.
 #
 1  23 * * * /usr/ucb/rsh soot /home/bsmith/petsc/maint/buildremotetest
