@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.27 2000/10/24 20:22:56 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.28 2000/10/24 20:44:59 hzhang Exp hzhang $*/
 /*
     Symbolic (-UT)*D*(-U) factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -2113,7 +2113,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat A,Mat *B)
 }
 
 /*
-    Numeric (-UT)*D*(-U) factorization for SBAIJ format. Modified from SNF of YSMP.
+    Numeric U^T*D*U factorization for SBAIJ format. Modified from SNF of YSMP.
     Version for blocks are 2 by 2.
 */
 #undef __FUNC__  
@@ -2133,7 +2133,6 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
   MatScalar          *up,*diag,*rtmp_ptr;
 
   PetscFunctionBegin;
-  printf("called factornum_2, bs2: %d\n",bs2);
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
 
   if (!a->permute){
@@ -2312,7 +2311,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
   C->assembled = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   PLogFlops(b->mbs);
-
+#ifdef TEMP
   printf("in num_2 \n");
   for (k=0; k<mbs; k++){ 
     k1 = b->i[k+1] - b->i[k];
@@ -2322,7 +2321,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
       printf(" %d , ",b->j[j]);
     }   
   }
-
+#endif
   PetscFunctionReturn(0);
 }
 
