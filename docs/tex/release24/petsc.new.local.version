@@ -6,15 +6,17 @@ Subject: new local PETSc installation
 
 We have installed a new local version of PETSc (version 2.0.15)
 in /usr/local/petsc/petsc.  Please see the file
-/usr/local/petsc/petsc/Changes for new features and changes in the
-software.
+/usr/local/petsc/petsc/Changes for new features and changes in 
+the software.
 
 The previous two versions (PETSc 2.0.13 and 2.0.14) are located in
 /home/petsc/petsc-2.0.13 and /home/petsc/petsc-2.0.14.  Please try 
 using the new code when you have a chance.  Please only revert to the
-previous version in case of emergency; be sure to let us know by
+previous version in case of emergency.  Be sure to let us know by
 writing to petsc-maint@mcs.anl.gov if you experience any problems with
-the new code, as we should be able to resolve them quickly.
+the new code, as we should be able to resolve them quickly.  Also,
+let us know if you need to use a version of PETSc that hasn't been
+built (by specifying needed PETSC_ARCH and BOPT).
 
 Thanks for your support.
 Barry, Satish, Bill, and Lois
