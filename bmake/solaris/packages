@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.84 2000/08/10 19:18:55 bsmith Exp balay $ 
+# $Id: base.site,v 1.85 2000/09/13 15:17:53 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -50,9 +50,7 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 # Location of MPE
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
-#MPE_INCLUDE   = -I/home/petsc/mpich/mpe
-#MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpe -lpmpi
-MPE_INCLUDE    = -I${MPI_HOME}/mpe
+MPE_INCLUDE    = -I${MPI_HOME}/mpe -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 MPE_LIB        = -L${MPI_BUILD_HOME}/lib -lmpe
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
