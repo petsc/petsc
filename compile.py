@@ -6,6 +6,7 @@ import logging
 import transform
 
 import os
+import string
 import types
 
 class Process (action.Action):
@@ -73,13 +74,14 @@ class Process (action.Action):
 class Compile (action.Action):
   def __init__(self, library, tag, sources, compiler, compilerFlags, archiver, archiverFlags, setwiseExecute, updateType = 'immediate'):
     if setwiseExecute:
-      action.Action.__init__(self, compiler,     sources, compilerFlags, setwiseExecute)
+      action.Action.__init__(self, self.compileSet, sources, compilerFlags, setwiseExecute)
     else:
-      action.Action.__init__(self, self.compile, sources, compilerFlags, setwiseExecute)
+      action.Action.__init__(self, self.compile,    sources, compilerFlags, setwiseExecute)
     self.tag           = tag
     self.compiler      = compiler
     self.archiver      = archiver
     self.archiverFlags = archiverFlags
+    self.archiverRoot  = ''
     self.library       = library
     self.buildProducts = 0
     self.products      = self.library
@@ -136,11 +138,57 @@ class Compile (action.Action):
       os.remove(object)
     return object
 
+  def compileSet(self, set):
+    if len(set) == 0: return set
+    self.debugPrint('Compiling '+self.debugFileSetStr(set)+' into '+self.library[0], 3, 'compile')
+    # Compile files
+    command  = self.compiler
+    flags    = self.constructFlags(set, self.flags)+self.getDefines()+self.getIncludeFlags()
+    command += ' '+flags
+    for source in set:
+      command += ' '+source
+    output   = self.executeShellCommand(command, self.errorHandler)
+    # Update source DB if it compiled successfully
+    for source in set:
+      if self.updateType == 'immediate':
+        bs.sourceDB.updateSource(source)
+      elif self.updateType == 'deferred':
+        self.deferredUpdates.append(source)
+    # Archive files
+    if self.archiver:
+      objects = []
+      for source in set:
+        objects.append(self.getIntermediateFileName(source))
+      command = self.archiver+' '+self.archiverFlags+' '+self.library[0]
+      if self.archiverRoot:
+        dirs = string.split(self.archiverRoot, os.sep)
+        for object in objects:
+          odirs = string.split(object, os.sep)
+          if not dirs == odirs[:len(dirs)]: raise RuntimeError('Invalid object '+object+' not under root '+self.archiverRoot)
+          command += ' -C '+self.archiverRoot+' '+string.join(odirs[len(dirs):], os.sep)
+      else:
+        for object in objects:
+          command += ' '+object
+      output  = self.executeShellCommand(command, self.errorHandler)
+      for object in objects:
+        os.remove(object)
+    return set
+
   def setExecute(self, set):
     if set.tag == self.tag:
       transform.Transform.setExecute(self, set)
     elif set.tag == 'old '+self.tag:
       if self.rebuildAll: transform.Transform.setExecute(self, set)
+    else:
+      if isinstance(self.products, fileset.FileSet):
+        self.products = [self.products]
+      self.products.append(set)
+
+  def setAction(self, set):
+    if set.tag == self.tag:
+      self.func(set)
+    elif set.tag == 'old '+self.tag:
+      if self.rebuildAll: self.func(set)
     else:
       if isinstance(self.products, fileset.FileSet):
         self.products = [self.products]
@@ -165,6 +213,13 @@ class CompileC (Compile):
   def __init__(self, library, sources = None, tag = 'c', compiler = 'gcc', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wredundant-decls -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
     Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
     self.includeDirs.append('.')
+    self.errorHandler = self.handleCErrors
+
+  def handleCErrors(self, command, status, output):
+    if status:
+      raise RuntimeError('Could not execute \''+command+'\': '+output)
+    elif output.find('warning') >= 0:
+      print('\''+command+'\': '+output)
 
 class TagCxx (transform.GenericTag):
   def __init__(self, tag = 'cxx', ext = 'cc', sources = None, extraExt = 'hh', root = None):
@@ -191,12 +246,51 @@ class CompileF77 (Compile):
     Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
 
 class TagF90 (transform.GenericTag):
-  def __init__(self, tag = 'f77', ext = 'f90', sources = None, extraExt = '', root = None):
+  def __init__(self, tag = 'f90', ext = 'f90', sources = None, extraExt = '', root = None):
     transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
 
 class CompileF90 (Compile):
   def __init__(self, library, sources = None, tag = 'f90', compiler = 'f90', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
     Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
+
+class TagJava (transform.GenericTag):
+  def __init__(self, tag = 'java', ext = 'java', sources = None, extraExt = '', root = None):
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
+
+class CompileJava (Compile):
+  def __init__(self, library, sources = None, tag = 'java', compiler = 'javac', compilerFlags = '-g', archiver = 'jar', archiverFlags = 'cf'):
+    Compile.__init__(self, library, tag, sources, compiler, compilerFlags, archiver, archiverFlags, 1, 'deferred')
+    self.includeDirs.append('.')
+    self.errorHandler = self.handleJavaErrors
+
+  def getDefines(self):
+    return ''
+
+  def checkJavaInclude(self, dirname):
+    ext = os.path.splitext(dirname)[1]
+    if ext == '.jar':
+      if not os.path.isfile(dirname):
+        raise RuntimeError('Jar file '+dirname+' does not exist')
+    else:
+      self.checkIncludeDirectory(dirname)
+
+  def getIncludeFlags(self):
+    flags = ' -classpath '
+    for dirname in self.includeDirs:
+      self.checkJavaInclude(dirname)
+      flags += dirname+":"
+    return flags[:-1]
+
+  def getIntermediateFileName(self, source):
+    (base, ext) = os.path.splitext(source)
+    if not ext == '.java': raise RuntimeError('Invalid Java file: '+source)
+    return base+'.class'
+
+  def handleJavaErrors(self, command, status, output):
+    if status:
+      raise RuntimeError('Could not execute \''+command+'\': '+output)
+    elif output.find('warning') >= 0:
+      print('\''+command+'\': '+output)
 
 class TagEtags (transform.GenericTag):
   def __init__(self, tag = 'etags', ext = ['c', 'h', 'cc', 'hh', 'py'], sources = None, extraExt = '', root = None):

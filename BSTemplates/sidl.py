@@ -15,7 +15,7 @@ import UserDict
 import UserList
 
 class BabelLanguageList (UserList.UserList):
-  languages = ['C', 'C++', 'Python', 'F77']
+  languages = ['C', 'C++', 'Python', 'F77', 'Java']
 
   def __setitem__(self, key, value):
     if not value in self.languages:
@@ -63,7 +63,7 @@ class BabelPackageDict (UserDict.UserDict):
 class Defaults:
   implRE     = re.compile(r'^(.*)_Impl$')
   libraryRE  = re.compile(r'^(.*)lib(.*).so$')
-  compileExt = ['.h', '.c', '.hh', '.cc', '.f', '.f90']
+  compileExt = ['.h', '.c', '.hh', '.cc', '.f', '.f90', '.java']
 
   def __init__(self, sources = None, repositoryDir = None, serverBaseDir = None, compilerFlags = ''):
     self.sources         = sources
@@ -184,6 +184,8 @@ class CompileDefaults (Defaults):
     self.libDir                = os.path.abspath('lib')
     self.pythonIncludeDir      = bs.argDB['PYTHON_INCLUDE']
     self.pythonLib             = fileset.FileSet([bs.argDB['PYTHON_LIB']])
+    self.javaIncludeDir        = bs.argDB['JAVA_INCLUDE']
+    self.javaRuntimeLib        = bs.argDB['JAVA_RUNTIME_LIB'] # Should be self.babelLibDir/sidl.jar
     self.babelDir              = os.path.abspath(bs.argDB['BABEL_DIR'])
     #self.babelIncludeDir       = os.path.join(self.babelDir, 'include')
     self.babelIncludeDir       = os.path.join(self.babelDir, 'server-sidl')
@@ -206,9 +208,12 @@ class CompileDefaults (Defaults):
     libraries.extend(self.babelLib)
     return libraries
 
-  def getClientLibrary(self, lang):
+  def getClientLibrary(self, lang, cSupport = 0):
     'Client libraries following the naming scheme: lib<project>-<lang>-client.a'
-    return fileset.FileSet([os.path.join(self.libDir, 'lib'+self.project+'-'+string.lower(lang)+'-client.a')])
+    if lang == 'Java' and not cSupport:
+      return fileset.FileSet([os.path.join(self.libDir, 'lib'+self.project+'-'+string.lower(lang)+'-client.jar')])
+    else:
+      return fileset.FileSet([os.path.join(self.libDir, 'lib'+self.project+'-'+string.lower(lang)+'-client.a')])
 
   def getServerLibrary(self, lang, package):
     'Server libraries following the naming scheme: lib<project>-<lang>-<package>-server.a'
@@ -311,29 +316,40 @@ class CompileDefaults (Defaults):
       sourceDir = self.getClientRootDir(lang)
       library   = self.getClientLibrary(lang)
       libraries = fileset.FileSet()
+      taggers   = []
+      actions   = []
 
       if lang in ['Python', 'F77', 'C']:
-        tagger = compile.TagC(root = sourceDir)
-        action = compile.CompileC(library)
+        taggers.append(compile.TagC(root = sourceDir))
+        actions.append(compile.CompileC(library))
+        if lang == 'Python':
+          actions[0].includeDirs.append(self.pythonIncludeDir)
       elif lang == 'C++':
-        tagger = [compile.TagC(root = sourceDir), compile.TagCxx(root = sourceDir)]
-        action = compile.CompileCxx(library)
+        taggers.append(compile.TagCxx(root = sourceDir))
+        actions.append(compile.CompileCxx(library))
+      elif lang == 'Java':
+        taggers.extend([compile.TagC(root = sourceDir), compile.TagJava(root = sourceDir)])
+        actions.extend([compile.CompileC(self.getClientLibrary(lang, 1)), compile.CompileJava(library)])
+        actions[0].includeDirs.append(self.javaIncludeDir)
+        actions[1].includeDirs.append(self.javaRuntimeLib)
+        actions[1].archiverRoot = sourceDir
       else:
         raise RuntimeError('Unknown client language: '+lang)
 
-      action.defines.append('PIC')
-      action.includeDirs.append(sourceDir)
-      self.addBabelInclude(action, lang)
-      if self.includeDirs.has_key(lang):
-        action.includeDirs.extend(self.includeDirs[lang])
+      for action in actions:
+        action.defines.append('PIC')
+        action.includeDirs.append(sourceDir)
+        self.addBabelInclude(action, lang)
+        if self.includeDirs.has_key(lang):
+          action.includeDirs.extend(self.includeDirs[lang])
 
       self.addBabelLib(libraries)
       if self.extraLibraries.has_key(lang):
         libraries.extend(self.extraLibraries[lang])
 
+      # TODO: This is part of the Python fix we need
       if lang == 'Python':
-        action.includeDirs.append(self.pythonIncludeDir)
-        action = (babel.PythonModuleFixup(library, sourceDir), action)
+        actions = (babel.PythonModuleFixup(library, sourceDir), actions)
 
       # Allow bootstrap
       linker = link.LinkSharedLibrary(extraLibraries = libraries)
@@ -341,8 +357,8 @@ class CompileDefaults (Defaults):
         linker.doLibraryCheck = 0
 
       targets.append(target.Target(None,
-                                   [tagger,
-                                    action,
+                                   [taggers,
+                                    actions,
                                     link.TagLibrary(),
                                     linker]))
     targets.append(transform.Update())
@@ -366,19 +382,19 @@ class CompileDefaults (Defaults):
     baseName  = os.path.splitext(os.path.split(executable[0])[1])[0] 
     library   = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
     libraries = fileset.FileSet()
-    tags      = []
+    taggers   = []
     actions   = []
 
     if lang == 'C':
-      tags.append(compile.TagC())
+      taggers.append(compile.TagC())
       actions.append(compile.CompileC(library))
     elif lang == 'C++':
-      tags.append(compile.TagCxx())
+      taggers.append(compile.TagCxx())
       actions.append(compile.CompileCxx(library))
     elif lang == 'F77':
-      tags.append(compile.TagF77())
+      taggers.append(compile.TagF77())
       actions.append(compile.CompileF77(library))
-      tags.append(compile.TagC())
+      taggers.append(compile.TagC())
       actions.append(compile.CompileC(library))
     else:
       raise RuntimeError('Unknown executable language: '+lang)
@@ -394,7 +410,7 @@ class CompileDefaults (Defaults):
       libraries.extend(self.extraLibraries['executable'])
 
     return [target.Target(None,
-                         [tags,
+                         [taggers,
                           actions,
                           link.TagLibrary(),
                           link.LinkSharedLibrary(extraLibraries = self.addBabelLib(libraries))])]

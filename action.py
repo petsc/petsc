@@ -30,9 +30,8 @@ class Action (transform.Transform):
     self.func(set)
     if self.buildProducts:
       if isinstance(self.products, fileset.FileSet):
-        self.products = [self.products, set]
-      else:
-        self.products.append(set)
+        self.products = [self.products]
+      self.products.append(set)
 
   def shellAction(self, file):
     command = self.program+' '+self.constructFlags(file, self.flags)+' '+file
