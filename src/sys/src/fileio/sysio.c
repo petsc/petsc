@@ -464,10 +464,12 @@ PetscErrorCode PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_t
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown seek location");
   }
-#if defined(PETSC_HAVE__LSEEK)
+#if defined(PETSC_HAVE_LSEEK)
+  *offset = lseek(fd,off,iwhence);
+#elif defined(PETSC_HAVE__LSEEK)
   *offset = _lseek(fd,(long)off,iwhence);
 #else
-  *offset = lseek(fd,off,iwhence);
+  SETERRQ(PETSC_ERR_SUP_SYS,"System does not have a way of seeking on a file");
 #endif
 
   PetscFunctionReturn(0);
