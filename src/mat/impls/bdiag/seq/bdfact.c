@@ -98,7 +98,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
   for (k=0; k<mblock; k++) { /* k = block pivot_row */
     knb = k*bs; knb2 = knb*bs;
     /* invert the diagonal block */
-    Kernel_A_gets_inverse_A(bs,dd+knb2,a->pivot+knb,v_work);
+    ierr = Kernel_A_gets_inverse_A(bs,dd+knb2,a->pivot+knb,v_work);CHKERRQ(ierr);
     for (d=mainbd-1; d>=0; d--) {
       elim_row = k + diag[d];
       if (elim_row < mblock) { /* sweep down */

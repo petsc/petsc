@@ -569,7 +569,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
     /* invert diagonal block */
     diag = ba+k*bs2;
     ierr = PetscMemcpy(diag,dk,bs2*sizeof(MatScalar));CHKERRQ(ierr);   
-    Kernel_A_gets_inverse_A(bs,diag,pivots,work);
+    ierr = Kernel_A_gets_inverse_A(bs,diag,pivots,work);CHKERRQ(ierr);
     
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
@@ -696,7 +696,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat A,Mat *B)
     /* invert diagonal block */
     diag = ba+k*bs2;
     ierr = PetscMemcpy(diag,dk,bs2*sizeof(MatScalar));CHKERRQ(ierr);   
-    Kernel_A_gets_inverse_A(bs,diag,pivots,work);
+    ierr = Kernel_A_gets_inverse_A(bs,diag,pivots,work);CHKERRQ(ierr);
     
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
