@@ -179,6 +179,7 @@ EXTERN int TSPVodeSetGramSchmidtType(TS,TSPVodeGramSchmidtType);
 EXTERN int TSPVodeSetGMRESRestart(TS,int);
 EXTERN int TSPVodeSetLinearTolerance(TS,PetscReal);
 EXTERN int TSPVodeSetExactFinalTime(TS,PetscTruth);
+EXTERN int TSPVodeGetParameters(TS,int *,long int**,double**);
 
 #endif
 

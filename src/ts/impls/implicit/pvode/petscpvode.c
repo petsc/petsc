@@ -7,6 +7,47 @@
 
 #include "src/ts/impls/implicit/pvode/petscpvode.h"  /*I "petscts.h" I*/    
 
+#undef __FUNCT__  
+#define __FUNCT__ "TSPVodeGetParameters"
+/*@C
+   TSPVodeGetParameters - Extract "iopt" and "ropt" PVODE parameters
+
+   Input Parameter:
+.    ts - the time-step context
+
+   Output Parameters:
++   opt_size - size of the parameter arrays (will be set to PVODE value OPT_SIZE)
+.   iopt - the integer parameters
+-   ropt - the double paramters
+
+
+   Level: advanced
+g
+   Notes: You may pass PETSC_NULL for any value you do not desire
+
+          PETSc initializes these array with the default PVODE values of 0, you may 
+          change them before calling the TS solver.
+
+          See the PVODE include file cvode.h for the definitions of the fields
+
+    Suggested by: Timothy William Chevalier
+
+.seealso: TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetGramSchmidtType(), TSPVodeSetTolerance(),
+          TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetTolerance()
+@*/
+int TSPVodeGetParameters(TS ts,int *opt_size,long int **iopt,double **ropt)
+{ 
+  TS_PVode     *cvode = (TS_PVode*)ts->data;
+
+  PetscFunctionBegin;
+  if (opt_size) *opt_size = OPT_SIZE;
+  if (iopt)     *iopt     = cvode->iopt;
+  if (ropt)     *ropt     = cvode->ropt;
+  PetscFunctionReturn(0);
+}
+
 /*
       TSPrecond_PVode - function that we provide to PVODE to
                         evaluate the preconditioner.
