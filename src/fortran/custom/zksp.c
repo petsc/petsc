@@ -1,4 +1,4 @@
-/*$Id: zksp.c,v 1.40 1999/12/13 01:46:46 bsmith Exp bsmith $*/
+/*$Id: zksp.c,v 1.41 1999/12/15 17:21:30 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ksp.h"
@@ -25,7 +25,7 @@
 #define kspgetsolution_            KSPGETSOLUTION
 #define kspgetpc_                  KSPGETPC
 #define kspsetmonitor_             KSPSETMONITOR
-#define kspsetconvergencetest _    KSPSETCONVERGENCETEST
+#define kspsetconvergencetest_     KSPSETCONVERGENCETEST
 #define kspcreate_                 KSPCREATE
 #define kspsetoptionsprefix_       KSPSETOPTIONSPREFIX
 #define kspappendoptionsprefix_    KSPAPPENDOPTIONSPREFIX
