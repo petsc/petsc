@@ -343,7 +343,7 @@ class Configure(config.base.Configure):
       self.framework.argDB['LIBS'] = oldLibs+self.flibs
       try:
         self.setCompilers.checkCompiler('C')
-      except RuntimeError:
+      except RuntimeError, e:
         self.framework.log.write(str(e)+'\n')
         raise RuntimeError('Fortran libraries cannot be used with C compiler')
 
@@ -352,14 +352,14 @@ class Configure(config.base.Configure):
       self.framework.argDB['LIBS'] += oldLibs+self.flibs
       try:
         self.setCompilers.checkCompiler('C++')
-      except RuntimeError:
+      except RuntimeError, e:
         self.framework.log.write(str(e)+'\n')
         # try removing this one causes grief with gnu g++ and Intel Fortran
         self.flibs = re.sub('-lintrins','',self.flibs)
         self.framework.argDB['LIBS'] = oldLibs+self.flibs
         try:
           self.setCompilers.checkCompiler('C++')
-        except RuntimeError:
+        except RuntimeError, e:
           self.framework.log.write(str(e)+'\n')
           raise RuntimeError('Fortran libraries cannot be used with C++ compiler.\n Run with --with-fc=0 or --with-cxx=0')
 
