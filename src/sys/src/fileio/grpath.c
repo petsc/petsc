@@ -69,7 +69,7 @@ int PetscGetRealPath(char path[],char rpath[])
   int        ierr;
   char       tmp3[MAXPATHLEN];
   PetscTruth flg;
-#if defined(HAVE_READLINK)
+#if !defined(HAVE_REALPATH) && !defined(PARCH_win32) && defined(HAVE_READLINK)
   char       tmp1[MAXPATHLEN],tmp4[MAXPATHLEN],*tmp2;
   int        n,m,N,len,len1,len2;
 #endif
