@@ -385,7 +385,8 @@ only the standard output, and <methodname>checkPreprocess</methodname> returns t
 multiple functions, as well as auxiliary libraries. For instance, to check for the <methodname>MPI_Init</methodname> and
 <methodname>MPI_Comm_create</methodname> functions in MPICH when the Fortran bindings are active, we would use:
 <programlisting>
-  self.libraries.check(['libmpich.so', 'libpmpich.so'], ['MPI_Init', 'MPI_Comm_create'], otherLibs = self.compilers.flibs)
+  self.libraries.check(['libmpich.so', 'libpmpich.so'], ['MPI_Init', 'MPI_Comm_create'],
+                       otherLibs = self.compilers.flibs)
 </programlisting>
 As in the BLAS example, we can also turn on Fortran name mangling. The caller may also supply a function prototype and
 calling sequence, which are necessary if the current language is C++.
@@ -395,8 +396,9 @@ calling sequence, which are necessary if the current language is C++.
 accomplished using the <methodname>checkShared</methodname> method, as we demonstrate with the MPICH library in a call
 taken from the MPI configure module in PETSc.
 <programlisting>
-  self.libraries.checkShared('#include &lt;mpi.h&gt;\n', 'MPI_Init', 'MPI_Initialized', 'MPI_Finalize',
-                             checkLink = self.checkMPILink, libraries = self.lib)
+  self.libraries.checkShared('#include &lt;mpi.h&gt;\n', 'MPI_Init', 'MPI_Initialized',
+                             'MPI_Finalize', checkLink = self.checkMPILink,
+                             libraries = self.lib)
 </programlisting>
 The theory for the check is that a shared object will have only one copy of any global variable. Thus functions such as
 <methodname>MPI_Initialized</methodname> will render consistent results across other libraries. The test begins by
@@ -473,8 +475,10 @@ activate the ParMetis package, we might provide
 </programlisting>
 and then for the make process
 <programlisting>
-  self.addSubstitution('PARMETIS_INCLUDE', ' '.join([self.libraries.getIncludeArgument(i) for i in self.include]))
-  self.addSubstitution('PARMETIS_LIB, ' '.join([self.libraries.getLibArgument(l) for l in self.lib]))
+  self.addSubstitution('PARMETIS_INCLUDE', ' '.join([self.libraries.getIncludeArgument(i)
+                                                     for i in self.include]))
+  self.addSubstitution('PARMETIS_LIB, ' '.join([self.libraries.getLibArgument(l)
+                                                for l in self.lib]))
 </programlisting>
 </para>
 
@@ -496,9 +500,9 @@ ParMetis example, if we instead used the code
 </programlisting>
 in our configuration header we would see
 <programlisting>
-#ifndef MATT_HAVE_PARMETIS
-#define MATT_HAVE_PARMETIS 1
-#endif
+  #ifndef MATT_HAVE_PARMETIS
+  #define MATT_HAVE_PARMETIS 1
+  #endif
 </programlisting>
 Note that the value of the prefix is used at output time, not at the time that the define or substitution is set.
 </para>
@@ -514,20 +518,22 @@ substitutions. Using <methodname>addMakeMacro</methodname>, we can add variable 
 makefile, whereas <methodname>addMakeRule</methodname> allows the user to specify a make target, complete with
 dependencies and action. As an example, we will replace our ParMetis example from above with the following code
 <programlisting>
-  self.addMakeMacro('PARMETIS_INCLUDE', ' '.join([self.libraries.getIncludeArgument(i) for i in self.include]))
-  self.addMakeMacro('PARMETIS_LIB, ' '.join([self.libraries.getLibArgument(l) for l in self.lib]))
-  self.addMakeRule('.c.o', '', ['${CC} -c -o $@ -I${PARMETIS_INCLUDE} $<'])
-  self.addMakeRule('myApp', '${.c=.o:SOURCE}', ['${CC} -o $@ $< ${PARMETIS_LIB}'])
+  self.addMakeMacro('PARMETIS_INCLUDE', ' '.join([self.libraries.getIncludeArgument(i)
+                                                  for i in self.include]))
+  self.addMakeMacro('PARMETIS_LIB, ' '.join([self.libraries.getLibArgument(l)
+                                             for l in self.lib]))
+  self.addMakeRule('.c.o', '', ['${CC} -c -o $@ -I${PARMETIS_INCLUDE} $&lt;'])
+  self.addMakeRule('myApp', '${.c=.o:SOURCE}', ['${CC} -o $@ $&lt; ${PARMETIS_LIB}'])
 </programlisting>
 which will produce
 <programlisting>
-  PARMETIS_INCLUDE = -I/home/knepley/PETSc-dev/petsc-dev/externalpackages/ParMetis/include
-  PARMETIS_LIB = -L/home/knepley/PETSc-dev/petsc-dev/externalpackages/ParMetis/lib/linux-gnu -lparmetis -lmetis
+  PARMETIS_INCLUDE = -I/home/knepley/petsc-dev/externalpackages/ParMetis/include
+  PARMETIS_LIB = -L/home/knepley/petsc-dev/externalpackages/ParMetis/lib/linux-gnu -lparmetis -lmetis
 </programlisting>
 in the file specified by the <varname>makeMacroHeader</varname> member variable, and
 <programlisting>
   myApp: ${.c=.o:SOURCE}
-        ${CC} -i $@ $< ${PARMETIS_LIB}
+        ${CC} -i $@ $&lt; ${PARMETIS_LIB}
 </programlisting>
 in the file specified by the <varname>makeRuleHeader</varname> member variable.</para>
 
@@ -576,7 +582,7 @@ reconfigure</command> command.
 whose value may substitute for the outcome of the test, allowing a user to preempt the run. For instance, the
 <methodname>config.types.checkEndian</methodname> method contains the code
 <programlisting>
-  if self.checkRun('', body, defaultArg = 'isLittleEndian):
+  if self.checkRun('', body, defaultArg = 'isLittleEndian'):
 </programlisting>
 which means the <option>isLittleEndian</option> option can be given to replace the output of the run. However, this does
 the require the user to supply the missing option.</para>
@@ -601,11 +607,13 @@ batch executable. We return to the endian test to illustrate this usage.
     else:
       endian = 'big'
   else:
-    self.framework.addBatchBody(['{',
-                                 '  union {long l; char c[sizeof(long)];} u;',
-                                 '  u.l = 1;',
-                                 '  fprintf(output, " \'--with-endian=%s\',\\n", (u.c[sizeof(long) - 1] == 1) ? "little" : "big");',
-                                 '}'])
+    self.framework.addBatchBody(
+      ['{',
+       '  union {long l; char c[sizeof(long)];} u;',
+       '  u.l = 1;',
+       '  fprintf(output, " \'--with-endian=%s\',\\n",\
+            (u.c[sizeof(long) - 1] == 1) ? "little" : "big");',
+       '}'])
     # Dummy value
     endian = 'little'
 </programlisting>
