@@ -42,7 +42,7 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
   ptr->b             = B_VAL;
   ptr->sd            = size;
   ptr->ndim          = 1;
-  ptr->dim[0].upper  = len;
+  ptr->dim[0].upper  = len+start;
   ptr->dim[0].mult   = size;
   ptr->dim[0].lower  = start;
   ptr->addr_d         =  (void*)((long)array - (ptr->dim[0].lower*ptr->dim[0].mult));
@@ -68,10 +68,10 @@ int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int star
   ptr->b             = B_VAL;
   ptr->sd            = size;
   ptr->ndim          = 2;
-  ptr->dim[1].upper  = len1;
+  ptr->dim[1].upper  = len1+start1;
   ptr->dim[1].mult   = size;
   ptr->dim[1].lower  = start1;
-  ptr->dim[0].upper  = len2;
+  ptr->dim[0].upper  = len2+start2;
   ptr->dim[0].mult   = len1*size;
   ptr->dim[0].lower  = start2;
   ptr->addr_d        = (void*)((long)array -(ptr->dim[0].lower*ptr->dim[0].mult+ptr->dim[1].lower*ptr->dim[1].mult));

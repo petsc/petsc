@@ -251,7 +251,6 @@
       Vec  b,x
       Mat  A
       integer m,n
-      KSP         ksp
       integer i,j,II,JJ
       PetscScalar  v
 

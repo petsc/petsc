@@ -13,14 +13,14 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
   PetscValidPointer(ptr);  
   ierr               = PetscDataTypeGetSize(type,&size);CHKERRQ(ierr);
   ptr->addr          = array;
-  ptr->size          = len;
   ptr->sd            = size;
-  ptr->cookie        = size;
   ptr->ndim          = 1;
+  ptr->a             = F90_COOKIE7;
+  ptr->b             = F90_COOKIE0;
+  ptr->dim[0].extent = len;
+  ptr->dim[0].mult   = size;
   ptr->dim[0].lower  = start;
-  ptr->dim[0].upper  = len+start;
-  ptr->dim[0].mult   = 1;
-  ptr->addr_d        = (void*)((long)array -(ptr->dim[0].lower*ptr->dim[0].mult));
+  ptr->sum_d         = -(ptr->dim[0].lower*ptr->dim[0].mult);
   PetscFunctionReturn(0);
 }
 
@@ -35,17 +35,17 @@ int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int star
   PetscValidPointer(ptr);
   ierr               = PetscDataTypeGetSize(type,&size);CHKERRQ(ierr);
   ptr->addr          = array;
-  ptr->size          = len1*len2;
   ptr->sd            = size;
-  ptr->cookie        = size;
   ptr->ndim          = 2;
+  ptr->a             = F90_COOKIE7;
+  ptr->b             = F90_COOKIE0;
+  ptr->dim[0].extent = len1;
+  ptr->dim[0].mult   = size;
   ptr->dim[0].lower  = start1;
-  ptr->dim[0].upper  = len1+start1;
-  ptr->dim[0].mult   = 1;
+  ptr->dim[1].extent = len2;
+  ptr->dim[1].mult   = len1*size;
   ptr->dim[1].lower  = start2;
-  ptr->dim[1].upper  = len2+start2;
-  ptr->dim[1].mult   = len1;
-  ptr->addr_d        = (void*)((long)array -(ptr->dim[0].lower*ptr->dim[0].mult+ptr->dim[1].lower*ptr->dim[1].mult));
+  ptr->sum_d         = -(ptr->dim[0].lower*ptr->dim[0].mult+ptr->dim[1].lower*ptr->dim[1].mult);
   PetscFunctionReturn(0);
 }
 /*-------------------------------------------------------------*/
