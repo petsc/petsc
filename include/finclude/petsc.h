@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.77 1998/06/11 19:59:26 bsmith Exp balay $;
+!  $Id: petsc.h,v 1.78 1998/06/25 22:38:25 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -9,7 +9,7 @@
 #define MPI_Comm integer
 !
 #define PetscTruth    integer
-#define PetscDataType integer 
+#define PetscDataType integer
 
 #if (SIZEOF_VOIDP == 8)
 #define PetscOffset        integer*8
@@ -83,8 +83,8 @@
 #define SETERRA(n,p,s) call MPI_Abort(PETSC_COMM_WORLD,n)
 #define CHKERRA(n) if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n)
 #else
-#define SETERRA(n,p,s)   
-#define CHKERRA(n)     
+#define SETERRA(n,p,s)
+#define CHKERRA(n)
 #endif
 !
 !
@@ -155,7 +155,7 @@
 !
 !     Declare PETSC_NULL_OBJECT
 !
-#define PETSC_NULL_OBJECT PETSC_NULL_INTEGER     
+#define PETSC_NULL_OBJECT PETSC_NULL_INTEGER
 !
 !      A PETSC_NULL_FUNCTION pointer
 !
