@@ -1230,6 +1230,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
 
   /* Override default with runtime options */
   ierr = OptionsGetDouble(PETSC_NULL,"-ksp_rtol_max",&app->ksp_rtol_max,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-ksp_rtol_min",&app->ksp_rtol_min,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max_incr",&app->cfl_max_incr,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max_decr",&app->cfl_max_decr,&flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-cfl_snes_it",&app->cfl_snes_it,&flg); CHKERRQ(ierr);
