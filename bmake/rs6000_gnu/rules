@@ -57,20 +57,24 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 
 # This F.f rule ensures that the old *.f files are removed.
 .F.f:
-	-$(RM) $*.f
-	-xlc $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
+	-$(RM) $*.f $*.c
+	-cp $< $*.c	
+	-gcc $(CFLAGS) -E $*.c > $*.f
+	-$(RM) $*.c
 
 .F.o:
-	-$(RM) $*.f
-	-xlc $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
+	-$(RM) $*.f $*.c
+	-cp $< $*.c	
+	-gcc $(CFLAGS) -E $*.c > $*.f
 	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-	-$(RM) $*.f
+	-$(RM) $*.f $*.c
 
 .F.a:
-	-$(RM) $*.f
-	-xlc $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
+	-$(RM) $*.f $*.c
+	-cp $< $*.c	
+	-xlc $(CFLAGS) -E $*.c > $*.f
 	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	-$(AR) cr $(LIBNAME) $*.o
-	-$(RM) $*.o	$*.f
+	-$(RM) $*.o $*.f $*.c
 
 shared:
