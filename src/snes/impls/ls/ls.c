@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.106 1998/04/21 23:44:46 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.107 1998/04/22 23:50:34 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -13,10 +13,10 @@ static char vcid[] = "$Id: ls.c,v 1.106 1998/04/21 23:44:46 curfman Exp curfman 
      and Mat interfaces for linear solvers, vectors, and matrices, 
      respectively.
 
-     The following basic routines are required for each nonlinear solver
+     The following basic routines are required for each nonlinear solver:
           SNESCreate_XXX()          - Creates a nonlinear solver context
           SNESSetFromOptions_XXX()  - Sets runtime options
-          SNESSolve_XXX()           - Solves the nonlinear solver
+          SNESSolve_XXX()           - Solves the nonlinear system
           SNESDestroy_XXX()         - Destroys the nonlinear solver context
      The suffix "_XXX" denotes a particular implementation, in this case
      we use _EQ_LS (e.g., SNESCreate_EQ_LS, SNESSolve_EQ_LS) for solving
@@ -35,7 +35,7 @@ static char vcid[] = "$Id: ls.c,v 1.106 1998/04/21 23:44:46 curfman Exp curfman 
      Additional basic routines are:
           SNESPrintHelp_XXX()       - Prints nonlinear solver runtime options
           SNESView_XXX()            - Prints details of runtime options that
-                                    have actually been used.
+                                      have actually been used.
      These are called by application codes via the interface routines
      SNESPrintHelp() and SNESView().
 
