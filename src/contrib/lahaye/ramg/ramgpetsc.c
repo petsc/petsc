@@ -1,4 +1,4 @@
-/*$Id: ramgpetsc.c,v 1.13 2001/07/05 14:42:14 bsmith Exp bsmith $*/
+/*$Id: ramgpetsc.c,v 1.14 2001/07/05 20:33:33 bsmith Exp bsmith $*/
 
 #include "ramgfunc.h"
 #include "petscfunc.h"
@@ -114,9 +114,15 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    /*..Set number of unknowns and nonzeros in RAMG terminology..*/
    nnu    = numnodes; 
    nna    = numnonzero; 
+
    /*..Set RAMG Class 1 parameters..*/
+   /*
+         These are the sizes of all the arrays passed into RAMG
+      They need to be large enough or RAMG will return telling how
+      large they should be
+   */
    nda    = 3*nna+5*nnu;
-   ndia   = (int)(2.2*nnu);
+   ndia   = (int)(2.5*nnu);
    ndja   = nda;
    ndu    = 5*nnu; 
    ndf    = ndu; 
@@ -199,7 +205,19 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    amg1r5_(Asky, ia, ja, u_approx, rhs, ig, &nda, &ndia, &ndja, &ndu, 
               &ndf, &ndig, &nnu, &matrix, &iswtch, &iout, &iprint, &levelx, 
               &ifirst, &ncyc, &eps, &madapt, &nrd, &nsolco, &nru, &ecg1, 
-              &ecg2, &ewt2, &nwt, &ntr, &ierr);CHKERRQ(ierr);
+              &ecg2, &ewt2, &nwt, &ntr, &ierr);
+   if (ierr) {
+     if (ierr == 2) {
+       (*PetscErrorPrintf)("Error from RAMG not enough array work space provided\n");
+       (*PetscErrorPrintf)("A provided %d\n",nda);
+       (*PetscErrorPrintf)("JA provided %d\n",ndja);
+       (*PetscErrorPrintf)("IA provided %d\n",ndia);
+       (*PetscErrorPrintf)("U provided %d\n",ndu);
+       (*PetscErrorPrintf)("F provided %d\n",ndf);
+       (*PetscErrorPrintf)("IG provided %d\n",ndig);
+     }
+     SETERRQ1(PETSC_ERR_LIB,"Error in RAMG. Error number %d",ierr);
+   }
 
    ierr = PetscLogInfo((PetscObject)pmat,"\n\n");CHKERRQ(ierr);  
    ierr = PetscLogInfo((PetscObject)pmat,"******************************************\n");CHKERRQ(ierr);
