@@ -468,8 +468,21 @@ shared_darwin6:
 
 shared_darwin7: 
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
+        echo $${LIBNAME} ;
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
-	libtool -v -dynamic -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o ${PETSC_EXTERNAL_LIB_BASIC};\
+        if [ "$${LIBNAME}" = "libpetscvec" ]; then set OTHERLIBS=${PETSC_SYS_LIB_BASIC}  ; fi;\
+        if [ "$${LIBNAME}" = "libpetscmat" ]; then set OTHERLIBS=${PETSC_VEC_LIB_BASIC}  ; fi;\
+        if [ "$${LIBNAME}" = "libpetscdm" ]; then set OTHERLIBS=${PETSC_MAT_LIB_BASIC}  ; fi;\
+        if [ "$${LIBNAME}" = "libpetscsles" ]; then set OTHERLIBS=${PETSC_DM_LIB_BASIC}  ; fi;\
+        if [ "$${LIBNAME}" = "libpetscsnes" ]; then set OTHERLIBS=${PETSC_SLES_LIB_BASIC}  ; fi;\
+        if [ "$${LIBNAME}" = "libpetscts" ]; then set OTHERLIBS=${PETSC_SNES_LIB_BASIC}  ; fi;\
+        if [ "$${LIBNAME}" = "libpetscmesh" ]; then set OTHERLIBS=${PETSC_DM_LIB_BASIC}  ; fi;\
+        if [ "$${LIBNAME}" = "libpetscgrid" ]; then set OTHERLIBS=${PETSC_MESH_LIB_BASIC}  ; fi;\
+        if [ "$${LIBNAME}" = "libpetscgsolver" ]; then set OTHERLIBS="${PETSC_GRID_LIB_BASIC} ${PETSC_TS_LIB_BASIC}"  ; fi;\
+        if [ "$${LIBNAME}" = "libpetscfortran" ]; then set OTHERLIBS=${PETSC_GSOLVER_LIB_BASIC}  ; fi;\
+        if [ "$${LIBNAME}" = "libpetsccontrib" ]; then set OTHERLIBS=${PETSC_GSOLVER_LIB_BASIC}  ; fi;\
+        echo $${OTHERLIBS} ; \
+	libtool -v -dynamic -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o $$OTHERLIBS ${PETSC_EXTERNAL_LIB_BASIC} -lm -lc;\
 	${RM} -f *
 
 shared_linux_intel:
