@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.89 1999/04/21 20:42:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.90 1999/05/12 03:26:11 bsmith Exp balay $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -264,7 +264,6 @@ int ViewerCreate_ASCII(Viewer v)
   vascii  = PetscNew(Viewer_ASCII);CHKPTRQ(vascii);
   v->data = (void *) vascii;
 
-  PLogObjectCreate(v);
   v->ops->destroy     = ViewerDestroy_ASCII;
   v->ops->flush       = ViewerFlush_ASCII;
 
