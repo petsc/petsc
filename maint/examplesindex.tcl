@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: examplesindex.tcl,v 1.20 1997/09/10 19:41:58 balay Exp balay $ 
+# $Id: examplesindex.tcl,v 1.21 1997/10/08 01:41:23 balay Exp balay $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -413,7 +413,8 @@ proc main { }  {
     if { $argc == 1  && ([lindex $argv 0 ] == "-www" || [lindex $argv 0 ] == "-wwwhome") } {
         set UPDATE_WWW true
     }
-    set PETSC_DIR_www ../..
+    set PETSC_DIR_www     ../..
+    set PETSC_DIR_www_man ../../..
     if { $argc == 1  &&  [lindex $argv 0 ] == "-wwwhome" } {
         set PETSC_DIR_www     ftp://info.mcs.anl.gov/pub/petsc/petsc
         set PETSC_DIR_www_man ftp://info.mcs.anl.gov/pub/petsc/petsc
