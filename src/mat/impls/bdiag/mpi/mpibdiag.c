@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.42 1995/10/12 13:40:09 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.43 1995/10/13 02:05:29 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -418,29 +418,37 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
 
 #include "draw.h"
 #include "pinclude/pviewer.h"
-static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
+
+static int MatView_MPIBDiag_Binary(Mat mat,Viewer viewer)
 {
-  Mat          mat = (Mat) obj;
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
+  int          ierr;
+  if (mbd->numtids == 1) {
+    ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
+  }
+  else SETERRQ(1,"MatView_MPIBDiag_Binary:Only uniprocessor output supported");
+  return 0;
+}
+
+static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
+{
+  Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
+  Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) mbd->A->data;
   int          ierr, format;
   PetscObject  vobj = (PetscObject) viewer;
-
-  if (!mbd->assembled) SETERRQ(1,"MatView_MPIBDiag:Must assemble matrix first");
-  if (!viewer) { /* so that viewers may be used from debuggers */
-    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
-  }
-  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-  ierr = ViewerFileGetFormat_Private(viewer,&format);
-  if (vobj->cookie == VIEWER_COOKIE && format == FILE_FORMAT_INFO &&
-     (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER)) {
-      Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) mbd->A->data;
-      FILE *fd;
+  FILE         *fd;
+ 
+  if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
+    ierr = ViewerFileGetFormat_Private(viewer,&format);
+    if (format == FILE_FORMAT_INFO) {
       ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
       MPIU_fprintf(mat->comm,fd,"  block size=%d, number of diagonals=%d\n",
                    dmat->nb,mbd->gnd);
+      return 0;
+    }
   }
-  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILE_VIEWER) {
-    FILE *fd;
+
+  if (vobj->type == ASCII_FILE_VIEWER) {
     ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d\n",
@@ -449,8 +457,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
     fflush(fd);
     MPIU_Seq_end(mat->comm,1);
   }
-  else if ((vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILES_VIEWER) || 
-            vobj->cookie == DRAW_COOKIE) {
+  else {
     int numtids = mbd->numtids, mytid = mbd->mytid; 
     if (numtids == 1) { 
       ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
@@ -488,6 +495,33 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
       }
       ierr = MatDestroy(A); CHKERRQ(ierr);
     }
+  }
+  return 0;
+}
+
+static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
+{
+  Mat          mat = (Mat) obj;
+  Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
+  PetscObject  vobj = (PetscObject) viewer;
+  int          ierr;
+ 
+  if (!mbd->assembled) SETERRQ(1,"MatView_MPIBDiag:must assemble matrix");
+  if (!viewer) { 
+    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+  }
+  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
+  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILE_VIEWER) {
+    ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
+  }
+  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILES_VIEWER) {
+    ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
+  }
+  else if (vobj->cookie == DRAW_COOKIE) {
+    ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
+  }
+  else if (vobj->type == BINARY_FILE_VIEWER) {
+    return MatView_MPIBDiag_Binary(mat,viewer);
   }
   return 0;
 }
@@ -779,20 +813,20 @@ int MatBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,Scalar ***dia
 int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
 {
   Mat          A;
-  int          i, nz, ierr, j,rstart, rend, fd;
   Scalar       *vals,*svals;
   PetscObject  vobj = (PetscObject) bview;
   MPI_Comm     comm = vobj->comm;
   MPI_Status   status;
-  int          header[4],mytid,numtid,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
-  int          *ourlens,*sndcounts = 0,*procsnz = 0, jj,*mycols,*smycols;
+  int          i, nz, ierr, j,rstart, rend, fd, *rowners, maxnz, *cols;
+  int          header[4], mytid, numtid, *rowlengths = 0, M, N, m;
+  int          *ourlens, *sndcounts = 0, *procsnz = 0, jj, *mycols, *smycols;
   int          tag = ((PetscObject)bview)->tag;
 
   MPI_Comm_size(comm,&numtid); MPI_Comm_rank(comm,&mytid);
   if (!mytid) {
     ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
-    if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIAIJorMPIRow:not matrix object");
+    if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIBDiag:not matrix object");
   }
 
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
@@ -864,13 +898,13 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
     /* receive message of column indices*/
     MPI_Recv(mycols,nz,MPI_INT,0,tag,comm,&status);
     MPI_Get_count(&status,MPI_INT,&maxnz);
-    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIAIJorMPIRow:something is wrong with file");
+    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIBDiag:something is wrong with file");
   }
 
   /* uses a block size of 1, this is not good! */
   ierr = MatCreateMPIBDiag(comm,m,M,N,0,1,0,0,newmat);CHKERRQ(ierr);
   A = *newmat;
-  MatSetOption(A,COLUMNS_SORTED); 
+  ierr = MatSetOption(A,COLUMNS_SORTED); CHKERRQ(ierr);
 
   if (!mytid) {
     vals = (Scalar *) PETSCMALLOC( maxnz*sizeof(Scalar) ); CHKPTRQ(vals);
@@ -905,7 +939,7 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
     /* receive message of values*/
     MPI_Recv(vals,nz,MPIU_SCALAR,0,A->tag,comm,&status);
     MPI_Get_count(&status,MPIU_SCALAR,&maxnz);
-    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIAIJorMPIRow:something is wrong with file");
+    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIBDiag:something is wrong with file");
 
     /* insert into matrix */
     jj      = rstart;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.1 1995/09/30 15:45:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.2 1995/09/30 19:27:41 bsmith Exp curfman $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -12,11 +12,41 @@ static char vcid[] = "$Id: memc.c,v 1.1 1995/09/30 15:45:12 bsmith Exp bsmith $"
 #include <memory.h>
 #include "pinclude/petscfix.h"
 
-void PetscMemcpy(void *a, void *b,int n)
+/*@
+   PetscMemcpy - Copies n bytes, beginning at location b to the space
+   beginning at location a.
+
+   Input Parameters:
+.  a - pointer to copy space
+.  b - pointer to initial memory space
+.  n - length (in bytes) of space to copy
+
+   Note:
+   This routine is analogous to memcpy().
+
+.keywords: Petsc, copy, memory
+
+.seealso: PetscMemcpy()
+@*/
+void PetscMemcpy(void *a,void *b,int n)
 {
   memcpy((char*)(a),(char*)(b),n);
 }
 
+/*@
+   PetscZero - Zeros the specified memory.
+
+   Input Parameters:
+.  a - pointer to beginning memory location
+.  n - length (in bytes) of memory to initialize
+
+   Note:
+   This routine is analogous to memset().
+
+.keywords: Petsc, zero, initialize, memory
+
+.seealso: PetscMemcpy()
+@*/
 void PetscZero(void *a,int n)
 {
   memset((char*)(a),0,n);
