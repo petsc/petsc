@@ -1,149 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-
 <head>
-<title>PETSc: Documentation</title>
+  <title>PETSc: Documentation</title>
 </head>
-
-<body bgcolor="#D5EAFF">
-
+<body bgcolor="#d5eaff">
 <table border="0" width="100%">
-  <tr>
-    <td width="25%" valign="top"><h1><font color="#FF0000" size="7">PETSc</font></h1>
-    <ul>
-      <li><strong><font color="#FF0000">Home</font></strong></li>
-    </ul>
-    </td>
-    <td width="75%"><!##begin> <h1 align="center">Portable, Extensible Toolkit
-      for<br>
-      &nbsp;Scientific Computation</h1><!##end>
- </td>
-  </tr>
-  <tr>
-    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
-    </td>
-  </tr>
-  <tr>
-    <td width="25%" valign="top"><ul>
-      <li><a href="download/index.html"><strong>Download</strong></a></li>
-      <li><a href="features/index.html"><strong>Features</strong></a></li>
-      <li><font color="#FF0000"><strong><a href="documentation/index.html">Documentation</a></strong></font><ul>
-          <li><strong><font color="#FF0000"><a href="documentation/index.html">Manual pages and Users Manual</a></font></strong></li>
-          <li><a href="documentation/referencing.html"><strong>Referencing&nbsp; PETSc</strong></a></li>
-          <li><a href="documentation/tutorials/index.html"><strong>Tutorials</strong></a></li>
-          <li><strong><a href="documentation/installation/index.html">Installation</a> </strong></li>
-          <li><strong><a href="documentation/changes/index.html">Changes</a></strong></li>
-          <li><strong><a href="documentation/troubleshooting.html">Troubleshooting</a></strong></li>
-          <li><strong><a href="documentation/bugreporting.html">Bug Reporting</a></strong></li>
-          <li><strong><a href="documentation/codemanagement.html">Code Management</a></strong></li>
-          <li><strong><a href="documentation/faq.html">FAQ</a> </strong></li>
-          <li><strong><a href="documentation/copyright.html">Copyright</a> </strong></li>
-        </ul>
-      </li>
-      <li><strong><a href="publications/index.html">Publications</a></strong></li>
-      <li><a href="presentations/index.html"><strong>Presentations</strong></a></li>
-      <li><a href="miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-      <li><a href="developers/index.html"><strong>Developers</strong></a></li>
-    </ul>
-    </td>
-    <td width="75%" valign="top">
+  <tbody>
+    <tr>
+      <td width="25%" valign="top">
+      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+      <ul>
+        <li><strong><font color="#ff0000">Home</font></strong></li>
+      </ul>
+      </td>
+      <td width="75%"><!--##begin-->
+      <h1 align="center">Portable, Extensible Toolkit       for<br>
+&nbsp;Scientific Computation</h1>
+<!--##end--> </td>
+    </tr>
+    <tr>
+      <td width="100%" colspan="2">
+      <hr size="4" color="#FF5B5B"> </td>
+    </tr>
+    <tr>
+      <td width="25%" valign="top">
+      <ul>
+        <li><a href="download/index.html"><strong>Download</strong></a></li>
+        <li><a href="features/index.html"><strong>Features</strong></a></li>
+        <li><font color="#ff0000"><strong><a
+ href="documentation/index.html">Documentation</a></strong></font>
+          <ul>
+            <li><strong><font color="#ff0000"><a
+ href="documentation/index.html">Manual pages and Users Manual</a></font></strong></li>
+            <li><a href="documentation/referencing.html"><strong>Referencing&nbsp;
+PETSc</strong></a></li>
+            <li><a href="documentation/tutorials/index.html"><strong>Tutorials</strong></a></li>
+            <li><strong><a href="documentation/installation/index.html">Installation</a> </strong></li>
+            <li><strong><a href="documentation/changes/index.html">Changes</a></strong></li>
+            <li><strong><a href="documentation/troubleshooting.html">Troubleshooting</a></strong></li>
+            <li><strong><a href="documentation/bugreporting.html">Bug
+Reporting</a></strong></li>
+            <li><strong><a href="documentation/codemanagement.html">Code
+Management</a></strong></li>
+            <li><strong><a href="documentation/faq.html">FAQ</a> </strong></li>
+            <li><strong><a href="documentation/copyright.html">Copyright</a> </strong></li>
+          </ul>
+        </li>
+        <li><strong><a href="publications/index.html">Publications</a></strong></li>
+        <li><a href="presentations/index.html"><strong>Presentations</strong></a></li>
+        <li><a href="miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
+        <li><a href="developers/index.html"><strong>Developers</strong></a></li>
+      </ul>
+      </td>
+      <td width="75%" valign="top">
       <table>
-        <tr>
-          <td vAlign="top" width="585">
-            <p align="center">The current version of PETSc            is <font color="#ff0000">2.1.5</font>; released&nbsp;<font color="#ff0000">
-            January 27, 2003.&nbsp;</font><br>
-            <font color="#000000">Web pages last updated 
-            <!--webbot
-            bot="Timestamp" S-Type="EDITED" S-Format="%B %d, %Y" startspan -->February 09, 2003<!--webbot
-            bot="Timestamp" endspan i-checksum="41423" -->
-            </font></p>
-            <p> PETSc is a
-            suite of data structures and routines for the scalable (parallel)
-            solution of scientific applications modeled by partial differential
-            equations.&nbsp; It employs the <a href="http://www.mcs.anl.gov/mpi/">MPI
-            standard</a> for all message-passing communication.&nbsp;&nbsp;</p>
-            <ul>
-              <li><a href="publications/index.html">Scientific applications</a>
-                that use PETSc
-              <li><a href="features/index.html">Features</a> of the PETSc
-                libraries
-              <li>Related packages that use PETSc
-                <ul>
-                  <li><a href="http://www.mcs.anl.gov/tao">Toolkit for Advanced
-                    Optimization (TAO)</a>.
-                  <li><a href="http://www.cs.utk.edu/~eijkhout/parpre.html">ParPre</a>
-                    - Additional Parallel Preconditioners</li>
-                </ul>
-              <li><a href="miscellaneous/acknwldg.html#otherpackages">Package</a>s that
-                PETSc can optionally uses&nbsp;</li>
-              <li>PETSc
-                is part of the <a href="http://www.scidac.org">DOE SciDAC</a>  <a href="http://www.tops-scidac.org">TOPS</a>
-                project in algorithms, software, and applications for the
-                scalable solution of PDES.</li>
-            </ul>
-            &nbsp;</td>
-        </tr>
-      </table>
-      <p>&nbsp;
- </td>
-  </tr>
-  <tr>
-    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
-    </td>
-  </tr>
-</table>
-<table>
-  <tr>
-    <td width="771"></td>
-  </tr>
-  <tr>
-    <td width="771">
-      <table width="111%">
         <tbody>
           <tr>
-            <td width="100%">
-              <table width="108%" border="0">
-                <tbody>
-                  <tr>
-                    <td width="18%"><a href="miscellaneous/index.html"><strong>Who are we?</strong></a></td>
-                    <td width="28%"><a href="documentation/bugreporting.html"><strong>Questions
-                      and Bug Reports</strong></a></td>
-                    <td width="17%"><a href="documentation/referencing.html"><strong>Referencing
-                      PETSc</strong></a></td>
-                    <td width="10%"><strong><a href="documentation/faq.html">FAQ</a></strong></td>
-                    <td width="35%"><a href="documentation/tutorials/index.html"><b>Tutorials</b></a></td>
-                  </tr>
-                  <tr>
-                    <td width="18%"></td>
-                    <td width="28%"><a href="publications/index.html"><strong>Applications</strong></a></td>
-                    <td width="17%"><a href="miscellaneous/acknwldg.html"><strong>Acknowledgements</strong></a></td>
-                    <td width="45%" colSpan="2"><strong><a href="miscellaneous/funding.html">Funding</a></strong></td>
-                  </tr>
-                </tbody>
-              </table>
+            <td valign="top" width="585">
+            <p align="center">The current version of PETSc           
+is <font color="#ff0000">2.1.5</font>; released&nbsp;<font
+ color="#ff0000"> January 27, 2003.&nbsp;</font><br>
+            <font color="#000000">Web pages last updated<!--webbot
+            bot="Timestamp" S-Type="EDITED" S-Format="%B %d, %Y" startspan -->
+February 24, 2003<!--webbot
+            bot="Timestamp" endspan i-checksum="41423" --> </font></p>
+            <p> PETSc is a             suite of data structures and
+routines for the scalable (parallel)             solution of scientific
+applications modeled by partial differential            
+equations.&nbsp; It employs the <a href="http://www.mcs.anl.gov/mpi/">MPI
+standard</a> for all message-passing communication.&nbsp;&nbsp;</p>
+            <ul>
+              <li><a href="publications/index.html">Scientific
+applications</a> that use PETSc </li>
+              <li><a href="features/index.html">Features</a> of the
+PETSc                 libraries </li>
+              <li>Related packages that use PETSc
+                <ul>
+                  <li><a href="http://www.mcs.anl.gov/tao">Toolkit for
+Advanced                     Optimization (TAO)</a>. </li>
+                  <li><a
+ href="http://www.cs.utk.edu/%7Eeijkhout/parpre.html">ParPre</a> -
+Additional Parallel Preconditioners</li>
+                </ul>
+              </li>
+              <li><a href="miscellaneous/acknwldg.html#otherpackages">Package</a>s
+that                 PETSc can optionally uses&nbsp;</li>
+              <li>PETSc                 is part of the <a
+ href="http://www.scidac.org">DOE SciDAC</a> <a
+ href="http://www.tops-scidac.org">TOPS</a> project in algorithms,
+software, and applications for the                 scalable solution of
+PDES.</li>
+            </ul>
+            <span style="font-weight: bold; color: rgb(255, 0, 0);">UPDATE:</span><span
+ style="color: rgb(0, 0, 0);">The PETSc web site is reorganized on Feb
+24, 2003 - so, bookmarks to any of the old PETSc web pages will not work</span><br>
             </td>
           </tr>
         </tbody>
       </table>
-    </td>
-  </tr>
-  <tr>
-    <td width="771">
+      <p>&nbsp; </p>
+      </td>
+    </tr>
+    <tr>
+      <td width="100%" colspan="2">
+      <hr size="4" color="#FF5B5B"> </td>
+    </tr>
+  </tbody>
+</table>
+<table>
+  <tbody>
+    <tr>
+      <td width="771"><br>
+      </td>
+    </tr>
+    <tr>
+      <td width="771">
+      <table width="100%">
+        <tbody>
+          <tr>
+            <td width="100%">
+            <table width="100%" border="0">
+              <tbody>
+                <tr>
+                  <td width="18%"><a href="miscellaneous/index.html"><strong>Who
+are we?</strong></a></td>
+                  <td width="28%"><a
+ href="documentation/bugreporting.html"><strong>Questions              
+and Bug Reports</strong></a></td>
+                  <td width="17%"><a
+ href="documentation/referencing.html"><strong>Referencing             
+PETSc</strong></a></td>
+                  <td width="10%"><strong><a
+ href="documentation/faq.html">FAQ</a></strong></td>
+                  <td width="35%"><a
+ href="documentation/tutorials/index.html"><b>Tutorials</b></a></td>
+                </tr>
+                <tr>
+                  <td width="18%"><br>
+                  </td>
+                  <td width="28%"><a href="publications/index.html"><strong>Applications</strong></a></td>
+                  <td width="17%"><a href="miscellaneous/acknwldg.html"><strong>Acknowledgements</strong></a></td>
+                  <td width="45%" colspan="2"><strong><a
+ href="miscellaneous/funding.html">Funding</a></strong></td>
+                </tr>
+              </tbody>
+            </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </td>
+    </tr>
+    <tr>
+      <td width="771">
       <table width="100%">
         <tbody>
           <tr>
             <td>
-              <form name="search" action="http://breeze.mcs.anl.gov:8765/query.html" method="get">
-                <input type="hidden" value="url:petsc" name="qp">
-                <p><input maxLength="2033" size="35" name="qt"> <input type="submit" value="Search PETSc" name="B1"></p>
-              </form>
+            <form name="search"
+ action="http://breeze.mcs.anl.gov:8765/query.html" method="get"> <input
+ type="hidden" value="url:petsc" name="qp">
+              <p><input maxlength="2033" size="35" name="qt"> <input
+ type="submit" value="Search PETSc" name="B1"></p>
+            </form>
             </td>
-            <td align="right"><a href="http://www.mcs.anl.gov/">
-            <img alt="MCS" src="images/mcs-rule-small.gif" border="0" width="104" height="38"></a></td>
+            <td align="right"><a href="http://www.mcs.anl.gov/"> <img
+ alt="MCS" src="images/mcs-rule-small.gif" border="0" width="104"
+ height="38"></a></td>
           </tr>
         </tbody>
       </table>
-    </td>
-  </tr>
+      </td>
+    </tr>
+  </tbody>
 </table>
 </body>
 </html>
