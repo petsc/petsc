@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.81 1999/01/13 23:47:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.82 1999/01/26 21:44:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -46,14 +46,12 @@ static int PCApply_Eisenstat(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0); 
 }
 
-/* this cheats and looks inside KSP to determine if nonzero initial guess*/
-#include "src/ksp/kspimpl.h"
-
 #undef __FUNC__  
 #define __FUNC__ "PCPre_Eisenstat"
 static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x, Vec b)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
+  PetscTruth   nonzero;
   int          ierr;
 
   PetscFunctionBegin;
@@ -72,7 +70,8 @@ static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x, Vec b)
   ierr = VecCopy(b,eis->b); CHKERRQ(ierr);
 
   /* if nonzero initial guess, modify x */
-  if (!ksp->guess_zero) {
+  ierr = KSPGetInitialGuessNonzero(ksp,&nonzero);CHKERRQ(ierr);
+  if (nonzero) {
     ierr = MatRelax(eis->A,x,eis->omega,SOR_APPLY_UPPER,0.0,1,x);CHKERRQ(ierr);
   }
 

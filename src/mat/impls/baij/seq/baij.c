@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.154 1999/01/18 21:55:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.155 1999/01/19 18:44:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -661,8 +661,8 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
   }
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k]; 
+    if (row < 0) continue;
 #if defined(USE_PETSC_BOPT_g)  
-    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
     if (row >= a->mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
     rp   = aj + ai[row]; 
@@ -671,8 +671,8 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
     nrow = ailen[row]; 
     low  = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
+      if (in[l] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)  
-      if (in[l] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
       if (in[l] >= a->nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
       col = in[l]; 
@@ -932,8 +932,8 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
   PetscFunctionBegin;
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k]; brow = row/bs;  
+    if (row < 0) continue;
 #if defined(USE_PETSC_BOPT_g)  
-    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
     if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
     rp   = aj + ai[brow]; 
@@ -942,14 +942,14 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
     nrow = ailen[brow]; 
     low  = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
+      if (in[l] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)  
-      if (in[l] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
       if (in[l] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
       col = in[l]; bcol = col/bs;
       ridx = row % bs; cidx = col % bs;
       if (roworiented) {
-        value = *v++; 
+        value = v[l + k*n]; 
       } else {
         value = v[k + l*m];
       }
@@ -1072,7 +1072,7 @@ extern int MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
 
 #undef __FUNC__  
 #define __FUNC__ "MatILUFactor_SeqBAIJ"
-int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
+int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) inA->data;
   Mat         outA;
@@ -1080,7 +1080,7 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
   PetscTruth  row_identity, col_identity;
 
   PetscFunctionBegin;
-  if (fill != 0) SETERRQ(PETSC_ERR_SUP,0,"Only fill=0 supported");
+  if (info && info->fill != 0) SETERRQ(PETSC_ERR_SUP,0,"Only fill=0 supported");
   ierr = ISIdentity(row,&row_identity); CHKERRQ(ierr);
   ierr = ISIdentity(col,&col_identity); CHKERRQ(ierr);
   if (!row_identity || !col_identity) {
@@ -1265,11 +1265,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        0,
        MatGetMaps_Petsc};
 
-#include "pc.h"
-EXTERN_C_BEGIN                                
-extern int PCSetUp_BJacobi_BAIJ(PC);
-EXTERN_C_END
-
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSeqBAIJ"
 /*@C
@@ -1441,10 +1436,6 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetColumnIndices_C",
                                      "MatSeqBAIJSetColumnIndices_SeqBAIJ",
                                      (void*)MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"PCSetUp_BJacobi_C",
-                                     "PCSetUp_BJacobi_BAIJ",
-                                     (void*)PCSetUp_BJacobi_BAIJ);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.102 1998/12/17 22:08:41 bsmith Exp bsmith $ 
+static char vcid[] = $Id: pdvec.c,v 1.103 1999/01/12 23:13:27 bsmith Exp bsmith $ 
 #endif
 
 /*
@@ -441,8 +441,7 @@ int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
 #if defined(USE_PETSC_BOPT_g)
   if (x->insertmode == INSERT_VALUES && addv == ADD_VALUES) { 
    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"You have already inserted values; you cannot now add");
-  }
-  else if (x->insertmode == ADD_VALUES && addv == INSERT_VALUES) { 
+  } else if (x->insertmode == ADD_VALUES && addv == INSERT_VALUES) { 
    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"You have already added values; you cannot now insert");
   }
 #endif
@@ -452,10 +451,10 @@ int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
     for ( i=0; i<ni; i++ ) {
       if ( (row = ix[i]) >= start && row < end) {
         xx[row-start] = y[i];
-      }
-      else if (!x->stash.donotstash) {
+      } else if (!x->stash.donotstash) {
+        if (ix[i] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-        if (ix[i] < 0 || ix[i] >= x->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
+        if (ix[i] >= x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->N);
 #endif
         if (x->stash.n == x->stash.nmax) { /* cache is full */
           int    *idx, nmax = x->stash.nmax;
@@ -478,10 +477,10 @@ int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
     for ( i=0; i<ni; i++ ) {
       if ( (row = ix[i]) >= start && row < end) {
         xx[row-start] += y[i];
-      }
-      else if (!x->stash.donotstash) {
+      } else if (!x->stash.donotstash) {
+        if (ix[i] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-        if (ix[i] < 0 || ix[i] > x->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
+        if (ix[i] > x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->N);
 #endif
         if (x->stash.n == x->stash.nmax) { /* cache is full */
           int    *idx, nmax = x->stash.nmax;
@@ -530,10 +529,10 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
         for ( j=0; j<bs; j++ ) {
           xx[row-start+j] = y[j];
         }
-      }
-      else if (!x->stash.donotstash) {
+      } else if (!x->stash.donotstash) {
+        if (ix[i] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-        if (ix[i] < 0 || ix[i] >= x->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
+        if (ix[i] >= x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],x->N);
 #endif
         if (x->stash.n == x->stash.nmax) { /* cache is full */
           int    *idx, nmax = x->stash.nmax;
@@ -562,10 +561,10 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
         for ( j=0; j<bs; j++ ) {
           xx[row-start+j] += y[j];
         }
-      }
-      else if (!x->stash.donotstash) {
+      } else if (!x->stash.donotstash) {
+        if (ix[i] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-        if (ix[i] < 0 || ix[i] > x->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
+        if (ix[i] > x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],x->N);
 #endif
         if (x->stash.n == x->stash.nmax) { /* cache is full */
           int    *idx, nmax = x->stash.nmax;

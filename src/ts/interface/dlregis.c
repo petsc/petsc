@@ -1,10 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.7 1998/04/22 19:13:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.8 1998/10/19 22:19:12 bsmith Exp bsmith $";
 #endif
 
 #include "ts.h"
 
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryRegister"
 /*
@@ -27,9 +28,10 @@ int DLLibraryRegister(char *path)
   ierr = TSRegisterAll(path); CHKERRQ(ierr);
   return(0);
 }
+EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc timestepping library. Contains:\n\
+static char *contents = "PETSc timestepping library. \n\
      Euler\n\
      Backward Euler\n\
      PVODE interface\n";
@@ -38,6 +40,9 @@ static char *authors = PETSC_AUTHOR_INFO;
 static char *version = PETSC_VERSION_NUMBER;
 
 /* --------------------------------------------------------------------------*/
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "DLLibraryInfo"
 int DLLibraryInfo(char *path,char *type,char **mess) 
 { 
   if (!PetscStrcmp(type,"Contents"))     *mess = contents;
@@ -47,3 +52,4 @@ int DLLibraryInfo(char *path,char *type,char **mess)
 
   return 0;
 }
+EXTERN_C_END

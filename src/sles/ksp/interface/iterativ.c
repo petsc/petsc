@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.76 1999/01/13 22:36:31 curfman Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.77 1999/01/26 23:05:53 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -150,13 +150,10 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
    Notes:
    When using right preconditioning, these values are equivalent.
 
-   Another Options Database Key:
-.  -ksp_bsmonitor - Activates BlockSolve95 monitor
-
    When using either ICC or ILU preconditioners in BlockSolve95 
-   (via MATMPIROWBS matrix format), then use the option -ksp_bsmonitor
-   to print both the true and scaled residual norms.  By default,
-   only the scaled residual norm is printed.
+   (via MATMPIROWBS matrix format), then use this monitor will
+   print both the residual norm associated with the original
+   (unscaled) matrix.
 
 .keywords: KSP, default, monitor, residual
 
@@ -166,15 +163,27 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 @*/
 int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
-  int          ierr;
+  int          ierr,(*us)(PC,Vec,NormType,double*);
   Vec          resid,work;
   double       scnorm;
   
   PetscFunctionBegin;
   ierr = VecDuplicate(ksp->vec_rhs,&work); CHKERRQ(ierr);
   ierr = KSPBuildResidual(ksp,0,work,&resid); CHKERRQ(ierr);
-  ierr = VecNorm(resid,NORM_2,&scnorm); CHKERRQ(ierr);
-  VecDestroy(work);
+
+  /* 
+     if the PC (like MPIRowbs ILU/ICC) scaled the matrix, the residual is 
+     a scaled residual. The following allows the PC to give us the original 
+     unscaled norm if it knows how 
+  */
+
+  ierr = PetscObjectQueryFunction((PetscObject)ksp->B,"PCUnscaledNorm_C",(void **)&us);CHKERRQ(ierr);
+  if (us) {
+    ierr = (*us)(ksp->B,resid,NORM_2,&scnorm);CHKERRQ(ierr);
+  } else {
+    ierr = VecNorm(resid,NORM_2,&scnorm); CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(work);CHKERRQ(ierr);
   PetscPrintf(ksp->comm,"%d KSP preconditioned resid norm %14.12e true resid norm %14.12e\n",n,rnorm,scnorm); 
   PetscFunctionReturn(0);
 }

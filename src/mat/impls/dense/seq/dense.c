@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.161 1998/12/17 22:10:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.162 1999/01/12 23:15:04 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -484,13 +484,13 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
   if (!mat->roworiented) {
     if (addv == INSERT_VALUES) {
       for ( j=0; j<n; j++ ) {
+        if (indexn[j] < 0) {v += m; continue;}
 #if defined(USE_PETSC_BOPT_g)  
-        if (indexn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
         if (indexn[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
         for ( i=0; i<m; i++ ) {
+          if (indexm[i] < 0) {v++; continue;}
 #if defined(USE_PETSC_BOPT_g)  
-          if (indexm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
           if (indexm[i] >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
           mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
@@ -498,13 +498,13 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
       }
     } else {
       for ( j=0; j<n; j++ ) {
+        if (indexn[j] < 0) {v += m; continue;}
 #if defined(USE_PETSC_BOPT_g)  
-        if (indexn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
         if (indexn[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
         for ( i=0; i<m; i++ ) {
+          if (indexm[i] < 0) {v++; continue;}
 #if defined(USE_PETSC_BOPT_g)  
-          if (indexm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
           if (indexm[i] >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
           mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
@@ -514,13 +514,13 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
   } else {
     if (addv == INSERT_VALUES) {
       for ( i=0; i<m; i++ ) {
+        if (indexm[i] < 0) { v += n; continue;}
 #if defined(USE_PETSC_BOPT_g)  
-        if (indexm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
         if (indexm[i] >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
         for ( j=0; j<n; j++ ) {
+          if (indexn[j] < 0) { v++; continue;}
 #if defined(USE_PETSC_BOPT_g)  
-          if (indexn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
           if (indexn[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
           mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
@@ -528,13 +528,13 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
       }
     } else {
       for ( i=0; i<m; i++ ) {
+        if (indexm[i] < 0) { v += n; continue;}
 #if defined(USE_PETSC_BOPT_g)  
-        if (indexm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
         if (indexm[i] >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
         for ( j=0; j<n; j++ ) {
+          if (indexn[j] < 0) { v++; continue;}
 #if defined(USE_PETSC_BOPT_g)  
-          if (indexn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
           if (indexn[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
           mat->v[indexn[j]*mat->m + indexm[i]] += *v++;

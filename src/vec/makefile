@@ -1,15 +1,8 @@
-# $Id: makefile,v 1.22 1998/06/12 21:33:18 balay Exp balay $ 
+# $Id: makefile,v 1.23 1998/06/15 15:46:46 balay Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =
-SOURCEF  =
 SOURCEH  = vecimpl.h
-OBJSC    =
-OBJSF    =
-LIBBASE  = libpetscvec
 DIRS     = utils interface impls  examples
 LOCDIR   = src/vec/
 

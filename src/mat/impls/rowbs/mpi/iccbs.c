@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iccbs.c,v 1.31 1999/01/12 23:15:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.32 1999/01/26 17:13:30 bsmith Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -28,55 +28,19 @@ static char vcid[] = "$Id: iccbs.c,v 1.31 1999/01/12 23:15:29 bsmith Exp bsmith 
 #include "petsc.h"
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(USE_PETSC_COMPLEX)
-#include "src/pc/pcimpl.h"            /*I "pc.h" I*/
-#include "src/pc/impls/icc/icc.h"
-#include "src/ksp/kspimpl.h"
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 
-/* BlockSolve implementation interface */
-
-typedef struct {
-  int    blocksize;    /* number of systems to solve */
-  int    pre_option;   /* preconditioner, one of PRE_DIAG,
-                          PRE_STICCG, PRE_SSOR, PRE_BJACOBI */
-  double rtol;
-  int    max_it;
-  double rnorm;
-  int    guess_zero;
-} PCiBS;
-
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_ICC_MPIRowbs"
-static int PCDestroy_ICC_MPIRowbs(PC pc)
+#define __FUNC__ "MatScaleSystem_MPIRowbs"
+int MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 {
-  PC_ICC *icc = (PC_ICC *) pc->data;
-  PCiBS  *iccbs = (PCiBS *) icc->implctx; 
-  int    ierr;
-
-  PetscFunctionBegin;  
-  PetscFree(iccbs);
-  ierr = MatDestroy(icc->fact); CHKERRQ(ierr);
-  PetscFree(icc);
-  PetscFunctionReturn(0);
-}
-
-/* Note:  We only call PCPreSolve_MPIRowbs() if both
-   the linear system matrix and preconditioning matrix
-   are stored in the MATMPIROWBS format */
-#undef __FUNC__  
-#define __FUNC__ "PCPreSolve_MPIRowbs"
-int PCPreSolve_MPIRowbs(PC pc,KSP ksp)
-{
-  Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) pc->pmat->data;
-  Mat_MPIRowbs *bsifa = (Mat_MPIRowbs *) pc->mat->data;
-  Vec          rhs, x, v = bsif->xwork;
+  Mat_MPIRowbs *bsif  = (Mat_MPIRowbs *) mat->data;
+  Vec          v = bsif->xwork;
   Scalar       *xa, *rhsa, *va;
   int          ierr;
 
   PetscFunctionBegin;  
   /* Permute and scale RHS and solution vectors */
-  ierr = KSPGetSolution(ksp,&x); CHKERRQ(ierr);
-  ierr = KSPGetRhs(ksp,&rhs); CHKERRQ(ierr);
   ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
   ierr = VecGetArray(v,&va); CHKERRQ(ierr);
   BSperm_dvec(xa,va,bsif->pA->perm); CHKERRBS(0);
@@ -89,28 +53,20 @@ int PCPreSolve_MPIRowbs(PC pc,KSP ksp)
   ierr = VecRestoreArray(rhs,&rhsa); CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
   ierr = VecPointwiseMult(v,bsif->diag,rhs); CHKERRQ(ierr);
-  bsif->vecs_permscale  = 1;
-  bsifa->vecs_permscale = 1;
   PetscFunctionReturn(0);
 }
 
-/* Note:  We only call PCPostSolve_MPIRowbs() if both
-   the linear system matrix and preconditioning matrix
-   are stored in the MATMPIROWBS format */
 #undef __FUNC__  
-#define __FUNC__ "PCPostSolve_MPIRowbs"
-int PCPostSolve_MPIRowbs(PC pc,KSP ksp)
+#define __FUNC__ "MatUnScaleSystem_MPIRowbs"
+int MatUnScaleSystem_MPIRowbs(Mat mat,Vec x, Vec rhs)
 {
-  Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) pc->pmat->data;
-  Mat_MPIRowbs *bsifa = (Mat_MPIRowbs *) pc->mat->data;
-  Vec          x, rhs, v = bsif->xwork;
+  Mat_MPIRowbs *bsif  = (Mat_MPIRowbs *) mat->data;
+  Vec          v = bsif->xwork;
   Scalar       *xa, *va, *rhsa;
   int          ierr;
 
   PetscFunctionBegin;  
   /* Unpermute and unscale the solution and RHS vectors */
-  ierr = KSPGetSolution(ksp,&x); CHKERRQ(ierr);
-  ierr = KSPGetRhs(ksp,&rhs); CHKERRQ(ierr);
   ierr = VecPointwiseMult(x,bsif->diag,v); CHKERRQ(ierr);
 
   ierr = VecGetArray(v,&va); CHKERRQ(ierr);
@@ -124,47 +80,21 @@ int PCPostSolve_MPIRowbs(PC pc,KSP ksp)
   BSiperm_dvec(va,rhsa,bsif->pA->perm); CHKERRBS(0);
   ierr = VecRestoreArray(rhs,&rhsa); CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
-  bsif->vecs_permscale  = 0;
-  bsifa->vecs_permscale = 0;
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PCSetUp_ICC_MPIRowbs"
-int PCSetUp_ICC_MPIRowbs(PC pc)
+#define __FUNC__ "MatUseScaledForm_MPIRowbs"
+int MatUseScaledForm_MPIRowbs(Mat mat,PetscTruth scale)
 {
-  PC_ICC       *icc = (PC_ICC *) pc->data;
-  PCiBS        *iccbs;
-  MatStructure pflag;
-  Mat          Amat, Pmat;
-  int          ierr;
+  Mat_MPIRowbs *bsif  = (Mat_MPIRowbs *) mat->data;
 
-  PetscFunctionBegin;  
-  ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
-  if (Amat != Pmat && Amat->type == MATMPIROWBS) {
-    SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Does not support different Amat and\n\
-      Pmat with MATMPIROWBS format for both.  Use a different format for\n\
-      Amat (e.g., MATMPIAIJ) and keep Pmat the same.");
-  }
-
-  pc ->destroy        = PCDestroy_ICC_MPIRowbs;
-  icc->implctx        = (void *) (iccbs = PetscNew(PCiBS)); CHKPTRQ(iccbs);
-  PLogObjectMemory(pc,sizeof(PCiBS));
-
-  iccbs->blocksize  = 0;
-  iccbs->pre_option = 0;
-  iccbs->rtol       = 0;
-  iccbs->max_it     = 0;
-  iccbs->rnorm      = 0.0;
-  iccbs->guess_zero = 0;
-  if (Amat->type == MATMPIROWBS) {
-    pc->presolve    = PCPreSolve_MPIRowbs;
-    pc->postsolve   = PCPostSolve_MPIRowbs;
-  }
+  PetscFunctionBegin;
+  bsif->vecs_permscale = scale;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
+#include "sles.h"
 
 /* 
    KSPMonitor_MPIRowbs - Prints the actual (unscaled) residual norm as
@@ -184,6 +114,7 @@ int KSPMonitor_MPIRowbs(KSP ksp,int n,double rnorm,void *dummy)
   double       scnorm;
   PC           pc;
   Mat          mat;
+  MPI_Comm     comm;
 
   PetscFunctionBegin;  
   ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
@@ -192,42 +123,8 @@ int KSPMonitor_MPIRowbs(KSP ksp,int n,double rnorm,void *dummy)
   ierr = KSPBuildResidual(ksp,0,bsif->xwork,&resid); CHKERRQ(ierr);
   ierr = VecPointwiseDivide(resid,bsif->diag,resid); CHKERRQ(ierr); 
   ierr = VecNorm(resid,NORM_2,&scnorm); CHKERRQ(ierr);
-  PetscPrintf(ksp->comm,"%d Preconditioned %14.12e True %14.12e\n",n,rnorm,scnorm); 
-  PetscFunctionReturn(0);
-}
-  
-
-#undef __FUNC__  
-#define __FUNC__ "PCBSIterSetFromOptions"
-/* @
-  PCBSIterSetFromOptions - Sets various options for the BlockSolve 
-  iterative solvers.
-
-  Input Parameter:
-. pc - the PC context
-
-  Notes:
-  These iterative solvers can be used only with the MATMPIROWBS matrix data 
-  structure for symmetric matrices.  They are intended primarily for
-  comparison with the SLES/KSP interface, which we recommend for general use.
-@ */
-int PCBSIterSetFromOptions(PC pc)
-{
-  PC_ICC *icc = (PC_ICC *) pc->data;
-  PCiBS  *iccbs;
-  int    ierr,flg;
-
-  PetscFunctionBegin;  
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->pmat->type != MATMPIROWBS) PetscFunctionReturn(0);
-  iccbs = (PCiBS *) icc->implctx;
-  ierr = OptionsGetInt(pc->prefix,"-pc_bs_max_it",&iccbs->max_it,&flg);CHKERRQ(ierr);
-  ierr = OptionsGetInt(pc->prefix,"-pc_bs_blocksize",&iccbs->blocksize,&flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(pc->prefix,"-pc_bs_rtol",&iccbs->rtol,&flg);CHKERRQ(ierr);
-  ierr = OptionsHasName(pc->prefix,"-pc_bs_guess_zero",&flg);CHKERRQ(ierr); 
-  if (flg) { 
-    iccbs->guess_zero = 1;
-  }
+  ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+  PetscPrintf(comm,"%d Preconditioned %14.12e True %14.12e\n",n,rnorm,scnorm); 
   PetscFunctionReturn(0);
 }
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.75 1999/01/13 23:41:00 curfman Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.76 1999/01/26 18:46:15 curfman Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -85,8 +85,8 @@ int PCSetType(PC ctx,PCType type)
   ctx->printhelp       = ( int (*)(PC,char*) ) 0;
   ctx->applytrans      = ( int (*)(PC,Vec,Vec) ) 0;
   ctx->applyBAtrans    = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
-  ctx->presolve        = ( int (*)(PC,KSP) ) 0;
-  ctx->postsolve       = ( int (*)(PC,KSP) ) 0;
+  ctx->presolve        = ( int (*)(PC,KSP,Vec,Vec) ) 0;
+  ctx->postsolve       = ( int (*)(PC,KSP,Vec,Vec) ) 0;
   ctx->getfactoredmatrix   = ( int (*)(PC,Mat*) ) 0;
   ctx->applysymmetricleft  = ( int (*)(PC,Vec,Vec) ) 0;
   ctx->applysymmetricright = ( int (*)(PC,Vec,Vec) ) 0;

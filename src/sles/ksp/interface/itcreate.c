@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.146 1999/01/14 19:42:39 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.147 1999/01/26 23:29:07 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -406,8 +406,6 @@ int KSPPrintHelp(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
-
 #define MAXSETFROMOPTIONS 5
 extern int numberofsetfromoptions;
 extern int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
@@ -492,15 +490,6 @@ int KSPSetFromOptions(KSP ksp)
     ierr = KSPSetComputeSingularValues(ksp); CHKERRQ(ierr);
     ierr = KSPSetMonitor(ksp,KSPSingularValueMonitor,(void *)0);CHKERRQ(ierr); 
   }
-  /*
-    Prints true residual for BlockSolve95 preconditioners
-    */
-#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
-  ierr = OptionsHasName(ksp->prefix,"-ksp_bsmonitor",&flg); CHKERRQ(ierr);
-  if (flg) {
-    ierr = KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)0);CHKERRQ(ierr);
-  }
-#endif
   /*
     Prints preconditioned residual norm with fewer digits
     */

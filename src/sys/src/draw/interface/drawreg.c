@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.2 1999/01/12 23:16:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawreg.c,v 1.3 1999/01/18 22:15:16 bsmith Exp bsmith $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
@@ -254,7 +254,11 @@ int DrawSetFromOptions(Draw draw)
 
   /* type has not been set? */
   if (!draw->type_name) {
+#if defined(HAVE_X11)
     ierr = DrawSetType(draw,DRAW_X); CHKERRQ(ierr);
+#else
+    (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");    ierr = DrawSetType(draw,DRAW_NULL); CHKERRQ(ierr);
+#endif
   }
 
   PetscFunctionReturn(0);

@@ -1,10 +1,11 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.2 1998/06/11 19:54:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.3 1998/10/19 22:16:13 bsmith Exp bsmith $";
 #endif
 
 #include "vec.h"
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryRegister"
 /*
@@ -28,15 +29,19 @@ int DLLibraryRegister(char *path)
   ierr = VecRegisterAll(path); CHKERRQ(ierr);
   return 0;
 }
+EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc Vector library. Contains:\n\
+static char *contents = "PETSc vector library. \n\
      PETSc#VecSeq, PETSc#VecMPI, PETSc#VecShared ...\n";
 
 static char *authors = PETSC_AUTHOR_INFO;
 static char *version = PETSC_VERSION_NUMBER;
 
 /* --------------------------------------------------------------------------*/
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "DLLibraryInfo"
 int DLLibraryInfo(char *path,char *type,char **mess) 
 { 
   if (!PetscStrcmp(type,"Contents"))     *mess = contents;
@@ -46,4 +51,4 @@ int DLLibraryInfo(char *path,char *type,char **mess)
 
   return 0;
 }
-
+EXTERN_C_END

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.40 1998/11/05 22:15:20 bsmith Exp bsmith $
+# $Id: makefile,v 1.41 1999/01/12 23:17:40 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = snesregi.o snes.o snesj.o snesut.o snesj2.o dlregis.o
 OBJSF    =
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsnes
 MANSEC   = n
 DIRS     = 
 LOCDIR   = src/snes/interface/

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.37 1998/06/15 15:48:13 balay Exp bsmith $ 
+# $Id: makefile,v 1.38 1999/01/12 23:13:58 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = itcl.o itfunc.o iguess.o itcreate.o iterativ.o itres.o itregis.o \
            xmon.o eige.o dlregis.o
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsles
 DIRS     =
 MANSEC   = 5
 LOCDIR   = src/ksp/interface/

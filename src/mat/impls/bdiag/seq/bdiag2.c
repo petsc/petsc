@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag2.c,v 1.3 1998/10/19 22:18:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag2.c,v 1.4 1998/12/03 04:00:32 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -21,15 +21,15 @@ int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
   PetscFunctionBegin;
   for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
     row = im[kk];   
-    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+    if (row < 0) continue;
     if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
     for (j=0; j<n; j++) {
-      if (in[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative col.");
+      if (in[j] < 0) continue;
       if (in[j] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
       ldiag = row - in[j]; /* diagonal number */
       dfound = 0;
       if (roworiented) {
-        value = *v++; 
+        value = v[j + kk*n]; 
       } else {
         value = v[kk + j*m];
       }
@@ -55,7 +55,7 @@ int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
           PLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
           a->reallocs++;
           /* free old bdiag storage info and reallocate */
-          diag_new = (int *)PetscMalloc(2*(a->nd+1)*sizeof(int));CHKPTRQ(diag_new);
+          diag_new  = (int *)PetscMalloc(2*(a->nd+1)*sizeof(int));CHKPTRQ(diag_new);
           bdlen_new = diag_new + a->nd + 1;
           diagv_new = (Scalar**)PetscMalloc((a->nd+1)*sizeof(Scalar*));CHKPTRQ(diagv_new);
           for (k=0; k<a->nd; k++) {
@@ -70,8 +70,7 @@ int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
             bdlen_new[a->nd] = PetscMin(a->mblock,a->nblock + ldiag);
           }
           newnz = bdlen_new[a->nd];
-          diagv_new[a->nd] = (Scalar*)PetscMalloc(newnz*sizeof(Scalar));
-          CHKPTRQ(diagv_new[a->nd]);
+          diagv_new[a->nd] = (Scalar*)PetscMalloc(newnz*sizeof(Scalar));CHKPTRQ(diagv_new[a->nd]);
           PetscMemzero(diagv_new[a->nd],newnz*sizeof(Scalar));
           /* adjust pointers so that dv[diag][row] works for all diagonals*/
           if (diag_new[a->nd] > 0) {

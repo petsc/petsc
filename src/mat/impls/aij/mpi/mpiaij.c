@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.273 1999/01/11 16:21:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.274 1999/01/12 23:15:12 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -210,8 +210,8 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
 
   PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
+    if (im[i] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-    if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
     if (im[i] >= aij->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
     if (im[i] >= rstart && im[i] < rend) {
@@ -223,8 +223,8 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
           MatSetValues_SeqAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
+        else if (in[j] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-        else if (in[j] < 0) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");}
         else if (in[j] >= aij->N) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");}
 #endif
         else {
@@ -252,12 +252,10 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
           /* ierr = MatSetValues_SeqAIJ(aij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
       }
-    } 
-    else {
+    } else {
       if (roworiented && !aij->donotstash) {
         ierr = StashValues_Private(&aij->stash,im[i],n,in,v+i*n,addv);CHKERRQ(ierr);
-      }
-      else {
+      } else {
         if (!aij->donotstash) {
           row = im[i];
           for ( j=0; j<n; j++ ) {
@@ -1685,7 +1683,7 @@ EXTERN_C_END
 
 #include "pc.h"
 EXTERN_C_BEGIN
-extern int PCSetUp_BJacobi_AIJ(PC);
+extern int MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
 EXTERN_C_END
 
 #undef __FUNC__  
@@ -1949,9 +1947,9 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_MPIAIJ",
                                      (void*)MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"PCSetUp_BJacobi_C",
-                                     "PCSetUp_BJacobi_AIJ",
-                                     (void*)PCSetUp_BJacobi_AIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",
+                                     "MatGetDiagonalBlock_MPIAIJ",
+                                     (void*)MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
   *A = B;
   PetscFunctionReturn(0);
 }

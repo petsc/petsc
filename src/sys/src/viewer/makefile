@@ -1,15 +1,7 @@
-# $Id: makefile,v 1.20 1998/06/15 15:46:51 balay Exp bsmith $ 
+# $Id: makefile,v 1.21 1999/01/13 21:45:53 bsmith Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =
-SOURCEF  =
-SOURCEH  = 
-OBJSC    =
-OBJSF    =
-LIBBASE  = libpetscvec
 DIRS     = impls examples interface
 LOCDIR   = src/viewer/
 

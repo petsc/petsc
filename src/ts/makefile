@@ -1,15 +1,8 @@
-# $Id: makefile,v 1.10 1998/06/12 21:33:06 balay Exp balay $ 
+# $Id: makefile,v 1.11 1998/06/15 15:46:30 balay Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =
-SOURCEF  =
 SOURCEH  = tsimpl.h
-OBJSC    =
-OBJSF    =
-LIBBASE  = libpetscts
 DIRS     = interface impls  examples
 LOCDIR   = src/ts/
 

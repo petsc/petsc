@@ -1,15 +1,8 @@
-# $Id: makefile,v 1.25 1998/06/12 21:32:42 balay Exp balay $ 
+# $Id: makefile,v 1.26 1998/06/15 15:45:53 balay Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =
-SOURCEF  =
 SOURCEH  = pcimpl.h
-OBJSC    =
-OBJSF    =
-LIBBASE  = libpetscsles
 DIRS     = interface impls  examples
 LOCDIR   = src/pc/
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.27 1999/01/13 21:38:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.28 1999/01/14 00:21:01 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -528,20 +528,6 @@ int OptionsCheckInitial_Alice(void)
     ierr = PetscStackCreate(256); CHKERRQ(ierr);
   }
 #endif
-#endif
-
-  /*
-     Publishing to the AMS
-  */
-#if defined(HAVE_AMS)
-  ierr = OptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    PetscAMSPublishAll = PETSC_TRUE;
-  }
-  ierr = OptionsHasName(0, "-ams_publish_stack", &flg1);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscStackPublish();CHKERRQ(ierr);
-  }
 #endif
 
 

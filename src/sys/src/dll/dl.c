@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.38 1999/01/04 21:48:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.39 1999/01/25 19:02:47 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -102,9 +102,10 @@ int DLLibraryGetInfo(void *handle,char *type,char **mess)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryOpen"
+#define __FUNC__ "DLLibraryRetrieve"
 /*@C
-   DLLibraryOpen - Opens a dynamic link library
+   DLLibraryRetrieve - Copies a PETSc dynamic library from a remote location
+     (if it is remote), indicates if it exits and its local name.
 
      Collective on MPI_Comm
 
@@ -121,12 +122,10 @@ int DLLibraryGetInfo(void *handle,char *type,char **mess)
    $PETSC_ARCH and $BOPT occuring in directoryname and filename 
    will be replaced with appropriate values.
 @*/
-int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
+int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)
 {
   char       *par2,ierr,len,*par3,arch[10],buff[10],*en,*gz;
-  PetscTruth foundlibrary;
   int        flg;
-  int        (*func)(const char*);
 
   PetscFunctionBegin;
 
@@ -187,13 +186,44 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
     ierr = PetscStrcat(par2,".gz");CHKERRQ(ierr);
   }
 
-  par3 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par3);
-  ierr = PetscFileRetrieve(comm,par2,par3,1024,&foundlibrary);CHKERRQ(ierr);
+  ierr = PetscFileRetrieve(comm,par2,lname,llen,found);CHKERRQ(ierr);
+  PetscFree(par2);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DLLibraryOpen"
+/*@C
+   DLLibraryOpen - Opens a dynamic link library
+
+     Collective on MPI_Comm
+
+   Input Parameters:
++   comm - processors that are opening the library
+-   libname - name of the library, can be relative or absolute
+
+   Output Parameter:
+.   handle - library handle 
+
+   Notes:
+   [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
+
+   $PETSC_ARCH and $BOPT occuring in directoryname and filename 
+   will be replaced with appropriate values.
+@*/
+int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
+{
+  char       *par2,ierr;
+  PetscTruth foundlibrary;
+  int        (*func)(const char*);
+
+  PetscFunctionBegin;
+
+  par2 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par2);
+  ierr = DLLibraryRetrieve(comm,libname,par2,1024,&foundlibrary);CHKERRQ(ierr);
   if (!foundlibrary) {
-    SETERRQ2(1,1,"Unable to locate dynamic library:\n  %s\n  %s\n",libname,par2);
+    SETERRQ1(1,1,"Unable to locate dynamic library:\n  %s\n",libname);
   }
-  ierr = PetscStrcpy(par2,par3);CHKERRQ(ierr);
-  PetscFree(par3);
 
 #if !defined(USE_NONEXECUTABLE_SO)
   ierr  = PetscTestFile(par2,'x',&foundlibrary);CHKERRQ(ierr);

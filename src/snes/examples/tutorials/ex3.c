@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.50 1998/03/20 22:52:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.51 1998/12/03 04:05:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -435,6 +435,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
+  *flag = SAME_NONZERO_PATTERN;
   return 0;
 }
 /* ------------------------------------------------------------------- */

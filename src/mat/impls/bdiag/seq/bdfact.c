@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdfact.c,v 1.49 1998/06/01 22:07:41 balay Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.50 1998/10/19 22:18:05 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -10,8 +10,7 @@ static char vcid[] = "$Id: bdfact.c,v 1.49 1998/06/01 22:07:41 balay Exp bsmith 
 
 #undef __FUNC__  
 #define __FUNC__ "MatILUFactorSymbolic_SeqBDiag"
-int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
-                                  int levels,Mat *B)
+int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *B)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   PetscTruth   idn;
@@ -27,7 +26,7 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
     ierr = ISIdentity(iscol,&idn); CHKERRQ(ierr);
     if (!idn) SETERRQ(PETSC_ERR_SUP,0,"Only identity column permutation supported");
   }
-  if (levels != 0) {
+  if (info && info->levels != 0) {
     SETERRQ(PETSC_ERR_SUP,0,"Only ILU(0) is supported");
   }
   ierr = MatConvert(A,MATSAME,B); CHKERRQ(ierr);
@@ -39,7 +38,7 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
 
 #undef __FUNC__  
 #define __FUNC__ "MatILUFactor_SeqBDiag"
-int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,double f,int level)
+int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   PetscTruth   idn;
@@ -57,7 +56,7 @@ int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,double f,int level)
     ierr = ISIdentity(iscol,&idn); CHKERRQ(ierr);
     if (!idn) SETERRQ(PETSC_ERR_SUP,0,"Only identity column permutation supported");
   }
-  if (level != 0) SETERRQ(PETSC_ERR_SUP,0,"Only ILU(0) is supported");
+  if (info && info->levels != 0) SETERRQ(PETSC_ERR_SUP,0,"Only ILU(0) is supported");
   ierr = MatLUFactorNumeric(A,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

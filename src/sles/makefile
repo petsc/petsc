@@ -1,15 +1,8 @@
-# $Id: makefile,v 1.22 1998/06/12 21:32:49 balay Exp balay $ 
+# $Id: makefile,v 1.23 1998/06/15 15:46:01 balay Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =
-SOURCEF  =
 SOURCEH  = slesimpl.h
-OBJSC    =
-OBJSF    =
-LIBBASE  = libpetscvec
 DIRS     = interface examples
 LOCDIR   = src/sles/
 

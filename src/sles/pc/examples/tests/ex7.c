@@ -1,69 +1,51 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex37.c,v 1.7 1998/10/09 19:23:15 bsmith Exp $";
+static char vcid[] = "$Id: ex69.c,v 1.1 1999/01/21 17:26:57 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n"; 
+static char help[] = "Tests MatILUFactorSymbolic() on matrix with missing diagonal.\n\n"; 
 
 #include "mat.h"
+#include "pc.h"
 
 int main(int argc,char **args)
 {
   Mat         C,A; 
-  int         i,  n = 10, midx[3], ierr,flg;
-  Scalar      v[3];
-  PetscTruth  flag;
+  int         i,j,ierr;
+  Scalar      v;
+  PC          pc;
+  Vec         xtmp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
 
-  ierr = MatCreate(PETSC_COMM_WORLD,n,n,&C); CHKERRA(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,n,n,&A); CHKERRA(ierr);
-
-  v[0] = -1.; v[1] = 2.; v[2] = -1.;
-  for ( i=1; i<n-1; i++ ){
-    midx[2] = i-1; midx[1] = i; midx[0] = i+1;
-    ierr = MatSetValues(C,1,&i,3,midx,v,INSERT_VALUES); CHKERRA(ierr);
-  }
-  i = 0; midx[0] = 0; midx[1] = 1;
-  v[0] = 2.0; v[1] = -1.; 
-  ierr = MatSetValues(C,1,&i,2,midx,v,INSERT_VALUES); CHKERRA(ierr);
-  i = n-1; midx[0] = n-2; midx[1] = n-1;
-  v[0] = -1.0; v[1] = 2.; 
-  ierr = MatSetValues(C,1,&i,2,midx,v,INSERT_VALUES); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,3,3,&C); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_WORLD,3,&xtmp);CHKERRA(ierr);
+  i = 0; j = 0; v = 4;
+  ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  i = 0; j = 2; v = 1;
+  ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  i = 1; j = 0; v = 1;
+  ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  i = 1; j = 1; v = 4;
+  ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  i = 2; j = 1; v = 1;
+  ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  /* test matrices with different nonzero patterns */
-  ierr = MatCopy(C,A,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
-
-  /* Now C and A have the same nonzero pattern */
-  ierr = MatSetOption(C,MAT_NO_NEW_NONZERO_LOCATIONS);CHKERRA(ierr);
-  ierr = MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);CHKERRA(ierr);
-  ierr = MatCopy(C,A,SAME_NONZERO_PATTERN); CHKERRA(ierr);
-
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = PCCreate(PETSC_COMM_WORLD,&pc); CHKERRA(ierr);
+  ierr = PCSetFromOptions(pc); CHKERRA(ierr);
+  ierr = PCSetOperators(pc,C,C,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+  ierr = PCSetVector(pc,xtmp); CHKERRA(ierr);
+  ierr = PCSetUp(pc);CHKERRA(ierr);
+  ierr = PCGetFactoredMatrix(pc,&A); CHKERRA(ierr);
   ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
-  ierr = MatEqual(A,C,&flag);CHKERRA(ierr);
-  if (flag) {
-    PetscPrintf(PETSC_COMM_WORLD,"Matrices are equal\n");
-  } else {
-    SETERRA(1,1,"Matrices are NOT equal");
-  }
-
-  ierr = MatStoreValues(A);CHKERRA(ierr);
-  ierr = MatZeroEntries(A);CHKERRA(ierr);
-  ierr = MatRetrieveValues(A);CHKERRA(ierr);
-  ierr = MatEqual(A,C,&flag);CHKERRA(ierr);
-  if (flag) {
-    PetscPrintf(PETSC_COMM_WORLD,"Matrices are equal\n");
-  } else {
-    SETERRA(1,1,"Matrices are NOT equal");
-  }
-
+  ierr = PCDestroy(pc);CHKERRA(ierr);
+  ierr = VecDestroy(xtmp);CHKERRA(ierr);
   ierr = MatDestroy(C); CHKERRA(ierr);
-  ierr = MatDestroy(A); CHKERRA(ierr);
+
 
   PetscFinalize();
   return 0;

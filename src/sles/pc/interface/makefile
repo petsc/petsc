@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.30 1998/06/15 15:48:26 balay Exp bsmith $ 
+# $Id: makefile,v 1.31 1999/01/12 23:14:45 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = precon.o pcset.o pcregis.o pcnull.o
 OBJSF    =
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsles
 MANSEC   = 4
 LOCDIR   = src/pc/interface/
 

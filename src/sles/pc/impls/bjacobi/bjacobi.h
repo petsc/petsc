@@ -1,4 +1,4 @@
-/* $Id: bjacobi.h,v 1.18 1996/08/06 04:01:55 bsmith Exp bsmith $ */
+/* $Id: bjacobi.h,v 1.19 1996/08/15 12:46:48 bsmith Exp bsmith $ */
 
 #if !defined(__BJACOBI_H)
 #define __BJACOBI_H
@@ -8,6 +8,9 @@
 #include "sles.h"
 #include "src/pc/pcimpl.h"
 
+/*
+       This data is general for all implementations
+*/
 typedef struct {
   int       n, n_local;        /* number of blocks (global, local) */
   int       first_local;       /* number of first block on processor */
@@ -18,9 +21,27 @@ typedef struct {
   int       same_local_solves; /* flag indicating whether all local solvers are same */
   int       *l_lens;           /* lens of each block */
   int       *g_lens;
-  /* -----------------Options related to Gauss-Seidel ----------------------------*/
-  int       gs;                /* flag indicating we are using Gauss-Seidel */
-  PCBGSType gstype;
+  Mat       tp_mat,tp_pmat;    /* diagonal block of matrix for this processor */
 } PC_BJacobi;
 
+/*
+       This data is specific for certain implementations
+*/
+
+/*  This is for multiple blocks per processor */
+
+typedef struct {
+  Vec              *x,*y;             /* work vectors for solves on each block */
+  int              *starts;           /* starting point of each block */
+  Mat              *mat,*pmat;        /* submatrices for each block */
+  IS               *is;               /* for gathering the submatrices */
+} PC_BJacobi_Multiblock;
+
+/*  This is for a single block per processor */
+typedef struct {
+  Vec  x, y;
+} PC_BJacobi_Singleblock;
+
 #endif
+
+

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.168 1998/12/17 22:10:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.169 1999/01/12 23:15:33 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -295,6 +295,10 @@ int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
   Mat          newmat;
 
   PetscFunctionBegin;
+  if (scall == MAT_REUSE_MATRIX) { /* no support for reuse so simply destroy all */
+    ierr = MatDestroy(*submat);CHKERRQ(ierr);
+  }
+
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&newr); CHKERRQ(ierr);
@@ -418,8 +422,8 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
 
 static int MatDuplicate_SeqBDiag(Mat,MatDuplicateOption,Mat *);
 extern int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,Mat*);
-extern int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,int,Mat*);
-extern int MatILUFactor_SeqBDiag(Mat,IS,IS,double,int);
+extern int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,MatILUInfo*,Mat*);
+extern int MatILUFactor_SeqBDiag(Mat,IS,IS,MatILUInfo*);
 extern int MatLUFactorNumeric_SeqBDiag_N(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBDiag_1(Mat,Mat*);
 extern int MatSolve_SeqBDiag_1(Mat,Vec,Vec);

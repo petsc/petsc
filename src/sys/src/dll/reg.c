@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.28 1999/01/05 18:18:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.29 1999/01/12 23:14:11 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -45,8 +45,9 @@ DLLibraryList DLLibrariesLoaded = 0;
 */ 
 int PetscInitialize_DynamicLibraries(void)
 {
-  char *libname[32],libs[256];
-  int  nmax,i,ierr,flg;
+  char       *libname[32],libs[256],dlib[1024];
+  int        nmax,i,ierr,flg;
+  PetscTruth found;
 
   PetscFunctionBegin;
 
@@ -59,27 +60,52 @@ int PetscInitialize_DynamicLibraries(void)
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetsc"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
+  if (found) {
+    ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  }
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscvec"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
+  if (found) {
+    ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  }
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscmat"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
+  if (found) {
+    ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  }
+
+  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetscdm"); CHKERRQ(ierr);
+  ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
+  if (found) {
+    ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  }
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscsles"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
+  if (found) {
+    ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  }
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscsnes"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
+  if (found) {
+    ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  }
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscts"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
+  if (found) {
+    ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  }
 
   nmax = 32;
   ierr = OptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,&flg);CHKERRQ(ierr);

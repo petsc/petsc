@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.30 1998/11/20 15:28:26 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.31 1998/11/25 16:32:24 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -27,63 +27,63 @@ EXAMPLESF       = ex5.F ex6.F ex7f.F ex13f.F
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o chkopts
-	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
+	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
 	${RM} -f ex1.o
 
 ex2: ex2.o chkopts
-	-${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
+	-${CLINKER} -o ex2 ex2.o  ${PETSC_SYS_LIB}
 	${RM} -f ex2.o
 
 ex3: ex3.o chkopts
-	-${CLINKER} -o ex3 ex3.o  ${PETSC_LIB}
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_SYS_LIB}
 	${RM} -f ex3.o
 
 ex4: ex4.o chkopts
-	-${CLINKER} -o ex4 ex4.o  ${PETSC_LIB}
+	-${CLINKER} -o ex4 ex4.o  ${PETSC_SYS_LIB}
 	${RM} -f ex4.o
 
 ex5: ex5.o chkopts
-	-${FLINKER} -o ex5 ex5.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex5 ex5.o  ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
 	${RM} -f ex5.o
 
 ex6: ex6.o chkopts
-	-${FLINKER} -o ex6 ex6.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex6 ex6.o  ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
 	${RM} -f ex6.o
 
 ex7: ex7.o chkopts
-	-${CLINKER} -o ex7 ex7.o  ${PETSC_LIB}
+	-${CLINKER} -o ex7 ex7.o  ${PETSC_SYS_LIB}
 	${RM} -f ex7.o
 
 ex7f: ex7f.o chkopts
-	-${FLINKER} -o ex7f ex7f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex7f ex7f.o  ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
 	${RM} -f ex7f.o
 
 ex9: ex9.o chkopts
-	-${CLINKER} -o ex9 ex9.o  ${PETSC_LIB}
+	-${CLINKER} -o ex9 ex9.o  ${PETSC_SYS_LIB}
 	${RM} -f ex9.o
 
 ex10: ex10.o chkopts
-	-${CLINKER} -o ex10 ex10.o  ${PETSC_LIB}
+	-${CLINKER} -o ex10 ex10.o  ${PETSC_SYS_LIB}
 	${RM} -f ex10.o
 
 ex11: ex11.o chkopts
-	-${CLINKER} -o ex11 ex11.o  ${PETSC_LIB}
+	-${CLINKER} -o ex11 ex11.o  ${PETSC_SYS_LIB}
 	${RM} -f ex11.o
 
 ex12: ex12.o chkopts
-	-${CLINKER} -o ex12 ex12.o  ${PETSC_LIB}
+	-${CLINKER} -o ex12 ex12.o  ${PETSC_SYS_LIB}
 	${RM} -f ex12.o
 
 ex13: ex13.o chkopts
-	-${CLINKER} -o ex13 ex13.o  ${PETSC_LIB}
+	-${CLINKER} -o ex13 ex13.o  ${PETSC_SYS_LIB}
 	${RM} -f ex13.o
 
 ex13f: ex13f.o chkopts
-	-${FLINKER} -o ex13f ex13f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex13f ex13f.o  ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
 	${RM} -f ex13f.o
 
 ex14: ex14.o chkopts
-	-${CLINKER} -o ex14 ex14.o  ${PETSC_LIB}
+	-${CLINKER} -o ex14 ex14.o  ${PETSC_SYS_LIB}
 	${RM} -f ex14.o
 
 runex1:

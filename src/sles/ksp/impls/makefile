@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.20 1998/06/15 15:54:20 balay Exp bsmith $
+# $Id: makefile,v 1.21 1998/07/28 15:49:36 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    =
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = libpetscsles
 DIRS     = cr bcgs cg cgs gmres cheby rich lsqr preonly tcqmr tfqmr qcg bicg
 LOCDIR   = src/ksp/impls/
 

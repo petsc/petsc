@@ -1,13 +1,13 @@
-# $Id: makefile,v 1.24 1999/01/12 23:17:36 bsmith Exp bsmith $
+# $Id: makefile,v 1.25 1999/01/13 21:46:16 bsmith Exp bsmith $
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = view.c flush.c viewregall.c viewreg.c viewa.c
+SOURCEC  = view.c flush.c viewregall.c viewreg.c viewa.c dlregis.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = view.o flush.o viewregall.o viewreg.o viewa.o
+OBJSC    = view.o flush.o viewregall.o viewreg.o viewa.o dlregis.o
 OBJSF    =
 LIBBASE  = libpetsc
 MANSEC   = v

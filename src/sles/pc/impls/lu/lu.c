@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.107 1998/12/23 22:51:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: lu.c,v 1.108 1999/01/13 23:50:37 curfman Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -132,6 +132,7 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
   PC_LU *dir = (PC_LU *) pc->data;
 
   PetscFunctionBegin;
+  if (!dir->fact) SETERRQ(1,1,"Matrix not yet factored; call after SLESSetUp() or PCSetUp()");
   *mat = dir->fact;
   PetscFunctionReturn(0);
 }

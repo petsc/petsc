@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.84 1998/10/16 03:19:44 bsmith Exp balay $ */
+/* $Id: pc.h,v 1.85 1998/11/19 20:15:26 balay Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -29,7 +29,6 @@ typedef char *PCType;
 #define PCILU       "ilu"
 #define PCICC       "icc"
 #define PCASM       "asm"
-#define PCBGS       "bgs"
 #define PCSLES      "sles"
 #define PCCOMPOSITE "composite"
 
@@ -98,19 +97,11 @@ extern int PCSORSetOmega(PC, double);
 extern int PCEisenstatSetOmega(PC, double);
 extern int PCSORSetIterations(PC, int);
 
-typedef enum {PCBGS_FORWARD_SWEEP=1,PCBGS_SYMMETRIC_SWEEP=2} PCBGSType;
-extern int PCBGSSetSymmetric(PC, PCBGSType);
-
 #define USE_PRECONDITIONER_MATRIX 0
 #define USE_TRUE_MATRIX           1
 extern int PCBJacobiSetUseTrueLocal(PC);
 extern int PCBJacobiSetTotalBlocks(PC, int, int*);
 extern int PCBJacobiSetLocalBlocks(PC, int, int*);
-
-extern int PCBGSSetUseTrueLocal(PC);
-extern int PCBGSSetTotalBlocks(PC, int, int*);
-extern int PCBGSSetLocalBlocks(PC, int, int*);
-extern int PCBGSSetSymmetric(PC, PCBGSType);
 
 extern int PCSLESSetUseTrue(PC);
 extern int PCCompositeSetUseTrue(PC);
@@ -134,6 +125,7 @@ extern int PCILUSetLevels(PC,int);
 extern int PCILUSetReuseReordering(PC,PetscTruth);
 extern int PCILUSetUseDropTolerance(PC,double,int);
 extern int PCILUSetReuseFill(PC,PetscTruth);
+extern int PCILUSetAllowDiagonalFill(PC);
 
 extern int PCEisenstatUseDiagonalScaling(PC);
 

@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.13 1998/12/03 04:01:06 bsmith Exp bsmith $ */
+/* $Id: baij.h,v 1.14 1998/12/17 22:10:39 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -34,7 +34,7 @@ typedef struct {
   Scalar           *mult_work;   /* work array for matrix vector product*/
 } Mat_SeqBAIJ;
 
-extern int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,double,int,Mat *);
+extern int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
 extern int MatConvert_SeqBAIJ(Mat,MatType,Mat *);
 extern int MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption, Mat*);
 extern int MatMarkDiag_SeqBAIJ(Mat);

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.31 1998/06/15 15:48:19 balay Exp bsmith $ 
+# $Id: makefile,v 1.32 1999/01/12 23:14:59 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = matrix.o mhas.o fdmatrix.o matcnv.o mgtype.o
 OBJSF    =
-LIBBASE  = libpetsc
+LIBBASE  = libpetscmat
 MANSEC   = 2
 LOCDIR   = src/mat/interface/
 

@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.164 1998/10/09 19:27:39 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.165 1999/01/12 23:18:23 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -144,6 +144,10 @@ extern int MatZeroEntries(Mat);
 extern int MatZeroRows(Mat,IS,Scalar*);
 extern int MatZeroColumns(Mat,IS,Scalar*);
 
+extern int MatUseScaledForm(Mat,PetscTruth);
+extern int MatScaleSystem(Mat,Vec,Vec);
+extern int MatUnScaleSystem(Mat,Vec,Vec);
+
 extern int MatGetSize(Mat,int*,int*);
 extern int MatGetLocalSize(Mat,int*,int*);
 extern int MatGetOwnershipRange(Mat,int*,int*);
@@ -198,10 +202,24 @@ extern int MatCholeskyFactor(Mat,IS,double);
 extern int MatCholeskyFactorSymbolic(Mat,IS,double,Mat*);
 extern int MatCholeskyFactorNumeric(Mat,Mat*);
 
+/* 
+   Context of matrix information, used with MatILUFactor() and MatILUFactorSymbolic()
+   Note: If any entries are added to this context, be sure
+         to adjust MAT_ILUINFO_SIZE in finclude/mat.h
+
+   Note: The integer values below are passed in double to allow easy use from 
+         Fortran
+ */
+typedef struct {
+  double levels;  /* ILU(levels) */ 
+  double fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
+  double diagonal_fill;  /* force diagonal to fill in if initially not filled */
+} MatILUInfo;
+
 extern int MatLUFactor(Mat,IS,IS,double);
-extern int MatILUFactor(Mat,IS,IS,double,int);
+extern int MatILUFactor(Mat,IS,IS,MatILUInfo*);
 extern int MatLUFactorSymbolic(Mat,IS,IS,double,Mat*);
-extern int MatILUFactorSymbolic(Mat,IS,IS,double,int,Mat*);
+extern int MatILUFactorSymbolic(Mat,IS,IS,MatILUInfo*,Mat*);
 extern int MatIncompleteCholeskyFactorSymbolic(Mat,IS,double,int,Mat*);
 extern int MatLUFactorNumeric(Mat,Mat*);
 extern int MatILUDTFactor(Mat,double,int,IS,IS,Mat *);

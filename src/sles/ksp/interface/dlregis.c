@@ -1,9 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.8 1998/04/22 19:13:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.9 1998/10/19 22:16:30 bsmith Exp bsmith $";
 #endif
 
 #include "sles.h"
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryRegister"
 /*
@@ -28,9 +29,10 @@ int DLLibraryRegister(char *path)
   ierr = PCRegisterAll(path); CHKERRQ(ierr);
   return 0;
 }
+EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc Krylov subspace method and preconditioner library. Contains:\n\
+static char *contents = "PETSc Krylov subspace method and preconditioner library.\n\
      GMRES, PCG, Bi-CG-stab, ...\n\
      Jacobi, ILU, Block Jacobi, LU, Additive Schwarz, ...\n";
 
@@ -38,6 +40,9 @@ static char *authors = PETSC_AUTHOR_INFO;
 static char *version = PETSC_VERSION_NUMBER;
 
 /* --------------------------------------------------------------------------*/
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "DLLibraryInfo"
 int DLLibraryInfo(char *path,char *type,char **mess) 
 { 
   if (!PetscStrcmp(type,"Contents"))     *mess = contents;
@@ -47,4 +52,4 @@ int DLLibraryInfo(char *path,char *type,char **mess)
 
   return 0;
 }
-
+EXTERN_C_END

@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.32 1998/10/09 19:22:05 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.33 1998/12/03 03:59:57 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -46,7 +46,7 @@ typedef struct {
   Scalar           *saved_values;     /* location for stashing nonzero values of matrix */
 } Mat_SeqAIJ;
 
-extern int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,double,int,Mat *);
+extern int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
 extern int MatConvert_SeqAIJ(Mat,MatType,Mat *);
 extern int MatDuplicate_SeqAIJ(Mat,MatDuplicateOption, Mat*);
 extern int MatMarkDiag_SeqAIJ(Mat);

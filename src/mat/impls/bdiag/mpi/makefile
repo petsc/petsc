@@ -1,13 +1,13 @@
-# $Id: makefile,v 1.23 1998/06/12 21:23:20 balay Exp balay $ 
+# $Id: makefile,v 1.24 1998/06/15 16:12:20 balay Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = mmbdiag.c mpibdiag.c mpibdpc.c
+SOURCEC  = mmbdiag.c mpibdiag.c
 SOURCEF  =
 SOURCEH  = mpibdiag.h
-OBJSC    = mmbdiag.o mpibdiag.o mpibdpc.o
+OBJSC    = mmbdiag.o mpibdiag.o
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = 2

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.152 1999/01/05 19:52:44 balay Exp balay $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.153 1999/01/05 19:54:17 balay Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -19,12 +19,12 @@ int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
 
   PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+    if (idxm[i] < 0) continue;
     if (idxm[i] >= mbd->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (idxn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+        if (idxn[j] < 0) continue;
         if (idxn[j] >= mbd->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
         if (roworiented) {
           ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j,addv); CHKERRQ(ierr);
@@ -581,11 +581,11 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
     ierr = ViewerGetFormat(viewer,&format);
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       int nline = PetscMin(10,mbd->gnd), k, nk, np;
-      PetscFPrintf(mat->comm,fd,"  block size=%d, total number of diagonals=%d\n",
+      ViewerASCIIPrintf(viewer,"  block size=%d, total number of diagonals=%d\n",
                    dmat->bs,mbd->gnd);
       nk = (mbd->gnd-1)/nline + 1;
       for (k=0; k<nk; k++) {
-        PetscFPrintf(mat->comm,fd,"  global diag numbers:");
+        ViewerASCIIPrintf(viewer,"  global diag numbers:");
         np = PetscMin(nline,mbd->gnd - nline*k);
         for (i=0; i<np; i++) {
           PetscFPrintf(mat->comm,fd,"  %d",mbd->gdiag[i+nline*k]);
@@ -907,9 +907,27 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
        0,
        MatGetMaps_Petsc};
 
-#include "pc.h"
 EXTERN_C_BEGIN
-extern int PCSetUp_BJacobi_MPIBDiag(PC);
+#undef __FUNC__  
+#define __FUNC__ "MatGetDiagonalBlock_MPIBDiag"
+int MatGetDiagonalBlock_MPIBDiag(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
+{
+  Mat_MPIBDiag *matin = (Mat_MPIBDiag *)A->data;
+  int          ierr,lrows,lcols,rstart,rend;
+  IS           localc,localr;
+
+  PetscFunctionBegin;
+  ierr = MatGetLocalSize(A,&lrows,&lcols); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,&rend); CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,lrows,rstart,1,&localc); 
+  ierr = ISCreateStride(PETSC_COMM_SELF,lrows,0,1,&localr); 
+  ierr = MatGetSubMatrix(matin->A,localr,localc,PETSC_DECIDE,reuse,a);CHKERRQ(ierr);
+  ierr = ISDestroy(localr); CHKERRQ(ierr);
+  ierr = ISDestroy(localc); CHKERRQ(ierr);
+
+  *iscopy = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
 EXTERN_C_END
 
 #undef __FUNC__  
@@ -1091,9 +1109,9 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = MatPrintHelp(B); CHKERRQ(ierr);}
   if (dset) PetscFree(diag);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"PCSetUp_BJacobi_C",
-                                     "PCSetUp_BJacobi_MPIBDiag",
-                                     (void*)PCSetUp_BJacobi_MPIBDiag);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",
+                                     "MatGetDiagonalBlock_MPIBDiag",
+                                     (void*)MatGetDiagonalBlock_MPIBDiag);CHKERRQ(ierr);
   *A = B;
   PetscFunctionReturn(0);
 }

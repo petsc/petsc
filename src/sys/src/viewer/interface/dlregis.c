@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.9 1998/10/19 22:16:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.1 1999/01/22 22:03:35 bsmith Exp bsmith $";
 #endif
 
 #include "sles.h"
@@ -25,16 +25,15 @@ int DLLibraryRegister(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = KSPRegisterAll(path); CHKERRQ(ierr);
-  ierr = PCRegisterAll(path); CHKERRQ(ierr);
+  ierr = DrawRegisterAll(path); CHKERRQ(ierr);
+  ierr = ViewerRegisterAll(path); CHKERRQ(ierr);
   return 0;
 }
 EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc Krylov subspace method and preconditioner library. Contains:\n\
-     GMRES, PCG, Bi-CG-stab, ...\n\
-     Jacobi, ILU, Block Jacobi, LU, Additive Schwarz, ...\n";
+static char *contents = "PETSc Graphics and Viewer libraries. \n\
+     ASCII, Binary, Sockets, X-windows, ...\n";
 
 static char *authors = PETSC_AUTHOR_INFO;
 static char *version = PETSC_VERSION_NUMBER;

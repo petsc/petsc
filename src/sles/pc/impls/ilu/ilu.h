@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.6 1997/05/28 23:20:09 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.7 1997/11/03 04:44:49 bsmith Exp bsmith $ */
 
 /* 
    Private data structure for ILU preconditioner.
@@ -22,6 +22,7 @@ typedef struct {
   int               dtcount;          /* max number nonzeros per row in iludt */
   int               reusefill;        /* reuse fill from previous ILUDT */
   double            fill, actualfill; /* expected fill in factorization */
+  int               diagonal_fill;    /* nonexisting diagonal entries are allowed fill */
 } PC_ILU;
 
 #endif

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.29 1998/06/12 21:22:51 balay Exp balay $
+# $Id: makefile,v 1.30 1998/06/15 15:54:25 balay Exp bsmith $
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    =
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = libpetscmat
 DIRS     = dense aij shell rowbs bdiag order baij color adj partition
 LOCDIR   = src/mat/impls/
 

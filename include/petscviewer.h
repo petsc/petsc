@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.64 1999/01/14 17:01:28 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.65 1999/01/14 17:01:45 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -44,6 +44,7 @@ extern int ViewerBinaryOpen(MPI_Comm,const char[],ViewerBinaryType,Viewer*);
 extern int ViewerSocketOpen(MPI_Comm,const char[],int,Viewer*);
 extern int ViewerStringOpen(MPI_Comm,char[],int, Viewer*);
 extern int ViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,Viewer*);
+extern int ViewerAMSSetCommName(Viewer,const char[]);
 
 extern int ViewerGetOutputname(Viewer,char**);  
 extern int ViewerGetType(Viewer,ViewerType*);

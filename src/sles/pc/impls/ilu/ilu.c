@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.117 1999/01/13 23:49:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.118 1999/01/22 00:25:43 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -521,10 +521,6 @@ static int PCSetUp_ILU(PC pc)
       if (ilu->row) PLogObjectParent(pc,ilu->row);
       if (ilu->col) PLogObjectParent(pc,ilu->col);
     }
-    ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"PCSetUp_ILU_C",(void**)&setup);CHKERRQ(ierr);
-    if (setup) {
-      ierr = (*setup)(pc);CHKERRQ(ierr);
-    }
 
     /* In place ILU only makes sense with fill factor of 1.0 because 
        cannot have levels of fill */
@@ -575,10 +571,7 @@ static int PCSetUp_ILU(PC pc)
         ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,&flg);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,ntol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
-      ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"PCSetUp_ILU_C",(void**)&setup);CHKERRQ(ierr);
-      if (setup) {
-        ierr = (*setup)(pc);CHKERRQ(ierr);
-      }
+
       info.levels        = ilu->levels;
       info.fill          = ilu->fill;
       info.diagonal_fill = ilu->diagonal_fill;

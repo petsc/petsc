@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.314 1999/01/14 00:21:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.315 1999/01/14 15:14:20 curfman Exp bsmith $";
 #endif
 
 /*
@@ -219,6 +219,127 @@ int MatView(Mat mat,Viewer viewer)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "MatScaleSystem"
+/*@C
+   MatScaleSystem - Scale a vector solution and right hand side to 
+     match the scaling of a scaled matrix.
+  
+   Collective on Mat
+
+   Input Parameter:
++  mat - the matrix
+.  x - solution vector (or PETSC_NULL)
++  b - right hand side vector (or PETSC_NULL)
+
+
+  Notes: 
+    For AIJ, BAIJ, and BDiag matrices the matrices are not 
+  internally scaled, so this does nothing. For MPIRowBS it
+  permutes and diagonally scales.
+
+    The SLES methods automatically call this routine when required
+  (via PCPreSolve()) so it is rarely used directly.
+
+  Level: Developer            
+
+.keywords: matrix, scale
+
+.seealso: MatUseScaledForm(), MatUnScaleSystem()
+@*/
+int MatScaleSystem(Mat mat,Vec x,Vec b)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (x) {PetscValidHeaderSpecific(x,VEC_COOKIE);}
+  if (b) {PetscValidHeaderSpecific(b,VEC_COOKIE);}
+  if (mat->ops->scalesystem) {
+    ierr = (*mat->ops->scalesystem)(mat,x,b); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatUnScaleSystem"
+/*@C
+   MatUnScaleSystem - Unscales a vector solution and right hand side to 
+     match the original scaling of a scaled matrix.
+  
+   Collective on Mat
+
+   Input Parameter:
++  mat - the matrix
+.  x - solution vector (or PETSC_NULL)
++  b - right hand side vector (or PETSC_NULL)
+
+
+  Notes: 
+    For AIJ, BAIJ, and BDiag matrices the matrices are not 
+  internally scaled, so this does nothing. For MPIRowBS it
+  permutes and diagonally scales.
+
+    The SLES methods automatically call this routine when required
+  (via PCPostSolve()) so it is rarely used directly.
+
+  Level: Developer            
+
+.keywords: matrix, scale
+
+.seealso: MatUseScaledForm(), MatScaleSystem()
+@*/
+int MatUnScaleSystem(Mat mat,Vec x,Vec b)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (x) {PetscValidHeaderSpecific(x,VEC_COOKIE);}
+  if (b) {PetscValidHeaderSpecific(b,VEC_COOKIE);}
+  if (mat->ops->unscalesystem) {
+    ierr = (*mat->ops->unscalesystem)(mat,x,b); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatUseScaledForm"
+/*@C
+   MatUseScaledForm - For matrix storage formats that scale the 
+     matrix (for example MPIRowbs matrices are diagonally scaled on
+     assembly) indicates matrix operations (MatMult() etc) are 
+     applied using the scaled matrix.
+  
+   Collective on Mat
+
+   Input Parameter:
++  mat - the matrix
+-  scaled - PETSC_TRUE for applying the scaled, PETSC_FALSE for 
+            applying the original matrix
+
+  Notes: 
+    For scaled formats applying the original, unscaled matrix
+   will be slightly more expensive
+
+  Level: Developer            
+
+.keywords: matrix, scale
+
+.seealso: MatScaleSystem(), MatUnScaleSystem()
+@*/
+int MatUseScaledForm(Mat mat,PetscTruth scaled)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (mat->ops->usescaledform) {
+    ierr = (*mat->ops->usescaledform)(mat,scaled); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "MatDestroy"
 /*@C
    MatDestroy - Frees space taken by a matrix.
@@ -295,6 +416,11 @@ int MatValid(Mat m,PetscTruth *flg)
    MatSetValues() uses 0-based row and column numbers in Fortran 
    as well as in C.
 
+   Negative indices may be passed in idxm and idxn, these rows and columns are 
+   simply ignored. This allows easily inserting element stiffness matrices
+   with homogeneous Dirchlet boundary conditions that you don't want represented
+   in the matrix.
+
    Efficiency Alert:
    The routine MatSetValuesBlocked() may offer much better efficiency
    for users of block sparse formats (MATSEQBAIJ and MATMPIBAIJ).
@@ -360,6 +486,11 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
 
    MatSetValuesBlocked() uses 0-based row and column numbers in Fortran 
    as well as in C.
+
+   Negative indices may be passed in idxm and idxn, these rows and columns are 
+   simply ignored. This allows easily inserting element stiffness matrices
+   with homogeneous Dirchlet boundary conditions that you don't want represented
+   in the matrix.
 
    Each time an entry is set within a sparse matrix via MatSetValues(),
    internal searching must be done to determine where to place the the
@@ -1014,8 +1145,11 @@ int MatLUFactor(Mat mat,IS row,IS col,double f)
 +  mat - the matrix
 .  row - row permutation
 .  col - column permutation
-.  f - expected fill as ratio of original fill.
--  level - number of levels of fill.
+-  info - structure containing 
+$      levels - number of levels of fill.
+$      expected fill - as ratio of original fill.
+$      1 or 0 - indicating force fill on diagonal (improves robustness for matrices
+                missing diagonal entries)
 
    Notes: 
    Probably really in-place only when level of fill is zero, otherwise allocates
@@ -1025,7 +1159,7 @@ int MatLUFactor(Mat mat,IS row,IS col,double f)
 
 .seealso: MatILUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
 @*/
-int MatILUFactor(Mat mat,IS row,IS col,double f,int level)
+int MatILUFactor(Mat mat,IS row,IS col,MatILUInfo *info)
 {
   int ierr;
 
@@ -1037,7 +1171,7 @@ int MatILUFactor(Mat mat,IS row,IS col,double f,int level)
   if (!mat->ops->ilufactor) SETERRQ(PETSC_ERR_SUP,0,"");
 
   PLogEventBegin(MAT_ILUFactor,mat,row,col,0); 
-  ierr = (*mat->ops->ilufactor)(mat,row,col,f,level); CHKERRQ(ierr);
+  ierr = (*mat->ops->ilufactor)(mat,row,col,info); CHKERRQ(ierr);
   PLogEventEnd(MAT_ILUFactor,mat,row,col,0); 
   PetscFunctionReturn(0);
 }
@@ -2581,11 +2715,11 @@ int MatGetOwnershipRange(Mat mat,int *m,int* n)
 +  mat - the matrix
 .  row - row permutation
 .  column - column permutation
-.  fill - number of levels of fill
--  f - expected fill as ratio of the original number of nonzeros, 
-       for example 3.0; choosing this parameter well can result in 
-       more efficient use of time and space. Run your code with -log_info 
-       to determine an optimal value to use.
+-  info - structure containing 
+$      levels - number of levels of fill.
+$      expected fill - as ratio of original fill.
+$      1 or 0 - indicating force fill on diagonal (improves robustness for matrices
+                missing diagonal entries)
 
    Output Parameters:
 .  fact - new matrix that has been symbolically factored
@@ -2598,21 +2732,21 @@ int MatGetOwnershipRange(Mat mat,int *m,int* n)
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric()
 @*/
-int MatILUFactorSymbolic(Mat mat,IS row,IS col,double f,int fill,Mat *fact)
+int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidPointer(fact);
-  if (fill < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Levels of fill negative %d",fill);
-  if (f < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Expected fill less than 1.0 %g",f);
+  if (info && info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Levels of fill negative %d",info->levels);
+  if (info && info->fill < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Expected fill less than 1.0 %g",info->fill);
   if (!mat->ops->ilufactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"Only MatCreateMPIRowbs() matrices support parallel ILU");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
   PLogEventBegin(MAT_ILUFactorSymbolic,mat,row,col,0);
-  ierr = (*mat->ops->ilufactorsymbolic)(mat,row,col,f,fill,fact); CHKERRQ(ierr);
+  ierr = (*mat->ops->ilufactorsymbolic)(mat,row,col,info,fact); CHKERRQ(ierr);
   PLogEventEnd(MAT_ILUFactorSymbolic,mat,row,col,0);
   PetscFunctionReturn(0);
 }
@@ -3319,7 +3453,7 @@ M*/
 .   iscol - columns for all processors you wish to keep
 .   csize - number of columns "local" to this processor (does nothing for sequential 
             matrices). This should match the result from VecGetLocalSize(x,...) if you 
-            plan to use the matrix in a A*x
+            plan to use the matrix in a A*x or use PETSC_DECIDE
 -  cll - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
     Output Parameter:

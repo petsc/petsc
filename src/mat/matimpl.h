@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.92 1999/01/12 23:14:58 bsmith Exp curfman $ */
+/* $Id: matimpl.h,v 1.93 1999/01/15 15:44:43 curfman Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -48,14 +48,14 @@ struct _MatOps {
 /*30*/      (*getsize)(Mat,int *,int *),
             (*getlocalsize)(Mat,int *,int *),
             (*getownershiprange)(Mat,int *,int *),
-            (*ilufactorsymbolic)(Mat,IS,IS,double,int,Mat *),
+            (*ilufactorsymbolic)(Mat,IS,IS,MatILUInfo*,Mat *),
             (*incompletecholeskyfactorsymbolic)(Mat,IS,double,int,Mat *),
 /*35*/      (*getarray)(Mat,Scalar **),
             (*restorearray)(Mat,Scalar **),
             (*duplicate)(Mat,MatDuplicateOption,Mat *),
             (*forwardsolve)(Mat,Vec,Vec),
             (*backwardsolve)(Mat,Vec,Vec),
-/*40*/      (*ilufactor)(Mat,IS,IS,double,int),
+/*40*/      (*ilufactor)(Mat,IS,IS,MatILUInfo*),
             (*incompletecholeskyfactor)(Mat,IS,double),
             (*axpy)(Scalar *,Mat,Mat),
             (*getsubmatrices)(Mat,int,IS *,IS *,MatReuse,Mat **),
@@ -80,7 +80,10 @@ struct _MatOps {
             (*getsubmatrix)(Mat,IS,IS,int,MatReuse,Mat*),
             (*destroy)(Mat),
             (*view)(Mat,Viewer),
-            (*getmaps)(Mat,Map*,Map*);
+            (*getmaps)(Mat,Map*,Map*),
+            (*usescaledform)(Mat,PetscTruth),
+            (*scalesystem)(Mat,Vec,Vec),
+            (*unscalesystem)(Mat,Vec,Vec);
 };
 
 #define FACTOR_LU       1

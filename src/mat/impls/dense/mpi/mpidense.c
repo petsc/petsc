@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.100 1998/12/17 22:10:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.101 1999/01/12 23:15:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,7 +19,7 @@ int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Inse
 
   PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+    if (idxm[i] < 0) continue;
     if (idxm[i] >= A->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
@@ -27,7 +27,7 @@ int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Inse
         ierr = MatSetValues(A->A,1,&row,n,idxn,v+i*n,addv); CHKERRQ(ierr);
       } else {
         for ( j=0; j<n; j++ ) {
-          if (idxn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+          if (idxn[j] < 0) continue;
           if (idxn[j] >= A->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
           ierr = MatSetValues(A->A,1,&row,1,&idxn[j],v+i+j*m,addv); CHKERRQ(ierr);
         }

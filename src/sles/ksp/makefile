@@ -1,15 +1,8 @@
-# $Id: makefile,v 1.24 1998/06/12 21:21:06 balay Exp balay $ 
+# $Id: makefile,v 1.25 1998/06/15 15:45:40 balay Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =
-SOURCEF  =
 SOURCEH  = kspimpl.h
-OBJSC    =
-OBJSF    =
-LIBBASE  = libpetscvec
 DIRS     = interface impls
 LOCDIR   = src/ksp/
 

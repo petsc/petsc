@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.37 1997/12/12 19:37:53 bsmith Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.38 1998/10/19 22:18:01 bsmith Exp bsmith $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(USE_PETSC_COMPLEX) && \
     !defined(__MPIROWBS_H)
@@ -37,7 +37,7 @@ typedef struct {
   int         nsends, nrecvs;     /* numbers of sends and receives */
   Scalar      *svalues, *rvalues; /* sending and receiving data */
   int         rmax;               /* maximum message length */
-  int         vecs_permscale;     /* flag indicating permuted and scaled vectors */
+  PetscTruth  vecs_permscale;     /* flag indicating permuted and scaled vectors */
   int         factor;
   int         mat_is_symmetric;   /* matrix is symmetric; hence use ICC */
   int         reallocs;           /* number of mallocs during MatSetValues() */

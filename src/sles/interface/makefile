@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.27 1998/06/15 15:48:32 balay Exp bsmith $ 
+# $Id: makefile,v 1.28 1999/01/12 23:16:12 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = sles.o 
 OBJSF    =
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsles
 MANSEC   = 3
 LOCDIR   = src/sles/interface/
 

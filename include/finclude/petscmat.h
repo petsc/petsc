@@ -1,5 +1,5 @@
 !
-!  $Id: mat.h,v 1.46 1998/03/30 21:14:41 balay Exp bsmith $;
+!  $Id: mat.h,v 1.47 1999/01/12 23:18:29 bsmith Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -17,6 +17,7 @@
 #define MatOperation        integer
 #define MatColoringType     integer
 #define MatInfo             double precision
+#define MatILUInfo          double precision
 #define MatStructure        integer
 #define PartitioningType    integer
 
@@ -101,7 +102,23 @@
       parameter (MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3)
 
 !
-!  MatSubMatrixCall
+!  Note: MAT_ILUINFO_SIZE must equal # elements in MatILUInfo structure
+!  (See petsc/include/mat.h)
+!
+      integer   MAT_ILUINFO_SIZE
+
+      parameter (MAT_ILUINFO_SIZE=3)
+
+      integer MAT_ILUINFO_LEVELS
+      integer MAT_ILUINFO_FILL
+      integer MAT_ILUINFO_DIAGONAL_FILL
+
+      parameter (MAT_ILUINFO_LEVELS = 1)
+      parameter (MAT_ILUINFO_FILL = 2)
+      parameter (MAT_ILUINFO_DIAGONAL_FILL = 3)
+
+!
+!  MatReuse
 !
       integer MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX
 

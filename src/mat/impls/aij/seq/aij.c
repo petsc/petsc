@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.293 1999/01/12 23:15:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.294 1999/01/18 21:55:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -156,21 +156,21 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
   PetscFunctionBegin;  
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k]; 
+    if (row < 0) continue;
 #if defined(USE_PETSC_BOPT_g)  
-    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
     if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
     rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift;
     rmax = imax[row]; nrow = ailen[row]; 
     low = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
+      if (in[l] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)  
-      if (in[l] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
       if (in[l] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
       col = in[l] - shift;
       if (roworiented) {
-        value = *v++; 
+        value = v[l + k*n]; 
       } else {
         value = v[k + l*m];
       }
@@ -1561,14 +1561,14 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatReuse scall,Mat 
 */
 #undef __FUNC__  
 #define __FUNC__ "MatILUFactor_SeqAIJ"
-int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
+int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) inA->data;
   int        ierr;
   Mat        outA;
 
   PetscFunctionBegin;
-  if (fill != 0) SETERRQ(PETSC_ERR_SUP,0,"Only fill=0 supported");
+  if (info && info->levels != 0) SETERRQ(PETSC_ERR_SUP,0,"Only levels=0 supported");
 
   outA          = inA; 
   inA->factor   = FACTOR_LU;
@@ -2055,11 +2055,6 @@ int MatRetrieveValues(Mat mat)
 
 /* --------------------------------------------------------------------------------*/
 
-#include "pc.h"
-EXTERN_C_BEGIN
-extern int PCSetUp_BJacobi_AIJ(PC);
-EXTERN_C_END
-
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSeqAIJ"
 /*@C
@@ -2215,9 +2210,6 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_SeqAIJ",
                                      (void*)MatRetrieveValues_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"PCSetUp_BJacobi_C",
-                                     "PCSetUp_BJacobi_AIJ",
-                                     (void*)PCSetUp_BJacobi_AIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

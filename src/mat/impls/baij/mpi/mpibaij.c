@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.143 1999/01/11 16:22:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.144 1999/01/12 23:15:45 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -223,8 +223,8 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
 
   PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
+    if (im[i] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-    if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
     if (im[i] >= baij->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
     if (im[i] >= rstart_orig && im[i] < rend_orig) {
@@ -236,8 +236,8 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
           MatSetValues_SeqBAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
+        else if (in[j] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-        else if (in[j] < 0) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");}
         else if (in[j] >= baij->N) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Col too large");}
 #endif
         else {
@@ -303,9 +303,9 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
     stepval = (m-1)*bs;
   }
   for ( i=0; i<m; i++ ) {
+    if (im[i] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-    if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
-    if (im[i] >= baij->Mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
+    if (im[i] >= baij->Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large, row %d max %d",im[i],baij->Mbs);
 #endif
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
@@ -333,9 +333,9 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
           col  = in[j] - cstart;
           ierr = MatSetValuesBlocked_SeqBAIJ(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
         }
+        else if (in[j] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-        else if (in[j] < 0) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");}
-        else if (in[j] >= baij->Nbs) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");}
+        else if (in[j] >= baij->Nbs) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large, col %d max %d",in[j],baij->Nbs);}
 #endif
         else {
           if (mat->was_assembled) {
@@ -1895,9 +1895,17 @@ static struct _MatOps MatOps_Values = {
   0,
   MatGetMaps_Petsc};
 
-#include "pc.h"
-EXTERN_C_BEGIN                                
-extern int PCSetUp_BJacobi_BAIJ(PC);
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "MatGetDiagonalBlock_MPIBAIJ"
+int MatGetDiagonalBlock_MPIBAIJ(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
+{
+  PetscFunctionBegin;
+  *a      = ((Mat_MPIBAIJ *)A->data)->A;
+  *iscopy = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
 EXTERN_C_END
 
 #undef __FUNC__  
@@ -2149,9 +2157,9 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
     ierr = MatMPIBAIJSetHashTableFactor(B,fact); CHKERRQ(ierr);
     PLogInfo(0,"MatCreateMPIBAIJ:Hash table Factor used %5.2f\n",fact);
   }
-  ierr = PetscObjectComposeFunction((PetscObject)B,"PCSetUp_BJacobi_C",
-                                     "PCSetUp_BJacobi_BAIJ",
-                                     (void*)PCSetUp_BJacobi_BAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",
+                                     "MatGetDiagonalBlock_MPIBAIJ",
+                                     (void*)MatGetDiagonalBlock_MPIBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,15 +1,7 @@
-# $Id: makefile,v 1.72 1998/06/15 15:47:24 balay Exp bsmith $ 
+# $Id: makefile,v 1.73 1999/01/12 23:14:08 bsmith Exp bsmith $ 
 
 ALL: lib 
 
-CFLAGS    =
-FFLAGS    =
-SOURCEC	  = 
-SOURCEF	  =
-SOURCEH	  = 
-OBJSC	  = 
-OBJSF	  =
-LIBBASE	  = libpetsc
 DIRS	  = error dll fileio memory objects time utils plog mpiuni
 LOCDIR	  = src/sys/src/
 

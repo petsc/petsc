@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.235 1998/12/21 01:06:07 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.236 1999/01/12 23:18:23 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -235,12 +235,14 @@ extern int FListView(FList,Viewer);
 
 typedef struct _DLLibraryList *DLLibraryList;
 extern DLLibraryList DLLibrariesLoaded;
+extern int DLLibraryRetrieve(MPI_Comm,const char[],char *,int,PetscTruth *);
 extern int DLLibraryOpen(MPI_Comm,const char[],void **);
 extern int DLLibrarySym(MPI_Comm,DLLibraryList *,const char[],const char[],void **);
 extern int DLLibraryAppend(MPI_Comm,DLLibraryList *,const char[]);
 extern int DLLibraryPrepend(MPI_Comm,DLLibraryList *,const char[]);
 extern int DLLibraryClose(DLLibraryList);
 extern int DLLibraryPrintPath();
+extern int DLLibraryGetInfo(void *,char *,char **);
 
 /*
     Mechanism for translating PETSc object representations between languages

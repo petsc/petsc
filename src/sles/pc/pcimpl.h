@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.21 1998/03/12 23:17:18 bsmith Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.22 1998/04/03 23:14:04 bsmith Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -18,7 +18,7 @@ struct _p_PC {
   int          (*apply)(PC,Vec,Vec),(*setup)(PC),(*applyrich)(PC,Vec,Vec,Vec,int),
                (*applyBA)(PC,int,Vec,Vec,Vec),(*setfromoptions)(PC),(*printhelp)(PC,char*),
                (*applytrans)(PC,Vec,Vec),(*applyBAtrans)(PC,int,Vec,Vec,Vec);
-  int          (*presolve)(PC,KSP),(*postsolve)(PC,KSP);
+  int          (*presolve)(PC,KSP,Vec,Vec),(*postsolve)(PC,KSP,Vec,Vec);
   Mat          mat,pmat;
   Vec          vec;
   void         *data;
