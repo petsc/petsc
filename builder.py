@@ -178,6 +178,10 @@ class Builder(logging.Logger):
     elif not configurationName in self.configurations:
       self.configurations[configurationName] = script.LanguageProcessor(argDB = self.argDB, compilers = self.compilers, libraries = self.libraries, versionControl = self.versionControl)
       self.configurations[configurationName].setup()
+      self.configurations[configurationName].setPreprocessorObject(language, self.framework.getPreprocessorObject(self.language[-1]))
+      self.configurations[configurationName].setCompilerObject(language, self.framework.getCompilerObject(self.language[-1]))
+      self.configurations[configurationName].setLinkerObject(language, self.framework.getLinkerObject(self.language[-1]))
+      self.configurations[configurationName].setSharedLinkerObject(language, self.framework.getSharedLinkerObject(self.language[-1]))
     configuration = self.configurations[configurationName]
     configuration.compilers      = self.compilers
     configuration.libraries      = self.libraries

@@ -602,7 +602,6 @@ class Configure(config.base.Configure):
       self.framework.argDB['LD_SHARED'] = ''
       language = self.framework.normalizeLanguage(self.language[-1])
       linker = self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
-      linker.outputFlag = self.AR_FLAGS
       yield (self.AR, [], 'a')
       raise RuntimeError('Archiver failed static link check')
     if 'with-shared-ld' in self.framework.argDB:
