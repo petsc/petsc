@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.72 1996/03/19 21:22:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.73 1996/03/20 03:57:17 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -135,7 +135,7 @@ int VecMin(Vec x,int *p,double *val)
 }
 
 /*@
-   VecTDot - Computes indefinite vector dot product. That is, this
+   VecTDot - Computes an indefinite vector dot product. That is, this
    routine does NOT use the complex conjugate.
 
    Input Parameters:
@@ -593,7 +593,7 @@ int VecAssemblyEnd(Vec vec)
 }
 
 /*@
-   VecMTDot - Computes non-Hermitian vector multiple dot product. 
+   VecMTDot - Computes indefinite vector multiple dot products. 
    That is, it does NOT use the complex conjugate.
 
    Input Parameters:
@@ -603,6 +603,15 @@ int VecAssemblyEnd(Vec vec)
 
    Output Parameter:
 .  val - array of the dot products
+
+   Notes for Users of Complex Numbers:
+   For complex vectors, VecMTDot() computes the indefinite form
+$      val = (x,y) = y^T x,
+   where y^T denotes the transpose of y.
+
+   Use VecMDot() for the inner product
+$      val = (x,y) = y^H x,
+   where y^H denotes the conjugate transpose of y.
 
 .keywords: vector, dot product, inner product, non-Hermitian, multiple
 
@@ -619,7 +628,7 @@ int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
   return 0;
 }
 /*@
-   VecMDot - Computes vector multiple dot product. 
+   VecMDot - Computes vector multiple dot products. 
 
    Input Parameters:
 .  nv - number of vectors
@@ -628,6 +637,15 @@ int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
 
    Output Parameter:
 .  val - array of the dot products
+
+   Notes for Users of Complex Numbers:
+   For complex vectors, VecMDot() computes 
+$      val = (x,y) = y^H x,
+   where y^H denotes the conjugate transpose of y.
+
+   Use VecMTDot() for the indefinite form
+$      val = (x,y) = y^T x,
+   where y^T denotes the transpose of y.
 
 .keywords: vector, dot product, inner product, multiple
 
