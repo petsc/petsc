@@ -8,7 +8,7 @@
 # FCLIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes).
 #
-FC_LIB         = /usr/lib/libf.a /usr/lib/libf.sl /usr/lib/libU77.a
+FC_LIB		= -lf /usr/lib/libU77.a
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
