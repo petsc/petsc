@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.85 1997/05/28 23:19:41 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.86 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -87,6 +87,7 @@ typedef struct _trSPACE {
     unsigned long   cookie;        
     struct _trSPACE *next, *prev;
 } TRSPACE;
+
 /* This union is used to insure that the block passed to the user is
    aligned on a double boundary */
 typedef union {
@@ -284,7 +285,7 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
     TRMaxMem   = allocated;
     TRMaxMemId = TRid;
   }
-  frags     ++;
+  frags++;
 
   if (TrUseNan && sizeof(Scalar)*(nsize/sizeof(Scalar)) == nsize) {
     ierr = PetscInitializeNans((Scalar*) inew,nsize/sizeof(Scalar)); 
@@ -303,9 +304,9 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
       if (!PetscLogMallocLength) return 0;
       PetscLogMallocDirectory = (char **) malloc( PetscLogMallocMax*sizeof(char**));
       if (!PetscLogMallocDirectory) return 0;
-      PetscLogMallocFile = (char **) malloc( PetscLogMallocMax*sizeof(char**));
+      PetscLogMallocFile      = (char **) malloc( PetscLogMallocMax*sizeof(char**));
       if (!PetscLogMallocFile) return 0;
-      PetscLogMallocFunction = (char **) malloc( PetscLogMallocMax*sizeof(char**));
+      PetscLogMallocFunction  = (char **) malloc( PetscLogMallocMax*sizeof(char**));
       if (!PetscLogMallocFunction) return 0;
     }
     PetscLogMallocLength[PetscLogMalloc]      = nsize;
