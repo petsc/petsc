@@ -56,6 +56,8 @@ help : consult@nersc.gov
 1 800 666 3772 select option 3
 ---------------
 
+afs directory at NCSA /afs/ncsa.uiuc.edu/user/barrys
+
 NCSA Convex Exemplar account
 Machine: lena.ncsa.uiuc.edu
 userid: barrys
@@ -68,6 +70,12 @@ userid: barrys
 password: petsc-password
 Account (whatever that means?) ryc
 help: consult@ncsa.uiuc.edu, future@ncsa.uiuc.edu
+
+2) NCSA Power Challenge 
+   Machine: sif.ncsa.uiuc.edu loki.ncsa.uiuc.edu  odin
+   Userid: barrys
+   password: petsc-passwd
+   Account (whatever that means?) ryc
 
 Other Machines at NCSA:
 solaris: pecos
