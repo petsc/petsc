@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.69 1998/04/13 17:25:21 bsmith Exp curfman $";
+static char vcid[] = "$Id: stride.c,v 1.70 1998/04/27 17:00:29 curfman Exp curfman $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -254,7 +254,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
 .  is - the new index set
 
    Notes: 
-   When communicator is not MPI_COMM_SELF, the operations on IS are NOT
+   When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
    conceptually the same as MPI_Group operations. The IS are the 
    distributed sets of indices. 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.69 1998/04/09 04:08:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.70 1998/04/13 17:25:15 bsmith Exp curfman $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -171,19 +171,20 @@ static struct _ISOps myops = { ISGetSize_General,
    ISCreateGeneral - Creates a data structure for an index set 
    containing a list of integers.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  n - the length of the index set
++  n - the length of the index set
 .  idx - the list of integers
-.  comm - the MPI communicator
+-  comm - the MPI communicator
 
    Output Parameter:
 .  is - the new index set
 
-   Collective on MPI_Comm
-
-   Notes: When comm is not MPI_COMM_SELF the operations on IS are NOT
-          conceptually the same as MPI_Group operations. The IS are 
-          distributed sets of indices. 
+   Notes:
+   When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
+   conceptually the same as MPI_Group operations. The IS are then
+   distributed sets of indices. 
 
 .keywords: IS, general, index set, create
 
