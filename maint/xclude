@@ -11,6 +11,8 @@ petsc/bmake/sun4_uni
 petsc/bmake/IRIX_uni
 petsc/bmake/freebsd_nolog
 petsc/bmake/alpha_nolog
+petsc/bmake/nt
+petsc/bmake/nt_gnu
 petsc/include/finclude/generateincludes
 petsc/include/finclude/RCS
 petsc/src/contrib/RCS
