@@ -14,7 +14,7 @@ struct _VeOps {
        (*dot)(Vec,Vec,Scalar*),          /* z = x^H * y */
        (*mdot)(int,Vec,Vec*,Scalar*),    /*   z[j] = x dot y[j] */
        (*norm)(Vec,double*),             /* z = sqrt(x^H * x) */
-       (*max)(Vec,int*,double*),  /* z = max(|x|); idx = index of max(|x|) */
+       (*amax)(Vec,int*,double*),  /* z = max(|x|); idx = index of max(|x|) */
        (*asum)(Vec,double*),             /*  z = sum |x| */
        (*tdot)(Vec,Vec,Scalar*),         /* x'*y */
        (*mtdot)(int,Vec,Vec*,Scalar*),   /*   z[j] = x dot y[j] */
@@ -35,7 +35,8 @@ struct _VeOps {
        (*getsize)(Vec,int*),(*localsize)(Vec,int*),
        (*getrange)(Vec,int*,int*),
        (*restorearray)(Vec,Scalar**),
-       (*min)(Vec,int*,double*);  /* z = min(|x|); idx = index of min(|x|) */
+       (*max)(Vec,int*,Scalar*),
+       (*min)(Vec,int*,Scalar*);  /* z = min(x); idx = index of min(x) */
 };
 
 /* Vector types, must be powers of 2 */

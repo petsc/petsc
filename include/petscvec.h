@@ -35,6 +35,7 @@ extern int VecMDot(int,      Vec ,Vec*,Scalar*);
 extern int VecMTDot(int,      Vec ,Vec*,Scalar*); 
 extern int VecNorm(Vec, double*);
 extern int VecASum(Vec, double*);
+extern int VecAMax(Vec, int *,   double*);
 extern int VecMax(Vec, int *,    Scalar*);
 extern int VecMin(Vec, int *,    Scalar*);
 extern int VecScale(Scalar*, Vec);    
