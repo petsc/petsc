@@ -250,12 +250,10 @@ class CompileDefaults (Defaults):
     baseName  = os.path.splitext(os.path.split(executable[0])[1])[0] 
     library   = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
     libraries = fileset.FileSet(children = [self.babelLib])
-    package   = self.getPackages()[0]
-    rootDir   = self.getServerRootDir(self.serverLanguages[0], package)
 
     action = compile.CompileCxx(library)
     action.includeDirs.append(self.babelIncludeDir)
-    action.includeDirs.append(rootDir)
+    action.includeDirs.append(self.getClientRootDir('C++'))
     if self.includeDirs.has_key('executable'):
       action.includeDirs.extend(self.includeDirs['executable'])
 
