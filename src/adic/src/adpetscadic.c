@@ -22,7 +22,7 @@ int ad_PetscADICFunctionCreate(PetscADICFunction ctx)
   ierr = ad_VecCreate(MPI_COMM_SELF, ctx->m, &(ctx->din)); CHKERRQ(ierr);
   ierr = ad_VecCreate(MPI_COMM_SELF, ctx->n, &(ctx->dout));CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -62,7 +62,7 @@ int ad_PetscADICFunctionEvaluateGradient(PetscADICFunction ctx,double *inx,doubl
     outx[i] = DERIV_VAL(outa[i]);
   }
   ierr = ad_VecRestoreArray(ctx->dout, &(outa)); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -84,7 +84,7 @@ int ad_PetscADICFunctionApplyGradientInitialize(PetscADICFunction ctx,double *in
     DERIV_VAL(ina[i])     = inx[i];
   }
   ierr = ad_VecRestoreArray(ctx->din, &(ina)); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -114,7 +114,7 @@ int ad_PetscADICFunctionApplyGradient(PetscADICFunction ctx,double *inx,double *
     ad_AD_ExtractGrad(outx+i,outa[i]);
   }
   ierr = ad_VecRestoreArray(ctx->dout, &(outa)); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -123,10 +123,10 @@ int ad_PetscADICFunctionInitialize(PetscADICFunction ctx)
 {
   int ierr;
 
-  if (!ctx->ad_FunctionInitialize) return 0;
+  if (!ctx->ad_FunctionInitialize) PetscFunctionReturn(0);
 
   ierr = (*ctx->ad_FunctionInitialize)(&ctx->ad_ctx); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #if !defined(AD_INCLUDE_viewer_h)
@@ -168,5 +168,5 @@ int ad_VecView_Seq_File(Vec xin, Viewer viewer)
     fprintf(fd,"\n");
   }
   fflush(fd);
-  return   0;
+  PetscFunctionReturn(0);
 }

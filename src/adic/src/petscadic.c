@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscadic.c,v 1.3 1997/05/23 18:35:10 balay Exp balay $";
+static char vcid[] = "$Id: petscadic.c,v 1.4 1997/07/09 21:39:35 balay Exp bsmith $";
 #endif
 
 #include "petscadic.h"
@@ -23,7 +23,7 @@ int PetscADICFunctionSetFunction(PetscADICFunction ctx,int (*Function)(Vec,Vec),
   (ctx)->Function           = Function;
   (ctx)->FunctionInitialize = FunctionInitialize;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -48,7 +48,7 @@ int PetscADICFunctionCreate(Vec in,Vec out,int (*ad_Function)(Vec,Vec),
   ierr = VecGetSize(in,&(*ctx)->m); CHKERRQ(ierr);
   ierr = VecGetSize(out,&(*ctx)->n); CHKERRQ(ierr);
   ierr = ad_PetscADICFunctionCreate(*ctx); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -77,7 +77,7 @@ int PetscADICFunctionEvaluateGradient(PetscADICFunction ctx,Vec in,Vec out,Mat g
     ierr = MatAssemblyBegin(grad,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(grad,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 int DefaultComputeJacobian(int (*Function)(Vec,Vec),Vec x1,Mat J)
@@ -109,7 +109,7 @@ int DefaultComputeJacobian(int (*Function)(Vec,Vec),Vec x1,Mat J)
     ierr = VecCopy(x1,x2); CHKERRQ(ierr);
     if ( i>= start && i<end) {
       dx = xx[i-start];
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
       if (dx < dx_min && dx >= 0.0) dx = dx_par;
       else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
 #else
@@ -126,10 +126,10 @@ int DefaultComputeJacobian(int (*Function)(Vec,Vec),Vec x1,Mat J)
     ierr = (*Function)(x2,j2); CHKERRQ(ierr);
     ierr = VecAXPY(&mone,j1,j2); CHKERRQ(ierr);
     /* Communicate scale to all processors */
-#if !defined(PETSC_COMPLEX)
-    MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);
+#if !defined(USE_PETSC_COMPLEX)
+    ierr = MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #else
-    MPI_Allreduce(&wscale,&scale,2,MPI_DOUBLE,MPI_SUM,comm);
+    ierr = MPI_Allreduce(&wscale,&scale,2,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #endif
     VecScale(&scale,j2);
     VecGetArray(j2,&y);
@@ -147,7 +147,7 @@ int DefaultComputeJacobian(int (*Function)(Vec,Vec),Vec x1,Mat J)
 
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -159,10 +159,13 @@ int PetscADICFunctionEvaluateGradientFD(PetscADICFunction ctx,Vec in,Vec out,Mat
 {
   int    ierr;
 
-  if (!ctx->Function) SETERRQ(1,1,"Must provide function via PETScADICFunctionSetFunction() before using finite differences\n");
+  if (!ctx->Function) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must provide function via PETScADICFunctionSetFunction()\n\
+            before using finite differences\n");
+  }
   ierr = DefaultComputeJacobian(ctx->Function,in,grad); CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------------------*/
@@ -187,7 +190,7 @@ int PetscADICFunctionApplyGradient(Mat mat,Vec in,Vec grad)
 
   ierr = VecRestoreArray(in,&inx); CHKERRQ(ierr);
   ierr = VecRestoreArray(grad,&gradarray); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -208,7 +211,7 @@ int PetscADICFunctionApplyGradientReset(Mat mat,Vec in)
   ierr = ad_PetscADICFunctionApplyGradientInitialize(ctx,inx); CHKERRQ(ierr);
 
   ierr = VecRestoreArray(in,&inx); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -231,7 +234,7 @@ int PetscADICFunctionApplyGradientInitialize(PetscADICFunction ctx,Vec in,Mat *m
   ierr = ad_PetscADICFunctionApplyGradientInitialize(ctx,inx); CHKERRQ(ierr);
 
   ierr = VecRestoreArray(in,&inx); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -246,6 +249,6 @@ int PetscADICFunctionIntialize(PetscADICFunction ctx)
   int    ierr;
 
   ierr = ad_PetscADICFunctionInitialize(ctx); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
