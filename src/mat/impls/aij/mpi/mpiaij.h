@@ -23,6 +23,7 @@ typedef struct {
 /*  Used in Matrix-vector product */
   Vec           lvec;
   VecScatterCtx Mvctx;
+  int           *invcolmap;
 } Mat_MPIAIJ;
 
 
