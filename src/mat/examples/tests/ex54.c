@@ -1,6 +1,6 @@
 /*$Id: ex54.c,v 1.22 2001/08/07 21:30:08 bsmith Exp $*/
 
-static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for MatBAIJ format.\n";
+static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for parallel MatBAIJ format.\n";
 
 #include "petscmat.h"
 

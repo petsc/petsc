@@ -10,7 +10,7 @@ PETSc configure
    by .cshrc and friends and sets PETSC_DIR, MATLABPATH and PATH, others?
 
 Matrices
-   Add getoverlap code for seq and mpi (mpi more important) sbaij matrices
+   Add MatIncreaseOverlap() code for mpi (mpi more important) sbaij matrices
 
 Vectors
    Move VecGet/RestoreArrayFast() -> VecGet/RestoreArray(), VecGetArray() -> Private
