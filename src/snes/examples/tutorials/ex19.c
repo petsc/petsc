@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.5 2000/09/06 22:19:34 balay Exp bsmith $*/
+/*$Id: ex19.c,v 1.6 2000/09/22 20:46:14 bsmith Exp bsmith $*/
 
 static char help[] = "Solves nonlinear driven cavity with multigrid.\n\
   \n\
@@ -12,10 +12,7 @@ Mesh parameters are:\n\
   -my <yg>, where <yg> = number of grid points in the y-direction\n\
   -printg : print grid information\n\
 Graphics of the contours of (U,V,Omega,T) are available on each grid:\n\
-  -contours : draw contour plots of solution\n\
-Parallelism can be invoked based on the DA construct:\n\
-  -Nx <npx>, where <npx> = number of processors in the x-direction\n\
-  -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
+  -contours : draw contour plots of solution\n\n";
 
 /*T
    Concepts: SNES^solving a system of nonlinear equations (parallel multicomponent example);
@@ -95,12 +92,15 @@ int main(int argc,char **argv)
   int           mx,my,its;
   int           ierr,nlevels = 2;
   MPI_Comm      comm;
+  SNES          snes;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
 
   mx = 4; 
   my = 4; 
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
 
   /* 
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
@@ -149,6 +149,8 @@ int main(int argc,char **argv)
   PreLoadStage("Solve");
   ierr = DAMGSolve(damg);CHKERRA(ierr); 
 
+  snes = DAMGGetSNES(damg);
+  ierr = SNESGetIterationNumber(snes,&its);CHKERRA(ierr);
   ierr = PetscPrintf(comm,"Number of Newton iterations = %d\n", its);CHKERRA(ierr);
 
   /*

@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.5 2000/09/06 22:19:36 balay Exp bsmith $ */
+/* $Id: ex18.c,v 1.6 2000/09/22 20:46:14 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -13,8 +13,7 @@ options are:\n\
   -tleft <tl>, where <tl> indicates the left Diriclet BC \n\
   -tright <tr>, where <tr> indicates the right Diriclet BC \n\
   -mx <xv>, where <xv> = number of coarse control volumes in the x-direction\n\
-  -my <yv>, where <yv> = number of coarse control volumes in the y-direction\n\
-  -ratio <r>, where <r> = ratio of fine volumes in each coarse in both x,y\n";
+  -my <yv>, where <yv> = number of coarse control volumes in the y-direction\n";
 
 /*T
    Concepts: SNES^solving a system of nonlinear equations
@@ -92,6 +91,8 @@ int main(int argc,char **argv)
   my              = 5; 
   ratio           = 2;
   nlevels         = 3;
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
 
   /*
       Create the multilevel DA data structure 
@@ -121,6 +122,7 @@ int main(int argc,char **argv)
     ierr = DAMGSolve(damg);CHKERRQ(ierr);
   PreLoadEnd();
   snes = DAMGGetSNES(damg);
+  ierr = SNESGetIterationNumber(snes,&its);CHKERRA(ierr);
   ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRA(ierr);
   litspit = ((double)lits)/((double)its);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
