@@ -14,6 +14,7 @@
 #
 # Makes the two shadow directories.  Must be done before the library builds.
 #
+15 23 * * * /home/bsmith/petsc/maint/buildlinks /home/balay/petsc > /dev/null
 15 23 * * * /home/bsmith/petsc/maint/buildlinks /home/curfman/petsc > /dev/null
 15 23 * * * /home/bsmith/petsc/maint/buildlinks /home/petsc/petsc > /dev/null
 15 23 * * * rsh clyde -n /home/bsmith/petsc/maint/buildlinks /sphome/curfman/petsc > /dev/null
