@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.17 2000/09/20 15:53:39 hzhang Exp hzhang $*/
+/*$Id: sro.c,v 1.18 2000/09/20 19:13:17 hzhang Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -57,7 +57,7 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   
   if (!a->inew){ 
     len = (mbs+1 + 2*(a->i[mbs]))*sizeof(int);
-    ai  = (int*)PetscMalloc(len); CHKPTRQ(ai);
+    ai  = (int*)PetscMalloc(len);CHKPTRQ(ai);
     aj  = ai + mbs+1;    
   } else {
     ai = a->inew; aj = a->jnew;

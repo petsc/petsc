@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.43 2000/08/17 04:51:19 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.44 2000/09/20 21:10:35 bsmith Exp bsmith $*/
 
 static char help[] = "Parallel vector layout.\n\n";
 
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   */
   ierr = VecGetLocalSize(x,&nlocal);CHKERRQ(ierr);
   ierr = VecGetArray(x,&array);CHKERRQ(ierr);
-  for ( i=0; i<nlocal; i++) {
+  for (i=0; i<nlocal; i++) {
     array[i] = rank + 1;
   }
   ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);

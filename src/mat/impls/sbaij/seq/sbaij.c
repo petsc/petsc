@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.26 2000/09/15 15:11:04 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.27 2000/09/20 16:50:47 hzhang Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -136,7 +136,7 @@ int MatDestroy_SeqSBAIJ(Mat A)
   if (a->saved_values) {ierr = PetscFree(a->saved_values);CHKERRQ(ierr);}
 
   if (a->inew){
-    ierr = PetscFree(a->inew); CHKERRQ(ierr);
+    ierr = PetscFree(a->inew);CHKERRQ(ierr);
     a->inew = 0;
   }
   ierr = PetscFree(a);CHKERRQ(ierr);
