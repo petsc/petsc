@@ -1,4 +1,4 @@
-# $Id: vec.h,v 1.65 1997/06/18 12:53:47 bsmith Exp $ 
+# $Id: makefile,v 1.49 1997/08/09 19:05:11 bsmith Exp bsmith $ 
 
 onepager.ps: onepager.tex
 	latex onepager
@@ -17,7 +17,8 @@ clean:
 	rm -f manual/routines.ps */*.dvi */*.aux */*.toc */*.log */*.bbl */*.blg \
               */*.hux */*.err */*.ilg */*.idx */*.ind manual/sindex.tex manual/findex.tex \
               */*/*.dvi */*/*.aux */*/*.toc */*/*.log */*/*.bbl */*/*.blg \
-              */*/*.hux */*/*.err */*/*.ilg */*/*.idx */*/*.ind
+              */*/*.hux */*/*.err */*/*.ilg */*/*.idx */*/*.ind */*/talk.ps */*/talk4.ps \
+              */*/paper.ps */*/talk6.ps */*~ */*/*~ */*/*.stolen *.stolen
 
 
 #
