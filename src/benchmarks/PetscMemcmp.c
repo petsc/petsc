@@ -1,4 +1,4 @@
-/*$Id: PetscMemcmp.c,v 1.19 2001/08/06 21:19:06 bsmith Exp balay $*/
+/*$Id: PetscMemcmp.c,v 1.20 2001/08/07 03:04:59 balay Exp balay $*/
 
 #include "petsc.h"
 
@@ -9,6 +9,7 @@ int main(int argc,char **argv)
   PetscLogDouble x,y,z;
   PetscScalar    A[10000],B[10000];
   int            i,ierr;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&argv,0,0);
 
@@ -17,20 +18,20 @@ int main(int argc,char **argv)
     B[i] = i%61897;
   }
   /* To take care of paging effects */
-  PetscMemcmp(A,B,sizeof(PetscScalar)*0);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
   ierr = PetscGetTime(&x);CHKERRQ(ierr);
 
   ierr = PetscGetTime(&x);CHKERRQ(ierr);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*10000);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*10000);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*10000);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*10000);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*10000);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*10000);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*10000);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*10000);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*10000);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*10000);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
   ierr = PetscGetTime(&y);CHKERRQ(ierr);
   PetscMemcmp(A,B,sizeof(PetscScalar)*0);
   PetscMemcmp(A,B,sizeof(PetscScalar)*0);
