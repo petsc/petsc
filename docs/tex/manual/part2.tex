@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.343 2000/08/08 12:32:43 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.344 2000/08/24 22:44:03 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2267,7 +2267,7 @@ corresponding tolerance; the
 defaults are \url{rtol}=$10^{-5}$, \url{atol}=$10^{-50}$,
 \url{dtol}=$10^{5}$, and \url{maxits}=$10^5$.
 These parameters can also be set from the options database with the 
-commands \url{-ksp_rtol} <\url{rtol>}, \url{-ksp_atol} \url{<atol>}, \url{-ksp_divtol} \url{<dtol>},
+commands \url{-ksp_rtol} \url{<rtol>}, \url{-ksp_atol} \url{<atol>}, \url{-ksp_divtol} \url{<dtol>},
 \findex{-ksp_rtol} \findex{-ksp_atol} \findex{-ksp_divtol}
 and \url{-ksp_max_it} \url{<its>}. \findex{-ksp_max_it}
 
@@ -3001,12 +3001,12 @@ W-cycle by \sindex{W-cycle} \sindex{V-cycle} calling
 with a value of \url{MG_W_CYCLE} for \url{cycles}. 
 The commands above can also be set from the options database. The option 
 names are \url{-pc_mg_type [multiplicative, additive, full, kaskade]},
-and \url{-pc_mg_cycles cycles}. \findex{-pc_mg_type} \findex{-pc_mg_cycles}
+and \url{-pc_mg_cycles} \url{<cycles>}. \findex{-pc_mg_type} \findex{-pc_mg_cycles}
 
 The user can control the amount of pre- and postsmoothing 
 \sindex{smoothing} \sindex{relaxation} by using
 either the options \findex{-pc_mg_smoothup} \findex{-pc_mg_smoothdown}
-\url{-pc_mg_smoothup~m} and \url{-pc_mg_smoothdown~n} or
+\url{-pc_mg_smoothup} \url{m} and \url{-pc_mg_smoothdown} \url{n} or
 the routines \findex{MGSetNumberSmoothUp()} \findex{MGSetNumberSmoothDown()}
 \begin{verbatim}
    ierr = MGSetNumberSmoothUp(PC pc,int m);
@@ -3031,11 +3031,29 @@ smoothers are set by calling \findex{MGGetSmoother()}
 \end{verbatim}
 and setting the various options in \url{sles.} 
 To use a different pre- and postsmoother, one should call the following
-routines instead
+routines instead.
+\begin{verbatim}
+   ierr = MGGetSmootherUp(PC pc,int level,SLES *upsles);
+\end{verbatim}
+and 
+\begin{verbatim}
+   ierr = MGGetSmootherDown(PC pc,int level,SLES *downsles);
+\end{verbatim}
 
- operations to be matrix free
+Use
+\begin{verbatim}
+   ierr = MGSetInterpolate(PC pc,int level,Mat P);
+\end{verbatim}
+and
+\begin{verbatim}
+   ierr = MGSetRestriction(PC pc,int level,Mat R);
+\end{verbatim}
+to define the intergrid transfer operations.
+
+It is possible for these interpolation operations to be matrix free
 (see Section \ref{sec:matrixfree}),
-he or she should make sure that these operations are defined. 
+he or she should make sure that these operations are defined for the (matrix-free) matrices
+passed in. 
 Note that this system is arranged so that if the interpolation is 
 the transpose of the restriction, the same \url{mat} argument can be 
 passed to both \url{MGSetRestriction()} and \url{MGSetInterpolation()}.
