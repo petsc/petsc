@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matstash.c,v 1.31 1999/03/19 01:02:27 balay Exp balay $";
+static char vcid[] = "$Id: matstash.c,v 1.32 1999/03/19 15:57:03 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"
@@ -40,7 +40,7 @@ int MatStashCreate_Private(MPI_Comm comm,int bs, MatStash *stash)
     if (nopt == 1)                max = opt[0];
     else if (nopt == stash->size) max = opt[stash->rank];
     else if (stash->rank < nopt)  max = opt[stash->rank];
-    /* else use the default */
+    else                          max = 0; /* Use default */
     stash->umax = max;
   } else {
     stash->umax = 0;

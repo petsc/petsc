@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecstash.c,v 1.8 1999/03/19 01:00:49 balay Exp balay $";
+static char vcid[] = "$Id: vecstash.c,v 1.9 1999/03/19 15:55:58 balay Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"
@@ -40,7 +40,7 @@ int VecStashCreate_Private(MPI_Comm comm,int bs, VecStash *stash)
     if (nopt == 1)                max = opt[0];
     else if (nopt == stash->size) max = opt[stash->rank];
     else if (stash->rank < nopt)  max = opt[stash->rank];
-    /* else use the default */
+    else                          max = 0; /* use default */
     stash->umax = max;
   } else {
     stash->umax = 0;
