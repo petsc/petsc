@@ -1,79 +1,84 @@
-#! /bin/csh
-# $Id: builddist,v 1.90 2001/08/25 01:39:37 balay Exp $ 
-
-# 
-#  Makes distribution version of Petsc 2.0
+#!/bin/sh
 #
-echo "------- Have you done ALL of the following?? -----------------------------"
-echo "(0) Excluded any directories not for public release (for example, src/eg, src/snes/interface/noise)"
-echo "(1) Built wwwpages, latexpages by running make allmanpages?"
-echo "(2) Set the version number in manual_tex.tex, manual.tex, and intro.tex?"
-echo "(3) Built the users manual (and intro) in .ps and .html?"
-echo "(4) Set the version number and release date in petsc.h?"
-echo "(5) Rebuilt and checked all Fortran stubs?"
-echo "(6) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run correctly?"
-echo "(7) Made sure Fortran include files match C ones?"
-echo "(8) Made sure the web documents are updated into the source tree - make updatewebdocs?"
+# This script builds the PETSc tar file distribution
+# It uses the bk rep in terra:/sandbox/petsc/petsc-dist
+#
+# Usage: builddist version
+# example usage: builddist -2.1.0
+#
+#echo "------- Have you done ALL of the following?? -----------------------------"
+#echo "(0) Excluded any directories not for public release (for example, src/eg, src/snes/interface/noise)"
+#echo "(1) Built wwwpages, latexpages by running make allmanpages?"
+#echo "(2) Set the version number in manual_tex.tex, manual.tex, and intro.tex?"
+#echo "(3) Built the users manual (and intro) in .ps and .html?"
+#echo "(4) Set the version number and release date in petsc.h?"
+#echo "(5) Rebuilt and checked all Fortran stubs?"
+#echo "(6) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run correctly?"
+#echo "(7) Made sure Fortran include files match C ones?"
+#echo "(8) Made sure the web documents are updated into the source tree - make updatewebdocs?"
 
-if ($#argv == 1) then
-  set version=$1
+# If version specified on the commandline, set the version
+if [ $# = 1 ] ; then 
+  version=$1
   echo "Building ~/petsc$version.tar.gz"
 else
   set version=""
-endif
-#
-# If /sandbox/petsc/tmp does not exist create it.
-#
-set tmpdir = "/sandbox/petsc/tmp"
-if (! -d $tmpdir) then
-  mkdir -p $tmpdir
-endif
-if (! -d $tmpdir) then
-  echo 'Cannot create $tmpdir. Exiting..'
-endif
+fi
 
-setenv PETSC_DIR /home/bsmith/petsc
-cd /home/bsmith/petsc
+# If /sandbox/petsc/tmp does not exist create it.
+tmpdir="/sandbox/petsc/tmp"
+if [ ! -d $tmpdir ]; then
+  mkdir -p $tmpdir
+fi
+if [ ! -d $tmpdir ]; then
+  echo 'Cannot create $tmpdir. Exiting..'
+  exit  
+fi
+/bin/rm -rf ${tmpdir}/*
+
+# Update the bk repository
+export PETSC_ARCH=linux
+export PETSC_DIR=/sandbox/petsc/petsc-dist
+cd $PETSC_DIR
+bk pull
+bk -r co -q
+
+# Clean up, create fortran stubs and tar up the PETSc tree
+cd $PETSC_DIR
+make allfortranstubs
 make ACTION=clean tree
-#
-#/bin/rm -f ~/petsc
-#
-cd /home/bsmith
-# /bin/tar cFFXf /home/bsmith/petsc/maint/xclude $tmpdir/petsc.tar petsc
-gnutar  --create --file $tmpdir/petsc.tar --exclude-from  /home/bsmith/petsc/maint/xclude  petsc
-#
+cd /sandbox/petsc
+/bin/tar --create --file $tmpdir/petsc.tar --exclude-from  ${PETSC_DIR}/maint/xclude  petsc-dist
 cd $tmpdir
 /bin/tar xf $tmpdir/petsc.tar
+mv petsc-dist petsc
 #
 # Before Creating the tarfile, make changes to the bmakefiles/makefiles,
 # create tagfiles etc. permissions etc.
+#
 cd $tmpdir/petsc
 
-# Eliminate unnecessary petscmachineinfo.h files
-\rm -f bmake/*/petscmachineinfo.h
-# Eliminate chmods in the makefile
+# Eliminate unnecessary petscmachineinfo.h & buildtest files
+/bin/rm -f bmake/*/petscmachineinfo.h
+/bin/rm -f bmake/*/buildtest
+
+# Eliminate chmods in the makefile & bmake/common/rules
 /bin/mv makefile makefile.bak
 /bin/grep -v 'chmod' makefile.bak > makefile
 /bin/rm -f makefile.bak
-# Eliminate chmods in bmake/common
+
 /bin/mv bmake/common/rules bmake/common/rules.bak
 /bin/grep -v 'chmod' bmake/common/rules.bak > bmake/common/rules
 /bin/rm -f  bmake/common/rules.bak
-# Eliminate '-u' from sun4/base
-  #/bin/mv bmake/sun4/base bmake/sun4/base.bak
-  #/bin/sed 's/-u//' bmake/sun4/base.bak > bmake/sun4/base
-  #/bin/rm -f  bmake/sun4/base.bak
-# Eliminate buildtest scripts from bmake/arch
-/bin/rm -f  bmake/*/buildtest
 
 # eliminate .html files in src/contrib
-find src/contrib -type f -name "*.html" -exec /bin/rm -f {} \;
+/usr/bin/find src/contrib -type f -name "*.html" -exec /bin/rm -f {} \;
 
-# Create EMACS-TAGS and VI-TAGS
+# Create EMACS-TAGS
 make etags etags_examples TAGSDIR=`pwd`
 
 # Clean up the external Packages from PETSC_ARCH/packages files
-foreach i (bmake/*/packages)
+for i in bmake/*/packages ; do
   cat $i | sed "s/^MPE_INCLUDE/#MPE_INCLUDE/g" | sed "s/^MPE_LIB/#MPE_LIB/g" | \
     sed "s/^PETSC_HAVE_MPE/#PETSC_HAVE_MPE/g" | \
     sed "s/^BLOCKSOLVE_INCLUDE/#BLOCKSOLVE_INCLUDE/g" | sed "s/^BLOCKSOLVE_LIB/#BLOCKSOLVE_LIB/g" | \
@@ -95,7 +100,7 @@ foreach i (bmake/*/packages)
     sed "s/^JAVA/#JAVA/g" | sed "s/^JAVAC/#JAVAC/g" | sed "s/^PETSC_HAVE_JAVA/#PETSC_HAVE_JAVA/g" | \
     sed "s/^PCONF/#PCONF/g" > $i.tmp
   /bin/mv -f $i.tmp $i
-end
+done
 
 # Set the correct file permissions.
 cd $tmpdir
@@ -104,12 +109,10 @@ chmod -R u+w petsc
 chmod -R a+r petsc
 find petsc -type d -name "*" -exec chmod a+x {} \;
 
-
 /bin/rm -f $tmpdir/petsc.tar
-if ($#argv == 1) then
-  mv petsc petsc$version
-endif
-
+if [ ! ${version}foo = foo ] ; then
+  /bin/mv petsc petsc$version
+fi
 
 /bin/tar cf $tmpdir/petsc$version.tar petsc$version
 /bin/rm -r -f $tmpdir/petsc$version
@@ -117,20 +120,4 @@ gzip -f $tmpdir/petsc$version.tar
 /bin/cp $tmpdir/petsc$version.tar.gz ~/
 /bin/rm -f $tmpdir/petsc$version.tar.gz
 chmod ug+w ~/petsc$version.tar.gz
-#
-#  To test locally and build petsc.solid
-#
-# tar xf petsc$version.tar
-# do chgrp -R petsc petsc$version
-# do chmod -R g+w petsc$version
-# do find petsc$version -type d -name '*' chmod g+s petsc$version
-# Run du on petsc$version to make sure there is no garbage
-# Test manpages and manual in petsc$version
-# Do builds in petsc$version -- Remember that you must set
-# PETSC_DIR in .cshrc to  point to petsc$version
-#
-# Put a .gz and .Z file in the ftp site.
-# Add to petsc.html the current release and date (in Overview section)
-# and to docs/tex/Releases
-#
-# After build Restore the local copy by undoing the following
+
