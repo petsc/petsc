@@ -8,10 +8,9 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
     self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/UMFPACKv4.3.tar.gz']
-    self.deps         = [self.mpi,self.blasLapack]
+    self.deps         = [self.blasLapack]
     self.functions    = ['umfpack_di_report_info'] 
     self.includes     = ['umfpack.h']
     self.libdir       = 'UMFPACK/Lib'
@@ -49,23 +48,7 @@ class Configure(PETSc.package.Package):
     if 'FC' in self.framework.argDB:
       self.framework.pushLanguage('FC')
       args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
-      self.framework.popLanguage()
-    if self.mpi.include:
-      if len(self.mpi.include) > 1:
-        raise RuntimeError("umfpack assumes there is a single MPI include directory")
-      args.append('--with-mpi-include="'+self.mpi.include[0].replace('-I','')+'"')
-    libdirs = []
-    for l in self.mpi.lib:
-      ll = os.path.dirname(l)
-      libdirs.append(ll)
-    libdirs = ' '.join(libdirs)
-    args.append('--with-mpi-lib-dirs="'+libdirs+'"')
-    libs = []
-    for l in self.mpi.lib:
-      ll = os.path.basename(l)
-      libs.append(ll[3:-2])
-    libs = ' '.join(libs)
-    args.append('--with-mpi-libs="'+libs+'"')   
+      self.framework.popLanguage() 
     args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"')        
     args = ' '.join(args)
 
