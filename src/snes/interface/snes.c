@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.150 1998/04/24 04:58:14 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.151 1998/04/24 04:59:19 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -2132,8 +2132,10 @@ int SNESPrintHelp(SNES snes)
    is ignored.
 
    Sample usage:
+.vb
    SNESRegister("my_solver",/home/username/my_lib/lib/libg/solaris/mylib.a,
                 "MySolverCreate",MySolverCreate);
+.ve
 
    Then, your solver can be chosen with the procedural interface via
 $     SNESSetType(snes,"my_solver")
