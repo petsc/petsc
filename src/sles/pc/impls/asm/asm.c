@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.7 1996/01/01 01:02:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.8 1996/01/12 03:52:53 bsmith Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -18,6 +18,7 @@ static char vcid[] = "$Id: asm.c,v 1.7 1996/01/01 01:02:52 bsmith Exp bsmith $";
 
 typedef struct {
   int        n,n_local,n_local_true;
+  int        overlap;                 /* overlap requested by user */
   SLES       *sles;                   /* linear solvers for each block */
   VecScatter *scat;                   /* mapping to subregion */
   Vec        *x,*y;
@@ -61,6 +62,13 @@ static int PCSetUp_ASM(PC pc)
     osm->x    = (Vec *) PetscMalloc(2*n_local*sizeof(Vec **)); CHKPTRQ(osm->x);
     osm->y    = osm->x + n_local;
 
+    /* 
+       Extend the "overlapping" regions by a number of steps 
+    */
+    if (overlap) {
+      ;
+    }
+
     /* create the local work vectors and scatter contexts */
     for ( i=0; i<n_local_true; i++ ) {
       ierr = ISGetSize(osm->is[i],&m); CHKERRQ(ierr);
@@ -76,7 +84,7 @@ static int PCSetUp_ASM(PC pc)
       ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&isl); CHKERRQ(ierr);
       ierr = VecScatterCreate(pc->vec,isl,osm->x[i],isl,&osm->scat[i]); CHKERRQ(ierr);
       ierr = ISDestroy(isl); CHKERRQ(ierr);   
-      ierr = MatCreateSeqAIJ(MPI_COMM_SELF,0,PETSC_NULL,0,PETSC_NULL,&osm->pmat[i]); CHKERRQ(ierr); 
+      ierr = MatCreateSeqAIJ(MPI_COMM_SELF,0,PETSC_NULL,0,PETSC_NULL,&osm->pmat[i]);CHKERRQ(ierr); 
     }
 
     /* create the local solvers */
@@ -157,6 +165,7 @@ int PCCreate_ASM(PC pc)
   PetscMemzero(osm,sizeof(PC_ASM)); 
   osm->n            = PETSC_DECIDE;
   osm->n_local_true = PETSC_DECIDE;
+  osm->overlap      = 0;
 
   pc->apply         = PCApply_ASM;
   pc->setup         = PCSetUp_ASM;
