@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.71 1995/09/04 21:54:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.72 1995/09/06 03:05:29 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1062,11 +1062,92 @@ static int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  int ierr;
+  int        ierr, i, j, rstart = aij->rstart;
+  double     sum = 0.0;
+  Mat_AIJ    *amat = (Mat_AIJ*) aij->A->data, *bmat = (Mat_AIJ*) aij->B->data;
+  Scalar     *v;
+
+  if (!aij->assembled) 
+    SETERRQ(1,"MatNorm_MPIAIJ: Cannot compute norm of unassembled matrix");
   if (aij->numtids == 1) {
     ierr =  MatNorm(aij->A,type,norm); CHKERRQ(ierr);
   } else {
-   SETERRQ(1,"MatNorm_MPIAIJ:  no parallel norms yet.");
+    if (type == NORM_FROBENIUS) {
+      v = amat->a;
+      for (i=0; i<amat->nz; i++ ) {
+#if defined(PETSC_COMPLEX)
+        sum += real(conj(*v)*(*v)); v++;
+#else
+        sum += (*v)*(*v); v++;
+#endif
+      }
+      v = bmat->a;
+      for (i=0; i<bmat->nz; i++ ) {
+#if defined(PETSC_COMPLEX)
+        sum += real(conj(*v)*(*v)); v++;
+#else
+        sum += (*v)*(*v); v++;
+#endif
+      }
+      MPI_Allreduce((void*)&sum,(void*)norm,1,MPI_DOUBLE,MPI_SUM,mat->comm);
+      *norm = sqrt(*norm);
+    }
+    else if (type == NORM_1) { /* max column norm */
+      double *tmp, *tmp2;
+      int    *jj, *garray = aij->garray;
+      tmp = (double *) PETSCMALLOC( aij->N*sizeof(double) ); CHKPTRQ(tmp);
+      tmp2 = (double *) PETSCMALLOC( aij->N*sizeof(double) ); CHKPTRQ(tmp2);
+      PETSCMEMSET(tmp,0,aij->N*sizeof(double));
+      *norm = 0.0;
+      v = amat->a; jj = amat->j;
+      for ( j=0; j<amat->nz; j++ ) {
+#if defined(PETSC_COMPLEX)
+        tmp[rstart + *jj++ - 1] += abs(*v++); 
+#else
+        tmp[rstart + *jj++ - 1] += fabs(*v++); 
+#endif
+      }
+      v = bmat->a; jj = bmat->j;
+      for ( j=0; j<bmat->nz; j++ ) {
+#if defined(PETSC_COMPLEX)
+        tmp[garray[*jj++ - 1]] += abs(*v++); 
+#else
+        tmp[garray[*jj++ - 1]] += fabs(*v++); 
+#endif
+      }
+      MPI_Allreduce((void*)tmp,(void*)tmp2,aij->N,MPI_DOUBLE,MPI_SUM,mat->comm);
+      for ( j=0; j<aij->N; j++ ) {
+        if (tmp2[j] > *norm) *norm = tmp2[j];
+      }
+      PETSCFREE(tmp); PETSCFREE(tmp2);
+    }
+    else if (type == NORM_INFINITY) { /* max row norm */
+      double normtemp = 0.0;
+      for ( j=0; j<amat->m; j++ ) {
+        v = amat->a + amat->i[j] - 1;
+        sum = 0.0;
+        for ( i=0; i<amat->i[j+1]-amat->i[j]; i++ ) {
+#if defined(PETSC_COMPLEX)
+          sum += abs(*v); v++;
+#else
+          sum += fabs(*v); v++;
+#endif
+        }
+        v = bmat->a + bmat->i[j] - 1;
+        for ( i=0; i<bmat->i[j+1]-bmat->i[j]; i++ ) {
+#if defined(PETSC_COMPLEX)
+          sum += abs(*v); v++;
+#else
+          sum += fabs(*v); v++;
+#endif
+        }
+        if (sum > normtemp) normtemp = sum;
+        MPI_Allreduce((void*)&normtemp,(void*)norm,1,MPI_DOUBLE,MPI_MAX,mat->comm);
+      }
+    }
+    else {
+      SETERRQ(1,"MatNorm_MPIRow:No support for the two norm");
+    }
   }
   return 0; 
 }
