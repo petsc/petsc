@@ -108,7 +108,7 @@ static int PCApply_HYPRE(PC pc,Vec b,Vec x)
   HYPRE_ParCSRMatrix hmat;
   PetscScalar        *bv,*xv;
   HYPRE_ParVector    jbv,jxv;
-  PetscScalar        *sbv,*sxv, zero = 0.0; 
+  PetscScalar        *sbv,*sxv; 
 
   PetscFunctionBegin;
   ierr = VecGetArray(b,&bv);CHKERRQ(ierr);

@@ -106,7 +106,7 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::applyB( esi::Vector<doubl
 {
   int    ierr;
   Vec    py,px,work;
-  PCSide iside;
+  PCSide iside= PC_LEFT;
 
   ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));
   ierr = xx.getInterface("Vec",reinterpret_cast<void*&>(px));
