@@ -121,14 +121,18 @@ class Logger(args.ArgumentProcessor):
   linewidth = property(getLinewidth, getLinewidth, doc = 'The maximum number of characters per log line')
 
   def checkWrite(self, f, debugLevel, debugSection, writeAll = 0):
-    '''Check whether the log line should be written'''
+    '''Check whether the log line should be written
+       - If writeAll is true, return true
+       - If debugLevel >= current level, and debugSection in current section or sections is empty, return true'''
     if not isinstance(debugLevel, int):
       raise RuntimeError('Debug level must be an integer')
     if f is None:
       return False
-    if not writeAll and not (self.debugLevel >= debugLevel and (not len(self.debugSections) or debugSection in self.debugSections)):
-      return False
-    return True
+    if writeAll:
+      return True
+    if self.debugLevel >= debugLevel and (not len(self.debugSections) or debugSection in self.debugSections):
+      return True
+    return False
 
   def logIndent(self, debugLevel = -1, debugSection = None):
     '''Write the proper indentation to the log streams'''
@@ -167,8 +171,9 @@ class Logger(args.ArgumentProcessor):
       self.logIndent(debugLevel, debugSection)
     self.logWrite(msg, debugLevel, debugSection)
     for writeAll, f in enumerate([self.out, self.log]):
-      if not f is None and (writeAll or self.linewidth < 0):
-        f.write('\n')
+      if self.checkWrite(f, debugLevel, debugSection, writeAll):
+        if writeAll or self.linewidth < 0:
+          f.write('\n')
     return
 
 class defaultWriter:

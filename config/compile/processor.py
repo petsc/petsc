@@ -11,11 +11,18 @@ class Processor(object):
     else:
       self.name          = name
     self.flagsName       = flagsName
-    self.requiredFlags   = ''
+    self.requiredFlags   = ['']
     self.outputFlag      = ''
     self.sourceExtension = sourceExtension
     self.targetExtension = targetExtension
     self.child           = None
+    return
+
+  def pushRequiredFlags(self, flags):
+    self.requiredFlags.append(flags)
+    return
+  def popRequiredFlags(self):
+    self.requiredFlags.pop()
     return
 
   def checkSetup(self):
@@ -57,7 +64,7 @@ class Processor(object):
     '''Returns a shell command as a string which will invoke the processor on sourceFiles, producing outputFile if given'''
     if isinstance(sourceFiles, str):
       sourceFiles = [sourceFiles]
-    cmd = [self.argDB[self.name], self.requiredFlags]
+    cmd = [self.argDB[self.name], self.requiredFlags[-1]]
     if not outputFile is None:
       cmd.extend([self.outputFlag, outputFile])
     cmd.append(self.flags)

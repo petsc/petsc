@@ -165,6 +165,20 @@ class SourceDB (dict, base.Base):
     self[source] = (SourceDB.getChecksum(source), os.path.getmtime(source), time.time(), dependencies)
     return
 
+  def addDependency(self, source, dependency):
+    self.isDirty = 1
+    dependencies = ()
+    try:
+      (checksum, mtime, timestamp, dependencies) = self[source]
+    except KeyError:
+      checksum = ''
+      mtime    = os.path.getmtime(source)
+    if not dependency in dependencies:
+      self.debugPrint('Adding dependency '+dependency+' to source '+source+' in source database', 3, 'sourceDB')
+      dependencies = dependencies+(dependency,)
+    self[source] = (checksum, mtime, time.time(), dependencies)
+    return
+
   def calculateDependencies(self):
     self.debugPrint('Recalculating dependencies', 1, 'sourceDB')
     for source in self:

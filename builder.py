@@ -7,25 +7,42 @@ class CompileError(RuntimeError):
 class LinkError(RuntimeError):
   pass
 
-class CompilerDependencyChecker(object):
+class CompilerDependencyChecker(logging.Logger):
   def __init__(self):
     import sourceDatabase
     import os
 
+    logging.Logger.__init__(self)
     self.sourceDB = sourceDatabase.SourceDB(os.getcwd())
     self.sourceDB.load()
     return
 
   def __call__(self, source, target):
+    '''This method determines whether source should be recompiled into target
+       - It checks that source exists
+       - If target is not None and does not exist, rebuild
+       - If source is not in the databasem rebuild
+       - If the checksum for source has changed, rebuild
+       - If any dependency would be rebuilt, rebuild'''
     import os
 
     for f in source:
       if not os.path.isfile(f):
         raise CompileError('Source file not found for compile: '+str(f))
-    if not os.path.isfile(target):
+    if not target is None and not os.path.isfile(target):
+      self.logPrint('Source '+str(source)+' rebuilds due to missing target '+str(target))
       return True
-    if reduce(lambda v,f: v or (not f in self.sourceDB) or (not self.sourceDB[f][0] == self.sourceDB.getChecksum(f)), source, False):
-      return True
+    for f in source:
+      if not f in self.sourceDB:
+        self.logPrint('Source '+str(source)+' rebuilds due to file '+str(f)+' missing from database')
+        return True
+      if not self.sourceDB[f][0] == self.sourceDB.getChecksum(f):
+        self.logPrint('Source '+str(source)+' rebuilds due to changed checksum of file '+str(f))
+        return True
+      for dep in self.sourceDB[f][3]:
+        if self([dep], None):
+          self.logPrint('Source '+str(source)+' rebuilds due to rebuilt dependecy '+str(dep))
+          return True
     return False
 
   def update(self, source):
@@ -46,6 +63,7 @@ class Builder(logging.Logger):
   def setup(self):
     logging.Logger.setup(self)
     self.getLanguageProcessor().setup()
+    self.shouldCompile.setup()
     return
 
   def pushLanguage(self, language):
@@ -181,9 +199,15 @@ class Builder(logging.Logger):
 
   def getLinkerCommand(self, source, target = None, shared = 0):
     self.getLinker()
+    obj = self.getLanguageProcessor().getLinkerObject(self.language[-1])
     if target is None:
       target = self.getLinkerTarget(source[0], shared)
-    return self.getLanguageProcessor().getLinkerObject(self.language[-1]).getCommand(source, target)
+    if shared:
+      obj.pushRequiredFlags(self.argDB['SHARED_LIBRARY_FLAG'])
+    command = obj.getCommand(source, target)
+    if shared:
+      obj.popRequiredFlags()
+    return command
 
   def link(self, source, target = None, shared = 0):
     def report(command, status, output, error):

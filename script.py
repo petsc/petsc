@@ -78,6 +78,17 @@ class Script(logging.Logger):
         self._root_ = os.getcwd()
     return self._root_
 
+  def getModule(self, root, name):
+    '''Retrieve a specific module from the directory root, bypassing the usual paths'''
+    import imp
+
+    (fp, pathname, description) = imp.find_module(name, [root])
+    try:
+      return imp.load_module(name, fp, pathname, description)
+    finally:
+      if fp: fp.close()
+    return
+
   def openPipe(command):
     '''We need to use the asynchronous version here since we want to avoid blocking reads'''
     import popen2

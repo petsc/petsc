@@ -10,9 +10,9 @@ class Compiler(config.compile.processor.Processor):
   '''The C compiler'''
   def __init__(self, argDB):
     config.compile.processor.Processor.__init__(self, argDB, 'CXX', ['CXXFLAGS', 'CXX_CXXFLAGS'], '.cc', '.o')
-    self.requiredFlags = '-c'
-    self.outputFlag    = '-o'
-    self.child         = Preprocessor(argDB)
+    self.requiredFlags[-1] = '-c'
+    self.outputFlag        = '-o'
+    self.child             = Preprocessor(argDB)
     return
 
 class Linker(config.compile.processor.Processor):
