@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.15 1995/06/18 16:23:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.16 1995/07/07 17:15:33 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -181,7 +181,7 @@ int PetscAttachDebugger()
 #if defined(PARCH_hpux)
     while (1) ; /* HP cannot attach to sleeper */
 #else
-    sleep(30);
+    sleep(10);
 #endif
     return 0;
   }

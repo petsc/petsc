@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.13 1995/07/08 20:40:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.14 1995/07/09 23:16:15 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -276,8 +276,8 @@ $      with PETSC_LOG)
 @*/
 int PLogAllBegin()
 {
-  events = (Events*) PETSCMALLOC(CHUNCK*sizeof(Events)); CHKPTRQ(events);
-  objects = (Objects*) PETSCMALLOC(CHUNCK*sizeof(Objects)); CHKPTRQ(objects);
+  objects = (Objects*) PETSCMALLOC(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
+  events = (Events*) PETSCMALLOC(CHUNCK*sizeof(Events));CHKPTRQ(events);
   _PHC = phc;
   _PHD = phd;
   _PLB = plball;
@@ -291,6 +291,7 @@ int PLogAllBegin()
 /*@
     PLogBegin - Turns on logging of objects and events. This logs flop
       rates and object creation. It should not slow programs down too much.
+      This may be called more then once 
 
    Options Database Keys:
 $  -log_all : Prints log information (for code compiled
@@ -305,8 +306,8 @@ $  -log_summary :
 @*/
 int PLogBegin()
 {
-  events = (Events*) PETSCMALLOC(CHUNCK*sizeof(Events)); CHKPTRQ(events);
-  objects = (Objects*) PETSCMALLOC(CHUNCK*sizeof(Objects)); CHKPTRQ(objects);
+  objects = (Objects*) PETSCMALLOC(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
+  events = (Events*) PETSCMALLOC(CHUNCK*sizeof(Events));CHKPTRQ(events);
   _PHC = phc;
   _PHD = phd;
   _PLB = plb;
