@@ -232,7 +232,8 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
 
       v += 16;
     }
-    row = (*ajtmp++)/4;
+    row = (*ajtmp)/4;
+    ajtmp++;
     while (row < i) {
       pc  = rtmp + 16*row;
       SSE_INLINE_BEGIN_1(pc)
@@ -520,7 +521,8 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
         }
         PetscLogFlops(128*nz+112);
       } 
-      row = *ajtmp++;
+      row = (*ajtmp)/4;
+      ajtmp++;
     }
     /* finished row so stick it into b->a */
     pv = ba + 16*bi[i];
