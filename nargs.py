@@ -53,6 +53,9 @@ class ArgEmpty:
       return str(map(str, self.value))
     return str(self.value)
 
+  def convertValue(self, value):
+    return value
+
   def getValue(self,key):
     return (0,None)
 
@@ -133,7 +136,7 @@ class ArgString(ArgEmpty):
       except KeyboardInterrupt:	sys.exit(1)
       return (1,self.value)
     else: return (0,self.value)
-    
+
 #  Objects that are stored in the ArgDict that are integers
 class ArgInt(ArgEmpty):
   def __init__(self,help = None,min = -1000000, max = 1000000):
@@ -152,11 +155,39 @@ class ArgInt(ArgEmpty):
         if self.value > self.min and self.value < self.max: return (1,self.value)
     else: return (0,self.value)
 
+#  Objects that are stored in the ArgDict that are booleans
+class ArgBool(ArgEmpty):
+  def __init__(self, help = None):
+    self.help  = help
+    return
+
+  def convertValue(self, value):
+    try:
+      value = int(value)
+    except:
+      value = 0
+    if value:
+      value = 1
+    return value
+
+  def getValue(self,key):
+    if not hasattr(self, 'value'):
+      if self.help: print self.help
+      try:
+        self.value = parseValue(raw_input('Please enter boolean value for '+key+':'))
+      except KeyboardInterrupt:
+        sys.exit(1)
+      return (1, self.convertValue(self.value))
+    else:
+      return (0, self.value)
+
 #=======================================================================================================
 #   Dictionary of actual command line arguments, etc.
 #
 class ArgDict (RDict.RArgs):
   def __init__(self, name = "ArgDict", argList = None, localDict = 0, addr = None):
+    if argList is None:
+      argList = []
     if localDict or '-localDict' in argList:
       self.purelocal = 1
     else:
@@ -213,26 +244,49 @@ class ArgDict (RDict.RArgs):
       else:
         return 0
     return 0
-  
+
   def keys(self):
     return self.local.keys()+RDict.RArgs.keys(self)
+
+  def hasType(self, key):
+    if self.local.has_key(key):
+      return 1
+    elif not self.purelocal:
+      if RDict.RArgs.has_key(self, key):
+        return 1
+    return 0
+
+  def getType(self, key):
+    if not self.purelocal:
+      if RDict.RArgs.has_key(self,key):
+        return RDict.RArgs.__getitem__(self, key)
+    if self.local.has_key(key):
+      return self.local[key]
+    return None
+
+  def setLocalType(self,key,arg):
+    # sets properties of the option that will be requested later
+    if not self.local.has_key(key):
+      self.local[key] = arg
+    return
 
   def setType(self,key,arg):
     # sets properties of the option that will be requested later
     if not self.purelocal:
       if not RDict.RArgs.has_key(self,key): RDict.RArgs.__setitem__(self,key,arg)
-    else: self.setLocalType(key,arg)
-
-  def setLocalType(self,key,arg):
-    # sets properties of the option that will be requested later
-    if not self.local.has_key(key): self.local[key] = arg
+    else:
+      self.setLocalType(key,arg)
+    return
 
   def insertArgList(self, argList):
     if not isinstance(argList, list): return
     for arg in argList:
       (key, value) = parseArgument(arg)
       if not key is None:
-        self[key] = value
+        if self.hasType(key):
+          self[key] = self.getType(key).convertValue(value)
+        else:
+          self[key] = value
       else:
         if not self.target == ['default']:
           self.target.append(arg)
