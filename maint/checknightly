@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: checknightly,v 1.43 1998/09/22 22:00:20 balay Exp bsmith $ 
+# $Id: checknightly,v 1.44 1998/10/31 15:39:49 bsmith Exp balay $ 
 #
 # Crontab job that checks if the nightly runs have finished by 7:30 am,
 # Checks if the remote jobs are done in the past 2days, and 
@@ -39,27 +39,27 @@ proc CheckNightlyBuilds { } {
     set day(Sat) Fri
     set today [exec date +%a ]
     
-#     set files {build_linux.log}
-#     foreach file $files {
-#         if { [file exists $file ] == 0 } {
-#             set mesg "$file: File does not exist"
-#             puts $tmpfileid  $mesg
-#             continue
-#         }
-#         set fileid [ open $file r ]
-#         if { [gets $fileid line ]< 0 } {
-#         set mesg "$file: File does not exist"
-#             puts $tmpfileid $mesg
-#             close $fileid
-#             continue
-#         }
-#         close $fileid
-#         if { [ string first $today $line] < 0  && [ string first $day($today) $line ] < 0 } {
-#             set mesg "**out of date logfile: $file **"
-#         puts $tmpfileid $mesg
-#             puts $tmpfileid $line
-#         }
-#    }
+     set files {freebsd.log}
+     foreach file $files {
+         if { [file exists $file ] == 0 } {
+             set mesg "$file: File does not exist"
+             puts $tmpfileid  $mesg
+             continue
+         }
+         set fileid [ open $file r ]
+         if { [gets $fileid line ]< 0 } {
+         set mesg "$file: File does not exist"
+             puts $tmpfileid $mesg
+             close $fileid
+             continue
+         }
+         close $fileid
+         if { [ string first $today $line] < 0  && [ string first $day($today) $line ] < 0 } {
+             set mesg "**out of date logfile: $file **"
+         puts $tmpfileid $mesg
+             puts $tmpfileid $line
+         }
+    }
 }
 
 proc CheckFortranAutoMakefile { } {
