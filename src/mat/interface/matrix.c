@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.318 1999/02/15 21:56:30 balay Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.319 1999/02/26 16:55:35 balay Exp bsmith $";
 #endif
 
 /*
@@ -1801,6 +1801,9 @@ int MatCopy_Basic(Mat A,Mat B,MatStructure str)
 .  B - where the copy is put
 
    Notes:
+   If you use SAME_NONZERO_PATTERN then the zero matrices had better have the 
+   same nonzero pattern or the routine will crash.
+
    MatCopy() copies the matrix entries of a matrix to another existing
    matrix (after first zeroing the second matrix).  A related routine is
    MatConvert(), which first creates a new matrix and then copies the data.
