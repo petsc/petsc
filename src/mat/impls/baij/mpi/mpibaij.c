@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.70 1997/05/09 22:32:36 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.71 1997/05/23 18:38:15 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -611,7 +611,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
       val = values[3*i+2];
       if (col >= baij->cstart*bs && col < baij->cend*bs) {
         col -= baij->cstart*bs;
-        MatSetValues(baij->A,1,&row,1,&col,&val,addv);
+        ierr = MatSetValues(baij->A,1,&row,1,&col,&val,addv); CHKERRQ(ierr)
       } 
       else {
         if (mat->was_assembled) {
@@ -624,7 +624,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
             col = (int) PetscReal(values[3*i+1]);
           }
         }
-        MatSetValues(baij->B,1,&row,1,&col,&val,addv);
+        ierr = MatSetValues(baij->B,1,&row,1,&col,&val,addv); CHKERRQ(ierr)
       }
     }
     count--;

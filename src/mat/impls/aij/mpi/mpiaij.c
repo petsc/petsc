@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.206 1997/05/09 22:34:48 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.207 1997/05/23 18:38:33 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -435,12 +435,12 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
       val = values[3*i+2];
       if (col >= aij->cstart && col < aij->cend) {
         col -= aij->cstart;
-        MatSetValues(aij->A,1,&row,1,&col,&val,addv);
+        ierr = MatSetValues(aij->A,1,&row,1,&col,&val,addv); CHKERRQ(ierr);
       } 
       else {
         if (mat->was_assembled || mat->assembled) {
           if (!aij->colmap) {
-            ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
+            ierr = CreateColmap_MPIAIJ_Private(mat); CHKERRQ(ierr);
           }
           col = aij->colmap[col] - 1;
           if (col < 0  && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
@@ -448,7 +448,7 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
             col = (int) PetscReal(values[3*i+1]);
           }
         }
-        MatSetValues(aij->B,1,&row,1,&col,&val,addv);
+        ierr = MatSetValues(aij->B,1,&row,1,&col,&val,addv); CHKERRQ(ierr);
       }
     }
     count--;
