@@ -1,4 +1,4 @@
-/*$Id: index.c,v 1.81 2001/01/15 21:44:25 bsmith Exp balay $*/
+/*$Id: index.c,v 1.82 2001/03/23 23:21:06 balay Exp bsmith $*/
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
@@ -184,6 +184,21 @@ int ISInvertPermutation(IS is,int nlocal,IS *isout)
   ierr = (*is->ops->invertpermutation)(is,nlocal,isout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#if defined(__cplusplus)
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetSizeNew" 
+int ISGetSizeNew(IS is,int *size)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidIntPointer(size);
+  ierr = is->cops->getsize(size);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetSize" 
@@ -464,7 +479,7 @@ int ISDuplicate(IS is,IS *newIS)
     indices.  The user should NOT change the indices.
 
     Synopsis:
-    ISGetIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    ISGetIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
 
     Not collective
 
@@ -501,7 +516,7 @@ M*/
     a call to ISGetIndicesF90().
 
     Synopsis:
-    ISRestoreIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    ISRestoreIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
 
     Not collective
 
@@ -537,7 +552,7 @@ M*/
     indices.  The user should NOT change the indices.
 
     Synopsis:
-    ISBlockGetIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    ISBlockGetIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
 
     Not collective
 
@@ -575,7 +590,7 @@ M*/
     a call to ISBlockGetIndicesF90().
 
     Synopsis:
-    ISBlockRestoreIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    ISBlockRestoreIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
 
     Input Parameters:
 +   x - index set
