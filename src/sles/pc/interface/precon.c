@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.77 1996/03/18 00:39:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.78 1996/03/19 21:24:56 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -112,6 +112,7 @@ int PCApply(PC pc,Vec x,Vec y)
 {
   int ierr;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (x == y) SETERRQ(1,"PCApply:x and y must be different vectors");
   PLogEventBegin(PC_Apply,pc,x,y,0);
   ierr = (*pc->apply)(pc,x,y); CHKERRQ(ierr);
   PLogEventEnd(PC_Apply,pc,x,y,0);
@@ -189,6 +190,7 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 int PCApplyTrans(PC pc,Vec x,Vec y)
 {
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (x == y) SETERRQ(1,"PCApplyTrans:x and y must be different vectors");
   if (pc->applytrans) return (*pc->applytrans)(pc,x,y);
   SETERRQ(PETSC_ERR_SUP,"PCApplyTrans");
 }
@@ -214,6 +216,7 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
 {
   int ierr;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (x == y) SETERRQ(1,"PCApplyBAorAB:x and y must be different vectors");
   if (pc->applyBA)  return (*pc->applyBA)(pc,side,x,y,work);
   if (side == PC_RIGHT) {
     ierr = PCApply(pc,x,work); CHKERRQ(ierr);
@@ -232,6 +235,7 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
   }
   else SETERRQ(1,"PCApplyBAorAB: Preconditioner side must be right, left, or symmetric");
 }
+
 /*@ 
    PCApplyBAorABTrans - Applies the transpose of the preconditioner
    and operator to a vector.
@@ -254,6 +258,7 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
 {
   int ierr;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (x == y) SETERRQ(1,"PCApplyBAorABTrans:x and y must be different vectors");
   if (pc->applyBAtrans)  return (*pc->applyBAtrans)(pc,side,x,y,work);
   if (side == PC_RIGHT) {
     ierr = MatMultTrans(pc->mat,x,work); CHKERRQ(ierr);

@@ -11,18 +11,19 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
   --------------------------------
 
-  - Change Scalabe ODE solvers to Scalable Time-Steppers
+  - Test MATMPIROWBS for nonsymmetric matrices by building another 
+    set of ARCO matrices by removing small values from them.
 
-  - Allow users to pass petsc objects between Fortran and C.
+  X Change Scalabe ODE solvers to Scalable Time-Steppers
 
-  - Treat interleaved vector as sepearate named vectors
+  X Allow users to pass petsc objects between Fortran and C.
 
-  - add filename to petscinitialize for fortran
+  X add filename to petscinitialize for fortran
 
   - Fix PetscRandomCreate() so that it actually generates random numbers
     for all machines.
 
-  - Fix PetscGetArchType() for Fortran.
+  X Fix PetscGetArchType() for Fortran.
 
   X Make MatGetArray_MPIDense().
 
@@ -46,7 +47,7 @@ Additional Capabilities that PETSc Needs:
   X Remove default stuff from MatCreate() into each matrix type, including
     processing command line options.
 
- (Barry)  - But in jump links for WWW manpages seealso.
+  X But in jump links for WWW manpages seealso.
 
  (Barry)  - Have all preconditioners (including LU) support null space, see 
             tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
@@ -146,6 +147,8 @@ Additional Capabilities that PETSc Needs:
    To do sometime soon:
   ----------------------
 
+  - Treat interleaved vector as seperate named vectors
+
    - Provide index of all example programs in by extracting the help char string 
      from the top of each file.  Similar to the index provided by the
      UNM PETSc tutorial -- fully automate this process though.
@@ -183,7 +186,7 @@ Additional Capabilities that PETSc Needs:
      prevent the annouying error message about MatGetDiagonal() when it 
      tries to use the default jacobi preconditioner.
 
-   * Add error checking in SLESSolve(), MatMult(), PCApply(), etc. for the case 
+   X Add error checking in SLESSolve(), MatMult(), PCApply(), etc. for the case 
      when input vector == output vector.
 
    - Augment some KSP methods to support symmetric preconditioning; fix relevant
@@ -215,7 +218,7 @@ Additional Capabilities that PETSc Needs:
 
  (Lois)   * Parallel dense matrix implementation.
 
-   - Block compressed row storage format implementation.
+   * Block compressed row storage format implementation.
 
    - Introduce a concept of Vecs and provide multiple right hand side
      versions of MatMult.... Then do KSP versions.
