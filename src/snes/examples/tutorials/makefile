@@ -19,7 +19,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F 
 EXAMPLESCH	 = 
 EXAMPLESFH       = 
-DOCS		 = ex5m.m
+EXAMPLESMATLAB   = ex5m.m
 DIRS		 = ex10d
 
 include ${PETSC_DIR}/bmake/common/base
