@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.31 1995/05/29 13:40:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.32 1995/05/30 19:00:28 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -18,6 +18,7 @@ static int MatFreeRowbs_Private(Mat matin,int n,int *i,Scalar *v)
   return 0;
 }
 
+/* Note:  Call MatMallocRowbs_Private only for n>0 */
 static int MatMallocRowbs_Private(Mat matin,int n,int **i,Scalar **v)
 {
   int len;
@@ -42,7 +43,7 @@ static int MatCreateMPIRowbs_local(Mat mat,int nz,int *nnz)
   if (!nnz) {
     if (nz <= 0) nz = 1;
     nzalloc = 1;
-    nnz = (int *) PMALLOC( m*sizeof(int) ); PCHKPTR(nnz);
+    nnz = (int *) PMALLOC( (m+1)*sizeof(int) ); PCHKPTR(nnz);
     for ( i=0; i<m; i++ ) nnz[i] = nz;
     nz = nz*m;
   }
@@ -53,7 +54,7 @@ static int MatCreateMPIRowbs_local(Mat mat,int nz,int *nnz)
 
   /* Allocate BlockSolve matrix context */
   bsif->A = bsmat = PNEW(BSspmat); PCHKPTR(bsmat);
-  len = m*(sizeof(BSsprow *) + sizeof(BSsprow));
+  len = m*(sizeof(BSsprow *) + sizeof(BSsprow)) + 1;
   bsmat->rows = (BSsprow **) PMALLOC( len ); PCHKPTR(bsmat->rows);
   bsmat->num_rows = m;
   bsmat->global_num_rows = bsif->M;
@@ -390,7 +391,8 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
     viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
   }
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-  if (vobj->cookie == VIEWER_COOKIE && vobj->type == FILE_VIEWER) {
+  if ((vobj->cookie == DRAW_COOKIE) || (vobj->cookie == VIEWER_COOKIE && 
+     (vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER))) {
     FILE *fd = ViewerFileGetPointer_Private(viewer);
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
@@ -399,45 +401,8 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
     fflush(fd);
     MPIU_Seq_end(mat->comm,1);
   }
-  else if ((vobj->cookie == VIEWER_COOKIE && vobj->type == FILES_VIEWER) || 
-            vobj->cookie == DRAW_COOKIE) {
-    int numtids = mrow->numtids, mytid = mrow->mytid; 
-    if (numtids == 1) { 
-      ierr = MatView_MPIRowbs_local(mat,viewer); PCHKERR(ierr);
-    }
-    else {
-      /* assemble the entire matrix onto first processor. */
-      Mat       A;
-      int       M = mrow->M, m, row, i, nz, *cols;
-      Scalar    *vals;
-
-      if (!mytid) {
-        ierr = MatCreateMPIRowbs(mat->comm,M,M,0,0,0,&A);
-      }
-      else {
-        ierr = MatCreateMPIRowbs(mat->comm,0,M,0,0,0,&A);
-      }
-      PCHKERR(ierr);
-
-      /* Copy the matrix ... This isn't the most efficient means,
-         but it's quick for now */
-      row = mrow->rstart; m = mrow->m;
-      for ( i=0; i<m; i++ ) {
-        ierr = MatGetRow(mat,row,&nz,&cols,&vals); PCHKERR(ierr);
-        ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERTVALUES); PCHKERR(ierr);
-        ierr = MatRestoreRow(mat,row,&nz,&cols,&vals); PCHKERR(ierr);
-        row++;
-      } 
-
-      ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); PCHKERR(ierr);
-      ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); PCHKERR(ierr);
-      if (!mytid) {
-        ierr = MatView_MPIRowbs_local(A,viewer); PCHKERR(ierr);
-      }
-      ierr = MatDestroy(A); PCHKERR(ierr);
-
-    }
-  }
+  /* Note:  Since BlockSolve does not support matrices of dimension 0,
+     we can't do the usual parallel viewer stuff */
   return 0;
 }
 
@@ -884,7 +849,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   mrow->M    = M;
   mrow->m    = m;
   mrow->n    = mrow->N; /* each row stores all columns */
-  mrow->imax = (int *) PMALLOC( (mrow->m)*sizeof(int) ); PCHKPTR(mrow->imax);
+  mrow->imax = (int *) PMALLOC( (mrow->m+1)*sizeof(int) ); PCHKPTR(mrow->imax);
 
   /* build local table of row ownerships */
   mrow->rowners = (int *) PMALLOC((mrow->numtids+2)*sizeof(int)); 
@@ -913,7 +878,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
                             &(mrow->diag)); PCHKERR(ierr);}
   if (!mrow->xwork) {ierr = VecDuplicate(mrow->diag,&(mrow->xwork)); 
                             PCHKERR(ierr);}
-  mrow->inv_diag = (Scalar *) PMALLOC( (mrow->m)*sizeof(Scalar) );
+  mrow->inv_diag = (Scalar *) PMALLOC( (mrow->m+1)*sizeof(Scalar) );
   PCHKPTR(mrow->inv_diag);
   if (!bspinfo) {bspinfo = BScreate_ctx(); CHKERRBS(0);}
   mrow->procinfo = bspinfo;
