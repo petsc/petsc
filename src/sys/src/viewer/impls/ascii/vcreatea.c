@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vcreatea.c,v 1.5 1999/03/17 23:20:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vcreatea.c,v 1.6 1999/03/31 03:53:51 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -126,13 +126,13 @@ static int Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 #undef __FUNC__  
 #define __FUNC__ "VIEWER_STDERR_" 
 /*@C
-   VIEWER_STDERR_ - Creates a window viewer shared by all processors 
+   VIEWER_STDERR_ - Creates a ASCII viewer shared by all processors 
                     in a communicator.
 
    Collective on MPI_Comm
 
    Input Parameter:
-.  comm - the MPI communicator to share the window viewer
+.  comm - the MPI communicator to share the viewer
 
    Level: beginner
 
@@ -141,7 +141,7 @@ static int Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
    an error code. Usually used in the form
 $      XXXView(XXX object,VIEWER_STDERR_(comm));
 
-.seealso: VIEWER_DRAW_, ViewerASCIIOpen(), 
+.seealso: VIEWER_DRAW_, ViewerASCIIOpen(), VIEWER_STDOUT_
 @*/
 Viewer VIEWER_STDERR_(MPI_Comm comm)
 {
