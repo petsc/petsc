@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sendsparse.c,v 1.5 1995/04/26 15:32:23 curfman Exp curfman $";
+static char vcid[] = "$Id: sendsparse.c,v 1.6 1995/04/26 19:30:51 curfman Exp bsmith $";
 #endif
 /* This is part of the MatlabSockettool package. Here are the routines
    to send a sparse matrix to Matlab.
@@ -12,8 +12,8 @@ static char vcid[] = "$Id: sendsparse.c,v 1.5 1995/04/26 15:32:23 curfman Exp cu
 
 /*--------------------------------------------------------------*/
 /*
-   ViewerMatlabPutSparse - Passes a sparse matrix in AIJ format to a Matlab 
-   viewer. 
+   ViewerMatlabPutSparse_Private - Passes a sparse matrix in AIJ format
+             to a Matlab viewer. 
 
    Input Parameters:
 .  viewer - obtained from ViewerMatlabOpen()
@@ -28,14 +28,14 @@ static char vcid[] = "$Id: sendsparse.c,v 1.5 1995/04/26 15:32:23 curfman Exp cu
 $     MatView(Mat matrix,Viewer viewer)
 
    Notes for Advanced Users:
-   ViewerMatlabPutSparse() actually passes the matrix transpose, since 
+   ViewerMatlabPutSparse_Private() actually passes the matrix transpose, since 
    Matlab prefers column oriented storage.
 
 .keywords: Viewer, Matlab, put, sparse, AIJ
 
 .seealso: ViewerMatlabOpen(), MatView()
 */
-int ViewerMatlabPutSparse(Viewer viewer,int m,int n,int nnz,Scalar *v,int *r,
+int ViewerMatlabPutSparse_Private(Viewer viewer,int m,int n,int nnz,Scalar *v,int *r,
                         int *c)
 {
   int t = viewer->port,type = SPARSEREAL,one = 1,zero = 0;
