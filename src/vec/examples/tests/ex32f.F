@@ -15,7 +15,7 @@
 
       PetscScalar  v_v1(1),v_v2(1)
       Vec     v
-      integer i,i_v1,i_v2
+      PetscInt i,i_v1,i_v2
       
       n=8
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -27,8 +27,6 @@
 
       call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,v,ierr)
       call VecGetArray(v,v_v1,i_v1,ierr)
-      call PetscOffsetFortran(v_v2,v_v1,i_v2,ierr)
-      i_v2 = i_v1 + i_v2
 
       do 10, i=1,n
         v_v1(i_v1 + i) = i
@@ -37,12 +35,15 @@
 
       call VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
+      call VecGetArray(v,v_v1,i_v1,ierr)
+      call PetscOffsetFortran(v_v2,v_v1,i_v2,ierr)
+      i_v2 = i_v1 + i_v2
       do 20, i=1,n
         print*,i,v_v2(i_v2 + i)
  20   continue
+      call VecRestoreArray(v,v_v1,i_v1,ierr)
 
       call VecDestroy(v,ierr)
-
       call PetscFinalize(ierr)
       
       end

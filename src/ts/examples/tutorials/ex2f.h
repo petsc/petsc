@@ -56,10 +56,11 @@
       PetscInt         M
       PetscTruth       debug
       PetscMPIInt      size,rank
-      PetscScalar      h,zero_d0,one_d0,two_d0,four_d0
+      PetscReal        zero_d0,one_d0,two_d0,four_d0
       MPI_Comm         comm
+      PetscReal        h
 
-      common /params/ h,zero_d0,one_d0,two_d0,four_d0
+      common /params/ zero_d0,one_d0,two_d0,four_d0,h
       common /appctx/ M,da,localwork,solution,debug
       common /appctx/ u_local,comm,rank,size
 
