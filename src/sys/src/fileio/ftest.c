@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ftest.c,v 1.18 1998/08/26 22:01:40 balay Exp balay $";
+static char vcid[] = "$Id: ftest.c,v 1.19 1998/12/17 21:57:12 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -74,8 +74,12 @@ int PetscTestFile( const char fname[], char mode,PetscTruth *flag)
   /* Get the (effective) user and group of the caller */
   uid = geteuid();
   gid = getegid();
-  
+
+#if !defined (PARCH_ascired)  
   err = stat( fname, &statbuf );
+#else
+  err = stat( (char*)fname, &statbuf );
+#endif
   if (err != 0) PetscFunctionReturn(0);
 
   /* At least the file exists ... */
