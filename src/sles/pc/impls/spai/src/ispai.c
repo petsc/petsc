@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ispai.c,v 1.1 1997/01/30 04:08:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ispai.c,v 1.3 1999/04/02 22:37:41 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -466,6 +466,7 @@ static int PCPrintHelp_SPAI(PC pc,char *p)
 int PCCreate_SPAI(PC pc)
 {
   PC_SPAI *ispai;
+  int     ierr;
 
   PetscFunctionBegin;
   pc->destroy        = PCDestroy_SPAI;
@@ -489,6 +490,31 @@ int PCCreate_SPAI(PC pc)
   ispai->verbose    = 0;     
 
   ispai->sp         = 1;     
+
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetEpsilon_C",
+                    "PCSPAISetEpsilon_SPAI",
+                    (void*)PCSPAISetEpsilon_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetNBSteps_C",
+                    "PCSPAISetNBSteps_SPAI",
+                    (void*)PCSPAISetNBSteps_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetMax_C",
+                    "PCSPAISetMax_SPAI",
+                    (void*)PCSPAISetMax_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetMaxNew_CC",
+                    "PCSPAISetMaxNew_SPAI",
+                    (void*)PCSPAISetMaxNew_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetBlockSize_C",
+                    "PCSPAISetBlockSize_SPAI",
+                    (void*)PCSPAISetBlockSize_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetCacheSize_C",
+                    "PCSPAISetCacheSize_SPAI",
+                    (void*)PCSPAISetCacheSize_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetVerbose_C",
+                    "PCSPAISetVerbose_SPAI",
+                    (void*)PCSPAISetVerbose_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetSp_C",
+                    "PCSPAISetSp_SPAI",
+                    (void*)PCSPAISetSp_SPAI);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
