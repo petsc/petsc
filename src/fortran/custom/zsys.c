@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.58 1999/03/03 16:48:46 balay Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.59 1999/03/04 16:47:41 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -37,7 +37,17 @@ static char vcid[] = "$Id: zsys.c,v 1.58 1999/03/03 16:48:46 balay Exp balay $";
 #define petscstrncpy_              PETSCSTRNCPY
 #define petscbarrier_              PETSCBARRIER
 #define petscsynchronizedflush_    PETSCSYNCHRONIZEDFLUSH
+#define petscsplitownership_       PETSCSPLITOWNERSHIP
+#define petscobjectgetnewtag_      PETSCOBJECTGETNEWTAG
+#define petscobjectrestorenewtag_  PETSCOBJECTRESTORENEWTAG
+#define petsccommgetnewtag_        PETSCCOMMGETNEWTAG
+#define petsccommrestorenewtag_    PETSCCOMMRESTORENEWTAG
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define petscobjectgetnewtag_      petscobjectgetnewtag
+#define petscobjectrestorenewtag_  petscobjectrestorenewtag
+#define petsccommgetnewtag_        petsccommgetnewtag
+#define petsccommrestorenewtag_    petsccommrestorenewtag
+#define petscsplitownership_       petscsplitownership
 #define petscbarrier_              petscbarrier
 #define petscstrncpy_              petscstrncpy
 #define petscreleasepointer_       petscreleasepointer
@@ -71,6 +81,31 @@ static char vcid[] = "$Id: zsys.c,v 1.58 1999/03/03 16:48:46 balay Exp balay $";
 #endif
 
 EXTERN_C_BEGIN
+
+void petscobjectgetnewtag_(PetscObject *obj,int *tag, int *__ierr )
+{
+  *__ierr = PetscObjectGetNewTag(*obj,tag);
+}
+
+void petscobjectrestorenewtag_(PetscObject *obj,int *tag, int *__ierr )
+{
+  *__ierr = PetscObjectRestoreNewTag(*obj,tag);
+}
+
+void petsccommgetnewtag_(MPI_Comm *comm,int *tag, int *__ierr )
+{
+  *__ierr = PetscCommGetNewTag((MPI_Comm)PetscToPointerComm(*comm),tag);
+}
+
+void petsccommrestorenewtag_(MPI_Comm *comm,int *tag, int *__ierr )
+{
+  *__ierr = PetscCommRestoreNewTag((MPI_Comm)PetscToPointerComm(*comm),tag);
+}
+
+void petscsplitownership_(MPI_Comm *comm,int *n,int *N, int *__ierr )
+{
+  *__ierr = PetscSplitOwnership((MPI_Comm)PetscToPointerComm(*comm),n,N);
+}
 
 void petscbarrier_(PetscObject *A, int *__ierr )
 {
