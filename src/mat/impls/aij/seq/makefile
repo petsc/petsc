@@ -4,11 +4,11 @@ ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../.. \
            -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"mat/impls/aij/seq/"'
-SOURCEC  = ij.c aij.c aijfact.c
+SOURCEC  = aij.c aijfact.c ij.c
 SOURCEF  =
 WSOURCEC = 
 SOURCEH  = aij.h
-OBJSC    = ij.o aij.o aijfact.o
+OBJSC    = aij.o aijfact.o ij.o
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscmat
