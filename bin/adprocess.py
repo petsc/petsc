@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.10 2001/07/18 04:00:31 bsmith Exp bsmith $ 
+# $Id: adprocess.py,v 1.11 2001/07/18 04:07:16 bsmith Exp bsmith $ 
 #
 # change python to whatever is needed on your system to invoke python
 #
@@ -29,6 +29,8 @@ from string import *
 #  Copies structs from filename to filename.tmp
     
 def setupfunctionC(filename):
+        import re
+        regtypedef = re.compile('typedef [ ]*struct')
 	newfile = filename + ".tmp"
 	f = open(filename)
 	g = open(newfile,"w")
@@ -36,8 +38,7 @@ def setupfunctionC(filename):
 	line = f.readline()
 	while line:
                 line = lstrip(line)+" "
-                reg = re.compile('typedef [ ]*struct')
-                fl = reg.search(line)
+                fl = regtypedef.search(line)
                 if fl:
                         struct = line
 			while line:
@@ -75,6 +76,7 @@ def setupfunctionC(filename):
 #  Appends function functionname from filename to filename.tmp
 
 def getfunctionC(g,filename,functionname):
+        import re
 	f = open(filename)
         g.write("/* Function "+functionname+"*/\n\n")
 	line = f.readline()
