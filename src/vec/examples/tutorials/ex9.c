@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.2 1997/03/09 17:57:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.3 1997/03/26 01:34:35 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates use of VecCreateMPIGhost().\n\n";
@@ -11,7 +11,7 @@ static char help[] = "Demonstrates use of VecCreateMPIGhost().\n\n";
    Routines: PetscSynchronizedFlush();
    Processors: n
 
-   Comments: Ghost padding is a good way to handle local calculations that
+   Comment: Ghost padding is a good way to handle local calculations that
       involve values from other processors. VecCreateMPIGhost() provides
       a way to create vectors with extra room at the end of the vector 
       array to contain the needed ghost values from other processors, 
