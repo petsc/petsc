@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.79 1999/01/31 21:15:53 curfman Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.80 1999/02/01 15:22:02 curfman Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -53,7 +53,9 @@ FList PCList = 0;
   Level: intermediate
 
 .keywords: PC, set, method, type
+
 .seealso: KSPSetType()
+
 @*/
 int PCSetType(PC ctx,PCType type)
 {
@@ -111,7 +113,9 @@ int PCSetType(PC ctx,PCType type)
    Level: advanced
 
 .keywords: PC, register, destroy
+
 .seealso: PCRegisterAll(), PCRegisterAll()
+
 @*/
 int PCRegisterDestroy(void)
 {
@@ -143,7 +147,9 @@ int PCRegisterDestroy(void)
    Level: developer
 
 .keywords: PC, help
+
 .seealso: PCSetFromOptions()
+
 @*/
 int PCPrintHelp(PC pc)
 {
@@ -182,7 +188,9 @@ int PCPrintHelp(PC pc)
    Level: intermediate
 
 .keywords: PC, get, method, name, type
+
 .seealso: PCSetType()
+
 @*/
 int PCGetType(PC pc,PCType *meth)
 {
@@ -191,6 +199,48 @@ int PCGetType(PC pc,PCType *meth)
   PetscFunctionBegin;
   if (!PCList) {ierr = PCRegisterAll(0); CHKERRQ(ierr);}
   if (meth)  *meth = (PCType) pc->type_name;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCSetTypeFromOptions"
+/*@
+   PCSetTypeFromOptions - Sets PC type from the options database; if not given
+         sets default.
+
+   Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Level: developer
+
+.keywords: PC, set, from, options, database
+
+.seealso: PCPrintHelp(), PCSetFromOptions(), SLESSetFromOptions(),
+          SLESSetTypeFromOptions()
+@*/
+int PCSetTypeFromOptions(PC pc)
+{
+  char   method[256];
+  int    ierr,flg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = OptionsGetString(pc->prefix,"-pc_type",method,256,&flg);
+  if (flg) {
+    ierr = PCSetType(pc,method); CHKERRQ(ierr);
+  }
+  if (!pc->type_name) {
+    int size;
+
+    MPI_Comm_size(pc->comm,&size);
+    if (size == 1) {
+      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
+    } else {
+      ierr = PCSetType(pc,PCBJACOBI);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -209,36 +259,17 @@ int PCGetType(PC pc,PCType *meth)
    Level: developer
 
 .keywords: PC, set, from, options, database
+
 .seealso: PCPrintHelp()
+
 @*/
 int PCSetFromOptions(PC pc)
 {
-  char   method[256];
   int    ierr,flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-
-  if (!PCList) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
-  ierr = OptionsGetString(pc->prefix,"-pc_type",method,256,&flg);
-  if (flg) {
-    ierr = PCSetType(pc,method); CHKERRQ(ierr);
-  }
-
-  /*
-      Since the private setfromoptions requires the type to have 
-      been set already, we make sure a type is set by this time.
-  */
-  if (!pc->type_name) {
-    int size;
-
-    MPI_Comm_size(pc->comm,&size);
-    if (size == 1) {
-      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
-    } else {
-      ierr = PCSetType(pc,PCBJACOBI);CHKERRQ(ierr);
-    }
-  }
+  ierr = PCSetTypeFromOptions(pc);CHKERRQ(ierr);
   if (pc->setfromoptions) {
     ierr = (*pc->setfromoptions)(pc);CHKERRQ(ierr);
   }
