@@ -23,46 +23,30 @@ class Configure(config.base.Configure):
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
                  'uname','_snprintf']
     libraries = [('dl', 'dlopen'),(['socket','nsl'],'socket')]
-    self.compilers    = self.framework.require('config.compilers',            self)
-    self.update       = self.framework.require('PETSc.packages.update',       self.compilers)
-    self.types        = self.framework.require('config.types',                self)
-    self.headers      = self.framework.require('config.headers',              self)
-    self.functions    = self.framework.require('config.functions',            self)
-    self.libraries    = self.framework.require('config.libraries',            self)
-    self.blaslapack   = self.framework.require('PETSc.packages.BlasLapack',   self)
-    self.fortranstubs = self.framework.require('PETSc.packages.fortranstubs', self.blaslapack)
-    self.mpi          = self.framework.require('PETSc.packages.MPI',          self)
-    self.mpe          = self.framework.require('PETSc.packages.MPE',          self)
-    self.adic         = self.framework.require('PETSc.packages.ADIC',         self)
-    self.matlab       = self.framework.require('PETSc.packages.Matlab',       self)
-    self.mathematica  = self.framework.require('PETSc.packages.Mathematica',  self)
-    self.triangle     = self.framework.require('PETSc.packages.Triangle',     self)
-    self.parmetis     = self.framework.require('PETSc.packages.ParMetis',     self)
-    self.plapack      = self.framework.require('PETSc.packages.PLAPACK',      self)
-    self.pvode        = self.framework.require('PETSc.packages.PVODE',        self)
-    self.blocksolve   = self.framework.require('PETSc.packages.BlockSolve',   self)
-    self.netcdf       = self.framework.require('PETSc.packages.NetCDF',       self)
+    self.compilers    = self.framework.require('config.compilers', self)
+    self.types        = self.framework.require('config.types',     self)
+    self.headers      = self.framework.require('config.headers',   self)
+    self.functions    = self.framework.require('config.functions', self)
+    self.libraries    = self.framework.require('config.libraries', self)
+    self.compilers.headerPrefix = self.headerPrefix
+    self.types.headerPrefix     = self.headerPrefix
+    self.headers.headerPrefix   = self.headerPrefix
+    self.functions.headerPrefix = self.headerPrefix
+    self.libraries.headerPrefix = self.headerPrefix
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries)
-    # Put all defines in the PETSc namespace
-    self.compilers.headerPrefix   = self.headerPrefix
-    self.types.headerPrefix       = self.headerPrefix
-    self.headers.headerPrefix     = self.headerPrefix
-    self.functions.headerPrefix   = self.headerPrefix
-    self.libraries.headerPrefix   = self.headerPrefix
-    self.blaslapack.headerPrefix  = self.headerPrefix
-    self.mpi.headerPrefix         = self.headerPrefix
-    self.mpe.headerPrefix         = self.headerPrefix
-    self.adic.headerPrefix        = self.headerPrefix
-    self.matlab.headerPrefix      = self.headerPrefix
-    self.mathematica.headerPrefix = self.headerPrefix
-    self.triangle.headerPrefix    = self.headerPrefix
-    self.parmetis.headerPrefix    = self.headerPrefix
-    self.plapack.headerPrefix     = self.headerPrefix
-    self.pvode.headerPrefix       = self.headerPrefix
-    self.blocksolve.headerPrefix  = self.headerPrefix
-    self.netcdf.headerPrefix      = self.headerPrefix
+    # Check for packages
+    import PETSc.packages
+
+    for package in os.listdir(os.path.dirname(PETSc.packages.__file__)):
+      (packageName, ext) = os.path.splitext(package)
+      if ext == '.py' and not packageName == '__init__':
+        packageObj              = self.framework.require('PETSc.packages.'+packageName, self)
+        packageObj.headerPrefix = self.headerPrefix
+        setattr(self, packageName.lower(), packageObj)
+    self.framework.require('PETSc.packages.fortranstubs', self.blaslapack)
+    self.framework.require('PETSc.packages.update',       self.compilers)
     return
 
 
@@ -288,45 +272,6 @@ class Configure(config.base.Configure):
       self.addDefine('USE_LARGEP_FOR_DEBUGGER', 1)
     return
 
-  def configureMake(self):
-    '''Check various things about make'''
-    self.framework.getExecutable(self.framework.argDB['with-make'], getFullPath = 1)
-    # Check for GNU make
-    haveGNUMake = 0
-    try:
-      (output, error, status) = self.executeShellCommand('strings '+self.framework.make)
-      if not status and output.find('GNU Make') >= 0:
-        haveGNUMake = 1
-    except RuntimeError, e:
-      self.framework.log.write('Make check failed: '+str(e)+'\n')
-    if not haveGNUMake:
-      try:
-        (output, error, status) = self.executeShellCommand('strings '+self.framework.make+'.exe')
-        if not status and output.find('GNU Make') >= 0:
-          haveGNUMake = 1
-      except RuntimeError, e:
-        self.framework.log.write('Make check failed: '+str(e)+'\n')
-    # Setup make flags
-    flags = ''
-    if haveGNUMake:
-      flags += ' --no-print-directory'
-    self.framework.addSubstitution('MAKE_FLAGS', flags.strip())
-    self.framework.addSubstitution('SET_MAKE', '')
-    # Check to see if make allows rules which look inside archives
-    if haveGNUMake:
-      self.framework.addSubstitution('LIB_C_TARGET', 'libc: ${LIBNAME}(${OBJSC} ${SOBJSC})')
-      self.framework.addSubstitution('LIB_F_TARGET', '''
-libf: ${OBJSF}
-	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}''')
-    else:
-      self.framework.addSubstitution('LIB_C_TARGET', '''
-libc: ${OBJSC}
-	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}''')
-      self.framework.addSubstitution('LIB_F_TARGET', '''
-libf: ${OBJSF}
-	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}''')
-    return
-
   def configureMkdir(self):
     '''Make sure we can have mkdir automatically make intermediate directories'''
     # We use the framework in order to remove the PETSC_ namespace
@@ -392,170 +337,6 @@ libf: ${OBJSF}
       self.addDefine('USE_SBREAK_FOR_SIZE', 1)
     elif not (self.headers.haveHeader('sys/resource.h') and self.functions.haveFunction('getrusage')):
         self.addDefine('HAVE_NO_GETRUSAGE', 1)
-    return
-
-  def checkXMake(self):
-    import shutil
-
-    includeDir = ''
-    libraryDir = ''
-    # Create Imakefile
-    dir = os.path.abspath('conftestdir')
-    if os.path.exists(dir): shutil.rmtree(dir)
-    os.mkdir(dir)
-    os.chdir(dir)
-    f = file('Imakefile', 'w')
-    f.write('''
-acfindx:
-	@echo \'X_INCLUDE_ROOT = ${INCROOT}\'
-	@echo \'X_USR_LIB_DIR = ${USRLIBDIR}\'
-	@echo \'X_LIB_DIR = ${LIBDIR}\'
-''')
-    f.close()
-    # Compile makefile
-    try:
-      (output, error, status) = self.executeShellCommand('xmkmf')
-      if not status and os.path.exists('Makefile'):
-        (output, error, status) = self.executeShellCommand(self.framework.make+' acfindx')
-        results                 = self.parseShellOutput(output)
-        # Open Windows xmkmf reportedly sets LIBDIR instead of USRLIBDIR.
-        for ext in ['.a', '.so', '.sl']:
-          if not os.path.isfile(os.path.join(results['X_USR_LIB_DIR'])) and os.path.isfile(os.path.join(results['X_LIB_DIR'])):
-            results['X_USR_LIB_DIR'] = results['X_LIB_DIR']
-            break
-        # Screen out bogus values from the imake configuration.  They are
-        # bogus both because they are the default anyway, and because
-        # using them would break gcc on systems where it needs fixed includes.
-        if not results['X_INCLUDE_ROOT'] == '/usr/include' and os.path.isfile(os.path.join(results['X_INCLUDE_ROOT'], 'X11', 'Xos.h')):
-          includeDir = results['X_INCLUDE_ROOT']
-        if not (results['X_USR_LIB_DIR'] == '/lib' or results['X_USR_LIB_DIR'] == '/usr/lib') and os.path.isdir(results['X_USR_LIB_DIR']):
-          libraryDir = results['X_USR_LIB_DIR']
-    except RuntimeError: pass
-    # Cleanup
-    os.chdir(os.path.dirname(dir))
-    shutil.rmtree(dir)
-    return (includeDir, libraryDir)
-
-  def configureX(self):
-    '''Checks for X windows, sets PETSC_HAVE_X11 if found, and defines X_CFLAGS, X_PRE_LIBS, X_LIBS, and X_EXTRA_LIBS'''
-    foundInclude = 0
-    includeDirs  = ['/usr/X11/include',
-                   '/usr/X11R6/include',
-                   '/usr/X11R5/include',
-                   '/usr/X11R4/include',
-                   '/usr/include/X11',
-                   '/usr/include/X11R6',
-                   '/usr/include/X11R5',
-                   '/usr/include/X11R4',
-                   '/usr/local/X11/include',
-                   '/usr/local/X11R6/include',
-                   '/usr/local/X11R5/include',
-                   '/usr/local/X11R4/include',
-                   '/usr/local/include/X11',
-                   '/usr/local/include/X11R6',
-                   '/usr/local/include/X11R5',
-                   '/usr/local/include/X11R4',
-                   '/usr/X386/include',
-                   '/usr/x386/include',
-                   '/usr/XFree86/include/X11',
-                   '/usr/include',
-                   '/usr/local/include',
-                   '/usr/unsupported/include',
-                   '/usr/athena/include',
-                   '/usr/local/x11r5/include',
-                   '/usr/lpp/Xamples/include',
-                   '/usr/openwin/include',
-                   '/usr/openwin/share/include']
-    includeDir   = ''
-    foundLibrary = 0
-    libraryDirs  = map(lambda s: s.replace('include', 'lib'), includeDirs)
-    libraryDir   = ''
-    if not self.framework.argDB.has_key('no_x'):
-      # Guess X location
-      (includeDirGuess, libraryDirGuess) = self.checkXMake()
-      # Check for X11 includes
-      if self.framework.argDB.has_key('with-x-include'):
-        if not os.path.isdir(self.framework.argDB['with-x-include']):
-          raise RuntimeError('Invalid X include directory specified by --with-x-include='+os.path.abspath(self.framework.argDB['with-x-include']))
-        includeDir = self.framework.argDB['with-x-include']
-      else:
-        testInclude  = 'X11/Intrinsic.h'
-
-        # Check guess
-        if includeDirGuess and os.path.isfile(os.path.join(includeDirGuess, testInclude)):
-          foundInclude = 1
-          includeDir   = includeDirGuess
-        # Check default compiler paths
-        if not foundInclude and self.checkPreprocess('#include <'+testInclude+'>\n'):
-          foundInclude = 1
-        # Check standard paths
-        if not foundInclude:
-          for dir in includeDirs:
-            if os.path.isfile(os.path.join(dir, testInclude)):
-              foundInclude = 1
-              includeDir   = dir
-      # Check for X11 libraries
-      if self.framework.argDB.has_key('with-x-library'):
-        if not os.path.isfile(self.framework.argDB['with-x-library']):
-          raise RuntimeError('Invalid X library specified by --with-x-library='+os.path.abspath(self.framework.argDB['with-x-library']))
-        libraryDir = os.path.dirname(self.framework.argDB['with-x-library'])
-      else:
-        testLibrary  = 'Xt'
-        testFunction = 'XtMalloc'
-
-        # Check guess
-        if libraryDirGuess:
-          for ext in ['.a', '.so', '.sl', '.dll.a']:
-            if os.path.isfile(os.path.join(libraryDirGuess, 'lib'+testLibrary+ext)):
-              foundLibrary = 1
-              libraryDir   = libraryDirGuess
-              break
-        # Check default compiler libraries
-        if not foundLibrary:
-          oldLibs = self.framework.argDB['LIBS']
-          self.framework.argDB['LIBS'] += ' -l'+testLibrary
-          self.pushLanguage(self.language[-1])
-          if self.checkLink('', testFunction+'();\n'):
-            foundLibrary = 1
-          self.framework.argDB['LIBS'] = oldLibs
-          self.popLanguage()
-        # Check standard paths
-        if not foundLibrary:
-          for dir in libraryDirs:
-            for ext in ['.a', '.so', '.sl']:
-              if os.path.isfile(os.path.join(dir, 'lib'+testLibrary+ext)):
-                foundLibrary = 1
-                libraryDir   = dir
-        # Verify that library can be linked with
-        if foundLibrary:
-          oldLibs = self.framework.argDB['LIBS']
-          if libraryDir:
-            self.framework.argDB['LIBS'] += ' -L'+libraryDir
-          self.framework.argDB['LIBS'] += ' -l'+testLibrary
-          self.pushLanguage(self.language[-1])
-          if not self.checkLink('', testFunction+'();\n'):
-            foundLibrary = 0
-          self.framework.argDB['LIBS'] = oldLibs
-          self.popLanguage()
-          
-    if not foundInclude or not foundLibrary:
-      self.addDefine('HAVE_X11', 0)
-      self.framework.addSubstitution('X_CFLAGS',     '')
-      self.framework.addSubstitution('X_PRE_LIBS',   '')
-      self.framework.addSubstitution('X_LIBS',       '')
-      self.framework.addSubstitution('X_EXTRA_LIBS', '')
-    else:
-      self.addDefine('HAVE_X11', 1)
-      if includeDir:
-        self.framework.addSubstitution('X_CFLAGS',   '-I'+includeDir)
-      else:
-        self.framework.addSubstitution('X_CFLAGS',   '')
-      if libraryDir:
-        self.framework.addSubstitution('X_LIBS',     '-L'+libraryDir+' -lX11')
-      else:
-        self.framework.addSubstitution('X_LIBS',     '-lX11')
-      self.framework.addSubstitution('X_PRE_LIBS',   '')
-      self.framework.addSubstitution('X_EXTRA_LIBS', '')
     return
 
   def configureFPTrap(self):
@@ -796,13 +577,11 @@ acfindx:
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)
-    self.executeTest(self.configureMake)
     self.executeTest(self.configureMkdir)
     self.executeTest(self.configurePrograms)
     self.executeTest(self.configureMissingFunctions)
     self.executeTest(self.configureMissingSignals)
     self.executeTest(self.configureMemorySize)
-    self.executeTest(self.configureX)
     self.executeTest(self.configureFPTrap)
     self.executeTest(self.configureLibrarySuffix)
     self.executeTest(self.configureGetDomainName)
