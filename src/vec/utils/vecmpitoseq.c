@@ -1,10 +1,10 @@
 #include "vecimpl.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecConvertMPIToSeqAll"
+#define __FUNCT__ "VecScatterCreateToAll"
 /*@C
-  VecConvertMPIToSeqAll - make available all the values of
-  an MPIVEC on all processors as a SEQVEC
+      VecScatterCreateToAll - Creates a scatter context that copies all 
+          vector values to each processor
 
   Collective
 
@@ -12,92 +12,107 @@
 .  vin  - input MPIVEC
 
   Output Parameter:
-.  vout - output SEQVEC
++  ctx - scatter context
+-  vout - output SEQVEC that is large enough to scatter into
 
   Level: intermediate
 
-  Notes: Each processor will have all the values
-.seealso VecConvertMPIToMPIZero
+   Usage:
+        VecScatterCreateToAll(vin,&ctx,&vout);
+
+        // scatter as many times as you need 
+        VecScatterBegin(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
+        VecScatterEnd(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
+
+        // destroy scatter context and local vector when no longer needed
+        VecScatterDestroy(ctx);
+        VecDestroy(vout);
+
+.seealso VecScatterCreate(), VecScatterCreateToZero(), VecScatterBegin(), VecScatterEnd()
+
 @*/
-int VecConvertMPIToSeqAll(Vec vin,Vec *vout)
+int VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
 {
 
   int        ierr,N;
   IS         is;
-  VecScatter ctx;
 
   PetscFunctionBegin;
-
-  /* Check if vin is of type VECMPI ????????? */
   PetscValidHeaderSpecific(vin,VEC_COOKIE,1);
-  PetscValidPointer(vout,2);
   PetscValidType(vin,1);
+  PetscValidPointer(ctx,2);
+  PetscValidPointer(vout,3);
 
   /* Create seq vec on each proc, with the same size of the original mpi vec */
   ierr = VecGetSize(vin,&N);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,vout);CHKERRQ(ierr);
   /* Create the VecScatter ctx with the communication info */
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vin,is,*vout,is,&ctx);CHKERRQ(ierr);
-  /* Now trasfer the values into the seq vector */
-  ierr = VecScatterBegin(vin,*vout,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(vin,*vout,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
-
+  ierr = VecScatterCreate(vin,is,*vout,is,ctx);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "VecConvertMPIToMPIZero"
-/*@C
-  VecConvertMPIToMPIZero - make available all the values of
-  an MPIVEC on processor zero as an MPIVEC
 
-  Collective on Vec
+#undef __FUNCT__  
+#define __FUNCT__ "VecScatterCreateToZero"
+/*@C
+      VecScatterCreateToZero - Creates a scatter context that copies all 
+          vector values to a vector on the zeroth processor
+
+  Collective
 
   Input Parameter: 
 .  vin  - input MPIVEC
 
   Output Parameter:
-.  vout - output MPIVEC, with values only on processor zero.
++  ctx - scatter context
+-  vout - output MPIVEC that is large enough to scatter into on processor 0 and
+          of length zero on all other processors
 
   Level: intermediate
 
-.seealso VecConvertMPIToSeqAll
+   Usage:
+        VecScatterCreateToZero(vin,&ctx,&vout);
+
+        // scatter as many times as you need 
+        VecScatterBegin(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
+        VecScatterEnd(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
+
+        // destroy scatter context and local vector when no longer needed
+        VecScatterDestroy(ctx);
+        VecDestroy(vout);
+
+   Note: If you want to treat the vector on processor zero as a sequential vector call
+         VecGetArray() on it and create a sequential vector with VecCreateSeqWithArray().
+
+.seealso VecScatterCreate(), VecScatterCreateToAll(), VecScatterBegin(), VecScatterEnd()
+
 @*/
-int VecConvertMPIToMPIZero(Vec vin,Vec *vout)
+int VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
 {
 
-  int        ierr,rank,N;
+  int        ierr,N,rank;
   IS         is;
-  VecScatter ctx;
 
   PetscFunctionBegin;
-
-  /* Check if vin is of type VECMPI ????????? */
   PetscValidHeaderSpecific(vin,VEC_COOKIE,1);
-  PetscValidPointer(vout,2);
   PetscValidType(vin,1);
+  PetscValidPointer(ctx,2);
+  PetscValidPointer(vout,3);
 
   /* Create seq vec on each proc, with the same size of the original mpi vec */
   ierr = VecGetSize(vin,&N);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(vin->comm,&rank);CHKERRQ(ierr);
-
   if (!rank) {
     ierr = VecCreateMPI(vin->comm,N,N,vout);CHKERRQ(ierr);
   } else {
     ierr = VecCreateMPI(vin->comm,0,N,vout);CHKERRQ(ierr);
   }
-
   /* Create the VecScatter ctx with the communication info */
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vin,is,*vout,is,&ctx);CHKERRQ(ierr);
-  /* Now trasfer the values into the new layout */
-  ierr = VecScatterBegin(vin,*vout,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(vin,*vout,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
-  
+  ierr = VecScatterCreate(vin,is,*vout,is,ctx);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+

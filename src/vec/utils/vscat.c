@@ -718,8 +718,8 @@ EXTERN int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
          of vectors from which we scatter
 .  yin - a vector that defines the shape (parallel data layout of the vector)
          of vectors to which we scatter
-.  ix - the indices of xin to scatter
--  iy - the indices of yin to hold results
+.  ix - the indices of xin to scatter (if PETSC_NULL scatters all values)
+-  iy - the indices of yin to hold results (if PETSC_NULL fills entire vector yin)
 
    Output Parameter:
 .  newctx - location to store the new scatter context
@@ -730,6 +730,7 @@ EXTERN int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 .  -vecscatter_sendfirst - Posts sends before receives (may offer better performance with some MPIs)
 .  -vecscatter_rr        - use ready receiver mode for MPI sends in scatters (rarely used)
 -  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
+
     Level: intermediate
 
   Notes:
@@ -744,7 +745,7 @@ EXTERN int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
    Concepts: scatter^between vectors
    Concepts: gather^between vectors
 
-.seealso: VecScatterDestroy()
+.seealso: VecScatterDestroy(), VecScatterCreateToAll(), VecScatterCreateToZero()
 @*/
 int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {

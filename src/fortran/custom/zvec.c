@@ -43,8 +43,8 @@
 #define veccreateghostblockwitharray_ VECCREATEGHOSTBLOCKWITHARRAY
 #define veccreateghostblock_          VECCREATEGHOSTBLOCK
 #define vecloadintovector_            VECLOADINTOVECTOR  
-#define vecconvertmpitoseqall_        VECCONVERTMPITOSEQALL
-#define vecconvertmpitompizero_       VECCONVERTMPITOMPIZERO
+#define vecscattercreatetoall_        VECSCATTERCREATETOALL
+#define vecscattercreatetozero_       VECSCATTERCREATETOZERO
 #define vecgetownershiprange_         VECGETOWNERSHIPRANGE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecloadintovector_            vecloadintovector
@@ -88,8 +88,8 @@
 #define vecduplicatevecs_         vecduplicatevecs
 #define vecmax_                   vecmax
 #define vecsetrandom_             vecsetrandom
-#define vecconvertmpitoseqall_    vecconvertmpitoseqall
-#define vecconvertmpitompizero_   vecconvertmpitompizero
+#define vecscattercreatetoall_    vecscattercreatetoall
+#define vecscattercreatetozero_   vecscattercreatetozero
 #define vecgetownershiprange_     vecgetownershiprange
 #endif
 
@@ -368,14 +368,14 @@ void PETSC_STDCALL vecmax_(Vec *x,int *p,PetscReal *val,int *ierr)
   *ierr = VecMax(*x,p,val);
 }
 
-void PETSC_STDCALL vecconvertmpitoseqall_(Vec *v,Vec *newv,int *ierr)
+void PETSC_STDCALL vecscattercreatetoall_(Vec *v,VecScatter *ctx,Vec *newv,int *ierr)
 {
-  *ierr = VecConvertMPIToSeqAll(*v,newv);
+  *ierr = VecScatterCreateToAll(*v,ctx,newv);
 }
 
-void PETSC_STDCALL vecconvertmpitompizero_(Vec *v,Vec *newv,int *ierr)
+void PETSC_STDCALL vecscattercreatetozero_(Vec *v,VecScatter *ctx,Vec *newv,int *ierr)
 {
-  *ierr = VecConvertMPIToMPIZero(*v,newv);
+  *ierr = VecScatterCreateToZero(*v,ctx,newv);
 }
 
 void PETSC_STDCALL vecgetownershiprange_(Vec *x,int *low,int *high, int *ierr)

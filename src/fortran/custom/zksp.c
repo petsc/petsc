@@ -43,7 +43,7 @@
 #define kspsetnormtype_            KSPSETNORMTYPE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspsetnullspace_           kspsetnullspace
-#define kspgetnullspace_           kspsetnullspace
+#define kspgetnullspace_           kspgetnullspace
 #define kspgetconvergedreason_     kspgetconvergedreason
 #define kspfgmressetmodifypc_      kspfgmressetmodifypc
 #define kspfgmresmodifypcksp_      kspfgmresmodifypcksp

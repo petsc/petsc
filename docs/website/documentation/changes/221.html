@@ -77,7 +77,8 @@ in PETSc 2.2.0 </font></p>
 
       <p><u><b>Vec:</b></u><br>
         <ul> <li> VecSetStashInitialSize() -> VecStashSetInitialSize()</li>
-        <li>added VecStashGetInfo()</li></ul>
+        <li>VecConvertMPIToAll() and VecConvertMPIToZero() have been replaced with
+            VecScatterCreateToAll() and VecScatterCreateToZero()</li></ul>
       </p>
       <p><u><b>Mat:</b></u></p>
         <ul> <li> MatSetStashInitialSize() -> MatStashSetInitialSize()</li>
