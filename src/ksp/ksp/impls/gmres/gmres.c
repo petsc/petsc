@@ -49,7 +49,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(2,"no symmetric preconditioning for KSPGMRES");
+    SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPGMRES");
   } 
 
   max_k         = gmres->max_k;

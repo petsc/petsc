@@ -378,9 +378,9 @@ PetscErrorCode KSPSetUp_QCG(KSP ksp)
   PetscFunctionBegin;
   /* Check user parameters and functions */
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,"no right preconditioning for QCG");
+    SETERRQ(PETSC_ERR_SUP,"no right preconditioning for QCG");
   } else if (ksp->pc_side == PC_LEFT) {
-    SETERRQ(2,"no left preconditioning for QCG");
+    SETERRQ(PETSC_ERR_SUP,"no left preconditioning for QCG");
   }
 
   /* Get work vectors from user code */

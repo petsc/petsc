@@ -66,9 +66,9 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
      so generate an error otherwise.
   */
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,"No right preconditioning for KSPCG");
+    SETERRQ(PETSC_ERR_SUP,"No right preconditioning for KSPCG");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(2,"No symmetric preconditioning for KSPCG");
+    SETERRQ(PETSC_ERR_SUP,"No symmetric preconditioning for KSPCG");
   }
 
   /* get work vectors needed by CG */

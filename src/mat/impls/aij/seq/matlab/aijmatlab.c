@@ -55,7 +55,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatlabEngineGet_Matlab(PetscObject obj,void
   mxArray        *mmat; 
 
   PetscFunctionBegin;
-  ierr = MatSeqXAIJFreeAIJ(aij->singlemalloc,aij->a,aij->j,aij->i);CHKERRQ(ierr);
+  ierr = MatSeqXAIJFreeAIJ(aij->singlemalloc,&aij->a,&aij->j,&aij->i);CHKERRQ(ierr);
 
   mmat = engGetVariable((Engine *)mengine,obj->name);
 

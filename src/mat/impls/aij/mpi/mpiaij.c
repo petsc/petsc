@@ -33,6 +33,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
   PetscFunctionReturn(0);
 }
 
+
 #define CHUNKSIZE   15
 #define MatSetValues_SeqAIJ_A_Private(row,col,value,addv) \
 { \
@@ -53,36 +54,8 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
       }  \
       if (value == 0.0 && ignorezeroentries) goto a_noinsert; \
       if (nonew == 1) goto a_noinsert; \
-      else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
-      if (nrow1 >= rmax1) { \
-        /* there is no extra room in row, therefore enlarge */ \
-        PetscInt    new_nz = ai[am] + CHUNKSIZE,len,*new_i,*new_j; \
-        PetscScalar *new_a; \
- \
-        if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col); \
- \
-        /* malloc new storage space */ \
-        ierr = PetscMalloc3(new_nz,PetscScalar,&new_a,new_nz,PetscInt,&new_j,am+1,PetscInt,&new_i);CHKERRQ(ierr);\
- \
-        /* copy over old data into new slots */ \
-        for (ii=0; ii<row+1; ii++) {new_i[ii] = ai[ii];} \
-        for (ii=row+1; ii<am+1; ii++) {new_i[ii] = ai[ii]+CHUNKSIZE;} \
-        ierr = PetscMemcpy(new_j,aj,(ai[row]+nrow1)*sizeof(PetscInt));CHKERRQ(ierr); \
-        len = (new_nz - CHUNKSIZE - ai[row] - nrow1); \
-        ierr = PetscMemcpy(new_j+ai[row]+nrow1+CHUNKSIZE,aj+ai[row]+nrow1,len*sizeof(PetscInt));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a,aa,(ai[row]+nrow1)*sizeof(PetscScalar));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a+ai[row]+nrow1+CHUNKSIZE,aa+ai[row]+nrow1,len*sizeof(PetscScalar));CHKERRQ(ierr);  \
-        /* free up old matrix storage */ \
-        ierr = MatSeqXAIJFreeAIJ(a->singlemalloc,a->a,a->j,a->i);CHKERRQ(ierr);\
-        aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j;  \
-        a->singlemalloc = PETSC_TRUE; \
- \
-        rp1   = aj + ai[row]; ap1 = aa + ai[row]; \
-        rmax1 = aimax[row] = aimax[row] + CHUNKSIZE; \
-        ierr = PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(PetscInt) + sizeof(PetscScalar)));CHKERRQ(ierr); \
-        a->maxnz += CHUNKSIZE; \
-        a->reallocs++; \
-      } \
+      if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
+      MatSeqXAIJReallocateAIJ(a,1,nrow1,row,rmax1,aa,ai,aj,am,rp1,ap1,aimax);\
       N = nrow1++ - 1; a->nz++; \
       /* shift up all the later entries in this row */ \
       for (ii=N; ii>=_i; ii--) { \
@@ -94,6 +67,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
       a_noinsert: ; \
       ailen[row] = nrow1; \
 } 
+
 
 #define MatSetValues_SeqAIJ_B_Private(row,col,value,addv) \
 { \
@@ -114,36 +88,8 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
       }  \
       if (value == 0.0 && ignorezeroentries) goto b_noinsert; \
       if (nonew == 1) goto b_noinsert; \
-      else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
-      if (nrow2 >= rmax2) { \
-        /* there is no extra room in row, therefore enlarge */ \
-        PetscInt    new_nz = bi[bm] + CHUNKSIZE,len,*new_i,*new_j; \
-        PetscScalar *new_a; \
- \
-        if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col); \
- \
-        /* malloc new storage space */ \
-        ierr = PetscMalloc3(new_nz,PetscScalar,&new_a,new_nz,PetscInt,&new_j,bm+1,PetscInt,&new_i);CHKERRQ(ierr);\
- \
-        /* copy over old data into new slots */ \
-        for (ii=0; ii<row+1; ii++) {new_i[ii] = bi[ii];} \
-        for (ii=row+1; ii<bm+1; ii++) {new_i[ii] = bi[ii]+CHUNKSIZE;} \
-        ierr = PetscMemcpy(new_j,bj,(bi[row]+nrow2)*sizeof(PetscInt));CHKERRQ(ierr); \
-        len = (new_nz - CHUNKSIZE - bi[row] - nrow2); \
-        ierr = PetscMemcpy(new_j+bi[row]+nrow2+CHUNKSIZE,bj+bi[row]+nrow2,len*sizeof(PetscInt));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a,ba,(bi[row]+nrow2)*sizeof(PetscScalar));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a+bi[row]+nrow2+CHUNKSIZE,ba+bi[row]+nrow2,len*sizeof(PetscScalar));CHKERRQ(ierr);  \
-        /* free up old matrix storage */ \
-        ierr = MatSeqXAIJFreeAIJ(b->singlemalloc,b->a,b->j,b->i);CHKERRQ(ierr);\
-        ba = b->a = new_a; bi = b->i = new_i; bj = b->j = new_j;  \
-        b->singlemalloc = PETSC_TRUE; \
- \
-        rp2   = bj + bi[row]; ap2 = ba + bi[row]; \
-        rmax2 = bimax[row] = bimax[row] + CHUNKSIZE; \
-        ierr = PetscLogObjectMemory(B,CHUNKSIZE*(sizeof(PetscInt) + sizeof(PetscScalar)));CHKERRQ(ierr); \
-        b->maxnz += CHUNKSIZE; \
-        b->reallocs++; \
-      } \
+      if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
+      MatSeqXAIJReallocateAIJ(b,1,nrow2,row,rmax2,ba,bi,bj,bm,rp2,ap2,bimax);\
       N = nrow2++ - 1; b->nz++; \
       /* shift up all the later entries in this row */ \
       for (ii=N; ii>=_i; ii--) { \
@@ -239,6 +185,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
               nrow2    = bilen[row];  
               low2     = 0; 
               high2    = nrow2;
+              bm       = aij->B->m;
               ba = b->a;
             }
           } else col = in[j];
@@ -259,6 +206,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   }
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_MPIAIJ"

@@ -166,7 +166,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       if (value == 0.0 && ignorezeroentries) goto noinsert;
       if (nonew == 1) goto noinsert;
       if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix",row,col);
-      MatSeqXAIJReallocateAIJ(a,nrow,rmax,aa,ai,aj,A->m,rp,ap,imax);
+      MatSeqXAIJReallocateAIJ(a,1,nrow,row,rmax,aa,ai,aj,A->m,rp,ap,imax);
       N = nrow++ - 1; a->nz++;
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
@@ -637,15 +637,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D",A->m,A->n,a->nz);
 #endif
-  if (a->freedata) {
-    if (!a->singlemalloc) {
-      if (a->a) {ierr = PetscFree(a->a);CHKERRQ(ierr);}
-      if (a->i) {ierr = PetscFree(a->i);CHKERRQ(ierr);}
-      if (a->j) {ierr = PetscFree(a->j);CHKERRQ(ierr);}
-    } else {
-      ierr = PetscFree3(a->a,a->j,a->i);CHKERRQ(ierr);
-    }
-  }
+  ierr = MatSeqXAIJFreeAIJ(a->singlemalloc,&a->a,&a->j,&a->i);CHKERRQ(ierr);
   if (a->row) {
     ierr = ISDestroy(a->row);CHKERRQ(ierr);
   }
@@ -2596,7 +2588,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscIn
 
     /* allocate the matrix space */
     ierr = PetscMalloc3(nz,PetscScalar,&b->a,nz,PetscInt,&b->j,B->m+1,PetscInt,&b->i);CHKERRQ(ierr);
-    ierr = PetscMemzero(b->j,nz*sizeof(PetscInt));CHKERRQ(ierr);
     b->i[0] = 0;
     for (i=1; i<B->m+1; i++) {
       b->i[i] = b->i[i-1] + b->imax[i-1];

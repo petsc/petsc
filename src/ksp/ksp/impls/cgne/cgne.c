@@ -30,9 +30,9 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
      so generate an error otherwise.
   */
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,"No right preconditioning for KSPCGNE");
+    SETERRQ(PETSC_ERR_SUP,"No right preconditioning for KSPCGNE");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(2,"No symmetric preconditioning for KSPCGNE");
+    SETERRQ(PETSC_ERR_SUP,"No symmetric preconditioning for KSPCGNE");
   }
 
   /* get work vectors needed by CGNE */

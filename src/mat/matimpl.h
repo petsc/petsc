@@ -251,47 +251,49 @@ extern PetscErrorCode MatAXPY_Basic(const PetscScalar*,Mat,Mat,MatStructure);
 /*
     Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
-PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(PetscTruth singlemalloc,PetscScalar *a,PetscInt *j,PetscInt *i) {
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqXAIJFreeAIJ"
+PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(PetscTruth singlemalloc,PetscScalar **a,PetscInt **j,PetscInt **i) {
                                      PetscErrorCode ierr;
                                      if (singlemalloc) {
-                                       ierr = PetscFree3(a,j,i);CHKERRQ(ierr);
+                                       ierr = PetscFree3(*a,*j,*i);CHKERRQ(ierr);
                                      } else {
-                                       ierr = PetscFree(a);CHKERRQ(ierr);
-                                       ierr = PetscFree(j);CHKERRQ(ierr);
-                                       ierr = PetscFree(i);CHKERRQ(ierr);
+                                       if (*a) {ierr = PetscFree(*a);CHKERRQ(ierr);}
+                                       if (*j) {ierr = PetscFree(*j);CHKERRQ(ierr);}
+                                       if (*i) {ierr = PetscFree(*i);CHKERRQ(ierr);}
                                      }
+                                     *a = 0; *j = 0; *i = 0;
                                      return 0;
                                    }
 
 /*
     Allocates larger a, i, and j arrays for the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
-#define MatSeqXAIJReallocateAIJ(A,NROW,RMAX,AA,AI,AJ,AM,RP,AP,AIMAX)\
+#define MatSeqXAIJReallocateAIJ(A,BS2,NROW,ROW,RMAX,AA,AI,AJ,AM,RP,AP,AIMAX)\
       if (NROW >= RMAX) { \
         /* there is no extra room in row, therefore enlarge */ \
         PetscInt    new_nz = AI[AM] + CHUNKSIZE,len,*new_i,*new_j; \
         PetscScalar *new_a; \
  \
-        if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col); \
- \
         /* malloc new storage space */ \
-        ierr = PetscMalloc3(new_nz,PetscScalar,&new_a,new_nz,PetscInt,&new_j,AM+1,PetscInt,&new_i);CHKERRQ(ierr);\
+        ierr = PetscMalloc3(BS2*new_nz,PetscScalar,&new_a,new_nz,PetscInt,&new_j,AM+1,PetscInt,&new_i);CHKERRQ(ierr);\
  \
         /* copy over old data into new slots */ \
-        for (ii=0; ii<row+1; ii++) {new_i[ii] = AI[ii];} \
-        for (ii=row+1; ii<AM+1; ii++) {new_i[ii] = AI[ii]+CHUNKSIZE;} \
-        ierr = PetscMemcpy(new_j,AJ,(ai[row]+NROW)*sizeof(PetscInt));CHKERRQ(ierr); \
-        len = (new_nz - CHUNKSIZE - ai[row] - NROW); \
-        ierr = PetscMemcpy(new_j+AI[row]+NROW+CHUNKSIZE,AJ+AI[row]+NROW,len*sizeof(PetscInt));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a,AA,(AI[row]+NROW)*sizeof(PetscScalar));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a+AI[row]+NROW+CHUNKSIZE,AA+AI[row]+NROW,len*sizeof(PetscScalar));CHKERRQ(ierr);  \
+        for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];} \
+        for (ii=ROW+1; ii<AM+1; ii++) {new_i[ii] = AI[ii]+CHUNKSIZE;} \
+        ierr = PetscMemcpy(new_j,AJ,(AI[ROW]+NROW)*sizeof(PetscInt));CHKERRQ(ierr); \
+        len = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
+        ierr = PetscMemcpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len*sizeof(PetscInt));CHKERRQ(ierr); \
+        ierr = PetscMemcpy(new_a,AA,BS2*(AI[ROW]+NROW)*sizeof(PetscScalar));CHKERRQ(ierr); \
+        ierr = PetscMemzero(new_a+BS2*(AI[ROW]+NROW),BS2*CHUNKSIZE*sizeof(MatScalar));CHKERRQ(ierr);\
+        ierr = PetscMemcpy(new_a+BS2*(AI[ROW]+NROW+CHUNKSIZE),AA+BS2*(AI[ROW]+NROW),BS2*len*sizeof(PetscScalar));CHKERRQ(ierr);  \
         /* free up old matrix storage */ \
-        ierr = MatSeqXAIJFreeAIJ(A->singlemalloc,A->a,A->j,A->i);CHKERRQ(ierr);\
+        ierr = MatSeqXAIJFreeAIJ(A->singlemalloc,&A->a,&A->j,&A->i);CHKERRQ(ierr);\
         AA = A->a = new_a; AI = A->i = new_i; AJ = A->j = new_j;  \
         A->singlemalloc = PETSC_TRUE; \
  \
-        RP   = AJ + AI[row]; AP = AA + AI[row]; \
-        RMAX = AIMAX[row] = AIMAX[row] + CHUNKSIZE; \
+        RP        = AJ + AI[ROW]; AP = AA + BS2*AI[ROW]; \
+        RMAX      = AIMAX[ROW] = AIMAX[ROW] + CHUNKSIZE; \
         A->maxnz += CHUNKSIZE; \
         A->reallocs++; \
       } \

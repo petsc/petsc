@@ -13,8 +13,8 @@ PetscErrorCode KSPSetUp_Richardson(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_RIGHT) {SETERRQ(2,"no right preconditioning for KSPRICHARDSON");}
-  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(2,"no symmetric preconditioning for KSPRICHARDSON");}
+  if (ksp->pc_side == PC_RIGHT) {SETERRQ(PETSC_ERR_SUP,"no right preconditioning for KSPRICHARDSON");}
+  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPRICHARDSON");}
   ierr = KSPDefaultGetWork(ksp,2);CHKERRQ(ierr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -43,18 +43,33 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   x       = ksp->vec_sol;
   b       = ksp->vec_rhs;
   r       = ksp->work[0];
+  z       = ksp->work[1];
   maxit   = ksp->max_it;
 
   /* if user has provided fast Richardson code use that */
   ierr = PCApplyRichardsonExists(ksp->pc,&exists);CHKERRQ(ierr);
   if (exists && !ksp->numbermonitors && !ksp->transpose_solve) {
+    ksp->normtype = KSP_NO_NORM;
     ierr = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit);CHKERRQ(ierr);
-    ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
-    ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    if (ksp->normtype != KSP_NO_NORM) {
+      ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);
+      ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
+      if (ksp->normtype == KSP_UNPRECONDITIONED_NORM || ksp->pc_side == PC_RIGHT) {
+        ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
+      } else {
+        ierr = KSP_PCApply(ksp,r,z);CHKERRQ(ierr);
+        if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+          ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'B'*Br     */
+        } else {
+          ierr = VecDot(r,z,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*r  = r'Br = e'*A'*B*A*e  */
+        }
+      }
+      ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    }
+    if (!ksp->reason) ksp->reason = KSP_CONVERGED_ITS;
     PetscFunctionReturn(0);
   }
 
-  z       = ksp->work[1];
   scale   = richardsonP->scale;
 
   if (!ksp->guess_zero) {                          /*   r <- b - A x     */

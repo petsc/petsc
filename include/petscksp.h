@@ -282,7 +282,7 @@ typedef enum {KSP_NO_NORM               = 0,
 
    Level: advanced
 
-    Note: Some Krylov methods need to compute a residual norm and then this is ignored
+    Note: Some Krylov methods need to compute a residual norm and then this option is ignored
 
 .seealso: KSPNormType, KSPSetNormType(), KSP_PRECONDITIONED_NORM, KSP_UNPRECONDITIONED_NORM, KSP_NATURAL_NORM
 M*/

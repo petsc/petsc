@@ -118,6 +118,27 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
    We should have performance benchmarking to make sure code performance is not decreased by changes
 
   ------------
+  Interfaces to external packages
+  ------------
+   An almost linear time LU solver for second order elliptic
+   operators (http://www.math.uni-leipzig.de/~bebendorf/AHMED.html)
+   Another software library on Hierarchical Matrices for Elliptic
+   Differential equations (AHMED)
+   An approximate LU decomposition canbe computed in the algebra of
+   hierarchical matrices with almost linear time complexity and with
+   the same robustness as the classical LU decomposition method.
+
+   DUNE, the Distributed and Unified Numerics Environment 
+   (http://hal.iwr.uni-heidelberg.de/dune)
+   DUNE aims to reach the following goals:
+    - Distributed development
+    - Unified access to different grid managers (ALBERTA , UG),
+      visualization tools (Grape), solvers, etc.
+    - high level abstraction through Operator concept
+
+    ILUPACK www.math.tu-berlin.de/ilupack
+      
+  ------------
   PR 
   ------------
   Add all PETSc user publications we find from scholar.google.com

@@ -11,9 +11,9 @@ PetscErrorCode KSPSetUp_BiCG(KSP ksp)
   PetscFunctionBegin;
   /* check user parameters and functions */
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,"no right preconditioning for KSPBiCG");
+    SETERRQ(PETSC_ERR_SUP,"no right preconditioning for KSPBiCG");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(2,"no symmetric preconditioning for KSPBiCG");
+    SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPBiCG");
   }
 
   /* get work vectors from user code */
