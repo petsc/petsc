@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.67 1996/01/12 22:08:29 bsmith Exp $";
+static char vcid[] = "$Id: iscomp.c,v 1.1 1996/01/18 23:32:04 balay Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -41,7 +41,7 @@ int ISCompareIndices(IS is1, IS is2, int *flg)
 
   ierr = SYIsort(sz1,a1); CHKERRQ(ierr);
   ierr = SYIsort(sz2,a2); CHKERRQ(ierr);
-  if(PetscMemcmp((char *)a1,(char *)a2, sz)) {*flg = 1;}
+  if(!PetscMemcmp((char *)a1,(char *)a2, sz)) {*flg = 1;}
   else {*flg = 0;}
 
   ierr = ISRestoreIndices(is1, &ptr1); CHKERRQ(ierr);
