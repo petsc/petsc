@@ -60,6 +60,8 @@ EXTERN int MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);
 EXTERN int MatLoad_MPIAIJ(PetscViewer,const MatType,Mat*);
 EXTERN int MatAXPY_SeqAIJ(const PetscScalar[],Mat,Mat,MatStructure);
 EXTERN int MatMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN int MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
+EXTERN int MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 EXTERN int MatSetValues_MPIAIJ(Mat,int,const int[],int,const int[],const PetscScalar [],InsertMode);
 
 

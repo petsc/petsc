@@ -1664,6 +1664,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
 /*90*/ 0,
        MatMatMult_MPIAIJ_MPIAIJ, 
+       MatMatMultSymbolic_MPIAIJ_MPIAIJ,  
+       MatMatMultNumeric_MPIAIJ_MPIAIJ, 
 };
 
 /* ----------------------------------------------------------------------------------------*/

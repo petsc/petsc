@@ -93,6 +93,8 @@ EXTERN int MatILUDTFactor_SeqAIJ(Mat,MatFactorInfo*,IS,IS,Mat*);
 EXTERN int MatLoad_SeqAIJ(PetscViewer,const MatType,Mat*);
 EXTERN int RegisterApplyPtAPRoutines_Private(Mat);
 EXTERN int MatMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN int MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+EXTERN int MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 EXTERN_C_BEGIN
 EXTERN int MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,Mat*);
 EXTERN int MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,Mat*);
