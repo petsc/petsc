@@ -10,7 +10,7 @@ foreach matrix (arco1 cfd.1.10)
     foreach level (0 1 2 3 4 5 )
 
       echo "matrix $matrix blocksize $blocksize level $level "
-      mpirun.ch_p4 ex10 -f0 /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type ilu -pc_ilu_levels $level -mat_block_size $blocksize -mat_seqbaij -log_summary
+      mpirun.ch_p4 ex10 -f0 /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type ilu -pc_ilu_levels $level -matload_block_size $blocksize -mat_seqbaij -log_summary
 
     end
 
