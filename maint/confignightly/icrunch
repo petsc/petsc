@@ -6,7 +6,7 @@ set LOC=/sandbox/petsc/petsc-dev
 set CONF=macosx-gnu
 
 if ($day == Sun || $day == Wed || $day == Sat) then
-  set CONF=macox-gnu
+  set CONF=macosx-gnu
 else if ($day == Thu || $day == Mon || $day == Fri) then
   set CONF=macosx-ibm
 endif

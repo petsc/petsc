@@ -26,8 +26,9 @@ int TSComputeRHSFunctionEuler(TS ts,PetscReal t,Vec x,Vec y)
   PetscScalar neg_two = -2.0,neg_mdt = -1.0/ts->time_step;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
-  PetscValidHeader(x);  PetscValidHeader(y);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);  
+  PetscValidHeaderSpecific(y,VEC_COOKIE,3);
 
   if (ts->ops->rhsfunction) {
     PetscStackPush("TS user right-hand-side function");
@@ -184,9 +185,10 @@ static int TSStep_CN_Nonlinear(TS ts,int *steps,PetscReal *ptime)
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,cn->update);CHKERRQ(ierr);
-    ierr = SNESSolve(ts->snes,cn->update,&its);CHKERRQ(ierr);
+    ierr = SNESSolve(ts->snes,cn->update);CHKERRQ(ierr);
+    ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ierr = SNESGetNumberLinearIterations(ts->snes,&lits);CHKERRQ(ierr);
-    ts->nonlinear_its += PetscAbsInt(its); ts->linear_its += lits;
+    ts->nonlinear_its += its; ts->linear_its += lits;
     ierr = VecCopy(cn->update,sol);CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
@@ -356,6 +358,12 @@ static int TSView_CN(TS ts,PetscViewer viewer)
 }
 
 /* ------------------------------------------------------------ */
+/*MC
+      TS_CN - ODE solver using the implicit Crank-Nicholson method
+
+.seealso:  TSCreate(), TS, TSSetType()
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_CN"

@@ -13,7 +13,7 @@ static char vcid[] = "$Id: mathematica.c,v 1.9 2000/01/26 15:46:22 baggag Exp $"
 #include "mathematica.h"
 #include "petscfix.h"
 
-#if defined (PETSC_HAVE__SNPRINTF)
+#if defined (PETSC_HAVE__SNPRINTF) && !defined(PETSC_HAVE_SNPRINTF)
 #define snprintf _snprintf
 #endif
 
@@ -343,7 +343,8 @@ int PetscViewerMathematicaSetLinkName(PetscViewer v, const char *name) {
   int                      ierr;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name);
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE,1);
+  PetscValidCharPointer(name,2);
   ierr = PetscStrallocpy(name, &vmath->linkname);                                                         CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -367,7 +368,8 @@ int PetscViewerMathematicaSetLinkHost(PetscViewer v, const char *host) {
   int                      ierr;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(host);
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE,1);
+  PetscValidCharPointer(host,2);
   ierr = PetscStrallocpy(host, &vmath->linkhost);                                                         CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -461,7 +463,7 @@ int PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link)
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
   *link = vmath->link;
   PetscFunctionReturn(0);
 }
@@ -625,8 +627,8 @@ int PetscViewerMathematicaGetName(PetscViewer viewer, const char **name)
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
-  PetscValidPointer(name);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidPointer(name,2);
   *name = vmath->objName;
   PetscFunctionReturn(0);
 }
@@ -650,8 +652,8 @@ int PetscViewerMathematicaSetName(PetscViewer viewer, const char name[])
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
-  PetscValidPointer(name);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidPointer(name,2);
   vmath->objName = name;
   PetscFunctionReturn(0);
 }
@@ -674,7 +676,7 @@ int PetscViewerMathematicaClearName(PetscViewer viewer)
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
   vmath->objName = PETSC_NULL;
   PetscFunctionReturn(0);
 }
@@ -707,8 +709,8 @@ int PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v) {
   int                 ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
-  PetscValidHeaderSpecific(v,      VEC_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(v,      VEC_COOKIE,2);
 
   /* Determine the object name */
   if (vmath->objName == PETSC_NULL) {
@@ -910,7 +912,7 @@ int PetscViewerMathematicaPartitionMesh(PetscViewer viewer, int numElements, int
   int                 ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
   link = vmath->link;
 
   /* Make sure that the reduce.m package is loaded */
@@ -993,8 +995,8 @@ int PetscViewerMathematicaReduce(PetscViewer viewer, PC pc, int thresh)
   int                 ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
-  PetscValidHeaderSpecific(pc,     PC_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(pc,     PC_COOKIE,2);
   link = vmath->link;
   ml   = (PC_Multilevel *) pc->data;
 
@@ -1160,8 +1162,8 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
   int                 ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
-  PetscValidHeaderSpecific(pc,     PC_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(pc,     PC_COOKIE,2);
   link = vmath->link;
   ml   = (PC_Multilevel *) pc->data;
 

@@ -1,13 +1,5 @@
 /*$Id: bcgs.c,v 1.78 2001/08/07 03:03:49 balay Exp $*/
 
-/*                       
-    This code implements the BiCGStab (Stabilized version of BiConjugate
-    Gradient Squared) method.  Reference: van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
-
-    Note that for the complex numbers version, the VecDot() arguments
-    within the code MUST remain in the order given for correct computation
-    of inner products.
-*/
 #include "src/ksp/ksp/kspimpl.h"
 
 #undef __FUNCT__  
@@ -128,6 +120,20 @@ static int  KSPSolve_BCGS(KSP ksp)
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*MC
+     KSPBCGS -     Implements the BiCGStab (Stabilized version of BiConjugate
+         Gradient Squared) method.  Reference: van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
+
+
+   Options Database Keys:
+.   see KSPSolve()
+
+   Level: beginner
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

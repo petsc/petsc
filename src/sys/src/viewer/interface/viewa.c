@@ -50,7 +50,7 @@
 int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   viewer->format     = format;
   PetscFunctionReturn(0);
 }
@@ -100,7 +100,7 @@ int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
 int PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   if (viewer->iformat > 9) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many pushes");
 
   viewer->formats[viewer->iformat++]  = viewer->format;
@@ -129,7 +129,7 @@ int PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
 int PetscViewerPopFormat(PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   if (viewer->iformat <= 0) PetscFunctionReturn(0);
 
   viewer->format = viewer->formats[--viewer->iformat];

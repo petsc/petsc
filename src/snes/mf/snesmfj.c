@@ -36,8 +36,8 @@ int MatSNESMFSetType(Mat mat,const MatSNESMFType ftype)
   PetscTruth   match;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  PetscValidCharPointer(ftype);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidCharPointer(ftype,2);
 
   /* already set, so just return */
   ierr = PetscTypeCompare((PetscObject)ctx,ftype,&match);CHKERRQ(ierr);
@@ -816,7 +816,7 @@ int MatSNESMFSetFunctioni(Mat mat,int (*funci)(int,Vec,PetscScalar*,void *))
   int  ierr,(*f)(Mat,int (*)(int,Vec,PetscScalar*,void *));
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSNESMFSetFunctioni_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,funci);CHKERRQ(ierr);
@@ -854,7 +854,7 @@ int MatSNESMFSetFunctioniBase(Mat mat,int (*func)(Vec,void *))
   int  ierr,(*f)(Mat,int (*)(Vec,void *));
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSNESMFSetFunctioniBase_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,func);CHKERRQ(ierr);
@@ -1075,8 +1075,8 @@ int MatSNESMFSetBase(Mat J,Vec U)
   int  ierr,(*f)(Mat,Vec);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(J,MAT_COOKIE);
-  PetscValidHeaderSpecific(U,VEC_COOKIE);
+  PetscValidHeaderSpecific(J,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(U,VEC_COOKIE,2);
   ierr = PetscObjectQueryFunction((PetscObject)J,"MatSNESMFSetBase_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(J,U);CHKERRQ(ierr);
@@ -1112,7 +1112,7 @@ int MatSNESMFSetCheckh(Mat J,int (*fun)(Vec,Vec,PetscScalar*,void*),void* ctx)
   int  ierr,(*f)(Mat,int (*)(Vec,Vec,PetscScalar*,void*),void*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(J,MAT_COOKIE);
+  PetscValidHeaderSpecific(J,MAT_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)J,"MatSNESMFSetCheckh_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(J,fun,ctx);CHKERRQ(ierr);

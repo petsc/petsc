@@ -35,7 +35,7 @@ int SNESSetLineSearchParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscRea
   SNES_LS *ls;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
 
   ls = (SNES_LS*)snes->data;
   if (alpha   >= 0.0) ls->alpha   = alpha;
@@ -77,19 +77,19 @@ int SNESGetLineSearchParams(SNES snes,PetscReal *alpha,PetscReal *maxstep,PetscR
   SNES_LS *ls;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
 
   ls = (SNES_LS*)snes->data;
   if (alpha) {
-    PetscValidDoublePointer(alpha);
+    PetscValidDoublePointer(alpha,2);
     *alpha   = ls->alpha;
   }
   if (maxstep) {
-    PetscValidDoublePointer(maxstep);
+    PetscValidDoublePointer(maxstep,3);
     *maxstep = ls->maxstep;
   }
   if (steptol) {
-    PetscValidDoublePointer(steptol);
+    PetscValidDoublePointer(steptol,4);
     *steptol = ls->steptol;
   }
   PetscFunctionReturn(0);

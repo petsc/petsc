@@ -2,13 +2,6 @@
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
-/*                       
-       This implements LSQR (Paige and Saunders, ACM Transactions on
-       Mathematical Software, Vol 8, pp 43-71, 1982).
-
-       This algorithm DOES NOT use a preconditioner. It ignores
-       any preconditioner arguments specified.
-*/
 #include "src/ksp/ksp/kspimpl.h"
 
 typedef struct {
@@ -182,6 +175,21 @@ int KSPDestroy_LSQR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+/*MC
+     KSPLSQR - This implements LSQR (Paige and Saunders, ACM Transactions on
+              Mathematical Software, Vol 8, pp 43-71, 1982).
+
+   Options Database Keys:
+.   see KSPSolve()
+
+   Level: beginner
+
+   Notes:  This algorithm DOES NOT use a preconditioner. It ignores
+       any preconditioner arguments specified.
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_LSQR"

@@ -29,8 +29,9 @@ int VecConvertMPIToSeqAll(Vec vin,Vec *vout)
   PetscFunctionBegin;
 
   /* Check if vin is of type VECMPI ????????? */
-  PetscValidHeaderSpecific(vin,VEC_COOKIE);
-  PetscValidType(vin);
+  PetscValidHeaderSpecific(vin,VEC_COOKIE,1);
+  PetscValidPointer(vout,2);
+  PetscValidType(vin,1);
 
   /* Create seq vec on each proc, with the same size of the original mpi vec */
   ierr = VecGetSize(vin,&N);CHKERRQ(ierr);
@@ -75,8 +76,9 @@ int VecConvertMPIToMPIZero(Vec vin,Vec *vout)
   PetscFunctionBegin;
 
   /* Check if vin is of type VECMPI ????????? */
-  PetscValidHeaderSpecific(vin,VEC_COOKIE);
-  PetscValidType(vin);
+  PetscValidHeaderSpecific(vin,VEC_COOKIE,1);
+  PetscValidPointer(vout,2);
+  PetscValidType(vin,1);
 
   /* Create seq vec on each proc, with the same size of the original mpi vec */
   ierr = VecGetSize(vin,&N);CHKERRQ(ierr);

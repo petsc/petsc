@@ -34,7 +34,7 @@ PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 int PFSet(PF pf,int(*apply)(void*,int,PetscScalar*,PetscScalar*),int(*applyvec)(void*,Vec,Vec),int(*view)(void*,PetscViewer),int(*destroy)(void*),void*ctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pf,PF_COOKIE);
+  PetscValidHeaderSpecific(pf,PF_COOKIE,1);
   pf->data             = ctx;
 
   pf->ops->destroy     = destroy;
@@ -67,7 +67,7 @@ int PFDestroy(PF pf)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pf,PF_COOKIE);
+  PetscValidHeaderSpecific(pf,PF_COOKIE,1);
   if (--pf->refct > 0) PetscFunctionReturn(0);
 
   ierr = PetscOptionsHasName(pf->prefix,"-pf_view",&flg);CHKERRQ(ierr);
@@ -133,7 +133,7 @@ int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(pf);
+  PetscValidPointer(pf,1);
   *pf = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
@@ -185,10 +185,10 @@ int PFApplyVec(PF pf,Vec x,Vec y)
   PetscTruth nox = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pf,PF_COOKIE);
-  PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(pf,PF_COOKIE,1);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,3);
   if (x) {
-    PetscValidHeaderSpecific(x,VEC_COOKIE);
+    PetscValidHeaderSpecific(x,VEC_COOKIE,2);
     if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   } else {
     PetscScalar *xx;
@@ -259,7 +259,9 @@ int PFApply(PF pf,int n,PetscScalar* x,PetscScalar* y)
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pf,PF_COOKIE);
+  PetscValidHeaderSpecific(pf,PF_COOKIE,1);
+  PetscValidScalarPointer(x,2);
+  PetscValidScalarPointer(y,3);
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different arrays");
   if (!pf->ops->apply) SETERRQ(1,"No function has been provided for this PF");
 
@@ -303,10 +305,10 @@ int PFView(PF pf,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pf,PF_COOKIE);
+  PetscValidHeaderSpecific(pf,PF_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(pf->comm);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE); 
-  PetscCheckSameComm(pf,viewer);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
+  PetscCheckSameComm(pf,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
@@ -447,8 +449,8 @@ int PFSetType(PF pf,const PFType type,void *ctx)
   PetscTruth match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pf,PF_COOKIE);
-  PetscValidCharPointer(type);
+  PetscValidHeaderSpecific(pf,PF_COOKIE,1);
+  PetscValidCharPointer(type,2);
 
   ierr = PetscTypeCompare((PetscObject)pf,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
@@ -504,7 +506,7 @@ int PFSetFromOptions(PF pf)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pf,PF_COOKIE);
+  PetscValidHeaderSpecific(pf,PF_COOKIE,1);
 
   if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
   ierr = PetscOptionsBegin(pf->comm,pf->prefix,"Mathematical functions options","Vec");CHKERRQ(ierr);

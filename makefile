@@ -113,6 +113,7 @@ blaslapack:
         echo "Building C Blas/Lapack libraries";\
         ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ;\
         ${MV} libf2cblas.a libf2clapack.a ${PETSC_ARCH};\
+        ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} cleanblaslapack ;\
         echo "Completed C building Blas/Lapack libraries";\
         echo "========================================="; fi
 	-@if [ -d fblaslapack/${PETSC_ARCH} -a ! -s fblaslapack/${PETSC_ARCH}/libfblas.a ] ; then cd fblaslapack;\
@@ -120,6 +121,7 @@ blaslapack:
         echo "Building Fortran Blas/Lapack libraries";\
         ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ;\
         ${MV} libfblas.a libflapack.a ${PETSC_ARCH};\
+        ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} cleanblaslapck ;\
         echo "Completed building Fortran Blas/Lapack libraries";\
         echo "========================================="; fi
 #
@@ -288,7 +290,7 @@ SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/crontab python/PET
              python/PETSc/packages/PLAPACK.py python/PETSc/packages/Triangle.py python/PETSc/packages/Matlab.py \
              python/PETSc/packages/PVODE.py python/PETSc/packages/BlasLapack.py python/PETSc/packages/MPI.py \
              python/PETSc/packages/BlockSolve.py python/PETSc/packages/NetCDF.py python/PETSc/packages/ParMetis.py \
-             python/PETSc/packages/update.py maint/buildtest/* config/configure*.py
+             python/PETSc/packages/update.py maint/confignightly/* config/*.py
 
 
 updatewebdocs:
@@ -348,13 +350,13 @@ chk_concepts_dir: chk_loc
 #
 #  checks if should build Fortran stubs
 chk_fortranstubs:
-	-@if [ ! -f "${PETSC_DIR}/src/fortran/auto/makefile.src" ]; then \
+	-@if [ ! -f "${PETSC_DIR}/src/fortran/auto/makefile.src" -a "${C_FC}" != "" ]; then \
           ${OMAKE} PETSC_DIR=${PETSC_DIR} allfortranstubs ;\
         fi
 
 # Builds Fortran stub files
 allfortranstubs:
-	-@which ${BFORT} > /dev/null 2>1;  \
+	-@which ${BFORT} > /dev/null 2>&1;  \
         if [ "$$?" != "0" ]; then \
           echo "No bfort available, skipping building Fortran stubs";\
         else \

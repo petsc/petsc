@@ -64,7 +64,7 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         raise RuntimeError('Error running configure on Sowing: '+str(e))
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';make; make install', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on Sowing: '+str(e))
       fd = open(os.path.join(installDir,'config.args'),'w')
@@ -80,6 +80,7 @@ class Configure(config.base.Configure):
       if dir.startswith('sowing') and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'], dir)):
         sowingDir = dir
     if sowingDir and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.argDB['PETSC_ARCH'],'bin')):
+      self.framework.log.write('Found Sowing directory\n')
       self.framework.sowingDir = os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.argDB['PETSC_ARCH'],'bin')
     
   def configureFortranStubs(self):

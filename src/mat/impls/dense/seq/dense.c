@@ -148,8 +148,9 @@ int MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,MatFactorInfo *info,Mat *fa
 #define __FUNCT__ "MatLUFactorNumeric_SeqDense"
 int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
 {
-  Mat_SeqDense *mat = (Mat_SeqDense*)A->data,*l = (Mat_SeqDense*)(*fact)->data;
-  int          lda1=mat->lda,lda2=l->lda, m=A->m,n=A->n, j,ierr;
+  Mat_SeqDense  *mat = (Mat_SeqDense*)A->data,*l = (Mat_SeqDense*)(*fact)->data;
+  int           lda1=mat->lda,lda2=l->lda, m=A->m,n=A->n, j,ierr;
+  MatFactorInfo info;
 
   PetscFunctionBegin;
   /* copy the numerical values */
@@ -161,7 +162,7 @@ int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
     ierr = PetscMemcpy(l->v,mat->v,A->m*A->n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   (*fact)->factor = 0;
-  ierr = MatLUFactor(*fact,0,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatLUFactor(*fact,0,0,&info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -225,8 +226,8 @@ int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
   
   PetscFunctionBegin;
   if (!A->m || !A->n) PetscFunctionReturn(0);
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr); 
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscMemcpy(y,x,A->m*sizeof(PetscScalar));CHKERRQ(ierr);
   if (A->factor == FACTOR_LU) {
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
@@ -244,8 +245,8 @@ int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
 #endif
   }
   else SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->n*A->n - A->n);
   PetscFunctionReturn(0);
 }
@@ -260,8 +261,8 @@ int MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   
   PetscFunctionBegin;
   if (!A->m || !A->n) PetscFunctionReturn(0);
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscMemcpy(y,x,A->m*sizeof(PetscScalar));CHKERRQ(ierr);
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
@@ -279,8 +280,8 @@ int MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
     if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->n*A->n - A->n);
   PetscFunctionReturn(0);
 }
@@ -295,8 +296,8 @@ int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   Vec          tmp = 0;
   
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (!A->m || !A->n) PetscFunctionReturn(0);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp);CHKERRQ(ierr);
@@ -322,8 +323,8 @@ int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   }
   if (tmp) {ierr = VecAXPY(&sone,tmp,yy);CHKERRQ(ierr); ierr = VecDestroy(tmp);CHKERRQ(ierr);}
   else     {ierr = VecAXPY(&sone,zz,yy);CHKERRQ(ierr);}
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->n*A->n);
   PetscFunctionReturn(0);
 }
@@ -339,8 +340,8 @@ int MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   
   PetscFunctionBegin;
   if (!A->m || !A->n) PetscFunctionReturn(0);
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp);CHKERRQ(ierr);
     PetscLogObjectParent(A,tmp);
@@ -369,8 +370,8 @@ int MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   } else {
     ierr = VecAXPY(&sone,zz,yy);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->n*A->n);
   PetscFunctionReturn(0);
 }
@@ -392,8 +393,8 @@ int MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,
     /* this is a hack fix, should have another version without the second BLdot */
     ierr = VecSet(&zero,xx);CHKERRQ(ierr);
   }
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr); 
-  ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   its  = its*lits;
   if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d and local its %d both positive",its,lits);
   while (its--) {
@@ -432,8 +433,8 @@ int MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,
       }
     }
   } 
-  ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 } 
 
@@ -449,11 +450,11 @@ int MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   if (!A->m || !A->n) PetscFunctionReturn(0);
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   LAgemv_("T",&(A->m),&(A->n),&_DOne,v,&(mat->lda),x,&_One,&_DZero,y,&_One);
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->m*A->n - A->n);
   PetscFunctionReturn(0);
 }
@@ -468,11 +469,11 @@ int MatMult_SeqDense(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   if (!A->m || !A->n) PetscFunctionReturn(0);
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   LAgemv_("N",&(A->m),&(A->n),&_DOne,v,&(mat->lda),x,&_One,&_DZero,y,&_One);
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->m*A->n - A->m);
   PetscFunctionReturn(0);
 }
@@ -488,11 +489,11 @@ int MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   PetscFunctionBegin;
   if (!A->m || !A->n) PetscFunctionReturn(0);
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr); 
   LAgemv_("N",&(A->m),&(A->n),&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One);
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->m*A->n);
   PetscFunctionReturn(0);
 }
@@ -509,11 +510,11 @@ int MatMultTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   PetscFunctionBegin;
   if (!A->m || !A->n) PetscFunctionReturn(0);
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   LAgemv_("T",&(A->m),&(A->n),&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One);
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->m*A->n);
   PetscFunctionReturn(0);
 }
@@ -1088,13 +1089,13 @@ int MatGetDiagonal_SeqDense(Mat A,Vec v)
   PetscFunctionBegin;
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
   ierr = VecGetSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   len = PetscMin(A->m,A->n);
   if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
   for (i=0; i<len; i++) {
     x[i] = mat->v[i*mat->lda + i];
   }
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -1109,26 +1110,26 @@ int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
   PetscFunctionBegin;
   if (ll) {
     ierr = VecGetSize(ll,&m);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(ll,&l);CHKERRQ(ierr);
+    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
     if (m != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vec wrong size");
     for (i=0; i<m; i++) {
       x = l[i];
       v = mat->v + i;
       for (j=0; j<n; j++) { (*v) *= x; v+= m;} 
     }
-    ierr = VecRestoreArrayFast(ll,&l);CHKERRQ(ierr);
+    ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
     PetscLogFlops(n*m);
   }
   if (rr) {
     ierr = VecGetSize(rr,&n);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(rr,&r);CHKERRQ(ierr);
+    ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
     if (n != A->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vec wrong size");
     for (i=0; i<n; i++) {
       x = r[i];
       v = mat->v + i*m;
       for (j=0; j<m; j++) { (*v++) *= x;} 
     }
-    ierr = VecRestoreArrayFast(rr,&r);CHKERRQ(ierr);
+    ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
     PetscLogFlops(n*m);
   }
   PetscFunctionReturn(0);

@@ -226,8 +226,8 @@ int ClassRegLogRegister(ClassRegLog classLog, const char cname[], int *cookie) {
   int           ierr;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(cname);
-  PetscValidIntPointer(cookie);
+  PetscValidCharPointer(cname,2);
+  PetscValidIntPointer(cookie,3);
   c = classLog->numClasses++;
   if (classLog->numClasses > classLog->maxClasses) {
     ierr = PetscMalloc(classLog->maxClasses*2 * sizeof(ClassRegInfo), &classInfo);                        CHKERRQ(ierr);
@@ -274,7 +274,7 @@ int ClassRegLogGetClass(ClassRegLog classLog, int cookie, int *oclass) {
   int c;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(oclass);
+  PetscValidIntPointer(oclass,3);
   for(c = 0; c < classLog->numClasses; c++) {
     /* Could do bisection here */
     if (classLog->classInfo[c].cookie == cookie) break;

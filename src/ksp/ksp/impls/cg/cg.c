@@ -333,6 +333,22 @@ EXTERN_C_END
 
     It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
 */
+/*MC
+     KSPCG - The preconditioned conjugate gradient (PCG) iterative method
+
+   Options Database Keys:
++   -ksp_cg_Hermitian - (for complex matrices only) indicates the matrix is Hermitian
+-   -ksp_cg_symmetric - (for complex matrices only) indicates the matrix is symmetric
+
+   Level: beginner
+
+   Notes: The PCG method requires both the matrix and preconditioner to 
+          be symmetric positive (semi) definite
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
+           KSPCGSetType()
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CG"

@@ -30,11 +30,11 @@
 int PetscDrawGetCoordinates(PetscDraw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
-  PetscValidDoublePointer(xl);
-  PetscValidDoublePointer(yl);
-  PetscValidDoublePointer(xr);
-  PetscValidDoublePointer(yr);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidDoublePointer(xl,2);
+  PetscValidDoublePointer(yl,3);
+  PetscValidDoublePointer(xr,4);
+  PetscValidDoublePointer(yr,5);
   *xl = draw->coor_xl; *yl = draw->coor_yl;
   *xr = draw->coor_xr; *yr = draw->coor_yr;
   PetscFunctionReturn(0);

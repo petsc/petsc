@@ -5,39 +5,40 @@
 #include "samgfunc.h"
 #include "petscfunc.h"
 
-/**************************************************************************/
-/*                                                                        */
-/*  SAMG - PETSc interface                                                */
-/*  author: Domenico Lahaye (domenico.lahaye@cs.kuleuven.ac.be)           */ 
-/*  January 2001                                                          */
-/*  This interface allows e.g. to call samg as a shell preconditioner.    */
-/*  samg is the new algebraic multigrid code by Klaus Stueben [1].        */ 
-/*  Reference for SAMG                                                    */ 
-/*  [1] K. St\"{u}ben,"Algebraic Multigrid: An Introduction for Positive  */
-/*      Definite Problems with Applications", in [2], pp. 413--532,       */ 
-/*      Academic Press, 2001.                                             */ 
-/*  [2] U. Trottenberg, C. Oosterlee and A. Sch\"{u}ller, "Multigrid      */
-/*      Methods", Academic Press, 2001.                                   */ 
-/*  [1] is also available as                                              */ 
-/*  [3] K. St\"{u}ben,"Algebraic Multigrid: An Introduction for Positive  */
-/*      Definite Problems with Applications", Tech. Rep. 53, German       */
-/*      National Research Center for Information Technology (GMD),        */
-/*      Schloss Birlinhoven, D-53754 Sankt-Augustin, Germany, March 1999  */ 
-/*  For more information on the SAMG-PETSc interface and examples of it's */
-/*  use, see                                                              */
-/*  [4] D. Lahaye "Algebraic Multigrid for Time-Harmonic Magnetic Field   */ 
-/*      Computations", PhD Thesis, KU Leuven, Belgium, December 2001.     */ 
-/*      (www.cs.kuleuven.ac.be/~domenico)                                 */ 
-/*                                                                        */
-/**************************************************************************/
+/*MC
+     PCSAMG -   SAMG + PETSc interface                                                
+                                                         
+    This interface allows e.g. to call samg as a shell preconditioner.    
+    samg is the new algebraic multigrid code by Klaus Stueben [1].         
+    Reference for SAMG                                                     
+    [1] K. St\"{u}ben,"Algebraic Multigrid: An Introduction for Positive  
+        Definite Problems with Applications", in [2], pp. 413--532,        
+        Academic Press, 2001.                                              
+    [2] U. Trottenberg, C. Oosterlee and A. Sch\"{u}ller, "Multigrid      
+        Methods", Academic Press, 2001.                                    
+    [1] is also available as                                               
+    [3] K. St\"{u}ben,"Algebraic Multigrid: An Introduction for Positive  
+        Definite Problems with Applications", Tech. Rep. 53, German       
+        National Research Center for Information Technology (GMD),        
+        Schloss Birlinhoven, D-53754 Sankt-Augustin, Germany, March 1999   
+    For more information on the SAMG-PETSc interface and examples of it's 
+    use, see                                                              
+    [4] D. Lahaye "Algebraic Multigrid for Time-Harmonic Magnetic Field    
+        Computations", PhD Thesis, KU Leuven, Belgium, December 2001.      
+        (www.cs.kuleuven.ac.be/~domenico)                                  
+                                                                          
+   Notes on PETSc part of this interface                                  
+   Information on how to set up shell preconditioners in PETSc can be     
+   in the PETSc documentation under preconditioners.                       
 
-/**************************************************************************/
-/*                                                                        */
-/* Notes on PETSc part of this interface                                  */
-/* Information on how to set up shell preconditioners in PETSc can be     */
-/* in the PETSc documentation under preconditioners.                      */ 
-/*                                                                        */
-/**************************************************************************/
+   This preconditioner has not been completely organized to match the PETSc style,
+   see src/ksp/pc/impls/samgpetsc.c for the PC shell routines.
+
+    SAMG is a commercial product available from Klaus Stueben.
+ 
+   Contributed by Domenico Lahaye (domenico.lahaye@cs.kuleuven.ac.be)   January 2001 
+                                                                          
+M*/
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__

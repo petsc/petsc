@@ -37,9 +37,9 @@ int ISDifference(IS is1,IS is2,IS *isout)
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is1,IS_COOKIE);
-  PetscValidHeaderSpecific(is2,IS_COOKIE);
-  PetscValidPointer(isout);
+  PetscValidHeaderSpecific(is1,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is2,IS_COOKIE,2);
+  PetscValidPointer(isout,3);
 
   ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);
@@ -126,9 +126,9 @@ int ISSum(IS is1,IS is2,IS *isout)
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is1,IS_COOKIE);
-  PetscValidHeaderSpecific(is2,IS_COOKIE);
-  PetscValidPointer(isout);
+  PetscValidHeaderSpecific(is1,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is2,IS_COOKIE,2);
+  PetscValidPointer(isout,3);
 
   ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);

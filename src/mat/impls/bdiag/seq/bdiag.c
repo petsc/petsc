@@ -154,12 +154,12 @@ static int MatGetDiagonal_SeqBDiag_N(Mat A,Vec v)
   if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Main diagonal not set");
   len = PetscMin(a->mblock,a->nblock);
   dd = a->diagv[a->mainbd];
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<len; i++) {
     ibase = i*bs*bs;  iloc = i*bs;
     for (j=0; j<bs; j++) x[j + iloc] = dd[ibase + j*(bs+1)];
   }
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -178,9 +178,9 @@ static int MatGetDiagonal_SeqBDiag_1(Mat A,Vec v)
   if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Main diagonal not set");
   dd = a->diagv[a->mainbd];
   len = PetscMin(A->m,A->n);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<len; i++) x[i] = dd[i];
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -353,7 +353,7 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
     ierr = VecGetSize(ll,&m);CHKERRQ(ierr);
     if (m != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
     if (bs == 1) {
-      ierr = VecGetArrayFast(ll,&l);CHKERRQ(ierr); 
+      ierr = VecGetArray(ll,&l);CHKERRQ(ierr); 
       for (d=0; d<nd; d++) {
         dv   = a->diagv[d];
         diag = a->diag[d];
@@ -361,7 +361,7 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
         if (diag > 0) for (j=0; j<len; j++) dv[j+diag] *= l[j+diag];
         else          for (j=0; j<len; j++) dv[j]      *= l[j];
       }
-      ierr = VecRestoreArrayFast(ll,&l);CHKERRQ(ierr); 
+      ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr); 
       PetscLogFlops(a->nz);
     } else SETERRQ(PETSC_ERR_SUP,"Not yet done for bs>1");
   }
@@ -369,7 +369,7 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
     ierr = VecGetSize(rr,&n);CHKERRQ(ierr);
     if (n != A->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
     if (bs == 1) {
-      ierr = VecGetArrayFast(rr,&r);CHKERRQ(ierr);  
+      ierr = VecGetArray(rr,&r);CHKERRQ(ierr);  
       for (d=0; d<nd; d++) {
         dv   = a->diagv[d];
         diag = a->diag[d];
@@ -377,7 +377,7 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
         if (diag > 0) for (j=0; j<len; j++) dv[j+diag] *= r[j];
         else          for (j=0; j<len; j++) dv[j]      *= r[j-diag];
       }
-      ierr = VecRestoreArrayFast(rr,&r);CHKERRQ(ierr);  
+      ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);  
       PetscLogFlops(a->nz);
     } else SETERRQ(PETSC_ERR_SUP,"Not yet done for bs>1");
   }

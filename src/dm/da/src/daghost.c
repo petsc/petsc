@@ -42,7 +42,7 @@ int DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p)
   int w;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   /* since the xs, xe ... have all been multiplied by the number of degrees 
      of freedom per cell, w = da->w, we divide that out before returning.*/
   w = da->w;  

@@ -43,17 +43,11 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReaso
    SNESSolve_TR - Implements Newton's Method with a very simple trust 
    region approach for solving systems of nonlinear equations. 
 
-   The basic algorithm is taken from "The Minpack Project", by More', 
-   Sorensen, Garbow, Hillstrom, pages 88-111 of "Sources and Development 
-   of Mathematical Software", Wayne Cowell, editor.
-
-   This is intended as a model implementation, since it does not 
-   necessarily have many of the bells and whistles of other 
-   implementations.  
+ 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve_TR"
-static int SNESSolve_TR(SNES snes,int *its)
+static int SNESSolve_TR(SNES snes)
 {
   SNES_TR             *neP = (SNES_TR*)snes->data;
   Vec                 X,F,Y,G,TMP,Ytmp;
@@ -89,7 +83,7 @@ static int SNESSolve_TR(SNES snes,int *its)
   SNESMonitor(snes,0,fnorm);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 
- if (fnorm < snes->atol) {*its = 0; snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
+ if (fnorm < snes->atol) {snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -192,10 +186,8 @@ static int SNESSolve_TR(SNES snes,int *its)
   snes->vec_func_always = snes->vec_func; 
   if (i == maxits) {
     PetscLogInfo(snes,"SNESSolve_TR: Maximum number of iterations has been reached: %d\n",maxits);
-    i--;
     reason = SNES_DIVERGED_MAX_IT;
   }
-  *its = i+1;
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->reason = reason;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
@@ -338,6 +330,30 @@ int SNESConverged_TR(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,S
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------ */
+/*MC
+      SNESTR - Newton based nonlinear solver that uses a trust region
+
+   Options Database:
++    -snes_trtol <tol> Trust region tolerance
+.    -snes_tr_mu <mu>
+.    -snes_tr_eta <eta>
+.    -snes_tr_sigma <sigma>
+.    -snes_tr_delta0 <delta0>
+.    -snes_tr_delta1 <delta1>
+.    -snes_tr_delta2 <delta2>
+-    -snes_tr_delta3 <delta3>
+
+   The basic algorithm is taken from "The Minpack Project", by More', 
+   Sorensen, Garbow, Hillstrom, pages 88-111 of "Sources and Development 
+   of Mathematical Software", Wayne Cowell, editor.
+
+   This is intended as a model implementation, since it does not 
+   necessarily have many of the bells and whistles of other 
+   implementations.  
+
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESSetTrustRegionTolerance()
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_TR"

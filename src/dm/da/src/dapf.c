@@ -29,7 +29,8 @@ int DACreatePF(DA da,PF *pf)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(pf,2);
   ierr = PFCreate(da->comm,da->dim,da->w,pf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

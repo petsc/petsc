@@ -101,10 +101,10 @@ int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE);
+  PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(c->comm);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE); 
-  PetscCheckSameComm(c,viewer);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
+  PetscCheckSameComm(c,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
@@ -167,7 +167,7 @@ int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
 int MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umin)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
 
   if (error != PETSC_DEFAULT) matfd->error_rel = error;
   if (umin != PETSC_DEFAULT)  matfd->umin      = umin;
@@ -204,7 +204,7 @@ int MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umi
 int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
 
   matfd->freq = freq;
   PetscFunctionReturn(0);
@@ -242,8 +242,7 @@ int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
 int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
-
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
   *freq = matfd->freq;
   PetscFunctionReturn(0);
 }
@@ -272,11 +271,9 @@ int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
-
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
   matfd->f    = f;
   matfd->fctx = fctx;
-
   PetscFunctionReturn(0);
 }
 
@@ -320,7 +317,7 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
 
   ierr = PetscOptionsBegin(matfd->comm,matfd->prefix,"Jacobian computation via finite differences option","MatFD");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
@@ -532,9 +529,9 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(J,MAT_COOKIE);
-  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE);
-  PetscValidHeaderSpecific(x1,VEC_COOKIE);
+  PetscValidHeaderSpecific(J,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE,2);
+  PetscValidHeaderSpecific(x1,VEC_COOKIE,3);
 
   if (coloring->usersetsrecompute) {
     if (!coloring->recompute) {
@@ -731,9 +728,9 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
   PetscTruth    flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(J,MAT_COOKIE);
-  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE);
-  PetscValidHeaderSpecific(x1,VEC_COOKIE);
+  PetscValidHeaderSpecific(J,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE,2);
+  PetscValidHeaderSpecific(x1,VEC_COOKIE,4);
 
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   if (!coloring->w1) {
@@ -873,7 +870,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
 int MatFDColoringSetRecompute(MatFDColoring c)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE);
+  PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE,1);
   c->usersetsrecompute = PETSC_TRUE;
   c->recompute         = PETSC_TRUE;
   PetscFunctionReturn(0);

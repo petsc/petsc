@@ -1747,7 +1747,7 @@ int PetscGetTime(PetscLogDouble *t)
 int PetscLogGetStageLog(StageLog *stageLog)
 {
   PetscFunctionBegin;
-  PetscValidPointer(stageLog);
+  PetscValidPointer(stageLog,1);
   *stageLog = _stageLog;
   PetscFunctionReturn(0);
 }
@@ -1916,7 +1916,7 @@ int StackDestroy(IntStack stack)
 int StackEmpty(IntStack stack, PetscTruth *empty)
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(empty);
+  PetscValidIntPointer(empty,2);
   if (stack->top == -1) {
     *empty = PETSC_TRUE;
   } else {
@@ -1946,7 +1946,7 @@ int StackEmpty(IntStack stack, PetscTruth *empty)
 int StackTop(IntStack stack, int *top)
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(top);
+  PetscValidIntPointer(top,2);
   *top = stack->stack[stack->top];
   PetscFunctionReturn(0);
 }
@@ -2006,7 +2006,7 @@ int StackPush(IntStack stack, int item)
 int StackPop(IntStack stack, int *item)
 {
   PetscFunctionBegin;
-  PetscValidPointer(item);
+  PetscValidPointer(item,2);
   if (stack->top == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Stack is empty");
   *item = stack->stack[stack->top--];
   PetscFunctionReturn(0);
@@ -2033,7 +2033,7 @@ int StackCreate(IntStack *stack)
   int      ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(stack);
+  PetscValidPointer(stack,1);
   ierr = PetscNew(struct _IntStack, &s);                                                                  CHKERRQ(ierr);
   s->top = -1;
   s->max = 128;

@@ -29,7 +29,7 @@ int PetscBarrier(PetscObject obj)
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  if (obj) PetscValidHeader(obj); 
+  if (obj) PetscValidHeader(obj,1); 
   ierr = PetscLogEventBegin(PETSC_Barrier,obj,0,0,0);CHKERRQ(ierr);
   if (obj) {
     ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);

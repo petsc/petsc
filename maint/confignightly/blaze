@@ -4,11 +4,9 @@ set MACH=blaze
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev
 set CONF=solaris-gnu
-#
-set day=`date | cut -f1 -d" "`
 
 if ($day == Sun || $day == Wed || $day == Sat) then
   set CONF=solaris-uni
 else if ($day == Thu || $day == Fri) then
-  set CONF=solaris64
+  set CONF=solaris-64
 endif

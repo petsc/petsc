@@ -311,7 +311,8 @@ int MatGetColoring(Mat mat,const MatColoringType type,ISColoring *iscoloring)
   char       tname[256];
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidPointer(iscoloring,3);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!MatColoringRegisterAllCalled) {

@@ -29,4 +29,6 @@ KSPSetSolution(ksp,x) KSPSolve(ksp)
 
  removed its argument from KSPSolve. Obtain the number of iterations via KSPGetIterationNumber()
 
+  SNESSolve() no longer returns number of iterations, use SNESGetIterationNumber() to get the
+number of iterations required
 

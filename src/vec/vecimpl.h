@@ -123,8 +123,8 @@ struct _p_Vec {
   void                   *esivec;      /* ESI wrapper of vector */
 };
 
-#define VecGetArrayFast(x,a)     ((x)->petscnative ? (*(a) = *((PetscScalar **)(x)->data),0) : VecGetArray((x),(a)))
-#define VecRestoreArrayFast(x,a) ((x)->petscnative ? PetscObjectIncreaseState((PetscObject)x) : VecRestoreArray((x),(a)))
+#define VecGetArray(x,a)     ((x)->petscnative ? (*(a) = *((PetscScalar **)(x)->data),0) : VecGetArray_Private((x),(a)))
+#define VecRestoreArray(x,a) ((x)->petscnative ? PetscObjectIncreaseState((PetscObject)x) : VecRestoreArray_Private((x),(a)))
 
 /*
      Common header shared by array based vectors, 

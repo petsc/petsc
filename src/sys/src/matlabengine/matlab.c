@@ -80,7 +80,7 @@ int PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],PetscMatlabEngine
 int PetscMatlabEngineDestroy(PetscMatlabEngine v)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,MATLABENGINE_COOKIE);
+  PetscValidHeaderSpecific(v,MATLABENGINE_COOKIE,1);
   if (--v->refct > 0) PetscFunctionReturn(0);
   PetscLogObjectDestroy(v);
   PetscHeaderDestroy(v); 

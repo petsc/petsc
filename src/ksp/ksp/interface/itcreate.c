@@ -50,10 +50,10 @@ int KSPView(KSP ksp,PetscViewer viewer)
   PetscTruth  isascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscCheckSameComm(ksp,viewer);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscCheckSameComm(ksp,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
@@ -131,7 +131,7 @@ int KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->normtype = normtype;
   if (normtype == KSP_NO_NORM) {
     PetscLogInfo(ksp,"KSPSetNormType:Warning seting KSPNormType to skip computing the norm\n\
@@ -229,9 +229,9 @@ $      Pmat does not have the same nonzero structure.
 int KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  PetscValidHeaderSpecific(Amat,MAT_COOKIE);
-  PetscValidHeaderSpecific(Pmat,MAT_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(Amat,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(Pmat,MAT_COOKIE,3);
   PCSetOperators(ksp->B,Amat,Pmat,flag);
   if (ksp->setupcalled > 1) ksp->setupcalled = 1;  /* so that next solve call will call setup */
   PetscFunctionReturn(0);
@@ -266,7 +266,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(inksp);
+  PetscValidPointer(inksp,2);
   *inksp = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = KSPInitializePackage(PETSC_NULL);                                                               CHKERRQ(ierr);
@@ -366,8 +366,8 @@ int KSPSetType(KSP ksp,const KSPType type)
   PetscTruth match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  PetscValidCharPointer(type);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidCharPointer(type,2);
 
   ierr = PetscTypeCompare((PetscObject)ksp,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
@@ -440,7 +440,8 @@ int KSPRegisterDestroy(void)
 int KSPGetType(KSP ksp,KSPType *type)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(type,2);
   *type = ksp->type_name;
   PetscFunctionReturn(0);
 }
@@ -495,7 +496,7 @@ int KSPSetFromOptions(KSP ksp)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PCSetFromOptions(ksp->B);CHKERRQ(ierr);
 
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}

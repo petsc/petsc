@@ -175,8 +175,8 @@ int AOMappingHasApplicationIndex(AO ao, int idex, PetscTruth *hasIndex)
   int         low, high, mid;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao, AO_COOKIE);
-  PetscValidPointer(hasIndex);
+  PetscValidHeaderSpecific(ao, AO_COOKIE,1);
+  PetscValidPointer(hasIndex,3);
   aomap = (AO_Mapping *) ao->data;
   app   = aomap->app;
   /* Use bisection since the array is sorted */
@@ -224,8 +224,8 @@ int AOMappingHasPetscIndex(AO ao, int idex, PetscTruth *hasIndex)
   int         low, high, mid;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao, AO_COOKIE);
-  PetscValidPointer(hasIndex);
+  PetscValidHeaderSpecific(ao, AO_COOKIE,1);
+  PetscValidPointer(hasIndex,3);
   aomap = (AO_Mapping *) ao->data;
   petsc = aomap->petsc;
   /* Use bisection since the array is sorted */
@@ -286,7 +286,7 @@ int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[]
   int         ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(aoout);
+  PetscValidPointer(aoout,5);
   *aoout = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);

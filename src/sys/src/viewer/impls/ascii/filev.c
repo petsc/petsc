@@ -182,7 +182,7 @@ int PetscViewerASCIISetTab(PetscViewer viewer,int tabs)
   int               ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ascii->tab = tabs;
@@ -220,7 +220,7 @@ int PetscViewerASCIIPushTab(PetscViewer viewer)
   int               ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ascii->tab++;
@@ -258,7 +258,7 @@ int PetscViewerASCIIPopTab(PetscViewer viewer)
   PetscTruth        isascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     if (ascii->tab <= 0) SETERRQ(1,"More tabs popped than pushed");
@@ -297,7 +297,7 @@ int PetscViewerASCIIUseTabs(PetscViewer viewer,PetscTruth flg)
   int               ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     if (flg) {
@@ -348,7 +348,8 @@ int PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
   PetscTruth        isascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidCharPointer(format,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (!isascii) SETERRQ(1,"Not ASCII PetscViewer");
 
@@ -425,8 +426,8 @@ int PetscViewerSetFilename(PetscViewer viewer,const char name[])
   int ierr,(*f)(PetscViewer,const char[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  if (!name) SETERRQ(1,"You must pass in non-null string");
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidCharPointer(name,2);
   ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerSetFilename_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,name);CHKERRQ(ierr);
@@ -458,7 +459,7 @@ int PetscViewerGetFilename(PetscViewer viewer,char **name)
   int ierr,(*f)(PetscViewer,char **);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerGetFilename_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,name);CHKERRQ(ierr);
@@ -683,7 +684,8 @@ int PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],..
   PetscTruth        isascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidCharPointer(format,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (!isascii) SETERRQ(1,"Not ASCII PetscViewer");
 

@@ -7,7 +7,7 @@
 int DAGetOwnershipRange(DA da,int **lx,int **ly,int **lz)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   if (lx) *lx = da->lx;
   if (ly) *ly = da->ly;
   if (lz) *lz = da->lz;
@@ -248,7 +248,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   IS            to,from;
 
   PetscFunctionBegin;
-  PetscValidPointer(inra);
+  PetscValidPointer(inra,12);
   *inra = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);
@@ -808,7 +808,7 @@ int DAPrintHelp(DA da)
   int               ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
 
   comm = da->comm;
   if (!called) {
@@ -852,7 +852,8 @@ int DARefine(DA da,MPI_Comm comm,DA *daref)
   DA  da2;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(daref,3);
 
   if (DAXPeriodic(da->wrap) || da->interptype == DA_Q0){
     M = da->refine_x*da->M;
@@ -992,7 +993,7 @@ int DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
 int DASetLocalFunction(DA da,DALocalFunction1 lf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   da->lf    = lf;
   PetscFunctionReturn(0);
 }
@@ -1017,7 +1018,7 @@ int DASetLocalFunction(DA da,DALocalFunction1 lf)
 int DASetLocalFunctioni(DA da,int (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   da->lfi = lfi;
   PetscFunctionReturn(0);
 }
@@ -1028,7 +1029,7 @@ int DASetLocalFunctioni(DA da,int (*lfi)(DALocalInfo*,MatStencil*,void*,PetscSca
 int DASetLocalAdicFunction_Private(DA da,DALocalFunction1 ad_lf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   da->adic_lf = ad_lf;
   PetscFunctionReturn(0);
 }
@@ -1058,7 +1059,7 @@ M*/
 int DASetLocalAdicFunctioni_Private(DA da,int (*ad_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   da->adic_lfi = ad_lfi;
   PetscFunctionReturn(0);
 }
@@ -1088,7 +1089,7 @@ M*/
 int DASetLocalAdicMFFunctioni_Private(DA da,int (*admf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   da->adicmf_lfi = admf_lfi;
   PetscFunctionReturn(0);
 }
@@ -1118,7 +1119,7 @@ M*/
 int DASetLocalAdicMFFunction_Private(DA da,DALocalFunction1 ad_lf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   da->adicmf_lf = ad_lf;
   PetscFunctionReturn(0);
 }
@@ -1146,7 +1147,7 @@ int DASetLocalAdicMFFunction_Private(DA da,DALocalFunction1 ad_lf)
 int DASetLocalJacobian(DA da,DALocalFunction1 lj)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   da->lj    = lj;
   PetscFunctionReturn(0);
 }
@@ -1173,7 +1174,7 @@ int DASetLocalJacobian(DA da,DALocalFunction1 lj)
 int DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   if (lf)       *lf = da->lf;
   PetscFunctionReturn(0);
 }
@@ -1709,7 +1710,7 @@ int DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec v,Vec f,void *w)
 int DASetInterpolationType(DA da,DAInterpolationType ctype)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   da->interptype = ctype;
   PetscFunctionReturn(0);
 }

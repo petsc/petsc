@@ -24,7 +24,7 @@ int PetscViewerDestroy(PetscViewer viewer)
   int         ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   if (--viewer->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
@@ -71,7 +71,7 @@ int PetscViewerDestroy(PetscViewer viewer)
 int PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   *type = (PetscViewerType) viewer->type_name;
   PetscFunctionReturn(0);
 }

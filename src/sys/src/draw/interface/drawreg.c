@@ -102,8 +102,8 @@ int PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
   PetscTruth    flg=PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
-  PetscValidCharPointer(type);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidCharPointer(type,2);
 
   ierr = PetscTypeCompare((PetscObject)draw,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
@@ -254,7 +254,7 @@ int PetscDrawSetFromOptions(PetscDraw draw)
 #endif
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
 
   if (!PetscDrawList) SETERRQ(1,"No draw implementations registered");
   if (draw->type_name) {

@@ -77,7 +77,7 @@ int TSSetFromOptions(TS ts)
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ierr = PetscOptionsBegin(ts->comm, ts->prefix, "Time step options", "TS");                              CHKERRQ(ierr);
 
   /* Handle generic TS options */
@@ -234,9 +234,9 @@ int TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
-  PetscValidHeaderSpecific(X,VEC_COOKIE);
-  PetscCheckSameComm(ts,X);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(X,VEC_COOKIE,3);
+  PetscCheckSameComm(ts,1,X,3);
   if (ts->problem_type != TS_NONLINEAR) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"For TS_NONLINEAR only");
   }
@@ -248,8 +248,8 @@ int TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg
     PetscStackPop;
     ierr = PetscLogEventEnd(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
     /* make sure user returned a correct Jacobian and preconditioner */
-    PetscValidHeaderSpecific(*A,MAT_COOKIE);
-    PetscValidHeaderSpecific(*B,MAT_COOKIE);  
+    PetscValidHeaderSpecific(*A,MAT_COOKIE,4);
+    PetscValidHeaderSpecific(*B,MAT_COOKIE,5);  
   } else {
     ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -274,9 +274,9 @@ int TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
-  PetscValidHeader(x);
-  PetscValidHeader(y);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,3);
 
   ierr = PetscLogEventBegin(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
   if (ts->ops->rhsfunction) {
@@ -335,7 +335,7 @@ int TSSetRHSFunction(TS ts,int (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
 
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   if (ts->problem_type == TS_LINEAR) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot set function for linear problem");
   }
@@ -393,11 +393,11 @@ $     func (TS ts,PetscReal t,Mat *A,Mat *B,int *flag,void *ctx);
 int TSSetRHSMatrix(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
-  PetscValidHeaderSpecific(A,MAT_COOKIE);
-  PetscValidHeaderSpecific(B,MAT_COOKIE);
-  PetscCheckSameComm(ts,A);
-  PetscCheckSameComm(ts,B);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(B,MAT_COOKIE,3);
+  PetscCheckSameComm(ts,1,A,2);
+  PetscCheckSameComm(ts,1,B,3);
   if (ts->problem_type == TS_NONLINEAR) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Not for nonlinear problems; use TSSetRHSJacobian()");
   }
@@ -458,11 +458,11 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
 int TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
-  PetscValidHeaderSpecific(A,MAT_COOKIE);
-  PetscValidHeaderSpecific(B,MAT_COOKIE);
-  PetscCheckSameComm(ts,A);
-  PetscCheckSameComm(ts,B);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(B,MAT_COOKIE,3);
+  PetscCheckSameComm(ts,1,A,2);
+  PetscCheckSameComm(ts,1,B,3);
   if (ts->problem_type != TS_NONLINEAR) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Not for linear problems; use TSSetRHSMatrix()");
   }
@@ -487,9 +487,9 @@ int TSComputeRHSBoundaryConditions(TS ts,PetscReal t,Vec x)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
-  PetscValidHeader(x);
-  PetscCheckSameComm(ts,x);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,3);
+  PetscCheckSameComm(ts,1,x,3);
 
   if (ts->ops->rhsbc) {
     PetscStackPush("TS user boundary condition function");
@@ -530,7 +530,7 @@ int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,PetscReal,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
 
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   if (ts->problem_type != TS_LINEAR) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"For linear problems only");
   }
@@ -577,10 +577,10 @@ int TSView(TS ts,PetscViewer viewer)
   PetscTruth isascii,isstring;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ts->comm);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscCheckSameComm(ts,viewer);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscCheckSameComm(ts,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
@@ -636,7 +636,7 @@ int TSView(TS ts,PetscViewer viewer)
 int TSSetApplicationContext(TS ts,void *usrP)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   ts->user = usrP;
   PetscFunctionReturn(0);
 }
@@ -664,7 +664,7 @@ int TSSetApplicationContext(TS ts,void *usrP)
 int TSGetApplicationContext(TS ts,void **usrP)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   *usrP = ts->user;
   PetscFunctionReturn(0);
 }
@@ -689,7 +689,8 @@ int TSGetApplicationContext(TS ts,void **usrP)
 int TSGetTimeStepNumber(TS ts,int* iter)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidIntPointer(iter,2);
   *iter = ts->steps;
   PetscFunctionReturn(0);
 }
@@ -716,7 +717,7 @@ int TSGetTimeStepNumber(TS ts,int* iter)
 int TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   ts->time_step         = time_step;
   ts->initial_time_step = time_step;
   ts->ptime             = initial_time;
@@ -744,7 +745,7 @@ int TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
 int TSSetTimeStep(TS ts,PetscReal time_step)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   ts->time_step = time_step;
   PetscFunctionReturn(0);
 }
@@ -771,7 +772,8 @@ int TSSetTimeStep(TS ts,PetscReal time_step)
 int TSGetTimeStep(TS ts,PetscReal* dt)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidDoublePointer(dt,2);
   *dt = ts->time_step;
   PetscFunctionReturn(0);
 }
@@ -801,7 +803,8 @@ int TSGetTimeStep(TS ts,PetscReal* dt)
 int TSGetSolution(TS ts,Vec *v)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidPointer(v,2);
   *v = ts->vec_sol_always;
   PetscFunctionReturn(0);
 }
@@ -830,7 +833,7 @@ int TSGetSolution(TS ts,Vec *v)
 @*/
 int TSSetProblemType(TS ts, TSProblemType type) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->problem_type = type;
   PetscFunctionReturn(0);
 }
@@ -860,8 +863,8 @@ int TSSetProblemType(TS ts, TSProblemType type) {
 @*/
 int TSGetProblemType(TS ts, TSProblemType *type) {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
-  PetscValidPointer(type);
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
+  PetscValidIntPointer(type,2);
   *type = ts->problem_type;
   PetscFunctionReturn(0);
 }
@@ -895,7 +898,7 @@ int TSSetUp(TS ts)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   if (!ts->vec_sol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
   if (!ts->type_name) {
     ierr = TSSetType(ts,TS_EULER);CHKERRQ(ierr);
@@ -927,7 +930,7 @@ int TSDestroy(TS ts)
   int ierr,i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   if (--ts->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
@@ -975,7 +978,8 @@ int TSDestroy(TS ts)
 int TSGetSNES(TS ts,SNES *snes)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidPointer(snes,2);
   if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_ERR_ARG_WRONG,"Nonlinear only; use TSGetKSP()");
   *snes = ts->snes;
   PetscFunctionReturn(0);
@@ -1010,7 +1014,8 @@ int TSGetSNES(TS ts,SNES *snes)
 int TSGetKSP(TS ts,KSP *ksp)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidPointer(ksp,2);
   if (ts->problem_type != TS_LINEAR) SETERRQ(PETSC_ERR_ARG_WRONG,"Linear only; use TSGetSNES()");
   *ksp = ts->ksp;
   PetscFunctionReturn(0);
@@ -1038,13 +1043,13 @@ int TSGetKSP(TS ts,KSP *ksp)
 int TSGetDuration(TS ts, int *maxsteps, PetscReal *maxtime)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   if (maxsteps != PETSC_NULL) {
-    PetscValidIntPointer(maxsteps);
+    PetscValidIntPointer(maxsteps,2);
     *maxsteps = ts->max_steps;
   }
   if (maxtime  != PETSC_NULL) {
-    PetscValidScalarPointer(maxtime);
+    PetscValidScalarPointer(maxtime,3);
     *maxtime  = ts->max_time;
   }
   PetscFunctionReturn(0);
@@ -1077,7 +1082,7 @@ int TSGetDuration(TS ts, int *maxsteps, PetscReal *maxtime)
 int TSSetDuration(TS ts,int maxsteps,PetscReal maxtime)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   ts->max_steps = maxsteps;
   ts->max_time  = maxtime;
   PetscFunctionReturn(0);
@@ -1102,7 +1107,8 @@ int TSSetDuration(TS ts,int maxsteps,PetscReal maxtime)
 int TSSetSolution(TS ts,Vec x)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   ts->vec_sol        = ts->vec_sol_always = x;
   PetscFunctionReturn(0);
 }
@@ -1132,7 +1138,7 @@ int TSSetSolution(TS ts,Vec x)
 int TSSetRhsBC(TS ts, int (*func)(TS, Vec, void *))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->ops->applyrhsbc = func;
   PetscFunctionReturn(0);
 }
@@ -1185,7 +1191,7 @@ int TSDefaultRhsBC(TS ts,  Vec rhs, void *ctx)
 int TSSetSystemMatrixBC(TS ts, int (*func)(TS, Mat, Mat, void *))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->ops->applymatrixbc = func;
   PetscFunctionReturn(0);
 }
@@ -1240,7 +1246,7 @@ int TSDefaultSystemMatrixBC(TS ts, Mat A, Mat B, void *ctx)
 int TSSetSolutionBC(TS ts, int (*func)(TS, Vec, void *))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->ops->applysolbc = func;
   PetscFunctionReturn(0);
 }
@@ -1290,7 +1296,7 @@ int TSDefaultSolutionBC(TS ts, Vec sol, void *ctx)
 int TSSetPreStep(TS ts, int (*func)(TS))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->ops->prestep = func;
   PetscFunctionReturn(0);
 }
@@ -1341,7 +1347,7 @@ int TSDefaultPreStep(TS ts)
 int TSSetUpdate(TS ts, int (*func)(TS, PetscReal, PetscReal *))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->ops->update = func;
   PetscFunctionReturn(0);
 }
@@ -1392,7 +1398,7 @@ int TSDefaultUpdate(TS ts, PetscReal t, PetscReal *dt)
 int TSSetPostStep(TS ts, int (*func)(TS))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->ops->poststep = func;
   PetscFunctionReturn(0);
 }
@@ -1457,7 +1463,7 @@ $    int func(TS ts,int steps,PetscReal time,Vec x,void *mctx)
 int TSSetMonitor(TS ts,int (*monitor)(TS,int,PetscReal,Vec,void*),void *mctx,int (*mdestroy)(void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   if (ts->numbermonitors >= MAXTSMONITORS) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   }
@@ -1489,7 +1495,7 @@ int TSSetMonitor(TS ts,int (*monitor)(TS,int,PetscReal,Vec,void*),void *mctx,int
 int TSClearMonitor(TS ts)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   ts->numbermonitors = 0;
   PetscFunctionReturn(0);
 }
@@ -1530,7 +1536,7 @@ int TSStep(TS ts,int *steps,PetscReal *ptime)
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   if (!ts->setupcalled) {
     ierr = TSSetUp(ts);                                                                                   CHKERRQ(ierr);
   }
@@ -1690,7 +1696,8 @@ int TSLGMonitorDestroy(PetscDrawLG drawlg)
 int TSGetTime(TS ts,PetscReal* t)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidDoublePointer(t,2);
   *t = ts->ptime;
   PetscFunctionReturn(0);
 }
@@ -1726,7 +1733,7 @@ int TSSetOptionsPrefix(TS ts,const char prefix[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)ts,prefix);CHKERRQ(ierr);
   switch(ts->problem_type) {
     case TS_NONLINEAR:
@@ -1771,7 +1778,7 @@ int TSAppendOptionsPrefix(TS ts,const char prefix[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)ts,prefix);CHKERRQ(ierr);
   switch(ts->problem_type) {
     case TS_NONLINEAR:
@@ -1814,7 +1821,8 @@ int TSGetOptionsPrefix(TS ts,char *prefix[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidPointer(prefix,2);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)ts,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1848,7 +1856,7 @@ int TSGetOptionsPrefix(TS ts,char *prefix[])
 int TSGetRHSMatrix(TS ts,Mat *A,Mat *M,void **ctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   if (A)   *A = ts->A;
   if (M)   *M = ts->B;
   if (ctx) *ctx = ts->jacP;

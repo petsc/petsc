@@ -883,7 +883,7 @@ int AODataCreateBasic(MPI_Comm comm,AOData *aoout)
   int       ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(aoout);
+  PetscValidPointer(aoout,2);
   *aoout = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);

@@ -119,7 +119,7 @@ int PCICCSetMatOrdering(PC pc,MatOrderingType ordering)
   int ierr,(*f)(PC,MatOrderingType);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetMatOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
@@ -151,7 +151,7 @@ int PCICCSetLevels(PC pc,int levels)
   int ierr,(*f)(PC,int);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"negative levels");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetLevels_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -192,7 +192,7 @@ int PCICCSetFill(PC pc,PetscReal fill)
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less than 1.0");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetFill_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -230,7 +230,7 @@ int PCICCSetDamping(PC pc,PetscReal damping)
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetDamping_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,damping);CHKERRQ(ierr);
@@ -267,7 +267,7 @@ int PCICCSetShift(PC pc,PetscTruth shift)
   int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetShift_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,shift);CHKERRQ(ierr);
@@ -300,7 +300,7 @@ int PCICCSetZeroPivot(PC pc,PetscReal zero)
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetZeroPivot_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,zero);CHKERRQ(ierr);
@@ -452,6 +452,34 @@ static int PCView_ICC(PC pc,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
+
+/*MC
+     PCICC - Incomplete Cholesky factorization preconditioners.
+
+   Options Database Keys:
++  -pc_icc_levels <k> - number of levels of fill for ICC(k)
+.  -pc_icc_in_place - only for ICC(0) with natural ordering, reuses the space of the matrix for
+                      its factorization (overwrites original matrix)
+.  -pc_icc_damping - add damping to diagonal to prevent zero (or very small) pivots
+.  -pc_icc_shift - apply Manteuffel shift to diagonal to force positive definite preconditioner
+.  -pc_icc_zeropivot <tol> - set tolerance for what is considered a zero pivot
+.  -pc_icc_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
+-  -pc_icc_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
+
+   Level: beginner
+
+  Concepts: incomplete Cholesky factorization
+
+   Notes: Only implemented for some matrix formats. Not implemented in parallel
+
+          For BAIJ matrices this implements a point block ICC.
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
+           PCICCSetSetZeroPivot(), PCICCSetDamping(), PCICCSetShift(), 
+           PCICCSetFill(), PCICCSetMatOrdering(), PCICCSetReuseOrdering(), 
+           PCICCSetLevels()
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

@@ -34,7 +34,8 @@ int PetscDrawLineGetWidth(PetscDraw draw,PetscReal *width)
   PetscTruth isdrawnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidScalarPointer(width,2);
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) PetscFunctionReturn(0);
   if (!draw->ops->linegetwidth) SETERRQ(PETSC_ERR_SUP," ");

@@ -225,7 +225,7 @@ int MatSNESMFDefaultSetUmin(Mat A,PetscReal umin)
   int ierr,(*f)(Mat,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFDefaultSetUmin_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,umin);CHKERRQ(ierr);

@@ -665,7 +665,8 @@ int PCHYPRESetType(PC pc,const char name[])
   int ierr,(*f)(PC,const char[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidCharPointer(name,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCHYPRESetType_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,name);CHKERRQ(ierr);
@@ -678,7 +679,7 @@ int PCHYPRESetType(PC pc,const char name[])
 
    Options Database Keys:
 +   -pc_hypre_type - One of pilut, parasails, boomerAMG, euclid
--   Too many others to list, run with -pc_type hypre -pc_hypre_type XXX to see options for the XXX
+-   Too many others to list, run with -pc_type hypre -pc_hypre_type XXX -help to see options for the XXX
           preconditioner
  
    Level: intermediate

@@ -49,7 +49,7 @@ int VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   /* determine maximum message to arrive */
   ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ int VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
     ierr = MPI_Send(xarray,xin->n,MPIU_SCALAR,0,tag,xin->comm);CHKERRQ(ierr);
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -183,7 +183,7 @@ int VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   FILE        *file;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
 
   /* determine maximum message to arrive */
@@ -217,7 +217,7 @@ int VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     /* send values */
     ierr = MPI_Send(xarray,xin->n,MPIU_SCALAR,0,tag,xin->comm);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -237,7 +237,7 @@ int VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
 
-  ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
@@ -284,7 +284,7 @@ int VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
   }
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -305,7 +305,7 @@ int VecView_MPI_Draw(Vec xin,PetscViewer viewer)
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
-  ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
   xmin = 1.e20; xmax = -1.e20;
   for (i=0; i<xin->n; i++) {
@@ -361,7 +361,7 @@ int VecView_MPI_Draw(Vec xin,PetscViewer viewer)
   }
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -374,7 +374,7 @@ int VecView_MPI_Socket(Vec xin,PetscViewer viewer)
   PetscScalar *xx,*xarray;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
   if (!rank) {
@@ -390,7 +390,7 @@ int VecView_MPI_Socket(Vec xin,PetscViewer viewer)
   } else {
     ierr = MPI_Gatherv(xarray,xin->n,MPIU_REAL,0,0,0,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -403,7 +403,7 @@ int VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
   PetscScalar *xx,*xarray;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
   if (!rank) {
@@ -422,7 +422,7 @@ int VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
   } else {
     ierr = MPI_Gatherv(xarray,xin->n,MPIU_REAL,0,0,0,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 #else
   PetscFunctionBegin;
@@ -441,7 +441,7 @@ int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   ierr = PetscViewerNetcdfGetID(v,&ncid); CHKERRQ(ierr);
   if (ncid < 0) SETERRQ(1,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
   /* define dimensions */
@@ -453,7 +453,7 @@ int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
   /* store the vector */
   ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL); CHKERRQ(ierr);
   ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const size_t*)&xstart,(const size_t*)&n,xarray); CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
 #else 
     PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
 #endif
@@ -488,7 +488,7 @@ int VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
   ierr = MPI_Comm_rank(X->comm, &rank); CHKERRQ(ierr);
   ierr = MPI_Comm_size(X->comm, &size); CHKERRQ(ierr);
 
-  ierr = VecGetArrayFast(X, &x); CHKERRQ(ierr);
+  ierr = VecGetArray(X, &x); CHKERRQ(ierr);
 
   for (k = 0; k < bs; k++) {
     for (i = 0; i < n; i++) {
@@ -512,7 +512,7 @@ int VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
       ierr = MPI_Send(xlf, n, MPI_FLOAT, 0, tag, X->comm); CHKERRQ(ierr);
     }
   }
-  ierr = VecRestoreArrayFast(X, &x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X, &x); CHKERRQ(ierr);
   ierr = PetscFree(xlf); CHKERRQ(ierr);
   ierr = PetscFree(xf); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -610,7 +610,7 @@ int VecSetValues_MPI(Vec xin,int ni,const int ix[],const PetscScalar y[],InsertM
    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
   }
 #endif
-  ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   xin->stash.insertmode = addv;
 
   if (addv == INSERT_VALUES) {
@@ -638,7 +638,7 @@ int VecSetValues_MPI(Vec xin,int ni,const int ix[],const PetscScalar y[],InsertM
       }
     }
   }
-  ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -651,7 +651,7 @@ int VecSetValuesBlocked_MPI(Vec xin,int ni,const int ix[],const PetscScalar yin[
   PetscScalar   *xx,*y = (PetscScalar*)yin;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
 #if defined(PETSC_USE_BOPT_g)
   if (xin->stash.insertmode == INSERT_VALUES && addv == ADD_VALUES) { 
    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
@@ -693,7 +693,7 @@ int VecSetValuesBlocked_MPI(Vec xin,int ni,const int ix[],const PetscScalar yin[
       y += bs;
     }
   }
-  ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -748,7 +748,7 @@ int VecAssemblyEnd_MPI(Vec vec)
 
   PetscFunctionBegin;
   if (!vec->stash.donotstash) {
-    ierr = VecGetArrayFast(vec,&xarray);CHKERRQ(ierr); 
+    ierr = VecGetArray(vec,&xarray);CHKERRQ(ierr); 
     base = vec->map->range[vec->stash.rank];
     bs   = vec->bs;
 
@@ -783,7 +783,7 @@ int VecAssemblyEnd_MPI(Vec vec)
       }
     }
     ierr = VecStashScatterEnd_Private(&vec->bstash);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(vec,&xarray);CHKERRQ(ierr); 
+    ierr = VecRestoreArray(vec,&xarray);CHKERRQ(ierr); 
   }
   vec->stash.insertmode = NOT_SET_VALUES;
   PetscFunctionReturn(0);

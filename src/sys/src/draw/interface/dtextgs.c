@@ -31,7 +31,7 @@ int PetscDrawStringGetSize(PetscDraw draw,PetscReal *width,PetscReal *height)
   PetscTruth isnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   if (!draw->ops->stringgetsize) SETERRQ1(1,"This draw object %s does not support getting string size",draw->type_name);

@@ -832,11 +832,27 @@ int TSPVodeSetExactFinalTime(TS ts,PetscTruth ft)
 }
 
 /* -------------------------------------------------------------------------------------------*/
+/*MC
+      TS_PVode - ODE solver using the LLNL CVODE/PVODE package (now called SUNDIALS)
 
-/*
+   Options Database:
++    -ts_pvode_type <bdf,adams>
+.    -ts_pvode_gramschmidt_type <modified, classical> - type of orthogonalization inside GMRES
+.    -ts_pvode_atol <tol> - Absolute tolerance for convergence
+.    -ts_pvode_rtol <tol> - Relative tolerance for convergence
+.    -ts_pvode_linear_tolerance <tol> 
+.    -ts_pvode_gmres_restart <restart> - Number of GMRES orthogonalization directions
+-    -ts_pvode_not_exact_final_time -Allow PVODE to stop near the final time, not exactly on it
+
+    Notes: This uses its own nonlinear solver and Krylov method so PETSc SNES and KSP options do not apply
+           only PETSc PC options
 
     Contributed by: Liyang Xu
-*/
+
+.seealso:  TSCreate(), TS, TSSetType(), TSPVodeSetType(), TSPVodeSetGMRESRestart(), TSPVodeSetLinearTolerance(),
+           TSPVodeSetGramSchmidtType(), TSPVodeSetTolerance(), TSPVodeGetPC(), TSPVodeGetIterations(), TSPVodeSetExactFinalTime()
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_PVode"

@@ -25,7 +25,7 @@ int PetscDrawClear(PetscDraw draw)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (draw->ops->clear) {
     ierr = (*draw->ops->clear)(draw);CHKERRQ(ierr);
   }
@@ -51,7 +51,7 @@ int PetscDrawBOP(PetscDraw draw)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (draw->ops->beginpage) {
     ierr = (*draw->ops->beginpage)(draw);CHKERRQ(ierr);
   }
@@ -76,7 +76,7 @@ int PetscDrawEOP(PetscDraw draw)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (draw->ops->endpage) {
     ierr =  (*draw->ops->endpage)(draw);CHKERRQ(ierr);
   }

@@ -24,7 +24,7 @@ int PetscDrawFlush(PetscDraw draw)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (draw->ops->flush) {
     ierr = (*draw->ops->flush)(draw);CHKERRQ(ierr);
   }

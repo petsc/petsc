@@ -130,7 +130,7 @@ int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve_LS"
-int SNESSolve_LS(SNES snes,int *outits)
+int SNESSolve_LS(SNES snes)
 {
   SNES_LS      *neP = (SNES_LS*)snes->data;
   int          maxits,i,ierr,lits,lsfail;
@@ -161,7 +161,7 @@ int SNESSolve_LS(SNES snes,int *outits)
   SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
 
-  if (fnorm < snes->atol) {*outits = 0; snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
+  if (fnorm < snes->atol) {snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -238,12 +238,8 @@ int SNESSolve_LS(SNES snes,int *outits)
   snes->vec_func_always = snes->vec_func;
   if (i == maxits) {
     PetscLogInfo(snes,"SNESSolve_LS: Maximum number of iterations has been reached: %d\n",maxits);
-    i--;
     snes->reason = SNES_DIVERGED_MAX_IT;
   }
-  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  *outits = i+1;
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -1024,17 +1020,24 @@ static int SNESSetFromOptions_LS(SNES snes)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-/*
-   SNESCreate_LS - Creates a nonlinear solver context for the SNESLS method,
-   SNES_LS, and sets this as the private data within the generic nonlinear solver
-   context, SNES, that was created within SNESCreate().
+/*MC
+      SNESLS - Newton based nonlinear solver that uses a line search
 
+   Options Database:
++   -snes_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
+.   -snes_ls_alpha <alpha> - Sets alpha
+.   -snes_ls_maxstep <max> - Sets maxstep
+-   -snes_ls_steptol <steptol> - Sets steptol, this is the minimum step size that the line search code
+                   will accept; min p[i]/x[i] < steptol. The -snes_stol <stol> is the minimum step length
+                   the default convergence test will use and is based on 2-norm(p) < stol*2-norm(x)
 
-   Input Parameter:
-.  snes - the SNES context
+    Notes: This is the default nonlinear solver in SNES
 
-   Application Interface Routine: SNESCreate()
- */
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESTR, SNESSetLineSearch(), 
+           SNESSetLineSearchCheck(), SNESNoLineSearch(), SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
+          SNESSetLineSearch(), SNESNoLineSearchNoNorms()
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_LS"

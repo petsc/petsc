@@ -44,15 +44,15 @@ int SNESView(SNES snes,PetscViewer viewer)
 {
   SNES_KSP_EW_ConvCtx *kctx;
   int                 ierr;
-  KSP                ksp;
+  KSP                 ksp;
   char                *type;
   PetscTruth          isascii,isstring;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(snes->comm); 
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscCheckSameComm(snes,viewer);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscCheckSameComm(snes,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
@@ -183,7 +183,7 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES))
 @*/
 int SNESSetFromOptions(SNES snes)
 {
-  KSP                ksp;
+  KSP                 ksp;
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
   PetscTruth          flg;
   int                 ierr, i;
@@ -191,7 +191,7 @@ int SNESSetFromOptions(SNES snes)
   char                type[256];
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
 
   ierr = PetscOptionsBegin(snes->comm,snes->prefix,"Nonlinear solver (SNES) options","SNES");CHKERRQ(ierr); 
     if (snes->type_name) {
@@ -290,7 +290,7 @@ int SNESSetFromOptions(SNES snes)
 int SNESSetApplicationContext(SNES snes,void *usrP)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   snes->user		= usrP;
   PetscFunctionReturn(0);
 }
@@ -318,7 +318,7 @@ int SNESSetApplicationContext(SNES snes,void *usrP)
 int SNESGetApplicationContext(SNES snes,void **usrP)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   *usrP = snes->user;
   PetscFunctionReturn(0);
 }
@@ -358,8 +358,8 @@ int SNESGetApplicationContext(SNES snes,void **usrP)
 int SNESGetIterationNumber(SNES snes,int* iter)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidIntPointer(iter);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidIntPointer(iter,2);
   *iter = snes->iter;
   PetscFunctionReturn(0);
 }
@@ -387,8 +387,8 @@ int SNESGetIterationNumber(SNES snes,int* iter)
 int SNESGetFunctionNorm(SNES snes,PetscScalar *fnorm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidScalarPointer(fnorm);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidScalarPointer(fnorm,2);
   *fnorm = snes->norm;
   PetscFunctionReturn(0);
 }
@@ -417,8 +417,8 @@ int SNESGetFunctionNorm(SNES snes,PetscScalar *fnorm)
 int SNESGetNumberUnsuccessfulSteps(SNES snes,int* nfails)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidIntPointer(nfails);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidIntPointer(nfails,2);
   *nfails = snes->numFailures;
   PetscFunctionReturn(0);
 }
@@ -442,7 +442,7 @@ int SNESGetNumberUnsuccessfulSteps(SNES snes,int* nfails)
 int SNESSetMaximumUnsuccessfulSteps(SNES snes, int maxFails)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   snes->maxFailures = maxFails;
   PetscFunctionReturn(0);
 }
@@ -468,8 +468,8 @@ int SNESSetMaximumUnsuccessfulSteps(SNES snes, int maxFails)
 int SNESGetMaximumUnsuccessfulSteps(SNES snes, int *maxFails)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidIntPointer(maxFails);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidIntPointer(maxFails,2);
   *maxFails = snes->maxFailures;
   PetscFunctionReturn(0);
 }
@@ -498,8 +498,8 @@ int SNESGetMaximumUnsuccessfulSteps(SNES snes, int *maxFails)
 int SNESGetNumberLinearIterations(SNES snes,int* lits)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidIntPointer(lits);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidIntPointer(lits,2);
   *lits = snes->linear_its;
   PetscFunctionReturn(0);
 }
@@ -531,7 +531,8 @@ int SNESGetNumberLinearIterations(SNES snes,int* lits)
 int SNESGetKSP(SNES snes,KSP *ksp)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidPointer(ksp,2);
   *ksp = snes->ksp;
   PetscFunctionReturn(0);
 }
@@ -596,7 +597,7 @@ int SNESCreate(MPI_Comm comm,SNES *outsnes)
   SNES_KSP_EW_ConvCtx *kctx;
 
   PetscFunctionBegin;
-  PetscValidPointer(outsnes);
+  PetscValidPointer(outsnes,1);
   *outsnes = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = SNESInitializePackage(PETSC_NULL);                                                               CHKERRQ(ierr);
@@ -692,9 +693,9 @@ $      f'(x) x = -f(x),
 int SNESSetFunction(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidHeaderSpecific(r,VEC_COOKIE);
-  PetscCheckSameComm(snes,r);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(r,VEC_COOKIE,2);
+  PetscCheckSameComm(snes,1,r,2);
 
   snes->computefunction     = func; 
   snes->vec_func            = snes->vec_func_always = r;
@@ -733,11 +734,11 @@ int SNESComputeFunction(SNES snes,Vec x,Vec y)
   int    ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscValidHeaderSpecific(y,VEC_COOKIE);
-  PetscCheckSameComm(snes,x);
-  PetscCheckSameComm(snes,y);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,3);
+  PetscCheckSameComm(snes,1,x,2);
+  PetscCheckSameComm(snes,1,y,3);
 
   ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   PetscStackPush("SNES user function");
@@ -783,9 +784,10 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
   int    ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidHeaderSpecific(X,VEC_COOKIE);
-  PetscCheckSameComm(snes,X);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(X,VEC_COOKIE,2);
+  PetscValidPointer(flg,5);
+  PetscCheckSameComm(snes,1,X,2);
   if (!snes->computejacobian) PetscFunctionReturn(0);
   ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
   *flg = DIFFERENT_NONZERO_PATTERN;
@@ -794,8 +796,8 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
   PetscStackPop;
   ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
   /* make sure user returned a correct Jacobian and preconditioner */
-  PetscValidHeaderSpecific(*A,MAT_COOKIE);
-  PetscValidHeaderSpecific(*B,MAT_COOKIE);  
+  PetscValidHeaderSpecific(*A,MAT_COOKIE,3);
+  PetscValidHeaderSpecific(*B,MAT_COOKIE,4);  
   PetscFunctionReturn(0);
 }
 
@@ -846,11 +848,11 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStru
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (A) PetscValidHeaderSpecific(A,MAT_COOKIE);
-  if (B) PetscValidHeaderSpecific(B,MAT_COOKIE);
-  if (A) PetscCheckSameComm(snes,A);
-  if (B) PetscCheckSameComm(snes,B);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  if (A) PetscValidHeaderSpecific(A,MAT_COOKIE,2);
+  if (B) PetscValidHeaderSpecific(B,MAT_COOKIE,3);
+  if (A) PetscCheckSameComm(snes,1,A,2);
+  if (B) PetscCheckSameComm(snes,1,B,2);
   if (func) snes->computejacobian = func;
   if (ctx)  snes->jacP            = ctx;
   if (A) {
@@ -890,7 +892,7 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStru
 int SNESGetJacobian(SNES snes,Mat *A,Mat *B,void **ctx,int (**func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (A)    *A    = snes->jacobian;
   if (B)    *B    = snes->jacobian_pre;
   if (ctx)  *ctx  = snes->jacP;
@@ -932,9 +934,9 @@ int SNESSetUp(SNES snes,Vec x)
   PetscTruth flg, iseqtr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscCheckSameComm(snes,x);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscCheckSameComm(snes,1,x,2);
   snes->vec_sol = snes->vec_sol_always = x;
 
   ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_operator",&flg);CHKERRQ(ierr); 
@@ -1028,7 +1030,7 @@ int SNESDestroy(SNES snes)
   int i,ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (--snes->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
@@ -1088,7 +1090,7 @@ int SNESDestroy(SNES snes)
 int SNESSetTolerances(SNES snes,PetscReal atol,PetscReal rtol,PetscReal stol,int maxit,int maxf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (atol != PETSC_DEFAULT)  snes->atol      = atol;
   if (rtol != PETSC_DEFAULT)  snes->rtol      = rtol;
   if (stol != PETSC_DEFAULT)  snes->xtol      = stol;
@@ -1125,7 +1127,7 @@ int SNESSetTolerances(SNES snes,PetscReal atol,PetscReal rtol,PetscReal stol,int
 int SNESGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,PetscReal *stol,int *maxit,int *maxf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (atol)  *atol  = snes->atol;
   if (rtol)  *rtol  = snes->rtol;
   if (stol)  *stol  = snes->xtol;
@@ -1157,7 +1159,7 @@ int SNESGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,PetscReal *stol,
 int SNESSetTrustRegionTolerance(SNES snes,PetscReal tol)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   snes->deltatol = tol;
   PetscFunctionReturn(0);
 }
@@ -1174,7 +1176,7 @@ int SNESLGMonitor(SNES snes,int it,PetscReal norm,void *ctx)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   ierr = KSPLGMonitor((KSP)snes,it,norm,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1252,7 +1254,7 @@ _    -snes_cancelmonitors - cancels all monitors that have
 int SNESSetMonitor(SNES snes,int (*func)(SNES,int,PetscReal,void*),void *mctx,int (*monitordestroy)(void *))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (snes->numbermonitors >= MAXSNESMONITORS) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   }
@@ -1290,7 +1292,7 @@ int SNESSetMonitor(SNES snes,int (*func)(SNES,int,PetscReal,void*),void *mctx,in
 int SNESClearMonitor(SNES snes)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   snes->numbermonitors = 0;
   PetscFunctionReturn(0);
 }
@@ -1328,7 +1330,7 @@ $     int func (SNES snes,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConver
 int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void *cctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   (snes)->converged = func;
   (snes)->cnvP      = cctx;
   PetscFunctionReturn(0);
@@ -1359,7 +1361,8 @@ int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,PetscReal,PetscReal,PetscR
 int SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidPointer(reason,2);
   *reason = snes->reason;
   PetscFunctionReturn(0);
 }
@@ -1397,8 +1400,8 @@ int SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
 int SNESSetConvergenceHistory(SNES snes,PetscReal a[],int *its,int na,PetscTruth reset)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (na) PetscValidScalarPointer(a);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  if (na) PetscValidScalarPointer(a,2);
   snes->conv_hist       = a;
   snes->conv_hist_its   = its;
   snes->conv_hist_max   = na;
@@ -1440,7 +1443,7 @@ $   call SNESGetConvergenceHistory(SNES snes, integer na, integer ierr)
 int SNESGetConvergenceHistory(SNES snes,PetscReal *a[],int *its[],int *na)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (a)   *a   = snes->conv_hist;
   if (its) *its = snes->conv_hist_its;
   if (na) *na   = snes->conv_hist_len;
@@ -1473,7 +1476,7 @@ int SNESGetConvergenceHistory(SNES snes,PetscReal *a[],int *its[],int *na)
 int SNESSetRhsBC(SNES snes, int (*func)(SNES, Vec, void *))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes, SNES_COOKIE);
+  PetscValidHeaderSpecific(snes, SNES_COOKIE,1);
   snes->applyrhsbc = func;
   PetscFunctionReturn(0);
 }
@@ -1527,7 +1530,7 @@ int SNESDefaultRhsBC(SNES snes, Vec rhs, void *ctx)
 int SNESSetSolutionBC(SNES snes, int (*func)(SNES, Vec, void *))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes, SNES_COOKIE);
+  PetscValidHeaderSpecific(snes, SNES_COOKIE,1);
   snes->applysolbc = func;
   PetscFunctionReturn(0);
 }
@@ -1580,7 +1583,7 @@ int SNESDefaultSolutionBC(SNES snes, Vec sol, void *ctx)
 int SNESSetUpdate(SNES snes, int (*func)(SNES, int))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes, SNES_COOKIE);
+  PetscValidHeaderSpecific(snes, SNES_COOKIE,1);
   snes->update = func;
   PetscFunctionReturn(0);
 }
@@ -1638,9 +1641,9 @@ int SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal *delta,Pets
   int         ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidHeaderSpecific(y,VEC_COOKIE);
-  PetscCheckSameComm(snes,y);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,2);
+  PetscCheckSameComm(snes,1,y,2);
 
   ierr = VecNorm(y,NORM_2,&nrm);CHKERRQ(ierr);
   if (nrm > *delta) {
@@ -1668,9 +1671,6 @@ int SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal *delta,Pets
 +  snes - the SNES context
 -  x - the solution vector
 
-   Output Parameter:
-.  its - number of iterations until termination
-
    Notes:
    The user should initialize the vector,x, with the initial guess
    for the nonlinear solve prior to calling SNESSolve.  In particular,
@@ -1683,16 +1683,15 @@ int SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal *delta,Pets
 
 .seealso: SNESCreate(), SNESDestroy()
 @*/
-int SNESSolve(SNES snes,Vec x,int *its)
+int SNESSolve(SNES snes,Vec x)
 {
   int        ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscCheckSameComm(snes,x);
-  PetscValidIntPointer(its);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscCheckSameComm(snes,1,x,2);
   if (!snes->solve) SETERRQ(1,"SNESSetType() or SNESSetFromOptions() must be called before SNESSolve()");
 
   if (!snes->setupcalled) {ierr = SNESSetUp(snes,x);CHKERRQ(ierr);}
@@ -1700,7 +1699,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
   if (snes->conv_hist_reset == PETSC_TRUE) snes->conv_hist_len = 0;
   ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
-  ierr = (*(snes)->solve)(snes,its);CHKERRQ(ierr);
+  ierr = (*(snes)->solve)(snes);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(snes->prefix,"-snes_view",&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) { ierr = SNESView(snes,PETSC_VIEWER_STDOUT_(snes->comm));CHKERRQ(ierr); }
@@ -1757,8 +1756,8 @@ int SNESSetType(SNES snes,const SNESType type)
   PetscTruth match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidCharPointer(type);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidCharPointer(type,2);
 
   ierr = PetscTypeCompare((PetscObject)snes,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
@@ -1832,7 +1831,8 @@ int SNESRegisterDestroy(void)
 int SNESGetType(SNES snes,SNESType *type)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidPointer(type,2);
   *type = snes->type_name;
   PetscFunctionReturn(0);
 }
@@ -1860,7 +1860,8 @@ int SNESGetType(SNES snes,SNESType *type)
 int SNESGetSolution(SNES snes,Vec *x)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidPointer(x,2);
   *x = snes->vec_sol_always;
   PetscFunctionReturn(0);
 }  
@@ -1888,7 +1889,8 @@ int SNESGetSolution(SNES snes,Vec *x)
 int SNESGetSolutionUpdate(SNES snes,Vec *x)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidPointer(x,2);
   *x = snes->vec_sol_update_always;
   PetscFunctionReturn(0);
 }
@@ -1917,7 +1919,7 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
 int SNESGetFunction(SNES snes,Vec *r,void **ctx,int (**func)(SNES,Vec,Vec,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (r)    *r    = snes->vec_func_always;
   if (ctx)  *ctx  = snes->funP;
   if (func) *func = snes->computefunction;
@@ -1951,7 +1953,7 @@ int SNESSetOptionsPrefix(SNES snes,const char prefix[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(snes->ksp,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1984,7 +1986,7 @@ int SNESAppendOptionsPrefix(SNES snes,const char prefix[])
   int ierr;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(snes->ksp,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2018,7 +2020,7 @@ int SNESGetOptionsPrefix(SNES snes,char *prefix[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -246,7 +246,7 @@ int PCShellSetSetUp(PC pc,int (*setup)(void*))
   int ierr,(*f)(PC,int (*)(void*));
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetSetUp_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,setup);CHKERRQ(ierr);
@@ -285,7 +285,7 @@ int PCShellSetView(PC pc,int (*view)(void*,PetscViewer))
   int ierr,(*f)(PC,int (*)(void*,PetscViewer));
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetView_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,view);CHKERRQ(ierr);
@@ -325,7 +325,7 @@ int PCShellSetApply(PC pc,int (*apply)(void*,Vec,Vec),void *ptr)
   int ierr,(*f)(PC,int (*)(void*,Vec,Vec),void *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApply_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,apply,ptr);CHKERRQ(ierr);
@@ -367,7 +367,7 @@ int PCShellSetApplyTranspose(PC pc,int (*applytranspose)(void*,Vec,Vec))
   int ierr,(*f)(PC,int (*)(void*,Vec,Vec));
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApplyTranspose_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,applytranspose);CHKERRQ(ierr);
@@ -398,7 +398,7 @@ int PCShellSetName(PC pc,const char name[])
   int ierr,(*f)(PC,const char []);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetName_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,name);CHKERRQ(ierr);
@@ -431,7 +431,8 @@ int PCShellGetName(PC pc,char *name[])
   int ierr,(*f)(PC,char *[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidPointer(name,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellGetName_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,name);CHKERRQ(ierr);
@@ -479,7 +480,7 @@ int PCShellSetApplyRichardson(PC pc,int (*apply)(void*,Vec,Vec,Vec,PetscReal,Pet
   int ierr,(*f)(PC,int (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApplyRichardson_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,apply,ptr);CHKERRQ(ierr);

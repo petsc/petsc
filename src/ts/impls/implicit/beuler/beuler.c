@@ -131,8 +131,9 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,PetscReal *ptime)
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,beuler->update);CHKERRQ(ierr);
-    ierr = SNESSolve(ts->snes,beuler->update,&its);CHKERRQ(ierr);
+    ierr = SNESSolve(ts->snes,beuler->update);CHKERRQ(ierr);
     ierr = SNESGetNumberLinearIterations(ts->snes,&lits);CHKERRQ(ierr);
+    ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ts->nonlinear_its += its; ts->linear_its += lits;
     ierr = VecCopy(beuler->update,sol);CHKERRQ(ierr);
     ts->steps++;
@@ -303,6 +304,12 @@ static int TSView_BEuler(TS ts,PetscViewer viewer)
 }
 
 /* ------------------------------------------------------------ */
+/*MC
+      TS_BEULER - ODE solver using the implicit backward Euler method
+
+.seealso:  TSCreate(), TS, TSSetType(), TS_EULER
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_BEuler"

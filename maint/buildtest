@@ -44,7 +44,7 @@ rm -f $nPETSC_DIR/buildout.tar
 echo "Build on $MACH $ARCH  `date` " > $nPETSC_DIR/build.log
 
 cd $nPETSC_DIR
-make PETSC_ARCH=linux BOPT=g PETSC_DIR=$nPETSC_DIR update >>& $nPETSC_DIR/build.log
+make PETSC_ARCH=solaris BOPT=g PETSC_DIR=$nPETSC_DIR update >>& $nPETSC_DIR/build.log
 
 set DATAFILESPATH=/home/petsc/datafiles
 set NICE=''

@@ -502,8 +502,8 @@ int PetscFListView(PetscFList list,PetscViewer viewer)
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscValidPointer(list);
+  PetscValidPointer(list,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (!isascii) SETERRQ(1,"Only ASCII viewer supported");

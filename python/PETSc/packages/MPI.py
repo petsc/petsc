@@ -106,7 +106,11 @@ class Configure(config.base.Configure):
       self.pushLanguage('F77')
       self.sourceExtension = '.F'
       if not self.checkMPILink('', '          integer comm,size,ierr\n          call MPI_Comm_size(comm, size, ierr)\n'):
-        self.framework.log.write('MPI cannot link Fortran, but can link C, which indicates a problem with the MPI installation\nRun with -with-fc=0 if you do not wish to use Fortran')
+        self.framework.log.write('MPI cannot link Fortran using MPI_Comm_size(), but can link C, which indicates a problem with the MPI installation\nRun with -with-fc=0 if you do not wish to use Fortran')
+        self.popLanguage()
+        return 0
+      if not self.checkMPILink('', '          call MPI_Init(ierr)\n'):
+        self.framework.log.write('MPI cannot link Fortran using MPI_Init((), but can link C, which indicates a problem with the MPI installation\nRun with -with-fc=0 if you do not wish to use Fortran')
         self.popLanguage()
         return 0
       self.popLanguage()
@@ -139,10 +143,17 @@ class Configure(config.base.Configure):
   def libraryGuesses(self, root = None):
     '''Return standard library name guesses for a given installation root'''
     if root:
+      yield [os.path.join(root, 'lib', 'shared', 'libfmpich.a'),os.path.join(root,'lib','shared','libmpich.a')]
       yield [os.path.join(root, 'lib', 'shared', 'libmpich.a')]
       yield [os.path.join(root, 'lib', 'shared', 'libmpi.a')]
       yield [os.path.join(root, 'lib', 'shared', 'libmpich.a'), os.path.join(root, 'lib', 'shared', 'libpmpich.a')]
+      yield [os.path.join(root, 'lib', 'libfmpich.a'), os.path.join(root,'lib','libmpich.a')]
       yield [os.path.join(root, 'lib', 'libmpich.a')]
+      # LAM
+      libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'liblamf77mpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
+      libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'liblamf90mpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]      
+      libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
+      yield libs
       #  SGI 
       yield [os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'libmpi++.a')]
       yield [os.path.join(root, 'lib', 'libmpi.a')]      
@@ -154,10 +165,14 @@ class Configure(config.base.Configure):
       yield [os.path.join(root, 'SDK','lib','mpich.lib'),'ws2_32.lib']
     else:
       yield ['']
+      yeild ['fmpich','mpich']
       yield ['mpich']
       yield ['mpi','mpi++']
       yield ['mpi']      
       yield ['mpich', 'pmpich']
+      yield ['lammpio','pmpi','lamf77mpi','mpi','lam']
+      yield ['lammpio','pmpi','lamf90mpi','mpi','lam']
+      yield ['lammpio','pmpi','mpi','lam']
     return
 
   def generateGuesses(self):
@@ -165,8 +180,6 @@ class Configure(config.base.Configure):
       (name, lib, include) = self.downLoadMPICH()
       yield (name, lib, include)
       raise RuntimeError('Downloaded MPICH could not be used. Please check install in '+os.path.dirname(include[0])+'\n')
-    # May not need to list anything
-    yield ('Default compiler locations', [''], [[]])
     # Try specified library and include
     if 'with-mpi-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-mpi-lib']
@@ -182,6 +195,8 @@ class Configure(config.base.Configure):
       dir = self.framework.argDB['with-mpi-dir']
       yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
       raise RuntimeError('You set a value for --with-mpi-dir, but '+self.framework.argDB['with-mpi-dir']+' cannot be used.\n It could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
+    # May not need to list anything
+    yield ('Default compiler locations', [''], [[]])
     # Try configure package directories
     dirExp = re.compile(r'mpi(ch)?(-.*)?')
     for packageDir in self.framework.argDB['package-dirs']:
@@ -331,17 +346,20 @@ class Configure(config.base.Configure):
       self.framework.log.write('Checking for a functional MPI in '+name+'\n')
       self.lib     = None
       self.include = None
+      found        = 0
       for libraries in libraryGuesses:
         if self.checkLib(libraries):
           self.lib = libraries
-          break
-      if self.lib is None: continue
-      for includeDir in includeGuesses:
-        if self.checkInclude(includeDir):
-          self.include = includeDir
-          break
-      if self.include is None: continue
-      if not self.executeTest(self.checkWorkingLink): continue
+          for includeDir in includeGuesses:
+            if self.checkInclude(includeDir):
+              self.include = includeDir
+              if self.executeTest(self.checkWorkingLink):
+                found = 1
+                break
+          if found:
+            break
+      if not found: continue
+      
       version = self.executeTest(self.configureVersion)
       if self.framework.argDB['with-mpi-shared']:
         if not self.executeTest(self.checkSharedLibrary):

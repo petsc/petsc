@@ -972,13 +972,13 @@ int MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
 
   /* copy x into the vec slvec0 */
-  ierr = VecGetArrayFast(a->slvec0,&from);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(a->slvec0,&from);CHKERRQ(ierr);  
+  ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);  
   
   ierr = VecScatterBegin(a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD,a->sMvctx);CHKERRQ(ierr); 
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecScatterEnd(a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD,a->sMvctx);CHKERRQ(ierr); 
   
   /* supperdiagonal part */
@@ -1039,13 +1039,13 @@ int MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
 
   /* copy x into the vec slvec0 */
-  ierr = VecGetArrayFast(a->slvec0,&from);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(a->slvec0,&from);CHKERRQ(ierr);  
+  ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);  
   
   ierr = VecScatterBegin(a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD,a->sMvctx);CHKERRQ(ierr); 
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecScatterEnd(a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD,a->sMvctx);CHKERRQ(ierr); 
   
   /* supperdiagonal part */
@@ -2105,13 +2105,13 @@ static int MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newm
   PetscLogObjectParent(mat,a->slvec1);
 
   ierr = VecGetLocalSize(a->slvec1,&nt);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(a->slvec1,&array);CHKERRQ(ierr);
+  ierr = VecGetArray(a->slvec1,&array);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs*mbs,array,&a->slvec1a);CHKERRQ(ierr); 
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,nt-bs*mbs,array+bs*mbs,&a->slvec1b);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(a->slvec1,&array);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(a->slvec0,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArray(a->slvec1,&array);CHKERRQ(ierr);
+  ierr = VecGetArray(a->slvec0,&array);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,nt-bs*mbs,array+bs*mbs,&a->slvec0b);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(a->slvec0,&array);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(a->slvec0,&array);CHKERRQ(ierr); 
   PetscLogObjectParent(mat,a->slvec0);
   PetscLogObjectParent(mat,a->slvec1);
   PetscLogObjectParent(mat,a->slvec0b);
@@ -2410,7 +2410,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
 
   PetscFunctionBegin;
   ierr = MatGetRowMax(a->A,v);CHKERRQ(ierr); 
-  ierr = VecGetArrayFast(v,&va);CHKERRQ(ierr);  
+  ierr = VecGetArray(v,&va);CHKERRQ(ierr);  
 
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
@@ -2495,7 +2495,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
     } 
   }
 
-  ierr = VecRestoreArrayFast(v,&va);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
   ierr = PetscFree(work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2527,25 +2527,25 @@ int MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal
       ierr = (*mat->B->ops->multtranspose)(mat->B,xx,mat->slvec0b);CHKERRQ(ierr);
       
       /* copy xx into slvec0a */
-      ierr = VecGetArrayFast(mat->slvec0,&ptr);CHKERRQ(ierr);
-      ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr); 
+      ierr = VecGetArray(mat->slvec0,&ptr);CHKERRQ(ierr);
+      ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
       ierr = PetscMemcpy(ptr,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-      ierr = VecRestoreArrayFast(mat->slvec0,&ptr);CHKERRQ(ierr);  
+      ierr = VecRestoreArray(mat->slvec0,&ptr);CHKERRQ(ierr);  
 
       ierr = VecScale(&mone,mat->slvec0);CHKERRQ(ierr);
 
       /* copy bb into slvec1a */
-      ierr = VecGetArrayFast(mat->slvec1,&ptr);CHKERRQ(ierr);
-      ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr);
+      ierr = VecGetArray(mat->slvec1,&ptr);CHKERRQ(ierr);
+      ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
       ierr = PetscMemcpy(ptr,b,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-      ierr = VecRestoreArrayFast(mat->slvec1,&ptr);CHKERRQ(ierr);  
+      ierr = VecRestoreArray(mat->slvec1,&ptr);CHKERRQ(ierr);  
 
       /* set slvec1b = 0 */
       ierr = VecSet(&zero,mat->slvec1b);CHKERRQ(ierr); 
 
       ierr = VecScatterBegin(mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD,mat->sMvctx);CHKERRQ(ierr);  
-      ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
-      ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr); 
+      ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+      ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
       ierr = VecScatterEnd(mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD,mat->sMvctx);CHKERRQ(ierr); 
 
       /* upper triangular part: bb1 = bb1 - B*x */ 

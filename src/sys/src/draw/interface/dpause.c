@@ -27,7 +27,7 @@ int PetscDrawPause(PetscDraw draw)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (draw->ops->pause) {
     ierr = (*draw->ops->pause)(draw);CHKERRQ(ierr);
   }

@@ -38,24 +38,24 @@ int MatMatMult(Mat A,Mat B, Mat *C) {
   /* Perhaps this "interface" routine should be moved into the interface directory.*/
   /* To facilitate implementations with varying types, QueryFunction is used.*/
   /* It is assumed that implementations will be composed as "MatMatMult_<type of A><type of B>". */
-  int ierr;
+  int  ierr;
   char funct[80];
-  int (*mult)(Mat,Mat,Mat*);
+  int  (*mult)(Mat,Mat,Mat*);
 
   PetscFunctionBegin;
-  PetscValidPointer(C);
-
-  PetscValidHeaderSpecific(A,MAT_COOKIE);
-  PetscValidType(A);
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
   MatPreallocated(A);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  PetscValidHeaderSpecific(B,MAT_COOKIE);
-  PetscValidType(B);
+  PetscValidHeaderSpecific(B,MAT_COOKIE,2);
+  PetscValidType(B,2);
   MatPreallocated(B);
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+
+  PetscValidPointer(C,3);
 
   if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
 
@@ -63,8 +63,7 @@ int MatMatMult(Mat A,Mat B, Mat *C) {
   ierr = PetscStrcat(funct,A->type_name);CHKERRQ(ierr);
   ierr = PetscStrcat(funct,B->type_name);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&mult);CHKERRQ(ierr);
-  if (!mult) SETERRQ2(PETSC_ERR_SUP,
-                         "C=A*B not implemented for A of type %s and B of type %s",
+  if (!mult) SETERRQ2(PETSC_ERR_SUP,"C=A*B not implemented for A of type %s and B of type %s",
                          A->type_name,B->type_name);
   ierr = (*mult)(A,B,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -127,24 +126,24 @@ int MatMatMultSymbolic(Mat A,Mat B,Mat *C) {
   /* Perhaps this "interface" routine should be moved into the interface directory.*/
   /* To facilitate implementations with varying types, QueryFunction is used.*/
   /* It is assumed that implementations will be composed as "MatMatMultSymbolic_<type of A><type of B>". */
-  int ierr;
+  int  ierr;
   char funct[80];
-  int (*symbolic)(Mat,Mat,Mat *);
+  int  (*symbolic)(Mat,Mat,Mat *);
 
   PetscFunctionBegin;
-  PetscValidPointer(C);
-
-  PetscValidHeaderSpecific(A,MAT_COOKIE);
-  PetscValidType(A);
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
   MatPreallocated(A);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  PetscValidHeaderSpecific(B,MAT_COOKIE);
-  PetscValidType(B);
+  PetscValidHeaderSpecific(B,MAT_COOKIE,2);
+  PetscValidType(B,2);
   MatPreallocated(B);
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidPointer(C,3);
+
 
   if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
 
@@ -296,20 +295,20 @@ int MatMatMultNumeric(Mat A,Mat B,Mat C){
 
   PetscFunctionBegin;
 
-  PetscValidHeaderSpecific(A,MAT_COOKIE);
-  PetscValidType(A);
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
   MatPreallocated(A);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  PetscValidHeaderSpecific(B,MAT_COOKIE);
-  PetscValidType(B);
+  PetscValidHeaderSpecific(B,MAT_COOKIE,2);
+  PetscValidType(B,2);
   MatPreallocated(B);
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  PetscValidHeaderSpecific(C,MAT_COOKIE);
-  PetscValidType(C);
+  PetscValidHeaderSpecific(C,MAT_COOKIE,3);
+  PetscValidType(C,3);
   MatPreallocated(C);
   if (!C->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (C->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 

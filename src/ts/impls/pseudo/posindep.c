@@ -156,9 +156,10 @@ static int TSStep_Pseudo(TS ts,int *steps,PetscReal *ptime)
     current_time_step = ts->time_step;
     while (PETSC_TRUE) {
       ts->ptime  += current_time_step;
-      ierr = SNESSolve(ts->snes,pseudo->update,&its);CHKERRQ(ierr);
+      ierr = SNESSolve(ts->snes,pseudo->update);CHKERRQ(ierr);
       ierr = SNESGetNumberLinearIterations(ts->snes,&lits);CHKERRQ(ierr);
-      ts->nonlinear_its += PetscAbsInt(its); ts->linear_its += lits;
+      ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
+      ts->nonlinear_its += its; ts->linear_its += lits;
       ierr = TSPseudoVerifyTimeStep(ts,pseudo->update,&ts->time_step,&ok);CHKERRQ(ierr);
       if (ok) break;
       ts->ptime        -= current_time_step;
@@ -355,7 +356,7 @@ int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,PetscReal*,int*),void
   int ierr,(*f)(TS,int (*)(TS,Vec,void*,PetscReal *,int *),void *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
 
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -390,7 +391,7 @@ int TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
   int ierr,(*f)(TS,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
 
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -427,7 +428,7 @@ int TSPseudoIncrementDtFromInitialDt(TS ts)
   int ierr,(*f)(TS);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
 
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -472,7 +473,7 @@ int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,PetscReal*,void*),void* ctx)
   int ierr,(*f)(TS,int (*)(TS,PetscReal *,void *),void *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
 
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetTimeStep_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {

@@ -38,8 +38,8 @@ fi
 /bin/rm -rf ${tmpdir}/*
 
 # Update the bk repository
-export PETSC_ARCH=linux
-export PETSC_DIR=/sandbox/petsc/petsc-dist
+PETSC_ARCH=linux; export PETSC_ARCH
+PETSC_DIR=/sandbox/petsc/petsc-dist; export PETSC_DIR
 cd $PETSC_DIR/python/BuildSystem
 bk pull
 bk -r co -q

@@ -307,8 +307,8 @@ EXTERN int VecPipelineEnd(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPi
 EXTERN int VecPipelineView(VecPipeline,PetscViewer);
 EXTERN int VecPipelineDestroy(VecPipeline);
 
-EXTERN int VecGetArray(Vec,PetscScalar*[]);
-EXTERN int VecRestoreArray(Vec,PetscScalar*[]);
+EXTERN int VecGetArray_Private(Vec,PetscScalar*[]);
+EXTERN int VecRestoreArray_Private(Vec,PetscScalar*[]);
 EXTERN int VecGetArray4d(Vec,int,int,int,int,int,int,int,int,PetscScalar****[]);
 EXTERN int VecRestoreArray4d(Vec,int,int,int,int,int,int,int,int,PetscScalar****[]);
 EXTERN int VecGetArray3d(Vec,int,int,int,int,int,int,PetscScalar***[]);
@@ -349,6 +349,12 @@ EXTERN int VecNormEnd(Vec,NormType,PetscReal *);
 
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_TREAT_OFF_PROC_ENTRIES} VecOption;
 EXTERN int VecSetOption(Vec,VecOption);
+
+/*
+   Expose VecGetArray()/VecRestoreArray() to users. Allows this to work without any function
+   call overhead on any 'native' Vecs.
+*/
+#include "src/vec/vecimpl.h"
 
 EXTERN int VecContourScale(Vec,PetscReal,PetscReal);
 

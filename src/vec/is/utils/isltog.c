@@ -28,7 +28,8 @@ int IS_LTOGM_COOKIE = -1;
 int ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,int *n)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
+  PetscValidIntPointer(n,2);
   *n = mapping->n;
   PetscFunctionReturn(0);
 }
@@ -56,9 +57,9 @@ int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscViewer viewer
   PetscTruth isascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(mapping->comm);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
   ierr = MPI_Comm_rank(mapping->comm,&rank);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
@@ -100,7 +101,8 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidPointer(mapping,2);
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
@@ -139,8 +141,8 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
   int *in,ierr;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(indices);
-  PetscValidPointer(mapping);
+  PetscValidIntPointer(indices,3);
+  PetscValidPointer(mapping,4);
   ierr = PetscMalloc((n+1)*sizeof(int),&in);CHKERRQ(ierr);
   ierr = PetscMemcpy(in,indices,n*sizeof(int));CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateNC(cm,n,in,mapping);CHKERRQ(ierr);
@@ -177,8 +179,8 @@ int ISLocalToGlobalMappingCreateNC(MPI_Comm cm,int n,const int indices[],ISLocal
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(indices);
-  PetscValidPointer(mapping);
+  PetscValidIntPointer(indices,3);
+  PetscValidPointer(mapping,4);
   *mapping = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
@@ -265,7 +267,7 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidPointer(mapping);
+  PetscValidPointer(mapping,1);
   if (--mapping->refct > 0) PetscFunctionReturn(0);
   if (mapping->refct < 0) {
     SETERRQ(1,"Mapping already destroyed");
@@ -306,9 +308,9 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis
   int ierr,n,i,*idxin,*idxmap,*idxout,Nmax = mapping->n;
 
   PetscFunctionBegin;
-  PetscValidPointer(mapping);
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidPointer(newis);
+  PetscValidPointer(mapping,1);
+  PetscValidHeaderSpecific(is,IS_COOKIE,2);
+  PetscValidPointer(newis,3);
 
   ierr   = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr   = ISGetIndices(is,&idxin);CHKERRQ(ierr);

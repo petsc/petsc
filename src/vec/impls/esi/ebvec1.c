@@ -229,15 +229,15 @@ int VecPointwiseDivide_ESI(Vec xin,Vec yin,Vec win)
   PetscScalar  *xx,*yy,*ww;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(yin,&yy);CHKERRQ(ierr);
-  if (yin != xin) {ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);}
+  ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
+  if (yin != xin) {ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);}
   else xx = yy;
-  if (yin != win) {ierr = VecGetArrayFast(win,&ww);CHKERRQ(ierr);}
+  if (yin != win) {ierr = VecGetArray(win,&ww);CHKERRQ(ierr);}
   else ww = yy;
   for (i=0; i<n; i++) ww[i] = xx[i] / yy[i];
-  ierr = VecRestoreArrayFast(yin,&yy);CHKERRQ(ierr);
-  if (yin != win) {ierr = VecRestoreArrayFast(win,&ww);CHKERRQ(ierr);}
-  if (xin != win) {ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);}
+  ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
+  if (yin != win) {ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);}
+  if (xin != win) {ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -256,11 +256,11 @@ int VecSwap_ESI(Vec xin,Vec yin)
     PetscScalar *ya,*xa;
     int         one = 1;
 
-    ierr = VecGetArrayFast(yin,&ya);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(xin,&xa);CHKERRQ(ierr);
+    ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
+    ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
     BLswap_(&xin->n,xa,&one,ya,&one);
-    ierr = VecRestoreArrayFast(xin,&xa);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yin,&ya);CHKERRQ(ierr);
+    ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

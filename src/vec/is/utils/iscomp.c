@@ -42,10 +42,10 @@ int ISEqual(IS is1,IS is2,PetscTruth *flg)
   MPI_Comm   comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is1,IS_COOKIE);
-  PetscValidHeaderSpecific(is2,IS_COOKIE);
-  PetscValidIntPointer(flg);
-  PetscCheckSameComm(is1,is2);
+  PetscValidHeaderSpecific(is1,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is2,IS_COOKIE,2);
+  PetscValidIntPointer(flg,3);
+  PetscCheckSameComm(is1,1,is2,2);
 
   if (is1 == is2) {
     *flg = PETSC_TRUE;

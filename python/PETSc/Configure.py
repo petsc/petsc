@@ -21,8 +21,9 @@ class Configure(config.base.Configure):
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getrusage', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
-                 'uname','_snprintf']
-    libraries = [(['socket', 'nsl'], 'socket')]
+                 'uname','snprintf','_snprintf']
+    libraries1 = [(['socket', 'nsl'], 'socket')]
+    libraries2 = [(['rt','aio'],'exit')]
     self.setCompilers = self.framework.require('config.setCompilers', self)
     self.compilers    = self.framework.require('config.compilers',    self)
     self.types        = self.framework.require('config.types',        self)
@@ -36,7 +37,8 @@ class Configure(config.base.Configure):
     self.libraries.headerPrefix = self.headerPrefix
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
-    self.libraries.libraries.extend(libraries)
+    self.libraries.libraries.extend(libraries1)
+    self.libraries.libraries.extend(libraries2)
     # Check for packages
     import PETSc.packages
 
@@ -69,6 +71,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ar',                    nargs.Arg(None, 'ar',   'Specify the archiver'))
     help.addArgument('PETSc', 'AR_FLAGS',                    nargs.Arg(None, 'cr',   'Specify the archiver flags'))
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
+    help.addArgument('PETSc', '-with-scroll-output',         nargs.ArgBool(None, 0, 'Scroll configure output instead of keeping it on one line'))
     return
 
   def defineAutoconfMacros(self):
@@ -331,7 +334,7 @@ class Configure(config.base.Configure):
     '''Solaris specific stuff'''
     if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
       if os.path.isdir(os.path.join('/usr','ucblib')):
-        self.framework.argDB['LIBS'] += ' ${CLINKER_SLFLAG}/usr/ucblib'
+        self.framework.argDB['LIBS'] += ' '+self.setCompilers.slpath+'/usr/ucblib'
     return
 
   def configureLinux(self):
@@ -394,7 +397,7 @@ class Configure(config.base.Configure):
 
   def configureMachineInfo(self):
     '''Define a string incorporating all configuration data needed for a bug report'''
-    self.addDefine('MACHINE_INFO', '"Libraries compiled on `date` on `hostname`\\nMachine characteristics: `uname -a`\\n-----------------------------------------\\nUsing C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}\\nC Compiler version: ${C_VERSION}\\nUsing C compiler: ${CXX} ${CXXOPTFLAGS} ${CXXCPPFLAGS}\\nC++ Compiler version: ${CXX_VERSION}\\nUsing Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}\\nFortran Compiler version: ${F_VERSION}\\n-----------------------------------------\\nUsing PETSc flags: ${PETSCFLAGS} ${PCONF}\\n-----------------------------------------\\nUsing include paths: ${PETSC_INCLUDE}\\n-----------------------------------------\\nUsing PETSc directory: ${PETSC_DIR}\\nUsing PETSc arch: ${PETSC_ARCH}"\\n')
+    #self.addDefine('MACHINE_INFO', '"Libraries compiled on `date` on `hostname`\\nMachine characteristics: `uname -a`\\n-----------------------------------------\\nUsing C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}\\nC Compiler version: ${C_VERSION}\\nUsing C compiler: ${CXX} ${CXXOPTFLAGS} ${CXXCPPFLAGS}\\nC++ Compiler version: ${CXX_VERSION}\\nUsing Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}\\nFortran Compiler version: ${F_VERSION}\\n-----------------------------------------\\nUsing PETSc flags: ${PETSCFLAGS} ${PCONF}\\n-----------------------------------------\\nUsing include paths: ${PETSC_INCLUDE}\\n-----------------------------------------\\nUsing PETSc directory: ${PETSC_DIR}\\nUsing PETSc arch: ${PETSC_ARCH}"\\n')
     return
 
   def configureETags(self):
@@ -406,7 +409,7 @@ class Configure(config.base.Configure):
         pd = self.framework.argDB['PETSC_DIR']
         self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand('export PETSC_ARCH=linux;make PETSC_DIR='+pd+' TAGSDIR='+pd+' etags', timeout = 15*60.0, log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand('PETSC_ARCH=linux; export PETSC_ARCH; make PETSC_DIR='+pd+' TAGSDIR='+pd+' etags', timeout = 15*60.0, log = self.framework.log)
           # filter out the normal messages
           cnt = 0
           for i in output.split('\n'):
@@ -431,19 +434,23 @@ class Configure(config.base.Configure):
     '''Determine if the docs are built, if not, warn the user'''
     if not os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'include','petscvec.h.html')):
       self.framework.log.write('WARNING: document files have not been created\n')
-      self.framework.getExecutable('doctext', getFullPath = 1)
-      if not hasattr(self.framework,'doctext') and hasattr(self.framework,'sowingDir') and os.path.isfile(os.path.join(self.framework.sowingDir,'doctext')):
-        self.framework.doctext = os.path.join(self.framework.sowingDir,'doctext')
-      self.framework.getExecutable('mapnames', getFullPath = 1)
-      if not hasattr(self.framework,'mapnames') and hasattr(self.framework,'sowingDir') and os.path.isfile(os.path.join(self.framework.sowingDir,'mapnames')):
-        self.framework.mapnames = os.path.join(self.framework.sowingDir,'mapnames')
-      self.framework.getExecutable('c2html', getFullPath = 1)
-      self.framework.getExecutable('pdflatex', getFullPath = 1)
-      if not hasattr(self.framework, 'doctext'): self.framework.doctext = ''
-      if not hasattr(self.framework, 'mapnames'): self.framework.mapnames = ''
-      self.framework.addSubstitution('DOCTEXT', self.framework.doctext)
-      self.framework.addSubstitution('MAPNAMES', self.framework.mapnames)
+    else:
+      self.framework.log.write('Document files found\n')
+      
+    self.framework.getExecutable('doctext', getFullPath = 1)
+    if not hasattr(self.framework,'doctext') and hasattr(self.framework,'sowingDir') and os.path.isfile(os.path.join(self.framework.sowingDir,'doctext')):
+      self.framework.doctext = os.path.join(self.framework.sowingDir,'doctext')
+    self.framework.getExecutable('mapnames', getFullPath = 1)
+    if not hasattr(self.framework,'mapnames') and hasattr(self.framework,'sowingDir') and os.path.isfile(os.path.join(self.framework.sowingDir,'mapnames')):
+      self.framework.mapnames = os.path.join(self.framework.sowingDir,'mapnames')
+    self.framework.getExecutable('c2html', getFullPath = 1)
+    self.framework.getExecutable('pdflatex', getFullPath = 1)
+    if not hasattr(self.framework, 'doctext'): self.framework.doctext = ''
+    if not hasattr(self.framework, 'mapnames'): self.framework.mapnames = ''
+    self.framework.addSubstitution('DOCTEXT', self.framework.doctext)
+    self.framework.addSubstitution('MAPNAMES', self.framework.mapnames)
 
+    if not os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'include','petscvec.h.html')):
       if self.framework.doctext and self.framework.mapnames and hasattr(self.framework, 'c2html') and hasattr(self.framework, 'pdflatex'):
         self.framework.log.write('           You can run "make alldoc LOC=${PETSC_DIR}" to generate all the documentation\n')
         self.framework.log.write('           WARNING!!! This will take several HOURS to run\n')
@@ -457,8 +464,6 @@ class Configure(config.base.Configure):
         self.framework.log.write('           from your PATH. See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how\n')
         self.framework.log.write('           install them and compile the documentation\n')
         self.framework.log.write('      Or view the docs on line at http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs\n')
-    else:
-      self.framework.log.write('Document files found\n')
     return
 
   def configureRegression(self):

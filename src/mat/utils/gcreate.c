@@ -99,7 +99,7 @@ int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
 #endif
 
   PetscFunctionBegin;
-  PetscValidPointer(A);
+  PetscValidPointer(A,6);
   *A = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = MatInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);

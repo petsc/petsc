@@ -62,7 +62,7 @@ int VecPackCreate(MPI_Comm comm,VecPack *packer)
   VecPack p;
 
   PetscFunctionBegin;
-  PetscValidPointer(packer);
+  PetscValidPointer(packer,2);
   *packer = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);
@@ -403,7 +403,7 @@ int VecPackScatter(VecPack packer,Vec gvec,...)
     } else if (next->type == VECPACK_DA) {
       Vec vec;
       vec = va_arg(Argp, Vec);
-      PetscValidHeaderSpecific(vec,VEC_COOKIE);
+      PetscValidHeaderSpecific(vec,VEC_COOKIE,3);
       ierr = VecPackScatter_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(1,"Cannot handle that object type yet");
@@ -453,7 +453,7 @@ int VecPackGather(VecPack packer,Vec gvec,...)
     } else if (next->type == VECPACK_DA) {
       Vec vec;
       vec = va_arg(Argp, Vec);
-      PetscValidHeaderSpecific(vec,VEC_COOKIE);
+      PetscValidHeaderSpecific(vec,VEC_COOKIE,3);
       ierr = VecPackGather_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(1,"Cannot handle that object type yet");

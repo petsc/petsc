@@ -81,7 +81,8 @@ int main(int argc,char **argv)
   ierr = SNESSetFunction(snes,FU,FormFunction,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SNESSetMonitor(snes,Monitor,&user,0);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,U,&its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,U);CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
 
   ierr = DADestroy(user.da1);CHKERRQ(ierr);

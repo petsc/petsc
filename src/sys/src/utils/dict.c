@@ -42,7 +42,7 @@ int ParameterDictCreate(MPI_Comm comm, ParameterDict *dict)
   ParameterDict d;
 
   PetscFunctionBegin;
-  PetscValidPointer(dict);
+  PetscValidPointer(dict,2);
   PetscHeaderCreate(d, _p_Dict, int, DICT_COOKIE, 0, "Dict", comm, ParameterDictDestroy, PETSC_NULL);
   PetscLogObjectCreate(d);
   PetscLogObjectMemory(d, sizeof(struct _p_Dict));
@@ -73,7 +73,7 @@ int ParameterDictDestroy(ParameterDict dict)
   int       ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dict, DICT_COOKIE);
+  PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
   if (--dict->refct > 0)
     PetscFunctionReturn(0);
   next = dict->dictHead;
@@ -111,8 +111,8 @@ int ParameterDictSetInteger(ParameterDict dict, const char key[], int data)
   int       ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidCharPointer(key);
+  PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
+  PetscValidCharPointer(key,2);
   ierr = PetscMalloc(sizeof(DictNode), &node);                                                            CHKERRQ(ierr);
   node->intData  = data;
   node->realData = 0.0;
@@ -147,8 +147,8 @@ int ParameterDictSetDouble(ParameterDict dict, const char key[], double data)
   int       ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidCharPointer(key);
+  PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
+  PetscValidCharPointer(key,2);
   ierr = PetscMalloc(sizeof(DictNode), &node);                                                            CHKERRQ(ierr);
   node->intData  = 0;
   node->realData = data;
@@ -183,8 +183,8 @@ int ParameterDictSetObject(ParameterDict dict, const char key[], void *data)
   int       ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidCharPointer(key);
+  PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
+  PetscValidCharPointer(key,2);
   ierr = PetscMalloc(sizeof(DictNode), &node);                                                            CHKERRQ(ierr);
   node->intData  = 0;
   node->realData = 0.0;
@@ -219,8 +219,8 @@ int ParameterDictRemove(ParameterDict dict, const char key[])
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidCharPointer(key);
+  PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
+  PetscValidCharPointer(key,2);
   found = PETSC_FALSE;
   node  = dict->dictHead;
   prev  = node;
@@ -272,9 +272,9 @@ int ParameterDictGetInteger(ParameterDict dict, const char key[], int *data)
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidCharPointer(key);
-  PetscValidIntPointer(data);
+  PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
+  PetscValidCharPointer(key,2);
+  PetscValidIntPointer(data,3);
   found = PETSC_FALSE;
   node  = dict->dictHead;
   /* Check the rest */
@@ -315,9 +315,9 @@ int ParameterDictGetDouble(ParameterDict dict, const char key[], double *data)
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidCharPointer(key);
-  PetscValidDoublePointer(data);
+  PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
+  PetscValidCharPointer(key,2);
+  PetscValidDoublePointer(data,3);
   found = PETSC_FALSE;
   node  = dict->dictHead;
   /* Check the rest */
@@ -358,9 +358,9 @@ int ParameterDictGetObject(ParameterDict dict, const char key[], void **data)
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidCharPointer(key);
-  PetscValidPointer(data);
+  PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
+  PetscValidCharPointer(key,2);
+  PetscValidPointer(data,3);
   found = PETSC_FALSE;
   node  = dict->dictHead;
   /* Check the rest */

@@ -31,8 +31,8 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
   int size,ierr,id;
 
   PetscFunctionBegin;
-  PetscValidPointer(array);
-  PetscValidPointer(ptr);  
+  PetscValidPointer(array,1);
+  PetscValidPointer(ptr,5);  
   ierr               = PetscDataTypeGetSize(type,&size);CHKERRQ(ierr);
   ierr               = F90GetID(type,&id);
   ptr->addr          = array;
@@ -54,8 +54,8 @@ int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int star
   int size,ierr,id;
 
   PetscFunctionBegin;
-  PetscValidPointer(array);
-  PetscValidPointer(ptr);
+  PetscValidPointer(array,1);
+  PetscValidPointer(ptr,7);
   ierr               = PetscDataTypeGetSize(type,&size);CHKERRQ(ierr);
   ierr               = F90GetID(type,&id);
   ptr->addr          = array;

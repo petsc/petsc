@@ -265,8 +265,8 @@ int EventRegLogRegister(EventRegLog eventLog, const char ename[], int cookie, Pe
   int           ierr;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(ename);
-  PetscValidIntPointer(event);
+  PetscValidCharPointer(ename,2);
+  PetscValidIntPointer(event,4);
   /* Should check cookie I think */
   e = eventLog->numEvents++;
   if (eventLog->numEvents > eventLog->maxEvents) {
@@ -475,7 +475,7 @@ int EventPerfLogSetVisible(EventPerfLog eventLog, PetscEvent event, PetscTruth i
 @*/
 int EventPerfLogGetVisible(EventPerfLog eventLog, PetscEvent event, PetscTruth *isVisible) {
   PetscFunctionBegin;
-  PetscValidIntPointer(isVisible);
+  PetscValidIntPointer(isVisible,3);
   *isVisible = eventLog->eventInfo[event].visible;
   PetscFunctionReturn(0);
 }

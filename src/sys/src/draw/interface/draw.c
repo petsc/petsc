@@ -76,7 +76,8 @@ int PetscDrawCheckResizedWindow(PetscDraw draw)
 int PetscDrawGetTitle(PetscDraw draw,char **title)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidPointer(title,2);
   *title = draw->title;
   PetscFunctionReturn(0);
 }
@@ -104,7 +105,8 @@ int PetscDrawSetTitle(PetscDraw draw,const char title[])
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidCharPointer(title,2);
   ierr = PetscStrfree(draw->title);CHKERRQ(ierr);
   ierr = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   if (draw->ops->settitle) {
@@ -138,7 +140,7 @@ int PetscDrawAppendTitle(PetscDraw draw,const char title[])
   char *newtitle;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (!title) PetscFunctionReturn(0);
 
   if (draw->title) {
@@ -178,7 +180,7 @@ int PetscDrawDestroy(PetscDraw draw)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (--draw->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
@@ -214,8 +216,8 @@ int PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
-  PetscValidPointer(popup);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidPointer(popup,2);
 
   if (draw->popup) {
     *popup = draw->popup; 
@@ -332,8 +334,8 @@ int PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
   int ierr,size;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
-  PetscValidPointer(sdraw);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidPointer(sdraw,2);
 
   ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
@@ -371,9 +373,9 @@ int PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)
   int ierr,size;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
-  PetscValidPointer(sdraw);
-  PetscValidHeaderSpecific(*sdraw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidPointer(sdraw,2);
+  PetscValidHeaderSpecific(*sdraw,PETSC_DRAW_COOKIE,2);
 
   ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
   if (size == 1) {

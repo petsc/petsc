@@ -263,7 +263,7 @@ int PetscViewerSetFileType(PetscViewer viewer,PetscViewerFileType type)
   int ierr,(*f)(PetscViewer,PetscViewerFileType);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerSetFileType_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,type);CHKERRQ(ierr);

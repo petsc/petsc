@@ -27,7 +27,7 @@ int AODataAddAlias(AOData ao,char *alias,char *name)
   int         ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AODATA_COOKIE);
+  PetscValidHeaderSpecific(ao,AODATA_COOKIE,1);
 
   ierr          = PetscNew(AODataAlias,&aoalias);CHKERRQ(ierr);
   ierr          = PetscStrallocpy(alias,&aoalias->alias);CHKERRQ(ierr);

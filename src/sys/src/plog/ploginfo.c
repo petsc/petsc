@@ -180,7 +180,8 @@ int PetscLogInfo(void *vobj, const char message[], ...)
   int         ierr;
 
   PetscFunctionBegin;
-  if (obj) PetscValidHeader(obj);
+  if (obj) PetscValidHeader(obj,1);
+  PetscValidCharPointer(message,2);
   if (PetscLogPrintInfo == PETSC_FALSE) PetscFunctionReturn(0);
   if ((PetscLogPrintInfoNull == PETSC_FALSE) && !vobj) PetscFunctionReturn(0);
   if (obj && !PetscLogInfoFlags[obj->cookie - PETSC_COOKIE - 1]) PetscFunctionReturn(0);

@@ -657,7 +657,8 @@ int Update(SNES snes,void *ctx)
   ams_err = AMS_Memory_take_write_access(memid);
   AMS_Check_error(ams_err, &msg);
 #endif
-  ierr = SNESSolve(snes,grid->qnode,&its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,grid->qnode);CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 
 #ifdef PETSC_HAVE_AMS
   ams_err = AMS_Memory_grant_write_access(memid);

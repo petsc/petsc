@@ -32,8 +32,8 @@ int ISIdentity(IS is,PetscTruth *ident)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidIntPointer(ident);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(ident,2);
   *ident = is->isidentity;
   if (*ident) PetscFunctionReturn(0);
   if (is->ops->identity) {
@@ -62,7 +62,7 @@ int ISIdentity(IS is,PetscTruth *ident)
 int ISSetIdentity(IS is)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
   is->isidentity = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -91,8 +91,8 @@ int ISSetIdentity(IS is)
 int ISPermutation(IS is,PetscTruth *perm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidIntPointer(perm);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(perm,2);
   *perm = (PetscTruth) is->isperm;
   PetscFunctionReturn(0);
 }
@@ -117,7 +117,7 @@ int ISPermutation(IS is,PetscTruth *perm)
 int ISSetPermutation(IS is)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
   is->isperm = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -141,7 +141,7 @@ int ISDestroy(IS is)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
   if (--is->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
@@ -181,7 +181,8 @@ int ISInvertPermutation(IS is,int nlocal,IS *isout)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidPointer(isout,3);
   if (!is->isperm) SETERRQ(PETSC_ERR_ARG_WRONG,"not a permutation");
   ierr = (*is->ops->invertpermutation)(is,nlocal,isout);CHKERRQ(ierr);
   ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
@@ -196,8 +197,8 @@ int ISGetSizeNew(IS is,int *size)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidIntPointer(size);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(size,2);
   ierr = is->cops->getsize(size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -227,8 +228,8 @@ int ISGetSize(IS is,int *size)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidIntPointer(size);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(size,2);
   ierr = (*is->ops->getsize)(is,size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -258,8 +259,8 @@ int ISGetLocalSize(IS is,int *size)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidIntPointer(size);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(size,2);
   ierr = (*is->ops->getlocalsize)(is,size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -308,8 +309,8 @@ int ISGetIndices(IS is,int *ptr[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidPointer(ptr);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidPointer(ptr,2);
   ierr = (*is->ops->getindices)(is,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
@@ -352,8 +353,8 @@ int ISRestoreIndices(IS is,int *ptr[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidPointer(ptr);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidPointer(ptr,2);
   if (is->ops->restoreindices) {
     ierr = (*is->ops->restoreindices)(is,ptr);CHKERRQ(ierr);
   }
@@ -380,10 +381,10 @@ int ISView(IS is,PetscViewer viewer)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(is->comm); 
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscCheckSameComm(is,viewer);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscCheckSameComm(is,1,viewer,2);
   
   ierr = (*is->ops->view)(is,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -411,7 +412,7 @@ int ISSort(IS is)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
   ierr = (*is->ops->sortindices)(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -439,8 +440,8 @@ int ISSorted(IS is,PetscTruth *flg)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidIntPointer(flg);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(flg,2);
   ierr = (*is->ops->sorted)(is,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -469,8 +470,8 @@ int ISDuplicate(IS is,IS *newIS)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidPointer(newIS);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidPointer(newIS,2);
   ierr = (*is->ops->duplicate)(is,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

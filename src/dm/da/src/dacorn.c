@@ -35,8 +35,8 @@ int DASetCoordinates(DA da,Vec c)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-  PetscValidHeaderSpecific(c,VEC_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(c,VEC_COOKIE,2);
   da->coordinates = c;
   ierr = VecSetBlockSize(c,da->dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -74,7 +74,8 @@ int DAGetCoordinates(DA da,Vec *c)
 {
   PetscFunctionBegin;
  
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(c,2);
   *c = da->coordinates;
   PetscFunctionReturn(0);
 }
@@ -105,7 +106,7 @@ int DASetFieldName(DA da,int nf,const char name[])
 
   PetscFunctionBegin;
  
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %d",nf);
   if (da->fieldname[nf]) {ierr = PetscFree(da->fieldname[nf]);CHKERRQ(ierr);}
   
@@ -139,7 +140,8 @@ int DAGetFieldName(DA da,int nf,char **name)
 {
   PetscFunctionBegin;
  
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(name,3);
   if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %d",nf);
   *name = da->fieldname[nf];
   PetscFunctionReturn(0);
@@ -180,7 +182,7 @@ int DAGetCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p)
   int w;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   /* since the xs, xe ... have all been multiplied by the number of degrees 
      of freedom per cell, w = da->w, we divide that out before returning.*/
   w = da->w;  

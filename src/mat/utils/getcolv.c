@@ -38,8 +38,8 @@ int MatGetColumnVector(Mat A,Vec yy,int col)
   MPI_Comm comm;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE); 
-  PetscValidHeaderSpecific(yy,VEC_COOKIE); 
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1); 
+  PetscValidHeaderSpecific(yy,VEC_COOKIE,2); 
 
   if (col < 0)  SETERRQ1(1,"Requested negative column: %d",col);
   ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);

@@ -1,8 +1,6 @@
 /*$Id: cgs.c,v 1.64 2001/08/07 03:03:51 balay Exp $*/
 
 /*                       
-    This code implements the CGS (Conjugate Gradient Squared) method. 
-    Reference: Sonneveld, 1989.
 
     Note that for the complex numbers version, the VecDot() arguments
     within the code MUST remain in the order given for correct computation
@@ -133,6 +131,19 @@ static int  KSPSolve_CGS(KSP ksp)
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*MC
+     KSPCGS -     This code implements the CGS (Conjugate Gradient Squared) method. 
+                  Reference: Sonneveld, 1989.
+
+   Options Database Keys:
+.   see KSPSolve()
+
+   Level: beginner
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

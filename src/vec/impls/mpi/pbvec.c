@@ -323,8 +323,8 @@ int VecGhostGetLocalForm(Vec g,Vec *l)
   PetscTruth isseq,ismpi;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(g,VEC_COOKIE);
-  PetscValidPointer(l);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,1);
+  PetscValidPointer(l,2);
 
   ierr = PetscTypeCompare((PetscObject)g,VECSEQ,&isseq);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)g,VECMPI,&ismpi);CHKERRQ(ierr);
@@ -416,7 +416,7 @@ int VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
   int     ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(g,VEC_COOKIE);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,1);
 
   v  = (Vec_MPI*)g->data;
   if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
@@ -478,7 +478,7 @@ int VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
   int     ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(g,VEC_COOKIE);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,1);
 
   v  = (Vec_MPI*)g->data;
   if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector is not ghosted");

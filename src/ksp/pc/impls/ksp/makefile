@@ -4,15 +4,15 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = pcsles.c
+SOURCEC  = pcksp.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = pcsles.o
+OBJSC    = pcksp.o
 OBJSF    =
 LIBBASE  = libpetscksp
 DIRS     = 
 MANSEC   = PC
-LOCDIR   = src/ksp/pc/impls/sles/
+LOCDIR   = src/ksp/pc/impls/ksp/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

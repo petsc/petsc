@@ -802,11 +802,14 @@ runex91:
 
 NPROCS    = 1 3 4
 OVERLAP   = 1 3
+BS        = 2 8 
 runex92:
 	-@touch ex92_1.tmp;\
 	for np in ${NPROCS}; do \
 	  for ov in ${OVERLAP}; do \
-	   ${MPIRUN} -np $$np  ex92 -ov  $$ov >> ex92_1.tmp 2>&1; \
+            for bs in ${BS}; do \
+	      ${MPIRUN} -np $$np  ex92 -ov  $$ov -mat_block_size $$bs >> ex92_1.tmp 2>&1; \
+	    done; \
 	  done; \
 	done; \
 	if (${DIFF} output/ex92_1.out ex92_1.tmp) then true; \

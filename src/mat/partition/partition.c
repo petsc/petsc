@@ -225,7 +225,8 @@ int MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   PetscTruth flag;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(matp,MAT_PARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(matp,MAT_PARTITIONING_COOKIE,1);
+  PetscValidPointer(partitioning,2);
   if (!matp->adj->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (matp->adj->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!matp->ops->apply) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
@@ -262,8 +263,8 @@ int MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 int MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE);
-  PetscValidHeaderSpecific(adj,MAT_COOKIE);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
+  PetscValidHeaderSpecific(adj,MAT_COOKIE,2);
   part->adj = adj;
   PetscFunctionReturn(0);
 }
@@ -289,7 +290,7 @@ int MatPartitioningDestroy(MatPartitioning part)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
   if (--part->refct > 0) PetscFunctionReturn(0);
 
   if (part->ops->destroy) {
@@ -332,7 +333,7 @@ int MatPartitioningSetVertexWeights(MatPartitioning part,const int weights[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
 
   if (part->vertex_weights){
     ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
@@ -367,7 +368,7 @@ int MatPartitioningSetPartitionWeights(MatPartitioning part,const PetscReal weig
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
 
   if (part->part_weights){
     ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
@@ -452,10 +453,10 @@ int MatPartitioningView(MatPartitioning part,PetscViewer viewer)
   MatPartitioningType name;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(part->comm);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscCheckSameComm(part,viewer);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscCheckSameComm(part,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
@@ -506,8 +507,8 @@ int MatPartitioningSetType(MatPartitioning part,const MatPartitioningType type)
   PetscTruth match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE);
-  PetscValidCharPointer(type);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
+  PetscValidCharPointer(type,2);
 
   ierr = PetscTypeCompare((PetscObject)part,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);

@@ -463,6 +463,18 @@ static int TSView_Rk(TS ts,PetscViewer viewer)
 }
 
 /* ------------------------------------------------------------ */
+/*MC
+      TS_RK - ODE solver using the explicit Runge-Kutta methods
+
+   Options Database:
+.  -ts_rk_tol <tol> Tolerance for convergence
+
+  Contributed by: Asbjorn Hoiland Aarrestad, asbjorn@aarrestad.com, http://asbjorn.aarrestad.com/
+
+.seealso:  TSCreate(), TS, TSSetType(), TS_EULER, TSRKSetTolerance()
+
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_Rk"

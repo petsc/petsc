@@ -158,6 +158,18 @@ static int KSPSetUp_TCQMR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+/*MC
+     KSPRTCQMR - A variant of QMR (quasi minimal residual) developed by Tony Chan
+
+   Options Database Keys:
+.   see KSPSolve()
+
+   Level: beginner
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPTFQMR
+
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_TCQMR"

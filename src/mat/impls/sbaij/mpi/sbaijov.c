@@ -4,143 +4,30 @@
    Routines to compute overlapping regions of a parallel MPI matrix.
    Used for finding submatrices that were shared across processors.
 */
-#include "src/mat/impls/sbaij/mpi/mpisbaij.h"
+#include "src/mat/impls/sbaij/mpi/mpisbaij.h" 
 #include "petscbt.h"
 
 static int MatIncreaseOverlap_MPISBAIJ_Once(Mat,int,IS *);
 static int MatIncreaseOverlap_MPISBAIJ_Local(Mat,int *,int,int **,PetscBT*);
- 
-/* this function is sasme as MatCompressIndicesGeneral_MPIBAIJ -- should be removed! */
-#undef __FUNCT__  
-#define __FUNCT__ "MatCompressIndicesGeneral_MPISBAIJ"
-static int MatCompressIndicesGeneral_MPISBAIJ(Mat C,int imax,const IS is_in[],IS is_out[])
-{
-  Mat_MPISBAIJ        *baij = (Mat_MPISBAIJ*)C->data;
-  int                ierr,isz,bs = baij->bs,n,i,j,*idx,ival;
-#if defined (PETSC_USE_CTABLE)
-  PetscTable         gid1_lid1;
-  int                tt, gid1, *nidx;
-  PetscTablePosition tpos;
-#else
-  int                Nbs,*nidx;
-  PetscBT            table;
-#endif
-
-  PetscFunctionBegin;
-  /* printf(" ...MatCompressIndicesGeneral_MPISBAIJ is called ...\n"); */
-#if defined (PETSC_USE_CTABLE)
-  ierr = PetscTableCreate(baij->mbs,&gid1_lid1);CHKERRQ(ierr);
-#else
-  Nbs  = baij->Nbs;
-  ierr = PetscMalloc((Nbs+1)*sizeof(int),&nidx);CHKERRQ(ierr); 
-  ierr = PetscBTCreate(Nbs,table);CHKERRQ(ierr);
-#endif
-  for (i=0; i<imax; i++) {
-    isz  = 0;
-#if defined (PETSC_USE_CTABLE)
-    ierr = PetscTableRemoveAll(gid1_lid1);CHKERRQ(ierr);
-#else
-    ierr = PetscBTMemzero(Nbs,table);CHKERRQ(ierr);
-#endif
-    ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(is_in[i],&n);CHKERRQ(ierr);
-    for (j=0; j<n ; j++) {
-      ival = idx[j]/bs; /* convert the indices into block indices */
-#if defined (PETSC_USE_CTABLE)
-      ierr = PetscTableFind(gid1_lid1,ival+1,&tt);CHKERRQ(ierr);
-      if (!tt) {
-	ierr = PetscTableAdd(gid1_lid1,ival+1,isz+1);CHKERRQ(ierr);
-        isz++;
-      }
-#else
-      if (ival>Nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
-      if(!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
-#endif
-    }
-    ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
-#if defined (PETSC_USE_CTABLE)
-    ierr = PetscMalloc((isz+1)*sizeof(int),&nidx);CHKERRQ(ierr); 
-    ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
-    j = 0;
-    while (tpos) {  
-      ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid1,&tt);CHKERRQ(ierr);
-      if (tt-- > isz) { SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than array-dim"); }
-      nidx[tt] = gid1 - 1;
-      j++;
-    }
-    if (j != isz) { SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"table error: jj != isz"); }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,(is_out+i));CHKERRQ(ierr);
-    ierr = PetscFree(nidx);CHKERRQ(ierr);
-#else
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,(is_out+i));CHKERRQ(ierr);
-#endif
-  }
-#if defined (PETSC_USE_CTABLE)
-  ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
-#else
-  ierr = PetscBTDestroy(table);CHKERRQ(ierr);
-  ierr = PetscFree(nidx);CHKERRQ(ierr);
-#endif
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatExpandIndices_MPISBAIJ"
-static int MatExpandIndices_MPISBAIJ(Mat C,int imax,const IS is_in[],IS is_out[])
-{
-  Mat_MPISBAIJ  *baij = (Mat_MPISBAIJ*)C->data;
-  int          ierr,bs = baij->bs,n,i,j,k,*idx,*nidx;
-#if defined (PETSC_USE_CTABLE)
-  int          maxsz;
-#else
-  int          Nbs = baij->Nbs;
-#endif
-
-  PetscFunctionBegin;
-  /* printf(" ... MatExpandIndices_MPISBAIJ is called ...\n"); */
-#if defined (PETSC_USE_CTABLE)
-  /* Now check max size */
-  for (i=0,maxsz=0; i<imax; i++) {
-    ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(is_in[i],&n);CHKERRQ(ierr);
-    if (n*bs > maxsz) maxsz = n*bs;
-  }
-  ierr = PetscMalloc((maxsz+1)*sizeof(int),&nidx);CHKERRQ(ierr);   
-#else
-  ierr = PetscMalloc((Nbs*bs+1)*sizeof(int),&nidx);CHKERRQ(ierr); 
-#endif
-
-  for (i=0; i<imax; i++) {
-    ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(is_in[i],&n);CHKERRQ(ierr);
-    for (j=0; j<n ; ++j){
-      for (k=0; k<bs; k++)
-        nidx[j*bs+k] = idx[j]*bs+k;
-    }
-    ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n*bs,nidx,is_out+i);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(nidx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ"
 int MatIncreaseOverlap_MPISBAIJ(Mat C,int is_max,IS is[],int ov)
 {
-  int           i,ierr;
+  Mat_MPISBAIJ  *c = (Mat_MPISBAIJ*)C->data;
+  int           i,ierr,N=C->N, bs=c->bs;
   IS            *is_new;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(is_max*sizeof(IS),&is_new);CHKERRQ(ierr);
   /* Convert the indices into block format */
-  ierr = MatCompressIndicesGeneral_MPISBAIJ(C,is_max,is,is_new);CHKERRQ(ierr);
+  ierr = ISCompressIndicesGeneral(N,bs,is_max,is,is_new);CHKERRQ(ierr);
   if (ov < 0){ SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified\n");}
   for (i=0; i<ov; ++i) {
     ierr = MatIncreaseOverlap_MPISBAIJ_Once(C,is_max,is_new);CHKERRQ(ierr);
   }
   for (i=0; i<is_max; i++) {ierr = ISDestroy(is[i]);CHKERRQ(ierr);}
-  ierr = MatExpandIndices_MPISBAIJ(C,is_max,is_new,is);CHKERRQ(ierr);
+  ierr = ISExpandIndicesGeneral(N,bs,is_max,is_new,is);CHKERRQ(ierr);
   for (i=0; i<is_max; i++) {ierr = ISDestroy(is_new[i]);CHKERRQ(ierr);}
   ierr = PetscFree(is_new);CHKERRQ(ierr);
   PetscFunctionReturn(0);

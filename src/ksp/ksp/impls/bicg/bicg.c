@@ -1,11 +1,5 @@
 /*$Id: bicg.c,v 1.28 2001/08/07 03:03:55 balay Exp $*/
 
-/*                       
-    This code implements the BiCG (BiConjugate Gradient) method
-
-    Contributed by: Victor Eijkhout
-
-*/
 #include "src/ksp/ksp/kspimpl.h"
 
 #undef __FUNCT__  
@@ -154,6 +148,18 @@ int KSPDestroy_BiCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+/*MC
+     KSPBICG - Implements the Biconjugate gradient method (essentially running the conjugate
+         gradient on the normal equations).
+
+   Options Database Keys:
+.   see KSPSolve()
+
+   Level: beginner
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_BiCG"

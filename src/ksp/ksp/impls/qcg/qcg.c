@@ -1,8 +1,4 @@
 /*$Id: qcg.c,v 1.86 2001/08/07 03:03:55 balay Exp curfman $*/
-/*
-   Code to run conjugate gradient method subject to a constraint
-   on the solution norm. This is used in Trust Region methods.
-*/
 
 #include "src/ksp/ksp/kspimpl.h"             /*I "petscksp.h" I*/
 #include "src/ksp/ksp/impls/qcg/qcg.h"
@@ -32,7 +28,7 @@ int KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
   int ierr,(*f)(KSP,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (delta < 0.0) SETERRQ(1,"Tolerance must be non-negative");
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -63,7 +59,7 @@ int KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
   int ierr,(*f)(KSP,PetscReal*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,tsnorm);CHKERRQ(ierr);
@@ -104,7 +100,7 @@ int KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
   int ierr,(*f)(KSP,PetscReal*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,quadratic);CHKERRQ(ierr);
@@ -463,6 +459,21 @@ int KSPSetFromOptions_QCG(KSP ksp)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*MC
+     KSPQCG -   Code to run conjugate gradient method subject to a constraint
+         on the solution norm. This is used in Trust Region methods for nonlinear equations, SNESTR
+
+   Options Database Keys:
+.      -ksp_qcg_trustregionradius <r> - Trust Region Radius
+
+   Notes: This is rarely used directly
+
+   Level: developer
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPQCGSetTrustRegionRadius()
+           KSPQCGGetTrialStepNorm(), KSPQCGGetQuadratic()
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

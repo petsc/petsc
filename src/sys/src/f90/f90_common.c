@@ -20,8 +20,8 @@
 int F90Array1dAccess(F90Array1d *ptr,void **array)
 {
   PetscFunctionBegin;
-  PetscValidPointer(array);
-  PetscValidPointer(ptr);
+  PetscValidPointer(ptr,1);
+  PetscValidPointer(array,2);
   *array = ptr->addr;
   PetscFunctionReturn(0);
 }
@@ -31,7 +31,7 @@ int F90Array1dAccess(F90Array1d *ptr,void **array)
 int F90Array1dDestroy(F90Array1d *ptr)
 {
   PetscFunctionBegin;
-  PetscValidPointer(ptr);
+  PetscValidPointer(ptr,1);
   ptr->addr = (Pointer)0;
   PetscFunctionReturn(0);
 }
@@ -40,7 +40,8 @@ int F90Array1dDestroy(F90Array1d *ptr)
 int F90Array1dGetNextRecord(F90Array1d *ptr,void **next)
 {
   PetscFunctionBegin;
-  PetscValidPointer(ptr);
+  PetscValidPointer(ptr,1);
+  PetscValidPointer(next,2);
   *next = (void*)(ptr + 1);
   PetscFunctionReturn(0);
 }
@@ -52,8 +53,8 @@ int F90Array1dGetNextRecord(F90Array1d *ptr,void **next)
 int F90Array2dAccess(F90Array2d *ptr,void **array)
 {
   PetscFunctionBegin;
-  PetscValidPointer(array);
-  PetscValidPointer(ptr);
+  PetscValidPointer(ptr,1);
+  PetscValidPointer(array,2);
   *array = ptr->addr;
   PetscFunctionReturn(0);
 }
@@ -63,7 +64,7 @@ int F90Array2dAccess(F90Array2d *ptr,void **array)
 int F90Array2dDestroy(F90Array2d *ptr)
 {
   PetscFunctionBegin;
-  PetscValidPointer(ptr);
+  PetscValidPointer(ptr,1);
   ptr->addr = (Pointer)0;
   PetscFunctionReturn(0);
 }
@@ -72,7 +73,8 @@ int F90Array2dDestroy(F90Array2d *ptr)
 int F90Array2dGetNextRecord(F90Array2d *ptr,void **next)
 {
   PetscFunctionBegin;
-  PetscValidPointer(ptr);
+  PetscValidPointer(ptr,1);
+  PetscValidPointer(next,2);
   *next = (void*)(ptr + 1);
   PetscFunctionReturn(0);
 }

@@ -12,7 +12,7 @@ typedef struct {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve_Test"
-int SNESSolve_Test(SNES snes,int *its)
+int SNESSolve_Test(SNES snes)
 {
   Mat          A = snes->jacobian,B;
   Vec          x = snes->vec_sol;
@@ -23,7 +23,6 @@ int SNESSolve_Test(SNES snes,int *its)
   SNES_Test    *neP = (SNES_Test*)snes->data;
 
   PetscFunctionBegin;
-  *its = 0;
 
   if (A != snes->jacobian_pre) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot test with alternative preconditioner");

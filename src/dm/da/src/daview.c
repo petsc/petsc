@@ -184,9 +184,9 @@ int DAView(DA da,PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(da->comm);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
@@ -256,7 +256,7 @@ int DAView(DA da,PetscViewer viewer)
 int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,int *s,DAPeriodicType *wrap,DAStencilType *st)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   if (dim)  *dim  = da->dim;
   if (M)    *M    = da->M;
   if (N)    *N    = da->N;
@@ -295,7 +295,8 @@ int DAGetLocalInfo(DA da,DALocalInfo *info)
   int w;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(info,2);
   info->da   = da;
   info->dim  = da->dim;
   info->mx   = da->M;

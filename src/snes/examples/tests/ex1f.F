@@ -246,7 +246,8 @@
 !  this vector to zero by calling VecSet().
 
       call FormInitialGuess(x,ierr)
-      call SNESSolve(snes,x,its,ierr) 
+      call SNESSolve(snes,x,ierr) 
+      call SNESGetIterationNumber(snes,its,ierr);
       if (rank .eq. 0) then
          write(6,100) its
       endif

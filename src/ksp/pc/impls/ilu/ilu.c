@@ -246,7 +246,7 @@ int PCILUSetZeroPivot(PC pc,PetscReal zero)
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetZeroPivot_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,zero);CHKERRQ(ierr);
@@ -283,7 +283,7 @@ int PCILUSetDamping(PC pc,PetscReal damping)
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetDamping_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,damping);CHKERRQ(ierr);
@@ -318,7 +318,7 @@ int PCILUSetShift(PC pc,PetscTruth shifting)
   int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetShift_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,shifting);CHKERRQ(ierr);
@@ -357,7 +357,7 @@ int PCILUSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,int maxrowcount)
   int ierr,(*f)(PC,PetscReal,PetscReal,int);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetUseDropTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,dt,dtcol,maxrowcount);CHKERRQ(ierr);
@@ -397,7 +397,7 @@ int PCILUSetFill(PC pc,PetscReal fill)
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less than 1.0");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetFill_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -435,7 +435,7 @@ int PCILUSetMatOrdering(PC pc,MatOrderingType ordering)
   int ierr,(*f)(PC,MatOrderingType);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetMatOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
@@ -470,7 +470,7 @@ int PCILUSetReuseOrdering(PC pc,PetscTruth flag)
   int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetReuseOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
@@ -504,7 +504,7 @@ int PCILUDTSetReuseFill(PC pc,PetscTruth flag)
   int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUDTSetReuseFill_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
@@ -535,7 +535,7 @@ int PCILUSetLevels(PC pc,int levels)
   int ierr,(*f)(PC,int);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"negative levels");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetLevels_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -570,7 +570,7 @@ int PCILUSetAllowDiagonalFill(PC pc)
   int ierr,(*f)(PC);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetAllowDiagonalFill_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
@@ -611,7 +611,7 @@ int PCILUSetUseInPlace(PC pc)
   int ierr,(*f)(PC);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetUseInPlace_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
@@ -934,6 +934,8 @@ static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
   Concepts: incomplete factorization
 
    Notes: Only implemented for some matrix formats. Not implemented in parallel
+
+          For BAIJ matrices this implements a point block ILU
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
            PCILUSetSetZeroPivot(), PCILUSetDamping(), PCILUSetShift(), PCILUSetUseDropTolerance(),

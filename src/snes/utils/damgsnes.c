@@ -347,11 +347,11 @@ int SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void 
 #define __FUNCT__ "DMMGSolveSNES"
 int DMMGSolveSNES(DMMG *dmmg,int level)
 {
-  int  ierr,nlevels = dmmg[0]->nlevels,its;
+  int  ierr,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   dmmg[0]->nlevels = level+1;
-  ierr             = SNESSolve(dmmg[level]->snes,dmmg[level]->x,&its);CHKERRQ(ierr);
+  ierr             = SNESSolve(dmmg[level]->snes,dmmg[level]->x);CHKERRQ(ierr);
   dmmg[0]->nlevels = nlevels;
   PetscFunctionReturn(0);
 }

@@ -54,14 +54,11 @@ E*/
 #define PCCOMPOSITE  "composite"
 #define PCREDUNDANT  "redundant"
 #define PCSPAI       "spai"
-#define PCMILU       "milu"
 #define PCNN         "nn"
 #define PCCHOLESKY   "cholesky"
 #define PCRAMG       "ramg"
 #define PCSAMG       "samg"
 #define PCPBJACOBI   "pbjacobi"
-#define PCMULTILEVEL "multilevel"
-#define PCSCHUR      "schur"
 #define PCESI        "esi"
 #define PCPETSCESI   "petscesi"
 #define PCMAT        "mat"
@@ -301,17 +298,6 @@ EXTERN int PCRedundantSetScatter(PC,VecScatter,VecScatter);
 EXTERN int PCRedundantGetOperators(PC,Mat*,Mat*);
 EXTERN int PCRedundantGetPC(PC,PC*);
 EXTERN int MatGetOrderingList(PetscFList *list);
-
-EXTERN int PCMultiLevelSetFields(PC, int, int);
-EXTERN int PCMultiLevelSetNonlinearIterate(PC, Vec);
-EXTERN int PCMultiLevelSetGradientOperator(PC, int, int, PetscScalar);
-EXTERN int PCMultiLevelApplyGradient(PC, Vec, Vec);
-EXTERN int PCMultiLevelApplyGradientTrans(PC, Vec, Vec);
-EXTERN int PCMultiLevelBuildSolution(PC, Vec);
-EXTERN int PCMultiLevelGetMultiplier(PC, Vec, Vec);
-
-EXTERN int PCSchurSetGradientOperator(PC, int, int);
-EXTERN int PCSchurGetIterationNumber(PC, int *, int *);
 
 EXTERN int PCSPAISetEpsilon(PC,double);
 EXTERN int PCSPAISetNBSteps(PC,int);

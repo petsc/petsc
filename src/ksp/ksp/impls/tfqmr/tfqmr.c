@@ -1,14 +1,5 @@
 /*$Id: tfqmr.c,v 1.61 2001/08/07 03:03:54 balay Exp $*/
 
-/*                       
-    This code implements the TFQMR (Transpose-free variant of Quasi-Minimal
-    Residual) method.  Reference: Freund, 1993
-
-    Note that for the complex numbers version, the VecDot() arguments
-    within the code MUST remain in the order given for correct computation
-    of inner products.
-*/
-
 #include "src/ksp/ksp/kspimpl.h"
 
 #undef __FUNCT__  
@@ -139,6 +130,18 @@ static int  KSPSolve_TFQMR(KSP ksp)
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*MC
+     KSPRTFQMR - A transpose free QMR (quasi minimal residual), Freund, 1993
+
+   Options Database Keys:
+.   see KSPSolve()
+
+   Level: beginner
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPTCQMR
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

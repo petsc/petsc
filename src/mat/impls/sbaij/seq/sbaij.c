@@ -1158,7 +1158,8 @@ int MatSeqSBAIJSetColumnIndices(Mat mat,int *indices)
   int ierr,(*f)(Mat,int *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidPointer(indices,2);
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqSBAIJSetColumnIndices_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,indices);CHKERRQ(ierr);
@@ -1958,9 +1959,9 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
   if (bs > 1)
     SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
 
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   if (xx != bb) { 
-    ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr);
+    ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   } else { 
     b = x;
   } 
@@ -2066,9 +2067,9 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
   } 
 
   ierr = PetscFree(t); CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   if (bb != xx) { 
-    ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);
+    ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   } 
 
   PetscFunctionReturn(0);

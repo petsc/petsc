@@ -717,7 +717,7 @@ EXTERN_C_BEGIN
 int KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ((KSP_FGMRES *)ksp->data)->modifypc      = fcn;
   ((KSP_FGMRES *)ksp->data)->modifydestroy = d;
   ((KSP_FGMRES *)ksp->data)->modifyctx     = ctx;
@@ -784,6 +784,36 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 EXTERN int KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
 EXTERN_C_END
+
+/*MC
+     KSPFGMRES - Implements the Flexible Generalized Minimal Residual method.  
+                developed by Saad with restart
+
+
+   Options Database Keys:
++   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
+.   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
+.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of 
+                             vectors are allocated as needed)
+.   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
+.   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
+.   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the 
+                                   stability of the classical Gram-Schmidt  orthogonalization.
+.   -ksp_gmres_krylov_monitor - plot the Krylov space generated
+.   -ksp_fgmres_modifypcnochange - do not change the preconditioner between iterations
+-   -ksp_fgmres_modifypcksp - modify the preconditioner using KSPFGMRESModifyPCKSP()
+
+   Level: beginner
+
+    Notes: See KSPFGMRESSetModifyPC() for how to vary the preconditioner between iterations
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPLGMRES,
+           KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization()
+           KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
+           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESKrylovMonitor(), KSPFGMRESSetModifyPC(),
+           KSPFGMRESModifyPCKSP()
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

@@ -44,9 +44,9 @@ int DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-  PetscValidHeaderSpecific(l,VEC_COOKIE);
-  PetscValidHeaderSpecific(g,VEC_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(l,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,4);
   ierr = VecScatterBegin(g,l,mode,SCATTER_FORWARD,da->gtol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -87,9 +87,9 @@ int DALocalToGlobalBegin(DA da,Vec l,Vec g)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-  PetscValidHeaderSpecific(l,VEC_COOKIE);
-  PetscValidHeaderSpecific(g,VEC_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(l,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,3);
   ierr = VecScatterBegin(l,g,ADD_VALUES,SCATTER_REVERSE,da->gtol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -130,9 +130,9 @@ int DALocalToGlobalEnd(DA da,Vec l,Vec g)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-  PetscValidHeaderSpecific(l,VEC_COOKIE);
-  PetscValidHeaderSpecific(g,VEC_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(l,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,3);
   ierr = VecScatterEnd(l,g,ADD_VALUES,SCATTER_REVERSE,da->gtol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -172,9 +172,9 @@ int DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-  PetscValidHeaderSpecific(l,VEC_COOKIE);
-  PetscValidHeaderSpecific(g,VEC_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(l,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,4);
   ierr = VecScatterEnd(g,l,mode,SCATTER_FORWARD,da->gtol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -207,7 +207,7 @@ int DAGlobalToNatural_Create(DA da)
   Vec global;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   if (!da->natural) {
     SETERRQ(1,"Natural layout vector not yet created; cannot scatter into it");
   }
@@ -263,9 +263,9 @@ int DAGlobalToNaturalBegin(DA da,Vec g,InsertMode mode,Vec l)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-  PetscValidHeaderSpecific(l,VEC_COOKIE);
-  PetscValidHeaderSpecific(g,VEC_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(l,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,4);
   if (!da->gton) {
     /* create the scatter context */
     ierr = DAGlobalToNatural_Create(da);CHKERRQ(ierr);
@@ -309,9 +309,9 @@ int DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mode,Vec l)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-  PetscValidHeaderSpecific(l,VEC_COOKIE);
-  PetscValidHeaderSpecific(g,VEC_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(l,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,4);
   ierr = VecScatterEnd(g,l,mode,SCATTER_FORWARD,da->gton);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -353,9 +353,9 @@ int DANaturalToGlobalBegin(DA da,Vec g,InsertMode mode,Vec l)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-  PetscValidHeaderSpecific(l,VEC_COOKIE);
-  PetscValidHeaderSpecific(g,VEC_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(l,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,4);
   if (!da->gton) {
     /* create the scatter context */
     ierr = DAGlobalToNatural_Create(da);CHKERRQ(ierr);
@@ -400,9 +400,9 @@ int DANaturalToGlobalEnd(DA da,Vec g,InsertMode mode,Vec l)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-  PetscValidHeaderSpecific(l,VEC_COOKIE);
-  PetscValidHeaderSpecific(g,VEC_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(l,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,4);
   ierr = VecScatterEnd(g,l,mode,SCATTER_REVERSE,da->gton);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

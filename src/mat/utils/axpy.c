@@ -31,9 +31,9 @@ int MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
   int         m1,m2,n1,n2,ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,MAT_COOKIE); 
-  PetscValidHeaderSpecific(Y,MAT_COOKIE);
-  PetscValidScalarPointer(a);
+  PetscValidScalarPointer(a,1);
+  PetscValidHeaderSpecific(X,MAT_COOKIE,2); 
+  PetscValidHeaderSpecific(Y,MAT_COOKIE,3);
 
   ierr = MatGetSize(X,&m1,&n1);CHKERRQ(ierr);
   ierr = MatGetSize(Y,&m2,&n2);CHKERRQ(ierr);
@@ -103,8 +103,8 @@ int MatShift(const PetscScalar *a,Mat Y)
   int    i,start,end,ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Y,MAT_COOKIE);
-  PetscValidScalarPointer(a);
+  PetscValidScalarPointer(a,1);
+  PetscValidHeaderSpecific(Y,MAT_COOKIE,2);
   if (Y->ops->shift) {
     ierr = (*Y->ops->shift)(a,Y);CHKERRQ(ierr);
   } else {
@@ -143,8 +143,8 @@ int MatDiagonalSet(Mat Y,Vec D,InsertMode is)
   int    i,start,end,ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Y,MAT_COOKIE);
-  PetscValidHeaderSpecific(D,VEC_COOKIE);
+  PetscValidHeaderSpecific(Y,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(D,VEC_COOKIE,2);
   if (Y->ops->diagonalset) {
     ierr = (*Y->ops->diagonalset)(Y,D,is);CHKERRQ(ierr);
   } else {
@@ -196,9 +196,9 @@ int MatAYPX(const PetscScalar *a,Mat X,Mat Y)
   int         mX,mY,nX,nY,ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,MAT_COOKIE);
-  PetscValidHeaderSpecific(Y,MAT_COOKIE);
-  PetscValidScalarPointer(a);
+  PetscValidScalarPointer(a,1);
+  PetscValidHeaderSpecific(X,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(Y,MAT_COOKIE,3);
 
   ierr = MatGetSize(X,&mX,&nX);CHKERRQ(ierr);
   ierr = MatGetSize(X,&mY,&nY);CHKERRQ(ierr);
@@ -243,8 +243,8 @@ int MatComputeExplicitOperator(Mat inmat,Mat *mat)
   PetscScalar   *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(inmat,MAT_COOKIE);
-  PetscValidPointer(mat);
+  PetscValidHeaderSpecific(inmat,MAT_COOKIE,1);
+  PetscValidPointer(mat,2);
 
   comm = inmat->comm;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

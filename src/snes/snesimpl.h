@@ -57,7 +57,7 @@ struct _p_SNES {
 
   int   (*setup)(SNES);             /* routine to set up the nonlinear solver */
   int   setupcalled;                /* true if setup has been called */
-  int   (*solve)(SNES,int*);        /* actual nonlinear solver */
+  int   (*solve)(SNES);             /* actual nonlinear solver */
   int   (*setfromoptions)(SNES);    /* sets options from database */
   int   (*printhelp)(SNES,char*);   /* prints help info */
   void  *data;                      /* implementation-specific data */

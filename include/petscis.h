@@ -185,5 +185,9 @@ EXTERN int ISColoringRestoreIS(ISColoring,IS*[]);
 EXTERN int ISPartitioningToNumbering(IS,IS*);
 EXTERN int ISPartitioningCount(IS,int[]);
 
+EXTERN int ISCompressIndicesGeneral(int,int,int,const IS[],IS[]);
+EXTERN int ISCompressIndicesSorted(int,int,int,const IS[],IS[]);
+EXTERN int ISExpandIndicesGeneral(int,int,int,const IS[],IS[]);
+
 PETSC_EXTERN_CXX_END
 #endif

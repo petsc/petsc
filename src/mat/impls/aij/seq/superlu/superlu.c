@@ -133,8 +133,6 @@ int MatCreateNull_SuperLU(Mat A,Mat *nullMat)
   int           row,newRow,col,newCol,block,b,ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE);
-  PetscValidPointer(nullMat);
   if (!A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
   numNullCols = numCols - numRows;
   if (numNullCols < 0) SETERRQ(PETSC_ERR_ARG_WRONG,"Function only applies to underdetermined problems");

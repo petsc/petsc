@@ -84,7 +84,7 @@ int PetscMapSetFromOptions(PetscMap map)
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map,MAP_COOKIE);
+  PetscValidHeaderSpecific(map,MAP_COOKIE,1);
 
   ierr = PetscOptionsBegin(map->comm, map->prefix, "PetscMap options", "PetscMap");                       CHKERRQ(ierr);
 
@@ -129,7 +129,7 @@ int PetscMapPrintHelp(PetscMap map)
   int  ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, MAP_COOKIE);
+  PetscValidHeaderSpecific(map, MAP_COOKIE,1);
 
   ierr = PetscStrcpy(p, "-");                                                                             CHKERRQ(ierr);
   if (map->prefix != PETSC_NULL) {
@@ -161,7 +161,7 @@ int PetscMapDestroy(PetscMap map)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, MAP_COOKIE); 
+  PetscValidHeaderSpecific(map, MAP_COOKIE,1); 
   if (--map->refct > 0) PetscFunctionReturn(0);
   if (map->range != PETSC_NULL) {
     ierr = PetscFree(map->range);                                                                         CHKERRQ(ierr);
@@ -193,7 +193,7 @@ Concepts: PetscMap^local size
 int PetscMapSetLocalSize(PetscMap m,int n)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(m,MAP_COOKIE); 
+  PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
   m->n = n;
   PetscFunctionReturn(0);
 }
@@ -221,8 +221,8 @@ int PetscMapSetLocalSize(PetscMap m,int n)
 int PetscMapGetLocalSize(PetscMap m,int *n)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(m,MAP_COOKIE); 
-  PetscValidIntPointer(n);
+  PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
+  PetscValidIntPointer(n,2);
   *n = m->n;
   PetscFunctionReturn(0);
 }
@@ -246,7 +246,7 @@ int PetscMapGetLocalSize(PetscMap m,int *n)
 int PetscMapSetSize(PetscMap m,int N)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(m,MAP_COOKIE); 
+  PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
   m->N = N;
   PetscFunctionReturn(0);
 }
@@ -273,8 +273,8 @@ int PetscMapSetSize(PetscMap m,int N)
 int PetscMapGetSize(PetscMap m,int *N)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(m,MAP_COOKIE); 
-  PetscValidIntPointer(N);
+  PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
+  PetscValidIntPointer(N,2);
   *N = m->N;
   PetscFunctionReturn(0);
 }
@@ -300,9 +300,9 @@ int PetscMapGetSize(PetscMap m,int *N)
 int PetscMapGetLocalRange(PetscMap m,int *rstart,int *rend)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(m,MAP_COOKIE); 
-  if (rstart)  PetscValidIntPointer(rstart);
-  if (rend) PetscValidIntPointer(rend);
+  PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
+  if (rstart)  PetscValidIntPointer(rstart,2);
+  if (rend) PetscValidIntPointer(rend,3);
   if (rstart) *rstart = m->rstart;
   if (rend)   *rend   = m->rend;
   PetscFunctionReturn(0);
@@ -331,8 +331,8 @@ int PetscMapGetLocalRange(PetscMap m,int *rstart,int *rend)
 int PetscMapGetGlobalRange(PetscMap m,int *range[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(m,MAP_COOKIE); 
-  PetscValidPointer(range);
+  PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
+  PetscValidPointer(range,2);
   *range = m->range;
   PetscFunctionReturn(0);
 }

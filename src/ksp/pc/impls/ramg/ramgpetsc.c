@@ -532,6 +532,51 @@ static int PCDestroy_RAMG(PC pc)
   PetscFunctionReturn(0);
 }
 
+/*MC
+     PCRAMG - Interface to the algebraic multigrid preconditioner 
+
+    amg1r5 is the algebraic multigrid code by John Ruge and Klaus         
+    Stueben [1,2].                                                         
+    [1] K. St\"{u}ben,"Algebraic Multigrid: An Introduction for Positive  
+        Definite Problems with Applications", Tech. Rep. 53, German       
+        National Research Center for Information Technology (GMD),        
+        Schloss Birlinhoven, D-53754 Sankt-Augustin, Germany, March 1999   
+    [2] J. Ruge and K. St\"{u}ben, "Algebraic Multigrid" in "Multigrid    
+        Methods" S. McCormick, Ed., vol. 3 of Frontiers in Applied        
+        Mathmatics, pp. 73--130, SIAM, Philadelphia, PA, 1987  
+
+   Options Database Keys:
++   -pc_ramg_iswtch - 
+.   -pc_ramg_iout -
+.   -pc_ramg_cycles -
+.   -pc_ramg_madapt -
+.   -pc_ramg_nsolc -
+.   -pc_ramg_eps - 
+.   -pc_ramg_nwt -
+.   -pc_ramg_ntr -
+.   -pc_ramg_ecg1 - 
+.   -pc_ramg_ecg2 - 
+-   -pc_ramg_ewt2 -
+      
+       See the amg1r5 documentation for the meaning of these parameters.
+
+   Level: intermediate
+
+  Concepts: algebraic multigrid
+
+   Notes: Only implemented for some matrix formats. Not implemented in parallel
+
+          Requires symmetric, positive definite matrices
+
+          AMG1r5 is no longer easily available, see http://www.mgnet.org/mgnet-codes-gmd.html
+          It has been replaced by Klaus Stueben's SAMG (represent in PETSc by PCRAMG).
+
+  Contributed by Domenico Lahaye
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSAMG
+
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_RAMG"

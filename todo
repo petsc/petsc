@@ -2,10 +2,6 @@
 PETSc configure
    Add support for requesting 32 bit or 64 bit code
 
-   Put in crazy windows compiler flags
-
-   Fix X11 test
-
    Have configure generate bmake/init.csh init.sh that can be source
    by .cshrc and friends and sets PETSC_DIR, MATLABPATH and PATH, others?
 
@@ -15,13 +11,12 @@ PETSc configure
    requested with --with-sowing-if-needed
 
 Vectors
-   Move VecGet/RestoreArrayFast() -> VecGet/RestoreArray(), VecGetArray() -> Private
-   and top part of Vec object to petscvec.h
-
    Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input
 
-Fortran
-   Re: [PETSC #8120] Bug report F90Array1dCreate() problem with upper bounds
+Error handling
+   Add troubleshooting entries and error messages with web address for common errors.
 
-PC/KSP
-   Add manual pages for all the KSP types and for the PC types that are missing
+Convert the Tufo-Fischer parallel direct solver to its own PC.
+
+if PETSC_ARCH is a bmake one then configure should error
+

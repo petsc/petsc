@@ -7,11 +7,11 @@
  */
 
 typedef struct {
-    int      curl,     /* Current number of basis vectors */
-             maxl;     /* Maximum number of basis vectors */
-    PetscScalar   *alpha;   /* */
-    Vec      *xtilde,  /* Saved x vectors */
-             *btilde;  /* Saved b vectors */
+    int         curl,     /* Current number of basis vectors */
+                maxl;     /* Maximum number of basis vectors */
+    PetscScalar *alpha;   /* */
+    Vec         *xtilde,  /* Saved x vectors */
+                *btilde;  /* Saved b vectors */
 } KSPIGUESS;
 
 #undef __FUNCT__  
@@ -23,7 +23,7 @@ int KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
 
   *ITG = 0;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PetscMalloc(sizeof(KSPIGUESS),&itg);CHKERRQ(ierr);
   itg->curl = 0;
   itg->maxl = maxl;
@@ -44,7 +44,7 @@ int KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PetscFree(itg->alpha);CHKERRQ(ierr);
   ierr = VecDestroyVecs(itg->btilde,itg->maxl);CHKERRQ(ierr);
   ierr = VecDestroyVecs(itg->xtilde,itg->maxl);CHKERRQ(ierr);
@@ -56,11 +56,13 @@ int KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 #define __FUNCT__ "KSPGuessFormB"
 int KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 {
-  int    i,ierr;
+  int         i,ierr;
   PetscScalar tmp;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(itg,2);
+  PetscValidHeaderSpecific(b,VEC_COOKIE,3);  
   for (i=1; i<=itg->curl; i++) {
     ierr = VecDot(itg->btilde[i-1],b,&(itg->alpha[i-1]));CHKERRQ(ierr);
     tmp = -itg->alpha[i-1];
@@ -76,7 +78,9 @@ int KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
   int i,ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(itg,2);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,3);  
   ierr = VecCopy(x,itg->xtilde[itg->curl]);CHKERRQ(ierr);
   for (i=1; i<=itg->curl; i++) {
     ierr = VecAXPY(&itg->alpha[i-1],itg->xtilde[i-1],x);CHKERRQ(ierr);
@@ -95,7 +99,9 @@ int  KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
   Mat          Amat,Pmat;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscValidPointer(itg,3);
   ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   if (curl == itg->maxl) {
     ierr = KSP_MatMult(ksp,Amat,x,itg->btilde[0]);CHKERRQ(ierr);

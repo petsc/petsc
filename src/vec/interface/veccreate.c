@@ -33,7 +33,7 @@ int VecCreate(MPI_Comm comm, Vec *vec)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(vec);
+  PetscValidPointer(vec,2);
   *vec = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);

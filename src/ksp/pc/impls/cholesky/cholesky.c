@@ -369,7 +369,7 @@ int PCCholeskySetReuseOrdering(PC pc,PetscTruth flag)
   int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetReuseOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
@@ -403,7 +403,7 @@ int PCCholeskySetReuseFill(PC pc,PetscTruth flag)
   int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetReuseFill_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
@@ -443,7 +443,7 @@ int PCCholeskySetFill(PC pc,PetscReal fill)
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less then 1.0");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetFill_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -478,7 +478,7 @@ int PCCholeskySetDamping(PC pc,PetscReal damping)
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetDamping_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,damping);CHKERRQ(ierr);
@@ -513,7 +513,7 @@ int PCCholeskySetShift(PC pc,PetscTruth shift)
   int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetShift_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,shift);CHKERRQ(ierr);
@@ -558,7 +558,7 @@ int PCCholeskySetUseInPlace(PC pc)
   int ierr,(*f)(PC);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetUseInPlace_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
