@@ -378,15 +378,17 @@ runex10_18:
 	   if (${DIFF} output/ex10_18.out ex10_18.tmp) then true; \
 	   else echo "Possible problem with ex10_18, diffs above"; fi; \
 	   ${RM} -f ex10_18.tmp
-LEVELS = 0 2
+LEVELS = 0 2 4
 runex10_19:
+	-@touch ex10_19aij.tmp
+	-@touch ex10_19sbaij.tmp
 	-@for levels in ${LEVELS}; do \
-	-@${MPIRUN} -np 1 ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type cg -pc_type icc -pc_icc_levels $$levles >> ex10_19aij.tmp 2>&1;
-	 -@${MPIRUN} -np 1 ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type cg -pc_type icc -pc_icc_levels $$levles -matload_type seqsbaij >> ex10_19sbaij.tmp 2>&1;
-	done;
-	   if (${DIFF} ex10_19aij.tmp ex10_19sbaij.tmp) then true; \
+	${MPIRUN} -np 1 ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_icc_levels $$levels >> ex10_19aij.tmp 2>&1; \
+	 ${MPIRUN} -np 1 ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_icc_levels $$levels -matload_type seqsbaij >> ex10_19sbaij.tmp 2>&1; \
+	done; 
+	-@if (${DIFF} ex10_19aij.tmp ex10_19sbaij.tmp) then true; \
 	   else echo "Possible problem with ex10_19, diffs above"; fi; \
-	   ${RM} -f ex10_19aij.tmp ex10_19sbaij.tmp
+	${RM} -f ex10_19aij.tmp ex10_19sbaij.tmp
 
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_irorthog > ex11_1.tmp 2>&1; \
