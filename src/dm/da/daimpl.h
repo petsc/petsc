@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.14 1996/06/26 15:37:21 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.15 1996/07/02 18:08:52 bsmith Exp curfman $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -44,7 +44,7 @@ struct _DA {
      ltol - Local representation to local representation, updates the
             ghostpoint values in the second vector from (correct) interior
             values in the first vector.  This is good for explicit
-            nearest neighbor time-stepping.
+            nearest neighbor timestepping.
 */
 
 extern int DFShellCreateDA_Private(MPI_Comm,char**,DA,DF*);

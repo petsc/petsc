@@ -1,11 +1,11 @@
-/* $Id: tsimpl.h,v 1.6 1996/03/29 18:30:57 curfman Exp bsmith $ */
+/* $Id: tsimpl.h,v 1.7 1996/04/20 04:20:55 bsmith Exp curfman $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
 #include "ts.h"
 
 /*
-    Time steping context. 
+    Timesteping context. 
       
       General case: U_t = F(t,U) <-- the right hand side function.
       Linear  case: U_t = A(t) U. <-- the right hand side matrix.
@@ -60,7 +60,6 @@ struct _TS {
   int           nwork;              
   Vec           *work;
 };
-
 
 extern int TSMonitor(TS,int,double,Vec);
 #endif

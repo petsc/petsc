@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.2 1996/09/27 02:43:36 bsmith Exp bsmith $";
+C "$Id: ex1f.F,v 1.3 1996/09/29 14:40:10 bsmith Exp curfman $";
 C
 C       Formatted test for TS routines.
 C
@@ -142,7 +142,7 @@ C
         problem   = nonlinear
       endif
     
-C   make time step context 
+C   make timestep context 
 
       call TSCreate(PETSC_COMM_WORLD,tsproblem,ts,ierr) 
       call TSSetMonitor(ts,Monitor,PETSC_NULL,ierr) 
@@ -378,7 +378,7 @@ C
       call VecNorm(csolution,NORM_MAX,lnrm_max,ierr) 
 
       if (nox .eq. 0) then
-        print*,'Time-step ',step,' time ',time,' norm of error ',
+        print*,'timestep ',step,' time ',time,' norm of error ',
      &         lnrm_2,lnrm_max
       endif
 
