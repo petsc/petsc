@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.109 1998/04/24 04:53:10 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.110 1998/04/24 21:37:31 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -652,7 +652,7 @@ int SNESSetLineSearch(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
   int ierr, (*f)(SNES,int (*f)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESSetLineSearch",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESSetLineSearch_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(snes,func);CHKERRQ(ierr);
   }
@@ -818,7 +818,7 @@ int SNESCreate_EQ_LS(SNES snes)
   neP->steptol		= 1.e-12;
   neP->LineSearch       = SNESCubicLineSearch;
 
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESSetLineSearch","SNESSetLineSearch_LS",
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESSetLineSearch_C","SNESSetLineSearch_LS",
                     (void*)SNESSetLineSearch_LS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

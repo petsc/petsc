@@ -1,59 +1,55 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex59.c,v 1.5 1998/04/13 17:41:36 bsmith Exp $";
+static char vcid[] = "$Id: ex61.c,v 1.1 1998/05/12 19:32:36 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Tests MatGetSubmatrix() in parallel";
+static char help[] = "Tests MatSeq(B)AIJSetColumnIndices()";
 
 #include "mat.h"
 
+/*
+      Generate the following matrix:
+
+         1 0 3 
+         1 2 3
+         0 0 3
+*/
 int main(int argc,char **args)
 {
-  Mat         C, A;
-  int         i,j, m = 3, n = 2, rank,size, ierr, rstart, rend;
+  Mat         A;
   Scalar      v;
-  IS          isrow,iscol;
+  int         ierr,i,j,rowlens[] = {2,3,1},cols[] = {0,2,0,1,2,2},flag;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  n = 2*size;
 
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-         m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C); CHKERRA(ierr);
-
-  /*
-        This is JUST to generate a nice test matrix, all processors fill up
-    the entire matrix. This is not something one would ever do in practice.
-  */
-  for ( i=0; i<m*n; i++ ) { 
-    for ( j=0; j<m*n; j++ ) {
-      v = i + j; 
-      ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
-    }
+  ierr = OptionsHasName(PETSC_NULL,"-baij",&flag);CHKERRA(ierr);
+  if (flag) {
+    ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,1,3,3,PETSC_NULL,rowlens,&A);CHKERRA(ierr);
+    ierr = MatSeqBAIJSetColumnIndices(A,cols);CHKERRA(ierr);
+  } else {
+    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,3,3,PETSC_NULL,rowlens,&A);CHKERRA(ierr);
+    ierr = MatSeqAIJSetColumnIndices(A,cols);CHKERRA(ierr);
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
-  /* 
-     Generate a new matrix consisting of every second row and column of
-   the original matrix
-  */
-  ierr = MatGetOwnershipRange(C,&rstart,&rend); CHKERRA(ierr);
-  /* list the rows we want on THIS processor */
-  ierr = ISCreateStride(PETSC_COMM_WORLD,(rend-rstart)/2,rstart,2,&isrow);CHKERRA(ierr);
-  /* list ALL the columns we want */
-  ierr = ISCreateStride(PETSC_COMM_WORLD,(m*n)/2,0,2,&iscol);CHKERRA(ierr);
-  ierr = MatGetSubMatrix(C,isrow,iscol,PETSC_DECIDE,MAT_INITIAL_MATRIX,&A);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRA(ierr); 
+  i = 0; j = 0; v = 1.0;
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  i = 0; j = 2; v = 3.0;
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
 
-  ierr = MatGetSubMatrix(C,isrow,iscol,PETSC_DECIDE,MAT_REUSE_MATRIX,&A);CHKERRA(ierr); 
-  ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRA(ierr); 
+  i = 1; j = 0; v = 1.0;
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  i = 1; j = 1; v = 2.0;
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  i = 1; j = 2; v = 3.0;
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
 
-  ierr = ISDestroy(isrow);CHKERRA(ierr);
-  ierr = ISDestroy(iscol);CHKERRA(ierr);
+  i = 2; j = 2; v = 3.0;
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+
   ierr = MatDestroy(A); CHKERRA(ierr);
-  ierr = MatDestroy(C); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

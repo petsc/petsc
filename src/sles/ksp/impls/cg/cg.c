@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.71 1998/04/03 23:13:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.72 1998/04/09 04:10:03 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -61,7 +61,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
 {
   int          ierr, i = 0,maxit,eigs,pres, hist_len, cerr;
   Scalar       dpi, a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0, mone = -1.0, ma; 
-  double       *history, dp;
+  double       *history, dp = 0.0;
   Vec          X,B,Z,R,P;
   KSP_CG       *cg;
   Mat          Amat, Pmat;
@@ -99,10 +99,12 @@ int  KSPSolve_CG(KSP ksp,int *its)
     ierr = VecCopy(B,R); CHKERRQ(ierr);            /*     r <- b (x is 0) */
   }
   ierr = PCApply(ksp->B,R,Z); CHKERRQ(ierr);       /*     z <- Br         */
-  if (pres) {
-      ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr); /*    dp <- z'*z       */
-  } else {
-      ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*    dp <- r'*r       */
+  if (!ksp->avoidnorms) {
+    if (pres) {
+        ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr); /*    dp <- z'*z       */
+    } else {
+        ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*    dp <- r'*r       */
+    }
   }
   cerr = (*ksp->converged)(ksp,0,dp,ksp->cnvP);
   if (cerr) {*its =  0; PetscFunctionReturn(0);}
@@ -135,11 +137,13 @@ int  KSPSolve_CG(KSP ksp,int *its)
      }
      ierr = VecAXPY(&a,P,X); CHKERRQ(ierr);        /*     x <- x + ap     */
      ma = -a; VecAXPY(&ma,Z,R);                    /*     r <- r - az     */
-     if (pres) {
-       ierr = PCApply(ksp->B,R,Z); CHKERRQ(ierr);    /*     z <- Br         */
-       ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- z'*z       */
-     } else {
-       ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- r'*r       */
+     if (!ksp->avoidnorms) {
+       if (pres) {
+         ierr = PCApply(ksp->B,R,Z); CHKERRQ(ierr);    /*     z <- Br         */
+         ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- z'*z       */
+       } else {
+         ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- r'*r       */
+       }
      }
      ksp->rnorm = dp;
      if (history && hist_len > i + 1) history[i+1] = dp;
@@ -273,7 +277,7 @@ int KSPCreate_CG(KSP ksp)
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType","KSPCGSetType_CG",
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CG",
                                      (void*)KSPCGSetType_CG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

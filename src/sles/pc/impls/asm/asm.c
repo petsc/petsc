@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.75 1998/04/13 17:34:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.76 1998/04/24 21:21:47 curfman Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -450,7 +450,7 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetLocalSubdomains",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetLocalSubdomains_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n,is);CHKERRQ(ierr);
   } 
@@ -498,7 +498,7 @@ int PCASMSetTotalSubdomains(PC pc, int N, IS *is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetTotalSubdomains",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetTotalSubdomains_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,N,is);CHKERRQ(ierr);
   } 
@@ -550,7 +550,7 @@ int PCASMSetOverlap(PC pc, int ovl)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetOverlap",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetOverlap_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ovl);CHKERRQ(ierr);
   } 
@@ -589,7 +589,7 @@ int PCASMSetType(PC pc,PCASMType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetType",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetType_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,type);CHKERRQ(ierr);
   } 
@@ -629,7 +629,7 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMGetSubSLES",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMGetSubSLES_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n_local,first_local,sles);CHKERRQ(ierr);
   } else {
@@ -668,15 +668,15 @@ int PCCreate_ASM(PC pc)
   pc->view              = PCView_ASM;
   pc->applyrich         = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalSubdomains","PCASMSetLocalSubdomains_ASM",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalSubdomains_C","PCASMSetLocalSubdomains_ASM",
                     (void*)PCASMSetLocalSubdomains_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetTotalSubdomains","PCASMSetTotalSubdomains_ASM",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetTotalSubdomains_C","PCASMSetTotalSubdomains_ASM",
                     (void*)PCASMSetTotalSubdomains_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetOverlap","PCASMSetOverlap_ASM",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetOverlap_C","PCASMSetOverlap_ASM",
                     (void*)PCASMSetOverlap_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetType","PCASMSetType_ASM",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetType_C","PCASMSetType_ASM",
                     (void*)PCASMSetType_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubSLES","PCASMGetSubSLES_ASM",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubSLES_C","PCASMGetSubSLES_ASM",
                     (void*)PCASMGetSubSLES_ASM);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

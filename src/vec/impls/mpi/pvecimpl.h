@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.17 1997/12/12 19:36:34 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.18 1998/04/03 21:47:37 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -11,7 +11,7 @@
 typedef struct {
     VECHEADER
     int         N;                         /* length of total vector */
-    int         size,rank,*ownership;
+    int         size,rank;
     InsertMode  insertmode;
 
     struct      {int donotstash, nmax, n, *idx; Scalar *array;} stash;
@@ -48,7 +48,7 @@ extern int VecSetValuesBlocked_MPI(Vec, int, int *, Scalar*,InsertMode);
 extern int VecAssemblyBegin_MPI(Vec);
 extern int VecAssemblyEnd_MPI(Vec);
 
-extern int VecCreateMPI_Private(MPI_Comm,int,int,int,int,int,int *,Scalar *,Vec *);
+extern int VecCreateMPI_Private(MPI_Comm,int,int,int,int,int,Scalar *,Map,Vec *);
 
 #endif
 

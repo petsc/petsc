@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dagtol.c,v 1.11 1998/04/13 17:58:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: dagtol.c,v 1.12 1998/04/27 15:58:33 curfman Exp bsmith $";
 #endif
  
 /*
@@ -41,6 +41,8 @@ int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(l,VEC_COOKIE);
+  PetscValidHeaderSpecific(g,VEC_COOKIE);
   ierr = VecScatterBegin(g,l,mode,SCATTER_FORWARD,da->gtol); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -78,6 +80,8 @@ int DAGlobalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(l,VEC_COOKIE);
+  PetscValidHeaderSpecific(g,VEC_COOKIE);
   ierr = VecScatterEnd(g,l,mode,SCATTER_FORWARD,da->gtol); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.26 1998/05/01 02:49:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.27 1998/05/13 18:42:05 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -324,6 +324,11 @@ static int TSSetFromOptions_PVode_Nonlinear(TS ts)
   ierr = OptionsGetInt(PETSC_NULL,"-ts_pvode_gmres_restart",&restart,&flag);CHKERRQ(ierr);
   ierr = TSPVodeSetGMRESRestart(ts,restart);CHKERRQ(ierr);
 
+  ierr = OptionsHasName(PETSC_NULL,"-ts_pvode_not_exact_final_time",&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = TSPVodeSetExactFinalTime(ts,PETSC_FALSE);CHKERRQ(ierr);
+  }
+
   ierr = PCSetFromOptions(cvode->pc); CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
@@ -348,6 +353,7 @@ static int TSPrintHelp_PVode(TS ts,char *p)
   (*PetscHelpPrintf)(ts->comm," -ts_pvode_gramschmidt_type <unmodified,modified>\n"); 
   (*PetscHelpPrintf)(ts->comm," -ts_pvode_gmres_restart <restart_size> (also max. GMRES its)\n"); 
   (*PetscHelpPrintf)(ts->comm," -ts_pvode_linear_tolerance <tol>\n"); 
+  (*PetscHelpPrintf)(ts->comm," -ts_pvode_not_exact_final_time\n"); 
 
   ierr = PCPrintHelp(cvode->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);

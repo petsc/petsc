@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.70 1998/03/12 23:25:24 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.71 1998/04/03 23:19:27 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -11,14 +11,17 @@
 #include "sys.h"
 
 #define VEC_COOKIE         PETSC_COOKIE+3
+#define MAP_COOKIE         PETSC_COOKIE+22
 #define VEC_SCATTER_COOKIE PETSC_COOKIE+4
 
 typedef enum {VECSAME=-1, VECSEQ, VECMPI} VecType;
 
+typedef struct _p_Map*         Map;
 typedef struct _p_Vec*         Vec;
 typedef struct _p_VecScatter*  VecScatter;
 
-extern int VecCreateSeq(MPI_Comm,int,Vec*);  
+extern int VecCreateSeq(MPI_Comm,int,Vec*);
+extern int MapCreateMPI(MPI_Comm,int,int,Map*);  
 extern int VecCreateMPI(MPI_Comm,int,int,Vec*);  
 extern int VecCreateSeqWithArray(MPI_Comm,int,Scalar*,Vec*);  
 extern int VecCreateMPIWithArray(MPI_Comm,int,int,Scalar*,Vec*);  
@@ -26,6 +29,12 @@ extern int VecCreate(MPI_Comm,int,int,Vec*);
 extern int VecCreateShared(MPI_Comm,int,int,Vec*);  
 
 extern int VecDestroy(Vec);        
+
+extern int MapDestroy(Map);
+extern int MapGetLocalSize(Map,int *);
+extern int MapGetGlobalSize(Map,int *);
+extern int MapGetLocalRange(Map,int *,int *);
+extern int MapGetGlobalRange(Map,int **);
 
 extern int VecDot(Vec,Vec,Scalar*);
 extern int VecTDot(Vec,Vec,Scalar*);  
@@ -56,6 +65,7 @@ extern int VecAbs(Vec);
 extern int VecDuplicate(Vec,Vec*);          
 extern int VecDuplicateVecs(Vec,int,Vec**);         
 extern int VecDestroyVecs(Vec*,int); 
+extern int VecGetMap(Vec,Map*);
 
 typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES} InsertMode;
 extern int VecSetValues(Vec,int,int*,Scalar*,InsertMode);

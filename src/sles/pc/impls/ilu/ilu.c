@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.105 1998/04/15 22:52:05 curfman Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.106 1998/04/24 21:21:40 curfman Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -140,7 +140,7 @@ int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetUseDropTolerance",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetUseDropTolerance_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,dt,dtcount);CHKERRQ(ierr);
   } 
@@ -179,7 +179,7 @@ int PCILUSetFill(PC pc,double fill)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less than 1.0");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetFill",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetFill_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);
   } 
@@ -209,7 +209,7 @@ int PCILUSetMatReordering(PC pc, MatReorderingType ordering)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetMatReordering",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetMatReordering_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
   } 
@@ -242,7 +242,7 @@ int PCILUSetReuseReordering(PC pc,PetscTruth flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetReuseReordering",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetReuseReordering_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   } 
@@ -274,7 +274,7 @@ int PCILUSetReuseFill(PC pc,PetscTruth flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetReuseFill",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetReuseFill_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   } 
@@ -304,7 +304,7 @@ int PCILUSetLevels(PC pc,int levels)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"negative levels");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetLevels",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetLevels_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,levels);CHKERRQ(ierr);
   } 
@@ -340,7 +340,7 @@ int PCILUSetUseInPlace(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetUseInPlace",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetUseInPlace_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -604,19 +604,19 @@ int PCCreate_ILU(PC pc)
   pc->view              = PCView_ILU;
   pc->applyrich         = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetUseDropTolerance","PCILUSetUseDropTolerance_ILU",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetUseDropTolerance_C","PCILUSetUseDropTolerance_ILU",
                     (void*)PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetFill","PCILUSetFill_ILU",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetFill_C","PCILUSetFill_ILU",
                     (void*)PCILUSetFill_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetMatReordering","PCILUSetMatReordering_ILU",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetMatReordering_C","PCILUSetMatReordering_ILU",
                     (void*)PCILUSetMatReordering_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetReuseReordering","PCILUSetReuseReordering_ILU",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetReuseReordering_C","PCILUSetReuseReordering_ILU",
                     (void*)PCILUSetReuseReordering_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetReuseFill","PCILUSetReuseFill_ILU",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetReuseFill_C","PCILUSetReuseFill_ILU",
                     (void*)PCILUSetReuseFill_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetLevels","PCILUSetLevels_ILU",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetLevels_C","PCILUSetLevels_ILU",
                     (void*)PCILUSetLevels_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetUseInPlace","PCILUSetUseInPlace_ILU",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetUseInPlace_C","PCILUSetUseInPlace_ILU",
                     (void*)PCILUSetUseInPlace_ILU);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

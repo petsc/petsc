@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5s.c,v 1.2 1997/11/25 05:13:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5s.c,v 1.3 1997/11/28 16:22:00 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -289,14 +289,14 @@ int FormInitialGuess(AppCtx *user,Vec X)
       Process 0 has to wait for all other processes to get here 
    before proceeding to write in the shared vector
   */
-  PetscBarrier(X);
+  PetscBarrier((PetscObject)X);
   if (user->rank) {
      /*
         All the non-busy processors have to wait here for process 0 to finish
         evaluating the function; otherwise they will start using the vector values
         before they have been computed
      */
-     PetscBarrier(X);
+     PetscBarrier((PetscObject)X);
      return 0;
   }
 
@@ -337,7 +337,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
   */
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
 
-  PetscBarrier(X);
+  PetscBarrier((PetscObject)X);
   return 0;
 } 
 /* ------------------------------------------------------------------- */
@@ -363,7 +363,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
       Process 0 has to wait for all other processes to get here 
    before proceeding to write in the shared vector
   */
-  PetscBarrier(X);
+  PetscBarrier((PetscObject)X);
 
   if (user->rank) {
      /*
@@ -371,7 +371,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         evaluating the function; otherwise they will start using the vector values
         before they have been computed
      */
-     PetscBarrier(X);
+     PetscBarrier((PetscObject)X);
      return 0;
   }
 
@@ -417,7 +417,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
 
   PLogFlops(11*(mx-2)*(my-2))
-  PetscBarrier(X);
+  PetscBarrier((PetscObject)X);
   return 0; 
 } 
 
@@ -442,7 +442,7 @@ int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
       Process 0 has to wait for all other processes to get here 
    before proceeding to write in the shared vector
   */
-  PetscBarrier(snes);
+  PetscBarrier((PetscObject)snes);
   if (!user->rank) {
     ierr = VecGetArray(X,&x);CHKERRQ(ierr);
     ierr = VecGetArray(F,&f);CHKERRQ(ierr);
@@ -456,6 +456,6 @@ int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
       evaluating the function; otherwise they will start using the vector values
       before they have been computed
   */
-  PetscBarrier(snes);
+  PetscBarrier((PetscObject)snes);
   return 0;
 }

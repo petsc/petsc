@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.8 1998/04/09 04:12:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.9 1998/04/13 17:34:45 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -173,7 +173,7 @@ int PCSLESSetUseTrue(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSLESSetUseTrue",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSLESSetUseTrue_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   }
@@ -205,7 +205,7 @@ int PCSLESGetSLES(PC pc,SLES *sles)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp first");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSLESGetSLES",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSLESGetSLES_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,sles);CHKERRQ(ierr);
   }
@@ -244,9 +244,9 @@ int PCCreate_SLES(PC pc)
   jac->use_true_matrix = PETSC_FALSE;
   jac->its             = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSLESSetUseTrue","PCSLESSetUseTrue_SLES",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSLESSetUseTrue_C","PCSLESSetUseTrue_SLES",
                     (void*)PCSLESSetUseTrue_SLES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSLESGetSLES","PCSLESGetSLES_SLES",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSLESGetSLES_C","PCSLESGetSLES_SLES",
                     (void*)PCSLESGetSLES_SLES);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

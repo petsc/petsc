@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.71 1998/04/13 17:33:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.72 1998/04/24 21:21:20 curfman Exp bsmith $";
 #endif
 
 /*
@@ -199,7 +199,7 @@ int PCSORSetSymmetric(PC pc, MatSORType flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetSymmetric",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetSymmetric_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   }
@@ -230,7 +230,7 @@ int PCSORSetOmega(PC pc, double omega)
   int ierr, (*f)(PC,double);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetOmega",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetOmega_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,omega);CHKERRQ(ierr);
   }
@@ -262,7 +262,7 @@ int PCSORSetIterations(PC pc, int its)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetIterations",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetIterations_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,its);CHKERRQ(ierr);
   }
@@ -290,11 +290,11 @@ int PCCreate_SOR(PC pc)
   jac->omega         = 1.0;
   jac->its           = 1;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetSymmetric","PCSORSetSymmetric_SOR",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetSymmetric_C","PCSORSetSymmetric_SOR",
                     (void*)PCSORSetSymmetric_SOR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetOmega","PCSORSetOmega_SOR",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetOmega_C","PCSORSetOmega_SOR",
                     (void*)PCSORSetOmega_SOR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetIterations","PCSORSetIterations_SOR",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetIterations_C","PCSORSetIterations_SOR",
                     (void*)PCSORSetIterations_SOR);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

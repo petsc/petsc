@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.10 1998/04/09 04:12:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.11 1998/04/13 17:34:49 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -317,7 +317,7 @@ int PCCompositeSetType(PC pc,PCCompositeType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeSetType",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeSetType_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,type);CHKERRQ(ierr);
   } 
@@ -344,7 +344,7 @@ int PCCompositeAddPC(PC pc,PCType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeAddPC",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeAddPC_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,type);CHKERRQ(ierr);
   } 
@@ -376,7 +376,7 @@ int PCCompositeGetPC(PC pc,int n,PC *subpc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeGetPC",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeGetPC_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n,subpc);CHKERRQ(ierr);
   } else {
@@ -414,7 +414,7 @@ int PCCompositeSetUseTrue(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeSetUseTrue",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeSetUseTrue_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   }
@@ -447,13 +447,13 @@ int PCCreate_Composite(PC pc)
   jac->work1             = 0;
   jac->work2             = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetType","PCCompositeSetType_Composite",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetType_C","PCCompositeSetType_Composite",
                     (void*)PCCompositeSetType_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPC","PCCompositeAddPC_Composite",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPC_C","PCCompositeAddPC_Composite",
                     (void*)PCCompositeAddPC_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetPC","PCCompositeGetPC_Composite",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetPC_C","PCCompositeGetPC_Composite",
                     (void*)PCCompositeGetPC_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetUseTrue","PCCompositeSetUseTrue_Composite",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetUseTrue_C","PCCompositeSetUseTrue_Composite",
                     (void*)PCCompositeSetUseTrue_Composite);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

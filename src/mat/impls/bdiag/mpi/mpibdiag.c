@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.139 1998/05/11 21:58:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.140 1998/05/15 13:21:18 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -519,10 +519,19 @@ int MatDestroy_MPIBDiag(Mat mat)
   Mat_SeqBDiag *ms = (Mat_SeqBDiag *) mbd->A->data;
 
   PetscFunctionBegin;
+  if (--mat->refct > 0) PetscFunctionReturn(0);
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",mbd->M,mbd->N,ms->bs,ms->nd);
 #else
   PetscFunctionBegin;
+  if (--mat->refct > 0) PetscFunctionReturn(0);
 #endif
+
+  if (mat->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
+  }
+  if (mat->bmapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
+  }
 
   ierr = StashDestroy_Private(&mbd->stash); CHKERRQ(ierr);
   PetscFree(mbd->rowners); 

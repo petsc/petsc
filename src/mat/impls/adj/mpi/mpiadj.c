@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.11 1998/04/13 17:41:17 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiadj.c,v 1.12 1998/04/27 04:04:28 curfman Exp bsmith $";
 #endif
 
 /*
@@ -57,12 +57,23 @@ int MatView_MPIAdj(Mat A,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_MPIAdj"
-int MatDestroy_MPIAdj(Mat A)
+int MatDestroy_MPIAdj(Mat mat)
 {
-  Mat_MPIAdj *a = (Mat_MPIAdj *) A->data;
+  Mat_MPIAdj *a = (Mat_MPIAdj *) mat->data;
+  int        ierr;
+
+  PetscFunctionBegin;
+  if (--mat->refct > 0) PetscFunctionReturn(0);
+
+  if (mat->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
+  }
+  if (mat->bmapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
+  }
 
 #if defined(USE_PETSC_LOG)
-  PLogObjectState((PetscObject)A,"Rows=%d, Cols=%d, NZ=%d",A->m,A->n,a->nz);
+  PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d, NZ=%d",mat->m,mat->n,a->nz);
 #endif
   if (a->diag) PetscFree(a->diag);
   PetscFree(a->i);
@@ -70,8 +81,8 @@ int MatDestroy_MPIAdj(Mat A)
   PetscFree(a->rowners);
   PetscFree(a); 
 
-  PLogObjectDestroy(A);
-  PetscHeaderDestroy(A);
+  PLogObjectDestroy(mat);
+  PetscHeaderDestroy(mat);
   PetscFunctionReturn(0);
 }
 

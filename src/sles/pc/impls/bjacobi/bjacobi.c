@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.107 1998/04/13 17:33:48 bsmith Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.108 1998/04/24 21:21:27 curfman Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -288,7 +288,7 @@ int PCBGSSetSymmetric(PC pc, PCBGSType flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBGSSetSymmetric",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBGSSetSymmetric_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   } 
@@ -327,7 +327,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetUseTrueLocal",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetUseTrueLocal_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -404,7 +404,7 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidIntPointer(n_local);
   PetscValidIntPointer(first_local);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetSubSLES",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetSubSLES_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n_local,first_local,sles);CHKERRQ(ierr);
   } else {
@@ -479,7 +479,7 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have positive blocks");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
   } 
@@ -546,7 +546,7 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have nonegative blocks");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetLocalBlocks",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetLocalBlocks_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
   } 
@@ -613,14 +613,14 @@ int PCCreate_BJacobi(PC pc)
   jac->g_lens            = 0;
   jac->l_lens            = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetUseTrueLocal",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetUseTrueLocal_C",
                     "PCBJacobiSetUseTrueLocal_BJacobi",
                     (void*)PCBJacobiSetUseTrueLocal_BJacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiGetSubSLES","PCBJacobiGetSubSLES_BJacobi",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiGetSubSLES_C","PCBJacobiGetSubSLES_BJacobi",
                     (void*)PCBJacobiGetSubSLES_BJacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks","PCBJacobiSetTotalBlocks_BJacobi",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks_C","PCBJacobiSetTotalBlocks_BJacobi",
                     (void*)PCBJacobiSetTotalBlocks_BJacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetLocalBlocks","PCBJacobiSetLocalBlocks_BJacobi",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetLocalBlocks_C","PCBJacobiSetLocalBlocks_BJacobi",
                     (void*)PCBJacobiSetLocalBlocks_BJacobi);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -641,7 +641,7 @@ int PCCreate_BGS(PC pc)
   pc->setfromoptions = PCSetFromOptions_BGS;
   pc->printhelp      = PCPrintHelp_BGS;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBGSSetSymmetric","PCBGSSetSymmetric_BGS",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBGSSetSymmetric_C","PCBGSSetSymmetric_BGS",
                     (void*)PCBGSSetSymmetric_BGS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

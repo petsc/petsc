@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.12 1998/04/15 22:45:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.13 1998/05/08 16:12:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -34,7 +34,7 @@ int VecDuplicate_Shared( Vec win, Vec *v)
   /* first processor allocates entire array and sends it's address to the others */
   array = (Scalar *) PetscSharedMalloc(w->n*sizeof(Scalar),w->N*sizeof(Scalar),win->comm);CHKPTRQ(array);
 
-  ierr = VecCreateMPI_Private(win->comm,w->n,w->N,w->nghost,w->size,rank,w->ownership,array,v);CHKERRQ(ierr);
+  ierr = VecCreateMPI_Private(win->comm,w->n,w->N,w->nghost,w->size,rank,array,win->map,v);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
 
   /* New vector should inherit stashing property of parent */
@@ -80,7 +80,7 @@ int VecDuplicate_Shared( Vec win, Vec *v)
 @*/ 
 int VecCreateShared(MPI_Comm comm,int n,int N,Vec *vv)
 {
-  int     sum, work = n, size, rank,ierr,*rowners,i;
+  int     sum, work = n, size, rank,ierr,i;
   Scalar  *array;
 
   PetscFunctionBegin;
@@ -95,18 +95,10 @@ int VecCreateShared(MPI_Comm comm,int n,int N,Vec *vv)
   if (n == PETSC_DECIDE) { 
     n = N/size + ((N % size) > rank);
   }
-  /*  Determine ownership range for each processor */
-  rowners = (int *) PetscMalloc((size+1)*sizeof(int));CHKPTRQ(rowners);
-  ierr = MPI_Allgather(&n,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
-  rowners[0] = 0;
-  for (i=2; i<=size; i++ ) {
-    rowners[i] += rowners[i-1];
-  }
 
   array = (Scalar *) PetscSharedMalloc(n*sizeof(Scalar),N*sizeof(Scalar),comm);CHKPTRQ(array); 
 
-  ierr = VecCreateMPI_Private(comm,n,N,0,size,rank,rowners,array,vv);CHKERRQ(ierr);
-  PetscFree(rowners);
+  ierr = VecCreateMPI_Private(comm,n,N,0,size,rank,array,PETSC_NULL,vv);CHKERRQ(ierr);
   (*vv)->ops->duplicate = VecDuplicate_Shared;
   PetscFunctionReturn(0);
 }

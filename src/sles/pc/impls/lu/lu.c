@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.92 1998/04/15 22:51:59 curfman Exp curfman $";
+static char vcid[] = "$Id: lu.c,v 1.93 1998/04/24 21:21:22 curfman Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -244,7 +244,7 @@ int PCLUSetFill(PC pc,double fill)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less then 1.0");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetFill",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetFill_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);
   } 
@@ -282,7 +282,7 @@ int PCLUSetUseInPlace(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetUseInPlace",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetUseInPlace_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -309,7 +309,7 @@ int PCLUSetMatReordering(PC pc, MatReorderingType ordering)
   int ierr, (*f)(PC,MatReorderingType);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetMatReodering",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetMatReodering_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
   } 
@@ -344,11 +344,11 @@ int PCCreate_LU(PC pc)
   pc->applyrich         = 0;
   pc->getfactoredmatrix = PCGetFactoredMatrix_LU;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetFill","PCLUSetFill_LU",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetFill_C","PCLUSetFill_LU",
                     (void*)PCLUSetFill_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetUseInPlace","PCLUSetUseInPlace_LU",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetUseInPlace_C","PCLUSetUseInPlace_LU",
                     (void*)PCLUSetUseInPlace_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetMatReordering","PCLUSetMatReordering_LU",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetMatReordering_C","PCLUSetMatReordering_LU",
                     (void*)PCLUSetMatReordering_LU);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

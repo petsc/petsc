@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgtype.c,v 1.10 1998/04/13 17:28:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: cgtype.c,v 1.11 1998/04/25 11:55:41 curfman Exp bsmith $";
 #endif
 
 #include "src/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
@@ -36,7 +36,7 @@ int KSPCGSetType(KSP ksp,KSPCGType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPCGSetType",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPCGSetType_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,type);CHKERRQ(ierr);
   }

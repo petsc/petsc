@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.155 1998/04/15 22:50:26 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.156 1998/04/27 03:53:29 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1777,9 +1777,17 @@ int MatView_SeqBDiag(Mat A,Viewer viewer)
 int MatDestroy_SeqBDiag(Mat A)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, bs = a->bs;
+  int          i, bs = a->bs,ierr;
 
   PetscFunctionBegin;
+  if (--A->refct > 0) PetscFunctionReturn(0);
+
+  if (A->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(A->mapping); CHKERRQ(ierr);
+  }
+  if (A->bmapping) {
+    ierr = ISLocalToGlobalMappingDestroy(A->bmapping); CHKERRQ(ierr);
+  }
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)A,"Rows=%d, Cols=%d, NZ=%d, BSize=%d, NDiag=%d",
                        a->m,a->n,a->nz,a->bs,a->nd);

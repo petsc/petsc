@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.57 1998/04/13 17:29:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: cheby.c,v 1.58 1998/04/25 11:55:36 curfman Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -55,7 +55,7 @@ int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,emax,emin);CHKERRQ(ierr);
   }
@@ -221,7 +221,7 @@ int KSPCreate_Chebychev(KSP ksp)
   ksp->buildresidual        = KSPDefaultBuildResidual;
   ksp->view                 = KSPView_Chebychev;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues",
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",
                                     "KSPChebychevSetEigenvalues_Chebychev",
                                     (void*)KSPChebychevSetEigenvalues_Chebychev); CHKERRQ(ierr);
   PetscFunctionReturn(0);

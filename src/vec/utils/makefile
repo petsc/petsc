@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.32 1998/03/19 02:04:56 balay Exp balay $
+# $Id: makefile,v 1.33 1998/04/23 23:30:56 balay Exp bsmith $
 
 ALL: lib
 
@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = vinv.o gcreatev.o vscat.o vpscat.o cmesh.o vecio.o
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = libvec
 MANSEC   = 1
 LOCDIR   = src/vec/utils/
 

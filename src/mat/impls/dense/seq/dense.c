@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.147 1998/04/27 03:53:19 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.148 1998/05/08 16:13:28 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -794,6 +794,14 @@ int MatDestroy_SeqDense(Mat mat)
   int          ierr;
 
   PetscFunctionBegin;
+  if (--mat->refct > 0) PetscFunctionReturn(0);
+
+  if (mat->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
+  }
+  if (mat->bmapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
+  }
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)mat,"Rows %d Cols %d",l->m,l->n);
 #endif

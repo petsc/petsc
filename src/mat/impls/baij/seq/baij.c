@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.135 1998/04/27 03:52:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.136 1998/05/13 14:18:00 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -107,6 +107,14 @@ int MatDestroy_SeqBAIJ(Mat A)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int         ierr;
 
+  if (--A->refct > 0) PetscFunctionReturn(0);
+
+  if (A->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(A->mapping); CHKERRQ(ierr);
+  }
+  if (A->bmapping) {
+    ierr = ISLocalToGlobalMappingDestroy(A->bmapping); CHKERRQ(ierr);
+  }
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject) A,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
 #endif

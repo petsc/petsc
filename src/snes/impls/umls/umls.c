@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.68 1998/04/13 17:56:35 bsmith Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.69 1998/04/24 04:53:05 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -587,7 +587,7 @@ int SNESCreate_UM_LS(SNES snes)
   ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI); CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchGetDampingParameter",
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchGetDampingParameter_C",
                                     "SNESLineSearchGetDampingParameter_UMLS",
                                     (void*)SNESLineSearchGetDampingParameter_UMLS);CHKERRQ(ierr);
 
@@ -617,7 +617,7 @@ int SNESLineSearchGetDampingParameter(SNES snes,Scalar *damp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
-  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESLineSearchGetDampingParameter",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESLineSearchGetDampingParameter_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(snes,damp);CHKERRQ(ierr);
   } else {

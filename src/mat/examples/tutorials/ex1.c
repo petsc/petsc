@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.4 1997/10/19 03:27:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.5 1997/11/03 04:47:01 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -110,7 +110,7 @@ int main(int argc,char **args)
        Conclude profiling last stage; begin profiling next stage.
     */
     /*    PLogStagePop(); */
-    PetscBarrier(A);
+    PetscBarrier((PetscObject)A);
     PLogStagePush(2*i+1);
     sprintf(stagename[2*i+1],"SLESSetUp %d",i);
     PLogStageRegister(2*i+1,stagename[2*i+1]);

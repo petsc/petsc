@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: richscale.c,v 1.8 1998/04/13 17:29:39 bsmith Exp curfman $";
+static char vcid[] = "$Id: richscale.c,v 1.9 1998/04/25 03:09:04 curfman Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -31,7 +31,7 @@ int KSPRichardsonSetScale(KSP ksp,double scale)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPRichardsonSetScale",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,scale);CHKERRQ(ierr);
   }

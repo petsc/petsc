@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.89 1998/05/08 16:13:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.90 1998/05/15 13:23:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -476,6 +476,14 @@ int MatDestroy_MPIDense(Mat mat)
   int          ierr;
 
   PetscFunctionBegin;
+  if (--mat->refct > 0) PetscFunctionReturn(0);
+
+  if (mat->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
+  }
+  if (mat->bmapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
+  }
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",mdn->M,mdn->N);
 #endif

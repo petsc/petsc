@@ -1,16 +1,32 @@
 
-/* $Id: vecimpl.h,v 1.48 1998/05/19 01:58:39 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.49 1998/05/19 02:21:28 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
    Defines the fields shared by all vector implementations.
 */
 
-#ifndef __VECIMPL 
-#define __VECIMPL
+#ifndef __VECIMPL_H
+#define __VECIMPL_H
 #include "vec.h"
 
-/* vector operations */
+struct _MapOps {
+  int  (*getlocalsize)(Map,int*),
+       (*getglobalsize)(Map,int*),
+       (*getlocalrange)(Map,int*,int*),
+       (*getglobalrange)(Map,int**),
+       (*destroy)(Map);
+};
+
+struct _p_Map {
+  PETSCHEADER(struct _MapOps)
+  int                    rstart,rend;       /* local start, local end + 1 */
+  int                    N, n;              /* global, local vector size */
+  int                    *range;
+};
+
+/* ----------------------------------------------------------------------------*/
+
 struct _VecOps {
   int  (*duplicate)(Vec,Vec*),           /* get single vector */
        (*duplicatevecs)(Vec,int,Vec**),  /* get array of vectors */

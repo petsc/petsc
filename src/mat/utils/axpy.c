@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.32 1998/04/13 17:43:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.33 1998/04/24 02:16:14 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -126,8 +126,7 @@ int MatDiagonalShift(Mat Y,Vec D)
   PetscValidHeaderSpecific(D,VEC_COOKIE);
   if (Y->ops->shift) {
     ierr = (*Y->ops->diagonalshift)(D,Y); CHKERRQ(ierr);
-  }
-  else {
+  } else {
     int    vstart,vend;
     Scalar *v;
     ierr = VecGetOwnershipRange(D,&vstart,&vend); CHKERRQ(ierr);

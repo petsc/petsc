@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.69 1998/04/13 17:56:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.70 1998/04/24 04:52:55 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -90,7 +90,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
         else delta = neP->delta0;
         ierr = MatNorm(snes->jacobian,NORM_1,&max_val);
         if (ierr == PETSC_ERR_SUP) {
-          PLogInfo(snes,"SNESSolve_UM_TR: Initial delta computed without matrix norm info");
+          PLogInfo(snes,"SNESSolve_UM_TR: Initial delta computed without matrix norm info\n");
         } else {
           CHKERRQ(ierr);
           if (PetscAbsDouble(max_val)<1.e-14)SETERRQ(PETSC_ERR_PLIB,0,"Hessian norm is too small");

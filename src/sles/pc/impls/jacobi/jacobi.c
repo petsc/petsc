@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.51 1998/04/27 20:02:22 balay Exp curfman $";
+static char vcid[] = "$Id: jacobi.c,v 1.52 1998/04/27 20:23:12 curfman Exp bsmith $";
 #endif
 
 /*  -------------------------------------------------------------------- 
@@ -142,7 +142,7 @@ static int PCSetUp_Jacobi(PC pc)
     ierr = VecRestoreArray(diagsqrt,&x); CHKERRQ(ierr);
   }
   if (zeroflag) {
-    PLogInfo(pc,"Zero detected in diagonal of matrix, using 1 at those locations");
+    PLogInfo(pc,"Zero detected in diagonal of matrix, using 1 at those locations\n");
   }
 
   PetscFunctionReturn(0);

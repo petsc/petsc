@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: posindep.c,v 1.26 1998/04/03 23:17:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.27 1998/04/13 17:51:25 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -398,7 +398,7 @@ int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* c
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
 
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,dt,ctx);CHKERRQ(ierr);
   }
@@ -431,7 +431,7 @@ int TSPseudoSetTimeStepIncrement(TS ts,double inc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
 
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetTimeStepIncremen",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,inc);CHKERRQ(ierr);
   }
@@ -466,7 +466,7 @@ int TSPseudoIncrementDtFromInitialDt(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
 
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts);CHKERRQ(ierr);
   }
@@ -509,7 +509,7 @@ int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
 
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetTimeStep",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetTimeStep_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,dt,ctx);CHKERRQ(ierr);
   }
@@ -610,16 +610,16 @@ int TSCreate_Pseudo(TS ts )
   pseudo->increment_dt_from_initial_dt = 0;
   pseudo->dt                           = TSPseudoDefaultTimeStep;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep",
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C",
                     "TSPseudoSetVerifyTimeStep_Pseudo",
                     (void*)TSPseudoSetVerifyTimeStep_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStepIncrement",
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C",
                     "TSPseudoSetTimeStepIncrement_Pseudo",
                     (void*)TSPseudoSetTimeStepIncrement_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt",
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C",
                     "TSPseudoIncrementDtFromInitialDt_Pseudo",
                     (void*)TSPseudoIncrementDtFromInitialDt_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStep","TSPseudoSetTimeStep_Pseudo",
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStep_C","TSPseudoSetTimeStep_Pseudo",
                     (void*)TSPseudoSetTimeStep_Pseudo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.50 1997/10/19 03:27:15 bsmith Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.51 1998/04/01 00:08:25 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -84,7 +84,7 @@ int main(int argc,char **args)
   }
 
   ierr = VecSet(&zero,x); CHKERRA(ierr);
-  PetscBarrier(A);
+  PetscBarrier((PetscObject)A);
 
   PLogStagePush(1);
   ierr = PetscGetTime(&tsetup1); CHKERRA(ierr);
@@ -96,7 +96,7 @@ int main(int argc,char **args)
   ierr = PetscGetTime(&tsetup2); CHKERRA(ierr);
   tsetup = tsetup2 -tsetup1;
   PLogStagePop();
-  PetscBarrier(A);
+  PetscBarrier((PetscObject)A);
 
 
   PLogStagePush(2);

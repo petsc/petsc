@@ -1,6 +1,6 @@
 
 
-/* $Id: dvec2.c,v 1.49 1998/04/13 17:26:44 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.50 1998/04/14 15:34:26 bsmith Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -747,7 +747,19 @@ int VecGetArray_Seq(Vec vin,Scalar **a)
   Vec_Seq *v = (Vec_Seq *)vin->data;
 
   PetscFunctionBegin;
-  *a =  v->array; PetscFunctionReturn(0);
+  *a =  v->array;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecPlaceArray_Seq"
+int VecPlaceArray_Seq(Vec vin,Scalar *a)
+{
+  Vec_Seq *v = (Vec_Seq *)vin->data;
+
+  PetscFunctionBegin;
+  v->array = a;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -757,7 +769,8 @@ int VecGetSize_Seq(Vec vin,int *size)
   Vec_Seq *v = (Vec_Seq *)vin->data;
 
   PetscFunctionBegin;
-  *size = v->n; PetscFunctionReturn(0);
+  *size = v->n;
+  PetscFunctionReturn(0);
 }
 
 

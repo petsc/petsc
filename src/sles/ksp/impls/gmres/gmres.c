@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.95 1998/04/03 23:13:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.96 1998/04/09 04:10:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -664,13 +664,13 @@ int KSPCreate_GMRES(KSP ksp)
   ksp->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors",
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
                                     "KSPGMRESSetPreAllocateVectors_GMRES",
                                      (void*)KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization",
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",
                                     "KSPGMRESSetOrthogonalization_GMRES",
                                      (void*)KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart",
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",
                                      "KSPGMRESSetRestart_GMRES",
                                     (void*)KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
 

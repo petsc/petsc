@@ -1,34 +1,34 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.1 1998/05/19 15:41:22 bsmith Exp bsmith $";
-#endif
+!
+! "$Id: ex13f.F,v 1.1 1998/05/19 16:11:42 bsmith Exp bsmith $";
+!
+!
+!     Tests PetscSetCommWorld()
+!
+#include "finclude/petsc.h"
 
-/*
-     Tests PetscSetCommWorld()
-*/
-#include "petsc.h"
+      integer   ierr,rank,size,color
+      MPI_Comm  newcomm
 
-int main(int argc, char **argv) 
-{
-  int      ierr,rank,size;
-  MPI_Comm newcomm;
+      call MPI_Init(ierr)
+      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+      call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
 
-  MPI_Init(&argc,&argv);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+!
+!       make two new communicators each half the size of original
+!
+      if ( 2*rank .lt. size) then 
+        color = 0
+      else 
+        color = 1
+      endif
+      call MPI_Comm_split(MPI_COMM_WORLD,color,0,newcomm,ierr)
 
-  /*
-       make two new communicators each half the size of original
-  */
-  MPI_Comm_split(MPI_COMM_WORLD,2*rank<size,0,&newcomm);
+      call PetscSetCommWorld(newcomm,ierr)
 
-  ierr = PetscSetCommWorld(newcomm);
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      print*,'rank ',rank
 
-  PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  printf("rank %d\n",rank);
-
-  PetscFinalize();
-
-  MPI_Finalize();
-  return 0;
-}
+      call PetscFinalize(ierr)
+      call MPI_Finalize(ierr)
+      end

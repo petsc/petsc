@@ -89,8 +89,8 @@ extern int    gettimeofday(struct timeval *,struct timezone *);
 #include <sys/systeminfo.h>
 #if defined(__cplusplus)
 extern "C" {
-extern char   *mktemp(char *);
-extern double atof(const char*);
+extern char     *mktemp(char *);
+extern double   atof(const char*);
 }
 #else
 
