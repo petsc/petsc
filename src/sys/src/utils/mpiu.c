@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.50 1996/08/05 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.51 1996/08/05 03:58:39 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -98,7 +98,7 @@ static char PetscDisplay[128];
 int PetscSetDisplay()
 {
   int  size,rank,len,ierr,flag;
-  char *string,*str;
+  char *str;
 
   ierr = OptionsGetString(0,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);
   if (flag) return 0;
@@ -108,7 +108,7 @@ int PetscSetDisplay()
   if (!rank) {
     str = getenv("DISPLAY");
     if (!str || (str[0] == ':' && size > 1)) {
-      ierr = PetscGetHostName(string,124); CHKERRQ(ierr);
+      ierr = PetscGetHostName(PetscDisplay,124); CHKERRQ(ierr);
       PetscStrcat(PetscDisplay,":0.0");
     }
     else {
