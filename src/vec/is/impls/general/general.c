@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.11 1995/03/23 05:00:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.12 1995/03/24 15:24:49 bsmith Exp curfman $";
 #endif
 /*
        General indices as a list of integers
@@ -65,13 +65,15 @@ static struct _ISOps myops = { ISGetSize_General,ISGetSize_General,
                                ISGetIndices_General,0,
                                ISInvertPermutation_General};
 /*@
-    ISCreateSequential - Creates data structure for 
-     a index set containing a list of integers.
+    ISCreateSequential - Creates a data structure for an index set 
+    containing a list of integers.
 
   Input Parameters:
 .   n - the length of the index set
-.   idx - the list of integers.
+.   idx - the list of integers
 
+  Output Parameter:
+.   is - the new index set
 @*/
 int ISCreateSequential(int n,int *idx,IS *is)
 {
