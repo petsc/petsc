@@ -11,8 +11,8 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscsys
-CEXAMPLES= ex1 ex2 ex3
-EXAMPLESC= ex1.c ex2.c ex3.c
+CEXAMPLES= ex1 ex2 ex3 ex4
+EXAMPLESC= ex1.c ex2.c ex3.c ex4.c
 LINCLUDE = $(SOURCEH)
 
 ex1: ex1.o 
@@ -26,5 +26,9 @@ ex2: ex2.o
 ex3: ex3.o 
 	-$(CLINKER) -o ex3 ex3.o  $(PETSC_LIB)
 	$(RM) -f ex3.o
+
+ex4: ex4.o 
+	-$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
+	$(RM) -f ex4.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
