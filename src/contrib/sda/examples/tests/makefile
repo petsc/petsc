@@ -1,8 +1,8 @@
-#PETSC_DIR = ../../../..
+#PETSC_DIR = ../../../../..
 
 ALL: lib
 
-CFLAGS   = $(PCONF) $(PETSC_INCLUDE) -D__DIR__='"contrib/sda/examples"' \
+CFLAGS   = $(PCONF) $(PETSC_INCLUDE) -D__DIR__='"contrib/sda/examples/tests"' \
            $(CONF) -I../src
 SOURCEC  = 
 SOURCEF  =
@@ -11,7 +11,7 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = 
-LOCDIR   = src/contrib/sda/examples
+LOCDIR   = src/contrib/sda/examples/tests/
 
 EXAMPLES_2    = ex1
 EXAMPLES_3    = ex2
