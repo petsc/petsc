@@ -1,0 +1,75 @@
+
+This is a list of PETSc application users.
+
+Argonne
+  disk brake analysis
+  superconductivity modeling
+  reacting flow analysis
+  
+Notre Dame
+  acoustics
+
+ICASE
+  aerodynamics
+
+Purdue
+  mantle convection (Scott King)
+
+Univ of Texas at Austin
+  oil reservoir simulation (via ACTI project)
+ 
+Univ of Utah 
+  phase transition in composite materials (Tim Burns)
+
+UCLA
+  design of parallel preconditioners (Victor Eijkhout)
+
+Dipartimento di Ingegneria Energetica, Nucleare e del Controllo Ambientale,
+  Bologna, Italy
+  meteorological modeling (Ruben Scardovelli)
+
+Northwestern
+  parallel linear solvers (Valerie Taylor)
+  finite elements for ?? (Petr Krysl)
+
+Renssalaer Polytechnic Institute
+
+Cornell Theory Center
+
+Silvaco Data Systems
+  parallel preconditioners
+
+University of New Mexico
+
+NASA Ames
+
+University of Tennessee, Knoxville
+
+UC Berkley
+
+Courant
+
+Univ of Colorado, Boulder
+
+Forsvarets Forskningsinstitutt, Norwegian Defence Research Establishment
+  wave/fluid dynamical problems in stratified media (Morten Bjoerjus)
+
+Old Dominion University
+
+French Atomic Energy Comission (CEA)
+  (Manus Renaud)
+
+Naval Surface Warfare Center 
+  complex linear solvers (Raymond Cheng)
+
+Yale University
+  Nick Jovanivic
+
+Lavrence Livermore
+  (Gary Smith)
+
+Reynolds Metal Company, Richmond, VA
+  finite element code which derives material response from hundreds
+  of microstructural crystal elements contained in each finite element
+  (A. J. Beaudoin)
+
