@@ -16,7 +16,6 @@
 int ad_grad_size = 0;
 int ad_total_grad_size = 0;
 int ad_grad_size_shadow = 0;
-int iWiLlNeVeRCoNfLiCt = 0;
 
 EXTERN_C_BEGIN
 
@@ -31,41 +30,29 @@ void ad_AD_ResetShadowVar(void)
 
 void ad_grad_axpy_n(int arity, void* ddz, ...)
 {
-  int                i, j, count = 0,found;
-  static double      alphas[100], *z,alpha;
-  static DERIV_TYPE* grads[100],*grad;
+  int                i, j;
+  double             *z,alpha,*gradv;
+  static double      alphas[100];
+  static DERIV_TYPE* grads[100];
   va_list            parg;
 
   va_start(parg, ddz);
   for (i = 0; i < arity; i++) {
-    alpha = va_arg(parg, double);
-    grad  = (DERIV_TYPE*)va_arg(parg, DERIV_TYPE*);
-
-    found = 0;
-    for (j=0; j<count; j++) {
-      if (grad == grads[j]) {
-        alphas[j] += alpha;
-        found     = 1;
-        break;
-      }
-    }
-    if (!found) {
-      alphas[count]  = alpha;
-      grads[count++] = grad;
-    }
+    alphas[i] = va_arg(parg, double);
+    grads[i]  = (DERIV_TYPE*)va_arg(parg, DERIV_TYPE*);
   }
   va_end(parg);
 
   z = DERIV_grad(*((DERIV_TYPE*)ddz));
   { 
-    double  *gradv = DERIV_grad(*grads[0]);
+    gradv = DERIV_grad(*grads[0]);
     alpha = alphas[0];
     for (i = 0; i < ad_grad_size_dynamic; i++) {
       z[i] = alpha*gradv[i];
     }
   }
-  for (j = 1; j < count; j++) {
-    double  *gradv = DERIV_grad(*grads[j]);
+  for (j = 1; j < arity; j++) {
+    gradv = DERIV_grad(*grads[j]);
     alpha = alphas[j];
     for (i = 0; i < ad_grad_size_dynamic; i++) {
       z[i] += alpha*gradv[i];

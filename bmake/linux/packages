@@ -51,9 +51,9 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 # Location where adiC is installed
 #
-#ADIC_DEFINES    = 
-#ADIC_CC         = adiC -a -d gradient
-#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
+ADIC_DEFINES    = 
+ADIC_CC         = adiC -a -d gradient
+PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #
 # Location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
@@ -78,6 +78,32 @@ PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
 #LUSOL_LIB
 #
+# SuperLU-DIST, SuperLU
+#
+SUPERLUDIST_INCLUDE    = -I/home/petsc/soft/linux-rh73/SuperLU_DIST/SRC
+SUPERLU_INCLUDE        = -I/home/petsc/soft/linux-rh73/SuperLU/SRC                       
+SUPERLUDIST_LIB        = /home/petsc/soft/linux-rh73/SuperLU_DIST/superlu_linux.a
+SUPERLU_LIB            = /home/petsc/soft/linux-rh73/SuperLU/superlu_linux.a
+PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
+PETSC_HAVE_SUPERLU     = -DPETSC_HAVE_SUPERLU                      
+#
+# SPOOLES, SPOOLES_MPI
+#
+SPOOLES_INCLUDE       = -I/home/petsc/soft/linux-rh73/spooles-2.2
+SPOOLES_LIB           = /home/petsc/soft/linux-rh73/spooles-2.2/MPI/src/spoolesMPI.a /home/petsc/soft/linux-rh73/spooles-2.2/spooles.a 
+PETSC_HAVE_SPOOLES    = -DPETSC_HAVE_SPOOLES
+#
+# DSCPACK
+#
+DSCPACK_INCLUDE    = -I/home/petsc/soft/linux-rh73/DSCPACK1.0/DSC_LIB
+DSCPACK_LIB        = /home/petsc/soft/linux-rh73/DSCPACK1.0/DSC_LIB/dsclibdbl.a
+PETSC_HAVE_DSCPACK = -DPETSC_HAVE_DSCPACK
+#
+# UMFPACK
+#
+UMFPACK_INCLUDE    = -I/home/petsc/soft/linux-rh73/umfpack
+UMFPACK_LIB        = /home/petsc/soft/linux-rh73/umfpack/umfpack.a
+PETSC_HAVE_UMFPACK = -DPETSC_HAVE_UMFPACK
 #
 #  Location of Trilinos
 #
