@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.9 1999/02/25 23:37:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.10 1999/02/28 23:19:36 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -8,6 +8,23 @@ static char vcid[] = "$Id: gr2.c,v 1.9 1999/02/25 23:37:07 bsmith Exp bsmith $";
 
 #include "src/dm/da/daimpl.h"      /*I  "da.h"   I*/
 
+typedef struct {
+  
+} ZoomCtx;
+
+/*
+       This does the drawing for one particular field 
+    in one particular set of coordinates. It is a callback
+    called from DrawZoom()
+      
+*/
+#undef __FUNC__  
+#define __FUNC__ "VecView_MPI_Draw_DA2d_Zoom"
+int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
+{
+  ZoomCtx *zctx = (ZoomCtx *) ctx;
+
+}
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -27,6 +44,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   Vec            xlocal,xcoor,xcoorl;
   DAPeriodicType periodic;
   DAStencilType  st;
+  ZoomCtx        zctx;
 
   PetscFunctionBegin;
   ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
