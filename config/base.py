@@ -362,14 +362,13 @@ class Configure:
           codeEnd   = ';\n  return 0;\n}\n'
         codeStr += codeBegin+body+codeEnd
     elif language == 'F77':
+      codeStr = includes
       if not body is None:
         if codeBegin is None:
           codeBegin = '      program main\n'
         if codeEnd is None:
           codeEnd   = '\n      end\n'
-        codeStr = codeBegin+body+codeEnd
-      else:
-        codeStr = includes
+        codeStr += codeBegin+body+codeEnd
     else:
       raise RuntimeError('Invalid language: '+language)
     return codeStr
