@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.47 1995/10/22 22:23:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.48 1995/10/23 23:14:39 curfman Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -464,6 +464,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
       ierr = VecScatterView(mbd->Mvctx,viewer); CHKERRQ(ierr);
       MPIU_fprintf(mat->comm,fd,"  block size=%d, number of diagonals=%d\n",
                    dmat->nb,mbd->gnd);
+    }
     else if (format == FILE_FORMAT_INFO) {
       MPIU_fprintf(mat->comm,fd,"  block size=%d, number of diagonals=%d\n",
                    dmat->nb,mbd->gnd);

@@ -26,6 +26,14 @@ Additional Capabilities that PETSc Needs:
    - Fix MPIRowbs format so that one can INSERT_VALUES with nonsymmetric matrix.
 
    - Implement MatDisAssemble() for all parallel matrix types.
+
+   - Make MatGetSubMatrices() for Seq and MPI AIJ.
+
+   - Make MatIncreaseOverlap() for Seq and MPI AIJ.
+
+   - Do overlapping additive Schwarz for Seq and MPI AIJ.
+
+   - Test PETSc with LAM.
     
    X Fix KSPSetGMRESxxx routines:  possibly zap 
      KSPGMRESSetUseUnmodifiedGramSchmidt() in favor of just
