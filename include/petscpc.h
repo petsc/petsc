@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.37 1995/11/09 22:33:28 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.38 1995/11/19 00:51:30 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -37,7 +37,6 @@ typedef enum {ALLMAT_DIFFERENT_NONZERO_PATTERN=0,MAT_SAME_NONZERO_PATTERN=1,
               PMAT_SAME_NONZERO_PATTERN=2,ALLMAT_SAME_NONZERO_PATTERN=3} MatStructure;
 
 extern int PCSetOperators(PC,Mat,Mat,MatStructure);
-extern int PCBJacobiSetUseTrueLocal(PC);
 extern int PCSetVector(PC,Vec);
 extern int PCPrintHelp(PC);
 extern int PCView(PC,Viewer);
@@ -48,8 +47,12 @@ extern int PCSORSetOmega(PC, double);
 extern int PCEisenstatSetOmega(PC, double);
 extern int PCSORSetIterations(PC, int);
 
-extern int PCBJacobiSetTotalBlocks(PC, int, int*);
-extern int PCBJacobiSetLocalBlocks(PC, int, int*);
+#define USE_PRECONDITIONER_MATRIX 0
+#define USE_TRUE_MATRIX           1
+
+extern int PCBJacobiSetUseTrueLocal(PC);
+extern int PCBJacobiSetTotalBlocks(PC, int, int*,int*);
+extern int PCBJacobiSetLocalBlocks(PC, int, int*,int*);
 
 extern int PCBSIterSetBlockSolve(PC);
 extern int PCBSIterSetFromOptions(PC);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.51 1995/11/19 00:22:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.52 1995/12/03 01:29:44 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -39,6 +39,8 @@ static int PCDestroy_BJacobi(PetscObject obj)
   PC_BJacobi *jac = (PC_BJacobi *) pc->data;
   if (jac->g_lens) PetscFree(jac->g_lens);
   if (jac->l_lens) PetscFree(jac->l_lens);
+  if (jac->g_true) PetscFree(jac->g_true);
+  if (jac->l_true) PetscFree(jac->l_true);
   PetscFree(jac);
   return 0;
 }
@@ -48,7 +50,7 @@ static int PCSetFromOptions_BJacobi(PC pc)
   int        blocks;
 
   if (OptionsGetInt(pc->prefix,"-pc_bjacobi_blocks",&blocks)) {
-    PCBJacobiSetTotalBlocks(pc,blocks,0);
+    PCBJacobiSetTotalBlocks(pc,blocks,PetscNull,PetscNull);
   }
   if (OptionsHasName(pc->prefix,"-pc_bjacobi_truelocal")) {
     PCBJacobiSetUseTrueLocal(pc);
@@ -60,6 +62,9 @@ static int PCSetFromOptions_BJacobi(PC pc)
    PCBJacobiSetUseTrueLocal - Sets a flag to indicate that the block 
    problem is associated with the linear system matrix instead of the
    default (where it is associated with the preconditioning matrix).
+   That is, if the local system is solved iteratively then it iterates
+   on the block from the matrix using the block from the preconditioner
+   as the preconditioner for the local block.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -194,6 +199,8 @@ int PCCreate_BJacobi(PC pc)
   jac->same_local_solves = 1;
   jac->g_lens            = 0;
   jac->l_lens            = 0;
+  jac->g_true            = 0;
+  jac->l_true            = 0;
   return 0;
 }
 
@@ -205,6 +212,8 @@ int PCCreate_BJacobi(PC pc)
 .  pc - the preconditioner context
 .  blocks - the number of blocks
 .  lens - [optional] integer array containing the size of each block
+.  true - [optiona] integer array whose entries are USE_PRECONDITIONER_MATRIX
+.          or USE_TRUE_MATRIX can only be provided if lens is provided.
 
    Options Database Key:
 $  -pc_bjacobi_blocks blocks
@@ -217,7 +226,7 @@ $  -pc_bjacobi_blocks blocks
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetLocalBlocks()
 @*/
-int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
+int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens,int *true)
 {
   PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
 
@@ -228,10 +237,18 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
   jac->n = blocks;
   if (!lens) {
     jac->g_lens = 0;
+    jac->g_true = 0;
   }
   else {
     jac->g_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->g_lens);
     PetscMemcpy(jac->g_lens,lens,blocks*sizeof(int));
+    jac->g_true = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->g_true);
+    if (true) {
+      PetscMemcpy(jac->g_true,true,blocks*sizeof(int));      
+    }
+    else {
+      PetscMemzero(jac->g_true,blocks*sizeof(int));
+    }
   }
   return 0;
 }
@@ -244,6 +261,8 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
 .  pc - the preconditioner context
 .  blocks - the number of blocks
 .  lens - [optional] integer array containing size of each block
+.  true - [optiona] integer array whose entries are USE_PRECONDITIONER_MATRIX
+.          or USE_TRUE_MATRIX can only be provided if lens is provided.
 
    Note:  
    Currently only a limited number of blocking configurations are supported.
@@ -252,7 +271,7 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetTotalBlocks()
 @*/
-int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
+int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true)
 {
   PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
 
@@ -263,10 +282,18 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
   jac->n_local = blocks;
   if (!lens) {
     jac->l_lens = 0;
+    jac->l_true = 0;
   }
   else {
     jac->l_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->l_lens);
     PetscMemcpy(jac->l_lens,lens,blocks*sizeof(int));
+    jac->l_true = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->l_true);
+    if (true) {
+      PetscMemcpy(jac->l_true,true,blocks*sizeof(int));      
+    }
+    else {
+      PetscMemzero(jac->l_true,blocks*sizeof(int));
+    }
   }
   return 0;
 }
