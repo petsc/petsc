@@ -22,7 +22,7 @@ EX1 = ex1.o $(FOBJ)
 
 ex1: $(EX1) chkopts
 	-$(CLINKER) -o ex1 $(EX1) $(PETSC_LIB)
-	$(RM) ex1.o
+	$(RM) $(EX1)
 
 runex1:
 	-@$(MPIRUN) ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
