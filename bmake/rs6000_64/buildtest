@@ -1,0 +1,42 @@
+#! /bin/csh
+# $Id: buildtest,v 1.2 2000/04/09 03:08:30 bsmith Exp $ 
+#
+# Defines the configuration for maint/buildtest, this is sourced by that script
+#
+# This handles tests for solaris_uni, solaris_gun, and solaris64
+#
+set DATAFILESPATH=/usr/common/homes/k/kaushik/datafiles
+set TMP=/usr/common/homes/k/kaushik/petsc-test
+set MACH=kaushik@seaborg.nersc.gov
+set ARCH=rs6000_64
+set TEST=testexamples_
+set RSH=ssh
+#
+set day=`date | cut -f1 -d" "`
+if ($day == Sun) then
+  set BOPT=g
+  set JOBS=(4 9 13)
+else if ($day == Mon) then
+  set BOPT=O
+  set JOBS=(4 9 13)
+else if ($day == Tue) then
+  set BOPT=g_c++
+  set JOBS=(4 9 13)
+else if ($day == Wed) then
+  set BOPT=O_c++
+  set JOBS=(4 9 13)
+else if ($day == Thu) then
+  set BOPT=g
+  set JOBS=(4 9 13)
+else if ($day == Fri) then
+  set BOPT=O
+  set JOBS=(4 9 13)
+else if ($day == Sat) then
+  set BOPT=g_c++
+  set JOBS=(4 9 13)
+endif
+
+
+
+
+
