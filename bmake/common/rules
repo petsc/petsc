@@ -104,7 +104,7 @@ manpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	doctext -jumpfile $(IPETSCDIR)/docs/routine.list \
                 -mpath $(PETSCLIB)/docs/man/man$(MANSEC) -ext $(MANSEC)  \
-                 $(SOURCEC) $(SOURCEH); \
+                -keyword $(PETSCLIB)/Keywords $(SOURCEC) $(SOURCEH); \
                 chmod g+w $(PETSCLIB)/docs/man/man$(MANSEC)/*; fi 
 
 latexpages:
