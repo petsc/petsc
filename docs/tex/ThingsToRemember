@@ -132,9 +132,24 @@ ICASE/NASA paragon: Back in action at Va-Tech :(
         pexec "mpirun -np 4 ex8 -log_summary" -sz 4
 
 ICASE/NASA SP2: poseidon.larc.nasa.gov, account: mcinnes
-     info: http://parallel.nas.nasa.gov/Parallel/Metacenter/howto.html
-     Now jobs submitted to poseidon may actually run on babbage, the
+   - info: http://parallel.nas.nasa.gov/Parallel/Metacenter/howto.html
+   - Now jobs submitted to poseidon may actually run on babbage, the
          NASA Ames machine, so that staging input/output files is crucial!
+   - Example of script file using staging:  Note that sometimes the stagein
+     copies do not work - for no aparent reason.  Other times, they work fine.
+       [poseidon] qsub run.job
+     where run.job is a script such as the following:
+         
+#!/bin/csh
+#PBS -l nodes=2
+#PBS -l walltime=10:00
+#PBS -W stagein=/u/mcinnes/work/euler/ex1@poseidon2.larc:/u/mcinnes/work/runs/ex1
+#PBS -W stageout=/u/mcinnes/work/euler/output/o.1@poseidon2.larc:/u/mcinnes/work/runs/out.1
+cd /u/mcinnes/work/runs
+poe ex1 -mat_baij -optionsleft out.1
+
+    Note: home directories and scratch directoreis are same names on babbage
+    and poseidon.
 
 ---------
 
