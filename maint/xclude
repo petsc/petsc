@@ -29,6 +29,7 @@ petsc/pinclude/RCS
 petsc/src/RCS
 petsc/src/examples
 petsc/bmake/IRIX/RCS
+petsc/bmake/IRIX64/RCS
 petsc/bmake/alpha/RCS
 petsc/bmake/freebsd/RCS
 petsc/bmake/rs6000/RCS
@@ -136,4 +137,5 @@ petsc/src/is/impls/seq/general/RCS/
 petsc/src/is/impls/seq/stride/RCS/
 petsc/src/mat/impls/aij/mpi/RCS/
 petsc/src/mat/impls/aij/seq/RCS/
+petsc/src/mat/impls/dense/mpi/RCS/
 petsc/src/mat/impls/dense/seq/RCS/
