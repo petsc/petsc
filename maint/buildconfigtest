@@ -1,16 +1,18 @@
 #! /bin/csh
-# $Id: buildtest,v 1.185 2001/02/06 16:12:26 balay Exp $ 
+# $Id: buildconfigtest,v 1.1 2001/02/08 23:55:46 balay Exp balay $ 
 # 
 ## Compiles and tests PETSc using configure in our nightly builds.
 
 source /home/bsmith/petsc/bmake/$1/buildconfigtest
 
-rsh $MACH -n /home/bsmith/petsc/maint/buildlinks $TMP >& /dev/null
+#rsh $MACH -n /home/bsmith/petsc/maint/buildlinks $TMP >& /dev/null
 rsh $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
 
+rsh $MACH -n "cd $TMP/maint;rm -f buildconfig_$ARCH.$MACH.log"
 rsh $MACH -n "cd $TMP/maint;touch buildconfig_$ARCH.$MACH.log"
 rsh $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH `date` ' >> maint/buildconfig_$ARCH.$MACH.log"
-rsh $MACH -n "cd $TMP;configure >>& maint/buildconfig_$ARCH.$MACH.log"
+rsh $MACH -n "cd $TMP;echo 'bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI' >>& maint/buildconfig_$ARCH.$MACH.log"
+rsh $MACH -n "cd $TMP;bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI >>& maint/buildconfig_$ARCH.$MACH.log"
 
 rsh $MACH -n "cd $TMP;/bin/cp maint/buildconfig_$ARCH.$MACH.log /home/bsmith/petsc/maint/nightlylogs;chmod g+rw /home/bsmith/petsc/maint/nightlylogs/buildconfig_$ARCH.$MACH.log"
 
