@@ -1,6 +1,7 @@
 
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.106 1998/07/23 22:46:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: pbvec.c,v 1.107 1998/08/16 22:06:10 curfman Exp bsmith $";
 #endif
 
 /*
@@ -10,6 +11,61 @@ static char vcid[] = "$Id: pbvec.c,v 1.106 1998/07/23 22:46:05 bsmith Exp curfma
 #include "petsc.h"
 #include <math.h>
 #include "src/vec/impls/mpi/pvecimpl.h"   /*I  "vec.h"   I*/
+
+/*
+       Note this code is very similar to VecPublish_Seq()
+*/
+#undef __FUNC__  
+#define __FUNC__ "VecPublish_MPI"
+static int VecPublish_MPI(PetscObject object)
+{
+#if defined(HAVE_AMS)
+
+  Vec          v = (Vec) object;
+  Vec_MPI      *s = (Vec_MPI *) v->data;
+  static int   counter = 0;
+  int          ierr,rank;
+  char         name[16];
+  AMS_Memory   amem;
+  AMS_Comm     acomm;
+  int          (*f)(AMS_Memory,char *,Vec);
+  
+  PetscFunctionBegin;
+
+  /* if it is already published then return */
+  if (v->amem >=0 ) PetscFunctionReturn(0);
+
+  ierr = ViewerAMSGetAMSComm(VIEWER_AMS_(v->comm),&acomm);CHKERRQ(ierr);
+  if (v->name) {
+    PetscStrcpy(name,v->name);
+  } else {
+    sprintf(name,"MPIVector_%d",counter++);
+  }
+  ierr = AMS_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr); 
+  ierr = AMS_Memory_add_field(amem,"values",s->array,v->n,AMS_DOUBLE,AMS_READ,
+                                AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+
+  /*
+     If the vector knows its "layout" let it set it, otherwise it defaults
+     to correct 1d distribution
+  */
+  ierr = PetscObjectQueryFunction((PetscObject)v,"AMSSetFieldBlock_C",(void**)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(amem,"values",v);CHKERRQ(ierr);
+  }
+
+
+  ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
+  v->amem = (int) amem;
+
+#else
+  PetscFunctionBegin;
+#endif
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "VecDot_MPI"
@@ -123,6 +179,7 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
   *vv = 0;
 
   PetscHeaderCreate(v,_p_Vec,struct _VecOps,VEC_COOKIE,VECMPI,comm,VecDestroy,VecView);
+  v->bops->publish   = VecPublish_MPI;
   PLogObjectCreate(v);
   PLogObjectMemory(v, sizeof(Vec_MPI) + sizeof(struct _p_Vec) + (n+nghost+1)*sizeof(Scalar));
   s              = (Vec_MPI *) PetscMalloc(sizeof(Vec_MPI)); CHKPTRQ(s);
@@ -138,6 +195,8 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
   v->bs          = 1;
   s->size        = size;
   s->rank        = rank;
+  v->type_name   = (char *) PetscMalloc(3*sizeof(char));CHKPTRQ(v->type_name);
+  PetscStrcpy(v->type_name,"MPI");
   if (array) {
     s->array           = array;
     s->array_allocated = 0;
@@ -449,7 +508,7 @@ int VecGhostUpdateEnd(Vec g, InsertMode insertmode,ScatterMode scattermode)
 .  n - local vector length 
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost points
-.  ghosts - global indices of ghost points
+.  ghosts - global indices of ghost points (or PETSC_NULL if not needed)
 -  array - the space to store the vector values (as long as n + nghost)
 
    Output Parameter:
@@ -496,7 +555,7 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Sca
   /*
        Create scatter context for scattering (updating) ghost values 
   */
-  {
+  if (ghosts) {
     IS from, to;
   
     ierr = ISCreateGeneral(PETSC_COMM_SELF,nghost,ghosts,&from);CHKERRQ(ierr);   
@@ -571,6 +630,7 @@ int VecDuplicate_MPI( Vec win, Vec *v)
   vw->stash.donotstash = w->stash.donotstash;
   
   ierr = OListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
+  ierr = FListDuplicate(win->qlist,&(*v)->qlist);CHKERRQ(ierr);
   if (win->mapping) {
     (*v)->mapping = win->mapping;
     PetscObjectReference((PetscObject)win->mapping);
