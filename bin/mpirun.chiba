@@ -207,6 +207,7 @@ DISPLAY=$DISPLAY
 export DISPLAY
 cd $rundir
 mpirun.ch_p4 -np $num $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
+cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase parseargs.py urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
 #
 exit 0;
 EOF
@@ -334,16 +335,12 @@ fi
 
 fi
 
+#
+# decide if we should make an output directory (was there output?)
+#
 pushd $rundir > /dev/null
-rm -rf $programbase parseargs.py urlget.py
-rm -rf */$$/$programbase */$$/parseargs.py */$$/urlget.py */$$/PI*
-rm -rf $shortinfiles
-for x in $shortinfiles
-do
-  rm -rf */$$/$x
-done
+rm -rf $programbase $shortinfiles parseargs.py urlget.py
 popd > /dev/null
-
 for x in $rundir/ccn*
 do
   pushd $x > /dev/null
@@ -353,9 +350,6 @@ do
   rm -rf $$
   popd > /dev/null
 done
-#
-# decide if we should make an output directory (was there output?)
-#
 if [ "`ls $rundir/*`" != "" ] ; then
   cp -rf $rundir ./output.$$ 
   cd output.$$
