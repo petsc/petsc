@@ -1,4 +1,4 @@
-# $Id: base,v 1.16 1998/03/13 22:49:14 balay Exp balay $ 
+# $Id: base,v 1.17 1998/03/19 02:01:29 balay Exp balay $ 
 
 PARCH    = alpha
 CC       = cc -DPARCH_alpha
@@ -46,6 +46,22 @@ libf: ${OBJSF}
 	${AR} cr ${LIBNAME} $*.o
 	${RM} -f $*.o
 
+shared: chkopts_basic
+	-@echo making shared libraries in ${LDIR} ;\
+	cd ${LDIR}; \
+	for LIBNAME in ${SHLIBS} ; \
+	do \
+	  flag=""; \
+	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	  else \
+	      flag="true"; \
+	  fi; \
+          if [ "$$flag" != "" ]; then \
+	    echo "building $$LIBNAME.${SLSUFFIX}"; \
+	    ${LD} -shared  -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX}  > /dev/null 2>&1; \
+	  fi; \
+	done
 shared: chkopts_basic
 	-@echo making shared libraries in ${LDIR} ;\
 	cd ${LDIR}; \
