@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.57 1997/02/03 06:03:27 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.58 1997/03/26 01:38:58 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -73,7 +73,7 @@ extern int SNESSetApplicationContext(SNES,void *);
 extern int SNESGetApplicationContext(SNES,void **);
 extern int SNESSetConvergenceTest(SNES,int (*)(SNES,double,double,double,void*),void*);
 
-/* --------- Routines for solving systems of nonlinear equations --------------- */
+/* --------- Solving systems of nonlinear equations --------------- */
 extern int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *);
 extern int SNESComputeFunction(SNES,Vec,Vec);
 extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
