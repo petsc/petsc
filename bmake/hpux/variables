@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.13 2000/02/10 16:32:06 balay Exp balay $ 
+# $Id: base_variables,v 1.14 2000/03/25 00:14:06 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -20,7 +20,7 @@ C_FLINKER	   = f90
 C_CCV		   = unknown
 C_FCV		   = unknown
 C_SYS_LIB	   = -lV3 -lU77 -lail -lcnx_syscall \
-	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
+	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl -lm
 
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
@@ -39,7 +39,7 @@ CXX_CLINKER	   = CC
 CXX_FLINKER	   = f90
 CXX_CCV		   = unknown
 CXX_SYS_LIB	   = -lV3 -lU77 -lail -lcnx_syscall -lcomplex -lC \
-	             -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
+	             -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g
 GCXX_FOPTFLAGS	   = -g

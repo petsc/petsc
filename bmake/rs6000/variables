@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.11 2000/02/10 16:32:31 balay Exp balay $ 
+# $Id: base_variables,v 1.12 2000/03/25 00:14:35 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -20,7 +20,7 @@ C_CLINKER	   = cc_r -bmaxdata:0x70000000
 C_FLINKER	   = cc_r -bmaxdata:0x70000000
 C_CCV		   = unknown
 C_FCV              = unknown
-C_SYS_LIB	   = -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a
+C_SYS_LIB	   = -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g  -qfullpath
 G_FOPTFLAGS	   = -g  -qfullpath
@@ -36,7 +36,7 @@ CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER	   = xlC_r
 CXX_FLINKER	   = xlC_r
 CXX_CCV		   = unknown
-CXX_SYS_LIB	   = -lcomplex -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a
+CXX_SYS_LIB	   = -lcomplex -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g  -qfullpath
 GCXX_FOPTFLAGS	   = -g  -qfullpath 

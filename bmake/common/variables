@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.13 2000/04/09 03:08:30 bsmith Exp bsmith $ 
+# $Id: common_variables,v 1.14 2000/04/18 04:28:06 bsmith Exp balay $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -37,7 +37,7 @@ F_SH_LIB_PATH  = ${FLINKER_SLFLAG}${LDIR} ${F_DYLIBPATH}
 #
 PETSC_SYS_LIB  = -L${LDIR} -lpetsc \
                  ${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} \
-                 ${MPI_LIB} ${FC_LIB} ${SYS_LIB} -lm
+                 ${MPI_LIB} ${FC_LIB} ${SYS_LIB}
 
 PETSC_VEC_LIB  = -L${LDIR} -lpetscvec ${PETSC_SYS_LIB}
 
@@ -78,7 +78,7 @@ PETSC_ADIC_LIB  = -L${LDIR} -lpetscsnes -lpetscsles \
 		 -lpetscmat  -lpetscvec -lpetscsys  \
                   -lpetscblas -lmpiuni  ${EXTERNAL_LIB}  ${LAPACK_LIB} \
                   ${BLAS_LIB} ${X11_LIB} \
-		  ${FC_LIB} ${SYS_LIB} -lm
+		  ${FC_LIB} ${SYS_LIB}
 #
 # Link if you are using the PETSc Fortran interface.
 #

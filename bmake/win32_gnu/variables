@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.12 2000/03/25 00:16:04 balay Exp balay $ 
+# $Id: base_variables,v 1.13 2000/03/26 15:10:10 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -19,7 +19,7 @@ C_CLINKER	   = gcc
 C_FLINKER	   = g77
 C_CCV		   = gcc --version
 C_FCV              = g77 --version
-C_SYS_LIB	   = -ladvapi32 -lg2c
+C_SYS_LIB	   = -ladvapi32 -lg2c -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 G_COPTFLAGS	   = -g
 G_FOPTFLAGS	   = -g
@@ -34,7 +34,7 @@ CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER	   = g77
 CXX_FLINKER	   = g77
 CXX_CCV		   = gcc --version
-CXX_SYS_LIB	   = -ladvapi32 -lg2c -lstdc++
+CXX_SYS_LIB	   = -ladvapi32 -lg2c -lstdc++ -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g

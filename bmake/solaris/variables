@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.18 2000/02/10 17:56:24 bsmith Exp balay $ 
+# $Id: base_variables,v 1.19 2000/03/25 00:14:56 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -19,7 +19,7 @@ C_CLINKER	   = cc
 C_FLINKER	   = f77
 C_CCV		   = cc  -V -c
 C_FCV		   = f77 -V
-C_SYS_LIB	   = -L/opt/SUNWspro/SC5.0/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl 
+C_SYS_LIB	   = -L/opt/SUNWspro/SC5.0/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl  -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g -xs
 G_FOPTFLAGS	   = -g -xs
@@ -35,7 +35,7 @@ CXX_FLINKER_SLFLAG = -R
 CXX_CLINKER	   = CC
 CXX_FLINKER	   = CC
 CXX_CCV		   = CC    -V -c
-CXX_SYS_LIB	   = -L/opt/SUNWspro/SC5.0/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl
+CXX_SYS_LIB	   = -L/opt/SUNWspro/SC5.0/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl -lm
 # older versions of the compiler may require -lcomplex before the -ldl
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g  -xs
