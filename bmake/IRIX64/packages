@@ -18,7 +18,8 @@ FC_LIB         =  -lftn
 # BLAS usually comes with SGI. Do NOT use mp version of the SGI BLAS.
 #
 BLAS_LIB       = -lblas $(FC_LIB)
-LAPACK_LIB     = /u/ac/barrys/blaslapack/lapack.a
+#LAPACK_LIB     = /u/ac/barrys/blaslapack/lapack.a
+LAPACK_LIB     = /home/bsmith/lapack/lapack_IRIX64.a
 #
 # Location of X-windows software
 #
@@ -41,9 +42,12 @@ BS_LIB     =
 #  you should remove the -DUSES_INT_MPI_COMM. If you are using SGI's
 #  version of MPI you MUST retain it.
 #
-MPI_LIB        = -lmpi
-MPI_INCLUDE    = -DUSES_INT_MPI_COMM
-MPIRUN         =  /usr/bin/mpirun
+#MPI_LIB        = -lmpi
+#MPI_INCLUDE    = -DUSES_INT_MPI_COMM
+#MPIRUN         =  /usr/bin/mpirun
+MPI_LIB        = -L/home/petsc/mpich/lib/IRIX64/ch_p4 -lmpi
+MPI_INCLUDE    = -DUSES_INT_MPI_COMM -I/home/petsc/mpich/include
+MPIRUN         =  /home/petsc/mpich/lib/IRIX64/ch_p4/mpirun
 #
 # The following lines can be uncommented if MPIUNI is used
 #
