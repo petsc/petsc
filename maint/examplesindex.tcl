@@ -245,6 +245,7 @@ proc write_concepts_file { } {
     global sub
 
     set PETSC_DIR ../..
+#    set PETSC_DIR ftp://info.mcs.anl.gov/pub/petsc/petsc
     exec /bin/rm -f docs/www/concepts.html
     set concepts_file [ open docs/www/concepts.html w ]
 
@@ -328,6 +329,7 @@ proc write_routines_file { } {
     global Processors Comment PETSC_DIR files html
     
     set PETSC_DIR ../..
+#    set PETSC_DIR ftp://info.mcs.anl.gov/pub/petsc/petsc
     exec /bin/rm -f docs/www/routines.html
     set routines_file [ open docs/www/routines.html w ]
 
@@ -500,6 +502,7 @@ proc main { }  {
     # Update wwwmanpages
     puts  "updating wwwmanpages pages."
     set PETSC_DIR ../../..
+#    set PETSC_DIR ftp://info.mcs.anl.gov/pub/petsc/petsc
 
     foreach routine $routines {
         set n [ llength $RoutinesFile($routine)  ]
