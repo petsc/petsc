@@ -54,7 +54,7 @@ class BS (maker.Maker):
     else:
       sourceDB = SourceDB()
     atexit.register(self.cleanup)
-    if not argDB['restart']:
+    if not int(argDB['restart']):
       for source in sourceDB:
         sourceDB.clearUpdateFlag(source)
 
@@ -116,7 +116,7 @@ class BS (maker.Maker):
 
   def cleanup(self):
     if argDB.has_key('target'):  del argDB['target']
-    if argDB.has_key('restart'): del argDB['restart']
+    if argDB.has_key('restart') and int(argDB['restart']): del argDB['restart']
     self.saveSourceDB()
 
   def main(self):
