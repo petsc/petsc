@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.26 2000/09/06 18:34:16 bsmith Exp bsmith $ */
+/* $Id: baij.h,v 1.27 2000/10/24 20:25:52 bsmith Exp buschelm $ */
 
 #include "src/mat/matimpl.h"
 
@@ -37,6 +37,7 @@ typedef struct {
 
 #if defined(PETSC_USE_MAT_SINGLE)
   int              setvalueslen;
+  int              singleprecisionsolves;
   MatScalar        *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied
                                       before calling MatSetValuesXXX_SeqBAIJ_MatScalar() */
 #endif
