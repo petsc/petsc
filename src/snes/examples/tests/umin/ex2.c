@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.22 1996/01/24 21:10:18 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.23 1996/01/29 21:46:33 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   user.problem = 1;
   ierr = OptionsGetInt(PETSC_NULL,"-p",&user.problem,&flg); CHKERRA(ierr);
   user.param = 5.0;
-  OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
   if (user.problem != 1 && user.problem != 2) SETERRA(1,"Invalid problem number");
   ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg); CHKERRA(ierr);
