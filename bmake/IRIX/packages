@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.17 1997/09/11 21:54:19 balay Exp $ 
+# $Id: base.site,v 1.1 1997/09/17 17:37:23 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -22,7 +22,7 @@ FC_LIB         =  -lftn
 # a bug in it, so if you are using complex numbers we recommend using
 # the SGI BLAS with extreme care.
 #
-BLAS_LIB       = /home/bsmith/lapack/blas_IRIX.a
+BLAS_LIB       = -lblas
 LAPACK_LIB     = /home/bsmith/lapack/lapack_IRIX.a $(FC_LIB)
 #
 # Location of X-windows software
