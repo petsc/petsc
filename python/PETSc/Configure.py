@@ -273,8 +273,10 @@ class Configure(config.base.Configure):
     '''Determine if Fortran handles CPP properly'''
     # IBM xlF chokes on this
     if not self.checkFortranCompilerOption('-DPTesting'):
-      if self.framework.argDB['CC'] == 'gcc': traditional = '-traditional-cpp'
-      else:                         traditional = ''
+      if self.compilers.isGCC:
+        traditional = '-traditional-cpp'
+      else:
+        traditional = ''
       self.framework.addSubstitution('F_to_o_TARGET', """
 .F.f:
 	-${RM} __$*.f __$*.c
@@ -296,6 +298,8 @@ class Configure(config.base.Configure):
 	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} __$*.f __$*.c""")
+    else:
+      self.framework.addSubstitution('F_to_o_TARGET', '')
     return
 
   def configureFortranStubs(self):
