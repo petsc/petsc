@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.11 1997/10/28 14:26:00 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.12 1997/11/09 04:10:30 bsmith Exp bsmith $ */
 
 /* 
    An application ordering is mapping between application-centric
@@ -35,15 +35,19 @@ typedef enum {AODATA_BASIC=0, AODATA_ADVANCED=1} AODataType;
 
 typedef struct _p_AOData* AOData;
 
-extern int AODataCreateBasic(MPI_Comm,int,AOData *);
+extern int AODataCreateBasic(MPI_Comm,AOData *);
+extern int AODataView(AOData,Viewer);
+extern int AODataDestroy(AOData);
+extern int AODataLoadBasic(Viewer,AOData *);
+extern int AODataGetInfo(AOData,int*,char ***);
 
-extern int AODataKeyAdd(AOData,char*,int,int,int);
+extern int AODataKeyAdd(AOData,char*,int,int);
 extern int AODataKeySetLocalToGlobalMapping(AOData,char*,ISLocalToGlobalMapping);
 extern int AODataKeyGetLocalToGlobalMapping(AOData,char*,ISLocalToGlobalMapping*);
 extern int AODataKeyRemap(AOData,char *,AO);
 
 extern int AODataKeyExists(AOData,char*,PetscTruth*);
-extern int AODataKeyGetInfo(AOData,char *,int *,int*,int *);
+extern int AODataKeyGetInfo(AOData,char *,int *,int*,int*,char***);
 extern int AODataKeyGetOwnershipRange(AOData,char *,int *,int*);
 
 extern int AODataKeyGetNeighbors(AOData,char *,int,int*,IS *);
@@ -56,7 +60,7 @@ extern int AODataSegmentAdd(AOData,char*,char *,int, int, int *,void *,PetscData
 extern int AODataSegmentAddIS(AOData,char*,char *,int, IS,void *,PetscDataType);
 
 extern int AODataSegmentExists(AOData,char*,char*,PetscTruth*);
-extern int AODataSegmentGetInfo(AOData,char *,char *,int *,int *,int*,PetscDataType*);
+extern int AODataSegmentGetInfo(AOData,char *,char *,int *,PetscDataType*);
 
 extern int AODataSegmentGet(AOData,char *,char *,int,int*,void **);
 extern int AODataSegmentRestore(AOData,char *,char *,int,int*,void **);
@@ -74,10 +78,6 @@ extern int AODataSegmentGetExtrema(AOData,char*,char*,void *,void *);
 
 extern int AODataSegmentPartition(AOData,char *,char *);
 
-extern int AODataView(AOData,Viewer);
-extern int AODataDestroy(AOData);
-
-extern int AODataLoadBasic(Viewer,AOData *);
 
 #endif
 

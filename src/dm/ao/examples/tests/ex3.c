@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.4 1997/10/10 04:08:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.5 1997/10/28 14:25:35 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests AOData \n\n";
@@ -25,13 +25,13 @@ int main(int argc,char **argv)
   /*
        Create a database with two sets of keys 
   */
-  ierr = AODataCreateBasic(PETSC_COMM_WORLD,2,&aodata);CHKERRA(ierr);
+  ierr = AODataCreateBasic(PETSC_COMM_WORLD,&aodata);CHKERRA(ierr);
 
   /*
        Put two segments in the first key and one in the second
   */
-  ierr = AODataKeyAdd(aodata,"key1",PETSC_DECIDE,nglobal,2); CHKERRA(ierr);
-  ierr = AODataKeyAdd(aodata,"key2",PETSC_DECIDE,nglobal,1); CHKERRA(ierr);
+  ierr = AODataKeyAdd(aodata,"key1",PETSC_DECIDE,nglobal); CHKERRA(ierr);
+  ierr = AODataKeyAdd(aodata,"key2",PETSC_DECIDE,nglobal); CHKERRA(ierr);
 
   /* allocate space for the keys each processor will provide */
   keys = (int *) PetscMalloc( n*sizeof(int) );CHKPTRA(keys);
@@ -82,6 +82,7 @@ int main(int argc,char **argv)
   */
   ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"dataoutput",BINARY_CREATE,&binary);CHKERRA(ierr);
   ierr = AODataView(aodata,binary);CHKERRA(ierr);
+  ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = ViewerDestroy(binary); CHKERRA(ierr);
  
   ierr = AODataDestroy(aodata); CHKERRA(ierr);

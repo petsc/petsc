@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.241 1997/10/28 14:22:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.242 1997/11/05 22:32:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -522,7 +522,7 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
     for ( i=0; i<nz; i++ ) {
       if (PetscAbsScalar(a->a[i]) > maxv) maxv = PetscAbsScalar(a->a[i]);
     }
-    ierr = DrawCreatePopUp(draw,&popup); CHKERRQ(ierr);
+    ierr = DrawGetPopup(draw,&popup); CHKERRQ(ierr);
     ierr = DrawScalePopup(popup,0.0,maxv); CHKERRQ(ierr);
     count = 0;
     for ( i=0; i<m; i++ ) {

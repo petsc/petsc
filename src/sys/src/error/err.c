@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.66 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.67 1997/10/28 14:21:45 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -113,41 +113,41 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
   PetscFunctionBegin;
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (n == PETSC_ERR_MEM) {
-    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
-    fprintf(stderr,"[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);
-    fprintf(stderr,"[%d]PETSC ERROR:   too large an object or bleeding by not properly\n",rank);
-    fprintf(stderr,"[%d]PETSC ERROR:   destroying unneeded objects.\n",rank);
+    PetscErrorPrintf("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
+    PetscErrorPrintf("[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);
+    PetscErrorPrintf("[%d]PETSC ERROR:   too large an object or bleeding by not properly\n",rank);
+    PetscErrorPrintf("[%d]PETSC ERROR:   destroying unneeded objects.\n",rank);
     PetscTrSpace(&mem,PETSC_NULL,PETSC_NULL); PetscGetResidentSetSize(&rss);
     OptionsHasName(PETSC_NULL,"-trdump",&flg1);
     OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg2);
     if (flg2) {
       PetscTrLogDump(stderr);
     } else if (flg1) {
-      fprintf(stderr,"[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
+      PetscErrorPrintf("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
       PetscTrDump(stderr);
     }  else {
-      fprintf(stderr,"[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
-      fprintf(stderr,"[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n",rank);
+      PetscErrorPrintf("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
+      PetscErrorPrintf("[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n",rank);
     }
     n = 1;
   } else if (n == PETSC_ERR_SUP) {
     if (!mess) mess = " ";
-    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
-    fprintf(stderr,"[%d]PETSC ERROR: No support for this operation for this object type!\n",rank);
-    fprintf(stderr,"[%d]PETSC ERROR: %s\n",rank,mess);
+    PetscErrorPrintf("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
+    PetscErrorPrintf("[%d]PETSC ERROR: No support for this operation for this object type!\n",rank);
+    PetscErrorPrintf("[%d]PETSC ERROR: %s\n",rank,mess);
     n = 1;
   } else if (n == PETSC_ERR_SIG) {
-    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
+    PetscErrorPrintf("[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
   } else if (n == PETSC_ERR_ARG_SIZ) {
     if (!mess) mess = " ";
-    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
-    fprintf(stderr,"[%d]PETSC ERROR:   %s: Nonconforming object sizes!\n",rank,mess);
+    PetscErrorPrintf("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
+    PetscErrorPrintf("[%d]PETSC ERROR:   %s: Nonconforming object sizes!\n",rank,mess);
     n = 1;
   } else {
     if (mess) {
-      fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n    %s\n",rank,fun,line,dir,file,mess);
+      PetscErrorPrintf("[%d]PETSC ERROR: %s() line %d in %s%s\n    %s\n",rank,fun,line,dir,file,mess);
     } else {
-      fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
+      PetscErrorPrintf("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
     }
   }
   fflush(stderr);
@@ -198,32 +198,32 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,ch
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (n == PETSC_ERR_MEM) {
-    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
-    fprintf(stderr,"[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);
-    fprintf(stderr,"[%d]PETSC ERROR:   too large an object or bleeding by not properly\n",rank);
-    fprintf(stderr,"[%d]PETSC ERROR:   destroying unneeded objects.\n",rank);
+    PetscErrorPrintf("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
+    PetscErrorPrintf("[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);
+    PetscErrorPrintf("[%d]PETSC ERROR:   too large an object or bleeding by not properly\n",rank);
+    PetscErrorPrintf("[%d]PETSC ERROR:   destroying unneeded objects.\n",rank);
     PetscTrSpace(&mem,PETSC_NULL,PETSC_NULL); PetscGetResidentSetSize(&rss);
     OptionsHasName(PETSC_NULL,"-trdump",&flg1);
     OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg2);
     if (flg2) {
       PetscTrLogDump(stderr);
     } else if (flg1) {
-      fprintf(stderr,"[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
+      PetscErrorPrintf("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
       PetscTrDump(stderr);
     }  else {
-      fprintf(stderr,"[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
-      fprintf(stderr,"[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n",rank);
+      PetscErrorPrintf("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
+      PetscErrorPrintf("[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n",rank);
     }
     n = 1;
   } else if (n == PETSC_ERR_SUP) {
-    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
-    fprintf(stderr,"[%d]PETSC ERROR: No support for this operation for this object type!\n",rank);
-    fprintf(stderr,"[%d]PETSC ERROR: %s\n",rank,mess);
+    PetscErrorPrintf("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
+    PetscErrorPrintf("[%d]PETSC ERROR: No support for this operation for this object type!\n",rank);
+    PetscErrorPrintf("[%d]PETSC ERROR: %s\n",rank,mess);
     n = 1;
   } else if (n == PETSC_ERR_SIG) {
-    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
+    PetscErrorPrintf("[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
   } else {
-    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n    %s\n",rank,fun,line,dir,file,mess);
+    PetscErrorPrintf("[%d]PETSC ERROR: %s() line %d in %s%s\n    %s\n",rank,fun,line,dir,file,mess);
   }
   MPI_Abort(PETSC_COMM_WORLD,n);
   PetscFunctionReturn(0);

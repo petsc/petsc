@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.106 1997/11/12 19:04:21 bsmith Exp curfman $ 
+% $Id: part1.tex,v 1.107 1997/11/13 21:15:00 curfman Exp bsmith $ 
 
 % --------------------------------------------------------------------
 %
@@ -334,7 +334,7 @@ One creates a new parallel or
 sequential vector, {\tt x}, of global dimension {\tt M} with the 
 command \findex{VecCreate()} \sindex{vectors}
 \begin{verbatim}
-   ierr = VecCreate(MPI_Comm comm,int M,Vec *x);
+   ierr = VecCreate(MPI_Comm comm,int m,int M,Vec *x);
 \end{verbatim}
 where {\tt comm} denotes the MPI communicator.
 Additional vectors of the same type can be formed with
@@ -474,7 +474,7 @@ as mentioned above, some commands for matrix, vector, and linear solver
 creation are:
 \begin{verbatim}
    ierr = MatCreate(MPI_Comm comm,int M,int N,Mat *A);
-   ierr = VecCreate(MPI_Comm comm,int M,Vec *x);
+   ierr = VecCreate(MPI_Comm comm,int m,int M,Vec *x);
    ierr = SLESCreate(MPI_Comm comm,SLES *sles); 
 \end{verbatim}
 The creation routines are collective over all processors in the

@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f90.F,v 1.5 1997/09/22 15:17:00 balay Exp bsmith $"
+C    "$Id: ex1f90.F,v 1.6 1997/10/19 03:22:58 bsmith Exp bsmith $"
 C
 C/*T
 C   Concepts: Vectors^Using basic vector routines;
@@ -74,7 +74,7 @@ C     VecCreateSeq() - uniprocessor vector
 C     VecCreateMPI() - distributed vector, where the user can
 C                      determine the parallel partitioning
 
-      call VecCreate(PETSC_COMM_WORLD,n,x,ierr)
+      call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
 
 C  Duplicate some work vectors (of the same format and
 C  partitioning as the initial vector).

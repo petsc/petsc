@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.13 1997/09/22 15:21:30 balay Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.14 1997/10/19 03:27:22 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -130,7 +130,7 @@ int main(int argc,char **args)
         dimension; the parallel partitioning is determined at runtime. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,dim,&u); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,dim,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 

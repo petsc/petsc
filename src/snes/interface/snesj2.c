@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj2.c,v 1.11 1997/10/12 21:45:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj2.c,v 1.12 1997/10/19 03:29:25 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -48,7 +48,13 @@ int SNESDefaultComputeJacobianWithColoring(SNES snes,Vec x1,Mat *J,Mat *B,MatStr
     *flag = SAME_NONZERO_PATTERN;
   }
 
+
+  PLogEventBegin(SNES_FunctionEval,snes,x1,0,0);
+  PetscStackPush("SNES user function");
   ierr = MatFDColoringApply(*B,color,x1,flag,snes); CHKERRQ(ierr);
+  PetscStackPop;
+  snes->nfuncs++;
+  PLogEventEnd(SNES_FunctionEval,snes,x1,0,0);
   PetscFunctionReturn(0);
 }
 

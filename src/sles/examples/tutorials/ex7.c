@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.32 1997/09/22 15:20:40 balay Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.33 1997/10/19 03:27:22 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -81,7 +81,7 @@ int main(int argc,char **args)
   /*
      Create parallel vectors
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,m*n,&u); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 

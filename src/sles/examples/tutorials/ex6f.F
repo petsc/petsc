@@ -1,5 +1,5 @@
 
-C    "$Id: ex6f.F,v 1.21 1997/07/10 15:47:31 balay Exp balay $";
+C    "$Id: ex6f.F,v 1.22 1997/09/22 15:20:42 balay Exp bsmith $";
 C
 C  Description: This example demonstrates repeated linear solves as
 C  well as the use of different preconditioner and linear system
@@ -111,7 +111,7 @@ C   - When using VecCreate(), the parallel partitioning of the vector
 C     is determined by PETSc at runtime.
 C   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-      call VecCreate(PETSC_COMM_WORLD,m*n,u,ierr)
+      call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 

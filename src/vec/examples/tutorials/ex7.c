@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.14 1997/09/22 15:16:11 balay Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.15 1997/10/19 03:22:58 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
@@ -39,7 +39,7 @@ int main(int argc,char **args)
 
   PetscInitializeFortran();  
 
-  ierr = VecCreate(PETSC_COMM_WORLD,m,&vec); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&vec); CHKERRA(ierr);
 
   /* 
      Call Fortran routine - the use of PetscCObjectToFortranObject()

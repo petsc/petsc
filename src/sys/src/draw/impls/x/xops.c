@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.98 1997/11/03 04:47:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.99 1997/11/09 03:59:27 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -373,8 +373,8 @@ static int DrawPause_X(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawCreatePopUp_X" 
-static int DrawCreatePopUp_X(Draw draw,Draw *popup)
+#define __FUNC__ "DrawGetPopup_X" 
+static int DrawGetPopup_X(Draw draw,Draw *popup)
 {
   int     ierr;
   Draw_X* win = (Draw_X*) draw->data;
@@ -472,7 +472,7 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
                                  DrawPause_X,
                                  DrawSynchronizedClear_X, 
 				 0, 0,
-                                 DrawCreatePopUp_X,
+                                 DrawGetPopup_X,
                                  DrawSetTitle_X,
                                  DrawCheckResizedWindow_X,
                                  DrawResizeWindow_X };

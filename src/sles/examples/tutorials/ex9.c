@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.27 1997/10/19 03:27:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.28 1997/10/27 13:53:17 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -88,7 +88,7 @@ int main(int argc,char **args)
   */
   ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&C1); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C1,&Istart,&Iend); CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,m*n,&u); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b1); CHKERRA(ierr);
   ierr = VecDuplicate(u,&x1); CHKERRA(ierr);
 

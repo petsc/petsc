@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.86 1997/08/22 15:11:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.87 1997/10/19 03:23:21 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -225,6 +225,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   gmres->it = (it - 1);
   while (!(*converged = cerr = (*ksp->converged)(ksp,it+itsSoFar,res,ksp->cnvP))
            && it < max_k && it + itsSoFar < max_it) {
+    ksp->rnorm = res;
     if (nres && hist_len > it + itsSoFar) nres[it+itsSoFar]   = res;
     gmres->it = (it - 1);
     KSPMonitor(ksp,it + itsSoFar,res); 
@@ -258,6 +259,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     it++;
     gmres->it = (it-1);  /* For converged */
   }
+  ksp->rnorm = res;
   if (nres && hist_len > it + itsSoFar) nres[it + itsSoFar]   = res; 
   if (nres) ksp->res_act_size = (hist_len < it + itsSoFar) ? hist_len : it+itsSoFar+1;
   KSPMonitor( ksp,  it + itsSoFar, res ); 
@@ -342,7 +344,7 @@ int KSPDestroy_GMRES(PetscObject obj)
 {
   KSP       ksp = (KSP) obj;
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
-  int       i;
+  int       i,ierr;
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrix */
@@ -353,12 +355,12 @@ int KSPDestroy_GMRES(PetscObject obj)
 
   /* free work vectors */
   for (i=0; i<gmres->nwork_alloc; i++) {
-    VecDestroyVecs(gmres->user_work[i], gmres->mwork_alloc[i] );
+    ierr = VecDestroyVecs(gmres->user_work[i], gmres->mwork_alloc[i] );CHKERRQ(ierr);
   }
   if (gmres->user_work)  PetscFree( gmres->user_work );
   if (gmres->mwork_alloc) PetscFree( gmres->mwork_alloc );
   if (gmres->nrs) PetscFree( gmres->nrs );
-  if (gmres->sol_temp) VecDestroy(gmres->sol_temp);
+  if (gmres->sol_temp) {ierr = VecDestroy(gmres->sol_temp);CHKERRQ(ierr);}
   if (gmres->Rsvd) PetscFree(gmres->Rsvd);
   if (gmres->Dsvd) PetscFree(gmres->Dsvd);
   PetscFree( gmres ); 

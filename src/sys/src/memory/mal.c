@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mal.c,v 1.26 1997/08/22 15:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.27 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
@@ -19,6 +19,8 @@ static char vcid[] = "$Id: mal.c,v 1.26 1997/08/22 15:11:48 bsmith Exp bsmith $"
 void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*)=(void*(*)(unsigned int,int,char*,char*,char*))malloc;
 int  (*PetscTrFree)(void *,int,char*,char *,char*)        = (int (*)(void*,int,char*,char*,char*))free;
 
+static int petscsetmallocvisited = 0;
+
 #undef __FUNC__  
 #define __FUNC__ "PetscSetMalloc"
 /*@C
@@ -35,13 +37,26 @@ int  (*PetscTrFree)(void *,int,char*,char *,char*)        = (int (*)(void*,int,c
 int PetscSetMalloc(void *(*imalloc)(unsigned int,int,char*,char*,char*),
                    int (*ifree)(void*,int,char*,char*,char*))
 {
-  static int visited = 0;
-
   PetscFunctionBegin;
-  if (visited) SETERRQ(PETSC_ERR_SUP,0,"cannot call multiple times");
-  PetscTrMalloc = imalloc;
-  PetscTrFree   = ifree;
-  visited       = 1;
+  if (petscsetmallocvisited) SETERRQ(PETSC_ERR_SUP,0,"cannot call multiple times");
+  PetscTrMalloc               = imalloc;
+  PetscTrFree                 = ifree;
+  petscsetmallocvisited       = 1;
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PetscClearMalloc"
+/*@C
+   PetscClearMalloc - Clears the routines used to do mallocs and frees.
+
+.keywords: Petsc, set, malloc, free, memory allocation
+@*/
+int PetscClearMalloc()
+{
+  PetscFunctionBegin;
+  PetscTrMalloc               = (void*(*)(unsigned int,int,char*,char*,char*))malloc;
+  PetscTrFree                 = (int (*)(void*,int,char*,char*,char*))free;
+  petscsetmallocvisited       = 0;
+  PetscFunctionReturn(0);
+}

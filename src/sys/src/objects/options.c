@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.152 1997/11/14 18:27:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.153 1997/11/14 18:28:37 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -21,8 +21,8 @@ static char vcid[] = "$Id: options.c,v 1.152 1997/11/14 18:27:03 bsmith Exp bsmi
 #include <malloc.h>
 #endif
 #include "pinclude/pviewer.h"
-#include "pinclude/petscfix.h"
 #include "src/sys/src/files.h"
+#include "pinclude/petscfix.h"
 
 /* 
     For simplicity, we begin with a static size database
@@ -56,7 +56,7 @@ Scalar PETSC_i = 0.0;
 #endif
 
 /* 
-   Optional file where all PETSc output from MPIU_*printf() is saved. 
+   Optional file where all PETSc output from various prints is saved
 */
 FILE *petsc_history = 0;
 
@@ -78,6 +78,7 @@ int PLogOpenHistoryFile(char *filename,FILE **fd)
       PetscStrcat(pfile,"/.petschistory");
       filename = pfile;
     }
+    ierr = PetscFixFilename(filename);CHKERRQ(ierr);
     *fd = fopen(filename,"a"); if (!fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"");
     fprintf(*fd,"---------------------------------------------------------\n");
     fprintf(*fd,"%s %s ",PETSC_VERSION_NUMBER,PetscGetDate());
@@ -474,7 +475,7 @@ int PetscFinalize()
   ierr = OptionsHasName(PETSC_NULL,"-get_resident_set_size",&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscGetResidentSetSize(&rss); CHKERRQ(ierr);
-    fprintf(stderr,"[%d] Size of entire process memory %d\n",rank,(int)rss);
+    PetscPrintf(PETSC_COMM_SELF,"[%d] Size of entire process memory %d\n",rank,(int)rss);
   }
 
 #if defined(USE_PETSC_STACK)
@@ -524,21 +525,23 @@ int PetscFinalize()
   }
   ierr = OptionsHasName(PETSC_NULL,"-optionsleft",&flg1); CHKERRQ(ierr);
   if (flg1) {
-    if (!rank) {
-      int nopt = OptionsAllUsed();
-      OptionsPrint(stdout);
-      if (nopt == 0) 
-        fprintf(stdout,"There are no unused options.\n");
-      else if (nopt == 1) 
-        fprintf(stdout,"There is one unused database option. It is:\n");
-      else
-        fprintf(stdout,"There are %d unused database options. They are:\n",nopt);
-      for ( i=0; i<options->N; i++ ) {
-        if (!options->used[i]) {
-          fprintf(stdout,"Option left: name:-%s value: %s\n",options->names[i],
+    int nopt = OptionsAllUsed();
+    ierr = OptionsPrint(stdout);CHKERRQ(ierr);
+    if (nopt == 0) { 
+      PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");
+    } else if (nopt == 1) {
+      PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");
+    } else {
+      PetscPrintf(PETSC_COMM_WORLD,"There are %d unused database options. They are:\n",nopt);
+    }
+    for ( i=0; i<options->N; i++ ) {
+      if (!options->used[i]) {
+        if (options->values[i]) {
+          PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",options->names[i],
                                                            options->values[i]);
+        } else {
+          PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s no value \n",options->names[i]);
         }
-        fflush(stdout);
       }
     } 
   }
@@ -572,8 +575,7 @@ int PetscFinalize()
     double maxm;
     ierr = PetscTrSpace(PETSC_NULL,PETSC_NULL,&maxm); CHKERRQ(ierr);
     PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
-      fprintf(stdout,"[%d] Maximum memory used %g\n",rank,maxm);
-      fflush(stdout);
+      PetscPrintf(PETSC_COMM_SELF,"[%d] Maximum memory used %g\n",rank,maxm);
     PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
   }
   if (flg3) {
@@ -596,7 +598,8 @@ int PetscFinalize()
    memory was not freed.
 
 */
-
+  PetscClearMalloc();
+  PetscInitializedCalled = 0;
   PetscFunctionReturn(0);
 }
  
@@ -687,7 +690,7 @@ int OptionsCheckInitial_Private()
      Set default debugger on solaris and rs6000 to dbx and hpux to xdb
      because gdb doesn't work with the native compilers.
   */
-#if defined(PARCH_solaris) || defined(PARCH_rs6000)
+#if defined(PARCH_solaris) || defined(PARCH_rs6000) || defined(PARCH_IRIX64) || defined(PARCH_IRIX)
   ierr = PetscSetDebugger("dbx",1,0); CHKERRQ(ierr);
 #elif defined(PARCH_hpux) 
   ierr = PetscSetDebugger("xdb",1,0); CHKERRQ(ierr);
@@ -830,6 +833,7 @@ int OptionsCheckInitial_Private()
     FILE *file;
     if (mname[0]) {
       sprintf(fname,"%s.%d",mname,rank);
+      ierr = PetscFixFilename(fname);CHKERRQ(ierr);
       file = fopen(fname,"w"); 
       if (!file) {
         SETERRQ(PETSC_ERR_FILE_OPEN,0,"Unable to open trace file");
@@ -935,7 +939,7 @@ static int OptionsInsertFile_Private(char *file)
   FILE  *fd;
 
   PetscFunctionBegin;
-  PetscFlipSlash_Private(file);
+  PetscFixFilename(file);
   fd  = fopen(file,"r"); 
   if (fd) {
     while (fgets(string,128,fd)) {
@@ -1036,8 +1040,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
         if ((!second) || ((second[0] == '-') && (second[1] > '9'))) {
           OptionsSetValue(first,(char *)0);
           first = second;
-        }
-        else {
+        } else {
           OptionsSetValue(first,second);
           first = PetscStrtok(0," ");
         }
@@ -1094,13 +1097,11 @@ int OptionsPrint(FILE *fd)
   if (!options) OptionsCreate_Private(0,0,0);
   for ( i=0; i<options->N; i++ ) {
     if (options->values[i]) {
-      fprintf(fd,"OptionTable: -%s %s\n",options->names[i],options->values[i]);
-    }
-    else {
-      fprintf(fd,"OptionTable: -%s\n",options->names[i]);
+      PetscFPrintf(PETSC_COMM_WORLD,fd,"OptionTable: -%s %s\n",options->names[i],options->values[i]);
+    } else {
+      PetscFPrintf(PETSC_COMM_WORLD,fd,"OptionTable: -%s\n",options->names[i]);
     }
   }
-  fflush(fd);
   PetscFunctionReturn(0);
 }
 

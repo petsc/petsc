@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.39 1997/10/01 22:46:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.40 1997/10/19 03:29:09 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -105,7 +105,7 @@ $    BINARY_WRONLY - open existing file for binary output
 @*/
 int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *binv)
 {  
-  int    rank;
+  int    rank,ierr;
   Viewer v;
 
   PetscFunctionBegin;
@@ -123,13 +123,11 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
       if ((v->fdes = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
         SETERRQ(1,0,"Cannot create file for writing");
       }
-    } 
-    else if (type == BINARY_RDONLY) {
+    } else if (type == BINARY_RDONLY) {
       if ((v->fdes = open(name,O_RDONLY|O_BINARY,0)) == -1) {
         SETERRQ(1,0,"Cannot open file for reading");
       }
-    }
-    else if (type == BINARY_WRONLY) {
+    } else if (type == BINARY_WRONLY) {
       if ((v->fdes = open(name,O_WRONLY|O_BINARY,0)) == -1) {
         SETERRQ(1,0,"Cannot open file for writing");
       }
@@ -139,20 +137,17 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
       if ((v->fdes = creat(name,0666)) == -1) {
         SETERRQ(1,0,"Cannot create file for writing");
       }
-    } 
-    else if (type == BINARY_RDONLY) {
+    } else if (type == BINARY_RDONLY) {
       if ((v->fdes = open(name,O_RDONLY,0)) == -1) {
         SETERRQ(1,0,"Cannot open file for reading");
       }
-    }
-    else if (type == BINARY_WRONLY) {
+    } else if (type == BINARY_WRONLY) {
       if ((v->fdes = open(name,O_WRONLY,0)) == -1) {
         SETERRQ(1,0,"Cannot open file for writing");
       }
     } else SETERRQ(1,0,"Unknown file type");
 #endif
-  }
-  else v->fdes = -1;
+  } else v->fdes = -1;
   v->format    = 0;
 
   /* try to open info file */
@@ -161,6 +156,7 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
     infoname = (char *)PetscMalloc(PetscStrlen(name)+6); CHKPTRQ(infoname);
     PetscStrcpy(infoname,name);
     PetscStrcat(infoname,".info");
+    ierr = PetscFixFilename(infoname); CHKERRQ(ierr);
     v->fdes_info = fopen(infoname,"r");
     PetscFree(infoname);
   }

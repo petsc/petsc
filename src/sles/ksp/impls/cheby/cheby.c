@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.50 1997/08/22 15:11:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.51 1997/10/19 03:23:29 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -110,6 +110,7 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
     if (ksp->calc_res) {
       if (!pres) {ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr);}
       else {ierr = VecNorm(p[kp1],NORM_2,&rnorm); CHKERRQ(ierr);}
+      ksp->rnorm                              = rnorm;
       if (history && hist_len > i) history[i] = rnorm;
       ksp->vec_sol = p[k]; 
       KSPMonitor(ksp,i,rnorm);
@@ -136,6 +137,7 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
       ierr = PCApply(ksp->B,r,p[kp1]); CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
       ierr = VecNorm(p[kp1],NORM_2,&rnorm); CHKERRQ(ierr);
     }
+    ksp->rnorm                              = rnorm;
     if (history && hist_len > i) history[i] = rnorm;
     ksp->vec_sol = p[k]; 
     KSPMonitor(ksp,i,rnorm);

@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.56 1997/10/29 15:32:18 bsmith Exp balay $ */
+/* $Id: mpi.h,v 1.57 1997/11/04 19:55:43 balay Exp bsmith $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -44,9 +44,13 @@ typedef char*   MPI_Errhandler;
 #define MPI_FLOAT         sizeof(float)
 #define MPI_DOUBLE        sizeof(double)
 #define MPI_CHAR          sizeof(char)
+#define MPI_BYTE          sizeof(char)
 #define MPI_INT           sizeof(int)
 #define MPI_UNSIGNED_LONG sizeof(unsigned long)
 #define MPIU_PLOGDOUBLE   sizeof(PLogDouble)
+
+typedef int MPI_Op;
+#define MPI_SUM 0
 
 /*
   Prototypes of some functions which are implemented in mpi.c
@@ -64,6 +68,7 @@ extern int    MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,
 extern int    MPI_Comm_free(MPI_Comm*);
 extern int    MPI_Initialized(int *);
 extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
+
 
 /* Routines */
 #define MPI_Send( buf, count, datatype, dest, tag, comm)  \
@@ -398,11 +403,12 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 #define MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm) \
      (PetscMemcpy( recvbuf, sendbuf, (count)*(datatype)), \
      MPIUNI_TMP = (void *) (comm), MPI_SUCCESS)
+#define MPI_Scan( sendbuf,  recvbuf, count, datatype, op, comm) \
+     (PetscMemcpy( recvbuf, sendbuf, (count)*(datatype)), \
+     MPIUNI_TMP = (void *) (comm), MPI_SUCCESS)
 #define MPI_Reduce_scatter( sendbuf,  recvbuf, recvcounts, \
      datatype, op, comm) \
      MPI_Abort(MPI_COMM_WORLD,0)
-#define MPI_Scan( sendbuf,  recvbuf, count,  datatype, \
-     op, comm ) MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Group_size(group, size) (*(size)=1,MPI_SUCCESS)
 #define MPI_Group_rank(group, rank) (*(rank)=0,MPI_SUCCESS)
 #define MPI_Group_translate_ranks (group1, n, ranks1, \
@@ -481,7 +487,7 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 #define MPI_Error_class(errorcode, errorclass) MPI_SUCCESS
 #define MPI_Wtick() 1.0
 #define MPI_Init(argc, argv) MPI_SUCCESS
-#define MPI_Finalize() MPI_SUCCESS
+extern int MPI_Finalize();
 #define MPI_Pcontrol(level) MPI_SUCCESS
 
 #define MPI_NULL_COPY_FN   0

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.36 1997/08/22 15:10:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.37 1997/10/19 03:22:27 bsmith Exp bsmith $";
 #endif
 
 
@@ -17,13 +17,15 @@ static char vcid[] = "$Id: gcreatev.c,v 1.36 1997/08/22 15:10:22 bsmith Exp bsmi
 
     Input Parameters:
 .   comm - MPI communicator
-.   n - global vector length
+.   n - local vector length (or PETSC_DECIDE)
+.   N - global vector length (or PETSC_DETERMINE)
  
     Output Parameter:
 .   V - location to stash resulting vector
 
     Options Database Key:
 $   -vec_mpi : use MPI vectors, even for the uniprocessor case
+$   -vec_shared : used shared memory parallel vectors
 
     Notes:
     Use VecDuplicate() or VecDuplicateVecs() to form additional vectors
@@ -33,19 +35,25 @@ $   -vec_mpi : use MPI vectors, even for the uniprocessor case
 
 .seealso: VecCreateSeq(), VecCreateMPI(), VecDuplicate(), VecDuplicateVecs()
 @*/
-int VecCreate(MPI_Comm comm,int n,Vec *V)
+int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
 {
-  int ierr,size,flg;
+  int ierr,size,flg,flgs;
 
   PetscFunctionBegin;
   MPI_Comm_size(comm,&size);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
-  if (flg) {PetscPrintf(comm,"VecCreate() option: -vec_mpi\n");}
+  if (flg) {
+    PetscPrintf(comm,"VecCreate() option: -vec_mpi\n");
+    PetscPrintf(comm,"                    -vec_shared\n");
+  }
   ierr = OptionsHasName(PETSC_NULL,"-vec_mpi",&flg); CHKERRQ(ierr);
-  if (size > 1 || flg) {
-    ierr = VecCreateMPI(comm,PETSC_DECIDE,n,V); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-vec_shared",&flgs); CHKERRQ(ierr);
+  if (flgs) {
+    ierr = VecCreateShared(comm,n,N,V); CHKERRQ(ierr);
+  } else if (size > 1 || flg) {
+    ierr = VecCreateMPI(comm,n,N,V); CHKERRQ(ierr);
   } else {
-    ierr = VecCreateSeq(comm,n,V);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = VecCreateSeq(comm,PetscMax(n,N),V);CHKERRQ(ierr);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.132 1997/10/28 14:24:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.133 1997/11/03 04:49:09 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -1195,10 +1195,10 @@ int SNESDestroy(SNES snes)
 
   if (snes->destroy) {ierr = (*(snes)->destroy)((PetscObject)snes); CHKERRQ(ierr);}
   if (snes->kspconvctx) PetscFree(snes->kspconvctx);
-  if (snes->mfshell) MatDestroy(snes->mfshell);
+  if (snes->mfshell) {ierr = MatDestroy(snes->mfshell);CHKERRQ(ierr);}
   ierr = SLESDestroy(snes->sles); CHKERRQ(ierr);
-  if (snes->xmonitor) SNESLGMonitorDestroy(snes->xmonitor);
-  if (snes->vwork) VecDestroyVecs(snes->vwork,snes->nvwork);
+  if (snes->xmonitor) {ierr = SNESLGMonitorDestroy(snes->xmonitor);CHKERRQ(ierr);}
+  if (snes->vwork) {ierr = VecDestroyVecs(snes->vwork,snes->nvwork);CHKERRQ(ierr);}
   PLogObjectDestroy((PetscObject)snes);
   PetscHeaderDestroy((PetscObject)snes);
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.41 1997/08/13 22:22:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.42 1997/10/19 03:22:58 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates various vector routines\n\n";
@@ -45,7 +45,7 @@ int main(int argc,char **argv)
         VecCreateMPI() - distributed vector, where the user can
                          determine the parallel partitioning
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
 
   /*
      Duplicate some work vectors (of the same format and

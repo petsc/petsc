@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iguess.c,v 1.21 1997/08/22 15:11:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.22 1997/10/19 03:23:06 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -21,6 +21,7 @@ typedef struct {
 int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
 {
   KSPIGUESS *itg;
+  int       ierr;
 
   *ITG = 0;
   PetscFunctionBegin;
@@ -30,9 +31,9 @@ int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
   itg->maxl = maxl;
   itg->alpha = (Scalar *)PetscMalloc( maxl * sizeof(Scalar) );  CHKPTRQ(itg->alpha);
   PLogObjectMemory(itctx,sizeof(KSPIGUESS) + maxl*sizeof(Scalar));
-  VecDuplicateVecs(itctx->vec_rhs,maxl,&itg->xtilde);
+  ierr = VecDuplicateVecs(itctx->vec_rhs,maxl,&itg->xtilde);CHKERRQ(ierr);
   PLogObjectParents(itctx,maxl,itg->xtilde);
-  VecDuplicateVecs(itctx->vec_rhs,maxl,&itg->btilde);
+  ierr = VecDuplicateVecs(itctx->vec_rhs,maxl,&itg->btilde);CHKERRQ(ierr);
   PLogObjectParents(itctx,maxl,itg->btilde);
   *ITG = (void *)itg;
   PetscFunctionReturn(0);
@@ -42,11 +43,13 @@ int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
 #define __FUNC__ "KSPGuessDestroy" 
 int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(itctx,KSP_COOKIE);
   PetscFree( itg->alpha );
-  VecDestroyVecs( itg->btilde, itg->maxl );
-  VecDestroyVecs( itg->xtilde, itg->maxl );
+  ierr = VecDestroyVecs( itg->btilde, itg->maxl );CHKERRQ(ierr);
+  ierr = VecDestroyVecs( itg->xtilde, itg->maxl );CHKERRQ(ierr);
   PetscFree( itg );
   PetscFunctionReturn(0);
 }
@@ -55,15 +58,15 @@ int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
 #define __FUNC__ "KSPGuessFormB"
 int KSPGuessFormB( KSP itctx, KSPIGUESS *itg, Vec b )
 {
-  int    i;
+  int    i,ierr;
   Scalar tmp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(itctx,KSP_COOKIE);
   for (i=1; i<=itg->curl; i++) {
-    VecDot(itg->btilde[i-1],b,&(itg->alpha[i-1]));
+    ierr = VecDot(itg->btilde[i-1],b,&(itg->alpha[i-1]));CHKERRQ(ierr);
     tmp = -itg->alpha[i-1];
-    VecAXPY(&tmp,itg->btilde[i-1],b);
+    ierr = VecAXPY(&tmp,itg->btilde[i-1],b);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -72,12 +75,13 @@ int KSPGuessFormB( KSP itctx, KSPIGUESS *itg, Vec b )
 #define __FUNC__ "KSPGuessFormX"
 int KSPGuessFormX( KSP itctx, KSPIGUESS *itg, Vec x )
 {
-  int i;
+  int i,ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(itctx,KSP_COOKIE);
-  VecCopy(x,itg->xtilde[itg->curl]);
+  ierr = VecCopy(x,itg->xtilde[itg->curl]);CHKERRQ(ierr);
   for (i=1; i<=itg->curl; i++) {
-    VecAXPY(&itg->alpha[i-1],itg->xtilde[i-1],x);
+    ierr = VecAXPY(&itg->alpha[i-1],itg->xtilde[i-1],x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -89,32 +93,32 @@ int  KSPGuessUpdate( KSP itctx, Vec x, KSPIGUESS *itg )
   double       normax, norm;
   Scalar       tmp;
   MatStructure pflag;
-  int          curl = itg->curl, i;
+  int          curl = itg->curl, i,ierr;
   Mat          Amat, Pmat;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(itctx,KSP_COOKIE);
-  PCGetOperators(itctx->B,&Amat,&Pmat,&pflag);
+  ierr = PCGetOperators(itctx->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   if (curl == itg->maxl) {
-    MatMult(Amat,x,itg->btilde[0] );
-    VecNorm(itg->btilde[0],NORM_2,&normax);
-    tmp = 1.0/normax; VecScale(&tmp,itg->btilde[0]);
+    ierr = MatMult(Amat,x,itg->btilde[0] );CHKERRQ(ierr);
+    ierr = VecNorm(itg->btilde[0],NORM_2,&normax);CHKERRQ(ierr);
+    tmp = 1.0/normax; ierr = VecScale(&tmp,itg->btilde[0]);CHKERRQ(ierr);
     /* VCOPY(itctx->vc,x,itg->xtilde[0]); */
-    VecScale(&tmp,itg->xtilde[0]);
-  }
-  else {
-    MatMult( Amat, itg->xtilde[curl], itg->btilde[curl] );
-    for (i=1; i<=curl; i++) 
-      VecDot(itg->btilde[curl],itg->btilde[i-1],itg->alpha+i-1);
+    ierr = VecScale(&tmp,itg->xtilde[0]);CHKERRQ(ierr);
+  } else {
+    ierr = MatMult( Amat, itg->xtilde[curl], itg->btilde[curl] );CHKERRQ(ierr);
     for (i=1; i<=curl; i++) {
-      tmp = -itg->alpha[i-1];
-      VecAXPY(&tmp,itg->btilde[i-1],itg->btilde[curl]);
-      VecAXPY(&itg->alpha[i-1],itg->xtilde[i-1],itg->xtilde[curl]);
+      ierr = VecDot(itg->btilde[curl],itg->btilde[i-1],itg->alpha+i-1);CHKERRQ(ierr);
     }
-    VecNorm(itg->btilde[curl],NORM_2,&norm);
-    tmp = 1.0/norm; VecScale(&tmp,itg->btilde[curl]);
-    VecNorm(itg->xtilde[curl],NORM_2,&norm);
-    VecScale(&tmp,itg->xtilde[curl]);
+    for (i=1; i<=curl; i++) {
+      tmp  = -itg->alpha[i-1];
+      ierr = VecAXPY(&tmp,itg->btilde[i-1],itg->btilde[curl]);CHKERRQ(ierr);
+      ierr = VecAXPY(&itg->alpha[i-1],itg->xtilde[i-1],itg->xtilde[curl]);CHKERRQ(ierr);
+    }
+    ierr = VecNorm(itg->btilde[curl],NORM_2,&norm);CHKERRQ(ierr);
+    tmp = 1.0/norm; ierr = VecScale(&tmp,itg->btilde[curl]);CHKERRQ(ierr);
+    ierr = VecNorm(itg->xtilde[curl],NORM_2,&norm);CHKERRQ(ierr);
+    ierr = VecScale(&tmp,itg->xtilde[curl]);CHKERRQ(ierr);
     itg->curl++;
   }
   PetscFunctionReturn(0);

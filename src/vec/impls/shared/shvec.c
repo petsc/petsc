@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.1 1997/11/17 21:44:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.2 1997/11/25 21:17:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -110,6 +110,7 @@ int VecCreateShared(MPI_Comm comm,int n,int N,Vec *vv)
 
   We associate with a communicator a shared memory "areana" from which memory may be shmalloced.
 */
+#include "src/sys/src/files.h"
 static int Petsc_Shared_keyval = MPI_KEYVAL_INVALID;
 static int Petsc_Shared_size   = 100000000;
 

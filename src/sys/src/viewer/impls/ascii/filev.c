@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.64 1997/10/27 00:44:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.65 1997/11/03 04:48:55 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -283,6 +283,7 @@ $    MatView(matrix,viewer);
 int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 {
   Viewer v;
+  int    ierr;
 
   PetscFunctionBegin;
   if (comm == PETSC_COMM_SELF) {
@@ -297,6 +298,7 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
   if (!PetscStrcmp(name,"stderr")) v->fd = stderr;
   else if (!PetscStrcmp(name,"stdout")) v->fd = stdout;
   else {
+    ierr         = PetscFixFilename(name);CHKERRQ(ierr);
     v->fd        = fopen(name,"w"); 
     if (!v->fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open viewer file");
   }

@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.15 1997/09/30 13:52:38 bsmith Exp bsmith $";
+C    "$Id: ex11f.F,v 1.16 1997/10/19 03:27:22 bsmith Exp bsmith $";
 C
 C/*T
 C  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -175,7 +175,7 @@ C     PETSc at runtime.  We could also specify the local dimensions
 C     if desired.
 C   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-      call VecCreate(PETSC_COMM_WORLD,dim,u,ierr)
+      call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,dim,u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 

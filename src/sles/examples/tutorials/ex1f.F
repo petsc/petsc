@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.15 1997/08/07 14:40:39 bsmith Exp balay $";
+C    "$Id: ex1f.F,v 1.16 1997/09/22 15:20:58 balay Exp bsmith $";
 C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
@@ -132,7 +132,7 @@ C     in Fortran as well as in C (as set here in the array "col").
 C  Create vectors.  Note that we form 1 vector from scratch and
 C  then duplicate as needed.
 
-      call VecCreate(PETSC_COMM_WORLD,n,x,ierr)
+      call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
       call VecDuplicate(x,b,ierr)
       call VecDuplicate(x,u,ierr)
 

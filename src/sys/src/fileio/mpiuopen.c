@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiuopen.c,v 1.11 1997/08/22 15:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiuopen.c,v 1.12 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability to MPI.
@@ -31,13 +31,16 @@ static char vcid[] = "$Id: mpiuopen.c,v 1.11 1997/08/22 15:11:48 bsmith Exp bsmi
 @*/
 FILE *PetscFOpen(MPI_Comm comm,char *name,char *mode)
 {
-  int  rank;
+  int  rank,ierr;
   FILE *fd;
 
   PetscFunctionBegin;
   MPI_Comm_rank(comm,&rank);
-  if (!rank) fd = fopen(name,mode);
-  else fd = 0;
+  if (!rank) {
+    ierr = PetscFixFilename(name);
+    if (ierr) PetscFunctionReturn(0);
+    fd = fopen(name,mode);
+  } else fd = 0;
   PetscFunctionReturn(fd);
 }
 

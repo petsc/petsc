@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex28.c,v 1.4 1997/09/22 15:24:11 balay Exp bsmith $";
+static char vcid[] = "$Id: ex28.c,v 1.5 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal()\n\n";
@@ -43,8 +43,8 @@ int main(int argc, char **args)
   ierr = MatLUFactorSymbolic(A,rowperm,colperm,1.0,&LU); CHKERRA(ierr);
   ierr = MatLUFactorNumeric(A,&LU); CHKERRA(ierr);
   ierr = MatView(LU,VIEWER_STDOUT_SELF); CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,4,&x); CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,4,&y); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,4,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,4,&y); CHKERRA(ierr);
   values[0]=0;values[1]=1.0;values[2]=-1.0;values[3]=1.0;
   for (i=0; i<4; i++) col[i]=i;
   ierr = VecSetValues(x,4,col,values,INSERT_VALUES); CHKERRA(ierr);

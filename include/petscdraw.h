@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.51 1997/10/19 03:31:51 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.52 1997/11/09 04:10:30 bsmith Exp bsmith $ */
 /*
   Interface to the graphics
 */
@@ -64,7 +64,7 @@ extern int DrawOpenNull(MPI_Comm,Draw *);
 extern int DrawDestroy(Draw);
 extern int DrawIsNull(Draw,PetscTruth*);
 
-extern int DrawCreatePopUp(Draw,Draw*);
+extern int DrawGetPopup(Draw,Draw*);
 extern int DrawCheckResizedWindow(Draw);
 extern int DrawResizeWindow(Draw,int,int);
 

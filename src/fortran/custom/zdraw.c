@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zdraw.c,v 1.16 1997/08/06 22:25:37 bsmith Exp balay $";
+static char vcid[] = "$Id: zdraw.c,v 1.17 1997/09/01 16:30:27 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: zdraw.c,v 1.16 1997/08/06 22:25:37 bsmith Exp balay $
 #define drawgettitle_        DRAWGETTITLE
 #define drawsettitle_        DRAWSETTITLE
 #define drawappendtitle_     DRAWAPPENDTITLE
-#define drawcreatepopup_     DRAWCREATEPOPUP
+#define drawgetpopup_        DRAWGETPOPUP
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define drawaxisdestroy_     drawaxisdestroy
 #define drawaxiscreate_      drawaxiscreate
@@ -43,7 +43,7 @@ static char vcid[] = "$Id: zdraw.c,v 1.16 1997/08/06 22:25:37 bsmith Exp balay $
 #define drawgettitle_        drawgettitle
 #define drawsettitle_        drawsettitle
 #define drawappendtitle_     drawappendtitle
-#define drawcreatepopup_     drawcreatepopup
+#define drawgetpopup_        drawgetpopup
 #endif
 
 #if defined(__cplusplus)
@@ -200,10 +200,10 @@ void drawappendtitle_(Draw draw,CHAR title, int *__ierr,int len )
   FREECHAR(title,t1);
 }
 
-void drawcreatepopup_(Draw draw,Draw *popup, int *__ierr )
+void drawgetpopup_(Draw draw,Draw *popup, int *__ierr )
 {
   Draw tmp;
-  *__ierr = DrawCreatePopUp((Draw)PetscToPointer( *(int*)(draw) ),&tmp);
+  *__ierr = DrawGetPopup((Draw)PetscToPointer( *(int*)(draw) ),&tmp);
   *(int *) popup = PetscFromPointer(tmp);
 }
 

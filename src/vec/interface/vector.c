@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.120 1997/10/19 03:22:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.121 1997/11/03 04:42:48 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1291,7 +1291,7 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
 
 
   Note: Currently the only option supported is
-$ VEC_IGNORE_OFF_PROCESSOR_ENTRIES which causes VecSetValues() to ignore 
+$ VEC_IGNORE_OFF_PROCESSOR_VALUES which causes VecSetValues() to ignore 
     entries destined to be stored on a seperate processor.
 
 .keywords: vector, options

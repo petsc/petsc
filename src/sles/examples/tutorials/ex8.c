@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.25 1997/09/22 15:20:37 balay Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.26 1997/10/19 03:27:22 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -92,7 +92,7 @@ int main(int argc,char **args)
   /* 
      Create and set vectors 
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,m*n,&b); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecSet(&one,u); CHKERRA(ierr);

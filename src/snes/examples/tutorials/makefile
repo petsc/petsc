@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.23 1997/11/10 02:46:46 curfman Exp bsmith $ 
+# $Id: makefile,v 1.24 1997/11/11 15:06:33 bsmith Exp bsmith $ 
 
 ALL: ex1
 
-CFLAGS	        = $(CPPFLAGS) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS	        = $(CPPFLAGS) -D__SDIR__='"$(LOCDIR)"' 
 FFLAGS	        =	 
 SOURCEC	        = 
 SOURCEF	        =
@@ -31,8 +31,8 @@ BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
 		  ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm clean
 BUILDEXAMPLES_8 = ex5f.PETSc ex5f.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c
-EXAMPLESF       = ex1f.F ex4f.F ex5f.F ex5f90.F ex5f.h
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex5s.c
+EXAMPLESF       = ex1f.F ex4f.F ex5f.F ex5f90.F ex5f.h 
 DIRS	        = 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
@@ -61,13 +61,26 @@ ex4f: ex4f.o  chkopts
 	-$(FLINKER) -o ex4f ex4f.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex4f.o
 
-ex5: ex5.o  chkopts
+ex5: ex5.o chkopts
 	-$(CLINKER) -o ex5 ex5.o $(PETSC_LIB)
 	$(RM) ex5.o
 
 ex5f: ex5f.o  chkopts
 	-$(FLINKER) -o ex5f ex5f.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex5f.o
+#
+#  The SGI parallizing compiler generates incorrect code by treating 
+#  the math functions, like sqrt and exp as local variables. The sed
+#  below patches for this
+#
+ex5s: chkopts
+	-$(CC) -pca keep  -WK,-lo=l $(FCONF) $(CFLAGS) -c ex5s.c
+	sed "s/, sqrt/ /g"   ex5s.M | sed "s/, exp/ /g"  > ex5s_tmp.c
+	-$(CC) -mp $(CFLAGS) $(FCONF) -c ex5s_tmp.c
+	-$(FC) -pfa keep -mp -64 $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) -c ex5fs.F
+	-$(CLINKER) -mp -o ex5s ex5s_tmp.o ex5fs.o $(PETSC_LIB)
+	$(RM) ex5s.o
+
 
 ex5f90: ex5f90.o  chkopts
 	-$(FLINKER) -o ex5f90 ex5f90.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)

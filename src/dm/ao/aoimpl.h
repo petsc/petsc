@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.8 1997/10/28 14:25:27 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.9 1997/11/09 04:09:43 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -59,19 +59,23 @@ struct _AODataOps {
 
                 ....
 */       
-typedef struct {
+typedef struct __AODataSegment AODataSegment; 
+struct __AODataSegment {
   void              *data;                   /* implementation-specific data */
   char              *name;
   int               bs;                      /* block size of basic chunk */
   PetscDataType     datatype;                /* type of data item, int, double etc */
-} AODataSegment;
+  AODataSegment     *next;  
+} ;
 
-typedef struct {
+typedef struct __AODataKey AODataKey;
+
+
+struct __AODataKey {
   void                   *data;                   /* implementation-specific data */
   char                   *name;
   int                    N;                       /* number of keys */
   int                    nsegments;               /* number of segments in key */
-  int                    nsegments_max;           /* number of segments allocated for */
   AODataSegment          *segments;
   ISLocalToGlobalMapping ltog;
 
@@ -80,20 +84,20 @@ typedef struct {
   int                    nlocal;                  /* number of keys owned locally */
   int                    *rowners;                /* ownership range of each processor */
   int                    rstart,rend;             /* first and 1 + last owned locally */
-} AODataKey;
+  AODataKey              *next;
+};
 
 struct _p_AOData {
   PETSCHEADER                                /* general PETSc header */
   struct _AODataOps ops;                     /* AOData operations */
-  int               nkeys_max;               /* number of keys allocated for */
   int               nkeys;                   /* current number of keys */
   AODataKey         *keys;
   void              *data;
   int               datacomplete;            /* indicates all AOData object is fully set */
 };
 
-extern int AODataKeyFind_Private(AOData, char *, int *,int *);
-extern int AODataSegmentFind_Private(AOData,char *, char *, int *,int *,int *);
+extern int AODataKeyFind_Private(AOData, char *, int *,AODataKey **);
+extern int AODataSegmentFind_Private(AOData,char *, char *, int *,AODataKey **,AODataSegment **);
 
 
 #endif

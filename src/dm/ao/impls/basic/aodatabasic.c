@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.16 1997/11/09 04:09:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.17 1997/11/23 16:58:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -412,9 +412,9 @@ int AODataSegmentGetLocal_Basic(AOData ao,char *name,char *segname,int n,int *ke
 
   PetscFunctionBegin;
   ierr = AODataKeyFind_Private(ao,segname,&flag,&key);CHKERRQ(ierr);
-  if (flag) SETERRQ(1,1,"Segment does not have corresponding key");
+  if (flag != 1) SETERRQ(1,1,"Segment does not have corresponding key");
   if (!key->ltog) SETERRQ(1,1,"No local to global mapping set for key");
-  ierr = AODataSegmentGetInfo(ao,name,segname,PETSC_NULL,PETSC_NULL,&bs,&dtype); CHKERRQ(ierr);
+  ierr = AODataSegmentGetInfo(ao,name,segname,&bs,&dtype); CHKERRQ(ierr);
   if (dtype != PETSC_INT) SETERRQ(1,1,"Datatype of segment must be PETSC_INT");
 
   /* get the values in global indexing */
@@ -423,8 +423,7 @@ int AODataSegmentGetLocal_Basic(AOData ao,char *name,char *segname,int n,int *ke
   /* allocate space to store them in local indexing */
   locals = (int *) PetscMalloc((n+1)*bs*sizeof(int));CHKPTRQ(locals);
 
-  ierr = ISGlobalToLocalMappingApply(key->ltog,IS_GTOLM_MASK,n*bs,globals,PETSC_NULL,locals);
-         CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApply(key->ltog,IS_GTOLM_MASK,n*bs,globals,PETSC_NULL,locals);CHKERRQ(ierr);
 
   ierr = AODataSegmentRestore_Basic(ao,name,segname,n,keys,(void **)&globals);CHKERRQ(ierr);
 
@@ -459,7 +458,10 @@ int AODataKeyRemap_Basic(AOData aodata, char *keyname,AO ao)
   while (key) {
     seg = key->segments;
     while (seg) {
-      if (PetscStrcmp(seg->name,keyname)) continue;
+      if (PetscStrcmp(seg->name,keyname)) {
+        seg = seg->next;
+        continue;
+      }
       if (seg->datatype != PETSC_INT) {
         SETERRQ(1,1,"Segment name same as key but not integer type");
       }
@@ -561,7 +563,7 @@ int AODataSegmentPartition_Basic(AOData aodata,char *keyname,char *segname)
   PetscMemzero(isc,keyseg->N*sizeof(int));
 
   ierr = AODataSegmentFind_Private(aodata,keyname,segname,&flag,&key,&segment);CHKERRQ(ierr);
-  if (flag) SETERRQ(1,1,"Cannot locate segment");
+  if (flag != 1) SETERRQ(1,1,"Cannot locate segment");
   MPI_Comm_size(aodata->comm,&size);
 
   bs                = segment->bs;

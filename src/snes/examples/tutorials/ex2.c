@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.59 1997/07/09 21:00:30 balay Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.60 1997/09/22 15:19:46 balay Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
@@ -71,7 +71,7 @@ int main( int argc, char **argv )
   /*
      Note that we form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 

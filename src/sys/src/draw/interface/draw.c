@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.45 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.46 1997/11/03 04:47:30 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -162,9 +162,9 @@ int DrawDestroy(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawCreatePopUp" 
+#define __FUNC__ "DrawGetPopup" 
 /*@C
-   DrawCreatePopUp - Creates a popup window associated with 
+   DrawGetPopup - Creates a popup window associated with 
       a Draw window.
 
   Input Parameter:
@@ -173,7 +173,7 @@ int DrawDestroy(Draw draw)
   Output Parameter:
 .  popup - the new popup window
 @*/
-int DrawCreatePopUp(Draw draw,Draw *popup)
+int DrawGetPopup(Draw draw,Draw *popup)
 {
   int ierr;
   PetscFunctionBegin;
@@ -181,8 +181,8 @@ int DrawCreatePopUp(Draw draw,Draw *popup)
   PetscValidPointer(popup);
 
   if (draw->popup) {*popup = draw->popup; PetscFunctionReturn(0);}
-  if (draw->ops.createpopup) {
-    ierr = (*draw->ops.createpopup)(draw,popup);CHKERRQ(ierr);
+  if (draw->ops.getpopup) {
+    ierr = (*draw->ops.getpopup)(draw,popup);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

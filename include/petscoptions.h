@@ -1,4 +1,4 @@
-/* $Id: options.h,v 1.21 1997/10/03 14:45:28 bsmith Exp bsmith $ */
+/* $Id: options.h,v 1.22 1997/10/04 16:20:10 bsmith Exp bsmith $ */
 /*
    Routines to determine options set in the options database.
 */
@@ -18,6 +18,7 @@ extern int  OptionsAllUsed();
 extern int  OptionsReject(char *,char*);
 
 extern int  OptionsSetValue(char*,char*);
+extern int  OptionsClearValue(char*);
 
 extern int  OptionsPrint(FILE *);
 

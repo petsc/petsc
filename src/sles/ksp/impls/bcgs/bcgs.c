@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.43 1997/07/09 20:50:30 balay Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.44 1997/10/19 03:23:15 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -58,6 +58,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
   KSPMonitor(ksp,0,dp);
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
+  ksp->rnorm              = dp;
   if (history) history[0] = dp;
 
   /* Make the initial Rp == R */
@@ -89,6 +90,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
       ierr = VecDot(S,S,&d1); CHKERRQ(ierr);
       if (d1 != 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Breakdown");}
       ierr = VecAXPY(&alpha,P,X); CHKERRQ(ierr);   /*   x <- x + a p       */
+      ksp->rnorm = 0.0;
       if (history && hist_len > i+1) history[i+1] = 0.0;
       KSPMonitor(ksp,i+1,0.0);
       break;
@@ -103,6 +105,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
     rhoold   = rho;
     omegaold = omega;
 
+    ksp->rnorm = dp;
     if (history && hist_len > i + 1) history[i+1] = dp;
     KSPMonitor(ksp,i+1,dp);
     cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.66 1997/10/19 03:27:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.67 1997/11/13 21:18:24 curfman Exp bsmith $";
 #endif
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
@@ -103,7 +103,7 @@ int main(int argc,char **args)
         and VecCreate() are used with the same communicator. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,m*n,&u); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.31 1997/07/09 20:50:03 balay Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.32 1997/09/22 15:16:33 balay Exp bsmith $";
 #endif
 
 static char help[] = "Displays a vector visually.\n\n";
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
      or sequential) is determined at runtime.  Also, the parallel
      partitioning of the vector is determined by PETSc at runtime.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel vectors are partitioned by

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.30 1997/10/19 03:27:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.31 1997/11/09 03:59:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -133,7 +133,9 @@ int XiInitCmap(Draw_X* XiWin )
       XAllocColor( XiWin->disp, XiWin->cmap, &colordef );
     } 
     XiWin->cmapping[i]                  = colordef.pixel;
-    cmap_pixvalues_used[colordef.pixel] = 1;
+    if (colordef.pixel < 256) {
+      cmap_pixvalues_used[colordef.pixel] = 1;
+    }
   }
   XiWin->background = XiWin->cmapping[DRAW_WHITE];
   XiWin->foreground = XiWin->cmapping[DRAW_BLACK];

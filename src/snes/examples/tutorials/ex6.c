@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.47 1997/07/09 21:00:30 balay Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.48 1997/09/22 15:19:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -65,7 +65,7 @@ int main( int argc, char **argv )
      Create vector data structures; set function evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecCreate(PETSC_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.4 1997/09/22 15:23:05 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.5 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTrans(),\n\
@@ -28,10 +28,10 @@ int main(int argc,char **args)
 
   ierr = MatCreate(PETSC_COMM_WORLD,m,n,&C); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&rstart,&rend); CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,m,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&z); CHKERRA(ierr);
   ierr = VecDuplicate(x,&w); CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,n,&y); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&y); CHKERRA(ierr);
   ierr = VecDuplicate(y,&u); CHKERRA(ierr);
   ierr = VecDuplicate(y,&s); CHKERRA(ierr);
   ierr = VecGetOwnershipRange(y,&vstart,&vend); CHKERRA(ierr);

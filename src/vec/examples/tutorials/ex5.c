@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.27 1997/10/27 13:51:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.28 1997/10/28 14:21:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -30,7 +30,7 @@ int main(int argc,char **args)
   ierr = PLogEventRegister(&VECTOR_GENERATE,"Generate Vector ","Red:");CHKERRA(ierr);
   PLogEventBegin(VECTOR_GENERATE,0,0,0,0);
   /* Generate vector */
-  ierr = VecCreate(PETSC_COMM_WORLD,m,&u); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&u); CHKERRA(ierr);
   ierr = VecGetOwnershipRange(u,&low,&high); CHKERRA(ierr);
   ierr = VecGetLocalSize(u,&ldim); CHKERRA(ierr);
   for (i=0; i<ldim; i++) {

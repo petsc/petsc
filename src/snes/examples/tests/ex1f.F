@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.24 1997/10/10 04:06:27 bsmith Exp balay $";
+C "$Id: ex4f.F,v 1.25 1997/10/10 14:53:50 balay Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -138,7 +138,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create vector data structures; set function evaluation routine
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call VecCreate(PETSC_COMM_WORLD,N,x,ierr)
+      call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,x,ierr)
       call VecDuplicate(x,r,ierr)
 
 C  Set function evaluation routine and vector.  Whenever the nonlinear

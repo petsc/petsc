@@ -1,16 +1,16 @@
-# $Id: makefile,v 1.33 1997/09/10 18:53:34 balay Exp $ 
+# $Id: makefile,v 1.1 1997/11/17 21:44:29 bsmith Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
-SOURCEC  = pbvec.c pdvec.c pvec2.c
+SOURCEC  = shvec.c
 SOURCEF  =
-SOURCEH  = pvecimpl.h 
-OBJSC    = pbvec.o pdvec.o pvec2.o
+SOURCEH  = 
+OBJSC    = shvec.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = 1
-LOCDIR   = src/vec/impls/mpi/
+LOCDIR   = src/vec/impls/shared/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

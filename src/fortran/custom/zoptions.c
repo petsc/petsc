@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.32 1997/10/09 17:52:12 balay Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.33 1997/10/19 03:18:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -18,6 +18,7 @@ extern int          PetscBeganMPI;
 #define petscgetarchtype_             PETSCGETARCHTYPE
 #define optionsgetintarray_           OPTIONSGETINTARRAY
 #define optionssetvalue_              OPTIONSSETVALUE
+#define optionsclearvalue_            OPTIONSCLEARVALUE
 #define optionshasname_               OPTIONSHASNAME
 #define optionsgetint_                OPTIONSGETINT
 #define optionsgetdouble_             OPTIONSGETDOUBLE
@@ -27,6 +28,7 @@ extern int          PetscBeganMPI;
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscgetarchtype_             petscgetarchtype
 #define optionssetvalue_              optionssetvalue
+#define optionsclearvalue_            optionsclearvalue
 #define optionshasname_               optionshasname
 #define optionsgetint_                optionsgetint
 #define optionsgetdouble_             optionsgetdouble
@@ -52,6 +54,17 @@ void optionssetvalue_(CHAR name,CHAR value,int *__ierr, int len1,int len2)
   ierr = OptionsSetValue(c1,c2);
   FREECHAR(name,c1);
   FREECHAR(value,c2);
+  *__ierr = ierr;
+}
+
+void optionsclearvalue_(CHAR name,int *__ierr, int len1)
+{
+  char *c1;
+  int  ierr;
+
+  FIXCHAR(name,len1,c1);
+  ierr = OptionsClearValue(c1);
+  FREECHAR(name,c1);
   *__ierr = ierr;
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.55 1997/08/22 15:11:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.56 1997/10/19 03:23:32 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -69,10 +69,10 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
      if (ksp->calc_res) {
 	if (!pres) {
           ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- r'*r     */
-        }
-	else {
+        } else {
           ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- z'*z     */
         }
+        ksp->rnorm                              = rnorm;
         if (history && hist_len > i) history[i] = rnorm;
         KSPMonitor(ksp,i,rnorm);
         cerr = (*ksp->converged)(ksp,i,rnorm,ksp->cnvP);
@@ -86,11 +86,11 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   if (ksp->calc_res && !brokeout) {
     if (!pres) {
       ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- r'*r     */
-    }
-    else {
+    } else {
       ierr = PCApply(ksp->B,r,z); CHKERRQ(ierr);   /*   z <- B r          */
       ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- z'*z     */
     }
+    ksp->rnorm                              = rnorm;
     if (history && hist_len > i) history[i] = rnorm;
     KSPMonitor(ksp,i,rnorm);
   }

@@ -1,5 +1,5 @@
 
-C    "$Id: ex2f.F,v 1.42 1997/08/07 14:40:39 bsmith Exp balay $";
+C    "$Id: ex2f.F,v 1.43 1997/09/22 15:20:51 balay Exp bsmith $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -76,9 +76,6 @@ C     A        - matrix that defines linear system
 C     its      - iterations for convergence
 C     norm     - norm of error in solution
 C     rctx     - random number generator context
-C
-C  Note:  "Double" -> "double precision" except for machines such
-C          as the Cray T3d, where "Double" -> "real"
 C
 C  Note that vectors are declared as PETSc "Vec" objects.  These vectors
 C  are mathematical objects that contain more than just an array of
@@ -240,11 +237,10 @@ C     parameters could alternatively be specified at runtime via
 C     SLESSetFromOptions(). All of these defaults can be
 C     overridden at runtime, as indicated below.
 
-       call SLESGetKSP(sles,ksp,ierr)
-
 C     We comment out this section of code since the Jacobi
 C     preconditioner is not a good general default.
 
+C      call SLESGetKSP(sles,ksp,ierr)
 C      call SLESGetPC(sles,pc,ierr)
 C      call PCSetType(pc,PCJACOBI,ierr)
 C      tol = 1.e-7

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.7 1997/04/10 00:00:03 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.8 1997/07/09 20:49:23 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates creating a general index set.\n\n";
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
      returned to the system 
   */
   ierr = ISRestoreIndices(is,&indices); CHKERRA(ierr);
-  
+
   /*
      One should destroy any PETSc object once one is completely
     done with it.

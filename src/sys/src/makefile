@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.57 1997/09/08 17:56:01 balay Exp bsmith $ 
+# $Id: makefile,v 1.58 1997/10/19 03:23:45 bsmith Exp bsmith $ 
 
 ALL: lib 
 CFLAGS	  = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
@@ -9,7 +9,7 @@ SOURCEC	  = adebug.c err.c signal.c fp.c mtr.c arch.c nreg.c \
             ffpath.c fwd.c  grpath.c ghome.c pcomm.c \
             mpiuopen.c pname.c pgname.c \
             gcomm.c gtype.c inherit.c prefix.c psleep.c gcookie.c \
-            cookie.c mpitr.c nt_time.c mem.c cputime.c stack.c
+            cookie.c mpitr.c nt_time.c mem.c cputime.c stack.c mprint.c
 SOURCEF	  =
 SOURCEH	  = files.h
 OBJSC	  = adebug.o err.o signal.o fp.o mtr.o arch.o nreg.o \
@@ -19,7 +19,7 @@ OBJSC	  = adebug.o err.o signal.o fp.o mtr.o arch.o nreg.o \
             ffpath.o fwd.o grpath.o ghome.o pcomm.o \
             mpiuopen.o pname.o pgname.o \
             gcomm.o gtype.o inherit.o prefix.o psleep.o gcookie.o \
-            cookie.o mpitr.o nt_time.o mem.o cputime.o stack.o
+            cookie.o mpitr.o nt_time.o mem.o cputime.o stack.o mprint.o
 OBJSF	  =
 MANSEC	  = 7
 LIBBASE	  = libpetscsys

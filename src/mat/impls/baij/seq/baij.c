@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.115 1997/10/28 14:23:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.116 1997/11/05 22:32:17 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1032,7 +1032,8 @@ static int MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
 static int MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
-  register Scalar *x,*z,*v,*xb,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;
+  register Scalar sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;
+  register Scalar * restrict v,* restrict xb,* restrict z, * restrict x;
   int             mbs=a->mbs,i,*idx,*ii,j,n;
 
   VecGetArray_Fast(xx,x);

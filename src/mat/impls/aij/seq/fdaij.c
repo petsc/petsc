@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdaij.c,v 1.14 1997/08/22 15:13:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdaij.c,v 1.15 1997/10/19 03:25:18 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -20,6 +20,10 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   PetscTruth done;
 
   PetscFunctionBegin;
+  if (!mat->assembled) {
+    SETERRQ(1,1,"Matrix must be assembled first by calls to MatAssemblyBegin/End();");
+  }
+
   c->M             = mat->M;  /* set total rows, columns and local rows */
   c->N             = mat->N;
   c->m             = mat->M;

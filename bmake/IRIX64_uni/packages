@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.20 1997/11/12 15:50:49 bsmith Exp $ 
+# $Id: base.site,v 1.1 1997/11/24 20:07:35 bsmith Exp bsmith $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -36,9 +36,11 @@ X11_LIB        = -lX11
 # you should remove the -DUSES_INT_MPI_COMM. If you are using MPICH Version 1.1
 # or SGI's version of MPI you MUST retain it.
 #
-MPI_LIB        = -lmpi
-MPI_INCLUDE    = -DUSES_INT_MPI_COMM
-MPIRUN         =  /bin/mpirun
+# Location of MPI (Message Passing Interface) software  
+#
+MPI_LIB        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)/libmpiuni.a
+MPI_INCLUDE    = -I$(PETSC_DIR)/src/mpiuni -DUSES_INT_MPI_COMM
+MPIRUN         = $(PETSC_DIR)/src/mpiuni/mpirun
 #
 # The following lines can be used with MPICH
 #
@@ -64,8 +66,8 @@ MPIRUN         =  /bin/mpirun
 #
 # Optional location of BlockSolve (MPI version)
 #
-BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+#BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+#BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 # Optional Matlab location
 #
@@ -97,7 +99,7 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DHAVE_BLOCKSOLVE 
+PCONF         = 
 #PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
 EXTERNAL_LIB  = $(BS_LIB)  $(MPE_LIB) $(PVODE_LIB) $(ADIC_LIB)
 #

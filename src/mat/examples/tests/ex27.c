@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex27.c,v 1.3 1997/09/22 15:24:13 balay Exp bsmith $";
+static char vcid[] = "$Id: ex27.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests repeated use of assembly for matrices.\n\
@@ -55,7 +55,7 @@ int main(int argc,char **args)
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   /* Form a couple of vectors to test matrix-vector product */
-  ierr = VecCreate(PETSC_COMM_WORLD,m*n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&y); CHKERRA(ierr);
   v = 1.0; ierr = VecSet(&v,x); CHKERRA(ierr);
   ierr = MatMult(C,x,y); CHKERRA(ierr);

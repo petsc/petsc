@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.4 1997/09/22 15:24:38 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.5 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\n";
@@ -20,10 +20,10 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*) 0,help);
 
-  ierr = VecCreate(PETSC_COMM_WORLD,m,&y); CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,m,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&y); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&x); CHKERRA(ierr);
   ierr = VecSet(&value,x); CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,n,&b); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b); CHKERRA(ierr);
 
   ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&type,&set); CHKERRQ(ierr);
   if (type == MATMPIDENSE) {

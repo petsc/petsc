@@ -1,5 +1,5 @@
 
-C      "$Id: ex3f.F,v 1.2 1996/10/28 23:01:29 curfman Exp balay $";
+C      "$Id: ex3f.F,v 1.3 1997/09/22 15:16:30 balay Exp bsmith $";
 
 C  Description: Displays a vector visually.
 C
@@ -46,7 +46,7 @@ C  Create a vector, specifying only its global dimension.
 C  When using VecCreate(), the vector format (currently parallel
 C  or sequential) is determined at runtime.  Also, the parallel
 C  partitioning of the vector is determined by PETSc at runtime.
-      call VecCreate(PETSC_COMM_WORLD,n,x,ierr)
+      call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
 
 C  Currently, all PETSc parallel vectors are partitioned by
 C  contiguous chunks of rows across the processors.  Determine

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.175 1997/10/20 02:13:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.176 1997/11/03 04:50:35 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -30,7 +30,7 @@ static char vcid[] = "$Id: plog.c,v 1.175 1997/10/20 02:13:27 curfman Exp bsmith
   to that object are printed. OBJECT_COOKIE is, for example, MAT_COOKIE.
 */
 int PLogPrintInfo = 0;
-static int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                               1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                               1,1,1,1,1,1,1,1,1,1,1,1};
 #undef __FUNC__  
@@ -99,75 +99,6 @@ int PLogInfoActivateClass(int objclass)
   PetscFunctionReturn(0);
 }
 
-/*
-   If the option -log_history was used, then all printed PLogInfo() 
-  messages are also printed to the history file, called by default
-  .petschistory in ones home directory.
-*/
-extern FILE *petsc_history;
-
-#undef __FUNC__  
-#define __FUNC__ "PLogInfo"
-/*@C
-    PLogInfo - Logs informative data, which is printed to standard output
-    when the option -log_info is specified.
-
-    Input Parameter:
-.   vobj - object most closely associated with the logging statement
-.   message - logging message, using standard "printf" format
-
-    Options Database Key:
-$    -log_info : activates printing of PLogInfo() messages 
-
-    Fortran Note:
-    This routine is not supported in Fortran.
-
-    Example of Usage:
-$
-$     Mat A
-$     double alpha
-$     PLogInfo(A,"Matrix uses parameter alpha=%g\n",alpha);
-$
-
-.keywords: information, printing, monitoring
-
-.seealso: PLogInfoAllow()
-@*/
-int PLogInfo(void *vobj,char *message,...)
-{
-  va_list     Argp;
-  int         rank,urank,len;
-  PetscObject obj = (PetscObject) vobj;
-  char        string[256];
-
-  PetscFunctionBegin;
-  if (obj) PetscValidHeader(obj);
-  if (!PLogPrintInfo) PetscFunctionReturn(0);
-  if (obj && !PLogInfoFlags[obj->cookie - PETSC_COOKIE - 1]) PetscFunctionReturn(0);
-  if (!obj) rank = 0;
-  else      {MPI_Comm_rank(obj->comm,&rank);} 
-  if (rank) PetscFunctionReturn(0);
-
-  MPI_Comm_rank(PETSC_COMM_WORLD,&urank);
-  va_start( Argp, message );
-  sprintf(string,"[%d]",urank); len = PetscStrlen(string);
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
-  vsprintf(string+len,message,(char *)Argp);
-#else
-  vsprintf(string+len,message,Argp);
-#endif
-  fprintf(stdout,"%s",string);
-  fflush(stdout);
-  if (petsc_history) {
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
-    vfprintf(petsc_history,message,(char *)Argp);
-#else
-    vfprintf(petsc_history,message,Argp);
-#endif
-  }
-  va_end( Argp );
-  PetscFunctionReturn(0);
-}
 
 /* -------------------------------------------------------------------*/
 #if defined(USE_PETSC_LOG)
@@ -1063,7 +994,7 @@ $      Log.<rank>
 @*/
 int PLogDump(char* sname)
 {
-  int        i,rank;
+  int        i,rank,ierr;
   FILE       *fd;
   char       file[64];
   PLogDouble flops,_TotalTime;
@@ -1075,7 +1006,8 @@ int PLogDump(char* sname)
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (sname) sprintf(file,"%s.%d",sname,rank);
   else  sprintf(file,"Log.%d",rank);
-  fd = fopen(file,"w"); if (!fd) SETERRQ(1,0,"cannot open file");
+  ierr = PetscFixFilename(file);CHKERRQ(ierr);
+  fd   = fopen(file,"w"); if (!fd) SETERRQ(1,0,"cannot open file");
 
   fprintf(fd,"Objects created %d Destroyed %d\n",nobjects,
                                                  ObjectsDestroyed);
@@ -1323,6 +1255,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
 
   /* Open the summary file */
   if (filename && !rank) {
+    ierr = PetscFixFilename(filename);CHKERRQ(ierr);
     fd = fopen(filename,"w"); 
     if (!fd) SETERRQ(1,0,"cannot open file");
   }

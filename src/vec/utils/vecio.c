@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.35 1997/10/19 03:22:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.36 1997/11/03 04:42:39 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -84,7 +84,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
     if ((VecType)type != VEC_COOKIE) SETERRQ(1,0,"Non-vector object");
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT); CHKERRQ(ierr);
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
-    ierr = VecCreate(comm,rows,&vec); CHKERRQ(ierr);
+    ierr = VecCreate(comm,PETSC_DECIDE,rows,&vec); CHKERRQ(ierr);
     v = (Vec_MPI*) vec->data;
     ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,avec,v->n,PETSC_SCALAR);CHKERRQ(ierr);
@@ -110,7 +110,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
     }
   } else {
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
-    ierr = VecCreate(comm,rows,&vec); CHKERRQ(ierr);
+    ierr = VecCreate(comm,PETSC_DECIDE,rows,&vec); CHKERRQ(ierr);
     ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr); 
     ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
     ierr = MPI_Recv(avec,n,MPIU_SCALAR,0,vec->tag,vec->comm,&status);CHKERRQ(ierr);

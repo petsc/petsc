@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.1 1997/10/23 01:39:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.2 1997/10/28 14:25:35 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests AODataRemap \n\n";
@@ -10,8 +10,9 @@ static char help[] = "Tests AODataRemap \n\n";
 
 int main(int argc,char **argv)
 {
-  int         n,nglobal, bs = 1, *keys, *data,ierr,flg,rank,size,i,start;
+  int         n,nglobal, bs = 1, *keys, *data,ierr,flg,rank,size,i,start,*news;
   AOData      aodata;
+  AO          ao;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
@@ -23,12 +24,12 @@ int main(int argc,char **argv)
   /*
        Create a database with one  key and one segment
   */
-  ierr = AODataCreateBasic(PETSC_COMM_WORLD,1,&aodata);CHKERRA(ierr);
+  ierr = AODataCreateBasic(PETSC_COMM_WORLD,&aodata);CHKERRA(ierr);
 
   /*
        Put one segment in the key
   */
-  ierr = AODataKeyAdd(aodata,"key1",PETSC_DECIDE,nglobal,1); CHKERRA(ierr);
+  ierr = AODataKeyAdd(aodata,"key1",PETSC_DECIDE,nglobal); CHKERRA(ierr);
 
   /* allocate space for the keys each processor will provide */
   keys = (int *) PetscMalloc( n*sizeof(int) );CHKPTRA(keys);
@@ -49,7 +50,7 @@ int main(int argc,char **argv)
   */
   data = (int *) PetscMalloc( bs*n*sizeof(int) );CHKPTRA(data);
   for ( i=0; i<n; i++ ) {
-    data[i]   = start + i +1; /* the data is the neighbor to the right */
+    data[i]   = start + i + 1; /* the data is the neighbor to the right */
   }
   data[n-1] = 0; /* make it periodic */
   ierr = AODataSegmentAdd(aodata,"key1","key1",bs,n,keys,data,PETSC_INT);CHKERRA(ierr); 
@@ -64,6 +65,14 @@ int main(int argc,char **argv)
   /*
          Remap the database so that i -> nglobal - i - 1
   */
+  news = (int *) PetscMalloc(n*sizeof(int));CHKPTRA(news);
+  for ( i=0; i<n; i++ ) {
+    news[i] = nglobal - i - start - 1;
+  }
+  ierr = AOCreateBasic(PETSC_COMM_WORLD,n,news,PETSC_NULL,&ao);CHKERRA(ierr);
+  PetscFree(news);
+  ierr = AODataKeyRemap(aodata,"key1",ao);CHKERRA(ierr);
+  ierr = AODestroy(ao);CHKERRA(ierr);
   ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = AODataDestroy(aodata); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.46 1997/10/19 03:22:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.47 1997/11/09 03:54:15 bsmith Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -96,7 +96,7 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
   /* create scale window */
   ierr = DrawCheckResizedWindow(win); CHKERRQ(ierr);
 
-  ierr = DrawCreatePopUp(win,&popup); CHKERRQ(ierr);
+  ierr = DrawGetPopup(win,&popup); CHKERRQ(ierr);
 
   if (rank == 0) {
 #if !defined(USE_PETSC_COMPLEX)
@@ -172,6 +172,37 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
 #endif
   }
   ierr = VecDestroy(W); CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecContourScale"
+/*@
+     VecContourScale - Prepares a vector of values to be plotted using 
+          the DrawTriangle() contour plotter.
+
+  Input Paramters:
+.   v - the vector of values
+.   vmin - minimum value (for lowest color)
+.   vmax - maximum value (for highest color)
+
+@*/
+int VecContourScale(Vec v,double vmin,double vmax)
+{
+  Scalar *values;
+  int    ierr,n,i;
+  double scale = (245.0 - DRAW_BASIC_COLORS)/(vmax - vmin); 
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
+
+  ierr = VecGetArray(v,&values);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  for ( i=0; i<n; i++ ) {
+    values[i] = DRAW_BASIC_COLORS + scale*(values[i] - vmin);
+  }
+  ierr = VecRestoreArray(v,&values);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

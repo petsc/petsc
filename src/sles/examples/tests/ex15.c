@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.9 1997/09/22 15:21:50 balay Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.10 1997/10/19 03:27:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "SLES on an operator with a null space.\n\n";
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   /* Create vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&b); CHKERRA(ierr);
   ierr = VecDuplicate(x,&u); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5s.c,v 1.1 1997/11/19 18:30:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5s.c,v 1.2 1997/11/25 05:13:17 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -9,7 +9,8 @@ The command line options include:\n\
   -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
      problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
-  -my <yg>, where <yg> = number of grid points in the y-direction\n\";
+  -my <yg>, where <yg> = number of grid points in the y-direction\n\
+  -use_fortran_function: use Fortran coded function, rather than C\n";
 
 /*T
    Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
@@ -40,6 +41,10 @@ T*/
 
          setenv MPC_NUM_THREADS nt <- set number of threads processor 0 should 
                                       use to evaluate user provided function
+
+       Note: The number of MPI processes (set with the mpirun option -np ) can 
+       be set completely independently from the number of threads process 0 
+       uses to evaluate the function (though usually one would make them the same).
 */
        
 /* ------------------------------------------------------------------------
@@ -99,12 +104,17 @@ extern int FormFunctionFortran(SNES,Vec,Vec,void*);
 */
 int main( int argc, char **argv )
 {
-  SNES     snes;                /* nonlinear solver */
-  Vec      x, r;                /* solution, residual vectors */
-  AppCtx   user;                /* user-defined work context */
-  int      its;                 /* iterations for convergence */
-  int      flg, N, ierr;
-  double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  SNES           snes;                /* nonlinear solver */
+  Vec            x, r;                /* solution, residual vectors */
+  AppCtx         user;                /* user-defined work context */
+  int            its;                 /* iterations for convergence */
+  int            flg, N, ierr, rstart, rend, *colors, i,ii,ri,rj;
+  double         bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  MatFDColoring  fdcoloring;           
+  ISColoring     iscoloring;
+  Mat            J;
+  int            (*fnc)(SNES,Vec,Vec,void*);
+  Scalar         zero = 0.0;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);
@@ -140,15 +150,17 @@ int main( int argc, char **argv )
   ierr = VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
 
+  ierr = OptionsHasName(PETSC_NULL,"-use_fortran_function",&flg);CHKERRA(ierr);
+  if (flg) {
+    fnc = FormFunctionFortran;
+  } else {
+    fnc = FormFunction;
+  }
+
   /* 
      Set function evaluation routine and vector
   */
-  ierr = OptionsHasName(PETSC_NULL,"-use_fortran_function",&flg);CHKERRA(ierr);
-  if (flg) {
-    ierr = SNESSetFunction(snes,r,FormFunctionFortran,&user); CHKERRA(ierr);
-  } else {
-    ierr = SNESSetFunction(snes,r,FormFunction,&user); CHKERRA(ierr);
-  }
+  ierr = SNESSetFunction(snes,r,fnc,&user); CHKERRA(ierr);
 
   /*
        Currently when using VecCreateShared() and using loop level parallelism
@@ -159,6 +171,68 @@ int main( int argc, char **argv )
     Thus this example uses the PETSc Jacobian calculations via finite differencing
     to approximate the Jacobian
   */ 
+
+  /*
+     Color the grid; since this is a five point stencil we can get away with 
+     9 colors.
+  */
+  ierr   = VecGetOwnershipRange(r,&rstart,&rend);CHKERRA(ierr);
+  colors = (int *) PetscMalloc((rend-rstart)*sizeof(int));CHKPTRA(colors);
+  for ( i=rstart; i<rend; i++ ) {
+    colors[i - rstart] = 3*((i/user.mx) % 3) + (i % 3);
+  }
+  ierr   = ISColoringCreate(PETSC_COMM_WORLD,rend-rstart,colors,&iscoloring);CHKERRA(ierr);
+  PetscFree(colors);
+
+  /*
+     Create and set the nonzero pattern for the Jacobian: This is not done 
+     particularly efficiently. One should process the boundary nodes seperately and 
+     then use a simple loop for the interior nodes.
+       Note that for this code we use the "natural" number of the nodes on the 
+     grid (since that is what is good for the user provided function). In the 
+     DA examples we must use the DA numbering where each processor is assigned a
+     chunk of data.
+  */
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,rend-rstart,rend-rstart,N,
+                         N,5,0,0,0,&J);CHKERRA(ierr);
+  for ( i=rstart; i<rend; i++ ) {
+    rj = i % user.mx;         /* column in grid */
+    ri = i / user.mx;         /* row in grid */
+    if (ri != 0) {     /* first row does not have neighbor below */
+      ii   = i - user.mx;
+      ierr = MatSetValues(J,1,&i,1,&ii,&zero,INSERT_VALUES);CHKERRA(ierr);
+    }
+    if (ri != user.my - 1) { /* last row does not have neighbors above */
+      ii   = i + user.mx;
+      ierr = MatSetValues(J,1,&i,1,&ii,&zero,INSERT_VALUES);CHKERRA(ierr);
+    }
+    if (rj != 0) {     /* first column does not have neighbor to left */
+      ii   = i - 1;
+      ierr = MatSetValues(J,1,&i,1,&ii,&zero,INSERT_VALUES);CHKERRA(ierr);
+    }
+    if (rj != user.mx - 1) {     /* last column does not have neighbor to right */
+      ii   = i + 1;
+      ierr = MatSetValues(J,1,&i,1,&ii,&zero,INSERT_VALUES);CHKERRA(ierr);
+    }
+    ierr = MatSetValues(J,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRA(ierr);
+  }
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+
+  /*
+       Create the data structure that SNESDefaultComputeJacobianWithColoring() uses
+       to compute the actual Jacobians via finite differences.
+  */
+  ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); CHKERRA(ierr);
+  ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void))fnc,&user);CHKERRA(ierr);
+  ierr = MatFDColoringSetFromOptions(fdcoloring); CHKERRA(ierr);
+  /*
+        Tell SNES to use the routine SNESDefaultComputeJacobianWithColoring()
+      to compute Jacobians.
+  */
+  ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianWithColoring,fdcoloring);CHKERRA(ierr);  
+  ierr = ISColoringDestroy(iscoloring); CHKERRA(ierr);
+
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.62 1997/09/11 03:02:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.63 1997/10/19 03:23:17 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -107,6 +107,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
   cerr = (*ksp->converged)(ksp,0,dp,ksp->cnvP);
   if (cerr) {*its =  0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,dp);
+  ksp->rnorm              = dp;
   if (history) history[0] = dp;
 
   for ( i=0; i<maxit; i++) {
@@ -137,10 +138,10 @@ int  KSPSolve_CG(KSP ksp,int *its)
      if (pres) {
        ierr = PCApply(ksp->B,R,Z); CHKERRQ(ierr);    /*     z <- Br         */
        ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- z'*z       */
-     }
-     else {
+     } else {
        ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- r'*r       */
      }
+     ksp->rnorm = dp;
      if (history && hist_len > i + 1) history[i+1] = dp;
      ksp->its = i+1;
      KSPMonitor(ksp,i+1,dp);

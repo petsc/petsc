@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.37 1997/10/29 15:32:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.38 1997/11/03 04:50:16 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -127,7 +127,13 @@ int MPI_Initialized(int *flag)
   return 0;
 }
 
-/*     Fortran versions of several routines */
+int MPI_Finalize()
+{
+  MPI_was_initialized = 0;
+  return 0;
+}
+
+/* -------------------     Fortran versions of several routines ------------------ */
 
 #if defined(__cplusplus)
 extern "C" {
@@ -307,6 +313,8 @@ void MPI_ALLREDUCE(void *sendbuf,void *recvbuf,int *count,int *datatype,
   PetscMemcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
+
+
 #if defined(__cplusplus)
 }
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tfqmr.c,v 1.32 1997/07/09 20:51:06 balay Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.33 1997/10/19 03:23:40 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -106,6 +106,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
       ierr = VecAXPY(&eta,D,X); CHKERRQ(ierr);
 
       dpest = sqrt(m + 1.0) * tau;
+      ksp->rnorm                                    = dpest;
       if (history && hist_len > i + 1) history[i+1] = dpest;
       KSPMonitor(ksp,i+1,dpest);
       if ((conv = cerr = (*ksp->converged)(ksp,i+1,dpest,ksp->cnvP))) break;

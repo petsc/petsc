@@ -1,5 +1,5 @@
 C
-C  $Id: vec.h,v 1.16 1997/11/13 20:04:18 balay Exp balay $;
+C  $Id: vec.h,v 1.17 1997/11/13 20:51:30 balay Exp bsmith $;
 C
 C  Include file for Fortran use of the Vec package in PETSc
 C
@@ -38,8 +38,8 @@ C
 C
 C  VecOption
 C
-      integer VEC_IGNORE_OFF_PROCESSOR_ENTRIES
-      parameter (VEC_IGNORE_OFF_PROCESSOR_ENTRIES=0)
+      integer VEC_IGNORE_OFF_PROCESSOR_VALUES
+      parameter (VEC_IGNORE_OFF_PROCESSOR_VALUES=0)
 C
 C  End of Fortran include file for the Vec package in PETSc
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.51 1997/10/19 03:25:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.52 1997/11/03 04:45:38 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -180,8 +180,8 @@ $
 $     Vec x, y
 $     Mat A
 $
-$     VecCreate(comm,M,&y);
-$     VecCreate(comm,N,&x);
+$     VecCreate(comm,PETSC_DECIDE,M,&y);
+$     VecCreate(comm,PETSC_DECIDE,N,&x);
 $     VecGetLocalSize(y,&m);
 $     MatCreateShell(comm,m,N,M,N,ctx,&A);
 $     MatShellSetOperation(mat,MATOP_MULT,mult);

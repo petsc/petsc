@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.68 1997/09/22 15:21:52 balay Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.69 1997/10/19 03:27:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   /* Generate vectors */
   ierr = MatGetSize(mat,&rdim,&cdim); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend); CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,rdim,&u); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,rdim,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   for (i=rstart; i<rend; i++) {

@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.21 1997/08/07 14:40:49 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.22 1997/10/19 03:27:37 bsmith Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -30,7 +30,7 @@ struct _DrawOps {
   int (*syncclear)(Draw);
   int (*beginpage)(Draw);
   int (*endpage)(Draw);
-  int (*createpopup)(Draw,Draw*);
+  int (*getpopup)(Draw,Draw*);
   int (*settitle)(Draw,char *);
   int (*checkresizedwindow)(Draw);
   int (*resizewindow)(Draw,int,int);

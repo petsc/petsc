@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmpiaij.c,v 1.13 1997/10/19 03:25:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.14 1997/11/03 04:45:30 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -24,6 +24,10 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   PetscTruth done;
 
   PetscFunctionBegin;
+  if (!mat->assembled) {
+    SETERRQ(1,1,"Matrix must be assembled first by calls to MatAssemblyBegin/End();");
+  }
+
   c->M             = mat->M;  /* set the global rows and columns and local rows */
   c->N             = mat->N;
   c->m             = mat->m;
