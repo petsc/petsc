@@ -1,19 +1,11 @@
-#ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.2 1994/08/19 02:08:33 bsmith Exp $";
-#endif
 
 #define RERROR  gmres_error
-#include "petsc.h"
-#include "kspimpl.h"
-#include "gmresctx.h"
 #include "gmresp.h"
 
 /*
   This is the basic version and does not assume anything. 
  */
-int GMRESBasicOrthog(  itP, it )
-int     it;
-KSP  itP;
+int GMRESBasicOrthog( KSP itP,int it )
 {
   KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
   int    j;
@@ -39,9 +31,7 @@ KSP  itP;
   Multiple applications of this can be used to provide a better 
   orthogonalization (but be careful of the HH and HES values).
  */
-int GMRESUnmodifiedOrthog(  itP, it )
-int     it;
-KSP  itP;
+int GMRESUnmodifiedOrthog(KSP  itP,int it )
 {
   KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
   int    j;

@@ -1,6 +1,8 @@
 
+
 #include "petsc.h"
 #include "kspimpl.h"
+
 
 /*@
    KSPRegisterAll - Registers all the iterative methods
@@ -13,15 +15,15 @@
 @*/
 int KSPRegisterAll()
 {
-  KSPRegister((int)KSPCG         , "cg",         KSPiCGCreate);
-  KSPRegister((int)KSPRICHARDSON , "richardson", KSPiRichardsonCreate);
-  KSPRegister((int)KSPCHEBYCHEV  , "chebychev",  KSPiChebychevCreate);
-  KSPRegister((int)KSPGMRES      , "gmres",      KSPiGMRESCreate);
-  KSPRegister((int)KSPTCQMR      , "tcqmr",      KSPiTCQMRCreate);
-  KSPRegister((int)KSPBCGS       , "bcgs",       KSPiBCGSCreate);
-  KSPRegister((int)KSPCGS        , "cgs",        KSPiCGSCreate);
-  KSPRegister((int)KSPTFQMR      , "tfqmr",      KSPiTFQMRCreate);
-  KSPRegister((int)KSPCR         , "cr",         KSPiCRCreate); 
-  KSPRegister((int)KSPLSQR       , "lsqr",       KSPiLSQRCreate);
-  KSPRegister((int)KSPPREONLY    , "preonly",    KSPiPREONLYCreate);
+  KSPRegister(KSPCG         , "cg",         KSPiCGCreate);
+  KSPRegister(KSPRICHARDSON , "richardson", KSPiRichardsonCreate);
+  KSPRegister(KSPCHEBYCHEV  , "chebychev",  KSPiChebychevCreate);
+  KSPRegister(KSPGMRES      , "gmres",      KSPiGMRESCreate);
+  KSPRegister(KSPTCQMR      , "tcqmr",      KSPiTCQMRCreate);
+  KSPRegister(KSPBCGS       , "bcgs",       KSPiBCGSCreate);
+  KSPRegister(KSPCGS        , "cgs",        KSPiCGSCreate);
+  KSPRegister(KSPTFQMR      , "tfqmr",      KSPiTFQMRCreate);
+  KSPRegister(KSPCR         , "cr",         KSPiCRCreate); 
+  KSPRegister(KSPLSQR       , "lsqr",       KSPiLSQRCreate);
+  KSPRegister(KSPPREONLY    , "preonly",    KSPiPREONLYCreate);
 }

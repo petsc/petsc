@@ -1,7 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: mmaxpy.c,v 1.2 1994/08/19 02:08:33 bsmith Exp $";
-#endif
-#include "kspimpl.h"
+
+#include  "gmresp.h"
 
 /*
    As the final part of the solution process in gmres, the Krylov 
@@ -19,12 +17,10 @@ static char vcid[] = "$Id: mmaxpy.c,v 1.2 1994/08/19 02:08:33 bsmith Exp $";
         p1    - array of multipliers
         dv    - destination for result.
  */
-BasicMultiMaxpy(  v1, nv, p1, dv )
-Vec     *v1, dv;
-int      nv;
-double   *p1;
+int BasicMultiMaxpy(  Vec *v1,int nv,double *p1, Vec dv )
 {
   int j;
   for (j=0; j<=nv; j++) VecAXPY( p1++, *v1++, dv );
+  return 0;
 }
 

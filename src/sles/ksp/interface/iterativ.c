@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.6 1994/08/21 23:56:11 bsmith Exp $";
+static char vcid[] = "$Id: iterativ.c,v 1.1 1994/10/01 20:02:39 bsmith Exp $";
 #endif
 
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: iterativ.c,v 1.6 1994/08/21 23:56:11 bsmith Exp $";
    the registry system, we provide a way to load only the truely necessary
    files) 
  */
-#include "kspimpl.h"
+#include "kspimpl.h"   /*I "ksp.h" I*/
 
 /*
   KSPiDefaultFreeWork - Free work vectors
@@ -17,8 +17,7 @@ static char vcid[] = "$Id: iterativ.c,v 1.6 1994/08/21 23:56:11 bsmith Exp $";
   Input Parameters:
 . itP  - iterative context
  */
-int KSPiDefaultFreeWork( itP )
-KSP itP;
+int KSPiDefaultFreeWork( KSP itP )
 {
   VALIDHEADER(itP,KSP_COOKIE);
   return VecFreeVecs(itP->work,itP->nwork);
@@ -34,8 +33,7 @@ KSP itP;
    Returns:
    the number of errors encountered.
  @*/
-int KSPCheckDef( itP )
-KSP itP;
+int KSPCheckDef( KSP itP )
 {
   int err = 0;
   VALIDHEADER(itP,KSP_COOKIE);
@@ -62,11 +60,7 @@ KSP itP;
 . rnorm - 2-norm residual value (may be estimated).  
 . dummy - unused monitor context 
  @*/
-int KSPDefaultMonitor(itP,n,rnorm,dummy)
-KSP itP;
-int    n;
-double rnorm;
-void   *dummy;
+int KSPDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
 {
   printf("%d %14.12e \n",n,rnorm); return 0;
 }
@@ -87,11 +81,7 @@ void   *dummy;
   0 otherwise.
   
  @*/
-int KSPDefaultConverged(itP,n,rnorm,dummy)
-KSP itP;
-int    n;
-double rnorm;
-void   *dummy;
+int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   if ( n == 0 ) {
@@ -113,9 +103,7 @@ void   *dummy;
   Returns:
   pointer to a vector containing the solution.
  @*/
-int KSPDefaultBuildSolution(itP,v,V)
-KSP itP;
-Vec v,*V;
+int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
 {
   int ierr;
   if (itP->right_pre) {
@@ -137,13 +125,11 @@ Vec v,*V;
   Returns:
   pointer to a vector containing the residual.
  @*/
-int KSPDefaultBuildResidual(itP,t,v,V)
-KSP itP;
-Vec  t,v,*V;
+int KSPDefaultBuildResidual(KSP itP,Vec t,Vec v,Vec *V)
 {
   int    ierr;
   Vec    T;
-  double mone = -1.0;
+  Scalar mone = -1.0;
   ierr = KSPBuildSolution(itP,t,&T); CHKERR(ierr);
   ierr = MM(itP, t, v ); CHKERR(ierr);
   ierr = VecAYPX(&mone, itP->vec_rhs, v ); CHKERR(ierr);
@@ -160,9 +146,7 @@ Vec  t,v,*V;
   Note:
   Call this only if no work vectors have been allocated 
  */
-int  KSPiDefaultGetWork( itP, nw )
-KSP itP;
-int    nw;
+int  KSPiDefaultGetWork( KSP itP, int nw )
 {
   if (itP->work) KSPiDefaultFreeWork( itP );
   itP->nwork = nw;
@@ -176,8 +160,7 @@ int    nw;
 . itP  - iterative context
 
  */
-int KSPiDefaultAdjustWork( itP )
-KSP itP;
+int KSPiDefaultAdjustWork( KSP itP )
 {
   if ( itP->adjust_work_vectors ) {
     return (itP->adjust_work_vectors)(itP, itP->work,itP->nwork); 
@@ -191,8 +174,7 @@ no separate context.  Preferred calling sequence KSPDestroy().
 Input Parameters: 
 .   itP - the iterative context
 */
-int KSPiDefaultDestroy(itP)
-KSP itP;
+int KSPiDefaultDestroy(KSP itP)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   if (itP->MethodPrivate) FREE(itP->MethodPrivate);
@@ -227,9 +209,8 @@ KSP itP;
 
   This routine does NOT clear the values; use KSPClearWorkCounts to do that.
 @*/
-int KSPGetWorkCounts( itP, matop, amult, binv, vecs, scalars )
-KSP itP;
-int    *matop, *amult, *binv, *vecs, *scalars;
+int KSPGetWorkCounts( KSP itP, int *matop, int *amult, int *binv, int *vecs,
+                      int * scalars )
 {
   VALIDHEADER(itP,KSP_COOKIE);
   *matop   = itP->nmatop;
@@ -246,8 +227,7 @@ int    *matop, *amult, *binv, *vecs, *scalars;
   Input Parameter:
 . itP - Iterative context
 @*/
-int KSPClearWorkCounts( itP )
-KSP itP;
+int KSPClearWorkCounts( KSP itP )
 {
   VALIDHEADER(itP,KSP_COOKIE);
   itP->nmatop        = 0;

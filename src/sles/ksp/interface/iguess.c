@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: iguess.c,v 1.3 1994/08/19 02:06:38 bsmith Exp $";
+static char vcid[] = "$Id: iguess.c,v 1.1 1994/10/01 20:02:37 bsmith Exp $";
 #endif
 
-#include "kspimpl.h"
+#include "kspimpl.h"  /*I "ksp.h" I*/
 /* 
   This code inplements Paul Fischer's initial guess code for situations where
   a linear system is solved repeatedly 
@@ -11,15 +11,12 @@ static char vcid[] = "$Id: iguess.c,v 1.3 1994/08/19 02:06:38 bsmith Exp $";
 typedef struct {
     int      curl,     /* Current number of basis vectors */
              maxl;     /* Maximum number of basis vectors */
-    double   *alpha;   /* */
+    Scalar   *alpha;   /* */
     Vec      *xtilde,  /* Saved x vectors */
              *btilde;  /* Saved b vectors */
 } KSPIGUESS;
 
-int KSPGuessCreate( itctx, maxl,ITG )
-KSP   itctx;
-int   maxl;
-void  **ITG;
+int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
 {
   KSPIGUESS *itg;
   *ITG = 0;
@@ -28,16 +25,14 @@ void  **ITG;
   CHKPTR(itg);
   itg->curl = 0;
   itg->maxl = maxl;
-  itg->alpha = (double *)MALLOC( maxl * sizeof(double) );  CHKPTR(itg->alpha);
+  itg->alpha = (Scalar *)MALLOC( maxl * sizeof(Scalar) );  CHKPTR(itg->alpha);
   VecGetVecs(itctx->vec_rhs,maxl,&itg->xtilde);
   VecGetVecs(itctx->vec_rhs,maxl,&itg->btilde);
   *ITG = (void *)itg;
   return 0;
 }
 
-int KSPGuessDestroy( itctx, itg )
-KSP   itctx;
-KSPIGUESS *itg;
+int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
 {
   VALIDHEADER(itctx,KSP_COOKIE);
   FREE( itg->alpha );
@@ -47,13 +42,10 @@ KSPIGUESS *itg;
   return 0;
 }
 
-int KSPGuessFormB( itctx, itg, b )
-KSP       itctx;
-KSPIGUESS *itg;
-Vec       b;
+int KSPGuessFormB( KSP itctx, KSPIGUESS *itg, Vec b )
 {
   int i;
-  double tmp;
+  Scalar tmp;
   VALIDHEADER(itctx,KSP_COOKIE);
   for (i=1; i<=itg->curl; i++) {
     VecDot(itg->btilde[i-1],b,&(itg->alpha[i-1]));
@@ -63,10 +55,7 @@ Vec       b;
   return 0;
 }
 
-int KSPGuessFormX( itctx, itg, x )
-KSP   itctx;
-KSPIGUESS *itg;
-Vec x;
+int KSPGuessFormX( KSP itctx, KSPIGUESS *itg, Vec x )
 {
   int i;
   VALIDHEADER(itctx,KSP_COOKIE);
@@ -77,12 +66,10 @@ Vec x;
   return 0;
 }
 
-int  KSPGuessUpdate( itctx, x, itg )
-KSP    itctx;
-Vec       *x;
-KSPIGUESS *itg;
+int  KSPGuessUpdate( KSP itctx, Vec x, KSPIGUESS *itg )
 {
-  double normax, tmp, norm;
+  double normax, norm;
+  Scalar tmp;
   int    curl = itg->curl, i;
   VALIDHEADER(itctx,KSP_COOKIE);
   if (curl == itg->maxl) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.2 1994/08/21 23:56:49 bsmith Exp $";
+static char vcid[] = "$Id: lsqr.c,v 1.1 1994/10/02 02:03:59 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -17,43 +17,23 @@ static char vcid[] = "$Id: lsqr.c,v 1.2 1994/08/21 23:56:49 bsmith Exp $";
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int KSPiLSQRSetUp();
-static int  KSPiLSQRSolve();
-
-int KSPiLSQRCreate(itP)
-KSP itP;
-{
-itP->MethodPrivate        = (void *) 0;
-itP->method               = KSPLSQR;
-itP->right_pre            = 0;
-itP->calc_res             = 1;
-itP->setup                = KSPiLSQRSetUp;
-itP->solver               = KSPiLSQRSolve;
-itP->adjustwork           = KSPiDefaultAdjustWork;
-itP->destroy              = KSPiDefaultDestroy;
-return 0;
-}
-
-static int KSPiLSQRSetUp(itP)
-KSP itP;
+static int KSPiLSQRSetUp(KSP itP)
 {
   int ierr;
-if (ierr = KSPCheckDef( itP )) return ierr;
-if (!itP->tamult) {
-  SETERR(1,"LSQR requires matrix-transpose * vector");
-}
-ierr = KSPiDefaultGetWork( itP,  6 );
-return ierr;
+  if (ierr = KSPCheckDef( itP )) return ierr;
+  if (!itP->tamult) {
+    SETERR(1,"LSQR requires matrix-transpose * vector");
+  }
+  ierr = KSPiDefaultGetWork( itP,  6 );
+  return ierr;
 }
 
-
-static int KSPiLSQRSolve(itP,its)
-KSP itP;
-int    *its;
+static int KSPiLSQRSolve(KSP itP,int *its)
 {
 int       i = 0, maxit, res, pres, hist_len, cerr;
-double    rho, rhobar, phi, phibar, theta, c, s, beta, alpha, rnorm, *history;
-double    tmp, zero = 0.0;
+Scalar    rho, rhobar, phi, phibar, theta, c, s;
+double    beta, alpha, rnorm, *history;
+Scalar    tmp, zero = 0.0;
 Vec       X,B,V,V1,U,U1,TMP,W,BINVF;
 
 res     = itP->calc_res;
@@ -113,7 +93,11 @@ for (i=0; i<maxit; i++) {
     tmp = phi/rho; VecAXPY(&tmp,W,X);      /*    x <- x + (phi/rho) w   */
     tmp = -theta/rho; VecAYPX(&tmp,V1,W);  /*    w <- v - (theta/rho) w */
 
+#if defined(PETSC_COMPLEX)
+    rnorm = real(phibar);
+#else
     rnorm = phibar;
+#endif
 
     if (history && hist_len > i + 1) history[i+1] = rnorm;
     MONITOR(itP,rnorm,i+1);
@@ -126,4 +110,17 @@ if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
 KSPUnwindPre(  itP, X, W );
 *its = RCONV(itP,i+1); return 0;
+}
+
+int KSPiLSQRCreate(KSP itP)
+{
+itP->MethodPrivate        = (void *) 0;
+itP->method               = KSPLSQR;
+itP->right_pre            = 0;
+itP->calc_res             = 1;
+itP->setup                = KSPiLSQRSetUp;
+itP->solver               = KSPiLSQRSolve;
+itP->adjustwork           = KSPiDefaultAdjustWork;
+itP->destroy              = KSPiDefaultDestroy;
+return 0;
 }

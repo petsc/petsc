@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.1 1994/10/02 02:04:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.2 1994/10/29 02:41:11 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -10,41 +10,17 @@ static char vcid[] = "$Id: rich.c,v 1.1 1994/10/02 02:04:20 bsmith Exp bsmith $"
 #include "kspimpl.h"         /*I "ksp.h" I*/
 #include "richctx.h"
 
-int  KSPiRichardsonSetUp();
-int  KSPiRichardsonSolve();
-
- 
-int KSPiRichardsonCreate(itP)
-KSP  itP;
-{
-  KSPRichardsonCntx *richardsonP;
-  richardsonP = NEW(KSPRichardsonCntx); CHKPTR(richardsonP);
-  itP->MethodPrivate = (void *) richardsonP;
-  itP->method               = KSPRICHARDSON;
-  richardsonP->scale        = 1.0;
-  richardsonP->applyrich    = 0;
-  itP->setup      = KSPiRichardsonSetUp;
-  itP->solver     = KSPiRichardsonSolve;
-  itP->adjustwork = KSPiDefaultAdjustWork;
-  itP->destroy    = KSPiDefaultDestroy;
-  itP->calc_res   = 1;
-  return 0;
-}
-
-int KSPiRichardsonSetUp(itP)
-KSP itP;
+int KSPiRichardsonSetUp(KSP itP)
 {
   int ierr;
   if (itP->method != KSPRICHARDSON) {
     SETERR(1,"Attempt to use Richardson Setup on wrong context"); 
   }
- 
   /* check user parameters and functions */
   if (itP->right_pre) {
     SETERR(2,"Right-inverse preconditioning not supported for Richardson"); 
   }
   if (ierr = KSPCheckDef( itP )) return ierr;
- 
   /* get work vectors from user code */
   return KSPiDefaultGetWork( itP,  2 );
 }
@@ -58,9 +34,7 @@ KSP itP;
 .   itP - the iterative context
 .   scale - the relaxation factor
 @*/
-int KSPRichardsonSetScale(itP,scale)
-KSP itP;
-double scale;
+int KSPRichardsonSetScale(KSP itP,Scalar scale)
 {
   KSPRichardsonCntx *richardsonP;
   VALIDHEADER(itP,KSP_COOKIE);
@@ -84,10 +58,8 @@ double scale;
 .   apply(void *ctx,Vec x,Vec b, Vec work,int its);
 
 @*/
-int KSPRichardsonSetFast(itP,apply,ctx)
-KSP  itP;
-int  (*apply)();
-void *ctx;
+int KSPRichardsonSetFast(KSP itP,int (*apply)(void *,Vec,Vec,
+                         Vec,int),void *ctx)
 {
   KSPRichardsonCntx *richardsonP;
   VALIDHEADER(itP,KSP_COOKIE);
@@ -98,12 +70,11 @@ void *ctx;
   return 0;
 }   
 
-int  KSPiRichardsonSolve(itP,its)
-KSP itP;
-int *its;
+int  KSPiRichardsonSolve(KSP itP,int *its)
 {
   int                i = 0,maxit,pres, brokeout = 0, hist_len, cerr;
-  double             rnorm,scale,*history, mone = -1.0;
+  double             rnorm,*history;
+  Scalar             scale, mone = -1.0;
   Vec                x,b,r,z;
   KSPRichardsonCntx  *richardsonP;
   richardsonP = (KSPRichardsonCntx *) itP->MethodPrivate;
@@ -164,3 +135,18 @@ int *its;
   return 0;
 }
 
+int KSPiRichardsonCreate(KSP itP)
+{
+  KSPRichardsonCntx *richardsonP;
+  richardsonP = NEW(KSPRichardsonCntx); CHKPTR(richardsonP);
+  itP->MethodPrivate = (void *) richardsonP;
+  itP->method               = KSPRICHARDSON;
+  richardsonP->scale        = 1.0;
+  richardsonP->applyrich    = 0;
+  itP->setup      = KSPiRichardsonSetUp;
+  itP->solver     = KSPiRichardsonSolve;
+  itP->adjustwork = KSPiDefaultAdjustWork;
+  itP->destroy    = KSPiDefaultDestroy;
+  itP->calc_res   = 1;
+  return 0;
+}

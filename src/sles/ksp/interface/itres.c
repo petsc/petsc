@@ -1,6 +1,7 @@
 
+
 #include "petsc.h"
-#include "kspimpl.h"
+#include "kspimpl.h"   /*I "ksp.h" I*/
 /*@
     KSPResidual - Computes the residual without making any assumptions
     about the solution.  Uses the general iterative structure.
@@ -19,11 +20,9 @@ $            A x = b
 $            M u = f    
     where M = AC (right preconditioning) or CA (left preconditioning).
  @*/
-int KSPResidual(itP,vsoln,vt1,vt2,vres, vbinvf,vb)
-KSP    itP;
-Vec  vsoln, vt1, vt2, vres, vbinvf, vb;
+int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 {
-  double one = -1.0;
+  Scalar one = -1.0;
   VALIDHEADER(itP,KSP_COOKIE);
   if (itP->right_pre) {
     if (vbinvf) VecCopy(vb,vbinvf);
@@ -70,9 +69,7 @@ Vec  vsoln, vt1, vt2, vres, vbinvf, vb;
   Output Parameter:
 . vsoln - contains solution on output  
 @*/
-int KSPUnwindPre( itP, vsoln, vt1 )
-KSP itP;
-Vec vsoln, vt1;
+int KSPUnwindPre( KSP itP, Vec vsoln, Vec vt1 )
 {
   VALIDHEADER(itP,KSP_COOKIE);
 /* If we preconditioned on the right, we need to solve for the correction to

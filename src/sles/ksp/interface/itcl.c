@@ -4,6 +4,7 @@
 
 #include "petsc.h"
 #include "kspimpl.h"
+#include "sys.h"
 
 /*@
     KSPSetFromCommandLine - sets KSP options from the command line.
@@ -16,10 +17,7 @@
    
    See also: KSPPrintHelpFromCommandLine()
 @*/
-int KSPSetFromCommandLine(ctx,argc,argv)
-int    *argc;
-char   **argv;
-KSP ctx;
+int KSPSetFromCommandLine(KSP ctx,int* argc,char **argv)
 {
   char      string[50];
   KSPMETHOD method;
@@ -43,10 +41,7 @@ KSP ctx;
 .  argc, argv - the command line arguments
 
 @*/
-int KSPPrintHelpFromCommandLine(ctx,argc,argv)
-int    *argc;
-char   **argv;
-KSP ctx;
+int KSPPrintHelpFromCommandLine(KSP ctx,int *argc,char **argv)
 {
   VALIDHEADER(ctx,KSP_COOKIE);
   if (!SYArgHasName(argc,argv,0,"-help")) return 0;

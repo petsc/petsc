@@ -10,15 +10,14 @@
 #include "kspimpl.h"
 #include "tcqmrp.h"
 
-static int KSPiTCQMRSolve( itP,its )
-KSP itP;
-int *its;
+static int KSPiTCQMRSolve(KSP itP,int *its )
 {
 double      rnorm0, rnorm;                      /* residual values */
-double      theta, ep, cl1, sl1, cl, sl, sprod, tau_n1, f, Gamma; 
-double      deltmp, rho, beta, eptmp, ta, s, c, tau_n, delta;
-double      dp1, dp2, rhom1, alpha,tmp, zero = 0.0;
+Scalar      theta, ep, cl1, sl1, cl, sl, sprod, tau_n1, f; 
+Scalar      deltmp, rho, beta, eptmp, ta, s, c, tau_n, delta;
+Scalar      dp11,dp2, rhom1, alpha,tmp, zero = 0.0;
 int         it, cerr;
+double      dp1,Gamma;
 
 it = 0;
 KSPResidual(itP,x,u,v, r, v0, b );
@@ -54,9 +53,9 @@ while ( !CONVERGED(itP,rnorm,it)) {
         (*itP->usr_monitor)( itP, it, rnorm,itP->monP );
 	}
     MATOP(itP, u, y, vtmp );                       /* y = A*u */
-    VecDot( v0, y, &dp1 );
+    VecDot( v0, y, &dp11 );
     VecDot( v0, u, &dp2 );
-    alpha = dp1 / dp2;                          /* alpha = v0'*y/v0'*u */
+    alpha = dp11 / dp2;                          /* alpha = v0'*y/v0'*u */
     deltmp = alpha;
     VecCopy(y,z);     
     tmp = -alpha; VecAXPY(&tmp,u,z);             /* z = y - alpha u */
@@ -99,8 +98,11 @@ while ( !CONVERGED(itP,rnorm,it)) {
 	ep     = -cl*eptmp + sl*alpha;
 	deltmp = -sl*eptmp - cl*alpha;
 	}
-    
+#if defined(PETSC_COMPLEX)
+    if (abs(Gamma) > abs(deltmp)) {
+#else    
     if (fabs(Gamma) > fabs(deltmp)) {
+#endif
 	ta = -deltmp / Gamma;
 	s = 1.0 / sqrt(1.0 + ta*ta);
 	c = s*ta;
@@ -124,8 +126,13 @@ while ( !CONVERGED(itP,rnorm,it)) {
     VecCopy(pvec,pvec1);
 
     /* Compute the upper bound on the residual norm r (See QMR paper p. 13) */
+#if defined(PETSC_COMPLEX)
+    sprod = sprod*abs(s);
+    rnorm = rnorm0 * sqrt((double)it+2.0) * real(sprod);     
+#else
     sprod = sprod*fabs(s);
     rnorm = rnorm0 * sqrt((double)it+2.0) * sprod;     
+#endif
     it++; if (it > itP->max_it) {break;}
     }
 
@@ -139,8 +146,7 @@ KSPUnwindPre(  itP, x, vtmp );
 *its = RCONV(itP,it); return 0;
 }
 
-static int KSPiTCQMRSetUp( itP )
-KSP itP;
+static int KSPiTCQMRSetUp(KSP  itP )
 {
   int ierr;
   if (ierr = KSPCheckDef( itP )) return ierr;
@@ -148,8 +154,7 @@ KSP itP;
   return 0;
 }
 
-int KSPiTCQMRCreate(itP)
-KSP itP;
+int KSPiTCQMRCreate(KSP itP)
 {
 itP->MethodPrivate = (void *) 0;
 itP->method        = KSPTCQMR;

@@ -1,6 +1,3 @@
-#ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.1 1994/10/02 02:03:46 bsmith Exp bsmith $";
-#endif
 
 /*
     This implements gmres.  It may be called recurrsively as long as 
@@ -56,55 +53,14 @@ static char vcid[] = "$Id: gmres.c,v 1.1 1994/10/02 02:03:46 bsmith Exp bsmith $
 
 #include <math.h>
 #include <stdio.h>
-#include "petsc.h"
-#include "kspimpl.h"        /*I "ksp.h" I*/
-#include "gmresctx.h"
 #include "gmresp.h"
 #define GMRES_DELTA_DIRECTIONS 5
 #define GMRES_DEFAULT_MAXK 10
-
-/* Forward references */
-static double GMRESUpdateHessenberg();
-static int    GMRESGetNewVectors();
-static int    GMRESBuildSolution();
-static int    GMRESResidual();
-       int    KSPiGMRESDefaultConverged();
-static int    BuildGmresSoln();
-
-static int  KSPiGMRESSolve();
-static int KSPiGMRESSetUp(),KSPiGMRESDestroy(), KSPiGMRESAdjustWork();
-
-int KSPiGMRESCreate(itP)
-KSP itP;
-{
-  KSPiGMRESCntx *gmresP;
-  int         GMRESBasicOrthog();
-
-  gmresP = NEW(KSPiGMRESCntx); CHKPTR(gmresP);
-
-  itP->MethodPrivate = (void *) gmresP;
-  itP->method        = KSPGMRES;
-  itP->converged     = KSPiGMRESDefaultConverged;
-  itP->BuildSolution = GMRESBuildSolution;
-
-  itP->setup         = KSPiGMRESSetUp;
-  itP->solver        = KSPiGMRESSolve;
-  itP->adjustwork    = KSPiGMRESAdjustWork;
-  itP->destroy       = KSPiGMRESDestroy;
-
-  gmresP->haptol    = 1.0e-8;
-  gmresP->epsabs    = 1.0e-8;
-  gmresP->q_preallocate = 0;
-  gmresP->delta_allocate = GMRES_DELTA_DIRECTIONS;
-  gmresP->orthog    = GMRESBasicOrthog;
-  gmresP->nrs       = 0;
-  gmresP->sol_temp  = 0;
-  gmresP->max_k     = GMRES_DEFAULT_MAXK;
-  return 0;
-}
-
-static int KSPiGMRESSetUp( itP )
-KSP itP;
+int  BasicMultiMaxpy( Vec *,int,double *,Vec);
+static int GMRESGetNewVectors( KSP ,int );
+static double GMRESUpdateHessenberg( KSP , int );
+static int BuildGmresSoln(double* ,Vec,Vec ,KSP, int);
+static int KSPiGMRESSetUp(KSP itP )
 {
   unsigned int size, hh, hes, rs, cc;
   int      ierr,  max_k, k;
@@ -154,82 +110,32 @@ KSP itP;
   }
   return 0;
 }
-
-static int KSPiGMRESSolve( itP,outits )
-KSP itP;
-int *outits;
+/* 
+    This routine computes the initial residual without making any assumptions
+    about the solution.
+ */
+static int GMRESResidual(  KSP itP,int restart )
 {
-  int maxit, err;
-  int restart, its, itcount, it;
-  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)itP->MethodPrivate;
+  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
+  double        mone = -1.0;
 
-  it      = 0;
-  restart = 0;
-  itcount = 0;
-  /* Save binv*f */
-  if (!itP->right_pre) {
-    /* inv(b)*f */
-    PRE(itP, VEC_RHS, VEC_BINVF );
+  /* compute initial residual: f - M*x */
+  /* (inv(b)*a)*x or (a*inv(b)*b)*x into dest */
+  if (itP->right_pre) {
+    /* we want a * binv * b * x, or just a * x for the first step */
+    /* a*x into temp */
+    MM(itP, VEC_SOLN, VEC_TEMP );
   }
-  else 
-    VecCopy( VEC_RHS, VEC_BINVF );
-  /* Compute the initial (preconditioned) residual */
-  if (!itP->guess_zero) {
-    if (err=GMRESResidual(  itP, restart )) return err;
+  else {
+    /* else we do binv * a * x */
+    MATOP(itP, VEC_SOLN, VEC_TEMP, VEC_TEMP_MATOP );
   }
-  else VecCopy( VEC_BINVF, VEC_VV(0) );
-    
-  while (err = GMREScycle(  &its, itcount, restart, itP )) {
-    restart = 1;
-    itcount += its;
-    if( err = GMRESResidual(  itP, restart )) return err;
-    if (itcount > itP->max_it) break;
-    /* need another check to make sure that gmres breaks out 
-       at precisely the number of iterations chosen */
-  }
-  itcount += its;      /* add in last call to GMREScycle */
-  *outits = itcount;  return 0;
-}
-
-static int KSPiGMRESAdjustWork( itP )
-KSP itP;
-{
-  KSPiGMRESCntx *gmresP;
-  int          i;
-
-  if ( itP->adjust_work_vectors ) {
-   gmresP = (KSPiGMRESCntx *) itP->MethodPrivate;
-   for (i=0; i<gmresP->vv_allocated; i++) 
-       if ( (*itP->adjust_work_vectors)(itP,gmresP->user_work[i],
-					     gmresP->mwork_alloc[i] ) ) 
-	   SETERR(1,"Could not allocate work vectors in GMRES");
- }
+  /* This is an extra copy for the right-inverse case */
+  VecCopy( VEC_BINVF, VEC_VV(0) );
+  VecAXPY( &mone, VEC_TEMP, VEC_VV(0) );
+      /* inv(b)(f - a*x) into dest */
   return 0;
 }
-
-static int KSPiGMRESDestroy(itP)
-KSP itP;
-{
-  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *) itP->MethodPrivate;
-  int          i;
-
-  /* Free the matrix */
-  FREE( gmresP->hh_origin );
-
-  /* Free the pointer to user variables */
-  FREE( gmresP->vecs );
-
-  /* free work vectors */
-  for (i=0; i<gmresP->nwork_alloc; i++) 
-    VecFreeVecs(gmresP->user_work[i], gmresP->mwork_alloc[i] );
-  FREE( gmresP->user_work );
-  FREE( gmresP->mwork_alloc );
-  if (gmresP->nrs) FREE( gmresP->nrs );
-  FREE( gmresP ); 
-  FREE( itP );
-  return 0;
-}
-
 /*
     Run gmres, possibly with restart.  Return residual history if requested.
     input parameters:
@@ -250,10 +156,7 @@ KSP itP;
     On entry, the value in vector VEC_VV(0) should be the initial residual
     (this allows shortcuts where the initial preconditioned residual is 0).
  */
-int GMREScycle(  itcount, itsSoFar, restart, itP )
-int     *itcount, itsSoFar;
-int     restart; 
-KSP  itP;
+int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
 {
   double  res_norm, res, rtol, tt, hapbnd, hist_len= itP->res_hist_size, cerr;
   double  *nres = itP->residual_history, tmp;
@@ -354,6 +257,77 @@ KSP  itP;
   return !converged;
 }
 
+static int KSPiGMRESSolve(KSP itP,int *outits )
+{
+  int maxit, err;
+  int restart, its, itcount, it;
+  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)itP->MethodPrivate;
+
+  it      = 0;
+  restart = 0;
+  itcount = 0;
+  /* Save binv*f */
+  if (!itP->right_pre) {
+    /* inv(b)*f */
+    PRE(itP, VEC_RHS, VEC_BINVF );
+  }
+  else 
+    VecCopy( VEC_RHS, VEC_BINVF );
+  /* Compute the initial (preconditioned) residual */
+  if (!itP->guess_zero) {
+    if (err=GMRESResidual(  itP, restart )) return err;
+  }
+  else VecCopy( VEC_BINVF, VEC_VV(0) );
+    
+  while (err = GMREScycle(  &its, itcount, restart, itP )) {
+    restart = 1;
+    itcount += its;
+    if( err = GMRESResidual(  itP, restart )) return err;
+    if (itcount > itP->max_it) break;
+    /* need another check to make sure that gmres breaks out 
+       at precisely the number of iterations chosen */
+  }
+  itcount += its;      /* add in last call to GMREScycle */
+  *outits = itcount;  return 0;
+}
+
+static int KSPiGMRESAdjustWork(KSP itP )
+{
+  KSPiGMRESCntx *gmresP;
+  int          i;
+
+  if ( itP->adjust_work_vectors ) {
+   gmresP = (KSPiGMRESCntx *) itP->MethodPrivate;
+   for (i=0; i<gmresP->vv_allocated; i++) 
+       if ( (*itP->adjust_work_vectors)(itP,gmresP->user_work[i],
+					     gmresP->mwork_alloc[i] ) ) 
+	   SETERR(1,"Could not allocate work vectors in GMRES");
+ }
+  return 0;
+}
+
+static int KSPiGMRESDestroy(PetscObject obj)
+{
+  KSP itP = (KSP) obj;
+  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *) itP->MethodPrivate;
+  int          i;
+
+  /* Free the matrix */
+  FREE( gmresP->hh_origin );
+
+  /* Free the pointer to user variables */
+  FREE( gmresP->vecs );
+
+  /* free work vectors */
+  for (i=0; i<gmresP->nwork_alloc; i++) 
+    VecFreeVecs(gmresP->user_work[i], gmresP->mwork_alloc[i] );
+  FREE( gmresP->user_work );
+  FREE( gmresP->mwork_alloc );
+  if (gmresP->nrs) FREE( gmresP->nrs );
+  FREE( gmresP ); 
+  FREE( itP );
+  return 0;
+}
 /*
     BuildGmresSoln - create the solution from the starting vector and the
     current iterates.
@@ -366,11 +340,7 @@ KSP  itP;
 
      This is an internal routine that knows about the GMRES internals.
  */
-static int BuildGmresSoln(  nrs, vs, vdest, itP, it )
-double    *nrs;
-void      *vs, *vdest;
-int       it;
-KSP itP;
+static int BuildGmresSoln(double* nrs,Vec vs,Vec vdest,KSP itP, int it )
 {
   double  tt, zero = 0.0, one = 1.0;
   int     ii, k, j;
@@ -420,13 +390,10 @@ KSP itP;
  }
   return 0;
 }
-
 /*
    Do the scalar work for the orthogonalization.  Return new residual.
  */
-static double GMRESUpdateHessenberg( itP, it )
-KSP itP;
-int       it;
+static double GMRESUpdateHessenberg( KSP itP, int it )
 {
   register double *hh, *cc, *ss, tt;
   register int    j;
@@ -459,71 +426,10 @@ int       it;
   *hh       = *cc * *hh + *ss * *(hh+1);
   return fabs( *RS(it+1) );
 }
-
-/* 
-    This routine computes the initial residual without making any assumptions
-    about the solution.
- */
-static int GMRESResidual(  itP, restart )
-KSP itP;
-int    restart;
-{
-  KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
-  double        mone = -1.0;
-
-  /* compute initial residual: f - M*x */
-  /* (inv(b)*a)*x or (a*inv(b)*b)*x into dest */
-  if (itP->right_pre) {
-    /* we want a * binv * b * x, or just a * x for the first step */
-    /* a*x into temp */
-    MM(itP, VEC_SOLN, VEC_TEMP );
-  }
-  else {
-    /* else we do binv * a * x */
-    MATOP(itP, VEC_SOLN, VEC_TEMP, VEC_TEMP_MATOP );
-  }
-  /* This is an extra copy for the right-inverse case */
-  VecCopy( VEC_BINVF, VEC_VV(0) );
-  VecAXPY( &mone, VEC_TEMP, VEC_VV(0) );
-      /* inv(b)(f - a*x) into dest */
-  return 0;
-}
-
-/*@
-    KSPGMRESSetRestart - Sets the number of search directions 
-    for GMRES before restart.
-
-    Input Parameters:
-.   itP - the iterative context
-.   max_k - the number of directions
-@*/
-int KSPGMRESSetRestart( itP, max_k )
-KSP itP;
-int    max_k;
-{
-  KSPiGMRESCntx *gmresP;
-  VALIDHEADER(itP,KSP_COOKIE);
-  gmresP = (KSPiGMRESCntx *)itP->MethodPrivate;
-  if (itP->method != KSPGMRES) return 0;
-  gmresP->max_k = max_k;
-  return 0;
-}
-
-int KSPiGMRESDefaultConverged(itP,n,rnorm)
-KSP itP;
-int    n;
-double rnorm;
-{
-  if ( rnorm <= itP->ttol ) return(1);
-  else return(0);
-}
-
 /*
    This routine allocates more work vectors, starting from VEC_VV(it).
  */
-static int GMRESGetNewVectors( itP, it )
-KSP itP;
-int       it;
+static int GMRESGetNewVectors( KSP itP,int it )
 {
   KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)itP->MethodPrivate;
   int nwork = gmresP->nwork_alloc;
@@ -546,12 +452,39 @@ int       it;
   gmresP->nwork_alloc++;
 }
 
+
+
+
+
+/*@
+    KSPGMRESSetRestart - Sets the number of search directions 
+    for GMRES before restart.
+
+    Input Parameters:
+.   itP - the iterative context
+.   max_k - the number of directions
+@*/
+int KSPGMRESSetRestart(KSP itP,int max_k )
+{
+  KSPiGMRESCntx *gmresP;
+  VALIDHEADER(itP,KSP_COOKIE);
+  gmresP = (KSPiGMRESCntx *)itP->MethodPrivate;
+  if (itP->method != KSPGMRES) return 0;
+  gmresP->max_k = max_k;
+  return 0;
+}
+
+int KSPiGMRESDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
+{
+  if ( rnorm <= itP->ttol ) return(1);
+  else return(0);
+}
+
+
 /*
   GMRESBuildSolution -Build the solution for GMRES 
  */
-static int GMRESBuildSolution( itP,  ptr, result )
-KSP itP;
-Vec *result, ptr;
+static int GMRESBuildSolution(KSP itP,Vec  ptr,Vec *result )
 {
   KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)itP->MethodPrivate; 
 
@@ -584,13 +517,38 @@ Vec *result, ptr;
   NOT recommended; however, for some problems, particularly when using 
   parallel distributed vectors, this may be significantly faster.
 @*/
-int KSPGMRESSetOrthogRoutine( itP, fcn )
-KSP itP;
-int    (*fcn)();
+int KSPGMRESSetOrthogRoutine( KSP itP,int (*fcn)(KSP,int) )
 {
   VALIDHEADER(itP,KSP_COOKIE);
   if (itP->method == KSPGMRES) {
     ((KSPiGMRESCntx *)itP->MethodPrivate)->orthog = fcn;
   }
+  return 0;
+}
+int KSPiGMRESCreate(KSP itP)
+{
+  KSPiGMRESCntx *gmresP;
+  int         GMRESBasicOrthog(KSP,int);
+
+  gmresP = NEW(KSPiGMRESCntx); CHKPTR(gmresP);
+
+  itP->MethodPrivate = (void *) gmresP;
+  itP->method        = KSPGMRES;
+  itP->converged     = KSPiGMRESDefaultConverged;
+  itP->BuildSolution = GMRESBuildSolution;
+
+  itP->setup         = KSPiGMRESSetUp;
+  itP->solver        = KSPiGMRESSolve;
+  itP->adjustwork    = KSPiGMRESAdjustWork;
+  itP->destroy       = KSPiGMRESDestroy;
+
+  gmresP->haptol    = 1.0e-8;
+  gmresP->epsabs    = 1.0e-8;
+  gmresP->q_preallocate = 0;
+  gmresP->delta_allocate = GMRES_DELTA_DIRECTIONS;
+  gmresP->orthog    = GMRESBasicOrthog;
+  gmresP->nrs       = 0;
+  gmresP->sol_temp  = 0;
+  gmresP->max_k     = GMRES_DEFAULT_MAXK;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.2 1994/08/21 23:56:49 bsmith Exp $";
+static char vcid[] = "$Id: tfqmr.c,v 1.1 1994/10/02 02:04:40 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -10,40 +10,20 @@ static char vcid[] = "$Id: tfqmr.c,v 1.2 1994/08/21 23:56:49 bsmith Exp $";
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int KSPiTFQMRSetUp();
-static int  KSPiTFQMRSolve();
-
-int KSPiTFQMRCreate(itP)
-KSP itP;
-{
-itP->MethodPrivate        = (void *) 0;
-itP->method               = KSPTFQMR;
-itP->right_pre            = 0;
-itP->calc_res             = 1;
-itP->setup                = KSPiTFQMRSetUp;
-itP->solver               = KSPiTFQMRSolve;
-itP->adjustwork           = KSPiDefaultAdjustWork;
-itP->destroy              = KSPiDefaultDestroy;
-return 0;
-}
-
-static int KSPiTFQMRSetUp(itP)
-KSP itP;
+static int KSPiTFQMRSetUp(KSP itP)
 {
   int ierr;
-if (ierr = KSPCheckDef( itP )) return ierr;
+  if (ierr = KSPCheckDef( itP )) return ierr;
   if (ierr = KSPiDefaultGetWork( itP,  10 )) return ierr;
   return 0;
 }
 
-
-static int  KSPiTFQMRSolve(itP,its)
-KSP itP;
-int *its;
+static int  KSPiTFQMRSolve(KSP itP,int *its)
 {
 int       i = 0, maxit, res, pres, m, conv, hist_len, cerr;
-double    rho, rhoold, a, s, b, *history, dp, dpold, dpest, cm, eta, tau,
-          etaold, psiold, w, psi, cf, tmp, one = 1.0, zero = 0.0;
+Scalar    rho, rhoold, a, s, b, eta,
+          etaold, psiold,  cf, tmp, one = 1.0, zero = 0.0;
+double    *history,dp,dpold,w,dpest,tau,psi,cm;
 Vec       X,B,V,P,R,RP,T,T1,Q,U, D, BINVF, AUQ;
 
 res     = itP->calc_res;
@@ -143,4 +123,17 @@ itP->nvectors += (i+1)*26;
 
 KSPUnwindPre(  itP, X, T );
 *its = RCONV(itP,i+1); return 0;
+}
+
+int KSPiTFQMRCreate(KSP itP)
+{
+itP->MethodPrivate        = (void *) 0;
+itP->method               = KSPTFQMR;
+itP->right_pre            = 0;
+itP->calc_res             = 1;
+itP->setup                = KSPiTFQMRSetUp;
+itP->solver               = KSPiTFQMRSolve;
+itP->adjustwork           = KSPiDefaultAdjustWork;
+itP->destroy              = KSPiDefaultDestroy;
+return 0;
 }

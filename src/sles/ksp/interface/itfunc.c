@@ -1,5 +1,5 @@
 #include "petsc.h"
-#include "kspimpl.h"
+#include "kspimpl.h"   /*I "ksp.h" I*/
 
 /*@
    KSPSetUp - Sets up the internal data structures for the
@@ -8,8 +8,7 @@
    Input Parameters:
 .   itP   - iterative context obtained from KSPCreate()
 @*/
-int KSPSetUp(itP)
-KSP itP;
+int KSPSetUp(KSP itP)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   if (itP->setupcalled) return 0;
@@ -32,9 +31,7 @@ KSP itP;
    convergence test is used, this happens when the residual grows to more
    than 10000 times the initial residual).
 @*/
-int KSPSolve(itP,its) 
-KSP itP;
-int *its;
+int KSPSolve(KSP itP,int *its) 
 {
   int ierr;
   VALIDHEADER(itP,KSP_COOKIE);
@@ -48,11 +45,10 @@ int *its;
    Input Parameters:
 .   itP   - iterative context obtained from KSPCreate
 @*/
-int KSPDestroy(itP)
-KSP itP;
+int KSPDestroy(KSP itP)
 {
   VALIDHEADER(itP,KSP_COOKIE);
-  return (*(itP)->destroy)(itP);
+  return (*(itP)->destroy)((PetscObject)itP);
 }
 
 /*@
@@ -62,9 +58,7 @@ KSP itP;
 .   itP  - iterative context obtained from KSPCreate()
 .   maxits - maximum iterations to use
 @*/
-int KSPSetIterations(itP, its)
-KSP itP;
-int    its;
+int KSPSetIterations(KSP itP, int its)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->max_it = its;
@@ -82,8 +76,7 @@ int    its;
     not currently available (note that it can be emulated by using either
     right or left preconditioning and a pre or post processing step).
 @*/
-int KSPSetRightPreconditioner(itP)
-KSP itP;
+int KSPSetRightPreconditioner(KSP itP)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->right_pre  = 1;
@@ -99,9 +92,7 @@ KSP itP;
     Returns:
     One for right preconditioning and zero for left preconditioning.
 @*/
-int KSPGetPreconditionerSide(itP,side) 
-KSP itP;
-int *side;
+int KSPGetPreconditionerSide(KSP itP,int *side) 
 {
   VALIDHEADER(itP,KSP_COOKIE);
   *side = (itP)->right_pre;
@@ -118,9 +109,7 @@ int *side;
     Note:
     KSPGetMethod gets the method from the command line.
 @*/
-int KSPGetMethodFromContext( itP,method )
-KSP itP;
-KSPMETHOD *method;
+int KSPGetMethodFromContext( KSP itP,KSPMETHOD *method )
 {
   VALIDHEADER(itP,KSP_COOKIE);
   *method = itP->method;
@@ -138,9 +127,7 @@ KSPMETHOD *method;
 .   tol - tolerance
 
 @*/
-int KSPSetRelativeTolerance(itP, r)
-KSP itP;
-double r;
+int KSPSetRelativeTolerance(KSP itP, double r)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->rtol       = r;
@@ -156,9 +143,7 @@ double r;
 .   tol - tolerance
 
 @*/
-int KSPSetDivergenceTolerance(itP, r)
-KSP itP;
-double r;
+int KSPSetDivergenceTolerance(KSP itP, double r)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->divtol       = r;
@@ -177,9 +162,7 @@ double r;
 .   tol - tolerance
 
 @*/
-int KSPSetAbsoluteTolerance(itP, a) 
-KSP itP;
-double a;
+int KSPSetAbsoluteTolerance(KSP itP, double a) 
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->atol       = a;
@@ -194,8 +177,7 @@ double a;
 .   itP - iterative context obtained from KSPCreate()
 
 @*/
-int KSPSetCalculateResidual(itP)
-KSP itP;
+int KSPSetCalculateResidual(KSP itP)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->calc_res   = 1;
@@ -212,8 +194,7 @@ KSP itP;
    Notes:
    Most Krylov methods do not yet take advantage of this flag.
 @*/
-int KSPSetDoNotCalculateResidual(itP)
-KSP itP;
+int KSPSetDoNotCalculateResidual(KSP itP)
 {      
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->calc_res   = 0;
@@ -232,8 +213,7 @@ KSP itP;
    preconditioning. All other methods always used the preconditioned
    residual. With right preconditioning this flag is ignored.
 @*/
-int KSPSetUsePreconditionedResidual(itP)
-KSP itP;
+int KSPSetUsePreconditionedResidual(KSP itP)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->use_pres   = 1;
@@ -250,8 +230,7 @@ KSP itP;
 .   itP - iterative context obtained from KSPCreate()
 
 @*/
-int KSPSetInitialGuessZero(itP)
-KSP itP;
+int KSPSetInitialGuessZero(KSP itP)
 {
   (itP)->guess_zero   = 1;
   return 0;
@@ -266,8 +245,7 @@ KSP itP;
 .   itP - iterative context obtained from KSPCreate()
 
 @*/
-int KSPSetCalculateEigenvalues(itP)
-KSP itP;
+int KSPSetCalculateEigenvalues(KSP itP)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->calc_eigs  = 1;
@@ -283,9 +261,7 @@ KSP itP;
 .   x   - the right hand side vector
 
 @*/
-int KSPSetRhs(itP,b)
-KSP   itP;
-Vec b;
+int KSPSetRhs(KSP itP,Vec b)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->vec_rhs    = (b);
@@ -300,9 +276,7 @@ Vec b;
 .   itP - Iterative context obtained from KSPCreate()
 
 @*/
-int KSPGetRhs(itP,r)
-KSP   itP;
-Vec   *r;
+int KSPGetRhs(KSP itP,Vec *r)
 {   
   VALIDHEADER(itP,KSP_COOKIE);
   *r = (itP)->vec_rhs; return 0;
@@ -317,9 +291,7 @@ Vec   *r;
 .   x   - the solution vector
 
 @*/
-int KSPSetSolution(itP,b)
-KSP   itP;
-Vec b;
+int KSPSetSolution(KSP itP,Vec b)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->vec_sol    = (b);
@@ -334,9 +306,7 @@ Vec b;
 .   itP - iterative context obtained from KSPCreate()
 
 @*/
-int KSPGetSolution(itP,v)
-KSP itP;
-Vec *v;
+int KSPGetSolution(KSP itP,Vec *v)
 {
   VALIDHEADER(itP,KSP_COOKIE);  *v = (itP)->vec_sol; return 0;
 }
@@ -352,10 +322,7 @@ Vec *v;
 .   amultP - pointer to amult context
 
 @*/
-int KSPSetAmult(itP,a,b)
-KSP itP;
-int (*a)();
-void *b;
+int KSPSetAmult(KSP itP,int (*a)(void *,Vec,Vec), void *b)
 {
   VALIDHEADER(itP,KSP_COOKIE);  (itP)->amult = a;(itP)->amultP = b;
   return 0;
@@ -372,9 +339,7 @@ void *b;
 .   returns the matrix multipler context
  
 @*/
-int KSPGetAmultContext(itP,ctx)
-KSP itP;
-void **ctx;
+int KSPGetAmultContext(KSP itP,void **ctx)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   *ctx = (itP)->amultP; return 0;
@@ -389,9 +354,7 @@ void **ctx;
 .   tamult - pointer to void function
 
 @*/
-int KSPSetAmultTranspose(itP,a)
-KSP itP;
-int   (*a)();
+int KSPSetAmultTranspose(KSP itP,int   (*a)(void *,Vec,Vec))
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->tamult = a;
@@ -410,10 +373,7 @@ int   (*a)();
 .   binvP - pointer to preconditioner context
  
 @*/
-int KSPSetBinv(itP,a,b)
-KSP itP;
-int   (*a)();
-void  *b;
+int KSPSetBinv(KSP itP,int   (*a)(void *,Vec,Vec),void *b)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->binv  = a; (itP)->binvP = (void*)b;
@@ -431,9 +391,7 @@ void  *b;
 .   returns the preconditioner context
  
 @*/
-int KSPGetBinvContext(itP,ctx)
-KSP itP;
-void **ctx;
+int KSPGetBinvContext(KSP itP,void **ctx)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   *ctx = (itP)->binv; return 0;
@@ -448,9 +406,7 @@ void **ctx;
 .   tbinv - pointer to void function
  
 @*/
-int KSPSetBinvTranspose(itP,a)
-KSP itP;
-int   (*a)();
+int KSPSetBinvTranspose(KSP itP,int (*a)(void *,Vec,Vec))
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->tbinv  = a;
@@ -468,9 +424,7 @@ int   (*a)();
 .   matop - pointer to void function
 
 @*/
-int KSPSetMatop(itP,a)
-KSP itP;
-int   (*a)();
+int KSPSetMatop(KSP itP,int (*a)(void *,void *,Vec,Vec))
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->matop      = a;
@@ -486,9 +440,7 @@ int   (*a)();
 .   tmatop - pointer to void function
 
 @*/
-int KSPSetMatopTranspose(itP,a)
-KSP itP;
-int   (*a)();
+int KSPSetMatopTranspose(KSP itP,int (*a)(void *,void *,Vec,Vec))
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->tmatop      = a;
@@ -516,10 +468,7 @@ $        int    it;              Iteration number
 $        double rnorm;           (Estimated) 2-norm of residual
 
 @*/
-int KSPSetMonitor(itP,a,b)
-KSP itP;
-int   (*a)();
-void  *b;
+int KSPSetMonitor(KSP itP,int   (*a)(KSP,int,double,void*),void  *b)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->usr_monitor = a;(itP)->monP = (void*)b;
@@ -533,9 +482,7 @@ void  *b;
 .   itP - iterative context obtained from KSPCreate()
 
 @*/
-int KSPGetMonitorContext(itP,ctx)
-KSP itP;
-void **ctx;
+int KSPGetMonitorContext(KSP itP,void **ctx)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   *ctx =      ((itP)->monP);
@@ -551,10 +498,7 @@ void **ctx;
 .   na  - size of a
 
 @*/
-int KSPSetResidualHistory(itP,a,na)
-KSP itP;
-double *a;
-int    na;
+int KSPSetResidualHistory(KSP itP,double *a,int    na)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->residual_history = a; (itP)->res_hist_size    = na;
@@ -586,10 +530,7 @@ $        KSP *itP;
 $        int    it;              Iteration number
 $        double rnorm;           (Estimated) 2-norm of residual
 @*/
-int KSPSetConvergenceTest(itP,a,b)
-KSP itP;
-int   (*a)();
-void   *b;
+int KSPSetConvergenceTest(KSP itP,int (*a)(KSP,int,double,void*),void *b)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->converged = a;(itP)->cnvP = (void*)b;
@@ -604,9 +545,7 @@ void   *b;
 .   itP - iterative context obtained from KSPCreate()
 
 @*/
-int KSPGetConvergenceContext(itP,ctx)
-KSP itP;
-void **ctx;
+int KSPGetConvergenceContext(KSP itP,void **ctx)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   *ctx = ((itP)->cnvP);
@@ -622,9 +561,7 @@ void **ctx;
   OutPut Parameters:
 .  v   - location to stash solution. If not provided then generates one.
 @*/
-int KSPBuildSolution(ctx,v,V)
-Vec v,*V;
-KSP   ctx;
+int KSPBuildSolution(KSP ctx,Vec v,Vec *V)
 {
   Vec w = v;
   int ierr;
@@ -643,9 +580,7 @@ KSP   ctx;
 .  v   - location to stash solution. If not provided then generates one.
 .  t   - work vector.  If not provided then generates one.
 @*/
-int KSPBuildResidual(ctx,t,v,V)
-Vec t,v,*V;
-KSP    ctx;
+int KSPBuildResidual(KSP ctx,Vec t,Vec v,Vec *V)
 {
   int flag = 0, ierr;
   Vec w = v, tt = t;

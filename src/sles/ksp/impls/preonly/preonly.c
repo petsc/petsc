@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: preonly.c,v 1.2 1994/08/21 23:56:49 bsmith Exp $";
+static char vcid[] = "$Id: preonly.c,v 1.1 1994/10/02 02:04:11 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -13,30 +13,12 @@ static char vcid[] = "$Id: preonly.c,v 1.2 1994/08/21 23:56:49 bsmith Exp $";
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int  KSPiPREONLYSolve();
-static int KSPiPREONLYSetUp();
-
-int KSPiPREONLYCreate(itP)
-KSP itP;
-{
-itP->MethodPrivate        = (void *) 0;
-itP->method               = KSPPREONLY;
-itP->setup                = KSPiPREONLYSetUp;
-itP->solver               = KSPiPREONLYSolve;
-itP->adjustwork           = 0;
-itP->destroy              = KSPiDefaultDestroy;
-return 0;
-}
-
-static int KSPiPREONLYSetUp(itP)
-KSP itP;
+static int KSPiPREONLYSetUp(KSP itP)
 {
  return KSPCheckDef( itP );
 }
 
-static int  KSPiPREONLYSolve(itP,its)
-KSP itP;
-int *its;
+static int  KSPiPREONLYSolve(KSP itP,int *its)
 {
 Vec      X,B;
 int      i = 0;
@@ -50,3 +32,13 @@ itP->nvectors += 0;
 return 0;
 }
 
+int KSPiPREONLYCreate(KSP itP)
+{
+itP->MethodPrivate        = (void *) 0;
+itP->method               = KSPPREONLY;
+itP->setup                = KSPiPREONLYSetUp;
+itP->solver               = KSPiPREONLYSolve;
+itP->adjustwork           = 0;
+itP->destroy              = KSPiDefaultDestroy;
+return 0;
+}
