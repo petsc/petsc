@@ -308,13 +308,11 @@ class Configure(config.base.Configure):
             self.framework.log.write( 'Found special library: '+arg+'\n')
             flibs.append(arg)
           continue
-        # Check for ???
-##        This breaks for the Intel Fortran compiler
-##        if arg == '-u':
-##          lib = arg+' '+argIter.next()
-##          self.framework.log.write( 'Found u library: '+lib+'\n')
-##          flibs.append(lib)
-##          continue
+        if arg == '-rpath':
+          lib = argIter.next()
+          self.framework.log.write( 'Found -rpath library: '+lib+'\n')
+          flibs.append('-rpath '+lib)
+          continue
         # Check for ???
         # Should probably try to ensure unique directory options here too.
         # This probably only applies to Solaris systems, and then will only
