@@ -329,7 +329,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiGetTotalBlocks_BJacobi"
-int PCBJacobiGetTotalBlocks_BJacobi(PC pc, int *blocks, int *lens[])
+int PCBJacobiGetTotalBlocks_BJacobi(PC pc, int *blocks, const int *lens[])
 {
   PC_BJacobi *jac = (PC_BJacobi*) pc->data;
 
@@ -366,7 +366,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiGetLocalBlocks_BJacobi"
-int PCBJacobiGetLocalBlocks_BJacobi(PC pc, int *blocks, int *lens[])
+int PCBJacobiGetLocalBlocks_BJacobi(PC pc, int *blocks, const int *lens[])
 {
   PC_BJacobi *jac = (PC_BJacobi*) pc->data;
 
@@ -508,7 +508,7 @@ int PCBJacobiSetTotalBlocks(PC pc,int blocks,int *lens)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiGetTotalBlocks"
-/*@
+/*@C
    PCBJacobiGetTotalBlocks - Gets the global number of blocks for the block
    Jacobi preconditioner.
 
@@ -527,9 +527,9 @@ int PCBJacobiSetTotalBlocks(PC pc,int blocks,int *lens)
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiGetLocalBlocks()
 @*/
-int PCBJacobiGetTotalBlocks(PC pc, int *blocks, int *lens[])
+int PCBJacobiGetTotalBlocks(PC pc, int *blocks, const int *lens[])
 {
-  int ierr,(*f)(PC,int*, int *[]);
+  int ierr,(*f)(PC,int*, const int *[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_COOKIE);
@@ -579,7 +579,7 @@ int PCBJacobiSetLocalBlocks(PC pc,int blocks,int *lens)
   
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiGetLocalBlocks"
-/*@
+/*@C
    PCBJacobiGetLocalBlocks - Gets the local number of blocks for the block
    Jacobi preconditioner.
 
@@ -599,9 +599,9 @@ int PCBJacobiSetLocalBlocks(PC pc,int blocks,int *lens)
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiGetTotalBlocks()
 @*/
-int PCBJacobiGetLocalBlocks(PC pc, int *blocks, int *lens[])
+int PCBJacobiGetLocalBlocks(PC pc, int *blocks, const int *lens[])
 {
-  int ierr,(*f)(PC,int*, int *[]);
+  int ierr,(*f)(PC,int*, const int *[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_COOKIE);
