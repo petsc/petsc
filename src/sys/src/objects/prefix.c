@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: prefix.c,v 1.9 1997/04/12 19:15:10 balay Exp bsmith $";
+static char vcid[] = "$Id: prefix.c,v 1.10 1997/04/12 19:21:41 bsmith Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -46,9 +46,9 @@ int PetscObjectSetOptionsPrefix(PetscObject obj, char *prefix)
 .  prefix - the prefix string to prepend to option requests of the object.
 
    Notes: 
-   The first character of all runtime options is automatically the
-   hyphen (-);  thus, the hyphen must NOT be given at the beginning
-   of the prefix name.
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the
+   hyphen.
 
 .keywords: object, append, options, prefix, database
 */

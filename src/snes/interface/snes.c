@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.119 1997/03/26 01:37:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.120 1997/04/12 19:16:00 bsmith Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -1900,9 +1900,9 @@ int SNESGetMinimizationFunction(SNES snes,double *r)
 .  prefix - the prefix to prepend to all option names
 
    Notes:
-   The first character of all runtime options is automatically the
-   hyphen (-);  thus, the hyphen must NOT be given at the beginning
-   of the prefix name.
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the
+   hyphen.
 
 .keywords: SNES, set, options, prefix, database
 
@@ -1929,9 +1929,9 @@ int SNESSetOptionsPrefix(SNES snes,char *prefix)
 .  prefix - the prefix to prepend to all option names
 
    Notes:
-   The first character of all runtime options is automatically the
-   hyphen (-);  thus, the hyphen must NOT be given at the beginning
-   of the prefix name.
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the
+   hyphen.
 
 .keywords: SNES, append, options, prefix, database
 
