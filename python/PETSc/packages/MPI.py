@@ -143,12 +143,15 @@ class Configure(config.base.Configure):
       yield [os.path.join(root, 'lib', 'shared', 'libmpi.a')]
       yield [os.path.join(root, 'lib', 'shared', 'libmpich.a'), os.path.join(root, 'lib', 'shared', 'libpmpich.a')]
       yield [os.path.join(root, 'lib', 'libmpich.a')]
-      yield [os.path.join(root, 'lib', 'libmpi.a')]
+      #  SGI 
+      yield [os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'libmpi++.a')]
+      yield [os.path.join(root, 'lib', 'libmpi.a')]      
       yield [os.path.join(root, 'lib', 'libmpich.a'), os.path.join(root, 'lib', 'libpmpich.a')]
     else:
       yield ['']
       yield ['mpich']
-      yield ['mpi']
+      yield ['mpi','mpi++']
+      yield ['mpi']      
       yield ['mpich', 'pmpich']
     return
 

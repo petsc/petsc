@@ -93,9 +93,13 @@ class Configure(config.base.Configure):
     if 'with-blas-lapack-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-blas-lapack-dir']
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'))
+      dir = os.path.join(dir,'lib','32')
+      yield ('User specified MKL installation root', None, [os.path.join(dir, 'libmkl_lapack.a'),os.path.join(dir, 'libmkl_def.a'),'-lguide','-lpthread'])
       raise RuntimeError('You set a value for --with-blas-lapack-dir, but '+self.framework.argDB['with-blas-lapack-dir']+' cannot be used\n')
+    # IRIX locations
+    yield ('IRIX Mathematics library', None, 'libcomplib.sgimath.a')
     # Try compiler defaults
-    yield ('Default compiler locations', 'libblas.a', 'liblapack.a')
+    yield ('Default compiler locations', 'libblas.a', 'liblapack.a')    
     yield ('Default compiler locations with G77', None, ['liblapack.a', 'libblas.a','libg2c.a'])
     # Try MacOSX location
     yield ('MacOSX BLAS/LAPACK library', None, os.path.join('/System', 'Library', 'Frameworks', 'vecLib.framework', 'vecLib'))
