@@ -6,7 +6,8 @@ is a pain to always check that file out of SourceSafe to
 add to it).
 
   VEC
-
+  Added the utility routines which do special cases of vecscatters
+  VecConvertMPIToSeqAll(),VecConvertMPIToMPIZero()
 
   MAT
    - MatSNESMFFormJacobian() has been renamed to MatSNESMFComputeJacobian().
