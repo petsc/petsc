@@ -140,6 +140,53 @@ clean:
 cleanadic:
 	@-${RM} *.ad.*
 #
+#   Compiles all the directories on which a particular external package depends. This way
+#  one can update PETSc for an external package without recompiling all of PETSc
+#
+package:
+	@-for dir in ${${PACKAGE}_DIRS} ; do \
+           r=`egrep requirespackage $$dir/makefile`; \
+           if [ "$$?" = 0 ]; then \
+ 	     HCONF=`grep PETSC_ ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h | cut -d" " -f2`; \
+             HPCONF=`echo ${PCONF} | sed s/-D//g`; \
+             f=0; \
+             for l in $${HPCONF} foo $${HCONF}; do \
+               echo $$r | egrep "'$$l'" > /dev/null; \
+               if [ "$$?" = 0 ]; then \
+	         f=1; \
+                 break; \
+               fi; \
+             done ; \
+             if [ "$$f" = 0 ]; then \
+                continue; \
+             fi; \
+           fi; \
+           r=`egrep requireslanguage $$dir/makefile`; \
+           if [ "$$?" = 0 ]; then \
+             echo $$r | egrep ${PETSC_LANGUAGE} > /dev/null; \
+             if [ "$$?" = 1 ]; then \
+               continue; \
+             fi; \
+           fi; \
+           r=`egrep requiresscalar $$dir/makefile`; \
+           if [ "$$?" = 0 ]; then \
+             echo $$r |  egrep ${PETSC_SCALAR} > /dev/null; \
+             if [ "$$?" = 1 ]; then \
+               continue; \
+             fi; \
+           fi; \
+           r=`egrep requiresprecision $$dir/makefile`; \
+           if [ "$$?" = 0 ]; then \
+             echo $$r |  egrep ${PETSC_PRECISION} > /dev/null; \
+             if [ "$$?" = 1 ]; then \
+               continue; \
+             fi; \
+           fi; \
+           pushd $$dir; \
+           ${OMAKE} tree ACTION=libfast BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} LOC=${LOC}; \
+           popd; \
+        done;
+#
 #  Checks if directory requires particular package or language
 # The makefile may contain
 #    #requirespackage 'PETSC_HAVE_XXX' 

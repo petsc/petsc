@@ -33,7 +33,6 @@ typedef char *SNESType;
 
 /* Logging support */
 extern int SNES_COOKIE;
-extern int MATSNESMFCTX_COOKIE;
 extern int SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
 
 

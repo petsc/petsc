@@ -700,7 +700,7 @@ int PetscFinalize(void)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGlobalMax"
 /*@C
-      PetscGlobalMax - Computes the maximum value over sever processors
+      PetscGlobalMax - Computes the maximum value over several processors
 
      Collective on MPI_Comm
 
@@ -727,7 +727,7 @@ int PetscGlobalMax(double* local,double* result,MPI_Comm comm)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGlobalMin"
 /*@C
-      PetscGlobalMin - Computes the minimum value over sever processors
+      PetscGlobalMin - Computes the minimum value over several processors
 
      Collective on MPI_Comm
 
