@@ -52,7 +52,8 @@ class Installer(install.base.Base):
     self.argDB['fileset'] = 'sidl'
     self.builder.build(root, target = ['default', 'purge'], setupTarget = 'setupBootstrap')
     # Fixup install arguments
-    argDB['installedprojects'] = self.argDB['installedprojects']
+    argDB['installedprojects']  = self.argDB['installedprojects']
+    argDB['installedLanguages'] = self.argDB['installedLanguages']
     return
 
   def backup(self, url):

@@ -35,7 +35,7 @@ class Defaults(maker.Maker):
 
   def addLanguage(self, lang):
     try:
-      self.getUsing(lang.replace('+', 'x'))
+      self.getUsing(lang)
     except AttributeError:
       lang = lang.replace('+', 'x')
       opt  = getattr(compileDefaults, 'Using'+lang)(self.usingSIDL)
@@ -44,15 +44,21 @@ class Defaults(maker.Maker):
     return
 
   def addClientLanguage(self, lang):
-    if lang in self.argDB['installedLanguages'] and not lang in self.usingSIDL.clientLanguages:
-      self.usingSIDL.clientLanguages.append(lang)
-      self.addLanguage(lang)
+    if lang in self.argDB['installedLanguages']:
+      if not lang in self.usingSIDL.clientLanguages:
+        self.usingSIDL.clientLanguages.append(lang)
+        self.addLanguage(lang)
+    else:
+      self.debugPrint('Language '+lang+' not installed', 2, 'sidl')
     return
 
   def addServerLanguage(self, lang):
-    if lang in self.argDB['installedLanguages'] and not lang in self.usingSIDL.serverLanguages:
-      self.usingSIDL.serverLanguages.append(lang)
-      self.addLanguage(lang)
+    if lang in self.argDB['installedLanguages']:
+      if not lang in self.usingSIDL.serverLanguages:
+        self.usingSIDL.serverLanguages.append(lang)
+        self.addLanguage(lang)
+    else:
+      self.debugPrint('Language '+lang+' not installed', 2, 'sidl')
     return
 
   def isImpl(self, source):
