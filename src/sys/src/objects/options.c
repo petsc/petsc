@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.31 1995/08/04 01:51:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.32 1995/08/07 21:58:31 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: options.c,v 1.31 1995/08/04 01:51:30 bsmith Exp bsmit
   what malloc is being used until it has already processed the input.
 
 */
-#include "petsc.h"
+#include "petsc.h"        /*I  "petsc.h"   I*/
 #include <stdio.h>
 #include <math.h>
 #if defined(HAVE_STRING_H)
@@ -102,7 +102,6 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env)
 
    Options Database Keys:
 $  -optionstable : Calls OptionsPrint()
-$  -optionsused : Calls OptionsAllUsed()
 $  -optionsleft : Prints unused options that remain in 
 $     the database
 $  -no_signal_handler : Turns off the signal handler
@@ -137,6 +136,7 @@ int PetscFinalize()
       else PLogDump(0);
     }
   }
+  PLogDestroy();
 #endif
   if (!OptionsHasName(0,"-no_signal_handler")) {
     PetscPopSignalHandler();
@@ -618,7 +618,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value)
   names = options->names;
 
   /* append prefix to name */
-  if (pre) { strcpy(tmp,pre); strcat(tmp,name+1);}
+  if (pre && *pre != '\000') { strcpy(tmp,pre); strcat(tmp,name+1);}
   else strcpy(tmp,name);
 
   /* slow search */
