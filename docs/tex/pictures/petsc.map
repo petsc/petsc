@@ -5,37 +5,37 @@
 default http://www.mcs.anl.gov/petsc/onepager.html
 
 # PDE Solvers Module
-rect http://www.mcs.anl.gov/petsc/summaries.html#NodeGrid 94 89 202 127
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeGrid 106 92 221 133
 
 # SNES Module
-rect http://www.mcs.anl.gov/petsc/summaries.html#NodeSNES 77 135 271 181
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeSNES 69 142 273 191
 
 # SLES Module
-rect http://www.mcs.anl.gov/petsc/summaries.html#NodeSLES 305 163 472 207
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeSLES 296 168 474 216
 
 # KSP Module
-rect http://www.mcs.anl.gov/petsc/summaries.html#NodeKSP 98 191 250 240
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeKSP 92 200 252 252
 
 # Draw Module
-rect http://www.mcs.anl.gov/petsc/summaries.html#NodeDraw 415 217 502 257
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeDraw 418 227 510 270
 
 # Vectors Module
-rect http://www.mcs.anl.gov/petsc/summaries.html#NodeVectors 241 267 350 303
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeVectors 225 281 340 319
 
 # Matrices Module
-rect http://www.mcs.anl.gov/petsc/summaries.html#NodeMatrices 76 266 187 304
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeMatrices 69 279 186 319
 
 # Index Sets Module
-rect http://www.mcs.anl.gov/petsc/summaries.html#Node 406 266 516 305
+rect http://www.mcs.anl.gov/petsc/summaries.html#Node 395 281 509 318
 
 # Preconditioners Module
-rect http://www.mcs.anl.gov/petsc/summaries.html#NodePC 271 216 397 257 
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodePC 266 227 400 270
 
 # MPI Module
-rect http://www.mcs.anl.gov/mpi/index.html 251 377 309 405 
+rect http://www.mcs.anl.gov/mpi/index.html 363 348 510 387
 
 # Applications
-rect http://www.mcs.anl.gov/petsc/petsc.html#NodeApplications 225 67 388 113
+rect http://www.mcs.anl.gov/petsc/petsc.html#NodeApplications 248 77 409 117
 
 # Abstraction
-rect http://www.mcs.anl.gov/petsc/summaries.html#NodeAbstractions 12 42 43 434
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeAbstractions 12 42 57 458
