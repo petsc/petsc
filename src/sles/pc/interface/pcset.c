@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.25 1995/09/30 19:28:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.26 1995/10/01 21:52:01 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -133,7 +133,7 @@ int PCGetMethodFromOptions_Private(PC pc,PCMethod *method )
 int PCGetMethodName(PCMethod meth,char **name)
 {
   int ierr;
-  if (!__PCList) {PCRegisterAll(); CHKERRQ(ierr);}
+  if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
   *name = NRFindName( __PCList, (int)meth );
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.18 1995/09/21 20:12:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.19 1995/10/01 21:53:26 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1387,7 +1387,8 @@ int SNESGetMethodFromContext(SNES snes, SNESMethod *method)
 @*/
 int SNESGetMethodName(SNESMethod method,char **name)
 {
-  if (!__NLList) SNESRegisterAll();
+  int ierr;
+  if (!__NLList) {ierr = SNESRegisterAll(); CHKERRQ(ierr);}
   *name = NRFindName( __NLList, (int) method );
   return 0;
 }

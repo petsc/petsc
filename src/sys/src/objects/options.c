@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.43 1995/10/01 21:51:51 bsmith Exp gropp $";
+static char vcid[] = "$Id: options.c,v 1.44 1995/10/02 20:15:28 gropp Exp curfman $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -184,9 +184,8 @@ int PetscFinalize()
     NRDestroyAll(); 
   }
   if (PetscBeganMPI) {
-    int mytid;
     MPI_Comm_size(MPI_COMM_WORLD,&mytid);
-    PLogInfo(0,"[%d] PETSc successfully end!\n",mytid);
+    PLogInfo(0,"[%d] PETSc successfully ended!\n",mytid);
     ierr = MPI_Finalize(); CHKERRQ(ierr);
   }
   return 0;

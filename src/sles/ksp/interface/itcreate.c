@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.61 1995/09/29 14:25:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.62 1995/10/01 21:51:26 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -237,7 +237,8 @@ int KSPGetMethodFromOptions_Private(KSP ctx,KSPMethod *itmethod)
 @*/
 int KSPGetMethodName(KSPMethod  itmeth,char **name )
 {
-  if (!__ITList) KSPRegisterAll();
+  int ierr;
+  if (!__ITList) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}
   *name = NRFindName( __ITList, (int) itmeth );
   return 0;
 }

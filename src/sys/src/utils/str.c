@@ -1,10 +1,10 @@
 
 #ifndef lint
-static char vcid[] = "$Id: str.c,v 1.1 1995/09/30 15:24:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.2 1995/09/30 19:27:41 bsmith Exp curfman $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
-  the standard string routines in teh PETSc code is that on some machines 
+  the standard string routines in the PETSc code is that on some machines 
   they are broken.
 
 */
