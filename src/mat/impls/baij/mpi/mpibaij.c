@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.98 1998/01/12 21:15:42 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.99 1998/01/13 00:07:02 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -373,8 +373,9 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
 }
 #include <math.h>
 #define HASH_KEY 0.6180339887
-#define HASH1(size,key) ((int)((size)*fmod(((key)*HASH_KEY),1)))
-
+/* #define HASH1(size,key) ((int)((size)*fmod(((key)*HASH_KEY),1))) */
+#define HASH(size,key,tmp) (tmp = (key)*HASH_KEY,(int)((size)*(tmp-(int)tmp)))
+/* #define HASH(size,key,tmp) ((int)((size)*fmod(((key)*HASH_KEY),1))) */
 #undef __FUNC__  
 #define __FUNC__ "MatSetValues_MPIBAIJ_HT"
 int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
@@ -382,10 +383,10 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   int         ierr,i,j,row,col;
   int         roworiented = baij->roworiented,rstart_orig=baij->rstart_bs ;
-  int         rend_orig=baij->rend_bs;
+  int         rend_orig=baij->rend_bs,Nbs=baij->Nbs;
   
-  int         h1,key,size=baij->ht_size,k,bs=baij->bs;
-  int         * HT  = baij->ht;
+  int         h1,key,size=baij->ht_size,bs=baij->bs,*HT=baij->ht,idx;
+  double      tmp;
   Scalar      ** HD = baij->hd,value;
 
 
@@ -396,23 +397,30 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
     if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
     if (im[i] >= baij->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
-    if (im[i] >= rstart_orig && im[i] < rend_orig) {
       row = im[i];
+    if (row >= rstart_orig && row < rend_orig) {
       for ( j=0; j<n; j++ ) {
         col = in[j];          
         if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
         /* Look up into the Hash Table */
-        key = (row/bs)*baij->Nbs+(col/bs)+1;
-        h1  = HASH1(size,key);
+        key = (row/bs)*Nbs+(col/bs)+1;
+        h1  = HASH(size,key,tmp);
 
-        for ( k=0; k<size; k++ ){
-          if (HT[(h1+k)%size] == key) {
-            if (addv == ADD_VALUES) *(HD[(h1+k)%size]+ (col % bs)*bs + row % bs) += value;
-            else                    *(HD[(h1+k)%size]+ (col % bs)*bs + row % bs)  = value;
-            break;
+        
+        idx = h1;
+        if (HT[idx] != key) {
+          for ( idx=h1; (idx<size) && (HT[idx]!=key); idx++);
+          if (idx == size) {
+            for ( idx=0; (idx<h1) && (HT[idx]!=key); idx++);
+            if (idx == h1) {
+              SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"(row,col) has no entry in the hash table");
+            }
           }
         }
-        if ( k==size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"(row,col) has no entry in the hash table");
+        /* A HASH table entry is found, so insert the values at the correct address */
+        if (addv == ADD_VALUES) *(HD[idx]+ (col % bs)*bs + (row % bs)) += value;
+        else                    *(HD[idx]+ (col % bs)*bs + (row % bs))  = value;
+        break;
       }
     } else {
       if (roworiented && !baij->donotstash) {
@@ -439,8 +447,8 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
   int         roworiented = baij->roworiented,rstart=baij->rstart ;
   int         rend=baij->rend,stepval,bs=baij->bs,bs2=baij->bs2;
 
-  int         h1,key,size=baij->ht_size;
-  int         * HT  = baij->ht;
+  int         h1,key,size=baij->ht_size,idx,*HT=baij->ht,Nbs=baij->Nbs;
+  double      tmp;
   Scalar      ** HD = baij->hd,*value,*baij_a;
  
   PetscFunctionBegin;
@@ -455,54 +463,58 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
     if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
     if (im[i] >= baij->Mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
-    if (im[i] >= rstart && im[i] < rend) {
-      row = im[i];
+    row = im[i];
+    if (row >= rstart && row < rend) {
       for ( j=0; j<n; j++ ) {
         col = in[j];          
 
         /* Look up into the Hash Table */
-        key = row*baij->Nbs+col+1;
-        h1  = HASH1(size,key);
-        
-        for ( k=0; k<size; k++ ){
-          if (HT[(h1+k)%size] == key) {
-            baij_a = HD[(h1+k)%size];
-            
-            if (roworiented) { 
-              value = v + i*(stepval+bs)*bs + j*bs;
-              if (addv == ADD_VALUES) {
-                for ( ii=0; ii<bs; ii++,value+=stepval,baij_a++ ) {
-                  for ( jj=0; jj<bs2; jj+=bs ) {
-                    baij_a[jj]  += *value++; 
-                  }
-                }
-              } else {
-                for ( ii=0; ii<bs; ii++,value+=stepval,baij_a++ ) {
-                  for ( jj=0; jj<bs2; jj+=bs ) {
-                    baij_a[jj]  = *value++; 
-                  }
-                }
-              }
-            } else {
-              value = v + j*(stepval+bs)*bs + i*bs;
-              if (addv == ADD_VALUES) {
-                for ( ii=0; ii<bs; ii++,value+=stepval,baij_a+=bs ) {
-                  for ( jj=0; jj<bs; jj++ ) {
-                    baij_a[jj]  += *value++; 
-                  }
-                }
-              } else {
-                for ( ii=0; ii<bs; ii++,value+=stepval,baij_a+=bs ) {
-                  for ( jj=0; jj<bs; jj++ ) {
-                    baij_a[jj]  = *value++; 
-                  }
-                }
-              }
+        key = row*Nbs+col+1;
+        h1  = HASH(size,key,tmp);
+      
+        idx = h1;
+        if (HT[idx] != key) {
+          for ( idx=h1; (idx<size) && (HT[idx]!=key); idx++);
+          if (idx == size) {
+            for ( idx=0; (idx<h1) && (HT[idx]!=key); idx++);
+            if (idx == h1) {
+              SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"(row,col) has no entry in the hash table");
             }
-            break;
           }
         }
-        if ( k==size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"(row,col) has no entry in the hash table");
+        baij_a = HD[idx];
+        if (roworiented) { 
+          /*value = v + i*(stepval+bs)*bs + j*bs;*/
+          value = v + (i*(stepval+bs)+j)*bs;
+          if (addv == ADD_VALUES) {
+            for ( ii=0; ii<bs; ii++,value+=stepval) {
+              for ( jj=ii; jj<bs2; jj+=bs ) {
+                baij_a[jj]  += *value++; 
+              }
+            }
+          } else {
+            for ( ii=0; ii<bs; ii++,value+=stepval) {
+              for ( jj=ii; jj<bs2; jj+=bs ) {
+                baij_a[jj]  = *value++; 
+              }
+            }
+          }
+        } else {
+          value = v + j*(stepval+bs)*bs + i*bs;
+          if (addv == ADD_VALUES) {
+            for ( ii=0; ii<bs; ii++,value+=stepval,baij_a+=bs ) {
+              for ( jj=0; jj<bs; jj++ ) {
+                baij_a[jj]  += *value++; 
+              }
+            }
+          } else {
+            for ( ii=0; ii<bs; ii++,value+=stepval,baij_a+=bs ) {
+              for ( jj=0; jj<bs; jj++ ) {
+                baij_a[jj]  = *value++; 
+              }
+            }
+          }
+        }
       }
     } else {
       if (!baij->donotstash) {
@@ -726,6 +738,7 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
   int         cstart=baij->cstart,*garray=baij->garray,row,col;
   int         *HT,key;
   Scalar      **HD;
+  double      tmp;
 
   PetscFunctionBegin;
   baij->ht_size=(int)(factor*nz);
@@ -742,7 +755,7 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
   HT = baij->ht;
 
 
-  PetscMemzero(HT,size*sizeof(int)+sizeof(Scalar*));
+  PetscMemzero(HD,size*(sizeof(int)+sizeof(Scalar*)));
   
 
   /* Loop Over A */
@@ -753,7 +766,7 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
        
       key = row*baij->Nbs + col + 1;
       /* printf("[%d]row,col,key = %2d,%2d,%5.2f\n",PetscGlobalRank,row,col,key); */
-      h1  = HASH1(size,key);
+      h1  = HASH(size,key,tmp);
       
       for ( k=0; k<size; k++ ){
         if (HT[(h1+k)%size] == 0.0) {
@@ -772,7 +785,7 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
       col = garray[bj[j]];
       key = row*baij->Nbs + col + 1;
       /* printf("[%d]row,col,key = %2d,%2d,%5.2f\n",PetscGlobalRank,row,col,key); */
-      h1  = HASH1(size,key);
+      h1  = HASH(size,key,tmp);
       for ( k=0; k<size; k++ ){
         if (HT[(h1+k)%size] == 0.0) {
           HT[(h1+k)%size] = key;
@@ -785,7 +798,7 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
   }
   
   /* Print Summary */
-  for ( i=0,key=0.0,j=0; i<size; i++) 
+  for ( i=0,j=0; i<size; i++) 
     if (HT[i]) {j++;}
   
   /*printf("[%d] fact = %3.2f max1 = %5d max2 = %5d Size %5d - Searches %5d Avg %5.2f Keys %5d\n", 
