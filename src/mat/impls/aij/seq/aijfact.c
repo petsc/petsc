@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.109 1998/09/25 03:14:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.110 1998/10/09 19:22:05 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -163,12 +163,13 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   (*B)->factor                 =  FACTOR_LU;;
   (*B)->info.factor_mallocs    = realloc;
   (*B)->info.fill_ratio_given  = f;
+  (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant if A has inodes */
+
   if (ai[n] != 0) {
     (*B)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[n]);
   } else {
     (*B)->info.fill_ratio_needed = 0.0;
   }
-
   PetscFunctionReturn(0); 
 }
 /* ----------------------------------------------------------- */
