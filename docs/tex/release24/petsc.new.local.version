@@ -29,7 +29,7 @@ The following versions are currently installed:
 
    Arch     PETSC_ARCH   BOPT                    machine (examples)
   ----------------------------------------------------------
-  solaris   solaris      g,O                                 fire
+  Suns      solaris      g,O                                 fire
   SP (new)  rs6000       g,O,g_c++,O_c++,g_complex,O_complex quad
   SGI       IRIX64       g,O,g_complex,O_complex             yukon
   SGI       IRIX         g,O                                 violet
