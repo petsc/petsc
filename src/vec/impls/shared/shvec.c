@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.8 1998/04/03 23:13:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.9 1998/04/13 17:27:06 bsmith Exp curfman $";
 #endif
 
 /*
@@ -53,7 +53,7 @@ int VecDuplicate_Shared( Vec win, Vec *v)
 #undef __FUNC__  
 #define __FUNC__ "VecCreateShared"
 /*@C
-   VecCreateShared - Creates a parallel vector.
+   VecCreateShared - Creates a parallel vector that uses shared memory.
 
    Input Parameters:
 .  comm - the MPI communicator to use
@@ -63,16 +63,19 @@ int VecDuplicate_Shared( Vec win, Vec *v)
    Output Parameter:
 .  vv - the vector
  
-   Collective on MPI_Comm
-
    Notes:
+   Currently VecCreateShared() is available only on the SGI); otherwise,
+   this routine is the same as VecCreateMPI().
+
+   VecCreateShared() is collective over the communicator comm.  
+
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
 
-.keywords: vector, create, MPI
+.keywords: vector, create, shared
 
-.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
-          VecCreateMPIWithArray(), VecCreateGhostWithArray()
+.seealso: VecCreateSeq(), VecCreate(), VecCreateMPI(), VecDuplicate(), VecDuplicateVecs(), 
+          VecCreateGhost(), VecCreateMPIWithArray(), VecCreateGhostWithArray()
 
 @*/ 
 int VecCreateShared(MPI_Comm comm,int n,int N,Vec *vv)
