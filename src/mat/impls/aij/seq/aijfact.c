@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.33 1995/08/30 02:16:02 curfman Exp curfman $";
+static char vcid[] = "$Id: aijfact.c,v 1.34 1995/09/04 19:27:31 curfman Exp curfman $";
 #endif
 
 
@@ -220,7 +220,7 @@ int MatLUFactor_AIJ(Mat matin,IS row,IS col,double f)
   PETSCFREE(mat);
 
   PETSCMEMCPY(matin,fact,sizeof(struct _Mat));
-  PETSCFREE(fact);
+  PETSCHEADERDESTROY(fact);
   return 0;
 }
 /* ----------------------------------------------------------- */
