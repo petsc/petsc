@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.194 2000/02/16 20:24:57 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.195 2000/02/24 15:38:01 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -113,6 +113,12 @@ int VecValid(Vec v,PetscTruth *flg)
    Output Parameter:
 .  alpha - the dot product
 
+   Performance Issues:
++    per-processor memory bandwidth
+.    interprocessor latency
+-    work load inbalance that causes certain processes to arrive much earlier than
+     others
+
    Notes for Users of Complex Numbers:
    For complex vectors, VecDot() computes 
 $     val = (x,y) = y^H x,
@@ -181,6 +187,12 @@ $     NORM_2 denotes sqrt(sum_i (x_i)^2)
 $     NORM_INFINITY denotes max_i |x_i|
 
    Level: intermediate
+
+   Performance Issues:
++    per-processor memory bandwidth
+.    interprocessor latency
+-    work load inbalance that causes certain processes to arrive much earlier than
+     others
 
    Compile Option:
    PETSC_HAVE_SLOW_NRM2 will cause a C (loop unrolled) version of the norm to be used, rather

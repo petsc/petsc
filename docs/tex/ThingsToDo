@@ -24,10 +24,8 @@ describes what effects performance for that routine. For examplle, memory bandwi
 communication latency, synchronization
 
 
-
   MatFDColoring() stuff for BAIJ.
 
- make buildtest include list of jobs to run from indivudial files in bmake/ARCH directories
 
   take the long list of routines out of the users manual and put in seperate document.
 
@@ -68,15 +66,11 @@ two values mapped to the same slot? Suggested by George Biros.
 
   Add Mark Adams parallel coloring stuff to PETSc, see src/contrib/markadamscolor
 
-  Add -ams_publish_notify to attempt to attach to server when starting up
-
   * Add -ams_publish tests to nightly build.
 
   Update sles/examples/tutorials/ex14.c to match new stuff in ex14f.F
 
   Write snes/examples/tutorials ex2f.F (Fortran example of setting user-defined monitor)
-
-  * Support MPI 2 standard for passing communicators between C and Fortran
 
   - Crank-Nicholson - finish TS implementation!! done only for linear constant coeff case!
 
@@ -91,7 +85,6 @@ two values mapped to the same slot? Suggested by George Biros.
  - Support preconditioning in LSQR code - requested by Victor and some other petsc-maint 
    person.
 
-
  look at MatGeetSubMatrices_MPI(B)AIJ to see if much of the information
  could be used between repeated calls.
 
@@ -102,11 +95,6 @@ Documentation:
  - add mention of useful debugging stuff in an easy-to-find place rather than
    being spread out here and there (e.g., error function labels for error handling,
    memory tracing, etc.)
-
-Current applications using PETSc (3) - pointers
-        to dinesh's work and ACTI?  This would
-        go into http://www.nersc.gov/ACTS/gallery.html
-
 
   Get SPPOLES from netlib
  Date: Thu, 7 May 98 13:43:34 EDT
@@ -147,7 +135,6 @@ rcheng@oasys.dt.navy.mil
     block row array. Note with BS and n = 125000 the block row is 4 meg which is
     a lot.
 
-
   * add map object to vectors and matrices to replace current local size, ownership range etc.
 
   - Add man pages for SETERRA/SETERRQ, CHKERRA, CHKERRQ
@@ -173,23 +160,10 @@ rcheng@oasys.dt.navy.mil
 > >     An output scalar: *
 > >     An output array: []
 
-
-  -  Are these the same thing?
-      MatZeroRows() Add flag KEEP_ZEROS_AS_NONZERO ( petsc-maint 1565)
-
-      add MAT_ZERO_ROWS_LEAVE_LOCATIONS option to keep the locations but zeroed
-         for AIJ and BAIJ matrices.
-
-  - add Denis Vanderstaeten's version of block orthogonalization that does
-    several vectors together; between unmodified and modified gram-schmidt
-
-  - make PETSc thread-safe
+  - make PETSc thread-safe?
 
   - Add MatGetOwnershipRangeColumn() for AIJ and BAIJ
 
-  - Change the zoom in in MatView_xxx (MatView_SeqAdj_Draw,MatView_SeqBAIJ_Draw,
-    MatView_SeqBDiag_Draw)  and tensor plotting? etc to use DrawZoom(),
-    much nicer.
 
   - Conceptual; when does SNESGetSLES() etc not increase reference count on SLES, note
                 we also have Get/Restore paradym which does not apply for GetSLES etc.
@@ -206,15 +180,11 @@ rcheng@oasys.dt.navy.mil
 
   - MatZeroColumns()
 
-  - make DrawOpenPostscript()
-
   - add indenting to PLogInfo?
 
   - Make MatLUFactorNumeric_SeqAIJ_NaturalOrdering() for efficiency. Might
     buy a couple of MFlops.
 
-  - Fix GMRESCycle() so that test for "happy breakdown" is actually
-    used.  See petsc-maint message #282 from David. NOT SO EASY BUT IMPORTANT!
 
   - Change All Fortran interface routines that take function pointer 
     arguments to work like MatCreateShell() now works keeping the Fortran
@@ -231,7 +201,6 @@ rcheng@oasys.dt.navy.mil
     Make Petsc[To/From]PointerComm public instead of private?
 
 
-  - PetscFree(); CHKERRQ(); on IRIX64 ( + manpages)
 
   - Convert DACreateXd() to use ISCreateBlock() when block size is bigger than 1.
 
@@ -306,8 +275,6 @@ Lois - Add table of all preconditioners and options to PETSc manual.
  - Add support to DA so that Global to Local and Local to Global uninterlaces
    multicomponent vectors.
 
- - investigate Saad's ILUDT
-
   - Split files into many files with one routine per file. Try to 
     reduce the amount of irrelevent stuff that is linked into the 
     executable.
@@ -320,14 +287,9 @@ Barry  * Finite difference approximations of derivatives using coloring
 
 Lois  - Add routine SNESWillNeedJacobian(SNES,SNESJacobianNeeded yes,no,maybe);
     
-Satish  - fix PetscView so that with scrolling in horizontal direction and click on icon
-    it pops up detailed information in correct location.
-
 Satish  - Aim for more exhaustive PETSc testing.  Use tconv Unix utilities
        Maybe, like, say, test one or two BDiag routines before making a release?
        More test cases that involve, zero size vectors, matrices, IS's etc.
-
-Barry  * get SPAI  http://lovelace.nas.nasa.gov/NAS/SPAI/download.html
 
 
 Lois  - Thorougly test PetscRandomSetInterval().
@@ -340,10 +302,7 @@ Lois  - Thorougly test PetscRandomSetInterval().
   - Suggestion by Carl - provide SNES example showing user computing most
     of Jacobian in function eval routine.
 
-
   - Write an example of using MatCreateShell().
-
-  - ILUDT() - made MatILUDTFactor_SeqAIJ() stub.
 
 Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from SC96
     that are in XXX.  What do we really want here? Nothing that takes much space.
@@ -367,8 +326,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
  - Provide tools that help with imposing BCs but retaining matrix symmetry.
    Is this even possible or just academics dreaming in their ivory towers?
 
- - Fix VRML vector viewer interface; add documentation about VRML.
-
   - Write preprocessor that zips through all of PETSc finding SETERRQ()
     setting unique error code number and save to big file: error code,
     function name, file, line number and error message.
@@ -379,8 +336,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
   - Features wanted by Isaac: Add option to set multiple values at once to different
     matrices.
-
-  - change KSP to not return -it on error but instead use error handling.
 
  - Fix DrawTensorMapMesh(): 
      Currently the mesh viewer does not display the final edge of
@@ -409,8 +364,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
    potentially different solvers on each
      - Send info to 1 proc, then print from it.
 
-  - Add optional scrolling stackframe window to PetscView    
-
   * Finish "Performance" chapter: section "System Related Problems"
 
   - Fix binary I/O for complex numbers.
@@ -433,8 +386,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
   - ordering with flow direction - made MatReodering_SeqAIJ_Flow() stub.
 
-  - add Flexible GMRES routine
-
   - cool example using KELP
 
   - HPF interface
@@ -452,9 +403,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
   - Write uniprocessor ICC code; possibly also introduce symmetric storage 
     variant.
-
-   - Provide MPIU_MAXSUM and use it to replace use of MAT_SUM + MAT_MAX
-     everywhere.
 
    - Add viewer for matrix graph - possibly interface to external software?
      (requested by Andreas) 
@@ -1183,3 +1131,31 @@ X  Add link to MPI manual pages from Main PETSc mainual pages pate; also to syst
   how to run mpi? + link to AMS manual pages.
 
 X  Parmetis for mpiaij matrices
+
+X make buildtest include list of jobs to run from indivudial files in bmake/ARCH directories
+
+  X  Support MPI 2 standard for passing communicators between C and Fortran
+
+
+  X Change the zoom in in MatView_xxx (MatView_SeqAdj_Draw,MatView_SeqBAIJ_Draw,
+    MatView_SeqBDiag_Draw)  and tensor plotting? etc to use DrawZoom(),
+    much nicer.
+
+  X make DrawOpenPostscript()
+
+ X Fix GMRESCycle() so that test for "happy breakdown" is actually
+    used.  See petsc-maint message #282 from David. NOT SO EASY BUT IMPORTANT!
+
+  X PetscFree(); CHKERRQ(); on IRIX64 ( + manpages)
+
+ X investigate Saad's ILUDT
+
+ X get SPAI  http://lovelace.nas.nasa.gov/NAS/SPAI/download.html
+
+  X change KSP to not return -it on error but instead use error handling.
+
+  X add Flexible GMRES routine
+
+   X Provide MPIU_MAXSUM and use it to replace use of MAT_SUM + MAT_MAX
+     everywhere.
+
