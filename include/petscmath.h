@@ -1,9 +1,11 @@
-/* $Id: petscmath.h,v 1.9 1998/06/01 21:33:42 balay Exp balay $ */
+/* $Id: petscmath.h,v 1.10 1998/06/01 23:51:47 balay Exp balay $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
     constants and functions for working with single and double precision
     floating point numbers as well as complex and integers.
+
+    This file is included by petsc.h and should not be used directly.
 
 */
 
