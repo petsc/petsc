@@ -1,4 +1,4 @@
-/* $Id: ptscimpl.h,v 1.11 1995/06/08 03:12:18 bsmith Exp bsmith $ */
+/* $Id: ptscimpl.h,v 1.12 1995/06/14 17:25:19 bsmith Exp curfman $ */
 
 /*
     Defines the basic format of all data types. 
@@ -51,7 +51,7 @@
 
 extern void *PetscLow,*PetscHigh;
 
-#if defined(PETSC_MALLOC) && !defined(PETSC_INSIGHT)
+#if defined(PETSC_BOPT_g) && !defined(PETSC_INSIGHT)
 #define VALIDHEADER(h,ck)                             \
   {if (!h) {SETERRQ(1,"Null Object");}                 \
   if (PetscLow > (void *) h || PetscHigh < (void *)h){\
