@@ -1,11 +1,14 @@
 #!/usr/local/bin/expect -f
-# $Id: autoftp,v 1.10 1997/09/10 19:38:40 balay Exp balay $ 
+# $Id: autoftp,v 1.11 1998/10/07 22:42:45 balay Exp balay $ 
 
 #
 #  automatically ftp's to a certain site and 
-# drops off a file
+# drops off a file 
+# 
+# PETSc MCS passwd is now different from external PETSc passwds.
+# mcs passwd: F67g23ah
 #
-#  old passwords: K23p66ai, Pzr92a8i, 1953bz24
+#  old passwords: F43z22gh, K23p66ai, Pzr92a8i, 1953bz24
 # 
   set host     [lindex $argv 0]
   set user     [lindex $argv 1]
@@ -22,7 +25,7 @@
      expect {*Name*}
      send "$user\r"
      expect {*Password:}
-     send "F43z22gh\r"
+     send "G88s43pe\r"
      expect {*ftp>*}
      # may be moving a large file 
      set timeout 2000
