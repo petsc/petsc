@@ -46,7 +46,7 @@ static char starttime[256];
 .seealso: PetscGetInitialDate()
 
 @*/
-PetscErrorCode PetscGetDate(char date[],int len)
+PetscErrorCode PetscGetDate(char date[],size_t len)
 {
   char           *str=0;
 #if defined (PARCH_win32)
@@ -106,7 +106,7 @@ PetscErrorCode PetscSetInitialDate(void)
 .seealso: PetscGetDate()
 
 @*/
-PetscErrorCode PetscGetInitialDate(char date[],int len)
+PetscErrorCode PetscGetInitialDate(char date[],size_t len)
 {
   PetscErrorCode ierr;
 

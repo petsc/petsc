@@ -365,7 +365,6 @@ PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 
 #else /* defined (PARCH_win32) */
  
-#include "petscviewer.h"
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSocketOpen" 
 PetscErrorCode PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)

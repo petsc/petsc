@@ -4,7 +4,6 @@
 
 #if !defined(__PETSCVIEWER_H)
 #define __PETSCVIEWER_H
-#include "petsc.h"
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 extern "C" {

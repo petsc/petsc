@@ -427,8 +427,6 @@ PetscErrorCode MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#include "petscviewer.h"
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIRowbs_ASCII"
 static int MatView_MPIRowbs_ASCII(Mat mat,PetscViewer viewer)

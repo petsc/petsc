@@ -136,7 +136,7 @@ PetscErrorCode PetscSetDisplay(void)
 .   display - the display string
 
 */
-PetscErrorCode PetscGetDisplay(char display[],int n)
+PetscErrorCode PetscGetDisplay(char display[],size_t n)
 {
   PetscErrorCode ierr;
 

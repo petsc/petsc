@@ -144,16 +144,16 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJ_PtAP"
-int MatDestroy_SeqAIJ_PtAP(Mat A)
+PetscErrorCode MatDestroy_SeqAIJ_PtAP(Mat A)
 {
-  int               ierr;
+  PetscErrorCode    ierr;
   Mat_PtAPstruct    *ptap=(Mat_PtAPstruct*)A->spptr; 
 
   PetscFunctionBegin;
   ierr = MatDestroy(ptap->symAP);CHKERRQ(ierr);
   ierr = PetscFree(ptap);CHKERRQ(ierr);
 
-  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -161,7 +161,7 @@ int MatDestroy_SeqAIJ_PtAP(Mat A)
 #define __FUNCT__ "MatPtAPSymbolic_SeqAIJ_SeqAIJ"
 PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C) {
   PetscErrorCode ierr;
-  int            ierr,*pti,*ptj;
+  int            *pti,*ptj;
   Mat            Pt,AP;
   Mat_PtAPstruct *ptap;
 
@@ -392,7 +392,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   Mat_SeqAIJ *a  = (Mat_SeqAIJ *) A->data;
   Mat_SeqAIJ *p  = (Mat_SeqAIJ *) P->data;
   Mat_SeqAIJ *c  = (Mat_SeqAIJ *) C->data;
-  int        *ai=a->i,*aj=a->j,*apjdense,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj;
+  int        *ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj;
   int        *ci=c->i,*cj=c->j,*cjj;
   int        am=A->M,cn=C->N,cm=C->M;
   int        i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow;

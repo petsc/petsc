@@ -86,9 +86,6 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
   PetscFunctionReturn(0);
 }
 
-#include "petscviewer.h"
-#include "petscsys.h"
-
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_Seq_File"
 PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)

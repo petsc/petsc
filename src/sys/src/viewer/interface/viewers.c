@@ -1,5 +1,5 @@
 
-#include "petscviewer.h"
+#include "petsc.h"
 
 struct _p_PetscViewers {
    MPI_Comm    comm;

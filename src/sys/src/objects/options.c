@@ -132,7 +132,7 @@ PetscErrorCode PetscOptionsAtod(const char name[],PetscReal *a)
     array of length len.  On some machines the program name includes 
     its entire path, so one should generally set len >= PETSC_MAX_PATH_LEN.
 @*/
-PetscErrorCode PetscGetProgramName(char name[],int len)
+PetscErrorCode PetscGetProgramName(char name[],size_t len)
 {
   PetscErrorCode ierr;
 
