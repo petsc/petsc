@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.45 1996/01/01 01:04:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.46 1996/01/12 03:54:16 bsmith Exp balay $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -91,14 +91,58 @@ int SLESPrintHelp(SLES sles)
 @*/
 int SLESSetOptionsPrefix(SLES sles,char *prefix)
 {
+  int ierr;
   PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
-
-  sles->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))*sizeof(char));
-  CHKPTRQ(sles->prefix);
-  PetscStrcpy(sles->prefix,prefix);
-  KSPSetOptionsPrefix(sles->ksp,prefix);
-  PCSetOptionsPrefix(sles->pc,prefix);
+  ierr = PetscObjectSetPrefix((PetscObject)sles, prefix); CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(sles->ksp,prefix);CHKERRQ(ierr);
+  ierr = PCSetOptionsPrefix(sles->pc,prefix); CHKERRQ(ierr);
   return 0;
+}
+/*@C
+   SLESAppendOptionsPrefix - Appends to the prefix used for searching for all 
+   SLES options in the database.
+
+   Input Parameter:
+.  sles - the SLES context
+.  prefix - the prefix to prepend to all option names
+
+   Notes:
+   This prefix is particularly useful for nested use of SLES.  For
+   example, the block Jacobi and block diagonal preconditioners use
+   the prefix "sub" for options relating to the individual blocks.  
+
+.keywords: SLES, append, options, prefix, database
+@*/
+int SLESAppendOptionsPrefix(SLES sles,char *prefix)
+{
+  int ierr;
+  PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
+  ierr = PetscObjectAppendPrefix((PetscObject)sles, prefix); CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(sles->ksp,prefix);CHKERRQ(ierr);
+  ierr = PCAppendOptionsPrefix(sles->pc,prefix); CHKERRQ(ierr);
+  return 0;
+}
+/*@C
+   SLESGetOptionsPrefix - Gets the prefix used for searching for all 
+   SLES options in the database.
+
+   Input Parameter:
+.  sles - the SLES context
+
+   Output Parameter:
+.  prefix - pointer to the prefix string used
+
+   Notes:
+   This prefix is particularly useful for nested use of SLES.  For
+   example, the block Jacobi and block diagonal preconditioners use
+   the prefix "sub" for options relating to the individual blocks.  
+
+.keywords: SLES, get, options, prefix, database
+@*/
+int SLESGetOptionsPrefix(SLES sles,char **prefix)
+{
+  PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
+  return PetscObjectGetPrefix((PetscObject)sles, prefix); 
 }
 
 /*@
