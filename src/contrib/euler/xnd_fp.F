@@ -84,7 +84,8 @@ c
 c      DO 2 K=1,NK1
 c      DO 2 J=1,NJ1
 c      DO 2 I=1,NI1
-      FP(I,J,K)= x(i,j,k)*RUINIT + y(i,j,k)*RVINIT + z(i,j,k)*RWINIT 
+          FP(I,J,K) = 
+     &    x(i,j,k)*RUINIT + y(i,j,k)*RVINIT + z(i,j,k)*RWINIT 
     2 CONTINUE
       RETURN
       END
