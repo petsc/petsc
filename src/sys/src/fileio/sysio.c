@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.46 1998/12/09 15:51:42 balay Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.47 1998/12/10 23:02:54 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -8,7 +8,6 @@ static char vcid[] = "$Id: sysio.c,v 1.46 1998/12/09 15:51:42 balay Exp bsmith $
 
 #include "petsc.h"     /*I          "petsc.h"    I*/
 #include "sys.h"
-#include <errno.h>
 #include <fcntl.h>
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
