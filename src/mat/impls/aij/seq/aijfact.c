@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.17 1995/05/21 14:04:20 curfman Exp curfman $";
+static char vcid[] = "$Id: aijfact.c,v 1.18 1995/05/22 17:49:05 curfman Exp curfman $";
 #endif
 
 
@@ -111,10 +111,14 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,Mat *fact)
   aijnew->imax       = 0;
   aijnew->row        = isrow;
   aijnew->col        = iscol;
-  /* aijnew->mem += something */
   (*fact)->factor    = FACTOR_LU;
   aijnew->solve_work = (Scalar *) MALLOC( n*sizeof(Scalar)); 
   CHKPTR(aijnew->solve_work);
+  /* In aijnew structure:  Free imax, ilen, old a, old j.  
+     Allocate idnew, solve_work, new a, new j */
+  aijnew->mem += (ainew[n]-1-n)*(sizeof(int) + sizeof(Scalar)) + sizeof(int);
+  aijnew->maxnz = aijnew->nz = ainew[n] - 1;
+
   /* Cannot do this here because child is destroyed before parent created
      PLogObjectParent(*fact,isicol); */
   return 0; 
@@ -174,7 +178,6 @@ int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
   ierr = ISDestroy(isicol); CHKERR(ierr);
   fact->factor      = FACTOR_LU;
   aijnew->assembled = 1;
-  aijnew->nz        = ai[aijnew->n];
   PLogFlops(aijnew->n);
   return 0;
 }
@@ -519,6 +522,10 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
   aijnew->col       = iscol;
   aijnew->solve_work = (Scalar *) MALLOC( n*sizeof(Scalar)); 
   CHKPTR(aijnew->solve_work);
+  /* In aijnew structure:  Free imax, ilen, old a, old j.  
+     Allocate idnew, solve_work, new a, new j */
+  aijnew->mem += (ainew[n]-1-n)*(sizeof(int) + sizeof(Scalar)) + sizeof(int);
+  aijnew->maxnz = aijnew->nz = ainew[n] - 1;
   (*fact)->factor   = FACTOR_LU;
   return 0; 
 }
