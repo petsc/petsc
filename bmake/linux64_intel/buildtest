@@ -24,11 +24,11 @@ else if ($day == Wed) then
   set BOPT=O_c++
   set JOBS=(1 2 3 6 8 13 )
 else if ($day == Thu) then
-  set ARCH=linux64_gnu
+  set ARCH=linux64
   set BOPT=O        
   set JOBS=(1 2 3 6 8)        
 else if ($day == Fri) then
-  set ARCH=linux64_gnu
+  set ARCH=linux64
   set BOPT=O_complex    
   set JOBS=(1 2 3 5 10 13)
 else if ($day == Sat) then
