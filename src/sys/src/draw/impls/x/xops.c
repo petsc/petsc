@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.44 1996/03/10 17:29:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.45 1996/03/15 21:27:46 curfman Exp curfman $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -320,8 +320,10 @@ extern int XiQuickWindowFromWindow(Draw_X*,char*,Window,int);
 .  ctx - the drawing context.
 
    Options Database Keys:
-$  -nox : disable all x-windows output
+$  -nox : disables all x-windows output
 $  -display <name> : name of machine for the X display
+$  -draw_pause <pause> : sets time (in seconds) that the program pauses
+    after DrawPause() is called (0 is default, -1 implies until user input).
 
 .keywords: draw, open, x
 
