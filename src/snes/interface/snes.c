@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.89 1996/09/30 17:58:39 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.90 1996/10/01 15:24:25 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -532,16 +532,16 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
    Input Parameters:
 .  snes - the SNES context
 .  func - function evaluation routine
-.  ctx - optional user-defined function context 
 .  r - vector to store function value
+.  ctx - [optional] user-defined context for private data for the 
+         function evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
 .  func (SNES snes,Vec x,Vec f,void *ctx);
 
 .  x - input vector
 .  f - function vector
-.  ctx - [optional] user-defined context for private data for the 
-         function evaluation routine (may be PETSC_NULL)
+.  ctx - optional user-defined function context 
 
    Notes:
    The Newton-like methods typically solve linear systems of the form
@@ -838,8 +838,8 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
 .  A - Jacobian matrix
 .  B - preconditioner matrix (usually same as the Jacobian)
 .  func - Jacobian evaluation routine
-.  ctx - optional user-defined context for private data for the 
-         Jacobian evaluation routine (may be null)
+.  ctx - [optional] user-defined context for private data for the 
+         Jacobian evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
 .  func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
@@ -849,11 +849,11 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
 .  B - preconditioner matrix, usually the same as A
 .  flag - flag indicating information about the preconditioner matrix
    structure (same as flag in SLESSetOperators())
-.  ctx - [optional] user-defined Jacobian context (may be PETSC_NULL)
+.  ctx - [optional] user-defined Jacobian context
 
    Notes: 
    See SLESSetOperators() for important information about setting the flag
-   input parameter in the routine func().  Be sure to read this information!
+   output parameter in the routine func().  Be sure to read this information!
 
    The routine func() takes Mat * as the matrix arguments rather than Mat.  
    This allows the Jacobian evaluation routine to replace A and/or B with a 
@@ -922,11 +922,11 @@ int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
 .  B - preconditioner matrix, usually the same as A
 .  flag - flag indicating information about the preconditioner matrix
    structure (same as flag in SLESSetOperators())
-.  ctx - optional user-defined Hessian context
+.  ctx - [optional] user-defined Hessian context
 
    Notes: 
    See SLESSetOperators() for important information about setting the flag
-   input parameter in the routine func().  Be sure to read this information!
+   output parameter in the routine func().  Be sure to read this information!
 
    The function func() takes Mat * as the matrix arguments rather than Mat.  
    This allows the Hessian evaluation routine to replace A and/or B with a 
