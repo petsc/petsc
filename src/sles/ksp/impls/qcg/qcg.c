@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.10 1995/11/01 23:15:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.11 1995/11/04 23:43:10 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -324,7 +324,7 @@ static int QuadraticRoots_Private(Vec s,Vec p,double *delta,double *step1,double
 #if defined(PETSC_COMPLEX)
   SETERRQ(1,"QuadraticRoots_Private:not done for complex numbers");
 #else
-  double zero = 0.0, dsq, ptp, pts, rad, sts,tmp;
+  double zero = 0.0, dsq, ptp, pts, rad, sts;
   int    ierr;
 
   ierr = VecDot(p,s,&pts); CHKERRQ(ierr);
