@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.167 1999/03/17 23:23:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.168 1999/03/23 22:06:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -974,7 +974,7 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
     row  = im[k]; brow = row/bs;  
     if (row < 0) continue;
 #if defined(USE_PETSC_BOPT_g)  
-    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
+    if (row >= a->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large: row %d max %d",row,a->m);
 #endif
     rp   = aj + ai[brow]; 
     ap   = aa + bs2*ai[brow];
@@ -984,7 +984,7 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
     for ( l=0; l<n; l++ ) { /* loop over added columns */
       if (in[l] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)  
-      if (in[l] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
+      if (in[l] >= a->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large: col %d max %d",in[l],a->n);
 #endif
       col = in[l]; bcol = col/bs;
       ridx = row % bs; cidx = col % bs;
@@ -1360,8 +1360,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "MatRetrieveValues_SeqAIJ"
-int MatRetrieveValues_SeqAIJ(Mat mat)
+#define __FUNC__ "MatRetrieveValues_SeqBAIJ"
+int MatRetrieveValues_SeqBAIJ(Mat mat)
 {
   Mat_SeqBAIJ *aij = (Mat_SeqBAIJ *)mat->data;
   int         nz = aij->i[aij->m]*aij->bs*aij->bs2;
@@ -1591,6 +1591,7 @@ int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->row             = 0;
   c->col             = 0;
   c->icol            = 0;
+  c->saved_values    = 0;
   C->assembled       = PETSC_TRUE;
 
   c->m = C->m   = a->m;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.314 1999/03/23 15:34:56 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.315 1999/03/24 15:20:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -158,7 +158,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
     row  = im[k]; 
     if (row < 0) continue;
 #if defined(USE_PETSC_BOPT_g)  
-    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
+    if (row >= a->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large: row %d max %d",row,a->m);
 #endif
     rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift;
     rmax = imax[row]; nrow = ailen[row]; 
@@ -166,7 +166,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
     for ( l=0; l<n; l++ ) { /* loop over added columns */
       if (in[l] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)  
-      if (in[l] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
+      if (in[l] >= a->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large: col %d max %d",in[l],a->n);
 #endif
       col = in[l] - shift;
       if (roworiented) {
@@ -208,11 +208,9 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
         for ( ii=row+1; ii<a->m+1; ii++ ) {new_i[ii] = ai[ii]+CHUNKSIZE;}
         PetscMemcpy(new_j,aj,(ai[row]+nrow+shift)*sizeof(int));
         len = (new_nz - CHUNKSIZE - ai[row] - nrow - shift);
-        PetscMemcpy(new_j+ai[row]+shift+nrow+CHUNKSIZE,aj+ai[row]+shift+nrow,
-                                                           len*sizeof(int));
+        PetscMemcpy(new_j+ai[row]+shift+nrow+CHUNKSIZE,aj+ai[row]+shift+nrow,len*sizeof(int));
         PetscMemcpy(new_a,aa,(ai[row]+nrow+shift)*sizeof(Scalar));
-        PetscMemcpy(new_a+ai[row]+shift+nrow+CHUNKSIZE,aa+ai[row]+shift+nrow,
-                                                           len*sizeof(Scalar)); 
+        PetscMemcpy(new_a+ai[row]+shift+nrow+CHUNKSIZE,aa+ai[row]+shift+nrow,len*sizeof(Scalar)); 
         /* free up old matrix storage */
         PetscFree(a->a); 
         if (!a->singlemalloc) {PetscFree(a->i);PetscFree(a->j);}
