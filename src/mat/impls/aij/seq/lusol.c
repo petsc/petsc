@@ -1,4 +1,4 @@
-/*$Id: essl.c,v 1.43 2000/09/11 18:18:11 bsmith Exp bsmith $*/
+/*$Id: lusol.c,v 1.2 2000/09/22 20:43:38 bsmith Exp bsmith $*/
 /* 
         Provides an interface to the LUSOL package of ....
 
@@ -254,11 +254,10 @@ int MatSolve_SeqAIJ_LUSOL(Mat A,Vec b,Vec x)
 int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
 {
      Mat_SeqAIJ *a;
-     Mat_SeqAIJ_LUSOL *lusol = 
-	  (Mat_SeqAIJ_LUSOL *)((Mat_SeqAIJ *)(*F)->data)->spptr;
+     Mat_SeqAIJ_LUSOL *lusol = (Mat_SeqAIJ_LUSOL *)((Mat_SeqAIJ *)(*F)->data)->spptr;
      MatType type;
      int m, n, nz, nnz, status;
-     int i, rs, re;
+     int i, rs, re,ierr;
      int factorizations;
 
      PetscFunctionBegin;
@@ -290,29 +289,23 @@ int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
 	  /*******************************************************************/
 
 	  nz = a->nz;
-	  nnz = PetscMax(lusol->nnz, lusol->elbowroom*nz);
+	  nnz = PetscMax(lusol->nnz, (int)(lusol->elbowroom*nz));
 	  nnz = PetscMax(nnz, 5*n);
 
-	  if (nnz < lusol->luparm[12])
-	  {
-	       nnz = lusol->luroom * lusol->luparm[12];
-	  } else if ((factorizations > 0) && (lusol->luroom < 6))
-	  {
+	  if (nnz < lusol->luparm[12]){
+	       nnz = (int)(lusol->luroom * lusol->luparm[12]);
+	  } else if ((factorizations > 0) && (lusol->luroom < 6)){
 	       lusol->luroom += 0.1;
 	  }
 
-	  nnz = PetscMax(nnz, lusol->luroom*
-			 (lusol->luparm[22] + lusol->luparm[23]));
+	  nnz = PetscMax(nnz, (int)(lusol->luroom*(lusol->luparm[22] + lusol->luparm[23])));
 
-	  if (nnz > lusol->nnz)
-	  {
-	       PetscFree(lusol->indc);
-
-	       lusol->indc = (int *)PetscMalloc((sizeof(double) + 
-						 2*sizeof(int))*nnz);
+	  if (nnz > lusol->nnz){
+	       ierr = PetscFree(lusol->indc);CHKERRQ(ierr);
+	       lusol->indc = (int *)PetscMalloc((sizeof(double) + 2*sizeof(int))*nnz);CHKPTRQ(lusol->indc);
 	       lusol->indr = lusol->indc + nnz;
 	       lusol->data = (double *)(lusol->indr + nnz);
-	       lusol->nnz = nnz;
+	       lusol->nnz  = nnz;
 	  }
 
 	  /*******************************************************************/
