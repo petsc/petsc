@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.3 1996/03/29 18:31:39 curfman Exp curfman $";
+static char vcid[] = "$Id: ex19.c,v 1.4 1996/04/01 18:47:26 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\
 solution of linear systems, while reusing matrix, vector, and solver data\n\
-structures throughout the process.  Note the various stages for event logging.\n\n";
+structures throughout the process.  Note the various stages of event logging.\n\n";
 
 #include "sles.h"
 #include  <stdio.h>
@@ -98,7 +98,7 @@ int main(int argc,char **args)
 
     /* Indicate same nonzero structure of successive preconditioner
        matrices by setting SAME_NONZERO_PATTERN below */
-    ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+    ierr = SLESSetOperators(sles,C,C,SAME_NONZERO_PATTERN); CHKERRA(ierr);
 
     /* Solve first linear system */
     ierr = SLESSetUp(sles,b,x); CHKERRA(ierr);
@@ -118,7 +118,7 @@ int main(int argc,char **args)
         if ( i<m-1 ) {J = I + n; MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);}
         if ( j>0 )   {J = I - 1; MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);}
         if ( j<n-1 ) {J = I + 1; MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);}
-        v = 6.0; ierr = MatSetValues(C2,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
+        v = 6.0 + t*0.5; ierr = MatSetValues(C2,1,&I,1,&I,&v,ADD_VALUES); CHKERRA(ierr);
       }
     } 
     for ( I=Istart2; I<Iend2; I++ ) { /* Make matrix nonsymmetric */
@@ -135,9 +135,9 @@ int main(int argc,char **args)
     /* Compute right-hand-side */
     ierr = MatMult(C2,u,b2); CHKERRA(ierr);
 
-    /* Indicate same nonzero structure of successive preconditioner
-       matrices by setting SAME_NONZERO_PATTERN below */
-    ierr = SLESSetOperators(sles2,C2,C2,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+    /* Indicate reuse of identical preconditioner matrix during successive
+       iterations by setting SAME_PRECONDITIONER below */
+    ierr = SLESSetOperators(sles2,C2,C2,SAME_PRECONDITIONER); CHKERRA(ierr);
 
     /* Solve second linear system */
     ierr = SLESSetUp(sles2,b2,x2); CHKERRA(ierr);
