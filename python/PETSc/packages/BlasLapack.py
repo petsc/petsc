@@ -378,9 +378,11 @@ class Configure(config.base.Configure):
           routine = 'd'+baseName+'_'
         else:
           routine = 'd'+baseName
+        oldLibs = self.framework.argDB['LIBS']
         if not self.libraries.check(self.lapackLibrary, routine, otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc):
           self.missingRoutines.append(baseName)
           self.addDefine('MISSING_LAPACK_'+baseName.upper(), 1)
+        self.framework.argDB['LIBS'] = oldLibs
     return
 
   def configure(self):

@@ -213,15 +213,17 @@ class Configure(config.base.Configure):
     self.framework.pushLanguage('C')
     args = ['--prefix='+installDir, '--with-cc="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"', '-PETSC_DIR='+self.arch.dir]
     self.framework.popLanguage()
-    args = ' '.join(args)
+    if not 'FC' in self.framework.argDB:
+      args.append('--with-fc=0')
+    argsStr = ' '.join(args)
     try:
-      fd      = file(os.path.join(installDir,'config.args'))
-      oldargs = fd.readline()
+      fd         = file(os.path.join(installDir,'config.args'))
+      oldArgsStr = fd.readline()
       fd.close()
     except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Have to rebuild ParMetis oldargs = '+oldargs+' new args '+args+'\n')
+      oldArgsStr = ''
+    if not oldArgsStr == argsStr:
+      self.framework.log.write('Have to rebuild ParMetis oldargs = '+oldArgsStr+' new args '+argsStr+'\n')
       self.logPrint("Configuring and compiling ParMetis; this may take several minutes\n", debugSection='screen')
       try:
         import logging
@@ -240,6 +242,7 @@ class Configure(config.base.Configure):
           os.remove('bsSource.db')
         make = self.getModule(parmetisDir, 'make').Make()
         make.prefix = installDir
+        make.clArgs = map(lambda s: s.replace('"', ''), args)
         make.run()
         self.argDB['ignoreCompileOutput'] = oldIgnore
         self.argDB['debugLevel'] = oldLevel
@@ -248,7 +251,7 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ParMetis: '+str(e))
       fd = file(os.path.join(installDir,'config.args'), 'w')
-      fd.write(args)
+      fd.write(argsStr)
       fd.close()
       self.framework.actions.addArgument('ParMetis', 'Install', 'Installed ParMetis into '+installDir)
     lib     = [[os.path.join(installDir, 'lib', 'libparmetis.a'), os.path.join(installDir, 'lib', 'libmetis.a')]]
