@@ -1,19 +1,16 @@
 #! /bin/sh
 #
 # Default values
-num=1
-max_minutes=30
-USE_MYRINET=${USE_MYRINET-no}
+np=1
+maxtime=30
 infiles=""
 outfiles=""
 verbose="no"
-keeptmpfiles="no"
-clear_bogus_head="no"
 shared="no"
 nolocal=""
 showtimes="yes"
-ctransin="nfs_in"
-ctransout="nfs_out"
+ctransin="parin"
+ctransout="parout"
 showoutput="no"
 #
 # Process arguments
@@ -22,7 +19,7 @@ while [ $# -gt 0 ] ; do
     shift
     case $arg in 
     -np) 
-    num=$1
+    np=$1
     shift
     ;;
     -shared) 
@@ -30,20 +27,14 @@ while [ $# -gt 0 ] ; do
     nolocal="-nolocal"
     ;;
     -maxtime)
-    max_minutes=$1
+    maxtime=$1
     shift
     ;;
     -showtimesoff)
     showtimes="no"
     ;;
-    -myrinet)
-    USE_MYRINET=yes
-    ;;
     -showoutput)
     showoutput="yes"
-    ;;
-    -normal)
-    USE_MYRINET=no
     ;;
     -infile)
     infiles="$infiles $1"
@@ -72,18 +63,10 @@ while [ $# -gt 0 ] ; do
     -echo)
     set -x
     ;;
-    -keeptmpfiles)
-    keeptmpfiles="yes"
-    ;;
-    -v)
-    verbose="yes"
-    ;;
     -u|-usage|-help)
-    echo "$0       [-np n] [-myrinet] [-normal] [-maxtime min] [-keepoutput] [-keeptmpfiles] "
+    echo "$0       [-np n] [-maxtime min] [-showoutput ] "
     echo "         [-showtimesoff] [-shared] [-infile file] [-outfile file] prog [ progs args ]"
     echo "Multiple -infile and -outfile args may be used."
-    echo "The environment variable USE_MYRINET, if set to yes, has"
-    echo "the same effect as -myrinet."
     exit 0;
     ;;
     *)
@@ -97,7 +80,7 @@ while [ $# -gt 0 ] ; do
     break
     esac
 done
-if [ $num -gt 32 ] ; then
+if [ $np -gt 32 ] ; then
   shared=no
 fi
 #
@@ -105,7 +88,6 @@ fi
 # stage the file directly into the rundir directory so we need to generate new
 # command line arguments that strip the path form the filename
 #
-# Process arguments
 newprogargs=""
 shortinfiles=""
 while [ $# -gt 0 ] ; do
@@ -142,72 +124,51 @@ while [ $# -gt 0 ] ; do
 done
 if [ "$infiles" != "" ] ; then echo "Staging files: $infiles" ; fi
 #
-jobname="myjobs"
-jobdir=$HOME/$jobname
+jobdir=$HOME/myjobs
 if [ ! -d $jobdir ] ; then mkdir $jobdir ; fi
 rundir=$jobdir/$$
-if [ $verbose = "yes" ] ; then echo "mkdir $rundir" ; fi
 mkdir $rundir
 #
-# Undocumented step:  copy program into rundir
+# copy program, scripts etc into run directory
+#
 cp $programname $rundir
 if [ "$infiles" != "" ] ; then cp $infiles $rundir; fi
 cp ${PETSC_DIR}/bin/urlget.py $rundir
 cp ${PETSC_DIR}/bin/parseargs.py $rundir
 #
 # Check if this should be a myrinet job:
-has_gm="`nm $programname | egrep 'T gm_init$'`"
-if [ -n "$has_gm" -a "$USE_MYRINET" != "yes" ] ; then
-    echo "Program $programname needs Myrinet"
-    USE_MYRINET=yes
-elif [ -z "$has_gm" -a "$USE_MYRINET" = "yes" ] ; then
-    echo "Program $programname does not use Myrinet"
-    USE_MYRINET=no
-fi 
-# if programname contains a directory path, strip that out
+#
+hasgm="`nm $programname | egrep 'T gm_init$'`"
+if [ -n "$has_gm" ] ; then
+  usemyrinet=yes
+else
+  usemyrinet=no
+fi
+#
+# strip path from program name
+#
 programbase=`basename $programname`
 #
 #
 # Create the PBS script
-if [ $USE_MYRINET = "yes" ] ; then
+#
     cat >./.mpirun$$ <<EOF
 #! /bin/bash
 #PBS -S /bin/sh
-#PBS -l nodes=$num
-#PBS -l walltime=0:${max_minutes}:00
-#ctrans $ctransin $rundir
+#PBS -l nodes=$np
+#PBS -l walltime=0:${maxtime}:00
 #ctrans $ctransout $rundir
-PATH=$PATH
-export PATH
-pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
-if [ ! -s \${pbsfile} ] ; then
-    sleep 2
-    if [ ! -s \${pbsfile} ] ; then 
-        echo "Could not access \${pbsfile}; may be NFS cache problem"
-	echo "Files in \${HOME} are:"
-	(cd \${HOME} ; pwd ; ls -la)
-	if [ "$HOME" != "\${HOME}" ] ; then
-	    echo "File in $HOME are:"
-	    (cd $HOME ; pwd ; ls -la )
-	fi
-	exit 1
-    fi
+#
+if [ $showtimes = "yes" ] ; then
+  echo -n "Staging files to shared nodes " 
+  date
 fi
-DISPLAY=$DISPLAY
-export DISPLAY
-mpirun.ch_gm -np $num --gm-f \${pbsfile} $rundir/$programbase -display $DISPLAY $newprogargs
-#
-exit 0;
-EOF
-else 
-    cat >./.mpirun$$ <<EOF
-#! /bin/bash
-#PBS -S /bin/sh
-#PBS -l nodes=$num
-#PBS -l walltime=0:${max_minutes}:00
-#ctrans $ctransin  $rundir
-#ctrans $ctransout $rundir
-#
+/my/bin/ctrans -t $ctransin -s $rundir -d $rundir -nf \$PBS_NODEFILE 
+if [ $showtimes = "yes" ] ; then
+  echo -n "Starting mpi program "
+  date
+fi
+
 PATH=$PATH
 export PATH
 DISPLAY=$DISPLAY
@@ -218,33 +179,25 @@ if [ $showoutput = "yes" ] ; then
   fileo=/var/spool/pbs/spool/\$pbs_job_num.ccsche.OU
   xterm -e tail -f \$fileo  &
 fi
-mpirun.ch_p4 -np $num $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
-cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase parseargs.py urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
+
+if [ $usemyrinet = "yes" ] ; then
+  pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
+  mpirun.ch_gm -np $np --gm-f \${pbsfile} $programbase -display $DISPLAY $newprogargs
+else
+  mpirun.ch_p4 -np $np $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
+  cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase parseargs.py urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
+fi
 #
 exit 0;
 EOF
-fi
-
-if [ $showoutput = "yes" ] ; then
-true
-else
-  showout=true 
-fi
-
+#
+#  Don't use patch system, just run script directly
+# 
 if [ $shared = "yes" ] ; then
-  head -$num ${PETSC_DIR}/bin/hostnames.chiba > ./.pbsnodefile.$$
+  head -$np ${PETSC_DIR}/bin/hostnames.chiba > ./.pbsnodefile.$$
   PBS_NODEFILE=`pwd`/.pbsnodefile.$$
   export PBS_NODEFILE
-  if [ $showtimes = "yes" ] ; then
-    echo -n "Staging files to shared nodes " 
-    date
-  fi
-  /my/bin/ctrans -t $ctransin -s $rundir -d $jobdir -nf $PBS_NODEFILE >/dev/null 2>&1
   chmod u+x ./.mpirun$$
-  if [ $showtimes = "yes" ] ; then
-    echo -n "Starting mpi program "
-    date
-  fi
   ./.mpirun$$
   if [ $showtimes = "yes" ] ; then
     echo -n "Bringing data files back "
@@ -258,7 +211,7 @@ if [ $shared = "yes" ] ; then
 else 
 #
 #  submit to batch system
-#  qsub -i doesn't do what you want (it is really like qsub -i (run $SHELL) )
+#
   pbs_job_id=`qsub ./.mpirun$$`
   pbs_job_num=`expr $pbs_job_id : '\([0-9]*\).*'`
 #
@@ -267,10 +220,10 @@ else
 #
   trap "qdel $pbs_job_id ; echo Killing job; exit" 2
 #
-if [ $showtimes = "yes" ] ; then
-  echo -n "PBS Job $pbs_job_id Submitted to queue " 
-  date
-fi
+  if [ $showtimes = "yes" ] ; then
+    echo -n "PBS Job $pbs_job_id Submitted to queue " 
+    date
+  fi
 
 #  Spin until qstat returns a non-zero return code
 #
@@ -287,10 +240,10 @@ fi
     echo " "
   fi
 # 
-if [ $showtimes = "yes" ] ; then
-  echo -n "PBS Job $pbs_job_id Running "
-  date
-fi
+  if [ $showtimes = "yes" ] ; then
+    echo -n "PBS Job $pbs_job_id Running "
+    date
+  fi
 #
 #
   status="R"
@@ -306,10 +259,10 @@ fi
     echo " "
   fi
 #
-if [ $showtimes = "yes" ] ; then
-  echo -n "PBS Job $pbs_job_id Job no longer running "
-  date
-fi
+  if [ $showtimes = "yes" ] ; then
+    echo -n "PBS Job $pbs_job_id Job no longer running "
+    date
+  fi
 
 #
   outstat=""
@@ -324,23 +277,18 @@ fi
     echo " "
   fi
 #
-if [ $showtimes = "yes" ] ; then
-  echo -n "PBS Job $pbs_job_id No longer existing "
-  date
-fi
+  if [ $showtimes = "yes" ] ; then
+    echo -n "PBS Job $pbs_job_id No longer existing "
+    date
+  fi
 #
 #  Move the output to the stdout/err of the process running this script
+#
   if [ -s .mpirun$$.o$pbs_job_num ] ; then
-    # This deletes the first two lines, which contain bogus output 
-    # due to a PBS bug.
-    if [ "$clear_bogus_head" = "yes" ] ; then
-        sed -e '1,2d' .mpirun$$.o$pbs_job_num 
+    if [ -n "$stdoutfile" ] ; then
+      cat .mpirun$$.o$pbs_job_num > $stdoutfile
     else
-        if [ -n "$stdoutfile" ] ; then
-            cat .mpirun$$.o$pbs_job_num > $stdoutfile
-	else
-            cat .mpirun$$.o$pbs_job_num 
-	fi
+      cat .mpirun$$.o$pbs_job_num 
     fi
   fi
   if [ -s .mpirun$$.e$pbs_job_num ] ; then
@@ -352,22 +300,13 @@ fi
   fi
 
 fi
-
 #
 # decide if we should make an output directory (was there output?)
 #
 pushd $rundir > /dev/null
 rm -rf $programbase $shortinfiles parseargs.py urlget.py
+rm -rf [0-9]*
 popd > /dev/null
-for x in $rundir/ccn*
-do
-  pushd $x > /dev/null
-  if [ "`ls $$/`" != "" ] ; then
-    mv  -f $$/* . 
-  fi
-  rm -rf $$
-  popd > /dev/null
-done
 if [ "`ls $rundir/*`" != "" ] ; then
   cp -rf $rundir ./output.$$ 
   cd output.$$
@@ -385,11 +324,11 @@ if [ "`ls $rundir/*`" != "" ] ; then
   fi
 fi
 
-
-if [ "$keeptmpfiles" != "yes" ] ; then
-    rm -rf .mpirun$$* 
-    rm -f .pbsnodefile*
-    rm -rf $rundir
-fi
+#
+#  Remove all files mpirun.chiba has created
+#
+rm -rf .mpirun$$* 
+rm -f .pbsnodefile*
+rm -rf $rundir
 
 
