@@ -1,0 +1,3 @@
+
+  Demonstrates how one can free the "values" memory from sparse AIJ 
+matrices, then reallocate it for the next linear solve
