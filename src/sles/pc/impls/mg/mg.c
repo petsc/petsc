@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.124 2001/08/07 03:03:36 balay Exp bsmith $*/
+/*$Id: mg.c,v 1.125 2001/08/10 18:49:43 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -26,14 +26,14 @@ int MGMCycle_Private(MG *mglevels)
     ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
   } else {
     ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
+    ierr = (*mg->residual)(mg->A,mg->b,mg->x,mg->r);CHKERRQ(ierr);
+    ierr = MatRestrict(mg->restrct,mg->r,mgc->b);CHKERRQ(ierr);
+    ierr = VecSet(&zero,mgc->x);CHKERRQ(ierr);
     while (cycles--) {
-      ierr = (*mg->residual)(mg->A,mg->b,mg->x,mg->r);CHKERRQ(ierr);
-      ierr = MatRestrict(mg->restrct,mg->r,mgc->b);CHKERRQ(ierr);
-      ierr = VecSet(&zero,mgc->x);CHKERRQ(ierr);
       ierr = MGMCycle_Private(mglevels-1);CHKERRQ(ierr); 
-      ierr = MatInterpolateAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
-      ierr = SLESSolve(mg->smoothu,mg->b,mg->x,&its);CHKERRQ(ierr); 
     }
+    ierr = MatInterpolateAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
+    ierr = SLESSolve(mg->smoothu,mg->b,mg->x,&its);CHKERRQ(ierr); 
   }
   PetscFunctionReturn(0);
 }
