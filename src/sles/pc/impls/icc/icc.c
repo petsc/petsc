@@ -436,6 +436,8 @@ int PCCreate_ICC(PC pc)
                     PCICCSetLevels_ICC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetFill_C","PCICCSetFill_ICC",
                     PCICCSetFill_ICC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetDamping_C","PCICCSetDamping_ICC",
+                    PCICCSetDamping_ICC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetMatOrdering_C","PCICCSetMatOrdering_ICC",
                     PCICCSetMatOrdering_ICC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
