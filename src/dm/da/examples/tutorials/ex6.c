@@ -9,21 +9,31 @@ static char help[] = "Demonstrates using 3 DA's to manage a slightly non-trivial
 int main(int argc,char **argv)
 {
   PetscMPIInt    rank;
-  PetscInt       p1 = 6, p2 = 2, r1 = 3, r2 = 2,r1g,r2g,sw = 1,tonglobal,rstart,x,nx,y,ny,*tonatural,i,j,*to,*from;
-  PetscInt       *fromnatural,tomax,fromnglobal,nscat;
+  PetscInt       p1 = 6, p2 = 2, r1 = 3, r2 = 2,r1g,r2g,sw = 1,tonglobal,globalrstart,x,nx,y,ny,*tonatural,i,j,*to,*from;
+  PetscInt       *fromnatural,tomax,fromnglobal,nscat,nlocal,cntl1,cntl2,cntl3,cntg1,cntg2,cntg3,*indices;
   PetscErrorCode ierr;
 
   /* Each DA manages the local vector for the portion of region 1, 2, and 3 for that processor
      Each DA can belong on any subset (overlapping between DA's or not) of processors
-     For processes that a particular DA does not exist on, the corresponding dak should be set to zero */
+     For processes that a particular DA does not exist on, the corresponding comm should be set to zero
+  */
   DA             da1 = 0,da2 = 0,da3 = 0;
   MPI_Comm       comm1 = 0,comm2 = 0,comm3 = 0;
+  /* 
+      v1, v2, v3 represent the local vector for a single DA
+  */
   Vec            vl1 = 0,vl2 = 0,vl3 = 0, vg1 = 0, vg2 = 0,vg3 = 0;
   PetscScalar    **avl1,**avl2,**avl3;
-  AO             toao,fromao;
-  IS             tois,fromis;
-  Vec            tovec,fromvec;
+
+  /*
+     globalvec and friends represent the global vectors that are used for the PETSc solvers 
+     localvec represents the concatenation of the (up to) 3 local vectors; vl1, vl2, vl3
+  */
+  AO             toao,globalao;
+  IS             tois,globalis,is;
+  Vec            tovec,globalvec,localvec;
   VecScatter     vscat;
+  PetscScalar    *globalarray,*localarray,*toarray;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -81,8 +91,6 @@ int main(int argc,char **argv)
     ierr = DAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     tonglobal += nx*ny;
   }
-  ierr    = MPI_Scan(&tonglobal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  rstart -= tonglobal;
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,tonglobal);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   
@@ -140,8 +148,8 @@ int main(int argc,char **argv)
     if (y == 0) {ny--;}  /* includes the ghost points on the lower side */
     fromnglobal += nx*ny;
   }
-  ierr    = MPI_Scan(&fromnglobal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  rstart -= fromnglobal;
+  ierr        = MPI_Scan(&fromnglobal,&globalrstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  globalrstart -= fromnglobal;
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,fromnglobal);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
@@ -178,7 +186,7 @@ int main(int argc,char **argv)
     }
   }
   /*ierr = PetscIntView(fromnglobal,fromnatural,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
-  ierr = AOCreateBasic(PETSC_COMM_WORLD,fromnglobal,fromnatural,0,&fromao);CHKERRQ(ierr);
+  ierr = AOCreateBasic(PETSC_COMM_WORLD,fromnglobal,fromnatural,0,&globalao);CHKERRQ(ierr);
   ierr = PetscFree(fromnatural);CHKERRQ(ierr);
 
   /* ---------------------------------------------------*/
@@ -220,38 +228,108 @@ int main(int argc,char **argv)
     }
   }
   ierr = AOPetscToApplication(toao,nscat,to);CHKERRQ(ierr);
-  ierr = AOPetscToApplication(fromao,nscat,from);CHKERRQ(ierr);
+  ierr = AOPetscToApplication(globalao,nscat,from);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,nscat,to,&tois);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,nscat,from,&fromis);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,nscat,from,&globalis);CHKERRQ(ierr);
   ierr = PetscFree(to);CHKERRQ(ierr);
   ierr = PetscFree(from);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,tonglobal,PETSC_DETERMINE,&tovec);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,fromnglobal,PETSC_DETERMINE,&fromvec);CHKERRQ(ierr);
-  ierr = VecScatterCreate(fromvec,fromis,tovec,tois,&vscat);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,fromnglobal,PETSC_DETERMINE,&globalvec);CHKERRQ(ierr);
+  ierr = VecScatterCreate(globalvec,globalis,tovec,tois,&vscat);CHKERRQ(ierr);
   ierr = ISDestroy(tois);CHKERRQ(ierr);
-  ierr = ISDestroy(fromis);CHKERRQ(ierr);
-  ierr = AODestroy(fromao);CHKERRQ(ierr);
+  ierr = ISDestroy(globalis);CHKERRQ(ierr);
+  ierr = AODestroy(globalao);CHKERRQ(ierr);
   ierr = AODestroy(toao);CHKERRQ(ierr);
 
+  /* fill up global vector without redundant values with PETSc global numbering */
+  ierr = VecGetArray(globalvec,&globalarray);CHKERRQ(ierr);
+  for (i=0; i<fromnglobal; i++) {
+    globalarray[i] = globalrstart + i;
+  }
+  ierr = VecRestoreArray(globalvec,&globalarray);CHKERRQ(ierr);
+  
+  /* scatter PETSc global indices to redundant valueed array */
+  ierr = VecScatterBegin(globalvec,tovec,INSERT_VALUES,SCATTER_FORWARD,vscat);CHKERRQ(ierr);
+  ierr = VecScatterEnd(globalvec,tovec,INSERT_VALUES,SCATTER_FORWARD,vscat);CHKERRQ(ierr);
+
+  /* Create local vector that is the concatenation of the local vectors */
+  nlocal = 0;
+  if (comm1) {
+    ierr = VecGetSize(vl1,&cntl1);CHKERRQ(ierr);
+    ierr = VecGetSize(vg1,&cntg1);CHKERRQ(ierr);
+    nlocal += cntl1;
+  }  
+  if (comm2) {
+    ierr = VecGetSize(vl2,&cntl2);CHKERRQ(ierr);
+    ierr = VecGetSize(vg2,&cntg2);CHKERRQ(ierr);
+    nlocal += cntl2;
+  }  
+  if (comm3) {
+    ierr = VecGetSize(vl3,&cntl3);CHKERRQ(ierr);
+    ierr = VecGetSize(vg3,&cntg3);CHKERRQ(ierr);
+    nlocal += cntl3;
+  }  
+  ierr = VecCreateSeq(PETSC_COMM_SELF,nlocal,&localvec);CHKERRQ(ierr);
+  
+  /* cheat so that  vl1, vl2, vl3 shared array memory with localvec */
+  ierr = VecGetArray(localvec,&localarray);CHKERRQ(ierr);
+  ierr = VecGetArray(tovec,&toarray);CHKERRQ(ierr);
+  if (comm1) {
+    ierr = VecPlaceArray(vl1,localarray);CHKERRQ(ierr);
+    ierr = VecPlaceArray(vg1,toarray);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalBegin(da1,vg1,INSERT_VALUES,vl1);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalEnd(da1,vg1,INSERT_VALUES,vl1);CHKERRQ(ierr);
+    ierr = DARestoreGlobalVector(da1,&vg1);CHKERRQ(ierr);
+  }  
+  if (comm2) {
+    ierr = VecPlaceArray(vl2,localarray+cntl1);CHKERRQ(ierr);
+    ierr = VecPlaceArray(vg2,toarray+cntg1);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalBegin(da2,vg2,INSERT_VALUES,vl2);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalEnd(da2,vg2,INSERT_VALUES,vl2);CHKERRQ(ierr);
+    ierr = DARestoreGlobalVector(da2,&vg2);CHKERRQ(ierr);
+  }  
+  if (comm3) {
+    ierr = VecPlaceArray(vl3,localarray+cntl1+cntl2);CHKERRQ(ierr);
+    ierr = VecPlaceArray(vg3,toarray+cntg1+cntg2);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalBegin(da3,vg3,INSERT_VALUES,vl3);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalEnd(da3,vg3,INSERT_VALUES,vl3);CHKERRQ(ierr);
+    ierr = DARestoreGlobalVector(da3,&vg3);CHKERRQ(ierr);
+  }  
+  ierr = VecRestoreArray(localvec,&localarray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(tovec,&toarray);CHKERRQ(ierr);
+
+  /* no longer need the redundant vector and VecScatter to it */
   ierr = VecScatterDestroy(vscat);CHKERRQ(ierr);
   ierr = VecDestroy(tovec);CHKERRQ(ierr);
-  ierr = VecDestroy(fromvec);CHKERRQ(ierr);
+
+  /* Create final scatter that goes directly from globalvec to localvec */
+  ierr = PetscMalloc(nlocal*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = VecGetArray(localvec,&localarray);CHKERRQ(ierr);
+  for (i=0; i<nlocal; i++) {
+    indices[i] = (PetscInt) localarray[i];
+  }
+  ierr = VecRestoreArray(localvec,&localarray);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,nlocal,indices,&is);CHKERRQ(ierr);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
+  ierr = VecScatterCreate(globalvec,is,localvec,PETSC_NULL,&vscat);CHKERRQ(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
+
+  ierr = VecScatterDestroy(vscat);CHKERRQ(ierr);
+  ierr = VecDestroy(globalvec);CHKERRQ(ierr);
+  ierr = VecDestroy(localvec);CHKERRQ(ierr);
   if (comm1) {
     ierr = DAVecRestoreArray(da1,vl1,&avl1);CHKERRQ(ierr);
     ierr = DARestoreLocalVector(da1,&vl1);CHKERRQ(ierr);
-    ierr = DARestoreGlobalVector(da1,&vg1);CHKERRQ(ierr);
     ierr = DADestroy(da1);CHKERRQ(ierr);
   }
   if (comm2) {
     ierr = DAVecRestoreArray(da2,vl2,&avl2);CHKERRQ(ierr);
     ierr = DARestoreLocalVector(da2,&vl2);CHKERRQ(ierr);
-    ierr = DARestoreGlobalVector(da2,&vg2);CHKERRQ(ierr);
     ierr = DADestroy(da2);CHKERRQ(ierr);
   }
   if (comm3) {
     ierr = DAVecRestoreArray(da3,vl3,&avl3);CHKERRQ(ierr);
     ierr = DARestoreLocalVector(da3,&vl3);CHKERRQ(ierr);
-    ierr = DARestoreGlobalVector(da3,&vg3);CHKERRQ(ierr);
     ierr = DADestroy(da3);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
