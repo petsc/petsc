@@ -85,7 +85,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    Scalar           *vals_getrow, rowentry; 
    MatInfo          info;
    /*..RAMG variables..*/
-   RAMG_PARAM       *ramg_param; 
+   struct RAMG_PARAM  *ramg_param; 
    double           *u_approx, *rhs, *Asky; 
    int              *ia, *ja; 
    /*..RAMG names for number of unknowns and number of nonzeros..*/ 
@@ -109,7 +109,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    /*..Get size and number of unknowns of preconditioner matrix..*/ 
    ierr = MatGetSize(pmat, &numnodes, &numnodes); CHKERRA(ierr);
    ierr = MatGetInfo(pmat,MAT_LOCAL,&info); CHKERRA(ierr); 
-   numnonzero = int(info.nz_used);
+   numnonzero = (int)info.nz_used;
    /*..Set number of unknowns and nonzeros in RAMG terminology..*/
    nnu    = numnodes; 
    nna    = numnonzero; 
@@ -147,7 +147,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    }
    ia[numnodes] = nnz_count; 
 
-   makeskyline(numnodes,Asky,ja,ia);
+   /* makeskyline(numnodes,Asky,ja,ia); */
 
    /*..Switch arrays ia and ja to Fortran conventions..*/ 
    for (j=0;j<=numnodes;j++)
@@ -156,8 +156,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
        ja[j]++;
 
    /*..Allocate memory for RAMG parameters..*/
-   ramg_param             = (RAMG_PARAM*) PetscMalloc(sizeof(RAMG_PARAM)); 
-			    CHKPTRQ(ramg_param); ; 
+   ramg_param = (struct RAMG_PARAM*) PetscMalloc(sizeof(struct RAMG_PARAM));CHKPTRQ(ramg_param);
 
    /*..Set RAMG parameters..*/
    RamgGetParam(ramg_param); 
@@ -194,7 +193,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    PetscPrintf(MPI_COMM_WORLD,"\n\n"); 
 
    /*..Call RAMG..*/  
-   symamg1r5_(Asky, ia, ja, u_approx, rhs, ig, &nda, &ndia, &ndja, &ndu, 
+   amg1r5_(Asky, ia, ja, u_approx, rhs, ig, &nda, &ndia, &ndja, &ndu, 
               &ndf, &ndig, &nnu, &matrix, &iswtch, &iout, &iprint, &levelx, 
               &ifirst, &ncyc, &eps, &madapt, &nrd, &nsolco, &nru, &ecg1, 
               &ecg2, &ewt2, &nwt, &ntr, &ierr); 
@@ -257,25 +256,25 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
 
 int RamgShellPCApply(void *ctx, Vec r, Vec z)
 {
-   int              ierr, I, numnodes, *cols; 
-   RamgShellPC      *shell = (RamgShellPC *) ctx; 
-   double           *u_approx, *rhs, *Asky, *vals_getarray; 
-   int              *ia, *ja; 
-   RAMG_PARAM       *ramg_param; 
+   int               ierr, I, numnodes, *cols; 
+   RamgShellPC       *shell = (RamgShellPC *) ctx; 
+   double            *u_approx, *rhs, *Asky, *vals_getarray; 
+   int               *ia, *ja; 
+   struct RAMG_PARAM *ramg_param; 
    /*..RAMG integer work array..*/
-   int              *ig;  
+   int               *ig;  
    /*..RAMG input parameters..*/ 
-   int              nnu; 
+   int               nnu; 
    /*....Class 1 parameters....*/ 
-   int              nda, ndia, ndja, ndu, ndf, ndig, matrix; 
+   int               nda, ndia, ndja, ndu, ndf, ndig, matrix; 
    /*....Class 2 parameters....*/ 
-   int              iswtch, iout, iprint; 
+   int               iswtch, iout, iprint; 
    /*....Class 3 parameters....*/ 
-   int              levelx, ifirst, ncyc, madapt, nrd, nsolco, nru; 
-   double           eps;
+   int               levelx, ifirst, ncyc, madapt, nrd, nsolco, nru; 
+   double            eps;
    /*....Class 4 parameters....*/ 
-   int              nwt, ntr; 
-   double           ecg1, ecg2, ewt2; 
+   int               nwt, ntr; 
+   double            ecg1, ecg2, ewt2; 
 
    /*..Get numnodes as the size of the input vector r..*/
    ierr = VecGetSize(r,&numnodes); CHKERRA(ierr);
@@ -333,20 +332,18 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
    iswtch = 2; 
 
    /*..Call RAMG..*/
-   symamg1r5_(Asky, ia, ja, u_approx, rhs, ig, &nda, &ndia, &ndja, &ndu, 
+   amg1r5_(Asky, ia, ja, u_approx, rhs, ig, &nda, &ndia, &ndja, &ndu, 
               &ndf, &ndig, &nnu, &matrix, &iswtch, &iout, &iprint, &levelx, 
               &ifirst, &ncyc, &eps, &madapt, &nrd, &nsolco, &nru, &ecg1, 
               &ecg2, &ewt2, &nwt, &ntr, &ierr); 
 
    /*..Create auxilary vector..*/ 
-   cols        = (int *) PetscMalloc(numnodes * sizeof(int) ); 
-                 CHKPTRQ(cols);
+   cols        = (int *) PetscMalloc(numnodes * sizeof(int));CHKPTRQ(cols);
    for (I=0;I<numnodes;I++)
        cols[I] = I; 
 
    /*..Store values computed by RAMG into the PETSc vector z..*/
-   ierr = VecSetValues(z,numnodes,cols,u_approx,INSERT_VALUES); 
-          CHKERRA(ierr);  
+   ierr = VecSetValues(z,numnodes,cols,u_approx,INSERT_VALUES);CHKERRA(ierr);  
 
    /*..Restore PETSc rhs vector..*/
    ierr = VecRestoreArray(r, &vals_getarray); CHKERRA(ierr);
@@ -384,7 +381,7 @@ int RamgShellPCDestroy(RamgShellPC *shell)
 /* ------------------------------------------------------------------- */
 #undef __FUNC__
 #define __FUNC__ " RamgGetParam"
-int RamgGetParam(RAMG_PARAM *ramg_param)
+int RamgGetParam(struct RAMG_PARAM *ramg_param)
 {
   int       ierr; 
 
@@ -416,11 +413,65 @@ int RamgGetParam(RAMG_PARAM *ramg_param)
 
   /*..Overwrite default values by values specified at runtime..*/
   /*....Class 2 RAMG parameters....*/ 
-  ierr = OptionsGetInt(PETSC_NULL,"-pc_ramg_iswtch",&(*ramg_param).ISWTCH,
-                       PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-pc_ramg_iswtch",&(*ramg_param).ISWTCH,PETSC_NULL);CHKERRA(ierr);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-pc_ramg_iout",&(*ramg_param).IOUT,
-                       PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-pc_ramg_iout",&(*ramg_param).IOUT,PETSC_NULL);CHKERRA(ierr);
 
   return 0; 
 }
+
+/* -------------------------------------------------------------------------------------*/
+
+#include "src/sles/pc/pcimpl.h"
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCSetUp_RAMG"
+static int PCSetUp_RAMG(PC pc)
+{
+  int        ierr;
+
+  PetscFunctionBegin;
+  ierr = RamgShellPCSetUp((RamgShellPC*)(pc->data),pc->pmat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCApply_RAMG"
+static int PCApply_RAMG(PC pc,Vec x,Vec y)
+{
+  int       ierr;
+
+  PetscFunctionBegin;
+  ierr = RamgShellPCApply(pc->data,x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCDestroy_RAMG"
+static int PCDestroy_RAMG(PC pc)
+{
+  int       ierr;
+
+  PetscFunctionBegin;
+  ierr = RamgShellPCDestroy((RamgShellPC *)pc->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCCreate_RAMG"
+int PCCreate_RAMG(PC pc)
+{
+  int       ierr;
+
+  PetscFunctionBegin;
+  ierr = RamgShellPCCreate((RamgShellPC **)&(pc->data));CHKERRQ(ierr);
+  pc->ops->destroy = PCDestroy_RAMG;
+  pc->ops->apply   = PCApply_RAMG;
+  pc->ops->setup   = PCSetUp_RAMG;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+
+
