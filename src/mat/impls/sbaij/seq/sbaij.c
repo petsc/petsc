@@ -1163,7 +1163,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        0,
        MatCholeskyFactor_SeqSBAIJ,
-       0,
+       MatRelax_SeqSBAIJ,
        MatTranspose_SeqSBAIJ,
        MatGetInfo_SeqSBAIJ,
        MatEqual_SeqSBAIJ,
@@ -1775,6 +1775,120 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRelax_SeqSBAIJ"
+int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
+{
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+  MatScalar    *aa=a->a,*v,*v1;
+  PetscScalar  *x,*b,*t,sum,d;
+  int          m=a->mbs,bs=a->bs,*ai=a->i,*aj=a->j,ierr;
+  int          nz,nz1,*vj,*vj1,i;
+
+  PetscFunctionBegin;
+
+  if (bs > 1)
+    SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
+
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  if (xx != bb) { 
+    ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  } else { 
+    b = x;
+  } 
+
+  ierr = PetscMalloc(m*sizeof(PetscScalar),&t);CHKERRQ(ierr);
+ 
+  if (flag & SOR_ZERO_INITIAL_GUESS) {
+    if (flag & SOR_FORWARD_SWEEP){
+      for (i=0; i<m; i++)
+        t[i] = b[i];
+
+      for (i=0; i<m; i++){
+        d  = *(aa + ai[i]);  /* diag */
+        v  = aa + ai[i] + 1; 
+        vj = aj + ai[i] + 1;    
+        nz = ai[i+1] - ai[i] - 1;       
+        x[i] = omega*t[i]/d;
+        while (nz--) t[*vj++] -= x[i]*(*v++); /* update rhs */
+      }
+    }
+
+    if (flag & SOR_BACKWARD_SWEEP){
+      for (i=0; i<m; i++)
+        t[i] = b[i];
+  
+      for (i=0; i<m-1; i++){  /* update rhs */
+        v  = aa + ai[i] + 1; 
+        vj = aj + ai[i] + 1;    
+        nz = ai[i+1] - ai[i] - 1;
+        while (nz--) t[*vj++] -= x[i]*(*v++);
+      }
+      for (i=m-1; i>=0; i--){
+        d  = *(aa + ai[i]);  
+        v  = aa + ai[i] + 1; 
+        vj = aj + ai[i] + 1;    
+        nz = ai[i+1] - ai[i] - 1;
+        sum = t[i];
+        while (nz--) sum -= x[*vj++]*(*v++);
+        x[i] =   (1-omega)*x[i] + omega*sum/d;        
+      }
+    }
+    its--;
+  }
+
+  while (its--) {
+    
+    if (flag & SOR_FORWARD_SWEEP ){
+      for (i=0; i<m; i++)
+        t[i] = b[i];
+
+      for (i=0; i<m; i++){
+        d  = *(aa + ai[i]);  /* diag */
+        v  = aa + ai[i] + 1; v1=v;
+        vj = aj + ai[i] + 1; vj1=vj;   
+        nz = ai[i+1] - ai[i] - 1; nz1=nz;
+        sum = t[i];
+        while (nz1--) sum -= (*v1++)*x[*vj1++]; 
+        x[i] = (1-omega)*x[i] + omega*sum/d;
+        while (nz--) t[*vj++] -= x[i]*(*v++); 
+      }
+    }
+  
+    if (flag & SOR_BACKWARD_SWEEP){
+      for (i=0; i<m; i++)
+        t[i] = b[i];
+  
+      for (i=0; i<m-1; i++){  /* update rhs */
+        v  = aa + ai[i] + 1; 
+        vj = aj + ai[i] + 1;    
+        nz = ai[i+1] - ai[i] - 1;
+        while (nz--) t[*vj++] -= x[i]*(*v++);
+      }
+      for (i=m-1; i>=0; i--){
+        d  = *(aa + ai[i]);  
+        v  = aa + ai[i] + 1; 
+        vj = aj + ai[i] + 1;    
+        nz = ai[i+1] - ai[i] - 1;
+        sum = t[i];
+        while (nz--) sum -= x[*vj++]*(*v++);
+        x[i] =   (1-omega)*x[i] + omega*sum/d;        
+      }
+    }
+  }
+
+  /* PetscLogFlops(m); -- to be put later */
+  ierr = PetscFree(t); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  if (bb != xx) { 
+    ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+} 
+
+
+
 
 
 

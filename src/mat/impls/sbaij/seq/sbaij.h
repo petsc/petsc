@@ -25,7 +25,7 @@ typedef struct {
   int              *imax;        /* maximum space allocated for each row */
   int              *ilen;        /* actual length of each row */
   int              *j,*jnew;     /* column values: j + i[k] is start of row k */
-  MatScalar        *a,*anew;     /* nonzero diagonal and subdiagonal elements */
+  MatScalar        *a,*anew;     /* nonzero diagonal and superdiagonal elements */
   IS               row,icol;     /* index sets, used for reorderings */
   PetscScalar      *solve_work;  /* work space used in MatSolve */
   void             *spptr;       /* pointer for special library like SuperLU */
@@ -75,5 +75,8 @@ extern int MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqSBAIJ_N_NaturalOrdering(Mat,Vec,Vec);
 
 extern int MatReorderingSeqSBAIJ(Mat,IS);
+
+extern int MatRelax_SeqSBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
+
 
 #endif
