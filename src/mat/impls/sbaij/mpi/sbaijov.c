@@ -212,6 +212,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   int         **idx,*n,len,*idx_i;
   int         size,rank,Mbs,i,j,k,ierr,nrqs,msz,*outdat,*indat;
   int         tag1,tag2,flag,proc_id;
+  int *nidx,*nidx_i;
   MPI_Comm    comm;
   MPI_Request *s_waits1,*s_waits2,r_req;
   MPI_Status  *s_status,r_status;
@@ -283,7 +284,6 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
 
   /* 2. Do local work on this processor's is[] */
   /*-------------------------------------------*/
-  int *nidx,*nidx_i;
   ierr = MatIncreaseOverlap_MPISBAIJ_Local(C,outdat,&nidx);CHKERRQ(ierr);
 
   for (i=0; i<is_max; i++){
@@ -466,7 +466,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int *data,int **data_new)
       idx_i  += n; /* ptr to is[i+1] array */
     }
     data[1+i] = isz;
-  } /* /* for each is */
+  } /* for each is */
   *data_new = nidx;
   ierr = PetscBTDestroy(table);CHKERRQ(ierr);
   ierr = PetscBTDestroy(table0);CHKERRQ(ierr); 
