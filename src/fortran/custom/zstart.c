@@ -354,7 +354,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Calling PetscLogInfo()");return;}
   *ierr = PetscGetHostName(hostname,64);
   if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Getting hostname");return;}
-  *ierr = PetscLogInfo((0,"Running on machine: %s\n",hostname));CHKERRQ(ierr);
+  *ierr = PetscLogInfo((0,"Running on machine: %s\n",hostname));
   if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Calling PetscLogInfo()");return;}  
   *ierr = PetscOptionsCheckInitial_Components(); 
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options");return;}
