@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.14 1997/09/26 02:21:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: fdda.c,v 1.15 1997/09/27 15:51:19 curfman Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -11,9 +11,6 @@ static char vcid[] = "$Id: fdda.c,v 1.14 1997/09/26 02:21:32 bsmith Exp curfman 
       DAGetColoring2dBox - Gets the coloring required for computing the Jacobian via
       finite differences on a function defined using the nine point stencil
       on a two dimensional grid. 
-
-      This is a utility routine that will change over time, not part of the 
-      core PETSc package.
 
      Input Parameter:
 .    da - the distributed array
@@ -27,9 +24,19 @@ static char vcid[] = "$Id: fdda.c,v 1.14 1997/09/26 02:21:32 bsmith Exp curfman 
 int DAGetColoring2dBox(DA da,ISColoring *coloring,Mat *J)
 {
   int      ierr, xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,ys1,ny1,nx1,gnx,gny;           
-  int      m,n,dim,w,s,N,*indices,*gindices,k,xs1,nc,ng,*cols;
+  int      m,n,dim,w,s,N,*indices,*gindices,k,xs1,nc,ng,*cols,col;
   MPI_Comm comm;
   Scalar   *values;
+
+  /*     
+         nc - number of components per grid point 
+         col - number of colors needed in one direction for single component problem
+  
+  */
+  nc     = w;
+  col    = 2*s + 1;
+
+
   /*
                                   m
           ------------------------------------------------------
@@ -47,15 +54,15 @@ int DAGetColoring2dBox(DA da,ISColoring *coloring,Mat *J)
           -----------------------------------------------------
   */
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,0); CHKERRQ(ierr);
-  if (dim != 2) SETERRQ(1,0,"2d only");
-  if (s != 1)   SETERRQ(1,0,"Stencil width 1 only");
-  /* also no support for periodic boundary conditions */
-  nc     = w;
-  values = (Scalar *) PetscMalloc( 9*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
+  N       = m*n;
+
+  if (dim != 2)                   SETERRQ(1,0,"2d only");
+  if (da->wrap != DA_NONPERIODIC) SETERRQ(1,0,"Currently no support for periodice");
+
+  values = (Scalar *) PetscMalloc( col*col*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
   PetscMemzero(values,9*nc*nc*sizeof(Scalar));
   cols    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(cols);
-  indices = (int *) PetscMalloc( 9*nc*nc*sizeof(int) ); CHKPTRQ(cols);
-  N       = m*n;
+  indices = (int *) PetscMalloc( col*col*nc*nc*sizeof(int) ); CHKPTRQ(cols);
 
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0); CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0); CHKERRQ(ierr);
@@ -68,7 +75,7 @@ int DAGetColoring2dBox(DA da,ISColoring *coloring,Mat *J)
   for ( j=ys; j<ys+ny; j++ ) {
     for ( i=xs; i<xs+nx; i++ ) {
       for ( k=0; k<nc; k++ ) {
-        colors[ii++] = k + nc*((i % 3) + 3*(j % 3));
+        colors[ii++] = k + nc*((i % col) + col*(j % col));
       }
     }
   }
@@ -76,7 +83,7 @@ int DAGetColoring2dBox(DA da,ISColoring *coloring,Mat *J)
   PetscFree(colors);
 
   /* create empty Jacobian matrix */
-  ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,9*nc,0,0,0,J);CHKERRQ(ierr);  
+  ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,col*col*nc,0,0,0,J);CHKERRQ(ierr);  
 
   ierr = DAGetGlobalIndices(da,&ng,&gindices);
   {
