@@ -4,6 +4,14 @@ petsc/bmake/sun4.local
 petsc/src/ts
 petsc/include/ts
 petsc/src/contrib
+petsc/src/contrib/RCS
+petsc/src/contrib/sda/
+petsc/src/contrib/ysmp
+petsc/src/contrib/vgrid/RCS
+petsc/src/contrib/vgrid/src/RCS
+petsc/src/contrib/vgrid/src/seq/RCS
+petsc/src/contrib/vgrid/src/mpi/RCS
+petsc/src/contrib/vgrid/examples/RCS
 petsc/mis
 petsc/bmake/sun4_umpi
 petsc/bmake/rs6000_impi
