@@ -72,8 +72,8 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::apply( esi::Vector<doubl
   int ierr;
   Vec py,px;
 
-  ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));
-  ierr = xx.getInterface("Vec",reinterpret_cast<void*&>(px));
+  ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));if (ierr) return ierr;
+  ierr = xx.getInterface("Vec",reinterpret_cast<void*&>(px));if (ierr) return ierr;
 
   return SLESSolve(this->sles,px,py,PETSC_NULL);
 }

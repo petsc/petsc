@@ -231,7 +231,7 @@ int main(int argc,char **args)
       ierr = PetscOptionsGetString(PETSC_NULL,"-cells_msh",cells_file,256,&flg);CHKERRQ(ierr);
       ierr = PetscTestFile(cells_file,'r',&exists);CHKERRQ(ierr);
       if (!exists) { /* try cells.msh as the file name */
-	ierr = PetscStrcpy(mesh_file,"cells.msh");CHKERRQ(ierr);
+	ierr = PetscStrcpy(cells_file,"cells.msh");CHKERRQ(ierr);
       }
       ierr = PetscBinaryOpen(cells_file,PETSC_BINARY_RDONLY,&fdes);CHKERRQ(ierr);
     }
