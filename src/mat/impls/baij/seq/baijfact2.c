@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.32 1999/11/10 03:19:27 bsmith Exp bsmith $*/
+/*$Id: baijfact2.c,v 1.33 1999/11/24 21:53:59 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -1777,7 +1777,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   {
     Scalar    s1,s2,s3,s4,x1,x2,x3,x4;
     MatScalar *v;
-    int       jdx,idt,idx,nz,*vi,i;
+    int       jdx,idt,idx,nz,*vi,i,ai16;
 
   /* forward solve the lower triangular */
   idx    = 0;
@@ -1803,11 +1803,12 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[3+idx] = s4;
   }
   /* backward solve the upper triangular */
+  idt = 4*(n-1);
   for ( i=n-1; i>=0; i-- ){
-    v    = aa + 16*diag[i] + 16;
+    ai16 = 16*diag[i];
+    v    = aa + ai16 + 16;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
-    idt  = 4*i;
     s1 = x[idt];  s2 = x[1+idt]; 
     s3 = x[2+idt];s4 = x[3+idt];
     while (nz--) {
@@ -1819,11 +1820,12 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
       s4 -= v[3]*x1 + v[7]*x2 + v[11]*x3  + v[15]*x4;
       v    += 16;
     }
-    v        = aa + 16*diag[i];
+    v        = aa + ai16;
     x[idt]   = v[0]*s1 + v[4]*s2 + v[8]*s3  + v[12]*s4;
     x[1+idt] = v[1]*s1 + v[5]*s2 + v[9]*s3  + v[13]*s4;
     x[2+idt] = v[2]*s1 + v[6]*s2 + v[10]*s3 + v[14]*s4;
     x[3+idt] = v[3]*s1 + v[7]*s2 + v[11]*s3 + v[15]*s4;
+    idt += 4;
   }
   }
 #endif
@@ -2249,7 +2251,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  if (levels == 0 && row_identity && col_identity) {
+  if (!levels && row_identity && col_identity) {
     ierr = MatDuplicate_SeqBAIJ(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
     (*fact)->factor = FACTOR_LU;
     b               = (Mat_SeqBAIJ *) (*fact)->data;
