@@ -129,6 +129,12 @@ foreach i ($job)
     rsh $mach -n "cd $H ;  \
       make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job3 tree  >>& maint/examples.log"
   endif
+    echo "******************************************************" >> examples.log
+  endif
+  if ( $job4 != 0 ) then 
+    rsh $mach -n "cd $H ;  \
+      make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job4 tree  >>& maint/examples.log"
+  endif
   echo "Finished Build on $mach $arch $bopt `date`" >> examples.log
 #
 #  Don't copy libs to /home/bsmith/petsc since there's not enough disk space.
