@@ -2436,6 +2436,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
       xtemp[2] = (PetscScalar)ttemp[2];
       xtemp[1] = (PetscScalar)ttemp[1];
       xtemp[0] = (PetscScalar)ttemp[0];
+      idt -= 4;
     }
 
   } /* End of artificial scope. */
