@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dpoints.c,v 1.1 1996/01/30 19:44:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dpoints.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: dpoints.c,v 1.1 1996/01/30 19:44:07 bsmith Exp bsmith
    width, 1.0 denotes the interior viewport. 
 
    Input Parameters:
-.  ctx - the drawing context
+.  draw - the drawing context
 .  width - the width in user coordinates
 
    Note: 
@@ -20,11 +20,11 @@ static char vcid[] = "$Id: dpoints.c,v 1.1 1996/01/30 19:44:07 bsmith Exp bsmith
 
 .keywords: draw, point, set, size
 @*/
-int DrawPointSetSize(Draw ctx,double width)
+int DrawPointSetSize(Draw draw,double width)
 {
-  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
-  if (ctx->type == NULLWINDOW) return 0;
+  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
+  if (draw->type == NULLWINDOW) return 0;
   if (width < 0.0 || width > 1.0) SETERRQ(1,"DrawPointSetSize: Bad size");
-  return (*ctx->ops.pointsetsize)(ctx,width);
+  return (*draw->ops.pointsetsize)(draw,width);
 }
 

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.68 1996/02/22 17:19:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.69 1996/03/08 05:45:46 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -742,7 +742,7 @@ int VecRestoreArray(Vec x,Scalar **a)
 
    Input Parameters:
 .  v - the vector
-.  ptr - an optional visualization context
+.  viewer - an optional visualization context
 
    Notes:
    The available visualization contexts include
@@ -765,10 +765,10 @@ $    ViewerMatlabOpen() - output vector to Matlab viewer
 .seealso: ViewerFileOpenASCII(), ViewerDrawOpenX(), DrawLGCreate(),
           ViewerMatlabOpen(), ViewerFileOpenBinary(), VecLoad()
 @*/
-int VecView(Vec v,Viewer ptr)
+int VecView(Vec v,Viewer viewer)
 {
   PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
-  return (*v->view)((PetscObject)v,ptr);
+  return (*v->view)((PetscObject)v,viewer);
 }
 
 /*@

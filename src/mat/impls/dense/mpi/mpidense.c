@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.30 1996/03/06 21:47:19 balay Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.31 1996/03/08 05:47:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -482,29 +482,28 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   int          ierr, format;
-  PetscObject  vobj = (PetscObject) viewer;
   FILE         *fd;
+  ViewerType   vtype;
 
+  ViewerGetType(viewer,&vtype);
   ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
-    ierr = ViewerFileGetFormat_Private(viewer,&format);
-    if (format == FILE_FORMAT_INFO_DETAILED) {
-      int nz, nzalloc, mem, rank;
-      MPI_Comm_rank(mat->comm,&rank);
-      ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
-      MPIU_Seq_begin(mat->comm,1);
-        fprintf(fd,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",
-            rank,mdn->m,nz,nzalloc,mem);       
+  ierr = ViewerFileGetFormat_Private(viewer,&format);
+  if (format == FILE_FORMAT_INFO_DETAILED) {
+    int nz, nzalloc, mem, rank;
+    MPI_Comm_rank(mat->comm,&rank);
+    ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
+    MPIU_Seq_begin(mat->comm,1);
+      fprintf(fd,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",
+          rank,mdn->m,nz,nzalloc,mem);       
       fflush(fd);
-      MPIU_Seq_end(mat->comm,1);
-      ierr = VecScatterView(mdn->Mvctx,viewer); CHKERRQ(ierr);
-      return 0; 
-    }
-    else if (format == FILE_FORMAT_INFO) {
-      return 0;
-    }
+    MPIU_Seq_end(mat->comm,1);
+    ierr = VecScatterView(mdn->Mvctx,viewer); CHKERRQ(ierr);
+    return 0; 
   }
-  if (vobj->type == ASCII_FILE_VIEWER) {
+  else if (format == FILE_FORMAT_INFO) {
+    return 0;
+  }
+  if (vtype == ASCII_FILE_VIEWER) {
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d\n",
              mdn->rank,mdn->m,mdn->rstart,mdn->rend,mdn->n);
@@ -556,12 +555,11 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
 static int MatView_MPIDense(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
-  PetscObject  vobj = (PetscObject) viewer;
   int          ierr;
   ViewerType   vtype;
  
   if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+    viewer = STDOUT_VIEWER_SELF; 
   }
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER) {
@@ -949,21 +947,20 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
 
 #include "sysio.h"
 
-int MatLoad_MPIDense(Viewer bview,MatType type,Mat *newmat)
+int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;
   int          i, nz, ierr, j,rstart, rend, fd;
   Scalar       *vals,*svals;
-  PetscObject  vobj = (PetscObject) bview;
-  MPI_Comm     comm = vobj->comm;
+  MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
   int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
   int          *ourlens,*sndcounts = 0,*procsnz = 0, *offlens,jj,*mycols,*smycols;
-  int          tag = ((PetscObject)bview)->tag;
+  int          tag = ((PetscObject)viewer)->tag;
 
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {
-    ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIDenseorMPIRow:not matrix object");
   }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.42 1996/01/12 22:06:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.43 1996/01/26 04:33:20 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -316,26 +316,31 @@ static int PCPrintHelp_MG(PC pc,char *p)
 
 static int PCView_MG(PetscObject obj,Viewer viewer)
 {
-  PC     pc = (PC)obj;
-  FILE   *fd;
-  MG     *mg = (MG *) pc->data;
-  KSP    kspu, kspd;
-  int    itu, itd,ierr;
-  double dtol, atol, rtol;
-  char   *cstring;
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  SLESGetKSP(mg[0]->smoothu,&kspu);
-  SLESGetKSP(mg[0]->smoothd,&kspd);
-  KSPGetTolerances(kspu,&dtol,&atol,&rtol,&itu);
-  KSPGetTolerances(kspd,&dtol,&atol,&rtol,&itd);
-  if (mg[0]->am == MGMULTIPLICATIVE) cstring = "multiplicative";
-  else if (mg[0]->am == MGADDITIVE)  cstring = "additive";
-  else if (mg[0]->am == MGFULL)      cstring = "full";
-  else if (mg[0]->am == MGKASKADE)   cstring = "Kaskade";
-  else cstring = "unknown";
-  MPIU_fprintf(pc->comm,fd,
-    "   MG: method is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
-    cstring,mg[0]->cycles,itu,itd); 
+  PC         pc = (PC)obj;
+  FILE       *fd;
+  MG         *mg = (MG *) pc->data;
+  KSP        kspu, kspd;
+  int        itu, itd,ierr;
+  double     dtol, atol, rtol;
+  char       *cstring;
+  ViewerType vtype;
+
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    SLESGetKSP(mg[0]->smoothu,&kspu);
+    SLESGetKSP(mg[0]->smoothd,&kspd);
+    KSPGetTolerances(kspu,&dtol,&atol,&rtol,&itu);
+    KSPGetTolerances(kspd,&dtol,&atol,&rtol,&itd);
+    if (mg[0]->am == MGMULTIPLICATIVE) cstring = "multiplicative";
+    else if (mg[0]->am == MGADDITIVE)  cstring = "additive";
+    else if (mg[0]->am == MGFULL)      cstring = "full";
+    else if (mg[0]->am == MGKASKADE)   cstring = "Kaskade";
+    else cstring = "unknown";
+    MPIU_fprintf(pc->comm,fd,
+      "   MG: method is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
+      cstring,mg[0]->cycles,itu,itd); 
+  }
   return 0;
 }
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.9 1996/03/04 05:16:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.10 1996/03/08 05:47:43 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -198,24 +198,24 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
 static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         A = (Mat) obj;
-  PetscObject vobj = (PetscObject) viewer;
+  ViewerType  vtype;
+  int         ierr;
 
   if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+    viewer = STDOUT_VIEWER_SELF; 
   }
-  if (vobj->cookie == VIEWER_COOKIE) {
-    if (vobj->type == MATLAB_VIEWER) {
-      SETERRQ(1,"MatView_SeqBAIJ:Matlab viewer not supported");
-    }
-    else if (vobj->type == ASCII_FILE_VIEWER||vobj->type == ASCII_FILES_VIEWER){
-      return MatView_SeqBAIJ_ASCII(A,viewer);
-    }
-    else if (vobj->type == BINARY_FILE_VIEWER) {
-      return MatView_SeqBAIJ_Binary(A,viewer);
-    }
+
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == MATLAB_VIEWER) {
+    SETERRQ(1,"MatView_SeqBAIJ:Matlab viewer not supported");
   }
-  else if (vobj->cookie == DRAW_COOKIE) {
-    if (vobj->type == NULLWINDOW) return 0;
+  else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
+    return MatView_SeqBAIJ_ASCII(A,viewer);
+  }
+  else if (vtype == BINARY_FILE_VIEWER) {
+    return MatView_SeqBAIJ_Binary(A,viewer);
+  }
+  else if (vtype == DRAW_VIEWER) {
     SETERRQ(1,"MatView_SeqBAIJ:Draw viewer not supported");
   }
   return 0;
@@ -709,7 +709,7 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   return 0;
 }
 
-int MatLoad_SeqBAIJ(Viewer bview,MatType type,Mat *A)
+int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
 {
   Mat_SeqBAIJ  *a;
   Mat          B;
@@ -718,15 +718,14 @@ int MatLoad_SeqBAIJ(Viewer bview,MatType type,Mat *A)
   int          kmax,jcount,block,idx,point,nzcountb,extra_rows;
   int          *masked, nmask,tmp,ishift,bs2;
   Scalar       *aa;
-  PetscObject  vobj = (PetscObject) bview;
-  MPI_Comm     comm = vobj->comm;
+  MPI_Comm     comm = ((PetscObject) viewer)->comm;
 
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRQ(ierr);
   bs2  = bs*bs;
 
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqBAIJ:view must have one processor");
-  ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqBAIJ:not Mat object");
   M = header[1]; N = header[2]; nz = header[3];
@@ -846,42 +845,42 @@ int MatLoad_SeqBAIJ(Viewer bview,MatType type,Mat *A)
 
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_info",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(B->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_INFO,0);CHKERRQ(ierr);
-    ierr = MatView(B,viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    Viewer tviewer;
+    ierr = ViewerFileOpenASCII(B->comm,"stdout",&tviewer);CHKERRQ(ierr);
+    ierr = ViewerFileSetFormat(tviewer,FILE_FORMAT_INFO,0);CHKERRQ(ierr);
+    ierr = MatView(B,tviewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(tviewer); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_info_detailed",&flg);CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(B->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_INFO_DETAILED,0);CHKERRQ(ierr);
-    ierr = MatView(B,viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    Viewer tviewer;
+    ierr = ViewerFileOpenASCII(B->comm,"stdout",&tviewer);CHKERRQ(ierr);
+    ierr = ViewerFileSetFormat(tviewer,FILE_FORMAT_INFO_DETAILED,0);CHKERRQ(ierr);
+    ierr = MatView(B,tviewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(tviewer); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_view",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(B->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = MatView(B,viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    Viewer tviewer;
+    ierr = ViewerFileOpenASCII(B->comm,"stdout",&tviewer);CHKERRQ(ierr);
+    ierr = MatView(B,tviewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(tviewer); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_matlab",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(B->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_MATLAB,"M");CHKERRQ(ierr);
-    ierr = MatView(B,viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    Viewer tviewer;
+    ierr = ViewerFileOpenASCII(B->comm,"stdout",&tviewer);CHKERRQ(ierr);
+    ierr = ViewerFileSetFormat(tviewer,FILE_FORMAT_MATLAB,"M");CHKERRQ(ierr);
+    ierr = MatView(B,tviewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(tviewer); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
   if (flg) {
-    Draw    win;
-    ierr = DrawOpenX(B->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
-    ierr = MatView(B,(Viewer)win); CHKERRQ(ierr);
-    ierr = DrawSyncFlush(win); CHKERRQ(ierr);
-    ierr = DrawDestroy(win); CHKERRQ(ierr);
+    Viewer tviewer;
+    ierr = ViewerDrawOpenX(B->comm,0,0,0,0,300,300,&tviewer); CHKERRQ(ierr);
+    ierr = MatView(B,(Viewer)tviewer); CHKERRQ(ierr);
+    ierr = ViewerFlush(tviewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(tviewer); CHKERRQ(ierr);
   }
   return 0;
 }

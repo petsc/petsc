@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dsflush.c,v 1.1 1996/01/30 19:44:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dsflush.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -12,15 +12,15 @@ static char vcid[] = "$Id: dsflush.c,v 1.1 1996/01/30 19:44:13 bsmith Exp bsmith
    This is usually done to change the frame for double buffered graphics.
 
   Input Parameters:
-.  ctx - the drawing context
+.  draw - the drawing context
 
 .keywords: draw, sync, flush
 
 @*/
-int DrawSyncFlush(Draw ctx)
+int DrawSyncFlush(Draw draw)
 {
-  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
-  if (ctx->type == NULLWINDOW) return 0;
-  if (ctx->ops.syncflush) return (*ctx->ops.syncflush)(ctx);
+  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
+  if (draw->type == NULLWINDOW) return 0;
+  if (draw->ops.syncflush) return (*draw->ops.syncflush)(draw);
   return 0;
 }

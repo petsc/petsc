@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.92 1996/03/06 21:47:29 balay Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.93 1996/03/08 05:47:03 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -374,19 +374,18 @@ static int MatConvertSameType_SeqDense(Mat A,Mat *newmat,int cpvalues)
 
 #include "sysio.h"
 
-int MatLoad_SeqDense(Viewer bview,MatType type,Mat *A)
+int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
 {
   Mat_SeqDense *a;
   Mat          B;
   int          *scols, i, j, nz, ierr, fd, header[4], size;
   int          *rowlengths = 0, M, N, *cols;
   Scalar       *vals, *svals, *v;
-  PetscObject  vobj = (PetscObject) bview;
-  MPI_Comm     comm = vobj->comm;
+  MPI_Comm     comm = ((PetscObject)viewer)->comm;
 
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqDense: view must have one processor");
-  ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqDense:Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
@@ -497,19 +496,18 @@ static int MatView_SeqDense(PetscObject obj,Viewer viewer)
 {
   Mat          A = (Mat) obj;
   Mat_SeqDense *a = (Mat_SeqDense*) A->data;
-  PetscObject  vobj = (PetscObject) viewer;
   ViewerType   vtype;
   int          ierr;
 
   if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+    viewer = STDOUT_VIEWER_SELF;
   }
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
   if (vtype == MATLAB_VIEWER) {
     return ViewerMatlabPutArray_Private(viewer,a->m,a->n,a->v); 
   }
-  else if (vtype == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
+  else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     return MatView_SeqDense_ASCII(A,viewer);
   }
   else if (vtype == BINARY_FILE_VIEWER) {

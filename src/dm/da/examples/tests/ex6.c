@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.16 1996/01/12 22:10:28 bsmith Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.17 1996/01/13 04:02:39 balay Exp bsmith $";
 #endif
       
 /* Peter Mell created this file on 7/25/95 */
@@ -18,14 +18,14 @@ int main(int argc,char **argv)
   int            rank,M = 3, N = 5, P=3,s=1, w=2,flg; 
   int            m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, ierr;
   DA             da;
-  Draw           win;
+  Viewer         viewer;
   Vec            local,global;
   Scalar         value;
   DAPeriodicType wrap = DA_XYPERIODIC;
   DAStencilType  stencil_type = DA_STENCIL_BOX;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,400,300,&win); CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",300,0,400,300,&viewer); CHKERRA(ierr);
   
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr);
@@ -68,9 +68,9 @@ int main(int argc,char **argv)
     MPIU_printf(MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",rank);
     ierr = VecView(local,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
   }
-  ierr = DAView(da,(Viewer) win); CHKERRA(ierr);
+  ierr = DAView(da,viewer); CHKERRA(ierr);
 
-  ierr = ViewerDestroy((Viewer)win); CHKERRA(ierr);
+  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = DADestroy(da); CHKERRA(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);

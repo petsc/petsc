@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daview.c,v 1.5 1996/02/16 21:24:44 curfman Exp curfman $";
+static char vcid[] = "$Id: daview.c,v 1.6 1996/02/20 23:26:46 curfman Exp bsmith $";
 #endif
  
 /*
@@ -43,7 +43,7 @@ $             DACreate2d(), and DACreate3d()
 
 .keywords: distributed array, view, visualize
 
-.seealso: ViewerFileOpenASCII(), DrawOpenX(), DAGetInfo()
+.seealso: ViewerFileOpenASCII(), ViewerDrawOpenX(), DAGetInfo()
 @*/
 int DAView(DA da, Viewer v)
 {

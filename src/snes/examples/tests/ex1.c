@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.34 1996/01/29 21:46:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.35 1996/02/08 18:28:30 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -60,11 +60,11 @@ int main( int argc, char **argv )
   Mat          J;
   int          ierr, its, N, nfails,flg; 
   AppCtx       user;
-  Draw         win;
+  Draw         draw;
   double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,&win);CHKERRA(ierr);
+  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
 
   user.mx    = 4;
   user.my    = 4;
@@ -107,14 +107,14 @@ int main( int argc, char **argv )
 
   MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d, ",its);
   MPIU_printf(MPI_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
-  DrawTensorContour(win,user.mx,user.my,0,0,x);
-  DrawSyncFlush(win);
-  DrawPause(win);
+  DrawTensorContour(draw,user.mx,user.my,0,0,x);
+  DrawSyncFlush(draw);
+  DrawPause(draw);
 
   /* Free data structures */
   ierr = VecDestroy(x); CHKERRA(ierr);  ierr = VecDestroy(r); CHKERRA(ierr);
   ierr = MatDestroy(J); CHKERRA(ierr);  ierr = SNESDestroy(snes); CHKERRA(ierr);
-  ierr = DrawDestroy(win); CHKERRA(ierr);
+  ierr = DrawDestroy(draw); CHKERRA(ierr);
   PetscFinalize();
 
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.59 1996/01/26 04:35:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.60 1996/02/08 18:28:19 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -487,20 +487,24 @@ static int SNESPrintHelp_LS(SNES snes,char *p)
 /* ------------------------------------------------------------------ */
 static int SNESView_LS(PetscObject obj,Viewer viewer)
 {
-  SNES    snes = (SNES)obj;
-  SNES_LS *ls = (SNES_LS *)snes->data;
-  FILE    *fd;
-  char    *cstring;
-  int     ierr;
+  SNES       snes = (SNES)obj;
+  SNES_LS    *ls = (SNES_LS *)snes->data;
+  FILE       *fd;
+  char       *cstr;
+  int        ierr;
+  ViewerType vtype;
 
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  if (ls->LineSearch == SNESNoLineSearch) cstring = "SNESNoLineSearch";
-  else if (ls->LineSearch == SNESQuadraticLineSearch) cstring = "SNESQuadraticLineSearch";
-  else if (ls->LineSearch == SNESCubicLineSearch) cstring = "SNESCubicLineSearch";
-  else cstring = "unknown";
-  MPIU_fprintf(snes->comm,fd,"    line search variant: %s\n",cstring);
-  MPIU_fprintf(snes->comm,fd,"    alpha=%g, maxstep=%g, steptol=%g\n",
-               ls->alpha,ls->maxstep,ls->steptol);
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {  
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    if (ls->LineSearch == SNESNoLineSearch) cstr = "SNESNoLineSearch";
+    else if (ls->LineSearch == SNESQuadraticLineSearch) cstr = "SNESQuadraticLineSearch";
+    else if (ls->LineSearch == SNESCubicLineSearch) cstr = "SNESCubicLineSearch";
+    else cstr = "unknown";
+    MPIU_fprintf(snes->comm,fd,"    line search variant: %s\n",cstr);
+    MPIU_fprintf(snes->comm,fd,"    alpha=%g, maxstep=%g, steptol=%g\n",
+                 ls->alpha,ls->maxstep,ls->steptol);
+  }
   return 0;
 }
 /* ------------------------------------------------------------------ */

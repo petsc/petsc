@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.22 1995/12/21 18:34:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.23 1996/01/12 22:10:28 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests various DA routines.\n\n";
@@ -15,12 +15,12 @@ int main(int argc,char **argv)
 {
   int      rank, M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr,flg;
   DA       da;
-  Draw     win;
+  Viewer   viewer;
   Vec      local, global;
   Scalar   value;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,300,300,&win); CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",300,0,300,300,&viewer); CHKERRA(ierr);
 
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr);
@@ -43,9 +43,9 @@ int main(int argc,char **argv)
   ierr = DALocalToGlobal(da,local,ADD_VALUES,global); CHKERRA(ierr);
 
   ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
-  ierr = DAView(da,(Viewer) win); CHKERRA(ierr);
+  ierr = DAView(da,viewer); CHKERRA(ierr);
 
-  ierr = ViewerDestroy((Viewer)win); CHKERRA(ierr);
+  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);
   ierr = DADestroy(da); CHKERRA(ierr);

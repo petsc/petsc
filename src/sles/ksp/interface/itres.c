@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.16 1996/01/09 03:13:28 curfman Exp curfman $";
+static char vcid[] = "$Id: itres.c,v 1.17 1996/01/09 15:09:28 curfman Exp bsmith $";
 #endif
 
 #include "kspimpl.h"   /*I "ksp.h" I*/
@@ -23,36 +23,36 @@ $     M u = f
 
 .keywords: KSP, residual
 @*/
-int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
+int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 {
   Scalar        one = -1.0;
   MatStructure  pflag;
   Mat           Amat, Pmat;
   int           ierr;
 
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
-  if (itP->pc_side == PC_RIGHT) {
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);
+  if (ksp->pc_side == PC_RIGHT) {
     if (vbinvf) {ierr = VecCopy(vb,vbinvf); CHKERRQ(ierr);}
     vbinvf = vb;
   }
-  else if (itP->pc_side == PC_LEFT) {
-    ierr = PCApply(itP->B,vb,vbinvf); CHKERRQ(ierr);
+  else if (ksp->pc_side == PC_LEFT) {
+    ierr = PCApply(ksp->B,vb,vbinvf); CHKERRQ(ierr);
   }
   else {
     SETERRQ(1,"KSPResidual: Only right and left preconditioning are currently supported.");
   }
-  if (!itP->guess_zero) {
+  if (!ksp->guess_zero) {
     /* compute initial residual: f - M*x */
     /* (inv(b)*a)*x or (a*inv(b)*b)*x into dest */
-    if (itP->pc_side == PC_RIGHT) {
+    if (ksp->pc_side == PC_RIGHT) {
       /* we want a * binv * b * x, or just a * x for the first step */
       /* a*x into temp */
       ierr = MatMult(Amat,vsoln,vt1); CHKERRQ(ierr);
     }
     else {
       /* else we do binv * a * x */
-      ierr = PCApplyBAorAB(itP->B,itP->pc_side,vsoln,vt1,vt2); CHKERRQ(ierr);
+      ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,vsoln,vt1,vt2); CHKERRQ(ierr);
     }
     /* This is an extra copy for the right-inverse case */
     ierr = VecCopy(vbinvf,vres); CHKERRQ(ierr);
@@ -69,7 +69,7 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
    KSPUnwindPre - Unwinds the preconditioning in the solution.
 
    Input Parameters:
-.  itP  - iterative context
+.  ksp  - iterative context
 .  vsoln - solution vector 
 .  vt1   - temporary work vector
 
@@ -85,16 +85,16 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 
 .seealso: KSPSetPreconditionerSide()
 @*/
-int KSPUnwindPre(KSP itP,Vec vsoln,Vec vt1)
+int KSPUnwindPre(KSP ksp,Vec vsoln,Vec vt1)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (itP->pc_side == PC_RIGHT) {
-    ierr = PCApply(itP->B,vsoln,vt1); CHKERRQ(ierr);
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  if (ksp->pc_side == PC_RIGHT) {
+    ierr = PCApply(ksp->B,vsoln,vt1); CHKERRQ(ierr);
     ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
   }
-  else if (itP->pc_side == PC_SYMMETRIC) {
-    ierr = PCApplySymmRight(itP->B,vsoln,vt1); CHKERRQ(ierr);
+  else if (ksp->pc_side == PC_SYMMETRIC) {
+    ierr = PCApplySymmRight(ksp->B,vsoln,vt1); CHKERRQ(ierr);
     ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
   }
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.42 1996/03/07 19:36:31 balay Exp bsmith $ */
+/* $Id: pdvec.c,v 1.43 1996/03/08 05:45:53 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -157,9 +157,11 @@ static int VecView_MPI_Draw(Vec xin, Viewer v )
   int         i,rank,size,ierr,start,end;
   MPI_Status  status;
   double      coors[4],ymin,ymax,xmin,xmax,tmp;
-  Draw        win;
+  Draw        draw;
+  PetscTruth  isnull;
 
-  ViewerDrawGetDraw(v,&win);
+  ViewerDrawGetDraw(v,&draw);
+  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
   MPI_Comm_size(xin->comm,&size); 
 
   xmin = 1.e20; xmax = -1.e20;
@@ -177,16 +179,16 @@ static int VecView_MPI_Draw(Vec xin, Viewer v )
   MPI_Comm_rank(xin->comm,&rank);
   if (!rank) {
     DrawAxis axis;
-    DrawClear(win); DrawFlush(win);
-    ierr = DrawAxisCreate(win,&axis); CHKERRQ(ierr);
-    PLogObjectParent(win,axis);
+    DrawClear(draw); DrawFlush(draw);
+    ierr = DrawAxisCreate(draw,&axis); CHKERRQ(ierr);
+    PLogObjectParent(draw,axis);
     ierr = DrawAxisSetLimits(axis,0.0,(double) x->N,ymin,ymax); CHKERRQ(ierr);
     ierr = DrawAxisDraw(axis); CHKERRQ(ierr);
     DrawAxisDestroy(axis);
-    DrawGetCoordinates(win,coors,coors+1,coors+2,coors+3);
+    DrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);
   }
   MPI_Bcast(coors,4,MPI_DOUBLE,0,xin->comm);
-  if (rank) DrawSetCoordinates(win,coors[0],coors[1],coors[2],coors[3]);
+  if (rank) DrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);
   /* draw local part of vector */
   VecGetOwnershipRange(xin,&start,&end);
   if (rank < size-1) { /*send value to right */
@@ -194,23 +196,23 @@ static int VecView_MPI_Draw(Vec xin, Viewer v )
   }
   for ( i=1; i<x->n; i++ ) {
 #if !defined(PETSC_COMPLEX)
-    DrawLine(win,(double)(i-1+start),x->array[i-1],(double)(i+start),
+    DrawLine(draw,(double)(i-1+start),x->array[i-1],(double)(i+start),
                    x->array[i],DRAW_RED);
 #else
-    DrawLine(win,(double)(i-1+start),real(x->array[i-1]),(double)(i+start),
+    DrawLine(draw,(double)(i-1+start),real(x->array[i-1]),(double)(i+start),
                    real(x->array[i]),DRAW_RED);
 #endif
   }
   if (rank) { /* receive value from right */
     MPI_Recv(&tmp,1,MPI_DOUBLE,rank-1,xin->tag,xin->comm,&status);
 #if !defined(PETSC_COMPLEX)
-    DrawLine(win,(double)start-1,tmp,(double)start,x->array[0],DRAW_RED);
+    DrawLine(draw,(double)start-1,tmp,(double)start,x->array[0],DRAW_RED);
 #else
-    DrawLine(win,(double)start-1,tmp,(double)start,real(x->array[0]),DRAW_RED);
+    DrawLine(draw,(double)start-1,tmp,(double)start,real(x->array[0]),DRAW_RED);
 #endif
   }
-  ierr = DrawSyncFlush(win); CHKERRQ(ierr);
-  ierr = DrawPause(win); CHKERRQ(ierr);
+  ierr = DrawSyncFlush(draw); CHKERRQ(ierr);
+  ierr = DrawPause(draw); CHKERRQ(ierr);
   return 0;
 }
 
@@ -218,7 +220,7 @@ static int VecView_MPI_LG(Vec xin, DrawLG lg )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,size, N = x->N,*lens;
-  Draw     win;
+  Draw        draw;
   double      *xx,*yy;
 
   MPI_Comm_rank(xin->comm,&rank);
@@ -245,9 +247,9 @@ static int VecView_MPI_LG(Vec xin, DrawLG lg )
          real part of x->array and Gatherv that */
     MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);
   }
-  DrawLGGetDraw(lg,&win);
-  DrawSyncFlush(win);
-  DrawPause(win);
+  DrawLGGetDraw(lg,&draw);
+  DrawSyncFlush(draw);
+  DrawPause(draw);
   return 0;
 }
 
@@ -280,39 +282,38 @@ static int VecView_MPI_Matlab(Vec xin, Viewer viewer )
 #endif
 }
 
-static int VecView_MPI(PetscObject obj,Viewer ptr)
+static int VecView_MPI(PetscObject obj,Viewer viewer)
 {
   Vec         xin = (Vec) obj;
-  PetscObject vobj = (PetscObject) ptr;
   ViewerType  vtype;
   int         ierr;
 
-  if (!ptr) { /* so that viewers may be used from debuggers */
-    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
+  if (!viewer) { /* so that viewers may be used from debuggers */
+    viewer = STDOUT_VIEWER_SELF;
   }
 
 #if !defined(PETSC_COMPLEX)
-  if (vobj->cookie == LG_COOKIE){
-    return VecView_MPI_LG(xin,(DrawLG) ptr);
+  if (((PetscObject)viewer)->cookie == LG_COOKIE){
+    return VecView_MPI_LG(xin,(DrawLG) viewer);
   }
 #endif
 
-  ierr = ViewerGetType(ptr,&vtype);
+  ierr = ViewerGetType(viewer,&vtype);
   if (vtype == ASCII_FILE_VIEWER){
-    return VecView_MPI_File(xin,ptr);
+    return VecView_MPI_File(xin,viewer);
   }
   else if (vtype == ASCII_FILES_VIEWER){
-    return VecView_MPI_Files(xin,ptr);
+    return VecView_MPI_Files(xin,viewer);
   }
   else if (vtype == MATLAB_VIEWER) {
-    return VecView_MPI_Matlab(xin,ptr);
+    return VecView_MPI_Matlab(xin,viewer);
   } 
   else if (vtype == BINARY_FILE_VIEWER) {
-    return VecView_MPI_Binary(xin,ptr);
+    return VecView_MPI_Binary(xin,viewer);
   }
 #if !defined(PETSC_COMPLEX)
   else if (vtype == DRAW_VIEWER) {
-    return VecView_MPI_Draw(xin,ptr);
+    return VecView_MPI_Draw(xin,viewer);
   }
 #endif
   return 0;

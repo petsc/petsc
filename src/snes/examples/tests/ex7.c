@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.26 1996/02/08 16:14:13 curfman Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.27 1996/02/08 20:41:45 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -15,7 +15,7 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      Monitor(SNES,int,double,void *);
 
 typedef struct {
-   Draw win1;
+   Viewer viewer;
 } MonitorCtx;
 
 typedef struct {
@@ -38,7 +38,7 @@ int main( int argc, char **argv )
   h = 1.0/(n-1);
 
   /* Set up data structures */
-  ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,400,400,&monP.win1); CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(MPI_COMM_SELF,0,0,0,0,400,400,&monP.viewer); CHKERRA(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)x,"Approximate Solution");
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
@@ -82,7 +82,7 @@ int main( int argc, char **argv )
   ierr = VecDestroy(U); CHKERRA(ierr);  ierr = VecDestroy(F); CHKERRA(ierr);
   ierr = MatDestroy(J); CHKERRA(ierr);  ierr = MatDestroy(B); CHKERRA(ierr);
   ierr = SNESDestroy(snes); CHKERRA(ierr);
-  ierr = DrawDestroy(monP.win1); CHKERRA(ierr);
+  ierr = ViewerDestroy(monP.viewer); CHKERRA(ierr);
   PetscFinalize();
 
   return 0;
@@ -171,6 +171,6 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
 
   fprintf(stdout, "iter = %d, Function norm %g \n",its,fnorm);
   ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
-  ierr = VecView(x,(Viewer)monP->win1); CHKERRQ(ierr);
+  ierr = VecView(x,monP->viewer); CHKERRQ(ierr);
   return 0;
 }

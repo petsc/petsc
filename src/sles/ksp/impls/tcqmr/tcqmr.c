@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.19 1996/01/09 03:30:21 curfman Exp curfman $";
+static char vcid[] = "$Id: tcqmr.c,v 1.20 1996/01/09 14:31:12 curfman Exp bsmith $";
 #endif
 
 /*
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: tcqmr.c,v 1.19 1996/01/09 03:30:21 curfman Exp curfma
 #include "kspimpl.h"
 #include "tcqmrp.h"
 
-static int KSPSolve_TCQMR(KSP itP,int *its )
+static int KSPSolve_TCQMR(KSP ksp,int *its )
 {
   double      rnorm0, rnorm,dp1,Gamma;
   Scalar      theta, ep, cl1, sl1, cl, sl, sprod, tau_n1, f; 
@@ -23,7 +23,7 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
 
 
   it    = 0;
-  ierr  = KSPResidual(itP,x,u,v,r,v0,b); CHKERRQ(ierr);
+  ierr  = KSPResidual(ksp,x,u,v,r,v0,b); CHKERRQ(ierr);
   ierr  = VecNorm(r,NORM_2,&rnorm0); CHKERRQ(ierr);         /*  rnorm0 = ||r|| */
 
   ierr  = VecSet(&zero,um1); CHKERRQ(ierr);
@@ -51,11 +51,11 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
   /*
    CALCULATE SQUARED LANCZOS  vectors
    */
-  while (!(cerr=(*itP->converged)(itP,it,rnorm,itP->cnvP))) {     
-    if (itP->monitor) {
-        (*itP->monitor)( itP, it, rnorm,itP->monP );
+  while (!(cerr=(*ksp->converged)(ksp,it,rnorm,ksp->cnvP))) {     
+    if (ksp->monitor) {
+        (*ksp->monitor)( ksp, it, rnorm,ksp->monP );
     }
-    ierr   = PCApplyBAorAB(itP->B,itP->pc_side,u,y,vtmp); CHKERRQ(ierr); /* y = A*u */
+    ierr   = PCApplyBAorAB(ksp->B,ksp->pc_side,u,y,vtmp); CHKERRQ(ierr); /* y = A*u */
     ierr   = VecDot(v0,y,&dp11); CHKERRQ(ierr);
     ierr   = VecDot(v0,u,&dp2); CHKERRQ(ierr);
     alpha  = dp11 / dp2;                          /* alpha = v0'*y/v0'*u */
@@ -70,7 +70,7 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
 					         (z-2*beta*p) + f*beta*
 					         beta*um1 */
     tmp    = -2.0*beta;VecAXPY(&tmp,p,utmp);
-    ierr   = PCApplyBAorAB(itP->B,itP->pc_side,utmp,up1,vtmp); CHKERRQ(ierr);
+    ierr   = PCApplyBAorAB(ksp->B,ksp->pc_side,utmp,up1,vtmp); CHKERRQ(ierr);
     tmp    = -alpha; ierr = VecAXPY(&tmp,utmp,up1); CHKERRQ(ierr);
     tmp    = f*beta*beta; ierr = VecAXPY(&tmp,um1,up1); CHKERRQ(ierr);
     ierr   = VecNorm(up1,NORM_2,&dp1); CHKERRQ(ierr);
@@ -83,7 +83,7 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
     ierr   = VecCopy(up1,u); CHKERRQ(ierr);
     beta   = beta/Gamma;
     eptmp  = beta;
-    ierr   = PCApplyBAorAB(itP->B,itP->pc_side,v,vp1,vtmp); CHKERRQ(ierr);
+    ierr   = PCApplyBAorAB(ksp->B,ksp->pc_side,v,vp1,vtmp); CHKERRQ(ierr);
     tmp    = -alpha; ierr = VecAXPY(&tmp,v,vp1); CHKERRQ(ierr);
     tmp    = -beta; ierr = VecAXPY(&tmp,vm1,vp1); CHKERRQ(ierr);
     ierr   = VecNorm(vp1,NORM_2,&Gamma); CHKERRQ(ierr);
@@ -133,39 +133,39 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
 #else
     rnorm = rnorm0 * sqrt((double)it+2.0) * sprod;     
 #endif
-    it++; if (it > itP->max_it) {break;}
+    it++; if (it > ksp->max_it) {break;}
   }
 
   /* Need to undo preconditioning here  */
-  ierr = KSPUnwindPre(itP,x,vtmp); CHKERRQ(ierr);
+  ierr = KSPUnwindPre(ksp,x,vtmp); CHKERRQ(ierr);
 
   if (cerr <= 0) *its = -it;
   else           *its = it;
   return 0;
 }
 
-static int KSPSetUp_TCQMR(KSP itP)
+static int KSPSetUp_TCQMR(KSP ksp)
 {
   int ierr;
-  if (itP->pc_side == PC_SYMMETRIC)
+  if (ksp->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_TCQMR:no symmetric preconditioning for KSPTCQMR");}
-  ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
-  ierr = KSPiDefaultGetWork(itP,TCQMR_VECS); CHKERRQ(ierr);
+  ierr = KSPCheckDef( ksp ); CHKERRQ(ierr);
+  ierr = KSPiDefaultGetWork(ksp,TCQMR_VECS); CHKERRQ(ierr);
   return 0;
 }
 
-int KSPCreate_TCQMR(KSP itP)
+int KSPCreate_TCQMR(KSP ksp)
 {
-  itP->data          = (void *) 0;
-  itP->type          = KSPTCQMR;
-  itP->pc_side       = PC_LEFT;
-  itP->converged     = KSPDefaultConverged;
-  itP->buildsolution = KSPDefaultBuildSolution;
-  itP->buildresidual = KSPDefaultBuildResidual;
-  itP->setup         = KSPSetUp_TCQMR;
-  itP->solver        = KSPSolve_TCQMR;
-  itP->adjustwork    = KSPiDefaultAdjustWork;
-  itP->destroy       = KSPiDefaultDestroy;
-  itP->view          = 0;
+  ksp->data          = (void *) 0;
+  ksp->type          = KSPTCQMR;
+  ksp->pc_side       = PC_LEFT;
+  ksp->converged     = KSPDefaultConverged;
+  ksp->buildsolution = KSPDefaultBuildSolution;
+  ksp->buildresidual = KSPDefaultBuildResidual;
+  ksp->setup         = KSPSetUp_TCQMR;
+  ksp->solver        = KSPSolve_TCQMR;
+  ksp->adjustwork    = KSPiDefaultAdjustWork;
+  ksp->destroy       = KSPiDefaultDestroy;
+  ksp->view          = 0;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dsclear.c,v 1.1 1996/01/30 19:44:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dsclear.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -11,14 +11,14 @@ static char vcid[] = "$Id: dsclear.c,v 1.1 1996/01/30 19:44:14 bsmith Exp bsmith
        Does not return until the drawable is clear.
 
    Input Parameters:
-.  ctx - the drawing context
+.  draw - the drawing context
 
 .keywords: draw, clear
 @*/
-int DrawSyncClear(Draw ctx)
+int DrawSyncClear(Draw draw)
 {
-  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
-  if (ctx->type == NULLWINDOW) return 0;
-  if (ctx->ops.syncclear) return (*ctx->ops.syncclear)(ctx);
+  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
+  if (draw->type == NULLWINDOW) return 0;
+  if (draw->ops.syncclear) return (*draw->ops.syncclear)(draw);
   return 0;
 }

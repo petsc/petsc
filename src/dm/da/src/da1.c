@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.28 1996/02/20 23:26:21 curfman Exp curfman $";
+static char vcid[] = "$Id: da1.c,v 1.29 1996/03/06 01:41:51 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -12,46 +12,44 @@ static char vcid[] = "$Id: da1.c,v 1.28 1996/02/20 23:26:21 curfman Exp curfman 
 #include <math.h>
 #include "draw.h"      /*I  "draw.h"  I*/
 
-static int DAView_1d(PetscObject pobj,Viewer ptr)
+static int DAView_1d(PetscObject pobj,Viewer viewer)
 {
-  DA da  = (DA) pobj;
-  PetscObject vobj = (PetscObject)ptr;
+  DA          da  = (DA) pobj;
   int         rank, ierr;
+  ViewerType  vtype;
+
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
 
   MPI_Comm_rank(da->comm,&rank); 
 
-  if (!ptr) { /* so that viewers may be used from debuggers */
-    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
+  if (!viewer) { 
+    viewer = STDOUT_VIEWER_SELF; 
   }
 
-  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
-  if (vobj->cookie == VIEWER_COOKIE) {
+
+  if (vtype == ASCII_FILE_VIEWER) {
     FILE *fd;
-    ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
-    if (vobj->type == ASCII_FILE_VIEWER) {
-      MPIU_Seq_begin(da->comm,1);
-      fprintf(fd,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    MPIU_Seq_begin(da->comm,1);
+    fprintf(fd,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
                  da->m,da->w,da->s);
-      fprintf(fd,"X range: %d %d\n",da->xs,da->xe);
-      fflush(fd);
-      MPIU_Seq_end(da->comm,1);
-    }
-    else if (vobj->type == ASCII_FILES_VIEWER) {
-      if (!rank) {
-      }
-      else {
-      }
-    }
+    fprintf(fd,"X range: %d %d\n",da->xs,da->xe);
+    fflush(fd);
+    MPIU_Seq_end(da->comm,1);
   }
-  else if (vobj->cookie == DRAW_COOKIE) {
-    Draw win = (Draw) ptr;
-    double  ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
-    int     base;
-    char    node[10];
+  else if (vtype == DRAW_VIEWER) {
+    Draw       draw;
+    double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
+    int        base;
+    char       node[10];
+    PetscTruth isnull;
 
-    DrawSetCoordinates(win,xmin,ymin,xmax,ymax);
+    ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+
+    DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);
 
     /* first processor draws all node lines */
 
@@ -59,34 +57,34 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
       ymin = 0.0; ymax = 0.3;
 
       for ( xmin=0; xmin<da->M; xmin++ ) {
-         DrawLine(win,xmin,ymin,xmin,ymax,DRAW_BLACK);
+         DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_BLACK);
       }
 
       xmin = 0.0; xmax = da->M - 1;
-      DrawLine(win,xmin,ymin,xmax,ymin,DRAW_BLACK);
-      DrawLine(win,xmin,ymax,xmax,ymax,DRAW_BLACK);
+      DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_BLACK);
+      DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_BLACK);
     }
 
-    DrawSyncFlush(win); 
-    DrawPause(win);
+    DrawSyncFlush(draw); 
+    DrawPause(draw);
     MPI_Barrier(da->comm);
 
     /* draw my box */
     ymin = 0; ymax = 0.3; xmin = da->xs / da->w; xmax = (da->xe / da->w)  - 1;
-    DrawLine(win,xmin,ymin,xmax,ymin,DRAW_RED);
-    DrawLine(win,xmin,ymin,xmin,ymax,DRAW_RED);
-    DrawLine(win,xmin,ymax,xmax,ymax,DRAW_RED);
-    DrawLine(win,xmax,ymin,xmax,ymax,DRAW_RED);
+    DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_RED);
+    DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_RED);
+    DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_RED);
+    DrawLine(draw,xmax,ymin,xmax,ymax,DRAW_RED);
 
     /* Put in index numbers */
     base = da->base / da->w;
     for ( x=xmin; x<=xmax; x++ ) {
       sprintf(node,"%d",base++);
-      DrawText(win,x,ymin,DRAW_RED,node);
+      DrawText(draw,x,ymin,DRAW_RED,node);
     }
 
-    DrawSyncFlush(win);
-    DrawPause(win); 
+    DrawSyncFlush(draw);
+    DrawPause(draw); 
   }
   return 0;
 }

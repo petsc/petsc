@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.57 1996/03/05 00:26:07 curfman Exp balay $";
+static char vcid[] = "$Id: itcl.c,v 1.58 1996/03/07 20:09:52 balay Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -34,11 +34,11 @@ int KSPSetFromOptions(KSP ctx)
   if (KSPGetTypeFromOptions_Private(ctx,&method)) {
     KSPSetType(ctx,method);
   }
-  ierr = OptionsGetInt(ctx->prefix,"-ksp_max_it",&ctx->max_it, &flg); CHKERRQ(ierr);
-  ierr = OptionsGetDouble(ctx->prefix,"-ksp_rtol",&ctx->rtol, &flg);  CHKERRQ(ierr);
-  ierr = OptionsGetDouble(ctx->prefix,"-ksp_atol",&ctx->atol, &flg);  CHKERRQ(ierr);
-  ierr = OptionsGetDouble(ctx->prefix,"-ksp_divtol",&ctx->divtol, &flg); CHKERRQ(ierr);
-  ierr = OptionsHasName(ctx->prefix,"-ksp_gmres_preallocate", &flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(ctx->prefix,"-ksp_max_it",&ctx->max_it, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ctx->prefix,"-ksp_rtol",&ctx->rtol, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ctx->prefix,"-ksp_atol",&ctx->atol, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ctx->prefix,"-ksp_divtol",&ctx->divtol, &flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(ctx->prefix,"-ksp_gmres_preallocate", &flg);CHKERRQ(ierr);
   if(flg){
     KSPGMRESSetPreAllocateVectors(ctx);
   }
@@ -71,7 +71,7 @@ int KSPSetFromOptions(KSP ctx)
     MPI_Initialized(&rank);
     if (rank) MPI_Comm_rank(ctx->comm,&rank);
     if (!rank) {
-      ierr = KSPLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); CHKERRQ(ierr);
+      ierr = KSPLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
       PLogObjectParent(ctx,(PetscObject) lg);
       KSPSetMonitor(ctx,KSPLGMonitor,(void *)lg);
     }
@@ -88,9 +88,10 @@ int KSPSetFromOptions(KSP ctx)
   ierr = OptionsGetInt(ctx->prefix,"-ksp_gmres_restart",&restart, &flg); CHKERRQ(ierr);
   if (flg) { KSPGMRESSetRestart(ctx,restart); }
   ierr = OptionsHasName(ctx->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
-  if (flg) { KSPGMRESSetOrthogRoutine(ctx, KSPGMRESUnmodifiedOrthog ); }
-  ierr = OptionsHasName(ctx->prefix,"-ksp_gmres_irorthog", &flg); CHKERRQ(ierr);
-  if(flg) {  KSPGMRESSetOrthogRoutine(ctx, KSPGMRESIROrthog ); }
+  if (flg) { KSPGMRESSetOrthogRoutine(ctx, 
+             KSPGMRESUnmodifiedGramSchmidtOrthogonalization ); }
+  ierr = OptionsHasName(ctx->prefix,"-ksp_gmres_irorthog", &flg);CHKERRQ(ierr);
+  if(flg) { KSPGMRESSetOrthogRoutine(ctx, KSPGMRESIROrthogonalization);}
   ierr = OptionsHasName(ctx->prefix,"-ksp_eigen", &flg); CHKERRQ(ierr);
   if (flg) { KSPSetCalculateEigenvalues(ctx); }
   return 0;

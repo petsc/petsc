@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dtext.c,v 1.1 1996/01/30 19:35:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtext.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -10,17 +10,17 @@ static char vcid[] = "$Id: dtext.c,v 1.1 1996/01/30 19:35:18 bsmith Exp bsmith $
    DrawText - Draws text onto a drawable.
 
    Input Parameters:
-.  ctx - the drawing context
+.  draw - the drawing context
 .  xl,yl - the coordinates of lower left corner of text
 .  cl - the color of the text
 .  text - the text to draw
 
 .keywords:  draw, text
 @*/
-int DrawText(Draw ctx,double xl,double yl,int cl,char *text)
+int DrawText(Draw draw,double xl,double yl,int cl,char *text)
 {
-  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
-  if (ctx->type == NULLWINDOW) return 0;
-  return (*ctx->ops.text)(ctx,xl,yl,cl,text);
+  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
+  if (draw->type == NULLWINDOW) return 0;
+  return (*draw->ops.text)(draw,xl,yl,cl,text);
 }
 

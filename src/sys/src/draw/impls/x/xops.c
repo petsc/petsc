@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.42 1996/03/08 00:43:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.43 1996/03/08 05:48:14 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
 */
 
-#include <stdio.h>
-#if defined(HAVE_X11)
 #include "ximpl.h"
+
+#if defined(HAVE_X11)
 
 /*
      These macros transform from the users coordinates to the 
@@ -112,6 +112,7 @@ static int DrawTextSetSize_X(Draw Win,double x,double  y)
 
   w = (int)((XiWin->w)*x*(Win->port_xr - Win->port_xl)/(Win->coor_xr - Win->coor_xl));
   h = (int)((XiWin->h)*y*(Win->port_yr - Win->port_yl)/(Win->coor_yr - Win->coor_yl));
+  PetscFree(XiWin->font);
   return XiFontFixed( XiWin,w, h, &XiWin->font);
 }
 
@@ -294,6 +295,8 @@ int DrawDestroy_X(PetscObject obj)
 {
   Draw   ctx = (Draw) obj;
   Draw_X *win = (Draw_X *) ctx->data;
+
+  PetscFree(win->font);
   PetscFree(win);
   PLogObjectDestroy(ctx);
   PetscHeaderDestroy(ctx);

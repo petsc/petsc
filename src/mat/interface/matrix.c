@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.148 1996/03/06 21:47:37 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.149 1996/03/08 05:46:59 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -163,26 +163,25 @@ $      matrix structure
 .seealso: ViewerFileSetFormat(), ViewerFileOpenASCII(), ViewerDrawOpenX(), 
           ViewerMatlabOpen(), ViewerFileOpenBinary(), MatLoad()
 @*/
-int MatView(Mat mat,Viewer ptr)
+int MatView(Mat mat,Viewer viewer)
 {
   int          format, ierr, rows, cols,nz, nzalloc, mem;
   FILE         *fd;
   char         *cstr;
-  PetscObject  vobj = (PetscObject) ptr;
   ViewerType   vtype;
   MPI_Comm     comm = mat->comm;
 
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatView:Not for unassembled matrix");
 
-  if (!ptr) {
-    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
+  if (!viewer) {
+    viewer = STDOUT_VIEWER_SELF;
   }
 
-  ierr = ViewerGetType(ptr,&vtype);
+  ierr = ViewerGetType(viewer,&vtype);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
-    ierr = ViewerFileGetFormat_Private(ptr,&format); CHKERRQ(ierr);  
-    ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetFormat_Private(viewer,&format); CHKERRQ(ierr);  
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (format == FILE_FORMAT_INFO || format == FILE_FORMAT_INFO_DETAILED) {
       MPIU_fprintf(comm,fd,"Matrix Object:\n");
       ierr = MatGetType(mat,PETSC_NULL,&cstr); CHKERRQ(ierr);
@@ -195,7 +194,7 @@ int MatView(Mat mat,Viewer ptr)
       }
     }
   }
-  if (mat->view) {ierr = (*mat->view)((PetscObject)mat,ptr); CHKERRQ(ierr);}
+  if (mat->view) {ierr = (*mat->view)((PetscObject)mat,viewer); CHKERRQ(ierr);}
   return 0;
 }
 
@@ -570,11 +569,11 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   PLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0); 
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer  win;
-    ierr = ViewerDrawOpenX((*fact)->comm,0,0,0,0,300,300,&win);CHKERRQ(ierr);
-    ierr = MatView(*fact,win); CHKERRQ(ierr);
-    ierr = ViewerFlush(win); CHKERRQ(ierr);
-    ierr = ViewerDestroy(win); CHKERRQ(ierr);
+    Viewer  viewer;
+    ierr = ViewerDrawOpenX((*fact)->comm,0,0,0,0,300,300,&viewer);CHKERRQ(ierr);
+    ierr = MatView(*fact,viewer); CHKERRQ(ierr);
+    ierr = ViewerFlush(viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -1275,11 +1274,11 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
     }
     ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
     if (flg) {
-      Viewer    win;
-      ierr = ViewerDrawOpenX(mat->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
-      ierr = MatView(mat,win); CHKERRQ(ierr);
-      ierr = ViewerFlush(win); CHKERRQ(ierr);
-      ierr = ViewerDestroy(win); CHKERRQ(ierr);
+      Viewer    viewer;
+      ierr = ViewerDrawOpenX(mat->comm,0,0,0,0,300,300,&viewer); CHKERRQ(ierr);
+      ierr = MatView(mat,viewer); CHKERRQ(ierr);
+      ierr = ViewerFlush(viewer); CHKERRQ(ierr);
+      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     }
   }
   inassm--;

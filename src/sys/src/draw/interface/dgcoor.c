@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dgcoor.c,v 1.1 1996/01/30 19:44:10 bsmith Exp $";
+static char vcid[] = "$Id: dgcoor.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: dgcoor.c,v 1.1 1996/01/30 19:44:10 bsmith Exp $";
    the window (or page).
 
    Input Paramter:
-.  ctx - the drawing object
+.  draw - the drawing object
 
    Ouput Parameters:
 .  xl,yl,xr,yr - the coordinates of the lower left corner and upper
@@ -19,12 +19,12 @@ static char vcid[] = "$Id: dgcoor.c,v 1.1 1996/01/30 19:44:10 bsmith Exp $";
 
 .keywords:  draw, get, coordinates
 @*/
-int DrawGetCoordinates(Draw ctx,double *xl,double *yl,double *xr,double *yr)
+int DrawGetCoordinates(Draw draw,double *xl,double *yl,double *xr,double *yr)
 {
-  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
   if (!xl || !xr || !yl || !yr) SETERRQ(1,"DrawGetCoordinates:Bad pointer");
-  if (ctx->type == NULLWINDOW) return 0;
-  *xl = ctx->coor_xl; *yl = ctx->coor_yl;
-  *xr = ctx->coor_xr; *yr = ctx->coor_yr;
+  if (draw->type == NULLWINDOW) return 0;
+  *xl = draw->coor_xl; *yl = draw->coor_yl;
+  *xr = draw->coor_xr; *yr = draw->coor_yr;
   return 0;
 }

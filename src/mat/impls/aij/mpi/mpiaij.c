@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.130 1996/03/04 05:15:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.131 1996/03/08 05:47:18 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -557,10 +557,11 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   Mat_SeqAIJ* C = (Mat_SeqAIJ*)aij->A->data;
   int         ierr, format,shift = C->indexshift,rank;
-  PetscObject vobj = (PetscObject) viewer;
   FILE        *fd;
- 
-  if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
+  ViewerType  vtype;
+
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype  == ASCII_FILES_VIEWER || vtype == ASCII_FILE_VIEWER) { 
     ierr = ViewerFileGetFormat_Private(viewer,&format);
     if (format == FILE_FORMAT_INFO_DETAILED) {
       int nz, nzalloc, mem, flg;
@@ -587,7 +588,14 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
     }
   }
 
-  if (vobj->type == ASCII_FILE_VIEWER) {
+  if (vtype == DRAW_VIEWER) {
+    Draw       draw;
+    PetscTruth isnull;
+    ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+  }
+
+  if (vtype == ASCII_FILE_VIEWER) {
     ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
@@ -659,25 +667,17 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         mat = (Mat) obj;
   int         ierr;
-  PetscObject vobj = (PetscObject) viewer;
+  ViewerType  vtype;
  
   if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+    viewer = STDOUT_VIEWER_SELF; 
   }
-  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILE_VIEWER) {
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER ||
+      vtype == DRAW_VIEWER       || vtype == MATLAB_VIEWER) { 
     ierr = MatView_MPIAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
   }
-  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILES_VIEWER) {
-    ierr = MatView_MPIAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
-  }
-  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
-    ierr = MatView_MPIAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
-  }
-  else if (vobj->cookie == DRAW_COOKIE) {
-    ierr = MatView_MPIAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
-  }
-  else if (vobj->type == BINARY_FILE_VIEWER) {
+  else if (vtype == BINARY_FILE_VIEWER) {
     return MatView_MPIAIJ_Binary(mat,viewer);
   }
   return 0;
@@ -1587,21 +1587,20 @@ static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
 
 #include "sysio.h"
 
-int MatLoad_MPIAIJ(Viewer bview,MatType type,Mat *newmat)
+int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;
   int          i, nz, ierr, j,rstart, rend, fd;
   Scalar       *vals,*svals;
-  PetscObject  vobj = (PetscObject) bview;
-  MPI_Comm     comm = vobj->comm;
+  MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
   int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
   int          *ourlens,*sndcounts = 0,*procsnz = 0, *offlens,jj,*mycols,*smycols;
-  int          tag = ((PetscObject)bview)->tag;
+  int          tag = ((PetscObject)viewer)->tag;
 
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {
-    ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIAIJ:not matrix object");
   }

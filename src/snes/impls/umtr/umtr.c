@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.31 1996/02/08 18:28:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.32 1996/02/23 02:28:14 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -317,15 +317,19 @@ static int SNESPrintHelp_UMTR(SNES snes,char *p)
 /*------------------------------------------------------------*/
 static int SNESView_UMTR(PetscObject obj,Viewer viewer)
 {
-  SNES      snes = (SNES)obj;
-  SNES_UMTR *tr = (SNES_UMTR *)snes->data;
-  FILE      *fd;
-  int       ierr;
+  SNES       snes = (SNES)obj;
+  SNES_UMTR  *tr = (SNES_UMTR *)snes->data;
+  FILE       *fd;
+  int        ierr;
+  ViewerType vtype;
 
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  MPIU_fprintf(snes->comm,fd,"    eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",
-    tr->eta1,tr->eta2,tr->eta3,tr->eta4);
-  MPIU_fprintf(snes->comm,fd,"    delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    MPIU_fprintf(snes->comm,fd,"    eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",
+                 tr->eta1,tr->eta2,tr->eta3,tr->eta4);
+    MPIU_fprintf(snes->comm,fd,"    delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);
+  }
   return 0;
 }
 /*------------------------------------------------------------*/

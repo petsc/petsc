@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.76 1996/03/07 20:09:04 balay Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.77 1996/03/08 05:46:02 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -42,7 +42,7 @@ int KSPView(KSP ksp,Viewer viewer)
   ViewerType  vtype;
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER)) {
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
     MPIU_fprintf(ksp->comm,fd,"KSP Object:\n");
     KSPGetType(ksp,PETSC_NULL,&method);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.21 1995/11/01 23:15:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.22 1995/11/04 23:30:51 bsmith Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -19,7 +19,7 @@ static int ccgtql1_private(int *, Scalar *, Scalar *, int *);
     calculated by the Lanczos method.
 
     Input Parameters:
-.   itP - KSP context
+.   ksp - KSP context
 .   n   - number of iterations of CG run
     
     Output Parameters:
@@ -35,22 +35,22 @@ static int ccgtql1_private(int *, Scalar *, Scalar *, int *);
 
 .seealso: KSPCGDefaultMonitor()
 @*/
-int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
+int KSPCGGetEigenvalues(KSP ksp,int n,Scalar *emax,Scalar *emin)
 {
   KSP_CG *cgP;
   double *d, *e, *dd, *ee;
   int    ii,j;
 
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (itP->type != KSPCG) {SETERRQ(3,"KSPCGGetEigenvalues:Method not CG");}
-  if (!itP->calc_eigs) {
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  if (ksp->type != KSPCG) {SETERRQ(3,"KSPCGGetEigenvalues:Method not CG");}
+  if (!ksp->calc_eigs) {
     SETERRQ(4,"KSPCGGetEigenvalues:Eigenvalues not requested in before KSPSetUp");}
 
   if (n == 0) {
     *emax = *emin = 1.0;
     return 0;
   }
-  cgP = (KSP_CG *) itP->data;
+  cgP = (KSP_CG *) ksp->data;
   d = cgP->d; e = cgP->e; dd = cgP->dd; ee = cgP->ee;
 
 
@@ -72,7 +72,7 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
     problem at each iteration.
  
     Input Parameters:
-.   itP - the iterative context
+.   ksp - the iterative context
 .   n  - the iteration
 .   rnorm - the two norm of the residual
 
@@ -83,26 +83,26 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
 
 .seealso: KSPCGGetEigenvalues()
 @*/
-int KSPCGDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
+int KSPCGDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
   KSP_CG *cgP;
   double c;
   int    ierr;
 
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (!itP->calc_eigs) {
-    MPIU_printf(itP->comm,"%d %14.12e \n",n,rnorm);
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  if (!ksp->calc_eigs) {
+    MPIU_printf(ksp->comm,"%d %14.12e \n",n,rnorm);
   }
   else {
-    cgP = (KSP_CG *) itP->data;
-    ierr = KSPCGGetEigenvalues(itP,n,&cgP->emax,&cgP->emin); CHKERRQ(ierr);
+    cgP = (KSP_CG *) ksp->data;
+    ierr = KSPCGGetEigenvalues(ksp,n,&cgP->emax,&cgP->emin); CHKERRQ(ierr);
 #if defined(PETSC_COMPLEX)
     c = real(cgP->emax)/real(cgP->emin);
-    MPIU_printf(itP->comm,"%d %14.12e %% %g %g %g \n",n,rnorm,real(cgP->emax),
+    MPIU_printf(ksp->comm,"%d %14.12e %% %g %g %g \n",n,rnorm,real(cgP->emax),
                                                                  real(cgP->emin),c);
 #else
     c = cgP->emax/cgP->emin;
-    MPIU_printf(itP->comm,"%d %14.12e %% %g %g %g \n",n,rnorm,cgP->emax,cgP->emin,c);
+    MPIU_printf(ksp->comm,"%d %14.12e %% %g %g %g \n",n,rnorm,cgP->emax,cgP->emin,c);
 #endif
   }
   return 0;
@@ -356,7 +356,7 @@ L20:
 
 #else
 
-int KSPCGGetEigenvalues(KSP itP,int n,double *emax,double *emin)
+int KSPCGGetEigenvalues(KSP ksp,int n,double *emax,double *emin)
 {
   fprintf(stderr,"KSPCGGetEigenvalues: No code for complex case \n");
   return 0;

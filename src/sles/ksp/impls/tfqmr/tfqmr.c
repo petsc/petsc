@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.17 1996/01/09 03:30:18 curfman Exp curfman $";
+static char vcid[] = "$Id: tfqmr.c,v 1.18 1996/01/09 14:31:32 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -10,47 +10,47 @@ static char vcid[] = "$Id: tfqmr.c,v 1.17 1996/01/09 03:30:18 curfman Exp curfma
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int KSPSetUp_TFQMR(KSP itP)
+static int KSPSetUp_TFQMR(KSP ksp)
 {
   int ierr;
-  if (itP->pc_side == PC_SYMMETRIC)
+  if (ksp->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_TFQMR:no symmetric preconditioning for KSPTFQMR");}
-  ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
-  ierr = KSPiDefaultGetWork( itP,  10 ); CHKERRQ(ierr);
+  ierr = KSPCheckDef( ksp ); CHKERRQ(ierr);
+  ierr = KSPiDefaultGetWork( ksp,  10 ); CHKERRQ(ierr);
   return 0;
 }
 
-static int  KSPSolve_TFQMR(KSP itP,int *its)
+static int  KSPSolve_TFQMR(KSP ksp,int *its)
 {
   int       i = 0, maxit, m, conv, hist_len, cerr = 0, ierr;
   Scalar    rho, rhoold, a, s, b, eta,etaold, psiold,  cf, tmp, one = 1.0, zero = 0.0;
   double    *history,dp,dpold,w,dpest,tau,psi,cm;
   Vec       X,B,V,P,R,RP,T,T1,Q,U, D, BINVF, AUQ;
 
-  maxit   = itP->max_it;
-  history = itP->residual_history;
-  hist_len= itP->res_hist_size;
-  X       = itP->vec_sol;
-  B       = itP->vec_rhs;
-  R       = itP->work[0];
-  RP      = itP->work[1];
-  V       = itP->work[2];
-  T       = itP->work[3];
-  Q       = itP->work[4];
-  P       = itP->work[5];
-  BINVF   = itP->work[6];
-  U       = itP->work[7];
-  D       = itP->work[8];
-  T1      = itP->work[9];
+  maxit   = ksp->max_it;
+  history = ksp->residual_history;
+  hist_len= ksp->res_hist_size;
+  X       = ksp->vec_sol;
+  B       = ksp->vec_rhs;
+  R       = ksp->work[0];
+  RP      = ksp->work[1];
+  V       = ksp->work[2];
+  T       = ksp->work[3];
+  Q       = ksp->work[4];
+  P       = ksp->work[5];
+  BINVF   = ksp->work[6];
+  U       = ksp->work[7];
+  D       = ksp->work[8];
+  T1      = ksp->work[9];
   AUQ     = V;
 
   /* Compute initial preconditioned residual */
-  ierr = KSPResidual(itP,X,V,T, R, BINVF, B ); CHKERRQ(ierr);
+  ierr = KSPResidual(ksp,X,V,T, R, BINVF, B ); CHKERRQ(ierr);
 
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
-  if ((*itP->converged)(itP,0,dp,itP->cnvP)) {*its = 0; return 0;}
-  MONITOR(itP,dp,0);
+  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; return 0;}
+  MONITOR(ksp,dp,0);
 
   /* Make the initial Rp == R */
   ierr = VecCopy(R,RP); CHKERRQ(ierr);
@@ -64,7 +64,7 @@ static int  KSPSolve_TFQMR(KSP itP,int *its)
   ierr = VecDot(RP,R,&rhoold); CHKERRQ(ierr);
   ierr = VecCopy(R,U); CHKERRQ(ierr);
   ierr = VecCopy(R,P); CHKERRQ(ierr);
-  ierr = PCApplyBAorAB(itP->B,itP->pc_side,P,V,T); CHKERRQ(ierr);
+  ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,P,V,T); CHKERRQ(ierr);
   ierr = VecSet(&zero,D); CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
@@ -72,7 +72,7 @@ static int  KSPSolve_TFQMR(KSP itP,int *its)
     a = rhoold / s;                                 /* a <- rho / s         */
     tmp = -a; VecWAXPY(&tmp,V,U,Q); CHKERRQ(ierr);  /* q <- u - a v         */
     ierr = VecWAXPY(&one,U,Q,T); CHKERRQ(ierr);     /* t <- u + q           */
-    ierr = PCApplyBAorAB(itP->B,itP->pc_side,T,AUQ,T1); CHKERRQ(ierr);
+    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,T,AUQ,T1); CHKERRQ(ierr);
     ierr = VecAXPY(&tmp,AUQ,R); CHKERRQ(ierr);      /* r <- r - a K (u + q) */
     ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
     for (m=0; m<2; m++) {
@@ -95,8 +95,8 @@ static int  KSPSolve_TFQMR(KSP itP,int *its)
 
       dpest = sqrt(m + 1.0) * tau;
       if (history && hist_len > i + 1) history[i+1] = dpest;
-      MONITOR(itP,dpest,i+1);
-      if ((conv = cerr = (*itP->converged)(itP,i+1,dpest,itP->cnvP))) break;
+      MONITOR(ksp,dpest,i+1);
+      if ((conv = cerr = (*ksp->converged)(ksp,i+1,dpest,ksp->cnvP))) break;
 
       etaold = eta;
       psiold = psi;
@@ -108,33 +108,33 @@ static int  KSPSolve_TFQMR(KSP itP,int *its)
     ierr = VecWAXPY(&b,Q,R,U); CHKERRQ(ierr);       /* u <- r + b q        */
     ierr = VecAXPY(&b,P,Q); CHKERRQ(ierr);
     ierr = VecWAXPY(&b,Q,U,P); CHKERRQ(ierr);       /* p <- u + b(q + b p) */
-    ierr = PCApplyBAorAB(itP->B,itP->pc_side,P,V,Q); CHKERRQ(ierr); /* v <- K p  */
+    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,P,V,Q); CHKERRQ(ierr); /* v <- K p  */
 
     rhoold = rho;
     dpold  = dp;
   }
   if (i == maxit) i--;
-  if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
+  if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
-  ierr = KSPUnwindPre(itP,X,T); CHKERRQ(ierr);
+  ierr = KSPUnwindPre(ksp,X,T); CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1);
   else          *its = i + 1;
   return 0;
 }
 
-int KSPCreate_TFQMR(KSP itP)
+int KSPCreate_TFQMR(KSP ksp)
 {
-  itP->data                 = (void *) 0;
-  itP->type                 = KSPTFQMR;
-  itP->pc_side              = PC_LEFT;
-  itP->calc_res             = 1;
-  itP->setup                = KSPSetUp_TFQMR;
-  itP->solver               = KSPSolve_TFQMR;
-  itP->adjustwork           = KSPiDefaultAdjustWork;
-  itP->destroy              = KSPiDefaultDestroy;
-  itP->converged            = KSPDefaultConverged;
-  itP->buildsolution        = KSPDefaultBuildSolution;
-  itP->buildresidual        = KSPDefaultBuildResidual;
-  itP->view                 = 0;
+  ksp->data                 = (void *) 0;
+  ksp->type                 = KSPTFQMR;
+  ksp->pc_side              = PC_LEFT;
+  ksp->calc_res             = 1;
+  ksp->setup                = KSPSetUp_TFQMR;
+  ksp->solver               = KSPSolve_TFQMR;
+  ksp->adjustwork           = KSPiDefaultAdjustWork;
+  ksp->destroy              = KSPiDefaultDestroy;
+  ksp->converged            = KSPDefaultConverged;
+  ksp->buildsolution        = KSPDefaultBuildSolution;
+  ksp->buildresidual        = KSPDefaultBuildResidual;
+  ksp->view                 = 0;
   return 0;
 }

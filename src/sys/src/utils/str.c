@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: str.c,v 1.4 1995/12/21 18:30:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.5 1996/03/08 05:46:26 bsmith Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -63,7 +63,7 @@ char *PetscStrchr(char *a,char b)
 char *PetscStrrchr(char *a,char b)
 {
   char *tmp = strrchr(a,b);
-  if (!tmp) tmp = *a; else tmp += 1;
+  if (!tmp) tmp = a; else tmp = tmp + 1;
   return tmp;
 }
 

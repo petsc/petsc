@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.153 1996/03/04 05:15:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.154 1996/03/08 05:47:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -306,8 +306,11 @@ static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
   double      xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r;
   Draw        draw;
   DrawButton  button;
+  PetscTruth  isnull;
 
   ViewerDrawGetDraw(viewer,&draw);
+  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+
   xr  = a->n; yr = a->m; h = yr/10.0; w = xr/10.0; 
   xr += w;    yr += h;  xl = -w;     yl = -h;
   ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
@@ -403,7 +406,6 @@ static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
   return 0;
 }
 
-
 static int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         A = (Mat) obj;
@@ -429,6 +431,7 @@ static int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
   }
   return 0;
 }
+
 extern int Mat_AIJ_CheckInode(Mat);
 static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 {
@@ -1496,21 +1499,17 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   return 0;
 }
 
-int MatLoad_SeqAIJ(Viewer bview,MatType type,Mat *A)
+int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
 {
   Mat_SeqAIJ   *a;
   Mat          B;
   int          i, nz, ierr, fd, header[4],size,*rowlengths = 0,M,N,shift;
   MPI_Comm     comm;
-  ViewerType   vtype;
-
-  ierr = ViewerGetType(bview,&vtype); CHKERRQ(ierr);
-  if (vtype != BINARY_FILE_VIEWER) SETERRQ(1,"MatLoad_SeqAIJ:Binary only");
   
-  PetscObjectGetComm((PetscObject) bview,&comm);
+  PetscObjectGetComm((PetscObject) viewer,&comm);
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqAIJ:view must have one processor");
-  ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqAIJ:not matrix object in file");
   M = header[1]; N = header[2]; nz = header[3];
@@ -1572,7 +1571,7 @@ int MatEqual_SeqAIJ(Mat A,Mat B, int* flg)
   }
   
   /* if a->a are the same */
-  if(PetscMemcmp(a, b->a, (a->nz)*sizeof(Scalar))) {
+  if(PetscMemcmp(a->a, b->a, (a->nz)*sizeof(Scalar))) {
     *flg = 0 ; return 0;
   }
   *flg =1 ; 

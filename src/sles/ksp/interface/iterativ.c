@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.37 1996/01/09 15:10:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.38 1996/01/22 17:22:23 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -15,12 +15,12 @@ static char vcid[] = "$Id: iterativ.c,v 1.37 1996/01/09 15:10:56 curfman Exp bsm
   KSPiDefaultFreeWork - Free work vectors
 
   Input Parameters:
-. itP  - iterative context
+. ksp  - iterative context
  */
-int KSPiDefaultFreeWork( KSP itP )
+int KSPiDefaultFreeWork( KSP ksp )
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (itP->work)  return VecDestroyVecs(itP->work,itP->nwork);
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  if (ksp->work)  return VecDestroyVecs(ksp->work,ksp->nwork);
   return 0;
 }
 
@@ -29,23 +29,23 @@ int KSPiDefaultFreeWork( KSP itP )
    necessary for most of the solvers.
 
    Input Parameter:
-.  itP - iterative context
+.  ksp - iterative context
 
    Returns:
    the number of errors encountered.
 
 .keywords: KSP, errors, check, definition
  */
-int KSPCheckDef( KSP itP )
+int KSPCheckDef( KSP ksp )
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (!itP->vec_sol) {
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  if (!ksp->vec_sol) {
     SETERRQ(1,"KSPCheckDef:Solution vector not specified"); 
   }
-  if (!itP->vec_rhs) {
+  if (!ksp->vec_rhs) {
     SETERRQ(2,"KSPCheckDef:RHS vector not specified"); 
   }
-  if (!itP->B)   {
+  if (!ksp->B)   {
     SETERRQ(4,"KSPCheckDef:Preconditioner routine not specified"); 
   }
   return 0;
@@ -57,7 +57,7 @@ int KSPCheckDef( KSP itP )
    iteration of the iterative solvers.
 
    Input Parameters:
-.  itP   - iterative context
+.  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - 2-norm residual value (may be estimated).  
 .  dummy - unused monitor context 
@@ -66,9 +66,9 @@ int KSPCheckDef( KSP itP )
 
 .seealso: KSPSetMonitor(), KSPLGMonitorCreate()
 @*/
-int KSPDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
+int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
-  MPIU_printf(itP->comm,"%d KSP Residual norm %14.12e \n",n,rnorm); return 0;
+  MPIU_printf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm); return 0;
 }
 
 int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
@@ -91,7 +91,7 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
    the iterative solvers.
 
    Input Parameters:
-.  itP   - iterative context
+.  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - 2-norm residual value (may be estimated)
 .  dummy - unused convergence context 
@@ -118,15 +118,15 @@ $        rnorm_0 = initial residual norm
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances()
 @*/
-int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
+int KSPDefaultConverged(KSP ksp,int n,double rnorm,void *dummy)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
   if ( n == 0 ) {
-    itP->ttol   = PetscMax(itP->rtol*rnorm,itP->atol);
-    itP->rnorm0 = rnorm;
+    ksp->ttol   = PetscMax(ksp->rtol*rnorm,ksp->atol);
+    ksp->rnorm0 = rnorm;
   }
-  if ( rnorm <= itP->ttol )      return 1;
-  if ( rnorm >= itP->divtol*itP->rnorm0 || rnorm != rnorm) return -1;
+  if ( rnorm <= ksp->ttol )      return 1;
+  if ( rnorm >= ksp->divtol*ksp->rnorm0 || rnorm != rnorm) return -1;
   return(0);
 }
 
@@ -134,7 +134,7 @@ int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
    KSPDefaultBuildSolution - Default code to create/move the solution.
 
    Input Parameters:
-.  itP - iterative context
+.  ksp - iterative context
 .  v   - pointer to the user's vector  
 
    Output Parameter:
@@ -144,32 +144,32 @@ int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
 
 .seealso: KSPGetSolution(), KSPDefaultBuildResidual()
 */
-int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
+int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
 {
   int ierr;
-  if (itP->pc_side == PC_RIGHT) {
-    if (itP->B) {
-      if (v) {ierr = PCApply(itP->B,itP->vec_sol,v); CHKERRQ(ierr); *V = v;}
+  if (ksp->pc_side == PC_RIGHT) {
+    if (ksp->B) {
+      if (v) {ierr = PCApply(ksp->B,ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
       else {SETERRQ(1,"KSPDefaultBuildSolution:Not working with right preconditioner");}
     }
     else        {
-      if (v) {ierr = VecCopy(itP->vec_sol,v); CHKERRQ(ierr); *V = v;}
-      else { *V = itP->vec_sol;}
+      if (v) {ierr = VecCopy(ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
+      else { *V = ksp->vec_sol;}
     }
   }
-  else if (itP->pc_side == PC_SYMMETRIC) {
-    if (itP->B) {
-      if (v) {ierr = PCApplySymmRight(itP->B,itP->vec_sol,v); CHKERRQ(ierr); *V = v;}
+  else if (ksp->pc_side == PC_SYMMETRIC) {
+    if (ksp->B) {
+      if (v) {ierr = PCApplySymmRight(ksp->B,ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
       else {SETERRQ(1,"KSPDefaultBuildSolution:Not working with symmetric preconditioner");}
     }
     else        {
-      if (v) {ierr = VecCopy(itP->vec_sol,v); CHKERRQ(ierr); *V = v;}
-      else { *V = itP->vec_sol;}
+      if (v) {ierr = VecCopy(ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
+      else { *V = ksp->vec_sol;}
     }
   }
   else {
-    if (v) {ierr = VecCopy(itP->vec_sol,v); CHKERRQ(ierr); *V = v;}
-    else { *V = itP->vec_sol; }
+    if (v) {ierr = VecCopy(ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
+    else { *V = ksp->vec_sol; }
   }
   return 0;
 }
@@ -178,7 +178,7 @@ int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
    KSPDefaultBuildResidual - Default code to compute the residual.
 
    Input Parameters:
-.  itP - iterative context
+.  ksp - iterative context
 .  t   - pointer to temporary vector
 .  v   - pointer to user vector  
 
@@ -189,7 +189,7 @@ int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
 
 .seealso: KSPDefaultBuildSolution()
 */
-int KSPDefaultBuildResidual(KSP itP,Vec t,Vec v,Vec *V)
+int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 {
   int          ierr;
   MatStructure pflag;
@@ -197,10 +197,10 @@ int KSPDefaultBuildResidual(KSP itP,Vec t,Vec v,Vec *V)
   Scalar       mone = -1.0;
   Mat          Amat, Pmat;
 
-  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
-  ierr = KSPBuildSolution(itP,t,&T); CHKERRQ(ierr);
+  PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);
+  ierr = KSPBuildSolution(ksp,t,&T); CHKERRQ(ierr);
   ierr = MatMult(Amat, t, v ); CHKERRQ(ierr);
-  ierr = VecAYPX(&mone, itP->vec_rhs, v ); CHKERRQ(ierr);
+  ierr = VecAYPX(&mone, ksp->vec_rhs, v ); CHKERRQ(ierr);
   *V = v; return 0;
 }
 
@@ -208,19 +208,19 @@ int KSPDefaultBuildResidual(KSP itP,Vec t,Vec v,Vec *V)
   KSPiDefaultGetWork - Gets a number of work vectors.
 
   Input Parameters:
-. itP  - iterative context
+. ksp  - iterative context
 . nw   - number of work vectors to allocate
 
   Notes:
   Call this only if no work vectors have been allocated 
  */
-int  KSPiDefaultGetWork( KSP itP, int nw )
+int  KSPiDefaultGetWork( KSP ksp, int nw )
 {
   int ierr;
-  if (itP->work) KSPiDefaultFreeWork( itP );
-  itP->nwork = nw;
-  ierr = VecDuplicateVecs(itP->vec_rhs,nw,&itP->work); CHKERRQ(ierr);
-  PLogObjectParents(itP,nw,itP->work);
+  if (ksp->work) KSPiDefaultFreeWork( ksp );
+  ksp->nwork = nw;
+  ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&ksp->work); CHKERRQ(ierr);
+  PLogObjectParents(ksp,nw,ksp->work);
   return 0;
 }
 
@@ -228,12 +228,12 @@ int  KSPiDefaultGetWork( KSP itP, int nw )
   KSPiDefaultAdjustWork - Adjusts work vectors.
 
   Input Parameters:
-. itP  - iterative context
+. ksp  - iterative context
  */
-int KSPiDefaultAdjustWork( KSP itP )
+int KSPiDefaultAdjustWork( KSP ksp )
 {
-  if ( itP->adjust_work_vectors ) {
-    return (itP->adjust_work_vectors)(itP, itP->work,itP->nwork); 
+  if ( ksp->adjust_work_vectors ) {
+    return (ksp->adjust_work_vectors)(ksp, ksp->work,ksp->nwork); 
   }
   return 0;
 }
@@ -243,16 +243,16 @@ KSPiDefaultDestroy - Destroys a iterative context variable for methods with
 no separate context.  Preferred calling sequence KSPDestroy().
 
 Input Parameters: 
-.   itP - the iterative context
+.   ksp - the iterative context
 */
 int KSPiDefaultDestroy(PetscObject obj)
 {
-  KSP itP = (KSP) obj;
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (itP->data) PetscFree(itP->data);
+  KSP ksp = (KSP) obj;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  if (ksp->data) PetscFree(ksp->data);
 
   /* free work vectors */
-  KSPiDefaultFreeWork( itP );
+  KSPiDefaultFreeWork( ksp );
   return 0;
 }
 

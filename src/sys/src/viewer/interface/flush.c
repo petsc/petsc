@@ -1,24 +1,30 @@
 #ifndef lint
-static char vcid[] = "$Id: view.c,v 1.8 1995/10/01 21:53:22 bsmith Exp $";
+static char vcid[] = "$Id: flush.c,v 1.1 1996/01/25 04:26:34 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
 
-/*@C
-   ViewerDestroy - Destroys a viewer.
+struct _Viewer {
+  PETSCHEADER
+  int         (*flush)(Viewer);
+};
+
+/*@
+   ViewerFlush - Flushes a viewer (i.e. tries to dump all the 
+                 data that has been printed through a viewer.
 
    Input Parameters:
-.  viewer - the viewer to be destroyed.
+.  viewer - the viewer to be flushed
 
 .seealso: ViewerMatlabOpen(), ViewerFileOpenASCII()
 
-.keywords: Viewer, destroy
+.keywords: Viewer, flush
 @*/
-int ViewerDestroy(Viewer v)
+int ViewerFlush(Viewer v)
 {
-  PetscObject o = (PetscObject) v;
-  if (!v) SETERRQ(1,"ViewerDestroy:null viewer");
-  return (*o->destroy)(o);
+  PETSCVALIDHEADERSPECIFIC(v,VIEWER_COOKIE);
+  if (v->flush) return (*v->flush)(v);
+  return 0;
 }
 
 

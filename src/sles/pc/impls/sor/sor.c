@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.46 1996/01/26 04:33:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.47 1996/03/04 05:15:25 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -89,25 +89,29 @@ static int PCView_SOR(PetscObject obj,Viewer viewer)
   MatSORType sym = jac->sym;
   char       *sortype;
   int        ierr;
+  ViewerType vtype;
 
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  if (sym & SOR_ZERO_INITIAL_GUESS) 
-    MPIU_fprintf(pc->comm,fd,"    SOR:  zero initial guess\n");
-  if (sym == SOR_APPLY_UPPER)              sortype = "apply_upper";
-  else if (sym == SOR_APPLY_LOWER)         sortype = "apply_lower";
-  else if (sym & SOR_EISENSTAT)            sortype = "Eisenstat";
-  else if ((sym & SOR_SYMMETRIC_SWEEP) == SOR_SYMMETRIC_SWEEP)
-                                           sortype = "symmetric";
-  else if (sym & SOR_BACKWARD_SWEEP)       sortype = "backward";
-  else if (sym & SOR_FORWARD_SWEEP)        sortype = "forward";
-  else if ((sym & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP)
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {  
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    if (sym & SOR_ZERO_INITIAL_GUESS) 
+      MPIU_fprintf(pc->comm,fd,"    SOR:  zero initial guess\n");
+    if (sym == SOR_APPLY_UPPER)              sortype = "apply_upper";
+    else if (sym == SOR_APPLY_LOWER)         sortype = "apply_lower";
+    else if (sym & SOR_EISENSTAT)            sortype = "Eisenstat";
+    else if ((sym & SOR_SYMMETRIC_SWEEP) == SOR_SYMMETRIC_SWEEP)
+                                             sortype = "symmetric";
+    else if (sym & SOR_BACKWARD_SWEEP)       sortype = "backward";
+    else if (sym & SOR_FORWARD_SWEEP)        sortype = "forward";
+    else if ((sym & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP)
                                            sortype = "local_symmetric";
-  else if (sym & SOR_LOCAL_FORWARD_SWEEP)  sortype = "local_forward";
-  else if (sym & SOR_LOCAL_BACKWARD_SWEEP) sortype = "local_backward"; 
-  else                                     sortype = "unknown";
-  MPIU_fprintf(pc->comm,fd,
-     "    SOR: type = %s, iterations = %d, omega = %g\n",
-     sortype,jac->its,jac->omega);
+    else if (sym & SOR_LOCAL_FORWARD_SWEEP)  sortype = "local_forward";
+    else if (sym & SOR_LOCAL_BACKWARD_SWEEP) sortype = "local_backward"; 
+    else                                     sortype = "unknown";
+    MPIU_fprintf(pc->comm,fd,
+       "    SOR: type = %s, iterations = %d, omega = %g\n",
+       sortype,jac->its,jac->omega);
+  }
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dsetpause.c,v 1.1 1996/01/30 19:44:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dsetpause.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: dsetpause.c,v 1.1 1996/01/30 19:44:12 bsmith Exp bsmi
    a DrawPause() is called. 
 
    Input Paramters:
-.  ctx - the drawing object
+.  draw - the drawing object
 .  pause - number of seconds to pause, -1 implies until user input
 
    Note:
@@ -22,10 +22,10 @@ static char vcid[] = "$Id: dsetpause.c,v 1.1 1996/01/30 19:44:12 bsmith Exp bsmi
 
 .seealso: DrawGetPause(), DrawPause()
 @*/
-int DrawSetPause(Draw ctx,int pause)
+int DrawSetPause(Draw draw,int pause)
 {
-  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
-  if (ctx->type == NULLWINDOW) return 0;
-  ctx->pause = pause;
+  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
+  if (draw->type == NULLWINDOW) return 0;
+  draw->pause = pause;
   return 0;
 }

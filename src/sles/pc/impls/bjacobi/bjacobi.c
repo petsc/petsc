@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.70 1996/01/26 23:58:27 curfman Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.71 1996/02/08 20:43:12 curfman Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -259,34 +259,37 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
   PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
   int              rank, ierr;
   char             *c,*bgs = "Block Gauss-Seiedel", *bj ="Block Jacobi";
-  
-if(jac->gs) c = bgs;
-  else c = bj;
-  
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  if (jac->use_true_local) 
-    MPIU_fprintf(pc->comm,fd,
-       "    %s: using true local matrix, number of blocks = %d\n", c, jac->n);
-  MPIU_fprintf(pc->comm,fd,"    %s: number of blocks = %d\n", c, jac->n);
-  MPI_Comm_rank(pc->comm,&rank);
-  if (jac->same_local_solves) {
-    MPIU_fprintf(pc->comm,fd,
-    "    Local solve is same for all blocks, in the following KSP and PC objects:\n");
-    if (!rank) {
-      ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
-    }           /* now only 1 block per proc */
+  ViewerType       vtype;
+
+  if (jac->gs) c = bgs; else c = bj;
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    if (jac->use_true_local) {
+      MPIU_fprintf(pc->comm,fd,
+         "    %s: using true local matrix, number of blocks = %d\n", c, jac->n);
+    }
+    MPIU_fprintf(pc->comm,fd,"    %s: number of blocks = %d\n", c, jac->n);
+    MPI_Comm_rank(pc->comm,&rank);
+    if (jac->same_local_solves) {
+      MPIU_fprintf(pc->comm,fd,
+      "    Local solve is same for all blocks, in the following KSP and PC objects:\n");
+      if (!rank) {
+        ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
+      }           /* now only 1 block per proc */
                 /* This shouldn't really be STDOUT */
-  } else {
-    MPIU_fprintf(pc->comm,fd,
-     "    Local solve info for each block is in the following KSP and PC objects:\n");
-    MPIU_Seq_begin(pc->comm,1);
-    fprintf(fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
-    rank,jac->n_local,jac->first_local);
-    ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
+    } else {
+      MPIU_fprintf(pc->comm,fd,
+       "    Local solve info for each block is in the following KSP and PC objects:\n");
+      MPIU_Seq_begin(pc->comm,1);
+      fprintf(fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
+      rank,jac->n_local,jac->first_local);
+      ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
            /* now only 1 block per proc */
            /* This shouldn't really be STDOUT */
-    fflush(fd);
-    MPIU_Seq_end(pc->comm,1);
+      fflush(fd);
+      MPIU_Seq_end(pc->comm,1);
+    }
   }
   return 0;
 }

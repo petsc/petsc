@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.42 1996/01/26 04:33:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.43 1996/03/04 05:15:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -33,10 +33,10 @@ $  -pc_eisenstat_diagonal_scaling
 
 .seealso: PCEisenstatSetOmega()
 @*/
-int PCEisenstatUseDiagonalScaling(PC ptr)
+int PCEisenstatUseDiagonalScaling(PC pc)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat *) ptr->data;
-  if (ptr->type != PCEISENSTAT) return 0;
+  PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
+  if (pc->type != PCEISENSTAT) return 0;
   eis->usediag = 1;
   return 0;
 }
@@ -48,9 +48,9 @@ static int PCMult_Eisenstat(void *ptr,Vec b,Vec x)
   return MatRelax(eis->A,b,eis->omega,SOR_EISENSTAT,0.0,1,x);
 }
 
-static int PCApply_Eisenstat(PC ptr,Vec x,Vec y)
+static int PCApply_Eisenstat(PC pc,Vec x,Vec y)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat *) ptr->data;
+  PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
   int          ierr;
 
   if (eis->usediag)  {ierr = VecPMult(x,eis->diag,y); CHKERRQ(ierr);}
@@ -150,9 +150,13 @@ static int PCView_Eisenstat(PetscObject obj,Viewer viewer)
   FILE          *fd;
   PC_Eisenstat  *eis = ( PC_Eisenstat  *) pc->data; 
   int           ierr;
+  ViewerType    vtype;
 
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  MPIU_fprintf(pc->comm,fd,"    Eisenstat: omega = %g\n",eis->omega);
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    MPIU_fprintf(pc->comm,fd,"    Eisenstat: omega = %g\n",eis->omega);
+  }
   return 0;
 }
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.40 1996/01/26 04:32:09 bsmith Exp balay $";
+static char vcid[] = "$Id: general.c,v 1.41 1996/02/16 19:30:39 balay Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -56,21 +56,21 @@ static int ISView_General(PetscObject obj, Viewer viewer)
   IS_General  *sub = (IS_General *)is->data;
   int         i,n = sub->n,*idx = sub->idx,ierr;
   FILE        *fd;
-  PetscObject vobj = (PetscObject) viewer;
+  ViewerType  vtype;
 
   if (!viewer) {
-    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+    viewer = STDOUT_VIEWER_SELF; 
   }
-  if (vobj->cookie == VIEWER_COOKIE) {
-    if ((vobj->type == ASCII_FILE_VIEWER) || (vobj->type == ASCII_FILES_VIEWER)) {
-      ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-      if (is->isperm) {
-        fprintf(fd,"Index set is permutation\n");
-      }
-      fprintf(fd,"Number of indices in set %d\n",n);
-      for ( i=0; i<n; i++ ) {
-        fprintf(fd,"%d %d\n",i,idx[i]);
-      }
+
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    if (is->isperm) {
+      fprintf(fd,"Index set is permutation\n");
+    }
+    fprintf(fd,"Number of indices in set %d\n",n);
+    for ( i=0; i<n; i++ ) {
+      fprintf(fd,"%d %d\n",i,idx[i]);
     }
   }
   return 0;

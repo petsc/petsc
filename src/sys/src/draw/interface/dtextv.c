@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dtextv.c,v 1.1 1996/01/30 19:35:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtextv.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -10,17 +10,17 @@ static char vcid[] = "$Id: dtextv.c,v 1.1 1996/01/30 19:35:18 bsmith Exp bsmith 
    DrawTextVertical - Draws text onto a drawable.
 
    Input Parameters:
-.  ctx - the drawing context
+.  draw - the drawing context
 .  xl,yl - the coordinates of upper left corner of text
 .  cl - the color of the text
 .  text - the text to draw
 
 .keywords: draw, text, vertical
 @*/
-int DrawTextVertical(Draw ctx,double xl,double yl,int cl,char *text)
+int DrawTextVertical(Draw draw,double xl,double yl,int cl,char *text)
 {
-  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
-  if (ctx->type == NULLWINDOW) return 0;
-  return (*ctx->ops.textvertical)(ctx,xl,yl,cl,text);
+  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
+  if (draw->type == NULLWINDOW) return 0;
+  return (*draw->ops.textvertical)(draw,xl,yl,cl,text);
 }
 

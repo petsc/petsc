@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.19 1996/01/09 03:30:30 curfman Exp curfman $";
+static char vcid[] = "$Id: lsqr.c,v 1.20 1996/01/09 14:31:53 curfman Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -13,17 +13,17 @@ static char vcid[] = "$Id: lsqr.c,v 1.19 1996/01/09 03:30:30 curfman Exp curfman
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int KSPSetUp_LSQR(KSP itP)
+static int KSPSetUp_LSQR(KSP ksp)
 {
   int ierr;
-  if (itP->pc_side == PC_SYMMETRIC)
+  if (ksp->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_LSQR:no symmetric preconditioning for KSPLSQR");}
-  ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
-  ierr = KSPiDefaultGetWork( itP,  6 ); CHKERRQ(ierr);
+  ierr = KSPCheckDef( ksp ); CHKERRQ(ierr);
+  ierr = KSPiDefaultGetWork( ksp,  6 ); CHKERRQ(ierr);
   return 0;
 }
 
-static int KSPSolve_LSQR(KSP itP,int *its)
+static int KSPSolve_LSQR(KSP ksp,int *its)
 {
   int          i = 0, maxit, hist_len, cerr = 0, ierr;
   Scalar       rho, rhobar, phi, phibar, theta, c, s,tmp, zero = 0.0;
@@ -32,26 +32,26 @@ static int KSPSolve_LSQR(KSP itP,int *its)
   Mat          Amat, Pmat;
   MatStructure pflag;
 
-  ierr     = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
-  maxit    = itP->max_it;
-  history  = itP->residual_history;
-  hist_len = itP->res_hist_size;
-  X        = itP->vec_sol;
-  B        = itP->vec_rhs;
-  U        = itP->work[0];
-  U1       = itP->work[1];
-  V        = itP->work[2];
-  V1       = itP->work[3];
-  W        = itP->work[4];
-  BINVF    = itP->work[5];
+  ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  maxit    = ksp->max_it;
+  history  = ksp->residual_history;
+  hist_len = ksp->res_hist_size;
+  X        = ksp->vec_sol;
+  B        = ksp->vec_rhs;
+  U        = ksp->work[0];
+  U1       = ksp->work[1];
+  V        = ksp->work[2];
+  V1       = ksp->work[3];
+  W        = ksp->work[4];
+  BINVF    = ksp->work[5];
 
   /* Compute initial preconditioned residual */
-  ierr = KSPResidual(itP,X,V,U, W,BINVF,B); CHKERRQ(ierr);
+  ierr = KSPResidual(ksp,X,V,U, W,BINVF,B); CHKERRQ(ierr);
 
   /* Test for nothing to do */
   ierr = VecNorm(W,NORM_2,&rnorm); CHKERRQ(ierr);
-  if ((*itP->converged)(itP,0,rnorm,itP->cnvP)) { *its = 0; return 0;}
-  MONITOR(itP,rnorm,0);
+  if ((*ksp->converged)(ksp,0,rnorm,ksp->cnvP)) { *its = 0; return 0;}
+  MONITOR(ksp,rnorm,0);
   if (history) history[0] = rnorm;
 
   ierr = VecCopy(B,U); CHKERRQ(ierr);
@@ -97,34 +97,34 @@ static int KSPSolve_LSQR(KSP itP,int *its)
 #endif
 
     if (history && hist_len > i + 1) history[i+1] = rnorm;
-    MONITOR(itP,rnorm,i+1);
-    cerr = (*itP->converged)(itP,i+1,rnorm,itP->cnvP);
+    MONITOR(ksp,rnorm,i+1);
+    cerr = (*ksp->converged)(ksp,i+1,rnorm,ksp->cnvP);
     if (cerr) break;
     SWAP( U1, U, TMP );
     SWAP( V1, V, TMP );
   }
   if (i == maxit) i--;
-  if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
+  if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
-  ierr = KSPUnwindPre(itP,X,W); CHKERRQ(ierr);
+  ierr = KSPUnwindPre(ksp,X,W); CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1);
   else          *its = i + 1;
   return 0;
 }
 
-int KSPCreate_LSQR(KSP itP)
+int KSPCreate_LSQR(KSP ksp)
 {
-  itP->data                 = (void *) 0;
-  itP->type                 = KSPLSQR;
-  itP->pc_side              = PC_LEFT;
-  itP->calc_res             = 1;
-  itP->setup                = KSPSetUp_LSQR;
-  itP->solver               = KSPSolve_LSQR;
-  itP->adjustwork           = KSPiDefaultAdjustWork;
-  itP->destroy              = KSPiDefaultDestroy;
-  itP->converged            = KSPDefaultConverged;
-  itP->buildsolution        = KSPDefaultBuildSolution;
-  itP->buildresidual        = KSPDefaultBuildResidual;
-  itP->view                 = 0;
+  ksp->data                 = (void *) 0;
+  ksp->type                 = KSPLSQR;
+  ksp->pc_side              = PC_LEFT;
+  ksp->calc_res             = 1;
+  ksp->setup                = KSPSetUp_LSQR;
+  ksp->solver               = KSPSolve_LSQR;
+  ksp->adjustwork           = KSPiDefaultAdjustWork;
+  ksp->destroy              = KSPiDefaultDestroy;
+  ksp->converged            = KSPDefaultConverged;
+  ksp->buildsolution        = KSPDefaultBuildSolution;
+  ksp->buildresidual        = KSPDefaultBuildResidual;
+  ksp->view                 = 0;
   return 0;
 }

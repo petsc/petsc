@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.19 1995/11/01 23:14:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: vecio.c,v 1.20 1996/01/05 22:53:01 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -32,23 +32,24 @@ static char vcid[] = "$Id: vecio.c,v 1.19 1995/11/01 23:14:28 bsmith Exp curfman
 
 .seealso: ViewerFileOpenBinary(), VecView(), MatLoad() 
 @*/  
-int VecLoad(Viewer bview,Vec *newvec)
+int VecLoad(Viewer viewer,Vec *newvec)
 {
   int         i, rows, ierr, type, fd,rank,size,n;
   Vec         vec;
   Vec_MPI     *v;
   Scalar      *avec;
-  PetscObject obj = (PetscObject) bview;
   MPI_Comm    comm;
   MPI_Request *requests;
   MPI_Status  status,*statuses;
+  ViewerType  vtype;
 
-  PETSCVALIDHEADERSPECIFIC(obj,VIEWER_COOKIE);
-  if (obj->type != BINARY_FILE_VIEWER) SETERRQ(1,"VecLoad:Invalid viewer");
-  PLogEventBegin(VEC_Load,bview,0,0,0);
-  ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
+  PETSCVALIDHEADERSPECIFIC(viewer,VIEWER_COOKIE);
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype != BINARY_FILE_VIEWER) SETERRQ(1,"VecLoad:Must be binary viewer");
+  PLogEventBegin(VEC_Load,viewer,0,0,0);
+  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
   
-  PetscObjectGetComm(obj,&comm);
+  PetscObjectGetComm((PetscObject)viewer,&comm);
   MPI_Comm_rank(comm,&rank);
   MPI_Comm_size(comm,&size);
 
@@ -91,7 +92,7 @@ int VecLoad(Viewer bview,Vec *newvec)
     ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
   }
   *newvec = vec;
-  PLogEventEnd(VEC_Load,bview,0,0,0);
+  PLogEventEnd(VEC_Load,viewer,0,0,0);
   return 0;
 }
 

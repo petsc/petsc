@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.41 1996/01/26 04:32:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.42 1996/03/04 04:57:49 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -16,15 +16,17 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 {
   VecScatter     ctx = (VecScatter) obj;
   VecScatter_MPI *to=(VecScatter_MPI *) ctx->todata, *from=(VecScatter_MPI *) ctx->fromdata;
-  PetscObject    vobj = (PetscObject) viewer;
   int            i,rank,ierr;
   FILE           *fd;
+  ViewerType     vtype;
 
   if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+    viewer = STDOUT_VIEWER_SELF; 
   }
-  if (vobj->cookie != VIEWER_COOKIE) return 0;
-  if (vobj->type != ASCII_FILE_VIEWER && vobj->type != ASCII_FILES_VIEWER) return 0;
+
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+
+  if (vtype != ASCII_FILE_VIEWER && vtype != ASCII_FILES_VIEWER) return 0;
 
   MPI_Comm_rank(ctx->comm,&rank);
   ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);

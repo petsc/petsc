@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.90 1996/03/04 05:16:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.91 1996/03/08 05:47:30 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1149,9 +1149,13 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
 static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
 {
   Mat_SeqBDiag  *a = (Mat_SeqBDiag *) A->data;
-  Draw          draw = (Draw) viewer;
+  Draw          draw;
   double        xl, yl, xr, yr, w, h;
   int           ierr, nz, *col, i, j, nr = a->m;
+  PetscTruth    isnull;
+
+  ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
 
   xr = a->n; yr = a->m; h = yr/10.0; w = xr/10.0;
   xr += w; yr += h; xl = -w; yl = -h;
@@ -1177,25 +1181,25 @@ static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
 static int MatView_SeqBDiag(PetscObject obj,Viewer viewer)
 {
   Mat         A = (Mat) obj;
-  PetscObject vobj = (PetscObject) viewer;
+  ViewerType  vtype;
+  int         ierr;
 
   if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+    viewer = STDOUT_VIEWER_SELF;
   }
-  if (vobj->cookie == VIEWER_COOKIE) {
-    if (vobj->type == MATLAB_VIEWER) {
-      SETERRQ(PETSC_ERR_SUP,"MatView_SeqBDiag:Matlab viewer");
-    }
-    else if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER){
-      return MatView_SeqBDiag_ASCII(A,viewer);
-    }
-    else if (vobj->type == BINARY_FILE_VIEWER) {
-      return MatView_SeqBDiag_Binary(A,viewer);
-    }
+
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == MATLAB_VIEWER) {
+    SETERRQ(PETSC_ERR_SUP,"MatView_SeqBDiag:Matlab viewer");
   }
-  else if (vobj->cookie == DRAW_COOKIE) {
-    if (vobj->type == NULLWINDOW) return 0;
-    else return MatView_SeqBDiag_Draw(A,viewer);
+  else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
+    return MatView_SeqBDiag_ASCII(A,viewer);
+  }
+  else if (vtype == BINARY_FILE_VIEWER) {
+    return MatView_SeqBDiag_Binary(A,viewer);
+  }
+  else if (vtype == DRAW_VIEWER) {
+    return MatView_SeqBDiag_Draw(A,viewer);
   }
   return 0;
 }
@@ -1593,19 +1597,19 @@ static int MatConvertSameType_SeqBDiag(Mat A,Mat *matout,int cpvalues)
   return 0;
 }
 
-int MatLoad_SeqBDiag(Viewer bview,MatType type,Mat *A)
+int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
 {
   Mat_SeqBDiag *a;
   Mat          B;
   int          *scols, i, nz, ierr, fd, header[4], size;
   int          nb, *rowlengths = 0,M,N,*cols,flg;
   Scalar       *vals, *svals;
-  PetscObject  vobj = (PetscObject) bview;
-  MPI_Comm     comm = vobj->comm;
-
+  MPI_Comm     comm;
+  
+  PetscObjectGetComm((PetscObject)viewer,&comm);
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqBDiag: view must have one processor");
-  ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqBDiag:Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: drect.c,v 1.1 1996/01/30 19:44:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drect.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -10,16 +10,16 @@ static char vcid[] = "$Id: drect.c,v 1.1 1996/01/30 19:44:15 bsmith Exp bsmith $
    DrawRectangle - Draws a rectangle  onto a drawable.
 
    Input Parameters:
-.  ctx - the drawing context
+.  draw - the drawing context
 .  xl,yl,xr,yr - the coordinates of the lower left, upper right corners
 .  c1,c2,c3,c4 - the colors of the four corners in counter clockwise order
 
 .keywords: draw, rectangle
 @*/
-int DrawRectangle(Draw c,double xl,double yl,double xr,double yr,
+int DrawRectangle(Draw draw,double xl,double yl,double xr,double yr,
                               int c1, int c2,int c3,int c4)
 {
-  PETSCVALIDHEADERSPECIFIC(c,DRAW_COOKIE);
-  if (c->type == NULLWINDOW) return 0;
-  return (*c->ops.rectangle)(c,xl,yl,xr,yr,c1,c2,c3,c4);
+  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
+  if (draw->type == NULLWINDOW) return 0;
+  return (*draw->ops.rectangle)(draw,xl,yl,xr,yr,c1,c2,c3,c4);
 }

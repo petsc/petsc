@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.58 1996/03/07 20:08:39 balay Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.59 1996/03/07 20:42:34 balay Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -38,15 +38,15 @@ $    ViewerFileOpenASCII() - output to a specified file
 @*/
 int SNESView(SNES snes,Viewer viewer)
 {
-  PetscObject         vobj = (PetscObject) viewer;
   SNES_KSP_EW_ConvCtx *kctx;
   FILE                *fd;
   int                 ierr;
   SLES                sles;
   char                *method;
+  ViewerType          vtype;
 
-  if (vobj->cookie == VIEWER_COOKIE && (vobj->type == ASCII_FILE_VIEWER ||
-                                        vobj->type == ASCII_FILES_VIEWER)) {
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
     MPIU_fprintf(snes->comm,fd,"SNES Object:\n");
     SNESGetType(snes,PETSC_NULL,&method);
@@ -73,9 +73,9 @@ int SNESView(SNES snes,Viewer viewer)
           kctx->gamma,kctx->alpha,kctx->alpha2);
       }
     }
-    SNESGetSLES(snes,&sles);
-    ierr = SLESView(sles,viewer); CHKERRQ(ierr);
   }
+  SNESGetSLES(snes,&sles);
+  ierr = SLESView(sles,viewer); CHKERRQ(ierr);
   return 0;
 }
 

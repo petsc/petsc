@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.18 1996/02/13 23:28:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex20.c,v 1.19 1996/03/04 05:14:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -18,7 +18,7 @@ int main(int argc,char **args)
   Scalar  v;
   Vec     u;
   VecType vtype;
-  Viewer  bview;
+  Viewer  viewer;
   int     VECTOR_GENERATE, VECTOR_READ;
 
   PetscInitialize(&argc,&args,0,0,help);
@@ -45,9 +45,9 @@ int main(int argc,char **args)
 
   MPIU_printf(MPI_COMM_WORLD,"writing vector in binary to vector.dat ...\n"); 
 
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_CREATE,&bview);CHKERRA(ierr);
-  ierr = VecView(u,bview); CHKERRA(ierr);
-  ierr = ViewerDestroy(bview); CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_CREATE,&viewer);CHKERRA(ierr);
+  ierr = VecView(u,viewer); CHKERRA(ierr);
+  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);
   PLogEventEnd(VECTOR_GENERATE,0,0,0,0);
 
@@ -61,10 +61,10 @@ int main(int argc,char **args)
   PLogEventRegister(&VECTOR_READ,"Read Vector     ","Green");
   PLogEventBegin(VECTOR_READ,0,0,0,0);
   MPIU_printf(MPI_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_RDONLY,&bview);CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
   vtype = VECSEQ;
-  ierr = VecLoad(bview,&u); CHKERRA(ierr);
-  ierr = ViewerDestroy(bview); CHKERRA(ierr);
+  ierr = VecLoad(viewer,&u); CHKERRA(ierr);
+  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   PLogEventEnd(VECTOR_READ,0,0,0,0);
   ierr = VecView(u,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 

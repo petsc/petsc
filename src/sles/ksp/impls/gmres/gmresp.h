@@ -1,4 +1,4 @@
-/* $Id: gmresp.h,v 1.3 1995/10/30 03:50:33 bsmith Exp bsmith $ */
+/* $Id: gmresp.h,v 1.4 1995/11/04 23:33:03 bsmith Exp bsmith $ */
 /*
    Private data structure used by the GMRES method.
 */
@@ -44,19 +44,19 @@ typedef struct {
     Vec    sol_temp;       /* used to hold temporary solution */
     } KSP_GMRES;
 
-#define HH(a,b)  (gmresP->hh_origin + (b)*(gmresP->max_k+2)+(a))
-#define HES(a,b) (gmresP->hes_origin + (b)*(gmresP->max_k+1)+(a))
-#define CC(a)    (gmresP->cc_origin + (a))
-#define SS(a)    (gmresP->ss_origin + (a))
-#define RS(a)    (gmresP->rs_origin + (a))
+#define HH(a,b)  (gmres->hh_origin + (b)*(gmres->max_k+2)+(a))
+#define HES(a,b) (gmres->hes_origin + (b)*(gmres->max_k+1)+(a))
+#define CC(a)    (gmres->cc_origin + (a))
+#define SS(a)    (gmres->ss_origin + (a))
+#define RS(a)    (gmres->rs_origin + (a))
 
 /* vector names */
 #define VEC_OFFSET     3
-#define VEC_SOLN       itP->vec_sol
-#define VEC_RHS        itP->vec_rhs
-#define VEC_TEMP       gmresP->vecs[0]
-#define VEC_TEMP_MATOP gmresP->vecs[1]
-#define VEC_BINVF      gmresP->vecs[2]
-#define VEC_VV(i)      gmresP->vecs[VEC_OFFSET+i]
+#define VEC_SOLN       ksp->vec_sol
+#define VEC_RHS        ksp->vec_rhs
+#define VEC_TEMP       gmres->vecs[0]
+#define VEC_TEMP_MATOP gmres->vecs[1]
+#define VEC_BINVF      gmres->vecs[2]
+#define VEC_VV(i)      gmres->vecs[VEC_OFFSET+i]
 
 #endif

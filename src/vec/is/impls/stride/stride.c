@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.37 1996/02/16 19:30:31 balay Exp balay $";
+static char vcid[] = "$Id: stride.c,v 1.38 1996/03/07 19:36:07 balay Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -78,24 +78,24 @@ static int ISView_Stride(PetscObject obj, Viewer viewer)
   IS          is = (IS) obj;
   IS_Stride   *sub = (IS_Stride *)is->data;
   int         i,n = sub->n,ierr;
-  PetscObject vobj = (PetscObject) viewer;
   FILE        *fd;
+  ViewerType  vtype;
 
   if (!viewer) {
-    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+    viewer = STDOUT_VIEWER_SELF; 
   }
-  if (vobj->cookie == VIEWER_COOKIE) {
-    if ((vobj->type == ASCII_FILE_VIEWER) || (vobj->type == ASCII_FILES_VIEWER)){
-      ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-      if (is->isperm) {
-        fprintf(fd,"Index set is permutation\n");
-      }
-      fprintf(fd,"Number of indices in set %d\n",n);
-      for ( i=0; i<n; i++ ) {
-        fprintf(fd,"%d %d\n",i,sub->first + i*sub->step);
-      }
-      fflush(fd);
+
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    if (is->isperm) {
+      fprintf(fd,"Index set is permutation\n");
     }
+    fprintf(fd,"Number of indices in set %d\n",n);
+    for ( i=0; i<n; i++ ) {
+      fprintf(fd,"%d %d\n",i,sub->first + i*sub->step);
+    }
+    fflush(fd);
   }
   return 0;
 }

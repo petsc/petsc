@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.16 1995/12/21 18:34:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.17 1996/01/12 22:10:28 bsmith Exp bsmith $";
 #endif
 
 /* This file was created by Peter Mell  6/30/95 */
@@ -17,14 +17,15 @@ int main(int argc,char **argv)
 {
   int      rank, M = 13, ierr, w=1, s=1, wrap=1,flg;
   DA       da;
-  Draw  win1,win2;
+  Viewer   viewer;
   Vec      local,global;
   Scalar   value;
+  Draw     draw;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"",280,480,600,200,&win1); CHKERRA(ierr);
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"",280,258,600,200,&win2); CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(win1); CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",280,480,600,200,&viewer); CHKERRA(ierr);
+  ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRA(ierr);
+  ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
 
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-w",&w,&flg);  CHKERRA(ierr); 
@@ -46,7 +47,7 @@ int main(int argc,char **argv)
   ierr = VecScale(&value,local); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 
-  ierr = VecView(global,(Viewer) win1); CHKERRA(ierr); 
+  ierr = VecView(global,viewer); CHKERRA(ierr); 
 
   MPIU_printf(MPI_COMM_WORLD,"\nGlobal Vectors:\n");
   ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
@@ -58,7 +59,7 @@ int main(int argc,char **argv)
   MPIU_printf(MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",rank);
   ierr = VecView(local,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
 
-  ierr = DAView(da,(Viewer) win2); CHKERRA(ierr);
+  ierr = DAView(da,viewer); CHKERRA(ierr);
   ierr = DADestroy(da); CHKERRA(ierr);
   PetscFinalize();
   return 0;

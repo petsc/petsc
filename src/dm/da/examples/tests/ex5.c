@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.14 1996/01/11 20:15:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.15 1996/01/12 22:10:28 bsmith Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -19,7 +19,8 @@ int main(int argc,char **argv)
 {
   int       rank, size, M = 14, ierr, time_steps = 1000, w=1, s=1, a=1,flg;
   DA        da;
-  Draw   win;
+  Viewer    viewer;
+  Draw      draw;
   Vec       local, global, copy;
   Scalar    *localptr, *copyptr;
   double    h,k;
@@ -42,8 +43,9 @@ int main(int argc,char **argv)
   ierr = VecGetArray (copy,&copyptr); CHKERRA(ierr);
 
   /* Set Up Display to Show Heat Graph */
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"",80,480,500,160,&win); CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(win); CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",80,480,500,160,&viewer); CHKERRA(ierr);
+  ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRA(ierr);
+  ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
 
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRA(ierr);
@@ -89,11 +91,11 @@ int main(int argc,char **argv)
     ierr = DALocalToGlobal(da,copy,INSERT_VALUES,global); CHKERRA(ierr);
   
     /* View Wave */ 
-    ierr = VecView(global,(Viewer) win);  CHKERRA(ierr);
+    ierr = VecView(global,viewer);  CHKERRA(ierr);
 
   }
 
-  ierr = ViewerDestroy((Viewer)win); CHKERRA(ierr);
+  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = VecDestroy(copy); CHKERRA(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: preonly.c,v 1.12 1995/10/17 21:41:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: preonly.c,v 1.13 1995/11/05 19:02:00 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -12,34 +12,34 @@ static char vcid[] = "$Id: preonly.c,v 1.12 1995/10/17 21:41:12 bsmith Exp bsmit
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int KSPSetUp_PREONLY(KSP itP)
+static int KSPSetUp_PREONLY(KSP ksp)
 {
- return KSPCheckDef( itP );
+ return KSPCheckDef( ksp );
 }
 
-static int  KSPSolve_PREONLY(KSP itP,int *its)
+static int  KSPSolve_PREONLY(KSP ksp,int *its)
 {
   int ierr;
   Vec X,B;
-  X    = itP->vec_sol;
-  B    = itP->vec_rhs;
-  ierr = PCApply(itP->B,B,X); CHKERRQ(ierr);
+  X    = ksp->vec_sol;
+  B    = ksp->vec_rhs;
+  ierr = PCApply(ksp->B,B,X); CHKERRQ(ierr);
   *its = 1;
   return 0;
 }
 
-int KSPCreate_PREONLY(KSP itP)
+int KSPCreate_PREONLY(KSP ksp)
 {
-  itP->data                 = (void *) 0;
-  itP->type                 = KSPPREONLY;
-  itP->setup                = KSPSetUp_PREONLY;
-  itP->solver               = KSPSolve_PREONLY;
-  itP->adjustwork           = 0;
-  itP->destroy              = KSPiDefaultDestroy;
-  itP->converged            = KSPDefaultConverged;
-  itP->buildsolution        = KSPDefaultBuildSolution;
-  itP->buildresidual        = KSPDefaultBuildResidual;
-  itP->view                 = 0;
-  itP->guess_zero           = 0; /* saves KSPSolve() unnessacarily zero x */
+  ksp->data                 = (void *) 0;
+  ksp->type                 = KSPPREONLY;
+  ksp->setup                = KSPSetUp_PREONLY;
+  ksp->solver               = KSPSolve_PREONLY;
+  ksp->adjustwork           = 0;
+  ksp->destroy              = KSPiDefaultDestroy;
+  ksp->converged            = KSPDefaultConverged;
+  ksp->buildsolution        = KSPDefaultBuildSolution;
+  ksp->buildresidual        = KSPDefaultBuildResidual;
+  ksp->view                 = 0;
+  ksp->guess_zero           = 0; /* saves KSPSolve() unnessacarily zero x */
   return 0;
 }

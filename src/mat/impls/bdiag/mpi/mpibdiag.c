@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.72 1996/03/04 05:16:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.73 1996/03/08 05:47:34 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -512,11 +512,12 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) mbd->A->data;
   int          ierr, format, i;
-  PetscObject  vobj = (PetscObject) viewer;
   FILE         *fd;
+  ViewerType   vtype;
 
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerFileGetFormat_Private(viewer,&format);
     if (format == FILE_FORMAT_INFO || format == FILE_FORMAT_INFO_DETAILED) {
       int nline = PetscMin(10,mbd->gnd), k, nk, np;
@@ -545,7 +546,14 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
     }
   }
 
-  if (vobj->type == ASCII_FILE_VIEWER) {
+  if (vtype == DRAW_VIEWER) {
+    Draw       draw;
+    PetscTruth isnull;
+    ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+  }
+
+  if (vtype == ASCII_FILE_VIEWER) {
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d\n",
              mbd->rank,mbd->m,mbd->rstart,mbd->rend,mbd->n);
@@ -598,23 +606,18 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
-  PetscObject  vobj = (PetscObject) viewer;
   int          ierr;
+  ViewerType   vtype;
  
   if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+    viewer = STDOUT_VIEWER_SELF; 
   }
-  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILE_VIEWER) {
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER  ||  vtype == ASCII_FILES_VIEWER ||
+      vtype == DRAW_VIEWER) {
     ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
   }
-  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILES_VIEWER) {
-    ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
-  }
-  else if (vobj->cookie == DRAW_COOKIE) {
-    ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
-  }
-  else if (vobj->type == BINARY_FILE_VIEWER) {
+  else if (vtype == BINARY_FILE_VIEWER) {
     return MatView_MPIBDiag_Binary(mat,viewer);
   }
   return 0;
@@ -971,21 +974,20 @@ int MatBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,Scalar ***dia
 
 #include "sysio.h"
 
-int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
+int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;
   Scalar       *vals,*svals;
-  PetscObject  vobj = (PetscObject) bview;
-  MPI_Comm     comm = vobj->comm;
+  MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
   int          nb, i, nz, ierr, j, rstart, rend, fd, *rowners, maxnz, *cols;
   int          header[4], rank, size, *rowlengths = 0, M, N, m;
   int          *ourlens, *sndcounts = 0, *procsnz = 0, jj, *mycols, *smycols;
-  int          tag = ((PetscObject)bview)->tag,flg;
+  int          tag = ((PetscObject)viewer)->tag,flg;
 
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {
-    ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIBDiag:not matrix object");
   }

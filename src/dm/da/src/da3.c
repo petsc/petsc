@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.25 1996/02/20 23:26:40 curfman Exp curfman $";
+static char vcid[] = "$Id: da3.c,v 1.26 1996/03/06 01:41:34 curfman Exp bsmith $";
 #endif
 
 /*
@@ -12,67 +12,64 @@ static char vcid[] = "$Id: da3.c,v 1.25 1996/02/20 23:26:40 curfman Exp curfman 
 #include <math.h>
 #include "draw.h"
 
-int DAView_3d(PetscObject dain,Viewer ptr)
+int DAView_3d(PetscObject dain,Viewer viewer)
 {
-  DA da = (DA) dain;
-  PetscObject vobj = (PetscObject)ptr;
+  DA          da = (DA) dain;
   int         rank, ierr;
+  ViewerType  vtype;
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
 
   MPI_Comm_rank(da->comm,&rank); 
 
-  if (!ptr) { /* so that viewers may be used from debuggers */
-    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
+  if (!viewer) { 
+    viewer = STDOUT_VIEWER_SELF; 
   }
 
-  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
-  if (vobj->cookie == VIEWER_COOKIE) {
+  if (vtype == ASCII_FILE_VIEWER) {
     FILE *fd;
-    ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
-    if (vobj->type == ASCII_FILE_VIEWER) {
-      MPIU_Seq_begin(da->comm,1);
-      fprintf(fd,"Processor [%d] M %d N %d P %d m %d n %d p %d w %d s %d\n",
-                 rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);
-      fprintf(fd,"X range: %d %d, Y: range %d %d, Z range: %d %d\n",
-                 da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);
-      fflush(fd);
-      MPIU_Seq_end(da->comm,1);
-    }
-    else if (vobj->type == ASCII_FILES_VIEWER) {
-      if (!rank) {
-      }
-      else {
-      }
-    }
-  }
-  else if (vobj->cookie == DRAW_COOKIE) {
-    Draw win = (Draw) ptr;
-    double  ymin = -1.0,ymax = (double) da->N;
-    double  xmin = -1.0,xmax = (double) ((da->M+2)*da->P),x,y;
-    int     k, plane;
-    double  ycoord, xcoord;
-    int     base,*idx;
-    char    node[10];
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
 
-    DrawSetCoordinates(win,xmin,ymin,xmax,ymax);
+    MPIU_Seq_begin(da->comm,1);
+    fprintf(fd,"Processor [%d] M %d N %d P %d m %d n %d p %d w %d s %d\n",
+               rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);
+    fprintf(fd,"X range: %d %d, Y: range %d %d, Z range: %d %d\n",
+               da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);
+    fflush(fd);
+    MPIU_Seq_end(da->comm,1);
+  }
+  else if (vtype == DRAW_VIEWER) {
+    Draw       draw;
+    double     ymin = -1.0,ymax = (double) da->N;
+    double     xmin = -1.0,xmax = (double) ((da->M+2)*da->P),x,y;
+    int        k, plane;
+    double     ycoord, xcoord;
+    int        base,*idx;
+    char       node[10];
+    PetscTruth isnull;
+
+    ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+
+    DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);
 
     /* first processor draw all node lines */
     if (!rank) {
       for (k=0; k<da->P; k++) {
         ymin = 0.0; ymax = (double) (da->N - 1);
         for ( xmin=(double)(k*(da->M+1)); xmin<(double)(da->M+(k*(da->M+1))); xmin++ ) {
-          DrawLine(win,xmin,ymin,xmin,ymax,DRAW_BLACK);
+          DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_BLACK);
         }
       
         xmin = (double)(k*(da->M+1)); xmax = xmin + (double)(da->M - 1);
         for ( ymin=0; ymin<(double)da->N; ymin++ ) {
-          DrawLine(win,xmin,ymin,xmax,ymin,DRAW_BLACK);
+          DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_BLACK);
         }
       }
     }
-    DrawSyncFlush(win);
-    DrawPause(win);
+    DrawSyncFlush(draw);
+    DrawPause(draw);
     MPI_Barrier(da->comm);
 
 
@@ -84,10 +81,10 @@ int DAView_3d(PetscObject dain,Viewer ptr)
         xmin = da->xs/da->w    + (da->M+1)*k; 
         xmax =(da->xe-1)/da->w + (da->M+1)*k;
 
-        DrawLine(win,xmin,ymin,xmax,ymin,DRAW_RED);
-        DrawLine(win,xmin,ymin,xmin,ymax,DRAW_RED);
-        DrawLine(win,xmin,ymax,xmax,ymax,DRAW_RED);
-        DrawLine(win,xmax,ymin,xmax,ymax,DRAW_RED);  
+        DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_RED);
+        DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_RED);
+        DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_RED);
+        DrawLine(draw,xmax,ymin,xmax,ymax,DRAW_RED);  
 
         xmin = da->xs/da->w; 
         xmax =(da->xe-1)/da->w;
@@ -97,19 +94,19 @@ int DAView_3d(PetscObject dain,Viewer ptr)
 
         /* Identify which processor owns the box */
         sprintf(node,"%d",rank);
-        DrawText(win,xmin+(da->M+1)*k+.2,ymin+.3,DRAW_RED,node);
+        DrawText(draw,xmin+(da->M+1)*k+.2,ymin+.3,DRAW_RED,node);
 
         for ( y=ymin; y<=ymax; y++ ) {
           for ( x=xmin+(da->M+1)*k; x<=xmax+(da->M+1)*k; x++ ) {
             sprintf(node,"%d",base++);
-            DrawText(win,x,y,DRAW_BLACK,node);
+            DrawText(draw,x,y,DRAW_BLACK,node);
           }
         } 
  
       }
     } 
-    DrawSyncFlush(win);
-    DrawPause(win);
+    DrawSyncFlush(draw);
+    DrawPause(draw);
     MPI_Barrier(da->comm);
     for (k=0-da->s; k<da->P+da->s; k++) {  
       /*Go through and draw for each plane*/
@@ -118,7 +115,7 @@ int DAView_3d(PetscObject dain,Viewer ptr)
         /* overlay ghost numbers, useful for error checking */
         base = (da->Xe-da->Xs)*(da->Ye-da->Ys)*(k-da->Zs); idx = da->idx;
         plane=k;  
-        /*Keep z wrap around points on the drawing*/
+        /*Keep z wrap around points on the dradrawg*/
         if (k<0)    { plane=da->P+k; }  
         if (k>=da->P) { plane=k-da->P; }
         ymin = da->Ys; ymax = da->Ye; 
@@ -136,14 +133,14 @@ int DAView_3d(PetscObject dain,Viewer ptr)
 
             if (x<xmin)  { xcoord = xmax - (xmin-x); }
             if (x>=xmax) { xcoord = xmin + (x-xmax); }
-            DrawText(win,xcoord/da->w,ycoord,DRAW_BLUE,node);
+            DrawText(draw,xcoord/da->w,ycoord,DRAW_BLUE,node);
             base+=da->w;
           }
         }
       }         
     } 
-    DrawSyncFlush(win);
-    DrawPause(win);
+    DrawSyncFlush(draw);
+    DrawPause(draw);
   }
   return 0;
 }

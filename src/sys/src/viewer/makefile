@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = impls examples interface
+DIRS     = impls examples interface utils
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.62 1996/02/13 23:28:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.63 1996/03/08 05:45:51 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -57,12 +57,12 @@ static int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 #include "viewer.h"
 #include "sysio.h"
 
-static int VecView_Seq_File(Vec xin,Viewer ptr)
+static int VecView_Seq_File(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   int      i, n = x->n,ierr;
   FILE     *fd;
-  ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
 
   for (i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
@@ -104,25 +104,28 @@ static int VecView_Seq_LG(Vec xin,DrawLG lg)
 
 static int VecView_Seq_Draw(Vec xin,Viewer v)
 {
-  int    ierr;
-  DrawLG lg;
-  Draw   win;
+  int        ierr;
+  DrawLG     lg;
+  Draw       draw;
+  PetscTruth isnull;
 
-  ierr = ViewerDrawGetDraw(v,&win); CHKERRQ(ierr);
-  ierr = DrawLGCreate(win,1,&lg); CHKERRQ(ierr);
-  PLogObjectParent(win,lg);
+  ierr = ViewerDrawGetDraw(v,&draw); CHKERRQ(ierr);
+  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+  
+  ierr = DrawLGCreate(draw,1,&lg); CHKERRQ(ierr);
+  PLogObjectParent(draw,lg);
   ierr = VecView(xin,(Viewer) lg); CHKERRQ(ierr);
   DrawLGDestroy(lg);
   return 0;
 }
 #endif
 
-static int VecView_Seq_Binary(Vec xin,Viewer ptr)
+static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   int      ierr,fdes,n = x->n;
 
-  ierr  = ViewerFileGetDescriptor_Private(ptr,&fdes); CHKERRQ(ierr);
+  ierr  = ViewerFileGetDescriptor_Private(viewer,&fdes); CHKERRQ(ierr);
   /* Write vector header */
   ierr = SYWrite(fdes,&xin->cookie,1,SYINT,0);CHKERRQ(ierr);
   ierr = SYWrite(fdes,&n,1,SYINT,0); CHKERRQ(ierr);
@@ -134,37 +137,40 @@ static int VecView_Seq_Binary(Vec xin,Viewer ptr)
 }
 
 
-static int VecView_Seq(PetscObject obj,Viewer ptr)
+static int VecView_Seq(PetscObject obj,Viewer viewer)
 {
   Vec         xin = (Vec) obj;
   Vec_Seq     *x = (Vec_Seq *)xin->data;
-  PetscObject vobj = (PetscObject) ptr;
   ViewerType  vtype;
   int         ierr;
 
-  if (!ptr) { 
-    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
+  if (!viewer) { 
+    viewer = STDOUT_VIEWER_SELF;
   }
 
 #if !defined(PETSC_COMPLEX)
-  if (vobj->cookie == LG_COOKIE){
-    return VecView_Seq_LG(xin,(DrawLG) ptr);
+  if (((PetscObject)viewer)->cookie == LG_COOKIE){
+    return VecView_Seq_LG(xin,(DrawLG) viewer);
+  }
+#else
+  if (((PetscObject)viewer)->cookie == LG_COOKIE){
+    SETERRQ(1,"VecView_Seq:Cannot view on DrawLG for complex");
   }
 #endif
-  ierr = ViewerGetType(ptr,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 #if !defined(PETSC_COMPLEX)
   if (vtype == DRAW_VIEWER){ 
-    return VecView_Seq_Draw(xin,ptr);
+    return VecView_Seq_Draw(xin,viewer);
   }
 #endif
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
-    return VecView_Seq_File(xin,ptr);
+    return VecView_Seq_File(xin,viewer);
   }
   else if (vtype == MATLAB_VIEWER) {
-    return ViewerMatlabPutArray_Private(ptr,x->n,1,x->array);
+    return ViewerMatlabPutArray_Private(viewer,x->n,1,x->array);
   } 
   else if (vtype == BINARY_FILE_VIEWER) {
-    return VecView_Seq_Binary(xin,ptr);
+    return VecView_Seq_Binary(xin,viewer);
   }
   return 0;
 }

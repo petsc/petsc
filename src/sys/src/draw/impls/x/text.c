@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: text.c,v 1.15 1995/11/01 23:20:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.16 1995/11/09 22:31:34 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -10,28 +10,24 @@ static char vcid[] = "$Id: text.c,v 1.15 1995/11/01 23:20:13 bsmith Exp bsmith $
 
 #include "ximpl.h"
 
+
 int XiInitFonts(Draw_X *);
 int XiMatchFontSize(XiFont*,int,int);
 int XiLoadFont(Draw_X*,XiFont*);
 /*
     XiFontFixed - Return a pointer to the selected font.
 
-    Warning: these fonts are never freeded because they can possibly 
-  be shared by several windows 
+    Warning: Loads a new font for each window. This should be 
+   ok because there will never be many windows and the graphics
+   are not intended to be high performance.
 */
 int XiFontFixed( Draw_X *XBWin,int w, int h,XiFont **outfont )
 {
-  static XiFont *curfont = 0,*font = 0;
-  static int    fw = 0, fh = 0;
+  static XiFont *curfont = 0,*font;
   if (!curfont) { XiInitFonts( XBWin );}
-  if (w != fw || h != fh) {
-    if (!font)	font = (XiFont*) PetscMalloc(sizeof(XiFont)); CHKPTRQ(font);
-    XiMatchFontSize( font, w, h );
-    fw = w;
-    fh = h;
-    /* if (curfont) ? unload current font ? */
-    XiLoadFont( XBWin, font );
-  }
+  font = (XiFont*) PetscMalloc(sizeof(XiFont)); CHKPTRQ(font);
+  XiMatchFontSize( font, w, h );
+  XiLoadFont( XBWin, font );
   curfont = font;
   *outfont = curfont;
   return 0;

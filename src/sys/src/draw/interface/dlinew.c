@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dlinew.c,v 1.1 1996/01/30 19:32:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlinew.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -12,16 +12,16 @@ static char vcid[] = "$Id: dlinew.c,v 1.1 1996/01/30 19:32:49 bsmith Exp bsmith 
    width; 1.0 denotes the interior viewport. 
 
    Input Parameters:
-.  ctx - the drawing context
+.  draw - the drawing context
 .  width - the width in user coordinates
 
 .keywords:  draw, line, set, width
 
 .seealso:  DrawLineGetWidth()
 @*/
-int DrawLineSetWidth(Draw ctx,double width)
+int DrawLineSetWidth(Draw draw,double width)
 {
-  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
-  if (ctx->type == NULLWINDOW) return 0;
-  return (*ctx->ops.linesetwidth)(ctx,width);
+  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
+  if (draw->type == NULLWINDOW) return 0;
+  return (*draw->ops.linesetwidth)(draw,width);
 }

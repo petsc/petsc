@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.15 1996/01/09 15:06:43 curfman Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.16 1996/01/12 03:51:34 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -64,8 +64,8 @@ struct _KSP {
   int setupcalled;
 };
 
-#define MONITOR(itP,rnorm,it) if (itP->monitor) { \
-                                (*itP->monitor)(itP,it,rnorm,itP->monP);\
+#define MONITOR(ksp,rnorm,it) if (ksp->monitor) { \
+                                (*ksp->monitor)(ksp,it,rnorm,ksp->monP);\
                               }
 
 extern int KSPCreate_Richardson(KSP);

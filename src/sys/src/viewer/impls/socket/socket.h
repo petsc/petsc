@@ -1,9 +1,7 @@
-/* $Id: matlab.h,v 1.6 1995/10/01 02:27:24 bsmith Exp bsmith $ */
+/* $Id: matlab.h,v 1.7 1996/03/08 05:48:24 bsmith Exp bsmith $ */
 /* 
-     This is the include file, it contains definitions 
-  needed by different components of the package.
-
-     Note: this is not the only viewer that can be defined!
+     This is the definition of the Matlab viewer structure. Note: 
+  each viewer has a different data structure.
 */
 
 #include "petsc.h"

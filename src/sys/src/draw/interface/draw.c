@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.28 1996/01/27 20:21:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.29 1996/02/08 18:27:49 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -10,14 +10,14 @@ static char vcid[] = "$Id: draw.c,v 1.28 1996/01/27 20:21:28 curfman Exp bsmith 
    DrawDestroy - Deletes a draw context.
 
    Input Parameters:
-.  ctx - the drawing context
+.  draw - the drawing context
 
 .keywords: draw, destroy
 @*/
-int DrawDestroy(Draw ctx)
+int DrawDestroy(Draw draw)
 {
-  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
-  if (ctx->destroy) return (*ctx->destroy)((PetscObject)ctx);
+  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
+  if (draw->destroy) return (*draw->destroy)((PetscObject)draw);
   return 0;
 }
 
@@ -37,18 +37,21 @@ int DrawDestroy_Null(PetscObject obj)
 */
 int DrawOpenNull(MPI_Comm comm,Draw *win)
 {
-  Draw ctx;
+  Draw draw;
   *win = 0;
-  PetscHeaderCreate(ctx,_Draw,DRAW_COOKIE,NULLWINDOW,comm);
-  PLogObjectCreate(ctx);
-  PetscMemzero(&ctx->ops,sizeof(struct _DrawOps));
-  ctx->destroy = DrawDestroy_Null;
-  ctx->view    = 0;
-  ctx->pause   = 0;
-  ctx->coor_xl = 0.0;  ctx->coor_xr = 1.0;
-  ctx->coor_yl = 0.0;  ctx->coor_yr = 1.0;
-  ctx->port_xl = 0.0;  ctx->port_xr = 1.0;
-  ctx->port_yl = 0.0;  ctx->port_yr = 1.0;
-  *win = ctx;
+  PetscHeaderCreate(draw,_Draw,DRAW_COOKIE,NULLWINDOW,comm);
+  PLogObjectCreate(draw);
+  PetscMemzero(&draw->ops,sizeof(struct _DrawOps));
+  draw->destroy = DrawDestroy_Null;
+  draw->view    = 0;
+  draw->pause   = 0;
+  draw->coor_xl = 0.0;  draw->coor_xr = 1.0;
+  draw->coor_yl = 0.0;  draw->coor_yr = 1.0;
+  draw->port_xl = 0.0;  draw->port_xr = 1.0;
+  draw->port_yl = 0.0;  draw->port_yr = 1.0;
+  *win = draw;
   return 0;
 }
+
+
+

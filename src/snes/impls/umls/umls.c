@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.25 1996/02/08 18:28:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.26 1996/02/23 02:24:25 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -162,14 +162,18 @@ static int SNESPrintHelp_UMLS(SNES snes,char *p)
 /*------------------------------------------------------------*/
 static int SNESView_UMLS(PetscObject obj,Viewer viewer)
 {
-  SNES      snes = (SNES)obj;
-  SNES_UMLS *ls = (SNES_UMLS *)snes->data;
-  FILE      *fd;
-  int       ierr;
+  SNES       snes = (SNES)obj;
+  SNES_UMLS  *ls = (SNES_UMLS *)snes->data;
+  FILE       *fd;
+  int        ierr;
+  ViewerType vtype;
 
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  MPIU_fprintf(snes->comm,fd,"    gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
-    ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    MPIU_fprintf(snes->comm,fd,"    gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
+      ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);
+  }
   return 0;
 }
 /* ---------------------------------------------------------- */

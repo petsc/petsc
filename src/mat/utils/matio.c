@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.21 1996/01/24 02:46:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.22 1996/02/13 23:30:02 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -28,7 +28,7 @@ extern int MatLoad_SeqBAIJ(Viewer,MatType,Mat*);
    with MatView().
 
    Input Parameters:
-.  bview - binary file viewer, created with ViewerFileOpenBinary()
+.  viewer - binary file viewer, created with ViewerFileOpenBinary()
 .  outtype - type of matrix desired, for example MATSEQAIJ,
    MATMPIROWBS, etc.  See types in petsc/include/mat.h.
 
@@ -62,51 +62,54 @@ $    Scalar *values of all nonzeros
 
 .seealso: ViewerFileOpenBinary(), MatView(), VecLoad() 
  @*/  
-int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
+int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 {
-  PetscObject vobj = (PetscObject) bview;
   int         ierr,set;
   MatType     type;
+  ViewerType  vtype;
+  MPI_Comm    comm;
   *newmat = 0;
 
-  PETSCVALIDHEADERSPECIFIC(vobj,VIEWER_COOKIE);
-  if (vobj->type != BINARY_FILE_VIEWER)
+  PETSCVALIDHEADERSPECIFIC(viewer,VIEWER_COOKIE);
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype != BINARY_FILE_VIEWER)
    SETERRQ(1,"MatLoad: Invalid viewer; open viewer with ViewerFileOpenBinary()");
 
-  ierr = MatGetFormatFromOptions(vobj->comm,0,&type,&set); CHKERRQ(ierr);
+  PetscObjectGetComm((PetscObject)viewer,&comm);
+  ierr = MatGetFormatFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   if (!set) type = outtype;
-  PLogEventBegin(MAT_Load,bview,0,0,0);
+  PLogEventBegin(MAT_Load,viewer,0,0,0);
 
   if (type == MATSEQAIJ) {
-    ierr = MatLoad_SeqAIJ(bview,type,newmat); CHKERRQ(ierr);
+    ierr = MatLoad_SeqAIJ(viewer,type,newmat); CHKERRQ(ierr);
   }
   else if (type == MATMPIAIJ) {
-    ierr = MatLoad_MPIAIJ(bview,type,newmat); CHKERRQ(ierr);
+    ierr = MatLoad_MPIAIJ(viewer,type,newmat); CHKERRQ(ierr);
   }
   else if (type == MATSEQBDIAG) {
-    ierr = MatLoad_SeqBDiag(bview,type,newmat); CHKERRQ(ierr);
+    ierr = MatLoad_SeqBDiag(viewer,type,newmat); CHKERRQ(ierr);
   }
   else if (type == MATMPIBDIAG) {
-    ierr = MatLoad_MPIBDiag(bview,type,newmat); CHKERRQ(ierr);
+    ierr = MatLoad_MPIBDiag(viewer,type,newmat); CHKERRQ(ierr);
   }
   else if (type == MATSEQDENSE) {
-    ierr = MatLoad_SeqDense(bview,type,newmat); CHKERRQ(ierr);
+    ierr = MatLoad_SeqDense(viewer,type,newmat); CHKERRQ(ierr);
   }
   else if (type == MATMPIDENSE) {
-    ierr = MatLoad_MPIDense(bview,type,newmat); CHKERRQ(ierr);
+    ierr = MatLoad_MPIDense(viewer,type,newmat); CHKERRQ(ierr);
   }
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   else if (type == MATMPIROWBS) {
-    ierr = MatLoad_MPIRowbs(bview,type,newmat); CHKERRQ(ierr);
+    ierr = MatLoad_MPIRowbs(viewer,type,newmat); CHKERRQ(ierr);
   }
 #endif
   else if (type == MATSEQBAIJ) {
-    ierr = MatLoad_SeqBAIJ(bview,type,newmat); CHKERRQ(ierr);
+    ierr = MatLoad_SeqBAIJ(viewer,type,newmat); CHKERRQ(ierr);
   }
   else {
     SETERRQ(1,"MatLoad: cannot load with that matrix type yet");
   }
 
-  PLogEventEnd(MAT_Load,bview,0,0,0);
+  PLogEventEnd(MAT_Load,viewer,0,0,0);
   return 0;
 }

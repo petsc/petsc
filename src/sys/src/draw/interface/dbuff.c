@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dbuff.c,v 1.1 1996/01/30 19:44:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dbuff.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -10,14 +10,14 @@ static char vcid[] = "$Id: dbuff.c,v 1.1 1996/01/30 19:44:11 bsmith Exp bsmith $
    DrawSetDoubleBuffer - Sets a window to be double buffered. 
 
    Input Parameter:
-.  ctx - the drawing context
+.  draw - the drawing context
 
 .keywords:  draw, set, double, buffer
 @*/
-int DrawSetDoubleBuffer(Draw ctx)
+int DrawSetDoubleBuffer(Draw draw)
 {
-  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
-  if (ctx->type == NULLWINDOW) return 0;
-  if (ctx->ops.setdoublebuffer) return (*ctx->ops.setdoublebuffer)(ctx);
+  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
+  if (draw->type == NULLWINDOW) return 0;
+  if (draw->ops.setdoublebuffer) return (*draw->ops.setdoublebuffer)(draw);
   return 0;
 }

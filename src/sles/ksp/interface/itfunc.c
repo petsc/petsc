@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.44 1996/01/09 15:46:21 curfman Exp balay $";
+static char vcid[] = "$Id: itfunc.c,v 1.45 1996/02/26 23:02:17 balay Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -12,28 +12,28 @@ static char vcid[] = "$Id: itfunc.c,v 1.44 1996/01/09 15:46:21 curfman Exp balay
    later use of an iterative solver.
 
    Input Parameter:
-.  itP   - iterative context obtained from KSPCreate()
+.  ksp   - iterative context obtained from KSPCreate()
 
 .keywords: KSP, setup
 
 .seealso: KSPCreate(), KSPSolve(), KSPDestroy()
 @*/
-int KSPSetUp(KSP itP)
+int KSPSetUp(KSP ksp)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (itP->setupcalled) return 0;
-  if (itP->type == -1) {
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  if (ksp->setupcalled) return 0;
+  if (ksp->type == -1) {
     SETERRQ(1,"KSPSetUp:Type must be set first");
   }
-  itP->setupcalled = 1;
-  return (*(itP)->setup)(itP);
+  ksp->setupcalled = 1;
+  return (*ksp->setup)(ksp);
 }
 /*@
    KSPSolve - Solves linear system; call it after calling 
    KSPCreate(), KSPSetup(), and KSPSet*().
 
    Input Parameter:
-.  itP - Iterative context obtained from KSPCreate()
+.  ksp - Iterative context obtained from KSPCreate()
 
    Output Parameter:
 .  its - number of iterations required
@@ -48,14 +48,14 @@ int KSPSetUp(KSP itP)
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy()
 @*/
-int KSPSolve(KSP itP, int *its) 
+int KSPSolve(KSP ksp, int *its) 
 {
   int    ierr;
   Scalar zero = 0.0;
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (!itP->setupcalled){ ierr = KSPSetUp(itP); CHKERRQ(ierr);}
-  if (itP->guess_zero) { VecSet(&zero,itP->vec_sol);}
-  ierr = (*(itP)->solver)(itP,its); CHKERRQ(ierr);
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  if (!ksp->setupcalled){ ierr = KSPSetUp(ksp); CHKERRQ(ierr);}
+  if (ksp->guess_zero) { VecSet(&zero,ksp->vec_sol);}
+  ierr = (*ksp->solver)(ksp,its); CHKERRQ(ierr);
   return 0;
 }
 
@@ -63,19 +63,19 @@ int KSPSolve(KSP itP, int *its)
    KSPDestroy - Destroys KSP context that was created with KSPCreate().
 
    Input Parameter:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 
 .keywords: KSP, destroy
 
 .seealso: KSPCreate(), KSPSetUp(), KSPSolve()
 @*/
-int KSPDestroy(KSP itP)
+int KSPDestroy(KSP ksp)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  ierr = (*(itP)->destroy)((PetscObject)itP); CHKERRQ(ierr);
-  PLogObjectDestroy(itP);
-  PetscHeaderDestroy(itP);
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  ierr = (*ksp->destroy)((PetscObject)ksp); CHKERRQ(ierr);
+  PLogObjectDestroy(ksp);
+  PetscHeaderDestroy(ksp);
   return 0;
 }
 
@@ -83,7 +83,7 @@ int KSPDestroy(KSP itP)
     KSPSetPreconditionerSide - Sets the preconditioning side.
 
     Input Parameter:
-.   itP - Iterative context obtained from KSPCreate()
+.   ksp - Iterative context obtained from KSPCreate()
 
     Output Parameter:
 .   side - the preconditioning side, where side is one of
@@ -105,10 +105,10 @@ $  -ksp_left_pc, -ksp_right_pc, -ksp_symmetric_pc,
 
 .seealso: KSPGetPreconditionerSide()
 @*/
-int KSPSetPreconditionerSide(KSP itP,PCSide side)
+int KSPSetPreconditionerSide(KSP ksp,PCSide side)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  (itP)->pc_side = side;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  ksp->pc_side = side;
   return 0;
 }
 
@@ -116,7 +116,7 @@ int KSPSetPreconditionerSide(KSP itP,PCSide side)
     KSPGetPreconditionerSide - Gets the preconditioning side.
 
     Input Parameter:
-.   itP - Iterative context obtained from KSPCreate()
+.   ksp - Iterative context obtained from KSPCreate()
 
     Output Parameter:
 .   side - the preconditioning side, where side is one of
@@ -129,10 +129,10 @@ $      PC_SYMMETRIC - symmetric preconditioning
 
 .seealso: KSPSetPreconditionerSide()
 @*/
-int KSPGetPreconditionerSide(KSP itP, PCSide *side) 
+int KSPGetPreconditionerSide(KSP ksp, PCSide *side) 
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  *side = (itP)->pc_side;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  *side = ksp->pc_side;
   return 0;
 }
 
@@ -212,7 +212,7 @@ int KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits)
    of the residual is calculated at each iteration.
 
    Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 .  flag - PETSC_TRUE or PETSC_FALSE
 
    Notes:
@@ -220,10 +220,10 @@ int KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits)
 
 .keywords: KSP, set, residual, norm, calculate, flag
 @*/
-int KSPSetCalculateResidual(KSP itP,PetscTruth flag)
+int KSPSetCalculateResidual(KSP ksp,PetscTruth flag)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  (itP)->calc_res   = flag;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  ksp->calc_res   = flag;
   return 0;
 }
 
@@ -233,7 +233,7 @@ int KSPSetCalculateResidual(KSP itP,PetscTruth flag)
    default convergence tests.
 
    Input Parameter:
-.  itP  - iterative context obtained from KSPCreate()
+.  ksp  - iterative context obtained from KSPCreate()
 
    Notes:
    Currently only CG, CHEBYCHEV, and RICHARDSON use this with left
@@ -246,10 +246,10 @@ $  -ksp_preres
 
 .keywords: KSP, set, residual, precondition, flag
 @*/
-int KSPSetUsePreconditionedResidual(KSP itP)
+int KSPSetUsePreconditionedResidual(KSP ksp)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  (itP)->use_pres   = 1;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  ksp->use_pres   = 1;
   return 0;
 }
 
@@ -259,13 +259,13 @@ int KSPSetUsePreconditionedResidual(KSP itP)
    is to be zero (and thus zeros it out before solving).
 
    Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 
 .keywords: KSP, set, initial guess, nonzero
 @*/
-int KSPSetInitialGuessNonzero(KSP itP)
+int KSPSetInitialGuessNonzero(KSP ksp)
 {
-  (itP)->guess_zero   = 0;
+  ksp->guess_zero   = 0;
   return 0;
 }
 
@@ -275,7 +275,7 @@ int KSPSetInitialGuessNonzero(KSP itP)
    is solved.
 
    Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 
    Options Database Key:
 $  -ksp_eigen
@@ -285,10 +285,10 @@ $  -ksp_eigen
 
 .keywords: KSP, set, eigenvalues, calculate, flag
 @*/
-int KSPSetCalculateEigenvalues(KSP itP)
+int KSPSetCalculateEigenvalues(KSP ksp)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  (itP)->calc_eigs  = 1;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  ksp->calc_eigs  = 1;
   return 0;
 }
 
@@ -297,17 +297,17 @@ int KSPSetCalculateEigenvalues(KSP itP)
    be solved.
 
    Input Parameters:
-.  itP - Iterative context obtained from KSPCreate()
+.  ksp - Iterative context obtained from KSPCreate()
 .  b   - right-hand-side vector
 
 .keywords: KSP, set, right-hand-side, rhs
 
 .seealso: KSPGetRhs(), KSPSetSolution()
 @*/
-int KSPSetRhs(KSP itP,Vec b)
+int KSPSetRhs(KSP ksp,Vec b)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  (itP)->vec_rhs    = (b);
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  ksp->vec_rhs    = (b);
   return 0;
 }
 
@@ -316,7 +316,7 @@ int KSPSetRhs(KSP itP,Vec b)
    be solved.
 
    Input Parameter:
-.  itP - Iterative context obtained from KSPCreate()
+.  ksp - Iterative context obtained from KSPCreate()
 
    Output Parameter:
 .  r - right-hand-side vector
@@ -325,10 +325,10 @@ int KSPSetRhs(KSP itP,Vec b)
 
 .seealso: KSPSetRhs(), KSPGetSolution()
 @*/
-int KSPGetRhs(KSP itP,Vec *r)
+int KSPGetRhs(KSP ksp,Vec *r)
 {   
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  *r = (itP)->vec_rhs; return 0;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  *r = ksp->vec_rhs; return 0;
 } 
 
 /*@
@@ -336,17 +336,17 @@ int KSPGetRhs(KSP itP,Vec *r)
    linear system to be solved.
 
    Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 .  x   - solution vector
 
 .keywords: KSP, set, solution
 
 .seealso: KSPSetRhs(), KSPGetSolution()
 @*/
-int KSPSetSolution(KSP itP, Vec x)
+int KSPSetSolution(KSP ksp, Vec x)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  (itP)->vec_sol    = (x);
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  ksp->vec_sol    = (x);
   return 0;
 }
 
@@ -356,7 +356,7 @@ int KSPSetSolution(KSP itP, Vec x)
    is stored during the iterative process; see KSPBuildSolution().
 
    Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 
    Output Parameters:
 .  v - solution vector
@@ -365,9 +365,9 @@ int KSPSetSolution(KSP itP, Vec x)
 
 .seealso: KSPGetRhs(), KSPSetSolution()
 @*/
-int KSPGetSolution(KSP itP, Vec *v)
+int KSPGetSolution(KSP ksp, Vec *v)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);  *v = (itP)->vec_sol; return 0;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);  *v = ksp->vec_sol; return 0;
 }
 
 /*@
@@ -375,7 +375,7 @@ int KSPGetSolution(KSP itP, Vec *v)
    application of the preconditioner on a vector. 
 
    Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 .  B   - the preconditioner object
 
    Notes:
@@ -386,10 +386,10 @@ int KSPGetSolution(KSP itP, Vec *v)
 
 .seealso: KSPGetBinv()
 @*/
-int KSPSetBinv(KSP itP,PC B)
+int KSPSetBinv(KSP ksp,PC B)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  (itP)->B = B;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  ksp->B = B;
   return 0;
 }
 
@@ -398,7 +398,7 @@ int KSPSetBinv(KSP itP,PC B)
    set with KSPSetBinv().
 
    Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 
    Output Parameter:
 .  B - preconditioner context
@@ -407,10 +407,10 @@ int KSPSetBinv(KSP itP,PC B)
 
 .seealso: KSPSetBinv()
 @*/
-int KSPGetBinv(KSP itP, PC *B)
+int KSPGetBinv(KSP ksp, PC *B)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  *B = (itP)->B; return 0;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  *B = ksp->B; return 0;
 }
 
 /*@C
@@ -418,15 +418,15 @@ int KSPGetBinv(KSP itP, PC *B)
    iteration of the iterative solution. 
 
    Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 .  monitor - pointer to int function
 .  mctx    - context for private data for the monitor routine (may be null)
 
    Calling sequence of monitor:
-.  monitor (KSP itP, int it, double rnorm, void *mctx)
+.  monitor (KSP ksp, int it, double rnorm, void *mctx)
 
    Input Parameters of monitor:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
 .  mctx  - optional monitoring context, as set by KSPSetMonitor()
 
@@ -446,10 +446,10 @@ $  -ksp_monitor   : key for setting KSPDefaultMonitor()
 
 .seealso: KSPDefaultMonitor(), KSPLGMonitorCreate()
 @*/
-int KSPSetMonitor(KSP itP, int (*monitor)(KSP,int,double,void*), void *mctx)
+int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  (itP)->monitor = monitor;(itP)->monP = (void*)mctx;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  ksp->monitor = monitor;ksp->monP = (void*)mctx;
   return 0;
 }
 
@@ -458,7 +458,7 @@ int KSPSetMonitor(KSP itP, int (*monitor)(KSP,int,double,void*), void *mctx)
    KSPSetMonitor().
 
    Input Parameter:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 
    Output Parameter:
 .  ctx - monitoring context
@@ -467,10 +467,10 @@ int KSPSetMonitor(KSP itP, int (*monitor)(KSP,int,double,void*), void *mctx)
 
 .seealso: KSPDefaultMonitor(), KSPLGMonitorCreate()
 @*/
-int KSPGetMonitorContext(KSP itP, void **ctx)
+int KSPGetMonitorContext(KSP ksp, void **ctx)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  *ctx =      ((itP)->monP);
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  *ctx =      (ksp->monP);
   return 0;
 }
 
@@ -480,16 +480,16 @@ int KSPGetMonitorContext(KSP itP, void **ctx)
    iteration of the solver.
 
    Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 .  a   - array to hold history
 .  na  - size of a
 
 .keywords: KSP, set, residual, history, norm
 @*/
-int KSPSetResidualHistory(KSP itP, double *a, int na)
+int KSPSetResidualHistory(KSP ksp, double *a, int na)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  (itP)->residual_history = a; (itP)->res_hist_size    = na;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  ksp->residual_history = a; ksp->res_hist_size    = na;
   return 0;
 }
 
@@ -498,16 +498,16 @@ int KSPSetResidualHistory(KSP itP, double *a, int na)
    convergence.  
 
    Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 .  converge - pointer to int function
 .  cctx    - context for private data for the convergence routine (may be 
               null)
 
    Calling sequence of converge:
-.  converge (KSP itP, int it, double rnorm, void *mctx)
+.  converge (KSP ksp, int it, double rnorm, void *mctx)
 
    Input Parameters of converge:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
 .  rnorm - (estimated) 2-norm of (preconditioned) residual
 .  cctx  - optional convergence context, as set by KSPSetConvergenceTest()
@@ -528,11 +528,11 @@ int KSPSetResidualHistory(KSP itP, double *a, int na)
 
 .seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
 @*/
-int KSPSetConvergenceTest(KSP itP, int (*converge)(KSP,int,double,void*), 
+int KSPSetConvergenceTest(KSP ksp, int (*converge)(KSP,int,double,void*), 
                           void *cctx)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  (itP)->converged = converge;	(itP)->cnvP = (void*)cctx;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  ksp->converged = converge;	ksp->cnvP = (void*)cctx;
   return 0;
 }
 
@@ -541,7 +541,7 @@ int KSPSetConvergenceTest(KSP itP, int (*converge)(KSP,int,double,void*),
    KSPSetConvergenceTest().  
 
    Input Parameter:
-.  itP - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 
    Output Parameter:
 .  ctx - monitoring context
@@ -550,10 +550,10 @@ int KSPSetConvergenceTest(KSP itP, int (*converge)(KSP,int,double,void*),
 
 .seealso: KSPDefaultConverged(), KSPSetConvergenceTest()
 @*/
-int KSPGetConvergenceContext(KSP itP, void **ctx)
+int KSPGetConvergenceContext(KSP ksp, void **ctx)
 {
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  *ctx = ((itP)->cnvP);
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  *ctx = ksp->cnvP;
   return 0;
 }
 

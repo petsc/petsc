@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.42 1996/01/26 04:35:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.43 1996/02/08 18:28:21 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -232,15 +232,19 @@ static int SNESPrintHelp_TR(SNES snes,char *p)
 
 static int SNESView_TR(PetscObject obj,Viewer viewer)
 {
-  SNES    snes = (SNES)obj;
-  SNES_TR *tr = (SNES_TR *)snes->data;
-  FILE    *fd;
-  int     ierr;
+  SNES       snes = (SNES)obj;
+  SNES_TR    *tr = (SNES_TR *)snes->data;
+  FILE       *fd;
+  int        ierr;
+  ViewerType vtype;
 
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  MPIU_fprintf(snes->comm,fd,"    mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);
-  MPIU_fprintf(snes->comm,fd,"    delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",
-               tr->delta0,tr->delta1,tr->delta2,tr->delta3);
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    MPIU_fprintf(snes->comm,fd,"    mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);
+    MPIU_fprintf(snes->comm,fd,"    delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",
+                 tr->delta0,tr->delta1,tr->delta2,tr->delta3);
+  }
   return 0;
 }
 

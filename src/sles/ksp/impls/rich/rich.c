@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.33 1996/01/09 14:31:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.34 1996/01/26 04:32:47 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -11,17 +11,17 @@ static char vcid[] = "$Id: rich.c,v 1.33 1996/01/09 14:31:38 curfman Exp bsmith 
 #include "richctx.h"
 #include "pinclude/pviewer.h"
 
-int KSPSetUp_Richardson(KSP itP)
+int KSPSetUp_Richardson(KSP ksp)
 {
   int ierr;
   /* check user parameters and functions */
-  if (itP->pc_side == PC_RIGHT)
+  if (ksp->pc_side == PC_RIGHT)
     {SETERRQ(2,"KSPSetUp_Richardson:no right preconditioning for KSPRICHARDSON");}
-  else if (itP->pc_side == PC_SYMMETRIC)
+  else if (ksp->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_Richardson:no symmetric preconditioning for KSPRICHARDSON");}
-  ierr = KSPCheckDef(itP); CHKERRQ(ierr);
+  ierr = KSPCheckDef(ksp); CHKERRQ(ierr);
   /* get work vectors from user code */
-  return KSPiDefaultGetWork(itP,2);
+  return KSPiDefaultGetWork(ksp,2);
 }
 
 /*@
@@ -30,22 +30,22 @@ int KSPSetUp_Richardson(KSP itP)
     defaults to 1.0.
 
     Input Parameters:
-.   itP - the iterative context
+.   ksp - the iterative context
 .   scale - the relaxation factor
 
 .keywords: KSP, Richardson, set, scale
 @*/
-int KSPRichardsonSetScale(KSP itP,double scale)
+int KSPRichardsonSetScale(KSP ksp,double scale)
 {
   KSP_Richardson *richardsonP;
-  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (itP->type != KSPRICHARDSON) return 0;
-  richardsonP = (KSP_Richardson *) itP->data;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  if (ksp->type != KSPRICHARDSON) return 0;
+  richardsonP = (KSP_Richardson *) ksp->data;
   richardsonP->scale = scale;
   return 0;
 }
 
-int  KSPSolve_Richardson(KSP itP,int *its)
+int  KSPSolve_Richardson(KSP ksp,int *its)
 {
   int                i = 0,maxit,pres, brokeout = 0, hist_len, cerr = 0, ierr;
   MatStructure       pflag;
@@ -53,27 +53,27 @@ int  KSPSolve_Richardson(KSP itP,int *its)
   Scalar             scale, mone = -1.0;
   Vec                x,b,r,z;
   Mat                Amat, Pmat;
-  KSP_Richardson     *richardsonP = (KSP_Richardson *) itP->data;
+  KSP_Richardson     *richardsonP = (KSP_Richardson *) ksp->data;
 
-  ierr    = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
-  x       = itP->vec_sol;
-  b       = itP->vec_rhs;
-  r       = itP->work[0];
-  maxit   = itP->max_it;
+  ierr    = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  x       = ksp->vec_sol;
+  b       = ksp->vec_rhs;
+  r       = ksp->work[0];
+  maxit   = ksp->max_it;
 
   /* if user has provided fast Richardson code use that */
-  if (PCApplyRichardsonExists(itP->B)) {
+  if (PCApplyRichardsonExists(ksp->B)) {
     *its = maxit;
-    return PCApplyRichardson(itP->B,b,x,r,maxit);
+    return PCApplyRichardson(ksp->B,b,x,r,maxit);
   }
 
-  z       = itP->work[1];
-  history = itP->residual_history;
-  hist_len= itP->res_hist_size;
+  z       = ksp->work[1];
+  history = ksp->residual_history;
+  hist_len= ksp->res_hist_size;
   scale   = richardsonP->scale;
-  pres    = itP->use_pres;
+  pres    = ksp->use_pres;
 
-  if (!itP->guess_zero) {                          /*   r <- b - A x     */
+  if (!ksp->guess_zero) {                          /*   r <- b - A x     */
     ierr = MatMult(Amat,x,r); CHKERRQ(ierr);
     ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
   }
@@ -82,8 +82,8 @@ int  KSPSolve_Richardson(KSP itP,int *its)
   }
 
   for ( i=0; i<maxit; i++ ) {
-     ierr = PCApply(itP->B,r,z); CHKERRQ(ierr);    /*   z <- B r          */
-     if (itP->calc_res) {
+     ierr = PCApply(ksp->B,r,z); CHKERRQ(ierr);    /*   z <- B r          */
+     if (ksp->calc_res) {
 	if (!pres) {
           ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- r'*r     */
         }
@@ -91,8 +91,8 @@ int  KSPSolve_Richardson(KSP itP,int *its)
           ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- z'*z     */
         }
         if (history && hist_len > i) history[i] = rnorm;
-        MONITOR(itP,rnorm,i);
-        cerr = (*itP->converged)(itP,i,rnorm,itP->cnvP);
+        MONITOR(ksp,rnorm,i);
+        cerr = (*ksp->converged)(ksp,i,rnorm,ksp->cnvP);
         if (cerr) {brokeout = 1; break;}
      }
    
@@ -100,18 +100,18 @@ int  KSPSolve_Richardson(KSP itP,int *its)
      ierr = MatMult(Amat,x,r); CHKERRQ(ierr);      /*   r  <- b - Ax      */
      ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
   }
-  if (itP->calc_res && !brokeout) {
+  if (ksp->calc_res && !brokeout) {
     if (!pres) {
       ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- r'*r     */
     }
     else {
-      ierr = PCApply(itP->B,r,z); CHKERRQ(ierr);   /*   z <- B r          */
+      ierr = PCApply(ksp->B,r,z); CHKERRQ(ierr);   /*   z <- B r          */
       ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- z'*z     */
     }
     if (history && hist_len > i) history[i] = rnorm;
-    MONITOR(itP,rnorm,i);
+    MONITOR(ksp,rnorm,i);
   }
-  if (history) itP->res_act_size = (hist_len < i) ? hist_len : i;
+  if (history) ksp->res_act_size = (hist_len < i) ? hist_len : i;
 
   if (cerr <= 0) *its = -(i+1);
   else          *its = i+1;
@@ -120,32 +120,35 @@ int  KSPSolve_Richardson(KSP itP,int *its)
 
 static int KSPView_Richardson(PetscObject obj,Viewer viewer)
 {
-  KSP            itP = (KSP)obj;
-  KSP_Richardson *richardsonP = (KSP_Richardson *) itP->data;
+  KSP            ksp = (KSP)obj;
+  KSP_Richardson *richardsonP = (KSP_Richardson *) ksp->data;
   FILE           *fd;
   int            ierr;
+  ViewerType     vtype;
 
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-
-  MPIU_fprintf(itP->comm,fd,"    Richardson: damping factor=%g\n",richardsonP->scale);
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    MPIU_fprintf(ksp->comm,fd,"    Richardson: damping factor=%g\n",richardsonP->scale);
+  }
   return 0;
 }
 
-int KSPCreate_Richardson(KSP itP)
+int KSPCreate_Richardson(KSP ksp)
 {
   KSP_Richardson *richardsonP = PetscNew(KSP_Richardson); CHKPTRQ(richardsonP);
-  itP->data                   = (void *) richardsonP;
-  itP->type                   = KSPRICHARDSON;
+  ksp->data                   = (void *) richardsonP;
+  ksp->type                   = KSPRICHARDSON;
   richardsonP->scale          = 1.0;
-  itP->setup                  = KSPSetUp_Richardson;
-  itP->solver                 = KSPSolve_Richardson;
-  itP->adjustwork             = KSPiDefaultAdjustWork;
-  itP->destroy                = KSPiDefaultDestroy;
-  itP->calc_res               = 1;
-  itP->converged              = KSPDefaultConverged;
-  itP->buildsolution          = KSPDefaultBuildSolution;
-  itP->buildresidual          = KSPDefaultBuildResidual;
-  itP->view                   = KSPView_Richardson;
+  ksp->setup                  = KSPSetUp_Richardson;
+  ksp->solver                 = KSPSolve_Richardson;
+  ksp->adjustwork             = KSPiDefaultAdjustWork;
+  ksp->destroy                = KSPiDefaultDestroy;
+  ksp->calc_res               = 1;
+  ksp->converged              = KSPDefaultConverged;
+  ksp->buildsolution          = KSPDefaultBuildSolution;
+  ksp->buildresidual          = KSPDefaultBuildResidual;
+  ksp->view                   = KSPView_Richardson;
   return 0;
 }
 

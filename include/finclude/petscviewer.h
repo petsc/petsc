@@ -1,10 +1,16 @@
 C
-C  $Id: petsc.h,v 1.18 1996/02/12 20:26:22 bsmith Exp $;
+C  $Id: viewer.h,v 1.4 1996/02/12 20:29:43 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the Viewer package in PETSc
 C
 #define Viewer           integer
+#define ViewerType       integer
 
+      integer MATLAB_VIEWER, ASCII_FILE_VIEWER,ASCII_FILES_VIEWER,
+     &        BINARY_FILE_VIEWER, STRING_VIEWER,DRAW_VIEWER 
+      parameter (MATLAB_VIEWER = 0, ASCII_FILE_VIEWER = 1,
+     &           ASCII_FILES_VIEWER = 2, BINARY_FILE_VIEWER = 3,
+     &           STRING_VIEWER = 4, DRAW_VIEWER = 5) 
 C
 C  Viewer formats
 C

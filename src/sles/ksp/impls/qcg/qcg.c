@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.17 1996/01/09 03:06:51 curfman Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.18 1996/01/09 14:31:46 curfman Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -47,7 +47,7 @@ $  3 if convergence is reached along a truncated step.
 
  We should perhaps rewrite using PCApplyBAorAB().
  */
-int KSPSolve_QCG(KSP itP,int *its)
+int KSPSolve_QCG(KSP ksp,int *its)
 {
 /* 
    Correpondence with documentation above:  
@@ -56,7 +56,7 @@ int KSPSolve_QCG(KSP itP,int *its)
    Note:  This is not coded correctly for complex arithmetic!
  */
 
-  KSP_QCG      *pcgP = (KSP_QCG *) itP->data;
+  KSP_QCG      *pcgP = (KSP_QCG *) ksp->data;
   MatStructure pflag;
   Mat          Amat, Pmat;
   Vec          W, WA, WA2, R, P, ASP, BS, X, B;
@@ -64,24 +64,24 @@ int KSPSolve_QCG(KSP itP,int *its)
   double       dzero = 0.0, bsnrm, ptasp, q1, q2, wtasp, bstp, rtr;
   double       xnorm, step1, step2, rnrm, p5 = 0.5, *history;
   int          i, cerr, hist_len, maxit, ierr;
-  PC           pc = itP->B;
+  PC           pc = ksp->B;
   PCType       pctype;
 #if defined(PETSC_COMPLEX)
   Scalar       cstep1, cstep2, ctasp, cbstp, crtr, cwtasp, cptasp;
 #endif
 
-  history  = itP->residual_history;
-  hist_len = itP->res_hist_size;
-  maxit    = itP->max_it;
-  WA       = itP->work[0];
-  R        = itP->work[1];
-  P        = itP->work[2]; 
-  ASP      = itP->work[3];
-  BS       = itP->work[4];
-  W        = itP->work[5];
-  WA2      = itP->work[6]; 
-  X        = itP->vec_sol;
-  B        = itP->vec_rhs;
+  history  = ksp->residual_history;
+  hist_len = ksp->res_hist_size;
+  maxit    = ksp->max_it;
+  WA       = ksp->work[0];
+  R        = ksp->work[1];
+  P        = ksp->work[2]; 
+  ASP      = ksp->work[3];
+  BS       = ksp->work[4];
+  W        = ksp->work[5];
+  WA2      = ksp->work[6]; 
+  X        = ksp->vec_sol;
+  B        = ksp->vec_rhs;
 
   *its = 0;
   pcgP->info = 0;
@@ -99,9 +99,9 @@ int KSPSolve_QCG(KSP itP,int *its)
   ierr = PCApplySymmLeft(pc,B,BS); CHKERRQ(ierr);
 
   ierr = VecNorm(BS,NORM_2,&bsnrm); CHKERRQ(ierr);
-  MONITOR(itP,bsnrm,0);
+  MONITOR(ksp,bsnrm,0);
   if (history) history[0] = bsnrm;
-  cerr = (*itP->converged)(itP,0,bsnrm,itP->cnvP);
+  cerr = (*ksp->converged)(ksp,0,bsnrm,ksp->cnvP);
   if (cerr) {*its =  0; return 0;}
 
   /* Compute the initial scaled direction and scaled residual */
@@ -167,9 +167,9 @@ int KSPSolve_QCG(KSP itP,int *its)
        pcgP->ltsnrm = pcgP->delta;    /* convergence in direction of */
        pcgP->info = 1;	        /* negative curvature */
        if (i == 0) {
-         PLogInfo((PetscObject)itP,"KSPSolve_QCG: negative curvature: delta=%g\n",pcgP->delta);
+         PLogInfo((PetscObject)ksp,"KSPSolve_QCG: negative curvature: delta=%g\n",pcgP->delta);
        } else {
-         PLogInfo((PetscObject)itP,
+         PLogInfo((PetscObject)ksp,
            "KSPSolve_QCG: negative curvature: step1=%g, step2=%g, delta=%g\n",step1,step2,pcgP->delta);
        }
          
@@ -206,10 +206,10 @@ int KSPSolve_QCG(KSP itP,int *its)
          pcgP->ltsnrm = pcgP->delta;
          pcgP->info = 2;	/* convergence along constrained step */
          if (i == 0) {
-           PLogInfo((PetscObject)itP,
+           PLogInfo((PetscObject)ksp,
              "KSPSolve_QCG: constrained step: delta=%g\n",pcgP->delta);
          } else {
-           PLogInfo((PetscObject)itP,
+           PLogInfo((PetscObject)ksp,
              "KSPSolve_QCG: constrained step: step1=%g, step2=%g, delta=%g\n",
               step1,step2,pcgP->delta);
          }
@@ -224,15 +224,15 @@ int KSPSolve_QCG(KSP itP,int *its)
          ierr = VecNorm(R,NORM_2,&rnrm); CHKERRQ(ierr);
 
          if (history && hist_len > i + 1) history[i+1] = rnrm;
-         MONITOR(itP,rnrm,i+1);
-         cerr = (*itP->converged)(itP,i+1,rnrm,itP->cnvP);
+         MONITOR(ksp,rnrm,i+1);
+         cerr = (*ksp->converged)(ksp,i+1,rnrm,ksp->cnvP);
          if (cerr) {                 /* convergence for */
            pcgP->info = 3;          /* truncated step */
 #if defined(PETSC_COMPLEX)               
-           PLogInfo((PetscObject)itP,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n", 
+           PLogInfo((PetscObject)ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n", 
               real(step),rnrm,pcgP->delta);
 #else
-           PLogInfo((PetscObject)itP,
+           PLogInfo((PetscObject)ksp,
                "KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",step,rnrm,pcgP->delta);
 #endif
          }
@@ -266,50 +266,50 @@ int KSPSolve_QCG(KSP itP,int *its)
   return 0;
 }
 
-static int KSPSetUp_QCG(KSP itP)
+static int KSPSetUp_QCG(KSP ksp)
 {
   int ierr;
 
   /* Check user parameters and functions */
-  if (itP->pc_side == PC_RIGHT) {
+  if (ksp->pc_side == PC_RIGHT) {
     SETERRQ(2,"KSPSetUp_QCG:no right preconditioning for QCG");}
-  else if (itP->pc_side == PC_LEFT) {
+  else if (ksp->pc_side == PC_LEFT) {
     SETERRQ(2,"KSPSetUp_QCG:no left preconditioning for QCG");}
-  if ((ierr = KSPCheckDef( itP ))) return ierr;
+  if ((ierr = KSPCheckDef( ksp ))) return ierr;
 
   /* Get work vectors from user code */
-  if ((ierr = KSPiDefaultGetWork( itP, 7 ))) return ierr;
+  if ((ierr = KSPiDefaultGetWork( ksp, 7 ))) return ierr;
   return 0;
 }
 
 static int KSPDestroy_QCG(PetscObject obj)
 {
-  KSP itP = (KSP) obj;
-  KSP_QCG *cgP = (KSP_QCG *) itP->data;
+  KSP ksp = (KSP) obj;
+  KSP_QCG *cgP = (KSP_QCG *) ksp->data;
 
-  KSPiDefaultFreeWork( itP );
+  KSPiDefaultFreeWork( ksp );
   
   /* Free the context variable */
   PetscFree(cgP); 
   return 0;
 }
 
-int KSPCreate_QCG(KSP itP)
+int KSPCreate_QCG(KSP ksp)
 {
   KSP_QCG *cgP = (KSP_QCG*) PetscMalloc(sizeof(KSP_QCG));  CHKPTRQ(cgP);
-  PLogObjectMemory(itP,sizeof(KSP_QCG));
-  itP->data                 = (void *) cgP;
-  itP->type                 = KSPQCG;
-  itP->pc_side              = PC_SYMMETRIC;
-  itP->calc_res             = 1;
-  itP->setup                = KSPSetUp_QCG;
-  itP->solver               = KSPSolve_QCG;
-  itP->adjustwork           = KSPiDefaultAdjustWork;
-  itP->destroy              = KSPDestroy_QCG;
-  itP->converged            = KSPDefaultConverged;
-  itP->buildsolution        = KSPDefaultBuildSolution;
-  itP->buildresidual        = KSPDefaultBuildResidual;
-  itP->view                 = 0;
+  PLogObjectMemory(ksp,sizeof(KSP_QCG));
+  ksp->data                 = (void *) cgP;
+  ksp->type                 = KSPQCG;
+  ksp->pc_side              = PC_SYMMETRIC;
+  ksp->calc_res             = 1;
+  ksp->setup                = KSPSetUp_QCG;
+  ksp->solver               = KSPSolve_QCG;
+  ksp->adjustwork           = KSPiDefaultAdjustWork;
+  ksp->destroy              = KSPDestroy_QCG;
+  ksp->converged            = KSPDefaultConverged;
+  ksp->buildsolution        = KSPDefaultBuildSolution;
+  ksp->buildresidual        = KSPDefaultBuildResidual;
+  ksp->view                 = 0;
   return 0;
 }
 /* ---------------------------------------------------------- */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xmon.c,v 1.13 1995/09/04 17:23:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.14 1995/11/09 22:26:59 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -20,20 +20,20 @@ static char vcid[] = "$Id: xmon.c,v 1.13 1995/09/04 17:23:33 bsmith Exp bsmith $
 .  m, n - the screen width and height in pixels
 
    Output Parameter:
-.  ctx - the drawing context
+.  draw - the drawing context
 
 .keywords: KSP, monitor, line graph, residual, create
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
 int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
-                       int n, DrawLG *ctx)
+                       int n, DrawLG *draw)
 {
   Draw win;
-  int     ierr;
+  int  ierr;
   ierr = DrawOpenX(MPI_COMM_SELF,host,label,x,y,m,n,&win); CHKERRQ(ierr);
-  ierr = DrawLGCreate(win,1,ctx); CHKERRQ(ierr);
-  PLogObjectParent(*ctx,win);
+  ierr = DrawLGCreate(win,1,draw); CHKERRQ(ierr);
+  PLogObjectParent(*draw,win);
   return 0;
 }
 
@@ -57,18 +57,18 @@ int KSPLGMonitor(KSP itP,int n,double rnorm,void *monctx)
    with KSPLGMonitorCreate().
 
    Input Parameter:
-.  ctx - the drawing context
+.  draw - the drawing context
 
 .keywords: KSP, monitor, line graph, destroy
 
 .seealso: KSPLGMonitorCreate(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
-int KSPLGMonitorDestroy(DrawLG ctx)
+int KSPLGMonitorDestroy(DrawLG drawlg)
 {
-  Draw win;
-  DrawLGGetDraw(ctx,&win);
-  DrawDestroy(win);
-  DrawLGDestroy(ctx);
+  Draw draw;
+  DrawLGGetDraw(drawlg,&draw);
+  DrawDestroy(draw);
+  DrawLGDestroy(drawlg);
   return 0;
 }
 

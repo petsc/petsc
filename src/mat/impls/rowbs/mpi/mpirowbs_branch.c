@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.95 1996/03/06 22:17:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.96 1996/03/08 05:47:26 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -525,7 +525,6 @@ static int MatView_MPIRowbs_ASCII(Mat mat,Viewer viewer)
   Mat_MPIRowbs *a = (Mat_MPIRowbs *) mat->data;
   int          ierr, format, i, rank, size, row;
   FILE         *fd;
-  PetscObject  vobj = (PetscObject) viewer;
 
   ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetFormat_Private(viewer,&format); CHKERRQ(ierr);
@@ -545,7 +544,9 @@ static int MatView_MPIRowbs_ASCII(Mat mat,Viewer viewer)
     MPIU_Seq_end(mat->comm,1);
   }
   else {
-    if (vobj->type == ASCII_FILE_VIEWER) {
+    ViewerType   vtype;
+    ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+    if (vtype == ASCII_FILE_VIEWER) {
       MPIU_Seq_begin(mat->comm,1);
       ierr = MatView_MPIRowbs_ASCII_Base_Private(a,fd); CHKERRQ(ierr);
       MPIU_Seq_end(mat->comm,1);
@@ -727,22 +728,19 @@ static int MatView_MPIRowbs_Binary(Mat mat,Viewer viewer)
 static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
-  PetscObject  vobj = (PetscObject) viewer;
+  ViewerType   vtype;
+  int          ierr;
 
   if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+    viewer = STDOUT_VIEWER_SELF; 
   }
 
-  if (vobj->cookie == DRAW_COOKIE) {
-    if (vobj->type == NULLWINDOW) return 0;
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    return MatView_MPIRowbs_ASCII(mat,viewer);
   }
-  else if (vobj->cookie == VIEWER_COOKIE) {
-    if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
-      return MatView_MPIRowbs_ASCII(mat,viewer);
-    }
-    else if (vobj->type == BINARY_FILE_VIEWER) {
-      return MatView_MPIRowbs_Binary(mat,viewer);
-    }
+  else if (vtype == BINARY_FILE_VIEWER) {
+    return MatView_MPIRowbs_Binary(mat,viewer);
   }
   return 0;
 }
@@ -1475,7 +1473,7 @@ int MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
   return 0;
 }
 
-int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
+int MatLoad_MPIRowbs(Viewer viewer,MatType type,Mat *newmat)
 {
   Mat_MPIRowbs *a;
   BSspmat      *A;
@@ -1483,14 +1481,13 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
   Mat          mat;
   int          i, nz, ierr, j,rstart, rend, fd, *ourlens,*sndcounts = 0,*procsnz;
   Scalar       *vals;
-  PetscObject  vobj = (PetscObject) bview;
-  MPI_Comm     comm = vobj->comm;
+  MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
   int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
 
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {
-    ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIRowbs: not matrix object");
   }

@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.2 1996/03/04 05:17:33 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.3 1996/03/08 05:49:06 bsmith Exp bsmith $ */
 /*
     User interface for the time-stepping package. This is package
   is for use in solving time dependent PDES.
@@ -11,9 +11,7 @@ typedef struct _TS* TS;
 #define TS_COOKIE PETSC_COOKIE+18
 
 typedef enum { TS_EULER, TS_BEULER, TS_PSEUDO} TSType;
-typedef enum { TS_LINEAR, TS_NONLINEAR, TS_LINEAR_CONSTANT_MATRIX, 
-               TS_LINEAR_VARIABLE_MATRIX, TS_NONLINEAR_JACOBIAN,
-               TS_NONLINEAR_NO_JACOBIAN} TSProblemType;
+typedef enum { TS_LINEAR, TS_NONLINEAR} TSProblemType;
 
 extern int TSCreate(MPI_Comm,TSProblemType,TS*);
 extern int TSSetType(TS,TSType);

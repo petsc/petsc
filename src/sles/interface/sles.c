@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.55 1996/02/26 19:00:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.56 1996/03/04 05:16:34 bsmith Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -32,23 +32,18 @@ $    ViewerFileOpenASCII() - output to a specified file
 @*/
 int SLESView(SLES sles,Viewer viewer)
 {
-  PetscObject vobj = (PetscObject) viewer;
-  FILE        *fd;
   KSP         ksp;
   PC          pc;
   PCType      pcmethod;
   int         ierr;
-  if (vobj->cookie == VIEWER_COOKIE && (vobj->type == ASCII_FILE_VIEWER ||
-                                        vobj->type == ASCII_FILES_VIEWER)){
-    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-    SLESGetPC(sles,&pc);
-    SLESGetKSP(sles,&ksp);
-    PCGetType(pc,&pcmethod,PETSC_NULL);
-    if (pcmethod != PCLU) {
-      ierr = KSPView(ksp,viewer); CHKERRQ(ierr);
-    }
-    ierr = PCView(pc,viewer); CHKERRQ(ierr);
+
+  SLESGetPC(sles,&pc);
+  SLESGetKSP(sles,&ksp);
+  PCGetType(pc,&pcmethod,PETSC_NULL);
+  if (pcmethod != PCLU) {
+    ierr = KSPView(ksp,viewer); CHKERRQ(ierr);
   }
+  ierr = PCView(pc,viewer); CHKERRQ(ierr);
   return 0;
 }
 
