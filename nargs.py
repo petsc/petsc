@@ -51,13 +51,22 @@ in order to declare the type of that option.'''
       else:            value = []
     elif arg and arg[0] == '{' and arg[-1] == '}':
       value = {}
-      if len(arg) > 2:
-        for item in arg[1:-1].split(','):
-          entry = item.split(':')
-          if len(entry) > 1:
-            value[entry[0]] = entry[1]
-          else:
-            value[entry[0]] = None
+      idx = 1
+      oldIdx = idx
+      while idx < len(arg)-1:
+        while not arg[idx] == ':': idx += 1
+        key = arg[oldIdx:idx]
+        idx += 1
+        oldIdx = idx
+        nesting = 0
+        while not (arg[idx] == ',' or arg[idx] == '}') or nesting:
+          if arg[idx] == '[':
+            nesting += 1
+          elif arg[idx] == ']':
+            nesting -= 1
+          idx += 1
+        value[key] = Arg.parseValue(arg[oldIdx:idx])
+        oldIdx = idx
     else:
       value = arg
     return value
