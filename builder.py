@@ -425,7 +425,10 @@ class Builder(logging.Logger):
     config = self.getConfiguration()
     if target is None:
       if len(source) and not source[0] is None:
-        target = self.getLinkerTarget(source[0], shared)
+        if shared:
+          target = self.getSharedLinkerTarget(source[0], shared)
+        else:
+          target = self.getLinkerTarget(source[0], shared)
     if not target is None and self.shouldLink(source, target):
         if callable(self.getLinkerObject()):
           if shared:
