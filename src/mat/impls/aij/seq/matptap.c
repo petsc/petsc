@@ -89,6 +89,8 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
     ierr  = PetscObjectContainerGetPointer(container,(void **)&ptap);CHKERRQ(ierr); 
     ierr = MatDestroy(ptap->B_loc);CHKERRQ(ierr);
     ierr = MatDestroy(ptap->B_oth);CHKERRQ(ierr);
+    ierr = ISDestroy(ptap->isrowb);CHKERRQ(ierr);
+    ierr = ISDestroy(ptap->iscolb);CHKERRQ(ierr);
     
     ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatPtAPMPI",0);CHKERRQ(ierr);
@@ -113,7 +115,7 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
     ierr = PetscNew(Mat_MatMatMultMPI,&ptap);CHKERRQ(ierr);
 
     /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
-    ierr = MatGetBrowsOfAoCols(A,P,MAT_INITIAL_MATRIX,PETSC_NULL,PETSC_NULL,&ptap->brstart,&ptap->B_oth);CHKERRQ(ierr);
+    ierr = MatGetBrowsOfAoCols(A,P,scall,&ptap->isrowb,&ptap->iscolb,&ptap->brstart,&ptap->B_oth);CHKERRQ(ierr);
   
     /* get P_loc by taking all local rows of P */
     ierr = MatGetLocalMat(P,scall,&ptap->B_loc);CHKERRQ(ierr);
@@ -136,12 +138,9 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
     } 
     
     /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
-    /* improve! */
-    ierr = MatDestroy(ptap->B_oth);CHKERRQ(ierr);
-    ierr = MatGetBrowsOfAoCols(A,P,MAT_INITIAL_MATRIX,PETSC_NULL,PETSC_NULL,&ptap->brstart,&ptap->B_oth);CHKERRQ(ierr);
+    ierr = MatGetBrowsOfAoCols(A,P,scall,&ptap->isrowb,&ptap->iscolb,&ptap->brstart,&ptap->B_oth);CHKERRQ(ierr);
   
     /* get P_loc by taking all local rows of P */
-    ierr = MatDestroy(ptap->B_loc);CHKERRQ(ierr); /* improve! */
     ierr = MatGetLocalMat(P,scall,&ptap->B_loc);CHKERRQ(ierr);
 
   } else {

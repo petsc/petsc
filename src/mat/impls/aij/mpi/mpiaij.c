@@ -3309,67 +3309,61 @@ static PetscEvent logkey_getlocalmat = 0;
 @*/
 PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc) 
 {
-  /* Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data; */
-  PetscErrorCode    ierr;
-  PetscInt          low;
-  IS                isrow,iscol;
-  Mat               *aloc;
+  PetscErrorCode  ierr;
+  Mat_MPIAIJ      *mpimat=(Mat_MPIAIJ*)A->data; 
+  Mat_SeqAIJ      *mat,*a=(Mat_SeqAIJ*)(mpimat->A)->data,*b=(Mat_SeqAIJ*)(mpimat->B)->data;
+  PetscInt        *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*cmap=mpimat->garray;
+  MatScalar       *aa=a->a,*ba=b->a;
+  PetscInt        am=A->m,i,j,*nnz,nnz_max,ncols,*cols,cstart=mpimat->cstart;
+  Mat             Aw;
 
   PetscFunctionBegin;
   if (!logkey_getlocalmat) {
     ierr = PetscLogEventRegister(&logkey_getlocalmat,"MatGetLocalMat",MAT_COOKIE);
   }
   ierr = PetscLogEventBegin(logkey_getlocalmat,A,0,0,0);CHKERRQ(ierr);
-
-  /* get A_loc by taking all local rows of A */
-  ierr = MatGetOwnershipRange(A,&low,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = ISCreateStride(PETSC_COMM_SELF,A->m,low,1,&isrow);CHKERRQ(ierr); 
-  ierr = ISCreateStride(PETSC_COMM_SELF,A->N,0,1,&iscol);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&aloc);CHKERRQ(ierr);
-  ierr = ISDestroy(isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(iscol);CHKERRQ(ierr);
-  *A_loc = aloc[0];
-  ierr = PetscFree(aloc);CHKERRQ(ierr);
-#ifdef RM
-  if (!row){
-    start = a->rstart; end = a->rend;
-    ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,&isrowa);CHKERRQ(ierr); 
-  } else {
-    isrowa = *row;
-  }
-  if (!col){
-    start = a->cstart;
-    cmap  = a->garray;
-    nzA   = a->A->n; 
-    nzB   = a->B->n;
-    ierr  = PetscMalloc((nzA+nzB)*sizeof(PetscInt), &idx);CHKERRQ(ierr);
-    ncols = 0;
-    for (i=0; i<nzB; i++) {
-      if (cmap[i] < start) idx[ncols++] = cmap[i];
-      else break;
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = PetscMalloc((1+am)*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
+    nnz_max = 0;
+    for (i=0; i<am; i++){
+      nnz[i] = (ai[i+1] - ai[i]) + (bi[i+1] - bi[i]);
+      if (nnz[i] > nnz_max) nnz_max = nnz[i];
     }
-    imark = i;
-    for (i=0; i<nzA; i++) idx[ncols++] = start + i;
-    for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i];
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,&iscola);CHKERRQ(ierr);
-    ierr = PetscFree(idx);CHKERRQ(ierr); 
+    ierr = MatCreate(PETSC_COMM_SELF,am,A->N,am,A->N,&Aw);CHKERRQ(ierr);
+    ierr = MatSetType(Aw,MATSEQAIJ);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(Aw,0,nnz);CHKERRQ(ierr);
+  } else if (scall == MAT_REUSE_MATRIX){
+    Aw = *A_loc;
+    mat=(Mat_SeqAIJ*)Aw->data; 
+    for (i=0; i<am; i++){
+      j = mat->i[i+1] - mat->i[i];
+      if (j > nnz_max) nnz_max = j;
+    }
+    /* clear old values in *A_loc */
+    ierr = PetscMemzero(mat->a,mat->i[am]*sizeof(MatScalar));CHKERRQ(ierr);
   } else {
-    iscola = *col;
+    SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",scall);
   }
-  if (scall != MAT_INITIAL_MATRIX){
-    ierr = PetscMalloc(sizeof(Mat),&aloc);CHKERRQ(ierr); 
-    aloc[0] = *A_loc;
+  ierr = PetscMalloc((1+nnz_max)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
+
+  for (i=0; i<am; i++) {
+    /* diagonal portion of A */
+    ncols = ai[i+1] - ai[i];
+    for (j=0; j<ncols; j++) {cols[j] = cstart + *aj++;} 
+    ierr = MatSetValues(Aw,1,&i,ncols,cols,aa+ai[i],INSERT_VALUES);CHKERRQ(ierr);
+    /* off-diagonal portion of A */
+    ncols = bi[i+1] - bi[i];
+    for (j=0; j<ncols; j++) cols[j] = cmap[*bj++]; /* cmap[*(bj+bi[i]+j)]; */
+    ierr = MatSetValues(Aw,1,&i,ncols,cols,ba+bi[i],INSERT_VALUES);CHKERRQ(ierr);
+  } 
+  ierr = MatAssemblyBegin(Aw,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Aw,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscFree(cols);CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX){ 
+    ierr = PetscFree(nnz);CHKERRQ(ierr);
+    *A_loc = Aw;
   }
-  ierr = MatGetSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr); 
-  *A_loc = aloc[0];
-  ierr = PetscFree(aloc);CHKERRQ(ierr);
-  if (!row){ 
-    ierr = ISDestroy(isrowa);CHKERRQ(ierr);
-  } 
-  if (!col){ 
-    ierr = ISDestroy(iscola);CHKERRQ(ierr);
-  } 
-#endif
+
   ierr = PetscLogEventEnd(logkey_getlocalmat,A,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3532,7 +3526,7 @@ static PetscEvent logkey_GetBrowsOfAocols = 0;
 #define __FUNCT__ "MatGetBrowsOfAoCols"
 /*@C
     MatGetBrowsOfAoCols - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns
-     of the off-diagonal portion of local A 
+    of the OFF-DIAGONAL portion of local A 
 
     Collective on Mat
 
@@ -3543,7 +3537,7 @@ static PetscEvent logkey_GetBrowsOfAocols = 0;
 
    Output Parameter:
 +    rowb, colb - index sets of rows and columns of B to extract 
-.    brstart - row index of B_seq from which next B->m rows are taken from B's local rows
+.    brstart - row index of B_seq from which the remaining rows correspond to A's columns that are greater than cend.
 -    B_seq - the sequential matrix generated
 
     Level: developer
@@ -3553,7 +3547,7 @@ PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,
 {
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*b=(Mat_MPIAIJ*)B->data;
   PetscErrorCode    ierr;
-  PetscInt          *idx,i,start,ncols,nzB,*cmap,imark; 
+  PetscInt          *idx,i,start,ncols,nzB,*cmap; 
   IS                isrowb,iscolb;
   Mat               *bseq;
  
@@ -3577,16 +3571,16 @@ PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,
     }
     ierr  = PetscMalloc(nzB*sizeof(PetscInt), &idx);CHKERRQ(ierr); 
     ncols = 0;
+    *brstart = nzB; 
     for (i=0; i<nzB; i++) {  /* row < local row index */
       if (cmap[i] < start) idx[ncols++] = cmap[i];
       else break;
     }
-    imark = i;
-    /* for (i=0; i<nzA; i++) idx[ncols++] = start + i; */ /* local rows */
-    for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i]; /* row > local row index */
+    *brstart = i;
+    for (i=*brstart; i<nzB; i++) idx[ncols++] = cmap[i]; /* row > local row index */
     ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,&isrowb);CHKERRQ(ierr);
     ierr = PetscFree(idx);CHKERRQ(ierr); 
-    *brstart = imark;
+    
     ierr = ISCreateStride(PETSC_COMM_SELF,B->N,0,1,&iscolb);CHKERRQ(ierr);
   } else {
     if (!rowb || !colb) SETERRQ(PETSC_ERR_SUP,"IS rowb and colb must be provided for MAT_REUSE_MATRIX");
