@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.308 2000/05/05 22:11:43 balay Exp bsmith $ 
+# $Id: makefile,v 1.309 2000/06/11 14:29:59 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -317,7 +317,7 @@ allfortranstubs:
 	-@include/foldinclude/generateincludes
 	-@${RM} -f src/fortran/auto/*.c
 	-${OMAKE} ACTION=fortranstubs ttree
-	-@cd src/fortran/auto; ${OMAKE} -f makefile fixfortran
+	-@cd src/fortran/auto; ${OMAKE} fixfortran
 	chmod g+w src/fortran/auto/*.c
 
 allci: 

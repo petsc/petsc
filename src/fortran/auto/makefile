@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.105 2000/05/01 18:24:59 balay Exp balay $ 
+# $Id: makefile,v 1.106 2000/05/22 15:40:29 balay Exp balay $ 
 
 ALL: lib
 
@@ -52,3 +52,19 @@ LOCDIR   = src/fortran/auto/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
+fixfortran:
+	@echo "Fixing pointers in src/fortran/auto"
+	-@for FILENAME in ${SOURCEC} ; do \
+	  if [ ! -f $$FILENAME ]; then \
+	    echo "Error: file $$FILENAME specified in SOURCEC does not exist."; \
+	  else \
+	    cat $$FILENAME | \
+	    sed "s/^void /void PETSC_STDCALL /" | \
+	    sed "s/PetscToPointer(int)/PetscToPointer(void *)/" | \
+	    sed "s/PetscRmPointer(int)/PetscRmPointer(void *)/" | \
+	    sed "s/PetscToPointer(a) (a)/PetscToPointer(a) (*(long *)(a))/" | \
+	    sed "s/PetscFromPointer(a) (int)(a)/PetscFromPointer(a) (long)(a)/" | \
+	    sed "s/PetscToPointer( \*(int\*)/PetscToPointer( /" >_$$FILENAME; \
+	    /bin/mv _$$FILENAME $$FILENAME ;\
+	  fi; \
+	done
