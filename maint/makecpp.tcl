@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: makecpp.tcl,v 1.11 1998/04/09 16:19:32 balay Exp balay $ 
+# $Id: makecpp.tcl,v 1.12 1998/07/28 22:29:45 balay Exp balay $ 
 
 
 proc movefilesin { dir } {
@@ -69,7 +69,7 @@ proc updatemakefile { makefile } {
         # *.ilk etc to the list
         #
         regsub -all { \-f} $databuff "" databuff       
-        regsub -all {\{RM\}} $databuff "{RM} *.pdb *.ilk" databuff 
+        regsub -all {\{RM\}} $databuff "{RM} *.ilk" databuff 
 
         # 
         # PETSC_ARCH -> nt
