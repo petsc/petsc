@@ -1,29 +1,47 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.85 1997/11/03 04:49:46 bsmith Exp $";
+static char vcid[] = "$Id: ex5s.c,v 1.1 1997/11/19 18:30:33 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
-domain, using distributed arrays (DAs) to partition the parallel grid.\n\
+domain, uses SHARED MEMORY to evaluate the user function.\n\
 The command line options include:\n\
   -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
      problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
-  -my <yg>, where <yg> = number of grid points in the y-direction\n\
-  -Nx <npx>, where <npx> = number of processors in the x-direction\n\
-  -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
+  -my <yg>, where <yg> = number of grid points in the y-direction\n\";
 
 /*T
    Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
-   Concepts: DA^Using distributed arrays;
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions(); DAView();
-   Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
-   Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
+   Routines: SNESSolve(); SNESSetFromOptions(); VecCreateShared();
    Processors: n
 T*/
 
+/*
+
+     Programming model: Combination of 
+        1) MPI message passing for PETSc routines
+        2) automatic loop parallism (using shared memory) for user
+           provided function.
+
+       While the user function is being evaluated all MPI processes except process
+     0 blocks. Process zero spawns nt threads to evaluate the user function. Once 
+     the user function is complete, the worker threads are suspended and all the MPI processes
+     continue.
+
+     Other useful options:
+
+       -snes_mf : use matrix free operator and no preconditioner
+       -snes_mf_operator : use matrix free operator but compute Jacobian via
+                           finite differences to form preconditioner
+
+       Environmental variable:
+
+         setenv MPC_NUM_THREADS nt <- set number of threads processor 0 should 
+                                      use to evaluate user provided function
+*/
+       
 /* ------------------------------------------------------------------------
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
@@ -40,11 +58,11 @@ T*/
     system of equations.
 
     The uniprocessor version of this code is snes/examples/tutorials/ex4.c
+    A parallel distributed memory version is snes/examples/tutorials/ex5.c and ex5f.F
 
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "da.h" so that we can use distributed arrays (DAs).
    Include "snes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petsc.h  - base PETSc routines   vec.h - vectors
@@ -53,40 +71,39 @@ T*/
      viewer.h - viewers               pc.h  - preconditioners
      sles.h   - linear solvers
 */
-#include "da.h"
 #include "snes.h"
 #include <math.h>
 
 /* 
    User-defined application context - contains data needed by the 
-   application-provided call-back routines, FormJacobian() and
-   FormFunction().
+   application-provided call-back routines   FormFunction().
 */
 typedef struct {
    double      param;          /* test problem parameter */
    int         mx,my;          /* discretization in x, y directions */
-   Vec         localX, localF; /* ghosted local vector */
-   DA          da;             /* distributed array data structure */
    int         rank;           /* processor rank */
 } AppCtx;
 
 /* 
    User-defined routines
 */
-int FormFunction(SNES,Vec,Vec,void*), FormInitialGuess(AppCtx*,Vec);
-int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int FormFunction(SNES,Vec,Vec,void*), FormInitialGuess(AppCtx*,Vec);
+extern int FormFunctionFortran(SNES,Vec,Vec,void*);
 
+/* 
+    The main program is written in C while the user provided function
+ is given in both Fortran and C. The main program could also be written 
+ in Fortran; the ONE PROBLEM is that VecGetArray() cannot be called from 
+ Fortran on the SGI machines; thus the routine FormFunctionFortran() must
+ be written in C.
+*/
 int main( int argc, char **argv )
 {
   SNES     snes;                /* nonlinear solver */
   Vec      x, r;                /* solution, residual vectors */
-  Mat      J;                   /* Jacobian matrix */
   AppCtx   user;                /* user-defined work context */
   int      its;                 /* iterations for convergence */
-  int      Nx, Ny;              /* number of preocessors in x- and y- directions */
-  int      matrix_free;         /* flag - 1 indicates matrix-free version */
-  int      size;                /* number of processors */
-  int      m, flg, N, ierr, nloc, *ltog;
+  int      flg, N, ierr;
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
@@ -115,85 +132,33 @@ int main( int argc, char **argv )
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
-     Create distributed array (DA) to manage parallel grid and vectors
+      The routine VecCreateShared() creates a parallel vector with each processor
+    assigned its own segment, BUT, in addition, the first processor has access to the 
+    entire array. This is to allow the users function to be based on loop level
+    parallelism rather than MPI.
   */
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
-  if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
-    SETERRA(1,0,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
-                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
-
-  /*
-     Visualize the distribution of the array across the processors
-  */
-  /* ierr =  DAView(user.da,VIEWER_DRAWX_WORLD); CHKERRA(ierr); */
-
-
-  /*
-     Extract global and local vectors from DA; then duplicate for remaining
-     vectors that are the same types
-  */
-  ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
-  ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);
+  ierr = VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
 
   /* 
      Set function evaluation routine and vector
   */
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user); CHKERRA(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create matrix data structure; set Jacobian evaluation routine
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /* 
-     Set Jacobian matrix data structure and default Jacobian evaluation
-     routine. User can override with:
-     -snes_fd : default finite differencing approximation of Jacobian
-     -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-                (unless user explicitly sets preconditioner) 
-     -snes_mf_operator : form preconditioning matrix as set by the user,
-                         but use matrix-free approx for Jacobian-vector
-                         products within Newton-Krylov method
-
-     Note:  For the parallel case, vectors and matrices MUST be partitioned
-     accordingly.  When using distributed arrays (DAs) to create vectors,
-     the DAs determine the problem partitioning.  We must explicitly
-     specify the local matrix dimensions upon its creation for compatibility
-     with the vector distribution.  Thus, the generic MatCreate() routine
-     is NOT sufficient when working with distributed arrays.
-
-     Note: Here we only approximately preallocate storage space for the
-     Jacobian.  See the users manual for a discussion of better techniques
-     for preallocating matrix memory.
-  */
-  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free); CHKERRA(ierr);
-  if (!matrix_free) {
-    if (size == 1) {
-      ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J); CHKERRA(ierr);
-    } else {
-      ierr = VecGetLocalSize(x,&m); CHKERRA(ierr);
-      ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J); CHKERRA(ierr);
-    }
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user); CHKERRA(ierr);
-
-    /*
-       Get the global node numbers for all local nodes, including ghost points.
-       Associate this mapping with the matrix for later use in setting matrix
-       entries via MatSetValuesLocal().
-    */
-    ierr = DAGetGlobalIndices(user.da,&nloc,&ltog); CHKERRA(ierr);
-    {
-      ISLocalToGlobalMapping isltog;
-      ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,ltog,&isltog); CHKERRA(ierr);
-      ierr = MatSetLocalToGlobalMapping(J,isltog); CHKERRA(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(isltog); CHKERRA(ierr);
-    }
+  ierr = OptionsHasName(PETSC_NULL,"-use_fortran_function",&flg);CHKERRA(ierr);
+  if (flg) {
+    ierr = SNESSetFunction(snes,r,FormFunctionFortran,&user); CHKERRA(ierr);
+  } else {
+    ierr = SNESSetFunction(snes,r,FormFunction,&user); CHKERRA(ierr);
   }
+
+  /*
+       Currently when using VecCreateShared() and using loop level parallelism
+    to automatically parallelise the user function it makes no sense for the 
+    Jacobian to be computed via loop level parallelism, because all the threads
+    would be simultaneously calling MatSetValues() causing a bottle-neck.
+
+    Thus this example uses the PETSc Jacobian calculations via finite differencing
+    to approximate the Jacobian
+  */ 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -221,18 +186,15 @@ int main( int argc, char **argv )
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  if (!matrix_free) {
-    ierr = MatDestroy(J); CHKERRA(ierr);
-  }
-  ierr = VecDestroy(user.localX); CHKERRA(ierr); ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(user.localF); CHKERRA(ierr); ierr = VecDestroy(r); CHKERRA(ierr);      
-  ierr = SNESDestroy(snes); CHKERRA(ierr);  ierr = DADestroy(user.da); CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(r); CHKERRA(ierr);      
+  ierr = SNESDestroy(snes); CHKERRA(ierr); 
   PetscFinalize();
 
   return 0;
 }
 /* ------------------------------------------------------------------- */
+
 /* 
    FormInitialGuess - Forms initial approximation.
 
@@ -245,10 +207,24 @@ int main( int argc, char **argv )
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i, j, row, mx, my, ierr, xs, ys, xm, ym, gxm, gym, gxs, gys;
+  int     i, j, row, mx, my, ierr;
   double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
   Scalar  *x;
-  Vec     localX = user->localX;
+
+  /*
+      Process 0 has to wait for all other processes to get here 
+   before proceeding to write in the shared vector
+  */
+  PetscBarrier(X);
+  if (user->rank) {
+     /*
+        All the non-busy processors have to wait here for process 0 to finish
+        evaluating the function; otherwise they will start using the vector values
+        before they have been computed
+     */
+     PetscBarrier(X);
+     return 0;
+  }
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
@@ -262,25 +238,18 @@ int FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
-
-  /*
-     Get local grid boundaries (for 2-dimensional DA):
-       xs, ys   - starting grid indices (no ghost points)
-       xm, ym   - widths of local grid (no ghost points)
-       gxs, gys - starting grid indices (including ghost points)
-       gxm, gym - widths of local grid (including ghost points)
-  */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
   */
-  for (j=ys; j<ys+ym; j++) {
+#pragma arl(4)
+#pragma distinct (*x, *f)
+#pragma no side effects (sqrt)
+  for (j=0; j<my; j++) {
     temp = (double)(PetscMin(j,my-j-1))*hy;
-    for (i=xs; i<xs+xm; i++) {
-      row = i - gxs + (j - gys)*gxm; 
+    for (i=0; i<mx; i++) {
+      row = i + j*mx; 
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
         x[row] = 0.0; 
         continue;
@@ -292,12 +261,9 @@ int FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
 
-  /*
-     Insert values into global vector
-  */
-  ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X); CHKERRQ(ierr);
+  PetscBarrier(X);
   return 0;
 } 
 /* ------------------------------------------------------------------- */
@@ -315,50 +281,57 @@ int FormInitialGuess(AppCtx *user,Vec X)
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;
-  int     ierr, i, j, row, mx, my, xs, ys, xm, ym, gxs, gys, gxm, gym;
+  int     ierr, i, j, row, mx, my;
   double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx,sc;
   Scalar  u, uxx, uyy, *x,*f;
-  Vec     localX = user->localX, localF = user->localF; 
+
+  /*
+      Process 0 has to wait for all other processes to get here 
+   before proceeding to write in the shared vector
+  */
+  PetscBarrier(X);
+
+  if (user->rank) {
+     /*
+        All the non-busy processors have to wait here for process 0 to finish
+        evaluating the function; otherwise they will start using the vector values
+        before they have been computed
+     */
+     PetscBarrier(X);
+     return 0;
+  }
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
   sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
 
   /*
-     Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
-     By placing code between these two statements, computations can be
-     done while messages are in transition.
-  */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-
-  /*
      Get pointers to vector data
   */
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(localF,&f); CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f); CHKERRQ(ierr);
 
   /*
-     Get local grid boundaries
+      The next line tells the SGI compiler that x and f contain no overlapping 
+    regions and thus it can use addition optimizations.
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
+#pragma arl(4)
+#pragma distinct (*x, *f)
+#pragma no side effects (exp)
 
   /*
-     Compute function over the locally owned part of the grid
+     Compute function over the entire  grid
   */
-  for (j=ys; j<ys+ym; j++) {
-    row = (j - gys)*gxm + xs - gxs - 1; 
-    for (i=xs; i<xs+xm; i++) {
-      row++;
+  for (j=0; j<my; j++) {
+    for (i=0; i<mx; i++) {
+      row = i + j*mx;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
         f[row] = x[row];
         continue;
-      }
+      } 
       u = x[row];
       uxx = (two*u - x[row-1] - x[row+1])*hydhx;
-      uyy = (two*u - x[row-gxm] - x[row+gxm])*hxdhy;
+      uyy = (two*u - x[row-mx] - x[row+mx])*hxdhy;
       f[row] = uxx + uyy - sc*exp(u);
     }
   }
@@ -366,213 +339,49 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(localF,&f); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
 
-  /*
-     Insert values into global vector
-  */
-  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F); CHKERRQ(ierr);
-  PLogFlops(11*ym*xm);
+  PLogFlops(11*(mx-2)*(my-2))
+  PetscBarrier(X);
   return 0; 
 } 
+
+#if defined(HAVE_FORTRAN_CAPS)
+#define applicationfunctionfortran_ APPLICATIONFUNCTIONFORTRAN
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define applicationfunctionfortran_ applicationfunctionfortran
+#endif
+
 /* ------------------------------------------------------------------- */
-/*
-   FormJacobian - Evaluates Jacobian matrix.
+/* 
+   FormFunctionFortran - Evaluates nonlinear function, F(x) in Fortran.
 
-   Input Parameters:
-.  snes - the SNES context
-.  x - input vector
-.  ptr - optional user-defined context, as set by SNESSetJacobian()
-
-   Output Parameters:
-.  A - Jacobian matrix
-.  B - optionally different preconditioning matrix
-.  flag - flag indicating matrix structure
-
-   Notes:
-   Due to grid point reordering with DAs, we must always work
-   with the local grid points, and then transform them to the new
-   global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
-   We cannot work directly with the global numbers for the original
-   uniprocessor grid!  
-
-   Two methods are available for imposing this transformation
-   when setting matrix entries:
-     (A) MatSetValuesLocal(), using the local ordering (including
-         ghost points!)
-         - Use DAGetGlobalIndices() to extract the local-to-global map
-         - Associate this map with the matrix by calling
-           MatSetLocalToGlobalMapping() once
-         - Set matrix entries using the local ordering
-           by calling MatSetValuesLocal()
-     (B) MatSetValues(), using the global ordering 
-         - Use DAGetGlobalIndices() to extract the local-to-global map
-         - Then apply this map explicitly yourself
-         - Set matrix entries using the global ordering by calling
-           MatSetValues()
-   Option (A) seems cleaner/easier in many cases, and is the procedure
-   used in this example.
 */
-int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx  *user = (AppCtx *) ptr;  /* user-defined application context */
-  Mat     jac = *J;                /* Jacobian matrix */
-  Vec     localX = user->localX;   /* local vector */
-  int     ierr, i, j, row, mx, my, col[5];
-  int     xs, ys, xm, ym, gxs, gys, gxm, gym;
-  Scalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x;
-
-  mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
-  sc = hx*hy;               hxdhy = hx/hy;            hydhx = hy/hx;
+  AppCtx  *user = (AppCtx *) ptr;
+  int     ierr;
+  Scalar  *x,*f;
 
   /*
-     Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
-     By placing code between these two statements, computations can be
-     done while messages are in transition.
+      Process 0 has to wait for all other processes to get here 
+   before proceeding to write in the shared vector
   */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-
-  /*
-     Get pointer to vector data
-  */
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
-
-  /*
-     Get local grid boundaries
-  */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
-
-  /* 
-     Compute entries for the locally owned part of the Jacobian.
-      - Currently, all PETSc parallel matrix formats are partitioned by
-        contiguous chunks of rows across the processors. 
-      - Each processor needs to insert only elements that it owns
-        locally (but any non-local elements will be sent to the
-        appropriate processor during matrix assembly). 
-      - Here, we set all entries for a particular row at once.
-      - We can set matrix entries either using either
-        MatSetValuesLocal() or MatSetValues(), as discussed above.
-  */
-  for (j=ys; j<ys+ym; j++) {
-    row = (j - gys)*gxm + xs - gxs - 1; 
-    for (i=xs; i<xs+xm; i++) {
-      row++;
-      /* boundary points */
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        ierr = MatSetValuesLocal(jac,1,&row,1,&row,&one,INSERT_VALUES); CHKERRQ(ierr);
-        continue;
-      }
-      /* interior grid points */
-      v[0] = -hxdhy; col[0] = row - gxm;
-      v[1] = -hydhx; col[1] = row - 1;
-      v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = row;
-      v[3] = -hydhx; col[3] = row + 1;
-      v[4] = -hxdhy; col[4] = row + gxm;
-      ierr = MatSetValuesLocal(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
-    }
+  PetscBarrier(snes);
+  if (!user->rank) {
+    ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+    ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+    applicationfunctionfortran_(&user->param,&user->mx,&user->my,x,f,&ierr);
+    ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+    PLogFlops(11*(user->mx-2)*(user->my-2))
   }
-
-  /* 
-     Assemble matrix, using the 2-step process:
-       MatAssemblyBegin(), MatAssemblyEnd().
-     By placing code between these two statements, computations can be
-     done while messages are in transition.
-  */
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-
   /*
-     Set flag to indicate that the Jacobian matrix retains an identical
-     nonzero structure throughout all nonlinear iterations (although the
-     values of the entries change). Thus, we can save some work in setting
-     up the preconditioner (e.g., no need to redo symbolic factorization for
-     ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the matrix
-        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
+      All the non-busy processors have to wait here for process 0 to finish
+      evaluating the function; otherwise they will start using the vector values
+      before they have been computed
   */
-  *flag = SAME_NONZERO_PATTERN;
-  /*
-      Tell the matrix we will never add a new nonzero location to the
-    matrix. If we do it will generate an error.
-  */
-  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRQ(ierr);
+  PetscBarrier(snes);
   return 0;
 }
-
-/*
-    Demonstrates how you can restrict the linking in of solvers, etc
-  to those that you KNOW you are going to use. This decreases the size
-  of your executable and decreases the time it takes to link your program.
-*/
-/* ------------- Note currently these are commented out -----------------
-extern int SNESCreate_EQ_LS(SNES);
-int SNESRegisterAll()
-{
-  SNESRegisterAllCalled = 1;
-
-  SNESRegister(SNES_EQ_LS,         0,"ls",      SNESCreate_EQ_LS);
-  return 0;
-}
-
-extern int KSPCreate_GMRES(KSP);
-int KSPRegisterAll()
-{
-  KSPRegisterAllCalled = 1;
-
-  KSPRegister(KSPGMRES      , 0,"gmres",      KSPCreate_GMRES); 
-  return 0;
-}
-
-extern int PCCreate_BJacobi(PC);
-extern int PCCreate_ILU(PC);
-int PCRegisterAll()
-{
-  PCRegisterAllCalled = 1;
-
-  PCRegister(PCBJACOBI      ,0, "bjacobi",    PCCreate_BJacobi);
-  PCRegister(PCILU          ,0, "ilu",        PCCreate_ILU);
-  return 0;
-}
-
-
-extern int MatLoad_SeqAIJ(Viewer,MatType,Mat*);
-extern int MatLoad_MPIAIJ(Viewer,MatType,Mat*);
-int MatLoadRegisterAll()
-{
-  int ierr;
-
-  ierr = MatLoadRegister(MATSEQAIJ,MatLoad_SeqAIJ); CHKERRQ(ierr);
-  ierr = MatLoadRegister(MATMPIAIJ,MatLoad_MPIAIJ); CHKERRQ(ierr);
-  return 0;
-}  
-
-int MatConvertRegisterAll()
-{
-  return 0;
-}
-
-extern int MatOrder_Natural(Mat,MatReorderingType,IS*,IS*);
-int MatReorderingRegisterAll()
-{
-  int           ierr;
-
-  MatReorderingRegisterAllCalled = 1;
-  ierr = MatReorderingRegister(ORDER_NATURAL,0,"natural",MatOrder_Natural);CHKERRQ(ierr);
-  return 0;
-}
- ----------------------------------------------------------------------*/
-
