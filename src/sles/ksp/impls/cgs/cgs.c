@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.28 1996/04/04 22:03:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.29 1996/04/05 05:57:56 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -17,7 +17,6 @@ static char vcid[] = "$Id: cgs.c,v 1.28 1996/04/04 22:03:04 bsmith Exp bsmith $"
 
 static int KSPSetUp_CGS(KSP ksp)
 {
-  int ierr;
   if (ksp->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_CGS:no symmetric preconditioning for KSPCGS");}
   return KSPDefaultGetWork( ksp, 8 );

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.40 1996/04/04 22:03:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.41 1996/04/05 05:58:02 bsmith Exp curfman $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -13,7 +13,6 @@ static char vcid[] = "$Id: rich.c,v 1.40 1996/04/04 22:03:11 bsmith Exp bsmith $
 
 int KSPSetUp_Richardson(KSP ksp)
 {
-  int ierr;
   /* check user parameters and functions */
   if (ksp->pc_side == PC_RIGHT)
     {SETERRQ(2,"KSPSetUp_Richardson:no right preconditioning for KSPRICHARDSON");}
