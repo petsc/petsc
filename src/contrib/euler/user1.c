@@ -340,21 +340,23 @@ int main(int argc,char **argv)
   /* Print convergence stats.  Note that we save this data in arrays for
      printing only after the completion of SNESSolve(), so that the timings
      are not distorted by output during the solve. */
+  /* temporarily this is printed within the monitoring routine */
+  /*
   if (app->no_output) {
     int i, overlap;
     if (app->rank == 0) {
       overlap = 0;
       ierr = OptionsGetInt(PETSC_NULL,"-pc_asm_overlap",&overlap,&flg); CHKERRQ(ierr);
       if (app->problem == 1) {
-        sprintf(filename,"f_m6%s_asm%d_p%d.m","c",overlap,app->size);
+        sprintf(filename,"f_m6%s_cc%d_asm%d_p%d.m","c",app->cfl_snes_it,overlap,app->size);
         sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","c",app->cfl_snes_it,overlap,app->size);
       }
       else if (app->problem == 2) {
-        sprintf(filename,"f_m6%s_asm%d_p%d.m","f",overlap,app->size);
+        sprintf(filename,"f_m6%s_cc%d_asm%d_p%d.m","f",app->cfl_snes_it,overlap,app->size);
         sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","f",app->cfl_snes_it,overlap,app->size);
       }
       else if (app->problem == 3) {
-        sprintf(filename,"f_m6%s_asm%d_p%d.m","n",overlap,app->size);
+        sprintf(filename,"f_m6%s_cc%d_asm%d_p%d.m","n",app->cfl_snes_it,overlap,app->size);
         sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","n",app->cfl_snes_it,overlap,app->size);
       }
       app->fp = fopen(filename,"w"); 
@@ -366,8 +368,9 @@ int main(int argc,char **argv)
                 app->lin_rtol[i],app->c_lift[i],app->c_drag[i],app->nsup[i]);
     }
   }
+  */
   if (app->rank == 0) {
-    fprintf(app->fp," ];\n%% Total SLES iterations = %d, Total time = %g sec\n",app->sles_tot,app->ftime[its]);
+    fprintf(app->fp," ];\n%% Total SLES iters = %d, Total fct evals = %d, Total time = %g sec\n",app->sles_tot,app->fct_tot,app->ftime[its]);
     fclose(app->fp);
   }
 
@@ -436,7 +439,7 @@ int main(int argc,char **argv)
  */
 int UserSetJacobian(SNES snes,Euler *app)
 {
-  MatType    mtype = MATSEQAIJ;      /* matrix format */
+  MatType    mtype = MATMPIBAIJ;      /* matrix format */
   MPI_Comm   comm = app->comm;       /* comunicator */
   Mat        J;                      /* Jacobian matrix context */
   int        ldim = app->ldim;       /* local dimension of vectors and matrix */
@@ -458,7 +461,7 @@ int UserSetJacobian(SNES snes,Euler *app)
   /* Determine matrix format, where we choose block AIJ as the default if
      no runtime option is specified */
   ierr = MatGetTypeFromOptions(comm,PETSC_NULL,&mtype,&mset); CHKERRQ(ierr);
-  if (mset == PETSC_TRUE) {
+  if (mset != PETSC_TRUE) {
     if (app->size == 1) mtype = MATSEQBAIJ;
     else                mtype = MATMPIBAIJ;
   }
@@ -936,6 +939,7 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
   Scalar zero = 0.0, *farray;
 
   if (app->bctype != IMPLICIT) SETERRQ(1,0,"This version supports only implicit BCs!");
+  app->fct_tot++;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         Do setup (not required for the first function evaluation)
@@ -1152,7 +1156,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.0e-6;
       app->cfl_snes_it    = 1;
-      app->ksp_max_it     = 10;   /* max number of KSP iterations */
+      app->ksp_max_it     = 20;   /* max number of KSP iterations */
       app->f_reduction    = 0.3;  /* fnorm reduction before beginning to advance CFL */
       break;
     case 2:
@@ -1189,6 +1193,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
 
   /* Set various defaults */
   app->sles_tot              = 0;
+  app->fct_tot               = 0;
   app->cfl                   = 0;        /* Initial CFL is set within Julianne code */
   app->cfl_init              = 0;        /* Initial CFL is set within Julianne code */
   app->cfl_max               = 100000.0; /* maximum CFL value */
@@ -1200,7 +1205,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->ts_type               = LOCAL_TS; /* type of timestepping */
   app->angle                 = 3.06;     /* default angle of attack = 3.06 degrees */
   app->fstagnate_ratio       = .01;      /* stagnation detection parameter */
-  app->ksp_rtol_max          = 1.0e-4;   /* maximum KSP relative convergence tolerance */
+  app->ksp_rtol_max          = 1.0e-2;   /* maximum KSP relative convergence tolerance */
+  app->ksp_rtol_min          = 1.0e-5;   /* minimum KSP relative convergence tolerance */
   app->mat_assemble_direct   = 1;        /* by default, we assemble Jacobian directly */
   app->use_vecsetvalues      = 0;        /* flag - by default assemble local vector data directly */
   app->no_output             = 0;        /* flag - by default print some output as program runs */
