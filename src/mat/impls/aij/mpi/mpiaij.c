@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.195 1997/03/26 01:35:49 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.196 1997/03/29 00:59:34 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -136,18 +136,18 @@ int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **i
       if (nonew)  goto b_noinsert; \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
-        int    new_nz = bi[a->m] + CHUNKSIZE,len,*new_i,*new_j; \
+        int    new_nz = bi[b->m] + CHUNKSIZE,len,*new_i,*new_j; \
         Scalar *new_a; \
  \
         /* malloc new storage space */ \
-        len     = new_nz*(sizeof(int)+sizeof(Scalar))+(a->m+1)*sizeof(int); \
+        len     = new_nz*(sizeof(int)+sizeof(Scalar))+(b->m+1)*sizeof(int); \
         new_a   = (Scalar *) PetscMalloc( len ); CHKPTRQ(new_a); \
         new_j   = (int *) (new_a + new_nz); \
         new_i   = new_j + new_nz; \
  \
         /* copy over old data into new slots */ \
         for ( ii=0; ii<row+1; ii++ ) {new_i[ii] = bi[ii];} \
-        for ( ii=row+1; ii<a->m+1; ii++ ) {new_i[ii] = bi[ii]+CHUNKSIZE;} \
+        for ( ii=row+1; ii<b->m+1; ii++ ) {new_i[ii] = bi[ii]+CHUNKSIZE;} \
         PetscMemcpy(new_j,bj,(bi[row]+nrow+shift)*sizeof(int)); \
         len = (new_nz - CHUNKSIZE - bi[row] - nrow - shift); \
         PetscMemcpy(new_j+bi[row]+shift+nrow+CHUNKSIZE,bj+bi[row]+shift+nrow, \
@@ -157,18 +157,18 @@ int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **i
                                                            len*sizeof(Scalar));  \
         /* free up old matrix storage */ \
  \
-        PetscFree(a->a);  \
-        if (!a->singlemalloc) {PetscFree(a->i);PetscFree(a->j);} \
-        ba = a->a = new_a; bi = a->i = new_i; bj = a->j = new_j;  \
-        a->singlemalloc = 1; \
+        PetscFree(b->a);  \
+        if (!b->singlemalloc) {PetscFree(b->i);PetscFree(b->j);} \
+        ba = b->a = new_a; bi = b->i = new_i; bj = b->j = new_j;  \
+        b->singlemalloc = 1; \
  \
         rp   = bj + bi[row] + shift; ap = ba + bi[row] + shift; \
         rmax = bimax[row] = bimax[row] + CHUNKSIZE; \
-        PLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + sizeof(Scalar))); \
-        a->maxnz += CHUNKSIZE; \
-        a->reallocs++; \
+        PLogObjectMemory(B,CHUNKSIZE*(sizeof(int) + sizeof(Scalar))); \
+        b->maxnz += CHUNKSIZE; \
+        b->reallocs++; \
       } \
-      N = nrow++ - 1; a->nz++; \
+      N = nrow++ - 1; b->nz++; \
       /* shift up all the later entries in this row */ \
       for ( ii=N; ii>=_i; ii-- ) { \
         rp[ii+1] = rp[ii]; \

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.60 1997/03/27 20:43:27 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.61 1997/03/29 00:41:11 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -164,21 +164,21 @@ static int MatRestoreRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n
           goto b_noinsert; \
         } \
       } \
-      if (a->nonew) goto b_noinsert; \
+      if (b->nonew) goto b_noinsert; \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
-        int    new_nz = bi[a->mbs] + CHUNKSIZE,len,*new_i,*new_j; \
+        int    new_nz = bi[b->mbs] + CHUNKSIZE,len,*new_i,*new_j; \
         Scalar *new_a; \
  \
         /* malloc new storage space */ \
-        len     = new_nz*(sizeof(int)+bs2*sizeof(Scalar))+(a->mbs+1)*sizeof(int); \
+        len     = new_nz*(sizeof(int)+bs2*sizeof(Scalar))+(b->mbs+1)*sizeof(int); \
         new_a   = (Scalar *) PetscMalloc( len ); CHKPTRQ(new_a); \
         new_j   = (int *) (new_a + bs2*new_nz); \
         new_i   = new_j + new_nz; \
  \
         /* copy over old data into new slots */ \
         for ( ii=0; ii<brow+1; ii++ ) {new_i[ii] = bi[ii];} \
-        for ( ii=brow+1; ii<a->mbs+1; ii++ ) {new_i[ii] = bi[ii]+CHUNKSIZE;} \
+        for ( ii=brow+1; ii<b->mbs+1; ii++ ) {new_i[ii] = bi[ii]+CHUNKSIZE;} \
         PetscMemcpy(new_j,bj,(bi[brow]+nrow)*sizeof(int)); \
         len = (new_nz - CHUNKSIZE - bi[brow] - nrow); \
         PetscMemcpy(new_j+bi[brow]+nrow+CHUNKSIZE,bj+bi[brow]+nrow, \
@@ -188,17 +188,17 @@ static int MatRestoreRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n
         PetscMemcpy(new_a+bs2*(bi[brow]+nrow+CHUNKSIZE), \
                     ba+bs2*(bi[brow]+nrow),bs2*len*sizeof(Scalar));  \
         /* free up old matrix storage */ \
-        PetscFree(a->a);  \
-        if (!a->singlemalloc) {PetscFree(a->i);PetscFree(a->j);} \
-        ba = a->a = new_a; bi = a->i = new_i; bj = a->j = new_j;  \
-        a->singlemalloc = 1; \
+        PetscFree(b->a);  \
+        if (!b->singlemalloc) {PetscFree(b->i);PetscFree(b->j);} \
+        ba = b->a = new_a; bi = b->i = new_i; bj = b->j = new_j;  \
+        b->singlemalloc = 1; \
  \
         rp   = bj + bi[brow]; ap = ba + bs2*bi[brow]; \
         rmax = bimax[brow] = bimax[brow] + CHUNKSIZE; \
-        PLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + bs2*sizeof(Scalar))); \
-        a->maxnz += bs2*CHUNKSIZE; \
-        a->reallocs++; \
-        a->nz++; \
+        PLogObjectMemory(B,CHUNKSIZE*(sizeof(int) + bs2*sizeof(Scalar))); \
+        b->maxnz += bs2*CHUNKSIZE; \
+        b->reallocs++; \
+        b->nz++; \
       } \
       N = nrow++ - 1;  \
       /* shift up all the later entries in this row */ \
