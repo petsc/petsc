@@ -18,11 +18,11 @@ class Defaults:
     self.addLanguage('C')
     # Setup compiler specific defaults
     if bs.argDB.has_key('babelCrap') and int(bs.argDB['babelCrap']):
-      print 'Using Babel'
+      self.debugPrint('Compiling SIDL with Babel', 3, 'sidl')
       import BSTemplates.babelTargets
       self.compilerDefaults = BSTemplates.babelTargets.Defaults(self)
     else:
-      print 'Using Scandal'
+      self.debugPrint('Compiling SIDL with Scandal', 3, 'sidl')
       import BSTemplates.scandalTargets
       self.compilerDefaults = BSTemplates.scandalTargets.Defaults(self)
     return
