@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.27 1995/06/21 14:14:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.28 1995/07/07 17:15:21 bsmith Exp curfman $";
 #endif
 
 /*
@@ -58,6 +58,7 @@ static char vcid[] = "$Id: gmres.c,v 1.27 1995/06/21 14:14:50 bsmith Exp bsmith 
 #include <math.h>
 #include <stdio.h>
 #include "gmresp.h"
+#include "pviewer.h"
 #define GMRES_DELTA_DIRECTIONS 5
 #define GMRES_DEFAULT_MAXK 10
 int  BasicMultiMaxpy( Vec *,int,Scalar *,Vec);
@@ -484,6 +485,10 @@ $   -ksp_gmres_restart  max_k
 
     Note:
     The default value of max_k = 10.
+
+.keywords: GMRES, set, restart
+
+.seealso: KSPGMRESSetUseUnmodifiedGrammSchmidt()
 @*/
 int KSPGMRESSetRestart(KSP itP,int max_k )
 {
@@ -549,10 +554,9 @@ int GMRESUnmodifiedOrthog(KSP,int);
 
 /*@
     KSPGMRESSetUseUnmodifiedGrammSchmidt - Sets GMRES to use unmodified
-        Gramm-Schmidt for the Orthogonalization. Not recommended, do 
-        to possible numerical problems, but may faster, especially in 
-        a parallel environment.
-        
+    Gramm-Schmidt for the orthogonalization.  This is not recommended, do 
+    to possible numerical problems, although it may be faster, especially
+    in a parallel environment.
 
     Input Parameters:
 .   itP - the iterative context
@@ -560,14 +564,37 @@ int GMRESUnmodifiedOrthog(KSP,int);
     Options Database Key:
 $   -ksp_gmres_unmodifiedgrammschmidt
 
-    Note:
-    The default is to use modified Gramm-Schmidt
+    Notes:
+    The default is to use modified Gramm-Schmidt.
+
+.keywords: GMRES, unmodified, Gramm-Schmidt, orthogonalization
+
+.seealso: KSPGMRESSetRestart()
 @*/
 int KSPGMRESSetUseUnmodifiedGrammSchmidt(KSP itP)
 {
   return KSPGMRESSetOrthogRoutine( itP, GMRESUnmodifiedOrthog);
 }
 
+static int KSPView_GMRES(PetscObject obj,Viewer viewer)
+{
+  KSP       itP = (KSP)obj;
+  KSP_GMRES *gmresP = (KSP_GMRES *)itP->MethodPrivate; 
+  FILE      *fd = ViewerFileGetPointer_Private(viewer);
+  char      *cstring;
+  int       GMRESBasicOrthog(KSP,int);
+
+  if (gmresP->orthog == GMRESUnmodifiedOrthog) 
+    cstring = "GMRESUnmodifiedOrthog";
+  else if (gmresP->orthog == GMRESBasicOrthog) 
+    cstring = "GMRESBasicOrthog";
+  else 
+    cstring = "unknown";
+  MPIU_fprintf(itP->comm,fd,
+    "     GMRES: restart=%d, orthogonalization routine is %s\n",
+    gmresP->max_k,cstring);
+  return 0;
+}
 
 int KSPCreate_GMRES(KSP itP)
 {
@@ -585,6 +612,7 @@ int KSPCreate_GMRES(KSP itP)
   itP->solver        = KSPSolve_GMRES;
   itP->adjustwork    = KSPAdjustWork_GMRES;
   itP->destroy       = KSPDestroy_GMRES;
+  itP->view          = KSPView_GMRES;
 
   gmresP->haptol    = 1.0e-8;
   gmresP->epsabs    = 1.0e-8;
@@ -596,5 +624,4 @@ int KSPCreate_GMRES(KSP itP)
   gmresP->max_k     = GMRES_DEFAULT_MAXK;
   return 0;
 }
-
 

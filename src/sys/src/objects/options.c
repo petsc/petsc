@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.21 1995/07/11 17:55:28 curfman Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.22 1995/07/14 13:51:37 curfman Exp curfman $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -150,7 +150,7 @@ int PetscFinalize()
       else if (nopt == 1) 
         fprintf(stderr,"There is one unused database option. It is:\n");
       else
-        fprintf(stderr,"There are %d unused database options.They are:\n",nopt);
+        fprintf(stderr,"There are %d unused database options. They are:\n",nopt);
       for ( i=0; i<options->N; i++ ) {
         if (!options->used[i]) {
           fprintf(stderr,"Option left: name:%s value: %s\n",options->names[i],
