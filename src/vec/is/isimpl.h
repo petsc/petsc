@@ -1,4 +1,4 @@
-/* $Id: isimpl.h,v 1.15 1998/03/12 23:14:49 bsmith Exp bsmith $ */
+/* $Id: isimpl.h,v 1.16 1998/04/03 23:12:35 bsmith Exp bsmith $ */
 
 /*
     Index sets for scatter-gather type operations in vectors
@@ -21,6 +21,7 @@ struct _ISOps {
        (*duplicate)(IS, IS *),
        (*destroy)(IS),
        (*view)(IS,Viewer);
+       (*identity)(IS);
 };
 
 struct _p_IS {
