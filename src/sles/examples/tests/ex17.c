@@ -1,39 +1,50 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.5 1996/02/08 18:27:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.6 1996/03/19 21:27:49 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
 
 #include "sles.h"
+#include <math.h>
 #include <stdio.h>
 
-int FormTestMatrix(Mat,int,int);
+typedef enum {TEST_1, TEST_2, TEST_3, HELMHOLTZ_1, HELMHOLTZ_2} TestType;
+int FormTestMatrix(Mat,int,TestType);
 
 int main(int argc,char **args)
 {
-  Vec      x, b, u;      /* approx solution, RHS, exact solution */
-  Mat      A;            /* linear system matrix */
-  SLES     sles;         /* SLES context */
-  int      ierr, n = 10, kind=0, its, flg;
-  Scalar   none = -1.0;
-  double   norm;
+  Vec         x, b, u;      /* approx solution, RHS, exact solution */
+  Mat         A;            /* linear system matrix */
+  SLES        sles;         /* SLES context */
+  int         ierr, n = 10, its, flg, dim, p = 1;
+  Scalar      none = -1.0;
+  double      norm;
   PetscRandom rctx;
+  TestType    type;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-kind",&kind,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-p",&p,&flg); CHKERRA(ierr);
+  switch (p) {
+    case 1:  type = TEST_1;      dim = n;   break;
+    case 2:  type = TEST_2;      dim = n;   break;
+    case 3:  type = TEST_3;      dim = n;   break;
+    case 4:  type = HELMHOLTZ_1; dim = n*n; break;
+    case 5:  type = HELMHOLTZ_2; dim = n*n; break;
+    default: type = TEST_1;      dim = n;
+  }
 
   /* Create vectors */
-  ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(MPI_COMM_WORLD,dim,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&b); CHKERRA(ierr);
   ierr = VecDuplicate(x,&u); CHKERRA(ierr);
   ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
   ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
 
   /* Create and assemble matrix */
-  ierr = MatCreate(MPI_COMM_WORLD,n,n,&A); CHKERRA(ierr);
-  ierr = FormTestMatrix(A,n,kind); CHKERRQ(ierr);
+  ierr = MatCreate(MPI_COMM_WORLD,dim,dim,&A); CHKERRA(ierr);
+  ierr = FormTestMatrix(A,n,type); CHKERRQ(ierr);
   ierr = MatMult(A,u,b); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-printout",&flg); CHKERRA(ierr);
   if (flg) {
@@ -67,16 +78,17 @@ int main(int argc,char **args)
   return 0;
 }
 
-int FormTestMatrix(Mat A,int n,int kind)
+int FormTestMatrix(Mat A,int n,TestType type)
 {
 #if !defined(PETSC_COMPLEX)
   SETERRQ(1,"FormTestMatrix: These problems require complex numbers.");
 #else
 
-  Scalar val[5];
-  int    i, ierr, col[5];
+  Scalar val[5], h;
+  int    flg, i, j, I, J, ierr, col[5], Istart, Iend;
 
-  if (kind == 0) {
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend); CHKERRA(ierr);
+  if (type == TEST_1) {
     val[0] = 1.0; val[1] = 4.0; val[2] = -2.0;
     for (i=1; i<n-1; i++ ) {
       col[0] = i-1; col[1] = i; col[2] = i+1;
@@ -87,7 +99,7 @@ int FormTestMatrix(Mat A,int n,int kind)
     i = 0; col[0] = 0; col[1] = 1; val[0] = 4.0; val[1] = -2.0;
     ierr = MatSetValues(A,1,&i,2,col,val,INSERT_VALUES); CHKERRQ(ierr);
   } 
-  else if (kind == 1) {
+  else if (type == TEST_2) {
     val[0] = 1.0; val[1] = 0.0; val[2] = 2.0; val[3] = 1.0;
     for (i=2; i<n-1; i++ ) {
       col[0] = i-2; col[1] = i-1; col[2] = i; col[3] = i+1;
@@ -100,9 +112,8 @@ int FormTestMatrix(Mat A,int n,int kind)
     i = 0;
     ierr = MatSetValues(A,1,&i,2,col,&val[2],INSERT_VALUES); CHKERRQ(ierr);
   } 
-  else if (kind == 2) {
-    complex tmp(0.0,2.0);
-    val[0] = tmp;
+  else if (type == TEST_3) {
+    val[0] = complex(0.0,2.0);
     val[1] = 4.0; val[2] = 0.0; val[3] = 1.0; val[4] = 0.7;
     for (i=1; i<n-3; i++ ) {
       col[0] = i-1; col[1] = i; col[2] = i+1; col[3] = i+2; col[4] = i+3;
@@ -117,7 +128,64 @@ int FormTestMatrix(Mat A,int n,int kind)
     i = 0; col[0] = 0; col[1] = 1; col[2] = 2; col[3] = 3;
     ierr = MatSetValues(A,1,&i,4,col,&val[1],INSERT_VALUES); CHKERRQ(ierr);
   } 
-  else SETERRQ(1,"FormTestMatrix: this kind of test matrix not supported");
+  else if (type == HELMHOLTZ_1) {
+    /* Problem domain: unit square: (0,1) x (0,1)
+       Solve Helmholtz equation:
+          -delta u - sigma1*u + i*sigma2*u = f, 
+           where delta = Laplace operator
+       Dirichlet b.c.'s on all sides
+     */
+    PetscRandom rctx;
+    double      h2, sigma1 = 100.0;
+    complex     sigma2;
+    ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,&flg); CHKERRA(ierr);
+    ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx); CHKERRQ(ierr);
+    h2 = 1.0/((n+1)*(n+1));
+    for ( I=Istart; I<Iend; I++ ) { 
+      *val = -1.0*h2; i = I/n; j = I - i*n;  
+      if ( i>0 ) {
+        J = I-n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
+      if ( i<n-1 ) {
+        J = I+n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
+      if ( j>0 ) {
+        J = I-1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
+      if ( j<n-1 ) {
+        J = I+1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
+      ierr = PetscRandomGetValue(rctx,&sigma2); CHKERRQ(ierr);
+      *val = (4.0 - sigma1 + sigma2)*h2;
+      ierr = MatSetValues(A,1,&I,1,&I,val,ADD_VALUES); CHKERRQ(ierr);
+    }
+    ierr = PetscRandomDestroy(rctx); CHKERRQ(ierr);
+  }
+  else if (type == HELMHOLTZ_2) {
+    /* Problem domain: unit square: (0,1) x (0,1)
+       Solve Helmholtz equation:
+          -delta u - sigma1*u + i*sigma2*u = f, 
+           where delta = Laplace operator
+       Dirichlet b.c.'s on 3 sides
+       du/dn = i*alpha*u on (1,y), 0<y<1
+     */
+    double  h, h2, sigma1 = 200.0, alpha = 10.0;
+    complex alpha_h;
+    ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,&flg); CHKERRA(ierr);
+    h2 = 1.0/((n+1)*(n+1));
+    alpha_h = complex(0.0,10.0) / (n+1);  /* alpha_h = alpha * h */
+    for ( I=Istart; I<Iend; I++ ) { 
+      *val = -1.0*h2; i = I/n; j = I - i*n;  
+      if ( i>0 ) {
+        J = I-n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
+      if ( i<n-1 ) {
+        J = I+n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
+      if ( j>0 ) {
+        J = I-1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
+      if ( j<n-1 ) {
+        J = I+1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
+      *val = (4.0 - sigma1)*h2;
+      if (!((I+1)%n)) *val += alpha_h;
+      ierr = MatSetValues(A,1,&I,1,&I,val,ADD_VALUES); CHKERRQ(ierr);
+    }
+  }
+  else SETERRQ(1,"FormTestMatrix: unknown test matrix type");
 
   ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
