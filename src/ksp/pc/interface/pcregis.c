@@ -30,6 +30,10 @@ EXTERN PetscErrorCode PCCreate_Mat(PC);
 #if defined(PETSC_HAVE_HYPRE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN PetscErrorCode PCCreate_HYPRE(PC);
 #endif
+#if !defined(PETSC_USE_64BIT_INT) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+EXTERN PetscErrorCode PCCreate_TFS(PC);
+#endif
+
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -83,9 +87,8 @@ PetscErrorCode PCRegisterAll(const char path[])
 #if defined(PETSC_HAVE_HYPRE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PCRegisterDynamic(PCHYPRE        ,path,"PCCreate_HYPRE",PCCreate_HYPRE);CHKERRQ(ierr);
 #endif
+#if !defined(PETSC_USE_64BIT_INT) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  ierr = PCRegisterDynamic(PCTFS         ,path,"PCCreate_TFS",PCCreate_TFS);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
-
-
-
-
