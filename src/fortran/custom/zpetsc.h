@@ -9,7 +9,7 @@
        int    *PetscIntAddressFromFortran(int*,long); 
 extern void   *PETSC_NULL_Fortran;
 extern char   *PETSC_NULL_CHARACTER_Fortran;
-
+extern void   *PETSC_NULL_FUNCTION_Fortran;
 /*  ----------------------------------------------------------------------*/
 /*
    On 32 bit machines we store each PETSc object C pointer directly as a
@@ -146,7 +146,7 @@ extern int   MPIR_FromPointer(void*);
 #endif
 
 #define FORTRANNULL(a) (((void *) a) == PETSC_NULL_Fortran)
-
+#define FORTRANNULLFUNCTION(a) (((void *) a) == PETSC_NULL_FUNCTION_Fortran)
 /*
     These are used to support the default viewers that are 
   created at run time, in C using the , trick.

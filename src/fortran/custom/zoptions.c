@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.38 1998/03/30 22:22:10 balay Exp balay $";
+static char vcid[] = "$Id: zoptions.c,v 1.39 1998/03/31 16:44:47 balay Exp balay $";
 #endif
 
 /*
@@ -194,6 +194,7 @@ void petscgetprogramname_(CHAR name, int *__ierr,int len_in )
 */
 void   *PETSC_NULL_Fortran;
 char   *PETSC_NULL_CHARACTER_Fortran;
+void   *PETSC_NULL_FUNCTION_Fortran;
 
 long PetscIntAddressToFortran(int *base,int *addr)
 {

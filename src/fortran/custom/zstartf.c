@@ -56,16 +56,18 @@ void petscinitializefortran_(void)
 }
 
 #if defined(USES_CPTOFCD)
-void petscsetfortranbasepointers_(void *fnull,_fcd fcnull)
+void petscsetfortranbasepointers_(void *fnull,_fcd fcnull,void *ffnull)
 {
   PETSC_NULL_Fortran            = fnull;
   PETSC_NULL_CHARACTER_Fortran  = _fcdtocp(fcnull);
+  PETSC_NULL_FUNCTION_Fortran   = ffnull;
 }
 #else
-void petscsetfortranbasepointers_(void *fnull,char *fcnull)
+void petscsetfortranbasepointers_(void *fnull,char *fcnull,void *ffnull)
 {
   PETSC_NULL_Fortran            = fnull;
   PETSC_NULL_CHARACTER_Fortran  = fcnull;
+  PETSC_NULL_FUNCTION_Fortran   = ffnull;
 }
 #endif 
 

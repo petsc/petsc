@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.21 1998/03/24 16:42:17 balay Exp balay $";
+! "$Id: ex1f.F,v 1.22 1998/03/30 22:02:42 balay Exp balay $";
 !
 !       Formatted test for TS routines.
 !
@@ -159,14 +159,14 @@
 !    
         call MatCreateShell(PETSC_COMM_WORLD,m,M,M,M,PETSC_NULL,A,ierr)
         call MatShellSetOperation(A,MATOP_MULT,RHSMatrixFree,ierr)
-        call TSSetRHSMatrix(ts,A,A,PETSC_NULL,PETSC_NULL,ierr) 
+        call TSSetRHSMatrix(ts,A,A,PETSC_NULL_FUNCTION,PETSC_NULL,ierr) 
       else if (problem .eq. linear_no_time) then
 !    
 !         The user provides the RHS as a matrix
 !    
         call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
         call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL,ierr)  
-        call TSSetRHSMatrix(ts,A,A,PETSC_NULL,PETSC_NULL,ierr) 
+        call TSSetRHSMatrix(ts,A,A,PETSC_NULL_FUNCTION,PETSC_NULL,ierr) 
       else if (problem .eq. linear) then
 !    
 !         The user provides the RHS as a time dependent matrix
@@ -181,7 +181,8 @@
         call TSSetRHSFunction(ts,RHSFunctionHeat,PETSC_NULL,ierr) 
         call MatCreateShell(PETSC_COMM_WORLD,m,M,M,M,PETSC_NULL,A,ierr)
         call MatShellSetOperation(A,MATOP_MULT,RHSMatrixFree,ierr)
-        call TSSetRHSJacobian(ts,A,A,PETSC_NULL,PETSC_NULL,ierr)   
+        call TSSetRHSJacobian(ts,A,A,PETSC_NULL_FUNCTION,               &
+     &       PETSC_NULL,ierr)   
       else if (problem .eq. nonlinear) then
 !    
 !         The user provides the RHS and Jacobian

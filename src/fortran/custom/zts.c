@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zts.c,v 1.9 1998/03/30 22:23:21 balay Exp bsmith $";
+static char vcid[] = "$Id: zts.c,v 1.10 1998/04/03 23:11:18 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -96,7 +96,7 @@ static int ourtsmatrix(TS ts,double d,Mat* m,Mat* p,MatStructure* type,void*ctx)
 void tssetrhsmatrix_(TS ts,Mat A,Mat B,int (*f)(PetscFortranAddr*,double*,PetscFortranAddr*,
             PetscFortranAddr*,MatStructure*,void*,int *),void*fP, int *__ierr )
 {
-  if (FORTRANNULL(f)) {
+  if (FORTRANNULLFUNCTION(f)) {
     *__ierr = TSSetRHSMatrix((TS)PetscToPointer(ts),
 	                   (Mat)PetscToPointer(A),
 	                   (Mat)PetscToPointer(B),PETSC_NULL,fP);
@@ -133,7 +133,7 @@ static int ourtsjacobian(TS ts,double d,Vec x,Mat* m,Mat* p,MatStructure* type,v
 void tssetrhsjacobian_(TS ts,Mat A,Mat B,int (*f)(PetscFortranAddr*,double*,PetscFortranAddr*,
              PetscFortranAddr*,PetscFortranAddr*,MatStructure*,void*,int*),void*fP, int *__ierr )
 {
-  if (FORTRANNULL(f)) {
+  if (FORTRANNULLFUNCTION(f)) {
     *__ierr = TSSetRHSJacobian((TS)PetscToPointer(ts),
 	                       (Mat)PetscToPointer(A),
 	                       (Mat)PetscToPointer(B),PETSC_NULL,fP);

@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.69 1998/04/07 03:30:38 balay Exp balay $;
+!  $Id: petsc.h,v 1.70 1998/04/07 22:30:13 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -79,7 +79,7 @@
 ! PETSc world communicator
 !
       MPI_Comm PETSC_COMM_WORLD, PETSC_COMM_SELF
-
+!
 !
 !     A string should be in a different common block
 !  
@@ -164,3 +164,8 @@
 #define PLogDouble  double precision
 
 
+
+!
+!      A PETSC_NULL_FUNCTION pointer
+!
+      external PETSC_NULL_FUNCTION

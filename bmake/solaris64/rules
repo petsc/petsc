@@ -1,4 +1,4 @@
-# $Id: base,v 1.29 1998/03/26 19:28:15 balay Exp balay $ 
+# $Id: base,v 1.30 1998/03/26 19:36:25 balay Exp balay $ 
 
 PARCH    = solaris
 #
@@ -44,21 +44,21 @@ libf: ${LIBNAME}(${OBJSF})
 #	${AR} cr ${LIBNAME} $*.o
 #	${RM} $*.o
 .F.f:
-	${RM} $*.f
-	/usr/ucb/cc -E  ${CFLAGS} $*.F | grep -v '^# '  > $*.f
+	-${RM} $*.f
+	-/usr/ucb/cc -E  ${CFLAGS} $*.F | grep -v '^# '  > $*.f
 
 .F.o:
-	${RM} $*.f
-	/usr/ucb/cc -E  ${CFLAGS} $*.F | grep -v '^# '  > $*.f
+	-${RM} $*.f
+	-/usr/ucb/cc -E  ${CFLAGS} $*.F | grep -v '^# '  > $*.f
 	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
-	${RM} $*.f 
+	-${RM} $*.f 
 
 .F.a:
-	${RM} $*.f 
-	/usr/ucb/cc -E  ${CFLAGS} $*.F | grep -v '^# '  > $*.f
+	-${RM} $*.f
+	-/usr/ucb/cc -E  ${CFLAGS} $*.F | grep -v '^# '  > $*.f
 	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
-	${AR} cr ${LIBNAME} $*.o
-	${RM} $*.f $*.o
+	-${AR} cr ${LIBNAME} $*.o
+	-${RM} $*.f $*.o
 
 
 shared: chkopts_basic
