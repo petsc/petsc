@@ -1,4 +1,4 @@
-# $Id: base,v 1.24 1998/12/05 20:43:39 balay Exp $ 
+# $Id: base_variables,v 1.1 1999/02/08 23:49:53 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -63,38 +63,4 @@ OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
 #
 PARCH    = rs6000
 
-include ${PETSC_DIR}/bmake/common
-
-libc:
-	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
-
-libf:
-	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
-
-libmember:    ${LIBNAME}(${LIBMEMBER})
-#########
-
-# This F.f rule ensures that the old *.f files are removed.
-#
-.F.f:
-	-${RM} $*.f __$*.c
-	-cp $*.F __$*.c
-	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
-	-${RM} __$*.c
-
-.F.o:
-	-${RM} $*.f __$*.c
-	-cp $*.F __$*.c
-	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} $*.f
-	-${RM} $*.f __$*.c
-
-.F.a:
-	-${RM} $*.f __$*.c
-	-cp $*.F __$*.c
-	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} $*.f
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} $*.f __$*.c
-
-shared:
+include ${PETSC_DIR}/bmake/common_variables
