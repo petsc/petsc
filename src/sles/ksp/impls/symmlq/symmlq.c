@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.5 2000/05/04 16:28:54 bsmith Exp $*/
+/*$Id: symmlq.c,v 1.1 2000/08/18 19:59:18 balay Exp hzhang $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
@@ -24,19 +24,19 @@ int KSPSetUp_SYMMLQ(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ "KSPSolve_SYMMLQ"
 int  KSPSolve_SYMMLQ(KSP ksp,int *its)
 {
   int          ierr,i,maxit;
-  Scalar       alpha,malpha,beta,mbeta,ibeta,betaold,eta;
-  Scalar       c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
+  Scalar       alpha,malpha,beta,mbeta,ibeta,betaold,beta1,eta;
+  Scalar       ceta,ceta_oold = 0.0, ceta_old = 0.0;
+  Scalar       c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,ms,s_prod;
   Scalar       rho0,rho1,irho1,rho2,mrho2,rho3,mrho3;
   Scalar       mone = -1.0,zero = 0.0; 
   Scalar       dp = 0.0;
   PetscReal    np;
-  Vec          X,B,R,Z,U,V,W,UOLD,VOLD,WOLD,WOOLD;
+  Vec          X,B,R,Z,U,V,W,UOLD,VOLD,Wbar;
   Mat          Amat,Pmat;
   MatStructure pflag;
 
@@ -51,125 +51,131 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   W       = ksp->work[4];
   UOLD    = ksp->work[5];
   VOLD    = ksp->work[6];
-  WOLD    = ksp->work[7];
-  WOOLD   = ksp->work[8];
-
+  Wbar    = ksp->work[7];
+  
   ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   ksp->its = 0;
 
-  ierr = VecSet(&zero,UOLD);CHKERRQ(ierr);         /*     u_old  <-   0   */
-  ierr = VecCopy(UOLD,VOLD);CHKERRQ(ierr);         /*     v_old  <-   0   */
-  ierr = VecCopy(UOLD,W);CHKERRQ(ierr);            /*     w      <-   0   */
-  ierr = VecCopy(UOLD,WOLD);CHKERRQ(ierr);         /*     w_old  <-   0   */
-
+  ierr = VecSet(&zero,UOLD);CHKERRQ(ierr);          /* u_old <- zeros;  */
+  ierr = VecCopy(UOLD,VOLD);CHKERRQ(ierr);          /* v_old <- u_old;  */
+  ierr = VecCopy(UOLD,W);CHKERRQ(ierr);             /* w     <- u_old;  */ 
+  ierr = VecCopy(UOLD,Wbar);CHKERRQ(ierr);          /* w_bar <- u_old;  */
   if (!ksp->guess_zero) {
-    ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr); /*     r <- b - A*x    */
+    ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr); /*     r <- b - A*x */
     ierr = VecAYPX(&mone,B,R);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(B,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
 
-  ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /*     z  <- B*r       */
-
-  ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
+  ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /* z  <- B*r       */
+  ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);             /* dp = r'*z;      */
 #if !defined(PETSC_USE_COMPLEX)
   if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner");
 #endif
   dp = PetscSqrtScalar(dp); 
-  beta = dp;                                        /*  beta <- sqrt(r'*z  */
+  beta = dp;                         /*  beta <- sqrt(r'*z)  */
+  beta1 = beta;
   eta  = beta;
+  s_prod = PetscAbsScalar(beta1); 
 
-  ierr = VecCopy(R,V);CHKERRQ(ierr);
-  ierr = VecCopy(Z,U);CHKERRQ(ierr);
+  ierr = VecCopy(R,V);CHKERRQ(ierr);  /* v <- r; */
+  ierr = VecCopy(Z,U);CHKERRQ(ierr);  /* u <- z; */
   ibeta = 1.0 / beta;
-  ierr = VecScale(&ibeta,V);CHKERRQ(ierr);         /*    v <- r / beta     */
-  ierr = VecScale(&ibeta,U);CHKERRQ(ierr);         /*    u <- z / beta     */
-
+  ierr = VecScale(&ibeta,V);CHKERRQ(ierr);     /* v <- ibeta*v; */
+  ierr = VecScale(&ibeta,U);CHKERRQ(ierr);     /* u <- ibeta*u; */
+  ierr = VecCopy(U,Wbar);CHKERRQ(ierr);        /* w_bar <- u;   */
   ierr = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);      /*   np <- ||z||        */
-
   ierr = (*ksp->converged)(ksp,0,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);  /* test for convergence */
   if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
   KSPLogResidualHistory(ksp,np);
   KSPMonitor(ksp,0,np);            /* call any registered monitor routines */
   ksp->rnorm = np;  
 
-  for (i=0; i<maxit; i++) {
-     ksp->its = i+1;
+for (i=0; i<maxit; i++){
+   ksp->its = i+1;
 
 /*   Lanczos  */
 
-     ierr = KSP_MatMult(ksp,Amat,U,R);CHKERRQ(ierr);   /*      r <- A*u   */
-     ierr = VecDot(U,R,&alpha);CHKERRQ(ierr);          /*  alpha <- r'*u  */
-     ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /*      z <- B*r   */
+     ierr = KSP_MatMult(ksp,Amat,U,R);CHKERRQ(ierr);   /*  r     <- Amat*u; */  
+     ierr = VecDot(U,R,&alpha);CHKERRQ(ierr);          /*  alpha <- u'*r;   */
+     ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /*      z <- B*r;    */
 
      malpha = - alpha;
-     ierr = VecAXPY(&malpha,V,R);CHKERRQ(ierr);     /*  r <- r - alpha v     */
-     ierr = VecAXPY(&malpha,U,Z);CHKERRQ(ierr);     /*  z <- z - alpha u     */
+     ierr = VecAXPY(&malpha,V,R);CHKERRQ(ierr);     /*  r <- r - alpha* v;  */
+     ierr = VecAXPY(&malpha,U,Z);CHKERRQ(ierr);     /*  z <- z - alpha* u;  */
      mbeta = - beta;
-     ierr = VecAXPY(&mbeta,VOLD,R);CHKERRQ(ierr);   /*  r <- r - beta v_old  */
-     ierr = VecAXPY(&mbeta,UOLD,Z);CHKERRQ(ierr);   /*  z <- z - beta u_old  */
-
-     betaold = beta;
-
-     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr); 
+     ierr = VecAXPY(&mbeta,VOLD,R);CHKERRQ(ierr);   /*  r <- r - beta * v_old; */
+     ierr = VecAXPY(&mbeta,UOLD,Z);CHKERRQ(ierr);   /*  z <- z - beta * u_old; */
+     betaold = beta;                                /* beta_k                  */
+     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);          /* dp <- r'*z;             */
 #if !defined(PETSC_USE_COMPLEX)
      if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner");
 #endif
-     beta = PetscSqrtScalar(dp);                               /*  beta <- sqrt(r'*z)   */
+     beta = PetscSqrtScalar(dp);                    /*  beta = sqrt(dp); */
 
 /*    QR factorisation    */
 
      coold = cold; cold = c; soold = sold; sold = s;
 
-     rho0 = cold * alpha - coold * sold * betaold;
-     rho1 = PetscSqrtScalar(rho0*rho0 + beta*beta);
-     rho2 = sold * alpha + coold * cold * betaold;
-     rho3 = soold * betaold;
+     rho0 = cold * alpha - coold * sold * betaold;    /* gamma_bar */ 
+     rho1 = PetscSqrtScalar(rho0*rho0 + beta*beta);   /* gamma     */
+     rho2 = sold * alpha + coold * cold * betaold;    /* delta     */
+     rho3 = soold * betaold;                          /* epsilon   */
 
-/*     Givens rotation    */
+/*     Givens rotation: [c -s; s c] (different from the Reference!)   */
 
      c = rho0 / rho1;
      s = beta / rho1;
 
 /*    Update    */
 
-     ierr = VecCopy(WOLD,WOOLD);CHKERRQ(ierr);     /*  w_oold <- w_old      */
-     ierr = VecCopy(W,WOLD);CHKERRQ(ierr);         /*  w_old  <- w          */
+     ierr = VecCopy(V,VOLD);CHKERRQ(ierr);  /* v_old <- v; */     
+     ierr = VecCopy(U,UOLD);CHKERRQ(ierr);  /* u_old <- u; */
      
-     ierr = VecCopy(U,W);CHKERRQ(ierr);            /*  w      <- u          */
-     mrho2 = - rho2;
-     ierr = VecAXPY(&mrho2,WOLD,W);CHKERRQ(ierr);  /*  w <- w - rho2 w_old  */
-     mrho3 = - rho3;
-     ierr = VecAXPY(&mrho3,WOOLD,W);CHKERRQ(ierr); /*  w <- w - rho3 w_oold */
-     irho1 = 1.0 / rho1;
-     ierr = VecScale(&irho1,W);CHKERRQ(ierr);      /*  w <- w / rho1        */
-
-     ceta = c * eta;
-     ierr = VecAXPY(&ceta,W,X);CHKERRQ(ierr);      /*  x <- x + c eta w     */ 
-     eta = - s * eta;
-
-     ierr = VecCopy(V,VOLD);CHKERRQ(ierr);
-     ierr = VecCopy(U,UOLD);CHKERRQ(ierr);
-     ierr = VecCopy(R,V);CHKERRQ(ierr);
-     ierr = VecCopy(Z,U);CHKERRQ(ierr);
      ibeta = 1.0 / beta;
-     ierr = VecScale(&ibeta,V);CHKERRQ(ierr);      /*  v <- r / beta       */
-     ierr = VecScale(&ibeta,U);CHKERRQ(ierr);      /*  u <- z / beta       */
-     
-     np = ksp->rnorm * PetscAbsScalar(s);
+	  ierr = VecCopy(R,V);CHKERRQ(ierr);
+     ierr = VecScale(&ibeta,V);CHKERRQ(ierr); /* v <- ibeta*r; */
+     ierr = VecCopy(Z,U);CHKERRQ(ierr);
+     ierr = VecScale(&ibeta,U);CHKERRQ(ierr); /* u <- ibeta*z; */
 
+     if (ksp->its==1){
+       ceta = beta1/rho1;
+     } else {
+       ceta = -(rho2*ceta_old + rho3*ceta_oold)/rho1;
+     }
+     /* x_c   = x + (ceta/c)*w_bar;          (xc_k) */
+     ierr = VecCopy(Wbar,W); CHKERRQ(ierr);
+     ierr = VecScale(&c,W);  CHKERRQ(ierr);
+     ierr = VecAXPY(&s,U,W); CHKERRQ(ierr);   /* w  <- c*w_bar + s*u;    (w_k) */
+     ms = -s;
+     ierr = VecScale(&ms,Wbar); CHKERRQ(ierr);
+     ierr = VecAXPY(&c,U,Wbar); CHKERRQ(ierr); /* w_bar <- -s*w_bar + c*u; (w_bar_(k+1)) */
+     ierr = VecAXPY(&ceta,W,X); CHKERRQ(ierr); /* x <- x + ceta * w;       (xL_k )  */
+
+     ceta_oold = ceta_old;
+     ceta_old  = ceta;
+     
+     s_prod = s_prod*PetscAbsScalar(s);
+     if (c == 0.0){
+       np = s_prod*1.e16;
+     } else {
+       np = s_prod/PetscAbsScalar(c);       /* residual norm for xc_k (CGNORM) */
+     }
      ksp->rnorm = np;
      KSPLogResidualHistory(ksp,np);
      KSPMonitor(ksp,i+1,np);
      ierr = (*ksp->converged)(ksp,i+1,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
      if (ksp->reason) break;
+    
   }
   if (i == maxit) {
     ksp->its--;
     ksp->reason = KSP_DIVERGED_ITS;
   }
   *its = ksp->its;
+  /* move to the CG point: xc_k */
+  
   PetscFunctionReturn(0);
 }
 
