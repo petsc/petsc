@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.304 1999/03/08 23:01:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.305 1999/03/09 04:09:21 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1030,6 +1030,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
     if (!a->idiag) {
       a->idiag = (Scalar *) PetscMalloc(2*m*sizeof(Scalar));CHKPTRQ(a->idiag);
       a->ssor  = a->idiag + m;
+      v        = a->a;
       for ( i=0; i<m; i++ ) { a->idiag[i] = 1.0/v[diag[i]];}
     }
     t     = a->ssor;
