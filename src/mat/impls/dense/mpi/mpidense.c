@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.13 1995/11/25 23:49:04 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.14 1995/11/29 22:08:17 curfman Exp curfman $";
 #endif
 
 /*
@@ -436,6 +436,7 @@ static int MatDestroy_MPIDense(PetscObject obj)
   ierr = MatDestroy(mdn->A); CHKERRQ(ierr);
   if (mdn->lvec)   VecDestroy(mdn->lvec);
   if (mdn->Mvctx)  VecScatterDestroy(mdn->Mvctx);
+  if (mdn->factor) PetscFree(mdn->factor);
   PetscFree(mdn); 
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
