@@ -1,0 +1,73 @@
+# $Id: base_variables,v 1.4 2001/01/04 22:20:37 balay Exp $ 
+#
+#     See the file bmake/base_variables.defs for a complete explanation of all these fields
+#
+WIN32FE            = ${PETSC_DIR}/bin/win32fe/win32fe.exe
+AR		   = ${WIN32FE} tlib -P128 --quiet
+AR_FLAGS	   = -u
+LIB_SUFFIX         = lib
+RM		   = rm -f
+OMAKE		   = make --no-print-directory
+RANLIB		   = true
+SHELL		   = /bin/sh
+SED		   = sed
+MKDIR              = mkdir -p
+# ######################### C and Fortran compiler ########################
+#
+C_CC		   = ${WIN32FE} bcc32 -q --quiet -w8019 -w8060
+C_FC		   = ${WIN32FE} bcf77 --quiet
+C_CLINKER_SLFLAG   = -L
+C_FLINKER_SLFLAG   = -L
+C_CLINKER	   = ${WIN32FE} bcc32 --quiet
+C_FLINKER	   = ${WIN32FE} bcf77 --quiet
+C_CCV		   = bcc32 | head -1
+C_FCV              = bcf77
+C_SYS_LIB	   = 
+# ------------------------- BOPT - g_c++ options ------------------------------
+G_COPTFLAGS	   = -v -w-8057
+G_FOPTFLAGS	   =
+# ----------------------------- BOPT - O options -----------------------------
+O_COPTFLAGS	   = -O -w-8057
+O_FOPTFLAGS	   = -O
+# ########################## C++ compiler ##################################
+CXX_CC		   = g++
+CXX_FC		   = g77 -Wno-globals
+CXX_CLINKER_SLFLAG = -L
+CXX_FLINKER_SLFLAG = -L
+CXX_CLINKER	   = g77
+CXX_FLINKER	   = g77
+CXX_CCV		   = gcc --version
+CXX_SYS_LIB	   = -ladvapi32 -lg2c -lstdc++ -lm
+# ------------------------- BOPT - g_c++ options ------------------------------
+GCXX_COPTFLAGS	   = -g 
+GCXX_FOPTFLAGS	   = -g
+# ------------------------- BOPT - O_c++ options ------------------------------
+OCXX_COPTFLAGS	   = -O
+OCXX_FOPTFLAGS	   = -O
+# -------------------------- BOPT - g_complex options ------------------------
+GCOMP_COPTFLAGS	   = -g 
+GCOMP_FOPTFLAGS	   = -g
+# --------------------------- BOPT - O_complex options -------------------------
+OCOMP_COPTFLAGS	   = -O
+OCOMP_FOPTFLAGS	   = -O
+
+# ########################### PETSc install options ###########################
+#
+G_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g -DPETSC_USE_STACK
+O_PETSCFLAGS	   = -DINLINE_FOR -DPETSC_USE_DEBUG  -DPETSC_USE_BOPT_O -DPETSC_USE_LOG
+GCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g -DPETSC_USE_STACK
+OCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O
+GCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
+                     -DPETSC_USE_STACK -DPETSC_USE_COMPLEX -DPETSC_HAVE_TEMPLATED_COMPLEX
+OCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O \
+                     -DPETSC_USE_COMPLEX -DPETSC_HAVE_TEMPLATED_COMPLEX
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
+
+PARCH		   = win32_borland
+
+include ${PETSC_DIR}/bmake/common_variables
