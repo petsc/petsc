@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.52 1995/12/21 18:31:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.53 1995/12/23 04:53:32 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -166,8 +166,8 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   for ( i=0; i<n; i++ ) {
     nz    = ai[i+1] - ai[i];
     ajtmp = aj + ai[i] + shift;
-    /*for  ( j=0; j<nz; j++ ) rtmps[ajtmp[j]] = 0.0;*/
-    for(j = 0; j < n; ++j) rtmps[j] =0.0;
+    for  ( j=0; j<nz; j++ ) rtmps[ajtmp[j]] = 0.0;
+    /* for(j = 0; j < n; ++j) rtmp[j] =0.0; */
 
     /* load in initial (unfactored row) */
     nz       = a->i[r[i]+1] - a->i[r[i]];
