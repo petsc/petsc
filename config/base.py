@@ -184,7 +184,6 @@ class Configure(script.Script):
         setattr(self, resultName, os.path.abspath(os.path.join(dir, name))+options)
       else:
         setattr(self, resultName, name+options)
-      self.addSubstitution(resultName.upper(), getattr(self, resultName))
       self.addMakeMacro(resultName.upper(), getattr(self, resultName))      
     return found
 

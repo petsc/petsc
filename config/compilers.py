@@ -510,10 +510,6 @@ class Configure(config.base.Configure):
         self.addDefine('HAVE_FORTRAN_MIXED_STR_ARG', 1)
       if self.fortranManglingDoubleUnderscore:
         self.addDefine('HAVE_FORTRAN_UNDERSCORE_UNDERSCORE',1)
-    else:
-      self.addSubstitution('FC', '')
-      self.addSubstitution('FC_SHARED_OPT', '')
-    self.addSubstitution('FLIBS', self.flibs)
     if hasattr(self, 'f90HeaderPath'):
       self.addDefine('HAVE_F90_H', '"'+self.f90HeaderPath+'"')
     if hasattr(self, 'f90SourcePath'):

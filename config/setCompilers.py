@@ -331,9 +331,7 @@ class Configure(config.base.Configure):
 
   def checkCxxPreprocessor(self):
     '''Locate a functional Cxx preprocessor'''
-    if not 'CXX' in self.framework.argDB:
-      self.addSubstitution('CXXCPP', '')
-      return
+    if not 'CXX' in self.framework.argDB: return
     for compiler in self.generateCxxPreprocessorGuesses():
       try:
         if self.getExecutable(compiler, resultName = 'CXXCPP'):
@@ -491,7 +489,7 @@ class Configure(config.base.Configure):
       self.addArgumentSubstitution('CC', 'CC')
       self.addArgumentSubstitution('CFLAGS', 'CFLAGS')
       if not self.CSharedLinkerFlag is None:
-        self.addSubstitution('C_LINKER_SLFLAG', self.CSharedLinkerFlag)
+        self.addMakeMacro('CC_LINKER_SLFLAG', self.CSharedLinkerFlag)
     if 'CPP' in self.framework.argDB:
       self.addArgumentSubstitution('CPP', 'CPP')
       self.addArgumentSubstitution('CPPFLAGS', 'CPPFLAGS')
@@ -509,7 +507,7 @@ class Configure(config.base.Configure):
       self.addArgumentSubstitution('FC', 'FC')
       self.addArgumentSubstitution('FFLAGS', 'FFLAGS')
       if not self.F77SharedLinkerFlag is None:
-        self.addSubstitution('F77_LINKER_SLFLAG', self.F77SharedLinkerFlag)
+        self.addMakeMacro('F77_LINKER_SLFLAG', self.F77SharedLinkerFlag)
     else:
       self.addSubstitution('FC', '')
     self.addArgumentSubstitution('LDFLAGS', 'LDFLAGS')
@@ -615,7 +613,7 @@ class Configure(config.base.Configure):
     self.getExecutable(archiver, getFullPath = 1, resultName = 'AR')
     self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB')
     self.framework.argDB['AR_FLAGS']=flags
-    self.framework.addArgumentSubstitution('AR_FLAGS','AR_FLAGS')
+    self.framework.addMakeMacro('AR_FLAGS',flags)
     self.AR_FLAGS = flags
     os.remove('conf1.o')
     self.framework.argDB['LIBS'] = oldLibs
