@@ -1,10 +1,9 @@
 
 
-/*
-    Scatters from  a sequential vector to a parallel vector.
-   Does case when we are merely selecting the local part of the 
-   parallel vector.
-*/
+static char help[] = "Scatters from  a sequential vector to a parallel vector.\n\
+   Does case when we are merely selecting the local part of the\n\
+   parallel vector.\n";
+
 #include "petsc.h"
 #include "comm.h"
 #include "is.h"
@@ -25,6 +24,7 @@ int main(int argc,char **argv)
   VecScatterCtx ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
 
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);

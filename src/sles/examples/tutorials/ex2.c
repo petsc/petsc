@@ -1,8 +1,9 @@
-/*
-   Tests MPI parallel AIJ  solve with SLES. This examples intentionally 
-  lays the matrix out across processors differently then the way it 
-  is assembled, this is to test parallel matrix assembly.
-*/
+
+static char help[] = "Tests MPI parallel AIJ solve with SLES. \n\
+  This examples intentionally lays the matrix out across processors\n\
+  differently then the way it is assembled, this is to test parallel\n\
+  matrix assembly.\n";
+
 #include "comm.h"
 #include "vec.h"
 #include "mat.h"
@@ -13,13 +14,14 @@
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i,j, m = 3, n = 2, mytid,numtids;
+  int         i,j, m = 3, n = 2, mytid,numtids,its;
   Scalar      v, zero = 0.0,norm, one = 1.0, none = -1.0;
   int         I, J, ierr;
   Vec         x,u,b;
   SLES        sles;
 
   PetscInitialize(&argc,&args,0,0);
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   n = 2*numtids;
@@ -52,12 +54,12 @@ int main(int argc,char **args)
   if (ierr = SLESCreate(&sles)) SETERR(ierr,0);
   if (ierr = SLESSetMat(sles,C)) SETERR(ierr,0);
   if (ierr = SLESSetFromOptions(sles)) SETERR(ierr,0);
-  if (ierr = SLESSolve(sles,b,x)) SETERR(ierr,0);
+  if (ierr = SLESSolve(sles,b,x,&its)) SETERR(ierr,0);
 
   /* check error */
   if (ierr = VecAXPY(&none,u,x)) SETERR(ierr,0);
   if (ierr = VecNorm(x,&norm)) SETERR(ierr,0);
-  printf("Norm of error %g\n",norm);
+  MPE_printf(MPI_COMM_WORLD,"Norm of error %g Number of iterations %d\n",norm,its);
 
   ierr = SLESDestroy(sles); CHKERR(ierr);
   ierr = VecDestroy(u); CHKERR(ierr);

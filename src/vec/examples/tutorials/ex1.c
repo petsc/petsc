@@ -1,8 +1,7 @@
 
 
-/*
-      Example demonstrating some features of the vectors directory.
-*/
+static char help[] = "Tests various vector routines\n";
+
 #include "petsc.h"
 #include "comm.h"
 #include "is.h"
@@ -22,7 +21,8 @@ int main(int argc,char **argv)
  
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  OptionsGetInt(0,"-n",&n);
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,0,"-n",&n);
 
   /* create a vector */
   ierr = VecCreateInitialVector(n,&x); CHKERR(ierr);

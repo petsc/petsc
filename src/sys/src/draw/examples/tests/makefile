@@ -12,7 +12,7 @@ OBJSF    =
 LIBBASE  = libpetscdraw
 EXAMPLES = ex1 ex2 ex3 ex4
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c
-SYSLIB   = $(LDIR)/libpetscdraw.a $(LDIR)/libpetscsys.a \
+SYSLIB   = -L$(LDIR) -lpetscdraw -lpetscsys \
            $(LAPACK) $(BLAS) \
            $(CLIB) $(X11LIB) $(SLIB) $(FCLIB) -lm 
 LINCLUDE = $(SOURCEH)

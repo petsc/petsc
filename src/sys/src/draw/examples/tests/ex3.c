@@ -17,17 +17,18 @@ int main(int argc,char **argv)
   DrawCtx     draw;
   DrawLGCtx   lg;
   DrawAxisCtx axis;
-  int         i, ierr, x = 0, y = 0, width = 300, height = 300;
+  int         n = 20,i, ierr, x = 0, y = 0, width = 300, height = 300;
   char        *xlabel,*ylabel,*toplabel;
   double      xd,yd;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
   OptionsCreate(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,help);
-  OptionsGetInt(0,"-width",&width);
-  OptionsGetInt(0,"-height",&height);
-  if (OptionsHasName(0,"-nolabels")) {
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,help);
+  OptionsGetInt(0,0,"-width",&width);
+  OptionsGetInt(0,0,"-height",&height);
+  OptionsGetInt(0,0,"-n",&n);
+  if (OptionsHasName(0,0,"-nolabels")) {
     xlabel = (char *)0; toplabel = (char *)0;
   }
   ierr = DrawOpenX(0,"Window Title",x,y,width,height,&draw); CHKERR(ierr);
@@ -36,7 +37,7 @@ int main(int argc,char **argv)
   ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE);
   ierr = DrawAxisSetLabels(axis,toplabel,xlabel,ylabel);
 
-  for ( i=0; i<20 ; i++ ) {
+  for ( i=0; i<n ; i++ ) {
     xd = (double)( i - 5 ); yd = xd*xd;
     DrawLGAddPoint(lg,&xd,&yd);
   }

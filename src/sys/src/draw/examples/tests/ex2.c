@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   double  xx;
 
   OptionsCreate(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,help);
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,help);
 
   ierr = DrawOpenX(0,"Window Title",x,y,width,height,&draw); CHKERR(ierr);
   for ( i=0; i<256; i++) {

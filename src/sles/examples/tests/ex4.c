@@ -1,9 +1,5 @@
 
-static char help[] = "Tests MPI parallel AIJ  solve with SLES.\n\
-  This examples intentionally\
-  lays the matrix out across processors differently then the way it\
-  is assembled, this is to test parallel matrix assembly.\
-  Uses simple bilinear elements on the unit square,\n";
+static char help[] = "Tests AIJ  solve with SLES.\n";
 
 #include "comm.h"
 #include "vec.h"
@@ -30,7 +26,7 @@ int FormElementRhs(double x, double y, double H,Scalar *r)
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i,j, m = 2, mytid,numtids, N, start,end,M,its;
+  int         i,j, m = 2,  N, start,end,M,its;
   Scalar      val, zero = 0.0,norm, one = 1.0, none = -1.0,Ke[16],r[4];
   double      x,y,h;
   int         I, J, ierr,idx[4],count,*rows;
@@ -39,24 +35,20 @@ int main(int argc,char **args)
   KSP         ksp;
   IS          is;
 
-  PetscInitialize(&argc,&args,0,0);
+  OptionsCreate(&argc,&args,0,0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,0,"-m",&m);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
 
   /* create stiffness matrix */
-  ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,-1,-1,N,N,9,0,9,0,&C); 
+  ierr = MatCreateSequentialAIJ(N,N,9,0,&C); 
   CHKERR(ierr);
 
-  start = mytid*(M/numtids) + ((M%numtids) < mytid ? (M%numtids) : mytid);
-  end   = start + M/numtids + ((M%numtids) > mytid); 
   /* forms the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke);
-  for ( i=start; i<end; i++ ) {
+  for ( i=0; i<M; i++ ) {
      /* location of lower left corner of element */
      x = h*(i % m); y = h*(i/m); 
      /* node numbers for the four corners of element */
@@ -69,12 +61,12 @@ int main(int argc,char **args)
 
   /* create right hand side and solution */
 
-  ierr = VecCreateMPI(MPI_COMM_WORLD,-1,N,&u); CHKERR(ierr); 
+  ierr = VecCreateSequential(N,&u); CHKERR(ierr); 
   ierr = VecCreate(u,&b); CHKERR(ierr);
   ierr = VecCreate(b,&ustar); CHKERR(ierr);
   VecSet(&zero,u); VecSet(&zero,b);
 
-  for ( i=start; i<end; i++ ) {
+  for ( i=0; i<M; i++ ) {
      /* location of lower left corner of element */
      x = h*(i % m); y = h*(i/m); 
      /* node numbers for the four corners of element */
@@ -114,18 +106,16 @@ int main(int argc,char **args)
   ierr = MatZeroRows(C,is,&one); CHKERR(ierr);
   ISDestroy(is);
 
-/* MatView(C,0); VecView(b,0); */
-
   /* solve linear system */
   if (ierr = SLESCreate(&sles)) SETERR(ierr,0);
   if (ierr = SLESSetMat(sles,C)) SETERR(ierr,0);
   if (ierr = SLESSetFromOptions(sles)) SETERR(ierr,0);
+  SLESGetKSP(sles,&ksp);
+  KSPSetInitialGuessNonZero(ksp);
   if (ierr = SLESSolve(sles,b,u,&its)) SETERR(ierr,0);
 
   /* check error */
-  start = mytid*(N/numtids) + ((N%numtids) < mytid ? (N%numtids) : mytid);
-  end   = start + N/numtids + ((N%numtids) > mytid); 
-  for ( i=start; i<end; i++ ) {
+  for ( i=0; i<N; i++ ) {
      x = h*(i % (m+1)); y = h*(i/(m+1)); 
      val = y;
      VecSetValues(ustar,1,&i,&val,InsertValues); 
@@ -135,7 +125,7 @@ int main(int argc,char **args)
 /*VecView(ustar,0); */
   if (ierr = VecAXPY(&none,ustar,u)) SETERR(ierr,0);
   if (ierr = VecNorm(u,&norm)) SETERR(ierr,0);
-  MPE_printf(MPI_COMM_WORLD,"Norm of error %g Number iterations %d\n",norm*h,its);
+  printf("Norm of error %g Number iterations %d\n",norm*h,its);
 
   sleep(2);
   ierr = SLESDestroy(sles); CHKERR(ierr);

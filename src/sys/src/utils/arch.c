@@ -17,31 +17,31 @@
 @*/
 void SYGetArchType( char *str, int slen )
 {
-#if defined(solaris)
+#if defined(PARCH_solaris)
 strncpy(str,"solaris",7);
-#elif defined(sun4) 
+#elif defined(PARCH_sun4) 
 strncpy(str,"sun4",4);
-#elif defined(IRIX)
+#elif defined(PARCH_IRIX)
 strncpy(str,"IRIX",4);
-#elif defined(tc2000)
+#elif defined(PARCH_tc2000)
 strcpy( str, "tc2000" );   /* Need a lowercase version eventually ... */
-#elif defined(HPUX)
+#elif defined(PARCH_HPUX)
 strncpy( str, "hpux", 4 );
-#elif defined(fx2800)
+#elif defined(PARCH_fx2800)
 strncpy( str, "fx2800", 6 );
-#elif defined(rs6000)
+#elif defined(PARCH_rs6000)
 strncpy( str, "rs6000", slen );
-#elif defined(MSDOS)
+#elif defined(PARCH_MSDOS)
 strncpy( str, "msdos", slen );
-#elif defined(intelnx)
+#elif defined(PARCH_intelnx)
 strncpy( str, "intelnx", slen );
-#elif defined(dec5000)
+#elif defined(PARCH_dec5000)
 strncpy( str, "dec5000", slen );
-#elif defined(tc2000)
+#elif defined(PARCH_tc2000)
 strncpy( str, "tc2000", slen );
-#elif defined(cm5)
+#elif defined(PARCH_cm5)
 strncpy( str, "cm5", slen );
-#elif defined(NeXT)
+#elif defined(PARCH_NeXT)
 strncpy( str, "NeXT", slen );
 #else
 strncpy( str, "Unknown", slen );

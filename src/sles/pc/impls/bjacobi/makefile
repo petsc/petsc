@@ -3,12 +3,12 @@ ITOOLSDIR = ../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../.. -I$(ITOOLSDIR)/pinclude\
-           $(CONF)
-SOURCEC  = jacobi.c
+           $(CONF) -I../../../mat/impls/aij/seq -I../../../mat
+SOURCEC  = bjacobi.c bjaijmpi.c
 SOURCEF  =
 WSOURCEC = 
 SOURCEH  = 
-OBJSC    = jacobi.o
+OBJSC    = bjacobi.o bjaijmpi.o
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscpc

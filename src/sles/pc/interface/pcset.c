@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.1 1994/11/21 06:47:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.2 1995/01/13 04:35:55 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -37,6 +37,7 @@ int PCSetMethod(PC ctx,PCMETHOD method)
   ctx->setfrom     = ( int (*)(PC) ) 0;
   ctx->printhelp   = ( int (*)(PC) ) 0;
   ctx->setup       = ( int (*)(PC) ) 0;
+  ctx->destroy     = ( int (*)(PetscObject) ) 0;
   return (*r)(ctx);
 }
 
@@ -79,11 +80,10 @@ int PCRegisterDestroy()
 . pcmethod -  Iterative method type
 . returns 1 if method found else 0.
 @*/
-int PCGetMethodFromOptions(int flag,char *sname,PCMETHOD *method )
+int PCGetMethodFromOptions(PC pc,PCMETHOD *method )
 {
   char sbuf[50];
-  if (!sname) sname = "-pcmethod";
-  if (OptionsGetString(  flag, sname, sbuf, 50 )) {
+  if (OptionsGetString(  0, pc->prefix,"-pcmethod", sbuf, 50 )) {
     if (!__PCList) PCRegisterAll();
     *method = (PCMETHOD)NRFindID( __PCList, sbuf );
     return 1;
@@ -112,12 +112,12 @@ int PCGetMethodName(PCMETHOD meth,char **name )
   Input Parameters:
 .   name - the command line option (usually -pcmethod) 
 @*/
-int PCPrintMethods(char *name)
+int PCPrintMethods(char *prefix,char *name)
 {
   FuncList *entry;
   if (!__PCList) {PCRegisterAll();}
   entry = __PCList->head;
-  fprintf(stderr," %s (one of)",name);
+  fprintf(stderr," %s%s (one of)",prefix,name);
   while (entry) {
     fprintf(stderr," %s",entry->name);
     entry = entry->next;
@@ -141,10 +141,10 @@ int PCSetFromOptions(PC pc)
   PCMETHOD method;
   VALIDHEADER(pc,PC_COOKIE);
 
-  if (PCGetMethodFromOptions(0,pc->namemethod,&method)) {
+  if (PCGetMethodFromOptions(pc,&method)) {
     PCSetMethod(pc,method);
   }
-  if (OptionsHasName(0,"-help")){
+  if (OptionsHasName(0,0,"-help")){
     PCPrintHelp(pc);
   }
   if (pc->setfrom) return (*pc->setfrom)(pc);

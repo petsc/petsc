@@ -4,6 +4,7 @@
 #include "pcimpl.h"
 
 int PCiJacobiCreate(PC);
+int PCiBJacobiCreate(PC);
 int PCiNoneCreate(PC);
 int PCiDirectCreate(PC);
 int PCiSORCreate(PC);
@@ -22,6 +23,7 @@ int PCRegisterAll()
 {
   PCRegister(PCNONE         , "none",       PCiNoneCreate);
   PCRegister(PCJACOBI       , "jacobi",     PCiJacobiCreate);
+  PCRegister(PCBJACOBI      , "bjacobi",     PCiBJacobiCreate);
   PCRegister(PCSOR          , "sor",        PCiSORCreate);
   PCRegister(PCDIRECT       , "direct",     PCiDirectCreate);
   PCRegister(PCSHELL        , "shell",      PCiShellCreate);

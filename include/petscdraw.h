@@ -1,8 +1,8 @@
 /*
   Public include file for all of the PETSc graphics routines
 */
-#if !defined(__DRAW_H)
-#define __DRAW_H
+#if !defined(__DRAW_PACKAGE)
+#define __DRAW_PACKAGE
 
 typedef struct _DrawCtx* DrawCtx;
 
@@ -14,6 +14,7 @@ typedef struct _DrawCtx* DrawCtx;
 #define DRAW_CYAN   5
 #define DRAW_BLUE   6
 
+#define DRAW_COOKIE 0x101010
 int DrawOpenX(char*,char *,int,int,int,int,DrawCtx*);
 int DrawDestroy(DrawCtx);
 
@@ -46,10 +47,13 @@ int DrawAxisSetLimits(DrawAxisCtx,double,double,double,double);
 int DrawAxisSetColors(DrawAxisCtx,int,int,int);
 int DrawAxisSetLabels(DrawAxisCtx,char*,char*,char*);
 
+#define LG_COOKIE 0x17181920
 int DrawLGCreate(DrawCtx,int,DrawLGCtx *);
 int DrawLGDestroy(DrawLGCtx);
 int DrawLGAddPoint(DrawLGCtx,double*,double*);
+int DrawLGAddPoints(DrawLGCtx,int,double**,double**);
 int DrawLG(DrawLGCtx);
 int DrawLGGetAxisCtx(DrawLGCtx,DrawAxisCtx *);
+int DrawLGGetDrawCtx(DrawLGCtx,DrawCtx *);
 
 #endif

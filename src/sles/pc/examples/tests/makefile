@@ -10,12 +10,17 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
-EXAMPLES = ex1 ex2 ex3
-EXAMPLESC= ex1.c ex2.c ex3.c
-SYSLIB   = $(LDIR)/libpetscpc.a $(LDIR)/libpetscksp.a $(LDIR)/libpetscmat.a \
-           $(LDIR)/libpetscvec.a \
-           $(LDIR)/libpetscsys.a $(LAPACK) $(BLAS) $(CLIB) $(SLIB) -lm 
+EXAMPLES = ex1 ex2 ex3 ex4
+EXAMPLESC= ex1.c ex2.c ex3.c ex4.c
+SYSLIB   = -L$(LDIR) -lpetscpc -lpetscsles -lpetscksp -lpetscmat \
+           -lpetscvec \
+           -lpetscsys -lpetscdraw $(LAPACK) $(BLAS) $(X11LIB) $(CLIB) $(SLIB) -lm 
 LINCLUDE = $(SOURCEH)
+
+runexamples: 
+	-ex1
+	-ex2 -kspmethod cg -kspmonitor 
+	-ex3 -kspmethod gmres -kspmonitor -pcmethod sor -sor_symmetric
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o $(LIBNAME) $(SYSLIB)

@@ -468,7 +468,7 @@ PixVal XiSimColor(XiWindow *XiWin,PixVal pixel, int intensity, int is_fore)
 }
 
 
-/*@
+/*
   XiUniformHues - Set the colormap to a uniform distribution
 
   Input parameters:
@@ -479,7 +479,7 @@ PixVal XiSimColor(XiWindow *XiWin,PixVal pixel, int intensity, int is_fore)
   This routine sets the colors in the current colormap, if the default
   colormap is used.  The Pixel values chosen are in the cmapping 
   structure; this is used by routines such as the Xi contour plotter.
-@*/  
+*/  
 int XiUniformHues( XiWindow *Xiwin, int ncolors )
 {
   unsigned char *red, *green, *blue;
@@ -494,7 +494,7 @@ int XiUniformHues( XiWindow *Xiwin, int ncolors )
   return 0;
 }
 
-/*@
+/*
   XiSetCmapLight - Create rgb values from a single color by adding white
   
   Input Parameters:
@@ -507,7 +507,7 @@ int XiUniformHues( XiWindow *Xiwin, int ncolors )
 
   Note:
   The initial color is (red[0],green[0],blue[0]).
-@*/
+*/
 int XiSetCmapLight(unsigned char *red, unsigned char *green,
                     unsigned char *blue, int mapsize )
 {

@@ -104,6 +104,7 @@ int VecTDot(Vec x,Vec y,Scalar *val)
   CHKSAME(x,y);
   return (*x->ops->tdot)(x,y,val);
 }
+
 /*@
      VecScale  - Scales a vector. 
 
@@ -133,7 +134,6 @@ int VecScale(Scalar *alpha,Vec x)
 int VecCopy(Vec x,Vec y)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  CHKSAME(x,y);
   return (*x->ops->copy)(x,y);
 }
  
@@ -167,7 +167,6 @@ int VecAXPY(Scalar *alpha,Vec x,Vec y)
 {
   VALIDHEADER(x,VEC_COOKIE); 
   VALIDHEADER(y,VEC_COOKIE);
-  CHKSAME(x,y);
   return (*x->ops->axpy)(alpha,x,y);
 } 
 /*@

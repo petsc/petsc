@@ -1,11 +1,9 @@
 
 
-/*
-      Builds a parallel vector with 1 component on the first processor
-   2 on the second,... Then each processor adds one to all elements 
-   except the last mytid.
+static char help[] = "Builds a parallel vector with 1 component on the first\n\
+   processor 2 on the second,... Then each processor adds one to all elements\n\
+   except the last mytid.\n";
 
-*/
 #include "petsc.h"
 #include "comm.h"
 #include "is.h"
@@ -22,6 +20,7 @@ int main(int argc,char **argv)
   Vec          x;
 
   PetscInitialize(&argc,&argv,0,0);
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid); 
 

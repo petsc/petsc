@@ -6,10 +6,12 @@
 */
 
 #include "petsc.h"
+#include "ptscimpl.h"
 #include "draw.h"
 
 
 struct _DrawLGCtx {
+  PETSCHEADER 
   int         len,loc;
   DrawCtx     win;
   DrawAxisCtx axis;
@@ -33,17 +35,21 @@ int DrawLGCreate(DrawCtx win,int dim,DrawLGCtx *outctx)
   int         i,ierr;
   DrawLGCtx   lg = (DrawLGCtx) MALLOC(sizeof(struct _DrawLGCtx));CHKPTR(lg);
 
-  lg->nopts = 0;
-  lg->win   = win;
-  lg->dim   = dim;
-  lg->xmin  = 1.e20;
-  lg->ymin  = 1.e20;
-  lg->xmax  = -1.e20;
-  lg->ymax  = -1.e20;
-  lg->x     = (double *) MALLOC(2*dim*CHUNCKSIZE*sizeof(double));CHKPTR(lg->x);
-  lg->y     = lg->x + dim*CHUNCKSIZE;
-  lg->len   = dim*CHUNCKSIZE;
-  lg->loc   = 0;
+  lg->cookie  = LG_COOKIE;
+  lg->view    = 0;
+  lg->destroy = 0;
+  lg->nopts   = 0;
+  lg->win     = win;
+  lg->dim     = dim;
+  lg->xmin    = 1.e20;
+  lg->ymin    = 1.e20;
+  lg->xmax    = -1.e20;
+  lg->ymax    = -1.e20;
+  lg->x       = (double *)MALLOC(2*dim*CHUNCKSIZE*sizeof(double));
+                CHKPTR(lg->x);
+  lg->y       = lg->x + dim*CHUNCKSIZE;
+  lg->len     = dim*CHUNCKSIZE;
+  lg->loc     = 0;
   ierr = DrawAxisCreate(win,&lg->axis); CHKERR(ierr);
   *outctx = lg;
   return 0;
@@ -55,10 +61,13 @@ int DrawLGCreate(DrawCtx win,int dim,DrawLGCtx *outctx)
 @*/
 int DrawLGReset(DrawLGCtx lg)
 {
+  VALIDHEADER(lg,LG_COOKIE);
   lg->xmin  = 1.e20;
   lg->ymin  = 1.e20;
   lg->xmax  = -1.e20;
   lg->ymax  = -1.e20;
+  lg->loc   = 0;
+  lg->nopts = 0;
 }
 
 /*@
@@ -67,8 +76,9 @@ int DrawLGReset(DrawLGCtx lg)
 @*/
 int DrawLGDestroy(DrawLGCtx lg)
 {
-  int i;
+  VALIDHEADER(lg,LG_COOKIE);
   DrawAxisDestroy(lg->axis);
+  FREE(lg->x);
   FREE(lg);
   return 0;
 }
@@ -87,8 +97,17 @@ int DrawLGDestroy(DrawLGCtx lg)
 int DrawLGAddPoint(DrawLGCtx lg,double *x,double *y)
 {
   int i, j;
+  VALIDHEADER(lg,LG_COOKIE);
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
-    ;
+    double *tmpx,*tmpy;
+    tmpx = (double *) MALLOC((2*lg->len+2*lg->dim*CHUNCKSIZE)*sizeof(double));
+    CHKPTR(tmpx);
+    tmpy = tmpx + lg->len + lg->dim*CHUNCKSIZE;
+    MEMCPY(tmpx,lg->x,lg->len*sizeof(double));
+    MEMCPY(tmpy,lg->y,lg->len*sizeof(double));
+    FREE(lg->x);
+    lg->x = tmpx; lg->y = tmpy;
+    lg->len += lg->dim*CHUNCKSIZE;
   }
   for (i=0; i<lg->dim; i++) {
     if (x[i] > lg->xmax) lg->xmax = x[i]; 
@@ -102,6 +121,54 @@ int DrawLGAddPoint(DrawLGCtx lg,double *x,double *y)
   lg->nopts++;
   return 0;
 }
+/*@
+    DrawLGAddPoints - Adds several points to each of the 
+                      line graphs. The new point must have a
+                      X coordinate larger than the old points.
+
+   Input Parameters:
+.   lg - the LineGraph data structure
+.   x,y -  points to two arrays of pointers that point to arrays 
+.          containing the new x and y points for each curve.
+.   n - number of points being added
+
+@*/
+int DrawLGAddPoints(DrawLGCtx lg,int n,double **xx,double **yy)
+{
+  int    i, j, k;
+  double *x,*y;
+  VALIDHEADER(lg,LG_COOKIE);
+  if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */
+    double *tmpx,*tmpy;
+    int    chunk = CHUNCKSIZE;
+    if (n > chunk) chunk = n;
+    tmpx = (double *) MALLOC((2*lg->len+2*lg->dim*chunk)*sizeof(double));
+    CHKPTR(tmpx);
+    tmpy = tmpx + lg->len + lg->dim*chunk;
+    MEMCPY(tmpx,lg->x,lg->len*sizeof(double));
+    MEMCPY(tmpy,lg->y,lg->len*sizeof(double));
+    FREE(lg->x);
+    lg->x = tmpx; lg->y = tmpy;
+    lg->len += lg->dim*CHUNCKSIZE;
+  }
+  for (j=0; j<lg->dim; j++) {
+    x = xx[j]; y = yy[j];
+    k = lg->loc + j;
+    for ( i=0; i<n; i++ ) {
+      if (x[i] > lg->xmax) lg->xmax = x[i]; 
+      if (x[i] < lg->xmin) lg->xmin = x[i];
+      if (y[i] > lg->ymax) lg->ymax = y[i]; 
+      if (y[i] < lg->ymin) lg->ymin = y[i];
+
+      lg->x[k]   = x[i];
+      lg->y[k] = y[i];
+      k += lg->dim;
+    }
+  }
+  lg->loc   += n*lg->dim;
+  lg->nopts += n;
+  return 0;
+}
 
 /*@
    DrawLG - Redraws a line graph
@@ -111,6 +178,7 @@ int DrawLG(DrawLGCtx lg)
   double   xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
   int      i, j, dim = lg->dim,nopts = lg->nopts;
   DrawCtx  win = lg->win;
+  VALIDHEADER(lg,LG_COOKIE);
 
   if (xmin >= xmax || ymin >= ymax) return 0;
   DrawClear(win);
@@ -141,6 +209,7 @@ int DrawLG(DrawLGCtx lg)
 int DrawLGSetLimits( DrawLGCtx lg,double x_min,double x_max,double y_min,
                                   double y_max) 
 {
+  VALIDHEADER(lg,LG_COOKIE);
   (lg)->xmin = x_min; 
   (lg)->xmax = x_max; 
   (lg)->ymin = y_min; 
@@ -163,6 +232,24 @@ int DrawLGSetLimits( DrawLGCtx lg,double x_min,double x_max,double y_min,
 @*/
 int DrawLGGetAxisCtx(DrawLGCtx lg,DrawAxisCtx *axis)
 {
+  VALIDHEADER(lg,LG_COOKIE);
   *axis = lg->axis;
+  return 0;
+}
+
+/*@
+    DrawLGGetDrawCtx - Gets the draw context associated with a line graph.
+
+  Input Parameter:
+.  lg - the line graph context
+
+  Output Parameter:
+.  win - the draw context
+
+@*/
+int DrawLGGetDrawCtx(DrawLGCtx lg,DrawCtx *win)
+{
+  VALIDHEADER(lg,LG_COOKIE);
+  *win = lg->win;
   return 0;
 }

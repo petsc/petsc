@@ -13,7 +13,7 @@ typedef enum { KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES,
                KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR,
                KSPPREONLY } KSPMETHOD;
 
-extern int KSPPrintMethods(char *);
+extern int KSPPrintMethods(char *,char *);
 
 extern int KSPCreate(KSP *);
 extern int KSPSetMethod(KSP,KSPMETHOD);
@@ -32,7 +32,7 @@ extern int KSPSetIterations(KSP,int);
 extern int KSPSetRightPreconditioner(KSP);
 extern int KSPGetPreconditionerSide(KSP,int *);
 extern int KSPGetMethodFromContext(KSP,KSPMETHOD *);
-extern int KSPGetMethodFromOptions(int,char*,KSPMETHOD *);
+extern int KSPGetMethodFromOptions(KSP,KSPMETHOD *);
 extern int KSPSetRelativeTolerance(KSP,double);
 extern int KSPSetAbsoluteTolerance(KSP,double);
 extern int KSPSetDivergenceTolerance(KSP,double);
@@ -74,7 +74,16 @@ extern int KSPDefaultConverged(KSP,int,double, void *);
 
 extern int KSPPrintHelp(KSP);
 
+extern int KSPSetOptionsPrefix(KSP,char*);
+
 extern int KSPView(KSP,Viewer);
+
+#if defined(__DRAW_PACKAGE)
+extern int KSPLGMonitorCreate(char*,char*,int,int,int,int,DrawLGCtx*);
+extern int KSPLGMonitor(KSP,int,double,void*);
+extern int KSPLGMonitorDestroy(DrawLGCtx);
+#endif 
+
 #endif
 
 

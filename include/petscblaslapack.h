@@ -9,7 +9,7 @@ Also deals with different Fortran 77 naming conventions on machines.
 #include "ptscimpl.h"
 
 #if !defined(PETSC_COMPLEX)
-#if defined(cray)
+#if defined(PARCH_cray)
 #define BLdot_   SDOT
 #define BLnrm2_  SNRM2
 #define BLscal_  SSCAL
@@ -43,7 +43,7 @@ Also deals with different Fortran 77 naming conventions on machines.
 #define BLasum_  dasum_
 #endif
 
-#if defined(cray)
+#if defined(PARCH_cray)
 #define LApotrf_ SPOTRF
 #define LApotrs_ SPOTRS
 #define LAgemv_  SGEMV
@@ -84,7 +84,7 @@ Also deals with different Fortran 77 naming conventions on machines.
 
 #else
 
-#if defined(cray)
+#if defined(PARCH_cray)
 #define BLdot_   CDOTC
 #define BLnrm2_  SCNRM2
 #define BLscal_  CSCAL
@@ -118,7 +118,7 @@ Also deals with different Fortran 77 naming conventions on machines.
 #define BLasum_  dzasum_
 #endif
 
-#if defined(cray)
+#if defined(PARCH_cray)
 #define LApotrf_ CPOTRF
 #define LApotrs_ CPOTRS
 #define LAgemv_  CGEMV
@@ -163,19 +163,19 @@ Also deals with different Fortran 77 naming conventions on machines.
 extern "C" {
 #endif
 
-Scalar BLdot_(int*,Scalar*,int*,Scalar*,int*);
-double BLnrm2_(int*,Scalar*,int*),BLasum_(int*,Scalar*,int*);
-void   BLscal_(int*,Scalar*,Scalar*,int*);
-void   BLcopy_(int*,Scalar*,int*,Scalar*,int*);
-void   BLswap_(int*,Scalar*,int*,Scalar*,int*);
-void   BLaxpy_(int*,Scalar*,Scalar*,int*,Scalar*,int*);
+extern Scalar BLdot_(int*,Scalar*,int*,Scalar*,int*);
+extern double BLnrm2_(int*,Scalar*,int*),BLasum_(int*,Scalar*,int*);
+extern void   BLscal_(int*,Scalar*,Scalar*,int*);
+extern void   BLcopy_(int*,Scalar*,int*,Scalar*,int*);
+extern void   BLswap_(int*,Scalar*,int*,Scalar*,int*);
+extern void   BLaxpy_(int*,Scalar*,Scalar*,int*,Scalar*,int*);
 
-void   LAgetrf_(int*,int*,Scalar*,int*,int*,int*);
-void   LApotrf_(char*,int*,Scalar*,int*,int*);
-void   LAgemv_(char*,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
+extern void   LAgetrf_(int*,int*,Scalar*,int*,int*,int*);
+extern void   LApotrf_(char*,int*,Scalar*,int*,int*);
+extern void   LAgemv_(char*,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
                Scalar*,Scalar*,int*);
-void   LApotrs_(char*,int*,int*,Scalar*,int*,Scalar*,int*,int*);
-void   LAgetrs_(char*,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
+extern void   LApotrs_(char*,int*,int*,Scalar*,int*,Scalar*,int*,int*);
+extern void   LAgetrs_(char*,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
 
 #if defined(__cplusplus)
 };

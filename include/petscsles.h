@@ -1,6 +1,6 @@
 
-#if !defined(_SLES_H)
-#define _SLES_H
+#if !defined(__SLES_PACKAGE)
+#define __SLES_PACKAGE
 #include "pc.h"
 #include "ksp.h"
 
@@ -10,9 +10,10 @@ extern int SLESCreate(SLES*);
 extern int SLESGetPC(SLES,PC*);
 extern int SLESGetKSP(SLES,KSP*);
 extern int SLESSetMat(SLES,Mat);
-extern int SLESSolve(SLES,Vec,Vec);
+extern int SLESSolve(SLES,Vec,Vec,int*);
 extern int SLESSetFromOptions(SLES);
 extern int SLESDestroy(SLES);
 extern int SLESPrintHelp(SLES);
+extern int SLESSetOptionsPrefix(SLES,char*);
 
 #endif

@@ -3,9 +3,12 @@
 */
 
 #include "petsc.h"
+#include "draw.h"
+#include "comm.h"
 #include "kspimpl.h"
 #include "sys.h"
 #include "options.h"
+
 /*@
     KSPSetFromOptions - Sets KSP options from the options database.
                             This must be called before KSPSetUp()
@@ -23,18 +26,47 @@ int KSPSetFromOptions(KSP ctx)
   KSPMETHOD method;
   VALIDHEADER(ctx,KSP_COOKIE);
 
-  if (OptionsHasName(0,"-help")) {
+  if (OptionsHasName(0,0,"-help")) {
     KSPPrintHelp(ctx);
   }
-  if (KSPGetMethodFromOptions(0,ctx->namemethod,&method)) {
+  if (KSPGetMethodFromOptions(ctx,&method)) {
     KSPSetMethod(ctx,method);
   }
-  OptionsGetInt(0,ctx->namemax_it,&ctx->max_it);
-  OptionsGetDouble(0,ctx->namertol,&ctx->rtol);  
-  OptionsGetDouble(0,ctx->nameatol,&ctx->atol);
-  OptionsGetDouble(0,ctx->namedivtol,&ctx->divtol);
-  if (OptionsHasName(0,"-kspmonitor")){
-    KSPSetMonitor(ctx,KSPDefaultMonitor,(void *)0);
+  OptionsGetInt(0,ctx->prefix,"-kspmax_it",&ctx->max_it);
+  OptionsGetDouble(0,ctx->prefix,"-ksprtol",&ctx->rtol);  
+  OptionsGetDouble(0,ctx->prefix,"-kspatol",&ctx->atol);
+  OptionsGetDouble(0,ctx->prefix,"-kspdivtol",&ctx->divtol);
+  /* this is not good!
+       1) assumes KSP is running on all processors
+  */
+  if (OptionsHasName(0,ctx->prefix,"-kspmonitor")){
+    int mytid = 0;
+#if defined(__COMM_PACKAGE)
+    MPI_Initialized(&mytid);
+    if (mytid) MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+#endif
+    if (!mytid) {
+      KSPSetMonitor(ctx,KSPDefaultMonitor,(void *)0);
+    }
+  }
+  /* this is not good!
+       1) assumes KSP is running on all processors
+       2) there is no way to free lg at end of KSP
+  */
+  if (OptionsHasName(0,ctx->prefix,"-kspxmonitor")){
+    int       ierr,mytid = 0;
+    DrawLGCtx lg;
+#if defined(__COMM_PACKAGE)
+    MPI_Initialized(&mytid);
+    if (mytid) MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+#endif
+    if (!mytid) {
+      ierr = KSPLGMonitorCreate(0,0,0,0,300,300,&lg); CHKERR(ierr);
+      KSPSetMonitor(ctx,KSPLGMonitor,(void *)lg);
+    }
+  }
+  if (OptionsHasName(0,ctx->prefix,"-ksppreres")) {
+    KSPSetUsePreconditionedResidual(ctx);
   }
   return 0;
 }
@@ -48,17 +80,38 @@ int KSPSetFromOptions(KSP ctx)
 @*/
 int KSPPrintHelp(KSP ctx)
 {
+  char *p;
+  if (ctx->prefix) p = ctx->prefix;
+  else             p = "-";
   VALIDHEADER(ctx,KSP_COOKIE);
-  KSPPrintMethods(ctx->namemethod);
-  fprintf(stderr," %s (relative tolerance: defaults to %g)\n",
-                 ctx->namertol,ctx->rtol);
-  fprintf(stderr," %s (absolute tolerance: defaults to %g)\n",
-                 ctx->nameatol,ctx->atol);
-  fprintf(stderr," %s (divergence tolerance: defaults to %g)\n",
-                 ctx->namedivtol,ctx->divtol);
-  fprintf(stderr," %s (maximum iterations: defaults to %d)\n",
-                 ctx->namemax_it,ctx->max_it);
-  fprintf(stderr," -kspmonitor: use residual convergence monitor\n");
+  fprintf(stderr,"KSP Options -------------------------------------\n");
+  KSPPrintMethods(p,"kspmethod");
+  fprintf(stderr," %sksprtol (relative tolerance: defaults to %g)\n",
+                   p,ctx->rtol);
+  fprintf(stderr," %skspatol (absolute tolerance: defaults to %g)\n",
+                   p,ctx->atol);
+  fprintf(stderr," %skspdivtol (divergence tolerance: defaults to %g)\n",
+                   p,ctx->divtol);
+  fprintf(stderr," %skspmax_it (maximum iterations: defaults to %d)\n",
+                   p,ctx->max_it);
+  fprintf(stderr," %sksppreres (use preconditioned residual in converg. test\n");
+  fprintf(stderr," %skspmonitor: use residual convergence monitor\n",p);
+  fprintf(stderr," %skspxmonitor [x,y,w,h]: use X graphics residual\
+                   convergence monitor\n",p);
   return 1;
 }
 
+/*@
+    KSPSetOptionsPrefix - Sets the prefix used for searching for all 
+       KSP options in the database.
+
+  Input Parameters:
+.  ksp - the Krylov context
+.  prefix - the prefix string to prepend to all KSP option requests
+
+@*/
+int KSPSetOptionsPrefix(KSP ksp,char *prefix)
+{
+  ksp->prefix = prefix;
+  return 0;
+}

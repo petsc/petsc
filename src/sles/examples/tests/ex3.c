@@ -30,17 +30,18 @@ int FormElementRhs(double x, double y, double H,Scalar *r)
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i,j, m = 2, mytid,numtids, N, start,end,M;
+  int         i,j, m = 2, mytid,numtids, N, start,end,M,its;
   Scalar      val, zero = 0.0,norm, one = 1.0, none = -1.0,Ke[16],r[4];
   double      x,y,h;
   int         I, J, ierr,idx[4],count,*rows;
   Vec         u,ustar,b;
   SLES        sles;
+  KSP         ksp;
   IS          is;
 
   PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
-  OptionsGetInt(0,"-m",&m);
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,0,"-m",&m);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */
@@ -119,7 +120,9 @@ int main(int argc,char **args)
   if (ierr = SLESCreate(&sles)) SETERR(ierr,0);
   if (ierr = SLESSetMat(sles,C)) SETERR(ierr,0);
   if (ierr = SLESSetFromOptions(sles)) SETERR(ierr,0);
-  if (ierr = SLESSolve(sles,b,u)) SETERR(ierr,0);
+  SLESGetKSP(sles,&ksp);
+  KSPSetInitialGuessNonZero(ksp);
+  if (ierr = SLESSolve(sles,b,u,&its)) SETERR(ierr,0);
 
   /* check error */
   start = mytid*(N/numtids) + ((N%numtids) < mytid ? (N%numtids) : mytid);
@@ -134,8 +137,9 @@ int main(int argc,char **args)
 /*VecView(ustar,0); */
   if (ierr = VecAXPY(&none,ustar,u)) SETERR(ierr,0);
   if (ierr = VecNorm(u,&norm)) SETERR(ierr,0);
-  printf("Norm of error %g\n",norm*h);
+  MPE_printf(MPI_COMM_WORLD,"Norm of error %g Number iterations %d\n",norm*h,its);
 
+  sleep(2);
   ierr = SLESDestroy(sles); CHKERR(ierr);
   ierr = VecDestroy(ustar); CHKERR(ierr);
   ierr = VecDestroy(u); CHKERR(ierr);

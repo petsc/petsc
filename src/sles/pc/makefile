@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    =
 WOBJS    = 
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = libpetscpc
 LINCLUDE = $(SOURCEH)
 DIRS     = utils src impls tests examples
 

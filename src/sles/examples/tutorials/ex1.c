@@ -1,11 +1,12 @@
 
+static char help[] = "Solves tridiagonal linear system with SLES";
 #include "sles.h"
 #include "stdio.h"
 #include "options.h"
 
 int main(int argc,char **args)
 {
-  int    ierr,i,n = 10, col[3];
+  int    ierr,i,n = 10, col[3], its;
   Scalar none = -1.0, one = 1.0, value[3];
   Vec    x,b,u;
   Mat    A;
@@ -13,7 +14,8 @@ int main(int argc,char **args)
   double norm;
 
   OptionsCreate(&argc,&args,0,0);
-  OptionsGetInt(0,"-n",&n);
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,0,"-n",&n);
 
   if (ierr = VecCreateInitialVector(n,&x)) SETERR(ierr,0);
   if (ierr = VecCreate(x,&b)) SETERR(ierr,0);
@@ -38,12 +40,12 @@ int main(int argc,char **args)
   if (ierr = SLESCreate(&sles)) SETERR(ierr,0);
   if (ierr = SLESSetMat(sles,A)) SETERR(ierr,0);
   if (ierr = SLESSetFromOptions(sles)) SETERR(ierr,0);
-  if (ierr = SLESSolve(sles,b,x)) SETERR(ierr,0);
+  if (ierr = SLESSolve(sles,b,x,&its)) SETERR(ierr,0);
 
   /* check error */
   if (ierr = VecAXPY(&none,u,x)) SETERR(ierr,0);
   if (ierr = VecNorm(x,&norm)) SETERR(ierr,0);
-  printf("Norm of error %g\n",norm);
+  printf("Norm of error %g Iterations %d\n",norm,its);
  
   VecDestroy(x); VecDestroy(u); MatDestroy(A); SLESDestroy(sles);
   PetscFinalize();

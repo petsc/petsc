@@ -197,3 +197,15 @@ int DrawClear(DrawCtx ctx)
   if (ctx->ops->clear) return (*ctx->ops->clear)(ctx);
   return 0;
 }
+/*@
+   DrawDestroy - Deletes a draw context.
+
+  Input Parameters:
+.  ctx - the drawing context
+@*/
+int DrawDestroy(DrawCtx ctx)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->destroy) return (*ctx->destroy)((PetscObject)ctx);
+  return 0;
+}

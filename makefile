@@ -22,7 +22,7 @@ ranlib:
 	$(RANLIB) $(LDIR)/*.a
 
 deletelibs:
-	-$(RM) $(LDIR)/*.o $(LDIR)/*.a $(LDIR)/complex/*
+	-$(RM) $(LDIR)/*.a $(LDIR)/complex/*
 
 deletemanpages:
 	$(RM) -f $(PETSCLIB)/docs/man/man*/*
@@ -37,7 +37,16 @@ deletelatexpages:
 #  then esc . to find a function
 etags:
 	$(RM) -f TAGS
-	etags -f TAGS src/*/impls/*/*.h src/*/impls/*/*/*.h src/*/examples/*.c
+	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h src/*/examples/*.c
 	etags -a -f TAGS src/*/*.h */*.c src/*/src/*.c src/*/impls/*/*.c 
-	etags -a -f TAGS src/*/impls/*/*/*.c
-	etags -a -f TAGS docs/design.tex
+	etags -a -f TAGS src/*/impls/*/*/*.c src/utils/*.c
+	etags -a -f TAGS docs/design.tex src/sys/error/*.c
+	etags -a -f TAGS include/*.h pinclude/*.h
+
+keywords:
+	$(RM) -f keywords
+	grep Keywords src/*/src/*.c src/*/impls/*.c src/*/impls/*/*.c > key1
+	cut -f1 -d: key1 > key2
+	cut -f3 -d: key1 > key3
+	paste key3 key2 > Keywords
+	$(RM) -f key1 key2 key3

@@ -18,6 +18,23 @@ int SLESPrintHelp(SLES sles)
 }
 
 /*@
+    SLESSetOptionsPrefix - Sets the prefix to use on all options setable from 
+                           SLES.
+
+  Input Parameter:
+.   sles - the linear equation solver context
+.   prefix - the prefix to prepend to all option names
+
+@*/
+int SLESSetOptionsPrefix(SLES sles,char *prefix)
+{
+  VALIDHEADER(sles,SLES_COOKIE);
+  KSPSetOptionsPrefix(sles->ksp,prefix);
+  PCSetOptionsPrefix(sles->pc,prefix);
+  return 0;
+}
+
+/*@
     SLESSetFromOptions - Sets various SLES parameters from user options.
 
   Input Parameter:
@@ -76,12 +93,18 @@ int SLESDestroy(SLES sles)
 
   Input Parameters:
 .   sles - the solver context
-.   b,x - the right hand side and result
+.   b - the right hand side
+
+  Output Parameters:
+.   x - the approximate solution
+.   its - the number of iterations used.
 @*/
-int SLESSolve(SLES sles,Vec b,Vec x)
+int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 {
   int ierr;
-  KSP ksp = sles->ksp; PC pc = sles->pc;Mat mat; int its;
+  KSP ksp = sles->ksp; 
+  PC  pc = sles->pc;
+  Mat mat;
   KSPSetRhs(ksp,b);
   KSPSetSolution(ksp,x);
   KSPSetBinv(ksp,pc);
@@ -91,10 +114,7 @@ int SLESSolve(SLES sles,Vec b,Vec x)
     if (ierr = PCSetUp(sles->pc)) SETERR(ierr,0);
     sles->setupcalled = 1;
   }
-  KSPSolve(ksp,&its);
-printf("number of its %d\n",its);
-
-
+  ierr = KSPSolve(ksp,its); CHKERR(ierr);
   return 0;
 }
 

@@ -27,12 +27,22 @@ int PCiJacobiApply(PC pc,Vec x,Vec y)
   return 0;
 }
 
+int PCiJacobiDestroy(PetscObject obj)
+{
+  PC pc = (PC) obj;
+  PCiJacobi *jac = (PCiJacobi *) pc->data;
+  if (jac->diag) VecDestroy(jac->diag);
+  FREE(jac);
+  return 0;
+}
+
 int PCiJacobiCreate(PC pc)
 {
   PCiJacobi *jac = NEW(PCiJacobi); CHKPTR(jac);
   jac->diag = 0;
   pc->apply = PCiJacobiApply;
   pc->setup = PCiJacobiSetup;
+  pc->destroy = PCiJacobiDestroy;
   pc->type  = PCJACOBI;
   pc->data  = (void *) jac;
   return 0;

@@ -1,8 +1,7 @@
 
 
-/*
-    Demonstrates a scatter with a stride and general index set
-*/
+static char help[] = "A scatter with a stride and general index set\n";
+
 #include "petsc.h"
 #include "comm.h"
 #include "is.h"
@@ -22,6 +21,7 @@ int main(int argc,char **argv)
   VecScatterCtx ctx = 0;
 
   OptionsCreate(&argc,&argv,(char*)0,(char*)0);
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
 
   /* create two vector */
   ierr = VecCreateSequential(n,&x); CHKERR(ierr);

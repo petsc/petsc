@@ -39,13 +39,7 @@ int KSPCreate(KSP *ksp)
   *ksp               = ctx;
   ctx->cookie        = KSP_COOKIE;
   ctx->view          = _KSPView;
-  ctx->namemethod    = "-kspmethod";
-  ctx->namemax_it    = "-kspmax_it";
-  ctx->nameright_pre = "-kspright_pre";
-  ctx->nameuse_pres  = "-kspuse_pres";
-  ctx->namertol      = "-ksprtol";
-  ctx->nameatol      = "-kspatol";
-  ctx->namedivtol    = "-kspdivtol";
+  ctx->prefix        = 0;
 
   ctx->method        = (KSPMETHOD) -1;
   ctx->max_it        = 10000;
@@ -157,19 +151,16 @@ int KSPRegisterDestroy()
                             database.
 
   Input parameters:
-. flag - 1 if argument should be removed from list if found 
-. sname - name used to indicate solver.  If null, -itmethod is used
+. ctx - the KSP context
 
   Output parameter:
 . kspmethod -  Iterative method type
 . returns 1 if method found else 0.
 @*/
-int KSPGetMethodFromOptions( int flag, char *sname, 
-                                 KSPMETHOD *itmethod )
+int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod )
 {
   char sbuf[50];
-  if (!sname) sname = "-kspmethod";
-  if (OptionsGetString( flag, sname, sbuf, 50 )) {
+  if (OptionsGetString(0,ctx->prefix,"-kspmethod", sbuf, 50 )) {
     if (!__ITList) KSPRegisterAll();
     *itmethod = (KSPMETHOD)NRFindID( __ITList, sbuf );
     return 1;
@@ -198,12 +189,12 @@ int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
   Input Parameters:
 .   name - the  options name (usually -kspmethod) 
 @*/
-int KSPPrintMethods(char *name)
+int KSPPrintMethods(char* prefix,char *name)
 {
   FuncList *entry;
   if (!__ITList) {KSPRegisterAll();}
   entry = __ITList->head;
-  fprintf(stderr," %s (one of)",name);
+  fprintf(stderr," %s%s (one of)",prefix,name);
   while (entry) {
     fprintf(stderr," %s",entry->name);
     entry = entry->next;

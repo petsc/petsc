@@ -17,7 +17,7 @@
 @*/
 int MatCreateInitialMatrix(int m,int n,Mat *V)
 {
-  if (OptionsHasName(0,"-dense")) {
+  if (OptionsHasName(0,0,"-dense")) {
     fprintf(stdout,"Using BLAS+LAPACK sequential dense matrices\n");
     return MatCreateSequentialDense(m,n,V);
   }

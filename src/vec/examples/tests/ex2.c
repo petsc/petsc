@@ -1,8 +1,6 @@
 
+static char help[] = "Tests vector scatter gathers\n";
 
-/*
-      Example demonstrating some features of the vectors directory.
-*/
 #include "petsc.h"
 #include "comm.h"
 #include "is.h"
@@ -22,7 +20,8 @@ int main(int argc,char **argv)
   VecScatterCtx ctx = 0;
 
   OptionsCreate(&argc,&argv,(char*)0,(char*)0);
-  OptionsGetInt(0,"-n",&n);
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,0,"-n",&n);
 
   /* create two vector */
   ierr = VecCreateSequential(n,&x); CHKERR(ierr);

@@ -53,16 +53,20 @@ extern int  PetscSetDebugger(char *,int,char *);
 extern int  PetscAttachDebugger();
 
 #include <signal.h> /* I don't like this, but? */
+#if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_alpha)
 extern int PetscSetSignalHandler(void (*)(int,int,struct sigcontext *,char*));
+#else
+extern int PetscSetSignalHandler(void (*)(int));
+#endif
 
 extern void *trmalloc(unsigned int,int,char*);
 extern int  trfree(void *,int,char*);
 #include <stdio.h> /* I don't like this, but? */
 extern int  trdump(FILE *);
 
-#if defined(titan) || defined(cray) || defined(ncube)
+#if defined(PARCH_cray) || defined(PARCH_NCUBE)
 #define FORTRANCAPS
-#elif !defined(rs6000) && !defined(NeXT) && !defined(HPUX)
+#elif !defined(PARCH_rs6000) && !defined(PACRH_NeXT) && !defined(PACRH_HPUX)
 #define FORTRANUNDERSCORE
 #endif
 

@@ -1,8 +1,6 @@
 
-/*
-    Demonstrates the use of fast Richardson for SOR.
-    Also tests MatRelax routines.
-*/
+static char help[] = "Demonstrates the use of fast Richardson for SOR.\n\
+    Also tests MatRelax routines.\n";
 
 #include "vec.h"
 #include "mat.h"
@@ -24,6 +22,8 @@ int main(int argc,char **args)
   char      *kspname, *pcname;
 
   OptionsCreate(&argc,&args,0,0);
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,0,"-n",&n);
   ierr = VecCreateSequential(n,&b);     CHKERR(ierr);
   ierr = VecCreateSequential(n,&ustar); CHKERR(ierr);
   ierr = VecCreateSequential(n,&u);     CHKERR(ierr);

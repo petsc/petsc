@@ -34,16 +34,16 @@ static int PCisetfrom(PC pc)
   int    its;
   double omega;
 
-  if (OptionsGetDouble(0,"-sor_omega",&omega)) {
+  if (OptionsGetDouble(0,pc->prefix,"-sor_omega",&omega)) {
     PCSORSetOmega(pc,omega);
   } 
-  if (OptionsGetInt(0,"-sor_its",&its)) {
+  if (OptionsGetInt(0,pc->prefix,"-sor_its",&its)) {
     PCSORSetIterations(pc,its);
   }
-  if (OptionsHasName(0,"-sor_symmetric")) {
+  if (OptionsHasName(0,pc->prefix,"-sor_symmetric")) {
     PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);
   }
-  if (OptionsHasName(0,"-sor_backward")) {
+  if (OptionsHasName(0,pc->prefix,"-sor_backward")) {
     PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);
   }
   return 0;
@@ -51,10 +51,12 @@ static int PCisetfrom(PC pc)
 
 int PCiSORprinthelp(PC pc)
 {
-  fprintf(stderr,"-sor_omega omega: relaxation factor. 0 < omega <2\n");
-  fprintf(stderr,"-sor_symmetric: use SSOR\n");
-  fprintf(stderr,"-sor_backward: use backward sweep instead of forward\n");
-  fprintf(stderr,"-sor_its its: number of inner SOR iterations to use\n");
+  char *p;
+  if (pc->prefix) p = pc->prefix; else p = "-";
+  fprintf(stderr,"%ssor_omega omega: relaxation factor. 0 < omega <2\n",p);
+  fprintf(stderr,"%ssor_symmetric: use SSOR\n",p);
+  fprintf(stderr,"%ssor_backward: use backward sweep instead of forward\n",p);
+  fprintf(stderr,"%ssor_its its: number of inner SOR iterations to use\n",p);
   return 0;
 }
 int PCiSORCreate(PC pc)

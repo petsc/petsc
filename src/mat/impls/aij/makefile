@@ -12,6 +12,6 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscmat
 LINCLUDE = $(SOURCEH)
-DIRS     = seq
+DIRS     = seq mpi
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

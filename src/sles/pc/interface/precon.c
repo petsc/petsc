@@ -12,9 +12,11 @@
 @*/
 int PCPrintHelp(PC pc)
 {
-  fprintf(stderr,"PC options\n");
-  PCPrintMethods(pc->namemethod);
-  fprintf(stderr,"Run program with -pcmethod method -help for help on ");
+  char *p; 
+  if (pc->prefix) p = pc->prefix; else p = "-";
+  fprintf(stderr,"PC options ----------------------------------------\n");
+  PCPrintMethods(p,"pcmethod");
+  fprintf(stderr,"Run program with %spcmethod method -help for help on ",p);
   fprintf(stderr,"a particular method\n");
   if (pc->printhelp) (*pc->printhelp)(pc);
   return 0;
@@ -54,12 +56,12 @@ int PCCreate(PC *newpc)
   pc->mat         = 0;
   pc->setupcalled = 0;
   pc->data        = 0;
-  pc->namemethod  = "-pcmethod";
   pc->apply       = 0;
   pc->applytrans  = 0;
   pc->applyBA     = 0;
   pc->applyBAtrans= 0;
   pc->applyrich   = 0;
+  pc->prefix      = 0;
   *newpc          = pc;
   /* this violates rule about seperating abstract from implementions*/
   return PCSetMethod(pc,PCJACOBI);
@@ -221,5 +223,20 @@ int PCGetMethodFromContext(PC pc,PCMETHOD *method)
 {
   VALIDHEADER(pc,PC_COOKIE);
   *method = (PCMETHOD) pc->type;
+  return 0;
+}
+
+/*@
+    PCSetOptionsPrefix - Sets the prefix used for searching for all 
+       PC options in the database.
+
+  Input Parameters:
+.  pc - the preconditioner context
+.  prefix - the prefix string to prepend to all PC option requests
+
+@*/
+int PCSetOptionsPrefix(PC pc,char *prefix)
+{
+  pc->prefix = prefix;
   return 0;
 }

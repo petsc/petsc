@@ -1,4 +1,6 @@
 
+static char help[] = "Tests PC and KSP on tridiagonal matrix\n";
+
 #include "vec.h"
 #include "mat.h"
 #include "ksp.h"
@@ -19,6 +21,7 @@ int main(int argc,char **args)
   char      *kspname, *pcname;
 
   OptionsCreate(&argc,&args,0,0);
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
 
   ierr = VecCreateSequential(n,&b);     CHKERR(ierr);
   ierr = VecCreateSequential(n,&ustar); CHKERR(ierr);

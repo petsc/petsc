@@ -18,15 +18,15 @@
 @*/
 int VecCreateInitialVector(int n,Vec *V)
 {
-  if (OptionsHasName(0,"-mpi")) {
+  if (OptionsHasName(0,0,"-mpi")) {
     fprintf(stdout,"Using MPI vectors\n");
     return VecCreateMPI(MPI_COMM_WORLD,-1,n,V);
   }
-  if (OptionsHasName(0,"-mpiblas")) {
+  if (OptionsHasName(0,0,"-mpiblas")) {
     fprintf(stdout,"Using MPI BLAS vectors\n");
     return VecCreateMPIBLAS(MPI_COMM_WORLD,-1,n,V);
   }
-  if (OptionsHasName(0,"-blas")) {
+  if (OptionsHasName(0,0,"-blas")) {
     fprintf(stdout,"Using BLAS sequential vectors\n");
     return VecCreateSequentialBLAS(n,V);
   }

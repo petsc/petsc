@@ -1,8 +1,8 @@
 /*
      Include file for the matrix component of PETSc
 */
-#ifndef __MAT 
-#define __MAT
+#ifndef __MAT_PACKAGE
+#define __MAT_PACKAGE
 #include "vec.h"
 
 typedef struct _Mat*           Mat;
@@ -99,7 +99,11 @@ extern int MatZeroColumns(Mat,IS,Scalar*);
 extern int MatCompress(Mat);
 extern int MatDestroy(Mat);
 
+extern int MatGetSize(Mat,int*,int*);
+extern int MatGetLocalSize(Mat,int*,int*);
+
 extern int MatCreateInitialMatrix(int,int,Mat*);
+
 
 
 

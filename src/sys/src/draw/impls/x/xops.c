@@ -124,6 +124,16 @@ static struct _DrawOps DvOps = { 0,XiFlush,XiDrawLine,0,0,0,
                                  XiDrawTextSize,XiDrawTextGetSize,
                                  Xiviewport,XiClearWindow};
 
+int XDestroy(PetscObject obj)
+{
+  DrawCtx  ctx = (DrawCtx) obj;
+  XiWindow *win = (XiWindow *) ctx->data;
+  FREE(win->font);
+  FREE(win);
+  FREE(ctx);
+  return 0;
+}
+
 
 /*@
     DrawOpenX - Opens an X window for use with the Draw routines.
@@ -149,7 +159,7 @@ int DrawOpenX(char* display,char *title,int x,int y,int w,int h,
   ctx->cookie  = DRAW_COOKIE;
   ctx->type    = XWINDOW;
   ctx->ops     = &DvOps;
-  ctx->destroy = 0;
+  ctx->destroy = XDestroy;
   ctx->view    = 0;
   ctx->coor_xl = 0.0;  ctx->coor_xr = 1.0;
   ctx->coor_yl = 0.0;  ctx->coor_yr = 1.0;
@@ -164,3 +174,5 @@ int DrawOpenX(char* display,char *title,int x,int y,int w,int h,
   *inctx       = ctx;
   return 0;
 }
+
+

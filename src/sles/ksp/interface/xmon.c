@@ -1,55 +1,49 @@
 
-#include "tools.h"
-#include "iter/itctx.h"
-#include "xtools/basex11.h"             /*I "xtools/basex11.h"  I*/
-#include "xtools/xlg/xlg.h"
+#include "petsc.h"
+#include "../../draw/drawimpl.h"
+#include "kspimpl.h"
 #include <math.h>
 
 
-XBLineGraph ITLineGraphMonitorCreate(label,host,x,y,m,n)
-char *label,*host;
-int  x, y, m, n;
+/*@
+     KSPLGMonitorCreate - Creates a line graph context for use with 
+                          KSP to monitor convergence of residual norms.
+
+  Input Parameters:
+.   label
+@*/
+int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,
+                       DrawLGCtx *ctx)
 {
-  XBWindow    win;
-  XBLineGraph lg;
-  win = XBWinCreate(); CHKPTRN(win);
-  if (XBQuickWindow(win,host,label,x,y,m,n)) {SETERR(1); return 0;}
-  return XBLineGraphCreate(win,1);
+  DrawCtx win;
+  int     ierr;
+  ierr = DrawOpenX(host,label,x,y,m,n,&win); CHKERR(ierr);
+  ierr = DrawLGCreate(win,1,ctx); CHKERR(ierr);
+  return 0;
 }
 
-XBWindow ITLineGraphGetWin( lg )
-XBLineGraph lg;
-{
-return XBLineGraphGetWindow(lg);
-}
 
-void ITLineGraphMonitor(itP,n,rnorm)
-ITCntx *itP;
-int    n;
-double rnorm;
+int KSPLGMonitor(KSP itP,int n,double rnorm,void *monctx)
 {
-  XBLineGraph lg = (XBLineGraph) itP->monP;
-  double      x, y;
+  DrawLGCtx lg = (DrawLGCtx) monctx;
+  double    x, y;
 
+  if (!n) DrawLGReset(lg);
   x = (double) n;
   if (rnorm > 0.0) y = log10(rnorm); else y = -15.0;
-  XBLineGraphAddPoint(lg,&x,&y);
+  DrawLGAddPoint(lg,&x,&y);
   if (n < 20 || (n % 5)) {
-    XBLineGraphDraw(lg);
+    DrawLG(lg);
   }
 } 
-
-void ITLineGraphMonitorDestroy(lg)
-XBLineGraph lg;
-{
-  XBWinDestroy(XBLineGraphGetWindow(lg));
-  XBLineGraphDestroy(lg);
-}
  
-void ITLineGraphMonitorReset(lg)
-XBLineGraph lg;
+int KSPLGMonitorDestroy(DrawLGCtx ctx)
 {
-  XBLineGraphReset(lg);
+  DrawCtx win;
+  DrawLGGetDrawCtx(ctx,&win);
+  DrawDestroy(win);
+  DrawLGDestroy(ctx);
+  return 0;
 }
 
 

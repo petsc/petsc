@@ -42,7 +42,7 @@ extern char *malloc(int );
 
 /* HEADER_DOUBLES is the number of doubles in a trSPACE header */
 /* We have to be careful about alignment rules here */
-#if defined(dec_alpha) || defined(cray)
+#if defined(PARCH_alpha) || defined(PARCH_cray)
 #define TR_ALIGN_BYTES 8
 #define TR_ALIGN_MASK  0x7
 #define TR_FNAME_LEN   16
@@ -347,19 +347,15 @@ fprintf( fp, "The maximum space allocated was %d bytes [%d]\n",
    two major systems */
 #if defined(HAVE_SEARCH_H)
 
-/*
-   Old test ...
-   (!defined(__MSDOS__) && !defined(fx2800) && !defined(tc2000) && \
-    !defined(NeXT) && !defined(c2mp) && !defined(intelnx) && !defined(BSD386))
- */
+
 /* The following routine uses the tsearch routines to summarize the
    memory heap by id */
 /* rs6000 needs _XOPEN_SOURCE to use tsearch */
-#if defined(rs6000) && !defined(_XOPEN_SOURCE)
+#if defined(PARCH_rs6000) && !defined(_XOPEN_SOURCE)
 #define _NO_PROTO
 #define _XOPEN_SOURCE
 #endif
-#if defined(HPUX) && !defined(_INCLUDE_XOPEN_SOURCE)
+#if defined(PARCH_HPUX) && !defined(_INCLUDE_XOPEN_SOURCE)
 #define _INCLUDE_XOPEN_SOURCE
 #endif
 #include <search.h>
@@ -402,7 +398,8 @@ while (head) {
     key->size   = 0;
     key->lineno = head->lineno;
     key->fname  = head->fname;
-#if !defined(IRIX) && !defined(solaris) && !defined(HPUX) && !defined(rs6000)
+#if !defined(PARCH_IRIX) && !defined(PARCH_solaris) && !defined(PARCH_HPUX) && 
+    !defined(PARCH_rs6000)
     fnd    = (TRINFO **)tsearch( (char *) key, (char **) &root, IntCompare );
 #else
     fnd    = (TRINFO **)tsearch( (void *) key, (void **) &root, 

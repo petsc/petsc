@@ -55,10 +55,10 @@ static int PCisetfrom(PC pc)
   PCiDirect *jac = (PCiDirect *) pc->data;
   char      name[10];
   int       ordering = ORDER_ND;
-  if (OptionsHasName(0,"-direct_in_place")) {
+  if (OptionsHasName(0,pc->prefix,"-direct_in_place")) {
     PCDirectSetUseInplace(pc);
   }
-  if (OptionsGetString(0,"-direct_ordering",name,10)) {
+  if (OptionsGetString(0,pc->prefix,"-direct_ordering",name,10)) {
     if (!strcmp(name,"nd")) ordering = ORDER_ND;
     else if (!strcmp(name,"natural")) ordering = ORDER_NATURAL;
     else if (!strcmp(name,"1wd")) ordering = ORDER_1WD;
@@ -72,8 +72,11 @@ static int PCisetfrom(PC pc)
 
 static int PCiprinthelp(PC pc)
 {
-  fprintf(stderr,"-direct_in_place: do factorization in place\n");
-  fprintf(stderr,"-direct_ordering name: ordering routine to reduce fill\n");
+  char *p;
+  if (pc->prefix) p = pc->prefix; else p = "-";
+  fprintf(stderr,"%sdirect_in_place: do factorization in place\n",p);
+  fprintf(stderr,"%sdirect_ordering name: ordering to reduce fill",p);
+  fprintf(stderr," (nd,natural,1wd,rcm,qmd)\n");
   return 0;
 }
 

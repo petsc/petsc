@@ -58,6 +58,7 @@ VecSet(&zero,V);
 
 for (i=0; i<maxit; i++) {
     VecDot(R,RP,&rho);                       /*   rho <- rp' r     */
+    if (rho == 0.0) {fprintf(stderr,"Breakdown\n"); *its = -(i+1);return 0;} 
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);        /*     p <- p - w v   */
     VecAYPX(&beta,R,P);                      /*     p <- r + p beta */

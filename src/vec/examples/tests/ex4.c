@@ -1,8 +1,7 @@
 
 
-/*
-      Scatters from parallel vector into two seqential vectors.
-*/
+static char help[] = "Scatters from parallel vector into seqential vectors.\n";
+
 #include "petsc.h"
 #include "comm.h"
 #include "is.h"
@@ -22,7 +21,8 @@ int main(int argc,char **argv)
   VecScatterCtx ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  OptionsGetInt(0,"-n",&n);
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,0,"-n",&n);
 
   /* create two vector */
   ierr = VecCreateMPI(MPI_COMM_WORLD,n,-1,&x); CHKERR(ierr);

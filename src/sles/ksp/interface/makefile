@@ -4,10 +4,12 @@ ALL: lib
 
 CFLAGS   = $(OPT) -I.. $(INCLUDEDIRS) \
            -I$(ITOOLSDIR)/pinclude $(CONF)
-SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c 
+SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c \
+           xmon.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = itcl.o itfunc.o iguess.o itcreate.o iterativ.o itres.o itregis.o 
+OBJSC    = itcl.o itfunc.o iguess.o itcreate.o iterativ.o itres.o itregis.o \
+           xmon.o
 WSOURCEC = itfuncf.c itcreatef.c iterativf.c itresf.c
 WOBJS    = itfuncf.o itcreatef.o iterativf.o itresf.o
 LIBBASE  = libpetscksp

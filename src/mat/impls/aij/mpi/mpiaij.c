@@ -1,488 +1,580 @@
 
-#include "aij.h"
+#include "mpiaij.h"
 #include "vec/vecimpl.h"
-#include "inline/spops.h"
 
-int SpToSymmetricIJ(Matiaij*,int**,int**);
-int SpOrderND(int,int*,int*,int*);
-int SpOrder1WD(int,int*,int*,int*);
-int SpOrderQMD(int,int*,int*,int*);
-int SpOrderRCM(int,int*,int*,int*);
 
-static int MatAIJreorder(Mat mat,int type,IS *rperm, IS *cperm)
+#define CHUNCKSIZE   100
+/*
+   This is a simple minded stash. Do a linear search to determine if
+ in stash, if not add to end.
+*/
+static int StashValues(Stash *stash,int row,int n, int *idxn,
+                       Scalar *values,InsertMode addv)
 {
-  Matiaij *aij = (Matiaij *) mat->data;
-  int     i, ierr, *ia, *ja, *perma;
+  int    i,j,N = stash->n,found,*n_idx, *n_idy;
+  Scalar val,*n_array;
 
-  perma = (int *) MALLOC( aij->n*sizeof(int) ); CHKPTR(perma);
-
-  if (ierr = SpToSymmetricIJ( aij, &ia, &ja )) SETERR(ierr,0);
-
-  if (type == ORDER_NATURAL) {
-    for ( i=0; i<aij->n; i++ ) perma[i] = i;
-  }
-  else if (type == ORDER_ND) {
-    ierr = SpOrderND( aij->n, ia, ja, perma );
-  }
-  else if (type == ORDER_1WD) {
-    ierr = SpOrder1WD( aij->n, ia, ja, perma );
-  }
-  else if (type == ORDER_RCM) {
-    ierr = SpOrderRCM( aij->n, ia, ja, perma );
-  }
-  else if (type == ORDER_QMD) {
-    ierr = SpOrderQMD( aij->n, ia, ja, perma );
-  }
-  else SETERR(1,"Cannot performing ordering requested");
-  if (ierr) SETERR(ierr,0);
-  FREE(ia); FREE(ja);
-
-  if (ierr = ISCreateSequential(aij->n,perma,rperm)) SETERR(ierr,0);
-  ISSetPermutation(*rperm);
-  FREE(perma); 
-  *cperm = *rperm; /* so far all permutations are symmetric.*/
-  return 0; 
-}
-
-
-#define CHUNCKSIZE 5
-
-/* This version has row oriented v  */
-static int MatiAIJAddValues(Mat matin,Scalar *v,int m,int *idxm,int n,
-                            int *idxn)
-{
-  Matiaij *mat = (Matiaij *) matin->data;
-  int    *rp,k,a,b,t,ii,row,nrow,i,col,l,rmax, N, sorted = mat->sorted;
-  int    *imax = mat->imax, *ai = mat->i, *ailen = mat->ilen;
-  int    *aj = mat->j, nonew = mat->nonew;
-  Scalar *ap,value, *aa = mat->a;
-
-  for ( k=0; k<m; k++ ) { /* loop over added rows */
-    row  = idxm[k];   rp   = aj + ai[row] - 1; ap = aa + ai[row] - 1;
-    rmax = imax[row]; nrow = ailen[row]; 
-    a = 0;
-    for ( l=0; l<n; l++ ) { /* loop over added columns */
-      col = idxn[l] + 1; value = *v++; 
-      if (nrow) {
-        if (!sorted) a = 0; b = nrow;
-        while (b-a > 5) {
-          t = (b+a)/2;
-          if (rp[t] > col) b = t;
-          else             a = t;
-        }
-        for ( i=a; i<b; i++ ) {
-          if (rp[i] > col) break;
-          if (rp[i] == col) {ap[i] += value;  goto noinsert;}
-        } 
-        if (nonew) goto noinsert;
-        if (nrow >= rmax) {
-          /* there is no extra room in row, therefore enlarge */
-          int    new_nz = ai[mat->m] + CHUNCKSIZE,len,*new_i,*new_j;
-          Scalar *new_a;
-          fprintf(stderr,"Warning, enlarging matrix storage \n");
-
-          /* malloc new storage space */
-          len     = new_nz*(sizeof(int)+sizeof(Scalar))+(mat->m+1)*sizeof(int);
-          new_a  = (Scalar *) MALLOC( len ); CHKPTR(new_a);
-          new_j  = (int *) (new_a + new_nz);
-          new_i  = new_j + new_nz;
-
-          /* copy over old data into new slots */
-          for ( ii=0; ii<row+1; ii++ ) {new_i[ii] = ai[ii];}
-          for ( ii=row+1; ii<mat->m+1; ii++ ) {new_i[ii] = ai[ii]+CHUNCKSIZE;}
-          MEMCPY(new_j,aj,(ai[row]+nrow-1)*sizeof(int));
-          len = (new_nz - CHUNCKSIZE - ai[row] - nrow + 1);
-          MEMCPY(new_j+ai[row]-1+nrow+CHUNCKSIZE,aj+ai[row]-1+nrow,
-                                                           len*sizeof(int));
-          MEMCPY(new_a,aa,(ai[row]+nrow-1)*sizeof(Scalar));
-          MEMCPY(new_a+ai[row]-1+nrow+CHUNCKSIZE,aa+ai[row]-1+nrow,
-                                                         len*sizeof(Scalar)); 
-          /* free up old matrix storage */
-          FREE(mat->a); if (!mat->singlemalloc) {FREE(mat->i);FREE(mat->j);}
-          aa = mat->a = new_a; ai = mat->i = new_i; aj = mat->j = new_j; 
-          mat->singlemalloc = 1;
-
-          rp   = aj + ai[row] - 1; ap = aa + ai[row] - 1;
-          rmax = imax[row] = imax[row] + CHUNCKSIZE;
-          mat->mem += CHUNCKSIZE*(sizeof(int) + sizeof(Scalar));
-        }
-        N = nrow++ - 1; mat->nz++;
-        /* this has too many shifts here; but alternative was slower*/
-        for ( ii=N; ii>=i; ii-- ) {/* shift values up*/
-          rp[ii+1] = rp[ii];
-          ap[ii+1] = ap[ii];
-        }
-        rp[i] = col; 
-        ap[i] = value; 
-        noinsert:;
-        a = i + 1;
-      }
-      else {
-        ap[0] = value; rp[0] = col; nrow++; a = 1;
-      }
-    }
-    ailen[row] = nrow;
-  }
-  return 0;
-} 
-
-static int MatiAIJview(PetscObject obj,Viewer ptr)
-{
-  Mat     aijin = (Mat) obj;
-  Matiaij *aij = (Matiaij *) aijin->data;
-  int i,j;
-  for ( i=0; i<aij->m; i++ ) {
-    printf("row %d:",i);
-    for ( j=aij->i[i]-1; j<aij->i[i+1]-1; j++ ) {
-#if defined(PETSC_COMPLEX)
-      printf(" %d %g + %g i",aij->j[j]-1,real(aij->a[j]),imag(aij->a[j]));
-#else
-      printf(" %d %g ",aij->j[j]-1,aij->a[j]);
-#endif
-    }
-    printf("\n");
-  }
-  return 0;
-}
-
-static int MatiAIJEndAssemble(Mat aijin)
-{
-  Matiaij *aij = (Matiaij *) aijin->data;
-  int    shift = 0,i,j,*ai = aij->i, *aj = aij->j, *imax = aij->imax;
-  int    m = aij->m, *ip, N, *ailen = aij->ilen;
-  Scalar *a = aij->a, *ap;
-
-  for ( i=1; i<m; i++ ) {
-    shift += imax[i-1] - ailen[i-1];
-    if (shift) {
-      ip = aj + ai[i] - 1; ap = a + ai[i] - 1;
-      N = ailen[i];
-      for ( j=0; j<N; j++ ) {
-        ip[j-shift] = ip[j];
-        ap[j-shift] = ap[j]; 
-      }
-    } 
-    ai[i] = ai[i-1] + ailen[i-1];
-  }
-  shift += imax[m-1] - ailen[m-1];
-  ai[m] = ai[m-1] + ailen[m-1];
-  FREE(aij->imax);
-  FREE(aij->ilen);
-  aij->mem -= 2*(aij->m)*sizeof(int);
-  return 0;
-}
-
-static int MatiAIJzeroentries(Mat mat)
-{
-  Matiaij *aij = (Matiaij *) mat->data; 
-  Scalar  *a = aij->a;
-  int     i,n = aij->i[aij->m]-1;
-  for ( i=0; i<n; i++ ) a[i] = 0.0;
-  return 0;
-
-}
-static int MatiAIJdestroy(PetscObject obj)
-{
-  Mat mat = (Mat) obj;
-  Matiaij *aij = (Matiaij *) mat->data;
-  FREE(aij->a); 
-  if (!aij->singlemalloc) {FREE(aij->i); FREE(aij->j);}
-  FREE(aij); FREE(mat);
-  return 0;
-}
-
-static int MatiAIJCompress(Mat aijin)
-{
-  return 0;
-}
-
-static int MatiAIJinsopt(Mat aijin,int op)
-{
-  Matiaij *aij = (Matiaij *) aijin->data;
-  if      (op == ROW_ORIENTED)              aij->roworiented = 1;
-  else if (op == COLUMN_ORIENTED)           aij->roworiented = 0;
-  else if (op == COLUMNS_SORTED)            aij->sorted      = 1;
-  /* doesn't care about sorted rows */
-  else if (op == NO_NEW_NONZERO_LOCATIONS)  aij->nonew = 1;
-  else if (op == YES_NEW_NONZERO_LOCATIONS) aij->nonew = 0;
-
-  if (op == COLUMN_ORIENTED) SETERR(1,"Column oriented input not supported");
-  return 0;
-}
-
-static int MatiAIJgetdiag(Mat aijin,Vec v)
-{
-  Matiaij *aij = (Matiaij *) aijin->data;
-  int    i,j, n;
-  Scalar *x, zero = 0.0;
-  CHKTYPE(v,SEQVECTOR);
-  VecSet(&zero,v);
-  VecGetArray(v,&x); VecGetSize(v,&n);
-  if (n != aij->m) SETERR(1,"Nonconforming matrix and vector");
-  for ( i=0; i<aij->m; i++ ) {
-    for ( j=aij->i[i]-1; j<aij->i[i+1]-1; j++ ) {
-      if (aij->j[j]-1 == i) {
-        x[i] = aij->a[j];
+  for ( i=0; i<n; i++ ) {
+    found = 0;
+    val = *values++;
+    for ( j=0; j<N; j++ ) {
+      if ( stash->idx[j] == row && stash->idy[j] == idxn[i]) {
+        /* found a match */
+        if (addv == AddValues) stash->array[j] += val;
+        else stash->array[j] = val;
+        found = 1;
         break;
       }
     }
+    if (!found) { /* not found so add to end */
+      if ( stash->n == stash->nmax ) {
+        /* allocate a larger stash */
+        n_array = (Scalar *) MALLOC( (stash->nmax + CHUNCKSIZE)*(
+                                     2*sizeof(int) + sizeof(Scalar)));
+        CHKPTR(n_array);
+        n_idx = (int *) (n_array + stash->nmax + CHUNCKSIZE);
+        n_idy = (int *) (n_idx + stash->nmax + CHUNCKSIZE);
+        MEMCPY(n_array,stash->array,stash->nmax*sizeof(Scalar));
+        MEMCPY(n_idx,stash->idx,stash->nmax*sizeof(int));
+        MEMCPY(n_idy,stash->idy,stash->nmax*sizeof(int));
+        if (stash->array) FREE(stash->array);
+        stash->array = n_array; stash->idx = n_idx; stash->idy = n_idy;
+        stash->nmax += CHUNCKSIZE;
+      }
+      stash->array[stash->n]   = val;
+      stash->idx[stash->n]     = row;
+      stash->idy[stash->n++]   = idxn[i];
+    }
   }
   return 0;
 }
 
-/* -------------------------------------------------------*/
-/* Should check that shapes of vectors and matrices match */
-/* -------------------------------------------------------*/
-static int MatiAIJmulttrans(Mat aijin,Vec xx,Vec yy)
+static int MatiAIJInsertValues(Mat mat,int m,int *idxm,int n,
+                            int *idxn,Scalar *v,InsertMode addv)
 {
-  Matiaij *aij = (Matiaij *) aijin->data;
-  Scalar  *x, *y, *v, alpha;
-  int     m = aij->m, n, i, *idx;
-  CHKTYPE(xx,SEQVECTOR);CHKTYPE(yy,SEQVECTOR);
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
-  MEMSET(y,0,aij->n*sizeof(Scalar));
-  y--; /* shift for Fortran start by 1 indexing */
-  for ( i=0; i<m; i++ ) {
-    idx   = aij->j + aij->i[i] - 1;
-    v     = aij->a + aij->i[i] - 1;
-    n     = aij->i[i+1] - aij->i[i];
-    alpha = x[i];
-    /* should inline */
-    while (n-->0) {y[*idx++] += alpha * *v++;}
-  }
-  return 0;
-}
-static int MatiAIJmulttransadd(Mat aijin,Vec xx,Vec zz,Vec yy)
-{
-  Matiaij *aij = (Matiaij *) aijin->data;
-  Scalar  *x, *y, *z, *v, alpha;
-  int     m = aij->m, n, i, *idx;
-  CHKTYPE(xx,SEQVECTOR);CHKTYPE(yy,SEQVECTOR);
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
-  if (zz != yy) VecCopy(zz,yy);
-  y--; /* shift for Fortran start by 1 indexing */
-  for ( i=0; i<m; i++ ) {
-    idx   = aij->j + aij->i[i] - 1;
-    v     = aij->a + aij->i[i] - 1;
-    n     = aij->i[i+1] - aij->i[i];
-    alpha = x[i];
-    /* should inline */
-    while (n-->0) {y[*idx++] += alpha * *v++;}
-  }
-  return 0;
-}
+  Matimpiaij *aij = (Matimpiaij *) mat->data;
+  int        ierr,i,j, rstart = aij->rstart, rend = aij->rend;
+  int        cstart = aij->cstart, cend = aij->cend,row,col;
 
-static int MatiAIJmult(Mat aijin,Vec xx,Vec yy)
-{
-  Matiaij *aij = (Matiaij *) aijin->data;
-  Scalar  *x, *y, *v, sum;
-  int     m = aij->m, n, i, *idx;
-  CHKTYPE(xx,SEQVECTOR);CHKTYPE(yy,SEQVECTOR);
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
-  x--; /* shift for Fortran start by 1 indexing */
-  for ( i=0; i<m; i++ ) {
-    idx  = aij->j + aij->i[i] - 1;
-    v    = aij->a + aij->i[i] - 1;
-    n    = aij->i[i+1] - aij->i[i];
-    sum  = 0.0;
-    SPARSEDENSEDOT(sum,x,v,idx,n); 
-    y[i] = sum;
+  if (aij->insertmode != NotSetValues && aij->insertmode != addv) {
+    SETERR(1,"You cannot mix inserts and adds");
   }
-  return 0;
-}
-
-static int MatiAIJmultadd(Mat aijin,Vec xx,Vec yy,Vec zz)
-{
-  Matiaij *aij = (Matiaij *) aijin->data;
-  Scalar  *x, *y, *z, *v, sum;
-  int     m = aij->m, n, i, *idx;
-  CHKTYPE(xx,SEQVECTOR);CHKTYPE(yy,SEQVECTOR); CHKTYPE(zz,SEQVECTOR);
-  VecGetArray(xx,&x); VecGetArray(yy,&y); VecGetArray(zz,&z); 
-  x--; /* shift for Fortran start by 1 indexing */
+  aij->insertmode = addv;
   for ( i=0; i<m; i++ ) {
-    idx  = aij->j + aij->i[i] - 1;
-    v    = aij->a + aij->i[i] - 1;
-    n    = aij->i[i+1] - aij->i[i];
-    sum  = y[i];
-    SPARSEDENSEDOT(sum,x,v,idx,n); 
-    y[i] = sum;
+    if (idxm[i] >= rstart && idxm[i] < rend) {
+      row = idxm[i] - rstart;
+      for ( j=0; j<n; j++ ) {
+        if (idxn[j] >= cstart && idxn[j] < cend){
+          col = idxn[j] - cstart;
+          ierr = MatSetValues(aij->A,1,&row,1,&col,v+i*n+j,addv);CHKERR(ierr);
+        }
+        else {
+          col = idxn[j];
+          ierr = MatSetValues(aij->B,1,&row,1,&col,v+i*n+j,addv);CHKERR(ierr);
+        }
+      }
+    } 
+    else {
+      ierr = StashValues(&aij->stash,idxm[i],n,idxn,v+i*n,addv);CHKERR(ierr);
+    }
   }
   return 0;
 }
 
 /*
-     Adds diagonal pointers to sparse matrix structure.
+    the assembly code is alot like the code for vectors, we should 
+    sometime derive a single assembly code that can be used for 
+    either case.
 */
 
-static int MatiAIJmarkdiag(Matiaij  *aij)
-{
-  int    i,j, n, *diag;;
-  diag = (int *) MALLOC( aij->m*sizeof(int)); CHKPTR(diag);
-  for ( i=0; i<aij->m; i++ ) {
-    for ( j=aij->i[i]-1; j<aij->i[i+1]-1; j++ ) {
-      if (aij->j[j]-1 == i) {
-        diag[i] = j + 1;
-        break;
+static int MatiAIJBeginAssemble(Mat mat)
+{ 
+  Matimpiaij  *aij = (Matimpiaij *) mat->data;
+  MPI_Comm    comm = aij->comm;
+  int         ierr, numtids = aij->numtids, *owners = aij->rowners;
+  int         mytid = aij->mytid;
+  MPI_Request *send_waits,*recv_waits;
+  int         *nprocs,i,j,n,idx,*procs,nsends,nreceives,nmax,*work;
+  int         tag = 50, *owner,*starts,count;
+  InsertMode  addv;
+  Scalar      *rvalues,*svalues;
+
+  /* make sure all processors are either in INSERTMODE or ADDMODE */
+  MPI_Allreduce((void *) &aij->insertmode,(void *) &addv,numtids,MPI_INT,
+                MPI_BOR,comm);
+  if (addv == (AddValues|InsertValues)) {
+    SETERR(1,"Some processors have inserted while others have added");
+  }
+  aij->insertmode = addv; /* in case this processor had no cache */
+
+  /*  first count number of contributors to each processor */
+  nprocs = (int *) MALLOC( 2*numtids*sizeof(int) ); CHKPTR(nprocs);
+  MEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  owner = (int *) MALLOC( (aij->stash.n+1)*sizeof(int) ); CHKPTR(owner);
+  for ( i=0; i<aij->stash.n; i++ ) {
+    idx = aij->stash.idx[i];
+    for ( j=0; j<numtids; j++ ) {
+      if (idx >= owners[j] && idx < owners[j+1]) {
+        nprocs[j]++; procs[j] = 1; owner[i] = j; break;
       }
     }
   }
-  aij->diag = diag;
+  nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
+
+  /* inform other processors of number of messages and max length*/
+  work = (int *) MALLOC( numtids*sizeof(int) ); CHKPTR(work);
+  MPI_Allreduce((void *) procs,(void *) work,numtids,MPI_INT,MPI_SUM,comm);
+  nreceives = work[mytid]; 
+  MPI_Allreduce((void *) nprocs,(void *) work,numtids,MPI_INT,MPI_MAX,comm);
+  nmax = work[mytid];
+  FREE(work);
+
+  /* post receives: 
+       1) each message will consist of ordered pairs 
+     (global index,value) we store the global index as a double 
+     to simply the message passing. 
+       2) since we don't know how long each individual message is we 
+     allocate the largest needed buffer for each receive. Potentially 
+     this is a lot of wasted space.
+
+
+       This could be done better.
+  */
+  rvalues = (Scalar *) MALLOC(3*(nreceives+1)*nmax*sizeof(Scalar));
+  CHKPTR(rvalues);
+  recv_waits = (MPI_Request *) MALLOC((nreceives+1)*sizeof(MPI_Request));
+  CHKPTR(recv_waits);
+  for ( i=0; i<nreceives; i++ ) {
+    MPI_Irecv((void *)(rvalues+3*nmax*i),3*nmax,MPI_SCALAR,MPI_ANY_SOURCE,tag,
+              comm,recv_waits+i);
+  }
+
+  /* do sends:
+      1) starts[i] gives the starting index in svalues for stuff going to 
+         the ith processor
+  */
+  svalues = (Scalar *) MALLOC( 3*(aij->stash.n+1)*sizeof(Scalar) );
+  CHKPTR(svalues);
+  send_waits = (MPI_Request *) MALLOC( (nsends+1)*sizeof(MPI_Request));
+  CHKPTR(send_waits);
+  starts = (int *) MALLOC( numtids*sizeof(int) ); CHKPTR(starts);
+  starts[0] = 0; 
+  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=0; i<aij->stash.n; i++ ) {
+    svalues[3*starts[owner[i]]]       = (Scalar)  aij->stash.idx[i];
+    svalues[3*starts[owner[i]]+1]     = (Scalar)  aij->stash.idy[i];
+    svalues[3*(starts[owner[i]]++)+2] =  aij->stash.array[i];
+  }
+  FREE(owner);
+  starts[0] = 0;
+  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  count = 0;
+  for ( i=0; i<numtids; i++ ) {
+    if (procs[i]) {
+      MPI_Isend((void*)(svalues+3*starts[i]),3*nprocs[i],MPI_SCALAR,i,tag,
+                comm,send_waits+count++);
+    }
+  }
+  FREE(starts); FREE(nprocs);
+
+  /* Free cache space */
+  aij->stash.nmax = aij->stash.n = 0;
+  if (aij->stash.array){ FREE(aij->stash.array); aij->stash.array = 0;}
+
+  aij->svalues    = svalues;       aij->rvalues = rvalues;
+  aij->nsends     = nsends;         aij->nrecvs = nreceives;
+  aij->send_waits = send_waits; aij->recv_waits = recv_waits;
+  aij->rmax       = nmax;
+
+  return 0;
+}
+extern int MPIAIJSetUpMultiply(Mat);
+
+static int MatiAIJEndAssemble(Mat mat)
+{ 
+  int        ierr;
+  Matimpiaij *aij = (Matimpiaij *) mat->data;
+
+  MPI_Status  *send_status,recv_status;
+  int         index,idx,nrecvs = aij->nrecvs, count = nrecvs, i, n;
+  int         row,col;
+  Scalar      *values,val;
+  InsertMode  addv = aij->insertmode;
+
+  /*  wait on receives */
+  while (count) {
+    MPI_Waitany(nrecvs,aij->recv_waits,&index,&recv_status);
+    /* unpack receives into our local space */
+    values = aij->rvalues + 3*index*aij->rmax;
+    MPI_Get_count(&recv_status,MPI_SCALAR,&n);
+    n = n/3;
+    for ( i=0; i<n; i++ ) {
+      row = (int) PETSCREAL(values[3*i]) - aij->rstart;
+      col = (int) PETSCREAL(values[3*i+1]);
+      val = values[3*i+2];
+      if (col >= aij->cstart && col < aij->cend) {
+          col -= aij->cstart;
+        MatSetValues(aij->A,1,&row,1,&col,&val,addv);
+      } 
+      else {
+        MatSetValues(aij->B,1,&row,1,&col,&val,addv);
+      }
+    }
+    count--;
+  }
+  FREE(aij->recv_waits); FREE(aij->rvalues);
+ 
+  /* wait on sends */
+  if (aij->nsends) {
+    send_status = (MPI_Status *) MALLOC( aij->nsends*sizeof(MPI_Status) );
+    CHKPTR(send_status);
+    MPI_Waitall(aij->nsends,aij->send_waits,send_status);
+    FREE(send_status);
+  }
+  FREE(aij->send_waits); FREE(aij->svalues);
+
+  aij->insertmode = NotSetValues;
+  ierr = MatBeginAssembly(aij->A); CHKERR(ierr);
+  ierr = MatEndAssembly(aij->A); CHKERR(ierr);
+
+  ierr = MPIAIJSetUpMultiply(mat); CHKERR(ierr);
+  ierr = MatBeginAssembly(aij->B); CHKERR(ierr);
+  ierr = MatEndAssembly(aij->B); CHKERR(ierr);
   return 0;
 }
 
+static int MatiZero(Mat A)
+{
+  Matimpiaij *l = (Matimpiaij *) A->data;
+
+  MatZeroEntries(l->A); MatZeroEntries(l->B);
+  return 0;
+}
+
+/* again this uses the same basic stratagy as in the assembly and 
+   scatter create routines, we should try to do it systemamatically 
+   if we can figure out the proper level of generality. */
+
+/* the code does not do the diagonal entries correctly unless the 
+   matrix is square and the column and row owerships are identical.
+   This is a BUG. The only way to fix it seems to be to access 
+   aij->A and aij->B directly and not through the MatZeroRows() 
+   routine. 
+*/
+static int MatiZerorows(Mat A,IS is,Scalar *diag)
+{
+  Matimpiaij     *l = (Matimpiaij *) A->data;
+  int            i,ierr,N, *rows,*owners = l->rowners,numtids = l->numtids;
+  int            *localrows,*procs,*nprocs,j,found,idx,nsends,*work;
+  int            nmax,*svalues,*starts,*owner,nrecvs,mytid = l->mytid;
+  int            *rvalues,tag = 67,count,base,slen,n,len,*source;
+  int            *lens,index,*lrows,*values;
+  MPI_Comm       comm = l->comm;
+  MPI_Request    *send_waits,*recv_waits;
+  MPI_Status     recv_status,*send_status;
+  IS             istmp;
+
+  ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
+  ierr = ISGetIndices(is,&rows); CHKERR(ierr);
+
+  /*  first count number of contributors to each processor */
+  nprocs = (int *) MALLOC( 2*numtids*sizeof(int) ); CHKPTR(nprocs);
+  MEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  owner = (int *) MALLOC((N+1)*sizeof(int)); CHKPTR(owner); /* see note*/
+  for ( i=0; i<N; i++ ) {
+    idx = rows[i];
+    found = 0;
+    for ( j=0; j<numtids; j++ ) {
+      if (idx >= owners[j] && idx < owners[j+1]) {
+        nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
+      }
+    }
+    if (!found) SETERR(1,"Index out of range");
+  }
+  nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
+
+  /* inform other processors of number of messages and max length*/
+  work = (int *) MALLOC( numtids*sizeof(int) ); CHKPTR(work);
+  MPI_Allreduce((void *) procs,(void *) work,numtids,MPI_INT,MPI_SUM,comm);
+  nrecvs = work[mytid]; 
+  MPI_Allreduce((void *) nprocs,(void *) work,numtids,MPI_INT,MPI_MAX,comm);
+  nmax = work[mytid];
+  FREE(work);
+
+  /* post receives:   */
+  rvalues = (int *) MALLOC((nrecvs+1)*nmax*sizeof(int)); /*see note */
+  CHKPTR(rvalues);
+  recv_waits = (MPI_Request *) MALLOC((nrecvs+1)*sizeof(MPI_Request));
+  CHKPTR(recv_waits);
+  for ( i=0; i<nrecvs; i++ ) {
+    MPI_Irecv((void *)(rvalues+nmax*i),nmax,MPI_INT,MPI_ANY_SOURCE,tag,
+              comm,recv_waits+i);
+  }
+
+  /* do sends:
+      1) starts[i] gives the starting index in svalues for stuff going to 
+         the ith processor
+  */
+  svalues = (int *) MALLOC( (N+1)*sizeof(int) ); CHKPTR(svalues);
+  send_waits = (MPI_Request *) MALLOC( (nsends+1)*sizeof(MPI_Request));
+  CHKPTR(send_waits);
+  starts = (int *) MALLOC( (numtids+1)*sizeof(int) ); CHKPTR(starts);
+  starts[0] = 0; 
+  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=0; i<N; i++ ) {
+    svalues[starts[owner[i]]++] = rows[i];
+  }
+  ISRestoreIndices(is,&rows);
+
+  starts[0] = 0;
+  for ( i=1; i<numtids+1; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  count = 0;
+  for ( i=0; i<numtids; i++ ) {
+    if (procs[i]) {
+      MPI_Isend((void*)(svalues+starts[i]),nprocs[i],MPI_INT,i,tag,
+                comm,send_waits+count++);
+    }
+  }
+  FREE(starts);
+
+  base = owners[mytid];
+
+  /*  wait on receives */
+  lens = (int *) MALLOC( 2*(nrecvs+1)*sizeof(int) ); CHKPTR(lens);
+  source = lens + nrecvs;
+  count = nrecvs; slen = 0;
+  while (count) {
+    MPI_Waitany(nrecvs,recv_waits,&index,&recv_status);
+    /* unpack receives into our local space */
+    MPI_Get_count(&recv_status,MPI_INT,&n);
+    source[index]  = recv_status.MPI_SOURCE;
+    lens[index]  = n;
+    slen += n;
+    count--;
+  }
+  FREE(recv_waits); 
+  
+  /* move the data into the send scatter */
+  lrows = (int *) MALLOC( slen*sizeof(int) ); CHKPTR(lrows);
+  count = 0;
+  for ( i=0; i<nrecvs; i++ ) {
+    values = rvalues + i*nmax;
+    for ( j=0; j<lens[i]; j++ ) {
+      lrows[count++] = values[j] - base;
+    }
+  }
+  FREE(rvalues); FREE(lens);
+  FREE(owner); FREE(nprocs);
+    
+  /* actually zap the local rows */
+  ierr = ISCreateSequential(slen,lrows,&istmp); CHKERR(ierr);  FREE(lrows);
+  ierr = MatZeroRows(l->A,istmp,diag); CHKERR(ierr);
+  ierr = MatZeroRows(l->B,istmp,0); CHKERR(ierr);
+  ierr = ISDestroy(istmp); CHKERR(ierr);
+
+  /* wait on sends */
+  if (nsends) {
+    send_status = (MPI_Status *) MALLOC( nsends*sizeof(MPI_Status) );
+    CHKPTR(send_status);
+    MPI_Waitall(nsends,send_waits,send_status);
+    FREE(send_status);
+  }
+  FREE(send_waits); FREE(svalues);
+
+
+  return 0;
+}
+
+static int MatiAIJMult(Mat aijin,Vec xx,Vec yy)
+{
+  Matimpiaij *aij = (Matimpiaij *) aijin->data;
+  int        ierr;
+
+  ierr = VecScatterBegin(xx,0,aij->lvec,0,InsertValues,&aij->Mvctx);
+  CHKERR(ierr);
+  ierr = MatMult(aij->A,xx,yy); CHKERR(ierr);
+  ierr = VecScatterEnd(xx,0,aij->lvec,0,InsertValues,&aij->Mvctx); CHKERR(ierr);
+  ierr = MatMultAdd(aij->B,aij->lvec,yy,yy); CHKERR(ierr);
+  return 0;
+}
+
+/*
+  This only works correctly for square matrices where the subblock A->A is the 
+   diagonal block
+*/
+static int MatiAIJgetdiag(Mat Ain,Vec v)
+{
+  Matimpiaij *A = (Matimpiaij *) Ain->data;
+  return MatGetDiagonal(A->A,v);
+}
+
+static int MatiAIJdestroy(PetscObject obj)
+{
+  Mat        mat = (Mat) obj;
+  Matimpiaij *aij = (Matimpiaij *) mat->data;
+  int        ierr;
+  FREE(aij->rowners); 
+  ierr = MatDestroy(aij->A); CHKERR(ierr);
+  ierr = MatDestroy(aij->B); CHKERR(ierr);
+  FREE(aij); FREE(mat);
+  if (aij->lvec) VecDestroy(aij->lvec);
+  if (aij->Mvctx) VecScatterCtxDestroy(aij->Mvctx);
+  return 0;
+}
+
+static int MatiView(PetscObject obj,Viewer viewer)
+{
+  Mat        mat = (Mat) obj;
+  Matimpiaij *aij = (Matimpiaij *) mat->data;
+  int        ierr;
+
+  MPE_Seq_begin(aij->comm,1);
+  printf("[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
+          aij->mytid,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
+          aij->cend);
+  ierr = MatView(aij->A,viewer); CHKERR(ierr);
+  ierr = MatView(aij->B,viewer); CHKERR(ierr);
+  MPE_Seq_end(aij->comm,1);
+  return 0;
+}
+
+/*
+    This has to provide several versions.
+
+     1) per sequential 
+     2) a) use only local smoothing updating outer values only once.
+        b) local smoothing updating outer values each inner iteration
+     3) color updating out values betwen colors. (this imples an 
+        ordering that is sort of related to the IS argument, it 
+        is not clear a IS argument makes the most sense perhaps it 
+        should be dropped.
+*/
 static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,IS is,
                         int its,Vec xx)
 {
-  Matiaij *mat = (Matiaij *) matin->data;
-  Scalar *x, *b, zero = 0.0, d, *xs, sum, *v = mat->a;
-  int    ierr,one = 1, tmp, *idx, *diag;
-  int    n = mat->n, m = mat->m, i, j;
+  Matimpiaij *mat = (Matimpiaij *) matin->data;
+  Scalar     zero = 0.0;
+  int        ierr,one = 1, tmp, *idx, *diag;
+  int        n = mat->n, m = mat->m, i, j;
 
   if (is) SETERR(1,"No support for ordering in relaxation");
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (ierr = VecSet(&zero,xx)) return ierr;
   }
-  VecGetArray(xx,&x); VecGetArray(bb,&b);
-  if (!mat->diag) {if (ierr = MatiAIJmarkdiag(mat)) return ierr;}
-  diag = mat->diag;
-  xs = x - 1; /* shifted by one for index start of a or mat->j*/
-  while (its--) {
-    if (flag & SOR_FORWARD_SWEEP){
-      for ( i=0; i<m; i++ ) {
-        d    = mat->a[diag[i]-1];
-        n    = mat->i[i+1] - mat->i[i]; 
-        idx  = mat->j + mat->i[i] - 1;
-        v    = mat->a + mat->i[i] - 1;
-        sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
-      }
-    }
-    if (flag & SOR_BACKWARD_SWEEP){
-      for ( i=m-1; i>=0; i-- ) {
-        d    = mat->a[diag[i] - 1];
-        n    = mat->i[i+1] - mat->i[i]; 
-        idx  = mat->j + mat->i[i] - 1;
-        v    = mat->a + mat->i[i] - 1;
-        sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
-      }
-    }
-  }
+
+  /* update outer values from other processors*/
+ 
+  /* smooth locally */
   return 0;
 } 
-
-static int MatiAIJnz(Mat matin,int *nz)
-{
-  Matiaij *mat = (Matiaij *) matin->data;
-  *nz = mat->nz;
-  return 0;
-}
-static int MatiAIJmem(Mat matin,int *nz)
-{
-  Matiaij *mat = (Matiaij *) matin->data;
-  *nz = mat->mem;
-  return 0;
-}
-
-int MatiAIJLUFactorSymbolic(Mat,IS,IS,Mat*);
-int MatiAIJLUFactorNumeric(Mat,Mat);
-int MatiAIJSolve(Mat,Vec,Vec);
-
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatiAIJAddValues,MatiAIJAddValues,
+static struct _MatOps MatOps = {MatiAIJInsertValues,
        0, 0,
-       MatiAIJmult,MatiAIJmultadd,MatiAIJmulttrans,MatiAIJmulttransadd,
-       MatiAIJSolve,0,0,0,
+       MatiAIJMult,0,0,0,
+       0,0,0,0,
        0,0,
        MatiAIJrelax,
        0,
-       MatiAIJnz,MatiAIJmem,0,
+       0,0,0,
        0,
        MatiAIJgetdiag,0,0,
-       0,MatiAIJEndAssemble,
-       MatiAIJCompress,
-       MatiAIJinsopt,MatiAIJzeroentries,0,MatAIJreorder,
-       MatiAIJLUFactorSymbolic,MatiAIJLUFactorNumeric,0,0 };
+       MatiAIJBeginAssemble,MatiAIJEndAssemble,
+       0,
+       0,MatiZero,MatiZerorows,0,
+       0,0,0,0 };
 
 
 
 /*@
 
-      MatCreateSequentialAIJ - Creates a sparse matrix in AIJ format.
+      MatCreateMPIAIJ - Creates a sparse parallel matrix 
+                                 in AIJ format.
 
   Input Parameters:
-.   m,n - number of rows and columns
-.   nz - total number nonzeros in matrix
-.   nzz - number of nonzeros per row or null
-.       You must leave room for the diagonal entry even if it is zero.
+.   comm - MPI communicator
+.   m,n - number of local rows and columns (or -1 to have calculated)
+.   M,N - global rows and columns (or -1 to have calculated)
+.   d_nz - total number nonzeros in diagonal portion of matrix
+.   d_nzz - number of nonzeros per row in diagonal portion of matrix or null
+.           You must leave room for the diagonal entry even if it is zero.
+.   o_nz - total number nonzeros in off-diagonal portion of matrix
+.   o_nzz - number of nonzeros per row in off-diagonal portion of matrix
+.           or null. You must have at least one nonzero per row.
 
   Output parameters:
 .  newmat - the matrix 
 
-  Keywords: matrix, aij, compressed row, sparse
+  Keywords: matrix, aij, compressed row, sparse, parallel
 @*/
-int MatCreateSequentialAIJ(int m,int n,int nz,int *nnz, Mat *newmat)
+int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
+                 int d_nz,int *d_nnz, int o_nz,int *o_nnz,Mat *newmat)
 {
-  Mat       mat;
-  Matiaij   *aij;
-  int       i,rl,len;
-  *newmat      = 0;
+  Mat          mat;
+  Matimpiaij   *aij;
+  int          ierr, i,rl,len,sum[2],work[2];
+  *newmat         = 0;
   CREATEHEADER(mat,_Mat);
-  mat->data    = (void *) (aij = NEW(Matiaij)); CHKPTR(aij);
-  mat->cookie  = MAT_COOKIE;
-  mat->ops     = &MatOps;
-  mat->destroy = MatiAIJdestroy;
-  mat->view    = MatiAIJview;
-  mat->type    = MATAIJSEQ;
-  mat->factor  = 0;
-  mat->row     = 0;
-  mat->col     = 0;
+  mat->data       = (void *) (aij = NEW(Matimpiaij)); CHKPTR(aij);
+  mat->cookie     = MAT_COOKIE;
+  mat->ops        = &MatOps;
+  mat->destroy    = MatiAIJdestroy;
+  mat->view       = MatiView;
+  mat->type       = MATAIJMPI;
+  mat->factor     = 0;
+  mat->row        = 0;
+  mat->col        = 0;
+  aij->comm       = comm;
+  aij->insertmode = NotSetValues;
+  MPI_Comm_rank(comm,&aij->mytid);
+  MPI_Comm_size(comm,&aij->numtids);
+
+  if (M == -1 || N == -1) {
+    work[0] = m; work[1] = n;
+    MPI_Allreduce((void *) work,(void *) sum,1,MPI_INT,MPI_SUM,comm );
+    if (M == -1) M = sum[0];
+    if (N == -1) N = sum[1];
+  }
+  if (m == -1) {m = M/aij->numtids + ((M % aij->numtids) > aij->mytid);}
+  if (n == -1) {n = N/aij->numtids + ((N % aij->numtids) > aij->mytid);}
   aij->m       = m;
   aij->n       = n;
-  aij->imax    = (int *) MALLOC( m*sizeof(int) ); CHKPTR(aij->imax);
-  aij->mem     = m*sizeof(int) + sizeof(Matiaij);
-  if (!nnz) {
-    if (nz <= 0) nz = 1;
-    for ( i=0; i<m; i++ ) aij->imax[i] = nz;
-    nz = nz*m;
+  aij->N       = N;
+  aij->M       = M;
+
+  /* build local table of row and column ownerships */
+  aij->rowners = (int *) MALLOC(2*(aij->numtids+2)*sizeof(int)); 
+  CHKPTR(aij->rowners);
+  aij->cowners = aij->rowners + aij->numtids + 1;
+  MPI_Allgather(&m,1,MPI_INT,aij->rowners+1,1,MPI_INT,comm);
+  aij->rowners[0] = 0;
+  for ( i=2; i<=aij->numtids; i++ ) {
+    aij->rowners[i] += aij->rowners[i-1];
   }
-  else {
-    nz = 0;
-    for ( i=0; i<m; i++ ) {aij->imax[i] = nnz[i]; nz += nnz[i];}
+  aij->rstart = aij->rowners[aij->mytid]; 
+  aij->rend   = aij->rowners[aij->mytid+1]; 
+  MPI_Allgather(&n,1,MPI_INT,aij->cowners+1,1,MPI_INT,comm);
+  aij->cowners[0] = 0;
+  for ( i=2; i<=aij->numtids; i++ ) {
+    aij->cowners[i] += aij->cowners[i-1];
   }
+  aij->cstart = aij->cowners[aij->mytid]; 
+  aij->cend   = aij->cowners[aij->mytid+1]; 
 
-  /* allocate the matrix space */
-  aij->nz = nz;
-  len     = nz*(sizeof(int) + sizeof(Scalar)) + (aij->m+1)*sizeof(int);
-  aij->a  = (Scalar *) MALLOC( len ); CHKPTR(aij->a);
-  aij->j  = (int *) (aij->a + nz);
-  aij->i  = aij->j + nz;
-  aij->singlemalloc = 1;
-  aij->mem += len;
 
-  aij->i[0] = 1;
-  for (i=1; i<m+1; i++) {
-    aij->i[i] = aij->i[i-1] + aij->imax[i-1];
-  }
+  ierr = MatCreateSequentialAIJ(m,n,d_nz,d_nnz,&aij->A); CHKERR(ierr);
+  ierr = MatCreateSequentialAIJ(m,N,o_nz,o_nnz,&aij->B); CHKERR(ierr);
 
-  /* aij->ilen will count nonzeros in each row so far. */
-  aij->ilen = (int *) MALLOC((aij->m)*sizeof(int)); 
+  /* build cache for off array entries formed */
+  aij->stash.nmax = CHUNCKSIZE; /* completely arbratray number */
+  aij->stash.n    = 0;
+  aij->stash.array = (Scalar *) MALLOC( aij->stash.nmax*(2*sizeof(int) +
+                            sizeof(Scalar))); CHKPTR(aij->stash.array);
+  aij->stash.idx = (int *) (aij->stash.array + aij->stash.nmax);
+  aij->stash.idy = (int *) (aij->stash.idx + aij->stash.nmax);
 
-  /* stick in zeros along diagonal */
-  for ( i=0; i<aij->m; i++ ) {
-    aij->ilen[i] = 1;
-    aij->j[aij->i[i]-1] = i+1;
-    aij->a[aij->i[i]-1] = 0.0;
-  }
-  aij->nz = aij->m;
-  aij->mem += (aij->m)*sizeof(int) + len;
-
-  aij->sorted      = 0;
-  aij->roworiented = 1;
-  aij->nonew       = 0;
-  aij->diag        = 0;
+  /* stuff used for matrix vector multiply */
+  aij->lvec      = 0;
+  aij->Mvctx     = 0;
 
   *newmat = mat;
   return 0;

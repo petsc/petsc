@@ -12,7 +12,7 @@ OBJSF    =
 LIBBASE  = libpetscis
 TESTS    = 
 TESTSC   = 
-SYSLIB   = $(LDIR)/libpetscvec.a $(LDIR)/libpetscsys.a \
+SYSLIB   = -L$(LDIR) -lpetscvec -lpetscsys \
            $(BLAS) $(SLIB) -lm 
 LINCLUDE = $(SOURCEH)
 
