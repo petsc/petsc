@@ -1,4 +1,4 @@
-/* $Id: inpututils.c,v 1.4 2000/04/09 04:40:07 bsmith Exp bsmith $ */
+/* $Id: inpututils.c,v 1.5 2000/04/12 04:26:33 bsmith Exp bsmith $ */
 
 /*
        Utilities for inputing, creating and managing simple two dimensional grids
@@ -45,7 +45,7 @@ int AOData2dGridToAOData(AOData2dGrid agrid,AOData *ao)
   */
   nmax = PetscMax(agrid->cell_n,agrid->vertex_n);
   nmax = PetscMax(nmax,agrid->edge_n);
-  keys = (int*) PetscMalloc(nmax*sizeof(int));CHKPTRQ(keys);
+  keys = (int*)PetscMalloc(nmax*sizeof(int));CHKPTRQ(keys);
   for (i=0; i<nmax; i++) {
     keys[i] = i;
   }
@@ -91,8 +91,8 @@ int AOData2dGridInput(AOData2dGrid agrid,Draw draw)
   /*
      Allocate large arrays to hold the nodes and cellrilateral lists 
   */
-  vertex = agrid->vertex = (double *) PetscMalloc(2*agrid->vertex_max*sizeof(double));CHKPTRQ(vertex);
-  cell = agrid->cell_vertex = (int *) PetscMalloc(4*agrid->cell_max*sizeof(int));CHKPTRQ(cell);
+  vertex = agrid->vertex = (double *)PetscMalloc(2*agrid->vertex_max*sizeof(double));CHKPTRQ(vertex);
+  cell = agrid->cell_vertex = (int *)PetscMalloc(4*agrid->cell_max*sizeof(int));CHKPTRQ(cell);
 
 
 
@@ -340,7 +340,7 @@ int AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
   /*
       count contains number of cell that contain the given vertex 
   */
-  count = (int *) PetscMalloc(agrid->vertex_n*sizeof(int));CHKPTRQ(count);
+  count = (int *)PetscMalloc(agrid->vertex_n*sizeof(int));CHKPTRQ(count);
   ierr = PetscMemzero(count,agrid->vertex_n*sizeof(int));CHKERRQ(ierr);
 
   for (i=0; i<agrid->cell_n; i++) {

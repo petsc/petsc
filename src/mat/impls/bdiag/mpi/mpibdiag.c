@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.183 2000/04/09 04:36:16 bsmith Exp bsmith $*/
+/*$Id: mpibdiag.c,v 1.184 2000/04/12 04:23:30 bsmith Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -1017,7 +1017,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   if (ldiagv) {ierr = PetscFree(ldiagv);CHKERRQ(ierr);}
 
   /* build cache for off array entries formed */
-  ierr = MatStashCreate_Private(comm,1,&B->stash);CHKERRQ(ierr);
+  ierr = MatStashCreate_Private(B->comm,1,&B->stash);CHKERRQ(ierr);
   b->donotstash = 0;
 
   /* stuff used for matrix-vector multiply */

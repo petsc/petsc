@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.138 2000/02/24 22:46:16 balay Exp bsmith $ */
+/* $Id: petsclog.h,v 1.139 2000/04/09 03:11:53 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -441,6 +441,17 @@ extern int PLogObjectState(PetscObject,const char[],...);
 
 #endif   /* PETSC_USE_LOG */
 
+#define PreLoadBegin(flag,name) {PetscTruth PreLoading = flag; int PreLoadMax,PreLoadIt,__ierr;\
+                                 __ierr = OptionsGetLogical(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(__ierr);\
+                                 PreLoadMax = (int)(PreLoading);\
+                                 for (PreLoadIt=0; PreLoadIt<=PreLoadMax; PreLoadIt++) {\
+                                   __ierr = PetscBarrier(PETSC_NULL);CHKERRQ(__ierr);\
+                                   __ierr = PLogStagePush(PETSC_DETERMINE);CHKERRQ(__ierr);\
+                                   __ierr = PLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(__ierr);
+#define PreLoadEnd()               __ierr = PLogStagePop();CHKERRQ(__ierr);PreLoading = PETSC_FALSE;}}
+#define PreLoadStage(name)         __ierr = PLogStagePop();CHKERRQ(__ierr);\
+                                   __ierr = PLogStagePush(PETSC_DETERMINE);CHKERRQ(__ierr);\
+                                   __ierr = PLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(__ierr);
 
 #endif
 

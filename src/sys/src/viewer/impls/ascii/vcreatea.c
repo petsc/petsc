@@ -1,47 +1,6 @@
-/*$Id: vcreatea.c,v 1.14 2000/04/09 04:33:53 bsmith Exp bsmith $*/
+/*$Id: vcreatea.c,v 1.15 2000/04/12 04:20:52 bsmith Exp bsmith $*/
 
 #include "petsc.h"  /*I     "petsc.h"   I*/
-
-Viewer VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF,VIEWER_STDOUT_WORLD,VIEWER_STDERR_WORLD;
-
-/*
-      This is called by PETScInitialize() to create the 
-   default PETSc viewers.
-*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerInitializeASCII_Private"></a>*/"ViewerInitializeASCII_Private" 
-int ViewerInitializeASCII_Private(void)
-{
-  int ierr;
-  PetscFunctionBegin;
-  ierr = ViewerASCIIOpen(PETSC_COMM_SELF,"stderr",&VIEWER_STDERR_SELF);CHKERRQ(ierr);
-  ierr = ViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = ViewerASCIIOpen(PETSC_COMM_WORLD,"stdout",&VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ViewerASCIIOpen(PETSC_COMM_WORLD,"stderr",&VIEWER_STDERR_WORLD);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-      This is called in PetscFinalize() to destroy all
-   traces of the default viewers.
-*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerDestroyASCII_Private"></a>*/"ViewerDestroyASCII_Private" 
-int ViewerDestroyASCII_Private(void)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = ViewerDestroy(VIEWER_STDERR_SELF);CHKERRQ(ierr);
-  ierr = ViewerDestroy(VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = ViewerDestroy(VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ViewerDestroy(VIEWER_STDERR_WORLD);CHKERRQ(ierr);
-  ierr = VIEWER_STDOUT_Destroy(PETSC_COMM_SELF);CHKERRQ(ierr);
-  ierr = VIEWER_STDERR_Destroy(PETSC_COMM_SELF);CHKERRQ(ierr);
-  ierr = VIEWER_STDOUT_Destroy(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = VIEWER_STDERR_Destroy(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 /* ---------------------------------------------------------------------*/
 /*
@@ -88,33 +47,12 @@ Viewer VIEWER_STDOUT_(MPI_Comm comm)
   if (!flg) { /* viewer not yet created */
     ierr = ViewerASCIIOpen(comm,"stdout",&viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
+    if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Stdout_keyval,(void*)viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
-}
-
-/*
-       If there is a Viewer associated with this communicator it is destroyed.
-*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name="VIEWER_STDOUT_Destroy"></a>*/"VIEWER_STDOUT_Destroy" 
-int VIEWER_STDOUT_Destroy(MPI_Comm comm)
-{
-  int        ierr;
-  PetscTruth flg;
-  Viewer     viewer;
-
-  PetscFunctionBegin;
-  if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
-    PetscFunctionReturn(0);
-  }
-  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stdout_keyval,(void **)&viewer,(int*)&flg);CHKERRQ(ierr);
-  if (flg) { 
-    ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
-    ierr = MPI_Attr_delete(comm,Petsc_Viewer_Stdout_keyval);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------*/
@@ -161,33 +99,12 @@ Viewer VIEWER_STDERR_(MPI_Comm comm)
   if (!flg) { /* viewer not yet created */
     ierr = ViewerASCIIOpen(comm,"stderr",&viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDERR_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
+    if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Stderr_keyval,(void*)viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDERR_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
-}
-
-/*
-       If there is a Viewer associated with this communicator it is destroyed.
-*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name="VIEWER_STDERR_Destroy"></a>*/"VIEWER_STDERR_Destroy" 
-int VIEWER_STDERR_Destroy(MPI_Comm comm)
-{
-  int        ierr;
-  PetscTruth flg;
-  Viewer     viewer;
-
-  PetscFunctionBegin;
-  if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
-    PetscFunctionReturn(0);
-  }
-  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stderr_keyval,(void **)&viewer,(int *)&flg);CHKERRQ(ierr);
-  if (flg) { 
-    ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
-    ierr = MPI_Attr_delete(comm,Petsc_Viewer_Stderr_keyval);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  

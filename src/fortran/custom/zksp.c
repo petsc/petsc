@@ -1,10 +1,7 @@
-/*$Id: zksp.c,v 1.43 2000/01/11 21:03:48 bsmith Exp balay $*/
+/*$Id: zksp.c,v 1.44 2000/03/23 22:30:17 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ksp.h"
-
-
-
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define kspfgmressetmodifypc_      KSPFGMRESSETMODIFYPC
@@ -35,6 +32,7 @@
 #define kspsettype_                KSPSETTYPE           
 #define kspgetresidualhistory_     KSPGETRESIDUALHISTORY
 #define kspgetoptionsprefix_       KSPGETOPTIONSPREFIX
+#define kspview_                   KSPVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspfgmressetmodifypc_      kspfgmressetmodifypc
 #define kspfgmresmodifypcsles_     kspfgmresmodifypcsles
@@ -64,10 +62,19 @@
 #define kspgetpreconditionerside_  kspgetpreconditionerside
 #define kspbuildsolution_          kspbuildsolution
 #define kspgetoptionsprefix_       kspgetoptionsprefix
+#define kspview_                   kspview
 #endif
 
 EXTERN_C_BEGIN
+
 /* function */
+void PETSC_STDCALL kspview_(KSP *ksp,Viewer *viewer, int *ierr)
+{
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = KSPView(*ksp,v);
+}
+
 void kspdefaultconverged_(KSP *ksp,int *n,double *rnorm,KSPConvergedReason *flag,void *dummy,int *ierr)
 {
   if (FORTRANNULLOBJECT(dummy)) dummy = PETSC_NULL;
@@ -311,29 +318,29 @@ static int ourmoddestroy(void* ctx)
   return 0;
 }
 
-void PETSC_STDCALL kspfgmresmodifypcnochange_(KSP *ksp,int *total_its,int *loc_its,double *res_norm,void* dummy,int *__ierr)
+void PETSC_STDCALL kspfgmresmodifypcnochange_(KSP *ksp,int *total_its,int *loc_its,double *res_norm,void* dummy,int *ierr)
 {
-  *__ierr = KSPFGMRESModifyPCNoChange(*ksp,*total_its,*loc_its,*res_norm,dummy);
+  *ierr = KSPFGMRESModifyPCNoChange(*ksp,*total_its,*loc_its,*res_norm,dummy);
 }
 
-void PETSC_STDCALL kspfgmresmodifypcsles_(KSP *ksp,int *total_its,int *loc_its,double *res_norm,void*dummy,int *__ierr)
+void PETSC_STDCALL kspfgmresmodifypcsles_(KSP *ksp,int *total_its,int *loc_its,double *res_norm,void*dummy,int *ierr)
 {
-  *__ierr = KSPFGMRESModifyPCSLES(*ksp,*total_its,*loc_its,*res_norm,dummy);
+  *ierr = KSPFGMRESModifyPCSLES(*ksp,*total_its,*loc_its,*res_norm,dummy);
 }
 
-void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (*fcn)(KSP*,int*,int*,double*,void*,int*),void* ctx,void (*d)(void*,int*),int *__ierr)
+void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (*fcn)(KSP*,int*,int*,double*,void*,int*),void* ctx,void (*d)(void*,int*),int *ierr)
 {
   if ((void*)fcn == (void*)kspfgmresmodifypcsles_) {
-    *__ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCSLES,0,0);
+    *ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCSLES,0,0);
   } else if ((void*)fcn == (void*)kspfgmresmodifypcnochange_) {
-    *__ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCNoChange,0,0);
+    *ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCNoChange,0,0);
   } else {
     f109 = fcn;
     if (FORTRANNULLFUNCTION(d)) {
-      *__ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,ctx,0);
+      *ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,ctx,0);
     } else {
       f210 = d;
-      *__ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,ctx,ourmoddestroy);
+      *ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,ctx,ourmoddestroy);
     }
   }
 }

@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.32 2000/04/09 04:33:56 bsmith Exp bsmith $*/
+/*$Id: ams.c,v 1.33 2000/04/12 04:20:55 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -135,21 +135,6 @@ int ViewerAMSGetAMSComm(Viewer v,AMS_Comm *ams_comm)
   PetscFunctionReturn(0);
 }
 
-/* ---------------------------------------------------------------------*/
-Viewer VIEWER_AMS_WORLD_PRIVATE = 0;
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerInitializeAMSWorld_Private" 
-int ViewerInitializeAMSWorld_Private(void)
-{
-  int  ierr;
-
-  PetscFunctionBegin;
-  if (VIEWER_AMS_WORLD_PRIVATE) PetscFunctionReturn(0);
-  ierr = ViewerAMSOpen(PETSC_COMM_WORLD,"PETSc",&VIEWER_AMS_WORLD_PRIVATE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*
     The variable Petsc_Viewer_Ams_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a Viewer.
@@ -178,26 +163,11 @@ $       XXXView(XXX object,VIEWER_AMS_(comm));
 @*/
 Viewer VIEWER_AMS_(MPI_Comm comm)
 {
-  int           ierr,flag,size,csize,rank;
+  int           ierr,flag,size,rank;
   Viewer        viewer;
   char          name[128];
 
   PetscFunctionBegin;
-  /*
-     If communicator is across all processors then we store the AMS_Comm not 
-     in the communicator but instead in a static variable. This is because this
-     routine is called before the PETSC_COMM_WORLD communictor may have been 
-     duplicated, thus if we stored it there we could not access it the next
-     time we called this routin.
-  */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-  ierr = MPI_Comm_size(comm,&csize);
-  if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-  if (size == csize) {
-    viewer = VIEWER_AMS_WORLD;
-    PetscFunctionReturn(viewer);
-  }
 
   if (Petsc_Viewer_Ams_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Ams_keyval,0);
@@ -206,14 +176,23 @@ Viewer VIEWER_AMS_(MPI_Comm comm)
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Ams_keyval,(void **)&viewer,&flag);
   if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   if (!flag) { /* viewer not yet created */
-    if (csize == 1) {
-      ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);if (ierr) PetscFunctionReturn(0);
-      sprintf(name,"PETSc_%d",rank);
+    if (comm == PETSC_COMM_WORLD) {
+      ierr = PetscStrcpy(name,"PETSc");
+      if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     } else {
-      PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;
+      ierr = MPI_Comm_size(comm,&size);
+      if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+      if (size == 1) {
+        ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);if (ierr) PetscFunctionReturn(0);
+        sprintf(name,"PETSc_%d",rank);
+      } else {
+        PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;
+      } 
     }
     ierr = ViewerAMSOpen(comm,name,&viewer); 
     if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
+    if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Ams_keyval,(void*)viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   } 
@@ -243,21 +222,6 @@ int VIEWER_AMS_Destroy(MPI_Comm comm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerDestroyAMS_Private" 
-int ViewerDestroyAMS_Private(void)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  if (VIEWER_AMS_WORLD_PRIVATE) {
-    ierr = ViewerDestroy(VIEWER_AMS_WORLD_PRIVATE);CHKERRQ(ierr);
-  }
-  ierr = VIEWER_AMS_Destroy(PETSC_COMM_SELF);CHKERRQ(ierr);
-  ierr = VIEWER_AMS_Destroy(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"ViewerDestroy_AMS" 
 static int ViewerDestroy_AMS(Viewer viewer)
 {
@@ -265,6 +229,13 @@ static int ViewerDestroy_AMS(Viewer viewer)
   int        ierr;
 
   PetscFunctionBegin;
+
+  /*
+     Make sure that we mark that the stack is no longer published
+  */
+  if (viewer->comm == PETSC_COMM_WORLD) {
+    ierr = PetscStackDepublish();CHKERRQ(ierr);
+  }
 
   ierr = AMS_Comm_destroy(vams->ams_comm);
   if (ierr) {

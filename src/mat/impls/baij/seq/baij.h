@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.22 2000/04/15 04:16:35 bsmith Exp bsmith $ */
+/* $Id: baij.h,v 1.23 2000/04/15 22:53:07 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -37,7 +37,7 @@ typedef struct {
   PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */
 
 #if defined(PETSC_USE_MAT_SINGLE)
-  int              lensetvaluescopy;
+  int              setvalueslen;
   MatScalar        *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied
                                       before calling MatSetValuesXXX_SeqBAIJ_MatScalar() */
 #endif

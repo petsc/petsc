@@ -1,4 +1,4 @@
-/*$Id: pbarrier.c,v 1.10 2000/04/09 04:34:47 bsmith Exp bsmith $*/
+/*$Id: pbarrier.c,v 1.11 2000/04/12 04:21:38 bsmith Exp bsmith $*/
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
@@ -10,7 +10,7 @@
 
    Input Parameters:
 .  A - PETSc object  (Mat, Vec, IS, SNES etc...)
-        Must be caste with a (PetscObject)
+        Must be caste with a (PetscObject), can use PETSC_NULL (for MPI_COMM_WORLD)
 
   Level: intermediate
 
@@ -26,9 +26,13 @@ int PetscBarrier(PetscObject obj)
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj); 
+  if (obj) PetscValidHeader(obj); 
   PLogEventBegin(Petsc_Barrier,obj,0,0,0); 
-  ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
+  if (obj) {
+    ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
+  } else {
+    comm = PETSC_COMM_WORLD;
+  }
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
   PLogEventEnd(Petsc_Barrier,obj,0,0,0); 
   PetscFunctionReturn(0);

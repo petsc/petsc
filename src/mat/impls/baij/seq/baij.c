@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.204 2000/04/13 03:57:14 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.205 2000/04/18 15:59:06 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1002,7 +1002,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is,Scalar *diag)
     if (sizes[i] == bs && !baij->keepzeroedrows) {
       if (diag) {
         if (baij->ilen[row/bs] > 0) {
-          baij->ilen[row/bs] = 1;
+          baij->ilen[row/bs]       = 1;
           baij->j[baij->i[row/bs]] = row/bs;
           ierr = PetscMemzero(aa,count*bs*sizeof(MatScalar));CHKERRQ(ierr);
         } 

@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.72 1999/11/24 21:55:57 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.73 2000/01/11 21:04:04 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -104,45 +104,24 @@ extern int ViewerGetFilename(Viewer,char**);
      These are all the default viewers that do not have 
    to be explicitly opened
 */
-extern Viewer VIEWER_STDOUT_SELF;  
-extern Viewer VIEWER_STDERR_SELF;
-extern Viewer VIEWER_STDOUT_WORLD;
 extern Viewer VIEWER_STDOUT_(MPI_Comm);
 extern int    VIEWER_STDOUT_Destroy(MPI_Comm);
-extern Viewer VIEWER_STDERR_WORLD;
 extern Viewer VIEWER_STDERR_(MPI_Comm);
 extern int    VIEWER_STDERR_Destroy(MPI_Comm);
-extern Viewer VIEWER_DRAW_WORLD_PRIVATE_0;
-extern Viewer VIEWER_DRAW_WORLD_PRIVATE_1;
-extern Viewer VIEWER_DRAW_WORLD_PRIVATE_2;
-extern Viewer VIEWER_DRAW_SELF_PRIVATE; 
-extern Viewer VIEWER_SOCKET_WORLD_PRIVATE;
-extern Viewer VIEWER_SOCKET_SELF_PRIVATE;  /* not yet used */
-
-extern int    ViewerInitializeDrawWorld_Private_0(void);
-extern int    ViewerInitializeDrawWorld_Private_1(void);
-extern int    ViewerInitializeDrawWorld_Private_2(void);
-extern int    ViewerInitializeDrawSelf_Private(void);
-extern int    ViewerInitializeSocketWorld_Private(void);
 extern Viewer VIEWER_DRAW_(MPI_Comm);
 extern int    VIEWER_DRAW_Destroy(MPI_Comm);
 extern Viewer VIEWER_SOCKET_(MPI_Comm);
 extern int    VIEWER_SOCKET_Destroy(MPI_Comm);
 
-#define VIEWER_DRAW_WORLD_0 \
-              (ViewerInitializeDrawWorld_Private_0(),VIEWER_DRAW_WORLD_PRIVATE_0) 
-#define VIEWER_DRAW_WORLD_1 \
-              (ViewerInitializeDrawWorld_Private_1(),VIEWER_DRAW_WORLD_PRIVATE_1) 
-#define VIEWER_DRAW_WORLD_2 \
-              (ViewerInitializeDrawWorld_Private_2(),VIEWER_DRAW_WORLD_PRIVATE_2) 
+#define VIEWER_STDOUT_SELF  VIEWER_STDOUT_(PETSC_COMM_SELF)
+#define VIEWER_STDOUT_WORLD VIEWER_STDOUT_(PETSC_COMM_WORLD)
+#define VIEWER_STDERR_SELF  VIEWER_STDERR_(PETSC_COMM_SELF)
+#define VIEWER_STDERR_WORLD VIEWER_STDERR_(PETSC_COMM_WORLD)
 
-#define VIEWER_DRAW_SELF \
-              (ViewerInitializeDrawSelf_Private(),VIEWER_DRAW_SELF_PRIVATE) 
-#define VIEWER_DRAW_WORLD VIEWER_DRAW_WORLD_0
-
-#define VIEWER_SOCKET_WORLD \
-        (ViewerInitializeSocketWorld_Private(),VIEWER_SOCKET_WORLD_PRIVATE) 
-
+#define VIEWER_DRAW_SELF    VIEWER_DRAW_(PETSC_COMM_SELF)
+#define VIEWER_DRAW_WORLD   VIEWER_DRAW_(PETSC_COMM_WORLD)
+#define VIEWER_SOCKET_WORLD VIEWER_SOCKET_(PETSC_COMM_WORLD)
+#define VIEWER_SOCKET_SELF  VIEWER_SOCKET_(PETSC_COMM_SELF)
 /*
     Viewer based on the ALICE Memory Snooper
 */
@@ -152,9 +131,7 @@ extern int    ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
 extern int    ViewerAMSOpen(MPI_Comm,const char[],Viewer*);
 extern Viewer VIEWER_AMS_(MPI_Comm);
 extern int    VIEWER_AMS_Destroy(MPI_Comm);
-extern Viewer VIEWER_AMS_WORLD_PRIVATE;
-extern int    ViewerInitializeAMSWorld_Private(void);
-#define VIEWER_AMS_WORLD (ViewerInitializeAMSWorld_Private(),VIEWER_AMS_WORLD_PRIVATE) 
+#define VIEWER_AMS_WORLD VIEWER_AMS_(PETSC_COMM_WORLD)
 #endif
 
 /* 
@@ -165,10 +142,7 @@ extern int  ViewerSocketPutScalar_Private(Viewer,int,int,Scalar*);
 extern int  ViewerSocketPutReal_Private(Viewer,int,int,double*);
 extern int  ViewerSocketPutInt_Private(Viewer,int,int*);
 extern int  ViewerSocketPutSparse_Private(Viewer,int,int,int,Scalar*,int*,int *);
-extern int  ViewerInitializeASCII_Private(void);
-extern int  ViewerDestroyASCII_Private(void);
-extern int  ViewerDestroyDraw_Private(void);
-extern int  ViewerDestroySocket_Private(void);
+
 extern int  ViewerDestroyAMS_Private(void);
 
 /*
@@ -180,4 +154,7 @@ extern int ViewersDestroy(Viewers);
 extern int ViewersGetViewer(Viewers,int,Viewer*);
 
 #endif
+
+
+
 

@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.30 2000/04/27 04:03:04 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.31 2000/04/29 02:53:52 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -448,6 +448,12 @@ int PetscFinalize(void)
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Size of entire process memory %d\n",rank,(int)rss);CHKERRQ(ierr);
   }
 
+  /*
+     Free all objects registered with PetscObjectRegisterDestroy() such ast
+    VIEWER_XXX_().
+  */
+  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);  
+
 #if defined(PETSC_USE_STACK)
   if (PetscStackActive) {
     ierr = PetscStackDestroy();CHKERRQ(ierr);
@@ -531,11 +537,6 @@ int PetscFinalize(void)
     petsc_history = 0;
   }
 
-  /*
-     Free all objects registered with PetscObjectRegisterDestroy() such ast
-    VIEWER_XXX_().
-  */
-  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);  
 
   /*
        Destroy PETSC_COMM_SELF/WORLD as a MPI_Comm with the PETSc 

@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.70 2000/02/02 21:21:19 bsmith Exp balay $*/
+/*$Id: zstart.c,v 1.71 2000/03/23 23:03:06 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -269,8 +269,6 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   *ierr = PetscInitialize_DynamicLibraries(); 
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Initializing dynamic libraries");return;}
 
-  *ierr = ViewerInitializeASCII_Private(); 
-  if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
   *ierr = PetscInitializeFortran();
   if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up common block");return;}
 

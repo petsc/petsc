@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.25 2000/04/12 04:23:40 bsmith Exp bsmith $ */
+/* $Id: mpibaij.h,v 1.26 2000/04/15 04:16:32 bsmith Exp bsmith $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/sys/ctable.h"
@@ -62,6 +62,7 @@ typedef struct {
   double        ht_fact;                  /* Factor to determine the HT size */
 
 #if defined(PETSC_USE_MAT_SINGLE)
+  int           setvalueslen;
   MatScalar     *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied
                                       before calling MatSetValuesXXX_MPIBAIJ_MatScalar() */
 #endif

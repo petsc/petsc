@@ -1,4 +1,4 @@
-/*$Id: zpetsc.h,v 1.53 1999/11/23 18:11:35 bsmith Exp bsmith $*/
+/*$Id: zpetsc.h,v 1.54 2000/01/11 21:03:48 bsmith Exp bsmith $*/
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
@@ -155,24 +155,33 @@ Fortran.
 
     The numbers here must match the numbers in include/finclude/petsc.h
 */
-#define VIEWER_DRAW_WORLD_0_FORTRAN  -4
-#define VIEWER_DRAW_WORLD_1_FORTRAN  -5
-#define VIEWER_DRAW_WORLD_2_FORTRAN  -6
-#define VIEWER_DRAW_SELF_FORTRAN     -7
-#define VIEWER_SOCKET_WORLD_FORTRAN   -8 
+#define VIEWER_DRAW_WORLD_FORTRAN     -4
+#define VIEWER_DRAW_SELF_FORTRAN      -5
+#define VIEWER_SOCKET_WORLD_FORTRAN   -6 
+#define VIEWER_SOCKET_SELF_FORTRAN    -7
+#define VIEWER_STDOUT_WORLD_FORTRAN   -8 
+#define VIEWER_STDOUT_SELF_FORTRAN    -9
+#define VIEWER_STDERR_WORLD_FORTRAN   -10 
+#define VIEWER_STDERR_SELF_FORTRAN    -11
 
 #define PetscPatchDefaultViewers_Fortran(vin,v) \
 { \
-    if ((*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_0_FORTRAN) { \
-      v = VIEWER_DRAW_WORLD_0; \
-    } else if ((*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_1_FORTRAN) { \
-      v = VIEWER_DRAW_WORLD_1; \
-    } else if ((*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_2_FORTRAN) { \
-      v = VIEWER_DRAW_WORLD_2; \
+    if ((*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_FORTRAN) { \
+      v = VIEWER_DRAW_WORLD; \
     } else if ((*(PetscFortranAddr*)vin) == VIEWER_DRAW_SELF_FORTRAN) { \
       v = VIEWER_DRAW_SELF; \
     } else if ((*(PetscFortranAddr*)vin) == VIEWER_SOCKET_WORLD_FORTRAN) { \
       v = VIEWER_SOCKET_WORLD; \
+    } else if ((*(PetscFortranAddr*)vin) == VIEWER_SOCKET_SELF_FORTRAN) { \
+      v = VIEWER_SOCKET_SELF; \
+    } else if ((*(PetscFortranAddr*)vin) == VIEWER_STDOUT_WORLD_FORTRAN) { \
+      v = VIEWER_STDOUT_WORLD; \
+    } else if ((*(PetscFortranAddr*)vin) == VIEWER_STDOUT_SELF_FORTRAN) { \
+      v = VIEWER_STDOUT_SELF; \
+    } else if ((*(PetscFortranAddr*)vin) == VIEWER_STDERR_WORLD_FORTRAN) { \
+      v = VIEWER_STDERR_WORLD; \
+    } else if ((*(PetscFortranAddr*)vin) == VIEWER_STDERR_SELF_FORTRAN) { \
+      v = VIEWER_STDERR_SELF; \
     } else { \
       v = *vin; \
     } \

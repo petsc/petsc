@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.46 2000/04/13 22:19:31 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.47 2000/04/16 04:01:51 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -520,3 +520,38 @@ int PetscErrorPrintfDefault(const char format[],...)
   return 0;
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PetscSynchronizedFGets" 
+/*@C
+    PetscSynchronizedFGets - Several processors all get the same line from a file.
+
+    Collective on MPI_Comm
+
+    Input Parameters:
++   comm - the communicator
+.   fd - the file pointer
+-   len - the lenght of the output buffer
+
+    Output Parameter:
+.   string - the line read from the file
+
+    Level: intermediate
+
+.seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), 
+          PetscFOpen(), ViewerASCIISynchronizedPrintf(), ViewerASCIIPrintf()
+
+@*/
+int PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,int len,char string[])
+{
+  int ierr,rank;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  
+  /* First processor prints immediately to fp */
+  if (!rank) {
+    fgets(string,len,fp);
+  }
+  ierr = MPI_Bcast(string,len,MPI_BYTE,0,comm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.201 2000/04/12 04:22:17 bsmith Exp balay $*/
+/*$Id: vector.c,v 1.202 2000/04/12 15:47:31 balay Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1810,7 +1810,7 @@ int VecRestoreArray(Vec x,Scalar *a[])
 @*/
 int VecView(Vec vec,Viewer viewer)
 {
-  int ierr;
+  int ierr,format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
@@ -1820,7 +1820,19 @@ int VecView(Vec vec,Viewer viewer)
   PetscCheckSameComm(vec,viewer);
   if (vec->stash.n || vec->bstash.n) SETERRQ(1,1,"Must call VecAssemblyBegin/End() before viewing this vector");
 
-  ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
+  /*
+     Check if default viewer has been overridden, but user request it anyways
+  */
+  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (vec->ops->viewnative && format == VIEWER_FORMAT_NATIVE) {
+    char *fname;
+    ierr   = ViewerGetOutputname(viewer,&fname);CHKERRQ(ierr);
+    ierr   = ViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = (*vec->ops->viewnative)(vec,viewer);CHKERRQ(ierr);
+    ierr   = ViewerPushFormat(viewer,VIEWER_FORMAT_NATIVE,fname);CHKERRQ(ierr);
+  } else {
+    ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2336,6 +2348,10 @@ int VecSetOperation(Vec vec,VecOperation op, void *f)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  /* save the native version of the viewer */
+  if (op == VECOP_VIEW && !vec->ops->viewnative) {
+    vec->ops->viewnative = vec->ops->view;
+  }
   (((void**)vec->ops)[(int)op]) = f;
   PetscFunctionReturn(0);
 }
@@ -2475,7 +2491,7 @@ int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
   if (m*n != N) SETERRQ3(1,1,"Local array size %d does not match 2d array dimensions %d by %d",N,m,n);
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
-  *a = (Scalar **) PetscMalloc(m*sizeof(Scalar*));CHKPTRQ(*a);
+  *a = (Scalar **)PetscMalloc(m*sizeof(Scalar*));CHKPTRQ(*a);
   for (i=0; i<m; i++) (*a)[i] = aa + i*n -nstart;
   *a -= mstart;
   PetscFunctionReturn(0);

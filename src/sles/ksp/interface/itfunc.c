@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.142 2000/04/09 04:37:45 bsmith Exp bsmith $*/
+/*$Id: itfunc.c,v 1.143 2000/04/12 04:24:52 bsmith Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -177,9 +177,11 @@ int KSPSetUp(KSP ksp)
 
    Notes:
    On return, the parameter "its" contains either the iteration
-   number at which convergence was successfully reached, or the
-   negative of the iteration at which divergence or breakdown was detected.
+   number at which convergence was successfully reached or failure was detected.
 
+   Call KSPGetConvergedReason() to determine if the solver converged or failed and 
+   why.
+   
    If using a direct method (e.g., via the KSP solver
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
    then its=1.  See KSPSetTolerances() and KSPDefaultConverged()

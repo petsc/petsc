@@ -1,4 +1,4 @@
-/*$Id: destroy.c,v 1.51 2000/04/09 04:34:38 bsmith Exp bsmith $*/
+/*$Id: destroy.c,v 1.52 2000/04/12 04:21:29 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -102,6 +102,64 @@ int PetscTypeCompare(PetscObject obj,char *type_name,PetscTruth *same)
   PetscFunctionReturn(0);
 }
 
+static int         PetscObjectRegisterDestroy_Count = 0;
+static PetscObject PetscObjectRegisterDestroy_Objects[128];
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PetscObjectRegisterDestroy"></a>*/"PetscObjectRegisterDestroy"
+/*@C
+   PetscObjectRegisterDestroy - Registers a PETSc object to be destroyed when
+     PetscFinalize() is called.
+
+   Collective on PetscObject
+
+   Input Parameter:
+.  obj - any PETSc object, for example a Vec, Mat or KSP.
+         This must be cast with a (PetscObject), for example, 
+         PetscObjectRegisterDestroy((PetscObject)mat);
+
+   Level: developer
+
+   Notes:
+      This is used by, for example, VIEWER_XXX_() routines to free the viewer
+    when PETSc ends.
+
+.keywords: object, destroy
+
+.seealso: PetscObjectRegisterDestroyAll()
+@*/
+int PetscObjectRegisterDestroy(PetscObject obj)
+{
+  PetscFunctionBegin;
+  PetscValidHeader(obj);
+  PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PetscObjectRegisterDestroyAll"></a>*/"PetscObjectRegisterDestroyAll"
+/*@C
+   PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
+     with PetscObjectRegisterDestroy(). Called by PetscFinalize()
+     PetscFinalize() is called.
+
+   Collective on individual PetscObjects
+
+   Level: developer
+
+.keywords: object, destroy
+
+.seealso: PetscObjectRegisterDestroy()
+@*/
+int PetscObjectRegisterDestroyAll(void)
+{
+  int ierr,i;
+
+  PetscFunctionBegin;
+  for (i=0; i<PetscObjectRegisterDestroy_Count; i++) {
+    ierr = PetscObjectDestroy(PetscObjectRegisterDestroy_Objects[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 

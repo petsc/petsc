@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.77 2000/01/11 21:03:48 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.78 2000/01/22 20:35:03 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
@@ -83,9 +83,9 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL petscsetfptrap_(PetscFPTrap *flag,int *__ierr)
+void PETSC_STDCALL petscsetfptrap_(PetscFPTrap *flag,int *ierr)
 {
-  *__ierr = PetscSetFPTrap(*flag);
+  *ierr = PetscSetFPTrap(*flag);
 }
 
 void PETSC_STDCALL petscobjectgetnewtag_(PetscObject *obj,int *tag,int *ierr)

@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.46 2000/04/09 04:37:11 bsmith Exp bsmith $*/
+/*$Id: color.c,v 1.47 2000/04/12 04:24:26 bsmith Exp bsmith $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
@@ -183,7 +183,7 @@ int MatColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
   PetscFunctionBegin;
   ierr = MatGetSize(mat,&N,&N);CHKERRQ(ierr);
   is  = (IS*)PetscMalloc(N*sizeof(IS*));CHKPTRQ(is); 
-  *iscoloring       = (ISColoring) PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
+  *iscoloring       = (ISColoring)PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
   (*iscoloring)->n  = N;
   (*iscoloring)->is = is;
   

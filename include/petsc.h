@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.269 2000/04/16 04:14:37 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.270 2000/04/27 04:17:52 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -213,6 +213,8 @@ extern int PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
 extern int PetscObjectGetOptionsPrefix(PetscObject,char*[]);
 extern int PetscObjectPublish(PetscObject);
 extern int PetscObjectChangeTypeName(PetscObject,char *);
+extern int PetscObjectRegisterDestroy(PetscObject);
+extern int PetscObjectRegisterDestroyAll(void);
 extern int PetscTypeCompare(PetscObject,char*,PetscTruth*);
 
 /*
@@ -350,6 +352,7 @@ extern int  PetscPClose(MPI_Comm,FILE*);
 extern int  PetscSynchronizedPrintf(MPI_Comm,const char[],...);
 extern int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...);
 extern int  PetscSynchronizedFlush(MPI_Comm);
+extern int  PetscSynchronizedFGets(MPI_Comm,FILE*,int,char[]);
 extern int  PetscStartMatlab(MPI_Comm,char *,char*,FILE**);
 extern int  PetscStartJava(MPI_Comm,char *,char*,FILE**);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: triconvert.c,v 1.2 1997/11/06 23:52:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: triconvert.c,v 1.1 2000/02/02 20:10:37 bsmith Exp bsmith $";
 #endif
 /*
       Converts triangulated grid data file.node and file.ele generated
@@ -49,7 +49,7 @@ int main(int argc,char **args)
   if (dim != 2) {
     SETERRA(1,1,"Triangulation is not in two dimensions");
   }
-  vertex = (double *) PetscMalloc(2*nvertex*sizeof(double));CHKPTRA(vertex);
+  vertex = (double *)PetscMalloc(2*nvertex*sizeof(double));CHKPTRA(vertex);
   ierr   = PetscBTCreate(nvertex,vertex_boundary);CHKERRA(ierr);
 
   if (nstuff == 1) {
@@ -84,7 +84,7 @@ int main(int argc,char **args)
   }
   fscanf(file,"%d %d %d\n",&ncell,&nc,&nstuff);ncp = nc;
 
-  cell = (int *) PetscMalloc(nc*ncell*sizeof(int));CHKPTRA(cell);
+  cell = (int *)PetscMalloc(nc*ncell*sizeof(int));CHKPTRA(cell);
   if (nstuff == 0) {
     if (nc == 3) {
       for (i=0; i<ncell; i++) {
@@ -110,16 +110,16 @@ int main(int argc,char **args)
   ierr = AODataKeyAdd(ao,"cell",ncell,ncell);CHKERRA(ierr);
   ierr = AODataSegmentAdd(ao,"cell","vertex",nc,ncell,0,cell,PETSC_INT);CHKERRA(ierr);
 
-  cell_edge    = (int *) PetscMalloc(nc*ncell*sizeof(int));CHKPTRA(cell_edge);
-  edge_cell    = (int *) PetscMalloc(2*nc*ncell*sizeof(int));CHKPTRA(edge_cell);
-  edge_vertex  = (int *) PetscMalloc(2*nc*ncell*sizeof(int));CHKPTRA(edge_vertex);
-  cell_cell    = (int *) PetscMalloc(3*ncell*sizeof(int));CHKPTRA(cell_cell);
+  cell_edge    = (int *)PetscMalloc(nc*ncell*sizeof(int));CHKPTRA(cell_edge);
+  edge_cell    = (int *)PetscMalloc(2*nc*ncell*sizeof(int));CHKPTRA(edge_cell);
+  edge_vertex  = (int *)PetscMalloc(2*nc*ncell*sizeof(int));CHKPTRA(edge_vertex);
+  cell_cell    = (int *)PetscMalloc(3*ncell*sizeof(int));CHKPTRA(cell_cell);
 
   /*
       Determine edges 
   */
-  shift0 = (int *) PetscMalloc(nc*sizeof(int));CHKPTRQ(shift0);
-  shift1 = (int *) PetscMalloc(nc*sizeof(int));CHKPTRQ(shift1);
+  shift0 = (int *)PetscMalloc(nc*sizeof(int));CHKPTRQ(shift0);
+  shift1 = (int *)PetscMalloc(nc*sizeof(int));CHKPTRQ(shift1);
   for (i=0; i<nc; i++) {
     shift0[i] = i; 
     shift1[i] = (i + 1) % nc;

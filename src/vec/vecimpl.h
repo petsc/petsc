@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.68 1999/11/05 14:44:34 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.69 2000/01/11 20:59:52 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -52,7 +52,8 @@ struct _VecOps {
        (*assemblybegin)(Vec),                /* start global assembly */
        (*assemblyend)(Vec),                  /* end global assembly */
        (*getarray)(Vec,Scalar**),            /* get data array */
-       (*getsize)(Vec,int*),(*getlocalsize)(Vec,int*),
+       (*getsize)(Vec,int*),
+       (*getlocalsize)(Vec,int*),
        (*getownershiprange)(Vec,int*,int*),
        (*restorearray)(Vec,Scalar**),        /* restore data array */
        (*max)(Vec,int*,double*),             /* z = max(x); idx=index of max(x) */
@@ -69,7 +70,8 @@ struct _VecOps {
        (*tdot_local)(Vec,Vec,Scalar*),
        (*norm_local)(Vec,NormType,double*),
        (*loadintovector)(Viewer,Vec),
-       (*reciprocal)(Vec);         
+       (*reciprocal)(Vec),
+       (*viewnative)(Vec,Viewer);
 };
 
 /* 

@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.45 2000/03/23 22:30:12 balay Exp bsmith $*/
+/*$Id: zsnes.c,v 1.46 2000/04/30 22:19:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "snes.h"
@@ -108,11 +108,11 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL snesview_(SNES *snes,Viewer *viewer, int *__ierr )
+void PETSC_STDCALL snesview_(SNES *snes,Viewer *viewer, int *ierr)
 {
   Viewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
-  *__ierr = SNESView(*snes,v);
+  *ierr = SNESView(*snes,v);
 }
 
 void PETSC_STDCALL snesgetconvergedreason(SNES *snes,SNESConvergedReason *r,int *ierr)

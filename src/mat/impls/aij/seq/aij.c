@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.341 2000/04/09 04:36:00 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.342 2000/04/12 04:23:03 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -1238,7 +1238,7 @@ extern int MatSolveTranspose_SeqAIJ(Mat,Vec,Vec);
 extern int MatSolveTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatZeroRows_SeqAIJ"
+#define __FUNC__ /*<a name="MatZeroRows_SeqAIJ"></a>*/"MatZeroRows_SeqAIJ"
 int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;

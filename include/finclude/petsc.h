@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.87 1999/11/05 14:48:35 bsmith Exp bsmith $;
+!  $Id: petsc.h,v 1.88 2000/01/11 21:04:11 bsmith Exp bsmith $;
 !
 !  Base include file for Fortran use of the PETSc package.
 !
@@ -31,23 +31,28 @@
 
 !
 !     Default Viewers.
-!     Some more viewers, which are initialized using common-block
-!     are declared at the end of this file.
 !
       PetscFortranAddr VIEWER_DRAW_WORLD
-      PetscFortranAddr VIEWER_DRAW_WORLD_0,VIEWER_DRAW_WORLD_1
-      PetscFortranAddr VIEWER_DRAW_WORLD_2,VIEWER_DRAW_SELF
+      PetscFortranAddr VIEWER_DRAW_SELF
       PetscFortranAddr VIEWER_SOCKET_WORLD
+      PetscFortranAddr VIEWER_SOCKET_SELF
+      PetscFortranAddr VIEWER_STDOUT_WORLD
+      PetscFortranAddr VIEWER_STDOUT_SELF
+      PetscFortranAddr VIEWER_STDERR_WORLD
+      PetscFortranAddr VIEWER_STDERR_SELF
+
 !
 !     The numbers used below should match those in 
 !     src/fortran/custom/zpetsc.h
 !
-      parameter (VIEWER_DRAW_WORLD_0 = -4) 
-      parameter (VIEWER_DRAW_WORLD_1 = -5)
-      parameter (VIEWER_DRAW_WORLD_2 = -6)
-      parameter (VIEWER_DRAW_SELF = -7)
-      parameter (VIEWER_SOCKET_WORLD = -8)
-      parameter (VIEWER_DRAW_WORLD = VIEWER_DRAW_WORLD_0)
+      parameter (VIEWER_DRAW_WORLD   = -4) 
+      parameter (VIEWER_DRAW_SELF    = -5)
+      parameter (VIEWER_SOCKET_WORLD = -6)
+      parameter (VIEWER_SOCKET_SELF  = -7)
+      parameter (VIEWER_STDOUT_WORLD = -8)
+      parameter (VIEWER_STDOUT_SELF  = -9)
+      parameter (VIEWER_STDERR_WORLD = -10)
+      parameter (VIEWER_STDERR_SELF  = -11)
 !
 !     PETSc DataTypes
 !
@@ -80,12 +85,6 @@
 ! ----------------------------------------------------------------------------
 !    BEGIN COMMON-BLOCK VARIABLES
 !
-!     Default Viewers.
-!     Other viewers are declared in the begining of this file.
-!
-      PetscFortranAddr VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF
-      PetscFortranAddr VIEWER_STDOUT_WORLD
-
 !
 !     PETSc world communicator
 !
@@ -112,9 +111,7 @@
       common /petscfortran2/ PETSC_NULL_INTEGER
       common /petscfortran3/ PETSC_NULL_SCALAR
       common /petscfortran4/ PETSC_NULL_DOUBLE
-      common /petscfortran5/ VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF
-      common /petscfortran6/ VIEWER_STDOUT_WORLD
-      common /petscfortran7/ PETSC_COMM_WORLD,PETSC_COMM_SELF
+      common /petscfortran5/ PETSC_COMM_WORLD,PETSC_COMM_SELF
 
 !    END COMMON-BLOCK VARIABLES
 ! ----------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.104 2000/04/09 04:37:28 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.105 2000/04/12 04:24:39 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -59,7 +59,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
   for (i=0; i<levels; i++) {
-    mg[i]         = (MG) PetscMalloc(sizeof(struct _MG));CHKPTRQ(mg[i]);
+    mg[i]         = (MG)PetscMalloc(sizeof(struct _MG));CHKPTRQ(mg[i]);
     ierr = PetscMemzero(mg[i],sizeof(struct _MG));CHKERRQ(ierr);
     mg[i]->level  = i;
     mg[i]->levels = levels;

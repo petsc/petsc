@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.108 2000/04/09 04:33:46 bsmith Exp bsmith $ */
+/* $Id: send.c,v 1.109 2000/04/12 04:20:47 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "sys.h"
@@ -242,39 +242,6 @@ int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
   PetscFunctionReturn(0);
 }
 
-Viewer VIEWER_SOCKET_WORLD_PRIVATE = 0;
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerInitializeSocketWorld_Private"></a>*/"ViewerInitializeSocketWorld_Private" 
-int ViewerInitializeSocketWorld_Private(void)
-{
-  int  ierr;
-
-  PetscFunctionBegin;
-  if (VIEWER_SOCKET_WORLD_PRIVATE) PetscFunctionReturn(0);
-  ierr = ViewerSocketOpen(PETSC_COMM_WORLD,0,0,&VIEWER_SOCKET_WORLD_PRIVATE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerDestroySocket_Private"></a>*/"ViewerDestroySocket_Private" 
-int ViewerDestroySocket_Private(void)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  if (VIEWER_SOCKET_WORLD_PRIVATE) {
-    ierr = ViewerDestroy(VIEWER_SOCKET_WORLD_PRIVATE);CHKERRQ(ierr);
-  }
-  /*
-      Free any viewers created with the VIEWER_DRAW_(MPI_Comm comm) trick.
-  */
-  ierr = VIEWER_SOCKET_Destroy(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = VIEWER_SOCKET_Destroy(PETSC_COMM_SELF);CHKERRQ(ierr);
-  ierr = VIEWER_SOCKET_Destroy(MPI_COMM_WORLD);CHKERRQ(ierr);
-  ierr = VIEWER_SOCKET_Destroy(MPI_COMM_SELF);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 /* ---------------------------------------------------------------------*/
 /*
     The variable Petsc_Viewer_Socket_keyval is used to indicate an MPI attribute that
@@ -334,57 +301,20 @@ Viewer VIEWER_SOCKET_(MPI_Comm comm)
   if (!flg) { /* viewer not yet created */
     ierr = ViewerSocketOpen(comm,0,0,&viewer); 
     if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
+    if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Socket_keyval,(void*)viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
 }
 
-/*
-       If there is a Viewer associated with this communicator it is destroyed.
-*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name="VIEWER_SOCKET_Destroy""></a>*/"VIEWER_SOCKET_Destroy" 
-int VIEWER_SOCKET_Destroy(MPI_Comm comm)
-{
-  int        ierr;
-  PetscTruth flg;
-  Viewer     viewer;
-
-  PetscFunctionBegin;
-  if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) {
-    PetscFunctionReturn(0);
-  }
-  ierr = MPI_Attr_get(comm,Petsc_Viewer_Socket_keyval,(void **)&viewer,(int*)&flg);CHKERRQ(ierr);
-  if (flg) { 
-    ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
-    ierr = MPI_Attr_delete(comm,Petsc_Viewer_Socket_keyval);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
 #else /* defined (PARCH_win32) */
  
 #include "viewer.h"
-Viewer VIEWER_SOCKET_WORLD_PRIVATE = 0;
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerInitializeSocketWorld_Private"></a>*/"ViewerInitializeSocketWorld_Private" 
-int ViewerInitializeSocketWorld_Private(void)
-{ 
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
 #undef __FUNC__  
 #define __FUNC__ /*<a name="ViewerSocketOpen"></a>*/"ViewerSocketOpen" 
 int ViewerSocketOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#undef __FUNC__  
-#define __FUNC__ /*<a name="ViewerDestroySocket_Private"></a>*/"ViewerDestroySocket_Private" 
-int ViewerDestroySocket_Private(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -406,4 +336,20 @@ int ViewerCreate_Socket(Viewer v)
 }
 EXTERN_C_END
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

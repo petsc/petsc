@@ -1,4 +1,4 @@
-/*$Id: strgen.c,v 1.11 2000/04/09 04:35:09 bsmith Exp bsmith $*/
+/*$Id: strgen.c,v 1.12 2000/04/12 04:21:58 bsmith Exp bsmith $*/
 
 #include "src/vec/is/impls/general/general.h" /*I  "is.h"  I*/
 
@@ -41,7 +41,7 @@ static struct _ISOps myops = { ISGetSize_General,
 @*/
 int ISStrideToGeneral(IS inis)
 {
-  int        ierr;
+  int        ierr,step;
   IS_General *sub;
   PetscTruth stride,flg;
 
@@ -56,8 +56,8 @@ int ISStrideToGeneral(IS inis)
   /* Note: we never restore the indices, since we need to keep the copy generated */
   ierr   = ISGetSize(inis,&sub->n);CHKERRQ(ierr);
 
-  ierr = ISStrideGetInfo(inis,PETSC_NULL,&sub->sorted);CHKERRQ(ierr);
-  if (sub->sorted > 0) sub->sorted = 1; else sub->sorted = 0;
+  ierr = ISStrideGetInfo(inis,PETSC_NULL,&step);CHKERRQ(ierr);
+  if (step > 0) sub->sorted = PETSC_TRUE; else sub->sorted = PETSC_FALSE;
 
   /* Remove the old stride data set */
   ierr = PetscFree(inis->data);CHKERRQ(ierr);

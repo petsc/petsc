@@ -1,20 +1,15 @@
 !
-!  "$Id: somefort.F,v 1.19 1998/04/23 01:55:16 balay Exp balay $";
+!  "$Id: somefort.F,v 1.20 1999/03/17 19:22:27 balay Exp bsmith $";
 !
 !  Utility routine used to set some values into a Fortran common block
 
-      subroutine PetscSetCommonBlock(s1,s2,s3,c1,c2)
+      subroutine PetscSetCommonBlock(c1,c2)
       implicit none
 
 #include      "../../../include/finclude/petsc.h"
 
-      PetscFortranAddr s1,s2,s3
       integer c1,c2
 
-
-      VIEWER_STDOUT_SELF  = s1
-      VIEWER_STDERR_SELF  = s2
-      VIEWER_STDOUT_WORLD = s3
       PETSC_COMM_WORLD    = c1
       PETSC_COMM_SELF     = c2
 

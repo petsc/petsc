@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.139 2000/04/12 04:26:20 bsmith Exp curfman $*/
+/*$Id: da2.c,v 1.140 2000/04/18 18:56:58 curfman Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
@@ -979,10 +979,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"VecView_C",
-         "VecView_MPI_DA",(void*)VecView_MPI_DA);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"VecLoadIntoVector_C",
-         "VecLoadIntoVector_Binary_DA",(void*)VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(global,VECOP_VIEW,(void*)VecView_MPI_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(global,VECOP_LOADINTOVECTOR,(void*)VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 

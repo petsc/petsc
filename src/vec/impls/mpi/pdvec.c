@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.135 2000/04/12 04:22:23 bsmith Exp balay $*/
+/* $Id: pdvec.c,v 1.136 2000/04/28 17:58:42 balay Exp bsmith $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -393,52 +393,32 @@ int VecView_MPI_Socket(Vec xin,Viewer viewer)
 #define __FUNC__ /*<a name=""></a>*/"VecView_MPI"
 int VecView_MPI(Vec xin,Viewer viewer)
 {
-  int         ierr,(*f)(Vec,Viewer),format;
-  PetscTruth  native = PETSC_FALSE;
-  char        *fname;
+  int        ierr;
+  PetscTruth isascii,issocket,isbinary,isdraw;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)xin,"VecView_C",(void **)&f);CHKERRQ(ierr);
-  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  /*
-      VIEWER_FORMAT_NATIVE means use the standard vector viewers not (for example) 
-     DA provided special ones
-  */
-  if (format == VIEWER_FORMAT_NATIVE) {
-   f      = (int (*)(Vec,Viewer)) 0;
-   ierr   = ViewerGetOutputname(viewer,&fname);CHKERRQ(ierr);
-   ierr   = ViewerPopFormat(viewer);CHKERRQ(ierr);
-   native = PETSC_TRUE;
-  }
-  if (f) {
-    ierr = (*f)(xin,viewer);CHKERRQ(ierr);
-  } else {
-    PetscTruth isascii,issocket,isbinary,isdraw;
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  if (isascii){
+    ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
+  } else if (issocket) {
+    ierr = VecView_MPI_Socket(xin,viewer);CHKERRQ(ierr);
+  } else if (isbinary) {
+    ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
+  } else if (isdraw) {
+    int format;
 
-    ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
-    if (isascii){
-      ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
-    } else if (issocket) {
-      ierr = VecView_MPI_Socket(xin,viewer);CHKERRQ(ierr);
-    } else if (isbinary) {
-      ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
-    } else if (isdraw) {
-      ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-      if (format == VIEWER_FORMAT_DRAW_LG) {
-        ierr = VecView_MPI_Draw_LG(xin,viewer);CHKERRQ(ierr);
-      } else {
-        SETERRQ(1,1,"Viewer Draw format not supported for this vector");
-      }
+    ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == VIEWER_FORMAT_DRAW_LG) {
+      ierr = VecView_MPI_Draw_LG(xin,viewer);CHKERRQ(ierr);
     } else {
-      SETERRQ1(1,1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+      SETERRQ(1,1,"Viewer Draw format not supported for this vector");
     }
+  } else {
+    SETERRQ1(1,1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
-  if (native) {
-    ierr   = ViewerPushFormat(viewer,VIEWER_FORMAT_NATIVE,fname);CHKERRQ(ierr);
-  }   
   PetscFunctionReturn(0);
 }
 

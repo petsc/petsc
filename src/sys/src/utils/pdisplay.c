@@ -1,4 +1,4 @@
-/*$Id: pdisplay.c,v 1.17 2000/04/09 04:34:47 bsmith Exp bsmith $*/
+/*$Id: pdisplay.c,v 1.18 2000/04/12 04:21:38 bsmith Exp bsmith $*/
 
 #include "petsc.h"        
 #include "sys.h"             /*I    "sys.h"   I*/
@@ -130,7 +130,9 @@ int PetscSetDisplay(void)
 */
 int PetscGetDisplay(char display[],int n)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscStrncpy(display,PetscDisplay,n);
+  ierr = PetscStrncpy(display,PetscDisplay,n);CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }

@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.46 2000/04/09 03:11:53 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.47 2000/04/22 04:01:27 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -69,7 +69,7 @@ extern int PetscFileRetrieve(MPI_Comm,const char *,char *,int,PetscTruth*);
 typedef enum {BINARY_SEEK_SET = 0,BINARY_SEEK_CUR = 1,BINARY_SEEK_END = 2} PetscBinarySeekType;
 extern int PetscBinarySeek(int,int,PetscBinarySeekType,int*);
 
-extern int PetscSetDebugger(const char[],int);
+extern int PetscSetDebugger(const char[],PetscTruth);
 extern int PetscAttachDebugger(void);
 extern int PetscStopForDebugger(void);
 

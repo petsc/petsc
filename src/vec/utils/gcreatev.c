@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.72 2000/04/09 04:35:20 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.73 2000/04/12 04:22:10 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "petsc.h"
@@ -183,3 +183,38 @@ int VecSetType(Vec vec,VecType type_name)
 }
 
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"VecPrintHelp"
+/*@ 
+   VecPrintHelp - Prints all options for the Vec component.
+
+   Collective on Vec
+
+   Input Parameter:
+.  vec - the vector context
+
+   Options Database Keys:
++  -help - Prints vector options
+-  -h - Prints vector options
+
+   Level: developer
+
+.keywords: Vector, help
+
+.seealso: VecSetFromOptions()
+@*/
+int VecPrintHelp(Vec vec)
+{
+  char p[64];
+  int  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
+  if (vec->prefix)  {ierr = PetscStrcat(p,vec->prefix);CHKERRQ(ierr);}
+
+  if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  ierr = (*PetscHelpPrintf)(vec->comm,"Vec options -------------------------------------------------\n");CHKERRQ(ierr);
+  ierr = FListPrintTypes(vec->comm,stdout,vec->prefix,"Vec_type",VecList);CHKERRQ(ierr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -1,14 +1,14 @@
-# $Id: makefile,v 1.31 1999/01/31 16:09:01 bsmith Exp $ 
+# $Id: makefile,v 1.1 2000/05/04 03:25:50 bsmith Exp bsmith $ 
 
 ALL: lib 
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = preonly.c
+SOURCEC  = minres.c
 SOURCEF  =
-OBJSC    = preonly.o
+OBJSC    = minres.o
 OBJSF    =
 LIBBASE  = libpetscsles
-LOCDIR   = src/sles/ksp/impls/preonly/
+LOCDIR   = src/sles/ksp/impls/minres/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.76 2000/01/11 21:03:48 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.77 2000/01/31 21:23:36 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "mat.h"
@@ -93,24 +93,24 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL matpartitioningcreate_(MPI_Comm *comm,MatPartitioning *part, int *__ierr)
+void PETSC_STDCALL matpartitioningcreate_(MPI_Comm *comm,MatPartitioning *part, int *ierr)
 {
-  *__ierr = MatPartitioningCreate((MPI_Comm)PetscToPointerComm(*comm),part);
+  *ierr = MatPartitioningCreate((MPI_Comm)PetscToPointerComm(*comm),part);
 }
 
-void PETSC_STDCALL matpartitioningapply_(MatPartitioning *part,IS *is,int *__ierr)
+void PETSC_STDCALL matpartitioningapply_(MatPartitioning *part,IS *is,int *ierr)
 {
-  *__ierr = MatPartitioningApply(*part,is);
+  *ierr = MatPartitioningApply(*part,is);
 }
 
-void PETSC_STDCALL matpartitioningsetadjacency_(MatPartitioning *part,Mat *mat,int *__ierr)
+void PETSC_STDCALL matpartitioningsetadjacency_(MatPartitioning *part,Mat *mat,int *ierr)
 {
-  *__ierr = MatPartitioningSetAdjacency(*part,*mat);
+  *ierr = MatPartitioningSetAdjacency(*part,*mat);
 }
 
-void PETSC_STDCALL matpartitioningview_(MatPartitioning  *part,Viewer *viewer, int *__ierr)
+void PETSC_STDCALL matpartitioningview_(MatPartitioning  *part,Viewer *viewer, int *ierr)
 {
-  *__ierr = MatPartitioningView(*part,*viewer);
+  *ierr = MatPartitioningView(*part,*viewer);
 }
 
 void PETSC_STDCALL matpartitioningsettype_(MatPartitioning *part,CHAR type PETSC_MIXED_LEN(len),

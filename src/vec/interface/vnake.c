@@ -1,4 +1,4 @@
-/*$Id: vnake.c,v 1.15 2000/04/09 04:35:24 bsmith Exp bsmith $*/
+/*$Id: vnake.c,v 1.16 2000/04/12 04:22:17 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
 
@@ -103,5 +103,9 @@ int VecSetFromOptions(Vec vec)
     }
   }
 
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
+  if (flg) { ierr = VecPrintHelp(vec);CHKERRQ(ierr);  }
+
   PetscFunctionReturn(0);
 }
+

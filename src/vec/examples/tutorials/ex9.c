@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.20 2000/01/11 21:00:24 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.21 2000/04/09 03:09:41 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
@@ -110,10 +110,10 @@ int main(int argc,char **argv)
   */
   ierr = VecGetArray(lx,&array);CHKERRA(ierr);
   for (i=0; i<nlocal+nghost; i++) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %g\n",i,PetscRealPart(array[i]));
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %g\n",i,PetscRealPart(array[i]));CHKERRA(ierr);
   }
   ierr = VecRestoreArray(lx,&array);CHKERRA(ierr);
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
 
   ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRA(ierr); 
   ierr = VecDestroy(gx);CHKERRA(ierr);

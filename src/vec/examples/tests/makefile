@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.99 1999/11/05 14:44:58 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.100 2000/01/23 17:24:45 bsmith Exp bsmith $ 
 
 
 ALL: ex1
@@ -17,12 +17,13 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 		  ex12.rm ex13.PETSc runex13 ex13.rm ex14.PETSc runex14 ex14.rm\
 		  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
                   ex17.PETSc runex17 ex17.rm ex25.PETSc runex25 ex25.rm  \
-                  ex26.PETSc runex26 ex26.rm ex29.PETSc runex29 ex29.rm clean
+                  ex26.PETSc runex26 ex26.rm ex29.PETSc runex29 ex29.rm \
+                  clean
 TESTEXAMPLES_2  = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm \
 		  ex23.PETSc runex23 ex23.rm ex24.PETSc runex24 ex24.rm \
 		  ex28.PETSc runex28 ex28.rm clean
 TESTEXAMPLES_3  = ex17f.PETSc runex17f ex17f.rm ex19.PETSc runex19 ex19.rm \
-	          ex20.PETSc ex20.rm clean
+	          ex20.PETSc ex20.rm ex30f.PETSc runex30f ex30f.rm clean
 TESTEXAMPLES_9  = ex19.PETSc runex19 ex19.rm 
 TESTEXAMPLES_4  = ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		  ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm \
@@ -42,7 +43,7 @@ BUILDEXAMPLES_9  = ex19.PETSc ex19.rm clean
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		  ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex21.c ex22.c \
 		  ex23.c ex24.c ex25.c ex26.c ex28.c ex29.c
-EXAMPLESF       = ex17f.F ex19.F ex20.F
+EXAMPLESF       = ex17f.F ex19.F ex20.F ex30f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -169,6 +170,9 @@ ex29: ex29.o chkopts
 ex30: ex30.o chkopts
 	-${CLINKER} -o ex30 ex30.o  ${PETSC_VEC_LIB} 
 	${RM} -f ex30.o 
+ex30f: ex30f.o  chkopts
+	-${FLINKER} -o ex30f ex30f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	${RM} -f ex30f.o
 
 runex1:
 	-@${MPIRUN} -np 1  ex1 ; \
@@ -320,3 +324,8 @@ runex29:
 	   if (diff output/ex29_1.out ex29_1.tmp) then true; \
 	   else echo "Possible problem with ex29_1, diffs above"; fi;\
 	   ${RM} -f ex29_1.tmp
+runex30f:
+	-@${MPIRUN}  -np 4 ex30f > ex30f_1.tmp 2>&1;\
+	   if (diff output/ex30f_1.out ex30f_1.tmp) then true; \
+	   else echo "Possible problem with ex30f_1, diffs above"; fi;\
+	   ${RM} -f ex30f_1.tmp

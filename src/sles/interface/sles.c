@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.135 2000/04/12 04:24:30 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.136 2000/04/15 03:56:09 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
 
@@ -20,7 +20,7 @@ static int SLESPublish_Petsc(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"SLESView"
-/*@ 
+/*@C 
    SLESView - Prints the SLES data structure.
 
    Collective on SLES

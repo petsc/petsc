@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.6 2000/04/09 04:34:45 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.7 2000/04/12 04:21:35 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -166,7 +166,7 @@ int OptionsSelectInt(MPI_Comm comm,char *opt,char *text,int defaultv)
   PetscFunctionBegin;
   ierr = OptionsSelectCreate(opt,text,&amsopt);CHKERRQ(ierr);
   amsopt->type        = PETSC_OPTION_INT;
-  amsopt->data        = (void *) PetscMalloc(sizeof(int));CHKERRQ(ierr);
+  amsopt->data        = (void *)PetscMalloc(sizeof(int));CHKERRQ(ierr);
   *(int*)amsopt->data = defaultv;
 
   ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
@@ -188,7 +188,7 @@ int OptionsSelectDouble(MPI_Comm comm,char *opt,char *text,double defaultv)
   PetscFunctionBegin;
   ierr = OptionsSelectCreate(opt,text,&amsopt);CHKERRQ(ierr);
   amsopt->type           = PETSC_OPTION_DOUBLE;
-  amsopt->data           = (void *) PetscMalloc(sizeof(double));CHKERRQ(ierr);
+  amsopt->data           = (void *)PetscMalloc(sizeof(double));CHKERRQ(ierr);
   *(double*)amsopt->data = defaultv;
 
   ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_DOUBLE,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
@@ -210,7 +210,7 @@ int OptionsSelectName(MPI_Comm comm,char *opt,char *text)
   PetscFunctionBegin;
   ierr = OptionsSelectCreate(opt,text,&amsopt);CHKERRQ(ierr);
   amsopt->type        = PETSC_OPTION_LOGICAL;
-  amsopt->data        = (void *) PetscMalloc(sizeof(int));CHKERRQ(ierr);
+  amsopt->data        = (void *)PetscMalloc(sizeof(int));CHKERRQ(ierr);
   *(int*)amsopt->data = 0;
 
   ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
@@ -235,13 +235,13 @@ int OptionsSelectList(MPI_Comm comm,char *opt,char *ltext,char **text,int ntext,
   ierr = OptionsSelectCreate(opt,ltext,&amsopt);CHKERRQ(ierr);
   amsopt->type           = PETSC_OPTION_LIST;
 
-  amsopt->data             = (void *) PetscMalloc(sizeof(char*));CHKERRQ(ierr);
+  amsopt->data             = (void *)PetscMalloc(sizeof(char*));CHKERRQ(ierr);
   *(char **)(amsopt->data) = defaultv;
   ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
   ierr = PetscStrcat(ldefault,ltext);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amspub.amem,ldefault,amsopt->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
-  amsopt->edata          = (void *) PetscMalloc(ntext*sizeof(char*));CHKPTRQ(amsopt->edata);
+  amsopt->edata          = (void *)PetscMalloc(ntext*sizeof(char*));CHKPTRQ(amsopt->edata);
   ierr = PetscMemcpy(amsopt->edata,text,ntext*sizeof(char*));CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amspub.amem,ltext,amsopt->edata,ntext,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 

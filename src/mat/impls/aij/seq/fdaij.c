@@ -1,4 +1,4 @@
-/*$Id: fdaij.c,v 1.27 2000/04/09 04:36:00 bsmith Exp bsmith $*/
+/*$Id: fdaij.c,v 1.28 2000/04/12 04:23:03 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -174,7 +174,7 @@ int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscolo
     ierr = ISCreateGeneral(PETSC_COMM_SELF,sizes[i],ii[i],is+i);CHKERRQ(ierr);
   }
 
-  *iscoloring         = (ISColoring) PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
+  *iscoloring         = (ISColoring)PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
   (*iscoloring)->n    = ncolors;
   (*iscoloring)->is   = is;
   ierr = PetscCommDuplicate_Private(mat->comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);

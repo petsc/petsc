@@ -1,4 +1,4 @@
-/*$Id: zts.c,v 1.26 2000/03/23 22:30:15 balay Exp bsmith $*/
+/*$Id: zts.c,v 1.27 2000/04/30 22:22:08 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ts.h"
@@ -43,11 +43,11 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL tsview_(TS *ts,Viewer *viewer, int *__ierr )
+void PETSC_STDCALL tsview_(TS *ts,Viewer *viewer, int *ierr)
 {
   Viewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
-  *__ierr = TSView(*ts,v);
+  *ierr = TSView(*ts,v);
 }
 
 /* function */

@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.56 2000/04/12 04:22:08 bsmith Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.57 2000/04/16 16:42:04 bsmith Exp bsmith $*/
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
@@ -137,7 +137,7 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
   IS         *is;
 
   PetscFunctionBegin;
-  *iscoloring = (ISColoring) PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
+  *iscoloring = (ISColoring)PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
   ierr = PetscCommDuplicate_Private(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
   comm = (*iscoloring)->comm;
 

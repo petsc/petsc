@@ -1,4 +1,4 @@
-/*$Id: select.c,v 1.2 2000/04/21 03:47:33 bsmith Exp bsmith $*/
+/*$Id: select.c,v 1.3 2000/04/24 04:03:53 bsmith Exp bsmith $*/
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
 
@@ -73,7 +73,7 @@ int PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choice
     ierr = PetscFOpen(PETSC_COMM_SELF,"${HOMEDIRECTORY}/.popuptmp","r",&fd);CHKERRQ(ierr);
     fscanf(fd,"%d",choice);
     *choice -= 1;
-    if (*choice < 0 || *choice > n-1) SETERRQ(1,1,"Selection %d out of range",*choice);
+    if (*choice < 0 || *choice > n-1) SETERRQ1(1,1,"Selection %d out of range",*choice);
     ierr = PetscFClose(PETSC_COMM_SELF,fd);CHKERRQ(ierr);
   }
   ierr = MPI_Bcast(choice,1,MPI_INT,0,comm);CHKERRQ(ierr);

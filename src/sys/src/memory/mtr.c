@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.141 2000/04/16 04:00:07 bsmith Exp bsmith $*/
+/*$Id: mtr.c,v 1.142 2000/04/16 04:39:17 bsmith Exp bsmith $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -104,7 +104,7 @@ typedef union {
     double  v[HEADER_DOUBLES];
 } TrSPACE;
 
-static long    allocated    = 0,frags = 0;
+static long    TRallocated    = 0,TRfrags = 0;
 static TRSPACE *TRhead      = 0;
 static int     TRid         = 0;
 static int     TRdebugLevel = 0;
@@ -269,11 +269,11 @@ void *PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *
   nend               = (unsigned long *)(inew + nsize);
   nend[0]            = COOKIE_VALUE;
 
-  allocated += nsize;
-  if (allocated > TRMaxMem) {
-    TRMaxMem   = allocated;
+  TRallocated += nsize;
+  if (TRallocated > TRMaxMem) {
+    TRMaxMem   = TRallocated;
   }
-  frags++;
+  TRfrags++;
 
 #if defined(PETSC_USE_STACK)
   ierr = PetscStackCopy(petscstack,&head->stack); if (ierr) PetscFunctionReturn(0);
@@ -388,8 +388,8 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
   /* zero out memory - helps to find some reuse of already freed memory */
   ierr = PetscMemzero(aa,(int)(head->size));CHKERRQ(ierr);
   
-  allocated -= head->size;
-  frags     --;
+  TRallocated -= head->size;
+  TRfrags     --;
   if (head->prev) head->prev->next = head->next;
   else TRhead = head->next;
   
@@ -456,8 +456,8 @@ int PetscTrSpace(PLogDouble *space,PLogDouble *fr,PLogDouble *maxs)
 {
   PetscFunctionBegin;
 
-  if (space) *space = (PLogDouble) allocated;
-  if (fr)    *fr    = (PLogDouble) frags;
+  if (space) *space = (PLogDouble) TRallocated;
+  if (fr)    *fr    = (PLogDouble) TRfrags;
   if (maxs)  *maxs  = (PLogDouble) TRMaxMem;
   PetscFunctionReturn(0);
 }
@@ -499,8 +499,8 @@ int PetscTrDump(FILE *fp)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!fp) fp = stderr;
-  if (allocated > 0) {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d]Total space allocated %d bytes\n",rank,(int)allocated);CHKERRQ(ierr);
+  if (TRallocated > 0) {
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d]Total space allocated %d bytes\n",rank,(int)TRallocated);CHKERRQ(ierr);
   }
   head = TRhead;
   while (head) {

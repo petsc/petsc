@@ -1,4 +1,4 @@
-/*$Id: zstartf.c,v 1.27 2000/01/11 21:03:48 bsmith Exp bsmith $*/
+/*$Id: zstartf.c,v 1.28 2000/04/16 03:46:53 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
@@ -20,7 +20,7 @@
 #endif
 
 EXTERN_C_BEGIN
-extern void PETSC_STDCALL petscsetcommonblock_(Viewer*,Viewer*,Viewer*,int*,int*);
+extern void PETSC_STDCALL petscsetcommonblock_(int*,int*);
 EXTERN_C_END
 
 /*@C
@@ -46,7 +46,7 @@ EXTERN_C_END
 
 int PetscInitializeFortran(void)
 {
-  int c1=0,c2=0;
+  int              c1=0,c2=0;
 
   if (PETSC_COMM_WORLD) {
     c1 = PetscFromPointerComm(PETSC_COMM_WORLD);
@@ -54,7 +54,7 @@ int PetscInitializeFortran(void)
   if (PETSC_COMM_SELF) {
     c2 = PetscFromPointerComm(PETSC_COMM_SELF);
   }
-  petscsetcommonblock_(&VIEWER_STDOUT_SELF,&VIEWER_STDERR_SELF,&VIEWER_STDOUT_WORLD,&c1,&c2);
+  petscsetcommonblock_(&c1,&c2);
   return 0;
 }
   

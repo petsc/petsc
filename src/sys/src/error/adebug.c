@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.102 2000/04/09 04:34:23 bsmith Exp bsmith $*/
+/*$Id: adebug.c,v 1.103 2000/04/12 04:21:20 bsmith Exp bsmith $*/
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
@@ -17,11 +17,11 @@
 /*
       These are the debugger and display used if the debugger is started up
 */
-static char  Debugger[256];
-static int   Xterm     = 1;
+static char       Debugger[256];
+static PetscTruth Xterm = PETSC_TRUE;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscSetDebugger" 
+#define __FUNC__ /*<a name="PetscSetDebugger"></a>*/"PetscSetDebugger" 
 /*@C
    PetscSetDebugger - Sets options associated with the debugger.
 
@@ -46,7 +46,7 @@ static int   Xterm     = 1;
 
 .seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler()
 @*/
-int PetscSetDebugger(const char debugger[],int xterm)
+int PetscSetDebugger(const char debugger[],PetscTruth xterm)
 {
   int ierr;
 
@@ -54,7 +54,7 @@ int PetscSetDebugger(const char debugger[],int xterm)
   if (debugger) {
     ierr = PetscStrcpy(Debugger,debugger);CHKERRQ(ierr);
   }
-  Xterm    = xterm;
+  Xterm = xterm;
 
   PetscFunctionReturn(0);
 }

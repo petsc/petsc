@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.35 2000/04/30 22:16:48 bsmith Exp bsmith $*/
+/*$Id: zpc.c,v 1.36 2000/04/30 22:19:54 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sles.h"
@@ -52,11 +52,11 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL pcview_(PC *pc,Viewer *viewer, int *__ierr )
+void PETSC_STDCALL pcview_(PC *pc,Viewer *viewer, int *ierr)
 {
   Viewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
-  *__ierr = PCView(*pc,v);
+  *ierr = PCView(*pc,v);
 }
 
 void PETSC_STDCALL pcnullspacecreate_(MPI_Comm comm,int *has_cnst,int *n,Vec *vecs,PCNullSpace *SP,int *ierr)

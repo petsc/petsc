@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.21 2000/04/09 04:34:00 bsmith Exp bsmith $*/
+/*$Id: viewreg.c,v 1.22 2000/04/12 04:20:59 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -88,7 +88,7 @@ int ViewerSetType(Viewer viewer,ViewerType type)
   if (!r) SETERRQ1(1,1,"Unknown Viewer type given: %s",type);
 
   viewer->data        = 0;
-  ierr = PetscMemzero(viewer->bops,sizeof(struct _ViewerOps));CHKERRQ(ierr);
+  ierr = PetscMemzero(viewer->ops,sizeof(struct _ViewerOps));CHKERRQ(ierr);
   ierr = (*r)(viewer);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)viewer,type);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.57 2000/04/27 03:12:59 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.58 2000/04/27 04:39:02 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -308,7 +308,6 @@ int FListDestroy(FList fl)
     ierr = PetscFree(entry);CHKERRQ(ierr);
     entry = next;
   }
-
  
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.81 2000/04/09 03:08:30 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.82 2000/04/18 04:09:43 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -57,8 +57,8 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Location of BlockSolve (MPI version)
 #
-BLOCKSOLVE_INCLUDE            = -I/home/petsc/software/BlockSolve95/include
-BLOCKSOLVE_LIB                = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+BLOCKSOLVE_INCLUDE    = -I/home/petsc/software/BlockSolve95/include
+BLOCKSOLVE_LIB        = ${CLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/solaris -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
 # Matlab location
@@ -76,6 +76,7 @@ MATLABCOMMAND     = matlab
 #
 #MATLAB_INCLUDE    = -I/software/solaris-2/com/packages/matlab-r11.1/extern/include
 MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
+MATLAB_LIB        = ${CLINKER_SLFLAG}/software/solaris-2/com/packages/matlab-r11.1/extern/lib/sol2 -L/software/solaris-2/com/packages/matlab-r11.1/extern/lib/sol2 -leng -lmx -lmat -lmi -lut
 PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 # Location where adiC is installed
@@ -121,10 +122,3 @@ PETSC_HAVE_JAVA = -DPETSC_HAVE_JAVA
 #
 PETSC_PYTHON    = -DPETSC_PYTHON="python1.5"
 #
-# ---------------------------------------------------------------------------------------
-#
-# If you are using shared version of any external libraries you must make this
-# point to the directories where all your shared libraries are stored.
-#
-C_DYLIBPATH     = ${CLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/solaris
-F_DYLIBPATH     = ${FLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/solaris

@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.59 2000/04/09 04:34:30 bsmith Exp bsmith $*/
+/*$Id: dl.c,v 1.60 2000/04/12 04:21:23 bsmith Exp bsmith $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -352,7 +352,7 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],const cha
     }
     ierr = DLLibraryOpen(comm,path,&handle);CHKERRQ(ierr);
 
-    nlist = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(nlist);
+    nlist = (DLLibraryList)PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(nlist);
     nlist->next   = 0;
     nlist->handle = handle;
     ierr = PetscStrcpy(nlist->libname,path);CHKERRQ(ierr);
@@ -433,7 +433,7 @@ int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
 
   ierr = DLLibraryOpen(comm,libname,&handle);CHKERRQ(ierr);
 
-  list = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
+  list = (DLLibraryList)PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
   list->next   = 0;
   list->handle = handle;
   ierr = PetscStrcpy(list->libname,libname);CHKERRQ(ierr);
@@ -497,7 +497,7 @@ int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
 
   PLogInfo(0,"DLLibraryPrepend:Prepending %s to dynamic library search path\n",libname);
 
-  list         = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
+  list         = (DLLibraryList)PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
   list->handle = handle;
   list->next   = *outlist;
   ierr = PetscStrcpy(list->libname,libname);CHKERRQ(ierr);

@@ -2,7 +2,7 @@
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
 
-    Contibuted by: Robert Scheichl
+    Contibuted by: Robert Scheichl: maprs@maths.bath.ac.uk
 
 */
 #include "src/sles/ksp/kspimpl.h"
@@ -11,7 +11,7 @@
 #define __FUNC__ "KSPSetUp_MINRES"
 int KSPSetUp_MINRES(KSP ksp)
 {
-  int    maxit = ksp->max_it,ierr;
+  int maxit = ksp->max_it,ierr;
 
   PetscFunctionBegin;
 
@@ -36,7 +36,8 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
   Scalar       c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
   Scalar       rho0,rho1,irho1,rho2,mrho2,rho3,mrho3;
   Scalar       *e = 0,*d = 0,mone = -1.0,zero = 0.0; 
-  PetscReal    dp = 0.0;
+  Scalar       dp = 0.0;
+  PetscReal    np;
   Vec          X,B,R,Z,U,V,W,UOLD,VOLD,WOLD,WOOLD;
   Mat          Amat,Pmat;
   MatStructure pflag;
@@ -54,7 +55,6 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
   VOLD    = ksp->work[6];
   WOLD    = ksp->work[7];
   WOOLD   = ksp->work[8];
-
 
   ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
@@ -74,7 +74,11 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
 
   ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /*     z  <- B*r       */
 
-  ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);dp = sqrt(dp); 
+  ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+  if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner");
+#endif
+  dp = PetscSqrtScalar(dp); 
   beta = dp;                                        /*  beta <- sqrt(r'*z  */
   eta  = beta;
 
@@ -84,13 +88,13 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
   ierr = VecScale(&ibeta,V);CHKERRQ(ierr);         /*    v <- r / beta     */
   ierr = VecScale(&ibeta,U);CHKERRQ(ierr);         /*    u <- z / beta     */
 
-  ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);      /*   dp <- ||z||        */
+  ierr = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);      /*   np <- ||z||        */
 
-  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
+  ierr = (*ksp->converged)(ksp,0,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);  /* test for convergence */
   if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
-  KSPLogResidualHistory(ksp,dp);
-  KSPMonitor(ksp,0,dp);            /* call any registered monitor routines */
-  ksp->rnorm = dp;  
+  KSPLogResidualHistory(ksp,np);
+  KSPMonitor(ksp,0,np);            /* call any registered monitor routines */
+  ksp->rnorm = np;  
 
   for (i=0; i<maxit; i++) {
      ksp->its = i+1;
@@ -111,14 +115,17 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
      betaold = beta;
 
      ierr = VecDot(R,Z,&dp);CHKERRQ(ierr); 
-     beta = sqrt(dp);                               /*  beta <- sqrt(r'*z)   */
+#if !defined(PETSC_USE_COMPLEX)
+     if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner");
+#endif
+     beta = PetscSqrtScalar(dp);                               /*  beta <- sqrt(r'*z)   */
 
 /*    QR factorisation    */
 
      coold = cold; cold = c; soold = sold; sold = s;
 
      rho0 = cold * alpha - coold * sold * betaold;
-     rho1 = sqrt(rho0*rho0 + beta*beta);
+     rho1 = PetscSqrtScalar(rho0*rho0 + beta*beta);
      rho2 = sold * alpha + coold * cold * betaold;
      rho3 = soold * betaold;
 
@@ -152,12 +159,12 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
      ierr = VecScale(&ibeta,V);CHKERRQ(ierr);      /*  v <- r / beta       */
      ierr = VecScale(&ibeta,U);CHKERRQ(ierr);      /*  u <- z / beta       */
      
-     dp = ksp->rnorm * fabs(s);
+     np = ksp->rnorm * PetscAbsScalar(s);
 
-     ksp->rnorm = dp;
-     KSPLogResidualHistory(ksp,dp);
-     KSPMonitor(ksp,i+1,dp);
-     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
+     ksp->rnorm = np;
+     KSPLogResidualHistory(ksp,np);
+     KSPMonitor(ksp,i+1,np);
+     ierr = (*ksp->converged)(ksp,i+1,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
      if (ksp->reason) break;
   }
   if (i == maxit) {
@@ -167,7 +174,6 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
   *its = ksp->its;
   PetscFunctionReturn(0);
 }
-
 
 EXTERN_C_BEGIN
 #undef __FUNC__  

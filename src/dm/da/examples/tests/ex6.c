@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.36 1999/11/05 14:47:57 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.37 2000/01/11 21:03:26 bsmith Exp bsmith $*/
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 
@@ -95,7 +95,6 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-local_print",&flg);CHKERRA(ierr);
   if (flg) {
     Viewer sviewer;
-    ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRA(ierr);
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal Vector: processor %d\n",rank);CHKERRA(ierr);
     ierr = ViewerGetSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
     ierr = VecView(local,sviewer);CHKERRA(ierr); 

@@ -1,4 +1,4 @@
-/*$Id: drawv.c,v 1.47 2000/04/09 04:33:57 bsmith Exp bsmith $*/
+/*$Id: drawv.c,v 1.48 2000/04/12 04:20:56 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "draw.h" I*/
@@ -377,104 +377,6 @@ int ViewerDrawClear(Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-
-/* -------------------------------------------------------------------*/
-/* 
-     Default X window viewers, may be used at any time.
-*/
-
-Viewer VIEWER_DRAW_SELF_PRIVATE = 0,VIEWER_DRAW_WORLD_PRIVATE_0 = 0,
-       VIEWER_DRAW_WORLD_PRIVATE_1 = 0,VIEWER_DRAW_WORLD_PRIVATE_2 = 0;
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerInitializeDrawSelf_Private" 
-int ViewerInitializeDrawSelf_Private(void)
-{
-  int ierr,xywh[4],size = 4;
-
-  PetscFunctionBegin;
-  if (VIEWER_DRAW_SELF_PRIVATE) PetscFunctionReturn(0);
-  xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
-  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_self_geometry",xywh,&size,PETSC_NULL);CHKERRQ(ierr);
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
-                         &VIEWER_DRAW_SELF_PRIVATE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerInitializeDrawWorld_Private_0" 
-int ViewerInitializeDrawWorld_Private_0(void)
-{
-  int ierr,xywh[4],size = 4;
-
-  PetscFunctionBegin;
-  if (VIEWER_DRAW_WORLD_PRIVATE_0) PetscFunctionReturn(0);
-  xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
-  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,PETSC_NULL);CHKERRQ(ierr);
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
-                         &VIEWER_DRAW_WORLD_PRIVATE_0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerInitializeDrawWorld_Private_1" 
-int ViewerInitializeDrawWorld_Private_1(void)
-{
-  int ierr,xywh[4],size = 4;
-
-  PetscFunctionBegin;
-  if (VIEWER_DRAW_WORLD_PRIVATE_1) PetscFunctionReturn(0);
-  xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
-  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,PETSC_NULL);CHKERRQ(ierr);
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
-                         &VIEWER_DRAW_WORLD_PRIVATE_1);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerInitializeDrawWorld_Private_2" 
-int ViewerInitializeDrawWorld_Private_2(void)
-{
-  int ierr,xywh[4],size = 4;
-
-  PetscFunctionBegin;
-  if (VIEWER_DRAW_WORLD_PRIVATE_2) PetscFunctionReturn(0);
-  xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
-  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,PETSC_NULL);CHKERRQ(ierr);
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
-                         &VIEWER_DRAW_WORLD_PRIVATE_2);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerDestroyDraw_Private" 
-int ViewerDestroyDraw_Private(void)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  if (VIEWER_DRAW_WORLD_PRIVATE_0) {
-    ierr = ViewerDestroy(VIEWER_DRAW_WORLD_PRIVATE_0);CHKERRQ(ierr);
-  }
-  if (VIEWER_DRAW_WORLD_PRIVATE_1) {
-    ierr = ViewerDestroy(VIEWER_DRAW_WORLD_PRIVATE_1);CHKERRQ(ierr);
-  }
-  if (VIEWER_DRAW_WORLD_PRIVATE_2) {
-    ierr = ViewerDestroy(VIEWER_DRAW_WORLD_PRIVATE_2);CHKERRQ(ierr);
-  }
-  if (VIEWER_DRAW_SELF_PRIVATE) {
-    ierr = ViewerDestroy(VIEWER_DRAW_SELF_PRIVATE);CHKERRQ(ierr);
-  }
-  /*
-      Free any viewers created with the VIEWER_DRAW_(MPI_Comm comm) trick.
-  */
-  ierr = VIEWER_DRAW_Destroy(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = VIEWER_DRAW_Destroy(PETSC_COMM_SELF);CHKERRQ(ierr);
-  ierr = VIEWER_DRAW_Destroy(MPI_COMM_WORLD);CHKERRQ(ierr);
-  ierr = VIEWER_DRAW_Destroy(MPI_COMM_SELF);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /* ---------------------------------------------------------------------*/
 /*
     The variable Petsc_Viewer_Draw_keyval is used to indicate an MPI attribute that
@@ -517,31 +419,12 @@ Viewer VIEWER_DRAW_(MPI_Comm comm)
   if (!flag) { /* viewer not yet created */
     ierr = ViewerDrawOpen(comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer); 
     if (ierr) {PetscError(__LINE__,"VIEWER_DRAW_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
+    if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Draw_keyval,(void*)viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_DRAW_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
 }
 
-/*
-       If there is a Viewer associated with this communicator it is destroyed.
-*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VIEWER_DRAW_Destroy" 
-int VIEWER_DRAW_Destroy(MPI_Comm comm)
-{
-  int    ierr,flag;
-  Viewer viewer;
-
-  PetscFunctionBegin;
-  if (Petsc_Viewer_Draw_keyval == MPI_KEYVAL_INVALID) {
-    PetscFunctionReturn(0);
-  }
-  ierr = MPI_Attr_get(comm,Petsc_Viewer_Draw_keyval,(void **)&viewer,&flag);CHKERRQ(ierr);
-  if (flag) { 
-    ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
-    ierr = MPI_Attr_delete(comm,Petsc_Viewer_Draw_keyval);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
 
