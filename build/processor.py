@@ -424,10 +424,11 @@ class SharedLinker(Linker):
   def getLibExt(self):
     if self._libExt is None:
       if self.argDB['HAVE_CYGWIN']:
-        self._libExt = 'dll'
+        return 'dll'
       else:
-        self._libExt = 'so'
+        return 'so'
     return self._libExt
+  libExt = property(getLibExt, Linker.setLibExt, doc = 'The library extension')
 
   def __str__(self):
     if self.argDB['HAVE_CYGWIN']:
