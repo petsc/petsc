@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.109 1996/08/22 19:53:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.110 1996/09/14 03:07:46 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -228,7 +228,7 @@ static int MatRelax_SeqDense(Mat A,Vec bb,double omega,MatSORType flag,
 #else
         xt = b[i]-BLdot_(&m,v+i,&m,x,&o);
 #endif
-        x[i] = (1. - omega)*x[i] + omega*(xt/(v[i + i*m]+shift) + x[i]);
+        x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
     }
     if (flag & SOR_BACKWARD_SWEEP) {
@@ -245,7 +245,7 @@ static int MatRelax_SeqDense(Mat A,Vec bb,double omega,MatSORType flag,
 #else
         xt = b[i]-BLdot_(&m,v+i,&m,x,&o);
 #endif
-        x[i] = (1. - omega)*x[i] + omega*(xt/(v[i + i*m]+shift) + x[i]);
+        x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
     }
   } 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.167 1996/09/19 20:43:08 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.168 1996/09/19 20:52:39 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -268,7 +268,7 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
         MatSetValues(aij->A,1,&row,1,&col,&val,addv);
       } 
       else {
-        if (mat->was_assembled) {
+        if (mat->was_assembled || mat->assembled) {
           if (!aij->colmap) {
             ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
           }
@@ -748,7 +748,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         idx  = B->j + B->i[i] + shift;
         v    = B->a + B->i[i] + shift;
         SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+        x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
       }
       /* come up through the rows */
       for ( i=m-1; i>-1; i-- ) {
@@ -762,7 +762,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         idx  = B->j + B->i[i] + shift;
         v    = B->a + B->i[i] + shift;
         SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+        x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
       }
     }    
   }
@@ -786,7 +786,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         idx  = B->j + B->i[i] + shift;
         v    = B->a + B->i[i] + shift;
         SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+        x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
       }
     } 
   }
@@ -810,7 +810,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         idx  = B->j + B->i[i] + shift;
         v    = B->a + B->i[i] + shift;
         SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+        x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
       }
     } 
   }
