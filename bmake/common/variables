@@ -127,7 +127,7 @@ EXTERNAL_LIB  = ${MPE_LIB}            ${BLOCKSOLVE_LIB}        ${PVODE_LIB}     
                                                                ${LUSOL_LIB}        ${DSCPACK_LIB} \
                 ${RAMG_LIB}           ${ADIFOR_LIB}            ${SUPERLUDIST_LIB}  ${SUPERLU_LIB} \
                 ${TRIANGLE_LIB}       ${PLAPACK_LIB}           ${TRILINOS_LIB}     ${HYPRE_LIB} \
-                ${SPOOLES_LIB} 
+                ${SPOOLES_LIB}        ${MATHEMATICA_LIB}
 #
 #   Directories that depend on each external package
 #
