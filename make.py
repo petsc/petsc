@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import bs
-import sidl
 import fileset
+import BSTemplates.babelTargets
+import BSTemplates.compileTargets
 
 import os
 import os.path
@@ -39,13 +40,14 @@ class PetscMake(bs.BS):
     self.filesets['sidl'] = fileset.ExtensionFileSet(self.directories['sidl'], '.sidl')
 
   def defineTargets(self):
-    babelDefaults = sidl.CompileDefaults('bs', self.filesets['sidl'])
-    babelDefaults.addServerLanguage('C++')
-    babelDefaults.addClientLanguage('C++')
-    babelDefaults.addClientLanguage('Python')
+    babel = BSTemplates.babelTargets.Defaults('bs', self.filesets['sidl'])
+    babel.addServerLanguage('C++')
+    babel.addClientLanguage('C++')
+    babel.addClientLanguage('Python')
+    compile = BSTemplates.compileTargets.Defaults(babel)
 
-    self.targets['sidl']    = babelDefaults.getSIDLTarget()
-    self.targets['compile'] = babelDefaults.getCompileTarget()
+    self.targets['sidl']    = babel.getSIDLTarget()
+    self.targets['compile'] = compile.getCompileTarget()
     self.targets['default'] = self.targets['compile']
 
 if __name__ ==  '__main__':
