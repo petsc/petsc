@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.3 1997/10/01 04:09:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.4 1997/10/01 22:47:36 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -8,13 +8,14 @@ static char vcid[] = "$Id: aodata.c,v 1.3 1997/10/01 04:09:00 bsmith Exp bsmith 
 #include "src/ao/aoimpl.h"      /*I "ao.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "AODataGet" 
+#define __FUNC__ "AODataGetSegment" 
 /*@
-   AODataGet - Get data from a particular segment of a database.
+   AODataGetSegment - Get data from a particular segment of a database.
 
    Input Parameters:
 .  aodata - the database
-.  name - the name of the data segment
+.  name - the name of the key
+.  segment - the name of the segment
 .  n - the number of data items needed by this processor
 .  keys - the keys provided by this processor
 
@@ -23,23 +24,25 @@ static char vcid[] = "$Id: aodata.c,v 1.3 1997/10/01 04:09:00 bsmith Exp bsmith 
 
 .keywords: database transactions
 
-.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddIS(), AODataRestore(),
-          AODataGetIS(), AODataRestoreIS()
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddKey(), AODataRestoreSegment(),
+          AODataGetSegmentIS(), AODataRestoreSegmentIS(), AODataAddSegment(), 
+          AODataGetInfoKey(), AODataGetInfoSegment(), AODataAddSegment()
 @*/
-int AODataGet(AOData aodata,char *name,int n,int *keys,void **data)
+int AODataGetSegment(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
 {
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  return (*aodata->ops.get)(aodata,name,n,keys,data);
+  return (*aodata->ops.getsegment)(aodata,name,n,keys,data);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataRestore" 
+#define __FUNC__ "AODataRestoreSegment" 
 /*@
-   AODataRestore - Restores data from a particular segment of a database.
+   AODataRestoreSegment - Restores data from a particular segment of a database.
 
    Input Parameters:
 .  aodata - the database
-.  name - the name of the data segment
+.  name - the name of the key
+.  segment - the name of the segment
 .  n - the number of data items needed by this processor
 .  keys - the keys provided by this processor
 
@@ -48,23 +51,23 @@ int AODataGet(AOData aodata,char *name,int n,int *keys,void **data)
 
 .keywords: database transactions
 
-.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddIS(), AODataRestore(),
-          AODataGetIS(), AODataRestoreIS()
+.seealso: 
 @*/
-int AODataRestore(AOData aodata,char *name,int n,int *keys,void **data)
+int AODataRestoreSegment(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
 {
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  return (*aodata->ops.restore)(aodata,name,n,keys,data);
+  return (*aodata->ops.restore)(aodata,name,segment,n,keys,data);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataGetIS" 
+#define __FUNC__ "AODataGetSegmentIS" 
 /*@
-   AODataGetIS - Get data from a particular segment of a database.
+   AODataGetSegmentIS - Get data from a particular segment of a database.
 
    Input Parameters:
 .  aodata - the database
-.  name - the name of the data segment
+.  name - the name of the key
+.  segment - the name of the segment
 .  is - the keys for data requested on this processor
 
    Output Parameters:
@@ -72,10 +75,9 @@ int AODataRestore(AOData aodata,char *name,int n,int *keys,void **data)
 
 .keywords: database transactions
 
-.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddIS(), AODataRestoreIS(),
-          AODataGet(), AODataRestore()
+.seealso:
 @*/
-int AODataGetIS(AOData aodata,char *name,IS is,void **data)
+int AODataGetSegmentIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
   int ierr,n,*keys;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
@@ -83,19 +85,20 @@ int AODataGetIS(AOData aodata,char *name,IS is,void **data)
 
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
-  ierr = (*aodata->ops.get)(aodata,name,n,keys,data); CHKERRQ(ierr);
+  ierr = (*aodata->ops.getsegment)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
   return 0;
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataRestore" 
+#define __FUNC__ "AODataRestoreSegment" 
 /*@
-   AODataRestoreIS - Restores data from a particular segment of a database.
+   AODataRestoreSegmentIS - Restores data from a particular segment of a database.
 
    Input Parameters:
 .  aodata - the database
-.  name - the name of the data segment
+.  name - the name of the data key
+.  segment - the name of the segment
 .  is - the keys provided by this processor
 
    Output Parameters:
@@ -103,10 +106,9 @@ int AODataGetIS(AOData aodata,char *name,IS is,void **data)
 
 .keywords: database transactions
 
-.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddIS(), AODataRestoreIS(),
-          AODataGet(), AODataRestore()
+.seealso:
 @*/
-int AODataRestoreIS(AOData aodata,char *name,IS is,void **data)
+int AODataRestoreSegmentIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
   int ierr,n,*keys;
   PetscValidHeaderSpecific(is,IS_COOKIE);
@@ -121,13 +123,14 @@ int AODataRestoreIS(AOData aodata,char *name,IS is,void **data)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataAdd" 
+#define __FUNC__ "AODataAddSegment" 
 /*@
-   AODataAdd - Add another data set to a AOData database.
+   AODataAddSegment - Add another data segment to a AOData database.
 
    Input Parameters:
 .  aodata - the database
-.  name - the name of the data segment
+.  name - the name of the key
+.  segment - the name of the data segment
 .  bs - the fundamental blocksize of the data
 .  n - the number of data items contributed by this processor
 .  keys - the keys provided by this processor
@@ -136,10 +139,12 @@ int AODataRestoreIS(AOData aodata,char *name,IS is,void **data)
 
 .keywords: database additions
 
-.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddIS()
+.seealso:
 @*/
-int AODataAdd(AOData aodata,char *name,int bs,int n,int *keys,void *data,PetscDataType dtype)
+int AODataAddSegment(AOData aodata,char *name,char *segment,int bs,int n,int *keys,void *data,
+                     PetscDataType dtype)
 {
+  
   int i;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   if (aodata->nc == aodata->nsegments) SETERRQ(1,1,"Data object already full");
@@ -149,17 +154,18 @@ int AODataAdd(AOData aodata,char *name,int bs,int n,int *keys,void *data,PetscDa
       SETERRQ(1,1,"Segment name already used");
     }
   }
-  return (*aodata->ops.add)(aodata,name,bs,n,keys,data,dtype);
+  return (*aodata->ops.addsegment)(aodata,name,bs,n,keys,data,dtype);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataAddIS" 
+#define __FUNC__ "AODataAddSegmentIS" 
 /*@
-   AODataAddIS - Add another data set to a AOData database.
+   AODataAddSegmentIS - Add another data segment to a AOData database.
 
    Input Parameters:
 .  aodata - the database
-.  name - the name of the data segment
+.  name - the name of the key
+.  segment - name of segment
 .  bs - the fundamental blocksize of the data
 .  is - the keys provided by this processor
 .  data - the actual data
@@ -167,9 +173,10 @@ int AODataAdd(AOData aodata,char *name,int bs,int n,int *keys,void *data,PetscDa
 
 .keywords: database additions
 
-.seealso: AODataCreateBasic(), AODataDestroy(), AODataAdd()
+.seealso:
 @*/
-int AODataAddIS(AOData aodata,char *name,int bs,IS is,void *data,PetscDataType dtype)
+int AODataAddSegmentIS(AOData aodata,char *name,char *segment,int bs,IS is,void *data,
+                       PetscDataType dtype)
 {
   int n,*keys,ierr;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
@@ -177,7 +184,7 @@ int AODataAddIS(AOData aodata,char *name,int bs,IS is,void *data,PetscDataType d
 
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
-  ierr = (*aodata->ops.add)(aodata,name,bs,n,keys,data,dtype); CHKERRQ(ierr);
+  ierr = (*aodata->ops.addsegment)(aodata,name,bs,n,keys,data,dtype); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
   return 0;
 }
@@ -199,7 +206,7 @@ int AODataAddIS(AOData aodata,char *name,int bs,IS is,void *data,PetscDataType d
 
 .keywords: database accessing
 
-.seealso: AODataGet(), AODataRestore(), AODataCreateBasic()
+.seealso:
 @*/
 int AODataGetInfo(AOData aodata,char *name,int *bs, int *n, PetscDataType *dtype)
 {
