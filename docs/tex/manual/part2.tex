@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.284 1998/07/21 19:47:07 bsmith Exp balay $ 
+% $Id: part2.tex,v 1.285 1998/07/24 19:22:20 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2037,14 +2037,14 @@ be used, one calls the command \findex{KSPSetType()}
    ierr = KSPSetType(KSP ksp,KSPType method);
 \end{verbatim}
 The type can be one of {\tt KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, 
-KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR}, or {\tt KSPPREONLY.}
+KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPBICG}, or {\tt KSPPREONLY.}
 \findex{KSPRICHARDSON} \findex{KSPCHEBYCHEV} \findex{KSPCG}
 \findex{KSPGMRES} \findex{KSPTCQMR} \findex{KSPBCGS} \findex{KSPTFQMR}
-\findex{KSPCR} \findex{KSPPREONLY}
+\findex{KSPCR} \findex{KSPPREONLY} \findex{KSPBICG}
 The KSP method can also be set with the options database command 
 {\tt -ksp\_type},
 followed by one of the options {\tt richardson, chebychev, cg, gmres, tcqmr, 
-bcgs, cgs, tfqmr, cr, lsqr}, or {\tt preonly.} \findex{-ksp_type}
+bcgs, cgs, tfqmr, cr, lsqr, bicg}, or {\tt preonly.} \findex{-ksp_type}
 There are method-specific options for the Richardson, Chebychev,
 and GMRES \findex{KSPChebychevSetEigenvalues()} \findex{KSPGMRESSetRestart()}
 methods. \findex{KSPRichardsonSetScale()}  \sindex{GMRES} \sindex{CG}
@@ -2157,6 +2157,7 @@ the options database command {\tt ksp\_preres} or by calling the routine
 Richardson                                & KSPRICHARDSON & richardson  & true\\
 Chebychev                                 & KSPCHEBYCHEV  & chebychev   & true\\
 Conjugate Gradient \cite{hs:52}           & KSPCG         & cg          & true\\
+BiConjugate Gradient                      & KSPBICG       & bicg        & true\\
 Generalized Minimal Residual \cite{ss:86} & KSPGMRES      & gmres       & precond\\
 BiCGSTAB \cite{v:92}                      & KSPBCGS       & bcgs        & precond \\
 Conjugate Gradient Squared \cite{so:89}   & KSPCGS        & cgs         & precond \\
@@ -2173,6 +2174,11 @@ $ \dagger $ true - denotes true residual norm, precond - denotes preconditioned 
 \caption{KSP Defaults.  All methods use left preconditioning by default.}
 \label{tab:kspdefaults}
 \end{table}
+
+Note: the bi-conjugate gradient method requires application of both the matrix and 
+its transpose plus the preconditioner and its transpose. Currently no all matrices
+and preconditioners provide this support and thus the {\tt KSPBICG} cannot always 
+be used. \findex{KSPBICG} \sindex{Bi-conjugate gradient}
 
 \subsection{Convergence Tests}
 \label{section:convergencetests}

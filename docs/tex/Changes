@@ -60,6 +60,10 @@ add to it).
     to return as the final value the number of eigenvalues computed; see the manual
     page for more details.
 
+    Added the KSP type of KSPBICG (contributed by Victor Eijkhout) and added support
+    to some of the preconditioners to apply the preconditioner transpose (required by 
+    KSPBICG).
+
   PC
 
     Added PCLUSetReuseReordering() and PCLUSetReuseFill() so that SLES can reuse the 

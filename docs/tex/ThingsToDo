@@ -9,6 +9,7 @@ Meta priorities:
 
  add MatSolveTrans_SeqBAIj_....
 
+ add in the vecpipeline stuff in vec/utils
 
 Documentation:
  - put vec/examples/tests/ex13.c in tutorials section; add other vecscatter
