@@ -1,4 +1,3 @@
-petsc/src/contrib/orderings
 petsc/src/apps
 petsc/src/contrib/flash
 petsc/src/mat/impls/baij/seq/dgedi.ff
@@ -48,6 +47,9 @@ petsc/src/contrib/pfull/oldversions
 petsc/src/contrib/vankat
 petsc/src/contrib/vrmltest
 petsc/src/contrib/ysmp
+petsc/src/contrib/orderings
+petsc/src/contrib/helmholtz
+petsc/src/contrib/helmholtz_2
 petsc/src/da/examples/tests/scripts
 petsc/docs/www/www.cit
 petsc/docs/www/petsc.cit
@@ -80,6 +82,7 @@ petsc/src/dfvec/examples/tests/ex20.c
 petsc/src/snes/examples/tests/umin/ex4.c
 petsc/src/snes/examples/tests/umin/ex5.c
 petsc/src/snes/examples/tests/umin/pdgl2fg.f
+petsc/src/snes/interface/noise
 petsc/bmake/alpha_uni
 petsc/bmake/rs6000_lam
 petsc/bmake/rs6000_impi
