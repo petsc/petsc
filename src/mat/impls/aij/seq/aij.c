@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.309 1999/03/10 00:12:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.310 1999/03/10 03:50:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1040,7 +1040,9 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
     SETERRQ(PETSC_ERR_SUP,0,"SOR_APPLY_LOWER is not done");
   } else if ((flag & SOR_EISENSTAT) && omega == 1.0 && shift == 0 && fshift == 0.0) {
     /* special case for omega = 1.0 saves flops and some integer ops */
-
+    Scalar *v2;
+ 
+    v2    = a->a;
     /*  x = (E + U)^{-1} b */
     for ( i=m-1; i>=0; i-- ) {
       n    = a->i[i+1] - diag[i] - 1;
@@ -1049,11 +1051,10 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
       sum  = b[i];
       SPARSEDENSEMDOT(sum,xs,v,idx,n); 
       x[i] = sum*idiag[i];
-    }
 
-    /*  t = b - (2*E - D)x */
-    v = a->a;
-    for ( i=0; i<m; i++ ) { t[i] = b[i] - (v[*diag++])*x[i]; }
+      /*  t = b - (2*E - D)x */
+      t[i] = b[i] - (v2[diag[i]])*x[i];
+    }
 
     /*  t = (E + L)^{-1}t */
     diag = a->diag;
@@ -1064,11 +1065,12 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
       v    = a->a + a->i[i];
       sum  = t[i];
       SPARSEDENSEMDOT(sum,t,v,idx,n); 
-      t[i] = sum*idiag[i];
+      t[i]  = sum*idiag[i];
+
+      /*  x = x + t */
+      x[i] += t[i];
     }
 
-    /*  x = x + t */
-    for ( i=0; i<m; i++ ) { x[i] += t[i]; }
     PLogFlops(3*m-1 + 2*a->nz);
     ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
     if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
@@ -1111,10 +1113,10 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
       sum  = t[i];
       SPARSEDENSEMDOT(sum,ts,v,idx,n); 
       t[i] = omega*(sum/d);
+      /*  x = x + t */
+      x[i] += t[i];
     }
 
-    /*  x = x + t */
-    for ( i=0; i<m; i++ ) { x[i] += t[i]; }
     PLogFlops(6*m-1 + 2*a->nz);
     ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
     if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
