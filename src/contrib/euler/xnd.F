@@ -135,6 +135,7 @@ c      call printgrids(x,y,z)
 
 c Set parallel parameters to use in these loops:
 c    for i=itl+1,itu    ->  for i=itlp1,itup
+c    for i=itl,itu+1    ->  for i=itlp,itup1
 c    for k=2,ktip       ->  for k=zsf2,ktipp
 c    ilep
 c
@@ -154,6 +155,23 @@ c         eliminate loop for this processor
           itlp1 = ni1+1
         endif
       endif
+      if (itl .le. xsf2) then
+        if (itu .le. xef01) then
+          itlp = xsf2
+        else
+c         eliminate loop for this processor
+          itlp = ni1+1
+        endif
+      else 
+        if (itl .le. xef01) then
+          itlp = itl
+        else
+c         eliminate loop for this processor
+          itlp = ni1+1
+        endif
+      endif
+
+      itu1 = itu+1
       if (itu .le. xef01) then
         if (itlp1 .eq. ni1+1) then
 c         eliminate loop for this processor
@@ -169,6 +187,21 @@ c         eliminate loop for this processor
           itup = 0
         endif
       endif
+      if (itu1 .le. xef01) then
+        if (itlp1 .eq. ni1+1) then
+c         eliminate loop for this processor
+          itup1 = 0
+        else
+          itup1 = itu1
+        endif
+      else
+        if (itl1 .le. xef01) then
+          itup1 = xef01
+        else
+c         eliminate loop for this processor
+          itup1 = 0
+        endif
+      endif
       if (zsf2 .le. ktip .and. zef01 .ge. ktip) then
          ktipp = ktip
       else if (ktip .lt. zsf2) then
@@ -177,11 +210,10 @@ c        eliminate loop for this processor
       else
          ktipp = zef01
       endif
-      ilep = ile
       if (printg .eq. 1) then
          call PetscSequentialPhaseBegin(comm,1,ierr)
-         write(6,*) 'rank,itl,itlp1,itu,itup,ile,ilep,ktip,ktipp = ',
-     &              rank,itl,itlp1,itu,itup,ile,ilep,ktip,ktipp
+         write(6,*) 'r:itl,itlp,itlp1,itu,itup,itup1,ile,ktip,ktipp = ',
+     &              rank,itl,itlp,itlp1,itu,itup,itup1,ile,ktip,ktipp
 #ifdef PARCH_rs6000
          call FLUSH_(6)
 #else
