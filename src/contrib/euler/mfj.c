@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mfj.c,v 1.14 1997/10/16 03:41:52 curfman Exp curfman $";
+static char vcid[] = "$Id: mfj.c,v 1.15 1997/10/16 04:57:25 curfman Exp curfman $";
 #endif
 
 /* 
@@ -407,12 +407,17 @@ int UserMatrixFreeMatCreate(SNES snes,Euler *user,Vec x,Mat *J)
   return 0;
 }
 
-int FixJacobianEdges(Euler *user,Mat mat)
+/*
+    FixJacobian - Fixes Jacobian diagonal for pseudo-transient continuation
+    and fixes dummy edges for null equations.
+ */
+int FixJacobian(Euler *user,Mat mat)
 {
-  Scalar        one = 1.0;
-  int           ierr, i, j, k, ijkx, ndof, jkx, ikx, m, diag;
+  Scalar        one = 1.0, dti;
+  int           ierr, i, j, k, ijkx, ijkv, ndof, jkx, ikx, m, diag;
   int           xm, ym, zm, xs, ys, zs, xe, ye, ze, ijx, mx, my, mz;
   int           gxm, gym, gzm, gxs, gys, gzs, gxe, gye, gze, *ltog = user->ltog;
+  int           xsi, xei, ysi, yei, zsi, zei;
 
   ndof = user->ndof;
   if (user->bctype != IMPLICIT) 
@@ -423,12 +428,18 @@ int FixJacobianEdges(Euler *user,Mat mat)
   xe = user->xe;  ye = user->ye;  ze = user->ze;
   xm = user->xm;  ym = user->ym;  zm = user->zm;
 
+  /* starting and ending interior grid points */
+  xsi = user->xsi; ysi = user->ysi; zsi = user->zsi;
+  xei = user->xei; yei = user->yei; zei = user->zei;
+
   gxs = user->gxs;  gys = user->gys;  gzs = user->gzs;
   gxe = user->gxe;  gye = user->gye;  gze = user->gze;
   gxm = user->gxm;  gym = user->gym;  gzm = user->gzm;
 
   /* edges of grid */
   mx = user->mx; my = user->my; mz = user->mz;
+
+  if (app->mmtype != MMEULER) SETERRQ(1,0,"Unsupported model type");
 
   /* Boundary edges of brick: rows of Jacobian are identity;
      corresponding residual values are 0.  So, we modify the
@@ -474,6 +485,28 @@ int FixJacobianEdges(Euler *user,Mat mat)
                 ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
               }
             }
+          }
+        }
+      }
+    }
+
+    ierr = MatAssemblyBegin(mat,MAT_FLUSH_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(mat,MAT_FLUSH_ASSEMBLY); CHKERRQ(ierr);
+
+    /* Interior grid points ... Add pseudo-transient continuation term:
+       dt != 0. 
+    */
+    for (k=zsi; k<zei; k++) {
+      for (j=ysi; j<yei; j++) {
+        jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+        for (i=xsi; i<xei; i++) {
+          ijkv = jkx + i-gxs;
+          ijkx = ltog[ndof * ijkv];
+          dti = one/user->dt[ijkv];
+          for (m=0; m<ndof; m++) {
+            diag = ijkx + m;
+            /* We add this to the existing values */
+            ierr = MatSetValues(mat,1,&diag,1,&diag,&dti,ADD_VALUES); CHKERRQ(ierr);
           }
         }
       }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.9 1997/10/16 15:12:50 curfman Exp curfman $";
+static char vcid[] = "$Id: jacob.c,v 1.10 1997/10/16 22:41:03 curfman Exp curfman $";
 #endif
 
 #include "user.h"
@@ -280,21 +280,26 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
      Form Jacobian matrix
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
   /* Do finite differencing with coloring */
   ierr = MatFDColoringApply(*pjac,app->fdcoloring,X,flag,snes); CHKERRQ(ierr);
 
-  /* Fix points on edges of the 3D domain, where diagonal of Jacobian is 1.
+  /* Modify matrix diagonal for pseudo-transient continuation.  Also fix
+     points on edges of the 3D domain, where diagonal of Jacobian is 1.
      edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.) */
 
-  if ((app->mmtype != MMFP) &&
-      (app->problem == 1 || app->problem == 2 || app->problem == 3 || app->problem == 5)) {
-    ierr = FixJacobianEdges(app,*pjac); CHKERRQ(ierr);
+  if (app->mmtype != MMFP) {
+    ierr = PackWork(app,app->da,X,app->localX,&app->xx); CHKERRQ(ierr);
+    eigenv_(app->dt,app->xx,app->p,
+           app->sadai,app->sadaj,app->sadak,
+           app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+           app->aiz,app->ajz,app->akz,&app->ts_type);
+
+    ierr = FixJacobian(app,*pjac); CHKERRQ(ierr);
   }
 
   /* Fix points on edges of the 3D domain, where diagonal of Jacobian is 1.
      edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.) 
-     SHOULD NOT BE NECESSARY NOW! */
+     NOT NECESSARY NOW! */
 
   ierr = OptionsHasName(PETSC_NULL,"-fix_jac",&flg); CHKERRQ(ierr);
   if (flg) {
