@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.118 1998/05/13 18:22:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.119 1998/05/24 20:24:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -246,8 +246,8 @@ int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
   out->begin          = in->begin;
   out->end            = in->end;
   out->copy           = in->copy;
-  out->destroy   = in->destroy;
-  out->view      = in->view;
+  out->destroy        = in->destroy;
+  out->view           = in->view;
 
   sto       = PetscNew(VecScatter_MPI_ToAll); CHKPTRQ(sto);
   sto->type = in_to->type;
@@ -527,14 +527,94 @@ int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   PetscFunctionReturn(0);
 }
 
+/* --------------------------------------------------------------------------*/
+
+
+#undef __FUNC__  
+#define __FUNC__ "VecScatterCopy_SGToSG"
+int VecScatterCopy_SGToSG(VecScatter in,VecScatter out)
+{
+  VecScatter_Seq_General *in_to   = (VecScatter_Seq_General *) in->todata, *out_to;
+  VecScatter_Seq_General *in_from = (VecScatter_Seq_General *) in->fromdata, *out_from;
+  
+  PetscFunctionBegin;
+  out->postrecvs     = 0;
+  out->begin         = in->begin;
+  out->end           = in->end;
+  out->copy          = in->copy;
+  out->destroy       = in->destroy;
+  out->view          = in->view;
+
+  out_to                         = PetscMalloc(in_to->n*sizeof(int)+sizeof(VecScatter_Seq_General));CHKPTRQ(out_to);
+  out_to->n                      = in_to->n; 
+  out_to->type                   = in_to->type;
+  out_to->nonmatching_computed   = 0;
+  out_to->slots_nonmatching      = 0;
+  out_to->is_copy                = 0;
+  out_to->slots                  = (int *) (out_to + 1);
+  PetscMemcpy(out_to->slots,in_to->slots,(out_to->n)*sizeof(int));
+
+  out_from                       = PetscMalloc(in_from->n*sizeof(int)+sizeof(VecScatter_Seq_General));CHKPTRQ(out_from);
+  out_from->n                    = in_from->n; 
+  out_from->type                 = in_from->type;
+  out_from->nonmatching_computed = 0;
+  out_from->slots_nonmatching    = 0;
+  out_from->is_copy              = 0;
+  out_from->slots                = (int *) (out_from + 1);
+  PetscMemcpy(out_from->slots,in_from->slots,(out_from->n)*sizeof(int));
+
+  PLogObjectMemory(out,2*sizeof(VecScatter_Seq_General)+(out_from->n+out_to->n)*sizeof(int));
+  out->todata     = (void *) out_to; 
+  out->fromdata   = (void *) out_from;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ "VecScatterDestroy_SGtoSG"
 int VecScatterDestroy_SGtoSG(VecScatter ctx)
 {
   PetscFunctionBegin;
-  PetscFree(ctx->todata); PetscFree(ctx->fromdata); 
+  PetscFree(ctx->todata); 
+  PetscFree(ctx->fromdata); 
   PLogObjectDestroy(ctx);
   PetscHeaderDestroy(ctx);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecScatterCopy_SGToStride"
+int VecScatterCopy_SGToStride(VecScatter in,VecScatter out)
+{
+  VecScatter_Seq_Stride  *in_to   = (VecScatter_Seq_Stride *) in->todata, *out_to;
+  VecScatter_Seq_General *in_from = (VecScatter_Seq_General *) in->fromdata, *out_from;
+  
+  PetscFunctionBegin;
+  out->postrecvs     = 0;
+  out->begin         = in->begin;
+  out->end           = in->end;
+  out->copy          = in->copy;
+  out->destroy       = in->destroy;
+  out->view          = in->view;
+
+  out_to          = PetscNew(VecScatter_Seq_Stride); CHKPTRQ(out_to);
+  out_to->n       = in_to->n; 
+  out_to->type    = in_to->type;
+  out_to->first   = in_to->first; 
+  out_to->step    = in_to->step;
+  out_to->type    = in_to->type;
+
+  out_from                       = PetscMalloc(in_from->n*sizeof(int)+sizeof(VecScatter_Seq_General));CHKPTRQ(out_from);
+  out_from->n                    = in_from->n; 
+  out_from->type                 = in_from->type;
+  out_from->nonmatching_computed = 0;
+  out_from->slots_nonmatching    = 0;
+  out_from->is_copy              = 0;
+  out_from->slots                = (int *) (out_from + 1);
+  PetscMemcpy(out_from->slots,in_from->slots,(out_from->n)*sizeof(int));
+
+  PLogObjectMemory(out,sizeof(VecScatter_Seq_General)+sizeof(VecScatter_Seq_Stride)+in_from->n*sizeof(int));
+  out->todata     = (void *) out_to; 
+  out->fromdata   = (void *) out_from;
   PetscFunctionReturn(0);
 }
 
@@ -550,21 +630,23 @@ int VecScatterCopy_PStoSS(VecScatter in,VecScatter out)
   VecScatter_Seq_Stride *in_from = (VecScatter_Seq_Stride *) in->fromdata, *out_from;
 
   PetscFunctionBegin;
-  out->postrecvs     = 0;
-  out->begin         = in->begin;
-  out->end           = in->end;
-  out->copy          = in->copy;
-  out->destroy  = in->destroy;
-  out->view     = in->view;
+  out->postrecvs  = 0;
+  out->begin      = in->begin;
+  out->end        = in->end;
+  out->copy       = in->copy;
+  out->destroy    = in->destroy;
+  out->view       = in->view;
 
   out_to          = PetscNew(VecScatter_Seq_Stride); CHKPTRQ(out_to);
   out_to->n       = in_to->n; 
+  out_to->type    = in_to->type;
   out_to->first   = in_to->first; 
   out_to->step    = in_to->step;
   out_to->type    = in_to->type;
   out_from        = PetscNew(VecScatter_Seq_Stride); CHKPTRQ(out_from);
   PLogObjectMemory(out,2*sizeof(VecScatter_Seq_Stride));
   out_from->n     = in_from->n; 
+  out_from->type  = in_from->type;
   out_from->first = in_from->first; 
   out_from->step  = in_from->step;
   out_from->type  = in_from->type;
@@ -573,11 +655,11 @@ int VecScatterCopy_PStoSS(VecScatter in,VecScatter out)
   PetscFunctionReturn(0);
 }
 
-int VecScatterCreate_PtoS(int,int *,int,int *,Vec,Vec,int,VecScatter);
-int VecScatterCreate_PtoP(int,int *,int,int *,Vec,Vec,VecScatter);
-int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
+extern int VecScatterCreate_PtoS(int,int *,int,int *,Vec,Vec,int,VecScatter);
+extern int VecScatterCreate_PtoP(int,int *,int,int *,Vec,Vec,VecScatter);
+extern int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 
-/* --------------------------------------------------------------*/
+/* =======================================================================*/
 #undef __FUNC__  
 #define __FUNC__ "VecScatterCreate"
 /*@C
@@ -612,16 +694,28 @@ int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter ctx;
-  int        len,size,cando,islocal,totalv,ierr,*range; 
-  MPI_Comm   comm = xin->comm;
+  int        len,size,cando,islocal,totalv,ierr,*range,xin_type = VECSEQ,yin_type = VECSEQ; 
+  MPI_Comm   comm,ycomm;
   PetscTruth ixblock,iyblock,iystride;
   IS         tix = 0, tiy = 0;
 
   PetscFunctionBegin;
-  /* next 2 lines insure that we use parallel comm if it exists */
-  MPI_Comm_size(yin->comm,&size);
-  if (size > 1) comm = yin->comm; 
 
+  /*
+      Determine if the vectors are "parallel", ie. it shares a comm with other processors, or
+      sequential (it does not share a comm). The difference is that parallel vectors treat the 
+      index set as providing indices in the global parallel numbering of the vector, with 
+      sequential vectors treat the index set as providing indices in the local sequential
+      numbering
+  */
+  PetscObjectGetComm((PetscObject) xin,&comm);
+  MPI_Comm_size(comm,&size);
+  if (size > 1) {xin_type = VECMPI;}
+
+  PetscObjectGetComm((PetscObject) yin,&ycomm);
+  MPI_Comm_size(ycomm,&size);
+  if (size > 1) {comm = ycomm; yin_type = VECMPI;}
+  
   /* generate the Scatter context */
   PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,comm,VecScatterDestroy,VecScatterView);
   PLogObjectCreate(ctx);
@@ -635,10 +729,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   /*
       if ix or iy is not included; assume just grabbing entire vector
   */
-  if (!ix && xin->type == VECSEQ) {
+  if (!ix && xin_type == VECSEQ) {
     ierr = ISCreateStride(comm,ctx->to_n,0,1,&ix);CHKERRQ(ierr);
     tix  = ix;
-  } else if (!iy && yin->type == VECSEQ) {
+  } else if (!iy && yin_type == VECSEQ) {
     ierr = ISCreateStride(comm,ctx->from_n,0,1,&iy);CHKERRQ(ierr);
     tiy  = iy;
   } else if (!ix || !iy) {
@@ -649,7 +743,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         Check for special cases
   */
   /* ---------------------------------------------------------------------------*/
-  if (xin->type == VECSEQ && yin->type == VECSEQ) {
+  if (xin_type == VECSEQ && yin_type == VECSEQ) {
     if (ix->type == IS_GENERAL && iy->type == IS_GENERAL){
       int                    nx,ny,*idx,*idy;
       VecScatter_Seq_General *to,*from;
@@ -675,7 +769,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ctx->begin        = VecScatterBegin_SGtoSG; 
       ctx->end          = 0; 
       ctx->destroy      = VecScatterDestroy_SGtoSG;
-      ctx->copy         = 0;
+      ctx->copy         = VecScatterCopy_SGToSG;
       *newctx           = ctx;
       PLogInfo(xin,"Special case: sequential vector general scatter\n");
       goto functionend;
@@ -731,7 +825,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       else            ctx->begin = VecScatterBegin_SGtoSS;
       ctx->destroy    = VecScatterDestroy_SGtoSG;
       ctx->end        = 0; 
-      ctx->copy       = 0;
+      ctx->copy       = VecScatterCopy_SGToStride;
       to->type        = VEC_SCATTER_SEQ_STRIDE; 
       from->type      = VEC_SCATTER_SEQ_GENERAL;
       *newctx         = ctx;
@@ -793,14 +887,14 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ctx->begin        = VecScatterBegin_SGtoSG; 
       ctx->end          = 0; 
       ctx->destroy      = VecScatterDestroy_SGtoSG;
-      ctx->copy         = 0;
+      ctx->copy         = VecScatterCopy_SGToSG;
       *newctx           = ctx;
       PLogInfo(xin,"Sequential vector scatter with block indices\n");
       goto functionend;
     }
   }
   /* ---------------------------------------------------------------------------*/
-  if (xin->type == VECMPI && yin->type == VECSEQ) {
+  if (xin_type == VECMPI && yin_type == VECSEQ) {
 
     islocal = 0;
     /* special case extracting (subset of) local portion */ 
@@ -1004,7 +1098,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     }
   }
   /* ---------------------------------------------------------------------------*/
-  if (xin->type == VECSEQ && yin->type == VECMPI) {
+  if (xin_type == VECSEQ && yin_type == VECMPI) {
     /* special case local copy portion */ 
     islocal = 0;
     if (ix->type == IS_STRIDE && iy->type == IS_STRIDE){
@@ -1035,7 +1129,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->begin        = VecScatterBegin_SStoSS; 
         ctx->end          = 0;  
         ctx->destroy      = VecScatterDestroy_SGtoSG;
-        ctx->copy         = 0;
+        ctx->copy         = VecScatterCopy_PStoSS;
         *newctx           = ctx;
         goto functionend;
       }
@@ -1055,7 +1149,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     }
   }
   /* ---------------------------------------------------------------------------*/
-  if (xin->type == VECMPI && yin->type == VECMPI) {
+  if (xin_type == VECMPI && yin_type == VECMPI) {
     /* no special cases for now */
     int nx,ny,*idx,*idy;
     ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
@@ -1396,6 +1490,17 @@ int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
       for ( i=0; i<to->n; i++ ) {
         to->slots[i] = rto[to->slots[i]];
       }
+    } else if (to->type == VEC_SCATTER_SEQ_STRIDE) {
+      VecScatter_Seq_Stride *sto = (VecScatter_Seq_Stride *) to;
+      
+      /* if the remapping is the identity and stride is identity then skip remap */
+      if (sto->step == 1 && sto->first == 0) {
+        for ( i=0; i<sto->n; i++ ) {
+          if (rto[i] != i) {
+            SETERRQ(PETSC_ERR_ARG_SIZ,0,"Unable to remap such scatters");
+          }
+        }
+      } else SETERRQ(PETSC_ERR_ARG_SIZ,0,"Unable to remap such scatters");
     } else SETERRQ(PETSC_ERR_ARG_SIZ,0,"Unable to remap such scatters");
   }
   if (rfrom) {
