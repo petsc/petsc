@@ -1,11 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: prefix.c,v 1.3 1996/03/25 17:00:29 balay Exp bsmith $";
+static char vcid[] = "$Id: prefix.c,v 1.4 1996/11/07 15:08:22 bsmith Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscObjectSetOptionsPrefix"
 /*
    PetscObjectSetOptionsPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database. You must NOT include the - at the beginning of 
@@ -27,6 +29,8 @@ int PetscObjectSetOptionsPrefix(PetscObject obj, char *prefix)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscObjectAppendOptionsPrefix"
 /*
    PetscObjectAppendOptionsPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database. You must NOT include the - at the beginning of 
@@ -51,6 +55,8 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj, char *prefix)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscObjectGetOptionsPrefix"
 /*
    PetscObjectGetOptionsPrefix - Gets the prefix of the PetscObject.
 

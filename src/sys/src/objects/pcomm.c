@@ -1,10 +1,12 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcomm.c,v 1.1 1996/09/14 15:39:18 curfman Exp curfman $";
+static char vcid[] = "$Id: pcomm.c,v 1.2 1996/09/23 18:19:14 curfman Exp balay $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSetCommWorld"
 /*@C 
    PetscSetCommWorld - Sets a communicator to be PETSc's world communicator
    (default is MPI_COMM_WORLD).  Must call BEFORE PetscInitialize().

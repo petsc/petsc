@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.20 1996/09/28 17:30:35 curfman Exp curfman $";
+static char vcid[] = "$Id: random.c,v 1.21 1996/10/22 20:35:45 curfman Exp balay $";
 #endif
 
 /*
@@ -31,6 +31,8 @@ struct _PetscRandom {
 };
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscRandomDestroy"
 /*@C
    PetscRandomDestroy - Destroys a context that has been formed by 
    PetscRandomCreate().
@@ -50,6 +52,8 @@ int PetscRandomDestroy(PetscRandom r)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscRandomSetInterval"
 /*@C
    PetscRandomSetInterval - Sets the interval over which the random numbers
    will be randomly distributed.  By default, this interval is [0,1).
@@ -99,6 +103,8 @@ extern double drand48();
 extern void   srand48(long);
 #endif
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscRandomCreate"
 /*@C
    PetscRandomCreate - Creates a context for generating random numbers,
    and initializes the random-number generator.
@@ -156,6 +162,8 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscRandomGetValue"
 /*@C
    PetscRandomGetValue - Generates a random number.  Call this after first calling
    PetscRandomCreate().
@@ -208,6 +216,8 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 
 extern double drand48();
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscRandomCreate"
 int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;
@@ -224,6 +234,8 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscRandomGetValue"
 int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);

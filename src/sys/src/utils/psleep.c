@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: psleep.c,v 1.1 1996/01/30 19:24:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: psleep.c,v 1.2 1996/02/08 18:26:06 bsmith Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -14,6 +14,8 @@ extern void sleep(int);
 }
 #endif
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSleep"
 /*@
    PetscSleep - Sleeps some number of seconds.
 
