@@ -1,13 +1,12 @@
-/* $Id: ls.h,v 1.2 1995/05/05 03:51:33 bsmith Exp curfman $ */
+/* $Id: ls.h,v 1.3 1995/06/14 19:55:54 curfman Exp curfman $ */
 
 /* 
-   Context for a Newton line search method (NLE_NLS1) for solving
-   systems of nonlinear equations. 
+   Context for a Newton line search method for solving
+   systems of nonlinear equations
  */
 
-#ifndef __SNES_NLS1
-#define __SNES_NLS1
-
+#ifndef __SNES_EQLS_H
+#define __SNES_EQLS_H
 #include "snesimpl.h"
 
 typedef struct {
@@ -17,6 +16,5 @@ typedef struct {
   double maxstep;               /* maximum step size */
   double steptol;               /* step convergence tolerance */
 } SNES_LS;
-
 
 #endif
