@@ -79,8 +79,19 @@ class Configure(config.base.Configure):
   def haveLib(self, library):
     return self.getDefineName(library) in self.defines
 
+  def add(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0):
+    '''Checks that the library "libName" contains "funcs", and if it does defines HAVE_LIB"libName AND adds it to $LIBS"
+       - libDir may be a list of directories
+       - libName may be a list of library names'''
+    if not isinstance(libName, list): libName = [libName]
+    if self.check(libName, funcs, libDir, otherLibs, prototype, call, fortranMangle):
+      self.logPrint('Adding '+str(libName)+' to argDB[LIBS]')
+      self.framework.argDB['LIBS'] += ' '+self.toString(libName)
+      return 1
+    return 0
+
   def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0):
-    '''Checks that the library "libName" contains "funcs", and if it does adds "libName" to $LIBS and defines HAVE_LIB"libName"
+    '''Checks that the library "libName" contains "funcs", and if it does defines HAVE_LIB"libName"
        - libDir may be a list of directories
        - libName may be a list of library names'''
     if not isinstance(funcs,list): funcs = [funcs]
