@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.29 2000/04/12 04:21:29 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.30 2000/04/27 04:03:04 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -369,7 +369,6 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   /*
       Initialize all the default viewers
   */
-  ierr = ViewerInitializeASCII_Private();CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   PLogInfo(0,"PetscInitialize:PETSc successfully started: number of processors = %d\n",size);
   ierr = PetscGetHostName(hostname,16);CHKERRQ(ierr);
@@ -381,7 +380,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PetscInitialize"></a>*/"PetscFinalize"
+#define __FUNC__ /*<a name="PetscFinalize"></a>*/"PetscFinalize"
 /*@C 
    PetscFinalize - Checks for options to be called at the conclusion
    of the program and calls MPI_Finalize().
@@ -441,21 +440,9 @@ int PetscFinalize(void)
   */
   ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-
-  /*
-       Close any default viewers that may have been opened during the run
-  */
-  ierr = ViewerDestroyASCII_Private();CHKERRQ(ierr);
-  ierr = ViewerDestroyDraw_Private();CHKERRQ(ierr);
-  ierr = ViewerDestroySocket_Private();CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscStackDepublish();CHKERRQ(ierr);
-  ierr = ViewerDestroyAMS_Private();CHKERRQ(ierr);
-#endif
-  ierr = FListDestroyAll();CHKERRQ(ierr); 
 
   ierr = OptionsHasName(PETSC_NULL,"-get_resident_set_size",&flg1);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Size of entire process memory %d\n",rank,(int)rss);CHKERRQ(ierr);
@@ -543,12 +530,24 @@ int PetscFinalize(void)
     ierr = PLogCloseHistoryFile(&petsc_history);CHKERRQ(ierr);
     petsc_history = 0;
   }
+
   /*
-       Destroy PETSC_COMM_SELF as a MPI_Comm with the PETSc 
+     Free all objects registered with PetscObjectRegisterDestroy() such ast
+    VIEWER_XXX_().
+  */
+  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);  
+
+  /*
+       Destroy PETSC_COMM_SELF/WORLD as a MPI_Comm with the PETSc 
      attribute.
   */
   ierr = PetscCommDestroy_Private(&PETSC_COMM_SELF);CHKERRQ(ierr);
   ierr = PetscCommDestroy_Private(&PETSC_COMM_WORLD);CHKERRQ(ierr);
+
+  /*
+       Free all the registered create functions, such as KSPList, VecList, SNESList, etc
+  */
+  ierr = FListDestroyAll();CHKERRQ(ierr); 
 
 #if defined(PETSC_USE_LOG)
   ierr = PLogEventRegisterDestroy_Private();CHKERRQ(ierr);
