@@ -48,6 +48,16 @@ class Retriever(install.base.Base):
     if os.path.exists(root):
       output = self.executeShellCommand('cd '+root+'; bk pull')
     else:
+      (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
+      if location.find('@') < 0:
+        login  = location.split('.')[0]
+        newUrl = urlparse.urlunparse((scheme, login+'@'+location, path, parameters, query, fragment))
+        try:
+          output = self.executeShellCommand('bk clone '+newUrl+' '+root)
+        except RuntimeError:
+          pass
+        else:
+          return root
       output = self.executeShellCommand('bk clone '+url+' '+root)
     return root
 
