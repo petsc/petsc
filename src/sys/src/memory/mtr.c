@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.101 1998/03/23 21:18:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.102 1998/04/13 17:30:26 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -13,6 +13,13 @@ static char vcid[] = "$Id: mtr.c,v 1.101 1998/03/23 21:18:59 bsmith Exp bsmith $
 #include <malloc.h>
 #endif
 #include "pinclude/petscfix.h"
+
+
+/*
+     These are defined in mal.c and ensure that malloced space is Scalar aligned
+*/
+extern void *PetscMallocAlign(int);
+extern int  PetscFreeAlign(void *);
 
 void *PetscTrMallocDefault(unsigned int, int, char *,char *,char *);
 int  PetscTrFreeDefault( void *, int, char *,char *,char *);
@@ -210,7 +217,7 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
   }
   nsize = a;
   if (nsize & TR_ALIGN_MASK) nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
-  inew = (char *) malloc( (unsigned)(nsize+sizeof(TrSPACE)+sizeof(unsigned long)));
+  inew = (char *) PetscMallocAlign((unsigned)(nsize+sizeof(TrSPACE)+sizeof(Scalar)));  
   if (!inew) PetscFunctionReturn(0);
 
   
@@ -372,7 +379,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
   else TRhead = head->next;
 
   if (head->next) head->next->prev = head->prev;
-  free( a );
+  PetscFreeAlign(a);
   PetscFunctionReturn(0);
 }
 
@@ -502,7 +509,7 @@ int PetscTrLogDump(FILE *fp)
 
   if (fp == 0) fp = stderr;
   ierr = PetscGetResidentSetSize(&rss); CHKERRQ(ierr);
-  (*PetscErrorPrintf)("[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);
+  fprintf(fp,"[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);
 
   /*
   for ( i=0; i<PetscLogMalloc; i++ ) {
