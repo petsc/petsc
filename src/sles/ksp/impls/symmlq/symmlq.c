@@ -1,7 +1,9 @@
-/*$Id: symmlq.c,v 1.12 2001/02/19 18:29:26 bsmith Exp balay $*/
+/*$Id: symmlq.c,v 1.13 2001/03/23 23:23:49 balay Exp bsmith $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
+
+    Contributed by: Hong Zhang
 */
 #include "src/sles/ksp/kspimpl.h"
 
