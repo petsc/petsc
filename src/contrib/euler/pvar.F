@@ -70,7 +70,7 @@ c            DO 10 I=ITL,ITU+1
 
       IF (NI.EQ.49) THEN
          WRITE (6,20) NCYC
-         WRITE (6,21) (ZLOC(K),K=2,KTIP) 
+         WRITE (6,21) (ZLOC(K),K=2,KTIP)  
          WRITE (6,30) (S(I),(CP2(I,K),K=2,KTIP),I=ITL,ITU+1)
       ELSE IF (NI.EQ.97) THEN
          WRITE (6,90) NCYC
