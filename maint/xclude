@@ -1,8 +1,6 @@
 petsc/docs/man
 petsc/src/contrib/vankat
 petsc/src/da/examples/tests/scripts
-petsc/src/gvec
-petsc/include/gvec.h
 petsc/docs/www/www.cit
 petsc/docs/www/petsc.cit
 petsc/docs/www/sec
