@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.97 1997/09/26 15:47:34 balay Exp balay $ 
+# $Id: buildtest,v 1.98 1997/10/01 18:44:58 balay Exp bsmith $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -143,7 +143,7 @@ foreach job ($*)
   rsh $mach -n "cd $hme;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt fortran >>& maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme; chmod -R g+w lib" >& /dev/null
   rsh $mach -n "cd $hme ;echo 'Finished Build on $mach  $arch $bopt `date`' >> maint/build_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme ;echo 'Build on $mach  $bopt `date` ' > maint/examples_$arch.$bopt.$mach.log"
+  rsh $mach -n "cd $hme ;echo 'Build on $mach $arch  $bopt `date` ' > maint/examples_$arch.$bopt.$mach.log"
   if ( $job1 != 0 ) then 
     rsh $mach -n "cd $hme ;   make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job1 tree >>& maint/examples_$arch.$bopt.$mach.log"
     rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
