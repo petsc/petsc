@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.194 1997/03/13 16:33:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.195 1997/03/26 01:35:49 bsmith Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -56,11 +56,11 @@ int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **i
 }
 
 #define CHUNKSIZE   15
-#define MatSetValues_SeqAIJ_A_Private(A,row,col,value,addv) \
+#define MatSetValues_SeqAIJ_A_Private(row,col,value,addv) \
 { \
  \
     rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift; \
-    rmax = imax[row]; nrow = ailen[row];  \
+    rmax = aimax[row]; nrow = ailen[row];  \
     col1 = col - shift; \
      \
       for ( _i=0; _i<nrow; _i++ ) { \
@@ -68,10 +68,10 @@ int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **i
         if (rp[_i] == col1) { \
           if (addv == ADD_VALUES) ap[_i] += value;   \
           else                  ap[_i] = value; \
-          goto _noinsert; \
+          goto a_noinsert; \
         } \
       }  \
-      if (nonew)  goto _noinsert; \
+      if (nonew)  goto a_noinsert; \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
         int    new_nz = ai[a->m] + CHUNKSIZE,len,*new_i,*new_j; \
@@ -101,7 +101,7 @@ int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **i
         a->singlemalloc = 1; \
  \
         rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift; \
-        rmax = imax[row] = imax[row] + CHUNKSIZE; \
+        rmax = aimax[row] = aimax[row] + CHUNKSIZE; \
         PLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + sizeof(Scalar))); \
         a->maxnz += CHUNKSIZE; \
         a->reallocs++; \
@@ -114,9 +114,71 @@ int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **i
       } \
       rp[_i] = col1;  \
       ap[_i] = value;  \
-      _noinsert: ; \
+      a_noinsert: ; \
       ailen[row] = nrow; \
 } 
+
+#define MatSetValues_SeqAIJ_B_Private(row,col,value,addv) \
+{ \
+ \
+    rp   = bj + bi[row] + shift; ap = ba + bi[row] + shift; \
+    rmax = bimax[row]; nrow = bilen[row];  \
+    col1 = col - shift; \
+     \
+      for ( _i=0; _i<nrow; _i++ ) { \
+        if (rp[_i] > col1) break; \
+        if (rp[_i] == col1) { \
+          if (addv == ADD_VALUES) ap[_i] += value;   \
+          else                  ap[_i] = value; \
+          goto b_noinsert; \
+        } \
+      }  \
+      if (nonew)  goto b_noinsert; \
+      if (nrow >= rmax) { \
+        /* there is no extra room in row, therefore enlarge */ \
+        int    new_nz = bi[a->m] + CHUNKSIZE,len,*new_i,*new_j; \
+        Scalar *new_a; \
+ \
+        /* malloc new storage space */ \
+        len     = new_nz*(sizeof(int)+sizeof(Scalar))+(a->m+1)*sizeof(int); \
+        new_a   = (Scalar *) PetscMalloc( len ); CHKPTRQ(new_a); \
+        new_j   = (int *) (new_a + new_nz); \
+        new_i   = new_j + new_nz; \
+ \
+        /* copy over old data into new slots */ \
+        for ( ii=0; ii<row+1; ii++ ) {new_i[ii] = bi[ii];} \
+        for ( ii=row+1; ii<a->m+1; ii++ ) {new_i[ii] = bi[ii]+CHUNKSIZE;} \
+        PetscMemcpy(new_j,bj,(bi[row]+nrow+shift)*sizeof(int)); \
+        len = (new_nz - CHUNKSIZE - bi[row] - nrow - shift); \
+        PetscMemcpy(new_j+bi[row]+shift+nrow+CHUNKSIZE,bj+bi[row]+shift+nrow, \
+                                                           len*sizeof(int)); \
+        PetscMemcpy(new_a,ba,(bi[row]+nrow+shift)*sizeof(Scalar)); \
+        PetscMemcpy(new_a+bi[row]+shift+nrow+CHUNKSIZE,ba+bi[row]+shift+nrow, \
+                                                           len*sizeof(Scalar));  \
+        /* free up old matrix storage */ \
+ \
+        PetscFree(a->a);  \
+        if (!a->singlemalloc) {PetscFree(a->i);PetscFree(a->j);} \
+        ba = a->a = new_a; bi = a->i = new_i; bj = a->j = new_j;  \
+        a->singlemalloc = 1; \
+ \
+        rp   = bj + bi[row] + shift; ap = ba + bi[row] + shift; \
+        rmax = bimax[row] = bimax[row] + CHUNKSIZE; \
+        PLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + sizeof(Scalar))); \
+        a->maxnz += CHUNKSIZE; \
+        a->reallocs++; \
+      } \
+      N = nrow++ - 1; a->nz++; \
+      /* shift up all the later entries in this row */ \
+      for ( ii=N; ii>=_i; ii-- ) { \
+        rp[ii+1] = rp[ii]; \
+        ap[ii+1] = ap[ii]; \
+      } \
+      rp[_i] = col1;  \
+      ap[_i] = value;  \
+      b_noinsert: ; \
+      bilen[row] = nrow; \
+}
 
 extern int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
 #undef __FUNC__  
@@ -132,10 +194,17 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
   /* Some Variables required in the macro */
   Mat        A = aij->A;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
+  int        *aimax = a->imax, *ai = a->i, *ailen = a->ilen,*aj = a->j;
+  Scalar     *aa = a->a;
+
+  Mat        B = aij->B;
+  Mat_SeqAIJ *b = (Mat_SeqAIJ *) B->data; 
+  int        *bimax = b->imax, *bi = b->i, *bilen = b->ilen,*bj = b->j;
+  Scalar     *ba = b->a;
+
   int        *rp,ii,nrow,_i,rmax, N, col1; 
-  int        *imax = a->imax, *ai = a->i, *ailen = a->ilen; 
-  int        *aj = a->j, nonew = a->nonew,shift = a->indexshift; 
-  Scalar     *ap, *aa = a->a;
+  int        nonew = a->nonew,shift = a->indexshift; 
+  Scalar     *ap;
 
   for ( i=0; i<m; i++ ) {
 #if defined(PETSC_BOPT_g)
@@ -148,7 +217,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
         if (in[j] >= cstart && in[j] < cend){
           col = in[j] - cstart;
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          MatSetValues_SeqAIJ_A_Private(aij->A,row,col,value,addv);
+          MatSetValues_SeqAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
 #if defined(PETSC_BOPT_g)
@@ -168,7 +237,8 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
           }
           else col = in[j];
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          ierr = MatSetValues_SeqAIJ(aij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
+          MatSetValues_SeqAIJ_B_Private(row,col,value,addv);
+          /* ierr = MatSetValues_SeqAIJ(aij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
       }
     } 
