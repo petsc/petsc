@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.80 2000/11/27 16:30:22 bsmith Exp bsmith $ 
+# $Id: builddist,v 1.83 2001/03/06 18:42:49 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -35,8 +35,6 @@ endif
 setenv PETSC_DIR /home/bsmith/petsc
 cd /home/bsmith/petsc
 make ACTION=clean tree
-\rm -f bmake/*/petscmachineinfo.h
-\rm -f bin/matlab/*
 #
 #/bin/rm -f ~/petsc
 #
@@ -50,6 +48,8 @@ cd $tmpdir
 # create tagfiles etc. permissions etc.
 cd $tmpdir/petsc
 
+# Eliminate unnecessary petscmachineinfo.h files
+\rm -f bmake/*/petscmachineinfo.h
 # Eliminate chmods in the makefile
 /bin/mv makefile makefile.bak
 /bin/grep -v 'chmod' makefile.bak > makefile
@@ -58,10 +58,6 @@ cd $tmpdir/petsc
 /bin/mv bmake/common bmake/common.bak
 /bin/grep -v 'chmod' bmake/common.bak > bmake/common
 /bin/rm -f  bmake/common.bak
-# Eliminate '-u' from sun4/base
-/bin/mv bmake/sun4/base bmake/sun4/base.bak
-/bin/sed 's/-u//' bmake/sun4/base.bak > bmake/sun4/base
-/bin/rm -f  bmake/sun4/base.bak
 # Eliminate buildtest scripts from bmake/arch
 /bin/rm -f  bmake/*/buildtest
 
