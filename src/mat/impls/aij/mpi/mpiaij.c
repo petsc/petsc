@@ -2908,6 +2908,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
   PetscMPIInt       size,rank;
   int               M=seqmat->m,N=seqmat->n,i,j,*owners,*ai=a->i,*aj=a->j;
   int               tag,taga,len,len_a = 0,*len_s,*len_sa,proc,*len_r,*len_ra;
+  int               tagi,*len_si,*len_ri,*id_r;  /* new! */
   int               **ijbuf_r,*ijbuf_s,*nnz_ptr,k,anzi,*bj_i,*bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0,nextaj; 
   MPI_Request       *s_waits,*r_waits,*s_waitsa,*r_waitsa;
   MPI_Status        *status;
@@ -2947,7 +2948,8 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
       ierr = PetscMapSetLocalSize(merge->rowmap,m);CHKERRQ(ierr); 
     } 
     ierr = PetscMapSetType(merge->rowmap,MAP_MPI);CHKERRQ(ierr);
-    ierr = PetscMalloc(size*sizeof(int),&len_s);CHKERRQ(ierr);
+    ierr = PetscMalloc(2*size*sizeof(int),&len_s);CHKERRQ(ierr);
+    len_si = len_s + size;
     ierr = PetscMalloc(2*size*sizeof(int),&merge->len_sra);CHKERRQ(ierr);
   }
   if (m == PETSC_DECIDE) ierr = PetscMapGetLocalSize(merge->rowmap,&m);CHKERRQ(ierr); 
@@ -2960,8 +2962,10 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
     merge->nsend = 0;
     len = len_a = 0;
     for (proc=0; proc<size; proc++){
+      len_si[proc] = 0;  /* new */
       len_s[proc] = len_sa[proc] = 0;
       if (proc == rank) continue;
+      len_si[proc] = owners[proc+1] - owners[proc];
       for (i=owners[proc]; i<owners[proc+1]; i++){ /* rows sent to [proc] */
         len_sa[proc] += ai[i+1] - ai[i]; /* num of cols sent to [proc] */
       }
@@ -2970,6 +2974,9 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
         len_s[proc] = len_sa[proc] + owners[proc+1] - owners[proc];
         if (len < len_s[proc]) len = len_s[proc];
         if (len_a < len_sa[proc]) len_a = len_sa[proc];
+        /*
+        ierr = PetscPrintf(PETSC_COMM_SELF," [%d] send len_si=%d to [%d]\n",rank,len_si[proc],proc);
+        */
       }
     } 
 
@@ -2978,6 +2985,17 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
     ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,len_s,&merge->nrecv);CHKERRQ(ierr);
     ierr = PetscGatherMessageLengths(comm,merge->nsend,merge->nrecv,len_s,&merge->id_r,&len_r);CHKERRQ(ierr);
 
+    ierr = PetscMalloc(size*sizeof(int),&len_ri);CHKERRQ(ierr);
+    ierr = PetscMemzero(len_ri,size*sizeof(int));CHKERRQ(ierr);
+    for (i=0; i<merge->nrecv; i++){
+      proc = merge->id_r[i];
+      len_ri[proc] = owners[rank+1] - owners[rank];
+      /*
+      ierr = PetscPrintf(PETSC_COMM_SELF," [%d] expects recv len_ri=%d from [%d]\n",rank,len_ri[proc],proc);
+      */
+    }
+    ierr = PetscFree(len_ri);CHKERRQ(ierr);
+    
     ierr = PetscLogInfo((PetscObject)(seqmat),"MatMerge_SeqsToMPI: nsend: %d, nrecv: %d\n",merge->nsend,merge->nrecv);CHKERRQ(ierr);
     for (i=0; i<merge->nrecv; i++){
       ierr = PetscLogInfo((PetscObject)(seqmat),"MatMerge_SeqsToMPI:   expects recv len_r=%d from [%d]\n",len_r[i],merge->id_r[i]);CHKERRQ(ierr);
