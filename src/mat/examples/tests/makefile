@@ -332,17 +332,17 @@ runex36:
 	   else echo "Possible problem with ex36_1, diffs above"; fi; \
 	   $(RM) -f ex36_1.tmp
 runex39:
-	-@$(MPIRUN)  ex39 > ex39_1.tmp -m 7  2>&1;   \
+	-@$(MPIRUN)  ex39 -m 7 > ex39_1.tmp   2>&1;   \
 	   if (diff output/ex39_1.out ex39_1.tmp) then true; \
 	   else echo "Possible problem with ex39_1, diffs above"; fi; \
 	   $(RM) -f ex39_1.tmp
 runex40:
-	-@$(MPIRUN) -np 3 ex40 > ex40_1.tmp -nd 7  -ov 2 2>&1;	 \
+	-@$(MPIRUN)  -np 3 ex40 -f matrices/arco1 -nd 7	 -ov 2 > ex40_1.tmp 2>&1; \
 	   if (diff output/ex40_1.out ex40_1.tmp) then true; \
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
 	   $(RM) -f ex40_1.tmp
 runex41:
-	-@$(MPIRUN) -np 3 ex41 > ex41_1.tmp -nd 3  -ov 1 2>&1;	 \
+	-@$(MPIRUN) -np 3 ex41 -f matrices/arco1 -nd 3	-ov 1 > ex41_1.tmp  2>&1; \
 	   if (diff output/ex41_1.out ex41_1.tmp) then true; \
 	   else echo "Possible problem with ex41_1, diffs above"; fi; \
 	   $(RM) -f ex41_1.tmp
