@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.28 1995/07/17 20:39:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.29 1995/07/20 15:04:23 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -77,27 +77,6 @@ int KSPDestroy(KSP itP)
 }
 
 /*@
-   KSPSetMaxIterations - Sets the maximum number of iterations to use.
-
-   Input Parameters:
-.  itP  - iterative context obtained from KSPCreate()
-.  maxits - maximum number of iterations to use
-
-   Options Database Key:
-$  -ksp_max_it  maxits
-
-.keywords: KSP, set, maximum, iterations
-
-.seealso: KSPSetRelativeTolerance(), KSPSetAbsoluteTolerance()
-@*/
-int KSPSetMaxIterations(KSP itP, int maxits)
-{
-  VALIDHEADER(itP,KSP_COOKIE);
-  (itP)->max_it = maxits;
-  return 0;
-}
-
-/*@
     KSPSetRightPreconditioner - Sets a flag so that right preconditioning
     is used.
 
@@ -168,86 +147,8 @@ int KSPGetMethodFromContext( KSP itP, KSPMethod *method )
 }
 
 /*@
-   KSPSetRelativeTolerance - Sets the convergence tolerance as a relative 
-   decrease in the residual of tol. 
-
-   Input Parameters:
-.  itP - Iterative context obtained from KSPCreate()
-.  tol - tolerance
-
-   Options Database Key:
-$  -ksp_rtol  tol
-
-   Notes:
-   Use KSPSetAbsoluteTolerance() to set the absolute tolerance. The
-   first of the two tolerances (absolute and relative) reached
-   will terminate the iteration. See also KSPSetConvergenceTest() for 
-   setting user-defined stopping criteria.
-
-.keywords:  KSP, set, relative, tolerance, convergence, norm, residual
-
-.seealso: KSPSetAbsoluteTolerance(), KSPSetDivergenceTolerance()
-@*/
-int KSPSetRelativeTolerance(KSP itP, double tol)
-{
-  VALIDHEADER(itP,KSP_COOKIE);
-  (itP)->rtol       = tol;
-  return 0;
-}
-/*@
-   KSPSetDivergenceTolerance - Sets the amount that the norm or the 
-   residual can increase before KSPDefaultConverged() concludes 
-   that the method is diverging.
-
-   Input Parameters:
-.  itP - Iterative context obtained from KSPCreate()
-.  tol - tolerance
-
-   Options Database Key:
-$  -ksp_divtol  tol
-
-.keywords: KSP, set, convergence, divergence, tolerance, residual, norm
-
-.seealso: KSPSetAbsoluteTolerance(), KSPSetRelativeTolerance()
-@*/
-int KSPSetDivergenceTolerance(KSP itP, double tol)
-{
-  VALIDHEADER(itP,KSP_COOKIE);
-  (itP)->divtol       = tol;
-  return 0;
-}
-
-/*@
-   KSPSetAbsoluteTolerance - Sets the convergence tolerance as an absolute 
-   size of the norm of the residual. 
-
-   Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
-.  tol - tolerance
-
-   Options Database Key:
-$  -ksp_atol  tol
-
-   Notes:
-   Use KSPSetRelativeTolerance() to set the relative tolerance. The
-   first of the two tolerances (absolute and relative) reached
-   will terminate the iterations. See also KSPSetConvergenceTest() 
-   for setting user-defined stopping criteria.
-
-.keywords: KSP, set, convergence, tolerance, absolute, residual, norm
-
-.seealso: KSPSetRelativeTolerance(), KSPSetDivergenceTolerance
-@*/
-int KSPSetAbsoluteTolerance(KSP itP, double tol) 
-{
-  VALIDHEADER(itP,KSP_COOKIE);
-  (itP)->atol       = tol;
-  return 0;
-}
-
-/*@
-    KSPGetTolerances - Gets the relative, absolute and divergence 
-    tolerances used by the default KSP convergence testers.
+    KSPGetTolerances - Gets the relative, absolute, divergence and maximum
+    iteration tolerances used by the default KSP convergence testers. 
 
    Input Parameter:
 .  ksp - the Krylov subspace context
@@ -258,10 +159,10 @@ int KSPSetAbsoluteTolerance(KSP itP, double tol)
 .  dtol - the divergence tolerance
 .  maxits - maximum number of iterations
 
-.keywords: convergence tolerance
+.keywords: KSP, get, tolerance, absolute, relative, divergence, convergence,
+.keywords: maximum, iterations
 
-.seealso: KSPSetRelativeTolerance(), KSPSetAbsoluteTolerance()
-          KSPSetMaxIterations()
+.seealso: KSPSetTolerances()
 @*/
 int KSPGetTolerances(KSP ksp,double *rtol,double *atol,double *dtol,
                      int *maxits)
@@ -271,6 +172,48 @@ int KSPGetTolerances(KSP ksp,double *rtol,double *atol,double *dtol,
   *rtol   = ksp->rtol;
   *dtol   = ksp->divtol;
   *maxits = ksp->max_it;
+  return 0;
+}
+/*@
+    KSPSetTolerances - Sets the relative, absolute, divergence and maximum
+    iteration tolerances used by the default KSP convergence testers. 
+
+   Input Parameters:
+.  ksp - the Krylov subspace context
+.  rtol - the relative convergence tolerance
+   (relative decrease in the residual norm)
+.  atol - the absolute convergence tolerance 
+   (absolute size of the residual norm)
+.  dtol - the divergence tolerance
+   (amount residual can increase before KSPDefaultConverged
+   concludes that the method is diverging)
+.  maxits - maximum number of iterations to use
+
+   Notes:
+   Use PETSC_DEFAULT to retain the default value of any of the tolerances.
+
+   The first of the absolute and relative tolerances reached
+   will terminate the iterations. See also KSPSetConvergenceTest() 
+   for setting user-defined stopping criteria.
+
+   Options Database Keys:
+$  -ksp_atol  tol  (absolute tolerance)
+$  -ksp_rtol  tol  (relative tolerance)
+$  -ksp_divtol  tol  (divergence tolerance)
+$  -ksp_max_it  maxits  (maximum iterations)
+
+.keywords: KSP, set, tolerance, absolute, relative, divergence, 
+           convergence, maximum, iterations
+
+.seealso: KSPGetTolerances()
+@*/
+int KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits)
+{
+  VALIDHEADER(ksp,KSP_COOKIE);
+  if (atol != PETSC_DEFAULT)   ksp->atol   = atol;
+  if (rtol != PETSC_DEFAULT)   ksp->rtol   = rtol;
+  if (dtol != PETSC_DEFAULT)   ksp->divtol = dtol;
+  if (maxits != PETSC_DEFAULT) ksp->max_it = maxits;
   return 0;
 }
 
