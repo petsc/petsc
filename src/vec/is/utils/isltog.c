@@ -1,10 +1,37 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.16 1997/10/10 04:01:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.17 1997/10/19 03:22:23 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "src/is/isimpl.h"    /*I "is.h"  I*/
+
+#undef __FUNC__  
+#define __FUNC__ "ISLocalToGlobalMappingView"
+/*@C
+    ISLocalToGlobalMappingView - View a local to global mapping
+
+    Input Parameters:
+.   ltog - local to global mapping
+
+   Collective on ISLocalToGlobalMapping and Viewer
+
+.keywords: IS, local-to-global mapping, create
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
+@*/
+int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,Viewer viewer)
+{
+  int      i;
+
+  PetscFunctionBegin;
+
+  for ( i=0; i<mapping->n; i++ ) {
+    printf("%d %d\n",i,mapping->indices[i]);
+  }
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "ISLocalToGlobalMappingCreateIS"
@@ -17,6 +44,8 @@ static char vcid[] = "$Id: isltog.c,v 1.16 1997/10/10 04:01:58 bsmith Exp bsmith
 
     Output Parameters:
 .   mapping - new mapping data structure
+
+   Collective on IS
 
 .keywords: IS, local-to-global mapping, create
 
@@ -38,6 +67,7 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 
   PetscFunctionReturn(0);
 }
+
 #undef __FUNC__  
 #define __FUNC__ "ISLocalToGlobalMappingCreate"
 /*@C
@@ -52,6 +82,8 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
     Output Parameters:
 .   mapping - new mapping data structure
 
+    Collective on MPI_Comm
+
 .keywords: IS, local-to-global mapping, create
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
@@ -62,7 +94,8 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n, int *indices,ISLocalToGlobal
   PetscValidIntPointer(indices);
   PetscValidPointer(mapping);
 
-  PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,IS_LTOGM_COOKIE,0,cm,ISLocalToGlobalMappingDestroy,0);
+  PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,IS_LTOGM_COOKIE,0,cm,ISLocalToGlobalMappingDestroy,
+                    ISLocalToGlobalMappingView);
   PLogObjectCreate(*mapping);
   PLogObjectMemory(*mapping,sizeof(struct _p_ISLocalToGlobalMapping)+n*sizeof(int));
 
@@ -86,6 +119,8 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n, int *indices,ISLocalToGlobal
 
    Input Parameters:
 .  mapping - mapping data structure
+
+   Collective on ISLocalToGlobalMapping
 
 .keywords: IS, local-to-global mapping, destroy
 
@@ -117,6 +152,8 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 
     Output Parameters:
 .   newis - index set in global numbering
+
+    Not collective
 
 .keywords: IS, local-to-global mapping, apply
 
@@ -158,6 +195,8 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
 
    Output Parameter:
 .  out - indices in global numbering
+
+   Not collective
 
    Notes: The in and out array may be identical
 
@@ -238,6 +277,8 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
              idxout == PETSC_NULL to determine the required length (returned in nout)
              and then allocate the required space and call ISGlobalToLocalMappingApply()
              a second time to set the values.
+
+    Not collective
 
     Notes: Either nout or idxout may be PETSC_NULL. idx and idxout may be identical.
 

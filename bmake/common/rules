@@ -1,4 +1,4 @@
-# $Id: common,v 1.200 1997/10/18 00:18:08 balay Exp bsmith $ 
+# $Id: common,v 1.201 1997/10/28 04:55:28 bsmith Exp bsmith $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -31,7 +31,7 @@ CPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS) $(PETSC_PARCH)
 # The order of listing these libraries is important!
 #
 PETSC_LIB   = -L$(LDIR) -lpetscts -lpetscsnes  -lpetscsles \
-		-lpetscmat -lpetscvec -lpetscmat -lpetscsys  \
+		-lpetscmat -lpetscvec -lpetscmat -lpetscvec -lpetscsys  \
 		$(EXTERNAL_LIB) $(KERNEL_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
 		$(MPE_LIB) $(MPI_LIB) $(X11_LIB) $(FC_LIB) $(SYS_LIB) -lm
 #

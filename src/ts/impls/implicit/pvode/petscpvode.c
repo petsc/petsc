@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.12 1997/10/19 03:28:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.13 1997/10/19 22:45:54 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: petscpvode.c,v 1.12 1997/10/19 03:28:26 bsmith Exp bs
    solver.
 */
 
-#if defined(HAVE_PVODE)  && !defined(__cplusplus)
+#if defined(HAVE_PVODE)  && !defined(__cplusplus) 
 
 #include "src/ts/impls/implicit/pvode/petscpvode.h"  /*I "ts.h" I*/    
 
@@ -48,8 +48,7 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
     ierr     = MatCopy(cvode->pmat,Jac); CHKERRQ(ierr);
     str      = SAME_NONZERO_PATTERN;
     *jcurPtr = FALSE;
-  }
-  else {
+  } else {
     /* make PETSc vector tmpy point to PVODE vector y */
     ierr = VecPlaceArray(tmpy,&N_VIth(y,0));CHKERRQ(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.45 1997/09/26 02:17:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.46 1997/10/19 03:22:27 bsmith Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -81,8 +81,7 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
     ierr = VecCreateSeq(PETSC_COMM_SELF,N,&W); CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&from); CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&to); CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = VecCreateSeq(PETSC_COMM_SELF,0,&W); CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&from); CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&to); CHKERRQ(ierr);
@@ -95,9 +94,10 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
   ISDestroy(from); ISDestroy(to); VecScatterDestroy(ctx);
 
   /* create scale window */
+  ierr = DrawCheckResizedWindow(win); CHKERRQ(ierr);
+
   ierr = DrawCreatePopUp(win,&popup); CHKERRQ(ierr);
 
-   
   if (rank == 0) {
 #if !defined(USE_PETSC_COMPLEX)
     double  xl = 0.0, yl = 0.0, xr = 1.0, yr = .1;
@@ -160,7 +160,8 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
          ierr = DrawSetCoordinates(win,xl,yl,xr,yr); CHKERRQ(ierr);
       } else {break;}
      
-      ierr = DrawCheckResizedWindow(win); CHKERRQ(ierr);
+      /* cannot check resize because requires synchronization accross draw */
+      /* ierr = DrawCheckResizedWindow(win); CHKERRQ(ierr); */
       if (!rank) {ierr = DrawClear(win); CHKERRQ(ierr);}
       ierr = DrawFlush(win); CHKERRQ(ierr);
     }
@@ -170,8 +171,6 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
     if (!yin) PetscFree(y);
 #endif
   }
-
-
   ierr = VecDestroy(W); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

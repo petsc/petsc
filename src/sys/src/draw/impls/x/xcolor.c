@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.29 1997/09/19 19:27:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.30 1997/10/19 03:27:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -164,10 +164,10 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
     colordef.blue   = ((int)blue[i-DRAW_BASIC_COLORS]  * 65535) / 255;
     colordef.flags  = DoRed | DoGreen | DoBlue;
     if (defaultmap == XiWin->cmap) { 
-      XAllocColor( XiWin->disp, XiWin->cmap, &colordef );
+      XAllocColor( XiWin->disp, XiWin->cmap, &colordef ); 
     } else {
       /* try to allocate the color in the default-map */
-      found = XAllocColor( XiWin->disp, defaultmap, &colordef );
+      found = XAllocColor( XiWin->disp, defaultmap, &colordef ); 
       /* use it, if it it exists and is not already used in the new colormap */
       if (found && !cmap_pixvalues_used[colordef.pixel]) {
         cmap_pixvalues_used[colordef.pixel] = 1; 
@@ -177,7 +177,7 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
         colordef.pixel                   = cmap_base;
         cmap_pixvalues_used[cmap_base++] = 1;
       }
-      XStoreColor( XiWin->disp, XiWin->cmap, &colordef );
+      XStoreColor( XiWin->disp, XiWin->cmap, &colordef ); 
     }
     XiWin->cmapping[i]   = colordef.pixel;
   }

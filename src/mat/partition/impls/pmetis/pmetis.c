@@ -2,13 +2,13 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.1 1997/10/30 03:58:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.2 1997/11/03 04:46:32 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
 
 #if defined(HAVE_PARMETIS)
-#include "src/mat/impls/adj/mpi/mpiadj.h"
+#include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "mat.h" I*/
 #include "par_kmetis.h"
 
 /*
@@ -30,7 +30,7 @@ typedef struct {
 static int PartitioningApply_Parmetis(Partitioning part, IS *partitioning)
 {
   int                   ierr,*locals,size;
-  int                   *vtxdist, *xadj,*adjncy,itmp;
+  int                   *vtxdist, *xadj,*adjncy,itmp = 0;
   Mat                   mat = part->adj;
   Mat_MPIAdj            *adj = (Mat_MPIAdj *)mat->data;
   Partitioning_Parmetis *parmetis = (Partitioning_Parmetis*)part->data;
@@ -43,7 +43,6 @@ static int PartitioningApply_Parmetis(Partitioning part, IS *partitioning)
   }
 
   locals = (int *) PetscMalloc((adj->m+1)*sizeof(int));CHKPTRQ(locals);
-
 
   vtxdist = adj->rowners;
   xadj    = adj->i;
@@ -88,6 +87,8 @@ int PartitioningView_Parmetis(PetscObject obj,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PartitioningParmetisSetCoarseSequential"
 /*@
      PartitioningParmetisSetCoarseSequential - Use the sequential code to 
          do the partitioning of the coarse grid.
@@ -96,8 +97,6 @@ int PartitioningView_Parmetis(PetscObject obj,Viewer viewer)
 .  part - the partitioning context
 
 @*/
-#undef __FUNC__  
-#define __FUNC__ "PartitioningParmetisSetCoarseSequential"
 int PartitioningParmetisSetCoarseSequential(Partitioning part)
 {
   Partitioning_Parmetis *parmetis = (Partitioning_Parmetis *)part->data;
@@ -132,6 +131,20 @@ int PartitioningSetFromOptions_Parmetis(Partitioning part)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNC__  
+#define __FUNC__ "PartitioningDestroy_Parmetis" 
+int PartitioningDestroy_Parmetis(PetscObject opart)
+{
+  Partitioning          part = (Partitioning) opart;
+  Partitioning_Parmetis *parmetis = (Partitioning_Parmetis *)part->data;
+  
+  PetscFunctionBegin;
+  PetscFree(parmetis);
+
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ "PartitioningCreate_Parmetis" 
 int PartitioningCreate_Parmetis(Partitioning part)
@@ -149,9 +162,9 @@ int PartitioningCreate_Parmetis(Partitioning part)
 
   part->apply          = PartitioningApply_Parmetis;
   part->view           = PartitioningView_Parmetis;
+  part->destroy        = PartitioningDestroy_Parmetis;
   part->printhelp      = PartitioningPrintHelp_Parmetis;
   part->setfromoptions = PartitioningSetFromOptions_Parmetis;
-  part->destroy        = 0;
   part->type           = PARTITIONING_PARMETIS;
   part->data           = (void *) parmetis;
   PetscFunctionReturn(0);

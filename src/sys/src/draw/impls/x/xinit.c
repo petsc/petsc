@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.34 1997/09/19 19:27:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.35 1997/10/19 03:27:52 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -57,8 +57,7 @@ int XiSetVisual(Draw_X* XiWin,int q_default_visual,Colormap cmap,int nc )
     if (!cmap) XiWin->cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
     else       XiWin->cmap  = cmap;
     PLogInfo(0,"Opening default visual X window\n");
-  }
-  else {
+  } else {
     XVisualInfo vinfo;
     /* Try to match to some popular types */
     /*
@@ -69,24 +68,21 @@ int XiSetVisual(Draw_X* XiWin,int q_default_visual,Colormap cmap,int nc )
       XiWin->depth  = 24;
       nc            = 256;
       PLogInfo(0,"Opening direct color 24 bit X window\n");
-    }
-    else */
+    } else */
 
      if (XMatchVisualInfo(XiWin->disp,XiWin->screen,8,PseudoColor,&vinfo)){
       XiWin->vis    = vinfo.visual;
       XiWin->depth  = 8;
       nc            = 256;
       PLogInfo(0,"Opening pseudo color 8 bit X window\n");
-    }
-    else if (XMatchVisualInfo( XiWin->disp, XiWin->screen,
+    } else if (XMatchVisualInfo( XiWin->disp, XiWin->screen,
 			 DefaultDepth(XiWin->disp,XiWin->screen),PseudoColor,&vinfo)){
       XiWin->vis    = vinfo.visual;
       XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
       nc            = (int) pow(2.0,(double) XiWin->depth);
       PLogInfo(0,"Opening pseudo color %d bit X window\n",XiWin->depth);
       cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
-    }
-    else {
+    } else {
       XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
       XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
       nc            = (int) pow(2.0,(double) XiWin->depth);
@@ -249,14 +245,23 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
     is set, or you use the -display name option and xhost + has been\n\
     run on your displaying machine.\n" );
   }
+
+  /*
+      The reason these are slow is they call XAllocColor() for each 256 colors
+    each one, I think, requires communication with the X server.
+  */
+
+  /* this is slow */
   ierr = OptionsHasName(PETSC_NULL,"-draw_x_shared_colormap",&flag); CHKERRQ(ierr);
   ierr = XiSetVisual( w, flag, (Colormap)0, nc ); CHKERRQ(ierr);
 
   ierr = XiDisplayWindow( w, name, x, y, nx, ny, (PixVal)0 ); CHKERRQ(ierr);
-
   XiSetGC( w, w->cmapping[1] );
   XiSetPixVal(w, w->background );
+
+  /* this is very slow */
   ierr = XiUniformHues(w,nc-DRAW_BASIC_COLORS); CHKERRQ(ierr);
+
   ierr = XiFontFixed( w,6, 10,&w->font ); CHKERRQ(ierr);
   XFillRectangle(w->disp,w->win,w->gc.set,0,0,nx,ny);
   PetscFunctionReturn(0);

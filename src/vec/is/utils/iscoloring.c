@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.19 1997/11/03 04:42:34 bsmith Exp balay $";
+static char vcid[] = "$Id: iscoloring.c,v 1.20 1997/11/03 16:02:29 balay Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -234,6 +234,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
   }
   PetscFree(lsizes);
 
+  ierr = ISRestoreIndices(part,&indices); CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,n,newi,is);CHKERRQ(ierr);
   PetscFree(newi);
 
@@ -255,7 +256,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
     Notes: Clearly not scalable for large index sets.
 
 @*/
-extern int ISAllGather(IS is,IS *isout)
+int ISAllGather(IS is,IS *isout)
 {
   int      *indices,*sizes,size,*offsets,n,*lindices,i,N,ierr;
   MPI_Comm comm;

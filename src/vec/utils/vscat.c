@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.101 1997/10/28 14:21:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.102 1997/11/03 04:42:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -438,6 +438,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   int        len,size,cando,islocal,totalv,ierr; 
   MPI_Comm   comm = xin->comm;
   PetscTruth ixblock,iyblock,iystride;
+  IS         tix = 0, tiy = 0;
 
   PetscFunctionBegin;
   /* next 2 lines insure that we use parallel comm if it exists */
@@ -452,6 +453,20 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
   VecGetLocalSize_Fast(xin,ctx->to_n);
   VecGetLocalSize_Fast(yin,ctx->from_n);
+
+
+  /*
+      if ix or iy is not included; assume just grabbing entire vector
+  */
+  if (!ix && xin->type == VECSEQ) {
+    ierr = ISCreateStride(comm,ctx->to_n,0,1,&ix);CHKERRQ(ierr);
+    tix  = ix;
+  } else if (!iy && yin->type == VECSEQ) {
+    ierr = ISCreateStride(comm,ctx->from_n,0,1,&iy);CHKERRQ(ierr);
+    tiy  = iy;
+  } else if (!ix || !iy) {
+    SETERRQ(1,1,"Must provide at least ix and iy");
+  }
 
   /*
         Check for special cases
@@ -485,9 +500,8 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ctx->destroy      = VecScatterDestroy_SGtoSG;
       ctx->copy         = 0;
       *newctx           = ctx;
-      PetscFunctionReturn(0);
-    }
-    else if (ix->type == IS_STRIDE &&  iy->type == IS_STRIDE){
+      goto functionend;
+    } else if (ix->type == IS_STRIDE &&  iy->type == IS_STRIDE){
       int                    nx,ny,to_first,to_step,from_first,from_step;
       VecScatter_Seq_Stride  *from,*to;
 
@@ -513,9 +527,8 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ctx->destroy      = VecScatterDestroy_SGtoSG;
       ctx->copy         = 0;
       *newctx           = ctx;
-      PetscFunctionReturn(0); 
-    }
-    else if (ix->type == IS_GENERAL && iy->type == IS_STRIDE){
+      goto functionend; 
+    } else if (ix->type == IS_GENERAL && iy->type == IS_STRIDE){
       int                    nx,ny,*idx,first,step;
       VecScatter_Seq_General *from;
       VecScatter_Seq_Stride  *to;
@@ -543,9 +556,8 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       to->type        = VEC_SCATTER_SEQ_STRIDE; 
       from->type      = VEC_SCATTER_SEQ_GENERAL;
       *newctx         = ctx;
-      PetscFunctionReturn(0);
-    }
-    else if (ix->type == IS_STRIDE && iy->type == IS_GENERAL){
+      goto functionend;
+    } else if (ix->type == IS_STRIDE && iy->type == IS_GENERAL){
       int                    nx,ny,*idx,first,step;
       VecScatter_Seq_General *to;
       VecScatter_Seq_Stride  *from;
@@ -574,9 +586,8 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       to->type        = VEC_SCATTER_SEQ_GENERAL; 
       from->type      = VEC_SCATTER_SEQ_STRIDE; 
       *newctx         = ctx;
-      PetscFunctionReturn(0);
-    }
-    else {
+      goto functionend;
+    } else {
       SETERRQ(PETSC_ERR_SUP,0,"Cannot generate such a scatter context yet");
     }
   }
@@ -615,7 +626,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->destroy      = VecScatterDestroy_SGtoSG;
         ctx->copy         = VecScatterCopy_PStoSS;
         *newctx           = ctx;
-        PetscFunctionReturn(0);
+        goto functionend;
       }
     } else {
       ierr = MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
@@ -658,7 +669,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->destroy      = VecScatterDestroy_MPI_ToAll;
         ctx->copy         = VecScatterCopy_MPI_ToAll;
         *newctx           = ctx;
-        PetscFunctionReturn(0);
+        goto functionend;
       }
     } else {
       ierr = MPI_Allreduce( &totalv, &cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
@@ -680,7 +691,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           ISBlockRestoreIndices(ix,&idx);
           ISBlockRestoreIndices(iy,&idy);
           *newctx = ctx;
-          PetscFunctionReturn(0);
+          goto functionend;
         }
       } else if (iystride) {
         int ystart,ystride,ysize,bsx;
@@ -700,7 +711,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           PetscFree(idy);
           ISBlockRestoreIndices(ix,&idx);
           *newctx = ctx;
-          PetscFunctionReturn(0);
+          goto functionend;
         }
       }
     }
@@ -714,7 +725,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ISRestoreIndices(ix,&idx);
       ISRestoreIndices(iy,&idy);
       *newctx = ctx;
-      PetscFunctionReturn(0);
+      goto functionend;
     }
   }
   /* ---------------------------------------------------------------------------*/
@@ -752,7 +763,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->destroy      = VecScatterDestroy_SGtoSG;
         ctx->copy         = 0;
         *newctx           = ctx;
-        PetscFunctionReturn(0);
+        goto functionend;
       }
     } else {
       ierr = MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);CHKERRQ(ierr);
@@ -766,7 +777,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = VecScatterCreate_StoP(nx,idx,ny,idy,yin,ctx); CHKERRQ(ierr);
       ISRestoreIndices(ix,&idx); ISRestoreIndices(iy,&idy);
       *newctx = ctx;
-      PetscFunctionReturn(0);
+      goto functionend;
     }
   }
   /* ---------------------------------------------------------------------------*/
@@ -780,9 +791,12 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     ISRestoreIndices(ix,&idx); 
     ISRestoreIndices(iy,&idy);
     *newctx = ctx;
-    PetscFunctionReturn(0);
+    goto functionend;
   }
-  /* One of the above 4 cases is true, and the next istruction should never be executed */
+
+  functionend:
+  if (tix) {ierr = ISDestroy(tix);CHKERRQ(ierr);}
+  if (tiy) {ierr = ISDestroy(tiy);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.97 1997/10/28 14:23:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.98 1997/11/03 04:47:44 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -362,10 +362,12 @@ static int DrawPause_X(Draw draw)
     DrawButton button;
     int        rank;
     MPI_Comm_rank(draw->comm,&rank);
-    if (rank) PetscFunctionReturn(0);
-    ierr = DrawGetMouseButton(draw,&button,0,0,0,0); CHKERRQ(ierr);
-    /*    if (button == BUTTON_RIGHT) SETERRQ(1,0,"User request exit"); */
-    if (button == BUTTON_CENTER) draw->pause = 0;
+    if (!rank) {
+      ierr = DrawGetMouseButton(draw,&button,0,0,0,0); CHKERRQ(ierr);
+      /*    if (button == BUTTON_RIGHT) SETERRQ(1,0,"User request exit"); */
+      if (button == BUTTON_CENTER) draw->pause = 0;
+    }
+    ierr = MPI_Bcast(&draw->pause,1,MPI_INT,0,draw->comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -378,8 +380,7 @@ static int DrawCreatePopUp_X(Draw draw,Draw *popup)
   Draw_X* win = (Draw_X*) draw->data;
 
   PetscFunctionBegin;
-  ierr = DrawOpenX(draw->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+25,150,220,popup);
-         CHKERRQ(ierr);
+  ierr = DrawOpenX(draw->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+25,150,220,popup);CHKERRQ(ierr);
   draw->popup = *popup;
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.125 1997/10/31 21:38:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.126 1997/11/03 04:45:54 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -469,10 +469,6 @@ int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
   double       isend[5], irecv[5];
 
   PetscFunctionBegin;
-  info->rows_global    = (double)mat->M;
-  info->columns_global = (double)mat->N;
-  info->rows_local     = (double)mat->m;
-  info->columns_local  = (double)mat->N;
   info->block_size     = (double)dmat->bs;
   ierr = MatGetInfo(mat->A,MAT_LOCAL,info);CHKERRQ(ierr);
   isend[0] = info->nz_used; isend[1] = info->nz_allocated; isend[2] = info->nz_unneeded;
@@ -498,6 +494,10 @@ int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   }
+  info->rows_global    = (double)mat->M;
+  info->columns_global = (double)mat->N;
+  info->rows_local     = (double)mat->m;
+  info->columns_local  = (double)mat->N;
   PetscFunctionReturn(0);
 }
 

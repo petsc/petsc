@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.149 1997/11/03 04:43:55 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.150 1997/11/03 16:32:49 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -607,8 +607,8 @@ int PetscFinalize()
 */
 
 #undef __FUNC__  
-#define __FUNC__ "abort_function"
-void abort_function(MPI_Comm *comm,int *flag) 
+#define __FUNC__ "Petsc_MPI_Abort_Function"
+void Petsc_MPI_Abort_Function(MPI_Comm *comm,int *flag) 
 {
   PetscFunctionBegin;
   fprintf(stderr,"MPI error %d\n",*flag);
@@ -761,10 +761,14 @@ int OptionsCheckInitial_Private()
       PetscSetDebugger(debugger,xterm,display);
       PetscPushErrorHandler(PetscAbortErrorHandler,0);
       PetscAttachDebugger();
-      ierr = MPI_Errhandler_create((MPI_Handler_function*)abort_function,&abort_handler);CHKERRQ(ierr);
+      ierr = MPI_Errhandler_create((MPI_Handler_function*)Petsc_MPI_Abort_Function,&abort_handler);CHKERRQ(ierr);
       ierr = MPI_Errhandler_set(comm,abort_handler);CHKERRQ(ierr);
     }
     PetscFree(nodes);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mpi_return_on_error", &flg1); CHKERRQ(ierr);
+  if (flg1) {
+    ierr = MPI_Errhandler_set(comm,MPI_ERRORS_RETURN);CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler", &flg1); CHKERRQ(ierr);
   if (!flg1) { PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0); }
@@ -775,8 +779,7 @@ int OptionsCheckInitial_Private()
     if(flg1) {
       if (mname[0]) {
         ierr = PLogOpenHistoryFile(mname,&petsc_history); CHKERRQ(ierr);
-      }
-      else {
+      } else {
         ierr = PLogOpenHistoryFile(0,&petsc_history); CHKERRQ(ierr);
       }
     }
@@ -861,6 +864,7 @@ int OptionsCheckInitial_Private()
     PetscPrintf(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n");
     PetscPrintf(comm," -display display: Location where graphics and debuggers are displayed\n");
     PetscPrintf(comm," -no_signal_handler: do not trap error signals\n");
+    PetscPrintf(comm," -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n");
     PetscPrintf(comm," -fp_trap: stop on floating point exceptions\n");
     PetscPrintf(comm,"           note on IBM RS6000 this slows run greatly\n");
     PetscPrintf(comm," -trdump: dump list of unfreed memory at conclusion\n");
