@@ -99,7 +99,8 @@ typedef enum {
   PETSC_VIEWER_DRAW_CONTOUR, 
   PETSC_VIEWER_DRAW_PORTS,
   PETSC_VIEWER_NATIVE,
-  PETSC_VIEWER_NOFORMAT} PetscViewerFormat;
+  PETSC_VIEWER_NOFORMAT,
+  PETSC_VIEWER_ASCII_FACTOR_INFO} PetscViewerFormat;
 
 EXTERN int PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
 EXTERN int PetscViewerPushFormat(PetscViewer,PetscViewerFormat);

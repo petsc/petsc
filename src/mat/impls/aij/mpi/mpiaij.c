@@ -713,6 +713,8 @@ int MatDestroy_MPIAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
+extern int MatMPIAIJFactorInfo_SuperLu(Mat,PetscViewer);
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIAIJ_ASCIIorDraworSocket"
 int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
@@ -749,6 +751,11 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
       ierr = VecScatterView(aij->Mvctx,viewer);CHKERRQ(ierr);
       PetscFunctionReturn(0); 
     } else if (format == PETSC_VIEWER_ASCII_INFO) {
+      PetscFunctionReturn(0);
+    } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+#if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+      ierr = MatMPIAIJFactorInfo_SuperLu(mat,viewer);CHKERRQ(ierr);
+#endif
       PetscFunctionReturn(0);
     }
   } else if (isdraw) {
