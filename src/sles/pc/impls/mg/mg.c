@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.8 1995/03/25 01:26:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.9 1995/04/13 02:14:30 curfman Exp curfman $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -109,12 +109,13 @@ static int MGDestroy(PetscObject obj)
 
 #include <stdio.h>
 /*@C
-       MGCheck - Checks that all components of MG structure have 
-                 been set, use before MGCycle().
+   MGCheck - Checks that all components of MG structure have 
+   been set, use before MGCycle().
 
-    Iput Parameters:
-.   mg - the MG structure
+   Iput Parameters:
+.  mg - the MG structure
 
+   Keywords:  check, set, multigrid
 @*/
 int MGCheck(PC pc)
 {
@@ -175,6 +176,8 @@ int MGCheck(PC pc)
 
    Options Database Key:
 $  -mgsmoothdown  n
+
+   Keywords:  smooth, down, pre-smoothing, steps, multigrid
 @*/
 int MGSetNumberSmoothDown(PC pc,int n)
 { 
@@ -199,6 +202,8 @@ int MGSetNumberSmoothDown(PC pc,int n)
 
    Options Database Key:
 $  -mgsmoothup  n
+
+   Keywords:  smooth, up, post-smoothing, steps, multigrid
 @*/
 int  MGSetNumberSmoothUp(PC pc,int n)
 { 
@@ -223,6 +228,8 @@ int  MGSetNumberSmoothUp(PC pc,int n)
 
    Options Database Key:
 $  -mgcycles n
+
+   Keywords:  cycles, V-cycle, W-cycle, cycling, multigrid
 @*/
 int MGSetCycles(PC pc,int n)
 { 
@@ -336,6 +343,8 @@ int PCCreate_MG(PC pc)
   Input Parameters:
 .  pc - the preconditioner context
 .  levels - the number of levels
+
+   Keywords:  levels, multigrid
 @*/
 int MGSetLevels(PC pc,int levels)
 {
@@ -350,7 +359,6 @@ int MGSetLevels(PC pc,int levels)
 }
 
 /*@
-
    MGSetMethod - Determines the form of multigrid to use, either 
    multiplicative, additive, full, or the Kaskade algorithm.
 
@@ -362,6 +370,8 @@ $      Multiplicative, Additive, FullMultigrid, Kaskade
    Options Database Key:
 $  -mgmethod <flag>, where <flag> is one of the following:
 $      multiplicative, additive, fullmultigrid, kaskade   
+
+   Keywords:  multiplicative, additive, full, Kaskade, multigrid
 @*/
 int MGSetMethod(PC pc,int flag)
 {
