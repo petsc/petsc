@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.17 2000/09/28 21:11:49 bsmith Exp hzhang $*/
+/*$Id: ex75.c,v 1.18 2000/10/12 17:54:28 hzhang Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -236,6 +236,17 @@ int main(int argc,char **args)
   
   ierr = MatScale(&alpha,A);CHKERRA(ierr);
   ierr = MatScale(&alpha,sA);CHKERRA(ierr);
+
+  /* Test MatGetRowMax() */
+  ierr = MatGetRowMax(A,s1);CHKERRA(ierr);  
+  ierr = MatGetRowMax(sA,s2);CHKERRA(ierr);
+
+  ierr = VecNorm(s1,NORM_1,&r1);CHKERRA(ierr);
+  ierr = VecNorm(s2,NORM_1,&r2);CHKERRA(ierr);
+  r1 -= r2;
+  if (r1<-tol || r1>tol) { 
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRowMax() \n");CHKERRA(ierr);
+  } 
   
   /* Test MatMult(), MatMultAdd() */
   for (i=0; i<10; i++) {
