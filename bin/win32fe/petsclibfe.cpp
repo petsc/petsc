@@ -1,6 +1,6 @@
-/* $Id: petsclibfe.cpp,v 1.3 2001/03/23 19:31:16 buschelm Exp $ */
+/* $Id: libfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
 #include <fstream>
-#include "petsclibfe.h"
+#include "libfe.h"
 
 using namespace PETScFE;
   
@@ -20,8 +20,8 @@ void lib::Execute(void) {
     file.push_front(temp);
     if (!verbose) {
       string libexe = *archivearg.begin();
-      libexe += " -nologo";
       archivearg.pop_front();
+      archivearg.push_front("-nologo");
       archivearg.push_front(libexe);
     }
   }
@@ -31,7 +31,6 @@ void lib::Execute(void) {
 void lib::Help(void) {
   tool::Help();
   string help = *archivearg.begin();
-  help = help.substr(0,help.find(" -nologo"));
   help += " -? 2>&1"; 
   system(help.c_str());
 }

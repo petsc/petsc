@@ -1,7 +1,8 @@
-/* $Id: petscarchiverfe.cpp,v 1.5 2001/04/11 07:48:16 buschelm Exp buschelm $ */
+/* $Id: archiverfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
 #include <stdlib.h>
 #include <process.h>
-#include "petscarchiverfe.h"
+#include "archiverfe.h"
+#include <string.h>
 
 using namespace PETScFE;
 
@@ -30,32 +31,22 @@ void archiver::Parse(void) {
 void archiver::Execute(void) {
   tool::Execute();
   if (!helpfound) {
-    int len;
-    LI li;
-    const char **args; 
-    if (verbose) {
-      li = archivearg.begin();
-      string archive = *li++;
-      Merge(archive,archivearg,li);
-      Merge(archive,file,file.begin());
-      cout << archive << endl;
-      cout.flush();
+    int lenarchive,lenfiles;
+    LI li = archivearg.begin();
+    string archive = *li++;
+    string files,callarchive;
+    Merge(archive,archivearg,li);
+    li = file.begin();
+    while (li != file.end()) {
+      /* Invoke archiver several times to limit arg length <1024 chars */
+      Merge(files,file,li);
+      callarchive = archive + " " +files;
+      files = "";
+      if (verbose) {
+        cout << callarchive << endl;
+      }
+      system(callarchive.c_str());
     }
-    /*      system(archive.c_str()); */
-    len = archivearg.size();
-    len += file.size();
-    args = (const char **)malloc((len+1)*sizeof(char *));
-    int i=0;
-    for (li=archivearg.begin();li!=archivearg.end();i++,li++) {
-      args[i] = (*li).c_str();
-    }
-    for (li=file.begin();li!=file.end();i++,li++) {
-      args[i] = (*li).c_str();
-    }
-    args[len+1] = NULL;
-    /*      _execvp(args[0],args); */ 
-    _spawnvp(_P_WAIT,args[0],args);
-    free(args);
   }
 }
 
@@ -78,5 +69,16 @@ void archiver::FoundFlag(LI &i) {
     helpfound = -1;
   } else {
     archivearg.push_back(*i);
+  }
+}
+
+void archiver::Merge(string &str,list<string> &liststr,LI &i) {
+  int len = str.length();
+  string tryfile = *i;
+  while (((len+tryfile.length()+1)<512) && (i!=liststr.end())) {
+    i++;
+    str += " " + tryfile;
+    len = str.length();
+    tryfile = *i;
   }
 }

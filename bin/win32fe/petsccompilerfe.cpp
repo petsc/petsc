@@ -1,6 +1,6 @@
-/* $Id: petsccompilefe.cpp,v 1.5 2001/03/28 22:05:13 buschelm Exp $ */
+/* $Id: compilerfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
 #include <stdlib.h>
-#include "petsccompilerfe.h"
+#include "compilerfe.h"
 
 using namespace PETScFE;
 

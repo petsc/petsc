@@ -1,7 +1,7 @@
-/* $Id: petsctlibfe.cpp,v 1.4 2001/04/11 07:48:16 buschelm Exp buschelm $ */
+/* $Id: tlibfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
 #include <fstream>
 #include "Windows.h"
-#include "petsctlibfe.h"
+#include "tlibfe.h"
 
 using namespace PETScFE;
 using namespace std;

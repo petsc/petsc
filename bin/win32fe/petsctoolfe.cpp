@@ -1,6 +1,6 @@
-/* $Id: petsctoolfe.cpp,v 1.5 2001/03/28 21:03:47 buschelm Exp $ */
+/* $Id: toolfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
 #include "Windows.h"
-#include "petsctoolfe.h"
+#include "toolfe.h"
 
 using namespace PETScFE;
 
@@ -136,7 +136,7 @@ void tool::PrintListString(list<string> &liststr) {
   cout << endl;
 }
 
-void tool::Merge(string &str,list<string> &liststr,LI i) {
+void tool::Merge(string &str,list<string> &liststr,LI &i) {
   while (i!=liststr.end()) {
     str += " " + *i++;
   }

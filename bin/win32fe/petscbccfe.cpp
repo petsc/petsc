@@ -1,8 +1,8 @@
-/* $Id: petscbccfe.cpp,v 1.7 2001/03/28 21:03:32 buschelm Exp $ */
+/* $Id: bccfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
 #include <vector>
 #include <stdlib.h>
 #include <Windows.h>
-#include "petscbccfe.h"
+#include "bccfe.h"
 
 using namespace PETScFE;
 
@@ -15,7 +15,7 @@ void bcc::GetArgs(int argc,char *argv[]) {
   if (!verbose) {
     string temp = *compilearg.begin();
     compilearg.pop_front();
-    temp += " -q";
+    compilearg.push_front("-q");
     compilearg.push_front(temp);
   }
   linkarg.push_front("**");
@@ -107,7 +107,6 @@ void bcc::Help(void) {
   cout << "  -l:-<flag>   disables <flag> for the linker, ilink32.exe" << endl << endl;
   cout << "  ======================================================================" << endl << endl;
   string help = *(compilearg.begin());
-  help = help.substr(0,help.find(" -q"));
   system(help.c_str());
 }
 

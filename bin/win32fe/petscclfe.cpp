@@ -1,6 +1,6 @@
-/* $Id: petscclfe.cpp,v 1.8 2001/03/28 22:12:54 buschelm Exp $ */
+/* $Id: clfe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
 #include <stdlib.h>
-#include "petscclfe.h"
+#include "clfe.h"
 #include "Windows.h"
 
 using namespace PETScFE;
@@ -14,7 +14,7 @@ void cl::GetArgs(int argc,char *argv[]) {
   if (!verbose) {
     string temp = *compilearg.begin();
     compilearg.pop_front();
-    temp += " -nologo";
+    compilearg.push_front("-nologo");
     compilearg.push_front(temp);
   }
   linkarg.push_front("-link");
@@ -29,7 +29,6 @@ void cl::Parse(void) {
 void cl::Help(void) {
   tool::Help();
   string help = *compilearg.begin();
-  help = help.substr(0,help.find(" -nologo"));
   help += " -? 2>&1";
   system(help.c_str());
 }

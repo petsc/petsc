@@ -1,6 +1,6 @@
-/* $Id: petscfe.cpp,v 1.7 2001/03/28 17:48:12 buschelm Exp $ */
+/* $Id: fe.cpp,v 1.1 2001/04/17 15:21:14 buschelm Exp buschelm $ */
 #include <iostream>
-#include "petsctoolfe.h"
+#include "toolfe.h"
 
 using namespace std;
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 2001/03/06 23:58:38 buschelm Exp $ 
+# $Id: makefile,v 1.2 2001/04/11 07:49:14 buschelm Exp $ 
 CXX       = cl
 CXX_FLAGS = -nologo -GX -GR -MD
 CXXFLAGS  =
@@ -8,16 +8,16 @@ RM        = cmd /C del
 # Note: under Windows9x the DOS shell is named command
 # RM        = command /C del
 
-SOURCES = petsccompilerfe.cpp petscbccfe.cpp petscclfe.cpp \
-          petscarchiverfe.cpp petsclibfe.cpp petsctlibfe.cpp \
-          petsccreate.cpp petsctoolfe.cpp petscfe.cpp
+SOURCES = compilerfe.cpp bccfe.cpp clfe.cpp \
+          archiverfe.cpp libfe.cpp tlibfe.cpp \
+          create.cpp toolfe.cpp fe.cpp
 
-OBJECTS = petsccompilerfe.obj petscbccfe.obj petscclfe.obj \
-          petscarchiverfe.obj petsclibfe.obj petsctlibfe.obj \
-          petsccreate.obj petsctoolfe.obj petscfe.obj
+OBJECTS = compilerfe.obj bccfe.obj clfe.obj \
+          archiverfe.obj libfe.obj tlibfe.obj \
+          create.obj toolfe.obj fe.obj
 
 INCLUDEPATHS = -Iinclude
 
-win32fe: petscfe.cpp $(SOURCES)
-	$(CXX) $(CXX_FLAGS) $(CXXFLAGS) -Fewin32fe.exe $(SOURCES) $(INCLUDEPATHS)
+win32fe: $(SOURCES)
+	$(CXX) $(CXX_FLAGS) $(CXXFLAGS) -Fewin32fe.exe $(SOURCES) $(INCLUDEPATHS) -link setargv.obj
 	$(RM) $(OBJECTS)
