@@ -1,4 +1,4 @@
-# $Id: base,v 1.24 1998/04/25 23:38:29 balay Exp balay $ 
+# $Id: base,v 1.25 1998/04/26 00:55:10 balay Exp balay $ 
 
 #
 #   If you do not have the XlC compiler then use the xlc compiler below
@@ -58,24 +58,12 @@ libf:
 libmember:    ${LIBNAME}(${LIBMEMBER})
 
 ###########
-#
-#  .F.f: target is nolonger required, but retained, as it is
-#  useful to check what the preprocessor output.
-#
-.F.f:
-	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
 .F.o:
-	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
-	-${RM} __$*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
 
-.F.a:
-	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
+.F.a: 
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
 	-${AR} cr ${LIBNAME} $*.o
-	-${RM} __$*.f
+	-${RM} $*.o
 
-shared:
+
