@@ -257,6 +257,7 @@ class ArchiveObjects (Action):
 class BKEditFiles (Action):
   def __init__(self, sources = FileGroup(), extraSources = None, flags = '', fileFilter = lambda file: 1):
     Action.__init__(self, 'bk', sources, 'edit '+flags, fileFilter, 1)
+    self.extraSources = extraSources
 
   def execute(self):
     if self.sources: self.sources.extend(self.extraSources)
