@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.15 1996/08/27 01:11:30 curfman Exp curfman $";
+static char vcid[] = "$Id: ex14.c,v 1.16 1996/08/27 18:16:40 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -22,6 +22,7 @@ parameters include:\n\
 
 /*T
    Concepts: SLES (solving linear equations)
+   Concepts: Additive Schwarz Method (ASM) with user-defined subdomains
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions(); SLESSolve();
    Routines: PCSetType(); PCASMCreateSubdomains2D(); PCASMSetLocalSubdomains();
    Routines: PCASMSetOverlap(); PCASMGetSubSLES();
@@ -42,7 +43,7 @@ T*/
 int main(int argc,char **args)
 {
   Vec     x, b, u;          /* approx solution, RHS, exact solution */
-  Mat     C;                /* linear system matrix */
+  Mat     A;                /* linear system matrix */
   SLES    sles;             /* linear solver context */
   PC      pc;               /* PC context */
   IS      *is;              /* array of index sets that define the subdomains */
@@ -64,24 +65,25 @@ int main(int argc,char **args)
   ierr = OptionsHasName(PETSC_NULL,"-user_set_subdomains",&user_subdomains); CHKERRA(ierr);
 
   /* -------------------------------------------------------------------
-                    Phase 1: Set up the linear system
+         Compute the matrix and right-hand-side vector that define
+         the linear system, Ax = b.
      ------------------------------------------------------------------- */
 
   /* 
      Assemble the matrix for the five point stencil, YET AGAIN 
   */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
-  ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
+  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-    if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-    if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-    if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-    v = 4.0; MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);
+    if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+    if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+    if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+    if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+    v = 4.0; MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* 
      Create and set vectors 
@@ -90,7 +92,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecSet(&one,u); CHKERRA(ierr);
-  ierr = MatMult(C,u,b); CHKERRA(ierr);
+  ierr = MatMult(A,u,b); CHKERRA(ierr);
 
   /* 
      Create linear solver context 
@@ -101,7 +103,7 @@ int main(int argc,char **args)
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
 
   /* 
      Set the default preconditioner for this program to be ASM
@@ -110,7 +112,7 @@ int main(int argc,char **args)
   ierr = PCSetType(pc,PCASM); CHKERRA(ierr);
 
   /* -------------------------------------------------------------------
-            Phase 2:  Define the problem decomposition
+                  Define the problem decomposition
      ------------------------------------------------------------------- */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -147,7 +149,7 @@ int main(int argc,char **args)
   }
 
   /* -------------------------------------------------------------------
-            Phase 3: Set the linear solvers for the subblocks
+                Set the linear solvers for the subblocks
      ------------------------------------------------------------------- */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -179,9 +181,10 @@ int main(int argc,char **args)
   */
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
-  /*
-     Solve the linear system
-  */
+  /* -------------------------------------------------------------------
+                      Solve the linear system
+     ------------------------------------------------------------------- */
+
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
 
   /* 
@@ -199,7 +202,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(u); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr);
-  ierr = MatDestroy(C); CHKERRA(ierr);
+  ierr = MatDestroy(A); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }
