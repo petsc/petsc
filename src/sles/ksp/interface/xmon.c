@@ -32,7 +32,7 @@
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPLGTrueMonitorCreate()
 @*/
-int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,PetscDrawLG *draw)
+int KSPLGMonitorCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw win;
   int       ierr;
@@ -134,7 +134,7 @@ int KSPLGMonitorDestroy(PetscDrawLG drawlg)
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
-int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int m,int n,PetscDrawLG *draw)
+int KSPLGTrueMonitorCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw win;
   int       ierr,rank;

@@ -57,10 +57,10 @@ EXTERN int KSPSolveTranspose(KSP,int *);
 EXTERN int KSPDestroy(KSP);
 
 extern PetscFList KSPList;
-EXTERN int KSPRegisterAll(char *);
+EXTERN int KSPRegisterAll(const char[]);
 EXTERN int KSPRegisterDestroy(void);
 
-EXTERN int KSPRegister(char*,char*,char*,int(*)(KSP));
+EXTERN int KSPRegister(const char[],const char[],char[],int(*)(KSP));
 
 /*MC
    KSPRegisterDynamic - Adds a method to the Krylov subspace solver package.
@@ -135,8 +135,8 @@ EXTERN int KSPGetPC(KSP,PC*);
 EXTERN int KSPSetMonitor(KSP,int (*)(KSP,int,PetscReal,void*),void *,int (*)(void*));
 EXTERN int KSPClearMonitor(KSP);
 EXTERN int KSPGetMonitorContext(KSP,void **);
-EXTERN int KSPGetResidualHistory(KSP,PetscReal **,int *);
-EXTERN int KSPSetResidualHistory(KSP,PetscReal *,int,PetscTruth);
+EXTERN int KSPGetResidualHistory(KSP,PetscReal*[],int *);
+EXTERN int KSPSetResidualHistory(KSP,PetscReal[],int,PetscTruth);
 
 
 EXTERN int KSPBuildSolution(KSP,Vec,Vec *);
@@ -179,9 +179,9 @@ EXTERN int KSPUnwindPreconditioner(KSP,Vec,Vec);
 EXTERN int KSPDefaultBuildSolution(KSP,Vec,Vec*);
 EXTERN int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 
-EXTERN int KSPSetOptionsPrefix(KSP,char*);
-EXTERN int KSPAppendOptionsPrefix(KSP,char*);
-EXTERN int KSPGetOptionsPrefix(KSP,char**);
+EXTERN int KSPSetOptionsPrefix(KSP,const char[]);
+EXTERN int KSPAppendOptionsPrefix(KSP,const char[]);
+EXTERN int KSPGetOptionsPrefix(KSP,char*[]);
 
 EXTERN int KSPView(KSP,PetscViewer);
 
@@ -251,13 +251,11 @@ EXTERN int KSPCGSetType(KSP,KSPCGType);
 EXTERN int PCPreSolve(PC,KSP);
 EXTERN int PCPostSolve(PC,KSP);
 
-EXTERN int KSPLGMonitorCreate(char*,char*,int,int,int,int,PetscDrawLG*);
+EXTERN int KSPLGMonitorCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
 EXTERN int KSPLGMonitor(KSP,int,PetscReal,void*);
 EXTERN int KSPLGMonitorDestroy(PetscDrawLG);
-EXTERN int KSPLGTrueMonitorCreate(MPI_Comm,char*,char*,int,int,int,int,PetscDrawLG*);
+EXTERN int KSPLGTrueMonitorCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDrawLG*);
 EXTERN int KSPLGTrueMonitor(KSP,int,PetscReal,void*);
 EXTERN int KSPLGTrueMonitorDestroy(PetscDrawLG);
 
 #endif
-
-

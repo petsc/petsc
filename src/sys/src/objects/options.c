@@ -1314,7 +1314,7 @@ int PetscOptionsGetString(const char pre[],const char name[],char string[],int l
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetStringArray(const char pre[],const char name[],char **strings,int *nmax,PetscTruth *flg)
+int PetscOptionsGetStringArray(const char pre[],const char name[],char *strings[],int *nmax,PetscTruth *flg)
 {
   char       *value;
   int        len,n,ierr;

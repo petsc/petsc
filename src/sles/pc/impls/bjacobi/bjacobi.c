@@ -456,7 +456,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
 
 .seealso: PCBJacobiGetSubSLES()
 @*/
-int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
+int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES *sles[])
 {
   int ierr,(*f)(PC,int *,int *,SLES **);
 

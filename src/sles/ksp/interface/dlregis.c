@@ -17,7 +17,7 @@
 .keywords: SLES, initialize, package
 .seealso: PetscInitialize()
 @*/
-int SLESInitializePackage(char *path) {
+int SLESInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char             *className;

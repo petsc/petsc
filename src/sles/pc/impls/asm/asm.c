@@ -776,7 +776,7 @@ int PCASMSetType(PC pc,PCASMType type)
 .seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMSetOverlap(),
           PCASMCreateSubdomains2D(),
 @*/
-int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
+int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES *sles[])
 {
   int ierr,(*f)(PC,int*,int*,SLES **);
 

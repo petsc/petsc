@@ -53,7 +53,7 @@ typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 extern int TS_COOKIE;
 extern int TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
-EXTERN int TSInitializePackage(char *);
+EXTERN int TSInitializePackage(const char[]);
 
 EXTERN int TSCreate(MPI_Comm,TS*);
 EXTERN int TSSerialize(MPI_Comm, TS *, PetscViewer, PetscTruth);
@@ -64,9 +64,9 @@ EXTERN int TSGetProblemType(TS,TSProblemType*);
 EXTERN int TSSetMonitor(TS,int(*)(TS,int,PetscReal,Vec,void*),void *,int (*)(void*));
 EXTERN int TSClearMonitor(TS);
 
-EXTERN int TSSetOptionsPrefix(TS,char *);
-EXTERN int TSAppendOptionsPrefix(TS,char *);
-EXTERN int TSGetOptionsPrefix(TS,char **);
+EXTERN int TSSetOptionsPrefix(TS,const char[]);
+EXTERN int TSAppendOptionsPrefix(TS,const char[]);
+EXTERN int TSGetOptionsPrefix(TS,char *[]);
 EXTERN int TSSetFromOptions(TS);
 EXTERN int TSSetUp(TS);
 
@@ -200,12 +200,12 @@ EXTERN int TSGetSNES(TS,SNES*);
 EXTERN int TSGetSLES(TS,SLES*);
 
 EXTERN int TSView(TS,PetscViewer);
-EXTERN int TSViewFromOptions(TS,char *);
+EXTERN int TSViewFromOptions(TS,const char[]);
 
 EXTERN int TSSetApplicationContext(TS,void *);
 EXTERN int TSGetApplicationContext(TS,void **);
 
-EXTERN int TSLGMonitorCreate(char *,char *,int,int,int,int,PetscDrawLG *);
+EXTERN int TSLGMonitorCreate(const char[],const char[],int,int,int,int,PetscDrawLG *);
 EXTERN int TSLGMonitor(TS,int,PetscReal,Vec,void *);
 EXTERN int TSLGMonitorDestroy(PetscDrawLG);
 
@@ -223,7 +223,7 @@ EXTERN int TSPVodeSetGramSchmidtType(TS,TSPVodeGramSchmidtType);
 EXTERN int TSPVodeSetGMRESRestart(TS,int);
 EXTERN int TSPVodeSetLinearTolerance(TS,PetscReal);
 EXTERN int TSPVodeSetExactFinalTime(TS,PetscTruth);
-EXTERN int TSPVodeGetParameters(TS,int *,long int**,double**);
+EXTERN int TSPVodeGetParameters(TS,int *,long int*[],double*[]);
 
 #endif
 
