@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.59 2001/03/27 22:17:30 balay Exp balay $ 
+# $Id: packages,v 1.60 2001/08/09 23:29:08 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -77,9 +77,9 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Location of ParMetis
 #
-#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
-#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
-#PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
+PARMETIS_INCLUDE    = -I/home/petsc/software/ParMetis-2.0
+PARMETIS_LIB        = -L/home/petsc/software/ParMetis-2.0/linux -lparmetis -lmetis
+PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
 #
 # Location of the LUSOL sparse LU factorization code (part of MINOS)
@@ -91,6 +91,11 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 #PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
 #LUSOL_LIB
+#
+#  Location of ESI include files
+#
+ESI_INCLUDE    = -I/home/alice/software/esi/cxx/include
+PETSC_HAVE_ESI = -DPETSC_HAVE_ESI
 #
 # ------------------------------------------------------------------------------
 # If you are using shared version of any external libraries you must make this

@@ -1,4 +1,4 @@
-# $Id: common_test,v 1.6 2001/06/21 21:14:27 bsmith Exp bsmith $ 
+# $Id: test,v 1.7 2001/07/06 14:33:14 bsmith Exp bsmith $ 
 #
 #  testexamples_X - Runs various PETSc test suites
 #    1 - basic C suite used in installation tests
@@ -23,7 +23,7 @@ testexamples_3: ${TESTEXAMPLES_3} clean
 testexamples_4: ${TESTEXAMPLES_4} clean
 testexamples_5: ${TESTEXAMPLES_5} clean
 testexamples_6: ${TESTEXAMPLES_6} clean
-testexamples_7: ${TESTEXAMPLES_7} clean
+testexamples_BLOCKSOLVE: ${TESTEXAMPLES_BLOCKSOLVE} clean
 testexamples_8: ${TESTEXAMPLES_8} clean
 testexamples_9: ${TESTEXAMPLES_9} clean
 testexamples_10: ${TESTEXAMPLES_10} clean
@@ -53,8 +53,8 @@ buildexamples_5:
 	-@${OMAKE} testexamples_5 TESTEXAMPLES_5=`echo ${TESTEXAMPLES_5} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_6:
 	-@${OMAKE} testexamples_6 TESTEXAMPLES_6=`echo ${TESTEXAMPLES_6} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_7:
-	-@${OMAKE} testexamples_7 TESTEXAMPLES_7=`echo ${TESTEXAMPLES_7} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_BLOCKSOLVE:
+	-@${OMAKE} testexamples_BLOCKSOLVE TESTEXAMPLES_BLOCKSOLVE=`echo ${TESTEXAMPLES_BLOCKSOLVE} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_8:
 	-@${OMAKE} testexamples_8 TESTEXAMPLES_8=`echo ${TESTEXAMPLES_8} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_9:
