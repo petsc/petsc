@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.17 1995/06/18 16:23:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.18 1995/06/25 20:03:11 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -39,7 +39,7 @@ int KSPChebychevSetEigenvalues(KSP itP,double emax,double emin)
 int  KSPSolve_Chebychev(KSP itP,int *its)
 {
   int              k,kp1,km1,maxit,ktmp,i = 0,pres,brokeout = 0;
-  int              hist_len,cerr;
+  int              hist_len,cerr,ierr;
   Scalar           alpha,omegaprod;
   Scalar           mu,omega,Gamma,c[3],scale;
   double           rnorm,*history;
@@ -102,7 +102,8 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
       if (history && hist_len > i) history[i] = rnorm;
       itP->vec_sol = p[k]; 
       MONITOR(itP,rnorm,i);
-      if (CONVERGED(itP,rnorm,i)) {brokeout = 1; break;}
+      cerr = (*itP->converged)(itP,i,rnorm,itP->cnvP);
+      if (cerr) {brokeout = 1; break;}
     }
 
     /* y^{k+1} = omega( y^{k} - y^{k-1} + Gamma*r^{k}) + y^{k-1} */
@@ -121,7 +122,7 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
     VecAYPX(&mone,b,r);                        
     if (!pres) VecNorm(r,&rnorm);
     else {
-      PCApply(itP->B,r,p[kp1]);                 /*  p[kp1] = B^{-1}z  */
+      ierr = PCApply(itP->B,r,p[kp1]);CHKERRQ(ierr);/*  p[kp1] = B^{-1}z  */
       VecNorm(p[kp1],&rnorm);
     }
     if (history && hist_len > i) history[i] = rnorm;
@@ -133,9 +134,10 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
   /* make sure solution is in vector x */
   itP->vec_sol = x;
   if (k != 0) {
-    VecCopy(p[k],x);
+    ierr = VecCopy(p[k],x); CHKERRQ(ierr);
   }
-  *its = RCONV(itP,i+1); 
+  if (cerr <= 0) *its = -(i+1);
+  else           *its = i+1;
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.9 1995/05/28 17:37:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.10 1995/06/08 03:08:02 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -8,6 +8,9 @@ static char vcid[] = "$Id: signal.c,v 1.9 1995/05/28 17:37:35 bsmith Exp bsmith 
 #include "petsc.h"
 #include "sys.h"
 #include <signal.h>
+#if defined(HAVE_STRING_H)
+#include <string.h>
+#endif
 #include "petscfix.h"     
 
 struct SH {
@@ -45,7 +48,7 @@ static void PetscSignalHandler( int sig )
   else{
     ierr = (*sh->handler)(sig,sh->ctx);
   }
-  if (ierr) exit(ierr);
+  if (ierr) MPI_Abort(MPI_COMM_WORLD,0);
 }
 
 
@@ -86,19 +89,29 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
 {
   struct  SH *newsh;
   if (!SignalSet && routine) {
+#if defined(PARCH_IRIX) && defined(__cplusplus)
+    signal( SIGQUIT, (void (*)(...)) PetscSignalHandler );
+    signal( SIGILL,  (void (*)(...)) PetscSignalHandler );
+    signal( SIGFPE,  (void (*)(...)) PetscSignalHandler );
+    signal( SIGSEGV, (void (*)(...)) PetscSignalHandler );
+    signal( SIGSYS,  (void (*)(...)) PetscSignalHandler );
+#else
     signal( SIGQUIT, PetscSignalHandler );
     signal( SIGILL,  PetscSignalHandler );
     signal( SIGFPE,  PetscSignalHandler );
     signal( SIGBUS,  PetscSignalHandler );
     signal( SIGSEGV, PetscSignalHandler );
     signal( SIGSYS,  PetscSignalHandler );
+#endif
     SignalSet = 1;
   }
   if (!routine) {
     signal( SIGQUIT, 0 );
     signal( SIGILL,  0 );
     signal( SIGFPE,  0 );
+#if !defined(PARCH_IRIX) && !defined(__cplusplus)
     signal( SIGBUS,  0 );
+#endif
     signal( SIGSEGV, 0 );
     signal( SIGSYS,  0 );
     SignalSet = 0;
@@ -123,7 +136,9 @@ int PetscPopSignalHandler()
     signal( SIGQUIT, 0 );
     signal( SIGILL,  0 );
     signal( SIGFPE,  0 );
+#if !defined(PARCH_IRIX) && !defined(__cplusplus)
     signal( SIGBUS,  0 );
+#endif
     signal( SIGSEGV, 0 );
     signal( SIGSYS,  0 );
     SignalSet = 0;

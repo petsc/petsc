@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.21 1995/06/08 03:06:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.22 1995/07/07 17:14:50 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -41,7 +41,7 @@ static int ISInvertPermutation_General(IS is, IS *isout)
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
-  if ((ierr = ISCreateSequential(MPI_COMM_SELF,n,ii,isout))) SETERRQ(ierr,0);
+  ierr = ISCreateSequential(MPI_COMM_SELF,n,ii,isout); CHKERRQ(ierr);
   ISSetPermutation(*isout);
   PETSCFREE(ii);
   return 0;

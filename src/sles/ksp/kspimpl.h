@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: kspimpl.h,v 1.6 1995/06/07 16:36:00 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -67,13 +67,6 @@ struct _KSP {
   /* ------Prefix for Names of setable parameters----------------------*/
   char  *prefix;
 };
-
-/*  
-    Ugly macros used by implementations, should be phased out
-*/
-
-#define CONVERGED(itP,rn,it) (cerr=(*itP->converged)(itP,it,rn,itP->cnvP))
-#define RCONV(itP,it)           ((cerr>0)?(it):-(it))
 
 #define MONITOR(itP,rnorm,it) if (itP->usr_monitor) { \
                                 (*itP->usr_monitor)(itP,it,rnorm,itP->monP);\

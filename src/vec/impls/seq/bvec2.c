@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.29 1995/07/05 17:28:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.30 1995/07/07 17:15:01 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -54,7 +54,12 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
     fd = ViewerFileGetPointer_Private(ptr);
     for (i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
-      fprintf(fd,"%g + %gi\n",real(x->array[i]),imag(x->array[i]));
+      if (imag(x->array[i]) != 0.0) {
+        fprintf(fd,"%g + %gi\n",real(x->array[i]),imag(x->array[i]));
+      }
+      else {
+        fprintf(fd,"%g\n",real(x->array[i]));
+      }
 #else
       fprintf(fd,"%g\n",x->array[i]);
 #endif
@@ -100,7 +105,7 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
     for ( i=0; i<ni; i++ ) {
 #if defined(PETSC_DEBUG)
       if (ix[i] < 0 || ix[i] >= x->n) 
-        SETERRQ(1,"VecSetValues_Seq: Index is out of range.");
+        SETERRQ(1,"VecSetValues_Seq: Index is out of range");
 #endif
       xx[ix[i]] = y[i];
     }
@@ -109,7 +114,7 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
     for ( i=0; i<ni; i++ ) {
 #if defined(PETSC_DEBUG)
       if (ix[i] < 0 || ix[i] >= x->n)
-        SETERRQ(1,"VecSetValues_Seq: Index is out of range.");
+        SETERRQ(1,"VecSetValues_Seq: Index is out of range");
 #endif
       xx[ix[i]] += y[i];
     }  
@@ -168,7 +173,7 @@ int VecCreateSequential(MPI_Comm comm,int n,Vec *V)
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
   if (flag == MPI_UNEQUAL) 
-    SETERRQ(1,"VecCreateSequential: Must call with MPI_COMM_SELF.");
+    SETERRQ(1,"VecCreateSequential: Must call with MPI_COMM_SELF");
   PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,VECSEQ,comm);
   PLogObjectCreate(v);
   v->destroy     = VecDestroy_Seq;

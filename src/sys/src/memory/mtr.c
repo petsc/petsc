@@ -1,12 +1,12 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.25 1995/06/28 16:25:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.26 1995/07/07 17:15:33 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
+#include "petsc.h"
 #if defined(HAVE_STRING_H)
 #include <string.h>
 #endif
-#include "petsc.h"
 /* rs6000 needs _XOPEN_SOURCE to use tsearch */
 #if defined(PARCH_rs6000) && !defined(_XOPEN_SOURCE)
 #define _XOPEN_SOURCE

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.9 1995/05/06 17:54:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: tcqmr.c,v 1.10 1995/05/18 22:44:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -51,10 +51,10 @@ rhom1 = 1.0;
 /*
  CALCULATE SQUARED LANCZOS  vectors
  */
-while ( !CONVERGED(itP,rnorm,it)) {     
+  while (!(cerr=(*itP->converged)(itP,it,rnorm,itP->cnvP))) {     
     if (itP->usr_monitor) {
         (*itP->usr_monitor)( itP, it, rnorm,itP->monP );
-	}
+    }
     PCApplyBAorAB(itP->B,itP->right_pre, u, y, vtmp );   /* y = A*u */
     VecDot( v0, y, &dp11 );
     VecDot( v0, u, &dp2 );
@@ -142,7 +142,9 @@ while ( !CONVERGED(itP,rnorm,it)) {
 /* Need to undo preconditioning here  */
 KSPUnwindPre(  itP, x, vtmp );
 
-*its = RCONV(itP,it); return 0;
+if (cerr <= 0) *its = -it;
+else          *its = it;
+return 0;
 }
 
 static int KSPSetUp_TCQMR(KSP  itP )

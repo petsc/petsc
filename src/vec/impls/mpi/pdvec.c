@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.15 1995/07/05 17:37:27 curfman Exp bsmith $ */
+/* $Id: pdvec.c,v 1.16 1995/07/07 17:15:03 bsmith Exp bsmith $ */
 
 #include "pviewer.h"
 
@@ -48,7 +48,12 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
       fprintf(fd,"Processor [%d] \n",mytid);
       for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
-        fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
+        if (imag(x->array[i]) != 0.0) {
+          fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
+        }
+        else {
+          fprintf(fd,"%g \n",real(x->array[i]));
+        }
 #else
         fprintf(fd,"%g \n",x->array[i]);
 #endif
@@ -68,7 +73,12 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
         fprintf(fd,"Processor [%d]\n",mytid);
         for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
-          fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
+          if (imag(x->array[i]) != 0.0) {
+            fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
+          }
+          else {
+            fprintf(fd,"%g \n",real(x->array[i]));
+          }
 #else
           fprintf(fd,"%g \n",x->array[i]);
 #endif
@@ -80,7 +90,12 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
           fprintf(fd,"Processor [%d]\n",j);
           for ( i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
-            fprintf(fd,"%g + %g i\n",real(values[i]),imag(values[i]));
+            if (imag(values[i]) != 0.0) {
+              fprintf(fd,"%g + %g i\n",real(values[i]),imag(values[i]));
+            }
+            else {
+              fprintf(fd,"%g\n",real(values[i]));
+            }
 #else
             fprintf(fd,"%g\n",values[i]);
 #endif
@@ -207,10 +222,10 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
 
 #if defined(PETSC_DEBUG)
   if (x->insertmode == INSERTVALUES && addv == ADDVALUES) { SETERRQ(1,
-   "VecSetValues_MPI: You have already inserted values; you cannot now add.");
+   "VecSetValues_MPI: You have already inserted values; you cannot now add");
   }
   else if (x->insertmode == ADDVALUES && addv == INSERTVALUES) { SETERRQ(1,
-   "VecSetValues_MPI: You have already added values; you cannot now insert.");
+   "VecSetValues_MPI: You have already added values; you cannot now insert");
   }
 #endif
   x->insertmode = addv;
@@ -275,7 +290,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
   MPI_Allreduce((void *) &x->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
   if (addv == (ADDVALUES|INSERTVALUES)) { SETERRQ(1,
-  "VecAssemblyBegin_MPI: Some processors inserted values while others added.");
+  "VecAssemblyBegin_MPI: Some processors inserted values while others added");
   }
   x->insertmode = addv; /* in case this processor had no cache */
 
@@ -385,7 +400,7 @@ static int VecAssemblyEnd_MPI(Vec vec)
       }
     }
     else { SETERRQ(1,
- "VecAssemblyEnd_MPI: Insert mode is not set correctly; corrupted vector.");
+ "VecAssemblyEnd_MPI: Insert mode is not set correctly; corrupted vector");
     }
     count--;
   }

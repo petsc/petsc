@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.18 1995/06/01 13:56:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.19 1995/06/08 03:06:44 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -127,8 +127,8 @@ int ISCreateStrideSequential(MPI_Comm comm,int n,int first,int step,IS *is)
 
   *is = 0;
  
-  if (n < 0) SETERRQ(1,"Number of indices must be non-negative");
-  if (step == 0) SETERRQ(1,"Step must be nonzero");
+  if (n < 0) SETERRQ(1,"ISCreateStrideSequential: Number of indices < 0");
+  if (step == 0) SETERRQ(1,"ISCreateStrideSequential: Step must be nonzero");
 
   PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISSTRIDESEQUENTIAL,comm); 
   PLogObjectCreate(Nindex);

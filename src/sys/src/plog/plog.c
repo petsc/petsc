@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.18 1995/07/12 16:17:49 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.19 1995/07/12 18:53:24 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -177,7 +177,7 @@ int phd(PetscObject obj)
 int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
                                                       PetscObject o4)
 {
- double time;
+ double ltime;
  if (nevents >= eventsspace) {
     Events *tmp;
     tmp = (Events *) PETSCMALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
@@ -186,8 +186,8 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
     PETSCFREE(events);
     events = tmp; eventsspace += CHUNCK;
   }
-  PetscTime(time);
-  events[nevents].time = time - BaseTime;
+  PetscTime(ltime);
+  events[nevents].time = ltime - BaseTime;
   events[nevents].id1     = o1->id;
   if (o2) events[nevents].id2     = o2->id; else events[nevents].id2 = -1;
   if (o3) events[nevents].id3     = o3->id; else events[nevents].id3 = -1;
@@ -196,7 +196,7 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
   events[nevents++].event= ACTIONBEGIN;
   if (t != 1) return 0;
   EventsType[event][COUNT]++;
-  EventsType[event][TIME]  -= time;
+  EventsType[event][TIME]  -= ltime;
   EventsType[event][FLOPS] -= _TotalFlops;
   return 0;
 }
@@ -206,7 +206,7 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
 int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
                                                          PetscObject o4)
 {
- double time;
+ double ltime;
  if (nevents >= eventsspace) {
     Events *tmp;
     tmp = (Events *) PETSCMALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
@@ -215,8 +215,8 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
     PETSCFREE(events);
     events = tmp; eventsspace += CHUNCK;
   }
-  PetscTime(time);
-  events[nevents].time   = time - BaseTime;
+  PetscTime(ltime);
+  events[nevents].time   = ltime - BaseTime;
   events[nevents].id1    = o1->id;
   if (o2) events[nevents].id2    = o2->id; else events[nevents].id2 = -1;
   if (o3) events[nevents].id3    = o3->id; else events[nevents].id3 = -1;
@@ -224,7 +224,7 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
   events[nevents].cookie = 0;
   events[nevents++].event= ACTIONEND;
   if (t != 1) return 0;
-  EventsType[event][TIME] += time;
+  EventsType[event][TIME] += ltime;
   EventsType[event][FLOPS] += _TotalFlops;
   return 0;
 }
@@ -480,8 +480,8 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 @*/
 int PLogEventRegister(int e,char *string)
 {
-  if (e < 70) SETERRQ(1,"PLogRegisterEvent: user events must be > 69");
-  if (e > 89) SETERRQ(1,"PLogRegisterEvent: user events must be < 89");
+  if (e < 70) SETERRQ(1,"PLogEventRegister: user events must be > 69");
+  if (e > 89) SETERRQ(1,"PLogEventRegister: user events must be < 89");
   name[e] = string;
   return 0;
 }

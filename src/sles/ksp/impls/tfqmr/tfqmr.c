@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.9 1995/05/06 17:54:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.10 1995/05/18 22:44:36 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -20,7 +20,7 @@ static int KSPSetUp_TFQMR(KSP itP)
 
 static int  KSPSolve_TFQMR(KSP itP,int *its)
 {
-int       i = 0, maxit, m, conv, hist_len, cerr;
+int       i = 0, maxit, m, conv, hist_len, cerr = 0;
 Scalar    rho, rhoold, a, s, b, eta,
           etaold, psiold,  cf, tmp, one = 1.0, zero = 0.0;
 double    *history,dp,dpold,w,dpest,tau,psi,cm;
@@ -48,7 +48,7 @@ KSPResidual(itP,X,V,T, R, BINVF, B );
 
 /* Test for nothing to do */
 VecNorm(R,&dp);
-if (CONVERGED(itP,dp,0)) {*its = 0; return 0;}
+if ((*itP->converged)(itP,0,dp,itP->cnvP)) {*its = 0; return 0;}
 MONITOR(itP,dp,0);
 
 /* Make the initial Rp == R */
@@ -95,7 +95,7 @@ for (i=0; i<maxit; i++) {
 	dpest = sqrt(m + 1.0) * tau;
 	if (history && hist_len > i + 1) history[i+1] = dpest;
 	MONITOR(itP,dpest,i+1);
-	if ((conv = CONVERGED(itP,dpest,i+1))) break;
+	if ((conv = cerr = (*itP->converged)(itP,i+1,dpest,itP->cnvP))) break;
 
 	etaold = eta;
 	psiold = psi;
@@ -116,7 +116,9 @@ if (i == maxit) i--;
 if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
 KSPUnwindPre(  itP, X, T );
-*its = RCONV(itP,i+1); return 0;
+if (cerr <= 0) *its = -(i+1);
+else          *its = i + 1;
+return 0;
 }
 
 int KSPCreate_TFQMR(KSP itP)

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.24 1995/06/08 03:06:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.25 1995/07/05 17:22:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: vscat.c,v 1.24 1995/06/08 03:06:54 bsmith Exp bsmith 
 /*
     Sequential general to general scatter 
 */
-static int SGtoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
+static int SGtoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
 {
   VecScatterGeneral *gen_to = (VecScatterGeneral *) ctx->todata;
   VecScatterGeneral *gen_from = (VecScatterGeneral *) ctx->fromdata;
@@ -36,7 +36,7 @@ static int SGtoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
   }
   return 0;
 }
-static int SGtoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
+static int SGtoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
 {
   VecScatterStride  *gen_to = (VecScatterStride *) ctx->todata;
   VecScatterGeneral *gen_from = (VecScatterGeneral *) ctx->fromdata;
@@ -54,7 +54,7 @@ static int SGtoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
   return 0;
 }
 
-static int SStoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
+static int SStoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
 {
   VecScatterStride  *gen_from = (VecScatterStride *) ctx->fromdata;
   VecScatterGeneral *gen_to = (VecScatterGeneral *) ctx->todata;
@@ -72,7 +72,7 @@ static int SStoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
   return 0;
 }
 
-static int SStoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
+static int SStoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
 {
   VecScatterStride  *gen_to = (VecScatterStride *) ctx->todata;
   VecScatterStride  *gen_from = (VecScatterStride *) ctx->fromdata;
@@ -157,7 +157,8 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       VecScatterGeneral *to,*from;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetLocalSize(iy,&ny); ISGetIndices(iy,&idy);
-      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
+      if (nx != ny) 
+        SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
       len = sizeof(VecScatterGeneral) + nx*sizeof(int);
       to = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(to);
       to->slots = (int *) (to + 1); to->n = nx; 
@@ -166,9 +167,9 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       from->slots = (int *) (from + 1); from->n = nx; 
       PETSCMEMCPY(from->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
-      ctx->begin = SGtoSG; ctx->destroy = SGtoSGDestroy;
-      ctx->end = 0; ctx->copy = 0;
-      ctx->beginpipe = 0; ctx->endpipe = 0;
+      ctx->scatterbegin = SGtoSG; ctx->destroy = SGtoSGDestroy;
+      ctx->scatterend = 0; ctx->copy = 0;
+      ctx->pipelinebegin = 0; ctx->pipelineend = 0;
       *newctx = ctx;
       return 0;
     }
@@ -178,15 +179,16 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       VecScatterStride  *from,*to;
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
-      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
       to = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride)); CHKPTRQ(to);
       to->n = nx; to->first = to_first; to->step = to_step;
       from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));
       CHKPTRQ(from);
       from->n = nx; from->first = from_first; from->step = from_step;
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
-      ctx->begin = SStoSS; ctx->destroy = SGtoSGDestroy;
-      ctx->end = 0; ctx->beginpipe = 0; ctx->endpipe = 0; ctx->copy = 0;
+      ctx->scatterbegin = SStoSS; ctx->destroy = SGtoSGDestroy;
+      ctx->scatterend = 0; ctx->pipelinebegin = 0; 
+      ctx->pipelineend = 0; ctx->copy = 0;
       *newctx = ctx;
       return 0;
     }
@@ -197,7 +199,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       VecScatterStride  *to;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&first,&step);
-      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
       to = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride)); CHKPTRQ(to);
       to->n = nx; to->first = first; to->step = step;
       len = sizeof(VecScatterGeneral) + nx*sizeof(int);
@@ -205,8 +207,9 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       from->slots = (int *) (from + 1); from->n = nx; 
       PETSCMEMCPY(from->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
-      ctx->begin = SGtoSS; ctx->destroy = SGtoSGDestroy;
-      ctx->end = 0; ctx->beginpipe = 0; ctx->endpipe = 0; ctx->copy = 0;
+      ctx->scatterbegin = SGtoSS; ctx->destroy = SGtoSGDestroy;
+      ctx->scatterend = 0; ctx->pipelinebegin = 0;
+      ctx->pipelineend = 0; ctx->copy = 0;
       *newctx = ctx;
       return 0;
     }
@@ -217,7 +220,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       VecScatterStride  *from;
       ISGetLocalSize(ix,&nx); ISGetIndices(iy,&idx);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(ix,&first,&step);
-      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
       from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride)); 
       CHKPTRQ(from);
       from->n = nx; from->first = first; from->step = step;
@@ -226,13 +229,14 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       to->slots = (int *) (to + 1); to->n = nx; 
       PETSCMEMCPY(to->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
-      ctx->begin = SStoSG; ctx->destroy = SGtoSGDestroy;
-      ctx->end = 0; ctx->beginpipe = 0; ctx->endpipe = 0; ctx->copy = 0;
+      ctx->scatterbegin = SStoSG; ctx->destroy = SGtoSGDestroy;
+      ctx->scatterend = 0; ctx->pipelinebegin = 0; 
+      ctx->pipelineend = 0; ctx->copy = 0;
       *newctx = ctx;
       return 0;
     }
     else {
-      SETERRQ(1,"Cannot generate such Scatter Context yet");
+      SETERRQ(1,"VecScatterCtxCreate:Cannot generate such Scatter Context yet");
     }
   }
   if (xin->type == VECMPI && yin->type == VECSEQ) {
@@ -245,7 +249,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       VecScatterStride  *from,*to;
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
-      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
       if (ix->min >= start && ix->max < end ) islocal = 1; else islocal = 0;
       MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,
                     MPI_LAND,xin->comm);
@@ -257,8 +261,9 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
         CHKPTRQ(from);
         from->n = nx; from->first = from_first-start; from->step = from_step;
         ctx->todata = (void *) to; ctx->fromdata = (void *) from;
-        ctx->begin = SStoSS; ctx->destroy = SGtoSGDestroy;
-        ctx->end = 0; ctx->beginpipe = 0; ctx->endpipe = 0; ctx->copy = 0;
+        ctx->scatterbegin = SStoSS; ctx->destroy = SGtoSGDestroy;
+        ctx->scatterend = 0; ctx->pipelinebegin = 0; 
+        ctx->pipelineend = 0; ctx->copy = 0;
         *newctx = ctx;
         return 0;
       }
@@ -267,7 +272,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       int ierr,nx,ny,*idx,*idy;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetLocalSize(iy,&ny); ISGetIndices(iy,&idy);
-      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
       ierr = PtoSScatterCtxCreate(nx,idx,ny,idy,xin,ctx); CHKERRQ(ierr);
       ISRestoreIndices(ix,&idx); ISRestoreIndices(iy,&idy);
       *newctx = ctx;
@@ -284,7 +289,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       VecScatterStride  *from,*to;
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
-      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
       if (iy->min >= start && iy->max < end ) islocal = 1; else islocal = 0;
       MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,
                     MPI_LAND,yin->comm);
@@ -296,8 +301,9 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
         CHKPTRQ(from);
         from->n = nx; from->first = from_first; from->step = from_step;
         ctx->todata = (void *) to; ctx->fromdata = (void *) from;
-        ctx->begin = SStoSS; ctx->destroy = SGtoSGDestroy;
-        ctx->end = 0; ctx->beginpipe = 0; ctx->endpipe = 0; ctx->copy = 0;
+        ctx->scatterbegin = SStoSS; ctx->destroy = SGtoSGDestroy;
+        ctx->scatterend = 0; ctx->pipelinebegin = 0;
+        ctx->pipelineend = 0; ctx->copy = 0;
         *newctx = ctx;
         return 0;
       }
@@ -306,14 +312,14 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       int ierr,nx,ny,*idx,*idy;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetLocalSize(iy,&ny); ISGetIndices(iy,&idy);
-      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
       ierr = StoPScatterCtxCreate(nx,idx,ny,idy,yin,ctx); CHKERRQ(ierr);
       ISRestoreIndices(ix,&idx); ISRestoreIndices(iy,&idy);
       *newctx = ctx;
       return 0;
     }
   }
-  SETERRQ(1,"Cannot generate such Scatter Context yet");
+  SETERRQ(1,"VecScatterCtxCreate:Cannot generate such Scatter Context yet");
 }
 
 /* ------------------------------------------------------------------*/
@@ -353,7 +359,7 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   VALIDHEADER(inctx,VEC_SCATTER_COOKIE);
   if (inctx->inuse) SETERRQ(1,"VecScatterBegin: Scatter ctx already in use");
-  return (*(inctx)->begin)(x,y,inctx,addv,mode);
+  return (*(inctx)->scatterbegin)(x,y,addv,mode,inctx);
 }
 
 /* --------------------------------------------------------------------*/
@@ -387,7 +393,7 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   VALIDHEADER(ctx,VEC_SCATTER_COOKIE);
   ctx->inuse = 0;
-  if ((ctx)->end) return (*(ctx)->end)(x,y,ctx,addv,mode);
+  if ((ctx)->scatterend) return (*(ctx)->scatterend)(x,y,addv,mode,ctx);
   else return 0;
 }
 
@@ -464,8 +470,9 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,
   VALIDHEADER(inctx,VEC_SCATTER_COOKIE);
   MPI_Comm_size(inctx->comm,&numtid);
   if (numtid == 1) return 0;
-  if (!inctx->beginpipe) SETERRQ(1,"No pipeline for this context");
-  return (*(inctx)->beginpipe)(x,y,inctx,addv,mode);
+  if (!inctx->pipelinebegin) 
+    SETERRQ(1,"VecPipelineBegin:No pipeline for this context");
+  return (*(inctx)->pipelinebegin)(x,y,addv,mode,inctx);
 }
 
 /* --------------------------------------------------------------------*/
@@ -502,6 +509,6 @@ int VecPipelineEnd(Vec x,Vec y,InsertMode addv,
   VALIDHEADER(ctx,VEC_SCATTER_COOKIE);
   MPI_Comm_size(ctx->comm,&numtid);
   if (numtid == 1) return 0;
-  if ((ctx)->endpipe) return (*(ctx)->endpipe)(x,y,ctx,addv,mode);
+  if ((ctx)->pipelineend) return (*(ctx)->pipelineend)(x,y,addv,mode,ctx);
   else return 0;
 }

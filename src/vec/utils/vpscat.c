@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.22 1995/06/20 01:45:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.23 1995/07/05 17:22:58 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -60,8 +60,8 @@ int PrintPVecScatterCtx(VecScatterCtx ctx)
      the naming can be a little confusing.
 
 */
-static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
-                     int mode)
+static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,
+                     int mode,VecScatterCtx ctx)
 {
   VecScatterMPI *gen_to, *gen_from;
   Vec_MPI       *x = (Vec_MPI *)xin->data,*y = (Vec_MPI*) yin->data;
@@ -113,7 +113,8 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
     }
   }
   else if (mode == SCATTERUP) {
-    if (gen_to->nself || gen_from->nself) SETERRQ(1,"No SCATTERUP to self");
+    if (gen_to->nself || gen_from->nself) 
+      SETERRQ(1,"PtoPScatterbegin:No SCATTERUP to self");
     /* post receives:   */
     for ( i=gen_from->nbelow; i<nrecvs; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
@@ -131,7 +132,8 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
     }
   }
   else { 
-    if (gen_to->nself || gen_from->nself) SETERRQ(1,"No SCATTERDOWN to self");
+    if (gen_to->nself || gen_from->nself) 
+      SETERRQ(1,"PtoPScatterbegin:No SCATTERDOWN to self");
     /* post receives:   */
     for ( i=0; i<gen_from->nbelow; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
@@ -163,8 +165,8 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
   return 0;
 }
 
-static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
-                          int mode)
+static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
+                          int mode,VecScatterCtx ctx)
 {
   VecScatterMPI *gen_to;
   VecScatterMPI *gen_from;
@@ -203,7 +205,8 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
       /* unpack receives into our local space */
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
-      if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"Bad message");
+      if (n != rstarts[imdex+1] - rstarts[imdex]) 
+        SETERRQ(1,"PtoPScatterend:Bad message");
 
       if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
@@ -227,7 +230,8 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
     }
   }
   else if (mode == SCATTERUP) {
-    if (gen_to->nself || gen_from->nself) SETERRQ(1,"No SCATTERUP to self");
+    if (gen_to->nself || gen_from->nself) 
+      SETERRQ(1,"PtoPScatterend:No SCATTERUP to self");
     /*  wait on receives */
     count = nrecvs - gen_from->nbelow ;
     while (count) {
@@ -237,7 +241,8 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
       /* unpack receives into our local space */
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
-      if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"Bad message");
+      if (n != rstarts[imdex+1] - rstarts[imdex]) 
+        SETERRQ(1,"PtoPScatterend:Bad message");
       if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
@@ -259,7 +264,8 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
     }
   }
   else { 
-    if (gen_to->nself || gen_from->nself) SETERRQ(1,"No SCATTERDOWN to self");
+    if (gen_to->nself || gen_from->nself) 
+      SETERRQ(1,"PtoPScatterend:No SCATTERDOWN to self");
     /*  wait on receives */
     count = gen_from->nbelow;
     while (count) {
@@ -267,7 +273,8 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
       /* unpack receives into our local space */
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
-      if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"Bad message");
+      if (n != rstarts[imdex+1] - rstarts[imdex]) 
+        SETERRQ(1,"PtoPScatterend:Bad message");
       if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
@@ -298,10 +305,10 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   VecScatterMPI *out_to,*out_from;
   int           len, ny;
 
-  out->begin     = in->begin;
-  out->end       = in->end;
-  out->beginpipe = in->beginpipe;
-  out->endpipe   = in->endpipe;
+  out->scatterbegin     = in->scatterbegin;
+  out->scatterend       = in->scatterend;
+  out->pipelinebegin    = in->pipelinebegin;
+  out->pipelineend      = in->pipelineend;
   out->copy      = in->copy;
   out->destroy   = in->destroy;
   out->view      = in->view;
@@ -364,8 +371,8 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   return 0;
 }
 /* --------------------------------------------------------------------*/
-static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
-               InsertMode addv, PipelineMode mode)
+static int PtoPPipelinebegin(Vec xin,Vec yin,
+               InsertMode addv, PipelineMode mode,VecScatterCtx ctx)
 {
   VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
   VecScatterMPI *gen_from = (VecScatterMPI *) ctx->fromdata;
@@ -381,7 +388,8 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
   MPI_Status    rstatus;
   Scalar        *yv = y->array,*val;
 
-  if (gen_to->nself || gen_from->nself) SETERRQ(1,"No pipeline to self");
+  if (gen_to->nself || gen_from->nself) 
+    SETERRQ(1,"PtoPPipelinebegin:No pipeline to self");
 
   if (mode == PIPELINEDOWN) {
     /* post receives:   */
@@ -396,7 +404,8 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
       /* unpack receives into our local space */
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
-      if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"Bad message");
+      if (n != rstarts[imdex+1] - rstarts[imdex]) 
+        SETERRQ(1,"PtoPPipelinebegin:Bad message");
       if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
@@ -424,7 +433,8 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
       imdex += nrecvs;
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
-      if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"Bad message");
+      if (n != rstarts[imdex+1] - rstarts[imdex]) 
+        SETERRQ(1,"PtoPPipelinebegin:Bad message");
       if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
@@ -441,8 +451,8 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
   return 0;
 }
 
-static int PtoPPipelineend(Vec xin,Vec yin,VecScatterCtx ctx,
-                 InsertMode addv, PipelineMode mode)
+static int PtoPPipelineend(Vec xin,Vec yin,
+                 InsertMode addv, PipelineMode mode,VecScatterCtx ctx)
 {
   VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
   Vec_MPI     *x = (Vec_MPI *)xin->data;
@@ -540,7 +550,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"Index out of range");
+    if (!found) SETERRQ(1,"PtoSScatterCtxCreate:Index out of range");
   }
   nprocslocal = nprocs[mytid]; 
   nprocs[mytid] = procs[mytid] = 0; 
@@ -710,10 +720,10 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
   } 
 
   ctx->destroy    = PtoPScatterDestroy;
-  ctx->begin      = PtoPScatterbegin;
-  ctx->end        = PtoPScatterend; 
-  ctx->beginpipe  = PtoPPipelinebegin;
-  ctx->endpipe    = PtoPPipelineend;
+  ctx->scatterbegin      = PtoPScatterbegin;
+  ctx->scatterend        = PtoPScatterend; 
+  ctx->pipelinebegin  = PtoPPipelinebegin;
+  ctx->pipelineend    = PtoPPipelineend;
   ctx->copy       = PtoPCopy;
   return 0;
 }
@@ -750,7 +760,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"Index out of range");
+    if (!found) SETERRQ(1,"StoPScatterCtxCreate:Index out of range");
   }
   nprocslocal = nprocs[mytid];
   nprocs[mytid] = procs[mytid] = 0; 
@@ -907,10 +917,10 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
   }
 
   ctx->destroy    = PtoPScatterDestroy;
-  ctx->begin      = PtoPScatterbegin;
-  ctx->end        = PtoPScatterend; 
-  ctx->beginpipe  = 0;
-  ctx->endpipe    = 0;
+  ctx->scatterbegin      = PtoPScatterbegin;
+  ctx->scatterend        = PtoPScatterend; 
+  ctx->pipelinebegin  = 0;
+  ctx->pipelineend    = 0;
   ctx->copy       = 0;
 
   /* PrintPVecScatterCtx(ctx); */

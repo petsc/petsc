@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.10 1995/07/08 14:41:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.11 1995/07/08 18:05:07 bsmith Exp bsmith $";
 #endif
 /*                       
 
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: cgeig.c,v 1.10 1995/07/08 14:41:53 bsmith Exp bsmith 
 #include <math.h>
 #include "kspimpl.h"  /*I "ksp.h" I*/
 #include "cgctx.h"
-int ccgtql1(int *, Scalar *, Scalar *, int *);
+static int ccgtql1_private(int *, Scalar *, Scalar *, int *);
 
 /* ------------------------------------------------------------------
 *      calculates eigenvalues of symmetric tridiagonal
@@ -41,13 +41,13 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
   double *d, *e, *dd, *ee;
   int    ii,j;
   VALIDHEADER(itP,KSP_COOKIE);
-  if (itP->type != KSPCG) {SETERRQ(3,"Method not CG");}
+  if (itP->type != KSPCG) {SETERRQ(3,"KSPCGGetEigenvalues: Method not CG");}
   if (!itP->calc_eigs) {
-      SETERRQ(4,"Eigenvalue calculation not requested in CG Setup");}
+    SETERRQ(4,"KSPCGGetEigenvalues: Eigenvalues not requested in CG Setup");}
 
   if (n == 0) {
-      *emax = *emin = 1.0;
-      return 0;
+    *emax = *emin = 1.0;
+    return 0;
   }
   cgP = (KSP_CG *) itP->MethodPrivate;
   d = cgP->d; e = cgP->e; dd = cgP->dd; ee = cgP->ee;
@@ -57,8 +57,8 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
   ii = n;
   for ( j=0; j<ii ; j++) { dd[j] = d[j]; ee[j] = e[j]; }
 
-  ccgtql1(&ii,dd,ee,&j);
-  if (j != 0) SETERRQ(1,"Error return from tql1 in CG code");  
+  ccgtql1_private(&ii,dd,ee,&j);
+  if (j != 0) SETERRQ(1,"KSPCGGetEigenvalues: Error from tql1.");  
   *emin = dd[0]; *emax = dd[ii-1];
   return 0;
 }
@@ -110,9 +110,9 @@ int KSPCGDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
 #define ABS(a)             ((a) < 0.0 ? -(a) : (a))
 
 static double c_b10 = 1.;
-static double cgpthy(double*,double*);
+static double cgpthy_private(double*,double*);
 
-int ccgtql1(int *n, Scalar *d, Scalar *e, int *ierr)
+static int ccgtql1_private(int *n, Scalar *d, Scalar *e, int *ierr)
 {
     /* System generated locals */
     int    i__1, i__2;
@@ -223,7 +223,7 @@ L130:
         l2 = l1 + 1;
         g = d[l];
         p = (d[l1] - g) / (e[l] * 2.);
-        r = cgpthy(&p, &c_b10);
+        r = cgpthy_private(&p, &c_b10);
 /*      d[l] = e[l] / (p + d_sign(&r, &p));
         d[l1] = e[l] * (p + d_sign(&r, &p)); */
         ds = 1.0; if (p < 0.0) ds = -1.0;
@@ -259,7 +259,7 @@ L145:
             i = m - ii;
             g = c * e[i];
             h = c * p;
-            r = cgpthy(&p, &e[i]);
+            r = cgpthy_private(&p, &e[i]);
             e[i + 1] = s * r;
             s = e[i] / r;
             c = p / r;
@@ -309,7 +309,7 @@ L1001:
     return 0;
 } /* cgtql1_ */
 
-static double cgpthy(double *a, double *b)
+static double cgpthy_private(double *a, double *b)
 {
     /* System generated locals */
     double ret_val, d__1, d__2, d__3;
@@ -353,7 +353,7 @@ L20:
 
 int KSPCGGetEigenvalues(KSP itP,int n,double *emax,double *emin)
 {
-  fprintf(stderr,"No eigenvalues for complex case \n");
+  fprintf(stderr,"KSPCGGetEigenvalues: No code for complex case \n");
   return 0;
 }
 

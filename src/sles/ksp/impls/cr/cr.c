@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.14 1995/06/08 03:07:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.15 1995/06/18 16:23:13 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -23,7 +23,7 @@ static int KSPSetUp_CR(KSP itP)
 
 static int  KSPSolve_CR(KSP itP,int *its)
 {
-  int          i = 0, maxit,pres, hist_len, cerr;
+  int          i = 0, maxit,pres, hist_len, cerr = 0;
   MatStructure pflag;
   double       *history, dp;
   Scalar       lambda, alpha0, alpha1; 
@@ -62,11 +62,11 @@ static int  KSPSolve_CR(KSP itP,int *its)
   PCApply(itP->B,R,P);                        /*     p <- Br         */
   if (pres) {
       VecNorm(P,&dp);                         /*    dp <- z'*z       */
-      }
+  }
   else {
       VecNorm(R,&dp);                         /*    dp <- r'*r       */       
-      }
-  if (CONVERGED(itP,dp,0)) {*its = 0; return 0;}
+  }
+  if ((*itP->converged)(itP,0,dp,itP->cnvP)) {*its = 0; return 0;}
   MONITOR(itP,dp,0);
   if (history) history[0] = dp;
   MatMult(Amat,P,Q);                          /*    q <- A p         */
@@ -81,7 +81,8 @@ static int  KSPSolve_CR(KSP itP,int *its)
      VecNorm(R,&dp);                           /*    dp <- r'*r       */       
      if (history && hist_len > i + 1) history[i+1] = dp;
      MONITOR(itP,dp,i+1);
-     if (CONVERGED(itP,dp,i+1)) break;
+     cerr = (*itP->converged)(itP,i+1,dp,itP->cnvP);
+     if (cerr) break;
      MatMult(Amat,S,T);                        /* T <-   As           */
      VecDot(T,S,&btop);
      alpha0 = btop/bbot;
@@ -104,7 +105,9 @@ static int  KSPSolve_CR(KSP itP,int *its)
   }
   if (i == maxit) i--;
   if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
-  *its = RCONV(itP,i+1); return 0;
+  if (cerr <= 0) *its = -(i+1);
+  else          *its = i + 1;
+  return 0;
 }
 
 int KSPCreate_CR(KSP itP)

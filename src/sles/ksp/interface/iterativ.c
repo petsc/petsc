@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.22 1995/06/18 16:23:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.23 1995/07/07 17:15:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -97,7 +97,8 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 .  dummy - unused converged context 
 
    Returns:
-   1 if the iteration has converged or exceeds divergence threshold;
+   1 if the iteration has converged
+  -1 if residual norm exceeds divergence threshold;
    0 otherwise.
 
 .keywords: KSP, default, convergence, residual

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.12 1995/06/08 03:07:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.13 1995/06/18 16:23:18 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -20,7 +20,7 @@ static int KSPSetUp_CGS(KSP itP)
 
 static int  KSPSolve_CGS(KSP itP,int *its)
 {
-int       i = 0, maxit, hist_len, cerr, ierr;
+int       i = 0, maxit, hist_len, cerr = 0, ierr;
 Scalar    rho, rhoold, a, s, b, tmp, one = 1.0; 
 Vec       X,B,V,P,R,RP,T,Q,U, BINVF, AUQ;
 double    *history, dp;
@@ -45,7 +45,7 @@ KSPResidual(itP,X,V,T, R, BINVF, B );
 
 /* Test for nothing to do */
 VecNorm(R,&dp);
-if (CONVERGED(itP,dp,0)) {*its = 0; return 0;}
+if ((*itP->converged)(itP,0,dp,itP->cnvP)) {*its = 0; return 0;}
 MONITOR(itP,dp,0);
 if (history) history[0] = dp;
 
@@ -70,7 +70,8 @@ for (i=0; i<maxit; i++) {
 
     if (history && hist_len > i + 1) history[i+1] = dp;
     MONITOR(itP,dp,i+1);
-    if (CONVERGED(itP,dp,i+1)) break;
+    cerr = (*itP->converged)(itP,i+1,dp,itP->cnvP);
+    if (cerr) break;
 
     VecDot(RP,R,&rho);                      /* newrho <- rp' r       */
     b = rho / rhoold;                      /* b <- rho / rhoold     */
@@ -79,12 +80,14 @@ for (i=0; i<maxit; i++) {
     VecWAXPY(&b,Q,U,P);                     /* p <- u + b(q + b p)   */
     PCApplyBAorAB(itP->B,itP->right_pre,P,V,Q);    /* v <- K p              */
     rhoold = rho;
-    }
-if (i == maxit) i--;
-if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
+  }
+  if (i == maxit) i--;
+  if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
-KSPUnwindPre(  itP, X, T );
-*its =  RCONV(itP,i+1); return 0;
+  KSPUnwindPre(  itP, X, T );
+  if (cerr <= 0) *its = -(i+1); 
+  else          *its = i+1;
+  return 0;
 }
 
 int KSPCreate_CGS(KSP itP)

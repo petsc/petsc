@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.8 1995/06/23 12:39:53 bsmith Exp bsmith $ */
+/* $Id: pvec2.c,v 1.9 1995/07/08 20:40:36 bsmith Exp bsmith $ */
 
 #include <math.h>
 #include "pvecimpl.h" 
@@ -52,7 +52,7 @@ static int VecAMax_MPI( Vec xin, int *idx, double *z )
   }
   else {
     /* Need to use special linked max */
-    SETERRQ( 1, "Parallel max with index not yet supported" );
+    SETERRQ( 1, "VecAMax_MPI: Parallel max with index not yet supported" );
   }
   return 0;
 }
@@ -69,7 +69,7 @@ static int VecMax_MPI( Vec xin, int *idx, double *z )
   }
   else {
     /* Need to use special linked max */
-    SETERRQ( 1, "Parallel max with index not yet supported" );
+    SETERRQ( 1, "VecMax_MPI: Parallel max with index not yet supported" );
   }
   return 0;
 }
@@ -86,7 +86,7 @@ static int VecMin_MPI( Vec xin, int *idx, double *z )
   }
   else {
     /* Need to use special linked Min */
-    SETERRQ( 1, "Parallel Min with index not yet supported" );
+    SETERRQ( 1, "VecMin_MPI: Parallel Min with index not yet supported" );
   }
   return 0;
 }

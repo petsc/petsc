@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.22 1995/07/07 17:15:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.23 1995/07/08 14:41:53 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -70,11 +70,12 @@ int  KSPSolve_CG(KSP itP,int *its)
   PCApply(itP->B,R,Z);                         /*     z <- Br        */
   if (pres) {
       VecNorm(Z,&dp);                         /*    dp <- z'*z       */
-      }
+  }
   else {
       VecNorm(R,&dp);                         /*    dp <- r'*r       */       
-      }
-  if (CONVERGED(itP,dp,0)) {*its =  RCONV(itP,0); return 0;}
+  }
+  cerr = (*itP->converged)(itP,0,dp,itP->cnvP);
+  if (cerr) {*its =  0; return 0;}
   MONITOR(itP,dp,0);
   if (history) history[0] = dp;
 
@@ -112,12 +113,15 @@ int  KSPSolve_CG(KSP itP,int *its)
      }
      if (history && hist_len > i + 1) history[i+1] = dp;
      MONITOR(itP,dp,i+1);
-     if (CONVERGED(itP,dp,i+1)) break;
+     cerr = (*itP->converged)(itP,i+1,dp,itP->cnvP);
+     if (cerr) break;
      if (!pres) PCApply(itP->B,R,Z);           /*     z <- Br         */
   }
   if (i == maxit) i--;
   if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
-  *its = RCONV(itP,i+1); return 0;
+  if (cerr <= 0) *its = -(i+1);
+  else          *its = i+1;
+  return 0;
 }
 
 int KSPDestroy_CG(PetscObject obj)

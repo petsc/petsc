@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.14 1995/06/17 22:59:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.15 1995/06/18 16:23:15 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -19,7 +19,7 @@ static int KSPSetUp_BCGS(KSP itP)
 
 static int  KSPSolve_BCGS(KSP itP,int *its)
 {
-int       i = 0, maxit, hist_len, cerr;
+int       i = 0, maxit, hist_len, cerr = 0;
 Scalar    rho, rhoold, alpha, beta, omega, omegaold, d1, d2;
 Scalar    zero = 0.0, tmp;
 Vec       X,B,V,P,R,RP,T,S, BINVF;
@@ -43,7 +43,7 @@ KSPResidual(itP,X,V,T, R, BINVF, B );
 
 /* Test for nothing to do */
 VecNorm(R,&dp);
-if (CONVERGED(itP,dp,0)) {*its = 0; return 0;}
+if ((*itP->converged)(itP,0,dp,itP->cnvP)) {*its = 0; return 0;}
 MONITOR(itP,dp,0);
 if (history) history[0] = dp;
 
@@ -90,13 +90,16 @@ for (i=0; i<maxit; i++) {
 
     if (history && hist_len > i + 1) history[i+1] = dp;
     MONITOR(itP,dp,i+1);
-    if (CONVERGED(itP,dp,i+1)) break;
+    cerr = (*itP->converged)(itP,i+1,dp,itP->cnvP);
+    if (cerr) break;    
   }
   if (i == maxit) i--;
   if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
   KSPUnwindPre( itP, X, T );
-  *its = RCONV(itP,i+1); return 0;
+  if (cerr <= 0) *its = -(i+1);
+  else          *its = i + 1;
+  return 0;
 }
 
 int KSPCreate_BCGS(KSP itP)

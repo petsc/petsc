@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.12 1995/07/14 13:51:30 curfman Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.13 1995/07/15 17:44:44 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -103,7 +103,7 @@ struct { int code_no; char *name; } error_codes[] = {
        { _OVERFL    , "floating overflow" } ,
        { _UNDERFL   , "floating underflow" } ,
        { _DIVZERO   , "floating divide" } ,
-       { 0      , "unknown error" }
+       { 0          , "unknown error" }
 } ;
 void SYsample_handler( unsigned exception[],int val[] )
 {
@@ -120,14 +120,16 @@ void SYsample_handler( unsigned exception[],int val[] )
             "*** floating point error 0x%x occurred ***\n",
             code);  
     ierr = PetscError(0,0,"Unknown","floating point error",1);
-    exit(ierr);
+    MPI_Abort(MPI_COMM_WORLD,0);
 }
 int PetscSetFPTrap(int flag)
 {
   if (flag == FP_TRAP_ON || flag == FP_TRAP_ALWAYS) {
+#if !defined(__cplusplus)
     sigfpe_[_EN_OVERFL].abort = 1;
     sigfpe_[_EN_DIVZERO].abort = 1;
     sigfpe_[_EN_INVALID].abort = 1;
+#endif
     handle_sigfpes(_ON,_EN_OVERFL | _EN_DIVZERO | _EN_INVALID, 
                     SYsample_handler,_ABORT_ON_ERROR,0);
   }
@@ -135,6 +137,7 @@ int PetscSetFPTrap(int flag)
   handle_sigfpes(_OFF,_EN_OVERFL | _EN_DIVZERO | _EN_INVALID, 
                  0,_ABORT_ON_ERROR,0);
   }
+  return 0;
 }
 /* ------------------------Paragon-------------------------------------*/
 #elif defined(PARCH_paragon)

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.28 1995/07/07 17:15:21 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmres.c,v 1.29 1995/07/14 15:57:19 curfman Exp bsmith $";
 #endif
 
 /*
@@ -202,8 +202,8 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
   }
   rtol= itP->ttol;
   gmresP->it = (it-1);  /* For converged */
-  while ( !(converged = CONVERGED(itP,res,it+itsSoFar)) && it < max_k && 
-        it + itsSoFar < max_it) {
+  while (!(converged = cerr = (*itP->converged)(itP,it+itsSoFar,res,itP->cnvP))
+           && it < max_k && it + itsSoFar < max_it) {
     if (nres && hist_len > it + itsSoFar) nres[it+itsSoFar]   = res;
     if (itP->usr_monitor) {
 	gmresP->it = (it - 1);

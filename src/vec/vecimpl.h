@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.11 1995/07/05 17:22:56 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.12 1995/07/11 03:01:37 bsmith Exp bsmith $ */
 /* 
    This should not be included in users code.
 */
@@ -72,10 +72,10 @@ typedef struct {
 struct _VecScatterCtx {
   PETSCHEADER
   int     inuse;
-  int     (*begin)(Vec,Vec,InsertMode,int,VecScatterCtx);
-  int     (*end)(Vec,Vec,InsertMode,int,VecScatterCtx);
-  int     (*beginpipe)(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx);
-  int     (*endpipe)(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx);
+  int     (*scatterbegin)(Vec,Vec,InsertMode,int,VecScatterCtx);
+  int     (*scatterend)(Vec,Vec,InsertMode,int,VecScatterCtx);
+  int     (*pipelinebegin)(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx);
+  int     (*pipelineend)(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx);
   int     (*copy)(VecScatterCtx,VecScatterCtx);
   void    *fromdata,*todata;
 };

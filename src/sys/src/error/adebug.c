@@ -1,11 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.16 1995/07/07 17:15:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.17 1995/07/11 15:10:32 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include <signal.h> 
 #include <stdio.h>
 #include <unistd.h>
+#if defined(HAVE_STRING_H)
+#include <string.h>
+#endif
 #include "petscfix.h"
 
 static char  *Debugger = "gdb", *Display = 0;
@@ -178,8 +181,12 @@ int PetscAttachDebugger()
     }
   }
   else { /* I am the child, continue with user code */
-#if defined(PARCH_hpux)
-    while (1) ; /* HP cannot attach to sleeper */
+#if defined(PARCH_hpux) || defined(PARCH_IRIX)
+    { 
+      double x = 1.0;
+      int i=10000000;
+        while (i--) x++ ; /* HP cannot attach to sleeper */
+    }
 #else
     sleep(10);
 #endif

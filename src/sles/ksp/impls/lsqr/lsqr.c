@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.11 1995/05/12 21:32:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.12 1995/05/18 22:44:28 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -27,7 +27,7 @@ static int KSPSetUp_LSQR(KSP itP)
 
 static int KSPSolve_LSQR(KSP itP,int *its)
 {
-int          i = 0, maxit, hist_len, cerr;
+int          i = 0, maxit, hist_len, cerr = 0;
 Scalar       rho, rhobar, phi, phibar, theta, c, s;
 double       beta, alpha, rnorm, *history;
 Scalar       tmp, zero = 0.0;
@@ -53,7 +53,7 @@ KSPResidual(itP,X,V,U, W, BINVF, B );
 
 /* Test for nothing to do */
 VecNorm(W,&rnorm);
-if (CONVERGED(itP,rnorm,0)) { *its = 0; return 0;}
+if ((*itP->converged)(itP,0,rnorm,itP->cnvP)) { *its = 0; return 0;}
 MONITOR(itP,rnorm,0);
 if (history) history[0] = rnorm;
 
@@ -99,15 +99,18 @@ for (i=0; i<maxit; i++) {
 
     if (history && hist_len > i + 1) history[i+1] = rnorm;
     MONITOR(itP,rnorm,i+1);
-    if (CONVERGED(itP,rnorm,i+1)) break;
+    cerr = (*itP->converged)(itP,i+1,rnorm,itP->cnvP);
+    if (cerr) break;
     SWAP( U1, U, TMP );
     SWAP( V1, V, TMP );
-    }
-if (i == maxit) i--;
-if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
+  }
+  if (i == maxit) i--;
+  if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
-KSPUnwindPre(  itP, X, W );
-*its = RCONV(itP,i+1); return 0;
+  KSPUnwindPre(  itP, X, W );
+  if (cerr <= 0) *its = -(i+1);
+  else          *its = i + 1;
+  return 0;
 }
 
 int KSPCreate_LSQR(KSP itP)
