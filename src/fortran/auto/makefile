@@ -15,9 +15,9 @@ SOURCEC	 = asmf.c axisf.c axpyf.c bjacobif.c cgf.c chebyf.c cmeshf.c \
 	iscompf.c itclf.c itcreatef.c itfuncf.c itresf.c lgf.c \
 	luf.c  matrixf.c mgf.c mgfuncf.c mhasf.c mtrf.c \
 	pcnullf.c pcsetf.c preconf.c pseudof.c psleepf.c randomf.c \
-	richf.c sda2f.c shellf.c signalf.c slesf.c snesf.c snesmfjf.c \
+	richf.c shellf.c signalf.c slesf.c snesf.c snesmfjf.c \
 	snesutf.c sorf.c sortdf.c sortif.c sortipf.c stridef.c \
-	trf.c tsf.c tsregf.c umlsf.c umtrf.c vectorf.c vgridf.c \
+	trf.c tsf.c tsregf.c umlsf.c umtrf.c vectorf.c  \
 	viewf.c vinvf.c vscatf.c zerodiagf.c
 
 SOURCEF	 =
@@ -32,9 +32,9 @@ OBJSC	 = asmf.o axisf.o axpyf.o bjacobif.o cgf.o chebyf.o cmeshf.o \
 	iscompf.o itclf.o itcreatef.o itfuncf.o itresf.o lgf.o \
 	luf.o matrixf.o mgf.o mgfuncf.o mhasf.o mtrf.o \
 	pcnullf.o pcsetf.o preconf.o pseudof.o psleepf.o randomf.o \
-	richf.o sda2f.o shellf.o signalf.o slesf.o snesf.o snesmfjf.o \
+	richf.o shellf.o signalf.o slesf.o snesf.o snesmfjf.o \
 	snesutf.o sorf.o sortdf.o sortif.o sortipf.o stridef.o \
-	trf.o tsf.o tsregf.o umlsf.o umtrf.o vectorf.o vgridf.o \
+	trf.o tsf.o tsregf.o umlsf.o umtrf.o vectorf.o \
 	viewf.o vinvf.o vscatf.o zerodiagf.o
 
 OBJSF	 =

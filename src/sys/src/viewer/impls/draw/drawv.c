@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: drawv.c,v 1.2 1996/03/08 05:48:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.3 1996/03/19 21:28:06 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
-#include "drawimpl.h"
+#include "drawimpl.h" /*I "draw.h" I*/
 
 int ViewerDestroy_Draw(PetscObject obj)
 {

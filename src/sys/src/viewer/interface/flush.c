@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: flush.c,v 1.3 1996/03/19 21:28:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: flush.c,v 1.4 1996/04/01 03:09:07 curfman Exp balay $";
 #endif
 
-#include "petsc.h"
+#include "petsc.h"  /*I "petsc.h" I*/
 
 struct _Viewer {
   PETSCHEADER

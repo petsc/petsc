@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: cookie.c,v 1.3 1996/02/09 14:57:35 bsmith Exp curfman $";
+static char vcid[] = "$Id: cookie.c,v 1.4 1996/02/15 02:17:32 curfman Exp balay $";
 #endif
 
-#include "petsc.h"
+#include "petsc.h"  /*I "petsc.h" I*/
 int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_STATIC;
 
 /*@
