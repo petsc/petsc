@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.81 2001/01/15 21:44:07 bsmith Exp balay $ */
+/* $Id: mpi.h,v 1.82 2001/03/07 18:31:15 balay Exp balay $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -102,17 +102,18 @@ extern int MPIUNI_Memcpy(void*,void*,int);
 
 /* In order to handle datatypes, we make them into "sizeof(raw-type)";
     this allows us to do the MPIUNI_Memcpy's easily */
-#define MPI_Datatype      int
-#define MPI_FLOAT         sizeof(float)
-#define MPI_DOUBLE        sizeof(double)
-#define MPI_CHAR          sizeof(char)
-#define MPI_BYTE          sizeof(char)
-#define MPI_INT           sizeof(int)
-#define MPI_LONG          sizeof(long)
-#define MPI_SHORT         sizeof(short)
-#define MPI_UNSIGNED_CHAR sizeof(unsigned char)
-#define MPI_UNSIGNED_LONG sizeof(unsigned long)
-#define MPIU_PetscLogDOUBLE   sizeof(PetscLogDouble)
+#define MPI_Datatype        int
+#define MPI_FLOAT           sizeof(float)
+#define MPI_DOUBLE          sizeof(double)
+#define MPI_CHAR            sizeof(char)
+#define MPI_BYTE            sizeof(char)
+#define MPI_INT             sizeof(int)
+#define MPI_LONG            sizeof(long)
+#define MPI_SHORT           sizeof(short)
+#define MPI_UNSIGNED_CHAR   sizeof(unsigned char)
+#define MPI_UNSIGNED_LONG   sizeof(unsigned long)
+#define MPIU_PetscLogDOUBLE sizeof(PetscLogDouble
+#define MPI_REQUEST_NULL    ((MPI_Request)0)
 
 typedef int MPI_Op;
 
@@ -124,6 +125,7 @@ typedef int MPI_Op;
 */
 typedef int   (MPI_Copy_function)(MPI_Comm,int,void *,void *,void *,int *);
 typedef int   (MPI_Delete_function)(MPI_Comm,int,void *,void *);
+typedef void  (MPI_User_function) ( void *, void *, int *, MPI_Datatype * ); 
 
 /*
   In order that the PETSc MPIUNI can be used with another package that has its
