@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.40 1996/01/12 22:32:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.41 1996/01/23 00:19:36 bsmith Exp curfman $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -311,7 +311,7 @@ extern int XiQuickWindowFromWindow(Draw_X*,char*,Window,int);
 .  display - the X display on which to open, or null for the local machine
 .  title - the title to put in the title bar
 .  x, y - the screen coordinates of the upper left corner of window
-.  width, height - the screen width and height in pixels
+.  w, h - the screen width and height in pixels
 
    Output Parameters:
 .  ctx - the drawing context.
