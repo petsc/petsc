@@ -325,6 +325,7 @@ class Configure(config.base.Configure):
         libFlag.append(self.libraries.getLibArgument(lib))
       self.addSubstitution('BLASLAPACK_DIR', dirs)
       self.addSubstitution('BLASLAPACK_LIB', ' '.join(libFlag))
+      self.lib = ' '.join(libFlag)
     return
 
   def configure(self):

@@ -14,6 +14,7 @@ class Configure(config.base.Configure):
     self.compilers    = self.framework.require('config.compilers',self)
     self.libraries    = self.framework.require('config.libraries',self)
     self.mpi          = self.framework.require('PETSc.packages.MPI',self)
+    self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
     self.found        = 0
     self.lib          = []
     self.include      = []
@@ -84,10 +85,13 @@ class Configure(config.base.Configure):
     return
         
   def checkLib(self,lib,func):
-    '''We may need the MPI libraries here'''
-    oldLibs = self.framework.argDB['LIBS']  
-    found   = self.libraries.check(lib,func)
-    self.framework.argDB['LIBS'] = oldLibs
+    '''We  need the BLAS libraries here'''
+    # This next line is really ugly
+    oldLibs = self.framework.argDB['LIBS']
+    otherLibs=self.blasLapack.lib
+    if hasattr(self.compilers,'flibs'): otherLibs += ' '+self.compilers.flibs
+    found = self.libraries.check(lib,func,otherLibs=otherLibs)
+    self.framework.argDB['LIBS']=oldLibs
     if found:
       self.framework.log.write('Found function '+func+' in '+str(lib)+'\n')
     return found
@@ -101,8 +105,8 @@ class Configure(config.base.Configure):
     for configstr, lib in self.generateLibGuesses():
       if not isinstance(lib, list): lib = [lib]
       self.framework.log.write('Checking for library '+configstr+': '+str(lib)+'\n')
-      #foundLibrary = self.executeTest(self.checkLib, [lib, 'ML_Set_PrintLevel'])  
-      foundLibrary = 1
+      foundLibrary = self.executeTest(self.checkLib, [lib, 'ML_Set_PrintLevel'])  
+      #foundLibrary = 1
       if foundLibrary:
         self.lib = lib
         break
