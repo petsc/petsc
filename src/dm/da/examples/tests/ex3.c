@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.3 1995/08/22 02:35:32 curfman Exp $";
+static char vcid[] = "$Id: ex3.c,v 1.6 1995/08/22 02:45:51 curfman Exp curfman $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -17,7 +17,7 @@ static char help[] = "This example creates a 1-dimensional wave equation.\n\n";
 
 int main(int argc,char **argv)
 {
-  int       mytid, numtid, M = 60, ierr,  time_steps = 1000;
+  int       mytid, numtid, M = 60, ierr,  time_steps = 100;
   DA        da;
   DrawCtx   win;
   Vec       local, global, copy;
@@ -38,14 +38,14 @@ int main(int argc,char **argv)
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtid); 
 
-  /* Set Up Display to Show Wave Graph */
+  /* Set up display to show wave graph */
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",80,480,500,160,&win); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(win); CHKERRA(ierr);
 
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRA(ierr);
 
-  /* Initialize the Array */
+  /* Initialize the array */
   ierr = VecGetLocalSize(local,&localsize); CHKERRA(ierr);
   ierr = VecGetArray(local,&localptr); CHKERRA(ierr);
   localptr[0] = 0.0;
@@ -72,7 +72,7 @@ int main(int argc,char **argv)
 
     /* Global to Local */
     ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
-    ierr = DAGlobalToLocalEnd  (da,global,INSERTVALUES,local); CHKERRA(ierr);
+    ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
 
     /*Extract local array */ 
     ierr = VecGetArray(local,&localptr); CHKERRA(ierr);
@@ -83,17 +83,21 @@ int main(int argc,char **argv)
       copyptr[i] = .5*(localptr[i+1]+localptr[i-1]) - 
                     (k / (2.0*a*h)) * (localptr[i+1] - localptr[i-1]);
     }
-  
     ierr = VecRestoreArray(copy,&copyptr); CHKERRA(ierr);
 
     /* Local to Global */
     ierr = DALocalToGlobal(da,copy,INSERTVALUES,global); CHKERRA(ierr);
   
     /* View Wave */ 
-    ierr = VecView (global,(Viewer) win); CHKERRA(ierr);
+    ierr = VecView(global,(Viewer) win); CHKERRA(ierr);
   }
 
   ierr = DADestroy(da); CHKERRA(ierr);
+  ierr = ViewerDestroy((Viewer)win); CHKERRA(ierr);
+  ierr = VecDestroy(copy); CHKERRA(ierr);
+  ierr = VecDestroy(local); CHKERRA(ierr);
+  ierr = VecDestroy(global); CHKERRA(ierr);
+
   PetscFinalize();
   return 0;
 }
