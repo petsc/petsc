@@ -26,3 +26,23 @@ Scalapack and Lapack are like sin or sqrt - routines that can be used in
 special cases, and that PETSc, in addition to providing a higher-level of
 functionality and abstraction, provides transparent access to such
 special-purpose libraries.
+[A
+>
+> How about something like the following:
+>
+>
+> PETSc is not a replacement or competitor of ScaLAPACK, LAPACK, or
+> MINPACK (don't know if you want to mention MINPACK also?).  Rather
+> PETSc is a complementary package that provides the infrastructure and
+> software for large-scale (possibly parallel) numerical solution of
+> partial differential equations.  Our uniquely wide perspective
+> markedly contrasts with traditional software packages, which typically
+> address only one facet of solving large-scale PDEs.  In addition to
+I don't like this part here because lapack scalapack and minpack 
+don't relly address any part of lsrge scale (or even small scale)
+PDEs. 
+> providing a higher level of functionality and abstraction, PETSc can
+> provide transparent access to such special-purpose libraries for
+> particular. PETSc currently employs parts of LAPACK, SPARSPAK, and
+> BlockSolve.
+>
