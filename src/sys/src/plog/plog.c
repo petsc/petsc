@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.196 1998/11/24 23:04:36 balay Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.197 1998/12/03 03:58:43 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -30,10 +30,12 @@ static char vcid[] = "$Id: plog.c,v 1.196 1998/11/24 23:04:36 balay Exp bsmith $
   If PLogInfoFlags[OBJECT_COOKIE - PETSC_COOKIE] is zero, no messages related
   to that object are printed. OBJECT_COOKIE is, for example, MAT_COOKIE.
 */
-int PLogPrintInfo = 0,PLogPrintInfoNull = 0;
-int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+int  PLogPrintInfo = 0,PLogPrintInfoNull = 0;
+int  PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                               1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                               1,1,1,1,1,1,1,1,1,1,1,1};
+FILE *PLogInfoFile;
+
 #undef __FUNC__  
 #define __FUNC__ "PLogInfoAllow"
 /*@C
@@ -44,7 +46,8 @@ int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     with the call to PLogInfo() has called this routine.
 
     Input Parameter:
-.   flag - PETSC_TRUE or PETSC_FALSE
++   flag - PETSC_TRUE or PETSC_FALSE
+-   filename - optional name of file to write output to (defaults to stdout)
 
     Options Database Key:
 .   -log_info - Activates PLogInfoAllow()
@@ -53,11 +56,24 @@ int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 
 .seealso: PLogInfo()
 @*/
-int PLogInfoAllow(PetscTruth flag)
+int PLogInfoAllow(PetscTruth flag,char *filename)
 {
+  char fname[256],tname[5];
+  int  ierr,rank;
+
   PetscFunctionBegin;
   PLogPrintInfo     = (int) flag;
   PLogPrintInfoNull = (int) flag;
+  if (flag && filename) {
+    ierr = PetscFixFilename(filename,fname); CHKERRQ(ierr);
+    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    sprintf(tname,".%d",rank);
+    PetscStrcat(fname,tname);
+    PLogInfoFile = fopen(fname,"w");
+    if (!PLogInfoFile) SETERRQ(1,1,"Cannot open requested file for writing");
+  } else if (flag) {
+    PLogInfoFile = stdout;
+  }
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.25 1998/04/27 14:40:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.26 1998/12/03 04:05:06 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -112,11 +112,11 @@ int ViewerDrawGetDrawLG(Viewer v, int windownumber,DrawLG *drawlg)
   if (windownumber < 0 || windownumber >= VIEWER_DRAW_MAX) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Window number out of range");
   }
+  vdraw = (Viewer_Draw *) v->data;
   if (!vdraw->draw[windownumber]) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"No window with that number");
   }
 
-  vdraw = (Viewer_Draw *) v->data;
   if (!vdraw->drawlg[windownumber]) {
     ierr = DrawLGCreate(vdraw->draw[windownumber],1,&vdraw->drawlg[windownumber]);CHKERRQ(ierr);
     PLogObjectParent(v,vdraw->drawlg[windownumber]);
@@ -158,11 +158,11 @@ int ViewerDrawGetDrawAxis(Viewer v, int windownumber, DrawAxis *drawaxis)
   if (windownumber < 0 || windownumber >= VIEWER_DRAW_MAX) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Window number out of range");
   }
+  vdraw = (Viewer_Draw *) v->data;
   if (!vdraw->draw[windownumber]) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"No window with that number");
   }
 
-  vdraw = (Viewer_Draw *) v->data;
   if (!vdraw->drawaxis[windownumber]) {
     ierr = DrawAxisCreate(vdraw->draw[windownumber],&vdraw->drawaxis[windownumber]);CHKERRQ(ierr);
     PLogObjectParent(v,vdraw->drawaxis[windownumber]);

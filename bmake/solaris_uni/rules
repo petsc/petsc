@@ -1,28 +1,66 @@
-# $Id: base,v 1.11 1998/04/25 23:41:41 balay Exp balay $ 
+# $Id: base,v 1.46 1998/11/30 16:57:40 bsmith Exp bsmith $ 
+#
+#     See the file .... for a complete explanation of all these fields
+#
+AR               = ar
+RM               = rm -f
+OMAKE            = make
+RANLIB           = true
+SHELL            = /bin/sh
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = cc    -KPIC -dalign -xtarget=native
+C_FC             = f77   -xpp=cpp
+C_CLINKER        = cc    -R${LDIR}:${DYLIBPATH}
+C_FLINKER        = f77   -R${LDIR}:${DYLIBPATH}
+C_CCV            = cc    -V -c
+C_SYS_LIB        = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl 
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g -xs
+G_FOPTFLAGS      = -g -xs
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -fast -xO4  -fsimple=2 -xtarget=native
+O_FOPTFLAGS      = -fast
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = CC    -KPIC
+CXX_FC           = f77   -xpp=cpp
+CXX_CLINKER      = CC    -R${LDIR}:${DYLIBPATH}
+CXX_FLINKER      = f77   -R${LDIR}:${DYLIBPATH}
+CXX_CCV          = CC    -V -c
+CXX_SYS_LIB      = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g  -xs
+GCXX_FOPTFLAGS   = -g  -xs
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O4  -fast -fsimple=2
+OCXX_FOPTFLAGS   = -fast -dalign
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g -xs
+GCOMP_FOPTFLAGS  = -g -xs
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O4 -fast -fsimple=2
+OCOMP_FOPTFLAGS  = -fast -dalign
+# ########################### PETSc install options ###########################
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK 
+O_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+OCXX_PETSCFLAGS  =  -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
 
 PARCH    = solaris
-#
-#  If you are using gcc or an old version cc you may need to remove the
-#  -dalign -xtarget=native from below.
-#
-CC       = cc -KPIC -dalign -xtarget=native
-#
-#  Indicates the version of the compiler you are using; if you do not know
-#  how to get the version number then leave this blank.
-#
-CCV      = ${CC} -V -c
-#
-FC       = f77
-AR       = ar
-RM       = rm -f
-OMAKE    = make
-RANLIB   = true
-SHELL    = /bin/sh
-CLINKER  = cc ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
-FLINKER  = f77 ${FOPTFLAGS} -R${LDIR}:${DYLIBPATH}
 
-
-SYS_LIB  = -lnsl -lsocket -lgen
 
 include ${PETSC_DIR}/bmake/common
 
@@ -41,9 +79,9 @@ shared: chkopts_basic
 	do \
 	  flag=""; \
 	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+            flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
 	  else \
-	      flag="true"; \
+	    flag="true"; \
 	  fi; \
           if [ "$$flag" != "" ]; then \
 	    echo "building $$LIBNAME.${SLSUFFIX}"; \
@@ -54,3 +92,22 @@ shared: chkopts_basic
 	done ;\
 	cd ../ ; \
 	${RM} -rf tmp
+#
+#  Generates a shared library from any .a library; not just the PETSc ones
+#  This is to allow any user to generate his or her own shared library
+#
+#  The ${PETSC_LIB} -lC is too tell the linker the location of the libC.a 
+#  library and force it to include those symbols into the shared library.
+#  Since there is no .so version of the libC.a it must be done this way.
+
+oshared: chkopts_basic
+	-${RM} -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+        echo "building ${LIBNAME}.${SLSUFFIX}"; \
+	${AR} x ${LIBNAME}.a ;\
+	${LD} -G  -h ${LIBNAME}.${SLSUFFIX} *.o  -o ${LIBNAME}.${SLSUFFIX} \
+              ${PETSC_LIB} -lC ; \
+	cd ../ ; \
+	${RM} -rf tmp
+

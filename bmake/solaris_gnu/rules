@@ -1,25 +1,65 @@
-# $Id: base,v 1.20 1998/11/20 18:47:36 balay Exp balay $ 
-
-PARCH    = solaris
-CC       = /home/alice/software/egcs/solaris/bin/gcc -fPIC
+# $Id: base,v 1.21 1998/12/04 22:05:08 balay Exp bsmith $ 
 #
-#  Indicates the version of the compiler you are using; if you do not know
-#  how to get the version number then leave this blank.
+#     See the file .... for a complete explanation of all these fields
 #
-CCV      = ${CC} --version
+AR               = ar
+RM               = rm -f
+OMAKE            = make
+RANLIB           = true
+SHELL            = /bin/sh
+# ######################### C and Fortran compiler ########################
 #
-FC       = /home/alice/software/egcs/solaris/bin/g77
-AR       = ar
-RM       = rm -f
-OMAKE    = make
-RANLIB   = ranlib
-SHELL    = /bin/sh
-CLINKER  = /home/alice/software/egcs/solaris/bin/gcc ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
-FLINKER  = /home/alice/software/egcs/solaris/bin/g77 ${FOPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
+C_CC             = /home/alice/software/egcs/solaris/bin/gcc -fPIC
+C_FC             = /home/alice/software/egcs/solaris/bin/g77
+C_CLINKER        = /home/alice/software/egcs/solaris/bin/gcc ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
+C_FLINKER        = /home/alice/software/egcs/solaris/bin/g77 ${FOPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
+C_CCV            = ${C_CC} --version
+C_SYS_LIB        = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl 
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g  -Wshadow  -fomit-frame-pointer
+G_FOPTFLAGS      = -g
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O -Wshadow  -fomit-frame-pointer
+O_FOPTFLAGS      = -O
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = /home/alice/software/egcs/solaris/bin/g++ -fPIC
+CXX_FC           = /home/alice/software/egcs/solaris/bin/g77
+CXX_CLINKER      = /home/alice/software/egcs/solaris/bin/g++ ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
+CXX_FLINKER      = /home/alice/software/egcs/solaris/bin/g77 ${FOPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
+CXX_CCV          = ${CXX_CC} --version
+CXX_SYS_LIB      = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g
+GCXX_FOPTFLAGS   = -g
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O
+OCXX_FOPTFLAGS   = -O
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g
+GCOMP_FOPTFLAGS  = -g
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O
+OCOMP_FOPTFLAGS  = -O
+# ########################### PETSc install options ###########################
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK 
+O_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+OCXX_PETSCFLAGS  =  -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS
 
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
 
-
-SYS_LIB  = -lnsl -lsocket -lc -ldl
+PARCH  =  solaris
 
 include ${PETSC_DIR}/bmake/common
 

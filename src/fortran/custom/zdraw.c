@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zdraw.c,v 1.23 1998/10/19 22:15:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zdraw.c,v 1.24 1998/12/03 03:53:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -106,9 +106,9 @@ void drawopenx_(MPI_Comm *comm,CHAR display,CHAR title,int *x,int *y,
   FREECHAR(title,t2);
 }
 
-void drawlggetaxis_(DrawLG *lg,int *win,DrawAxis *axis, int *__ierr )
+void drawlggetaxis_(DrawLG *lg,DrawAxis *axis, int *__ierr )
 {
-  *__ierr = DrawLGGetAxis(*lg,*win,axis);
+  *__ierr = DrawLGGetAxis(*lg,axis);
 }
 
 void drawlggetdraw_(DrawLG *lg,Draw *win, int *__ierr )

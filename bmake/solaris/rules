@@ -1,32 +1,66 @@
-# $Id: base,v 1.45 1998/10/19 22:14:14 bsmith Exp bsmith $ 
+# $Id: base,v 1.46 1998/11/30 16:57:40 bsmith Exp bsmith $ 
+#
+#     See the file .... for a complete explanation of all these fields
+#
+AR               = ar
+RM               = rm -f
+OMAKE            = make
+RANLIB           = true
+SHELL            = /bin/sh
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = cc    -KPIC -dalign -xtarget=native
+C_FC             = f77   -xpp=cpp
+C_CLINKER        = cc    -R${LDIR}:${DYLIBPATH}
+C_FLINKER        = f77   -R${LDIR}:${DYLIBPATH}
+C_CCV            = cc    -V -c
+C_SYS_LIB        = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl 
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g -xs
+G_FOPTFLAGS      = -g -xs
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -fast -xO4  -fsimple=2 -xtarget=native
+O_FOPTFLAGS      = -fast
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = CC    -KPIC
+CXX_FC           = f77   -xpp=cpp
+CXX_CLINKER      = CC    -R${LDIR}:${DYLIBPATH}
+CXX_FLINKER      = f77   -R${LDIR}:${DYLIBPATH}
+CXX_CCV          = CC    -V -c
+CXX_SYS_LIB      = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g  -xs
+GCXX_FOPTFLAGS   = -g  -xs
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O4  -fast -fsimple=2
+OCXX_FOPTFLAGS   = -fast -dalign
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g -xs
+GCOMP_FOPTFLAGS  = -g -xs
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O4 -fast -fsimple=2
+OCOMP_FOPTFLAGS  = -fast -dalign
+# ########################### PETSc install options ###########################
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK 
+O_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+OCXX_PETSCFLAGS  =  -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
 
 PARCH    = solaris
-#
-#  If you are using gcc or an old version cc you may need to remove the
-#  -dalign -xtarget=native from below.
-#
-CC       = cc -KPIC -dalign -xtarget=native
-#
-# If using the sun bundled compiler /usr/ucb/cc, the following should be used
-# 
-#CC       = /usr/ucb/cc -Xa -KPIC -dalign -xtarget=native
-#
-#  Indicates the version of the compiler you are using; if you do not know
-#  how to get the version number then leave this blank.
-#
-CCV      = ${CC} -V -c
-#
-#FC       = f90 -xpp=cpp
-FC       = f77 -xpp=cpp
-AR       = ar
-RM       = rm -f
-OMAKE    = make
-RANLIB   = true
-SHELL    = /bin/sh
-CLINKER  = cc ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
-FLINKER  = f77 ${FOPTFLAGS} -R${LDIR}:${DYLIBPATH}
 
-SYS_LIB  = -lnsl -lsocket -lgen -ldl
 
 include ${PETSC_DIR}/bmake/common
 

@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.26 1998/09/23 15:48:45 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.27 1998/10/09 19:27:39 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -227,6 +227,8 @@ extern int        stack_err;
 extern int PetscStackCreate(int);
 extern int PetscStackView(Viewer);
 extern int PetscStackDestroy(void);
+extern int PetscStackPublish(void);
+extern int PetscStackDepublish(void);
 
 /*
           For locking and unlocking AMS memories associated with 

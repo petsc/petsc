@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.250 1998/11/06 22:03:43 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.251 1998/12/03 03:53:44 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -47,9 +47,8 @@ info:
 	-@echo "Using PETSc arch: ${PETSC_ARCH}"
 	-@echo "------------------------------------------"
 	-@echo "Using C linker: ${CLINKER}"
-	-@echo "Using libraries: ${PETSC_LIB}"
 	-@echo "Using Fortran linker: ${FLINKER}"
-	-@echo "Using Fortran libraries: ${PETSC_FORTRAN_LIB}"
+	-@echo "Using libraries: ${PETSC_LIB}"
 	-@echo "=========================================="
 
 #

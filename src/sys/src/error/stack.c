@@ -1,9 +1,6 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.12 1998/09/25 03:13:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stack.c,v 1.13 1998/10/09 19:20:29 bsmith Exp bsmith $";
 #endif
-/*
-
-*/
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "sys.h"
@@ -22,11 +19,50 @@ int        stack_err;
 char       *msg;
 #endif
 
-int PetscStackCreate(int stacksize)
+int PetscStackPublish(void)
 {
 #if defined(HAVE_AMS)
-  int ierr,ams_flag;
+  /*
+        Publishes the stack to AMS
+  */
+  int      ierr,ams_flag;
+  AMS_Comm acomm;
+
+  PetscFunctionBegin;
+  if (!petscstack) SETERRQ(1,1,"Stack not available to publish");
+  ierr = ViewerAMSGetAMSComm(VIEWER_AMS_WORLD,&acomm);CHKERRQ(ierr);
+  ierr = AMS_Memory_create(acomm, "stack_memory", &stack_mem);CHKERRQ(ierr);
+         
+  /* Add a field to the memory */
+  ierr = AMS_Memory_add_field(stack_mem, "stack",petscstack->function ,
+	                      petscstacksize,AMS_STRING, AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+                
+  /* Publish the memory */
+  ierr = AMS_Memory_publish(stack_mem);CHKERRQ(ierr);
+#else
+  PetscFunctionBegin;
 #endif
+  PetscFunctionReturn(0);
+}
+
+int PetscStackDepublish(void)
+{
+#if defined(HAVE_AMS)
+  int ierr;
+
+  PetscFunctionBegin;
+  if (stack_mem >= 0) {
+    ierr      = AMS_Memory_destroy(stack_mem);CHKERRQ(ierr);
+    stack_mem = -1;
+  }
+#else
+  PetscFunctionBegin;
+#endif
+  PetscFunctionReturn(0);
+}
+  
+int PetscStackCreate(int stacksize)
+{
 
   PetscStack *petscstack_in;
   if (stacksize <=0 ) return 0;
@@ -48,25 +84,6 @@ int PetscStackCreate(int stacksize)
 
   petscstack = petscstack_in;
 
-#if defined(HAVE_AMS)
-  /*
-        Publishes the stack to AMS if AMS is installed and requested 
-  */
-  ierr = OptionsHasName(0, "-ams_publish_stack", &ams_flag);CHKERRQ(ierr);
-  if (ams_flag) {
-    AMS_Comm acomm;
-
-    ierr = ViewerAMSGetAMSComm(VIEWER_AMS_WORLD,&acomm);CHKERRQ(ierr);
-    ierr = AMS_Memory_create(acomm, "stack_memory", &stack_mem);CHKERRQ(ierr);
-         
-    /* Add a field to the memory */
-    ierr = AMS_Memory_add_field(stack_mem, "stack",petscstack_in->function ,
-	          stacksize , AMS_STRING, AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-                
-    /* Publish the memory */
-    ierr = AMS_Memory_publish(stack_mem);CHKERRQ(ierr);
-  }
-#endif
 
   return 0;
 }
@@ -101,6 +118,10 @@ int PetscStackView(Viewer viewer)
 
 int PetscStackDestroy(void) 
 {
+#if defined(HAVE_AMS)
+  int ierr;
+  ierr = PetscStackDepublish();CHKERRQ(ierr);
+#endif
   if (petscstack){
     PetscStack *petscstack_in = petscstack;
     petscstack = 0;

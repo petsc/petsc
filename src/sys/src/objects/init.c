@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.19 1998/11/20 15:28:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.20 1998/12/03 03:58:23 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -300,7 +300,7 @@ extern int malloc_debug(int);
 EXTERN_C_END
 #endif
 
-extern int PLogInfoAllow(PetscTruth);
+extern int PLogInfoAllow(PetscTruth,char *);
 extern int PetscSetUseTrMalloc_Private(void);
 
 #undef __FUNC__  
@@ -475,7 +475,13 @@ int OptionsCheckInitial_Alice(void)
     }
     ierr = OptionsHasName(PETSC_NULL,"-log_info", &flg1); CHKERRQ(ierr);
     if (flg1) { 
-      PLogInfoAllow(PETSC_TRUE); 
+      char logname[256]; logname[0] = 0;
+      ierr = OptionsGetString(PETSC_NULL,"-log_info",logname,250,&flg1);CHKERRQ(ierr);
+      if (logname[0]) {
+        PLogInfoAllow(PETSC_TRUE,logname); 
+      } else {
+        PLogInfoAllow(PETSC_TRUE,PETSC_NULL); 
+      }
     }
 #if defined (HAVE_MPE)
     ierr = OptionsHasName(PETSC_NULL,"-log_mpe", &flg1); CHKERRQ(ierr);
@@ -507,16 +513,6 @@ int OptionsCheckInitial_Alice(void)
 #endif
 
   /*
-     Publishing to the AMS
-  */
-#if defined(HAVE_AMS)
-  ierr = OptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    PetscAMSPublishAll = PETSC_TRUE;
-  }
-#endif
-
-  /*
       Setup building of stack frames for all function calls
   */
 #if defined(USE_PETSC_STACK)
@@ -529,6 +525,21 @@ int OptionsCheckInitial_Alice(void)
   }
 #endif
 #endif
+
+  /*
+     Publishing to the AMS
+  */
+#if defined(HAVE_AMS)
+  ierr = OptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    PetscAMSPublishAll = PETSC_TRUE;
+  }
+  ierr = OptionsHasName(0, "-ams_publish_stack", &flg1);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscStackPublish();CHKERRQ(ierr);
+  }
+#endif
+
 
   /*
        Print basic help message
@@ -563,7 +574,7 @@ int OptionsCheckInitial_Alice(void)
 #if defined (HAVE_MPE)
     (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through upshot\n");
 #endif
-    (*PetscHelpPrintf)(comm," -log_info: print informative messages about the calculations\n");
+    (*PetscHelpPrintf)(comm," -log_info <optional filename>: print informative messages about the calculations\n");
 #endif
     (*PetscHelpPrintf)(comm," -v: prints PETSc version number and release date\n");
     (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");
@@ -656,7 +667,7 @@ int AliceInitializeNoArguments(void)
 +  -log_trace [filename] - Print traces of all Alice calls
         to the screen (useful to determine where a program
         hangs without running in the debugger).  See PLogTraceBegin().
-.  -log_info - Prints verbose information to the screen
+.  -log_info <optional filename> - Prints verbose information to the screen
 -  -log_info_exclude <null,vec,mat,sles,snes,ts> - Excludes some of the verbose messages
 
    Notes:
@@ -825,6 +836,7 @@ int AliceFinalize(void)
   ierr = ViewerDestroyDrawX_Private();CHKERRQ(ierr);
   ierr = ViewerDestroyMatlab_Private();CHKERRQ(ierr);
 #if defined(HAVE_AMS)
+  ierr = PetscStackDepublish();CHKERRQ(ierr);
   ierr = ViewerDestroyAMS_Private();CHKERRQ(ierr);
 #endif
 

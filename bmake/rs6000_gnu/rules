@@ -1,63 +1,98 @@
-# $Id: base,v 1.27 1998/04/28 18:06:17 balay Exp balay $ 
-
+# $Id: base,v 1.20 1998/07/23 22:18:52 bsmith Exp bsmith $ 
 #
-#   If you do not have the XlC compiler then use the xlc compiler below
-# we default to xlC since it generates faster code.
+#     See the file .... for a complete explanation of all these fields
+#
+AR               = ar
+RM               = rm -f
+OMAKE            = make
+RANLIB           = ranlib
+SHELL            = /bin/sh
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = /usr/local/bin/gcc
+C_FC             = /home/alice/egcs/rs6000/bin/g77
+C_CLINKER        = /usr/local/bin/gcc -Wl,-bbigtoc 
+C_FLINKER        = /home/alice/egcs/rs6000/bin/g77 -Wl,-bbigtoc 
+C_CCV            = /usr/local/bin/gcc -V
+C_SYS_LIB        = -lg2c -lisode
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g
+G_FOPTFLAGS      = -g
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O
+O_FOPTFLAGS      = -O
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = g++
+CXX_FC           = /home/alice/egcs/rs6000/bin/g77
+CXX_CLINKER      = g++
+CXX_FLINKER      = g++
+CXX_CCV          = g++ -V
+CXX_SYS_LIB      =  -lcomplex -lisode
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g
+GCXX_FOPTFLAGS   = -g
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O
+OCXX_FOPTFLAGS   = -O
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g
+GCOMP_FOPTFLAGS  = -g
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O
+OCOMP_FOPTFLAGS  = -O
+# ########################### PETSc install options ###########################
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK 
+O_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+OCXX_PETSCFLAGS  =  -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS
+
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
 #
 PARCH    = rs6000
-CC       = /usr/local/bin/gcc
-#
-#  Indicates the version of the compiler you are using; if you do not know
-#  how to get the version number then use: unknown
-#
-CCV      = ${CC} --version
-#
-FC       = /home/alice/egcs/rs6000/bin/g77 
-AR       = ar
-RM       = rm -f
-RANLIB   = ranlib
-OMAKE    = make
-SHELL    = /bin/sh
-# 
-#  Some systems may require instead
-# CLINKER = xlc ${COPTFLAGS} -bI:/usr/lpp/xlf/lib/lowsys.exp 
-# CLINKER = xlc ${COPTFLAGS}
-#  Next line is a hack for IBM SPx, you should remove it if 
-# you are running on plain IBM RS6000 workstations and replace 
-# with one of the above.
-#
-CLINKER  = ${CC} -Wl,-bbigtoc ${COPTFLAGS} 
-#
-# Fortran programs MUST be linked statically (no shared libraries) for them
-# to run on systems that haven't licensed a Fortran runtime or compiler.
-# This used to be the default, but I've removed it since most system have
-# licensed runtimes
-#
-# FLINKER = xlf 
-#  Next line is a hack for IBM SPx, you should remove it if 
-# you are running on plain IBM RS6000 workstations and replace 
-# with the above.
-#
-FLINKER = /home/alice/egcs/rs6000/bin/g77 -Wl,-bbigtoc ${FOPTFLAGS}
-
-SHELL   = /bin/sh
-SYS_LIB = -lisode
-
-# AIX apparently does not remotely resemble EITHER System V or BSD 4.x.
-# By defining _POSIX_SOURCE , there is some hope that it will pretend that
-# it is some form of Unix.
 
 include ${PETSC_DIR}/bmake/common
 
 libc:
-	 for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
+	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
 
 libf:
 	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
 
 libmember:    ${LIBNAME}(${LIBMEMBER})
+#########
 
-###########
+# This F.f rule ensures that the old *.f files are removed.
+#
+.F.f:
+	-${RM} $*.f __$*.c
+	-cp $*.F __$*.c
+	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
+	-${RM} __$*.c
+
+.F.o:
+	-${RM} $*.f __$*.c
+	-cp $*.F __$*.c
+	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} $*.f
+	-${RM} $*.f __$*.c
+
+.F.a:
+	-${RM} $*.f
+	-${CC} ${FCPPFLAGS} -E $< | grep -v '^ *#' > $*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} $*.f
+	-${AR} cr ${LIBNAME} $*.o
+	-${RM} $*.o	$*.f
+
 shared:
-
-

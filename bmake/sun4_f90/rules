@@ -1,29 +1,71 @@
-# $Id: base,v 1.17 1998/06/18 14:41:03 balay Exp balay $ 
+# $Id: base,v 1.18 1998/06/18 14:42:12 balay Exp bsmith $ 
 
+#
+#     See the file .... for a complete explanation of all these fields
+#
+AR               = ar
+RM               = rm -f
+OMAKE            = make
+RANLIB           = ranlib
+SHELL            = /bin/sh
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = gcc   -D__USE_FIXED_PROTOTYPES__ -fPIC
+C_FC             = f90 -f77 -mismatch -free
+C_CLINKER        = gcc
+C_FLINKER        = f90 -f77 ${FOPTFLAGS}
+C_CCV            = gcc   --version
+C_SYS_LIB        = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
+                   /usr/local/lib/f90/libf90.a /usr/lang/SC1.0.1/libF77.a -lm \
+	           /home/petsc/lib/sun4/libm.a
+# change /home/petsc/lib/sun4/libm.a to /usr/lang/SC1.0.1/libm.a
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g -Wall -Wshadow
+G_FOPTFLAGS      = -g
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O -Wall -Wshadow -fomit-frame-pointer
+O_FOPTFLAGS      = -O
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = g++   -fPIC
+CXX_FC           = f90 -f77 ${FOPTFLAGS}
+CXX_CLINKER      = g++
+CXX_FLINKER      = f90 -f77 ${FOPTFLAGS}
+CXX_CCV          = g++   --version
+CXX_SYS_LIB      = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
+                   /usr/local/lib/f90/libf90.a /usr/lang/SC1.0.1/libF77.a -lm \
+	           /home/petsc/lib/sun4/libm.a
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g 
+GCXX_FOPTFLAGS   = -g
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O
+OCXX_FOPTFLAGS   = -O 
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g 
+GCOMP_FOPTFLAGS  = -g
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O
+OCOMP_FOPTFLAGS  = -O
+# ########################### PETSc install options ###########################
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK -DUSE_DYNAMIC_LIBRARIES  
+O_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+OCXX_PETSCFLAGS  =  -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS
 
+##################################################################################
 #
+#   PETSc installers should very rarely ever need to edit anything below this 
 #
-#  If you are not using the Gnu C compiler then replace the compiler name 
-# gcc with your own and remove the -D__USE_FIXED_PROTOTYPES__ and the -fPIC.
-#
-#  Setup to use the NAG Fortran 90 compiler.
-#
-PARCH    = sun4
-CC       = gcc -D__USE_FIXED_PROTOTYPES__ -fPIC
-#
-#  Indicates the version of the compiler you are using; if you do not know
-#  how to get the version number then use: unknown
-#
-CCV      = ${CC} --version
-#
-FC       = f90 -f77 -mismatch -free
-AR       = ar
-RM       = rm -f
-OMAKE    = make
-RANLIB   = ranlib
-SHELL    = /bin/sh
-CLINKER  = gcc ${COPTFLAGS}
-FLINKER  = f90 -f77 ${FOPTFLAGS}
+##################################################################################
+
+PARCH            = sun4
 
 include ${PETSC_DIR}/bmake/common
 

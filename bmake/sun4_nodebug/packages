@@ -1,5 +1,5 @@
-# $Id: base.site,v 1.7 1998/05/12 18:53:30 bsmith Exp balay $ 
-
+# $Id: base.site,v 1.40 1998/12/04 19:08:38 bsmith Exp bsmith $ 
+#
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -7,16 +7,16 @@
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
 #
-# FCLIB contains the libraries for a CLINKER to use for code containing
+# FC_LIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes).  
-# The extra -lm is needed to force the C version of libm.a to 
-# be searched before the Fortran 77 version.
 #
-FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /home/petsc/lib/sun4/libm.a
-#FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a
 #
-# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html 
 # for information on retrieving them.
+#
+# If your machine has the file /usr/lang/SC3.0.1/lib/libsunperf.a then
+# you can use -lsunperf or /usr/lang/SC3.0.1/lib/libsunperf.a below as the 
+# BLAS and LAPACK library
 #
 BLAS_LIB       =  /usr/local/lapack/lib/blas.a
 LAPACK_LIB     =  /usr/local/lapack/lib/lapack.a
@@ -28,40 +28,61 @@ X11_LIB        = -lX11
 #
 # Location of MPI (Message Passing Interface) software  
 #
-MPI_LIB        = /usr/local/mpi/lib/sun4/ch_p4/libmpe.a \
-                 /usr/local/mpi/lib/sun4/ch_p4/libmpi.a
+MPI_LIB        = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpi
 MPI_INCLUDE    = -I/usr/local/mpi/include
-#MPIRUN         = /usr/local/mpi/bin/mpirun
+#MPIRUN        = /usr/local/mpi/bin/mpirun
 MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 #
-# Optional location of BlockSolve (MPI version), if you do not have
-# BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
-# below if it is there and comment out the BS_INCLUDE and BS_LIB lines.
+# ----------------------------------------------------------------------------------------  
+#  Locations of optional packages. Comment out those you do not have and change the 
+#  values in PCONF below accordingly.
+# ----------------------------------------------------------------------------------------  
 #
-#  Note: you cannot use BlockSolve with complex
+# Optional location of MPE
+#
+MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
+MPE_INCLUDE   = -I/usr/local/mpi/include
+#
+# Optional location of BlockSolve (MPI version)
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
 BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
 #
-# Optional Matlab location, remove if not needed.
+# Optional Matlab location
 #
 MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
 MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
 CMEX           = /usr/local/bin/cmex 
-#  
-# PCONF - indicates which external packages are available at your site
-#  Make sure that -DHAVE_BLOCKSOLVE is not listed below unless you have
-#  installed it. Make sure that _DHAVE_MPE is listed only if you have 
-#  installed MPICH with the MPE option.
 #
-#PCONF         = -DHAVE_BLOCKSOLVE -DHAVE_MPE
-PCONF         = -DHAVE_BLOCKSOLVE  -DHAVE_MPE
+# Option location where adiC is installed
 #
+#ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=10
+#ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_grad
+#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
 #
-ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=10
-ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_grad
-ADIC_CC      = adiC -akud gradient.new -i ${PETSC_DIR}/bmake/adicmastercontrol
+# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# 
+PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
+PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/sun4/libpvode.a
 #
+# Optional location of SPAI;
 #
-EXTERNAL_LIB  = ${BS_LIB} ${CVODE_LIB} ${ADIC_LIB}
+SPAI_INCLUDE = -I/home/bsmith/libraries/spai_1.1
+SPAI_LIB     = /home/bsmith/libraries/spai_1.1/lib/${PETSC_ARCH}/libspai.a
+#
+# Optional location of ParMetis
+#
+PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
+PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
+#
+# ---------------------------------------------------------------------------------------
+#
+# PCONF - indicates which OPTIONAL external packages are available at your site
+#
+# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# the locations are appropriately indicated above. If you do not have the package then
+# comment out the locations indicated for that package above.
+#
+PCONF         = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE -DHAVE_SPAI -DHAVE_PARMETIS
+EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${SPAI_LIB} ${PARMETIS_LIB}
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.5 1998/10/09 19:20:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pinit.c,v 1.6 1998/10/19 22:17:08 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -141,7 +141,7 @@ int PetscInitializeNoArguments(void)
 +  -log_trace [filename] - Print traces of all PETSc calls
         to the screen (useful to determine where a program
         hangs without running in the debugger).  See PLogTraceBegin().
-.  -log_info - Prints verbose information to the screen
+.  -log_info <optional filename> - Prints verbose information to the screen
 -  -log_info_exclude <null,vec,mat,sles,snes,ts> - Excludes some of the verbose messages
 
    Notes:

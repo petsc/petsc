@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.14 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: base.site,v 1.15 1998/04/07 18:46:33 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -6,11 +6,6 @@
 #  The following naming convention is used:
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
-#
-# FC_LIB contains the libraries for a CLINKER to use for code containing
-# FORTRAN code (such as I/O or special Fortran runtimes). 
-#
-FC_LIB         = 
 #
 # Location of BLAS and LAPACK.  These are in the Cray library "sci"
 # you may have to have "-lsci" or "/mpp/lib/libsci.a" on the BLAS_LIB line

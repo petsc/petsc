@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.57 1998/11/20 15:31:26 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.58 1998/12/03 04:07:00 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -122,6 +122,20 @@ extern Viewer VIEWER_AMS_WORLD_PRIVATE;
 extern int    ViewerInitializeAMSWorld_Private(void);
 #define VIEWER_AMS_WORLD (ViewerInitializeAMSWorld_Private(),VIEWER_AMS_WORLD_PRIVATE) 
 #endif
+
+/* 
+    Viewer utility routines used by PETSc that are not normally used
+   by users.
+*/
+extern int  ViewerMatlabPutScalar_Private(Viewer,int,int,Scalar*);
+extern int  ViewerMatlabPutDouble_Private(Viewer,int,int,double*);
+extern int  ViewerMatlabPutInt_Private(Viewer,int,int*);
+extern int  ViewerMatlabPutSparse_Private(Viewer,int,int,int,Scalar*,int*,int *);
+extern int  ViewerInitializeASCII_Private(void);
+extern int  ViewerDestroyASCII_Private(void);
+extern int  ViewerDestroyDrawX_Private(void);
+extern int  ViewerDestroyMatlab_Private(void);
+extern int  ViewerDestroyAMS_Private(void);
 
 #endif
 

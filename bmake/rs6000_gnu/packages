@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.14 1998/05/12 18:51:16 bsmith Exp balay $ 
+# $Id: base.site,v 1.15 1998/12/04 23:09:35 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -7,18 +7,7 @@
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
 #
-# FC_LIB contains the libraries for a CLINKER to use for code containing
-# FORTRAN code (such as I/O or special Fortran runtimes).  
-#
-#FC_LIB         = /usr/lib/libxlf.a /usr/lib/libxlf90.a \
- #                -bI:/usr/lpp/xlf/lib/lowsys.exp
-#FC_LIB = -lbsd -lc /usr/local/gcc-2.5.8/lib/gcc-lib/rs6000/2.5.8/libgcc.a /usr/lib/libxlf.a /usr/lib/libxlf90.a /usr/lib/libxlfutil.a -bI:/usr/lpp/xlf/lib/lowsys.exp 
-
-#FC_LIB         = /usr/lib/libxlf.a /usr/lib/libxlf90.a -Wl,-bI:/usr/lpp/xlf/lib/lowsys.exp
-#FC_LIB         = /usr/lib/libxlf.a /usr/lib/libxlf90.a
-FC_LIB         = -lg2c
-
-# Location of BLAS and LAPACK. See ${PETSC_DIR}/readme for information on 
+# Location of BLAS and LAPACK. See ${PETSC_DIR}/docs/installation.html for information on 
 # retrieving them.
 # Important: If you use the IBM version of lapack you must include 
 #  -lessl at the end of the line defining the BLAS libraries.
@@ -29,12 +18,9 @@ LAPACK_LIB     = -lessl /home/bsmith/libraries/blaslapack/lapack_rs6000_gnu.a
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = /home/petsc/mpich/lib/rs6000/ch_shmem/libmpi.a 
-MPI_INCLUDE    = -I/home/petsc/mpich/include
-MPIRUN         = /home/petsc/mpich/lib/rs6000/ch_shmem/mpirun
-#MPI_LIB        = /usr/local/mpi/lib/rs6000/ch_p4/libmpe.a /usr/local/mpi/lib/rs6000/ch_p4/libmpi.a 
-#MPI_INCLUDE    = -I/usr/local/mpi/include
-#MPIRUN         = /usr/local/mpi//lib/rs6000/ch_p4/mpirun -machinefile /usr/local/mpi/util/machines/machines.rs6000.2
+MPI_LIB        = /usr/lpp/ppe.poe/lib/libmpi.a
+MPI_INCLUDE    = -I/usr/lpp/ppe.poe/include
+MPIRUN         = mpirun
 #
 # Location of X-windows software
 #

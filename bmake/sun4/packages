@@ -1,79 +1,5 @@
-# $Id: base.site,v 1.39 1998/07/16 14:42:55 balay Exp balay $ 
-
-############################################################################
-# common info
-############################################################################
-PARCH    = sun4
-AR       = ar
-RM       = rm -f
-OMAKE    = make
-RANLIB   = ranlib
-SHELL    = /bin/sh
-############################################################################
-# BOPT=g,O which includes the C, Fortran Compiler info:
-############################################################################
-C_CC       = gcc -D__USE_FIXED_PROTOTYPES__ -fPIC
-C_CCV      = ${CC} --version
-C_FC       = f77 -PIC -u
-C_CLINKER  = gcc ${COPTFLAGS}
-C_FLINKER  = f77 ${FOPTFLAGS}
-############################################################################
-# BOPT=g_c++,O_c++,g_complex,O_complex, includes the C++, 
-# Fortran for C++ compiler info
-############################################################################
-CXX_CC       = g++ -fPIC
-CXX_CCV      = ${CC} --version
-CXX_FC       = f77 -PIC -u
-CXX_CLINKER  = g++ ${COPTFLAGS}
-CXX_FLINKER  = f77 ${FOPTFLAGS}
-############################################################################
-# BOPT=g - includes the compiler flags used, and some system specific libs.
-############################################################################
-G_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
-               -DUSE_PETSC_STACK -DUSE_DYNAMIC_LIBRARIES  
-G_COPTFLAGS  = -g -Wall -Wshadow
-G_FOPTFLAGS  = -g -dalign
-G_SYS_LIB    = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o
-############################################################################
-# BOPT=O
-############################################################################
-O_COPTFLAGS  = -O -Wall -Wshadow -fomit-frame-pointer
-O_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
-O_FOPTFLAGS  = -O -dalign
-O_SYS_LIB    =
-############################################################################
-# BOPT=g_c++
-############################################################################
-GCXX_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
-                  -DUSE_PETSC_STACK
-CCXX_OPTFLAGS   = -g 
-GCXX_FOPTFLAGS  = -g -dalign
-GCXX_SYS_LIB    = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o
-############################################################################
-# BOPT=O_c++
-############################################################################
-OCXX_PETSCFLAGS =  -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
-OCXX_COPTFLAGS  = -O
-OCXX_FOPTFLAGS  = -O -dalign
-OCXX_SYS_LIB    =
-############################################################################
-# BOPT=g_complex
-############################################################################
-GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
-                   -DUSE_PETSC_COMPLEX -DUSES_TEMPLATED_COMPLEX \
-                   -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
-GCOMP_COPTFLAGS  = -g 
-GCOMP_FOPTFLAGS  = -g -dalign
-GCOMP_SYS_LIB    = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o
-############################################################################
-# BOPT=O_complex
-############################################################################
-OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
-                   -DUSE_PETSC_COMPLEX -DUSES_TEMPLATED_COMPLEX \
-		   -DUSE_FORTRAN_KERNELS
-OCOMP_COPTFLAGS  = -O
-OCOMP_FOPTFLAGS  = -O -dalign
-############################################################################
+# $Id: base.site,v 1.40 1998/12/04 19:08:38 bsmith Exp bsmith $ 
+#
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -84,11 +10,6 @@ OCOMP_FOPTFLAGS  = -O -dalign
 # FC_LIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes).  
 #
-# The extra -lm is needed to force the C version of libm.a to 
-# be searched before the Fortran 77 version.
-#
-FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /home/petsc/lib/sun4/libm.a
-#FC_LIB        = /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a
 #
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html 
 # for information on retrieving them.

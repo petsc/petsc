@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.73 1998/06/11 19:54:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.74 1998/12/03 03:56:20 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -169,7 +169,7 @@ int ISGetSize_Stride(IS is,int *size)
 int ISView_Stride(IS is, Viewer viewer)
 {
   IS_Stride   *sub = (IS_Stride *)is->data;
-  int         i,n = sub->n,ierr,rank;
+  int         i,n = sub->n,ierr,rank,size;
   FILE        *fd;
   ViewerType  vtype;
 
@@ -177,13 +177,24 @@ int ISView_Stride(IS is, Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (!PetscStrcmp(vtype,ASCII_VIEWER)) { 
     MPI_Comm_rank(is->comm,&rank);
+    MPI_Comm_size(is->comm,&size);
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (is->isperm) {
-      PetscSynchronizedFPrintf(is->comm,fd,"[%d] Index set is permutation\n",rank);
-    }
-    PetscSynchronizedFPrintf(is->comm,fd,"[%d] Number of indices in (stride) set %d\n",rank,n);
-    for ( i=0; i<n; i++ ) {
-      PetscSynchronizedFPrintf(is->comm,fd,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);
+    if (size == 1) {
+      if (is->isperm) {
+        PetscSynchronizedFPrintf(is->comm,fd,"Index set is permutation\n");
+      }
+      PetscSynchronizedFPrintf(is->comm,fd,"Number of indices in (stride) set %d\n",n);
+      for ( i=0; i<n; i++ ) {
+        PetscSynchronizedFPrintf(is->comm,fd,"%d %d\n",i,sub->first + i*sub->step);
+      }
+    } else {
+      if (is->isperm) {
+        PetscSynchronizedFPrintf(is->comm,fd,"[%d] Index set is permutation\n",rank);
+      }
+      PetscSynchronizedFPrintf(is->comm,fd,"[%d] Number of indices in (stride) set %d\n",rank,n);
+      for ( i=0; i<n; i++ ) {
+        PetscSynchronizedFPrintf(is->comm,fd,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);
+      }
     }
     PetscSynchronizedFlush(is->comm);
   } else {
