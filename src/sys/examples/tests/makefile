@@ -87,35 +87,35 @@ ex18: ex18.o chkopts
 	${RM} -f ex18.o
 #----------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ex1
+	-@${MPIRUN} -np 1 ./ex1
 	-@echo "This is a contrived error to test error handling."
 
 runex1f:
-	-@${MPIRUN} -np 1 ex1f
+	-@${MPIRUN} -np 1 ./ex1f
 	-@echo "This is a contrived error to test error handling."
 
 runex2:
-	-@${MPIRUN} -np 1 ex2
+	-@${MPIRUN} -np 1 ./ex2
 	-@echo "This is a contrived error to test error handling."
 
 runex3:
-	-@${MPIRUN} -np 1 ex3 -fp_trap
+	-@${MPIRUN} -np 1 ./ex3 -fp_trap
 	-@echo "This is a contrived error to test error handling of floating point exceptions."
 
 runex7:
-	-@${MPIRUN} -np 2 ex7
+	-@${MPIRUN} -np 2 ./ex7
 runex10:
-	-@${MPIRUN} -np 1 ex10 > ex10_1.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ./ex10 > ex10_1.tmp 2>&1;\
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Error in PetscMemmove."; fi; \
 	   ${RM} -f ex10_1.tmp ex10_1.tmp
 runex13:
-	-@${MPIRUN} -np 2 ex13 > ex13_1.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ./ex13 > ex13_1.tmp 2>&1;\
 	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Error in PetscSetCommWorld."; fi; \
 	   ${RM} -f ex13_1.tmp ex13_1.tmp
 runex13f:
-	-@${MPIRUN} -np 2 ex13f > ex13_1.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ./ex13f > ex13_1.tmp 2>&1;\
 	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Possible problem in ex13f"; fi; \
 	   ${RM} -f ex13_1.tmp ex13_1.tmp

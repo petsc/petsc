@@ -27,29 +27,29 @@ ex4: ex4.o  chkopts
 	${RM} -f ex4.o
 #----------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1  ex1 > ex1_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex1 > ex1_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIRUN}  -np 2 ex1 > ex1_2.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ./ex1 > ex1_2.tmp 2>&1;\
 	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
 	   ${RM} -f ex1_2.tmp
 runex1_3:
-	-@${MPIRUN}  -np 3 ex1  > ex1_3.tmp 2>&1;\
+	-@${MPIRUN}  -np 3 ./ex1  > ex1_3.tmp 2>&1;\
 	   if (${DIFF} output/ex1_3.out ex1_3.tmp) then true ;  \
 	   else echo "Possible problem with ex1_3, diffs above"; fi ;\
 	   ${RM} -f ex1_3.tmp
 runex2:
-	-@${MPIRUN} -np 1 ex2  >\
+	-@${MPIRUN} -np 1 ./ex2  >\
 	   ex2_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
 
 runex2_2:
-	-@${MPIRUN} -np 2 ex2  >\
+	-@${MPIRUN} -np 2 ./ex2  >\
 	   ex2_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \

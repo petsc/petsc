@@ -35,22 +35,22 @@ ex4: ex4.o   chkopts
 # ------------------------------------------------------------------------
 #
 runex1:
-	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex1 > ex1_1.tmp 2>&1; \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp 
 
 runex2:
-	-@${MPIRUN} -np 1 ex2 > ex2_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex2 > ex2_1.tmp 2>&1; \
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp 
 
 runex3:
-	-@${MPIRUN} -np 1 ex3 
+	-@${MPIRUN} -np 1 ./ex3 
 
 runex3f:
-	-@${MPIRUN} -np 1 ex3f
+	-@${MPIRUN} -np 1 ./ex3f
 
 TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
                    ex3.PETSc runex3 ex3.rm
