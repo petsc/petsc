@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.96 1995/11/01 19:10:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.97 1995/11/01 23:18:18 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1136,11 +1136,11 @@ static int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
       *norm = 0.0;
       v = amat->a; jj = amat->j;
       for ( j=0; j<amat->nz; j++ ) {
-        tmp[cstart + *jj++ + shift] += PetscAbsScalar(*v++); 
+        tmp[cstart + *jj++ + shift] += PetscAbsScalar(*v);  v++;
       }
       v = bmat->a; jj = bmat->j;
       for ( j=0; j<bmat->nz; j++ ) {
-        tmp[garray[*jj++ + shift]] += PetscAbsScalar(*v++); 
+        tmp[garray[*jj++ + shift]] += PetscAbsScalar(*v); v++;
       }
       MPI_Allreduce((void*)tmp,(void*)tmp2,aij->N,MPI_DOUBLE,MPI_SUM,mat->comm);
       for ( j=0; j<aij->N; j++ ) {
@@ -1339,8 +1339,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
 
   /* build local table of row and column ownerships */
   a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);
-  PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _Mat)+ 
-                       sizeof(Mat_MPIAIJ));
+  PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_MPIAIJ));
   a->cowners = a->rowners + a->size + 1;
   MPI_Allgather(&m,1,MPI_INT,a->rowners+1,1,MPI_INT,comm);
   a->rowners[0] = 0;
