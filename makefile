@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.254 1999/01/27 23:08:53 balay Exp balay $ 
+# $Id: makefile,v 1.255 1999/01/29 20:41:25 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -246,10 +246,10 @@ etags_fexamples:
 
 BMAKEFILES = bmake/common* bmake/*/base* bmake/*/petscconf.h
 DOCS	   = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
-	     maint/xclude maint/crontab bmake/common bmake/*/base* \
+	     maint/xclude maint/crontab  \
 	     maint/autoftp include/foldinclude/generateincludes \
 	     bin/petscviewinfo.text bin/petscoptsinfo.text \
-	     bmake/*/petscconf.h bmake/readme bmake/petscconf.defs
+	     bmake/readme bmake/petscconf.defs
 
 # Deletes man pages (HTML version)
 deletemanualpages:
