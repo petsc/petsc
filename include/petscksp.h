@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.87 1999/12/08 22:17:32 balay Exp bsmith $ */
+/* $Id: ksp.h,v 1.88 2000/01/11 21:04:04 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -24,6 +24,7 @@ typedef struct _p_KSP*     KSP;
 #define KSPQCG        "qcg"
 #define KSPBICG       "bicg"
 #define KSPFGMRES     "fgmres" 
+#define KSPMINRES     "minres"
 typedef char * KSPType;
 
 extern int KSPCreate(MPI_Comm,KSP *);
@@ -130,6 +131,9 @@ typedef enum {/* converged */
               KSP_DIVERGED_ITS                 = -3,
               KSP_DIVERGED_DTOL                = -4,
               KSP_DIVERGED_BREAKDOWN           = -5,
+              KSP_DIVERGED_BREAKDOWN_BICG      = -6,
+              KSP_DIVERGED_NONSYMMETRIC        = -7,
+              KSP_DIVERGED_INDEFINITE_PC       = -8,
  
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
 
