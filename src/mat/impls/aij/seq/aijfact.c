@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.27 1995/07/17 20:40:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: aijfact.c,v 1.28 1995/07/21 17:52:41 curfman Exp bsmith $";
 #endif
 
 
@@ -427,9 +427,10 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
 {
   Mat_AIJ *aij = (Mat_AIJ *) mat->data, *aijnew;
   IS      isicol;
-  int     *r,*ic, ierr, i, n = aij->m, *ai = aij->i, *aj = aij->j;
-  int     *ainew,*ajnew, jmax,*fill, *ajtmp, nz, *lfill,*ajfill,*ajtmpf;
-  int     *idnew, idx, row,m,fm, nnz, nzi,len, *im, nzbd, realloc = 0;
+  int     *r,*ic, ierr, prow, n = aij->m, *ai = aij->i, *aj = aij->j;
+  int     *ainew,*ajnew, jmax,*fill, *xi, nz, *im,*ajfill,*flev;
+  int     *dloc, idx, row,m,fm, nzf, nzi,len,  realloc = 0;
+  int     incrlev,nnz,i;
  
   if (n != aij->n) 
     SETERRQ(1,"MatILUFactorSymbolic_AIJ:Matrix must be square");
@@ -450,101 +451,101 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
   /* ajfill is level of fill for each fill entry */
   ajfill = (int *) PETSCMALLOC( (jmax)*sizeof(int) ); CHKPTRQ(ajfill);
   /* fill is a linked list of nonzeros in active row */
-  fill = (int *) PETSCMALLOC( (2*n+1)*sizeof(int)); CHKPTRQ(fill);
-  im   = fill + n + 1;
-  /* lfill is level for each filled value */
-  lfill = (int *) PETSCMALLOC( (n+1)*sizeof(int)); CHKPTRQ(lfill);
-  /* idnew is location of diagonal in factor */
-  idnew = (int *) PETSCMALLOC( (n+1)*sizeof(int)); CHKPTRQ(idnew);
-  idnew[0] = 1;
+  fill = (int *) PETSCMALLOC( (n+1)*sizeof(int)); CHKPTRQ(fill);
+  /* im is level for each filled value */
+  im = (int *) PETSCMALLOC( (n+1)*sizeof(int)); CHKPTRQ(im);
+  /* dloc is location of diagonal in factor */
+  dloc = (int *) PETSCMALLOC( (n+1)*sizeof(int)); CHKPTRQ(dloc);
+  dloc[0]  = 0;
 
-  for ( i=0; i<n; i++ ) {
+  for ( prow=0; prow<n; prow++ ) {
     /* first copy previous fill into linked list */
-    nnz = nz    = ai[r[i]+1] - ai[r[i]];
-    ajtmp = aj + ai[r[i]] - 1;
+    nzf = nz  = ai[r[prow]+1] - ai[r[prow]];
+    xi  = aj + ai[r[prow]] - 1;
     fill[n] = n;
     while (nz--) {
-      fm = n;
-      idx = ic[*ajtmp++ - 1];
+      fm  = n;
+      idx = ic[*xi++ - 1];
       do {
-        m = fm;
+        m  = fm;
         fm = fill[m];
       } while (fm < idx);
-      fill[m] = idx;
+      fill[m]   = idx;
       fill[idx] = fm;
-      lfill[idx] = -1;
- /* printf("i %d cols %d %d\n",i,nz,idx);  */
+      im[idx]   = 0;
     }
+    nzi = 0;
     row = fill[n];
-    while ( row < i ) {
-      ajtmp  = ajnew + idnew[row];
-      ajtmpf = ajfill + idnew[row];
-
-      nzbd = 1 + idnew[row] - ainew[row];
-      nz = im[row] - nzbd;
-
-      fm = fill[row]; m = row;
-      while (nz-- > 0) {
-        idx = *ajtmp++ - 1;
-        nzbd++;
-        if (idx == i) im[row] = nzbd;
-        while (fm < idx) {
-          m = fm;
+    while ( row < prow ) {
+      incrlev = im[row] + 1;
+      nz      = dloc[row];
+      xi      = ajnew  + ainew[row] - 1 + nz;
+      flev    = ajfill + ainew[row] - 1 + nz + 1;
+      nnz     = ainew[row+1] - ainew[row] - nz - 1;
+      if (*xi++ - 1 != row) {
+        SETERRQ(1,"MatILUFactorSymbolic_AIJ:zero pivot");
+      }
+      fm      = row;
+      while (nnz-- > 0) {
+        idx = *xi++ - 1;
+        if (*flev + incrlev > levels) {
+          flev++;
+          continue;
+        }
+        do {
+          m  = fm;
           fm = fill[m];
-        }
+        } while (fm < idx);
         if (fm != idx) {
-          lfill[idx] = *ajtmpf + 1;
-          if (lfill[idx] < levels) {
-            fill[m] = idx;
-            fill[idx] = fm;
-            fm = idx;
-            nnz++;
-          }
+          im[idx]  = *flev + incrlev;
+          fill[m] = idx;
+          fill[idx] = fm;
+          fm = idx;
+          nzf++;
         }
- /* printf("i %d row %d nz %d idx %d fm %d level %d nnz %d\n",i,row,nz,idx,fm,*ajtmpf + 1,nnz); */
-        ajtmpf++;
+        else {
+          if (im[idx] > *flev + incrlev) im[idx] = *flev+incrlev;
+        }
+        flev++;
       }
       row = fill[row];
+      nzi++;
     }
     /* copy new filled row into permanent storage */
-    ainew[i+1] = ainew[i] + nnz;
-    if (ainew[i+1] > jmax+1) {
+    ainew[prow+1] = ainew[prow] + nzf;
+    if (ainew[prow+1] > jmax+1) {
       /* allocate a longer ajnew */
       int maxadd;
-      maxadd = (int) ((f*ai[n]*(n-i+5))/n);
-      if (maxadd < nnz) maxadd = (n-i)*(nnz+1);
+      maxadd = (int) ((f*ai[n]*(n-prow+5))/n);
+      if (maxadd < nzf) maxadd = (n-prow)*(nzf+1);
       jmax += maxadd;
-      ajtmp = (int *) PETSCMALLOC( jmax*sizeof(int) );CHKPTRQ(ajtmp);
-      PETSCMEMCPY(ajtmp,ajnew,(ainew[i]-1)*sizeof(int));
+      xi = (int *) PETSCMALLOC( jmax*sizeof(int) );CHKPTRQ(xi);
+      PETSCMEMCPY(xi,ajnew,(ainew[prow]-1)*sizeof(int));
       PETSCFREE(ajnew);
-      ajnew = ajtmp;
+      ajnew = xi;
       /* allocate a longer ajfill */
-      ajtmp = (int *) PETSCMALLOC( jmax*sizeof(int) );CHKPTRQ(ajtmp);
-      PETSCMEMCPY(ajtmp,ajfill,(ainew[i]-1)*sizeof(int));
+      xi = (int *) PETSCMALLOC( jmax*sizeof(int) );CHKPTRQ(xi);
+      PETSCMEMCPY(xi,ajfill,(ainew[prow]-1)*sizeof(int));
       PETSCFREE(ajfill);
-      ajfill = ajtmp;
+      ajfill = xi;
       realloc++;
     }
-    ajtmp  = ajnew + ainew[i] - 1;
-    ajtmpf = ajfill + ainew[i] - 1;
-    fm = fill[n];
-    im[i] = nnz;
-    nzi = 0;
-    while (nnz--) {
-      if (fm < i) nzi++;
-      *ajtmp++  = fm + 1;
-      *ajtmpf++ = lfill[fm];
-/* printf("i %d col %d level %d\n",i,fm,lfill[fm]); */
-      fm = fill[fm];
+    xi          = ajnew + ainew[prow] - 1;
+    flev        = ajfill + ainew[prow] - 1;
+    dloc[prow]  = nzi;
+    fm          = fill[n];
+    while (nzf--) {
+      *xi++   = fm + 1;
+      *flev++ = im[fm];
+      fm      = fill[fm];
     }
-    idnew[i] = ainew[i] + nzi;
   }
   PETSCFREE(ajfill); 
-  ISDestroy(isicol); PETSCFREE(fill); PETSCFREE(lfill);
+  ISDestroy(isicol); PETSCFREE(fill); PETSCFREE(im);
 
   PLogInfo((PetscObject)mat,
     "Info:MatILUFactorSymbolic_AIJ:Realloc %d Fill ratio:given %g needed %g\n",
-                             realloc,f,((double)ainew[n])/((double)ai[i]));
+                             realloc,f,((double)ainew[n])/((double)ai[prow]));
 
   /* put together the new matrix */
   ierr = MatCreateSequentialAIJ(mat->comm,n, n, 0, 0, fact); CHKERRQ(ierr);
@@ -557,7 +558,8 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
   aijnew->a         = (Scalar *) PETSCMALLOC( len ); CHKPTRQ(aijnew->a);
   aijnew->j         = ajnew;
   aijnew->i         = ainew;
-  aijnew->diag      = idnew;
+  for ( i=0; i<n; i++ ) dloc[i] += ainew[i];
+  aijnew->diag      = dloc;
   aijnew->ilen      = 0;
   aijnew->imax      = 0;
   aijnew->row       = isrow;
@@ -565,7 +567,7 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
   aijnew->solve_work = (Scalar *) PETSCMALLOC( (n+1)*sizeof(Scalar)); 
   CHKPTRQ(aijnew->solve_work);
   /* In aijnew structure:  Free imax, ilen, old a, old j.  
-     Allocate idnew, solve_work, new a, new j */
+     Allocate dloc, solve_work, new a, new j */
   aijnew->mem += (ainew[n]-1-n)*(sizeof(int) + sizeof(Scalar)) + sizeof(int);
   aijnew->maxnz = aijnew->nz = ainew[n] - 1;
   (*fact)->factor   = FACTOR_LU;
