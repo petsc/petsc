@@ -29,6 +29,8 @@ class Configure(config.base.Configure):
        - Otherwise return -l<library>'''
     if not library:
       return ''
+    if library[0] == '-':
+      return library
     if len(library) > 3 and library[-4:] == '.lib':
       return library
     if os.path.basename(library).startswith('lib'):
@@ -47,8 +49,6 @@ class Configure(config.base.Configure):
     if os.path.splitext(library)[1] == '.so':
       return library
     if os.path.isabs(library):
-      return library
-    if library[0] == '-':
       return library
     return '-l'+library
 
