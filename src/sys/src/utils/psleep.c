@@ -1,4 +1,4 @@
-/*$Id: psleep.c,v 1.27 2000/12/21 03:22:10 balay Exp bsmith $*/
+/*$Id: psleep.c,v 1.28 2001/01/15 21:44:00 bsmith Exp balay $*/
 
 #include "petsc.h"                 /*I   "petsc.h"    I*/
 #if defined (PETSC_HAVE_UNISTD_H)
@@ -36,7 +36,7 @@ int PetscSleep(int s)
 {
   PetscFunctionBegin;
   if (s < 0) getc(stdin);
-#if defined (PARCH_win32)
+#if defined (PETSC_HAVE_U_SLEEP)
   else       _sleep(s*1000);
 #else
   else       sleep(s);
