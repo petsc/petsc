@@ -1,7 +1,5 @@
-/* Peter Mell Modified this file   8/95 */
-
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.16 1996/01/24 17:53:26 curfman Exp curfman $";
+static char vcid[] = "$Id: ex9.c,v 1.17 1996/01/28 18:26:18 curfman Exp curfman $";
 #endif
 
 static char help[] =
