@@ -79,6 +79,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', 'AR',                          nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('PETSc', 'AR_FLAGS',                    nargs.Arg(None, 'cr',   'Specify the archiver flags'))
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
+    help.addArgument('PETSc', '--prefix',                    nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
     return
 
   def defineAutoconfMacros(self):
@@ -379,9 +380,9 @@ class Configure(config.base.Configure):
       else:
         raise RuntimeError('********** Error: Unable to locate a functional MPI. Please consult configure.log. **********')
     self.framework.addDefine('HAVE_MPI', 1)
-    self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/src/sys/src/mpiuni')
+    self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/include/mpiuni')
     self.framework.addSubstitution('MPI_LIB',     '-L${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH} -lmpiuni')
-    self.framework.addSubstitution('MPIRUN',      '${PETSC_DIR}/src/sys/src/mpiuni/mpirun')
+    self.framework.addSubstitution('MPIRUN',      '${PETSC_DIR}/bin/mpirun.uni')
     self.framework.addSubstitution('MPE_INCLUDE', '')
     self.framework.addSubstitution('MPE_LIB',     '')
     self.mpi.addDefine('HAVE_MPI_COMM_F2C', 1)
@@ -520,9 +521,9 @@ class Configure(config.base.Configure):
     self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h')
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureFortranCPP)
+    self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configurePIC)
-    self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)
     self.executeTest(self.configureMkdir)
@@ -548,5 +549,7 @@ class Configure(config.base.Configure):
       os.makedirs(self.bmakeDir)
     self.executeTest(self.configureRegression)
     self.executeTest(self.configureScript)
+    if self.framework.argDB['prefix']: self.framework.addSubstitution('INSTALL_DIR', os.path.join(self.framework.argDB['prefix'],os.path.basename(os.getcwd())))
+    else: self.framework.addSubstitution('INSTALL_DIR', self.framework.argDB['PETSC_DIR'])
     self.startLine()
     return

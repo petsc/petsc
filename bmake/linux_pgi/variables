@@ -13,6 +13,7 @@ SH_LD		   = pgcc
 MKDIR              = mkdir -p
 LIB_SUFFIX         = a
 DIFF               = diff
+INSTALL_DIR        = ${PETSC_DIR}
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = pgcc -fPIC

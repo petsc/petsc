@@ -249,7 +249,7 @@ void PETSC_STDCALL tssetmonitor_(TS *ts,void (PETSC_STDCALL *func)(TS*,int*,Pets
   } else {
     ((PetscObject)*ts)->fortran_func_pointers[4] = (FCNVOID)func;
     ((PetscObject)*ts)->fortran_func_pointers[5] = (FCNVOID)d;
-    ((PetscObject)*ts)->fortran_func_pointers[6] = mctx;
+    ((PetscObject)*ts)->fortran_func_pointers[6] = (FCNVOID)mctx;
     if (FORTRANNULLFUNCTION(d)) {
       *ierr = TSSetMonitor(*ts,ourtsmonitor,*ts,0);
     } else {

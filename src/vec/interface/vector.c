@@ -3,7 +3,7 @@
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
 */
-#include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
+#include "vecimpl.h"    /*I "petscvec.h" I*/
 
 /* Logging support */
 int VEC_COOKIE = 0;

@@ -354,13 +354,13 @@ EXTERN int VecSetOption(Vec,VecOption);
    Expose VecGetArray()/VecRestoreArray() to users. Allows this to work without any function
    call overhead on any 'native' Vecs.
 */
-#include "src/vec/vecimpl.h"
+#include "vecimpl.h"
 
 EXTERN int VecContourScale(Vec,PetscReal,PetscReal);
 
 /*
     These numbers need to match the entries in 
-  the function table in src/vec/vecimpl.h
+  the function table in vecimpl.h
 */
 typedef enum { VECOP_VIEW = 32,
                VECOP_LOADINTOVECTOR = 38

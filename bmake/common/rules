@@ -10,7 +10,7 @@ chkpetsc_dir:
         if [ $${mypwd} = $${newpwd} -a $${haspetsc} != $${mypwd} ]; then \
           echo "*********************Warning*************************" ; \
           echo "Your PETSC_DIR may not match the directory you are in";\
-          echo "PETSC_DIR " ${true_PETSC_DIR} "Current directory" ${mypwd};\
+          echo "PETSC_DIR " $${true_PETSC_DIR} "Current directory" $${mypwd};\
           echo "******************************************************" ; \
         fi
 
@@ -592,7 +592,7 @@ getexlist:
 checkmakefilelist:
 	-@ls makefile ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
 	ls makefile *.c *.h *.F *.m *.h90 2>/dev/null | sort | uniq > /tmp/$$USER.$$.ls; \
-	diff /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls; \
+	${DIFF} /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls; \
 	${RM}  /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls
 
 html:

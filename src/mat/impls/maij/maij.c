@@ -17,7 +17,7 @@
 */
 
 #include "src/mat/impls/maij/maij.h"
-#include "src/vec/vecimpl.h"
+#include "vecimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMAIJGetAIJ" 

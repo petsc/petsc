@@ -63,9 +63,5 @@ def petsc_configure(configure_options):
     sys.exit(1)
 
 if __name__ == '__main__':
-  for opt in sys.argv[1:]:
-    if opt.startswith('--prefix') or opt.startswith('-prefix'):
-      print '=====================================================================\nPETSc does NOT support the --prefix options. All installs are done in-place.\nMove your petsc directory to the location you wish it installed, before running configure\n'
-      sys.exit(1)
   petsc_configure([])
 

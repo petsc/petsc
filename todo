@@ -2,9 +2,6 @@
 PETSc configure
    Add support for requesting 32 bit or 64 bit code
 
-   Have configure generate bmake/init.csh init.sh that can be source
-   by .cshrc and friends and sets PETSC_DIR, MATLABPATH and PATH, others?
-
    Download and install c2html if user missing documentation?
 
    Download sowing (take code from fortranStubs.py) for build docs if 
@@ -20,3 +17,4 @@ Convert the Tufo-Fischer parallel direct solver to its own PC.
 
 if PETSC_ARCH is a bmake one then configure should error
 
+support --prefix option

@@ -2,7 +2,7 @@
 static char vcid[] = "$Id: vecregall.c,v 1.5 1999/06/07 17:17:56 knepley Exp $";
 #endif
 
-#include "src/vec/vecimpl.h"     /*I  "vec.h"  I*/
+#include "vecimpl.h"     /*I  "vec.h"  I*/
 EXTERN_C_BEGIN
 extern int VecCreate_Seq(Vec);
 extern int VecCreate_MPI(Vec);

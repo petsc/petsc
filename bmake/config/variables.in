@@ -22,6 +22,7 @@ DOCTEXT            = @DOCTEXT@
 MAPNAMES           = @MAPNAMES@
 
 top_builddir       = @PETSC_DIR@
+INSTALL_DIR        = @INSTALL_DIR@
 LIBTOOL            = @LIBTOOL@
 PETSC_LIBTOOL      = ${PETSC_DIR}/bin/petsc_libtool
 # ######################### C compiler #####################################

@@ -9,7 +9,7 @@
 #include "petsc.h"
 #include "petscsys.h"
 #include "petscvec.h"         /*I  "petscvec.h"  I*/
-#include "src/vec/vecimpl.h"
+#include "vecimpl.h"
 #if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN
 #include "pnetcdf.h"

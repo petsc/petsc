@@ -210,6 +210,72 @@ chk_petsc_dir:
 	  echo "Aborting build"; \
 	  false; fi
 
+install:
+	-@if [ "${INSTALL_DIR}" == "${PETSC_DIR}" ]; then \
+	  echo "You did not set a directory to install to";\
+        else \
+	  echo Installing PETSc at ${INSTALL_DIR};\
+          if [ ! -d `dirname ${INSTALL_DIR}` ]; then \
+	    mkdir `dirname ${INSTALL_DIR}` ; \
+          fi;\
+          if [ ! -d ${INSTALL_DIR} ]; then \
+	    mkdir ${INSTALL_DIR} ; \
+          fi;\
+          cp -fr include ${INSTALL_DIR};\
+          if [ ! -d ${INSTALL_DIR}/bmake ]; then \
+	    mkdir ${INSTALL_DIR}/bmake ; \
+          fi;\
+          cp -f bmake/adic* bmake/variables ${INSTALL_DIR}/bmake ; \
+          cp -fr bmake/common ${INSTALL_DIR}/bmake;\
+          cp -fr bmake/${PETSC_ARCH} ${INSTALL_DIR}/bmake;\
+          cp -fr bin ${INSTALL_DIR};\
+          if [ ! -d ${INSTALL_DIR}/lib ]; then \
+	    mkdir ${INSTALL_DIR}/lib ; \
+          fi;\
+          for i in lib/lib*; do \
+            bopt=`echo $${i} | ${SED} s=lib/lib==g`;\
+            if [ ! -d ${INSTALL_DIR}/$${i} ]; then \
+              mkdir ${INSTALL_DIR}/$${i};\
+            fi; \
+            if [ -d $${i}/${PETSC_ARCH} ]; then \
+              cp -fr $${i}/${PETSC_ARCH} ${INSTALL_DIR}/$${i};\
+              ${RANLIB}  ${INSTALL_DIR}/$${i}/*.a > /dev/null 2>&1 ;\
+              ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${INSTALL_DIR} BOPT=$${bopt} shared; \
+            fi;\
+          done;\
+          echo "sh/bash: PETSC_DIR="${INSTALL_DIR}"; export PETSC_DIR";\
+          echo "csh/tcsh: setenv PETSC_DIR "${INSTALL_DIR} ;\
+          echo "The do make test to verify correct install";\
+        fi;
+
+install_src:
+	-@if [ "${INSTALL_DIR}" == "${PETSC_DIR}" ]; then \
+	  echo "You did not set a directory to install to";\
+        else \
+	  echo Installing PETSc source at ${INSTALL_DIR};\
+          if [ ! -d `dirname ${INSTALL_DIR}` ]; then \
+	    mkdir `dirname ${INSTALL_DIR}` ; \
+          fi;\
+          if [ ! -d ${INSTALL_DIR} ]; then \
+	    mkdir ${INSTALL_DIR} ; \
+          fi;\
+          cp -fr src ${INSTALL_DIR};\
+        fi;
+
+install_docs:
+	-@if [ "${INSTALL_DIR}" == "${PETSC_DIR}" ]; then \
+	  echo "You did not set a directory to install to";\
+        else \
+	  echo Installing PETSc documentation at ${INSTALL_DIR};\
+          if [ ! -d `dirname ${INSTALL_DIR}` ]; then \
+	    mkdir `dirname ${INSTALL_DIR}` ; \
+          fi;\
+          if [ ! -d ${INSTALL_DIR} ]; then \
+	    mkdir ${INSTALL_DIR} ; \
+          fi;\
+          cp -fr docs ${INSTALL_DIR};\
+          ${RM} -fr docs/tex;\
+        fi;
 # ------------------------------------------------------------------
 #
 # All remaining actions are intended for PETSc developers only.

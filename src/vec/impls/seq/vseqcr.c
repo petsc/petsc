@@ -3,7 +3,7 @@
    Implements the sequential vectors.
 */
 
-#include "src/vec/vecimpl.h"          /*I  "petscvec.h"   I*/
+#include "vecimpl.h"          /*I  "petscvec.h"   I*/
 #include "src/vec/impls/dvecimpl.h" 
 
 #undef __FUNCT__  

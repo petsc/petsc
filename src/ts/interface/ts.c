@@ -415,6 +415,7 @@ int TSSetRHSMatrix(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Mat*,Mat*,MatStructur
 /*@C
    TSSetRHSJacobian - Sets the function to compute the Jacobian of F,
    where U_t = F(U,t), as well as the location to store the matrix.
+   Use TSSetRHSMatrix() for linear problems.
 
    Collective on TS
 
@@ -452,7 +453,7 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
 .keywords: TS, timestep, set, right-hand-side, Jacobian
 
 .seealso: TSDefaultComputeJacobianColor(),
-          SNESDefaultComputeJacobianColor()
+          SNESDefaultComputeJacobianColor(), TSSetRHSFunction(), TSSetRHSMatrix()
 
 @*/
 int TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)

@@ -1,6 +1,6 @@
 /*$Id: vecstash.c,v 1.29 2001/09/07 20:08:55 bsmith Exp $*/
 
-#include "src/vec/vecimpl.h"
+#include "vecimpl.h"
 
 #define DEFAULT_STASH_SIZE   100
 

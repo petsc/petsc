@@ -1,4 +1,4 @@
-#include "src/vec/vecimpl.h"
+#include "vecimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecConvertMPIToSeqAll"

@@ -417,7 +417,7 @@ int PetscInitialize(int *argc,char ***args,const char file[],const char help[])
   }
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr); 
 
-  /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we od not print it out */
+  /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
   ierr = PetscLogBegin_Private();CHKERRQ(ierr);
 
   /*

@@ -5,7 +5,7 @@
 */
 
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
-#include "src/vec/vecimpl.h"  
+#include "vecimpl.h"  
 
 /* Logging support */
 int MAT_COOKIE = 0;
