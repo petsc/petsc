@@ -154,7 +154,12 @@ Arg class, which wraps the usual value.'''
         if not arg:
           self.writeLogLine('__getitem__: Parent has no type')
           arg = nargs.Arg(key)
-        value = arg.getValue()
+        try:
+          value = arg.getValue()
+        except AttributeError, e:
+          self.writeLogLine('__getitem__: Parent had invalid entry: '+str(e))
+          arg   = nargs.Arg(key)
+          value = arg.getValue()
         self.writeLogLine('__getitem__: Setting parent value '+str(value))
         self.send(key, value, operation = '__setitem__')
         return value
