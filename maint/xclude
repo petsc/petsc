@@ -1,3 +1,7 @@
+petsc/src/contrib/pc/spai/RCS
+petsc/src/contrib/pc/spai/examples/RCS
+petsc/src/contrib/pc/spai/examples/tutorials/RCS
+petsc/src/contrib/pc/spai/src/RCS
 petsc/include/ec.h
 petsc/src/contrib/pfull
 petsc/src/contrib/agglom

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 1999/04/06 21:27:11 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.8 1999/04/07 02:48:09 bsmith Exp bsmith $ 
 #
 #   SPAI_LIB should be defined in bmake/$PETSC_ARCH/base.site
 #
@@ -25,7 +25,7 @@ BUILDEXAMPLES_6 =
 BUILDEXAMPLES_7 =
 BUILDEXAMPLES_9 =
 
-EXAMPLESC       = ex1.c ex2.c
+EXAMPLESC       = ex1.c ex2.c ex3.c
 EXAMPLESF       =
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
