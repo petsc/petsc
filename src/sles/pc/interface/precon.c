@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.125 1997/05/23 15:46:34 balay Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.126 1997/06/06 20:52:04 balay Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -74,8 +74,8 @@ int PCDestroy(PC pc)
 .  pc - location to put the preconditioner context
 
    Notes:
-   The default preconditioner on one processor is PCILU on more 
-   then one it is PCBJACOBI.
+   The default preconditioner on one processor is PCILU with 0 fill on more 
+   then one it is PCBJACOBI with ILU() on each processor.
 
 .keywords: PC, create, context
 
