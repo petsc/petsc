@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.81 1999/02/01 18:15:24 balay Exp bsmith $ 
+# $Id: makefile,v 1.82 1999/02/02 16:19:17 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -47,7 +47,7 @@ OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cputimef.o cgtypef.o \
 
 OBJSF	 =
 LIBBASE	 = libpetscfortran
-MANSEC	 = 1
+MANSEC	 = Sys
 LOCDIR   = src/fortran/auto/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
