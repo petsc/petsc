@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.2 1995/07/22 19:37:04 curfman Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.3 1995/07/22 20:33:54 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -32,7 +32,7 @@ static char vcid[] = "$Id: umtr.c,v 1.2 1995/07/22 19:37:04 curfman Exp curfman 
     Conjugate Gradient) to find an approximate minimizer of the 
     resulting quadratic.  Eventually, we will generalize the solver.
 */
-static int SNESSolve_UMTR(SNES snes,int *its)
+static int SNESSolve_UMTR(SNES snes,int *outits)
 {
   SNES_UMTR    *neP = (SNES_UMTR *) snes->data;
   int          maxits, i, history_len, nlconv, ierr;
@@ -44,7 +44,6 @@ static int SNESSolve_UMTR(SNES snes,int *its)
   MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
   SLES         sles;
   KSP          ksp;
-  PC           pc;
   KSP_QCG      *qcgP;
 
   nlconv        = 0;
@@ -71,10 +70,8 @@ static int SNESSolve_UMTR(SNES snes,int *its)
 
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
   ierr = KSPSetMethod(ksp,KSPQCG); CHKERRQ(ierr);
-  ierr = PCSetMethod(pc,PCICC); CHKERRQ(ierr);
-  PLogInfo((PetscObject)snes,"setting KSPMethod = kspqcg, pcmethod=icc\n");
+  PLogInfo((PetscObject)snes,"setting KSPMethod = KSPQCG\n");
   qcgP = (KSP_QCG *) ksp->MethodPrivate;
 
   for ( i=0; i<maxits && !nlconv; i++ ) {
@@ -83,7 +80,7 @@ static int SNESSolve_UMTR(SNES snes,int *its)
     neP->success = 0;
     snes->nfailures = 0;
     ierr = SNESComputeHessian(snes,X,&snes->jacobian,&snes->jacobian_pre,
-                                            &flg,snes->jacP); CHKERRQ(ierr);
+                                            &flg); CHKERRQ(ierr);
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
     CHKERRQ(ierr);
 
@@ -174,7 +171,13 @@ static int SNESSolve_UMTR(SNES snes,int *its)
     snes->vec_sol_always = snes->vec_sol;
     snes->vec_func_always = snes->vec_func; 
   }
-  return i+1;
+  if (i == maxits) {
+    PLogInfo((PetscObject)snes,
+      "Maximum number of iterations has been reached: %d\n",maxits);
+    i--;
+  }
+  *outits = i+1;
+  return 0;
 }
 /*------------------------------------------------------------*/
 static int SNESSetUp_UMTR(SNES snes)
@@ -191,28 +194,6 @@ static int SNESDestroy_UMTR(PetscObject obj )
   SNES snes = (SNES) obj;
   VecFreeVecs(snes->work,snes->nwork);
   PETSCFREE(snes->data);
-  return 0;
-}
-/*------------------------------------------------------------*/
-/* @ 
-   SNESMonitor_UMTR - SNES monitoring routine for unconstrained 
-   minimization.  Prints the function values and gradient norm at 
-   each iteration.
-
-   Input Parameters:
-.  snes - the SNES context
-.  its - iteration number
-.  gnorm - 2-norm gradient value (may be estimated)
-.  dummy - unused context
-
-.keywords: SNES, nonlinear, default, monitor, gradient, norm
-
-.seealso: SNESSetMonitor()
-@ */
-int SNESMonitor_UMTR(SNES snes,int its,double gnorm,void *dummy)
-{
-  MPIU_printf(snes->comm,
-    "iter = %d, Function value %g, Gradient norm %g \n",its,snes->fc,gnorm);
   return 0;
 }
 /*------------------------------------------------------------*/
@@ -241,18 +222,13 @@ $    delta    - trust region paramenter
 $    deltatol - trust region size tolerance,
 $    epsmch   - machine epsilon
 $    fmin     - lower bound on function value,
-$               set with NLSetMinFunctionTol()
+$               set with SNESSetMinFunctionTolerance()
 $    nfunc    - number of function evaluations
 $    maxfunc  - maximum number of function evaluations, 
-$               set with NLSetMaxFunctionEvaluations()
+$               set with SNESSetMaxFunctionEvaluations()
 $    pred     - predicted reduction
 $    rtol     - relative function tolerance, 
-$               set with NLSetRelConvergenceTol()
-
-   Note:  
-   Call NLGetTerminationType() after calling NLSolve() to obtain
-   information about the type of termination which occurred for the
-   nonlinear solver.  
+$               set with SNESSetRelativeTolerance()
 @*/
 int SNESConverged_UMTR(SNES snes,double xnorm,double gnorm,double f,
                        void *dummy)
@@ -269,31 +245,33 @@ int SNESConverged_UMTR(SNES snes,double xnorm,double gnorm,double f,
   if ((!neP->success || neP->sflag) && (delta <= snes->deltatol * xnorm)) {
     neP->sflag = 0;
     PLogInfo((PetscObject)snes,
-    "Trust region parameter satisfies the trust region tolerance.\n");  
+      "SNES: Trust region param satisfies tolerance: %g <= %g * %g\n",
+      delta,snes->deltatol,xnorm);  
     return 3;
   }
   if ((fabs(ared) <= fabs(f) * rtol) && (pred) <= rtol*fabs(f)) {
     PLogInfo((PetscObject)snes,
-      "Actual and predicted reductions satisfy relative tolerance.\n");
+      "SNES: Actual (%g) and predicted (%g) reductions < %g * %g\n",
+      fabs(ared),pred,rtol,fabs(f));
     return 2;
   }
   if (f < snes->fmin) {
     PLogInfo((PetscObject)snes,
-      "f < f_{min}, where f = function and f_{min} = minimum function.\n");
+      "SNES: function value (%g) < f_{minimum} (%g)\n",f,snes->fmin);
     return 1;
   }
-
   /* Test for termination and stringent tolerances. (failure and stop) */
   if ( (fabs(ared) <= epsmch) && pred <= epsmch ) {
     PLogInfo((PetscObject)snes,
-      "Machine epsilon exceeds actual and predicted reductions.\n");
-      return -2;
+      "SNES: Actual (%g) and predicted (%g) reductions < epsmch (%g)\n",
+      fabs(ared),pred,epsmch);
+    return -2;
   }
   if (snes->nfuncs > snes->max_funcs) {
     PLogInfo((PetscObject)snes,
-      "Exceeded maximum number of function evaluations: %d > %d\n",
+      "SNES: Exceeded maximum number of function evaluations: %d > %d\n",
       snes->nfuncs, snes->max_funcs );
-      return -1;
+    return -1;
   }
   return 0;
 }
@@ -314,26 +292,26 @@ static int SNESSetFromOptions_UMTR(SNES snes)
 static int SNESPrintHelp_UMTR(SNES snes)
 {
   SNES_UMTR *ctx = (SNES_UMTR *)snes->data;
-  char    *prefix = "-";
-  if (snes->prefix) prefix = snes->prefix;
-  MPIU_fprintf(snes->comm,stdout," method umtr:\n");
-  MPIU_fprintf(snes->comm,stdout,"%seta1 eta1 (default %g)\n",prefix,ctx->eta1);
-  MPIU_fprintf(snes->comm,stdout,"%seta1 eta2 (default %g)\n",prefix,ctx->eta2);
-  MPIU_fprintf(snes->comm,stdout,"%seta1 eta3 (default %g)\n",prefix,ctx->eta3);
-  MPIU_fprintf(snes->comm,stdout,"%seta1 eta4 (default %g)\n",prefix,ctx->eta4);
-  MPIU_fprintf(snes->comm,stdout,"%sdelta0 delta0 (default %g)\n",prefix,ctx->delta0);
-  MPIU_fprintf(snes->comm,stdout,"%sfactor1 factor1 (default %g)\n",prefix,ctx->factor1);
-  MPIU_fprintf(snes->comm,stdout,
-    "delta0, factor1: used to initialize trust region parameter\n");
-  MPIU_fprintf(snes->comm,stdout,
-    "eta2, eta3, eta4: used to compute trust region parameter\n");
-  MPIU_fprintf(snes->comm,stdout,
-    "eta1: step is unsuccessful if actred < eta1 * prered, where\n"); 
-  MPIU_fprintf(snes->comm,stdout,
-    "      pred = predicted reduction, actred = actual reduction\n");
+  char      *p;
+  if (snes->prefix) p = snes->prefix; else p = "-";
+  MPIU_printf(snes->comm," method umtr (unconstrained minimization):\n");
+  MPIU_printf(snes->comm,"   %ssnes_trust_region_eta1 eta1 (default %g)\n",p,ctx->eta1);
+  MPIU_printf(snes->comm,"   %ssnes_trust_region_eta2 eta2 (default %g)\n",p,ctx->eta2);
+  MPIU_printf(snes->comm,"   %ssnes_trust_region_eta3 eta3 (default %g)\n",p,ctx->eta3);
+  MPIU_printf(snes->comm,"   %ssnes_trust_region_eta4 eta4 (default %g)\n",p,ctx->eta4);
+  MPIU_printf(snes->comm,"   %ssnes_trust_region_delta0 delta0 (default %g)\n",p,ctx->delta0);
+  MPIU_printf(snes->comm,"   %ssnes_trust_region_factor1 factor1 (default %g)\n",p,ctx->factor1);
+  MPIU_printf(snes->comm,
+    "   delta0, factor1: used to initialize trust region parameter\n");
+  MPIU_printf(snes->comm,
+    "   eta2, eta3, eta4: used to compute trust region parameter\n");
+  MPIU_printf(snes->comm,
+    "   eta1: step is unsuccessful if actred < eta1 * prered, where\n"); 
+  MPIU_printf(snes->comm,
+    "         pred = predicted reduction, actred = actual reduction\n");
   return 0;
 }
-
+/*------------------------------------------------------------*/
 static int SNESView_UMTR(PetscObject obj,Viewer viewer)
 {
   SNES      snes = (SNES)obj;
@@ -351,7 +329,6 @@ int SNESCreate_UMTR(SNES snes)
 {
   SNES_UMTR *neP;
 
-
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
    "SNESCreate_UMTR: Valid for SNES_UNCONSTRAINED_MINIMIZATION problems only");
   snes->type 		= SNES_UM_NTR;
@@ -359,7 +336,7 @@ int SNESCreate_UMTR(SNES snes)
   snes->solve		= SNESSolve_UMTR;
   snes->destroy		= SNESDestroy_UMTR;
   snes->converged	= SNESConverged_UMTR;
-  snes->monitor         = SNESMonitor_UMTR;
+  snes->monitor         = SNESDefaultMonitor;
   snes->printhelp       = SNESPrintHelp_UMTR;
   snes->setfromoptions  = SNESSetFromOptions_UMTR;
   snes->view            = SNESView_UMTR;
