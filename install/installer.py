@@ -39,7 +39,9 @@ class Installer(install.base.Base):
   def bootstrapInstall(self, projectUrl):
     self.debugPrint('Installing '+projectUrl+' from bootstrap', 3, 'install')
     root = self.retriever.retrieve(projectUrl, force = self.force);
-    self.builder.build(root, setupTarget = 'setupBootstrap')
+    # This is for purging the sidl after the build
+    self.argDB['fileset'] = 'sidl'
+    self.builder.build(root, target = ['default', 'purge'], setupTarget = 'setupBootstrap')
     return
 
   def backup(self, projectUrl):
