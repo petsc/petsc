@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.15 2001/03/23 23:23:55 balay Exp bsmith $*/
+/*$Id: ex22.c,v 1.16 2001/03/30 15:50:05 bsmith Exp bsmith $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
   ierr = VecAXPY(&mone,DMMGGetb(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
   ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",norm);CHKERRQ(ierr);
+  /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",norm);CHKERRQ(ierr); */
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);

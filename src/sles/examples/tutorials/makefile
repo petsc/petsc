@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.93 2001/03/29 15:39:35 bsmith Exp balay $ 
+# $Id: makefile,v 1.94 2001/03/29 16:36:19 balay Exp bsmith $ 
 
 CFLAGS	         =
 FFLAGS	         = 
@@ -392,9 +392,15 @@ runex21f:
 	   else echo "Possible problem with ex21f_1, diffs above"; fi; \
 	   ${RM} -f ex21f_1.tmp
 runex22:
-	-@${MPIRUN} -np 1 ex22 -dmmg_ksp_monitor > ex22_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ex22 -pc_mg_type full -dmmg_ksp_monitor > ex22_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
+	   ${RM} -f ex22_1.tmp
+
+runex22f:
+	-@${MPIRUN} -np 1 ex22f -pc_mg_type full -dmmg_ksp_monitor > ex22_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
+	   else echo "Possible problem with ex22f_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
 
 runex23:
@@ -421,7 +427,7 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
 	           runex5_5 ex5.rm ex8.rm 
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
-                   ex6f.PETSc ex6f.rm ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm\
+                   ex6f.PETSc ex6f.rm ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f ex22f.rm \
                    ex21f.PETSc runex21f ex21f.rm
 TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm
 TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
