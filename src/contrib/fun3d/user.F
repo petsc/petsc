@@ -1,4 +1,4 @@
-!  $Id: vector.c,v 1.191 2000/01/11 21:00:09 bsmith Exp $
+!  $Id: user.F,v 1.2 2000/01/13 17:17:46 bsmith Exp bsmith $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -140,12 +140,12 @@ c     print *, "I am in INIT"
       conv = 180./pi
       p0    = 1.0
 #if defined(CFL3D_AXIS)
-      u0    = dcos( alpha/conv )
+      u0    = dcos(alpha/conv)
       v0    = 0.0
-      w0    = dsin( alpha/conv )
+      w0    = dsin(alpha/conv)
 #else
-      u0    = dcos( alpha/conv )
-      v0    = dsin( alpha/conv )
+      u0    = dcos(alpha/conv)
+      v0    = dsin(alpha/conv)
       w0    = 0.0
 #endif
       do n = 1,nnodes
@@ -633,14 +633,14 @@ c
  
         write(13,1000) "nn." // c4(ic:4),nnpts(i),nntet(i)
  
-        write(13,1010) (  x(isnode(j)  )      ,j=isp,isp+nnpts(i)-1)
-        write(13,1010) (  y(isnode(j)  )      ,j=isp,isp+nnpts(i)-1)
-        write(13,1010) (  z(isnode(j)  )      ,j=isp,isp+nnpts(i)-1)
-        write(13,1010) (  1.0                 ,j=isp,isp+nnpts(i)-1)
-        write(13,1010) (  q(2,isnode(j))      ,j=isp,isp+nnpts(i)-1)
-        write(13,1010) (  q(3,isnode(j))      ,j=isp,isp+nnpts(i)-1)
-        write(13,1010) (  q(4,isnode(j))      ,j=isp,isp+nnpts(i)-1)           
-        write(13,1010) (  q(1,isnode(j))/pinf ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (x(isnode(j))      ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (y(isnode(j))      ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (z(isnode(j))      ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (1.0                 ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (q(2,isnode(j))      ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (q(3,isnode(j))      ,j=isp,isp+nnpts(i)-1)
+        write(13,1010) (q(4,isnode(j))      ,j=isp,isp+nnpts(i)-1)           
+        write(13,1010) (q(1,isnode(j))/pinf ,j=isp,isp+nnpts(i)-1)
  
         do 30 j=ist,ist+nntet(i)-1
           i1 = f2ntn(j,1) - isp + 1
@@ -668,14 +668,14 @@ c
  
         write(13,1000) "nv." // c4(ic:4),nvpts(i),nvtet(i)
  
-        write(13,1010) (  x(ivnode(j)  )      ,j=isp,isp+nvpts(i)-1)
-        write(13,1010) (  y(ivnode(j)  )      ,j=isp,isp+nvpts(i)-1)
-        write(13,1010) (  z(ivnode(j)  )      ,j=isp,isp+nvpts(i)-1)
-        write(13,1010) (  1.0                 ,j=isp,isp+nvpts(i)-1)
-        write(13,1010) (  q(2,ivnode(j))      ,j=isp,isp+nvpts(i)-1)
-        write(13,1010) (  q(3,ivnode(j))      ,j=isp,isp+nvpts(i)-1)
-        write(13,1010) (  q(4,ivnode(j))      ,j=isp,isp+nvpts(i)-1)           
-        write(13,1010) (  q(1,ivnode(j))/pinf ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (x(ivnode(j))      ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (y(ivnode(j))      ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (z(ivnode(j))      ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (1.0                 ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (q(2,ivnode(j))      ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (q(3,ivnode(j))      ,j=isp,isp+nvpts(i)-1)
+        write(13,1010) (q(4,ivnode(j))      ,j=isp,isp+nvpts(i)-1)           
+        write(13,1010) (q(1,ivnode(j))/pinf ,j=isp,isp+nvpts(i)-1)
  
         do 90 j=ist,ist+nvtet(i)-1
            i1 = f2ntv(j,1) - isp + 1
@@ -703,14 +703,14 @@ c
   
          write(13,1000) "ff." // c4(ic:4),nfpts(i),nftet(i)
   
-         write(13,1010) (  x(ifnode(j)  )      ,j=isp,isp+nfpts(i)-1)         
-         write(13,1010) (  y(ifnode(j)  )      ,j=isp,isp+nfpts(i)-1)
-         write(13,1010) (  z(ifnode(j)  )      ,j=isp,isp+nfpts(i)-1)
-         write(13,1010) (  1.0                 ,j=isp,isp+nfpts(i)-1)
-         write(13,1010) (  q(2,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
-         write(13,1010) (  q(3,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
-         write(13,1010) (  q(4,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
-         write(13,1010) (  q(1,ifnode(j))/pinf ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (x(ifnode(j))        ,j=isp,isp+nfpts(i)-1)         
+         write(13,1010) (y(ifnode(j))        ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (z(ifnode(j))        ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (1.0                 ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (q(2,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (q(3,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (q(4,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
+         write(13,1010) (q(1,ifnode(j))/pinf ,j=isp,isp+nfpts(i)-1)
  
          do 60 j=ist,ist+nftet(i)-1
             i1 = f2ntf(j,1) - isp + 1
@@ -1630,7 +1630,7 @@ c
           ti21 = -(u*phi7 + v*phi8 + w*phi9)/beta
           ti31 =  .5*(c-ubar)/beta
           ti41 = -.5*(c+ubar)/beta
-c jumps ( T(inverse)*dq ) 
+c jumps (T(inverse)*dq) 
           dv1 = (ti11*dp + phi4*du + phi5*dv + phi6*dw)/c2
           dv2 = (ti21*dp + phi7*du + phi8*dv + phi9*dw)/c2
           dv3 = .5*(2.*ti31*dp + xnorm*du + ynorm*dv + znorm*dw)/c2
