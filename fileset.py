@@ -72,7 +72,7 @@ class TreeFileSet (FileSet):
       else:
         self.roots  = roots
     else:
-      self.roots  = FileSet(os.path.getcwd())
+      self.roots  = FileSet(os.getcwd())
     self.fileTest = fileTest
 
   def walkTree(self, fileSet):
