@@ -356,7 +356,7 @@ class CompileCxxFiles (CompileFiles):
       return 0
 
 class CompileSIDLFiles (CompileFiles):
-  def __init__(self, generatedSources, sources = FileGroup(), compiler='babel', compilerFlags='-sC++ -ogenerated', archiver = '', archiverFlags = '', allAtOnce = 1):
+  def __init__(self, generatedSources, sources = FileGroup(), compiler='babel', compilerFlags='-sC++ -ogenerated --suppress-timestamp', archiver = '', archiverFlags = '', allAtOnce = 1):
     CompileFiles.__init__(self, None, sources, self.sidlFilter, compiler, compilerFlags, archiver, archiverFlags, allAtOnce)
     self.products = generatedSources
 
