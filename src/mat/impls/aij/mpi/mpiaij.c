@@ -2913,6 +2913,7 @@ PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
      The input seqmat is included into the container "Mat_Merge_SeqsToMPI", and will be
      destroyed when mpimat is destroyed. Call PetscObjectQuery() to access seqmat.
 @*/
+static PetscEvent logkey_seqstompinum = 0;
 PetscErrorCode MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat) 
 {
   PetscErrorCode       ierr; 
@@ -2931,6 +2932,11 @@ PetscErrorCode MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
   PetscObjectContainer container;
   
   PetscFunctionBegin;
+  if (!logkey_seqstompinum) {
+    ierr = PetscLogEventRegister(&logkey_seqstompinum,"MatMerge_SeqsToMPINumeric",MAT_COOKIE);
+  }
+  ierr = PetscLogEventBegin(logkey_seqstompinum,seqmat,0,0,0);CHKERRQ(ierr);
+
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
@@ -3024,10 +3030,10 @@ PetscErrorCode MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree(ba_i);CHKERRQ(ierr);
   ierr = PetscFree(buf_ri_k);CHKERRQ(ierr);
-
+  ierr = PetscLogEventEnd(logkey_seqstompinum,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+static PetscEvent logkey_seqstompisym = 0;
 PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat) 
 {
   PetscErrorCode       ierr; 
@@ -3048,6 +3054,11 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   PetscObjectContainer container;
 
   PetscFunctionBegin;
+  if (!logkey_seqstompisym) {
+    ierr = PetscLogEventRegister(&logkey_seqstompisym,"MatMerge_SeqsToMPISymbolic",MAT_COOKIE);
+  }
+  ierr = PetscLogEventBegin(logkey_seqstompisym,seqmat,0,0,0);CHKERRQ(ierr);
+
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
@@ -3268,7 +3279,7 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   ierr = PetscObjectContainerSetPointer(container,merge);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)B_mpi,"MatMergeSeqsToMPI",(PetscObject)container);CHKERRQ(ierr);
   *mpimat = B_mpi;
-
+  ierr = PetscLogEventEnd(logkey_seqstompisym,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
