@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: vec.h,v 1.23 1995/06/07 16:29:54 bsmith Exp bsmith $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -77,6 +77,8 @@ extern int VecPipelineEnd(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx);
 
 extern int VecGetArray(Vec,Scalar**);
 extern int VecRestoreArray(Vec,Scalar**);
+extern int VecGetArrays(Vec*,int,Scalar***);
+extern int VecRestoreArrays(Vec*,int,Scalar***);
 extern int VecValidVector(Vec);
 extern int VecView(Vec, Viewer);
 
