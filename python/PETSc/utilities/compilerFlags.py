@@ -82,7 +82,7 @@ class Configure(config.base.Configure):
           bopts = ['']
           if self.debugging.debugging:
             bopts.append('g')
-          if self.debugging.optimization:
+          else:
             bopts.append('O')
           for bopt in bopts:
             for testFlag in options.getCompilerFlags(language, self.getCompiler(), bopt):
