@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.8 1996/11/19 16:46:52 curfman Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.9 1996/11/19 19:47:30 balay Exp balay $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\n";
@@ -12,15 +12,18 @@ static char help[] = "Demonstrates calling a Fortran computational routine from 
    Fortran linker if Fortran IO is done. The Fortran linker requires one of
    these routines, even though it will never be called.
 */
-#if defined(__cplusplus) && defined (PARCH_sun4)
+#if defined (PARCH_sun4)
+#if defined(__cplusplus)
 extern "C" {
-   int __main()
+#endif
+  int __main()
     {
       return 0;
     }
+#if defined(__cplusplus)
 }
 #endif
-
+#endif
 
 /*
   Ugly stuff to insure the function names match between Fortran 

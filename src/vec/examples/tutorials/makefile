@@ -74,7 +74,7 @@ ex6: ex6.o  chkopts
 	$(RM) -f ex6.o
 
 ex7: ex7.o ex7f.o chkopts
-	-$(FLINKER) -o ex7 ex7.o ex7f.o $(PETSC_FORTRAN_LIB) $(SLES_LIB) 
+	-$(CLINKER) -o ex7 ex7.o ex7f.o $(PETSC_FORTRAN_LIB) $(SLES_LIB) 
 	$(RM) -f ex7.o ex7f.o
 
 ex8: ex8.o  chkopts
