@@ -1,31 +1,35 @@
-C    "$Id: ex12.F,v 1.30 1996/03/07 18:19:07 curfman Exp bsmith $";
+C    "$Id: ex12.F,v 1.31 1996/03/19 21:29:18 bsmith Exp curfman $";
+C
+C  This example demonstrates basic use of the SNES Fortran interface.
+C  
+C  Note:  The program ex10.f is the same as this example, except that it
+C         uses the Fortran .f suffix rather than the .F suffix.
+C
+C  In this example the application context is a Fortran integer array:
+C      ctx(1) = da    - distributed array
+C          2  = F     - global vector where the function is stored
+C          3  = xl    - local work vector
+C          4  = rank  - processor rank
+C          5  = size  - number of processors
+C          6  = N     - system size
+C
+C  Note: Any user-defined Fortran routines (such as FormJacobian)
+C  MUST be declared as external.
+C
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/da.h"
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/snes.h"
-C
-C  This example demonstrates basic use of the SNES Fortran interface.
-C  In this example the application context is a Fortran integer array:
-C  
-C  Note:  The program ex10.f is the same as this example, except that it
-C         uses the Fortran .f suffix rather than the .F suffix.
-C
-C      ctx(1) = da    - distributed array
-C          2  = F     - global vector where the evaluated function is stored
-C          3  = xl    - local work vector
-C          4  = rank  - processor rank
-C          5  = size  - number of processors
-C          6  = N     - system size
-C
+
       integer          ctx(8),ierr,N,start,end,nn,i,ii,its,flg
       SNES             snes
       Mat              J
       Vec              x,r,u,F
       Scalar           xp,FF,UU,h
       character*(10)   matrixname
-      external         FormJacobian,FormFunction,FormInitialGuess
+      external         FormJacobian, FormFunction
 
       call PetscInitialize(PETSC_NULL_CHAR,ierr)
       N = 10
