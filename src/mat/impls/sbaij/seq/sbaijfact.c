@@ -916,10 +916,10 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
 
     /* check for zero pivot and save diagoanl element */
     if (dk == 0.0){
-      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
+      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");    
       /*
-    }else if (PetscRealPart(dk) < 0){
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Negative pivot: d[%d] = %g\n",k,dk);
+    } else if (PetscRealPart(dk) < 0.0){
+      SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Negative pivot: d[%d] = %g\n",k,dk);  
       */
     }                                               
 
@@ -1026,8 +1026,8 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
     if (dk == 0.0){
       SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
       /*
-    }else if (PetscRealPart(dk) < 0){
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Negative pivot: d[%d] = %g\n",k,dk);
+    } else if (PetscRealPart(dk) < 0){
+      SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Negative pivot: d[%d] = %g\n",k,dk);  
       */
     }                                               
 
