@@ -1,21 +1,20 @@
-
-
-
-/*$Id: AMSPETScOptions.java,v 1.17 2000/11/07 20:44:03 bsmith Exp bsmith $*/
+/*$Id: PETScView.java,v 1.1 2000/11/09 15:45:35 bsmith Exp bsmith $*/
 /*
-     Accesses the PETSc published database options and allows the user to change them via a GUI
+     Accesses the PETSc published objects
 */
 
 /*  These are the Java GUI classes */
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.tree.*;
 
 /* For the text input regions */
 import javax.swing.text.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
+import java.util.*;
 
 /*   This allows multiple threads */
 import java.lang.Thread;
@@ -31,14 +30,7 @@ import java.net.*;
 
     Applet is a subclass of PanelFrame, i.e. it is itself the base window we draw onto
 */
-public class AMSPETScOptions extends java.applet.Applet {
-
-  Thread tupdate = null;
-
-  /*  top panel that shows options title */
-  JPanel tpanel;
-  /*  middle panel shows selections */
-  JPanel panel;
+public class PETScView extends java.applet.Applet {
     
   /*  AMSBean Object - this is where all the AMS "global" functions and 
                        "enum" types are stored                            */
@@ -56,15 +48,17 @@ public class AMSPETScOptions extends java.applet.Applet {
   boolean    waiting = false; /* indicates choices have been presented on screen, waiting for user input */
 
   java.applet.AppletContext appletcontext;
+  java.applet.Applet applet;
 
   JTextField inputport;
   JTextField inputserver;
+
+  Hashtable memories;
 
   /*
     This is the destructor;
   */
   public void destroy(){
-    /*    if (tupdate != null) tupdate.stop(); */
         System.out.println("destroy called");
   }
 
@@ -77,6 +71,8 @@ public class AMSPETScOptions extends java.applet.Applet {
       }
     };
     appletcontext = this.getAppletContext();
+    applet        = this;
+    memories = new Hashtable();
   }
 
   public String getAppletInfo() {
@@ -113,7 +109,7 @@ public class AMSPETScOptions extends java.applet.Applet {
     */
     this.setLayout(new FlowLayout());
         
-    tpanel = new JPanel(new GridLayout(3,1));
+    JPanel tpanel = new JPanel(new GridLayout(3,1));
     this.add(tpanel, BorderLayout.NORTH);
         
     inputserver = new JTextField(host,32);
@@ -193,7 +189,7 @@ public class AMSPETScOptions extends java.applet.Applet {
   }
     
   /*
-        Displays the current set of options and sets up call backs for all options
+        Displays the objects
   */
   public void displayoptionsset() { /*---------------------------------------------*/
     /*
@@ -207,133 +203,82 @@ public class AMSPETScOptions extends java.applet.Applet {
 
     this.setLayout(new FlowLayout());
         
-    tpanel = new JPanel(new GridLayout(1,1));
-    this.add(tpanel, BorderLayout.NORTH);
 
-    /* Create text area where choices will be displayed */
-    panel = new JPanel(new GridLayout(0,2));
-        
-    /* Put the text area in a scroller. */
-    JScrollPane scroll = new JScrollPane();
-    scroll.getViewport().add(panel);
-    this.add(scroll,BorderLayout.CENTER);
 
     /* Create a Panel that  will contain two buttons. Default layout manager */
-    JPanel bpanel = new JPanel(new GridLayout(1,2));
+    JPanel bpanel = new JPanel(new GridLayout(1,4));
         
-    /* Add two buttons */
-    JButton button = new JButton("Continue");
+    JButton button = new JButton("Refresh");
     bpanel.add(button);
-    button.addActionListener(new ContinueActionListener()); /* callback for button */
-        
-    button = new JButton("Quit");
-    bpanel.add(button);
-    button.addActionListener(new QuitActionListener());
+    button.addActionListener(new RefreshActionListener());
+
+    JButton qbutton = new JButton("Quit GUI");
+    bpanel.add(qbutton);
+    qbutton.addActionListener(new QuitActionListener());
         
     /* Add the Panel in the bottom of the Frame */
     this.add(bpanel, BorderLayout.SOUTH);
         
-    String options = "Options_"+count++;
-    /* Get the options memory (we ignore the rest) */
-    mem = ams.get_memory(options);
-    while (mem == null) {
-      try {Thread.sleep(300);} catch (InterruptedException ex) {;} finally {;} 
+    /* Get the memorys (we ignore the rest) */
+    String mems[] = ams.get_memory_list();
+    int i, cnt = 1;
+
+    if (mems == null) {
+      getserver();
+      return;
+    } 
+
+    /* count total number of object ids */
+    for (i=0; i<mems.length; i++) {
+      mem = ams.get_memory(mems[i]);
+      memories.put(mems[i],mem);     /* keep memories in hash table so do not have to access remote system for memories */
+
+      String flist[] = mem.get_field_list();
+      if (!flist[0].equals("Class")) continue; /* Not a published PETSc object */
+      int id = mem.get_field("Id").getIntData()[0];
+      cnt = id > cnt ? id : cnt;
     }
 
-    System.out.println("Got next set of options");    
+    DefaultMutableTreeNode root = new DefaultMutableTreeNode(),nodes[] = new DefaultMutableTreeNode[cnt+1];
 
-    /* first field is always the name of the options being set */
-    String flist[] = mem.get_field_list();
-    String OptionsCategory = flist[0];
-    String Prefix = mem.get_field(flist[0]).getStringData()[0];
-    System.out.println("prefix"+Prefix);    
-    if (Prefix != null) {
-      OptionsCategory = Prefix+":"+OptionsCategory;
+    /* create treenode for each published object */
+    for (i=0; i<mems.length; i++) {
+      mem = (AMS_Memory) memories.get(mems[i]);
+      String flist[] = mem.get_field_list();
+      if (!flist[0].equals("Class")) continue; /* Not a published PETSc object */
+      int id = mem.get_field("Id").getIntData()[0];
+      nodes[id] = new DefaultMutableTreeNode(mems[i]);
     }
-    Label  label = new Label(OptionsCategory);
-    label.setAlignment(Label.CENTER);
-    label.setForeground(Color.red);
-    tpanel.add(label);
 
-    /* second field is mansec */
-    String mansec = flist[1];
-    System.out.println("mansec"+mansec);    
-
-    boolean left = false;
-    /* Loop over the rest of the fields */
-    int i;
-    for (i=3; i<flist.length; i++) {
-      AMS_Field lockfld    = mem.get_field(flist[i]);
-      String    man        = mem.get_field(flist[i+1]).getStringData()[0];
-      AMS_Field fld        = mem.get_field(flist[i+2]);
-      int       info[]     = fld.get_field_info();
-      String    tag        = flist[i+2];
-      String    tip        = flist[i];
-      left = !left;
-
-      /* handle OptionsSelectInt() */
-      if (info[1] == AMSBean.INT) {
-        int value[] = fld.getIntData();
-        panel.add(new JPanelPack(new TextFieldInt(flist[i],flist[i+2],value[0]),tag,tip,man,mansec));
-
-      } else if (info[1] == AMSBean.BOOLEAN) {
-
-        /* is it a header label? If so, print it centered accross the screen */
-        if (flist[i].substring(0,8).equals("-amshead")) {
-          if (!left) {
-            panel.add(new Label(" "));
-          }
-          int len = flist[i+2].length();
-          label = new Label(flist[i+2].substring(0,1+len/2));
-          label.setAlignment(Label.RIGHT);
-          label.setForeground(Color.red);
-          panel.add(label);
-          label = new Label(flist[i+2].substring(1+len/2));
-          label.setAlignment(Label.LEFT);
-          label.setForeground(Color.red);
-          panel.add(label);
-        } else {
-          boolean value[] = fld.getBooleanData();
-          MyCheckbox checkbox;
-          checkbox = new MyCheckbox(flist[i],flist[i+2],value[0]);
-          checkbox.addItemListener(new MyCheckboxItemListener());
-          panel.add(new JPanelPack(checkbox,tag,tip,man,mansec));
-        }
-
-      /* handle OptionsSelectDouble() */
-      } else if (info[1] == AMSBean.DOUBLE) {
-        double value[] = fld.getDoubleData();
-        panel.add(new JPanelPack(new TextFieldDouble(flist[i],flist[i+2],value[0]),tag,tip,man,mansec));
-
-      /* handle string */
-      } else if (info[1] == AMSBean.STRING) {
-        String value[] = fld.getStringData();
-       
-        /* handle OptionsSelectList() */
-        if ((flist[i+2].substring(0,8)).equals("DEFAULT:")) {
-          int       j;
-          AMS_Field lfld    = mem.get_field(flist[i+3]);
-          String    llist[] = lfld.getStringData();
-          MyChoice  choice = new MyChoice(flist[i],flist[i+2]);
-
-          choice.addItem(value[0]);
-          for (j=0; j<llist.length-1; j++) {
-            if (!llist[j].equals(value[0])) {
-              choice.addItem(llist[j]);
-            }
-          }
-          choice.addItemListener(new MyChoiceItemListener());
-          tag = flist[i+2].substring(8);
-          panel.add(new JPanelPack(choice,tag,tip,man,mansec));
-          i++;
-
-        /* handle OptionsSelectString() */
-        } else {
-          panel.add(new JPanelPack(new TextFieldString(flist[i],flist[i+2],value[0]),tag,tip,man,mansec));
-        }
+    /* mark parents of each tree node */
+    for (i=0; i<mems.length; i++) {
+      mem = (AMS_Memory) memories.get(mems[i]);
+      String flist[] = mem.get_field_list();
+      if (!flist[0].equals("Class")) continue; /* Not a published PETSc object */
+      int parent = mem.get_field("ParentId").getIntData()[0];
+      int id = mem.get_field("Id").getIntData()[0];
+         System.out.println("me "+id+" parant "+parent);    
+      if (parent > 0) {
+        nodes[parent].add(nodes[id]);
+        nodes[id].setParent(nodes[parent]);
+      } else {
+        root.add(nodes[id]);
+        nodes[id].setParent(root);
       }
-      i++; i++;
+      int j;
+      for (j=0; j<flist.length; j++) {
+         System.out.println("mem "+mems[i]+" field "+flist[j]);    
+      }
+
     }
+
+    DefaultTreeModel tree = new DefaultTreeModel(root);
+    JTree jtree = new JTree(tree);
+    jtree.setCellRenderer(new MyTreeCellRenderer());
+    this.add(new JScrollPane(jtree), BorderLayout.NORTH); 
+    jtree.setRowHeight(15);
+    jtree.setPreferredSize(new Dimension(400,650));
+
     System.out.println("Processed options set");    
     this.setVisible(true);
     this.validate(); 
@@ -352,181 +297,39 @@ public class AMSPETScOptions extends java.applet.Applet {
     }
   }
 
-  /* callback for the continue button */
-  class ContinueActionListener implements ActionListener {/*--------------------*/
+  /* callback for the refresh button */
+  class RefreshActionListener implements ActionListener {/*--------------------*/
     public void actionPerformed(ActionEvent e) {
-      panel.removeAll();
-      System.out.println("User selected continue");
-      (tupdate = new ThreadOptionUpdate()).start();
+      applet.removeAll();
+      System.out.println("User selected refresh");
+      (new ThreadOptionUpdate()).start();
     }
   }
 
-  /* call back for the check box */
-  class MyCheckboxItemListener implements ItemListener {/*--------------------*/
-    public void itemStateChanged(ItemEvent e) {
-      MyCheckbox checkbox = (MyCheckbox) e.getItemSelectable();
-      System.out.println("User changed checkbox"+checkbox.getLabel());
-      mem.get_field(checkbox.vName).setData(checkbox.getState(),0);
-      mem.get_field(checkbox.vLock).setData(true,0);
-    }
-  }
+  class MyTreeCellRenderer implements TreeCellRenderer 
+  {
+    public Component getTreeCellRendererComponent(JTree tree,Object value,boolean selected,
+                                                    boolean expanded, boolean leaf, int row,
+                                                    boolean hasfocus) {
+      Object obj = ((DefaultMutableTreeNode)value).getUserObject();
+      if (obj != null) {
+        String     smem = (String)obj;
+        AMS_Memory mem = (AMS_Memory) memories.get(smem);
 
-  class MyCheckbox extends Checkbox { /*----------------------------------------*/
-    String vLock,vName;
-    public MyCheckbox(String vlock,String vname,boolean v) {
-      super("",v);
-      vLock = vlock;
-      vName = vname;
-    }
-  }
-
-  /* call back for the select option */
-  class MyChoiceItemListener implements ItemListener {/*--------------------*/
-    public void itemStateChanged(ItemEvent e) {
-      MyChoice choice = (MyChoice) e.getItemSelectable();
-      String   oldata = mem.get_field(choice.vName).getStringData()[0];
-
-      if (!oldata.equals(choice.getSelectedItem())) {
-        mem.get_field(choice.vName).setData(choice.getSelectedItem(),0);
-        System.out.println("User changed Choice");
-        mem.get_field(choice.vLock).setData(true,0);
-
-        /* tell publisher that I changed a method so it can send me a new screen of data */
-        mem.get_field("ChangedMethod").setData(true,0);
-        panel.removeAll();
-        System.out.println("User selected choice");
-        (tupdate = new ThreadOptionUpdate()).start();
-      }
-    }
-  }
-
-  class MyChoice extends Choice { /*----------------------------------------*/
-    String vLock,vName;
-    public MyChoice(String vlock,String vname) {
-      super();
-      vLock = vlock;
-      vName = vname;
-    }
-  }
-
-  /* callback for the integer field is the insertString() method below */
-  public class TextFieldInt extends JTextField { /*------------------------------*/   
-    private NumberFormat integerFormatter;
-    private String       vLock,vName;
-    public TextFieldInt(String vlock,String vname, int value) {
-      super(6); /* create text field with 6 columns */
-      integerFormatter = NumberFormat.getNumberInstance(Locale.US);
-      integerFormatter.setParseIntegerOnly(true);
-      setValue(value);
-      vLock = vlock;
-      vName = vname;
-    }
-    public int getValue() {
-      try { 
-        return integerFormatter.parse(getText()).intValue();
-      } catch (ParseException e) {;}
-      return 0;
-    }
-
-    public void setValue(int value) {
-      setText(integerFormatter.format(value));
-    }
-
-    protected Document createDefaultModel() {
-      return new IntDocument();
-    }
-
-    protected class IntDocument extends PlainDocument {
-      public void insertString(int offs, String str,AttributeSet a) throws BadLocationException {
-	char[] source = str.toCharArray();
-	char[] result = new char[source.length];
-	int j = 0;
-	for (int i = 0; i<result.length; i++) {
-	  if (Character.isDigit(source[i])) {
-	    result[j++] = source[i];
-	  } 
-	}
-	super.insertString(offs, new String(result,0,j),a);
-        if (vName != null) {
-          System.out.println("User changed int"+vName+vLock+getValue());
-	  mem.get_field(vName).setData(getValue(),0); 
-	  mem.get_field(vLock).setData(true,0); 
-	}
-      }
-    }
-  }
-
-  /* callback for the double field is the insertString() method below */
-  public class TextFieldDouble extends JTextField { /*-----------------------------------*/
-    private String vLock,vName;
-    public TextFieldDouble(String vlock,String vname, double value) {
-      super(8);
-      setValue(value);
-      vLock = vlock;
-      vName = vname;
-    }
-
-    public double getValue() {
-      return Double.parseDouble(getText());
-    }
-
-    public void setValue(double value) {
-      setText(String.valueOf(value));
-    }
-
-    protected Document createDefaultModel() {
-      return new DoubleDocument();
-    }
-
-    protected class DoubleDocument extends PlainDocument {
-      public void insertString(int offs, String str,AttributeSet a) throws BadLocationException {
-	char[] source = str.toCharArray();
-	char[] result = new char[source.length];
-	int j = 0;
-	for (int i = 0; i<result.length; i++) {
-	  if (Character.isDigit(source[i]) || source[i] == 'E' ||
-              source[i] == '+' || source[i] == '-' || source[i] == '.') {
-	    result[j++] = source[i];
-	  } 
-	}
-	super.insertString(offs, new String(result,0,j),a);
-        if (vName != null) {
-          double v;
-          try {
-            v = getValue();
-          } catch (NumberFormatException ex) {
-            return;
-          } 
-          System.out.println("User changed double"+vName+vLock+v);
-
-	  mem.get_field(vName).setData(v,0); 
-	  mem.get_field(vLock).setData(true,0); 
-	}
-      }
-    }
-  }
-
-  /* callback for the double string is the insertString() method below */
-  public class TextFieldString extends JTextField { /*-----------------------------------*/
-    private String vLock,vName;
-    public TextFieldString(String vlock,String vname,String value) {
-      super(12);
-      setText(value);
-      vLock = vlock;
-      vName = vname;
-    }
-
-    protected Document createDefaultModel() {
-      return new DoubleDocument();
-    }
-
-    protected class DoubleDocument extends PlainDocument {
-      public void insertString(int offs, String str,AttributeSet a) throws BadLocationException {
-	super.insertString(offs,str,a);
-        if (vName != null) {
-	  mem.get_field(vName).setData(str,0); 
-	  mem.get_field(vLock).setData(true,0); 
-	}
+        String     label = "";
+        if (mem.get_field("Type").getStringData()[0] != null) {
+          label += mem.get_field("Type").getStringData()[0]+" ";
+        }
+        label += mem.get_field("Class").getStringData()[0];
+        if (smem.indexOf("n_") != 0) {
+	  label += " "+smem;
+        }
+        if (selected) {
+          System.out.println("I'm selectede");
+        }
+        return new JLabel(label);
+      } else {
+	return new JLabel("");
       }
     }
   }
@@ -537,79 +340,7 @@ public class AMSPETScOptions extends java.applet.Applet {
 
   class ThreadOptionUpdate extends Thread {/*-----------------------------------*/
     public void run() {
-      displayoptionsupdate(); /* update options on PETSc program */
-      displayoptionsset(); /* wait for next set of options from PETSc program */
-      tupdate = null;
-    }
-  }
-
-  public void displayoptionsupdate() { /*---------------------------------------*/
-    if (mem != null) {
-
-      /* Send values through AMS to PETSc program  */
-      mem.send_begin();
-      mem.send_end(); 
-        
-      /* Tell PETSc program we are done with this set of options*/
-      mem.unlock();
-      System.out.println("Options updated in program");
-    }
-  }
-
-    /* puts two components next to each other on the screen */
-  public class JPanelPack extends JPanel { /*-----------------------------------*/
-    public JPanelPack(Component c1,String text,String tip,String man,String mansec) {
-      super( new GridBagLayout());
-      add(c1);
-      JButton c2 = new JButton(text);
-      /* c2.setToolTipText(tip); does not work in applet */
-      c2.setBorderPainted(false);
-      if (man.compareTo("None") != 0) {
-        c2.setActionCommand(mansec+"/"+man+".html");
-      } else {
-        c2.setActionCommand("None");
-      }
-      c2.addActionListener(new ActionListener(){
-        public void actionPerformed(ActionEvent e) { 
-          System.out.println("User selected manualpage");
-          String iman = e.getActionCommand();
-          if (iman.compareTo("None") != 0) {
-            String[] sites = new String[2];
-            sites[0] = "http://www-unix.mcs.anl.gov/petsc/docs/manualpages/";
-            sites[1] = "http://www-unix.mcs.anl.gov/tao/docs/manualpages/";
-            int i;
-            for (i=0; i<2; i++) {
-              URL url = null;
-              try {
-                url = new URL(sites[i]+iman);
-              } catch (MalformedURLException ex) {;}
-
-              /* check if the MCS webserver can find the page */
-              java.io.InputStreamReader stream = null;
-              try {
-                stream = new java.io.InputStreamReader(url.openStream());
-              } catch (java.io.IOException ex) {continue;}
-              char[] errors = new char[1024];
-              try {
-                stream.read(errors);
-              } catch (java.io.IOException ex) {;}
-              String serrors = new String(errors);
-              System.out.println(serrors); 
-              if (serrors.indexOf("File Not Found") == -1) {
-                appletcontext.showDocument(url,"ManualPages");
-                break;
-              }
-            }
-          }
-        }
-      }); 
-      add(c2);
-      GridBagLayout layout = (GridBagLayout) getLayout();
-      GridBagConstraints constraints = new GridBagConstraints();
-      constraints.anchor  = GridBagConstraints.WEST;
-      constraints.weightx = 100;
-      constraints.gridx   = GridBagConstraints.RELATIVE;
-      layout.setConstraints(c2,constraints);
+      displayoptionsset(); 
     }
   }
 }

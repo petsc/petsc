@@ -1,4 +1,4 @@
-/*$Id: PETScRun.java,v 1.8 2000/11/07 17:33:39 bsmith Exp bsmith $*/
+/*$Id: PETScRun.java,v 1.9 2000/11/07 21:35:01 bsmith Exp bsmith $*/
 /*
      Compiles and runs a PETSc program
 */
@@ -18,11 +18,14 @@ public class PETScRun extends java.applet.Applet
   Hashtable        systems[];
 
   java.applet.AppletContext appletcontext;
+  java.applet.Applet applet;
 
   JPanel      tpanel;
+  JTextField options;
 
   Checkbox toptions;
   Checkbox tbopt;
+  Checkbox snoop;
 
     Choice    arch;
     Choice    dir;
@@ -31,8 +34,11 @@ public class PETScRun extends java.applet.Applet
 
   JTextArea   opanel;
 
+  boolean isviewsource = false;
+
   public void init() {
     appletcontext = getAppletContext();
+    applet = this;
     try {
       System.out.println("parameter"+this.getParameter("server"));
       Socket sock = new Socket(this.getParameter("server"),2000);
@@ -55,7 +61,7 @@ public class PETScRun extends java.applet.Applet
  
     this.setLayout(new FlowLayout());
 
-    tpanel = new JPanel(new GridLayout(2,4));
+    tpanel = new JPanel(new GridLayout(3,4));
     this.add(tpanel, BorderLayout.NORTH);
       
       arch = new Choice();
@@ -107,11 +113,34 @@ public class PETScRun extends java.applet.Applet
         }
       }); 
 
+      JButton tbutton = new JButton("Test");
+      tpanel.add(tbutton);
+      tbutton.addActionListener(new ActionListener(){
+        public void actionPerformed(ActionEvent e) { 
+          runprogram("maketest");
+        }
+      }); 
+
+      JButton sbutton = new JButton("View source");
+      tpanel.add(sbutton);
+      sbutton.addActionListener(new ActionListener(){
+        public void actionPerformed(ActionEvent e) { 
+          isviewsource = true;
+          runprogram("makehtml");
+        }
+      }); 
+
       toptions = new Checkbox("Set options graphically");
       tpanel.add(toptions);
 
+      snoop = new Checkbox("Snoop on running program");
+      tpanel.add(snoop);
+
       tbopt = new Checkbox("Compile debug version");
       tpanel.add(tbopt);
+
+    options = new JTextField(50);
+    this.add(options, BorderLayout.NORTH);
 
     opanel = new JTextArea(30,60);
     this.add(new JScrollPane(opanel), BorderLayout.NORTH); 
@@ -148,7 +177,6 @@ public class PETScRun extends java.applet.Applet
 
   public void runprogram(String what)
   {
-
     try {
       final Socket sock = new Socket(this.getParameter("server"),2000);
       sock.setSoLinger(true,5);
@@ -166,9 +194,10 @@ public class PETScRun extends java.applet.Applet
       } else {
         properties.setProperty("BOPT","O");
       }
+      String soptions = options.getText();
       if (toptions.getState() && what.equals("mpirun")) {
 	URL urlb = this.getDocumentBase();
-        properties.setProperty("OPTIONS","-ams_publish_options");
+        soptions += " -ams_publish_options";
 	try {
 	  final URL url = new URL(""+urlb+"AMSPETScOptions.html");  
           System.out.println("loading url"+url);
@@ -181,6 +210,22 @@ public class PETScRun extends java.applet.Applet
 	  }).start();
         } catch (MalformedURLException ex) {System.out.println("bad luck");;} 
       } 
+      if (snoop.getState() && what.equals("mpirun")) {
+	URL urlb = this.getDocumentBase();
+        soptions += " -ams_publish_objects";
+	try {
+	  final URL url = new URL(""+urlb+"PETScView.html");  
+          System.out.println("loading url"+url);
+          (new Thread() {
+            public void run() {
+              System.out.println("open new");
+              appletcontext.showDocument(url,"PETScView");
+              System.out.println("done open new");
+            }
+	  }).start();
+        } catch (MalformedURLException ex) {System.out.println("bad luck");;} 
+      } 
+      properties.setProperty("OPTIONS",soptions);
       System.out.println("getting back");
 
       (new Thread() {
@@ -201,9 +246,30 @@ public class PETScRun extends java.applet.Applet
 	      cnt += fd;
             }
           } catch (java.io.IOException ex) {;}
+          opanel.append("----DONE-----");
+          donerun();
         }
       }).start();
     } catch (java.io.IOException ex) {;}
+  }
+
+  public void donerun() 
+  {
+    System.out.println("done run");
+    if (isviewsource) {
+      String ex = example.getSelectedItem();
+      URL    urlb = applet.getDocumentBase();
+  
+      try {
+        String s = null;
+        if (ex.endsWith("f90") || ex.endsWith("f")) s = "_F";
+        else s = "_c";
+        final URL url = new URL(""+urlb+"../"+dir.getSelectedItem()+"/"+ex+s+".html");  
+        System.out.println("showing"+url);
+        appletcontext.showDocument(url,"Source");
+      } catch (MalformedURLException oops) { System.out.println("bad:showing"+urlb);;} 
+    }
+    isviewsource = false;
   }
 }
 
