@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.267 1999/02/03 23:15:27 balay Exp balay $ 
+# $Id: makefile,v 1.268 1999/02/04 22:08:00 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -81,7 +81,7 @@ build_fortran:
 	  egrep -i '(Error|warning|Can)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; ${RM} trashz
-	${RANLIB} ${PDIR}/*.a
+	${RANLIB} ${PDIR}/libpetscfortran.a
 	-@chmod g+w  ${PDIR}/*.a
 	-@echo "Completed compiling Fortran interface library"
 	-@echo "========================================="
@@ -96,6 +96,7 @@ build_fortrankernels: chkpetsc_dir
 	-@echo "========================================="
 	-@cd src/fortran/kernels; \
 	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} libf
+	${RANLIB} ${PDIR}/libpetsc.a
 	-@chmod g+w  ${PDIR}/*.a
 	-@echo "Completed compiling Fortran kernels library"
 	-@echo "========================================="
