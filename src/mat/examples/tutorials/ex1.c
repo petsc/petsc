@@ -64,10 +64,10 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /* 
-       Open binary file.  Note that we use PETSC_BINARY_RDONLY to indicate
+       Open binary file.  Note that we use PETSC_FILE_RDONLY to indicate
        reading from this file.
     */
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],PETSC_BINARY_RDONLY,&fd);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
 
     /*
        Load the matrix; then destroy the viewer.

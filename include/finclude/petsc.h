@@ -49,6 +49,8 @@
       PetscFortranAddr PETSC_VIEWER_STDERR_SELF
       PetscFortranAddr PETSC_VIEWER_BINARY_WORLD
       PetscFortranAddr PETSC_VIEWER_BINARY_SELF
+      PetscFortranAddr PETSC_VIEWER_MATLAB_WORLD
+      PetscFortranAddr PETSC_VIEWER_MATLAB_SELF
 
 !
 !     The numbers used below should match those in 
@@ -64,6 +66,8 @@
       parameter (PETSC_VIEWER_STDERR_SELF  = -11)
       parameter (PETSC_VIEWER_BINARY_WORLD = -12)
       parameter (PETSC_VIEWER_BINARY_SELF  = -13)
+      parameter (PETSC_VIEWER_MATLAB_WORLD = -14)
+      parameter (PETSC_VIEWER_MATLAB_SELF  = -15)
 !
 !     PETSc DataTypes
 !

@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-  ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",PETSC_MATLAB_CREATE,&mviewer);CHKERRQ(ierr);
+  ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",PETSC_FILE_CREATE,&mviewer);CHKERRQ(ierr);
 #endif
 
   /* Read options */

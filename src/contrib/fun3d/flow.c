@@ -233,7 +233,7 @@ int main(int argc,char **args)
       if (!exists) { /* try cells.msh as the file name */
 	ierr = PetscStrcpy(cells_file,"cells.msh");CHKERRQ(ierr);
       }
-      ierr = PetscBinaryOpen(cells_file,PETSC_BINARY_RDONLY,&fdes);CHKERRQ(ierr);
+      ierr = PetscBinaryOpen(cells_file,PETSC_FILE_RDONLY,&fdes);CHKERRQ(ierr);
     }
     ICALLOC(4*user.grid->ncell,&itmp);
     ICALLOC(4*user.grid->ncell,&user.grid->c2n);
@@ -587,7 +587,7 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
     PetscViewer viewer;
     char mat_file[256];
     sprintf(mat_file,"mat_bin.%d",tsCtx->itstep);
-    ierr = PetscViewerBinaryOpen(MPI_COMM_WORLD,mat_file,PETSC_BINARY_CREATE,&viewer);
+    ierr = PetscViewerBinaryOpen(MPI_COMM_WORLD,mat_file,PETSC_FILE_CREATE,&viewer);
     ierr = MatView(pc_mat,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);
     /*ierr = MPI_Abort(MPI_COMM_WORLD,1);*/
@@ -843,7 +843,7 @@ int GetLocalOrdering(GRID *grid)
    if (!exists) { /* try uns3d.msh as the file name */
       ierr = PetscStrcpy(mesh_file,"uns3d.msh");CHKERRQ(ierr);
    }
-   ierr = PetscBinaryOpen(mesh_file,PETSC_BINARY_RDONLY,&fdes);CHKERRQ(ierr);
+   ierr = PetscBinaryOpen(mesh_file,PETSC_FILE_RDONLY,&fdes);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp,grid_param,PETSC_INT);CHKERRQ(ierr);
   grid->ncell   = tmp[0];

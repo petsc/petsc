@@ -383,7 +383,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 
    Input Parameters:
 +  name - filename
--  type - type of binary file, on of PETSC_BINARY_RDONLY, PETSC_BINARY_WRONLY, PETSC_BINARY_CREATE
+-  type - type of binary file, on of PETSC_FILE_RDONLY, PETSC_FILE_WRONLY, PETSC_FILE_CREATE
 
    Output Parameter:
 .  fd - the file
@@ -399,29 +399,29 @@ int PetscBinaryOpen(const char name[],int type,int *fd)
 {
   PetscFunctionBegin;
 #if defined(PARCH_win32_gnu) || defined(PARCH_win32) 
-  if (type == PETSC_BINARY_CREATE) {
+  if (type == PETSC_FILE_CREATE) {
     if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
     }
-  } else if (type == PETSC_BINARY_RDONLY) {
+  } else if (type == PETSC_FILE_RDONLY) {
     if ((*fd = open(name,O_RDONLY|O_BINARY,0)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
     }
-  } else if (type == PETSC_BINARY_WRONLY) {
+  } else if (type == PETSC_FILE_WRONLY) {
     if ((*fd = open(name,O_WRONLY|O_BINARY,0)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
     }
 #else
-  if (type == PETSC_BINARY_CREATE) {
+  if (type == PETSC_FILE_CREATE) {
     if ((*fd = creat(name,0666)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
     }
-  } else if (type == PETSC_BINARY_RDONLY) {
+  } else if (type == PETSC_FILE_RDONLY) {
     if ((*fd = open(name,O_RDONLY,0)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
     }
   }
-  else if (type == PETSC_BINARY_WRONLY) {
+  else if (type == PETSC_FILE_WRONLY) {
     if ((*fd = open(name,O_WRONLY,0)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
     }

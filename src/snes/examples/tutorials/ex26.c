@@ -203,7 +203,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   {
     PetscViewer view_out;
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"psi.binary",PETSC_BINARY_CREATE,&view_out);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"psi.binary",PETSC_FILE_CREATE,&view_out);CHKERRQ(ierr);
     ierr = VecView(user.psi,view_out); CHKERRQ(ierr);
     ierr = PetscViewerDestroy(view_out); CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"psi.out",&view_out);CHKERRQ(ierr);
@@ -293,7 +293,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
     Vec          Y;
     ierr = PetscOptionsGetString(PETSC_NULL,"-initialGuess",filename,256,&flg); CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,PETSC_BINARY_RDONLY,&view_in); CHKERRQ(ierr);
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,PETSC_FILE_RDONLY,&view_in); CHKERRQ(ierr);
       ierr = VecLoad(view_in,&Y); CHKERRQ(ierr);
       ierr = PetscViewerDestroy(view_in); CHKERRQ(ierr);
       ierr = VecMax(Y,PETSC_NULL,&user->psi_bdy); CHKERRQ(ierr);
