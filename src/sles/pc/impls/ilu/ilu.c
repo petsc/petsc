@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.134 1999/11/10 03:20:27 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.135 1999/11/24 21:54:39 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -16,7 +16,7 @@ int PCILUSetUseDropTolerance_ILU(PC pc,double dt,int dtcount)
 
   PetscFunctionBegin;
   ilu = (PC_ILU *) pc->data;
-  ilu->usedt    = 1;
+  ilu->usedt    = PETSC_TRUE;
   ilu->dt       = dt;
   ilu->dtcount  = dtcount;
   PetscFunctionReturn(0);
@@ -136,9 +136,6 @@ EXTERN_C_END
 
    Options Database Key:
 .  -pc_ilu_use_drop_tolerance <dt,dtcount> - Sets drop tolerance
-
-   Note:
-   This routine is NOT currently supported!
 
    Level: intermediate
 
@@ -537,8 +534,7 @@ static int PCSetUp_ILU(PC pc)
       ierr = MatGetOrdering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
       if (ilu->row) PLogObjectParent(pc,ilu->row); 
       if (ilu->col) PLogObjectParent(pc,ilu->col);
-      ierr = MatILUDTFactor(pc->pmat,ilu->dt,ilu->dtcount,ilu->row,ilu->col,
-                                   &ilu->fact);CHKERRQ(ierr);
+      ierr = MatILUDTFactor(pc->pmat,ilu->dt,ilu->dtcount,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);
     } else if (pc->flag != SAME_NONZERO_PATTERN) { 
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
@@ -553,8 +549,7 @@ static int PCSetUp_ILU(PC pc)
       PLogObjectParent(pc,ilu->fact);
     } else if (!ilu->reusefill) { 
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
-      ierr = MatILUDTFactor(pc->pmat,ilu->dt,ilu->dtcount,ilu->row,ilu->col,
-                                   &ilu->fact);CHKERRQ(ierr);
+      ierr = MatILUDTFactor(pc->pmat,ilu->dt,ilu->dtcount,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);
     } else {
       ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact);CHKERRQ(ierr);
@@ -676,7 +671,7 @@ int PCCreate_ILU(PC pc)
   ilu->inplace          = 0;
   ilu->ordering         = MATORDERING_NATURAL;
   ilu->reuseordering    = 0;
-  ilu->usedt            = 0;
+  ilu->usedt            = PETSC_FALSE;
   ilu->dt               = 0.0;
   ilu->dtcount          = 0;
   ilu->reusefill        = 0;
