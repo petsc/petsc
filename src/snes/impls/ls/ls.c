@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.154 2000/04/18 23:03:49 bsmith Exp balay $*/
+/*$Id: ls.c,v 1.155 2000/05/04 14:03:59 balay Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -101,6 +101,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     ierr = SLESSolve(snes->sles,F,Y,&lits);CHKERRQ(ierr);
+    /* should check what happened to the linear solve? */
     snes->linear_its += lits;
     PLogInfo(snes,"SNESSolve_EQ_LS: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
 
@@ -112,8 +113,15 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lsfail);CHKERRQ(ierr);
     PLogInfo(snes,"SNESSolve_EQ_LS: fnorm=%g, gnorm=%g, ynorm=%g, lsfail=%d\n",fnorm,gnorm,ynorm,lsfail);
     if (lsfail) {
+      double a1;
       snes->nfailures++;
       snes->reason = SNES_DIVERGED_LS_FAILURE;
+      /* Compute || J^T b||/|| b || */
+      ierr = MatMultTranspose(snes->jacobian,F,W);CHKERRQ(ierr);
+      ierr = VecNorm(W,NORM_2,&a1);CHKERRQ(ierr);
+      PLogInfo(snes,"SNESSolve_EQ_LS: || J^T b|| %g || b || %g || J^T b||/|| b || %g\n",a1,fnorm,a1/fnorm);      
+      /* || J^T b || == 0 implies the linear system is inconsistent and also that F() has a local minimum at the point */
+      if (a1/fnorm < 1.e-4) snes->reason = SNES_DIVERGED_LOCAL_MIN;
       break;
     }
 
@@ -418,9 +426,9 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
     scale = maxstep/(*ynorm);
 #if defined(PETSC_USE_COMPLEX)
-    PLogInfo(snes,"SNESCubicLineSearch: Scaling step by %g\n",PetscRealPart(scale));
+    PLogInfo(snes,"SNESCubicLineSearch: Scaling step by %g old ynorm %g\n",PetscRealPart(scale),*ynorm);
 #else
-    PLogInfo(snes,"SNESCubicLineSearch: Scaling step by %g\n",scale);
+    PLogInfo(snes,"SNESCubicLineSearch: Scaling step by %g old ynorm %g\n",scale,*ynorm);
 #endif
     ierr = VecScale(&scale,y);CHKERRQ(ierr);
     *ynorm = maxstep;
@@ -474,8 +482,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   while (1) {
     if (lambda <= minlambda) { /* bad luck; use full step */
       PLogInfo(snes,"SNESCubicLineSearch:Unable to find good step length! %d \n",count);
-      PLogInfo(snes,"SNESCubicLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",
-               fnorm,*gnorm,*ynorm,lambda,initslope);
+      PLogInfo(snes,"SNESCubicLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",fnorm,*gnorm,*ynorm,lambda,initslope);
       ierr = VecCopy(w,y);CHKERRQ(ierr);
       *flag = -1; break;
     }
