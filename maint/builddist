@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.46 1998/04/13 17:42:43 balay Exp balay $ 
+# $Id: builddist,v 1.47 1998/04/13 17:43:00 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -47,7 +47,7 @@ cd /mcs/tmp/petsc
 /bin/rm -f  bmake/common.bak
 # Eliminate '-u' from sun4/base
 /bin/mv bmake/sun4/base bmake/base.bak
-/bin/sed 's/-u//' bmake/common.bak > bmake/sun4/base
+/bin/sed 's/-u//' bmake/sun4/base.bak > bmake/sun4/base
 /bin/rm -f  bmake/sun4/base.bak
 
 # Create ETAGS and CTAGS
