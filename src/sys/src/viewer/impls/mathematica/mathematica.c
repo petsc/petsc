@@ -36,7 +36,11 @@ static void *mathematicaEnv                   = PETSC_NULL;
 .seealso: PetscInitializePackage(), PetscInitialize()
 @*/
 int PetscViewerMathematicaInitializePackage(char *path) {
+  static PetscTruth initialized = PETSC_FALSE;
+
   PetscFunctionBegin;
+  if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
 #ifdef PETSC_HAVE_MATHEMATICA
   mathematicaEnv = (void *) MLInitialize(0);
 #else

@@ -18,15 +18,15 @@
 .seealso: PetscInitialize()
 @*/
 int MatInitializePackage(char *path) {
-  static int initialized = 0;
-  char       logList[256];
-  char      *className;
-  PetscTruth opt;
-  int        ierr;
+  static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char             *className;
+  PetscTruth        opt;
+  int               ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = 1;
+  if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&MAT_COOKIE,              "Matrix");                                       CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&MAT_FDCOLORING_COOKIE,   "Matrix FD Coloring");                           CHKERRQ(ierr);

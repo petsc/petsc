@@ -21,15 +21,15 @@ static char vcid[] = "$Id: dlregis.c,v 1.1 2000/01/10 06:34:46 knepley Exp $";
 .seealso: PetscInitialize()
 @*/
 int DMInitializePackage(char *path) {
-  static int initialized = 0;
-  char       logList[256];
-  char      *className;
-  PetscTruth opt;
-  int        ierr;
+  static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char             *className;
+  PetscTruth        opt;
+  int               ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = 1;
+  if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");                                      CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&AODATA_COOKIE, "Application Data");                                       CHKERRQ(ierr);

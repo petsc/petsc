@@ -21,15 +21,15 @@
 @*/
 int PetscInitializePackage(char *path)
 {
-  static int initialized = 0;
-  char       logList[256];
-  char      *className;
-  PetscTruth opt;
-  int        ierr;
+  static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char             *className;
+  PetscTruth        opt;
+  int               ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = 1;
+  if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&PETSC_VIEWER_COOKIE, "Viewer");                                           CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&PETSC_DRAW_COOKIE,   "Draw");                                             CHKERRQ(ierr);
