@@ -1,4 +1,4 @@
-/* $Id: inpututils.c,v 1.13 2001/01/16 18:21:27 balay Exp balay $ */
+/* $Id: inpututils.c,v 1.14 2001/03/09 19:18:47 balay Exp balay $ */
 
 /*
        Utilities for inputing, creating and managing simple two dimensional grids
@@ -130,7 +130,8 @@ int AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
     ierr     = AOData2dGridAddNode(agrid,cx,cy,&cn);CHKERRQ(ierr);
     cell[4*agrid->cell_n+2] = cn;
     ierr = PetscDrawLine(draw,vertex[2*cell[4*agrid->cell_n+1]],vertex[1+2*cell[4*agrid->cell_n+1]],
-                         vertex[2*cell[4*agrid->cell_n+2]],vertex[1+2*cell[4*agrid->cell_n+2]],PETSC_DRAW_RED);
+                         vertex[2*cell[4*agrid->cell_n+2]],vertex[1+2*cell[4*agrid->cell_n+2]],
+                         PETSC_DRAW_RED);CHKERRQ(ierr);
     sprintf(title,"Input grid: Number vertex %d Number cell %d",agrid->vertex_n,agrid->cell_n);
     ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);
     /* wait for fourth vertex */
