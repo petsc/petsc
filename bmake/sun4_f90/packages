@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.13 1999/01/15 22:12:57 balay Exp bsmith $ 
+# $Id: base.site,v 1.14 1999/01/21 15:17:37 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -23,7 +23,7 @@ X11_LIB        = -lX11
 #MPI_LIB        = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpi
 #MPI_INCLUDE    = -I/usr/local/mpi/include
 #MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
-MPI_HOME       = /home/MPI/releases/mpich-1.1.2
+MPI_HOME       = /home/petsc/mpich-1.1.2-beta
 MPI_BUILD_HOME = ${MPI_HOME}/build/sun4/ch_p4
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
@@ -37,12 +37,12 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/ma
 MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
 MPE_INCLUDE   = -I/usr/local/mpi/include
 MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
-MPE_INCLUDE   = -I${MPI_HOME}/include 
+MPE_INCLUDE   = -I${MPI_HOME}/mpe
 #
 # Optional location of BlockSolve (MPI version)
 #
 #BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-#BS_LIB     = /home/petsc/BlockSolve95/lib/libO/sun4/libBS95.a
+#BS_LIB     = -L/home/petsc/BlockSolve95/lib/libO/sun4 -lBS95
 #
 # Optional Matlab location
 #
