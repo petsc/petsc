@@ -5,6 +5,57 @@
 #include "src/vec/vecimpl.h"          /*I "petscvec.h" I*/
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecStrideScale"
+/*@C
+   VecStrideScale - Scales a subvector of a vector defined 
+   by a starting point and a stride.
+
+   Collective on Vec
+
+   Input Parameter:
++  v - the vector 
+.  start - starting point of the subvector (defined by a stride)
+-  scale - value to multiply each subvector entry by
+
+   Notes:
+   One must call VecSetBlockSize() before this routine to set the stride 
+   information, or use a vector created from a multicomponent DA.
+
+   This will only work if the desire subvector is a stride subvector
+
+   Level: advanced
+
+   Concepts: scale^on stride of vector
+   Concepts: stride^scale
+
+.seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
+@*/
+int VecStrideScale(Vec v,int start,PetscScalar *scale)
+{
+  int         i,n,ierr,bs;
+  PetscScalar *x,xscale = *scale;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+
+  bs   = v->bs;
+  if (start >= bs) {
+    SETERRQ2(1,"Start of stride subvector (%d) is too large for stride\n\
+            Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
+  }
+  x += start;
+
+  for (i=0; i<n; i+=bs) {
+    x[i] *= xscale;
+  }
+  x -= start;
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecStrideNorm"
 /*@C
    VecStrideNorm - Computes the norm of subvector of a vector defined 
@@ -49,7 +100,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *nrm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->bs;
@@ -87,7 +138,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *nrm)
     SETERRQ(1,"Unknown norm type");
   }
 
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -139,7 +190,7 @@ int VecStrideMax(Vec v,int start,int *idex,PetscReal *nrm)
     SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->bs;
@@ -167,7 +218,7 @@ int VecStrideMax(Vec v,int start,int *idex,PetscReal *nrm)
   }
   ierr   = MPI_Allreduce(&max,nrm,1,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -219,7 +270,7 @@ int VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
     SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->bs;
@@ -247,7 +298,306 @@ int VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
   }
   ierr   = MPI_Allreduce(&min,nrm,1,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecBlockScale"
+/*@C
+   VecBlockScale - Scales the subvectors of a vector defined 
+   by a starting point and a stride.
+
+   Collective on Vec
+
+   Input Parameter:
++  v - the vector 
+-  scales - values to multiply each subvector entry by
+
+   Notes:
+   One must call VecSetBlockSize() before this routine to set the stride 
+   information, or use a vector created from a multicomponent DA.
+
+
+   Level: advanced
+
+   Concepts: scale^on stride of vector
+   Concepts: stride^scale
+
+.seealso: VecNorm(), VecStrideScale(), VecScale(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
+@*/
+int VecBlockScale(Vec v,PetscScalar *scales)
+{
+  int         i,j,n,ierr,bs;
+  PetscScalar *x;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+
+  bs   = v->bs;
+
+  /* need to provide optimized code for each bs */
+  for (i=0; i<n; i+=bs) {
+    for (j=0; j<bs; j++) {
+      x[i+j] *= scales[j];
+    }
+  }
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecBlockNorm"
+/*@C
+   VecBlockNorm - Computes the norms  subvectors of a vector defined 
+   by a starting point and a stride.
+
+   Collective on Vec
+
+   Input Parameter:
++  v - the vector 
+-  ntype - type of norm, one of NORM_1, NORM_2, NORM_INFINITY
+
+   Output Parameter:
+.  nrm - the norms
+
+   Notes:
+   One must call VecSetBlockSize() before this routine to set the stride 
+   information, or use a vector created from a multicomponent DA.
+
+   If x is the array representing the vector x then this computes the norm 
+   of the array (x[start],x[start+stride],x[start+2*stride], ....)
+
+   This is useful for computing, say the norm of the pressure variable when
+   the pressure is stored (interlaced) with other variables, say density etc.
+
+   This will only work if the desire subvector is a stride subvector
+
+   Level: advanced
+
+   Concepts: norm^on stride of vector
+   Concepts: stride^norm
+
+.seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
+@*/
+int VecBlockNorm(Vec v,NormType ntype,PetscReal *nrm)
+{
+  int         i,j,n,ierr,bs;
+  PetscScalar *x;
+  PetscReal   tnorm[128];
+  MPI_Comm    comm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
+
+  bs   = v->bs;
+  if (bs > 128) SETERRQ(1,"Currently supports only blocksize up to 128");
+
+  if (ntype == NORM_2) {
+    PetscScalar sum[128];
+    for (j=0; j<bs; j++) sum[j] = 0.0;
+    for (i=0; i<n; i+=bs) {
+      for (j=0; j<bs; j++) {
+	sum[j] += x[i+j]*(PetscConj(x[i+j]));
+      }
+    }
+    for (j=0; j<bs; j++) {
+      tnorm[j]  = PetscRealPart(sum[j]);
+    }
+    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPI_SUM,comm);CHKERRQ(ierr);
+    for (j=0; j<bs; j++) {
+      nrm[j] = sqrt(nrm[j]);
+    }
+  } else if (ntype == NORM_1) {
+    for (j=0; j<bs; j++) {
+      tnorm[j] = 0.0;
+    }
+    for (i=0; i<n; i+=bs) {
+      for (j=0; j<bs; j++) {
+	tnorm[j] += PetscAbsScalar(x[i+j]);
+      }
+    }
+    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPI_SUM,comm);CHKERRQ(ierr);
+  } else if (ntype == NORM_INFINITY) {
+    PetscReal tmp;
+    for (j=0; j<bs; j++) {
+      tnorm[j] = 0.0;
+    }
+
+    for (i=0; i<n; i+=bs) {
+      for (j=0; j<bs; j++) {
+	if ((tmp = PetscAbsScalar(x[i+j])) > tnorm[j]) tnorm[j] = tmp;
+	/* check special case of tmp == NaN */
+	if (tmp != tmp) {tnorm[j] = tmp; break;}
+      }
+    } 
+    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,"Unknown norm type");
+  }
+
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecBlockMax"
+/*@C
+   VecBlockMax - Computes the maximums of subvectors of a vector defined 
+   by a starting point and a stride and optionally its location.
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector 
+
+   Output Parameter:
++  index - the location where the maximum occurred (not supported, pass PETSC_NULL,
+           if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
+-  nrm - the maximums
+
+   Notes:
+   One must call VecSetBlockSize() before this routine to set the stride 
+   information, or use a vector created from a multicomponent DA.
+
+   This is useful for computing, say the maximum of the pressure variable when
+   the pressure is stored (interlaced) with other variables, e.g., density, etc.
+   This will only work if the desire subvector is a stride subvector.
+
+   Level: advanced
+
+   Concepts: maximum^on stride of vector
+   Concepts: stride^maximum
+
+.seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
+@*/
+int VecBlockMax(Vec v,int *idex,PetscReal *nrm)
+{
+  int         i,j,n,ierr,bs;
+  PetscScalar *x;
+  PetscReal   max[128],tmp;
+  MPI_Comm    comm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  if (idex) {
+    SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+  }
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
+
+  bs   = v->bs;
+  if (bs > 128) SETERRQ(1,"Currently supports only blocksize up to 128");
+
+  if (!n) {
+    for (j=0; j<bs; j++) {
+      max[j] = PETSC_MIN;
+    }
+  } else {
+    for (j=0; j<bs; j++) {
+#if defined(PETSC_USE_COMPLEX)
+      max[j] = PetscRealPart(x[j]);
+#else
+      max[j] = x[j];
+#endif
+    }
+    for (i=bs; i<n; i+=bs) {
+      for (j=0; j<bs; j++) {
+#if defined(PETSC_USE_COMPLEX)
+	if ((tmp = PetscRealPart(x[i+j])) > max[j]) { max[j] = tmp;}
+#else
+	if ((tmp = x[i+j]) > max[j]) { max[j] = tmp; } 
+#endif
+      }
+    }
+  }
+  ierr   = MPI_Allreduce(max,nrm,bs,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
+
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecBlockMin"
+/*@C
+   VecBlockMin - Computes the minimum of subvector of a vector defined 
+   by a starting point and a stride and optionally its location.
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector 
+
+   Output Parameter:
++  idex - the location where the minimum occurred (not supported, pass PETSC_NULL,
+           if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
+-  nrm - the minimums
+
+   Level: advanced
+
+   Notes:
+   One must call VecSetBlockSize() before this routine to set the stride 
+   information, or use a vector created from a multicomponent DA.
+
+   This is useful for computing, say the minimum of the pressure variable when
+   the pressure is stored (interlaced) with other variables, e.g., density, etc.
+   This will only work if the desire subvector is a stride subvector.
+
+   Concepts: minimum^on stride of vector
+   Concepts: stride^minimum
+
+.seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
+@*/
+int VecBlockMin(Vec v,int *idex,PetscReal *nrm)
+{
+  int         i,n,ierr,bs,j;
+  PetscScalar *x;
+  PetscReal   min[128],tmp;
+  MPI_Comm    comm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  if (idex) {
+    SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+  }
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
+
+  bs   = v->bs;
+  if (bs > 128) SETERRQ(1,"Currently supports only blocksize up to 128");
+
+  if (!n) {
+    for (j=0; j<bs; j++) {
+      min[j] = PETSC_MAX;
+    }
+  } else {
+    for (j=0; j<bs; j++) {
+#if defined(PETSC_USE_COMPLEX)
+      min[j] = PetscRealPart(x[j]);
+#else
+      min[j] = x[j];
+#endif
+    }
+    for (i=bs; i<n; i+=bs) {
+      for (j=0; j<bs; j++) {
+#if defined(PETSC_USE_COMPLEX)
+	if ((tmp = PetscRealPart(x[i+j])) < min[j]) { min[j] = tmp;}
+#else
+	if ((tmp = x[i+j]) < min[j]) { min[j] = tmp; } 
+#endif
+      }
+    }
+  }
+  ierr   = MPI_Allreduce(min,nrm,bs,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
+
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -294,12 +644,12 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   PetscValidHeaderSpecific(*s,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(*s,&ns);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
 
   ierr = PetscMalloc(bs*sizeof(PetscReal*),&y);CHKERRQ(ierr);
   for (i=0; i<bs; i++) {
-    ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(s[i],&y[i]);CHKERRQ(ierr);
   }
 
   if (n != ns*bs) {
@@ -331,9 +681,9 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
     SETERRQ(1,"Unknown insert type");
   }
 
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
   for (i=0; i<bs; i++) {
-    ierr = VecRestoreArray(s[i],&y[i]);CHKERRQ(ierr);
+    ierr = VecRestoreArrayFast(s[i],&y[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -377,12 +727,12 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
   PetscValidHeaderSpecific(*s,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(*s,&ns);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
 
   ierr = PetscMalloc(bs*sizeof(PetscReal*),&y);CHKERRQ(ierr);
   for (i=0; i<bs; i++) {
-    ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(s[i],&y[i]);CHKERRQ(ierr);
   }
 
   if (n != ns*bs) {
@@ -414,9 +764,9 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
     SETERRQ(1,"Unknown insert type");
   }
 
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
   for (i=0; i<bs; i++) {
-    ierr = VecRestoreArray(s[i],&y[i]);CHKERRQ(ierr);
+    ierr = VecRestoreArrayFast(s[i],&y[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -465,8 +815,8 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
   PetscValidHeaderSpecific(s,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(s,&ns);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(s,&y);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(s,&y);CHKERRQ(ierr);
 
   bs   = v->bs;
   if (start >= bs) {
@@ -497,8 +847,8 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
     SETERRQ(1,"Unknown insert type");
   }
 
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(s,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(s,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -541,8 +891,8 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
   PetscValidHeaderSpecific(s,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(s,&ns);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(s,&y);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(s,&y);CHKERRQ(ierr);
 
   bs   = v->bs;
   if (start >= bs) {
@@ -575,8 +925,8 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
   }
 
 
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(s,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(s,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -625,11 +975,11 @@ int VecSqrt(Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_COOKIE);
   ierr = VecGetLocalSize(v, &n);                                                                          CHKERRQ(ierr);
-  ierr = VecGetArray(v, &x);                                                                              CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v, &x);                                                                              CHKERRQ(ierr);
   for(i = 0; i < n; i++) {
     x[i] = sqrt(PetscAbsScalar(x[i]));
   }
-  ierr = VecRestoreArray(v, &x);                                                                          CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v, &x);                                                                          CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -660,12 +1010,12 @@ int VecSum(Vec v,PetscScalar *sum)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     lsum += x[i];
   }
   ierr = MPI_Allreduce(&lsum,sum,1,MPIU_SCALAR,PetscSum_Op,v->comm);CHKERRQ(ierr);
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -697,11 +1047,11 @@ int VecShift(const PetscScalar *shift,Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr); 
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     x[i] += lsum;
   }
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -728,11 +1078,11 @@ int VecAbs(Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     x[i] = PetscAbsScalar(x[i]);
   }
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -762,7 +1112,7 @@ int VecPermute(Vec x, IS row, PetscTruth inv)
 
   PetscFunctionBegin;
   ierr = ISGetIndices(row, &idx);                                                                         CHKERRQ(ierr);
-  ierr = VecGetArray(x, &array);                                                                          CHKERRQ(ierr);
+  ierr = VecGetArrayFast(x, &array);                                                                          CHKERRQ(ierr);
   ierr = PetscMalloc((x->n+1) * sizeof(PetscScalar), &newArray);                                          CHKERRQ(ierr);
 #ifdef PETSC_USE_BOPT_g
   for(i = 0; i < x->n; i++) {
@@ -776,7 +1126,7 @@ int VecPermute(Vec x, IS row, PetscTruth inv)
   } else {
     for(i = 0; i < x->n; i++) newArray[idx[i]] = array[i];
   }
-  ierr = VecRestoreArray(x, &array);                                                                      CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(x, &array);                                                                      CHKERRQ(ierr);
   ierr = ISRestoreIndices(row, &idx);                                                                     CHKERRQ(ierr);
   ierr = VecReplaceArray(x, newArray);                                                                    CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -816,11 +1166,11 @@ int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
   } else if (n1 != n2) {
     flg1 = PETSC_FALSE;
   } else {
-    ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr);
-    ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(vec1,&v1);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(vec2,&v2);CHKERRQ(ierr);
     ierr = PetscMemcmp(v1,v2,n1*sizeof(PetscScalar),&flg1);CHKERRQ(ierr);
-    ierr = VecRestoreArray(vec1,&v1);CHKERRQ(ierr);
-    ierr = VecRestoreArray(vec2,&v2);CHKERRQ(ierr);
+    ierr = VecRestoreArrayFast(vec1,&v1);CHKERRQ(ierr);
+    ierr = VecRestoreArrayFast(vec2,&v2);CHKERRQ(ierr);
   }
 
   /* combine results from all processors */
