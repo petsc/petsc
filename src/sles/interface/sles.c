@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.53 1996/02/08 19:38:51 curfman Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.54 1996/02/08 20:41:39 curfman Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -240,19 +240,20 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   int ierr;
   KSP ksp;
   PC  pc;
+
   PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
-  PLogEventBegin(SLES_SetUp,sles,b,x,0);
   ksp = sles->ksp; pc = sles->pc;
   KSPSetRhs(ksp,b);
   KSPSetSolution(ksp,x);
   KSPSetBinv(ksp,pc);
   if (!sles->setupcalled) {
+    PLogEventBegin(SLES_SetUp,sles,b,x,0);
     ierr = PCSetVector(pc,b); CHKERRQ(ierr);
     ierr = KSPSetUp(sles->ksp); CHKERRQ(ierr);
     ierr = PCSetUp(sles->pc); CHKERRQ(ierr);
     sles->setupcalled = 1;
+    PLogEventEnd(SLES_SetUp,sles,b,x,0);
   }
-  PLogEventEnd(SLES_SetUp,sles,b,x,0);
   return 0;
 }
 /*@
