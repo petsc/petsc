@@ -1397,9 +1397,8 @@ PetscErrorCode PetscLogPrintSummary(MPI_Comm comm, const char filename[])
   ierr = PetscFPrintf(comm, fd, "      #                          WARNING!!!                    #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #   This code was compiled with a debugging option,      #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   BOPT=<g,g_c++,g_complex>.   To get timing results    #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   ALWAYS compile your code with an optimized version,  #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   BOPT=<O,O_c++,O_complex>;  the performance will      #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   To get timing results run config/configure.py        #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   without --with-debugging=no, the performance will    #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #   be generally two or three times faster.              #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      ##########################################################\n\n\n");CHKERRQ(ierr);

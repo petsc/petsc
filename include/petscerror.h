@@ -287,7 +287,7 @@ EXTERN PetscErrorCode PetscSetFPTrap(PetscFPTrap);
 /*
       Allows the code to build a stack frame as it runs
 */
-#if defined(PETSC_USE_STACK)
+#if defined(PETSC_USE_DEBUG)
 
 #define PETSCSTACKSIZE 15
 

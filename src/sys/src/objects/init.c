@@ -578,15 +578,8 @@ PetscErrorCode PetscOptionsCheckInitial_Private(void)
   /*
       Setup building of stack frames for all function calls
   */
-#if defined(PETSC_USE_STACK)
 #if defined(PETSC_USE_DEBUG)
   ierr = PetscStackCreate();CHKERRQ(ierr);
-#else
-  ierr = PetscOptionsHasName(PETSC_NULL,"-log_stack",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscStackCreate();CHKERRQ(ierr);
-  }
-#endif
 #endif
 
 

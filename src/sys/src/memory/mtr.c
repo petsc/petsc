@@ -85,7 +85,7 @@ typedef struct _trSPACE {
     const char      *functionname;
     const char      *dirname;
     unsigned long   cookie;        
-#if defined(PETSC_USE_STACK)
+#if defined(PETSC_USE_DEBUG)
     PetscStack      stack;
 #endif
     struct _trSPACE *next,*prev;
@@ -257,7 +257,7 @@ PetscErrorCode PetscTrMallocDefault(size_t a,int lineno,const char function[],co
   }
   TRfrags++;
 
-#if defined(PETSC_USE_STACK)
+#if defined(PETSC_USE_DEBUG)
   ierr = PetscStackCopy(petscstack,&head->stack);CHKERRQ(ierr);
 #endif
 
@@ -496,7 +496,7 @@ PetscErrorCode PetscTrDump(FILE *fp)
   while (head) {
     fprintf(fp,"[%2d]%d bytes %s() line %d in %s%s\n",rank,(int)head->size,
             head->functionname,head->lineno,head->dirname,head->filename);
-#if defined(PETSC_USE_STACK)
+#if defined(PETSC_USE_DEBUG)
     ierr = PetscStackPrint(&head->stack,fp);CHKERRQ(ierr);
 #endif
     head = head->next;

@@ -552,7 +552,7 @@ PetscErrorCode PetscFinalize(void)
   */
   ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);  
 
-#if defined(PETSC_USE_STACK)
+#if defined(PETSC_USE_DEBUG)
   if (PetscStackActive) {
     ierr = PetscStackDestroy();CHKERRQ(ierr);
   }
