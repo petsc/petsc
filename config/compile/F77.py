@@ -17,6 +17,12 @@ class Compiler(config.compile.processor.Processor):
     self.flagsName.extend(Preprocessor(argDB).flagsName)
     return
 
+  def getTarget(self, source):
+    import os
+
+    base, ext = os.path.splitext(source)
+    return base+'.o'
+
 class Linker(config.compile.processor.Processor):
   '''The Fortran linker'''
   def __init__(self, argDB):

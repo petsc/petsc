@@ -55,6 +55,10 @@ class Processor(object):
     return
   extraArguments = property(getExtraArguments, setExtraArguments, doc = 'Optional arguments for the end of the command')
 
+  def getTarget(self, source):
+    '''Returns the default target for the given source file, or None'''
+    return None
+
   def getCommand(self, sourceFiles, outputFile = None):
     '''Returns a shell command as a string which will invoke the processor on sourceFiles, producing outputFile if given'''
     if isinstance(sourceFiles, str):

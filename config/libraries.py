@@ -103,7 +103,7 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return found
 
-  def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int'):
+  def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int', noCheckArg = 0):
     '''Determine whether a library is shared
        - initFunction(int *argc, char *argv[]) is called to initialize some static data
        - checkFunction(int *check) is called to verify that the static data wer set properly
@@ -119,6 +119,10 @@ class Configure(config.base.Configure):
       self.framework.argDB['LDFLAGS'] += ' -Wl,-rpath,'+os.path.dirname(lib)
 
     # Make a library which calls initFunction(), and returns checkFunction()
+    if noCheckArg:
+      checkCode = 'isInitialized = '+checkFunction+'();'
+    else:
+      checkCode = checkFunction+'(&isInitialized);'
     codeBegin = '''
 #ifdef __cplusplus
 extern "C"
@@ -129,9 +133,9 @@ int init(int argc,  char *argv[]) {
   %s isInitialized;
 
   %s(%s);
-  %s(&isInitialized);
+  %s
   return (int) isInitialized;
-''' % (boolType, initFunction, initArgs, checkFunction)
+''' % (boolType, initFunction, initArgs, checkCode)
     codeEnd   = '\n}\n'
     if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd):
       if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
@@ -150,9 +154,9 @@ int checkInit(void) {
     body      = '''
   %s isInitialized;
 
-  %s(&isInitialized);
+  %s
   return (int) isInitialized;
-''' % (boolType, checkFunction)
+''' % (boolType, checkCode)
     codeEnd   = '\n}\n'
     if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd):
       if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)

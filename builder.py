@@ -77,8 +77,13 @@ class Builder(logging.Logger):
     self.language.pop()
     return self.language[-1]
 
-  def getConfiguration(self, configurationName):
-    if not configurationName in self.configurations:
+  def getConfiguration(self, configurationName = None):
+    '''Retrieve the configuration with the given name
+       - Create a new one if none exists
+       - If no name is given, return the current configuration'''
+    if configurationName is None:
+      configurationName = self.configurationName[-1]
+    elif not configurationName in self.configurations:
       self.configurations[configurationName] = script.LanguageProcessor()
       self.configurations[configurationName].setup()
     return self.configurations[configurationName]
@@ -92,6 +97,22 @@ class Builder(logging.Logger):
     '''Restore the previous configuration'''
     self.configurationName.pop()
     return self.getConfiguration(self.configurationName[-1])
+
+  def saveConfiguration(self, configurationName):
+    '''Save a configuration to RDict'''
+    import cPickle
+
+    self.argDB['#'+configurationName+' cache#'] = cPickle.dumps(self.getConfiguration(configurationName))
+    return
+
+  def loadConfiguration(self, configurationName):
+    '''Load a configuration from RDict'''
+    loadName = '#'+configurationName+' cache#'
+    if loadName in self.argDB:
+      import cPickle
+
+      self.configurations[configurationName] = cPickle.loads(self.argDB[loadName])
+    return self.getConfiguration(configurationName)
 
   def getLanguageProcessor(self):
     return self.configurations[self.configurationName[-1]]
@@ -139,10 +160,12 @@ class Builder(logging.Logger):
     return self.getLanguageProcessor().getCompilerObject(self.language[-1]).setFlags(flags)
 
   def getCompilerTarget(self, source):
-    import os
+    return self.getLanguageProcessor().getCompilerObject(self.language[-1]).getTarget(source)
 
-    base, ext = os.path.splitext(source)
-    return base+'.o'
+  def getCompilerObject(self):
+    compiler = self.getLanguageProcessor().getCompilerObject(self.language[-1])
+    compiler.checkSetup()
+    return compiler
 
   def getCompilerCommand(self, source, target = None):
     self.getCompiler()
@@ -151,7 +174,9 @@ class Builder(logging.Logger):
     return self.getLanguageProcessor().getCompilerObject(self.language[-1]).getCommand(source, target)
 
   def compile(self, source, target = None):
-    '''Return the error output from this compile and the return code'''
+    '''Compile the list of source files into target
+       - Return the standard output, error output, return code, and a dictionary mapping languages to lists of output files
+       - This method checks whether the compile should occur'''
     def check(command, status, output, error):
       if error or status:
         self.logWrite('Possible ERROR while running compiler: '+output)
@@ -164,11 +189,23 @@ class Builder(logging.Logger):
       self.shouldCompile.update(source)
       return
 
+    config = self.getConfiguration()
     if target is None:
       target = self.getCompilerTarget(source[0])
     if self.shouldCompile(source, target):
-      return script.Script.executeShellCommand(self.getCompilerCommand(source, target), checkCommand = check, log = self.log)
-    return ('', '', 0)
+      if callable(self.getCompilerObject()):
+        output, error, status, outputFiles = self.getCompilerObject()(source, target)
+        check(None, status, output, error)
+      else:
+        output, error, status = script.Script.executeShellCommand(self.getCompilerCommand(source, target), checkCommand = check, log = self.log)
+        outputFiles = {self.language[-1]: [target]}
+      config.outputFiles.update(outputFiles)
+    else:
+      output      = ''
+      error       = ''
+      status      = 0
+      outputFiles = {}
+    return (output, error, status, outputFiles)
 
   def getLinker(self):
     linker = self.getLanguageProcessor().getLinkerObject(self.language[-1])
