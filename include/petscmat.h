@@ -87,6 +87,7 @@ extern int MatSolveTransAdd(Mat,Vec,Vec,Vec);
 extern int MatRelax(Mat,Vec,double,int,double,int,Vec);
 
 extern int MatCopy(Mat,Mat*);
+extern int MatConvert(Mat,MATTYPE,Mat*);
 extern int MatView(Mat,Viewer);
 #include <stdio.h>
 extern int MatPrintMatlab(Mat,FILE*,char *);
