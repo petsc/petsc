@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbaij.c,v 1.15 1997/10/19 03:26:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmbaij.c,v 1.16 1997/11/03 04:46:15 bsmith Exp balay $";
 #endif
 
 
@@ -37,7 +37,9 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   tmp    = (int *) PetscMalloc( (ec*bs+1)*sizeof(int) ); CHKPTRQ(tmp)
   ec = 0;
   for ( i=0; i<Nbs; i++ ) {
-    if (indices[i]) garray[ec++] = i;
+    if (indices[i]) {
+      garray[ec++] = i;
+    }
   }
 
   /* make indices now point into garray */
