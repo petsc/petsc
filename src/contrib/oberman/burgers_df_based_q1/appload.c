@@ -22,7 +22,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   view    = &(*appctx)->view; /*added by H. */
   element = &(*appctx)->element; /*added by H. */
 /*  ---------------
-      Setup the functions
+      Setup the functions (?)
 -------------------*/
 
 
@@ -35,20 +35,23 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   ierr = AODataLoadBasic(binary,&(*appctx)->aodata); CHKERRQ(ierr);
   ierr = ViewerDestroy(binary); CHKERRQ(ierr);
 
-  /* moved from AppCtxGraphics by H */
+  /*----------------------------------------------------
+    setup viewing options (moved from AppCtxGraphics by H)
+   --------------------------------------------------------*/
   ierr = OptionsHasName(PETSC_NULL,"-show_grid",&view->show_grid);CHKERRQ(ierr); 
   ierr = OptionsHasName(PETSC_NULL,"-show_griddata",&view->show_griddata);CHKERRQ(ierr);
 
   /*------------------------------------------------------------------------
       Setup the local data structures 
       ----------------------------------------------------------------------------*/
-  /*
-      Partition the grid cells
-  */
-  ierr = AODataKeyPartition((*appctx)->aodata,"cell"); CHKERRA(ierr);  
+  /* (moved to AppCtxSetLocal by H)
+      Partition the grid cells */
+  
+  /* ierr = AODataKeyPartition((*appctx)->aodata,"cell"); CHKERRA(ierr); */ 
 
-  /*      Partition the vertices subservient to the cells */ 
-  ierr = AODataSegmentPartition((*appctx)->aodata,"cell","vertex"); CHKERRA(ierr);  
+  /* Partition the vertices subservient to the cells */
+  /* ierr = AODataSegmentPartition((*appctx)->aodata,"cell","vertex"); CHKERRA(ierr);  
+  */
 
   /*     Generate the local numbering of cells and vertices  */
   ierr = AppCtxSetLocal(*appctx); CHKERRA(ierr);
@@ -80,7 +83,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   AOData                 ao     = appctx->aodata;
   AppGrid                *grid = &appctx->grid;
   PetscBT                vertex_boundary_flag;
-  ISLocalToGlobalMapping ltogcell;
+  ISLocalToGlobalMapping cell_ltog;
   int                    ierr, rstart,rend,rank, *vertices;
   int                    i;
 
@@ -91,6 +94,14 @@ int AppCtxSetLocal(AppCtx *appctx)
     AODataView(ao, VIEWER_STDOUT_SELF);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\n-------- end of AO -------\n");CHKERRQ(ierr);  
   }
+
+  /* (moved from AppCtxCreate by H)
+      Partition the grid cells */
+  
+  ierr = AODataKeyPartition(ao,"cell"); CHKERRA(ierr); 
+
+  /* Partition the vertices subservient to the cells */
+  ierr = AODataSegmentPartition(ao,"cell","vertex"); CHKERRA(ierr);  
 
   /*   Generate the list of on processor cells   */
   /* Need a local numbering so that we can loop over the cells */
@@ -117,7 +128,7 @@ int AppCtxSetLocal(AppCtx *appctx)
    }
   /*      Make local to global mapping of cells and vertices  */
  /* Don't want to carry around table which contains the info for all nodes */
-  ierr = ISLocalToGlobalMappingCreateIS(grid->cell_global,&ltogcell);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateIS(grid->cell_global,&cell_ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(grid->vertex_global,&grid->ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(grid->df_global,&grid->dfltog);CHKERRQ(ierr);
   if(appctx->view.show_griddata){ 
@@ -126,10 +137,10 @@ int AppCtxSetLocal(AppCtx *appctx)
   }
 
   /* Attach the ltog to the database */
-  ierr = AODataKeySetLocalToGlobalMapping(ao,"cell",ltogcell);CHKERRQ(ierr);
+  ierr = AODataKeySetLocalToGlobalMapping(ao,"cell",cell_ltog);CHKERRQ(ierr);
   ierr = AODataKeySetLocalToGlobalMapping(ao,"vertex",grid->ltog);CHKERRQ(ierr);
   ierr = AODataKeySetLocalToGlobalMapping(ao,"df",grid->dfltog);CHKERRQ(ierr);
-  ierr = PetscObjectDereference((PetscObject)ltogcell);CHKERRQ(ierr);
+  ierr = PetscObjectDereference((PetscObject)cell_ltog);CHKERRQ(ierr);
 
   /*      Get the local DF  and vertex lists */
   /* AODataSegmentGetLocalIS uses the ltog info in the database to return the local values for indices */
@@ -150,11 +161,16 @@ int AppCtxSetLocal(AppCtx *appctx)
   ierr = AODataSegmentGetIS(ao,"vertex","values",grid->vertex_global,(void **)&grid->vertex_value);CHKERRQ(ierr);
   /* Get Df's corresponding to the vertices */
  ierr = AODataSegmentGetIS(ao,"vertex","df",grid->vertex_global,(void **)&grid->vertex_df);CHKERRQ(ierr);
-
+ 
   /* Get  the number of local vertices (rather than the number of ghosted vertices) */
   ierr = AODataKeyGetInfo(ao,"vertex",PETSC_NULL,&grid->vertex_n,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   /* get the number of local dfs */
  ierr = AODataKeyGetInfo(ao,"df",PETSC_NULL,&grid->df_local_count,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+
+ if(appctx->view.show_griddata){ 
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], vertex_n=%d, df_local_count=%d,\n grid->vertex_df\n",rank,grid->vertex_n, grid->df_local_count );CHKERRQ(ierr);
+    ierr = PetscIntView(2*grid->vertex_n,grid->vertex_df,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+ }
 
   /************************************************************/
   /*   Set up data structures to simplify dealing with boundary values */
