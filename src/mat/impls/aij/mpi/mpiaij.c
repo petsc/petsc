@@ -3326,9 +3326,10 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
   Mat_MPIAIJ      *mpimat=(Mat_MPIAIJ*)A->data; 
   Mat_SeqAIJ      *mat,*a=(Mat_SeqAIJ*)(mpimat->A)->data,*b=(Mat_SeqAIJ*)(mpimat->B)->data;
   PetscInt        *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*cmap=mpimat->garray;
-  MatScalar       *aa=a->a,*ba=b->a;
-  PetscInt        am=A->m,i,j,*nnz,nnz_max,ncols,*cols,cstart=mpimat->cstart;
+  MatScalar       *aa=a->a,*ba=b->a,*ca;
+  PetscInt        am=A->m,i,j,k,*nnz,nnz_max,ncols,cstart=mpimat->cstart;
   Mat             Aw;
+  PetscInt        *ci,*cj,col,ncols_d,ncols_o,jo;
 
   PetscFunctionBegin;
   if (!logkey_getlocalmat) {
@@ -3345,37 +3346,57 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
     ierr = MatCreate(PETSC_COMM_SELF,am,A->N,am,A->N,&Aw);CHKERRQ(ierr);
     ierr = MatSetType(Aw,MATSEQAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(Aw,0,nnz);CHKERRQ(ierr);
-  } else if (scall == MAT_REUSE_MATRIX){
-    Aw = *A_loc;
-    mat=(Mat_SeqAIJ*)Aw->data; 
-    nnz_max = 0;
-    for (i=0; i<am; i++){
-      j = mat->i[i+1] - mat->i[i];
-      if (j > nnz_max) nnz_max = j;
+    ierr = PetscMalloc((1+nnz_max)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
+    ierr = PetscMalloc((1+nnz_max)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
+    for (i=0; i<am; i++) {
+      ncols_o = bi[i+1] - bi[i];
+      ncols_d = ai[i+1] - ai[i];
+      ncols   = ncols_d + ncols_o;
+      k = 0;
+      /* off-diagonal portion of A */
+      for (jo=0; jo<ncols_o; jo++) {
+        col = cmap[*bj];
+        if (col >= cstart) break;
+        cj[k]   = col; bj++;
+        ca[k++] = *ba++; 
+      }
+      /* diagonal portion of A */
+      for (j=0; j<ncols_d; j++) {
+        cj[k]   = cstart + *aj++; 
+        ca[k++] = *aa++; 
+      }
+      /* off-diagonal portion of A */
+      for (j=jo;j<ncols_o; j++) {
+        cj[k]   = cmap[*bj++]; 
+        ca[k++] = *ba++; 
+      }
+      ierr = MatSetValues(Aw,1,&i,ncols,cj,ca,INSERT_VALUES);CHKERRQ(ierr);
     }
-    /* clear old values in *A_loc */
-    ierr = PetscMemzero(mat->a,mat->i[am]*sizeof(MatScalar));CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
-  }
-  ierr = PetscMalloc((1+nnz_max)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-
-  for (i=0; i<am; i++) {
-    /* diagonal portion of A */
-    ncols = ai[i+1] - ai[i];
-    for (j=0; j<ncols; j++) {cols[j] = cstart + *aj++;} 
-    ierr = MatSetValues(Aw,1,&i,ncols,cols,aa+ai[i],INSERT_VALUES);CHKERRQ(ierr);
-    /* off-diagonal portion of A */
-    ncols = bi[i+1] - bi[i];
-    for (j=0; j<ncols; j++) cols[j] = cmap[*bj++]; /* cmap[*(bj+bi[i]+j)]; */
-    ierr = MatSetValues(Aw,1,&i,ncols,cols,ba+bi[i],INSERT_VALUES);CHKERRQ(ierr);
-  } 
-  ierr = MatAssemblyBegin(Aw,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Aw,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree(cols);CHKERRQ(ierr);
-  if (scall == MAT_INITIAL_MATRIX){ 
+    ierr = MatAssemblyBegin(Aw,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Aw,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = PetscFree(cj);CHKERRQ(ierr);
+    ierr = PetscFree(ca);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);
     *A_loc = Aw;
+  } else if (scall == MAT_REUSE_MATRIX){
+    mat=(Mat_SeqAIJ*)(*A_loc)->data; 
+    ci = mat->i; cj = mat->j; ca = mat->a;
+    for (i=0; i<am; i++) {
+      /* off-diagonal portion of A */
+      ncols_o = bi[i+1] - bi[i];
+      for (jo=0; jo<ncols_o; jo++) {
+        col = cmap[*bj];
+        if (col >= cstart) break;
+        *ca++ = *ba++; 
+      }
+      /* diagonal portion of A */
+      ncols = ai[i+1] - ai[i];
+      for (j=0; j<ncols; j++) *ca++ = *aa++; 
+      /* off-diagonal portion of A */
+      for (j=jo;j<ncols_o; j++) *ca++ = *ba++; 
+    }
+  } else {
+    SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
   }
 
   ierr = PetscLogEventEnd(logkey_getlocalmat,A,0,0,0);CHKERRQ(ierr);
