@@ -72,7 +72,7 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
     DrawLGDestroy(lg);
   }
   else if (vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
-    return ViewerMatlabPutArray(ptr,x->n,1,x->array); 
+    return ViewerMatlabPutArray_Private(ptr,x->n,1,x->array); 
   }
 #endif
   return 0;

@@ -1,18 +1,7 @@
 #ifndef lint
-static char vcid[] = "$Id: senddense.c,v 1.7 1995/04/28 02:25:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: senddense.c,v 1.8 1995/04/28 02:26:40 bsmith Exp bsmith $";
 #endif
-/* This is part of the MatlabSockettool package. Here are the routines
-   to send a dense matrix to Matlab.
-
- 
-    Usage: Fortran: putmat(machine, portnumber, m, n, matrix)
-           C:       putmatrix(machine, portnumber, m, n, matrix)
-
-       char   *machine    e.g. "condor"
-       int    portnumber  [  5000 < portnumber < 5010 ]
-       int    m,n         number of rows and columns in matrix
-       double *matrix     fortran style matrix
- 
+/*
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 */
 #include "matlab.h"
