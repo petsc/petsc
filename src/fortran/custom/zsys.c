@@ -58,6 +58,12 @@
 #define petscmatlabenginegetarray_    PETSCMATLABENGINEGETARRAY
 #define petscgetresidentsetsize_      PETSCGETRESIDENTSETSIZE
 #define petsctrspace_                 PETSCTRSPACE
+#define petscviewerasciiprintf_       PETSCVIEWERASCIIPRINTF
+#define petscviewerasciisynchronizedprintf_       PETSCVIEWERASCIISYNCHRONIZEDPRINTF
+#define petscviewerasciisettab_       PETSCVIEWERASCIISETTAB
+#define petscviewerasciipushtab_      PETSCVIEWERASCIIPUSHTAB
+#define petscviewerasciipoptab_       PETSCVIEWERASCIIPOPTAB
+#define petscviewerasciiusetabs_      PETSCVIEWERASCIIUSETABS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscfopen_                   petscfopen
 #define petscfclose_                  petscfclose
@@ -112,6 +118,13 @@
 #define petscgetcputime_           petscgetcputime
 #define petscgetresidentsetsize_   petscgetresidentsetsize
 #define petsctrspace_              petsctrspace
+#define petscviewerasciiprintf_    petscviewerasciiprintf
+#define petscviewerasciisynchronizedprintf_    petscviewerasciisynchronizedprintf
+#define petscviewerasciisettab_ petscviewerasciisettab
+#define petscviewerasciipushtab_ petscviewerasciipushtab
+#define petscviewerasciipoptab_ petscviewerasciipoptab
+#define petscviewerasciiusetabs_ petscviewerasciiusetabs
+
 #endif
 
 EXTERN_C_BEGIN
@@ -128,6 +141,44 @@ EXTERN_C_BEGIN
       call VecGetArray(y,v_y,i_y,ierr)
     endif
 */
+
+void PETSC_STDCALL petscviewerasciisettab_(PetscViewer *viewer,int *tabs,int *ierr)
+{
+  *ierr = PetscViewerASCIISetTab(*viewer,*tabs);
+}
+
+void PETSC_STDCALL petscviewerasciipushtab_(PetscViewer *viewer,int *ierr)
+{
+  *ierr = PetscViewerASCIIPushTab(*viewer);
+}
+
+void PETSC_STDCALL petscviewerasciipoptab_(PetscViewer *viewer,int *ierr)
+{
+  *ierr = PetscViewerASCIIPopTab(*viewer);
+}
+
+void PETSC_STDCALL petscviewerasciiusetabs_(PetscViewer *viewer,PetscTruth *flg,int *ierr)
+{
+  *ierr = PetscViewerASCIIUseTabs(*viewer,*flg);
+}
+
+void PETSC_STDCALL petscviewerasciiprintf_(PetscViewer *viewer,CHAR str PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+{
+  char *c1;
+
+  FIXCHAR(str,len1,c1);
+  *ierr = PetscViewerASCIIPrintf(*viewer,c1);
+  FREECHAR(str,c1);
+}
+
+void PETSC_STDCALL petscviewerasciisynchronizedprintf_(PetscViewer *viewer,CHAR str PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+{
+  char *c1;
+
+  FIXCHAR(str,len1,c1);
+  *ierr = PetscViewerASCIISynchronizedPrintf(*viewer,c1);
+  FREECHAR(str,c1);
+}
 
 void PETSC_STDCALL petsctrspace_(PetscLogDouble *space,PetscLogDouble *fr,PetscLogDouble *maxs, int *ierr)
 {

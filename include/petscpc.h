@@ -58,6 +58,7 @@ E*/
 #define PCSCHUR      "schur"
 #define PCESI        "esi"
 #define PCPETSCESI   "petscesi"
+#define PCMAT        "mat"
 
 /* Logging support */
 extern int PC_COOKIE;

@@ -413,17 +413,6 @@ int ProcYes(int proc,PetscObject pipe_info)
   PetscFunctionReturn(1);
 }
 #undef __FUNCT__
-#define __FUNCT__ "IsProcYes"
-int IsProcYes(long fun)
-{
-  PetscFunctionBegin;
-  /* 
-     Pass the actual function pointer, instead of typecasting it
-     into a long?
-  */
-  PetscFunctionReturn(fun==(long)&ProcYes);
-}
-#undef __FUNCT__
 #define __FUNCT__ "ProcNo"
 int ProcNo(int proc,PetscObject pipe_info)
 {

@@ -29,6 +29,7 @@ EXTERN int PCCreate_RAMG(PC);
 EXTERN int PCCreate_mILU(PC);
 EXTERN int PCCreate_PetscESI(PC);
 EXTERN int PCCreate_ESI(PC);
+EXTERN int PCCreate_Mat(PC);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -71,6 +72,7 @@ int PCRegisterAll(char *path)
   ierr = PCRegisterDynamic(PCCOMPOSITE    ,path,"PCCreate_Composite",PCCreate_Composite);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCREDUNDANT    ,path,"PCCreate_Redundant",PCCreate_Redundant);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCNN           ,path,"PCCreate_NN",PCCreate_NN);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCMAT          ,path,"PCCreate_Mat",PCCreate_Mat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SPAI) && !defined(__cplusplus) && !defined(PETSC_USE_SINGLE)
   ierr = PCRegisterDynamic(PCSPAI         ,path,"PCCreate_SPAI",PCCreate_SPAI);CHKERRQ(ierr);
 #endif

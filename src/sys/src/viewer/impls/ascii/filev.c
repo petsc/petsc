@@ -329,7 +329,8 @@ int PetscViewerASCIIUseTabs(PetscViewer viewer,PetscTruth flg)
     Level: developer
 
     Fortran Note:
-    This routine is not supported in Fortran.
+    The call sequence is PetscViewerASCIIPrintf(PetscViewer, character(*), int ierr) from Fortran. 
+    That is, you can only pass a single character string from Fortran.
 
   Concepts: PetscViewerASCII^printing
   Concepts: printing^to file
@@ -664,6 +665,9 @@ EXTERN_C_END
 -   format - the usual printf() format string 
 
     Level: intermediate
+
+    Fortran Note:
+      Can only print a single character* string
 
 .seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), PetscFPrintf(),
           PetscFOpen(), PetscViewerFlush(), PetscViewerASCIIGetPointer(), PetscViewerDestroy(), PetscViewerASCIIOpen(),
