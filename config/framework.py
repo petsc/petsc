@@ -18,7 +18,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if not nargs.Arg.findArgument('debugSections', self.clArgs):
       self.argDB['debugSections'] = ['screen']
     config.base.Configure.__init__(self, self)
-    script.LanguageProcessor.__init__(self)
+    script.LanguageProcessor.__init__(self, argDB = self.argDB)
     self.childGraph   = graph.DirectedGraph()
     self.substRE      = re.compile(r'@(?P<name>[^@]+)@')
     self.substFiles   = {}
