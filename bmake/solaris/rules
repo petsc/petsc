@@ -1,4 +1,4 @@
-# $Id: base,v 1.46 1998/11/30 16:57:40 bsmith Exp bsmith $ 
+# $Id: base,v 1.47 1998/12/04 23:22:05 bsmith Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -11,8 +11,8 @@ SHELL            = /bin/sh
 #
 C_CC             = cc    -KPIC -dalign -xtarget=native
 C_FC             = f77   -xpp=cpp
-C_CLINKER        = cc    -R${LDIR}:${DYLIBPATH}
-C_FLINKER        = f77   -R${LDIR}:${DYLIBPATH}
+C_CLINKER        = cc    ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
+C_FLINKER        = f77   ${FOPTFLAGS} -R${LDIR}:${DYLIBPATH}
 C_CCV            = cc    -V -c
 C_SYS_LIB        = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl 
 # ---------------------------- BOPT=g options ----------------------------
@@ -25,8 +25,8 @@ O_FOPTFLAGS      = -fast
 #
 CXX_CC           = CC    -KPIC
 CXX_FC           = f77   -xpp=cpp
-CXX_CLINKER      = CC    -R${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = f77   -R${LDIR}:${DYLIBPATH}
+CXX_CLINKER      = CC    ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
+CXX_FLINKER      = f77   ${FOPTFLAGS} -R${LDIR}:${DYLIBPATH}
 CXX_CCV          = CC    -V -c
 CXX_SYS_LIB      = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl
 # ------------------------- BOPT=g_c++ options ------------------------------

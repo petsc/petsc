@@ -1,4 +1,4 @@
-# $Id: base,v 1.20 1998/07/23 22:18:52 bsmith Exp bsmith $ 
+# $Id: base,v 1.29 1998/12/04 23:22:05 bsmith Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -11,8 +11,8 @@ SHELL            = /bin/sh
 #
 C_CC             = /usr/local/bin/gcc
 C_FC             = /home/alice/egcs/rs6000/bin/g77
-C_CLINKER        = /usr/local/bin/gcc -Wl,-bbigtoc 
-C_FLINKER        = /home/alice/egcs/rs6000/bin/g77 -Wl,-bbigtoc 
+C_CLINKER        = /usr/local/bin/gcc ${COPTFLAGS} -Wl,-bbigtoc 
+C_FLINKER        = /home/alice/egcs/rs6000/bin/g77 ${FOPTFLAGS} -Wl,-bbigtoc 
 C_CCV            = /usr/local/bin/gcc -V
 C_SYS_LIB        = -lg2c -lisode
 # ---------------------------- BOPT=g options ----------------------------
@@ -25,8 +25,8 @@ O_FOPTFLAGS      = -O
 #
 CXX_CC           = g++
 CXX_FC           = /home/alice/egcs/rs6000/bin/g77
-CXX_CLINKER      = g++
-CXX_FLINKER      = g++
+CXX_CLINKER      = g++ ${COPTFLAGS}
+CXX_FLINKER      = g++ ${COPTFLAGS}
 CXX_CCV          = g++ -V
 CXX_SYS_LIB      =  -lcomplex -lisode
 # ------------------------- BOPT=g_c++ options ------------------------------

@@ -1,6 +1,6 @@
-# $Id: base,v 1.47 1998/09/25 19:10:51 balay Exp balay $ 
+# $Id: base,v 1.48 1998/12/04 21:53:01 balay Exp balay $ 
 
-# $Id: base,v 1.42 1998/12/04 19:34:49 bsmith Exp bsmith $ 
+# $Id: base,v 1.48 1998/12/04 21:53:01 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -12,9 +12,9 @@ SHELL            = /bin/sh
 # ######################### C and Fortran compiler ########################
 #
 C_CC             = cc -Aa +z -Ae
-C_FC             = f90
+C_FC             = f90 ${COPTFLAGS} 
 C_CLINKER        = cc
-C_FLINKER        = f90
+C_FLINKER        = f90 ${FOPTFLAGS} 
 C_CCV            = unknown
 C_SYS_LIB        = -lV3 -lU77 -lail -lcnx_syscall \
 	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
@@ -29,8 +29,8 @@ O_FOPTFLAGS      = -O
 #
 CXX_CC           = CC -Aa +z -ext +eh 
 CXX_FC           = f90
-CXX_CLINKER      = CC
-CXX_FLINKER      = f90
+CXX_CLINKER      = CC ${COPTFLAGS} 
+CXX_FLINKER      = f90 ${FOPTFLAGS} 
 CXX_CCV          = unknown
 CXX_SYS_LIB      = -lV3 -lU77 -lail -lcnx_syscall -lcomplex -lC \
 	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl

@@ -1,4 +1,4 @@
-# $Id: base,v 1.39 1998/11/20 17:08:32 balay Exp balay $ 
+# $Id: base,v 1.40 1998/12/04 21:31:29 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -11,9 +11,9 @@ SHELL            = /bin/sh
 #
 C_CC             = /home/alice/software/egcs/linux/bin/gcc -fPIC
 C_FC             = /home/alice/software/egcs/linux/bin/g77
-C_CLINKER        = /home/alice/software/egcs/linux/bin/gcc \
+C_CLINKER        = /home/alice/software/egcs/linux/bin/gcc ${COPTFLAGS} \
                   -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
-C_FLINKER        = /home/alice/software/egcs/linux/bin/g77 \
+C_FLINKER        = /home/alice/software/egcs/linux/bin/g77 ${FOPTFLAGS} \
                   -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
 C_CCV            = /home/alice/software/egcs/linux/bin/gcc --version
 C_SYS_LIB        = -ldl -lc -lg2c -lm
@@ -27,9 +27,9 @@ O_FOPTFLAGS      = -O
 #
 CXX_CC           = /home/alice/software/egcs/linux/bin/g++ -fPIC
 CXX_FC           = /home/alice/software/egcs/linux/bin/g77
-CXX_CLINKER      = /home/alice/software/egcs/linux/bin/g++ \
+CXX_CLINKER      = /home/alice/software/egcs/linux/bin/g++ ${COPTFLAGS} \
 	           -Wl,-rpath,${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = /home/alice/software/egcs/linux/bin/g++ \
+CXX_FLINKER      = /home/alice/software/egcs/linux/bin/g++ ${COPTFLAGS} \
                    -Wl,-rpath,${LDIR}:${DYLIBPATH}
 CXX_CCV          = /home/alice/software/egcs/linux/bin/gcc --version
 CXX_SYS_LIB      = -ldl -lc -lg2c -lm

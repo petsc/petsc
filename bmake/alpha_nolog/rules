@@ -1,4 +1,4 @@
-# $Id: base,v 1.32 1998/12/04 22:31:05 balay Exp $ 
+# $Id: base,v 1.25 1998/12/04 22:35:36 balay Exp balay $ 
 
 #
 #     See the file .... for a complete explanation of all these fields
@@ -12,8 +12,8 @@ SHELL            = /bin/sh
 #
 C_CC             = cc
 C_FC             = f77 -w
-C_CLINKER        = cc -Wl,-rpath,${LDIR}:${DYLIBPATH}
-C_FLINKER        = f77 -Wl,-rpath,${LDIR}:${DYLIBPATH}
+C_CLINKER        = cc ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
+C_FLINKER        = f77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 C_CCV            = unknown
 C_SYS_LIB        = -lfor -lutil -lFutil -lots
 # ---------------------------- BOPT=g options ----------------------------
@@ -26,8 +26,8 @@ O_FOPTFLAGS      = -O2
 #
 CXX_CC           = cxx -x cxx
 CXX_FC           = f77 -w
-CXX_CLINKER      = cxx -Wl,-rpath,${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = f77 -Wl,-rpath,${LDIR}:${DYLIBPATH}
+CXX_CLINKER      = cxx ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
+CXX_FLINKER      = f77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 CXX_CCV          = unknown
 CXX_SYS_LIB      = -lfor -lutil -lFutil -lots
 # ------------------------- BOPT=g_c++ options ------------------------------

@@ -1,4 +1,4 @@
-# $Id: base,v 1.43 1998/12/04 23:28:05 balay Exp balay $ 
+# $Id: base,v 1.44 1998/12/04 23:37:26 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -28,10 +28,10 @@ O_COPTFLAGS      = -O2 -Olimit 6000
 O_FOPTFLAGS      = -O2
 # ########################## C++ compiler ##################################
 #
-CC               = CC -32
-CLINKER          = CC -32 ${COPTFLAGS} -rpath ${LDIR}:${DYLIBPATH}  
-FLINKER          = CC -32 ${COPTFLAGS} -rpath ${LDIR}:${DYLIBPATH}
-SYS_LIB          = -lcomplex -lfpe -lsun -lF77 -lU77 -lI77 -lisam
+CXX_CC               = CC -32
+CXX_CLINKER          = CC -32 ${COPTFLAGS} -rpath ${LDIR}:${DYLIBPATH}  
+CXX_FLINKER          = CC -32 ${COPTFLAGS} -rpath ${LDIR}:${DYLIBPATH}
+CXX_SYS_LIB          = -lcomplex -lfpe -lsun -lF77 -lU77 -lI77 -lisam
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g 
 GCXX_FOPTFLAGS   = -g

@@ -1,4 +1,4 @@
-# $Id: base,v 1.42 1998/12/04 19:34:49 bsmith Exp bsmith $ 
+# $Id: base,v 1.28 1998/12/04 21:12:58 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -11,8 +11,8 @@ SHELL            = /bin/sh
 #
 C_CC             = gcc -D__USE_FIXED_PROTOTYPES__
 C_FC             = g77
-C_CLINKER        = gcc
-C_FLINKER        = g77
+C_CLINKER        = gcc ${COPTFLAGS} 
+C_FLINKER        = g77 ${FOPTFLAGS} 
 C_CCV            = gcc --version
 C_SYS_LIB        = -ladvapi32 -lg2c
 # ------------------------- BOPT=g_c++ options ------------------------------
@@ -24,8 +24,8 @@ O_FOPTFLAGS      = -O4
 # ########################## C++ compiler ##################################
 CXX_CC           = g++
 CXX_FC           = g77
-CXX_CLINKER      = g++ 
-CXX_FLINKER      = g77
+CXX_CLINKER      = g++ ${COPTFLAGS} 
+CXX_FLINKER      = g77 ${FOPTFLAGS} 
 CXX_CCV          = gcc --version
 CXX_SYS_LIB      = -ladvapi32 -lg2c
 # ------------------------- BOPT=g_c++ options ------------------------------

@@ -1,4 +1,4 @@
-# $Id: base,v 1.21 1998/12/04 22:05:08 balay Exp bsmith $ 
+# $Id: base,v 1.22 1998/12/04 23:22:05 bsmith Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -11,8 +11,10 @@ SHELL            = /bin/sh
 #
 C_CC             = /home/alice/software/egcs/solaris/bin/gcc -fPIC
 C_FC             = /home/alice/software/egcs/solaris/bin/g77
-C_CLINKER        = /home/alice/software/egcs/solaris/bin/gcc ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
-C_FLINKER        = /home/alice/software/egcs/solaris/bin/g77 ${FOPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
+C_CLINKER        = /home/alice/software/egcs/solaris/bin/gcc ${COPTFLAGS} \
+		   -Wl,-R,${LDIR}:${DYLIBPATH}
+C_FLINKER        = /home/alice/software/egcs/solaris/bin/g77 ${FOPTFLAGS} \
+		   -Wl,-R,${LDIR}:${DYLIBPATH}
 C_CCV            = ${C_CC} --version
 C_SYS_LIB        = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl 
 # ---------------------------- BOPT=g options ----------------------------
@@ -25,8 +27,10 @@ O_FOPTFLAGS      = -O
 #
 CXX_CC           = /home/alice/software/egcs/solaris/bin/g++ -fPIC
 CXX_FC           = /home/alice/software/egcs/solaris/bin/g77
-CXX_CLINKER      = /home/alice/software/egcs/solaris/bin/g++ ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = /home/alice/software/egcs/solaris/bin/g77 ${FOPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
+CXX_CLINKER      = /home/alice/software/egcs/solaris/bin/g++ ${COPTFLAGS} \
+		   -Wl,-R,${LDIR}:${DYLIBPATH}
+CXX_FLINKER      = /home/alice/software/egcs/solaris/bin/g77 ${FOPTFLAGS} \
+		   -Wl,-R,${LDIR}:${DYLIBPATH}
 CXX_CCV          = ${CXX_CC} --version
 CXX_SYS_LIB      = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl
 # ------------------------- BOPT=g_c++ options ------------------------------
