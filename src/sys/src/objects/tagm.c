@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tagm.c,v 1.2 1998/04/28 15:20:18 bsmith Exp balay $";
+static char vcid[] = "$Id: tagm.c,v 1.3 1998/06/29 21:01:23 balay Exp balay $";
 #endif
 /*
       Some PETSc utilites
@@ -136,12 +136,7 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 */
 int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 {
-  int ierr = MPI_SUCCESS,*tagvalp, flag;
-#if defined (LAM_MPI)
-  int maxval;
-#else
-  int *maxval;
-#endif  
+  int ierr = MPI_SUCCESS,*tagvalp, flag,*maxval;
 
   PetscFunctionBegin;
   if (Petsc_Tag_keyval == MPI_KEYVAL_INVALID) {
@@ -162,11 +157,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     ierr       = MPI_Comm_dup( comm_in, comm_out );CHKERRQ(ierr);
     ierr       = MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );CHKERRQ(ierr);
     tagvalp    = (int *) PetscMalloc( 2*sizeof(int) ); CHKPTRQ(tagvalp);
-#if defined (LAM_MPI)
-    tagvalp[0] = maxval;
-#else
     tagvalp[0] = *maxval;
-#endif
     tagvalp[1] = 0;
     ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval, tagvalp);CHKERRQ(ierr);
   } else {
