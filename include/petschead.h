@@ -325,8 +325,7 @@ M*/
    This routine does not return an error code; any errors are handled
    internally.
 
-   The 'data' and 'flag' variables have to be "star" variables; you can not
-   pass an argument of '&data' or '&flag.
+   The 'data' and 'flag' variables are inlined, so they are not pointers.
 
    Level: developer
 M*/
@@ -390,8 +389,7 @@ M*/
    This routine does not return an error code; any errors are handled
    internally.
 
-   The 'data' and 'flag' variables have to be "star" variables; you can not
-   pass an argument of '&data' or '&flag.
+   The 'data' and 'flag' variables are inlined, so they are not pointers.
 
    Level: developer
 M*/
@@ -455,8 +453,7 @@ M*/
    This routine does not return an error code; any errors are handled
    internally.
 
-   The 'data' and 'flag' variables have to be "star" variables; you can not
-   pass an argument of '&data' or '&flag.
+   The 'data' and 'flag' variables are inlined, so they are not pointers.
 
    Level: developer
 M*/
