@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.52 2000/11/06 16:42:54 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.53 2000/11/07 15:48:15 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -228,8 +228,8 @@ int MatRestoreRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
 
   PetscFunctionBegin;
-  if (a->ia != ia) SETERRQ(1,"ia passed back is not one obtained with MatGetRowIJ()");
-  if (a->ja != ja) SETERRQ(1,"ja passed back is not one obtained with MatGetRowIJ()");
+  if (ia && a->i != *ia) SETERRQ(1,"ia passed back is not one obtained with MatGetRowIJ()");
+  if (ja && a->j != *ja) SETERRQ(1,"ja passed back is not one obtained with MatGetRowIJ()");
   if (oshift) {
     for (i=0; i<=(*m); i++) (*ia)[i]--;
     for (i=0; i<(*ia)[*m]; i++) {
