@@ -33,7 +33,8 @@ set active_petsc_team_time(Lois)   "Unknown"
 #
 #   Get the most recent petsc-maint added
 # 
-    set last_petsc_maint [exec ls /mcs/adm/request/petsc-maint/active | sort -n | tail -1]
+    set last_petsc_maint unknown
+    catch { set last_petsc_maint [exec ls /mcs/adm/request/petsc-maint/active | sort -n | tail -1] }
 
 #
 #  Start up the MUD session
@@ -125,11 +126,14 @@ set active_petsc_team_time(Lois)   "Unknown"
 #
 #   Check petsc-maint, see if anything came in
 #
-       set last [exec ls /mcs/adm/request/petsc-maint/active | sort -n | tail -1]
+       set last    $last_petsc_maint
+       set subject unknown
+       set from    unknown
+       catch { set last [exec ls /mcs/adm/request/petsc-maint/active | sort -n | tail -1] }
        if {$last > $last_petsc_maint} {
           set last_petsc_maint $last
-          set subject [exec grep Subject: /mcs/adm/request/petsc-maint/active/$last]
-          set from [exec grep From: /mcs/adm/request/petsc-maint/active/$last]
+          catch { set subject [exec grep Subject: /mcs/adm/request/petsc-maint/active/$last] }
+          catch { set from [exec grep From: /mcs/adm/request/petsc-maint/active/$last] }
           send "say Another pesky petsc-maint has arrived\r"
           send "say $subject\r"
           send "say $from\r"
