@@ -1,4 +1,4 @@
-/* $Id: mpibdiag.h,v 1.11 1996/08/08 14:43:18 bsmith Exp bsmith $ */
+/* $Id: mpibdiag.h,v 1.12 1996/08/15 12:47:50 bsmith Exp curfman $ */
 
 #include "src/mat/impls/bdiag/seq/bdiag.h"
 
@@ -19,8 +19,8 @@ typedef struct {
   Mat           A;                  /* local matrix */
   int           gnd;                /* number of global diagonals */
   int           *gdiag;             /* global matrix diagonal numbers */
-  int           size;                   /* size of communicator */
-  int           rank;                   /* rank of proc in communicator */ 
+  int           size;               /* size of communicator */
+  int           rank;               /* rank of proc in communicator */ 
 
   /* The following variables are used for matrix assembly */
 
