@@ -44,6 +44,7 @@ petsc/surplus
 petsc/TAGS
 petsc/TAGS_MAKEFILES
 petsc/TAGS_NO_EXAMPLES
+petsc/TAGS_COMPLETE
 petsc/TAGS_DFVEC
 petsc/maint
 petsc/lib
