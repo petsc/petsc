@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcnull.c,v 1.17 1998/06/01 19:32:20 balay Exp bsmith $";
+static char vcid[] = "$Id: pcnull.c,v 1.18 1998/12/17 22:09:36 bsmith Exp curfman $";
 #endif
 /*
     Routines to project vectors out of null spaces.
@@ -25,6 +25,8 @@ static char vcid[] = "$Id: pcnull.c,v 1.17 1998/06/01 19:32:20 balay Exp bsmith 
 .  n - number of vectors (excluding constant vector) in null space
 -  vecs - the vectors that span the null space (excluding the constant vector)
           these vectors must be orthonormal
+
+   Level: advanced
 
    Output Parameter:
 .  SP - the null space context
@@ -57,7 +59,9 @@ int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace 
    Collective on PCNullSpace
 
    Input Parameter:
-.  SP - the null space context to be destroyed
+.  sp - the null space context to be destroyed
+
+   Level: advanced
 
 .keywords: PC, Null space
 @*/
@@ -79,6 +83,8 @@ int PCNullSpaceDestroy(PCNullSpace sp)
    Input Parameters:
 +  sp - the null space context
 -  vec - the vector you want the null space removed from
+
+   Level: advanced
 
 .keywords: PC, Null space
 @*/

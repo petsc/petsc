@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.90 1998/12/23 22:51:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.91 1999/01/12 23:14:53 bsmith Exp curfman $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -506,7 +506,7 @@ EXTERN_C_END
 #undef __FUNC__  
 #define __FUNC__ "PCASMSetUseInPlace"
 /*@
-   PCASMSetUseInPlace - Tells the system to destroy the matrix, after setup is done.
+   PCASMSetUseInPlace - Tells the system to destroy the matrix after setup is done.
 
    Collective on PC
 
@@ -515,6 +515,8 @@ EXTERN_C_END
 
    Options Database Key:
 .  -pc_asm_in_place - Activates in-place factorization
+
+   Level: intermediate
 
    Note:
    PCASMSetUseInplace() can only be used with the KSP method KSPPREONLY, and
@@ -552,6 +554,8 @@ int PCASMSetUseInPlace(PC pc)
 .   n - the number of subdomains for this processor (default value = 1)
 -   is - the index sets that define the subdomains for this processor
          (or PETSC_NULL for PETSc to determine subdomains)
+
+    Level: advanced
 
     Notes:
     The IS numbering is in the parallel, global numbering of the vector.
@@ -595,6 +599,8 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 .   n - the number of subdomains for all processors
 -   is - the index sets that define the subdomains for all processor
          (or PETSC_NULL for PETSc to determine subdomains)
+
+    Level: advanced
 
     Options Database Key:
     To set the total number of subdomain blocks rather than specify the
@@ -641,6 +647,8 @@ int PCASMSetTotalSubdomains(PC pc, int N, IS *is)
     Input Parameters:
 +   pc  - the preconditioner context
 -   ovl - the amount of overlap between subdomains (ovl >= 0, default value = 1)
+
+    Level: intermediate
 
     Options Database Key:
 .   -pc_asm_overlap <ovl> - Sets overlap
@@ -699,6 +707,8 @@ int PCASMSetOverlap(PC pc, int ovl)
       PC_ASM_NONE        - local processor restriction and interpolation
 .ve
 
+    Level: intermediate
+
     Options Database Key:
 $   -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
 
@@ -735,6 +745,8 @@ int PCASMSetType(PC pc,PCASMType type)
 +  n_local - the number of blocks on this processor
 .  first_local - the global number of the first block on this processor
 -  sles - the array of SLES contexts
+
+   Level: advanced
 
    Note:  
    After PCASMGetSubSLES() the array of SLESes is not to be freed
@@ -836,6 +848,8 @@ EXTERN_C_END
    Output Parameters:
 +  Nsub - the number of subdomains created
 -  is - the array of index sets defining the subdomains
+
+   Level: advanced
 
    Note:
    Presently PCAMSCreateSubdomains2d() is valid only for sequential

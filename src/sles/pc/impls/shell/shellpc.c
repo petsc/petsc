@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.51 1998/12/21 00:59:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.52 1998/12/23 22:51:11 bsmith Exp curfman $";
 #endif
 
 /*
@@ -199,7 +199,7 @@ EXTERN_C_END
 #define __FUNC__ "PCShellSetSetUp"
 /*@C
    PCShellSetSetUp - Sets routine to use to "setup" the preconditioner whenever the 
-     matrix operator is changed.
+   matrix operator is changed.
 
    Collective on PC
 
@@ -213,6 +213,8 @@ EXTERN_C_END
 .ve
 
 .  ptr - the application context
+
+   Level: developer
 
 .keywords: PC, shell, set, setup, user-provided
 
@@ -252,6 +254,8 @@ int PCShellSetSetUp(PC pc, int (*setup)(void*))
 .  xin - input vector
 -  xout - output vector
 
+   Level: developer
+
 .keywords: PC, shell, set, apply, user-provided
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTrans()
@@ -289,7 +293,10 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 .  xin - input vector
 -  xout - output vector
 
-   Notes: uses the same context variable as PCShellSetApply()
+   Level: developer
+
+   Notes: 
+   Uses the same context variable as PCShellSetApply().
 
 .keywords: PC, shell, set, apply, user-provided
 
@@ -319,6 +326,8 @@ int PCShellSetApplyTrans(PC pc, int (*applytrans)(void*,Vec,Vec))
    Input Parameters:
 +  pc - the preconditioner context
 -  name - character string describing shell preconditioner
+
+   Level: developer
 
 .keywords: PC, shell, set, name, user-provided
 
@@ -350,6 +359,8 @@ int PCShellSetName(PC pc,char *name)
 
    Output Parameter:
 .  name - character string describing shell preconditioner
+
+   Level: developer
 
 .keywords: PC, shell, get, name, user-provided
 
@@ -393,6 +404,8 @@ int PCShellGetName(PC pc,char **name)
 .  b - right-hand-side
 .  r - residual
 -  maxits - maximum number of iterations
+
+   Level: developer
 
 .keywords: PC, shell, set, apply, Richardson, user-provided
 

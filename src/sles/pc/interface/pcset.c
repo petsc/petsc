@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.73 1998/12/17 22:09:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.74 1999/01/04 21:49:20 bsmith Exp curfman $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -28,7 +28,9 @@ FList PCList = 0;
 +  pc - the preconditioner context.
 -  type - a known method
 
-   Options Database Command:
+   Level: beginner
+
+   Options Database Key:
 .  -pc_type <type> - Sets PC type
 
    Use -help for a list of available methods (for instance,
@@ -105,6 +107,8 @@ int PCSetType(PC ctx,PCType type)
 
    Not Collective
 
+   Level: advanced
+
 .keywords: PC, register, destroy
 
 .seealso: PCRegisterAll(), PCRegisterAll()
@@ -135,6 +139,8 @@ int PCRegisterDestroy(void)
    Options Database Keys:
 +  -help - Prints PC options
 -  -h - Prints PC options
+
+   Level: beginner
 
 .keywords: PC, help
 
@@ -174,6 +180,8 @@ int PCPrintHelp(PC pc)
    Output Parameter:
 .  name - name of preconditioner 
 
+   Level: intermediate
+
 .keywords: PC, get, method, name, type
 @*/
 int PCGetType(PC pc,PCType *meth)
@@ -195,8 +203,10 @@ int PCGetType(PC pc,PCType *meth)
 
    Collective on PC
 
-   Input Parameters:
+   Input Parameter:
 .  pc - the preconditioner context
+
+   Level: beginner
 
 .keywords: PC, set, from, options, database
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.143 1999/01/13 22:18:18 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.144 1999/01/13 23:38:53 curfman Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -228,7 +228,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
 .  -ksp_type  <method> - Sets the method; use -help for a list 
     of available methods (for instance, cg or gmres)
 
-   Level: intermediate
+   Level: beginner
 
    Notes:  
    See "petsc/include/ksp.h" for available methods (for instance,

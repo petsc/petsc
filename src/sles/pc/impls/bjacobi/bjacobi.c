@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.117 1998/12/23 22:51:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.118 1999/01/12 23:14:49 bsmith Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -269,6 +269,8 @@ EXTERN_C_END
 +  pc - the preconditioner context
 -  flag - either PCBGS_FORWARD_SWEEP or PCBGS_SYMMETRIC_SWEEP
 
+   Level: intermediate
+
    Options Database Keys:
 .  -pc_gs_symmetric - Activates PCBGSSetSymmetric()
 
@@ -303,6 +305,8 @@ int PCBGSSetSymmetric(PC pc, PCBGSType flag)
 
    Input Parameters:
 .  pc - the preconditioner context
+
+   Level: intermediate
 
    Options Database Key:
 .  -pc_bjacobi_truelocal - Activates PCBJacobiSetUseTrueLocal()
@@ -344,6 +348,8 @@ int PCBJacobiSetUseTrueLocal(PC pc)
    Input Parameters:
 .  pc - the preconditioner context
 
+   Level: intermediate
+
    Options Database Key:
 .  -pc_bgs_truelocal - Activates PCBGSSetUseTrueLocal()
 
@@ -380,8 +386,10 @@ int PCBGSSetUseTrueLocal(PC pc)
 .  first_local - the global number of the first block on this processor
 -  sles - the array of SLES contexts
 
-   Note:  
-   After PCBJacobiGetSubSLES() the array of SLESes is not to be freed
+   Level: advanced
+
+   Notes:  
+   After PCBJacobiGetSubSLES() the array of SLES contexts is not to be freed.
    
    Currently for some matrix implementations only 1 block per processor 
    is supported.
@@ -425,8 +433,10 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 .  first_local - the global number of the first block on this processor
 -  sles - the array of SLES contexts
 
-   Note:  
-   After PCBGSGetSubSLES() the array of SLESes is not to be freed
+   Level: advanced
+
+   Notes:  
+   After PCBGSGetSubSLES() the array of SLES contexts is not to be freed.
 
    Currently for some matrix implementations only 1 block per processor 
    is supported.
@@ -458,6 +468,8 @@ int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 +  pc - the preconditioner context
 .  blocks - the number of blocks
 -  lens - [optional] integer array containing the size of each block
+
+   Level: intermediate
 
    Options Database Key:
 .  -pc_bjacobi_blocks <blocks> - Sets the number of global blocks
@@ -497,6 +509,8 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
 .  blocks - the number of blocks
 -  lens - [optional] integer array containing the size of each block
 
+   Level: intermediate
+
    Options Database Key:
 .  -pc_bgs_blocks <blocks> - Sets the number of global blocks
 
@@ -529,6 +543,8 @@ int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens)
 +  pc - the preconditioner context
 .  blocks - the number of blocks
 -  lens - [optional] integer array containing size of each block
+
+   Level: intermediate
 
    Note:  
    Currently only a limited number of blocking configurations are supported.
@@ -563,6 +579,8 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
 +  pc - the preconditioner context
 .  blocks - the number of blocks
 -  lens - [optional] integer array containing size of each block
+
+   Level: intermediate
 
    Note:  
    Currently only a limited number of blocking configurations are supported.

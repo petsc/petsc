@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcregis.c,v 1.45 1998/04/24 21:21:12 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.46 1998/10/19 22:17:19 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -31,6 +31,8 @@ EXTERN_C_END
 
    Input Parameter:
 .  path - the library where the routines are to be found (optional)
+
+   Level: advanced
 
 .keywords: PC, register, all
 

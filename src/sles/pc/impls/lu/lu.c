@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.106 1998/12/21 00:59:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.107 1998/12/23 22:51:10 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -293,6 +293,8 @@ EXTERN_C_END
 +  pc - the preconditioner context
 -  flag - PETSC_TRUE to reuse else PETSC_FALSE
 
+   Level: intermediate
+
    Options Database Key:
 .  -pc_lu_reuse_reordering - Activate PCLUSetReuseReordering()
 
@@ -317,13 +319,15 @@ int PCLUSetReuseReordering(PC pc,PetscTruth flag)
 #define __FUNC__ "PCLUSetReuseFill"
 /*@
    PCLUSetReuseFill - When matrices with same nonzero structure are LU factored,
-     this causes later ones to use the fill computed in the initial factorization.
+   this causes later ones to use the fill computed in the initial factorization.
 
    Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
 -  flag - PETSC_TRUE to reuse else PETSC_FALSE
+
+   Level: intermediate
 
    Options Database Key:
 .  -pc_lu_reuse_fill - Activates PCLUSetReuseFill()
@@ -349,13 +353,15 @@ int PCLUSetReuseFill(PC pc,PetscTruth flag)
 #define __FUNC__ "PCLUSetFill"
 /*@
    PCLUSetFill - Indicate the amount of fill you expect in the factored matrix,
-       fill = number nonzeros in factor/number nonzeros in original matrix.
+   fill = number nonzeros in factor/number nonzeros in original matrix.
 
    Collective on PC
    
    Input Parameters:
 +  pc - the preconditioner context
 -  fill - amount of expected fill
+
+   Level: intermediate
 
    Options Database Key:
 .  -pc_lu_fill <fill> - Sets fill amount
@@ -402,6 +408,8 @@ int PCLUSetFill(PC pc,double fill)
    Options Database Key:
 .  -pc_lu_in_place - Activates in-place factorization
 
+   Level: intermediate
+
    Note:
    PCLUSetUseInplace() can only be used with the KSP method KSPPREONLY or when 
    a different matrix is provided for the multiply and the preconditioner in 
@@ -437,8 +445,10 @@ int PCLUSetUseInPlace(PC pc)
 +   pc - the preconditioner context
 -   ordering - the matrix ordering name, for example, ORDER_ND or ORDER_RCM
 
-   Options Database Key:
-.  -mat_order <nd,rcm,...> - Sets ordering routine
+    Level: intermediate
+
+    Options Database Key:
+.   -mat_order <nd,rcm,...> - Sets ordering routine
 
 .seealso: PCILUSetMatReordering()
 @*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.115 1998/12/23 22:51:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.116 1999/01/12 23:14:52 bsmith Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -122,6 +122,8 @@ EXTERN_C_END
 .  dt - the drop tolerance
 -  dtcount - the max number of nonzeros allowed in a row?
 
+   Level: intermediate
+
    Options Database Key:
 .  -pc_ilu_use_drop_tolerance <dt,dtcount> - Sets drop tolerance
 
@@ -146,14 +148,16 @@ int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
 #undef __FUNC__  
 #define __FUNC__ "PCILUSetFill"
 /*@
-    PCILUSetFill - Indicate the amount of fill you expect in the factored matrix,
-    where fill = number nonzeros in factor/number nonzeros in original matrix.
+   PCILUSetFill - Indicate the amount of fill you expect in the factored matrix,
+   where fill = number nonzeros in factor/number nonzeros in original matrix.
 
    Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
 -  fill - amount of expected fill
+
+   Level: intermediate
 
    Options Database Key:
 $  -pc_ilu_fill <fill>
@@ -194,6 +198,8 @@ int PCILUSetFill(PC pc,double fill)
 +   pc - the preconditioner context
 -   ordering - the matrix ordering name, for example, ORDER_ND or ORDER_RCM
 
+    Level: intermediate
+
     Options Database Key:
 .   -mat_order <nd,rcm,...> - Sets ordering routine
 
@@ -225,6 +231,8 @@ int PCILUSetMatReordering(PC pc, MatReorderingType ordering)
 +  pc - the preconditioner context
 -  flag - PETSC_TRUE to reuse else PETSC_FALSE
 
+   Level: intermediate
+
    Options Database Key:
 .  -pc_ilu_reuse_reordering - Activate PCILUSetReuseReordering()
 
@@ -249,13 +257,15 @@ int PCILUSetReuseReordering(PC pc,PetscTruth flag)
 #define __FUNC__ "PCILUSetReuseFill"
 /*@
    PCILUSetReuseFill - When matrices with same nonzero structure are ILUDT factored,
-     this causes later ones to use the fill computed in the initial factorization.
+   this causes later ones to use the fill computed in the initial factorization.
 
    Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
 -  flag - PETSC_TRUE to reuse else PETSC_FALSE
+
+   Level: intermediate
 
    Options Database Key:
 .  -pc_ilu_reuse_fill - Activates PCILUSetReuseFill()
@@ -288,6 +298,8 @@ int PCILUSetReuseFill(PC pc,PetscTruth flag)
 +  pc - the preconditioner context
 -  levels - number of levels of fill
 
+   Level: intermediate
+
    Options Database Key:
 .  -pc_ilu_levels <levels> - Sets fill level
 
@@ -315,6 +327,8 @@ int PCILUSetLevels(PC pc,int levels)
 
    Input Parameters:
 .  pc - the preconditioner context
+
+   Level: intermediate
 
    Options Database Key:
 .  -pc_ilu_in_place - Activates in-place factorization

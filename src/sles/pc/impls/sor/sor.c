@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.77 1998/12/21 00:59:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.78 1998/12/23 22:51:09 bsmith Exp curfman $";
 #endif
 
 /*
@@ -178,6 +178,8 @@ EXTERN_C_END
     SOR_LOCAL_SYMMETRIC_SWEEP
 .ve
 
+   Level: intermediate
+
    Options Database Keys:
 .  -pc_sor_symmetric - Activates symmetric version
 .  -pc_sor_backward - Activates backward version
@@ -219,6 +221,8 @@ int PCSORSetSymmetric(PC pc, MatSORType flag)
 +  pc - the preconditioner context
 -  omega - relaxation coefficient (0 < omega < 2). 
 
+   Level: intermediate
+
    Options Database Key:
 .  -pc_sor_omega <omega> - Sets omega
 
@@ -249,6 +253,8 @@ int PCSORSetOmega(PC pc, double omega)
    Input Parameters:
 +  pc - the preconditioner context
 -  its - number of iterations to use
+
+   Level: intermediate
 
    Options Database Key:
 .  -pc_sor_its <its> - Sets number of iterations

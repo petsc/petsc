@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.84 1998/12/21 00:59:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.85 1998/12/23 22:51:13 bsmith Exp curfman $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -305,6 +305,8 @@ static int PCSetUp_MG(PC pc)
 +  pc - the preconditioner context
 -  levels - the number of levels
 
+   Level: advanced
+
 .keywords: MG, set, levels, multigrid
 
 .seealso: MGSetType(), MGGetLevels()
@@ -341,6 +343,8 @@ int MGSetLevels(PC pc,int levels)
    Output parameter:
 .  levels - the number of levels
 
+   Level: advanced
+
 .keywords: MG, get, levels, multigrid
 
 .seealso: MGSetLevels()
@@ -369,6 +373,8 @@ int MGGetLevels(PC pc,int *levels)
 +  pc - the preconditioner context
 -  form - multigrid form, one of MGMULTIPLICATIVE, MGADDITIVE,
    MGFULL, MGKASKADE
+
+   Level: advanced
 
    Options Database Key:
 .  -pc_mg_type <form> - Sets <form>, one of multiplicative,
@@ -405,6 +411,8 @@ int MGSetType(PC pc,MGType form)
 +  mg - the multigrid context 
 -  n - the number of cycles
 
+   Level: advanced
+
    Options Database Key:
 $  -pc_mg_cycles n - Sets number of multigrid cycles
 
@@ -435,6 +443,8 @@ int MGSetCycles(PC pc,int n)
    been set.
 
    Collective on PC
+
+   Level: advanced
 
    Input Parameters:
 .  mg - the MG structure
@@ -497,6 +507,8 @@ int MGCheck(PC pc)
 +  mg - the multigrid context 
 -  n - the number of smoothing steps
 
+   Level: advanced
+
    Options Database Key:
 .  -pc_mg_smoothdown <n> - Sets number of pre-smoothing steps
 
@@ -535,6 +547,8 @@ int MGSetNumberSmoothDown(PC pc,int n)
    Input Parameters:
 +  mg - the multigrid context 
 -  n - the number of smoothing steps
+
+   Level: advanced
 
    Options Database Key:
 .  -pc_mg_smoothup <n> - Sets number of post-smoothing steps

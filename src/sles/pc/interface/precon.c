@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.159 1998/12/17 22:09:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.160 1998/12/21 00:59:06 bsmith Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: precon.c,v 1.159 1998/12/17 22:09:36 bsmith Exp bsmit
 
    Input Parameter:
 .  pc - the preconditioner context
+
+   Level: beginner
 
 .keywords: PC, destroy
 
@@ -70,6 +72,8 @@ static int PCPublish_Petsc(PetscObject object)
    Output Parameter:
 .  pc - location to put the preconditioner context
 
+   Level: beginner
+
    Notes:
    The default preconditioner on one processor is PCILU with 0 fill on more 
    then one it is PCBJACOBI with ILU() on each processor.
@@ -124,6 +128,8 @@ static int apply_double_count = 0;
 /*@
    PCApply - Applies the preconditioner to a vector.
 
+   Collective on PC and Vec
+
    Input Parameters:
 .  pc - the preconditioner context
 .  x - input vector
@@ -131,7 +137,7 @@ static int apply_double_count = 0;
    Output Parameter:
 .  y - output vector
 
-   Collective on PC and Vec
+   Level: beginner
 
 .keywords: PC, apply
 
@@ -170,6 +176,8 @@ int PCApply(PC pc,Vec x,Vec y)
 
    Output Parameter:
 .  y - output vector
+
+   Level: intermediate
 
    Notes:
    Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
@@ -211,6 +219,8 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
    Output Parameter:
 .  y - output vector
 
+   Level: intermediate
+
    Notes:
    Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
 
@@ -250,6 +260,8 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 
    Output Parameter:
 .  y - output vector
+
+   Level: beginner
 
 .keywords: PC, apply, transpose
 
@@ -292,6 +304,8 @@ $   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
 
    Output Parameter:
 .  y - output vector
+
+   Level: intermediate
 
 .keywords: PC, apply, operator
 
@@ -357,6 +371,8 @@ $   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
    Output Parameter:
 .  y - output vector
 
+   Level: intermediate
+
 .keywords: PC, apply, operator, transpose
 
 .seealso: PCApply(), PCApplyTrans(), PCApplyBAorAB()
@@ -410,6 +426,8 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
    Output Parameter:
 .  exists - PETSC_TRUE or PETSC_FALSE
 
+   Level: advanced
+
 .keywords: PC, apply, Richardson, exists
 
 .seealso: PCApplyRichardson()
@@ -441,6 +459,8 @@ int PCApplyRichardsonExists(PC pc, PetscTruth *exists)
 
    Output Parameter:
 .  y - the solution
+
+   Level: advanced
 
    Notes: 
    Most preconditioners do not support this function. Use the command
@@ -483,6 +503,8 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 
    Input Parameter:
 .  pc - the preconditioner context
+
+   Level: developer
 
 .keywords: PC, setup
 
@@ -538,6 +560,8 @@ int PCSetUp(PC pc)
    Input Parameters:
 .  pc - the preconditioner context
 
+   Level: developer
+
 .keywords: PC, setup, blocks
 
 .seealso: PCCreate(), PCApply(), PCDestroy(), PCSetUp()
@@ -564,12 +588,12 @@ int PCSetUpOnBlocks(PC pc)
    usual; the user can then alter these (for example, to set different boundary
    conditions for each submatrix) before they are used for the local solves.
 
+   Collective on PC
+
    Input Parameters:
 +  pc - the preconditioner context
 .  func - routine for modifying the submatrices
 -  ctx - optional user-defined context (may be null)
-
-   Collective on PC
 
    Calling sequence of func:
 $     func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
@@ -581,6 +605,8 @@ $     func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
 .  submat - array of local submatrices
 -  ctx - optional user-defined context for private data for the 
          user-defined func routine (may be null)
+
+   Level: advanced
 
    Notes:
    PCSetModifySubMatrices() MUST be called before SLESSetUp() and
@@ -627,6 +653,8 @@ int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx
 .  submat - array of local submatrices (the entries of which may
             have been modified)
 
+   Level: developer
+
    Notes:
    The user should NOT generally call this routine, as it will
    automatically be called within certain preconditioners (currently
@@ -670,6 +698,8 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
    system.
+
+   Level: beginner
 
    Notes: 
    The flag can be used to eliminate unnecessary work in the preconditioner 
@@ -753,7 +783,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
    PCGetOperators - Gets the matrix associated with the linear system and
    possibly a different one associated with the preconditioner.
 
-   Not Collective though parallel Mats are returned if the PC is parallel
+   Not collective, though parallel Mats are returned if the PC is parallel
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -764,6 +794,8 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
           as mat. 
 -  flag - flag indicating information about the preconditioner
           matrix structure.  See PCSetOperators() for details.
+
+   Level: beginner
 
 .keywords: PC, get, operators, matrix, linear system
 
@@ -790,6 +822,8 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 +  pc - the preconditioner context
 -  vec - the vector
 
+   Level: beginner
+
    Notes:
    The vector must be set so that the preconditioner knows what type
    of vector to allocate if necessary.
@@ -812,15 +846,17 @@ int PCSetVector(PC pc,Vec vec)
 #define __FUNC__ "PCGetVector"
 /*@
    PCGetVector - Gets a vector associated with the preconditioner; if the 
-     vector was not get set it will return a 0 pointer.
+   vector was not get set it will return a 0 pointer.
 
-   Not Collective, but vector is shared by all processors that share the PC
+   Not collective, but vector is shared by all processors that share the PC
 
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameter:
 .  vec - the vector
+
+   Level: beginner
 
 .keywords: PC, get, vector
 
@@ -850,6 +886,8 @@ int PCGetVector(PC pc,Vec *vec)
    Output parameters:
 .  mat - the factored matrix
 
+   Level: intermediate
+
 .keywords: PC, get, factored, matrix
 @*/
 int PCGetFactoredMatrix(PC pc,Mat *mat)
@@ -875,6 +913,8 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
    Input Parameters:
 +  pc - the preconditioner context
 -  prefix - the prefix string to prepend to all PC option requests
+
+   Level: advanced
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -906,6 +946,8 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
    Input Parameters:
 +  pc - the preconditioner context
 -  prefix - the prefix string to prepend to all PC option requests
+
+   Level: advanced
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -940,6 +982,8 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
    Output Parameters:
 .  prefix - pointer to the prefix string used, is returned
 
+   Level: advanced
+
 .keywords: PC, get, options, prefix, database
 
 .seealso: PCSetOptionsPrefix(), PCAppendOptionsPrefix()
@@ -966,6 +1010,8 @@ int PCGetOptionsPrefix(PC pc,char **prefix)
    Input Parameters:
 +  pc - the preconditioner context
 -  ksp - the Krylov subspace context
+
+   Level: developer
 
    Sample of Usage:
 .vb
@@ -1000,11 +1046,13 @@ int PCPreSolve(PC pc,KSP ksp)
    preconditioner-specific actions that must be performed after
    the iterative solve itself.
 
+   Collective on PC
+
    Input Parameters:
 +  pc - the preconditioner context
 -  ksp - the Krylov subspace context
 
-   Collective on PC
+   Level: developer
 
    Sample of Usage:
 .vb
@@ -1034,11 +1082,13 @@ int PCPostSolve(PC pc,KSP ksp)
 /*@ 
    PCView - Prints the PC data structure.
 
+   Collective on PC unless Viewer is VIEWER_STDOUT_SELF  
+
    Input Parameters:
 +  PC - the PC context
 -  viewer - optional visualization context
 
-   Collective on PC unless Viewer is VIEWER_STDOUT_SELF  
+   Level: beginner
 
    Note:
    The available visualization contexts include
@@ -1120,6 +1170,8 @@ int PCView(PC pc,Viewer viewer)
 .  path - path (either absolute or relative) the library containing this solver
 .  name_create - name of routine to create method context
 -  routine_create - routine to create method context
+
+   Level: advanced
 
    Notes:
    PCRegister() may be called multiple times to add several user-defined preconditioners.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.79 1998/12/21 00:59:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.80 1998/12/23 22:51:15 bsmith Exp curfman $";
 #endif
 
 /*
@@ -280,6 +280,8 @@ int PCEisenstatSetOmega(PC pc,double omega)
 
    Input Parameter:
 .  pc - the preconditioner context
+
+   Level: intermediate
 
    Options Database Key:
 .  -pc_eisenstat_diagonal_scaling - Activates PCEisenstatUseDiagonalScaling()
