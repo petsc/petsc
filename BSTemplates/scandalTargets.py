@@ -28,7 +28,10 @@ class Defaults:
     return path
 
   def getClientRootDir(self, lang):
-    return os.path.abspath(lang.lower()+'-scandal')
+    return lang.lower()+'-scandal'
+
+  def generatesAllStubs(self):
+    return 0
 
   def getImplRE(self):
     return self.implRE

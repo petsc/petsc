@@ -26,7 +26,11 @@ class Defaults:
     return path
 
   def getClientRootDir(self, lang):
-    return os.path.abspath(lang.lower())
+    return lang.lower()
+
+  def generatesAllStubs(self):
+    '''Babel generates stubs for all interfaces and classes involved in a compile'''
+    return 1
 
   def getImplRE(self):
     return self.implRE

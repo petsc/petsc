@@ -105,10 +105,11 @@ class UsingSIDL (logging.Logger):
     self.setupExtraLibraries()
 
   def setupIncludeDirectories(self):
-    rootDir    = self.getRootDir()
-    includeDir = os.path.join(rootDir, 'server-'+self.getBaseLanguage().lower()+'-'+self.getBasePackage())
+    rootDir = self.getRootDir()
     for lang in SIDLConstants.getLanguages():
-      self.includeDirs[lang].append(includeDir)
+      self.includeDirs[lang].append(self.getServerRootDir(self.getBaseLanguage(), self.getBasePackage(), root = rooDir))
+      if self.compilerDefaults().generatesAllStubs():
+        self.includeDirs[lang].append(self.getClientRootDir(lang, root = rootDir))
     # TODO: Fix this debacle by generating SIDLObjA and SIDLPyArrays
     self.includeDirs['Python'].append(os.path.join(rootDir, 'python'))
     return self.includeDirs
@@ -181,11 +182,17 @@ class UsingSIDL (logging.Logger):
   def getRootDir(self):
     return os.path.abspath(bs.argDB['SIDL_DIR'])
 
-  def getServerRootDir(self, lang, package = None):
-    return self.compilerDefaults.getServerRootDir(lang, package, self.serverBaseDir)
+  def getServerRootDir(self, lang, package = None, root = None):
+    '''Returns an absolute path if root is given, otherwise a relative path'''
+    dir = self.compilerDefaults.getServerRootDir(lang, package, self.serverBaseDir)
+    if root: dir = os.path.abspath(os.path.join(root, dir))
+    return dir
 
-  def getClientRootDir(self, lang):
-    return self.compilerDefaults.getClientRootDir(lang)
+  def getClientRootDir(self, lang, root = None):
+    '''Always returns an absolute path'''
+    dir = self.compilerDefaults.getClientRootDir(lang)
+    if root: dir = os.path.join(root, dir)
+    return os.path.abspath(dir)
 
   def getStubDir(self, lang, package):
     if lang in self.internalClientLanguages[package]:
