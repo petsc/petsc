@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.49 1997/07/09 20:50:47 balay Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.50 1997/08/22 15:11:31 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
     necessarily well optimized.
 */
-#include <stdio.h>
 #include <math.h>
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"    /*I "ksp.h" I*/
@@ -16,9 +15,12 @@ static char vcid[] = "$Id: cheby.c,v 1.49 1997/07/09 20:50:47 balay Exp bsmith $
 #define __FUNC__ "KSPSetUp_Chebychev"
 int KSPSetUp_Chebychev(KSP ksp)
 {
-  if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,0,"no symmetric preconditioning for KSPCHEBYCHEV");}
-  return KSPDefaultGetWork( ksp, 3 );
+  int ierr;
+
+  PetscFunctionBegin;
+  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(2,0,"no symmetric preconditioning for KSPCHEBYCHEV");
+  ierr = KSPDefaultGetWork( ksp, 3 );CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -36,14 +38,16 @@ int KSPSetUp_Chebychev(KSP ksp)
 int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
 {
   KSP_Chebychev *chebychevP = (KSP_Chebychev *) ksp->data;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (ksp->type != KSPCHEBYCHEV) return 0;
+  if (ksp->type != KSPCHEBYCHEV) PetscFunctionReturn(0);
   chebychevP->emax = emax;
   chebychevP->emin = emin;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
+#undef __FUNC__
 #define __FUNC__ "KSPSolve_Chebychev"
 int KSPSolve_Chebychev(KSP ksp,int *its)
 {
@@ -55,6 +59,7 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   Mat              Amat, Pmat;
   MatStructure     pflag;
 
+  PetscFunctionBegin;
   ierr    = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   history = ksp->residual_history;
   hist_len= ksp->res_hist_size;
@@ -144,7 +149,7 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   }
   if (cerr <= 0) *its = -(i+1);
   else           *its = i+1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -158,6 +163,7 @@ int KSPView_Chebychev(PetscObject obj,Viewer viewer)
   ViewerType    vtype;
   MPI_Comm      comm = ksp->comm;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -165,7 +171,7 @@ int KSPView_Chebychev(PetscObject obj,Viewer viewer)
     PetscFPrintf(comm,fd,"    Chebychev: eigenvalue estimates:  min = %g, max = %g\n",
                cheb->emin,cheb->emax);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -173,6 +179,8 @@ int KSPView_Chebychev(PetscObject obj,Viewer viewer)
 int KSPCreate_Chebychev(KSP ksp)
 {
   KSP_Chebychev *chebychevP = PetscNew(KSP_Chebychev);CHKPTRQ(chebychevP);
+
+  PetscFunctionBegin;
   PLogObjectMemory(ksp,sizeof(KSP_Chebychev));
 
   ksp->data                 = (void *) chebychevP;
@@ -191,5 +199,5 @@ int KSPCreate_Chebychev(KSP ksp)
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
   ksp->view                 = KSPView_Chebychev;
-  return 0;
+  PetscFunctionReturn(0);
 }

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorti.c,v 1.10 1997/08/14 21:02:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorti.c,v 1.11 1997/09/11 20:38:50 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -115,7 +115,7 @@ static int TeXqsort_Private(int *base, int *max)
       max = j;
     }
   } while (lo >= THRESH);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__
@@ -166,7 +166,7 @@ static int PetsciIqsort(int *base, int right)
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #else
@@ -193,7 +193,7 @@ static int PetsciIqsort(int *v,int right)
     if (right == 1) {
       if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
     }
-    return 0;
+    PetscFunctionReturn(0);
   }
   SWAP(v[0],v[right/2],tmp);
   vl   = v[0];
@@ -204,7 +204,7 @@ static int PetsciIqsort(int *v,int right)
   SWAP(v[0],v[last],tmp);
   PetsciIqsort(v,last-1);
   PetsciIqsort(v+last+1,right-(last+1));
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #endif
@@ -238,7 +238,7 @@ int PetscSortInt( int n, int *i )
     }
   }
   else PetsciIqsort(i,n-1);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

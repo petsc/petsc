@@ -43,6 +43,7 @@ int qmdmrg(int *xadj, int *adjncy, int *deg,
     static int head, inhd, irch, node, mark, link, root, j, lnode, nabor, 
 	    jstop, jstrt, rchsze, mrgsze, novrlp, iov, deg1;
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --ovrlp;
     --rchset;
@@ -55,7 +56,7 @@ int qmdmrg(int *xadj, int *adjncy, int *deg,
     --xadj;
 
     if (*nhdsze <= 0) {
-	return 0;
+	PetscFunctionReturn(0);
     }
     i__1 = *nhdsze;
     for (inhd = 1; inhd <= i__1; ++inhd) {
@@ -172,6 +173,6 @@ L1200:
 L1400:
 	;
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

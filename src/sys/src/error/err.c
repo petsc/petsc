@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.64 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.65 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
    error handlers.
 */
 #include "petsc.h"           /*I "petsc.h" I*/
-#include <stdio.h>           
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -60,12 +59,15 @@ $    PetscAbortErrorHandler()
 
 .keywords: abort, error, handler
 
-.seealso: PetscPuchErrorHandler(), PetscTraceBackErrorHandler(), 
+.seealso: PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
           PetscAttachDebuggerErrorHandler()
 @*/
 int PetscAbortErrorHandler(int line,char *func,char *file,char* dir,int n,int p,char *mess,void *ctx)
 {
-  abort(); return 0;
+  PetscFunctionBegin;
+
+  abort(); 
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -108,6 +110,7 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
   int        rank,flg1,flg2;
   PLogDouble mem,rss;
 
+  PetscFunctionBegin;
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (n == PETSC_ERR_MEM) {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
@@ -127,24 +130,20 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
       fprintf(stderr,"[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n",rank);
     }
     n = 1;
-  }
-  else if (n == PETSC_ERR_SUP) {
+  } else if (n == PETSC_ERR_SUP) {
     if (!mess) mess = " ";
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
     fprintf(stderr,"[%d]PETSC ERROR: No support for this operation for this object type!\n",rank);
     fprintf(stderr,"[%d]PETSC ERROR: %s\n",rank,mess);
     n = 1;
-  }
-  else if (n == PETSC_ERR_SIG) {
+  } else if (n == PETSC_ERR_SIG) {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
-  }
-  else if (n == PETSC_ERR_ARG_SIZ) {
+  } else if (n == PETSC_ERR_ARG_SIZ) {
     if (!mess) mess = " ";
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
     fprintf(stderr,"[%d]PETSC ERROR:   %s: Nonconforming object sizes!\n",rank,mess);
     n = 1;
-  }
-  else {
+  } else {
     if (mess) {
       fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n    %s\n",rank,fun,line,dir,file,mess);
     } else {
@@ -152,7 +151,7 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
     }
   }
   fflush(stderr);
-  return n;
+  PetscFunctionReturn(n);
 }
 
 #undef __FUNC__  
@@ -194,6 +193,7 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,ch
   int        rank, flg1, flg2;
   PLogDouble mem,rss;
 
+  PetscFunctionBegin;
   if (!mess) mess = " ";
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
@@ -215,21 +215,18 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,ch
       fprintf(stderr,"[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n",rank);
     }
     n = 1;
-  }
-  else if (n == PETSC_ERR_SUP) {
+  } else if (n == PETSC_ERR_SUP) {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
     fprintf(stderr,"[%d]PETSC ERROR: No support for this operation for this object type!\n",rank);
     fprintf(stderr,"[%d]PETSC ERROR: %s\n",rank,mess);
     n = 1;
-  }
-  else if (n == PETSC_ERR_SIG) {
+  } else if (n == PETSC_ERR_SIG) {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
-  }
-  else {
+  } else {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n    %s\n",rank,fun,line,dir,file,mess);
   }
   MPI_Abort(PETSC_COMM_WORLD,n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -259,12 +256,14 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,ch
 int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,void*),void *ctx )
 {
   struct  EH *neweh = (struct EH*) PetscMalloc(sizeof(struct EH)); CHKPTRQ(neweh);
+
+  PetscFunctionBegin;
   if (eh) {neweh->previous = eh;} 
   else    {neweh->previous = 0;}
   neweh->handler = handler;
   neweh->ctx     = ctx;
   eh = neweh;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -283,12 +282,14 @@ int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,vo
 int PetscPopErrorHandler()
 {
   struct EH *tmp;
-  if (!eh) return 0;
+
+  PetscFunctionBegin;
+  if (!eh) PetscFunctionReturn(0);
   tmp = eh;
   eh  = eh->previous;
   PetscFree(tmp);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -320,8 +321,12 @@ $     SETERRQ(n,p,mess)
 @*/
 int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess)
 {
-  if (!eh) return PetscTraceBackErrorHandler(line,func,file,dir,n,p,mess,0);
-  else  return (*eh->handler)(line,func,file,dir,n,p,mess,eh->ctx);
+  int ierr;
+
+  PetscFunctionBegin;
+  if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,n,p,mess,0);
+  else         ierr = (*eh->handler)(line,func,file,dir,n,p,mess,eh->ctx);
+  PetscFunctionReturn(ierr)
 }
 
 #undef __FUNC__  
@@ -345,6 +350,7 @@ int PetscIntView(int N,int* idx,Viewer viewer)
   int      j,i,n = N/20, p = N % 20,ierr;
   MPI_Comm comm;
 
+  PetscFunctionBegin;
   if (viewer) PetscValidHeader(viewer);
   PetscValidIntPointer(idx);
 
@@ -366,7 +372,7 @@ int PetscIntView(int N,int* idx,Viewer viewer)
     for ( i=0; i<p; i++ ) { PetscSynchronizedPrintf(comm," %d",idx[20*n+i]);}
     PetscSynchronizedPrintf(comm,"\n");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -390,6 +396,7 @@ int PetscDoubleView(int N,double* idx,Viewer viewer)
   int      j,i,n = N/5, p = N % 5,ierr;
   MPI_Comm comm;
 
+  PetscFunctionBegin;
   if (viewer) PetscValidHeader(viewer);
   PetscValidScalarPointer(idx);
 
@@ -410,7 +417,7 @@ int PetscDoubleView(int N,double* idx,Viewer viewer)
     for ( i=0; i<p; i++ ) { PetscSynchronizedPrintf(comm," %6.4e",idx[5*n+i]);}
     PetscSynchronizedPrintf(comm,"\n");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

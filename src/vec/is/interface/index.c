@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.48 1997/08/14 23:17:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.49 1997/08/22 15:09:54 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -24,10 +24,11 @@ static char vcid[] = "$Id: index.c,v 1.48 1997/08/14 23:17:22 bsmith Exp bsmith 
 @*/
 int ISIdentity(IS is,PetscTruth *ident)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(ident);
   *ident = (PetscTruth) is->isidentity;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -44,9 +45,10 @@ int ISIdentity(IS is,PetscTruth *ident)
 @*/
 int ISSetIdentity(IS is)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   is->isidentity = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -67,10 +69,11 @@ int ISSetIdentity(IS is)
 @*/
 int ISPermutation(IS is,PetscTruth *perm)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(perm);
   *perm = (PetscTruth) is->isperm;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -87,9 +90,10 @@ int ISPermutation(IS is,PetscTruth *perm)
 @*/
 int ISSetPermutation(IS is)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   is->isperm = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -106,9 +110,13 @@ int ISSetPermutation(IS is)
 @*/
 int ISDestroy(IS is)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
-  if (--is->refct > 0) return 0;
-  return (*is->destroy)((PetscObject) is);
+  if (--is->refct > 0) PetscFunctionReturn(0);
+  ierr = (*is->destroy)((PetscObject) is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -127,9 +135,13 @@ int ISDestroy(IS is)
 @*/
 int ISInvertPermutation(IS is,IS *isout)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   if (!is->isperm) SETERRQ(PETSC_ERR_ARG_WRONG,0,"not a permutation");
-  return (*is->ops.invertpermutation)(is,isout);
+  ierr = (*is->ops.invertpermutation)(is,isout);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -148,9 +160,13 @@ int ISInvertPermutation(IS is,IS *isout)
 @*/
 int ISGetSize(IS is,int *size)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(size);
-  return (*is->ops.getsize)(is,size);
+  ierr = (*is->ops.getsize)(is,size);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -178,9 +194,13 @@ int ISGetSize(IS is,int *size)
 @*/
 int ISGetIndices(IS is,int **ptr)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidPointer(ptr);
-  return (*is->ops.getindices)(is,ptr);
+  ierr = (*is->ops.getindices)(is,ptr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
@@ -203,10 +223,15 @@ int ISGetIndices(IS is,int **ptr)
 @*/
 int ISRestoreIndices(IS is,int **ptr)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidPointer(ptr);
-  if (is->ops.restoreindices) return (*is->ops.restoreindices)(is,ptr);
-  else return 0;
+  if (is->ops.restoreindices) {
+    ierr = (*is->ops.restoreindices)(is,ptr);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -224,10 +249,14 @@ int ISRestoreIndices(IS is,int **ptr)
 @*/
 int ISView(IS is, Viewer viewer)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   if (viewer) {PetscValidHeader(viewer);}
   else { viewer = VIEWER_STDOUT_SELF; }
-  return (*is->view)((PetscObject)is,viewer);
+  ierr = (*is->view)((PetscObject)is,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -244,8 +273,12 @@ int ISView(IS is, Viewer viewer)
 @*/
 int ISSort(IS is)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
-  return (*is->ops.sortindices)(is);
+  ierr = (*is->ops.sortindices)(is); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -267,9 +300,13 @@ $     PETSC_FALSE otherwise.
 @*/
 int ISSorted(IS is, PetscTruth *flg)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(flg);
-  return (*is->ops.sorted)(is, flg);
+  ierr = (*is->ops.sorted)(is, flg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -291,10 +328,11 @@ int ISDuplicate(IS is, IS *newIS)
 {
   int ierr;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_COOKIE);
   PetscValidPointer(newIS);
   ierr = (*is->ops.duplicate)(is, newIS); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.36 1997/10/09 17:49:48 balay Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.37 1997/10/09 17:53:02 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -199,7 +199,7 @@ double petscgetcputime_()
 
 double  petscgetflops_()
 {
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   return PetscGetFlops();
 #else
   return 0.0;

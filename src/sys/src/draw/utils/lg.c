@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.46 1997/08/22 15:16:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.47 1997/10/10 04:04:54 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -44,10 +44,11 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
   PetscObject vobj = (PetscObject) win;
   DrawLG      lg;
 
+  PetscFunctionBegin;
   if (vobj->cookie == DRAW_COOKIE && vobj->type == DRAW_NULLWINDOW) {
     ierr = DrawOpenNull(vobj->comm,(Draw*)outctx); CHKERRQ(ierr);
     (*outctx)->win = win;
-    return 0;
+    PetscFunctionReturn(0);
   }
   PetscHeaderCreate(lg,_p_DrawLG,DRAWLG_COOKIE,0,vobj->comm,DrawLGDestroy,0);
   lg->view    = 0;
@@ -68,7 +69,7 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
   ierr = DrawAxisCreate(win,&lg->axis); CHKERRQ(ierr);
   PLogObjectParent(lg,lg->axis);
   *outctx = lg;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -84,9 +85,10 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
 @*/
 int DrawLGSetDimension(DrawLG lg,int dim)
 {
-  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {return 0;}
+  PetscFunctionBegin;
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
-  if (lg->dim == dim) return 0;
+  if (lg->dim == dim) PetscFunctionReturn(0);
 
   PetscFree(lg->x);
   lg->dim = dim;
@@ -94,7 +96,7 @@ int DrawLGSetDimension(DrawLG lg,int dim)
   PLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(double));
   lg->y       = lg->x + dim*CHUNCKSIZE;
   lg->len     = dim*CHUNCKSIZE;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -109,7 +111,8 @@ int DrawLGSetDimension(DrawLG lg,int dim)
 @*/
 int DrawLGReset(DrawLG lg)
 {
-  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {return 0;}
+  PetscFunctionBegin;
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   lg->xmin  = 1.e20;
   lg->ymin  = 1.e20;
@@ -117,7 +120,7 @@ int DrawLGReset(DrawLG lg)
   lg->ymax  = -1.e20;
   lg->loc   = 0;
   lg->nopts = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -134,19 +137,23 @@ int DrawLGReset(DrawLG lg)
 @*/
 int DrawLGDestroy(DrawLG lg)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   if (!lg || !(lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW)) {
     PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   }
 
-  if (--lg->refct > 0) return 0;
+  if (--lg->refct > 0) PetscFunctionReturn(0);
   if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {
-    return PetscObjectDestroy((PetscObject) lg);
+    ierr = PetscObjectDestroy((PetscObject) lg);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
   DrawAxisDestroy(lg->axis);
   PetscFree(lg->x);
   PLogObjectDestroy(lg);
   PetscHeaderDestroy(lg);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -167,7 +174,9 @@ int DrawLGDestroy(DrawLG lg)
 int DrawLGAddPoint(DrawLG lg,double *x,double *y)
 {
   int i;
-  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {return 0;}
+
+  PetscFunctionBegin;
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {PetscFunctionReturn(0);}
 
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
@@ -191,7 +200,7 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
     lg->y[lg->loc++] = y[i];
   }
   lg->nopts++;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -206,10 +215,11 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
 @*/
 int DrawLGIndicateDataPoints(DrawLG lg)
 {
-  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {return 0;}
+  PetscFunctionBegin;
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {PetscFunctionReturn(0);}
 
   lg->use_dots = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -233,7 +243,8 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
   int    i, j, k;
   double *x,*y;
 
-  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {return 0;}
+  PetscFunctionBegin;
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */
     double *tmpx,*tmpy;
@@ -264,7 +275,7 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
   }
   lg->loc   += n*lg->dim;
   lg->nopts += n;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -282,11 +293,13 @@ int DrawLGDraw(DrawLG lg)
   double   xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
   int      i, j, dim = lg->dim,nopts = lg->nopts;
   Draw     win = lg->win;
-  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {return 0;}
+
+  PetscFunctionBegin;
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
 
-  if (nopts < 2) return 0;
-  if (xmin > xmax || ymin > ymax) return 0;
+  if (nopts < 2) PetscFunctionReturn(0);
+  if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
   DrawClear(win);
   DrawAxisSetLimits(lg->axis, xmin, xmax, ymin, ymax);
   DrawAxisDraw(lg->axis);
@@ -301,7 +314,7 @@ int DrawLGDraw(DrawLG lg)
   }
   DrawSynchronizedFlush(lg->win);
   DrawPause(lg->win);
-  return 0;
+  PetscFunctionReturn(0);
 } 
  
 #undef __FUNC__  
@@ -320,13 +333,14 @@ int DrawLGDraw(DrawLG lg)
 int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
                                   double y_max) 
 {
-  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {return 0;}
+  PetscFunctionBegin;
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   (lg)->xmin = x_min; 
   (lg)->xmax = x_max; 
   (lg)->ymin = y_min; 
   (lg)->ymax = y_max;
-  return 0;
+  PetscFunctionReturn(0);
 }
  
 #undef __FUNC__  
@@ -347,13 +361,14 @@ int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
 @*/
 int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 {
+  PetscFunctionBegin;
   if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {
     *axis = 0;
-    return 0;
+    PetscFunctionReturn(0);
   }
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   *axis = lg->axis;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -371,9 +386,14 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 @*/
 int DrawLGGetDraw(DrawLG lg,Draw *win)
 {
+  PetscFunctionBegin;
   if (!lg || lg->cookie != DRAW_COOKIE || lg->type != DRAW_NULLWINDOW) {
     PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   }
   *win = lg->win;
-  return 0;
+  PetscFunctionReturn(0);
 }
+
+
+
+

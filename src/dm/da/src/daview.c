@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.17 1997/07/09 21:00:44 balay Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.18 1997/08/22 15:18:43 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -63,8 +63,12 @@ $             DACreate2d(), and DACreate3d()
 @*/
 int DAView(DA da, Viewer v)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  return (*da->view)((PetscObject)da,v);
+  ierr = (*da->view)((PetscObject)da,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }  
 
 #undef __FUNC__  
@@ -92,6 +96,7 @@ int DAView(DA da, Viewer v)
 @*/
 int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,DAPeriodicType *wrap)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   if (dim != PETSC_NULL)  *dim  = da->dim;
   if (M != PETSC_NULL)    *M    = da->M;
@@ -103,6 +108,12 @@ int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,in
   if (w != PETSC_NULL)    *w    = da->w;
   if (s != PETSC_NULL)    *s    = da->s;
   if (wrap != PETSC_NULL) *wrap = da->wrap;
-  return 0;
+  PetscFunctionReturn(0);
 }  
+
+
+
+
+
+
 

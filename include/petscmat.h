@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.144 1997/10/12 23:27:14 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.145 1997/10/14 04:29:18 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -87,7 +87,7 @@ extern int MatMultTrans(Mat,Vec,Vec);
 extern int MatMultTransAdd(Mat,Vec,Vec,Vec);
 
 extern int MatConvert(Mat,MatType,Mat*);
-extern int MatDuplicate(Mat,*Mat);
+extern int MatDuplicate(Mat,Mat*);
 extern int MatConvertRegister(MatType,MatType,int (*)(Mat,MatType,Mat*));
 extern int MatConvertRegisterAll();
 

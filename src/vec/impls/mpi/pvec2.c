@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.28 1997/09/09 19:09:17 curfman Exp bsmith $ */
+/* $Id: pvec2.c,v 1.29 1997/09/17 23:14:34 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -15,12 +15,13 @@ int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
   Scalar awork[128],*work = awork;
   int    ierr;
 
+  PetscFunctionBegin;
   if (nv > 128) {
     work = (Scalar *) PetscMalloc(nv * sizeof(Scalar)); CHKPTRQ(work);
   }
   ierr = VecMDot_Seq(  nv, xin, y, work ); CHKERRQ(ierr);
   PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );
 #else
   MPI_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );
@@ -29,7 +30,7 @@ int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
   if (nv > 128) {
     PetscFree(work);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -39,12 +40,13 @@ int VecMTDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
   Scalar awork[128],*work = awork;
   int    ierr;
 
+  PetscFunctionBegin;
   if (nv > 128) {
     work = (Scalar *) PetscMalloc(nv * sizeof(Scalar)); CHKPTRQ(work);
   }
   ierr = VecMTDot_Seq(  nv, xin, y, work ); CHKERRQ(ierr);
   PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );
 #else
   MPI_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );
@@ -53,7 +55,7 @@ int VecMTDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
   if (nv > 128) {
     PetscFree(work);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -65,10 +67,11 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
   Scalar       *xx = x->array;
   register int n = x->n;
 
+  PetscFunctionBegin;
   if (type == NORM_2) {
 
 #if defined(USE_FORTRAN_KERNELS)
-  fortrannormsqr_(xx,&n,&work);
+    fortrannormsqr_(xx,&n,&work);
 #else
     /* int i; for ( i=0; i<n; i++ ) work += xx[i]*xx[i];   */
     switch (n & 0x3) {
@@ -133,7 +136,7 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
     z[1] = sqrt(z[1]);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -143,6 +146,7 @@ int VecMax_MPI( Vec xin, int *idx, double *z )
   int    ierr;
   double work;
 
+  PetscFunctionBegin;
   /* Find the local max */
   ierr = VecMax_Seq( xin, idx, &work ); CHKERRQ(ierr);
 
@@ -151,12 +155,11 @@ int VecMax_MPI( Vec xin, int *idx, double *z )
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
-  }
-  else {
+  } else {
     /* Need to use special linked max */
     SETERRQ( 1,0, "Parallel max with index not supported" );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -166,6 +169,7 @@ int VecMin_MPI( Vec xin, int *idx, double *z )
   int    ierr;
   double work;
 
+  PetscFunctionBegin;
   /* Find the local Min */
   ierr = VecMin_Seq( xin, idx, &work ); CHKERRQ(ierr);
 
@@ -174,10 +178,9 @@ int VecMin_MPI( Vec xin, int *idx, double *z )
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MIN,xin->comm );
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
-  }
-  else {
+  } else {
     /* Need to use special linked Min */
     SETERRQ( 1,0, "Parallel Min with index not supported" );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }

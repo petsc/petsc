@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesregi.c,v 1.19 1997/07/09 20:59:37 balay Exp bsmith $";
+static char vcid[] = "$Id: snesregi.c,v 1.20 1997/08/22 15:17:50 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
@@ -31,11 +31,12 @@ extern int SNESCreate_Test(SNES);
 @*/
 int SNESRegisterAll()
 {
+  PetscFunctionBegin;
   SNESRegisterAllCalled = 1;
   SNESRegister(SNES_EQ_LS,         0,"ls",      SNESCreate_EQ_LS);
   SNESRegister(SNES_EQ_TR,         0,"tr",      SNESCreate_EQ_TR);
   SNESRegister(SNES_EQ_TEST,       0,"test",    SNESCreate_Test);
   SNESRegister(SNES_UM_TR,         0,"umtr",    SNESCreate_UM_TR);
   SNESRegister(SNES_UM_LS,         0,"umls",    SNESCreate_UM_LS);
-  return 0;
+  PetscFunctionReturn(0);
 }

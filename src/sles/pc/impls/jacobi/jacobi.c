@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.33 1997/08/07 23:52:04 balay Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.34 1997/08/22 15:12:30 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -21,6 +21,7 @@ static int PCSetUp_Jacobi(PC pc)
   Vec        diag, diagsqrt;
   Scalar     *x;
 
+  PetscFunctionBegin;
   /* We set up both regular and symmetric preconditioning. Perhaps there
      actually should be an option to use only one or the other? */
   if (pc->setupcalled == 0) {
@@ -44,7 +45,7 @@ static int PCSetUp_Jacobi(PC pc)
   jac->diag = diag;
   jac->diagsqrt = diagsqrt;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -53,8 +54,10 @@ static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
   int       ierr;
+
+  PetscFunctionBegin;
   ierr = VecPointwiseMult(x,jac->diag,y); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -62,20 +65,25 @@ static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
+
+  PetscFunctionBegin;
   VecPointwiseMult(x,jac->diagsqrt,y);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy_Jacobi"
 static int PCDestroy_Jacobi(PetscObject obj)
 {
-  PC pc = (PC) obj;
+  PC        pc = (PC) obj;
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
-  if (jac->diag)     VecDestroy(jac->diag);
-  if (jac->diagsqrt) VecDestroy(jac->diagsqrt);
+  int       ierr;
+
+  PetscFunctionBegin;
+  if (jac->diag)     {ierr = VecDestroy(jac->diag);CHKERRQ(ierr);}
+  if (jac->diagsqrt) {ierr = VecDestroy(jac->diagsqrt);CHKERRQ(ierr);}
   PetscFree(jac);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -83,6 +91,8 @@ static int PCDestroy_Jacobi(PetscObject obj)
 int PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi *jac = PetscNew(PC_Jacobi); CHKPTRQ(jac);
+
+  PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_Jacobi));
 
   jac->diag          = 0;
@@ -95,7 +105,7 @@ int PCCreate_Jacobi(PC pc)
   pc->applyrich      = 0;
   pc->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
   pc->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgs.c,v 1.35 1997/01/06 20:22:35 balay Exp balay $";
+static char vcid[] = "$Id: cgs.c,v 1.36 1997/07/09 20:50:37 balay Exp bsmith $";
 #endif
 
 /*                       
@@ -10,7 +10,6 @@ static char vcid[] = "$Id: cgs.c,v 1.35 1997/01/06 20:22:35 balay Exp balay $";
     within the code MUST remain in the order given for correct computation
     of inner products.
 */
-#include <stdio.h>
 #include <math.h>
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
@@ -19,9 +18,12 @@ static char vcid[] = "$Id: cgs.c,v 1.35 1997/01/06 20:22:35 balay Exp balay $";
 #define __FUNC__ "KSPSetUp_CGS"
 static int KSPSetUp_CGS(KSP ksp)
 {
-  if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,0,"no symmetric preconditioning for KSPCGS");}
-  return KSPDefaultGetWork( ksp, 8 );
+  int ierr;
+
+  PetscFunctionBegin;
+  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(2,0,"no symmetric preconditioning for KSPCGS");
+  ierr = KSPDefaultGetWork( ksp, 8 );CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -33,6 +35,7 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   Vec       X,B,V,P,R,RP,T,Q,U, BINVF, AUQ;
   double    *history, dp;
 
+  PetscFunctionBegin;
   maxit   = ksp->max_it;
   history = ksp->residual_history;
   hist_len= ksp->res_hist_size;
@@ -53,7 +56,7 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
 
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
-  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; return 0;}
+  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,dp);
   if (history) history[0] = dp;
 
@@ -97,13 +100,14 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   ierr = KSPUnwindPreconditioner(ksp,X,T); CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1); 
   else           *its = i+1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_CGS"
 int KSPCreate_CGS(KSP ksp)
 {
+  PetscFunctionBegin;
   ksp->data                 = (void *) 0;
   ksp->type                 = KSPCGS;
   ksp->pc_side              = PC_LEFT;
@@ -116,5 +120,5 @@ int KSPCreate_CGS(KSP ksp)
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
   ksp->view                 = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }

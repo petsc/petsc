@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dascatter.c,v 1.10 1997/07/09 21:00:44 balay Exp bsmith $";
+static char vcid[] = "$Id: dascatter.c,v 1.11 1997/08/22 15:18:43 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -33,10 +33,11 @@ Notes:
 @*/
 int DAGetScatter(DA da, VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   if (ltog) *ltog = da->ltog;
   if (gtol) *gtol = da->gtol;
   if (ltol) *ltol = da->ltol;
-  return 0;
+  PetscFunctionReturn(0);
 }
  

@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.14 1997/09/26 15:14:22 balay Exp bsmith $";
+C    "$Id: ex11f.F,v 1.15 1997/09/30 13:52:38 bsmith Exp bsmith $";
 C
 C/*T
 C  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -86,7 +86,7 @@ C                 Beginning of program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
       write(6,*) "This example requires complex numbers."
       goto 200
 #endif

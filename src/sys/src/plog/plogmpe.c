@@ -1,14 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.22 1997/07/09 21:01:39 balay Exp bsmith $";
+static char vcid[] = "$Id: plogmpe.c,v 1.23 1997/08/22 15:19:22 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
-#include <stdio.h>
 #include "sys.h"
 
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
 #if defined(HAVE_MPE)
 #include "mpe.h"
 
@@ -299,7 +298,7 @@ extern char *PLogEventName[];
 
    Options Database Keys:
 $  -log_mpe : Prints extensive log information (for code compiled
-$      with PETSC_LOG)
+$      with USE_PETSC_LOG)
 
    Notes:
    A related routine is PLogBegin (with the options key -log), which is 
@@ -315,6 +314,7 @@ int PLogMPEBegin()
 {
   int i, rank;
     
+  PetscFunctionBegin;
   /* Do MPE initialization */
   MPE_Init_log();
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
@@ -326,7 +326,7 @@ int PLogMPEBegin()
     }
   }
   UseMPE = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -355,8 +355,9 @@ $
 @*/
 int PLogEventMPEDeactivate(int event)
 {
+  PetscFunctionBegin;
   PLogEventMPEFlags[event] = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -385,8 +386,9 @@ $
 @*/
 int PLogEventMPEActivate(int event)
 {
+  PetscFunctionBegin;
   PLogEventMPEFlags[event] = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -401,9 +403,10 @@ int PLogEventMPEActivate(int event)
 @*/
 int PLogMPEDump(char* sname)
 {
+  PetscFunctionBegin;
   if (!sname) sname = "mpe.log";
   MPE_Finish_log(sname); 
-  return 0;
+  PetscFunctionReturn(0);
 }
 #else
 void dummy()

@@ -1,4 +1,4 @@
-/* $Id: dot.h,v 1.5 1997/09/17 23:14:08 bsmith Exp balay $ */
+/* $Id: dot.h,v 1.6 1997/09/18 16:06:38 balay Exp bsmith $ */
 
 #ifndef DOT
 
@@ -47,7 +47,7 @@ extern void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
 /* ------------------------------------------------------------------- */
 
 
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
 
 #ifdef USE_UNROLL_KERNELS
 #define DOT(sum,x,y,n) {\

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: frame.c,v 1.14 1997/08/22 15:16:14 bsmith Exp gropp $";
+static char vcid[] = "$Id: frame.c,v 1.15 1997/09/03 15:36:39 gropp Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -33,10 +33,11 @@ static PixVal HiPix=0, LoPix=0;
 #define __FUNC__ "XiFrameColors" 
 int XiFrameColors( Draw_X* XiWin, XiDecoration *Rgn, char *Hi, char *Lo )
 {
+  PetscFunctionBegin;
   Rgn->Hi = XiGetColor( XiWin, Hi, 1 );
   Rgn->Lo = XiGetColor( XiWin, Lo, 1 );
   Rgn->HasColor = Rgn->Hi != Rgn->Lo;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -48,6 +49,7 @@ int XiDrawFrame(Draw_X *XiWin, XiDecoration *Rgn )
   XPoint high[7], low[7];
   PixVal Hi, Lo;
 
+  PetscFunctionBegin;
   /* High polygon */
   high[0].x = xl;            high[0].y = yh;
   high[1].x = xl + o;        high[1].y = yh - o;
@@ -103,7 +105,7 @@ int XiDrawFrame(Draw_X *XiWin, XiDecoration *Rgn )
 		 low, 7, Nonconvex, CoordModeOrigin);
     XSetFillStyle( XiWin->disp, XiWin->gc.set, FillSolid );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -114,17 +116,18 @@ int XiDrawFrame(Draw_X *XiWin, XiDecoration *Rgn )
 #define __FUNC__ "XiFrameColorsByName" 
 int XiFrameColorsByName(Draw_X* XiWin, char *Hi, char *Lo )
 {
+  PetscFunctionBegin;
   if (XiWin->numcolors > 2) {
     HiPix = XiGetColor( XiWin, Hi, 1 );
     LoPix = XiGetColor( XiWin, Lo, 1 );
-    /* HasColor = 1; */
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #else
 int dummy_frame()
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 #endif

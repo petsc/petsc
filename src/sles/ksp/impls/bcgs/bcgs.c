@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.42 1997/01/06 20:22:31 balay Exp balay $";
+static char vcid[] = "$Id: bcgs.c,v 1.43 1997/07/09 20:50:30 balay Exp bsmith $";
 #endif
 
 /*                       
@@ -10,7 +10,6 @@ static char vcid[] = "$Id: bcgs.c,v 1.42 1997/01/06 20:22:31 balay Exp balay $";
     within the code MUST remain in the order given for correct computation
     of inner products.
 */
-#include <stdio.h>
 #include <math.h>
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
@@ -19,10 +18,14 @@ static char vcid[] = "$Id: bcgs.c,v 1.42 1997/01/06 20:22:31 balay Exp balay $";
 #define __FUNC__ "KSPSetUp_BCGS"
 static int KSPSetUp_BCGS(KSP ksp)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
     SETERRQ(PETSC_ERR_SUP,0,"no symmetric preconditioning for KSPBCGS");
   }
-  return KSPDefaultGetWork( ksp, 7 );
+  ierr = KSPDefaultGetWork( ksp, 7 );CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -34,6 +37,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   Vec       X,B,V,P,R,RP,T,S, BINVF;
   double    dp, *history;
 
+  PetscFunctionBegin;
   maxit   = ksp->max_it;
   history = ksp->residual_history;
   hist_len= ksp->res_hist_size;
@@ -53,7 +57,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
   KSPMonitor(ksp,0,dp);
-  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; return 0;}
+  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
   if (history) history[0] = dp;
 
   /* Make the initial Rp == R */
@@ -110,13 +114,14 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   ierr = KSPUnwindPreconditioner(ksp,X,T); CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1);
   else           *its = i + 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_BCGS"
 int KSPCreate_BCGS(KSP ksp)
 {
+  PetscFunctionBegin;
   ksp->data                 = (void *) 0;
   ksp->type                 = KSPBCGS;
   ksp->pc_side              = PC_LEFT;
@@ -129,5 +134,5 @@ int KSPCreate_BCGS(KSP ksp)
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
   ksp->view                 = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.64 1997/07/09 20:57:17 balay Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.65 1997/09/22 15:20:55 balay Exp bsmith $";
 #endif
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
@@ -30,7 +30,6 @@ T*/
      viewer.h - viewers               pc.h  - preconditioners
 */
 #include "sles.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {

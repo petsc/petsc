@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.33 1997/07/29 14:07:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.34 1997/09/26 02:17:40 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -68,6 +68,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
   MPI_Status  status,*statuses;
   ViewerType  vtype;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype != BINARY_FILE_VIEWER) SETERRQ(1,0,"Must be binary viewer");
@@ -119,7 +120,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
   VecAssemblyBegin(vec);
   VecAssemblyEnd(vec);
   PLogEventEnd(VEC_Load,viewer,0,0,0);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matioall.c,v 1.5 1997/07/09 20:56:43 balay Exp bsmith $";
+static char vcid[] = "$Id: matioall.c,v 1.6 1997/08/22 15:15:22 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -32,7 +32,8 @@ int MatLoadRegisterAll()
 {
   int ierr;
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
+  PetscFunctionBegin;
+#if defined(HAVE_BLOCKSOLVE) && !defined(USE_PETSC_COMPLEX)
   ierr = MatLoadRegister(MATMPIROWBS,MatLoad_MPIRowbs); CHKERRQ(ierr);
 #endif
   ierr = MatLoadRegister(MATSEQAIJ,MatLoad_SeqAIJ); CHKERRQ(ierr);
@@ -45,6 +46,6 @@ int MatLoadRegisterAll()
   ierr = MatLoadRegister(MATMPIBAIJ,MatLoad_MPIBAIJ); CHKERRQ(ierr);
   ierr = MatLoadRegister(MATSEQADJ,MatLoad_SeqAdj); CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }  
 

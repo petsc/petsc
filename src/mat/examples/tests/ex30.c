@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex30.c,v 1.4 1997/04/10 00:03:45 bsmith Exp balay $";
+static char vcid[] = "$Id: ex30.c,v 1.5 1997/07/09 20:55:45 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
@@ -12,7 +12,6 @@ linear solvers instead of using the factorization routines\n\
 directly.\n\n";
 
 #include "mat.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {

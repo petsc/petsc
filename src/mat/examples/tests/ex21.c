@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex21.c,v 1.2 1997/07/09 20:55:45 balay Exp balay $";
+static char vcid[] = "$Id: ex21.c,v 1.3 1997/09/22 15:24:15 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the\n\
@@ -7,7 +7,6 @@ parallel Row format. This also tests MatGetRow() and MatRestoreRow()\n\
 for the parallel case.";
 
 #include "mat.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {
@@ -46,7 +45,7 @@ int main(int argc,char **args)
     ierr = MatGetRow(C,i,&nz,&idx,&values); CHKERRA(ierr);
     fprintf(stdout,"[%d] get row %d: ", rank, i);
     for ( j=0; j<nz; j++ ) {
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
       fprintf(stdout,"%d %g  ",idx[j],real(values[j]));
 #else
       fprintf(stdout,"%d %g  ",idx[j],values[j]);

@@ -1,8 +1,7 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: PetscMemcpy.c,v 1.7 1997/03/09 18:00:35 bsmith Exp balay $";
+static char vcid[] = "$Id: PetscMemcpy.c,v 1.8 1997/07/09 21:01:29 balay Exp bsmith $";
 #endif
 
-#include "stdio.h"
 #include "petsc.h"
 
 int main( int argc, char **argv)
@@ -49,5 +48,5 @@ int main( int argc, char **argv)
   fprintf(stderr,"    %-11s : %e sec\n","Per Scalar",(2*y-x-z)/100000.0);
 
   PetscFinalize();
-  return 0;
+  PetscFunctionReturn(0);
 }

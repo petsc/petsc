@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.27 1997/08/22 15:15:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.28 1997/09/11 20:40:16 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -23,6 +23,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
   int    m1,m2,n1,n2,i,*row,start,end,j,ncols,ierr;
   Scalar *val,*vals;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(X,MAT_COOKIE); 
   PetscValidHeaderSpecific(Y,MAT_COOKIE);
   PetscValidScalarPointer(a);
@@ -55,7 +56,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
     ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -76,6 +77,7 @@ int MatShift(Scalar *a,Mat Y)
 {
   int    i,start,end,ierr;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_COOKIE);
   PetscValidScalarPointer(a);
   if (Y->ops.shift) {
@@ -89,7 +91,7 @@ int MatShift(Scalar *a,Mat Y)
     ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -113,6 +115,7 @@ int MatDiagonalShift(Mat Y,Vec D)
 {
   int    i,start,end,ierr;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_COOKIE);
   PetscValidHeaderSpecific(D,VEC_COOKIE);
   if (Y->ops.shift) {
@@ -134,7 +137,7 @@ int MatDiagonalShift(Mat Y,Vec D)
     ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -156,6 +159,7 @@ int MatAYPX(Scalar *a,Mat X,Mat Y)
   Scalar one = 1.0;
   int    mX, mY,nX, nY,ierr;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(X, MAT_COOKIE);
   PetscValidHeaderSpecific(Y, MAT_COOKIE);
   PetscValidScalarPointer(a);
@@ -166,5 +170,5 @@ int MatAYPX(Scalar *a,Mat X,Mat Y)
 
   ierr = MatScale(a, Y);      CHKERRQ(ierr);
   ierr = MatAXPY(&one, X, Y); CHKERRQ(ierr);
-  return(0);
+  PetscFunctionReturn(0);
 }

@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cr.c,v 1.33 1997/01/06 20:22:29 balay Exp balay $";
+static char vcid[] = "$Id: cr.c,v 1.34 1997/07/09 20:50:28 balay Exp bsmith $";
 #endif
 
 /*                       
            This implements Preconditioned Conjugate Residuals.       
 */
-#include <stdio.h>
 #include <math.h>
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
@@ -15,12 +14,12 @@ static char vcid[] = "$Id: cr.c,v 1.33 1997/01/06 20:22:29 balay Exp balay $";
 static int KSPSetUp_CR(KSP ksp)
 {
   int ierr;
-  if (ksp->pc_side == PC_RIGHT)
-    {SETERRQ(2,0,"no right preconditioning for KSPCR");}
-  else if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,0,"no symmetric preconditioning for KSPCR");}
+
+  PetscFunctionBegin;
+  if (ksp->pc_side == PC_RIGHT) {SETERRQ(2,0,"no right preconditioning for KSPCR");}
+  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(2,0,"no symmetric preconditioning for KSPCR");}
   ierr = KSPDefaultGetWork( ksp, 9  ); CHKERRQ(ierr);
-  return ierr;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -35,6 +34,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   Vec          X,B,R,Pm1,P,Pp1,Sm1,S,Qm1,Q,Qp1,T, Tmp;
   Mat          Amat, Pmat;
 
+  PetscFunctionBegin;
   pres    = ksp->use_pres;
   maxit   = ksp->max_it;
   history = ksp->residual_history;
@@ -70,7 +70,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   else {
     ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- r'*r       */
   }
-  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; return 0;}
+  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,dp);
   if (history) history[0] = dp;
   ierr = MatMult(Amat,P,Q); CHKERRQ(ierr);      /*    q <- A p          */
@@ -113,13 +113,14 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
   if (cerr <= 0) *its = -(i+1);
   else           *its = i + 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_CR"
 int KSPCreate_CR(KSP ksp)
 {
+  PetscFunctionBegin;
   ksp->type                 = KSPCR;
   ksp->pc_side              = PC_LEFT;
   ksp->calc_res             = 1;
@@ -131,5 +132,5 @@ int KSPCreate_CR(KSP ksp)
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
   ksp->view                 = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }

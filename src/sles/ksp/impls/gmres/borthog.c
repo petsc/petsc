@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog.c,v 1.40 1997/07/02 22:24:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.41 1997/07/10 03:43:31 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -22,6 +22,7 @@ int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP ksp,int it )
   int       j;
   Scalar    *hh, *hes, tmp;
 
+  PetscFunctionBegin;
   PLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);
   /* update Hessenberg matrix and do Gram-Schmidt */
   hh  = HH(0,it);
@@ -34,7 +35,7 @@ int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP ksp,int it )
     tmp = - (*hh++);  VecAXPY(&tmp , VEC_VV(j), VEC_VV(it+1) );
   }
   PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* This is from
@@ -158,7 +159,7 @@ int KSPGMRESDGKSOrthogonalization(KSP  ksp,int it )
 
     /* Note that dnorm = (norm(d))**2 */
     dnorm = 0.0;
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
     for (j = 0; j <= it; j++) dnorm += real(lhh[j] * conj(lhh[j]));
 #else
     for (j = 0; j <= it; j++) dnorm += lhh[j] * lhh[j];
@@ -177,7 +178,7 @@ int KSPGMRESDGKSOrthogonalization(KSP  ksp,int it )
 
   if (it >= 100) PetscFree(lhh);
   PLogEventEnd(KSP_GMRESOrthogonalization, ksp, 0, 0, 0);
-  return(0);
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.45 1997/07/09 20:56:59 balay Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.46 1997/09/22 15:21:38 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
@@ -7,7 +7,6 @@ bilinear elements on the unit square. Input arguments are:\n\
   -m <size> : problem size\n\n";
 
 #include "sles.h"
-#include  <stdio.h>
 
 int FormElementStiffness(double H,Scalar *Ke)
 {

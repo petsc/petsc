@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dalocal.c,v 1.8 1997/07/09 21:00:44 balay Exp bsmith $";
+static char vcid[] = "$Id: dalocal.c,v 1.9 1997/08/22 15:18:43 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -27,8 +27,9 @@ static char vcid[] = "$Id: dalocal.c,v 1.8 1997/07/09 21:00:44 balay Exp bsmith 
 @*/
 int   DAGetLocalVector(DA da,Vec* l)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   *l = da->local;
-  return 0;
+  PetscFunctionReturn(0);
 }
 

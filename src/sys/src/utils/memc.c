@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.37 1997/09/17 18:55:39 balay Exp balay $";
+static char vcid[] = "$Id: memc.c,v 1.38 1997/09/17 18:56:41 balay Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -51,11 +51,12 @@ int PetscMemcpy(void *a,void *b,int n)
   unsigned long al = (unsigned long) a, bl = (unsigned long) b;
   unsigned long nl = (unsigned long) n;
 
+  PetscFunctionBegin;
   if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
     SETERRQ(1,1,"Memory regions overlap: use PetscMemmov instead");
   }
   memcpy((char*)(a),(char*)(b),n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -73,12 +74,13 @@ int PetscMemcpy(void *a,void *b,int n)
 @*/
 int PetscMemzero(void *a,int n)
 {
+  PetscFunctionBegin;
 #if defined(PREFER_BZERO)
   bzero((char *)a,n);
 #else
   memset((char*)a,0,n);
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -102,7 +104,11 @@ int PetscMemzero(void *a,int n)
 @*/
 int PetscMemcmp(void * str1, void *str2, int len)
 {
-  return memcmp((char *)str1, (char *)str2, len);
+  int r;
+
+  PetscFunctionBegin;
+  r = memcmp((char *)str1, (char *)str2, len);
+  PetscFunctionReturn(r);
 }
 
 #undef __FUNC__  
@@ -130,6 +136,7 @@ int PetscMemcmp(void * str1, void *str2, int len)
 @*/
 int PetscMemmove(void *a,void *b,int n)
 {
+  PetscFunctionBegin;
 #if !defined(HAVE_MEMMOVE)
   if (a < b) {
     if (a <= b - n) {
@@ -149,7 +156,7 @@ int PetscMemmove(void *a,void *b,int n)
 #else
   memmove((char*)(a),(char*)(b),n);
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

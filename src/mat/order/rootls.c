@@ -33,6 +33,9 @@ int rootls(int *root, int *xadj, int *adjncy,
 	    nbr;
 
 /*       INITIALIZATION ...*/
+
+
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --ls;
     --xls;
@@ -90,6 +93,6 @@ L400:
 	node = ls[i];
 	mask[node] = 1;
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.16 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: mem.c,v 1.17 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -51,6 +51,8 @@ int PetscGetResidentSetSize(PLogDouble *foo)
 #if !defined(PARCH_solaris) && !defined(PARCH_hpux) && !defined(PARCH_t3d) \
   && !defined (PARCH_nt) && !defined (PARCH_nt_gnu)
   static struct rusage temp;
+
+  PetscFunctionBegin;
   getrusage(RUSAGE_SELF,&temp);
 #if defined(PARCH_rs6000)
   /* RS6000 always reports sizes in k instead of pages */
@@ -62,13 +64,16 @@ int PetscGetResidentSetSize(PLogDouble *foo)
   int             fd;
   char            proc[1024];
   prpsinfo_t      prusage;
+
+  PetscFunctionBegin;
   sprintf(proc,"/proc/%d", getpid());
   if ((fd = open(proc,O_RDONLY)) == -1) SETERRQ(1,1,"Unable to access system files");
   if (ioctl(fd, PIOCPSINFO,&prusage) == -1) SETERRQ(1,1,"Unable to access system files"); 
   *foo = (double) prusage.pr_byrssize;
   close(fd);
 #else
+  PetscFunctionBegin;
   *foo = 0.0;
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }

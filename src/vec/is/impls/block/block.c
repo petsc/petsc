@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.18 1997/08/14 23:13:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.19 1997/08/22 15:10:03 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -22,10 +22,12 @@ int ISDestroy_Block(PetscObject obj)
 {
   IS       is = (IS) obj;
   IS_Block *is_block = (IS_Block *) is->data;
+
+  PetscFunctionBegin;
   PetscFree(is_block->idx); 
   PetscFree(is_block); 
   PLogObjectDestroy(is);
-  PetscHeaderDestroy(is); return 0;
+  PetscHeaderDestroy(is); PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -35,6 +37,7 @@ int ISGetIndices_Block(IS in,int **idx)
   IS_Block *sub = (IS_Block *) in->data;
   int      i,j,k,bs = sub->bs,n = sub->n,*ii,*jj;
 
+  PetscFunctionBegin;
   if (sub->bs == 1) {
     *idx = sub->idx; 
   } else {
@@ -48,7 +51,7 @@ int ISGetIndices_Block(IS in,int **idx)
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -57,6 +60,7 @@ int ISRestoreIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block *) in->data;
 
+  PetscFunctionBegin;
   if (sub->bs != 1) {
     PetscFree(*idx);
   } else {
@@ -64,7 +68,7 @@ int ISRestoreIndices_Block(IS in,int **idx)
       SETERRQ(1,0,"Must restore with value from ISGetIndices()");
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -72,8 +76,10 @@ int ISRestoreIndices_Block(IS in,int **idx)
 int ISGetSize_Block(IS is,int *size)
 {
   IS_Block *sub = (IS_Block *)is->data;
+
+  PetscFunctionBegin;
   *size = sub->bs*sub->n; 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -84,6 +90,7 @@ int ISInvertPermutation_Block(IS is, IS *isout)
   IS_Block *sub = (IS_Block *)is->data;
   int      i,ierr, *ii,n = sub->n,*idx = sub->idx;
 
+  PetscFunctionBegin;
   ii = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(ii);
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
@@ -91,7 +98,7 @@ int ISInvertPermutation_Block(IS is, IS *isout)
   ierr = ISCreateBlock(PETSC_COMM_SELF,sub->bs,n,ii,isout); CHKERRQ(ierr);
   ISSetPermutation(*isout);
   PetscFree(ii);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -104,6 +111,7 @@ int ISView_Block(PetscObject obj, Viewer viewer)
   FILE        *fd;
   ViewerType  vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -117,7 +125,7 @@ int ISView_Block(PetscObject obj, Viewer viewer)
       fprintf(fd,"%d %d\n",i,idx[i]);
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -127,10 +135,11 @@ int ISSort_Block(IS is)
   IS_Block *sub = (IS_Block *)is->data;
   int      ierr;
 
-  if (sub->sorted) return 0;
+  PetscFunctionBegin;
+  if (sub->sorted) PetscFunctionReturn(0);
   ierr = PetscSortInt(sub->n, sub->idx); CHKERRQ(ierr);
   sub->sorted = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -138,17 +147,22 @@ int ISSort_Block(IS is)
 int ISSorted_Block(IS is, PetscTruth *flg)
 {
   IS_Block *sub = (IS_Block *)is->data;
+
+  PetscFunctionBegin;
   *flg = (PetscTruth) sub->sorted;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "ISDuplicate_Block" 
 int ISDuplicate_Block(IS is, IS *newIS)
 {
+  int      ierr;
   IS_Block *sub = (IS_Block *)is->data;
 
-  return ISCreateBlock(is->comm, sub->bs, sub->n, sub->idx, newIS);
+  PetscFunctionBegin;
+  ierr = ISCreateBlock(is->comm, sub->bs, sub->n, sub->idx, newIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 
@@ -189,6 +203,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
   IS       Nindex;
   IS_Block *sub;
 
+  PetscFunctionBegin;
   *is = 0;
   PetscHeaderCreate(Nindex, _p_IS,IS_COOKIE,IS_BLOCK,comm,ISDestroy,ISView); 
   PLogObjectCreate(Nindex);
@@ -214,7 +229,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
   Nindex->destroy = ISDestroy_Block;
   Nindex->view    = ISView_Block;
   Nindex->isperm  = 0;
-  *is = Nindex; return 0;
+  *is = Nindex; PetscFunctionReturn(0);
 }
 
 
@@ -236,13 +251,15 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
 int ISBlockGetIndices(IS in,int **idx)
 {
   IS_Block *sub;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(in,IS_COOKIE);
   PetscValidPointer(idx);
   if (in->type != IS_BLOCK) SETERRQ(1,0,"Not a block index set");
 
   sub = (IS_Block *) in->data;
   *idx = sub->idx; 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -262,10 +279,11 @@ int ISBlockGetIndices(IS in,int **idx)
 @*/
 int ISBlockRestoreIndices(IS is,int **idx)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidPointer(idx);
   if (is->type != IS_BLOCK) SETERRQ(1,0,"Not a block index set");
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -286,13 +304,15 @@ int ISBlockRestoreIndices(IS is,int **idx)
 int ISBlockGetBlockSize(IS is,int *size)
 {
   IS_Block *sub;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(size);
   if (is->type != IS_BLOCK) SETERRQ(1,0,"Not a block index set");
 
   sub = (IS_Block *)is->data;
   *size = sub->bs; 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -312,11 +332,12 @@ int ISBlockGetBlockSize(IS is,int *size)
 @*/
 int ISBlock(IS is,PetscTruth *flag)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(flag);
   if (is->type != IS_BLOCK) *flag = PETSC_FALSE;
   else                          *flag = PETSC_TRUE;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -337,11 +358,13 @@ int ISBlock(IS is,PetscTruth *flag)
 int ISBlockGetSize(IS is,int *size)
 {
   IS_Block *sub;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(size);
   if (is->type != IS_BLOCK) SETERRQ(1,0,"Not a block index set");
 
   sub = (IS_Block *)is->data;
   *size = sub->n; 
-  return 0;
+  PetscFunctionReturn(0);
 }

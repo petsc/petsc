@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.29 1997/06/18 12:53:51 bsmith Exp curfman $ */
+/* $Id: plapack.h,v 1.30 1997/09/11 02:56:03 curfman Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -22,7 +22,7 @@ Cray T3D/T3E.
 #include <fortran.h>
 #endif
 
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
 
 /*
     These are real case with no character string arguments
@@ -300,7 +300,7 @@ extern void   LAgeqrf_(int*,int*,Scalar*,int*,Scalar*,Scalar*,int*,int*);
 
 #if defined(USES_CPTOFCD)
 
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
 extern void   ZPOTRF(_fcd,int*,Scalar*,int*,int*);
 extern void   ZGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
                         Scalar*,Scalar*,int*);
@@ -340,7 +340,7 @@ extern void   BLgemm_(char *,char*,int*,int*,int*,Scalar*,Scalar*,int*,
                       Scalar*,int*,Scalar*,Scalar*,int*);
 
 /* ESSL uses a different calling sequence for dgeev(), zgeev() than LAPACK; */
-#if defined(HAVE_ESSL) && defined(PETSC_COMPLEX)
+#if defined(HAVE_ESSL) && defined(USE_PETSC_COMPLEX)
 extern void   LAgeev_(int*,Scalar*,int*,Scalar*,Scalar*,int*,int*,int*,double*,int*);
 extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,double*,int*);
@@ -348,7 +348,7 @@ extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,
 extern void   LAgeev_(int*,Scalar*,int*,Scalar*,Scalar*,int*,int*,int*,double*,int*);
 extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
-#elif !defined(PETSC_COMPLEX)
+#elif !defined(USE_PETSC_COMPLEX)
 extern void   LAgeev_(char *,char *,int *, Scalar *,int*,double*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
 extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.38 1997/04/10 00:06:41 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.39 1997/07/09 21:49:18 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -268,7 +268,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
     temp = PetscMin(j+1,ny-j)*hy;
     for (i=0; i<nx; i++) {
       k = nx*j + i;
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
       x[k] = PetscMin((PetscMin(i+1,nx-i))*hx,temp);
 #else
       x[k] = PetscMin(real(PetscMin(i+1,nx-i)*hx),real(temp));
@@ -362,7 +362,7 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
   area = p5*hx*hy;
   if (fg & FunctionEval) {   /* Scale the function */
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
     *f = area*(p5*fquad+flin);
 #else
     *f = real(area*(p5*fquad+flin));
@@ -552,7 +552,7 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       dvdy = (vt-v)/hy;
       fl = sqrt(one + dvdx*dvdx + dvdy*dvdy);
       if (fg & FunctionEval) {
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
         *f += fl;
 #else
         *f += real(fl);
@@ -601,7 +601,7 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       dvdy = (v-vb)/hy;
       fu = sqrt(one + dvdx*dvdx + dvdy*dvdy);
       if (fg & FunctionEval) {
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
         *f += fu;
 #else
         *f += real(fu);
@@ -625,7 +625,7 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
   area = p5*hx*hy;
   if (fg & FunctionEval) {   /* Scale the function */
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
     *f *= area;
 #else
     *f *= real(area);
@@ -842,7 +842,7 @@ int BoundaryValues(AppCtx *user)
         nf[0] = u[0] + u[0]*u[1]*u[1] - pow(u[0],three)/three - xt;
         nf[1] = -u[1] - u[0]*u[0]*u[1] + pow(u[1],three)/three - yt;
         fnorm = sqrt(nf[0]*nf[0]+nf[1]*nf[1]);
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
         if (fnorm <= tol) break;
 #else
         if (real(fnorm) <= tol) break;

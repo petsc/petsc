@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.48 1997/07/09 20:56:59 balay Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.49 1997/09/22 15:21:37 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -8,10 +8,8 @@ Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
                     use the file petsc/src/mat/examples/matbinary.ex\n\n";
 
-#include "mat.h"
 #include "sles.h"
 #include "petsclog.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {
@@ -32,7 +30,7 @@ int main(int argc,char **args)
   ierr = OptionsHasName(PETSC_NULL,"-table",&flg);
   if (flg) table = PETSC_TRUE;
 
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   SETERRA(1,0,"This example does not work with complex numbers");
 #else
 

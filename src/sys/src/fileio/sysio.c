@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.29 1997/10/01 22:44:39 bsmith Exp curfman $";
+static char vcid[] = "$Id: sysio.c,v 1.30 1997/10/06 02:48:27 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -24,11 +24,12 @@ static char vcid[] = "$Id: sysio.c,v 1.29 1997/10/01 22:44:39 bsmith Exp curfman
 /*
   PetscByteSwapInt - Swap bytes in an integer
 */
-void PetscByteSwapInt(int *buff,int n)
+int PetscByteSwapInt(int *buff,int n)
 {
   int  i,j,tmp =0;
   int  *tptr = &tmp;            /* Need to access tmp indirectly to get */
                                 /* arround the bug in DEC-ALPHA compilers*/
+  PetscFunctionBegin;
   char *ptr1,*ptr2 = (char *) &tmp;
 
   for ( j=0; j<n; j++ ) {
@@ -38,6 +39,7 @@ void PetscByteSwapInt(int *buff,int n)
     }
     buff[j] = *tptr;
   }
+  PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
@@ -45,12 +47,14 @@ void PetscByteSwapInt(int *buff,int n)
 /*
   PetscByteSwapShort - Swap bytes in a short
 */
-void PetscByteSwapShort(short *buff,int n)
+int PetscByteSwapShort(short *buff,int n)
 {
   int   i,j;
   short tmp;
   short *tptr = &tmp;           /* take care pf bug in DEC-ALPHA g++ */
   char  *ptr1,*ptr2 = (char *) &tmp;
+
+  PetscFunctionBegin;
   for ( j=0; j<n; j++ ) {
     ptr1 = (char *) (buff + j);
     for (i=0; i<sizeof(short); i++) {
@@ -58,6 +62,7 @@ void PetscByteSwapShort(short *buff,int n)
     }
     buff[j] = *tptr;
   }
+  PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
@@ -66,13 +71,15 @@ void PetscByteSwapShort(short *buff,int n)
   PetscByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
 */
-void PetscByteSwapScalar(Scalar *buff,int n)
+int PetscByteSwapScalar(Scalar *buff,int n)
 {
   int    i,j;
   double tmp,*buff1 = (double *) buff;
   double *tptr = &tmp;          /* take care pf bug in DEC-ALPHA g++ */
   char   *ptr1,*ptr2 = (char *) &tmp;
-#if defined(PETSC_COMPLEX)
+
+  PetscFunctionBegin;
+#if defined(USE_PETSC_COMPLEX)
   n *= 2;
 #endif
   for ( j=0; j<n; j++ ) {
@@ -82,6 +89,7 @@ void PetscByteSwapScalar(Scalar *buff,int n)
     }
     buff1[j] = *tptr;
   }
+  PetscFunctionReturn(0);
 }
 #endif
 /* --------------------------------------------------------- */
@@ -117,7 +125,8 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   void *ptmp = p; 
 #endif
 
-  if (!n) return 0;
+  PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(0);
 
   maxblock = 65536;
 #if defined(HAVE_64BIT_INT)
@@ -143,7 +152,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     wsize = (m < maxblock) ? m : maxblock;
     err = read( fd, pp, wsize );
     if (err < 0 && errno == EINTR) continue;
-    if (err == 0 && wsize > 0) return 1;
+    if (err == 0 && wsize > 0) PetscFunctionReturn(1);
     if (err < 0) SETERRQ(PETSC_ERR_FILE_READ,0,"Error reading from file");
     m  -= err;
     pp += err;
@@ -169,7 +178,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   }
 #endif
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
@@ -201,7 +210,8 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
   void *ptmp = p; 
 #endif
 
-  if (!n) return 0;
+  PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(0);
 
   maxblock = 65536;
 
@@ -259,7 +269,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
   }
 #endif
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -280,6 +290,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 @*/
 int PetscBinaryOpen(char *name,int type,int *fd)
 {
+  PetscFunctionBegin;
 #if defined(PARCH_nt_gnu) || defined(PARCH_nt) 
   if (type == BINARY_CREATE) {
     if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
@@ -312,7 +323,7 @@ int PetscBinaryOpen(char *name,int type,int *fd)
     }
 #endif
   } else SETERRQ(1,0,"Unknown file type");
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -329,8 +340,9 @@ int PetscBinaryOpen(char *name,int type,int *fd)
 @*/
 int PetscBinaryClose(int fd)
 {
+  PetscFunctionBegin;
   close(fd);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -360,6 +372,8 @@ int PetscBinaryClose(int fd)
 int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence)
 {
   int iwhence;
+
+  PetscFunctionBegin;
   if (whence == BINARY_SEEK_SET) {
     iwhence = SEEK_SET;
   } else if (whence == BINARY_SEEK_CUR) {
@@ -375,5 +389,7 @@ int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence)
   lseek(fd,(off_t)size,iwhence);
 #endif
 
-  return 0;
+  PetscFunctionReturn(0);
 }
+
+

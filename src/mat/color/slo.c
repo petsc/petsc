@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: slo.c,v 1.6 1997/07/09 20:55:35 balay Exp bsmith $";
+static char vcid[] = "$Id: slo.c,v 1.7 1997/08/22 15:14:43 bsmith Exp bsmith $";
 #endif
 
 /* slo.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
@@ -66,6 +66,7 @@ int MINPACKslo(int *n,int * indrow,int * jpntr,int * indcol, int *ipntr, int *nd
 /*     Argonne National Laboratory. MINPACK Project. August 1984. */
 /*     Thomas F. Coleman, Burton S. Garbow, Jorge J. More' */
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --iwa4;
     --iwa3;
@@ -232,6 +233,6 @@ L80:
     for (jp = 1; jp <= i__1; ++jp) {
 	list[jp] = iwa2[jp];
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

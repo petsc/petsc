@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.113 1997/09/08 15:06:09 bsmith Exp curfman $ */
+/* $Id: petsclog.h,v 1.114 1997/09/09 20:27:02 curfman Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -138,7 +138,7 @@ extern int PLogInfoDeactivateClass(int);
 extern int PLogInfoActivateClass(int);
 extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
 
-#if defined(PETSC_LOG)  /* --- Logging is turned on --------------------------------*/
+#if defined(USE_PETSC_LOG)  /* --- Logging is turned on --------------------------------*/
 
 /* 
    Flop counting:  We count each arithmetic operation (e.g., addition, multiplication) separately.
@@ -153,7 +153,7 @@ extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
    among the various arithmetic operations.
  */
 
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
 #define PLogFlops(n) {_TotalFlops += (4*n);}
 #else
 #define PLogFlops(n) {_TotalFlops += (n);}
@@ -249,9 +249,9 @@ extern int (*_PLogPHD)(PetscObject);
 #endif
 
 
-#define PLogObjectParent(p,c)       {PetscValidHeader((PetscObject)c); \
-                                     PetscValidHeader((PetscObject)p);\
-                                     ((PetscObject)(c))->parent = (PetscObject) p;}
+#define PLogObjectParent(p,c)       if (c) {PetscValidHeader((PetscObject)(c)); \
+                                     PetscValidHeader((PetscObject)(p));\
+                                     ((PetscObject)(c))->parent = (PetscObject) (p);}
 #define PLogObjectParents(p,n,d)    {int _i; for ( _i=0; _i<n; _i++ ) \
                                     PLogObjectParent(p,(d)[_i]);}
 #define PLogObjectCreate(h)         {if (_PLogPHC) (*_PLogPHC)((PetscObject)h);}
@@ -431,7 +431,7 @@ extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
 #define PLogMPEDump(a)
 extern int PLogObjectState(PetscObject,char *,...);
 
-/* If PETSC_LOG is NOT defined, these still need to be! */
+/* If USE_PETSC_LOG is NOT defined, these still need to be! */
 #define MPI_Startall_irecv( count,number,requests) \
 {                                                  \
   MPI_Startall( number, requests);                 \
@@ -446,7 +446,7 @@ extern int PLogObjectState(PetscObject,char *,...);
 {                                         \
   MPI_Start( requests);                   \
 }
-#endif   /* PETSC_LOG */
+#endif   /* USE_PETSC_LOG */
 
 /*MC
    PLogFlops - Adds floating point operations to the global counter.
@@ -463,7 +463,7 @@ extern int PLogObjectState(PetscObject,char *,...);
    application code.  
 
    PETSc automatically logs library events if the code has been
-   compiled with -DPETSC_LOG (which is the default), and -log,
+   compiled with -DUSE_PETSC_LOG (which is the default), and -log,
    -log_summary, or -log_all are specified.  PLogFlops() is
    intended for logging user flops to supplement this PETSc
    information.
@@ -496,10 +496,10 @@ M*/
    Notes:
    You should also register each integer event with the command 
    PLogRegisterEvent().  The source code must be compiled with 
-   -DPETSC_LOG, which is the default.
+   -DUSE_PETSC_LOG, which is the default.
 
    PETSc automatically logs library events if the code has been
-   compiled with -DPETSC_LOG, and -log, -log_summary, or -log_all are
+   compiled with -DUSE_PETSC_LOG, and -log, -log_summary, or -log_all are
    specified.  PLogEventBegin() is intended for logging user events
    to supplement this PETSc information.
 
@@ -531,10 +531,10 @@ M*/
    Notes:
    You should also register each additional integer event with the command 
    PLogRegisterEvent(). Source code must be compiled with 
-   -DPETSC_LOG, which is the default.
+   -DUSE_PETSC_LOG, which is the default.
 
    PETSc automatically logs library events if the code has been
-   compiled with -DPETSC_LOG, and -log, -log_summary, or -log_all are
+   compiled with -DUSE_PETSC_LOG, and -log, -log_summary, or -log_all are
    specified.  PLogEventEnd() is intended for logging user events
    to supplement this PETSc information.
 

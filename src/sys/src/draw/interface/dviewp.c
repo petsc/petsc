@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dviewp.c,v 1.13 1997/08/22 15:15:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dviewp.c,v 1.14 1997/10/10 04:04:31 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -23,15 +23,19 @@ static char vcid[] = "$Id: dviewp.c,v 1.13 1997/08/22 15:15:58 bsmith Exp bsmith
 @*/
 int DrawSetViewPort(Draw draw,double xl,double yl,double xr,double yr)
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == DRAW_NULLWINDOW) return 0;
+  if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
   if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"ViewPort values must be >= 0 and <= 1"); 
   }
   draw->port_xl = xl; draw->port_yl = yl;
   draw->port_xr = xr; draw->port_yr = yr;
-  if (draw->ops.setviewport) return (*draw->ops.setviewport)(draw,xl,yl,xr,yr);
-  return 0;
+  if (draw->ops.setviewport) {
+    ierr = (*draw->ops.setviewport)(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -50,8 +54,9 @@ int DrawSplitViewPort(Draw draw)
   int    rank,size,n,ierr;
   double xl,xr,yl,yr,h;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == DRAW_NULLWINDOW) return 0;
+  if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
 
   MPI_Comm_rank(draw->comm,&rank);
   MPI_Comm_size(draw->comm,&size);
@@ -76,6 +81,8 @@ int DrawSplitViewPort(Draw draw)
   draw->port_yl = yl;
   draw->port_yr = yr;
 
-  if (draw->ops.setviewport) return (*draw->ops.setviewport)(draw,xl,yl,xr,yr);
-  return 0;
+  if (draw->ops.setviewport) {
+    ierr =  (*draw->ops.setviewport)(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }

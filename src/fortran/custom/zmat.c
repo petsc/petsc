@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.34 1997/07/25 15:26:45 balay Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.35 1997/10/12 23:22:20 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -38,6 +38,8 @@ static char vcid[] = "$Id: zmat.c,v 1.34 1997/07/25 15:26:45 balay Exp bsmith $"
 #define matshellsetoperation_            MATSHELLSETOPERATION
 #define matview_                         MATVIEW
 #define matfdcoloringcreate_             MATFDCOLORINGCREATE
+#define matfdcoloringdestroy_            MATFDCOLORINGDESTROY
+#define matfdcoloringsetfunction_        MATFDCOLORINGSETFUNCTION
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define matgetrow_                       matgetrow
 #define matrestorerow_                   matrestorerow
@@ -67,6 +69,8 @@ static char vcid[] = "$Id: zmat.c,v 1.34 1997/07/25 15:26:45 balay Exp bsmith $"
 #define matrestorearray_                 matrestorearray
 #define matshellsetoperation_            matshellsetoperation
 #define matfdcoloringcreate_             matfdcoloringcreate
+#define matfdcoloringdestroy_            matfdcoloringdestroy
+#define matfdcoloringsetfunction_        matfdcoloringsetfunction
 #endif
 
 #if defined(__cplusplus)
@@ -325,6 +329,12 @@ void matcreateseqbaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *nz,
   *(int*) newmat = PetscFromPointer(mm);
 }
 
+void matfdcoloringdestroy_(MatFDColoring mat, int *__ierr )
+{
+  *__ierr = MatFDColoringDestroy((MatFDColoring)PetscToPointer( *(int*)(mat) ));
+   PetscRmPointer(*(int*)(mat)); 
+}
+
 void matdestroy_(Mat mat, int *__ierr )
 {
   *__ierr = MatDestroy((Mat)PetscToPointer( *(int*)(mat) ));
@@ -393,6 +403,39 @@ void matshellsetoperation_(Mat mat,MatOperation *op,int (*f)(int*,int*,int*,int*
                "Cannot set that matrix operation");
     *__ierr = 0;
   }
+}
+
+#include "ts.h"
+/*
+        MatFDColoringSetFunction sticks the Fortran function into the fortran_func_pointers
+    this function is then accessed by ourmatfdcoloringfunction()
+
+   NOTE: FORTRAN USER CANNOT PUT IN A NEW J OR B currently.
+
+   USER CAN HAVE ONLY ONE MatFDCOloring in code Because there is no place to hang f7!
+*/
+
+static void (*f7)(int*,double*,int*,int*,void*,int*);
+
+static int ourmatfdcoloringfunctionts(TS ts,double t,Vec x,Vec y, void *ctx)
+{
+  int ierr,s1,s2,s3;
+  s1 = PetscFromPointer(ts);
+  s2 = PetscFromPointer(x);
+  s3 = PetscFromPointer(y);
+  
+  (*f7)(&s1,&t,&s2,&s3,ctx,&ierr);
+  return ierr;
+}
+
+void matfdcoloringsetfunction_(MatFDColoring fd,void (*f)(int*,double*,int*,int*,void*,int*), void *ctx, int *__ierr )
+{
+  MatFDColoring mm = (MatFDColoring)PetscToPointer(*(int*)(fd));
+
+
+  f7 = f;
+
+  *__ierr = MatFDColoringSetFunction(mm,(int (*)(void))ourmatfdcoloringfunctionts,ctx);
 }
 
 #if defined(__cplusplus)

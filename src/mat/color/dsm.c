@@ -87,6 +87,7 @@ int MINPACKdsm(int *m,int *n,int *npairs,int *indrow,int *indcol,int *ngrp,int *
 /*     Argonne National Laboratory. MINPACK Project. December 1984. */
 /*     Thomas F. Coleman, Burton S. Garbow, Jorge J. More' */
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --iwa;
     --jpntr;
@@ -126,7 +127,7 @@ int MINPACKdsm(int *m,int *n,int *npairs,int *indrow,int *indcol,int *ngrp,int *
 /*     Exit if the smallest-last ordering is optimal. */
 
     if (*maxgrp == *mingrp) {
-	return 0;
+	PetscFunctionReturn(0);
     }
 
 /*     Color the intersection graph of the columns of A */
@@ -151,7 +152,7 @@ int MINPACKdsm(int *m,int *n,int *npairs,int *indrow,int *indcol,int *ngrp,int *
 /*        Exit if the incidence-degree ordering is optimal. */
 
 	if (*maxgrp == *mingrp) {
-	    return 0;
+	    PetscFunctionReturn(0);
 	}
     }
 
@@ -173,5 +174,5 @@ int MINPACKdsm(int *m,int *n,int *npairs,int *indrow,int *indcol,int *ngrp,int *
 	    ngrp[j] = iwa[j];
 	}
     }
-    return 0;
+    PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.5 1997/04/10 00:04:20 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.6 1997/07/09 20:56:59 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
@@ -28,7 +28,6 @@ T*/
      viewer.h - viewers               pc.h  - preconditioners
 */
 #include "sles.h"
-#include <stdio.h>
 
 int slesex(int,char**);
 

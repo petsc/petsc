@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.31 1997/07/09 20:55:52 balay Exp balay $";
+static char vcid[] = "$Id: zoptions.c,v 1.32 1997/10/09 17:52:12 balay Exp bsmith $";
 #endif
 
 /*
@@ -10,7 +10,6 @@ static char vcid[] = "$Id: zoptions.c,v 1.31 1997/07/09 20:55:52 balay Exp balay
 
 #include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
-#include <stdio.h>
 #include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
 extern int          PetscBeganMPI;
@@ -263,7 +262,7 @@ int PetscCObjectToFortranObject(void *cobj,int *fobj)
 {
   PetscValidHeader(cobj);
   *fobj = PetscFromPointer(cobj);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@
@@ -287,7 +286,7 @@ int PetscCObjectToFortranObject(void *cobj,int *fobj)
 int PetscFortranObjectToCObject(int fobj,void *cobj)
 {
   (*(void **) cobj) = (void *) PetscToPointer(fobj);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@
@@ -313,7 +312,7 @@ int PetscFortranObjectToCObject(int fobj,void *cobj)
 int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 {
   *fcomm = PetscFromPointerComm(comm);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@
@@ -339,7 +338,7 @@ int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 int MPIFortranCommToCComm(int fcomm,MPI_Comm *comm)
 {
   *comm = (MPI_Comm)PetscToPointerComm(fcomm);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.15 1997/10/11 02:48:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.16 1997/10/12 23:23:18 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -19,6 +19,7 @@ int ISColoringDestroy(ISColoring iscoloring)
 {
   int i,ierr;
 
+  PetscFunctionBegin;
   PetscValidPointer(iscoloring);
 
   for ( i=0; i<iscoloring->n; i++ ) {
@@ -27,7 +28,7 @@ int ISColoringDestroy(ISColoring iscoloring)
   PetscCommFree_Private(&iscoloring->comm);
   PetscFree(iscoloring->is);
   PetscFree(iscoloring);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -47,6 +48,7 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
   ViewerType vtype;
   FILE       *fd;
 
+  PetscFunctionBegin;
   PetscValidPointer(iscoloring);
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
@@ -67,7 +69,7 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
   for ( i=0; i<iscoloring->n; i++ ) {
     ierr = ISView(iscoloring->is[i],viewer); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -96,6 +98,7 @@ int ISColoringCreate(MPI_Comm comm,int n,int *colors,ISColoring *iscoloring)
   MPI_Status status;
   IS         *is;
 
+  PetscFunctionBegin;
   *iscoloring = (ISColoring) PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
   PetscCommDup_Private(comm,&(*iscoloring)->comm,&tag);
   comm = (*iscoloring)->comm;
@@ -156,7 +159,7 @@ int ISColoringCreate(MPI_Comm comm,int n,int *colors,ISColoring *iscoloring)
     ierr = ISColoringView(*iscoloring,VIEWER_STDOUT_((*iscoloring)->comm));CHKERRQ(ierr);
   }
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -188,6 +191,7 @@ int ISPartitioningToLocalIS(ISPartitioning part,IS *is)
   int      i,ierr,rank,size, *indices,trlen,tilen,nc = part->n;
   int      *ilen,*rlen,*idisp,*rdisp,*ivalues,*rvalues;
 
+  PetscFunctionBegin;
   MPI_Comm_size(comm,&size);
 
   if (nc > size) {
@@ -244,7 +248,7 @@ int ISPartitioningToLocalIS(ISPartitioning part,IS *is)
 
 
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -49,6 +49,9 @@ int qmdupd(int *xadj, int *adjncy, int *nlist,
 /*       TO SOME NODES IN THE GIVEN LIST. PUT THEM INTO.*/
 /*       (NHDSZE, NBRHD). DEG0 CONTAINS THE NUMBER OF*/
 /*       NODES IN THE LIST.*/
+
+
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --nbrhd;
     --rchset;
@@ -61,7 +64,7 @@ int qmdupd(int *xadj, int *adjncy, int *nlist,
     --xadj;
 
     if (*nlist <= 0) {
-	return 0;
+	PetscFunctionReturn(0);
     }
     deg0 = 0;
     nhdsze = 0;
@@ -126,6 +129,6 @@ L400:
 L600:
 	;
     }
-    return 0;
+    PetscFunctionReturn(0);
 } 
 

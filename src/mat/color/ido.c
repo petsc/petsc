@@ -69,6 +69,7 @@ int MINPACKido(int *m,int * n,int * indrow,int * jpntr,int * indcol,int * ipntr,
 
 /*     Sort the degree sequence. */
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --iwa4;
     --iwa3;
@@ -260,6 +261,6 @@ L100:
     for (jp = 1; jp <= i__1; ++jp) {
 	list[jp] = iwa2[jp];
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

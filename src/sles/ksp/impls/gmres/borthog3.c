@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog3.c,v 1.5 1997/06/05 12:51:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog3.c,v 1.6 1997/07/10 03:43:31 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -28,6 +28,7 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
   Scalar    *hh, *hes,shh[100], *lhh;
   double    dnorm;
 
+  PetscFunctionBegin;
   PLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);
   /* Don't allocate small arrays */
   if (it < 100) lhh = shh;
@@ -66,7 +67,7 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
 
     /* Note that dnorm = (norm(d))**2 */
     dnorm = 0.0;
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
     for (j=0; j<=it; j++) dnorm += real(lhh[j] * conj(lhh[j]));
 #else
     for (j=0; j<=it; j++) dnorm += lhh[j] * lhh[j];
@@ -81,6 +82,6 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
 
   if (it >= 100) PetscFree( lhh );
   PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);
-  return 0;
+  PetscFunctionReturn(0);
 }
 

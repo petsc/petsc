@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.90 1997/09/10 20:50:25 curfman Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.91 1997/09/10 20:50:35 curfman Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -38,13 +38,14 @@ int SLESView(SLES sles,Viewer viewer)
   PC          pc;
   int         ierr;
 
+  PetscFunctionBegin;
   if (!viewer) {viewer = VIEWER_STDOUT_SELF;}
 
   SLESGetPC(sles,&pc);
   SLESGetKSP(sles,&ksp);
   ierr = KSPView(ksp,viewer); CHKERRQ(ierr);
   ierr = PCView(pc,viewer); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -62,13 +63,15 @@ int SLESView(SLES sles,Viewer viewer)
 int SLESPrintHelp(SLES sles)
 {
   char    *prefix = "-";
+
+  PetscFunctionBegin;
   if (sles->prefix) prefix = sles->prefix;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   PetscPrintf(sles->comm,"SLES options:\n");
   PetscPrintf(sles->comm," %ssles_view: view SLES info after each linear solve\n",prefix);
   KSPPrintHelp(sles->ksp);
   PCPrintHelp(sles->pc);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -97,11 +100,13 @@ int SLESPrintHelp(SLES sles)
 int SLESSetOptionsPrefix(SLES sles,char *prefix)
 {
   int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)sles, prefix); CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(sles->ksp,prefix);CHKERRQ(ierr);
   ierr = PCSetOptionsPrefix(sles->pc,prefix); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -130,11 +135,13 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
 int SLESAppendOptionsPrefix(SLES sles,char *prefix)
 {
   int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)sles, prefix); CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(sles->ksp,prefix);CHKERRQ(ierr);
   ierr = PCAppendOptionsPrefix(sles->pc,prefix); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -160,8 +167,12 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
 @*/
 int SLESGetOptionsPrefix(SLES sles,char **prefix)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  return PetscObjectGetOptionsPrefix((PetscObject)sles, prefix); 
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)sles, prefix); CHKERRQ(ierr);
+  PetscFunctionReturn(0);  
 }
 
 #undef __FUNC__  
@@ -181,11 +192,12 @@ int SLESSetFromOptions(SLES sles)
 {
   int ierr;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   ierr = KSPSetPC(sles->ksp,sles->pc);  CHKERRQ(ierr);
   ierr = KSPSetFromOptions(sles->ksp); CHKERRQ(ierr);
   ierr = PCSetFromOptions(sles->pc); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -205,8 +217,10 @@ int SLESSetFromOptions(SLES sles)
 @*/
 int SLESCreate(MPI_Comm comm,SLES *outsles)
 {
-  int ierr;
+  int  ierr;
   SLES sles;
+
+  PetscFunctionBegin;
   *outsles = 0;
   PetscHeaderCreate(sles,_p_SLES,SLES_COOKIE,0,comm,SLESDestroy,SLESView);
   PLogObjectCreate(sles);
@@ -216,7 +230,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   PLogObjectParent(sles,sles->pc);
   sles->setupcalled = 0;
   *outsles = sles;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -234,14 +248,16 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
 int SLESDestroy(SLES sles)
 {
   int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  if (--sles->refct > 0) return 0;
+  if (--sles->refct > 0) PetscFunctionReturn(0);
 
   ierr = KSPDestroy(sles->ksp); CHKERRQ(ierr);
   ierr = PCDestroy(sles->pc); CHKERRQ(ierr);
   PLogObjectDestroy(sles);
   PetscHeaderDestroy(sles);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -274,6 +290,7 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   KSP ksp;
   PC  pc;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
@@ -289,7 +306,7 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
     sles->setupcalled = 1;
     PLogEventEnd(SLES_SetUp,sles,b,x,0);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -356,6 +373,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   KSP        ksp;
   PC         pc;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   if (b == x) SETERRQ(PETSC_ERR_ARG_IDN,0,"b and x must be different vectors");
   ksp = sles->ksp; pc = sles->pc;
@@ -373,7 +391,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   if (doublecount == 1) {PLogEventEnd(SLES_Solve,sles,b,x,0);} doublecount--;
   ierr = OptionsHasName(sles->prefix,"-sles_view", &flg); CHKERRQ(ierr); 
   if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRQ(ierr); }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -397,9 +415,10 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 @*/
 int SLESGetKSP(SLES sles,KSP *ksp)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   *ksp = sles->ksp;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -423,9 +442,10 @@ int SLESGetKSP(SLES sles,KSP *ksp)
 @*/
 int SLESGetPC(SLES sles,PC *pc)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   *pc = sles->pc;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #include "src/mat/matimpl.h"
@@ -479,12 +499,13 @@ $      Pmat does not have the same nonzero structure.
 @*/
 int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   PetscValidHeaderSpecific(Amat,MAT_COOKIE);
   PetscValidHeaderSpecific(Pmat,MAT_COOKIE);
   PCSetOperators(sles->pc,Amat,Pmat,flag);
   sles->setupcalled = 0;  /* so that next solve call will call setup */
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -515,7 +536,8 @@ int SLESSetUpOnBlocks(SLES sles)
   int ierr;
   PC  pc;
 
+  PetscFunctionBegin;
   ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
   ierr = PCSetUpOnBlocks(pc); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }

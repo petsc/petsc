@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zplog.c,v 1.11 1997/04/04 19:10:23 bsmith Exp balay $";
+static char vcid[] = "$Id: zplog.c,v 1.12 1997/07/09 20:55:52 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -37,7 +37,7 @@ extern "C" {
 #endif
 
 void plogdump_(CHAR name, int *__ierr,int len ){
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   char *t1;
   FIXCHAR(name,len,t1);
   *__ierr = PLogDump(t1);
@@ -46,7 +46,7 @@ void plogdump_(CHAR name, int *__ierr,int len ){
 }
 void plogeventregister_(int *e,CHAR string,CHAR color,int *__ierr,int len1,
                         int len2){
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   char *t1,*t2;
   FIXCHAR(string,len1,t1);
   FIXCHAR(color,len2,t2);
@@ -58,25 +58,25 @@ void plogeventregister_(int *e,CHAR string,CHAR color,int *__ierr,int len1,
 }
 
 void plogallbegin_(int *__ierr){
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   *__ierr = PLogAllBegin();
 #endif
 }
 
 void plogdestroy_(int *__ierr){
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   *__ierr = PLogDestroy();
 #endif
 }
 
 void plogbegin_(int *__ierr){
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   *__ierr = PLogBegin();
 #endif
 }
 
 void plogeventbegin_(int *e,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4){
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   PetscObject t1,t2,t3,t4;
   if (o1) t1 = (PetscObject) PetscToPointer(*(int*)(o1)); else t1 = 0;
   if (o2) t2 = (PetscObject) PetscToPointer(*(int*)(o2)); else t2 = 0;
@@ -91,7 +91,7 @@ void plogeventbegin_(int *e,PetscObject o1,PetscObject o2,PetscObject o3,PetscOb
 }
 
 void plogeventend_(int *e,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4){
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   PetscObject t1,t2,t3,t4;
   if (o1) t1 = (PetscObject) PetscToPointer(*(int*)(o1)); else t1 = 0;
   if (o2) t2 = (PetscObject) PetscToPointer(*(int*)(o2)); else t2 = 0;
@@ -110,13 +110,13 @@ void plogflops_(int *f) {
 
 void plogstagepop_(int *__ierr )
 {
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   *__ierr = PLogStagePop();
 #endif
 }
 
 void plogstageregister_(int *stage,CHAR sname, int *__ierr,int len){
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   char *t;
   FIXCHAR(sname,len,t);
   *__ierr = PLogStageRegister(*stage,t);
@@ -124,7 +124,7 @@ void plogstageregister_(int *stage,CHAR sname, int *__ierr,int len){
 }
 
 void plogstagepush_(int *stage, int *__ierr ){
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   *__ierr = PLogStagePush(*stage);
 #endif
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: text.c,v 1.24 1997/08/22 15:16:14 bsmith Exp gropp $";
+static char vcid[] = "$Id: text.c,v 1.25 1997/09/03 15:36:04 gropp Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -29,13 +29,15 @@ int XiLoadFont(Draw_X*,XiFont*);
 int XiFontFixed( Draw_X *XBWin,int w, int h,XiFont **outfont )
 {
   static XiFont *curfont = 0,*font;
+
+  PetscFunctionBegin;
   if (!curfont) { XiInitFonts( XBWin );}
   font = (XiFont*) PetscMalloc(sizeof(XiFont)); CHKPTRQ(font);
   XiMatchFontSize( font, w, h );
   XiLoadFont( XBWin, font );
   curfont = font;
   *outfont = curfont;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* this is set by XListFonts at startup */
@@ -58,6 +60,7 @@ int XiLoadFont( Draw_X *XBWin, XiFont *font )
   XFontStruct *FontInfo;
   XGCValues   values ;
 
+  PetscFunctionBegin;
   (void) sprintf(font_name, "%dx%d", font->font_w, font->font_h );
   font->fnt  = XLoadFont( XBWin->disp, font_name );
 
@@ -72,7 +75,7 @@ int XiLoadFont( Draw_X *XBWin, XiFont *font )
   /* Set the current font in the CG */
   values.font = font->fnt ;
   XChangeGC( XBWin->disp, XBWin->gc.set, GCFont, &values ) ; 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* Code to find fonts and their characteristics */
@@ -84,6 +87,7 @@ int XiInitFonts( Draw_X *XBWin )
   int          cnt, i, j;
   XFontStruct  *info;
 
+  PetscFunctionBegin;
   /* This just gets the most basic fixed-width fonts */
   names   = XListFontsWithInfo( XBWin->disp, "?x??", NFONTS, &cnt, &info );
   j       = 0;
@@ -120,7 +124,7 @@ int XiInitFonts( Draw_X *XBWin )
     act_nfonts    = j;
     XFreeFontInfo( names, info, cnt );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -129,12 +133,13 @@ int XiMatchFontSize( XiFont *font, int w, int h )
 {
   int i,max,imax,tmp;
 
+  PetscFunctionBegin;
   for (i=0; i<act_nfonts; i++) {
     if (nfonts[i].w == w && nfonts[i].h == h) {
         font->font_w        = w;
         font->font_h        = h;
         font->font_descent  = nfonts[i].descent;
-        return 0;
+        PetscFunctionReturn(0);
     }
   }
 
@@ -150,11 +155,11 @@ int XiMatchFontSize( XiFont *font, int w, int h )
   font->font_w        = nfonts[imax].w;
   font->font_h        = nfonts[imax].h;
   font->font_descent  = nfonts[imax].descent;
-  return 0;
+  PetscFunctionReturn(0);
 }
 #else
 int dummy_text()
 {
-  return 0;
+  PetscFunctionReturn(0);
 }
 #endif

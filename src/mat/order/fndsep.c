@@ -47,6 +47,7 @@ int fndsep(int *root, int *xadj, int *adjncy,
 	    int *, int *, int *, int *);
     static int nbr;
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --ls;
     --xls;
@@ -68,7 +69,7 @@ int fndsep(int *root, int *xadj, int *adjncy,
 	sep[i] = node;
 	mask[node] = 0;
     }
-    return 0;
+    PetscFunctionReturn(0);
 /*       FIND THE MIDDLE LEVEL OF THE ROOTED LEVEL STRUCTURE.*/
 L200:
     midlvl = (nlvl + 2) / 2;
@@ -113,5 +114,5 @@ L500:
 	node = ls[i];
 	xadj[node] = -xadj[node];
     }
-    return 0;
+    PetscFunctionReturn(0);
 } 

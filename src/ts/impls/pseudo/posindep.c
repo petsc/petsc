@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: posindep.c,v 1.19 1997/07/25 23:11:40 balay Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.20 1997/08/22 15:16:51 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -52,6 +52,7 @@ int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
   double    inc = pseudo->dt_increment,fnorm_previous = pseudo->fnorm_previous;
   int       ierr;
 
+  PetscFunctionBegin;
   ierr = TSComputeRHSFunction(ts,ts->ptime,ts->vec_sol,pseudo->func);CHKERRQ(ierr);  
   ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm); CHKERRQ(ierr); 
   if (pseudo->initial_fnorm == 0.0) {
@@ -68,7 +69,7 @@ int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
     *newdt = inc*ts->time_step*fnorm_previous/pseudo->fnorm;
   }
   pseudo->fnorm_previous = pseudo->fnorm;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -101,13 +102,14 @@ int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
 {
   TS_Pseudo *pseudo;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->type != TS_PSEUDO) return 0;
+  if (ts->type != TS_PSEUDO) PetscFunctionReturn(0);
 
   pseudo          = (TS_Pseudo*) ts->data;
   pseudo->dt      = dt;
   pseudo->dtctx   = ctx;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -136,10 +138,11 @@ int TSPseudoComputeTimeStep(TS ts,double *dt)
   TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
   int       ierr;
 
+  PetscFunctionBegin;
   PLogEventBegin(TS_PseudoComputeTimeStep,ts,0,0,0);
   ierr = (*pseudo->dt)(ts,dt,pseudo->dtctx); CHKERRQ(ierr);
   PLogEventEnd(TS_PseudoComputeTimeStep,ts,0,0,0);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -168,8 +171,9 @@ int TSPseudoComputeTimeStep(TS ts,double *dt)
 @*/
 int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,double *newdt,int *flag)
 {
+  PetscFunctionBegin;
   *flag = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -204,13 +208,14 @@ int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* c
 {
   TS_Pseudo *pseudo;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->type != TS_PSEUDO) return 0;
+  if (ts->type != TS_PSEUDO) PetscFunctionReturn(0);
 
   pseudo              = (TS_Pseudo*) ts->data;
   pseudo->verify      = dt;
   pseudo->verifyctx   = ctx;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -239,11 +244,12 @@ int TSPseudoVerifyTimeStep(TS ts,Vec update,double *dt,int *flag)
   TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
   int       ierr;
 
-  if (!pseudo->verify) {*flag = 1; return 0;}
+  PetscFunctionBegin;
+  if (!pseudo->verify) {*flag = 1; PetscFunctionReturn(0);}
 
   ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag ); CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* --------------------------------------------------------------------------------*/
@@ -257,6 +263,7 @@ static int TSStep_Pseudo(TS ts,int *steps,double *time)
   TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
   double    current_time_step;
   
+  PetscFunctionBegin;
   *steps = -ts->steps;
 
   ierr = VecCopy(sol,pseudo->update); CHKERRQ(ierr);
@@ -280,7 +287,7 @@ static int TSStep_Pseudo(TS ts,int *steps,double *time)
 
   *steps += ts->steps;
   *time  = ts->ptime;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
@@ -292,12 +299,13 @@ static int TSDestroy_Pseudo(PetscObject obj )
   TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
   int       ierr;
 
+  PetscFunctionBegin;
   ierr = VecDestroy(pseudo->update); CHKERRQ(ierr);
   if (pseudo->func) {ierr = VecDestroy(pseudo->func);CHKERRQ(ierr);}
   if (pseudo->rhs)  {ierr = VecDestroy(pseudo->rhs);CHKERRQ(ierr);}
   if (ts->Ashell)   {ierr = MatDestroy(ts->A); CHKERRQ(ierr);}
   PetscFree(pseudo);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -314,14 +322,15 @@ int TSPseudoMatMult(Mat mat,Vec x,Vec y)
   Scalar mdt,mone = -1.0;
   int    ierr;
 
-  MatShellGetContext(mat,(void **)&ts);
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(mat,(void **)&ts);CHKERRQ(ierr);
   mdt = 1.0/ts->time_step;
 
   /* apply user provided function */
   ierr = MatMult(ts->Ashell,x,y); CHKERRQ(ierr);
   /* shift and scale by 1/dt - F */
   ierr = VecAXPBY(&mdt,&mone,x,y); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* 
@@ -337,6 +346,7 @@ int TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
   Scalar mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
   int    ierr,i,n;
 
+  PetscFunctionBegin;
   /* apply user provided function */
   ierr = TSComputeRHSFunction(ts,ts->ptime,x,y); CHKERRQ(ierr);
   /* compute (u^{n+1) - u^{n})/dt - F(u^{n+1}) */
@@ -351,7 +361,7 @@ int TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
   ierr = VecRestoreArray(x,&unp1);
   ierr = VecRestoreArray(y,&Funp1);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -368,6 +378,7 @@ int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
   Scalar  mone = -1.0, mdt = 1.0/ts->time_step;
   MatType mtype;
 
+  PetscFunctionBegin;
   /* construct users Jacobian */
   if (ts->rhsjacobian) {
     ierr = (*ts->rhsjacobian)(ts,ts->ptime,x,AA,BB,str,ts->jacP);CHKERRQ(ierr);
@@ -385,7 +396,7 @@ int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
     ierr = MatShift(&mdt,*BB); CHKERRQ(ierr);
   }
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -394,8 +405,9 @@ int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
 static int TSSetUp_Pseudo(TS ts)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
-  int         ierr, M, m;
+  int       ierr, M, m;
 
+  PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&pseudo->update); CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&pseudo->func); CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,pseudo->func,TSPseudoFunction,ts);CHKERRQ(ierr);
@@ -406,7 +418,7 @@ static int TSSetUp_Pseudo(TS ts)
     ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void*)TSPseudoMatMult);CHKERRQ(ierr);
   }
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSPseudoJacobian,ts);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
 
@@ -416,8 +428,9 @@ int TSPseudoDefaultMonitor(TS ts, int step, double time,Vec v, void *ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
 
+  PetscFunctionBegin;
   PetscPrintf(ts->comm,"TS %d dt %g time %g fnorm %g\n",step,ts->time_step,time,pseudo->fnorm);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -427,6 +440,7 @@ static int TSSetFromOptions_Pseudo(TS ts)
   int    ierr,flg;
   double inc;
 
+  PetscFunctionBegin;
   ierr = SNESSetFromOptions(ts->snes); CHKERRQ(ierr);
 
   ierr = OptionsHasName(ts->prefix,"-ts_monitor",&flg); CHKERRQ(ierr);
@@ -441,26 +455,28 @@ static int TSSetFromOptions_Pseudo(TS ts)
   if (flg) {
     ierr = TSPseudoIncrementDtFromInitialDt(ts); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "TSPrintHelp_Pseudo"
 static int TSPrintHelp_Pseudo(TS ts,char *p)
 {
+  PetscFunctionBegin;
   PetscPrintf(ts->comm," Options for TS Pseudo timestepper:\n");
   PetscPrintf(ts->comm," %sts_pseudo_increment <value> : default 1.1\n",p);
   PetscPrintf(ts->comm," %sts_pseudo_increment_dt_from_initial_dt : use initial_dt *\n",p); 
   PetscPrintf(ts->comm,"     initial fnorm/current fnorm to determine new timestep\n");
   PetscPrintf(ts->comm,"     default is current_dt * previous fnorm/current fnorm\n"); 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "TSView_Pseudo"
 static int TSView_Pseudo(PetscObject obj,Viewer viewer)
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------ */
@@ -472,6 +488,7 @@ int TSCreate_Pseudo(TS ts )
   int       ierr;
   MatType   mtype;
 
+  PetscFunctionBegin;
   ts->type 	      = TS_PSEUDO;
   ts->destroy         = TSDestroy_Pseudo;
   ts->printhelp       = TSPrintHelp_Pseudo;
@@ -503,7 +520,7 @@ int TSCreate_Pseudo(TS ts )
   pseudo->dt_increment                 = 1.1;
   pseudo->increment_dt_from_initial_dt = 0;
   pseudo->dt                           = TSPseudoDefaultTimeStep;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -528,12 +545,13 @@ int TSPseudoSetTimeStepIncrement(TS ts,double inc)
 {
   TS_Pseudo *pseudo;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->type != TS_PSEUDO) return 0;
+  if (ts->type != TS_PSEUDO) PetscFunctionReturn(0);
 
   pseudo               = (TS_Pseudo*) ts->data;
   pseudo->dt_increment = inc;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -559,12 +577,13 @@ int TSPseudoIncrementDtFromInitialDt(TS ts)
 {
   TS_Pseudo *pseudo;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->type != TS_PSEUDO) return 0;
+  if (ts->type != TS_PSEUDO) PetscFunctionReturn(0);
 
   pseudo                               = (TS_Pseudo*) ts->data;
   pseudo->increment_dt_from_initial_dt = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

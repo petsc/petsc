@@ -1,8 +1,7 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: PetscMalloc.c,v 1.9 1997/04/10 00:07:26 bsmith Exp balay $";
+static char vcid[] = "$Id: PetscMalloc.c,v 1.10 1997/07/09 21:01:29 balay Exp bsmith $";
 #endif
 
-#include "stdio.h"
 #include "petsc.h"
 #include "sys.h"
 
@@ -57,5 +56,5 @@ int main( int argc, char **argv)
   
   PetscRandomDestroy(r);
   PetscFinalize();
-  return 0;
+  PetscFunctionReturn(0);
 }

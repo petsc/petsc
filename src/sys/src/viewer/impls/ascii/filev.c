@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.61 1997/09/26 02:20:48 bsmith Exp balay $";
+static char vcid[] = "$Id: filev.c,v 1.62 1997/10/07 20:50:04 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -23,11 +23,12 @@ Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD, VIEWER_STDER
 #define __FUNC__ "ViewerInitialize_Private"
 int ViewerInitialize_Private()
 {
+  PetscFunctionBegin;
   ViewerFileOpenASCII(PETSC_COMM_SELF,"stderr",&VIEWER_STDERR_SELF);
   ViewerFileOpenASCII(PETSC_COMM_SELF,"stdout",&VIEWER_STDOUT_SELF);
   ViewerFileOpenASCII(PETSC_COMM_WORLD,"stdout",&VIEWER_STDOUT_WORLD);
   ViewerFileOpenASCII(PETSC_COMM_WORLD,"stderr",&VIEWER_STDERR_WORLD);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -38,6 +39,7 @@ int ViewerInitialize_Private()
 #define __FUNC__ "ViewerDestroy_Private"
 int ViewerDestroy_Private()
 {
+  PetscFunctionBegin;
   ViewerDestroy(VIEWER_STDERR_SELF);
   ViewerDestroy(VIEWER_STDOUT_SELF);
   ViewerDestroy(VIEWER_STDOUT_WORLD);
@@ -46,7 +48,7 @@ int ViewerDestroy_Private()
   VIEWER_STDERR_Destroy(PETSC_COMM_SELF);
   VIEWER_STDOUT_Destroy(PETSC_COMM_WORLD);
   VIEWER_STDERR_Destroy(PETSC_COMM_WORLD);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------*/
@@ -76,6 +78,7 @@ Viewer VIEWER_STDOUT_(MPI_Comm comm)
   int    ierr,flag;
   Viewer viewer;
 
+  PetscFunctionBegin;
   if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
     MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stdout_keyval,0);
   }
@@ -85,7 +88,7 @@ Viewer VIEWER_STDOUT_(MPI_Comm comm)
     if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     MPI_Attr_put( comm, Petsc_Viewer_Stdout_keyval, (void *) viewer );
   } 
-  return viewer;
+  PetscFunctionReturn(viewer);
 }
 
 /*
@@ -96,15 +99,16 @@ int VIEWER_STDOUT_Destroy(MPI_Comm comm)
   int    ierr,flag;
   Viewer viewer;
 
+  PetscFunctionBegin;
   if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
-    return 0;
+    PetscFunctionReturn(0);
   }
   MPI_Attr_get( comm, Petsc_Viewer_Stdout_keyval, (void **)&viewer, &flag );
   if (flag) { 
     ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     MPI_Attr_delete(comm,Petsc_Viewer_Stdout_keyval);
   } 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------*/
@@ -134,6 +138,7 @@ Viewer VIEWER_STDERR_(MPI_Comm comm)
   int    ierr,flag;
   Viewer viewer;
 
+  PetscFunctionBegin;
   if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
     MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stderr_keyval,0);
   }
@@ -143,7 +148,7 @@ Viewer VIEWER_STDERR_(MPI_Comm comm)
     if (ierr) {PetscError(__LINE__,"VIEWER_STDERR_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     MPI_Attr_put( comm, Petsc_Viewer_Stderr_keyval, (void *) viewer );
   } 
-  return viewer;
+  PetscFunctionReturn(viewer);
 }
 
 /*
@@ -154,15 +159,16 @@ int VIEWER_STDERR_Destroy(MPI_Comm comm)
   int    ierr,flag;
   Viewer viewer;
 
+  PetscFunctionBegin;
   if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
-    return 0;
+    PetscFunctionReturn(0);
   }
   MPI_Attr_get( comm, Petsc_Viewer_Stderr_keyval, (void **)&viewer, &flag );
   if (flag) { 
     ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     MPI_Attr_delete(comm,Petsc_Viewer_Stderr_keyval);
   } 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ----------------------------------------------------------------------*/
@@ -172,11 +178,13 @@ int ViewerDestroy_File(PetscObject obj)
 {
   Viewer v = (Viewer) obj;
   int    rank = 0;
+
+  PetscFunctionBegin;
   if (v->type == ASCII_FILES_VIEWER) {MPI_Comm_rank(v->comm,&rank);} 
   if (!rank && v->fd != stderr && v->fd != stdout) fclose(v->fd);
   PLogObjectDestroy(obj);
   PetscHeaderDestroy(obj);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -184,10 +192,12 @@ int ViewerDestroy_File(PetscObject obj)
 int ViewerFlush_File(Viewer v)
 {
   int rank;
+
+  PetscFunctionBegin;
   MPI_Comm_rank(v->comm,&rank);
-  if (rank) return 0;
+  if (rank) PetscFunctionReturn(0);
   fflush(v->fd);
-  return 0;  
+  PetscFunctionReturn(0);  
 }
 
 #undef __FUNC__  
@@ -207,24 +217,27 @@ int ViewerFlush_File(Viewer v)
 @*/
 int ViewerASCIIGetPointer(Viewer viewer, FILE **fd)
 {
+  PetscFunctionBegin;
   *fd = viewer->fd;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerFileGetOutputname_Private"
 int ViewerFileGetOutputname_Private(Viewer viewer, char **name)
 {
+  PetscFunctionBegin;
   *name = viewer->outputname;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerGetFormat"
 int ViewerGetFormat(Viewer viewer,int *format)
 {
+  PetscFunctionBegin;
   *format =  viewer->format;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -263,6 +276,8 @@ $    MatView(matrix,viewer);
 int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 {
   Viewer v;
+
+  PetscFunctionBegin;
   if (comm == PETSC_COMM_SELF) {
     PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,ASCII_FILE_VIEWER,comm,ViewerDestroy,0);
   } else {
@@ -281,11 +296,11 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
   v->format        = VIEWER_FORMAT_ASCII_DEFAULT;
   v->iformat       = 0;
   v->outputname    = 0;
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
 #endif
   *lab           = v;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -326,6 +341,7 @@ $    VIEWER_FORMAT_DRAW_CONTOUR - View the vector with a contour
 @*/
 int ViewerSetFormat(Viewer v,int format,char *name)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
   if (v->type == ASCII_FILES_VIEWER || v->type == ASCII_FILE_VIEWER) {
     v->format     = format;
@@ -333,7 +349,7 @@ int ViewerSetFormat(Viewer v,int format,char *name)
   } else {
     v->format     = format;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -371,6 +387,7 @@ $       matrices are stored as dense)
 @*/
 int ViewerPushFormat(Viewer v,int format,char *name)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
   if (v->iformat > 9) SETERRQ(1,0,"Too many pushes");
 
@@ -383,7 +400,7 @@ int ViewerPushFormat(Viewer v,int format,char *name)
     v->formats[v->iformat++]     = v->format;
     v->format                    = format;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -401,8 +418,9 @@ int ViewerPushFormat(Viewer v,int format,char *name)
 @*/
 int ViewerPopFormat(Viewer v)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (v->iformat <= 0) return 0;
+  if (v->iformat <= 0) PetscFunctionReturn(0);
 
   if (v->type == ASCII_FILES_VIEWER || v->type == ASCII_FILE_VIEWER) {
     v->format     = v->formats[--v->iformat];
@@ -410,7 +428,7 @@ int ViewerPopFormat(Viewer v)
   } else if (v->type == BINARY_FILE_VIEWER) {
     v->format     = v->formats[--v->iformat];
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

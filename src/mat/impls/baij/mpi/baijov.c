@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijov.c,v 1.24 1997/10/01 22:21:04 balay Exp balay $";
+static char vcid[] = "$Id: baijov.c,v 1.25 1997/10/06 16:24:17 balay Exp bsmith $";
 #endif
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -23,6 +23,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_
   int          ierr,isz,bs = baij->bs,Nbs,n,i,j,*idx,*nidx,ival;
   BT           table;
 
+  PetscFunctionBegin;
   Nbs   = baij->Nbs;
   nidx  = (int *) PetscMalloc((Nbs+1)*sizeof(int)); CHKPTRQ(nidx); 
   ierr  = BTCreate(Nbs,table); CHKERRQ(ierr);
@@ -42,7 +43,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_
   }
   BTDestroy(table);
   PetscFree(nidx);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -53,12 +54,13 @@ static int MatCompressIndicesSorted_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_o
   int          ierr,bs=baij->bs,i,j,k,val,n,*idx,*nidx,Nbs=baij->Nbs,*idx_local;
   PetscTruth   flg;
 
+  PetscFunctionBegin;
   for (i=0; i<imax; i++) {
     ierr = ISSorted(is_in[i],&flg); CHKERRQ(ierr);
     if (!flg) SETERRQ(1,0,"Indices are not sorted");
   }
   nidx  = (int *) PetscMalloc((Nbs+1)*sizeof(int)); CHKPTRQ(nidx); 
-  /* Now chech if the indices are in block order */
+  /* Now check if the indices are in block order */
   for (i=0; i<imax; i++) {
     ierr = ISGetIndices(is_in[i],&idx);  CHKERRQ(ierr);
     ierr = ISGetSize(is_in[i],&n);  CHKERRQ(ierr);
@@ -79,7 +81,7 @@ static int MatCompressIndicesSorted_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_o
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,nidx,(is_out+i)); CHKERRQ(ierr);
   }
   PetscFree(nidx);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -89,6 +91,7 @@ static int MatExpandIndices_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_out)
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ *) C->data;
   int          ierr,bs = baij->bs,Nbs,n,i,j,k,*idx,*nidx;
 
+  PetscFunctionBegin;
   Nbs   = baij->Nbs;
 
   nidx  = (int *) PetscMalloc((Nbs*bs+1)*sizeof(int)); CHKPTRQ(nidx); 
@@ -104,7 +107,7 @@ static int MatExpandIndices_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_out)
     ierr = ISCreateGeneral(PETSC_COMM_SELF, n*bs, nidx, (is_out+i)); CHKERRQ(ierr);
   }
   PetscFree(nidx);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -113,8 +116,9 @@ static int MatExpandIndices_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_out)
 int MatIncreaseOverlap_MPIBAIJ(Mat C, int imax, IS *is, int ov)
 {
   int i, ierr;
-  IS *is_new;
+  IS  *is_new;
 
+  PetscFunctionBegin;
   is_new = (IS *)PetscMalloc(imax*sizeof(IS)); CHKPTRQ(is_new);
   /* Convert the indices into block format */
   ierr = MatCompressIndicesGeneral_MPIBAIJ(C, imax, is,is_new); CHKERRQ(ierr);
@@ -126,7 +130,7 @@ int MatIncreaseOverlap_MPIBAIJ(Mat C, int imax, IS *is, int ov)
   ierr = MatExpandIndices_MPIBAIJ(C, imax, is_new,is); CHKERRQ(ierr);
   for (i=0; i<imax; i++) ISDestroy(is_new[i]);
   PetscFree(is_new);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -165,6 +169,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   MPI_Request *s_waits1,*r_waits1,*s_waits2,*r_waits2;
   MPI_Status  *s_status,*recv_status;
 
+  PetscFunctionBegin;
   comm   = C->comm;
   tag    = C->tag;
   size   = c->size;
@@ -250,8 +255,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   for (i=1; i<nrqr; ++i) rbuf[i] = rbuf[i-1] + bsz;
   
   /* Post the receives */
-  r_waits1 = (MPI_Request *) PetscMalloc((nrqr+1)*sizeof(MPI_Request)); 
-  CHKPTRQ(r_waits1);
+  r_waits1 = (MPI_Request *) PetscMalloc((nrqr+1)*sizeof(MPI_Request));CHKPTRQ(r_waits1);
   for (i=0; i<nrqr; ++i) {
     MPI_Irecv(rbuf[i],bsz,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits1+i);
   }
@@ -342,8 +346,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
 
 
   /*  Now  post the sends */
-  s_waits1 = (MPI_Request *) PetscMalloc((nrqs+1)*sizeof(MPI_Request));
-  CHKPTRQ(s_waits1);
+  s_waits1 = (MPI_Request *) PetscMalloc((nrqs+1)*sizeof(MPI_Request));CHKPTRQ(s_waits1);
   for (i=0; i<nrqs; ++i) {
     j = pa[i];
     MPI_Isend(outdat[j], w1[j], MPI_INT, j, tag, comm, s_waits1+i);
@@ -366,14 +369,12 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   {
     int        index;
     
-    recv_status = (MPI_Status *) PetscMalloc( (nrqr+1)*sizeof(MPI_Status) );
-    CHKPTRQ(recv_status);
+    recv_status = (MPI_Status *) PetscMalloc((nrqr+1)*sizeof(MPI_Status));CHKPTRQ(recv_status);
     for (i=0; i<nrqr; ++i) {
       MPI_Waitany(nrqr, r_waits1, &index, recv_status+i);
     }
     
-    s_status = (MPI_Status *) PetscMalloc( (nrqs+1)*sizeof(MPI_Status) );
-    CHKPTRQ(s_status);
+    s_status = (MPI_Status *) PetscMalloc((nrqs+1)*sizeof(MPI_Status));CHKPTRQ(s_status);
     MPI_Waitall(nrqs,s_waits1,s_status);
   }
 
@@ -413,15 +414,13 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   for (i=1; i<nrqs; ++i) rbuf2[i] = rbuf2[i-1] + bsz1;
   
   /* Post the receives */
-  r_waits2 = (MPI_Request *)PetscMalloc((nrqs+1)*sizeof(MPI_Request));
-  CHKPTRQ(r_waits2);
+  r_waits2 = (MPI_Request *)PetscMalloc((nrqs+1)*sizeof(MPI_Request));CHKPTRQ(r_waits2);
   for (i=0; i<nrqs; ++i) {
     MPI_Irecv(rbuf2[i], bsz1, MPI_INT, MPI_ANY_SOURCE, tag, comm, r_waits2+i);
   }
   
   /*  Now  post the sends */
-  s_waits2 = (MPI_Request *) PetscMalloc((nrqr+1)*sizeof(MPI_Request));
-  CHKPTRQ(s_waits2);
+  s_waits2 = (MPI_Request *) PetscMalloc((nrqr+1)*sizeof(MPI_Request));CHKPTRQ(s_waits2);
   for (i=0; i<nrqr; ++i) {
     j = recv_status[i].MPI_SOURCE;
     MPI_Isend( xdata[i], isz1[i], MPI_INT, j, tag, comm, s_waits2+i);
@@ -474,7 +473,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   PetscFree(xdata[0]); 
   PetscFree(xdata);
   PetscFree(isz1);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -503,6 +502,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Local(Mat C,int imax,BT *table,int *isz,
   int        *bi, *bj, *garray, i, j, k, row,*data_i,isz_i;
   BT         table_i;
 
+  PetscFunctionBegin;
   rstart = c->rstart;
   cstart = c->cstart;
   ai     = a->i;
@@ -533,7 +533,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Local(Mat C,int imax,BT *table,int *isz,
     }
     isz[i] = isz_i;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 #undef __FUNC__  
 #define __FUNC__ "MatIncreaseOverlap_MPIBAIJ_Receive"
@@ -568,8 +568,9 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,
   int         *rbuf_i,kmax,rbuf_0,ierr;
   BT          xtable;
 
+  PetscFunctionBegin;
   rank   = c->rank;
-  Mbs      = c->Mbs;
+  Mbs     = c->Mbs;
   rstart = c->rstart;
   cstart = c->cstart;
   ai     = a->i;
@@ -669,7 +670,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,
   }
   BTDestroy(xtable);
   PLogInfo(0,"MatIncreaseOverlap_MPIBAIJ:[%d] Allocated %d bytes, required %d bytes, no of mallocs = %d\n",rank,mem_estimate, ct3,no_malloc);    
-  return 0;
+  PetscFunctionReturn(0);
 }  
 
 static int MatGetSubMatrices_MPIBAIJ_local(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat *);
@@ -683,7 +684,8 @@ int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ *) C->data;
   int         nmax,nstages_local,nstages,i,pos,max_no,ierr;
 
-  /* The compression and expansion should be avoided. Dos'nt point
+  PetscFunctionBegin;
+  /* The compression and expansion should be avoided. Does'nt point
      out errors might change the indices hence buggey */
 
   isrow_new = (IS *)PetscMalloc(2*ismax*sizeof(IS)); CHKPTRQ(isrow_new);
@@ -717,7 +719,7 @@ int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,
     ISDestroy(iscol_new[i]);
   }
   PetscFree(isrow_new);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------*/
@@ -746,6 +748,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   Scalar      **rbuf4,**sbuf_aa,*vals,*mat_a,*sbuf_aa_i,*vworkA,*vworkB;
   Scalar      *a_a=a->a,*b_a=b->a;
 
+  PetscFunctionBegin;
   comm   = C->comm;
   tag0    = C->tag;
   size   = c->size;
@@ -1055,15 +1058,18 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
           /* load the column values for this row into vals*/
           vals  = sbuf_aa_i+ct2*bs2;
           for (l=0; l<nzB; l++) {
-            if ((bmap[cworkB[l]]) < cstart)  
+            if ((bmap[cworkB[l]]) < cstart) { 
               PetscMemcpy(vals+l*bs2,vworkB+l*bs2,bs2*sizeof(Scalar));
+            }
             else break;
           }
           imark = l;
-          for (l=0; l<nzA; l++)  
+          for (l=0; l<nzA; l++) {
             PetscMemcpy(vals+(imark+l)*bs2,vworkA+l*bs2,bs2*sizeof(Scalar));
-          for (l=imark; l<nzB; l++) 
+          }
+          for (l=imark; l<nzB; l++) {
             PetscMemcpy(vals+(nzA+l)*bs2,vworkB+l*bs2,bs2*sizeof(Scalar));
+          }
           ct2 += ncols;
         }
       }
@@ -1361,5 +1367,5 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag2); CHKERRQ(ierr);
   ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag1); CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.90 1997/09/05 18:17:33 gropp Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.91 1997/09/08 16:26:45 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -24,9 +24,10 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   FILE                   *fd;
   ViewerType             vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
-  if (vtype != ASCII_FILE_VIEWER && vtype != ASCII_FILES_VIEWER) return 0;
+  if (vtype != ASCII_FILE_VIEWER && vtype != ASCII_FILES_VIEWER) PetscFunctionReturn(0);
 
   MPI_Comm_rank(ctx->comm,&rank);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -54,7 +55,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 
   fflush(fd);
   PetscSequentialPhaseEnd(ctx->comm,1);
-  return 0;
+  PetscFunctionReturn(0);
 }  
 
 /* -----------------------------------------------------------------------------------*/
@@ -70,6 +71,7 @@ int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,VecScatter_Se
   int n = gen_to->n,n_nonmatching = 0,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
   int *nto_slots, *nfrom_slots,j = 0;
   
+  PetscFunctionBegin;
   for ( i=0; i<n; i++ ) {
     if (to_slots[i] != from_slots[i]) n_nonmatching++;
   }
@@ -97,7 +99,7 @@ int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,VecScatter_Se
     }
     PLogInfo(0,"VecScatterLocalOptimize_Private:Reduced %d to %d\n",n,n_nonmatching);
   } 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -122,6 +124,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   int                    tag = ctx->tag, i,j,*indices,*rstarts,*sstarts,*rprocs, *sprocs;
   int                    nrecvs, nsends,iend,ierr;
 
+  PetscFunctionBegin;
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
@@ -186,7 +189,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
     for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[tslots[i]];}
   }
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -200,7 +203,8 @@ int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatt
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
-  if (mode & SCATTER_LOCAL) return 0;
+  PetscFunctionBegin;
+  if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
 
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
@@ -244,7 +248,7 @@ int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatt
   if (nsends) {
     MPI_Waitall(nsends,swaits,sstatus);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------------*/
 /*
@@ -267,8 +271,9 @@ int VecScatterPostRecvs_PtoP_X(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,
 {
   VecScatter_MPI_General *gen_from = (VecScatter_MPI_General *) ctx->fromdata;
 
+  PetscFunctionBegin;
   MPI_Startall_irecv(gen_from->starts[gen_from->n],gen_from->n,gen_from->requests); 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -286,14 +291,15 @@ int VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatte
   int n = gen_to->n,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
   int to_start,from_start;
   
+  PetscFunctionBegin;
   to_start   = to_slots[0];
   from_start = from_slots[0];
 
   for ( i=1; i<n; i++ ) {
     to_start   += bs;
     from_start += bs;
-    if (to_slots[i]   != to_start)   return 0;
-    if (from_slots[i] != from_start) return 0;
+    if (to_slots[i]   != to_start)   PetscFunctionReturn(0);
+    if (from_slots[i] != from_start) PetscFunctionReturn(0);
   }
   gen_to->is_copy       = 1; 
   gen_to->copy_start    = to_slots[0]; 
@@ -304,7 +310,7 @@ int VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatte
 
   PLogInfo(0,"VecScatterLocalOptimizeCopy_Private:Local scatter is a copy, optimizing for it\n");
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -315,6 +321,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   VecScatter_MPI_General *in_from = (VecScatter_MPI_General *) in->fromdata,*out_to,*out_from;
   int                    len, ny, bs = in_from->bs;
 
+  PetscFunctionBegin;
   out->postrecvs = in->postrecvs;
   out->begin     = in->begin;
   out->end       = in->end;
@@ -446,7 +453,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
     }
   } 
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -460,6 +467,7 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
   int                    i,*indices,*sstarts,iend,j;
   int                    nrecvs, nsends,idx;
 
+  PetscFunctionBegin;
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
@@ -551,7 +559,7 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -565,7 +573,8 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
-  if (mode & SCATTER_LOCAL) return 0;
+  PetscFunctionBegin;
+  if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
 
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
@@ -635,7 +644,7 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
   if (nsends) {
     MPI_Waitall(nsends,swaits,sstatus);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -648,6 +657,7 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
   MPI_Request            *rwaits, *swaits;
   int                    i,*indices,*sstarts,iend,j,nrecvs, nsends,idx;
 
+  PetscFunctionBegin;
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
@@ -734,7 +744,7 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -748,7 +758,8 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
-  if (mode & SCATTER_LOCAL) return 0;
+  PetscFunctionBegin;
+  if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
 
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
@@ -804,7 +815,7 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   if (nsends) {
     MPI_Waitall(nsends,swaits,sstatus);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -817,6 +828,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
   MPI_Request            *rwaits, *swaits;
   int                    i,*indices,*sstarts,iend,j,nrecvs, nsends,idx;
 
+  PetscFunctionBegin;
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
@@ -899,7 +911,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -913,7 +925,8 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
-  if (mode & SCATTER_LOCAL) return 0;
+  PetscFunctionBegin;
+  if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
 
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
@@ -967,7 +980,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   if (nsends) {
     MPI_Waitall(nsends,swaits,sstatus);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -980,6 +993,7 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
   MPI_Request            *rwaits, *swaits;
   int                    i,*indices,*sstarts,iend,j, nrecvs, nsends,idx;
 
+  PetscFunctionBegin;
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
@@ -1060,7 +1074,7 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1074,7 +1088,8 @@ int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
-  if (mode & SCATTER_LOCAL) return 0;
+  PetscFunctionBegin;
+  if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
 
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
@@ -1126,7 +1141,7 @@ int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   if (nsends) {
     MPI_Waitall(nsends,swaits,sstatus);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1139,6 +1154,7 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
   MPI_Request            *rwaits, *swaits;
   int                    i,*indices,*sstarts,iend,j,nrecvs, nsends,idx;
 
+  PetscFunctionBegin;
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
@@ -1213,7 +1229,7 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1227,7 +1243,8 @@ int VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
-  if (mode & SCATTER_LOCAL) return 0;
+  PetscFunctionBegin;
+  if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
 
   if (mode & SCATTER_REVERSE ) {
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
@@ -1277,7 +1294,7 @@ int VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   if (nsends) {
     MPI_Waitall(nsends,swaits,sstatus);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* --------------------------------------------------------------------------------------*/
@@ -1289,6 +1306,7 @@ int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
   VecScatter_MPI_General *in_from = (VecScatter_MPI_General *) in->fromdata,*out_to,*out_from;
   int                    len, ny;
 
+  PetscFunctionBegin;
   out->postrecvs = in->postrecvs;
   out->begin     = in->begin;
   out->end       = in->end;
@@ -1362,7 +1380,7 @@ int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
   else {
     out_from->local.slots = 0;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------------------------*/
 
@@ -1375,6 +1393,7 @@ int VecScatterDestroy_PtoP_X(PetscObject obj)
   VecScatter_MPI_General *gen_from = (VecScatter_MPI_General *) ctx->fromdata;
   int                    i;
 
+  PetscFunctionBegin;
   if (gen_to->use_readyreceiver) {
     /*
        Since we have already posted sends we must cancel them before freeing 
@@ -1422,7 +1441,7 @@ int VecScatterDestroy_PtoP_X(PetscObject obj)
   PetscFree(gen_from);
   PLogObjectDestroy(ctx);
   PetscHeaderDestroy(ctx);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1433,6 +1452,7 @@ int VecScatterDestroy_PtoP(PetscObject obj)
   VecScatter_MPI_General *gen_to   = (VecScatter_MPI_General *) ctx->todata;
   VecScatter_MPI_General *gen_from = (VecScatter_MPI_General *) ctx->fromdata;
 
+  PetscFunctionBegin;
   if (gen_to->local.slots) PetscFree(gen_to->local.slots);
   if (gen_from->local.slots) PetscFree(gen_from->local.slots);
   if (gen_to->local.slots_nonmatching) PetscFree(gen_to->local.slots_nonmatching);
@@ -1442,7 +1462,7 @@ int VecScatterDestroy_PtoP(PetscObject obj)
   PetscFree(gen_from->values); PetscFree(gen_from);
   PLogObjectDestroy(ctx);
   PetscHeaderDestroy(ctx);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------------------*/
@@ -1467,6 +1487,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   MPI_Request            *send_waits,*recv_waits;
   MPI_Status             recv_status,*send_status;
   
+  PetscFunctionBegin;
   /*  first count number of contributors to each processor */
   nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
   PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
@@ -1750,7 +1771,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
     ierr = VecScatterLocalOptimizeCopy_Private(&to->local,&from->local,bs); CHKERRQ(ierr);
   }
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------------------------*/
@@ -1772,6 +1793,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   MPI_Request            *send_waits,*recv_waits;
   MPI_Status             recv_status,*send_status;
 
+  PetscFunctionBegin;
   /*  first count number of contributors to each processor */
   nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
   PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
@@ -1958,7 +1980,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   ctx->copy       = 0;
   ctx->view       = VecScatterView_MPI;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -1975,9 +1997,10 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
   MPI_Request *send_waits,*recv_waits;
   MPI_Status  recv_status;
 
+  PetscFunctionBegin;
   if (x->size == 1) {
     ierr = VecScatterCreate_StoP(nx,inidx,ny,inidy,yin,ctx); CHKERRQ(ierr);
-    return 0;
+    PetscFunctionReturn(0);
   }
 
   /*
@@ -2086,7 +2109,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
   ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,yin,ctx); CHKERRQ(ierr);
   PetscFree(local_inidx);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

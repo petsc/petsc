@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgedi.c,v 1.5 1997/01/06 20:25:20 balay Exp balay $";
+static char vcid[] = "$Id: dgedi.c,v 1.6 1997/07/09 20:55:07 balay Exp bsmith $";
 #endif
 
 /*  
@@ -20,6 +20,7 @@ int Linpack_DGEDI(Scalar *a,int n,int *ipvt,Scalar *work)
     int     i__2,kb, kp1, nm1,i, j, k, l, ll,kn,knp1,jn;
     Scalar  t, *aa,*ax,*ay,tmp;
 
+    PetscFunctionBegin;
     --work;
     --ipvt;
     a       -= n + 1;
@@ -52,7 +53,7 @@ int Linpack_DGEDI(Scalar *a,int n,int *ipvt,Scalar *work)
 
     nm1 = n - 1;
     if (nm1 < 1) {
-	return 0;
+	PetscFunctionReturn(0);
     }
     for (kb = 1; kb <= nm1; ++kb) {
 	k   = n - kb;
@@ -82,6 +83,6 @@ int Linpack_DGEDI(Scalar *a,int n,int *ipvt,Scalar *work)
             }
 	}
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.102 1997/08/22 15:11:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.103 1997/09/09 15:32:23 curfman Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
 */
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"      /*I "ksp.h" I*/
-#include <stdio.h>
 #include "src/sys/nreg.h"     /*I "src/sys/nreg.h" I*/
 #include "sys.h"
 #include "viewer.h"       /*I "viewer.h" I*/
@@ -45,6 +44,7 @@ int KSPView(KSP ksp,Viewer viewer)
   int         ierr;
   ViewerType  vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -69,7 +69,7 @@ int KSPView(KSP ksp,Viewer viewer)
       ierr = ViewerStringSPrintf(viewer," %-7.7s",method); CHKERRQ(ierr);
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 static NRList *__KSPList = 0;
@@ -92,7 +92,9 @@ static NRList *__KSPList = 0;
 int KSPCreate(MPI_Comm comm,KSP *ksp)
 {
   KSP ctx;
+  int ierr;
 
+  PetscFunctionBegin;
   *ksp = 0;
   PetscHeaderCreate(ctx,_p_KSP,KSP_COOKIE,KSPGMRES,comm,KSPDestroy,KSPView);
   PLogObjectCreate(ctx);
@@ -136,7 +138,8 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
 
   ctx->setupcalled   = 0;
   /* this violates our rule about seperating abstract from implementations*/
-  return KSPSetType(*ksp,KSPGMRES);
+  ierr = KSPSetType(*ksp,KSPGMRES);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
  
 #undef __FUNC__  
@@ -175,8 +178,9 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 {
   int ierr,(*r)(KSP);
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (ksp->type == (int) itmethod) return 0;
+  if (ksp->type == (int) itmethod) PetscFunctionReturn(0);
 
   if (ksp->setupcalled) {
     /* destroy the old private KSP context */
@@ -190,7 +194,8 @@ int KSPSetType(KSP ksp,KSPType itmethod)
   if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method");}
   if (ksp->data) PetscFree(ksp->data);
   ksp->data = 0;
-  return (*r)(ksp);
+  ierr = (*r)(ksp); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -223,11 +228,13 @@ int  KSPRegister(KSPType name, KSPType *oname,char *sname, int  (*create)(KSP))
   int ierr;
   static int numberregistered = 0;
 
+  PetscFunctionBegin;
   if (name == KSPNEW) name = (KSPType) ((int) KSPNEW + numberregistered++);
 
   if (oname) *oname = name;
   if (!__KSPList) {ierr = NRCreate(&__KSPList); CHKERRQ(ierr);}
-  return NRRegister( __KSPList, (int) name, sname, (int (*)(void*))create );
+  ierr = NRRegister( __KSPList, (int) name, sname, (int (*)(void*))create );CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -242,12 +249,13 @@ int  KSPRegister(KSPType name, KSPType *oname,char *sname, int  (*create)(KSP))
 @*/
 int KSPRegisterDestroy()
 {
+  PetscFunctionBegin;
   if (__KSPList) {
     NRDestroy( __KSPList );
     __KSPList = 0;
   }
   KSPRegisterAllCalled = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -270,13 +278,14 @@ int KSPGetTypeFromOptions_Private(KSP ksp,KSPType *itmethod)
   char sbuf[50];
   int  flg,ierr;
 
+  PetscFunctionBegin;
   ierr = OptionsGetString(ksp->prefix,"-ksp_type", sbuf, 50,&flg); CHKERRQ(ierr);
   if (flg) {
     if (!__KSPList) KSPRegisterAll();
     *itmethod = (KSPType)NRFindID( __KSPList, sbuf );
-    return 1;
+    PetscFunctionReturn(0);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -297,13 +306,13 @@ int KSPGetTypeFromOptions_Private(KSP ksp,KSPType *itmethod)
 int KSPGetType(KSP ksp,KSPType *type,char **name)
 {
   int ierr;
+  PetscFunctionBegin;
   if (!__KSPList) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}
   if (type) *type = (KSPType) ksp->type;
   if (name)  *name = NRFindName( __KSPList, (int) ksp->type);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
-#include <stdio.h>
 #undef __FUNC__  
 #define __FUNC__ "KSPPrintTypes_Private"
 /*
@@ -320,6 +329,7 @@ int KSPPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
   FuncList *entry;
   int      count = 0;
 
+  PetscFunctionBegin;
   if (!__KSPList) {KSPRegisterAll();}
   entry = __KSPList->head;
   PetscPrintf(comm," %s%s (one of)",prefix,name);
@@ -330,5 +340,5 @@ int KSPPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
     if (count == 8) PetscPrintf(comm,"\n    ");
   }
   PetscPrintf(comm,"\n");
-  return 1;
+  PetscFunctionReturn(0);
 }

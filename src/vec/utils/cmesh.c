@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.44 1997/08/22 15:10:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.45 1997/09/26 02:17:40 bsmith Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -14,9 +14,10 @@ int DrawScalePopup(Draw popup,double min,double max)
   char     string[32];
   MPI_Comm comm;
 
+  PetscFunctionBegin;
   PetscObjectGetComm((PetscObject) popup,&comm);
   MPI_Comm_rank(comm,&rank);
-  if (rank) return 0;
+  if (rank) PetscFunctionReturn(0);
 
   for ( i=0; i<10; i++ ) {
     DrawRectangle(popup,xl,yl,xr,yr,c,c,c,c);
@@ -31,7 +32,7 @@ int DrawScalePopup(Draw popup,double min,double max)
   }
   DrawSetTitle(popup,"Contour Scale");
   DrawFlush(popup);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -70,7 +71,8 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
   PetscObject   vobj = (PetscObject) win;
   Draw          popup;
 
-  if (vobj->cookie == DRAW_COOKIE && vobj->type == DRAW_NULLWINDOW) return 0;
+  PetscFunctionBegin;
+  if (vobj->cookie == DRAW_COOKIE && vobj->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
   MPI_Comm_rank(win->comm,&rank);
 
   /* move entire vector to first processor */
@@ -97,7 +99,7 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
 
    
   if (rank == 0) {
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
     double  xl = 0.0, yl = 0.0, xr = 1.0, yr = .1;
 
     ierr = VecGetArray(W,&v); CHKERRQ(ierr);
@@ -172,5 +174,5 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
 
   ierr = VecDestroy(W); CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }

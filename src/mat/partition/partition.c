@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.1 1997/09/24 20:32:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.2 1997/10/01 22:45:42 bsmith Exp bsmith $";
 #endif
  
 
@@ -17,6 +17,7 @@ int MatPartitioning_Current(Mat mat,MatPartitioning color, int nu,ISPartitioning
 {
   int   ierr,i,m,rank,*locals,size;
 
+  PetscFunctionBegin;
   MPI_Comm_size(mat->comm,&size);
   if (nu != size) {
     SETERRQ(1,1,"Currently only support one domain per processor");
@@ -32,7 +33,7 @@ int MatPartitioning_Current(Mat mat,MatPartitioning color, int nu,ISPartitioning
   ierr = ISPartitioningCreate(mat->comm,m,locals,partitioning); CHKERRQ(ierr);
   PetscFree(locals);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
   
 /* ===========================================================================================*/
@@ -67,6 +68,7 @@ int MatPartitioningRegister(MatPartitioning name,MatPartitioning *oname,char *sn
   int         ierr;
   static int  numberregistered = 0;
 
+  PetscFunctionBegin;
   if (!__MatPartitioningList) {
     ierr = NRCreate(&__MatPartitioningList); CHKERRQ(ierr);
   }
@@ -74,7 +76,7 @@ int MatPartitioningRegister(MatPartitioning name,MatPartitioning *oname,char *sn
   if (name == PARTITIONING_NEW) name = (MatPartitioning) ((int) PARTITIONING_NEW + numberregistered++);
   if (oname) *oname = name;
   ierr = NRRegister(__MatPartitioningList,(int)name,sname,(int (*)(void*))part);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -88,12 +90,13 @@ int MatPartitioningRegister(MatPartitioning name,MatPartitioning *oname,char *sn
 @*/
 int MatPartitioningRegisterDestroy()
 {
+  PetscFunctionBegin;
   if (__MatPartitioningList) {
     NRDestroy( __MatPartitioningList );
     __MatPartitioningList = 0;
   }
   MatPartitioningRegisterAllCalled = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -122,12 +125,13 @@ int MatGetPartitioningTypeFromOptions(char *prefix,MatPartitioning *type)
   char sbuf[50];
   int  ierr,flg;
   
+  PetscFunctionBegin;
   ierr = OptionsGetString(prefix,"-mat_partitioning", sbuf, 50,&flg); CHKERRQ(ierr);
   if (flg) {
     if (!__MatPartitioningList) MatPartitioningRegisterAll();
     *type = (MatPartitioning)NRFindID( __MatPartitioningList, sbuf );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -146,9 +150,11 @@ int MatGetPartitioningTypeFromOptions(char *prefix,MatPartitioning *type)
 int MatPartitioningGetName(MatPartitioning meth,char **name)
 {
   int ierr;
+
+  PetscFunctionBegin;
   if (!__MatPartitioningList) {ierr = MatPartitioningRegisterAll(); CHKERRQ(ierr);}
    *name = NRFindName( __MatPartitioningList, (int)meth );
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -187,6 +193,7 @@ int MatGetPartitioning(Mat mat,MatPartitioning type,int p,ISPartitioning *partit
   int         ierr,flag;
   int         (*r)(Mat,MatPartitioning,int,ISPartitioning *);
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
@@ -210,6 +217,6 @@ int MatGetPartitioning(Mat mat,MatPartitioning type,int p,ISPartitioning *partit
   if (flag) {
     ierr = ISPartitioningView(*partitioning,VIEWER_STDOUT_((*partitioning)->comm));CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
  

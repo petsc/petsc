@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.4 1997/09/11 20:40:10 bsmith Exp balay $";
+static char vcid[] = "$Id: ex12.c,v 1.5 1997/09/22 15:24:34 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\n";
 
 #include "mat.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {

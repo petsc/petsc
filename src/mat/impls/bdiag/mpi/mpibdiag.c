@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.121 1997/08/22 15:14:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.122 1997/09/26 02:19:22 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -46,7 +46,7 @@ int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -71,7 +71,7 @@ int MatGetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
       SETERRQ(1,0,"Only local values currently supported");
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -172,7 +172,7 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   mbd->send_waits = send_waits; mbd->recv_waits = recv_waits;
   mbd->rmax       = nmax;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 extern int MatSetUpMultiply_MPIBDiag(Mat);
 
@@ -246,7 +246,7 @@ int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIBDiag(mat); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -256,7 +256,7 @@ int MatGetBlockSize_MPIBDiag(Mat mat,int *bs)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) mbd->A->data;
   *bs = dmat->bs;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -264,7 +264,9 @@ int MatGetBlockSize_MPIBDiag(Mat mat,int *bs)
 int MatZeroEntries_MPIBDiag(Mat A)
 {
   Mat_MPIBDiag *l = (Mat_MPIBDiag *) A->data;
-  return MatZeroEntries(l->A);
+  int          ierr;
+  ierr = MatZeroEntries(l->A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);  
 }
 
 /* again this uses the same basic stratagy as in the assembly and 
@@ -400,7 +402,7 @@ int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   }
   PetscFree(send_waits); PetscFree(svalues);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -413,7 +415,7 @@ int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
   ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
   ierr = (*mbd->A->ops.mult)(mbd->A,mbd->lvec,yy); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -426,7 +428,7 @@ int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
   ierr = (*mbd->A->ops.multadd)(mbd->A,mbd->lvec,yy,zz); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -441,7 +443,7 @@ int MatMultTrans_MPIBDiag(Mat A,Vec xx,Vec yy)
   ierr = (*a->A->ops.multtrans)(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -455,7 +457,7 @@ int MatMultTransAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = (*a->A->ops.multtrans)(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -496,15 +498,17 @@ int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetDiagonal_MPIBDiag"
 int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 {
+  int          ierr;
   Mat_MPIBDiag *A = (Mat_MPIBDiag *) mat->data;
-  return MatGetDiagonal(A->A,v);
+  ierr = MatGetDiagonal(A->A,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -515,7 +519,7 @@ int MatDestroy_MPIBDiag(PetscObject obj)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
 
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   Mat_SeqBDiag *ms = (Mat_SeqBDiag *) mbd->A->data;
   PLogObjectState(obj,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",
                   mbd->M,mbd->N,ms->bs,ms->nd);
@@ -532,7 +536,7 @@ int MatDestroy_MPIBDiag(PetscObject obj)
   }
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -547,7 +551,7 @@ static int MatView_MPIBDiag_Binary(Mat mat,Viewer viewer)
     ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
   }
   else SETERRQ(1,0,"Only uniprocessor output supported");
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -588,7 +592,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
         PetscSequentialPhaseEnd(mat->comm,1);
         ierr = VecScatterView(mbd->Mvctx,viewer); CHKERRQ(ierr);
       }
-      return 0;
+      PetscFunctionReturn(0);
     }
   }
 
@@ -596,7 +600,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
     Draw       draw;
     PetscTruth isnull;
     ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
-    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   }
 
   if (vtype == ASCII_FILE_VIEWER) {
@@ -646,7 +650,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
       ierr = MatDestroy(A); CHKERRQ(ierr);
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -663,9 +667,9 @@ int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
     ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
   }
   else if (vtype == BINARY_FILE_VIEWER) {
-    return MatView_MPIBDiag_Binary(mat,viewer);
+    ierr = MatView_MPIBDiag_Binary(mat,viewer);CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -698,9 +702,10 @@ int MatSetOption_MPIBDiag(Mat A,MatOption op)
            op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_YES_NEW_DIAGONALS)
     PLogInfo(A,"Info:MatSetOption_MPIBDiag:Option ignored\n");
-  else 
-    {SETERRQ(PETSC_ERR_SUP,0,"unknown option");}
-  return 0;
+  else {
+    SETERRQ(PETSC_ERR_SUP,0,"unknown option");
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -709,7 +714,7 @@ int MatGetSize_MPIBDiag(Mat mat,int *m,int *n)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   *m = mbd->M; *n = mbd->N;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -718,7 +723,7 @@ int MatGetLocalSize_MPIBDiag(Mat mat,int *m,int *n)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   *m = mbd->m; *n = mbd->N;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -727,7 +732,7 @@ int MatGetOwnershipRange_MPIBDiag(Mat matin,int *m,int *n)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
   *m = mat->rstart; *n = mat->rend;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -735,11 +740,12 @@ int MatGetOwnershipRange_MPIBDiag(Mat matin,int *m,int *n)
 int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
-  int          lrow;
+  int          lrow,ierr;
 
   if (row < mat->rstart || row >= mat->rend)SETERRQ(1,0,"only for local rows")
   lrow = row - mat->rstart;
-  return MatGetRow(mat->A,lrow,nz,idx,v);
+  ierr = MatGetRow(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -748,9 +754,10 @@ int MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
                                   Scalar **v)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
-  int          lrow;
+  int          lrow,ierr;
   lrow = row - mat->rstart;
-  return MatRestoreRow(mat->A,lrow,nz,idx,v);
+  ierr = MatRestoreRow(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 
@@ -769,7 +776,7 @@ int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
       dv   = a->diagv[d];
       len  = a->bdlen[d]*bs*bs;
       for (i=0; i<len; i++) {
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
         sum += real(conj(dv[i])*dv[i]);
 #else
         sum += dv[i]*dv[i];
@@ -798,7 +805,7 @@ int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
     ierr = MatNorm(mbd->A,type,&normtemp); CHKERRQ(ierr);
     MPI_Allreduce(&normtemp,norm,1,MPI_DOUBLE,MPI_MAX,A->comm);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 extern int MatPrintHelp_SeqBDiag(Mat);
@@ -807,8 +814,11 @@ extern int MatPrintHelp_SeqBDiag(Mat);
 int MatPrintHelp_MPIBDiag(Mat A)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag*) A->data;
-  if (!a->rank) return MatPrintHelp_SeqBDiag(a->A);
-  else return 0;
+  int          ierr;
+  if (!a->rank) {
+    ierr = MatPrintHelp_SeqBDiag(a->A);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 extern int MatScale_SeqBDiag(Scalar*,Mat);
@@ -816,8 +826,10 @@ extern int MatScale_SeqBDiag(Scalar*,Mat);
 #define __FUNC__ "MatScale_MPIBDiag"
 int MatScale_MPIBDiag(Scalar *alpha,Mat A)
 {
+  int          ierr;
   Mat_MPIBDiag *a = (Mat_MPIBDiag*) A->data;
-  return MatScale_SeqBDiag(alpha,a->A);
+  ierr = MatScale_SeqBDiag(alpha,a->A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------*/
@@ -1010,7 +1022,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
   if (flg1) {ierr = MatPrintHelp(B); CHKERRQ(ierr);}
   if (dset) PetscFree(diag);
   *A = B;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1058,7 +1070,7 @@ int MatBDiagGetData(Mat mat,int *nd,int *bs,int **diag,int **bdlen,Scalar ***dia
   *diag  = dmat->diag;
   *bdlen = dmat->bdlen;
   *diagv = dmat->diagv;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #include "sys.h"
@@ -1243,7 +1255,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.49 1997/09/15 16:27:42 bsmith Exp bsmith $;
+C  $Id: petsc.h,v 1.50 1997/09/18 14:40:44 bsmith Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -59,7 +59,7 @@ C
 C
 C     Macros for error checking
 C
-#if defined(PETSC_DEBUG)
+#if defined(USE_PETSC_DEBUG)
 #define SETERRA(n,p,s) call MPI_Abort(PETSC_COMM_WORLD,n)
 #define CHKERRA(n) if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n)
 #else
@@ -83,7 +83,7 @@ C
 C
 C     Macro for templating between real and complex
 C
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
 #define PetscReal(a)  real(a)
 #define PetscConj(a)  dconjg(a)
 #define Scalar        double complex

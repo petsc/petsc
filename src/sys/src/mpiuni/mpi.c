@@ -1,9 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.33 1997/09/22 00:27:32 bsmith Exp balay $";
+static char vcid[] = "$Id: mpi.c,v 1.34 1997/10/10 16:04:06 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
-#include <stdio.h>
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif

@@ -1,6 +1,6 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base.insight,v 1.5 1997/09/10 18:10:23 balay Exp bsmith $ 
 
-PETSCFLAGS = -DPETSC_DEBUG -DPETSC_INSIGHT
+PETSCFLAGS = -DUSE_PETSC_DEBUG -DPETSC_INSIGHT
 COPTFLAGS  = -g 
 FOPTFLAGS  = -g -dalign
 CC         = $(RM) tca.map; /usr/local/insight/bin.sun4/insight -DPARCH_sun4 -fPIC

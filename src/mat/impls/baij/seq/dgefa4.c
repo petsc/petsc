@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa4.c,v 1.3 1997/07/09 20:55:07 balay Exp balay $";
+static char vcid[] = "$Id: dgefa4.c,v 1.4 1997/08/04 17:48:49 balay Exp bsmith $";
 #endif
 /*
     Inverts 4 by 4 matrix using partial pivoting.
@@ -17,6 +17,7 @@ int Kernel_A_gets_inverse_A_4(Scalar *a)
 
 /*     gaussian elimination with partial pivoting */
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     a       -= 5;
 
@@ -140,6 +141,6 @@ int Kernel_A_gets_inverse_A_4(Scalar *a)
             stmp = ax[3]; ax[3] = ay[3]; ay[3] = stmp;
 	}
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

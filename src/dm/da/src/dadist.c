@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadist.c,v 1.9 1997/07/09 21:00:44 balay Exp bsmith $";
+static char vcid[] = "$Id: dadist.c,v 1.10 1997/08/22 15:18:43 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -29,15 +29,16 @@ int   DAGetDistributedVector(DA da,Vec* g)
 {
   PetscValidHeaderSpecific(da,DA_COOKIE);
   *g = da->global;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "DAGetGlobalToGlobal1_Private"
 int DAGetGlobalToGlobal1_Private(DA da,int **gtog1)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   *gtog1 = da->gtog1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 

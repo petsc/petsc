@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreate.c,v 1.103 1997/07/02 22:26:14 bsmith Exp balay $";
+static char vcid[] = "$Id: gcreate.c,v 1.104 1997/07/09 20:56:43 balay Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -63,6 +63,7 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *A)
   PetscTruth set;
   int        ierr, bs=1, flg;
 
+  PetscFunctionBegin;
   ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   switch (type) {
   case MATSEQDENSE:
@@ -99,7 +100,7 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *A)
     ierr = MatCreateSeqAIJ(comm,m,n,PETSC_DEFAULT,PETSC_NULL,A); CHKERRQ(ierr);
     break;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
  

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.68 1997/07/10 03:44:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.69 1997/08/22 15:12:45 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -23,6 +23,7 @@ int MGMCycle_Private(MG *mglevels)
   int    cycles = mg->cycles, ierr,its;
   Scalar zero = 0.0;
 
+  PetscFunctionBegin;
   if (mg->level == 0) {
     ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its); CHKERRQ(ierr);
   }
@@ -37,7 +38,7 @@ int MGMCycle_Private(MG *mglevels)
       ierr = SLESSolve(mg->smoothu,mg->b,mg->x,&its);CHKERRQ(ierr); 
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -54,6 +55,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
   int  i,ierr;
   char *prefix;
 
+  PetscFunctionBegin;
   mg = (MG *) PetscMalloc( levels*sizeof(MG) ); CHKPTRQ(mg);
   PLogObjectMemory(pc,levels*(sizeof(MG)+sizeof(struct _MG)));
 
@@ -73,7 +75,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
     mg[i]->default_smoothd = 10000;
   }
   *result = mg;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -84,6 +86,7 @@ static int PCDestroy_MG(PetscObject obj)
   MG  *mg = (MG *) pc->data;
   int i, n = mg[0]->levels,ierr;
 
+  PetscFunctionBegin;
   for ( i=0; i<n; i++ ) {
     if (mg[i]->smoothd != mg[i]->smoothu) {
       ierr = SLESDestroy(mg[i]->smoothd); CHKERRQ(ierr);
@@ -92,10 +95,9 @@ static int PCDestroy_MG(PetscObject obj)
     PetscFree(mg[i]);
   }
   PetscFree(mg);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
-#include <stdio.h>
 #undef __FUNC__  
 #define __FUNC__ "MGCheck"
 /*@
@@ -111,8 +113,10 @@ int MGCheck(PC pc)
 {
   MG  *mg;
   int i, n, count = 0;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) return 0;
+  if (pc->type != PCMG) PetscFunctionReturn(0);
   mg = (MG *) pc->data;
 
   if (!mg) SETERRQ(1,1,"Must set MG levels before calling");
@@ -145,7 +149,7 @@ int MGCheck(PC pc)
       fprintf(stderr,"No b set level %d \n",n-i); count++;
     }
   }
-  return count;
+  PetscFunctionReturn(count);
 }
 
 #undef __FUNC__  
@@ -171,8 +175,10 @@ int MGSetNumberSmoothDown(PC pc,int n)
   MG  *mg;
   int i, levels;
   KSP ksp;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) return 0;
+  if (pc->type != PCMG) PetscFunctionReturn(0);
   mg     = (MG *) pc->data;
   levels = mg[0]->levels;
 
@@ -181,7 +187,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
     KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
     mg[i]->default_smoothd = n;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -207,8 +213,10 @@ int  MGSetNumberSmoothUp(PC pc,int n)
   MG  *mg;
   int i,levels;
   KSP ksp;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) return 0;
+  if (pc->type != PCMG) PetscFunctionReturn(0);
   mg     = (MG *) pc->data;
   levels = mg[0]->levels;
 
@@ -217,7 +225,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
     KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
     mg[i]->default_smoothu = n;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -242,15 +250,17 @@ int MGSetCycles(PC pc,int n)
 { 
   MG  *mg;
   int i,levels;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) return 0;
+  if (pc->type != PCMG) PetscFunctionReturn(0);
   mg     = (MG *) pc->data;
   levels = mg[0]->levels;
 
   for ( i=0; i<levels; i++ ) {  
     mg[i]->cycles  = n; 
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 extern int MGACycle_Private(MG*);
@@ -270,23 +280,25 @@ static int MGCycle(PC pc,Vec b,Vec x)
 {
   MG     *mg = (MG*) pc->data;
   Scalar zero = 0.0;
-  int    levels = mg[0]->levels;
+  int    levels = mg[0]->levels,ierr;
 
+  PetscFunctionBegin;
   mg[levels-1]->b = b; 
   mg[levels-1]->x = x;
   if (mg[0]->am == MGMULTIPLICATIVE) {
-    VecSet(&zero,x);
-    return MGMCycle_Private(mg+levels-1);
+    ierr = VecSet(&zero,x);CHKERRQ(ierr);
+    ierr = MGMCycle_Private(mg+levels-1);CHKERRQ(ierr);
   } 
   else if (mg[0]->am == MGADDITIVE) {
-    return MGACycle_Private(mg);
+    ierr = MGACycle_Private(mg);CHKERRQ(ierr);
   }
   else if (mg[0]->am == MGKASKADE) {
-    return MGKCycle_Private(mg);
+    ierr = MGKCycle_Private(mg);CHKERRQ(ierr);
   }
   else {
-    return MGFCycle_Private(mg);
+    ierr = MGFCycle_Private(mg);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -296,12 +308,13 @@ static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
   MG  *mg = (MG*) pc->data;
   int ierr,levels = mg[0]->levels;
 
+  PetscFunctionBegin;
   mg[levels-1]->b = b; 
   mg[levels-1]->x = x;
   while (its--) {
     ierr = MGMCycle_Private(mg); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -311,7 +324,8 @@ static int PCSetFromOptions_MG(PC pc)
   int    ierr, m,levels = 1,flg;
   char   buff[16];
 
-  if (pc->type != PCMG) return 0;
+  PetscFunctionBegin;
+  if (pc->type != PCMG) PetscFunctionReturn(0);
   if (!pc->data) {
     ierr = OptionsGetInt(pc->prefix,"-pc_mg_levels",&levels,&flg);CHKERRQ(ierr);
     ierr = MGSetLevels(pc,levels); CHKERRQ(ierr);
@@ -339,20 +353,21 @@ static int PCSetFromOptions_MG(PC pc)
     else SETERRQ(1,0,"Unknown type");
     ierr = MGSetType(pc,mg); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PCPrintHelp_MG"
 static int PCPrintHelp_MG(PC pc,char *p)
 {
+  PetscFunctionBegin;
   PetscPrintf(pc->comm," Options for PCMG preconditioner:\n");
   PetscFPrintf(pc->comm,stdout," %spc_mg_type [additive,multiplicative,fullmultigrid,kaskade]\n",p);
   PetscFPrintf(pc->comm,stdout,"              type of multigrid method\n");
   PetscFPrintf(pc->comm,stdout," %spc_mg_smoothdown m: number of pre-smooths\n",p);
   PetscFPrintf(pc->comm,stdout," %spc_mg_smoothup m: number of post-smooths\n",p);
   PetscFPrintf(pc->comm,stdout," %spc_mg_cycles m: 1 for V-cycle, 2 for W-cycle\n",p);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -368,6 +383,7 @@ static int PCView_MG(PetscObject obj,Viewer viewer)
   char       *cstring;
   ViewerType vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -392,7 +408,7 @@ static int PCView_MG(PetscObject obj,Viewer viewer)
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -406,6 +422,7 @@ static int PCSetUp_MG(PC pc)
   int        ierr,i,n = mg[0]->levels;
   KSP        ksp;
 
+  PetscFunctionBegin;
   /*
      temporarily stick pc->vec into mg[0]->b and x so that 
    SLESSetUp is happy. Since currently those slots are empty.
@@ -434,7 +451,7 @@ static int PCSetUp_MG(PC pc)
   ierr = SLESSetOptionsPrefix(mg[0]->smoothd,"mg_coarse_"); CHKERRQ(ierr);
   ierr = SLESSetFromOptions(mg[0]->smoothd); CHKERRQ(ierr);
   ierr = SLESSetUp(mg[0]->smoothd,mg[0]->b,mg[0]->x); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -442,6 +459,7 @@ static int PCSetUp_MG(PC pc)
 #define __FUNC__ "PCCreate_MG"
 int PCCreate_MG(PC pc)
 {
+  PetscFunctionBegin;
   pc->apply     = MGCycle;
   pc->setup     = PCSetUp_MG;
   pc->destroy   = PCDestroy_MG;
@@ -450,7 +468,7 @@ int PCCreate_MG(PC pc)
   pc->setfrom   = PCSetFromOptions_MG;
   pc->printhelp = PCPrintHelp_MG;
   pc->view      = PCView_MG;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -471,14 +489,16 @@ int MGSetLevels(PC pc,int levels)
 {
   int ierr;
   MG  *mg;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) return 0;
+  if (pc->type != PCMG) PetscFunctionReturn(0);
 
   ierr          = MGCreate_Private(pc->comm,levels,pc,&mg); CHKERRQ(ierr);
   mg[0]->am     = MGMULTIPLICATIVE;
   pc->data      = (void *) mg;
   pc->applyrich = MGCycleRichardson;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -499,12 +519,14 @@ int MGSetLevels(PC pc,int levels)
 int MGGetLevels(PC pc,int *levels)
 {
   MG  *mg;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) return 0;
+  if (pc->type != PCMG) PetscFunctionReturn(0);
 
   mg      = (MG*) pc->data;
   *levels = mg[0]->levels;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -529,12 +551,15 @@ $      multiplicative, additive, full, kaskade
 int MGSetType(PC pc,MGType form)
 {
   MG *mg;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) return 0;
+  if (pc->type != PCMG) PetscFunctionReturn(0);
   mg = (MG *) pc->data;
 
   mg[0]->am = form;
   if (form == MGMULTIPLICATIVE) pc->applyrich = MGCycleRichardson;
   else pc->applyrich = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
+

@@ -1,5 +1,5 @@
 C
-C  $Id: sys.h,v 1.7 1997/09/18 14:40:56 bsmith Exp bsmith $;
+C  $Id: sys.h,v 1.8 1997/09/26 02:22:28 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the System package in PETSc
 C
@@ -23,7 +23,7 @@ C
       parameter (BINARY_INT_SIZE = 32, BINARY_FLOAT_SIZE = 32,
      *            BINARY_CHAR_SIZE = 8, BINARY_SHORT_SIZE = 16,
      *            BINARY_DOUBLE_SIZE = 64)
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
       parameter ( BINARY_SCALAR_SIZE = 128)
 #else
       parameter ( BINARY_SCALAR_SIZE = 64)

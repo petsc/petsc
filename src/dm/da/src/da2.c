@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.85 1997/09/26 02:21:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.86 1997/10/10 04:06:37 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -14,6 +14,7 @@ int DAView_2d(PetscObject dain,Viewer viewer)
   int         rank, ierr;
   ViewerType  vtype;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   
   MPI_Comm_rank(da->comm,&rank); 
@@ -33,8 +34,7 @@ int DAView_2d(PetscObject dain,Viewer viewer)
     fprintf(fd,"X range: %d %d, Y range: %d %d\n",da->xs,da->xe,da->ys,da->ye);
     fflush(fd);
     PetscSequentialPhaseEnd(da->comm,1);
-  }
-  else if (vtype == DRAW_VIEWER) {
+  } else if (vtype == DRAW_VIEWER) {
     Draw       draw;
     double     ymin = -1*da->s-1, ymax = da->N+da->s;
     double     xmin = -1*da->s-1, xmax = da->M+da->s;
@@ -44,7 +44,7 @@ int DAView_2d(PetscObject dain,Viewer viewer)
     PetscTruth isnull;
  
     ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
-    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
     DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);
 
     /* first processor draw all node lines */
@@ -99,7 +99,7 @@ int DAView_2d(PetscObject dain,Viewer viewer)
     DrawSynchronizedFlush(draw);
     DrawPause(draw);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -153,6 +153,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   VecScatter    ltog,gtol;
   IS            to,from;
   DF            df_local;
+
+  PetscFunctionBegin;
   *inra = 0;
 
   if (w < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node");
@@ -633,8 +635,10 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   */
   {
     ISLocalToGlobalMapping isltog;
-    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nn,idx,&isltog); CHKERRQ(ierr);
-    ierr = VecSetLocalToGlobalMapping(da->global,isltog); CHKERRQ(ierr);
+    ierr        = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nn,idx,&isltog); CHKERRQ(ierr);
+    ierr        = VecSetLocalToGlobalMapping(da->global,isltog); CHKERRQ(ierr);
+    da->ltogmap = isltog; PetscObjectReference((PetscObject)isltog);
+    PLogObjectParent(da,isltog);
     ierr = ISLocalToGlobalMappingDestroy(isltog); CHKERRQ(ierr);
   }
 
@@ -813,6 +817,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     PetscFree(lidx);
 
     ierr = AOCreateBasicIS(comm,isnatural,ispetsc,&da->ao); CHKERRQ(ierr);
+    PLogObjectParent(da,da->ao);
     ierr = ISDestroy(ispetsc); CHKERRQ(ierr);
     ierr = ISDestroy(isnatural); CHKERRQ(ierr);
   }
@@ -871,8 +876,9 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAPrintHelp(da); CHKERRQ(ierr);}
   
-  return 0; 
+  PetscFunctionReturn(0); 
 }
+
 #undef __FUNC__  
 #define __FUNC__ "DAPrintHelp"
 /*@
@@ -890,6 +896,8 @@ int DAPrintHelp(DA da)
 {
   static int called = 0;
   MPI_Comm   comm;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
 
   comm = da->comm;
@@ -899,7 +907,7 @@ int DAPrintHelp(DA da)
     PetscPrintf(comm,"  -da_view_draw: display DA in window\n");
     called = 1;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -927,6 +935,7 @@ int DARefine(DA da, DA *daref)
   int M, N, P, ierr;
   DA  da2;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
 
   M = 2*da->M - 1; N = 2*da->N - 1; P = 2*da->P - 1;
@@ -942,7 +951,7 @@ int DARefine(DA da, DA *daref)
            da->w,da->s,0,0,0,&da2); CHKERRQ(ierr);
   }
   *daref = da2;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
  

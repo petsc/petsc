@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtext.c,v 1.11 1997/07/09 20:57:34 balay Exp bsmith $";
+static char vcid[] = "$Id: dtext.c,v 1.12 1997/08/22 15:15:58 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -21,8 +21,11 @@ static char vcid[] = "$Id: dtext.c,v 1.11 1997/07/09 20:57:34 balay Exp bsmith $
 @*/
 int DrawString(Draw draw,double xl,double yl,int cl,char *text)
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == DRAW_NULLWINDOW) return 0;
-  return (*draw->ops.text)(draw,xl,yl,cl,text);
+  if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
+  ierr = (*draw->ops.text)(draw,xl,yl,cl,text);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: util2.c,v 1.3 1997/07/09 20:58:39 balay Exp bsmith $";
+static char vcid[] = "$Id: util2.c,v 1.4 1997/08/07 14:41:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -81,7 +81,7 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
     ierr = VecCopy(xx1,xx2); CHKERRQ(ierr);
     if ( i>= start && i<end) {
       dx = xx[i-start];
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
       if (dx < dx_min && dx >= 0.0) dx = dx_par;
       else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
 #else
@@ -98,7 +98,7 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
     ierr = TSComputeRHSFunction(ts,t,xx2,jj2); CHKERRQ(ierr);
     ierr = VecAXPY(&mone,jj1,jj2); CHKERRQ(ierr);
     /* Communicate scale to all processors */
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
     MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);
 #else
 #endif

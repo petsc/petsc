@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stash.c,v 1.16 1997/07/09 20:56:43 balay Exp bsmith $";
+static char vcid[] = "$Id: stash.c,v 1.17 1997/08/22 15:15:22 bsmith Exp bsmith $";
 #endif
 
 #include "src/vec/vecimpl.h"
@@ -18,42 +18,46 @@ static char vcid[] = "$Id: stash.c,v 1.16 1997/07/09 20:56:43 balay Exp bsmith $
 #define __FUNC__ "StashInitialize_Private"
 int StashInitialize_Private(Stash *stash)
 {
+  PetscFunctionBegin;
   stash->nmax  = 0;
   stash->n     = 0;
   stash->array = 0;
   stash->idx   = 0;
   stash->idy   = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "StashBuild_Private"
 int StashBuild_Private(Stash *stash)
 {
+  PetscFunctionBegin;
   stash->nmax  = CHUNCKSIZE; /* completely arbitrary number */
   stash->n     = 0;
   stash->array = (Scalar *) PetscMalloc( stash->nmax*(2*sizeof(int) +
                             sizeof(Scalar))); CHKPTRQ(stash->array);
   stash->idx   = (int *) (stash->array + stash->nmax); CHKPTRQ(stash->idx);
   stash->idy   = (int *) (stash->idx + stash->nmax); CHKPTRQ(stash->idy);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "StashDestroy_Private"
 int StashDestroy_Private(Stash *stash)
 {
+  PetscFunctionBegin;
   stash->nmax = stash->n = 0;
   if (stash->array) {PetscFree(stash->array); stash->array = 0;}
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "StashInfo_Private"
 int StashInfo_Private(Stash *stash)
 {
+  PetscFunctionBegin;
   PLogInfo(0,"Stash size %d\n",stash->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* 
@@ -66,6 +70,7 @@ int StashValues_Private(Stash *stash,int row,int n, int *idxn,Scalar *values,Ins
   int    i, found, *n_idx, *n_idy; 
   Scalar val, *n_array;
 
+  PetscFunctionBegin;
   for ( i=0; i<n; i++ ) {
     found = 0;
     val = *values++;
@@ -88,7 +93,7 @@ int StashValues_Private(Stash *stash,int row,int n, int *idxn,Scalar *values,Ins
       stash->idy[stash->n++] = idxn[i];
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

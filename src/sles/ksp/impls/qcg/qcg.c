@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.38 1997/07/24 03:38:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.39 1997/08/22 15:11:43 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
 */
 
-#include <stdio.h>
 #include <math.h>
 #include "src/ksp/kspimpl.h"
 #include "src/ksp/impls/qcg/qcg.h"
@@ -68,10 +67,11 @@ int KSPSolve_QCG(KSP ksp,int *its)
   int          i, cerr, hist_len, maxit, ierr;
   PC           pc = ksp->B;
   PCSide       side;
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   Scalar       cstep1, cstep2, ctasp, cbstp, crtr, cwtasp, cptasp;
 #endif
 
+  PetscFunctionBegin;
   history  = ksp->residual_history;
   hist_len = ksp->res_hist_size;
   maxit    = ksp->max_it;
@@ -103,13 +103,13 @@ int KSPSolve_QCG(KSP ksp,int *its)
   KSPMonitor(ksp,0,bsnrm);
   if (history) history[0] = bsnrm;
   cerr = (*ksp->converged)(ksp,0,bsnrm,ksp->cnvP);
-  if (cerr) {*its =  0; return 0;}
+  if (cerr) {*its =  0; PetscFunctionReturn(0);}
 
   /* Compute the initial scaled direction and scaled residual */
   ierr = VecCopy(BS,R); CHKERRQ(ierr);
   ierr = VecScale(&negone,R); CHKERRQ(ierr);
   ierr = VecCopy(R,P); CHKERRQ(ierr);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   ierr = VecDot(R,R,&crtr); CHKERRQ(ierr); rtr = real(crtr);
 #else
   ierr = VecDot(R,R,&rtr); CHKERRQ(ierr);
@@ -123,7 +123,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
     ierr = PCApplySymmetricLeft(pc,WA2,ASP); CHKERRQ(ierr);
 
     /* Check for negative curvature */
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
     ierr = VecDot(P,ASP,&cptasp); CHKERRQ(ierr);
     ptasp = real(cptasp);
 #else
@@ -143,7 +143,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
          /* Compute roots of quadratic */
          ierr = QuadraticRoots_Private(W,P,&pcgP->delta,&step1,&step2);
          CHKERRQ(ierr);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
          ierr = VecDot(W,ASP,&cwtasp); CHKERRQ(ierr); wtasp = real(cwtasp);
          ierr = VecDot(BS,P,&cbstp); CHKERRQ(ierr);   bstp  = real(cbstp);
 #else
@@ -153,7 +153,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
          ierr = VecCopy(W,X); CHKERRQ(ierr);
          q1 = step1*(bstp + wtasp + p5*step1*ptasp);
          q2 = step2*(bstp + wtasp + p5*step2*ptasp);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
          if (q1 <= q2) {
            cstep1 = step1; ierr = VecAXPY(&cstep1,P,X); CHKERRQ(ierr);
          }
@@ -198,7 +198,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
            ierr = QuadraticRoots_Private(W,P,&pcgP->delta,&step1,&step2);
            CHKERRQ(ierr);
            ierr = VecCopy(W,X); CHKERRQ(ierr);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
            cstep1 = step1; ierr = VecAXPY(&cstep1,P,X); CHKERRQ(ierr);
 #else
            ierr = VecAXPY(&step1,P,X); CHKERRQ(ierr);  /*  x <- step1*p + x  */
@@ -229,7 +229,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
          cerr = (*ksp->converged)(ksp,i+1,rnrm,ksp->cnvP);
          if (cerr) {                 /* convergence for */
            pcgP->info = 3;          /* truncated step */
-#if defined(PETSC_COMPLEX)               
+#if defined(USE_PETSC_COMPLEX)               
            PLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n", 
               real(step),rnrm,pcgP->delta);
 #else
@@ -244,7 +244,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
       ierr = VecDot(R,R,&rntrn); CHKERRQ(ierr);
       beta = rntrn/rtr;
       ierr = VecAYPX(&beta,R,P); CHKERRQ(ierr);	/*  p <- r + beta*p  */
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
       rtr = real(rntrn);
 #else
       rtr = rntrn;
@@ -258,13 +258,13 @@ int KSPSolve_QCG(KSP ksp,int *its)
   ierr = MatMult(Amat,X,WA); CHKERRQ(ierr);
   ierr = VecDot(B,X,&btx); CHKERRQ(ierr);
   ierr = VecDot(X,WA,&xtax); CHKERRQ(ierr);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   pcgP->quadratic = real(btx) + p5* real(xtax);
 #else
   pcgP->quadratic = btx + p5*xtax;              /* Compute q(x) */
 #endif
   *its = i+1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -273,6 +273,7 @@ int KSPSetUp_QCG(KSP ksp)
 {
   int ierr;
 
+  PetscFunctionBegin;
   /* Check user parameters and functions */
   if (ksp->pc_side == PC_RIGHT) {
     SETERRQ(2,0,"no right preconditioning for QCG");}
@@ -281,7 +282,7 @@ int KSPSetUp_QCG(KSP ksp)
 
   /* Get work vectors from user code */
   ierr = KSPDefaultGetWork(ksp, 7); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -291,11 +292,12 @@ int KSPDestroy_QCG(PetscObject obj)
   KSP ksp = (KSP) obj;
   KSP_QCG *cgP = (KSP_QCG *) ksp->data;
 
+  PetscFunctionBegin;
   KSPDefaultFreeWork( ksp );
   
   /* Free the context variable */
   PetscFree(cgP); 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -303,6 +305,8 @@ int KSPDestroy_QCG(PetscObject obj)
 int KSPCreate_QCG(KSP ksp)
 {
   KSP_QCG *cgP = (KSP_QCG*) PetscMalloc(sizeof(KSP_QCG));  CHKPTRQ(cgP);
+
+  PetscFunctionBegin;
   PLogObjectMemory(ksp,sizeof(KSP_QCG));
   ksp->data                 = (void *) cgP;
   ksp->type                 = KSPQCG;
@@ -316,7 +320,7 @@ int KSPCreate_QCG(KSP ksp)
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
   ksp->view                 = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------- */
 #undef __FUNC__  
@@ -343,12 +347,14 @@ static int QuadraticRoots_Private(Vec s,Vec p,double *delta,double *step1,double
   double zero = 0.0, dsq, ptp, pts, rad, sts;
   int    ierr;
 
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   Scalar cptp, cpts, csts;
+  PetscFunctionBegin;
   ierr = VecDot(p,s,&cpts); CHKERRQ(ierr); pts = real(cpts);
   ierr = VecDot(p,p,&cptp); CHKERRQ(ierr); ptp = real(cptp);
   ierr = VecDot(s,s,&csts); CHKERRQ(ierr); sts = real(csts);
 #else
+  PetscFunctionBegin;
   ierr = VecDot(p,s,&pts); CHKERRQ(ierr);
   ierr = VecDot(p,p,&ptp); CHKERRQ(ierr);
   ierr = VecDot(s,s,&sts); CHKERRQ(ierr);
@@ -362,5 +368,5 @@ static int QuadraticRoots_Private(Vec s,Vec p,double *delta,double *step1,double
     *step1 = -(pts - rad)/ptp;
     *step2 = (sts - dsq)/(ptp * *step1);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dasub.c,v 1.13 1997/07/09 21:00:44 balay Exp bsmith $";
+static char vcid[] = "$Id: dasub.c,v 1.14 1997/08/22 15:18:43 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -35,6 +35,7 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
   MPI_Group group, subgroup;
   int       ierr,i,ict,flag,size,*ranks,*owners,xs,xm,ys,ym,zs,zm;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   flag = 0; 
   ierr = DAGetCorners(da,&xs,&xm,&ys,&ym,&zs,&zm); CHKERRQ(ierr);
@@ -68,5 +69,5 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
   MPI_Group_incl(group,ict,ranks,&subgroup);
   MPI_Comm_create(da->comm,subgroup,comm);
   PetscFree(owners);
-  return 0;
+  PetscFunctionReturn(0);
 } 

@@ -1,13 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex44.c,v 1.2 1997/07/09 20:55:45 balay Exp balay $";
+static char vcid[] = "$Id: ex44.c,v 1.3 1997/09/22 15:23:47 balay Exp bsmith $";
 #endif
 
 static char help[] = 
 "Loads matrix dumped by ex43.\n\n";
 
-#include <stdio.h>
 #include "mat.h"
-
 
 int main(int argc,char **args)
 {

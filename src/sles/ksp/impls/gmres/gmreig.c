@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmreig.c,v 1.3 1997/07/09 20:50:40 balay Exp curfman $";
+static char vcid[] = "$Id: gmreig.c,v 1.4 1997/09/11 02:56:33 curfman Exp bsmith $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"
@@ -17,9 +17,10 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
   double    *realpart = gmres->Dsvd;
   Scalar    *work = R + N*N, sdummy;
 
+  PetscFunctionBegin;
   if (n == 0) {
     *emax = *emin = 1.0;
-    return 0;
+    PetscFunctionReturn(0);
   }
   /* copy R matrix to work space */
   PetscMemcpy(R,gmres->hh_origin,N*N*sizeof(Scalar));
@@ -34,7 +35,7 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
   SETERRQ(1,0,"DGESVD not found on Cray T3D\n\
              Therefore not able to provide singular value estimates.");
 #else
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
   LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
 #else
   LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,realpart+N,&ierr);
@@ -44,7 +45,7 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
   *emin = realpart[n-1];
   *emax = realpart[0];
 
-  return 0;
+  PetscFunctionReturn(0);
 #endif
 }
 /* ------------------------------------------------------------------------ */
@@ -62,10 +63,11 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
   double    *work, *realpart = gmres->Dsvd, *imagpart = realpart + N ;
   Scalar    sdummy;
 
+  PetscFunctionBegin;
   if (nmax < n) SETERRQ(1,0,"Not enough room in r and c for eigenvalues");
 
   if (n == 0) {
-    return 0;
+    PetscFunctionReturn(0);
   }
   /* copy R matrix to work space */
   PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));
@@ -84,7 +86,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
      components of evalues separately.  But is this what we really want? */
   perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
 
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
   for ( i=0; i<n; i++ ) {
     realpart[i] = cwork[2*i];
     perm[i]     = i;
@@ -106,9 +108,9 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
   }
 #endif
   PetscFree(perm);
-  return 0;
+  PetscFunctionReturn(0);
 }
-#elif !defined(PETSC_COMPLEX)
+#elif !defined(USE_PETSC_COMPLEX)
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
@@ -121,10 +123,11 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
   Scalar    *realpart = gmres->Dsvd, *imagpart = realpart + N ;
   Scalar    sdummy;
 
+  PetscFunctionBegin;
   if (nmax < n) SETERRQ(1,0,"Not enough room in r and c for eigenvalues");
 
   if (n == 0) {
-    return 0;
+    PetscFunctionReturn(0);
   }
   /* copy R matrix to work space */
   PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));
@@ -140,7 +143,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
     c[i] = imagpart[perm[i]];
   }
   PetscFree(perm);
-  return 0;
+  PetscFunctionReturn(0);
 }
 #else
 #undef __FUNC__  
@@ -155,10 +158,11 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
   Scalar    *eigs = work + 5*N;
   Scalar    sdummy;
 
+  PetscFunctionBegin;
   if (nmax < n) SETERRQ(1,0,"Not enough room in r and c for eigenvalues");
 
   if (n == 0) {
-    return 0;
+    PetscFunctionReturn(0);
   }
   /* copy R matrix to work space */
   PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));
@@ -175,7 +179,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
     c[i] = PetscImaginary(eigs[perm[i]]);
   }
   PetscFree(perm);
-  return 0;
+  PetscFunctionReturn(0);
 }
 #endif
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iguess.c,v 1.20 1997/07/09 20:50:16 balay Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.21 1997/08/22 15:11:05 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -23,6 +23,7 @@ int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
   KSPIGUESS *itg;
 
   *ITG = 0;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(itctx,KSP_COOKIE);
   itg  = (KSPIGUESS* ) PetscMalloc(sizeof(KSPIGUESS)); CHKPTRQ(itg);
   itg->curl = 0;
@@ -34,19 +35,20 @@ int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
   VecDuplicateVecs(itctx->vec_rhs,maxl,&itg->btilde);
   PLogObjectParents(itctx,maxl,itg->btilde);
   *ITG = (void *)itg;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGuessDestroy" 
 int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(itctx,KSP_COOKIE);
   PetscFree( itg->alpha );
   VecDestroyVecs( itg->btilde, itg->maxl );
   VecDestroyVecs( itg->xtilde, itg->maxl );
   PetscFree( itg );
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -56,13 +58,14 @@ int KSPGuessFormB( KSP itctx, KSPIGUESS *itg, Vec b )
   int    i;
   Scalar tmp;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(itctx,KSP_COOKIE);
   for (i=1; i<=itg->curl; i++) {
     VecDot(itg->btilde[i-1],b,&(itg->alpha[i-1]));
     tmp = -itg->alpha[i-1];
     VecAXPY(&tmp,itg->btilde[i-1],b);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -70,12 +73,13 @@ int KSPGuessFormB( KSP itctx, KSPIGUESS *itg, Vec b )
 int KSPGuessFormX( KSP itctx, KSPIGUESS *itg, Vec x )
 {
   int i;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(itctx,KSP_COOKIE);
   VecCopy(x,itg->xtilde[itg->curl]);
   for (i=1; i<=itg->curl; i++) {
     VecAXPY(&itg->alpha[i-1],itg->xtilde[i-1],x);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -88,6 +92,7 @@ int  KSPGuessUpdate( KSP itctx, Vec x, KSPIGUESS *itg )
   int          curl = itg->curl, i;
   Mat          Amat, Pmat;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(itctx,KSP_COOKIE);
   PCGetOperators(itctx->B,&Amat,&Pmat,&pflag);
   if (curl == itg->maxl) {
@@ -112,5 +117,5 @@ int  KSPGuessUpdate( KSP itctx, Vec x, KSPIGUESS *itg )
     VecScale(&tmp,itg->xtilde[curl]);
     itg->curl++;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.58 1997/07/09 21:00:00 balay Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.59 1997/08/22 15:18:11 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -32,6 +32,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   KSP          ksp;
   MatStructure flg = DIFFERENT_NONZERO_PATTERN;
 
+  PetscFunctionBegin;
   history	= snes->conv_hist;      /* convergence history */
   history_len	= snes->conv_hist_size; /* convergence history length */
   maxits	= snes->max_its;        /* maximum number of iterations */
@@ -63,17 +64,15 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
     success = 0;
     ierr = VecCopy(G,RHS); CHKERRQ(ierr);
     ierr = VecScale(&neg_one,RHS); CHKERRQ(ierr);
-    ierr = SNESComputeHessian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);
-           CHKERRQ(ierr);
-    ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
-           CHKERRQ(ierr);
+    ierr = SNESComputeHessian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     while (!success) {
       ierr = SLESSolve(snes->sles,RHS,S,&iters); CHKERRQ(ierr);
       snes->linear_its += PetscAbsInt(iters);
       if ((iters < 0) || (iters >= kspmaxit)) { /* Modify diagonal of Hessian */
         neP->gamma_factor *= two; 
         neP->gamma = neP->gamma_factor*(*gnorm); 
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
         PLogInfo(snes,"SNESSolve_UM_LS:  modify diagonal (assume same nonzero structure), gamma_factor=%g, gamma=%g\n",
           neP->gamma_factor,neP->gamma);
 #else
@@ -81,10 +80,11 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
           neP->gamma_factor,real(neP->gamma));
 #endif
         ierr = MatShift(&neP->gamma,snes->jacobian); CHKERRQ(ierr);
-        if ((snes->jacobian_pre != snes->jacobian) && (flg != SAME_PRECONDITIONER))
-          {ierr = MatShift(&neP->gamma,snes->jacobian_pre); CHKERRQ(ierr);}
-       /* We currently assume that all diagonal elements were allocated in
-        original matrix, so that nonzero pattern is same ... should fix this */
+        if ((snes->jacobian_pre != snes->jacobian) && (flg != SAME_PRECONDITIONER)){
+          ierr = MatShift(&neP->gamma,snes->jacobian_pre); CHKERRQ(ierr);
+        }
+        /* We currently assume that all diagonal elements were allocated in
+         original matrix, so that nonzero pattern is same ... should fix this */
         ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,
                SAME_NONZERO_PATTERN); CHKERRQ(ierr);
       } else {
@@ -95,8 +95,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
 
     /* Line search */
     ierr = (*neP->LineSearch)(snes,X,G,S,W,f,&(neP->step),gnorm,&(neP->line));
-    if (neP->line != 1) snes->nfailures++;
-    CHKERRQ(ierr);
+    if (neP->line != 1) snes->nfailures++;CHKERRQ(ierr);
 
     if (history && history_len > i+1) history[i+1] = *gnorm;
     SNESMonitor(snes,i+1,*gnorm);
@@ -119,7 +118,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   }
   if (history) snes->conv_act_size = (history_len < i+1) ? history_len : i+1;
   *outits = i+1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------- */
 #undef __FUNC__  
@@ -128,11 +127,12 @@ static int SNESSetUp_UM_LS(SNES snes)
 {
   int ierr;
 
+  PetscFunctionBegin;
   snes->nwork = 4;
   ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
   PLogObjectParents(snes,snes->nwork,snes->work);
   snes->vec_sol_update_always = snes->work[3];
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
@@ -142,11 +142,12 @@ static int SNESDestroy_UM_LS(PetscObject obj )
   SNES snes = (SNES) obj;
   int  ierr;
 
+  PetscFunctionBegin;
   if (snes->nwork) {
     ierr =  VecDestroyVecs(snes->work,snes->nwork); CHKERRQ(ierr);
   }
   PetscFree(snes->data);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
@@ -157,6 +158,7 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
   double    tmp;
   int       itmp,ierr,flg;
 
+  PetscFunctionBegin;
   ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gamma_factor",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->gamma_factor = tmp;}
   ierr = OptionsGetInt(snes->prefix,"-snes_um_ls_maxfev",&itmp, &flg); CHKERRQ(ierr);
@@ -171,7 +173,7 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
   if (flg) {ctx->stepmin = tmp;}
   ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_stepmax",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->stepmax = tmp;}
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
@@ -180,6 +182,7 @@ static int SNESPrintHelp_UM_LS(SNES snes,char *p)
 {
   SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
 
+  PetscFunctionBegin;
   PetscPrintf(snes->comm," method SNES_UM_LS (umls) for unconstrained minimization:\n");
   PetscPrintf(snes->comm,"   %ssnes_um_ls_gamma_f gamma_f (default %g) damping parameter\n",
     p,ctx->gamma_factor);
@@ -190,7 +193,7 @@ static int SNESPrintHelp_UM_LS(SNES snes,char *p)
   PetscPrintf(snes->comm,"   %ssnes_um_ls_gtol <gtol> (default %g) tol for curvature condition\n",p,ctx->gtol);
   PetscPrintf(snes->comm,"   %ssnes_um_ls_stepmin <stepmin> (default %g) lower bound for step\n",p,ctx->stepmin);
   PetscPrintf(snes->comm,"   %ssnes_um_ls_stepmax <stepmax> (default %g) upper bound for step\n",p,ctx->stepmax);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
@@ -203,13 +206,14 @@ static int SNESView_UM_LS(PetscObject obj,Viewer viewer)
   int        ierr;
   ViewerType vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(snes->comm,fd,"    gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
       ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------- */
 #undef __FUNC__  
@@ -248,36 +252,37 @@ int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,void *dummy
   SNES_UMLS *neP = (SNES_UMLS *) snes->data;
   double    epsmch = 1.0e-14;   /* This must be fixed */
 
+  PetscFunctionBegin;
   /* Test for successful convergence */
   if (f != f) {
     PLogInfo(snes,"SNES:Failed to converged, function is NaN\n");
-    return -3;
+    PetscFunctionReturn(-3);
   }
   if (f < snes->fmin) {
     PLogInfo(snes,
       "SNESConverged_UM_LS: Converged due to function value %g < minimum function value %g\n",f,snes->fmin);
-    return 1;
+    PetscFunctionReturn(1);
   }
   if (gnorm < snes->atol) {
     PLogInfo(snes,"SNESConverged_UM_LS: Converged due to gradient norm %g < %g\n",gnorm,snes->atol);
-    return 2;
+    PetscFunctionReturn(2);
   }
   /* Test for termination and stringent tolerances. (failure and stop) */
  if (snes->nfuncs > snes->max_funcs) {
     PLogInfo(snes,
              "SNESConverged_UM_LS: Exceeded maximum number of function evaluations: %d > %d\n",
              snes->nfuncs,snes->max_funcs );
-    return -1;
+    PetscFunctionReturn(-1);
   } 
   if (gnorm < epsmch) {
     PLogInfo(snes,"SNESConverged_UM_LS: Gradient norm %g < minimum tolerance %g\n",gnorm,epsmch);
-    return -2;
+    PetscFunctionReturn(-2);
   }
   if (neP->line != 1) {
     PLogInfo(snes,"SNESConverged_UM_LS: Line search failed for above reason\n");
-    return -3;
+    PetscFunctionReturn(-3);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------- */
 #undef __FUNC__  
@@ -341,10 +346,11 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   double    dgx, dgy, dg, fx, fy, stx, sty, dgtest, ftest1;
   int       ierr, i, stage1;
 
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   Scalar    cdginit, cdg, cstep = 0.0;
 #endif
 
+  PetscFunctionBegin;
   /* neP->stepmin - lower bound for step */
   /* neP->stepmax - upper bound for step */
   /* neP->rtol 	  - relative tolerance for an acceptable step */
@@ -356,37 +362,37 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   /* Check input parameters for errors */
   if (*step < zero) {
     PLogInfo(snes,"Line search error: step (%g) < 0\n",*step);
-    *info = -1; return 0;
+    *info = -1; PetscFunctionReturn(0);
   } else if (neP->ftol < zero) {
     PLogInfo(snes,"Line search error: ftol (%g) < 0\n,neP->ftol");
-    *info = -2; return 0;
+    *info = -2; PetscFunctionReturn(0);
   } else if (neP->rtol < zero) {
     PLogInfo(snes,"Line search error: rtol (%g) < 0\n",neP->rtol);
-    *info = -3; return 0;
+    *info = -3; PetscFunctionReturn(0);
   } else if (neP->gtol < zero) {
     PLogInfo(snes,"Line search error: gtol (%g) < 0\n",neP->gtol);
-    *info = -4; return 0;
+    *info = -4; PetscFunctionReturn(0);
   } else if (neP->stepmin < zero) {
     PLogInfo(snes,"Line search error: stepmin (%g) < 0\n,neP->stepmin");
-    *info = -5; return 0;
+    *info = -5; PetscFunctionReturn(0);
   } else if (neP->stepmax < neP->stepmin) {
     PLogInfo(snes,"Line search error: stepmax (%g) < stepmin (%g)\n",
        neP->stepmax,neP->stepmin);
-    *info = -6; return 0;
+    *info = -6; PetscFunctionReturn(0);
   } else if (neP->maxfev < zero) {
     PLogInfo(snes,"Line search error: maxfev (%d) < 0\n",neP->maxfev);
-    *info = -7; return 0;
+    *info = -7; PetscFunctionReturn(0);
   }
 
   /* Check that search direction is a descent direction */
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   ierr = VecDot(G,S,&cdginit); CHKERRQ(ierr); dginit = real(cdginit);
 #else
   ierr = VecDot(G,S,&dginit); CHKERRQ(ierr);  /* dginit = G^T S */
 #endif
   if (dginit >= zero) {
     PLogInfo(snes,"Line search error:Search direction not a descent direction\n");
-    *info = 7; return 0;
+    *info = 7; PetscFunctionReturn(0);
   }
 
   /* Initialization */
@@ -433,7 +439,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
         (neP->nfev >= neP->maxfev - 1) || (neP->infoc == 0)) 
       *step = stx;
 
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
     cstep = *step;
     ierr = VecWAXPY(&cstep,S,W,X); CHKERRQ(ierr);
 #else
@@ -442,7 +448,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
     ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr);
     neP->nfev++;
     ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
     ierr = VecDot(G,S,&cdg); CHKERRQ(ierr); dg = real(cdg);
 #else
     ierr = VecDot(G,S,&dg); CHKERRQ(ierr);	        /* dg = G^T S */
@@ -526,7 +532,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   PLogInfo(snes,"%d function evals in line search, step = %10.4f\n", 
            neP->nfev,neP->step);
   ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------- */
 #undef __FUNC__  
@@ -538,8 +544,10 @@ int SNESCreate_UM_LS(SNES snes)
   PC        pc;
   int       ierr;
 
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,0,
-    "For SNES_UNCONSTRAINED_MINIMIZATION only");
+  PetscFunctionBegin;
+  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
+    SETERRQ(1,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+  }
   snes->type 		  = SNES_UM_LS;
   snes->setup		  = SNESSetUp_UM_LS;
   snes->solve		  = SNESSolve_UM_LS;
@@ -573,7 +581,7 @@ int SNESCreate_UM_LS(SNES snes)
   ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI); CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -593,8 +601,10 @@ int SNESCreate_UM_LS(SNES snes)
 int SNESGetLineSearchDampingParameter(SNES snes,Scalar *damp)
 {
   SNES_UMLS *neP;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   neP = (SNES_UMLS *) snes->data;
   *damp = neP->gamma;
-  return 0;
+  PetscFunctionReturn(0);
 }

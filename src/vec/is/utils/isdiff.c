@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isdiff.c,v 1.2 1997/10/01 22:43:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isdiff.c,v 1.3 1997/10/10 04:01:58 bsmith Exp bsmith $";
 #endif
 
 #include "is.h"                    /*I "is.h"  I*/
@@ -34,6 +34,7 @@ int ISDifference(IS is1,IS is2, IS *isout)
   BT       mask;
   MPI_Comm comm;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is1,IS_COOKIE);
   PetscValidHeaderSpecific(is2,IS_COOKIE);
   PetscValidPointer(isout);
@@ -86,7 +87,7 @@ int ISDifference(IS is1,IS is2, IS *isout)
   PetscFree(iout);
 
   BTDestroy(mask);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -115,6 +116,7 @@ int ISSum(IS is1,IS is2, IS *isout)
   BT       mask;
   MPI_Comm comm;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is1,IS_COOKIE);
   PetscValidHeaderSpecific(is2,IS_COOKIE);
   PetscValidPointer(isout);
@@ -167,6 +169,6 @@ int ISSum(IS is1,IS is2, IS *isout)
   PetscFree(iout);
 
   BTDestroy(mask);
-  return 0;
+  PetscFunctionReturn(0);
 }
 

@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.26 1997/07/09 20:59:26 balay Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.27 1997/09/22 15:15:57 balay Exp bsmith $";
 #endif
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 #include "sles.h"
-#include <stdio.h>
 #include "petsc.h"
 
 int main(int argc,char **args)

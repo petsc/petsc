@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.34 1997/08/22 15:12:39 bsmith Exp balay $";
+static char vcid[] = "$Id: shellpc.c,v 1.35 1997/09/11 17:01:07 balay Exp bsmith $";
 #endif
 
 /*
@@ -24,18 +24,23 @@ static int PCApply_Shell(PC pc,Vec x,Vec y)
   PC_Shell *shell;
   int      ierr;
 
+  PetscFunctionBegin;
   shell = (PC_Shell *) pc->data;
   ierr = (*shell->apply)(shell->ctx,x,y); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PCApplyRichardson_Shell"
 static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
 {
+  int      ierr;
   PC_Shell *shell;
+
+  PetscFunctionBegin;
   shell = (PC_Shell *) pc->data;
-  return (*shell->applyrich)(shell->ctx,x,y,w,it);
+  ierr = (*shell->applyrich)(shell->ctx,x,y,w,it);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -44,8 +49,10 @@ static int PCDestroy_Shell(PetscObject obj)
 {
   PC       pc = (PC) obj;
   PC_Shell *shell = (PC_Shell *) pc->data;
+
+  PetscFunctionBegin;
   PetscFree(shell);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -58,12 +65,13 @@ static int PCView_Shell(PetscObject obj,Viewer viewer)
   int        ierr;
   ViewerType vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {  
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (jac->name) PetscFPrintf(pc->comm,fd,"    Shell: %s\n", jac->name);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -86,6 +94,7 @@ int PCCreate_Shell(PC pc)
 {
   PC_Shell *shell;
 
+  PetscFunctionBegin;
   pc->destroy    = PCDestroy_Shell;
   shell          = PetscNew(PC_Shell); CHKPTRQ(shell);
   PLogObjectMemory(pc,sizeof(PC_Shell));
@@ -102,7 +111,7 @@ int PCCreate_Shell(PC pc)
   shell->applyrich = 0;
   shell->ctxrich   = 0;
   shell->ctx       = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -128,11 +137,13 @@ int PCCreate_Shell(PC pc)
 int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 {
   PC_Shell *shell;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   shell        = (PC_Shell *) pc->data;
   shell->apply = apply;
   shell->ctx   = ptr;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -152,10 +163,12 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 int PCShellSetName(PC pc,char *name)
 {
   PC_Shell *shell;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   shell       = (PC_Shell *) pc->data;
   shell->name = name;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -177,10 +190,12 @@ int PCShellSetName(PC pc,char *name)
 int PCShellGetName(PC pc,char **name)
 {
   PC_Shell *shell;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   shell = (PC_Shell *) pc->data;
   *name  = shell->name;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -210,10 +225,16 @@ int PCShellSetApplyRichardson(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),
                               void *ptr)
 {
   PC_Shell *shell;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   shell            = (PC_Shell *) pc->data;
   pc->applyrich    = PCApplyRichardson_Shell;
   shell->applyrich = apply;
   shell->ctxrich   = ptr;
-  return 0;
+  PetscFunctionReturn(0);
 }
+
+
+
+

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.34 1997/07/09 20:49:32 balay Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.35 1997/08/22 15:10:22 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -24,13 +24,15 @@ int VecReciprocal(Vec v)
 {
   int    i,n;
   Scalar *x;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   VecGetLocalSize_Fast(v,n);
   VecGetArray_Fast(v,x);
   for ( i=0; i<n; i++ ) {
     if (x[i] != 0.0) x[i] = 1.0/x[i];
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -53,18 +55,19 @@ int VecSum(Vec v,Scalar *sum)
   int    i,n;
   Scalar *x,lsum = 0.0;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   VecGetLocalSize_Fast(v,n);
   VecGetArray_Fast(v,x);
   for ( i=0; i<n; i++ ) {
     lsum += x[i];
   }
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   MPI_Allreduce(&lsum,sum,2,MPI_DOUBLE,MPI_SUM,v->comm);
 #else
   MPI_Allreduce(&lsum,sum,1,MPI_DOUBLE,MPI_SUM,v->comm);
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -87,13 +90,14 @@ int VecShift(Scalar *shift,Vec v)
   int    i,n;
   Scalar *x,lsum = *shift;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   VecGetLocalSize_Fast(v,n); 
   VecGetArray_Fast(v,x);
   for ( i=0; i<n; i++ ) {
     x[i] += lsum;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -111,13 +115,14 @@ int VecAbs(Vec v)
   int    i,n;
   Scalar *x;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   VecGetLocalSize_Fast(v,n);
   VecGetArray_Fast(v,x);
   for ( i=0; i<n; i++ ) {
     x[i] = PetscAbsScalar(x[i]);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #include "src/vec/impls/dvecimpl.h"
@@ -146,10 +151,11 @@ int VecPlaceArray(Vec vec,Scalar *array)
 {
   Vec_Seq *xin = (Vec_Seq *) vec->data;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
   if (vec->type != VECSEQ && vec->type != VECMPI) SETERRQ(PETSC_ERR_SUP,0,"");
   xin->array = array;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -172,9 +178,10 @@ int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
   Scalar *v1,*v2;
   int    n1,n2,ierr;
 
+  PetscFunctionBegin;
   ierr = VecGetSize(vec1,&n1); CHKERRQ(ierr);
   ierr = VecGetSize(vec2,&n2); CHKERRQ(ierr);
-  if (n1 != n2) { *flg = PETSC_FALSE; return 0;}
+  if (n1 != n2) { *flg = PETSC_FALSE; PetscFunctionReturn(0);}
 
   ierr = VecGetArray(vec1,&v1); CHKERRQ(ierr);
   ierr = VecGetArray(vec2,&v2); CHKERRQ(ierr);
@@ -185,5 +192,8 @@ int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
   ierr = VecRestoreArray(vec1,&v1); CHKERRQ(ierr);
   ierr = VecRestoreArray(vec2,&v2); CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
+
+
+

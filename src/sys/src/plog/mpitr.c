@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpitr.c,v 1.9 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: mpitr.c,v 1.10 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -7,10 +7,9 @@ static char vcid[] = "$Id: mpitr.c,v 1.9 1997/07/09 20:51:14 balay Exp bsmith $"
   nonblocking messages that are not correctly waited for, etc.
 */
 
-#include <stdio.h>
 #include "petsc.h"           /*I "petsc.h" I*/
 
-#if defined(PETSC_LOG) && !defined(PETSC_USING_MPIUNI)
+#if defined(USE_PETSC_LOG) && !defined(PETSC_USING_MPIUNI)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscMPIDump"
@@ -33,6 +32,7 @@ int PetscMPIDump(FILE *fd)
   int    rank;
   double tsends,trecvs,work;
 
+  PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (fd == 0) fd = stderr;
    
@@ -54,7 +54,7 @@ int PetscMPIDump(FILE *fd)
     fprintf(fd,"Total number sends %g not equal receives %g\n",tsends,trecvs);
     fflush(fd);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #else
@@ -63,7 +63,8 @@ int PetscMPIDump(FILE *fd)
 #define __FUNC__ "PetscMPIDump"
 int PetscMPIDump(FILE *fd)
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #endif

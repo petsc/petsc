@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iccbs.c,v 1.23 1997/06/05 12:54:03 bsmith Exp balay $";
+static char vcid[] = "$Id: iccbs.c,v 1.24 1997/07/09 20:54:23 balay Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -25,7 +25,9 @@ static char vcid[] = "$Id: iccbs.c,v 1.23 1997/06/05 12:54:03 bsmith Exp balay $
    permutation within PCApply().
 */
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
+#include "petsc.h"
+
+#if defined(HAVE_BLOCKSOLVE) && !defined(USE_PETSC_COMPLEX)
 #include "src/pc/pcimpl.h"            /*I "pc.h" I*/
 #include "src/pc/impls/icc/icc.h"
 #include "src/ksp/kspimpl.h"
@@ -40,10 +42,11 @@ static int PCDestroy_ICC_MPIRowbs(PetscObject obj)
   PCiBS  *iccbs = (PCiBS *) icc->implctx; 
   int    ierr;
 
+  PetscFunctionBegin;  
   PetscFree(iccbs);
   ierr = MatDestroy(icc->fact); CHKERRQ(ierr);
   PetscFree(icc);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* Note:  We only call PCPreSolve_MPIRowbs() if both
@@ -59,6 +62,7 @@ int PCPreSolve_MPIRowbs(PC pc,KSP ksp)
   Scalar       *xa, *rhsa, *va;
   int          ierr;
 
+  PetscFunctionBegin;  
   /* Permute and scale RHS and solution vectors */
   ierr = KSPGetSolution(ksp,&x); CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&rhs); CHKERRQ(ierr);
@@ -74,7 +78,7 @@ int PCPreSolve_MPIRowbs(PC pc,KSP ksp)
   ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
   bsif->vecs_permscale  = 1;
   bsifa->vecs_permscale = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* Note:  We only call PCPostSolve_MPIRowbs() if both
@@ -90,6 +94,7 @@ int PCPostSolve_MPIRowbs(PC pc,KSP ksp)
   Scalar       *xa, *va, *rhsa;
   int          ierr;
 
+  PetscFunctionBegin;  
   /* Unpermute and unscale the solution and RHS vectors */
   ierr = KSPGetSolution(ksp,&x); CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&rhs); CHKERRQ(ierr);
@@ -105,7 +110,7 @@ int PCPostSolve_MPIRowbs(PC pc,KSP ksp)
   ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
   bsif->vecs_permscale  = 0;
   bsifa->vecs_permscale = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -118,11 +123,13 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
   Mat          Amat, Pmat;
   int          ierr;
 
+  PetscFunctionBegin;  
   ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
-  if (Amat != Pmat && Amat->type == MATMPIROWBS)
+  if (Amat != Pmat && Amat->type == MATMPIROWBS) {
     SETERRQ(1,0,"Does not support different Amat and\n\
       Pmat with MATMPIROWBS format for both.  Use a different format for\n\
       Amat (e.g., MATMPIAIJ) and keep Pmat the same.");
+  }
 
   pc ->destroy        = PCDestroy_ICC_MPIRowbs;
   icc->implctx        = (void *) (iccbs = PetscNew(PCiBS)); CHKPTRQ(iccbs);
@@ -148,7 +155,7 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
       pc->postsolve   = PCPostSolve_MPIRowbs;
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* 
@@ -170,6 +177,7 @@ int KSPMonitor_MPIRowbs(KSP ksp,int n,double rnorm,void *dummy)
   PC           pc;
   Mat          mat;
 
+  PetscFunctionBegin;  
   ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
   ierr = PCGetOperators(pc,&mat,0,0); CHKERRQ(ierr);
   bsif = (Mat_MPIRowbs *) mat->data;
@@ -177,7 +185,7 @@ int KSPMonitor_MPIRowbs(KSP ksp,int n,double rnorm,void *dummy)
   ierr = VecPointwiseDivide(resid,bsif->diag,resid); CHKERRQ(ierr); 
   ierr = VecNorm(resid,NORM_2,&scnorm); CHKERRQ(ierr);
   PetscPrintf(ksp->comm,"%d Preconditioned %14.12e True %14.12e\n",n,rnorm,scnorm); 
-  return 0;
+  PetscFunctionReturn(0);
 }
   
 #undef __FUNC__  
@@ -205,6 +213,7 @@ int PCBSIterSolve(PC pc,Vec b,Vec x,int *its)
   Mat_MPIRowbs *amat = (Mat_MPIRowbs *) pc->mat->data;
   Scalar       *xa, *ba; */
 
+  PetscFunctionBegin;  
   SETERRQ(1,0,"Currently out of commission.");
   /* Note: The vectors x and b are permuted within BSpar_solve */
 /*
@@ -217,7 +226,7 @@ int PCBSIterSolve(PC pc,Vec b,Vec x,int *its)
   PetscPrintf(pc->mat->comm,"method=%d, final residual = %e\n",
               iccbs->pre_option,iccbs->rnorm); 
   VecRestoreArray(b,&ba); VecRestoreArray(x,&xa);
-  return 0;
+  PetscFunctionReturn(0);
 */
 }
 
@@ -241,8 +250,9 @@ int PCBSIterSetFromOptions(PC pc)
   PCiBS  *iccbs;
   int    ierr,flg;
 
+  PetscFunctionBegin;  
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->pmat->type != MATMPIROWBS) return 0;
+  if (pc->pmat->type != MATMPIROWBS) PetscFunctionReturn(0);
   iccbs = (PCiBS *) icc->implctx;
   ierr = OptionsGetInt(pc->prefix,"-pc_bs_max_it",&iccbs->max_it,&flg);CHKERRQ(ierr);
   ierr = OptionsGetInt(pc->prefix,"-pc_bs_blocksize",&iccbs->blocksize,&flg);CHKERRQ(ierr);
@@ -251,7 +261,7 @@ int PCBSIterSetFromOptions(PC pc)
   if (flg) { 
     iccbs->guess_zero = 1;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -270,20 +280,24 @@ int PCBSIterSetFromOptions(PC pc)
 */
 int PCBSIterSetBlockSolve(PC pc)
 {
+  PetscFunctionBegin;  
   SETERRQ(1,0,"Not currently supported.");
 /*
   PC_ICC *icc = (PC_ICC *) pc->data;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->setupcalled) SETERRQ(1,0,"Must call before PCSetUp");
-  if (pc->type != PCICC) return 0;
+  if (pc->type != PCICC) PetscFunctionReturn(0);
   icc->bs_iter = 1;
-  return 0; */
+  PetscFunctionReturn(0); */
 }
 
 #else
 #undef __FUNC__  
 #define __FUNC__ "MatNull_MPIRowbs"
 int MatNull_MPIRowbs()
-{return 0;}
+{
+  PetscFunctionBegin;  
+  PetscFunctionReturn(0);
+}
 #endif
 

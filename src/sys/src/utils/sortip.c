@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortip.c,v 1.18 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: sortip.c,v 1.19 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -23,11 +23,13 @@ static int PetsciIqsortPerm(int *v,int *vdx,int right)
 {
   int          tmp;
   register int i, vl, last;
+
+  PetscFunctionBegin;
   if (right <= 1) {
     if (right == 1) {
       if (v[vdx[0]] > v[vdx[1]]) SWAP(vdx[0],vdx[1],tmp);
     }
-    return 0;
+    PetscFunctionReturn(0);
   }
   SWAP(vdx[0],vdx[right/2],tmp);
   vl   = v[vdx[0]];
@@ -38,7 +40,7 @@ static int PetsciIqsortPerm(int *v,int *vdx,int right)
   SWAP(vdx[0],vdx[last],tmp);
   PetsciIqsortPerm(v,vdx,last-1);
   PetsciIqsortPerm(v,vdx+last+1,right-(last+1));
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -63,6 +65,7 @@ int PetscSortIntWithPermutation(int n, int *i, int *idx )
 {
   register int j, k, tmp, ik;
 
+  PetscFunctionBegin;
   if (n<8) {
     for (k=0; k<n; k++) {
       ik = i[idx[k]];
@@ -74,9 +77,10 @@ int PetscSortIntWithPermutation(int n, int *i, int *idx )
       }
     }
   }
-  else 
+  else {
     PetsciIqsortPerm(i,idx,n-1);
-  return 0;
+  }
+  PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -88,11 +92,12 @@ static int PetsciDqsortPerm(double *v,int *vdx,int right)
   double       vl;
   register int tmp,i, last;
 
+  PetscFunctionBegin;
   if (right <= 1) {
     if (right == 1) {
       if (v[vdx[0]] > v[vdx[1]]) SWAP(vdx[0],vdx[1],tmp);
     }
-    return 0;
+    PetscFunctionReturn(0);
   }
   SWAP(vdx[0],vdx[right/2],tmp);
   vl   = v[vdx[0]];
@@ -103,7 +108,7 @@ static int PetsciDqsortPerm(double *v,int *vdx,int right)
   SWAP(vdx[0],vdx[last],tmp);
   PetsciDqsortPerm(v,vdx,last-1);
   PetsciDqsortPerm(v,vdx+last+1,right-(last+1));
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -129,6 +134,7 @@ int PetscSortDoubleWithPermutation(int n, double *i, int *idx )
   register int j, k,tmp;
   double       ik;
 
+  PetscFunctionBegin;
   if (n<8) {
     for (k=0; k<n; k++) {
       ik = i[idx[k]];
@@ -140,7 +146,8 @@ int PetscSortDoubleWithPermutation(int n, double *i, int *idx )
       }
     }
   }
-  else 
+  else {
     PetsciDqsortPerm(i,idx,n-1);
-  return 0;
+  }
+  PetscFunctionReturn(0);
 }

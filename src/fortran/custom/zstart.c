@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.24 1997/09/11 15:33:10 balay Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.25 1997/09/11 15:55:46 balay Exp bsmith $";
 #endif
 
 /*
@@ -16,7 +16,6 @@ static char vcid[] = "$Id: zstart.c,v 1.24 1997/09/11 15:33:10 balay Exp balay $
 #define T3EMPI_FORTRAN
 #include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
-#include <stdio.h>
 #include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
 extern int          PetscBeganMPI;
@@ -195,7 +194,7 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   }
   PetscInitializedCalled = 1;
 
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   /* 
      Initialized the global variable; this is because with 
      shared libraries the constructors for global variables

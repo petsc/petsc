@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mal.c,v 1.25 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.26 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
@@ -36,10 +36,12 @@ int PetscSetMalloc(void *(*imalloc)(unsigned int,int,char*,char*,char*),
                    int (*ifree)(void*,int,char*,char*,char*))
 {
   static int visited = 0;
+
+  PetscFunctionBegin;
   if (visited) SETERRQ(PETSC_ERR_SUP,0,"cannot call multiple times");
   PetscTrMalloc = imalloc;
   PetscTrFree   = ifree;
   visited       = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 

@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.15 1997/07/09 20:59:21 balay Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.16 1997/08/22 15:17:38 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include "pinclude/pviewer.h"
-#include <stdio.h>
 #include <stdarg.h>
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
@@ -20,9 +19,11 @@ struct _p_Viewer {
 
 static int ViewerDestroy_String(PetscObject obj)
 {
+  PetscFunctionBegin;
+
   PLogObjectDestroy(obj);
   PetscHeaderDestroy(obj);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -47,8 +48,9 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
   int     shift;
   char    tmp[512];
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (v->type != STRING_VIEWER) return 0;
+  if (v->type != STRING_VIEWER) PetscFunctionReturn(0);
 
   va_start( Argp, format );
 #if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
@@ -66,7 +68,7 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
 
   v->head   += shift;
   v->curlen += shift;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -93,6 +95,8 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
 int ViewerStringOpen(MPI_Comm comm,char *string,int len, Viewer *lab)
 {
   Viewer v;
+
+  PetscFunctionBegin;
   PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,STRING_VIEWER,comm,ViewerDestroy,0);
   PLogObjectCreate(v);
   v->destroy     = ViewerDestroy_String;
@@ -105,7 +109,7 @@ int ViewerStringOpen(MPI_Comm comm,char *string,int len, Viewer *lab)
   v->maxlen      = len;
 
   *lab           = v;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

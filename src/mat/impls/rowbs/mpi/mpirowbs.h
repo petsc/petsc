@@ -1,6 +1,6 @@
-/* $Id: mpirowbs.h,v 1.33 1996/11/29 22:07:44 curfman Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.34 1997/03/09 17:58:30 bsmith Exp bsmith $ */
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX) && \
+#if defined(HAVE_BLOCKSOLVE) && !defined(USE_PETSC_COMPLEX) && \
     !defined(__MPIROWBS_H)
 #define __MPIROWBS_H
 
@@ -77,7 +77,7 @@ extern int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat);
 #define CHKERRBS(a) {if (__BSERROR_STATUS) {fprintf(stderr, \
         "BlockSolve95 Error Code %d\n",__BSERROR_STATUS); CHKERRQ(1);}}
 
-#if defined(PETSC_LOG)  /* turn on BlockSolve logging */
+#if defined(USE_PETSC_LOG)  /* turn on BlockSolve logging */
 #define MAINLOG
 #endif
 

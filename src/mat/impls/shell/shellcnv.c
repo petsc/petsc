@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellcnv.c,v 1.3 1997/06/05 12:54:00 bsmith Exp balay $";
+static char vcid[] = "$Id: shellcnv.c,v 1.4 1997/07/09 20:54:17 balay Exp bsmith $";
 #endif
 
 
@@ -16,6 +16,7 @@ int MatConvert_Shell(Mat oldmat,MatType newtype, Mat *mat)
   MPI_Comm comm;
   Scalar   *array,zero = 0.0,one = 1.0;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(oldmat,MAT_COOKIE);
   PetscValidPointer(mat);
 
@@ -59,7 +60,7 @@ int MatConvert_Shell(Mat oldmat,MatType newtype, Mat *mat)
   ierr = VecDestroy(out); CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.22 1996/12/08 20:52:39 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.23 1997/07/09 21:01:53 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
@@ -7,7 +7,7 @@ inserting their own event logging.  Run this program with one of the\n\
 following options to generate logging information:  -log, -log_summary,\n\
 -log_all.  The PETSc routines automatically log event times and flops,\n\
 so this monitoring is intended solely for users to employ in application\n\
-codes.  Note that the code must be compiled with the flag -DPETSC_LOG\n\
+codes.  Note that the code must be compiled with the flag -DUSE_PETSC_LOG\n\
 (the default) to activate logging.\n\n";
 
 /*T
@@ -24,7 +24,6 @@ T*/
   Include "petsc.h" so that we can use PETSc profiling routines.
 */
 #include "petsc.h"
-#include <stdio.h>
 
 int main(int argc,char **argv)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.16 1997/07/09 20:56:43 balay Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.17 1997/08/22 15:15:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -24,6 +24,7 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
   int      k, nz, repl, *j, kk, nnz, *jj,ierr;
   Scalar   *v, *vv;
 
+  PetscFunctionBegin;
   ierr = MatGetRow( mat, row[prow], &nz, &j, &v ); CHKERRQ(ierr);
 /*
     Here one could sort the col[j[k]] to try to select the column closest
@@ -40,14 +41,14 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
 	  *rc  = repl;
           ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
           ierr = MatRestoreRow( mat, row[prow], &nz, &j, &v ); CHKERRQ(ierr);
-	  return 1;
+	  PetscFunctionReturn(1);
 	}
       }
       ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
     }
   }
   ierr = MatRestoreRow( mat, row[prow], &nz, &j, &v ); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -84,6 +85,7 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
   Scalar   *v;
   double   repla;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(ris,IS_COOKIE);
   PetscValidHeaderSpecific(cis,IS_COOKIE);
@@ -126,7 +128,7 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
   }
   ierr = ISRestoreIndices(ris,&row); CHKERRQ(ierr);
   ierr = ISRestoreIndices(cis,&col); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -26,8 +26,7 @@
 /*****************************************************************/
 #undef __FUNC__  
 #define __FUNC__ "degree" 
-int degree(int *root, int *xadj, int *adjncy, 
-	int *mask, int *deg, int *ccsize, int *ls)
+int degree(int *root, int *xadj, int *adjncy, int *mask, int *deg, int *ccsize, int *ls)
 {
     /* System generated locals */
     int i__1, i__2;
@@ -39,6 +38,7 @@ int degree(int *root, int *xadj, int *adjncy,
 /*       THE ARRAY XADJ IS USED AS A TEMPORARY MARKER TO*/
 /*       INDICATE WHICH NODES HAVE BEEN CONSIDERED SO FAR.*/
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --ls;
     --deg;
@@ -98,6 +98,6 @@ L300:
 	node = ls[i];
 	xadj[node] = -xadj[node];
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

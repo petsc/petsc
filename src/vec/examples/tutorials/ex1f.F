@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.6 1997/08/07 14:38:06 bsmith Exp balay $"
+C    "$Id: ex1f.F,v 1.7 1997/09/22 15:17:03 balay Exp bsmith $"
 C
 C/*T
 C   Concepts: Vectors^Using basic vector routines;
@@ -95,11 +95,11 @@ C  Demonstrate various basic vector routines.
       call VecMDot(3,x,z,dots,ierr)
 
 C  Note: If using a complex numbers version of PETSc, then
-C  PETSC_COMPLEX is defined in the makefiles; otherwise,
+C  USE_PETSC_COMPLEX is defined in the makefiles; otherwise,
 C  (when using real numbers) it is undefined.
 
       if (rank .eq. 0) then
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
          write(6,100) int(real(dot))
          write(6,110) int(real(dots(1))),int(real(dots(2))),
      &                int(real(dots(3)))

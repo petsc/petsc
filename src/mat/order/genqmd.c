@@ -61,6 +61,7 @@ int genqmd(int *neqns, int *xadj, int *adjncy,
 
 /*       INITIALIZE DEGREE VECTOR AND OTHER WORKING VARIABLES.   */
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --qlink;
     --qsize;
@@ -180,5 +181,5 @@ L800:
     if (num < *neqns) {
 	goto L300;
     }
-    return 0;
+    PetscFunctionReturn(0);
 }

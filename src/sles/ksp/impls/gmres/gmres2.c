@@ -1,8 +1,7 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres2.c,v 1.4 1997/07/09 20:50:40 balay Exp bsmith $";
+static char vcid[] = "$Id: gmres2.c,v 1.5 1997/08/22 15:11:26 bsmith Exp bsmith $";
 #endif
 #include <math.h>
-#include <stdio.h>
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
 #undef __FUNC__  
@@ -28,11 +27,13 @@ $   -ksp_gmres_restart <max_k>
 int KSPGMRESSetRestart(KSP ksp,int max_k )
 {
   KSP_GMRES *gmres;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   gmres = (KSP_GMRES *)ksp->data;
-  if (ksp->type != KSPGMRES) return 0;
+  if (ksp->type != KSPGMRES) PetscFunctionReturn(0);
   gmres->max_k = max_k;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -67,11 +68,12 @@ $  -ksp_gmres_irorthog
 @*/
 int KSPGMRESSetOrthogonalization( KSP ksp,int (*fcn)(KSP,int) )
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->type == KSPGMRES) {
     ((KSP_GMRES *)ksp->data)->orthog = fcn;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

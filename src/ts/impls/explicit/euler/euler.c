@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: euler.c,v 1.9 1997/06/05 12:56:16 bsmith Exp balay $";
+static char vcid[] = "$Id: euler.c,v 1.10 1997/07/09 20:58:26 balay Exp bsmith $";
 #endif
 /*
        Code for Timestepping with explicit Euler.
@@ -20,8 +20,9 @@ static int TSSetUp_Euler(TS ts)
   TS_Euler *euler = (TS_Euler*) ts->data;
   int      ierr;
 
+  PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&euler->update); CHKERRQ(ierr);  
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -33,6 +34,7 @@ static int TSStep_Euler(TS ts,int *steps,double *time)
   int      ierr,i,max_steps = ts->max_steps;
   Scalar   dt = ts->time_step;
   
+  PetscFunctionBegin;
   *steps = -ts->steps;
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
 
@@ -47,7 +49,7 @@ static int TSStep_Euler(TS ts,int *steps,double *time)
 
   *steps += ts->steps;
   *time  = ts->ptime;
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
@@ -57,9 +59,10 @@ static int TSDestroy_Euler(PetscObject obj )
   TS       ts = (TS) obj;
   TS_Euler *euler = (TS_Euler*) ts->data;
 
+  PetscFunctionBegin;
   VecDestroy(euler->update);
   PetscFree(euler);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
 
@@ -67,23 +70,24 @@ static int TSDestroy_Euler(PetscObject obj )
 #define __FUNC__ "TSSetFromOptions_Euler"
 static int TSSetFromOptions_Euler(TS ts)
 {
-
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "TSPrintHelp_Euler"
 static int TSPrintHelp_Euler(TS ts,char *p)
 {
-
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "TSView_Euler"
 static int TSView_Euler(PetscObject obj,Viewer viewer)
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------ */
@@ -93,6 +97,7 @@ int TSCreate_Euler(TS ts )
 {
   TS_Euler *euler;
 
+  PetscFunctionBegin;
   ts->type 	      = TS_EULER;
   ts->setup	      = TSSetUp_Euler;
   ts->step            = TSStep_Euler;
@@ -105,7 +110,7 @@ int TSCreate_Euler(TS ts )
   PLogObjectMemory(ts,sizeof(TS_Euler));
   ts->data = (void *) euler;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

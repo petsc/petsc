@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.26 1997/07/09 21:00:05 balay Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.27 1997/09/22 15:19:57 balay Exp bsmith $";
 #endif
 
 static char help[] =
@@ -31,7 +31,6 @@ ignition) test problem. The command line options are:\n\
 #include "snes.h"
 #include "da.h"
 #include <math.h>
-#include <stdio.h>
 
 typedef struct {
     double    param;           /* test problem nonlinearity parameter */

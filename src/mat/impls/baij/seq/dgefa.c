@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa.c,v 1.7 1997/01/06 20:25:20 balay Exp balay $";
+static char vcid[] = "$Id: dgefa.c,v 1.8 1997/07/09 20:55:07 balay Exp bsmith $";
 #endif
 /*
        This routine was converted by f2c from Linpack source
@@ -18,6 +18,7 @@ int Linpack_DGEFA(Scalar *a, int n, int *ipvt)
 
 /*     gaussian elimination with partial pivoting */
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --ipvt;
     a       -= n + 1;
@@ -85,6 +86,6 @@ int Linpack_DGEFA(Scalar *a, int n, int *ipvt)
     if (a[n + n * n] == 0.) {
 	SETERRQ(n,0,"Zero pivot,final row");
     }
-    return 0;
+    PetscFunctionReturn(0);
 } 
 

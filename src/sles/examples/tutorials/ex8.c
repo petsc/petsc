@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.24 1997/07/09 20:57:17 balay Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.25 1997/09/22 15:20:37 balay Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -42,7 +42,6 @@ T*/
      viewer.h - viewers               pc.h  - preconditioners
 */
 #include "sles.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.40 1997/08/07 14:38:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.41 1997/08/13 22:22:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates various vector routines\n\n";
@@ -79,10 +79,10 @@ int main(int argc,char **argv)
 
   /* 
      Note: If using a complex numbers version of PETSc, then
-     PETSC_COMPLEX is defined in the makefiles; otherwise,
+     USE_PETSC_COMPLEX is defined in the makefiles; otherwise,
      (when using real numbers) it is undefined.
   */
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n", int (real(dot)));
   PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)real(dots[0]),
                              (int)real(dots[1]),(int)real(dots[2]));

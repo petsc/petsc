@@ -48,6 +48,7 @@ int fn1wd(int *root, int *xadj, int *adjncy,
 	    int *, int *, int *, int *);
     static int nbr, lvl;
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --ls;
     --xls;
@@ -72,7 +73,7 @@ int fn1wd(int *root, int *xadj, int *adjncy,
 	sep[i] = node;
 	mask[node] = 0;
     }
-    return 0;
+    PetscFunctionReturn(0);
 /*       FIND THE PARALLEL DISSECTORS.*/
 L300:
     *nsep = 0;
@@ -81,7 +82,7 @@ L400:
     ++i;
     lvl = (int) ((double) i * deltp1 + .5f);
     if (lvl >= *nlvl) {
-	return 0;
+	PetscFunctionReturn(0);
     }
     lvlbeg = xls[lvl];
     lp1beg = xls[lvl + 1];

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.7 1997/07/09 20:57:17 balay Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.8 1997/09/22 15:20:49 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -27,7 +27,6 @@ T*/
      viewer.h - viewers               pc.h  - preconditioners
 */
 #include "sles.h"
-#include <stdio.h>
 
 /* Declare user-defined routines */
 int FormElementStiffness(double,Scalar*);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sp1wd.c,v 1.21 1997/07/09 20:54:49 balay Exp bsmith $";
+static char vcid[] = "$Id: sp1wd.c,v 1.22 1997/08/22 15:14:10 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -13,9 +13,10 @@ static char vcid[] = "$Id: sp1wd.c,v 1.21 1997/07/09 20:54:49 balay Exp bsmith $
 #define __FUNC__ "MatOrder_1WD"
 int MatOrder_1WD( Mat mat, MatReordering type, IS *row, IS *col)
 {
-  int i,   *mask, *xls, nblks, *xblk, *ls, nrow, *perm, ierr,*ia,*ja;
+  int        i,*mask, *xls, nblks, *xblk, *ls, nrow, *perm, ierr,*ia,*ja;
   PetscTruth done;
 
+  PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done); CHKERRQ(ierr);
   if (!done) SETERRQ(1,0,"Cannot get rows for matrix");
 
@@ -33,6 +34,6 @@ int MatOrder_1WD( Mat mat, MatReordering type, IS *row, IS *col)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,col); CHKERRQ(ierr);
   PetscFree(mask);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 

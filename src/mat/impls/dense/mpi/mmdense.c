@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmdense.c,v 1.11 1997/04/10 00:02:34 bsmith Exp balay $";
+static char vcid[] = "$Id: mmdense.c,v 1.12 1997/07/09 20:53:40 balay Exp bsmith $";
 #endif
 
 /*
@@ -17,6 +17,7 @@ int MatSetUpMultiply_MPIDense(Mat mat)
   IS           tofrom;
   Vec          gvec;
 
+  PetscFunctionBegin;
   /* Create local vector that is used to scatter into */
   ierr = VecCreateSeq(PETSC_COMM_SELF,mdn->N,&mdn->lvec); CHKERRQ(ierr);
 
@@ -36,7 +37,7 @@ int MatSetUpMultiply_MPIDense(Mat mat)
 
   ierr = ISDestroy(tofrom); CHKERRQ(ierr);
   ierr = VecDestroy(gvec); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

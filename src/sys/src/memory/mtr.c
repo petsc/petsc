@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.88 1997/08/22 15:11:48 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.89 1997/09/18 18:12:00 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
 */
-#include <stdio.h>
 #include "petsc.h"           /*I "petsc.h" I*/
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
@@ -32,6 +31,8 @@ static int TrUseNan;   /* unitialize Scalar arrays with Nans */
 int PetscSetUseTrMalloc_Private(int usenan)
 {
   int ierr;
+
+  PetscFunctionBegin;
 #if !defined(PETSC_INSIGHT)
   PetscLow     = (void *) 0xEEEEEEEE;
   PetscHigh    = (void *) 0x0;
@@ -39,7 +40,7 @@ int PetscSetUseTrMalloc_Private(int usenan)
   ierr         = PetscSetMalloc(PetscTrMallocDefault,PetscTrFreeDefault); CHKERRQ(ierr);
   TrMallocUsed = 1;
   TrUseNan     = usenan;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -58,10 +59,7 @@ int PetscSetUseTrMalloc_Private(int usenan)
 /* HEADER_DOUBLES is the number of doubles in a PetscTrSpace header */
 /* We have to be careful about alignment rules here */
 
-#define TR_FILENAME_LEN     16
-#define TR_FUNCTIONNAME_LEN 32
-#define TR_DIRNAME_LEN      224
-#define HEADER_DOUBLES      38
+#define HEADER_DOUBLES      8
 
 #if defined(HAVE_64BITS)
 #define TR_ALIGN_BYTES      8
@@ -81,9 +79,9 @@ typedef struct _trSPACE {
     unsigned long   size;
     int             id;
     int             lineno;
-    char            filename[TR_FILENAME_LEN];
-    char            functionname[TR_FUNCTIONNAME_LEN];
-    char            dirname[TR_DIRNAME_LEN];
+    char            *filename;
+    char            *functionname;
+    char            *dirname;
     unsigned long   cookie;        
     struct _trSPACE *next, *prev;
 } TRSPACE;
@@ -95,12 +93,12 @@ typedef union {
     double  v[HEADER_DOUBLES];
 } TrSPACE;
 
-static long    allocated = 0, frags = 0;
-static TRSPACE *TRhead = 0;
-static int     TRid = 0;
+static long    allocated    = 0, frags = 0;
+static TRSPACE *TRhead      = 0;
+static int     TRid         = 0;
 static int     TRdebugLevel = 0;
-static long    TRMaxMem = 0;
-static long    TRMaxMemId = 0;
+static long    TRMaxMem     = 0;
+static long    TRMaxMemId   = 0;
 
 #if defined(PARCH_sun4) && defined(__cplusplus)
 extern "C" {
@@ -110,31 +108,6 @@ extern "C" {
   extern int malloc_verify();
 #endif
 
-/*
-    These are for MPICH version 1.0.13 only. This is for testing purposes
-  only and should not be uncommented or used 
-
-struct MPIR_OP {
-  void              (*op)();
-  unsigned long     cookie;
-  int               commute;
-  int               permanent;
-};
-
-int MPI_Corrupted()
-{
-  if ((MPI_SUM)->cookie != (unsigned long) 0xca01beaf) {
-    SETERRQ(1,0,"MPI_SUM corrupted");
-  }
-  if ((MPI_MIN)->cookie != (unsigned long) 0xca01beaf) {
-    SETERRQ(1,0,"MPI_MIN corrupted");
-  }
-  if ((MPI_MAX)->cookie != (unsigned long) 0xca01beaf) {
-    SETERRQ(1,0,"MPI_MAX corrupted");
-  }
-  return 0;
-}
-*/
 
 #undef __FUNC__  
 #define __FUNC__ "PetscTrValid"
@@ -155,10 +128,11 @@ int MPI_Corrupted()
 */
 int PetscTrValid(int line,char *function,char *file,char *dir )
 {
-  TRSPACE *head;
-  char    *a;
+  TRSPACE  *head;
+  char     *a;
   unsigned long *nend;
 
+  PetscFunctionBegin;
   head = TRhead;
   while (head) {
     if (head->cookie != COOKIE_VALUE) {
@@ -171,13 +145,11 @@ int PetscTrValid(int line,char *function,char *file,char *dir )
     if (nend[0] != COOKIE_VALUE) {
       fprintf( stderr, "called from %s() line %d in %s%s\n",function,line,dir,file );
       if (nend[0] == ALREADY_FREED) {
-        fprintf(stderr,"Block [id=%d(%lx)] at address %p already freed\n", 
-	        head->id, head->size, a );
+        fprintf(stderr,"Block [id=%d(%lx)] at address %p already freed\n",head->id,head->size, a );
         SETERRQ(1,0,"Freed block in memory list, corrupted memory");
       } else {
-        fprintf( stderr, 
-             "Block [id=%d(%lx)] at address %p is corrupted (probably write past end)\n", 
-	     head->id, head->size, a );
+        fprintf(stderr,"Block [id=%d(%lx)] at address %p is corrupted (probably write past end)\n", 
+	        head->id, head->size, a );
         fprintf(stderr,"Block allocated in %s() line %d in %s%s\n",head->functionname,
                 head->lineno,head->dirname,head->filename);
         SETERRQ(1,0,"Corrupted memory");
@@ -185,18 +157,11 @@ int PetscTrValid(int line,char *function,char *file,char *dir )
     }
     head = head->next;
   }
-#if defined(PARCH_sun4) && defined(PETSC_BOPT_g)
+#if defined(PARCH_sun4) && defined(USE_PETSC_BOPT_g)
   malloc_verify();
 #endif
 
-  /*
-  {
-    int ierr;
-    ierr = MPI_Corrupted(); CHKERRQ(ierr);
-  }
-  */
-
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -228,20 +193,21 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
   char             *inew;
   unsigned long    *nend;
   unsigned int     nsize;
-  int              l,ierr;
+  int              ierr;
 
+  PetscFunctionBegin;
   if (TRdebugLevel > 0) {
-    ierr = PetscTrValid(lineno,function,filename,dir); if (ierr) return 0;
+    ierr = PetscTrValid(lineno,function,filename,dir); if (ierr) PetscFunctionReturn(0);
   }
 
   if (a == 0) {
     fprintf(stderr,"PETSC ERROR: PetscTrMalloc: malloc zero length, this is illegal!\n");
-    return 0;
+    PetscFunctionReturn(0);
   }
   nsize = a;
   if (nsize & TR_ALIGN_MASK) nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
   inew = (char *) malloc( (unsigned)(nsize+sizeof(TrSPACE)+sizeof(unsigned long)));
-  if (!inew) return 0;
+  if (!inew) PetscFunctionReturn(0);
 
   
   /*
@@ -253,7 +219,7 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
       PetscHigh = (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long));
 #endif
 
-  head = (TRSPACE *)inew;
+  head   = (TRSPACE *)inew;
   inew  += sizeof(TrSPACE);
 
   if (TRhead) TRhead->prev = head;
@@ -264,21 +230,12 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
   head->id       = TRid;
   head->lineno   = lineno;
 
-  if ((l = PetscStrlen(filename)) > TR_FILENAME_LEN-1) filename += (l - (TR_FILENAME_LEN-1));
-  if (filename) PetscStrncpy( head->filename, filename, (TR_FILENAME_LEN-1) );
-  head->filename[TR_FILENAME_LEN-1] = 0;
-
-  if ((l = PetscStrlen(function)) > TR_FUNCTIONNAME_LEN-1) function += (l-(TR_FUNCTIONNAME_LEN-1));
-  if (function) PetscStrncpy( head->functionname, function, (TR_FUNCTIONNAME_LEN-1) );
-  head->functionname[TR_FUNCTIONNAME_LEN-1] = 0;
-
-  if ((l = PetscStrlen(dir)) > TR_DIRNAME_LEN-1) dir += (l-(TR_DIRNAME_LEN-1));
-  if (dir) PetscStrncpy( head->dirname, dir, (TR_DIRNAME_LEN-1) );
-  head->dirname[TR_DIRNAME_LEN-1] = 0;
-
-  head->cookie                = COOKIE_VALUE;
-  nend                        = (unsigned long *)(inew + nsize);
-  nend[0]                     = COOKIE_VALUE;
+  head->filename     = filename;
+  head->functionname = function;
+  head->dirname      = dir;
+  head->cookie       = COOKIE_VALUE;
+  nend               = (unsigned long *)(inew + nsize);
+  nend[0]            = COOKIE_VALUE;
 
   allocated += nsize;
   if (allocated > TRMaxMem) {
@@ -289,10 +246,10 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
 
   if (TrUseNan && sizeof(Scalar)*(nsize/sizeof(Scalar)) == nsize) {
     ierr = PetscInitializeNans((Scalar*) inew,nsize/sizeof(Scalar)); 
-    if (ierr) return 0;
+    if (ierr) PetscFunctionReturn(0);
   } else if (TrUseNan && sizeof(int)*(nsize/sizeof(int)) == nsize) {
     ierr = PetscInitializeLargeInts((int*) inew,nsize/sizeof(int)); 
-    if (ierr) return 0;
+    if (ierr) PetscFunctionReturn(0);
   }
 
   /*
@@ -301,13 +258,13 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
   if (PetscLogMalloc > -1 && PetscLogMalloc < PetscLogMallocMax) {
     if (PetscLogMalloc == 0) {
       PetscLogMallocLength    = (int *) malloc( PetscLogMallocMax*sizeof(int));
-      if (!PetscLogMallocLength) return 0;
+      if (!PetscLogMallocLength) PetscFunctionReturn(0);
       PetscLogMallocDirectory = (char **) malloc( PetscLogMallocMax*sizeof(char**));
-      if (!PetscLogMallocDirectory) return 0;
+      if (!PetscLogMallocDirectory) PetscFunctionReturn(0);
       PetscLogMallocFile      = (char **) malloc( PetscLogMallocMax*sizeof(char**));
-      if (!PetscLogMallocFile) return 0;
+      if (!PetscLogMallocFile) PetscFunctionReturn(0);
       PetscLogMallocFunction  = (char **) malloc( PetscLogMallocMax*sizeof(char**));
-      if (!PetscLogMallocFunction) return 0;
+      if (!PetscLogMallocFunction) PetscFunctionReturn(0);
     }
     PetscLogMallocLength[PetscLogMalloc]      = nsize;
     PetscLogMallocDirectory[PetscLogMalloc]   = dir;
@@ -315,7 +272,7 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
     PetscLogMallocFunction[PetscLogMalloc++]  = function; 
   }
 
-  return (void *)inew;
+  PetscFunctionReturn((void *)inew);
 }
 
 
@@ -336,9 +293,10 @@ int PetscTrFreeDefault( void *aa, int line, char *function, char *file, char *di
   char     *a = (char *) aa;
   TRSPACE  *head;
   char     *ahead;
-  unsigned long *nend;
   int      ierr;
+  unsigned long *nend;
 
+  PetscFunctionBegin;
   /* Don't try to handle empty blocks */
   if (!a) {
     fprintf(stderr,"PetscTrFree called from %s() line %d in %s%s\n",function,line,dir,file);
@@ -362,7 +320,6 @@ int PetscTrFreeDefault( void *aa, int line, char *function, char *file, char *di
   head  = (TRSPACE *)a;
 
   if (head->cookie != COOKIE_VALUE) {
-    /* Damaged header */
     fprintf( stderr, "Block at address %p is corrupted; cannot free;\n\
 may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
     SETERRQ(1,0,"Bad location or corrupted memory");
@@ -370,24 +327,23 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
   nend = (unsigned long *)(ahead + head->size);
   if (*nend != COOKIE_VALUE) {
     if (*nend == ALREADY_FREED) {
-	fprintf(stderr,"Block [id=%d(%lx)] at address %p was already freed\n", 
-		head->id, head->size, a + sizeof(TrSPACE) );
-	if (head->lineno > 0) 
-	  fprintf( stderr, "Block freed in %s() line %d in %s%s\n", head->functionname,
+      fprintf(stderr,"Block [id=%d(%lx)] at address %p was already freed\n", 
+              head->id, head->size, a + sizeof(TrSPACE) );
+      if (head->lineno > 0) {
+	fprintf( stderr, "Block freed in %s() line %d in %s%s\n", head->functionname,
                  head->lineno,head->dirname,head->filename);	
-	else
-	fprintf( stderr, "Block allocated in %s() line %d in %s%s\n", head->functionname,
-                 -head->lineno,head->dirname,head->filename);	
-	SETERRQ(1,0,"Memory already freed");
-    }
-    else {
-	/* Damaged tail */
-	fprintf( stderr, 
-  "Block [id=%d(%lx)] at address %p is corrupted (probably write past end)\n", 
+      } else {
+        fprintf( stderr, "Block allocated in %s() line %d in %s%s\n", head->functionname,
+                -head->lineno,head->dirname,head->filename);	
+      }
+      SETERRQ(1,0,"Memory already freed");
+    } else {
+      /* Damaged tail */
+      fprintf( stderr,"Block [id=%d(%lx)] at address %p is corrupted (probably write past end)\n", 
 		head->id, head->size, a );
-	fprintf( stderr, "Block allocated in %s() line %d in %s%s\n", head->functionname,
+      fprintf( stderr, "Block allocated in %s() line %d in %s%s\n", head->functionname,
                  head->lineno,head->dirname,head->filename);
-	SETERRQ(1,0,"Corrupted memory");
+      SETERRQ(1,0,"Corrupted memory");
     }
   }
   /* Mark the location freed */
@@ -395,15 +351,11 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
   /* Save location where freed.  If we suspect the line number, mark as 
      allocated location */
   if (line > 0 && line < 50000) {
-    head->lineno = line;
-    if (file) PetscStrncpy( head->filename, file, (TR_FILENAME_LEN-1) );
-    head->filename[TR_FILENAME_LEN-1]= 0;  /* Just in case */
-    if (function) PetscStrncpy( head->functionname, function, (TR_FUNCTIONNAME_LEN-1) );
-    head->functionname[TR_FUNCTIONNAME_LEN-1]= 0;  /* Just in case */
-    if (dir) PetscStrncpy( head->dirname, dir, (TR_DIRNAME_LEN-1) );
-    head->dirname[TR_DIRNAME_LEN-1]= 0;  /* Just in case */
-  }
-  else {
+    head->lineno       = line;
+    head->filename     = file;
+    head->functionname = function;
+    head->dirname      = dir;
+  } else {
     head->lineno = - head->lineno;
   }
 
@@ -414,7 +366,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
 
   if (head->next) head->next->prev = head->prev;
   free( a );
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -433,10 +385,12 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
  @*/
 int PetscTrSpace( PLogDouble *space, PLogDouble *fr, PLogDouble *maxs )
 {
+  PetscFunctionBegin;
+
   if (space) *space = (PLogDouble) allocated;
   if (fr)    *fr    = (PLogDouble) frags;
   if (maxs)  *maxs  = (PLogDouble) TRMaxMem;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -464,18 +418,17 @@ int PetscTrDump( FILE *fp )
   TRSPACE *head;
   int     rank;
 
+  PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (fp == 0) fp = stderr;
-  if (allocated > 0) {
-    fprintf(fp,"[%d]Total space allocated %d bytes\n",rank,(int)allocated);
-  }
+  if (allocated > 0) {fprintf(fp,"[%d]Total space allocated %d bytes\n",rank,(int)allocated);}
   head = TRhead;
   while (head) {
     fprintf(fp,"[%2d]%8d bytes %s() line %d in %s%s\n",rank,(int) head->size,
             head->functionname,head->lineno,head->dirname,head->filename);
     head = head->next;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------------- */
@@ -492,8 +445,10 @@ int PetscTrDump( FILE *fp )
 @*/
 int PetscTrLog()
 {
+  PetscFunctionBegin;
+
   PetscLogMalloc = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -517,6 +472,7 @@ int PetscTrLogDump(FILE *fp)
   PLogDouble rss;
   MPI_Status status;
 
+  PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   /*
@@ -569,7 +525,7 @@ int PetscTrLogDump(FILE *fp)
     MPI_Send(&dummy,1,MPI_INT,rank+1,tag,PETSC_COMM_WORLD);
   }
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------------- */
@@ -586,8 +542,10 @@ int PetscTrLogDump(FILE *fp)
 */
 int  PetscTrDebugLevel(int level )
 {
+  PetscFunctionBegin;
+
   TRdebugLevel = level;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #if defined(PARCH_IRIX) || defined(PARCH_IRIX5)
@@ -631,22 +589,25 @@ int PetscInitializeNans(Scalar *p,int n )
 {
   double     *pp,nval;
 
+  PetscFunctionBegin;
 #if defined(PARCH_sun4) 
   nval = signaling_nan();
 #elif defined(PARCH_rs6000)
   nval = FP_INV_SNAN;
 #else
-  NANDouble  nd;
-  nd.l[0] = nanval[0];
-  nd.l[1] = nanval[1];
-  nval = nd.d;
+  { 
+    NANDouble  nd;
+    nd.l[0] = nanval[0];
+    nd.l[1] = nanval[1];
+    nval    = nd.d;
+  }
 #endif
   pp = (double *) p;
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   n *= 2;
 #endif
   while (n--) *pp++   = nval;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -671,9 +632,14 @@ $   -trmalloc_nan
 @*/
 int PetscInitializeLargeInts(int *p,int n )
 {
+  PetscFunctionBegin;
+
   while (n--) *p++   = 1073741824;
-  return 0;
+  PetscFunctionReturn(0);
 }
+
+
+
 
 
 

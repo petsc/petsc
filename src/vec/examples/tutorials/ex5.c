@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.24 1997/07/09 20:50:03 balay Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.25 1997/09/22 15:16:17 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
 user-defined event logging.\n\n";
 
-#include <stdio.h>
 #include "vec.h"
 
 /* Note:  Most applications would not read and write a vector within

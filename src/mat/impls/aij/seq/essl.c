@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: essl.c,v 1.21 1997/07/09 20:53:48 balay Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.22 1997/08/22 15:13:29 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -36,10 +36,13 @@ extern int MatDestroy_SeqAIJ_Essl(PetscObject obj)
   Mat             A = (Mat) obj;
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*) A->data;
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*) a->spptr;
+  int             ierr;
 
+  PetscFunctionBegin;
   /* free the Essl datastructures */
   PetscFree(essl->a);
-  return MatDestroy_SeqAIJ(obj);
+  ierr = MatDestroy_SeqAIJ(obj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -51,13 +54,14 @@ extern int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
   Scalar          *xx;
   int             ierr,m, zero = 0;
 
+  PetscFunctionBegin;
   VecGetLocalSize_Fast(b,m);
   ierr = VecCopy(b,x); CHKERRQ(ierr);
   VecGetArray_Fast(x,xx);
 
   dgss(&zero, &a->n, essl->a, essl->ia, essl->ja,&essl->lna,xx,essl->aux,&essl->naux);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -69,6 +73,7 @@ extern int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
   int             ierr, *ridx, *cidx,i, len;
   Mat_SeqAIJ_Essl *essl;
 
+  PetscFunctionBegin;
   if (a->m != a->n) SETERRQ(1,0,"matrix must be square"); 
   ierr          = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PETSC_NULL,F); CHKERRQ(ierr);
   B             = *F;
@@ -93,7 +98,7 @@ extern int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
   essl->ja   = essl->ia + essl->lna;
 
   PLogObjectMemory(B,len+sizeof(Mat_SeqAIJ_Essl));
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -105,6 +110,7 @@ extern int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl *) a->spptr;
   int             i,ierr, one = 1;
 
+  PetscFunctionBegin;
   /* copy matrix data into silly ESSL data structure */
   if (!a->indexshift) {
     for ( i=0; i<aa->m+1; i++ ) essl->ia[i] = aa->i[i] + 1;
@@ -127,20 +133,21 @@ extern int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
   dgsf(&one,&aa->m,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,
                essl->rparm,essl->oparm,essl->aux,&essl->naux);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "MatUseEssl_SeqAIJ"
 int MatUseEssl_SeqAIJ(Mat A)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);  
-  if (A->type != MATSEQAIJ) return 0;
+  if (A->type != MATSEQAIJ) PetscFunctionReturn(0);
 
   A->ops.lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Essl;
   A->ops.lufactornumeric  = MatLUFactorNumeric_SeqAIJ_Essl;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #else
@@ -149,7 +156,8 @@ int MatUseEssl_SeqAIJ(Mat A)
 #define __FUNC__ "MatUseEssl_SeqAIJ"
 int MatUseEssl_SeqAIJ(Mat A)
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #endif

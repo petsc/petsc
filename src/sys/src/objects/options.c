@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.144 1997/10/04 17:12:11 curfman Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.145 1997/10/09 17:53:42 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -10,7 +10,6 @@ static char vcid[] = "$Id: options.c,v 1.144 1997/10/04 17:12:11 curfman Exp bal
 */
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
-#include <stdio.h>
 #include <math.h>
 #include "sys.h"
 #include "src/sys/nreg.h"
@@ -47,7 +46,7 @@ int        OptionsCheckInitial_Private(),
 static int OptionsDestroy_Private();
 extern int PLogEventRegisterDestroy_Private();
 
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
 MPI_Datatype  MPIU_COMPLEX;
 Scalar PETSC_i; 
 #else
@@ -66,6 +65,7 @@ int PLogOpenHistoryFile(char *filename,FILE **fd)
   int  ierr,rank,size;
   char pfile[256];
 
+  PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
   if (!rank) {
     char arch[10];
@@ -85,7 +85,7 @@ int PLogOpenHistoryFile(char *filename,FILE **fd)
     fprintf(*fd,"---------------------------------------------------------\n");
     fflush(*fd);
   }
-  return 0; 
+  PetscFunctionReturn(0); 
 }
 
 #undef __FUNC__  
@@ -94,14 +94,15 @@ static int PLogCloseHistoryFile(FILE **fd)
 {
   int  rank;
 
+  PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
-  if (rank) return 0;
+  if (rank) PetscFunctionReturn(0);
   fprintf(*fd,"---------------------------------------------------------\n");
   fprintf(*fd,"Finished at %s",PetscGetDate());
   fprintf(*fd,"---------------------------------------------------------\n");
   fflush(*fd);
   fclose(*fd);
-  return 0; 
+  PetscFunctionReturn(0); 
 }
 
 int      PetscInitializedCalled = 0;
@@ -134,11 +135,12 @@ int PetscCompareInt(int d)
 {
   int work = d;
 
+  PetscFunctionBegin;
   MPI_Bcast(&work,1,MPI_INT,0,MPI_COMM_WORLD);
   if (d != work) {
     SETERRQ(1,0,"Inconsistent integer");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -162,13 +164,14 @@ int PetscCompareDouble(double d)
 {
   double work = d;
 
+  PetscFunctionBegin;
   MPI_Bcast(&work,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-  if (!d && !work) return 0;
+  if (!d && !work) PetscFunctionReturn(0);
   if (PetscAbsDouble(work - d)/PetscMax(PetscAbsDouble(d),PetscAbsDouble(work)) 
       > PetscCompareTolerance) {
     SETERRQ(1,0,"Inconsistent double");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -193,13 +196,14 @@ int PetscCompareScalar(Scalar d)
 {
   Scalar work = d;
 
+  PetscFunctionBegin;
   MPI_Bcast(&work,2,MPI_DOUBLE,0,MPI_COMM_WORLD);
-  if (!PetscAbsScalar(d) && !PetscAbsScalar(work)) return 0;
+  if (!PetscAbsScalar(d) && !PetscAbsScalar(work)) PetscFunctionReturn(0);
   if (PetscAbsScalar(work - d)/PetscMax(PetscAbsScalar(d),PetscAbsScalar(work)) 
       >= PetscCompareTolerance) {
     SETERRQ(1,0,"Inconsistent scalar");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -217,6 +221,7 @@ int PetscCompareInitialize(double tol)
   char      *programname = options->programname, basename[256];
   MPI_Group group_all,group_sub;
 
+  PetscFunctionBegin;
   PetscCompareTolerance = tol;
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
@@ -255,26 +260,28 @@ int PetscCompareInitialize(double tol)
 
   PetscCompare = 1;
   PLogInfo(0,"Configured to compare two programs\n",rank);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "PetscInitializeOptions"
 int PetscInitializeOptions()
 {
+  PetscFunctionBegin;
   options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTRQ(options);
   PetscMemzero(options->used,MAXOPTIONS*sizeof(int));
   options->namegiven = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsSetProgramName"
 int OptionsSetProgramName(char *name)
 { 
+  PetscFunctionBegin;
   options->namegiven = 1;
   PetscStrncpy(options->programname,name,256);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -337,7 +344,8 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
 {
   int        ierr,flag,flg,dummy_tag;
 
-  if (PetscInitializedCalled) return 0;
+  PetscFunctionBegin;
+  if (PetscInitializedCalled) PetscFunctionReturn(0);
 
   ierr = PetscInitializeOptions(); CHKERRQ(ierr);
 
@@ -362,7 +370,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
 
   MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);
   MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   /* 
      Initialized the global variable; this is because with 
      shared libraries the constructors for global variables
@@ -394,7 +402,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   if (help && flg) {
     PetscPrintf(PETSC_COMM_WORLD,help);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 int PetscSequentialPhaseBegin_Private(MPI_Comm,int);
@@ -424,11 +432,11 @@ $      BOPT=[g,g_c++,g_complex] only!)
 $  -log_summary [filename] : Prints summary of flop and timing
 $      information to screen. If the filename is specified the
 $      summary is written to the file. (for code compiled with 
-$      PETSC_LOG).  See PLogPrintSummary().
+$      USE_PETSC_LOG).  See PLogPrintSummary().
 $  -log_all [filename]: Logs extensive profiling information
-$      (for code compiled with PETSC_LOG). See PLogDump(). 
+$      (for code compiled with USE_PETSC_LOG). See PLogDump(). 
 $  -log [filename]: Logs basic profiline information (for
-$      code compiled with PETSC_LOG).  See PLogDump().
+$      code compiled with USE_PETSC_LOG).  See PLogDump().
 $  -log_sync: Log the synchronization in scatters, inner products
 $             and norms
 $  -log_mpe [filename]: Creates a logfile viewable by the 
@@ -446,9 +454,10 @@ int PetscFinalize()
   int        ierr,i,rank = 0,flg1,flg2,flg3;
   PLogDouble rss;
 
+  PetscFunctionBegin;
   if (!PetscInitializedCalled) {
     fprintf(stderr,"PETSc ERROR: PetscInitialize() must be called before PetscFinalize()\n");
-    return 0;
+    PetscFunctionReturn(0);
   }
 
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
@@ -463,7 +472,14 @@ int PetscFinalize()
     fprintf(stderr,"[%d] Size of entire process memory %d\n",rank,(int)rss);
   }
 
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_STACK)
+  ierr = OptionsHasName(PETSC_NULL,"-log_stack", &flg1); CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscStackDestroy(256); CHKERRQ(ierr);
+  }
+#endif
+
+#if defined(USE_PETSC_LOG)
   {
     char mname[64];
 #if defined (HAVE_MPE)
@@ -530,7 +546,7 @@ int PetscFinalize()
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trinfo",&flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3); CHKERRQ(ierr);
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   PLogEventRegisterDestroy_Private();
 #endif
   OptionsDestroy_Private();
@@ -577,7 +593,7 @@ int PetscFinalize()
 
 */
 
-  return 0;
+  PetscFunctionReturn(0);
 }
  
 /* 
@@ -592,6 +608,7 @@ int PetscFinalize()
 #define __FUNC__ "abort_function"
 void abort_function(MPI_Comm *comm,int *flag) 
 {
+  PetscFunctionBegin;
   fprintf(stderr,"MPI error %d\n",*flag);
   abort();
 }
@@ -617,11 +634,12 @@ int OptionsCheckInitial_Private()
   MPI_Comm comm = PETSC_COMM_WORLD;
   int      flg1,flg2,flg3,flg4,ierr,*nodes,flag,i,rank;
 
+  PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_nan",&flg4);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3); CHKERRQ(ierr);
-#if defined(PETSC_BOPT_g)
+#if defined(USE_PETSC_BOPT_g)
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_off", &flg1); CHKERRQ(ierr);
   if (!flg1) { ierr = PetscSetUseTrMalloc_Private(flg4); CHKERRQ(ierr); }
 #else
@@ -635,7 +653,7 @@ int OptionsCheckInitial_Private()
   ierr = OptionsHasName(PETSC_NULL,"-trdebug",&flg1); CHKERRQ(ierr);
   if (flg1) { 
     ierr = PetscTrDebugLevel(1);CHKERRQ(ierr);
-#if defined(PARCH_sun4) && defined(PETSC_BOPT_g)
+#if defined(PARCH_sun4) && defined(USE_PETSC_BOPT_g)
     malloc_debug(2);
 #endif
   }
@@ -693,8 +711,7 @@ int OptionsCheckInitial_Private()
     PetscSetDebugger(debugger,xterm,display);
     PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);
   }
-  ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64,&flg1);
-         CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64,&flg1);CHKERRQ(ierr);
   if (flg1) {
     char           *debugger = 0, *display = 0;
     int            xterm     = 1,size;
@@ -718,8 +735,7 @@ int OptionsCheckInitial_Private()
     }
     /* check if this processor node should be in debugger */
     nodes = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(nodes);
-    ierr = OptionsGetIntArray(PETSC_NULL,"-debugger_nodes",nodes,&size,&flag);
-           CHKERRQ(ierr);
+    ierr = OptionsGetIntArray(PETSC_NULL,"-debugger_nodes",nodes,&size,&flag);CHKERRQ(ierr);
     if (flag) {
       for (i=0; i<size; i++) {
         if (nodes[i] == rank) { flag = 0; break; }
@@ -750,7 +766,7 @@ int OptionsCheckInitial_Private()
   }
   ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler", &flg1); CHKERRQ(ierr);
   if (!flg1) { PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0); }
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   {
     mname[0] = 0;
     ierr = OptionsGetString(PETSC_NULL,"-log_history",mname,256, &flg1);CHKERRQ(ierr);
@@ -817,6 +833,13 @@ int OptionsCheckInitial_Private()
     ierr = PLogTraceBegin(file); CHKERRQ(ierr);
   }
 #endif
+#if defined(USE_PETSC_STACK)
+  ierr = OptionsHasName(PETSC_NULL,"-log_stack", &flg1); CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscStackCreate(256); CHKERRQ(ierr);
+  }
+#endif
+
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);
   if (flg1) {
     PetscPrintf(comm,"Options for all PETSc programs:\n");
@@ -841,7 +864,7 @@ int OptionsCheckInitial_Private()
     PetscPrintf(comm," -trdebug: enables extended checking for memory corruption\n");
     PetscPrintf(comm," -optionstable: dump list of options inputted\n");
     PetscPrintf(comm," -optionsleft: dump list of unused options\n");
-#if defined (PETSC_LOG)
+#if defined (USE_PETSC_LOG)
     PetscPrintf(comm," -log[_all _summary]: logging objects and events\n");
     PetscPrintf(comm," -log_trace [filename]: prints trace of all PETSc calls\n");
 #if defined (HAVE_MPE)
@@ -859,7 +882,7 @@ int OptionsCheckInitial_Private()
      ierr = OptionsGetDouble(PETSC_NULL,"-compare",&tol,&flg1);CHKERRQ(ierr); 
      ierr = PetscCompareInitialize(tol); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -880,10 +903,11 @@ int OptionsCheckInitial_Private()
 @*/
 int PetscGetProgramName(char *name,int len)
 {
+  PetscFunctionBegin;
   if (!options) SETERRQ(1,1,"Must call PetscInitialize() first");
   if (!options->namegiven) SETERRQ(1,1,"Unable to determine program name");
   PetscStrncpy(name,options->programname,len);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -897,6 +921,7 @@ static int OptionsInsertFile_Private(char *file)
   int   len,ierr,i;
   FILE *fd = fopen(file,"r"); 
 
+  PetscFunctionBegin;
   if (fd) {
     while (fgets(string,128,fd)) {
       /* Comments are indicated by #, ! or % in the first column */
@@ -930,7 +955,7 @@ static int OptionsInsertFile_Private(char *file)
     }
     fclose(fd);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -957,6 +982,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
   int  ierr,rank;
   char pfile[256];
 
+  PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (!file) {
     ierr = PetscGetHomeDirectory(240,pfile); CHKERRQ(ierr);
@@ -1025,7 +1051,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1047,6 +1073,8 @@ $  -optionstable : checked within PetscFinalize()
 int OptionsPrint(FILE *fd)
 {
   int i;
+
+  PetscFunctionBegin;
   if (!fd) fd = stdout;
   if (!options) OptionsCreate_Private(0,0,0);
   for ( i=0; i<options->N; i++ ) {
@@ -1058,7 +1086,7 @@ int OptionsPrint(FILE *fd)
     }
   }
   fflush(fd);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1077,7 +1105,9 @@ int OptionsPrint(FILE *fd)
 static int OptionsDestroy_Private()
 {
   int i;
-  if (!options) return 0;
+
+  PetscFunctionBegin;
+  if (!options) PetscFunctionReturn(0);
   for ( i=0; i<options->N; i++ ) {
     if (options->names[i]) free(options->names[i]);
     if (options->values[i]) free(options->values[i]);
@@ -1088,7 +1118,7 @@ static int OptionsDestroy_Private()
   }
   free(options);
   options = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1113,6 +1143,8 @@ int OptionsSetValue(char *name,char *value)
 {
   int  len, N, n, i;
   char **names;
+
+  PetscFunctionBegin;
   if (!options) OptionsCreate_Private(0,0,0);
 
   /* this is so that -h and -help are equivalent (p4 don't like -help)*/
@@ -1141,7 +1173,7 @@ int OptionsSetValue(char *name,char *value)
         PetscStrcpy(options->values[i],value);
       }
       else { options->values[i] = 0;}
-      return 0;
+      PetscFunctionReturn(0);
     }
     else if (PetscStrcmp(names[i],name) > 0) {
       n = i;
@@ -1152,7 +1184,7 @@ int OptionsSetValue(char *name,char *value)
     fprintf(stderr,"No more room in option table, limit %d\n",MAXOPTIONS);
     fprintf(stderr,"recompile options/src/options.c with larger ");
     fprintf(stderr,"value for MAXOPTIONS\n");
-    return 0;
+    PetscFunctionReturn(0);
   }
   /* shift remaining values down 1 */
   for ( i=N; i>n; i-- ) {
@@ -1170,7 +1202,7 @@ int OptionsSetValue(char *name,char *value)
   }
   else {options->values[n] = 0;}
   options->N++;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1179,6 +1211,7 @@ int OptionsSetAlias_Private(char *newname,char *oldname)
 {
   int len,n = options->Naliases;
 
+  PetscFunctionBegin;
   if (newname[0] != '-') SETERRQ(1,0,"aliased must have -");
   if (oldname[0] != '-') SETERRQ(1,0,"aliasee must have -");
   if (n >= MAXALIASES) {SETERRQ(1,0,"You have defined to many PETSc options aliases");}
@@ -1191,7 +1224,7 @@ int OptionsSetAlias_Private(char *newname,char *oldname)
   options->aliases2[n] = (char *) malloc( len );CHKPTRQ(options->aliases2[n]);
   PetscStrcpy(options->aliases2[n],oldname);
   options->Naliases++;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1201,6 +1234,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
   int  i, N,ierr,len;
   char **names,tmp[128];
 
+  PetscFunctionBegin;
   if (!options) {ierr = OptionsCreate_Private(0,0,0); CHKERRQ(ierr);}
   N = options->N;
   names = options->names;
@@ -1225,7 +1259,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
        break;
      }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1247,14 +1281,14 @@ int OptionsReject(char* name,char *mess)
 {
   int ierr,flag;
 
+  PetscFunctionBegin;
   ierr = OptionsHasName(PETSC_NULL,name,&flag); CHKERRQ(ierr);
   if (flag) {
-
     PetscPrintf(PETSC_COMM_WORLD,"Cannot run program with option %s\n",name);
     PetscPrintf(PETSC_COMM_WORLD,"  %s",mess);
     SETERRQ(1,1,"Program has disabled option");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1278,7 +1312,11 @@ int OptionsReject(char* name,char *mess)
 int OptionsHasName(char* pre,char *name,int *flg)
 {
   char *value;
-  return OptionsFindPair_Private(pre,name,&value,flg);
+  int  ierr;
+
+  PetscFunctionBegin;
+  ierr = OptionsFindPair_Private(pre,name,&value,flg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1305,11 +1343,12 @@ int OptionsGetInt(char*pre,char *name,int *ivalue,int *flg)
   char *value;
   int  ierr;
 
+  PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
-  if (!*flg) return 0;
+  if (!*flg) PetscFunctionReturn(0);
   if (!value) {*flg = 0; *ivalue = 0;}
   else        *ivalue = atoi(value);
-  return 0; 
+  PetscFunctionReturn(0); 
 } 
 
 #undef __FUNC__  
@@ -1335,11 +1374,13 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue,int *flg)
 {
   char *value;
   int  ierr;
+
+  PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
-  if (!*flg) return 0;
+  if (!*flg) PetscFunctionReturn(0);
   if (!value) {*flg = 0; *dvalue = 0.0;}
   else *dvalue = atof(value);
-  return 0; 
+  PetscFunctionReturn(0); 
 } 
 
 #undef __FUNC__  
@@ -1367,11 +1408,12 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue,int *flg)
   char *value;
   int  ierr;
   
+  PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
-  if (!*flg) return 0;
+  if (!*flg) PetscFunctionReturn(0);
   if (!value) {*flg = 0; *dvalue = 0;}
   else        *dvalue = atof(value);
-  return 0; 
+  PetscFunctionReturn(0); 
 } 
 
 #undef __FUNC__  
@@ -1401,9 +1443,10 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *fl
   char *value,*cpy;
   int  flag,n = 0,ierr,len;
 
+  PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag); CHKERRQ(ierr);
-  if (!flag)  {if (flg) *flg = 0; *nmax = 0; return 0;}
-  if (!value) {if (flg) *flg = 0; *nmax = 0; return 0;}
+  if (!flag)  {if (flg) *flg = 0; *nmax = 0; PetscFunctionReturn(0);}
+  if (!value) {if (flg) *flg = 0; *nmax = 0; PetscFunctionReturn(0);}
 
   if (flg) *flg = 1;
   /* make a copy of the values, otherwise we destroy the old values */
@@ -1421,7 +1464,7 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *fl
   }
   *nmax = n;
   PetscFree(cpy);
-  return 0; 
+  PetscFunctionReturn(0); 
 } 
 
 #undef __FUNC__  
@@ -1451,9 +1494,10 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
   char *value,*cpy;
   int  flag,n = 0,ierr,len;
 
+  PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag); CHKERRQ(ierr);
-  if (!flag)  {if (flg) *flg = 0; *nmax = 0; return 0;}
-  if (!value) {if (flg) *flg = 0; *nmax = 0; return 0;}
+  if (!flag)  {if (flg) *flg = 0; *nmax = 0; PetscFunctionReturn(0);}
+  if (!value) {if (flg) *flg = 0; *nmax = 0; PetscFunctionReturn(0);}
 
   if (flg) *flg = 1;
   /* make a copy of the values, otherwise we destroy the old values */
@@ -1471,7 +1515,7 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
   }
   *nmax = n;
   PetscFree(cpy);
-  return 0; 
+  PetscFunctionReturn(0); 
 } 
 
 #undef __FUNC__  
@@ -1499,11 +1543,12 @@ int OptionsGetString(char *pre,char *name,char *string,int len, int *flg)
   char *value;
   int  ierr;
 
+  PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr); 
-  if (!*flg) {return 0;}
+  if (!*flg) {PetscFunctionReturn(0);}
   if (value) PetscStrncpy(string,value,len);
   else PetscMemzero(string,len);
-  return 0; 
+  PetscFunctionReturn(0); 
 }
 
 #undef __FUNC__  
@@ -1522,8 +1567,11 @@ $  -optionsleft : checked within PetscFinalize()
 int OptionsAllUsed()
 {
   int  i,n = 0;
+
+  PetscFunctionBegin;
   for ( i=0; i<options->N; i++ ) {
     if (!options->used[i]) { n++; }
   }
-  return n;
+  PetscFunctionReturn(n);
 }
+

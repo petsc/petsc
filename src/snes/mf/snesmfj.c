@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.55 1997/08/13 22:26:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.56 1997/08/22 15:17:50 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -22,11 +22,12 @@ int SNESMatrixFreeDestroy_Private(PetscObject obj)
   Mat           mat = (Mat) obj;
   MFCtx_Private *ctx;
 
+  PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);
   ierr = VecDestroy(ctx->w); CHKERRQ(ierr);
   if (ctx->sp) {ierr = PCNullSpaceDestroy(ctx->sp); CHKERRQ(ierr);}
   PetscFree(ctx);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -42,6 +43,7 @@ int SNESMatrixFreeView_Private(Mat J,Viewer viewer)
   FILE          *fd;
   ViewerType    vtype;
 
+  PetscFunctionBegin;
   PetscObjectGetComm((PetscObject)J,&comm);
   ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
@@ -51,7 +53,7 @@ int SNESMatrixFreeView_Private(Mat J,Viewer viewer)
      PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);
      PetscFPrintf(comm,fd,"    umin=%g (minimum iterate parameter)\n",ctx->umin);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 extern int VecDot_Seq(Vec,Vec,Scalar *);
@@ -77,6 +79,7 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   int           ierr, (*eval_fct)(SNES,Vec,Vec);
   MPI_Comm      comm;
 
+  PetscFunctionBegin;
   PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
 
   PetscObjectGetComm((PetscObject)mat,&comm);
@@ -114,7 +117,7 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
      to reduce the number of communications required
   */
 
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
   PLogEventBegin(VEC_Dot,U,a,0,0);
   ierr = VecDot_Seq(U,a,ovalues); CHKERRQ(ierr);
   PLogEventEnd(VEC_Dot,U,a,0,0);
@@ -150,7 +153,7 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
 
   /* Safeguard for step sizes too small */
   if (sum == 0.0) {dot = 1.0; norm = 1.0;}
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   else if (abs(dot) < umin*sum && real(dot) >= 0.0) dot = umin*sum;
   else if (abs(dot) < 0.0 && real(dot) > -umin*sum) dot = -umin*sum;
 #else
@@ -168,7 +171,7 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   if (ctx->sp) {ierr = PCNullSpaceRemove(ctx->sp,y); CHKERRQ(ierr);}
 
   PLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -219,6 +222,7 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   int           n, nloc, ierr, flg;
   char          p[64];
 
+  PetscFunctionBegin;
   mfctx = (MFCtx_Private *) PetscMalloc(sizeof(MFCtx_Private)); CHKPTRQ(mfctx);
   PLogObjectMemory(snes,sizeof(MFCtx_Private));
   mfctx->sp   = 0;
@@ -244,7 +248,7 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   ierr = MatShellSetOperation(*J,MATOP_VIEW,(void *)SNESMatrixFreeView_Private); CHKERRQ(ierr);
   PLogObjectParent(*J,mfctx->w);
   PLogObjectParent(snes,*J);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -273,13 +277,14 @@ int SNESSetMatrixFreeParameters(SNES snes,double error,double umin)
   int           ierr;
   Mat           mat;
 
+  PetscFunctionBegin;
   ierr = SNESGetJacobian(snes,&mat,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
   if (ctx) {
     if (error != PETSC_DEFAULT) ctx->error_rel = error;
     if (umin != PETSC_DEFAULT)  ctx->umin = umin;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -305,13 +310,14 @@ int SNESDefaultMatrixFreeMatAddNullSpace(Mat J,int has_cnst,int n,Vec *vecs)
   MFCtx_Private *ctx;
   MPI_Comm      comm;
 
+  PetscFunctionBegin;
   PetscObjectGetComm((PetscObject)J,&comm);
 
   ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
   /* no context indicates that it is not the "matrix free" matrix type */
-  if (!ctx) return 0;
+  if (!ctx) PetscFunctionReturn(0);
   ierr = PCNullSpaceCreate(comm,has_cnst,n,vecs,&ctx->sp); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.31 1997/07/09 20:57:17 balay Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.32 1997/09/22 15:20:40 balay Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -35,7 +35,6 @@ T*/
      viewer.h - viewers               pc.h  - preconditioners
 */
 #include "sles.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {

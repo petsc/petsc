@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.40 1997/07/09 20:58:15 balay Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.41 1997/08/22 15:16:30 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -33,8 +33,12 @@ static int    PetscAGetBase(double,double,int,double*,int*);
 #define __FUNC__ "PetscRint"
 static double PetscRint(double x )
 {
-  if (x > 0) return floor( x + 0.5 );
-  return floor( x - 0.5 );
+  double f;
+
+  PetscFunctionBegin;
+  if (x > 0) f = floor( x + 0.5 );
+  else f = floor( x - 0.5 );
+  PetscFunctionReturn(f);
 }
 
 #undef __FUNC__  
@@ -50,11 +54,14 @@ static double PetscRint(double x )
 @*/
 int DrawAxisCreate(Draw win,DrawAxis *ctx)
 {
-  DrawAxis ad;
+  DrawAxis    ad;
   PetscObject vobj = (PetscObject) win;
+  int         ierr;
 
+  PetscFunctionBegin;
   if (vobj->cookie == DRAW_COOKIE && vobj->type == DRAW_NULLWINDOW) {
-     return DrawOpenNull(vobj->comm,(Draw*)ctx);
+    ierr = DrawOpenNull(vobj->comm,(Draw*)ctx); CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
   PetscHeaderCreate(ad,_p_DrawAxis,DRAWAXIS_COOKIE,0,vobj->comm,DrawAxisDestroy,0);
   PLogObjectCreate(ad);
@@ -72,7 +79,7 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
   ad->toplabel  = 0;
 
   *ctx = ad;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -85,12 +92,13 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
 @*/
 int DrawAxisDestroy(DrawAxis ad)
 {
-  if (!ad) return 0;
-  if (--ad->refct > 0) return 0;
+  PetscFunctionBegin;
+  if (!ad) PetscFunctionReturn(0);
+  if (--ad->refct > 0) PetscFunctionReturn(0);
 
   PLogObjectDestroy(ad);
   PetscHeaderDestroy(ad);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -107,9 +115,10 @@ int DrawAxisDestroy(DrawAxis ad)
 @*/
 int DrawAxisSetColors(DrawAxis ad,int ac,int tc,int cc)
 {
-  if (!ad) return 0;
+  PetscFunctionBegin;
+  if (!ad) PetscFunctionReturn(0);
   ad->ac = ac; ad->tc = tc; ad->cc = cc;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -125,11 +134,12 @@ int DrawAxisSetColors(DrawAxis ad,int ac,int tc,int cc)
 @*/
 int DrawAxisSetLabels(DrawAxis ad,char* top,char *xlabel,char *ylabel)
 {
-  if (!ad) return 0;
+  PetscFunctionBegin;
+  if (!ad) PetscFunctionReturn(0);
   ad->xlabel   = xlabel;
   ad->ylabel   = ylabel;
   ad->toplabel = top;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -144,12 +154,13 @@ int DrawAxisSetLabels(DrawAxis ad,char* top,char *xlabel,char *ylabel)
 @*/
 int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double ymax)
 {
-  if (!ad) return 0;
+  PetscFunctionBegin;
+  if (!ad) PetscFunctionReturn(0);
   ad->xlow = xmin;
   ad->xhigh= xmax;
   ad->ylow = ymin;
   ad->yhigh= ymax;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -174,8 +185,9 @@ int DrawAxisDraw(DrawAxis ad)
   Draw      awin = ad->win;
   double    h,w,tw,th,xl,xr,yl,yr;
  
-  if (!ad) return 0;
-   MPI_Comm_rank(ad->comm,&rank); if (rank) return 0;
+  PetscFunctionBegin;
+  if (!ad) PetscFunctionReturn(0);
+  MPI_Comm_rank(ad->comm,&rank); if (rank) PetscFunctionReturn(0);
 
   if (ad->xlow == ad->xhigh) {ad->xlow -= .5; ad->xhigh += .5;}
   if (ad->ylow == ad->yhigh) {ad->ylow -= .5; ad->yhigh += .5;}
@@ -248,7 +260,7 @@ int DrawAxisDraw(DrawAxis ad)
     w = xl + .5*tw;
     DrawStringVertical(awin,w,h,cc,ad->ylabel); 
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -258,14 +270,17 @@ int DrawAxisDraw(DrawAxis ad)
 */
 static int PetscStripAllZeros(char *buf)
 {
-  int i,n = (int) PetscStrlen(buf);
-  if (buf[0] != '.') return 0;
+  int i,n;
+
+  PetscFunctionBegin;
+  n = (int) PetscStrlen(buf);
+  if (buf[0] != '.') PetscFunctionReturn(0);
   for ( i=1; i<n; i++ ) {
-    if (buf[i] != '0') return 0;
+    if (buf[i] != '0') PetscFunctionReturn(0);
   }
   buf[0] = '0';
   buf[1] = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -275,20 +290,22 @@ static int PetscStripAllZeros(char *buf)
 */
 static int PetscStripTrailingZeros(char *buf)
 {
-  int i,n = (int) PetscStrlen(buf),m = -1;
+  int i,n,m = -1;
 
+  PetscFunctionBegin;
+  n = (int) PetscStrlen(buf);
   /* locate decimal point */
   for ( i=0; i<n; i++ ) {
     if (buf[i] == '.') {m = i; break;}
   }
   /* if not decimal point then no zeros to remove */
-  if (m == -1) return 0;
+  if (m == -1) PetscFunctionReturn(0);
   /* start at right end of string removing 0s */
   for ( i=n-1; i>m; i++ ) {
-    if (buf[i] != '0') return 0;
+    if (buf[i] != '0') PetscFunctionReturn(0);
     buf[i] = 0;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -298,7 +315,10 @@ static int PetscStripTrailingZeros(char *buf)
 */
 static int PetscStripInitialZero(char *buf)
 {
-  int i,n = (int) PetscStrlen(buf); 
+  int i,n;
+
+  PetscFunctionBegin;
+  n = (int) PetscStrlen(buf); 
   if (buf[0] == '0') {
     for ( i=0; i<n; i++ ) {
       buf[i] = buf[i+1];
@@ -308,7 +328,7 @@ static int PetscStripInitialZero(char *buf)
       buf[i] = buf[i+1];
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -318,16 +338,19 @@ static int PetscStripInitialZero(char *buf)
 */
 static int PetscStripZeros(char *buf)
 {
-  int i,j,n = (int) PetscStrlen(buf);
-  if (n<5) return 0;
+  int i,j,n;
+
+  PetscFunctionBegin;
+  n = (int) PetscStrlen(buf);
+  if (n<5) PetscFunctionReturn(0);
   for ( i=1; i<n-1; i++ ) {
     if (buf[i] == 'e' && buf[i-1] == '0') {
       for ( j=i; j<n+1; j++ ) buf[j-1] = buf[j];
       PetscStripZeros(buf);
-      return 0;
+      PetscFunctionReturn(0);
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -337,26 +360,29 @@ static int PetscStripZeros(char *buf)
 */
 static int PetscStripZerosPlus(char *buf)
 {
-  int i,j,n = (int) PetscStrlen(buf);
-  if (n<5) return 0;
+  int i,j,n;
+
+  PetscFunctionBegin;
+  n = (int) PetscStrlen(buf);
+  if (n<5) PetscFunctionReturn(0);
   for ( i=1; i<n-2; i++ ) {
     if (buf[i] == '+') {
       if (buf[i+1] == '0') {
         for ( j=i+1; j<n+1; j++ ) buf[j-1] = buf[j+1];
-        return 0;
+        PetscFunctionReturn(0);
       }
       else {
         for ( j=i+1; j<n+1; j++ ) buf[j] = buf[j+1];
-        return 0;  
+        PetscFunctionReturn(0);  
       }
     } else if (buf[i] == '-') {
       if (buf[i+1] == '0') {
         for ( j=i+1; j<n+1; j++ ) buf[j] = buf[j+1];
-        return 0;
+        PetscFunctionReturn(0);
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -372,6 +398,7 @@ static char *PetscADefLabel(double val,double sep )
   char   fmat[10];
   int    w, d;
 
+  PetscFunctionBegin;
   /* Find the string */
   if (PetscAbsDouble(val)/sep <  1.e-6) {
     buf[0] = '0'; buf[1] = 0;
@@ -422,7 +449,7 @@ static char *PetscADefLabel(double val,double sep )
     PetscStripAllZeros(buf);
     PetscStripTrailingZeros(buf);
   }
-  return buf;
+  PetscFunctionReturn(buf);
 }
 
 #undef __FUNC__  
@@ -431,10 +458,10 @@ static char *PetscADefLabel(double val,double sep )
 static int PetscADefTicks( double low, double high, int num, int *ntick,
                            double * tickloc,int  maxtick )
 {
-  int    i;
+  int    i,power;
   double x, base;
-  int    power;
 
+  PetscFunctionBegin;
   /* patch if low == high */
   if (PetscAbsDouble(low-high) < 1.e-8) {
     low  -= .01;
@@ -458,7 +485,7 @@ static int PetscADefTicks( double low, double high, int num, int *ntick,
   if (i < 2 && num < 10) {
     PetscADefTicks( low, high, num+1, ntick, tickloc, maxtick );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #define EPS 1.e-6
@@ -467,7 +494,10 @@ static int PetscADefTicks( double low, double high, int num, int *ntick,
 #define __FUNC__ "PetscExp10"
 static double PetscExp10(double d )
 {
-  return pow( 10.0, d );
+  double dd;
+  PetscFunctionBegin;
+  dd = pow( 10.0, d );
+  PetscFunctionReturn(dd);
 }
 
 #undef __FUNC__  
@@ -475,18 +505,21 @@ static double PetscExp10(double d )
 static double PetscMod(double x,double y )
 {
   int     i;
+
+  PetscFunctionBegin;
   i   = ((int) x ) / ( (int) y );
   x   = x - i * y;
   while (x > y) x -= y;
-  return x;
+  PetscFunctionReturn(x);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscCopysign"
 static double PetscCopysign(double a,double b )
 {
-  if (b >= 0) return a;
-  return -a;
+  PetscFunctionBegin;
+  if (b >= 0) PetscFunctionReturn(a);
+  PetscFunctionReturn(-a);
 }
 
 #undef __FUNC__  
@@ -499,10 +532,12 @@ static double PetscAGetNice(double in,double base,int sgn )
 {
   double  etmp;
 
+  PetscFunctionBegin;
   etmp    = in / base + 0.5 + PetscCopysign ( 0.5, (double) sgn );
   etmp    = etmp - 0.5 + PetscCopysign( 0.5, etmp ) -
 		       PetscCopysign ( EPS * etmp, (double) sgn );
-  return base * ( etmp - PetscMod( etmp, 1.0 ) );
+  etmp = base * ( etmp - PetscMod( etmp, 1.0 ) );
+  PetscFunctionReturn(etmp);
 }
 
 #undef __FUNC__  
@@ -513,6 +548,7 @@ static int PetscAGetBase(double vmin,double vmax,int num,double*Base,int*power)
   static double base_try[5] = {10.0, 5.0, 2.0, 1.0, 0.5};
   int     i;
 
+  PetscFunctionBegin;
   /* labels of the form n * BASE */
   /* get an approximate value for BASE */
   base    = ( vmax - vmin ) / (double) (num + 1);
@@ -536,6 +572,11 @@ static int PetscAGetBase(double vmin,double vmax,int num,double*Base,int*power)
     }
   }
   *Base   = base;
-  return 0;
+  PetscFunctionReturn(0);
 }
+
+
+
+
+
 

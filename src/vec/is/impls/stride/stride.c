@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.61 1997/10/01 22:43:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.62 1997/10/10 04:01:47 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -16,9 +16,12 @@ typedef struct {
 #define __FUNC__ "ISDuplicate_Stride" 
 int ISDuplicate_Stride(IS is, IS *newIS)
 {
+  int       ierr;
   IS_Stride *sub = (IS_Stride *) is->data;
 
-  return ISCreateStride(is->comm, sub->n, sub->first, sub->step, newIS);
+  PetscFunctionBegin;
+  ierr = ISCreateStride(is->comm, sub->n, sub->first, sub->step, newIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -28,6 +31,7 @@ int ISInvertPermutation_Stride(IS is, IS *perm)
   IS_Stride *isstride = (IS_Stride *) is->data;
   int       ierr;
 
+  PetscFunctionBegin;
   if (is->isidentity) {
     ierr = ISCreateStride(PETSC_COMM_SELF,isstride->n,0,1,perm); CHKERRQ(ierr);
     ierr = ISSetPermutation(*perm); CHKERRQ(ierr);
@@ -43,7 +47,7 @@ int ISInvertPermutation_Stride(IS is, IS *perm)
     PetscFree(ii);
     ierr = ISSetPermutation(*perm); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
     
 #undef __FUNC__  
@@ -70,14 +74,16 @@ int ISInvertPermutation_Stride(IS is, IS *perm)
 int ISStrideGetInfo(IS is,int *first,int *step)
 {
   IS_Stride *sub;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(first);
   PetscValidIntPointer(step);
 
   sub = (IS_Stride *) is->data;
-  if (is->type != IS_STRIDE) return 0;
+  if (is->type != IS_STRIDE) PetscFunctionReturn(0);
   *first = sub->first; *step = sub->step;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -97,13 +103,14 @@ int ISStrideGetInfo(IS is,int *first,int *step)
 @*/
 int ISStride(IS is,PetscTruth *flag)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(flag);
 
   if (is->type != IS_STRIDE) *flag = PETSC_FALSE;
   else                           *flag = PETSC_TRUE;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -111,9 +118,11 @@ int ISStride(IS is,PetscTruth *flag)
 int ISDestroy_Stride(PetscObject obj)
 {
   IS is = (IS) obj;
+
+  PetscFunctionBegin;
   PetscFree(is->data); 
   PLogObjectDestroy(is);
-  PetscHeaderDestroy(is); return 0;
+  PetscHeaderDestroy(is); PetscFunctionReturn(0);
 }
 
 /*
@@ -127,18 +136,20 @@ int ISGetIndices_Stride(IS in,int **idx)
   IS_Stride *sub = (IS_Stride *) in->data;
   int       i;
 
+  PetscFunctionBegin;
   *idx = (int *) PetscMalloc((sub->n+1)*sizeof(int)); CHKPTRQ(idx);
   (*idx)[0] = sub->first;
   for ( i=1; i<sub->n; i++ ) (*idx)[i] = (*idx)[i-1] + sub->step;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "ISRestoreIndices_Stride" 
 int ISRestoreIndices_Stride(IS in,int **idx)
 {
+  PetscFunctionBegin;
   PetscFree(*idx);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -146,7 +157,9 @@ int ISRestoreIndices_Stride(IS in,int **idx)
 int ISGetSize_Stride(IS is,int *size)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
-  *size = sub->n; return 0;
+
+  PetscFunctionBegin;
+  *size = sub->n; PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -159,6 +172,7 @@ int ISView_Stride(PetscObject obj, Viewer viewer)
   FILE        *fd;
   ViewerType  vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER) { 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -182,7 +196,7 @@ int ISView_Stride(PetscObject obj, Viewer viewer)
     }
     fflush(fd);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
   
 #undef __FUNC__  
@@ -190,10 +204,12 @@ int ISView_Stride(PetscObject obj, Viewer viewer)
 int ISSort_Stride(IS is)
 {
   IS_Stride *sub = (IS_Stride *) is->data;
-  if (sub->step >= 0 ) return 0;
+
+  PetscFunctionBegin;
+  if (sub->step >= 0 ) PetscFunctionReturn(0);
   sub->first += (sub->n - 1 )*sub->step;
   sub->step *= -1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -201,9 +217,11 @@ int ISSort_Stride(IS is)
 int ISSorted_Stride(IS is, PetscTruth* flg)
 {
   IS_Stride *sub = (IS_Stride *) is->data;
+
+  PetscFunctionBegin;
   if (sub->step >= 0) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 static struct _ISOps myops = { ISGetSize_Stride,
@@ -240,6 +258,7 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   IS        Nindex;
   IS_Stride *sub;
 
+  PetscFunctionBegin;
   *is = 0;
   if (n < 0) SETERRQ(1,0,"Number of indices < 0");
   if (step == 0) SETERRQ(1,0,"Step must be nonzero");
@@ -266,7 +285,7 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
     ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm)); CHKERRQ(ierr);
   }
   *is = Nindex; 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

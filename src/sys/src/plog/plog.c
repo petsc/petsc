@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.172 1997/10/04 04:45:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.173 1997/10/10 04:07:27 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -10,7 +10,6 @@ static char vcid[] = "$Id: plog.c,v 1.172 1997/10/04 04:45:45 bsmith Exp bsmith 
 #if defined(HAVE_MPE)
 #include "mpe.h"
 #endif
-#include <stdio.h>
 #include <stdarg.h>
 #include <sys/types.h>
 #include "sys.h"
@@ -51,8 +50,9 @@ $    -log_info
 @*/
 int PLogInfoAllow(PetscTruth flag)
 {
+  PetscFunctionBegin;
   PLogPrintInfo = (int) flag;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -68,12 +68,13 @@ int PLogInfoAllow(PetscTruth flag)
 @*/
 int PLogInfoDeactivateClass(int objclass)
 {
+  PetscFunctionBegin;
   PLogInfoFlags[objclass - PETSC_COOKIE - 1] = 0;
   if (objclass == SLES_COOKIE) {
     PLogInfoFlags[PC_COOKIE - PETSC_COOKIE - 1]  = 0;
     PLogInfoFlags[KSP_COOKIE - PETSC_COOKIE - 1] = 0;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -89,12 +90,13 @@ int PLogInfoDeactivateClass(int objclass)
 @*/
 int PLogInfoActivateClass(int objclass)
 {
+  PetscFunctionBegin;
   PLogInfoFlags[objclass - PETSC_COOKIE - 1] = 1;
   if (objclass == SLES_COOKIE) {
     PLogInfoFlags[PC_COOKIE - PETSC_COOKIE - 1]  = 1;
     PLogInfoFlags[KSP_COOKIE - PETSC_COOKIE - 1] = 1;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -138,12 +140,13 @@ int PLogInfo(void *vobj,char *message,...)
   PetscObject obj = (PetscObject) vobj;
   char        string[256];
 
+  PetscFunctionBegin;
   if (obj) PetscValidHeader(obj);
-  if (!PLogPrintInfo) return 0;
-  if (obj && !PLogInfoFlags[obj->cookie - PETSC_COOKIE - 1]) return 0;
+  if (!PLogPrintInfo) PetscFunctionReturn(0);
+  if (obj && !PLogInfoFlags[obj->cookie - PETSC_COOKIE - 1]) PetscFunctionReturn(0);
   if (!obj) rank = 0;
   else      {MPI_Comm_rank(obj->comm,&rank);} 
-  if (rank) return 0;
+  if (rank) PetscFunctionReturn(0);
 
   MPI_Comm_rank(PETSC_COMM_WORLD,&urank);
   va_start( Argp, message );
@@ -163,11 +166,11 @@ int PLogInfo(void *vobj,char *message,...)
 #endif
   }
   va_end( Argp );
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------*/
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
 static int PLOG_USER_EVENT_LOW = PLOG_USER_EVENT_LOW_STATIC;
 
 /* 
@@ -488,9 +491,10 @@ static PLogDouble  EventsType[10][PLOG_USER_EVENT_HIGH][6];
 @*/
 int PLogStageRegister(int stage, char *sname)
 {
+  PetscFunctionBegin;
   if (stage < 0 || stage > 10) SETERRQ(1,0,"Out of range");
   EventsStageName[stage] = sname;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -529,6 +533,7 @@ $
 @*/
 int PLogStagePush(int stage)
 {
+  PetscFunctionBegin;
   if (stage < 0 || stage > 10) SETERRQ(1,0,"Out of range");
   /* record flops/time of previous stage */
   if (EventsStagePushed) {
@@ -547,7 +552,7 @@ int PLogStagePush(int stage)
   EventsStageMessageCounts[EventsStage]  -= irecv_ct + isend_ct + recv_ct + send_ct;
   EventsStageMessageLengths[EventsStage] -= irecv_len + isend_len + recv_len + send_len;
   EventsStageReductions[EventsStage]     -= allreduce_ct;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -580,6 +585,7 @@ $
 @*/
 int PLogStagePop()
 {
+  PetscFunctionBegin;
   PetscTimeAdd(EventsStageTime[EventsStage]);
   EventsStageFlops[EventsStage]          += _TotalFlops;
   EventsStageMessageCounts[EventsStage]  += irecv_ct + isend_ct + recv_ct + send_ct;
@@ -594,7 +600,7 @@ int PLogStagePop()
     EventsStageMessageLengths[EventsStage] -= irecv_len + isend_len + recv_len + send_len;
     EventsStageReductions[EventsStage]     -= allreduce_ct;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* --------------------------------------------------------------------------------*/
@@ -611,6 +617,7 @@ int (*_PLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject) = 0;
 #define __FUNC__ "PLogDefaultPHC"
 int PLogDefaultPHC(PetscObject obj)
 {
+  PetscFunctionBegin;
   if (nevents >= eventsspace) {
     Events *tmp;
     PLogDouble end,start;
@@ -646,7 +653,7 @@ int PLogDefaultPHC(PetscObject obj)
   PetscMemzero(objects[nobjects].name,16*sizeof(char));
   obj->id = nobjects++;
   ObjectsType[EventsStage][obj->cookie - PETSC_COOKIE-1][0]++;
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*
       Default object destroy logger 
@@ -656,6 +663,8 @@ int PLogDefaultPHC(PetscObject obj)
 int PLogDefaultPHD(PetscObject obj)
 {
   PetscObject parent;
+
+  PetscFunctionBegin;
   if (nevents >= eventsspace) {
     Events *tmp;
     PLogDouble end,start;
@@ -694,7 +703,7 @@ int PLogDefaultPHD(PetscObject obj)
     parent = parent->parent;
   } 
   ObjectsDestroyed++;
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*
     Event begin logger with complete logging
@@ -703,8 +712,10 @@ int PLogDefaultPHD(PetscObject obj)
 #define __FUNC__ "PLogDefaultPLBAll"
 int PLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
- PLogDouble ltime;
- if (nevents >= eventsspace) {
+  PLogDouble ltime;
+
+  PetscFunctionBegin;
+  if (nevents >= eventsspace) {
     Events *tmp;
     PLogDouble end,start;
     PetscTime(start);
@@ -730,7 +741,7 @@ int PLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject 
   EventsType[EventsStage][event][MESSAGES]    -= irecv_ct + isend_ct + recv_ct + send_ct;
   EventsType[EventsStage][event][LENGTHS]     -= irecv_len + isend_len + recv_len + send_len;
   EventsType[EventsStage][event][REDUCTIONS]  -= allreduce_ct;
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*
      Event end logger with complete logging
@@ -739,8 +750,10 @@ int PLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject 
 #define __FUNC__ "PLogDefaultPLEAll"
 int PLogDefaultPLEAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
- PLogDouble ltime;
- if (nevents >= eventsspace) {
+  PLogDouble ltime;
+
+  PetscFunctionBegin;
+  if (nevents >= eventsspace) {
     Events *tmp;
     PLogDouble end,start;
     PetscTime(start);
@@ -765,7 +778,7 @@ int PLogDefaultPLEAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject 
   EventsType[EventsStage][event][MESSAGES]    += irecv_ct + isend_ct + recv_ct + send_ct;
   EventsType[EventsStage][event][LENGTHS]     += irecv_len + isend_len + recv_len + send_len;
   EventsType[EventsStage][event][REDUCTIONS]  += allreduce_ct;
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*
      Default event begin logger
@@ -774,13 +787,14 @@ int PLogDefaultPLEAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject 
 #define __FUNC__ "PLogDefaultPLB"
 int PLogDefaultPLB(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
+  PetscFunctionBegin;
   EventsType[EventsStage][event][COUNT]++;
   PetscTimeSubtract(EventsType[EventsStage][event][TIME]);
   EventsType[EventsStage][event][FLOPS]       -= _TotalFlops;
   EventsType[EventsStage][event][MESSAGES]    -= irecv_ct + isend_ct + recv_ct + send_ct;
   EventsType[EventsStage][event][LENGTHS]     -= irecv_len + isend_len + recv_len + send_len;
   EventsType[EventsStage][event][REDUCTIONS]  -= allreduce_ct;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -790,12 +804,13 @@ int PLogDefaultPLB(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
 #define __FUNC__ "PLogDefaultPLE"
 int PLogDefaultPLE(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
+  PetscFunctionBegin;
   PetscTimeAdd(EventsType[EventsStage][event][TIME]);
   EventsType[EventsStage][event][FLOPS]       += _TotalFlops;
   EventsType[EventsStage][event][MESSAGES]    += irecv_ct + isend_ct + recv_ct + send_ct;
   EventsType[EventsStage][event][LENGTHS]     += irecv_len + isend_len + recv_len + send_len;
   EventsType[EventsStage][event][REDUCTIONS]  += allreduce_ct;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -813,6 +828,7 @@ int PLogDefaultPLBTrace(int event,int t,PetscObject o1,PetscObject o2,PetscObjec
 {
   int  rank;
 
+  PetscFunctionBegin;
   if (!tracetime) { tracetime = PetscGetTime(); }
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
@@ -822,7 +838,7 @@ int PLogDefaultPLBTrace(int event,int t,PetscObject o1,PetscObject o2,PetscObjec
   fflush(tracefile);
   tracelevel++;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -834,13 +850,14 @@ int PLogDefaultPLETrace(int event,int t,PetscObject o1,PetscObject o2,PetscObjec
 {
   int rank;
 
+  PetscFunctionBegin;
   tracelevel--;
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   PetscStrncpy(tracespace,traceblanks,2*tracelevel);
   tracespace[2*tracelevel] = 0;
   fprintf(tracefile,"%s[%d] %g Event end: %s\n",tracespace,rank,PetscGetTime()-tracetime,PLogEventName[event]);
   fflush(tracefile);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------------*/
@@ -849,7 +866,9 @@ int PLogDefaultPLETrace(int event,int t,PetscObject o1,PetscObject o2,PetscObjec
 int PLogObjectState(PetscObject obj,char *format,...)
 {
   va_list Argp;
-  if (!objects) return 0;
+
+  PetscFunctionBegin;
+  if (!objects) PetscFunctionReturn(0);
   va_start( Argp, format );
 #if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
   vsprintf(objects[obj->id].string,format,(char *)Argp);
@@ -857,7 +876,7 @@ int PLogObjectState(PetscObject obj,char *format,...)
   vsprintf(objects[obj->id].string,format,Argp);
 #endif
   va_end( Argp );
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -876,9 +895,10 @@ int PLogObjectState(PetscObject obj,char *format,...)
 int PLogSet(int (*b)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
             int (*e)(int,int,PetscObject,PetscObject,PetscObject,PetscObject))
 {
+  PetscFunctionBegin;
   _PLogPLB    = b;
   _PLogPLE    = e;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -889,7 +909,7 @@ int PLogSet(int (*b)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
 
    Options Database Keys:
 $  -log_all : Prints extensive log information (for code compiled
-$      with PETSC_LOG)
+$      with USE_PETSC_LOG)
 
    Notes:
    A related routine is PLogBegin (with the options key -log), which is 
@@ -903,6 +923,8 @@ $      with PETSC_LOG)
 int PLogAllBegin()
 {
   int ierr;
+
+  PetscFunctionBegin;
   objects  = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
   events   = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
   _PLogPHC = PLogDefaultPHC;
@@ -912,7 +934,7 @@ int PLogAllBegin()
   MPI_Barrier(PETSC_COMM_WORLD);
   PetscTime(BaseTime);
   PLogStagePush(0);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -933,6 +955,7 @@ int PLogDestroy()
 {
   int ierr;
 
+  PetscFunctionBegin;
   if (objects) {free(objects); objects = 0;}
   if (events)  {free(events); events = 0;}
   ierr    = PLogSet(0,0); CHKERRQ(ierr);
@@ -944,7 +967,7 @@ int PLogDestroy()
   nobjects         = 0;
   nevents          = 0;
   ObjectsDestroyed = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -956,9 +979,9 @@ int PLogDestroy()
 
    Options Database Keys:
 $  -log : Prints basic log information (for code compiled 
-$      with PETSC_LOG)
+$      with USE_PETSC_LOG)
 $  -log_summary : Prints summary of flop and timing information 
-$      to screen (for code compiled with PETSC_LOG)
+$      to screen (for code compiled with USE_PETSC_LOG)
 
 .keywords: log, begin
 
@@ -968,6 +991,7 @@ int PLogBegin()
 {
   int ierr;
 
+  PetscFunctionBegin;
   objects  = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
   events   = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
   _PLogPHC = PLogDefaultPHC;
@@ -977,7 +1001,7 @@ int PLogBegin()
   MPI_Barrier(PETSC_COMM_WORLD);
   PetscTime(BaseTime);
   PLogStagePush(0);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1006,9 +1030,10 @@ int PLogTraceBegin(FILE *file)
 {
   int ierr;
 
+  PetscFunctionBegin;
   ierr      = PLogSet(PLogDefaultPLBTrace,PLogDefaultPLETrace); CHKERRQ(ierr);
   tracefile = file;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1022,9 +1047,9 @@ int PLogTraceBegin(FILE *file)
 
    Options Database Keys:
 $  -log : Prints basic log information (for code compiled 
-$      with PETSC_LOG)
+$      with USE_PETSC_LOG)
 $  -log_all : Prints extensive log information (for code compiled
-$      with PETSC_LOG)
+$      with USE_PETSC_LOG)
    
    Notes:
    The default file name is 
@@ -1038,11 +1063,12 @@ $      Log.<rank>
 @*/
 int PLogDump(char* sname)
 {
-  int    i,rank;
-  FILE   *fd;
-  char   file[64];
+  int        i,rank;
+  FILE       *fd;
+  char       file[64];
   PLogDouble flops,_TotalTime;
   
+  PetscFunctionBegin;
   PetscTime(_TotalTime);
   _TotalTime -= BaseTime;
 
@@ -1078,7 +1104,7 @@ int PLogDump(char* sname)
   }
   fprintf(fd,"Total Flops %14e %16.8e\n",_TotalFlops,_TotalTime);
   fclose(fd);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 extern char *PLogEventColor[];
@@ -1102,7 +1128,7 @@ extern int  PLogEventColorMalloced[];
 
     Notes: 
     PETSc automatically logs library events if the code has been
-    compiled with -DPETSC_LOG (which is the default) and -log,
+    compiled with -DUSE_PETSC_LOG (which is the default) and -log,
     -log_summary, or -log_all are specified.  PLogEventRegister() is
     intended for logging user events to supplement this PETSc
     information. 
@@ -1135,6 +1161,8 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 int PLogEventRegister(int *e,char *string,char *color)
 {
   char *cstring;
+
+  PetscFunctionBegin;
   *e = PLOG_USER_EVENT_LOW++;
   if (*e > PLOG_USER_EVENT_HIGH) { 
     *e = 0;
@@ -1161,7 +1189,7 @@ int PLogEventRegister(int *e,char *string,char *color)
     }
   }
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1175,13 +1203,14 @@ int PLogEventRegisterDestroy_Private()
 {
   int i;
   
+  PetscFunctionBegin;
   for (i=PLOG_USER_EVENT_LOW-1; i>=PLOG_USER_EVENT_LOW_STATIC; i--) {
     PetscFree(PLogEventName[i]);
 #if defined(HAVE_MPE)
     if (PLogEventColorMalloced[i]) PetscFree(PLogEventColor[i]);
 #endif
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1210,8 +1239,9 @@ $
 @*/
 int PLogEventDeactivate(int event)
 {
+  PetscFunctionBegin;
   PLogEventFlags[event] = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1240,8 +1270,9 @@ $
 @*/
 int PLogEventActivate(int event)
 {
+  PetscFunctionBegin;
   PLogEventFlags[event] = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -1256,7 +1287,7 @@ int PLogEventActivate(int event)
 
    Options Database Keys:
 $  -log_summary : Prints summary of log information (for code
-   compiled with PETSC_LOG)
+   compiled with USE_PETSC_LOG)
 
    Notes:
    By defult the summary is printed to stdout.
@@ -1281,6 +1312,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   char       arch[10],hostname[64],username[16],pname[256];
   FILE       *fd = stdout;
 
+  PetscFunctionBegin;
   /* pop off any stages the user forgot to remove */
   while (EventsStagePushed) PLogStagePop();
 
@@ -1423,7 +1455,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PetscFPrintf(comm,fd,
     "------------------------------------------------------------------------------------------------------------------------\n"); 
 
-#if defined(PETSC_BOPT_g)
+#if defined(USE_PETSC_BOPT_g)
   PetscFPrintf(comm,fd,"\n\n");
   PetscFPrintf(comm,fd,"      ##########################################################\n");
   PetscFPrintf(comm,fd,"      #                                                        #\n");
@@ -1437,7 +1469,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PetscFPrintf(comm,fd,"      #                                                        #\n");
   PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");
 #endif
-#if defined(PETSC_COMPLEX) && !defined(USE_FORTRAN_KERNELS)
+#if defined(USE_PETSC_COMPLEX) && !defined(USE_FORTRAN_KERNELS)
   PetscFPrintf(comm,fd,"\n\n");
   PetscFPrintf(comm,fd,"      ##########################################################\n");
   PetscFPrintf(comm,fd,"      #                                                        #\n");
@@ -1546,7 +1578,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   }
   PetscFPrintf(comm,fd,"\n");
   if (filename && !rank) fclose(fd);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1564,7 +1596,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
    application code.  
 
    PETSc automatically logs library events if the code has been
-   compiled with -DPETSC_LOG (which is the default), and -log,
+   compiled with -DUSE_PETSC_LOG (which is the default), and -log,
    -log_summary, or -log_all are specified.  PLogFlops() is
    intended for logging user flops to supplement this PETSc
    information.
@@ -1575,7 +1607,8 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
 @*/
 PLogDouble PetscGetFlops()
 {
-  return _TotalFlops;
+  PetscFunctionBegin;
+  PetscFunctionReturn(_TotalFlops);
 }
 
 /* --------- Activate version -------------  */
@@ -1594,6 +1627,7 @@ PLogDouble PetscGetFlops()
 @*/
 int PLogEventActivateClass(int cookie)
 {
+  PetscFunctionBegin;
   if (cookie == SNES_COOKIE) {
     PLogEventActivate(SNES_Solve);
     PLogEventActivate(SNES_LineSearch);
@@ -1675,7 +1709,7 @@ int PLogEventActivateClass(int cookie)
     PLogEventActivate(VEC_ScatterEnd);
     PLogEventActivate(VEC_SetRandom);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1692,6 +1726,7 @@ int PLogEventActivateClass(int cookie)
 @*/
 int PLogEventDeactivateClass(int cookie)
 {
+  PetscFunctionBegin;
   if (cookie == SNES_COOKIE) {
     PLogEventDeactivate(SNES_Solve);
     PLogEventDeactivate(SNES_LineSearch);
@@ -1773,19 +1808,20 @@ int PLogEventDeactivateClass(int cookie)
     PLogEventDeactivate(VEC_ScatterEnd);
     PLogEventDeactivate(VEC_SetRandom);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
 
-/* end of -DPETSC_LOG section */
+/* end of -DUSE_PETSC_LOG section */
 #else  /* -------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ "PLogObjectState"
 int PLogObjectState(PetscObject obj,char *format,...)
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #endif
@@ -1819,6 +1855,8 @@ $     v = PetscGetTime() -v;
 PLogDouble PetscGetTime()
 {
   PLogDouble t;
+
+  PetscFunctionBegin;
   PetscTime(t);
-  return t;
+  PetscFunctionReturn(t);
 }

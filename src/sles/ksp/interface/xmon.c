@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.26 1997/07/09 20:50:16 balay Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.27 1997/08/22 15:11:05 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -39,10 +39,12 @@ int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
 {
   Draw win;
   int  ierr;
+
+  PetscFunctionBegin;
   ierr = DrawOpenX(PETSC_COMM_SELF,host,label,x,y,m,n,&win); CHKERRQ(ierr);
   ierr = DrawLGCreate(win,1,draw); CHKERRQ(ierr);
   PLogObjectParent(*draw,win);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -52,6 +54,7 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
   DrawLG lg = (DrawLG) monctx;
   double    x, y;
 
+  PetscFunctionBegin;
   if (!n) DrawLGReset(lg);
   x = (double) n;
   if (rnorm > 0.0) y = log10(rnorm); else y = -15.0;
@@ -59,7 +62,7 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
   if (n < 20 || (n % 5)) {
     DrawLGDraw(lg);
   }
-  return 0;
+  PetscFunctionReturn(0);
 } 
  
 #undef __FUNC__  
@@ -78,10 +81,12 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
 int KSPLGMonitorDestroy(DrawLG drawlg)
 {
   Draw draw;
+
+  PetscFunctionBegin;
   DrawLGGetDraw(drawlg,&draw);
   DrawDestroy(draw);
   DrawLGDestroy(drawlg);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -118,13 +123,14 @@ int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int 
   Draw win;
   int  ierr,rank;
 
+  PetscFunctionBegin;
   MPI_Comm_rank(comm,&rank);
-  if (rank) { *draw = 0; return 0;}
+  if (rank) { *draw = 0; PetscFunctionReturn(0);}
 
   ierr = DrawOpenX(PETSC_COMM_SELF,host,label,x,y,m,n,&win); CHKERRQ(ierr);
   ierr = DrawLGCreate(win,2,draw); CHKERRQ(ierr);
   PLogObjectParent(*draw,win);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -136,6 +142,7 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
   int       ierr,rank;
   Vec       resid,work;
 
+  PetscFunctionBegin;
   MPI_Comm_rank(ksp->comm,&rank);
   if (!rank) { 
     if (!n) DrawLGReset(lg);
@@ -155,7 +162,7 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
       DrawLGDraw(lg);
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 } 
  
 #undef __FUNC__  
@@ -174,10 +181,12 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
 int KSPLGTrueMonitorDestroy(DrawLG drawlg)
 {
   Draw draw;
+
+  PetscFunctionBegin;
   DrawLGGetDraw(drawlg,&draw);
   DrawDestroy(draw);
   DrawLGDestroy(drawlg);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

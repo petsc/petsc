@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex42.c,v 1.5 1997/07/09 20:55:45 balay Exp balay $";
+static char vcid[] = "$Id: ex42.c,v 1.6 1997/09/22 15:23:50 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -14,7 +14,6 @@ Input arguments are:\n\
   
 #include "mat.h"
 #include "sles.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {
@@ -26,7 +25,7 @@ int main(int argc,char **args)
   PetscRandom   r;
   Scalar     rand;
   PetscInitialize(&argc,&args,(char *)0,help);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   SETERRA(1,0,"This example does not work with complex numbers");
 #else
   

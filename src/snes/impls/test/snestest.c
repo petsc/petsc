@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snestest.c,v 1.35 1997/07/09 20:59:56 balay Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.36 1997/08/22 15:18:07 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -24,10 +24,12 @@ int SNESSolve_Test(SNES snes,int *its)
   double       norm,gnorm;
   SNES_Test    *neP = (SNES_Test*) snes->data;
 
+  PetscFunctionBegin;
   *its = 0;
 
-  if (A != snes->jacobian_pre) 
+  if (A != snes->jacobian_pre) {
     SETERRQ(1,0,"Cannot test with alternative preconditioner");
+  }
 
   PetscPrintf(snes->comm,"Testing hand-coded Jacobian, if the ratio is\n");
   PetscPrintf(snes->comm,"O(1.e-8), the hand-coded Jacobian is probably correct.\n");
@@ -59,23 +61,25 @@ int SNESSolve_Test(SNES snes,int *its)
     PetscPrintf(snes->comm,"Norm of matrix ratio %g difference %g\n",norm/gnorm,norm);
   }
   ierr = MatDestroy(B); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
 #define __FUNC__ "SNESDestroy_Test"
 int SNESDestroy_Test(PetscObject obj)
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "SNESPrintHelp_Test"
 static int SNESPrintHelp_Test(SNES snes,char *p)
 {
+  PetscFunctionBegin;
   PetscPrintf(snes->comm,"Test code to compute Jacobian\n");
   PetscPrintf(snes->comm,"-snes_test_display - display difference between\n");
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -85,11 +89,12 @@ static int SNESSetFromOptions_Test(SNES snes)
   SNES_Test *ls = (SNES_Test *)snes->data;
   int       ierr,flg;
 
+  PetscFunctionBegin;
   ierr = OptionsHasName(PETSC_NULL,"-snes_test_display",&flg); CHKERRQ(ierr);
   if (flg) {
     ls->complete_print = 1;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------ */
@@ -99,6 +104,7 @@ int SNESCreate_Test(SNES  snes )
 {
   SNES_Test *neP;
 
+  PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,0,"SNES_NONLINEAR_EQUATIONS only");
   snes->type		= SNES_EQ_TEST;
   snes->setup		= 0;
@@ -112,7 +118,7 @@ int SNESCreate_Test(SNES  snes )
   PLogObjectMemory(snes,sizeof(SNES_Test));
   snes->data    	= (void *) neP;
   neP->complete_print   = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

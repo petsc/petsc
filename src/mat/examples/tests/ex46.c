@@ -1,11 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex46.c,v 1.2 1997/07/09 20:55:45 balay Exp balay $";
+static char vcid[] = "$Id: ex46.c,v 1.3 1997/09/22 15:23:09 balay Exp bsmith $";
 #endif
 
-static char help[] = 
-"Tests generating a nonsymmetric BlockSolve95 (MATMPIROWBS) matrix.\n\n";
+static char help[] = "Tests generating a nonsymmetric BlockSolve95 (MATMPIROWBS) matrix.\n\n";
 
-#include <stdio.h>
 #include "mat.h"
 
 int main(int argc,char **args)

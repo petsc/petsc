@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.73 1997/08/14 23:16:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.74 1997/09/11 20:38:50 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
 */
 #include "petsc.h"        
 #include "sys.h"             /*I    "sys.h"   I*/
-#include <stdio.h>
 #include <stdarg.h>
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
@@ -52,6 +51,8 @@ static FILE        *queuefile  = PETSC_NULL;
 int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
 {
   int rank;
+
+  PetscFunctionBegin;
   MPI_Comm_rank(comm,&rank);
   
   /* First processor prints immediately to stdout */
@@ -91,7 +92,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
     if (len > 256) SETERRQ(1,0,"Formated string longer then 256 bytes");
   }
     
-  return 0;
+  PetscFunctionReturn(0);
 }
  
 #undef __FUNC__  
@@ -120,6 +121,8 @@ int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
 int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,char *format,...)
 {
   int rank;
+
+  PetscFunctionBegin;
   MPI_Comm_rank(comm,&rank);
   
   /* First processor prints immediately to fp */
@@ -160,7 +163,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,char *format,...)
     if (len > 256) SETERRQ(1,0,"Formated string longer then 256 bytes");
   }
     
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -185,6 +188,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
   MPI_Status status;
   FILE       *fd;
 
+  PetscFunctionBegin;
   MPI_Comm_rank(comm,&rank);
   MPI_Comm_size(comm,&size);
   
@@ -221,7 +225,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
     queue       = 0;
     queuelength = 0;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -247,6 +251,8 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
 {
   int rank;
+
+  PetscFunctionBegin;
   MPI_Comm_rank(comm,&rank);
   if (!rank) {
     va_list Argp;
@@ -267,7 +273,7 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
     }
     va_end( Argp );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -290,6 +296,8 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
 int PetscPrintf(MPI_Comm comm,char *format,...)
 {
   int rank;
+
+  PetscFunctionBegin;
   if (!comm) comm = PETSC_COMM_WORLD;
   MPI_Comm_rank(comm,&rank);
   if (!rank) {
@@ -311,7 +319,7 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
     }
     va_end( Argp );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -328,8 +336,9 @@ int PetscSetDisplay()
   int  size,rank,len,ierr,flag;
   char *str;
 
+  PetscFunctionBegin;
   ierr = OptionsGetString(0,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);
-  if (flag) return 0;
+  if (flag) PetscFunctionReturn(0);
 
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);  
@@ -351,7 +360,7 @@ int PetscSetDisplay()
     MPI_Bcast(PetscDisplay,len,MPI_CHAR,0,PETSC_COMM_WORLD);
     PetscDisplay[len] = 0;
   }
-  return 0;  
+  PetscFunctionReturn(0);  
 }
 
 #undef __FUNC__  
@@ -368,8 +377,9 @@ int PetscSetDisplay()
 */
 int PetscGetDisplay(char *display,int n)
 {
+  PetscFunctionBegin;
   PetscStrncpy(display,PetscDisplay,n);
-  return 0;  
+  PetscFunctionReturn(0);  
 }
 
 #undef __FUNC__  
@@ -379,8 +389,9 @@ int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng )
   int        lidx, np, tag = 0;
   MPI_Status status;
 
+  PetscFunctionBegin;
   MPI_Comm_size( comm, &np );
-  if (np == 1) return 0;
+  if (np == 1) PetscFunctionReturn(0);
   MPI_Comm_rank( comm, &lidx );
   if (lidx != 0) {
     MPI_Recv( 0, 0, MPI_INT, lidx-1, tag, comm, &status );
@@ -389,7 +400,7 @@ int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng )
   if ((lidx % ng) < ng - 1 && lidx != np - 1) {
     MPI_Send( 0, 0, MPI_INT, lidx + 1, tag, comm );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -399,9 +410,10 @@ int PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng )
   int        lidx, np, tag = 0;
   MPI_Status status;
 
+  PetscFunctionBegin;
   MPI_Comm_rank( comm, &lidx );
   MPI_Comm_size( comm, &np );
-  if (np == 1) return 0;
+  if (np == 1) PetscFunctionReturn(0);
 
   /* Send to the first process in the next group */
   if ((lidx % ng) == ng - 1 || lidx == np - 1) {
@@ -410,7 +422,7 @@ int PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng )
   if (lidx == 0) {
     MPI_Recv( 0, 0, MPI_INT, np-1, tag, comm, &status );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------*/
@@ -454,8 +466,9 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
   int        ierr, np;
   MPI_Comm   local_comm,*addr_local_comm;
 
+  PetscFunctionBegin;
   MPI_Comm_size( comm, &np );
-  if (np == 1) return 0;
+  if (np == 1) PetscFunctionReturn(0);
 
   /* Get the private communicator for the sequential operations */
   if (Petsc_Seq_keyval == MPI_KEYVAL_INVALID) {
@@ -467,7 +480,7 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
   *addr_local_comm = local_comm;
   MPI_Attr_put( comm, Petsc_Seq_keyval, (void *) addr_local_comm );
   ierr = PetscSequentialPhaseBegin_Private(local_comm,ng); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -493,8 +506,9 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
   int        ierr, np, flag;
   MPI_Comm   local_comm,*addr_local_comm;
 
+  PetscFunctionBegin;
   MPI_Comm_size( comm, &np );
-  if (np == 1) return 0;
+  if (np == 1) PetscFunctionReturn(0);
 
   MPI_Attr_get( comm, Petsc_Seq_keyval, (void **)&addr_local_comm, &flag );
   if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
@@ -506,7 +520,7 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
   MPI_Comm_free(&local_comm);
   MPI_Attr_delete(comm,Petsc_Seq_keyval);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------- */
 /*
@@ -534,8 +548,9 @@ static int Petsc_Tag_keyval = MPI_KEYVAL_INVALID;
 */
 static int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
 {
+  PetscFunctionBegin;
   PetscFree( attr_val );
-  return MPI_SUCCESS;
+  PetscFunctionReturn(MPI_SUCCESS);
 }
 
 #undef __FUNC__  
@@ -560,6 +575,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 {
   int ierr,*tagvalp=0,flag;
 
+  PetscFunctionBegin;
   PetscValidHeader(obj);
   PetscValidIntPointer(tag);
 
@@ -568,7 +584,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 
   if (*tagvalp < 1) SETERRQ(1,0,"Out of tags for object");
   *tag = tagvalp[0]--;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -592,6 +608,7 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 {
   int ierr,*tagvalp=0,flag;
 
+  PetscFunctionBegin;
   PetscValidHeader(obj);
   PetscValidIntPointer(tag);
 
@@ -601,7 +618,7 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
   if (*tagvalp == *tag - 1) {
     tagvalp[0]++;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -625,6 +642,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 {
   int ierr = MPI_SUCCESS, *tagvalp, *maxval, flag;
 
+  PetscFunctionBegin;
   if (Petsc_Tag_keyval == MPI_KEYVAL_INVALID) {
     /* 
        The calling sequence of the 2nd argument to this function changed
@@ -654,7 +672,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
   if (*tagvalp < 1) SETERRQ(1,0,"Out of tags for object");
   *first_tag = tagvalp[0]--;
   tagvalp[1]++;
-#if defined(PETSC_BOPT_g)
+#if defined(USE_PETSC_BOPT_g)
   if (*comm_out == comm_in) {
     int size;
     MPI_Comm_size(*comm_out,&size);
@@ -667,7 +685,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     }
   }
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -679,13 +697,14 @@ int PetscCommFree_Private(MPI_Comm *comm)
 {
   int ierr,*tagvalp,flag;
 
+  PetscFunctionBegin;
   ierr = MPI_Attr_get(*comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
   if (!flag) {
     SETERRQ(1,0,"Error freeing PETSc object, problem with corrupted memory");
   }
   tagvalp[1]--;
   if (!tagvalp[1]) {MPI_Comm_free(comm);}
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex31.c,v 1.2 1997/07/09 20:55:45 balay Exp balay $";
+static char vcid[] = "$Id: ex31.c,v 1.3 1997/09/22 15:24:10 balay Exp bsmith $";
 #endif
 
 static char help[] = 
 "Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";
 
-#include <stdio.h>
 #include "mat.h"
 
 /* Note:  Most applications would not read and write the same matrix within

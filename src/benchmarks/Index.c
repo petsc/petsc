@@ -1,8 +1,7 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: Index.c,v 1.15 1997/05/03 15:32:11 bsmith Exp balay $";
+static char vcid[] = "$Id: Index.c,v 1.16 1997/07/09 21:01:29 balay Exp bsmith $";
 #endif
 
-#include "stdio.h"
 #include "petsc.h"
 #include "sys.h"
 
@@ -18,7 +17,7 @@ int main( int argc, char **argv)
   test2();
 
   PetscFinalize();
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 int test1()
@@ -109,7 +108,7 @@ int test1()
   PetscFree(x);
   PetscFree(y);
   PetscRandomDestroy(r);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 int test2()
@@ -183,7 +182,7 @@ int test2()
 
 
   PetscRandomDestroy(r);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 int BlastCache()
@@ -215,5 +214,5 @@ int BlastCache()
     z[i] = 3.0*x[i] + 2.0*y[i] + 3.3*a[i] - 25.*b[i];
   }
   PetscFree(x);
-  return 0;
+  PetscFunctionReturn(0);
 }

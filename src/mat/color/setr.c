@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: setr.c,v 1.6 1997/07/09 20:55:35 balay Exp bsmith $";
+static char vcid[] = "$Id: setr.c,v 1.7 1997/08/22 15:14:43 bsmith Exp bsmith $";
 #endif
 
 /* setr.f -- translated by f2c (version of 25 March 1992  12:58:56). */
@@ -52,6 +52,7 @@ int MINPACKsetr(int*m,int* n,int* indrow,int* jpntr,int* indcol, int*ipntr,int* 
 
     /*     Store in array iwa the counts of non-zeroes in the rows. */
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --iwa;
     --ipntr;
@@ -89,6 +90,6 @@ int MINPACKsetr(int*m,int* n,int* indrow,int* jpntr,int* indcol, int*ipntr,int* 
 	    ++iwa[ir];
 	}
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dacorn.c,v 1.11 1997/07/09 21:00:44 balay Exp bsmith $";
+static char vcid[] = "$Id: dacorn.c,v 1.12 1997/08/22 15:18:43 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -38,6 +38,7 @@ int DAGetCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
 {
   int w;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   /* since the xs, xe ... have all been multiplied by the number of degrees 
      of freedom per cell, w = da->w, we divide that out before returning.*/
@@ -46,6 +47,6 @@ int DAGetCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
   /* the y and z have NOT been multiplied by w */
   if (y) *y = da->ys;   if (n) *n = (da->ye - da->ys);
   if (z) *z = da->zs;   if (p) *p = (da->ze - da->zs); 
-  return 0;
+  PetscFunctionReturn(0);
 } 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.31 1997/01/06 20:22:44 balay Exp balay $";
+static char vcid[] = "$Id: lsqr.c,v 1.32 1997/07/09 20:50:53 balay Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -8,7 +8,6 @@ static char vcid[] = "$Id: lsqr.c,v 1.31 1997/01/06 20:22:44 balay Exp balay $";
        This implements LSQR (Paige and Saunders, ACM Transactions on
        Mathematical Software, Vol 8, pp 43-71, 1982).
 */
-#include <stdio.h>
 #include <math.h>
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
@@ -18,10 +17,13 @@ static char vcid[] = "$Id: lsqr.c,v 1.31 1997/01/06 20:22:44 balay Exp balay $";
 static int KSPSetUp_LSQR(KSP ksp)
 {
   int ierr;
-  if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,0,"no symmetric preconditioning for KSPLSQR");}
+
+  PetscFunctionBegin;
+  if (ksp->pc_side == PC_SYMMETRIC){
+    SETERRQ(2,0,"no symmetric preconditioning for KSPLSQR");
+  }
   ierr = KSPDefaultGetWork( ksp,  6 ); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -35,6 +37,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   Mat          Amat, Pmat;
   MatStructure pflag;
 
+  PetscFunctionBegin;
   ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   maxit    = ksp->max_it;
   history  = ksp->residual_history;
@@ -53,7 +56,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
 
   /* Test for nothing to do */
   ierr = VecNorm(W,NORM_2,&rnorm); CHKERRQ(ierr);
-  if ((*ksp->converged)(ksp,0,rnorm,ksp->cnvP)) { *its = 0; return 0;}
+  if ((*ksp->converged)(ksp,0,rnorm,ksp->cnvP)) { *its = 0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,rnorm);
   if (history) history[0] = rnorm;
 
@@ -93,7 +96,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
     tmp  = -theta/rho; 
     ierr = VecAYPX(&tmp,V1,W); CHKERRQ(ierr); /*    w <- v - (theta/rho) w */
 
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
     rnorm = real(phibar);
 #else
     rnorm = phibar;
@@ -112,13 +115,14 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   ierr = KSPUnwindPreconditioner(ksp,X,W); CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1);
   else          *its = i + 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_LSQR"
 int KSPCreate_LSQR(KSP ksp)
 {
+  PetscFunctionBegin;
   ksp->data                 = (void *) 0;
   ksp->type                 = KSPLSQR;
   ksp->pc_side              = PC_LEFT;
@@ -131,5 +135,5 @@ int KSPCreate_LSQR(KSP ksp)
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
   ksp->view                 = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }

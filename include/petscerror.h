@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.12 1997/04/17 18:30:59 curfman Exp bsmith $ */
+/* $Id: petscerror.h,v 1.13 1997/05/20 03:00:06 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -58,7 +58,7 @@
 #define PETSC_ERR_MAT_LU_ZRPVT    71   /* Detected a zero pivot during LU factorization */
 #define PETSC_ERR_MAT_CH_ZRPVT    71   /* Detected a zero pivot during Cholesky factorization */
 
-#if defined(PETSC_DEBUG)
+#if defined(USE_PETSC_DEBUG)
 #define SETERRQ(n,p,s) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);}
 #define SETERRA(n,p,s) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);\
                           MPI_Abort(PETSC_COMM_WORLD,_ierr);}
@@ -91,5 +91,48 @@ extern int PetscPopSignalHandler();
 extern int PetscSetFPTrap(int);
 extern int PetscInitializeNans(Scalar*,int);
 extern int PetscInitializeLargeInts(int *,int);
+
+/*
+      Allows the code to build a stack frame as it runs
+*/
+#if defined(USE_PETSC_STACK)
+
+typedef struct  {
+  char *function;
+  char *file;
+  char *directory;
+  int  line;
+} PetscStack;
+
+extern int        petscstacksize_max;
+extern int        petscstacksize;
+extern PetscStack *petscstack;
+
+#define PetscFunctionBegin \
+  {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
+    petscstack[petscstacksize].function  = __FUNC__; \
+    petscstack[petscstacksize].file      = __FILE__; \
+    petscstack[petscstacksize].directory = __SDIR__;  \
+    petscstack[petscstacksize].line      = __LINE__; \
+    petscstacksize++; \
+  }}
+
+#define PetscFunctionReturn(a) \
+  {if (petscstack && petscstacksize > 0) {    \
+    petscstacksize--; \
+  } \
+  return(a);}
+
+#else
+
+#define PetscFunctionBegin 
+#define PetscFunctionReturn(a)  return(a)
+
+#endif
+
+extern int PetscStackCreate(int);
+extern int PetscStackView(Viewer);
+extern int PetscStackDestroy();
+extern int PetscStackPop();
 
 #endif

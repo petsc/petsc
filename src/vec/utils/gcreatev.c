@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.35 1997/07/09 20:49:32 balay Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.36 1997/08/22 15:10:22 bsmith Exp bsmith $";
 #endif
 
 
@@ -35,16 +35,19 @@ $   -vec_mpi : use MPI vectors, even for the uniprocessor case
 @*/
 int VecCreate(MPI_Comm comm,int n,Vec *V)
 {
-  int size,flg,ierr;
+  int ierr,size,flg;
 
+  PetscFunctionBegin;
   MPI_Comm_size(comm,&size);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (flg) {PetscPrintf(comm,"VecCreate() option: -vec_mpi\n");}
   ierr = OptionsHasName(PETSC_NULL,"-vec_mpi",&flg); CHKERRQ(ierr);
   if (size > 1 || flg) {
-    return VecCreateMPI(comm,PETSC_DECIDE,n,V);
+    ierr = VecCreateMPI(comm,PETSC_DECIDE,n,V); CHKERRQ(ierr);
+  } else {
+    ierr = VecCreateSeq(comm,n,V);CHKERRQ(ierr);CHKERRQ(ierr);
   }
-  return VecCreateSeq(comm,n,V);
+  PetscFunctionReturn(0);
 }
 
 #include "src/vec/vecimpl.h"
@@ -67,6 +70,7 @@ int VecGetType(Vec vec,VecType *type,char **name)
   int  itype = (int)vec->type;
   char *vecname[10];
 
+  PetscFunctionBegin;
   if (type) *type = (VecType) vec->type;
   if (name) {
     /* Note:  Be sure that this list corresponds to the enum in vec.h */
@@ -75,7 +79,7 @@ int VecGetType(Vec vec,VecType *type,char **name)
     if (itype < 0 || itype > 1) *name = "Unknown vector type";
     else                        *name = vecname[itype];
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
  

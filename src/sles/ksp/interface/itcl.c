@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.99 1997/08/22 15:11:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.100 1997/09/04 22:32:21 curfman Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -31,12 +31,13 @@ static int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 @*/
 int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
 {
+  PetscFunctionBegin;
   if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
     SETERRQ(1,0,"Too many options checkers, only 5 allowed");
   }
 
   othersetfromoptions[numberofsetfromoptions++] = kspcheck;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -62,6 +63,7 @@ int KSPSetFromOptions(KSP ksp)
   int       restart, flg, ierr,loc[4], nmax = 4,i;
   double    tmp;
 
+  PetscFunctionBegin;
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
 
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -202,7 +204,7 @@ int KSPSetFromOptions(KSP ksp)
   for ( i=0; i<numberofsetfromoptions; i++ ) {
     ierr = (*othersetfromoptions[i])(ksp); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
   
 extern int KSPPrintTypes_Private(MPI_Comm,char *,char *);
@@ -227,6 +229,7 @@ int KSPPrintHelp(KSP ksp)
   char p[64];
   int  rank = 0;
 
+  PetscFunctionBegin;
   MPI_Comm_rank(ksp->comm,&rank);
     
   if (!rank) {
@@ -269,13 +272,13 @@ int KSPPrintHelp(KSP ksp)
     PetscPrintf(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);
     PetscPrintf(ksp->comm,"   %sksp_gmres_irorthog: use iterative refinement in orthogonalization\n",p);
     PetscPrintf(ksp->comm,"   %sksp_gmres_preallocate: preallocate GMRES work vectors\n",p);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
     PetscPrintf(ksp->comm," CG Options:\n");
     PetscPrintf(ksp->comm,"   %sksp_cg_Hermitian: use CG for complex, Hermitian matrix (default)\n",p);
     PetscPrintf(ksp->comm,"   %sksp_cg_symmetric: use CG for complex, symmetric matrix\n",p);
 #endif
   }
-  return 1;
+  PetscFunctionReturn(1);
 }
 
 #undef __FUNC__  
@@ -308,8 +311,11 @@ $       -sys2_ksp_type bcgs  -sys2_ksp_rtol 1.e-4
 @*/
 int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  return PetscObjectSetOptionsPrefix((PetscObject)ksp, prefix);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)ksp, prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);  
 }
  
 #undef __FUNC__  
@@ -333,8 +339,11 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 @*/
 int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  return PetscObjectAppendOptionsPrefix((PetscObject)ksp, prefix);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)ksp, prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -355,8 +364,11 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 @*/
 int KSPGetOptionsPrefix(KSP ksp,char **prefix)
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  return PetscObjectGetOptionsPrefix((PetscObject)ksp, prefix);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ksp, prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
  

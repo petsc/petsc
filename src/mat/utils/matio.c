@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.45 1997/07/29 14:10:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.46 1997/08/22 15:15:22 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -30,9 +30,10 @@ static int MatLoadersSet = 0,(*MatLoaders[MAX_MATRIX_TYPES])(Viewer,MatType,Mat*
 @*/
 int MatLoadRegister(MatType type,int (*loader)(Viewer,MatType,Mat*))
 {
+  PetscFunctionBegin;
   MatLoaders[type] = loader;
   MatLoadersSet    = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }  
 
 extern int MatLoadGetInfo_Private(Viewer);
@@ -44,11 +45,12 @@ static int MatLoadPrintHelp_Private(Mat A)
   static int called = 0; 
   MPI_Comm   comm = A->comm;
   
-  if (called) return 0; else called = 1;
+  PetscFunctionBegin;
+  if (called) {PetscFunctionReturn(0);} else called = 1;
   PetscPrintf(comm," Options for MatLoad:\n");
   PetscPrintf(comm,"  -matload_block_size <block_size> :Used for MATBAIJ, MATBDIAG\n");
   PetscPrintf(comm,"  -matload_bdiag_diags <s1,s2,s3,...> : Used for MATBDIAG\n");
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -143,6 +145,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   ViewerType  vtype;
   MPI_Comm    comm;
 
+  PetscFunctionBegin;
   if (outtype > MAX_MATRIX_TYPES || outtype < 0) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Not a valid matrix type");
   }
@@ -174,7 +177,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) {ierr = MatLoadPrintHelp_Private(*newmat); CHKERRQ(ierr); }
   PLogEventEnd(MAT_Load,viewer,0,0,0);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -190,11 +193,12 @@ int MatLoadGetInfo_Private(Viewer viewer)
   char string[128],*first,*second,*final;
   int  len,ierr,flg;
 
+  PetscFunctionBegin;
   ierr = OptionsHasName(PETSC_NULL,"-matload_ignore_info",&flg);CHKERRQ(ierr);
-  if (flg) return 0;
+  if (flg) PetscFunctionReturn(0);
 
   ierr = ViewerBinaryGetInfoPointer(viewer,&file); CHKERRQ(ierr);
-  if (!file) return 0;
+  if (!file) PetscFunctionReturn(0);
 
   /* read rows of the file adding them to options database */
   while (fgets(string,128,file)) {
@@ -213,6 +217,6 @@ int MatLoadGetInfo_Private(Viewer viewer)
       ierr = OptionsSetValue(first,second); CHKERRQ(ierr);
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 
 }

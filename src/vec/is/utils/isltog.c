@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.15 1997/09/26 02:17:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.16 1997/10/10 04:01:58 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -26,6 +26,8 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 {
   int      n,*indices,ierr;
   MPI_Comm comm;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm); CHKERRQ(ierr);
@@ -34,7 +36,7 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
   ierr = ISLocalToGlobalMappingCreate(comm,n,indices,mapping);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 #undef __FUNC__  
 #define __FUNC__ "ISLocalToGlobalMappingCreate"
@@ -56,6 +58,7 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 @*/
 int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n, int *indices,ISLocalToGlobalMapping *mapping)
 {
+  PetscFunctionBegin;
   PetscValidIntPointer(indices);
   PetscValidPointer(mapping);
 
@@ -72,7 +75,7 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n, int *indices,ISLocalToGlobal
      ISGlobalToLocalMapping() is called 
   */
   (*mapping)->globals = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
   
 #undef __FUNC__  
@@ -90,14 +93,15 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n, int *indices,ISLocalToGlobal
 @*/
 int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 {
+  PetscFunctionBegin;
   PetscValidPointer(mapping);
-  if (--mapping->refct > 0) return 0;
+  if (--mapping->refct > 0) PetscFunctionReturn(0);
 
   PetscFree(mapping->indices);
   if (mapping->globals) PetscFree(mapping->globals);
   PLogObjectDestroy(mapping);
   PetscHeaderDestroy(mapping);
-  return 0;
+  PetscFunctionReturn(0);
 }
   
 #undef __FUNC__  
@@ -122,6 +126,8 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *newis)
 {
   int ierr,n,i,*idxin,*idxmap,*idxout;
+
+  PetscFunctionBegin;
   PetscValidPointer(mapping);
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidPointer(newis);
@@ -136,7 +142,7 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idxout,newis); CHKERRQ(ierr);
   PetscFree(idxout);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -165,12 +171,14 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
 int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int *in,int *out)
 {
   int i,*idx = mapping->indices,Nmax = mapping->n;
+
+  PetscFunctionBegin;
   for ( i=0; i<N; i++ ) {
     if (in[i] < 0) {out[i] = in[i]; continue;}
     if (in[i] >= Nmax) SETERRQ(1,1,"Local index too large");
     out[i] = idx[in[i]];
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* -----------------------------------------------------------------------------------------*/
@@ -184,6 +192,7 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
 {
   int i,*idx = mapping->indices,n = mapping->n,end,start,*globals;
 
+  PetscFunctionBegin;
   end   = 0;
   start = 100000000;
 
@@ -206,7 +215,7 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
   }
 
   PLogObjectMemory(mapping,(end-start+1)*sizeof(int));
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -242,6 +251,7 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping, ISGlobalToLocalM
 {
   int i,ierr, *globals,nf = 0,tmp,start,end;
 
+  PetscFunctionBegin;
   if (!mapping->globals) {
     ierr = ISGlobalToLocalMappingSetUp_Private(mapping); CHKERRQ(ierr);
   }
@@ -282,6 +292,6 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping, ISGlobalToLocalM
     if (nout) *nout = nf;
   }
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 

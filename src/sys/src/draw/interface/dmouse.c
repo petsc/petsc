@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dmouse.c,v 1.11 1997/08/22 15:15:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dmouse.c,v 1.12 1997/10/10 04:04:31 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -28,11 +28,14 @@ static char vcid[] = "$Id: dmouse.c,v 1.11 1997/08/22 15:15:58 bsmith Exp bsmith
 int DrawGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_user,
                        double *x_phys,double *y_phys)
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   *button = BUTTON_NONE;
-  if (draw->type == DRAW_NULLWINDOW) return 0;
-  if (!draw->ops.getmousebutton) return 0;
-  return (*draw->ops.getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys);
+  if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
+  if (!draw->ops.getmousebutton) PetscFunctionReturn(0);
+  ierr = (*draw->ops.getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -61,6 +64,7 @@ int DrawSynchronizedGetMouseButton(Draw draw,DrawButton *button,double* x_user,d
   int    ierr,rank;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
 
+  PetscFunctionBegin;
   MPI_Comm_rank(draw->comm,&rank);
   if (!rank) {
     ierr = DrawGetMouseButton(draw,button,x_user,y_user,x_phys,y_phys); CHKERRQ(ierr);
@@ -77,7 +81,7 @@ int DrawSynchronizedGetMouseButton(Draw draw,DrawButton *button,double* x_user,d
   if (y_user) *y_user = bcast[1];
   if (x_phys) *x_phys = bcast[2];
   if (y_phys) *y_phys = bcast[3];
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: arch.c,v 1.24 1997/09/08 15:27:41 gropp Exp balay $";
+static char vcid[] = "$Id: arch.c,v 1.25 1997/09/18 18:12:13 balay Exp bsmith $";
 #endif
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
@@ -21,6 +21,7 @@ static char vcid[] = "$Id: arch.c,v 1.24 1997/09/08 15:27:41 gropp Exp balay $";
 @*/
 int PetscGetArchType(char *str,int slen)
 {
+  PetscFunctionBegin;
 #if defined(PETSC_ARCH_NAME)
   PetscStrncpy(str,PETSC_ARCH_NAME,slen);
 #elif defined(PARCH_solaris)
@@ -52,6 +53,6 @@ int PetscGetArchType(char *str,int slen)
 #else
   PetscStrncpy(str,"Unknown",slen);
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }
 

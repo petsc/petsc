@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.81 1997/08/22 15:12:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.82 1997/10/09 15:37:22 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -42,12 +42,14 @@ $  -pc_lu_fill <fill>
 int PCLUSetFill(PC pc,double fill)
 {
   PC_LU *dir;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   dir = (PC_LU *) pc->data;
-  if (pc->type != PCLU) return 0;
+  if (pc->type != PCLU) PetscFunctionReturn(0);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less then 1.0");
   dir->fill = fill;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -76,11 +78,13 @@ $  -pc_lu_in_place
 int PCLUSetUseInPlace(PC pc)
 {
   PC_LU *dir;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   dir = (PC_LU *) pc->data;
-  if (pc->type != PCLU) return 0;
+  if (pc->type != PCLU) PetscFunctionReturn(0);
   dir->inplace = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -90,6 +94,7 @@ static int PCSetFromOptions_LU(PC pc)
   int    ierr,flg;
   double fill;
 
+  PetscFunctionBegin;
   ierr = OptionsHasName(pc->prefix,"-pc_lu_in_place",&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = PCLUSetUseInPlace(pc); CHKERRQ(ierr);
@@ -99,13 +104,14 @@ static int PCSetFromOptions_LU(PC pc)
     ierr = PCLUSetFill(pc,fill); CHKERRQ(ierr);
   }
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PCPrintHelp_LU"
 static int PCPrintHelp_LU(PC pc,char *p)
 {
+  PetscFunctionBegin;
   PetscPrintf(pc->comm," Options for PCLU preconditioner:\n");
   PetscPrintf(pc->comm," %spc_lu_in_place: do factorization in place\n",p);
   PetscPrintf(pc->comm," %spc_lu_fill <fill>: expected fill in factor\n",p);
@@ -114,7 +120,7 @@ static int PCPrintHelp_LU(PC pc,char *p)
   PetscPrintf(pc->comm," %spc_lu_nonzeros_along_diagonal <tol>: changes column ordering\n",p);
   PetscPrintf(pc->comm,"    to reduce the change of obtaining zero pivot during LU.\n");
   PetscPrintf(pc->comm,"    If <tol> not given defaults to 1.e-10.\n");
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -128,6 +134,7 @@ static int PCView_LU(PetscObject obj,Viewer viewer)
   char       *order;
   ViewerType vtype;
 
+  PetscFunctionBegin;
   ierr = MatReorderingGetName(lu->ordering,&order); CHKERRQ(ierr);
   ViewerGetType(viewer,&vtype);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
@@ -144,7 +151,7 @@ static int PCView_LU(PetscObject obj,Viewer viewer)
   else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer," order=%s",order);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -152,8 +159,34 @@ static int PCView_LU(PetscObject obj,Viewer viewer)
 static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 {
   PC_LU *dir = (PC_LU *) pc->data;
+
+  PetscFunctionBegin;
   *mat = dir->fact;
-  return 0;
+  PetscFunctionReturn(0);
+}
+
+/*@
+     PCLUSetMatReordering - Sets the ordering routine (to reduce fill) to 
+         be used it the LU factorization.
+
+    Input Parameters:
+.   pc - the preconditioner context
+.   ordering - the matrix ordering name, for example, ORDER_ND or ORDER_RCM
+
+   Options Database:
+.   -mat_order <nd,rcm,...>
+
+.seealso: PCILUSetMatReordering()
+@*/
+int PCLUSetMatReordering(PC pc, MatReordering ordering)
+{
+  PC_LU *dir = (PC_LU *) pc->data;
+
+  PetscFunctionBegin;
+  if (pc->type != PCLU) PetscFunctionReturn(0);
+  
+  dir->ordering = ordering;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -164,6 +197,7 @@ static int PCSetUp_LU(PC pc)
   PC_LU       *dir = (PC_LU *) pc->data;
   MatType     type;
 
+  PetscFunctionBegin;
   ierr = MatGetType(pc->pmat,&type,PETSC_NULL); CHKERRQ(ierr);
   if (dir->inplace) {
     ierr = MatGetReorderingTypeFromOptions(0,&dir->ordering); CHKERRQ(ierr);
@@ -203,7 +237,7 @@ static int PCSetUp_LU(PC pc)
     }
     ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -214,11 +248,12 @@ static int PCDestroy_LU(PetscObject obj)
   PC_LU *dir = (PC_LU*) pc->data;
   int   ierr;
 
+  PetscFunctionBegin;
   if (!dir->inplace && dir->fact) {ierr = MatDestroy(dir->fact); CHKERRQ(ierr);}
   if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row); CHKERRQ(ierr);}
   if (dir->col) {ierr = ISDestroy(dir->col); CHKERRQ(ierr);}
   PetscFree(dir); 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -228,9 +263,10 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
   PC_LU *dir = (PC_LU *) pc->data;
   int   ierr;
 
+  PetscFunctionBegin;
   if (dir->inplace) {ierr = MatSolve(pc->pmat,x,y); CHKERRQ(ierr);}
   else              {ierr = MatSolve(dir->fact,x,y); CHKERRQ(ierr);}
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -238,6 +274,8 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
 int PCCreate_LU(PC pc)
 {
   PC_LU *dir     = PetscNew(PC_LU); CHKPTRQ(dir);
+
+  PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_LU));
 
   dir->fact      = 0;
@@ -256,5 +294,5 @@ int PCCreate_LU(PC pc)
   pc->view       = PCView_LU;
   pc->applyrich  = 0;
   pc->getfactoredmatrix = PCGetFactoredMatrix_LU;
-  return 0;
+  PetscFunctionReturn(0);
 }

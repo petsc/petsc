@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdfact.c,v 1.44 1997/04/05 00:57:05 balay Exp balay $";
+static char vcid[] = "$Id: bdfact.c,v 1.45 1997/07/09 20:54:32 balay Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -17,6 +17,7 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
   PetscTruth   idn;
   int          ierr;
 
+  PetscFunctionBegin;
   if (a->m != a->n) SETERRQ(1,0,"Matrix must be square");
   if (isrow) {
     ierr = ISIdentity(isrow,&idn); CHKERRQ(ierr);
@@ -26,13 +27,14 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
     ierr = ISIdentity(iscol,&idn); CHKERRQ(ierr);
     if (!idn) SETERRQ(1,0,"Only identity column permutation supported");
   }
-  if (levels != 0)
+  if (levels != 0) {
     SETERRQ(1,0,"Only ILU(0) is supported");
+  }
   ierr = MatConvert(A,MATSAME,B); CHKERRQ(ierr);
 
   /* Must set to zero for repeated calls with different nonzero structure */
   (*B)->factor = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -43,6 +45,7 @@ int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,double f,int level)
   PetscTruth   idn;
   int          ierr;
 
+  PetscFunctionBegin;
   /* For now, no fill is allocated in symbolic factorization phase, so we
      directly use the input matrix for numeric factorization. */
   if (a->m != a->n) SETERRQ(1,0,"Matrix must be square");
@@ -55,7 +58,8 @@ int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,double f,int level)
     if (!idn) SETERRQ(1,0,"Only identity column permutation supported");
   }
   if (level != 0) SETERRQ(1,0,"Only ILU(0) is supported");
-  return MatLUFactorNumeric(A,&A);
+  ierr = MatLUFactorNumeric(A,&A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 /* --------------------------------------------------------------------------*/
@@ -71,6 +75,7 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
   Scalar       **dv = a->diagv, *dd = dv[mainbd], *v_work;
   Scalar       *multiplier;
 
+  PetscFunctionBegin;
   /* Copy input matrix to factored matrix if we've already factored the
      matrix before AND the nonzero structure remains the same.  This is done
      in symbolic factorization the first time through, but there's no symbolic
@@ -117,7 +122,7 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
   }
   PetscFree(dgptr); PetscFree(v_work);
   C->factor = FACTOR_LU;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -130,6 +135,7 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
   int          *diag = a->diag, n = a->n, m = a->m, mainbd = a->mainbd, *dgptr;
   Scalar       **dv = a->diagv, *dd = dv[mainbd], mult;
 
+  PetscFunctionBegin;
   /* Copy input matrix to factored matrix if we've already factored the
      matrix before AND the nonzero structure remains the same.  This is done
      in symbolic factorization the first time through, but there's no symbolic
@@ -169,7 +175,7 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
   }
   PetscFree(dgptr);
   C->factor = FACTOR_LU;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* -----------------------------------------------------------------*/
@@ -183,6 +189,7 @@ int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
   int          n = a->n, m = a->m, *diag = a->diag, col;
   Scalar       *x, *y, *dd = a->diagv[mainbd], sum, **dv = a->diagv;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(xx,x);
   VecGetArray_Fast(yy,y);
   /* forward solve the lower triangular part */
@@ -204,7 +211,7 @@ int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
     y[i] = sum*dd[i];
   }
   PLogFlops(2*a->nz - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -218,6 +225,7 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
   Scalar       w0,w1,sum0,sum1;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(xx,x);
   VecGetArray_Fast(yy,y);
   PetscMemcpy(y,x,m*sizeof(Scalar));
@@ -260,7 +268,7 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
     inb -= 2; inb2 -= 4;
   }
   PLogFlops(2*a->nz - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -274,6 +282,7 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
   Scalar       w0,w1,w2,sum0,sum1,sum2;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(xx,x);
   VecGetArray_Fast(yy,y);
   PetscMemcpy(y,x,m*sizeof(Scalar));
@@ -318,7 +327,7 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
     inb -= 3; inb2 -= 9;
   }
   PLogFlops(2*a->nz - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -332,6 +341,7 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
   Scalar       w0,w1,w2,w3,sum0,sum1,sum2,sum3;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(xx,x);
   VecGetArray_Fast(yy,y);
   PetscMemcpy(y,x,m*sizeof(Scalar));
@@ -379,7 +389,7 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
     inb -= 4; inb2 -= 16;
   }
   PLogFlops(2*a->nz - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -393,6 +403,7 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
   Scalar       w0,w1,w2,w3,w4,sum0,sum1,sum2,sum3,sum4;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(xx,x);
   VecGetArray_Fast(yy,y);
   PetscMemcpy(y,x,m*sizeof(Scalar));
@@ -449,7 +460,7 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
     inb -= 5; inb2 -= 25;
   }
   PLogFlops(2*a->nz - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -463,6 +474,7 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv;
   Scalar       work[25];
 
+  PetscFunctionBegin;
   VecGetArray_Fast(xx,x);
   VecGetArray_Fast(yy,y);
   if (bs > 25) SETERRQ(1,0,"Blocks must be smaller then 25");
@@ -495,7 +507,7 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
     inb -= bs; inb2 -= bs2;
   }
   PLogFlops(2*a->nz - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

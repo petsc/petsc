@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: convert.c,v 1.58 1997/01/27 18:17:25 bsmith Exp balay $";
+static char vcid[] = "$Id: convert.c,v 1.59 1997/07/09 20:56:43 balay Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"
@@ -15,6 +15,7 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
   Scalar *vwork;
   int    ierr, i, nz, m, n, *cwork, rstart, rend,flg;
 
+  PetscFunctionBegin;
   ierr = MatGetSize(mat,&m,&n); CHKERRQ(ierr);
   if (newtype == MATSAME) newtype = (MatType)mat->type;
   switch (newtype) {
@@ -70,5 +71,5 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
   }
   ierr = MatAssemblyBegin(*M,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*M,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }

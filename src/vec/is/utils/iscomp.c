@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscomp.c,v 1.12 1997/08/22 15:10:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscomp.c,v 1.13 1997/10/01 22:43:58 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -29,13 +29,14 @@ int ISEqual(IS is1, IS is2, PetscTruth *flg)
 {
   int sz, sz1, sz2, ierr, *ptr1, *ptr2, *a1, *a2;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(is1,IS_COOKIE);
   PetscValidHeaderSpecific(is2,IS_COOKIE);
   PetscValidPointer(flg);
   
   ierr = ISGetSize(is1, &sz1); CHKERRQ(ierr);
   ierr = ISGetSize(is2, &sz2); CHKERRQ(ierr);
-  if( sz1 != sz2) { *flg = PETSC_FALSE; return 0;}
+  if( sz1 != sz2) { *flg = PETSC_FALSE; PetscFunctionReturn(0);}
   
   ierr = ISGetIndices(is1, &ptr1); CHKERRQ(ierr);
   ierr = ISGetIndices(is2, &ptr2); CHKERRQ(ierr);
@@ -57,6 +58,6 @@ int ISEqual(IS is1, IS is2, PetscTruth *flg)
   
   PetscFree(a1);
   PetscFree(a2);
-  return 0;
+  PetscFunctionReturn(0);
 }
   

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tcqmr.c,v 1.32 1997/01/06 20:22:47 balay Exp balay $";
+static char vcid[] = "$Id: tcqmr.c,v 1.33 1997/07/09 20:50:59 balay Exp bsmith $";
 #endif
 
 /*
@@ -10,7 +10,6 @@ static char vcid[] = "$Id: tcqmr.c,v 1.32 1997/01/06 20:22:47 balay Exp balay $"
 */
 
 #include <math.h>
-#include <stdio.h>
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
 #include "src/ksp/impls/tcqmr/tcqmrp.h"
@@ -25,7 +24,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
   Scalar      dp11,dp2, rhom1, alpha,tmp, zero = 0.0;
   int         it, cerr, ierr;
 
-
+  PetscFunctionBegin;
   it    = 0;
   ierr  = KSPResidual(ksp,x,u,v,r,v0,b); CHKERRQ(ierr);
   ierr  = VecNorm(r,NORM_2,&rnorm0); CHKERRQ(ierr);         /*  rnorm0 = ||r|| */
@@ -130,7 +129,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
 
     /* Compute the upper bound on the residual norm r (See QMR paper p. 13) */
     sprod = sprod*PetscAbsScalar(s);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
     rnorm = rnorm0 * sqrt((double)it+2.0) * real(sprod);     
 #else
     rnorm = rnorm0 * sqrt((double)it+2.0) * sprod;     
@@ -143,7 +142,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
 
   if (cerr <= 0) *its = -it;
   else           *its = it;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -151,16 +150,20 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
 static int KSPSetUp_TCQMR(KSP ksp)
 {
   int ierr;
-  if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,0,"no symmetric preconditioning for KSPTCQMR");}
+
+  PetscFunctionBegin;
+  if (ksp->pc_side == PC_SYMMETRIC){
+    SETERRQ(2,0,"no symmetric preconditioning for KSPTCQMR");
+  }
   ierr = KSPDefaultGetWork(ksp,TCQMR_VECS); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_TCQMR"
 int KSPCreate_TCQMR(KSP ksp)
 {
+  PetscFunctionBegin;
   ksp->data          = (void *) 0;
   ksp->type          = KSPTCQMR;
   ksp->pc_side       = PC_LEFT;
@@ -172,5 +175,5 @@ int KSPCreate_TCQMR(KSP ksp)
   ksp->adjustwork    = KSPDefaultAdjustWork;
   ksp->destroy       = KSPDefaultDestroy;
   ksp->view          = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }

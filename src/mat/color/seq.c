@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: seq.c,v 1.6 1997/07/09 20:55:35 balay Exp bsmith $";
+static char vcid[] = "$Id: seq.c,v 1.7 1997/08/22 15:14:43 bsmith Exp bsmith $";
 #endif
 
 /* seq.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
@@ -68,6 +68,7 @@ int MINPACKseq(int *n,int *indrow,int *jpntr,int *indcol,int *ipntr,int *list,in
 /*     Argonne National Laboratory. MINPACK Project. July 1983. */
 /*     Thomas F. Coleman, Burton S. Garbow, Jorge J. More' */
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --iwa;
     --ngrp;
@@ -129,6 +130,6 @@ L50:
 
     /*        End of iteration loop. */
 
-    return 0;
+    PetscFunctionReturn(0);
 }
 

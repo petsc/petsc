@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgeig.c,v 1.36 1997/07/09 20:50:32 balay Exp curfman $";
+static char vcid[] = "$Id: cgeig.c,v 1.37 1997/09/11 03:02:32 curfman Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
    running with CG. Note this only works for symmetric real and Hermitian
    matrices (not complex matrices that are symmetric).
 */
-#include <stdio.h>
 #include <math.h>
 #include "src/ksp/impls/cg/cgctx.h"
 static int ccgtql1_private(int *, double *, double *, int *);
@@ -21,12 +20,13 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c)
   double *ee;
   int    j,n = ksp->its;
 
+  PetscFunctionBegin;
   if (nmax < n) SETERRQ(1,0,"Not enough room in r and c for eigenvalues");
 
   PetscMemzero(c,nmax*sizeof(double));
   if (n == 0) {
     *r = 0.0;
-    return 0;
+    PetscFunctionReturn(0);
   }
   d = cgP->d; e = cgP->e; ee = cgP->ee;
 
@@ -39,7 +39,7 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c)
   ccgtql1_private(&n,r,ee,&j);
   if (j != 0) SETERRQ(1,0,"Error from tql1.");  
   PetscSortDouble(n,r);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -51,9 +51,10 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
   double *dd, *ee;
   int    j,n = ksp->its;
 
+  PetscFunctionBegin;
   if (n == 0) {
     *emax = *emin = 1.0;
-    return 0;
+    PetscFunctionReturn(0);
   }
   d = cgP->d; e = cgP->e; dd = cgP->dd; ee = cgP->ee;
 
@@ -66,7 +67,7 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
   ccgtql1_private(&n,dd,ee,&j);
   if (j != 0) SETERRQ(1,0,"Error from tql1.");  
   *emin = dd[0]; *emax = dd[n-1];
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -144,6 +145,8 @@ static int ccgtql1_private(int *n, double *d, double *e, int *ierr)
 /*     ------------------------------------------------------------------ 
 */
     double ds;
+
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --e;
     --d;
@@ -279,7 +282,7 @@ L270:
 L1000:
     *ierr = l;
 L1001:
-    return 0;
+    PetscFunctionReturn(0);
 } /* cgtql1_ */
 
 #undef __FUNC__  
@@ -292,7 +295,7 @@ static double cgpthy_private(double *a, double *b)
     /* Local variables */
     static double p, r, s, t, u;
 
-
+    PetscFunctionBegin;
 /*     FINDS DSQRT(A**2+B**2) WITHOUT OVERFLOW OR DESTRUCTIVE UNDERFLOW */
 
 
@@ -321,7 +324,7 @@ L10:
     goto L10;
 L20:
     ret_val = p;
-    return ret_val;
+    PetscFunctionReturn(ret_val);
 } /* cgpthy_ */
 
 

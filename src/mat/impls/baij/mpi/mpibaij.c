@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.81 1997/09/25 21:42:10 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.82 1997/09/25 21:43:23 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -30,7 +30,7 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
   PLogObjectMemory(mat,baij->Nbs*sizeof(int));
   PetscMemzero(baij->colmap,baij->Nbs*sizeof(int));
   for ( i=0; i<nbs; i++ ) baij->colmap[baij->garray[i]] = i*bs+1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #define CHUNKSIZE  10
@@ -212,7 +212,7 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
   Scalar      *ap,*bap;
 
   for ( i=0; i<m; i++ ) {
-#if defined(PETSC_BOPT_g)
+#if defined(USE_PETSC_BOPT_g)
     if (im[i] < 0) SETERRQ(1,0,"Negative row");
     if (im[i] >= baij->M) SETERRQ(1,0,"Row too large");
 #endif
@@ -225,7 +225,7 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
           MatSetValues_SeqBAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
-#if defined(PETSC_BOPT_g)
+#if defined(USE_PETSC_BOPT_g)
         else if (in[j] < 0) {SETERRQ(1,0,"Negative column");}
         else if (in[j] >= baij->N) {SETERRQ(1,0,"Col too large");}
 #endif
@@ -266,7 +266,7 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 extern int MatSetValuesBlocked_SeqBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
@@ -292,7 +292,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
     stepval = (m-1)*bs;
   }
   for ( i=0; i<m; i++ ) {
-#if defined(PETSC_BOPT_g)
+#if defined(USE_PETSC_BOPT_g)
     if (im[i] < 0) SETERRQ(1,0,"Negative row");
     if (im[i] >= baij->Mbs) SETERRQ(1,0,"Row too large");
 #endif
@@ -322,7 +322,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
           col  = in[j] - cstart;
           ierr = MatSetValuesBlocked_SeqBAIJ(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
         }
-#if defined(PETSC_BOPT_g)
+#if defined(USE_PETSC_BOPT_g)
         else if (in[j] < 0) {SETERRQ(1,0,"Negative column");}
         else if (in[j] >= baij->Nbs) {SETERRQ(1,0,"Column too large");}
 #endif
@@ -332,7 +332,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
               ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
 
-#if defined(PETSC_BOPT_g)
+#if defined(USE_PETSC_BOPT_g)
             if ((baij->colmap[in[j]] - 1) % bs) {SETERRQ(1,0,"Incorrect colmap");}
 #endif
             col = (baij->colmap[in[j]] - 1)/bs;
@@ -373,7 +373,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -413,7 +413,7 @@ int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
       SETERRQ(1,0,"Only local values currently supported");
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -432,7 +432,7 @@ int MatNorm_MPIBAIJ(Mat mat,NormType type,double *norm)
     if (type == NORM_FROBENIUS) {
       v = amat->a;
       for (i=0; i<amat->nz*bs2; i++ ) {
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
         sum += real(conj(*v)*(*v)); v++;
 #else
         sum += (*v)*(*v); v++;
@@ -440,7 +440,7 @@ int MatNorm_MPIBAIJ(Mat mat,NormType type,double *norm)
       }
       v = bmat->a;
       for (i=0; i<bmat->nz*bs2; i++ ) {
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
         sum += real(conj(*v)*(*v)); v++;
 #else
         sum += (*v)*(*v); v++;
@@ -452,7 +452,7 @@ int MatNorm_MPIBAIJ(Mat mat,NormType type,double *norm)
     else
       SETERRQ(PETSC_ERR_SUP,0,"No support for this norm yet");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -553,7 +553,7 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   baij->send_waits = send_waits; baij->recv_waits = recv_waits;
   baij->rmax       = nmax;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 #include <math.h>
 #define HASH_KEY 0.6180339887
@@ -619,7 +619,7 @@ int CreateHashTable(Mat mat,double factor)
   printf("[%d] fact = %3.2f max1 = %5d max2 = %5d Size %5d - Searches %5d Avg %5.2f Keys %5d\n", 
          PetscGlobalRank,factor,max1,max2,size,ct+j,((float)ct+j)/j,j);
   PetscFree(HT);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -697,7 +697,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     for ( fact=1.2; fact<2.0; fact +=0.05) CreateHashTable(mat,fact);
   }
   if (baij->rowvalues) {PetscFree(baij->rowvalues); baij->rowvalues = 0;}
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -711,7 +711,7 @@ static int MatView_MPIBAIJ_Binary(Mat mat,Viewer viewer)
     ierr = MatView(baij->A,viewer); CHKERRQ(ierr);
   }
   else SETERRQ(1,0,"Only uniprocessor output supported");
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -742,11 +742,11 @@ static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
       fflush(fd);
       PetscSequentialPhaseEnd(mat->comm,1);
       ierr = VecScatterView(baij->Mvctx,viewer); CHKERRQ(ierr);
-      return 0; 
+      PetscFunctionReturn(0); 
     }
     else if (format == VIEWER_FORMAT_ASCII_INFO) {
       PetscPrintf(mat->comm,"  block size is %d\n",bs);
-      return 0;
+      PetscFunctionReturn(0);
     }
   }
 
@@ -754,7 +754,7 @@ static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
     Draw       draw;
     PetscTruth isnull;
     ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
-    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   }
 
   if (vtype == ASCII_FILE_VIEWER) {
@@ -833,7 +833,7 @@ static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
       ierr = MatDestroy(A); CHKERRQ(ierr);
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -850,11 +850,10 @@ int MatView_MPIBAIJ(PetscObject obj,Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER ||
       vtype == DRAW_VIEWER       || vtype == MATLAB_VIEWER) { 
     ierr = MatView_MPIBAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
+  } else if (vtype == BINARY_FILE_VIEWER) {
+    ierr = MatView_MPIBAIJ_Binary(mat,viewer);CHKERRQ(ierr);
   }
-  else if (vtype == BINARY_FILE_VIEWER) {
-    return MatView_MPIBAIJ_Binary(mat,viewer);
-  }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -865,7 +864,7 @@ int MatDestroy_MPIBAIJ(PetscObject obj)
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   int         ierr;
 
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d",baij->M,baij->N);
 #endif
 
@@ -882,7 +881,7 @@ int MatDestroy_MPIBAIJ(PetscObject obj)
   PetscFree(baij); 
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -905,7 +904,7 @@ int MatMult_MPIBAIJ(Mat A,Vec xx,Vec yy)
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->B->ops.multadd)(a->B,a->lvec,yy,yy); CHKERRQ(ierr);
   ierr = VecScatterPostRecvs(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -918,7 +917,7 @@ int MatMultAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = (*a->A->ops.multadd)(a->A,xx,yy,zz); CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->B->ops.multadd)(a->B,a->lvec,zz,zz); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -938,7 +937,7 @@ int MatMultTrans_MPIBAIJ(Mat A,Vec xx,Vec yy)
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
   ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -958,7 +957,7 @@ int MatMultTransAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
   ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -970,9 +969,10 @@ int MatMultTransAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 int MatGetDiagonal_MPIBAIJ(Mat A,Vec v)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *) A->data;
-  if (a->M != a->N) 
-    SETERRQ(1,0,"Supports only square matrix where A->A is diag block");
-  return MatGetDiagonal(a->A,v);
+  int         ierr;
+  if (a->M != a->N) SETERRQ(1,0,"Supports only square matrix where A->A is diag block");
+  ierr = MatGetDiagonal(a->A,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -983,7 +983,7 @@ int MatScale_MPIBAIJ(Scalar *aa,Mat A)
   int        ierr;
   ierr = MatScale(aa,a->A); CHKERRQ(ierr);
   ierr = MatScale(aa,a->B); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -993,7 +993,7 @@ int MatGetSize_MPIBAIJ(Mat matin,int *m,int *n)
   Mat_MPIBAIJ *mat = (Mat_MPIBAIJ *) matin->data;
   if (m) *m = mat->M; 
   if (n) *n = mat->N;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1002,7 +1002,7 @@ int MatGetLocalSize_MPIBAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIBAIJ *mat = (Mat_MPIBAIJ *) matin->data;
   *m = mat->m; *n = mat->N;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1011,7 +1011,7 @@ int MatGetOwnershipRange_MPIBAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIBAIJ *mat = (Mat_MPIBAIJ *) matin->data;
   *m = mat->rstart*mat->bs; *n = mat->rend*mat->bs;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 extern int MatGetRow_SeqBAIJ(Mat,int,int*,int**,Scalar**);
@@ -1097,7 +1097,7 @@ int MatGetRow_MPIBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   *nz = nztot;
   ierr = (*mat->A->ops.restorerow)(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
   ierr = (*mat->B->ops.restorerow)(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1109,7 +1109,7 @@ int MatRestoreRow_MPIBAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
     SETERRQ(1,0,"MatGetRow not called");
   }
   baij->getrowactive = PETSC_FALSE;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1118,7 +1118,7 @@ int MatGetBlockSize_MPIBAIJ(Mat mat,int *bs)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   *bs = baij->bs;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1129,7 +1129,7 @@ int MatZeroEntries_MPIBAIJ(Mat A)
   int         ierr;
   ierr = MatZeroEntries(l->A); CHKERRQ(ierr);
   ierr = MatZeroEntries(l->B); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1174,7 +1174,7 @@ int MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
   info->fill_ratio_given  = 0; /* no parallel LU/ILU/Cholesky */
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1211,7 +1211,7 @@ int MatSetOption_MPIBAIJ(Mat A,MatOption op)
     {SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");}
   else 
     {SETERRQ(PETSC_ERR_SUP,0,"unknown option");}
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1281,7 +1281,7 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
     PetscMemcpy(A,B,sizeof(struct _p_Mat)); 
     PetscHeaderDestroy(B);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1300,7 +1300,7 @@ int MatDiagonalScale_MPIBAIJ(Mat A,Vec ll,Vec rr)
     ierr = MatDiagonalScale(b,ll,0); CHKERRQ(ierr);
   }
   if (rr) SETERRQ(1,0,"not supported for right vector");
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* the code does not do the diagonal entries correctly unless the 
@@ -1431,7 +1431,7 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
   }
   PetscFree(send_waits); PetscFree(svalues);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 extern int MatPrintHelp_SeqBAIJ(Mat);
 #undef __FUNC__  
@@ -1439,9 +1439,12 @@ extern int MatPrintHelp_SeqBAIJ(Mat);
 int MatPrintHelp_MPIBAIJ(Mat A)
 {
   Mat_MPIBAIJ *a   = (Mat_MPIBAIJ*) A->data;
+  int         ierr;
 
-  if (!a->rank) return MatPrintHelp_SeqBAIJ(a->A);
-  else return 0;
+  if (!a->rank) {
+    ierr = MatPrintHelp_SeqBAIJ(a->A);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1451,7 +1454,7 @@ int MatSetUnfactored_MPIBAIJ(Mat A)
   Mat_MPIBAIJ *a   = (Mat_MPIBAIJ*) A->data;
   int         ierr;
   ierr = MatSetUnfactored(a->A); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 static int MatConvertSameType_MPIBAIJ(Mat,Mat *,int);
@@ -1566,7 +1569,7 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
     if (M == PETSC_DECIDE) M = m;
     if (N == PETSC_DECIDE) N = n;
     ierr = MatCreateSeqBAIJ(comm,bs,M,N,d_nz,d_nnz,A); CHKERRQ(ierr);
-    return 0;
+    PetscFunctionReturn(0);
   }
 
   *A = 0;
@@ -1676,7 +1679,7 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   b->getrowactive = PETSC_FALSE;
 
   *A = B;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1749,7 +1752,7 @@ static int MatConvertSameType_MPIBAIJ(Mat matin,Mat *newmat,int cpvalues)
     ierr = MatPrintHelp(mat); CHKERRQ(ierr);
   }
   *newmat = mat;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #include "sys.h"
@@ -1980,7 +1983,7 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
   PetscFree(mask);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

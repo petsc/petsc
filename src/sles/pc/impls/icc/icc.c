@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: icc.c,v 1.45 1997/07/09 20:53:05 balay Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.46 1997/08/22 15:12:53 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -34,6 +34,7 @@ static int PCSetup_ICC(PC pc)
   IS     perm;
   int    ierr;
 
+  PetscFunctionBegin;
   /* Currently no reorderings are supported!
   ierr = MatGetReordering(pc->pmat,icc->ordering,&perm,&perm); CHKERRQ(ierr); */
   perm = 0;
@@ -51,7 +52,7 @@ static int PCSetup_ICC(PC pc)
 				icc->levels,&icc->fact); CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorNumeric(pc->pmat,&icc->fact); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -61,9 +62,10 @@ static int PCDestroy_ICC(PetscObject obj)
   PC     pc = (PC) obj;
   PC_ICC *icc = (PC_ICC *) pc->data;
 
+  PetscFunctionBegin;
   MatDestroy(icc->fact);
   PetscFree(icc);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -73,35 +75,45 @@ static int PCApply_ICC(PC pc,Vec x,Vec y)
   PC_ICC *icc = (PC_ICC *) pc->data;
   int    ierr;
 
+  PetscFunctionBegin;
   ierr = MatSolve(icc->fact,x,y); CHKERRQ(ierr);
-  return 0;  
+  PetscFunctionReturn(0);  
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PCApplySymmetricLeft_ICC"
 static int PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 {
+  int    ierr;
   PC_ICC *icc = (PC_ICC *) pc->data;
-  return MatForwardSolve(icc->fact,x,y);
+
+  PetscFunctionBegin;
+  ierr = MatForwardSolve(icc->fact,x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PCApplySymmetricRight_ICC"
 static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 {
+  int    ierr;
   PC_ICC *icc = (PC_ICC *) pc->data;
-  return MatBackwardSolve(icc->fact,x,y);
+
+  PetscFunctionBegin;
+  ierr = MatBackwardSolve(icc->fact,x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PCPrintHelp_ICC"
 static int PCPrintHelp_ICC(PC pc,char *p)
 {
+  PetscFunctionBegin;
   PetscPrintf(pc->comm," Options for PCICC preconditioner:\n");
   PetscPrintf(pc->comm,"  %spc_icc_factorpointwise: Do NOT use block factorization \n",p);
   PetscPrintf(pc->comm,"    (Note: This only applies to the MATMPIROWBS matrix format;\n");
   PetscPrintf(pc->comm,"    all others currently only support point factorization.\n");
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -109,15 +121,18 @@ static int PCPrintHelp_ICC(PC pc,char *p)
 static int PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
 {
   PC_ICC *icc = (PC_ICC *) pc->data;
+
+  PetscFunctionBegin;
   *mat = icc->fact;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PCSetFromOptions_ICC"
 static int PCSetFromOptions_ICC(PC pc)
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -125,6 +140,8 @@ static int PCSetFromOptions_ICC(PC pc)
 int PCCreate_ICC(PC pc)
 {
   PC_ICC      *icc = PetscNew(PC_ICC); CHKPTRQ(icc);
+
+  PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_ICC));
 
   icc->fact	   = 0;
@@ -143,7 +160,7 @@ int PCCreate_ICC(PC pc)
   pc->data	   = (void *) icc;
   pc->applysymmetricleft  = PCApplySymmetricLeft_ICC;
   pc->applysymmetricright = PCApplySymmetricRight_ICC;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

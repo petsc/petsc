@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dxml.c,v 1.10 1997/07/09 20:53:48 balay Exp bsmith $";
+static char vcid[] = "$Id: dxml.c,v 1.11 1997/08/22 15:13:29 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -19,11 +19,12 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
   Scalar             *xx,*yy;
   int                ierr, zero = 0;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(x,xx);
   VecGetArray_Fast(y,yy);
   dmatvec_genr_(&zero,a->a,a->i,a->j,&a->nz,0,xx,yy,&a->m);
   PLogFlops(2*a->nz - a->m);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -31,10 +32,11 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
 #define __FUNC__ "MatUseDXML_SeqAIJ"
 int MatUseDXML_SeqAIJ(Mat A)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);  
-  if (A->type != MATSEQAIJ) return 0;
+  if (A->type != MATSEQAIJ) PetscFunctionReturn(0);
   A->ops.mult    = MatMult_SeqAIJ_DXML;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #else
@@ -43,7 +45,8 @@ int MatUseDXML_SeqAIJ(Mat A)
 #define __FUNC__ "MatUseDXML_SeqAIJ"
 int MatUseDXML_SeqAIJ(Mat A)
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 

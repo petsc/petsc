@@ -1,13 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.32 1997/07/09 20:53:11 balay Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.33 1997/09/22 15:21:57 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR and tests\n\
 the MatRelax() routines.\n\n";
 
 #include "pc.h"
-#include "petsc.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {

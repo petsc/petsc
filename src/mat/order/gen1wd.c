@@ -44,6 +44,7 @@ int gen1wd(int *neqns, int *xadj, int *adjncy,
 	    int *, int *, int *, int *, int *, int *, int *);
     static int num;
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --ls;
     --xls;
@@ -108,5 +109,5 @@ L500:
     revrse(neqns, &perm[1]);
     revrse(nblks, &xblk[1]);
     xblk[*nblks + 1] = *neqns + 1;
-    return 0;
+    PetscFunctionReturn(0);
 }

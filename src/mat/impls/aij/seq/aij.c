@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.238 1997/10/01 22:23:47 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.239 1997/10/06 16:23:56 balay Exp bsmith $";
 #endif
 
 /*
@@ -25,6 +25,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,double dt,int maxnz,IS row,IS col,Mat *fact)
   /* Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; */
   int        ierr = 1;
 
+  PetscFunctionBegin;  
   SETERRQ(ierr,0,"Not implemented");
 }
 
@@ -38,8 +39,9 @@ int MatGetRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        ierr,i,ishift;
  
+  PetscFunctionBegin;  
   *m     = A->m;
-  if (!ia) return 0;
+  if (!ia) PetscFunctionReturn(0);
   ishift = a->indexshift;
   if (symmetric) {
     ierr = MatToSymmetricIJ_SeqAIJ(a->m,a->i,a->j,ishift,oshift,ia,ja); CHKERRQ(ierr);
@@ -61,7 +63,7 @@ int MatGetRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int
     *ia = a->i; *ja = a->j;
   }
   
-  return 0; 
+  PetscFunctionReturn(0); 
 }
 
 #undef __FUNC__  
@@ -72,12 +74,13 @@ int MatRestoreRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        ishift = a->indexshift;
  
-  if (!ia) return 0;
+  PetscFunctionBegin;  
+  if (!ia) PetscFunctionReturn(0);
   if (symmetric || (oshift == 0 && ishift == -1) || (oshift == 1 && ishift == 0)) {
     PetscFree(*ia);
     PetscFree(*ja);
   }
-  return 0; 
+  PetscFunctionReturn(0); 
 }
 
 #undef __FUNC__  
@@ -89,8 +92,9 @@ int MatGetColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia
   int        ierr,i,ishift = a->indexshift,*collengths,*cia,*cja,n = A->n,m = A->m;
   int        nz = a->i[m]+ishift,row,*jj,mr,col;
  
+  PetscFunctionBegin;  
   *nn     = A->n;
-  if (!ia) return 0;
+  if (!ia) PetscFunctionReturn(0);
   if (symmetric) {
     ierr = MatToSymmetricIJ_SeqAIJ(a->m,a->i,a->j,ishift,oshift,ia,ja); CHKERRQ(ierr);
   } else {
@@ -119,7 +123,7 @@ int MatGetColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia
     *ia = cia; *ja = cja;
   }
   
-  return 0; 
+  PetscFunctionReturn(0); 
 }
 
 #undef __FUNC__  
@@ -127,12 +131,13 @@ int MatGetColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia
 int MatRestoreColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,
                                      int **ja,PetscTruth *done)
 {
-  if (!ia) return 0;
+  PetscFunctionBegin;  
+  if (!ia) PetscFunctionReturn(0);
 
   PetscFree(*ia);
   PetscFree(*ja);
   
-  return 0; 
+  PetscFunctionReturn(0); 
 }
 
 #define CHUNKSIZE   15
@@ -147,9 +152,10 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
   int        *aj = a->j, nonew = a->nonew,shift = a->indexshift;
   Scalar     *ap,value, *aa = a->a;
 
+  PetscFunctionBegin;  
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k]; 
-#if defined(PETSC_BOPT_g)  
+#if defined(USE_PETSC_BOPT_g)  
     if (row < 0) SETERRQ(1,0,"Negative row");
     if (row >= a->m) SETERRQ(1,0,"Row too large");
 #endif
@@ -157,7 +163,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
     rmax = imax[row]; nrow = ailen[row]; 
     low = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
-#if defined(PETSC_BOPT_g)  
+#if defined(USE_PETSC_BOPT_g)  
       if (in[l] < 0) SETERRQ(1,0,"Negative column");
       if (in[l] >= a->n) SETERRQ(1,0,"Column too large");
 #endif
@@ -232,7 +238,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
     }
     ailen[row] = nrow;
   }
-  return 0;
+  PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
@@ -244,6 +250,7 @@ int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
   int        *ai = a->i, *ailen = a->ilen, shift = a->indexshift;
   Scalar     *ap, *aa = a->a, zero = 0.0;
 
+  PetscFunctionBegin;  
   for ( k=0; k<m; k++ ) { /* loop over rows */
     row  = im[k];   
     if (row < 0) SETERRQ(1,0,"Negative row");
@@ -271,7 +278,7 @@ int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
       finished:;
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 } 
 
 
@@ -282,6 +289,7 @@ extern int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        i, fd, *col_lens, ierr;
 
+  PetscFunctionBegin;  
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   col_lens = (int *) PetscMalloc( (4+a->m)*sizeof(int) ); CHKPTRQ(col_lens);
   col_lens[0] = MAT_COOKIE;
@@ -307,7 +315,7 @@ extern int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
 
   /* store nonzero values */
   ierr = PetscBinaryWrite(fd,a->a,a->nz,PETSC_SCALAR,0); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -319,20 +327,19 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
   FILE        *fd;
   char        *outputname;
 
+  PetscFunctionBegin;  
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
   if (format == VIEWER_FORMAT_ASCII_INFO) {
-    return 0;
-  } 
-  else if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
+    PetscFunctionReturn(0);
+  } else if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg1); CHKERRQ(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg2); CHKERRQ(ierr);
     if (flg1 || flg2) fprintf(fd,"  not using I-node routines\n");
     else     fprintf(fd,"  using I-node routines: found %d nodes, limit used is %d\n",
         a->inode.node_count,a->inode.limit);
-  }
-  else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
+  } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
     int nofinalvalue = 0;
     if ((a->i[m] == a->i[m-1]) || (a->j[a->nz-1] != a->n-!shift)) {
       nofinalvalue = 1;
@@ -344,7 +351,7 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
 
     for (i=0; i<m; i++) {
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
         fprintf(fd,"%d %d  %18.16e + %18.16e i \n",i+1,a->j[j]+!shift,real(a->a[j]),
                    imag(a->a[j]));
 #else
@@ -356,12 +363,11 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
       fprintf(fd,"%d %d  %18.16e\n", m, a->n, 0.0);
     } 
     fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
-  } 
-  else if (format == VIEWER_FORMAT_ASCII_COMMON) {
+  } else if (format == VIEWER_FORMAT_ASCII_COMMON) {
     for ( i=0; i<m; i++ ) {
       fprintf(fd,"row %d:",i);
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
         if (imag(a->a[j]) > 0.0 && real(a->a[j]) != 0.0)
           fprintf(fd," %d %g + %g i",a->j[j]+shift,real(a->a[j]),imag(a->a[j]));
         else if (imag(a->a[j]) < 0.0 && real(a->a[j]) != 0.0)
@@ -382,7 +388,7 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
       sptr[i] = nzd+1;
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         if (a->j[j] >= i) {
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
           if (imag(a->a[j]) != 0.0 || real(a->a[j]) != 0.0) nzd++;
 #else
           if (a->a[j] != 0.0) nzd++;
@@ -412,7 +418,7 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     for ( i=0; i<m; i++ ) {
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         if (a->j[j] >= i) {
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
           if (imag(a->a[j]) != 0.0 || real(a->a[j]) != 0.0)
             fprintf(fd," %18.16e %18.16e ",real(a->a[j]),imag(a->a[j]));
 #else
@@ -422,18 +428,16 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
       }
       fprintf(fd,"\n");
     }
-  } 
-  else {
+  } else {
     for ( i=0; i<m; i++ ) {
       fprintf(fd,"row %d:",i);
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
         if (imag(a->a[j]) > 0.0) {
           fprintf(fd," %d %g + %g i",a->j[j]+shift,real(a->a[j]),imag(a->a[j]));
         } else if (imag(a->a[j]) < 0.0) {
           fprintf(fd," %d %g - %g i",a->j[j]+shift,real(a->a[j]),-imag(a->a[j]));
-        }
-        else {
+        } else {
           fprintf(fd," %d %g ",a->j[j]+shift,real(a->a[j]));
         }
 #else
@@ -444,7 +448,7 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     }
   }
   fflush(fd);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -459,10 +463,11 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
   DrawButton  button;
   PetscTruth  isnull;
 
+  PetscFunctionBegin;  
   ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
   ierr = DrawClear(draw); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
-  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   xr  = a->n; yr = a->m; h = yr/10.0; w = xr/10.0; 
   xr += w;    yr += h;  xl = -w;     yl = -h;
@@ -476,7 +481,7 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
       y_l = m - i - 1.0; y_r = y_l + 1.0;
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         x_l = a->j[j] + shift; x_r = x_l + 1.0;
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
         if (real(a->a[j]) >=  0.) continue;
 #else
         if (a->a[j] >=  0.) continue;
@@ -498,7 +503,7 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
       y_l = m - i - 1.0; y_r = y_l + 1.0;
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         x_l = a->j[j] + shift; x_r = x_l + 1.0;
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
         if (real(a->a[j]) <=  0.) continue;
 #else
         if (a->a[j] <=  0.) continue;
@@ -530,7 +535,7 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
   }
   DrawFlush(draw); 
   DrawGetPause(draw,&pause);
-  if (pause >= 0) { PetscSleep(pause); return 0;}
+  if (pause >= 0) { PetscSleep(pause); PetscFunctionReturn(0);}
 
   /* allow the matrix to zoom or shrink */
   ierr = DrawCheckResizedWindow(draw);
@@ -552,7 +557,7 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
         y_l = m - i - 1.0; y_r = y_l + 1.0;
         for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
           x_l = a->j[j] + shift; x_r = x_l + 1.0;
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
           if (real(a->a[j]) >=  0.) continue;
 #else
           if (a->a[j] >=  0.) continue;
@@ -574,7 +579,7 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
         y_l = m - i - 1.0; y_r = y_l + 1.0;
         for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
           x_l = a->j[j] + shift; x_r = x_l + 1.0;
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
           if (real(a->a[j]) <=  0.) continue;
 #else
           if (a->a[j] <=  0.) continue;
@@ -590,16 +595,16 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
         for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
           x_l = a->j[j] + shift; x_r = x_l + 1.0;
           color = 32 + (int) ((200.0 - 32.0)*PetscAbsScalar(a->a[count])/maxv);
-          DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+          DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color); CHKERRQ(ierr);
           count++;
         } 
       }
     }
 
-    ierr = DrawCheckResizedWindow(draw);
-    ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0); 
+    ierr = DrawCheckResizedWindow(draw); CHKERRQ(ierr);
+    ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0);  CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -611,20 +616,21 @@ int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
   ViewerType  vtype;
   int         ierr;
 
+  PetscFunctionBegin;  
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == MATLAB_VIEWER) {
-    return ViewerMatlabPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j); 
+    ierr = ViewerMatlabPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j);  CHKERRQ(ierr);
   }
   else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
-    return MatView_SeqAIJ_ASCII(A,viewer);
+    ierr = MatView_SeqAIJ_ASCII(A,viewer); CHKERRQ(ierr);
   }
   else if (vtype == BINARY_FILE_VIEWER) {
-    return MatView_SeqAIJ_Binary(A,viewer);
+    ierr = MatView_SeqAIJ_Binary(A,viewer); CHKERRQ(ierr);
   }
   else if (vtype == DRAW_VIEWER) {
-    return MatView_SeqAIJ_Draw(A,viewer);
+    ierr = MatView_SeqAIJ_Draw(A,viewer); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 extern int Mat_AIJ_CheckInode(Mat);
@@ -637,7 +643,8 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   int        m = a->m, *ip, N, *ailen = a->ilen,shift = a->indexshift,rmax = 0;
   Scalar     *aa = a->a, *ap;
 
-  if (mode == MAT_FLUSH_ASSEMBLY) return 0;
+  PetscFunctionBegin;  
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
 
   if (m) rmax = ailen[0]; /* determine row with most nonzeros */
   for ( i=1; i<m; i++ ) {
@@ -680,7 +687,7 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 
   /* check out for identical nodes. If found, use inode functions */
   ierr = Mat_AIJ_CheckInode(A); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -688,8 +695,10 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 int MatZeroEntries_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
+
+  PetscFunctionBegin;  
   PetscMemzero(a->a,(a->i[a->m]+a->indexshift)*sizeof(Scalar));
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -699,7 +708,8 @@ int MatDestroy_SeqAIJ(PetscObject obj)
   Mat        A  = (Mat) obj;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
 
-#if defined(PETSC_LOG)
+  PetscFunctionBegin;  
+#if defined(USE_PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
 #endif
   PetscFree(a->a); 
@@ -713,14 +723,15 @@ int MatDestroy_SeqAIJ(PetscObject obj)
 
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "MatCompress_SeqAIJ"
 int MatCompress_SeqAIJ(Mat A)
 {
-  return 0;
+  PetscFunctionBegin;  
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -728,6 +739,8 @@ int MatCompress_SeqAIJ(Mat A)
 int MatSetOption_SeqAIJ(Mat A,MatOption op)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+
+  PetscFunctionBegin;  
   if      (op == MAT_ROW_ORIENTED)                 a->roworiented = 1;
   else if (op == MAT_COLUMN_ORIENTED)              a->roworiented = 0;
   else if (op == MAT_COLUMNS_SORTED)               a->sorted      = 1;
@@ -743,16 +756,15 @@ int MatSetOption_SeqAIJ(Mat A,MatOption op)
            op == MAT_YES_NEW_DIAGONALS ||
            op == MAT_IGNORE_OFF_PROC_ENTRIES)
     PLogInfo(A,"Info:MatSetOption_SeqAIJ:Option ignored\n");
-  else if (op == MAT_NO_NEW_DIAGONALS)
-    {SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");}
-  else if (op == MAT_INODE_LIMIT_1)            a->inode.limit  = 1;
+  else if (op == MAT_NO_NEW_DIAGONALS) {
+    SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");
+  } else if (op == MAT_INODE_LIMIT_1)            a->inode.limit  = 1;
   else if (op == MAT_INODE_LIMIT_2)            a->inode.limit  = 2;
   else if (op == MAT_INODE_LIMIT_3)            a->inode.limit  = 3;
   else if (op == MAT_INODE_LIMIT_4)            a->inode.limit  = 4;
   else if (op == MAT_INODE_LIMIT_5)            a->inode.limit  = 5;
-  else 
-    {SETERRQ(PETSC_ERR_SUP,0,"unknown option");}
-  return 0;
+  else SETERRQ(PETSC_ERR_SUP,0,"unknown option");
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -760,10 +772,11 @@ int MatSetOption_SeqAIJ(Mat A,MatOption op)
 int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        i,j, n,shift = a->indexshift;
+  int        i,j, n,shift = a->indexshift,ierr;
   Scalar     *x, zero = 0.0;
 
-  VecSet(&zero,v);
+  PetscFunctionBegin;
+  ierr = VecSet(&zero,v);CHKERRQ(ierr);
   VecGetArray_Fast(v,x); VecGetLocalSize(v,&n);
   if (n != a->m) SETERRQ(1,0,"Nonconforming matrix and vector");
   for ( i=0; i<a->m; i++ ) {
@@ -774,7 +787,7 @@ int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------*/
@@ -788,6 +801,7 @@ int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
   Scalar     *x, *y, *v, alpha;
   int        m = a->m, n, i, *idx, shift = a->indexshift;
 
+  PetscFunctionBegin; 
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
   PetscMemzero(y,a->n*sizeof(Scalar));
   y = y + shift; /* shift for Fortran start by 1 indexing */
@@ -799,7 +813,7 @@ int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
     while (n-->0) {y[*idx++] += alpha * *v++;}
   }
   PLogFlops(2*a->nz - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -810,6 +824,7 @@ int MatMultTransAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
   Scalar     *x, *y, *v, alpha;
   int        m = a->m, n, i, *idx,shift = a->indexshift;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
   if (zz != yy) VecCopy(zz,yy);
   y = y + shift; /* shift for Fortran start by 1 indexing */
@@ -821,7 +836,7 @@ int MatMultTransAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
     while (n-->0) {y[*idx++] += alpha * *v++;}
   }
   PLogFlops(2*a->nz);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -832,6 +847,7 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   Scalar     *x, *y, *v, sum;
   int        m = a->m, n, i, *idx, shift = a->indexshift,*ii,jrow,j;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
   x    = x + shift; /* shift for Fortran start by 1 indexing */
   idx  = a->j;
@@ -851,7 +867,7 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   }
 #endif
   PLogFlops(2*a->nz - m);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -863,6 +879,7 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   int        m = a->m, n, i, *idx, shift = a->indexshift,*ii,jrow,j;
 
 
+  PetscFunctionBegin;
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y); VecGetArray_Fast(zz,z); 
   x    = x + shift; /* shift for Fortran start by 1 indexing */
   idx  = a->j;
@@ -882,7 +899,7 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   }
 #endif
   PLogFlops(2*a->nz);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -896,6 +913,7 @@ int MatMarkDiag_SeqAIJ(Mat A)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
   int        i,j, *diag, m = a->m,shift = a->indexshift;
 
+  PetscFunctionBegin;
   diag = (int *) PetscMalloc( (m+1)*sizeof(int)); CHKPTRQ(diag);
   PLogObjectMemory(A,(m+1)*sizeof(int));
   for ( i=0; i<a->m; i++ ) {
@@ -907,7 +925,7 @@ int MatMarkDiag_SeqAIJ(Mat A)
     }
   }
   a->diag = diag;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -919,6 +937,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
   Scalar     *x, *b, *bs,  d, *xs, sum, *v = a->a,*t,scale,*ts, *xb;
   int        ierr, *idx, *diag,n = a->n, m = a->m, i, shift = a->indexshift;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(xx,x); VecGetArray_Fast(bb,b);
   if (!a->diag) {ierr = MatMarkDiag_SeqAIJ(A);CHKERRQ(ierr);}
   diag = a->diag;
@@ -935,12 +954,11 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
         SPARSEDENSEDOT(sum,bs,v,idx,n); 
         x[i] = sum;
     }
-    return 0;
+    PetscFunctionReturn(0);
   }
   if (flag == SOR_APPLY_LOWER) {
     SETERRQ(1,0,"SOR_APPLY_LOWER is not done");
-  }
-  else if (flag & SOR_EISENSTAT) {
+  } else if (flag & SOR_EISENSTAT) {
     /* Let  A = L + U + D; where L is lower trianglar,
     U is upper triangular, E is diagonal; This routine applies
 
@@ -984,7 +1002,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
     /*  x = x + t */
     for ( i=0; i<m; i++ ) { x[i] += t[i]; }
     PetscFree(t);
-    return 0;
+    PetscFunctionReturn(0);
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
@@ -998,8 +1016,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
         x[i] = omega*(sum/d);
       }
       xb = x;
-    }
-    else xb = b;
+    } else xb = b;
     if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
       for ( i=0; i<m; i++ ) {
@@ -1043,7 +1060,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
@@ -1052,6 +1069,7 @@ int MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
 
+  PetscFunctionBegin;
   info->rows_global    = (double)a->m;
   info->columns_global = (double)a->n;
   info->rows_local     = (double)a->m;
@@ -1074,7 +1092,7 @@ int MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
     info->fill_ratio_needed = 0;
     info->factor_mallocs    = 0;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 extern int MatLUFactorSymbolic_SeqAIJ(Mat,IS,IS,double,Mat*);
@@ -1092,6 +1110,7 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int         i,ierr,N, *rows,m = a->m - 1,shift = a->indexshift;
 
+  PetscFunctionBegin;
   ierr = ISGetSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
   if (diag) {
@@ -1101,14 +1120,12 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
         a->ilen[rows[i]] = 1; 
         a->a[a->i[rows[i]]+shift] = *diag;
         a->j[a->i[rows[i]]+shift] = rows[i]+shift;
-      }
-      else {
+      } else {
         ierr = MatSetValues_SeqAIJ(A,1,&rows[i],1,&rows[i],diag,INSERT_VALUES);
         CHKERRQ(ierr);
       }
     }
-  }
-  else {
+  } else {
     for ( i=0; i<N; i++ ) {
       if (rows[i] < 0 || rows[i] > m) SETERRQ(1,0,"row out of range");
       a->ilen[rows[i]] = 0; 
@@ -1116,7 +1133,7 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
   }
   ISRestoreIndices(is,&rows);
   ierr = MatAssemblyEnd_SeqAIJ(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1124,9 +1141,11 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
 int MatGetSize_SeqAIJ(Mat A,int *m,int *n)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+
+  PetscFunctionBegin;
   if (m) *m = a->m; 
   if (n) *n = a->n;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1134,8 +1153,10 @@ int MatGetSize_SeqAIJ(Mat A,int *m,int *n)
 int MatGetOwnershipRange_SeqAIJ(Mat A,int *m,int *n)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+
+  PetscFunctionBegin;
   *m = 0; *n = a->m;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1145,6 +1166,7 @@ int MatGetRow_SeqAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        *itmp,i,shift = a->indexshift;
 
+  PetscFunctionBegin;
   if (row < 0 || row >= a->m) SETERRQ(1,0,"Row out of range");
 
   *nz = a->i[row+1] - a->i[row];
@@ -1159,7 +1181,7 @@ int MatGetRow_SeqAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
     }
     else *idx = 0;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1167,8 +1189,10 @@ int MatGetRow_SeqAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 int MatRestoreRow_SeqAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+
+  PetscFunctionBegin;
   if (idx) {if (*idx && a->indexshift) PetscFree(*idx);}
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1180,17 +1204,17 @@ int MatNorm_SeqAIJ(Mat A,NormType type,double *norm)
   double     sum = 0.0;
   int        i, j,shift = a->indexshift;
 
+  PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
     for (i=0; i<a->nz; i++ ) {
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
       sum += real(conj(*v)*(*v)); v++;
 #else
       sum += (*v)*(*v); v++;
 #endif
     }
     *norm = sqrt(sum);
-  }
-  else if (type == NORM_1) {
+  } else if (type == NORM_1) {
     double *tmp;
     int    *jj = a->j;
     tmp = (double *) PetscMalloc( (a->n+1)*sizeof(double) ); CHKPTRQ(tmp);
@@ -1203,8 +1227,7 @@ int MatNorm_SeqAIJ(Mat A,NormType type,double *norm)
       if (tmp[j] > *norm) *norm = tmp[j];
     }
     PetscFree(tmp);
-  }
-  else if (type == NORM_INFINITY) {
+  } else if (type == NORM_INFINITY) {
     *norm = 0.0;
     for ( j=0; j<a->m; j++ ) {
       v = a->a + a->i[j] + shift;
@@ -1214,11 +1237,10 @@ int MatNorm_SeqAIJ(Mat A,NormType type,double *norm)
       }
       if (sum > *norm) *norm = sum;
     }
-  }
-  else {
+  } else {
     SETERRQ(1,0,"No support for two norm yet");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1231,8 +1253,8 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
   int        shift = a->indexshift;
   Scalar     *array = a->a;
 
-  if (B == PETSC_NULL && m != a->n)
-    SETERRQ(1,0,"Square matrix only for in-place");
+  PetscFunctionBegin;
+  if (B == PETSC_NULL && m != a->n) SETERRQ(1,0,"Square matrix only for in-place");
   col = (int *) PetscMalloc((1+a->n)*sizeof(int)); CHKPTRQ(col);
   PetscMemzero(col,(1+a->n)*sizeof(int));
   if (shift) {
@@ -1268,7 +1290,7 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
     PetscMemcpy(A,C,sizeof(struct _p_Mat)); 
     PetscHeaderDestroy(C);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1279,6 +1301,7 @@ int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
   Scalar     *l,*r,x,*v;
   int        i,j,m = a->m, n = a->n, M, nz = a->nz, *jj,shift = a->indexshift;
 
+  PetscFunctionBegin;
   if (ll) {
     /* The local size is used so that VecMPI can be passed to this routine
        by MatDiagonalScale_MPIAIJ */
@@ -1303,7 +1326,7 @@ int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
     }
     PLogFlops(nz);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1319,6 +1342,7 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat
   Scalar       *a_new,*mat_a;
   Mat          C;
 
+  PetscFunctionBegin;
   ierr = ISSorted(isrow,(PetscTruth*)&i);
   if (!i) SETERRQ(1,0,"ISrow is not sorted");
   ierr = ISSorted(iscol,(PetscTruth*)&i);
@@ -1356,8 +1380,7 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat
       if (n_rows != nrows || n_cols != ncols) SETERRQ(1,0,"");
       ierr = MatZeroEntries(*B); CHKERRQ(ierr);
       C = *B;
-    }
-    else {  
+    } else {  
       ierr = MatCreateSeqAIJ(A->comm,nrows,ncols,0,lens,&C);CHKERRQ(ierr);
     }
     c = (Mat_SeqAIJ*) C->data;
@@ -1379,8 +1402,7 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat
       c->ilen[i]  = lensi;
     }
     PetscFree(lens);
-  }
-  else {
+  } else {
     ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
     smap  = (int *) PetscMalloc((1+oldcols)*sizeof(int)); CHKPTRQ(smap);
     ssmap = smap + shift;
@@ -1408,8 +1430,7 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat
       }
       PetscMemzero(c->ilen,c->m*sizeof(int));
       C = *B;
-    }
-    else {  
+    } else {  
       ierr = MatCreateSeqAIJ(A->comm,nrows,ncols,0,lens,&C);CHKERRQ(ierr);
     }
     c = (Mat_SeqAIJ *)(C->data);
@@ -1440,7 +1461,7 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat
 
   ierr = ISRestoreIndices(isrow,&irow); CHKERRQ(ierr);
   *B = C;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -1455,6 +1476,7 @@ int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
   int        ierr;
   Mat        outA;
 
+  PetscFunctionBegin;
   if (fill != 0) SETERRQ(1,0,"Only fill=0 supported");
 
   outA          = inA; 
@@ -1470,7 +1492,7 @@ int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
     ierr = MatMarkDiag_SeqAIJ(inA); CHKERRQ(ierr);
   }
   ierr = MatLUFactorNumeric_SeqAIJ(inA,&outA); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #include "pinclude/plapack.h"
@@ -1480,9 +1502,11 @@ int MatScale_SeqAIJ(Scalar *alpha,Mat inA)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) inA->data;
   int        one = 1;
+
+  PetscFunctionBegin;
   BLscal_( &a->nz, alpha, a->a, &one );
   PLogFlops(a->nz);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1492,6 +1516,7 @@ int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall 
 {
   int ierr,i;
 
+  PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
     *B = (Mat *) PetscMalloc( (n+1)*sizeof(Mat) ); CHKPTRQ(*B);
   }
@@ -1499,7 +1524,7 @@ int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall 
   for ( i=0; i<n; i++ ) {
     ierr = MatGetSubMatrix_SeqAIJ(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1507,7 +1532,7 @@ int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall 
 int MatGetBlockSize_SeqAIJ(Mat A, int *bs)
 {
   *bs = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1519,6 +1544,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
   int        start, end, *ai, *aj;
   BT         table;
 
+  PetscFunctionBegin;
   shift = a->indexshift;
   m     = a->m;
   ai    = a->i;
@@ -1562,7 +1588,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
   }
   BTDestroy(table);
   PetscFree(nidx);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------- */
@@ -1576,6 +1602,7 @@ int MatPermute_SeqAIJ(Mat A, IS rowp, IS colp, Mat *B)
   int        *row,*col,*cnew,j,*lens;
   IS         icolp,irowp;
 
+  PetscFunctionBegin;
   ierr = ISInvertPermutation(rowp,&irowp); CHKERRQ(ierr);
   ierr = ISGetIndices(irowp,&row); CHKERRQ(ierr);
   ierr = ISInvertPermutation(colp,&icolp); CHKERRQ(ierr);
@@ -1603,7 +1630,7 @@ int MatPermute_SeqAIJ(Mat A, IS rowp, IS colp, Mat *B)
   ierr = ISRestoreIndices(icolp,&col); CHKERRQ(ierr);
   ierr = ISDestroy(irowp); CHKERRQ(ierr);
   ierr = ISDestroy(icolp); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1613,7 +1640,8 @@ int MatPrintHelp_SeqAIJ(Mat A)
   static int called = 0; 
   MPI_Comm   comm = A->comm;
 
-  if (called) return 0; else called = 1;
+  PetscFunctionBegin;
+  if (called) {PetscFunctionReturn(0);} else called = 1;
   PetscPrintf(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");
   PetscPrintf(comm,"  -mat_lu_pivotthreshold <threshold>: Set pivoting threshold\n");
   PetscPrintf(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");
@@ -1622,7 +1650,7 @@ int MatPrintHelp_SeqAIJ(Mat A)
 #if defined(HAVE_ESSL)
   PetscPrintf(comm,"  -mat_aij_essl: Use IBM sparse LU factorization and solve.\n");
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }
 extern int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg);
 extern int MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
@@ -1720,6 +1748,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   Mat_SeqAIJ *b;
   int        i, len, ierr, flg,size;
 
+  PetscFunctionBegin;
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,0,"Comm must be of size 1");
 
@@ -1754,8 +1783,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
     else if (nz <= 0)        nz = 1;
     for ( i=0; i<m; i++ ) b->imax[i] = nz;
     nz = nz*m;
-  }
-  else {
+  } else {
     nz = 0;
     for ( i=0; i<m; i++ ) {b->imax[i] = nnz[i]; nz += nnz[i];}
   }
@@ -1808,7 +1836,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   }
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) {ierr = MatPrintHelp(B); CHKERRQ(ierr); }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1819,6 +1847,7 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   Mat_SeqAIJ *c,*a = (Mat_SeqAIJ *) A->data;
   int        i,len, m = a->m,shift = a->indexshift;
 
+  PetscFunctionBegin;
   *B = 0;
   PetscHeaderCreate(C,_p_Mat,MAT_COOKIE,MATSEQAIJ,A->comm,MatDestroy,MatView);
   PLogObjectCreate(C);
@@ -1870,8 +1899,7 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
     for ( i=0; i<m; i++ ) {
       c->diag[i] = a->diag[i];
     }
-  }
-  else c->diag          = 0;
+  } else c->diag          = 0;
   c->inode.limit        = a->inode.limit;
   c->inode.max_limit    = a->inode.max_limit;
   if (a->inode.size){
@@ -1888,7 +1916,7 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   c->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
 
   *B = C;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1900,6 +1928,7 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   int          i, nz, ierr, fd, header[4],size,*rowlengths = 0,M,N,shift;
   MPI_Comm     comm;
   
+  PetscFunctionBegin;
   PetscObjectGetComm((PetscObject) viewer,&comm);
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,0,"view must have one processor");
@@ -1939,7 +1968,7 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1948,29 +1977,30 @@ int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data, *b = (Mat_SeqAIJ *)B->data;
 
+  PetscFunctionBegin;
   if (B->type !=MATSEQAIJ)SETERRQ(1,0,"Matrices must be same type");
 
   /* If the  matrix dimensions are not equal, or no of nonzeros or shift */
   if ((a->m != b->m ) || (a->n !=b->n) ||( a->nz != b->nz)|| 
       (a->indexshift != b->indexshift)) {
-    *flg = PETSC_FALSE; return 0; 
+    *flg = PETSC_FALSE; PetscFunctionReturn(0); 
   }
   
   /* if the a->i are the same */
   if (PetscMemcmp(a->i,b->i,(a->m+1)*sizeof(int))) { 
-    *flg = PETSC_FALSE; return 0;
+    *flg = PETSC_FALSE; PetscFunctionReturn(0);
   }
   
   /* if a->j are the same */
   if (PetscMemcmp(a->j, b->j, (a->nz)*sizeof(int))) { 
-    *flg = PETSC_FALSE; return 0;
+    *flg = PETSC_FALSE; PetscFunctionReturn(0);
   }
   
   /* if a->a are the same */
   if (PetscMemcmp(a->a, b->a, (a->nz)*sizeof(Scalar))) {
-    *flg = PETSC_FALSE; return 0;
+    *flg = PETSC_FALSE; PetscFunctionReturn(0);
   }
   *flg = PETSC_TRUE; 
-  return 0;
+  PetscFunctionReturn(0);
   
 }

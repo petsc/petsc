@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.2 1997/07/09 20:55:45 balay Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.3 1997/09/22 15:24:36 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests repeated use of assembly for matrices.\n\n";
 
 #include "mat.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {

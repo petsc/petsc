@@ -1,6 +1,8 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base.g,v 1.11 1997/09/10 18:10:05 balay Exp bsmith $ 
 
-PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_g 
+PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+             -DUSE_PETSC_STACK
+
 COPTFLAGS  = -g -Wall -Wshadow
 #
 # To prohibit Fortran implicit typing, add -u in FOPTFLAGS definition

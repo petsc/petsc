@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.9 1996/04/13 15:14:36 curfman Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.10 1997/07/09 20:52:08 balay Exp bsmith $";
 #endif
 
 /*
       Tests the signal handler.
 */
 #include "petsc.h"
-#include <stdio.h>
 
 int CreateError(int n)
 {

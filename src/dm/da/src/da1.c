@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.67 1997/09/26 02:21:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.68 1997/10/10 04:06:37 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -19,6 +19,7 @@ int DAView_1d(PetscObject pobj,Viewer viewer)
   int         rank, ierr;
   ViewerType  vtype;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
 
   MPI_Comm_rank(da->comm,&rank); 
@@ -39,8 +40,7 @@ int DAView_1d(PetscObject pobj,Viewer viewer)
     fprintf(fd,"X range: %d %d\n",da->xs,da->xe);
     fflush(fd);
     PetscSequentialPhaseEnd(da->comm,1);
-  }
-  else if (vtype == DRAW_VIEWER) {
+  } else if (vtype == DRAW_VIEWER) {
     Draw       draw;
     double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
     int        base;
@@ -48,7 +48,7 @@ int DAView_1d(PetscObject pobj,Viewer viewer)
     PetscTruth isnull;
 
     ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
-    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
     DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);
 
@@ -87,7 +87,7 @@ int DAView_1d(PetscObject pobj,Viewer viewer)
     DrawSynchronizedFlush(draw);
     DrawPause(draw); 
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -125,6 +125,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   VecScatter ltog,gtol;
   IS         to,from;
   DF         df_local;
+
+  PetscFunctionBegin;
   *inra = 0;
 
   if (w < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node");
@@ -280,8 +282,10 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   */
   {
     ISLocalToGlobalMapping isltog;
-    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nn,idx,&isltog); CHKERRQ(ierr);
-    ierr = VecSetLocalToGlobalMapping(da->global,isltog); CHKERRQ(ierr);
+    ierr        = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nn,idx,&isltog); CHKERRQ(ierr);
+    ierr        = VecSetLocalToGlobalMapping(da->global,isltog); CHKERRQ(ierr);
+    da->ltogmap = isltog; PetscObjectReference((PetscObject)isltog);
+    PLogObjectParent(da,isltog);
     ierr = ISLocalToGlobalMappingDestroy(isltog); CHKERRQ(ierr);
   }
 
@@ -308,9 +312,9 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   {
     IS is;
     
-    ierr = ISCreateStride(PETSC_COMM_SELF,da->xe-da->xs,da->base,1,&is);
-           CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,da->xe-da->xs,da->base,1,&is);CHKERRQ(ierr);
     ierr = AOCreateBasicIS(comm,is,is,&da->ao); CHKERRQ(ierr);
+    PLogObjectParent(da,da->ao);
     ierr = ISDestroy(is); CHKERRQ(ierr);
   }
 
@@ -348,7 +352,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAPrintHelp(da); CHKERRQ(ierr);}
   *inra = da;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fmg.c,v 1.9 1997/01/06 20:23:46 balay Exp balay $";
+static char vcid[] = "$Id: fmg.c,v 1.10 1997/07/09 20:52:58 balay Exp bsmith $";
 #endif
 /*
      Full multigrid using either additive or multiplicative V or W cycle
@@ -28,6 +28,7 @@ int MGFCycle_Private(MG *mg)
   int    i, l = mg[0]->levels,ierr;
   Scalar zero = 0.0;
 
+  PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
   for ( i=l-1; i>0; i-- ){
     ierr = MatMult(mg[i]->restrct, mg[i]->b, mg[i-1]->b ); CHKERRQ(ierr);
@@ -41,7 +42,7 @@ int MGFCycle_Private(MG *mg)
     ierr = MatMultTransAdd(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x,mg[i+1]->x);CHKERRQ(ierr); 
   }
   ierr = MGMCycle_Private(&mg[l-1]);  CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -60,6 +61,7 @@ int MGKCycle_Private(MG *mg)
   int    i, l = mg[0]->levels,its,ierr;
   Scalar zero = 0.0;
 
+  PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
   for ( i=l-1; i>0; i-- ){
     ierr = MatMult(mg[i]->restrct,mg[i]->b, mg[i-1]->b); CHKERRQ(ierr); 
@@ -74,7 +76,7 @@ int MGKCycle_Private(MG *mg)
   }
   ierr = SLESSolve(mg[l-1]->smoothd,mg[l-1]->b,mg[l-1]->x,&its); CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

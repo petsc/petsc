@@ -1,8 +1,7 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: PetscGetTime.c,v 1.5 1997/03/09 18:00:35 bsmith Exp balay $";
+static char vcid[] = "$Id: PetscGetTime.c,v 1.6 1997/07/09 21:01:29 balay Exp bsmith $";
 #endif
 
-#include "stdio.h"
 #include "petsc.h"
 
 int main( int argc, char **argv)
@@ -31,5 +30,5 @@ int main( int argc, char **argv)
   }
 
   PetscFinalize();
-  return 0;
+  PetscFunctionReturn(0);
 }

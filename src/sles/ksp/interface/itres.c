@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itres.c,v 1.29 1997/01/27 18:15:21 bsmith Exp balay $";
+static char vcid[] = "$Id: itres.c,v 1.30 1997/07/09 20:50:16 balay Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -32,6 +32,7 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
   Mat           Amat, Pmat;
   int           ierr;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);
   if (ksp->pc_side == PC_RIGHT) {
@@ -64,7 +65,7 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
   else {
     ierr = VecCopy(vbinvf,vres); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -92,6 +93,8 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 int KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
 {
   int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->pc_side == PC_RIGHT) {
     ierr = PCApply(ksp->B,vsoln,vt1); CHKERRQ(ierr);
@@ -101,5 +104,5 @@ int KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
     ierr = PCApplySymmetricRight(ksp->B,vsoln,vt1); CHKERRQ(ierr);
     ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }

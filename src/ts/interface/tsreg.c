@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.22 1997/08/22 15:16:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.23 1997/09/26 02:20:18 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -27,6 +27,7 @@ $    (for instance, euler)
    Notes:
    See "petsc/include/ts.h" for available methods (for instance)
 $   TS_EULER
+$   TS_PVODE
 $   TS_BEULER
 $   TS_PSEUDO
 
@@ -48,6 +49,7 @@ int TSSetType(TS ts,TSType method)
 {
   int ierr,(*r)(TS);
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   /* Get the function pointers for the method requested */
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(); CHKERRQ(ierr);}
@@ -55,7 +57,8 @@ int TSSetType(TS ts,TSType method)
   r =  (int (*)(TS))NRFindRoutine( __TSList, (int)method, (char *)0 );
   if (!r) {SETERRQ(1,0,"Unknown method");}
   if (ts->data) PetscFree(ts->data);
-  return (*r)(ts);
+  ierr = (*r)(ts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 /* --------------------------------------------------------------------- */
@@ -89,12 +92,13 @@ int TSRegister(TSType name,TSType *oname, char *sname, int (*create)(TS))
   int ierr;
   static int numberregistered = 0;
 
+  PetscFunctionBegin;
   if (name == TS_NEW) name = (TSType) ((int) TS_NEW + numberregistered++);
 
   if (oname) *oname = name;
   if (!__TSList) {ierr = NRCreate(&__TSList); CHKERRQ(ierr);}
   NRRegister( __TSList, (int) name, sname, (int (*)(void*))create );
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNC__  
@@ -109,12 +113,13 @@ int TSRegister(TSType name,TSType *oname, char *sname, int (*create)(TS))
 @*/
 int TSRegisterDestroy()
 {
+  PetscFunctionBegin;
   if (__TSList) {
     NRDestroy( __TSList );
     __TSList = 0;
   }
   TSRegisterAllCalled = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -134,13 +139,14 @@ int TSRegisterDestroy()
 int TSGetType(TS ts, TSType *method,char **name)
 {
   int ierr;
+
+  PetscFunctionBegin;
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(); CHKERRQ(ierr);}
   if (method) *method = (TSType) ts->type;
   if (name)  *name = NRFindName( __TSList, (int) ts->type );
-  return 0;
+  PetscFunctionReturn(0);
 }
 
-#include <stdio.h>
 #undef __FUNC__  
 #define __FUNC__ "TSPrintTypes_Private"
 /*
@@ -155,6 +161,8 @@ int TSGetType(TS ts, TSType *method,char **name)
 int TSPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
 {
   FuncList *entry;
+
+  PetscFunctionBegin;
   if (!__TSList) {TSRegisterAll();}
   entry = __TSList->head;
   PetscPrintf(comm," %s%s (one of)",prefix,name);
@@ -163,7 +171,7 @@ int TSPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
     entry = entry->next;
   }
   PetscPrintf(comm,"\n");
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -187,12 +195,14 @@ $  -ts_type  method
 */
 int TSGetTypeFromOptions_Private(TS ctx,TSType *method,int *flg)
 {
-  int ierr;
+  int  ierr;
   char sbuf[50];
+
+  PetscFunctionBegin;
   ierr = OptionsGetString(ctx->prefix,"-ts_type", sbuf, 50, flg); CHKERRQ(ierr);
   if (*flg) {
     if (!__TSList) {ierr = TSRegisterAll(); CHKERRQ(ierr);}
     *method = (TSType)NRFindID( __TSList, sbuf );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }

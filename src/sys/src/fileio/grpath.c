@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: grpath.c,v 1.11 1997/08/22 15:11:48 bsmith Exp gropp $";
+static char vcid[] = "$Id: grpath.c,v 1.12 1997/09/05 18:28:16 gropp Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -35,13 +35,17 @@ static char vcid[] = "$Id: grpath.c,v 1.11 1997/08/22 15:11:48 bsmith Exp gropp 
 int PetscGetRealPath(char * path, char *rpath )
 {
   char tmp3[MAXPATHLEN];
+
 #if defined(HAVE_REALPATH)
+  PetscFunctionBegin;
   realpath( path, rpath );
 #elif !defined(HAVE_READLINK) || defined (PARCH_nt)
+  PetscFunctionBegin;
   PetscStrcpy( rpath, path );
 #else
   char tmp1[MAXPATHLEN], tmp4[MAXPATHLEN], *tmp2;
   int  n, m, N;
+  PetscFunctionBegin;
 
   /* Algorithm: we move through the path, replacing links with the real paths.   */
   PetscStrcpy( rpath, path );
@@ -59,13 +63,12 @@ int PetscGetRealPath(char * path, char *rpath )
         PetscStrncat(tmp4,tmp3,MAXPATHLEN - PetscStrlen(tmp4));
         PetscGetRealPath(tmp4,rpath);
         PetscStrncat(rpath,path+N,MAXPATHLEN - PetscStrlen(rpath));
-        return 0;
-      }
-      else {
+        PetscFunctionReturn(0);
+      } else {
         PetscGetRealPath(tmp3,tmp1);
         PetscStrncpy(rpath,tmp1,MAXPATHLEN);
         PetscStrncat(rpath,path+N,MAXPATHLEN - PetscStrlen(rpath));
-        return 0;
+        PetscFunctionReturn(0);
       }
     }  
     tmp2 = PetscStrchr(tmp1,'/');
@@ -78,5 +81,5 @@ int PetscGetRealPath(char * path, char *rpath )
     PetscStrcpy( tmp3, rpath + 8 );
     PetscStrcpy( rpath, tmp3 );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }

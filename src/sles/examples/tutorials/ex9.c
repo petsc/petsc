@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.25 1997/07/09 20:57:17 balay Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.26 1997/09/22 15:20:33 balay Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -29,7 +29,6 @@ T*/
      viewer.h - viewers               pc.h  - preconditioners
 */
 #include "sles.h"
-#include  <stdio.h>
 
 /* 
    Declare user-defined routines

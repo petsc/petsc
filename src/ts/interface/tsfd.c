@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsfd.c,v 1.1 1997/10/12 22:00:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsfd.c,v 1.2 1997/10/12 23:25:36 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -9,8 +10,7 @@ static char vcid[] = "$Id: tsfd.c,v 1.1 1997/10/12 22:00:31 bsmith Exp bsmith $"
 #define __FUNC__ "TSDefaultComputeJacobianWithColoring"
 /*@C
     TSDefaultComputeJacobianWithColoring - Computes the Jacobian using
-    finite differences and coloring to exploit matrix sparsity.  DOES NOT HANDLE
-    TIME CORRECTLY!
+    finite differences and coloring to exploit matrix sparsity.  
   
     Input Parameters:
 .   ts - nonlinear solver object
@@ -38,22 +38,150 @@ int TSDefaultComputeJacobianWithColoring(TS ts,double t,Vec x1,Mat *J,Mat *B,Mat
   SNES          snes;
   int           ierr,freq,it;
 
-  ierr = MatFDColoringGetFrequency(color,&freq);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  /*
+       If we are not using SNES we have no way to know the current iteration.
+  */
   ierr = TSGetSNES(ts,&snes); CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(snes,&it); CHKERRQ(ierr);
+  if (snes) {
+    ierr = MatFDColoringGetFrequency(color,&freq);CHKERRQ(ierr);
+    ierr = SNESGetIterationNumber(snes,&it); CHKERRQ(ierr);
 
-  if ((freq > 1) && ((it % freq) != 1)) {
-    PLogInfo(color,"TSDefaultComputeJacobianWithColoring:Skipping Jacobian, it %d, freq %d\n",it,freq);
-    *flag = SAME_PRECONDITIONER;
-    return 0;
-  } else {
-    PLogInfo(color,"TSDefaultComputeJacobianWithColoring:Computing Jacobian, it %d, freq %d\n",it,freq);
-    *flag = SAME_NONZERO_PATTERN;
+    if ((freq > 1) && ((it % freq) != 1)) {
+      PLogInfo(color,"TSDefaultComputeJacobianWithColoring:Skipping Jacobian, it %d, freq %d\n",it,freq);
+      *flag = SAME_PRECONDITIONER;
+      PetscFunctionReturn(0);
+    } else {
+      PLogInfo(color,"TSDefaultComputeJacobianWithColoring:Computing Jacobian, it %d, freq %d\n",it,freq);
+      *flag = SAME_NONZERO_PATTERN;
+    }
   }
 
-  ierr = MatFDColoringApply(*B,color,x1,flag,ts); CHKERRQ(ierr);
-  return 0;
+  ierr = MatFDColoringApplyTS(*B,color,t,x1,flag,ts); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "TSSetRHSJacobianDefault"
+/*@
+      TSSetRHSJacobianDefault - Sets TS to use the default coloring
+                                            computation of the Jacobian.
+
+   Input Parameters:
+.   ts - the time-step context
+.   fd - the matrix coloring object
+.   A  - the Jacobian matrix
+.   B  - the preconditioner matrix (often the same as A)
+
+    Note: This is equivalent to calling
+      TSSetRHSJacobian(ts,A,B,TSDefaultComputeJacobianWithColoring,fd);
+      but may be called from Fortran code.
+ 
+.keywords: Jacobian, coloring
+@*/
+int TSSetRHSJacobianDefault(TS ts,MatFDColoring fd,Mat A,Mat B)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = TSSetRHSJacobian(ts,A,B,TSDefaultComputeJacobianWithColoring,fd);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "TSSDefaultComputeJacobianSlow"
+/*
+   TSDefaultComputeJacobianSlow - Computes the Jacobian using finite differences.
+
+   Input Parameters:
+.  ts - TS context
+.  xx1 - compute Jacobian at this point
+.  ctx - application's function context, as set with SNESSetFunction()
+
+   Output Parameters:
+.  J - Jacobian
+.  B - preconditioner, same as Jacobian
+.  flag - matrix flag
+
+   Notes:
+   This routine is slow and expensive, and is not optimized.
+
+   Sparse approximations using colorings are also available and
+   would be a much better alternative!
+
+.seealso: TSDefaultComputeJacobianWithColoring()
+
+*/
+int TSDefaultComputeJacobianSlow(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+{
+  Vec      jj1,jj2,xx2;
+  int      i,ierr,N,start,end,j;
+  Scalar   dx, mone = -1.0,*y,scale,*xx,wscale;
+  double   amax, epsilon = 1.e-8; /* assumes double precision */
+  double   dx_min = 1.e-16, dx_par = 1.e-1;
+  MPI_Comm comm;
+
+  PetscFunctionBegin;
+  ierr = VecDuplicate(xx1,&jj1); CHKERRQ(ierr);
+  ierr = VecDuplicate(xx1,&jj2); CHKERRQ(ierr);
+  ierr = VecDuplicate(xx1,&xx2); CHKERRQ(ierr);
+
+  PetscObjectGetComm((PetscObject)xx1,&comm);
+  MatZeroEntries(*J);
+
+  ierr = VecGetSize(xx1,&N); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(xx1,&start,&end); CHKERRQ(ierr);
+  VecGetArray(xx1,&xx);
+  ierr = TSComputeRHSFunction(ts,ts->ptime,xx1,jj1); CHKERRQ(ierr);
+
+  /* Compute Jacobian approximation, 1 column at a time.
+      xx1 = current iterate, jj1 = F(xx1)
+      xx2 = perturbed iterate, jj2 = F(xx2)
+   */
+  for ( i=0; i<N; i++ ) {
+    ierr = VecCopy(xx1,xx2); CHKERRQ(ierr);
+    if ( i>= start && i<end) {
+      dx = xx[i-start];
+#if !defined(USE_PETSC_COMPLEX)
+      if (dx < dx_min && dx >= 0.0) dx = dx_par;
+      else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
+#else
+      if (abs(dx) < dx_min && real(dx) >= 0.0) dx = dx_par;
+      else if (real(dx) < 0.0 && abs(dx) < dx_min) dx = -dx_par;
+#endif
+      dx *= epsilon;
+      wscale = 1.0/dx;
+      VecSetValues(xx2,1,&i,&dx,ADD_VALUES);
+    }
+    else {
+      wscale = 0.0;
+    }
+    ierr = TSComputeRHSFunction(ts,t,xx2,jj2); CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,jj1,jj2); CHKERRQ(ierr);
+    /* Communicate scale to all processors */
+#if !defined(USE_PETSC_COMPLEX)
+    MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);
+#else
+#endif
+    VecScale(&scale,jj2);
+    VecGetArray(jj2,&y);
+    VecNorm(jj2,NORM_INFINITY,&amax); amax *= 1.e-14;
+    for ( j=start; j<end; j++ ) {
+      if (PetscAbsScalar(y[j-start]) > amax) {
+        ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERT_VALUES); CHKERRQ(ierr);
+      }
+    }
+    VecRestoreArray(jj2,&y);
+  }
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  *flag =  DIFFERENT_NONZERO_PATTERN;
+
+  ierr = VecDestroy(jj1); CHKERRQ(ierr);
+  ierr = VecDestroy(jj2); CHKERRQ(ierr);
+  ierr = VecDestroy(xx2); CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
 
 

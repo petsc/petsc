@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.86 1997/08/22 15:10:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.87 1997/09/11 20:38:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -18,19 +18,20 @@ int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
   Scalar    sum, work;
   int       ierr;
 
+  PetscFunctionBegin;
   ierr = VecDot_Seq(  xin, yin, &work ); CHKERRQ(ierr);
 /*
    This is a ugly hack. But to do it right is kind of silly.
 */
   PLogEventBarrierBegin(VEC_DotBarrier,0,0,0,0,xin->comm);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   MPI_Allreduce(&work,&sum,2,MPI_DOUBLE,MPI_SUM,xin->comm);
 #else
   MPI_Allreduce(&work,&sum,1,MPI_DOUBLE,MPI_SUM,xin->comm);
 #endif
   PLogEventBarrierEnd(VEC_DotBarrier,0,0,0,0,xin->comm);
   *z = sum;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -38,19 +39,21 @@ int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
 int VecTDot_MPI( Vec xin, Vec yin, Scalar *z )
 {
   Scalar    sum, work;
+
+  PetscFunctionBegin;
   VecTDot_Seq(  xin, yin, &work );
 /*
    This is a ugly hack. But to do it right is kind of silly.
 */
   PLogEventBarrierBegin(VEC_DotBarrier,0,0,0,0,xin->comm);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   MPI_Allreduce(&work, &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm );
 #else
   MPI_Allreduce(&work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
 #endif
   PLogEventBarrierEnd(VEC_DotBarrier,0,0,0,0,xin->comm);
   *z = sum;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -59,10 +62,11 @@ int VecSetOption_MPI(Vec v,VecOption op)
 {
   Vec_MPI *w = (Vec_MPI *) v->data;
 
+  PetscFunctionBegin;
   if (op == VEC_IGNORE_OFF_PROCESSOR_ENTRIES) {
     w->stash.donotstash = 1;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
     
 int VecDuplicate_MPI(Vec,Vec *);
@@ -95,6 +99,8 @@ static int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,in
   Vec     v;
   Vec_MPI *s;
   int     mem,i;
+
+  PetscFunctionBegin;
   *vv = 0;
 
   mem           = sizeof(Vec_MPI)+(size+1)*sizeof(int);
@@ -149,7 +155,7 @@ static int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,in
   PLogObjectMemory(v,10*sizeof(Scalar) + 10 *sizeof(int));
 
   *vv = v;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -177,7 +183,9 @@ static int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,in
 @*/ 
 int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 {
-  int sum, work = n, size, rank;
+  int sum, work = n, size, rank,ierr;
+
+  PetscFunctionBegin;
   *vv = 0;
 
   MPI_Comm_size(comm,&size);
@@ -189,7 +197,8 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
   if (n == PETSC_DECIDE) { 
     n = N/size + ((N % size) > rank);
   }
-  return VecCreateMPI_Private(comm,n,N,0,size,rank,0,0,vv);
+  ierr = VecCreateMPI_Private(comm,n,N,0,size,rank,0,0,vv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -217,7 +226,9 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 @*/ 
 int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
 {
-  int sum, work = n, size, rank;
+  int sum, work = n, size, rank,ierr;
+
+  PetscFunctionBegin;
   *vv = 0;
 
   MPI_Comm_size(comm,&size);
@@ -229,7 +240,8 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
   if (n == PETSC_DECIDE) { 
     SETERRQ(1,1,"Must set local size of vector");
   }
-  return VecCreateMPI_Private(comm,n,N,0,size,rank,0,array,vv);
+  ierr =  VecCreateMPI_Private(comm,n,N,0,size,rank,0,array,vv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -260,13 +272,15 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
 int VecGhostGetLocalRepresentation(Vec g,Vec *l)
 {
   Vec_MPI *v;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(g,VEC_COOKIE);
 
   v  = (Vec_MPI *) g->data;
   if (!v->localrep) SETERRQ(1,1,"Vector is not ghosted");
   *l = v->localrep;
   PetscObjectReference((PetscObject)*l);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -291,8 +305,9 @@ int VecGhostGetLocalRepresentation(Vec g,Vec *l)
 @*/
 int VecGhostRestoreLocalRepresentation(Vec g,Vec *l)
 {
+  PetscFunctionBegin;
   PetscObjectDereference((PetscObject)*l);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -324,6 +339,8 @@ int VecGhostUpdateBegin(Vec g, InsertMode insertmode,ScatterMode scattermode)
 {
   Vec_MPI *v;
   int     ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(g,VEC_COOKIE);
 
   v  = (Vec_MPI *) g->data;
@@ -334,7 +351,7 @@ int VecGhostUpdateBegin(Vec g, InsertMode insertmode,ScatterMode scattermode)
   } else {
     ierr = VecScatterBegin(g,v->localrep,insertmode,scattermode,v->localupdate);CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -366,6 +383,8 @@ int VecGhostUpdateEnd(Vec g, InsertMode insertmode,ScatterMode scattermode)
 {
   Vec_MPI *v;
   int     ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(g,VEC_COOKIE);
 
   v  = (Vec_MPI *) g->data;
@@ -376,7 +395,7 @@ int VecGhostUpdateEnd(Vec g, InsertMode insertmode,ScatterMode scattermode)
   } else {
     ierr = VecScatterEnd(g,v->localrep,insertmode,scattermode,v->localupdate);CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -410,6 +429,7 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Sca
   int     sum, work = n, size, rank, ierr;
   Vec_MPI *w;
 
+  PetscFunctionBegin;
   *vv = 0;
 
   if (n == PETSC_DECIDE)      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must set local size");
@@ -445,7 +465,7 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Sca
     ierr = ISDestroy(from); CHKERRQ(ierr);
   }
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -476,8 +496,9 @@ int VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Vec *vv)
 {
   int ierr;
 
+  PetscFunctionBegin;
   ierr = VecCreateGhostWithArray(comm,n,N,nghost,ghosts,0,vv); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -488,6 +509,7 @@ int VecDuplicate_MPI( Vec win, Vec *v)
   Vec_MPI *vw, *w = (Vec_MPI *)win->data;
   Scalar  *array;
 
+  PetscFunctionBegin;
   ierr = VecCreateMPI_Private(win->comm,w->n,w->N,w->nghost,w->size,w->rank,w->ownership,0,v);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
 
@@ -510,8 +532,12 @@ int VecDuplicate_MPI( Vec win, Vec *v)
     (*v)->mapping = win->mapping;
     PetscObjectReference((PetscObject)win->mapping);
   }
-  if (win->child) return (*win->childcopy)(win->child,&(*v)->child);
-  return 0;
+  if (win->child) {
+    ierr = (*win->childcopy)(win->child,&(*v)->child);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
+
+
 
 

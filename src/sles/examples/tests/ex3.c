@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.49 1997/07/09 20:56:59 balay Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.50 1997/09/22 15:21:41 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -10,7 +10,6 @@ differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
 #include "sles.h"
-#include  <stdio.h>
 
 int FormElementStiffness(double H,Scalar *Ke)
 {

@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.8 1997/07/09 20:56:59 balay Exp balay $";
+static char vcid[] = "$Id: ex15.c,v 1.9 1997/09/22 15:21:50 balay Exp bsmith $";
 #endif
 
 static char help[] = "SLES on an operator with a null space.\n\n";
 
 #include "sles.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {

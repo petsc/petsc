@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: scolor.c,v 1.8 1997/07/09 20:55:35 balay Exp bsmith $";
+static char vcid[] = "$Id: scolor.c,v 1.9 1997/08/22 15:14:43 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -35,13 +35,14 @@ int MatColoringRegisterAll()
 {
   int         ierr;
 
+  PetscFunctionBegin;
   MatColoringRegisterAllCalled = 1;  
   ierr = MatColoringRegister(COLORING_NATURAL,0,"natural",MatColoring_Natural);CHKERRQ(ierr);
   ierr = MatColoringRegister(COLORING_SL,     0,"sl",MatFDColoringSL_Minpack);CHKERRQ(ierr);
   ierr = MatColoringRegister(COLORING_LF,     0,"lf",MatFDColoringLF_Minpack);CHKERRQ(ierr);
   ierr = MatColoringRegister(COLORING_ID,     0,"id",MatFDColoringID_Minpack);CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

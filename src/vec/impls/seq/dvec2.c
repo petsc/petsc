@@ -1,5 +1,5 @@
 
-/* $Id: dvec2.c,v 1.43 1997/08/22 15:10:36 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.44 1997/09/17 23:14:25 bsmith Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -23,6 +23,7 @@ int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
   Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
   Vec      *yy;
 
+  PetscFunctionBegin;
   sum0 = 0;
   sum1 = 0;
   sum2 = 0;
@@ -81,7 +82,7 @@ int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
     i   -= 4;
   }
   PLogFlops(nv*(2*xv->n-1));
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #else
@@ -101,6 +102,7 @@ int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
   }
 */
 
+  PetscFunctionBegin;
   sum0 = 0;
   sum1 = 0;
   sum2 = 0;
@@ -275,7 +277,7 @@ int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
     i   -= 4;
   }
   PLogFlops(nv*(2*xv->n-1));
-  return 0;
+  PetscFunctionReturn(0);
 }
 #endif
 
@@ -289,6 +291,7 @@ int VecMTDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
   Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
   Vec      *yy;
   
+  PetscFunctionBegin;
 /*
   for (i=0; i<nv_rem; i++) {
     sum = 0.0;
@@ -472,7 +475,7 @@ int VecMTDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
     i   -= 4;
   }
   PLogFlops(nv*(2*xv->n-1));
-  return 0;
+  PetscFunctionReturn(0);
 }
     
 
@@ -485,17 +488,18 @@ int VecMax_Seq(Vec xin,int* idx,double * z )
   register double max, tmp;
   Scalar          *xx = x->array;
 
+  PetscFunctionBegin;
   if (!n) {
     max = PETSC_MIN;
     j   = -1;
   } else {
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
       max = real(*xx++); j = 0;
 #else
       max = *xx++; j = 0;
 #endif
     for (i=1; i<n; i++) {
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
       if ((tmp = real(*xx++)) > max) { j = i; max = tmp;}
 #else
       if ((tmp = *xx++) > max) { j = i; max = tmp; } 
@@ -504,7 +508,7 @@ int VecMax_Seq(Vec xin,int* idx,double * z )
   }
   *z   = max;
   if (idx) *idx = j;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -516,17 +520,18 @@ int VecMin_Seq(Vec xin,int* idx,double * z )
   register double min, tmp;
   Scalar          *xx = x->array;
 
+  PetscFunctionBegin;
   if (!n) {
     min = PETSC_MAX;
     j   = -1;
   } else {
-#if defined(PETSC_COMPLEX)
-     min = real(*xx++); j = 0;
+#if defined(USE_PETSC_COMPLEX)
+    min = real(*xx++); j = 0;
 #else
-     min = *xx++; j = 0;
+    min = *xx++; j = 0;
 #endif
-     for ( i=1; i<n; i++ ) {
-#if defined(PETSC_COMPLEX)
+    for ( i=1; i<n; i++ ) {
+#if defined(USE_PETSC_COMPLEX)
       if ((tmp = real(*xx++)) < min) { j = i; min = tmp;}
 #else
       if ((tmp = *xx++) < min) { j = i; min = tmp; } 
@@ -535,7 +540,7 @@ int VecMin_Seq(Vec xin,int* idx,double * z )
   }
   *z   = min;
   if (idx) *idx = j;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -546,13 +551,14 @@ int VecSet_Seq(Scalar* alpha,Vec xin)
   register int n = x->n;
   Scalar       *xx = x->array, oalpha = *alpha;
 
+  PetscFunctionBegin;
   if (oalpha == 0.0) {
     PetscMemzero(xx,n*sizeof(Scalar));
   }
   else {
     SET(xx,n,oalpha);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -564,8 +570,9 @@ int VecSetRandom_Seq(PetscRandom r,Vec xin)
   int          i, ierr;
   Scalar       *xx = x->array;
 
+  PetscFunctionBegin;
   for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]); CHKERRQ(ierr);}
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
@@ -575,21 +582,20 @@ int VecSetRandom_Seq(PetscRandom r,Vec xin)
   int          j;
   Scalar       *xx = x->array, *yy,oalpha;
 
+  PetscFunctionBegin;
   PLogFlops(nv*2*n);
   for (j=0; j<nv; j++) {
     yy     = ((Vec_Seq *)(y[j]->data))->array;
     oalpha = alpha[j];
     if (oalpha == -1.0) {
       YMX(xx,yy,n);
-    }
-    else if (oalpha == 1.0) {
+    } else if (oalpha == 1.0) {
       YPX(xx,yy,n);
-    }
-    else if (oalpha != 0.0) {
+    } else if (oalpha != 0.0) {
       APXY(xx,oalpha,yy,n);
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 } */
 
 
@@ -601,6 +607,8 @@ int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
   register int n = xdata->n;
   int          j,j_rem;
   Scalar       *xx = xdata->array,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
+
+  PetscFunctionBegin;
   PLogFlops(nv*2*n);
   
   switch (j_rem=nv&0x3) {
@@ -643,7 +651,7 @@ int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
 
     APXY4(xx,alpha0,alpha1,alpha2,alpha3,yy0,yy1,yy2,yy3,n);
   }
-  return 0;
+  PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
@@ -654,11 +662,12 @@ int VecAYPX_Seq(Scalar *alpha, Vec xin, Vec yin )
   register int i,n = x->n;
   Scalar       *xx = x->array, *yy = y->array, oalpha = *alpha;
 
+  PetscFunctionBegin;
   PLogFlops(2*n);
   for ( i=0; i<n; i++ ) {
     yy[i] = xx[i] + oalpha*yy[i];
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -676,23 +685,21 @@ int VecWAXPY_Seq(Scalar* alpha,Vec xin,Vec yin,Vec win )
   register int i, n = x->n;
   Scalar       *xx = x->array, *yy = y->array, *ww = w->array, oalpha = *alpha;
 
+  PetscFunctionBegin;
   if (oalpha == 1.0) {
     PLogFlops(n);
     /* could call BLAS axpy after call to memcopy, but may be slower */
     for (i=0; i<n; i++) ww[i] = yy[i] + xx[i];
-  }
-  else if (oalpha == -1.0) {
+  } else if (oalpha == -1.0) {
     PLogFlops(n);
     for (i=0; i<n; i++) ww[i] = yy[i] - xx[i];
-  }
-  else if (oalpha == 0.0) {
+  } else if (oalpha == 0.0) {
     PetscMemcpy(ww,yy,n*sizeof(Scalar));
-  }
-  else {
+  } else {
     for (i=0; i<n; i++) ww[i] = yy[i] + oalpha * xx[i];
     PLogFlops(2*n);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -704,9 +711,10 @@ int VecPointwiseMult_Seq( Vec xin, Vec yin, Vec win )
   register int n = x->n, i;
   Scalar       *xx = x->array, *yy = y->array, *ww = w->array;
 
+  PetscFunctionBegin;
   PLogFlops(n);
   for (i=0; i<n; i++) ww[i] = xx[i] * yy[i];
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -718,9 +726,10 @@ int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win )
   register int n = x->n, i;
   Scalar       *xx = x->array, *yy = y->array, *ww = w->array;
 
+  PetscFunctionBegin;
   PLogFlops(n);
   for (i=0; i<n; i++) ww[i] = xx[i] / yy[i];
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -729,7 +738,9 @@ int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win )
 int VecGetArray_Seq(Vec vin,Scalar **a)
 {
   Vec_Seq *v = (Vec_Seq *)vin->data;
-  *a =  v->array; return 0;
+
+  PetscFunctionBegin;
+  *a =  v->array; PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -737,7 +748,9 @@ int VecGetArray_Seq(Vec vin,Scalar **a)
 int VecGetSize_Seq(Vec vin,int *size)
 {
   Vec_Seq *v = (Vec_Seq *)vin->data;
-  *size = v->n; return 0;
+
+  PetscFunctionBegin;
+  *size = v->n; PetscFunctionReturn(0);
 }
 
 

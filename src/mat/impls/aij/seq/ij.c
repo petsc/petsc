@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ij.c,v 1.26 1997/01/06 20:24:23 balay Exp balay $";
+static char vcid[] = "$Id: ij.c,v 1.27 1997/07/09 20:53:48 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -37,6 +37,7 @@ int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin, int shiftout,
 {
   int *work,*ia,*ja,*j,i, nz, row, col;
 
+  PetscFunctionBegin;
   /* allocate space for row pointers */
   *iia = ia = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(ia);
   PetscMemzero(ia,(m+1)*sizeof(int));
@@ -78,7 +79,7 @@ int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin, int shiftout,
     }
   }
   PetscFree(work);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

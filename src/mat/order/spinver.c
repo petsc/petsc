@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spinver.c,v 1.11 1997/07/09 20:54:49 balay Exp bsmith $";
+static char vcid[] = "$Id: spinver.c,v 1.12 1997/08/22 15:14:10 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -12,6 +12,8 @@ static char vcid[] = "$Id: spinver.c,v 1.11 1997/07/09 20:54:49 balay Exp bsmith
 void MatInvertPermutation_Private( int n, int *perm, int *iperm )
 {
   int i;
+
+  PetscFunctionBegin;
   for (i=0; i<n; i++) {
     iperm[*perm++] = i;
   }

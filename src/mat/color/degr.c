@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: degr.c,v 1.6 1997/07/09 20:55:35 balay Exp bsmith $";
+static char vcid[] = "$Id: degr.c,v 1.7 1997/08/22 15:14:43 bsmith Exp bsmith $";
 #endif
 
 /* degr.f -- translated by f2c (version of 25 March 1992  12:58:56). */
@@ -56,6 +56,7 @@ int MINPACKdegr(int *n,int * indrow,int * jpntr,int * indcol,int * ipntr,int * n
 /*     Argonne National Laboratory. MINPACK Project. July 1983. */
 /*     Thomas F. Coleman, Burton S. Garbow, Jorge J. More' */
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --iwa;
     --ndeg;
@@ -105,6 +106,6 @@ int MINPACKdegr(int *n,int * indrow,int * jpntr,int * indcol,int * ipntr,int * n
 	    }
 	}
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

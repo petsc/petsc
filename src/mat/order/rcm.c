@@ -53,6 +53,9 @@ int rcm(int *root, int *xadj, int *adjncy,
 /*       FIND THE DEGREES OF THE NODES IN THE                  */
 /*       COMPONENT SPECIFIED BY MASK AND ROOT.                 */
 /*       -------------------------------------                 */
+
+
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --deg;
     --perm;
@@ -64,7 +67,7 @@ int rcm(int *root, int *xadj, int *adjncy,
     degree(root, &xadj[1], &adjncy[1], &mask[1], &deg[1], ccsize, &perm[1]);
     mask[*root] = 0;
     if (*ccsize <= 1) {
-	return 0;
+	PetscFunctionReturn(0);
     }
     lvlend = 0;
     lnbr = 1;
@@ -140,6 +143,6 @@ L600:
 	perm[i] = lperm;
 	--l;
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

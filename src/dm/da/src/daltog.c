@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daltog.c,v 1.7 1997/02/05 22:04:53 bsmith Exp balay $";
+static char vcid[] = "$Id: daltog.c,v 1.8 1997/07/09 21:00:44 balay Exp bsmith $";
 #endif
  
 /*
@@ -29,10 +29,12 @@ static char vcid[] = "$Id: daltog.c,v 1.7 1997/02/05 22:04:53 bsmith Exp balay $
 int DALocalToGlobal(DA da,Vec l, InsertMode mode,Vec g)
 {
   int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   ierr = VecScatterBegin(l,g,mode,SCATTER_FORWARD,da->ltog); CHKERRQ(ierr);
   ierr = VecScatterEnd(l,g,mode,SCATTER_FORWARD,da->ltog); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

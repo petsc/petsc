@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa3.c,v 1.9 1997/07/09 20:55:07 balay Exp balay $";
+static char vcid[] = "$Id: dgefa3.c,v 1.10 1997/08/04 17:48:12 balay Exp bsmith $";
 #endif
 /*
     Inverts 3 by 3 matrix using partial pivoting.
@@ -17,6 +17,7 @@ int Kernel_A_gets_inverse_A_3(Scalar *a)
 
 /*     gaussian elimination with partial pivoting */
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     a       -= 4;
 
@@ -138,6 +139,6 @@ int Kernel_A_gets_inverse_A_3(Scalar *a)
             stmp = ax[2]; ax[2] = ay[2]; ay[2] = stmp;
 	}
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

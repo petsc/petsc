@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.19 1997/07/09 20:59:29 balay Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.20 1997/08/22 15:17:44 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h" /*I "petsc.h" I*/
@@ -23,10 +23,14 @@ struct _p_Viewer {
 @*/
 int ViewerDestroy(Viewer v)
 {
+  int         ierr;
   PetscObject o = (PetscObject) v;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (--v->refct > 0) return 0;
-  return (*o->destroy)(o);
+  if (--v->refct > 0) PetscFunctionReturn(0);
+  ierr = (*o->destroy)(o);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -53,7 +57,8 @@ $    DRAW_VIEWER, ...
 @*/
 int ViewerGetType(Viewer v,ViewerType *type)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
   *type = (ViewerType) v->type;
-  return 0;
+  PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rpath.c,v 1.9 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: rpath.c,v 1.10 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -26,8 +26,9 @@ int PetscGetRelativePath( char *fullpath, char *path, int flen )
 {
   char  *p;
 
+  PetscFunctionBegin;
   /* Find string after last '/' or entire string if no '/' */
   p = PetscStrrchr( fullpath, '/' );
   PetscStrncpy( path, p, flen );
-  return 0;
+  PetscFunctionReturn(0);
 }

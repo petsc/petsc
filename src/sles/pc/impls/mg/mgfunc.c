@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mgfunc.c,v 1.21 1997/07/09 20:52:58 balay Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.22 1997/08/22 15:12:45 bsmith Exp bsmith $";
 #endif
 
 #include "src/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
@@ -21,8 +21,10 @@ static char vcid[] = "$Id: mgfunc.c,v 1.21 1997/07/09 20:52:58 balay Exp bsmith 
 int MGGetCoarseSolve(PC pc,SLES *sles)  
 { 
   MG *mg = (MG*) pc->data;
+
+  PetscFunctionBegin;
   *sles =  mg[0]->smoothd;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -46,9 +48,11 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 {
   int    ierr;
   Scalar mone = -1.0;
+
+  PetscFunctionBegin;
   ierr = MatMult(mat,x,r); CHKERRQ(ierr);
   ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -70,9 +74,11 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
 {
   MG *mg = (MG*) pc->data;
+
+  PetscFunctionBegin;
   mg[l]->residual = residual;  
   mg[l]->A        = mat;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -93,8 +99,10 @@ int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
 int MGSetInterpolate(PC pc,int l,Mat mat)
 { 
   MG *mg = (MG*) pc->data;
+
+  PetscFunctionBegin;
   mg[l]->interpolate = mat;  
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -115,8 +123,10 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
 int MGSetRestriction(PC pc,int l,Mat mat)  
 {
   MG *mg = (MG*) pc->data;
+
+  PetscFunctionBegin;
   mg[l]->restrct  = mat;  
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -141,8 +151,10 @@ int MGSetRestriction(PC pc,int l,Mat mat)
 int MGGetSmoother(PC pc,int l,SLES *sles)
 {
   MG *mg = (MG*) pc->data;
+
+  PetscFunctionBegin;
   *sles = mg[l]->smoothd;  
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -168,6 +180,7 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
   int  ierr;
   char *prefix;
 
+  PetscFunctionBegin;
   /*
      This is called only if user wants a different pre-smoother from post.
      Thus we check if a different one has already been allocated, 
@@ -181,7 +194,7 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
     PLogObjectParent(pc,mg[l]->smoothu);
   }
   *sles = mg[l]->smoothu;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -204,8 +217,10 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
 int MGGetSmootherDown(PC pc,int l,SLES *sles)
 {
   MG *mg = (MG*) pc->data;
+
+  PetscFunctionBegin;
   *sles = mg[l]->smoothd;  
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -225,8 +240,10 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
 int MGSetCyclesOnLevel(PC pc,int l,int c) 
 {
   MG *mg = (MG*) pc->data;
+
+  PetscFunctionBegin;
   mg[l]->cycles  = c;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -248,8 +265,10 @@ int MGSetCyclesOnLevel(PC pc,int l,int c)
 int MGSetRhs(PC pc,int l,Vec c)  
 { 
   MG *mg = (MG*) pc->data;
+
+  PetscFunctionBegin;
   mg[l]->b  = c;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -271,8 +290,10 @@ int MGSetRhs(PC pc,int l,Vec c)
 int MGSetX(PC pc,int l,Vec c)  
 { 
   MG *mg = (MG*) pc->data;
+
+  PetscFunctionBegin;
   mg[l]->x  = c;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -292,8 +313,10 @@ int MGSetX(PC pc,int l,Vec c)
 int MGSetR(PC pc,int l,Vec c)
 { 
   MG *mg = (MG*) pc->data;
+
+  PetscFunctionBegin;
   mg[l]->r  = c;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

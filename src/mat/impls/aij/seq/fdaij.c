@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdaij.c,v 1.13 1997/08/13 22:24:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdaij.c,v 1.14 1997/08/22 15:13:29 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -19,6 +19,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   IS         *isa = iscoloring->is;
   PetscTruth done;
 
+  PetscFunctionBegin;
   c->M             = mat->M;  /* set total rows, columns and local rows */
   c->N             = mat->N;
   c->m             = mat->M;
@@ -141,7 +142,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   c->scale  = (Scalar *) PetscMalloc( 2*N*sizeof(Scalar) ); CHKPTRQ(c->scale);
   c->wscale = c->scale + N;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -152,6 +153,7 @@ int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscolo
   int        n = a->n,*sizes,i,**ii,ierr,tag;
   IS         *is;
 
+  PetscFunctionBegin;
   /* construct the index sets from the coloring array */
   sizes = (int *) PetscMalloc( ncolors*sizeof(int) ); CHKPTRQ(sizes);
   PetscMemzero(sizes,ncolors*sizeof(int));
@@ -179,7 +181,7 @@ int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscolo
   PetscFree(sizes);
   PetscFree(ii[0]);
   PetscFree(ii);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -193,6 +195,7 @@ int MatColoringPatch_SeqAIJ_Inode(Mat mat,int ncolors,int *coloring,ISColoring *
   int        n = a->n,ierr, m = a->inode.node_count,j,*ns = a->inode.size,row;
   int        *colorused,i,*newcolor;
 
+  PetscFunctionBegin;
   newcolor = (int *) PetscMalloc((n+1)*sizeof(int)); CHKPTRQ(newcolor);
 
   /* loop over inodes, marking a color for each column*/
@@ -222,6 +225,11 @@ int MatColoringPatch_SeqAIJ_Inode(Mat mat,int ncolors,int *coloring,ISColoring *
   ierr = MatColoringPatch_SeqAIJ(mat,ncolors,newcolor,iscoloring); CHKERRQ(ierr);
   PetscFree(newcolor);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
+
+
+
+
+
 

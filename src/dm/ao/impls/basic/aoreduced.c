@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aoreduced.c,v 1.1 1997/10/08 01:43:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aoreduced.c,v 1.2 1997/10/10 04:07:52 bsmith Exp bsmith $";
 #endif
 
 #include "src/ao/aoimpl.h"
@@ -69,7 +69,7 @@ int AODataGetReducedSegment_Basic(AOData ao,char *name,char *segname,int n,int *
 
   ierr = ISCreateGeneral(ao->comm,count,out,is);CHKERRQ(ierr);
   PetscFree(out);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

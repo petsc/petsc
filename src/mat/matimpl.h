@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.75 1997/09/26 02:18:48 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.76 1997/10/01 22:45:06 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -100,7 +100,7 @@ struct _p_Mat {
   InsertMode             insertmode;       /* have values been inserted in matrix or added? */
 };
 
-/* final argument for MatConvertXXX() */
+/* final argument for MatConvertSameType() */
 #define DO_NOT_COPY_VALUES 0
 #define COPY_VALUES        1
 
@@ -178,7 +178,7 @@ struct  _p_MatFDColoring{
   double umin;             /* minimum allowable u'dx value */
   int    freq;             /* frequency at which new Jacobian is computed */
   Vec    w1,w2,w3;         /* work vectors used in computing Jacobian */
-  int    (*f)(void *,Vec,Vec,void *); /* function that defines Jacobian */
+  int    (*f)(void);       /* function that defines Jacobian */
   void   *fctx;
 };
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daindex.c,v 1.14 1997/07/09 21:00:44 balay Exp bsmith $";
+static char vcid[] = "$Id: daindex.c,v 1.15 1997/08/22 15:18:43 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -37,10 +37,11 @@ static char vcid[] = "$Id: daindex.c,v 1.14 1997/07/09 21:00:44 balay Exp bsmith
 @*/
 int DAGetGlobalIndices(DA da, int *n,int **idx)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   if (n) *n   = da->Nl;
   *idx = da->idx;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -69,9 +70,10 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
 @*/
 int DAGetAO(DA da, AO *ao)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   *ao = da->ao;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*MC

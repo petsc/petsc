@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.96 1997/07/09 20:52:51 balay Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.97 1997/08/22 15:12:42 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -29,10 +29,13 @@ static int (*setups[])(PC) = {0,
 #define __FUNC__ "PCSetUp_BJacobi"
 static int PCSetUp_BJacobi(PC pc)
 {
+  int ierr;
   Mat pmat = pc->pmat;
 
+  PetscFunctionBegin;
   if (!setups[pmat->type]) SETERRQ(PETSC_ERR_SUP,0,"");
-  return (*setups[pmat->type])(pc);
+  ierr = (*setups[pmat->type])(pc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 /* Default destroy, if it has never been setup */
@@ -43,10 +46,11 @@ static int PCDestroy_BJacobi(PetscObject obj)
   PC         pc = (PC) obj;
   PC_BJacobi *jac = (PC_BJacobi *) pc->data;
 
+  PetscFunctionBegin;
   if (jac->g_lens) PetscFree(jac->g_lens);
   if (jac->l_lens) PetscFree(jac->l_lens);
   PetscFree(jac);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -55,6 +59,7 @@ static int PCSetFromOptions_BJacobi(PC pc)
 {
   int        blocks,flg,ierr;
 
+  PetscFunctionBegin;
   ierr = OptionsGetInt(pc->prefix,"-pc_bjacobi_blocks",&blocks,&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = PCBJacobiSetTotalBlocks(pc,blocks,PETSC_NULL); CHKERRQ(ierr); 
@@ -63,7 +68,7 @@ static int PCSetFromOptions_BJacobi(PC pc)
   if (flg) {
     ierr = PCBJacobiSetUseTrueLocal(pc); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -72,6 +77,7 @@ static int PCSetFromOptions_BGS(PC pc)
 {
   int        blocks,ierr,flg;
 
+  PetscFunctionBegin;
   ierr = OptionsGetInt(pc->prefix,"-pc_bgs_blocks",&blocks,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCBGSSetTotalBlocks(pc,blocks,PETSC_NULL);CHKERRQ(ierr);
@@ -84,7 +90,7 @@ static int PCSetFromOptions_BGS(PC pc)
   if (flg) {
     ierr = PCBGSSetSymmetric(pc,PCBGS_SYMMETRIC_SWEEP); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -110,11 +116,13 @@ $  -pc_gs_symmetric
 int PCBGSSetSymmetric(PC pc, PCBGSType flag)
 {
   PC_BJacobi *jac;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCBGS) return 0;
+  if (pc->type != PCBGS) PetscFunctionReturn(0);
   jac         = (PC_BJacobi *) pc->data; 
   jac->gstype = flag;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -144,11 +152,13 @@ $  -pc_bjacobi_truelocal
 int PCBJacobiSetUseTrueLocal(PC pc)
 {
   PC_BJacobi   *jac;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCBJACOBI && pc->type != PCBGS ) return 0;
+  if (pc->type != PCBJACOBI && pc->type != PCBGS ) PetscFunctionReturn(0);
   jac                 = (PC_BJacobi *) pc->data;
   jac->use_true_local = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -177,7 +187,11 @@ $  -pc_bgs_truelocal
 @*/
 int PCBGSSetUseTrueLocal(PC pc)
 {
-  return PCBJacobiSetUseTrueLocal(pc);
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PCBJacobiSetUseTrueLocal(pc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -207,8 +221,10 @@ int PCBGSSetUseTrueLocal(PC pc)
 int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 {
   PC_BJacobi   *jac;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCBJACOBI && pc->type != PCBGS) return 0;
+  if (pc->type != PCBJACOBI && pc->type != PCBGS) PetscFunctionReturn(0);
   if (!pc->setupcalled) SETERRQ(1,0,"Must call SLESSetUp first");
   PetscValidIntPointer(n_local);
   PetscValidIntPointer(first_local);
@@ -220,7 +236,7 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   jac->same_local_solves = 0; /* Assume that local solves are now different;
                                  not necessarily true though!  This flag is 
                                  used only for PCView_BJacobi */
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -249,13 +265,18 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 @*/
 int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 {  
-  return PCBJacobiGetSubSLES(pc, n_local, first_local, sles);
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PCBJacobiGetSubSLES(pc, n_local, first_local, sles);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PCPrintHelp_BJacobi"
 static int PCPrintHelp_BJacobi(PC pc,char *p)
 {
+  PetscFunctionBegin;
   PetscPrintf(pc->comm," Options for PCBJACOBI preconditioner:\n");
   PetscPrintf(pc->comm," %spc_bjacobi_blocks <blks>: total blocks in preconditioner\n",p);
   PetscPrintf(pc->comm, " %spc_bjacobi_truelocal: use blocks from the local linear\
@@ -263,13 +284,14 @@ static int PCPrintHelp_BJacobi(PC pc,char *p)
   PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
  <kspmethod>)\n",p,p);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PCPrintHelp_BGS"
 static int PCPrintHelp_BGS(PC pc,char *p)
 {
+  PetscFunctionBegin;
   PetscPrintf(pc->comm," Options for PCBGS preconditioner:\n");
   PetscPrintf(pc->comm," %spc_bgs_blocks <blks>: total blocks in preconditioner\n",p);
   PetscPrintf(pc->comm, " %spc_bgs_truelocal: use blocks from the local linear\
@@ -278,7 +300,7 @@ static int PCPrintHelp_BGS(PC pc,char *p)
   PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
  <kspmethod>)\n",p,p);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -292,6 +314,7 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
   char             *c,*bgs = "Block Gauss-Seiedel", *bj ="Block Jacobi";
   ViewerType       vtype;
 
+  PetscFunctionBegin;
   if (jac->gs) c = bgs; else c = bj;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
@@ -329,7 +352,7 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
     ViewerStringSPrintf(viewer," blks=%d",jac->n);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer); CHKERRQ(ierr);}
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -339,6 +362,7 @@ int PCCreate_BJacobi(PC pc)
   int          rank,size;
   PC_BJacobi   *jac = PetscNew(PC_BJacobi); CHKPTRQ(jac);
 
+  PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_BJacobi));
   MPI_Comm_rank(pc->comm,&rank);
   MPI_Comm_size(pc->comm,&size);
@@ -360,7 +384,7 @@ int PCCreate_BJacobi(PC pc)
   jac->same_local_solves = 1;
   jac->g_lens            = 0;
   jac->l_lens            = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -370,6 +394,7 @@ int PCCreate_BGS(PC pc)
   int        ierr;
   PC_BJacobi *jac;
 
+  PetscFunctionBegin;
   ierr          = PCCreate_BJacobi(pc); CHKERRQ(ierr);
   jac           = (PC_BJacobi*) pc->data;
   jac->gs       = PETSC_TRUE;
@@ -377,7 +402,7 @@ int PCCreate_BGS(PC pc)
   pc->setfrom   = PCSetFromOptions_BGS;
   pc->printhelp = PCPrintHelp_BGS;
   pc->type      = PCBGS;
-  return 0;
+  PetscFunctionReturn(0);
 }
   
 #undef __FUNC__  
@@ -406,9 +431,10 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
 {
   PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks <= 0) SETERRQ(1,0,"Must have positive blocks");
-  if (pc->type != PCBJACOBI && pc->type != PCBGS) return 0;
+  if (pc->type != PCBJACOBI && pc->type != PCBGS) PetscFunctionReturn(0);
 
   jac->n = blocks;
   if (!lens) {
@@ -419,7 +445,7 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
     PLogObjectMemory(pc,blocks*sizeof(int));
     PetscMemcpy(jac->g_lens,lens,blocks*sizeof(int));
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
   
 #undef __FUNC__  
@@ -446,7 +472,11 @@ $  -pc_bgs_blocks <blocks>
 @*/
 int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens)
 {
-  return PCBJacobiSetTotalBlocks(pc, blocks, lens);
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PCBJacobiSetTotalBlocks(pc, blocks, lens);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -470,9 +500,11 @@ int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens)
 int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
 {
   PC_BJacobi *jac;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks < 0) SETERRQ(1,0,"Must have nonegative blocks");
-  if (pc->type != PCBJACOBI && pc->type != PCBGS ) return 0;
+  if (pc->type != PCBJACOBI && pc->type != PCBGS ) PetscFunctionReturn(0);
   jac = (PC_BJacobi *) pc->data; 
 
   jac->n_local = blocks;
@@ -484,7 +516,7 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
     PLogObjectMemory(pc,blocks*sizeof(int));
     PetscMemcpy(jac->l_lens,lens,blocks*sizeof(int));
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -507,7 +539,11 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
 @*/
 int PCBGSSetLocalBlocks(PC pc, int blocks,int *lens)
 {
-  return PCBJacobiSetLocalBlocks(pc, blocks, lens);
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PCBJacobiSetLocalBlocks(pc, blocks, lens);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 

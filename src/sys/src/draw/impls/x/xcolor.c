@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.28 1997/09/03 15:38:43 gropp Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.29 1997/09/19 19:27:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -59,6 +59,7 @@ int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
 {
   PixVal   white_pixel, black_pixel;
 
+  PetscFunctionBegin;
   /* 
      Reset the number of colors from info on the display 
   
@@ -86,7 +87,7 @@ int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
     XiWin->foreground             = black_pixel;
     XiWin->background             = white_pixel;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -108,6 +109,7 @@ int XiInitCmap(Draw_X* XiWin )
   int      i;
   Colormap defaultmap = DefaultColormap( XiWin->disp, XiWin->screen );
 
+  PetscFunctionBegin;
   cmap_base = 0;
   PetscMemzero(cmap_pixvalues_used,256*sizeof(long int));
 
@@ -136,7 +138,7 @@ int XiInitCmap(Draw_X* XiWin )
   XiWin->background = XiWin->cmapping[DRAW_WHITE];
   XiWin->foreground = XiWin->cmapping[DRAW_BLACK];
   XiWin->maxcolors  = DRAW_BASIC_COLORS;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -151,6 +153,7 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
   XColor   colordef;
   Colormap defaultmap = DefaultColormap( XiWin->disp, XiWin->screen );
 
+  PetscFunctionBegin;
   if (mapsize > XiWin->numcolors) mapsize = XiWin->numcolors;
 
   XiWin->maxcolors = XiWin->numcolors;
@@ -194,7 +197,7 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
    We could detect this only by seeing if there are any duplications
    among the XiWin->cmap values.
   */
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -221,31 +224,34 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
 int XiSetVisualClass(Draw_X* XiWin )
 {
   XVisualInfo vinfo;
+
+  PetscFunctionBegin;
   if (XMatchVisualInfo( XiWin->disp, XiWin->screen, 24, DirectColor, &vinfo)) {
     XiWin->vis    = vinfo.visual;
-    return 0;
+    PetscFunctionReturn(0);
   }
   if (XMatchVisualInfo( XiWin->disp, XiWin->screen, 8, PseudoColor, &vinfo)) {
     XiWin->vis    = vinfo.visual;
-    return 0;
+    PetscFunctionReturn(0);
   }
   if (XMatchVisualInfo( XiWin->disp, XiWin->screen,
     DefaultDepth(XiWin->disp,XiWin->screen), PseudoColor, &vinfo)) {
     XiWin->vis    = vinfo.visual;
-    return 0;
+    PetscFunctionReturn(0);
   }
   XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "XiGetVisualClass"
 int XiGetVisualClass(Draw_X* XiWin )
 {
+  PetscFunctionBegin;
 #if defined(__cplusplus)
-  return XiWin->vis->c_class;
+  PetscFunctionReturn(XiWin->vis->c_class);
 #else
-  return XiWin->vis->class;
+  PetscFunctionReturn(XiWin->vis->class);
 #endif
 }
 
@@ -255,29 +261,32 @@ Colormap XiCreateColormap(Draw_X* XiWin, Display* display,int screen,Visual *vis
 {
   Colormap Cmap;
 
+  PetscFunctionBegin;
   if (DefaultDepth( display, screen ) <= 1)
     Cmap    = DefaultColormap( display, screen );
   else {
     Cmap    = XCreateColormap( display, RootWindow(display,screen),visual, AllocAll );
   }
-  return Cmap;
+  PetscFunctionReturn(Cmap);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "XiSetColormap" 
 int XiSetColormap(Draw_X* XiWin )
 {
+  PetscFunctionBegin;
   XSetWindowColormap( XiWin->disp, XiWin->win, XiWin->cmap );
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "XiGetBaseColor" 
 int XiGetBaseColor(Draw_X* XiWin,PixVal* white_pix,PixVal* black_pix )
 {
+  PetscFunctionBegin;
   *white_pix  = XiWin->cmapping[DRAW_WHITE];
   *black_pix  = XiWin->cmapping[DRAW_BLACK];
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -297,8 +306,9 @@ static double Gamma = 2.0;
 #define __FUNC__ "XiSetGamma" 
 int XiSetGamma( double g )
 {
+  PetscFunctionBegin;
   Gamma = g;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -308,6 +318,7 @@ int XiSetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,in
   int     i, hue, lightness, saturation;
   double  igamma = 1.0 / Gamma;
 
+  PetscFunctionBegin;
   red[0]      = 0;
   green[0]    = 0;
   blue[0]     = 0;
@@ -321,7 +332,7 @@ int XiSetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,in
     green[i] = (int)floor( 255.999 * pow( ((double)green[i])/255.0, igamma ) );
     hue     += (359/(mapsize-2));
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -337,12 +348,13 @@ int XiSetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,in
 #define __FUNC__ "XiHlsHelper" 
 int XiHlsHelper(int h,int n1,int n2 )
 {
+  PetscFunctionBegin;
   while (h > 360) h = h - 360;
   while (h < 0)   h = h + 360;
-  if (h < 60)  return n1 + (n2-n1)*h/60;
-  if (h < 180) return n2;
-  if (h < 240) return n1 + (n2-n1)*(240-h)/60;
-  return n1;
+  if (h < 60)  PetscFunctionReturn(n1 + (n2-n1)*h/60);
+  if (h < 180) PetscFunctionReturn(n2);
+  if (h < 240) PetscFunctionReturn(n1 + (n2-n1)*(240-h)/60);
+  PetscFunctionReturn(n1);
 }
 
 #undef __FUNC__  
@@ -353,6 +365,7 @@ int XiHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,unsigned char
   if (l <= 50) m2 = l * ( 100 + s ) / 100 ;           /* not sure of "/100" */
   else         m2 = l + s - l*s/100;
 
+  PetscFunctionBegin;
   m1  = 2*l - m2;
   if (s == 0) {
     /* ignore h */
@@ -365,7 +378,7 @@ int XiHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,unsigned char
     *g  = (255 * XiHlsHelper( h, m1, m2 ) )     / 100;
     *b  = (255 * XiHlsHelper( h-120, m1, m2 ) ) / 100;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -379,12 +392,13 @@ int XiFindColor( Draw_X *XiWin, char *name, PixVal *pixval )
   XColor   colordef;
   int      st;
 
+  PetscFunctionBegin;
   st = XParseColor( XiWin->disp, XiWin->cmap, name, &colordef );
   if (st) {
     st  = XAllocColor( XiWin->disp, XiWin->cmap, &colordef );
     if (st)  *pixval = colordef.pixel;
   }
-  return st;
+  PetscFunctionReturn(st);
 }
 
 /*
@@ -400,10 +414,12 @@ int XiFindColor( Draw_X *XiWin, char *name, PixVal *pixval )
 PixVal XiGetColor(Draw_X* XiWin, char *name, int is_fore )
 {
   PixVal pixval;
+
+  PetscFunctionBegin;
   if (XiWin->numcolors == 2 || !XiFindColor( XiWin, name, &pixval )) {
     pixval  = is_fore ? XiWin->cmapping[DRAW_WHITE] : XiWin->cmapping[DRAW_BLACK];
   }
-  return pixval;
+  PetscFunctionReturn(pixval);
 }
 
 /*
@@ -418,6 +434,7 @@ PixVal XiSimColor(Draw_X *XiWin,PixVal pixel, int intensity, int is_fore)
   char     RGBcolor[20];
   PixVal   red, green, blue;
 
+  PetscFunctionBegin;
   colordef.pixel = pixel;
   XQueryColor( XiWin->disp, XiWin->cmap, &colordef );
   /* Adjust the color value up or down.  Get the RGB values for the color */
@@ -441,7 +458,7 @@ PixVal XiSimColor(Draw_X *XiWin,PixVal pixel, int intensity, int is_fore)
                      (unsigned int)green, (unsigned int)blue );
   XLookupColor( XiWin->disp, XiWin->cmap, RGBcolor, &colordef, 
                      &colorsdef );
-  return  colorsdef.pixel;
+  PetscFunctionReturn(colorsdef.pixel);
 }
 
 /*
@@ -457,13 +474,14 @@ int XiUniformHues( Draw_X *Xiwin, int ncolors )
 {
   unsigned char *red, *green, *blue;
 
+  PetscFunctionBegin;
   red   = (unsigned char *)PetscMalloc(3*ncolors*sizeof(unsigned char));CHKPTRQ(red);
   green = red + ncolors;
   blue  = green + ncolors;
   XiSetCmapHue( red, green, blue, ncolors );
   XiCmap( red, green, blue, ncolors, Xiwin );
   PetscFree( red );
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -477,22 +495,23 @@ int XiSetCmapLight(unsigned char *red, unsigned char *green,unsigned char *blue,
 {
   int     i ;
 
+  PetscFunctionBegin;
   for (i = 1; i < mapsize-1; i++) {
       blue[i]  = i*(255-(int)blue[0])/(mapsize-2)+blue[0] ;
       green[i] = i*(255-(int)green[0])/(mapsize-2)+green[0] ;
       red[i]   = i*(255-(int)red[0])/(mapsize-2)+red[0] ;
   }
   red[mapsize-1] = green[mapsize-1] = blue[mapsize-1] = 255;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 int XiGetNumcolors( Draw_X *XiWin )
 {
-  return XiWin->numcolors;
+  PetscFunctionReturn(XiWin->numcolors);
 }
 #else
 int dummy_xcolor()
 {
-  return 0;
+  PetscFunctionReturn(0);
 }
 #endif

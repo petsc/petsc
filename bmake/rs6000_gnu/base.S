@@ -1,7 +1,7 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base.S,v 1.2 1997/09/10 18:40:11 balay Exp bsmith $ 
 
 #
-PETSCFLAGS = -DPETSC_DEBUG -DPETSC_LOG  -DPETSC_BOPT_O
+PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_O
 COPTFLAGS  = -O3  -S 
 # For Fortran, there are lots of options
 # -P is a preprocessor that seems to unroll loops.

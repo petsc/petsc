@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.11 1997/07/09 21:00:44 balay Exp bsmith $";
+static char vcid[] = "$Id: dadestroy.c,v 1.12 1997/08/22 15:18:43 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -23,8 +23,9 @@ static char vcid[] = "$Id: dadestroy.c,v 1.11 1997/07/09 21:00:44 balay Exp bsmi
 {
   int ierr;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (--da->refct > 0) return 0;
+  if (--da->refct > 0) PetscFunctionReturn(0);
 
   PLogObjectDestroy(da);
   PetscFree(da->idx);
@@ -32,9 +33,31 @@ static char vcid[] = "$Id: dadestroy.c,v 1.11 1997/07/09 21:00:44 balay Exp bsmi
   ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);
   ierr = VecScatterDestroy(da->ltol);CHKERRQ(ierr);
   ierr = AODestroy(da->ao); CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(da->ltogmap); CHKERRQ(ierr);
   if (da->gtog1) PetscFree(da->gtog1);
   if (da->dfshell) {ierr = DFShellDestroy(da->dfshell); CHKERRQ(ierr);}
   PetscHeaderDestroy(da);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "DAGetISLocalToGlobalMapping"
+/*@C
+   DAGetISLocalToGlobalMapping - Accesses the local to global mapping in a DA.
+
+   Input Parameter:
+.  da - the distributed array to destroy 
+
+   Output Parameter:
+.  ltog - the mapping
+
+.keywords: distributed array, destroy
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d()
+@*/int DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  *map = da->ltogmap;
+  PetscFunctionReturn(0);
+}

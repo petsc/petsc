@@ -1,13 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.54 1997/07/09 20:50:50 balay Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.55 1997/08/22 15:11:33 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
 */
-#include <stdio.h>
 #include <math.h>
 #include "petsc.h"
-#include "src/ksp/kspimpl.h"         /*I "ksp.h" I*/
+#include "src/ksp/kspimpl.h"              /*I "ksp.h" I*/
 #include "src/ksp/impls/rich/richctx.h"
 #include "pinclude/pviewer.h"
 
@@ -15,13 +14,12 @@ static char vcid[] = "$Id: rich.c,v 1.54 1997/07/09 20:50:50 balay Exp bsmith $"
 #define __FUNC__ "KSPSetUp_Richardson"
 int KSPSetUp_Richardson(KSP ksp)
 {
-  /* check user parameters and functions */
-  if (ksp->pc_side == PC_RIGHT)
-    {SETERRQ(2,0,"no right preconditioning for KSPRICHARDSON");}
-  else if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,0,"no symmetric preconditioning for KSPRICHARDSON");}
-  /* get work vectors from user code */
-  return KSPDefaultGetWork(ksp,2);
+  int ierr;
+
+  if (ksp->pc_side == PC_RIGHT) {SETERRQ(2,0,"no right preconditioning for KSPRICHARDSON");}
+  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(2,0,"no symmetric preconditioning for KSPRICHARDSON");}
+  ierr = KSPDefaultGetWork(ksp,2);CHKERRQ(ierr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -37,6 +35,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   KSP_Richardson     *richardsonP = (KSP_Richardson *) ksp->data;
   PetscTruth         exists;
 
+  PetscFunctionBegin;
   ierr    = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   x       = ksp->vec_sol;
   b       = ksp->vec_rhs;
@@ -47,7 +46,8 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   ierr = PCApplyRichardsonExists(ksp->B,&exists); CHKERRQ(ierr);
   if (exists && !ksp->numbermonitors) {
     *its = maxit;
-    return PCApplyRichardson(ksp->B,b,x,r,maxit);
+    ierr = PCApplyRichardson(ksp->B,b,x,r,maxit);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
 
   z       = ksp->work[1];
@@ -98,7 +98,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
 
   if (cerr <= 0) *its = -(i+1);
   else          *its = i+1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -111,12 +111,13 @@ extern int KSPView_Richardson(PetscObject obj,Viewer viewer)
   int            ierr;
   ViewerType     vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(ksp->comm,fd,"    Richardson: damping factor=%g\n",richardsonP->scale);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -124,6 +125,8 @@ extern int KSPView_Richardson(PetscObject obj,Viewer viewer)
 int KSPCreate_Richardson(KSP ksp)
 {
   KSP_Richardson *richardsonP = PetscNew(KSP_Richardson); CHKPTRQ(richardsonP);
+
+  PetscFunctionBegin;
   PLogObjectMemory(ksp,sizeof(KSP_Richardson));
   ksp->data                   = (void *) richardsonP;
   ksp->type                   = KSPRICHARDSON;
@@ -137,7 +140,7 @@ int KSPCreate_Richardson(KSP ksp)
   ksp->buildsolution          = KSPDefaultBuildSolution;
   ksp->buildresidual          = KSPDefaultBuildResidual;
   ksp->view                   = KSPView_Richardson;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

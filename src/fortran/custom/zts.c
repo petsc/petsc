@@ -1,32 +1,34 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zts.c,v 1.4 1997/07/01 19:32:56 bsmith Exp balay $";
+static char vcid[] = "$Id: zts.c,v 1.5 1997/07/09 20:55:52 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ts.h"
 
 #ifdef HAVE_FORTRAN_CAPS
-#define tssetrhsfunction_ TSSETRHSFUNCTION
-#define tssetrhsmatrix_   TSSETRHSMATRIX
-#define tssetrhsjacobian_ TSSETRHSJACOBIAN
-#define tscreate_         TSCREATE
-#define tsgetsolution_    TSGETSOLUTION
-#define tsgetsnes_        TSGETSNES
-#define tsgetsles_        TSGETSLES
-#define tsgettype_        TSGETTYPE
-#define tsdestroy_        TSDESTROY
-#define tssetmonitor_     TSSETMONITOR
+#define tssetrhsfunction_                    TSSETRHSFUNCTION
+#define tssetrhsmatrix_                      TSSETRHSMATRIX
+#define tssetrhsjacobian_                    TSSETRHSJACOBIAN
+#define tscreate_                            TSCREATE
+#define tsgetsolution_                       TSGETSOLUTION
+#define tsgetsnes_                           TSGETSNES
+#define tsgetsles_                           TSGETSLES
+#define tsgettype_                           TSGETTYPE
+#define tsdestroy_                           TSDESTROY
+#define tssetmonitor_                        TSSETMONITOR
+#define tssetrhsjacobiandefault_             TSSETRHSJACOBIANDEFAULT
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define tssetrhsfunction_ tssetrhsfunction
-#define tssetrhsmatrix_   tssetrhsmatrix
-#define tssetrhsjacobian_ tssetrhsjacobian
-#define tscreate_         tscreate
-#define tsgetsolution_    tsgetsolution
-#define tsgetsnes_        tsgetsnes
-#define tsgetsles_        tsgetsles
-#define tsgettype_        tsgettype
-#define tsdestroy_        tsdestroy
-#define tssetmonitor_     tssetmonitor
+#define tssetrhsfunction_                     tssetrhsfunction
+#define tssetrhsmatrix_                       tssetrhsmatrix
+#define tssetrhsjacobian_                     tssetrhsjacobian
+#define tscreate_                             tscreate
+#define tsgetsolution_                        tsgetsolution
+#define tsgetsnes_                            tsgetsnes
+#define tsgetsles_                            tsgetsles
+#define tsgettype_                            tsgettype
+#define tsdestroy_                            tsdestroy
+#define tssetmonitor_                         tssetmonitor
+#define tssetrhsjacobiandefault_              tssetrhsjacobiandefault
 #endif
 
 #if defined(__cplusplus)
@@ -183,6 +185,14 @@ void tssetmonitor_(TS ts,int (*func)(int*,int*,double*,int*,void*,int*),
                     void *mctx, int *__ierr ){
   f7 = func;
   *__ierr = TSSetMonitor((TS)PetscToPointer( *(int*)(ts) ),ourtsmonitor,mctx);
+}
+
+void tssetrhsjacobiandefault_(TS ts,MatFDColoring fd,Mat A,Mat B,int *err)
+{
+  *err = TSSetRHSJacobianDefault((TS)PetscToPointer( *(int*)(ts) ),
+                                             (MatFDColoring)PetscToPointer(*(int*)(fd)),
+                                             (Mat)PetscToPointer( *(int*)(A) ),
+	                                     (Mat)PetscToPointer( *(int*)(B) )); 
 }
 
 #if defined(__cplusplus)

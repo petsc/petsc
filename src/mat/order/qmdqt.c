@@ -33,6 +33,7 @@ int qmdqt(int *root, int *xadj, int *adjncy,
     /* Local variables */
     static int inhd, irch, node, link, j, nabor, jstop, jstrt;
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --nbrhd;
     --rchset;
@@ -95,6 +96,6 @@ L500:
 L600:
 	;
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

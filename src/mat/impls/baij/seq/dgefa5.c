@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa5.c,v 1.3 1997/07/09 20:55:07 balay Exp balay $";
+static char vcid[] = "$Id: dgefa5.c,v 1.4 1997/08/04 17:49:18 balay Exp bsmith $";
 #endif
 /*
     Inverts 5 by 5 matrix using partial pivoting.
@@ -17,6 +17,7 @@ int Kernel_A_gets_inverse_A_5(Scalar *a)
 
 /*     gaussian elimination with partial pivoting */
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     a       -= 6;
 
@@ -142,6 +143,6 @@ int Kernel_A_gets_inverse_A_5(Scalar *a)
             stmp = ax[4]; ax[4] = ay[4]; ay[4] = stmp;
 	}
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.19 1997/09/26 02:18:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.20 1997/10/01 22:44:39 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -16,6 +17,7 @@ static char vcid[] = "$Id: inherit.c,v 1.19 1997/09/26 02:18:19 bsmith Exp bsmit
 int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,MPI_Comm comm,int (*des)(PetscObject),
                               int (*vie)(PetscObject,Viewer))
 {
+  PetscFunctionBegin;
   h->cookie        = cookie;
   h->type          = type;
   h->prefix        = 0;
@@ -23,7 +25,7 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,MPI_Comm comm,in
   h->destroypublic = des;
   h->viewpublic    = vie;
   PetscCommDup_Private(comm,&h->comm,&h->tag);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -35,6 +37,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
 {
   int ierr;
 
+  PetscFunctionBegin;
   PetscCommFree_Private(&h->comm);
   h->cookie = PETSCFREEDHEADER;
   if (h->prefix) PetscFree(h->prefix);
@@ -45,7 +48,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
     PetscFree(h->fortran_func_pointers);
   }
   PetscFree(h);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -59,9 +62,10 @@ static int PetscObjectInherit_DefaultCopy(void *in, void **out)
 {
   PetscObject obj = (PetscObject) in;
 
+  PetscFunctionBegin;
   obj->refct++;
   *out = in;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -75,8 +79,9 @@ static int PetscObjectInherit_DefaultDestroy(void *in)
   int         ierr;
   PetscObject obj = (PetscObject) in;
 
+  PetscFunctionBegin;
   ierr = (*obj->destroypublic)(obj); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -94,9 +99,10 @@ static int PetscObjectInherit_DefaultDestroy(void *in)
 @*/
 int PetscObjectReference(PetscObject obj)
 {
+  PetscFunctionBegin;
   PetscValidHeader(obj);
   obj->refct++;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -116,13 +122,14 @@ int PetscObjectDereference(PetscObject obj)
 {
   int ierr;
 
+  PetscFunctionBegin;
   PetscValidHeader(obj);
   if (obj->destroypublic) {
     ierr = (*obj->destroypublic)(obj); CHKERRQ(ierr);
   } else if (--obj->refct == 0) {
     SETERRQ(1,0,"This PETSc object does not have a generic destroy routine");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -155,16 +162,17 @@ int PetscObjectDereference(PetscObject obj)
 @*/
 int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **),int (*destroy)(void*))
 {
-/*
-  if (obj->child) 
-    SETERRQ(1,0,"Child already set;object can have only 1 child");
-*/
+  PetscFunctionBegin;
+  if (obj->child) {
+    PLogInfo(obj,"Child already set; releasing old child");
+    PetscObjectDereference((PetscObject)obj->child);
+  }
   if (copy == PETSC_NULL)    copy = PetscObjectInherit_DefaultCopy;
   if (destroy == PETSC_NULL) destroy = PetscObjectInherit_DefaultDestroy;
   obj->child        = ptr;
   obj->childcopy    = copy;
   obj->childdestroy = destroy;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -184,23 +192,25 @@ int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **),in
 @*/
 int PetscObjectGetChild(PetscObject obj,void **child)
 {
+  PetscFunctionBegin;
   PetscValidHeader(obj);
 
   *child = obj->child;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscDataTypeToMPIDataType"
 int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
 {
+  PetscFunctionBegin;
   if (ptype == PETSC_INT) {
     *mtype = MPI_INT;
   } else if (ptype == PETSC_DOUBLE) {
     *mtype = MPI_DOUBLE;
   } else if (ptype == PETSC_SCALAR) {
     *mtype = MPIU_SCALAR;
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   } else if (ptype == PETSC_DCOMPLEX) {
     *mtype = MPIU_COMPLEX;
 #endif
@@ -209,20 +219,21 @@ int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
   } else {
     SETERRQ(1,1,"Unknown PETSc datatype");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscDataTypeGetSize"
 int PetscDataTypeGetSize(PetscDataType ptype,int *size)
 {
+  PetscFunctionBegin;
   if (ptype == PETSC_INT) {
     *size = PETSC_INT_SIZE;
   } else if (ptype == PETSC_DOUBLE) {
     *size = PETSC_DOUBLE_SIZE;
   } else if (ptype == PETSC_SCALAR) {
     *size = PETSC_SCALAR_SIZE;
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   } else if (ptype == PETSC_DCOMPLEX) {
     *size = PETSC_DCOMPLEX_SIZE;
 #endif
@@ -231,20 +242,21 @@ int PetscDataTypeGetSize(PetscDataType ptype,int *size)
   } else {
     SETERRQ(1,1,"Unknown PETSc datatype");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscDataTypeGetName"
 int PetscDataTypeGetName(PetscDataType ptype,char **name)
 {
+  PetscFunctionBegin;
   if (ptype == PETSC_INT) {
     *name = "int";
   } else if (ptype == PETSC_DOUBLE) {
     *name = "double";
   } else if (ptype == PETSC_SCALAR) {
     *name = "Scalar";
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   } else if (ptype == PETSC_DCOMPLEX) {
     *name = "complex";
 #endif
@@ -253,6 +265,6 @@ int PetscDataTypeGetName(PetscDataType ptype,char **name)
   } else {
     SETERRQ(1,1,"Unknown PETSc datatype");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 

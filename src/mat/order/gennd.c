@@ -12,6 +12,7 @@ int revrse(int *n, int *perm)
     /* Local variables */
     static int swap, i, m, in;
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --perm;
 
@@ -24,7 +25,7 @@ int revrse(int *n, int *perm)
 	perm[in] = swap;
 	--in;
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 
 
@@ -66,6 +67,7 @@ int gennd(int *neqns, int *xadj, int *adjncy,
 	    int *, int *, int *, int *, int *);
     static int num;
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --ls;
     --xls;
@@ -103,5 +105,5 @@ L300:
 /*        ORDERING VECTOR.*/
 L400:
     revrse(neqns, &perm[1]);
-    return 0;
+    PetscFunctionReturn(0);
 }

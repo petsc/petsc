@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tone.c,v 1.15 1997/08/22 15:16:14 bsmith Exp gropp $";
+static char vcid[] = "$Id: tone.c,v 1.16 1997/09/03 15:38:14 gropp Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -23,6 +23,7 @@ int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1,
   int    rc_lc, rx_lx, t2_t1, x2_x1, t3_t1, x3_x1, t3_t2, x3_x2;
   double R_y2_y1, R_y3_y1, R_y3_y2;
 
+  PetscFunctionBegin;
   t1 = t1 << SHIFT_VAL;
   t2 = t2 << SHIFT_VAL;
   t3 = t3 << SHIFT_VAL;
@@ -85,7 +86,7 @@ int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1,
 
   /* For simplicity, "move" t1 to the intersection of t1-t3 with the line y=y2.
      We take advantage of the previous iteration. */
-  if (y2 >= y3) return 0;
+  if (y2 >= y3) PetscFunctionReturn(0);
   if (y1 < y2) {
     t1 = rc;
     y1 = y2;
@@ -131,11 +132,11 @@ int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1,
       XDrawPoint(win->disp,XiDrawable(win),win->gc.set,lx,y);
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 #else
 int dummy_tone()
 {
-  return 0;
+  PetscFunctionReturn(0);
 }
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.1 1997/09/23 20:11:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.2 1997/09/26 02:19:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -25,7 +25,7 @@ extern int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
   if (format == VIEWER_FORMAT_ASCII_INFO) {
-    return 0;
+    PetscFunctionReturn(0);
   } else {
     for ( i=0; i<m; i++ ) {
       PetscSynchronizedFPrintf(comm,fd,"row %d:",i+a->rstart);
@@ -36,7 +36,7 @@ extern int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
     }
   } 
   PetscSynchronizedFlush(comm);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -49,9 +49,9 @@ int MatView_MPIAdj(PetscObject obj,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
-    return MatView_MPIAdj_ASCII(A,viewer);
+    ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -61,7 +61,7 @@ int MatDestroy_MPIAdj(PetscObject obj)
   Mat        A  = (Mat) obj;
   Mat_MPIAdj *a = (Mat_MPIAdj *) A->data;
 
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d",A->m,A->n,a->nz);
 #endif
   if (a->diag) PetscFree(a->diag);
@@ -72,7 +72,7 @@ int MatDestroy_MPIAdj(PetscObject obj)
 
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -87,7 +87,7 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
   } else {
     PLogInfo(A,"Info:MatSetOption_MPIAdj:Option ignored\n");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -113,7 +113,7 @@ int MatMarkDiag_MPIAdj(Mat A)
     }
   }
   a->diag = diag;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -122,7 +122,7 @@ int MatGetSize_MPIAdj(Mat A,int *m,int *n)
 {
   if (m) *m = A->M;
   if (n) *n = A->N;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -132,7 +132,7 @@ int MatGetLocalSize_MPIAdj(Mat A,int *m,int *n)
   Mat_MPIAdj *a = (Mat_MPIAdj *) A->data; 
   if (m) *m = a->m; 
   if (n) *n = A->N;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -141,7 +141,7 @@ int MatGetOwnershipRange_MPIAdj(Mat A,int *m,int *n)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj *) A->data;
   *m = a->rstart; *n = a->rend;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -164,14 +164,14 @@ int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
     }
     else *idx = 0;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "MatRestoreRow_MPIAdj"
 int MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -179,7 +179,7 @@ int MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
 int MatGetBlockSize_MPIAdj(Mat A, int *bs)
 {
   *bs = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -210,7 +210,7 @@ int MatEqual_MPIAdj(Mat A,Mat B, PetscTruth* flg)
   MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_LAND,A->comm);
   
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -325,7 +325,7 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
   if (flg) {ierr = MatPrintHelp(B); CHKERRQ(ierr); }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.52 1997/09/22 15:19:38 balay Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.53 1997/10/10 04:06:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system on 1 processor with SNES. We\n\
@@ -161,8 +161,7 @@ int main( int argc, char **argv )
        to compute the actual Jacobians via finite differences.
     */
     ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); CHKERRA(ierr);
-    ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void *,Vec,Vec,void *))FormFunction,&user);
-           CHKERRA(ierr);
+    ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void))FormFunction,&user);CHKERRA(ierr);
     ierr = MatFDColoringSetFromOptions(fdcoloring); CHKERRA(ierr);
     /*
         Tell SNES to use the routine SNESDefaultComputeJacobianWithColoring()

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.61 1997/09/10 18:50:27 curfman Exp curfman $";
+static char vcid[] = "$Id: cg.c,v 1.62 1997/09/11 03:02:57 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -18,7 +18,6 @@ static char vcid[] = "$Id: cg.c,v 1.61 1997/09/10 18:50:27 curfman Exp curfman $
     Note, however, that the complex symmetric code is NOT valid for
     all such matrices ... and thus we don't recommend using this method.
 */
-#include <stdio.h>
 #include <math.h>
 #include "src/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
 extern int KSPComputeExtremeSingularValues_CG(KSP,double *,double *);
@@ -31,6 +30,7 @@ int KSPSetUp_CG(KSP ksp)
   KSP_CG *cgP = (KSP_CG *) ksp->data;
   int    maxit = ksp->max_it,ierr;
 
+  PetscFunctionBegin;
   /* check user parameters and functions */
   if (ksp->pc_side == PC_RIGHT)
     {SETERRQ(2,0,"no right preconditioning for KSPCG");}
@@ -51,7 +51,7 @@ int KSPSetUp_CG(KSP ksp)
     ksp->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->computeeigenvalues           = KSPComputeEigenvalues_CG;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -66,6 +66,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
   Mat          Amat, Pmat;
   MatStructure pflag;
 
+  PetscFunctionBegin;
   cg = (KSP_CG *) ksp->data;
   eigs    = ksp->calc_sings;
   pres    = ksp->use_pres;
@@ -78,7 +79,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
   Z       = ksp->work[1];
   P       = ksp->work[2];
 
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
 #define VecXDot(x,y,a) {ierr = VecDot(x,y,a); CHKERRQ(ierr)}
 #else
 #define VecXDot(x,y,a) \
@@ -104,7 +105,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
       ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*    dp <- r'*r       */
   }
   cerr = (*ksp->converged)(ksp,0,dp,ksp->cnvP);
-  if (cerr) {*its =  0; return 0;}
+  if (cerr) {*its =  0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,dp);
   if (history) history[0] = dp;
 
@@ -116,7 +117,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
      }
      else {
          b = beta/betaold;
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
          if (b<0.0) SETERRQ(1,0,"Nonsymmetric/bad preconditioner");
 #endif
          if (eigs) {
@@ -151,7 +152,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
   if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
   if (cerr <= 0) *its = -(i+1);
   else           *its = i+1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -161,6 +162,7 @@ int KSPDestroy_CG(PetscObject obj)
   KSP    ksp = (KSP) obj;
   KSP_CG *cg = (KSP_CG *) ksp->data;
 
+  PetscFunctionBegin;
   /* free space used for Singularvalue calculations */
   if ( ksp->calc_sings ) {
     PetscFree(cg->e);
@@ -171,14 +173,14 @@ int KSPDestroy_CG(PetscObject obj)
   
   /* free the context variables */
   PetscFree(cg); 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "KSPView_CG" 
 int KSPView_CG(PetscObject obj,Viewer viewer)
 {
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   KSP         ksp = (KSP)obj;
   KSP_CG      *cg = (KSP_CG *)ksp->data; 
   FILE        *fd;
@@ -186,6 +188,7 @@ int KSPView_CG(PetscObject obj,Viewer viewer)
   int         ierr;
   ViewerType  vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -197,7 +200,7 @@ int KSPView_CG(PetscObject obj,Viewer viewer)
       PetscFPrintf(ksp->comm,fd,"    CG: unknown variant\n");
   }
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -205,9 +208,11 @@ int KSPView_CG(PetscObject obj,Viewer viewer)
 int KSPCreate_CG(KSP ksp)
 {
   KSP_CG *cg = (KSP_CG*) PetscMalloc(sizeof(KSP_CG));  CHKPTRQ(cg);
+
+  PetscFunctionBegin;
   PetscMemzero(cg,sizeof(KSP_CG));
   PLogObjectMemory(ksp,sizeof(KSP_CG));
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
   cg->type                  = KSP_CG_SYMMETRIC;
 #else
   cg->type                  = KSP_CG_HERMITIAN;
@@ -224,7 +229,7 @@ int KSPCreate_CG(KSP ksp)
   ksp->converged            = KSPDefaultConverged;
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

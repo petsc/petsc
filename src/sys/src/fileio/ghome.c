@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ghome.c,v 1.11 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: ghome.c,v 1.12 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -25,17 +25,20 @@ static char vcid[] = "$Id: ghome.c,v 1.11 1997/07/09 20:51:14 balay Exp bsmith $
 @*/
 int PetscGetHomeDirectory(int maxlen,char *dir)
 {
-  /* On NT get the HOME DIR from the env variable HOME */
 #if defined(PARCH_nt) || defined(PARCH_nt_gnu)
   char *d1 = getenv("HOME");
+
+  PetscFunctionBegin;
   if (d1 == NULL) d1 ="c:\\";
   PetscStrncpy(dir,d1,maxlen);
 #else
   struct passwd *pw = 0;
+
+  PetscFunctionBegin;
   pw = getpwuid( getuid() );
-  if (!pw)  return 0;
+  if (!pw)  PetscFunctionReturn(0);
   PetscStrncpy(dir, pw->pw_dir,maxlen);
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.7 1997/07/09 21:00:30 balay Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.8 1997/09/22 15:19:54 balay Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
@@ -22,7 +22,6 @@ T*/
      sles.h   - linear solvers
 */
 #include "snes.h"
-#include <stdio.h>
 
 /* 
    User-defined routines

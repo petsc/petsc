@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcnull.c,v 1.11 1997/07/09 20:52:24 balay Exp bsmith $";
+static char vcid[] = "$Id: pcnull.c,v 1.12 1997/08/22 15:12:25 bsmith Exp bsmith $";
 #endif
 /*
     Routines to project vectors out of null spaces.
@@ -7,7 +7,6 @@ static char vcid[] = "$Id: pcnull.c,v 1.11 1997/07/09 20:52:24 balay Exp bsmith 
 
 #include "petsc.h"
 #include "src/pc/pcimpl.h"      /*I "pc.h" I*/
-#include <stdio.h>
 #include "src/sys/nreg.h"
 #include "sys.h"
 
@@ -35,6 +34,7 @@ int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace 
 {
   PCNullSpace sp;
 
+  PetscFunctionBegin;
   PetscHeaderCreate(sp,_p_PCNullSpace,PCNULLSPACE_COOKIE,0,comm,PCNullSpaceDestroy,0);
   PLogObjectCreate(sp);
   PLogObjectMemory(sp,sizeof(struct _p_PCNullSpace));
@@ -44,7 +44,7 @@ int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace 
   sp->vecs     = vecs;
 
   *SP          = sp;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -60,9 +60,10 @@ int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace 
 @*/
 int PCNullSpaceDestroy(PCNullSpace sp)
 {
+  PetscFunctionBegin;
   PLogObjectDestroy(sp);
   PetscHeaderDestroy(sp);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -82,6 +83,7 @@ int PCNullSpaceRemove(PCNullSpace sp,Vec vec)
   Scalar sum;
   int    j, n = sp->n, N,ierr;
 
+  PetscFunctionBegin;
   if (sp->has_cnst) {
     ierr = VecSum(vec,&sum); CHKERRQ(ierr);
     ierr = VecGetSize(vec,&N); CHKERRQ(ierr);
@@ -95,5 +97,5 @@ int PCNullSpaceRemove(PCNullSpace sp,Vec vec)
     ierr = VecAYPX(&sum,sp->vecs[j],vec); CHKERRQ(ierr);
   }
   
-  return 0;
+  PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.2 1997/07/02 22:26:13 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.3 1997/07/09 20:56:41 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -32,7 +32,6 @@ T*/
      is.h     - index sets            viewer.h - viewers               
 */
 #include "mat.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {

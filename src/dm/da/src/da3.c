@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.63 1997/09/26 02:21:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.64 1997/10/10 04:06:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -18,8 +18,9 @@ int DAView_3d(PetscObject dain,Viewer viewer)
   DA          da = (DA) dain;
   int         rank, ierr;
   ViewerType  vtype;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
   MPI_Comm_rank(da->comm,&rank); 
 
   if (!viewer) { 
@@ -51,7 +52,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
     PetscTruth isnull;
 
     ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
-    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+    ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
     DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);
 
@@ -143,7 +144,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
     DrawSynchronizedFlush(draw);
     DrawPause(draw);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -198,6 +199,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   VecScatter    ltog,gtol;
   IS            to,from;
   DF            df_local;
+
+  PetscFunctionBegin;
   *inra = 0;
 
   if (w < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node");
@@ -1249,8 +1252,10 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   */
   {
     ISLocalToGlobalMapping isltog;
-    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nn,idx,&isltog); CHKERRQ(ierr);
-    ierr = VecSetLocalToGlobalMapping(da->global,isltog); CHKERRQ(ierr);
+    ierr        = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nn,idx,&isltog);CHKERRQ(ierr);
+    ierr        = VecSetLocalToGlobalMapping(da->global,isltog); CHKERRQ(ierr);
+    da->ltogmap = isltog; PetscObjectReference((PetscObject)isltog);
+    PLogObjectParent(da,isltog);
     ierr = ISLocalToGlobalMappingDestroy(isltog); CHKERRQ(ierr);
   }
 
@@ -1743,6 +1748,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     PetscFree(lidx);
 
     ierr = AOCreateBasicIS(comm,isnatural,ispetsc,&da->ao); CHKERRQ(ierr);
+    PLogObjectParent(da,da->ao);
     ierr = ISDestroy(ispetsc); CHKERRQ(ierr);
     ierr = ISDestroy(isnatural); CHKERRQ(ierr);
   }
@@ -1802,6 +1808,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   if (flg1) {ierr = DAView(da,VIEWER_DRAWX_(da->comm)); CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAPrintHelp(da); CHKERRQ(ierr);}
-  return 0;
+  PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.41 1997/07/09 21:00:13 balay Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.42 1997/09/22 15:15:54 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -242,7 +242,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
     temp = PetscMin(j+1,ny-j)*hy;
     for (i=xs; i<xe; i++) {  /*  for (i=0; i<nx; i++) */
       k = (j-Ys)*Xm + i-Xs;
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
       x[k] = PetscMin((PetscMin(i+1,nx-i))*hx,temp);
 #else
       x[k] = PetscMin(real((PetscMin(i+1,nx-i))*hx),real(temp));
@@ -358,7 +358,7 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   area = p5*hx*hy;
   if (fg & FunctionEval) {   /* Scale the function */
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
     floc = area*(p5*fquad+flin);
 #else
     floc = real(area*(p5*fquad+flin));

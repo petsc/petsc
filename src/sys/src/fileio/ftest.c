@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ftest.c,v 1.10 1997/08/22 15:11:48 bsmith Exp gropp $";
+static char vcid[] = "$Id: ftest.c,v 1.11 1997/09/05 18:39:47 gropp Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -23,12 +23,12 @@ static char vcid[] = "$Id: ftest.c,v 1.10 1997/08/22 15:11:48 bsmith Exp gropp $
 int PetscTestFile( char *fname, char mode)
 {
   int m;
-  if (!fname) return 0;
+  if (!fname) PetscFunctionReturn(0);
   
   if (mode == 'r') m = 4;
   if (mode == 'w') m = 2;
-  if(!_access(fname,4)) return 1;
-  return 0;
+  if(!_access(fname,4))   PetscFunctionReturn(1);
+  PetscFunctionReturn(0);
 }
 #else 
 int PetscTestFile( char *fname, char mode,uid_t uid, gid_t gid )
@@ -37,17 +37,18 @@ int PetscTestFile( char *fname, char mode,uid_t uid, gid_t gid )
   struct stat statbuf;
   int         stmode, rbit, wbit, ebit;
   
-  if (!fname) return 0;
+  PetscFunctionBegin;
+  if (!fname) PetscFunctionReturn(0);
   
   /* Check to see if the environment variable is a valid regular FILE */
   err = stat( fname, &statbuf );
-  if (err != 0) return 0;
+  if (err != 0) PetscFunctionReturn(0);
 
   /* At least the file exists ... */
   stmode = statbuf.st_mode;
   /* Except for systems that have this broken stat macros (rare), this
      is the correct way to check for a (not) regular file */
-  if (!S_ISREG(stmode)) return 0;
+  if (!S_ISREG(stmode)) PetscFunctionReturn(0);
 /* Test for accessible. */
   if (statbuf.st_uid == uid) {
     rbit = S_IRUSR;
@@ -65,15 +66,15 @@ int PetscTestFile( char *fname, char mode,uid_t uid, gid_t gid )
     ebit = S_IXOTH;
   }
   if (mode == 'r') {
-    if ((stmode & rbit)) return 1;
+    if ((stmode & rbit))   PetscFunctionReturn(1);
   }
   else if (mode == 'w') {
-    if ((stmode & wbit)) return 1;
+    if ((stmode & wbit))   PetscFunctionReturn(1);
   }
   else if (mode == 'e') {
-    if ((stmode & ebit)) return 1;
+    if ((stmode & ebit))   PetscFunctionReturn(1);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaijpc.c,v 1.31 1997/08/07 14:39:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.32 1997/08/22 15:13:39 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the SeqAIJ/MPIAIJ format.
@@ -26,6 +26,7 @@ int PCDestroy_BJacobi_MPIAIJ(PetscObject obj)
   PC_BJacobi_MPIAIJ *bjac = (PC_BJacobi_MPIAIJ *) jac->data;
   int               ierr;
 
+  PetscFunctionBegin;
   ierr = SLESDestroy(jac->sles[0]); CHKERRQ(ierr);
   PetscFree(jac->sles);
   ierr = VecDestroy(bjac->x); CHKERRQ(ierr);
@@ -33,7 +34,7 @@ int PCDestroy_BJacobi_MPIAIJ(PetscObject obj)
   if (jac->l_lens) PetscFree(jac->l_lens);
   if (jac->g_lens) PetscFree(jac->g_lens);
   PetscFree(bjac); PetscFree(jac); 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -45,8 +46,9 @@ int PCSetUpOnBlocks_BJacobi_MPIAIJ(PC pc)
   PC_BJacobi        *jac = (PC_BJacobi *) pc->data;
   PC_BJacobi_MPIAIJ *bjac = (PC_BJacobi_MPIAIJ *) jac->data;
 
+  PetscFunctionBegin;
   ierr = SLESSetUp(jac->sles[0],bjac->x,bjac->y); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -58,6 +60,7 @@ int PCApply_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
   PC_BJacobi_MPIAIJ *bjac = (PC_BJacobi_MPIAIJ *) jac->data;
   Scalar            *x_array,*x_true_array, *y_array,*y_true_array;
 
+  PetscFunctionBegin;
   /* 
       The VecPlaceArray() is to avoid having to copy the 
     y vector into the bjac->x vector. The reason for 
@@ -73,7 +76,7 @@ int PCApply_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
   ierr = SLESSolve(jac->sles[0],bjac->x,bjac->y,&its); 
   VecPlaceArray_Fast(bjac->x,x_true_array); 
   VecPlaceArray_Fast(bjac->y,y_true_array); 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -92,6 +95,7 @@ int PCSetUp_BJacobi_MPIAIJ(PC pc)
   PC                subpc;
   MatType           type;
 
+  PetscFunctionBegin;
   if (jac->use_true_local) {
     MatGetType(pc->mat,&type,PETSC_NULL);
     if (type != MATMPIAIJ) SETERRQ(1,0,"Incompatible matrix type.");
@@ -133,8 +137,7 @@ int PCSetUp_BJacobi_MPIAIJ(PC pc)
     jac->sles    = (SLES*) PetscMalloc( sizeof(SLES) ); CHKPTRQ(jac->sles);
     jac->sles[0] = sles;
     jac->data    = (void *) bjac;
-  }
-  else {
+  } else {
     sles = jac->sles[0];
     bjac = (PC_BJacobi_MPIAIJ *)jac->data;
   }
@@ -143,7 +146,7 @@ int PCSetUp_BJacobi_MPIAIJ(PC pc)
   }  else {
     ierr = SLESSetOperators(sles,pmatin->A,pmatin->A,pc->flag); CHKERRQ(ierr);
   }   
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -160,6 +163,7 @@ int PCSetUp_BJacobi_SeqAIJ(PC pc)
   PC                subpc;
   MatType           type;
 
+  PetscFunctionBegin;
   if (jac->use_true_local) {
     MatGetType(mat,&type,PETSC_NULL);
     if (type != MATSEQAIJ) SETERRQ(1,0,"Incompatible matrix type.");
@@ -200,8 +204,7 @@ int PCSetUp_BJacobi_SeqAIJ(PC pc)
     jac->sles    = (SLES*) PetscMalloc( sizeof(SLES) ); CHKPTRQ(jac->sles);
     jac->sles[0] = sles;
     jac->data    = (void *) bjac;
-  }
-  else {
+  } else {
     sles = jac->sles[0];
     bjac = (PC_BJacobi_MPIAIJ *)jac->data;
   }
@@ -210,6 +213,6 @@ int PCSetUp_BJacobi_SeqAIJ(PC pc)
   }  else {
     ierr = SLESSetOperators(sles,pmat,pmat,pc->flag); CHKERRQ(ierr);
   }   
-  return 0;
+  PetscFunctionReturn(0);
 }
 

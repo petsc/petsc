@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.49 1997/07/09 20:54:17 balay Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.50 1997/08/22 15:13:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -40,10 +40,11 @@ typedef struct {
 @*/
 int MatShellGetContext(Mat mat,void **ctx)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE); 
   if (mat->type != MATSHELL) *ctx = 0; 
   else                       *ctx = ((Mat_Shell *) (mat->data))->ctx; 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -51,8 +52,10 @@ int MatShellGetContext(Mat mat,void **ctx)
 int MatGetSize_Shell(Mat mat,int *M,int *N)
 {
   Mat_Shell *shell = (Mat_Shell *) mat->data;
+
+  PetscFunctionBegin;
   *M = shell->M; *N = shell->N;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -60,8 +63,10 @@ int MatGetSize_Shell(Mat mat,int *M,int *N)
 int MatGetLocalSize_Shell(Mat mat,int *m,int *n)
 {
   Mat_Shell *shell = (Mat_Shell *) mat->data;
+
+  PetscFunctionBegin;
   *m = shell->n; *n = shell->n;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -72,19 +77,20 @@ int MatDestroy_Shell(PetscObject obj)
   Mat       mat = (Mat) obj;
   Mat_Shell *shell;
 
+  PetscFunctionBegin;
   shell = (Mat_Shell *) mat->data;
   if (shell->destroy) {ierr = (*shell->destroy)(mat);CHKERRQ(ierr);}
   PetscFree(shell); 
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 int MatGetOwnershipRange_Shell(Mat mat, int *rstart,int *rend)
 {
   MPI_Scan(&mat->m,rend,1,MPI_INT,MPI_SUM,mat->comm);
   *rstart = *rend - mat->m;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -190,6 +196,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
   Mat       B;
   Mat_Shell *b;
 
+  PetscFunctionBegin;
   PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSHELL,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->factor    = 0;
@@ -207,7 +214,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
   b->n = n; B->n = n;
   b->ctx     = ctx;
   *A = B;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -248,6 +255,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 @*/
 int MatShellSetOperation(Mat mat,MatOperation op, void *f)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
 
   if (op == MATOP_DESTROY) {
@@ -260,10 +268,8 @@ int MatShellSetOperation(Mat mat,MatOperation op, void *f)
   else if (op == MATOP_VIEW) mat->view  = (int (*)(PetscObject,Viewer)) f;
   else      (((void**)&mat->ops)[op]) = f;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNC__  
 #define __FUNC__ "MatShellGetOperation"
@@ -299,6 +305,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 @*/
 int MatShellGetOperation(Mat mat,MatOperation op, void **f)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
 
   if (op == MATOP_DESTROY) {
@@ -311,6 +318,6 @@ int MatShellGetOperation(Mat mat,MatOperation op, void **f)
   else if (op == MATOP_VIEW) *f = (void *) mat->view;
   else      *f = (((void**)&mat->ops)[op]);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 

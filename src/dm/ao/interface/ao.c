@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.12 1997/08/22 15:19:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.13 1997/09/26 02:21:53 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -21,8 +21,11 @@ static char vcid[] = "$Id: ao.c,v 1.12 1997/08/22 15:19:32 bsmith Exp bsmith $";
 @*/
 int AOView(AO ao, Viewer viewer)
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
-  return (*ao->view)((PetscObject)ao,viewer);
+  ierr = (*ao->view)((PetscObject)ao,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -39,10 +42,13 @@ int AOView(AO ao, Viewer viewer)
 @*/
 int AODestroy(AO ao)
 {
-  if (!ao) return 0;
+  int ierr;
+  PetscFunctionBegin;
+  if (!ao) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ao,AO_COOKIE);
-  if (--ao->refct > 0) return 0;
-  return (*ao->destroy)((PetscObject)ao);
+  if (--ao->refct > 0) PetscFunctionReturn(0);
+  ierr = (*ao->destroy)((PetscObject)ao); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 
@@ -70,12 +76,13 @@ int AODestroy(AO ao)
 int AOPetscToApplicationIS(AO ao,IS is)
 {
   int n,*ia,ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ia); CHKERRQ(ierr);
   ierr = (*ao->ops.petsctoapplication)(ao,n,ia); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&ia); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -101,12 +108,13 @@ int AOPetscToApplicationIS(AO ao,IS is)
 int AOApplicationToPetscIS(AO ao,IS is)
 {
   int n,*ia,ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ia); CHKERRQ(ierr);
   ierr = (*ao->ops.applicationtopetsc)(ao,n,ia); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&ia); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -132,8 +140,11 @@ int AOApplicationToPetscIS(AO ao,IS is)
 @*/
 int AOPetscToApplication(AO ao,int n,int *ia)
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
-  return (*ao->ops.petsctoapplication)(ao,n,ia);
+  ierr = (*ao->ops.petsctoapplication)(ao,n,ia);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -159,8 +170,11 @@ int AOPetscToApplication(AO ao,int n,int *ia)
 @*/
 int AOApplicationToPetsc(AO ao,int n,int *ia)
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
-  return (*ao->ops.applicationtopetsc)(ao,n,ia);
+  ierr = (*ao->ops.applicationtopetsc)(ao,n,ia); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 

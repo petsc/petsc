@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: prefix.c,v 1.12 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: prefix.c,v 1.13 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -25,14 +25,15 @@ static char vcid[] = "$Id: prefix.c,v 1.12 1997/07/09 20:51:14 balay Exp bsmith 
 */
 int PetscObjectSetOptionsPrefix(PetscObject obj, char *prefix)
 {
+  PetscFunctionBegin;
   if (obj->prefix) PetscFree(obj->prefix);
-  if (prefix == PETSC_NULL) {obj->prefix = PETSC_NULL; return 0;}
+  if (prefix == PETSC_NULL) {obj->prefix = PETSC_NULL; PetscFunctionReturn(0);}
   if (prefix[0] == '-') SETERRQ(1,1,"Options prefix should not begin with a hypen");
 
   obj->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))* 
                 sizeof(char)); CHKPTRQ(obj->prefix);
   PetscStrcpy(obj->prefix,prefix);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -55,8 +56,14 @@ int PetscObjectSetOptionsPrefix(PetscObject obj, char *prefix)
 int PetscObjectAppendOptionsPrefix(PetscObject obj, char *prefix)
 {
   char *buf = obj->prefix ;
-  if (!prefix) {return 0;}
-  if (!buf) return PetscObjectSetOptionsPrefix(obj, prefix);
+  int  ierr;
+
+  PetscFunctionBegin;
+  if (!prefix) {PetscFunctionReturn(0);}
+  if (!buf) {
+    ierr = PetscObjectSetOptionsPrefix(obj, prefix);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   if (prefix[0] == '-') SETERRQ(1,1,"Options prefix should not begin with a hypen");
 
   obj->prefix = (char*)PetscMalloc((1 + PetscStrlen(prefix) + PetscStrlen(buf))*
@@ -64,7 +71,7 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj, char *prefix)
   PetscStrcpy(obj->prefix,buf);
   PetscStrcat(obj->prefix,prefix);
   PetscFree(buf);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -82,8 +89,9 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj, char *prefix)
 */
 int PetscObjectGetOptionsPrefix(PetscObject obj ,char** prefix)
 {
+  PetscFunctionBegin;
   *prefix = obj->prefix;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

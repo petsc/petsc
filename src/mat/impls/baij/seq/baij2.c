@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.17 1997/08/22 15:14:29 bsmith Exp balay $";
+static char vcid[] = "$Id: baij2.c,v 1.18 1997/10/01 21:30:01 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/seq/baij.h"
@@ -15,6 +15,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
   int         start, end, *ai, *aj,bs,*nidx2;
   BT          table;
 
+  PetscFunctionBegin;
   m     = a->mbs;
   ai    = a->i;
   aj    = a->j;
@@ -67,7 +68,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
   BTDestroy(table);
   PetscFree(nidx);
   PetscFree(nidx2);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -82,6 +83,7 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   Scalar       *mat_a;
   Mat          C;
 
+  PetscFunctionBegin;
   ierr = ISSorted(iscol,(PetscTruth*)&i);
   if (!i) SETERRQ(1,0,"IS is not sorted");
 
@@ -110,15 +112,13 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   if (scall == MAT_REUSE_MATRIX) {
     c = (Mat_SeqBAIJ *)((*B)->data);
 
-    if (c->mbs!=nrows || c->nbs!=ncols || c->bs!=bs) 
-      SETERRQ(1,0,"");
+    if (c->mbs!=nrows || c->nbs!=ncols || c->bs!=bs) SETERRQ(1,0,"");
     if (PetscMemcmp(c->ilen,lens, c->mbs *sizeof(int))) {
       SETERRQ(1,0,"Cannot reuse matrix. wrong no of nonzeros");
     }
     PetscMemzero(c->ilen,c->mbs*sizeof(int));
     C = *B;
-    }
-  else {  
+  } else {  
     ierr = MatCreateSeqBAIJ(A->comm,bs,nrows*bs,ncols*bs,0,lens,&C);CHKERRQ(ierr);
   }
   c = (Mat_SeqBAIJ *)(C->data);
@@ -149,7 +149,7 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   
   ierr = ISRestoreIndices(isrow,&irow); CHKERRQ(ierr);
   *B = C;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -160,6 +160,7 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Ma
   IS          is1,is2;
   int         *vary,*iary,*irow,*icol,nrows,ncols,i,ierr,bs=a->bs,count;
 
+  PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows); CHKERRQ(ierr);
@@ -193,7 +194,7 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Ma
   ierr = MatGetSubMatrix_SeqBAIJ_Private(A,is1,is2,scall,B); CHKERRQ(ierr);
   ISDestroy(is1);
   ISDestroy(is2);
-  return 0;
+  PetscFunctionReturn(0);
 }
   
 extern int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,MatGetSubMatrixCall,Mat*);
@@ -205,6 +206,7 @@ int MatGetSubMatrices_SeqBAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall
 {
   int ierr,i;
 
+  PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
     *B = (Mat *) PetscMalloc( (n+1)*sizeof(Mat) ); CHKPTRQ(*B);
   }
@@ -212,7 +214,7 @@ int MatGetSubMatrices_SeqBAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall
   for ( i=0; i<n; i++ ) {
     ierr = MatGetSubMatrix_SeqBAIJ(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

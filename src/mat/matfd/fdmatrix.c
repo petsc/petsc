@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.23 1997/10/12 23:24:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.24 1997/10/14 20:15:42 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -23,8 +23,9 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
   double      xr,yr,xl,yl,h,w,x,y,xc,yc,scale = 0.0;
   DrawButton  button;
 
+  PetscFunctionBegin;
   ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
-  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
 
   xr  = fd->N; yr = fd->M; h = yr/10.0; w = xr/10.0; 
@@ -41,7 +42,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
   }
   ierr = DrawSynchronizedFlush(draw); CHKERRQ(ierr); 
   ierr = DrawGetPause(draw,&pause); CHKERRQ(ierr);
-  if (pause >= 0) { PetscSleep(pause); return 0;}
+  if (pause >= 0) { PetscSleep(pause); PetscFunctionReturn(0);}
   ierr = DrawCheckResizedWindow(draw);
   ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0); 
   while (button != BUTTON_RIGHT) {
@@ -66,7 +67,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
     ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0); 
   }
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -97,6 +98,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
   int        i,j,format,ierr;
   FILE       *fd;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE);
   if (viewer) {PetscValidHeader(viewer);} 
   else {viewer = VIEWER_STDOUT_SELF;}
@@ -104,7 +106,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == DRAW_VIEWER) { 
     ierr = MatFDColoringView_Draw(c,viewer); CHKERRQ(ierr);
-    return 0;
+    PetscFunctionReturn(0);
   }
   else if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -128,7 +130,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -154,11 +156,12 @@ $   dx_{i} = (0, ... 1, .... 0)
 @*/
 int MatFDColoringSetParameters(MatFDColoring matfd,double error,double umin)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
 
   if (error != PETSC_DEFAULT) matfd->error_rel = error;
   if (umin != PETSC_DEFAULT)  matfd->umin      = umin;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -184,10 +187,11 @@ $  -mat_fd_coloring_freq <freq>
 @*/
 int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
 
   matfd->freq = freq;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -215,10 +219,11 @@ $  -mat_fd_coloring_freq <freq>
 @*/
 int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
 
   *freq = matfd->freq;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -235,12 +240,13 @@ int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 @*/
 int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
 
   matfd->f    = f;
   matfd->fctx = fctx;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -275,6 +281,8 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
 {
   int    ierr,flag,freq = 1;
   double error = PETSC_DEFAULT,umin = PETSC_DEFAULT;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
 
   ierr = OptionsGetDouble(matfd->prefix,"-mat_fd_coloring_err",&error,&flag);CHKERRQ(ierr);
@@ -286,7 +294,7 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
   if (flag) {
     ierr = MatFDColoringPrintHelp(matfd); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -302,6 +310,7 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
 @*/
 int MatFDColoringPrintHelp(MatFDColoring fd)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(fd,MAT_FDCOLORING_COOKIE);
 
   PetscPrintf(fd->comm,"-mat_fd_coloring_err <err>: set sqrt rel tol in function, defaults to %g\n",fd->error_rel);
@@ -310,13 +319,14 @@ int MatFDColoringPrintHelp(MatFDColoring fd)
   PetscPrintf(fd->comm,"-mat_fd_coloring_view\n");
   PetscPrintf(fd->comm,"-mat_fd_coloring_view_draw\n");
   PetscPrintf(fd->comm,"-mat_fd_coloring_view_info\n");
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 int MatFDColoringView_Private(MatFDColoring fd)
 {
   int ierr,flg;
 
+  PetscFunctionBegin;
   ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view",&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = MatFDColoringView(fd,VIEWER_STDOUT_(fd->comm)); CHKERRQ(ierr);
@@ -332,7 +342,7 @@ int MatFDColoringView_Private(MatFDColoring fd)
     ierr = MatFDColoringView(fd,VIEWER_DRAWX_(fd->comm)); CHKERRQ(ierr);
     ierr = ViewerFlush(VIEWER_DRAWX_(fd->comm)); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -361,6 +371,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   MPI_Comm      comm;
   int           ierr,M,N;
 
+  PetscFunctionBegin;
   ierr = MatGetSize(mat,&M,&N); CHKERRQ(ierr);
   if (M != N) SETERRQ(PETSC_ERR_SUP,0,"Only for square matrices");
 
@@ -382,7 +393,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 
   *color = c;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -400,7 +411,8 @@ int MatFDColoringDestroy(MatFDColoring c)
 {
   int i,ierr;
 
-  if (--c->refct > 0) return 0;
+  PetscFunctionBegin;
+  if (--c->refct > 0) PetscFunctionReturn(0);
 
 
   for ( i=0; i<c->ncolors; i++ ) {
@@ -421,7 +433,7 @@ int MatFDColoringDestroy(MatFDColoring c)
   }
   PLogObjectDestroy(c);
   PetscHeaderDestroy(c);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #include "snes.h"
@@ -455,6 +467,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   int           (*f)(void *,Vec,Vec,void *) = ( int (*)(void *,Vec,Vec,void *))coloring->f;
   void          *fctx = coloring->fctx;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_COOKIE);
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE);
   PetscValidHeaderSpecific(x1,VEC_COOKIE);
@@ -497,7 +510,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col-start];
       if (dx == 0.0) dx = 1.0;
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;
 #else
@@ -515,7 +528,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     ierr = (*f)(sctx,w3,w2,fctx); CHKERRQ(ierr);
     ierr = VecAXPY(&mone,w1,w2); CHKERRQ(ierr);
     /* Communicate scale to all processors */
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
     MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);
 #else
     MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);
@@ -535,7 +548,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   }
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #include "ts.h"
@@ -569,6 +582,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
   int           (*f)(void *,double,Vec,Vec,void *) = ( int (*)(void *,double,Vec,Vec,void *))coloring->f;
   void          *fctx = coloring->fctx;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_COOKIE);
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE);
   PetscValidHeaderSpecific(x1,VEC_COOKIE);
@@ -611,7 +625,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col-start];
       if (dx == 0.0) dx = 1.0;
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;
 #else
@@ -629,7 +643,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
     ierr = (*f)(sctx,t,w3,w2,fctx); CHKERRQ(ierr);
     ierr = VecAXPY(&mone,w1,w2); CHKERRQ(ierr);
     /* Communicate scale to all processors */
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
     MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);
 #else
     MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);
@@ -649,5 +663,5 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
   }
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }

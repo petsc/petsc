@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.67 1997/09/22 18:50:04 balay Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.68 1997/10/10 04:02:45 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -44,15 +44,16 @@ $     0 to start debugger in initial window (zero makes no
 @*/
 int PetscSetDebugger(char *debugger, int xterm,char *display)
 {
+  PetscFunctionBegin;
   if (debugger) Debugger = debugger;
   Xterm    = xterm;
   if (Display) {PetscFree(Display); Display = 0;}
   if (display) {
     int len = PetscStrlen(display)+1;
-    Display = (char *) PetscMalloc(len*sizeof(char)); if (!Display) return 1;
+    Display = (char *) PetscMalloc(len*sizeof(char)); if (!Display) PetscFunctionReturn(0);
     PetscStrcpy(Display,display);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -69,6 +70,7 @@ int PetscAttachDebugger()
   int   child=0,sleeptime=0,flg=0,ierr=0;
   char  program[256];
 
+  PetscFunctionBegin;
   PetscGetProgramName(program,256);
 #if defined(PARCH_t3d) 
   fprintf(stderr,"PETSC ERROR: Cray t3d cannot start debugger\n");
@@ -81,12 +83,12 @@ int PetscAttachDebugger()
 #else
   if (!program) {
     fprintf(stderr,"PETSC ERROR: Cannot determine program name\n");
-    return 1;
+    PetscFunctionReturn(1);
   }
   child = fork(); 
   if (child <0) {
     fprintf(stderr,"PETSC ERROR: Error attaching debugger\n");
-    return -1;
+    PetscFunctionReturn(-11);
   }
 
   /* Swap role the parent and child. */
@@ -264,10 +266,10 @@ int PetscAttachDebugger()
 #else
     sleep(sleeptime);
 #endif
-    return 0;
+    PetscFunctionReturn(0);
   }
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -317,6 +319,8 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
                                     char* mess,void *ctx)
 {
   int ierr,rank;
+
+  PetscFunctionBegin;
   if (!fun)  fun = "unknownfunction";
   if (!dir)  dir = " ";
   if (!mess) mess = " ";
@@ -328,5 +332,5 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
   if (ierr) { /* hopeless so get out */
     exit(num);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }

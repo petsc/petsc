@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.31 1997/07/18 19:10:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.32 1997/08/22 15:17:50 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -29,13 +29,13 @@ static char vcid[] = "$Id: snesut.c,v 1.31 1997/07/18 19:10:14 bsmith Exp bsmith
 @*/
 int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
 {
+  PetscFunctionBegin;
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS)
     PetscPrintf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);
   else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
-    PetscPrintf(snes->comm,
-     "iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);
+    PetscPrintf(snes->comm,"iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);
   else SETERRQ(1,0,"Unknown method class");
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------- */
 #undef __FUNC__  
@@ -49,34 +49,28 @@ int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
 */
 int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
 {
+  PetscFunctionBegin;
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     if (fgnorm > 1.e-9) {
       PetscPrintf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);
-    }
-    else if (fgnorm > 1.e-11){
+    } else if (fgnorm > 1.e-11){
       PetscPrintf(snes->comm, "iter = %d, SNES Function norm %5.3e \n",its,fgnorm);
-    }
-    else {
+    } else {
       PetscPrintf(snes->comm, "iter = %d, SNES Function norm < 1.e-11\n",its);
     }
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     if (fgnorm > 1.e-9) {
       PetscPrintf(snes->comm,
-       "iter = %d, SNES Function value %g, Gradient norm %g \n",
-       its,snes->fc,fgnorm);
-    }
-    else if (fgnorm > 1.e-11) {
+       "iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);
+    } else if (fgnorm > 1.e-11) {
       PetscPrintf(snes->comm,
-        "iter = %d, SNES Function value %g, Gradient norm %5.3e \n",
-        its,snes->fc,fgnorm);
-    }
-    else {
+        "iter = %d, SNES Function value %g, Gradient norm %5.3e \n",its,snes->fc,fgnorm);
+    } else {
       PetscPrintf(snes->comm,
-        "iter = %d, SNES Function value %g, Gradient norm < 1.e-11\n",
-        its,snes->fc);
+        "iter = %d, SNES Function value %g, Gradient norm < 1.e-11\n",its,snes->fc);
     }
   } else SETERRQ(1,0,"Unknown method class");
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------- */
 #undef __FUNC__  
@@ -114,37 +108,38 @@ $           set with SNESSetTolerances()
 @*/
 int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
 {
+  PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
      SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
   /* Note:  Reserve return code 1, -1 for compatibility with SNESConverged_EQ_TR */
   if (fnorm != fnorm) {
     PLogInfo(snes,"SNES:Failed to converged, function norm is NaN\n");
-    return -3;
+    PetscFunctionReturn(-3);
   }
   if (fnorm <= snes->ttol) {
     PLogInfo(snes,
     "SNES:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
-    return 4;
+    PetscFunctionReturn(4);
   }
 
   if (fnorm < snes->atol) {
     PLogInfo(snes,
       "SNES: Converged due to function norm %g < %g\n",fnorm,snes->atol);
-    return 2;
+    PetscFunctionReturn(2);
   }
   if (pnorm < snes->xtol*(xnorm)) {
     PLogInfo(snes,
       "SNES: Converged due to small update length: %g < %g * %g\n",
        pnorm,snes->xtol,xnorm);
-    return 3;
+    PetscFunctionReturn(3);
   }
   if (snes->nfuncs > snes->max_funcs) {
     PLogInfo(snes,"SNES: Exceeded maximum number of function evaluations: %d > %d\n",
       snes->nfuncs, snes->max_funcs );
-    return -2;
+    PetscFunctionReturn(-2);
   }  
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
@@ -172,8 +167,9 @@ int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *d
 @*/
 int SNES_KSP_SetConvergenceTestEW(SNES snes)
 {
+  PetscFunctionBegin;
   snes->ksp_ewconv = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -215,6 +211,8 @@ int SNES_KSP_SetParametersEW(SNES snes,int version,double rtol_0,
                              double alpha2,double threshold)
 {
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
+
+  PetscFunctionBegin;
   if (!kctx) SETERRQ(1,0,"No context");
   if (version != PETSC_DEFAULT)   kctx->version = version;
   if (rtol_0 != PETSC_DEFAULT)    kctx->rtol_0 = rtol_0;
@@ -235,7 +233,7 @@ int SNES_KSP_SetParametersEW(SNES snes,int version,double rtol_0,
     "1.0 < alpha <= 2.0\n");
   if (kctx->version != 1 && kctx->version !=2) SETERRQ(1,0,
      "Only versions 1 and 2 are supported");
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -245,8 +243,9 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
   double rtol, stol;
   int    ierr;
-  if (!kctx) 
-    SETERRQ(1,0,"No context");
+
+  PetscFunctionBegin;
+  if (!kctx) SETERRQ(1,0,"No context");
   if (snes->iter == 1) {
     rtol = kctx->rtol_0;
   } else {
@@ -259,8 +258,7 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
       rtol = kctx->gamma * pow(snes->norm/kctx->norm_last,kctx->alpha);
       stol = kctx->gamma * pow(kctx->rtol_last,kctx->alpha);
       if (stol > kctx->threshold) rtol = PetscMax(rtol,stol);
-    } else SETERRQ(1,0,
-     "Only versions 1 or 2 are supported");
+    } else SETERRQ(1,0,"Only versions 1 or 2 are supported");
   }
   rtol = PetscMin(rtol,kctx->rtol_max);
   kctx->rtol_last = rtol;
@@ -269,7 +267,7 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
      snes->iter,kctx->version,rtol);
   ierr = KSPSetTolerances(ksp,rtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRQ(ierr);
   kctx->norm_last = snes->norm;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -280,13 +278,15 @@ int SNES_KSP_EW_Converged_Private(KSP ksp,int n,double rnorm,void *ctx)
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
   int                 convinfo;
 
+  PetscFunctionBegin;
   if (!kctx) SETERRQ(1,0,"No convergence context");
   if (n == 0) SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);
   convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
   kctx->lresid_last = rnorm;
-  if (convinfo) 
+  if (convinfo) {
     PLogInfo(snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
-  return convinfo;
+  }
+  PetscFunctionReturn(convinfo);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sda2.c,v 1.8 1997/02/07 23:31:26 bsmith Exp balay $";
+static char vcid[] = "$Id: sda2.c,v 1.9 1997/07/09 21:01:25 balay Exp bsmith $";
 #endif
 /*
     Simplified interface to PETSC DA (distributed array) object. 
@@ -45,6 +45,7 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   int        argc = 0;
 
   PetscInitialize(&argc,&args,0,0);
+  PetscFunctionBegin;
 
   *sda = PetscNew(struct _SDA); CHKPTRQ(*sda);
   ierr = DACreate1d(comm,wrap,M,w,s,lc,&da);CHKERRQ(ierr);
@@ -72,7 +73,7 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   ierr = DAGetGlobalIndices(da,&ntmp,&idx); CHKERRQ(ierr);
   PetscFree(idx);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -113,6 +114,7 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   int        argc = 0;
 
   PetscInitialize(&argc,&args,0,0);
+  PetscFunctionBegin;
 
   *sda = PetscNew(struct _SDA); CHKPTRQ(*sda);
   ierr = DACreate2d(comm,wrap,stencil_type,M,N,m,n,w,s,lx,ly,&da);CHKERRQ(ierr);
@@ -140,7 +142,7 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = DAGetGlobalIndices(da,&ntmp,&idx); CHKERRQ(ierr);
   PetscFree(idx);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -181,6 +183,7 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
   int        argc = 0;
 
   PetscInitialize(&argc,&args,0,0);
+  PetscFunctionBegin;
 
   *sda = PetscNew(struct _SDA); CHKPTRQ(*sda);
   ierr = DACreate3d(comm,wrap,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
@@ -208,7 +211,7 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
   ierr = DAGetGlobalIndices(da,&ntmp,&idx); CHKERRQ(ierr);
   PetscFree(idx);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -219,6 +222,7 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
 @*/
 int SDADestroy(SDA sda)
 {
+  PetscFunctionBegin;
   /*
      This doesn't properly distroy these objects, but since 
     I have already illegally freed parts of the objects, I 
@@ -228,7 +232,7 @@ int SDADestroy(SDA sda)
   PetscFree(sda->lvec);
   PetscFree(sda->da);
   PetscFree(sda);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -254,10 +258,11 @@ int SDALocalToLocalBegin(SDA sda,Scalar *g, InsertMode mode,Scalar *l)
   DA  da = sda->da;
   Vec gvec = sda->gvec,lvec = sda->lvec;
 
+  PetscFunctionBegin;
   ierr = VecPlaceArray(gvec,g);
   ierr = VecPlaceArray(lvec,l);
   ierr = DALocalToLocalBegin(da,gvec,mode,lvec); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -283,10 +288,11 @@ int SDALocalToLocalEnd(SDA sda,Scalar *g, InsertMode mode,Scalar *l)
   DA  da = sda->da;
   Vec gvec = sda->gvec,lvec = sda->lvec;
 
+  PetscFunctionBegin;
   ierr = VecPlaceArray(gvec,g);
   ierr = VecPlaceArray(lvec,l);
   ierr = DALocalToLocalEnd(da,gvec,mode,lvec); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
  
 /*@C
@@ -311,7 +317,11 @@ $    n and p are optional (used for 2D and 3D problems)
 @*/
 int SDAGetCorners(SDA da,int *x,int *y,int *z,int *m, int *n, int *p)
 {
-  return DAGetCorners(da->da,x,y,z,m,n,p);
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = DAGetCorners(da->da,x,y,z,m,n,p);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -336,7 +346,11 @@ $    n and p are optional (used for 2D and 3D problems)
 @*/
 int SDAGetGhostCorners(SDA da,int *x,int *y,int *z,int *m, int *n, int *p)
 {
-  return DAGetGhostCorners(da->da,x,y,z,m,n,p);
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = DAGetGhostCorners(da->da,x,y,z,m,n,p);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.16 1996/09/30 20:29:51 curfman Exp balay $ */
+/* $Id: daimpl.h,v 1.17 1997/05/23 16:18:23 balay Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -30,6 +30,8 @@ struct _p_DA {
                                        proc; intended for internal use only */
   DF             dfshell;           /* discrete function shell */
   AO             ao;                /* application ordering context */
+
+  ISLocalToGlobalMapping ltogmap;      /* local to global mapping for associated vectors */
 };
 
 /*

@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.9 1997/04/10 00:01:45 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.10 1997/07/09 20:52:08 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests catching of floating point exceptions.\n\n";
 
 #include "petsc.h"
-#include <stdio.h>
 
 int CreateError(double x)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.38 1997/08/22 15:25:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.39 1997/10/01 22:46:48 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -35,8 +35,9 @@ struct _p_Viewer {
 @*/
 int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 {
+  PetscFunctionBegin;
   *fdes = viewer->fdes;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -57,8 +58,9 @@ int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 @*/
 int ViewerBinaryGetInfoPointer(Viewer viewer,FILE **file)
 {
+  PetscFunctionBegin;
   *file = viewer->fdes_info;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -67,12 +69,14 @@ int ViewerDestroy_BinaryFile(PetscObject obj)
 {
   int    rank;
   Viewer v = (Viewer) obj;
+
+  PetscFunctionBegin;
   MPI_Comm_rank(v->comm,&rank);
   if (!rank) close(v->fdes);
   if (!rank && v->fdes_info) fclose(v->fdes_info);
   PLogObjectDestroy(obj);
   PetscHeaderDestroy(obj);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -104,6 +108,7 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
   int    rank;
   Viewer v;
 
+  PetscFunctionBegin;
   PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,BINARY_FILE_VIEWER,comm,ViewerDestroy,0);
   PLogObjectCreate(v);
   v->destroy = ViewerDestroy_BinaryFile;
@@ -121,7 +126,7 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
     } 
     else if (type == BINARY_RDONLY) {
       if ((v->fdes = open(name,O_RDONLY|O_BINARY,0)) == -1) {
-      SETERRQ(1,0,"Cannot open file for reading");
+        SETERRQ(1,0,"Cannot open file for reading");
       }
     }
     else if (type == BINARY_WRONLY) {
@@ -137,7 +142,7 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
     } 
     else if (type == BINARY_RDONLY) {
       if ((v->fdes = open(name,O_RDONLY,0)) == -1) {
-      SETERRQ(1,0,"Cannot open file for reading");
+        SETERRQ(1,0,"Cannot open file for reading");
       }
     }
     else if (type == BINARY_WRONLY) {
@@ -159,10 +164,10 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
     v->fdes_info = fopen(infoname,"r");
     PetscFree(infoname);
   }
-#if defined(PETSC_LOG)
+#if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodebug.c,v 1.23 1997/09/19 22:15:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.24 1997/09/19 22:15:42 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -24,11 +24,13 @@ int AODestroy_Basic(PetscObject obj)
 {
   AO       ao = (AO) obj;
   AO_Basic *aodebug = (AO_Basic *) ao->data;
+
+  PetscFunctionBegin;
   PetscFree(aodebug->app);
   PetscFree(ao->data); 
   PLogObjectDestroy(ao);
   PetscHeaderDestroy(ao);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -41,7 +43,8 @@ int AOView_Basic(PetscObject obj,Viewer viewer)
   FILE        *fd;
   AO_Basic    *aodebug = (AO_Basic*) ao->data;
 
-  MPI_Comm_rank(ao->comm,&rank); if (rank) return 0;
+  PetscFunctionBegin;
+  MPI_Comm_rank(ao->comm,&rank); if (rank) PetscFunctionReturn(0);
 
   if (!viewer) {
     viewer = VIEWER_STDOUT_SELF; 
@@ -56,7 +59,7 @@ int AOView_Basic(PetscObject obj,Viewer viewer)
       fprintf(fd,"%d   %d    %d\n",i,aodebug->app[i],aodebug->petsc[i]);
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -66,10 +69,11 @@ int AOPetscToApplication_Basic(AO ao,int n,int *ia)
   int      i;
   AO_Basic *aodebug = (AO_Basic *) ao->data;
 
+  PetscFunctionBegin;
   for ( i=0; i<n; i++ ) {
     if (ia[i] >= 0) {ia[i] = aodebug->app[ia[i]];}
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -79,10 +83,11 @@ int AOApplicationToPetsc_Basic(AO ao,int n,int *ia)
   int      i;
   AO_Basic *aodebug = (AO_Basic *) ao->data;
 
+  PetscFunctionBegin;
   for ( i=0; i<n; i++ ) {
     if (ia[i] >= 0) {ia[i] = aodebug->petsc[ia[i]];}
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 static struct _AOOps myops = {AOPetscToApplication_Basic,
@@ -116,6 +121,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   int       *lens,size,rank,N,i,flg1,ierr;
   int       *allpetsc,*allapp,*disp,ip,ia;
 
+  PetscFunctionBegin;
   *aoout = 0;
   PetscHeaderCreate(ao, _p_AO,AO_COOKIE,AO_BASIC,comm,AODestroy,AOView); 
   PLogObjectCreate(ao);
@@ -170,7 +176,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   ierr = OptionsHasName(PETSC_NULL,"-ao_view",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = AOView(ao,VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
 
-  *aoout = ao; return 0;
+  *aoout = ao; PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -197,6 +203,7 @@ int AOCreateBasicIS(MPI_Comm comm,IS isapp,IS ispetsc,AO *aoout)
 {
   int       *mypetsc,*myapp,ierr,napp,npetsc;
 
+  PetscFunctionBegin;
   ierr = ISGetSize(isapp,&napp); CHKERRQ(ierr);
   ierr = ISGetSize(ispetsc,&npetsc); CHKERRQ(ierr);
   if (napp != npetsc) SETERRQ(1,0,"Local IS lengths must match");
@@ -208,6 +215,6 @@ int AOCreateBasicIS(MPI_Comm comm,IS isapp,IS ispetsc,AO *aoout)
 
   ierr = ISRestoreIndices(isapp,&myapp); CHKERRQ(ierr);
   ierr = ISRestoreIndices(ispetsc,&mypetsc); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 

@@ -1,13 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.61 1997/09/08 15:03:01 gropp Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.62 1997/09/18 18:11:50 balay Exp bsmith $";
 #endif
 
-/* Include incase petscconf.h is used to pick up options/features */
 #include "petsc.h"
 
-/* 
-        Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
-*/
 #if defined(NEED_UTYPE_TYPEDEFS)
 /* Some systems have inconsistent include files that use but don't
    ensure that the following definitions are made */
@@ -18,7 +14,6 @@ typedef unsigned int    u_int;
 typedef unsigned long   u_long;
 #endif
 
-#include <stdio.h>
 #include <errno.h> 
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
@@ -110,12 +105,15 @@ static int ViewerDestroy_Matlab(PetscObject obj)
   locallinger.onoff = 1;
   locallinger.time  = 0;
 
-  if (setsockopt(viewer->port,SOL_SOCKET,SO_LINGER,(char*)&locallinger,sizeof(Linger))) 
+  PetscFunctionBegin;
+  if (setsockopt(viewer->port,SOL_SOCKET,SO_LINGER,(char*)&locallinger,sizeof(Linger))) {
     SETERRQ(1,0,"System error setting linger");
-  if (close(viewer->port)) 
+  }
+  if (close(viewer->port)) {
     SETERRQ(1,0,"System error closing socket");
+  }
   PetscHeaderDestroy(viewer);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*--------------------------------------------------------------*/
@@ -127,6 +125,7 @@ int SOCKCall_Private(char *hostname,int portnum)
   struct hostent     *hp;
   int                s = 0,flag = 1;
   
+  PetscFunctionBegin;
   if ( (hp=gethostbyname(hostname)) == NULL ) {
     perror("SEND: error gethostbyname: ");   
     SETERRQ(1,0,"system error open connection");
@@ -155,15 +154,14 @@ int SOCKCall_Private(char *hostname,int portnum)
       else if ( errno == ECONNREFUSED ) {
         /* fprintf(stderr,"SEND: forcefully rejected\n"); */
         sleep((unsigned) 1);
-      }
-      else {
+      } else {
         perror(NULL); SETERRQ(1,0,"system error");
       }
       flag = 1; close(s);
     } 
     else flag = 0;
   }
-  return(s);
+  PetscFunctionReturn(s);
 }
 
 #undef __FUNC__  
@@ -205,6 +203,7 @@ int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
   Viewer v;
   int    t,rank;
 
+  PetscFunctionBegin;
   if (port <= 0) port = DEFAULTPORT;
   PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,MATLAB_VIEWER,comm,ViewerDestroy,0);
   PLogObjectCreate(v);
@@ -216,7 +215,7 @@ int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
   v->destroy     = ViewerDestroy_Matlab;
   v->flush       = 0;
   *lab           = v;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 Viewer VIEWER_MATLAB_WORLD_PRIVATE = 0;
@@ -228,14 +227,15 @@ int ViewerInitializeMatlabWorld_Private()
   int  ierr,port = 5005,flag;
   char machine[128];
 
-  if (VIEWER_MATLAB_WORLD_PRIVATE) return 0;
+  PetscFunctionBegin;
+  if (VIEWER_MATLAB_WORLD_PRIVATE) PetscFunctionReturn(0);
   ierr = OptionsGetString(PETSC_NULL,"-viewer_matlab_machine",machine,128,&flag);CHKERRQ(ierr);
   if (!flag) {
     ierr = PetscGetHostName(machine,128); CHKERRQ(ierr);
   }
   ierr = OptionsGetInt(PETSC_NULL,"-viewer_matlab_port",&port,&flag); CHKERRQ(ierr);
   ierr = ViewerMatlabOpen(PETSC_COMM_WORLD,machine,port,&VIEWER_MATLAB_WORLD_PRIVATE); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -244,10 +244,11 @@ int ViewerDestroyMatlab_Private()
 {
   int ierr;
 
+  PetscFunctionBegin;
   if (VIEWER_MATLAB_WORLD_PRIVATE) {
     ierr = ViewerDestroy(VIEWER_MATLAB_WORLD_PRIVATE); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 #else /* defined (PARCH_nt) */
  
@@ -256,16 +257,19 @@ Viewer VIEWER_MATLAB_WORLD_PRIVATE = 0;
 
 int ViewerInitializeMatlabWorld_Private()
 { 
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
 {
-	return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 int ViewerDestroyMatlab_Private()
 {
-	return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 #endif
 

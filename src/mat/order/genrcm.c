@@ -47,6 +47,7 @@ int genrcm(int *neqns, int *xadj, int *adjncy,
 	    int *, int *, int *, int *, int *, int *);
     static int num;
 
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --xls;
     --mask;
@@ -77,11 +78,11 @@ int genrcm(int *neqns, int *xadj, int *adjncy,
 		1]);
 	num += ccsize;
 	if (num > *neqns) {
-	    return 0;
+	    PetscFunctionReturn(0);
 	}
 L200:
 	;
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

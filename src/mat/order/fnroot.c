@@ -42,6 +42,8 @@ int fnroot(int *root, int *xadj, int *adjncy,
     extern int rootls(int *, int *, int *, 
 	    int *, int *, int *, int *);
 /*       DETERMINE THE LEVEL STRUCTURE ROOTED AT ROOT. */
+
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --ls;
     --xls;
@@ -52,7 +54,7 @@ int fnroot(int *root, int *xadj, int *adjncy,
     rootls(root, &xadj[1], &adjncy[1], &mask[1], nlvl, &xls[1], &ls[1]);
     ccsize = xls[*nlvl + 1] - 1;
     if (*nlvl == 1 || *nlvl == ccsize) {
-	return 0;
+	PetscFunctionReturn(0);
     }
 /*       PICK A NODE WITH MINIMUM DEGREE FROM THE LAST LEVEL.*/
 L100:
@@ -87,12 +89,12 @@ L300:
 L400:
     rootls(root, &xadj[1], &adjncy[1], &mask[1], &nunlvl, &xls[1], &ls[1]);
     if (nunlvl <= *nlvl) {
-	return 0;
+	PetscFunctionReturn(0);
     }
     *nlvl = nunlvl;
     if (*nlvl < ccsize) {
 	goto L100;
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

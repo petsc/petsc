@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcregis.c,v 1.34 1997/07/09 20:52:24 balay Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.35 1997/08/22 15:12:25 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -43,6 +43,7 @@ extern int PCCreate_BGS(PC);
 @*/
 int PCRegisterAll()
 {
+  PetscFunctionBegin;
   PCRegisterAllCalled = 1;
 
   PCRegister(PCNONE         ,0, "none",       PCCreate_None);
@@ -57,7 +58,7 @@ int PCRegisterAll()
   PCRegister(PCICC          ,0, "icc",        PCCreate_ICC);
   PCRegister(PCASM          ,0, "asm",        PCCreate_ASM);
   PCRegister(PCBGS          ,0, "bgs",        PCCreate_BGS);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dclear.c,v 1.13 1997/07/09 20:57:34 balay Exp bsmith $";
+static char vcid[] = "$Id: dclear.c,v 1.14 1997/08/22 15:15:58 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -20,10 +20,14 @@ static char vcid[] = "$Id: dclear.c,v 1.13 1997/07/09 20:57:34 balay Exp bsmith 
 @*/
 int DrawClear(Draw draw)
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == DRAW_NULLWINDOW) return 0;
-  if (draw->ops.clear) return (*draw->ops.clear)(draw);
-  return 0;
+  if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
+  if (draw->ops.clear) {
+    ierr = (*draw->ops.clear)(draw);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -40,10 +44,14 @@ int DrawClear(Draw draw)
 @*/
 int DrawBOP( Draw draw )
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == DRAW_NULLWINDOW) return 0;
-  if (draw->ops.beginpage) return (*draw->ops.beginpage)(draw);
-  return 0;
+  if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
+  if (draw->ops.beginpage) {
+    ierr = (*draw->ops.beginpage)(draw);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 #undef __FUNC__  
 #define __FUNC__ "DrawEOP" 
@@ -59,9 +67,13 @@ int DrawBOP( Draw draw )
 @*/
 int DrawEOP( Draw draw )
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == DRAW_NULLWINDOW) return 0;
-  if (draw->ops.endpage) return (*draw->ops.endpage)(draw);
-  return 0;
+  if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
+  if (draw->ops.endpage) {
+    ierr =  (*draw->ops.endpage)(draw);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 

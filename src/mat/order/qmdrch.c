@@ -40,6 +40,9 @@ int qmdrch(int *root, int *xadj, int *adjncy,
 
 /*       LOOP THROUGH THE NEIGHBORS OF ROOT IN THE*/
 /*       QUOTIENT GRAPH.*/
+
+
+    PetscFunctionBegin;
     /* Parameter adjustments */
     --nbrhd;
     --rchset;
@@ -53,13 +56,13 @@ int qmdrch(int *root, int *xadj, int *adjncy,
     istrt = xadj[*root];
     istop = xadj[*root + 1] - 1;
     if (istop < istrt) {
-	return 0;
+	PetscFunctionReturn(0);
     }
     i__1 = istop;
     for (i = istrt; i <= i__1; ++i) {
 	nabor = adjncy[i];
 	if (nabor == 0) {
-	    return 0;
+	    PetscFunctionReturn(0);
 	}
 	if (marker[nabor] != 0) {
 	    goto L600;
@@ -105,6 +108,6 @@ L500:
 L600:
 	;
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.24 1997/09/24 21:44:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.25 1997/10/01 22:45:38 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -21,13 +21,14 @@ int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int 
 {
   int *work;
 
+  PetscFunctionBegin;
   work = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(work);  
   *seq = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(*seq);
 
   MINPACKdegr(&m,cja,cia,rja,ria,*seq,work);
 
   PetscFree(work);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -41,11 +42,12 @@ int MatFDColoringMinimumNumberofColors_Private(int m,int *ia,int *minc)
 {
   int i,c = 0;
 
+  PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
     c = PetscMax(c,ia[i+1]-ia[i]);
   }
   *minc = c;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ----------------------------------------------------------------------------*/
@@ -60,6 +62,7 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
   int        ncolors;
   PetscTruth done;
 
+  PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(1,0,"Ordering requires IJ");
@@ -81,7 +84,7 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 
   ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring); CHKERRQ(ierr);
   PetscFree(coloring);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ----------------------------------------------------------------------------*/
@@ -96,6 +99,7 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
   int        n1, none,ncolors;
   PetscTruth done;
 
+  PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(1,0,"Ordering requires IJ");
@@ -119,7 +123,7 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 
   ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring); CHKERRQ(ierr);
   PetscFree(coloring);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ----------------------------------------------------------------------------*/
@@ -134,6 +138,7 @@ int MatFDColoringID_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
   int        ncolors;
   PetscTruth done;
 
+  PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(1,0,"Ordering requires IJ");
@@ -157,7 +162,7 @@ int MatFDColoringID_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
   ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring); CHKERRQ(ierr);
 
   PetscFree(coloring);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -171,6 +176,7 @@ int MatColoring_Natural(Mat mat,MatColoring color, ISColoring *iscoloring)
   IS       *is;
   MPI_Comm comm;
 
+  PetscFunctionBegin;
   ierr = MatGetSize(mat,&N,&N); CHKERRQ(ierr);
   is  = (IS *) PetscMalloc( N*sizeof(IS*) ); CHKPTRQ(is); 
   *iscoloring       = (ISColoring) PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
@@ -189,7 +195,7 @@ int MatColoring_Natural(Mat mat,MatColoring color, ISColoring *iscoloring)
   }
   PetscObjectGetComm((PetscObject)mat,&comm);
   PetscCommDup_Private(comm,&(*iscoloring)->comm,&tag);
-  return 0;
+  PetscFunctionReturn(0);
 }
   
 /* ===========================================================================================*/
@@ -223,6 +229,7 @@ int MatColoringRegister(MatColoring name,MatColoring *oname,char *sname,int (*co
   int         ierr;
   static int  numberregistered = 0;
 
+  PetscFunctionBegin;
   if (!__MatColoringList) {
     ierr = NRCreate(&__MatColoringList); CHKERRQ(ierr);
   }
@@ -230,7 +237,7 @@ int MatColoringRegister(MatColoring name,MatColoring *oname,char *sname,int (*co
   if (name == COLORING_NEW) name = (MatColoring) ((int) COLORING_NEW + numberregistered++);
   if (oname) *oname = name;
   ierr = NRRegister(__MatColoringList,(int)name,sname,(int (*)(void*))color);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -244,12 +251,13 @@ int MatColoringRegister(MatColoring name,MatColoring *oname,char *sname,int (*co
 @*/
 int MatColoringRegisterDestroy()
 {
+  PetscFunctionBegin;
   if (__MatColoringList) {
     NRDestroy( __MatColoringList );
     __MatColoringList = 0;
   }
   MatColoringRegisterAllCalled = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -279,12 +287,13 @@ int MatGetColoringTypeFromOptions(char *prefix,MatColoring *type)
   char sbuf[50];
   int  ierr,flg;
   
+  PetscFunctionBegin;
   ierr = OptionsGetString(prefix,"-mat_coloring", sbuf, 50,&flg); CHKERRQ(ierr);
   if (flg) {
     if (!__MatColoringList) MatColoringRegisterAll();
     *type = (MatColoring)NRFindID( __MatColoringList, sbuf );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -303,9 +312,11 @@ int MatGetColoringTypeFromOptions(char *prefix,MatColoring *type)
 int MatColoringGetName(MatColoring meth,char **name)
 {
   int ierr;
+
+  PetscFunctionBegin;
   if (!__MatColoringList) {ierr = MatColoringRegisterAll(); CHKERRQ(ierr);}
    *name = NRFindName( __MatColoringList, (int)meth );
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 extern int MatAdjustForInodes(Mat,IS *,IS *);
@@ -346,6 +357,7 @@ int MatGetColoring(Mat mat,MatColoring type,ISColoring *iscoloring)
   int         ierr,flag;
   int         (*r)(Mat,MatColoring,ISColoring *);
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
@@ -365,6 +377,6 @@ int MatGetColoring(Mat mat,MatColoring type,ISColoring *iscoloring)
   if (flag) {
     ierr = ISColoringView(*iscoloring,VIEWER_STDOUT_((*iscoloring)->comm));CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
  

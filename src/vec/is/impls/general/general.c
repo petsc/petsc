@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.63 1997/09/26 02:17:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.64 1997/10/01 22:43:50 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -18,8 +18,12 @@ typedef struct {
 #define __FUNC__ "ISDuplicate_General" 
 int ISDuplicate_General(IS is, IS *newIS)
 {
+  int ierr;
   IS_General *sub = (IS_General *)is->data;
-  return ISCreateGeneral(is->comm, sub->n, sub->idx, newIS);
+
+  PetscFunctionBegin;
+  ierr = ISCreateGeneral(is->comm, sub->n, sub->idx, newIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -29,10 +33,11 @@ int ISDestroy_General(PetscObject obj)
   IS         is = (IS) obj;
   IS_General *is_general = (IS_General *) is->data;
 
+  PetscFunctionBegin;
   PetscFree(is_general->idx);
   PetscFree(is_general); 
   PLogObjectDestroy(is);
-  PetscHeaderDestroy(is); return 0;
+  PetscHeaderDestroy(is); PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -40,7 +45,9 @@ int ISDestroy_General(PetscObject obj)
 int ISGetIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General *) in->data;
-  *idx = sub->idx; return 0;
+
+  PetscFunctionBegin;
+  *idx = sub->idx; PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -48,10 +55,12 @@ int ISGetIndices_General(IS in,int **idx)
 int ISRestoreIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General *) in->data;
+
+  PetscFunctionBegin;
   if (*idx != sub->idx ) {
     SETERRQ(1,0,"Must restore with value from ISGetIndices()");
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -59,7 +68,9 @@ int ISRestoreIndices_General(IS in,int **idx)
 int ISGetSize_General(IS is,int *size)
 {
   IS_General *sub = (IS_General *)is->data;
-  *size = sub->n; return 0;
+
+  PetscFunctionBegin;
+  *size = sub->n; PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -69,6 +80,7 @@ int ISInvertPermutation_General(IS is, IS *isout)
   IS_General *sub = (IS_General *)is->data;
   int        i,ierr, *ii,n = sub->n,*idx = sub->idx;
 
+  PetscFunctionBegin;
   ii = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(ii);
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
@@ -76,7 +88,7 @@ int ISInvertPermutation_General(IS is, IS *isout)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,isout); CHKERRQ(ierr);
   ISSetPermutation(*isout);
   PetscFree(ii);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -89,6 +101,7 @@ int ISView_General(PetscObject obj, Viewer viewer)
   FILE        *fd;
   ViewerType  vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -115,7 +128,7 @@ int ISView_General(PetscObject obj, Viewer viewer)
     }
     PetscSynchronizedFlush(comm);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -125,10 +138,11 @@ int ISSort_General(IS is)
   IS_General *sub = (IS_General *)is->data;
   int        ierr;
 
-  if (sub->sorted) return 0;
+  PetscFunctionBegin;
+  if (sub->sorted) PetscFunctionReturn(0);
   ierr = PetscSortInt(sub->n, sub->idx); CHKERRQ(ierr);
   sub->sorted = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -136,8 +150,10 @@ int ISSort_General(IS is)
 int ISSorted_General(IS is, PetscTruth *flg)
 {
   IS_General *sub = (IS_General *)is->data;
+
+  PetscFunctionBegin;
   *flg = (PetscTruth) sub->sorted;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 static struct _ISOps myops = { ISGetSize_General,
@@ -173,6 +189,7 @@ int ISCreateGeneral(MPI_Comm comm,int n,int *idx,IS *is)
   IS         Nindex;
   IS_General *sub;
 
+  PetscFunctionBegin;
   PetscValidPointer(is);
   if (n < 0) SETERRQ(1,0,"length < 0");
   if (n) {PetscValidIntPointer(idx);}
@@ -205,7 +222,7 @@ int ISCreateGeneral(MPI_Comm comm,int n,int *idx,IS *is)
   if (flg) {
     ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm)); CHKERRQ(ierr);
   }
-  *is = Nindex; return 0;
+  *is = Nindex; PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.56 1997/07/09 20:52:24 balay Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.57 1997/08/22 15:12:25 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -7,7 +7,6 @@ static char vcid[] = "$Id: pcset.c,v 1.56 1997/07/09 20:52:24 balay Exp bsmith $
 
 #include "petsc.h"
 #include "src/pc/pcimpl.h"      /*I "pc.h" I*/
-#include <stdio.h>
 #include "src/sys/nreg.h"
 #include "sys.h"
 
@@ -49,8 +48,10 @@ $      (for instance, jacobi or bjacobi)
 int PCSetType(PC ctx,PCType type)
 {
   int ierr,(*r)(PC);
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,PC_COOKIE);
-  if (ctx->type == (int) type) return 0;
+  if (ctx->type == (int) type) PetscFunctionReturn(0);
 
   if (ctx->setupcalled) {
     if (ctx->destroy) ierr =  (*ctx->destroy)((PetscObject)ctx);
@@ -64,7 +65,7 @@ int PCSetType(PC ctx,PCType type)
   r =  (int (*)(PC))NRFindRoutine( __PCList, (int)type, (char *)0 );
   if (!r) {SETERRQ(1,0,"Unknown type");}
   if (ctx->data) PetscFree(ctx->data);
-  /* BUG-FIX [PETSC #974] */
+
   ctx->destroy      = ( int (*)(PetscObject) ) 0;
   ctx->view         = ( int (*)(PetscObject,Viewer) ) 0;
   ctx->apply        = ( int (*)(PC,Vec,Vec) ) 0;
@@ -82,7 +83,8 @@ int PCSetType(PC ctx,PCType type)
   ctx->applysymmetricright = ( int (*)(PC,Vec,Vec) ) 0;
   ctx->setuponblocks       = ( int (*)(PC) ) 0;
   ctx->modifysubmatrices   = ( int (*)(PC,int,IS*,IS*,Mat*,void*) ) 0;
-  return (*r)(ctx);
+  ierr = (*r)(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -115,11 +117,13 @@ int  PCRegister(PCType name,PCType *oname,char *sname,int (*create)(PC))
   int ierr;
   static int numberregistered = 0;
 
+  PetscFunctionBegin;
   if (name == PCNEW) name = (PCType) ((int) PCNEW + numberregistered++);
 
   if (oname) *oname = name;
   if (!__PCList) {ierr = NRCreate(&__PCList); CHKERRQ(ierr);}
-  return NRRegister( __PCList, (int) name, sname, (int (*)(void*)) create );
+  ierr = NRRegister( __PCList, (int) name, sname, (int (*)(void*)) create );CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -134,12 +138,13 @@ int  PCRegister(PCType name,PCType *oname,char *sname,int (*create)(PC))
 @*/
 int PCRegisterDestroy()
 {
+  PetscFunctionBegin;
   if (__PCList) {
     NRDestroy( __PCList );
     __PCList = 0;
   }
   PCRegisterAllCalled = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -165,13 +170,14 @@ int PCGetTypeFromOptions_Private(PC pc,PCType *method )
   int  ierr,flg;
   char sbuf[50];
 
+  PetscFunctionBegin;
   ierr = OptionsGetString( pc->prefix,"-pc_type", sbuf, 50,&flg );CHKERRQ(ierr);
   if (flg) {
     if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
     *method = (PCType)NRFindID( __PCList, sbuf );
-    return 1;
+    PetscFunctionReturn(1);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -192,10 +198,12 @@ int PCGetTypeFromOptions_Private(PC pc,PCType *method )
 int PCGetType(PC pc,PCType *meth,char **name)
 {
   int ierr;
+
+  PetscFunctionBegin;
   if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
   if (meth) *meth = (PCType) pc->type;
   if (name)  *name = NRFindName( __PCList, (int)pc->type );
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -214,6 +222,7 @@ int PCPrintTypes_Private(MPI_Comm comm,char *prefix,char *name)
   FuncList *entry;
   int      count = 0,ierr;
 
+  PetscFunctionBegin;
   if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
   entry = __PCList->head;
   PetscPrintf(comm," %s%s (one of)",prefix,name);
@@ -224,7 +233,7 @@ int PCPrintTypes_Private(MPI_Comm comm,char *prefix,char *name)
     if (count == 8) PetscPrintf(comm,"\n     ");
   }
   PetscPrintf(comm,"\n");
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -246,6 +255,7 @@ int PCSetFromOptions(PC pc)
   PCType method;
   int    ierr,flg;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
 
   if (PCGetTypeFromOptions_Private(pc,&method)) {
@@ -255,6 +265,8 @@ int PCSetFromOptions(PC pc)
   if (flg){
     PCPrintHelp(pc);
   }
-  if (pc->setfrom) return (*pc->setfrom)(pc);
-  return 0;
+  if (pc->setfrom) {
+    ierr = (*pc->setfrom)(pc);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }

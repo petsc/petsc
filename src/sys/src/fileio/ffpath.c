@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ffpath.c,v 1.10 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: ffpath.c,v 1.11 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -44,6 +44,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
   uid_t  uid;
   gid_t  gid;
 
+  PetscFunctionBegin;
   /* Setup default */
   PetscGetFullPath(defname,fname,MAXPATHLEN);
 
@@ -55,7 +56,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
     /* Check to see if the path is a valid regular FILE */
     if (PetscTestFile( path, mode, uid, gid )) {
       PetscStrcpy( fname, path );
-      return 1;
+      PetscFunctionReturn(1);
     }
     
     /* Make a local copy of path and mangle it */
@@ -89,7 +90,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
     PetscFree( senv );
   }
 
-  if (PetscTestFile( fname, mode, uid, gid )) return 1;
+  if (PetscTestFile( fname, mode, uid, gid ))   PetscFunctionReturn(1);
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }

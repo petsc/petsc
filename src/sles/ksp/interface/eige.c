@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eige.c,v 1.4 1997/07/09 20:50:16 balay Exp curfman $";
+static char vcid[] = "$Id: eige.c,v 1.5 1997/09/11 02:57:40 curfman Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -35,6 +35,7 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
   MPI_Comm comm;
   Scalar   *array,zero = 0.0,one = 1.0;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PetscValidPointer(mat);
   comm = ksp->comm;
@@ -78,7 +79,7 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
   ierr = VecDestroy(out); CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #include "pinclude/plapack.h"
@@ -121,6 +122,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
   int          m,row, nz, *cols;
   Scalar       *vals;
 
+  PetscFunctionBegin;
   ierr =  KSPComputeExplicitOperator(ksp,&BA); CHKERRQ(ierr);
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
@@ -158,7 +160,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
     double *work, *realpart;
     int    clen, idummy, lwork, *perm, zero;
 
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
     clen = n;
 #else
     clen = 2*n;
@@ -176,7 +178,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
        components of evalues separately.  But is this what we really want? */
     perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
 
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
     for ( i=0; i<n; i++ ) {
       realpart[i] = cwork[2*i];
       perm[i]     = i;
@@ -199,7 +201,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
 #endif
     PetscFree(perm); PetscFree(realpart); PetscFree(cwork);
   }
-#elif !defined(PETSC_COMPLEX)
+#elif !defined(USE_PETSC_COMPLEX)
   if (!rank) {
     Scalar *work,sdummy;
     double *realpart,*imagpart;
@@ -257,5 +259,5 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
     ierr = MatRestoreArray(BA,&array); CHKERRQ(ierr);
   }
   ierr = MatDestroy(BA); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }

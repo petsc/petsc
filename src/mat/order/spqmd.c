@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spqmd.c,v 1.22 1997/07/09 20:54:49 balay Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.23 1997/08/22 15:14:10 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -17,6 +17,7 @@ int MatOrder_QMD(Mat mat, MatReordering type, IS *row, IS *col)
   int        ierr, *ia,*ja,*perm;
   PetscTruth done; 
 
+  PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done); CHKERRQ(ierr);
   if (!done) SETERRQ(1,0,"Cannot get rows for matrix");
 
@@ -39,6 +40,6 @@ int MatOrder_QMD(Mat mat, MatReordering type, IS *row, IS *col)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,row); CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,col); CHKERRQ(ierr);
   PetscFree(perm);
-  return 0;
+  PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.30 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.31 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -45,12 +45,13 @@ struct _p_PetscRandom {
 @*/
 int PetscRandomDestroy(PetscRandom r)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
-  if (--r->refct > 0) return 0;
+  if (--r->refct > 0) PetscFunctionReturn(0);
 
   PLogObjectDestroy((PetscObject)r);
   PetscHeaderDestroy((PetscObject)r);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -75,8 +76,9 @@ $    PetscRandomDestroy(r);
 @*/
 int PetscRandomSetInterval(PetscRandom r,Scalar low,Scalar high)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   if (PetscReal(low) >= PetscReal(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
   if (PetscImaginary(low) >= PetscImaginary(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
 #else
@@ -85,7 +87,7 @@ int PetscRandomSetInterval(PetscRandom r,Scalar low,Scalar high)
   r->low   = low;
   r->width = high-low;
   r->iset  = PETSC_TRUE;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -147,6 +149,8 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;
   int      rank;
+
+  PetscFunctionBegin;
   *r = 0;
   if (type != RANDOM_DEFAULT && type != RANDOM_DEFAULT_REAL 
                              && type != RANDOM_DEFAULT_IMAGINARY)
@@ -160,7 +164,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   MPI_Comm_rank(comm,&rank);
   srand48(0x12345678+rank);
   *r = rr;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -188,8 +192,9 @@ $    PetscRandomDestroy(r);
 @*/
 int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   if (r->type == RANDOM_DEFAULT) {
     if (r->iset == PETSC_TRUE)
          *val = PetscReal(r->width)*drand48() + PetscReal(r->low) +
@@ -209,7 +214,7 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
   if (r->iset == PETSC_TRUE) *val = r->width * drand48() + r->low;
   else                       *val = drand48();
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #else
@@ -224,6 +229,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   PetscRandom rr;
   char   arch[10];
 
+  PetscFunctionBegin;
   *r = 0;
   if (type != RANDOM_DEFAULT) SETERRQ(PETSC_ERR_SUP,0,"Not for this random number type");
   PetscHeaderCreate(rr,_p_PetscRandom,PETSCRANDOM_COOKIE,type,comm,PetscRandomDestroy,0);
@@ -231,20 +237,21 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   *r = rr;
   PetscGetArchType(arch,10);
   PetscPrintf(comm,"PetscRandomCreate: Warning: Random number generator not set for machine %s; using fake random numbers.\n",arch);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscRandomGetValue"
 int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   *val = (0.5,0.5);
 #else
   *val = 0.5;
 #endif
-  return 0;
+  PetscFunctionReturn(0);
 }
 #endif
 

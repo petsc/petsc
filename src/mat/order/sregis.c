@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sregis.c,v 1.19 1997/07/09 20:54:49 balay Exp bsmith $";
+static char vcid[] = "$Id: sregis.c,v 1.20 1997/08/22 15:14:10 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"     /*I       "mat.h"   I*/
@@ -35,6 +35,8 @@ extern int MatOrder_Flow(Mat,MatReordering,IS*,IS*);
 int MatReorderingRegisterAll()
 {
   int           ierr;
+
+  PetscFunctionBegin;
   MatReorderingRegisterAllCalled = 1;
 
   ierr = MatReorderingRegister(ORDER_NATURAL,  0,"natural",MatOrder_Natural);CHKERRQ(ierr);
@@ -44,6 +46,6 @@ int MatReorderingRegisterAll()
   ierr = MatReorderingRegister(ORDER_QMD,      0,"qmd"    ,MatOrder_QMD);CHKERRQ(ierr);
   ierr = MatReorderingRegister(ORDER_ROWLENGTH,0,"rl"     ,MatOrder_RowLength);CHKERRQ(ierr);
   ierr = MatReorderingRegister(ORDER_FLOW,     0,"flow"   ,MatOrder_Flow);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 

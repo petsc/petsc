@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.44 1997/07/09 20:54:49 balay Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.45 1997/08/22 15:14:10 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -18,8 +18,12 @@ extern int MatOrder_Flow_SeqAIJ(Mat,MatReordering,IS *,IS *);
 #define __FUNC__ "MatOrder_Flow"
 int MatOrder_Flow(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   if (mat->type == MATSEQAIJ) {
-    return MatOrder_Flow_SeqAIJ(mat,type,irow,icol);
+    ierr = MatOrder_Flow_SeqAIJ(mat,type,irow,icol);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
   SETERRQ(1,0,"Cannot do default flow ordering for matrix type");
 }
@@ -32,6 +36,7 @@ int MatOrder_Natural(Mat mat,MatReordering type,IS *irow,IS *icol)
   MPI_Comm   comm;
   PetscTruth done;
 
+  PetscFunctionBegin;
   if (mat->type == MATMPIROWBS || mat->type == MATSEQBDIAG || mat->type == MATMPIBDIAG) {
     int start, end;
     /*
@@ -43,7 +48,7 @@ int MatOrder_Natural(Mat mat,MatReordering type,IS *irow,IS *icol)
     ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,icol); CHKERRQ(ierr);
     ierr = ISSetIdentity(*irow); CHKERRQ(ierr);
     ierr = ISSetIdentity(*icol); CHKERRQ(ierr);
-    return 0;
+    PetscFunctionReturn(0);
   }
     
   ierr = PetscObjectGetComm((PetscObject)mat,&comm); CHKERRQ(ierr);
@@ -70,7 +75,7 @@ int MatOrder_Natural(Mat mat,MatReordering type,IS *irow,IS *icol)
 
   ierr = ISSetIdentity(*irow); CHKERRQ(ierr);
   ierr = ISSetIdentity(*icol); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -85,6 +90,7 @@ int MatOrder_RowLength(Mat mat,MatReordering type,IS *irow,IS *icol)
   int        ierr,n,*ia,*ja,*permr,*lens,i;
   PetscTruth done;
 
+  PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done); CHKERRQ(ierr);
   if (!done) SETERRQ(1,0,"Cannot get rows for matrix");
 
@@ -101,7 +107,7 @@ int MatOrder_RowLength(Mat mat,MatReordering type,IS *irow,IS *icol)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,irow); CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,icol); CHKERRQ(ierr);
   PetscFree(lens);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -127,6 +133,7 @@ int  MatReorderingRegister(MatReordering name,MatReordering *out,char *sname,int
   int         ierr;
   static int  numberregistered = 0;
 
+  PetscFunctionBegin;
   if (name == ORDER_NEW) {
     name = (MatReordering) (ORDER_NEW + numberregistered++);
   }
@@ -136,7 +143,7 @@ int  MatReorderingRegister(MatReordering name,MatReordering *out,char *sname,int
     ierr = NRCreate(&__MatReorderingList); CHKERRQ(ierr);
   }
   ierr = NRRegister(__MatReorderingList,(int)name,sname,(int (*)(void*))order);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -150,12 +157,13 @@ int  MatReorderingRegister(MatReordering name,MatReordering *out,char *sname,int
 @*/
 int MatReorderingRegisterDestroy()
 {
+  PetscFunctionBegin;
   if (__MatReorderingList) {
     NRDestroy( __MatReorderingList );
     __MatReorderingList = 0;
   }
   MatReorderingRegisterAllCalled = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -188,12 +196,13 @@ int MatGetReorderingTypeFromOptions(char *prefix,MatReordering *type)
   char sbuf[50];
   int  ierr,flg;
   
+  PetscFunctionBegin;
   ierr = OptionsGetString(prefix,"-mat_order", sbuf, 50,&flg); CHKERRQ(ierr);
   if (flg) {
     if (!MatReorderingRegisterAllCalled) {ierr = MatReorderingRegisterAll();CHKERRQ(ierr);}
     *type = (MatReordering)NRFindID( __MatReorderingList, sbuf );
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -212,9 +221,11 @@ int MatGetReorderingTypeFromOptions(char *prefix,MatReordering *type)
 int MatReorderingGetName(MatReordering meth,char **name)
 {
   int ierr;
+
+  PetscFunctionBegin;
   if (!MatReorderingRegisterAllCalled) {ierr = MatReorderingRegisterAll(); CHKERRQ(ierr);}
    *name = NRFindName( __MatReorderingList, (int)meth );
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 extern int MatAdjustForInodes(Mat,IS *,IS *);
@@ -259,6 +270,7 @@ int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
   int         ierr,flg,mmat,nmat,mis;
   int         (*r)(Mat,MatReordering,IS*,IS*);
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
@@ -267,7 +279,7 @@ int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
     /*
        Dense matrices don't need the ordering
     */
-    *rperm = *cperm = 0; return 0;
+    *rperm = *cperm = 0; PetscFunctionReturn(0);
   }
 
   if (mat->M == 0) {
@@ -277,7 +289,7 @@ int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
     ierr = ISSetIdentity(*rperm); CHKERRQ(ierr);
     ierr = ISSetPermutation(*rperm); CHKERRQ(ierr);
     ierr = ISSetPermutation(*cperm); CHKERRQ(ierr);
-    return 0;
+    PetscFunctionReturn(0);
   }
 
 
@@ -322,7 +334,7 @@ int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
     ierr = MatDestroy(tmat);  CHKERRQ(ierr);
   }
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

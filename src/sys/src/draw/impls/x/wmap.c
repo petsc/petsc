@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wmap.c,v 1.17 1997/09/03 15:38:27 gropp Exp bsmith $";
+static char vcid[] = "$Id: wmap.c,v 1.18 1997/10/12 23:25:21 bsmith Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -19,6 +19,7 @@ int Xi_wait_map( Draw_X *XiWin)
   XEvent  event;
   int     w, h;
 
+  PetscFunctionBegin;
   /*
    This is a bug.  XSelectInput should be set BEFORE the window is mapped
   */
@@ -41,19 +42,19 @@ int Xi_wait_map( Draw_X *XiWin)
         XiWin->h  = h;
         break;
       case DestroyNotify:
-        return 1;
+        PetscFunctionReturn(1);
       case Expose:
-        return 0;
+        PetscFunctionReturn(0);
       /* else ignore event */
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 #else
 int dummy_wmap()
 {
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #endif

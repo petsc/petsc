@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.61 1997/07/09 20:53:01 balay Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.62 1997/08/22 15:12:49 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -38,23 +38,29 @@ $  -pc_eisenstat_diagonal_scaling
 int PCEisenstatUseDiagonalScaling(PC pc)
 {
   PC_Eisenstat *eis;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCEISENSTAT) return 0;
+  if (pc->type != PCEISENSTAT) PetscFunctionReturn(0);
 
   eis = (PC_Eisenstat *) pc->data;
   eis->usediag = 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PCMult_Eisenstat"
 static int PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 {
+  int          ierr;
   PC           pc;
   PC_Eisenstat *eis;
+
+  PetscFunctionBegin;
   MatShellGetContext(mat,(void **)&pc);
   eis = (PC_Eisenstat *) pc->data;
-  return MatRelax(eis->A,b,eis->omega,SOR_EISENSTAT,0.0,1,x);
+  ierr = MatRelax(eis->A,b,eis->omega,SOR_EISENSTAT,0.0,1,x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -64,9 +70,10 @@ static int PCApply_Eisenstat(PC pc,Vec x,Vec y)
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
   int          ierr;
 
+  PetscFunctionBegin;
   if (eis->usediag)  {ierr = VecPointwiseMult(x,eis->diag,y);CHKERRQ(ierr);}
   else               {ierr = VecCopy(x,y);  CHKERRQ(ierr);}
-  return 0; 
+  PetscFunctionReturn(0); 
 }
 
 /* this cheats and looks inside KSP to determine if nonzero initial guess*/
@@ -80,6 +87,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
   Vec          b,x;
   int          ierr;
 
+  PetscFunctionBegin;
   if (pc->mat != pc->pmat) SETERRQ(1,0,"cannot have different mat+pmat"); 
  
   /* swap shell matrix and true matrix */
@@ -104,7 +112,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
   /* modify b by (L + D)^{-1} */
   ierr =   MatRelax(eis->A,b,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
                                         SOR_FORWARD_SWEEP),0.0,1,b); CHKERRQ(ierr);  
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -114,6 +122,8 @@ static int PCPost_Eisenstat(PC pc,KSP ksp)
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
   Vec          x,b;
   int          ierr;
+
+  PetscFunctionBegin;
   KSPGetSolution(ksp,&x);
   ierr =   MatRelax(eis->A,x,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
                                  SOR_BACKWARD_SWEEP),0.0,1,x); CHKERRQ(ierr);
@@ -121,7 +131,7 @@ static int PCPost_Eisenstat(PC pc,KSP ksp)
   /* get back true b */
   KSPGetRhs(ksp,&b);
   VecCopy(eis->b,b);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -130,11 +140,13 @@ static int PCDestroy_Eisenstat(PetscObject obj)
 {
   PC           pc = (PC) obj;
   PC_Eisenstat *eis = ( PC_Eisenstat  *) pc->data; 
+
+  PetscFunctionBegin;
   if (eis->b) VecDestroy(eis->b);
   if (eis->shell) MatDestroy(eis->shell);
   if (eis->diag) VecDestroy(eis->diag);
   PetscFree(eis);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -144,6 +156,7 @@ static int PCSetFromOptions_Eisenstat(PC pc)
   double  omega;
   int     ierr,flg;
 
+  PetscFunctionBegin;
   ierr = OptionsGetDouble(pc->prefix,"-pc_eisenstat_omega",&omega,&flg); CHKERRQ(ierr);
   if (flg) {
     PCEisenstatSetOmega(pc,omega);
@@ -152,17 +165,18 @@ static int PCSetFromOptions_Eisenstat(PC pc)
   if (flg) {
     PCEisenstatUseDiagonalScaling(pc);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PCPrintHelp_Eisenstat"
 static int PCPrintHelp_Eisenstat(PC pc,char *p)
 {
+  PetscFunctionBegin;
   PetscPrintf(pc->comm," Options for PCEisenstat preconditioner:\n");
   PetscPrintf(pc->comm," %spc_eisenstat_omega omega: relaxation factor (0<omega<2)\n",p);
   PetscPrintf(pc->comm," %spc_eisenstat_diagonal_scaling\n",p);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -175,12 +189,13 @@ static int PCView_Eisenstat(PetscObject obj,Viewer viewer)
   int           ierr;
   ViewerType    vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"    Eisenstat: omega = %g\n",eis->omega);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -191,6 +206,7 @@ static int PCSetUp_Eisenstat(PC pc)
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
   Vec          diag;
 
+  PetscFunctionBegin;
   if (pc->setupcalled == 0) {
     ierr = MatGetSize(pc->mat,&M,&N); CHKERRA(ierr);
     ierr = MatGetLocalSize(pc->mat,&m,&n); CHKERRA(ierr);
@@ -199,18 +215,17 @@ static int PCSetUp_Eisenstat(PC pc)
     ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void*)PCMult_Eisenstat); 
            CHKERRQ(ierr);
   }
-  if (!eis->usediag) return 0;
+  if (!eis->usediag) PetscFunctionReturn(0);
   if (pc->setupcalled == 0) {
     ierr = VecDuplicate(pc->vec,&diag); CHKERRQ(ierr);
     PLogObjectParent(pc,diag);
-  }
-  else {
+  } else {
     diag = eis->diag;
   }
   ierr = MatGetDiagonal(pc->pmat,diag); CHKERRQ(ierr);
   ierr = VecReciprocal(diag); CHKERRQ(ierr);
   eis->diag = diag;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -218,6 +233,8 @@ static int PCSetUp_Eisenstat(PC pc)
 int PCCreate_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis = PetscNew(PC_Eisenstat); CHKPTRQ(eis);
+
+  PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_Eisenstat));
 
   pc->apply         = PCApply_Eisenstat;
@@ -235,7 +252,7 @@ int PCCreate_Eisenstat(PC pc)
   eis->b            = 0;
   eis->diag         = 0;
   eis->usediag      = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -268,13 +285,15 @@ $    -pc_type  sor  -pc_sor_symmetric
 int PCEisenstatSetOmega(PC pc,double omega)
 {
   PC_Eisenstat  *eis;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCEISENSTAT) return 0;
+  if (pc->type != PCEISENSTAT) PetscFunctionReturn(0);
   if (omega >= 2.0 || omega <= 0.0) SETERRQ(1,0,"Relaxation out of range");
 
   eis = (PC_Eisenstat *) pc->data;
   eis->omega = omega;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mhas.c,v 1.10 1997/07/09 20:53:23 balay Exp bsmith $";
+static char vcid[] = "$Id: mhas.c,v 1.11 1997/08/22 15:13:06 bsmith Exp bsmith $";
 #endif
 
 
@@ -31,8 +31,9 @@ static char vcid[] = "$Id: mhas.c,v 1.10 1997/07/09 20:53:23 balay Exp bsmith $"
 @*/
 int MatHasOperation(Mat mat,MatOperation op,PetscTruth *has)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (((void **)&mat->ops)[op]) {*has =  PETSC_TRUE;}
   else {*has = PETSC_FALSE;}
-  return 0;
+  PetscFunctionReturn(0);
 }

@@ -5,7 +5,6 @@
    fulfill most needs. 
  */
 
-#include <stdio.h>
 #include <math.h>
 #include "BSprivate.h"  /* BlockSolve include file */
 

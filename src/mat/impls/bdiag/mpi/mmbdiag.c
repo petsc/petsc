@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbdiag.c,v 1.27 1997/04/10 00:03:12 bsmith Exp balay $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.28 1997/07/09 20:54:42 balay Exp bsmith $";
 #endif
 
 /*
@@ -89,5 +89,5 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
 
   ierr = ISDestroy(tofrom); CHKERRQ(ierr);
   ierr = VecDestroy(gvec); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }

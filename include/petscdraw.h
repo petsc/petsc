@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.49 1997/10/03 17:17:14 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.50 1997/10/10 04:08:45 bsmith Exp bsmith $ */
 /*
   Interface to the graphics
 */
@@ -177,6 +177,7 @@ extern int DrawHistSetColor(DrawHist,int);
 */
 extern int ViewerDrawGetDraw(Viewer, Draw*);
 extern int ViewerDrawGetDrawLG(Viewer, DrawLG*);
+extern int ViewerDrawGetDrawAxis(Viewer, DrawAxis*);
 
 /* Mesh management routines */
 typedef struct _p_DrawMesh* DrawMesh;

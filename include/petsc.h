@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.181 1997/10/07 19:50:08 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.182 1997/10/07 20:11:07 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -172,7 +172,7 @@ extern int PetscObjectView(PetscObject,Viewer);
 
 typedef enum {PETSC_INT = 0, PETSC_DOUBLE = 1, PETSC_SHORT = 2, PETSC_FLOAT = 3,
               PETSC_DCOMPLEX = 4, PETSC_CHAR = 5} PetscDataType;
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
 #define PETSC_SCALAR PETSC_DCOMPLEX
 #else
 #define PETSC_SCALAR PETSC_DOUBLE

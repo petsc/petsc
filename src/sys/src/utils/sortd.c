@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortd.c,v 1.11 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: sortd.c,v 1.12 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -26,11 +26,12 @@ static int PetsciDqsort(double *v,int right)
   register double vl;
   double          tmp;
   
+  PetscFunctionBegin;
   if (right <= 1) {
       if (right == 1) {
 	  if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
       }
-      return 0;
+      PetscFunctionReturn(0);
   }
   SWAP(v[0],v[right/2],tmp);
   vl   = v[0];
@@ -41,7 +42,7 @@ static int PetsciDqsort(double *v,int right)
   SWAP(v[0],v[last],tmp);
   PetsciDqsort(v,last-1);
   PetsciDqsort(v+last+1,right-(last+1));
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -62,6 +63,7 @@ int PetscSortDouble(int n,double *v)
   register int    j, k;
   register double tmp, vk;
 
+  PetscFunctionBegin;
   if (n<8) {
     for (k=0; k<n; k++) {
 	vk = v[k];
@@ -73,8 +75,9 @@ int PetscSortDouble(int n,double *v)
 	}
     }
   }
-  else
+  else {
     PetsciDqsort( v, n-1 );
-  return 0;
+  }
+  PetscFunctionReturn(0);
 }
 

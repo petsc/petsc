@@ -1,7 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.10 1997/10/14 18:41:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.11 1997/10/14 20:50:52 bsmith Exp bsmith $";
 #endif
 
+#include "petsc.h"
 /*
     Provides a PETSc interface to PVODE. Alan Hindmarsh's parallel ODE
    solver.
@@ -34,6 +35,7 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
   MatStructure str = DIFFERENT_NONZERO_PATTERN;
 
   
+  PetscFunctionBegin;
   /* This allows use to construct preconditioners in-place if we like */
   ierr = MatSetUnfactored(Jac); CHKERRQ(ierr);
 
@@ -70,7 +72,7 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
   
   ierr = PCSetOperators(pc,Jac,Jac,str);CHKERRQ(ierr);
 
-  return(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -92,6 +94,7 @@ static int TSPSolve_PVode(integer N, real tn, N_Vector y,
   Vec      rr = cvode->w1, xx = cvode->w2;
   int      ierr;
 
+  PetscFunctionBegin;
   /*
       Make the PETSc work vectors rr and xx point to the arrays in the PVODE vectors 
   */
@@ -103,7 +106,7 @@ static int TSPSolve_PVode(integer N, real tn, N_Vector y,
   */
   ierr = PCApply(pc,rr,xx); CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -121,6 +124,7 @@ static void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
   Vec       tmpx = cvode->w1, tmpy = cvode->w2;
   int       ierr;
 
+  PetscFunctionBegin;
   /*
       Make the PETSc work vectors tmpx and tmpy point to the arrays in the PVODE vectors 
   */
@@ -152,6 +156,7 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
   int       ierr,i,max_steps = ts->max_steps,flag;
   double    t, tout;
 
+  PetscFunctionBegin;
   /* initialize the number of steps */
   *steps = -ts->steps;
   ierr   = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
@@ -186,7 +191,7 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
   *steps           += ts->steps;
   *time             = t;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*--------------------------------------------------------------------*/
@@ -198,6 +203,7 @@ static int TSDestroy_PVode(PetscObject obj )
   TS_PVode *cvode = (TS_PVode*) ts->data;
   int       ierr;
 
+  PetscFunctionBegin;
   if (cvode->pmat)   {ierr = MatDestroy(cvode->pmat);CHKERRQ(ierr);}
   if (cvode->pc)     {ierr = PCDestroy(cvode->pc); CHKERRQ(ierr);}
   if (cvode->update) {ierr = VecDestroy(cvode->update); CHKERRQ(ierr);}
@@ -206,7 +212,7 @@ static int TSDestroy_PVode(PetscObject obj )
   if (cvode->w1)     {ierr = VecDestroy(cvode->w1);CHKERRQ(ierr);}
   if (cvode->w2)     {ierr = VecDestroy(cvode->w2);CHKERRQ(ierr);}
   PetscFree(cvode);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -219,6 +225,7 @@ static int TSSetUp_PVode_Nonlinear(TS ts)
   int         ierr, M, locsize;
   machEnvType machEnv;
 
+  PetscFunctionBegin;
   /* get the vector size */
   ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
   ierr = VecGetLocalSize(ts->vec_sol,&locsize); CHKERRQ(ierr);
@@ -259,7 +266,7 @@ static int TSSetUp_PVode_Nonlinear(TS ts)
                                   NEWTON,SS,&cvode->reltol,
                                   &cvode->abstol,ts,NULL,FALSE,cvode->iopt,
                                   cvode->ropt,machEnv); CHKPTRQ(cvode->mem);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -272,6 +279,7 @@ static int TSSetFromOptions_PVode_Nonlinear(TS ts)
   int      ierr, flag;
   char     method[128];
 
+  PetscFunctionBegin;
   /*
      Allows user to set any of the PC options 
      -ts_pvode_type bdf or adams
@@ -294,7 +302,7 @@ static int TSSetFromOptions_PVode_Nonlinear(TS ts)
   }
   ierr = PCSetFromOptions(cvode->pc); CHKERRQ(ierr);
   
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -306,11 +314,12 @@ static int TSPrintHelp_PVode(TS ts,char *p)
   int      ierr;
   TS_PVode *cvode = (TS_PVode*) ts->data;
 
+  PetscFunctionBegin;
   PetscPrintf(ts->comm," Options for TSPVODE integrater:\n");
   PetscPrintf(ts->comm," -ts_pvode_type <bdf,adams>: integration approach",p);
 
   ierr = PCPrintHelp(cvode->pc);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -324,12 +333,13 @@ static int TSView_PVode(PetscObject obj,Viewer viewer)
   MPI_Comm comm;
   FILE     *fd;
 
+  PetscFunctionBegin;
   ierr = PetscObjectGetComm(obj,&comm); CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   PetscFPrintf(comm,fd,"PVode integrater does not use SNES!\n");
   ierr = PCView(cvode->pc,viewer); CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------------- */
@@ -340,6 +350,7 @@ int TSCreate_PVode(TS ts )
   TS_PVode *cvode;
   int      ierr;
 
+  PetscFunctionBegin;
   ts->type 	      = TS_PVODE;
   ts->destroy         = TSDestroy_PVode;
   ts->printhelp       = TSPrintHelp_PVode;
@@ -358,7 +369,7 @@ int TSCreate_PVode(TS ts )
   PLogObjectParent(ts,cvode->pc);
   ts->data = (void *) cvode;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -379,9 +390,10 @@ int TSPVodeSetType(TS ts, TSPVodeType type)
 {
   TS_PVode *cvode = (TS_PVode*) ts->data;
   
-  if (ts->type != TS_PVODE) return 0;
+  PetscFunctionBegin;
+  if (ts->type != TS_PVODE) PetscFunctionReturn(0);
   cvode->cvode_type = type;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -402,12 +414,13 @@ int TSPVodeGetPC(TS ts, PC *pc)
 { 
   TS_PVode *cvode = (TS_PVode*) ts->data;
 
+  PetscFunctionBegin;
   if (ts->type != TS_PVODE) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"TS must be of PVode type to extract the PC");
   }
   *pc = cvode->pc;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #else
@@ -417,7 +430,8 @@ int TSPVodeGetPC(TS ts, PC *pc)
 */
 int adummyfunction()
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #endif

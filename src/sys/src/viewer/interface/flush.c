@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: flush.c,v 1.10 1997/07/09 20:59:30 balay Exp bsmith $";
+static char vcid[] = "$Id: flush.c,v 1.11 1997/08/22 15:17:45 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"  /*I "petsc.h" I*/
@@ -24,9 +24,14 @@ struct _p_Viewer {
 @*/
 int ViewerFlush(Viewer v)
 {
+  int ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (v->flush) return (*v->flush)(v);
-  return 0;
+  if (v->flush) {
+    ierr = (*v->flush)(v);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 

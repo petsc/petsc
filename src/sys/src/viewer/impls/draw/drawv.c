@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.20 1997/08/22 15:15:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.21 1997/10/10 04:04:31 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -12,18 +12,23 @@ int ViewerDestroy_Draw(PetscObject obj)
   int    ierr;
   Viewer v = (Viewer) obj;
 
-  ierr = DrawLGDestroy(v->drawlg); CHKERRQ(ierr);
+  PetscFunctionBegin;
+  if (v->drawaxis) {ierr = DrawAxisDestroy(v->drawaxis); CHKERRQ(ierr);}
+  if (v->drawlg)   {ierr = DrawLGDestroy(v->drawlg); CHKERRQ(ierr);}
   ierr = DrawDestroy(v->draw); CHKERRQ(ierr);
   PLogObjectDestroy(obj);
   PetscHeaderDestroy(obj);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerFlush_Draw" 
 int ViewerFlush_Draw(Viewer v)
 {
-  return DrawSynchronizedFlush(v->draw);
+  int ierr;
+  PetscFunctionBegin;
+  ierr = DrawSynchronizedFlush(v->draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -41,16 +46,17 @@ int ViewerFlush_Draw(Viewer v)
 
 .keywords: viewer, draw, get
 
-.seealso: ViewerDrawGetLG()
+.seealso: ViewerDrawGetLG(), ViewerDrawGetAxis()
 @*/
 int ViewerDrawGetDraw(Viewer v, Draw *draw)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VIEWER_COOKIE);
   if (v->type != DRAW_VIEWER) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be draw type viewer");
   }
   *draw = v->draw;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -69,15 +75,54 @@ int ViewerDrawGetDraw(Viewer v, Draw *draw)
 
 .keywords: viewer, draw, get, line graph
 
-.seealso: ViewerDrawGetDraw()
+.seealso: ViewerDrawGetDraw(), ViewerDrawGetAxis()
 @*/
 int ViewerDrawGetDrawLG(Viewer v, DrawLG *drawlg)
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VIEWER_COOKIE);
   if (v->type != DRAW_VIEWER) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be draw type viewer");
   }
+  if (!v->drawlg) {
+    ierr = DrawLGCreate(v->draw,1,&v->drawlg);CHKERRQ(ierr);
+    PLogObjectParent(v,v->drawlg);
+  }
   *drawlg = v->drawlg;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "ViewerDrawGetDrawAxis" 
+/*@C
+    ViewerDrawGetDrawAxis - Returns DrawAxis object from Viewer object.
+    This DrawAxis object may then be used to perform graphics using 
+    DrawAxisXXX() commands.
+
+    Input Parameter:
+.   viewer - the viewer (created with ViewerDrawOpenX()
+
+    Ouput Parameter:
+.   drawaxis - the draw axis object
+
+
+.keywords: viewer, draw, get, line graph
+
+.seealso: ViewerDrawGetDraw(), ViewerDrawGetLG()
+@*/
+int ViewerDrawGetDrawAxis(Viewer v, DrawAxis *drawaxis)
+{
+  int ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VIEWER_COOKIE);
+  if (v->type != DRAW_VIEWER) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be draw type viewer");
+  }
+  if (!v->drawaxis) {
+    ierr = DrawAxisCreate(v->draw,&v->drawaxis);CHKERRQ(ierr);
+    PLogObjectParent(v,v->drawaxis);
+  }
+  *drawaxis = v->drawaxis;
+  PetscFunctionReturn(0);
+}

@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.10 1997/09/26 02:17:56 bsmith Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.11 1997/09/26 15:14:40 balay Exp bsmith $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
 a file, then forms a vector.\n\n";
 
-#include <stdio.h>
 #include "vec.h"
 #include "pinclude/pviewer.h"
 

@@ -1,13 +1,7 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sendsparse.c,v 1.19 1997/08/22 15:17:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sendsparse.c,v 1.20 1997/09/26 02:20:46 bsmith Exp bsmith $";
 #endif
-/* This is part of the MatlabSockettool package. Here are the routines
-   to send a sparse matrix to Matlab.
 
-
-        Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
-*/
-#include <stdio.h>
 #include "src/viewer/impls/matlab/matlab.h"
 
 /*--------------------------------------------------------------*/
@@ -40,11 +34,13 @@ $     MatView(Mat matrix,Viewer viewer)
 int ViewerMatlabPutSparse_Private(Viewer vw,int m,int n,int nnz,Scalar *v,int *r,int *c)
 {
   int ierr,t = vw->port,type = SPARSEREAL,value;
+
+  PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0); CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,&m,1,PETSC_INT,0); CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,&n,1,PETSC_INT,0); CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,&nnz,1,PETSC_INT,0); CHKERRQ(ierr);
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
   value = 0;
 #else
   value = 1;
@@ -53,6 +49,6 @@ int ViewerMatlabPutSparse_Private(Viewer vw,int m,int n,int nnz,Scalar *v,int *r
   ierr = PetscBinaryWrite(t,v,nnz,PETSC_DOUBLE,0); CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,r,m+1,PETSC_INT,0); CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,c,nnz,PETSC_INT,0); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.51 1997/08/22 15:20:23 bsmith Exp curfman $ */
+/* $Id: petschead.h,v 1.52 1997/09/07 19:13:17 curfman Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -80,7 +80,7 @@ extern int PetscHeaderDestroy_Private(PetscObject);
 */
 extern void *PetscLow,*PetscHigh;
 
-#if defined(PETSC_BOPT_g) && !defined(PETSC_INSIGHT)
+#if defined(USE_PETSC_BOPT_g) && !defined(PETSC_INSIGHT)
 #define PetscValidHeaderSpecific(h,ck)                                        \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null Object");}                  \
   if ((unsigned long)h & (unsigned long)3) {                                  \

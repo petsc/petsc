@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tfqmr.c,v 1.31 1997/01/06 20:22:49 balay Exp balay $";
+static char vcid[] = "$Id: tfqmr.c,v 1.32 1997/07/09 20:51:06 balay Exp bsmith $";
 #endif
 
 /*                       
@@ -11,7 +11,6 @@ static char vcid[] = "$Id: tfqmr.c,v 1.31 1997/01/06 20:22:49 balay Exp balay $"
     of inner products.
 */
 
-#include <stdio.h>
 #include <math.h>
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
@@ -21,10 +20,13 @@ static char vcid[] = "$Id: tfqmr.c,v 1.31 1997/01/06 20:22:49 balay Exp balay $"
 static int KSPSetUp_TFQMR(KSP ksp)
 {
   int ierr;
-  if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,0,"no symmetric preconditioning for KSPTFQMR");}
+
+  PetscFunctionBegin;
+  if (ksp->pc_side == PC_SYMMETRIC){
+    SETERRQ(2,0,"no symmetric preconditioning for KSPTFQMR");
+  }
   ierr = KSPDefaultGetWork( ksp,  10 ); CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -36,6 +38,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   double    *history,dp,dpold,w,dpest,tau,psi,cm;
   Vec       X,B,V,P,R,RP,T,T1,Q,U, D, BINVF, AUQ;
 
+  PetscFunctionBegin;
   maxit   = ksp->max_it;
   history = ksp->residual_history;
   hist_len= ksp->res_hist_size;
@@ -58,7 +61,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
 
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
-  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; return 0;}
+  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,dp);
 
   /* Make the initial Rp == R */
@@ -128,13 +131,14 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   ierr = KSPUnwindPreconditioner(ksp,X,T); CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1);
   else          *its = i + 1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_TFQMR"
 int KSPCreate_TFQMR(KSP ksp)
 {
+  PetscFunctionBegin;
   ksp->data                 = (void *) 0;
   ksp->type                 = KSPTFQMR;
   ksp->pc_side              = PC_LEFT;
@@ -147,5 +151,5 @@ int KSPCreate_TFQMR(KSP ksp)
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
   ksp->view                 = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }

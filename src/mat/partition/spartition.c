@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spartition.c,v 1.1 1997/09/24 20:32:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spartition.c,v 1.2 1997/10/01 22:45:42 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -31,11 +31,12 @@ int MatPartitioningRegisterAll()
 {
   int         ierr;
 
+  PetscFunctionBegin;
   MatPartitioningRegisterAllCalled = 1;  
   ierr = MatPartitioningRegister(PARTITIONING_CURRENT,0,"natural",MatPartitioning_Current);CHKERRQ(ierr);
 
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

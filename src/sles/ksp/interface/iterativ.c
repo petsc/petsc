@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.62 1997/08/22 15:11:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.63 1997/09/11 03:03:04 curfman Exp bsmith $";
 #endif
 
 /*
@@ -21,9 +21,13 @@ static char vcid[] = "$Id: iterativ.c,v 1.62 1997/08/22 15:11:05 bsmith Exp curf
  */
 int KSPDefaultFreeWork( KSP ksp )
 {
+  int ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (ksp->work)  return VecDestroyVecs(ksp->work,ksp->nwork);
-  return 0;
+  if (ksp->work)  {
+    ierr = VecDestroyVecs(ksp->work,ksp->nwork); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -55,6 +59,7 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
   double emin,emax,c;
   int    ierr;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (!ksp->calc_sings) {
     PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm);
@@ -64,7 +69,7 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
     c = emax/emin;
     PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e %% max %g min %g max/min %g\n",n,rnorm,emax,emin,c);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -86,7 +91,9 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 @*/
 int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
-  PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm); return 0;
+  PetscFunctionBegin;
+  PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm); 
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -124,12 +131,13 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
   double       scnorm;
   
 
+  PetscFunctionBegin;
   ierr = VecDuplicate(ksp->vec_rhs,&work); CHKERRQ(ierr);
   ierr = KSPBuildResidual(ksp,0,work,&resid); CHKERRQ(ierr);
   ierr = VecNorm(resid,NORM_2,&scnorm); CHKERRQ(ierr);
   VecDestroy(work);
   PetscPrintf(ksp->comm,"%d KSP preconditioned resid norm %14.12e true resid norm %14.12e\n",n,rnorm,scnorm); 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -143,6 +151,7 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 */
 int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 {
+  PetscFunctionBegin;
   if (fnorm > 1.e-9) {
     PetscPrintf(ksp->comm, "iter = %d, KSP Residual norm %g \n",its,fnorm);
   }
@@ -152,7 +161,7 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
   else {
     PetscPrintf(ksp->comm, "iter = %d, KSP Residual norm < 1.e-11\n",its);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -192,14 +201,15 @@ $        rnorm_0 = initial residual norm
 @*/
 int KSPDefaultConverged(KSP ksp,int n,double rnorm,void *dummy)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if ( n == 0 ) {
     ksp->ttol   = PetscMax(ksp->rtol*rnorm,ksp->atol);
     ksp->rnorm0 = rnorm;
   }
-  if ( rnorm <= ksp->ttol )      return 1;
-  if ( rnorm >= ksp->divtol*ksp->rnorm0 || rnorm != rnorm) return -1;
-  return(0);
+  if ( rnorm <= ksp->ttol )                                PetscFunctionReturn(1);
+  if ( rnorm >= ksp->divtol*ksp->rnorm0 || rnorm != rnorm) PetscFunctionReturn(-1);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -221,6 +231,7 @@ int KSPDefaultConverged(KSP ksp,int n,double rnorm,void *dummy)
 int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
 {
   int ierr;
+  PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {
     if (ksp->B) {
       if (v) {ierr = PCApply(ksp->B,ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
@@ -245,7 +256,7 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
     if (v) {ierr = VecCopy(ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
     else { *V = ksp->vec_sol; }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -273,11 +284,12 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   Scalar       mone = -1.0;
   Mat          Amat, Pmat;
 
+  PetscFunctionBegin;
   PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);
   ierr = KSPBuildSolution(ksp,t,&T); CHKERRQ(ierr);
   ierr = MatMult(Amat, t, v ); CHKERRQ(ierr);
   ierr = VecAYPX(&mone, ksp->vec_rhs, v ); CHKERRQ(ierr);
-  *V = v; return 0;
+  *V = v; PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -295,11 +307,13 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 int  KSPDefaultGetWork( KSP ksp, int nw )
 {
   int ierr;
+
+  PetscFunctionBegin;
   if (ksp->work) KSPDefaultFreeWork( ksp );
   ksp->nwork = nw;
   ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&ksp->work); CHKERRQ(ierr);
   PLogObjectParents(ksp,nw,ksp->work);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -312,10 +326,13 @@ int  KSPDefaultGetWork( KSP ksp, int nw )
  */
 int KSPDefaultAdjustWork( KSP ksp )
 {
+  int ierr;
+
+  PetscFunctionBegin;
   if ( ksp->adjust_work_vectors ) {
-    return (ksp->adjust_work_vectors)(ksp, ksp->work,ksp->nwork); 
+    ierr = (ksp->adjust_work_vectors)(ksp, ksp->work,ksp->nwork); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -330,11 +347,13 @@ int KSPDefaultAdjustWork( KSP ksp )
 int KSPDefaultDestroy(PetscObject obj)
 {
   KSP ksp = (KSP) obj;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->data) PetscFree(ksp->data);
 
   /* free work vectors */
   KSPDefaultFreeWork( ksp );
-  return 0;
+  PetscFunctionReturn(0);
 }
 

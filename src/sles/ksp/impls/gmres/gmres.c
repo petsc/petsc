@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.85 1997/07/29 14:08:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.86 1997/08/22 15:11:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -72,8 +72,10 @@ int    KSPSetUp_GMRES(KSP ksp )
   int       ierr,  max_k, k;
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
-  if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,0,"no symmetric preconditioning for KSPGMRES");}
+  PetscFunctionBegin;
+  if (ksp->pc_side == PC_SYMMETRIC) {
+    SETERRQ(2,0,"no symmetric preconditioning for KSPGMRES");
+  }
   max_k         = gmres->max_k;
   hh            = (max_k + 2) * (max_k + 1);
   hes           = (max_k + 1) * (max_k + 1);
@@ -123,7 +125,7 @@ int    KSPSetUp_GMRES(KSP ksp )
     for (k=0; k<gmres->vv_allocated; k++)
 	gmres->vecs[k] = gmres->user_work[0][k];
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* 
@@ -140,6 +142,7 @@ static int GMRESResidual(  KSP ksp,int restart )
   MatStructure pflag;
   int          ierr;
 
+  PetscFunctionBegin;
   ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   /* compute initial residual: f - M*x */
   /* (inv(b)*a)*x or (a*inv(b)*b)*x into dest */
@@ -157,7 +160,7 @@ static int GMRESResidual(  KSP ksp,int restart )
   ierr = VecCopy( VEC_BINVF, VEC_VV(0) ); CHKERRQ(ierr);
   ierr = VecAXPY( &mone, VEC_TEMP, VEC_VV(0) ); CHKERRQ(ierr);
       /* inv(b)(f - a*x) into dest */
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -193,6 +196,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
   int       max_k = gmres->max_k, max_it = ksp->max_it;
 
+  PetscFunctionBegin;
   /* Question: on restart, compute the residual?  No; provide a restart 
      driver */
 
@@ -208,7 +212,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   if (res_norm == 0.0) {
     if (itcount) *itcount = 0;
     *converged = 1;
-    return 0;
+    PetscFunctionReturn(0);
   }
   /* scale VEC_VV (the initial residual) */
   tmp = 1.0/res_norm; ierr = VecScale(&tmp , VEC_VV(0) ); CHKERRQ(ierr);
@@ -266,13 +270,13 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
    */
   if (it == 0) {
     *converged = 1;
-    return 0;
+    PetscFunctionReturn(0);
   }
 
   /* Form the solution (or the solution so far) */
   ierr = BuildGmresSoln(RS(0),VEC_SOLN,VEC_SOLN,ksp,it-1); CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -282,6 +286,7 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
   int       ierr, restart, its, itcount, converged;
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
+  PetscFunctionBegin;
   restart = 0;
   itcount = 0;
   /* Save binv*f */
@@ -311,7 +316,7 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
     ierr = GMREScycle(&its, itcount, restart, ksp, &converged);CHKERRQ(ierr);
     itcount += its;  
   }
-  *outits = itcount;  return 0;
+  *outits = itcount;  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -321,14 +326,14 @@ static int KSPAdjustWork_GMRES(KSP ksp )
   KSP_GMRES *gmres;
   int       i,ierr;
 
+  PetscFunctionBegin;
   if ( ksp->adjust_work_vectors ) {
     gmres = (KSP_GMRES *) ksp->data;
     for (i=0; i<gmres->vv_allocated; i++) {
-      ierr = (*ksp->adjust_work_vectors)(ksp,gmres->user_work[i],gmres->mwork_alloc[i]); 
-      CHKERRQ(ierr);
+      ierr = (*ksp->adjust_work_vectors)(ksp,gmres->user_work[i],gmres->mwork_alloc[i]);CHKERRQ(ierr);
     }  
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -339,6 +344,7 @@ int KSPDestroy_GMRES(PetscObject obj)
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
   int       i;
 
+  PetscFunctionBegin;
   /* Free the Hessenberg matrix */
   if (gmres->hh_origin) PetscFree( gmres->hh_origin );
 
@@ -356,7 +362,7 @@ int KSPDestroy_GMRES(PetscObject obj)
   if (gmres->Rsvd) PetscFree(gmres->Rsvd);
   if (gmres->Dsvd) PetscFree(gmres->Dsvd);
   PetscFree( gmres ); 
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*
     BuildGmresSoln - create the solution from the starting vector and the
@@ -378,6 +384,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp, int it )
   int       ierr, ii, k, j;
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
 
+  PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */
 
   /* If it is < 0, no gmres steps have been performed */
@@ -385,7 +392,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp, int it )
     if (vdest != vs) {
       ierr = VecCopy( vs, vdest ); CHKERRQ(ierr);
     }
-    return 0;
+    PetscFunctionReturn(0);
   }
   nrs[it] = *RS(it) / *HH(it,it);
   for (ii=1; ii<=it; ii++) {
@@ -420,7 +427,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp, int it )
       ierr = VecAXPY( &one, VEC_TEMP, vdest ); CHKERRQ(ierr);
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*
    Do the scalar work for the orthogonalization.  Return new residual.
@@ -433,6 +440,7 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
   int       j;
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
 
+  PetscFunctionBegin;
   hh  = HH(0,it);
   cc  = CC(0);
   ss  = SS(0);
@@ -441,7 +449,7 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
      of the Hessenberg matrix */
   for (j=1; j<=it; j++) {
     tt  = *hh;
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
     *hh = conj(*cc) * tt + *ss * *(hh+1);
 #else
     *hh = *cc * tt + *ss * *(hh+1);
@@ -456,7 +464,7 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
      2) the new column of the Hessenberg matrix
     thus obtaining the updated value of the residual
   */
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   tt        = sqrt( conj(*hh) * *hh + conj(*(hh+1)) * *(hh+1) );
 #else
   tt        = sqrt( *hh * *hh + *(hh+1) * *(hh+1) );
@@ -465,7 +473,7 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
   *cc       = *hh / tt;
   *ss       = *(hh+1) / tt;
   *RS(it+1) = - ( *ss * *RS(it) );
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   *RS(it)   = conj(*cc) * *RS(it);
   *hh       = conj(*cc) * *hh + *ss * *(hh+1);
 #else
@@ -473,7 +481,7 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
   *hh       = *cc * *hh + *ss * *(hh+1);
 #endif
   *res      = PetscAbsScalar( *RS(it+1) );
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*
    This routine allocates more work vectors, starting from VEC_VV(it).
@@ -485,13 +493,14 @@ static int GMRESGetNewVectors( KSP ksp,int it )
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
   int       nwork = gmres->nwork_alloc,k, nalloc;
 
+  PetscFunctionBegin;
   nalloc = gmres->delta_allocate;
   /* Adjust the number to allocate to make sure that we don't exceed the
     number of available slots */
   if (it + VEC_OFFSET + nalloc >= gmres->vecs_allocated)
       nalloc = gmres->vecs_allocated - it - VEC_OFFSET;
   /* CHKPTRQ(nalloc); */
-  if (nalloc == 0) return 0;
+  if (nalloc == 0) PetscFunctionReturn(0);
 
   gmres->vv_allocated += nalloc;
   VecDuplicateVecs(ksp->vec_rhs, nalloc,&gmres->user_work[nwork] );
@@ -501,7 +510,7 @@ static int GMRESGetNewVectors( KSP ksp,int it )
     gmres->vecs[it+VEC_OFFSET+k] = gmres->user_work[nwork][k];
   }
   gmres->nwork_alloc++;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -511,6 +520,7 @@ int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data; 
   int       ierr;
 
+  PetscFunctionBegin;
   if (ptr == 0) {
     if (!gmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&gmres->sol_temp); CHKERRQ(ierr);
@@ -525,7 +535,7 @@ int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
   }
 
   ierr = BuildGmresSoln(gmres->nrs,VEC_SOLN,ptr,ksp,gmres->it); CHKERRQ(ierr);
-  *result = ptr; return 0;
+  *result = ptr; PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -539,6 +549,7 @@ int KSPView_GMRES(PetscObject obj,Viewer viewer)
   int         ierr;
   ViewerType  vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -554,7 +565,7 @@ int KSPView_GMRES(PetscObject obj,Viewer viewer)
     PetscFPrintf(ksp->comm,fd,"    GMRES: restart=%d, using %s\n",
                gmres->max_k,cstr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 extern int KSPComputeExtremeSingularValues_GMRES(KSP,double *,double *);
@@ -567,6 +578,7 @@ int KSPCreate_GMRES(KSP ksp)
 {
   KSP_GMRES *gmres;
 
+  PetscFunctionBegin;
   gmres = (KSP_GMRES*) PetscMalloc(sizeof(KSP_GMRES)); CHKPTRQ(gmres);
   PetscMemzero(gmres,sizeof(KSP_GMRES));
   PLogObjectMemory(ksp,sizeof(KSP_GMRES));
@@ -592,6 +604,6 @@ int KSPCreate_GMRES(KSP ksp)
   gmres->sol_temp       = 0;
   gmres->max_k          = GMRES_DEFAULT_MAXK;
   gmres->Rsvd           = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 

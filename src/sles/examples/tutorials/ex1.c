@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.62 1997/07/09 20:57:17 balay Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
@@ -21,7 +21,6 @@ T*/
      viewer.h - viewers               pc.h  - preconditioners
 */
 #include "sles.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: numsrt.c,v 1.6 1997/07/09 20:55:35 balay Exp bsmith $";
+static char vcid[] = "$Id: numsrt.c,v 1.7 1997/08/22 15:14:43 bsmith Exp bsmith $";
 #endif
 
 /* numsrt.f -- translated by f2c (version of 25 March 1992  12:58:56). */
@@ -61,6 +61,7 @@ int MINPACKnumsrt(int *n,int *nmax,int *num,int *mode,int *index,int *last,int *
 /*     Thomas F. Coleman, Burton S. Garbow, Jorge J. More' */
 
     /* Parameter adjustments */
+    PetscFunctionBegin;
     --next;
     --index;
     --num;
@@ -76,7 +77,7 @@ int MINPACKnumsrt(int *n,int *nmax,int *num,int *mode,int *index,int *last,int *
 	last[l] = k;
     }
     if (*mode == 0) {
-	return 0;
+	PetscFunctionReturn(0);
     }
 
 /*     Store the pointers to the sorted array in index. */
@@ -106,6 +107,6 @@ L30:
 L40:
 	;
     }
-    return 0;
+    PetscFunctionReturn(0);
 }
 

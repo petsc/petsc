@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: nt_time.c,v 1.9 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: nt_time.c,v 1.10 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 
 #include <petsc.h>
@@ -22,11 +22,12 @@ double nt_time()
   double time;
   
   
+  PetscFunctionBegin;
   if (flag) {
-  ierr = QueryPerformanceCounter( &StartTime ); CHKERRQ(!ierr);
-  ierr = QueryPerformanceFrequency( &PerfFreq ); CHKERRQ(!ierr);
-  SecInTick = 1.0/((double)PerfFreq.HighPart*FACTOR+(double)PerfFreq.LowPart);
-  flag = 0;
+    ierr = QueryPerformanceCounter( &StartTime ); CHKERRQ(!ierr);
+    ierr = QueryPerformanceFrequency( &PerfFreq ); CHKERRQ(!ierr);
+    SecInTick = 1.0/((double)PerfFreq.HighPart*FACTOR+(double)PerfFreq.LowPart);
+    flag = 0;
   }		
   
   ierr        = QueryPerformanceCounter( &CurTime ); CHKERRQ(!ierr);
@@ -37,6 +38,6 @@ double nt_time()
   dTime = dHigh*(double)FACTOR + (double)CurTime.LowPart - (double)StartTime.LowPart;
   time  = (double)SecInTick*dTime;
 
-  return time;
+  PetscFunctionReturn(time);
 }
 #endif

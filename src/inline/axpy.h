@@ -1,4 +1,4 @@
-/* $Id: axpy.h,v 1.9 1997/09/15 16:23:05 bsmith Exp bsmith $ */
+/* $Id: axpy.h,v 1.10 1997/09/17 23:14:08 bsmith Exp bsmith $ */
 
 /* 
    These are macros for daxpy like operations.  The format is
@@ -143,7 +143,7 @@ aa[0]=a1;aa[1]=a2;\
 if (n & 0x1) {\
 *U    += Alpha * *P; U += inc; P += inc; n--;}\
 while (n>0) {U[0] += Alpha * P[0];U[inc] += Alpha * P[inc];\
-U += 2*inc;; P += 2*inc;; n -= 2;}}
+U += 2*inc; P += 2*inc; n -= 2;}}
 #define APXY2INC(U,a1,a2,p1,p2,n,inc) {\
 if (n & 0x1) {\
 *U    += a1 * *p1 + a2 * *p2; U += inc; p1 += inc; p2 += inc;n--;}\

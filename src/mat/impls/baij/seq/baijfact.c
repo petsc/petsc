@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact.c,v 1.51 1997/07/25 22:14:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.52 1997/07/26 19:03:52 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -25,6 +25,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   int         *ainew,*ajnew, jmax,*fill, *ajtmp, nz, bs = a->bs, bs2=a->bs2;
   int         *idnew, idx, row,m,fm, nnz, nzi,realloc = 0,nzbd,*im;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
@@ -141,8 +142,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
-  b->solve_work = (Scalar *) PetscMalloc( (bs*n+bs)*sizeof(Scalar)); 
-  CHKPTRQ(b->solve_work);
+  b->solve_work = (Scalar *) PetscMalloc( (bs*n+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */
   PLogObjectMemory(*B,(ainew[n]-n)*(sizeof(int)+sizeof(Scalar)));
@@ -157,7 +157,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   }
   
 
-  return 0; 
+  PetscFunctionReturn(0); 
 }
 
 /* ----------------------------------------------------------- */
@@ -171,10 +171,11 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   int             *r,*ic, ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
   int             *ajtmpold, *ajtmp, nz, row, bslog,*ai=a->i,*aj=a->j,k,flg;
   int             *diag_offset=b->diag,diag,bs=a->bs,bs2 = a->bs2,*v_pivots;
-  Scalar          *ba = b->a,*aa = a->a;
-  register Scalar *pv,*v,*rtmp,*multiplier,*v_work,*pc,*w;
   register int    *pj;
+  register Scalar *pv,*v,*rtmp,*multiplier,*v_work,*pc,*w;
+  Scalar          *ba = b->a,*aa = a->a;
 
+  PetscFunctionBegin;
   ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   PLogObjectParent(*B,isicol);
   ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
@@ -241,7 +242,7 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*bs*bs2*b->mbs); /* from inverting diagonal blocks */
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------*/
 /*
@@ -257,6 +258,7 @@ int MatLUFactorNumeric_SeqBAIJ_5(Mat A,Mat *B)
   int             *r,*ic, ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
   int             *ajtmpold, *ajtmp, nz, row;
   int             *diag_offset = b->diag,idx,*ai=a->i,*aj=a->j;
+  register int    *pj;
   register Scalar *pv,*v,*rtmp,*pc,*w,*x;
   Scalar          p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
   Scalar          p5,p6,p7,p8,p9,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16;
@@ -264,8 +266,8 @@ int MatLUFactorNumeric_SeqBAIJ_5(Mat A,Mat *B)
   Scalar          p15,p16,p17,p18,p19,p20,p21,p22,p23,p24,p25,m10,m11,m12;
   Scalar          m13,m14,m15,m16,m17,m18,m19,m20,m21,m22,m23,m24,m25;
   Scalar          *ba = b->a,*aa = a->a;
-  register int    *pj;
 
+  PetscFunctionBegin;
   ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   PLogObjectParent(*B,isicol);
   ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
@@ -421,7 +423,7 @@ int MatLUFactorNumeric_SeqBAIJ_5(Mat A,Mat *B)
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*125*b->mbs); /* from inverting diagonal blocks */
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------*/
@@ -438,14 +440,15 @@ int MatLUFactorNumeric_SeqBAIJ_4(Mat A,Mat *B)
   int             *r,*ic, ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
   int             *ajtmpold, *ajtmp, nz, row;
   int             *diag_offset = b->diag,idx,*ai=a->i,*aj=a->j;
+  register int    *pj;
   register Scalar *pv,*v,*rtmp,*pc,*w,*x;
   Scalar          p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
   Scalar          p5,p6,p7,p8,p9,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16;
   Scalar          p10,p11,p12,p13,p14,p15,p16,m10,m11,m12;
   Scalar          m13,m14,m15,m16;
   Scalar          *ba = b->a,*aa = a->a;
-  register int    *pj;
 
+  PetscFunctionBegin;
   ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   PLogObjectParent(*B,isicol);
   ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
@@ -568,7 +571,7 @@ int MatLUFactorNumeric_SeqBAIJ_4(Mat A,Mat *B)
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*64*b->mbs); /* from inverting diagonal blocks */
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*
       Version for when blocks are 4 by 4 Using natural ordering
@@ -582,14 +585,15 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
   int             ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
   int             *ajtmpold, *ajtmp, nz, row;
   int             *diag_offset = b->diag,*ai=a->i,*aj=a->j;
+  register int    *pj;
   register Scalar *pv,*v,*rtmp,*pc,*w,*x;
   Scalar          p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
   Scalar          p5,p6,p7,p8,p9,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16;
   Scalar          p10,p11,p12,p13,p14,p15,p16,m10,m11,m12;
   Scalar          m13,m14,m15,m16;
   Scalar          *ba = b->a,*aa = a->a;
-  register int    *pj;
 
+  PetscFunctionBegin;
   rtmp  = (Scalar *) PetscMalloc(16*(n+1)*sizeof(Scalar));CHKPTRQ(rtmp);
 
   for ( i=0; i<n; i++ ) {
@@ -704,7 +708,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*64*b->mbs); /* from inverting diagonal blocks */
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------*/
@@ -721,12 +725,13 @@ int MatLUFactorNumeric_SeqBAIJ_3(Mat A,Mat *B)
   int             *r,*ic, ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
   int             *ajtmpold, *ajtmp, nz, row, *ai=a->i,*aj=a->j;
   int             *diag_offset = b->diag,idx;
+  register int    *pj;
   register Scalar *pv,*v,*rtmp,*pc,*w,*x;
   Scalar          p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
   Scalar          p5,p6,p7,p8,p9,x5,x6,x7,x8,x9;
   Scalar          *ba = b->a,*aa = a->a;
-  register int    *pj;
 
+  PetscFunctionBegin;
   ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   PLogObjectParent(*B,isicol);
   ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
@@ -818,7 +823,7 @@ int MatLUFactorNumeric_SeqBAIJ_3(Mat A,Mat *B)
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*27*b->mbs); /* from inverting diagonal blocks */
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------*/
@@ -835,11 +840,12 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
   int             *r,*ic, ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
   int             *ajtmpold, *ajtmp, nz, row, v_pivots[2];
   int             *diag_offset=b->diag,bs = 2,idx,*ai=a->i,*aj=a->j;
+  register int    *pj;
   register Scalar *pv,*v,*rtmp,m1,m2,m3,m4,*pc,*w,*x,x1,x2,x3,x4;
   Scalar          p1,p2,p3,p4,v_work[2];
   Scalar          *ba = b->a,*aa = a->a;
-  register int    *pj;
 
+  PetscFunctionBegin;
   ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   PLogObjectParent(*B,isicol);
   ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
@@ -910,7 +916,7 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*8*b->mbs); /* from inverting diagonal blocks */
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ----------------------------------------------------------- */
@@ -927,10 +933,11 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
   int             *r,*ic, ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
   int             *ajtmpold, *ajtmp, nz, row,*ai = a->i,*aj = a->j;
   int             *diag_offset = b->diag,diag;
+  register int    *pj;
   register Scalar *pv,*v,*rtmp,multiplier,*pc;
   Scalar          *ba = b->a,*aa = a->a;
-  register int    *pj;
 
+  PetscFunctionBegin;
   ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   PLogObjectParent(*B,isicol);
   ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
@@ -982,7 +989,7 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(b->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ----------------------------------------------------------- */
@@ -994,6 +1001,7 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
   int         ierr;
   Mat         C;
 
+  PetscFunctionBegin;
   ierr = MatLUFactorSymbolic(A,row,col,f,&C); CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(A,&C); CHKERRQ(ierr);
 
@@ -1009,7 +1017,7 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
 
   PetscMemcpy(A,C,sizeof(struct _p_Mat));
   PetscHeaderDestroy(C);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
 #undef __FUNC__  
@@ -1023,6 +1031,7 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   Scalar          *aa=a->a,*sum;
   register Scalar *x,*b,*lsum,*tmp,*v;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(bb,b); 
   VecGetArray_Fast(xx,x); 
   tmp  = a->solve_work;
@@ -1063,7 +1072,7 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   VecRestoreArray_Fast(bb,b); 
   VecRestoreArray_Fast(xx,x); 
   PLogFlops(2*(a->bs2)*(a->nz) - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1077,6 +1086,7 @@ int MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
   Scalar          *aa=a->a,sum1,sum2,sum3,sum4,sum5,sum6,sum7,x1,x2,x3,x4,x5,x6,x7;
   register Scalar *x,*b,*tmp,*v;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(bb,b); 
   VecGetArray_Fast(xx,x); 
   tmp  = a->solve_work;
@@ -1162,7 +1172,7 @@ int MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
   VecRestoreArray_Fast(bb,b); 
   VecRestoreArray_Fast(xx,x); 
   PLogFlops(2*49*(a->nz) - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1176,6 +1186,7 @@ int MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   Scalar          *aa=a->a,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;
   register Scalar *x,*b,*tmp,*v;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(bb,b); 
   VecGetArray_Fast(xx,x); 
   tmp  = a->solve_work;
@@ -1247,7 +1258,7 @@ int MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   VecRestoreArray_Fast(bb,b); 
   VecRestoreArray_Fast(xx,x); 
   PLogFlops(2*25*(a->nz) - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1261,6 +1272,7 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   Scalar          *aa=a->a,sum1,sum2,sum3,sum4,x1,x2,x3,x4;
   register Scalar *x,*b,*tmp,*v;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(bb,b); 
   VecGetArray_Fast(xx,x); 
   tmp  = a->solve_work;
@@ -1322,7 +1334,7 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   VecRestoreArray_Fast(bb,b); 
   VecRestoreArray_Fast(xx,x); 
   PLogFlops(2*16*(a->nz) - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -1339,6 +1351,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   Scalar          *aa=a->a,sum1,sum2,sum3,sum4,x1,x2,x3,x4;
   register Scalar *x,*b,*v;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(bb,b); 
   VecGetArray_Fast(xx,x); 
 
@@ -1392,7 +1405,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   VecRestoreArray_Fast(bb,b); 
   VecRestoreArray_Fast(xx,x); 
   PLogFlops(2*16*(a->nz) - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -1407,6 +1420,7 @@ int MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   Scalar          *aa=a->a,sum1,sum2,sum3,x1,x2,x3;
   register Scalar *x,*b,*tmp,*v;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(bb,b); 
   VecGetArray_Fast(xx,x); 
   tmp  = a->solve_work;
@@ -1460,7 +1474,7 @@ int MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   VecRestoreArray_Fast(bb,b); 
   VecRestoreArray_Fast(xx,x); 
   PLogFlops(2*9*(a->nz) - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -1474,6 +1488,7 @@ int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   Scalar          *aa=a->a,sum1,sum2,x1,x2;
   register Scalar *x,*b,*tmp,*v;
 
+  PetscFunctionBegin;
   VecGetArray_Fast(bb,b); 
   VecGetArray_Fast(xx,x); 
   tmp  = a->solve_work;
@@ -1524,7 +1539,7 @@ int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   VecRestoreArray_Fast(bb,b); 
   VecRestoreArray_Fast(xx,x); 
   PLogFlops(2*4*(a->nz) - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
@@ -1539,7 +1554,8 @@ int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
   Scalar          *aa=a->a,sum1;
   register Scalar *x,*b,*tmp,*v;
 
-  if (!n) return 0;
+  PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(0);
 
   VecGetArray_Fast(bb,b); 
   VecGetArray_Fast(xx,x); 
@@ -1577,7 +1593,7 @@ int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
   VecRestoreArray_Fast(bb,b); 
   VecRestoreArray_Fast(xx,x); 
   PLogFlops(2*1*(a->nz) - a->n);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 extern int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
@@ -1600,6 +1616,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   int         incrlev,nnz,i,bs = a->bs,bs2 = a->bs2;
   PetscTruth  col_identity, row_identity;
 
+  PetscFunctionBegin;
   /* special case that simply copies fill pattern */
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
@@ -1622,7 +1639,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
       (*fact)->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
       (*fact)->ops.solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
     }
-    return 0;
+    PetscFunctionReturn(0);
   }
 
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
@@ -1759,8 +1776,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
-  b->solve_work = (Scalar *) PetscMalloc( (bs*n+bs)*sizeof(Scalar)); 
-  CHKPTRQ(b->solve_work);
+  b->solve_work = (Scalar *) PetscMalloc( (bs*n+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate dloc, solve_work, new a, new j */
   PLogObjectMemory(*fact,(ainew[n]-n)*(sizeof(int))+bs2*ainew[n]*sizeof(Scalar));
@@ -1771,7 +1787,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   (*fact)->info.fill_ratio_given  = f;
   (*fact)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[prow]);
 
-  return 0; 
+  PetscFunctionReturn(0); 
 }
 
 

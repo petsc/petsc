@@ -1,7 +1,6 @@
 
 #include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
-#include <stdio.h>
 
 #ifdef HAVE_FORTRAN_CAPS
 #define petscinitializefortran_       PETSCINITIALIZEFORTRAN

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.18 1997/09/22 15:21:47 balay Exp curfman $";
+static char vcid[] = "$Id: ex17.c,v 1.19 1997/10/15 19:51:08 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -7,7 +7,6 @@ intended to test the complex numbers version of various solvers.\n\n";
 
 #include "sles.h"
 #include <math.h> 
-#include <stdio.h>
 
 typedef enum {TEST_1, TEST_2, TEST_3, HELMHOLTZ_1, HELMHOLTZ_2} TestType;
 int FormTestMatrix(Mat,int,TestType);
@@ -89,7 +88,7 @@ int main(int argc,char **args)
 
 int FormTestMatrix(Mat A,int n,TestType type)
 {
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
   SETERRQ(1,0,"FormTestMatrix: These problems require complex numbers.");
 #else
 

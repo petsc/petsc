@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.24 1997/07/09 20:57:17 balay Exp balay $";
+static char vcid[] = "$Id: ex12.c,v 1.25 1997/09/22 15:21:21 balay Exp bsmith $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -58,7 +58,6 @@ T*/
 #include "sles.h"
 #include "dfvec.h"
 #include <math.h>
-#include <stdio.h>
 
 /* 
    ---------------------
@@ -191,7 +190,7 @@ int main(int argc,char **args)
       Initialize PETSc
   */
   PetscInitialize(&argc,&args,(char *)0,help);
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
   SETERRA(1,0,"This example requires complex numbers");
 #endif
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: PetscVecNorm.c,v 1.1 1997/07/08 22:22:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: PetscVecNorm.c,v 1.2 1997/07/10 03:46:48 bsmith Exp bsmith $";
 #endif
 
 #include "vec.h"
@@ -37,5 +37,5 @@ int main( int argc, char **argv)
   fprintf(stderr," Time %g\n",t2-t1);
 
   PetscFinalize();
-  return 0;
+  PetscFunctionReturn(0);
 }
