@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.42 1995/07/09 19:35:27 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.43 1995/07/09 23:17:55 bsmith Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -49,6 +49,7 @@ extern int MatGetBDiagData(Mat,int*,int*,int**,Scalar***);
 extern int MatSetOption(Mat,MatOption);
 
 extern int MatGetType(Mat,MatType*);
+extern int MatGetName(Mat,char**);
 extern int MatGetValues(Mat,int,int*,int,int*,Scalar*);
 extern int MatGetRow(Mat,int,int *,int **,Scalar**);
 extern int MatRestoreRow(Mat,int,int *,int **,Scalar**);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.29 1995/06/22 19:21:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.30 1995/07/06 17:20:03 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -89,5 +89,38 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     return MatCreateSequentialRow(comm,m,n,10,0,V);
   }
   return MatCreateSequentialAIJ(comm,m,n,10,0,V);
+}
+
+#include "matimpl.h"
+/*@C
+   MatGetName - Gets the matrix type name (as a string) from the matrix.
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameter:
+.  name - name of matrix type
+
+.keywords: matrix, get, name
+
+.seealso:  MatGetType()
+@*/
+int MatGetName(Mat mat,char **name)
+{
+  /* Note:  Be sure that this list corresponds to the enum in mat.h */
+  int  itype = (int)mat->type;
+  char *matname[9];
+  matname[0] = "MATDENSE";
+  matname[1] = "MATAIJ";
+  matname[2] = "MATMPIAIJ";
+  matname[3] = "MATSHELL";
+  matname[4] = "MATROW";
+  matname[5] = "MATMPIROW";
+  matname[6] = "MATMPIROW_BS";
+  matname[7] = "MATMPIBDIAG";
+  matname[8] = "MATBDIAG";
+  if (itype < 0 || itype > 8) *name = "unknown matrix type";
+  else                        *name = matname[itype];
+  return 0;
 }
  
