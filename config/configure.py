@@ -44,8 +44,14 @@ def rhl9():
     return 0
 
 def petsc_configure(configure_options):
-  # use the name of the config/configure_arch.py to determine the arch
-  if getarch(): configure_options.append('-PETSC_ARCH='+getarch())
+  # If PETSC_ARCH not already defined, check if the script name is different then configure
+  # (if so, use this name). Or else - get a  name of the config/configure_arch.py
+  found = 0
+  for name in configure_options:
+    if name.startswith('-PETSC_ARCH'):
+      found = 1
+      break
+  if not found and getarch(): configure_options.append('-PETSC_ARCH='+getarch())
 
   # Disable threads on RHL9
   if rhl9():
