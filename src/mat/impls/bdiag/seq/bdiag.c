@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.1 1995/04/22 00:47:56 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.2 1995/04/23 01:31:35 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: bdiag.c,v 1.1 1995/04/22 00:47:56 curfman Exp curfman
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
 
-static int MatSetValues_AIJ(Mat matin,int m,int *idxm,int n,
+static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode  addv)
 {
   Mat_BDiag *dmat = (Mat_BDiag *) matin->data;
@@ -265,7 +265,7 @@ static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
       k     = 0;
       *v    = dmat->dvalue;
       *col  = dmat->colloc;
-      shift = (row/nb)*nb*nb + row%nb;  	/* integer arithmetic */
+      shift = (row/nb)*nb*nb + row%nb;  /* integer arithmetic */
       for (j=0; j<nd; j++) {
         pcol = nb * (row/nb - diag[j]);	/* computed base column */
         if (pcol > -1 && pcol < nc) {
@@ -368,13 +368,95 @@ static int MatRestoreRow_BDiag(Mat matin,int row,int *ncols,int **cols,
   return 0;
 }
 /* ----------------------------------------------------------------*/
-#include "viewer.h"
+#include "draw.h"
 
 int MatView_BDiag(PetscObject obj,Viewer ptr)
 {
-  Mat         matin = (Mat) obj;
-  Mat_BDiag      *mat = (Mat_BDiag *) matin->data;
+  Mat       matin = (Mat) obj;
+  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  int       nz, ierr, *col, i, j, len, diag, nr = mat->m, nb = mat->nb;
+  Scalar    *val, *dv;
+  PetscObject vobj = (PetscObject) ptr;
 
+  if (!mat->assembled) SETERR(1,"Cannot view unassembled matrix");
+  if (!ptr) { /* so that viewers may be used from debuggers */
+    ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
+  }
+  if (vobj && vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
+    SETERR(1,"Matlab viewer not yet supported for ROW matrix format.");
+  }
+  if (vobj && vobj->cookie == DRAW_COOKIE) {
+    SETERR(1,"Drawing not yet supported for ROW matrix format.");
+  }
+  else {
+    for (i=0; i<mat->m; i++) {
+      printf("row %d:",i);
+      ierr = MatGetRow( matin, i, &nz, &col, &val ); CHKERR(ierr);
+      for (j=0; j<nz; j++) {
+#if defined(PETSC_COMPLEX)
+        printf(" %d %g ", col[j], real(val[j]), imag(val[j]) );
+#else
+        printf(" %d %g ", col[j], val[j] );
+#endif
+      }
+        printf("\n");
+    ierr = MatRestoreRow( matin, i, &nz, &col, &val ); CHKERR(ierr);
+    }
+
+    printf("\n\n");
+    if (nb == 1) {
+      for (i=0; i< mat->nd; i++) {
+        dv   = mat->diagv[i];
+        diag = mat->diag[i];
+        printf("\n<diagonal %d>\n",diag);
+        /* diag[i] is (row-col)/nb */
+        if (diag > 0) {  /* lower triangle */
+          len = nr - diag;
+          for (j=0; j<len; j++)
+            printf("A[ %d , %d ] = %e\n", j+diag, j, dv[j]);
+        } else {         /* upper triangle, including main diagonal */
+          len = nr + diag;
+          for (j=0; j<len; j++)
+            printf("A[ %d , %d ] = %e\n", j, j-diag, dv[j]);
+        }
+      }
+    } else {  /* Block diagonals */
+      int d, k, kshift, nbrows = nr/nb;
+      for (d=0; d< mat->nd; d++) {
+        dv   = mat->diagv[d];
+        diag = mat->diag[d];
+        printf("\n<diagonal %d>\n", diag);
+        /* diag is (row-col)/nb */
+        if (diag > 0) {  /* lower triangle */
+          len = nbrows - diag;
+          for (k=0; k<len; k++) {
+            kshift = k*nb*nb;
+            for (i=0; i<nb; i++) {
+              for (j=0; j<nb; j++) {
+                if (dv[kshift + j*nb + i])
+                  printf("A[%d,%d]=%5.2e   ", (k+diag)*nb + i, 
+	              k*nb + j, dv[kshift + j*nb + i] );
+              }
+              printf("\n");
+            }
+          }
+        } else {         /* upper triangle, including main diagonal */
+          len = nbrows + diag;
+          for (k=0; k<len; k++) {
+            kshift = k*nb*nb;
+            for (i=0; i<nb; i++) {
+              for (j=0; j<nb; j++) {
+                if (dv[kshift + j*nb + i])
+                  printf("A[%d,%d]=%5.2e   ", k*nb + i, 
+                          (k-diag)*nb + j, dv[kshift + j*nb + i] );
+              }
+              printf("\n");
+            }
+          }
+        }
+      }
+    }
+  }
   return 0;
 }
 
@@ -442,7 +524,7 @@ static int MatGetSize_BDiag(Mat matin,int *m,int *n)
 static int MatCopy_BDiag(Mat,Mat *);
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {0,
+static struct _MatOps MatOps = {MatSetValues_BDiag,
        MatGetRow_BDiag, MatRestoreRow_BDiag,
        MatMult_BDiag, MatMultAdd_BDiag, 
        MatMultTrans_BDiag, MatMultTransAdd_BDiag, 
@@ -466,6 +548,7 @@ static struct _MatOps MatOps = {0,
 .  nd     - number of block diagonals
 .  nb     - each element of a diagonal is an nb x nb dense matrix
 .  diag   - array of block diagonal numbers, values of (row-col)/nb
+            NOTE:  currently, diagonals MUST be listed in descending order!
 .  diagv  - pointer to actual diagonals (in same order as diag array), 
             if allocated by user.
             Otherwise, set diagv=0 on input for PETSc to control memory 
@@ -480,6 +563,9 @@ static struct _MatOps MatOps = {0,
    added.  Thus, only elements that fall on the specified diagonals
    can be set or altered; trying to modify other elements results in
    an error.
+
+   The case nb=1 (conventional diagonal storage) is implemented as
+   a special case. 
 
 .keywords: Mat, matrix, block, diagonal
 
