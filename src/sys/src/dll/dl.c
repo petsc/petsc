@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.23 1998/07/15 18:54:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.24 1998/07/22 16:03:51 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -495,7 +495,7 @@ int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,char *libname)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
      DLLibraryPrepend - Add another dynamic library to search for symbols to the beginning of
                  the search path.
 

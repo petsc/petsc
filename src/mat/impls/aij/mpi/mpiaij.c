@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.256 1998/07/14 21:10:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.257 1998/07/14 21:27:10 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1219,8 +1219,7 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
       tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i];
       if (max < tmp) { max = tmp; }
     }
-    mat->rowvalues = (Scalar *) PetscMalloc( max*(sizeof(int)+sizeof(Scalar))); 
-    CHKPTRQ(mat->rowvalues);
+    mat->rowvalues  = (Scalar *) PetscMalloc(max*(sizeof(int)+sizeof(Scalar)));CHKPTRQ(mat->rowvalues);
     mat->rowindices = (int *) (mat->rowvalues + max);
   }
 
@@ -1265,8 +1264,7 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
         for ( i=0; i<nzA; i++ )     idx_p[imark+i] = cstart + cworkA[i];
         for ( i=imark; i<nzB; i++ ) idx_p[nzA+i]   = cmap[cworkB[i]];
       } 
-    } 
-    else {
+    } else {
       if (idx) *idx = 0; 
       if (v)   *v   = 0;
     }
