@@ -13,11 +13,13 @@ static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY()
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat          mat,tmat = 0;
-  int          m = 7,n,i,j,ierr,size,rank,rstart,rend,rect = 0;
-  PetscTruth   flg;
-  PetscScalar  v, alpha;
-  PetscReal    normf,normi,norm1;
+  Mat              mat,tmat = 0;
+  PetscInt         m = 7,n,i,j,rstart,rend,rect = 0;
+  PetscErrorCode   ierr;
+  PetscMPIInt      size,rank;
+  PetscTruth       flg;
+  PetscScalar      v, alpha;
+  PetscReal        normf,normi,norm1;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
