@@ -1,223 +1,40 @@
 #! /bin/csh
-# $Id: buildtest,v 1.173 2000/02/18 17:20:23 bsmith Exp bsmith $ 
-
+# $Id: newbuildtest,v 1.1 2000/02/19 17:07:02 bsmith Exp bsmith $ 
 # 
 # Compiles and tests PETSc in our nightly builds.
 #
+# Run as buildtest ARCH where ARCH is one of the PETSc arcs
 #
-# Define some variables so that the table is concise.
-# First names used for abbrivations
+source /home/bsmith/petsc/bmake/$1/buildtest
 #
-#set TMP=/tmp/petsc
-set SP=/sphome/petsc/petsc
-set CCST=/ccsthome/petsc/petsc
-set PETSC=/home/petsc/petsc
-set LOIS=/home/curfman/petsc
-#set SATISH=/home/balay/petsc
-set TMP=/tmp/petsc
-set TMP_S=/tmp/balay/petsc
-set TMP_P=/tmp/petsc/petsc
-set TMP_B=/tmp/bsmith/petsc
-set TMP_L=/tmp/curfman/petsc
-set SB_P=/sandbox/petsc/petsc
-set SB_S=/sandbox/balay/petsc
-set CO_P=/common/petsc/petsc
-#
-#  load the machine names and versions to test
-#
-set day=`date | cut -f1 -d" "`
-if ($day == Sun) then
-  set M =(snake  fire       violet     gaea          tri33       ptera        lava        ico08       maverick    denali      puddle       )
-  set B =(O      O_complex  g          g_c++         O_c++       O            O           O_c++       g           g_complex   g            )
-  set A =(hpux   solaris    IRIX       linux         rs6000      alpha        solaris_uni rs6000_sp   sun4        IRIX64      linux_absoft )
-  set J1=(1      1          1          1             1           1            4           4           2           1           1            )
-  set J2=(0      2          2          2             2           2            9           9           3           2           2            )
-  set J3=(0      3          3          3             3           3            0           0           6           3           3            )
-  set J4=(0      5          6          6             6           7            0           0           8           5           6            )
-  set J5=(0      10         7          8             8           8            0           0           1           10          8            )
-  set J6=(0      13         8          13            12          13           13          13          13          12          0            )
-  set J7=(0      15         0          14            0           0            0           14           0          14          0            )
-  set J8=(0      16          0          0             0           0            0           0            0         16          0            )
-  set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P        $SB_P       $CCST       $TMP_P      $SB_P       $CO_P        )
-endif
-if ($day == Mon) then
-  set M =(snake  fire       violet     gaea          tri33       ptera       lava         ico08       maverick    denali      puddle       )
-  set B =(g      O_c++      O_c++      g             O           g           O_complex    O           O_complex   O_complex   O_c++        )
-  set A =(hpux   solaris    IRIX       linux         rs6000      alpha_nolog solaris_gnu  rs6000_sp   sun4        IRIX64      linux_absoft )
-  set J1=(0      1          1          1             1           1           1            1           1           1           1            )
-  set J2=(1      2          2          2             2           2           2            2           2           2           2            )
-  set J3=(0      8          3          3             3           6           3            3           3           3           3            )
-  set J4=(0      13         6          6             6           7           0            6           5           5           6            )
-  set J5=(0      15         8          13            13          3           0            7           10          10          8            )
-  set J6=(0      16          13         8             12          8           0            8           13         12          13           )
-  set J7=(0      0          0          14            0           0            0           14          0           16           0            )
-  set J8=(0      0          0          0             0           0            0           0            0           0          0            )
-  set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $CO_P        )
-endif  
-if ($day == Tue) then
-  set M =(snake  fire       alaska     gaea          tri33       ptera       lava         ico08       maverick    denali      puddle       )
-  set B =(O      g          O_complex  O             g           O           g            g           O_c++       g_c++       O_complex    )
-  set A =(hpux   solaris    IRIX       linux         rs6000      alpha       solaris_gnu  rs6000_sp   sun4        IRIX64      linux_absoft )
-  set J1=(0      1          1          1             1           1           1            1           1           1           1            )
-  set J2=(2      2          2          2             2           2           2            2           2           2           2            )
-  set J3=(0      3          3          3             3           6           3            3           3           3           3            )
-  set J4=(6      6          5          6             6           7           8            6           6           6           13           )
-  set J5=(0      7          10         8             8           3           0            7           8           8           0            )
-  set J6=(0      13         13         14            12          8           0            8           13          12          0            )
-  set J7=(0      14         0          0             0           0           0           14           0           16           0            )
-  set J8=(0      16          0          0             0           0           0            0           0           0           0            )
-  set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $CO_P        )
-endif
-if ($day == Wed) then
-  set M =(snake  fire       violet     gaea          tri33       ptera       lava         ico08       maverick    denali      puddle       )
-  set B =(g      g_c++      O          g_complex     O_complex   O           O_c++        O_complex   O           g           O            )
-  set A =(hpux   solaris    IRIX       linux         rs6000      alpha_uni   solaris_uni  rs6000_sp   sun4        IRIX64      linux_absoft )
-  set J1=(3      1          1          1             1           4           4            1           1           1           1            )
-  set J2=(0      2          2          2             2           9           9            2           2           2           2            )
-  set J3=(0      3          3          3             3           13          13           3           3           3           3            )
-  set J4=(6      6          6          5             5           0           0            5           6           4           8            )
-  set J5=(0      8          7          10            10          0           0            10          8           7           13           )
-  set J6=(0      14         8          13            12          0           0            13          13          13          0            )
-  set J7=(0      15         0          0             0           0           0            0           0           16           0            )
-  set J8=(0      16          0          0             0           0            0           0            0           0          0            )
-  set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $CO_P        )
-endif
-if ($day == Thu) then
-  set M =(snake  fire       violet     gaea          tri33       ptera       lava         ico08       maverick    denali      puddle       )
-  set B =(O      g_complex  g_c++      O_c++         O           g           O_complex    g_c++       g           O           g_c++        )
-  set A =(hpux   solaris    IRIX       linux         rs6000_gnu  alpha       solaris64    rs6000_sp   sun4_f90    IRIX64      linux_absoft )
-  set J1=(0      1          1          1             1           1           1            1           1           1           1            )
-  set J2=(0      2          2          2             2           2           2            2           2           2           2            )
-  set J3=(3      3          3          3             3           6           3            3           3           3           3            )
-  set J4=(6      5          6          6             6           7           5            6           6           6           6            )
-  set J5=(0      10         8          8             8           3           10           8           12          7           8            )
-  set J6=(0      13         13         13            13          8           13           13          13          8           0            )
-  set J7=(0      15         0          14            0           0           0            14          0           14          0            )
-  set J8=(0      16          0          0             0           0           0            0           0          16           0            )
-  set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $CO_P        )
-endif  
-if ($day == Fri) then
-  set M =(snake  fire       violet     gaea          tri33       ptera       lava         ico08       maverick    denali      puddle       )
-  set B =(g      O_c++      g_complex  O_complex     g           O           O            g_complex   g_c++       O           g            )
-  set A =(hpux   solaris    IRIX       linux         rs6000_gnu  alpha_uni   solaris64    rs6000_sp   sun4_f90    IRIX64      linux_absoft )
-  set J1=(0      1          1          1             1           4           1            1           1           1           1            )
-  set J2=(2      2          2          2             2           9           2            2           2           2           2            )
-  set J3=(0      3          3          3             3           13          3            3           3           3           3            )
-  set J4=(6      6          5          5             6           0           8            5           6           6           6            )
-  set J5=(0      8          10         10            8           0           13            10          8           13          8            )
-  set J6=(0      14          13         13            0           0           0           0           0          12          0            )
-  set J7=(0      15          0          0             0           0           0           0           0          14          0            )
-  set J8=(0      16          0          0             0           0            0           0            0         16          0            )
-  set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $CO_P        )
-endif
-if ($day == Sat) then
-  set M =(snake  fire       alaska     gaea          tri33       ptera       lava         ico08       maverick    denali      puddle       )
-  set B =(O      O          g          O_complex     O           O           g_complex    O           O_complex   O_c++       O            )
-  set A =(hpux   solaris    IRIX       linux         rs6000_gnu  alpha_nolog solaris_uni  rs6000_sp   sun4        IRIX64      linux_absoft )
-  set J1=(1      1          1          1             1           1           4            1           1           1           1            )
-  set J2=(0      2          2          2             2           2           9            2           2           2           2            )
-  set J3=(0      3          3          3             3           6           11           3           3           3           6            )
-  set J4=(6      6          6          5             6           7           10           7           5           6           8            )
-  set J5=(0      7          7          10            13          3           13           8           10          8           0            )
-  set J6=(0      8         13          0             0           8           0            13          4           12          0            )
-  set J7=(0      14         0          0             0           0            0           14          0           16           0            )
-  set J8=(0      15         0          0             0           0            0           0            0           0          0            )
-  set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $CO_P        )
-endif
-#
-#  test for each machine
-#
-foreach job ($*)
-  set mach    = $M[$job]
-  set bopt    = $B[$job]
-  set arch    = $A[$job]
-  set job1    = $J1[$job]
-  set job2    = $J2[$job]
-  set job3    = $J3[$job]
-  set job4    = $J4[$job]
-  set job5    = $J5[$job]
-  set job6    = $J6[$job]
-  set job7    = $J7[$job]
-  set job8    = $J8[$job]
-  set hme     = $H[$job]
+rsh $MACH -n /home/bsmith/petsc/maint/buildlinks $TMP >& /dev/null
+rsh $MACH -n "cd $TMP/maint;rm -f build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
+rsh $MACH -n "cd $TMP/maint;touch build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
 
-#
-# On ico08 and clyde do not run the test examples
-#
-  if ( $mach == clyde || $mach == ico08 ) then 
-#    Actually run the testexamples_14 on the IBM (this tests the Matlab viewer)
-    if ( $job7 == 14 ) then
-      set TEST = testexamples_
-    else
-      set TEST = buildexamples_
-    endif
-  else
-    set TEST = testexamples_
-  endif
-#
-# Use nice to reduce priority on yukon,alaska
-#
-  if ( $mach == denali || $mach == alaska ) then 
-    set NICE = 'nice -20 '
-  else
-    set NICE = ''
-  endif
+rsh $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH $BOPT `date` ' >> maint/build_$ARCH.$BOPT.$MACH.log"
+rsh $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all >>& maint/build_$ARCH.$BOPT.$MACH.log"
 
-  rsh $mach -n /home/bsmith/petsc/maint/buildlinks $hme >& /dev/null
-  rsh $mach -n "cd $hme/maint ;rm -f build_$arch.$bopt.$mach.log examples_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme/maint ; touch build_$arch.$bopt.$mach.log examples_$arch.$bopt.$mach.log"
+if ($?MATLAB) then
+  rsh $MACH -n "cd $TMP;echo 'Build matlabcodes on $MACH $ARCH $BOPT `date` ' >> maint/build_$ARCH.$BOPT.$MACH.log"
+  rsh $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT matlabcodes >>& maint/build_$ARCH.$BOPT.$MACH.log"
+endif
 
-  rsh $mach -n "cd $hme ; echo 'Build on $mach $arch $bopt `date` ' >> maint/build_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt all >>& maint/build_$arch.$bopt.$mach.log"
-
-  if ( $arch == solaris || $arch == IRIX64 || $arch == linux || $arch == rs6000_sp ) then
-    rsh $mach -n "cd $hme ; echo 'Build matlabcodes on $mach $arch $bopt `date` ' >> maint/build_$arch.$bopt.$mach.log"
-    rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt matlabcodes >>& maint/build_$arch.$bopt.$mach.log"
-  endif
-
-  rsh $mach -n "cd $hme ; echo '****************************************************' >> maint/build_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme; chmod -R g+w lib" >& /dev/null
-  rsh $mach -n "cd $hme ;echo 'Finished Build on $mach  $arch $bopt `date`' >> maint/build_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme ;echo 'Build on $mach $arch  $bopt `date` ' >> maint/examples_$arch.$bopt.$mach.log"
-  if ( $job1 != 0 ) then 
-    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job1 tree >>& maint/examples_$arch.$bopt.$mach.log"
-    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
-  endif
-  if ( $job2 != 0 ) then 
-    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job2 tree  >>& maint/examples_$arch.$bopt.$mach.log"
-    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
-  endif
-  if ( $job3 != 0 ) then 
-    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job3 tree  >>& maint/examples_$arch.$bopt.$mach.log"
-    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
-  endif
-  if ( $job4 != 0 ) then 
-    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job4 tree  >>& maint/examples_$arch.$bopt.$mach.log"
-    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
-  endif
-  if ( $job5 != 0 ) then 
-    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job5 tree  >>& maint/examples_$arch.$bopt.$mach.log"
-    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
-  endif
-  if ( $job6 != 0 ) then 
-    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job6 tree  >>& maint/examples_$arch.$bopt.$mach.log"
-    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
-  endif
-  if ( $job7 != 0 ) then 
-    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job7 tree  >>& maint/examples_$arch.$bopt.$mach.log"
-    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
-  endif
-  if ( $job8 != 0 ) then 
-    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job8 tree  >>& maint/examples_$arch.$bopt.$mach.log"
-    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
-  endif
-  rsh $mach -n "cd $hme ;echo 'Finished Build on $mach $arch $bopt `date`' >> maint/examples_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme ; echo 'Finished Build `date`' >> maint/build_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme ;echo 'Finished Build `date`' >> maint/examples_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme ; echo 'X******************************************************X' >> maint/examples_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme ;/bin/cp  maint/examples_$arch.$bopt.$mach.log /home/bsmith/petsc/maint/nightlylogs"
-  rsh $mach -n "cd $hme ;/bin/cp  maint/build_$arch.$bopt.$mach.log /home/bsmith/petsc/maint/nightlylogs"
+rsh $MACH -n "cd $TMP;echo '****************************************************' >> maint/build_$ARCH.$BOPT.$MACH.log"
+rsh $MACH -n "cd $TMP;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/build_$ARCH.$BOPT.$MACH.log"
+rsh $MACH -n "cd $TMP;/bin/cp maint/build_$ARCH.$BOPT.$MACH.log /home/bsmith/petsc/maint/nightlylogs"
+rsh $MACH -n "cd $TMP;chmod -R g+w lib" >& /dev/null
+#
+#  Now run the test examples
+#
+rsh $MACH -n "cd $TMP ;echo 'Build on $MACH $ARCH  $BOPT `date` ' >> maint/examples_$ARCH.$BOPT.$MACH.log"
+foreach j ($JOBS)
+  rsh $MACH -n "cd $TMP; $NICE make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT ACTION=$TEST$j tree >>& maint/examples_$ARCH.$BOPT.$MACH.log"
+  rsh $MACH -n "cd $TMP;echo '******************************************************' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 end
+rsh $MACH -n "cd $TMP ;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/examples_$ARCH.$BOPT.$MACH.log"
+rsh $MACH -n "cd $TMP ;echo 'X******************************************************X' >> maint/examples_$ARCH.$BOPT.$MACH.log"
+rsh $MACH -n "cd $TMP;/bin/cp maint/examples_$ARCH.$BOPT.$MACH.log /home/bsmith/petsc/maint/nightlylogs"
+
 
 
 
