@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.126 1996/09/12 16:28:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.127 1996/09/14 03:35:41 curfman Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -129,11 +129,19 @@ int PLogInfo(void *vobj,char *message,...)
   MPI_Comm_rank(PETSC_COMM_WORLD,&urank);
   va_start( Argp, message );
   sprintf(string,"[%d]",urank); len = PetscStrlen(string);
+#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+  vsprintf(string+len,message,(char *)Argp);
+#else
   vsprintf(string+len,message,Argp);
+#endif
   fprintf(stdout,"%s",string);
   fflush(stdout);
   if (petsc_history) {
+#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+    vfprintf(petsc_history,message,(char *)Argp);
+#else
     vfprintf(petsc_history,message,Argp);
+#endif
   }
   va_end( Argp );
   return 0;
@@ -719,7 +727,11 @@ int PLogObjectState(PetscObject obj,char *format,...)
   va_list Argp;
   if (!objects) return 0;
   va_start( Argp, format );
+#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+  vsprintf(objects[obj->id].string,format,(char *)Argp);
+#else
   vsprintf(objects[obj->id].string,format,Argp);
+#endif
   va_end( Argp );
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stringv.c,v 1.5 1996/03/23 18:35:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: stringv.c,v 1.6 1996/04/01 03:12:13 curfman Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -46,7 +46,11 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
   if (v->type != STRING_VIEWER) return 0;
   va_start( Argp, format );
+#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+  vsprintf(v->head,format,(char *)Argp);
+#else
   vsprintf(v->head,format,Argp);
+#endif
   va_end( Argp );
 
   /* update the position of v->head */

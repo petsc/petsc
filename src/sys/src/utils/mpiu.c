@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.56 1996/09/14 03:34:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.57 1996/09/14 16:20:48 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -43,10 +43,18 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
+#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+    vfprintf(fd,format,(char*)Argp);
+#else
     vfprintf(fd,format,Argp);
+#endif
     fflush(fd);
     if (petsc_history) {
+#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+      vfprintf(petsc_history,format,(char *)Argp);
+#else
       vfprintf(petsc_history,format,Argp);
+#endif
       fflush(petsc_history);
     }
     va_end( Argp );
@@ -77,10 +85,18 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
+#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+    vfprintf(stdout,format,(char *)Argp);
+#else
     vfprintf(stdout,format,Argp);
+#endif
     fflush(stdout);
     if (petsc_history) {
+#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+      vfprintf(petsc_history,format,(char *)Argp);
+#else
       vfprintf(petsc_history,format,Argp);
+#endif
       fflush(petsc_history);
     }
     va_end( Argp );
