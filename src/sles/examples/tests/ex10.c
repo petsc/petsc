@@ -20,7 +20,7 @@ diagonal data structure.\n\n";
 int main(int argc,char **args)
 {
   Mat     mat;
-  int     ierr, i, its, m = 3, rdim, cdim;
+  int     ierr, i, its, m = 3, rdim, cdim, rstart, rend, mytid, numtids;
   Scalar  norm, v, one = 1.0, neg1 = -1.0;
   Vec     u, x, b;
   SLES    sles;
@@ -29,17 +29,21 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stderr,help);
   OptionsGetInt(0,"-m",&m);
+  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
 
   /* Form matrix */
   ierr = GetElasticityMatrix(m,&mat); CHKERRA(ierr);
 
   /* Generate vectors */
   ierr = MatGetSize(mat,&rdim,&cdim); CHKERRA(ierr);
-  ierr = VecCreate(MPI_COMM_SELF,rdim,&u); CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(mat,&rstart,&rend); CHKERRA(ierr);
+  ierr = VecCreate(MPI_COMM_WORLD,rdim,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
-  for (i=0; i<rdim; i++) {
-    v = one*i; ierr = VecSetValues(u,1,&i,&v,INSERTVALUES); CHKERR(ierr);
+  for (i=rstart; i<rend; i++) {
+    v = (Scalar)(i-rstart + 100*mytid); 
+    ierr = VecSetValues(u,1,&i,&v,INSERTVALUES); CHKERR(ierr);
   } 
   ierr = VecAssemblyBegin(u); CHKERR(ierr);
   ierr = VecAssemblyEnd(u); CHKERR(ierr);
@@ -48,7 +52,7 @@ int main(int argc,char **args)
   ierr = MatMult(mat,u,b); CHKERRA(ierr);
   
   /* Solve linear system */
-  ierr = SLESCreate(MPI_COMM_SELF,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,mat,mat,MAT_SAME_NONZERO_PATTERN);
           CHKERRA(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERR(ierr);
@@ -151,38 +155,14 @@ int GetElasticityMatrix(int m,Mat *newmat)
   /* Convert storage formats -- just to demonstrate block diagonal format */
   { MatType type = MATBDIAG;
   if (OptionsHasName(0,"-mat_row")) type = MATROW; 
-  ierr = MatConvert(submat,type,newmat1); CHKERR(ierr);
+  if (OptionsHasName(0,"-mat_aij")) type = MATSAME;
+  if (OptionsHasName(0,"-mat_dense")) type = MATDENSE;
+  if (OptionsHasName(0,"-mat_mpiaij")) type = MATMPIAIJ;
+  if (OptionsHasName(0,"-mat_mpirow")) type = MATMPIROW;
+  if (OptionsHasName(0,"-mat_mpibdiag")) type = MATMPIBDIAG;
+  ierr = MatConvert(submat,type,newmat); CHKERR(ierr);
   ierr = MatDestroy(submat); CHKERR(ierr);
-
-    {  
-      int    nz, nd, nb, *diag, rows, cols, rstart, rend, *cval;
-      Scalar **diagv, *val;
-      MatGetSize(*newmat1,&rows,&cols);
-      if (type == MATBDIAG) {
-        MatGetBDiagData(*newmat1,&nd,&nb,&diag,&diagv);
-        MatCreateSequentialBDiag(MPI_COMM_SELF,rows,cols,nd,nb,diag,0,
-                          newmat);
-/*        MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,rows,cols,nd,nb,diag,0,
-                          newmat); */
-      } else {
-        MatCreateSequentialRow(MPI_COMM_SELF,rows,cols,
-                    0,0,newmat);
-/*        MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,rows,cols,
-                    0,0,0,0,newmat); */
-      }
-      MatGetOwnershipRange(*newmat,&rstart,&rend);
-      for (i=rstart; i<rend; i++) {
-        ierr = MatGetRow(*newmat1,i,&nz,&cval,&val); CHKERR(ierr);
-        ierr = MatSetValues(*newmat,1,&i,nz,cval,val,INSERTVALUES); 
-               CHKERR(ierr);
-        ierr = MatRestoreRow(*newmat1,i,&nz,&cval,&val); CHKERR(ierr);
-      }
-      ierr = MatAssemblyBegin(*newmat,FINAL_ASSEMBLY);
-      ierr = MatAssemblyEnd(*newmat,FINAL_ASSEMBLY);
-      ierr = MatDestroy(*newmat1); CHKERR(ierr);
-    }
   }
-
 
   /* Display matrix information and nonzero structure */
   MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRA(ierr);
