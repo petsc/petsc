@@ -99,6 +99,7 @@ class Maker (logging.Logger):
   def executeShellCommand(self, command, checkCommand = None):
     self.debugPrint('sh: '+command, 3, 'shell')
     (status, output) = commands.getstatusoutput(command)
+    self.debugPrint('sh: '+output, 4, 'shell')
     if checkCommand:
       checkCommand(command, status, output)
     else:
