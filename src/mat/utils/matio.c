@@ -78,6 +78,8 @@ static int MatLoadPrintHelp_Private(Mat A)
 .    -matload_type mpiaij   - parallel AIJ type
 .    -matload_type seqbaij  - block AIJ type
 .    -matload_type mpibaij  - parallel block AIJ type
+.    -matload_type seqsbaij - block symmetric AIJ type
+.    -matload_type mpisbaij - parallel block symmetric AIJ type
 .    -matload_type seqbdiag - block diagonal type
 .    -matload_type mpibdiag - parallel block diagonal type
 .    -matload_type mpirowbs - parallel rowbs type

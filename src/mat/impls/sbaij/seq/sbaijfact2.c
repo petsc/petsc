@@ -1266,7 +1266,7 @@ int MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
     IS              isrow=a->row;
     int             mbs=a->mbs,*ai=a->i,*aj=a->j,*rip,i;
     MatScalar       *aa=a->a,*v;
-    PetscScalar     *x,*b,xk,*t;
+    PetscScalar     *x,*b,*t;
     int             nz,*vj,k,n;
     if (bb->n > a->solves_work_n) {
       if (a->solves_work) {ierr = PetscFree(a->solves_work);CHKERRQ(ierr);}
@@ -1596,7 +1596,7 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
         PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS>7\n");
       break; 
     }
-  } 
+  }
 
   PetscFunctionReturn(0); 
 }
