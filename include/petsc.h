@@ -2,6 +2,8 @@
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.2 Released May 12, 1995."
+
 #include <stdio.h>
 #if defined(PARCH_sun4)
 int fprintf(FILE*,char*,...);
