@@ -1,6 +1,8 @@
 /*$Id: fgmresp.h,v 1.7 2001/08/07 03:03:55 balay Exp $*/
 /*
-   Private data structure used by the FGMRES method.
+   Private data structure used by the FGMRES method. The beginning of this
+ data structure MUST be identical to the beginning of KSP_GMRES since they
+ share several functions!
 */
 
 #if !defined(__FGMRES)

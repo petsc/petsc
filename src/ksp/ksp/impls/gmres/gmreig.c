@@ -7,6 +7,14 @@
 #define __FUNCT__ "KSPComputeExtremeSingularValues_GMRES"
 int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
+#if defined(PETSC_MISSING_LAPACK_GESVD) 
+  PetscFunctionBegin;
+  /*
+      The Cray math libraries on T3D/T3E, and Intel Math Kernel Libraries (MKL) for PCs do not 
+      seem to have the DGESVD() lapack routines
+  */
+  SETERRQ(PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable\nNot able to provide singular value estimates.");
+#else
   KSP_GMRES   *gmres = (KSP_GMRES*)ksp->data;
   int         n = gmres->it + 1,N = gmres->max_k + 2,ierr,lwork = 5*N,idummy = N,i;
   PetscScalar *R = gmres->Rsvd,*work = R + N*N,sdummy;
@@ -26,13 +34,6 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emi
   }
   
   /* compute Singular Values */
-  /*
-      The Cray math libraries on T3D/T3E, and Intel Math Kernel Libraries (MKL) for PCs do not 
-      seem to have the DGESVD() lapack routines
-  */
-#if defined(PETSC_MISSING_LAPACK_GESVD) 
-  SETERRQ(PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable\nNot able to provide singular value estimates.");
-#else
 #if !defined(PETSC_USE_COMPLEX)
   LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
 #else
@@ -42,17 +43,17 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emi
 
   *emin = realpart[n-1];
   *emax = realpart[0];
-
-  PetscFunctionReturn(0);
 #endif
+  PetscFunctionReturn(0);
 }
+
 /* ------------------------------------------------------------------------ */
 /* ESSL has a different calling sequence for dgeev() and zgeev() than standard LAPACK */
-#if defined(PETSC_HAVE_ESSL)
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
+#if defined(PETSC_HAVE_ESSL)
   KSP_GMRES   *gmres = (KSP_GMRES*)ksp->data;
   int         n = gmres->it + 1,N = gmres->max_k + 1,ierr,lwork = 5*N;
   int         idummy = N,i,*perm,clen,zero;
@@ -106,13 +107,10 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   }
 #endif
   ierr = PetscFree(perm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
+#elif defined(PETSC_MISSING_LAPACK_GEEV) 
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
 #elif !defined(PETSC_USE_COMPLEX)
-#undef __FUNCT__  
-#define __FUNCT__ "KSPComputeEigenvalues_GMRES"
-int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
-{
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
   int       n = gmres->it + 1,N = gmres->max_k + 1,ierr,lwork = 5*N,idummy = N,i,*perm;
   PetscScalar    *R = gmres->Rsvd,*work = R + N*N;
@@ -130,11 +128,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* compute eigenvalues */
-#if defined(PETSC_MISSING_LAPACK_GEEV) 
-  SETERRQ(PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
-#else
   LAgeev_("N","N",&n,R,&N,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
-#endif
   if (ierr) SETERRQ(PETSC_ERR_LIB,"Error in LAPACK routine");
   ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) { perm[i] = i;}
@@ -144,13 +138,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
     c[i] = imagpart[perm[i]];
   }
   ierr = PetscFree(perm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 #else
-#undef __FUNCT__  
-#define __FUNCT__ "KSPComputeEigenvalues_GMRES"
-int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
-{
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
   int       n = gmres->it + 1,N = gmres->max_k + 1,ierr,lwork = 5*N,idummy = N,i,*perm;
   PetscScalar    *R = gmres->Rsvd,*work = R + N*N,*eigs = work + 5*N,sdummy;
@@ -166,11 +154,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* compute eigenvalues */
-#if defined(PETSC_MISSING_LAPACK_GEEV) 
-  SETERRQ(PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
-#else
   LAgeev_("N","N",&n,R,&N,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&ierr);
-#endif
   if (ierr) SETERRQ(PETSC_ERR_LIB,"Error in LAPACK routine");
   ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) { perm[i] = i;}
@@ -181,9 +165,9 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
     c[i] = PetscImaginaryPart(eigs[perm[i]]);
   }
   ierr = PetscFree(perm);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
-#endif
 
 
 
