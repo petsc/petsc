@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.4 1995/04/13 14:42:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.5 1995/04/17 02:17:36 bsmith Exp curfman $";
 #endif
 
 #include "ptscimpl.h"
@@ -37,13 +37,17 @@ FILE *ViewerFileGetPointer(Viewer viewer)
 }
 
 /*@
-     ViewerFileOpen - Opens an ASCI file as a viewer.
+   ViewerFileOpen - Opens an ASCII file as a viewer.
 
-  Input Parameters:
-.   name - the file name
+   Input Parameter:
+.  name - the file name
 
-  Output Parameter:
-.   lab - the viewer to use with that file.
+   Output Parameter:
+.  lab - the viewer to use with that file
+
+.keywords: Viewer, file, open
+
+.seealso: ViewerFileSyncOpen()
 @*/
 int ViewerFileOpen(char *name,Viewer *lab)
 {
@@ -64,16 +68,20 @@ int ViewerFileOpen(char *name,Viewer *lab)
   return 0;
 }
 /*@
-     ViewerSyncFileOpen - Opens an ASCI file as a viewer, only the first
-            processor opens the file. All other processors ship the 
-            data to the first processor to print. 
+   ViewerSyncFileOpen - Opens an ASCII file as a viewer, where only the first
+   processor opens the file. All other processors send their data to the 
+   first processor to print. 
 
-  Input Parameters:
-.   name - the file name
-.   comm - the communicator
+   Input Parameters:
+.  name - the file name
+.  comm - the communicator
 
-  Output Parameter:
-.   lab - the viewer to use with that file.
+   Output Parameter:
+.  lab - the viewer to use with that file
+
+.keywords: Viewer, file, open
+
+.seealso: ViewerFileOpen()
 @*/
 int ViewerSyncFileOpen(char *name,MPI_Comm comm,Viewer *lab)
 {

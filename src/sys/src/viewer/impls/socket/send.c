@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.6 1995/03/21 23:20:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.7 1995/03/23 00:40:04 bsmith Exp curfman $";
 #endif
 /* This is part of the MatlabSockettool package. 
  
@@ -169,14 +169,30 @@ int byteswapdouble(double *buff,int n)
 
 
 /*@
-     ViewerMatlabOpen - Opens a connection to a Matlab server.
+   ViewerMatlabOpen - Opens a connection to a Matlab server.
 
-  Input Parameters:
-.   machine - the machine the server is running on
-.   port - the port to connect to, use -1 for default. 
+   Input Parameters:
+.  machine - the machine the server is running on
+.  port - the port to connect to, use -1 for the default
 
-  Output Parameter:
-.   lab - a context to use when communicating with the server.
+   Output Parameter:
+.  lab - a context to use when communicating with the server
+
+   Notes:
+   Most users should employ the following commands to access the 
+   Matlab viewers
+$
+$    ViewerMatlabOpen(char *machine,int port,Viewer &viewer)
+$    MatView(Mat matrix,Viewer viewer)
+$
+$                or
+$
+$    ViewerMatlabOpen(char *machine,int port,Viewer &viewer)
+$    VecView(Vec vector,Viewer viewer)
+
+.keywords: Viewer, Matlab, open
+
+.seealso: MatView(), VecView(), ViewerMatlabPutSparse(), ViewerMatlabPutArray()
 @*/
 int ViewerMatlabOpen(char *machine,int port,Viewer *lab)
 {
