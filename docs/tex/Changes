@@ -46,6 +46,10 @@ add to it).
  please let us and know and we can provide it or provide alternative code
 to do what you need.
 
+    Added optional filename to -log_info <filename> option. PETSc will open
+  a seperate file, called filename.rank for each processor and print the 
+  output there.
+
   Viewer
 
     Changed ViewerFileOpenASCII() to ViewerASCIIOpen()
