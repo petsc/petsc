@@ -60,6 +60,10 @@ PETScView info:
 
 
 ------------Accounts (around the world and around the block) -----
+UofC: 
+   IRIX machines :europium.uchicago.edu,dysprosium,terbium,gadolinium,lanthanum,neodymium
+    Userid: bsmith
+    Password: petsc-passwd
 
 
 Berkeley: i86pc machines running Solaris
