@@ -32,7 +32,6 @@ while [ $# -gt 0 ] ; do
     ;;
     -showtimesoff)
     showtimes="no"
-    shift
     ;;
     -myrinet)
     USE_MYRINET=yes
@@ -219,7 +218,7 @@ else
 #
   trap "qdel $pbs_job_id ; echo Killing job; exit" 2
 #
-if [ $shared = "yes" ] ; then
+if [ $showtimes = "yes" ] ; then
   echo -n "PBS Job $pbs_job_id Submitted to queue " 
   date
 fi
@@ -231,15 +230,15 @@ fi
     sleep 5
     lstatus=`qstat $pbs_job_id 2> /dev/null`
     status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
-    if [ $shared = "yes" ] ; then
+    if [ $showtimes = "yes" ] ; then
       echo -n "."
     fi
   done
-  if [ $shared = "yes" ] ; then
+  if [ $showtimes = "yes" ] ; then
     echo " "
   fi
 # 
-if [ $shared = "yes" ] ; then
+if [ $showtimes = "yes" ] ; then
   echo -n "PBS Job $pbs_job_id Running "
   date
 fi
@@ -250,15 +249,15 @@ fi
     sleep 2
     lstatus=`qstat $pbs_job_id 2> /dev/null`
     status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
-    if [ $shared = "yes" ] ; then
+    if [ $showtimes = "yes" ] ; then
       echo -n "."
     fi
   done
-  if [ $shared = "yes" ] ; then
+  if [ $showtimes = "yes" ] ; then
     echo " "
   fi
 #
-if [ $shared = "yes" ] ; then
+if [ $showtimes = "yes" ] ; then
   echo -n "PBS Job $pbs_job_id Job no longer running "
   date
 fi
@@ -268,15 +267,15 @@ fi
   while [ "$outstat" != "Unknown Job" ] ; do
     sleep 2
     outstat=`qstat $pbs_job_id 2>&1 | sed -e 's/^.*Unknown Job.*$/Unknown Job/'`
-    if [ $shared = "yes" ] ; then
+    if [ $showtimes = "yes" ] ; then
       echo -n "."
     fi
   done
-  if [ $shared = "yes" ] ; then
+  if [ $showtimes = "yes" ] ; then
     echo " "
   fi
 #
-if [ $shared = "yes" ] ; then
+if [ $showtimes = "yes" ] ; then
   echo -n "PBS Job $pbs_job_id No longer existing "
   date
 fi
