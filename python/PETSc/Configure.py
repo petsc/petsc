@@ -1060,6 +1060,7 @@ fi
 
   def configureCompilerFlags(self):
     '''Get all compiler flags from the Petsc database'''
+    # We use the framework in order to remove the PETSC_ namespace
     optionsCmd = os.path.join(self.configAuxDir, 'config.options')+' '+self.host_cpu+'-'+self.host_vendor+'-'+self.host_os
     self.getCompilerFlags('C',   self.compilers.CC)
     self.getCompilerFlags('CXX', self.compilers.CXX)
@@ -1075,9 +1076,9 @@ fi
     self.addSubstitution('FFLAGS_g',    self.FFLAGS_g)
     self.addSubstitution('FFLAGS_O',    self.FFLAGS_O)
 
-    self.addSubstitution('PETSCFLAGS', self.framework.argDB['PETSCFLAGS'])
-    self.addSubstitution('COPTFLAGS',  self.framework.argDB['COPTFLAGS'])
-    self.addSubstitution('FOPTFLAGS',  self.framework.argDB['FOPTFLAGS'])
+    self.framework.addSubstitution('PETSCFLAGS', self.framework.argDB['PETSCFLAGS'])
+    self.framework.addSubstitution('COPTFLAGS',  self.framework.argDB['COPTFLAGS'])
+    self.framework.addSubstitution('FOPTFLAGS',  self.framework.argDB['FOPTFLAGS'])
     return
 
   def checkF77CompilerOption(self, option):
@@ -1093,6 +1094,7 @@ fi
 
   def configureFortranPIC(self):
     '''Determine the PIC option for the Fortran compiler'''
+    # We use the framework in order to remove the PETSC_ namespace
     option = ''
     if self.checkF77CompilerOption('-PIC'):
       option = '-PIC'
@@ -1100,7 +1102,7 @@ fi
       option = '-fPIC'
     elif self.checkF77CompilerOption('-KPIC'):
       option = '-KPIC'
-    self.addSubstitution('FC_SHARED_OPT', option)
+    self.framework.addSubstitution('FC_SHARED_OPT', option)
     return
 
   def configureDynamicLibraries(self):
@@ -1114,9 +1116,10 @@ fi
 
   def configureDebuggers(self):
     '''Find a default debugger and determine its arguments'''
-    self.getExecutable('gdb', getFullPath = 1, comment = 'GNU debugger')
-    self.getExecutable('dbx', getFullPath = 1, comment = 'DBX debugger')
-    self.getExecutable('xdb', getFullPath = 1, comment = 'XDB debugger')
+    # We use the framework in order to remove the PETSC_ namespace
+    self.framework.getExecutable('gdb', getFullPath = 1, comment = 'GNU debugger')
+    self.framework.getExecutable('dbx', getFullPath = 1, comment = 'DBX debugger')
+    self.framework.getExecutable('xdb', getFullPath = 1, comment = 'XDB debugger')
     if hasattr(self, 'gdb'):
       self.addDefine('USE_GDB_DEBUGGER', 1, comment = 'Use GDB as the default debugger')
     elif hasattr(self, 'dbx'):
@@ -1154,41 +1157,44 @@ fi
 
   def checkMkdir(self):
     '''Make sure we can have mkdir automatically make intermediate directories'''
-    self.getExecutable('mkdir', getFullPath = 1, comment = 'Mkdir utility')
+    # We use the framework in order to remove the PETSC_ namespace
+    self.framework.getExecutable('mkdir', getFullPath = 1, comment = 'Mkdir utility')
     if hasattr(self, 'mkdir'):
       if os.path.exists('.conftest'): os.rmdir('.conftest')
       (status, output) = commands.getstatusoutput(self.mkdir+' -p .conftest/.tmp')
       if not status and os.path.isdir('.conftest/.tmp'):
         self.mkdir = self.mkdir+' -p'
-        self.addSubstitution('MKDIR', self.mkdir)
+        self.framework.addSubstitution('MKDIR', self.mkdir)
       if os.path.exists('.conftest'): os.removedirs('.conftest/.tmp')
     return
 
   def configurePrograms(self):
     '''Check for the programs needed to build and run PETSc'''
+    # We use the framework in order to remove the PETSC_ namespace
     self.checkMkdir()
-    self.getExecutable('sh',   getFullPath = 1, comment = 'Bourne shell', resultName = 'SHELL')
-    self.getExecutable('sed',  getFullPath = 1, comment = 'Sed utility')
-    self.getExecutable('diff', getFullPath = 1, comment = 'Diff utility')
-    self.getExecutable('ar',   getFullPath = 1, comment = 'Archive utility')
-    self.getExecutable('make', comment = 'Build utility')
-    self.addSubstitution('AR_FLAGS', 'cr')
-    self.getExecutable('ranlib', comment = 'Ranlib utility')
-    self.addSubstitution('SET_MAKE', '', comment = 'Obsolete')
-    self.addSubstitution('LIBTOOL', '${SHELL} ${top_builddir}/libtool')
-    self.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
+    self.framework.getExecutable('sh',   getFullPath = 1, comment = 'Bourne shell', resultName = 'SHELL')
+    self.framework.getExecutable('sed',  getFullPath = 1, comment = 'Sed utility')
+    self.framework.getExecutable('diff', getFullPath = 1, comment = 'Diff utility')
+    self.framework.getExecutable('ar',   getFullPath = 1, comment = 'Archive utility')
+    self.framework.getExecutable('make', comment = 'Build utility')
+    self.framework.addSubstitution('AR_FLAGS', 'cr')
+    self.framework.getExecutable('ranlib', comment = 'Ranlib utility')
+    self.framework.addSubstitution('SET_MAKE', '', comment = 'Obsolete')
+    self.framework.addSubstitution('LIBTOOL', '${SHELL} ${top_builddir}/libtool')
+    self.framework.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
     return
 
   def configureMissingPrototypes(self):
     '''Checks for missing prototypes, which it adds to petscfix.h'''
-    self.addSubstitution('MISSING_PROTOTYPES',     '', comment = 'C compiler')
-    self.addSubstitution('MISSING_PROTOTYPES_CXX', '', comment = 'C compiler')
+    # We use the framework in order to remove the PETSC_ namespace
+    self.framework.addSubstitution('MISSING_PROTOTYPES',     '', comment = 'C compiler')
+    self.framework.addSubstitution('MISSING_PROTOTYPES_CXX', '', comment = 'C compiler')
     self.missingPrototypesExternC = ''
     if self.archBase == 'linux':
       self.missingPrototypesExternC += 'extern void *memalign(int, int);'
-    self.addSubstitution('MISSING_PROTOTYPES_EXTERN_C', self.missingPrototypesExternC, comment = 'C compiler')
+    self.framework.addSubstitution('MISSING_PROTOTYPES_EXTERN_C', self.missingPrototypesExternC, comment = 'C compiler')
     return
 
   def configureMissingFunctions(self):
@@ -1269,8 +1275,9 @@ fi
 
   def configureMisc(self):
     '''Fix up all the things that we currently need to run'''
-    self.addSubstitution('LT_CC', '${PETSC_LIBTOOL} ${LIBTOOL} --mode=compile')
-    self.addSubstitution('CC_SHARED_OPT', '')
+    # We use the framework in order to remove the PETSC_ namespace
+    self.framework.addSubstitution('LT_CC', '${PETSC_LIBTOOL} ${LIBTOOL} --mode=compile')
+    self.framework.addSubstitution('CC_SHARED_OPT', '')
     return
 
   def configure(self):
