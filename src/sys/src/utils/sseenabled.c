@@ -1,4 +1,4 @@
-/* $Id: sseenabled.c,v 1.10 2001/07/10 23:36:58 buschelm Exp buschelm $ */
+/* $Id: sseenabled.c,v 1.11 2001/07/13 14:56:05 buschelm Exp buschelm $ */
 #include "petscsys.h"
 
 #ifdef PETSC_HAVE_SSE
@@ -7,21 +7,30 @@
 #define SSE_FEATURE_FLAG 0x2000000 /* Mask for bit 25 (from bit 0) */
 
 #include <string.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSSEHardwareTest"
 int PetscSSEHardwareTest(PetscTruth *flag) {
-  char *vendor="************";
+  char *vendor;
   char Gen[13]="GenuineIntel";
-  *flag = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  vendor = (char *)malloc(13*sizeof(char));
+  strcpy(vendor,"************");
   CPUID_GET_VENDOR(vendor);
   if (!strcmp(vendor,Gen)) { 
-    /* If Genuine Intel ... */
+    /* If GenuineIntel ... */
     unsigned long myeax,myebx,myecx,myedx;
     CPUID(CPUID_FEATURES,&myeax,&myebx,&myecx,&myedx);
     /* SSE Feature is indicated by Bit 25 of the EDX register */
     if (myedx & SSE_FEATURE_FLAG) {
       *flag = PETSC_TRUE;
+    } else {
+      *flag = PETSC_FALSE;
     }
   }
-  return(0);
+  free(vendor);
+  PetscFunctionReturn(0);
 }
 
 #ifdef PARCH_linux
@@ -41,7 +50,7 @@ static void SSEEnabledHandler(int sig) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscSSEOSEnabledTest"
+#define __FUNCT__ "PetscSSEOSEnabledTest_Linux"
 int PetscSSEOSEnabledTest_Linux(PetscTruth *flag) {
   int status,pid =0;
   PetscFunctionBegin;
@@ -69,6 +78,8 @@ int PetscSSEOSEnabledTest_Linux(PetscTruth *flag) {
 */
 #define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_TRUE(arg)
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSSEOSEnabledTest_TRUE"
 int PetscSSEOSEnabledTest_TRUE(PetscTruth *flag) {
   *flag = PETSC_TRUE;
   return(0);
