@@ -149,6 +149,12 @@ class UsingPython (base.Base):
     '''Add Python paths for clients to the project'''
     return self.project.appendPath(self.language, os.path.join(self.project.getRoot(), self.usingSIDL.getClientRootDir(self.language)))
 
+  def installClasses(self, package):
+    for cls in self.usingSIDL.getClasses(package):
+      self.project.addImplementation(cls, os.path.join(self.project.getRoot(), self.usingSIDL.getServerLibrary(self.project.getName(), self.language, package, isShared = 1)), self.language)
+    return
+
   def installServer(self, package):
     '''Add Python paths for servers to the project'''
+    self.installClasses(package)
     return self.project.appendPath(self.language, os.path.join(self.project.getRoot(), self.usingSIDL.getServerRootDir(self.language, package)))

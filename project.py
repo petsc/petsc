@@ -13,8 +13,9 @@ class Project:
     self.webdirectory = 'petsc@terra.mcs.anl.gov://mcs/www-unix/sidl/'
     self.web          = web
     # Updated variables
-    self.paths        = {}
-    self.packages     = []
+    self.paths           = {}
+    self.packages        = []
+    self.implementations = {}
     return
 
   def __str__(self):
@@ -84,10 +85,23 @@ class Project:
   def appendPackages(self, packages):
     '''Appends package names'''
     self.packages += packages
+    return
 
   def getPackages(self):
     '''Gets package names'''
     return self.packages
+
+  def addImplementation(self, cls, library, lang):
+    '''Specify the location and language for an implementation of the given class'''
+    if not cls in self.implementations:
+      self.implementations[cls] = []
+    self.implementations[cls].append((library, lang))
+    return
+
+  def getImplementations(self):
+    if hasattr(self, 'implementations'):
+      return self.implementations
+    return {}
 
 class ArgumentPath (base.Base):
   '''This class represents a relocatable path based upon an argument in RDict

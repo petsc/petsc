@@ -11,8 +11,8 @@ def getSIDLDLLPath():
     SIDL_DLL_PATH = filter(lambda p: len(p), os.environ['SIDL_DLL_PATH'].split(';'))
   else:  
     SIDL_DLL_PATH = [] 
-  argsDB   = RDict.RDict(parentDirectory = os.path.abspath(os.path.dirname(sys.modules['RDict'].__file__)))
-  projects = argsDB['installedprojects']
+  argDB    = RDict.RDict(parentDirectory = os.path.abspath(os.path.dirname(sys.modules['RDict'].__file__)))
+  projects = argDB['installedprojects']
   for p in projects:
     try:
       root = os.path.join(p.getRoot(), 'lib')
@@ -20,7 +20,17 @@ def getSIDLDLLPath():
         SIDL_DLL_PATH.append(root)
     except: pass
   return ';'.join(SIDL_DLL_PATH)
-    
+
+def getSIDLDLLMap():
+  argDB    = RDict.RDict(parentDirectory = os.path.abspath(os.path.dirname(sys.modules['RDict'].__file__)))
+  projects = argDB['installedprojects']
+  dllMap   = {}
+  for p in projects:
+    impls = p.getImplementations()
+    for cls in impls:
+      dllMap[cls] = impls[cls][0][0]
+  return dllMap
+
 if __name__ ==  '__main__':
   if len(sys.argv) > 1: sys.exit('Usage: sidldllpath.py')
   print getSIDLDLLPath()
