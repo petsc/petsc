@@ -12,6 +12,11 @@ else
 endif
 
 cd $petscdir
+#
+#  remove all garabage from true petsc directory
+#
+make ACTION=clean tree
+#
 /bin/rm -f $petscdir/maint/links$suffix.log
 echo "Building links from" $petscdir "to" $shadowdir "(`date`)" \
      > $petscdir/maint/links$suffix.log
