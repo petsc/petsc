@@ -1,11 +1,7 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: f90_IRIX.c,v 1.8 1998/04/07 00:55:15 balay Exp balay $";
+static char vcid[] = "$Id: f90_IRIX.c,v 1.9 1998/04/24 14:08:11 balay Exp balay $";
 #endif
 
-/*
-         This file contains the code to map between Fortran 90 
-  pointers and traditional C pointers for the NAG F90 compiler.
-*/
 #include "src/fortran/f90/zf90.h"
 #if defined(HAVE_IRIXF90)
 
