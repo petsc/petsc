@@ -4,12 +4,14 @@ import build.transform
 import os
 
 class FileChanged (build.transform.Transform):
-  '''Detects whether files have changed using checksums'''
-  def __init__(self, sourceDB, inputTag = None, changedTag = 'changed', unchangedTag = 'unchanged'):
+  '''Detects whether files have changed using checksums
+     - If the force flag is given, all files are marked changed'''
+  def __init__(self, sourceDB, inputTag = None, changedTag = 'changed', unchangedTag = 'unchanged', force = 0):
     build.transform.Transform.__init__(self)
     self.sourceDB      = sourceDB
     self.inputTag      = inputTag
     if isinstance(self.inputTag, str): self.inputTag = [self.inputTag]
+    self.force         = force
     self.changed       = build.fileset.FileSet(tag = changedTag)
     self.unchanged     = build.fileset.FileSet(tag = unchangedTag)
     self.output.children.append(self.changed)
@@ -27,6 +29,9 @@ class FileChanged (build.transform.Transform):
 
   def hasChanged(self, source):
     '''Returns True if "source" has changed since it was last updates in the source database'''
+    if self.force:
+      self.debugPrint(source+' was forcibly tagged', 3, 'sourceDB')
+      return 1
     try:
       if not os.path.exists(source):
         self.debugPrint(source+' does not exist', 3, 'sourceDB')
@@ -55,8 +60,8 @@ class FileChanged (build.transform.Transform):
 
 class GenericTag (FileChanged):
   '''Uses input tag, extension and directory checks to group files which need further processing'''
-  def __init__(self, sourceDB, outputTag, inputTag = None, ext = '', deferredExt = None, root = None):
-    FileChanged.__init__(self, sourceDB, inputTag, outputTag, 'old '+outputTag)
+  def __init__(self, sourceDB, outputTag, inputTag = None, ext = '', deferredExt = None, root = None, force = 0):
+    FileChanged.__init__(self, sourceDB, inputTag, outputTag, 'old '+outputTag, force)
     self.ext   = ext
     if isinstance(self.ext, list):
       self.ext = map(lambda x: '.'+x, self.ext)

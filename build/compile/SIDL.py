@@ -134,7 +134,7 @@ class Compiler(build.processor.Processor):
     flags    = self.getFlags(set)
     cacheKey = 'cacheKey'+''.join([sourceDatabase.SourceDB.getChecksum(f) for f in set]+[md5.new(''.join(flags)).hexdigest()])
     if set.tag.startswith('old') and cacheKey in self.argDB:
-      self.debugPrint('Loading '+str(set)+' for a '+self.language+' '+self.action+' from argument database', 3, 'compile')
+      self.debugPrint('Loading '+str(set)+' for a '+self.language+' '+self.action+' from argument database ('+cacheKey+')', 3, 'compile')
       outputFiles = cPickle.loads(self.argDB[cacheKey])
     else:
       # Save targets so that they do not interfere with Scandal

@@ -97,9 +97,12 @@ class Template(base.Base):
         target.appendGraph(self.getServerTarget(lang, package))
     return target
 
-  def getClientTarget(self, lang):
-    using = getattr(self, 'using'+lang.capitalize())
-    return self.setupExtraOptions(lang, using.getClientCompileTarget())
+  def getClientTarget(self, lang, fullTarget = 0):
+    using  = getattr(self, 'using'+lang.capitalize())
+    target = self.setupExtraOptions(lang, using.getClientCompileTarget())
+    if fullTarget:
+      target.appendGraph(build.buildGraph.BuildGraph([build.fileState.Update(self.sourceDB)]))
+    return target
 
   def getClientTargets(self):
     '''Return a BuildGraph which will compile the clients specified

@@ -49,38 +49,51 @@ class Template(base.Base):
     compiler.repositoryDirs.extend([vertex.getRoot() for vertex in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project)])
     return compiler
 
-  def getServerTarget(self):
+  def getServerTarget(self, lang):
+    target = build.buildGraph.BuildGraph()
+    rootFunc   = ServerRootMap(self.project.getUrl(), lang, self.usingSIDL)
+    lastVertex = None
+    vertex     = build.bk.Tag(rootFunc = rootFunc, inputTag = ['sidl', 'old sidl'])
+    target.addEdges(lastVertex, outputs = [vertex])
+    lastVertex = vertex
+    vertex     = build.bk.Open()
+    target.addEdges(lastVertex, outputs = [vertex])
+    lastVertex = vertex
+    vertex     = self.addRepositoryDirs(build.compile.SIDL.Compiler(self.sourceDB, lang, self.project.getRoot(), 1, self.usingSIDL))
+    target.addEdges(lastVertex, outputs = [vertex])
+    lastVertex = vertex
+    vertex     = build.bk.Tag(rootFunc = rootFunc, inputTag = ['update sidl', 'old sidl'])
+    target.addEdges(lastVertex, outputs = [vertex])
+    lastVertex = vertex
+    vertex     = build.bk.Close()
+    target.addEdges(lastVertex, outputs = [vertex])
+    return target
+
+  def getServerTargets(self):
     '''Return a BuildGraph which will compile SIDL into the clients specified'''
     import build.bk
     import os
 
     target = build.buildGraph.BuildGraph()
     for lang in self.usingSIDL.serverLanguages:
-      rootFunc   = ServerRootMap(self.project.getUrl(), lang, self.usingSIDL)
-      lastVertex = None
-      vertex     = build.bk.Tag(rootFunc = rootFunc, inputTag = ['sidl', 'old sidl'])
-      target.addEdges(lastVertex, outputs = [vertex])
-      lastVertex = vertex
-      vertex     = build.bk.Open()
-      target.addEdges(lastVertex, outputs = [vertex])
-      lastVertex = vertex
-      vertex     = self.addRepositoryDirs(build.compile.SIDL.Compiler(self.sourceDB, lang, self.project.getRoot(), 1, self.usingSIDL))
-      target.addEdges(lastVertex, outputs = [vertex])
-      lastVertex = vertex
-      vertex     = build.bk.Tag(rootFunc = rootFunc, inputTag = ['update sidl', 'old sidl'])
-      target.addEdges(lastVertex, outputs = [vertex])
-      lastVertex = vertex
-      vertex     = build.bk.Close()
-      target.addEdges(lastVertex, outputs = [vertex])
+      target.addSubgraph(self.getServerTarget(lang))
     return target
 
-  def getClientTarget(self):
+  def getClientTarget(self, lang, fullTarget = 0, forceRebuild = 0):
+    '''Return a BuildGraph which will compile SIDL into the client specified'''
+    target = build.buildGraph.BuildGraph()
+    target.addVertex(self.addRepositoryDirs(build.compile.SIDL.Compiler(self.sourceDB, lang, self.project.getRoot(), 0, self.usingSIDL)))
+    if fullTarget:
+      target.prependGraph(build.buildGraph.BuildGraph([build.fileState.GenericTag(self.sourceDB, 'sidl', ext = 'sidl', force = forceRebuild)]))
+      target.appendGraph(build.buildGraph.BuildGraph([build.fileState.Update(self.sourceDB)]))
+    return target
+
+  def getClientTargets(self):
     '''Return a BuildGraph which will compile SIDL into the clients specified
        - Currently this graph is just a list of unconnected vertices, which will be linked up in the final target'''
     target = build.buildGraph.BuildGraph()
     for lang in self.usingSIDL.clientLanguages:
-      #TODO: Static packages should be linked with the server by the linker
-      target.addVertex(self.addRepositoryDirs(build.compile.SIDL.Compiler(self.sourceDB, lang, self.project.getRoot(), 0, self.usingSIDL)))
+      target.addSubgraph(self.getClientTarget(lang))
     return target
 
   def getTarget(self):
@@ -90,8 +103,8 @@ class Template(base.Base):
     target = build.buildGraph.BuildGraph()
     tagger = build.fileState.GenericTag(self.sourceDB, 'sidl', ext = 'sidl')
     target.addVertex(tagger)
-    client = self.getClientTarget()
-    server = self.getServerTarget()
+    client = self.getClientTargets()
+    server = self.getServerTargets()
     target.addSubgraph(client)
     target.addSubgraph(server)
     target.addEdges(tagger, outputs = build.buildGraph.BuildGraph.getRoots(client)+build.buildGraph.BuildGraph.getRoots(server))

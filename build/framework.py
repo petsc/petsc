@@ -228,14 +228,21 @@ class Framework(base.Base):
     return self.executeGraph(self.sidlTemplate.getTarget(), input = self.filesets['sidl'])
 
   def checkClients(self):
+    import build.buildGraph
+
     for lang in self.compileTemplate.usingSIDL.clientLanguages+self.compileTemplate.clientLanguages:
       clientDir = self.compileTemplate.usingSIDL.getClientRootDir(lang)
       for v in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project):
         if not os.path.isdir(os.path.join(v.getRoot(), clientDir)):
-          # Build the client
-          print 'Missing '+lang+' client in '+v.getRoot()
-          target = self.compileTemplate.getClientTarget(lang)
-          self.executeGraph(target, input = self.filesets['sidl'])
+          self.debugPrint('Building missing '+lang+' client in '+v.getRoot(), 1, 'build')
+          maker  = self.getMakeModule(v.getRoot()).PetscMake(None, self.argDB)
+          maker.setupProject()
+          maker.setupDependencies()
+          maker.setupSourceDB(maker.project)
+          sidlGraph    = maker.sidlTemplate.getClientTarget(lang, fullTarget = 1, forceRebuild = 1)
+          compileGraph = maker.compileTemplate.getClientTarget(lang)
+          compileGraph.prependGraph(sidlGraph)
+          maker.executeGraph(compileGraph, input = maker.filesets['sidl'])
     return
 
   def getCompileGraph(self):
@@ -312,6 +319,7 @@ class Framework(base.Base):
   def t_compile(self):
     '''Recompile the entire source for this project'''
     (compileGraph, input) = self.getCompileGraph()
+    self.checkClients()
     return self.executeGraph(compileGraph, input = input)
 
   def t_compilePrograms(self):
