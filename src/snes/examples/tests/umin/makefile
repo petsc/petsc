@@ -1,7 +1,8 @@
 PETSC_DIR = ../../../..
 ALL: ex1
 
-CFLAGS        = $(PCONF) $(PETSC_INCLUDE)
+/* Note that we need CONF to pick up the Fortran format info */
+CFLAGS        = $(CONF) $(PCONF) $(PETSC_INCLUDE)
 FFLAGS        = 
 SOURCEC       = 
 SOURCEF       =
