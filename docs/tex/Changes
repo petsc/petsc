@@ -91,6 +91,8 @@ have the error flag as the final argument.
    stack for each malloc, allow one to more easily track down where mallocs where made that where not
    freed.
 
+  The BT bitarray macros are now prefixed with PetscBT
+
   Viewer
 
  Added ViewerASCIISynchronizedPrintf(viewer,....)
