@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.42 2000/10/24 20:25:52 bsmith Exp bsmith $*/
+/*$Id: baijfact2.c,v 1.43 2000/11/06 16:00:48 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2235,6 +2235,9 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   PetscReal   f;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(isrow,IS_COOKIE);
+  PetscValidHeaderSpecific(iscol,IS_COOKIE);
+
   if (info) {
     f             = info->fill;
     levels        = (int)info->levels;
@@ -2251,12 +2254,196 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     ierr = ISCreateStride(PETSC_COMM_SELF,A->M,0,1,&iscol);CHKERRQ(ierr);
   }
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
-
-  /* special case that simply copies fill pattern */
-  PetscValidHeaderSpecific(isrow,IS_COOKIE);
-  PetscValidHeaderSpecific(iscol,IS_COOKIE);
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
+
+  if (!levels && row_identity && col_identity) {  /* special case copy the nonzero structure */
+    ierr = MatDuplicate_SeqBAIJ(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
+    (*fact)->factor = FACTOR_LU;
+    b               = (Mat_SeqBAIJ*)(*fact)->data;
+    if (!b->diag) {
+      ierr = MatMarkDiagonal_SeqBAIJ(*fact);CHKERRQ(ierr);
+    }
+    ierr = MatMissingDiagonal_SeqBAIJ(*fact);CHKERRQ(ierr);
+    b->row        = isrow;
+    b->col        = iscol;
+    ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+    ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
+    b->icol       = isicol;
+    b->solve_work = (Scalar*)PetscMalloc(((*fact)->m+1+b->bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
+    PetscFunctionReturn(0);
+  } else { /* general case perform the symbolic factorization */
+    ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+    ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+
+    /* get new row pointers */
+    ainew = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(ainew);
+    ainew[0] = 0;
+    /* don't know how many column pointers are needed so estimate */
+    jmax = (int)(f*ai[n] + 1);
+    ajnew = (int*)PetscMalloc((jmax)*sizeof(int));CHKPTRQ(ajnew);
+    /* ajfill is level of fill for each fill entry */
+    ajfill = (int*)PetscMalloc((jmax)*sizeof(int));CHKPTRQ(ajfill);
+    /* fill is a linked list of nonzeros in active row */
+    fill = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(fill);
+    /* im is level for each filled value */
+    im = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(im);
+    /* dloc is location of diagonal in factor */
+    dloc = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(dloc);
+    dloc[0]  = 0;
+    for (prow=0; prow<n; prow++) {
+
+      /* copy prow into linked list */
+      nzf        = nz  = ai[r[prow]+1] - ai[r[prow]];
+      if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix");
+      xi         = aj + ai[r[prow]];
+      fill[n]    = n;
+      fill[prow] = -1; /* marker for diagonal entry */
+      while (nz--) {
+	fm  = n;
+	idx = ic[*xi++];
+	do {
+	  m  = fm;
+	  fm = fill[m];
+	} while (fm < idx);
+	fill[m]   = idx;
+	fill[idx] = fm;
+	im[idx]   = 0;
+      }
+
+      /* make sure diagonal entry is included */
+      if (diagonal_fill && fill[prow] == -1) {
+	fm = n;
+	while (fill[fm] < prow) fm = fill[fm];
+	fill[prow] = fill[fm];  /* insert diagonal into linked list */
+	fill[fm]   = prow;
+	im[prow]   = 0;
+	nzf++;
+	dcount++;
+      }
+
+      nzi = 0;
+      row = fill[n];
+      while (row < prow) {
+	incrlev = im[row] + 1;
+	nz      = dloc[row];
+	xi      = ajnew  + ainew[row] + nz + 1;
+	flev    = ajfill + ainew[row] + nz + 1;
+	nnz     = ainew[row+1] - ainew[row] - nz - 1;
+	fm      = row;
+	while (nnz-- > 0) {
+	  idx = *xi++;
+	  if (*flev + incrlev > levels) {
+	    flev++;
+	    continue;
+	  }
+	  do {
+	    m  = fm;
+	    fm = fill[m];
+	  } while (fm < idx);
+	  if (fm != idx) {
+	    im[idx]   = *flev + incrlev;
+	    fill[m]   = idx;
+	    fill[idx] = fm;
+	    fm        = idx;
+	    nzf++;
+	  } else {
+	    if (im[idx] > *flev + incrlev) im[idx] = *flev+incrlev;
+	  }
+	  flev++;
+	}
+	row = fill[row];
+	nzi++;
+      }
+      /* copy new filled row into permanent storage */
+      ainew[prow+1] = ainew[prow] + nzf;
+      if (ainew[prow+1] > jmax) {
+
+	/* estimate how much additional space we will need */
+	/* use the strategy suggested by David Hysom <hysom@perch-t.icase.edu> */
+	/* just double the memory each time */
+	int maxadd = jmax;
+	/* maxadd = (int)(((f*ai[n]+1)*(n-prow+5))/n); */
+	if (maxadd < nzf) maxadd = (n-prow)*(nzf+1);
+	jmax += maxadd;
+
+	/* allocate a longer ajnew and ajfill */
+	xi = (int*)PetscMalloc(jmax*sizeof(int));CHKPTRQ(xi);
+	ierr = PetscMemcpy(xi,ajnew,ainew[prow]*sizeof(int));CHKERRQ(ierr);
+	ierr = PetscFree(ajnew);CHKERRQ(ierr);
+	ajnew = xi;
+	xi = (int*)PetscMalloc(jmax*sizeof(int));CHKPTRQ(xi);
+	ierr = PetscMemcpy(xi,ajfill,ainew[prow]*sizeof(int));CHKERRQ(ierr);
+	ierr = PetscFree(ajfill);CHKERRQ(ierr);
+	ajfill = xi;
+	realloc++; /* count how many reallocations are needed */
+      }
+      xi          = ajnew + ainew[prow];
+      flev        = ajfill + ainew[prow];
+      dloc[prow]  = nzi;
+      fm          = fill[n];
+      while (nzf--) {
+	*xi++   = fm;
+	*flev++ = im[fm];
+	fm      = fill[fm];
+      }
+      /* make sure row has diagonal entry */
+      if (ajnew[ainew[prow]+dloc[prow]] != prow) {
+	SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Row %d has missing diagonal in factored matrix\n\
+    try running with -pc_ilu_nonzeros_along_diagonal or -pc_ilu_diagonal_fill",prow);
+      }
+    }
+    ierr = PetscFree(ajfill);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+    ierr = PetscFree(fill);CHKERRQ(ierr);
+    ierr = PetscFree(im);CHKERRQ(ierr);
+
+    {
+      PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
+      PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
+      PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Run with -pc_ilu_fill %g or use \n",af);
+      PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:PCILUSetFill(pc,%g);\n",af);
+      PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:for best performance.\n");
+      if (diagonal_fill) {
+	PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Detected and replace %d missing diagonals",dcount);
+      }
+    }
+
+    /* put together the new matrix */
+    ierr = MatCreateSeqBAIJ(A->comm,bs,bs*n,bs*n,0,PETSC_NULL,fact);CHKERRQ(ierr);
+    PLogObjectParent(*fact,isicol);
+    b = (Mat_SeqBAIJ*)(*fact)->data;
+    ierr = PetscFree(b->imax);CHKERRQ(ierr);
+    b->singlemalloc = PETSC_FALSE;
+    len = bs2*ainew[n]*sizeof(MatScalar);
+    /* the next line frees the default space generated by the Create() */
+    ierr = PetscFree(b->a);CHKERRQ(ierr);
+    ierr = PetscFree(b->ilen);CHKERRQ(ierr);
+    b->a          = (MatScalar*)PetscMalloc(len);CHKPTRQ(b->a);
+    b->j          = ajnew;
+    b->i          = ainew;
+    for (i=0; i<n; i++) dloc[i] += ainew[i];
+    b->diag       = dloc;
+    b->ilen       = 0;
+    b->imax       = 0;
+    b->row        = isrow;
+    b->col        = iscol;
+    ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+    ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
+    b->icol       = isicol;
+    b->solve_work = (Scalar*)PetscMalloc((bs*n+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
+    /* In b structure:  Free imax, ilen, old a, old j.  
+       Allocate dloc, solve_work, new a, new j */
+    PLogObjectMemory(*fact,(ainew[n]-n)*(sizeof(int))+bs2*ainew[n]*sizeof(Scalar));
+    b->maxnz          = b->nz = ainew[n];
+    (*fact)->factor   = FACTOR_LU;
+
+    (*fact)->info.factor_mallocs    = realloc;
+    (*fact)->info.fill_ratio_given  = f;
+    (*fact)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
+  }
+
   if (row_identity && col_identity) {
     switch (b->bs) {
       case 2:
@@ -2290,194 +2477,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
         PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
       break; 
     }
-    if (!levels) {
-      ierr = MatDuplicate_SeqBAIJ(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
-      (*fact)->factor = FACTOR_LU;
-      b               = (Mat_SeqBAIJ*)(*fact)->data;
-      if (!b->diag) {
-        ierr = MatMarkDiagonal_SeqBAIJ(*fact);CHKERRQ(ierr);
-      }
-      ierr = MatMissingDiagonal_SeqBAIJ(*fact);CHKERRQ(ierr);
-      b->row        = isrow;
-      b->col        = iscol;
-      ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
-      ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
-      b->icol       = isicol;
-      b->solve_work = (Scalar*)PetscMalloc(((*fact)->m+1+b->bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
-      PetscFunctionReturn(0);
-    }
   }
-
-  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-
-  /* get new row pointers */
-  ainew = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(ainew);
-  ainew[0] = 0;
-  /* don't know how many column pointers are needed so estimate */
-  jmax = (int)(f*ai[n] + 1);
-  ajnew = (int*)PetscMalloc((jmax)*sizeof(int));CHKPTRQ(ajnew);
-  /* ajfill is level of fill for each fill entry */
-  ajfill = (int*)PetscMalloc((jmax)*sizeof(int));CHKPTRQ(ajfill);
-  /* fill is a linked list of nonzeros in active row */
-  fill = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(fill);
-  /* im is level for each filled value */
-  im = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(im);
-  /* dloc is location of diagonal in factor */
-  dloc = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(dloc);
-  dloc[0]  = 0;
-  for (prow=0; prow<n; prow++) {
-
-    /* copy prow into linked list */
-    nzf        = nz  = ai[r[prow]+1] - ai[r[prow]];
-    if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix");
-    xi         = aj + ai[r[prow]];
-    fill[n]    = n;
-    fill[prow] = -1; /* marker for diagonal entry */
-    while (nz--) {
-      fm  = n;
-      idx = ic[*xi++];
-      do {
-        m  = fm;
-        fm = fill[m];
-      } while (fm < idx);
-      fill[m]   = idx;
-      fill[idx] = fm;
-      im[idx]   = 0;
-    }
-
-    /* make sure diagonal entry is included */
-    if (diagonal_fill && fill[prow] == -1) {
-      fm = n;
-      while (fill[fm] < prow) fm = fill[fm];
-      fill[prow] = fill[fm];  /* insert diagonal into linked list */
-      fill[fm]   = prow;
-      im[prow]   = 0;
-      nzf++;
-      dcount++;
-    }
-
-    nzi = 0;
-    row = fill[n];
-    while (row < prow) {
-      incrlev = im[row] + 1;
-      nz      = dloc[row];
-      xi      = ajnew  + ainew[row] + nz + 1;
-      flev    = ajfill + ainew[row] + nz + 1;
-      nnz     = ainew[row+1] - ainew[row] - nz - 1;
-      fm      = row;
-      while (nnz-- > 0) {
-        idx = *xi++;
-        if (*flev + incrlev > levels) {
-          flev++;
-          continue;
-        }
-        do {
-          m  = fm;
-          fm = fill[m];
-        } while (fm < idx);
-        if (fm != idx) {
-          im[idx]   = *flev + incrlev;
-          fill[m]   = idx;
-          fill[idx] = fm;
-          fm        = idx;
-          nzf++;
-        } else {
-          if (im[idx] > *flev + incrlev) im[idx] = *flev+incrlev;
-        }
-        flev++;
-      }
-      row = fill[row];
-      nzi++;
-    }
-    /* copy new filled row into permanent storage */
-    ainew[prow+1] = ainew[prow] + nzf;
-    if (ainew[prow+1] > jmax) {
-
-      /* estimate how much additional space we will need */
-      /* use the strategy suggested by David Hysom <hysom@perch-t.icase.edu> */
-      /* just double the memory each time */
-      int maxadd = jmax;
-      /* maxadd = (int)(((f*ai[n]+1)*(n-prow+5))/n); */
-      if (maxadd < nzf) maxadd = (n-prow)*(nzf+1);
-      jmax += maxadd;
-
-      /* allocate a longer ajnew and ajfill */
-      xi = (int*)PetscMalloc(jmax*sizeof(int));CHKPTRQ(xi);
-      ierr = PetscMemcpy(xi,ajnew,ainew[prow]*sizeof(int));CHKERRQ(ierr);
-      ierr = PetscFree(ajnew);CHKERRQ(ierr);
-      ajnew = xi;
-      xi = (int*)PetscMalloc(jmax*sizeof(int));CHKPTRQ(xi);
-      ierr = PetscMemcpy(xi,ajfill,ainew[prow]*sizeof(int));CHKERRQ(ierr);
-      ierr = PetscFree(ajfill);CHKERRQ(ierr);
-      ajfill = xi;
-      realloc++; /* count how many reallocations are needed */
-    }
-    xi          = ajnew + ainew[prow];
-    flev        = ajfill + ainew[prow];
-    dloc[prow]  = nzi;
-    fm          = fill[n];
-    while (nzf--) {
-      *xi++   = fm;
-      *flev++ = im[fm];
-      fm      = fill[fm];
-    }
-    /* make sure row has diagonal entry */
-    if (ajnew[ainew[prow]+dloc[prow]] != prow) {
-      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Row %d has missing diagonal in factored matrix\n\
-    try running with -pc_ilu_nonzeros_along_diagonal or -pc_ilu_diagonal_fill",prow);
-    }
-  }
-  ierr = PetscFree(ajfill);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr = PetscFree(fill);CHKERRQ(ierr);
-  ierr = PetscFree(im);CHKERRQ(ierr);
-
-  {
-    PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
-    PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
-    PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Run with -pc_ilu_fill %g or use \n",af);
-    PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:PCILUSetFill(pc,%g);\n",af);
-    PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:for best performance.\n");
-    if (diagonal_fill) {
-      PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Detected and replace %d missing diagonals",dcount);
-    }
-  }
-
-  /* put together the new matrix */
-  ierr = MatCreateSeqBAIJ(A->comm,bs,bs*n,bs*n,0,PETSC_NULL,fact);CHKERRQ(ierr);
-  PLogObjectParent(*fact,isicol);
-  b = (Mat_SeqBAIJ*)(*fact)->data;
-  ierr = PetscFree(b->imax);CHKERRQ(ierr);
-  b->singlemalloc = PETSC_FALSE;
-  len = bs2*ainew[n]*sizeof(MatScalar);
-  /* the next line frees the default space generated by the Create() */
-  ierr = PetscFree(b->a);CHKERRQ(ierr);
-  ierr = PetscFree(b->ilen);CHKERRQ(ierr);
-  b->a          = (MatScalar*)PetscMalloc(len);CHKPTRQ(b->a);
-  b->j          = ajnew;
-  b->i          = ainew;
-  for (i=0; i<n; i++) dloc[i] += ainew[i];
-  b->diag       = dloc;
-  b->ilen       = 0;
-  b->imax       = 0;
-  b->row        = isrow;
-  b->col        = iscol;
-  ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
-  ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
-  b->icol       = isicol;
-  b->solve_work = (Scalar*)PetscMalloc((bs*n+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
-  /* In b structure:  Free imax, ilen, old a, old j.  
-     Allocate dloc, solve_work, new a, new j */
-  PLogObjectMemory(*fact,(ainew[n]-n)*(sizeof(int))+bs2*ainew[n]*sizeof(Scalar));
-  b->maxnz          = b->nz = ainew[n];
-  (*fact)->factor   = FACTOR_LU;
-
-  (*fact)->info.factor_mallocs    = realloc;
-  (*fact)->info.fill_ratio_given  = f;
-  (*fact)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
-
   PetscFunctionReturn(0); 
 }
 
