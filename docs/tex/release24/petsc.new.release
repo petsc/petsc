@@ -6,11 +6,17 @@ Precedence: bulk
 
 PETSc-Users,
 
-We have just released a new version of PETSc with several important 
-bug fixes and a variety of additions to the code.  You can find a list 
-of new features and changes in PETSc in the "Changes" file at 
-ftp://info.mcs.anl.gov/pub/petsc or 
-http://www.mcs.anl.gov/petsc/petsc.html 
+We have just released a new version of PETSc (2.0.Beta.10) with
+several important performance enhancements and a variety of additions
+to the code.  You can find a list of new features and changes in PETSc
+in the "Changes" file at ftp://info.mcs.anl.gov/pub/petsc or
+http://www.mcs.anl.gov/petsc/petsc.html. In particular, those who use the 
+AIJ or MPIAIJ matrix formats for multicomponent problems will see
+a significant speedup on IBM rs6000s and DEC alphas. We also provide 
+code that will allow you to compile PETSc without installing MPI for 
+those who are ONLY using PETSc for sequential computing (sorry it took 
+so long).
+
 
 As always, please send bug reports, questions, and requests for new 
 features to petsc-maint@mcs.anl.gov.
@@ -18,5 +24,5 @@ features to petsc-maint@mcs.anl.gov.
 Thanks for your support.
 
 The PETSc team,
-  Barry, Lois, and Bill
+  Satish, Barry, Lois, and Bill
 
