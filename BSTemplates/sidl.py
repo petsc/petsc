@@ -129,9 +129,6 @@ class CompileDefaults (Defaults):
     self.extraLibraries        = BabelPackageDict(self)
     self.etagsFile             = None
 
-    bs.argDB.setHelp('PYTHON_INCLUDE', 'The directory containing Python.h')
-    bs.argDB.setParent('BABEL_DIR', '$BS_DIR/bsArg.db')
-
   def getServerCompileTargets(self):
     targets = []
     for lang in self.serverLanguages:
