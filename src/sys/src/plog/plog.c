@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.52 1995/11/27 22:23:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.53 1995/11/29 23:21:36 curfman Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -852,7 +852,37 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
 
 #endif
 
+/*@C 
+   PetscGetTime - Returns the current time of day in seconds.  
 
+   Output Parameter:
+.  v - time counter
+
+   Synopsis:
+   double PetscGetTime()
+
+   Usage: 
+     double v;
+     v = PetscGetTime();
+     .... perform some calculation ...
+     v = PetscGetTime() -v;
+
+   Notes:
+   Since the PETSc libraries incorporate timing of phases and operations, 
+   PetscGetTime() is intended only for timing of application codes.  
+   The options database commands -log, -log_summary, and -log_all activate
+   PETSc library timing.  See the users manual for further details.
+
+.keywords:  Petsc, time
+@*/
+
+double PetscGetTime()
+{
+  double t;
+  PetscTime(t);
+  return t;
+}
+  
 
 
 
