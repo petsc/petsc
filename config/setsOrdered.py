@@ -364,12 +364,13 @@ class BaseSet(object):
         # The main loop for update() and the subclass __init__() methods.
         data = self._data
 
-        # Use the fast update() method when a dictionary is available.
-        if isinstance(iterable, BaseSet):
-            data.update(iterable._data)
-            return
+## These would need to have all values incremented
+##        # Use the fast update() method when a dictionary is available.
+##        if isinstance(iterable, BaseSet):
+##            data.update(iterable._data)
+##            return
 
-        value = 0
+        value = len(self._data)
 
         if type(iterable) in (list, tuple, xrange):
             # Optimized: we know that __iter__() and next() can't

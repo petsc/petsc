@@ -19,6 +19,14 @@ class Script(logging.Logger):
     self.shell = '/bin/sh'
     return
 
+  def showHelp(self):
+    '''Decide whether to display the help message and exit'''
+    import nargs
+
+    if nargs.Arg.findArgument('help', self.clArgs) is None and nargs.Arg.findArgument('h', self.clArgs) is None:
+      return 0
+    return 1
+
   def setupArguments(self, argDB):
     '''This method now also creates the help and action logs'''
     import help
