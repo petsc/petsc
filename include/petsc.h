@@ -643,6 +643,17 @@ M*/
 M*/
 
 /*M
+    MPI_Comm - the basic object used by MPI to determine which processes are involved in a 
+        communication
+
+   Level: beginner
+
+   Note: This manual page is a place-holder because MPICH does not have a manual page for MPI_Comm
+
+.seealso: size, rank, comm, PETSC_COMM_WORLD, PETSC_COMM_SELF
+M*/
+
+/*M
     PetscScalar - PETSc type that represents either a double precision real number or 
        a double precision complex number if the code is compiled with BOPT=g_complex or O_complex
 
