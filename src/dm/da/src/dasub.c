@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dasub.c,v 1.3 1996/06/22 17:09:43 curfman Exp curfman $";
+static char vcid[] = "$Id: dasub.c,v 1.4 1996/06/26 03:21:22 curfman Exp curfman $";
 #endif
  
 /*
@@ -66,67 +66,5 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
   MPI_Group_incl(group,ict,ranks,&subgroup);
   MPI_Comm_create(da->comm,subgroup,comm);
   PetscFree(owners);
-  return 0;
-} 
-
-/*@
-   DAGetGridSubset - Returns the local grid indices for a subblock of a DA.
-
-   Input Parameters:
-.  da - the distributed array
-.  gxs, gys, gzs - global starting grid points
-.  gxe, gye, gze - global ending grid points
-
-   Output Parameters:
-.  lxs, lys, lzs - local starting grid points
-.  lxe, lye, lze - local ending grid points
-
-   Restrictions:
-   gxs <= gxe, gys <= gye, gzs <= gze
-
-   Notes:
-   This routine is particularly useful to compute boundary conditions
-   or other application-specific calculations that require manipulating
-   sets of data throughout a subblock of a grid.
-
-.keywords: distributed array, get, processor subset
-@*/
-int DAGetGridSubset(DA da,int gxs,int gxe,int gys,int gye,int gzs,int gze,
-                    int *lxs,int *lxe,int *lys,int *lye,int *lzs,int *lze)
-{
-  int ierr,xs,xm,ys,ym,zs,zm;
-
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-  ierr = DAGetCorners(da,&xs,&xm,&ys,&ym,&zs,&zm); CHKERRQ(ierr);
-  if (gxs == PETSC_DEFAULT || gxs == PETSC_DECIDE) gxs = 0;
-  if (gxe == PETSC_DEFAULT || gxe == PETSC_DECIDE) gxe = da->M-1;
-  if (gxs < 0 || gxe >= da->M || gxs > gxe)
-    SETERRQ(1,"DAGetGridSubset:invalid grid point(s): 0 <= gxs <= gxe < M");
-  if (lxs != PETSC_NULL) *lxs = PetscMax(gxs,xs);
-  if (lxe != PETSC_NULL) *lxe = PetscMin(gxe,xs+xm);
-  if (da->dim > 1) {
-    if (gys == PETSC_DEFAULT || gys == PETSC_DECIDE) gys = 0;
-    if (gye == PETSC_DEFAULT || gye == PETSC_DECIDE) gye = da->N-1;
-    if (gys < 0 || gye >= da->N || gys > gye)
-      SETERRQ(1,"DAGetGridSubset:invalid grid point(s): 0 <= gys <= gye < N");
-    if (lys != PETSC_NULL) *lys = PetscMax(gys,ys);
-    if (lye != PETSC_NULL) *lye = PetscMin(gye,ys+ym);
-    if (da->dim > 2) {
-      if (gzs == PETSC_DEFAULT || gzs == PETSC_DECIDE) gzs = 0;
-      if (gze == PETSC_DEFAULT || gze == PETSC_DECIDE) gze = da->P-1;
-      if (gzs < 0 || gze >= da->P || gzs > gze)
-        SETERRQ(1,"DAGetGridSubset:invalid grid point(s): 0 <= gzs <= gze < P");
-      if (lzs != PETSC_NULL) *lzs = PetscMax(gzs,zs);
-      if (lze != PETSC_NULL) *lze = PetscMin(gze,zs+zm);
-    }
-    else {
-      if (lze != PETSC_NULL) *lze = da->ze;
-      if (lzs != PETSC_NULL) *lzs = da->zs;
-    }
-  }
-  else {
-    if (lye != PETSC_NULL) *lye = da->ye;
-    if (lys != PETSC_NULL) *lys = da->ys;
-  }
   return 0;
 } 

@@ -22,9 +22,6 @@ petsc/src/dfvec/impls/general/seq/RCS
 petsc/src/dfvec/impls/general/mpi/RCS
 petsc/src/dfvec/examples/RCS
 petsc/src/dfvec/examples/ex6.c
-petsc/src/dfvec/examples/ex3.c
-petsc/src/dfvec/examples/ex4.c
-petsc/src/dfvec/examples/ex5.c
 petsc/src/dfvec/examples/ex20.c
 petsc/src/snes/examples/umin/ex4.c
 petsc/src/snes/examples/umin/ex5.c
