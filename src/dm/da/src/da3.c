@@ -280,10 +280,6 @@ int DAView_3d(PetscObject dain,Viewer ptr)
             }
           }
         }
-  
-
-
-    
     } 
   }
     DrawSyncFlush(win);
@@ -296,20 +292,25 @@ int DAView_3d(PetscObject dain,Viewer ptr)
     distributed across some processors.
 
    Input Parameters:
-.  stencil_type - Type of stencil { DA_STENCIL_STAR or DA_STENCIL_BOX }
+.  comm - MPI communicator
+.  wrap - type of periodicity should the array have, if any
+$      DA_NONPERIODIC, DA_XPERIODIC, 
+$      DA_YPERIODIC, DA_XYPERIODIC
+$      DA_XYZPERIODIC, DA_XZPERIODIC, 
+$      DA_YZPERIODIC
+.  stencil_type - Type of stencil (DA_STENCIL_STAR or DA_STENCIL_BOX)
 .  M,N,P - global dimension in each direction of the array
-.  m,n,p - corresponding local dimensions (or PETSC_DECIDE to have calculated)
+.  m,n - corresponding number of processors in each dimension 
+         (or PETSC_DECIDE to have calculated)
 .  w - number of degress of freedom per node
 .  s - stencil width
-.  wrap - what type of periodicity should the array have, if any
-$      DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC
-$      DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC
 
    Output Parameter:
 .  inra - the resulting array object
 
 .keywords: distributed array, create, three-dimensional
-.seealso: DADestroy(), DAView()
+
+.seealso: DADestroy(), DAView(), DACreate1d(), DACreate2d()
 @*/
 int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type, 
              int M, int N, int P, int m, int n, int p, int w, int s, DA *inra)

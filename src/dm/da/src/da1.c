@@ -93,17 +93,19 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
     distributed across some processors.
 
    Input Parameters:
+.  comm - MPI communicator
+.  wrap - Do you want ghost points to wrap around? Use one of
+$         DA_NONPERIODIC, DA_XPERIODIC
 .  M - global dimension of the array
 .  w - number of degress of freedom per node
 .  s - stencil width  
-.  wrap - Do you want ghost points to wrap around? Use one of
-$         DA_NONPERIODIC, DA_XPERIODIC
 
    Output Parameter:
 .  inra - the resulting array object
 
-.keywords: distributed array, create
-.seealso: DADestroy(), DAView()
+.keywords: distributed array, create, one-dimensional
+
+.seealso: DADestroy(), DAView(), DACreate2d(), DACreate3d()
 @*/
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 {

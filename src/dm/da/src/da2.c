@@ -160,20 +160,28 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
     distributed across some processors.
 
    Input Parameters:
+.  comm - MPI communicator
+.  wrap - type of periodicity should the array have, if any
+$         DA_NONPERIODIC, DA_XPERIODIC, 
+$         DA_YPERIODIC, DA_XYPERIODIC  
 .  stencil_type - stencil type either DA_STENCIL_BOX or DA_STENCIL_STAR
 .  M,N - global dimension in each direction of the array
 .  m,n - corresponding number of processors in each dimension 
          (or PETSC_DECIDE to have calculated)
 .  w - number of degress of freedom per node
 .  s - stencil width
-.  wrap - Are you using a periodic domain? Choose from 
-$         DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC  
 
    Output Parameter:
 .  inra - the resulting array object
 
+   Notes:
+   The stencil type DA_STENCIL_STAR with width 1 corresponds to the 
+   standard 5-pt stencil, while DA_STENCIL_BOX with width 1 denotes
+   the standard 9-pt stencil.
+
 .keywords: distributed array, create, two-dimensional
-.seealso: DADestroy(), DAView()
+
+.seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
 int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                 int M, int N, int m,int n, int w, int s, DA *inra)
