@@ -871,7 +871,7 @@ static int PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
 {
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   int                    ierr,m;
-  KSP                   ksp;
+  KSP                    ksp;
   Vec                    x,y;
   PC_BJacobi_Singleblock *bjac;
   PC                     subpc;
@@ -885,11 +885,9 @@ static int PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     PetscLogObjectParent(pc,ksp);
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
-    ierr = PCSetType(subpc,PCILU);CHKERRQ(ierr);
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(ksp,prefix);CHKERRQ(ierr);
     ierr = KSPAppendOptionsPrefix(ksp,"sub_");CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
     /*
       The reason we need to generate these vectors is to serve 
       as the right-hand side and solution vector for the solve on the 
@@ -927,6 +925,7 @@ static int PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
   }  else {
     ierr = KSPSetOperators(ksp,pmat,pmat,pc->flag);CHKERRQ(ierr);
   }   
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1120,11 +1119,9 @@ static int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
       PetscLogObjectParent(pc,ksp);
       ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
       ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
-      ierr = PCSetType(subpc,PCILU);CHKERRQ(ierr);
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(ksp,prefix);CHKERRQ(ierr);
       ierr = KSPAppendOptionsPrefix(ksp,"sub_");CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
       m = jac->l_lens[i];
 
@@ -1185,6 +1182,7 @@ static int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     } else {
       ierr = KSPSetOperators(jac->ksp[i],bjac->pmat[i],bjac->pmat[i],pc->flag);CHKERRQ(ierr);
     }
+    ierr = KSPSetFromOptions(jac->ksp[i]);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

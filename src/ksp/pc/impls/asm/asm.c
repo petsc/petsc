@@ -22,6 +22,7 @@ typedef struct {
   IS         *is;                 /* index set that defines each subdomain */
   Mat        *mat,*pmat;          /* mat is not currently used */
   PCASMType  type;                /* use reduced interpolation, restriction or both */
+  PetscTruth type_set;            /* if user set this value (so won't change it for symmetric problems) */
   PetscTruth same_local_solves;   /* flag indicating whether all local solvers are same */
   PetscTruth inplace;             /* indicates that the sub-matrices are deleted after 
                                      PCSetUpOnBlocks() is done. Similar to inplace 
@@ -170,11 +171,9 @@ static int PCSetUp_ASM(PC pc)
       PetscLogObjectParent(pc,ksp);
       ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
       ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
-      ierr = PCSetType(subpc,PCILU);CHKERRQ(ierr);
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(ksp,prefix);CHKERRQ(ierr);
       ierr = KSPAppendOptionsPrefix(ksp,"sub_");CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
       osm->ksp[i] = ksp;
     }
     scall = MAT_INITIAL_MATRIX;
@@ -201,6 +200,7 @@ static int PCSetUp_ASM(PC pc)
     ierr = PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix);CHKERRQ(ierr);
     PetscLogObjectParent(pc,osm->pmat[i]);
     ierr = KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i],pc->flag);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(osm->ksp[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -365,10 +365,17 @@ static int PCSetFromOptions_ASM(PC pc)
 {
   PC_ASM     *osm = (PC_ASM*)pc->data;
   int        blocks,ovl,ierr,indx;
-  PetscTruth flg;
+  PetscTruth flg,set,sym;
   const char *type[] = {"none","restrict","interpolate","basic"};
 
   PetscFunctionBegin;
+  /* set the type to symmetric if matrix is symmetric */
+  if (pc->pmat && !osm->type_set) {
+    ierr = MatIsSymmetricKnown(pc->pmat,&set,&sym);CHKERRQ(ierr);
+    if (set && sym) {
+      osm->type = PC_ASM_BASIC;
+    }
+  }
   ierr = PetscOptionsHead("Additive Schwarz options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_asm_blocks","Number of subdomains","PCASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCASMSetTotalSubdomains(pc,blocks,PETSC_NULL);CHKERRQ(ierr); }
@@ -460,7 +467,8 @@ int PCASMSetType_ASM(PC pc,PCASMType type)
 
   PetscFunctionBegin;
   osm        = (PC_ASM*)pc->data;
-  osm->type  = type;
+  osm->type     = type;
+  osm->type_set = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

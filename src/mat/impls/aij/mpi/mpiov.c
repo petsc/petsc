@@ -649,6 +649,7 @@ int MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
     ierr = PetscFree(lens);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
   } else {
     B  = **Bin;
     b = (Mat_SeqAIJ *)B->data;
@@ -706,6 +707,13 @@ int MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
   recvbuf   = b->a;
   ierr = MPI_Allgatherv(sendbuf,sendcount,MPIU_SCALAR,recvbuf,recvcounts,displs,MPIU_SCALAR,A->comm);CHKERRQ(ierr);
   ierr = PetscFree(recvcounts);CHKERRQ(ierr);
+  if (A->symmetric){
+    ierr = MatSetOption(B,MAT_SYMMETRIC);CHKERRQ(ierr);
+  } else if (A->hermitian) {
+    ierr = MatSetOption(B,MAT_HERMITIAN);CHKERRQ(ierr);
+  } else if (A->structurally_symmetric) {
+    ierr = MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC);CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -779,7 +787,7 @@ int MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,const IS isrow[],const IS isc
   MPI_Status  *r_status3,*r_status4,*s_status4;
   MPI_Comm    comm;
   PetscScalar **rbuf4,**sbuf_aa,*vals,*mat_a,*sbuf_aa_i;
-  PetscTruth  sorted;
+  PetscTruth  sorted,eq;
   int         *onodes1,*olengths1;
 
   PetscFunctionBegin;
@@ -1366,6 +1374,18 @@ int MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,const IS isrow[],const IS isc
   for (i=0; i<ismax; i++) {
     ierr = MatAssemblyBegin(submats[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(submats[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (A->symmetric || A->structurally_symmetric || A->hermitian) {
+      ierr = ISEqual(isrow[i],iscol[i],&eq);CHKERRQ(ierr);
+      if (eq) {
+	if (A->symmetric){
+	  ierr = MatSetOption(submats[i],MAT_SYMMETRIC);CHKERRQ(ierr);
+	} else if (A->hermitian) {
+	  ierr = MatSetOption(submats[i],MAT_HERMITIAN);CHKERRQ(ierr);
+	} else if (A->structurally_symmetric) {
+	  ierr = MatSetOption(submats[i],MAT_STRUCTURALLY_SYMMETRIC);CHKERRQ(ierr);
+	}
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
