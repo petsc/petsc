@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.21 1998/03/06 00:12:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mem.c,v 1.22 1998/04/13 17:30:26 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -77,7 +77,7 @@ int PetscGetResidentSetSize(PLogDouble *foo)
   prpsinfo_t      prusage;
 
   PetscFunctionBegin;
-  sprintf(proc,"/proc/%d", getpid());
+  sprintf(proc,"/proc/%d", (int)getpid());
   if ((fd = open(proc,O_RDONLY)) == -1) {
     SETERRQ(PETSC_ERR_FILE_OPEN,1,"Unable to access system file to get memory usage data");
   }
