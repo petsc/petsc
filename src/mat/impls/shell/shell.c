@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.14 1995/08/07 18:52:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.15 1995/08/21 18:12:53 bsmith Exp curfman $";
 #endif
 
 /*
@@ -13,25 +13,33 @@ static char vcid[] = "$Id: shell.c,v 1.14 1995/08/07 18:52:42 bsmith Exp bsmith 
 #include "vec/vecimpl.h"  
 
 typedef struct {
-  int  m,n;
-  int  (*mult)(void *,Vec,Vec);
+  int  m, n;                       /* rows, columns */
+  int  (*mult)(void*,Vec,Vec);
   int  (*multtransadd)(void*,Vec,Vec,Vec);
-  int  (*destroy)(void *);
+  int  (*destroy)(void*);
+  int  (*getsize)(void*,int*,int*);
   void *ctx;
 } Mat_Shell;      
 
+static int MatGetSize_Shell(Mat mat,int *m,int *n)
+{
+  Mat_Shell *shell = (Mat_Shell *) mat->data;
+  *m = shell->m; *n = shell->n;
+  return 0;
+}
+
 static int MatMult_Shell(Mat mat,Vec x,Vec y)
 {
-  Mat_Shell *shell;
-  shell = (Mat_Shell *) mat->data;
+  Mat_Shell *shell = (Mat_Shell *) mat->data;
   return (*shell->mult)(shell->ctx,x,y);
 }
+
 static int MatMultTransAdd_Shell(Mat mat,Vec x,Vec y,Vec z)
 {
-  Mat_Shell *shell;
-  shell = (Mat_Shell *) mat->data;
+  Mat_Shell *shell = (Mat_Shell *) mat->data;
   return (*shell->multtransadd)(shell->ctx,x,y,z);
 }
+
 static int MatDestroy_Shell(PetscObject obj)
 {
   int      ierr;
@@ -58,7 +66,9 @@ static struct _MatOps MatOps = {0,0,
        0,0,
        0,
        0,0,0,0,
-       0,0 };
+       0,0,MatGetSize_Shell,
+       0,0,0,0,
+       0,0,0,0 };
 
 /*@
    MatShellCreate - Creates a new matrix class for use with a user-defined
