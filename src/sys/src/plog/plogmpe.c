@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.36 1998/10/27 22:43:40 balay Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.37 1998/10/27 22:44:24 balay Exp balay $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -59,7 +59,7 @@ int PLogEventMPEFlags[] = {  1,1,1,1,1,  /* 0 - 24*/
 
 /* For Colors, check out the file  /usr/local/X11/lib/rgb.txt */
 
-char *(PLogEventColor[]) = {"AliceBlue:      ",
+char *(PLogEventColor[]) = {"OliveDrab:      ",
                             "BlueViolet:     ",
                             "CadetBlue:      ",
                             "CornflowerBlue: ",
@@ -73,7 +73,7 @@ char *(PLogEventColor[]) = {"AliceBlue:      ",
                             "DarkSlateGray:  ",
                             "DarkTurquoise:  ",
                             "DeepPink:       ",
-                            "DeepSkyBlue:    ",
+                            "DarkKhaki:      ",
                             "DimGray:        ", 
                             "DodgerBlue:     ",
                             "GreenYellow:    ",
@@ -105,7 +105,7 @@ char *(PLogEventColor[]) = {"AliceBlue:      ",
                             "PeachPuff:      ",
                             "RosyBrown:      ",
                             "SaddleBrown:    ",
-                            "SpringGreen:    ",
+                            "OrangeRed:      ",
                             "SteelBlue:      ",
                             "VioletRed:      ",
                             "beige:          ",
@@ -137,7 +137,7 @@ char *(PLogEventColor[]) = {"AliceBlue:      ",
                             "DarkSlateGray:  ",
                             "DarkTurquoise:  ",
                             "DeepPink:       ",
-                            "DeepSkyBlue:    ",
+                            "DarkKhaki:      ",
                             "DimGray:        ", 
                             "DodgerBlue:     ",
                             "GreenYellow:    ",
@@ -169,7 +169,7 @@ char *(PLogEventColor[]) = {"AliceBlue:      ",
                             "PeachPuff:      ",
                             "RosyBrown:      ",
                             "SaddleBrown:    ",
-                            "SpringGreen:    ",
+                            "OrangeRed:      ",
                             "SteelBlue:      ",
                             "VioletRed:      ",
                             "beige:          ",
@@ -194,7 +194,7 @@ char *(PLogEventColor[]) = {"AliceBlue:      ",
                             "DarkSlateGray:  ",
                             "DarkTurquoise:  ",
                             "DeepPink:       ",
-                            "DeepSkyBlue:    ",
+                            "DarkKhaki:      ",
                             "DimGray:        ", 
                             "DodgerBlue:     ",
                             "GreenYellow:    ",
@@ -226,7 +226,7 @@ char *(PLogEventColor[]) = {"AliceBlue:      ",
                             "PeachPuff:      ",
                             "RosyBrown:      ",
                             "SaddleBrown:    ",
-                            "SpringGreen:    ",
+                            "OrangeRed:      ",
                             "SteelBlue:      ",
                             "VioletRed:      ",
                             "beige:          ",
@@ -258,7 +258,7 @@ char *(PLogEventColor[]) = {"AliceBlue:      ",
                             "DarkSlateGray:  ",
                             "DarkTurquoise:  ",
                             "DeepPink:       ",
-                            "DeepSkyBlue:    "};
+                            "DarkKhaki:      "};
 
 /*
     Indicates if a color was malloced for each event, or if it is
