@@ -1,3 +1,4 @@
+! ex1f.F,v 1.20 1999/03/02 16:20:11 balay Exp bsmith $"
 !  This file contains include statements and a user-defined
 !  common block for application-specific data.  This file is
 !  included in each routine within the program ex2f. 
@@ -54,13 +55,13 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Common block data:
       DA               da
-      Vec              localwork, solution
-      integer          M, rank, size, debug
-      double precision h, zero_d0, one_d0, two_d0, four_d0
+      Vec              localwork,solution
+      integer          M,rank,size,debug
+      double precision h,zero_d0,one_d0,two_d0,four_d0
       MPI_Comm         comm
 
-      common /params/ h, zero_d0, one_d0, two_d0, four_d0
-      common /appctx/ M, debug, da, localwork, solution
-      common /appctx/ comm, rank, size
+      common /params/ h,zero_d0,one_d0,two_d0,four_d0
+      common /appctx/ M,debug,da,localwork,solution
+      common /appctx/ comm,rank,size
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

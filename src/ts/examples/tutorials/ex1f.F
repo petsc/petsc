@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.19 1998/04/21 18:31:57 balay Exp balay $"
+! ex1f.F,v 1.20 1999/03/02 16:20:11 balay Exp bsmith $"
 !
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !
@@ -53,17 +53,17 @@
 !   Data for problem
 !
       TS                ts                
-      Vec               x, r              
+      Vec               x,r              
       Mat               J                 
       integer           its               
-      integer           ierr, N, flg 
-      double precision  param_max, param_min, dt,tmax, zero
+      integer           ierr,N,flg 
+      double precision  param_max,param_min,dt,tmax,zero
       double precision  ftime
 
       param_max = 6.81
       param_min = 0
 
-      call PetscInitialize( PETSC_NULL_CHARACTER ,ierr)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       user(lmx)        = 4
       user(lmy)        = 4
       user(param)      = 6.0
@@ -202,10 +202,10 @@
 #include "finclude/ts.h"
       Vec              X
       double precision user(3)
-      integer          i, j, row, mx, my, ierr
+      integer          i,j,row,mx,my,ierr
       PetscOffset      xidx
-      double precision two, one, lambda
-      double precision temp1, temp, hx, hy, hxdhy, hydhx
+      double precision two,one,lambda
+      double precision temp1,temp,hx,hy,hxdhy,hydhx
       double precision sc
       Scalar           xx(1)
       integer          param,lmx,lmy
@@ -231,7 +231,7 @@
         do 20 i=1,mx
           row = i + (j-1)*mx  
           if (i .eq. 1 .or. j .eq. 1 .or.                               &
-     &        i .eq. mx .or. j .eq. my ) then
+     &        i .eq. mx .or. j .eq. my) then
             xx(row+xidx) = 0.0 
           else
             xx(row+xidx) =                                              &
@@ -256,11 +256,11 @@
       double precision  t
       Vec               X,F
       double precision  user(3)
-      integer           ierr, i, j, row, mx, my
+      integer           ierr,i,j,row,mx,my
       PetscOffset       xidx,fidx
-      double precision  two, one, lambda
-      double precision  hx, hy, hxdhy, hydhx
-      Scalar            ut, ub, ul, ur, u, uxx, uyy, sc
+      double precision  two,one,lambda
+      double precision  hx,hy,hxdhy,hydhx
+      Scalar            ut,ub,ul,ur,u,uxx,uyy,sc
       Scalar            xx(1),ff(1)
       integer           param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
@@ -284,7 +284,7 @@
         do 20 i=1,mx
           row = i + (j-1)*mx
           if (i .eq. 1 .or. j .eq. 1 .or.                               &
-     &        i .eq. mx .or. j .eq. my ) then
+     &        i .eq. mx .or. j .eq. my) then
             ff(row+fidx) = xx(row+xidx)
           else
             u            = xx(row + xidx)
@@ -320,10 +320,10 @@
       MatStructure     flag
       double precision user(3),ctime
       Mat              jac
-      integer          i, j, row, mx, my, col(5), ierr
+      integer          i,j,row,mx,my,col(5),ierr
       PetscOffset      xidx
-      Scalar           two, one, lambda, v(5), sc, xx(1)
-      double precision hx, hy, hxdhy, hydhx
+      Scalar           two,one,lambda,v(5),sc,xx(1)
+      double precision hx,hy,hxdhy,hydhx
 
       integer   param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
@@ -351,7 +351,7 @@
 !       call PetscTrValid(ierr)
           row = i - 1 + (j-1)*mx
           if (i .eq. 1 .or. j .eq. 1 .or.                               &
-     &        i .eq. mx .or. j .eq. my ) then
+     &        i .eq. mx .or. j .eq. my) then
             call MatSetValues(jac,1,row,1,row,one,INSERT_VALUES,ierr) 
           else
             v(1)   = hxdhy 
