@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.19 1999/04/12 01:53:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.20 1999/04/13 21:20:59 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -12,9 +12,10 @@ static char vcid[] = "$Id: gr2.c,v 1.19 1999/04/12 01:53:16 bsmith Exp bsmith $"
         The data that is passed into the graphics callback
 */
 typedef struct {
-  int    m,n,step,k;
-  double min,max,scale;
-  Scalar *xy,*v;
+  int        m,n,step,k;
+  double     min,max,scale;
+  Scalar     *xy,*v;
+  PetscTruth showgrid;
 } ZoomCtx;
 
 /*
@@ -58,8 +59,15 @@ int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
 #endif
       ierr = DrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3); CHKERRQ(ierr);
       ierr = DrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4); CHKERRQ(ierr);
+      if (zctx->showgrid) {
+        ierr = DrawLine(draw,x1,y_1,x2,y2,DRAW_BLACK); CHKERRQ(ierr);
+        ierr = DrawLine(draw,x2,y2,x3,y3,DRAW_BLACK); CHKERRQ(ierr);
+        ierr = DrawLine(draw,x3,y3,x4,y4,DRAW_BLACK); CHKERRQ(ierr);
+        ierr = DrawLine(draw,x4,y4,x1,y_1,DRAW_BLACK); CHKERRQ(ierr);
+      }
     }
   }
+
   PetscFunctionReturn(0);
 }
 
@@ -86,7 +94,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   if (!da) SETERRQ(1,1,"Vector not generated from a DA");
 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = DAGetInfo(da,0,&M,&N,0,&zctx.m,&zctx.n,0,&w,&s,&periodic,&st);CHKERRQ(ierr);
   ierr = DAGetOwnershipRange(da,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
@@ -182,6 +190,8 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   ierr = DAGetInfo(dac,0,&M,&N,0,0,0,0,&zctx.step,0,&periodic,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(dac,&igstart,&jgstart,0,&zctx.m,&zctx.n,0);CHKERRQ(ierr);
   ierr = DAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
+
+  ierr = OptionsHasName(PETSC_NULL,"-draw_contour_grid",(int *)&zctx.showgrid);CHKERRQ(ierr);
 
   /*
      Loop over each field; drawing each in a different window

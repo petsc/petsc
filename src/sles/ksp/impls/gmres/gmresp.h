@@ -1,4 +1,4 @@
-/* $Id: gmresp.h,v 1.10 1998/07/29 19:36:10 bsmith Exp bsmith $ */
+/* $Id: gmresp.h,v 1.11 1999/01/31 16:08:49 bsmith Exp bsmith $ */
 /*
    Private data structure used by the GMRES method.
 */
@@ -40,7 +40,7 @@ typedef struct {
     /* In order to allow the solution to be constructed during the solution
        process, we need some additional information: */
 
-    int    it;              /* Current iteration */
+    int    it;              /* Current iteration: inside restart */
     Scalar *nrs;            /* temp that holds the coefficients of the 
                                Krylov vectors that form the minimum residual
                                solution */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.40 1999/03/15 20:58:52 balay Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.41 1999/03/15 21:53:16 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -337,7 +337,7 @@ int PLogMPEBegin(void)
       PetscBeganMPE = 1;
     }
 #endif
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
     for ( i=0; i < PLOG_USER_EVENT_HIGH; i++) {
       if (PLogEventMPEFlags[i]) {

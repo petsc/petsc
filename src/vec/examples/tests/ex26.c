@@ -33,8 +33,8 @@ int main(int Argc,char **Args)
   PetscInitialize(&Argc,&Args,PETSC_NULL,PETSC_NULL);
 
   comm = MPI_COMM_WORLD;
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRA(ierr);
   
   /* Create the necessary vectors; one element per processor */
   ierr = VecCreateMPI(comm,1,PETSC_DECIDE,&tar_v); CHKERRA(ierr);

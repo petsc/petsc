@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.134 1999/03/24 15:37:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.135 1999/03/24 16:51:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -50,7 +50,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
       MPI_Comm comm;
       int      rank;
       ierr = PetscObjectGetComm((PetscObject)y,&comm);CHKERRQ(ierr);
-      MPI_Comm_rank(comm,&rank);
+      ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
       if (scat->work1) xvt = scat->work1; 
       else {
         scat->work1 = xvt = (Scalar *) PetscMalloc(xx_n*sizeof(Scalar));CHKPTRQ(xvt);
@@ -149,7 +149,7 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
   ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* --------  Reverse scatter; spread from processor 0 to other processors */
   if (mode & SCATTER_REVERSE) {
@@ -243,7 +243,7 @@ int VecScatterDestroy_MPI_ToAll(VecScatter ctx)
 int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_ToAll *in_to = (VecScatter_MPI_ToAll *) in->todata, *sto;
-  int                  size, i;
+  int                  size, i,ierr;
 
   PetscFunctionBegin;
   out->postrecvs      = 0;
@@ -256,7 +256,7 @@ int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
   sto       = PetscNew(VecScatter_MPI_ToAll); CHKPTRQ(sto);
   sto->type = in_to->type;
 
-  MPI_Comm_size(out->comm,&size);
+  ierr = MPI_Comm_size(out->comm,&size);CHKERRQ(ierr);
   sto->count = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(sto->count);
   for ( i=0; i<size; i++ ) {
     sto->count[i] = in_to->count[i];
@@ -737,11 +737,11 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       numbering
   */
   ierr = PetscObjectGetComm((PetscObject) xin,&comm);CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {xin_type = VECMPI;}
 
   ierr = PetscObjectGetComm((PetscObject) yin,&ycomm);CHKERRQ(ierr);
-  MPI_Comm_size(ycomm,&size);
+  ierr = MPI_Comm_size(ycomm,&size);CHKERRQ(ierr);
   if (size > 1) {comm = ycomm; yin_type = VECMPI;}
   
   /* generate the Scatter context */
@@ -1020,7 +1020,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       if (cando) {
         Map map;
 
-        MPI_Comm_size(ctx->comm,&size);
+        ierr  = MPI_Comm_size(ctx->comm,&size);CHKERRQ(ierr);
         sto   = PetscNew(VecScatter_MPI_ToAll);CHKPTRQ(sto);
         count = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(count);
         ierr  = VecGetMap(xin,&map);CHKERRQ(ierr);
@@ -1055,7 +1055,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       VecScatter_MPI_ToAll *sto;
 
       ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
-      MPI_Comm_rank(comm,&rank);
+      ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
       ierr = ISGetSize(ix,&nx); CHKERRQ(ierr);
       ierr = ISStrideGetInfo(ix,&from_first,&from_step);CHKERRQ(ierr);
       ierr = ISGetSize(iy,&ny); CHKERRQ(ierr);
@@ -1078,7 +1078,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       if (cando) {
         Map map;
 
-        MPI_Comm_size(ctx->comm,&size);
+        ierr  = MPI_Comm_size(ctx->comm,&size);CHKERRQ(ierr);
         sto   = PetscNew(VecScatter_MPI_ToAll);CHKPTRQ(sto);
         count = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(count);
         ierr  = VecGetMap(xin,&map);CHKERRQ(ierr);

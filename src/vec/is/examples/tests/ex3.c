@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.3 1998/12/03 03:56:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.4 1999/03/19 21:17:32 bsmith Exp bsmith $";
 #endif
 /*
        Tests ISAllGather()
@@ -17,8 +17,8 @@ int main(int argc,char **argv)
   IS         is,newis;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   /*
      Create IS

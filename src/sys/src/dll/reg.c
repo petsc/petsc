@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.32 1999/02/03 15:34:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.33 1999/04/02 04:14:25 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -440,13 +440,13 @@ int FListView(FList list,Viewer viewer)
 
   while (list) {
     if (list->path) {
-      ViewerASCIIPrintf(viewer," %s %s %s\n",list->path,list->name,list->rname);
+      ierr = ViewerASCIIPrintf(viewer," %s %s %s\n",list->path,list->name,list->rname);CHKERRQ(ierr);
     } else {
-      ViewerASCIIPrintf(viewer," %s %s\n",list->name,list->rname);
+      ierr = ViewerASCIIPrintf(viewer," %s %s\n",list->name,list->rname);CHKERRQ(ierr);
     }
     list = list->next;
   }
-  ViewerASCIIPrintf(viewer,"\n");
+  ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -469,23 +469,23 @@ int FListView(FList list,Viewer viewer)
 */
 int FListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],FList list)
 {
-  int      count = 0;
+  int      ierr, count = 0;
   char     p[64];
 
   PetscFunctionBegin;
   if (!fd) fd = stdout;
 
-  PetscStrcpy(p,"-");
-  if (prefix) PetscStrcat(p,prefix);
-  PetscFPrintf(comm,fd,"  %s%s (one of)",p,name);
+  ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
+  if (prefix) {ierr = PetscStrcat(p,prefix);CHKERRQ(ierr);}
+  ierr = PetscFPrintf(comm,fd,"  %s%s (one of)",p,name);CHKERRQ(ierr);
 
   while (list) {
-    PetscFPrintf(comm,fd," %s",list->name);
+    ierr = PetscFPrintf(comm,fd," %s",list->name);CHKERRQ(ierr);
     list = list->next;
     count++;
-    if (count == 8) PetscFPrintf(comm,fd,"\n     ");
+    if (count == 8) {ierr = PetscFPrintf(comm,fd,"\n     ");CHKERRQ(ierr);}
   }
-  PetscFPrintf(comm,fd,"\n");
+  ierr = PetscFPrintf(comm,fd,"\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.2 1999/02/02 23:41:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.3 1999/03/19 21:18:10 bsmith Exp bsmith $";
 #endif
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
@@ -22,8 +22,8 @@ int main(int argc,char **argv)
   VecScatter    ctx = 0, newctx;
 
   PetscInitialize(&argc,&argv,(char*)0,help); 
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   if (size != 2) SETERRQ(1,1,"Must run with 2 processors");
 

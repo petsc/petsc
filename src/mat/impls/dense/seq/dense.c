@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.165 1999/02/15 21:58:46 balay Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.166 1999/04/14 16:24:09 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -579,7 +579,7 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
 
   PetscFunctionBegin;
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT); CHKERRQ(ierr);
@@ -1296,7 +1296,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
   int          ierr,flg,size;
 
   PetscFunctionBegin;
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Comm must be of size 1");
 
   *A            = 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.83 1999/03/29 23:22:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.84 1999/04/05 00:11:38 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -176,9 +176,9 @@ int MatSNESMFView_Private(Mat J,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-     PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");
-     PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);
-     PetscFPrintf(ctx->comm,fd,"    Using %s compute h routine\n",ctx->type_name);  
+     ierr = PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
+     ierr = PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
+     ierr = PetscFPrintf(ctx->comm,fd,"    Using %s compute h routine\n",ctx->type_name);  CHKERRQ(ierr);
      if (ctx->ops->view) {
        ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
      }
@@ -424,12 +424,12 @@ int MatSNESMFSetFromOptions(Mat mat)
     }
 
     ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
-    PetscStrcpy(p,"-");
-    if (mfctx->snes->prefix) PetscStrcat(p,mfctx->snes->prefix);
+    ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
+    if (mfctx->snes->prefix) {ierr = PetscStrcat(p,mfctx->snes->prefix);CHKERRQ(ierr);}
     if (flg) {
-      (*PetscHelpPrintf)(mfctx->snes->comm,"   %ssnes_mf_err <err>: set sqrt rel error in function (default %g)\n",p,mfctx->error_rel);
+      ierr = (*PetscHelpPrintf)(mfctx->snes->comm,"   %ssnes_mf_err <err>: set sqrt rel error in function (default %g)\n",p,mfctx->error_rel);CHKERRQ(ierr);
       if (mfctx->ops->printhelp) {
-        (*mfctx->ops->printhelp)(mfctx);CHKERRQ(ierr);
+        ierr = (*mfctx->ops->printhelp)(mfctx);CHKERRQ(ierr);
       }
     }
   }
@@ -480,7 +480,7 @@ int MatSNESMFGetH(Mat mat,Scalar *h)
 int MatSNESMFKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
   PC             pc;
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx   ctx;
   int            ierr;
   Mat            mat;
   MPI_Comm       comm;
@@ -497,13 +497,13 @@ int MatSNESMFKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
   }
   if (n > 0 || nonzeroinitialguess) {
 #if defined(USE_PETSC_COMPLEX)
-    PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g + %g i\n",n,rnorm,
-                PetscReal(ctx->currenth),PetscImaginary(ctx->currenth)); 
+    ierr = PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g + %g i\n",n,rnorm,
+                PetscReal(ctx->currenth),PetscImaginary(ctx->currenth)); CHKERRQ(ierr);
 #else
-    PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g \n",n,rnorm,ctx->currenth); 
+    ierr = PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g \n",n,rnorm,ctx->currenth);CHKERRQ(ierr); 
 #endif
   } else {
-    PetscPrintf(comm,"%d KSP Residual norm %14.12e\n",n,rnorm); 
+    ierr = PetscPrintf(comm,"%d KSP Residual norm %14.12e\n",n,rnorm);CHKERRQ(ierr); 
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.158 1999/04/02 04:17:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.159 1999/04/02 15:10:07 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -49,19 +49,19 @@ int KSPView(KSP ksp,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = KSPGetType(ksp,&method);CHKERRQ(ierr);
-    ViewerASCIIPrintf(viewer,"KSP Object:\n");
-    ViewerASCIIPrintf(viewer,"  method: %s\n",method);
+    ierr = ViewerASCIIPrintf(viewer,"KSP Object:\n");CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",method);CHKERRQ(ierr);
     if (ksp->ops->view) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
       ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    if (ksp->guess_zero) ViewerASCIIPrintf(viewer,"  maximum iterations=%d, initial guess is zero\n",ksp->max_it);
-    else                 ViewerASCIIPrintf(viewer,"  maximum iterations=%d\n", ksp->max_it);
-    ViewerASCIIPrintf(viewer,"  tolerances:  relative=%g, absolute=%g, divergence=%g\n",ksp->rtol, ksp->atol, ksp->divtol);
-    if (ksp->pc_side == PC_RIGHT)          ViewerASCIIPrintf(viewer,"  right preconditioning\n");
-    else if (ksp->pc_side == PC_SYMMETRIC) ViewerASCIIPrintf(viewer,"  symmetric preconditioning\n");
-    else                                   ViewerASCIIPrintf(viewer,"  left preconditioning\n");
+    if (ksp->guess_zero) {ierr = ViewerASCIIPrintf(viewer,"  maximum iterations=%d, initial guess is zero\n",ksp->max_it);CHKERRQ(ierr);}
+    else                 {ierr = ViewerASCIIPrintf(viewer,"  maximum iterations=%d\n", ksp->max_it);CHKERRQ(ierr);}
+    ierr = ViewerASCIIPrintf(viewer,"  tolerances:  relative=%g, absolute=%g, divergence=%g\n",ksp->rtol, ksp->atol, ksp->divtol);CHKERRQ(ierr);
+    if (ksp->pc_side == PC_RIGHT)          {ierr = ViewerASCIIPrintf(viewer,"  right preconditioning\n");CHKERRQ(ierr);}
+    else if (ksp->pc_side == PC_SYMMETRIC) {ierr = ViewerASCIIPrintf(viewer,"  symmetric preconditioning\n");CHKERRQ(ierr);}
+    else                                   {ierr = ViewerASCIIPrintf(viewer,"  left preconditioning\n");CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -367,39 +367,39 @@ int KSPPrintHelp(KSP ksp)
   if (ksp->prefix)  PetscStrcat(p,ksp->prefix);
 
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
-  (*PetscHelpPrintf)(ksp->comm,"KSP options -------------------------------------------------\n");
-  ierr = FListPrintTypes(ksp->comm,stdout,ksp->prefix,"ksp_type",KSPList);CHKERRQ(ierr);
-  (*PetscHelpPrintf)(ksp->comm," %sksp_rtol <tol>: relative tolerance, defaults to %g\n",
-                   p,ksp->rtol);
-  (*PetscHelpPrintf)(ksp->comm," %sksp_atol <tol>: absolute tolerance, defaults to %g\n",
-                   p,ksp->atol);
-  (*PetscHelpPrintf)(ksp->comm," %sksp_divtol <tol>: divergence tolerance, defaults to %g\n",
-                     p,ksp->divtol);
-  (*PetscHelpPrintf)(ksp->comm," %sksp_max_it <maxit>: maximum iterations, defaults to %d\n",
-                     p,ksp->max_it);
-  (*PetscHelpPrintf)(ksp->comm," %sksp_preres: use preconditioned residual norm in convergence test\n",p);
-  (*PetscHelpPrintf)(ksp->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
-  (*PetscHelpPrintf)(ksp->comm," %sksp_avoid_norms: do not compute residual norms (CG and Bi-CG-stab)\n",p);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"KSP options -------------------------------------------------\n");CHKERRQ(ierr);
+  ierr = FListPrintTypes(ksp->comm,stdout,ksp->prefix,"ksp_type",KSPList);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_rtol <tol>: relative tolerance, defaults to %g\n",
+                   p,ksp->rtol);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_atol <tol>: absolute tolerance, defaults to %g\n",
+                   p,ksp->atol);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_divtol <tol>: divergence tolerance, defaults to %g\n",
+                     p,ksp->divtol);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_max_it <maxit>: maximum iterations, defaults to %d\n",
+                     p,ksp->max_it);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_preres: use preconditioned residual norm in convergence test\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_avoid_norms: do not compute residual norms (CG and Bi-CG-stab)\n",p);CHKERRQ(ierr);
 
-  (*PetscHelpPrintf)(ksp->comm," KSP Monitoring Options: Choose any of the following\n");
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_cancelmonitors: cancel all monitors hardwired in code\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_monitor: at each iteration print (usually preconditioned) \n\
-  residual norm to stdout\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_smonitor: same as the above, but prints fewer digits of the\n\
+  ierr = (*PetscHelpPrintf)(ksp->comm," KSP Monitoring Options: Choose any of the following\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_cancelmonitors: cancel all monitors hardwired in code\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_monitor: at each iteration print (usually preconditioned) \n\
+  residual norm to stdout\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_smonitor: same as the above, but prints fewer digits of the\n\
     residual norm for small residual norms. This is useful to conceal\n\
-    meaningless digits that may be different on different machines.\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_xmonitor [x,y,w,h]: use X graphics monitor of (usually \n\
-    preconditioned) residual norm\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_truemonitor: at each iteration print true and preconditioned\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"                      residual norms to stdout\n");
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_xtruemonitor [x,y,w,h]: use X graphics monitor of true\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"                                 residual norm\n");
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_singmonitor: calculate singular values during linear solve\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"       (only for CG and GMRES)\n");
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues_explicitly\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_compute_eigenvalues\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_compute_singularvalues\n",p);
+    meaningless digits that may be different on different machines.\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_xmonitor [x,y,w,h]: use X graphics monitor of (usually \n\
+    preconditioned) residual norm\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_truemonitor: at each iteration print true and preconditioned\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"                      residual norms to stdout\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_xtruemonitor [x,y,w,h]: use X graphics monitor of true\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"                                 residual norm\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_singmonitor: calculate singular values during linear solve\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"       (only for CG and GMRES)\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues_explicitly\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_compute_eigenvalues\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_compute_singularvalues\n",p);CHKERRQ(ierr);
 
   if (ksp->ops->printhelp) {
     ierr = (*ksp->ops->printhelp)(ksp,p);CHKERRQ(ierr);
@@ -522,7 +522,7 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(ksp->prefix,"-ksp_monitor",&flg); CHKERRQ(ierr);
   if (flg) {
     int rank = 0;
-    MPI_Comm_rank(ksp->comm,&rank);
+    ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,(void *)0); CHKERRQ(ierr);
     }
@@ -555,7 +555,7 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(ksp->prefix,"-ksp_smonitor",&flg); CHKERRQ(ierr); 
   if (flg) {
     int rank = 0;
-    MPI_Comm_rank(ksp->comm,&rank);
+    ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = KSPSetMonitor(ksp,KSPDefaultSMonitor,(void *)0);CHKERRQ(ierr);
     }
@@ -568,7 +568,7 @@ int KSPSetFromOptions(KSP ksp)
   if (flg) {
     int    rank = 0;
     DrawLG lg;
-    MPI_Comm_rank(ksp->comm,&rank);
+    ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = KSPLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); CHKERRQ(ierr);
       PLogObjectParent(ksp,(PetscObject) lg);
@@ -584,7 +584,7 @@ int KSPSetFromOptions(KSP ksp)
   if (flg){
     int    rank = 0;
     DrawLG lg;
-    MPI_Comm_rank(ksp->comm,&rank);
+    ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = KSPLGTrueMonitorCreate(ksp->comm,0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
       PLogObjectParent(ksp,(PetscObject) lg);

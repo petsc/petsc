@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.32 1999/02/07 15:59:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.33 1999/03/17 23:25:01 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -1002,8 +1002,8 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
   key->ltog          = 0;
   key->next          = 0;
 
-  MPI_Comm_rank(comm,&rank);
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /*  Set nlocal and ownership ranges */
   ierr         = PetscSplitOwnership(comm,&nlocal,&N);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.27 1999/03/10 19:26:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtri.c,v 1.28 1999/03/17 23:21:11 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -62,7 +62,7 @@ int DrawScalePopup(Draw popup,double min,double max)
   PetscFunctionBegin;
   ierr = DrawCheckResizedWindow(popup); CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) popup,&comm);CHKERRQ(ierr);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
   for ( i=0; i<10; i++ ) {
@@ -147,7 +147,7 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],S
   PetscFunctionBegin;
   ierr = DrawIsNull(win,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)win,&comm);CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(1,1,"May only be used with single processor Draw");
 
   if (N <= 0) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.120 1999/03/18 03:45:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.121 1999/03/19 21:24:07 bsmith Exp bsmith $";
 #endif
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
@@ -26,7 +26,7 @@ int DAView_2d(DA da,Viewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   
-  MPI_Comm_rank(da->comm,&rank); 
+  ierr = MPI_Comm_rank(da->comm,&rank); CHKERRQ(ierr);
 
   if (!viewer) { 
     viewer = VIEWER_STDOUT_SELF;
@@ -270,8 +270,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   da->fieldname  = (char **) PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
   ierr = PetscMemzero(da->fieldname, dof*sizeof(char*));CHKERRQ(ierr);
 
-  MPI_Comm_size(comm,&size); 
-  MPI_Comm_rank(comm,&rank); 
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
 
   if (m != PETSC_DECIDE) {
     if (m < 1) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in X direction: %d",m);}
@@ -1014,15 +1014,16 @@ int DAPrintHelp(DA da)
 {
   static int called = 0;
   MPI_Comm   comm;
+  int        ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
 
   comm = da->comm;
   if (!called) {
-    (*PetscHelpPrintf)(comm,"General Distributed Array (DA) options:\n");
-    (*PetscHelpPrintf)(comm,"  -da_view: print DA distribution to screen\n");
-    (*PetscHelpPrintf)(comm,"  -da_view_draw: display DA in window\n");
+    ierr = (*PetscHelpPrintf)(comm,"General Distributed Array (DA) options:\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"  -da_view: print DA distribution to screen\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"  -da_view_draw: display DA in window\n");CHKERRQ(ierr);
     called = 1;
   }
   PetscFunctionReturn(0);

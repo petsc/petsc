@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.86 1998/05/18 19:28:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.87 1999/03/17 23:21:54 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        
@@ -18,9 +18,9 @@ int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng )
   MPI_Status status;
 
   PetscFunctionBegin;
-  MPI_Comm_size( comm, &np );
+  ierr = MPI_Comm_size( comm, &np );CHKERRQ(ierr);
   if (np == 1) PetscFunctionReturn(0);
-  MPI_Comm_rank( comm, &lidx );
+  ierr = MPI_Comm_rank( comm, &lidx );CHKERRQ(ierr);
   if (lidx != 0) {
     ierr = MPI_Recv( 0, 0, MPI_INT, lidx-1, tag, comm, &status );CHKERRQ(ierr);
   }
@@ -39,8 +39,8 @@ int PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng )
   MPI_Status status;
 
   PetscFunctionBegin;
-  MPI_Comm_rank( comm, &lidx );
-  MPI_Comm_size( comm, &np );
+  ierr = MPI_Comm_rank( comm, &lidx );CHKERRQ(ierr);
+  ierr = MPI_Comm_size( comm, &np );CHKERRQ(ierr);
   if (np == 1) PetscFunctionReturn(0);
 
   /* Send to the first process in the next group */
@@ -101,7 +101,7 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
   MPI_Comm   local_comm,*addr_local_comm;
 
   PetscFunctionBegin;
-  MPI_Comm_size( comm, &np );
+  ierr = MPI_Comm_size( comm, &np );CHKERRQ(ierr);
   if (np == 1) PetscFunctionReturn(0);
 
   /* Get the private communicator for the sequential operations */
@@ -144,7 +144,7 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
   MPI_Comm   local_comm,*addr_local_comm;
 
   PetscFunctionBegin;
-  MPI_Comm_size( comm, &np );
+  ierr = MPI_Comm_size( comm, &np );CHKERRQ(ierr);
   if (np == 1) PetscFunctionReturn(0);
 
   ierr = MPI_Attr_get( comm, Petsc_Seq_keyval, (void **)&addr_local_comm, &flag );CHKERRQ(ierr);

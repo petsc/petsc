@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pdisplay.c,v 1.5 1998/10/31 15:38:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pdisplay.c,v 1.6 1999/03/17 23:21:54 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        
@@ -43,7 +43,7 @@ int OptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,PetscTruth *
   PetscFunctionBegin;
   PetscMemzero(env,len*sizeof(char));
 
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     str = getenv(name);
     if (str) PetscStrncpy(env,str,len);
@@ -75,15 +75,15 @@ int PetscSetDisplay(void)
   ierr = OptionsGetString(0,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);  
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr); 
   if (!rank) {
     str = getenv("DISPLAY");
     if (!str || (str[0] == ':' && size > 1)) {
       ierr = PetscGetHostName(PetscDisplay,124); CHKERRQ(ierr);
-      PetscStrcat(PetscDisplay,":0.0");
+      ierr = PetscStrcat(PetscDisplay,":0.0");CHKERRQ(ierr);
     } else {
-      PetscStrncpy(PetscDisplay,str,128);
+      ierr = PetscStrncpy(PetscDisplay,str,128);CHKERRQ(ierr);
     }
     len  = PetscStrlen(PetscDisplay);
     ierr = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);

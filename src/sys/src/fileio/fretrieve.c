@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fretrieve.c,v 1.7 1999/01/04 21:48:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fretrieve.c,v 1.8 1999/03/17 23:21:32 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -81,7 +81,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
   static int Petsc_Tmp_keyval = MPI_KEYVAL_INVALID;
 
   PetscFunctionBegin;
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     *shared = PETSC_TRUE;
     PetscFunctionReturn(0);
@@ -103,7 +103,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
       ierr = PetscStrcpy(filename,"/tmp");CHKERRQ(ierr);
     }
     ierr = PetscStrcat(filename,"/petsctestshared");CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     
     /* each processor creates a /tmp file and all the later ones check */
     /* this makes sure no subset of processors is shared */
@@ -187,7 +187,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
   /* Determine if all processors share a common /tmp */
   ierr = PetscSharedTmp(comm,&sharedtmp);CHKERRQ(ierr);
 
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank || !sharedtmp) {
   
     /* Construct the Python script to get URL file */

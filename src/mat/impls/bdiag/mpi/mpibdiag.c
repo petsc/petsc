@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.165 1999/03/18 00:35:52 balay Exp balay $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.166 1999/03/25 21:22:51 balay Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -496,26 +496,25 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
     ierr = ViewerGetFormat(viewer,&format);
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       int nline = PetscMin(10,mbd->gnd), k, nk, np;
-      ViewerASCIIPrintf(viewer,"  block size=%d, total number of diagonals=%d\n",
-                   dmat->bs,mbd->gnd);
+      ierr = ViewerASCIIPrintf(viewer,"  block size=%d, total number of diagonals=%d\n",dmat->bs,mbd->gnd);CHKERRQ(ierr);
       nk = (mbd->gnd-1)/nline + 1;
       for (k=0; k<nk; k++) {
-        ViewerASCIIPrintf(viewer,"  global diag numbers:");
+        ierr = ViewerASCIIPrintf(viewer,"  global diag numbers:");CHKERRQ(ierr);
         np = PetscMin(nline,mbd->gnd - nline*k);
         for (i=0; i<np; i++) {
-          PetscFPrintf(mat->comm,fd,"  %d",mbd->gdiag[i+nline*k]);
+          ierr = PetscFPrintf(mat->comm,fd,"  %d",mbd->gdiag[i+nline*k]);CHKERRQ(ierr);
         }
-        PetscFPrintf(mat->comm,fd,"\n");        
+        ierr = PetscFPrintf(mat->comm,fd,"\n");CHKERRQ(ierr);        
       }
       if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
         MatInfo info;
-        MPI_Comm_rank(mat->comm,&rank);
-        ierr = MatGetInfo(mat,MAT_LOCAL,&info); 
-        PetscSequentialPhaseBegin(mat->comm,1);
+        ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
+        ierr = MatGetInfo(mat,MAT_LOCAL,&info); CHKERRQ(ierr);
+        ierr = PetscSequentialPhaseBegin(mat->comm,1);CHKERRQ(ierr);
           fprintf(fd,"[%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mbd->m,
             (int)info.nz_used,(int)info.nz_allocated,(int)info.memory);       
           fflush(fd);
-        PetscSequentialPhaseEnd(mat->comm,1);
+        ierr = PetscSequentialPhaseEnd(mat->comm,1);CHKERRQ(ierr);
         ierr = VecScatterView(mbd->Mvctx,viewer); CHKERRQ(ierr);
       }
       PetscFunctionReturn(0);
@@ -938,8 +937,8 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   B->mapping    = 0;
 
   B->insertmode = NOT_SET_VALUES;
-  MPI_Comm_rank(comm,&b->rank);
-  MPI_Comm_size(comm,&b->size);
+  ierr = MPI_Comm_rank(comm,&b->rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&b->size);CHKERRQ(ierr);
 
   ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
   if ((m%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size - bad local row number");
@@ -1101,7 +1100,8 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
   int          tag = ((PetscObject)viewer)->tag,flg,extra_rows;
 
   PetscFunctionBegin;
-  MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT); CHKERRQ(ierr);

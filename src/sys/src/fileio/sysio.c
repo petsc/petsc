@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.50 1999/01/04 21:48:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.51 1999/03/17 23:21:32 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -169,8 +169,8 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     ierr = OptionsHasName(PETSC_NULL,"-binary_longints",&longintfile);CHKERRQ(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-help",&flag);CHKERRQ(ierr);
     if (flag) {
-      (*PetscHelpPrintf)(PETSC_COMM_SELF,"-binary_longints - for binary file generated\n\
-   on a Cray vector machine (not T3E/T3D)\n");
+      ierr = (*PetscHelpPrintf)(PETSC_COMM_SELF,"-binary_longints - for binary file generated\n\
+   on a Cray vector machine (not T3E/T3D)\n");CHKERRQ(ierr);
     }
   }
 

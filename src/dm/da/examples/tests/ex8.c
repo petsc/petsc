@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.12 1999/03/19 21:24:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.13 1999/03/30 16:40:56 balay Exp bsmith $";
 #endif
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
@@ -28,7 +28,7 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
   IS       isfrom,isto;
 
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = DAGetAO(da,&ao); CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.123 1999/03/11 16:20:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.124 1999/04/16 16:08:23 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -455,20 +455,22 @@ static int PCSetFromOptions_ILU(PC pc)
 #define __FUNC__ "PCPrintHelp_ILU"
 static int PCPrintHelp_ILU(PC pc,char *p)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(pc->comm," Options for PCILU preconditioner:\n");
-  (*PetscHelpPrintf)(pc->comm," -mat_order <name>: ordering to reduce fill",p);
-  (*PetscHelpPrintf)(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
-  (*PetscHelpPrintf)(pc->comm," %spc_ilu_levels <levels>: levels of fill\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_ilu_fill <fill>: expected fill in factorization\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_ilu_factorpointwise: do NOT use block factorization\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_ilu_use_drop_tolerance <dt,maxrowcount>: \n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_ilu_reuse_ordering:                          \n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_ilu_reuse_fill:                             \n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_ilu_nonzeros_along_diagonal: <tol> changes column ordering\n",p);
-  (*PetscHelpPrintf)(pc->comm,"    to reduce the chance of obtaining zero pivot during ILU.\n");
-  (*PetscHelpPrintf)(pc->comm,"    If <tol> not given, defaults to 1.e-10.\n"); 
+  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCILU preconditioner:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," -mat_order <name>: ordering to reduce fill",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," (nd,natural,1wd,rcm,qmd)\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_levels <levels>: levels of fill\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_fill <fill>: expected fill in factorization\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_factorpointwise: do NOT use block factorization\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_use_drop_tolerance <dt,maxrowcount>: \n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_reuse_ordering:                          \n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_reuse_fill:                             \n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_nonzeros_along_diagonal: <tol> changes column ordering\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm,"    to reduce the chance of obtaining zero pivot during ILU.\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm,"    If <tol> not given, defaults to 1.e-10.\n");CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -484,17 +486,17 @@ static int PCView_ILU(PC pc,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER )) {
     if (ilu->levels == 1) {
-      ViewerASCIIPrintf(viewer,"  ILU: %d level of fill\n",ilu->levels);
+      ierr = ViewerASCIIPrintf(viewer,"  ILU: %d level of fill\n",ilu->levels);CHKERRQ(ierr);
     } else {
-      ViewerASCIIPrintf(viewer,"  ILU: %d levels of fill\n",ilu->levels);
+      ierr = ViewerASCIIPrintf(viewer,"  ILU: %d levels of fill\n",ilu->levels);CHKERRQ(ierr);
     }
-    if (ilu->inplace) ViewerASCIIPrintf(viewer,"       in-place factorization\n");
-    else              ViewerASCIIPrintf(viewer,"       out-of-place factorization\n");
-    ViewerASCIIPrintf(viewer,"       matrix ordering: %s\n",ilu->ordering);
-    if (ilu->reusefill)     ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");
-    if (ilu->reuseordering) ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");
+    if (ilu->inplace) {ierr = ViewerASCIIPrintf(viewer,"       in-place factorization\n");CHKERRQ(ierr);}
+    else              {ierr = ViewerASCIIPrintf(viewer,"       out-of-place factorization\n");CHKERRQ(ierr);}
+    ierr = ViewerASCIIPrintf(viewer,"       matrix ordering: %s\n",ilu->ordering);CHKERRQ(ierr);
+    if (ilu->reusefill)     {ierr = ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
+    if (ilu->reuseordering) {ierr = ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
-    ierr = ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->levels,ilu->ordering);CHKERRQ(ierr);
+    ierr = ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->levels,ilu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

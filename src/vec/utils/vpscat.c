@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.112 1998/12/17 22:08:16 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.113 1999/01/31 16:03:39 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -25,7 +25,7 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    MPI_Comm_rank(ctx->comm,&rank);
+    ierr = MPI_Comm_rank(ctx->comm,&rank);CHKERRQ(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format ==  VIEWER_FORMAT_ASCII_INFO) {
@@ -46,15 +46,15 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
       ierr = MPI_Reduce(&itmp,&lenrecv_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
       ierr = MPI_Reduce(&itmp,&alldata,1,MPI_INT,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
 
-      PetscPrintf(ctx->comm,"VecScatter statistics\n");
-      PetscPrintf(ctx->comm,"  Maximum number sends %d\n",nsend_max);
-      PetscPrintf(ctx->comm,"  Maximum number receives %d\n",nrecv_max);
-      PetscPrintf(ctx->comm,"  Maximum data sent %d\n",lensend_max*to->bs*sizeof(Scalar));
-      PetscPrintf(ctx->comm,"  Maximum data received %d\n",lenrecv_max*to->bs*sizeof(Scalar));
-      PetscPrintf(ctx->comm,"  Total data sent %d\n",alldata*to->bs*sizeof(Scalar));
+      ierr = PetscPrintf(ctx->comm,"VecScatter statistics\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(ctx->comm,"  Maximum number sends %d\n",nsend_max);CHKERRQ(ierr);
+      ierr = PetscPrintf(ctx->comm,"  Maximum number receives %d\n",nrecv_max);CHKERRQ(ierr);
+      ierr = PetscPrintf(ctx->comm,"  Maximum data sent %d\n",lensend_max*to->bs*sizeof(Scalar));CHKERRQ(ierr);
+      ierr = PetscPrintf(ctx->comm,"  Maximum data received %d\n",lenrecv_max*to->bs*sizeof(Scalar));CHKERRQ(ierr);
+      ierr = PetscPrintf(ctx->comm,"  Total data sent %d\n",alldata*to->bs*sizeof(Scalar));CHKERRQ(ierr);
 
     } else { 
-      PetscSequentialPhaseBegin(ctx->comm,1);
+      ierr = PetscSequentialPhaseBegin(ctx->comm,1);CHKERRQ(ierr);
       fprintf(fd,"[%d] Number sends %d self %d\n",rank,to->n,to->local.n);
       for ( i=0; i<to->n; i++ ){
         fprintf(fd,"[%d]   %d length %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);
@@ -1827,8 +1827,8 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
-  MPI_Comm_rank(comm,&rank);
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = VecGetMap(xin,&map);
   ierr = MapGetGlobalRange(map,&owners);
 
@@ -2360,8 +2360,8 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (size == 1) {
     ierr = VecScatterCreate_StoP(nx,inidx,ny,inidy,yin,ctx); CHKERRQ(ierr);
     PetscFunctionReturn(0);

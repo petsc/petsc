@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.64 1999/03/12 00:21:46 balay Exp bsmith $"
+static char vcid[] =  "$Id: dvec2.c,v 1.65 1999/04/14 16:22:50 bsmith Exp bsmith $"
 #endif
 
 /* 
@@ -759,13 +759,6 @@ int VecGetArray_Seq(Vec vin,Scalar *a[])
   Vec_Seq *v = (Vec_Seq *)vin->data;
 
   PetscFunctionBegin;
-
-  /*  {
-    int rank;
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-    if (!rank) PetscStackView(0);
-  } */
-
   if (vin->array_gotten) {
     SETERRQ(1,1,"Array has already been gotten for this vector, you may\n\
     have forgotten a call to VecRestoreArray()");

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.80 1999/01/31 16:08:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.81 1999/01/31 21:56:31 curfman Exp bsmith $";
 #endif
 
 /*
@@ -66,15 +66,17 @@ static int PCSetFromOptions_SOR(PC pc)
 #define __FUNC__ "PCPrintHelp_SOR" 
 static int PCPrintHelp_SOR(PC pc,char *p)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(pc->comm," Options for PCSOR preconditioner:\n");
-  (*PetscHelpPrintf)(pc->comm," %spc_sor_omega <omega>: relaxation factor (0 < omega < 2)\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_sor_symmetric: use SSOR\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_sor_backward: use backward sweep instead of forward\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_sor_local_symmetric: use SSOR on each processor\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_sor_local_backward: use backward sweep locally\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_sor_local_forward: use forward sweep locally\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_sor_its <its>: number of inner SOR iterations to use\n",p);
+  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCSOR preconditioner:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_omega <omega>: relaxation factor (0 < omega < 2)\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_symmetric: use SSOR\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_backward: use backward sweep instead of forward\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_local_symmetric: use SSOR on each processor\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_local_backward: use backward sweep locally\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_local_forward: use forward sweep locally\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_its <its>: number of inner SOR iterations to use\n",p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -91,7 +93,7 @@ static int PCView_SOR(PC pc,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    if (sym & SOR_ZERO_INITIAL_GUESS) ViewerASCIIPrintf(viewer,"  SOR:  zero initial guess\n");
+    if (sym & SOR_ZERO_INITIAL_GUESS) {ierr = ViewerASCIIPrintf(viewer,"  SOR:  zero initial guess\n");CHKERRQ(ierr);}
     if (sym == SOR_APPLY_UPPER)              sortype = "apply_upper";
     else if (sym == SOR_APPLY_LOWER)         sortype = "apply_lower";
     else if (sym & SOR_EISENSTAT)            sortype = "Eisenstat";
@@ -104,7 +106,7 @@ static int PCView_SOR(PC pc,Viewer viewer)
     else if (sym & SOR_LOCAL_FORWARD_SWEEP)  sortype = "local_forward";
     else if (sym & SOR_LOCAL_BACKWARD_SWEEP) sortype = "local_backward"; 
     else                                     sortype = "unknown";
-    ViewerASCIIPrintf(viewer,"  SOR: type = %s, iterations = %d, omega = %g\n",sortype,jac->its,jac->omega);
+    ierr = ViewerASCIIPrintf(viewer,"  SOR: type = %s, iterations = %d, omega = %g\n",sortype,jac->its,jac->omega);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.27 1999/04/02 19:37:58 balay Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.28 1999/04/04 00:11:08 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -15,11 +15,11 @@ static int MatPartitioningApply_Current(MatPartitioning part, IS *partitioning)
   int   ierr,m,rank,size;
 
   PetscFunctionBegin;
-  MPI_Comm_size(part->comm,&size);
+  ierr = MPI_Comm_size(part->comm,&size);CHKERRQ(ierr);
   if (part->n != size) {
     SETERRQ(PETSC_ERR_SUP,1,"Currently only supports one domain per processor");
   }
-  MPI_Comm_rank(part->comm,&rank);
+  ierr = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(part->adj,&m,PETSC_NULL); CHKERRQ(ierr);
   ierr = ISCreateStride(part->comm,m,rank,0,partitioning);CHKERRQ(ierr);
@@ -281,7 +281,8 @@ int MatPartitioningDestroy(MatPartitioning part)
 @*/
 int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 {
-  MatPartitioning     part;
+  MatPartitioning part;
+  int             ierr;
 
   PetscFunctionBegin;
   *newp          = 0;
@@ -290,7 +291,7 @@ int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
                     MatPartitioningView);
   PLogObjectCreate(part);
   part->type               = -1;
-  MPI_Comm_size(comm,&part->n);
+  ierr = MPI_Comm_size(comm,&part->n);CHKERRQ(ierr);
 
   *newp = part;
   PetscFunctionReturn(0);
@@ -338,7 +339,7 @@ int MatPartitioningView(MatPartitioning  part,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = MatPartitioningGetType(part,&name); CHKERRQ(ierr);
-    ViewerASCIIPrintf(viewer,"MatPartitioning Object: %s\n",name);
+    ierr = ViewerASCIIPrintf(viewer,"MatPartitioning Object: %s\n",name);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -376,8 +377,8 @@ int MatPartitioningPrintHelp(MatPartitioning  part)
   PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
 
   if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
-  (*PetscHelpPrintf)(part->comm,"MatPartitioning options ----------------------------------------------\n");
-  ierr = FListPrintTypes(part->comm,stdout,part->prefix,"mat_partioning_type",MatPartitioningList);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(part->comm,"MatPartitioning options ----------------------------------------------\n");CHKERRQ(ierr);
+  ierr = FListPrintTypes(part->comm,stdout,part->prefix,"mat_partioning_type",MatPartitioningList);CHKERRQ(ierr);CHKERRQ(ierr);
 
   if (part->printhelp) {
     ierr = (*part->printhelp)(part);CHKERRQ(ierr);

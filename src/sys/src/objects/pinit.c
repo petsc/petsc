@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.14 1999/03/17 23:21:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pinit.c,v 1.15 1999/04/16 16:03:28 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -50,57 +50,57 @@ int OptionsCheckInitial_Components(void)
   ierr = OptionsGetString(PETSC_NULL,"-log_info_exclude",mname,256, &flg1);CHKERRQ(ierr);
   if (flg1) {
     if (PetscStrstr(mname,"null")) {
-      PLogInfoDeactivateClass(PETSC_NULL);
+      ierr = PLogInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);
     }
     if (PetscStrstr(mname,"vec")) {
-      PLogInfoDeactivateClass(VEC_COOKIE);
+      ierr = PLogInfoDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
     }
     if (PetscStrstr(mname,"mat")) {
-      PLogInfoDeactivateClass(MAT_COOKIE);
+      ierr = PLogInfoDeactivateClass(MAT_COOKIE);CHKERRQ(ierr);
     }
     if (PetscStrstr(mname,"sles")) {
-      PLogInfoDeactivateClass(SLES_COOKIE);
+      ierr = PLogInfoDeactivateClass(SLES_COOKIE);CHKERRQ(ierr);
     }
     if (PetscStrstr(mname,"snes")) {
-      PLogInfoDeactivateClass(SNES_COOKIE);
+      ierr = PLogInfoDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
     }
   }
   ierr = OptionsGetString(PETSC_NULL,"-log_summary_exclude",mname,256, &flg1);CHKERRQ(ierr);
   if (flg1) {
     if (PetscStrstr(mname,"vec")) {
-      PLogEventDeactivateClass(VEC_COOKIE);
+      ierr = PLogEventDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
     }
     if (PetscStrstr(mname,"mat")) {
-      PLogEventDeactivateClass(MAT_COOKIE);
+      ierr = PLogEventDeactivateClass(MAT_COOKIE);CHKERRQ(ierr);
     }
     if (PetscStrstr(mname,"sles")) {
-      PLogEventDeactivateClass(SLES_COOKIE);
+      ierr = PLogEventDeactivateClass(SLES_COOKIE);CHKERRQ(ierr);
     }
     if (PetscStrstr(mname,"snes")) {
-      PLogEventDeactivateClass(SNES_COOKIE);
+      ierr = PLogEventDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
     }
   }
     
   ierr = OptionsHasName(PETSC_NULL,"-log_sync",&flg1);CHKERRQ(ierr);
   if (flg1) {
-    PLogEventActivate(VEC_ScatterBarrier);
-    PLogEventActivate(VEC_NormBarrier);
-    PLogEventActivate(VEC_NormComm);
-    PLogEventActivate(VEC_DotBarrier);
-    PLogEventActivate(VEC_DotComm);
-    PLogEventActivate(VEC_MDotBarrier);
-    PLogEventActivate(VEC_MDotComm);
-    PLogEventActivate(VEC_ReduceBarrier);
-    PLogEventActivate(VEC_ReduceCommOnly);
+    ierr = PLogEventActivate(VEC_ScatterBarrier);CHKERRQ(ierr);
+    ierr = PLogEventActivate(VEC_NormBarrier);CHKERRQ(ierr);
+    ierr = PLogEventActivate(VEC_NormComm);CHKERRQ(ierr);
+    ierr = PLogEventActivate(VEC_DotBarrier);CHKERRQ(ierr);
+    ierr = PLogEventActivate(VEC_DotComm);CHKERRQ(ierr);
+    ierr = PLogEventActivate(VEC_MDotBarrier);CHKERRQ(ierr);
+    ierr = PLogEventActivate(VEC_MDotComm);CHKERRQ(ierr);
+    ierr = PLogEventActivate(VEC_ReduceBarrier);CHKERRQ(ierr);
+    ierr = PLogEventActivate(VEC_ReduceCommOnly);CHKERRQ(ierr);
   }
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);
   if (flg1) {
 #if defined (USE_PETSC_LOG)
-    (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");
-    (*PetscHelpPrintf)(comm," -log_summary_exclude: <vec,mat,sles,snes>\n");
-    (*PetscHelpPrintf)(comm," -log_info_exclude: <null,vec,mat,sles,snes,ts>\n");
-    (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");
+    ierr = (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -log_summary_exclude: <vec,mat,sles,snes>\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -log_info_exclude: <null,vec,mat,sles,snes,ts>\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
 #endif
   }
   PetscFunctionReturn(0);

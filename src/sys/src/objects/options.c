@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.206 1999/04/04 22:41:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.207 1999/04/16 16:03:28 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -171,7 +171,7 @@ int OptionsInsert(int *argc,char ***args,const char file[])
   char pfile[256];
 
   PetscFunctionBegin;
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   options->N        = 0;
   options->Naliases = 0;
@@ -182,7 +182,7 @@ int OptionsInsert(int *argc,char ***args,const char file[])
   ierr = OptionsInsertFile(file); CHKERRQ(ierr);
   } else {
     ierr = PetscGetHomeDirectory(pfile,240); CHKERRQ(ierr);
-    PetscStrcat(pfile,"/.petscrc");
+    ierr = PetscStrcat(pfile,"/.petscrc");CHKERRQ(ierr);
     ierr = OptionsInsertFile(pfile); CHKERRQ(ierr);
   }
 
@@ -288,9 +288,9 @@ int OptionsPrint(FILE *fd)
   if (!options) {ierr = OptionsInsert(0,0,0);CHKERRQ(ierr);}
   for ( i=0; i<options->N; i++ ) {
     if (options->values[i]) {
-      PetscFPrintf(PETSC_COMM_WORLD,fd,"OptionTable: -%s %s\n",options->names[i],options->values[i]);
+      ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"OptionTable: -%s %s\n",options->names[i],options->values[i]);CHKERRQ(ierr);
     } else {
-      PetscFPrintf(PETSC_COMM_WORLD,fd,"OptionTable: -%s\n",options->names[i]);
+      ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"OptionTable: -%s\n",options->names[i]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1085,16 +1085,16 @@ int OptionsAllUsed(void)
 @*/
 int OptionsLeft(void)
 {
-  int i;
+  int i,ierr;
 
   PetscFunctionBegin;
   for ( i=0; i<options->N; i++ ) {
     if (!options->used[i]) {
       if (options->values[i]) {
-        PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",options->names[i],
-                                                         options->values[i]);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",options->names[i],
+                                                         options->values[i]);CHKERRQ(ierr);
       } else {
-        PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s no value \n",options->names[i]);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s no value \n",options->names[i]);CHKERRQ(ierr);
       }
     }
   }

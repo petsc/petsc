@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.112 1999/03/11 16:20:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.113 1999/04/16 16:08:11 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -79,17 +79,19 @@ static int PCSetFromOptions_LU(PC pc)
 #define __FUNC__ "PCPrintHelp_LU"
 static int PCPrintHelp_LU(PC pc,char *p)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(pc->comm," Options for PCLU preconditioner:\n");
-  (*PetscHelpPrintf)(pc->comm," %spc_lu_in_place: do factorization in place\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_lu_fill <fill>: expected fill in factor\n",p);
-  (*PetscHelpPrintf)(pc->comm," -mat_order <name>: ordering to reduce fill",p);
-  (*PetscHelpPrintf)(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
-  (*PetscHelpPrintf)(pc->comm," %spc_lu_nonzeros_along_diagonal <tol>: changes column ordering\n",p);
-  (*PetscHelpPrintf)(pc->comm,"    to reduce the change of obtaining zero pivot during LU.\n");
-  (*PetscHelpPrintf)(pc->comm,"    If <tol> not given defaults to 1.e-10.\n");
-  (*PetscHelpPrintf)(pc->comm," %spc_lu_reuse_ordering:                          \n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_lu_reuse_fill:                             \n",p);
+  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCLU preconditioner:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_in_place: do factorization in place\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_fill <fill>: expected fill in factor\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," -mat_order <name>: ordering to reduce fill",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," (nd,natural,1wd,rcm,qmd)\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_nonzeros_along_diagonal <tol>: changes column ordering\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm,"    to reduce the change of obtaining zero pivot during LU.\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm,"    If <tol> not given defaults to 1.e-10.\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_reuse_ordering:                          \n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_reuse_fill:                             \n",p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -106,17 +108,17 @@ static int PCView_LU(PC pc,Viewer viewer)
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     MatInfo info;
 
-    if (lu->inplace) ViewerASCIIPrintf(viewer,"  LU: in-place factorization\n");
-    else             ViewerASCIIPrintf(viewer,"  LU: out-of-place factorization\n");
-    ViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",lu->ordering);
+    if (lu->inplace) {ierr = ViewerASCIIPrintf(viewer,"  LU: in-place factorization\n");CHKERRQ(ierr);}
+    else             {ierr = ViewerASCIIPrintf(viewer,"  LU: out-of-place factorization\n");CHKERRQ(ierr);}
+    ierr = ViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",lu->ordering);CHKERRQ(ierr);
     if (lu->fact) {
       ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info); CHKERRQ(ierr);
-      ViewerASCIIPrintf(viewer,"    LU nonzeros %g\n",info.nz_used);
+      ierr = ViewerASCIIPrintf(viewer,"    LU nonzeros %g\n",info.nz_used);CHKERRQ(ierr);
     }
-    if (lu->reusefill)       ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");
-    if (lu->reuseorering) ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");
+    if (lu->reusefill)    {ierr = ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
+    if (lu->reuseorering) {ierr = ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
-    ierr = ViewerStringSPrintf(viewer," order=%s",lu->ordering);CHKERRQ(ierr);
+    ierr = ViewerStringSPrintf(viewer," order=%s",lu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

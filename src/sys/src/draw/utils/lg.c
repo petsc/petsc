@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.57 1999/03/17 23:21:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.58 1999/03/25 17:24:35 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -338,7 +338,7 @@ int DrawLGDraw(DrawLG lg)
   ierr = DrawAxisSetLimits(lg->axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
   ierr = DrawAxisDraw(lg->axis);CHKERRQ(ierr);
 
-  MPI_Comm_rank(lg->comm,&rank);
+  ierr = MPI_Comm_rank(lg->comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
   for ( i=0; i<dim; i++ ) {

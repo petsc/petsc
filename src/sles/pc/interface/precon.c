@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.169 1999/04/02 04:17:29 bsmith Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.170 1999/04/05 18:21:21 balay Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -533,7 +533,7 @@ int PCSetUp(PC pc)
   if (!pc->type_name) {
     int size;
 
-    MPI_Comm_size(pc->comm,&size);
+    ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
     } else {
@@ -1155,31 +1155,31 @@ int PCView(PC pc,Viewer viewer)
   if (viewer) {PetscValidHeader(viewer);} 
   else { viewer = VIEWER_STDOUT_SELF;}
 
-  ViewerGetType(viewer,&vtype);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerGetFormat(viewer,&fmt); CHKERRQ(ierr);
-    ViewerASCIIPrintf(viewer,"PC Object:\n");
+    ierr = ViewerASCIIPrintf(viewer,"PC Object:\n");CHKERRQ(ierr);
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
-    ViewerASCIIPrintf(viewer,"  method: %s\n",cstr);
+    ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",cstr);CHKERRQ(ierr);
     if (pc->view) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*pc->view)(pc,viewer);CHKERRQ(ierr);
       ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    PetscObjectExists((PetscObject)pc->mat,&mat_exists);
+    ierr = PetscObjectExists((PetscObject)pc->mat,&mat_exists);CHKERRQ(ierr);
     if (mat_exists) {
-      ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_INFO,0);
+      ierr = ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
       if (pc->pmat == pc->mat) {
-        ViewerASCIIPrintf(viewer,"  linear system matrix = precond matrix:\n");
+        ierr = ViewerASCIIPrintf(viewer,"  linear system matrix = precond matrix:\n");CHKERRQ(ierr);
         ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
         ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       } else {
-        PetscObjectExists((PetscObject)pc->pmat,&mat_exists);
+        ierr = PetscObjectExists((PetscObject)pc->pmat,&mat_exists);CHKERRQ(ierr);
         if (mat_exists) {
-          ViewerASCIIPrintf(viewer,"  linear system matrix followed by preconditioner matrix:\n");
+          ierr = ViewerASCIIPrintf(viewer,"  linear system matrix followed by preconditioner matrix:\n");CHKERRQ(ierr);
         } else {
-          ViewerASCIIPrintf(viewer,"  linear system matrix:\n");
+          ierr = ViewerASCIIPrintf(viewer,"  linear system matrix:\n");CHKERRQ(ierr);
         }
         ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);

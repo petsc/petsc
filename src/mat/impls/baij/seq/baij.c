@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.169 1999/03/26 00:39:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.170 1999/03/31 18:41:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -421,7 +421,7 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
   ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
   if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
-    ViewerASCIIPrintf(viewer,"  block size is %d\n",bs);
+    ierr = ViewerASCIIPrintf(viewer,"  block size is %d\n",bs); CHKERRQ(ierr);
   } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
     SETERRQ(PETSC_ERR_SUP,0,"Socket format not supported");
   } else if (format == VIEWER_FORMAT_ASCII_COMMON) {
@@ -498,7 +498,7 @@ static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
    rest should return immediately.
   */
   ierr = PetscObjectGetComm((PetscObject)draw,&comm);CHKERRQ(ierr);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
   ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*) &viewer);CHKERRQ(ierr); 
@@ -1186,7 +1186,6 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
   }
 
   ierr = MatLUFactorNumeric(inA,&outA); CHKERRQ(ierr);
-  
 
   PetscFunctionReturn(0);
 }
@@ -1196,11 +1195,12 @@ int MatPrintHelp_SeqBAIJ(Mat A)
 {
   static int called = 0; 
   MPI_Comm   comm = A->comm;
+  int        ierr;
 
   PetscFunctionBegin;
   if (called) {PetscFunctionReturn(0);} else called = 1;
-  (*PetscHelpPrintf)(comm," Options for MATSEQBAIJ and MATMPIBAIJ matrix formats (the defaults):\n");
-  (*PetscHelpPrintf)(comm,"  -mat_block_size <block_size>\n");
+  ierr = (*PetscHelpPrintf)(comm," Options for MATSEQBAIJ and MATMPIBAIJ matrix formats (the defaults):\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_block_size <block_size>\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1341,6 +1341,7 @@ int MatStoreValues_SeqBAIJ(Mat mat)
 {
   Mat_SeqBAIJ *aij = (Mat_SeqBAIJ *)mat->data;
   int         nz = aij->i[aij->m]*aij->bs*aij->bs2;
+  int         ierr;
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
@@ -1353,7 +1354,7 @@ int MatStoreValues_SeqBAIJ(Mat mat)
   }
 
   /* copy values over */
-  PetscMemcpy(aij->saved_values,aij->a,nz*sizeof(Scalar));
+  ierr = PetscMemcpy(aij->saved_values,aij->a,nz*sizeof(Scalar));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1429,7 +1430,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   int         i,len,ierr,flg,mbs=m/bs,nbs=n/bs,bs2=bs*bs,size;
 
   PetscFunctionBegin;
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Comm must be of size 1");
 
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRQ(ierr);
@@ -1666,7 +1667,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,&flg);CHKERRQ(ierr);
   bs2  = bs*bs;
 
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT); CHKERRQ(ierr);

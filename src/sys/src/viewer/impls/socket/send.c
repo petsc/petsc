@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.90 1999/04/02 19:23:02 balay Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.91 1999/04/02 19:23:50 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -271,10 +271,10 @@ int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
       ierr = PetscGetHostName(mach,256); CHKERRQ(ierr);
     }
   } else {
-    PetscStrncpy(mach,machine,256);
+    ierr = PetscStrncpy(mach,machine,256);CHKERRQ(ierr);
   }
 
-  MPI_Comm_rank(v->comm,&rank);
+  ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     PLogInfo(0,"ViewerSocketSetConnection:Connecting to socket process on port %d machine %s\n",port,mach);
     ierr          = SOCKCall_Private(mach,port,&vmatlab->port);CHKERRQ(ierr);

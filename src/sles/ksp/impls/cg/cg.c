@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.84 1999/03/01 04:55:47 bsmith Exp balay $";
+static char vcid[] = "$Id: cg.c,v 1.85 1999/04/08 21:12:20 balay Exp bsmith $";
 #endif
 
 /*
@@ -253,11 +253,11 @@ int KSPView_CG(KSP ksp,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     if (cg->type == KSP_CG_HERMITIAN) {
-      ViewerASCIIPrintf(viewer,"  CG: variant for complex, Hermitian system\n");
+      ierr = ViewerASCIIPrintf(viewer,"  CG: variant for complex, Hermitian system\n");CHKERRQ(ierr);
     } else if (cg->type == KSP_CG_SYMMETRIC) {
-      ViewerASCIIPrintf(viewer,"  CG: variant for complex, symmetric system\n");
+      ierr = ViewerASCIIPrintf(viewer,"  CG: variant for complex, symmetric system\n");CHKERRQ(ierr);
     } else {
-      ViewerASCIIPrintf(viewer,"  CG: unknown variant\n");
+      ierr = ViewerASCIIPrintf(viewer,"  CG: unknown variant\n");CHKERRQ(ierr);
     }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
@@ -274,11 +274,13 @@ int KSPView_CG(KSP ksp,Viewer viewer)
 #define __FUNC__ "KSPPrintHelp_CG"
 static int KSPPrintHelp_CG(KSP ksp,char *p)
 {
+  int ierr;
+
   PetscFunctionBegin;
 #if defined(USE_PETSC_COMPLEX)
-  (*PetscHelpPrintf)(ksp->comm," Options for CG method:\n");
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_cg_Hermitian: use CG for complex, Hermitian matrix (default)\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_cg_symmetric: use CG for complex, symmetric matrix\n",p);
+  ierr = (*PetscHelpPrintf)(ksp->comm," Options for CG method:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_cg_Hermitian: use CG for complex, Hermitian matrix (default)\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_cg_symmetric: use CG for complex, symmetric matrix\n",p);CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);

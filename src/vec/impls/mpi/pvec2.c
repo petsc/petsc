@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pvec2.c,v 1.35 1998/12/03 03:57:00 bsmith Exp balay $"
+static char vcid[] = "$Id: pvec2.c,v 1.36 1999/01/27 21:20:37 balay Exp bsmith $"
 #endif
 
 /*
@@ -11,12 +11,12 @@ static char vcid[] = "$Id: pvec2.c,v 1.35 1998/12/03 03:57:00 bsmith Exp balay $
 #define do_not_use_ethernet
 int Ethernet_Allreduce(double *in,double *out,int n,MPI_Datatype type,MPI_Op op,MPI_Comm comm)
 {
-  int        i,rank,size;
+  int        i,rank,size,ierr;
   MPI_Status status;
 
 
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   if (rank) {
     MPI_Recv(out,n,MPI_DOUBLE,rank-1,837,comm,&status);

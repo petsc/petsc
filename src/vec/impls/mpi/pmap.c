@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmap.c,v 1.8 1999/02/02 03:02:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: pmap.c,v 1.9 1999/03/01 04:51:43 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -99,8 +99,8 @@ int MapCreateMPI(MPI_Comm comm,int n,int N,Map *mm)
   PetscFunctionBegin;
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
 
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank); 
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
 
   PetscHeaderCreate(m,_p_Map,struct _MapOps,MAP_COOKIE,0,"Map",comm,MapDestroy,0);
   PLogObjectCreate(m);

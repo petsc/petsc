@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.132 1999/03/31 22:20:23 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.133 1999/03/31 22:23:41 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -823,13 +823,14 @@ EXTERN_C_END
 static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
 {
   SNES_LS *ls = (SNES_LS *)snes->data;
+  int     ierr;
 
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(snes->comm," method SNES_EQ_LS (ls) for systems of nonlinear equations:\n");
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls [cubic,quadratic,basic,basicnonorms,...]\n",p);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_alpha <alpha> (default %g)\n",p,ls->alpha);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_maxstep <max> (default %g)\n",p,ls->maxstep);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_steptol <tol> (default %g)\n",p,ls->steptol);
+  ierr = (*PetscHelpPrintf)(snes->comm," method SNES_EQ_LS (ls) for systems of nonlinear equations:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls [cubic,quadratic,basic,basicnonorms,...]\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_alpha <alpha> (default %g)\n",p,ls->alpha);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_maxstep <max> (default %g)\n",p,ls->maxstep);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_steptol <tol> (default %g)\n",p,ls->steptol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -858,8 +859,8 @@ static int SNESView_EQ_LS(SNES snes,Viewer viewer)
     else if (ls->LineSearch == SNESQuadraticLineSearch) cstr = "SNESQuadraticLineSearch";
     else if (ls->LineSearch == SNESCubicLineSearch)     cstr = "SNESCubicLineSearch";
     else                                                cstr = "unknown";
-    ViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);
-    ViewerASCIIPrintf(viewer,"  alpha=%g, maxstep=%g, steptol=%g\n",ls->alpha,ls->maxstep,ls->steptol);
+    ierr = ViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"  alpha=%g, maxstep=%g, steptol=%g\n",ls->alpha,ls->maxstep,ls->steptol);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

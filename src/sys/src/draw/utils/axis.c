@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.51 1999/01/12 23:16:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.52 1999/03/17 23:21:24 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -206,7 +206,7 @@ int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double yma
 @*/
 int DrawAxisDraw(DrawAxis ad)
 {
-  int       i,  ntick, numx, numy, ac = ad->ac, tc = ad->tc,cc = ad->cc,rank;
+  int       i, ierr, ntick, numx, numy, ac = ad->ac, tc = ad->tc,cc = ad->cc,rank;
   double    tickloc[MAXSEGS], sep;
   char      *p;
   Draw      awin = ad->win;
@@ -214,7 +214,8 @@ int DrawAxisDraw(DrawAxis ad)
  
   PetscFunctionBegin;
   if (!ad) PetscFunctionReturn(0);
-  MPI_Comm_rank(ad->comm,&rank); if (rank) PetscFunctionReturn(0);
+  ierr = MPI_Comm_rank(ad->comm,&rank);CHKERRQ(ierr);
+  if (rank) PetscFunctionReturn(0);
 
   if (ad->xlow == ad->xhigh) {ad->xlow -= .5; ad->xhigh += .5;}
   if (ad->ylow == ad->yhigh) {ad->ylow -= .5; ad->yhigh += .5;}

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.118 1999/02/07 19:49:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.119 1999/03/01 04:55:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -574,9 +574,9 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
     } else {
       cstr = "unknown orthogonalization";
     }
-    ViewerASCIIPrintf(viewer,"  GMRES: restart=%d, using %s\n",gmres->max_k,cstr);
+    ierr = ViewerASCIIPrintf(viewer,"  GMRES: restart=%d, using %s\n",gmres->max_k,cstr);CHKERRQ(ierr);
     if (gmres->nprestart > 0) {
-      ViewerASCIIPrintf(viewer,"  GMRES: using prestart=%d\n",gmres->nprestart);
+      ierr = ViewerASCIIPrintf(viewer,"  GMRES: using prestart=%d\n",gmres->nprestart);CHKERRQ(ierr);
     }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
@@ -588,14 +588,16 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
 #define __FUNC__ "KSPPrintHelp_GMRES"
 static int KSPPrintHelp_GMRES(KSP ksp,char *p)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(ksp->comm," Options for GMRES method:\n");
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_prestart <num>: GMRES prestart, defaults to 0\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_modifiedgramschmidt: use alternative orthogonalization\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_irorthog: (default) use iterative refinement in orthogonalization\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_preallocate: preallocate GMRES work vectors\n",p);
+  ierr = (*PetscHelpPrintf)(ksp->comm," Options for GMRES method:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_prestart <num>: GMRES prestart, defaults to 0\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_modifiedgramschmidt: use alternative orthogonalization\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_irorthog: (default) use iterative refinement in orthogonalization\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_preallocate: preallocate GMRES work vectors\n",p);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -738,3 +740,48 @@ int KSPCreate_GMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+typedef struct {
+   Viewer *viewers;
+   int    nviewers;
+} KSPGMRES_MonitorKrylovSpace;
+
+#undef __FUNC__  
+#define __FUNC__ "KSPGMRESMonitorKrylovSpace"
+/*@C
+    KSPGMRESMonitorKrylovSpace- Calls VecView() for each direction in the 
+      GMRES accumulated Krylov space.
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - the KSP context
+.  its - iteration number
+.  fgnorm - 2-norm of residual (or gradient)
+-  dummy - either a viewer or PETSC_NULL
+
+   Level: intermediate
+
+.keywords: KSP, nonlinear, vector, monitor, view, Krylov space
+
+.seealso: KSPSetMonitor(), KSPDefaultMonitor(), VecView()
+@*/
+int KSPGMRESMonitorKrylovSpace(KSP ksp,int its,double fgnorm,void *dummy)
+{
+  KSPGMRES_MonitorKrylovSpace *ctx = (KSPGMRES_MonitorKrylovSpace *)dummy;
+  KSP_GMRES                   *gmres = (KSP_GMRES*)ksp->data;
+  int                         ierr;
+  Vec                         x;
+  Viewer                      viewer;
+
+  PetscFunctionBegin;
+  if (gmres->it >= ctx->nviewers) {
+    SETERRQ(1,1,"Not enough viewers in array to display next Krylov space");
+  }
+
+  x      = VEC_VV(gmres->it);
+  viewer = ctx->viewers[gmres->it];
+  ierr   = VecView(x,viewer);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}

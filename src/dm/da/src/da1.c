@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.95 1999/03/17 23:25:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.96 1999/03/19 21:24:07 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -25,7 +25,7 @@ int DAView_1d(DA da,Viewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
 
-  MPI_Comm_rank(da->comm,&rank); 
+  ierr = MPI_Comm_rank(da->comm,&rank); CHKERRQ(ierr);
 
   if (!viewer) { 
     viewer = VIEWER_STDOUT_SELF; 
@@ -161,8 +161,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   da->globalused = PETSC_FALSE;
   da->fieldname  = (char **) PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
   ierr = PetscMemzero(da->fieldname, dof*sizeof(char*));CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size); 
-  MPI_Comm_rank(comm,&rank); 
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
 
   m = size;
 

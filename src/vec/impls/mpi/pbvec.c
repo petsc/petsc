@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.130 1999/03/18 17:03:46 balay Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.131 1999/03/19 01:05:36 balay Exp bsmith $";
 #endif
 
 /*
@@ -165,8 +165,8 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
   int     ierr,size,rank;
 
   PetscFunctionBegin;
-  MPI_Comm_size(v->comm,&size);
-  MPI_Comm_rank(v->comm,&rank); 
+  ierr = MPI_Comm_size(v->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(v->comm,&rank); CHKERRQ(ierr);
 
   v->bops->publish   = VecPublish_MPI;
   PLogObjectMemory(v, sizeof(Vec_MPI) + (v->n+nghost+1)*sizeof(Scalar));

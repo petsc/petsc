@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.14 1999/04/06 03:04:38 bsmith Exp balay $";
+static char vcid[] = "$Id: comb.c,v 1.15 1999/04/06 04:22:46 balay Exp bsmith $";
 #endif
 
 /*
@@ -126,7 +126,7 @@ int VecSplitReductionApply(VecSplitReduction *sr)
 
   PLogEventBegin(VEC_ReduceCommunication,0,0,0,0);
   PLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,comm);
-  MPI_Comm_size(sr->comm,&size);
+  ierr  = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr); 
   if (size == 1) {
     PetscMemcpy(gvalues,lvalues,numops*sizeof(Scalar));
   } else {

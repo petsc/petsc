@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.43 1999/04/02 15:11:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.44 1999/04/16 16:10:38 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -156,13 +156,13 @@ int TSPrintHelp(TS ts)
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (ts->prefix) prefix = ts->prefix;
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
-  (*PetscHelpPrintf)(ts->comm,"TS options --------------------------------------------------\n");
+  ierr = (*PetscHelpPrintf)(ts->comm,"TS options --------------------------------------------------\n");CHKERRQ(ierr);
   ierr = FListPrintTypes(ts->comm,stdout,ts->prefix,"ts_type",TSList);CHKERRQ(ierr);
-  (*PetscHelpPrintf)(ts->comm," %sts_monitor: use default TS monitor\n",prefix);
-  (*PetscHelpPrintf)(ts->comm," %sts_view: view TS info after each solve\n",prefix);
+  ierr = (*PetscHelpPrintf)(ts->comm," %sts_monitor: use default TS monitor\n",prefix);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm," %sts_view: view TS info after each solve\n",prefix);CHKERRQ(ierr);
 
-  (*PetscHelpPrintf)(ts->comm," %sts_max_steps <steps>: maximum steps, defaults to %d\n",prefix,ts->max_steps);
-  (*PetscHelpPrintf)(ts->comm," %sts_max_time <steps>: maximum time, defaults to %g\n",prefix,ts->max_time);
+  ierr = (*PetscHelpPrintf)(ts->comm," %sts_max_steps <steps>: maximum steps, defaults to %d\n",prefix,ts->max_steps);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm," %sts_max_time <steps>: maximum time, defaults to %g\n",prefix,ts->max_time);CHKERRQ(ierr);
   if (ts->printhelp) {ierr = (*ts->printhelp)(ts,prefix);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -249,7 +249,7 @@ int TSSetFromOptions(TS ts)
   if (flg) {
     int    rank = 0;
     DrawLG lg;
-    MPI_Comm_rank(ts->comm,&rank);
+    ierr = MPI_Comm_rank(ts->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = TSLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); CHKERRQ(ierr);
       PLogObjectParent(ts,(PetscObject) lg);

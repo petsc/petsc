@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.34 1999/01/31 16:11:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.35 1999/03/17 23:25:04 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -120,8 +120,9 @@ int AODataView_Basic_ASCII(AOData ao,Viewer viewer)
   PetscDataType   dtype;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(ao->comm,&rank); if (rank) PetscFunctionReturn(0);  
-  MPI_Comm_size(ao->comm,&size);
+  ierr = MPI_Comm_rank(ao->comm,&rank);CHKERRQ(ierr);
+  if (rank) PetscFunctionReturn(0);  
+  ierr = MPI_Comm_size(ao->comm,&size);CHKERRQ(ierr);
 
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
@@ -129,16 +130,16 @@ int AODataView_Basic_ASCII(AOData ao,Viewer viewer)
     ierr = AODataGetInfo(ao,&nkeys,&keynames);CHKERRQ(ierr);
     for ( i=0; i<nkeys; i++) {
       ierr = AODataKeyGetInfo(ao,keynames[i],&N,0,&nsegs,&segnames);CHKERRQ(ierr);
-      ViewerASCIIPrintf(viewer,"  %s: (%d)\n",keynames[i],N);
+      ierr = ViewerASCIIPrintf(viewer,"  %s: (%d)\n",keynames[i],N);CHKERRQ(ierr);
       for ( j=0; j<nsegs; j++ ) {
         ierr = AODataSegmentGetInfo(ao,keynames[i],segnames[j],&bs,&dtype);CHKERRQ(ierr);
         ierr = PetscDataTypeGetName(dtype,&stype);CHKERRQ(ierr);
         if (dtype == PETSC_CHAR) {
           ierr = AODataSegmentGet(ao,keynames[i],segnames[j],1,&zero,(void **)&segvalue);CHKERRQ(ierr);
-          ViewerASCIIPrintf(viewer,"      %s: (%d) %s -> %s\n",segnames[j],bs,stype,segvalue);
+          ierr = ViewerASCIIPrintf(viewer,"      %s: (%d) %s -> %s\n",segnames[j],bs,stype,segvalue);
           ierr = AODataSegmentRestore(ao,keynames[i],segnames[j],1,&zero,(void **)&segvalue);CHKERRQ(ierr);
         } else {
-          ViewerASCIIPrintf(viewer,"      %s: (%d) %s\n",segnames[j],bs,stype);
+          ierr = ViewerASCIIPrintf(viewer,"      %s: (%d) %s\n",segnames[j],bs,stype);CHKERRQ(ierr);
         }
       }
     }
@@ -227,7 +228,8 @@ int AODataView_Basic(AOData ao,Viewer viewer)
   ViewerType      vtype;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(ao->comm,&rank); if (rank) PetscFunctionReturn(0);
+  ierr = MPI_Comm_rank(ao->comm,&rank);CHKERRQ(ierr);
+  if (rank) PetscFunctionReturn(0);
 
   if (!viewer) {
     viewer = VIEWER_STDOUT_SELF; 
@@ -360,8 +362,8 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Keys not given, but not all data given on each processor");
   } else {
     /* transmit all lengths to all processors */
-    MPI_Comm_size(comm,&size);
-    MPI_Comm_rank(comm,&rank);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     lens = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(lens);
     disp = lens + size;
     ierr = MPI_Allgather(&n,1,MPI_INT,lens,1,MPI_INT,comm);CHKERRQ(ierr);
@@ -712,7 +714,7 @@ int AODataSegmentPartition_Basic(AOData aodata,char *keyname,char *segname)
 
   ierr = AODataSegmentFind_Private(aodata,keyname,segname,&flag,&key,&segment);CHKERRQ(ierr);
   if (flag != 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Cannot locate segment");
-  MPI_Comm_size(aodata->comm,&size);
+  ierr = MPI_Comm_size(aodata->comm,&size);CHKERRQ(ierr);
 
   bs                = segment->bs;
 
@@ -921,8 +923,8 @@ int AODataLoadBasic(Viewer viewer,AOData *aoout)
   }
 
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm); CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex19.c,v 1.9 1999/03/19 21:19:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex19.c,v 1.10 1999/04/16 16:07:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
@@ -38,8 +38,8 @@ int main(int argc,char **args)
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m;         /* number of elements */
   h = 1.0/m;       /* mesh width */
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   /* Create stiffness matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&C); CHKERRA(ierr);

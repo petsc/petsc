@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.82 1999/02/23 18:47:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.83 1999/03/07 17:28:24 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -125,11 +125,11 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (!ksp->calc_sings) {
-    PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm);
+    ierr = PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
   } else {
     ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin); CHKERRQ(ierr);
     c = emax/emin;
-    PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e %% max %g min %g max/min %g\n",n,rnorm,emax,emin,c);
+    ierr = PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e %% max %g min %g max/min %g\n",n,rnorm,emax,emin,c);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -198,8 +198,10 @@ int KSPVecViewMonitor(KSP ksp,int its,double fgnorm,void *dummy)
 @*/
 int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm); 
+  ierr = PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -259,7 +261,7 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
     ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
     ierr = VecDestroy(work);CHKERRQ(ierr);
   }
-  PetscPrintf(ksp->comm,"%d KSP preconditioned resid norm %14.12e true resid norm %14.12e\n",n,rnorm,scnorm); 
+  ierr = PetscPrintf(ksp->comm,"%d KSP preconditioned resid norm %14.12e true resid norm %14.12e\n",n,rnorm,scnorm); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -274,13 +276,15 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 */
 int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (fnorm > 1.e-9) {
-    PetscPrintf(ksp->comm, "iter = %d, KSP Residual norm %g \n",its,fnorm);
+    ierr = PetscPrintf(ksp->comm, "iter = %d, KSP Residual norm %g \n",its,fnorm);CHKERRQ(ierr);
   } else if (fnorm > 1.e-11){
-    PetscPrintf(ksp->comm, "iter = %d, KSP Residual norm %5.3e \n",its,fnorm);
+    ierr = PetscPrintf(ksp->comm, "iter = %d, KSP Residual norm %5.3e \n",its,fnorm);CHKERRQ(ierr);
   } else {
-    PetscPrintf(ksp->comm, "iter = %d, KSP Residual norm < 1.e-11\n",its);
+    ierr = PetscPrintf(ksp->comm, "iter = %d, KSP Residual norm < 1.e-11\n",its);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.80 1999/03/01 04:57:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.81 1999/03/17 23:24:32 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -328,19 +328,20 @@ static int SNESSetFromOptions_UM_TR(SNES snes)
 static int SNESPrintHelp_UM_TR(SNES snes,char *p)
 {
   SNES_UMTR *ctx = (SNES_UMTR *)snes->data;
+  int       ierr;
 
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(snes->comm," method SNES_UM_TR (umtr) for unconstrained minimization:\n");
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta1 <eta1> (default %g)\n",p,ctx->eta1);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta2 <eta2> (default %g)\n",p,ctx->eta2);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta3 <eta3> (default %g)\n",p,ctx->eta3);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta4 <eta4> (default %g)\n",p,ctx->eta4);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_delta0 <delta0> (default %g)\n",p,ctx->delta0);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_factor1 <factor1> (default %g)\n",p,ctx->factor1);
-  (*PetscHelpPrintf)(snes->comm,"   delta0, factor1: used to initialize trust region parameter\n");
-  (*PetscHelpPrintf)(snes->comm,"   eta2, eta3, eta4: used to compute trust region parameter\n");
-  (*PetscHelpPrintf)(snes->comm,"   eta1: step is unsuccessful if actred < eta1 * prered, where\n"); 
-  (*PetscHelpPrintf)(snes->comm,"         pred = predicted reduction, actred = actual reduction\n");
+  ierr = (*PetscHelpPrintf)(snes->comm," method SNES_UM_TR (umtr) for unconstrained minimization:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta1 <eta1> (default %g)\n",p,ctx->eta1);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta2 <eta2> (default %g)\n",p,ctx->eta2);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta3 <eta3> (default %g)\n",p,ctx->eta3);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta4 <eta4> (default %g)\n",p,ctx->eta4);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_delta0 <delta0> (default %g)\n",p,ctx->delta0);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_factor1 <factor1> (default %g)\n",p,ctx->factor1);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   delta0, factor1: used to initialize trust region parameter\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   eta2, eta3, eta4: used to compute trust region parameter\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   eta1: step is unsuccessful if actred < eta1 * prered, where\n");CHKERRQ(ierr); 
+  ierr = (*PetscHelpPrintf)(snes->comm,"         pred = predicted reduction, actred = actual reduction\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -355,8 +356,8 @@ static int SNESView_UM_TR(SNES snes,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"  eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",tr->eta1,tr->eta2,tr->eta3,tr->eta4);
-    ViewerASCIIPrintf(viewer,"  delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);
+    ierr = ViewerASCIIPrintf(viewer,"  eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",tr->eta1,tr->eta2,tr->eta3,tr->eta4);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"  delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

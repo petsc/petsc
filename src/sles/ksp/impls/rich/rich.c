@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.73 1999/02/12 19:52:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.74 1999/03/01 04:55:58 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -120,7 +120,7 @@ extern int KSPView_Richardson(KSP ksp,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"  Richardson: damping factor=%g\n",richardsonP->scale);
+    ierr = ViewerASCIIPrintf(viewer,"  Richardson: damping factor=%g\n",richardsonP->scale);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -131,11 +131,11 @@ extern int KSPView_Richardson(KSP ksp,Viewer viewer)
 #define __FUNC__ "KSPPrintHelp_Richardson"
 static int KSPPrintHelp_Richardson(KSP ksp,char *p)
 {
+  int ierr;
+
   PetscFunctionBegin;
-
-  (*PetscHelpPrintf)(ksp->comm," Options for Richardson method:\n");
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_richardson_scale <scale> : damping factor\n",p);
-
+  ierr = (*PetscHelpPrintf)(ksp->comm," Options for Richardson method:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_richardson_scale <scale> : damping factor\n",p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

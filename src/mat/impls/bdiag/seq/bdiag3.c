@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag3.c,v 1.6 1999/01/21 15:13:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag3.c,v 1.7 1999/01/25 19:06:53 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -491,13 +491,13 @@ int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
   if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     int nline = PetscMin(10,a->nd), k, nk, np;
     if (a->user_alloc) {
-      ViewerASCIIPrintf(viewer,"  block size=%d, number of diagonals=%d, user-allocated storage\n",bs,a->nd);
+      ierr = ViewerASCIIPrintf(viewer,"  block size=%d, number of diagonals=%d, user-allocated storage\n",bs,a->nd);CHKERRQ(ierr);
     } else {
-      ViewerASCIIPrintf(viewer,"  block size=%d, number of diagonals=%d, PETSc-allocated storage\n",bs,a->nd);
+      ierr = ViewerASCIIPrintf(viewer,"  block size=%d, number of diagonals=%d, PETSc-allocated storage\n",bs,a->nd);CHKERRQ(ierr);
     }
     nk = (a->nd-1)/nline + 1;
     for (k=0; k<nk; k++) {
-      ViewerASCIIPrintf(viewer,"  diag numbers:");
+      ierr = ViewerASCIIPrintf(viewer,"  diag numbers:"); CHKERRQ(ierr);
       np = PetscMin(nline,a->nd - nline*k);
       for (i=0; i<np; i++) {
         fprintf(fd,"  %d",a->diag[i+nline*k]);

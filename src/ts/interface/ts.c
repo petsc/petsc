@@ -313,20 +313,20 @@ int TSView(TS ts,Viewer viewer)
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"TS Object:\n");
+    ierr = ViewerASCIIPrintf(viewer,"TS Object:\n");CHKERRQ(ierr);
     ierr = TSGetType(ts,(TSType *)&method);CHKERRQ(ierr);
-    ViewerASCIIPrintf(viewer,"  method: %s\n",method);
+    ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",method);CHKERRQ(ierr);
     if (ts->view) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*ts->view)(ts,viewer);CHKERRQ(ierr);
       ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    ViewerASCIIPrintf(viewer,"  maximum steps=%d\n",ts->max_steps);
-    ViewerASCIIPrintf(viewer,"  maximum time=%g\n",ts->max_time);
+    ierr = ViewerASCIIPrintf(viewer,"  maximum steps=%d\n",ts->max_steps);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"  maximum time=%g\n",ts->max_time);CHKERRQ(ierr);
     if (ts->problem_type == TS_NONLINEAR) {
-      ViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%d\n",ts->nonlinear_its);
+      ierr = ViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%d\n",ts->nonlinear_its);CHKERRQ(ierr);
     }
-    ViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%d\n",ts->linear_its);
+    ierr = ViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%d\n",ts->linear_its);CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     ierr = TSGetType(ts,(TSType *)&method);CHKERRQ(ierr);
     ierr = ViewerStringSPrintf(viewer," %-7.7s",method);CHKERRQ(ierr);
@@ -893,8 +893,10 @@ int TSClearMonitor(TS ts)
 #define __FUNC__ "TSDefaultMonitor"
 int TSDefaultMonitor(TS ts, int step, double time,Vec v, void *ctx)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscPrintf(ts->comm,"timestep %d dt %g time %g\n",step,ts->time_step,time);
+  ierr = PetscPrintf(ts->comm,"timestep %d dt %g time %g\n",step,ts->time_step,time);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

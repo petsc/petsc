@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.22 1999/03/09 20:58:11 bsmith Exp balay $";
+static char vcid[] = "$Id: shvec.c,v 1.23 1999/03/17 19:32:44 balay Exp bsmith $";
 #endif
 
 /*
@@ -167,7 +167,7 @@ int PetscSharedInitialize(MPI_Comm comm)
     /* This communicator does not yet have a shared memory areana */
     arena    = (usptr_t**) PetscMalloc( sizeof(usptr_t*) ); CHKPTRQ(arena);
 
-    MPI_Comm_rank(comm,&rank);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       PetscStrcpy(filename,"/tmp/PETScArenaXXXXXX");
       mktemp(filename);
@@ -208,7 +208,7 @@ void *PetscSharedMalloc(int llen,int len,MPI_Comm comm)
   ierr   = MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm); if (ierr) PetscFunctionReturn(0);
   shift -= llen;
 
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     value = (char *) usmalloc((size_t) len, *arena);
     if (!value) {
@@ -235,7 +235,7 @@ int VecCreate_Shared(MPI_Comm comm,int n,int N,Vec *vv)
   int ierr,size;
 
   PetscFunctionBegin;
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
     SETERRQ(1,1,"No supported for shared memory vector objects on this machine");
   }

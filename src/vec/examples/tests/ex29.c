@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex29.c,v 1.3 1999/03/18 23:59:54 balay Exp bsmith $";
+static char vcid[] = "$Id: ex29.c,v 1.4 1999/03/19 21:18:10 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors\n\
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   Vec          x;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   bs = size;
 
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.90 1999/04/05 16:00:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.91 1999/04/08 17:53:58 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -198,13 +198,15 @@ static int PCSetFromOptions_MG(PC pc)
 #define __FUNC__ "PCPrintHelp_MG"
 static int PCPrintHelp_MG(PC pc,char *p)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(pc->comm," Options for PCMG preconditioner:\n");
-  (*PetscHelpPrintf)(pc->comm," %spc_mg_type [additive,multiplicative,fullmultigrid,kaskade]\n",p);
-  (*PetscHelpPrintf)(pc->comm,"              type of multigrid method\n");
-  (*PetscHelpPrintf)(pc->comm," %spc_mg_smoothdown m: number of pre-smooths\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_mg_smoothup m: number of post-smooths\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_mg_cycles m: 1 for V-cycle, 2 for W-cycle\n",p);
+  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCMG preconditioner:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_mg_type [additive,multiplicative,fullmultigrid,kaskade]\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm,"              type of multigrid method\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_mg_smoothdown m: number of pre-smooths\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_mg_smoothup m: number of post-smooths\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_mg_cycles m: 1 for V-cycle, 2 for W-cycle\n",p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -231,15 +233,15 @@ static int PCView_MG(PC pc,Viewer viewer)
     else if (mg[0]->am == MGFULL)      cstring = "full";
     else if (mg[0]->am == MGKASKADE)   cstring = "Kaskade";
     else cstring = "unknown";
-    ViewerASCIIPrintf(viewer,"  MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
-                      cstring,mg[0]->cycles,mg[0]->default_smoothu,mg[0]->default_smoothd); 
+    ierr = ViewerASCIIPrintf(viewer,"  MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
+                      cstring,mg[0]->cycles,mg[0]->default_smoothu,mg[0]->default_smoothd); CHKERRQ(ierr);
     for ( i=0; i<levels; i++ ) {
-      ViewerASCIIPrintf(viewer,"Down solver on level %d -------------------------------\n",i);
+      ierr = ViewerASCIIPrintf(viewer,"Down solver on level %d -------------------------------\n",i);CHKERRQ(ierr);
       ierr = ViewerASCIIPushTab(viewer); CHKERRQ(ierr);
       ierr = SLESView(mg[i]->smoothd,viewer); CHKERRQ(ierr);
       ierr = ViewerASCIIPopTab(viewer); CHKERRQ(ierr);
       if (mg[i]->smoothd == mg[i]->smoothu) {
-        ViewerASCIIPrintf(viewer,"Up solver same as down solver\n");
+        ierr = ViewerASCIIPrintf(viewer,"Up solver same as down solver\n");CHKERRQ(ierr);
       } else {
         ierr = ViewerASCIIPushTab(viewer); CHKERRQ(ierr);
         ierr = SLESView(mg[i]->smoothu,viewer); CHKERRQ(ierr);

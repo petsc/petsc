@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.57 1999/04/02 21:09:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.58 1999/04/16 16:06:37 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -55,7 +55,7 @@ int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
   }
     
   ierr = PetscObjectGetComm((PetscObject)mat,&comm); CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   if (size > 1) {
     SETERRQ(PETSC_ERR_SUP,0,"Currently only for 1 processor matrices");

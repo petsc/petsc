@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellcnv.c,v 1.4 1997/07/09 20:54:17 balay Exp bsmith $";
+static char vcid[] = "$Id: shellcnv.c,v 1.5 1997/10/19 03:25:34 bsmith Exp bsmith $";
 #endif
 
 
@@ -25,7 +25,7 @@ int MatConvert_Shell(Mat oldmat,MatType newtype, Mat *mat)
   }
   comm = oldmat->comm;
 
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(oldmat,&start,&end); CHKERRQ(ierr);
   ierr = VecCreateMPI(comm,end-start,PETSC_DECIDE,&in); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.79 1999/02/01 21:47:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.80 1999/03/17 23:22:12 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -180,27 +180,27 @@ int ISView_Stride(IS is, Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
-    MPI_Comm_rank(is->comm,&rank);
-    MPI_Comm_size(is->comm,&size);
+    ierr = MPI_Comm_rank(is->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (size == 1) {
       if (is->isperm) {
-        PetscSynchronizedFPrintf(is->comm,fd,"Index set is permutation\n");
+        ierr = PetscSynchronizedFPrintf(is->comm,fd,"Index set is permutation\n");CHKERRQ(ierr);
       }
-      PetscSynchronizedFPrintf(is->comm,fd,"Number of indices in (stride) set %d\n",n);
+      ierr = PetscSynchronizedFPrintf(is->comm,fd,"Number of indices in (stride) set %d\n",n);CHKERRQ(ierr);
       for ( i=0; i<n; i++ ) {
-        PetscSynchronizedFPrintf(is->comm,fd,"%d %d\n",i,sub->first + i*sub->step);
+        ierr = PetscSynchronizedFPrintf(is->comm,fd,"%d %d\n",i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
     } else {
       if (is->isperm) {
-        PetscSynchronizedFPrintf(is->comm,fd,"[%d] Index set is permutation\n",rank);
+        ierr = PetscSynchronizedFPrintf(is->comm,fd,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
       }
-      PetscSynchronizedFPrintf(is->comm,fd,"[%d] Number of indices in (stride) set %d\n",rank,n);
+      ierr = PetscSynchronizedFPrintf(is->comm,fd,"[%d] Number of indices in (stride) set %d\n",rank,n);CHKERRQ(ierr);
       for ( i=0; i<n; i++ ) {
-        PetscSynchronizedFPrintf(is->comm,fd,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);
+        ierr = PetscSynchronizedFPrintf(is->comm,fd,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
     }
-    PetscSynchronizedFlush(is->comm);
+    ierr = PetscSynchronizedFlush(is->comm);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

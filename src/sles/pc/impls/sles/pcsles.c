@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.15 1999/01/31 16:08:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcsles.c,v 1.16 1999/01/31 21:55:20 curfman Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -63,11 +63,13 @@ static int PCDestroy_SLES(PC pc)
 #define __FUNC__ "PCPrintHelp_SLES"
 static int PCPrintHelp_SLES(PC pc,char *p)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(pc->comm," Options for PCSLES preconditioner:\n");
-  (*PetscHelpPrintf)(pc->comm," %ssles : prefix to control options for individual blocks.\
+  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCSLES preconditioner:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %ssles : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (e.g., %ssles_ksp_type\
- <kspmethod>)\n",p,p);
+ <kspmethod>)\n",p,p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -83,10 +85,10 @@ static int PCView_SLES(PC pc,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     if (jac->use_true_matrix) {
-      ViewerASCIIPrintf(viewer,"Using true matrix (not preconditioner matrix) on inner solve\n");
+      ierr = ViewerASCIIPrintf(viewer,"Using true matrix (not preconditioner matrix) on inner solve\n");CHKERRQ(ierr);
     }
-    ViewerASCIIPrintf(viewer,"KSP and PC on SLES preconditioner follow\n");
-    ViewerASCIIPrintf(viewer,"---------------------------------\n");
+    ierr = ViewerASCIIPrintf(viewer,"KSP and PC on SLES preconditioner follow\n");CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -94,7 +96,7 @@ static int PCView_SLES(PC pc,Viewer viewer)
   ierr = SLESView(jac->sles,viewer); CHKERRQ(ierr);
   ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"---------------------------------\n");
+    ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -232,8 +234,8 @@ int PCCreate_SLES(PC pc)
 
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_SLES));
-  MPI_Comm_rank(pc->comm,&rank);
-  MPI_Comm_size(pc->comm,&size);
+  ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   pc->apply              = PCApply_SLES;
   pc->setup              = PCSetUp_SLES;
   pc->destroy            = PCDestroy_SLES;

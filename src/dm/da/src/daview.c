@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.31 1999/03/17 23:25:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.32 1999/03/19 21:24:07 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -137,7 +137,7 @@ int DAView_Binary(DA da,Viewer viewer)
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   ierr = DAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     FILE *file;
 

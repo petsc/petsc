@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.52 1999/03/17 23:22:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.53 1999/03/18 21:56:47 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -78,8 +78,8 @@ int VecLoad(Viewer viewer,Vec *newvec)
   PLogEventBegin(VEC_Load,viewer,0,0,0);
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  MPI_Comm_rank(comm,&rank);
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   if (!rank) {
     /* Read vector header. */
@@ -160,8 +160,8 @@ int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
   } else {
     ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-    MPI_Comm_rank(comm,&rank);
-    MPI_Comm_size(comm,&size);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
     if (!rank) {
       /* Read vector header. */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex32.c,v 1.11 1998/12/03 04:01:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex32.c,v 1.12 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
@@ -26,8 +26,8 @@ int main(int argc,char **args)
 
   /* Read in matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-fin",filein,127,&flg); CHKERRA(ierr);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   if ((file = PetscFOpen(PETSC_COMM_SELF,filein,"r")) == 0) {
     SETERRA(1,0,"cannot open file\n");

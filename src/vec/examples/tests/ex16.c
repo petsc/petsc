@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex16.c,v 1.2 1999/02/02 23:41:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex16.c,v 1.3 1999/03/19 21:18:10 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests VecSetValuesBlocked() on MPI vectors\n\n";
@@ -16,8 +16,8 @@ int main(int argc,char **argv)
   Vec          x;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   if (size != 2) SETERRA(1,0,"Must be run with two processors");
 

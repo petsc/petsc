@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.37 1999/01/31 21:21:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.38 1999/03/01 04:55:34 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -134,7 +134,7 @@ int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int 
   int  ierr,rank;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) { *draw = 0; PetscFunctionReturn(0);}
 
   ierr = DrawOpenX(PETSC_COMM_SELF,host,label,x,y,m,n,&win); CHKERRQ(ierr);
@@ -153,7 +153,7 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
   Vec       resid,work;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(ksp->comm,&rank);
+  ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
   if (!rank) { 
     if (!n) {ierr = DrawLGReset(lg);CHKERRQ(ierr);}
     x[0] = x[1] = (double) n;

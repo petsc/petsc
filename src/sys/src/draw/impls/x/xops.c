@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.127 1999/03/02 00:10:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.128 1999/03/07 17:26:51 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -206,7 +206,7 @@ static int DrawSynchronizedFlush_X(Draw Win )
   PetscFunctionBegin;
   XFlush( XiWin->disp );
   if (XiWin->drw) {
-    MPI_Comm_rank(Win->comm,&rank);
+    ierr = MPI_Comm_rank(Win->comm,&rank);CHKERRQ(ierr);
     /* make sure data has actually arrived at server */
     XSync(XiWin->disp,False);
     ierr = MPI_Barrier(Win->comm);CHKERRQ(ierr);
@@ -264,7 +264,7 @@ static int DrawSynchronizedClear_X(Draw Win)
 
   PetscFunctionBegin;
   ierr = MPI_Barrier(Win->comm);CHKERRQ(ierr);
-  MPI_Comm_rank(Win->comm,&rank);
+  ierr = MPI_Comm_rank(Win->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = DrawClear_X(Win);CHKERRQ(ierr);
   }
@@ -285,7 +285,7 @@ static int DrawSetDoubleBuffer_X(Draw Win)
   PetscFunctionBegin;
   if (win->drw) PetscFunctionReturn(0);
 
-  MPI_Comm_rank(Win->comm,&rank);
+  ierr = MPI_Comm_rank(Win->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     win->drw = XCreatePixmap(win->disp,win->win,win->w,win->h,win->depth);
   }
@@ -354,7 +354,7 @@ static int DrawPause_X(Draw draw)
   else if (draw->pause < 0) {
     DrawButton button;
     int        rank;
-    MPI_Comm_rank(draw->comm,&rank);
+    ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = DrawGetMouseButton(draw,&button,0,0,0,0); CHKERRQ(ierr);
       if (button == BUTTON_CENTER) draw->pause = 0;
@@ -421,7 +421,7 @@ static int DrawCheckResizedWindow_X(Draw draw)
   XRectangle   box;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(draw->comm,&rank);
+  ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     XSync(win->disp,False);
     XGetGeometry(win->disp,win->win,&root,&x,&y,geo,geo+1,&border,&depth);
@@ -601,9 +601,9 @@ int DrawCreate_X(Draw ctx)
   /* actually create and open the window */
   Xwin         = (Draw_X *) PetscMalloc( sizeof(Draw_X) ); CHKPTRQ(Xwin);
   PLogObjectMemory(ctx,sizeof(Draw_X)+sizeof(struct _p_Draw));
-  PetscMemzero(Xwin,sizeof(Draw_X));
-  MPI_Comm_size(ctx->comm,&size);
-  MPI_Comm_rank(ctx->comm,&rank);
+  ierr = PetscMemzero(Xwin,sizeof(Draw_X));CHKERRQ(ierr);
+  ierr = MPI_Comm_size(ctx->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(ctx->comm,&rank);CHKERRQ(ierr);
 
   if (rank == 0) {
     if (x < 0 || y < 0)   SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative corner of window");
@@ -623,7 +623,7 @@ int DrawCreate_X(Draw ctx)
   ctx->data    = (void *) Xwin;
 
   ctx->type_name = (char *) PetscMalloc((PetscStrlen(DRAW_X)+1)*sizeof(char));CHKPTRQ(ctx->type_name);
-  PetscStrcpy(ctx->type_name,DRAW_X);
+  ierr = PetscStrcpy(ctx->type_name,DRAW_X);CHKERRQ(ierr);
 
   /*
     Need barrier here so processor 0 doesn't destroy the window before other 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tagm.c,v 1.8 1999/03/17 23:21:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tagm.c,v 1.9 1999/04/16 16:03:28 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites
@@ -250,7 +250,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
 #if defined(USE_PETSC_BOPT_g)
   if (*comm_out == comm_in) {
     int size;
-    MPI_Comm_size(*comm_out,&size);
+    ierr = MPI_Comm_size(*comm_out,&size);CHKERRQ(ierr);
     if (size > 1) {
       int tag1 = *first_tag, tag2;
       ierr = MPI_Allreduce(&tag1,&tag2,1,MPI_INT,MPI_BOR,*comm_out);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.13 1998/12/03 04:02:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.14 1999/03/19 21:22:11 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
@@ -144,7 +144,7 @@ int main( int argc, char **argv )
   /*
      Create distributed array (DA) to manage parallel grid and vectors
   */
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRA(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);

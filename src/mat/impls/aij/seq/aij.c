@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.317 1999/03/26 15:40:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.318 1999/03/29 16:50:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -334,8 +334,8 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
   } else if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg1); CHKERRQ(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg2); CHKERRQ(ierr);
-    if (flg1 || flg2) ViewerASCIIPrintf(viewer,"  not using I-node routines\n");
-    else ViewerASCIIPrintf(viewer,"  using I-node routines: found %d nodes, limit used is %d\n",a->inode.node_count,a->inode.limit);
+    if (flg1 || flg2) {ierr = ViewerASCIIPrintf(viewer,"  not using I-node routines\n");CHKERRQ(ierr);}
+    else {ierr = ViewerASCIIPrintf(viewer,"  using I-node routines: found %d nodes, limit used is %d\n",a->inode.node_count,a->inode.limit);CHKERRQ(ierr);}
   } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
     int nofinalvalue = 0;
     if ((a->i[m] == a->i[m-1]) || (a->j[a->nz-1] != a->n-!shift)) {
@@ -487,7 +487,7 @@ int MatView_SeqAIJ_Draw_Zoom(Draw draw,void *Aa)
    rest should return immediately.
   */
   ierr = PetscObjectGetComm((PetscObject)draw,&comm);CHKERRQ(ierr);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
   ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*) &viewer);CHKERRQ(ierr); 
@@ -1785,16 +1785,17 @@ int MatPrintHelp_SeqAIJ(Mat A)
 {
   static int called = 0; 
   MPI_Comm   comm = A->comm;
+  int        ierr;
 
   PetscFunctionBegin;
   if (called) {PetscFunctionReturn(0);} else called = 1;
-  (*PetscHelpPrintf)(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");
-  (*PetscHelpPrintf)(comm,"  -mat_lu_pivotthreshold <threshold>: Set pivoting threshold\n");
-  (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");
-  (*PetscHelpPrintf)(comm,"  -mat_aij_no_inode: Do not use inodes\n");
-  (*PetscHelpPrintf)(comm,"  -mat_aij_inode_limit <limit>: Set inode limit (max limit=5)\n");
+  ierr = (*PetscHelpPrintf)(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_lu_pivotthreshold <threshold>: Set pivoting threshold\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_no_inode: Do not use inodes\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_inode_limit <limit>: Set inode limit (max limit=5)\n");CHKERRQ(ierr);
 #if defined(HAVE_ESSL)
-  (*PetscHelpPrintf)(comm,"  -mat_aij_essl: Use IBM sparse LU factorization and solve.\n");
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_essl: Use IBM sparse LU factorization and solve.\n");CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -2165,7 +2166,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   int        i, len, ierr, flg,size;
 
   PetscFunctionBegin;
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Comm must be of size 1");
 
   *A                  = 0;
@@ -2369,7 +2370,7 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT); CHKERRQ(ierr);

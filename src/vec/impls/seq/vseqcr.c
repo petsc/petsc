@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vseqcr.c,v 1.4 1999/04/14 18:13:58 balay Exp balay $";
+static char vcid[] = "$Id: vseqcr.c,v 1.5 1999/04/14 18:14:19 balay Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -37,7 +37,7 @@ int VecCreateSeq(MPI_Comm comm, int n, Vec *v)
   int ierr,size;
 
   PetscFunctionBegin;
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(1,1,"Cannot only create sequential vectors on 1 processor");
   ierr = VecCreate(comm,n,n,v); CHKERRQ(ierr);
   ierr = VecSetType(*v,"PETSc#VecSeq");CHKERRQ(ierr);

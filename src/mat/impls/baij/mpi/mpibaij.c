@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.165 1999/03/19 21:19:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.166 1999/03/31 18:41:43 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -946,23 +946,23 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
     ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
-      MPI_Comm_rank(mat->comm,&rank);
+      ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
       ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-      PetscSequentialPhaseBegin(mat->comm,1);
+      ierr = PetscSequentialPhaseBegin(mat->comm,1);CHKERRQ(ierr);
       fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d bs %d mem %d\n",
               rank,baij->m,(int)info.nz_used*bs,(int)info.nz_allocated*bs,
               baij->bs,(int)info.memory);      
-      ierr = MatGetInfo(baij->A,MAT_LOCAL,&info);
+      ierr = MatGetInfo(baij->A,MAT_LOCAL,&info);CHKERRQ(ierr);
       fprintf(fd,"[%d] on-diagonal part: nz %d \n",rank,(int)info.nz_used*bs);
-      ierr = MatGetInfo(baij->B,MAT_LOCAL,&info); 
+      ierr = MatGetInfo(baij->B,MAT_LOCAL,&info);CHKERRQ(ierr); 
       fprintf(fd,"[%d] off-diagonal part: nz %d \n",rank,(int)info.nz_used*bs); 
       fflush(fd);
-      PetscSequentialPhaseEnd(mat->comm,1);
+      ierr = PetscSequentialPhaseEnd(mat->comm,1);CHKERRQ(ierr);
       ierr = VecScatterView(baij->Mvctx,viewer); CHKERRQ(ierr);
       PetscFunctionReturn(0); 
     } else if (format == VIEWER_FORMAT_ASCII_INFO) {
-      PetscPrintf(mat->comm,"  block size is %d\n",bs);
+      ierr = PetscPrintf(mat->comm,"  block size is %d\n",bs);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
   }
@@ -1734,8 +1734,8 @@ int MatPrintHelp_MPIBAIJ(Mat A)
     ierr = MatPrintHelp_SeqBAIJ(a->A);CHKERRQ(ierr);
   }
   if (called) {PetscFunctionReturn(0);} else called = 1;
-  (*PetscHelpPrintf)(comm," Options for MATMPIBAIJ matrix format (the defaults):\n");
-  (*PetscHelpPrintf)(comm,"  -mat_use_hash_table <factor>: Use hashtable for efficient matrix assembly\n");
+  ierr = (*PetscHelpPrintf)(comm," Options for MATMPIBAIJ matrix format (the defaults):\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_use_hash_table <factor>: Use hashtable for efficient matrix assembly\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1960,7 +1960,7 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   PetscFunctionBegin;
   if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size specified, must be positive");
 
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_mpibaij",&flag1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_mpi",&flag2); CHKERRQ(ierr);
   if (!flag1 && !flag2 && size == 1) {
@@ -1984,8 +1984,8 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   B->assembled  = PETSC_FALSE;
 
   B->insertmode = NOT_SET_VALUES;
-  MPI_Comm_rank(comm,&b->rank);
-  MPI_Comm_size(comm,&b->size);
+  ierr = MPI_Comm_rank(comm,&b->rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&b->size);CHKERRQ(ierr);
 
   if ( m == PETSC_DECIDE && (d_nnz != PETSC_NULL || o_nnz != PETSC_NULL)) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Cannot have PETSC_DECIDE rows but set d_nnz or o_nnz");
@@ -2244,7 +2244,8 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
   PetscFunctionBegin;
   ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,&flg);CHKERRQ(ierr);
 
-  MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT); CHKERRQ(ierr);

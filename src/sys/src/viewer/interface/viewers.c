@@ -1,77 +1,68 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.31 1999/03/31 04:09:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewers.c,v 1.1 1999/04/19 21:29:35 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
-#undef __FUNC__  
-#define __FUNC__ "ViewerDestroy"
-/*@C
-   ViewerDestroy - Destroys a viewer.
+struct _p_Viewers {
+   MPI_Comm comm;
+   Viewer   *viewer;
+   int      n,nmax;
+} ;
 
-   Collective on Viewer
+#undef __FUNC__  
+#define __FUNC__ "ViewersDestroy"
+/*@C
+   ViewersDestroy - Destroys a set of viewers created with ViewersCreate().
+
+   Collective on Viewers
 
    Input Parameters:
-.  viewer - the viewer to be destroyed.
+.  viewers - the viewer to be destroyed.
 
-   Level: beginner
+   Level: intermediate
 
-.seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerCreate(), ViewerDrawOpen()
+.seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerCreate(), ViewerDrawOpen(), ViewersCreate()
 
 .keywords: Viewer, destroy
 @*/
-int ViewerDestroy(Viewer v)
+int ViewersDestroy(Viewers v)
 {
-  int         ierr;
+  int         i,ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (--v->refct > 0) PetscFunctionReturn(0);
-  if (v->ops->destroy) {
-    ierr = (*v->ops->destroy)(v);CHKERRQ(ierr);
+  for ( i=0; i<v->n; i++ ) {
+    ierr = ViewerDestroy(v->viewer[i]);CHKERRQ(ierr);
   }
-  PLogObjectDestroy((PetscObject)v);
-  PetscHeaderDestroy((PetscObject)v);
+  PetscFree(v->viewer);
+  PetscFree(v);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerGetType"
+#define __FUNC__ "ViewersCreate"
 /*@C
-   ViewerGetType - Returns the type of a viewer.
+   ViewersCreate - Creates a container to hold a set of viewers.
 
-   Not Collective
+   Collective on MPI_Comm
 
    Input Parameter:
-.   v - the viewer
+.   comm - the MPI communicator
 
    Output Parameter:
-.  type - viewer type (see below)
-
-   Available Types Include:
-.  SOCKET_VIEWER - Socket viewer
-.  ASCII_VIEWER - ASCII viewer
-.  BINARY_VIEWER - binary file viewer
-.  STRING_VIEWER - string viewer
-.  DRAW_VIEWER - drawing viewer
+.  viewers - the collection of viewers
 
    Level: intermediate
 
-   Note:
-   See include/viewer.h for a complete list of viewers.
+.keywords: Viewers, get, type
 
-   ViewerType is actually a string
-
-.keywords: Viewer, get, type
-
-.seealso: ViewerCreate(), ViewerSetType()
+.seealso: ViewerCreate(), ViewersDestroy()
 
 @*/
-int ViewerGetType(Viewer v,ViewerType *type)
+int ViewersCreate(MPI_Comm comm,Viewers *v)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  *type = (ViewerType) v->type_name;
+  *v = PetscNew(struct _p_Viewers);CHKPTRQ(*v);
   PetscFunctionReturn(0);
 }
 

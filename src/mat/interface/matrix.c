@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.330 1999/03/18 22:50:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.331 1999/03/31 18:40:59 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -203,15 +203,15 @@ int MatView(Mat mat,Viewer viewer)
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);  
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
-      ViewerASCIIPrintf(viewer,"Matrix Object:\n");
+      ierr = ViewerASCIIPrintf(viewer,"Matrix Object:\n");CHKERRQ(ierr);
       ierr = MatGetType(mat,PETSC_NULL,&cstr); CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols); CHKERRQ(ierr);
-      ViewerASCIIPrintf(viewer,"  type=%s, rows=%d, cols=%d\n",cstr,rows,cols);
+      ierr = ViewerASCIIPrintf(viewer,"  type=%s, rows=%d, cols=%d\n",cstr,rows,cols);CHKERRQ(ierr);
       if (mat->ops->getinfo) {
         MatInfo info;
         ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
-        ViewerASCIIPrintf(viewer,"  total: nonzeros=%d, allocated nonzeros=%d\n",
-                          (int)info.nz_used,(int)info.nz_allocated);
+        ierr = ViewerASCIIPrintf(viewer,"  total: nonzeros=%d, allocated nonzeros=%d\n",
+                          (int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
       }
     }
   }
@@ -3253,12 +3253,12 @@ int MatPrintHelp(Mat mat)
 
   comm = mat->comm;
   if (!called) {
-    (*PetscHelpPrintf)(comm,"General matrix options:\n");
-    (*PetscHelpPrintf)(comm,"  -mat_view_info: view basic matrix info during MatAssemblyEnd()\n");
-    (*PetscHelpPrintf)(comm,"  -mat_view_info_detailed: view detailed matrix info during MatAssemblyEnd()\n");
-    (*PetscHelpPrintf)(comm,"  -mat_view_draw: draw nonzero matrix structure during MatAssemblyEnd()\n");
-    (*PetscHelpPrintf)(comm,"      -draw_pause <sec>: set seconds of display pause\n");
-    (*PetscHelpPrintf)(comm,"      -display <name>: set alternate display\n");
+    ierr = (*PetscHelpPrintf)(comm,"General matrix options:\n"); CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"  -mat_view_info: view basic matrix info during MatAssemblyEnd()\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"  -mat_view_info_detailed: view detailed matrix info during MatAssemblyEnd()\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"  -mat_view_draw: draw nonzero matrix structure during MatAssemblyEnd()\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"      -draw_pause <sec>: set seconds of display pause\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"      -display <name>: set alternate display\n");CHKERRQ(ierr);
     called = 1;
   }
   if (mat->ops->printhelp) {
@@ -3708,7 +3708,7 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
   Mat     *local;
 
   PetscFunctionBegin;
-  MPI_Comm_size(mat->comm,&size);
+  ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
 
   /* if original matrix is on just one processor then use submatrix generated */
   if (!mat->ops->getsubmatrix && size == 1 && cll == MAT_REUSE_MATRIX) {

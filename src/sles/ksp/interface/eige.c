@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eige.c,v 1.14 1999/01/31 16:08:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: eige.c,v 1.15 1999/01/31 21:21:37 curfman Exp bsmith $";
 #endif
 
 #include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -44,7 +44,7 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
   PetscValidPointer(mat);
   comm = ksp->comm;
 
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   ierr = VecDuplicate(ksp->vec_sol,&in); CHKERRQ(ierr);
   ierr = VecDuplicate(ksp->vec_sol,&out); CHKERRQ(ierr);
@@ -132,8 +132,8 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
 
   PetscFunctionBegin;
   ierr =  KSPComputeExplicitOperator(ksp,&BA); CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr     = MatGetSize(BA,&n,&n); CHKERRQ(ierr);
   if (size > 1) { /* assemble matrix on first processor */

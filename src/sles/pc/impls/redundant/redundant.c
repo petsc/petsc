@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: redundant.c,v 1.4 1999/03/26 18:44:15 balay Exp bsmith $";
+static char vcid[] = "$Id: redundant.c,v 1.5 1999/04/16 16:08:33 bsmith Exp bsmith $";
 #endif
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
@@ -27,12 +27,12 @@ static int PCView_Redundant(PC pc,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: Actual PC follows\n");
+    ierr = ViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: Actual PC follows\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PCView(red->pc,viewer); CHKERRQ(ierr);
+    ierr = PCView(red->pc,viewer); CHKERRQ(ierr);
     ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
-    ViewerStringSPrintf(viewer," Redundant solver preconditioner");
+    ierr = ViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
     ierr = PCView(red->pc,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
@@ -74,7 +74,7 @@ static int PCSetUp_Redundant(PC pc)
   /* if pmatrix set by user is sequential then we do not need to gather the parallel matrix*/
 
   ierr = PetscObjectGetComm((PetscObject)pc->pmat,&comm);CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     red->useparallelmat = PETSC_FALSE;
   }
@@ -164,11 +164,13 @@ static int PCDestroy_Redundant(PC pc)
 #define __FUNC__ "PCPrintHelp_Redundant"
 static int PCPrintHelp_Redundant(PC pc,char *p)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(pc->comm," Options for PCRedundant preconditioner:\n");
-  (*PetscHelpPrintf)(pc->comm," %sredundant : prefix to control options for redundant PC.\
+  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCRedundant preconditioner:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %sredundant : prefix to control options for redundant PC.\
   Add before the \n      usual PC option names (e.g., %sredundant_pc_type\
-  <method>)\n",p,p);
+  <method>)\n",p,p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.44 1999/02/01 03:22:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.45 1999/03/17 23:24:18 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
@@ -43,6 +43,44 @@ int SNESVecViewMonitor(SNES snes,int its,double fgnorm,void *dummy)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "SNESVecViewMonitorUpdate"
+/*@C
+   SNESVecViewMonitorUpdate - Monitors progress of the SNES solvers by calling 
+   VecView() for the UPDATE to the solution at each iteration.
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  its - iteration number
+.  fgnorm - 2-norm of residual (or gradient)
+-  dummy - either a viewer or PETSC_NULL
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, vector, monitor, view
+
+.seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
+@*/
+int SNESVecViewMonitorUpdate(SNES snes,int its,double fgnorm,void *dummy)
+{
+  int    ierr;
+  Vec    x;
+  Viewer viewer = (Viewer) dummy;
+
+  PetscFunctionBegin;
+  ierr = SNESGetSolutionUpdate(snes,&x);CHKERRQ(ierr);
+  if (!viewer) {
+    MPI_Comm comm;
+    ierr   = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
+    viewer = VIEWER_DRAW_(comm);
+  }
+  ierr = VecView(x,viewer);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "SNESDefaultMonitor"
 /*@C
    SNESDefaultMonitor - Monitoring progress of the SNES solvers (default).
@@ -70,11 +108,13 @@ int SNESVecViewMonitor(SNES snes,int its,double fgnorm,void *dummy)
 @*/
 int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-    PetscPrintf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);
+    ierr = PetscPrintf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-    PetscPrintf(snes->comm,"iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);
+    ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method class");
   PetscFunctionReturn(0);
 }
@@ -91,25 +131,24 @@ int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
 */
 int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     if (fgnorm > 1.e-9) {
-      PetscPrintf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);
+      ierr = PetscPrintf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
     } else if (fgnorm > 1.e-11){
-      PetscPrintf(snes->comm, "iter = %d, SNES Function norm %5.3e \n",its,fgnorm);
+      ierr = PetscPrintf(snes->comm, "iter = %d, SNES Function norm %5.3e \n",its,fgnorm);CHKERRQ(ierr);
     } else {
-      PetscPrintf(snes->comm, "iter = %d, SNES Function norm < 1.e-11\n",its);
+      ierr = PetscPrintf(snes->comm, "iter = %d, SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
     }
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     if (fgnorm > 1.e-9) {
-      PetscPrintf(snes->comm,
-       "iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);
+      ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
     } else if (fgnorm > 1.e-11) {
-      PetscPrintf(snes->comm,
-        "iter = %d, SNES Function value %g, Gradient norm %5.3e \n",its,snes->fc,fgnorm);
+      ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function value %g, Gradient norm %5.3e \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
     } else {
-      PetscPrintf(snes->comm,
-        "iter = %d, SNES Function value %g, Gradient norm < 1.e-11\n",its,snes->fc);
+      ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function value %g, Gradient norm < 1.e-11\n",its,snes->fc);CHKERRQ(ierr);
     }
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method class");
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.172 1999/02/15 21:55:57 balay Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.173 1999/03/07 17:27:30 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -157,13 +157,14 @@ int MatPrintHelp_SeqBDiag(Mat A)
 {
   static int called = 0; 
   MPI_Comm   comm = A->comm;
+  int        ierr;
 
   PetscFunctionBegin;
   if (called) {PetscFunctionReturn(0);} else called = 1;
-  (*PetscHelpPrintf)(comm," Options for MATSEQBDIAG and MATMPIBDIAG matrix formats:\n");
-  (*PetscHelpPrintf)(comm,"  -mat_block_size <block_size>\n");
-  (*PetscHelpPrintf)(comm,"  -mat_bdiag_diags <d1,d2,d3,...> (diagonal numbers)\n"); 
-  (*PetscHelpPrintf)(comm,"   (for example) -mat_bdiag_diags -5,-1,0,1,5\n"); 
+  ierr = (*PetscHelpPrintf)(comm," Options for MATSEQBDIAG and MATMPIBDIAG matrix formats:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_block_size <block_size>\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_bdiag_diags <d1,d2,d3,...> (diagonal numbers)\n");CHKERRQ(ierr); 
+  ierr = (*PetscHelpPrintf)(comm,"   (for example) -mat_bdiag_diags -5,-1,0,1,5\n"); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -550,7 +551,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
   int          i, nda, sizetot, ierr,  nd2 = 128,flg1,idiag[128],size;
 
   PetscFunctionBegin;
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Comm must be of size 1");
 
   *A = 0;
@@ -725,7 +726,7 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT); CHKERRQ(ierr);

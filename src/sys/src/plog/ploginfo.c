@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ploginfo.c,v 1.9 1998/12/03 16:50:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ploginfo.c,v 1.10 1999/03/17 23:22:00 bsmith Exp bsmith $";
 #endif
 /*
       PLogInfo() is contained in a different file from the other profiling to 
@@ -62,7 +62,7 @@ $
 int PLogInfo(void *vobj,const char message[],...)  
 {
   va_list     Argp;
-  int         rank,urank,len;
+  int         rank,urank,len,ierr;
   PetscObject obj = (PetscObject) vobj;
   char        string[256];
 
@@ -72,10 +72,10 @@ int PLogInfo(void *vobj,const char message[],...)
   if (!PLogPrintInfoNull && !vobj) PetscFunctionReturn(0);
   if (obj && !PLogInfoFlags[obj->cookie - PETSC_COOKIE - 1]) PetscFunctionReturn(0);
   if (!obj) rank = 0;
-  else      {MPI_Comm_rank(obj->comm,&rank);} 
+  else      {ierr = MPI_Comm_rank(obj->comm,&rank);CHKERRQ(ierr);} 
   if (rank) PetscFunctionReturn(0);
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&urank);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&urank);CHKERRQ(ierr);
   va_start( Argp, message );
   sprintf(string,"[%d]",urank); len = PetscStrlen(string);
 #if defined(HAVE_VPRINTF_CHAR)

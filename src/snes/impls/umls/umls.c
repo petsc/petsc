@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.78 1999/03/01 04:57:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.79 1999/03/17 23:24:35 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
@@ -184,18 +184,19 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
 static int SNESPrintHelp_UM_LS(SNES snes,char *p)
 {
   SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
+  int       ierr;
 
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(snes->comm," method SNES_UM_LS (umls) for unconstrained minimization:\n");
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_gamma_f gamma_f (default %g) damping parameter\n",
-    p,ctx->gamma_factor);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_maxf <maxf> (default %d) max function evals in line search\n",p,ctx->maxfev);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_maxkspf (default %d) computes max KSP iters\n",p,ctx->max_kspiter_factor);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_ftol <ftol> (default %g) tol for sufficient decrease\n",p,ctx->ftol);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_rtol <rtol> (default %g) relative tol for acceptable step\n",p,ctx->rtol);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_gtol <gtol> (default %g) tol for curvature condition\n",p,ctx->gtol);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_stepmin <stepmin> (default %g) lower bound for step\n",p,ctx->stepmin);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_stepmax <stepmax> (default %g) upper bound for step\n",p,ctx->stepmax);
+  ierr = (*PetscHelpPrintf)(snes->comm," method SNES_UM_LS (umls) for unconstrained minimization:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_gamma_f gamma_f (default %g) damping parameter\n",
+    p,ctx->gamma_factor);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_maxf <maxf> (default %d) max function evals in line search\n",p,ctx->maxfev);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_maxkspf (default %d) computes max KSP iters\n",p,ctx->max_kspiter_factor);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_ftol <ftol> (default %g) tol for sufficient decrease\n",p,ctx->ftol);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_rtol <rtol> (default %g) relative tol for acceptable step\n",p,ctx->rtol);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_gtol <gtol> (default %g) tol for curvature condition\n",p,ctx->gtol);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_stepmin <stepmin> (default %g) lower bound for step\n",p,ctx->stepmin);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_stepmax <stepmax> (default %g) upper bound for step\n",p,ctx->stepmax);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -210,8 +211,8 @@ static int SNESView_UM_LS(SNES snes,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"  gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
-                      ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);
+    ierr = ViewerASCIIPrintf(viewer,"  gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
+                      ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

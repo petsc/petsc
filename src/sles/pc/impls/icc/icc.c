@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: icc.c,v 1.57 1999/03/11 16:20:51 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.58 1999/04/16 16:08:28 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -83,11 +83,13 @@ static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 #define __FUNC__ "PCPrintHelp_ICC"
 static int PCPrintHelp_ICC(PC pc,char *p)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(pc->comm," Options for PCICC preconditioner:\n");
-  (*PetscHelpPrintf)(pc->comm,"  %spc_icc_factorpointwise: Do NOT use block factorization \n",p);
-  (*PetscHelpPrintf)(pc->comm,"    (Note: This only applies to the MATMPIROWBS matrix format;\n");
-  (*PetscHelpPrintf)(pc->comm,"    all others currently only support point factorization.\n");
+  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCICC preconditioner:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm,"  %spc_icc_factorpointwise: Do NOT use block factorization \n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm,"    (Note: This only applies to the MATMPIROWBS matrix format;\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm,"    all others currently only support point factorization.\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pipeline.c,v 1.10 1998/12/03 03:56:41 bsmith Exp balay $";
+static char vcid[] = "$Id: pipeline.c,v 1.11 1999/04/02 22:02:40 balay Exp bsmith $";
 #endif
 
 /*
@@ -38,6 +38,7 @@ static int VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_General **t
 {
   VecScatter_MPI_General *gen_to,*gen_from, *pipe_to,*pipe_from;
 
+  PetscFunctionBegin;
   gen_to    = (VecScatter_MPI_General *) scatter->todata;
   gen_from  = (VecScatter_MPI_General *) scatter->fromdata;
 
@@ -58,7 +59,7 @@ static int VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_General **t
   *to   = pipe_to; 
   *from = pipe_from;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* --------------------------------------------------------------*/
@@ -70,8 +71,9 @@ static int VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_General **t
 int VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *newctx)
 {
   VecPipeline ctx;
-  int ierr;
+  int         ierr;
 
+  PetscFunctionBegin;
   ctx       = (VecPipeline) PetscMalloc(sizeof(struct _p_VecPipeline));CHKPTRQ(ctx);
   PetscMemzero(ctx,sizeof(struct _p_VecPipeline));
   ctx->comm = comm;
@@ -93,7 +95,7 @@ int VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *new
 
   *newctx = ctx;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__
@@ -103,6 +105,7 @@ static int VecPipelineSetupSelect(VecScatter_MPI_General *gen,VecScatter_MPI_Gen
 {
   int i;
 
+  PetscFunctionBegin;
   pipe->n = 0;
   for (i=0; i<gen->n; i++) {
     if ((*test)(gen->procs[i],pipe_data)) {
@@ -137,7 +140,7 @@ static int VecPipelineSetupSelect(VecScatter_MPI_General *gen,VecScatter_MPI_Gen
     }
   }
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*C
@@ -153,7 +156,8 @@ int VecPipelineSetup(VecPipeline ctx)
   VecScatter_MPI_General *gen_to,*gen_from;
   int                    ierr;
 
-  if (ctx->setupcalled) return 0;
+  PetscFunctionBegin;
+  if (ctx->setupcalled) PetscFunctionReturn(0);
 
   ierr = (ctx->setup)(ctx,ctx->aux_data,&(ctx->custom_pipe_data));CHKERRQ(ierr);
 
@@ -170,7 +174,7 @@ int VecPipelineSetup(VecPipeline ctx)
 
   ctx->setupcalled = 1;
   
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -216,6 +220,8 @@ int ProcNo(int proc,PetscObject pipe_info);
 */
 int VecPipelineSetType(VecPipeline ctx,PipelineType type,PetscObject x)
 {
+  PetscFunctionBegin;
+
   ctx->pipe_type = type;
   ctx->aux_data = x;
   if (type==PIPELINE_NONE) {
@@ -238,7 +244,7 @@ int VecPipelineSetType(VecPipeline ctx,PipelineType type,PetscObject x)
     SETERRQ(1,(int)type,"VecPipelineSetType: unknown or not implemented type\n");
   }
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__
@@ -253,6 +259,7 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirec
 {
   int ierr;
 
+  PetscFunctionBegin;
   if (!ctx->setupcalled) {
     ierr = VecPipelineSetup(ctx); CHKERRQ(ierr);
   }
@@ -272,8 +279,7 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirec
 
     if (smode & SCATTER_REVERSE ){
       gen_to   = (VecScatter_MPI_General *) scat->fromdata;
-    }
-    else {
+    } else {
       gen_to   = (VecScatter_MPI_General *) scat->todata;
     }
     if (ctx->pipe_type != PIPELINE_NONE) {
@@ -284,7 +290,7 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirec
     ierr = VecScatterEnd(x,y,addv,smode,scat); CHKERRQ(ierr);
     if (ctx->pipe_type != PIPELINE_NONE) gen_to->n = nsends;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__
@@ -301,6 +307,7 @@ int VecPipelineEnd(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirecti
   VecScatter_MPI_General *gen_from,*gen_to;
   int                    nsends=0,nrecvs,ierr;
   
+  PetscFunctionBegin;
   if (smode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI_General *) scat->fromdata;
     gen_from = (VecScatter_MPI_General *) scat->todata;
@@ -319,7 +326,7 @@ int VecPipelineEnd(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirecti
   if (ctx->pipe_type == PIPELINE_NONE) gen_to->n = nsends;
   gen_from->n = nrecvs;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -350,6 +357,7 @@ int VecPipelineDestroy( VecPipeline ctx )
 {
   int ierr;
 
+  PetscFunctionBegin;
   /* free the VecScatter_MPI_General data structures */
   if (ctx->upto) {
     PetscFree(ctx->upto->procs);
@@ -390,7 +398,7 @@ int VecPipelineDestroy( VecPipeline ctx )
   PetscHeaderDestroy(ctx->scatter);
   PetscFree(ctx);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* >>>> Routines for sequential ordering of processors <<<< */
@@ -401,23 +409,26 @@ typedef struct {int rank;} Pipeline_sequential_info;
 #define __FUNC__ "ProcYes"
 int ProcYes(int proc,PetscObject pipe_info)
 {
-  return 1;
+  PetscFunctionBegin;
+  PetscFunctionReturn(1);
 }
 #undef __FUNC__
 #define __FUNC__ "IsProcYes"
 int IsProcYes(long fun)
 {
+  PetscFunctionBegin;
   /* 
      Pass the actual function pointer, instead of typecasting it
      into a long?
   */
-  return (fun==(long)&ProcYes);
+  PetscFunctionReturn(fun==(long)&ProcYes);
 }
 #undef __FUNC__
 #define __FUNC__ "ProcNo"
 int ProcNo(int proc,PetscObject pipe_info)
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__
@@ -426,20 +437,22 @@ int ProcUp(int proc,PetscObject pipe_info)
 {
   int rank = ((Pipeline_sequential_info *)pipe_info)->rank;
 
+  PetscFunctionBegin;
   if (rank<proc) {
-    return 1;
+    PetscFunctionReturn(1);
   } else {
-    return 0;
+    PetscFunctionReturn(0);
   }
 }
 int ProcDown(int proc,PetscObject pipe_info)
 { 
   int rank = ((Pipeline_sequential_info *)pipe_info)->rank;
 
+  PetscFunctionBegin;
   if (rank>proc) {
-    return 1;
+    PetscFunctionReturn(1);
   } else {
-    return 0;
+    PetscFunctionReturn(0);
   }
 }
 
@@ -448,12 +461,14 @@ int ProcDown(int proc,PetscObject pipe_info)
 int PipelineSequentialSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_sequential_info *info;
+  int                      ierr;
 
+  PetscFunctionBegin;
   info = PetscNew(Pipeline_sequential_info);
-  MPI_Comm_rank(vs->scatter->comm,&(info->rank));
+  ierr = MPI_Comm_rank(vs->scatter->comm,&(info->rank));CHKERRQ(ierr);
   *obj = (PetscObject) info;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* >>>> Routines for multicolor ordering of processors <<<< */
@@ -465,23 +480,25 @@ typedef struct {
 int ProcColorUp(int proc,PetscObject pipe_info)
 {
   Pipeline_colored_info* comm_info = (Pipeline_colored_info *) pipe_info;
-  int                     rank = comm_info->rank;
+  int                    rank = comm_info->rank;
 
+  PetscFunctionBegin;
   if (comm_info->proc_colors[rank]<comm_info->proc_colors[proc]) {
-    return 1;
+    PetscFunctionReturn(1);
   } else {
-    return 0;
+    PetscFunctionReturn(0);
   }
 }
 int ProcColorDown(int proc,PetscObject pipe_info)
 { 
   Pipeline_colored_info* comm_info = (Pipeline_colored_info *) pipe_info;
-  int rank = comm_info->rank;
+  int                    rank = comm_info->rank;
 
+  PetscFunctionBegin;
   if (comm_info->proc_colors[rank]>comm_info->proc_colors[proc]) {
-    return 1;
+    PetscFunctionReturn(1);
   } else {
-    return 0;
+    PetscFunctionReturn(0);
   }
 }
 
@@ -490,16 +507,17 @@ int ProcColorDown(int proc,PetscObject pipe_info)
 int PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_colored_info *info;
-  int                    size,i;
+  int                    size,i,ierr;
 
+  PetscFunctionBegin;
   info = PetscNew(Pipeline_colored_info);
-  MPI_Comm_rank(vs->scatter->comm,&(info->rank));
-  MPI_Comm_size(vs->scatter->comm,&size);
+  ierr = MPI_Comm_rank(vs->scatter->comm,&(info->rank));CHKERRQ(ierr);
+  ierr = MPI_Comm_size(vs->scatter->comm,&size);CHKERRQ(ierr);
   info->proc_colors = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(info->proc_colors);
   for (i=0; i<size; i++) {info->proc_colors[i] = i%2;}
   *obj = (PetscObject) info;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__
@@ -508,13 +526,14 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_colored_info *info;
   Mat                    mat = (Mat) x;
-  int                    size;
+  int                    size,ierr;
 
+  PetscFunctionBegin;
   info = PetscNew(Pipeline_colored_info);
-  MPI_Comm_rank(mat->comm,&(info->rank));
-  MPI_Comm_size(mat->comm,&size);
+  ierr = MPI_Comm_rank(mat->comm,&(info->rank));CHKERRQ(ierr);
+  ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
   info->proc_colors = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(info->proc_colors);
-  PetscMemzero(info->proc_colors,size*sizeof(int));
+  ierr = PetscMemzero(info->proc_colors,size*sizeof(int));CHKERRQ(ierr);
 
   /* coloring */
   {
@@ -550,13 +569,13 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
     }
   exit:
     /* distribute to establish local copies of full connectivity matrix */
-    MPI_Allgather(conn+base,size,MPI_INT,conn,size,MPI_INT,mat->comm);
+    ierr = MPI_Allgather(conn+base,size,MPI_INT,conn,size,MPI_INT,mat->comm);CHKERRQ(ierr);
 
     base = size;
     /*PetscPrintf(mat->comm,"Coloring: 0->0");*/
     for (p=1; p<size; p++) {
       int q,hi=-1,nc=0;
-      PetscMemzero(colr,size*sizeof(int));
+      ierr = PetscMemzero(colr,size*sizeof(int));CHKERRQ(ierr);
       for (q=0; q<p; q++) { /* inspect colors of all connect previous procs */
 	if (conn[base+q] /* should be tranposed! */) {
 	  if (!colr[colors[q]]) {
@@ -580,7 +599,7 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
   }
   *obj = (PetscObject) info;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__
@@ -588,16 +607,18 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 int VecPipelineView(VecPipeline pipe,Viewer viewer)
 {
   MPI_Comm comm = pipe->comm;
+  int      ierr;
 
-  PetscPrintf(comm,">> Vector Pipeline<<\n");
-  if (!pipe->setupcalled) PetscPrintf(comm,"Not yet set up\n");
-  PetscPrintf(comm,"Pipelinetype: %d\n",(int)pipe->pipe_type);
-  PetscPrintf(comm,"based on scatter:\n");
+  PetscFunctionBegin;
+  ierr = PetscPrintf(comm,">> Vector Pipeline<<\n");CHKERRQ(ierr);
+  if (!pipe->setupcalled) {ierr = PetscPrintf(comm,"Not yet set up\n");CHKERRQ(ierr);}
+  ierr = PetscPrintf(comm,"Pipelinetype: %d\n",(int)pipe->pipe_type);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"based on scatter:\n");CHKERRQ(ierr);
   /*  ierr = VecScatterView(pipe->scatter,viewer); CHKERRQ(ierr);*/
-  PetscPrintf(comm,"Up function %p\n",pipe->upfn);
-  PetscPrintf(comm,"Dn function %p\n",pipe->dnfn);
+  ierr = PetscPrintf(comm,"Up function %p\n",pipe->upfn);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Dn function %p\n",pipe->dnfn);CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

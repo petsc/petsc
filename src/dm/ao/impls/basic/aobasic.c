@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.41 1999/01/31 16:11:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.42 1999/03/17 23:25:04 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -55,7 +55,8 @@ int AOView_Basic(AO ao,Viewer viewer)
   AO_Basic    *aodebug = (AO_Basic*) ao->data;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(ao->comm,&rank); if (rank) PetscFunctionReturn(0);
+  ierr = MPI_Comm_rank(ao->comm,&rank);CHKERRQ(ierr);
+  if (rank) PetscFunctionReturn(0);
 
   if (!viewer) {
     viewer = VIEWER_STDOUT_SELF; 
@@ -63,10 +64,10 @@ int AOView_Basic(AO ao,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
-    ViewerASCIIPrintf(viewer,"Number of elements in ordering %d\n",aodebug->N);
-    ViewerASCIIPrintf(viewer,"   App.   PETSc\n");
+    ierr = ViewerASCIIPrintf(viewer,"Number of elements in ordering %d\n",aodebug->N);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"   App.   PETSc\n");CHKERRQ(ierr);
     for ( i=0; i<aodebug->N; i++ ) {
-      ViewerASCIIPrintf(viewer,"%d   %d    %d\n",i,aodebug->app[i],aodebug->petsc[i]);
+      ierr = ViewerASCIIPrintf(viewer,"%d   %d    %d\n",i,aodebug->app[i],aodebug->petsc[i]);CHKERRQ(ierr);
     }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
@@ -151,8 +152,8 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   ao->data    = (void *)aodebug;
 
   /* transmit all lengths to all processors */
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   lens = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(lens);
   disp = lens + size;
   ierr = MPI_Allgather(&napp,1,MPI_INT,lens,1,MPI_INT,comm);CHKERRQ(ierr);

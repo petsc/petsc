@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dasub.c,v 1.20 1999/01/31 16:11:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dasub.c,v 1.21 1999/03/17 23:25:10 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -43,7 +43,7 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
   PetscValidHeaderSpecific(da,DA_COOKIE);
   flag = 0; 
   ierr = DAGetCorners(da,&xs,&xm,&ys,&ym,&zs,&zm); CHKERRQ(ierr);
-  MPI_Comm_size(da->comm,&size);
+  ierr = MPI_Comm_size(da->comm,&size);CHKERRQ(ierr);
   if (dir == DA_Z) {
     if (da->dim < 3) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"DA_Z invalid for DA dim < 3");
     if (gp < 0 || gp > da->P) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"invalid grid point");

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: posindep.c,v 1.31 1998/12/03 04:04:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.32 1999/03/17 23:24:56 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -311,9 +311,10 @@ static int TSSetUp_Pseudo(TS ts)
 int TSPseudoDefaultMonitor(TS ts, int step, double time,Vec v, void *ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  int       ierr;
 
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(ts->comm,"TS %d dt %g time %g fnorm %g\n",step,ts->time_step,time,pseudo->fnorm);
+  ierr = (*PetscHelpPrintf)(ts->comm,"TS %d dt %g time %g fnorm %g\n",step,ts->time_step,time,pseudo->fnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -346,12 +347,14 @@ static int TSSetFromOptions_Pseudo(TS ts)
 #define __FUNC__ "TSPrintHelp_Pseudo"
 static int TSPrintHelp_Pseudo(TS ts,char *p)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(ts->comm," Options for TS Pseudo timestepper:\n");
-  (*PetscHelpPrintf)(ts->comm," %sts_pseudo_increment <value> : default 1.1\n",p);
-  (*PetscHelpPrintf)(ts->comm," %sts_pseudo_increment_dt_from_initial_dt : use initial_dt *\n",p); 
-  (*PetscHelpPrintf)(ts->comm,"     initial fnorm/current fnorm to determine new timestep\n");
-  (*PetscHelpPrintf)(ts->comm,"     default is current_dt * previous fnorm/current fnorm\n"); 
+  ierr = (*PetscHelpPrintf)(ts->comm," Options for TS Pseudo timestepper:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm," %sts_pseudo_increment <value> : default 1.1\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm," %sts_pseudo_increment_dt_from_initial_dt : use initial_dt *\n",p);CHKERRQ(ierr); 
+  ierr = (*PetscHelpPrintf)(ts->comm,"     initial fnorm/current fnorm to determine new timestep\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm,"     default is current_dt * previous fnorm/current fnorm\n"); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

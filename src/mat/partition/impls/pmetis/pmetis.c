@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.16 1999/03/17 23:23:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.17 1999/04/01 21:35:07 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -36,7 +36,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part, IS *partitioning)
 
   PetscFunctionBegin;
   if (mat->type != MATMPIADJ) SETERRQ(PETSC_ERR_SUP,1,"Only MPIAdj matrix type supported");
-  MPI_Comm_size(mat->comm,&size);
+  ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
   if (part->n != size) {
     SETERRQ(PETSC_ERR_SUP,1,"Supports exactly one domain per processor");
   }
@@ -44,7 +44,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part, IS *partitioning)
   vtxdist = adj->rowners;
   xadj    = adj->i;
   adjncy  = adj->j;
-  MPI_Comm_rank(part->comm,&rank);
+  ierr = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
   if (vtxdist[rank+1] - vtxdist[rank] == 0) {
     SETERRQ(1,1,"Does not support any processor with no entries");
   }
@@ -71,18 +71,18 @@ int MatPartitioningView_Parmetis(MatPartitioning part,Viewer viewer)
   int                   ierr,rank;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(part->comm,&rank);
-  ViewerGetType(viewer,&vtype);
+  ierr = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (parmetis->parallel == 2) {
-      PetscFPrintf(part->comm,fd,"  Using parallel coarse grid partitioner\n");
+      ierr = PetscFPrintf(part->comm,fd,"  Using parallel coarse grid partitioner\n");CHKERRQ(ierr);
     } else {
-      PetscFPrintf(part->comm,fd,"  Using sequential coarse grid partitioner\n");
+      ierr = PetscFPrintf(part->comm,fd,"  Using sequential coarse grid partitioner\n");CHKERRQ(ierr);
     }
-    PetscFPrintf(part->comm,fd,"  Using %d fold factor\n",parmetis->foldfactor);
-    PetscSynchronizedFPrintf(part->comm,fd,"  [%d]Number of cuts found %d\n",rank,parmetis->cuts);
-    PetscSynchronizedFlush(part->comm);
+    ierr = PetscFPrintf(part->comm,fd,"  Using %d fold factor\n",parmetis->foldfactor);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFPrintf(part->comm,fd,"  [%d]Number of cuts found %d\n",rank,parmetis->cuts);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(part->comm);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -117,9 +117,11 @@ int MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
 #define __FUNC__ "MatPartitioningPrintHelp_Parmetis" 
 int MatPartitioningPrintHelp_Parmetis(MatPartitioning part)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(part->comm,"ParMETIS options\n");
-  (*PetscHelpPrintf)(part->comm,"  -mat_partitioning_parmetis_coarse_sequential\n");
+  ierr = (*PetscHelpPrintf)(part->comm,"ParMETIS options\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(part->comm,"  -mat_partitioning_parmetis_coarse_sequential\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

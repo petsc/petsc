@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.6 1997/10/19 03:26:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.7 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
@@ -20,8 +20,8 @@ int main(int argc,char **args)
   Vec        u, b;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   n = 2*size;
 
   ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&type,&set); CHKERRA(ierr);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.8 1999/03/17 23:25:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr1.c,v 1.9 1999/03/19 21:24:07 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -96,8 +96,8 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
   ierr = VecGetArray(xcoor,&xg);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size); 
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /*
       Determine the min and max x coordinate in plot 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.86 1999/03/17 23:20:57 bsmith Exp balay $";
+static char vcid[] = "$Id: filev.c,v 1.87 1999/04/08 19:51:23 balay Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -29,11 +29,11 @@ int ViewerDestroy_ASCII(Viewer v)
 #define __FUNC__ "ViewerFlush_ASCII"
 int ViewerFlush_ASCII(Viewer v)
 {
-  int          rank;
+  int          rank,ierr;
   Viewer_ASCII *vascii = (Viewer_ASCII *)v->data;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(v->comm,&rank);
+  ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
   fflush(vascii->fd);
   PetscFunctionReturn(0);  
@@ -162,11 +162,11 @@ int ViewerASCIIPopTab(Viewer viewer)
 int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
 {
   Viewer_ASCII *ascii = (Viewer_ASCII*) viewer->data;
-  int          rank, tab;
+  int          rank, tab, ierr;
   FILE         *fd = ascii->fd;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(viewer->comm,&rank);
+  ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     va_list Argp;
 

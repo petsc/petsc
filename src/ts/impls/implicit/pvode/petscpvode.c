@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.36 1999/03/07 17:28:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.37 1999/03/17 23:24:54 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -351,14 +351,14 @@ int TSPrintHelp_PVode(TS ts,char *p)
   TS_PVode *cvode = (TS_PVode*) ts->data;
 
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(ts->comm," Options for TSPVODE integrater:\n");
-  (*PetscHelpPrintf)(ts->comm," -ts_pvode_type <bdf,adams>: integration approach\n",p);
-  (*PetscHelpPrintf)(ts->comm," -ts_pvode_atol aabs: absolute tolerance of ODE solution\n",p);
-  (*PetscHelpPrintf)(ts->comm," -ts_pvode_rtol rel: relative tolerance of ODE solution\n",p);
-  (*PetscHelpPrintf)(ts->comm," -ts_pvode_gramschmidt_type <unmodified,modified>\n"); 
-  (*PetscHelpPrintf)(ts->comm," -ts_pvode_gmres_restart <restart_size> (also max. GMRES its)\n"); 
-  (*PetscHelpPrintf)(ts->comm," -ts_pvode_linear_tolerance <tol>\n"); 
-  (*PetscHelpPrintf)(ts->comm," -ts_pvode_not_exact_final_time\n"); 
+  ierr = (*PetscHelpPrintf)(ts->comm," Options for TSPVODE integrater:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_type <bdf,adams>: integration approach\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_atol aabs: absolute tolerance of ODE solution\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_rtol rel: relative tolerance of ODE solution\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_gramschmidt_type <unmodified,modified>\n"); CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_gmres_restart <restart_size> (also max. GMRES its)\n")CHKERRQ(ierr);; 
+  ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_linear_tolerance <tol>\n"); CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_not_exact_final_time\n");CHKERRQ(ierr); 
 
   ierr = PCPrintHelp(cvode->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -383,15 +383,15 @@ int TSView_PVode(TS ts,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"PVode integrater does not use SNES!\n"); 
-    ViewerASCIIPrintf(viewer,"PVode integrater type %s\n",type);
-    ViewerASCIIPrintf(viewer,"PVode abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);
-    ViewerASCIIPrintf(viewer,"PVode linear solver tolerance factor %g\n",cvode->linear_tol);
-    ViewerASCIIPrintf(viewer,"PVode GMRES max iterations (same as restart in PVODE) %d\n",cvode->restart);
+    ierr = ViewerASCIIPrintf(viewer,"PVode integrater does not use SNES!\n");CHKERRQ(ierr); 
+    ierr = ViewerASCIIPrintf(viewer,"PVode integrater type %s\n",type);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"PVode abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"PVode linear solver tolerance factor %g\n",cvode->linear_tol);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"PVode GMRES max iterations (same as restart in PVODE) %d\n",cvode->restart);CHKERRQ(ierr);
     if (cvode->gtype == PVODE_MODIFIED_GS) {
-      ViewerASCIIPrintf(viewer,"PVode using modified Gram-Schmidt for orthogonalization in GMRES\n");
+      ierr = ViewerASCIIPrintf(viewer,"PVode using modified Gram-Schmidt for orthogonalization in GMRES\n");CHKERRQ(ierr);
     } else {
-      ViewerASCIIPrintf(viewer,"PVode using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n");
+      ierr = ViewerASCIIPrintf(viewer,"PVode using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n");CHKERRQ(ierr);
     }
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer,"Pvode type %s",type);CHKERRQ(ierr);

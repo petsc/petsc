@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.20 1999/03/11 16:19:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.21 1999/03/17 23:23:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -20,19 +20,19 @@ extern int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
 
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerGetOutputname(viewer,&outputname); CHKERRQ(ierr);
-  ierr = ViewerGetFormat(viewer,&format);
+  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_INFO) {
     PetscFunctionReturn(0);
   } else {
     for ( i=0; i<m; i++ ) {
-      PetscSynchronizedFPrintf(comm,fd,"row %d:",i+a->rstart);
+      ierr = PetscSynchronizedFPrintf(comm,fd,"row %d:",i+a->rstart);CHKERRQ(ierr);
       for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
-        PetscSynchronizedFPrintf(comm,fd," %d ",a->j[j]);
+        ierr = PetscSynchronizedFPrintf(comm,fd," %d ",a->j[j]);CHKERRQ(ierr);
       }
-      PetscSynchronizedFPrintf(comm,fd,"\n");
+      ierr = PetscSynchronizedFPrintf(comm,fd,"\n");CHKERRQ(ierr);
     }
   } 
-  PetscSynchronizedFlush(comm);
+  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -334,8 +334,8 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
   Mat_MPIAdj *b;
   int        ii,ierr, flg,size,rank;
 
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   *A                  = 0;
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIADJ,"Mat",comm,MatDestroy,MatView);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: milu.c,v 1.7 1998/12/23 22:53:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: milu.c,v 1.8 1999/01/31 16:11:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -178,11 +178,11 @@ static int PCView_mILU(PC pc,Viewer viewer)
   ViewerType vtype;
  
   PetscFunctionBegin;
-  ViewerGetType(viewer,&vtype);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"  modified ILU preconditioner\n");
-    ViewerASCIIPrintf(viewer,"    see src/contrib/pc/milu/milu.c\n");
-    ViewerASCIIPrintf(viewer,"    base PC used by mILU next\n");
+    ierr = ViewerASCIIPrintf(viewer,"  modified ILU preconditioner\n");CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"    see src/contrib/pc/milu/milu.c\n");CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"    base PC used by mILU next\n");CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

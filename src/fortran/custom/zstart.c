@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.55 1999/04/06 18:14:07 balay Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.56 1999/04/16 21:47:38 balay Exp bsmith $";
 #endif
 
 /*
@@ -111,7 +111,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   int warg = 256,rank,ierr;
   char *p;
 
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
     *argc = 1 + iargc_();
   }
@@ -261,7 +261,8 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
   if (PetscBeganMPI) {
     int size;
 
-    MPI_Comm_size(PETSC_COMM_WORLD,&size);
+    *__ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
+    if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Getting MPI_Comm_size()");return;}
     PLogInfo(0,"PetscInitialize(Fortran):PETSc successfully started: procs %d\n",size);
   }
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.43 1999/03/17 23:23:40 bsmith Exp curfman $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.44 1999/03/24 04:30:37 curfman Exp bsmith $";
 #endif
 
 /*
@@ -110,22 +110,22 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
     ierr = MatFDColoringView_Draw(c,viewer); CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"MatFDColoring Object:\n");
-    ViewerASCIIPrintf(viewer,"  Error tolerance=%g\n",c->error_rel);
-    ViewerASCIIPrintf(viewer,"  Umin=%g\n",c->umin);
-    ViewerASCIIPrintf(viewer,"  Number of colors=%d\n",c->ncolors);
+    ierr = ViewerASCIIPrintf(viewer,"MatFDColoring Object:\n");CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"  Error tolerance=%g\n",c->error_rel);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"  Umin=%g\n",c->umin);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"  Number of colors=%d\n",c->ncolors);CHKERRQ(ierr);
 
     ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
     if (format != VIEWER_FORMAT_ASCII_INFO) {
       for ( i=0; i<c->ncolors; i++ ) {
-        ViewerASCIIPrintf(viewer,"  Information for color %d\n",i);
-        ViewerASCIIPrintf(viewer,"    Number of columns %d\n",c->ncolumns[i]);
+        ierr = ViewerASCIIPrintf(viewer,"  Information for color %d\n",i);CHKERRQ(ierr);
+        ierr = ViewerASCIIPrintf(viewer,"    Number of columns %d\n",c->ncolumns[i]);CHKERRQ(ierr);
         for ( j=0; j<c->ncolumns[i]; j++ ) {
-          ViewerASCIIPrintf(viewer,"      %d\n",c->columns[i][j]);
+          ierr = ViewerASCIIPrintf(viewer,"      %d\n",c->columns[i][j]);CHKERRQ(ierr);
         }
-        ViewerASCIIPrintf(viewer,"    Number of rows %d\n",c->nrows[i]);
+        ierr = ViewerASCIIPrintf(viewer,"    Number of rows %d\n",c->nrows[i]);CHKERRQ(ierr);
         for ( j=0; j<c->nrows[i]; j++ ) {
-          ViewerASCIIPrintf(viewer,"      %d %d \n",c->rows[i][j],c->columnsforrow[i][j]);
+          ierr = ViewerASCIIPrintf(viewer,"      %d %d \n",c->rows[i][j],c->columnsforrow[i][j]);CHKERRQ(ierr);
         }
       }
     }
@@ -347,15 +347,17 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
 @*/
 int MatFDColoringPrintHelp(MatFDColoring fd)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fd,MAT_FDCOLORING_COOKIE);
 
-  (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_err <err>: set sqrt rel tol in function, defaults to %g\n",fd->error_rel);
-  (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_umin <umin>: see users manual, defaults to %d\n",fd->umin);
-  (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_freq <freq>: frequency that Jacobian is recomputed, defaults to %d\n",fd->freq);
-  (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_view\n");
-  (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_view_draw\n");
-  (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_view_info\n");
+  ierr = (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_err <err>: set sqrt rel tol in function, defaults to %g\n",fd->error_rel);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_umin <umin>: see users manual, defaults to %d\n",fd->umin);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_freq <freq>: frequency that Jacobian is recomputed, defaults to %d\n",fd->freq);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_view\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_view_draw\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_view_info\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

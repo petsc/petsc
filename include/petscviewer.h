@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.66 1999/01/27 19:50:01 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.67 1999/03/19 21:25:01 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -164,6 +164,14 @@ extern int  ViewerDestroyASCII_Private(void);
 extern int  ViewerDestroyDraw_Private(void);
 extern int  ViewerDestroySocket_Private(void);
 extern int  ViewerDestroyAMS_Private(void);
+
+/*
+    Manages sets of viewers
+*/
+typedef struct _p_Viewers* Viewers;
+extern int ViewersCreate(MPI_Comm,Viewers*);
+extern int ViewersDestroy(Viewers);
+extern int ViewersGetViewer(Viewers,int,Viewer*);
 
 #endif
 

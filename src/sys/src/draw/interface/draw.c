@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.55 1999/02/19 23:39:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.56 1999/03/17 23:21:11 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -111,7 +111,7 @@ int DrawSetTitle(Draw draw,char *title)
     int len = PetscStrlen(title);
     draw->title = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(draw->title);
     PLogObjectMemory(draw,(len+1)*sizeof(char*))
-    PetscStrcpy(draw->title,title);
+    ierr = PetscStrcpy(draw->title,title);CHKERRQ(ierr);
   } else {
     draw->title = 0;
   }
@@ -144,6 +144,7 @@ int DrawAppendTitle(Draw draw,char *title)
 {
   int  ierr;
   char *newtitle;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (!title) PetscFunctionReturn(0);
@@ -152,15 +153,15 @@ int DrawAppendTitle(Draw draw,char *title)
     int len  = PetscStrlen(title) + PetscStrlen(draw->title);
     newtitle = (char *) PetscMalloc( (len + 1)*sizeof(char*) );CHKPTRQ(newtitle);
     PLogObjectMemory(draw,(len+1)*sizeof(char*));
-    PetscStrcpy(newtitle,draw->title);
-    PetscStrcat(newtitle,title);
+    ierr = PetscStrcpy(newtitle,draw->title);CHKERRQ(ierr);
+    ierr = PetscStrcat(newtitle,title);CHKERRQ(ierr);
     PetscFree(draw->title);
     draw->title = newtitle;
   } else {
     int len     = PetscStrlen(title);
     draw->title = (char *) PetscMalloc((len + 1)*sizeof(char*));CHKPTRQ(draw->title);
     PLogObjectMemory(draw,(len+1)*sizeof(char*));
-    PetscStrcpy(draw->title,title);
+    ierr = PetscStrcpy(draw->title,title);CHKERRQ(ierr);
   }
   if (draw->ops->settitle) {
     ierr = (*draw->ops->settitle)(draw,draw->title);CHKERRQ(ierr);
@@ -273,9 +274,10 @@ EXTERN_C_BEGIN
 */
 int DrawCreate_Null(Draw draw)
 {
-  PetscFunctionBegin;
+  int ierr;
 
-  PetscMemzero(draw->ops,sizeof(struct _DrawOps));
+  PetscFunctionBegin;
+  ierr = PetscMemzero(draw->ops,sizeof(struct _DrawOps));CHKERRQ(ierr);
   draw->ops->destroy = DrawDestroy_Null;
   draw->ops->view    = 0;
   draw->pause   = 0;
@@ -286,7 +288,7 @@ int DrawCreate_Null(Draw draw)
   draw->popup   = 0;
 
   draw->type_name = (char *) PetscMalloc((PetscStrlen(DRAW_NULL)+1)*sizeof(char));CHKPTRQ(draw->type_name);
-  PetscStrcpy(draw->type_name,DRAW_NULL);
+  ierr = PetscStrcpy(draw->type_name,DRAW_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: errstop.c,v 1.2 1998/07/02 14:34:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: errstop.c,v 1.3 1999/03/17 23:21:27 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -41,13 +41,13 @@ $     SETERRQ(n,p,mess)
  @*/
 int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,char *mess,void *ctx)
 {
-  int        rank, flg1, flg2;
+  int        ierr,rank, flg1, flg2;
   PLogDouble mem,rss;
 
   PetscFunctionBegin;
   if (!mess) mess = " ";
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (n == PETSC_ERR_MEM) {
     (*PetscErrorPrintf)("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);

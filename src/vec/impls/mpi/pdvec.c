@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.116 1999/03/19 01:10:51 balay Exp bsmith $ 
+static char vcid[] = $Id: pdvec.c,v 1.117 1999/03/26 15:41:29 bsmith Exp bsmith $ 
 #endif
 
 /*
@@ -58,9 +58,9 @@ int VecView_MPI_ASCII(Vec xin, Viewer viewer )
   PetscFunctionBegin;
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   /* determine maximum message to arrive */
-  MPI_Comm_rank(xin->comm,&rank);
+  ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);CHKERRQ(ierr);
-  MPI_Comm_size(xin->comm,&size);
+  ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
 
   if (!rank) {
     values = (Scalar *) PetscMalloc( (len+1)*sizeof(Scalar) ); CHKPTRQ(values);
@@ -193,9 +193,9 @@ int VecView_MPI_Binary(Vec xin, Viewer viewer )
   ierr = ViewerBinaryGetDescriptor(viewer,&fdes); CHKERRQ(ierr);
 
   /* determine maximum message to arrive */
-  MPI_Comm_rank(xin->comm,&rank);
+  ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);CHKERRQ(ierr);
-  MPI_Comm_size(xin->comm,&size);
+  ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
 
   if (!rank) {
     ierr = PetscBinaryWrite(fdes,&xin->cookie,1,PETSC_INT,0); CHKERRQ(ierr);
@@ -240,8 +240,8 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
   ierr = ViewerDrawGetDrawLG(v,0,&lg); CHKERRQ(ierr);
   ierr = DrawLGGetDraw(lg,&draw); CHKERRQ(ierr);
   ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  MPI_Comm_rank(xin->comm,&rank);
-  MPI_Comm_size(xin->comm,&size);
+  ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
   if (!rank) {
     DrawLGReset(lg);
     xx   = (double *) PetscMalloc( 2*(N+1)*sizeof(double) ); CHKPTRQ(xx);
@@ -323,8 +323,8 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
   }
   ierr = MPI_Reduce(&xmin,&ymin,1,MPI_DOUBLE,MPI_MIN,0,xin->comm);CHKERRQ(ierr);
   ierr = MPI_Reduce(&xmax,&ymax,1,MPI_DOUBLE,MPI_MAX,0,xin->comm);CHKERRQ(ierr);
-  MPI_Comm_size(xin->comm,&size); 
-  MPI_Comm_rank(xin->comm,&rank);
+  ierr = MPI_Comm_size(xin->comm,&size); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
   ierr = DrawAxisCreate(draw,&axis); CHKERRQ(ierr);
   PLogObjectParent(draw,axis);
   if (!rank) {
@@ -379,8 +379,8 @@ int VecView_MPI_Socket(Vec xin, Viewer viewer )
 #if defined(USE_PETSC_COMPLEX)
   SETERRQ(PETSC_ERR_SUP,0,"Complex not done");
 #else
-  MPI_Comm_rank(xin->comm,&rank);
-  MPI_Comm_size(xin->comm,&size);
+  ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
   if (!rank) {
     xx = (double *) PetscMalloc( (N+1)*sizeof(double) ); CHKPTRQ(xx);
     lens = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(lens);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.42 1999/03/11 16:16:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.43 1999/03/17 23:22:17 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -65,10 +65,10 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
     MPI_Comm comm;
     int      rank;
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm); CHKERRQ(ierr);
-    MPI_Comm_rank(comm,&rank);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscSynchronizedFPrintf(comm,fd,"[%d] Number of colors %d\n",rank,iscoloring->n);
-    PetscSynchronizedFlush(comm);
+    ierr = PetscSynchronizedFPrintf(comm,fd,"[%d] Number of colors %d\n",rank,iscoloring->n);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
   }
 
   for ( i=0; i<iscoloring->n; i++ ) {
@@ -142,10 +142,10 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
   comm = (*iscoloring)->comm;
 
   /* compute the number of the first node on my processor */
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* should use MPI_Scan() */
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank == 0) {
     base = 0;
     top  = n;
@@ -231,8 +231,8 @@ int ISPartitioningToNumbering(IS part,IS *is)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) part,&comm);CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* count the number of partitions, make sure <= size */
   ierr = ISGetSize(part,&n);CHKERRQ(ierr);
@@ -310,7 +310,7 @@ int ISPartitioningCount(IS part,int count[])
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) part,&comm);CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* count the number of partitions, make sure <= size */
   ierr = ISGetSize(part,&n);CHKERRQ(ierr);
@@ -379,7 +379,7 @@ int ISAllGather(IS is,IS *isout)
   PetscValidHeaderSpecific(is,IS_COOKIE);
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   sizes   = (int *) PetscMalloc(2*size*sizeof(int));CHKPTRQ(sizes);
   offsets = sizes + size;
   

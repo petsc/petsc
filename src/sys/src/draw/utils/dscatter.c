@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dscatter.c,v 1.21 1999/01/12 23:16:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dscatter.c,v 1.22 1999/03/17 23:21:24 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -298,7 +298,7 @@ int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
 int DrawSPDraw(DrawSP sp)
 {
   double   xmin=sp->xmin, xmax=sp->xmax, ymin=sp->ymin, ymax=sp->ymax;
-  int      i, j, dim = sp->dim,nopts = sp->nopts,rank;
+  int      ierr, i, j, dim = sp->dim,nopts = sp->nopts,rank;
   Draw     win = sp->win;
 
   PetscFunctionBegin;
@@ -307,19 +307,19 @@ int DrawSPDraw(DrawSP sp)
 
   if (nopts < 1) PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
-  DrawClear(win);
-  DrawAxisSetLimits(sp->axis, xmin, xmax, ymin, ymax);
-  DrawAxisDraw(sp->axis);
+  ierr = DrawClear(win);CHKERRQ(ierr);
+  ierr = DrawAxisSetLimits(sp->axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
+  ierr = DrawAxisDraw(sp->axis);CHKERRQ(ierr);
   
-  MPI_Comm_rank(sp->comm,&rank);
+  ierr = MPI_Comm_rank(sp->comm,&rank);CHKERRQ(ierr);
   if (rank)   PetscFunctionReturn(0);
   for ( i=0; i<dim; i++ ) {
     for ( j=0; j<nopts; j++ ) {
-      DrawString(win,sp->x[j*dim+i],sp->y[j*dim+i],DRAW_RED,"x");
+      ierr = DrawString(win,sp->x[j*dim+i],sp->y[j*dim+i],DRAW_RED,"x");CHKERRQ(ierr);
     }
   }
-  DrawFlush(sp->win);
-  DrawPause(sp->win);
+  ierr = DrawFlush(sp->win);CHKERRQ(ierr);
+  ierr = DrawPause(sp->win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
  

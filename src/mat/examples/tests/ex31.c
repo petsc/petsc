@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex31.c,v 1.9 1999/03/19 21:19:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex31.c,v 1.10 1999/04/16 16:07:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -22,10 +22,10 @@ int main(int argc,char **args)
   int     MATRIX_GENERATE, MATRIX_READ;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  ierr =MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr =MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
   N = m*n;
 
   /* PART 1:  Generate matrix, then write it in binary format */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.7 1999/03/19 21:22:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: wp.c,v 1.8 1999/03/29 22:40:09 curfman Exp bsmith $";
 #endif
 /*
   Implements an alternative approach for computing the differencing parameter
@@ -118,10 +118,10 @@ static int MatSNESMFView_WP(MatSNESMFCtx ctx,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    if (hctx->computenorma) PetscFPrintf(ctx->comm,fd,"    Computes normA\n");  
-    else                    PetscFPrintf(ctx->comm,fd,"    Does not compute normA\n");  
-    if (hctx->computenormU) PetscFPrintf(ctx->comm,fd,"    Computes normU\n");  
-    else                    PetscFPrintf(ctx->comm,fd,"    Does not compute normU\n");  
+    if (hctx->computenorma){ierr = PetscFPrintf(ctx->comm,fd,"    Computes normA\n");  CHKERRQ(ierr);}
+    else                   {ierr =  PetscFPrintf(ctx->comm,fd,"    Does not compute normA\n");CHKERRQ(ierr);}
+    if (hctx->computenormU){ierr =  PetscFPrintf(ctx->comm,fd,"    Computes normU\n");CHKERRQ(ierr);}  
+    else                   {ierr =  PetscFPrintf(ctx->comm,fd,"    Does not compute normU\n");CHKERRQ(ierr);}  
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }    
@@ -146,8 +146,8 @@ static int MatSNESMFPrintHelp_WP(MatSNESMFCtx ctx)
   PetscFunctionBegin;
   ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p); CHKERRQ(ierr);
   if (!p) p = "";
-  (*PetscHelpPrintf)(ctx->comm,"   -%ssnes_mf_compute_norma <true or false>\n",p);
-  (*PetscHelpPrintf)(ctx->comm,"   -%ssnes_mf_compute_normu <true or false>\n",p);
+  ierr = (*PetscHelpPrintf)(ctx->comm,"   -%ssnes_mf_compute_norma <true or false>\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ctx->comm,"   -%ssnes_mf_compute_normu <true or false>\n",p);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

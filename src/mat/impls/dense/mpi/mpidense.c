@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.110 1999/03/18 00:36:01 balay Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.111 1999/03/25 21:23:03 balay Exp bsmith $";
 #endif
 
 /*
@@ -924,8 +924,8 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
 
   a->factor       = 0;
   mat->insertmode = NOT_SET_VALUES;
-  MPI_Comm_rank(comm,&a->rank);
-  MPI_Comm_size(comm,&a->size);
+  ierr = MPI_Comm_rank(comm,&a->rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&a->size);CHKERRQ(ierr);
 
   ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
 
@@ -1046,8 +1046,8 @@ int MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M, int N, Mat *newmat)
   MPI_Status status;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(comm,&rank);
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* determine ownership of all rows */
   m          = M/size + ((M % size) > rank);
@@ -1118,7 +1118,8 @@ int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
   int          i, nz, ierr, j,rstart, rend, fd;
 
   PetscFunctionBegin;
-  MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.122 1999/02/18 15:51:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.123 1999/03/17 23:21:40 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -433,10 +433,10 @@ int PetscTrSpace( PLogDouble *space, PLogDouble *fr, PLogDouble *maxs )
 int PetscTrDump( FILE *fp )
 {
   TRSPACE *head;
-  int     rank;
+  int     rank,ierr;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (fp == 0) fp = stderr;
   if (allocated > 0) {fprintf(fp,"[%d]Total space allocated %d bytes\n",rank,(int)allocated);}
   head = TRhead;
@@ -502,8 +502,8 @@ int PetscTrLogDump(FILE *fp)
   MPI_Status status;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
   /*
        Try to get the data printed in order by processor. This will only sometimes work 
   */  

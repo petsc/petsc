@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.36 1999/03/17 23:21:46 bsmith Exp balay $";
+static char vcid[] = "$Id: init.c,v 1.37 1999/03/23 16:22:30 balay Exp bsmith $";
 #endif
 /*
 
@@ -79,17 +79,17 @@ int PLogOpenHistoryFile(const char filename[],FILE **fd)
   char pfile[256],pname[256],fname[256],date[64];
 
   PetscFunctionBegin;
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRQ(ierr);
   if (!rank) {
     char arch[10];
-    PetscGetArchType(arch,10);
-    PetscGetDate(date,64);
-    MPI_Comm_size(PETSC_COMM_WORLD,&size);
+    ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
+    ierr = PetscGetDate(date,64);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (filename) {
       ierr = PetscFixFilename(filename,fname);CHKERRQ(ierr);
     } else {
       ierr = PetscGetHomeDirectory(pfile,240); CHKERRQ(ierr);
-      PetscStrcat(pfile,"/.petschistory");
+      ierr = PetscStrcat(pfile,"/.petschistory");CHKERRQ(ierr);
       ierr = PetscFixFilename(pfile,fname);CHKERRQ(ierr);
     }
 
@@ -113,7 +113,7 @@ static int PLogCloseHistoryFile(FILE **fd)
   char date[64];
 
   PetscFunctionBegin;
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
   ierr = PetscGetDate(date,64); CHKERRQ(ierr);
   fprintf(*fd,"---------------------------------------------------------\n");
@@ -245,10 +245,10 @@ int PetscCompareInitialize(double tol)
   ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
   PetscCompareTolerance = tol;
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
   if (!rank) {
-    PetscStrcpy(basename,pname);
+    ierr = PetscStrcpy(basename,pname);CHKERRQ(ierr);
     len = PetscStrlen(basename);
   }
 
@@ -323,7 +323,7 @@ int OptionsCheckInitial_Alice(void)
   int      flg1,flg2,flg3,ierr,*nodes,flag,i,rank;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /*
       Setup the memory management; support for tracing malloc() usage 
@@ -362,19 +362,19 @@ int OptionsCheckInitial_Alice(void)
   ierr = OptionsHasName(PETSC_NULL,"-version",&flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg3); CHKERRQ(ierr);
   if (flg1 || flg2 || flg3 ){
-    (*PetscHelpPrintf)(comm,"--------------------------------------------\
-------------------------------\n");
-    (*PetscHelpPrintf)(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
-    (*PetscHelpPrintf)(comm,"%s",PETSC_AUTHOR_INFO);
-    (*PetscHelpPrintf)(comm,"See docs/copyright.html for copyright information\n");
-    (*PetscHelpPrintf)(comm,"See docs/changes.html for recent updates.\n");
-    (*PetscHelpPrintf)(comm,"See docs/troubleshooting.html hints for problems.\n");
-    (*PetscHelpPrintf)(comm,"See docs/manualpages/index.html for help. \n");
+    ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
+------------------------------\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"\t   %s\n",PETSC_VERSION_NUMBER);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"%s",PETSC_AUTHOR_INFO);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"See docs/copyright.html for copyright information\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"See docs/changes.html for recent updates.\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"See docs/troubleshooting.html hints for problems.\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"See docs/manualpages/index.html for help. \n");CHKERRQ(ierr);
 #if !defined(PARCH_win32)
-    (*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LDIR);
+    ierr = (*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LDIR);CHKERRQ(ierr);
 #endif
-    (*PetscHelpPrintf)(comm,"--------------------------------------------\
-------------------------------\n");
+    ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
+------------------------------\n");CHKERRQ(ierr);
   }
 
   /*
@@ -430,7 +430,7 @@ int OptionsCheckInitial_Alice(void)
        debugger has stated it is likely to receive a SIGUSR1
        and kill the program. 
     */
-    MPI_Comm_size(PETSC_COMM_WORLD,&size);
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (size > 2) {
       int        dummy;
       MPI_Status status;
@@ -548,46 +548,46 @@ int OptionsCheckInitial_Alice(void)
   */
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);
   if (flg1) {
-    (*PetscHelpPrintf)(comm,"Options for all PETSc programs:\n");
-    (*PetscHelpPrintf)(comm," -on_error_abort: cause an abort when an error is");
-    (*PetscHelpPrintf)(comm," detected. Useful \n       only when run in the debugger\n");
-    (*PetscHelpPrintf)(comm," -on_error_attach_debugger [gdb,dbx,xxgdb,ups,noxterm]\n"); 
-    (*PetscHelpPrintf)(comm,"       start the debugger in new xterm\n");
-    (*PetscHelpPrintf)(comm,"       unless noxterm is given\n");
-    (*PetscHelpPrintf)(comm," -start_in_debugger [gdb,dbx,xxgdb,ups,noxterm]\n");
-    (*PetscHelpPrintf)(comm,"       start all processes in the debugger\n");
-    (*PetscHelpPrintf)(comm," -debugger_nodes [n1,n2,..] Nodes to start in debugger\n");
-    (*PetscHelpPrintf)(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n");
-    (*PetscHelpPrintf)(comm," -stop_for_debugger : prints message on how to attach debugger manually\n");
-    (*PetscHelpPrintf)(comm,"                      waits the delay for you to attach\n");
-    (*PetscHelpPrintf)(comm," -display display: Location where graphics and debuggers are displayed\n");
-    (*PetscHelpPrintf)(comm," -no_signal_handler: do not trap error signals\n");
-    (*PetscHelpPrintf)(comm," -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n");
-    (*PetscHelpPrintf)(comm," -fp_trap: stop on floating point exceptions\n");
-    (*PetscHelpPrintf)(comm,"           note on IBM RS6000 this slows run greatly\n");
-    (*PetscHelpPrintf)(comm," -trdump <optional filename>: dump list of unfreed memory at conclusion\n");
-    (*PetscHelpPrintf)(comm," -trmalloc: use our error checking malloc\n");
-    (*PetscHelpPrintf)(comm," -trmalloc_off: don't use error checking malloc\n");
-    (*PetscHelpPrintf)(comm," -trinfo: prints total memory usage\n");
-    (*PetscHelpPrintf)(comm," -trdebug: enables extended checking for memory corruption\n");
-    (*PetscHelpPrintf)(comm," -optionstable: dump list of options inputted\n");
-    (*PetscHelpPrintf)(comm," -optionsleft: dump list of unused options\n");
-    (*PetscHelpPrintf)(comm," -get_resident_set_size: print memory usage at end of run\n");
+    ierr = (*PetscHelpPrintf)(comm,"Options for all PETSc programs:\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -on_error_abort: cause an abort when an error is");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," detected. Useful \n       only when run in the debugger\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -on_error_attach_debugger [gdb,dbx,xxgdb,ups,noxterm]\n"); CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"       start the debugger in new xterm\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"       unless noxterm is given\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -start_in_debugger [gdb,dbx,xxgdb,ups,noxterm]\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"       start all processes in the debugger\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -debugger_nodes [n1,n2,..] Nodes to start in debugger\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -stop_for_debugger : prints message on how to attach debugger manually\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"                      waits the delay for you to attach\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -display display: Location where graphics and debuggers are displayed\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -no_signal_handler: do not trap error signals\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -fp_trap: stop on floating point exceptions\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"           note on IBM RS6000 this slows run greatly\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -trdump <optional filename>: dump list of unfreed memory at conclusion\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -trmalloc: use our error checking malloc\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -trmalloc_off: don't use error checking malloc\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -trinfo: prints total memory usage\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -trdebug: enables extended checking for memory corruption\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -optionstable: dump list of options inputted\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -optionsleft: dump list of unused options\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -get_resident_set_size: print memory usage at end of run\n");CHKERRQ(ierr);
 #if defined (USE_PETSC_LOG)
-    (*PetscHelpPrintf)(comm," -log[_all _summary]: logging objects and events\n");
-    (*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n");
+    ierr = (*PetscHelpPrintf)(comm," -log[_all _summary]: logging objects and events\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n");CHKERRQ(ierr);
 #if defined (HAVE_MPE)
-    (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through upshot\n");
+    ierr = (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through upshot\n");CHKERRQ(ierr);
 #endif
-    (*PetscHelpPrintf)(comm," -log_info <optional filename>: print informative messages about the calculations\n");
+    ierr = (*PetscHelpPrintf)(comm," -log_info <optional filename>: print informative messages about the calculations\n");CHKERRQ(ierr);
 #endif
-    (*PetscHelpPrintf)(comm," -v: prints PETSc version number and release date\n");
-    (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");
+    ierr = (*PetscHelpPrintf)(comm," -v: prints PETSc version number and release date\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");CHKERRQ(ierr);
 #if defined(HAVE_AMS)
-    (*PetscHelpPrintf)(comm," -ams_publish_objects: \n");
-    (*PetscHelpPrintf)(comm," -ams_publish_stack: \n");
+    ierr = (*PetscHelpPrintf)(comm," -ams_publish_objects: \n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -ams_publish_stack: \n");CHKERRQ(ierr);
 #endif
-    (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");
+    ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
   }
 
   /*
@@ -733,8 +733,8 @@ int AliceInitialize(int *argc,char ***args,const char file[],const char help[])
     PETSC_COMM_WORLD          = MPI_COMM_WORLD;
   }
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);
-  MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);CHKERRQ(ierr);
 
 #if defined(USE_PETSC_COMPLEX)
   /* 
@@ -775,7 +775,7 @@ int AliceInitialize(int *argc,char ***args,const char file[],const char help[])
   if (PetscBeganMPI) {
     int size;
 
-    MPI_Comm_size(PETSC_COMM_WORLD,&size);
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     PLogInfo(0,"PetscInitialize:Alice successfully started: number of processors = %d\n",size);
   }
 
@@ -784,7 +784,7 @@ int AliceInitialize(int *argc,char ***args,const char file[],const char help[])
   */
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (help && flg) {
-    PetscPrintf(PETSC_COMM_WORLD,help);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
   }
   
   PetscFunctionReturn(0);
@@ -844,7 +844,7 @@ int AliceFinalize(void)
     PetscFunctionReturn(0);
   }
 
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /*
        Close any default viewers that may have been opened during the run
@@ -861,7 +861,7 @@ int AliceFinalize(void)
   ierr = OptionsHasName(PETSC_NULL,"-get_resident_set_size",&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscGetResidentSetSize(&rss); CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_SELF,"[%d] Size of entire process memory %d\n",rank,(int)rss);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Size of entire process memory %d\n",rank,(int)rss);CHKERRQ(ierr);
   }
 
 #if defined(USE_PETSC_STACK)
@@ -916,11 +916,11 @@ int AliceFinalize(void)
   }
   if (flg1) {
     if (nopt == 0) { 
-      PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
     } else if (nopt == 1) {
-      PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
     } else {
-      PetscPrintf(PETSC_COMM_WORLD,"There are %d unused database options. They are:\n",nopt);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %d unused database options. They are:\n",nopt);CHKERRQ(ierr);
     }
   }
 
@@ -928,8 +928,8 @@ int AliceFinalize(void)
   flg2 = 0;
   ierr = OptionsHasName(PETSC_NULL,"-optionsleft_off",&flg2); CHKERRQ(ierr);
   if (nopt && !flg1 && !flg2) {
-    PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");
-    PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);
   }
   if ((nopt || flg1) && !flg2) {
 #else 
@@ -1014,7 +1014,7 @@ int AliceFinalize(void)
 
 
   if (PetscBeganMPI) {
-    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+    ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
     PLogInfo(0,"PetscFinalize:PETSc successfully ended!\n");
     ierr = MPI_Finalize(); CHKERRQ(ierr);
   }

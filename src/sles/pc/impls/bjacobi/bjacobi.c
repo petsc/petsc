@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.127 1999/03/02 20:27:21 bsmith Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.128 1999/03/24 18:01:38 balay Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -21,8 +21,8 @@ static int PCSetUp_BJacobi(PC pc)
   int             bs, i_start=-1, i_end=-1;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(pc->comm,&rank);
-  MPI_Comm_size(pc->comm,&size);
+  ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   ierr = MatGetLocalSize(pc->pmat,&M,&N); CHKERRQ(ierr);
   ierr = MatGetBlockSize(pc->pmat,&bs); CHKERRQ(ierr);
 
@@ -100,7 +100,7 @@ static int PCSetUp_BJacobi(PC pc)
     jac->l_lens[0] = M;
   }
 
-  MPI_Comm_size(pc->comm,&size);
+  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     mat  = pc->mat;
     pmat = pc->pmat;
@@ -206,14 +206,16 @@ static int PCSetFromOptions_BJacobi(PC pc)
 #define __FUNC__ "PCPrintHelp_BJacobi"
 static int PCPrintHelp_BJacobi(PC pc,char *p)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(pc->comm," Options for PCBJACOBI preconditioner:\n");
-  (*PetscHelpPrintf)(pc->comm," %spc_bjacobi_blocks <blks>: total blocks in preconditioner\n",p);
-  (*PetscHelpPrintf)(pc->comm, " %spc_bjacobi_truelocal: use blocks from the local linear\
- system matrix \n      instead of the preconditioning matrix\n",p);
-  (*PetscHelpPrintf)(pc->comm," %ssub : prefix to control options for individual blocks.\
+  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCBJACOBI preconditioner:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_bjacobi_blocks <blks>: total blocks in preconditioner\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm, " %spc_bjacobi_truelocal: use blocks from the local linear\
+ system matrix \n      instead of the preconditioning matrix\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
- <kspmethod>)\n",p,p);
+ <kspmethod>)\n",p,p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -229,12 +231,12 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     if (jac->use_true_local) {
-      ViewerASCIIPrintf(viewer,"  block Jacobi: using true local matrix, number of blocks = %d\n", jac->n);
+      ierr = ViewerASCIIPrintf(viewer,"  block Jacobi: using true local matrix, number of blocks = %d\n", jac->n);CHKERRQ(ierr);
     }
-    ViewerASCIIPrintf(viewer,"  block Jacobi: number of blocks = %d\n", jac->n);
-    MPI_Comm_rank(pc->comm,&rank);
+    ierr = ViewerASCIIPrintf(viewer,"  block Jacobi: number of blocks = %d\n", jac->n);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
     if (jac->same_local_solves) {
-      ViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");
+      ierr = ViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
       if (!rank && jac->sles) {
         ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = SLESView(jac->sles[0],viewer); CHKERRQ(ierr);
@@ -244,18 +246,18 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
       FILE *fd;
 
       ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-      ViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");
-      PetscSequentialPhaseBegin(pc->comm,1);
-      PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
-                   rank,jac->n_local,jac->first_local);
+      ierr = ViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
+      ierr = PetscSequentialPhaseBegin(pc->comm,1);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
+                   rank,jac->n_local,jac->first_local);CHKERRQ(ierr);
       for (i=0; i<jac->n_local; i++) {
-        PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: local block number %d\n",rank,i);
+        ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: local block number %d\n",rank,i);CHKERRQ(ierr);
            /* This shouldn't really be STDOUT */
         ierr = SLESView(jac->sles[i],VIEWER_STDOUT_SELF); CHKERRQ(ierr);
-        if (i != jac->n_local-1) PetscFPrintf(PETSC_COMM_SELF,fd,"- - - - - - - - - - - - - - - - - -\n");
+        if (i != jac->n_local-1) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);}
       }
       fflush(fd);
-      PetscSequentialPhaseEnd(pc->comm,1);
+      ierr = PetscSequentialPhaseEnd(pc->comm,1);CHKERRQ(ierr);
     }
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer," blks=%d",jac->n);CHKERRQ(ierr);
@@ -525,8 +527,8 @@ int PCCreate_BJacobi(PC pc)
 
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_BJacobi));
-  MPI_Comm_rank(pc->comm,&rank);
-  MPI_Comm_size(pc->comm,&size);
+  ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   pc->apply              = 0;
   pc->applytrans         = 0;
   pc->setup              = PCSetUp_BJacobi;

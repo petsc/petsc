@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.83 1999/04/02 15:10:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.84 1999/04/16 16:08:03 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -158,10 +158,10 @@ int PCPrintHelp(PC pc)
   PetscStrcpy(p,"-");
   if (pc->prefix) PetscStrcat(p,pc->prefix);
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0); CHKERRQ(ierr);}
-  (*PetscHelpPrintf)(pc->comm,"PC options --------------------------------------------------\n");
+  ierr = (*PetscHelpPrintf)(pc->comm,"PC options --------------------------------------------------\n");CHKERRQ(ierr);
   ierr = FListPrintTypes(pc->comm,stdout,pc->prefix,"pc_type",PCList);CHKERRQ(ierr);
-  (*PetscHelpPrintf)(pc->comm,"Run program with -help %spc_type <method> for help on ",p);
-  (*PetscHelpPrintf)(pc->comm,"a particular method\n");
+  ierr = (*PetscHelpPrintf)(pc->comm,"Run program with -help %spc_type <method> for help on ",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm,"a particular method\n");CHKERRQ(ierr);
   if (pc->printhelp) {
     ierr = (*pc->printhelp)(pc,p);CHKERRQ(ierr);
   }
@@ -232,7 +232,7 @@ int PCSetTypeFromOptions(PC pc)
   if (!pc->type_name) {
     int size;
 
-    MPI_Comm_size(pc->comm,&size);
+    ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
     } else {

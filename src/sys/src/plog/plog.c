@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.211 1999/03/23 16:22:08 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.212 1999/04/01 23:49:53 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -67,7 +67,7 @@ int PLogInfoAllow(PetscTruth flag,char *filename)
   PLogPrintInfoNull = (int) flag;
   if (flag && filename) {
     ierr = PetscFixFilename(filename,fname); CHKERRQ(ierr);
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     sprintf(tname,".%d",rank);
     PetscStrcat(fname,tname);
     PLogInfoFile = fopen(fname,"w");
@@ -841,14 +841,14 @@ PLogDouble tracetime = 0.0;
 #define __FUNC__ "PLogDefaultPLBTrace"
 int PLogDefaultPLBTrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
-  int        rank;
+  int        rank,ierr;
   PLogDouble cur_time;
 
   PetscFunctionBegin;
   if (!tracetime) { PetscTime(tracetime);}
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  PetscStrncpy(tracespace,traceblanks,2*tracelevel);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = PetscStrncpy(tracespace,traceblanks,2*tracelevel);CHKERRQ(ierr);
   tracespace[2*tracelevel] = 0;
   PetscTime(cur_time);
   fprintf(tracefile,"%s[%d] %g Event begin: %s\n",tracespace,rank,cur_time-tracetime,PLogEventName[event]);
@@ -865,13 +865,13 @@ int PLogDefaultPLBTrace(int event,int t,PetscObject o1,PetscObject o2,PetscObjec
 #define __FUNC__ "PLogDefaultPLETrace"
 int PLogDefaultPLETrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
-  int        rank;
+  int        ierr,rank;
   PLogDouble cur_time;
 
   PetscFunctionBegin;
   tracelevel--;
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  PetscStrncpy(tracespace,traceblanks,2*tracelevel);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = PetscStrncpy(tracespace,traceblanks,2*tracelevel);CHKERRQ(ierr);
   tracespace[2*tracelevel] = 0;
   PetscTime(cur_time);
   fprintf(tracefile,"%s[%d] %g Event end: %s\n",tracespace,rank,cur_time-tracetime,PLogEventName[event]);
@@ -1142,7 +1142,7 @@ int PLogDump(const char sname[])
   PetscTime(_TotalTime);
   _TotalTime -= BaseTime;
 
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (sname) sprintf(file,"%s.%d",sname,rank);
   else  sprintf(file,"Log.%d",rank);
   ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
@@ -1236,6 +1236,7 @@ extern int  PLogEventColorMalloced[];
 int PLogEventRegister(int *e,const char string[],const char color[])
 {
   char *cstring;
+  int  ierr;
 
   PetscFunctionBegin;
   *e = PLOG_USER_EVENT_LOW++;
@@ -1258,7 +1259,7 @@ int PLogEventRegister(int *e,const char string[],const char color[])
       PLogEventColor[*e]         = ccolor;
       PLogEventColorMalloced[*e] = 1;
     }
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     if (!rank) {
       MPE_Describe_state(MPEBEGIN+2*(*e),MPEBEGIN+2*(*e)+1,cstring,PLogEventColor[*e]);
     }
@@ -1408,8 +1409,8 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   while (EventsStagePushed) PLogStagePop();
 
   PetscTime(_TotalTime);  _TotalTime -= BaseTime;
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* Open the summary file */
   if (filename && !rank) {
@@ -1418,22 +1419,22 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
     if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,0,"cannot open file: %s",fname);
   }
 
-  PetscFPrintf(comm,fd,"************************************************************************************************************************\n");
-  PetscFPrintf(comm,fd,"***             WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document            ***\n");
-  PetscFPrintf(comm,fd,"************************************************************************************************************************\n");
+  ierr = PetscFPrintf(comm,fd,"************************************************************************************************************************\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"***             WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document            ***\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"************************************************************************************************************************\n");CHKERRQ(ierr);
 
-  PetscFPrintf(comm,fd,"\n---------------------------------------------- PETSc Performance Summary: ----------------------------------------------\n\n");
+  ierr = PetscFPrintf(comm,fd,"\n---------------------------------------------- PETSc Performance Summary: ----------------------------------------------\n\n");CHKERRQ(ierr);
   ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
   ierr = PetscGetUserName(username,16);CHKERRQ(ierr);
   ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
   ierr = PetscGetDate(date,64);CHKERRQ(ierr);
   if (size == 1) {
-    PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s\n",
-                 pname,arch,hostname,size,username,date);
+    ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s\n",
+                 pname,arch,hostname,size,username,date);CHKERRQ(ierr);
   } else {
-    PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n",
-                 pname,arch,hostname,size,username,date);
+    ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n",
+                 pname,arch,hostname,size,username,date);CHKERRQ(ierr);
   }
 
   wdou = _TotalFlops; 
@@ -1452,26 +1453,26 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   ierr = MPI_Allreduce(&wdou,&tott,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
   avet = (tott)/((PLogDouble) size);
 
-  PetscFPrintf(comm,fd,"\n                         Max       Max/Min      Avg      Total \n");
+  ierr = PetscFPrintf(comm,fd,"\n                         Max       Max/Min      Avg      Total \n");CHKERRQ(ierr);
   if (mint) ratio = maxt/mint; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"Time (sec):           %5.3e   %10.5f   %5.3e\n",maxt,ratio,avet);
+  ierr = PetscFPrintf(comm,fd,"Time (sec):           %5.3e   %10.5f   %5.3e\n",maxt,ratio,avet);CHKERRQ(ierr);
   if (mino) ratio = maxo/mino; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"Objects:              %5.3e   %10.5f   %5.3e\n",maxo,ratio,aveo);
+  ierr = PetscFPrintf(comm,fd,"Objects:              %5.3e   %10.5f   %5.3e\n",maxo,ratio,aveo);CHKERRQ(ierr);
   if (minf) ratio = maxf/minf; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"Flops:                %5.3e   %10.5f   %5.3e  %5.3e\n",maxf,ratio,avef,totf);
+  ierr = PetscFPrintf(comm,fd,"Flops:                %5.3e   %10.5f   %5.3e  %5.3e\n",maxf,ratio,avef,totf);CHKERRQ(ierr);
 
   if (mint) fmin = minf/mint; else fmin = 0;
   if (maxt) fmax = maxf/maxt; else fmax = 0;
   if (maxt) ftot = totf/maxt; else ftot = 0;
   if (fmin) ratio = fmax/fmin; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"Flops/sec:            %5.3e   %10.5f              %5.3e\n",fmax,ratio,ftot);
-  PetscTrSpace(PETSC_NULL,PETSC_NULL,&mem);
+  ierr = PetscFPrintf(comm,fd,"Flops/sec:            %5.3e   %10.5f              %5.3e\n",fmax,ratio,ftot);CHKERRQ(ierr);
+  ierr = PetscTrSpace(PETSC_NULL,PETSC_NULL,&mem);CHKERRQ(ierr);
   if (mem > 0.0) {
     ierr = MPI_Allreduce(&mem,&maxmem,1,MPIU_PLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&mem,&minmem,1,MPIU_PLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&mem,&totmem,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
     if (minmem) ratio = maxmem/minmem; else ratio = 0.0;
-    PetscFPrintf(comm,fd,"Memory:               %5.3e   %8.3f              %5.3e\n",maxmem,ratio,totmem);
+    ierr = PetscFPrintf(comm,fd,"Memory:               %5.3e   %8.3f              %5.3e\n",maxmem,ratio,totmem);CHKERRQ(ierr);
   }
   wdou = .5*(irecv_ct + isend_ct + recv_ct + send_ct);
   ierr = MPI_Allreduce(&wdou,&minm,1,MPIU_PLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
@@ -1484,24 +1485,24 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   ierr = MPI_Allreduce(&wdou,&totml,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
   if (totm) aveml = (totml)/(totm); else aveml = 0;
   if (minm) ratio = maxm/minm; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"MPI Messages:         %5.3e   %8.3f   %5.3e  %5.3e\n",maxm,ratio,avem,totm);
+  ierr = PetscFPrintf(comm,fd,"MPI Messages:         %5.3e   %8.3f   %5.3e  %5.3e\n",maxm,ratio,avem,totm);CHKERRQ(ierr);
   if (minml) ratio = maxml/minml; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"MPI Message Lengths:  %5.3e   %8.3f   %5.3e  %5.3e\n",maxml,ratio,aveml,totml);
+  ierr = PetscFPrintf(comm,fd,"MPI Message Lengths:  %5.3e   %8.3f   %5.3e  %5.3e\n",maxml,ratio,aveml,totml);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&allreduce_ct,&minr,1,MPIU_PLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&allreduce_ct,&maxr,1,MPIU_PLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&allreduce_ct,&totr,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
   if (minr) ratio = maxr/minr; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"MPI Reductions:       %5.3e   %8.3f\n",maxr,ratio);
-  PetscFPrintf(comm,fd,"\nFlop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)\n");
-  PetscFPrintf(comm,fd,"                            e.g., VecAXPY() for real vectors of length N --> 2N flops\n");
-  PetscFPrintf(comm,fd,"                            and VecAXPY() for complex vectors of length N --> 8N flops\n");
+  ierr = PetscFPrintf(comm,fd,"MPI Reductions:       %5.3e   %8.3f\n",maxr,ratio);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"\nFlop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"                            e.g., VecAXPY() for real vectors of length N --> 2N flops\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"                            and VecAXPY() for complex vectors of length N --> 8N flops\n");CHKERRQ(ierr);
 
   ierr = MPI_Allreduce(&EventsStageMax,&lEventsStageMax,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   if (lEventsStageMax) {
     PLogDouble mcounts,mlens,rcounts;
 
-    PetscFPrintf(comm,fd,"\nSummary of Stages:  ---- Time ------     ----- Flops -------    -- Messages -- -- Message-lengths -- Reductions --\n");
-    PetscFPrintf(comm,fd,"                      Avg      %%Total        Avg       %%Total   counts   %%Total    avg      %%Total   counts  %%Total \n");
+    ierr = PetscFPrintf(comm,fd,"\nSummary of Stages:  ---- Time ------     ----- Flops -------    -- Messages -- -- Message-lengths -- Reductions --\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"                      Avg      %%Total        Avg       %%Total   counts   %%Total    avg      %%Total   counts  %%Total \n");CHKERRQ(ierr);
     for ( j=0; j<=lEventsStageMax; j++ ) {
       ierr = MPI_Allreduce(&EventsStageFlops[j],&sflops,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
       ierr = MPI_Allreduce(&EventsStageTime[j],&sstime,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
@@ -1519,80 +1520,80 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
       if (totr)  rat3 = 100.*size*rcounts/totr; else rat3 = 0.0;if (rat2 >= 100.0) rat2 = 99.9;
       if (mcounts) mlensmcounts = mlens/mcounts; else mlensmcounts = 0.0; 
       if (EventsStageName[j]) {
-        PetscFPrintf(comm,fd," %d: %15s: %6.4e    %4.1f%%     %6.4e      %4.1f%%  %5.3e   %4.1f%%  %5.3e  %4.1f%%  %5.3e  %4.1f%% \n",
+        ierr = PetscFPrintf(comm,fd," %d: %15s: %6.4e    %4.1f%%     %6.4e      %4.1f%%  %5.3e   %4.1f%%  %5.3e  %4.1f%%  %5.3e  %4.1f%% \n",
                 j,EventsStageName[j],sstime/size,pstime,psflops1,psflops,mcounts,rat1,mlensmcounts,rat2,
-                rcounts,rat3);
+                rcounts,rat3);CHKERRQ(ierr);
       } else {
-        PetscFPrintf(comm,fd," %d:                 %6.4e    %4.1f%%     %6.4e      %4.1f%%  %5.3e   %4.1f%%  %5.3e  %4.1f%%  %5.3e  %4.1f%% \n",
-                j,sstime/size,pstime,psflops1,psflops,mcounts,rat1,mlensmcounts,rat2,rcounts,rat3);
+        ierr = PetscFPrintf(comm,fd," %d:                 %6.4e    %4.1f%%     %6.4e      %4.1f%%  %5.3e   %4.1f%%  %5.3e  %4.1f%%  %5.3e  %4.1f%% \n",
+                j,sstime/size,pstime,psflops1,psflops,mcounts,rat1,mlensmcounts,rat2,rcounts,rat3);CHKERRQ(ierr);
       }
     }
   }
 
 
-  PetscFPrintf(comm,fd,  
-    "\n------------------------------------------------------------------------------------------------------------------------\n"); 
-  PetscFPrintf(comm,fd,"See the 'Profiling' chapter of the users' manual for details on interpreting output.\n");
-  PetscFPrintf(comm,fd,"Phase summary info:\n");
-  PetscFPrintf(comm,fd,"   Count: number of times phase was executed\n");
-  PetscFPrintf(comm,fd,"   Time and Flops/sec: Max - maximum over all processors\n");
-  PetscFPrintf(comm,fd,"                       Ratio - ratio of maximum to minimum over all processors\n");
-  PetscFPrintf(comm,fd,"   Mess: number of messages sent\n");
-  PetscFPrintf(comm,fd,"   Avg. len: average message length\n");
-  PetscFPrintf(comm,fd,"   Reduct: number of global reductions\n");
-  PetscFPrintf(comm,fd,"   Global: entire computation\n");
-  PetscFPrintf(comm,fd,"   Stage: optional user-defined stages of a computation. Set stages with PLogStagePush() and PLogStagePop().\n");
-  PetscFPrintf(comm,fd,"      %%T - percent time in this phase         %%F - percent flops in this phase\n");
-  PetscFPrintf(comm,fd,"      %%M - percent messages in this phase     %%L - percent message lengths in this phase\n");
-  PetscFPrintf(comm,fd,"      %%R - percent reductions in this phase\n");
-  PetscFPrintf(comm,fd,"   Total Mflop/s: 10e-6 * (sum of flops over all processors)/(max time over all processors)\n");
-  PetscFPrintf(comm,fd,
-    "------------------------------------------------------------------------------------------------------------------------\n"); 
+  ierr = PetscFPrintf(comm,fd,  
+    "\n------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);  
+  ierr = PetscFPrintf(comm,fd,"See the 'Profiling' chapter of the users' manual for details on interpreting output.\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"Phase summary info:\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"   Count: number of times phase was executed\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"   Time and Flops/sec: Max - maximum over all processors\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"                       Ratio - ratio of maximum to minimum over all processors\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"   Mess: number of messages sent\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"   Avg. len: average message length\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"   Reduct: number of global reductions\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"   Global: entire computation\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"   Stage: optional user-defined stages of a computation. Set stages with PLogStagePush() and PLogStagePop().\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      %%T - percent time in this phase         %%F - percent flops in this phase\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      %%M - percent messages in this phase     %%L - percent message lengths in this phase\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      %%R - percent reductions in this phase\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"   Total Mflop/s: 10e-6 * (sum of flops over all processors)/(max time over all processors)\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,
+    "------------------------------------------------------------------------------------------------------------------------\n"); CHKERRQ(ierr);
 
 #if defined(USE_PETSC_BOPT_g)
-  PetscFPrintf(comm,fd,"\n\n");
-  PetscFPrintf(comm,fd,"      ##########################################################\n");
-  PetscFPrintf(comm,fd,"      #                                                        #\n");
-  PetscFPrintf(comm,fd,"      #                          WARNING!!!                    #\n");
-  PetscFPrintf(comm,fd,"      #                                                        #\n");
-  PetscFPrintf(comm,fd,"      #   This code was compiled with a debugging option,      #\n");
-  PetscFPrintf(comm,fd,"      #   BOPT=<g,g_c++,g_complex>.   To get timing results    #\n");
-  PetscFPrintf(comm,fd,"      #   ALWAYS compile your code with an optimized version,  #\n");
-  PetscFPrintf(comm,fd,"      #   BOPT=<O,O_c++,O_complex>;  the performance will      #\n");
-  PetscFPrintf(comm,fd,"      #   be generally two or three times faster.              #\n");
-  PetscFPrintf(comm,fd,"      #                                                        #\n");
-  PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");
+  ierr = PetscFPrintf(comm,fd,"\n\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      ##########################################################\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #                          WARNING!!!                    #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   This code was compiled with a debugging option,      #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   BOPT=<g,g_c++,g_complex>.   To get timing results    #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   ALWAYS compile your code with an optimized version,  #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   BOPT=<O,O_c++,O_complex>;  the performance will      #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   be generally two or three times faster.              #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");CHKERRQ(ierr);
 #endif
 #if defined(USE_PETSC_COMPLEX) && !defined(USE_FORTRAN_KERNELS)
-  PetscFPrintf(comm,fd,"\n\n");
-  PetscFPrintf(comm,fd,"      ##########################################################\n");
-  PetscFPrintf(comm,fd,"      #                                                        #\n");
-  PetscFPrintf(comm,fd,"      #                          WARNING!!!                    #\n");
-  PetscFPrintf(comm,fd,"      #                                                        #\n");
-  PetscFPrintf(comm,fd,"      #   The code for various complex numbers numerical       #\n");
-  PetscFPrintf(comm,fd,"      #   kernels uses C++, which generally is not well        #\n");
-  PetscFPrintf(comm,fd,"      #   optimized.  For performance that is about 4-5 times  #\n");
-  PetscFPrintf(comm,fd,"      #   faster, specify the flag -DUSE_FORTRAN_KERNELS in    #\n");
-  PetscFPrintf(comm,fd,"      #   base.O_complex and recompile the PETSc libraries.    #\n");
-  PetscFPrintf(comm,fd,"      #                                                        #\n");
-  PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");
+  ierr = PetscFPrintf(comm,fd,"\n\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      ##########################################################\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #                          WARNING!!!                    #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   The code for various complex numbers numerical       #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   kernels uses C++, which generally is not well        #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   optimized.  For performance that is about 4-5 times  #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   faster, specify the flag -DUSE_FORTRAN_KERNELS in    #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   base_variables and recompile the PETSc libraries.    #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");CHKERRQ(ierr);
 #endif
 
   /* loop over operations looking for interesting ones */
-  PetscFPrintf(comm,fd,"Phase                  Count      Time (sec)        Flops/sec \
-                          --- Global ---  --- Stage ---   Total\n");
-  PetscFPrintf(comm,fd,"                    Max  Ratio  Max     Ratio      Max     Ratio\
-  Mess  Avg len  Reduct %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s\n");
-  PetscFPrintf(comm,fd,
-    "------------------------------------------------------------------------------------------------------------------------\n"); 
+  ierr = PetscFPrintf(comm,fd,"Phase                  Count      Time (sec)        Flops/sec \
+                          --- Global ---  --- Stage ---   Total\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"                    Max  Ratio  Max     Ratio      Max     Ratio\
+  Mess  Avg len  Reduct %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,
+    "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr); 
   for ( j=0; j<=EventsStageMax; j++ ) {
     ierr = MPI_Allreduce(&EventsStageFlops[j],&sflops,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&EventsStageTime[j],&sstime,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
     if (EventsStageMax) {
       if (EventsStageName[j]) {
-        PetscFPrintf(comm,fd,"\n--- Event Stage %d: %s\n\n",j,EventsStageName[j]);
+        ierr = PetscFPrintf(comm,fd,"\n--- Event Stage %d: %s\n\n",j,EventsStageName[j]);CHKERRQ(ierr);
       } else {
-        PetscFPrintf(comm,fd,"\n--- Event Stage %d:\n\n",j);
+        ierr = PetscFPrintf(comm,fd,"\n--- Event Stage %d:\n\n",j);CHKERRQ(ierr);
       }
     }
     /* This loop assumes that PLOG_USER_EVENT_HIGH is the max event number */
@@ -1640,37 +1641,37 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
         if (mict) rct = mact/mict; else rct = 0.0;
         mp = mp/2.0;
         rp = rp/((PLogDouble) size);
-        PetscFPrintf(comm,fd,"%-16s %7d %3.1f  %5.4e %5.1f  %3.2e %6.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f  %2.0f %2.0f %2.0f %2.0f %2.0f %5.0f\n",
+        ierr = PetscFPrintf(comm,fd,"%-16s %7d %3.1f  %5.4e %5.1f  %3.2e %6.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f  %2.0f %2.0f %2.0f %2.0f %2.0f %5.0f\n",
                     PLogEventName[i],(int)mact,rct,maxt,rat,maxf,ratf,
-                    mp,lpmp,rp,ptotts,ptotff,mpg,lpg,rpg,ptotts_stime,ptotff_sflops,mps,lps,rps,flopr/1.e6);
+                    mp,lpmp,rp,ptotts,ptotff,mpg,lpg,rpg,ptotts_stime,ptotff_sflops,mps,lps,rps,flopr/1.e6);CHKERRQ(ierr);
       }
     }
   }
 
-  PetscFPrintf(comm,fd,
-    "------------------------------------------------------------------------------------------------------------------------\n"); 
-  PetscFPrintf(comm,fd,"\n"); 
-  PetscFPrintf(comm,fd,"Memory usage is given in bytes:\n\n");
+  ierr = PetscFPrintf(comm,fd,
+    "------------------------------------------------------------------------------------------------------------------------\n"); CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"\n");CHKERRQ(ierr); 
+  ierr = PetscFPrintf(comm,fd,"Memory usage is given in bytes:\n\n");CHKERRQ(ierr);
 
   /* loop over objects looking for interesting ones */
-  PetscFPrintf(comm,fd,"Object Type      Creations   Destructions   Memory  Descendants' Mem.\n");
+  ierr = PetscFPrintf(comm,fd,"Object Type      Creations   Destructions   Memory  Descendants' Mem.\n");CHKERRQ(ierr);
   for ( j=0; j<=EventsStageMax; j++ ) {
     if (EventsStageMax) {
       if (EventsStageName[j]) {
-        PetscFPrintf(comm,fd,"\n--- Event Stage %d: %s\n\n",j,EventsStageName[j]);
+        ierr = PetscFPrintf(comm,fd,"\n--- Event Stage %d: %s\n\n",j,EventsStageName[j]);CHKERRQ(ierr);
       } else {
-        PetscFPrintf(comm,fd,"\n--- Event Stage %d:\n\n",j);
+        ierr = PetscFPrintf(comm,fd,"\n--- Event Stage %d:\n\n",j);CHKERRQ(ierr);
       }
     }
     for ( i=0; i<50; i++ ) {
       if (ObjectsType[j][i][0]) {
-        PetscFPrintf(comm,fd,"%s %5d          %5d  %9d     %g\n",oname[i],(int) 
+        ierr = PetscFPrintf(comm,fd,"%s %5d          %5d  %9d     %g\n",oname[i],(int) 
             ObjectsType[j][i][0],(int)ObjectsType[j][i][1],(int)ObjectsType[j][i][2],
-            ObjectsType[j][i][3]);
+            ObjectsType[j][i][3]);CHKERRQ(ierr);
       }
     }
   }
-  PetscFPrintf(comm,fd,"\n");
+  ierr = PetscFPrintf(comm,fd,"\n");CHKERRQ(ierr);
   if (filename && !rank) fclose(fd);
   PetscFunctionReturn(0);
 }

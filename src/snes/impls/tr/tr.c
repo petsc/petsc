@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.95 1999/03/01 04:57:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.96 1999/03/17 23:24:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
@@ -245,17 +245,19 @@ static int SNESSetFromOptions_EQ_TR(SNES snes)
 #define __FUNC__ "SNESPrintHelp_EQ_TR"
 static int SNESPrintHelp_EQ_TR(SNES snes,char *p)
 {
-  SNES_TR *ctx = (SNES_TR *)snes->data;
+  SNES_TR  *ctx = (SNES_TR *)snes->data;
+  int      ierr;
+  MPI_Comm comm = snes->comm;
 
   PetscFunctionBegin;
-  PetscFPrintf(snes->comm,stdout," method SNES_EQ_TR (tr) for systems of nonlinear equations:\n");
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_mu <mu> (default %g)\n",p,ctx->mu);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_eta <eta> (default %g)\n",p,ctx->eta);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_sigma <sigma> (default %g)\n",p,ctx->sigma);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_delta0 <delta0> (default %g)\n",p,ctx->delta0);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_delta1 <delta1> (default %g)\n",p,ctx->delta1);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_delta2 <delta2> (default %g)\n",p,ctx->delta2);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_delta3 <delta3> (default %g)\n",p,ctx->delta3);
+  ierr = (*PetscHelpPrintf)(comm," method SNES_EQ_TR (tr) for systems of nonlinear equations:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_mu <mu> (default %g)\n",p,ctx->mu);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_eta <eta> (default %g)\n",p,ctx->eta);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_sigma <sigma> (default %g)\n",p,ctx->sigma);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_delta0 <delta0> (default %g)\n",p,ctx->delta0);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_delta1 <delta1> (default %g)\n",p,ctx->delta1);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_delta2 <delta2> (default %g)\n",p,ctx->delta2);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_delta3 <delta3> (default %g)\n",p,ctx->delta3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -270,8 +272,8 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"  mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);
-    ViewerASCIIPrintf(viewer,"  delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",tr->delta0,tr->delta1,tr->delta2,tr->delta3);
+    ierr = ViewerASCIIPrintf(viewer,"  mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"  delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",tr->delta0,tr->delta1,tr->delta2,tr->delta3);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

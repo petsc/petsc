@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.3 1998/06/23 16:18:52 balay Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.4 1999/03/19 21:17:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -15,13 +15,13 @@ int main(int argc, char **argv)
   MPI_Comm newcomm;
 
   MPI_Init(&argc,&argv);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRA(ierr);
 
   /*
        make two new communicators each half the size of original
   */
-  MPI_Comm_split(MPI_COMM_WORLD,2*rank<size,0,&newcomm);
+  ierr = MPI_Comm_split(MPI_COMM_WORLD,2*rank<size,0,&newcomm);CHKERRA(ierr);
 
   ierr = PetscSetCommWorld(newcomm);
   if (ierr) {
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
   }
 
   PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   printf("rank = %3d\n",rank);
 
   PetscFinalize();

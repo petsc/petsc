@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.121 1999/03/30 03:43:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.122 1999/04/12 17:43:59 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -211,7 +211,7 @@ int KSPSolve(KSP ksp, int *its)
   if (ksp->res_hist_reset == PETSC_TRUE) ksp->res_hist_len = 0;
   ierr = (*ksp->ops->solve)(ksp,its); CHKERRQ(ierr);
 
-  MPI_Comm_rank(ksp->comm,&rank);
+  ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
 
   ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flag1);CHKERRQ(ierr);
   ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues",&flag2);CHKERRQ(ierr);
@@ -222,10 +222,10 @@ int KSPSolve(KSP ksp, int *its)
     c = r + n;
     ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig); CHKERRQ(ierr);
     if (flag1) {
-      PetscPrintf(ksp->comm,"Iteratively computed eigenvalues\n");
+      ierr = PetscPrintf(ksp->comm,"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
       for ( i=0; i<neig; i++ ) {
-        if (c[i] >= 0.0) PetscPrintf(ksp->comm,"%g + %gi\n",r[i],c[i]);
-        else             PetscPrintf(ksp->comm,"%g - %gi\n",r[i],-c[i]);
+        if (c[i] >= 0.0) {ierr = PetscPrintf(ksp->comm,"%g + %gi\n",r[i],c[i]);CHKERRQ(ierr);}
+        else             {ierr = PetscPrintf(ksp->comm,"%g - %gi\n",r[i],-c[i]);CHKERRQ(ierr);}
       }
     }
     if (flag2 && !rank) {
@@ -257,10 +257,10 @@ int KSPSolve(KSP ksp, int *its)
     c = r + n;
     ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c); CHKERRQ(ierr); 
     if (flag1) {
-      PetscPrintf(ksp->comm,"Explicitly computed eigenvalues\n");
+      ierr = PetscPrintf(ksp->comm,"Explicitly computed eigenvalues\n");CHKERRQ(ierr);
       for ( i=0; i<n; i++ ) {
-        if (c[i] >= 0.0) PetscPrintf(ksp->comm,"%g + %gi\n",r[i],c[i]);
-        else             PetscPrintf(ksp->comm,"%g - %gi\n",r[i],-c[i]);
+        if (c[i] >= 0.0) {ierr = PetscPrintf(ksp->comm,"%g + %gi\n",r[i],c[i]);CHKERRQ(ierr);}
+        else             {ierr = PetscPrintf(ksp->comm,"%g - %gi\n",r[i],-c[i]);CHKERRQ(ierr);}
       }
     }
     if (flag2 && !rank) {

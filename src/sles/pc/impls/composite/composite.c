@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.19 1999/01/31 21:45:16 curfman Exp balay $";
+static char vcid[] = "$Id: composite.c,v 1.20 1999/03/16 00:53:07 balay Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -163,17 +163,17 @@ static int PCPrintHelp_Composite(PC pc,char *p)
   int              ierr;
 
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(pc->comm," Options for PCComposite preconditioner:\n"); 
-  (*PetscHelpPrintf)(pc->comm," %spc_composite_type [additive,multiplicative]\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_composite_true\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_composite_pcs pc1,[pc2,pc3] preconditioner types to compose\n",p);
+  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCComposite preconditioner:\n"); CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_composite_type [additive,multiplicative]\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_composite_true\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_composite_pcs pc1,[pc2,pc3] preconditioner types to compose\n",p);CHKERRQ(ierr);
 
-  (*PetscHelpPrintf)(pc->comm," ---------------------------------\n");
+  ierr = (*PetscHelpPrintf)(pc->comm," ---------------------------------\n");CHKERRQ(ierr);
   while (next) {
     ierr = PCPrintHelp(next->pc); CHKERRQ(ierr);
     next = next->next;
   }
-  (*PetscHelpPrintf)(pc->comm," ---------------------------------\n");
+  ierr = (*PetscHelpPrintf)(pc->comm," ---------------------------------\n");CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -190,8 +190,8 @@ static int PCView_Composite(PC pc,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n");
-    ViewerASCIIPrintf(viewer,"---------------------------------\n");
+    ierr = ViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n");CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -202,7 +202,7 @@ static int PCView_Composite(PC pc,Viewer viewer)
   }
   ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"---------------------------------\n");
+    ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -449,8 +449,8 @@ int PCCreate_Composite(PC pc)
 
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_Composite));
-  MPI_Comm_rank(pc->comm,&rank);
-  MPI_Comm_size(pc->comm,&size);
+  ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   pc->apply              = PCApply_Composite_Additive;
   pc->setup              = PCSetUp_Composite;
   pc->destroy            = PCDestroy_Composite;

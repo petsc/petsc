@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.16 1999/03/30 19:57:35 balay Exp bsmith $";
+static char vcid[] = "$Id: ams.c,v 1.17 1999/03/31 04:03:19 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -155,8 +155,10 @@ Viewer VIEWER_AMS_(MPI_Comm comm)
      duplicated, thus if we stored it there we could not access it the next
      time we called this routin.
   */
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  MPI_Comm_size(comm,&csize);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+  ierr = MPI_Comm_size(comm,&csize);
+  if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   if (size == csize) {
     viewer = VIEWER_AMS_WORLD;
     PetscFunctionReturn(viewer);
@@ -170,7 +172,7 @@ Viewer VIEWER_AMS_(MPI_Comm comm)
   if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   if (!flag) { /* viewer not yet created */
     if (csize == 1) {
-      MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+      ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);if (ierr) PetscFunctionReturn(0);
       sprintf(name,"PETSc_%d",rank);
     } else {
       PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;

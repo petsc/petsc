@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.88 1999/03/10 17:23:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: eisen.c,v 1.89 1999/03/31 22:28:29 curfman Exp bsmith $";
 #endif
 
 /*
@@ -135,10 +135,12 @@ static int PCSetFromOptions_Eisenstat(PC pc)
 #define __FUNC__ "PCPrintHelp_Eisenstat"
 static int PCPrintHelp_Eisenstat(PC pc,char *p)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(pc->comm," Options for PCEisenstat preconditioner:\n");
-  (*PetscHelpPrintf)(pc->comm," %spc_eisenstat_omega omega: relaxation factor (0<omega<2)\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_eisenstat_no_diagonal_scaling\n",p);
+  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCEisenstat preconditioner:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_eisenstat_omega omega: relaxation factor (0<omega<2)\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_eisenstat_no_diagonal_scaling\n",p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -153,7 +155,7 @@ static int PCView_Eisenstat(PC pc,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ViewerASCIIPrintf(viewer,"  Eisenstat: omega = %g\n",eis->omega);
+    ierr = ViewerASCIIPrintf(viewer,"  Eisenstat: omega = %g\n",eis->omega);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

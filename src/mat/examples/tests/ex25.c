@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex25.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex25.c,v 1.5 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatTranspose\n\n";
@@ -15,8 +15,8 @@ int main(int argc,char **args)
   int     i, j, m = 4, n = 4, rank, size, I, J, ierr, Istart, Iend;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
          m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.28 1999/03/23 16:21:35 balay Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.29 1999/03/31 18:40:02 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -53,10 +53,10 @@ static FILE        *queuefile  = PETSC_NULL;
 @*/
 int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 {
-  int rank;
+  int ierr,rank;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
   /* First processor prints immediately to stdout */
   if (!rank) {
@@ -127,10 +127,10 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 @*/
 int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 {
-  int rank;
+  int ierr,rank;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
   /* First processor prints immediately to fp */
   if (!rank) {
@@ -200,8 +200,8 @@ int PetscSynchronizedFlush(MPI_Comm comm)
   FILE       *fd;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(comm,&rank);
-  MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   
   /* First processor waits for messages from all other processors */
   if (!rank) {
@@ -265,10 +265,10 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 @*/
 int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 {
-  int rank;
+  int rank,ierr;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
@@ -314,11 +314,11 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 @*/
 int PetscPrintf(MPI_Comm comm,const char format[],...)
 {
-  int rank;
+  int rank,ierr;
 
   PetscFunctionBegin;
   if (!comm) comm = PETSC_COMM_WORLD;
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
@@ -365,11 +365,11 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
 @*/
 int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 {
-  int rank;
+  int rank,ierr;
 
   PetscFunctionBegin;
   if (!comm) comm = PETSC_COMM_WORLD;
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
@@ -416,6 +416,7 @@ int PetscErrorPrintfDefault(const char format[],...)
 {
   va_list     Argp;
   static  int PetscErrorPrintfCalled = 0;
+  int         ierr;
 
   /*
       This function does not call PetscFunctionBegin and PetscFunctionReturn() because
@@ -431,7 +432,7 @@ int PetscErrorPrintfDefault(const char format[],...)
       different processors, the messages are printed all jumbled up; to try to 
       prevent this we have each processor wait based on their rank
     */
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     if (rank > 8) rank = 8;
 #if defined(CAN_SLEEP_AFTER_ERROR)
     PetscSleep(rank);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.77 1999/01/31 16:03:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: general.c,v 1.78 1999/02/01 21:48:15 curfman Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -98,28 +98,28 @@ int ISView_General(IS is, Viewer viewer)
     int      rank,size;
 
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm); CHKERRQ(ierr);
-    MPI_Comm_rank(comm,&rank);
-    MPI_Comm_size(comm,&size);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (size > 1) {
       if (is->isperm) {
-        PetscSynchronizedFPrintf(comm,fd,"[%d] Index set is permutation\n",rank);
+        ierr = PetscSynchronizedFPrintf(comm,fd,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
       }
-      PetscSynchronizedFPrintf(comm,fd,"[%d] Number of indices in set %d\n",rank,n);
+      ierr = PetscSynchronizedFPrintf(comm,fd,"[%d] Number of indices in set %d\n",rank,n);CHKERRQ(ierr);
       for ( i=0; i<n; i++ ) {
-        PetscSynchronizedFPrintf(comm,fd,"[%d] %d %d\n",rank,i,idx[i]);
+        ierr = PetscSynchronizedFPrintf(comm,fd,"[%d] %d %d\n",rank,i,idx[i]);CHKERRQ(ierr);
       }
     } else {
       if (is->isperm) {
-        PetscSynchronizedFPrintf(comm,fd,"Index set is permutation\n");
+        ierr = PetscSynchronizedFPrintf(comm,fd,"Index set is permutation\n");CHKERRQ(ierr);
       }
-      PetscSynchronizedFPrintf(comm,fd,"Number of indices in set %d\n",n);
+      ierr = PetscSynchronizedFPrintf(comm,fd,"Number of indices in set %d\n",n);CHKERRQ(ierr);
       for ( i=0; i<n; i++ ) {
-        PetscSynchronizedFPrintf(comm,fd,"%d %d\n",i,idx[i]);
+        ierr = PetscSynchronizedFPrintf(comm,fd,"%d %d\n",i,idx[i]);CHKERRQ(ierr);
       }
     }
-    PetscSynchronizedFlush(comm);
+    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.85 1999/03/20 00:40:00 balay Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.86 1999/04/01 23:37:39 balay Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -340,7 +340,7 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
   if (!dir)  dir = " ";
   if (!mess) mess = " ";
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   (*PetscErrorPrintf)("[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
 
   ierr = PetscAttachDebugger();
@@ -372,7 +372,7 @@ int PetscStopForDebugger(void)
   char  program[256],hostname[256];
 
   PetscFunctionBegin;
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
   ierr = PetscGetProgramName(program,256);CHKERRQ(ierr);
   

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: hists.c,v 1.10 1999/01/12 23:16:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: hists.c,v 1.11 1999/03/17 23:21:24 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -279,7 +279,7 @@ int DrawHistDraw(DrawHist hist)
   if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
-  MPI_Comm_rank(hist->comm,&rank);
+  ierr = MPI_Comm_rank(hist->comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
   color = hist->color; 
@@ -295,9 +295,9 @@ int DrawHistDraw(DrawHist hist)
   values    = hist->values;
   binSize   = (xmax - xmin)/numBins;
 
-  ierr = DrawClear(win);                                        CHKERRQ(ierr);
+  ierr = DrawClear(win);CHKERRQ(ierr);
   /* Calculate number of points in each bin */
-  PetscMemzero(bins, numBins * sizeof(double));
+  ierr = PetscMemzero(bins, numBins * sizeof(double));CHKERRQ(ierr);
   maxHeight = 0;
   for (i = 0; i < numBins; i++) {
     binLeft   = xmin + binSize*i;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.39 1998/12/03 03:57:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.40 1999/03/19 21:18:10 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
@@ -19,8 +19,8 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg); if (n < 5) n = 5;
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   if (size < 2) SETERRA(1,0,"Must be run with at least two processors");
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.44 1999/01/04 21:48:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.45 1999/03/17 23:21:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -157,7 +157,7 @@ EXTERN_C_END
 int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;
-  int      rank;
+  int         ierr,rank;
 
   PetscFunctionBegin;
   *r = 0;
@@ -170,7 +170,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
   rr->seed  = 0;
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   srand48(0x12345678+rank);
   *r = rr;
   PetscFunctionReturn(0);
@@ -256,7 +256,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
   rr->seed  = 0;
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   srand(0x12345678+rank);
   *r = rr;
   PetscFunctionReturn(0);
@@ -298,7 +298,8 @@ extern double drand48();
 int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;
-  char   arch[10];
+  char        arch[10];
+  int         ierr;
 
   PetscFunctionBegin;
   *r = 0;
@@ -306,8 +307,8 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   PetscHeaderCreate(rr,_p_PetscRandom,int,PETSCRANDOM_COOKIE,type,"random",comm,PetscRandomDestroy,0);
   PLogObjectCreate(rr);
   *r = rr;
-  PetscGetArchType(arch,10);
-  PetscPrintf(comm,"PetscRandomCreate: Warning: Random number generator not set for machine %s; using fake random numbers.\n",arch);
+  ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"PetscRandomCreate: Warning: Random number generator not set for machine %s; using fake random numbers.\n",arch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
