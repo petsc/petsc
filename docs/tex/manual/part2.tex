@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.338 2000/05/08 15:10:06 balay Exp bsmith $ 
+% $Id: part2.tex,v 1.339 2000/06/23 15:47:52 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4456,10 +4456,10 @@ command line options -vec\_view\_matlab -mat\_view\_matlab. This causes the PETS
 to print the vectors and matrices every time a VecAssemblyXXX() and MatAssemblyXXX()
 is called. \findex{-vec_view_matlab} \findex{-mat_view_matlab} To provide finer control
 over when and what vectors and matrices are dumped one can use the VecView() and 
-MatView() functions with a viewer type of ASCII (see ViewerASCIIOpen(), 
-VIEWER\_STDOUT\_WORLD, VIEWER\_STDOUT\_SELF, or VIEWER\_STDOUT\_(MPI_Comm)). Before calling
-the viewer set the output type with ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,char *name) or
-ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,char *name). \findex{VIEWER_FORMAT_ASCII_MATLAB}
+MatView() functions with a viewer type of ASCII (see {\tt ViewerASCIIOpen()}, 
+{\tt VIEWER\_STDOUT\_WORLD}, {\tt VIEWER\_STDOUT\_SELF}, or {\tt VIEWER\_STDOUT\_(MPI_Comm)}). Before calling
+the viewer set the output type with {\tt ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,char *name)} or
+{\tt ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,char *name)}. \findex{VIEWER_FORMAT_ASCII_MATLAB}
 \begin{verbatim}
   ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_MATLAB,''VecA'');
   VecView(A,VIEWER_STDOUT_WORLD);
@@ -4470,7 +4470,7 @@ ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,char *name). \findex{VIEWER_F
 \section{Sending Data to Running Matlab}
 
 One creates a viewer to Matlab via {\tt ViewerSocketOpen(MPI_Comm,char *machine,int port,Viewer *v)}
-(port is usally set to PETSC\_DEFAULT) and then sends matrices or vectors via
+(port is usally set to {\tt PETSC\_DEFAULT}) and then sends matrices or vectors via
 \begin{verbatim}
   VecView(Vec A,v);
   MatView(Mat B,v);
@@ -4481,6 +4481,28 @@ One can also send arrays or integer arrays via
   ViewerSocketPutReal(v,int m,int n,double *array);
   ViewerSocketPutInt(v,int m,int *array);
 \end{verbatim}
+One may start the Matlab program manually or use the PETSc command
+{\tt PetscStartMatlab(MPI_Comm,char *machine,char *script,FILE **fp);} where machine and script may be {\tt PETSC\_NULL}.
+
+To receive the objects in Matlab you must first make sure that {\tt \${PETSC\_DIR}/src/sys/src/viewer/impls/socket/matlab}
+is in your Matlab path. Use {\tt p = openport;} (or {\tt p = openport(portnumber) if you provided a port number in
+your call to {\tt ViewerSocketOpen()}), then {\tt a = receive(p);} returns the object you have passed from PETSc.
+{\tt receive()} may be called any number of times. You many call {\tt closeport()} to close the connection from Matlab.
+It is also possible to start your PETSc program from Matlab via {\tt launch()}.
+
+\section{Using the Matlab Compute Engine}
+
+One creates access to the Matlab engine via {\tt PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *e);}
+({\tt machine} may be {\tt PETSC\_NULL}).
+One can send objects to Matlab via {\tt PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);} One can get objects
+via {\tt PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj);}. Similarly one can send arrays via
+{\tt PetscMatlabEnginePutArray(PetscMatlabEngine e,int m,int n,Scalar *array,char *name);} and get them back via
+{\tt PetscMatlabEngineGetArray(PetscMatlabEngine e,int m,int n,Scalar *array,char *name);} One cannot use Matlab
+interactively in this mode but you can send Matlab commands via
+{\tt PetscMatlabEngineEvaluate(PetscMatlabEngine,''format'',...);} where {\tt format} has the usual {\tt printf()} format.
+Responses can be returned from Matlab via {\tt PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);} or 
+{\tt PetscMatlabEnginedPrintOutput(PetscMatlabEngine,FILE*)}. There is a short-cut to starting the Matlab engine
+with {\tt MATLAB\_ENGINE\_(MPI\_Comm)}.
 
 
 
