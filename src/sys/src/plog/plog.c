@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.60 1996/01/12 03:52:10 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.61 1996/01/15 15:50:25 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -918,7 +918,7 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
 
 #endif
 
-/*@C 
+/*@
    PetscGetTime - Returns the current time of day in seconds.  
 
    Output Parameter:
