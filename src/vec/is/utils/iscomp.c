@@ -1,14 +1,14 @@
-/*$Id: iscomp.c,v 1.26 2000/05/05 22:14:51 balay Exp bsmith $*/
+/*$Id: iscomp.c,v 1.27 2000/05/23 00:30:07 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISEqual"
+#define __FUNC__ /*<a name="ISEqual"></a>*/"ISEqual"
 /*@C
    ISEqual  - Compares if two index sets have the same set of indices.
 
-   Not Collective (Hmmm, that is a little strange, some processors may return true, others false)
+   Collective on IS
 
    Input Parameters:
 .  is1, is2 - The index sets being compared
@@ -28,12 +28,15 @@
 @*/
 int ISEqual(IS is1,IS is2,PetscTruth *flg)
 {
-  int sz,sz1,sz2,ierr,*ptr1,*ptr2,*a1,*a2;
+  int        sz,sz1,sz2,ierr,*ptr1,*ptr2,*a1,*a2;
+  PetscTruth flag;
+  MPI_Comm   comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is1,IS_COOKIE);
   PetscValidHeaderSpecific(is2,IS_COOKIE);
   PetscValidIntPointer(flg);
+  PetscCheckSameComm(is1,is2);
   
   ierr = ISGetSize(is1,&sz1);CHKERRQ(ierr);
   ierr = ISGetSize(is2,&sz2);CHKERRQ(ierr);
@@ -51,13 +54,16 @@ int ISEqual(IS is1,IS is2,PetscTruth *flg)
 
   ierr = PetscSortInt(sz1,a1);CHKERRQ(ierr);
   ierr = PetscSortInt(sz2,a2);CHKERRQ(ierr);
-  ierr = PetscMemcmp(a1,a2,sz,flg);CHKERRQ(ierr);
+  ierr = PetscMemcmp(a1,a2,sz,&flag);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(is1,&ptr1);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is2,&ptr2);CHKERRQ(ierr);
   
   ierr = PetscFree(a1);CHKERRQ(ierr);
   ierr = PetscFree(a2);CHKERRQ(ierr);
+
+  ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);  
+  ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
   
