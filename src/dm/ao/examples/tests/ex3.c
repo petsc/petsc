@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.5 1997/10/28 14:25:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.6 1997/11/28 16:22:40 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests AOData \n\n";
@@ -10,15 +10,16 @@ static char help[] = "Tests AOData \n\n";
 
 int main(int argc,char **argv)
 {
-  int         n,nglobal, bs = 2, *keys, *data,ierr,flg,rank,size,i,start;
+  int         n = 2,nglobal, bs = 2, *keys, *data,ierr,flg,rank,size,i,start;
   double      *gd;
   AOData      aodata;
   Viewer      binary;
+  BT          ld;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
 
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); n = rank + 2;
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); n = n + rank;
   MPI_Allreduce(&n,&nglobal,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
@@ -26,10 +27,6 @@ int main(int argc,char **argv)
        Create a database with two sets of keys 
   */
   ierr = AODataCreateBasic(PETSC_COMM_WORLD,&aodata);CHKERRA(ierr);
-
-  /*
-       Put two segments in the first key and one in the second
-  */
   ierr = AODataKeyAdd(aodata,"key1",PETSC_DECIDE,nglobal); CHKERRA(ierr);
   ierr = AODataKeyAdd(aodata,"key2",PETSC_DECIDE,nglobal); CHKERRA(ierr);
 
@@ -71,18 +68,30 @@ int main(int argc,char **argv)
   ierr = AODataSegmentAdd(aodata,"key1","seg2",bs,n,keys,gd,PETSC_DOUBLE);CHKERRA(ierr); 
 
   /*
+      Allocate data for first key and third segment 
+  */
+  bs   = 1;
+  BTCreate(n,ld);
+  for ( i=0; i<n; i++ ) {
+    if (i % 2) BTSet(ld,i);
+  }
+  ierr = AODataSegmentAdd(aodata,"key1","seg3",bs,n,keys,ld,PETSC_LOGICAL);CHKERRA(ierr); 
+
+  /*
        Use same data for second key and first segment 
   */
+  bs   = 3;
   ierr = AODataSegmentAdd(aodata,"key2","seg1",bs,n,keys,gd,PETSC_DOUBLE);CHKERRA(ierr); 
   PetscFree(gd);
   PetscFree(keys);
+
+  ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /*
         Save the database to a file
   */
   ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"dataoutput",BINARY_CREATE,&binary);CHKERRA(ierr);
   ierr = AODataView(aodata,binary);CHKERRA(ierr);
-  ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = ViewerDestroy(binary); CHKERRA(ierr);
  
   ierr = AODataDestroy(aodata); CHKERRA(ierr);
