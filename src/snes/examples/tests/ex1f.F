@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.14 1997/05/04 00:04:20 curfman Exp curfman $";
+C "$Id: ex4f.F,v 1.15 1997/05/05 04:09:55 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -240,7 +240,7 @@ C  X - vector
 C  ierr - error code 
 C
 C  Notes:
-C  This routine serves as a wrapper to the lower-level routine
+C  This routine serves as a wrapper for the lower-level routine
 C  "ApplicationInitialGuess", where the actual computations are 
 C  done using standard Fortran-style computations over a 2-dim array.
 C  This routine merely accesses the local vector data via VecGetArray()
@@ -359,7 +359,7 @@ C  Output Parameter:
 C  F     - vector with newly computed function
 C
 C  Notes:
-C  This routine serves as a wrapper to the lower-level routine
+C  This routine serves as a wrapper for the lower-level routine
 C  "ApplicationFunction", where the actual computations are done
 C  using standard Fortran-style computations over a 2-dim array.
 C  This routine merely accesses the local vector data via VecGetArray()

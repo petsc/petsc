@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.25 1997/05/05 04:09:49 curfman Exp curfman $";
+C "$Id: ex5f.F,v 1.26 1997/05/05 04:12:56 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -264,7 +264,7 @@ C  Output Parameter:
 C  X - vector
 C
 C  Notes:
-C  This routine serves as a wrapper to the lower-level routine
+C  This routine serves as a wrapper for the lower-level routine
 C  "ApplicationInitialGuess", where the actual computations are 
 C  done using standard Fortran-style computations over a 2-dim array.
 C  This routine merely handles ghost point scatters and accesses
@@ -380,7 +380,7 @@ C  Output Parameter:
 C  F - function vector
 C
 C  Notes:
-C  This routine serves as a wrapper to the lower-level routine
+C  This routine serves as a wrapper for the lower-level routine
 C  "ApplicationFunction", where the actual computations are done
 C  using standard Fortran-style computations over a 2-dim array.
 C  This routine merely handles ghost point scatters and accesses
