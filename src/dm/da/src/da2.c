@@ -1392,18 +1392,21 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
+  PetscADResetIndep();
+
   /* get space for derivative objects.  */
   ierr = DAGetAdicArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
   ierr = DAGetAdicArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
   ierr = VecGetArray(vu,&ustart);CHKERRQ(ierr);
-  PetscADSetValArray(((DERIV_TYPE*)ad_ustart),gtdof,ustart);
-  ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
-
-  PetscADResetIndep();
   ierr = DAGetColoring(da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
-  PetscADSetIndepArrayColored(ad_ustart,gtdof,iscoloring->colors);
-  PetscADIncrementTotalGradSize(iscoloring->n);
+
+  /*  PetscADSetValArray(((DERIV_TYPE*)ad_ustart),gtdof,ustart);
+      PetscADSetIndepArrayColored(ad_ustart,gtdof,iscoloring->colors); */
+  PetscADSetValueAndColor(ad_ustart,gtdof,iscoloring->colors,ustart);
+
+  ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+  PetscADIncrementTotalGradSize(iscoloring->n);
   PetscADSetIndepDone();
 
   DALogEventBegin(DA_LocalADFunction,0,0,0,0);

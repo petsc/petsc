@@ -3047,22 +3047,20 @@ int MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;  
   int         m = A->m,*ii = a->i,*jj = a->j,nz,i,*color,j,nlen;
-  PetscScalar *v = a->a,*values;
-  char        *cadvalues = (char *)advalues;
+  PetscScalar *v = a->a,*values = ((PetscScalar*)advalues)+1;
 
   PetscFunctionBegin;
   if (!a->coloring) SETERRQ(1,"Coloring not set for matrix");
-  nlen  = PetscADGetDerivTypeSize();
+  nlen  = PetscADGetDerivTypeSize()/sizeof(PetscScalar);
   color = a->coloring->colors;
   /* loop over rows */
   for (i=0; i<m; i++) {
     nz = ii[i+1] - ii[i];
     /* loop over columns putting computed value into matrix */
-    values = PetscADGetGradArray(cadvalues);
     for (j=0; j<nz; j++) {
       *v++ = values[color[*jj++]];
     }
-    cadvalues += nlen; /* jump to next row of derivatives */
+    values += nlen; /* jump to next row of derivatives */
   }
   PetscFunctionReturn(0);
 }

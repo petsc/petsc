@@ -106,6 +106,9 @@ int DACreateLocalVector(DA da,Vec* g)
    Level: beginner
 
    Note:
+   The vector values are NOT initialized and may have garbage in them, so you may need
+   to zero them.
+
    The output parameter, g, is a regular PETSc vector that should be returned with 
    DARestoreLocalVector() DO NOT call VecDestroy() on it.
 
@@ -203,6 +206,9 @@ int DARestoreLocalVector(DA da,Vec* g)
    Level: beginner
 
    Note:
+   The vector values are NOT initialized and may have garbage in them, so you may need
+   to zero them.
+
    The output parameter, g, is a regular PETSc vector that should be returned with 
    DARestoreGlobalVector() DO NOT call VecDestroy() on it.
 
@@ -305,7 +311,11 @@ EXTERN_C_END
 .    array_start - actual start of 1d array of all values that adiC can access directly (may be null)
 -    tdof - total number of degrees of freedom represented in array_start (may be null)
 
-     Notes: Returns the same type of object as the DAVecGetArray() except its elements are 
+     Notes:
+       The vector values are NOT initialized and may have garbage in them, so you may need
+       to zero them.
+
+       Returns the same type of object as the DAVecGetArray() except its elements are 
            derivative types instead of PetscScalars
 
      Level: advanced
@@ -365,7 +375,6 @@ int DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int *
       itdof = xm;
 
       ierr  = PetscMalloc(xm*deriv_type_size,&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*deriv_type_size);CHKERRQ(ierr);
 
       ptr   = (void*)(iarray_start - xs*deriv_type_size);
       *iptr = (void*)ptr; 
@@ -375,7 +384,6 @@ int DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int *
       itdof = xm*ym;
 
       ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*deriv_type_size,&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*ym*deriv_type_size);CHKERRQ(ierr);
 
       ptr  = (void**)(iarray_start + xm*ym*deriv_type_size - ys*sizeof(void*));
       for(j=ys;j<ys+ym;j++) {
@@ -388,7 +396,6 @@ int DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int *
       itdof = xm*ym*zm;
 
       ierr  = PetscMalloc((zm+1)*sizeof(void **)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*deriv_type_size,&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*ym*zm*deriv_type_size);CHKERRQ(ierr);
 
       ptr  = (void***)(iarray_start + xm*ym*zm*deriv_type_size - zs*sizeof(void*));
       bptr = (void**)(iarray_start + xm*ym*zm*deriv_type_size + zm*sizeof(void**));
@@ -532,7 +539,10 @@ int ad_DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
     Output Parameters:
 .    ptr - array data structured
 
-     Level: advanced
+    Note:  The vector values are NOT initialized and may have garbage in them, so you may need
+           to zero them.
+
+  Level: advanced
 
 .seealso: DARestoreArray(), DAGetAdicArray()
 
@@ -585,7 +595,6 @@ int DAGetArray(DA da,PetscTruth ghosted,void **iptr)
       void *ptr;
 
       ierr  = PetscMalloc(xm*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*sizeof(PetscScalar));CHKERRQ(ierr);
 
       ptr   = (void*)(iarray_start - xs*sizeof(PetscScalar));
       *iptr = (void*)ptr; 
@@ -594,7 +603,6 @@ int DAGetArray(DA da,PetscTruth ghosted,void **iptr)
       void **ptr;
 
       ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*ym*sizeof(PetscScalar));CHKERRQ(ierr);
 
       ptr  = (void**)(iarray_start + xm*ym*sizeof(PetscScalar) - ys*sizeof(void*));
       for(j=ys;j<ys+ym;j++) {
@@ -606,7 +614,6 @@ int DAGetArray(DA da,PetscTruth ghosted,void **iptr)
       void ***ptr,**bptr;
 
       ierr  = PetscMalloc((zm+1)*sizeof(void **)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*ym*zm*sizeof(PetscScalar));CHKERRQ(ierr);
 
       ptr  = (void***)(iarray_start + xm*ym*zm*sizeof(PetscScalar) - zs*sizeof(void*));
       bptr = (void**)(iarray_start + xm*ym*zm*sizeof(PetscScalar) + zm*sizeof(void**));
@@ -720,6 +727,9 @@ int DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 -    tdof - total number of degrees of freedom represented in array_start (may be null)
 
      Notes: 
+     The vector values are NOT initialized and may have garbage in them, so you may need
+     to zero them.
+
      This routine returns the same type of object as the DAVecGetArray(), except its
      elements are derivative types instead of PetscScalars.
 
@@ -779,7 +789,6 @@ int DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int
       itdof = xm;
 
       ierr  = PetscMalloc(xm*2*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*2*sizeof(PetscScalar));CHKERRQ(ierr);
 
       ptr   = (void*)(iarray_start - xs*2*sizeof(PetscScalar));
       *iptr = (void*)ptr; 
@@ -789,7 +798,6 @@ int DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int
       itdof = xm*ym;
 
       ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*2*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*ym*2*sizeof(PetscScalar));CHKERRQ(ierr);
 
       ptr  = (void**)(iarray_start + xm*ym*2*sizeof(PetscScalar) - ys*sizeof(void*));
       for(j=ys;j<ys+ym;j++) {
@@ -802,7 +810,6 @@ int DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int
       itdof = xm*ym*zm;
 
       ierr  = PetscMalloc((zm+1)*sizeof(void **)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*2*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*ym*zm*2*sizeof(PetscScalar));CHKERRQ(ierr);
 
       ptr  = (void***)(iarray_start + xm*ym*zm*2*sizeof(PetscScalar) - zs*sizeof(void*));
       bptr = (void**)(iarray_start + xm*ym*zm*2*sizeof(PetscScalar) + zm*sizeof(void**));
