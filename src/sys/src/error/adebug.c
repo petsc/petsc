@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.27 1995/09/30 19:27:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.28 1995/10/01 21:51:51 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -258,8 +258,8 @@ $    PetscAbortErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscDefaultErrorHandler(), 
            PetscAbortErrorHandler()
 @*/
-int PetscAttachDebuggerErrorHandler(int line,char* dir,char* file,char* mess,
-                                    int num,void *ctx)
+int PetscAttachDebuggerErrorHandler(int line,char* dir,char* file,int num,char* mess,
+                                    void *ctx)
 {
   int ierr;
   fprintf(stderr,"Error %s at %d in %s (aborting)\n",mess,line,file);
