@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.160 1998/10/24 02:25:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.161 1998/11/20 15:30:34 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -550,10 +550,6 @@ static int SNESPublish_Petsc(PetscObject object)
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Residual",&v->norm,1,AMS_DOUBLE,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
-  
-  /* publish children of object */
-  ierr = PetscObjectPublish((PetscObject)v->sles);CHKERRQ(ierr);
-
 #else
   PetscFunctionBegin;
 #endif
