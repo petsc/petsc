@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.28 2000/09/25 15:43:33 balay Exp bsmith $*/
+/*$Id: ex74.c,v 1.29 2000/09/28 21:11:49 bsmith Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -251,6 +251,16 @@ int main(int argc,char **args)
 
   ierr = MatScale(&alpha,A);CHKERRA(ierr);
   ierr = MatScale(&alpha,sA);CHKERRA(ierr);
+
+  /* Test MatGetRowMax() */
+  ierr = MatGetRowMax(A,s1);CHKERRA(ierr);
+  ierr = MatGetRowMax(sA,s2);CHKERRA(ierr); 
+  ierr = VecNorm(s1,NORM_1,&norm1);CHKERRA(ierr);
+  ierr = VecNorm(s2,NORM_1,&norm2);CHKERRA(ierr);
+  norm1 -= norm2;
+  if (norm1<-tol || norm1>tol) { 
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetRowMax() \n");CHKERRA(ierr);
+  } 
 
   /* Test MatMult(), MatMultAdd() */
   for (i=0; i<40; i++) { 
