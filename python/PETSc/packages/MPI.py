@@ -114,6 +114,16 @@ class Configure(config.base.Configure):
     if 'FC' in self.framework.argDB:
       self.pushLanguage('FC')
       self.sourceExtension = '.F'
+      if not self.checkMPILink('', '          integer comm,size,ierr\n          call MPI_Comm_size(comm, size, ierr)\n'):
+        if not self.checkMPILink('', '          include \'mpif.h\'\n          integer comm,size,ierr\n          call MPI_Comm_size(comm, size, ierr)\n'):
+          self.framework.log.write('MPI cannot link Fortran using MPI_Comm_size(), but can link C, which indicates a problem with the MPI installation\nRun with -with-fc=0 if you do not wish to use Fortran')
+          self.popLanguage()
+          return 0
+      if not self.checkMPILink('', '          call MPI_Init(ierr)\n'):
+        if not self.checkMPILink('', '          include \'mpif.h\'\n          call MPI_Init(ierr)\n'):
+          self.framework.log.write('MPI cannot link Fortran using MPI_Init((), but can link C, which indicates a problem with the MPI installation\nRun with -with-fc=0 if you do not wish to use Fortran')
+          self.popLanguage()
+          return 0
       if not self.checkMPILink('', '          include \'mpif.h\'\n          call MPI_Init(ierr)\n'):
         self.framework.log.write('MPI cannot locate Fortran includes, but can find the MPI libraries\n')
         if not self.include:
@@ -127,14 +137,6 @@ class Configure(config.base.Configure):
           self.popLanguage()
           self.framework.argDB['CPPFLAGS'] = savetmp
         return 0  
-      if not self.checkMPILink('', '          integer comm,size,ierr\n          call MPI_Comm_size(comm, size, ierr)\n'):
-        self.framework.log.write('MPI cannot link Fortran using MPI_Comm_size(), but can link C, which indicates a problem with the MPI installation\nRun with -with-fc=0 if you do not wish to use Fortran')
-        self.popLanguage()
-        return 0
-      if not self.checkMPILink('', '          call MPI_Init(ierr)\n'):
-        self.framework.log.write('MPI cannot link Fortran using MPI_Init((), but can link C, which indicates a problem with the MPI installation\nRun with -with-fc=0 if you do not wish to use Fortran')
-        self.popLanguage()
-        return 0
       # Also do Satish check for broken mpif90 (MPICH)
       # 1) bug.F
       #       program main
