@@ -64,6 +64,21 @@ static int PetscDrawRectangle_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRe
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__
+#define __FUNC__ "PetscDrawEllipse_X"
+static int PetscDrawEllipse_X(PetscDraw Win, double x, double y, double a, double b, int c)
+{
+  PetscDraw_X* XiWin = (PetscDraw_X*) Win->data;
+  int          xA, yA, w, h;
+
+  PetscFunctionBegin;
+  XiSetColor(XiWin, c);
+  xA = XTRANS(Win, XiWin, x - a/2.0); w = XTRANS(Win, XiWin, x + a/2.0) - xA;
+  yA = YTRANS(Win, XiWin, y + b/2.0); h = YTRANS(Win, XiWin, y - b/2.0) - yA;
+  XFillArc(XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, xA, yA, w, h, 0, 23040);
+  PetscFunctionReturn(0);
+}
+
 EXTERN int PetscDrawInterpolatedTriangle_X(PetscDraw_X*,int,int,int,int,int,int,int,int,int);
 
 #undef __FUNCT__  
@@ -502,6 +517,7 @@ static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
                                  PetscDrawSynchronizedFlush_X,
                                  PetscDrawRectangle_X,
                                  PetscDrawTriangle_X,
+                                 PetscDrawEllipse_X,
                                  PetscDrawGetMouseButton_X,
                                  PetscDrawPause_X,
                                  PetscDrawSynchronizedClear_X,

@@ -25,6 +25,7 @@ struct _PetscDrawOps {
   int (*synchronizedflush)(PetscDraw);
   int (*rectangle)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int,int);
   int (*triangle)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int);
+  int (*ellipse)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
   int (*getmousebutton)(PetscDraw,PetscDrawButton*,PetscReal *,PetscReal *,PetscReal*,PetscReal*);
   int (*pause)(PetscDraw);
   int (*synchronizedclear)(PetscDraw);
