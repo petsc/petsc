@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.18 1995/06/18 16:26:06 bsmith Exp curfman $ */
+/* $Id: ksp.h,v 1.19 1995/07/20 15:03:05 curfman Exp curfman $ */
 
 #ifndef __KSP_PACKAGE
 #define __KSP_PACKAGE
@@ -27,14 +27,11 @@ extern int KSPRegisterDestroy();
 extern int KSPRegister(KSPMethod,char *,int (*)(KSP));
 
 extern int KSPGetMethodName(KSPMethod,char **);
-extern int KSPSetMaxIterations(KSP,int);
 extern int KSPSetRightPreconditioner(KSP);
 extern int KSPGetPreconditionerSide(KSP,int *);
 extern int KSPGetMethodFromContext(KSP,KSPMethod *);
-extern int KSPSetRelativeTolerance(KSP,double);
-extern int KSPSetAbsoluteTolerance(KSP,double);
-extern int KSPSetDivergenceTolerance(KSP,double);
 extern int KSPGetTolerances(KSP,double*,double*,double*,int*);
+extern int KSPSetTolerances(KSP,double,double,double,int);
 extern int KSPSetCalculateResidual(KSP,PetscTruth);
 extern int KSPSetUsePreconditionedResidual(KSP);
 extern int KSPSetInitialGuessNonzero(KSP);

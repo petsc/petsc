@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.26 1995/07/20 04:11:54 curfman Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.27 1995/07/20 15:32:38 curfman Exp curfman $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -190,7 +190,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
   KSP ksp;
   for ( i=0; i<mg[0]->level; i++ ) {  
      SLESGetKSP(mg[i]->smoothd,&ksp);
-     KSPSetMaxIterations(ksp,n);
+     KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
   }
   return 0;
 }
@@ -218,7 +218,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
   KSP ksp;
   for ( i=0; i<mg[0]->level; i++ ) {  
      SLESGetKSP(mg[i]->smoothu,&ksp);
-     KSPSetMaxIterations(ksp,n);
+     KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
   }
   return 0;
 }
