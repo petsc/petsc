@@ -1,5 +1,5 @@
 !
-!  $Id: mat.h,v 1.53 1999/04/02 16:59:17 balay Exp bsmith $;
+!  $Id: mat.h,v 1.54 1999/04/02 17:01:22 bsmith Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -13,12 +13,12 @@
 #define MatType             integer
 #define MatOption           integer 
 #define MatAssemblyType     integer
-#define MatOrderingType     integer
+#define MatOrderingType     character*(80)
 #define MatSORType          integer
 #define MatInfoType         integer
 #define MatReuse            integer
 #define MatOperation        integer
-#define MatColoringType     integer
+#define MatColoringType     character*(80)
 #define MatInfo             double precision
 #define MatILUInfo          double precision
 #define MatDuplicateOption  integer      
@@ -27,6 +27,18 @@
 
 #define MATPARTITIONING_CURRENT  'current'
 #define MATPARTITIONING_PARMETIS 'parmetis'
+
+#define MATCOLORING_NATURAL 'natural'
+#define MATCOLORING_SL      'sl'
+#define MATCOLORING_LF      'lf'
+#define MATCOLORING_ID      'id'
+
+#define MATORDERING_NATURAL   'natural'
+#define MATORDERING_ND        'nd'
+#define MATORDERING_1WD       '1wd'
+#define MATORDERING_RCM       'rcm'
+#define MATORDERING_QMD       'qmd'
+#define MATORDERING_ROWLENGTH 'rowlength'
 
 #endif
 !
@@ -126,17 +138,6 @@
       integer MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX
 
       parameter (MAT_INITIAL_MATRIX=0, MAT_REUSE_MATRIX=1)
-!
-!  Matrix orderings
-!
-      integer ORDER_NATURAL,ORDER_ND,ORDER_1WD,ORDER_RCM
-      integer ORDER_QMD,ORDER_ROWLENGTH,ORDER_FLOW,ORDER_NEW
-
-      parameter (ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2)
-      parameter (ORDER_RCM=3,ORDER_QMD=4,ORDER_ROWLENGTH=5)
-      parameter (ORDER_FLOW=6, ORDER_NEW=7)
-
-
 
 !
 !  MatInfoType
@@ -176,14 +177,6 @@
       parameter (SOR_LOCAL_SYMMETRIC_SWEEP=12)
       parameter (SOR_ZERO_INITIAL_GUESS=16,SOR_EISENSTAT=32)
       parameter (SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128)
-!
-!     MatColoringType
-!
-      integer COLORING_NATURAL, COLORING_SL, COLORING_LF, COLORING_ID
-      integer COLORING_NEW
-      
-      parameter (COLORING_NATURAL=0, COLORING_SL=1, COLORING_LF=2)
-      parameter (COLORING_ID=3, COLORING_NEW=4)
 !
 !  MatOperation
 !

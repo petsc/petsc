@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.14 1999/04/01 16:45:35 bsmith Exp bsmith $";
+!    "$Id: ex14f.F,v 1.15 1999/04/02 18:50:45 bsmith Exp bsmith $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -76,7 +76,7 @@
       Vec      X, Y, F
       Mat      J, B
       integer  Nx, Ny, flg, N, ierr
-      integer  usemf
+      integer  usemf,nooutput
       common   /mycommon/ B
 !
 !      user() containes PETSc objects (vectors) hence we need to 
@@ -116,6 +116,9 @@
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',user(2),flg,ierr)
       N = user(1)*user(2)
 
+      nooutput = 0
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-no_output',nooutput,    &
+     &                    flg,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create linear solver context
@@ -203,7 +206,9 @@
        call ComputeFunction(user,X,F,ierr)
        call VecNorm(F,NORM_2,fnorm,ierr)
        ttol = fnorm*rtol
-       print*, 'Initial function norm ',fnorm
+       if (nooutput .ne. 1) then
+         print*, 'Initial function norm ',fnorm
+       endif
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Solve nonlinear system with a user-defined method
@@ -241,25 +246,32 @@
          call VecAYPX(mone,X,Y,ierr)
          call VecCopy(Y,X,ierr)
          call VecNorm(X,NORM_2,xnorm,ierr)
-         print*,'linear solve iterations = ',lin_its,' xnorm = ',       &
-     &        xnorm,' ynorm = ',ynorm
+         if (nooutput .ne. 1) then
+           print*,'linear solve iterations = ',lin_its,' xnorm = ',     &
+     &         xnorm,' ynorm = ',ynorm
+         endif
 
 !  Evaluate nonlinear function at new location
 
          call ComputeFunction(user,X,F,ierr)
          call VecNorm(F,NORM_2,fnorm,ierr)
-         print*, 'Iteration ',i+1,' function norm',fnorm
+         if (nooutput .ne. 1) then
+           print*, 'Iteration ',i+1,' function norm',fnorm
+         endif
 
 !  Test for convergence
 
-       if (fnorm .le. ttol) then 
-         print*,'Converged: function norm ',fnorm,' tolerance ',ttol
+       if (fnorm .le. ttol) then
+         if ( nooutput .ne. 1) then
+           print*,'Converged: function norm ',fnorm,' tolerance ',ttol
+         endif
          goto 20
        endif
  10   continue
  20   continue
 
-      print*, 'Number of Newton iterations = ',i+1
+      write(6,100) i+1
+ 100  format('Number of Newton iterations =',I2)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Free work space.  All PETSc objects should be destroyed when they
