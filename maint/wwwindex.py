@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.11 1999/02/01 18:14:35 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.12 1999/02/01 18:18:05 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -123,8 +123,8 @@ def createtable(dirname,levels):
       for filename in split(strip(buf),'\n'):
             level = modifylevel(filename)
             #if not level: continue
-            if level in levels:
-                  table[levels.index(level)].append(filename)
+            if lower(level) in levels:
+                  table[levels.index(lower(level))].append(filename)
             else:
                   print 'Error! Unknown level \''+ level + '\' in', filename
       return table
