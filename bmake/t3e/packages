@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.24 2000/02/02 20:07:23 bsmith Exp balay $ 
+# $Id: base.site,v 1.25 2001/03/26 19:11:27 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -12,7 +12,7 @@
 #
 BLAS_LIB       = 
 LAPACK_LIB     = 
-PETSC_HAVE_BLAS = -DPETSC_HAVE_CRAYT3D_BLAS
+PETSC_HAVE_BLAS = -DPETSC_HAVE_CRAYBLAS
 
 # Location of MPI (Message Passing Interface) software
 #
