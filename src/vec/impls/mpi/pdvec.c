@@ -492,8 +492,9 @@ int VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
 #define __FUNCT__ "VecView_MPI_HDF4"
 int VecView_MPI_HDF4(Vec xin,PetscViewer viewer)
 {
-  int ierr, bs, dims[1];
 #if defined(PETSC_HAVE_HDF4)  
+  int ierr, bs, dims[1];
+
   bs = xin->bs > 0 ? xin->bs : 1;
   dims[0] = xin->N / bs;
   ierr = VecView_MPI_HDF4_Ex(xin, viewer, 1, dims); CHKERRQ(ierr);
