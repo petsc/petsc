@@ -6,6 +6,7 @@
 #include "src/inline/ilu.h"
 #include "include/petscis.h"
 
+#if !defined(PETSC_USE_COMPLEX)
 /* 
   input:
    A -- original matrix in SEQSBAIJ format
@@ -35,6 +36,7 @@ int MatGetInertia_SeqSBAIJ(Mat A,Mat *F,int *nneig,int *nzero,int *npos)
   
   PetscFunctionReturn(0);
 }
+#endif /* !defined(PETSC_USE_COMPLEX) */
 
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
