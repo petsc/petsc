@@ -37,14 +37,15 @@ int DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   DIFFPAR_MORE *neP;
   Vec          w;
   PetscRandom  rctx;  /* random number generator context */
-  int          ierr, flg;
+  int          ierr;
+  PetscTruth   flg;
   char         noise_file[128];
 
   PetscFunctionBegin;
 
-  neP  = PetscNew(DIFFPAR_MORE);CHKPTRQ(neP);
+  ierr = PetscNew(DIFFPAR_MORE,&neP);CHKERRQ(ierr);
   ierr = PetscMemzero(neP,sizeof(DIFFPAR_MORE));CHKERRQ(ierr);
-  PLogObjectMemory(snes,sizeof(DIFFPAR_MORE));
+  PetscLogObjectMemory(snes,sizeof(DIFFPAR_MORE));
   
   neP->function_count = 0;
   neP->fnoise_min     = 1.0e-20;
@@ -63,11 +64,11 @@ int DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
 
   /* Open output file */
-  ierr = OptionsGetString(snes->prefix,"-snes_mf_noise_file",noise_file,128,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(snes->prefix,"-snes_mf_noise_file",noise_file,128,&flg);CHKERRQ(ierr);
   if (flg) neP->fp = fopen(noise_file,"w"); 
   else     neP->fp = fopen("noise.out","w"); 
-  if (!neP->fp) SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file");
-  PLogInfo(snes,"DiffParameterCreate_More: Creating Jorge's differencing parameter context\n");
+  if (!neP->fp) SETERRQ(PETSC_ERR_FILE_OPEN,"Cannot open file");
+  PetscLogInfo(snes,"DiffParameterCreate_More: Creating Jorge's differencing parameter context\n");
 
   *outneP = neP;
   PetscFunctionReturn(0);
@@ -99,9 +100,10 @@ int DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double *fnoise,do
   double      f, rerrf, fder2;
   int         iter, k, i, j, ierr, info;
   int         nf = 7;         /* number of function evaluations */
-  int         noise_test, fcount;
+  int         fcount;
   MPI_Comm    comm = snes->comm;
   FILE        *fp;
+  PetscTruth  noise_test;
 
   PetscFunctionBegin;
   /* Call to SNESSetUp() just to set data structures in SNES context */
@@ -211,7 +213,7 @@ int DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double *fnoise,do
 
   /* For now, compute h **each** MV Mult!! */
   /*
-  ierr = OptionsHasName(PETSC_NULL,"-matrix_free_jorge_each_mvp",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-matrix_free_jorge_each_mvp",&flg);CHKERRQ(ierr);
   if (!flg) {
     Mat mat;
     ierr = SNESGetJacobian(snes,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -219,11 +221,11 @@ int DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double *fnoise,do
   }
   */
   fcount = neP->function_count - fcount;
-  PLogInfo(snes,"DiffParameterCompute_More: fct_now = %d, fct_cum = %d, rerrf=%g, sqrt(noise)=%g, h_more=%g\n",
+  PetscLogInfo(snes,"DiffParameterCompute_More: fct_now = %d, fct_cum = %d, rerrf=%g, sqrt(noise)=%g, h_more=%g\n",
            fcount,neP->function_count,rerrf,sqrt(*fnoise),*hopt);
 
 
-  ierr = OptionsHasName(PETSC_NULL,"-noise_test",&noise_test);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-noise_test",&noise_test);CHKERRQ(ierr);
   if (noise_test) {
     ierr = JacMatMultCompare(snes,x,p,*hopt);CHKERRQ(ierr); 
   }
@@ -235,23 +237,24 @@ int DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double *fnoise,do
 int JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
 {
   Vec          yy1, yy2; /* work vectors */
-  Viewer       view2;    /* viewer */
+  PetscViewer  view2;    /* viewer */
   Mat          J;        /* analytic Jacobian (set as preconditioner matrix) */
   Mat          Jmf;      /* matrix-free Jacobian (set as true system matrix) */
   double       h;        /* differencing parameter */
   Vec          f;
   MatStructure sparsity = DIFFERENT_NONZERO_PATTERN;
   PetscScalar  alpha, yy1n, yy2n, enorm;
-  int          i, ierr, printv;
+  int          i, ierr;
+  PetscTruth   printv;
   char         filename[32];
   MPI_Comm     comm = snes->comm;
 
   PetscFunctionBegin;
 
   /* Compute function and analytic Jacobian at x */
-  ierr = SNESGetJacobian(snes,&Jmf,&J,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,&Jmf,&J,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = SNESComputeJacobian(snes,x,&Jmf,&J,&sparsity);CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes,&f,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,&f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
 
   /* Duplicate work vectors */
@@ -263,12 +266,12 @@ int JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   ierr = VecNorm(yy1,NORM_2,&yy1n);CHKERRQ(ierr);
 
   /* View product vector if desired */
-  ierr = OptionsHasName(PETSC_NULL,"-print_vecs",&printv);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-print_vecs",&printv);CHKERRQ(ierr);
   if (printv) {
-    ierr = ViewerASCIIOpen(comm,"y1.out",&view2);CHKERRQ(ierr);
-    ierr = ViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIOpen(comm,"y1.out",&view2);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
     ierr = VecView(yy1,view2);CHKERRQ(ierr);
-    ierr = ViewerDestroy(view2);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(view2);CHKERRQ(ierr);
   }
 
   /* Test Jacobian-vector product computation */
@@ -285,10 +288,10 @@ int JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
     /* View product vector if desired */
     if (printv) {
       sprintf(filename,"y2.%d.out",i);
-      ierr = ViewerASCIIOpen(comm,filename,&view2);CHKERRQ(ierr);
-      ierr = ViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIOpen(comm,filename,&view2);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
       ierr = VecView(yy2,view2);CHKERRQ(ierr);
-      ierr = ViewerDestroy(view2);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(view2);CHKERRQ(ierr);
     }
 
     /* Compute relative error */

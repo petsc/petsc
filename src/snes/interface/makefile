@@ -11,7 +11,7 @@ OBJSC    = snesregi.o snes.o snesj.o snesut.o snesj2.o dlregis.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-DIRS     = 
+DIRS     = noise
 EDIRS    = noise
 LOCDIR   = src/snes/interface/
 

@@ -95,7 +95,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
      with particular objects, hence alleviating the more general problem. */
-  ierr = PetscLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MultMatrixFree,a,y,0,0);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
@@ -168,7 +168,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   ierr = VecScale(&hs,y);CHKERRQ(ierr);
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr = PetscLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultMatrixFree,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -244,8 +244,8 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   mfctx->compute_err_iter = -1;
   ierr = PetscOptionsGetReal(snes->prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(snes->prefix,"-snes_mf_umin",&mfctx->umin,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_jorge",&mfctx->jorge);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_compute_err",&mfctx->compute_err);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_jorge",(PetscTruth*)&mfctx->jorge);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_compute_err",(PetscTruth*)&mfctx->compute_err);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(snes->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);
   if (flg) {
     if (mfctx->compute_err_freq < 0) mfctx->compute_err_freq = 0;
