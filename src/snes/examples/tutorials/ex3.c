@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.73 2001/01/17 22:26:26 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.74 2001/01/23 20:57:12 balay Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -52,7 +52,6 @@ int StepCheck(SNES,void *,Vec,PetscTruth *);
 typedef struct {
    DA     da;     /* distributed array */
    Vec    F;      /* right-hand-side of PDE */
-   Vec    xlocal; /* local work vector */
    int    rank;   /* rank of processor */
    int    size;   /* size of communicator */
    double h;      /* mesh spacing */
@@ -116,7 +115,6 @@ int main(int argc,char **argv)
      vectors that are the same types
   */
   ierr = DACreateGlobalVector(ctx.da,&x);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(ctx.da,&ctx.xlocal);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&F);CHKERRQ(ierr); ctx.F = F;
   ierr = VecDuplicate(x,&U);CHKERRQ(ierr); 
@@ -206,24 +204,24 @@ int main(int argc,char **argv)
   /*
      Get pointers to vector data
   */
-  ierr = VecGetArray(F,&FF);CHKERRQ(ierr);
-  ierr = VecGetArray(U,&UU);CHKERRQ(ierr);
+  ierr = DAVecGetArray(ctx.da,F,(void**)&FF);CHKERRQ(ierr);
+  ierr = DAVecGetArray(ctx.da,U,(void**)&UU);CHKERRQ(ierr);
 
   /*
      Compute local vector entries
   */
   xp = ctx.h*xs;
-  for (i=0; i<xm; i++) {
+  for (i=xs; i<xs+xm; i++) {
     FF[i] = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     UU[i] = xp*xp*xp;
-    xp += ctx.h;
+    xp   += ctx.h;
   }
 
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(F,&FF);CHKERRQ(ierr);
-  ierr = VecRestoreArray(U,&UU);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(ctx.da,F,(void**)&FF);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(ctx.da,U,(void**)&UU);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -257,7 +255,6 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(monP.viewer);CHKERRQ(ierr);
   if (step_check) {ierr = VecDestroy(checkP.last_step);CHKERRQ(ierr);}
   ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(ctx.xlocal);CHKERRQ(ierr);
   ierr = VecDestroy(r);CHKERRQ(ierr);
   ierr = VecDestroy(U);CHKERRQ(ierr);
   ierr = VecDestroy(F);CHKERRQ(ierr);
@@ -308,8 +305,10 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   DA             da = user->da;
   Scalar         *xx,*ff,*FF,d;
   int            i,ierr,N,xs,xm,gxs,gxm,xsi,xei,ilg,ilr;
-  Vec            xlocal = user->xlocal;
+  Vec            xlocal;
 
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&xlocal);CHKERRQ(ierr);
   /*
      Scatter ghost points to local vector, using the 2-step process
         DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
@@ -375,7 +374,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   ierr = VecRestoreArray(xlocal,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->F,&FF);CHKERRQ(ierr);
-  return 0;
+  ierr = DAGetLocalVector(da,&xlocal);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNC__
