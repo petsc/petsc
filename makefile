@@ -310,11 +310,13 @@ alletags:
 	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags_makefiles
 # Builds complete etags list
 etags:
-	-@${RM} ${TAGSDIR}/TAGS
-	-@touch ${TAGSDIR}/TAGS
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS ACTION="etags_sourcec etags_sourcej etags_sourceh etags_examplesc etags_examplesf etags_examplesch etags_examplesfh etags_makefile etags_docs etags_scripts" alltree
-	-@cd src/fortran; ${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS ACTION=etags_sourcef alltree
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS etags_bmakefiles
+	-@${RM} ${TAGSDIR}/ETAGS
+	-@touch ${TAGSDIR}/ETAGS
+	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/ETAGS ACTION="etags_sourcec etags_sourcej etags_sourceh etags_examplesc etags_examplesf etags_examplesch etags_examplesfh etags_makefile etags_docs etags_scripts" alltree
+	-@cd src/fortran; ${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/ETAGS ACTION=etags_sourcef alltree
+	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/ETAGS etags_bmakefiles
+	-@maint/fixtags.py ETAGS
+	-@${RM} ETAGS
 # Builds the etags file that excludes the examples directories
 etags_noexamples:
 	-@${RM} ${TAGSDIR}/TAGS_NO_EXAMPLES
