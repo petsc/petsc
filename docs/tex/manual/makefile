@@ -34,9 +34,11 @@ manual.ps:
 manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	rm -f www.cit
 	cat ../../manualpages/manualpages.cit | sed 's/+man+../+man+manualpages/g' > www.cit 
-	/home/gropp/bin/solaris/tohtml -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
+	/home/gropp/bin/solaris/tohtml -headeroffset 1 -cvtmath -quietlatex \
+               -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
 	       -nonavnames -nobottomnav -mapref ../../manualpages/manualpages.cit
-	/home/gropp/bin/solaris/tohtml -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
+	/home/gropp/bin/solaris/tohtml -headeroffset 1 -cvtmath -quietlatex
+               -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
 	       -nonavnames -nobottomnav -useimg -mapref ../../manualpages/manualpages.cit
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv manual.html manual_html.html
