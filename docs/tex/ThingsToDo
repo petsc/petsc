@@ -10,6 +10,10 @@ Additional Capabilities that PETSc Needs:
 
    To do BEFORE the next release:
   --------------------------------
+
+  - Mat interface routines for MatMult etc should generate error if matrix 
+    is a factored matrix.
+
   - Create an INDEX for examples
 
   - For MatLoad() add support for automatically checking for file 
