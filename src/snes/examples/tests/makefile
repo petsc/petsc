@@ -48,7 +48,15 @@ runexamples:
 	-@$(MPIRUN) ex4 -snes_monitor -snes_method tr > ex4_2.tmp 2>&1;   \
            if (diff ex4_2.out ex4_2.tmp) then true; \
            else echo "Possible problem with ex4_2, diffs above"; fi; \
-           $(RM) -f ex1_2.tmp
+           $(RM) -f ex4_2.tmp
+	-@$(MPIRUN) ex5 -snes_monitor > ex5_1.tmp 2>&1;   \
+           if (diff ex5_1.out ex5_1.tmp) then true; \
+           else echo "Possible problem with ex5_1, diffs above"; fi; \
+           $(RM) -f ex5_1.tmp
+	-@$(MPIRUN) ex5 -snes_monitor -snes_mf > ex5_2.tmp 2>&1;   \
+           if (diff ex5_2.out ex5_2.tmp) then true; \
+           else echo "Possible problem with ex5_2, diffs above"; fi; \
+           $(RM) -f ex5_2.tmp
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o $(PETSC_LIB)
