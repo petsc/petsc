@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.14 1995/04/27 01:04:14 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.15 1995/04/27 01:37:47 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -21,12 +21,12 @@ static char vcid[] = "$Id: gcreate.c,v 1.14 1995/04/27 01:04:14 curfman Exp curf
 .  V - location to stash resulting matrix
 
    Options Database Keywords:
-$  -dense_mat : dense type, uses MatCreateSequentialDense()
-$  -row_mat   : row type, uses MatCreateSequentialRow()
+$  -mat_dense : dense type, uses MatCreateSequentialDense()
+$  -mat_row   : row type, uses MatCreateSequentialRow()
 $               and MatCreateMPIRow()
-$  -rowbs_mat : rowbs type (for parallel symmetric matrices),
+$  -mat_rowbs : rowbs type (for parallel symmetric matrices),
 $               uses MatCreateMPIRowbs()
-$  -bdiag_mat : block diagonal type, uses 
+$  -mat_bdiag : block diagonal type, uses 
 $               MatCreateSequentialBDiag() and
 $               MatCreateMPIBDiag()
 $
@@ -47,21 +47,21 @@ int MatCreateInitialMatrix(MPI_Comm comm,int m,int n,Mat *V)
 {
   int numtid;
   MPI_Comm_size(comm,&numtid);
-  if (OptionsHasName(0,0,"-dense_mat")) {
+  if (OptionsHasName(0,0,"-mat_dense")) {
     return MatCreateSequentialDense(comm,m,n,V);
   }
   if (numtid > 1 || OptionsHasName(0,0,"-mpi_objects")) {
-    if (OptionsHasName(0,0,"-row_mat")) {
+    if (OptionsHasName(0,0,"-mat_row")) {
       return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE, m,n,5,0,0,0,V);
     }
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
-    if (OptionsHasName(0,0,"-rowbs_mat")) {
+    if (OptionsHasName(0,0,"-mat_rowbs")) {
       return MatCreateMPIRowbs(comm,PETSC_DECIDE,m,5,0,0,V);
     }
 #endif
     return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE, m,n,5,0,0,0,V);
   }
-  if (OptionsHasName(0,0,"-row_mat")) {
+  if (OptionsHasName(0,0,"-mat_row")) {
     return MatCreateSequentialRow(comm,m,n,10,0,V);
   }
   return MatCreateSequentialAIJ(comm,m,n,10,0,V);
