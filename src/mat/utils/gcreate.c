@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.15 1995/04/27 01:37:47 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.16 1995/04/29 14:18:09 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -52,17 +52,32 @@ int MatCreateInitialMatrix(MPI_Comm comm,int m,int n,Mat *V)
   }
   if (numtid > 1 || OptionsHasName(0,0,"-mpi_objects")) {
     if (OptionsHasName(0,0,"-mat_row")) {
-      return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE, m,n,5,0,0,0,V);
+      return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);
     }
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
     if (OptionsHasName(0,0,"-mat_rowbs")) {
       return MatCreateMPIRowbs(comm,PETSC_DECIDE,m,5,0,0,V);
     }
 #endif
-    return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE, m,n,5,0,0,0,V);
+    return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);
   }
   if (OptionsHasName(0,0,"-mat_row")) {
     return MatCreateSequentialRow(comm,m,n,10,0,V);
+  }
+  if (OptionsHasName(0,0,"-mat_bdiag")) {
+    int nb = 1, ndiag = 0, ndiag2, i, *d, ierr;
+    OptionsGetInt(0,0,"-mat_bdiag_bsize",&nb);
+    OptionsGetInt(0,0,"-mat_bdiag_ndiag",&ndiag);
+    if (ndiag) {
+      d = (int *)MALLOC( ndiag * sizeof(int) ); CHKPTR(d);
+      ndiag2 = ndiag;
+      OptionsGetIntArray(0,0,"-mat_bdiag_dvals",d,&ndiag2);
+      if (ndiag2 != ndiag) 
+        SETERR(1,"Incompatible number of diagonals and diagonal values.");
+    } else SETERR(1,"Must set diagonals before creating matrix.");
+    ierr = MatCreateSequentialBDiag(comm,m,n,ndiag,nb,d,0,V); 
+    if (d) FREE(d);
+    return ierr;
   }
   return MatCreateSequentialAIJ(comm,m,n,10,0,V);
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.5 1995/04/28 19:28:53 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.6 1995/04/29 18:17:07 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -12,7 +12,7 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode  addv)
 {
   Mat_BDiag *dmat = (Mat_BDiag *) matin->data;
-  int       kk, j, k, loc, ldiag, shift, row, nz = n, mblock;
+  int       kk, j, k, loc, ldiag, shift, row, nz = n, dfound;
   int       nb = dmat->nb, nd = dmat->nd, *diag = dmat->diag;
   Scalar    *valpt;
 /* 
@@ -20,16 +20,18 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
    the gathered elements ... It does NOT currently allocate additional
    space! 
  */
-/*  if (m!=1) SETERR(1,"Currently can set only 1 row at a time."); */
+  if (m!=1) SETERR(1,"Currently can set only 1 row at a time.");
   if (nb == 1) {
     for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
       row  = idxm[kk];   
       if (row < 0) SETERR(1,"Negative row index");
       if (row >= dmat->m) SETERR(1,"Row index too large");
       for (j=0; j<nz; j++) {
-        ldiag = row - idxn[j]; /* diagonal */
+        ldiag = row - idxn[j]; /* diagonal number */
+        dfound = 0;
         for (k=0; k<nd; k++) {
 	  if (diag[k] == ldiag) {
+            dfound = 1;
 	    if (ldiag > 0) /* lower triangle */
 	      loc = row - dmat->diag[k];
 	    else
@@ -42,24 +44,29 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
             break;
           }
         }
+        if (!dfound) SETERR(1,
+         "Diagonal not allocated.  Set all diagonals in matrix creation.");
       }
     }
   } else {
     for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
       row    = idxm[kk];   
-      mblock = dmat->mblock;
       if (row < 0) SETERR(1,"Negative row index");
       if (row >= dmat->m) SETERR(1,"Row index too large");
+      shift = (row/nb)*nb*nb + row%nb;
       for (j=0; j<nz; j++) {
-        ldiag = mblock - idxn[j]/nb; /* block diagonal */
-        shift = mblock*nb*nb + row%nb;
+        ldiag = row/nb - idxn[j]/nb; /* block diagonal */
+        dfound = 0;
         for (k=0; k<nd; k++) {
           if (diag[k] == ldiag) {
+            dfound = 1;
 	    if (ldiag > 0) /* lower triangle */
 	      loc = shift - ldiag*nb*nb;
              else
 	      loc = shift;
 	    if ((valpt = &((dmat->diagv[k])[loc + (idxn[j]%nb)*nb ]))) {
+              printf("row=%d, col=%d, bdiag=%d, loc=%d, idx=%d, val=%g\n",
+                 row,idxn[j],ldiag, loc, loc + (idxn[j]%nb)*nb, v[j] );             
 	      if (addv == AddValues) *valpt += v[j];
 	      else                   *valpt = v[j];
             } else SETERR(1,
@@ -67,6 +74,8 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
             break;
           }
         }
+        if (!dfound) SETERR(1,
+         "Diagonal not allocated.  Set all diagonals in matrix creation.");
       }
     }
   }
@@ -103,7 +112,6 @@ static int MatMult_BDiag_base(Mat matin,Vec xx,Vec yy)
     }
   } else { /* Block diagonal approach, assuming storage within dense blocks 
               in column-major order */
-    nbrows = mat->mblock;
     for (d=0; d<nd; d++) {
       dv   = mat->diagv[d];
       diag = mat->diag[d];
@@ -137,7 +145,7 @@ static int MatMultTrans_BDiag_base(Mat matin,Vec xx,Vec yy)
 {
   Mat_BDiag       *mat = (Mat_BDiag *) matin->data;
   int             nd = mat->nd, nb = mat->nb, diag;
-  int             kshift, nbrows;
+  int             kshift;
   register Scalar *pvin, *pvout, *dv;
   register int    d, i, j, k, len;
   Scalar          *vin, *vout;
@@ -161,7 +169,6 @@ static int MatMultTrans_BDiag_base(Mat matin,Vec xx,Vec yy)
     }
   } else { /* Block diagonal approach, assuming storage within dense blocks
               in column-major order */
-    nbrows = mat->mblock;
     for (d=0; d<nd; d++) {
       dv   = mat->diagv[d];
       diag = mat->diag[d];
@@ -227,15 +234,15 @@ static int MatGetInfo_BDiag(Mat matin,int flag,int *nz,int *nzalloc,int *mem)
 static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
 {
   Mat_BDiag *dmat = (Mat_BDiag *) matin->data;
-  int       nd = dmat->nd, nb = dmat->nb, mblock = dmat->mblock, loc;
+  int       nd = dmat->nd, nb = dmat->nb, loc;
   int       nc = dmat->n, *diag = dmat->diag, pcol, shift, i, j, k;
 
 /* For efficiency, if ((nz) && (col) && (v)) then do all at once */
   if ((nz) && (col) && (v)) {
+    *col = dmat->colloc;
+    *v   = dmat->dvalue;
+    k    = 0;
     if (nb == 1) { 
-      *col = dmat->colloc;
-      *v   = dmat->dvalue;
-      k    = 0;
       for (j=0; j<nd; j++) {
         pcol = row - diag[j];
         if (pcol > -1 && pcol < nc) {
@@ -249,10 +256,7 @@ static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
       }
       *nz = k;
     } else {
-      k     = 0;
-      *v    = dmat->dvalue;
-      *col  = dmat->colloc;
-      shift = mblock*nb*nb + row%nb;
+      shift = (row/nb)*nb*nb + row%nb;
       for (j=0; j<nd; j++) {
         pcol = nb * (row/nb - diag[j]);
         if (pcol > -1 && pcol < nc) {
@@ -309,7 +313,7 @@ static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
       if (nz) {
         k = 0;
         for (j=0; j<nd; j++) {
-          pcol = nb * (mblock - diag[j]);
+          pcol = nb * (row/nb- diag[j]);
           if (pcol > -1 && pcol < nc) k += nb; 
         }
         *nz = k;
@@ -318,7 +322,7 @@ static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
         *col = dmat->colloc;
         k = 0;
         for (j=0; j<nd; j++) {
-          pcol = nb * (mblock - diag[j]);
+          pcol = nb * (row/nb - diag[j]);
           if (pcol > -1 && pcol < nc) {
             for (i=0; i<nb; i++) {
 	      (*col)[k+i] = pcol + i;
@@ -328,7 +332,7 @@ static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
         }
       }
       if (v) {
-        shift = mblock*nb*nb + row%nb;
+        shift = (row/nb)*nb*nb + row%nb;
         *v = dmat->dvalue;
         k = 0;
         for (j=0; j<nd; j++) {
@@ -365,7 +369,7 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
   Mat_BDiag *mat = (Mat_BDiag *) matin->data;
   int       ierr, *col, i, j, len, diag, nr = mat->m, nb = mat->nb;
   int       nz, nzalloc, mem;
-  Scalar    *val, *dv;
+  Scalar    *val, *dv, zero = 0.0;
   PetscObject vobj = (PetscObject) ptr;
 
   if (!mat->assembled) SETERR(1,"Cannot view unassembled matrix");
@@ -409,11 +413,12 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
       for ( i=0; i<mat->m; i++ ) {
         ierr = MatGetRow( matin, i, &nz, &col, &val ); CHKERR(ierr);
         for (j=0; j<nz; j++) {
+          if (val[j] != zero)
 #if defined(PETSC_COMPLEX)
-          fprintf(fd,"%d %d  %18.16e  %18.16e \n",
+            fprintf(fd,"%d %d  %18.16e  %18.16e \n",
                i+1, col[j]+1, real(val[j]), imag(val[j]) );
 #else
-          fprintf(fd,"%d %d  %18.16e\n", i+1, col[j]+1, val[j]);
+            fprintf(fd,"%d %d  %18.16e\n", i+1, col[j]+1, val[j]);
 #endif
         }
       }
@@ -428,11 +433,11 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
           if (diag > 0) {  /* lower triangle */
             len = nr - diag;
             for (j=0; j<len; j++)
-              fprintf(fd,"A[ %d , %d ] = %e\n", j+diag, j, dv[j]);
+              if (dv[j]) fprintf(fd,"A[ %d , %d ] = %e\n", j+diag, j, dv[j]);
           } else {         /* upper triangle, including main diagonal */
             len = nr + diag;
             for (j=0; j<len; j++)
-              fprintf(fd,"A[ %d , %d ] = %e\n", j, j-diag, dv[j]);
+              if (dv[j]) fprintf(fd,"A[ %d , %d ] = %e\n", j, j-diag, dv[j]);
           }
         }
       } else {  /* Block diagonals */
@@ -474,10 +479,11 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
         fprintf(fd,"row %d:",i);
         ierr = MatGetRow( matin, i, &nz, &col, &val ); CHKERR(ierr);
         for (j=0; j<nz; j++) {
+          if (val[j] != zero)
 #if defined(PETSC_COMPLEX)
-          fprintf(fd," %d %g ", col[j], real(val[j]), imag(val[j]) );
+            fprintf(fd," %d %g ", col[j], real(val[j]), imag(val[j]) );
 #else
-          fprintf(fd," %d %g ", col[j], val[j] );
+            fprintf(fd," %d %g ", col[j], val[j] );
 #endif
         }
         fprintf(fd,"\n");
@@ -610,7 +616,7 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
 {
   Mat       bmat;
   Mat_BDiag *mat;
-  int       i, sizetot;
+  int       i, j, temp, sizetot;
 
   *newmat       = 0;
   if ((n%nb) || (m%nb)) SETERR(1,"Invalid block size.");
@@ -635,6 +641,18 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   mat->bdlen  = mat->diag + nd;
   mat->colloc = mat->bdlen + nd;
   sizetot = 0;
+
+  /* Sort diagonals in decreasing order. */
+  for (i=0; i<nd; i++) {
+    for (j=i+1; j<nd; j++) {
+      if (diag[i] < diag[j]) {
+        temp = diag[i];
+        diag[i] = diag[j];
+        diag[j] = temp;
+      }
+    }
+  }
+
   for (i=0; i<nd; i++) {
     mat->diag[i] = diag[i];
     if (diag[i] > 0) /* lower triangular */
@@ -644,6 +662,7 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
     else mat->bdlen[i] = mat->mblock;
     sizetot += mat->bdlen[i];
     if (diag[i] == 0) mat->mainbd = i;
+    printf("i=%d, diag=%d, dlen=%d\n",i,mat->diag[i],mat->bdlen[i]);
   }
   if ((mat->mainbd == -1))
     SETERR(1,"No main diagonal.  Must set main diagonal, even if empty.")
@@ -659,8 +678,6 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   else       mat->user_alloc = 0;
   if (!mat->user_alloc) {
     Scalar *d;
-    /* Actually, size = upper bound on each diagonal's size.  Equivalence 
-       holds for main diagonal only. */
     d = (Scalar *)MALLOC(sizetot * sizeof(Scalar)); CHKPTR(d);
     MEMSET(d,0,sizetot*sizeof(Scalar));
     for (i=0; i<nd; i++) {
