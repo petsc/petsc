@@ -165,33 +165,33 @@ EXTERN_C_BEGIN
    
    functions, hence no STDCALL
 */
-void petsctracebackerrorhandler_(int *line,char *fun,char *file,char *dir,int *n,int *p,char *mess,void *ctx,int *ierr)
+void petsctracebackerrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,int *ierr)
 {
   *ierr = PetscTraceBackErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
 }
 
-void petscaborterrorhandler_(int *line,char *fun,char *file,char *dir,int *n,int *p,char *mess,void *ctx,int *ierr)
+void petscaborterrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,int *ierr)
 {
   *ierr = PetscAbortErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
 }
 
-void petscattachdebuggererrorhandler_(int *line,char *fun,char *file,char *dir,int *n,int *p,char *mess,void *ctx,int *ierr)
+void petscattachdebuggererrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,int *ierr)
 {
   *ierr = PetscAttachDebuggerErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
 }
 
-void petscemacsclienterrorhandler_(int *line,char *fun,char *file,char *dir,int *n,int *p,char *mess,void *ctx,int *ierr)
+void petscemacsclienterrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,int *ierr)
 {
   *ierr = PetscEmacsClientErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
 }
 
-void petscignoreerrorhandler_(int *line,char *fun,char *file,char *dir,int *n,int *p,char *mess,void *ctx,int *ierr)
+void petscignoreerrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,int *ierr)
 {
   *ierr = PetscIgnoreErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
 }
 
-static void (PETSC_STDCALL *f2)(int*,CHAR PETSC_MIXED_LEN(len1),CHAR PETSC_MIXED_LEN(len2),CHAR PETSC_MIXED_LEN(len3),int*,int*,CHAR PETSC_MIXED_LEN(len4),void*,int* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4));
-static int ourerrorhandler(int line,char *fun,char *file,char *dir,int n,int p,char *mess,void *ctx)
+static void (PETSC_STDCALL *f2)(int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),int*,int*,const CHAR PETSC_MIXED_LEN(len4),void*,int* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4));
+static int ourerrorhandler(int line,const char *fun,const char *file,const char *dir,int n,int p,const char *mess,void *ctx)
 {
   int ierr = 0,len1,len2,len3,len4;
   
@@ -219,7 +219,7 @@ static int ourerrorhandler(int line,char *fun,char *file,char *dir,int n,int p,c
   return ierr;
 }
 
-void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(int*,CHAR PETSC_MIXED_LEN(len1),CHAR PETSC_MIXED_LEN(len2),CHAR PETSC_MIXED_LEN(len3),int*,int*,CHAR PETSC_MIXED_LEN(len4),void*,int* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4)),void *ctx,int *ierr)
+void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),int*,int*,const CHAR PETSC_MIXED_LEN(len4),void*,int* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4)),void *ctx,int *ierr)
 {
   if ((void(*)(void))handler == (void(*)(void))petsctracebackerrorhandler_) {
     *ierr = PetscPushErrorHandler(PetscTraceBackErrorHandler,0);
