@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.117 1998/10/19 22:17:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.118 1999/02/01 15:28:16 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -32,7 +32,7 @@ extern int  PetscTrFreeDefault( void *, int, char *,char *,char *);
 #if (SIZEOF_VOIDP == 8)
 void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEEEEEEEEEE;
 #else
-void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEE;
+void *PetscLow  = (void *) 0x0, *PetscHigh = (void *) 0xEEEEEEEE;  
 #endif
 
 #undef __FUNC__  
@@ -45,9 +45,9 @@ int PetscSetUseTrMalloc_Private(void)
 #if (SIZEOF_VOIDP == 8)
   PetscLow     = (void *) 0xEEEEEEEEEEEEEEEE;
 #else
-  PetscLow     = (void *) 0xEEEEEEEE;
+  PetscLow     = (void *) 0xEEEEEEEE; 
 #endif
-  PetscHigh    = (void *) 0x0;
+  /*  PetscHigh    = (void *) 0x0; */
   ierr         = PetscSetMalloc(PetscTrMallocDefault,PetscTrFreeDefault); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -182,8 +182,6 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
   PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNC__  
 #define __FUNC__ "PetscTrMallocDefault"
 /*
@@ -222,13 +220,13 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
   inew = (char *) PetscMallocAlign((unsigned)(nsize+sizeof(TrSPACE)+sizeof(Scalar)));  
   if (!inew) PetscFunctionReturn(0);
 
-  
+
   /*
    Keep track of range of memory locations we have malloced in 
   */
   if (PetscLow > (void *) inew) PetscLow = (void *) inew;
   if (PetscHigh < (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long)))
-      PetscHigh = (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long));
+      PetscHigh = (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long)); 
 
   head   = (TRSPACE *)inew;
   inew  += sizeof(TrSPACE);
@@ -298,7 +296,7 @@ int PetscTrFreeDefault( void *aa, int line, char *function, char *file, char *di
   int      ierr;
   unsigned long *nend;
 
-  PetscFunctionBegin;
+  PetscFunctionBegin; 
   /* Don't try to handle empty blocks */
   if (!a) {
     (*PetscErrorPrintf)("PetscTrFreeDefault called from %s() line %d in %s%s\n",function,line,dir,file);
@@ -312,7 +310,7 @@ int PetscTrFreeDefault( void *aa, int line, char *function, char *file, char *di
   if (PetscLow > aa || PetscHigh < aa){
     (*PetscErrorPrintf)("PetscTrFreeDefault called from %s() line %d in %s%s\n",function,line,dir,file);
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"PetscTrFreeDefault called with address not allocated by PetscTrMallocDefault");
-  } 
+  }
 
   ahead = a;
   a     = a - sizeof(TrSPACE);
@@ -330,7 +328,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
       (*PetscErrorPrintf)("PetscTrFreeDefault called from %s() line %d in %s%s\n",function,line,dir,file);
       (*PetscErrorPrintf)("Block [id=%d(%lx)] at address %p was already freed\n", 
               head->id, head->size, a + sizeof(TrSPACE) );
-      if (head->lineno > 0 && head->lineno < 5000 /* sanity check */) {
+      if (head->lineno > 0 && head->lineno < 5000 /* sanity check */ ) {
 	(*PetscErrorPrintf)("Block freed in %s() line %d in %s%s\n", head->functionname,
                  head->lineno,head->dirname,head->filename);	
       } else {
@@ -339,7 +337,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
       }
       SETERRQ(PETSC_ERR_ARG_WRONG,0,"Memory already freed");
     } else {
-      /* Damaged tail */
+      /* Damaged tail */ 
       (*PetscErrorPrintf)("PetscTrFreeDefault called from %s() line %d in %s%s\n",function,line,dir,file);
       (*PetscErrorPrintf)("Block [id=%d(%lx)] at address %p is corrupted (probably write past end)\n", 
 		head->id, head->size, a );
@@ -349,10 +347,10 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
     }
   }
   /* Mark the location freed */
-  *nend        = ALREADY_FREED;
+  *nend        = ALREADY_FREED; 
   /* Save location where freed.  If we suspect the line number, mark as 
      allocated location */
-  if (line > 0 && line < 50000) {
+   if (line > 0 && line < 50000) {
     head->lineno       = line;
     head->filename     = file;
     head->functionname = function;
@@ -422,7 +420,7 @@ int PetscTrSpace( PLogDouble *space, PLogDouble *fr, PLogDouble *maxs )
 .keywords: memory, allocation, tracing, space, statistics
 
 .seealso:  PetscTrSpace(), PetscTrLogDump() 
- @*/
+@*/
 int PetscTrDump( FILE *fp )
 {
   TRSPACE *head;
@@ -544,7 +542,7 @@ int PetscTrLogDump(FILE *fp)
   }
 
   PetscFunctionReturn(0);
-}
+} 
 
 /* ---------------------------------------------------------------------------- */
 
