@@ -1,6 +1,6 @@
-/* $Id: vmult.h,v 1.1 1994/03/18 00:24:03 gropp Exp $ */
+/* $Id: vmult.h,v 1.1 1994/10/02 02:07:37 bsmith Exp bsmith $ */
 
-#include "system/flog.h"
+
 /*
    Routines for vector - vector products.  Includes sums with vectors
  */

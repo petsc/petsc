@@ -1,4 +1,4 @@
-/* $Id: mvmult.h,v 1.1 1994/03/18 00:23:59 gropp Exp $ */
+/* $Id: mvmult.h,v 1.1 1994/10/02 02:07:34 bsmith Exp bsmith $ */
 
 /*
    This file contains routines for matrix-vector products.
@@ -10,7 +10,7 @@
  */
 
 #ifndef DIAGVMULT
-#include "system/flog.h"
+
 /*
    DIAGVMULT(vout,vin,vinc,nd,dv,nr)
 

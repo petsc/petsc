@@ -1,4 +1,4 @@
-/* $Id: copy.h,v 1.1 1994/03/18 00:23:56 gropp Exp $ */
+/* $Id: copy.h,v 1.1 1994/10/02 02:07:33 bsmith Exp bsmith $ */
 
 /* This file contains definitions for INLINING some popular operations
    All arguments should be simple and in register if possible.
@@ -6,7 +6,6 @@
 
 /* x <- y */
 #ifndef COPY 
-#include "system/flog.h"
 
 #ifdef UNROLL
 #define COPY(x,y,n) \

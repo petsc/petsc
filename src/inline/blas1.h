@@ -17,7 +17,7 @@
 #ifndef _BLAS1
 #define _BLAS1
 
-#if defined(cray)
+#if defined(PARCH_cray)
 #define ddot_  SDOT
 #define daxpy_ SAXPY
 #define dswap_ SSWAP

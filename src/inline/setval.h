@@ -1,11 +1,10 @@
-/* $Id: setval.h,v 1.1 1994/03/18 00:24:00 gropp Exp $ */
+/* $Id: setval.h,v 1.1 1994/10/02 02:07:35 bsmith Exp bsmith $ */
 
 /* This file contains definitions for INLINING some popular operations
    All arguments should be simple and in register if possible.
  */
 
 #ifndef SET
-#include "system/flog.h"
 
 #ifdef UNROLL
 #define SET(v,n,val) \

@@ -1,13 +1,12 @@
-/* $Id: spops.h,v 1.1 1994/03/18 00:24:02 gropp Exp $ */
+/* $Id: spops.h,v 1.1 1994/10/02 02:07:36 bsmith Exp bsmith $ */
 
 #ifndef SPARSEDENSESMAXPY
-#include "system/flog.h"
+
 
 /* take (x,i) into dense vector r; there are nnz entries in (x,i)
    r(xi) -= alpha * xv */
 #ifdef UNROLL
 #define SPARSEDENSESMAXPY(r,alpha,xv,xi,nnz) {int __noff;\
-LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(nnz);/* if (nnz > 0) {*/\
 __noff = nnz & 0x3;\
 switch (__noff) {\
 case 3: r[xi[2]] -= alpha * xv[2];\
@@ -22,13 +21,11 @@ xi  += 4;xv  += 4;nnz -= 4;}}/*}*/
 
 #elif defined(INLINE_WHILE)
 #define SPARSEDENSESMAXPY(r,alpha,xv,xi,nnz) {\
-LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(nnz);\
 while (nnz-->0) r[*xi++] -= alpha * *xv++;}
 
 #elif defined(INLINE_FOR)
 #define SPARSEDENSESMAXPY(r,alpha,xv,xi,nnz) {\
 register int __i,__j1,__j2;register double __s1, __s2;\
-LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(nnz);\
 for(__i=0;__i<nnz-1;__i+=2){__j1=xi[__i];__j2=xi[__i+1];__s1=alpha*xv[__i];\
 __s2=alpha*xv[__i+1];__s1=r[__j1]-__s1;__s2=r[__j2]-__s2;\
 r[__j1]=__s1;r[__j2]=__s2;}\
@@ -36,14 +33,14 @@ if (nnz & 0x1) r[xi[__i]] -= alpha * xv[__i];}
 
 #else
 #define SPARSEDENSESMAXPY(r,alpha,xv,xi,nnz) {\
-int __i;LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(nnz);\
+int __i;\
 for(__i=0;__i<nnz;__i++)r[xi[__i]] -= alpha * xv[__i];}
 #endif
 
 /* Form sum -= r[xi] * xv; */
 #ifdef UNROLL
 #define SPARSEDENSEMDOT(sum,r,xv,xi,nnz) {\
-LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(1);if (nnz > 0) {\
+if (nnz > 0) {\
 switch (nnz & 0x3) {\
 case 3: sum -= *xv++ * r[*xi++];\
 case 2: sum -= *xv++ * r[*xi++];\
@@ -56,20 +53,18 @@ xv  += 4; xi += 4; nnz -= 4; }}}
 
 #elif defined(INLINE_WHILE)
 #define SPARSEDENSEMDOT(sum,r,xv,xi,nnz) {\
-LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(1);\
 while (nnz--) sum -= *xv++ * r[*xi++];}
 
 #elif defined(INLINE_FOR) && defined(MEMQUEST)
 #define SPARSEDENSEMDOT(sum,r,xv,xi,nnz) {\
 int __i,__i1,__i2;\
-LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(1);\
 for(__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
 sum -= (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
 if (nnz & 0x1) sum -= xv[__i] * r[xi[__i]];}
 
 #else
 #define SPARSEDENSEMDOT(sum,r,xv,xi,nnz) {\
-int __i;LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(1);\
+int __i;\
 for(__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
 #endif
 
@@ -78,7 +73,7 @@ for(__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
 /* Form sum += r[xi] * xv; */
 #ifdef UNROLL
 #define SPARSEDENSEDOT(sum,r,xv,xi,nnz) {\
-LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(1);if (nnz > 0) {\
+if (nnz > 0) {\
 switch (nnz & 0x3) {\
 case 3: sum += *xv++ * r[*xi++];\
 case 2: sum += *xv++ * r[*xi++];\
@@ -91,27 +86,25 @@ xv  += 4; xi += 4; nnz -= 4; }}}
 
 #elif defined(INLINE_WHILE)
 #define SPARSEDENSEDOT(sum,r,xv,xi,nnz) {\
-LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(1);\
 while (nnz--) sum += *xv++ * r[*xi++];}
 
 #elif defined(INLINE_FOR) && defined(MEMQUEST)
 #define SPARSEDENSEDOT(sum,r,xv,xi,nnz) {\
 int __i,__i1,__i2;\
-LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(1);\
 for(__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
 sum += (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
 if (nnz & 0x1) sum += xv[__i] * r[xi[__i]];}
 
 #else
 #define SPARSEDENSEDOT(sum,r,xv,xi,nnz) {\
-register int __i;LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(1);\
+register int __i;\
 for(__i=0;__i<nnz;__i++) sum += xv[__i] * r[xi[__i]];}
 #endif
 
 /* Form sum += r[map[xi]] * xv; */
 #ifdef UNROLL
 #define SPARSEDENSEMAPDOT(sum,r,xv,xi,map,nnz) {\
-LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(1);if (nnz > 0) {\
+if (nnz > 0) {\
 switch (nnz & 0x3) {\
 case 3: sum += *xv++ * r[map[*xi++]];\
 case 2: sum += *xv++ * r[map[*xi++]];\
@@ -124,12 +117,11 @@ xv  += 4; xi += 4; nnz -= 4; }}}
 
 #elif defined(INLINE_WHILE)
 #define SPARSEDENSEMAPDOT(sum,r,xv,xi,map,nnz) {\
-LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(1);\
 while (nnz--) sum += *xv++ * r[map[*xi++]];}
 
 #else
 #define SPARSEDENSEMAPDOT(sum,r,xv,xi,map,nnz) {\
-int __i;LOGFLOAT(2*nnz);LOGLOAD(2*nnz);LOGSTORE(1);\
+int __i;\
 for(__i=0;__i<nnz;__i++) sum += xv[__i] * r[map[xi[__i]]];}
 #endif
 
@@ -226,7 +218,6 @@ for(__i=0;__i<n;__i++)vo[xi[__i]]=vi[xi[__i]];}
 /* Scale sparse vector v[xi] *= a */
 #ifdef UNROLL
 #define SPARSESCALE(v,xi,n,val) {\
-LOGFLOAT(n);LOGLOAD(n+1);LOGSTORE(n);\
 switch (n & 0x3) {\
 case 3: v[*xi++] *= val;\
 case 2: v[*xi++] *= val;\
@@ -237,19 +228,16 @@ v[xi[0]]*=val;vo[xi[1]]*=val; vo[xi[2]]*=val;vo[xi[3]]*=val;xi  += 4;n -= 4;}}}
 
 #elif defined(INLINE_WHILE)
 #define SPARSESCALE(v,xi,n,val) {\
-LOGFLOAT(n);LOGLOAD(n+1);LOGSTORE(n);\
 while (n--) v[*xi++] *= val;}
 
 #else
 #define SPARSESCALE(v,xi,n,val) {int __i;\
-LOGFLOAT(n);LOGLOAD(n+1);LOGSTORE(n);\
 for(__i=0;__i<n;__i++)v[xi[__i]*=val;}
 #endif
 
 /* sparse dot sum = sum(a[xi] * b[xi]) */
 #ifdef UNROLL
 #define SPARSEDOT(sum,a,b,xi,n) {\
-LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(1);\
 switch (n & 0x3) {\
 case 3: sum += a[*xi] * b[*xi]; xi++;\
 case 2: sum += a[*xi] * b[*xi]; xi++;\
@@ -261,12 +249,11 @@ xi  += 4;n -= 4;}}}
 
 #elif defined(INLINE_WHILE)
 #define SPARSEDOT(sum,a,b,xi,n) {\
-LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(1);\
 while (n--) {sum += a[*xi]*b[*xi];xi++;}}
 
 #else
 #define SPARSEDOT(sum,a,b,xi,n) {\
-int __i;LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(1);\
+int __i;\
 for(__i=0;__i<n;__i++)sum+= a[xi[__i]]*b[xi[__i]];}
 #endif
 
@@ -274,7 +261,6 @@ for(__i=0;__i<n;__i++)sum+= a[xi[__i]]*b[xi[__i]];}
 /* Scatter r[xi] += xv */
 #ifdef UNROLL
 #define SCATTERADD(xv,xi,r,nz) {\
-LOGFLOAT(nz);LOGLOAD(nz);LOGSTORE(nz);\
 if (nz > 0) {\
 switch (nz & 0x3) {\
 case 3: r[*xi++] += *xv++;\
@@ -287,26 +273,24 @@ xi  += 4;xv  += 4;nz -= 4;}}}
 
 #elif defined(INLINE_WHILE)
 #define SCATTERADD(xv,xi,r,nz) {\
-LOGFLOAT(nz);LOGLOAD(nz);LOGSTORE(nz);\
 while (nz--) r[*xi++]+= *xv++;}
 
 #elif defined(INLINE_FOR)
 #define SCATTERADD(xv,xi,r,nz) {register double __s1, __s2;\
-register int __i,__i1, __i2;LOGFLOAT(nz);LOGLOAD(nz);LOGSTORE(nz);\
+register int __i,__i1, __i2;\
 for(__i=0;__i<nz-1;__i+=2){__i1 = xi[__i]; __i2 = xi[__i+1];\
 __s1 = r[__i1]; __s2 = r[__i2]; __s1 += xv[__i]; __s2 += xv[__i+1];\
 r[__i1]=__s1;r[__i2]=__s2;}if ((nz)&0x1)r[xi[__i]]+=xv[__i];}
 
 #else
 #define SCATTERADD(xv,xi,r,nz) {\
-int __i;LOGFLOAT(nz);LOGLOAD(nz);LOGSTORE(nz);\
+int __i;\
 for(__i=0;__i<nz;__i++) r[xi[__i]]+= xv[__i];}
 #endif
 
 /* Gather xv += r[xi] */
 #ifdef UNROLL
 #define GATHERADD(xv,xi,r,nz) {\
-LOGFLOAT(nz);LOGLOAD(nz);LOGSTORE(nz);\
 if (nz > 0) {\
 switch (nz & 0x3) {\
 case 3: *xv++ += r[*xi++];\
@@ -319,12 +303,11 @@ xi  += 4;xv  += 4;nz -= 4;}}}
 
 #elif defined(INLINE_WHILE)
 #define GATHERADD(xv,xi,r,nz) {\
-LOGFLOAT(nz);LOGLOAD(nz);LOGSTORE(nz);\
 while (nz--) *xv++ += r[*xi++];}
 
 #else
 #define GATHERADD(xv,xi,r,nz) {\
-int __i;LOGFLOAT(nz);LOGLOAD(nz);LOGSTORE(nz);\
+int __i;\
 for(__i=0;__i<nz;__i++)xv[__i] += r[xi[__i]];}
 #endif
 

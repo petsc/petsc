@@ -1,4 +1,4 @@
-/* $Id: axpy.h,v 1.1 1994/03/18 00:23:53 gropp Exp $ */
+/* $Id: axpy.h,v 1.1 1994/10/02 02:07:29 bsmith Exp bsmith $ */
 
 /* 
    These are macros for daxpy like operations.  The format is
@@ -12,17 +12,16 @@
  */
 
 #ifndef APXY
-#include "system/flog.h"
 
 #ifdef UNROLL
-#define APXY(U,Alpha,P,n) {LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(n);\
+#define APXY(U,Alpha,P,n) {\
 switch (n & 0x3) {\
 case 3: *U++    += Alpha * *P++;\
 case 2: *U++    += Alpha * *P++;\
 case 1: *U++    += Alpha * *P++;\
 n -= 4;case 0: break;}while (n>0) {U[0] += Alpha * P[0];U[1] += Alpha * P[1];\
 U[2] += Alpha * P[2]; U[3] += Alpha * P[3]; U += 4; P += 4; n -= 4;}}
-#define APXY2(U,a1,a2,p1,p2,n) {LOGFLOAT(4*n);LOGLOAD(3*n);LOGSTORE(n);\
+#define APXY2(U,a1,a2,p1,p2,n) {\
 switch (n & 0x3) {\
 case 3: *U++    += a1 * *p1++ + a2 * *p2++;\
 case 2: *U++    += a1 * *p1++ + a2 * *p2++;\
@@ -30,8 +29,7 @@ case 1: *U++    += a1 * *p1++ + a2 * *p2++;\
 n -= 4;case 0: break;}\
 while (n>0) {U[0]+=a1*p1[0]+a2*p2[0];U[1]+=a1*p1[1]+a2*p2[1];\
 U[2]+=a1*p1[2]+a2*p2[2];U[3]+=a1*p1[3]+a2*p2[3];U+=4;p1+=4;p2+=4;n -= 4;}}
-#define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n) {LOGFLOAT(8*n);LOGLOAD(5*n);\
-LOGSTORE(n);\
+#define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n) {\
 switch (n & 0x3) {\
 case 3: *U++    += a1 * *p1++ + a2 * *p2++ + a3 * *p3++ + a4 * *p4++;\
 case 2: *U++    += a1 * *p1++ + a2 * *p2++ + a3 * *p3++ + a4 * *p4++;\
@@ -42,20 +40,19 @@ U[2]+=a1*p1[2]+a2*p2[2]+a3*p3[2]+a4*p4[2];\
 U[3]+=a1*p1[3]+a2*p2[3]+a3*p3[3]+a4*p4[3];U+=4;p1+=4;p2+=4;p3+=4;p4+=4;n-=4;}}
 
 #elif defined(INLINE_WHILE)
-#define APXY(U,a1,p1,n)  {LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(n);\
+#define APXY(U,a1,p1,n)  {\
 while (n--) *U++ += a1 * *p1++;}
-#define APXY2(U,a1,a2,p1,p2,n)  {LOGFLOAT(4*n);LOGLOAD(3*n);LOGSTORE(n);\
+#define APXY2(U,a1,a2,p1,p2,n)  {\
 while (n--) *U++ += a1 * *p1++ + a2 * *p2++;}
-#define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n) {LOGFLOAT(8*n);LOGLOAD(5*n);\
-LOGSTORE(n);\
+#define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n) {\
 while (n--) *U++ += a1 * *p1++ + a2 * *p2++ + a3 * *p3++ + a4 * *p4++;}
 
 /* Using blas is a good idea only if the vectors are quite long */
 #elif defined(INLINE_BLAS)
-#define APXY(U,a1,p1,n)  {int one=1;LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(n);\
+#define APXY(U,a1,p1,n)  {int one=1;\
 daxpy_(&n,&a1,p1,&one,U,&one);}
 #define APXY2(U,a1,a2,p1,p2,n)  {int one=1,two=2,off=(int)(p2-p1);\
-double fone=1.0,aa[2];LOGFLOAT(4*n);LOGLOAD(3*n);LOGSTORE(n);\
+double fone=1.0,aa[2];\
 aa[0]=a1;aa[1]=a2;\
 dgemv_("N",&n,&two,&fone,p1,&off,aa,&one,&fone,U,&one,1);}
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){APXY2(U,a1,a2,p1,p2,n);\
@@ -63,49 +60,46 @@ APXY2(U,a3,a4,p3,p4,n);}
 
 #elif defined(INLINE_FOR)
 #define APXY(U,a1,p1,n)  {int __i;register double __s1, __s2; \
-LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(n);\
 for(__i=0;__i<n-1;__i+=2){__s1=a1*p1[__i];__s2=a1*p1[__i+1];\
 __s1+=U[__i];__s2+=U[__i+1];U[__i]=__s1;U[__i+1]=__s2;}\
 if (n & 0x1) U[__i] += a1 * p1[__i];}
 /* For now, these are just the default choices */
-#define APXY2(U,a1,a2,p1,p2,n) {int __i;LOGFLOAT(4*n);LOGLOAD(3*n);\
-LOGSTORE(n);for(__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
+#define APXY2(U,a1,a2,p1,p2,n) {int __i;\
+for(__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){int __i;\
-LOGFLOAT(8*n);LOGLOAD(5*n);LOGSTORE(n);\
 for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i]+a4*p4[__i];}
 
 #else
-#define APXY(U,a1,p1,n)  {int __i;LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(n);\
+#define APXY(U,a1,p1,n)  {int __i;\
 for(__i=0;__i<n;__i++)U[__i]+=a1 * p1[__i];}
-#define APXY2(U,a1,a2,p1,p2,n) {int __i;LOGFLOAT(4*n);LOGLOAD(3*n);\
-LOGSTORE(n);for(__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
+#define APXY2(U,a1,a2,p1,p2,n) {int __i;\
+for(__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){int __i;\
-LOGFLOAT(8*n);LOGLOAD(5*n);LOGSTORE(n);\
 for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i]+a4*p4[__i];}
 #endif
 
 
 /* These are like the above, but for increments of inc in both U and P */
 #ifdef UNROLL_APXYINC
-#define APXYINC(U,Alpha,P,n,inc) {LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(n);\
+#define APXYINC(U,Alpha,P,n,inc) {\
 if (n & 0x1) {\
 *U    += Alpha * *P; U += inc; P += inc; n--;}\
 while (n>0) {U[0] += Alpha * P[0];U[inc] += Alpha * P[inc];\
 U += 2*inc;; P += 2*inc;; n -= 2;}}
-#define APXY2INC(U,a1,a2,p1,p2,n,inc) {LOGFLOAT(4*n);LOGLOAD(3*n);LOGSTORE(n);\
+#define APXY2INC(U,a1,a2,p1,p2,n,inc) {\
 if (n & 0x1) {\
 *U    += a1 * *p1 + a2 * *p2; U += inc; p1 += inc; p2 += inc;n--;}\
 while (n>0) {U[0] += a1*p1[0]+a2*p2[0];U[inc]+=a1*p1[inc]+a2*p2[inc];\
 U += 2*inc;p1 += 2*inc;p2+=2*inc; n -= 2;}}
-#define APXY3INC(U,a1,a2,a3,p1,p2,p3,n,inc) {LOGFLOT(6*n);LOGLOAD(4*n);\
-LOGSTORE(n);if (n & 0x1) {\
+#define APXY3INC(U,a1,a2,a3,p1,p2,p3,n,inc) {
+if (n & 0x1) {\
 *U    += a1 * *p1 + a2 * *p2 + a3 * *p3; \
     U += inc; p1 += inc; p2 += inc; p3 += inc;n--;}\
 while (n>0) {U[0] += a1*p1[0]+a2*p2[0]+a3*p3[0];\
 U[inc]+=a1*p1[inc]+a2*p2[inc]+a3*p3[inc];\
 U += 2*inc;p1 += 2*inc;p2+=2*inc;p3+=2*inc;n -= 2;}}
-#define APXY4INC(U,a1,a2,a3,a4,p1,p2,p3,p4,n,inc) {LOGFLOAT(8*n);LOGLOAD(5*n);\
-LOGSTORE(n);if (n & 0x1) {\
+#define APXY4INC(U,a1,a2,a3,a4,p1,p2,p3,p4,n,inc) {\
+;if (n & 0x1) {\
 *U    += a1 * *p1 + a2 * *p2 + a3 * *p3 + a4 * *p4; \
     U += inc; p1 += inc; p2 += inc; p3 += inc; p4 += inc;n--;}\
 while (n>0) {U[0] += a1*p1[0]+a2*p2[0]+a3*p3[0]+a4*p4[0];\
@@ -113,31 +107,27 @@ U[inc]+=a1*p1[inc]+a2*p2[inc]+a3*p3[inc]+a4*p4[inc];\
 U += 2*inc;p1 += 2*inc;p2+=2*inc;p3+=2*inc;p4+=2*inc; n -= 2;}}
 
 #elif defined(INLINE_WHILE)
-#define APXYINC(U,a1,p1,n,inc) {LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(n);\
+#define APXYINC(U,a1,p1,n,inc) {\
 while (n--){*U += a1 * *p1; U += inc; p1 += inc;}}
-#define APXY2INC(U,a1,a2,p1,p2,n,inc)  {LOGFLOAT(4*n);LOGLOAD(3*n);\
-LOGSTORE(n);while (n--) {*U += a1 * *p1 + a2 * *p2;\
+#define APXY2INC(U,a1,a2,p1,p2,n,inc)  {\
+while (n--) {*U += a1 * *p1 + a2 * *p2;\
 U+=inc;p1+=inc;p2+=inc;}}
-#define APXY3INC(U,a1,a2,a3,p1,p2,p3,n,inc){LOGFLOAT(6*n);LOGLOAD(4*n);\
-LOGSTORE(n);\
+#define APXY3INC(U,a1,a2,a3,p1,p2,p3,n,inc){\
 while (n--) {*U+=a1**p1+a2**p2+a3 * *p3;U+=inc;p1+=inc;p2+=inc;p3+=inc;}}
-#define APXY4INC(U,a1,a2,a3,a4,p1,p2,p3,p4,n,inc) {LOGFLOAT(8*n);LOGLOAD(5*n);\
-LOGSTORE(n);\
+#define APXY4INC(U,a1,a2,a3,a4,p1,p2,p3,p4,n,inc) {\
 while (n--) {*U += a1 * *p1 + a2 * *p2 + a3 * *p3 + a4 * *p4;U+=inc;p1+=inc;\
 p2+=inc;p3+=inc;p4+=inc;}}
 
 #else
 /* These need to be converted to for loops */
-#define APXYINC(U,a1,p1,n,inc) {LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(n);\
+#define APXYINC(U,a1,p1,n,inc) {\
 while (n--){*U += a1 * *p1; U += inc; p1 += inc;}}
-#define APXY2INC(U,a1,a2,p1,p2,n,inc) {LOGFLOAT(4*n);LOGLOAD(3*n);LOGSTORE(n);\
+#define APXY2INC(U,a1,a2,p1,p2,n,inc) {\
 while (n--) {*U += a1 * *p1 + a2 * *p2;\
 U+=inc;p1+=inc;p2+=inc;}}
-#define APXY3INC(U,a1,a2,a3,p1,p2,p3,n,inc) {LOGFLOAT(6*n);LOGLOAD(4*n);\
-LOGSTORE(n);\
+#define APXY3INC(U,a1,a2,a3,p1,p2,p3,n,inc) {\
 while (n--) {*U+=a1**p1+a2**p2+a3 * *p3;U+=inc;p1+=inc;p2+=inc;p3+=inc;}}
-#define APXY4INC(U,a1,a2,a3,a4,p1,p2,p3,p4,n,inc){LOGFLOAT(8*n);LOGLOAD(5*n);\
-LOGSTORE(n);\
+#define APXY4INC(U,a1,a2,a3,a4,p1,p2,p3,p4,n,inc){\
 while (n--) {*U += a1 * *p1 + a2 * *p2 + a3 * *p3 + a4 * *p4;U+=inc;p1+=inc;\
 p2+=inc;p3+=inc;p4+=inc;}}
 #endif
@@ -147,7 +137,7 @@ for (i=0; i<n; i++)
     y[i] = x[i] + alpha * y[i];
  */
 #if defined(UNROLL)
-#define AYPX(U,Alpha,P,n) {LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(n);\
+#define AYPX(U,Alpha,P,n) {\
 switch (n & 0x3) {\
 case 3: *U    = *P++ + Alpha * *U;U++;\
 case 2: *U    = *P++ + Alpha * *U;U++;\
@@ -158,24 +148,23 @@ U[2] = P[2] + Alpha * U[2]; U[3] = P[3] + Alpha * U[3]; \
 U += 4; P += 4; n -= 4;}}
 
 #elif defined(INLINE_WHILE)
-#define AYPX(U,a1,p1,n)  {LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(n);\
+#define AYPX(U,a1,p1,n)  {\
 while (n--) {*U = *p1++ + a1 * *U;U++;}
 
 #elif defined(INLINE_FOR)
 #define AYPX(U,a1,p1,n)  {int __i;register double __s1, __s2; \
-LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(n);\
 for(__i=0;__i<n-1;__i+=2){__s1=p1[__i];__s2=p1[__i+1];\
 __s1+=a1*U[__i];__s2+=a1*U[__i+1];\
 U[__i]=__s1;U[__i+1]=__s2;}\
 if (n & 0x1) U[__i] = p1[__i] + a1 * U[__i];}
 
 #else
-#define AYPX(U,a1,p1,n)  {int __i;LOGFLOAT(2*n);LOGLOAD(2*n);LOGSTORE(n);\
+#define AYPX(U,a1,p1,n)  {int __i;\
 for(__i=0;__i<n;__i++)U[__i]=p1[__i]+a1 * U[__i];}
 #endif
 
 /* Useful for APXY where alpha == -1 */
-#define YMX(U,p1,n)  {int __i;LOGFLOAT(n);LOGLOAD(n);LOGSTORE(n);\
+#define YMX(U,p1,n)  {int __i;\
 for(__i=0;__i<n;__i++)U[__i]-=p1[__i];}
 
 #endif
