@@ -3262,7 +3262,7 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
   /* Initial matrix as if empty */
     ierr = PetscMemzero(matA->ilen,nrow*sizeof(int));CHKERRQ(ierr);
     ierr = PetscMemzero(matB->ilen,nrow*sizeof(int));CHKERRQ(ierr);
-    /*MatZeroEnteries may be better - look what it is exactly doing - I must
+    /* Perhaps MatZeroEnteries may be better - look what it is exactly doing - I must
      * delete all possibly nonactual inforamtion */
     /*submats[i]->factor = C->factor; !!! ??? if factor will be same then I must
      * copy some factor information - where are thay */

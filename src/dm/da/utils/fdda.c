@@ -449,13 +449,13 @@ int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 }
 
 /* =========================================================================== */
-EXTERN int DAGetMatrix1d_MPIAIJ(DA,Mat *);
-EXTERN int DAGetMatrix2d_MPIAIJ(DA,Mat *);
-EXTERN int DAGetMatrix2d_MPIAIJ_Fill(DA,Mat *);
-EXTERN int DAGetMatrix3d_MPIAIJ(DA,Mat *);
-EXTERN int DAGetMatrix3d_MPIAIJ_Fill(DA,Mat *);
-EXTERN int DAGetMatrix3d_MPIBAIJ(DA,Mat *);
-EXTERN int DAGetMatrix3d_MPISBAIJ(DA,Mat *);
+EXTERN int DAGetMatrix1d_MPIAIJ(DA,Mat);
+EXTERN int DAGetMatrix2d_MPIAIJ(DA,Mat);
+EXTERN int DAGetMatrix2d_MPIAIJ_Fill(DA,Mat);
+EXTERN int DAGetMatrix3d_MPIAIJ(DA,Mat);
+EXTERN int DAGetMatrix3d_MPIAIJ_Fill(DA,Mat);
+EXTERN int DAGetMatrix3d_MPIBAIJ(DA,Mat);
+EXTERN int DAGetMatrix3d_MPISBAIJ(DA,Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix" 
@@ -483,8 +483,11 @@ EXTERN int DAGetMatrix3d_MPISBAIJ(DA,Mat *);
 @*/
 int DAGetMatrix(DA da,MatType mtype,Mat *J)
 {
-  int        ierr,dim;
-  PetscTruth aij,baij,sbaij;
+  int      ierr,dim,dof,nx,ny,nz,size;
+  Mat      A;
+  MPI_Comm comm;
+  MatType  Atype;
+  void     (*aij)(void)=PETSC_NULL,(*baij)(void)=PETSC_NULL,(*sbaij)(void)=PETSC_NULL;
 
   PetscFunctionBegin;
   /*
@@ -509,59 +512,83 @@ int DAGetMatrix(DA da,MatType mtype,Mat *J)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-
+  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+  ierr = MatCreate(comm,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,mtype);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatGetType(A,&Atype);CHKERRQ(ierr);
   /*
      We do not provide a getmatrix function in the DA operations because 
    the basic DA does not know about matrices. We think of DA as being more 
    more low-level then matrices. This is kind of cheating but, cause sometimes 
    we think of DA has higher level then matrices.
+
+     We could switch based on Atype (or mtype), but we do not since the
+   specialized setting routines depend only the particular preallocation
+   details of the matrix, not the type itself.
   */
-  ierr = PetscStrcmp(MATMPIAIJ,mtype,&aij);CHKERRQ(ierr);
-  ierr = PetscStrcmp(MATMPIBAIJ,mtype,&baij);CHKERRQ(ierr);
-  ierr = PetscStrcmp(MATMPISBAIJ,mtype,&sbaij);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
+  }
   if (aij) {
     if (dim == 1) {
-      ierr = DAGetMatrix1d_MPIAIJ(da,J);CHKERRQ(ierr);
+      ierr = DAGetMatrix1d_MPIAIJ(da,A);CHKERRQ(ierr);
     } else if (dim == 2) {
       if (da->ofill) {
-	ierr =  DAGetMatrix2d_MPIAIJ_Fill(da,J);CHKERRQ(ierr);
+        DAGetMatrix2d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
-	ierr =  DAGetMatrix2d_MPIAIJ(da,J);CHKERRQ(ierr);
+        DAGetMatrix2d_MPIAIJ(da,A);CHKERRQ(ierr);
       }
     } else if (dim == 3) {
       if (da->ofill) {
-	ierr =  DAGetMatrix3d_MPIAIJ_Fill(da,J);CHKERRQ(ierr);
+        DAGetMatrix3d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
-	ierr =  DAGetMatrix3d_MPIAIJ(da,J);CHKERRQ(ierr);
+        DAGetMatrix3d_MPIAIJ(da,A);CHKERRQ(ierr);
       }
     }
-  } else if(baij) {
-    if (dim == 3) {
-      ierr =  DAGetMatrix3d_MPIBAIJ(da,J);CHKERRQ(ierr);
+  } else if (dim == 3) {
+    if (size == 1) {
+      ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqBAIJSetPreallocation_C",&baij);CHKERRQ(ierr);
     } else {
-      SETERRQ1(1,"Not done for %d dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
+      ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIBAIJSetPreallocation_C",&baij);CHKERRQ(ierr);
     }
-  } else if(sbaij) {
-    if (dim == 3) {
-      ierr =  DAGetMatrix3d_MPISBAIJ(da,J);CHKERRQ(ierr);
+    if (baij) {
+      ierr = DAGetMatrix3d_MPIBAIJ(da,A);CHKERRQ(ierr);
     } else {
-      SETERRQ1(1,"Not done for %d dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
+      if (size == 1) {
+        ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
+      } else {
+        ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPISBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
+      }
+      if (sbaij) {
+        ierr = DAGetMatrix3d_MPISBAIJ(da,A);CHKERRQ(ierr);
+      } else {
+        SETERRQ2(PETSC_ERR_SUP,"Not implemented for %d dimension and Matrix Type: %s!\n" \
+                               "Send mail to petsc-maint@mcs.anl.gov for code",
+                               dim,Atype);
+      }
     }
   } else {
-    SETERRQ1(1,"Not done for %s matrix type, send us mail petsc-maint@mcs.anl.gov for code",mtype);
+    SETERRQ2(PETSC_ERR_SUP,"Not implemented for %d dimension and matrix type: %s!\n" \
+                           "Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype);
   }
+  *J = A;
   PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix2d_MPIAIJ" 
-int DAGetMatrix2d_MPIAIJ(DA da,Mat *J)
+int DAGetMatrix2d_MPIAIJ(DA da,Mat J)
 {
   int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
-  int                    lstart,lend,pstart,pend,*dnz,*onz,size;
+  int                    lstart,lend,pstart,pend,*dnz,*onz;
   int                    dims[2],starts[2];
   MPI_Comm               comm;
   PetscScalar            *values;
@@ -580,10 +607,6 @@ int DAGetMatrix2d_MPIAIJ(DA da,Mat *J)
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
-  /* create empty Jacobian matrix */
-  ierr = MatCreate(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
 
   ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -618,20 +641,13 @@ int DAGetMatrix2d_MPIAIJ(DA da,Mat *J)
       ierr = MatPreallocateSetLocal(ltog,nc,rows,cnt,cols,dnz,onz);CHKERRQ(ierr);
     }
   }
-  /* set matrix type and preallocation information */
-  if (size > 1) {
-    ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
-  }
-  ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);  
-  ierr = MatSeqBAIJSetPreallocation(*J,nc,0,dnz);CHKERRQ(ierr);  
-  ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);  
-  ierr = MatMPIBAIJSetPreallocation(*J,nc,0,dnz,0,onz);CHKERRQ(ierr);  
+  ierr = MatSeqAIJSetPreallocation(J,0,dnz);CHKERRQ(ierr);  
+  ierr = MatMPIAIJSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);  
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
+
+  ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&starts[0],&starts[1],PETSC_IGNORE,&dims[0],&dims[1],PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = MatSetStencil(*J,2,dims,starts,nc);CHKERRQ(ierr);
+  ierr = MatSetStencil(J,2,dims,starts,nc);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -660,24 +676,24 @@ int DAGetMatrix2d_MPIAIJ(DA da,Mat *J)
 	}
 	rows[k]      = k + nc*(slot);
       }
-      ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = PetscFree(cols);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix2d_MPIAIJ_Fill" 
-int DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat *J)
+int DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
 {
   int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
-  int                    lstart,lend,pstart,pend,*dnz,*onz,size;
+  int                    lstart,lend,pstart,pend,*dnz,*onz;
   int                    dims[2],starts[2],ifill_col,*ofill = da->ofill, *dfill = da->dfill;
   MPI_Comm               comm;
   PetscScalar            *values;
@@ -696,10 +712,6 @@ int DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat *J)
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
-  /* create empty Jacobian matrix */
-  ierr = MatCreate(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
 
   ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -745,20 +757,13 @@ int DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat *J)
       }
     }
   }
-  /* set matrix type and preallocation information */
-  if (size > 1) {
-    ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
-  }
-  ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);  
-  ierr = MatSeqBAIJSetPreallocation(*J,nc,0,dnz);CHKERRQ(ierr);  
-  ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);  
-  ierr = MatMPIBAIJSetPreallocation(*J,nc,0,dnz,0,onz);CHKERRQ(ierr);  
+  ierr = MatSeqAIJSetPreallocation(J,0,dnz);CHKERRQ(ierr);  
+  ierr = MatMPIAIJSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);  
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
+
+  ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&starts[0],&starts[1],PETSC_IGNORE,&dims[0],&dims[1],PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = MatSetStencil(*J,2,dims,starts,nc);CHKERRQ(ierr);
+  ierr = MatSetStencil(J,2,dims,starts,nc);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -797,15 +802,15 @@ int DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat *J)
           }
         }
 	rows[0]      = k + nc*(slot);
-	ierr = MatSetValuesLocal(*J,1,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+	ierr = MatSetValuesLocal(J,1,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = PetscFree(cols);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -813,11 +818,11 @@ int DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat *J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix3d_MPIAIJ" 
-int DAGetMatrix3d_MPIAIJ(DA da,Mat *J)
+int DAGetMatrix3d_MPIAIJ(DA da,Mat J)
 {
   int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
-  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk,size;
+  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   int                    dims[3],starts[3];
   MPI_Comm               comm;
   PetscScalar            *values;
@@ -837,12 +842,7 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat *J)
   ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-
-  /* create the matrix */
-  /* create empty Jacobian matrix */
-  ierr = MatCreate(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
   ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
@@ -880,20 +880,13 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat *J)
       }
     }
   }
-  /* set matrix type and preallocation */
-  if (size > 1) {
-    ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
-  }
-  ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);  
-  ierr = MatSeqBAIJSetPreallocation(*J,nc,0,dnz);CHKERRQ(ierr);  
-  ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);  
-  ierr = MatMPIBAIJSetPreallocation(*J,nc,0,dnz,0,onz);CHKERRQ(ierr);  
+  ierr = MatSeqAIJSetPreallocation(J,0,dnz);CHKERRQ(ierr);  
+  ierr = MatMPIAIJSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);  
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
+
+  ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
-  ierr = MatSetStencil(*J,3,dims,starts,nc);CHKERRQ(ierr);
+  ierr = MatSetStencil(J,3,dims,starts,nc);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -925,15 +918,15 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat *J)
 	  }
 	  rows[l]      = l + nc*(slot);
 	}
-	ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+	ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = PetscFree(cols);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -941,13 +934,12 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat *J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix1d_MPIAIJ" 
-int DAGetMatrix1d_MPIAIJ(DA da,Mat *J)
+int DAGetMatrix1d_MPIAIJ(DA da,Mat J)
 {
   int                    ierr,xs,nx,i,i1,slot,gxs,gnx;           
   int                    m,dim,s,*cols,nc,*rows,col,cnt,l;
-  int                    istart,iend,size;
+  int                    istart,iend;
   int                    dims[1],starts[1];
-  MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
   ISLocalToGlobalMapping ltog;
@@ -963,23 +955,12 @@ int DAGetMatrix1d_MPIAIJ(DA da,Mat *J)
 
   ierr = DAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  /* create empty Jacobian matrix */
-  
-  ierr    = MatCreate(comm,nc*nx,nc*nx,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);
-  if (size > 1) {
-    ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
-  }
-  ierr = MatSeqAIJSetPreallocation(*J,col*nc,0);CHKERRQ(ierr);  
-  ierr = MatSeqBAIJSetPreallocation(*J,nc,col,0);CHKERRQ(ierr);  
-  ierr = MatMPIAIJSetPreallocation(*J,col*nc,0,0,0);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(*J,nc,col,0,0,0);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(J,col*nc,0);CHKERRQ(ierr);  
+  ierr = MatMPIAIJSetPreallocation(J,col*nc,0,0,0);CHKERRQ(ierr);
+
   ierr = DAGetGhostCorners(da,&starts[0],PETSC_IGNORE,PETSC_IGNORE,&dims[0],PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = MatSetStencil(*J,1,dims,starts,nc);CHKERRQ(ierr);
+  ierr = MatSetStencil(J,1,dims,starts,nc);CHKERRQ(ierr);
   
   ierr = PetscMalloc(col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr = PetscMemzero(values,col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -987,7 +968,7 @@ int DAGetMatrix1d_MPIAIJ(DA da,Mat *J)
   ierr = PetscMalloc(col*nc*sizeof(int),&cols);CHKERRQ(ierr);
   
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
   
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1006,19 +987,19 @@ int DAGetMatrix1d_MPIAIJ(DA da,Mat *J)
       }
       rows[l]      = l + nc*(slot);
     }
-    ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = PetscFree(cols);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix3d_MPIBAIJ" 
-int DAGetMatrix3d_MPIBAIJ(DA da,Mat *J)
+int DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
 {
   int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
@@ -1043,7 +1024,6 @@ int DAGetMatrix3d_MPIBAIJ(DA da,Mat *J)
   ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
-  /* create the matrix */
   ierr  = PetscMalloc(col*col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr  = PetscMemzero(values,col*col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr  = PetscMalloc(col*col*col*sizeof(int),&cols);CHKERRQ(ierr);
@@ -1100,12 +1080,11 @@ int DAGetMatrix3d_MPIBAIJ(DA da,Mat *J)
       }
     }
   }
-
-  /* create empty Jacobian matrix */
-  ierr = MatCreateMPIBAIJ(comm,nc,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,0,dnz,0,onz,J);CHKERRQ(ierr);
-
+  ierr = MatSeqBAIJSetPreallocation(J,nc,0,dnz);CHKERRQ(ierr);  
+  ierr = MatMPIBAIJSetPreallocation(J,nc,0,dnz,0,onz);CHKERRQ(ierr);  
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMappingBlock(*J,ltog);CHKERRQ(ierr);
+
+  ierr = MatSetLocalToGlobalMappingBlock(J,ltog);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1155,21 +1134,21 @@ int DAGetMatrix3d_MPIBAIJ(DA da,Mat *J)
             }
 	  }
 	}
-	ierr = MatSetValuesBlockedLocal(*J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+	ierr = MatSetValuesBlockedLocal(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscFree(cols);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
 /* BAD! Almost identical to the BAIJ one */
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix3d_MPISBAIJ" 
-int DAGetMatrix3d_MPISBAIJ(DA da,Mat *J)
+int DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
 {
   int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
@@ -1251,12 +1230,11 @@ int DAGetMatrix3d_MPISBAIJ(DA da,Mat *J)
       }
     }
   }
-
-  /* create empty Jacobian matrix */
-  ierr = MatCreateMPISBAIJ(comm,nc,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,0,dnz,0,onz,J);CHKERRQ(ierr);
-
+  ierr = MatSeqSBAIJSetPreallocation(J,nc,0,dnz);CHKERRQ(ierr);  
+  ierr = MatMPISBAIJSetPreallocation(J,nc,0,dnz,0,onz);CHKERRQ(ierr);  
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMappingBlock(*J,ltog);CHKERRQ(ierr);
+
+  ierr = MatSetLocalToGlobalMappingBlock(J,ltog);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1306,14 +1284,14 @@ int DAGetMatrix3d_MPISBAIJ(DA da,Mat *J)
             }
 	  }
 	}
-	ierr = MatSetValuesBlockedLocal(*J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+	ierr = MatSetValuesBlockedLocal(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscFree(cols);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -1322,11 +1300,11 @@ int DAGetMatrix3d_MPISBAIJ(DA da,Mat *J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix3d_MPIAIJ_Fill" 
-int DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat *J)
+int DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
 {
   int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
-  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk,size;
+  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   int                    ifill_col,*dfill = da->dfill,*ofill = da->ofill;
   int                    dims[3],starts[3];
   MPI_Comm               comm;
@@ -1359,12 +1337,7 @@ int DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat *J)
   ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-
-  /* create the matrix */
-  /* create empty Jacobian matrix */
-  ierr = MatCreate(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
   ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
@@ -1415,22 +1388,13 @@ int DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat *J)
       }
     }
   }
-  /* set matrix type and preallocation */
-  if (size > 1) {
-    ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
-  }
-  ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);  
-  ierr = MatSeqBAIJSetPreallocation(*J,nc,0,dnz);CHKERRQ(ierr);  
-  ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);  
-  ierr = MatMPIBAIJSetPreallocation(*J,nc,0,dnz,0,onz);CHKERRQ(ierr);  
-
+  ierr = MatSeqAIJSetPreallocation(J,0,dnz);CHKERRQ(ierr);  
+  ierr = MatMPIAIJSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);  
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr); 
 
-  ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
-  ierr = MatSetStencil(*J,3,dims,starts,nc);CHKERRQ(ierr);
+  ierr = MatSetStencil(J,3,dims,starts,nc);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1472,7 +1436,7 @@ int DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat *J)
 	    }
 	  }
 	  rows[0] = l + nc*(slot);
-	  ierr = MatSetValuesLocal(*J,1,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+	  ierr = MatSetValuesLocal(J,1,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
 	}
       }
     }
@@ -1480,8 +1444,8 @@ int DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat *J)
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = PetscFree(cols);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
