@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.34 1998/08/06 23:26:31 balay Exp balay $ 
+# $Id: base.site,v 1.35 1998/09/02 22:49:10 balay Exp bsmith $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -18,7 +18,8 @@ FC_LIB         =  -lfortran -lftn -lfastm
 # Location of BLAS and LAPACK. See ${BS_DIR}/docs/installation.html for
 # information on retrieving them.
 #
-# BLAS usually comes with SGI. Do NOT use mp version of the SGI BLAS.
+# BLAS usually comes with SGI. Do NOT use the parallel (library names with 
+# mp in them) version of the SGI BLAS.
 #
 BLAS_LIB       = -lblas ${FC_LIB}
 LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX64.a

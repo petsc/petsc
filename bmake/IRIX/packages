@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.6 1998/04/07 18:44:11 balay Exp bsmith $ 
+# $Id: base.site,v 1.7 1998/05/12 18:46:52 bsmith Exp bsmith $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -25,6 +25,9 @@ FC_LIB         =  -lftn
 # below for BLAS_LIB. However, the complex BLAS routine izamax() has
 # a bug in it, so if you are using complex numbers we recommend using
 # the SGI BLAS with extreme care.
+#
+# BLAS usually comes with SGI. Do NOT use the parallel (library names with 
+# mp in them) version of the SGI BLAS.
 #
 BLAS_LIB       = -lblas
 LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX.a ${FC_LIB}
