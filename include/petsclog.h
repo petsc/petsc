@@ -315,19 +315,19 @@ EXTERN PetscErrorCode StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
 #define MPI_Startall_irecv(count,number,requests) \
 (\
   PETSC_DUMMY = MPI_Startall(number,requests),\
-  irecv_ct += (PetscLogDouble)(number),irecv_len += ((PetscLogDouble) ((count)*sizeof(PetscScalar))),PETSC_DUMMY\
+  irecv_ct += (PetscLogDouble)(number),TypeSize(irecv_len,count,MPIU_SCALAR),PETSC_DUMMY\
 )
 
 #define MPI_Startall_isend(count,number,requests) \
 (\
   PETSC_DUMMY = MPI_Startall(number,requests),\
-  isend_ct += (PetscLogDouble)(number),isend_len += ((PetscLogDouble) ((count)*sizeof(PetscScalar))),PETSC_DUMMY\
+  isend_ct += (PetscLogDouble)(number),TypeSize(isend_len,count,MPIU_SCALAR),PETSC_DUMMY\
 )
 
 #define MPI_Start_isend(count, requests) \
 (\
   PETSC_DUMMY = MPI_Start(requests),\
-  isend_ct++,isend_len += ((PetscLogDouble) ((count)*sizeof(PetscScalar))),PETSC_DUMMY\
+  isend_ct++,TypeSize(isend_len,count,MPIU_SCALAR),PETSC_DUMMY\
 )
 
 #define MPI_Recv(buf,count, datatype,source,tag,comm,status) \
