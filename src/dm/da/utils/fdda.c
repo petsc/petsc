@@ -132,14 +132,6 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
     }
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
-    if (DAXPeriodic(wrap) && (M == 1)){ 
-      SETERRQ(PETSC_ERR_SUP,"For algorithmic issues you need to have at least 2 processors in each direction\n\
-                 that is periodic when using AD, try FD instead. In x direction you only have 1.\n");
-    }
-    if (DAYPeriodic(wrap) && (N == 1)){ 
-      SETERRQ(PETSC_ERR_SUP,"For algorithmic issues you need to have at least 2 processors in each direction\n\
-                 that is periodic when using AD, try FD instead. In y direction you only have 1.\n");
-    }
     if (!da->ghostedcoloring) {
       ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
       ii = 0;
@@ -217,18 +209,6 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
     }
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
-    if (DAXPeriodic(wrap) && (M == 1)){ 
-      SETERRQ(PETSC_ERR_SUP,"For algorithmic issues you need to have at least 2 processors in each direction\n\
-                 that is periodic when using AD, try FD instead. In x direction you only have 1.\n");
-    }
-    if (DAYPeriodic(wrap) && (N == 1)){ 
-      SETERRQ(PETSC_ERR_SUP,"For algorithmic issues you need to have at least 2 processors in each direction\n\
-                 that is periodic when using AD, try FD instead. In y direction you only have 1.\n");
-    }
-    if (DAZPeriodic(wrap) && (P == 1)){ 
-      SETERRQ(PETSC_ERR_SUP,"For algorithmic issues you need to have at least 2 processors in each direction\n\
-                 that is periodic when using AD, try FD instead. In z direction you only have 1.\n");
-    }
     if (!da->ghostedcoloring) {
       ierr = PetscMalloc(nc*gnx*gny*gnz*sizeof(int),&colors);CHKERRQ(ierr);
       ii = 0;
@@ -297,10 +277,6 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
     }
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
-    if (DAXPeriodic(wrap) && (M == 1)){ 
-      SETERRQ(PETSC_ERR_SUP,"For algorithmic issues you need to have at least 2 processors in each direction\n\
-                 that is periodic when using AD, try FD instead. In x direction you only have 1.\n");
-    }
     if (!da->ghostedcoloring) {
       ierr = PetscMalloc(nc*gnx*sizeof(int),&colors);CHKERRQ(ierr);
       i1 = 0;
