@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fhost.c,v 1.4 1996/04/10 04:28:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.5 1996/04/16 16:20:00 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -7,7 +7,9 @@ static char vcid[] = "$Id: fhost.c,v 1.4 1996/04/10 04:28:47 bsmith Exp bsmith $
 #include "files.h"   /*I  "sys.h"   I*/
 
 /*@C
-    PetscGetHostName - Returns the name of the host.
+    PetscGetHostName - Returns the name of the host. This attempts to
+      return the entire internet name. It may not return the same name
+      as MPI_Get_processor_name().
 
     Input Parameter:
     nlen - length of name
@@ -37,6 +39,13 @@ int PetscGetHostName( char *name, int nlen )
 #elif defined(HAVE_GETDOMAINNAME)
     getdomainname( name+l, nlen - l );
 #endif
+    /* 
+       Some machines (Linx) default to (none) if the not
+       configured with a particular domain name.
+    */
+    if (PetscStrncmp(name+l,"(none)",6)) {
+      name[l-1] = 0;
+    }
   }
   return 0;
 }
