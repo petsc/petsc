@@ -129,3 +129,6 @@ to do what you need.
     Added support for an alternative way to compute h using the Walker-Pernice
       strategy accessible via -snes_mf_type wp
 
+  DA
+
+    DAGetInfo() has a new final argument, the stencil type. See the manual page.
