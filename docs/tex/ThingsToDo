@@ -10,7 +10,7 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
-  Barry - fix scrwew2ed up locking in src/fortran/custom!!!!!!!!!!!!!
+  - Change MatConvert() so that all matrix formats are not always loaded.
 
   - Add VecCreateWithData() and VecCreateXXXWithData().
 

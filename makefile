@@ -265,9 +265,13 @@ allfortranstubs:
 	-make ACTION=fortranstubs tree
 	chmod g+w $(PETSC_DIR)/src/fortran/auto/*.c
 
-allci: chkpetsc_dir
-	-@cd $(PETSC_DIR)/src/fortran/custom ; $(OMAKE) PETSC_ARCH=$(PETSC_ARCH) ci
+allci: 
+	-@cd src/fortran/custom ; $(OMAKE) BOPT=$(BOPT) ci
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=ci  tree 
+
+allco: 
+	-@cd src/fortran/custom ; $(OMAKE) BOPT=$(BOPT) co
+	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=co  tree 
 
 # 
 #  We no longer make Unix manpages
