@@ -1,4 +1,10 @@
-
+#
+# LDIR, PDIR - PETSc directories.  These will usually be the same.
+# LIBNAME - library name
+# SOURCE - source files
+# OBJS - object files
+# INCLUDEDIRS - locations of include files
+#
 LDIR        = $(IPETSCDIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 PDIR        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 LIBNAME     = $(PDIR)/$(LIBBASE).a
@@ -6,30 +12,44 @@ SOURCE      = $(SOURCEC) $(SOURCEF)
 OBJS        = $(OBJSC) $(OBJSF)
 INCLUDEDIRS = -I$(IPETSCDIR) -I$(IPETSCDIR)/include $(MPI_INCLUDE) \
                -I$(IPETSCDIR)/src
-
+#
+# Defines all libraries needed for using linear and nonlinear solvers, 
+# stencils, grids, and all lower level PETSc components (such as vectors 
+# and matrices).  The order of listing these libraries is important!
+#
 PETSC_LIB   = -L$(LDIR) -lpetscstencil -lpetscgrid \
                 -lpetscsnes  -lpetscsles -lpetscksp \
                 -lpetscmat  -lpetscvec -lpetscdraw \
                 -lpetscsys \
                 $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
                 $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
+
+#
+# Defines all libraries needed for using linear solvers and all lower
+# level PETSc components (such as vectors and matrices).  The order
+# of listing these libraries is important!
+#
 SLES_LIB    =   -L$(LDIR) -lpetscsles -lpetscksp \
                 -lpetscmat  -lpetscvec -lpetscdraw \
                 -lpetscsys \
                 $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
                 $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 
+#
+# These include files set customized site, optimization, and version options.
+# Do NOT remove any of these include files.  You should have to edit only
+# $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site for your particular
+# machine configuration.  See the users manual for details.
+#
 include $(IPETSCDIR)/bmake/common.$(PETSC_VERSION) 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(BOPT)
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(PETSC_VERSION)
 
-# next line cause trouble with gnumake when OBJS is empty
+# Next line cause trouble with gnumake when OBJS is empty
 #$(LIBNAME)($(OBJS)): $(LINCLUDE)
 
-# 
 # Checks that PETSC_DIR variable is set
-#
 chkpetsc_dir:
 	@if [ Holder = Holder$(PETSC_DIR) ] ; then \
           echo "You must set the variable PETSC_DIR to the petsc directory.1";\
@@ -39,10 +59,12 @@ chkpetsc_dir:
           false ;\
           fi
 
+# Checks that BOPT is set
 chkbopt:
 	@if [ Holder = Holder$(BOPT) ] ; then \
           echo "You must set the variable BOPT [g,O, or Opg]" ; false; fi
 
+# Compiles examples
 examples: chkbopt
 	@-if [ "$(EXAMPLES)" != "" ] ; then \
           (for ex in $(EXAMPLES) foo ; do \
@@ -52,14 +74,17 @@ examples: chkbopt
           cat trashz ; fi; $(RM) trashz;\
           done;) fi
 
+# Runs examples that have already been compiled
 runexamples:
 	@-if [ "$(REXAMPLES)" != "" ] ; then \
           (for ex in $(REXAMPLES) foo ; do \
           $(OMAKE) -f makefile $$ex; \
           done;) fi
 
+# Does nothing, obviously
 foo:
 
+# Builds library
 lib: $(SOURCE)
 	@-if [ "$(SOURCEC)" != "" ] ; then \
            $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) \
@@ -71,6 +96,7 @@ lib: $(SOURCE)
 	        $(RM) -f $(OBJS); \
         fi
 
+# Builds library - fast version
 libfast: $(SOURCEC) $(SOURCEF)
 	@-if [ "$(SOURCEC)" != "" ] ; then \
 	     $(CC) -c $(CFLAGS) $(BASEOPT) $(SOURCEC) ;\
@@ -83,33 +109,7 @@ libfast: $(SOURCEC) $(SOURCEF)
 	  $(RM) -f $(OBJS); \
         fi
 
-rcs: 
-	@-rcs -i -agropp,bsmith,curfman -L -t/dev/null $(SOURCEH)\
-           $(SOURCE) makefile $(EXAMPLESC) $(EXAMPLESF) $(TESTSC)\
-           $(TESTSF)
-
-ci: 
-	@-ci -u -q -mAutoCheckin $(SOURCEH) $(SOURCE) makefile \
-          $(EXAMPLESC) $(EXAMPLESF) $(TESTSC) $(TESTSF) 
-
-co:
-	@-co -l -q $(SOURCEH) $(SOURCE) makefile $(EXAMPLESC)\
-          $(EXAMPLESF) $(TESTSC) $(TESTSF)
-
-#  true is to prevent make error message from empty grep
-lint:
-	@-if [ "$(SOURCEC)" != "" ] ; then \
-           lint -cvhu -DLINT -DPETSC_ARCH_$(PETSC_ARCH) $(CFLAGS) $(SOURCEC)\
-                | grep -v "never defined"\
-                | grep -v "pointer alignment problem" | grep -v\
-                "function prototype not in scope"; true ;\
-           $(RM) -f *.ln ; fi
-
-C2f77:
-	@-if [ -n "$(WOBJS)" ] ; then \
-  	$(IPETSCDIR)/c2f77/bfort -nomsgs -anyname -mapptr \
-                         $(SOURCEC) $(SOURCEH); fi
-
+# Builds Fortran-77 wrappers library - not yet available
 C2f77lib: 
 	@-if [ -n "$(WOBJS)" ] ; then \
 	echo "Compiling wrappers: " $(WSOURCEC); \
@@ -118,18 +118,80 @@ C2f77lib:
 	$(RM) -f $(WOBJS) $(WSOURCE); \
 	fi
 
+# Removes garbage files
+clean:
+	@-$(RM) -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(CEXAMPLES) $(TESTS) \
+               PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
+               trashz \#*\#
+
+# Builds and runs examples; then cleans directory.
+testexamples: examples runexamples clean
+
+# Builds examples but does not run them; then cleans directory.
+# This is used temporarily for the SP
+buildexamples: examples clean
+
+# Performs the specified action throughout the directory tree
+tree: $(ACTION)
+	@-if [ "$(DIRS)" != "" ]; then \
+        for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
+        (cd $$dir ; echo $(ACTION) in: `pwd`  ; \
+        $(OMAKE) -f makefile tree ACTION=$(ACTION) BOPT=$(BOPT) \
+        PETSC_ARCH=$(PETSC_ARCH) PETSC_VERSION=$(PETSC_VERSION) ) ;fi; \
+        done ; fi
+
+# --------------------------------------------------------------------
+#
+# All remaining actions are intended for PETSc developers only.
+# PETSc users should not generally need to use these commands.
+#
+
+# Places new files in RCS (for PETSc developers only)
+rcs: 
+	@-rcs -i -agropp,bsmith,curfman -L -t/dev/null $(SOURCEH)\
+           $(SOURCE) makefile $(EXAMPLESC) $(EXAMPLESF) $(TESTSC)\
+           $(TESTSF)
+
+# RCS file check-in
+ci: 
+	@-ci -u -q -mAutoCheckin $(SOURCEH) $(SOURCE) makefile \
+          $(EXAMPLESC) $(EXAMPLESF) $(TESTSC) $(TESTSF) 
+
+# RCS file check-out
+co:
+	@-co -l -q $(SOURCEH) $(SOURCE) makefile $(EXAMPLESC)\
+          $(EXAMPLESF) $(TESTSC) $(TESTSF)
+
+# Uses lint; true is to prevent make error message from empty grep
+lint:
+	@-if [ "$(SOURCEC)" != "" ] ; then \
+           lint -cvhu -DLINT -DPETSC_ARCH_$(PETSC_ARCH) $(CFLAGS) $(SOURCEC)\
+                | grep -v "never defined"\
+                | grep -v "pointer alignment problem" | grep -v\
+                "function prototype not in scope"; true ;\
+           $(RM) -f *.ln ; fi
+
+# Builds Fortran-77 wrappers - not yet available
+C2f77:
+	@-if [ -n "$(WOBJS)" ] ; then \
+  	$(IPETSCDIR)/c2f77/bfort -nomsgs -anyname -mapptr \
+                         $(SOURCEC) $(SOURCEH); fi
+
+# Builds man pages (xman version)
 manpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	doctext -mpath $(PETSC_DIR)/docs/man/man$(MANSEC) -ext $(MANSEC)  \
                 -keyword $(PETSC_DIR)/Keywords $(SOURCEC) $(SOURCEH); \
                 chmod g+w $(PETSC_DIR)/docs/man/man$(MANSEC)/*; fi 
 
+# Builds man pages (LaTeX version)
 latexpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	doc2lt  \
           $(SOURCEC) $(SOURCEH) >> \
                     $(PETSC_DIR)/docs/tex/rsum/rsum$(MANSEC).tex ; fi 
 
+# Builds man pages (HTML version)
 wwwpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	doctext -html -index $(PETSC_DIR)/docs/www/www.cit \
@@ -138,21 +200,6 @@ wwwpages:
                  $(SOURCEC) $(SOURCEH); \
                 chmod g+w $(PETSC_DIR)/docs/www/man$(MANSEC)/*; fi 
 
-clean:
-	@-$(RM) -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(CEXAMPLES) $(TESTS) \
-               PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
-               trashz \#*\#
-
-testexamples: examples runexamples clean
-
-
-tree: $(ACTION)
-	@-if [ "$(DIRS)" != "" ]; then \
-        for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo $(ACTION) in: `pwd`  ; \
-        $(OMAKE) -f makefile tree ACTION=$(ACTION) BOPT=$(BOPT) \
-        PETSC_ARCH=$(PETSC_ARCH) PETSC_VERSION=$(PETSC_VERSION) ) ;fi; \
-        done ; fi
 
 
 
