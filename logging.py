@@ -198,15 +198,15 @@ class Logger(args.ArgumentProcessor):
       self.out.write('\r')
     return
 
-  def logPrintDivider(self, debugLevel = -1, debugSection = 'screen'):
+  def logPrintDivider(self, debugLevel = -1, debugSection = None):
     self.logPrint('=================================================================================', debugLevel = debugLevel, debugSection = debugSection)
     return
 
   def logPrintBox(self,msg, debugLevel = -1, debugSection = 'screen', indent = 1, comm = None):
     self.logClear()
-    self.logPrint('=================================================================================', debugSection=debugSection)
+    self.logPrint('=================================================================================', debugSection = debugSection)
     self.logPrint('      '+msg+'\n', debugSection=debugSection)
-    self.logPrint('=================================================================================\n', debugSection=debugSection)
+    self.logPrint('=================================================================================\n', debugSection = debugSection)
 
   def logWrite(self, msg, debugLevel = -1, debugSection = None, forceScroll = 0):
     '''Write the message to the log streams'''
