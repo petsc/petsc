@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.10 1996/01/09 01:28:07 curfman Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.11 1996/01/12 03:52:27 bsmith Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -22,7 +22,7 @@ struct _PC {
   Mat          mat,pmat;
   Vec          vec;
   void         *data;
-  int          (*getfactmat)(PC,Mat*);
+  int          (*getfactoredmatrix)(PC,Mat*);
   PCNullSpace  nullsp;
   int          (*applysymmleft)(PC,Vec,Vec),(*applysymmright)(PC,Vec,Vec);
 };

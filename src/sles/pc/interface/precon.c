@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.70 1996/02/08 16:53:47 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.71 1996/02/08 20:41:24 curfman Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -474,7 +474,7 @@ int PCSetVector(PC pc,Vec vec)
 int PCGetFactoredMatrix(PC pc,Mat *mat)
 {
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  if (pc->getfactmat) return (*pc->getfactmat)(pc,mat);
+  if (pc->getfactoredmatatrix) return (*pc->getfactoredmatrix)(pc,mat);
   return 0;
 }
 
