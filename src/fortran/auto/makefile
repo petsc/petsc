@@ -1,11 +1,11 @@
-# $Id: makefile,v 1.46 1998/01/07 16:01:24 balay Exp balay $ 
+# $Id: makefile,v 1.47 1998/01/07 16:02:12 balay Exp balay $ 
 
 ALL: lib
 
 CFLAGS	 = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
 
 SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cgtypef.c \
-        chebyf.c cookief.c da2f.c dacornf.c daghostf.c dagtolf.c daltogf.c \
+        chebyf.c compositef.c cookief.c da2f.c dacornf.c daghostf.c dagtolf.c daltogf.c \
         daltolf.c dbufff.c dclearf.c dcoorf.c dflushf.c dfvecf.c dgcoorf.c \
         dgpausef.c dlinef.c dlinegwf.c dlinewf.c dmousef.c dpausef.c dpointf.c \
         dpointsf.c drawf.c drectf.c dscatterf.c dsclearf.c dsetpausef.c \
@@ -26,7 +26,7 @@ SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cgtypef.c \
 SOURCEF	 = 
 SOURCEH	 = 
 OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cgtypef.o \
-        chebyf.o cookief.o da2f.o dacornf.o daghostf.o dagtolf.o daltogf.o \
+        chebyf.o compositef.o cookief.o da2f.o dacornf.o daghostf.o dagtolf.o daltogf.o \
         daltolf.o dbufff.o dclearf.o dcoorf.o dflushf.o dfvecf.o dgcoorf.o \
         dgpausef.o dlinef.o dlinegwf.o dlinewf.o dmousef.o dpausef.o dpointf.o \
         dpointsf.o drawf.o drectf.o dscatterf.o dsclearf.o dsetpausef.o \
