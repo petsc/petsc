@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.63 1997/09/11 03:03:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.64 1997/10/19 03:23:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -27,6 +27,30 @@ int KSPDefaultFreeWork( KSP ksp )
   if (ksp->work)  {
     ierr = VecDestroyVecs(ksp->work,ksp->nwork); CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPGetResidualNorm"
+/*@C
+    KSPGetResidualNorm - Get's the last (approximate) residual norm computed.
+ 
+    Input Parameters:
+.   ksp - the iterative context
+
+    Output Parameters:
+.   rnorm - residual norm
+
+
+.keywords: KSP, residual norm
+
+.seealso: KSPComputeResidual()
+@*/
+int KSPGetResidualNorm(KSP ksp,double *rnorm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  *rnorm = ksp->rnorm;
   PetscFunctionReturn(0);
 }
 
