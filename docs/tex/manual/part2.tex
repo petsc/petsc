@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.252 1998/03/14 15:30:44 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.253 1998/03/18 15:38:32 curfman Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -694,10 +694,10 @@ array, divided among four processors.
 \end{figure}
 
 The example
-{\tt \$(PETSC\_DIR)/src/snes/examples/tutorials/ex5.c},
+{\tt \$\{PETSC\_DIR\}/src/snes/examples/tutorials/ex5.c},
 illustrates the use of a distributed array in the solution of
 a nonlinear problem.  The analogous Fortran program is
-\break {\tt \$(PETSC\_DIR)/src/snes/examples/tutorials/ex5f.F};
+\break {\tt \$\{PETSC\_DIR\}/src/snes/examples/tutorials/ex5f.F};
 See Chapter \ref{chapter:snes} for a discussion of the nonlinear
 solvers.
 
@@ -1142,7 +1142,7 @@ should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
 information will be reused (instead of regenerated) during successive
 steps, thereby increasing efficiency.  
-See {\tt \$(PETSC\_DIR)/src/sles/examples/tutorials/ex5.c} for a simple example of
+See {\tt \$\{PETSC\_DIR\}/src/sles/examples/tutorials/ex5.c} for a simple example of
 solving two linear systems that use the same matrix data structure.
 
 \subsection{Sparse Matrices}
@@ -1600,7 +1600,7 @@ equation solvers discussed in the following chapters.
 
 The routine {\tt MatShellSetOperation()} can be used to set any other
 shell matrix operations as well.  The file 
-{\tt \$(PETSC\_DIR)/include/mat.h} provides a complete list of matrix
+{\tt \$\{PETSC\_DIR\}/include/mat.h} provides a complete list of matrix
 operations, which have the form {\tt MATOP\_<OPERATION>}, where {\tt
 <OPERATION>} is the name (in all capital letters) of the user
 interface routine (for example, {\tt MatMult()} $ \rightarrow $ {\tt MATOP\_MULT}).  All
@@ -1695,7 +1695,7 @@ Another matrix routine of interest is \findex{MatConvert()}
 which converts the matrix {\tt mat} to new matrix, {\tt M}, that has
 either the same or different format.  Set {\tt newtype} to {\tt MATSAME}
 to copy the matrix, keeping the same matrix format.  See 
-{\tt \$(PETSC\_DIR)/include/mat.h} for other available matrix types;
+{\tt \$\{PETSC\_DIR\}/include/mat.h} for other available matrix types;
 standard ones are {\tt MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ,  
                MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG,  MATSEQBAIJ}, and
                {\tt MATMPIBAIJ}.
@@ -2392,9 +2392,9 @@ internally during the application of the preconditioner;
 
 Users who wish to use these preconditioners via the PETSc interface and
 who have not already installed BlockSolve95 should see
-the file {\tt \$(PETSC\_DIR)/Installation} for details on building
+the file {\tt \$\{PETSC\_DIR\}/Installation} for details on building
 PETSc when BlockSolve95 is being used.  In particular, one must edit
-the file {\tt \$(PETSC\_DIR)/bmake/\$(PETSC\_ARCH)/base.site} so that
+the file {\tt \$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base.site} so that
 {\tt BS\_LIB} and {\tt BS\_INCLUDE} indicate the library location, and
 the {\tt PCONF} variable specifies the flag {\tt -DHAVE\_BLOCKSOLVE}.
 Then the PETSc library must be (re)compiled.
@@ -2540,7 +2540,7 @@ user {\em must} explicitly call {\tt SLESSetUp()} \findex{SLESSetUp()}
 before calling {\tt PCBJacobiGetSubSLES()}, {\tt PCBGSGetSubSLES()}, or
 {\tt PCASMGetSubSLES()}.
 For further details, see the 
-example {\tt \$(PETSC\_DIR)/src/sles/examples/tutorials/ex7.c}.
+example {\tt \$\{PETSC\_DIR\}/src/sles/examples/tutorials/ex7.c}.
 
 The block Jacobi, block Gauss-Seidel, and additive Schwarz 
 preconditioners allow the user
@@ -2921,7 +2921,7 @@ routines are discussed below.
 To provide an overview of the use of the nonlinear solvers,
 we first introduce a complete and simple example in
 Figure~\ref{fig:snesexample}, corresponding to 
-{\tt \$(PETSC\_DIR)/src/snes/examples/tutorials/ex1.c}.  
+{\tt \$\{PETSC\_DIR\}/src/snes/examples/tutorials/ex1.c}.  
 Note that the procedures for solving systems
 of nonlinear equations and unconstrained minimization problems
 are quite similar.  We present the details unique to each class of 
@@ -3007,8 +3007,8 @@ function evaluation routine; {\tt PETSC\_NULL} should be used if such informatio
 is not needed.  In C and C++, a user-defined context is merely a
 structure in which various objects can be stashed; in Fortran a user
 context can be an integer array that contains both parameters and
-pointers to PETSc objects. {\tt \$(PETSC\_DIR)/src/snes/examples/tutorials/ex5.c} and
-{\tt \$(PETSC\_DIR)/src/snes/examples/ex5f.F} give examples of user-defined
+pointers to PETSc objects. {\tt \$\{PETSC\_DIR\}/src/snes/examples/tutorials/ex5.c} and
+{\tt \$\{PETSC\_DIR\}/src/snes/examples/ex5f.F} give examples of user-defined
 application contexts in C and Fortran, respectively.
 
 The user must also specify a routine to form some approximation of the
@@ -3061,7 +3061,7 @@ by setting {\tt flag} to {\tt SAME\_PRECONDITIONER}.  See the
 discussion of {\tt SLESSetOperators()} in Section~\ref{sec:usingsles} for
 details.
 
-The directory {\tt \$(PETSC\_DIR)/src/snes/examples/tutorials} provides
+The directory {\tt \$\{PETSC\_DIR\}/src/snes/examples/tutorials} provides
 a variety of examples.
 
 \subsection{Solving Unconstrained Minimization Problems}
@@ -3106,7 +3106,7 @@ case of solving systems of nonlinear equations in
 Section~\ref{sec:sneseq}; the options are identical for solving
 unconstrained minimization problems, and thus are not repeated here.
 
-The directory {\tt \$(PETSC\_DIR)/src/snes/examples/tests/umin} provides
+The directory {\tt \$\{PETSC\_DIR\}/src/snes/examples/tests/umin} provides
 examples of solving unconstrained minimization problems. 
 
 \section{The Various Nonlinear Solvers}
@@ -3472,7 +3472,7 @@ that SNES supports.  In particular, different linear system matrices
 and preconditioning matrices are allowed, as well as both matrix-free
 and application-provided preconditioners.  All combinations are
 possible, as demonstrated by the example, 
-{\tt \$(PETSC\_DIR)/src/snes/\-examples/ex5.c},
+{\tt \$\{PETSC\_DIR\}/src/snes/\-examples/ex5.c},
  in Figure~\ref{fig:snesexample2}.
 
 \begin{center}
@@ -4463,7 +4463,7 @@ is available for the adventurous.  Stay tuned for future developments.
 
 \sindex{graphics, disabling}
 To disable all x-window-based graphics, edit the file
-{\tt \$(PETSC\_DIR)/bmake/\$(PETSC\_ARCH)/base} and remove the flag
+{\tt \$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base} and remove the flag
 {\tt -DHAVE\_X11} from the CONF variable definition.  Then (re)compile
 the PETSc libraries.
 
@@ -4516,7 +4516,7 @@ files.
 \noindent {\bf Recommended Approach:}
 In the first  approach, 
 the Fortran include files for PETSc are located in the directory 
-{\tt \$(PETSC\_DIR)/include/FINCLUDE} and should be used via statements 
+{\tt \$\{PETSC\_DIR\}/include/FINCLUDE} and should be used via statements 
 such as the following:
 \begin{verbatim}
     #include "include/FINCLUDE/includefile.h"
@@ -4707,7 +4707,7 @@ pointer conversion within the C routine using
    Mat mat;
    ierr = PetscFortranObjectToCObject(*fmat,&mat);
 \end{verbatim}
-See {\tt \$(PETSC\_DIR)/src/vec/examples/tests/ex24.c} for a complete
+See {\tt \$\{PETSC\_DIR\}/src/vec/examples/tests/ex24.c} for a complete
 example demonstrating this interface.  Note that the pointer
 conversion is always done in the C/C++ routines, but not
 in the Fortran routines.
@@ -4725,7 +4725,7 @@ PETSc provides two macros (defined in C/C++) to help write
 portable code that mixes C/C++ and Fortran. They are 
 {\tt HAVE\_FORTRAN\_UNDERSCORE} and {\tt HAVE\_FORTRAN\_CAPS}
 \findex{HAVE_FORTRAN_UNDERSCORE} \findex{HAVE_FORTRAN_CAPS},
-which are defined in the file {\tt \$(PETSC\_DIR)/bmake/\$(PETSC\_ARCH)/base.site}.
+which are defined in the file {\tt \$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base.site}.
 The macros are used, for example, as follows:
 \begin{verbatim}
    #if defined(HAVE_FORTRAN_CAPS)
@@ -4805,14 +4805,14 @@ program, that routine is assumed to be written in C.
 \label{sec:fortcompile}
 
 Before any PETSc Fortran programs are compiled, the Fortran interface
-library must be built from the PETSc home directory, {\tt \$(PETSC\_DIR)},
+library must be built from the PETSc home directory, {\tt \$\{PETSC\_DIR\}},
 with the command
 \begin{verbatim}
    make BOPT=[g,O,Opg] fortran
 \end{verbatim}
 The Fortran interface library  for a particular architecture and {\tt BOPT} value
 resides in the same directory as the other PETSc libraries, as given by
-{\tt \$(PETSC\_DIR)/lib/lib\$(BOPT)/\$(PETSC\_ARCH)/libpetscfortran.a}.
+{\tt \$\{PETSC\_DIR\}/lib/lib\$(BOPT)/\$(PETSC\_ARCH)/libpetscfortran.a}.
 
 Figure \ref{fig:make1} shows a sample makefile that can be used for
 PETSc programs.  In this makefile, one can compile and run a debugging version
@@ -4889,10 +4889,10 @@ instructions on building the Fortran90 routines.
 Sample programs that illustrate the PETSc interface for Fortran
 are given in Figures \ref{fig:vec-Fortran} - \ref{fig:SNES-Fortran},
 corresponding to
-{\tt \$(PETSC\_DIR)/src/vec/examples/tests/ex19.F}, 
-{\tt \$(PETSC\_DIR)/src/vec/examples/tutorials/ex4f.F}, 
-\break {\tt \$(PETSC\_DIR)/src/draw/examples/tests/ex5.F}, and 
-{\tt \$(PETSC\_DIR)/src/snes/examples/ex1f.F}, respectively.  We also
+{\tt \$\{PETSC\_DIR\}/src/vec/examples/tests/ex19.F}, 
+{\tt \$\{PETSC\_DIR\}/src/vec/examples/tutorials/ex4f.F}, 
+\break {\tt \$\{PETSC\_DIR\}/src/draw/examples/tests/ex5.F}, and 
+{\tt \$\{PETSC\_DIR\}/src/snes/examples/ex1f.F}, respectively.  We also
 refer Fortran programmers to the C examples listed throughout the manual,
 since PETSc usage within the two languages differs only slightly.
 
@@ -4960,7 +4960,7 @@ then various kinds of profiling of code between calls to {\tt
 PetscInitialize()} and {\tt PetscFinalize()} can be \findex{USE_PETSC_LOG}
 activated at runtime.  Note that the flag {\tt -DPETSC\_LOG} can be
 specified for an installation of PETSc in the file {\tt
-\$(PETSC\_DIR)/bmake/\$(PETSC\_ARCH)/base.\$(BOPT)}, as discussed in
+\$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base.\$(BOPT)}, as discussed in
 Section~\ref{sec:makeflags}.  The profiling options include the following:
 \findex{-log_all} \findex{-log_summary} \findex{-log} \findex{-log_info}
 \findex{-log_trace}
@@ -5089,7 +5089,7 @@ We next discuss performance summaries for parallel programs,
 \findex{-log_summary} as shown within Figures~\ref{fig:exparprof} and
 ~\ref{fig:exparprof2}, which present the combined output generated by
 the {-log\_summary} option.  The program that generated this data is
-{\tt \$(PETSC\_DIR)/src/sles/examples/ex21.c}.  The code loads a
+{\tt \$\{PETSC\_DIR\}/src/sles/examples/ex21.c}.  The code loads a
 matrix and right-hand-side vector from a binary file and then solves
 the resulting linear system; the program then repeats this process for
 a second linear system.  This particular case was run on four
@@ -5160,7 +5160,7 @@ suggestions about achieving good performance with PETSc codes.
 \subsection{Using -log and -log\_all with PETScView}
 \findex{-log} \findex{-log_all}
 
-The PETSc utility {\tt \$(PETSC\_DIR)/bin/petscview [logfile]}
+The PETSc utility {\tt \$\{PETSC\_DIR\}/bin/petscview [logfile]}
 \findex{petscview} can be used to examine the profile data generated by
 {\tt -log} and {\tt -log\_all}.  Chapter \ref{ch:petsc_gui} provides
 details regarding this Tk/Tcl tool, which provides a high-level view of
@@ -5188,7 +5188,7 @@ the MPICH.  The user must compile the PETSc library with the {\tt
 -DHAVE\_MPE} flag, which is {\em not} activated by default. The user
 can turn on MPE logging by specifying {\tt -DHAVE\_MPE} in the {\tt
 PCONF} variable within {\tt
-\$(PETSC\_DIR)/bmake/\$(PETSC\_ARCH)/base.site} and (re)compiling all
+\$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base.site} and (re)compiling all
 of PETSc.
 
 By default, not all PETSc events are logged with MPE. For example,
@@ -5203,7 +5203,7 @@ To deactivate logging of an event for MPE, one should use
     PLogEventMPEDeactivate(int event);
 \end{verbatim}
 The {\tt event} may be either a predefined PETSc event (as listed in
-the file {\tt \$(PETSC\_DIR)/include/petsclog.h}) or one obtained with
+the file {\tt \$\{PETSC\_DIR\}/include/petsclog.h}) or one obtained with
 {\tt PetscEventRegister()} (as described in
 Section~\ref{sec:profileuser}).  These routines may be called as many
 times as desired in an application program, so that one could restrict
@@ -5341,7 +5341,7 @@ To enable or disable the PETSc logging of individual events, one uses the comman
    PLogEventDeactivate(int event);
 \end{verbatim}
 The {\tt event} may be either a predefined PETSc event (as listed in
-the file {\tt \$(PETSC\_DIR)/include/petsclog.h}) or one obtained with
+the file {\tt \$\{PETSC\_DIR\}/include/petsclog.h}) or one obtained with
 {\tt PetscEventRegister()} (as described in Section~\ref{sec:profileuser}).
 
 PETSc also provides routines that deactivate (or activate)
@@ -5467,7 +5467,7 @@ performance numbers are not distorted.
 When this procedure is used in conjunction with the user-defined stages of profiling
 described in Section~\ref{sec:profstages}, we can focus easily on the
 problem of interest.  For example, we used this technique in the program
-{\tt \$(PETSC\_DIR)/src/sles/examples/tutorials/ex10.c} to
+{\tt \$\{PETSC\_DIR\}/src/sles/examples/tutorials/ex10.c} to
 generate the timings within Figures~\ref{fig:exparprof} and \ref{fig:exparprof2}.
 In this case,
 the profiled code of interest (solving the linear system for the larger problem)
@@ -5494,7 +5494,7 @@ The user can specify alternative compiler options instead of
 the defaults set in the PETSc distribution.  One can set
 the compiler options for a particular architecture
 ({\tt PETSC\_ARCH}) and {\tt BOPT} by editing the file
-{\tt \$(PETSC\_DIR)/bmake/\$(PETSC\_ARCH)/base.\$(BOPT)}.
+{\tt \$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base.\$(BOPT)}.
 Section~\ref{sec:custom} gives details.
 
 \section{Profiling}
@@ -5511,7 +5511,7 @@ are specified.  We briefly highlight usage of these features below.
    summary for various phases of the code. \findex{-log_summary}
 
 \item Run the code with the option {\tt -log} (or {\tt -log\_all}), and use the utility
-   {\tt \$(PETSC\_DIR)/bin/petscview} to see where the code is fast and slow and
+   {\tt \$\{PETSC\_DIR\}/bin/petscview} to see where the code is fast and slow and
    what PETSc objects are being created. \findex{-log_all} \findex{-log}
 
 \item Compile the code with {\tt BOPT=Opg} and then run {\tt gprof} for a good-sized 
@@ -5608,8 +5608,8 @@ A simple technique for saving work vectors, matrices, etc. is employing
 a user-defined context.  In C and C++ such a context is merely a
 structure in which various objects can be stashed; in Fortran a user
 context can be an integer array that contains both parameters and pointers
-to PETSc objects. See {\tt \$(PETSC\_DIR)/snes/examples/tutorials/ex5.c} and 
-{\tt \$(PETSC\_DIR)/snes/examples/tutorials/ex5f.F} for examples of user-defined application
+to PETSc objects. See {\tt \$\{PETSC\_DIR\}/snes/examples/tutorials/ex5.c} and 
+{\tt \$\{PETSC\_DIR\}/snes/examples/tutorials/ex5f.F} for examples of user-defined application
 contexts in C and Fortran, respectively.
 
 \section{Numerical Experiments}
@@ -5708,7 +5708,7 @@ first having been set, a floating point exception is generated.  This
 option also calls {PetscInitializeLargeInts()}; see the man pages for
 details.  Note that so far these work only on the sun4 system.
 
-\item The utility {\tt \$(PETSC\_DIR)/bin/petscview} can illustrate graphically
+\item The utility {\tt \$\{PETSC\_DIR\}/bin/petscview} can illustrate graphically
 what PETSc objects have never been properly destroyed during a run.  
 First, one should check that the source has been compiled with the
 {\tt -DPETSC\_LOG} flag (which is the default for all versions).
@@ -5752,7 +5752,7 @@ overcoming them.
 \item {\bf Overhead of timing routines on certain machines}: On certain machines,
       even calling the system clock in order to time routines is 
       slow; this skews all of the flop rates and timing results. The file
-      {\tt \$(PETSC\_DIR)/src/benchmarks/PetscTime.c} contains a
+      {\tt \$\{PETSC\_DIR\}/src/benchmarks/PetscTime.c} contains a
       simple test problem that will approximate the ammount of time
       required to get the current time in a running program. On good
       systems it will on the order of 1.e-6 seconds or less.
@@ -5963,7 +5963,7 @@ predefined viewers:
       with {\tt closeport(v)}. On the PETSc side, one should destroy
       the viewer object with \findex{ViewerDestroy()} {\tt
       ViewerDestroy()}. The corresponding Matlab {\tt mex}
-      files are located in {\tt \$(PETSC\_DIR)/src/viewer/impls/matlab}.
+      files are located in {\tt \$\{PETSC\_DIR\}/src/viewer/impls/matlab}.
 \end{itemize}
 
 The user can control the format of ASCII printed objects with viewers 
@@ -6225,13 +6225,13 @@ libraries).  To work with complex numbers,
 the user should compile the PETSc libraries (including the Fortran
 interface library) and the application code with
 {\tt BOPT=[g\_complex,O\_complex,Opg\_complex]} for debugging, optimized,
-and profiling versions, respectively.  The file {\tt \$(PETSC\_DIR)/Installation}
+and profiling versions, respectively.  The file {\tt \$\{PETSC\_DIR\}/Installation}
 provides detailed instructions for installing PETSc.
 
 We recommend using optimized Fortran kernels for some key numerical
 routines with complex numbers (such as matrix-vector products, vector
 norms, etc.) instead of the default C++ routines.  See the ``Complex
-Numbers'' section of the file {\tt \$(PETSC\_DIR)/Installation} for
+Numbers'' section of the file {\tt \$\{PETSC\_DIR\}/Installation} for
 details on building these kernels.  This implementation exploits the
 maturity of Fortran compilers while retaining the identical user
 interface.  For example, on rs6000 machines, the base single-node
@@ -6240,7 +6240,7 @@ the default C++ code.
 
 Recall that each variant of the PETSc libraries is stored in a
 different directory, given by
-\break {\tt \$(PETSC\_DIR)/lib/lib\$(BOPT)/\$(PETSC\_ARCH)}, according to the
+\break {\tt \$\{PETSC\_DIR\}/lib/lib\$(BOPT)/\$(PETSC\_ARCH)}, according to the
 architecture and {\tt BOPT} optimization variable.  Thus, the libraries for complex
 numbers are maintained separately from those for real
 numbers.  When using any of the complex numbers versions of PETSc,
@@ -6251,10 +6251,10 @@ numbers when using the complex versions of the PETSc libraries;
 however, when working {\em only} with real numbers in a code,
 one should use a version of PETSc for real numbers for best efficiency.
 
-The program {\tt \$(PETSC\_DIR)/src/sles/examples/tutorials/ex11.c}
+The program {\tt \$\{PETSC\_DIR\}/src/sles/examples/tutorials/ex11.c}
 solves a linear system with a complex
 coefficient matrix.  Its Fortran counterpart is
-{\tt \$(PETSC\_DIR)/src/sles/examples/tutorials/ex11f.F}.
+{\tt \$\{PETSC\_DIR\}/src/sles/examples/tutorials/ex11f.F}.
 
 \section{Emacs Users} \sindex{Emacs} \label{sec:emacs}
 
@@ -6263,7 +6263,7 @@ If users develop application codes on UNIX machines using Emacs (which we
 highly recommend), the {\tt etags} feature can be used to search PETSc 
 files quickly and efficiently.  To use this feature, one should 
 first check if the file,
-{\tt \$(PETSC\_DIR)/TAGS} exists.  If this file is
+{\tt \$\{PETSC\_DIR\}/TAGS} exists.  If this file is
 not present, it should be generated by
 running {\tt make etags} from the PETSc home directory. 
 Once the file exists, from 
@@ -6282,12 +6282,12 @@ one can simply use ``{\tt M-,}'' to find the next occurrence.
 If users develop 
 application codes on UNIX machines using VI, the {\tt ctags} feature 
 can be used to browse PETSc files quickly and efficiently.  To use 
-this feature, one should first check if the file, {\tt \$(PETSC\_DIR)/tags} 
+this feature, one should first check if the file, {\tt \$\{PETSC\_DIR\}/tags} 
 exists.  If this file is not present, it should be generated by running 
 {\tt make tags} from the PETSc home directory. Once the file exists, 
-from VI, the user should issue the command ``{\tt :set tags=\$(PETSC\_DIR)/tags}'' 
+from VI, the user should issue the command ``{\tt :set tags=\$\{PETSC\_DIR\}/tags}'' 
 or the user should add to
-his ``{\tt \~/.exrc }'' file the line ``{\tt set tags=\$(PETSC\_DIR)/tags}''.
+his ``{\tt \~/.exrc }'' file the line ``{\tt set tags=\$\{PETSC\_DIR\}/tags}''.
 Then the command ``{\tt :tag FunctionName}'' will cause VI 
 to find the file and line number where a desired PETSc function 
 is defined. 
@@ -6332,10 +6332,10 @@ create versions that use complex double-precision numbers.
 
 \subsection{Makefile Commands} \label{sec:common}
 
-The directory {\tt \$(PETSC\_DIR)/bmake} contains virtually all
+The directory {\tt \$\{PETSC\_DIR\}/bmake} contains virtually all
 makefile commands and customizations to enable portability across
 different architectures.  Most makefile commands for maintaining the
-PETSc system are defined in the file {\tt \$(PETSC\_DIR)/bmake/common}.  
+PETSc system are defined in the file {\tt \$\{PETSC\_DIR\}/bmake/common}.  
 These commands, which process all appropriate files within the
 directory of execution, include
 \begin{itemize}
@@ -6367,13 +6367,13 @@ listed above. For example, if the command
 \begin{verbatim}
    make BOPT=g ACTION=lib tree
 \end{verbatim}
-were executed from the directory {\tt \$(PETSC\_DIR)/src/ksp},
+were executed from the directory {\tt \$\{PETSC\_DIR\}/src/ksp},
 the debugging library for all Krylov subspace solvers would be built.
 
 \subsection{Customized Makefiles}
 \label{sec:custom}
 
-The directory {\tt \$(PETSC\_DIR)/bmake} contains a subdirectory for each 
+The directory {\tt \$\{PETSC\_DIR\}/bmake} contains a subdirectory for each 
 architecture that contains machine-specific information, enabling the
 portability of our makefile system.
 For instance, for Sun SPARCstations running OS 4.1.3, the 
@@ -6398,8 +6398,8 @@ several base makefiles:
                             profiling.
 \end{itemize}
 Each architecture base file, denoted by
-{\tt \$(PETSC\_DIR)/bmake/\$(PETSC\_ARCH)/base},
-includes the file \break {\tt \$(PETSC\_DIR)/bmake/common},
+{\tt \$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base},
+includes the file \break {\tt \$\{PETSC\_DIR\}/bmake/common},
 which contains the rules discussed in Section~\ref{sec:common}
 that are common to all machines.
 
@@ -6413,7 +6413,7 @@ freeBSD {\em gnumake} must be used.
 PETSc has several flags that determine how the source code will be
 compiled.  The default flags for particular versions are specified by
 the variable {\tt PETSCFLAGS} within the base files of {\tt
-\$(PETSC\_DIR)/bmake/\$(PETSC\_ARCH)}, discussed in Section
+\$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)}, discussed in Section
 ~\ref{sec:custom}.  The flags include
 \begin{itemize}
 \item PETSC\_DEBUG - The PETSc debugging options are activated. We 
@@ -6434,11 +6434,11 @@ The first is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraires.
 The most important line in this makefile is the line starting with {\tt include}:
 \begin{verbatim}
-   include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+   include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 \end{verbatim}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
-{\tt \$(PETSC\_DIR)}) and architecture (specified by
+{\tt \$\{PETSC\_DIR\}}) and architecture (specified by
 {\tt \$(PETSC\_ARCH)}).  (See \ref{sec:running} for information on
 setting these environmental variables.)  As listed in the sample
 makefile, the appropriate {\tt include} file is automatically
@@ -6460,7 +6460,7 @@ within the makefile.
    LIBBASE         = libpetscsles
    DIRS            = 
 
-   include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+   include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
    ex2: ex2.o chkopts
            $(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
@@ -6524,7 +6524,7 @@ controls the generation of several example programs.
    runex4:
         -@$(MPIRUN) -np 4 ex4 -trdump
 
-   include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+   include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Several Example Programs}
@@ -6593,7 +6593,7 @@ makefiles, they are also easily used.
 \begin{verbatim}
    ALL: lib
 
-   CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I$(PETSC_DIR)/pinclude $(CONF)
+   CFLAGS   =  ${PETSC_INCLUDE} -I../../.. -I${PETSC_DIR}/pinclude ${CONF}
    SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c
    SOURCEF  = degree.f  fnroot.f genqmd.f qmdqt.f rcm.f fn1wd.f gen1wd.f \
               genrcm.f qmdrch.f rootls.f fndsep.f gennd.f qmdmrg.f qmdupd.f
@@ -6604,7 +6604,7 @@ makefiles, they are also easily used.
    LIBBASE  = libpetscmat
    MANSEC   = 2
 
-   include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+   include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Library Maintenance}
@@ -6670,8 +6670,8 @@ Tcl/Tk: {\tt http://www.sunlabs.com/research/tcl/}.
 
 In order for PETScView and PETScOptions to work properly, a
 slight modification of the source code is required.  Using any text
-editor, the user should load the file {\tt \$(PETSC\_DIR)/bin/petscview} (or 
-\break {\tt \$(PETSC\_DIR)/bin/petscopts}) and change the
+editor, the user should load the file {\tt \$\{PETSC\_DIR\}/bin/petscview} (or 
+\break {\tt \$\{PETSC\_DIR\}/bin/petscopts}) and change the
 first line in the source code to point to the proper location of where
 {\tt wish} can be found.  For example, if {\tt wish} is located at
 {\tt /usr/bin/wish}, the first line for each program should be changed
@@ -6720,7 +6720,7 @@ utility.
 \subsection{Running PETScView}
 
 Due to fundamental limitations of Tcl/Tk, PETScView can only be run with 
-relatively small log files (at most a couple thousand events). If the user
+      relatively small log files (at most a couple thousand events). If the user
 generates a very large log file, Tcl/Tk will hang and often swamp 
 the machine. 
 
@@ -7071,20 +7071,20 @@ does {\em not} know how the data is stored internally.
 PETSc is designed around several components (e.g. {\tt Vec} (vectors),
 {\tt Mat} (matrices, both dense and sparse)). Each component has
 \begin{itemize}
-\item Its own include file {\tt \$(PETSC\_DIR)/include/<component>.h} 
-\item Its own directory, {\tt \$(PETSC\_DIR)/src/<component>}
+\item Its own include file {\tt \$\{PETSC\_DIR\}/include/<component>.h} 
+\item Its own directory, {\tt \$\{PETSC\_DIR\}/src/<component>}
 \item An abstract data structure defined in  the file
-      {\tt \$(PETSC\_DIR)/src/<component>/<component>impl.h}.
+      {\tt \$\{PETSC\_DIR\}/src/<component>/<component>impl.h}.
       This data structure is shared by all the different implementations of the 
       component. For example, for matrices it is shared by dense,
       sparse, parallel, and sequential formats.
 \item An abstract interface that defines the application callable 
       functions for the component. These are defined in the directory
-      {\tt \$(PETSC\_DIR)/src/<component>/interface}.
+      {\tt \$\{PETSC\_DIR\}/src/<component>/interface}.
 \item One or more actual implementations of the components (for example,
       sparse uniprocessor and parallel matrices implemented with the AIJ storage format).
       These are each in a subdirectory of 
-      \break {\tt \$(PETSC\_DIR)/src/<component>/impls}. Except in rare circumstances data 
+      \break {\tt \$\{PETSC\_DIR\}/src/<component>/impls}. Except in rare circumstances data 
       structures defined here should not be referenced from outside this 
       directory.
 \end{itemize}
@@ -7099,7 +7099,7 @@ completely removing the details of the implementation of {\tt
 because it allows the library internals to be changed
 without altering or recompiling the application code.
 
-Polymorphism is supported through the directory {\tt \$(PETSC\_DIR)/src/<component>/interface},
+Polymorphism is supported through the directory {\tt \$\{PETSC\_DIR\}/src/<component>/interface},
 which contains the code that implements the abstract interface to the
 operations on the object.  Essentially, these routines do some error
 checking of arguments and logging of profiling information 
@@ -7263,7 +7263,7 @@ logging and profiling within PETSc.   Chapter~\ref{ch:profiling}
 gives information about using the profiling in application codes. 
 
 The interface for profiling in PETSc is contained in the file 
-{\tt \$(PETSC\_DIR)/include/petsclog.h}. It includes \findex{PLogObjectCreate()}
+{\tt \$\{PETSC\_DIR\}/include/petsclog.h}. It includes \findex{PLogObjectCreate()}
 \begin{verbatim}
    PLogObjectCreate(PetscObject h);
 \end{verbatim}
@@ -7625,7 +7625,7 @@ provide easy-to-use PETSc interfaces for them.
 
 To allow the portable use of BLAS and LAPACK from C, we constructed a
 new include file, 
-\break{\tt \$(PETSC\_DIR)/include/pinclude/plapack.h}, that uses defines to make
+\break{\tt \$\{PETSC\_DIR\}/include/pinclude/plapack.h}, that uses defines to make
 a uniform naming scheme for BLAS (all routines begin with BL) and
 LAPACK (all routines begin with LA). This file incorporates function
 prototypes for the BLAS and LAPACK routines used. In addition, the
