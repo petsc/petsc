@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.15 1999/02/01 15:09:42 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.16 1999/02/03 15:40:45 bsmith Exp balay $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -35,7 +35,7 @@ X11_LIB        = -lX11
 #MPI_LIB        = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpi
 #MPI_INCLUDE    = -I/home/petsc/mpich/include
 #MPIRUN         = /home/petsc/mpich/lib/IRIX/ch_shmem/mpirun.ch_shmem
-MPI_HOME       = /home/petsc/mpich-1.1.2-beta
+MPI_HOME       = /home/petsc/mpich-1.1.2
 MPI_BUILD_HOME = ${MPI_HOME}/build/IRIX/ch_shmem
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
