@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.5 2001/07/17 19:28:31 bsmith Exp bsmith $ 
+# $Id: adprocess.py,v 1.6 2001/07/17 21:15:19 bsmith Exp bsmith $ 
 #
 # change python to whatever is needed on your system to invoke python
 #
@@ -36,7 +36,9 @@ def setupfunctionC(filename):
                 if fl:
                         struct = line
 			while line:
-                                if line[0] == "}":
+                                reg = re.compile('^[ ]*}')
+                                fl = reg.search(line)
+                                if fl:
 	 	                	 break
  		                line = f.readline()
                                 struct = struct + line
