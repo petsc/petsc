@@ -57,3 +57,8 @@ one cannot do error checking like
   if ((unsigned long)h & (unsigned long)3) {                        \
     SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Pointer to Object");   \
   }                                                                 \
+
+PETSC_HAVE_STD_COMPLEX
+indicates that the C++ compiler implements complex as a Standard
+template library, with <complex> as the include file, and using
+std::complex name space
