@@ -19,10 +19,12 @@ RUNEXAMPLES_3 =
 EXAMPLES_4    = 
 RUNEXAMPLES_4 = 
 EXAMPLESC     = PetscTime.c PetscGetTime.c MPI_Wtime.c PLogEvent.c PetscMalloc.c \
-		PetscMemcpy.c PetscMemzero.c PetscMemcmp.c Index.c PetscVecNorm.c
+		PetscMemcpy.c PetscMemzero.c PetscMemcmp.c Index.c PetscVecNorm.c \
+		PetscGetCPUTime.c
 EXAMPLESF     = 
 TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
-		PetscMemcpy PetscMemzero PetscMemcmp Index PetscVecNorm
+		PetscMemcpy PetscMemzero PetscMemcmp Index PetscVecNorm \
+		PetscGetCPUTime
 
 PetscTime: PetscTime.o  chkopts 
 	-$(CLINKER) -o PetscTime PetscTime.o $(PETSC_LIB)
@@ -31,6 +33,10 @@ PetscTime: PetscTime.o  chkopts
 PetscGetTime: PetscGetTime.o  chkopts 
 	-$(CLINKER) -o PetscGetTime PetscGetTime.o $(PETSC_LIB)
 	$(RM) -f PetscGetTime.o
+
+PetscGetCPUTime: PetscGetCPUTime.o  chkopts 
+	-$(CLINKER) -o PetscGetCPUTime PetscGetCPUTime.o $(PETSC_LIB)
+	$(RM) -f PetscGetCPUTime.o
 
 MPI_Wtime: MPI_Wtime.o  chkopts 
 	-$(CLINKER) -o MPI_Wtime MPI_Wtime.o $(PETSC_LIB)
@@ -69,9 +75,10 @@ test: $(TESTS)
 runtest: 
 	-@echo "Time Taken by some PETSc routines are as follows:"
 	-@echo "------------------------------------------------"
-	-@$(MPIRUN) -np 1 PetscTime    > /dev/null
-	-@$(MPIRUN) -np 1 PetscGetTime > /dev/null
-	-@$(MPIRUN) -np 1 MPI_Wtime    > /dev/null
+	-@$(MPIRUN) -np 1 PetscTime       > /dev/null
+	-@$(MPIRUN) -np 1 PetscGetTime    > /dev/null
+	-@$(MPIRUN) -np 1 PetscGetCPUTime > /dev/null
+	-@$(MPIRUN) -np 1 MPI_Wtime       > /dev/null
 	-@echo " "
 	-@echo "PLogEventBegin and PLogEventEnd together with options"
 	-@echo "------------------------------------------------"
