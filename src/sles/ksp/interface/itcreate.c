@@ -470,6 +470,15 @@ int KSPSetFromOptions(KSP ksp)
       }
     }
 
+    ierr = PetscOptionsName("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = KSPSetDiagonalScale(ksp,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsName("-ksp_diagonal_scale_fix","Fix diagonaled scaled matrix after solve","KSPSetDiagonalScaleFix",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = KSPSetDiagonalScaleFix(ksp,PETSC_TRUE);CHKERRQ(ierr);
+    }
+
     /*
       Prints reason for convergence or divergence of each linear solve
     */

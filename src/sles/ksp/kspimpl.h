@@ -84,6 +84,14 @@ struct _p_KSP {
   PetscTruth transpose_solve;    /* solve transpose system instead */
 
   KSPNormType normtype;          /* type of norm used for convergence tests */
+
+  /*   Allow diagonally scaling the matrix before computing the preconditioner or using 
+       the Krylov method. Note this is NOT just Jacobi preconditioning */
+
+  PetscTruth dscale;      /* diagonal scale system; used with KSPSetDiagonalScale() */
+  PetscTruth dscalefix;   /* unscale system after solve */
+  PetscTruth dscalefix2;  /* system has been unscaled */
+  Vec        diagonal;    /* 1/sqrt(diag of matrix) */
 };
 
 #define KSPLogResidualHistory(ksp,norm) \

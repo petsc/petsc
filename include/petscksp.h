@@ -196,6 +196,11 @@ EXTERN int KSPSetOptionsPrefix(KSP,const char[]);
 EXTERN int KSPAppendOptionsPrefix(KSP,const char[]);
 EXTERN int KSPGetOptionsPrefix(KSP,char*[]);
 
+EXTERN int KSPSetDiagonalScale(KSP,PetscTruth);
+EXTERN int KSPGetDiagonalScale(KSP,PetscTruth*);
+EXTERN int KSPSetDiagonalScaleFix(KSP,PetscTruth);
+EXTERN int KSPGetDiagonalScaleFix(KSP,PetscTruth*);
+
 EXTERN int KSPView(KSP,PetscViewer);
 
 /*E

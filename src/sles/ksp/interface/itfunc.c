@@ -192,6 +192,39 @@ int KSPSetUp(KSP ksp)
   if (ksp->setupcalled) PetscFunctionReturn(0);
   ksp->setupcalled = 1;
   ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
+
+  /* scale the matrix if requested */
+  if (ksp->dscale) {
+    Mat mat,pmat;
+    ierr = PCGetOperators(ksp->B,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
+    if (mat == pmat) {
+      PetscScalar  *xx;
+      int          i,n;
+      PetscTruth   zeroflag = PETSC_FALSE;
+
+      if (!ksp->diagonal) { /* allocate vector to hold diagonal */
+	ierr = VecDuplicate(ksp->vec_rhs,&ksp->diagonal);CHKERRQ(ierr);
+      }
+      ierr = MatGetDiagonal(mat,ksp->diagonal);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(ksp->diagonal,&n);CHKERRQ(ierr);
+      ierr = VecGetArray(ksp->diagonal,&xx);CHKERRQ(ierr);
+      for (i=0; i<n; i++) {
+	if (xx[i] != 0.0) xx[i] = 1.0/sqrt(PetscAbsScalar(xx[i]));
+	else {
+	  xx[i]     = 1.0;
+	  zeroflag  = PETSC_TRUE;
+	}
+      }
+      ierr = VecRestoreArray(ksp->diagonal,&xx);CHKERRQ(ierr);
+      if (zeroflag) {
+	PetscLogInfo(ksp,"KSPSetUp:Zero detected in diagonal of matrix, using 1 at those locations\n");
+      }
+      ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
+      ksp->dscalefix2 = PETSC_FALSE;
+    } else {
+      SETERRQ(1,"No support for diagonal scaling of linear system if preconditioner matrix not actual matrix");
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -269,6 +302,19 @@ int KSPSolve(KSP ksp)
     ierr = VecView(ksp->vec_rhs,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
   }
 
+  /* diagonal scale RHS if called for */
+  if (ksp->dscale) {
+    Mat mat;
+    ierr = VecPointwiseMult(ksp->diagonal,ksp->vec_rhs,ksp->vec_rhs);CHKERRQ(ierr);
+    /* second time in, but matrix was scaled back to original */
+    if (ksp->dscalefix && ksp->dscalefix2) {
+      Mat mat;
+
+      ierr = PCGetOperators(ksp->B,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
+    }
+  }
+
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp);CHKERRQ(ierr);}
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   if (ksp->guess_knoll) {
@@ -289,6 +335,22 @@ int KSPSolve(KSP ksp)
       ierr = PetscPrintf(ksp->comm,"Linear solve converged due to %s\n",convergedreasons[ksp->reason+8]);CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(ksp->comm,"Linear solve did not converge due to %s\n",convergedreasons[ksp->reason+8]);CHKERRQ(ierr);
+    }
+  }
+
+  /* diagonal scale solution if called for */
+  if (ksp->dscale) {
+    ierr = VecPointwiseMult(ksp->diagonal,ksp->vec_sol,ksp->vec_sol);CHKERRQ(ierr);
+    /* unscale right hand side and matrix */
+    if (ksp->dscalefix) {
+      Mat mat;
+
+      ierr = VecReciprocal(ksp->diagonal);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(ksp->diagonal,ksp->vec_rhs,ksp->vec_rhs);CHKERRQ(ierr);
+      ierr = PCGetOperators(ksp->B,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
+      ierr = VecReciprocal(ksp->diagonal);CHKERRQ(ierr);
+      ksp->dscalefix2 = PETSC_TRUE;
     }
   }
 
@@ -1373,3 +1435,154 @@ int KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetDiagonalScale"
+/*@
+   KSPSetDiagonalScale - Tells KSP to diagonally scale the system
+     before solving. This actually CHANGES the matrix (and right hand side).
+
+   Collective on KSP
+
+   Input Parameter:
++  ksp - the KSP context
+-  scale - PETSC_TRUE or PETSC_FALSE
+
+   Notes:
+    BE CAREFUL with this routine: it actually scales the matrix and right 
+    hand side that define the system. After the system is solved the matrix
+    and right hand side remain scaled.
+
+    This routine is only used if the matrix and preconditioner matrix are
+    the same thing.
+ 
+    If you use this with the PCType Eisenstat preconditioner than you can 
+    use the PCEisenstatNoDiagonalScaling() option, or -pc_eisenstat_no_diagonal_scaling
+    to save some unneeded, redundant flops.
+
+   Level: intermediate
+
+.keywords: KSP, set, options, prefix, database
+
+.seealso: KSPGetDiagonalScale(), KSPSetDiagonalScaleFix()
+@*/
+int KSPSetDiagonalScale(KSP ksp,PetscTruth scale)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  ksp->dscale = scale;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetDiagonalScale"
+/*@C
+   KSPGetDiagonalScale - Checks if KSP solver scales the matrix and
+                          right hand side
+
+   Not Collective
+
+   Input Parameter:
+.  ksp - the KSP context
+
+   Output Parameter:
+.  scale - PETSC_TRUE or PETSC_FALSE
+
+   Notes:
+    BE CAREFUL with this routine: it actually scales the matrix and right 
+    hand side that define the system. After the system is solved the matrix
+    and right hand side remain scaled.
+
+    This routine is only used if the matrix and preconditioner matrix are
+    the same thing.
+
+   Level: intermediate
+
+.keywords: KSP, set, options, prefix, database
+
+.seealso: KSPSetDiagonalScale(), KSPSetDiagonalScaleFix()
+@*/
+int KSPGetDiagonalScale(KSP ksp,PetscTruth *scale)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  *scale = ksp->dscale;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetDiagonalScaleFix"
+/*@C
+   KSPSetDiagonalScaleFix - Tells KSP to diagonally scale the system
+     back after solving.
+
+   Collective on KSP
+
+   Input Parameter:
++  ksp - the KSP context
+-  fix - PETSC_TRUE to scale back after the system solve, PETSC_FALSE to not 
+         rescale (default)
+
+   Notes:
+     Must be called after KSPSetDiagonalScale()
+
+     Using this will slow things down, because it rescales the matrix before and
+     after each linear solve. This is intended mainly for testing to allow one
+     to easily get back the original system to make sure the solution computed is
+     accurate enough.
+
+    This routine is only used if the matrix and preconditioner matrix are
+    the same thing.
+
+   Level: intermediate
+
+.keywords: KSP, set, options, prefix, database
+
+.seealso: KSPGetDiagonalScale(), KSPSetDiagonalScale(), KSPGetDiagonalScaleFix()
+@*/
+int KSPSetDiagonalScaleFix(KSP ksp,PetscTruth fix)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  ksp->dscalefix = fix;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetDiagonalScaleFix"
+/*@C
+   KSPGetDiagonalScaleFix - Determines if KSP diagonally scales the system
+     back after solving.
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - the KSP context
+
+   Output Parameter:
+.  fix - PETSC_TRUE to scale back after the system solve, PETSC_FALSE to not 
+         rescale (default)
+
+   Notes:
+     Must be called after KSPSetDiagonalScale()
+
+     If PETSC_TRUE will slow things down, because it rescales the matrix before and
+     after each linear solve. This is intended mainly for testing to allow one
+     to easily get back the original system to make sure the solution computed is
+     accurate enough.
+
+    This routine is only used if the matrix and preconditioner matrix are
+    the same thing.
+
+   Level: intermediate
+
+.keywords: KSP, set, options, prefix, database
+
+.seealso: KSPGetDiagonalScale(), KSPSetDiagonalScale(), KSPSetDiagonalScaleFix()
+@*/
+int KSPGetDiagonalScaleFix(KSP ksp,PetscTruth *fix)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  *fix = ksp->dscalefix;
+  PetscFunctionReturn(0);
+}
