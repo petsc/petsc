@@ -27,8 +27,8 @@ C_SYS_LIB  = @LIBS@ @FC_LIB@
 # contain an explicit : character for an option that we are not using nor
 # need.  This causes the configure-based builds to fail.
 # The following was an attempt to override the bogus definitions.
-CLINKER	       = ${C_CLINKER} ${COPTFLAGS} 
-FLINKER	       = ${C_FLINKER} ${FOPTFLAGS} 
+###CLINKER	       = ${C_CLINKER} ${COPTFLAGS} 
+###FLINKER	       = ${C_FLINKER} ${FOPTFLAGS} 
 # Regrettably, this file loses in the war of battling definitions.
 # Fixing this requires changing common_xxx.
 # I belive that these should in fact be

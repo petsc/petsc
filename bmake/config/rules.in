@@ -40,7 +40,7 @@ libf: $(LIBNAME)($(OBJSF))
 #	-$(RM) $*.o	$*.f
 
 
-SLSUFFIX = so.1.0 
+#SLSUFFIX = so.1.0 
 # This is old code.  See the bmake/<arch>/base files for current information
 # on creating shared libraries.  Eventually, we should use libtool or a 
 # similar approach.
