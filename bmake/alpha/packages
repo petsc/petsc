@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base.site,v 1.23 1997/09/10 18:11:09 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -7,26 +7,22 @@
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
 #
-# FCLIB contains the libraries for a CLINKER to use for code containing
-# FORTRAN code (such as I/O or special Fortran runtimes). 
+# FC_LIB contains the libraries for a CLINKER to use for code containing
+# FORTRAN code (such as I/O or special Fortran runtimes).  
 #
+#FC_LIB         =  -lutil -lFutil -lots -lUfor -lfor
+FC_LIB          =
 #FC_LIB         =  /usr/lib/libfor.a /usr/lib/libutil.a \
 #                 /usr/lib/libFutil.a /usr/lib/libots.a 
-#FC_LIB         =                    /usr/lib/libutil.a \
-#                 /usr/lib/libFutil.a /usr/lib/libots.a  
-#FC_LIB         =  -lutil -lFutil -lots -lUfor -lfor
-FC_LIB         =
-# /usr/lib/libUfor.a /usr/lib/libfor.a /usr/lib/libc_r.a \
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
+#
 # If you are lucky, you may have the DEC Alpha math library installed on 
 # your machine. The library name is dxml, and it contains both BLAS and Lapack.
 #
-#
 BLAS_LIB        = -lpetscblas
 LAPACK_LIB      = 
-#
 #BLAS_LIB       = /home/bsmith/lapack/blas_alpha.a $(FC_LIB)
 #LAPACK_LIB     = /home/bsmith/lapack/lapack_alpha.a 
 #
@@ -45,32 +41,56 @@ MPI_LIB        = /home/petsc/mpich/lib/alpha/ch_p4/libmpi.a
 MPI_INCLUDE    = -I/home/petsc/mpich/include -DUSES_INT_MPI_COMM
 MPIRUN         = /home/petsc/mpich/lib/alpha/ch_p4/mpirun
 #
-# The following lines can be uncommented if MPIUNI is used
+# The following lines can be used with MPIUNI
 #
 #MPI_LIB         =$(LDIR)/libmpiuni.a
 #MPI_INCLUDE     = -I$(PETSC_DIR)/src/mpiuni -DUSES_INT_MPI_COMM
 #MPIRUN          = $(PETSC_DIR)/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  
-# PCONF - indicates which OPTIONAL external packages are available at your site
 #
-# If you have a package then make sure -DHAVE_packagename is indicated below and 
-# the locations are appropriately indicated. If you do not have the package then
-# comment out the locations indicated for that package.
+# Optional location of MPE
 #
-# Make sure that you have the DEC alpha dxml library installed on your 
-# machine and -ldxml in the BLAS_LIB line above if you define 
-# HAVE_DXML below.
+#MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
+#MPE_INCLUDE   = -I/usr/local/mpi/include
 #
-PCONF      =   -DHAVE_BLOCKSOLVE
-#
-#   If you are not using BlockSolve then comment out or remove the next
-#  two lines and make sure -DHAVE_BLOCKSOLVE is not defined above
+# Optional location of BlockSolve (MPI version)
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
 BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
-
-DYLIBPATH  = 
-
+# Optional Matlab location
+#
+#MATLAB_LIB     = /usr/local/matlab/extern/lib/alpha/libmex.a
+#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
+#CMEX           = /usr/local/bin/cmex 
+#
+# Option location where adiC is installed
+#
+#ADIC_INCLUDE = -I$(ADIC)/run-lib/include -I$(ADIC)/gradient -I$(ADIC)/include -Dad_GRAD_MAX=1
+#ADIC_LIB     = -L$(ADIC)/lib -L$(ADIC)/run-lib/lib -L$(ADIC)/gradient -lADIntrinsics-C -laif_
+#ADIC_CC      = adiC -aeud gradient -i $(PETSC_DIR)/bmake/adicmastercontrol
+#
+# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# 
+#PVODE_INCLUDE = -I/home/bsmith/MPI_PVODE/include
+#PVODE_LIB     = /home/bsmith/MPI_PVODE/lib/alpha/libpvode.a
+#
+# ---------------------------------------------------------------------------------------
+#
+# PCONF - indicates which OPTIONAL external packages are available at your site
+#
+# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# the locations are appropriately indicated above. If you do not have the package then
+# comment out the locations indicated for that package above.
+#
+PCONF         = -DHAVE_BLOCKSOLVE
+#PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
 EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
+#
+# ---------------------------------------------------------------------------------------
+#
+# If you are using dynamic libraries you must make this
+# point to the directories where all your shared libraries are stored.
+#
+#DYLIBPATH     = /home/bsmith/lapack:/home/bsmith/blas
