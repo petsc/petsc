@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.41 1996/01/09 01:26:06 curfman Exp bsmith $ */
+/* $Id: plog.h,v 1.42 1996/01/12 03:56:30 bsmith Exp curfman $ */
 
 /*
     Defines high level logging in PETSc.
@@ -69,6 +69,7 @@
 #define VEC_View                                60
 #define VEC_ScatterBegin                        61
 #define VEC_ScatterEnd                          62
+#define VEC_SetRandom                           63
 
 #define SLES_Solve                              70
 #define SLES_SetUp                              71

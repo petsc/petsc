@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.40 1995/11/19 00:50:19 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.41 1996/01/01 01:05:46 bsmith Exp curfman $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -16,6 +16,7 @@
 #ifndef __VEC_PACKAGE 
 #define __VEC_PACKAGE
 #include "is.h"
+#include "sys.h"
 
 #define VEC_COOKIE         PETSC_COOKIE+3
 #define VEC_SCATTER_COOKIE PETSC_COOKIE+4
@@ -25,42 +26,43 @@ typedef enum { VECSAME=-1, VECSEQ, VECMPI } VecType;
 typedef struct _Vec*         Vec;
 typedef struct _VecScatter*  VecScatter;
 
-extern int VecCreateSeq(MPI_Comm,int,Vec *);  
-extern int VecCreateMPI(MPI_Comm,int,int,Vec *);  
-extern int VecCreate(MPI_Comm,int,Vec *); 
+extern int VecCreateSeq(MPI_Comm,int,Vec*);  
+extern int VecCreateMPI(MPI_Comm,int,int,Vec*);  
+extern int VecCreate(MPI_Comm,int,Vec*); 
 
 extern int VecDestroy(Vec);        
 
-extern int VecDot(Vec, Vec, Scalar*);
-extern int VecTDot(Vec, Vec, Scalar*);  
-extern int VecMDot(int,  Vec ,Vec*,Scalar*);
-extern int VecMTDot(int,  Vec ,Vec*,Scalar*); 
+extern int VecDot(Vec,Vec,Scalar*);
+extern int VecTDot(Vec,Vec,Scalar*);  
+extern int VecMDot(int,Vec,Vec*,Scalar*);
+extern int VecMTDot(int,Vec,Vec*,Scalar*); 
 
 typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4} NormType;
 #define NORM_MAX NORM_INFINITY
 extern int VecNorm(Vec,NormType,double *);
 extern int VecSum(Vec,Scalar*);
-extern int VecMax(Vec, int *,    double*);
-extern int VecMin(Vec, int *,    double*);
-extern int VecScale(Scalar*, Vec);    
-extern int VecCopy(Vec, Vec);        
-extern int VecSet(Scalar*, Vec);    
-extern int VecSwap(Vec, Vec);
-extern int VecAXPY(Scalar*, Vec, Vec);  
-extern int VecMAXPY(int,      Scalar*, Vec ,Vec*);
-extern int VecAYPX(Scalar*, Vec, Vec);
-extern int VecWAXPY(Scalar*, Vec, Vec, Vec);
-extern int VecPMult(Vec, Vec, Vec);    
-extern int VecPDiv(Vec, Vec, Vec);    
-extern int VecShift(Scalar *,Vec);
+extern int VecMax(Vec,int*,double*);
+extern int VecMin(Vec,int*,double*);
+extern int VecScale(Scalar*,Vec);    
+extern int VecCopy(Vec,Vec);        
+extern int VecSetRandom(SYRandomType,Vec);
+extern int VecSet(Scalar*,Vec);
+extern int VecSwap(Vec,Vec);
+extern int VecAXPY(Scalar*,Vec,Vec);  
+extern int VecMAXPY(int,Scalar*,Vec,Vec*);
+extern int VecAYPX(Scalar*,Vec,Vec);
+extern int VecWAXPY(Scalar*,Vec,Vec,Vec);
+extern int VecPMult(Vec,Vec,Vec);    
+extern int VecPDiv(Vec,Vec,Vec);    
+extern int VecShift(Scalar*,Vec);
 extern int VecReciprocal(Vec);
 extern int VecAbs(Vec);
-extern int VecDuplicate(Vec,Vec *);          
-extern int VecDuplicateVecs(Vec, int,Vec **);         
+extern int VecDuplicate(Vec,Vec*);          
+extern int VecDuplicateVecs(Vec,int,Vec**);         
 extern int VecDestroyVecs(Vec*,int); 
 
 typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES} InsertMode;
-extern int VecSetValues(Vec, int, int *,Scalar*,InsertMode);
+extern int VecSetValues(Vec,int,int*,Scalar*,InsertMode);
 extern int VecAssemblyBegin(Vec);
 extern int VecAssemblyEnd(Vec);
 
@@ -82,8 +84,8 @@ extern int VecValidVector(Vec);
 extern int VecView(Vec,Viewer);
 extern int VecLoad(Viewer,Vec*);
 
-extern int VecGetSize(Vec,int *);
-extern int VecGetLocalSize(Vec,int *);
+extern int VecGetSize(Vec,int*);
+extern int VecGetLocalSize(Vec,int*);
 extern int VecGetOwnershipRange(Vec,int*,int*);
 
 typedef enum {PIPELINE_DOWN=0,PIPELINE_UP=1} PipelineMode;

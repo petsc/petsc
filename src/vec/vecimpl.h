@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.20 1995/11/26 20:59:54 curfman Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.21 1996/01/01 01:01:07 bsmith Exp curfman $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -35,7 +35,8 @@ struct _VeOps {
        (*getownershiprange)(Vec,int*,int*),
        (*restorearray)(Vec,Scalar**),    /* restore data array */
        (*max)(Vec,int*,double*),         /* z = max(x); idx=index of max(x) */
-       (*min)(Vec,int*,double*);         /* z = min(x); idx=index of min(x) */
+       (*min)(Vec,int*,double*),         /* z = min(x); idx=index of min(x) */
+       (*setrandom)(SYRandomType,Vec);   /* set y[j] = random numbers */
 };
 
 struct _Vec {
