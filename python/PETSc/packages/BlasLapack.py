@@ -215,7 +215,7 @@ class Configure(config.base.Configure):
     yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libF77.a','libM77.a','libsunmath.a','libm.a'], 1)
     yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libfui.a','libfsu.a','libsunmath.a','libm.a'], 1)
     # Try Microsoft Windows location
-    for MKL_Version in ['MKL70','MKL61','MKL']:
+    for MKL_Version in ['MKL72','MKL70','MKL61','MKL']:
       MKL_Dir = os.path.join('/cygdrive', 'c', 'Program\\ Files', 'Intel', MKL_Version)
       if self.framework.argDB['with-64-bit-pointers']:
         MKL_Dir = os.path.join(MKL_Dir, 'ia64', 'lib')
