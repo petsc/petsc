@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.12 1996/07/08 22:20:04 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.13 1996/07/11 04:06:08 balay Exp balay $";
 #endif
 
 #include "mpibaij.h"
@@ -75,7 +75,7 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
         else {
           if (mat->was_assembled) {
             if (!baij->colmap) {ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);}
-            col = baij->colmap[in[j]];
+            col = baij->colmap[in[j]/bs] +in[j]%bs;
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
               ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr); 
               col =  in[j];              
@@ -730,6 +730,42 @@ static int MatGetBlockSize_MPIBAIJ(Mat mat, int *bs)
   return 0;
 }
 
+static int MatZeroEntries_MPIBAIJ(Mat A)
+{
+  Mat_MPIBAIJ *l = (Mat_MPIBAIJ *) A->data;
+  int         ierr;
+  ierr = MatZeroEntries(l->A); CHKERRQ(ierr);
+  ierr = MatZeroEntries(l->B); CHKERRQ(ierr);
+  return 0;
+}
+static int MatSetOption_MPIBAIJ(Mat A,MatOption op)
+{
+  Mat_MPIBAIJ *a = (Mat_MPIBAIJ *) A->data;
+
+  if (op == MAT_NO_NEW_NONZERO_LOCATIONS ||
+      op == MAT_YES_NEW_NONZERO_LOCATIONS ||
+      op == MAT_COLUMNS_SORTED ||
+      op == MAT_ROW_ORIENTED) {
+        MatSetOption(a->A,op);
+        MatSetOption(a->B,op);
+  }
+  else if (op == MAT_ROWS_SORTED || 
+           op == MAT_SYMMETRIC ||
+           op == MAT_STRUCTURALLY_SYMMETRIC ||
+           op == MAT_YES_NEW_DIAGONALS)
+    PLogInfo(A,"Info:MatSetOption_MPIBAIJ:Option ignored\n");
+  else if (op == MAT_COLUMN_ORIENTED) {
+    a->roworiented = 0;
+    MatSetOption(a->A,op);
+    MatSetOption(a->B,op);
+  }
+  else if (op == MAT_NO_NEW_DIAGONALS)
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:MAT_NO_NEW_DIAGONALS");}
+  else 
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:unknown option");}
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {
   MatSetValues_MPIBAIJ,MatGetRow_MPIBAIJ,MatRestoreRow_MPIBAIJ,MatMult_MPIBAIJ,
@@ -737,8 +773,8 @@ static struct _MatOps MatOps = {
   0,0,0,0,
   0,0,0,0,
   0,MatGetDiagonal_MPIBAIJ,0,MatNorm_MPIBAIJ,
-  MatAssemblyBegin_MPIBAIJ,MatAssemblyEnd_MPIBAIJ,0,0,
-  0,0,MatGetReordering_MPIBAIJ,0,
+  MatAssemblyBegin_MPIBAIJ,MatAssemblyEnd_MPIBAIJ,0,MatSetOption_MPIBAIJ,
+  MatZeroEntries_MPIBAIJ,0,MatGetReordering_MPIBAIJ,0,
   0,0,0,MatGetSize_MPIBAIJ,
   MatGetLocalSize_MPIBAIJ,MatGetOwnershipRange_MPIBAIJ,0,0,
   0,0,0,0,
