@@ -341,12 +341,15 @@ fortranstubs:
 	  -ptr64 PETSC_USE_POINTER_CONVERSION  -fcaps PETSC_HAVE_FORTRAN_CAPS \
           -fuscore PETSC_HAVE_FORTRAN_UNDERSCORE ${SOURCEC}
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .r .rm .so .html .ad .m .tex .mtex
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .r .rm .so .html .ad .m .tex .mtex .make
 
 #
 #
-.c.tex:
+.c.tex .F.tex:
 	${LGRIND}/${PETSC_ARCH}/lgrind -d ${LGRIND}/lgrindef -i $< > $*.tex
+
+.make.tex:
+	${LGRIND}/${PETSC_ARCH}/lgrind -lmake -d ${LGRIND}/lgrindef -i $< > $*.tex
 
 .tex.mtex:
 	PYTHONPATH=${PETSC_DIR}/maint;export PYTHONPATH;cat $< | ${PETSC_DIR}/maint/mapnameslatex.py > $*.mtex
