@@ -1,5 +1,4 @@
 
-
 PETSc Users Mailing list info:
 
   Perl script for WWW petsc-users subscription is located in:
@@ -48,5 +47,16 @@ Paragon account
    argument IPETSCDIR properly set.
 
 
-  To kill the running crontab remove bmake/common and bmake/RCS/common,v
+To kill the running crontab remove bmake/common and bmake/RCS/common,v
 
+
+To determine who is on the PETSc users mailing list send
+   to majordom@mcs.anl.gov "who petsc-users"
+
+
+To unsubscribe a person from petsc-users use
+   unsubscribe petsc-users name
+
+
+To add an object to the PETSc logging:
+  - Add object to plog.h, plog.c, petscsim.cfg ... anything else?
