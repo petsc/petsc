@@ -32,8 +32,7 @@ shared_cygwin:
 shared_linux_intel:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
-	${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}; \
-	${RM} -f *
+	${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
 
 shared_irix:
 	-@${C_CC} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
@@ -47,22 +46,18 @@ shared_freebsd:
 shared_hpux:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
-	${LD} -b *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}; \
-	${RM} -f *
+	${LD} -b *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
 
-#${CLINKER} -fPIC -shared *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX};
 shared_linux:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
-	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SLSUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}; \
-	${RM} -f *
+	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SLSUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
 
 shared_solaris:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
 	sys_lib=`echo "${SYS_LIB}" | sed s?-Wl,-rpath?-L?g`; external_lib=`echo "${PETSC_EXTERNAL_LIB_BASIC}" | sed s?-Wl,-rpath?-L?g`;\
-	${LD}  -G -h ${LIBNAME}.${SLSUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX} $${sys_lib} $${external_lib}; \
-	${RM} -f *
+	${LD}  -G -h ${LIBNAME}.${SLSUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX} $${sys_lib} $${external_lib}
 
 # Actions taken by libtool to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
@@ -71,8 +66,7 @@ shared_libtool:
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
 	${AR} x ${INSTALL_LIB_DIR}/lt_${LIBNAME}.${AR_LIB_SUFFIX}; \
 	${LIBTOOL} --mode=link ${CLINKER} ${CFLAGS} ${CCPPFLAGS} -rpath ${INSTALL_LIB_DIR} -o ${LIBNAME}.la *.lo; \
-	${LIBTOOL} --mode=install ${PETSC_DIR}/bin/config/install-sh ${LIBNAME}.la ${INSTALL_LIB_DIR}; \
-	${RM} -f *
+	${LIBTOOL} --mode=install ${PETSC_DIR}/bin/config/install-sh ${LIBNAME}.la ${INSTALL_LIB_DIR}
 
 # This is the main target for building shared libraries. It takes the following actions
 #   a) Create 'tmp' in the library directory
@@ -108,5 +102,3 @@ shared:
 	  fi; \
 	done; \
 	${RM} -rf ${INSTALL_LIB_DIR}/tmp
-
-

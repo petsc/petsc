@@ -1,3 +1,9 @@
+#
+# a dummy target which does nothing - just in case
+# 'ALL: get mapped into this file'
+#  
+all_dummy:
+	-@true
 
 include ${PETSC_DIR}/bmake/common/variables
 include ${PETSC_DIR}/bmake/common/rules
