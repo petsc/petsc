@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.214 1998/03/23 22:12:16 balay Exp balay $ 
+# $Id: makefile,v 1.215 1998/03/24 20:39:23 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -246,7 +246,8 @@ TAGS_SRC_FILES      = src/*/*.[c,h] src/*/interface/*.[c,h] src/*/src/*.[c,h] \
                       src/snes/interface/noise/*.[c,F,h] src/gvec/impls/*/*/*/*/*.[c,h] \
 		      src/contrib/*/*.[c,h] \
                       src/contrib/*/src/*.[c,h] src/fortran/custom/*.[c,h,F] \
-		      src/fortran/f90/*.[c,h,F] src/fortran/kernels/*.[c,h,F] \
+		      src/fortran/kernels/*.[c,h,F] \
+		      src/fortran/f90/*.[c,h,F] src/fortran/f90/*/*.[c,h,F] \
 		      src/adic/blas/*.c src/lapack/src[1,2,3]/*.c
 TAGS_MAKEFILE_FILES = include/makefile include/*/makefile \
                       makefile \
@@ -257,7 +258,7 @@ TAGS_MAKEFILE_FILES = include/makefile include/*/makefile \
                       src/snes/interface/noise/makefile src/*/examples/makefile \
 		      src/*/examples/*/makefile src/*/examples/*/*/makefile \
                       src/gvec/impls/*/*/*/*/makefile src/gvec/impls/*/*/*/makefile \
-                      src/fortran/*/makefile \
+                      src/fortran/*/makefile src/fortran/f90/*/makefile \
                       src/contrib/*/makefile src/contrib/*/src/makefile \
                       src/contrib/*/examples/makefile src/contrib/*/examples/*/makefile \
                       src/contrib/sif/*/makefile docs/makefile src/adic/*/makefile \
