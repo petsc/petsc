@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.80 1997/01/06 20:29:52 balay Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.81 1997/01/14 22:58:01 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -84,13 +84,13 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
 
     /* Test for convergence */
     if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
-      if (X != snes->vec_sol) {
-        ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
-        snes->vec_sol_always = snes->vec_sol;
-        snes->vec_func_always = snes->vec_func;
-      }
       break;
     }
+  }
+  if (X != snes->vec_sol) {
+    ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
+    snes->vec_sol_always  = snes->vec_sol;
+    snes->vec_func_always = snes->vec_func;
   }
   if (i == maxits) {
     PLogInfo(snes,
