@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex22.c,v 1.4 1996/07/30 17:17:44 curfman Exp curfman $";
+static char vcid[] = "$Id: ex22.c,v 1.5 1996/08/20 05:10:22 curfman Exp curfman $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -216,7 +216,7 @@ int main(int argc,char **args)
   }
 
   /* Here we explicitly call SLESSetUp() and SLESSetUpOnBlocks() to
-     enable more precise profiling of setting up the preconditioner.
+     enable more detailed profiling of setting up the preconditioner.
      These calls are optional, since both will be called within
      SLESSolve() if they haven't been called already. */
   ierr = SLESSetUp(sles,b,phi); CHKERRA(ierr);
