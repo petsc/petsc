@@ -397,14 +397,14 @@ class SharedLinker(Linker):
      - This linker now works correctly with Cygwin'''
   def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = None):
     if not isinstance(inputTag, list): inputTag = [inputTag]
-    if libExt is None:
-      if 'HAVE_CYGWIN' in self.argDB:
-        libExt = 'dll'
-      else:
-        libExt = 'so'
     if outputTag is None:
       outputTag = inputTag[0]+' shared library'
     Linker.__init__(self, sourceDB, linker, inputTag, outputTag, isSetwise, updateType, library, libExt)
+    if self.libExt is None:
+      if 'HAVE_CYGWIN' in self.argDB:
+        self.libExt = 'dll'
+      else:
+        self.libExt = 'so'
     return
 
   def __str__(self):
