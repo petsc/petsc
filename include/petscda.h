@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.63 2001/03/22 18:47:52 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.64 2001/03/22 20:11:48 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -179,7 +179,6 @@ struct _p_DMMG {
   Vec        x,b,r;                /* global vectors used in multigrid preconditioner for this level*/
   Mat        J;                    /* matrix on this level */
   Mat        R;                    /* restriction to next coarser level (not defined on level 0) */
-  int        ratiox,ratioy,ratioz; /* grid spacing to next level finer level, usually 2 */
   int        nlevels;              /* number of levels above this one (total number of levels on level 0)*/
   MPI_Comm   comm;
   int        (*solve)(DMMG*,int);
