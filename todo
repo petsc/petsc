@@ -111,6 +111,9 @@ General
 
   Allow setting precision of printed numbers in ASCII viewers.
 
+  PetscSequentialPhaseBegin/End..() should NOT use a tag of 0!!! Need to stash tag used in begin
+  in communicator for use in end?
+
 Related Packages
 
   Download and look at HiFlow

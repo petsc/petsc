@@ -3,6 +3,7 @@ from __future__ import generators
 import user
 import config.base
 import os
+import md5
 
 #Developed for Mumps-4.3.1
 
@@ -36,8 +37,6 @@ class Configure(config.base.Configure):
     import nargs
 
     help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,0,'Indicate if you wish to test for '+self.name))
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<lib>',nargs.Arg(None,None,'Indicate the library containing '+self.name))
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of header files for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     help.addArgument(self.PACKAGE,'-with-scalapack-lib',nargs.ArgBool(None,None,'SCALAPACK libraries'))
     help.addArgument(self.PACKAGE,'-with-scalapack-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the SCALAPACK installation'))
@@ -47,6 +46,22 @@ class Configure(config.base.Configure):
     help.addArgument(self.PACKAGE,'-download-scalapack=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Install Scalapack'))
     help.addArgument(self.PACKAGE,'-download-mumps=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Install Mumps'))    
     return
+
+  def getChecksum(self,source, chunkSize = 1024*1024):
+    '''Return the md5 checksum for a given file, which may also be specified by its filename
+       - The chunkSize argument specifies the size of blocks read from the file'''
+    if isinstance(source, file):
+      f = source
+    else:
+      f = file(source)
+    m = md5.new()
+    size = chunkSize
+    buf  = f.read(size)
+    while buf:
+      m.update(buf)
+      buf = f.read(size)
+    f.close()
+    return m.hexdigest()
 
   def getDirBLACS(self):
     '''Find the directory containing BLACS'''
@@ -131,16 +146,24 @@ class Configure(config.base.Configure):
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
-    try:
-      output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make', timeout=2500, log = self.framework.log)[0]
-    except RuntimeError, e:
-      raise RuntimeError('Error running make on BLACS: '+str(e))
+    if not os.path.isfile(os.path.join(installDir,'Bmake.Inc')) or not (self.getChecksum(os.path.join(installDir,'Bmake.Inc')) == self.getChecksum(os.path.join(blacsDir,'Bmake.Inc'))):
+      try:
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make', timeout=2500, log = self.framework.log)[0]
+      except RuntimeError, e:
+        raise RuntimeError('Error running make on BLACS: '+str(e))
+    else:
+      self.framework.log.write('Do NOT need to compile BLACS downloaded libraries\n')
     if not os.path.isfile(os.path.join(installDir,'libblacs.a')):
       self.framework.log.write('Error running make on BLACS   ******(libraries not installed)*******\n')
       self.framework.log.write('********Output of running make on BLACS follows *******\n')        
       self.framework.log.write(output)
       self.framework.log.write('********End of Output of running make on BLACS *******\n')
       raise RuntimeError('Error running make on BLACS, libraries not installed')
+    try:
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(blacsDir,'Bmake.Inc')+' '+installDir, timeout=5, log = self.
+framework.log)[0]
+    except RuntimeError, e:
+      pass
     self.framework.actions.addArgument('blacs', 'Install', 'Installed blacs into '+installDir)
     return os.path.join(installDir,'libblacs.a')
 
@@ -227,36 +250,37 @@ class Configure(config.base.Configure):
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
-    try:
-      output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make clean', timeout=2500, log = self.framework.log)[0]
-    except RuntimeError, e:
-      pass
-    try:
-      output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make', timeout=2500, log = self.framework.log)[0]
-    except RuntimeError, e:
-      raise RuntimeError('Error running make on SCALAPACK: '+str(e))
+    if not os.path.isdir(installDir):
+      os.mkdir(installDir)
+    if not os.path.isfile(os.path.join(installDir,'SLmake.inc')) or not (self.getChecksum(os.path.join(installDir,'SLmake.inc')) == self.getChecksum(os.path.join(scalapackDir,'SLmake.inc'))):
+      try:
+        output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make clean', timeout=2500, log = self.framework.log)[0]
+      except RuntimeError, e:
+        pass
+      try:
+        output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make', timeout=2500, log = self.framework.log)[0]
+      except RuntimeError, e:
+        raise RuntimeError('Error running make on SCALAPACK: '+str(e))
+    else:
+      self.framework.log.write('Did not need to compile downloaded SCALAPACK\n')
     if not os.path.isfile(os.path.join(installDir,'libscalapack.a')):
       self.framework.log.write('Error running make on SCALAPACK   ******(libraries not installed)*******\n')
       self.framework.log.write('********Output of running make on SCALAPACK follows *******\n')        
       self.framework.log.write(output)
       self.framework.log.write('********End of Output of running make on SCALAPACK *******\n')
       raise RuntimeError('Error running make on SCALAPACK, libraries not installed')
+    try:
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(scalapackDir,'SLmake.inc')+' '+installDir, timeout=5, log = self.
+framework.log)[0]
+    except RuntimeError, e:
+      pass
     self.framework.actions.addArgument('scalapack', 'Install', 'Installed SCALAPACK into '+installDir)
     return os.path.join(installDir,'libscalapack.a')
 
   def generateIncludeGuesses(self):
-    if 'with-'+self.package in self.framework.argDB:
-      if 'with-'+self.package+'-include' in self.framework.argDB:
-        incl = self.framework.argDB['with-'+self.package+'-include']
-        yield('User specified '+self.PACKAGE+' header location',incl)
-      elif 'with-'+self.package+'-lib' in self.framework.argDB:
-        incl     = self.lib[0]
-        for i in 1,2:
-          (incl,dummy) = os.path.split(incl)
-        yield('based on found library location',os.path.join(incl,'include'))
-      elif 'with-'+self.package+'-dir' in self.framework.argDB:
-        dir = os.path.abspath(self.framework.argDB['with-'+self.package+'-dir'])
-        yield('based on found root directory',os.path.join(dir,'include'))
+    if 'with-'+self.package+'-dir' in self.framework.argDB:
+      dir = os.path.abspath(self.framework.argDB['with-'+self.package+'-dir'])
+      yield('based on found root directory',os.path.join(dir,'include'))
 
   def checkInclude(self,incl,hfile):
     if not isinstance(incl,list): incl = [incl]
@@ -270,9 +294,7 @@ class Configure(config.base.Configure):
     return found
 
   def generateLibGuesses(self):
-    if 'with-'+self.package+'-lib' in self.framework.argDB: #~MUMPS_4.3.1/lib/libdmumps.a
-      yield ('User specified '+self.PACKAGE+' library',self.framework.argDB['with-'+self.package+'-lib'])
-    elif 'with-'+self.package+'-dir' in self.framework.argDB: 
+    if 'with-'+self.package+'-dir' in self.framework.argDB: 
       dir = os.path.abspath(self.framework.argDB['with-'+self.package+'-dir'])
       dir = os.path.join(dir,'lib')
       libs = []
@@ -316,7 +338,7 @@ class Configure(config.base.Configure):
     else:
       self.framework.log.write('Must specify either a library or installation root directory for BLACS, or -download-blacs=yes\n')
 
-  def checkLib(self,lib,func,otherLibs = []):
+  def checkLib(self,lib,func,mangle,otherLibs = []):
     oldLibs = self.framework.argDB['LIBS']
     otherLibs += self.blasLapack.lapackLibrary
     if not None in self.blasLapack.blasLibrary:
@@ -326,7 +348,7 @@ class Configure(config.base.Configure):
     otherLibs += ' '+' '.join(map(self.libraries.getLibArgument, self.mpi.lib))
     if hasattr(self.compilers,'flibs'): otherLibs += ' '+self.compilers.flibs
     self.framework.log.write('Otherlibs '+otherLibs+'\n')
-    found = self.libraries.check(lib,func, otherLibs = otherLibs,fortranMangle=1)
+    found = self.libraries.check(lib,func, otherLibs = otherLibs,fortranMangle=mangle)
     self.framework.argDB['LIBS']=oldLibs
     if found:
       self.framework.log.write('Found function '+func+' in '+str(lib)+'\n')
@@ -339,7 +361,7 @@ class Configure(config.base.Configure):
     found  = 0
     for (configstr,libs) in self.generateBlacsLibGuesses():
       self.framework.log.write('Checking for a functional BLACS in '+configstr+'\n')
-      found = self.executeTest(self.checkLib,[libs,'blacs_pinfo'])
+      found = self.executeTest(self.checkLib,[libs,'blacs_pinfo',1])
       break  
     if found:
       if not isinstance(libs,list): self.blacslib = [libs]
@@ -351,26 +373,19 @@ class Configure(config.base.Configure):
     found  = 0
     for (configstr,libs) in self.generateScalapackLibGuesses():
       self.framework.log.write('Checking for a functional SCALAPACK in '+configstr+'\n')
-      found = self.executeTest(self.checkLib,[libs,'ssytrd',self.blacslib])
+      found = self.executeTest(self.checkLib,[libs,'ssytrd',1,self.blacslib])
       break
     if found:
       self.scalapacklib = [libs]
     else:
       raise RuntimeError('Could not find a functional SCALAPACK: use --with-scalapack-dir or --with-scalapack-lib to indicate location\n')
 
-
-    found  = 0
     foundlibs = 0
     foundh = 0
     for (configstr,libs) in self.generateLibGuesses():
       self.framework.log.write('Checking for a functional '+self.name+' in '+configstr+'\n')
-      for lib in libs:
-        #found = self.executeTest(self.checkLib,[libs[0],'dmumps_c',self.mpi.lib+self.compiler.flibs])
-        #found = self.executeTest(self.checkLib,[libs[0],'dmumps_c']) -- not work yet!
-        found = 1  #???
-        foundlibs = foundlibs or found
-        if found:
-          self.lib.append(lib)
+      foundlibs = self.executeTest(self.checkLib,[libs,'dmumps_c',0,self.blacslib+self.scalapacklib])
+      self.libs = libs
       break
     if foundlibs:
       for (inclstr,incl) in self.generateIncludeGuesses():
@@ -378,20 +393,16 @@ class Configure(config.base.Configure):
         foundh = self.executeTest(self.checkInclude,[incl,'dmumps_c.h'])
         if foundh:
           self.include = [incl]
-          self.found   = 1
           break
+      if not self.foundh:
+        raise RuntimeError('Could not find include files '+self.name+': Use --with-'+self.package+'-dir to indicate is location\n')        
     else:
-      raise RuntimeError('Could not find a functional '+self.name+': Use --with-'+self.package+'-dir to indicate is location\n')
-    
-      
+      raise RuntimeError('Could not find libraries for '+self.name+': Use --with-'+self.package+'-dir to indicate is location\n')
     self.setFoundOutput()
     return
 
   def setFoundOutput(self):
-    incl_str = ''
-    for i in range(len(self.include)):
-      incl_str += self.include[i]+ ' '
-    self.addSubstitution(self.PACKAGE+'_INCLUDE','-I' +incl_str)
+    self.addSubstitution(self.PACKAGE+'_INCLUDE',' '.join(['-I'+inc for inc in self.include]))
     self.addSubstitution(self.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
     self.addDefine('HAVE_'+self.PACKAGE,1)
     self.framework.packages.append(self)
