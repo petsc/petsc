@@ -1,7 +1,7 @@
-/*$Id: f90_rs6000.c,v 1.11 2000/01/11 21:03:54 bsmith Exp $*/
+/*$Id: f90_win32.c,v 1.1 2000/07/11 19:36:15 balay Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
-#if defined(PETSC_HAVE_XLF90)
+#if defined(PETSC_HAVE_DECF90)
 
 /* --------------------------------------------------------*/
 /*
@@ -20,7 +20,6 @@ int PetscF90Create1dArrayScalar(Scalar *array,int len,array1d *ptr)
 {
   ptr->addr          = (void *)array;
   ptr->id            = F90_SCALAR_ID;
-  ptr->cookie        = F90_COOKIE;
   ptr->sd            = sizeof(Scalar);
   ptr->ndim          = 1;
   ptr->dim[0].extent = len;
@@ -77,7 +76,6 @@ int PetscF90Create2dArrayScalar(Scalar *array,int m,int n,array2d *ptr)
 {
   ptr->addr          = (void *)array;
   ptr->id            = F90_SCALAR_ID;
-  ptr->cookie        = F90_COOKIE;
   ptr->sd            = sizeof(Scalar);
   ptr->ndim          = 2;
   ptr->dim[1].extent = m;
@@ -137,7 +135,6 @@ int PetscF90Create1dArrayInt(int *array,int len,array1d *ptr)
 {
   ptr->addr          = (void *)array;
   ptr->id            = F90_INT_ID;
-  ptr->cookie        = F90_COOKIE;
   ptr->sd            = sizeof(int);
   ptr->ndim          = 1;
   ptr->dim[0].extent = len;
@@ -194,7 +191,6 @@ int PetscF90Create1dArrayPetscFortranAddr(PetscFortranAddr *array,int len,array1
 {
   ptr->addr          = (void *)array;
   ptr->id            = F90_INT_ID;
-  ptr->cookie        = F90_COOKIE;
   ptr->sd            = sizeof(PetscFortranAddr);
   ptr->ndim          = 1;
   ptr->dim[0].extent = len;
@@ -239,7 +235,7 @@ int PetscF90Destroy1dArrayPetscFortranAddr(array1d *ptr)
      Dummy function so that compilers won't complain about 
   empty files.
 */
-int F90_rs600_Dummy(int dummy)
+int F90_win32_Dummy(int dummy)
 {
   return 0;
 }
