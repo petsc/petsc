@@ -151,7 +151,7 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 #if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT)
   PetscErrorCode    ierr;
 #endif
-  int               maxblock = 65536,wsize,err,m = (int) n;
+  int               maxblock = 65536,wsize,ierr,m = (int) n;
   char              *pp = (char*)p;
 #if (PETSC_SIZEOF_INT == 8) || !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_64BIT_INT)
   void              *ptmp = p; 
@@ -530,14 +530,13 @@ PetscErrorCode PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,PetscInt
 /*@C
    PetscSynchronizedBinarySeek - Moves the file pointer on a PETSc binary file.
 
-   Not Collective
 
    Input Parameters:
 +  fd - the file
 .  whence - if PETSC_BINARY_SEEK_SET then size is an absolute location in the file
             if PETSC_BINARY_SEEK_CUR then size is offset from current location
             if PETSC_BINARY_SEEK_END then size is offset from end of file
--  size - number of bytes to move. Use PETSC_BINARY_INT_SIZE, PETSC_BINARY_SCALAR_SIZE,
+-  off    - number of bytes to move. Use PETSC_BINARY_INT_SIZE, PETSC_BINARY_SCALAR_SIZE,
             etc. in your calculation rather than sizeof() to compute byte lengths.
 
    Output Parameter:
