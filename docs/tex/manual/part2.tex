@@ -2555,7 +2555,7 @@ When repeatedly solving linear systems with the same SLES
 context, one can reuse some information  computed
 during the first linear solve.
 In particular, PCILUSetReuseOrdering() causes the ordering  (for example, set with 
-\trl{-pc_ilu_ordering_type order}) computed in the first factorization to be reused
+\trl{-pc_ilu_ordering_type} \trl{order}) computed in the first factorization to be reused
 for later factorizations. \sindex{orderings} 
 The \trl{ PCILUDTSetReuseFill()} causes the 
 fill computed during the first drop tolerance factorization to be reused
@@ -2706,7 +2706,7 @@ also be set with the options \trl{-pc_sor_omega <omega>},
 
 The Eisenstat trick \cite{eisenstat81} \sindex{Eisenstat trick} for SSOR preconditioning 
 can be employed with the method PCEISENSTAT \findex{PCEISENSTAT} 
-(\trl{-pc_type eisenstat}).  
+(\trl{-pc_type} \trl{eisenstat}).  
 By using both left and right preconditioning of the linear system,
 this variant of SSOR requires about half of the floating-point operations 
 for conventional SSOR. \findex{-pc_eisenstat_no_diagonal_scaling} 
@@ -2815,8 +2815,8 @@ example \trl{${PETSC_DIR}/src/sles/examples/tutorials/ex7.c}.
 The block Jacobi, block Gauss-Seidel, and additive Schwarz 
 preconditioners allow the user
 to set the number of blocks into which the problem is divided.  The
-options database commands to set this value are \trl{-pc_bjacobi_blocks n}
-and \trl{-pc_bgs_blocks n}, and, within a program, the corresponding routines
+options database commands to set this value are \trl{-pc_bjacobi_blocks} \trl{n}
+and \trl{-pc_bgs_blocks} \trl{n}, and, within a program, the corresponding routines
 are \sindex{block Jacobi} \sindex{block Gauss-Seidel}
 \findex{-pc_bjacobi_blocks} \findex{-pc_bgs_blocks} 
 \begin{tabbing}
@@ -2977,15 +2977,15 @@ For example, to set the first sub preconditioners to use ILU(1)
 \findex{PCCompositeGetPC}
 
 These various options can also be set via the options database. For example,
-\trl{-pc_type composite} \findex{composite} \trl{-pc_composite_pcs jacobi,ilu}
+\trl{-pc_type} \trl{composite} \findex{composite} \trl{-pc_composite_pcs} \trl{jacobi,ilu}
 \findex{-pc_composite_pcs} causes the composite preconditioner to be used with 
-two preconditioners: Jacobi and ILU. The option \trl{-pc_composite_type multiplicative}
+two preconditioners: Jacobi and ILU. The option \trl{-pc_composite_type} \trl{multiplicative}
 \findex{-pc_composite_type} initiates the multiplicative version of the algorithm,
-while \trl{-pc_composite_type additive} the additive version. Using the true
+while \trl{-pc_composite_type} \trl{additive} the additive version. Using the true
 preconditioner is obtained with the option \trl{-pc_composite_true}. 
 \findex{-pc_composite_true} One sets options for the subpreconditioners with the 
 extra prefix \trl{-sub_N_} where \trl{N} is the number of the subpreconditioner.
-For example, \trl{-sub_0_pc_ilu_fill 0}.
+For example, \trl{-sub_0_pc_ilu_fill} \trl{0}.
 
 
 PETSc also allows a preconditioner to be a complete linear solver. This is 
@@ -3467,7 +3467,7 @@ Test Jacobian   & SNESTEST        & test  & \\
 
 \subsection{Line Search Techniques} \sindex{line search}
 
-The method \trl{SNESLS} (\trl{-snes_type ls}) provides a line
+The method \trl{SNESLS} (\trl{-snes_type} \trl{ls}) provides a line
 search Newton method for solving systems of nonlinear equations.  By
 default, this technique employs cubic backtracking \cite{dennis:83}.
 An alternative line search routine can be set with the command
@@ -3493,7 +3493,7 @@ can override the defaults by using the options
 \subsection{Trust Region Methods}\sindex{trust region}
 
 The trust region method in SNES for solving systems of nonlinear
-equations, \trl{SNESTR} (\trl{-snes_type tr}), is taken from
+equations, \trl{SNESTR} (\trl{-snes_type} \trl{tr}), is taken from
 the MINPACK project \cite{more84}. Several parameters can be set to
 control the variation of the trust region size during the solution
 process.  In particular, the user can control the initial trust region
@@ -3635,7 +3635,7 @@ routine arguments.
 Since hand-coding routines for Jacobian matrix evaluation
 can be error prone, SNES provides easy-to-use support for checking
 these matrices against finite difference versions.  In the simplest
-form of comparison, users can employ the option \trl{-snes_type test}
+form of comparison, users can employ the option \trl{-snes_type} \trl{test}
 to compare the matrices at several points.  Although not exhaustive,
 this test will generally catch obvious problems.  One can compare the
 elements of the two matrices by using the option \trl{
@@ -3718,7 +3718,7 @@ Jacobian evaluation routine need not be conventional
 matrices; instead, they can point to the data required to implement a
 particular matrix-free method.  The matrix-free variant is allowed
 {\em only} when the linear systems are solved by an iterative method
-in combination with no preconditioning (\trl{PCNONE} or \trl{-pc_type none}),
+in combination with no preconditioning (\trl{PCNONE} or \trl{-pc_type} \trl{none}),
 a user-provided preconditioner matrix, or a user-provided preconditioner
 shell (\trl{PCSHELL}, discussed in Section~\ref{sec_pc}); that is,
 obviously matrix-free methods cannot be used if a direct solver is to 
@@ -4197,7 +4197,7 @@ To use the PVODE integrators, call
 \begin{tabbing}
  TSSetType(TS ts,TSType TS\_PVODE);
 \end{tabbing}
-or use the command line option \trl{-ts_type pvode}. \findex{TS_PVODE} 
+or use the command line option \trl{-ts_type} \trl{pvode}. \findex{TS_PVODE} 
 \sindex{PVODE} \sindex{Hindmarsh} \sindex{ODE solvers}
 
 PVODE comes with to main integrator families, Adams and BDF (backward 
@@ -4244,7 +4244,7 @@ The routine
 \end{tabbing}
 sets the number of vectors in the Krylov subpspace used by GMRES.
 \findex{TSPVodeSetGMRESRestart()} This may be set in the options 
-database with \trl{-ts_pvode_gmres_restart restart}. \findex{-ts_pvode_gmres_restart}
+database with \trl{-ts_pvode_gmres_restart} \trl{restart}. \findex{-ts_pvode_gmres_restart}
 
 
 \subsection{Solving Steady-State Problems with Pseudo-Timestepping}
@@ -6582,7 +6582,7 @@ command \findex{PetscDrawSetDoubleBuffer()} \sindex{double buffer}
   PetscDrawSynchronizedFlush(PetscDraw win);
 \end{tabbing}
 in order to swap the buffers. From the options database one may use 
-\trl{-draw_pause n}, which \findex{-draw_pause} causes the PETSc application 
+\trl{-draw_pause} \trl{n}, which \findex{-draw_pause} causes the PETSc application 
 to pause \trl{n} seconds at each PetscDrawPause(). A time of \trl{-1}
 indicates that the application should pause until receiving mouse 
 input from the user.
@@ -7074,7 +7074,7 @@ directory for examples on how the reordering routines may be written.
 
 Once the reordering routine has been registered,
 it can be selected for use at runtime with the
-command line option \trl{-pc_lu_ordering_type sname}.  If reordering directly,
+command line option \trl{-pc_lu_ordering_type} \trl{sname}.  If reordering directly,
 the user should provide the \trl{name} as the second input argument of
 MatGetOrdering().
 
