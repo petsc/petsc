@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.140 2000/05/10 16:40:34 bsmith Exp bsmith $*/
+/*$Id: mpidense.c,v 1.141 2000/07/10 03:39:30 bsmith Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -144,12 +144,12 @@ static int MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
     newmat = *B;
   } else {
     /* Create and fill new matrix */
-    ierr = MatCreateMPIDense(A->comm,nrows,ncols,PETSC_DECIDE,PETSC_DECIDE,PETSC_NULL,&newmat);CHKERRQ(ierr);
+    ierr = MatCreateMPIDense(A->comm,nrows,cs,PETSC_DECIDE,ncols,PETSC_NULL,&newmat);CHKERRQ(ierr);
   }
 
   /* Now extract the data pointers and do the copy, column at a time */
   newmatd = (Mat_MPIDense*)newmat->data;
-  bv = ((Mat_SeqDense *)newmatd->A->data)->v;
+  bv      = ((Mat_SeqDense *)newmatd->A->data)->v;
   
   for (i=0; i<ncols; i++) {
     av = v + nlrows*icol[i];

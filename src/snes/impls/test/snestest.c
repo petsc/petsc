@@ -1,9 +1,9 @@
-/*$Id: snestest.c,v 1.48 2000/04/09 04:38:44 bsmith Exp bsmith $*/
+/*$Id: snestest.c,v 1.49 2000/04/12 04:25:35 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 
 typedef struct {
-  int complete_print;
+  PetscTruth complete_print;
 } SNES_Test;
 
 /*
@@ -29,11 +29,11 @@ int SNESSolve_Test(SNES snes,int *its)
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Cannot test with alternative preconditioner");
   }
 
-  ierr = (*PetscHelpPrintf)(snes->comm,"Testing hand-coded Jacobian, if the ratio is\n");CHKERRQ(ierr);
-  PetscPrintf(snes->comm,"O(1.e-8), the hand-coded Jacobian is probably correct.\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(snes->comm,"Testing hand-coded Jacobian, if the ratio is\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(snes->comm,"O(1.e-8), the hand-coded Jacobian is probably correct.\n");CHKERRQ(ierr);
   if (!neP->complete_print) {
-    ierr = (*PetscHelpPrintf)(snes->comm,"Run with -snes_test_display to show difference\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,"of hand-coded and finite difference Jacobian.\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(snes->comm,"Run with -snes_test_display to show difference\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(snes->comm,"of hand-coded and finite difference Jacobian.\n");CHKERRQ(ierr);
   }
 
   for (i=0; i<3; i++) {
@@ -93,7 +93,7 @@ static int SNESSetFromOptions_Test(SNES snes)
   PetscFunctionBegin;
   ierr = OptionsHasName(PETSC_NULL,"-snes_test_display",&flg);CHKERRQ(ierr);
   if (flg) {
-    ls->complete_print = 1;
+    ls->complete_print = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -120,7 +120,7 @@ int SNESCreate_Test(SNES  snes)
   neP			= PetscNew(SNES_Test);CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_Test));
   snes->data    	= (void*)neP;
-  neP->complete_print   = 0;
+  neP->complete_print   = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
