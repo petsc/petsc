@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.330 2001/01/04 22:34:53 balay Exp balay $ 
+# $Id: makefile,v 1.331 2001/01/08 17:10:18 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -210,6 +210,7 @@ etags:
 	-${RM} ${TAGSDIR}/TAGS
 	-touch ${TAGSDIR}/TAGS
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS ACTION=etags_sourcec alltree
+	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS ACTION=etags_sourcej alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS ACTION=etags_sourceh alltree
 	-cd src/fortran; ${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS ACTION=etags_sourcef alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS ACTION=etags_examplesc alltree
@@ -224,6 +225,7 @@ etags_complete:
 	-${RM} ${TAGSDIR}/TAGS_COMPLETE
 	-touch ${TAGSDIR}/TAGS_COMPLETE
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_sourcec alltree
+	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_sourcej alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_sourceh alltree
 	-cd src/fortran; ${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_sourcef alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_examplesc alltree
@@ -240,6 +242,7 @@ etags_noexamples:
 	-${RM} ${TAGSDIR}/TAGS_NO_EXAMPLES
 	-touch ${TAGSDIR}/TAGS_NO_EXAMPLES
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_sourcec alltree
+	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_sourcej alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_sourceh alltree
 	-cd src/fortran; ${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_sourcef alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_makefile alltree
