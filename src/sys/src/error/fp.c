@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.32 1997/02/13 20:16:09 balay Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.33 1997/02/22 02:23:29 bsmith Exp balay $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -43,7 +43,7 @@ struct { int code_no; char *name; } error_codes[] = {
 #define SIGPC(scp) (scp->sc_pc)
 
 #undef __FUNC__  
-#define __FUNC__ "sigfpe_handler_type SYsample_handler" /* ADIC Ignore */
+#define __FUNC__ "SYsample_handler" /* ADIC Ignore */
 sigfpe_handler_type SYsample_handler(int sig,int code,struct sigcontext *scp,
                                      char *addr)
 {
@@ -108,6 +108,7 @@ int PetscSetFPTrap(int flag)
 
 /* ------------------------ SOLARIS --------------------------------------*/
 #elif defined(PARCH_solaris) 
+#include <sunmath.h>
 #include <floatingpoint.h>
 #include <siginfo.h>
 #include <ucontext.h>
@@ -123,7 +124,7 @@ struct { int code_no; char *name; } error_codes[] = {
 #define SIGPC(scp) (scp->si_addr)
 
 #undef __FUNC__  
-#define __FUNC__ "sigfpe_handler_type SYsample_handler" /* ADIC Ignore */
+#define __FUNC__ "SYsample_handler" /* ADIC Ignore */
 void SYsample_handler(int sig, siginfo_t *scp,ucontext_t *uap)
 {
   int err_ind, j,ierr;
@@ -150,7 +151,7 @@ int PetscSetFPTrap(int flag)
   char *out; 
   (void) ieee_flags( "clear", "exception", "all", &out );
   if (flag == PETSC_FP_TRAP_ON) {
-    if (ieee_handler("set","common",SYsample_handler))
+    if (ieee_handler("set","common",(sigfpe_handler_type)SYsample_handler))
       fprintf(stderr, "Can't set floatingpoint handler\n");
   
     /* sigfpe(FPE_FLTINV,SYsample_handler);
@@ -160,7 +161,7 @@ int PetscSetFPTrap(int flag)
     sigfpe(FPE_FLTOVF,SYsample_handler); */
   }
   else {
-     if (ieee_handler("clear","common",SYsample_handler))
+     if (ieee_handler("clear","common",(sigfpe_handler_type)SYsample_handler))
 		fprintf(stderr,"Can't clear floatingpoint handler\n");
   }
   return 0;
