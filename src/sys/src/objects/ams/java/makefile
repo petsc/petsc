@@ -1,15 +1,18 @@
-# $Id: makefile,v 1.14 2001/02/14 17:15:41 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.15 2001/02/25 15:41:29 bsmith Exp bsmith $ 
 
 #requirespackage  'PETSC_HAVE_JAVA'
 
-SPECIALLIB = yes
-speciallib:      PETScRun PETScView PETScOptions PETScRund
+SPECIALLIB     = yes
+SPECIALFASTLIB = yes
+speciallib:      PETScRun PETScView PETScOptions PETScRund PETScPlugins
+specialfastlib: speciallib
 
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  = 
 SOURCEC	  = 
-SOURCEJ   = PETScRun.java PETScOptions.java PETScRund.java PETScView.java PumpStream.java PETScViewKSP.java
+SOURCEJ   = PETScRun.java PETScOptions.java PETScRund.java PETScView.java PumpStream.java PETScViewKSP.java \
+            PETScViewSNES.java
 SOURCEF	  =
 SOURCEH	  = 
 OBJSC	  = 
@@ -53,6 +56,15 @@ PETScOptions:
 	-@cp -f PETScOptions.html /mcs/www-unix/petsc/bin
 	-@${RM} AMSBean/*.class
 	-@chmod g+w /mcs/www-unix/petsc/bin/PETScOptions.*
+
+PETScPlugins:
+	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScPlugins*.java 
+	-@${JAR} cf PETScPlugins.jar *.class
+	-@rm -f /mcs/www-unix/petsc/bin/PETScPlugins.*
+	-@mv -f PETScPlugins.jar /mcs/www-unix/petsc/bin
+	-@cp PETScPlugins.html /mcs/www-unix/petsc/bin
+	-@${RM} *.class
+	-@chmod g+w /mcs/www-unix/petsc/bin/PETScPlugins.*
 
 PETScRund:
 	-@${JAVAC} -deprecation PETScRund.java PumpStream.java

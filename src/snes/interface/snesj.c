@@ -1,4 +1,4 @@
-/*$Id: snesj.c,v 1.68 2000/09/28 21:14:05 bsmith Exp bsmith $*/
+/*$Id: snesj.c,v 1.69 2001/01/15 21:47:49 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"    /*I  "petscsnes.h"  I*/
 
@@ -65,7 +65,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
 
   ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
-  ierr = eval_fct(snes,x1,j1a);CHKERRQ(ierr);
+  ierr = (*eval_fct)(snes,x1,j1a);CHKERRQ(ierr);
 
   /* Compute Jacobian approximation, 1 column at a time. 
       x1 = current iterate, j1a = F(x1)
@@ -90,7 +90,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     } else {
       wscale = 0.0;
     }
-    ierr = eval_fct(snes,x2,j2a);CHKERRQ(ierr);
+    ierr = (*eval_fct)(snes,x2,j2a);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,j1a,j2a);CHKERRQ(ierr);
     /* Communicate scale to all processors */
     ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
