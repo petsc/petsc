@@ -55,7 +55,13 @@ SLESSolveTrans() is now SLESSolveTranspose()
   Viewers
 
 
-   
+   PETSc now has a new viewer that generates rudimentary Postscript.
+Improvements, additions may be added as needed.
+
+  Barry
+
+  DrawOpenPS(), or DrawSetType(,DRAW_PS); or -draw_type ps
+
 
   SNES 
 
