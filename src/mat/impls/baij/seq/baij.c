@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.109 1997/07/28 16:19:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.110 1997/08/22 15:14:29 bsmith Exp curfman $";
 #endif
 
 /*
@@ -2069,7 +2069,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
 
    Options Database Keys:
 $    -mat_no_unroll - uses code that does not unroll the loops in the 
-$                     block calculations (much solver)
+$                     block calculations (much slower)
 $    -mat_block_size - size of the blocks to use
 
    Notes:
