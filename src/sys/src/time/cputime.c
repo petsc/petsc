@@ -1,13 +1,25 @@
 #ifndef lint
-static char vcid[] = "$Id: cputime.c,v 1.1 1997/04/01 15:31:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cputime.c,v 1.2 1997/04/01 20:33:29 bsmith Exp bsmith $";
 #endif
 
 /*
               This file is not currently used. It is to allow one
-     to measure CPU time usage of their job, not just real time usage.
+     to measure CPU time usage of their job, NOT real time usage.
 */
 
 #include "petsc.h"
+
+#if defined(PARCH_t3d)
+
+PLogDouble PetscGetCPUTime()
+{
+  fprintf(stderr,"CPUTime unavailable on Cray T3D/E\n");
+  fprintf(stderr,"PetscGetCPUTime() returning 0\n");
+  return 0.0;
+}
+
+#else
+
 #include "src/sys/src/files.h"
 #if defined(PARCH_hpux)
 #include <time.h>
@@ -17,7 +29,6 @@ static char vcid[] = "$Id: cputime.c,v 1.1 1997/04/01 15:31:40 bsmith Exp bsmith
 #else
 #include <sys/types.h>
 #include <sys/time.h>
-#include <sys/resource.h>
 #include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
@@ -64,6 +75,7 @@ return  ((double)clock()) / ((double)CLOCKS_PER_SEC);
 #endif
 }
 
+#endif
 
 
 

@@ -90,8 +90,6 @@ Barry  * Finite difference approximations of derivatives using coloring
 
 Lois  - Add routine SNESWillNeedJacobian(SNES,SNESJacobianNeeded yes,no,maybe);
     
-Satish  - Add a searchable index for the man pages (Jeff Scroggs Complaint)
-
 Satish  - fix PetscView so that with scrolling in horizontal direction and click on icon
     it pops up detailed information in correct location.
 
