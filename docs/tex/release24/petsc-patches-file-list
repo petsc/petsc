@@ -17,5 +17,3 @@ src/sles/ksp/impls/cg/cg.c
 #
 src/snes/examples/tests/ex11.c
 src/snes/examples/tests/ex11options
-
-
