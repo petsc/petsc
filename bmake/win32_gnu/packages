@@ -12,7 +12,7 @@
 #
 #FC_LIB         = c:/users/petsc/clapack/f2clibs/libF77.a \
 #		 c:/users/petsc/clapack/f2clibs/libI77.a -lm
-FC_LIB          = -lf2c
+FC_LIB          = -lg2c
 #
 # Location of BLAS and LAPACK.  
 #
