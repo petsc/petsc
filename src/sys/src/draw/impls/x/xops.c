@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.28 1995/09/06 03:06:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.29 1995/09/30 19:30:30 bsmith Exp curfman $";
 #endif
 
 #include <stdio.h>
@@ -236,17 +236,26 @@ int DrawDestroy_X(PetscObject obj)
 extern int XiQuickWindowFromWindow(DrawCtx_X*,char*,Window,int);
 
 /*@C
-    DrawOpenX - Opens an X window for use with the Draw routines.
+   DrawOpenX - Opens an X window for use with the Draw routines.
 
-  Input Parameters:
-.   comm - communicator that will share window
-.   display - the X display to open on, or null for the local machine
-.   title - the title to put in the title bar
-.   x,y - the screen coordinates of the upper left corner of window
-.   width, height - the screen width and height in pixels
+   Input Parameters:
+.  comm - communicator that will share window
+.  display - the X display on which to open, or null for the local machine
+.  title - the title to put in the title bar
+.  x, y - the screen coordinates of the upper left corner of window
+.  width, height - the screen width and height in pixels
 
-  Output Parameters:
-.   ctx - the drawing context.
+   Output Parameters:
+.  ctx - the drawing context.
+
+   Options Database Keys:
+$  -pause <sec> : number of seconds to pause after DrawSyncFlush() is called
+$  -nox : disable all x-windows output
+$  -display <name> : name of machine for the X display
+
+.keywords: draw, open, x
+
+.seealso: DrawSyncFlush()
 @*/
 int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
               DrawCtx* inctx)
