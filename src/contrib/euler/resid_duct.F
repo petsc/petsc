@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_duct.F,v 1.6 1997/10/17 03:44:24 curfman Exp curfman $";
+c  "$Id: resid_duct.F,v 1.7 1997/10/17 03:59:56 curfman Exp curfman $";
 c
       integer function residbc_duct(jacform,xx,fff,p,xx_bc,p_bc,
      &                sadai,sadaj,sadak,
@@ -75,22 +75,22 @@ c
 c      DO 2 K=2,NK
 c      DO 2 I=2,NI
       IF (I.LE.ILE.OR.I.GT.ITU) GO TO 4
-      IF (NCYC.GE.bcswitch) GO TO 15
-      ADA=SADAJ(I,1,K)**2
-      QDA=RU(I,2,K)*AJX(I,1,K)+RV(I,2,K)*AJY(I,1,K)
-     *   +RW(I,2,K)*AJZ(I,1,K)
-      FF=two*QDA/ADA
-      fbcruj1(i,k)=ru(I,1,K)-RU(I,2,K)+FF*AJX(I,1,K)
-      fbcrvj1(i,k)=rv(I,1,K)-RV(I,2,K)+FF*AJY(I,1,K)
-      fbcrwj1(i,k)=rw(I,1,K)-RW(I,2,K)+FF*AJZ(I,1,K)
-      fbcrj1(i,k)=r(I,1,K)-R(I,2,K)
-      fbcej1(i,k)=e(I,1,K)-E(I,2,K)
-      GO TO 2
+c      IF (NCYC.GE.bcswitch) GO TO 15
+c      ADA=SADAJ(I,1,K)**2
+c      QDA=RU(I,2,K)*AJX(I,1,K)+RV(I,2,K)*AJY(I,1,K)
+c     *   +RW(I,2,K)*AJZ(I,1,K)
+c      FF=two*QDA/ADA
+c      fbcruj1(i,k)=ru(I,1,K)-RU(I,2,K)+FF*AJX(I,1,K)
+c      fbcrvj1(i,k)=rv(I,1,K)-RV(I,2,K)+FF*AJY(I,1,K)
+c      fbcrwj1(i,k)=rw(I,1,K)-RW(I,2,K)+FF*AJZ(I,1,K)
+c      fbcrj1(i,k)=r(I,1,K)-R(I,2,K)
+c      fbcej1(i,k)=e(I,1,K)-E(I,2,K)
+c      GO TO 2
 c
 c Subsonic Inflow/Outflow for transpiration conditions at bump
 c
 C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC INFLOW B.C.s
-  15  CONTINUE
+c  15  CONTINUE
       R0=p5*(R(I,2,K)+R(I,1,K))
       P0=p5*(P(I,2,K)+P(I,1,K))
       C0=SQRT(GAM*P0/R0)
