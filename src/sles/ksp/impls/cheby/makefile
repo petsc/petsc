@@ -1,8 +1,7 @@
 ALL: lib 
 PETSC_DIR = ../../../..
 
-CFLAGS   =   $(CONF) $(PETSC_INCLUDE) $(PCONF) \
-           -I../../ -D__DIR__='"ksp/impls/cheby/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../../ 
 SOURCEC  = cheby.c 
 SOURCEF  =
 SOURCEH  = chebctx.h

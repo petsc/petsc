@@ -1,8 +1,7 @@
 ALL: lib 
 PETSC_DIR = ../../../../
 
-CFLAGS   =  $(PETSC_INCLUDE) $(CONF) $(PCONF) \
-           -I../.. -D__DIR__='"ksp/impls/qcg/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'  -I../..
 FFLAGS   =
 SOURCEC  = qcg.c
 SOURCEF  =
@@ -11,5 +10,6 @@ OBJSC    = qcg.o
 OBJSF    =
 LIBBASE  = libpetscksp
 LINCLUDE = 
+LOCDIR   = ksp/impls/qcg/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

@@ -1,13 +1,13 @@
 ALL: lib 
 PETSC_DIR = ../../../..
 
-CFLAGS   =  $(CONF) $(PETSC_INCLUDE) $(PCONF) \
-           -I../../ -D__DIR__='"ksp/impls/tcqmr/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../../
 SOURCEC  = tcqmr.c
 SOURCEF  =
 SOURCEH  = tcqmrp.h
 OBJSC    = tcqmr.o
 OBJSF    = 
 LIBBASE  = libpetscksp
+LOCDIR   = ksp/impls/tcqmr/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

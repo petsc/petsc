@@ -2,8 +2,7 @@ ALL: lib
 
 PETSC_DIR = ../../../../
 
-CFLAGS   =  $(CONF) $(PETSC_INCLUDE) $(PCONF) \
-           -I../../ -D__DIR__='"ksp/impls/gmres/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../../
 SOURCEC  = gmres.c borthog.c
 SOURCEH  = gmresp.h
 SOURCEF  = 

@@ -2,13 +2,13 @@ ALL: lib
 
 PETSC_DIR = ../../../..
 
-CFLAGS   =  $(CONF) $(PETSC_INCLUDE) $(PCONF)\
-           -I../.. -D__DIR__='"ksp/impls/cr/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../.. 
 FFLAGS   =
 SOURCEC  = cr.c 
 SOURCEF  = 
 OBJSC    = cr.o 
 OBJSF    =
 LIBBASE  = libpetscksp
+LOCDIR   = src/ksp/impls/cr/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

@@ -1,12 +1,12 @@
 ALL: lib 
 PETSC_DIR = ../../../..
 
-CFLAGS   =  $(CONF) $(PETSC_INCLUDE) $(PCONF) \
-           -I../.. -D__DIR__='"ksp/impls/preonly/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'  -I../..
 SOURCEC  = preonly.c
 SOURCEF  =
 OBJSC    = preonly.o
 OBJSF    =
 LIBBASE  = libpetscksp
+LOCDIR   = src/ksp/impls/preonly/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

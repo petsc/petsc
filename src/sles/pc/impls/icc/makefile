@@ -3,9 +3,8 @@ PETSC_DIR = ../../../..
 ALL: lib
 
 # This matrix dependency should be fixed!
-CFLAGS   =  $(PETSC_INCLUDE) -I../..  $(PCONF) \
-           $(BS_INCLUDE) -I../../../../src/mat \
-           $(CONF) -D__DIR__='"pc/impls/icc/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'   \
+           $(BS_INCLUDE) -I../../../../src/mat -I../..
 SOURCEC  = icc.c
 SOURCEF  =
 SOURCEH  = icc.h
