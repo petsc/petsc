@@ -1,5 +1,5 @@
 C
-C  $Id: pc.h,v 1.18 1996/09/27 13:51:30 curfman Exp balay $;
+C  $Id: pc.h,v 1.19 1996/09/27 22:03:42 balay Exp bsmith $;
 C
 C  Include file for Fortran use of the PC (preconditioner) package in PETSc
 C
@@ -8,6 +8,7 @@ C
 #define PCNullSpace  integer
 #define PCSide       integer
 #define PCBGSType    integer
+#define MatStructure integer
 C
 C  Various preconditioners
 C
