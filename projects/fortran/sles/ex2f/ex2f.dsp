@@ -53,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib libpetscts.lib libpetscsnes.lib libpetscsles.lib libpetscdm.lib libpetscmat.lib libpetscvec.lib libpetsc.lib libmpiuni.lib libpetscfortran.lib mkl_c.lib /nologo /subsystem:console /machine:I386 /libpath:"$(PETSC_DIR)\lib\libO\$(PETSC_ARCH)" /libpath:"C:/Program Files/Intel/plsuite/lib32/dll"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib libpetscts.lib libpetscsnes.lib libpetscsles.lib libpetscdm.lib libpetscmat.lib libpetscvec.lib libpetsc.lib libmpiuni.lib libpetscfortran.lib mkl_c_dll.lib /nologo /subsystem:console /machine:I386 /libpath:"$(PETSC_DIR)\lib\libO\$(PETSC_ARCH)" /libpath:"C:/Program Files/Intel/MKL/ia32/lib"
 
 !ELSEIF  "$(CFG)" == "ex2f - Win32 Debug"
 
@@ -79,7 +79,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib libpetscts.lib libpetscsnes.lib libpetscsles.lib libpetscdm.lib libpetscmat.lib libpetscvec.lib libpetsc.lib libmpiuni.lib libpetscfortran.lib mkl_c.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"$(PETSC_DIR)\lib\libg\$(PETSC_ARCH)" /libpath:"C:/Program Files/Intel/plsuite/lib32/dll"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib libpetscts.lib libpetscsnes.lib libpetscsles.lib libpetscdm.lib libpetscmat.lib libpetscvec.lib libpetsc.lib libmpiuni.lib libpetscfortran.lib mkl_c_dll.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"$(PETSC_DIR)\lib\libg\$(PETSC_ARCH)" /libpath:"C:/Program Files/Intel/MKL/ia32/lib"
 
 !ENDIF 
 
