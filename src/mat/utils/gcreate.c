@@ -255,15 +255,13 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   PetscFunctionBegin;
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy_Private(A);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy_Private((PetscObject)A);CHKERRQ(ierr);
 
   /* copy C over to A */
   if (C) {
     ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
-
     ierr = PetscLogObjectDestroy((PetscObject)C);CHKERRQ(ierr);
     ierr = PetscFree(C);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
