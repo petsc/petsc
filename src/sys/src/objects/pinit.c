@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.39 2000/09/28 17:58:26 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.40 2000/09/28 21:09:12 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -443,12 +443,14 @@ int PetscFinalize(void)
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Size of entire process memory %d\n",rank,(int)rss);CHKERRQ(ierr);
   }
 
+#if defined(PETSC_USE_LOG)
   ierr = OptionsHasName(PETSC_NULL,"-get_total_flops",&flg1);CHKERRQ(ierr);
   if (flg1) {
     PLogDouble flops = 0;
     ierr = MPI_Reduce(&_TotalFlops,&flops,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Total flops over all processors %g\n",flops);CHKERRQ(ierr);
   }
+#endif
 
   /*
      Free all objects registered with PetscObjectRegisterDestroy() such ast
