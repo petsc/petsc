@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.6 1998/04/28 03:37:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.7 1998/04/29 02:50:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -554,7 +554,7 @@ int DataMoveElements(GridData *gdata)
 */
 int DataPartitionVertices(GridData *gdata)
 {
-  int        n_vert = gdata->n_vert,ierr,*localvert,n_ele = gdata->n_ele;
+  int        n_vert = gdata->n_vert,ierr,*localvert;
   int        rank,size,mlocal_ele = gdata->mlocal_ele,*ele = gdata->ele,i,j,nlocal = 0,nmax;
   BT         mask;
   MPI_Status status;
