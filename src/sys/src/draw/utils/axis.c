@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.55 1999/05/04 18:12:58 balay Exp balay $";
+static char vcid[] = "$Id: axis.c,v 1.56 1999/05/04 20:28:46 balay Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -220,32 +220,32 @@ int DrawAxisDraw(DrawAxis ad)
   if (ad->xlow == ad->xhigh) {ad->xlow -= .5; ad->xhigh += .5;}
   if (ad->ylow == ad->yhigh) {ad->ylow -= .5; ad->yhigh += .5;}
   xl = ad->xlow; xr = ad->xhigh; yl = ad->ylow; yr = ad->yhigh;
-  DrawSetCoordinates(awin,xl,yl,xr,yr);
-  DrawStringGetSize(awin,&tw,&th);
+  ierr = DrawSetCoordinates(awin,xl,yl,xr,yr);CHKERRQ(ierr);
+  ierr = DrawStringGetSize(awin,&tw,&th);CHKERRQ(ierr);
   numx = (int) (.15*(xr-xl)/tw); if (numx > 6) numx = 6; if (numx< 2) numx = 2;
   numy = (int) (.5*(yr-yl)/th); if (numy > 6) numy = 6; if (numy< 2) numy = 2;
   xl -= 8*tw; xr += 2*tw; yl -= 2.5*th; yr += 2*th;
   if (ad->xlabel) yl -= 2*th;
   if (ad->ylabel) xl -= 2*tw;
-  DrawSetCoordinates(awin,xl,yl,xr,yr);
-  DrawStringGetSize(awin,&tw,&th);
+  ierr = DrawSetCoordinates(awin,xl,yl,xr,yr);CHKERRQ(ierr);
+  ierr = DrawStringGetSize(awin,&tw,&th);CHKERRQ(ierr);
 
-  DrawLine( awin, ad->xlow,ad->ylow,ad->xhigh,ad->ylow,ac);
-  DrawLine( awin, ad->xlow,ad->ylow,ad->xlow,ad->yhigh,ac);
+  ierr = DrawLine( awin, ad->xlow,ad->ylow,ad->xhigh,ad->ylow,ac);CHKERRQ(ierr);
+  ierr = DrawLine( awin, ad->xlow,ad->ylow,ad->xlow,ad->yhigh,ac);CHKERRQ(ierr);
 
   if (ad->toplabel) {
     w = xl + .5*(xr - xl) - .5*((int)PetscStrlen(ad->toplabel))*tw;
     h = ad->yhigh;
-    DrawString(awin,w,h,cc,ad->toplabel); 
+    ierr = DrawString(awin,w,h,cc,ad->toplabel); CHKERRQ(ierr);
   }
 
   /* Draw the ticks and labels */
   if (ad->xticks) {
-    (*ad->xticks)( ad->xlow, ad->xhigh, numx, &ntick, tickloc, MAXSEGS );
+    ierr = (*ad->xticks)( ad->xlow, ad->xhigh, numx, &ntick, tickloc, MAXSEGS );CHKERRQ(ierr);
     /* Draw in tick marks */
     for (i=0; i<ntick; i++ ) {
-      DrawLine(awin,tickloc[i],ad->ylow-.5*th,tickloc[i],ad->ylow+.5*th,
-               tc);
+      ierr = DrawLine(awin,tickloc[i],ad->ylow-.5*th,tickloc[i],ad->ylow+.5*th,
+               tc);CHKERRQ(ierr);
     }
     /* label ticks */
     for (i=0; i<ntick; i++) {
@@ -255,21 +255,21 @@ int DrawAxisDraw(DrawAxis ad)
 	    else               sep = 0.0;
 	    p = (*ad->xlabelstr)( tickloc[i], sep );
 	    w = .5*((int)PetscStrlen(p)) * tw;
-	    DrawString( awin, tickloc[i]-w,ad->ylow-1.2*th,cc,p); 
+	    ierr = DrawString( awin, tickloc[i]-w,ad->ylow-1.2*th,cc,p); CHKERRQ(ierr);
         }
     }
   }
   if (ad->xlabel) {
     w = xl + .5*(xr - xl) - .5*((int)PetscStrlen(ad->xlabel))*tw;
     h = ad->ylow - 2.5*th;
-    DrawString(awin,w,h,cc,ad->xlabel); 
+    ierr = DrawString(awin,w,h,cc,ad->xlabel); CHKERRQ(ierr);
   }
   if (ad->yticks) {
-    (*ad->yticks)( ad->ylow, ad->yhigh, numy, &ntick, tickloc, MAXSEGS );
+    ierr = (*ad->yticks)( ad->ylow, ad->yhigh, numy, &ntick, tickloc, MAXSEGS );CHKERRQ(ierr);
     /* Draw in tick marks */
     for (i=0; i<ntick; i++ ) {
-      DrawLine(awin,ad->xlow -.5*tw,tickloc[i],ad->xlow+.5*tw,tickloc[i],
-               tc);
+      ierr = DrawLine(awin,ad->xlow -.5*tw,tickloc[i],ad->xlow+.5*tw,tickloc[i],
+               tc);CHKERRQ(ierr);
     }
     /* label ticks */
     for (i=0; i<ntick; i++) {
@@ -279,14 +279,14 @@ int DrawAxisDraw(DrawAxis ad)
 	    else               sep = 0.0;
 	    p = (*ad->xlabelstr)( tickloc[i], sep );
 	    w = ad->xlow - ((int)PetscStrlen(p)) * tw - 1.2*tw;
-	    DrawString( awin, w,tickloc[i]-.5*th,cc,p); 
+	    ierr = DrawString( awin, w,tickloc[i]-.5*th,cc,p); CHKERRQ(ierr);
         }
     }
   }
   if (ad->ylabel) {
     h = yl + .5*(yr - yl) + .5*((int)PetscStrlen(ad->ylabel))*th;
     w = xl + .5*tw;
-    DrawStringVertical(awin,w,h,cc,ad->ylabel); 
+    ierr = DrawStringVertical(awin,w,h,cc,ad->ylabel); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
