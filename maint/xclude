@@ -14,6 +14,7 @@ petsc/src/contrib/dfvec/src/seq/RCS
 petsc/src/contrib/dfvec/src/mpi/RCS
 petsc/src/contrib/dfvec/examples/RCS
 petsc/src/contrib/dfvec/examples/ex6.c
+petsc/src/contrib/dfvec/examples/ex4.c
 petsc/src/contrib/dfvec/examples/ex20.c
 petsc/mis
 petsc/bmake/sun4_umpi
@@ -23,6 +24,7 @@ petsc/bmake/rs6000_p4
 petsc/bin/configure
 petsc/bin/config.status
 petsc/src/snes/impls/trdl
+petsc/src/snes/examples/umin/ex5.c
 petsc/src/mat/examples/matrices
 petsc/src/grid
 petsc/src/stencil
