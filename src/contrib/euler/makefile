@@ -1,0 +1,220 @@
+#
+# PETSc makefile for the Euler application code
+#
+# Organization:
+#  - Specify PETSc installation and user-defined compiler flags
+#  - Define application source code, program tests, and utilities
+#  - Specify "include" statement for using PETSc portable makefiles
+#
+# -----------------------------------------------------------------------
+# Specify PETSc installation and user-defined compiler flags
+# -----------------------------------------------------------------------
+
+#  We use various PETSc installations as we move among machines.
+
+# PETSC_DIR = /home/curfman/petsc
+  PETSC_DIR = /tmp/petsc
+# PETSC_DIR = /ump/hpcc/home3/mcinnes/petsc
+# PETSC_DIR = /ump/hpcc/home3/mcinnes/work/petsc
+
+# ACTIVATE_JULIANNE - Flag to indicate that we activate the original 
+#    Julianne solver and thus must compile _all_ Fortran source, even
+#    that used only by the Julianne solver.  Not defining this flag
+#    saves some memory for the PETSc version.  This flag is used only
+#    in the routine julianne() in xnd.F.
+
+# CFLAGS    = $(CPPFLAGS) $(CONF) $(PETSC_INCLUDE) -DACTIVATE_JULIANNE
+  CFLAGS    = $(CPPFLAGS) $(CONF) $(PETSC_INCLUDE)
+
+# -----------------------------------------------------------------------
+# Define application source code
+# -----------------------------------------------------------------------
+#
+# Use following variables for use with PETSc commands "make ci" and
+# "make co" for checking in/out an entire directory of files via RCS.
+#    SOURCEC - C source code
+#    SOURCEF - Fortran source code
+#    SOURCEH - include files
+# 
+# Note: "make clean" removes the files
+#    *.o, ex[0-9], ex[0-9][0-9], plus others (see petsc/bmake/common)
+#    CLEANFILES - variable to specify other files to delete via "make clean"
+#    
+# Define default make rule
+#
+ALL: ex1
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+#
+# Define Fortran source code:
+#
+# [SOURCEF,OBJSF]_COMMON   - routines used by both the PETSc and Julianne solvers
+# [SOURCEF,OBJSF]_JULIANNE - routines used only by the Julianne solver
+# [SOURCEF,OBJSF]_PETSC    - routines used only by the PETSc solvers
+# [SOURCEF,OBJSF]          - all application Fortran source
+#
+# We can (temporarily) remove OBJSF_JULIANNE, which are object files that use
+# common blocks with lots of memory and are needed only by the original Julianne
+# solver.  This saves some memory for the PETSc version of code.
+#
+  SOURCEF_COMMON   = xnd.F xmod2.F
+  SOURCEF_JULIANNE = xjul.F
+  SOURCEF_PETSC    = xmod.F implbc.F mat.F
+  SOURCEF          = $(SOURCEF_COMMON) $(SOURCEF_PETSC) $(SOURCEF_JULIANNE)
+
+  OBJSF_COMMON     = xnd.o xmod2.o
+  OBJSF_JULIANNE   = xjul.o
+  OBJSF_PETSC      = xmod.o implbc.o mat.o
+  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
+# OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+#
+# Define C source code:
+#
+  OBJSC     = user1.o bc.o misc.o mfj.o regmpimat.o monitor.o vrml.o
+  SOURCEC   = user1.c bc.c misc.c mfj.c regmpimat.c monitor.c vrml.c
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+#
+# Define application include files:
+#
+# SOURCEH_C - C include files 
+# SOURCEH_F - Fortran include files 
+# SOURCEH   - all application include files
+#
+  SOURCEH_C = user.h 
+  SOURCEH_F = matrixb.h diag.h dt.h varbls.h dvarbls.h param.h ang.h \
+              avctrs.h condi.h consts.h coord.h bc.h es.h freq.h fv.h \
+              gs.h init.h sada.h sigma.h wing.h bcimpl.h ibcwork.h
+  SOURCEH   = $(SOURCEH_C) $(SOURCEH_F)
+
+# -----------------------------------------------------------------------
+# Define programs
+# -----------------------------------------------------------------------
+
+ex1: chkopts $(OBJSC) $(OBJSF) $(SOURCEH)
+	-$(FLINKER) -o ex1 $(OBJSC) $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# These are just temporary programs for experiments
+
+interpolate: chkopts interpolate.o mesh.o
+	-$(FLINKER) -o interpolate interpolate.o mesh.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+
+meshview: chkopts meshview.o mesh.o
+	-$(FLINKER) -o meshview meshview.o mesh.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+
+ex5: ex5.o regmpimat.o  chkopts
+	-$(CLINKER) -o ex5 ex5.o regmpimat.o $(PETSC_LIB)
+	$(RM) ex5.o 
+
+# -----------------------------------------------------------------------
+# Define program tests
+# -----------------------------------------------------------------------
+
+runex1:
+	-@$(MPIRUN) ex1 -mat_seqbaij -mat_view_info_detailed -pc_type ilu -snes_max_it 14 > ex1_1.tmp 2>&1;	  \
+	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
+	   else echo "Possible problem with ex1_1, diffs above"; fi; \
+	   $(RM) -f ex1_1.tmp
+
+runex1_2:
+	-@$(MPIRUN) ex1 -pc_type none -snes_max_it 5 -ksp_monitor > ex1_2.tmp 2>&1;	  \
+	   if (diff output/ex1_2.out ex1_2.tmp) then true; \
+	   else echo "Possible problem with ex1_2, diffs above"; fi; \
+	   $(RM) -f ex1_2.tmp
+
+runex1_3:
+	-@$(MPIRUN) ex1 -mat_mpirowbs -mat_view_info_detailed -pc_type ilu -snes_max_it 14 > ex1_1.tmp 2>&1;	  \
+	   if (diff output/ex1_3.out ex1_3.tmp) then true; \
+	   else echo "Possible problem with ex1_3, diffs above"; fi; \
+	   $(RM) -f ex1_3.tmp
+
+runex1_4:
+	   if (diff output/ex1_4.out ex1_4.tmp) then true; \
+	   else echo "Possible problem with ex1_4, diffs above"; fi; \
+	   $(RM) -f ex1_4.tmp
+
+# original solver (uniprocessor only!)
+# output in file nd.out.5
+runex1_5:
+	-@$(MPIRUN) ex1 -julianne
+
+# -----------------------------------------------------------------------
+# Define utilities
+# -----------------------------------------------------------------------
+
+# To access the tags in emacs, type M-x visit-tags-table and specify
+# the file TAGS_EULER.	Then, to move to where a routine is
+# defined, enter M-. and the function name.  To search for a string
+# and move to the first occurrence, use M-x tags-search and the string.
+# To locate later occurrences, use M-,
+
+etags_euler:
+	$(RM) TAGS_EULER
+	etags -f TAGS_EULER $(SOURCEC) $(SOURCEF) $(SOURCEH)
+
+etags_fortran:
+	$(RM) TAGS_FORTRAN
+	etags -f TAGS_FORTRAN $(SOURCEF) $(SOURCEH_F)
+
+clean_f:
+	$(RM) $(OBJSF)
+
+clean_c:
+	$(RM) $(OBJSC)
+
+#
+# Make PETSc tar file (containing all but input files that define meshes)
+#
+install_contrib: tar_euler
+	cp euler/*.c euler/*.F euler/*.h euler/makefile euler/nd.in /home/bsmith/petsc/src/contrib/euler
+
+#
+# Make PETSc tar file (containing all but input files that define meshes)
+#
+tar_euler:
+	cp $(SOURCEC) $(SOURCEF) $(SOURCEH) makefile nd.in euler 
+	tar -cf euler.tar euler
+	gzip euler.tar
+
+# -----------------------------------------------------------------------
+# Include statement for using PETSc portable makefiles
+# -----------------------------------------------------------------------
+
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
+# needed for freebsd
+# FOPTFLAGS = -g -dalign -Nn802
+
+
+# -----------------------------------------------------------------------
+# Junk
+# -----------------------------------------------------------------------
+#
+# We temporarily redefine some of the default compilation rules keep the
+# Fortran *.f files (generated from the *.F files) for use with debuggers
+# on certain machines.  This is dangerous and not portable!  Beware!
+
+# Compilation rule for rs6000 only (using debugger)!
+# Use the compiler option -C for array bounds checking
+#.F.o:
+#	-$(RM) $*.f
+#	-$(CC) $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
+#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) -C $*.f
+##	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+##	-$(RM) $*.f
+
+# Compilation rule for freebsd only (using debugger)!
+#.F.o:
+#	$(RM) $*.f
+#	-cpp $(CFLAGS)  $*.F > $*.f 
+#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+##	$(RM) $*.f
+
+# Compilation rule for sun4 only (using array bounds checking)!
+#.F.o: 
+#	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) -C $*.F
+##	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) $*.F
