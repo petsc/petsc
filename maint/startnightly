@@ -12,6 +12,8 @@ foreach CONF ($*)
   source $dir/confignightly/$1
 
   echo "start build at `date`:$SSH $USR@$MACH $DASHN $LOC/maint/buildtest $CONF" 
-  $SSH $USR@$MACH $DASHN "$LOC/maint/buildtest $CONF" &
+#  $SSH $USR@$MACH $DASHN "$LOC/maint/buildtest $CONF" &
+# Needs bk pull for another day.
+  $SSH $USR@$MACH $DASHN "cd $LOC; bk pull; $LOC/maint/buildtest $CONF" &
 end
 wait
