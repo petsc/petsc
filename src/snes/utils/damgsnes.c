@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.38 2001/05/10 03:21:41 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.39 2001/05/22 03:01:46 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -84,7 +84,7 @@ int DMMGComputeJacobian_User(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,vo
   if (ismg) {
 
     ierr = MGGetSmoother(pc,nlevels-1,&lsles);CHKERRQ(ierr);
-    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->J,*flag);CHKERRQ(ierr);
+    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->B,*flag);CHKERRQ(ierr);
 
     for (i=nlevels-1; i>0; i--) {
 
