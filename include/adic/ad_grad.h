@@ -172,9 +172,9 @@ extern int ad_grad_size_shadow;
         } \
     }
 
-int ad_AD_IncrShadowVar();
-void ad_AD_CommitShadowVar();
-void ad_AD_ResetShadowVar();
+extern int ad_AD_IncrShadowVar(void);
+extern void ad_AD_CommitShadowVar(void);
+extern void ad_AD_ResetShadowVar(void);
 
 
 #   if defined(__cplusplus)

@@ -71,7 +71,7 @@ PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getInterface(const
   return 0;
 }
 
-esi::ErrorCode esi::petsc::Matrix<double,int>::getInterfacesSupported(esi::Argv * list)
+PETSC_TEMPLATE esi::ErrorCode esi::petsc::Matrix<double,int>::getInterfacesSupported(esi::Argv * list)
 {
   list->appendArg("esi::Object");
   list->appendArg("esi::Operator");

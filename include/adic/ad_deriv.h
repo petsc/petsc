@@ -48,8 +48,8 @@ typedef struct {
 /* _FLOAT_INITIALIZER_ is currently incorrect */
 #define _FLOAT_INITIALIZER_(x) { x, 0.0 }
 
-void ad_AD_Init();
-void ad_AD_Final();
+extern void ad_AD_Init(void);
+extern void ad_AD_Final(void);
 #include "ad_grad.h"
 
 #define nullFunc(x) 0

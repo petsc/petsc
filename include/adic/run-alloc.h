@@ -7,8 +7,8 @@ extern "C" {
 #endif
 
 void* ad_adic_deriv_init(int dsize, int bsize);
-void ad_adic_deriv_final();
-void* ad_adic_deriv_alloc();
+void ad_adic_deriv_final(void);
+void* ad_adic_deriv_alloc(void);
 void ad_adic_deriv_free(void*);
 
 #if defined(__cplusplus)

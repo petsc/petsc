@@ -10,12 +10,12 @@
 
 typedef void DERIV_TYPE;
 
-ADUTILS_EXTERN void PetscADResetIndep();
+ADUTILS_EXTERN void PetscADResetIndep(void);
 ADUTILS_EXTERN void PetscADSetValArray(DERIV_TYPE *,int,double *);
 ADUTILS_EXTERN void PetscADSetIndepVector(DERIV_TYPE *,int,double *);
 ADUTILS_EXTERN void PetscADSetIndepArrayColored(DERIV_TYPE *,int,int *);
 ADUTILS_EXTERN void PetscADIncrementTotalGradSize(int);
-ADUTILS_EXTERN void PetscADSetIndepDone();
+ADUTILS_EXTERN void PetscADSetIndepDone(void);
 ADUTILS_EXTERN void PetscADExtractGrad(double *,DERIV_TYPE *);
 ADUTILS_EXTERN int  PetscADGetDerivTypeSize();
 ADUTILS_EXTERN double *PetscADGetGradArray(DERIV_TYPE *);

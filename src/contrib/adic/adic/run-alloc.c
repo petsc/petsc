@@ -55,7 +55,7 @@ void* ad_adic_deriv_init(int dsize, int bsize)
   return(bucketList);
 }
 
-void ad_adic_deriv_final()
+void ad_adic_deriv_final(void)
 {
   if (bucketList) {
     genlist_t* block = bucketList;
@@ -69,7 +69,7 @@ void ad_adic_deriv_final()
   }
 }
 
-void* ad_adic_deriv_alloc()
+void* ad_adic_deriv_alloc(void)
 {
   
 #if defined(DEBUG)

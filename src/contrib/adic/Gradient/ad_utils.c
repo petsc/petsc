@@ -12,7 +12,7 @@ extern "C" {
 
 #include "ad_deriv.h"
 
-void PetscADResetIndep(){
+void PetscADResetIndep(void){
   ad_AD_ResetIndep();
 }
 
@@ -32,7 +32,7 @@ void PetscADIncrementTotalGradSize(int num){
   ad_AD_IncrementTotalGradSize(num);
 }
 
-void PetscADSetIndepDone(){
+void PetscADSetIndepDone(void){
   ad_AD_SetIndepDone();
 }
 
@@ -41,7 +41,7 @@ void PetscADExtractGrad(double *grad, DERIV_TYPE *deriv){
   ad_AD_ExtractGrad(grad,*deriv);
 }
 
-int PetscADGetDerivTypeSize(){
+int PetscADGetDerivTypeSize(void){
   return sizeof(DERIV_TYPE);
 }
 

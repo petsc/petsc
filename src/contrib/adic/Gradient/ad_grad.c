@@ -21,13 +21,13 @@ int ad_total_grad_size = 0;
 int ad_grad_size_shadow = 0;
 int iWiLlNeVeRCoNfLiCt = 0;
 
-int ad_AD_IncrShadowVar()
+int ad_AD_IncrShadowVar(void)
 { return ad_grad_size_shadow++; }
 
-void ad_AD_CommitShadowVar() 
+void ad_AD_CommitShadowVar(void) 
 { ad_grad_size = ad_grad_size_shadow; }
 
-void ad_AD_ResetShadowVar() 
+void ad_AD_ResetShadowVar(void) 
 { ad_grad_size_shadow = 0; }
 
 void ad_grad_axpy_n(int arity, void* ddz, ...)
