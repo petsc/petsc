@@ -58,7 +58,7 @@ EXTERN int MatIncreaseOverlap_MPIAIJ(Mat,int,IS [],int);
 EXTERN int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
 EXTERN int MatGetSubMatrices_MPIAIJ (Mat,int,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN int MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);
-EXTERN int MatLoad_MPIAIJ(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_MPIAIJ(PetscViewer,const MatType,Mat*);
 EXTERN int MatAXPY_SeqAIJ(const PetscScalar[],Mat,Mat,MatStructure);
 
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)

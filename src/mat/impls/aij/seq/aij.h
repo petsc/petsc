@@ -91,11 +91,11 @@ EXTERN int MatSolveTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 EXTERN int MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg);
 EXTERN int MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
 EXTERN int MatILUDTFactor_SeqAIJ(Mat,MatFactorInfo*,IS,IS,Mat*);
-EXTERN int MatLoad_SeqAIJ(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_SeqAIJ(PetscViewer,const MatType,Mat*);
 EXTERN int RegisterApplyPtAPRoutines_Private(Mat);
 EXTERN_C_BEGIN
-EXTERN int MatConvert_SeqAIJ_SeqSBAIJ(Mat,MatType,Mat*);
-EXTERN int MatConvert_SeqAIJ_SeqBAIJ(Mat,MatType,Mat*);
+EXTERN int MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,Mat*);
+EXTERN int MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,Mat*);
 EXTERN int MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
 EXTERN int MatAdjustForInodes_SeqAIJ(Mat,IS*,IS*);
 EXTERN int MatSeqAIJGetInodeSizes_SeqAIJ(Mat,int*,int*[],int*);

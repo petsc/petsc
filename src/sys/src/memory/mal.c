@@ -110,8 +110,8 @@ int PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
   return 0;
 }
 
-int  (*PetscTrMalloc)(size_t,int,char*,char*,char*,void**) = PetscMallocAlign;
-int  (*PetscTrFree)(void *,int,char*,char *,char*)         = PetscFreeAlign;
+int  (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**) = PetscMallocAlign;
+int  (*PetscTrFree)(void *,int,const char[],const char[],const char[])          = PetscFreeAlign;
 
 PetscTruth petscsetmallocvisited = PETSC_FALSE;
 

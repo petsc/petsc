@@ -135,7 +135,7 @@ EXTERN int PetscOptionsLogical(const char[],const char[],const char[],PetscTruth
 EXTERN int PetscOptionsLogicalGroupBegin(const char[],const char[],const char[],PetscTruth*);
 EXTERN int PetscOptionsLogicalGroup(const char[],const char[],const char[],PetscTruth*);
 EXTERN int PetscOptionsLogicalGroupEnd(const char[],const char[],const char[],PetscTruth*);
-EXTERN int PetscOptionsList(const char[],const char[],const char[],PetscFList,const char[],const char[],int,PetscTruth*);
+EXTERN int PetscOptionsList(const char[],const char[],const char[],PetscFList,const char[],char[],int,PetscTruth*);
 EXTERN int PetscOptionsEList(const char[],const char[],const char[],const char*[],int,const char[],int*,PetscTruth*);
 EXTERN int PetscOptionsRealArray(const char[],const char[],const char[],PetscReal[],int*,PetscTruth*);
 EXTERN int PetscOptionsIntArray(const char[],const char[],const char[],int[],int*,PetscTruth*);

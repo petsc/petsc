@@ -137,7 +137,7 @@ int MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
   PetscFunctionReturn(0);
 }
 
-extern int MatConvert_Shell(Mat,MatType,Mat*);
+extern int MatConvert_Shell(Mat,const MatType,Mat*);
 
 static struct _MatOps MatOps_Values = {0,
        0,

@@ -55,6 +55,6 @@ typedef struct {
   FactorCtx     *factor;                /* factorization context */
 } Mat_MPIDense;
 
-EXTERN int MatLoad_MPIDense(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_MPIDense(PetscViewer,const MatType,Mat*);
 EXTERN int MatSetUpMultiply_MPIDense(Mat);
 EXTERN int MatGetSubMatrices_MPIDense(Mat,int,const IS[],const IS[],MatReuse,Mat *[]);

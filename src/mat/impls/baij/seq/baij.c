@@ -1609,7 +1609,7 @@ int MatRetrieveValues_SeqBAIJ(Mat mat)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-extern int MatConvert_SeqBAIJ_SeqAIJ(Mat,MatType,Mat*);
+extern int MatConvert_SeqBAIJ_SeqAIJ(Mat,const MatType,Mat*);
 EXTERN_C_END
 
 EXTERN_C_BEGIN

@@ -71,5 +71,5 @@ typedef struct {
 #endif
 } Mat_MPISBAIJ;
 
-EXTERN int MatLoad_MPISBAIJ(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_MPISBAIJ(PetscViewer,const MatType,Mat*);
 #endif
