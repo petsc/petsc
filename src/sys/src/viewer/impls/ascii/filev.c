@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.7 1995/04/26 19:33:09 curfman Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.8 1995/04/27 20:16:07 curfman Exp curfman $";
 #endif
 
 #include "ptscimpl.h"
@@ -43,10 +43,9 @@ char *ViewerFileGetOutputname_Private(Viewer viewer)
   return viewer->outputname;
 }
 
-int ViewerFileGetFormat_Private(Viewer viewer,int *fmt)
+int ViewerFileGetFormat_Private(Viewer viewer)
 {
-  *fmt = viewer->format;
-  return 0;
+  return viewer->format;
 }
 
 /*@

@@ -18,7 +18,11 @@ extern int ViewerFileOpen(char*,Viewer *);
 extern int ViewerFileOpenSync(char*,MPI_Comm,Viewer *);
 extern int ViewerFileSetFormat(Viewer,int,char *);
 extern int ViewerMatlabOpen(char*,int,Viewer *);
+
+/* These routines should not be in the public include file! */
 extern FILE *ViewerFileGetPointer_Private(Viewer);
+extern char *ViewerFileGetOutputname_Private(Viewer);
+extern int  ViewerFileGetFormat_Private(Viewer);
 
 extern Viewer STDOUT_VIEWER;  
 extern Viewer STDERR_VIEWER;
