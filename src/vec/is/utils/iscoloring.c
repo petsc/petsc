@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.39 1999/01/13 16:26:34 curfman Exp curfman $";
+static char vcid[] = "$Id: iscoloring.c,v 1.40 1999/02/01 21:45:12 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -220,7 +220,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
   int      i,ierr,rank,size, *indices,np,n,*starts,*sums,*lsizes,*newi;
 
   PetscFunctionBegin;
-  PetscObjectGetComm((PetscObject) part,&comm);
+  ierr = PetscObjectGetComm((PetscObject) part,&comm);CHKERRQ(ierr);
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
 
@@ -297,7 +297,7 @@ int ISPartitioningCount(IS part,int count[])
   int      i,ierr,size, *indices,np,n,*lsizes;
 
   PetscFunctionBegin;
-  PetscObjectGetComm((PetscObject) part,&comm);
+  ierr = PetscObjectGetComm((PetscObject) part,&comm);CHKERRQ(ierr);
   MPI_Comm_size(comm,&size);
 
   /* count the number of partitions, make sure <= size */
@@ -366,7 +366,7 @@ int ISAllGather(IS is,IS *isout)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
 
-  PetscObjectGetComm((PetscObject)is,&comm);
+  ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
   MPI_Comm_size(comm,&size);
   sizes   = (int *) PetscMalloc(2*size*sizeof(int));CHKPTRQ(sizes);
   offsets = sizes + size;

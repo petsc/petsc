@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.27 1999/01/31 16:11:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.28 1999/03/01 04:58:26 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -84,14 +84,14 @@ int DAView(DA da, Viewer v)
 .  da - the distributed array
 
    Output Parameters:
-+  dim - dimension of the distributed array (1, 2, or 3)
++  dim     - dimension of the distributed array (1, 2, or 3)
 .  M, N, P - global dimension in each direction of the array
 .  m, n, p - corresponding number of procs in each dimension
-.  w - number of degrees of freedom per node
-.  s - stencil width
-.  wrap - type of periodicity, on of DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, 
-          DA_XYPERIODIC, DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC,DA_ZPERIODIC
--  st - stencil type, either DA_STENCIL_STAR or DA_STENCIL_BOX
+.  dof     - number of degrees of freedom per node
+.  s       - stencil width
+.  wrap    - type of periodicity, on of DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, 
+             DA_XYPERIODIC, DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC,DA_ZPERIODIC
+-  st      - stencil type, either DA_STENCIL_STAR or DA_STENCIL_BOX
   
    Note:
    Use PETSC_NULL in place of any output parameter that is not of interest.
@@ -100,7 +100,7 @@ int DAView(DA da, Viewer v)
 
 .seealso: DAView()
 @*/
-int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,DAPeriodicType *wrap,
+int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,int *s,DAPeriodicType *wrap,
               DAStencilType *st)
 {
   PetscFunctionBegin;
@@ -112,7 +112,7 @@ int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,in
   if (m != PETSC_NULL)    *m    = da->m;
   if (n != PETSC_NULL)    *n    = da->n;
   if (p != PETSC_NULL)    *p    = da->p;
-  if (w != PETSC_NULL)    *w    = da->w;
+  if (dof != PETSC_NULL)  *dof  = da->w;
   if (s != PETSC_NULL)    *s    = da->s;
   if (wrap != PETSC_NULL) *wrap = da->wrap;
   if (st != PETSC_NULL)   *st   = da->stencil_type;

@@ -1,15 +1,15 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsfd.c,v 1.9 1998/10/09 19:24:42 bsmith Exp curfman $";
+static char vcid[] = "$Id: tsfd.c,v 1.10 1999/02/01 03:43:18 curfman Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
 #include "src/ts/tsimpl.h"        /*I  "ts.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "TSDefaultComputeJacobianWithColoring"
+#define __FUNC__ "TSDefaultComputeJacobianColor"
 /*@C
-    TSDefaultComputeJacobianWithColoring - Computes the Jacobian using
+    TSDefaultComputeJacobianColor - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity.  
   
     Collective on TS, Vec and Mat
@@ -35,7 +35,7 @@ $  -mat_fd_coloring_freq <freq>
 
 .seealso: TSSetJacobian(), , MatFDColoringCreate(), MatFDColoringSetFunction()
 @*/
-int TSDefaultComputeJacobianWithColoring(TS ts,double t,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+int TSDefaultComputeJacobianColor(TS ts,double t,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   MatFDColoring color = (MatFDColoring) ctx;
   SNES          snes;
@@ -51,58 +51,22 @@ int TSDefaultComputeJacobianWithColoring(TS ts,double t,Vec x1,Mat *J,Mat *B,Mat
     ierr = SNESGetIterationNumber(snes,&it); CHKERRQ(ierr);
 
     if ((freq > 1) && ((it % freq) != 1)) {
-      PLogInfo(color,"TSDefaultComputeJacobianWithColoring:Skipping Jacobian, it %d, freq %d\n",it,freq);
+      PLogInfo(color,"TSDefaultComputeJacobianColor:Skipping Jacobian, it %d, freq %d\n",it,freq);
       *flag = SAME_PRECONDITIONER;
       PetscFunctionReturn(0);
     } else {
-      PLogInfo(color,"TSDefaultComputeJacobianWithColoring:Computing Jacobian, it %d, freq %d\n",it,freq);
+      PLogInfo(color,"TSDefaultComputeJacobianColor:Computing Jacobian, it %d, freq %d\n",it,freq);
       *flag = SAME_NONZERO_PATTERN;
     }
   }
-
   ierr = MatFDColoringApplyTS(*B,color,t,x1,flag,ts); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSSetRHSJacobianDefault"
-/*@C
-    TSSetRHSJacobianDefault - Sets TS to use the default coloring
-    computation of the Jacobian.
-
-    Collective on TS, MatFDColoring and Mat
-
-    Input Parameters:
-+   ts - the time-step context
-.   fd - the matrix coloring object
-.   A  - the Jacobian matrix
--   B  - the preconditioner matrix (often the same as A)
-
-    Note: 
-    This is equivalent to calling
-      TSSetRHSJacobian(ts,A,B,TSDefaultComputeJacobianWithColoring,fd);
-    but may be called from Fortran code.
- 
-    Level: intermediate
-
-.keywords: Jacobian, coloring
-
-.seealso: TSSetRHSJacobian(), TSDefaultComputeJacobianWithColoring()
-
-@*/
-int TSSetRHSJacobianDefault(TS ts,MatFDColoring fd,Mat A,Mat B)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = TSSetRHSJacobian(ts,A,B,TSDefaultComputeJacobianWithColoring,fd);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "TSSDefaultComputeJacobianSlow"
+#define __FUNC__ "TSSDefaultComputeJacobian"
 /*
-   TSDefaultComputeJacobianSlow - Computes the Jacobian using finite differences.
+   TSDefaultComputeJacobian - Computes the Jacobian using finite differences.
 
    Input Parameters:
 +  ts - TS context
@@ -122,9 +86,9 @@ int TSSetRHSJacobianDefault(TS ts,MatFDColoring fd,Mat A,Mat B)
 
    Level: intermediate
 
-.seealso: TSDefaultComputeJacobianWithColoring()
+.seealso: TSDefaultComputeJacobianColor()
 */
-int TSDefaultComputeJacobianSlow(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+int TSDefaultComputeJacobian(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   Vec      jj1,jj2,xx2;
   int      i,ierr,N,start,end,j;
@@ -138,8 +102,8 @@ int TSDefaultComputeJacobianSlow(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructu
   ierr = VecDuplicate(xx1,&jj2); CHKERRQ(ierr);
   ierr = VecDuplicate(xx1,&xx2); CHKERRQ(ierr);
 
-  PetscObjectGetComm((PetscObject)xx1,&comm);
-  MatZeroEntries(*J);
+  ierr = PetscObjectGetComm((PetscObject)xx1,&comm);CHKERRQ(ierr);
+  ierr = MatZeroEntries(*J);CHKERRQ(ierr);
 
   ierr = VecGetSize(xx1,&N); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xx1,&start,&end); CHKERRQ(ierr);

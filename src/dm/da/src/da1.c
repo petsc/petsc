@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.90 1999/01/31 16:11:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.91 1999/02/24 22:55:51 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -113,7 +113,7 @@ extern int DAPublish_Petsc(PetscObject);
 .  wrap - type of periodicity should the array have, if any. Use 
           either DA_NONPERIODIC or DA_XPERIODIC
 .  M - global dimension of the array
-.  w - number of degrees of freedom per node
+.  dof - number of degrees of freedom per node
 .  lc - array containing number of nodes in the X direction on each processor, 
         or PETSC_NULL. If non-null, must be of length as m.
 -  s - stencil width  
@@ -136,7 +136,7 @@ extern int DAPublish_Petsc(PetscObject);
           DAGetInfo()
 
 @*/
-int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra)
+int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA *inra)
 {
   int        rank, size,xs,xe,x,Xs,Xe,ierr,start,end,m;
   int        i,*idx,nn,j,left,flg1,flg2,gdim;
@@ -149,7 +149,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   PetscFunctionBegin;
   *inra = 0;
 
-  if (w < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node: %d",w);
+  if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node: %d",dof);
   if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative: %d",s);
 
   PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
@@ -160,8 +160,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   da->gtog1      = 0;
   da->localused  = PETSC_FALSE;
   da->globalused = PETSC_FALSE;
-  da->fieldname  = (char **) PetscMalloc(w*sizeof(char*));CHKPTRQ(da->fieldname);
-  ierr = PetscMemzero(da->fieldname, w*sizeof(char*));CHKERRQ(ierr);
+  da->fieldname  = (char **) PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
+  ierr = PetscMemzero(da->fieldname, dof*sizeof(char*));CHKERRQ(ierr);
   MPI_Comm_size(comm,&size); 
   MPI_Comm_rank(comm,&rank); 
 
@@ -207,9 +207,9 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   }
 
   /* From now on x,s,xs,xe,Xs,Xe are the exact location in the array */
-  x  *= w;
-  s  *= w;  /* NOTE: here change s to be absolute stencil distance */
-  xs *= w;
+  x  *= dof;
+  s  *= dof;  /* NOTE: here change s to be absolute stencil distance */
+  xs *= dof;
   xe = xs + x;
 
   /* determine ghost region */
@@ -218,14 +218,14 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
     Xe = xe + s;
   } else {
     if ((xs-s) >= 0)   Xs = xs-s;  else Xs = 0; 
-    if ((xe+s) <= M*w) Xe = xe+s;  else Xe = M*w;    
+    if ((xe+s) <= M*dof) Xe = xe+s;  else Xe = M*dof;    
   }
 
   /* allocate the base parallel and sequential vectors */
   ierr = VecCreateMPI(comm,x,PETSC_DECIDE,&global); CHKERRQ(ierr);
-  ierr = VecSetBlockSize(global,w);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(global,dof);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,(Xe-Xs),&local); CHKERRQ(ierr);
-  ierr = VecSetBlockSize(local,w);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(local,dof);CHKERRQ(ierr);
     
   /* Create Local to Global Vector Scatter Context */
   /* local to global inserts non-ghost point region into global */
@@ -250,14 +250,14 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
 
     for (i=0; i<s; i++) {  /* Left ghost points */
       if ((xs-s+i)>=0) { idx[nn++] = xs-s+i;}
-      else             { idx[nn++] = M*w+(xs-s+i);}
+      else             { idx[nn++] = M*dof+(xs-s+i);}
     }
 
     for (i=0; i<x; i++) { idx [nn++] = xs + i;}  /* Non-ghost points */
     
     for (i=0; i<s; i++) { /* Right ghost points */
-      if ((xe+i)<M*w) { idx [nn++] =  xe+i; }
-      else            { idx [nn++] = (xe+i) - M*w;}
+      if ((xe+i)<M*dof) { idx [nn++] =  xe+i; }
+      else            { idx [nn++] = (xe+i) - M*dof;}
     }
   } else {      /* Now do all cases with no wrapping */
 
@@ -266,8 +266,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
 
     for (i=0; i<x; i++) { idx [nn++] = xs + i;}
     
-    if ((xe+s)<=M*w) {for (i=0;  i<s;     i++) {idx[nn++]=xe+i;}}
-    else             {for (i=xe; i<(M*w); i++) {idx[nn++]=i;   }}
+    if ((xe+s)<=M*dof) {for (i=0;  i<s;     i++) {idx[nn++]=xe+i;}}
+    else             {for (i=xe; i<(M*dof); i++) {idx[nn++]=i;   }}
   }
 
   ierr = ISCreateGeneral(comm,nn,idx,&from); CHKERRQ(ierr);
@@ -280,7 +280,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   da->M  = M;  da->N  = 1;  da->m  = m; da->n = 1;
   da->xs = xs; da->xe = xe; da->ys = 0; da->ye = 0; da->zs = 0; da->ze = 0;
   da->Xs = Xs; da->Xe = Xe; da->Ys = 0; da->Ye = 0; da->Zs = 0; da->Ze = 0;
-  da->P  = 1;  da->p  = 1;  da->w = w; da->s = s/w;
+  da->P  = 1;  da->p  = 1;  da->w = dof; da->s = s/dof;
 
   PLogObjectParent(da,global);
   PLogObjectParent(da,local);

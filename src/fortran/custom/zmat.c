@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.60 1998/10/31 19:17:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.61 1999/01/12 23:12:34 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -38,9 +38,11 @@ static char vcid[] = "$Id: zmat.c,v 1.60 1998/10/31 19:17:48 bsmith Exp bsmith $
 #define matview_                         MATVIEW
 #define matfdcoloringcreate_             MATFDCOLORINGCREATE
 #define matfdcoloringdestroy_            MATFDCOLORINGDESTROY
-#define matfdcoloringsetfunction_        MATFDCOLORINGSETFUNCTION
+#define matfdcoloringsetfunctionsnes_    MATFDCOLORINGSETFUNCTIONSNES
+#define matfdcoloringsetfunctionts_      MATFDCOLORINGSETFUNCTIONTS
 #define matcopy_                         MATCOPY
 #define matgetsubmatrices_               MATGETSUBMATRICES
+#define matgetcoloring_                  MATGETCOLORING
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define matsetvalue_                     matsetvalue
 #define matgetrow_                       matgetrow
@@ -72,12 +74,19 @@ static char vcid[] = "$Id: zmat.c,v 1.60 1998/10/31 19:17:48 bsmith Exp bsmith $
 #define matshellsetoperation_            matshellsetoperation
 #define matfdcoloringcreate_             matfdcoloringcreate
 #define matfdcoloringdestroy_            matfdcoloringdestroy
-#define matfdcoloringsetfunction_        matfdcoloringsetfunction
+#define matfdcoloringsetfunctionsnes_    matfdcoloringsetfunctionsnes
+#define matfdcoloringsetfunctionts_      matfdcoloringsetfunctionts
 #define matcopy_                         matcopy
 #define matgetsubmatrices_               matgetsubmatrices
+#define matgetcoloring_                  matgetcoloring
 #endif
 
 EXTERN_C_BEGIN
+
+void matgetcoloring_(Mat *mat,MatColoringType *type,ISColoring *iscoloring,int *__ierr)
+{
+  *__ierr = MatGetColoring(*mat,*type,iscoloring);
+}
 
 void matsetvalue_(Mat *mat,int *i,int *j,Scalar *va,InsertMode *mode)
 {
@@ -385,7 +394,7 @@ void matshellsetoperation_(Mat *mat,MatOperation *op,int (*f)(Mat*,Vec*,Vec*,int
 
    NOTE: FORTRAN USER CANNOT PUT IN A NEW J OR B currently.
 
-   USER CAN HAVE ONLY ONE MatFDCOloring in code Because there is no place to hang f7!
+   USER CAN HAVE ONLY ONE MatFDColoring in code Because there is no place to hang f7!
 */
 
 static void (*f7)(TS*,double*,Vec*,Vec*,void*,int*);
@@ -397,11 +406,28 @@ static int ourmatfdcoloringfunctionts(TS ts,double t,Vec x,Vec y, void *ctx)
   return ierr;
 }
 
-void matfdcoloringsetfunction_(MatFDColoring *fd,void (*f)(TS*,double*,Vec*,Vec*,void*,int*),
-                               void *ctx, int *__ierr )
+void matfdcoloringsetfunctionts_(MatFDColoring *fd,void (*f)(TS*,double*,Vec*,Vec*,void*,int*),
+                                 void *ctx, int *__ierr )
 {
   f7 = f;
   *__ierr = MatFDColoringSetFunction(*fd,(int (*)(void))ourmatfdcoloringfunctionts,ctx);
+}
+
+static void (*f8)(SNES*,Vec*,Vec*,void*,int*);
+
+static int ourmatfdcoloringfunctionsnes(SNES ts,Vec x,Vec y, void *ctx)
+{
+  int ierr = 0;
+  (*f8)(&ts,&x,&y,ctx,&ierr);
+  return ierr;
+}
+
+
+void matfdcoloringsetfunctionsnes_(MatFDColoring *fd,void (*f)(SNES*,Vec*,Vec*,void*,int*),
+                                 void *ctx, int *__ierr )
+{
+  f8 = f;
+  *__ierr = MatFDColoringSetFunction(*fd,(int (*)(void))ourmatfdcoloringfunctionsnes,ctx);
 }
 
 /*

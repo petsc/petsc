@@ -1,14 +1,14 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj2.c,v 1.16 1998/09/25 03:16:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesj2.c,v 1.17 1999/02/01 03:14:07 curfman Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "SNESDefaultComputeJacobianWithColoring"
+#define __FUNC__ "SNESDefaultComputeJacobianColor"
 /*@C
-    SNESDefaultComputeJacobianWithColoring - Computes the Jacobian using
+    SNESDefaultComputeJacobianColor - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity. 
   
     Collective on SNES
@@ -25,18 +25,18 @@ static char vcid[] = "$Id: snesj2.c,v 1.16 1998/09/25 03:16:01 bsmith Exp curfma
 -   flag - flag indicating whether the matrix sparsity structure has changed
 
     Options Database Keys:
-.  -mat_fd_coloring_freq <freq> - Activates SNESDefaultComputeJacobianWithColoring()
+.  -mat_fd_coloring_freq <freq> - Activates SNESDefaultComputeJacobianColor()
 
     Level: intermediate
 
 .keywords: SNES, finite differences, Jacobian, coloring, sparse
 
 .seealso: SNESSetJacobian(), SNESTestJacobian(), SNESDefaultComputeJacobian()
-          TSDefaultComputeJacobianWithColoring(), MatFDColoringCreate(),
+          TSDefaultComputeJacobianColor(), MatFDColoringCreate(),
           MatFDColoringSetFunction()
 
 @*/
-int SNESDefaultComputeJacobianWithColoring(SNES snes,Vec x1,Mat *J,Mat *B,
+int SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,
                                            MatStructure *flag,void *ctx)
 {
   MatFDColoring color = (MatFDColoring) ctx;
@@ -47,11 +47,11 @@ int SNESDefaultComputeJacobianWithColoring(SNES snes,Vec x1,Mat *J,Mat *B,
   ierr = SNESGetIterationNumber(snes,&it); CHKERRQ(ierr);
 
   if ((freq > 1) && ((it % freq) != 1)) {
-    PLogInfo(color,"SNESDefaultComputeJacobianWithColoring:Skipping Jacobian, it %d, freq %d\n",it,freq);
+    PLogInfo(color,"SNESDefaultComputeJacobianColor:Skipping Jacobian, it %d, freq %d\n",it,freq);
     *flag = SAME_PRECONDITIONER;
     PetscFunctionReturn(0);
   } else {
-    PLogInfo(color,"SNESDefaultComputeJacobianWithColoring:Computing Jacobian, it %d, freq %d\n",it,freq);
+    PLogInfo(color,"SNESDefaultComputeJacobianColor:Computing Jacobian, it %d, freq %d\n",it,freq);
     *flag = SAME_NONZERO_PATTERN;
   }
 

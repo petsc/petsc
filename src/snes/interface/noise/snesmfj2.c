@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj2.c,v 1.11 1999/02/03 04:32:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj2.c,v 1.12 1999/02/18 22:51:46 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -55,7 +55,7 @@ int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
   ViewerType    vtype;
 
   PetscFunctionBegin;
-  PetscObjectGetComm((PetscObject)J,&comm);
+  ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -103,7 +103,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
      with particular objects, hence alleviating the more general problem. */
   PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
 
-  PetscObjectGetComm((PetscObject)mat,&comm);
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
   snes = ctx->snes;
   w    = ctx->w;

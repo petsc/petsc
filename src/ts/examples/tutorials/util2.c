@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: util2.c,v 1.7 1998/07/01 15:50:14 balay Exp bsmith $";
+static char vcid[] = "$Id: util2.c,v 1.8 1998/10/19 22:19:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -70,8 +70,8 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
   ierr = VecDuplicate(xx1,&jj2); CHKERRQ(ierr);
   ierr = VecDuplicate(xx1,&xx2); CHKERRQ(ierr);
 
-  PetscObjectGetComm((PetscObject)xx1,&comm);
-  MatZeroEntries(*J);
+  ierr = PetscObjectGetComm((PetscObject)xx1,&comm);CHKERRQ(ierr);
+  ierr = MatZeroEntries(*J);CHKERRQ(ierr);
 
   ierr = VecGetSize(xx1,&N); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xx1,&start,&end); CHKERRQ(ierr);

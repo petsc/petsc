@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.81 1999/01/31 21:23:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.82 1999/02/23 18:47:46 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -131,6 +131,48 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
     c = emax/emin;
     PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e %% max %g min %g max/min %g\n",n,rnorm,emax,emin,c);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPVecViewMonitor"
+/*@C
+   KSPVecViewMonitor - Monitors progress of the KSP solvers by calling 
+   VecView() for the approximate solution at each iteration.
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - the KSP context
+.  its - iteration number
+.  fgnorm - 2-norm of residual (or gradient)
+-  dummy - either a viewer or PETSC_NULL
+
+   Level: intermediate
+
+   Notes:
+    For some Krylov methods such as GMRES constructing the solution at
+  each iteration is expensive, hence using this will slow the code.
+
+.keywords: KSP, nonlinear, vector, monitor, view
+
+.seealso: KSPSetMonitor(), KSPDefaultMonitor(), VecView()
+@*/
+int KSPVecViewMonitor(KSP ksp,int its,double fgnorm,void *dummy)
+{
+  int    ierr;
+  Vec    x;
+  Viewer viewer = (Viewer) dummy;
+
+  PetscFunctionBegin;
+  ierr = KSPBuildSolution(ksp,PETSC_NULL,&x);CHKERRQ(ierr);
+  if (!viewer) {
+    MPI_Comm comm;
+    ierr   = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+    viewer = VIEWER_DRAW_(comm);
+  }
+  ierr = VecView(x,viewer);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 !
-!  $Id: snes.h,v 1.18 1999/02/04 23:07:06 bsmith Exp balay $;
+!  $Id: snes.h,v 1.19 1999/03/01 18:39:14 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
@@ -32,7 +32,7 @@
 !  Some PETSc fortran functions that the user might pass as arguments
 !
       external SNESDEFAULTCOMPUTEJACOBIAN
-      external SNESDEFAULTCOMPUTEJACOBIANWITHCOLORING
+      external SNESDEFAULTCOMPUTEJACOBIANCOLOR
 !
 !  End of Fortran include file for the SNES package in PETSc
 

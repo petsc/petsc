@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.77 1998/12/17 22:12:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.78 1999/02/05 19:15:10 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -159,7 +159,7 @@ int MatSNESFDMFView_Private(Mat J,Viewer viewer)
   ViewerType     vtype;
 
   PetscFunctionBegin;
-  PetscObjectGetComm((PetscObject)J,&comm);
+  ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -562,7 +562,7 @@ int MatSNESFDMFAddNullSpace(Mat J,int has_cnst,int n,Vec *vecs)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  PetscObjectGetComm((PetscObject)J,&comm);
+  ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
 
   ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
   /* no context indicates that it is not the "matrix free" matrix type */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.54 1998/12/09 16:06:57 balay Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.55 1999/02/01 03:18:45 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -31,16 +31,15 @@ static char vcid[] = "$Id: snesj.c,v 1.54 1998/12/09 16:06:57 balay Exp curfman 
    correctness of a user-provided Jacobian.
 
    An alternative routine that uses coloring to explot matrix sparsity is
-   SNESDefaultComputeJacobianWithColoring().
+   SNESDefaultComputeJacobianColor().
 
    Level: intermediate
 
 .keywords: SNES, finite differences, Jacobian
 
-.seealso: SNESSetJacobian(), SNESDefaultComputeJacobianWithColoring()
+.seealso: SNESSetJacobian(), SNESDefaultComputeJacobianColor()
 @*/
-int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
-                               MatStructure *flag,void *ctx)
+int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   Vec      j1a,j2a,x2;
   int      i,ierr,N,start,end,j;
@@ -55,8 +54,8 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
   else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) eval_fct = SNESComputeGradient;
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid method class");
 
-  PetscObjectGetComm((PetscObject)x1,&comm);
-  MatZeroEntries(*B);
+  ierr = PetscObjectGetComm((PetscObject)x1,&comm);CHKERRQ(ierr);
+  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
   if (!snes->nvwork) {
     ierr = VecDuplicateVecs(x1,3,&snes->vwork); CHKERRQ(ierr);
     snes->nvwork = 3;

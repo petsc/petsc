@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.151 1999/02/01 15:21:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.152 1999/03/01 04:55:34 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -475,6 +475,13 @@ int KSPSetFromOptions(KSP ksp)
     if (!rank) {
       ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,(void *)0); CHKERRQ(ierr);
     }
+  }
+  /*
+    Plots the vector solution 
+    */
+  ierr = OptionsHasName(ksp->prefix,"-ksp_vecmonitor",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = KSPSetMonitor(ksp,KSPVecViewMonitor,(void *)0); CHKERRQ(ierr);
   }
   /*
     Prints preconditioned and true residual norm at each iteration

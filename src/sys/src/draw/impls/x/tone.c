@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tone.c,v 1.23 1999/01/31 16:05:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tone.c,v 1.24 1999/03/02 00:09:13 bsmith Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -24,6 +24,14 @@ int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y_1, int t1,
   double R_y2_y_1, R_y3_y_1, R_y3_y2;
 
   PetscFunctionBegin;
+  /*
+        Is triangle even visible in window?
+  */
+  if (x1 < 0 && x2 < 0 && x3 < 0) PetscFunctionReturn(0);
+  if (y_1 < 0 && y2 < 0 && y3 < 0) PetscFunctionReturn(0);
+  if (x1 > win->w && x2 > win->w && x3 > win->w) PetscFunctionReturn(0);
+  if (y_1 > win->h && y2 > win->h && y3 > win->h) PetscFunctionReturn(0);
+
   t1 = t1 << SHIFT_VAL;
   t2 = t2 << SHIFT_VAL;
   t3 = t3 << SHIFT_VAL;
@@ -84,9 +92,9 @@ int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y_1, int t1,
      We take advantage of the previous iteration. */
   if (y2 >= y3) PetscFunctionReturn(0);
   if (y_1 < y2) {
-    t1 = rc;
+    t1  = rc;
     y_1 = y2;
-    x1 = rx;
+    x1  = rx;
 
     t3_t1   = t3 - t1;
     x3_x1   = x3 - x1;    

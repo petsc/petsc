@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5s.c,v 1.4 1998/05/29 20:39:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5s.c,v 1.5 1998/12/03 04:05:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -219,17 +219,17 @@ int main( int argc, char **argv )
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   /*
-       Create the data structure that SNESDefaultComputeJacobianWithColoring() uses
+       Create the data structure that SNESDefaultComputeJacobianColor() uses
        to compute the actual Jacobians via finite differences.
   */
   ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); CHKERRA(ierr);
   ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void))fnc,&user);CHKERRA(ierr);
   ierr = MatFDColoringSetFromOptions(fdcoloring); CHKERRA(ierr);
   /*
-        Tell SNES to use the routine SNESDefaultComputeJacobianWithColoring()
+        Tell SNES to use the routine SNESDefaultComputeJacobianColor()
       to compute Jacobians.
   */
-  ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianWithColoring,fdcoloring);CHKERRA(ierr);  
+  ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRA(ierr);  
   ierr = ISColoringDestroy(iscoloring); CHKERRA(ierr);
 
 

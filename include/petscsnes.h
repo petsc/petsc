@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.79 1999/02/16 22:28:43 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.80 1999/03/01 04:49:35 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -108,7 +108,7 @@ extern int SNESComputeFunction(SNES,Vec,Vec);
 extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
 extern int SNESGetJacobian(SNES,Mat*,Mat*,void **);
 extern int SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int SNESDefaultComputeJacobianWithColoring(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int SNESConverged_EQ_LS(SNES,double,double,double,void*);
 extern int SNESConverged_EQ_TR(SNES,double,double,double,void*);
 extern int SNESSetLineSearch(SNES,int(*)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));

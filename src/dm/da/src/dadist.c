@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadist.c,v 1.18 1999/01/31 16:11:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dadist.c,v 1.19 1999/02/24 22:55:29 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -34,6 +34,8 @@ int DAGetGlobalToGlobal1_Private(DA da,int **gtog1)
    Output Parameter:
 .  g - the distributed global vector
 
+   Level: basic
+
    Note:
    The output parameter, g, is a regular PETSc vector that should be destroyed
    with a call to VecDestroy() when usage is finished.
@@ -60,6 +62,56 @@ int DACreateGlobalVector(DA da,Vec* g)
     ierr = PetscObjectCompose((PetscObject)da->global,"DA",(PetscObject)da);CHKERRQ(ierr);
     da->globalused = PETSC_TRUE;
     *g   = da->global;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DACreateNaturalVector"
+/*@C
+   DACreateNaturalVector - Creates a parallel PETSc vector that
+       will hold vector values in the natural numbering, rather than in 
+       the PETSc parallel numbering associated with the DA.
+
+   Collective on DA
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameter:
+.  g - the distributed global vector
+
+   Level: developer
+
+   Note:
+   The output parameter, g, is a regular PETSc vector that should be destroyed
+   with a call to VecDestroy() when usage is finished.
+
+.keywords: distributed array, create, global, distributed, vector
+
+.seealso: DACreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
+          DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
+          DAGlobalToLocalEnd(), DALocalToGlobal()
+@*/
+int DACreateNaturalVector(DA da,Vec* g)
+{
+  int cnt,m,ierr;
+
+  PetscFunctionBegin; 
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  if (da->natural) {
+    ierr = PetscObjectGetReference((PetscObject)da->natural,&cnt);CHKERRQ(ierr);
+    if (cnt == 1) { /* object is not currently used by anyone */
+      ierr = PetscObjectReference((PetscObject)da->natural);CHKERRQ(ierr);
+      *g   = da->natural;
+    } else {
+      ierr = VecDuplicate(da->natural,g);CHKERRQ(ierr);
+    }
+  } else { /* create the first version of this guy */
+    ierr = VecGetLocalSize(da->global,&m);CHKERRQ(ierr);
+    ierr = VecCreateMPI(da->comm,m,PETSC_DETERMINE,g);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)*g);CHKERRQ(ierr);
+    da->natural = *g;
   }
   PetscFunctionReturn(0);
 }

@@ -1,32 +1,31 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.33 1998/12/03 04:06:22 bsmith Exp $";
+static char vcid[] = "$Id: ex13.c,v 1.1 1999/03/04 21:18:05 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Tests various DA routines.\n\n";
+static char help[] = "Tests loading DA vector from file\n\n";
 
 #include "da.h"
 #include "sys.h"
 
 int main(int argc,char **argv)
 {
-  int      rank, M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr,flg;
+  int      ierr,flg,M,N,rank;
+  int      dof = 1;
   DA       da;
-  Viewer   viewer;
-  Vec      local, global;
+  Vec      local, global, natural;
   Scalar   value;
+  Viewer   bviewer;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer); CHKERRA(ierr);
 
   /* Read options */
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
-  /* Create distributed array and get vectors */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
-                    M,N,m,n,1,1,PETSC_NULL,PETSC_NULL,&da); CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",BINARY_RDONLY,&bviewer);CHKERRA(ierr);
+  ierr = DALoad(bviewer,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&da);CHKERRA(ierr);
+  ierr = ViewerDestroy(bviewer);CHKERRA(ierr);
+
   ierr = DACreateGlobalVector(da,&global); CHKERRA(ierr);
   ierr = DACreateLocalVector(da,&local); CHKERRA(ierr);
 
@@ -40,13 +39,17 @@ int main(int argc,char **argv)
   ierr = VecScale(&value,local); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,ADD_VALUES,global); CHKERRA(ierr);
 
-  ierr = VecView(global,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  ierr = DAView(da,viewer); CHKERRA(ierr);
+  ierr = DACreateNaturalVector(da,&natural);CHKERRA(ierr);
+  ierr = DAGlobalToNaturalBegin(da,global,INSERT_VALUES,natural); CHKERRA(ierr);
+  ierr = DAGlobalToNaturalEnd(da,global,INSERT_VALUES,natural); CHKERRA(ierr);
+
+  ierr = VecView(global,VIEWER_DRAW_WORLD); CHKERRA(ierr);
+
 
   /* Free memory */
-  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);
+  ierr = VecDestroy(natural); CHKERRA(ierr);
   ierr = DADestroy(da); CHKERRA(ierr);
   PetscFinalize();
   return 0;

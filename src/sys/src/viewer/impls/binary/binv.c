@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.59 1999/01/31 16:04:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.60 1999/02/01 15:38:12 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -169,6 +169,60 @@ int ViewerBinarySetType_Binary(Viewer viewer,ViewerBinaryType type)
 }
 EXTERN_C_END
 
+#undef __FUNC__  
+#define __FUNC__ "ViewerBinaryLoadInfo"
+/*
+    ViewerBinaryLoadInfo options from the name.info file
+    if it exists.
+*/
+int ViewerBinaryLoadInfo(Viewer viewer)
+{
+  FILE *file;
+  char string[128],*first,*second,*final;
+  int  len,ierr,flg;
+
+  PetscFunctionBegin;
+  ierr = OptionsHasName(PETSC_NULL,"-load_ignore_info",&flg);CHKERRQ(ierr);
+  if (flg) PetscFunctionReturn(0);
+
+  ierr = ViewerBinaryGetInfoPointer(viewer,&file); CHKERRQ(ierr);
+  if (!file) PetscFunctionReturn(0);
+
+  /* read rows of the file adding them to options database */
+  while (fgets(string,128,file)) {
+    /* Comments are indicated by #, ! or % in the first column */
+    if (string[0] == '#') continue;
+    if (string[0] == '!') continue;
+    if (string[0] == '%') continue;
+    first  = PetscStrtok(string," ");
+    second = PetscStrtok(0," ");
+    if (first && first[0] == '-') {
+
+      /*
+         Check for -mat_complex or -mat_double
+      */
+#if defined(USE_PETSC_COMPLEX)
+      if (!PetscStrncmp(first,"-mat_double",11)) {
+        SETERRQ(1,1,"Loading double number matrix with complex number code");
+      }
+#else
+      if (!PetscStrncmp(first,"-mat_complex",12)) {
+        SETERRQ(1,1,"Loading complex number matrix with double number code");
+      }
+#endif
+
+      if (second) {final = second;} else {final = first;}
+      len = PetscStrlen(final);
+      while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
+        len--; final[len] = 0;
+      }
+      ierr = OptionsSetValue(first,second); CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+
+}
+
 /*
         Actually opens the file 
 */
@@ -238,7 +292,7 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
   /* 
       try to open info file: all processors open this file
   */
-  if (type == BINARY_RDONLY) {
+  if (!rank || type == BINARY_RDONLY) {
     char infoname[256],iname[256],*gz;
   
     ierr = PetscStrcpy(infoname,name);CHKERRQ(ierr);
@@ -249,9 +303,18 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
     
     ierr = PetscStrcat(infoname,".info");CHKERRQ(ierr);
     ierr = PetscFixFilename(infoname,iname); CHKERRQ(ierr);
-    ierr = PetscFileRetrieve(viewer->comm,iname,infoname,256,&found); CHKERRQ(ierr);
-    if (found) {
-      vbinary->fdes_info = fopen(infoname,"r");
+    if (type == BINARY_RDONLY) {
+      ierr = PetscFileRetrieve(viewer->comm,iname,infoname,256,&found); CHKERRQ(ierr);
+      if (found) {
+        vbinary->fdes_info = fopen(infoname,"r");
+        if (vbinary->fdes_info) {
+          ierr = ViewerBinaryLoadInfo(viewer);CHKERRQ(ierr);
+          fclose(vbinary->fdes_info);
+        }
+        vbinary->fdes_info = fopen(infoname,"r");
+      }
+    } else {
+      vbinary->fdes_info = fopen(infoname,"w");
     }
   }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.130 1998/12/17 22:08:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.131 1999/01/31 16:03:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -734,11 +734,11 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       sequential vectors treat the index set as providing indices in the local sequential
       numbering
   */
-  PetscObjectGetComm((PetscObject) xin,&comm);
+  ierr = PetscObjectGetComm((PetscObject) xin,&comm);CHKERRQ(ierr);
   MPI_Comm_size(comm,&size);
   if (size > 1) {xin_type = VECMPI;}
 
-  PetscObjectGetComm((PetscObject) yin,&ycomm);
+  ierr = PetscObjectGetComm((PetscObject) yin,&ycomm);CHKERRQ(ierr);
   MPI_Comm_size(ycomm,&size);
   if (size > 1) {comm = ycomm; yin_type = VECMPI;}
   

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.171 1999/02/03 03:17:30 curfman Exp balay $";
+static char vcid[] = "$Id: bdiag.c,v 1.172 1999/02/15 21:55:57 balay Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -724,7 +724,7 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   MPI_Comm     comm;
   
   PetscFunctionBegin;
-  PetscObjectGetComm((PetscObject)viewer,&comm);
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);

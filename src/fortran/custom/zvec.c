@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.48 1999/01/12 23:12:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.49 1999/01/31 16:12:02 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -91,7 +91,7 @@ void vecsetrandom_(PetscRandom *r,Vec *x, int *__ierr )
   *__ierr = VecSetRandom(*r,*x);
 }
 
-void drawtensorcontour_(Draw *win,int *m,int *n,double *x,double *y,Vec *V, int *__ierr )
+void drawtensorcontour_(Draw *win,int *m,int *n,double *x,double *y,Scalar *V, int *__ierr )
 {
   double *xx,*yy;
   if (FORTRANNULLDOUBLE(x)) xx = PETSC_NULL; 
@@ -99,7 +99,7 @@ void drawtensorcontour_(Draw *win,int *m,int *n,double *x,double *y,Vec *V, int 
   if (FORTRANNULLDOUBLE(y)) yy = PETSC_NULL; 
   else yy = y;
 
-  *__ierr = DrawTensorContour(*win,*m,*n,xx,yy,*V);
+  *__ierr = DrawTensorContour(*win,*m,*n,xx,yy,V);
 }
 
 void vecsetfromoptions_(Vec *x,int *__ierr)

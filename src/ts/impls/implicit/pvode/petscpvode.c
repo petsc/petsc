@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.34 1998/12/21 01:03:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.35 1999/01/12 01:46:55 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -171,12 +171,16 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
   tout = ts->max_time;
   for ( i=0; i<max_steps; i++) {
     if (ts->ptime >= tout) break;
+    ierr = VecGetArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
     flag = CVode(cvode->mem, tout, cvode->y, &t, ONE_STEP);
+    ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
     if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,0,"PVODE failed");	
 
     if (t > tout && cvode->exact_final_time) { 
       /* interpolate to final requested time */
+      ierr = VecGetArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
       flag = CVodeDky(cvode->mem,tout,0,cvode->y);
+      ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
       if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,0,"PVODE interpolation to final time failed");	
       t = tout;
     }
@@ -249,8 +253,7 @@ int TSSetUp_PVode_Nonlinear(TS ts)
   /* allocate the memory for N_Vec y */
   cvode->y         = N_VNew(M,machEnv); 
   ierr = VecGetArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
-
-
+  ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
 
   /* initializing vector update and func */
   ierr = VecDuplicate(ts->vec_sol,&cvode->update); CHKERRQ(ierr);  
@@ -271,11 +274,13 @@ int TSSetUp_PVode_Nonlinear(TS ts)
   ierr = PCSetVector(cvode->pc,ts->vec_sol);   CHKERRQ(ierr);
 
   /* allocate memory for PVode */
+  ierr = VecGetArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
   cvode->mem = CVodeMalloc(M,TSFunction_PVode,ts->ptime,cvode->y,
  			          cvode->cvode_type,
                                   NEWTON,SS,&cvode->reltol,
                                   &cvode->abstol,ts,NULL,FALSE,cvode->iopt,
                                   cvode->ropt,machEnv); CHKPTRQ(cvode->mem);
+  ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

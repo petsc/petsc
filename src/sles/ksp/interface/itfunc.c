@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.118 1999/02/27 04:49:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.119 1999/02/27 16:12:37 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -805,7 +805,7 @@ int KSPSetSolution(KSP ksp, Vec x)
 
 .keywords: KSP, get, solution
 
-.seealso: KSPGetRhs(), KSPSetSolution()
+.seealso: KSPGetRhs(), KSPSetSolution(), KSPBuildSolution()
 @*/
 int KSPGetSolution(KSP ksp, Vec *v)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.52 1998/04/15 22:52:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.53 1999/01/13 21:41:17 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -338,13 +338,13 @@ int MatGetReordering(Mat mat,MatReorderingType type,IS *rperm,IS *cperm)
     Mat tmat;
     ierr = OptionsHasName(0,"-mat_view_contour",&flg); CHKERRQ(ierr);
     if (flg) {
-      ViewerPushFormat(VIEWER_DRAW_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+      ierr = ViewerPushFormat(VIEWER_DRAW_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
     }
     ierr = MatPermute(mat,*rperm,*cperm,&tmat); CHKERRQ(ierr);
     ierr = MatView(tmat,VIEWER_DRAW_(mat->comm)); CHKERRQ(ierr);
     ierr = ViewerFlush(VIEWER_DRAW_(mat->comm)); CHKERRQ(ierr);
     if (flg) {
-      ViewerPopFormat(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+      ierr = ViewerPopFormat(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     }
     ierr = MatDestroy(tmat);  CHKERRQ(ierr);
   }

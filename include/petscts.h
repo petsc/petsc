@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.32 1998/07/27 03:52:11 curfman Exp balay $ */
+/* $Id: ts.h,v 1.33 1998/07/28 15:18:03 balay Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -55,9 +55,8 @@ extern int TSSetRHSMatrix(TS,Mat,Mat,int (*)(TS,double,Mat*,Mat*,MatStructure*,v
 extern int TSSetRHSJacobian(TS,Mat,Mat,int(*)(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),void*);
 extern int TSSetRHSBoundaryConditions(TS,int (*)(TS,double,Vec,void*),void*);
 
-extern int TSDefaultComputeJacobianWithColoring(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int TSSetRHSJacobianDefault(TS,MatFDColoring,Mat,Mat);
-extern int TSDefaultComputeJacobianSlow(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int TSDefaultComputeJacobianColor(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int TSDefaultComputeJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
 
 extern int TSGetRHSMatrix(TS,Mat*,Mat*,void**);
 extern int TSGetRHSJacobian(TS,Mat*,Mat*,void**);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aopart.c,v 1.3 1998/04/13 18:02:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: aopart.c,v 1.4 1998/04/27 13:53:47 curfman Exp bsmith $";
 #endif
 
 #include "ao.h"       /*I  "ao.h"  I*/
@@ -30,7 +30,7 @@ int AODataKeyPartition(AOData aodata,char *key)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  PetscObjectGetComm((PetscObject) aodata,&comm);
+  ierr = PetscObjectGetComm((PetscObject) aodata,&comm);CHKERRQ(ierr);
 
   ierr = AODataKeyGetAdjacency(aodata,key,&adj);CHKERRA(ierr);
   ierr = PartitioningCreate(comm,&part);CHKERRA(ierr);

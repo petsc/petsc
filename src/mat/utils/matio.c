@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.54 1998/12/03 04:02:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.55 1998/12/13 19:47:28 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -35,8 +35,6 @@ int MatLoadRegister(MatType type,int (*loader)(Viewer,MatType,Mat*))
   MatLoadersSet    = 1;
   PetscFunctionReturn(0);
 }  
-
-extern int MatLoadGetInfo_Private(Viewer);
 
 #undef __FUNC__  
 #define __FUNC__ "MatLoadPrintHelp_Private"
@@ -110,7 +108,7 @@ static int MatLoadPrintHelp_Private(Mat A)
 
    In parallel, each processor can load a subset of rows (or the
    entire matrix).  This routine is especially useful when a large
-   matrix is stored on disk and only part of it is desired on each
+   matrix is stored on disk and only part of it existsis desired on each
    processor.  For example, a parallel solver may access only some of
    the rows from each processor.  The algorithm used here reads
    relatively small blocks of data rather than reading the entire
@@ -173,11 +171,9 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Invalid viewer; open viewer with ViewerBinaryOpen()");
   }
 
-  PetscObjectGetComm((PetscObject)viewer,&comm);
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   if (!set) type = outtype;
-
-  ierr = MatLoadGetInfo_Private(viewer); CHKERRQ(ierr);
 
   PLogEventBegin(MAT_Load,viewer,0,0,0);
 
@@ -193,57 +189,3 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatLoadGetInfo_Private"
-
-/*
-    MatLoadGetInfo_Private - Loads the matrix options from the name.info file
-    if it exists.
-*/
-int MatLoadGetInfo_Private(Viewer viewer)
-{
-  FILE *file;
-  char string[128],*first,*second,*final;
-  int  len,ierr,flg;
-
-  PetscFunctionBegin;
-  ierr = OptionsHasName(PETSC_NULL,"-matload_ignore_info",&flg);CHKERRQ(ierr);
-  if (flg) PetscFunctionReturn(0);
-
-  ierr = ViewerBinaryGetInfoPointer(viewer,&file); CHKERRQ(ierr);
-  if (!file) PetscFunctionReturn(0);
-
-  /* read rows of the file adding them to options database */
-  while (fgets(string,128,file)) {
-    /* Comments are indicated by #, ! or % in the first column */
-    if (string[0] == '#') continue;
-    if (string[0] == '!') continue;
-    if (string[0] == '%') continue;
-    first  = PetscStrtok(string," ");
-    second = PetscStrtok(0," ");
-    if (first && first[0] == '-') {
-
-      /*
-         Check for -mat_complex or -mat_double
-      */
-#if defined(USE_PETSC_COMPLEX)
-      if (!PetscStrncmp(first,"-mat_double",11)) {
-        SETERRQ(1,1,"Loading double number matrix with complex number code");
-      }
-#else
-      if (!PetscStrncmp(first,"-mat_complex",12)) {
-        SETERRQ(1,1,"Loading complex number matrix with double number code");
-      }
-#endif
-
-      if (second) {final = second;} else {final = first;}
-      len = PetscStrlen(final);
-      while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
-        len--; final[len] = 0;
-      }
-      ierr = OptionsSetValue(first,second); CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-
-}
