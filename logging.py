@@ -94,7 +94,7 @@ class Logger(args.ArgumentProcessor):
     if logName is None:
       logName = nargs.Arg.findArgument('log', self.clArgs)
     if logName is None:
-      if 'log' in self.argDB:
+      if not self.argDB is None and 'log' in self.argDB:
         logName    = self.argDB['log']
       else:
         logName    = 'build.log'
@@ -112,7 +112,7 @@ class Logger(args.ArgumentProcessor):
       if Logger.defaultLog is None:
         appendArg = nargs.Arg.findArgument('logAppend', self.clArgs)
         if self.checkLog(logName):
-          if ('logAppend' in self.argDB and self.argDB['logAppend']) or (not appendArg is None and bool(appendArg)):
+          if not self.argDB is None and ('logAppend' in self.argDB and self.argDB['logAppend']) or (not appendArg is None and bool(appendArg)):
             Logger.defaultLog = file(self.logName, 'a')
           else:
             try:
