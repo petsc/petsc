@@ -1,12 +1,12 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.18 1995/08/29 21:39:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.19 1995/09/04 17:25:39 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"   /*I  "draw.h"   I*/
 #include "snes.h"   /*I  "snes.h"   I*/
 
-typedef struct {
+typedef struct {  /* default context for matrix-free SNES */
   SNES snes;
   Vec  w;
 } MFCtx_Private;
@@ -18,10 +18,10 @@ int SNESMatrixFreeDestroy_Private(void *ptr)
   ierr = VecDestroy(ctx->w); CHKERRQ(ierr);
   PETSCFREE(ptr);
   return 0;
-}  
-/*
-    SNESMatrixFreeMult_Private - Default matrix free form of A*u.
+}
 
+/*
+  SNESMatrixFreeMult_Private - Default matrix free form of A*u.
 */
 int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
 {
@@ -36,8 +36,11 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
 
   ierr = SNESGetSolution(snes,&U); CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,&F); CHKERRQ(ierr);
-  /* determine a "good" step size */
-  VecDot(U,dx,&dot); VecASum(dx,&sum); VecNorm(dx,&norm);
+
+  /* Determine a "good" step size */
+  ierr = VecDot(U,dx,&dot); CHKERRQ(ierr);
+  ierr = VecASum(dx,&sum); CHKERRQ(ierr);
+  ierr = VecNorm(dx,&norm); CHKERRQ(ierr);
   if (sum == 0.0) {dot = 1.0; norm = 1.0;}
 #if defined(PETSC_COMPLEX)
   else if (abs(dot) < 1.e-16*sum && real(dot) >= 0.0) dot = 1.e-16*sum;
@@ -48,7 +51,7 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
 #endif
   h = epsilon*dot/(norm*norm);
   
-  /* evaluate function at F(x + dx) */
+  /* Evaluate function at F(x + dx) */
   ierr = VecWAXPY(&h,dx,U,w); CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,w,y); CHKERRQ(ierr);
   ierr = VecAXPY(&mone,F,y); CHKERRQ(ierr);
@@ -58,8 +61,8 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
 }
 /*@C
    SNESDefaultMatrixFreeMatCreate - Creates a matrix-free matrix
-   context for use with a SNES solver. You can use this matrix as the
-   Jacobian argument for the routine SNESSetJacobian().
+   context for use with a SNES solver.  This matrix can be used as
+   the Jacobian argument for the routine SNESSetJacobian().
 
    Input Parameters:
 .  x - vector where SNES solution is to be stored.

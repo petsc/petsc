@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.20 1995/09/30 19:31:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.21 1995/10/12 04:20:45 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -21,14 +21,14 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 
 int main( int argc, char **argv )
 {
-  SNES         snes;               /* SNES context */
-  SNESMethod   method = SNES_EQ_NLS;  /* nonlinear solution method */
-  SLES         sles;               /* SLES context */
-  PC           pc;                 /* PC context */
-  Vec          x,r,F;              /* solution, residual, work vector */
-  Mat          J, JPrec;           /* Jacobian, preconditioner matrices */
-  int          ierr, its, n = 5,i;
-  double       h,xp = 0.0;
+  SNES         snes;                 /* SNES context */
+  SNESMethod   method = SNES_EQ_NLS; /* nonlinear solution method */
+  SLES         sles;                 /* SLES context */
+  PC           pc;                   /* PC context */
+  Vec          x, r, F;              /* solution, residual, work vector */
+  Mat          J, JPrec;             /* Jacobian, preconditioner matrices */
+  int          ierr, its, n = 5, i;
+  double       h, xp = 0.0;
   Scalar       v;
 
   PetscInitialize( &argc, &argv, 0,0,help );
@@ -119,31 +119,26 @@ int FormInitialGuess(SNES snes,Vec x,void *dummy)
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,
                  void *dummy)
 {
-  Scalar *xx, A, d;
-  int    i, n, j, ierr;
+  Scalar *xx, A[3], d;
+  int    i, n, j[3], ierr;
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
-  ierr =  VecGetSize(x,&n); CHKERRQ(ierr);
+  ierr = VecGetSize(x,&n); CHKERRQ(ierr);
   d = (double)(n - 1); d = d*d;
 
   /* Form Jacobian.  Also form a different preconditioning matrix that 
      has only the diagonal elements. */
-  i = 0; A = 1.0; 
-  ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
-  ierr = MatSetValues(*prejac,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
+  i = 0; A[0] = 1.0; 
+  ierr = MatSetValues(*jac,1,&i,1,&i,&A[0],INSERT_VALUES); CHKERRQ(ierr);
+  ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES); CHKERRQ(ierr);
   for ( i=1; i<n-1; i++ ) {
-    A = d; 
-    j = i - 1; 
-    ierr = MatSetValues(*jac,1,&i,1,&j,&A,INSERT_VALUES); CHKERRQ(ierr);
-    j = i + 1; 
-    ierr = MatSetValues(*jac,1,&i,1,&j,&A,INSERT_VALUES); CHKERRQ(ierr);
-    A = -2.0*d + 2.0*xx[i];
-    j = i + 1; 
-    ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
-    ierr = MatSetValues(*prejac,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
+    j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
+    A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d; 
+    ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*prejac,1,&i,1,&i,&A[1],INSERT_VALUES); CHKERRQ(ierr);
   }
-  i = n-1; A = 1.0; 
-  ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
-  ierr = MatSetValues(*prejac,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
+  i = n-1; A[0] = 1.0; 
+  ierr = MatSetValues(*jac,1,&i,1,&i,&A[0],INSERT_VALUES); CHKERRQ(ierr);
+  ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES); CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*prejac,FINAL_ASSEMBLY); CHKERRQ(ierr);
