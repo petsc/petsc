@@ -429,17 +429,18 @@ EXTERN PetscErrorCode Mat_AIJ_CheckInode(Mat,PetscTruth);
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
 PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 {
-  Mat            C = *B;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ *)C->data;
+  Mat            C=*B;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ *)C->data;
   IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
-  PetscInt       *r,*ic,i,j,n = A->m,*ai = b->i,*aj = b->j;
+  PetscInt       *r,*ic,i,j,n=A->m,*ai=b->i,*aj=b->j;
   PetscInt       *ajtmpold,*ajtmp,nz,row,*ics;
-  PetscInt       *diag_offset = b->diag,diag,*pj,ndamp = 0, nshift=0;
+  PetscInt       *diag_offset = b->diag,diag,*pj,nshift=0;
   PetscScalar    *rtmp,*v,*pc,multiplier,*pv,*rtmps;
-  PetscReal      damping = b->lu_damping, zeropivot = b->lu_zeropivot,rs,d;
-  PetscReal      row_shift,shift_fraction,shift_amount,shift_lo=0., shift_hi=1., shift_top=0.;
-  PetscTruth     damp,lushift;
+  PetscReal      zeropivot=b->lu_zeropivot,rs,d;
+  PetscReal      row_shift,shift_fraction,shift_amount,shift_lo=0.,shift_hi=1.,shift_top=0.;
+  PetscTruth     lushift;
+  PetscReal      shift_pd=b->lu_shift,shift_nonzero=b->lu_damping;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -451,8 +452,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   if (!a->diag) {
     ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   }
-
-  if (b->lu_shift) { /* set max shift */
+  /* if both shift schemes are chosen by user, only use shift_pd */
+  if (shift_pd && shift_nonzero) shift_nonzero = 0.0; 
+  if (shift_pd) { /* set shift_top=max{row_shift} */
     PetscInt *aai = a->i,*ddiag = a->diag;
     shift_top = 0;
     for (i=0; i<n; i++) {
@@ -463,8 +465,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
       } else {
         row_shift = -2*d;
       }
-      v = a->a+aai[i];
-      for (j=0; j<aai[i+1]-aai[i]; j++) 
+      v  = a->a+aai[i];
+      nz = aai[i+1] - aai[i];
+      for (j=0; j<nz; j++) 
 	row_shift += PetscAbsScalar(v[j]);
       if (row_shift>shift_top) shift_top = row_shift;
     }
@@ -472,9 +475,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 
   shift_fraction = 0; shift_amount = 0;
   do {
-    damp    = PETSC_FALSE;
     lushift = PETSC_FALSE;
-    for (i=0; i<n; i++) {
+    for (i=0; i<n; i++){
       nz    = ai[i+1] - ai[i];
       ajtmp = aj + ai[i];
       for  (j=0; j<nz; j++) rtmps[ajtmp[j]] = 0.0;
@@ -486,9 +488,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
       for (j=0; j<nz; j++) {
         rtmp[ics[ajtmpold[j]]] = v[j];
       }
-      rtmp[ics[r[i]]] += damping + shift_amount; /* damp the diagonal of the matrix */
+      rtmp[ics[r[i]]] += shift_amount; /* shift the diagonal of the matrix */
 
-      row = *ajtmp++ ;
+      row = *ajtmp++;
       while  (row < i) {
         pc = rtmp + row;
         if (*pc != 0.0) {
@@ -513,33 +515,37 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
         pv[j] = rtmps[pj[j]];
         if (j != diag) rs += PetscAbsScalar(pv[j]);
       }
+      /* shift the diagonals when zero pivot is detected */
 #define MAX_NSHIFT 5
-      if (PetscRealPart(pv[diag]) <= zeropivot*rs && b->lu_shift) {
+      if (PetscAbsScalar(pv[diag]) <= zeropivot*rs && shift_nonzero){
+        /* force |diag(*B)| > zeropivot*rs */
+        if (!nshift){
+          shift_amount = shift_nonzero;
+        } else {
+          shift_amount *= 2.0;
+        }
+        lushift = PETSC_TRUE;
+        nshift++;
+        break;
+      } else if (PetscRealPart(pv[diag]) <= zeropivot*rs && shift_pd){ 
+        /* force *B to be diagonally dominant */
 	if (nshift>MAX_NSHIFT) {
 	  SETERRQ(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner");
 	} else if (nshift==MAX_NSHIFT) {
 	  shift_fraction = shift_hi;
-	  lushift      = PETSC_FALSE;
+	  lushift        = PETSC_FALSE;
 	} else {
 	  shift_lo = shift_fraction; shift_fraction = (shift_hi+shift_lo)/2.;
-	  lushift      = PETSC_TRUE;
+	  lushift  = PETSC_TRUE;
 	}
 	shift_amount = shift_fraction * shift_top;
         nshift++; 
         break;
+      } else if (PetscAbsScalar(pv[diag]) <= zeropivot*rs){
+        SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",i,PetscAbsScalar(pv[diag]),zeropivot,rs);
       }
-      if (PetscAbsScalar(pv[diag]) <= zeropivot*rs) {
-        if (damping) {
-          if (ndamp) damping *= 2.0;
-          damp = PETSC_TRUE;
-          ndamp++;
-          break;
-        } else {
-          SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",i,PetscAbsScalar(pv[diag]),zeropivot,rs);
-        }
-      }
-    }
-    if (!lushift && b->lu_shift && shift_fraction>0 && nshift<MAX_NSHIFT) {
+    } 
+    if (shift_pd && !lushift && shift_fraction>0 && nshift<MAX_NSHIFT) {
       /*
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
@@ -550,7 +556,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
       lushift        = PETSC_TRUE;
       nshift++;
     }
-  } while (damp || lushift);
+  } while (lushift);
 
   /* invert diagonal entries for simplier triangular solves */
   for (i=0; i<n; i++) {
@@ -564,10 +570,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
   C->assembled = PETSC_TRUE;
   PetscLogFlops(C->n);
-  if (ndamp) {
-    PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of damping tries %D damping value %g\n",ndamp,damping);
+  if (nshift && shift_nonzero) {
+    PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_nonzero tries %D shift_nonzero value %g\n",nshift,shift_amount);
   }
-  if (nshift) {
+  if (nshift && shift_pd) {
     b->lu_shift_fraction = shift_fraction;
     PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: diagonal shifted up by %e fraction top_value %e number shifts %D\n",shift_fraction,shift_top,nshift);
   }
@@ -1127,8 +1133,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *B)
 
   shift_amount = 0;
   do {
-    damp = PETSC_FALSE;
+    /*
+    damp = PETSC_FALSE; 
     chshift = PETSC_FALSE;
+    */
     for (i=0; i<mbs; i++) {
       rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
     } 
