@@ -41,13 +41,15 @@
       PC               pc
       integer          n,dim,ierr,istart,iend,i,j,jj,ii
       double precision v,h2
-      external     MyResidual
+      external         MyResidual
+      PetscScalar      pfive
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      pfive = .5d0
       n      = 6
       dim    = n*n
 
@@ -125,7 +127,7 @@
 
 !  Set exact solution; then compute right-hand-side vector.
 
-      call VecSet(.5d0,u,ierr)
+      call VecSet(pfive,u,ierr)
       call MatMult(A,u,b,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
