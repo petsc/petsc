@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdaij.c,v 1.17 1997/12/01 01:54:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdaij.c,v 1.18 1998/10/19 22:17:52 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -181,7 +181,7 @@ int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscolo
   *iscoloring         = (ISColoring) PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
   (*iscoloring)->n    = ncolors;
   (*iscoloring)->is   = is;
-  PetscCommDuplicate_Private(mat->comm,&(*iscoloring)->comm,&tag);
+  ierr = PetscCommDuplicate_Private(mat->comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
   PetscFree(sizes);
   PetscFree(ii[0]);
   PetscFree(ii);

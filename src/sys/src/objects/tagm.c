@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tagm.c,v 1.4 1998/06/30 18:36:32 balay Exp bsmith $";
+static char vcid[] = "$Id: tagm.c,v 1.5 1998/10/19 22:17:08 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites
@@ -154,19 +154,19 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
   ierr = MPI_Attr_get(comm_in,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
 
   if (!flag) {
-    /* This communicator is not yet known to this system, so we dup it and set its value */
+    /* This communicator is not yet known to this system, so we duplicate it and set its value */
     ierr       = MPI_Comm_dup( comm_in, comm_out );CHKERRQ(ierr);
     ierr       = MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );CHKERRQ(ierr);
     tagvalp    = (int *) PetscMalloc( 2*sizeof(int) ); CHKPTRQ(tagvalp);
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
     ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval, tagvalp);CHKERRQ(ierr);
-    PLogInfo(0,"Duplicating a communicator %d %d\n",(int) comm_in,(int)*comm_out);
+    PLogInfo(0,"Duplicating a communicator %d %d max tags = %d\n",(int) comm_in,(int)*comm_out,*maxval);
   } else {
     *comm_out = comm_in;
   }
 
-  if (*tagvalp < 1) SETERRQ(PETSC_ERR_PLIB,0,"Out of tags for object");
+  if (*tagvalp < 1) SETERRQ1(PETSC_ERR_PLIB,0,"Out of tags for object.Number tags issued %d",tagvalp[1]);
   *first_tag = tagvalp[0]--;
   tagvalp[1]++;
 #if defined(USE_PETSC_BOPT_g)

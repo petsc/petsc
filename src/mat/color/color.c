@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.32 1998/10/19 22:18:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.33 1999/01/04 21:51:09 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -192,8 +192,8 @@ int MatColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
   for ( i=end; i<N; i++ ) {
     ierr = ISCreateGeneral(PETSC_COMM_SELF,0,PETSC_NULL,is+i); CHKERRQ(ierr);
   }
-  PetscObjectGetComm((PetscObject)mat,&comm);
-  PetscCommDuplicate_Private(comm,&(*iscoloring)->comm,&tag);
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate_Private(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
   
