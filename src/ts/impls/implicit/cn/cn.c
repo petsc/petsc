@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cn.c,v 1.4 1998/07/29 00:50:29 curfman Exp curfman $";
+static char vcid[] = "$Id: cn.c,v 1.5 1998/07/29 01:00:00 curfman Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
@@ -13,10 +13,50 @@ typedef struct {
   Vec  update;      /* work vector where new solution is formed */
   Vec  func;        /* work vector where F(t[i],u[i]) is stored */
   Vec  rhs;         /* work vector for RHS; vec_sol/dt */
-  Mat  Aeuler;
 } TS_CN;
 
 /*------------------------------------------------------------------------------*/
+#undef __FUNC__  
+#define __FUNC__ "TSComputeRHSFunctionEuler"
+/*
+   TSComputeRHSFunctionEuler - Evaluates the right-hand-side function. 
+
+   Note: If the user did not provide a function but merely a matrix,
+   this routine applies the matrix.
+*/
+int TSComputeRHSFunctionEuler(TS ts,double t,Vec x, Vec y)
+{
+  int ierr;
+  Scalar neg_two = -2.0, neg_mdt = -1.0/ts->time_step;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeader(x);  PetscValidHeader(y);
+
+  if (ts->rhsfunction) {
+    PetscStackPush("TS user right-hand-side function");
+    ierr = (*ts->rhsfunction)(ts,t,x,y,ts->funP);CHKERRQ(ierr);
+    PetscStackPop;
+    PetscFunctionReturn(0);
+  }
+
+  if (ts->rhsmatrix) { /* assemble matrix for this timestep */
+    MatStructure flg;
+    PetscStackPush("TS user right-hand-side matrix function");
+    ierr = (*ts->rhsmatrix)(ts,t,&ts->A,&ts->B,&flg,ts->jacP); CHKERRQ(ierr);
+    PetscStackPop;
+  }
+  ierr = MatMult(ts->A,x,y); CHKERRQ(ierr);
+  /* shift: y = y -2*x */
+  ierr = VecAXPY(&neg_two,x,y); CHKERRQ(ierr);
+  /* scale: y = y -2*x */
+  ierr = VecScale(&neg_mdt,y); CHKERRQ(ierr);
+
+  /* apply user-provided boundary conditions (only needed if these are time dependent) */
+  ierr = TSComputeRHSBoundaryConditions(ts,t,y); CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
 
 /*
     Version for linear PDE where RHS does not depend on time. Has built a
@@ -31,7 +71,6 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
   Vec       rhs = cn->rhs;
   int       ierr,i,max_steps = ts->max_steps,its;
   Scalar    dt = ts->time_step, two = 2.0;
-  Mat       Atmp;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -44,20 +83,19 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
     /* phase 1 - explicit step */
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
-    Atmp = ts->A;
-    ts->A = cn->Aeuler;
-    ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update); CHKERRQ(ierr);
-    ts->A = Atmp;
-    ierr = VecAXPBY(&dt,&two,update,sol); CHKERRQ(ierr);
+    ierr = TSComputeRHSFunctionEuler(ts,ts->ptime,sol,update); CHKERRQ(ierr);
+    ierr = VecView(update,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+    ierr = VecAXPY(&dt,update,sol); CHKERRQ(ierr);
+    /*    ierr = VecAXPBY(&dt,&two,update,sol); CHKERRQ(ierr); */
 
     /* phase 2 - implicit step */
-    ierr = VecCopy(sol,rhs); CHKERRQ(ierr); 
+    /*    ierr = VecCopy(sol,rhs); CHKERRQ(ierr); */
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
-    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs); CHKERRQ(ierr);
+    /*    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs); CHKERRQ(ierr);
 
     ierr = SLESSolve(ts->sles,rhs,update,&its); CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
-    ierr = VecCopy(update,sol); CHKERRQ(ierr);
+    ierr = VecCopy(update,sol); CHKERRQ(ierr); */
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
   }
@@ -159,7 +197,6 @@ static int TSDestroy_CN(TS ts )
   if (cn->update) {ierr = VecDestroy(cn->update); CHKERRQ(ierr);}
   if (cn->func) {ierr = VecDestroy(cn->func);CHKERRQ(ierr);}
   if (cn->rhs) {ierr = VecDestroy(cn->rhs);CHKERRQ(ierr);}
-  if (cn->Aeuler) {ierr = MatDestroy(cn->Aeuler);CHKERRQ(ierr);}
   if (ts->Ashell) {ierr = MatDestroy(ts->A); CHKERRQ(ierr);}
   PetscFree(cn);
   PetscFunctionReturn(0);
@@ -183,7 +220,7 @@ int TSCnMatMult(Mat mat,Vec x,Vec y)
   ierr = MatShellGetContext(mat,(void **)&ts);CHKERRQ(ierr);
   neg_dt = -1.0*ts->time_step;
 
-  /* apply user provided function */
+  /* apply user-provided function */
   ierr = MatMult(ts->Ashell,x,y); CHKERRQ(ierr);
   /* shift and scale by 2 - dt*F */
   ierr = VecAXPBY(&two,&neg_dt,x,y); CHKERRQ(ierr);
@@ -271,7 +308,8 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
     
   /* build linear system to be solved */
   if (!ts->Ashell) {
-    ierr = MatConvert(ts->A,MATSAME,&cn->Aeuler); CHKERRQ(ierr);
+    /* temporary implementation -- this will NOT be the final approach used! */
+    /*  ierr = MatConvert(ts->A,MATSAME,&cn->Aeuler); CHKERRQ(ierr); */
     ierr = MatScale(&neg_dt,ts->A); CHKERRQ(ierr);
     ierr = MatShift(&two,ts->A); CHKERRQ(ierr);
   } else {
