@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.165 1999/09/20 19:50:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.166 1999/10/01 21:21:00 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -28,17 +28,17 @@ int VecNorm_Seq(Vec xin,NormType type,double* z )
     {
       int i;
       Scalar sum=0.0;
-      for ( i=0; i<x->n; i++) {
+      for ( i=0; i<xin->n; i++) {
         sum += (x->array[i])*(PetscConj(x->array[i]));
       }
       *z = sqrt(PetscReal(sum));
     }
 #else
-    *z = BLnrm2_( &x->n, x->array, &one );
+    *z = BLnrm2_( &xin->n, x->array, &one );
 #endif
-    PLogFlops(2*x->n-1);
+    PLogFlops(2*xin->n-1);
   } else if (type == NORM_INFINITY) {
-    register int    i, n = x->n;
+    register int    i, n = xin->n;
     register double max = 0.0, tmp;
     Scalar          *xx = x->array;
 
@@ -50,8 +50,8 @@ int VecNorm_Seq(Vec xin,NormType type,double* z )
     }
     *z   = max;
   } else if (type == NORM_1) {
-    *z = BLasum_( &x->n, x->array, &one );
-    PLogFlops(x->n-1);
+    *z = BLasum_( &xin->n, x->array, &one );
+    PLogFlops(xin->n-1);
   } else if (type == NORM_1_AND_2) {
     ierr = VecNorm_Seq(xin,NORM_1,z);CHKERRQ(ierr);
     ierr = VecNorm_Seq(xin,NORM_2,z+1);CHKERRQ(ierr);
@@ -63,10 +63,8 @@ int VecNorm_Seq(Vec xin,NormType type,double* z )
 #define __FUNC__ "VecGetOwnershipRange_Seq"
 int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 {
-  Vec_Seq *x = (Vec_Seq *) xin->data;
-
   PetscFunctionBegin;
-  *low = 0; *high = x->n;
+  *low = 0; *high = xin->n;
   PetscFunctionReturn(0);
 }
 #include "viewer.h"
@@ -77,7 +75,7 @@ int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 int VecView_Seq_File(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
-  int      i, n = x->n,ierr,format;
+  int      i, n = xin->n,ierr,format;
   FILE     *fd;
   char     *outputname;
 
@@ -137,7 +135,7 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
 static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
-  int      i, n = x->n,ierr;
+  int      i, n = xin->n,ierr;
   Draw     win;
   double   *xx;
   DrawLG   lg;
@@ -202,7 +200,7 @@ static int VecView_Seq_Draw(Vec xin,Viewer v)
 static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
-  int      ierr,fdes,n = x->n;
+  int      ierr,fdes,n = xin->n;
   FILE     *file;
 
   PetscFunctionBegin;
@@ -235,7 +233,7 @@ int VecView_Seq(Vec xin,Viewer viewer)
   } else if (PetscTypeCompare(viewer,ASCII_VIEWER)){
     ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
   } else if (PetscTypeCompare(viewer,SOCKET_VIEWER)) {
-    ierr = ViewerSocketPutScalar_Private(viewer,x->n,1,x->array);CHKERRQ(ierr);
+    ierr = ViewerSocketPutScalar_Private(viewer,xin->n,1,x->array);CHKERRQ(ierr);
   } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
   } else {
@@ -257,7 +255,7 @@ int VecSetValues_Seq(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
     for ( i=0; i<ni; i++ ) {
       if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-      if (ix[i] >= x->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->n);
+      if (ix[i] >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],xin->n);
 #endif
       xx[ix[i]] = y[i];
     }
@@ -265,7 +263,7 @@ int VecSetValues_Seq(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
     for ( i=0; i<ni; i++ ) {
       if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-      if (ix[i] >= x->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->n);
+      if (ix[i] >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],xin->n);
 #endif
       xx[ix[i]] += y[i];
     }  
@@ -290,7 +288,7 @@ int VecSetValuesBlocked_Seq(Vec xin, int ni,const int ix[],const Scalar yin[],In
       start = bs*ix[i];
       if (start < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-      if (start >= x->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",start,x->n);
+      if (start >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",start,xin->n);
 #endif
       for (j=0; j<bs; j++) {
         xx[start+j] = y[j];
@@ -302,7 +300,7 @@ int VecSetValuesBlocked_Seq(Vec xin, int ni,const int ix[],const Scalar yin[],In
       start = bs*ix[i];
       if (start < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-      if (start >= x->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",start,x->n);
+      if (start >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",start,xin->n);
 #endif
       for (j=0; j<bs; j++) {
         xx[start+j] += y[j];
@@ -327,7 +325,7 @@ int VecDestroy_Seq(Vec v)
   ierr = PetscAMSDestroy(v);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
-  PLogObjectState((PetscObject)v,"Length=%d",((Vec_Seq *)v->data)->n);
+  PLogObjectState((PetscObject)v,"Length=%d",v->n);
 #endif
   if (vs->array_allocated) {ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);}
   ierr = PetscFree(vs);CHKERRQ(ierr);
@@ -425,7 +423,6 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
   s                  = (Vec_Seq *) PetscMalloc(sizeof(Vec_Seq));CHKPTRQ(s);
   v->data            = (void *) s;
   v->bops->publish   = VecPublish_Seq;
-  s->n               = PetscMax(v->n,v->N);
   v->n               = PetscMax(v->n,v->N);; 
   v->N               = PetscMax(v->n,v->N);; 
   v->bs              = -1;
@@ -519,7 +516,7 @@ int VecDuplicate_Seq(Vec win,Vec *V)
   Vec_Seq *w = (Vec_Seq *)win->data;
 
   PetscFunctionBegin;
-  ierr = VecCreateSeq(win->comm,w->n,V);CHKERRQ(ierr);
+  ierr = VecCreateSeq(win->comm,win->n,V);CHKERRQ(ierr);
   if (win->mapping) {
     (*V)->mapping = win->mapping;
     PetscObjectReference((PetscObject)win->mapping);
