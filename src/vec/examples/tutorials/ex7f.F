@@ -1,5 +1,5 @@
 
-C    "$Id: ex7f.F,v 1.8 1996/11/16 23:00:00 curfman Exp balay $";
+C    "$Id: ex7f.F,v 1.9 1996/11/19 19:47:23 balay Exp balay $";
 
        subroutine ex7f(vec)
 
@@ -23,13 +23,14 @@ C  Now call C routine from Fortran, passing in the vector
 C
        call ex7c(vec)
 C
-C  If IO is done in the fortran routine, then on some machines
-C  (for eg: SUN4) use FLINKER (fortran linker) instead of 
-C  CLINKER (C linker ). This does not work on DEC Alpha
+C     IO from the fortran routines may cause all kinds of
+C     grief while linking. FC_LIBS in base.site is supporsed
+C     to take care of it. 
 C
-C       write(6,*) 'Calling VecView from Fortran'
+ 100   format ('Calling VecView from Fortran')
+       write(6,100)
 C
-C  Now Call A Petsc Routine form Fortran
+C  Now Call a Petsc Routine form Fortran
 C
        call VecView(vec,VIEWER_STDOUT_WORLD,ierr)
        return 

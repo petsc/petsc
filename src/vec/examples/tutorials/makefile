@@ -154,7 +154,7 @@ runex6:
 	   else echo "Possible problem with ex6_1, diffs above"; fi;\
 	   $(RM) -f ex6_1.tmp input.dat
 runex7:
-	-@$(MPIRUN) -np 3 ex7 > ex7_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 3 ex7 |sort > ex7_1.tmp 2>&1;\
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi;\
 	   $(RM) -f ex7_1.tmp input.dat
