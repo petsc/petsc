@@ -1,67 +1,16 @@
 #! /bin/csh
 # 
-#  Makes distribution version of Petsc 2.0
+#  Makes a complete backup of PETSc src incase the PETSc disk is lost
 #
-echo "------- Have you done ALL of the following?? -----------------------------"
-echo "(0) Excluded any directories not for public release (for example, src/eg, src/snes/interface/noise)"
-echo "(1) Built wwwpages, latexpages by running make allmanpages?"
-echo "(2) Set the version number in manual_tex.tex, manual.tex, and intro.tex?"
-echo "(3) Built the users manual (and intro) in .ps and .html?"
-echo "(4) Set the version number and release date in petsc.h?"
-echo "(5) Removed the option -u from BASEOPTF in bmake/sun4/base.g?"
-echo "(6) Rebuilt and checked all Fortran stubs?"
-echo "(7) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run correctly?"
-echo "(8) Made sure Fortran include files match C ones?"
-echo "(9) Converted hpux/base.* files to nonshared mode?"
-echo "(10) Taken away chmod g+* from petsc/makefile?"
-echo "(11) Built TAGS, tags files?"
-#
-if ($#argv == 1) then
-  set version=$1
-  echo "Building ~/petsc$version.tar"
-else
-  set version=""
-endif
 #
 cd /home/bsmith/petsc
-make ACTION=clean tree
+#make ACTION=clean tree
+cd /home/bsmith/petsc/docs/tex
+#make clean
 #
-#/bin/rm -f ~/petsc
 #
+set name=`date +%d%m%y`
 cd /home/bsmith
-tar cFFXf /home/bsmith/petsc/maint/xclude ~/petsc.tar petsc
+tar cFFXf /home/bsmith/petsc/maint/xcludebackup /hsm/mcs/petsc/userbackups/petsc_$name.tar petsc >& /hsm/mcs/petsc/userbackups/petsc_$name.out 
 #
-cd /mcs/tmp
-tar xf ~/petsc.tar
-chmod -R u+w petsc
-/bin/rm -f ~/petsc.tar
-if ($#argv == 1) then
-  mv petsc petsc$version
-endif
-tar cf ~/petsc$version.tar petsc$version
-/bin/rm -r -f /mcs/tmp/petsc$version
-
-#
-#  To test locally and build petsc.solid
-#
-# tar xf petsc$version.tar
-# do chmod g+ws petsc$version
-# do chgrp -R pdetools petsc$version
-# do chmod -R g+w petsc$version
-# Run du on petsc$version to make sure there is no garbage
-# Test manpages and manual in petsc$version
-# Do builds in petsc$version -- Remember that you must set
-# PETSC_DIR in .cshrc to  point to petsc$version
-#
-# For local distribution, remember to make etags in petsc$version
-#
-# Put a .gz and .Z file in the ftp site.
-# Add to petsc.html the current release and date (in Overview section)
-# and to docs/tex/Releases
-
-#
-# After build Restore the local copy by undoing the following
-#
-# 1. Add chmod u+* back to petsc/makefile
-# 2. Change HPUX back to shared mode
 

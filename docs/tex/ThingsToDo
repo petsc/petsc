@@ -7,7 +7,7 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-  - Add RCS header to all makefiles
+  - Add RCS header to all makefiles and scripts in maint
 
   - MatZeroColumns()
 
