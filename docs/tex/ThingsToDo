@@ -7,6 +7,12 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+I am in the process of preparing my Euclid ILU preconditioning
+library for public release.  Alex suggested I forward you a copy
+of our proposed user manual, for any comments or suggestions
+you might have.  There is also a web page,
+http://www.cs.odu.edu/~hysom/Euclid
+
 Steven Allmaras <steven.r.allmaras@boeing.com>
 support so that the MAT_COLUMN_ORIENTED effects the MatGetValues() as well as
 the MatSetValues() and also we'll add a MatGetBlockRow() to match the    
@@ -38,14 +44,15 @@ freshmeat.
      Possibilities coloring? or look at RAMG/SAMG contrib/lahaye fortran code
      for ideas to do it efficiently.
 
-  Provide efficient routines for converting to/from the AMG sky-line storage to 
-  PETSc aij; see contrib/lahaye
 
   Change PETSc to use http://subversion.tigris.org instead of RCS
 
 *  Improve DAGetColoring for star stencil, paul says (i + 3*j % 5) in 2d
 
 X  Man pages for PetscMalloc()/PetscFree()?
+
+X  Provide efficient routines for converting to/from the AMG sky-line storage to 
+  PETSc aij; see contrib/lahaye
 
   Redue src/snes/examples/tutorials/ex5s.c and .F with OpenMP and merge with ex5.c
 

@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.230 2001/05/24 20:54:52 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.231 2001/06/21 21:15:58 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -2002,10 +2002,12 @@ int VecGetMap(Vec x,Map *map)
 +  x - the vector
 -  op - the option
 
-   Notes: 
-   Currently the only option supported is
-   VEC_IGNORE_OFF_PROC_ENTRIES, which causes VecSetValues() to ignore 
-   entries destined to be stored on a seperate processor.
+   Supported Options:
++     VEC_IGNORE_OFF_PROC_ENTRIES, which causes VecSetValues() to ignore 
+      entries destined to be stored on a seperate processor. This can be used
+      to eliminate the global reduction in the VecAssemblyXXXX() if you know 
+      that you have only used VecSetValues() to set local elements
+-   VEC_TREAT_OFF_PROC_ENTRIES restores the treatment of off processor entries.
 
    Level: intermediate
 

@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.165 2001/03/23 23:21:26 balay Exp bsmith $*/
+/*$Id: pbvec.c,v 1.166 2001/04/10 19:34:57 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -77,6 +77,8 @@ int VecSetOption_MPI(Vec v,VecOption op)
   PetscFunctionBegin;
   if (op == VEC_IGNORE_OFF_PROC_ENTRIES) {
     w->donotstash = PETSC_TRUE;
+  } else if (op == VEC_TREAT_OFF_PROC_ENTRIES) {
+    w->donotstash = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
