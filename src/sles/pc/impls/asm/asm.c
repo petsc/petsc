@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.81 1998/07/24 15:39:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.82 1998/07/24 15:39:18 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -236,7 +236,6 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
     reverse = SCATTER_REVERSE_LOCAL;
   }
 
-
   for ( i=0; i<n_local; i++ ) {
     ierr = VecScatterBegin(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
   }
@@ -245,6 +244,55 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
   for ( i=0; i<n_local_true; i++ ) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
     ierr = SLESSolve(osm->sles[i],osm->x[i],osm->y[i],&its);CHKERRQ(ierr); 
+    ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
+  }
+  /* handle the rest of the scatters that do not have local solves */
+  for ( i=n_local_true; i<n_local; i++ ) {
+    ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
+    ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
+  }
+  for ( i=0; i<n_local; i++ ) {
+    ierr = VecScatterEnd(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCApplyTrans_ASM"
+static int PCApplyTrans_ASM(PC pc,Vec x,Vec y)
+{
+  PC_ASM      *osm = (PC_ASM *) pc->data;
+  int         i,n_local = osm->n_local,n_local_true = osm->n_local_true,ierr,its;
+  Scalar      zero = 0.0;
+  ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
+
+  PetscFunctionBegin;
+  /*
+       Support for limiting the restriction or interpolation to only local 
+     subdomain values (leaving the other values 0).
+
+       Note: these are reversed from the PCApply_ASM() because we are applying the 
+     transpose of the three terms 
+  */
+  if (!(osm->type & PC_ASM_INTERPOLATE)) {
+    forward = SCATTER_FORWARD_LOCAL;
+    /* have to zero the work RHS since scatter may leave some slots empty */
+    for ( i=0; i<n_local; i++ ) {
+      ierr = VecSet(&zero,osm->x[i]);CHKERRQ(ierr);
+    }
+  }
+  if (!(osm->type & PC_ASM_RESTRICT)) {
+    reverse = SCATTER_REVERSE_LOCAL;
+  }
+
+  for ( i=0; i<n_local; i++ ) {
+    ierr = VecScatterBegin(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
+  }
+  ierr = VecSet(&zero,y); CHKERRQ(ierr);
+  /* do the local solves */
+  for ( i=0; i<n_local_true; i++ ) {
+    ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
+    ierr = SLESSolveTrans(osm->sles[i],osm->x[i],osm->y[i],&its);CHKERRQ(ierr); 
     ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
   }
   /* handle the rest of the scatters that do not have local solves */
@@ -673,6 +721,7 @@ int PCCreate_ASM(PC pc)
   osm->same_local_solves = 1;
 
   pc->apply             = PCApply_ASM;
+  pc->applytrans        = PCApplyTrans_ASM;
   pc->setup             = PCSetUp_ASM;
   pc->destroy           = PCDestroy_ASM;
   pc->printhelp         = PCPrintHelp_ASM;
