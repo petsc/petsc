@@ -409,11 +409,13 @@ static int MatiZero(Mat A)
   return 0;
 }
 
-static int MatiZerorows(Mat A,int N,int *rows,Scalar *diag)
+static int MatiZerorows(Mat A,IS is,Scalar *diag)
 {
   MatiSD *l = (MatiSD *) A->data;
-  int     m = l->m, n = l->n, i, j;
+  int     m = l->m, n = l->n, i, j,ierr,N, *rows;
   Scalar  *slot;
+  ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
+  ierr = ISGetIndices(is,&rows); CHKERR(ierr);
   for ( i=0; i<N; i++ ) {
     slot = l->v + rows[i];
     for ( j=0; j<n; j++ ) { *slot = 0.0; slot += n;}
@@ -421,9 +423,10 @@ static int MatiZerorows(Mat A,int N,int *rows,Scalar *diag)
   if (diag) {
     for ( i=0; i<N; i++ ) { 
       slot = l->v + (n+1)*rows[i];
-      *slot = *diag++;
+      *slot = *diag;
     }
   }
+  ISRestoreIndices(is,&rows);
   return 0;
 }
 /* -------------------------------------------------------------------*/
