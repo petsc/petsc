@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.196 2000/01/19 22:00:37 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.197 2000/01/26 21:50:39 bsmith Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -448,10 +448,10 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
           for (l=0; l<bs; l++) {
 #if defined(PETSC_USE_COMPLEX)
             if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) > 0.0 && PetscRealPart(a->a[bs2*k + l*bs + j]) != 0.0) {
-              ierr = ViewerASCIIPrintf(viewer," %d %g + %g i",bs*a->j[k]+l,
+              ierr = ViewerASCIIPrintf(viewer," %d %g + %gi",bs*a->j[k]+l,
                       PetscRealPart(a->a[bs2*k + l*bs + j]),PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             } else if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) < 0.0 && PetscRealPart(a->a[bs2*k + l*bs + j]) != 0.0) {
-              ierr = ViewerASCIIPrintf(viewer," %d %g - %g i",bs*a->j[k]+l,
+              ierr = ViewerASCIIPrintf(viewer," %d %g - %gi",bs*a->j[k]+l,
                       PetscRealPart(a->a[bs2*k + l*bs + j]),-PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             } else if (PetscRealPart(a->a[bs2*k + l*bs + j]) != 0.0) {
               ierr = ViewerASCIIPrintf(viewer," %d %g ",bs*a->j[k]+l,PetscRealPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.336 2000/01/08 01:21:16 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.337 2000/01/26 21:50:28 bsmith Exp balay $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -331,7 +331,7 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     for (i=0; i<m; i++) {
       for (j=a->i[i]+shift; j<a->i[i+1]+shift; j++) {
 #if defined(PETSC_USE_COMPLEX)
-        ierr = ViewerASCIIPrintf(viewer,"%d %d  %18.16e + %18.16e i \n",i+1,a->j[j]+!shift,PetscRealPart(a->a[j]),PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
+        ierr = ViewerASCIIPrintf(viewer,"%d %d  %18.16e + %18.16ei \n",i+1,a->j[j]+!shift,PetscRealPart(a->a[j]),PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
 #else
         ierr = ViewerASCIIPrintf(viewer,"%d %d  %18.16e\n",i+1,a->j[j]+!shift,a->a[j]);CHKERRQ(ierr);
 #endif
