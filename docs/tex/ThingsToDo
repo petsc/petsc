@@ -10,7 +10,6 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
-
   - Fix VRML vector viewer interface; add documentation about VRML.
 
   - Aim for more exhaustive PETSc testing.  See
@@ -19,6 +18,8 @@ Additional Capabilities that PETSc Needs:
   - Create an Database for examples
 
   - Reorganize examples, write a SLES tutorial
+
+  - Make sure to document any examples that are uniprocessor only.
 
   - Make all systems use shared libraries if possible, and document how to
     use these variants.

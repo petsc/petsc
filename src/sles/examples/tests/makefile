@@ -13,7 +13,7 @@ LOCDIR          = src/sles/examples/
 TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 runex1_5\
 		  ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_5 \
 		  ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
-		  runex4 runex4_2 runex4_3 runex4_5 ex4.rm\
+		  runex4 runex4_3 runex4_5 ex4.rm\
 		  ex5.PETSc runex5 ex5.rm ex8.PETSc runex8 runex8_2 ex8.rm\
 		  ex19.PETSc runex19 ex19.rm clean
 TESTEXAMPLES_2  = ex10.PETSc ex10.rm ex11.PETSc ex11.rm ex13.PETSc runex13 \
