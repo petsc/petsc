@@ -5374,10 +5374,10 @@ These statistics can aid in optimizing performance, since they indicate the sect
 could benefit from various kinds of tuning.  Chapter~\ref{ch_performance} gives
 suggestions about achieving good performance with PETSc codes.
 
-\subsection{Using {\tt -log\_mpe} with Upshot/Nupshot}
+\subsection{Using {\tt -log\_mpe} with Upshot/Jumpshot}
 \label{sec_mpelogs}
 
-It is also possible to use the {\em Upshot} (or {\em Nupshot}) package
+It is also possible to use the {\em Upshot} (or {\em Jumpshot}) package
 \cite{upshot} \sindex{Upshot} \sindex{Nupshot}  to visualize PETSc events. 
 This package comes with the MPE software, which is part of the MPICH
 \cite{mpich-web-page} implementation of MPI.
@@ -5451,7 +5451,7 @@ One must register the event by calling \trl{
 PetscLogEventRegister()}, which assigns a unique integer to identify the
 event for profiling purposes: \findex{PetscLogEventRegister()}
 \begin{tabbing}
-  PetscLogEventRegister(int *e,char *string);
+  PetscLogEventRegister(int *e,const char string[]);
 \end{tabbing}
 Here \trl{string} is a user-defined event name, and \trl{color} is an
 optional user-defined event color (for use with {\em Upshot/Nupshot} logging);
@@ -5461,8 +5461,10 @@ routines.
 
 Events are logged by using the pair \findex{PetscLogEventBegin()}
 \begin{tabbing}
-   PetscLogEventBegin(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);\\
-   PetscLogEventEnd(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
+   PetscLogEventBegin(int event,PetscObject o1,PetscObject o2,\\
+                      PetscObject o3,PetscObject o4);\\
+   PetscLogEventEnd(int event,PetscObject o1,PetscObject o2,\\
+                    PetscObject o3,PetscObject o4);
 \end{tabbing}
 The \findex{PetscLogEventEnd()}
 four objects are the PETSc objects that are most closely associated 
@@ -5603,7 +5605,7 @@ where \trl{obj} is the PETSc object associated most closely with
 the logging statement, \trl{message}.
 For example, in the line search Newton methods, we use a statement such as
 \begin{tabbing}
-   PetscLogInfo(snes,"Cubically determined step, lambda %g\n",lambda);
+   PetscLogInfo(snes,\trl{"Cubically determined step, lambda '%'g\n"},lambda);
 \end{tabbing}
 
 One can selectively turn off informative messages about any of the 
@@ -5865,7 +5867,7 @@ solvers, as discussed throughout the manual.
 
 In particular, note that the default restart parameter for GMRES is
 30, which may be too small for some large-scale problems.  One can alter this
-parameter with the option \trl{-ksp_gmres_restart} \trl{<restart\trl{>}} or by
+parameter with the option \trl{-ksp_gmres_restart} \trl{<}restart\trl{>} or by
 calling KSPGMRESSetRestart(). Section~\ref{sec_ksp} gives
 information on setting alternative GMRES orthogonalization routines,
 which may provide much better parallel performance.
@@ -5923,13 +5925,13 @@ details.  Note that so far these work only on the certain systems.
 
 \end{itemize}
 
-\section{Machine-Specific Optimizations}
-
-\begin{itemize}
-\item On the IBM SP, using the mpirun option \trl{-nopoll} may
-      improve the performance of some PETSc programs.
-\end{itemize}
-
+%\section{Machine-Specific Optimizations}
+%
+%\begin{itemize}
+%\item On the IBM SP, using the mpirun option \trl{-nopoll} may
+%      improve the performance of some PETSc programs.
+%\end{itemize}
+%
 \section{System-Related Problems}
 
 The performance of a code can be affected by a variety of factors, 
@@ -5942,7 +5944,7 @@ overcoming them.
       should always leave at least a ten percent margin between the total
       memory a process is using and the physical size of 
       the machine's memory. One way to estimate the amount of 
-      memory used by given process is with the UNIX \trl{ps} command.
+      memory used by given process is with the UNIX \trl{getrusage} system routine.
       Also, the PETSc option \trl{-log_summary} prints the amount of 
       memory used by the basic PETSc objects, thus providing a lower
       bound on the memory used.  Another useful option is \trl{-trmalloc_log}
@@ -6016,11 +6018,11 @@ Each PETSc process maintains a database of option names and values
 PETScInitialize(), which is listed below in its C/C++ and
 Fortran variants, respectively:
 \begin{tabbing}
-  PetscInitialize(int *argc,char ***args,char *file,char *help);\\
+  PetscInitialize(int *argc,char ***args,const char *file,const char *help);\\
    call PetscInitialize(character file,integer ierr)
 \end{tabbing}
 The arguments \trl{argc} and \trl{args} (in the C/C++ version only) are
-the usual command line arguments, while the \trl{file} is a name of
+the addresses of usual command line arguments, while the \trl{file} is a name of
 a file that can contain additional options. 
 By default this file is called \trl{.petscrc} \findex{.petscrc} in the 
 user's home directory.  The user can also specify options via the
@@ -6061,7 +6063,7 @@ For example,
    alias -sd -start\_in\_debugger
 \end{tabbing}
 Comments can be placed in the .petscrc file by using one of the
-following symbols in the first column of a line: \trl{\#, \%}, or \trl{!}.
+following symbols in the first column of a line: \trl{#, %}, or \trl{!}.
 
 \subsection{User-Defined PetscOptions}
 
@@ -6147,8 +6149,10 @@ predefined viewers:
       PetscViewer *viewer)}. \findex{PetscViewerBinaryOpen}  Details of binary
       I/O are discussed below.
 \item Vector and matrix objects can be passed to a running Matlab process
-      with a viewer created by \trl{PetscViewerMatlabOpen(MPI_Comm comm,
-      char *machine, int port, PetscViewer *viewer)}. \findex{PetscViewerMatlabOpen()} 
+      with a viewer created by 
+\begin{tabbing}
+     PetscViewerMatlabOpen(MPI\_Comm comm,char *machine,int port,PetscViewer *viewer). \findex{PetscViewerMatlabOpen()}
+\end{tabbing} 
       On the Matlab side, one must first run \trl{v = openport(int port)}
       and then \trl{A = receive(v)} to obtain the matrix or vector. Once all
       objects have been received, the port can be closed from the Matlab end
@@ -6715,7 +6719,7 @@ C++ compiler.  For many C++ users this may be the preferred route. To compile
 with the C++ compiler, one should use the option \trl{BOPT=g_c++} or 
 \trl{BOPT=O_c++}.  \sindex{C++}
 The options \trl{BOPT=g_complex} and \trl{BOPT=O_complex}
-will create versions that use complex double-precision numbers. 
+will create C versions that use complex double-precision numbers. 
 \sindex{complex numbers}
 
 \subsection{Makefile Commands} \label{sec_common}
@@ -6794,7 +6798,7 @@ The first is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraires.
 The most important line in this makefile is the line starting with \trl{include}:
 \begin{tabbing}
-   include \${PETSC\_DIR}/bmake/common/base
+   include \$\trl{{PETSC_DIR}/bmake/common/base}
 \end{tabbing}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
@@ -6918,15 +6922,15 @@ Note that the PETSc example programs are divided into several
 categories, which currently include: 
 \begin{tabbing}
 1234\= EXAMPLESx\= \kill
-\> \trl{EXAMPLES_1} \> - basic C suite used in installation tests\\
-\> \trl{EXAMPLES_2} \> - additional C suite including graphics\\
-\> \trl{EXAMPLES_3} \> - basic Fortran .F suite\\
-\> \trl{EXAMPLES_4} \> - subset of 1 and 2 that runs on only a single processor\\
-\> \trl{EXAMPLES_5} \> - examples that require complex numbers\\
-\> \trl{EXAMPLES_6} \> - C examples that do not work with complex numbers\\
-\> \trl{EXAMPLES_8} \> - Fortran .F examples that do not work with complex numbers\\
-\> \trl{EXAMPLES_9} \> - uniprocessor version of 3\\
-\> \trl{EXAMPLES_10} \> - Fortran .F examples that require complex numbers\\
+\> \trl{EXAMPLES_1 } \> -- basic C suite used in installation tests\\
+\> \trl{EXAMPLES_2 } \> -- additional C suite including graphics\\
+\> \trl{EXAMPLES_3 } \> -- basic Fortran .F suite\\
+\> \trl{EXAMPLES_4 } \> -- subset of 1 and 2 that runs on only a single processor\\
+\> \trl{EXAMPLES_5 } \> -- examples that require complex numbers\\
+\> \trl{EXAMPLES_6 } \> -- C examples that do not work with complex numbers\\
+\> \trl{EXAMPLES_8 } \> -- Fortran .F examples that do not work with complex numbers\\
+\> \trl{EXAMPLES_9 } \> -- uniprocessor version of 3\\
+\> \trl{EXAMPLES_10 } \> -- Fortran .F examples that require complex numbers\\
 \end{tabbing}
 
 We next list in Figure \ref{fig_make3} a makefile that maintains a PETSc 
@@ -6947,9 +6951,9 @@ makefiles, they are also easily used.
    OBJSF    = degree.o  fnroot.o genqmd.o qmdqt.o rcm.o fn1wd.o gen1wd.o \ \\
               genrcm.o qmdrch.o rootls.o fndsep.o gennd.o qmdmrg.o qmdupd.o\\
    LIBBASE  = libpetscmat\\
-   MANSEC   = Mat
+   MANSEC   = Mat\\
 
-   include \${PETSC\_DIR}/bmake/common/base
+   include \$\trl{{PETSC_DIR}/bmake/common/base}
 \end{tabbing}
 }
 \caption{Sample PETSc Makefile for Library Maintenance}
@@ -7042,6 +7046,7 @@ one of the following:  \trl{-pc_lu_ordering_type} \trl{natural}, \trl{-pc_lu_ord
 \findex{MATORDERING_RCM} \findex{MATORDERING_QMD} \sindex{nested dissection}
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
 \sindex{quotient minimum degree} \findex{-pc_lu_ordering_type}
+
 Certain matrix formats may support only a subset of these; more options may 
 be added. Check the manual pages for up-to-date information. All of these orderings are 
 symmetric at the moment; ordering routines that are 
