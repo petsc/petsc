@@ -27,9 +27,12 @@ tar cf ~/petsc.tar petsc
 # tar xf petsc.tar
 # mv petsc petsc.solid
 # mv petsc.good petsc
-# run du on petsc.solid to make sure there is no garbage
-# test manpages and manual in petsc.solid
-# do builds in petsc.solid
-# remember you must set PETSC_DIR in .cshrc to 
+# Run du on petsc.solid to make sure there is no garbage
+# Test manpages and manual in petsc.solid
+# Do builds in petsc.solid
+# Remember you must set PETSC_DIR in .cshrc to 
 # point to petsc.solid
+# chmod -r g+ws petsc.solid
+# cd petsc.solid, then make etags
+
 
