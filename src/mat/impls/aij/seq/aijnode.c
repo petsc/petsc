@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.114 2000/05/10 16:40:36 bsmith Exp bsmith $*/
+/*$Id: aijnode.c,v 1.115 2000/07/01 03:34:23 bsmith Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -350,8 +350,7 @@ static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat_SeqAIJ *A,int **iia,int 
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatGetColumnIJ_SeqAIJ_Inode"
-static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
-                                 PetscTruth *done)
+static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   int        ierr,ishift;
@@ -372,8 +371,7 @@ static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatRestoreColumnIJ_SeqAIJ_Inode"
-static int MatRestoreColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
-                                     PetscTruth *done)
+static int MatRestoreColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,PetscTruth *done)
 {
   int ierr;
 
