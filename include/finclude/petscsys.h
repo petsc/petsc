@@ -1,5 +1,5 @@
 !
-!  $Id: sys.h,v 1.14 1998/03/30 21:14:16 balay Exp balay $;
+!  $Id: sys.h,v 1.15 1999/03/24 18:11:04 balay Exp balay $;
 !
 !  Include file for Fortran use of the System package in PETSc
 !
@@ -7,7 +7,7 @@
 #define __SYS_H
 
 #define PetscRandom         PetscFortranAddr
-#define PetscBynarySeekType integer
+#define PetscBinarySeekType integer
 #define PetscRandomType     integer
 
 #endif
