@@ -13,7 +13,7 @@ method but different matrices (having the same nonzero structure).\n";
 int main(int argc,char **args)
 {
   Mat    C; 
-  Scalar v, *xa, *ua, zero = 0.0, one = 1.0, none = -1.0;
+  Scalar v, one = 1.0, none = -1.0;
   int    I, J, ldim, ierr, low, high, iglobal;
   int    i, j, m = 3, n = 2, mytid, numtids, its;
   Vec    x, u, b;
@@ -89,7 +89,7 @@ int main(int argc,char **args)
   /* Check error */
   if ((ierr = VecAXPY(&none,u,x))) SETERRA(ierr,0);
   if ((ierr = VecNorm(x,&norm))) SETERRA(ierr,0);
-  MPE_printf(MPI_COMM_WORLD,"Norm of error %g Number of iterations %d\n",norm,its);
+  MPE_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
 
   /* Change matrix (keeping same nonzero structure) and solve again */
   for ( i=0; i<m; i++ ) { 
@@ -109,7 +109,7 @@ int main(int argc,char **args)
   /* Check error */
   if ((ierr = VecAXPY(&none,u,x))) SETERRA(ierr,0);
   if ((ierr = VecNorm(x,&norm))) SETERRA(ierr,0);
-  MPE_printf(MPI_COMM_WORLD,"Norm of error %g Number of iterations %d\n",norm,its);
+  MPE_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
 
   /* Free work space */
   ierr = SLESDestroy(sles); CHKERRA(ierr);
