@@ -135,9 +135,9 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         /* Modify the CFL if we are past the threshold ratio and we're not at a plateau */
         if (!(its%app->cfl_snes_it)) {
           if (app->cfl_advance == ADVANCE) {
-            if (fnorm/app->fnorm_init < .00001 && fnorm/app->fnorm_last > 0.75) 
+            /* if (fnorm/app->fnorm_init < .00001 && fnorm/app->fnorm_last > 0.75) 
               cfl1 = app->cfl * 0.5;
-            else
+            else */
               cfl1 = app->cfl_init * app->fnorm_init / fnorm;
              /* cfl1 = app->cfl * app->fnorm_last / fnorm;   equivalent alternative */
           } else SETERRQ(1,1,"Unsupported CFL advancement strategy");
@@ -244,50 +244,77 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
   FILE     *fp;
   int      ierr, i, j, k, ijkx, ijkcx, ijkxi, iter, ni, nj, nk, ni1, nj1, nk1;
   char     filename[64];
+  Vec      P_uni, X_uni;
+  Scalar   *xx, *pp;
 
   /* Since we call MonitorDumpGeneral() from the routine ComputeFunction(), packing and
      computing the pressure have already been done. */
   /*
-  ierr = PackWork(app,X,app->localX,
-                  app->r,app->ru,app->rv,app->rw,app->e); CHKERRQ(ierr);
-  ierr = jpressure_(app->r,app->ru,app->rv,app->rw,app->e,app->p); CHKERRQ(ierr);
+  ierr = PackWork(app,app->X,app->localX,
+                  app->r,app->ru,app->rv,app->rw,app->e,&app->xx); CHKERRA(ierr);
+  ierr = jpressure_(app->xx,app->p); CHKERRA(ierr);
   */
 
-  if (app->size != 1) SETERRQ(1,1,"Currently supports uniprocessor use only!")
-    /* ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
-  sprintf(filename,"euler.%d.out",iter); */
-  sprintf(filename,"euler.out"); 
-  fp = fopen(filename,"w"); 
-  fprintf(fp,"VARIABLES=x,y,z,ru,rv,rw,r,e,p\n");
-  ni  = app->ni;  nj  = app->nj;  nk = app->nk;
-  ni1 = app->ni1; nj1 = app->nj1; nk1 = app->nk1;
-  if (app->reorder) {
-    for (k=0; k<nk; k++) {
-      for (j=0; j<nj; j++) {
-        for (i=0; i<ni; i++) {
-          ijkx  = k*nj1*ni1 + j*ni1 + i;
-          ijkcx = k*nj*ni + j*ni + i;
-          fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
-            app->xc[ijkcx],app->yc[ijkcx],app->zc[ijkcx],app->ru[ijkx],app->rv[ijkx],
-            app->rw[ijkx],app->r[ijkx],app->e[ijkx],app->p[ijkx]);
-        }
-      }
-    }
-  } else {
-    for (k=0; k<nk; k++) {
-      for (j=0; j<nj; j++) {
-        for (i=0; i<ni; i++) {
-          ijkx  = k*nj1*ni1 + j*ni1 + i;
-          ijkxi = ijkx * 5;
-          ijkcx = k*nj*ni + j*ni + i;
-          fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
-            app->xc[ijkcx],app->yc[ijkcx],app->zc[ijkcx],app->xx[ijkxi+1],app->xx[ijkxi+2],
-            app->xx[ijkxi+3],app->xx[ijkxi],app->xx[ijkxi+4],app->p[ijkx]);
-        }
-      }
+  /* If using multiple processors, then assemble the pressure and field vectors on only
+     1 processor (in the appropriate ordering) and then view them.  Eventually, we will
+     optimize such manipulations and hide them in the viewer routines */
+  if (app->size != 1) {
+    /* Pack pressure and field vectors */
+    if (app->reorder) SETERRQ(1,0,"Reordering not supported");
+    ierr = UnpackWorkComponent(app,app->p,app->P); CHKERRQ(ierr);
+    ierr = DFVecFormUniVec_MPIRegular_Private(app->P,&P_uni); CHKERRQ(ierr);
+    ierr = DFVecFormUniVec_MPIRegular_Private(app->X,&X_uni); CHKERRQ(ierr);
+    if (app->rank == 0) {
+      ierr = VecGetArray(P_uni,&pp); CHKERRQ(ierr);
+      ierr = VecGetArray(X_uni,&xx); CHKERRQ(ierr);
     }
   }
-  fclose(fp);
+
+  /* Dump data from first processor only */
+  if (app->rank == 0) {
+    if (app->size != 1) {
+      ierr = VecGetArray(P_uni,&pp); CHKERRQ(ierr);
+      ierr = VecGetArray(X_uni,&xx); CHKERRQ(ierr);
+    } else {
+      xx = app->xx;
+      pp = app->p;
+    }
+  
+    /* ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
+    sprintf(filename,"euler.%d.out",iter); */
+    sprintf(filename,"euler.out"); 
+    fp = fopen(filename,"w"); 
+    fprintf(fp,"VARIABLES=x,y,z,ru,rv,rw,r,e,p\n");
+    ni  = app->ni;  nj  = app->nj;  nk = app->nk;
+    ni1 = app->ni1; nj1 = app->nj1; nk1 = app->nk1;
+    if (app->reorder) {
+      for (k=0; k<nk; k++) {
+        for (j=0; j<nj; j++) {
+          for (i=0; i<ni; i++) {
+            ijkx  = k*nj1*ni1 + j*ni1 + i;
+            ijkcx = k*nj*ni + j*ni + i;
+            fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
+              app->xc[ijkcx],app->yc[ijkcx],app->zc[ijkcx],app->ru[ijkx],app->rv[ijkx],
+              app->rw[ijkx],app->r[ijkx],app->e[ijkx],pp[ijkx]);
+          }
+        }
+      }
+    } else {
+      for (k=0; k<nk; k++) {
+        for (j=0; j<nj; j++) {
+          for (i=0; i<ni; i++) {
+            ijkx  = k*nj1*ni1 + j*ni1 + i;
+            ijkxi = ijkx * 5;
+            ijkcx = k*nj*ni + j*ni + i;
+            fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
+              app->xc[ijkcx],app->yc[ijkcx],app->zc[ijkcx],xx[ijkxi+1],xx[ijkxi+2],
+              xx[ijkxi+3],xx[ijkxi],xx[ijkxi+4],pp[ijkx]);
+          }
+        }
+      }
+    }
+    fclose(fp);
+  }
   return 0;
 }
 #undef __FUNC__
@@ -728,7 +755,7 @@ int ConvergenceTestEuler(SNES snes,double xnorm,double pnorm,double fnorm,void *
       PLogInfo(snes,"ConvergenceTestEuler:Function norm is NaN: %g\n",fnorm);
       return 2;
     }
-    if (iter >= 40) {
+    if (iter >= 990) {
       /* Computer average fnorm over the past 6 iterations */
       last_k = 5;
       tmp = 0.0;
@@ -737,7 +764,7 @@ int ConvergenceTestEuler(SNES snes,double xnorm,double pnorm,double fnorm,void *
       /* printf("   iter = %d, f_avg = %g \n",iter,favg[iter]); */
   
       /* Test for stagnation over the past 10 iterations */
-      if (iter >=50) {
+      if (iter >=1000) {
         last_k = 10;
         for (i=iter-last_k; i<iter; i++) {
           if (PetscAbsScalar(favg[i] - favg[iter])/favg[iter] < app->fstagnate_ratio) fstagnate++;
