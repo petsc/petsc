@@ -704,7 +704,7 @@ class Configure(config.base.Configure):
       self.logPrint('Shared linking does not require an explicit libc reference')
       return
     oldLibs = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] += '-lc'
+    self.framework.argDB['LIBS'] += '-lc '
     if self.checkLink(includes = code, codeBegin = '', codeEnd = '', shared = 1):
       self.logPrint('Shared linking requires an explicit libc reference')
       return
