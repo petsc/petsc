@@ -73,7 +73,7 @@ class Package(config.base.Configure):
   def generateGuesses(self):
     if self.download and self.framework.argDB['download-'+self.package] == 1:
       dir = os.path.join(self.Install(),self.arch.arch)
-      yield('Download '+self.PACKAGE,self.generateLibList(os.path.join(dir,'lib')) ,os.path.join(dir,'include'))
+      yield('Download '+self.PACKAGE,self.generateLibList(os.path.join(dir,self.libdir)) ,os.path.join(dir,self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
     if 'with-'+self.package+'-dir' in self.framework.argDB:     
       dir = os.path.abspath(self.framework.argDB['with-'+self.package+'-dir'])
@@ -87,7 +87,7 @@ class Package(config.base.Configure):
       yield('User specified '+self.PACKAGE+' root directory',libs,dir2)
     if self.download and self.framework.argDB['download-'+self.package] == 2:
       dir = os.path.join(self.Install(),self.arch.arch)
-      yield('Download '+self.PACKAGE,self.generateLibList(os.path.join(dir,'lib')) ,os.path.join(dir,'include'))
+      yield('Download '+self.PACKAGE,self.generateLibList(os.path.join(dir,self.libdir)) ,os.path.join(dir,self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
     raise RuntimeError('You must specifiy a path for '+self.name+' with --with-'+self.package+'-dir=<directory>')
 
@@ -167,7 +167,7 @@ class Package(config.base.Configure):
     incls        = []
     for l in self.deps:
       if hasattr(l,'dlib'):    libs  += l.dlib
-      if hasattr(l,'include'): incls += l.include
+      if hasattr(l,self.includedir): incls += l.include
       
     for location, lib,incl in self.generateGuesses():
       if not isinstance(lib, list): lib = [lib]
