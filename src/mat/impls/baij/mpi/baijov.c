@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijov.c,v 1.23 1997/08/22 15:14:37 bsmith Exp balay $";
+static char vcid[] = "$Id: baijov.c,v 1.24 1997/10/01 22:21:04 balay Exp balay $";
 #endif
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -289,7 +289,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
     char *t_p;
 
     len      = (imax)*(sizeof(BT) + sizeof(int *) + sizeof(int)) + 
-               (Mbs)*imax*sizeof(int)  + (Mbs/BITSPERBYTE)*imax*sizeof(char) + 1;
+               (Mbs)*imax*sizeof(int)  + (Mbs/BITSPERBYTE+1)*imax*sizeof(char) + 1;
     table    = (BT *)PetscMalloc(len);  CHKPTRQ(table);
     PetscMemzero(table,len);
     data     = (int **)(table + imax);
@@ -297,7 +297,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
     d_p      = (int  *)(isz   + imax);
     t_p      = (char *)(d_p   + Mbs*imax);
     for (i=0; i<imax; i++) {
-      table[i] = t_p + (Mbs/BITSPERBYTE)*i;
+      table[i] = t_p + (Mbs/BITSPERBYTE+1)*i;
       data[i]  = d_p + (Mbs)*i;
     }
   }

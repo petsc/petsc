@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex51.c,v 1.3 1997/04/10 00:03:45 bsmith Exp balay $";
+static char vcid[] = "$Id: ex51.c,v 1.4 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -153,6 +153,8 @@ int main(int argc,char **args)
   PetscFree(vals);
   MatDestroy(A);
   MatDestroy(B);
+  PetscFree(submatA); 
+  PetscFree(submatB);
   PetscRandomDestroy(rand);
   PetscFinalize();
   return 0;

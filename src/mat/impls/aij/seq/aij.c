@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.237 1997/09/26 02:19:01 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.238 1997/10/01 22:23:47 balay Exp balay $";
 #endif
 
 /*
@@ -1554,7 +1554,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
         end   = ai[row+1];
         for ( l = start; l<end ; l++){
           val = aj[l] + shift;
-          if (!BTLookup(table,val)) {nidx[isz++] = val;}
+          if (!BTLookupSet(table,val)) {nidx[isz++] = val;}
         }
       }
     }
