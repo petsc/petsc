@@ -1,12 +1,12 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.43 1995/09/21 20:11:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.44 1995/09/21 20:37:10 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
 #include "mat.h"       /*I "mat.h"  I*/
 
-int MatGetFormatFromOptions_Private(MPI_Comm comm,MatType *type,int *set)
+int MatGetFormatFromOptions(MPI_Comm comm,MatType *type,int *set)
 {
   int numtid;
   MPI_Comm_size(comm,&numtid);
@@ -122,7 +122,7 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     MPIU_printf(comm,"            -mat_mpirowbs, -mat_seqdense\n");
     MPIU_printf(comm,"            -mat_bdiag, -mat_seqbdiag,-mat_mpibdiag\n"); 
   }
-  ierr = MatGetFormatFromOptions_Private(comm,&type,&set); CHKERRQ(ierr);
+  ierr = MatGetFormatFromOptions(comm,&type,&set); CHKERRQ(ierr);
 
   if (type == MATSEQDENSE) {
     return MatCreateSeqDense(comm,m,n,V);
