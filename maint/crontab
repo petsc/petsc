@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.155 2001/08/09 23:22:37 balay Exp balay $ 
+# $Id: crontab,v 1.156 2001/08/24 16:54:04 balay Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -16,7 +16,7 @@
 40  1 * * * /home/bsmith/petsc/maint/buildtest solaris
 50  1 * * * /home/bsmith/petsc/maint/buildtest IRIX
 01  2 * * * /home/bsmith/petsc/maint/buildtest linux
-10  2 * * * /home/bsmith/petsc/maint/buildtest linux_absoft
+##10  2 * * * /home/bsmith/petsc/maint/buildtest linux_absoft
 20  2 * * * /home/bsmith/petsc/maint/buildtest solaris_uni
 30  2 * * * /home/bsmith/petsc/maint/buildtest IRIX64
 40  2 * * * /home/bsmith/petsc/maint/buildtest rs6000_sp
