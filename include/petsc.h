@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.50 1995/08/01 14:04:20 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.51 1995/08/01 21:33:16 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -37,7 +37,7 @@ extern int  (*PetscFree)(void *,int,char*);
 #define PETSCFREE(a)         (*PetscFree)(a,__LINE__,__FILE__)
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),
                            int (*)(void *,int,char*));
-extern int  Trdump(FILE *);
+extern int  TrDump(FILE *);
 extern int  TrGetMaximumAllocated(double*);
 
 #define PETSCNEW(A)         (A*) PETSCMALLOC(sizeof(A))
