@@ -84,9 +84,6 @@ class Configure(config.base.Configure):
        - libDir may be a list of directories
        - libName may be a list of library names'''
     if not isinstance(libName, list): libName = [libName]
-    if reduce(lambda x,y: x and y, [self.haveLib(lib) for lib in libName], 1):
-      self.framework.logPrint('Already located libraries '+str(libName))
-      return
     self.framework.logPrint('Checking for function '+funcName+' in library '+str(libName))
     # Handle Fortran mangling
     if fortranMangle:
