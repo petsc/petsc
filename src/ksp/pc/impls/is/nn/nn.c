@@ -164,6 +164,10 @@ static int PCDestroy_NN(PC pc)
 
    Notes: The matrix used with this preconditioner must be of type MATIS 
 
+          Unlike more 'conventional' Neumann-Neumann preconditioners this iterates over ALL the
+          degrees of freedom, NOT just those on the interface (this allows the use of approximate solvers
+          on the subdomains; though in our experience using approximate solvers is slower.).
+
           Options for the coarse grid preconditioner can be set with -nn_coarse_pc_xxx
           Options for the Dirichlet subproblem preconditioner can be set with -is_localD_pc_xxx
           Options for the Neumann subproblem preconditioner can be set with -is_localN_pc_xxx
