@@ -52,6 +52,7 @@ int main(int argc,char **args)
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   PetscScalar    zero = 0.0,none = -1.0;
   PetscTruth     preload = PETSC_TRUE,diagonalscale;
+  int            num_numfac;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -196,7 +197,7 @@ int main(int argc,char **args)
     */
     ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
 
-     int num_numfac = 1;
+    num_numfac = 1;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-num_numfac",&num_numfac,PETSC_NULL);CHKERRQ(ierr);
     while ( num_numfac-- ){
       /* ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); */

@@ -458,10 +458,8 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,PetscReal f,Mat *F)
     SETERRQ1(1,"Unknown factor type %s",buff);
   }
 
-  ierr = PetscOptionsInt("-mat_baij_dscpack_stats","display stats: 
-         0 = no display,  1 = display",
-         "None",
-         lu->stat,&lu->stat,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_baij_dscpack_stats","display stats: 0 = no display,  1 = display",
+         "None", lu->stat,&lu->stat,PETSC_NULL);CHKERRQ(ierr);
   
   ierr = PetscOptionsEList("-mat_baij_dscpack_LBLAS","BLAS level used in the local phase","None",
              ltype,3,ltype[2],buff,32,&flg);CHKERRQ(ierr);

@@ -38,7 +38,7 @@ int AppCtxSolve(AppCtx* appctx)
   /* MatView(algebra->A,PETSC_VIEWER_STDOUT_SELF); */
 
   /*  5) Create the nonlinear solver context  */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
   /*  6) Set function evaluation rountine and vector */
   ierr = SNESSetFunction(snes,algebra->f,FormStationaryFunction,(void *)appctx);CHKERRQ(ierr);
