@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.46 1999/08/05 19:48:14 balay Exp $ 
+# $Id: base.site,v 1.1 1999/08/30 19:55:54 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,8 +10,8 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-BLAS_LIB       = /home/petsc/software/blaslapack/blas_INTEL_linux.a
-LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_linux.a
+BLAS_LIB       = -L/common/petsc/blaslapack -lblas
+LAPACK_LIB     = -L/common/petsc/blaslapack -llapack
 #
 #
 # Location of X-windows software
@@ -24,7 +24,7 @@ X11_LIB        = -L/usr/X11R6/lib -lX11
 #MPI_LIB        = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpich
 #MPI_INCLUDE    = -I/home/petsc/mpich-1.1.1/include
 #MPIRUN         = /home/petsc/mpich-1.1.1/lib/LINUX/ch_p4/mpirun
-MPI_HOME       = /home/petsc/software/mpich-1.1.2
+MPI_HOME       = /common/petsc/mpich-1.1.2
 MPI_BUILD_HOME = ${MPI_HOME}/build/LINUX/ch_p4
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
@@ -45,14 +45,14 @@ MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
 #
 # Optional location of BlockSolve (MPI version)
 #
-BS_INCLUDE     = -I/home/petsc/software/BlockSolve95/include
-BS_LIB         =  -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+#BS_INCLUDE     = -I/home/petsc/software/BlockSolve95/include
+#BS_LIB         =  -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # Optional Matlab location
 #
-CMEX            = /software/linux/com/packages/matlab-5.2/bin/mex
-MCC             = gcc
-MATLABCOMMAND   = matlab
+#CMEX            = /software/linux/com/packages/matlab-5.2/bin/mex
+#MCC             = gcc
+#MATLABCOMMAND   = matlab
 #
 # Option location where adiC is installed
 #
@@ -78,7 +78,7 @@ MATLABCOMMAND   = matlab
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DPETSC_HAVE_MPE -DPETSC_HAVE_BLOCKSOLVE
+PCONF         = -DPETSC_HAVE_MPE
 #PCONF        = -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
@@ -87,4 +87,4 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-DYLIBPATH     = /home/alice/software/egcs/linux/lib:/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH}
+DYLIBPATH     = 

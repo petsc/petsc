@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.13 1999/08/19 18:18:22 balay Exp $ 
+# $Id: base_variables,v 1.1 1999/08/30 19:55:55 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -11,15 +11,14 @@ SH_LD		   = gcc
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = gcc
-C_FC		   = g77 -Wno-globals
+C_FC		   = f90
 C_CLINKER_SLFLAG   = -Wl,-rpath,
 C_FLINKER_SLFLAG   = -Wl,-rpath,
 C_CLINKER	   = gcc
-C_FLINKER	   = g77
+C_FLINKER	   = f90
 C_CCV		   = ${C_CC} --version
-C_SYS_LIB	   = -ldl -lc -lf2c -lm
-#C_SYS_LIB	   = -ldl -lc -lg2c -lm
-#C_SYS_LIB	   = -ldl -lc /usr/lib/libf2c.a -lm  #Use /usr/lib/libf2c.a if that's what your f77 uses.
+C_SYS_LIB	   = -ldl -lc -L/common/absoft/lib -lfio -lf90math -lf77math -lU77 -lV77 -lm
+
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g
@@ -29,15 +28,13 @@ O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = g++ -fPIC
-CXX_FC		   = g77 -Wno-globals
+CXX_FC		   = f90
 CXX_CLINKER_SLFLAG = -Wl,-rpath,
 CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = g++
 CXX_FLINKER	   = g++
 CXX_CCV		   = ${CXX_CC} --version
-CXX_SYS_LIB	   = -ldl -lc -lf2c -lm
-#CXX_SYS_LIB	   = -ldl -lc -lg2c -lm
-#CXX_SYS_LIB	   = -ldl -lc /usr/lib/libf2c.a -lm
+CXX_SYS_LIB	   = -ldl -lc -L/common/absoft/lib -lfio -lf90math -lf77math -lU77 -lV77 -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g
