@@ -1,12 +1,7 @@
-# $Id: base,v 1.28 1997/09/10 18:08:28 balay Exp bsmith $ 
+# $Id: base,v 1.29 1997/09/17 04:31:45 bsmith Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -32 -DPARCH_IRIX
-#
-# For IRIX version 5.* please use the following
-#
-#CC       = cc -32 -DPARCH_IRIX -DPARCH_IRIX5
-#
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown
